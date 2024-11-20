@@ -1,3 +1,26 @@
+2024-11-19  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/114869
+	* c-decl.cc (c_init_decl_processing): Register nullptr_type_node
+	as typeof (nullptr) not nullptr_t.
+
+2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117456
+	* c-parser.cc (c_parser_postfix_expression): Use LROTATE_EXPR
+	or RROTATE_EXPR only if type_has_mode_precision_p or if arg1
+	has BITINT_TYPE with precision larger than MAX_FIXED_MODE_SIZE.
+	Otherwise build BIT_IOR_EXPR of LSHIFT_EXPR and RSHIFT_EXPR
+	and wrap it into a COND_EXPR depending on if arg2 is 0 or not.
+	* c-fold.cc (c_fully_fold_internal): Check for suppression of
+	-Wshift-count-overflow warning.
+
+2024-11-19  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117490
+	* c-typeck.cc (tagged_types_tu_compatible): Form equivalence
+	classed for tagless types in C23.
+
 2024-11-18  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/112556

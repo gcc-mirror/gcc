@@ -1,3 +1,45 @@
+2024-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117538
+	* Makefile.rtl (GNU Hurd): Add $(TRASYM_DWARF_UNIX_OBJS).
+	(x86-64 kfreebsd): Likewise.
+	(aarch64 FreeBSD): Likewise.
+	(x86-64 DragonFly): Likewise.
+	(S390 Linux): Likewise.
+	(Mips Linux): Likewise.
+	(SPARC Linux): Likewise.
+	(HP/PA Linux): Linux.
+	(M68K Linux): Likewise.
+	(SH4 Linux): Likewise.
+	(Alpha Linux): Likewise.
+	(RISC-V Linux): Likewise.
+
+2024-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Within_Case_Or_If_Expression): Rename into...
+	(Within_Conditional_Expression): ...this.
+	* exp_util.adb (Within_Case_Or_If_Expression): Rename into...
+	(Within_Conditional_Expression): ...this.
+	* checks.adb (Install_Null_Excluding_Check): Adjust for renaming.
+
+2024-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Assignment_With_Temporary): Inline into...
+	(Build_Array_Aggr_Code): ...this.  Set the Analyzed flag on the
+	relocated aggregate if it is to be handled by the back-end.
+
+2024-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb: Remove clauses for Expander.
+	(Expand_N_Object_Declaration): Remove special processing for delayed
+	aggregates of limited types as initialization expressions.
+	* freeze.adb (Warn_Overlay): Bail out if No_Initialization is set on
+	the declaration node of the entity.
+	* sem_ch3.adb (Delayed_Aspect_Present): Delete.
+	(Expand_N_Object_Declaration): Do not block the resolution of the
+	initialization expression that is an aggregate when the object has
+	an address clause or delayed aspects.
+
 2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Case_Expression): Remove the test on

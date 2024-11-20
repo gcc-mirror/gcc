@@ -1,3 +1,11 @@
+2024-11-19  Jason Merrill  <jason@redhat.com>
+
+	* decl2.cc (cp_handle_deprecated_or_unavailable): Avoid redundant
+	warning.
+	* call.cc (build_over_call): Set TREE_NO_WARNING for calls
+	to deprecated functions.
+	* semantics.cc (finish_call_expr): Propagate TREE_NO_WARNING.
+
 2024-11-17  Jason Merrill  <jason@redhat.com>
 
 	* module.cc (module_preprocess_options): Set directives_only here.

@@ -1,3 +1,10 @@
+2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117641
+	* c-common.cc (sync_resolve_size): For size == 16 fetch of
+	BITINT_TYPE if TImode isn't supported scalar mode diagnose
+	and return 0 if orig_format instead of returning 16.
+
 2024-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116253

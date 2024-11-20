@@ -1,3 +1,7 @@
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* simple-object-coff.c: Add aarch64.
+
 2024-11-16  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* testsuite/test-demangle.c (get_line): Change K&R style

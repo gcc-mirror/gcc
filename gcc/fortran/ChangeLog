@@ -1,3 +1,55 @@
+2024-11-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-intrinsic.cc (gfc_inline_intrinsic_function_p): Return TRUE
+	for MINLOC/MAXLOC with constant DIM and either REAL ARRAY or
+	non-scalar MASK.
+	(walk_inline_intrinsic_minmaxloc): Walk MASK and if it's an array
+	add the chain obtained before that of ARRAY.
+	(gfc_conv_intrinsic_minmaxloc): Use the nested loop if there is one.
+	To evaluate MASK (respectively ARRAY in the second loop), inherit
+	the scalarizer chain if in a nested loop, otherwise keep using the
+	chain obtained by walking MASK (respectively ARRAY).  If there is a
+	nested loop, avoid advancing the parent scalarization chain a second
+	time in the second loop.
+
+2024-11-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Use
+	conditionals based on the MASK expression rather than on its
+	scalarization chains.
+
+2024-11-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-intrinsic.cc (gfc_inline_intrinsic_function_p): Return TRUE
+	if MASK is scalar.
+	(walk_inline_intrinsic_minmaxloc): Append to the scalarization chain
+	a scalar element for MASK if it's present.
+	(gfc_conv_intrinsic_minmaxloc): Use a local gfc_se struct to serve
+	as base for all the expressions evaluated in the nested loop.  To
+	evaluate MASK when there is a nested loop, enable usage of the
+	scalarizer and set the original passed in SE argument as current
+	scalarization chain element to use.  And use the nested loop from
+	the scalarizer instead of the local loop in that case.
+
+2024-11-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-intrinsic.cc (gfc_inline_intrinsic_function_p): Return true
+	if DIM is constant, ARRAY is integral and MASK is absent.
+	(walk_inline_intrinsic_minmaxloc): If DIM is present, walk ARRAY and
+	move the dimension corresponding to DIM to a nested chain, keeping
+	the rest of the dimensions as the returned scalarization chain.
+	(gfc_conv_intrinsic_minmaxloc): When inside the scalarization loops,
+	proceed with inline code generation If DIM is present.  If DIM is
+	present, skip result array creation and final initialization from
+	individual result local variables.  If DIM is present and ARRAY has
+	rank greater than 1, use the nested loop initialized by the
+	scalarizer instead of the local one, use 1 as scalarization
+	dimension, and evaluate ARRAY using the inherited scalarization
+	chain instead of creating a local one by walking the expression.
+
 2024-11-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/53357

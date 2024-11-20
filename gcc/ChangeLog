@@ -1,3 +1,220 @@
+2024-11-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54378
+	* config/avr/avr.cc (avr_default_shift_costs): New static function.
+	(avr_rtx_costs_1) [ASHIFT, LSHIFTRT, ASHIFTRT]: Use it
+	to determine the default shift costs for shifts with a
+	constant shift offset.
+
+2024-11-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (ashlhi3, *ashlhi3_const_split, *ashlhi3_const)
+	(*ashlpsi3_split, *ashlpsi3)
+	(ashlsi3, *ashlsi3_const_split, *ashlsi3_const)
+	(ashrhi3, *ashrhi3, ashrpsi3, *ashrpsi3, ashrsi3, *ashrsi3)
+	(*ashrhi3_const_split, *ashrhi3_const, *ashrsi3_const_split, *ashrsi3_const):
+	Add constraint alternatives that allow a 3-operand operation when the
+	shift offset is one less than the mode's bitsize.
+	* config/avr/avr.cc (ashl<mode>3_out, ashr<mode>3_out)
+	(lshr<mode>3_out): Use avr_asm_len for asm_out and length tracking.
+	(ashrhi3_out, ashlhi3_out): Support the new "r,r,C15" alternatives.
+	(ashrsi3_out, ashlsi3_out): Support the new "r,r,C31" alternatives.
+	(avr_out_ashrpsi3, avr_out_ashlpsi3): Support the new "r,r,C23" alternatives.
+
+2024-11-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (avr_args.has_stack_args): Be a bool.
+	(struct machine_function) <is_naked, is_noblock, is_OS_task,
+	is_OS_task, sibcall_fails, attributes_checked_p, is_no_gccisr,
+	use_L__stack_usage, gasisr.yes, gasisr.maybe>: Same.
+	* config/avr/avr-protos.h (reg_unused_after)
+	(test_hard_reg_class, jump_over_one_insn_p): Use bool as
+	return type.
+	* config/avr/avr.cc (reg_unused_after)
+	(test_hard_reg_class, jump_over_one_insn_p): Same.
+	(cfun->machine->attributes_checked_p, cum->has_stack_args)
+	(cfun->machine->use_L__stack_usage, cfun->machine->gasisr.yes)
+	(cfun->machine->sibcall_fails): Use like a bool.
+
+2024-11-19  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/riscv/riscv.cc (riscv_override_options_internal):
+	Set division option's default to disabled if multiplication
+	is not available.
+
+2024-11-19  Jason Merrill  <jason@redhat.com>
+
+	* warning-control.cc (has_warning_spec): Fix handling of
+	get_no_warning_bit.
+
+2024-11-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/84211
+	* config/avr/avr-passes.cc (memento_t::apply_insn1): Don't
+	use operator &= on memento_t.known but on memento_t itself.
+
+2024-11-19  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/117657
+	* config/gcn/gcn-valu.md (mask_gather_load<mode><vnsi>): Fix bug in
+	maskload else patch.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config/aarch64/cygming.h (TARGET_ASM_LTO_START): New.
+	(TARGET_ASM_LTO_END): Likewise.
+	* config/i386/cygming.h (TARGET_ASM_LTO_START): Update.
+	(TARGET_ASM_LTO_END): Likewise.
+	* config/i386/i386-protos.h (i386_pe_asm_lto_start): Delete.
+	(i386_pe_asm_lto_end): Likewise.
+	* config/mingw/winnt.cc (i386_pe_asm_lto_start): Rename
+	into ...
+	(mingw_pe_asm_lto_start): ... this.
+	(i386_pe_asm_lto_end): Rename into ...
+	(mingw_pe_asm_lto_end): ... this.
+	* config/mingw/winnt.h (mingw_pe_asm_lto_start): New.
+	(mingw_pe_asm_lto_end): Likewise.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config/aarch64/aarch64.cc (aarch64_load_symref_appropriately):
+	Update.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config/aarch64/aarch64-coff.h (LOCAL_LABEL_PREFIX):
+	Use "." as the local label prefix.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Remove.
+	(ASM_OUTPUT_LOCAL): New.
+	* config/aarch64/cygming.h (ASM_OUTPUT_EXTERNAL_LIBCALL):
+	Update.
+	(ASM_DECLARE_OBJECT_NAME): New.
+	(ASM_DECLARE_FUNCTION_NAME): New.
+	* config/i386/cygming.h (ASM_DECLARE_COLD_FUNCTION_NAME):
+	Update.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Update.
+	* config/mingw/winnt.cc (mingw_pe_declare_function_type):
+	Rename into ...
+	(mingw_pe_declare_type): ... this.
+	(i386_pe_start_function): Update.
+	* config/mingw/winnt.h (mingw_pe_declare_function_type):
+	Rename into ...
+	(mingw_pe_declare_type): ... this.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config/aarch64/aarch64.cc (aarch64_classify_symbol):
+	Disable GOT for PECOFF target.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config.gcc: Add missing dependencies.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config/aarch64/aarch64.cc (TARGET_ASM_UNALIGNED_HI_OP):
+	Enable DWARF.
+	(TARGET_ASM_UNALIGNED_SI_OP): Likewise.
+	(TARGET_ASM_UNALIGNED_DI_OP): Likewise.
+	* config/aarch64/cygming.h (DWARF2_DEBUGGING_INFO): Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Likewise.
+	(DWARF2_UNWIND_INFO): Likewise.
+	(ASM_OUTPUT_DWARF_OFFSET): Likewise.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config/aarch64/cygming.h (SUB_TARGET_RECORD_STUB): Request
+	declaration for weak symbols.
+	(PE_COFF_LEGITIMIZE_EXTERN_DECL): Legitimize external
+	declaration for weak symbols.
+	* config/i386/cygming.h (SUB_TARGET_RECORD_STUB): Update
+	declarations in ix86 with the same functionality.
+	(PE_COFF_LEGITIMIZE_EXTERN_DECL): Likewise.
+	* config/mingw/winnt-dll.cc (legitimize_pe_coff_symbol):
+	Support declaration for weak symbols if requested.
+	* config/mingw/winnt.cc (struct stub_list): Likewise.
+	(mingw_pe_record_stub): Likewise.
+	(mingw_pe_file_end): Likewise.
+	* config/mingw/winnt.h (mingw_pe_record_stub): Likewise.
+
+2024-11-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (shuffle_merge_patterns): Load VLS
+	indices directly.
+
+2024-11-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/117297
+	* recog.h (temporarily_undo_changes, redo_changes): Delete in
+	favor of...
+	(undo_recog_changes): ...this new RAII class.
+	* fwprop.cc (should_replace_address): Update accordingly.
+	(fwprop_propagation::check_mem): Likewise.
+	(try_fwprop_subst_note): Likewise.
+	(try_fwprop_subst_pattern): Likewise.
+	* rtl-ssa/insns.cc (insn_info::calculate_cost): Likewise.
+	* rtl-ssa/changes.cc (rtl_ssa::changes_are_worthwhile): Temporarily
+	undo all in-progress changes while computing the cost of the original
+	sequence.
+	* recog.cc (temporarily_undone_changes): Replace with...
+	(undo_recog_changes::s_num_changes): ...this static member variable.
+	(validate_change_1): Update check accordingly.
+	(confirm_change_group): Likewise.
+	(num_validated_changes): Likewise.
+	(temporarily_undo_changes): Replace with...
+	(undo_recog_changes::undo_recog_changes): ...this constructor.
+	(redo_changes): Replace with...
+	(undo_recog_changes::~undo_recog_changes): ...this destructor.
+
+2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117458
+	* expr.cc (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: Don't
+	call extract_bit_field if op0 has complex mode and isn't a MEM,
+	instead first force op0 into memory and then call extract_bit_field.
+
+2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117459
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_stmt,
+	bitint_large_huge::lower_stmt): Handle PAREN_EXPR.
+
+2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117571
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_muldiv_stmt,
+	bitint_large_huge::lower_stmt, stmt_needs_operand_addr,
+	build_bitint_stmt_ssa_conflicts, gimple_lower_bitint): Handle
+	EXACT_DIV_EXPR like TRUNC_DIV_EXPR.
+
+2024-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/avr/avr.opt.urls: Regenerate for
+	r15-5415-gc3db52bb47913a.
+
+2024-11-19  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (add_to_fieldlist): New function.
+	(add_struct_member): Call recursively to flatten structs, and call
+	add_to_fieldlist.
+	(add_struct_static_member): Call add_to_fieldlist.
+	(add_struct_function): Call add_to_fieldlist.
+	(add_struct_inheritance): Call add_to_fieldlist.
+	(add_struct_nested_type): Call add_to_fieldlist.
+	(get_type_num_struct): Move code to add_to_fieldlist, and move
+	responsibility for this to subfunctions.
+
+2024-11-19  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_leaf_type): Add LF_NESTTYPE.
+	(struct codeview_subtype): Add lf_nesttype to union.
+	(flush_deferred_types): Add declaration.
+	(write_lf_fieldlist): Handle LF_NESTTYPE.
+	(codeview_debug_finish): Call flush_deferred_types.
+	(add_struct_nested_type): New function.
+	(get_type_num_struct): Call add_struct_nested_type, and if nested make
+	that parent is added.
+
 2024-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/96032

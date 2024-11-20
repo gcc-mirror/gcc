@@ -1,3 +1,7 @@
+2024-11-19  Jason Merrill  <jason@redhat.com>
+
+	* src/c++23/libstdc++.modules.json.in: Remove C++ comment.
+
 2024-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libstdc++.exp: Add
