@@ -21847,11 +21847,16 @@ Enable the Common Short Sequence Compression instructions.
 @item sme
 Enable the Scalable Matrix Extension.
 @item sme-i16i64
-Enable the FEAT_SME_I16I64 extension to SME.
+Enable the FEAT_SME_I16I64 extension to SME.  This also enables SME
+instructions.
 @item sme-f64f64
-Enable the FEAT_SME_F64F64 extension to SME.
+Enable the FEAT_SME_F64F64 extension to SME.  This also enables SME
+instructions.
 @item sme2
 Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
+@item sme-f16f16
+Enable the FEAT_SME_F16F16 extension to SME.  This also enables SME2
+instructions.
 @item lse128
 Enable the LSE128 128-bit atomic instructions extension.  This also
 enables LSE instructions.

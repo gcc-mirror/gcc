@@ -70,17 +70,43 @@
 #ifdef __ARM_FEATURE_SME_I16I64
 #error Foo
 #endif
+#ifdef __ARM_FEATURE_SME_F16F16
+#error Foo
+#endif
 #ifdef __ARM_FEATURE_SME_F64F64
 #error Foo
 #endif
 
-#pragma GCC target "+sme-i16i64"
+#pragma GCC target "+nothing+sme-i16i64"
 #ifndef __ARM_FEATURE_SME_I16I64
 #error Foo
 #endif
+#ifndef __ARM_FEATURE_SME
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_SME2
+#error Foo
+#endif
 
-#pragma GCC target "+sme-f64f64"
+#pragma GCC target "+nothing+sme-f16f16"
+#ifndef __ARM_FEATURE_SME_F16F16
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SME
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SME2
+#error Foo
+#endif
+
+#pragma GCC target "+nothing+sme-f64f64"
 #ifndef __ARM_FEATURE_SME_F64F64
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SME
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_SME2
 #error Foo
 #endif
 

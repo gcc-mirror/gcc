@@ -97,6 +97,7 @@
 ;; == Conversions
 ;; ---- [FP<-FP] Widening conversions
 ;; ---- [FP<-FP] Narrowing conversions
+;; ---- [FP<-FP] Multi-vector widening conversions
 ;; ---- [FP<-FP] Multi-vector narrowing conversions
 ;; ---- [FP<-INT] Multi-vector conversions
 ;; ---- [INT<-FP] Multi-vector conversions
@@ -3114,6 +3115,31 @@
 	  UNSPEC_COND_FCVTXNT))]
   "TARGET_SVE2"
   "fcvtxnt\t%0.<Ventype>, %2/m, %3.<Vetype>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP<-FP] Multi-vector widening conversions
+;; -------------------------------------------------------------------------
+;; Includes the multi-register forms of:
+;; - FCVT
+;; - FCVTL
+;; -------------------------------------------------------------------------
+
+(define_insn "extendvnx8hfvnx8sf2"
+  [(set (match_operand:VNx8SF 0 "aligned_register_operand" "=Uw2")
+	(float_extend:VNx8SF
+	  (match_operand:VNx8HF 1 "register_operand" "w")))]
+  "TARGET_STREAMING_SME_F16F16"
+  "fcvt\t%0, %1.h"
+)
+
+(define_insn "@aarch64_sve_cvtl<mode>"
+  [(set (match_operand:VNx8SF_ONLY 0 "aligned_register_operand" "=Uw2")
+	(unspec:VNx8SF_ONLY
+	  [(match_operand:VNx8HF 1 "register_operand" "w")]
+	  UNSPEC_FCVTL))]
+  "TARGET_STREAMING_SME_F16F16"
+  "fcvtl\t%0, %1.h"
 )
 
 ;; -------------------------------------------------------------------------

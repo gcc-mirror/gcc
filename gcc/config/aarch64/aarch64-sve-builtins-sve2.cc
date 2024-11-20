@@ -211,6 +211,16 @@ public:
   }
 };
 
+class svcvtl_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_aarch64_sve_cvtl (e.result_mode ()));
+  }
+};
+
 class svcvtn_impl : public function_base
 {
 public:
@@ -908,6 +918,7 @@ FUNCTION (svcdot, svcdot_impl,)
 FUNCTION (svcdot_lane, svcdot_lane_impl,)
 FUNCTION (svclamp, svclamp_impl,)
 FUNCTION (svcvtlt, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTLT))
+FUNCTION (svcvtl, svcvtl_impl,)
 FUNCTION (svcvtn, svcvtn_impl,)
 FUNCTION (svcvtx, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTX))
 FUNCTION (svcvtxnt, CODE_FOR_MODE1 (aarch64_sve2_cvtxnt),)

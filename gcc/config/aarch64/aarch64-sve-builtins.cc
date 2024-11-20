@@ -296,6 +296,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_h_bfloat(S, D) \
   S (bf16)
 
+/* _f16.  */
+#define TYPES_h_float(S, D) \
+  S (f16)
+
 /* _s16
    _u16.  */
 #define TYPES_h_integer(S, D) \
@@ -449,6 +453,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 /* { _bf16 _f16 } x _f32.  */
 #define TYPES_cvt_h_s_float(S, D) \
   D (bf16, f32), D (f16, f32)
+
+/* _f32_f16.  */
+#define TYPES_cvt_f32_f16(S, D) \
+  D (f32, f16)
 
 /* _f32_f16
    _f64_f32.  */
@@ -625,6 +633,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   TYPES_za_bhsd_data (S, D), \
   TYPES_reinterpret1 (D, za128)
 
+/* _za16_f16.  */
+#define TYPES_za_h_float(S, D) \
+  D (za16, f16)
+
 /* _za32_s8.  */
 #define TYPES_za_s_b_signed(S, D) \
    D (za32, s8)
@@ -744,6 +756,7 @@ DEF_SVE_TYPES_ARRAY (bhs_data);
 DEF_SVE_TYPES_ARRAY (bhs_widen);
 DEF_SVE_TYPES_ARRAY (c);
 DEF_SVE_TYPES_ARRAY (h_bfloat);
+DEF_SVE_TYPES_ARRAY (h_float);
 DEF_SVE_TYPES_ARRAY (h_integer);
 DEF_SVE_TYPES_ARRAY (hs_signed);
 DEF_SVE_TYPES_ARRAY (hs_integer);
@@ -772,6 +785,7 @@ DEF_SVE_TYPES_ARRAY (d_data);
 DEF_SVE_TYPES_ARRAY (cvt);
 DEF_SVE_TYPES_ARRAY (cvt_bfloat);
 DEF_SVE_TYPES_ARRAY (cvt_h_s_float);
+DEF_SVE_TYPES_ARRAY (cvt_f32_f16);
 DEF_SVE_TYPES_ARRAY (cvt_long);
 DEF_SVE_TYPES_ARRAY (cvt_narrow_s);
 DEF_SVE_TYPES_ARRAY (cvt_narrow);
@@ -793,6 +807,7 @@ DEF_SVE_TYPES_ARRAY (all_za);
 DEF_SVE_TYPES_ARRAY (d_za);
 DEF_SVE_TYPES_ARRAY (za_bhsd_data);
 DEF_SVE_TYPES_ARRAY (za_all_data);
+DEF_SVE_TYPES_ARRAY (za_h_float);
 DEF_SVE_TYPES_ARRAY (za_s_b_signed);
 DEF_SVE_TYPES_ARRAY (za_s_b_unsigned);
 DEF_SVE_TYPES_ARRAY (za_s_b_integer);

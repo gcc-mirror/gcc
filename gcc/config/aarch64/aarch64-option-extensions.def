@@ -225,6 +225,8 @@ AARCH64_FMV_FEATURE("sme-i16i64", SME_I64, (SME_I16I64))
 
 AARCH64_OPT_FMV_EXTENSION("sme2", SME2, (SME), (), (), "sme2")
 
+AARCH64_OPT_EXTENSION("sme-f16f16", SME_F16F16, (SME2), (), (), "")
+
 AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")

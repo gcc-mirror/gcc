@@ -684,8 +684,11 @@ public:
 	  optab = e.type_suffix (0).unsigned_p ? ufix_optab : sfix_optab;
 	else if (e.type_suffix (1).integer_p)
 	  optab = e.type_suffix (1).unsigned_p ? ufloat_optab : sfloat_optab;
-	else
+	else if (e.type_suffix (0).element_bits
+		 < e.type_suffix (1).element_bits)
 	  optab = trunc_optab;
+	else
+	  optab = sext_optab;
 	icode = convert_optab_handler (optab, mode0, mode1);
 	gcc_assert (icode != CODE_FOR_nothing);
 	return e.use_exact_insn (icode);

@@ -764,4 +764,20 @@
 		    "w" (z25));					\
   }
 
+#define TEST_X2_WIDE(NAME, TTYPE, ZTYPE, CODE1, CODE2)		\
+  PROTO (NAME, void, ())					\
+  {								\
+    register ZTYPE z0 __asm ("z0");				\
+    register ZTYPE z5 __asm ("z5");				\
+    register TTYPE z6 __asm ("z6");				\
+    register TTYPE z16 __asm ("z16");				\
+    register ZTYPE z22 __asm ("z22");				\
+    register TTYPE z29 __asm ("z29");				\
+    register TTYPE z0_res __asm ("z0");				\
+    __asm volatile ("" : "=w" (z0), "=w" (z5), "=w" (z22));	\
+    INVOKE (CODE1, CODE2);					\
+    __asm volatile ("" :: "w" (z0_res), "w" (z5), "w" (z6),	\
+		    "w" (z16), "w" (z22), "w" (z29));		\
+  }
+
 #endif
