@@ -349,6 +349,10 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 /* The FEAT_SME_I16I64 extension to SME, enabled through +sme-i16i64.  */
 #define TARGET_SME_I16I64 AARCH64_HAVE_ISA (SME_I16I64)
 
+/* The FEAT_SME_B16B16 extension to SME, enabled through +sme-b16b16.  */
+#define TARGET_STREAMING_SME_B16B16 \
+  (AARCH64_HAVE_ISA (SME_B16B16) && TARGET_STREAMING)
+
 /* The FEAT_SME_F16F16 extension to SME, enabled through +sme-f16f16.  */
 #define TARGET_STREAMING_SME_F16F16 \
   (AARCH64_HAVE_ISA (SME_F16F16) && TARGET_STREAMING)

@@ -633,6 +633,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   TYPES_za_bhsd_data (S, D), \
   TYPES_reinterpret1 (D, za128)
 
+/* _za16_bf16.  */
+#define TYPES_za_h_bfloat(S, D) \
+  D (za16, bf16)
+
 /* _za16_f16.  */
 #define TYPES_za_h_float(S, D) \
   D (za16, f16)
@@ -807,6 +811,7 @@ DEF_SVE_TYPES_ARRAY (all_za);
 DEF_SVE_TYPES_ARRAY (d_za);
 DEF_SVE_TYPES_ARRAY (za_bhsd_data);
 DEF_SVE_TYPES_ARRAY (za_all_data);
+DEF_SVE_TYPES_ARRAY (za_h_bfloat);
 DEF_SVE_TYPES_ARRAY (za_h_float);
 DEF_SVE_TYPES_ARRAY (za_s_b_signed);
 DEF_SVE_TYPES_ARRAY (za_s_b_unsigned);

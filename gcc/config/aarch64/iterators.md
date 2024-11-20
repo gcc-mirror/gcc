@@ -686,13 +686,16 @@
 				      (VNx4DF "TARGET_SME_F64F64")
 				      (VNx8DF "TARGET_SME_F64F64")
 				      (VNx16HF "TARGET_STREAMING_SME_F16F16")
-				      (VNx32HF "TARGET_STREAMING_SME_F16F16")])
+				      (VNx32HF "TARGET_STREAMING_SME_F16F16")
+				      (VNx16BF "TARGET_STREAMING_SME_B16B16")
+				      (VNx32BF "TARGET_STREAMING_SME_B16B16")])
 
 ;; The modes for which outer product instructions are supported.
 (define_mode_iterator SME_MOP_BHI [VNx16QI (VNx8HI "TARGET_SME_I16I64")])
 (define_mode_iterator SME_MOP_HSDF [VNx4SF
 				    (VNx2DF "TARGET_SME_F64F64")
-				    (VNx8HF "TARGET_STREAMING_SME_F16F16")])
+				    (VNx8HF "TARGET_STREAMING_SME_F16F16")
+				    (VNx8BF "TARGET_STREAMING_SME_B16B16")])
 
 ;; ------------------------------------------------------------------
 ;; Unspec enumerations for Advance SIMD. These could well go into

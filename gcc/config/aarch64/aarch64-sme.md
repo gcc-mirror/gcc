@@ -926,6 +926,8 @@
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - ADD
+;; - BFADD
+;; - BFSUB
 ;; - FADD
 ;; - FSUB
 ;; - SUB
@@ -965,7 +967,7 @@
 	   (match_operand:SME_ZA_HSDFx24 1 "aligned_register_operand" "Uw<vector_count>")]
 	  SME_BINARY_SLICE_HSDF))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1"
+  "<b><optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1"
 )
 
 (define_insn "*aarch64_sme_<optab><mode>_plus"
@@ -978,7 +980,7 @@
 	   (match_operand:SME_ZA_HSDFx24 2 "aligned_register_operand" "Uw<vector_count>")]
 	  SME_BINARY_SLICE_HSDF))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2"
+  "<b><optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2"
 )
 
 ;; -------------------------------------------------------------------------
@@ -1632,6 +1634,8 @@
 ;; ---- [FP] Ternary arithmetic on ZA slice
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - BFMLA
+;; - BFMLS
 ;; - FMLA
 ;; - FMLS
 ;; -------------------------------------------------------------------------
@@ -1646,7 +1650,7 @@
 	   (match_operand:SME_ZA_HSDFx24 2 "aligned_register_operand" "Uw<vector_count>")]
 	  SME_FP_TERNARY_SLICE))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1, %2"
+  "<b><optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1, %2"
 )
 
 (define_insn "*aarch64_sme_<optab><mode><mode>_plus"
@@ -1660,7 +1664,7 @@
 	   (match_operand:SME_ZA_HSDFx24 3 "aligned_register_operand" "Uw<vector_count>")]
 	  SME_FP_TERNARY_SLICE))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2, %3"
+  "<b><optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2, %3"
 )
 
 (define_insn "@aarch64_sme_single_<optab><mode><mode>"
@@ -1674,7 +1678,7 @@
 	     (match_operand:<SME_ZA_HSDFx24:VSINGLE> 2 "register_operand" "x"))]
 	  SME_FP_TERNARY_SLICE))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1, %2.<Vetype>"
+  "<b><optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1, %2.<Vetype>"
 )
 
 (define_insn "*aarch64_sme_single_<optab><mode><mode>_plus"
@@ -1689,7 +1693,7 @@
 	     (match_operand:<SME_ZA_HSDFx24:VSINGLE> 3 "register_operand" "x"))]
 	  SME_FP_TERNARY_SLICE))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2, %3.<Vetype>"
+  "<b><optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2, %3.<Vetype>"
 )
 
 (define_insn "@aarch64_sme_lane_<optab><mode><mode>"
@@ -1705,7 +1709,7 @@
 	     UNSPEC_SVE_LANE_SELECT)]
 	  SME_FP_TERNARY_SLICE))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1, %2.<Vetype>[%3]"
+  "<b><optab>\tza.<Vetype>[%w0, 0, vgx<vector_count>], %1, %2.<Vetype>[%3]"
 )
 
 (define_insn "*aarch64_sme_lane_<optab><mode><mode>"
@@ -1722,7 +1726,7 @@
 	     UNSPEC_SVE_LANE_SELECT)]
 	  SME_FP_TERNARY_SLICE))]
   "TARGET_STREAMING_SME2"
-  "<optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2, %3.<Vetype>[%4]"
+  "<b><optab>\tza.<Vetype>[%w0, %1, vgx<vector_count>], %2, %3.<Vetype>[%4]"
 )
 
 ;; -------------------------------------------------------------------------
