@@ -1,3 +1,22 @@
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_dispatch): New function.
+	(c_parser_omp_clause_name): Handle nocontext and novariants clauses.
+	(c_parser_omp_clause_novariants): New function.
+	(c_parser_omp_clause_nocontext): Likewise.
+	(c_parser_omp_all_clauses): Handle nocontext and novariants clauses.
+	(c_parser_omp_dispatch_body): New function adapted from
+	c_parser_expr_no_commas.
+	(OMP_DISPATCH_CLAUSE_MASK): Define.
+	(c_parser_omp_dispatch): New function.
+	(c_finish_omp_declare_variant): Parse adjust_args.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_DISPATCH.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

@@ -1,3 +1,15 @@
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.dg/gomp/adjust-args-1.c: New test.
+	* gcc.dg/gomp/dispatch-1.c: New test.
+	* gcc.dg/gomp/dispatch-2.c: New test.
+	* gcc.dg/gomp/dispatch-3.c: New test.
+	* gcc.dg/gomp/dispatch-4.c: New test.
+	* gcc.dg/gomp/dispatch-5.c: New test.
+
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
