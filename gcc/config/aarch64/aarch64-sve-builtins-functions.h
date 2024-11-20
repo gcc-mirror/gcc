@@ -443,7 +443,11 @@ public:
 };
 
 /* General SME unspec-based functions, parameterized on both the ZA mode
-   and the vector mode.  */
+   and the vector mode.  If the elements of the ZA and vector modes are
+   the same size (e.g. _za64_f64 or _za32_s32) then the two mode arguments
+   are equal, otherwise the first mode argument is the single-vector integer
+   mode associated with the ZA suffix and the second mode argument is the
+   tuple mode associated with the vector suffix.  */
 template<insn_code (*CODE) (int, machine_mode, machine_mode),
 	 insn_code (*CODE_SINGLE) (int, machine_mode, machine_mode)>
 class sme_2mode_function_t : public read_write_za<unspec_based_function_base>
@@ -460,11 +464,14 @@ public:
   expand (function_expander &e) const override
   {
     insn_code icode;
+    machine_mode za_mode = e.vector_mode (0);
+    machine_mode v_mode = e.tuple_mode (1);
+    if (GET_MODE_UNIT_BITSIZE (za_mode) == GET_MODE_UNIT_BITSIZE (v_mode))
+      za_mode = v_mode;
     if (e.mode_suffix_id == MODE_single)
-      icode = CODE_SINGLE (unspec_for (e), e.vector_mode (0),
-			   e.tuple_mode (1));
+      icode = CODE_SINGLE (unspec_for (e), za_mode, v_mode);
     else
-      icode = CODE (unspec_for (e), e.vector_mode (0), e.tuple_mode (1));
+      icode = CODE (unspec_for (e), za_mode, v_mode);
     return e.use_exact_insn (icode);
   }
 };

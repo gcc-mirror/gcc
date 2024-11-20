@@ -652,8 +652,6 @@
 (define_mode_iterator SME_ZA_I [VNx16QI VNx8HI VNx4SI VNx2DI VNx1TI])
 (define_mode_iterator SME_ZA_SDI [VNx4SI (VNx2DI "TARGET_SME_I16I64")])
 
-(define_mode_iterator SME_ZA_SDF_I [VNx4SI (VNx2DI "TARGET_SME_F64F64")])
-
 (define_mode_iterator SME_ZA_BIx24 [VNx32QI VNx64QI])
 
 (define_mode_iterator SME_ZA_BHIx124 [VNx16QI VNx32QI VNx64QI
@@ -678,8 +676,7 @@
 
 ;; The modes for which outer product instructions are supported.
 (define_mode_iterator SME_MOP_BHI [VNx16QI (VNx8HI "TARGET_SME_I16I64")])
-(define_mode_iterator SME_MOP_HSDF [VNx8BF VNx8HF VNx4SF
-				    (VNx2DF "TARGET_SME_F64F64")])
+(define_mode_iterator SME_MOP_SDF [VNx4SF (VNx2DF "TARGET_SME_F64F64")])
 
 ;; ------------------------------------------------------------------
 ;; Unspec enumerations for Advance SIMD. These could well go into
