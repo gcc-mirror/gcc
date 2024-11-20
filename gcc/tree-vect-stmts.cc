@@ -2121,9 +2121,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	    {
 	      gcc_assert (vls_type == VLS_LOAD);
 	      *memory_access_type = VMAT_INVARIANT;
-	      /* Invariant accesses perform only component accesses, alignment
-		 is irrelevant for them.  */
-	      *alignment_support_scheme = dr_unaligned_supported;
 	    }
 	  /* Try using LOAD/STORE_LANES.  */
 	  else if (slp_node->ldst_lanes
@@ -2379,7 +2376,9 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     *memory_access_type = VMAT_GATHER_SCATTER;
 
   if (*memory_access_type == VMAT_GATHER_SCATTER
-      || *memory_access_type == VMAT_ELEMENTWISE)
+      || *memory_access_type == VMAT_ELEMENTWISE
+      || *memory_access_type == VMAT_STRIDED_SLP
+      || *memory_access_type == VMAT_INVARIANT)
     {
       *alignment_support_scheme = dr_unaligned_supported;
       *misalignment = DR_MISALIGNMENT_UNKNOWN;
@@ -8497,6 +8496,8 @@ vectorizable_store (vec_info *vinfo,
       if (dump_enabled_p ()
 	  && memory_access_type != VMAT_ELEMENTWISE
 	  && memory_access_type != VMAT_GATHER_SCATTER
+	  && memory_access_type != VMAT_STRIDED_SLP
+	  && memory_access_type != VMAT_INVARIANT
 	  && alignment_support_scheme != dr_aligned)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Vectorizing an unaligned access.\n");
@@ -10410,6 +10411,8 @@ vectorizable_load (vec_info *vinfo,
       if (dump_enabled_p ()
 	  && memory_access_type != VMAT_ELEMENTWISE
 	  && memory_access_type != VMAT_GATHER_SCATTER
+	  && memory_access_type != VMAT_STRIDED_SLP
+	  && memory_access_type != VMAT_INVARIANT
 	  && alignment_support_scheme != dr_aligned)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Vectorizing an unaligned access.\n");
