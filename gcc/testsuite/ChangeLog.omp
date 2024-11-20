@@ -3,6 +3,22 @@
 	Backported from master:
 	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
 
+	* g++.dg/gomp/adjust-args-1.C: New test.
+	* g++.dg/gomp/adjust-args-2.C: New test.
+	* g++.dg/gomp/adjust-args-3.C: New test.
+	* g++.dg/gomp/dispatch-1.C: New test.
+	* g++.dg/gomp/dispatch-2.C: New test.
+	* g++.dg/gomp/dispatch-3.C: New test.
+	* g++.dg/gomp/dispatch-4.C: New test.
+	* g++.dg/gomp/dispatch-5.C: New test.
+	* g++.dg/gomp/dispatch-6.C: New test.
+	* g++.dg/gomp/dispatch-7.C: New test.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
 	* gcc.dg/gomp/adjust-args-1.c: New test.
 	* gcc.dg/gomp/dispatch-1.c: New test.
 	* gcc.dg/gomp/dispatch-2.c: New test.
