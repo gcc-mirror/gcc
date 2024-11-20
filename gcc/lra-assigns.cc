@@ -1362,14 +1362,7 @@ find_all_spills_for (int regno)
 	    {
 	      if (live_pseudos_reg_renumber[r2->regno] >= 0
 		  && ! sparseset_bit_p (live_range_hard_reg_pseudos, r2->regno)
-		  && rclass_intersect_p[regno_allocno_class_array[r2->regno]]
-		  && ((int) r2->regno < lra_constraint_new_regno_start
-		      || bitmap_bit_p (&lra_inheritance_pseudos, r2->regno)
-		      || bitmap_bit_p (&lra_split_regs, r2->regno)
-		      || bitmap_bit_p (&lra_optional_reload_pseudos, r2->regno)
-		      /* There is no sense to consider another reload
-			 pseudo if it has the same class.  */
-		      || regno_allocno_class_array[r2->regno] != rclass))
+		  && rclass_intersect_p[regno_allocno_class_array[r2->regno]])
 		sparseset_set_bit (live_range_hard_reg_pseudos, r2->regno);
 	    }
 	}
