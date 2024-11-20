@@ -8936,7 +8936,7 @@ check_constexpr_init (location_t loc, tree type, tree init,
       if (!int_const_expr)
 	error_at (loc, "%<constexpr%> integer initializer is not an "
 		  "integer constant expression");
-      if (!int_fits_type_p (init, type))
+      else if (!int_fits_type_p (init, type))
 	error_at (loc, "%<constexpr%> initializer not representable in "
 		  "type of object");
       return;
