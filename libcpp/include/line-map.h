@@ -1111,6 +1111,10 @@ extern location_t linemap_module_loc
 extern void linemap_module_reparent
   (line_maps *, location_t loc, location_t new_parent);
 
+/* TRUE iff the location comes from a module import.  */
+extern bool linemap_location_from_module_p
+  (const line_maps *, location_t);
+
 /* Restore the linemap state such that the map at LWM-1 continues.
    Return start location of the new map.  */
 extern location_t linemap_module_restore

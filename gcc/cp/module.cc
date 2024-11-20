@@ -3879,6 +3879,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_macro_maps (elf_out *to, range_t &, unsigned *crc_ptr);
   bool read_macro_maps (line_map_uint_t);
 
+  void write_diagnostic_classification (elf_out *, diagnostic_context *,
+					unsigned *);
+  bool read_diagnostic_classification (diagnostic_context *);
+
  private:
   void write_define (bytes_out &, const cpp_macro *);
   cpp_macro *read_define (bytes_in &, cpp_reader *) const;
@@ -18167,6 +18171,168 @@ module_state::write_ordinary_maps (elf_out *to, range_t &info,
   dump.outdent ();
 }
 
+/* Return the prefix to use for dumping a #pragma diagnostic change to DK.  */
+
+static const char *
+dk_string (diagnostic_t dk)
+{
+  gcc_assert (dk > DK_UNSPECIFIED && dk < DK_LAST_DIAGNOSTIC_KIND);
+  if (dk == DK_IGNORED)
+    /* diagnostic.def has an empty string for ignored.  */
+    return "ignored: ";
+  else
+    return get_diagnostic_kind_text (dk);
+}
+
+/* Dump one #pragma GCC diagnostic entry.  */
+
+static bool
+dump_dc_change (unsigned index, unsigned opt, diagnostic_t dk)
+{
+  if (dk == DK_POP)
+    return dump (" Index %u: pop from %d", index, opt);
+  else
+    return dump (" Index %u: %s%s", index, dk_string (dk),
+		 cl_options[opt].opt_text);
+}
+
+/* Write out any #pragma GCC diagnostic info to the .dgc section.  */
+
+void
+module_state::write_diagnostic_classification (elf_out *to,
+					       diagnostic_context *dc,
+					       unsigned *crc_p)
+{
+  auto &changes = dc->get_classification_history ();
+
+  bytes_out sec (to);
+  if (sec.streaming_p ())
+    {
+      sec.begin ();
+      dump () && dump ("Writing diagnostic change locations");
+      dump.indent ();
+    }
+
+  unsigned len = changes.length ();
+
+  /* We don't want to write out any entries that came from one of our imports.
+     But then we need to adjust the total, and change DK_POP targets to match
+     the index in our actual output.  So remember how many lines we had skipped
+     at each step, where -1 means this line itself is skipped.  */
+  int skips = 0;
+  auto_vec<int> skips_at (len);
+  skips_at.safe_grow (len);
+
+  for (unsigned i = 0; i < len; ++i)
+    {
+      const auto &c = changes[i];
+      skips_at[i] = skips;
+      if (linemap_location_from_module_p (line_table, c.location))
+	{
+	  ++skips;
+	  skips_at[i] = -1;
+	  continue;
+	}
+    }
+
+  if (sec.streaming_p ())
+    {
+      sec.u (len - skips);
+      dump () && dump ("Diagnostic changes: %u", len - skips);
+    }
+
+  for (unsigned i = 0; i < len; ++i)
+    {
+      if (skips_at[i] == -1)
+	continue;
+
+      const auto &c = changes[i];
+      write_location (sec, c.location);
+      if (sec.streaming_p ())
+	{
+	  unsigned opt = c.option;
+	  if (c.kind == DK_POP)
+	    opt -= skips_at[opt];
+	  sec.u (opt);
+	  sec.u (c.kind);
+	  dump () && dump_dc_change (i - skips_at[i], opt, c.kind);
+	}
+    }
+
+  if (sec.streaming_p ())
+    {
+      sec.end (to, to->name (MOD_SNAME_PFX ".dgc"), crc_p);
+      dump.outdent ();
+    }
+}
+
+/* Read any #pragma GCC diagnostic info from the .dgc section.  */
+
+bool
+module_state::read_diagnostic_classification (diagnostic_context *dc)
+{
+  bytes_in sec;
+
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".dgc"))
+    return false;
+
+  dump () && dump ("Reading diagnostic change locations");
+  dump.indent ();
+
+  unsigned len = sec.u ();
+  dump () && dump ("Diagnostic changes: %u", len);
+
+  auto &changes = dc->get_classification_history ();
+  int offset = changes.length ();
+  changes.reserve (len + 1);
+  for (unsigned i = 0; i < len; ++i)
+    {
+      location_t loc = read_location (sec);
+      int opt = sec.u ();
+      diagnostic_t kind = (diagnostic_t) sec.u ();
+      if (kind == DK_POP)
+	/* For a pop, opt is the 'changes' index to return to.  */
+	opt += offset;
+      changes.quick_push ({ loc, opt, kind });
+      dump () && dump_dc_change (changes.length () - 1, opt, kind);
+    }
+
+  /* Did the import pop all its diagnostic changes?  */
+  bool last_was_reset = (len == 0);
+  if (len)
+    for (int i = changes.length () - 1; ; --i)
+      {
+	gcc_checking_assert (i >= offset);
+
+	const auto &c = changes[i];
+	if (c.kind != DK_POP)
+	  break;
+	else if (c.option == offset)
+	  {
+	    last_was_reset = true;
+	    break;
+	  }
+	else
+	  /* As in update_effective_level_from_pragmas, the loop will decrement
+	     i so we actually jump to c.option - 1.  */
+	  i = c.option;
+      }
+  if (!last_was_reset)
+    {
+      /* It didn't, so add a pop at its last location to avoid affecting later
+	 imports.  */
+      location_t last_loc = ordinary_locs.first + ordinary_locs.second - 1;
+      changes.quick_push ({ last_loc, offset, DK_POP });
+      dump () && dump (" Adding final pop from index %d", offset);
+    }
+
+  dump.outdent ();
+  if (!sec.end (from ()))
+    return false;
+
+  return true;
+}
+
 void
 module_state::write_macro_maps (elf_out *to, range_t &info, unsigned *crc_p)
 {
@@ -19853,6 +20019,8 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
     }
   ool->qsort (ool_cmp);
 
+  write_diagnostic_classification (nullptr, global_dc, nullptr);
+
   vec<cpp_hashnode *> *macros = nullptr;
   if (is_header ())
     macros = prepare_macros (reader);
@@ -19998,7 +20166,10 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
 
   /* Write the line maps.  */
   if (config.ordinary_locs)
-    write_ordinary_maps (to, map_info, bool (config.num_partitions), &crc);
+    {
+      write_ordinary_maps (to, map_info, bool (config.num_partitions), &crc);
+      write_diagnostic_classification (to, global_dc, &crc);
+    }
   if (config.macro_locs)
     write_macro_maps (to, map_info, &crc);
 
@@ -20069,6 +20240,10 @@ module_state::read_initial (cpp_reader *reader)
   if (!(have_locs && config.ordinary_locs))
     ordinary_locs.first = line_table->highest_location + 1;
   else if (!read_ordinary_maps (config.ordinary_locs, config.loc_range_bits))
+    ok = false;
+
+  if (ok && have_locs && config.ordinary_locs
+      && !read_diagnostic_classification (global_dc))
     ok = false;
 
   /* Allocate the REMAP vector.  */
