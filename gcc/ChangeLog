@@ -1,3 +1,22 @@
+2024-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117357
+	* config/i386/i386.md (*rsqrtsf2_sse):
+	Also enable for !TARGET_SSE_MATH.
+
+2024-11-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2024-10-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116997
+	* fold-const.cc (fold_ternary_loc): Fix BIT_INSERT_EXPR constant folding
+	for BYTES_BIG_ENDIAN targets.
+
 2024-11-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
