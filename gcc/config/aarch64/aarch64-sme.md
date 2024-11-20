@@ -662,7 +662,7 @@
 	   (match_operand:<VPRED> 2 "register_operand" "Upl")
 	   (match_operand:DI 3 "const_int_operand")
 	   (match_operand:SI 4 "register_operand" "Ucj")]
-	  SME_READ))]
+	  SME_READ_HV))]
   "TARGET_STREAMING"
   "mova\t%0.<Vetype>, %2/m, za%3<hv>.<Vetype>[%w4, 0]"
 )
@@ -677,7 +677,7 @@
 	   (match_operand:DI 3 "const_int_operand")
 	   (plus:SI (match_operand:SI 4 "register_operand" "Ucj")
 		    (match_operand:SI 5 "const_int_operand"))]
-	  SME_READ))]
+	  SME_READ_HV))]
   "TARGET_STREAMING
    && UINTVAL (operands[5]) < 128 / <elem_bits>"
   "mova\t%0.<Vetype>, %2/m, za%3<hv>.<Vetype>[%w4, %5]"
@@ -692,7 +692,7 @@
 	   (match_operand:VNx2BI 2 "register_operand" "Upl")
 	   (match_operand:DI 3 "const_int_operand")
 	   (match_operand:SI 4 "register_operand" "Ucj")]
-	  SME_READ))]
+	  SME_READ_HV))]
   "TARGET_STREAMING"
   "mova\t%0.q, %2/m, za%3<hv>.q[%w4, 0]"
 )
@@ -706,7 +706,7 @@
 	   (match_operand:SI 1 "register_operand" "Ucj")
 	   (match_operand:<VPRED> 2 "register_operand" "Upl")
 	   (match_operand:SVE_FULL 3 "register_operand" "w")]
-	  SME_WRITE))]
+	  SME_WRITE_HV))]
   "TARGET_STREAMING"
   "mova\tza%0<hv>.<Vetype>[%w1, 0], %2/m, %3.<Vetype>"
 )
@@ -721,7 +721,7 @@
 		    (match_operand:SI 2 "const_int_operand"))
 	   (match_operand:<VPRED> 3 "register_operand" "Upl")
 	   (match_operand:SVE_FULL 4 "register_operand" "w")]
-	  SME_WRITE))]
+	  SME_WRITE_HV))]
   "TARGET_STREAMING
    && UINTVAL (operands[2]) < 128 / <elem_bits>"
   "mova\tza%0<hv>.<Vetype>[%w1, %2], %3/m, %4.<Vetype>"
@@ -736,7 +736,7 @@
 	   (match_operand:SI 1 "register_operand" "Ucj")
 	   (match_operand:VNx2BI 2 "register_operand" "Upl")
 	   (match_operand:SVE_FULL 3 "register_operand" "w")]
-	  SME_WRITE))]
+	  SME_WRITE_HV))]
   "TARGET_STREAMING"
   "mova\tza%0<hv>.q[%w1, 0], %2/m, %3.q"
 )
@@ -755,7 +755,7 @@
 	   (reg:DI SME_STATE_REGNUM)
 	   (match_operand:DI 1 "const_int_operand")
 	   (match_operand:SI 2 "register_operand" "Ucj")]
-	  SME_READ))]
+	  SME_READ_HV))]
   "TARGET_STREAMING_SME2"
   {
     operands[3] = GEN_INT (<vector_count> - 1);
@@ -772,7 +772,7 @@
 	   (plus:SI
 	     (match_operand:SI 2 "register_operand" "Ucj")
 	     (match_operand:SI 3 "const_int_operand"))]
-	  SME_READ))]
+	  SME_READ_HV))]
   "TARGET_STREAMING_SME2
    && UINTVAL (operands[3]) % <vector_count> == 0
    && UINTVAL (operands[3]) < 128 / <elem_bits>"
@@ -813,7 +813,7 @@
 	   (match_operand:DI 0 "const_int_operand")
 	   (match_operand:SI 1 "register_operand" "Ucj")
 	   (match_operand:SVE_FULLx24 2 "aligned_register_operand" "Uw<vector_count>")]
-	  SME_WRITE))]
+	  SME_WRITE_HV))]
   "TARGET_STREAMING_SME2"
   {
     operands[3] = GEN_INT (<vector_count> - 1);
@@ -831,7 +831,7 @@
 	     (match_operand:SI 1 "register_operand" "Ucj")
 	     (match_operand:SI 2 "const_int_operand"))
 	   (match_operand:SVE_FULLx24 3 "aligned_register_operand" "Uw<vector_count>")]
-	  SME_WRITE))]
+	  SME_WRITE_HV))]
   "TARGET_STREAMING_SME2
    && UINTVAL (operands[2]) % <vector_count> == 0
    && UINTVAL (operands[2]) < 128 / <elem_bits>"
