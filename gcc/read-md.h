@@ -364,8 +364,10 @@ class rtx_reader : public md_reader
   /* Analogous to rtx_writer's m_in_call_function_usage.  */
   bool m_in_call_function_usage;
 
+#ifndef GENERATOR_FILE
   /* Support for "reuse_rtx" directives.  */
   auto_vec<rtx> m_reuse_rtx_by_id;
+#endif
 };
 
 /* Global singleton; constrast with md_reader_ptr above.  */

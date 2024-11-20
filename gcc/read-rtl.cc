@@ -1672,7 +1672,6 @@ rtx_reader::read_rtx_code (const char *code_name)
   struct md_name name;
   rtx return_rtx;
   int c;
-  long reuse_id = -1;
 
   /* Linked list structure for making RTXs: */
   struct rtx_list
@@ -1681,6 +1680,8 @@ rtx_reader::read_rtx_code (const char *code_name)
       rtx value;		/* Value of this node.  */
     };
 
+#ifndef GENERATOR_FILE
+  long reuse_id = -1;
   /* Handle reuse_rtx ids e.g. "(0|scratch:DI)".  */
   if (ISDIGIT (code_name[0]))
     {
@@ -1696,10 +1697,12 @@ rtx_reader::read_rtx_code (const char *code_name)
       read_name (&name);
       unsigned idx = atoi (name.string);
       /* Look it up by ID.  */
-      gcc_assert (idx < m_reuse_rtx_by_id.length ());
+      if (idx >= m_reuse_rtx_by_id.length ())
+	fatal_with_file_and_line ("invalid reuse index %u", idx);
       return_rtx = m_reuse_rtx_by_id[idx];
       return return_rtx;
     }
+#endif
 
   /* Handle "const_double_zero".  */
   if (strcmp (code_name, "const_double_zero") == 0)
@@ -1727,12 +1730,14 @@ rtx_reader::read_rtx_code (const char *code_name)
   memset (return_rtx, 0, RTX_CODE_SIZE (code));
   PUT_CODE (return_rtx, code);
 
+#ifndef GENERATOR_FILE
   if (reuse_id != -1)
     {
       /* Store away for later reuse.  */
       m_reuse_rtx_by_id.safe_grow_cleared (reuse_id + 1, true);
       m_reuse_rtx_by_id[reuse_id] = return_rtx;
     }
+#endif
 
   /* Check for flags. */
   read_flags (return_rtx);
