@@ -2162,6 +2162,8 @@ aarch64_init_ls64_builtins (void)
 static void
 aarch64_init_data_intrinsics (void)
 {
+  /* These intrinsics are not fp nor they read/write memory. */
+  tree attrs = aarch64_get_attributes (FLAG_NONE, SImode);
   tree uint32_fntype = build_function_type_list (uint32_type_node,
 						 uint32_type_node, NULL_TREE);
   tree ulong_fntype = build_function_type_list (long_unsigned_type_node,
@@ -2171,22 +2173,22 @@ aarch64_init_data_intrinsics (void)
 						 uint64_type_node, NULL_TREE);
   aarch64_builtin_decls[AARCH64_REV16]
     = aarch64_general_add_builtin ("__builtin_aarch64_rev16", uint32_fntype,
-				   AARCH64_REV16);
+				   AARCH64_REV16, attrs);
   aarch64_builtin_decls[AARCH64_REV16L]
     = aarch64_general_add_builtin ("__builtin_aarch64_rev16l", ulong_fntype,
-				   AARCH64_REV16L);
+				   AARCH64_REV16L, attrs);
   aarch64_builtin_decls[AARCH64_REV16LL]
     = aarch64_general_add_builtin ("__builtin_aarch64_rev16ll", uint64_fntype,
-				   AARCH64_REV16LL);
+				   AARCH64_REV16LL, attrs);
   aarch64_builtin_decls[AARCH64_RBIT]
     = aarch64_general_add_builtin ("__builtin_aarch64_rbit", uint32_fntype,
-				   AARCH64_RBIT);
+				   AARCH64_RBIT, attrs);
   aarch64_builtin_decls[AARCH64_RBITL]
     = aarch64_general_add_builtin ("__builtin_aarch64_rbitl", ulong_fntype,
-				   AARCH64_RBITL);
+				   AARCH64_RBITL, attrs);
   aarch64_builtin_decls[AARCH64_RBITLL]
     = aarch64_general_add_builtin ("__builtin_aarch64_rbitll", uint64_fntype,
-				   AARCH64_RBITLL);
+				   AARCH64_RBITLL, attrs);
 }
 
 /* Implement #pragma GCC aarch64 "arm_acle.h".  */
