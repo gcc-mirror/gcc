@@ -109,6 +109,7 @@ package body System.Image_R is
    is
       pragma Assert (S'First = 1);
 
+      Fore : Natural;
    begin
       --  Decide whether a blank should be prepended before the call to
       --  Set_Image_Real. We generate a blank for positive values, and
@@ -125,11 +126,13 @@ package body System.Image_R is
          --  Image_Floating_Point operation.
          S (1) := ' ';
          P := 1;
+         Fore := 1;
       else
          P := 0;
+         Fore := 2;
       end if;
 
-      Set_Image_Real (V, S, P, 1, Digs - 1, 3);
+      Set_Image_Real (V, S, P, Fore, Digs - 1, 3);
    end Image_Floating_Point;
 
    -----------------
