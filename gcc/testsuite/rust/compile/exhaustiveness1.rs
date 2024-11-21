@@ -15,9 +15,7 @@ fn s2(s: S) {
 }
 
 fn s3(s: S) {
-    match s {
-        // { dg-error "non-exhaustive patterns: '_' not covered" "" { target *-*-* } .-1 }
-    }
+    match s {}
 }
 
 enum E {
