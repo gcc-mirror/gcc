@@ -359,7 +359,8 @@ Dump::do_matcharm (MatchArm &e)
   // FIXME Can't remember how to handle that. Let's see later.
   // do_outer_attrs(e);
   visit_collection ("match_arm_patterns", e.get_patterns ());
-  visit_field ("guard_expr", e.get_guard_expr ());
+  if (e.has_match_arm_guard ())
+    visit_field ("guard_expr", e.get_guard_expr ());
   end ("MatchArm");
 }
 
@@ -1264,7 +1265,8 @@ Dump::visit (BlockExpr &e)
 
   visit_collection ("statements", e.get_statements ());
 
-  visit_field ("expr", e.get_final_expr ());
+  if (e.has_final_expr ())
+    visit_field ("expr", e.get_final_expr ());
 
   end ("BlockExpr");
 }
@@ -1489,7 +1491,8 @@ Dump::visit (TypeParam &e)
 
   visit_collection ("type_param_bounds", e.get_type_param_bounds ());
 
-  visit_field ("type", e.get_type ());
+  if (e.has_type ())
+    visit_field ("type", e.get_type ());
 
   end ("TypeParam");
 }
@@ -1655,7 +1658,8 @@ Dump::visit (Function &e)
       put_field ("function_params", "empty");
     }
 
-  visit_field ("return_type", e.get_return_type ());
+  if (e.has_function_return_type ())
+    visit_field ("return_type", e.get_return_type ());
 
   if (!e.has_where_clause ())
     put_field ("where_clause", "none");
