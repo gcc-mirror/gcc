@@ -42,7 +42,8 @@
   (cond [(eq_attr "type" "vlde,vste,vldm,vstm,vlds,vsts,\
 			  vldux,vldox,vstux,vstox,vldff,\
 			  vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,\
-			  vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,\
+			  vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,
+			  vmov,vimov,\
 			  vsalu,vaalu,vsmul,vsshift,vnclip,\
 			  vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,\
 			  vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,\
@@ -1214,20 +1215,57 @@
 ;; which is not the pattern we want.
 ;; According the facts above, we make "*mov<mode>_whole" includes load/store/move for whole
 ;; vector modes according to '-march' and "*mov<mode>_fract" only include fractional vector modes.
-(define_insn "*mov<mode>_whole"
+(define_insn_and_split "*mov<mode>_whole"
   [(set (match_operand:V_WHOLE 0 "reg_or_mem_operand" "=vr, m,vr")
 	(match_operand:V_WHOLE 1 "reg_or_mem_operand" "  m,vr,vr"))]
   "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "@
    vl%m1re<sew>.v\t%0,%1
    vs%m1r.v\t%1,%0
-   vmv%m1r.v\t%0,%1"
+   #"
+  "&& !memory_operand (operands[0], <MODE>mode)
+   && !memory_operand (operands[1], <MODE>mode)"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (use (reg:SI VTYPE_REGNUM))])]
+  ""
   [(set_attr "type" "vldr,vstr,vmov")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*mov<mode>_fract"
+;; Full-register moves like vmv1r.v require a valid vtype.
+;; The ABI does not guarantee that the vtype is valid after a function
+;; call so we need to make it dependent on the vtype and have
+;; the vsetvl pass insert a vsetvl if necessary.
+;; To facilitate optimization we keep the reg-reg move patterns "regular"
+;; until split time and only then switch to a pattern like below that
+;; uses the vtype register.
+;; As the use of these patterns is limited (in the general context)
+;; there is no need for helper functions and we can just create the RTX
+;; directly.
+(define_insn "*mov<mode>_reg_whole_vtype"
+  [(set (match_operand:V_WHOLE 0 "reg_or_mem_operand" "=vr")
+	(match_operand:V_WHOLE 1 "reg_or_mem_operand" " vr"))
+   (use (reg:SI VTYPE_REGNUM))]
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
+  "vmv%m1r.v\t%0,%1"
+  [(set_attr "type" "vmov")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn_and_split "*mov<mode>_fract"
   [(set (match_operand:V_FRACT 0 "register_operand" "=vr")
 	(match_operand:V_FRACT 1 "register_operand" " vr"))]
+  "TARGET_VECTOR"
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (use (reg:SI VTYPE_REGNUM))])]
+  ""
+  [(set_attr "type" "vmov")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*mov<mode>_fract_vtype"
+  [(set (match_operand:V_FRACT 0 "register_operand" "=vr")
+	(match_operand:V_FRACT 1 "register_operand" " vr"))
+   (use (reg:SI VTYPE_REGNUM))]
   "TARGET_VECTOR"
   "vmv1r.v\t%0,%1"
   [(set_attr "type" "vmov")
@@ -1249,9 +1287,22 @@
     DONE;
 })
 
-(define_insn "*mov<mode>"
+(define_insn_and_split "*mov<mode>"
   [(set (match_operand:VB 0 "register_operand" "=vr")
 	(match_operand:VB 1 "register_operand" " vr"))]
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (use (reg:SI VTYPE_REGNUM))])]
+  ""
+  [(set_attr "type" "vmov")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*mov<mode>_vtype"
+  [(set (match_operand:VB 0 "register_operand" "=vr")
+	(match_operand:VB 1 "register_operand" " vr"))
+   (use (reg:SI VTYPE_REGNUM))]
   "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "vmv1r.v\t%0,%1"
   [(set_attr "type" "vmov")
@@ -1451,17 +1502,43 @@
    (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))]
 )
 
-(define_insn "*mov<mode>_vls"
+(define_insn_and_split "*mov<mode>_vls"
   [(set (match_operand:VLS 0 "register_operand" "=vr")
 	(match_operand:VLS 1 "register_operand" " vr"))]
+  "TARGET_VECTOR"
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (use (reg:SI VTYPE_REGNUM))])]
+  ""
+  [(set_attr "type" "vmov")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*mov<mode>_vls_vtype"
+  [(set (match_operand:VLS 0 "register_operand" "=vr")
+	(match_operand:VLS 1 "register_operand" " vr"))
+   (use (reg:SI VTYPE_REGNUM))]
   "TARGET_VECTOR"
   "vmv%m1r.v\t%0,%1"
   [(set_attr "type" "vmov")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*mov<mode>_vls"
+(define_insn_and_split "*mov<mode>_vls"
   [(set (match_operand:VLSB 0 "register_operand" "=vr")
 	(match_operand:VLSB 1 "register_operand" " vr"))]
+  "TARGET_VECTOR"
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (use (reg:SI VTYPE_REGNUM))])]
+  ""
+  [(set_attr "type" "vmov")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*mov<mode>_vls_vtype"
+  [(set (match_operand:VLSB 0 "register_operand" "=vr")
+	(match_operand:VLSB 1 "register_operand" " vr"))
+   (use (reg:SI VTYPE_REGNUM))]
   "TARGET_VECTOR"
   "vmv1r.v\t%0,%1"
   [(set_attr "type" "vmov")
