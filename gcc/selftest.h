@@ -338,6 +338,26 @@ extern int num_passes;
     ::selftest::fail ((LOC), desc_);			       \
   SELFTEST_END_STMT
 
+/* Evaluate VAL1 and VAL2 and compare them, calling
+   ::selftest::pass if they are within ABS_ERROR of each other,
+   ::selftest::fail if they are not.  */
+
+#define ASSERT_NEAR(VAL1, VAL2, ABS_ERROR)	\
+  ASSERT_NEAR_AT ((SELFTEST_LOCATION), (VAL1), (VAL2), (ABS_ERROR))
+
+/* Like ASSERT_NEAR, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_NEAR_AT(LOC, VAL1, VAL2, ABS_ERROR)	       \
+  SELFTEST_BEGIN_STMT					       \
+  const char *desc_ = "ASSERT_NEAR (" #VAL1 ", " #VAL2 ", " #ABS_ERROR ")"; \
+  double error = fabs ((VAL1) - (VAL2));				\
+  if (error < (ABS_ERROR))						\
+    ::selftest::pass ((LOC), desc_);					\
+  else									\
+    ::selftest::fail ((LOC), desc_);					\
+  SELFTEST_END_STMT
+
 /* Evaluate VAL1 and VAL2 and compare them with known_eq, calling
    ::selftest::pass if they are always equal,
    ::selftest::fail if they might be non-equal.  */
