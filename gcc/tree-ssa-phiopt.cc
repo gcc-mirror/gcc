@@ -2746,7 +2746,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
       else if (tree_to_shwi (arg1) != 2
 	       || absu_hwi (tree_to_shwi (arg0)) != 1
-	       || wi::to_widest (arg0) == wi::to_widest (arg1))
+	       || wi::to_widest (arg0) == wi::to_widest (arg2))
 	return false;
       switch (cmp2)
 	{
