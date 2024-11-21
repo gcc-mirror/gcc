@@ -1,7 +1,7 @@
 /* Check that Thumb 16-bit shifts can be if-converted.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb2_ok } */
-/* { dg-options "-O2 -mthumb -mno-restrict-it" } */
+/* { dg-options "-O2 -mthumb -mtune=cortex-m4 -mno-restrict-it" } */
 
 int
 foo (int a, int b)
