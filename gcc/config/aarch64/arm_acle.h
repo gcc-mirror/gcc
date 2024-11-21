@@ -194,6 +194,9 @@ __rint64x (double __a)
 #pragma GCC push_options
 #pragma GCC target ("+nothing")
 
+/* Feature constants for CHKFEAT operation.  */
+#define _CHKFEAT_GCS 1
+
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __chkfeat (uint64_t __feat)
