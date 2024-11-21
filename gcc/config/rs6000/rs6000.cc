@@ -4189,12 +4189,11 @@ rs6000_option_override_internal (bool global_init_p)
      because sometimes the compiler wants to put things in an integer
      container, and if we don't have __int128 support, it is impossible.  */
   if (TARGET_FLOAT128_TYPE && !TARGET_FLOAT128_HW && TARGET_64BIT
-      && (rs6000_isa_flags & ISA_3_0_MASKS_IEEE) == ISA_3_0_MASKS_IEEE
+      && TARGET_P9_VECTOR
       && !(rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW))
     rs6000_isa_flags |= OPTION_MASK_FLOAT128_HW;
 
-  if (TARGET_FLOAT128_HW
-      && (rs6000_isa_flags & ISA_3_0_MASKS_IEEE) != ISA_3_0_MASKS_IEEE)
+  if (TARGET_FLOAT128_HW && (!TARGET_P9_VECTOR))
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
 	error ("%qs requires full ISA 3.0 support", "%<-mfloat128-hardware%>");
