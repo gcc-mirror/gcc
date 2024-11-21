@@ -4055,7 +4055,7 @@ rs6000_option_override_internal (bool global_init_p)
      support. If we only have ISA 2.06 support, and the user did not specify
      the switch, leave it set to -1 so the movmisalign patterns are enabled,
      but we don't enable the full vectorization support  */
-  if (TARGET_ALLOW_MOVMISALIGN == -1 && TARGET_P8_VECTOR && TARGET_DIRECT_MOVE)
+  if (TARGET_ALLOW_MOVMISALIGN == -1 && TARGET_P8_VECTOR)
     TARGET_ALLOW_MOVMISALIGN = 1;
 
   else if (TARGET_ALLOW_MOVMISALIGN && !TARGET_VSX)
@@ -13799,7 +13799,7 @@ rs6000_output_move_128bit (rtx operands[])
 		    ? "mfvsrd %0,%x1\n\tmfvsrld %L0,%x1"
 		    : "mfvsrd %L0,%x1\n\tmfvsrld %0,%x1");
 
-	  else if (TARGET_VSX && TARGET_DIRECT_MOVE && src_vsx_p)
+	  else if (TARGET_DIRECT_MOVE && src_vsx_p)
 	    return "#";
 	}
 

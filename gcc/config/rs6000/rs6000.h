@@ -469,13 +469,11 @@ extern int rs6000_vector_align[];
 
 /* TARGET_DIRECT_MOVE is redundant to TARGET_P8_VECTOR, so alias it to that.  */
 #define TARGET_DIRECT_MOVE	TARGET_P8_VECTOR
-#define TARGET_XSCVDPSPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
-#define TARGET_XSCVSPDPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
+#define TARGET_XSCVDPSPN	TARGET_P8_VECTOR
+#define TARGET_XSCVSPDPN	TARGET_P8_VECTOR
 #define TARGET_VADDUQM		(TARGET_P8_VECTOR && TARGET_POWERPC64)
-#define TARGET_DIRECT_MOVE_128	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
-				 && TARGET_POWERPC64)
-#define TARGET_VEXTRACTUB	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
-				 && TARGET_POWERPC64)
+#define TARGET_DIRECT_MOVE_128	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE_64BIT)
+#define TARGET_VEXTRACTUB	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE_64BIT)
 
 /* Whether we should avoid (SUBREG:SI (REG:SF) and (SUBREG:SF (REG:SI).  */
 #define TARGET_NO_SF_SUBREG	TARGET_DIRECT_MOVE_64BIT
@@ -555,7 +553,6 @@ extern int rs6000_vector_align[];
    the calculation in 64-bit GPRs and then is transfered to the vector
    registers.  */
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
-					 && TARGET_P8_VECTOR		\
 					 && TARGET_POWERPC64)
 
 /* Inlining allows targets to define the meanings of bits in target_info
