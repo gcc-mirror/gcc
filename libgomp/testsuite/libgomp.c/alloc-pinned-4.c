@@ -57,7 +57,7 @@ get_pinned_mem ()
 }
 
 void
-set_pin_limit ()
+set_pin_limit (int size)
 {
 }
 #endif
