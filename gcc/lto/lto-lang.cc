@@ -262,6 +262,7 @@ int flag_isoc94;
 int flag_isoc99;
 int flag_isoc11;
 int flag_isoc23;
+int flag_isoc2y;
 
 /* Attribute handlers.  */
 

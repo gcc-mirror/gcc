@@ -9378,7 +9378,8 @@ fold_builtin_fabs (location_t loc, tree arg, tree type)
   return fold_build1_loc (loc, ABS_EXPR, type, arg);
 }
 
-/* Fold a call to abs, labs, llabs or imaxabs with argument ARG.  */
+/* Fold a call to abs, labs, llabs, imaxabs, uabs, ulabs, ullabs or uimaxabs
+   with argument ARG.  */
 
 static tree
 fold_builtin_abs (location_t loc, tree arg, tree type)
@@ -9386,6 +9387,14 @@ fold_builtin_abs (location_t loc, tree arg, tree type)
   if (!validate_arg (arg, INTEGER_TYPE))
     return NULL_TREE;
 
+  if (TYPE_UNSIGNED (type))
+    {
+      if (TYPE_PRECISION (TREE_TYPE (arg))
+	  != TYPE_PRECISION (type)
+	  || TYPE_UNSIGNED (TREE_TYPE (arg)))
+	return NULL_TREE;
+      return fold_build1_loc (loc, ABSU_EXPR, type, arg);
+    }
   arg = fold_convert_loc (loc, type, arg);
   return fold_build1_loc (loc, ABS_EXPR, type, arg);
 }
@@ -10518,6 +10527,10 @@ fold_builtin_1 (location_t loc, tree expr, tree fndecl, tree arg0)
     case BUILT_IN_LABS:
     case BUILT_IN_LLABS:
     case BUILT_IN_IMAXABS:
+    case BUILT_IN_UABS:
+    case BUILT_IN_ULABS:
+    case BUILT_IN_ULLABS:
+    case BUILT_IN_UIMAXABS:
       return fold_builtin_abs (loc, arg0, type);
 
     CASE_FLT_FN (BUILT_IN_CONJ):

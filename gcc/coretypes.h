@@ -421,7 +421,8 @@ enum function_class {
   function_c99_math_complex,
   function_sincos,
   function_c11_misc,
-  function_c23_misc
+  function_c23_misc,
+  function_c2y_misc
 };
 
 /* Enumerate visibility settings.  This is deliberately ordered from most
