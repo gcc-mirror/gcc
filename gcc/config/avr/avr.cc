@@ -390,7 +390,7 @@ avr_adiw_reg_p (rtx reg)
 static bool
 ra_in_progress ()
 {
-  return avr_lra_p ? lra_in_progress : reload_in_progress;
+  return avropt_lra_p ? lra_in_progress : reload_in_progress;
 }
 
 
@@ -402,8 +402,8 @@ avr_set_core_architecture (void)
 {
   /* Search for mcu core architecture.  */
 
-  if (!avr_mmcu)
-    avr_mmcu = AVR_MMCU_DEFAULT;
+  if (!avropt_mmcu)
+    avropt_mmcu = AVR_MMCU_DEFAULT;
 
   avr_arch = &avr_arch_types[0];
 
@@ -417,18 +417,18 @@ avr_set_core_architecture (void)
 	     with -mmcu=<device>. */
 
 	  error ("unknown core architecture %qs specified with %qs",
-		 avr_mmcu, "-mmcu=");
+		 avropt_mmcu, "-mmcu=");
 	  avr_inform_core_architectures ();
 	  break;
 	}
-      else if (strcmp (mcu->name, avr_mmcu) == 0
+      else if (strcmp (mcu->name, avropt_mmcu) == 0
 	       // Is this a proper architecture ?
 	       && mcu->macro == NULL)
 	{
 	  avr_arch = &avr_arch_types[mcu->arch_id];
 	  avr_arch_index = mcu->arch_id;
-	  if (avr_n_flash < 0)
-	    avr_n_flash = 1 + (mcu->flash_size - 1) / 0x10000;
+	  if (avropt_n_flash < 0)
+	    avropt_n_flash = 1 + (mcu->flash_size - 1) / 0x10000;
 
 	  return true;
 	}
@@ -451,7 +451,7 @@ avr_option_override (void)
      with the challenge of AVR's very few address registers and fails to
      perform the requested spills.  */
 
-  if (avr_strict_X)
+  if (avropt_strict_X)
     flag_caller_saves = 0;
 
   /* Unwind tables currently require a frame pointer for correctness,
@@ -485,14 +485,14 @@ avr_option_override (void)
     warning (OPT_fPIE, "%<-fPIE%> is not supported");
 
 #if !defined (HAVE_AS_AVR_MGCCISR_OPTION)
-  avr_gasisr_prologues = 0;
+  avropt_gasisr_prologues = 0;
 #endif
 
   if (!avr_set_core_architecture())
     return;
 
   /* Sould be set by avr-common.cc */
-  gcc_assert (avr_long_double >= avr_double && avr_double >= 32);
+  gcc_assert (avropt_long_double >= avropt_double && avropt_double >= 32);
 
   /* RAM addresses of some SFRs common to all devices in respective arch. */
 
@@ -3182,7 +3182,7 @@ avr_xload_libgcc_p (machine_mode mode)
   int n_bytes = GET_MODE_SIZE (mode);
 
   return (n_bytes > 1
-	  || avr_n_flash > 1);
+	  || avropt_n_flash > 1);
 }
 
 
@@ -8182,7 +8182,7 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, rtx_code code,
 	  // When that pass adjusts the frame pointer, then we know that
 	  // reg Y points to ordinary memory, and the only side-effect
 	  // of -Y and Y+ is the side effect on Y.
-	  && avr_fuse_add >= 2
+	  && avropt_fuse_add >= 2
 	  && frame_pointer_needed
 	  && REGNO (xop[0]) == FRAME_POINTER_REGNUM)
 	{
@@ -10742,12 +10742,12 @@ avr_addr_space_supported_p (addr_space_t as, location_t loc)
 		  "Tiny devices");
       return false;
     }
-  else if (avr_addrspace[as].segment >= avr_n_flash)
+  else if (avr_addrspace[as].segment >= avropt_n_flash)
     {
       if (loc != UNKNOWN_LOCATION)
 	error_at (loc, "address space %qs not supported for devices with "
 		  "flash size up to %d KiB", avr_addrspace[as].name,
-		  64 * avr_n_flash);
+		  64 * avropt_n_flash);
       return false;
     }
 
@@ -11070,10 +11070,10 @@ avr_rodata_in_flash_p ()
       return have_avrxmega3_rodata_in_flash;
 
     case ARCH_AVRXMEGA2:
-      return avr_flmap && have_avrxmega2_flmap && avr_rodata_in_ram != 1;
+      return avropt_flmap && have_avrxmega2_flmap && avropt_rodata_in_ram != 1;
 
     case ARCH_AVRXMEGA4:
-      return avr_flmap && have_avrxmega4_flmap && avr_rodata_in_ram != 1;
+      return avropt_flmap && have_avrxmega4_flmap && avropt_rodata_in_ram != 1;
     }
 
   return false;
@@ -11550,7 +11550,7 @@ avr_file_start (void)
   int sfr_offset = avr_arch->sfr_offset;
 
   if (avr_arch->asm_only)
-    error ("architecture %qs supported for assembler only", avr_mmcu);
+    error ("architecture %qs supported for assembler only", avropt_mmcu);
 
   default_file_start ();
 
@@ -13143,7 +13143,7 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   if (GET_MODE_SIZE (mode) >= 4
       && regno >= REG_X
       // This problem only concerned the old reload.
-      && ! avr_lra_p)
+      && ! avropt_lra_p)
     return false;
 
   /* All modes larger than 8 bits should start in an even register.  */
@@ -13192,7 +13192,7 @@ avr_mode_code_base_reg_class (machine_mode /*mode*/, addr_space_t as,
     // will rectify it (register allocation cannot do it).
     return POINTER_REGS;
 
-  if (!avr_strict_X)
+  if (!avropt_strict_X)
     return reload_completed ? BASE_POINTER_REGS : POINTER_REGS;
 
   return PLUS == outer_code ? BASE_POINTER_REGS : POINTER_REGS;
@@ -13250,7 +13250,7 @@ avr_regno_mode_code_ok_for_base_p (int regno, machine_mode /*mode*/,
 	}
     }
 
-  if (avr_strict_X
+  if (avropt_strict_X
       // On Reduced Tiny, all registers are equal in that they do not
       // support PLUS addressing; respective addresses will be fake,
       // even for the frame pointer.  They must be handled in the
@@ -13924,7 +13924,7 @@ avr_convert_to_type (tree type, tree expr)
 	    code with progmem and pgm_read_xxx.
   */
 
-  if (avr_warn_addr_space_convert
+  if (avropt_warn_addr_space_convert
       && expr != error_mark_node
       && POINTER_TYPE_P (type)
       && POINTER_TYPE_P (TREE_TYPE (expr)))
@@ -14136,7 +14136,7 @@ avr_emit_cpymemhi (rtx *xop)
       int segment = avr_addrspace[as].segment;
 
       if (segment
-	  && avr_n_flash > 1)
+	  && avropt_n_flash > 1)
 	{
 	  a_hi8 = GEN_INT (segment);
 	  emit_move_insn (rampz_rtx, a_hi8 = copy_to_mode_reg (QImode, a_hi8));
@@ -15415,9 +15415,9 @@ static machine_mode
 avr_c_mode_for_floating_type (tree_index ti)
 {
   if (ti == TI_DOUBLE_TYPE)
-    return avr_double == 32 ? SFmode : DFmode;
+    return avropt_double == 32 ? SFmode : DFmode;
   if (ti == TI_LONG_DOUBLE_TYPE)
-    return avr_long_double == 32 ? SFmode : DFmode;
+    return avropt_long_double == 32 ? SFmode : DFmode;
   return default_mode_for_floating_type (ti);
 }
 
@@ -15444,7 +15444,7 @@ avr_float_lib_compare_returns_bool (machine_mode mode, rtx_code)
 static bool
 avr_use_lra_p ()
 {
-  return avr_lra_p;
+  return avropt_lra_p;
 }
 
 

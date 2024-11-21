@@ -91,7 +91,7 @@ avr_handle_option (struct gcc_options *opts, struct gcc_options*,
           error_at (loc, "option %<-mdouble=64%> is only available if "
                     "configured %<--with-double={64|64,32|32,64}%>");
 #endif
-          opts->x_avr_long_double = 64;
+          opts->x_avropt_long_double = 64;
         }
       else if (value == 32)
         {
@@ -104,7 +104,7 @@ avr_handle_option (struct gcc_options *opts, struct gcc_options*,
         gcc_unreachable();
 
 #if defined (HAVE_LONG_DOUBLE_IS_DOUBLE)
-      opts->x_avr_long_double = value;
+      opts->x_avropt_long_double = value;
 #endif
       break; // -mdouble=
 
@@ -126,13 +126,13 @@ avr_handle_option (struct gcc_options *opts, struct gcc_options*,
                     "or %<--with-long-double=double%> together with "
                     "%<--with-double={32|32,64|64,32}%>");
 #endif
-          opts->x_avr_double = 32;
+          opts->x_avropt_double = 32;
         }
       else
         gcc_unreachable();
 
 #if defined (HAVE_LONG_DOUBLE_IS_DOUBLE)
-      opts->x_avr_double = value;
+      opts->x_avropt_double = value;
 #endif
       break; // -mlong-double=
     }

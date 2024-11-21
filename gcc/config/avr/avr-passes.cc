@@ -1227,7 +1227,7 @@ public:
 
   unsigned int execute (function *func) final override
   {
-    if (optimize > 0 && avr_fuse_move > 0)
+    if (optimize > 0 && avropt_fuse_move > 0)
       {
 	df_note_add_problem ();
 	df_analyze ();
@@ -3181,13 +3181,13 @@ bbinfo_t::optimize_one_function (function *func)
   // use arith                                     1 1 1 1  1 1 1 1      3
 
   // Which optimization(s) to perform.
-  bbinfo_t::try_fuse_p = avr_fuse_move & 0x1;      // Digit 0 in [0, 1].
-  bbinfo_t::try_bin_arg1_p = avr_fuse_move & 0x2;  // Digit 1 in [0, 1].
-  bbinfo_t::try_split_any_p = avr_fuse_move & 0x4; // Digit 2 in [0, 1].
-  bbinfo_t::try_split_ldi_p = avr_fuse_move >> 3;       // Digit 3 in [0, 2].
-  bbinfo_t::use_arith_p = (avr_fuse_move >> 3) >= 2;    // Digit 3 in [0, 2].
+  bbinfo_t::try_fuse_p = avropt_fuse_move & 0x1;      // Digit 0 in [0, 1].
+  bbinfo_t::try_bin_arg1_p = avropt_fuse_move & 0x2;  // Digit 1 in [0, 1].
+  bbinfo_t::try_split_any_p = avropt_fuse_move & 0x4; // Digit 2 in [0, 1].
+  bbinfo_t::try_split_ldi_p = avropt_fuse_move >> 3;    // Digit 3 in [0, 2].
+  bbinfo_t::use_arith_p = (avropt_fuse_move >> 3) >= 2; // Digit 3 in [0, 2].
   bbinfo_t::use_set_some_p = bbinfo_t::try_split_ldi_p; // Digit 3 in [0, 2].
-  bbinfo_t::try_simplify_p = avr_fuse_move != 0;
+  bbinfo_t::try_simplify_p = avropt_fuse_move != 0;
 
   // Topologically sort BBs from last to first.
 
@@ -4221,7 +4221,7 @@ public:
     func->machine->n_avr_fuse_add_executed += 1;
     n_avr_fuse_add_executed = func->machine->n_avr_fuse_add_executed;
 
-    if (optimize && avr_fuse_add > 0)
+    if (optimize && avropt_fuse_add > 0)
       return execute1 (func);
     return 0;
   }
@@ -4349,7 +4349,7 @@ avr_maybe_adjust_cfa (rtx_insn *insn, rtx reg, int addend)
   if (addend
       && frame_pointer_needed
       && REGNO (reg) == FRAME_POINTER_REGNUM
-      && avr_fuse_add == 3)
+      && avropt_fuse_add == 3)
     {
       rtx plus = plus_constant (Pmode, reg, addend);
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -4443,7 +4443,7 @@ avr_pass_fuse_add::avr_pass_fuse_add::Mem_Insn::Mem_Insn (rtx_insn *insn)
 
   addr_regno = REGNO (addr_reg);
 
-  if (avr_fuse_add == 2
+  if (avropt_fuse_add == 2
       && frame_pointer_needed
       && addr_regno == FRAME_POINTER_REGNUM)
     MEM_VOLATILE_P (mem) = 0;
@@ -4829,7 +4829,7 @@ avr_shift_is_3op ()
   // For OPTIMIZE_SIZE_BALANCED (-Os), we still split because
   // the size overhead (if exists at all) is marginal.
 
-  return (avr_split_bit_shift
+  return (avropt_split_bit_shift
 	  && optimize > 0
 	  && avr_optimize_size_level () < OPTIMIZE_SIZE_MAX);
 }
@@ -4947,7 +4947,7 @@ public:
 
   unsigned int execute (function *fun) final override
   {
-    if (avr_gasisr_prologues
+    if (avropt_gasisr_prologues
 	// Whether this function is an ISR worth scanning at all.
 	&& !fun->machine->is_no_gccisr
 	&& (fun->machine->is_interrupt
@@ -5100,15 +5100,15 @@ avr_split_fake_addressing_move (rtx_insn * /*insn*/, rtx *xop)
   if (frame_pointer_needed
       && REGNO (base) == FRAME_POINTER_REGNUM)
     {
-      if (avr_fuse_add < 2
+      if (avropt_fuse_add < 2
 	  // Be a projection (we always split PLUS).
-	  || (avr_fuse_add == 2 && volatile_p && addr_code != PLUS))
+	  || (avropt_fuse_add == 2 && volatile_p && addr_code != PLUS))
 	return false;
 
       // Changing the frame pointer locally may confuse later passes
       // like .dse2 which don't track changes of FP, not even when
       // respective CFA notes are present.  An example is pr22141-1.c.
-      if (avr_fuse_add == 2)
+      if (avropt_fuse_add == 2)
 	mem_volatile_p = true;
     }
 

@@ -1003,7 +1003,7 @@
                    (match_operand:MOVMODE 1 "general_operand"))
               (clobber (reg:CC REG_CC))])]
   "reload_completed
-   && avr_fuse_add > 0
+   && avropt_fuse_add > 0
    // Only split this for .split2 when we are before
    // pass .avr-fuse-add (which runs after proep).
    && ! epilogue_completed
@@ -5392,7 +5392,7 @@
                    (ashift:ALL4 (match_operand:ALL4 1 "register_operand")
                                 (match_operand:QI 2 "const_int_operand")))
               (clobber (reg:CC REG_CC))])]
-  "avr_split_bit_shift
+  "avropt_split_bit_shift
    && n_avr_fuse_add_executed >= 1
    && satisfies_constraint_C4l (operands[2])"
   [(parallel [(set (match_dup 0)
@@ -5420,7 +5420,7 @@
                                 (match_operand:QI 2 "const_int_operand")))
               (clobber (match_operand:QI 3 "scratch_or_d_register_operand"))
               (clobber (reg:CC REG_CC))])]
-  "avr_split_bit_shift
+  "avropt_split_bit_shift
    && n_avr_fuse_add_executed >= 1
    && satisfies_constraint_C4l (operands[2])"
   [(parallel [(set (match_dup 0)
@@ -8494,7 +8494,7 @@
                    (unspec_volatile:BLK [(match_dup 2)]
                                         UNSPECV_MEMORY_BARRIER))
               (clobber (reg:CC REG_CC))])]
-  "avr_gasisr_prologues"
+  "avropt_gasisr_prologues"
   {
     operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
     MEM_VOLATILE_P (operands[2]) = 1;
@@ -8509,7 +8509,7 @@
    (set (match_operand:BLK 2)
         (unspec_volatile:BLK [(match_dup 2)] UNSPECV_MEMORY_BARRIER))
    (clobber (reg:CC REG_CC))]
-  "avr_gasisr_prologues"
+  "avropt_gasisr_prologues"
   "__gcc_isr %0"
   [(set_attr "length" "6,5")])
 

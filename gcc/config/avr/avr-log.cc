@@ -342,17 +342,17 @@ avr_log_set_avr_log (void)
   bool all = TARGET_ALL_DEBUG != 0;
 
   if (all)
-    avr_log_details = "all";
+    avropt_log_details = "all";
 
-  if (all || avr_log_details)
+  if (all || avropt_log_details)
     {
       /* Adding , at beginning and end of string makes searching easier.  */
 
-      char *str = (char*) alloca (3 + strlen (avr_log_details));
+      char *str = (char*) alloca (3 + strlen (avropt_log_details));
       bool info;
 
       str[0] = ',';
-      strcat (stpcpy (str+1, avr_log_details), ",");
+      strcat (stpcpy (str+1, avropt_log_details), ",");
 
       all |= strstr (str, ",all,") != NULL;
       info = strstr (str, ",?,") != NULL;
