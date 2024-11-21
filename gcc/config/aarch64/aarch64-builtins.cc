@@ -911,7 +911,7 @@ static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] = {
    2, \
    { SIMD_INTR_MODE(A, L), SIMD_INTR_MODE(B, L) }, \
    { SIMD_INTR_QUAL(A), SIMD_INTR_QUAL(B) }, \
-   FLAG_AUTO_FP, \
+   FLAG_NONE, \
    SIMD_INTR_MODE(A, L) == SIMD_INTR_MODE(B, L) \
      && SIMD_INTR_QUAL(A) == SIMD_INTR_QUAL(B) \
   },
@@ -923,7 +923,7 @@ static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] = {
    2, \
    { SIMD_INTR_MODE(A, d), SIMD_INTR_MODE(A, q) }, \
    { SIMD_INTR_QUAL(A), SIMD_INTR_QUAL(A) }, \
-   FLAG_AUTO_FP, \
+   FLAG_NONE, \
    false \
   },
 
@@ -934,7 +934,7 @@ static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] = {
    2, \
    { SIMD_INTR_MODE(A, d), SIMD_INTR_MODE(A, q) }, \
    { SIMD_INTR_QUAL(A), SIMD_INTR_QUAL(A) }, \
-   FLAG_AUTO_FP, \
+   FLAG_NONE, \
    false \
   },
 
