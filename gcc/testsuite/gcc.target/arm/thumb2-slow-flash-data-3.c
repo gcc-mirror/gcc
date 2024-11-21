@@ -7,7 +7,7 @@
 /* From PR71607 */
 
 float b;
-void fn1 ();
+void fn1 (void*);
 
 float
 fn2 ()
