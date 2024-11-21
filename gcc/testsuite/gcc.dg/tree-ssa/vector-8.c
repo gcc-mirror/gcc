@@ -30,5 +30,5 @@ void f (vec *p_v_in_1, vec *p_v_in_2, vec *p_v_out_1, vec *p_v_out_2)
   *p_v_out_2 = v_out_2;
 }
 
-/* { dg-final { scan-tree-dump "Vec perm simplify sequences have been blended" "forwprop1" } } */
-/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 2, 3, 6, 7 }" "forwprop1" } } */
+/* { dg-final { scan-tree-dump "Vec perm simplify sequences have been blended" "forwprop1" { target { aarch64*-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 2, 3, 6, 7 }" "forwprop1" { target { aarch64*-*-* x86_64-*-* } } } } */

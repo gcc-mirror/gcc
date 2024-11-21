@@ -40,4 +40,4 @@ x264_pixel_satd_8x4_simplified (uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_
   return (((uint16_t)sum) + ((uint32_t)sum>>16)) >> 1;
 }
 
-/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 2, 3, 6, 7 }" "forwprop4" } } */
+/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 2, 3, 6, 7 }" "forwprop4" { target { aarch64*-*-* x86_64-*-* } } } } */
