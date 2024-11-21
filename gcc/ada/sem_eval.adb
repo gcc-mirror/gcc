@@ -2696,9 +2696,13 @@ package body Sem_Eval is
 
             --  If we have an array type (we should have but perhaps there are
             --  error cases where this is not the case), then see if we can do
-            --  a constant evaluation of the array reference.
+            --  a constant evaluation of the array reference, although specific
+            --  processing would be required if the array type is bit-packed.
 
-            if Is_Array_Type (Atyp) and then Atyp /= Any_Composite then
+            if Is_Array_Type (Atyp)
+              and then not Is_Bit_Packed_Array (Atyp)
+              and then Atyp /= Any_Composite
+            then
                if Ekind (Atyp) = E_String_Literal_Subtype then
                   Lbd := String_Literal_Low_Bound (Atyp);
                else

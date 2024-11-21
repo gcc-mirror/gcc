@@ -3811,6 +3811,31 @@ package body Exp_Aggr is
          end loop;
       end if;
 
+      --  If Typ is a bit-packed array and the first statement generated for
+      --  the aggregate initialization is an assignment of the form:
+
+      --    Obj (j) := (Obj (j) [and Mask]) or Val
+
+      --  then we initialize Obj (j) right before the assignment, in order to
+      --  avoid a spurious warning about Obj being used uninitialized.
+
+      if Is_Bit_Packed_Array (Typ) then
+         Stmt := Next (N);
+
+         if Stmt /= Marker
+           and then Nkind (Stmt) = N_Assignment_Statement
+           and then Nkind (Expression (Stmt)) in N_Op_And | N_Op_Or
+           and then Nkind (Name (Stmt)) = N_Indexed_Component
+           and then Is_Entity_Name (Prefix (Name (Stmt)))
+           and then Entity (Prefix (Name (Stmt))) = Obj
+         then
+            Insert_Action (Stmt,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Copy_Tree (Name (Stmt)),
+                Expression => Make_Integer_Literal (Loc, Uint_0)));
+         end if;
+      end if;
+
       --  After expansion the expression can be removed from the declaration
       --  except if the object is class-wide, in which case the aggregate
       --  provides the actual type.
@@ -6163,9 +6188,8 @@ package body Exp_Aggr is
                                       Designated_Type (Etype (Parent_Node)),
                                       Typ)))
 
-         --  Object declaration (see Convert_Aggr_In_Object_Decl). Bit-packed
-         --  array types need specific processing and sliding cannot be done
-         --  in place for the time being.
+         --  Object declaration (see Convert_Aggr_In_Object_Decl). Sliding
+         --  cannot be done in place for the time being.
 
          or else (Parent_Kind = N_Object_Declaration
                    and then
@@ -6174,13 +6198,11 @@ package body Exp_Aggr is
                        or else Needs_Finalization (Typ)
                        or else Is_Special_Return_Object
                                  (Defining_Identifier (Parent_Node))
-                       or else (not Is_Bit_Packed_Array (Typ)
-                                 and then not
-                                   Must_Slide
+                       or else not Must_Slide
                                      (N,
                                       Etype
                                         (Defining_Identifier (Parent_Node)),
-                                      Typ))))
+                                      Typ)))
 
          --  Safe assignment (see Convert_Aggr_In_Assignment). So far only the
          --  assignments in init procs are taken into account, as well those
