@@ -960,8 +960,9 @@ struct absint_t
 	    const int sub_regno = eq[i].regno (false /*nonstrict*/);
 	    const bool nop = regno &&  sub_regno == regno + i;
 	    eq[i].dump (nop ? "%s=nop" : "%s", f);
-	    fprintf (f, "%s", i ? "; " : xs + strlen ("%s"));
+	    fprintf (f, "%s", i ? "; " : "");
 	  }
+	fprintf (f, "%s", xs + strlen ("%s"));
       }
   }
 }; // absint_t
