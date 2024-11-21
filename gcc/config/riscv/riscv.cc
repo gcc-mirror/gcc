@@ -1328,16 +1328,20 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 	    value = 9;
 
 	  if (value)
-	    alt_cost = 2 + riscv_build_integer_1 (alt_codes,
+	    alt_cost = 3 + riscv_build_integer_1 (alt_codes,
 						  sext_hwi (loval, 32), mode);
 
 	  /* For constants where the upper half is a shNadd of the lower half
 	     we can do a similar transformation.  */
 	  if (value && alt_cost < cost)
 	    {
-	      alt_codes[alt_cost - 3].save_temporary = true;
-	      alt_codes[alt_cost - 2].code = FMA;
-	      alt_codes[alt_cost - 2].value = value;
+	      alt_codes[alt_cost - 4].save_temporary = true;
+	      alt_codes[alt_cost - 3].code = FMA;
+	      alt_codes[alt_cost - 3].value = value;
+	      alt_codes[alt_cost - 3].use_uw = false;
+	      alt_codes[alt_cost - 3].save_temporary = false;
+	      alt_codes[alt_cost - 2].code = ASHIFT;
+	      alt_codes[alt_cost - 2].value = 32;
 	      alt_codes[alt_cost - 2].use_uw = false;
 	      alt_codes[alt_cost - 2].save_temporary = false;
 	      alt_codes[alt_cost - 1].code = CONCAT;
