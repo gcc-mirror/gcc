@@ -1382,6 +1382,11 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       }
   }
 
+  bool promote_p
+    = targetm.calls.promote_prototypes (fndecl
+					? TREE_TYPE (fndecl)
+					: fntype);
+
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (argpos = 0; argpos < num_actuals; i--, argpos++)
     {
@@ -1391,6 +1396,10 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       /* Replace erroneous argument with constant zero.  */
       if (type == error_mark_node || !COMPLETE_TYPE_P (type))
 	args[i].tree_value = integer_zero_node, type = integer_type_node;
+      else if (promote_p
+	       && INTEGRAL_TYPE_P (type)
+	       && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	type = integer_type_node;
 
       /* If TYPE is a transparent union or record, pass things the way
 	 we would pass the first field of the union or record.  We have
