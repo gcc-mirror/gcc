@@ -3913,3 +3913,36 @@ find_optab (optab_pattern *p, const char *name)
     }
   return false;
 }
+
+/* Find the file to write into next.  We try to evenly distribute the contents
+   over the different files.  */
+
+#define SIZED_BASED_CHUNKS 1
+
+FILE *
+choose_output (const vec<FILE *> &parts, unsigned &idx)
+{
+  if (parts.length () == 0)
+    gcc_unreachable ();
+#ifdef SIZED_BASED_CHUNKS
+  FILE *shortest = NULL;
+  long min = 0;
+  idx = 0;
+  for (unsigned i = 0; i < parts.length (); i++)
+    {
+      FILE *part  = parts[i];
+      long len = ftell (part);
+      if (!shortest || min > len)
+	{
+	  shortest = part;
+	  min = len;
+	  idx = i;
+       }
+    }
+  return shortest;
+#else
+  static int current_file;
+  idx = current_file++ % parts.length ();
+  return parts[idx];
+#endif
+}
