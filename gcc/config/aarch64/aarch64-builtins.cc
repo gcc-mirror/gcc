@@ -2024,10 +2024,12 @@ aarch64_init_prefetch_builtin (void)
 {
 #define AARCH64_INIT_PREFETCH_BUILTIN(INDEX, N)				\
   aarch64_builtin_decls[INDEX] =					\
-    aarch64_general_add_builtin ("__builtin_aarch64_" N, ftype, INDEX)
+    aarch64_general_add_builtin ("__builtin_aarch64_" N, ftype, INDEX,  \
+				 prefetch_attrs)
 
   tree ftype;
   tree cv_argtype;
+  tree prefetch_attrs = aarch64_get_attributes (FLAG_PREFETCH_MEMORY, DImode);
   cv_argtype = build_qualified_type (void_type_node, TYPE_QUAL_CONST
 						     | TYPE_QUAL_VOLATILE);
   cv_argtype = build_pointer_type (cv_argtype);
