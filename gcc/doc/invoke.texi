@@ -2479,8 +2479,8 @@ applied with @option{-std=c11}) and a new value of
 @item c23
 @itemx c2x
 @itemx iso9899:2024
-ISO C23, the 2023 revision of the ISO C standard (expected to be
-published in 2024).  The name @samp{c2x} is deprecated.
+ISO C23, the 2023 revision of the ISO C standard (published in 2024).  The
+name @samp{c2x} is deprecated.
 
 @item c2y
 The next version of the ISO C standard, still under development.  The

@@ -115,8 +115,8 @@ known as @dfn{C17} and is supported with @option{-std=c17} or
 @option{-std=c11}, and the only difference between the options is the
 value of @code{__STDC_VERSION__}.
 
-A fifth version of the C standard, known as @dfn{C23}, is
-expected to be published in 2024 as ISO/IEC 9899:2024.
+A fifth version of the C standard, known as @dfn{C23}, was published
+in 2024 as ISO/IEC 9899:2024.
 (While in development, drafts of this standard version were referred
 to as @dfn{C2X}.)  Support for this is
 enabled with @option{-std=c23} or @option{-std=iso9899:2024}.
@@ -136,11 +136,12 @@ Use of the
 they conflict with the C standard version selected.  You may also
 select an extended version of the C language explicitly with
 @option{-std=gnu90} (for C90 with GNU extensions), @option{-std=gnu99}
-(for C99 with GNU extensions) or @option{-std=gnu11} (for C11 with GNU
-extensions).  
+(for C99 with GNU extensions), @option{-std=gnu11} (for C11 with GNU
+extensions), @option{-std=gnu17} (for C17 with GNU extensions) or
+@option{-std=gnu23} (for C23 with GNU extensions).
 
 The default, if no C language dialect options are given,
-is @option{-std=gnu17}.
+is @option{-std=gnu23}.
 
 The ISO C standard defines (in clause 4) two classes of conforming
 implementation.  A @dfn{conforming hosted implementation} supports the
