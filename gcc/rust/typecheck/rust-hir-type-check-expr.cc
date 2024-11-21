@@ -1456,6 +1456,18 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
   TyTy::BaseType *scrutinee_tyty
     = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ());
 
+  // https://github.com/Rust-GCC/gccrs/issues/3231#issuecomment-2462660048
+  // https://github.com/rust-lang/rust/blob/3d1dba830a564d1118361345d7ada47a05241f45/compiler/rustc_hir_typeck/src/_match.rs#L32-L36
+  if (!expr.has_match_arms ())
+    {
+      // this is a special case where rustc returns !
+      TyTy::BaseType *lookup = nullptr;
+      bool ok = context->lookup_builtin ("!", &lookup);
+      rust_assert (ok);
+      infered = lookup->clone ();
+      return;
+    }
+
   bool saw_error = false;
   std::vector<TyTy::BaseType *> kase_block_tys;
   for (auto &kase : expr.get_match_cases ())

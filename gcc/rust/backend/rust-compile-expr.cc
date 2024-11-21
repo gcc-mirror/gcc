@@ -1013,17 +1013,7 @@ check_match_scrutinee (HIR::MatchExpr &expr, Context *ctx)
 	       || scrutinee_kind == TyTy::TypeKind::TUPLE
 	       || scrutinee_kind == TyTy::TypeKind::REF);
 
-  if (scrutinee_kind == TyTy::TypeKind::ADT)
-    {
-      // this will need to change but for now the first pass implementation,
-      // lets assert this is the case
-      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
-      if (adt->is_enum ())
-	rust_assert (adt->number_of_variants () > 0);
-      else
-	rust_assert (adt->number_of_variants () == 1);
-    }
-  else if (scrutinee_kind == TyTy::TypeKind::FLOAT)
+  if (scrutinee_kind == TyTy::TypeKind::FLOAT)
     {
       // FIXME: CASE_LABEL_EXPR does not support floating point types.
       // Find another way to compile these.
@@ -1061,6 +1051,15 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 				       &expr_tyty))
     {
       translated = error_mark_node;
+      return;
+    }
+
+  // if the result of this expression is meant to be never type then we can
+  // optimise this away but there is the case where match arms resolve to !
+  // because of return statements we need to special case this
+  if (!expr.has_match_arms () && expr_tyty->is<TyTy::NeverType> ())
+    {
+      translated = unit_expression (expr.get_locus ());
       return;
     }
 

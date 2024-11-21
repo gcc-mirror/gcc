@@ -1530,6 +1530,9 @@ void
 check_match_usefulness (Resolver::TypeCheckContext *ctx,
 			TyTy::BaseType *scrutinee_ty, HIR::MatchExpr &expr)
 {
+  if (!expr.has_match_arms ())
+    return;
+
   // Lower the arms to a more convenient representation.
   std::vector<MatrixRow> rows;
   for (auto &arm : expr.get_match_cases ())
