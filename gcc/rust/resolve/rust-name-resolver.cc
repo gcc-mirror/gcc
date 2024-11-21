@@ -19,6 +19,9 @@
 #include "rust-name-resolver.h"
 #include "rust-ast-full.h"
 
+// for flag_name_resolution_2_0
+#include "options.h"
+
 namespace Rust {
 namespace Resolver {
 
@@ -468,6 +471,7 @@ Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
 void
 Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   resolved_names[refId] = defId;
   get_name_scope ().append_reference_for_def (refId, defId);
   insert_captured_item (defId);
@@ -476,6 +480,7 @@ Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_name (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_names.find (refId);
   if (it == resolved_names.end ())
     return false;
@@ -489,6 +494,7 @@ Resolver::insert_resolved_type (NodeId refId, NodeId defId)
 {
   // auto it = resolved_types.find (refId);
   // rust_assert (it == resolved_types.end ());
+  rust_assert (!flag_name_resolution_2_0);
 
   resolved_types[refId] = defId;
   get_type_scope ().append_reference_for_def (refId, defId);
@@ -497,6 +503,7 @@ Resolver::insert_resolved_type (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_type (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_types.find (refId);
   if (it == resolved_types.end ())
     return false;
@@ -508,6 +515,7 @@ Resolver::lookup_resolved_type (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_label (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_labels.find (refId);
   rust_assert (it == resolved_labels.end ());
 
@@ -518,6 +526,7 @@ Resolver::insert_resolved_label (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_label (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_labels.find (refId);
   if (it == resolved_labels.end ())
     return false;
@@ -529,6 +538,7 @@ Resolver::lookup_resolved_label (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_macro (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_macros.find (refId);
   rust_assert (it == resolved_macros.end ());
 
@@ -539,6 +549,7 @@ Resolver::insert_resolved_macro (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_macros.find (refId);
   if (it == resolved_macros.end ())
     return false;
@@ -550,6 +561,7 @@ Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_misc (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = misc_resolved_items.find (refId);
   rust_assert (it == misc_resolved_items.end ());
 
@@ -559,6 +571,7 @@ Resolver::insert_resolved_misc (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_misc (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = misc_resolved_items.find (refId);
   if (it == misc_resolved_items.end ())
     return false;
