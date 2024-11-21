@@ -13144,6 +13144,16 @@ package body Sem_Ch6 is
          --  An access formal type
 
          else
+            if Nkind (Parent (T)) = N_Accept_Statement
+              or else (Nkind (Parent (T)) = N_Entry_Declaration
+                       and then Nkind (Context) = N_Task_Definition)
+            then
+               Error_Msg_N
+                 ("task entries cannot have access parameters",
+                  Parameter_Type (Param_Spec));
+               return;
+            end if;
+
             Formal_Type :=
               Access_Definition (Related_Nod, Parameter_Type (Param_Spec));
 
