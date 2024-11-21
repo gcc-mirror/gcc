@@ -1,1 +1,1 @@
-void a (void x) {}	/* { dg-error "has incomplete type" } */
+void a (void x) {}	/* { dg-error "void|has incomplete type" } */

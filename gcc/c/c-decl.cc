@@ -8480,8 +8480,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 	 or definition of the function.  In the case where the tag was
 	 first declared within the parameter list, a warning has
 	 already been given.  If a parameter has void type, then
-	 however the function cannot be defined or called, so
-	 warn.  */
+	 this has already received an error (constraint violation in C2Y,
+	 previously implicitly undefined behavior).  */
 
       for (parm = arg_info->parms, typelt = arg_types, parmno = 1;
 	   parm;
@@ -8507,17 +8507,6 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 		  TREE_VALUE (typelt) = error_mark_node;
 		  TREE_TYPE (parm) = error_mark_node;
 		  arg_types = NULL_TREE;
-		}
-	      else if (VOID_TYPE_P (type))
-		{
-		  if (DECL_NAME (parm))
-		    warning_at (input_location, 0,
-				"parameter %u (%q+D) has void type",
-				parmno, parm);
-		  else
-		    warning_at (DECL_SOURCE_LOCATION (parm), 0,
-				"parameter %u has void type",
-				parmno);
 		}
 	    }
 
@@ -8627,12 +8616,14 @@ get_parm_info (bool ellipsis, tree expr)
 	  if (TREE_ASM_WRITTEN (decl))
 	    error_at (b->locus,
 		      "parameter %q+D has just a forward declaration", decl);
-	  /* Check for (..., void, ...) and issue an error.  */
-	  else if (VOID_TYPE_P (type) && !DECL_NAME (decl))
+	  /* Check for (..., void, ...) and named void parameters and issue an
+	     error.  */
+	  else if (VOID_TYPE_P (type))
 	    {
 	      if (!gave_void_only_once_err)
 		{
-		  error_at (b->locus, "%<void%> must be the only parameter");
+		  error_at (b->locus,
+			    "%<void%> must be the only parameter and unnamed");
 		  gave_void_only_once_err = true;
 		}
 	    }
