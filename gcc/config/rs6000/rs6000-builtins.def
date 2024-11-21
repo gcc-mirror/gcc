@@ -2012,7 +2012,7 @@
     VADDUDM addv2di3 {}
 
   const vsq __builtin_altivec_vadduqm (vsq, vsq);
-    VADDUQM altivec_vadduqm {}
+    VADDUQM addv1ti3 {}
 
   const vsll __builtin_altivec_vbpermq (vsc, vsc);
     VBPERMQ altivec_vbpermq {}
@@ -2150,7 +2150,7 @@
     VSUBUDM subv2di3 {}
 
   const vsq __builtin_altivec_vsubuqm (vsq, vsq);
-    VSUBUQM altivec_vsubuqm {}
+    VSUBUQM subv1ti3 {}
 
   const vsll __builtin_altivec_vupkhsw (vsi);
     VUPKHSW altivec_vupkhsw {}

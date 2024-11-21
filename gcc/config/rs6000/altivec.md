@@ -4426,7 +4426,7 @@
 ;; ISA 2.07 128-bit binary support to target the VMX/altivec registers without
 ;; having to worry about the register allocator deciding GPRs are better.
 
-(define_insn "altivec_vadduqm"
+(define_insn "addv1ti3"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
 	(plus:V1TI (match_operand:V1TI 1 "register_operand" "v")
 		   (match_operand:V1TI 2 "register_operand" "v")))]
@@ -4443,7 +4443,7 @@
   "vaddcuq %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "altivec_vsubuqm"
+(define_insn "subv1ti3"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
 	(minus:V1TI (match_operand:V1TI 1 "register_operand" "v")
 		    (match_operand:V1TI 2 "register_operand" "v")))]
