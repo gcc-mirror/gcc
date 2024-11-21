@@ -2354,6 +2354,10 @@ extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt,
 				  enum vect_cost_model_location);
+extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
+				  enum vect_cost_for_stmt, stmt_vec_info,
+				  slp_tree, tree, int,
+				  enum vect_cost_model_location);
 
 /* Overload of record_stmt_cost with VECTYPE derived from STMT_INFO.  */
 
@@ -2375,12 +2379,8 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 		  slp_tree node,
 		  int misalign, enum vect_cost_model_location where)
 {
-  if (node)
-    return record_stmt_cost (body_cost_vec, count, kind, node,
-			     STMT_VINFO_VECTYPE (stmt_info), misalign, where);
-  else
-    return record_stmt_cost (body_cost_vec, count, kind, stmt_info,
-			     STMT_VINFO_VECTYPE (stmt_info), misalign, where);
+  return record_stmt_cost (body_cost_vec, count, kind, stmt_info, node,
+			   STMT_VINFO_VECTYPE (stmt_info), misalign, where);
 }
 
 extern void vect_finish_replace_stmt (vec_info *, stmt_vec_info, gimple *);
@@ -2411,12 +2411,12 @@ extern bool vect_nop_conversion_p (stmt_vec_info);
 extern opt_result vect_analyze_stmt (vec_info *, stmt_vec_info, bool *,
 				     slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
-extern void vect_get_load_cost (vec_info *, stmt_vec_info, int,
+extern void vect_get_load_cost (vec_info *, stmt_vec_info, slp_tree, int,
 				dr_alignment_support, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
 				stmt_vector_for_cost *, bool);
-extern void vect_get_store_cost (vec_info *, stmt_vec_info, int,
+extern void vect_get_store_cost (vec_info *, stmt_vec_info, slp_tree, int,
 				 dr_alignment_support, int,
 				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (vec_info *, enum tree_code, tree);

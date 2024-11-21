@@ -1729,12 +1729,14 @@ vect_get_data_access_cost (vec_info *vinfo, dr_vec_info *dr_info,
     ncopies = vect_get_num_copies (loop_vinfo, STMT_VINFO_VECTYPE (stmt_info));
 
   if (DR_IS_READ (dr_info->dr))
-    vect_get_load_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
-			misalignment, true, inside_cost,
-			outside_cost, prologue_cost_vec, body_cost_vec, false);
+    vect_get_load_cost (vinfo, stmt_info, NULL, ncopies,
+			alignment_support_scheme, misalignment, true,
+			inside_cost, outside_cost, prologue_cost_vec,
+			body_cost_vec, false);
   else
-    vect_get_store_cost (vinfo,stmt_info, ncopies, alignment_support_scheme,
-			 misalignment, inside_cost, body_cost_vec);
+    vect_get_store_cost (vinfo,stmt_info, NULL, ncopies,
+			 alignment_support_scheme, misalignment, inside_cost,
+			 body_cost_vec);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
