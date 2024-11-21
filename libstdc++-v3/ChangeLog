@@ -1,3 +1,16 @@
+2024-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_set.h (set::find): Use const_iterator in
+	return type, not iterator.
+
+2024-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117686
+	* include/bits/hashtable.h (_Hashtable::_M_emplace_uniq):
+	Adjust usage of __is_key_type to avoid false positive.
+	* testsuite/23_containers/unordered_set/insert/117686.cc:
+	New test.
+
 2024-11-19  Jason Merrill  <jason@redhat.com>
 
 	* src/c++23/libstdc++.modules.json.in: Remove C++ comment.

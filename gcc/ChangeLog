@@ -1,3 +1,380 @@
+2024-11-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* tree-cfg.cc (assign_discriminators): Fix incorrect value passed to
+	next_discriminator_for_locus().
+
+2024-11-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/116587
+	* lra-assigns.cc (find_all_spills_for): Consider all pseudos whose
+	classes intersect given pseudo class.
+
+2024-11-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* read-md.h (class rtx_reader): Don't include m_reuse_rtx_by_id
+	when GENERATOR_FILE is defined.
+	* read-rtl.cc (rtx_reader::read_rtx_code): Disable reuse_rtx
+	support when GENERATOR_FILE is defined.
+
+2024-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117709
+	* tree-vect-stmts.cc (get_group_load_store_type): Only
+	set *poffset when we end up with VMAT_CONTIGUOUS_DOWN
+	or VMAT_CONTIGUOUS_REVERSE.
+
+2024-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117698
+	* tree-vect-stmts.cc (get_group_load_store_type): Properly
+	disregard alignment for VMAT_STRIDED_SLP and VMAT_INVARIANT.
+	(vectorizable_load): Adjust guard for dumping whether we
+	vectorize and unaligned access.
+	(vectorizable_store): Likewise.
+
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* builtins.cc (builtin_fnspec): Handle BUILT_IN_OMP_GET_MAPPED_PTR.
+	* gimple-low.cc (lower_stmt): Handle GIMPLE_OMP_DISPATCH.
+	* gimple-pretty-print.cc (dump_gimple_omp_dispatch): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_DISPATCH.
+	* gimple-walk.cc (walk_gimple_stmt): Likewise.
+	* gimple.cc (gimple_build_omp_dispatch): New function.
+	(gimple_copy): Handle GIMPLE_OMP_DISPATCH.
+	* gimple.def (GIMPLE_OMP_DISPATCH): Define.
+	* gimple.h (gimple_build_omp_dispatch): Declare.
+	(gimple_has_substatements): Handle GIMPLE_OMP_DISPATCH.
+	(gimple_omp_dispatch_clauses): New function.
+	(gimple_omp_dispatch_clauses_ptr): Likewise.
+	(gimple_omp_dispatch_set_clauses): Likewise.
+	(gimple_return_set_retval): Handle GIMPLE_OMP_DISPATCH.
+	* gimplify.cc (enum omp_region_type): Add ORT_DISPATCH.
+	(struct gimplify_omp_ctx): Add in_call_args.
+	(gimplify_call_expr): Handle need_device_ptr arguments.
+	(is_gimple_stmt): Handle OMP_DISPATCH.
+	(gimplify_scan_omp_clauses): Handle OMP_CLAUSE_DEVICE in a dispatch
+	construct. Handle OMP_CLAUSE_NOVARIANTS and OMP_CLAUSE_NOCONTEXT.
+	(omp_has_novariants): New function.
+	(omp_has_nocontext): Likewise.
+	(omp_construct_selector_matches): Handle OMP_DISPATCH with nocontext
+	clause.
+	(find_ifn_gomp_dispatch): New function.
+	(gimplify_omp_dispatch): Likewise.
+	(gimplify_expr): Handle OMP_DISPATCH.
+	* gimplify.h (omp_has_novariants): Declare.
+	* internal-fn.cc (expand_GOMP_DISPATCH): New function.
+	* internal-fn.def (GOMP_DISPATCH): Define.
+	* omp-builtins.def (BUILT_IN_OMP_GET_MAPPED_PTR): Define.
+	(BUILT_IN_OMP_GET_DEFAULT_DEVICE): Define.
+	(BUILT_IN_OMP_SET_DEFAULT_DEVICE): Define.
+	* omp-general.cc (omp_construct_traits_to_codes): Add OMP_DISPATCH.
+	(struct omp_ts_info): Add dispatch.
+	(omp_resolve_declare_variant): Handle novariants. Adjust
+	DECL_ASSEMBLER_NAME.
+	* omp-low.cc (scan_omp_1_stmt): Handle GIMPLE_OMP_DISPATCH.
+	(lower_omp_dispatch): New function.
+	(lower_omp_1): Call it.
+	* tree-inline.cc (remap_gimple_stmt): Handle GIMPLE_OMP_DISPATCH.
+	(estimate_num_insns): Handle GIMPLE_OMP_DISPATCH.
+
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* builtin-types.def (BT_FN_PTR_CONST_PTR_INT): New.
+	* omp-selectors.h (enum omp_ts_code): Add OMP_TRAIT_CONSTRUCT_DISPATCH.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_NOVARIANTS
+	and OMP_CLAUSE_NOCONTEXT.
+	(dump_generic_node): Handle OMP_DISPATCH.
+	* tree.cc (omp_clause_num_ops): Add OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+	(omp_clause_code_name): Add "novariants" and "nocontext".
+	* tree.def (OMP_DISPATCH): New.
+	* tree.h (OMP_DISPATCH_BODY): New macro.
+	(OMP_DISPATCH_CLAUSES): New macro.
+	(OMP_CLAUSE_NOVARIANTS_EXPR): New macro.
+	(OMP_CLAUSE_NOCONTEXT_EXPR): New macro.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (sme2p1): New extension.
+	* doc/invoke.texi: Document it.
+	* config/aarch64/aarch64.h (TARGET_STREAMING_SME2p1): New macro.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Conditionally define __ARM_FEATURE_SME2p1.
+	* config/aarch64/iterators.md (UNSPEC_SME_READZ, UNSPEC_SME_READZ_HOR)
+	(UNSPEC_SME_READZ_VER): New unspecs.
+	(optab, hv): Handle them.
+	(SME_READZ_HV): New int iterator.
+	* config/aarch64/aarch64-sme.md
+	(UNSPEC_SME_ZERO_SLICES): New unspec.
+	(@aarch64_sme_<SME_READZ_HV:optab><v_int_container><mode>)
+	(*aarch64_sme_<SME_READZ_HV:optab><v_int_container><mode>_plus)
+	(@aarch64_sme_<SME_READZ_HV:optab><VNx1TI_ONLY:mode><SVE_FULL:mode>)
+	(@aarch64_sme_<SME_READZ_HV:optab><SVE_FULLx24:mode><mode>)
+	(*aarch64_sme_<SME_READZ_HV:optab><SVE_FULLx24:mode><mode>_plus)
+	(@aarch64_sme_readz<mode>, *aarch64_sme_readz<mode>_plus)
+	(@aarch64_sme_zero_za_slices<mode>): New patterns.
+	(*aarch64_sme_zero_za_slices<mode>_plus): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.h
+	(inherent_za_slice): Declare.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(inherent_za_slice_def, inherent_za_slice): New shape.
+	* config/aarch64/aarch64-sve-builtins-sme.h (svreadz_za)
+	(svreadz_hor_za, svreadz_ver_za): Declare.
+	* config/aarch64/aarch64-sve-builtins-sme.cc
+	(svread_za_slice_base): New class, split out from...
+	(svread_za_impl): ...here.
+	(svreadz_za_impl, svreadz_za_tile_impl): New type aliases.
+	(zero_slices_mode): New function.
+	(svzero_za_impl::expand): Handle the slice forms.
+	(svreadz_za, svreadz_hor_za, svreadz_ver_za): New functions.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Add the SME2p1
+	instructions.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(sme-b16b16): New extension.
+	* doc/invoke.texi: Document it.
+	* config/aarch64/aarch64.h (TARGET_STREAMING_SME_B16B16): New macro.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Conditionally define __ARM_FEATURE_SME_B16B16.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Add SME_B16B16 forms
+	of existing intrinsics.
+	* config/aarch64/aarch64-sme.md
+	(@aarch64_sme_<SME_BINARY_SLICE_HSDF:optab><mode>)
+	(*aarch64_sme_<SME_BINARY_SLICE_HSDF:optab><mode>_plus)
+	(@aarch64_sme_<SME_FP_TERNARY_SLICE:optab><mode><mode>)
+	(*aarch64_sme_<SME_FP_TERNARY_SLICE:optab><mode><mode>_plus)
+	(@aarch64_sme_single_<SME_FP_TERNARY_SLICE:optab><mode><mode>)
+	(*aarch64_sme_single_<SME_FP_TERNARY_SLICE:optab><mode><mode>_plus)
+	(@aarch64_sme_lane_<SME_FP_TERNARY_SLICE:optab><mode><mode>)
+	(*aarch64_sme_lane_<SME_FP_TERNARY_SLICE:optab><mode><mode>)
+	(@aarch64_sme_<SME_FP_MOP:optab><mode><mode>): Extend to BF16 modes.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_za_h_bfloat): New
+	type macro.
+	* config/aarch64/iterators.md (SME_ZA_HSDFx24): Add BF16 modes.
+	(SME_MOP_HSDF): Likewise.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(sme-f16f16): New extension.
+	* doc/invoke.texi: Document it.  Also document that sme-i16i64 and
+	sme-f64f64 enable SME.
+	* config/aarch64/aarch64.h (TARGET_STREAMING_SME_F16F16): New macro.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Conditionally define __ARM_FEATURE_SME_F16F16.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svcvt, svcvtl): Add
+	new SME_F16F16 intrinsics.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Add SME_F16F16 forms
+	of existing intrinsics.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_h_float)
+	(TYPES_cvt_f32_f16, TYPES_za_h_float): New type macros.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svcvt_impl::expand): Add sext_optab as another possibility.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svcvtl): Declare.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svcvtl_impl): New class.
+	(svcvtl): New function.
+	* config/aarch64/iterators.md (VNx8SF_ONLY): New mode iterator.
+	(SME_ZA_SDFx24): Replace with...
+	(SME_ZA_HSDFx24): ...this.
+	(SME_MOP_SDF): Replace with...
+	(SME_MOP_HSDF): ...this.
+	(SME_BINARY_SLICE_SDF): Replace with...
+	(SME_BINARY_SLICE_HSDF): ...this.
+	* config/aarch64/aarch64-sve2.md (extendvnx8hfvnx8sf2)
+	(@aarch64_sve_cvtl<mode>): New patterns.
+	* config/aarch64/aarch64-sme.md
+	(@aarch64_sme_<SME_BINARY_SLICE_SDF:optab><mode>): Extend to...
+	(@aarch64_sme_<SME_BINARY_SLICE_HSDF:optab><mode>): ...this.
+	(*aarch64_sme_<SME_BINARY_SLICE_SDF:optab><mode>_plus): Extend to...
+	(*aarch64_sme_<SME_BINARY_SLICE_HSDF:optab><mode>_plus): ...this.
+	(@aarch64_sme_<SME_FP_TERNARY_SLICE:optab><mode><mode>): Extend to
+	HF modes.
+	(*aarch64_sme_<SME_FP_TERNARY_SLICE:optab><mode><mode>_plus)
+	(@aarch64_sme_single_<SME_FP_TERNARY_SLICE:optab><mode><mode>)
+	(*aarch64_sme_single_<SME_FP_TERNARY_SLICE:optab><mode><mode>_plus)
+	(@aarch64_sme_lane_<SME_FP_TERNARY_SLICE:optab><mode><mode>)
+	(*aarch64_sme_lane_<SME_FP_TERNARY_SLICE:optab><mode><mode>)
+	(@aarch64_sme_<SME_FP_MOP:optab><mode><mode>): Likewise.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(sve-b16b16): New extension.
+	* doc/invoke.texi: Document it.
+	* config/aarch64/aarch64.h (TARGET_SME_B16B16, TARGET_SVE2_OR_SME2)
+	(TARGET_SSVE_B16B16): New macros.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Conditionally define __ARM_FEATURE_SVE_B16B16
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Add AARCH64_FL_SVE2
+	to the SVE2p1 requirements.  Add SVE_B16B16 forms of existing
+	intrinsics.
+	* config/aarch64/aarch64-sve-builtins.cc (type_suffixes): Treat
+	bfloat as a floating-point type.
+	(TYPES_h_bfloat): New macro.
+	* config/aarch64/aarch64.md (is_bf16, is_rev, supports_bf16_rev)
+	(mode_enabled): New attributes.
+	(enabled): Test mode_enabled.
+	* config/aarch64/iterators.md (SVE_FULL_F_BF): New mode iterator.
+	(SVE_CLAMP_F): Likewise.
+	(SVE_Fx24): Add BF16 modes when TARGET_SSVE_B16B16.
+	(sve_lane_con): Handle BF16 modes.
+	(b): Handle SF and DF modes.
+	(is_bf16): New mode attribute.
+	(supports_bf16, supports_bf16_rev): New int attributes.
+	* config/aarch64/predicates.md
+	(aarch64_sve_float_maxmin_immediate): Reject BF16 modes.
+	* config/aarch64/aarch64-sve.md
+	(*post_ra_<sve_fp_op><mode>3): Add BF16 support, and likewise
+	for the associated define_split.
+	(<optab:SVE_COND_FP_BINARY_OPTAB><mode>): Add BF16 support.
+	(@cond_<optab:SVE_COND_FP_BINARY><mode>): Likewise.
+	(*cond_<optab:SVE_COND_FP_BINARY><mode>_2_relaxed): Likewise.
+	(*cond_<optab:SVE_COND_FP_BINARY><mode>_2_strict): Likewise.
+	(*cond_<optab:SVE_COND_FP_BINARY><mode>_3_relaxed): Likewise.
+	(*cond_<optab:SVE_COND_FP_BINARY><mode>_3_strict): Likewise.
+	(*cond_<optab:SVE_COND_FP_BINARY><mode>_any_relaxed): Likewise.
+	(*cond_<optab:SVE_COND_FP_BINARY><mode>_any_strict): Likewise.
+	(@aarch64_mul_lane_<mode>): Likewise.
+	(<optab:SVE_COND_FP_TERNARY><mode>): Likewise.
+	(@aarch64_pred_<optab:SVE_COND_FP_TERNARY><mode>): Likewise.
+	(@cond_<optab:SVE_COND_FP_TERNARY><mode>): Likewise.
+	(*cond_<optab:SVE_COND_FP_TERNARY><mode>_4_relaxed): Likewise.
+	(*cond_<optab:SVE_COND_FP_TERNARY><mode>_4_strict): Likewise.
+	(*cond_<optab:SVE_COND_FP_TERNARY><mode>_any_relaxed): Likewise.
+	(*cond_<optab:SVE_COND_FP_TERNARY><mode>_any_strict): Likewise.
+	(@aarch64_<optab:SVE_FP_TERNARY_LANE>_lane_<mode>): Likewise.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_pred_<optab:SVE_COND_FP_BINARY><mode>): Define BF16 version.
+	(@aarch64_sve_fclamp<mode>): Add BF16 support.
+	(*aarch64_sve_fclamp<mode>_x): Likewise.
+	(*aarch64_sve_<maxmin_uns_op><SVE_Fx24:mode>): Likewise.
+	(*aarch64_sve_single_<maxmin_uns_op><SVE_Fx24:mode>): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_sve_float_arith_immediate_p)
+	(aarch64_sve_float_mul_immediate_p): Return false for BF16 modes.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sme.md (@aarch64_sme_write<mode>)
+	(*aarch64_sme_write<mode>_plus): Use UNSPEC_SME_WRITE instead
+	of UNSPEC_SME_READ.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SME_READ): Rename to...
+	(SME_READ_HV): ...this.
+	(SME_WRITE): Rename to...
+	(SME_WRITE_HV): ...this.
+	* config/aarch64/aarch64-sme.md: Update accordingly.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_COND_FP): New code attribute.
+	* config/aarch64/aarch64-sve.md: Use a single define_split to
+	handle the conversion of predicated FADD, FSUB, and FMUL into
+	unpredicated forms.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SME_ZA_SDF_I): Delete.
+	(SME_MOP_HSDF): Replace with...
+	(SME_MOP_SDF): ...this.
+	* config/aarch64/aarch64-sme.md: Change the non-widening FMLA and
+	FMLS patterns so that both mode parameters are the same, rather than
+	using both SME_ZA_SDF_I and SME_ZA_SDFx24 and checking that their
+	element sizes are the same.  Split the FMOPA and FMOPS patterns
+	into separate non-widening and widening forms, then update the
+	non-widening forms in a similar way to FMLA and FMLS.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(sme_2mode_function_t::expand): If the two type suffixes have the same
+	element size, use the vector tuple mode for both mode parameters.
+
+2024-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (legitimize_tls_address)
+	<TLS_MODEL_INITIAL_EXEC>: Remove 64-bit Solaris ld workaround.
+	* config/i386/i386.md (UNSPEC_TLS_IE_SUN): Remove.
+	(tls_initial_exec_64_sun): Remove.
+
+2024-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117574
+	* tree-ssa-loop-niter.cc (number_of_iterations_lt_to_ne):
+	Use the obvious may_be_zero condition.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* machmode.h (opt_mode::opt_mode): New overload.
+	* optabs-query.h (get_absneg_bit_mode): Declare.
+	* optabs-query.cc (get_absneg_bit_mode): New function, split
+	out from expand_absneg_bit.
+	(can_open_code_p): Use get_absneg_bit_mode.
+	* optabs.cc (expand_absneg_bit): Likewise.  Take an outer and inner
+	mode, rather than just one.  Handle vector modes.
+	(expand_unop, expand_abs_nojump): Update calls accordingly.
+	Handle vector modes.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-data-refs.cc (vect_supportable_dr_alignment): Use
+	can_implement_p instead of optab_handler.
+	* tree-vect-generic.cc (add_rshift, expand_vector_divmod): Likewise.
+	(optimize_vector_constructor, type_for_widest_vector_mode): Likewise.
+	(lower_vec_perm, expand_vector_operations_1): Likewise.
+	* tree-vect-loop.cc (have_whole_vector_shift): Likewise.
+	* tree-vect-patterns.cc (vect_recog_rotate_pattern): Likewise.
+	(target_has_vecop_for_code, vect_recog_mult_pattern): Likewise.
+	(vect_recog_divmod_pattern): Likewise.
+	* tree-vect-stmts.cc (vect_supportable_shift, vectorizable_shift)
+	(scan_store_can_perm_p, check_scan_store, vectorizable_store)
+	(vectorizable_load, vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+
+2024-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* optabs-query.cc (can_open_code_p, can_implement_p): Declare.
+	* optabs-query.h (can_open_code_p, can_implement_p): New functions.
+	* optabs-tree.cc (target_supports_op_p): Use can_implement_p.
+	* tree-vect-stmts.cc (vectorizable_operation): Likewise.
+	* tree-vect-generic.cc (get_compute_type): Likewise.  Remove code
+	parameter.
+	(expand_vector_scalar_condition, expand_vector_conversion)
+	(expand_vector_operations_1): Update calls accordingly.
+
+2024-11-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.cc (arm_mve_dlstp_check_dec_counter): Call
+	single_pred_p to verify it's safe to call single_pred.
+
+2024-11-20  Feng Wang  <wangfeng@eswincomputing.com>
+
+	PR target/117669
+	* config/riscv/vector-iterators.md:
+
+2024-11-20  MayShao-oc  <MayShao-oc@zhaoxin.com>
+
+	PR target/117438
+	* config/i386/i386-features.cc (TARGET_ALIGN_TIGHT_LOOPS):
+	default true in all processors except for m_ZHAOXIN, m_CASCADELAKE, and
+	m_SKYLAKE_AVX512.
+	* config/i386/i386.h (TARGET_ALIGN_TIGHT_LOOPS): New Macro.
+	* config/i386/x86-tune.def (X86_TUNE_ALIGN_TIGHT_LOOPS):
+	New tune
+
+2024-11-20  yulong  <shiyulong@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New.
+	* config/riscv/riscv.opt: New.
+
+2024-11-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117649
+	* config/riscv/riscv.md (branch on masked/shifted operands): Use
+	arithmetic rather than logical shift for operand 1.
+
 2024-11-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54378

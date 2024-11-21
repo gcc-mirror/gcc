@@ -1,3 +1,31 @@
+2024-11-20  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/114266
+	* c-decl.cc (build_compound_literal): Diagnose array of unknown
+	size with empty initializer for C23.
+
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_dispatch): New function.
+	(c_parser_omp_clause_name): Handle nocontext and novariants clauses.
+	(c_parser_omp_clause_novariants): New function.
+	(c_parser_omp_clause_nocontext): Likewise.
+	(c_parser_omp_all_clauses): Handle nocontext and novariants clauses.
+	(c_parser_omp_dispatch_body): New function adapted from
+	c_parser_expr_no_commas.
+	(OMP_DISPATCH_CLAUSE_MASK): Define.
+	(c_parser_omp_dispatch): New function.
+	(c_finish_omp_declare_variant): Parse adjust_args.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_DISPATCH.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+
+2024-11-20  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/115515
+	* c-typeck.cc (check_constexpr_init): Do not call int_fits_type_p
+	for arguments that are not integer constant expressions.
+
 2024-11-19  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/114869

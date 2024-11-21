@@ -1,3 +1,133 @@
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_34): New ABI tag.
+	* docs/topics/contexts.rst: Document gcc_jit_context_set_output_ident.
+	* jit-playback.cc (set_output_ident): New method.
+	* jit-playback.h (set_output_ident): New method.
+	* jit-recording.cc (recording::context::set_output_ident,
+	recording::output_ident::output_ident,
+	recording::output_ident::~output_ident,
+	recording::output_ident::replay_into,
+	recording::output_ident::make_debug_string,
+	recording::output_ident::write_reproducer): New methods.
+	* jit-recording.h (class output_ident): New class.
+	* libgccjit.cc (gcc_jit_context_set_output_ident): New function.
+	* libgccjit.h (gcc_jit_context_set_output_ident): New function.
+	* libgccjit.map: New function.
+
+2024-01-18  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_33): New ABI tag.
+	* docs/topics/functions.rst: Document gcc_jit_function_new_temp.
+	* jit-playback.cc (new_local): Add support for temporary
+	variables.
+	* jit-recording.cc (recording::function::new_temp): New method.
+	(recording::local::write_reproducer): Support temporary
+	variables.
+	* jit-recording.h (new_temp): New method.
+	* libgccjit.cc (gcc_jit_function_new_temp): New function.
+	* libgccjit.h (gcc_jit_function_new_temp): New function.
+	* libgccjit.map: New function.
+
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/108762
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_32): New ABI tag.
+	* docs/topics/functions.rst: Add documentation for the function
+	gcc_jit_context_get_target_builtin_function.
+	* dummy-frontend.cc: Include headers target.h, jit-recording.h,
+	print-tree.h, unordered_map and string, new variables (target_builtins,
+	target_function_types, and target_builtins_ctxt), new function
+	(tree_type_to_jit_type).
+	* jit-builtins.cc: Specify that the function types are not from
+	target builtins.
+	* jit-playback.cc: New argument is_target_builtin to new_function.
+	* jit-playback.h: New argument is_target_builtin to
+	new_function.
+	* jit-recording.cc: New argument is_target_builtin to
+	new_function_type, function_type constructor and function
+	constructor, new function
+	(get_target_builtin_function).
+	* jit-recording.h: Include headers string and unordered_map, new
+	variable target_function_types, new argument is_target_builtin
+	to new_function_type, function_type and function, new functions
+	(get_target_builtin_function, copy).
+	* libgccjit.cc: New function
+	(gcc_jit_context_get_target_builtin_function).
+	* libgccjit.h: New function
+	(gcc_jit_context_get_target_builtin_function).
+	* libgccjit.map: New functions
+	(gcc_jit_context_get_target_builtin_function).
+
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-common.h: Add forward declaration of memento_of_get_aligned.
+	* jit-recording.h (type::is_same_type_as): Compare integer
+	types.
+	(dyn_cast_aligned_type): New method.
+	(type::is_aligned, memento_of_get_aligned::is_same_type_as,
+	memento_of_get_aligned::is_aligned): new methods.
+
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/contexts.rst: Add documentation for new option.
+	* jit-recording.cc (recording::context::get_str_option): New
+	method.
+	* jit-recording.h (get_str_option): New method.
+	* libgccjit.cc (gcc_jit_context_new_function): Allow special
+	characters in function names.
+	* libgccjit.h (enum gcc_jit_str_option): New option.
+
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/112602
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_31): New ABI tag.
+	* docs/topics/expressions.rst: Document
+	gcc_jit_context_new_rvalue_vector_perm and
+	gcc_jit_context_new_vector_access.
+	* jit-playback.cc (playback::context::new_rvalue_vector_perm,
+	common_mark_addressable_vec,
+	gnu_vector_type_p,
+	lvalue_p,
+	convert_vector_to_array_for_subscript,
+	new_vector_access): new functions.
+	* jit-playback.h (new_rvalue_vector_perm, new_vector_access):
+	New functions.
+	* jit-recording.cc (recording::context::new_rvalue_vector_perm,
+	recording::context::new_vector_access,
+	memento_of_new_rvalue_vector_perm,
+	recording::memento_of_new_rvalue_vector_perm::replay_into,
+	recording::memento_of_new_rvalue_vector_perm::visit_children,
+	recording::memento_of_new_rvalue_vector_perm::make_debug_string,
+	recording::memento_of_new_rvalue_vector_perm::write_reproducer,
+	recording::vector_access::replay_into,
+	recording::vector_access::visit_children,
+	recording::vector_access::make_debug_string,
+	recording::vector_access::write_reproducer): New methods.
+	* jit-recording.h (class memento_of_new_rvalue_vector_perm,
+	class vector_access): New classes.
+	* libgccjit.cc (gcc_jit_context_new_vector_access,
+	gcc_jit_context_new_rvalue_vector_perm): New functions.
+	* libgccjit.h (gcc_jit_context_new_rvalue_vector_perm,
+	gcc_jit_context_new_vector_access): New functions.
+	* libgccjit.map: New functions.
+
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/113343
+	* jit-playback.cc (new_rvalue_from_const): Fix to have the
+	correct value when cross-compiling.
+
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* libgccjit.cc (RETURN_IF_FAIL_PRINTF3): New macro.
+	(gcc_jit_block_add_assignment_op): Add numeric checks.
+
+2024-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* dummy-frontend.cc (jit_langhook_init): Send flag_signed_char
+	argument to build_common_tree_nodes.
+
 2024-11-04  Antoni Boucher  <bouanto@zoho.com>
 
 	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_30): New ABI tag.

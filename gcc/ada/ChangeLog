@@ -1,3 +1,20 @@
+2024-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117538
+	PR ada/117708
+	* Makefile.rtl (GNU Hurd): Add $(TRASYM_DWARF_UNIX_PAIRS).
+	(x86-64 kfreebsd): Likewise.
+	(aarch64 FreeBSD): Likewise.
+	(x86-64 DragonFly): Likewise.
+	(S390 Linux): Likewise and add Linux version of s-tsmona.adb.
+	(Mips Linux): Likewise.
+	(SPARC Linux): Likewise.
+	(HP/PA Linux): Linux.
+	(M68K Linux): Likewise.
+	(SH4 Linux): Likewise.
+	(Alpha Linux): Likewise.
+	(RISC-V Linux): Likewise.
+
 2024-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/117538

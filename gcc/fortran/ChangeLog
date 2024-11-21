@@ -1,3 +1,29 @@
+2024-11-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83135
+	* expr.cc (sym_is_from_ancestor): New helper function.
+	(gfc_check_vardef_context): Refine checking of PROTECTED attribute
+	of symbols that are indirectly use-associated in a submodule.
+
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* types.def (BT_FN_PTR_CONST_PTR_INT): Declare.
+
+2024-11-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-intrinsic.cc
+	(walk_inline_intrinsic_minmaxloc): Add a scalar element for BACK as
+	first item of the chain if BACK is present and there will be nested
+	loops.
+	(gfc_conv_intrinsic_minmaxloc): Evaluate BACK using an inherited
+	scalarization chain if there is a nested loop.
+
+2024-11-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Only get the size
+	along DIM instead of the full size if DIM is present.
+
 2024-11-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/90608

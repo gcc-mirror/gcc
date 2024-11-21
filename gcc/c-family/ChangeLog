@@ -1,3 +1,13 @@
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-attribs.cc (c_common_gnu_attributes): Add attribute for adjust_args
+	need_device_ptr.
+	* c-omp.cc (c_omp_directives): Uncomment dispatch.
+	* c-pragma.cc (omp_pragmas): Add dispatch.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_DISPATCH.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_NOCONTEXT and
+	PRAGMA_OMP_CLAUSE_NOVARIANTS.
+
 2024-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117641

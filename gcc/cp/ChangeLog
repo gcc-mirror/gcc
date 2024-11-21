@@ -1,3 +1,33 @@
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* decl.cc (omp_declare_variant_finalize_one): Set adjust_args
+	need_device_ptr attribute.
+	* parser.cc (cp_parser_direct_declarator): Update call to
+	cp_parser_late_return_type_opt.
+	(cp_parser_late_return_type_opt): Add 'tree parms' parameter. Update
+	call to cp_parser_late_parsing_omp_declare_simd.
+	(cp_parser_omp_clause_name): Handle nocontext and novariants clauses.
+	(cp_parser_omp_clause_novariants): New function.
+	(cp_parser_omp_clause_nocontext): Likewise.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_NOVARIANTS and
+	PRAGMA_OMP_CLAUSE_NOCONTEXT.
+	(cp_parser_omp_dispatch_body): New function, inspired from
+	cp_parser_assignment_expression and cp_parser_postfix_expression.
+	(OMP_DISPATCH_CLAUSE_MASK): Define.
+	(cp_parser_omp_dispatch): New function.
+	(cp_finish_omp_declare_variant): Add parameter. Handle adjust_args
+	clause.
+	(cp_parser_late_parsing_omp_declare_simd): Add parameter. Update calls
+	to cp_finish_omp_declare_variant and cp_finish_omp_declare_variant.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_DISPATCH.
+	(cp_parser_pragma): Likewise.
+	* semantics.cc (finish_omp_clauses): Handle OMP_CLAUSE_NOCONTEXT and
+	OMP_CLAUSE_NOVARIANTS.
+	* pt.cc (tsubst_omp_clauses): Handle OMP_CLAUSE_NOCONTEXT and
+	OMP_CLAUSE_NOVARIANTS.
+	(tsubst_stmt): Handle OMP_DISPATCH.
+	(tsubst_expr): Handle IFN_GOMP_DISPATCH.
+
 2024-11-19  Jason Merrill  <jason@redhat.com>
 
 	* decl2.cc (cp_handle_deprecated_or_unavailable): Avoid redundant
