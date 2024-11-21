@@ -1076,7 +1076,15 @@ complex_mul_pattern::matches (complex_operation_t op,
   enum _conj_status status;
   if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
 				     right_op, false, &status))
-    return IFN_LAST;
+    {
+      /* Try swapping the order and re-trying since multiplication is
+	 commutative.  */
+      std::swap (left_op[0], left_op[1]);
+      std::swap (right_op[0], right_op[1]);
+      if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
+					 right_op, false, &status))
+	return IFN_LAST;
+    }
 
   if (status == CONJ_NONE)
     {
@@ -1293,7 +1301,15 @@ complex_fms_pattern::matches (complex_operation_t op,
   enum _conj_status status;
   if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
 				     left_op, true, &status))
-    return IFN_LAST;
+    {
+      /* Try swapping the order and re-trying since multiplication is
+	 commutative.  */
+      std::swap (left_op[0], left_op[1]);
+      std::swap (right_op[0], right_op[1]);
+      if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
+					 left_op, true, &status))
+	return IFN_LAST;
+    }
 
   if (status == CONJ_NONE)
     ifn = IFN_COMPLEX_FMS;
