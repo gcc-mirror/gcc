@@ -133,15 +133,35 @@
   (and (match_code "const_int")
        (match_test "ival == 7")))
 
+(define_constraint "C7c"
+  "Constant integer the range 7 @dots{} 12."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 7, 12)")))
+
+(define_constraint "C14"
+  "Constant integer 14."
+  (and (match_code "const_int")
+       (match_test "ival == 14")))
+
 (define_constraint "C15"
   "Constant integer 15."
   (and (match_code "const_int")
        (match_test "ival == 15")))
 
+(define_constraint "C22"
+  "Constant integer 22."
+  (and (match_code "const_int")
+       (match_test "ival == 22")))
+
 (define_constraint "C23"
   "Constant integer 23."
   (and (match_code "const_int")
        (match_test "ival == 23")))
+
+(define_constraint "C30"
+  "Constant integer 30."
+  (and (match_code "const_int")
+       (match_test "ival == 30")))
 
 (define_constraint "C31"
   "Constant integer 31."

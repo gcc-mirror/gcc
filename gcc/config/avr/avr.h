@@ -611,10 +611,11 @@ struct GTY(()) machine_function
      __builtin_return_address.  */
   bool use_L__stack_usage;
 
-  /* Counts how many times the execute() method of the avr-fuse-add
+  /* Counts how many times the execute() method of the avr-fuse-add pass
      has been invoked.  The count is even increased when the optimization
-     itself is not run.  This purpose of this variable is to provide
-     information about where in the pass sequence we are.  */
+     itself is not run.  The purpose of this variable is to provide
+     information about where in the pass sequence we are.
+     It is used in insn / split conditons.  */
   int n_avr_fuse_add_executed;
 };
 

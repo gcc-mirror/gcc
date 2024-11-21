@@ -905,7 +905,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdouble=@var{bits}  -mlong-double=@var{bits}
 -mn_flash=@var{size}  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
--mrodata-in-ram  -mfract-convert-truncate
+-mrodata-in-ram  -mfract-convert-truncate  -msplit-bit-shift
 -mshort-calls  -mskip-bug  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
@@ -24251,6 +24251,15 @@ adiw r26, const   ; X += const
 ld   @var{Rn}, X        ; @var{Rn} = *X
 sbiw r26, const   ; X -= const
 @end example
+
+@opindex msplit-bit-shift
+@item -msplit-bit-shift
+Split multi-byte shifts into a shift with a byte offset and a residual
+shift with a non-byte offset.  This optimization is turned on per default
+for @option{-O2} and higher, including @option{-Os} but excluding
+@option{-Oz}.  To date, only 4-byte shifts with a shift offset of
+at least 17 are split.  Splitting of shifts with an offset that is
+a multiple of 8 is controlled by @option{-mfuse-move}.
 
 @opindex mtiny-stack
 @item -mtiny-stack

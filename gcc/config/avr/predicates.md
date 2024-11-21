@@ -27,7 +27,7 @@
   (and (match_code "reg")
        (match_test "REGNO (op) >= 16 && REGNO (op) <= 31")))
 
-(define_predicate "scratch_or_d_register_operand"
+(define_predicate "scratch_or_dreg_operand"
   (ior (match_operand 0 "d_register_operand")
        (and (match_code ("scratch"))
             (match_operand 0 "scratch_operand"))))
