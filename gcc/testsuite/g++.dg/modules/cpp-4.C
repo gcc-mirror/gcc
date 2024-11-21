@@ -1,3 +1,4 @@
+// { dg-additional-options -fno-modules }
 // { dg-do preprocess }
 
 #if 1
