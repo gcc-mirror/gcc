@@ -1,3 +1,75 @@
+2024-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116603
+	* diagnostic-format-sarif.cc (SARIF_SCHEMA): Update URL.
+	(sarif_builder::maybe_make_region_object): Don't create regions
+	with startLine <= 0.
+	(sarif_builder::maybe_make_region_object_for_context): Likewise.
+
+2024-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* doc/install.texi (Python3 modules): Update SARIF validation
+	requirement to use check-jsonschema rather than jsonschema.
+
+2024-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* doc/install.texi: Mention optional usage of "jsonschema" tool.
+
+2024-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_location_object): Pass any column override
+	from rich_loc to maybe_make_physical_location_object.
+	(sarif_builder::maybe_make_physical_location_object): Add
+	"column_override" param and pass it to maybe_make_region_object.
+	(sarif_builder::maybe_make_region_object): Add "column_override"
+	param and use it when the location has 0 for a column.  Don't
+	add "startLine", "startColumn", "endLine", or "endColumn" if
+	the values aren't positive.
+	(sarif_builder::maybe_make_region_object_for_context): Don't
+	add "startLine" or "endLine" if the values aren't positive.
+
+2024-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/v850/v850.opt.urls: Regenerate, with fix.
+	* config/vax/vax.opt.urls: Likewise.
+	* regenerate-opt-urls.py (TARGET_SPECIFIC_PAGES): Fix transposed
+	values for "vax" and "v850".
+
+2024-11-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-05-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi: Replace all occurrences of xref
+	{foo, , , gm2} with xref {foo}.
+
+2024-11-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi: Replace all occurrences of xref {, , , gm2}
+	with xref {, , , m2}.
+
 2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
