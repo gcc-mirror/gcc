@@ -10650,9 +10650,19 @@ vectorizable_load (vec_info *vinfo,
 	     of it.  */
 	  if (n == const_nunits)
 	    {
-	      nloads = 1;
-	      lnel = const_nunits;
-	      ltype = vectype;
+	      int mis_align = dr_misalignment (first_dr_info, vectype);
+	      dr_alignment_support dr_align
+		= vect_supportable_dr_alignment (vinfo, dr_info, vectype,
+						 mis_align);
+	      if (dr_align == dr_aligned
+		  || dr_align == dr_unaligned_supported)
+		{
+		  nloads = 1;
+		  lnel = const_nunits;
+		  ltype = vectype;
+		  alignment_support_scheme = dr_align;
+		  misalignment = mis_align;
+		}
 	    }
 	  /* Else use the biggest vector we can load the group without
 	     accessing excess elements.  */
