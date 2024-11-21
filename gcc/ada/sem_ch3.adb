@@ -1100,7 +1100,9 @@ package body Sem_Ch3 is
                                 | N_Protected_Type_Declaration
       loop
          D_Ityp := Parent (D_Ityp);
-         pragma Assert (D_Ityp /= Empty);
+         if No (D_Ityp) then
+            raise Program_Error;
+         end if;
       end loop;
 
       Set_Associated_Node_For_Itype (Desig_Type, D_Ityp);
