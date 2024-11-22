@@ -20,14 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_NAME_HINT_H
 #define GCC_NAME_HINT_H
 
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence it must be included from
-   system.h by defining INCLUDE_MEMORY in any source file using it.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use name-hint.h"
-#endif
-
 enum lookup_name_fuzzy_kind {
   /* Names of types.  */
   FUZZY_LOOKUP_TYPENAME,

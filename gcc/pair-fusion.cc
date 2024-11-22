@@ -20,7 +20,6 @@
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
 #define INCLUDE_LIST
-#define INCLUDE_MEMORY
 #define INCLUDE_TYPE_TRAITS
 #define INCLUDE_ARRAY
 #include "config.h"

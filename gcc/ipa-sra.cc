@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
    ipa-param-manipulation.h for more details.  */
 
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
      mangle_ctor_vtbl_for_type:		`C-in-B' constructor virtual table data
      mangle_thunk:			thunk function or entry  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

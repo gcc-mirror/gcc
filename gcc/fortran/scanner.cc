@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
    From the scanner's viewpoint, the higher level subroutines ask for
    new characters and do a lot of jumping backwards.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

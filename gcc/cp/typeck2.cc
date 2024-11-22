@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
    including computing the types of the result, C and C++ specific error
    checks, and some optimization.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

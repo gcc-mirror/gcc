@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
    comment can thus be removed at that point.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"

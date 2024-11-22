@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
    code node is passed.  The result type and library subroutine name
    are generally set according to the function arguments.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

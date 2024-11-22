@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
    If desired, it could be extended to floating-point operations under
    control of something like -funsafe-math-optimizations.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

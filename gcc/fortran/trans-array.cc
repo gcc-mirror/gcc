@@ -75,7 +75,6 @@ along with GCC; see the file COPYING3.  If not see
    After the loop code has been added into its parent scope gfc_cleanup_loop
    is called to free all the SS allocated by the scalarizer.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

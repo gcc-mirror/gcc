@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
        That is a vector recording what function parameters
        may escape to a function call (and with what parameter index).  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

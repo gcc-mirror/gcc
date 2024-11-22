@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
    GENERIC tree structures and from there to executable code for a
    target.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -74,7 +74,6 @@ along with GCC; see the file COPYING3.  If not see
    7) There is nothing preventing us from producing multiple parts of single function
       when needed or splitting also the parts.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

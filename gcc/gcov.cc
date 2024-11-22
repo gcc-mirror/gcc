@@ -32,7 +32,6 @@ along with Gcov; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #define INCLUDE_STRING
 #define INCLUDE_MAP

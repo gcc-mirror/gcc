@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #define INCLUDE_MAP
-#define INCLUDE_MEMORY
 #include "system.h"
 
 #include "line-map.h"

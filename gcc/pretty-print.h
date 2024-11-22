@@ -21,14 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PRETTY_PRINT_H
 #define GCC_PRETTY_PRINT_H
 
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence it must be included from
-   system.h by defining INCLUDE_MEMORY in any source file using it.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use pretty-print.h"
-#endif
-
 #include "obstack.h"
 #include "rich-location.h"
 #include "diagnostic-url.h"

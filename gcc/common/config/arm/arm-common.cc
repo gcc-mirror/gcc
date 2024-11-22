@@ -18,7 +18,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_LIST
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #define INCLUDE_ALGORITHM
 #include "config.h"

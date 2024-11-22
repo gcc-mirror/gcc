@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
    should be one of the later passes since it's information is used by
    the rest of the compilation. */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

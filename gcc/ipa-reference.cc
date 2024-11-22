@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
    traumatic, promote some statics to registers, and improve aliasing
    information.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -71,7 +71,6 @@ along with GCC; see the file COPYING3.  If not see
       Finally, if a parameter got scalarized, the scalar replacements are
       initialized with values from respective parameter aggregates.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

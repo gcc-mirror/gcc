@@ -74,7 +74,6 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

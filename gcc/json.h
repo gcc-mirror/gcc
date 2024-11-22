@@ -21,15 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_JSON_H
 #define GCC_JSON_H
 
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence <memory> must be included
-   from system.h by defining INCLUDE_MEMORY in any source file using
-   json.h.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use json.h"
-#endif
-
 /* Implementation of JSON, a lightweight data-interchange format.
 
    See http://www.json.org/

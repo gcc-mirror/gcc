@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
    different data types for the translation of the gfortran internal
    representation to GIMPLE.  The only entry point is `convert'.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

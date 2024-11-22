@@ -89,7 +89,6 @@ along with GCC; see the file COPYING3.  If not see
 	 This should almost always lead to reduction of code size by eliminating
 	 the need for offline copy of the function.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

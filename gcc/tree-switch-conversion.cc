@@ -22,7 +22,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* This file handles the lowering of GIMPLE_SWITCH to an indexed
    load, or a series of bit-test-and-branch expressions.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

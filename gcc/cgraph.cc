@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
     optimization.  It represents a multi-graph where nodes are functions
     (symbols within symbol table) and edges are call sites. */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

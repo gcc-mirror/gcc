@@ -118,7 +118,6 @@ along with GCC; see the file COPYING3.  If not see
      Advanced Compiler Design and Implementation,
      Steven Muchnick, Morgan Kaufmann, 1997, Section 12.6  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

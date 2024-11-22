@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MAP
-#define INCLUDE_MEMORY
 #define INCLUDE_SET
 #include "system.h"
 #include "coretypes.h"

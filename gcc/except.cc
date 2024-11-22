@@ -109,7 +109,6 @@ along with GCC; see the file COPYING3.  If not see
    output_call_frame_info (dwarf2out.cc) emits the required unwind data.  */
 
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

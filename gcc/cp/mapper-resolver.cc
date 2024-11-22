@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_VECTOR
 #define INCLUDE_ALGORITHM
 #define INCLUDE_MAP
-#define INCLUDE_MEMORY
 #include "system.h"
 
 // We don't want or need to be aware of networking

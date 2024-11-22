@@ -130,7 +130,6 @@ along with GCC; see the file COPYING3.  If not see
    More helpful for optimization might be to make the contracts a wrapper
    function that could be inlined into the caller, the callee, or both.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

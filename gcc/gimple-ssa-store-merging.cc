@@ -138,7 +138,6 @@
   [p]      (32-bit) := 0x12345678; // (val & 0xffffffff0000) >> 16;
   [p + 4B] (16-bit) := 0xabcd;     //  val & 0x00000000ffff;  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
    have different dependency checking functions for different types
    if dependencies.  Ideally these would probably be merged.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
    The functions whose names start with `expand_' are called by the
    expander to generate RTL instructions for various kinds of constructs.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

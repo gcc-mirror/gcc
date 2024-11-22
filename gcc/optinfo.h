@@ -21,15 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OPTINFO_H
 #define GCC_OPTINFO_H
 
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence <memory> must be included
-   from system.h by defining INCLUDE_MEMORY in any source file using
-   optinfo.h.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use optinfo.h"
-#endif
-
 /* An "optinfo" is a bundle of information describing part of an
    optimization, which can be emitted to zero or more of several
    destinations, such as:

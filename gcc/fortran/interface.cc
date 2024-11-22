@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
    formal argument list points to symbols within the same namespace as
    the program unit name.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

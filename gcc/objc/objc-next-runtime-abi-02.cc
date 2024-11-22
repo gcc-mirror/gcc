@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
    This version is intended to match (logically) the output of Apple's
    4.2.1 compiler.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -21,7 +21,6 @@
 #define RUST_SYSTEM_H
 
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #include "config.h"
 
 /* Define this so that inttypes.h defines the PRI?64 macros even

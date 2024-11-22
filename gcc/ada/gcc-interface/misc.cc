@@ -23,7 +23,6 @@
  *                                                                          *
  ****************************************************************************/
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

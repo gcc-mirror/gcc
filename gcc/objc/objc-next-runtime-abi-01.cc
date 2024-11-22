@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
    of additions made for properties and optional protocol methods as
    ABI=1 (module version 7).  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

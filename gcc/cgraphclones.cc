@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
    only difference is that clones are not visible during the
    Generate Summary stage.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

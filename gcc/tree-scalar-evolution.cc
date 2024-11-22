@@ -253,7 +253,6 @@ along with GCC; see the file COPYING3.  If not see
    at: http://cri.ensmp.fr/~pop/gcc/20040604/gccsummit-lno-spop.pdf
 */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

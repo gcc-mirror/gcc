@@ -22,7 +22,6 @@
 
 #define INCLUDE_STRING
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"

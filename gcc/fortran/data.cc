@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
    etc., to convert the initial value. Refer to trans-expr.cc and
    trans-array.cc.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

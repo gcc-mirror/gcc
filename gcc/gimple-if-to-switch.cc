@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
    d) We move all GIMPLE statements in the removed blocks into the
       first one.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

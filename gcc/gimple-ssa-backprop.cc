@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
    Note that this pass does not deal with direct redundancies,
    such as cos(-x)->cos(x).  match.pd handles those cases instead.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

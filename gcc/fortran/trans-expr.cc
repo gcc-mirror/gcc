@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* trans-expr.cc-- generate GENERIC trees for gfc_expr.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

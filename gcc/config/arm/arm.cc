@@ -23,7 +23,6 @@
 #define IN_TARGET_CODE 1
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"

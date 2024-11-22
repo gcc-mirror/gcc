@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ARRAY
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"

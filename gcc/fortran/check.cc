@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
    has been sorted into the right order and has NULL arguments in the
    correct places for missing optional arguments.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

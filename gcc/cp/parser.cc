@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "omp-selectors.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"

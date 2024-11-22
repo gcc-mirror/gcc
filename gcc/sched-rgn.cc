@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
    priorities are computed, and (3) block level: insns in the block
    are actually scheduled.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
    It is intended to be language-independent but can occasionally
    calls language-dependent routines.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

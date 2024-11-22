@@ -1724,7 +1724,6 @@ open_base_files (void)
     outf_p gtype_desc_c;
 
     gtype_desc_c = create_file ("GCC", "gtype-desc.cc");
-    oprintf (gtype_desc_c, "#define INCLUDE_MEMORY\n");
     for (ifp = ifiles; *ifp; ifp++)
       oprintf (gtype_desc_c, "#include \"%s\"\n", *ifp);
     for (int j = 0; j < (int) num_build_headers; j++)

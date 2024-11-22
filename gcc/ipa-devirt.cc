@@ -105,7 +105,6 @@ along with GCC; see the file COPYING3.  If not see
   pass_ipa_devirt performs simple speculative devirtualization.
 */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
