@@ -94,10 +94,10 @@ BDESC (0, 0, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNO
 BDESC (0, 0, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID)
 
 /* 80387 (for use internally for atomic compound assignment).  */
-BDESC (0, 0, CODE_FOR_fnstenv, "__builtin_ia32_fnstenv", IX86_BUILTIN_FNSTENV, UNKNOWN, (int) VOID_FTYPE_PVOID)
-BDESC (0, 0, CODE_FOR_fldenv, "__builtin_ia32_fldenv", IX86_BUILTIN_FLDENV, UNKNOWN, (int) VOID_FTYPE_PCVOID)
-BDESC (0, 0, CODE_FOR_fnstsw, "__builtin_ia32_fnstsw", IX86_BUILTIN_FNSTSW, UNKNOWN, (int) USHORT_FTYPE_VOID)
-BDESC (0, 0, CODE_FOR_fnclex, "__builtin_ia32_fnclex", IX86_BUILTIN_FNCLEX, UNKNOWN, (int) VOID_FTYPE_VOID)
+BDESC (0, 0, CODE_FOR_fnstenv, "__builtin_ia32_fnstenv ", IX86_BUILTIN_FNSTENV, UNKNOWN, (int) VOID_FTYPE_PVOID)
+BDESC (0, 0, CODE_FOR_fldenv, "__builtin_ia32_fldenv ", IX86_BUILTIN_FLDENV, UNKNOWN, (int) VOID_FTYPE_PCVOID)
+BDESC (0, 0, CODE_FOR_fnstsw, "__builtin_ia32_fnstsw ", IX86_BUILTIN_FNSTSW, UNKNOWN, (int) USHORT_FTYPE_VOID)
+BDESC (0, 0, CODE_FOR_fnclex, "__builtin_ia32_fnclex ", IX86_BUILTIN_FNCLEX, UNKNOWN, (int) VOID_FTYPE_VOID)
 
 /* MMX */
 BDESC (OPTION_MASK_ISA_MMX, 0, CODE_FOR_mmx_emms, "__builtin_ia32_emms", IX86_BUILTIN_EMMS, UNKNOWN, (int) VOID_FTYPE_VOID)
