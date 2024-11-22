@@ -10808,7 +10808,7 @@ proc check_effective_target_avx10_2 { } {
 	  __asm__ volatile ("vcvtph2ibs\t%ymm5, %ymm6");
 	  __asm__ volatile ("vminmaxpd\t$123, %ymm4, %ymm5, %ymm6");
 	}
-    } "-mavx10.2" ]
+    } "" ]
 }
 
 # Return 1 if avx10.2-512 instructions can be compiled.
@@ -10823,7 +10823,7 @@ proc check_effective_target_avx10_2_512 { } {
 	  __asm__ volatile ("vcvtph2ibs\t%zmm5, %zmm6");
 	  __asm__ volatile ("vminmaxpd\t$123, %zmm4, %zmm5, %zmm6");
 	}
-    } "-mavx10.2-512" ]
+    } "" ]
 }
 
 # Return 1 if amx-avx512 instructions can be compiled.
