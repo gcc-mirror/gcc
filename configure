@@ -1551,7 +1551,7 @@ Optional Features:
 
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
-  --enable-gprofng[=ARG]  build gprofng [ARG={yes,no}]
+  --disable-gprofng       do not build gprofng
   --enable-compressed-debug-sections={all,gas,gold,ld,none}
                           Enable compressed debug sections for gas, gold or ld
                           by default
@@ -3151,7 +3151,9 @@ fi
 
 if test "$enable_gprofng" = "yes"; then
   case "${target}" in
-    x86_64-*-linux* | i?86-*-linux* | aarch64-*-linux*)
+    *-musl*)
+      ;;
+    x86_64-*-linux* | i?86-*-linux* | aarch64-*-linux* | riscv64-*-linux*)
     configdirs="$configdirs gprofng"
     ;;
   esac
@@ -3670,6 +3672,15 @@ case "${target}" in
   cris-*-* | crisv32-*-*)
     libgloss_dir=cris
     ;;
+  kvx-*-elf)
+    libgloss_dir=kvx-elf
+    ;;
+  kvx-*-mbr)
+    libgloss_dir=kvx-mbr
+    ;;
+  kvx-*-cos)
+    libgloss_dir=kvx-cos
+    ;;
   hppa*-*-*)
     libgloss_dir=pa
     ;;
@@ -3970,6 +3981,9 @@ case "${target}" in
     ;;
   i[3456789]86-*-rdos*)
     noconfigdirs="$noconfigdirs gdb"
+    ;;
+  kvx-*-*)
+    noconfigdirs="$noconfigdirs gdb gdbserver sim"
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs gdb"
@@ -11314,7 +11328,8 @@ hbaseargs="$hbaseargs --disable-option-checking"
 tbaseargs="$tbaseargs --disable-option-checking"
 
 if test "$enable_year2038" = no; then
-  baseargs="$baseargs --disable-year2038"
+  bbaseargs="$bbaseargs --disable-year2038"
+  hbaseargs="$hbaseargs --disable-year2038"
   tbaseargs="$tbaseargs --disable-year2038"
 fi
 
