@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3 -fdump-tree-forwprop1-details" } */
+/* { dg-additional-options "-O3 -fdump-tree-forwprop1-details -Wno-psabi" } */
 
 typedef int vec __attribute__((vector_size (4 * sizeof (int))));
 
