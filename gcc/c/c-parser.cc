@@ -4444,7 +4444,8 @@ c_parser_typeof_specifier (c_parser *parser)
   parens.skip_until_found_close (parser);
   if (ret.spec != error_mark_node)
     {
-      if (is_unqual && TYPE_QUALS (ret.spec) != TYPE_UNQUALIFIED)
+      if (is_unqual
+	  && TYPE_QUALS (strip_array_types (ret.spec)) != TYPE_UNQUALIFIED)
 	ret.spec = TYPE_MAIN_VARIANT (ret.spec);
       if (is_std)
 	{
