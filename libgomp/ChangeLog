@@ -1,3 +1,12 @@
+2024-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.c/alloc-pinned-3.c [!__linux__]
+	(set_pin_limit): Add size arg.
+	* testsuite/libgomp.c/alloc-pinned-4.c [!__linux__]
+	(set_pin_limit): Likewise.
+	* testsuite/libgomp.c/alloc-pinned-6.c [!__linux__]
+	(set_pin_limit): Likewise.
+
 2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* testsuite/libgomp.c-c++-common/dispatch-1.c: New test.

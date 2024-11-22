@@ -1,3 +1,9 @@
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (enum dwarf_source_language): Add comment where
+	the post DWARF 5 additions start.  Refresh list from
+	https://dwarfstd.org/languages.html.
+
 2024-10-31  Mark Wielaard  <mark@klomp.org>
 
 	* safe-ctype.h: Change accidently to accidentally.

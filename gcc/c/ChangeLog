@@ -1,3 +1,9 @@
+2024-11-21  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/114816
+	* c-decl.cc (grokparms): Do not warn for void parameter type here.
+	(get_parm_info): Give errors for void parameters even when named.
+
 2024-11-20  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/114266

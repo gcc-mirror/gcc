@@ -1,3 +1,8 @@
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117024
+	* lto-lang.cc (flag_isoc2y): New variable.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/117201

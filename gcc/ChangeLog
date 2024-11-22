@@ -1,3 +1,242 @@
+2024-11-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117690
+	* config/riscv/riscv.cc (riscv_build_integer): Add missing left
+	shift when using shNadd to derive upper 32 bits from lower 32 bits.
+
+2024-11-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/cpp.texi (__has_include): Document __has_include_next
+	also.
+	(Conditional Syntax): Mention __has_include_next in the
+	description for the __has_include menu entry.
+
+2024-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117677
+	* json-parsing.cc (selftest::test_parse_number): Replace
+	ASSERT_EQ of 'double' values with ASSERT_NEAR.  Eliminate
+	ASSERT_PRINT_EQ for such values.
+	* selftest.h (ASSERT_NEAR): New.
+	(ASSERT_NEAR_AT): New.
+
+2024-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117726
+	* config/avr/avr.opt (-msplit-bit-shift): Add new optimization option.
+	* common/config/avr/avr-common.cc (avr_option_optimization_table)
+	[OPT_LEVELS_2_PLUS]: Turn on -msplit-bit-shift.
+	* config/avr/avr.h (machine_function.n_avr_fuse_add_executed):
+	New bool component.
+	* config/avr/avr.md (attr "isa") <2op, 3op>: Add new values.
+	(attr "enabled"): Handle them.
+	(ashlsi3, *ashlsi3, *ashlsi3_const): Add "r,r,C15" alternative.
+	Add "r,0,C4l" and "r,r,C4l" alternatives (depending on 2op / 3op).
+	(define_split) [avr_split_bit_shift]: Add 2 new ashift:ALL4 splitters.
+	(define_peephole2) [ashift:ALL4]: Add (match_dup 3) so that the scratch
+	won't overlap with the output operand of the matched insn.
+	(*ashl<mode>3_const_split): Remove unused ashift:ALL4 splitter.
+	* config/avr/avr-passes.cc (emit_valid_insn)
+	(emit_valid_move_clobbercc): Move out of anonymous namespace.
+	(make_avr_pass_fuse_add) <gate>: Don't override.
+	<execute>: Set n_avr_fuse_add_executed according to
+	func->machine->n_avr_fuse_add_executed.
+	(pass_data avr_pass_data_split_after_peephole2): New object.
+	(avr_pass_split_after_peephole2): New rtl_opt_pass.
+	(avr_emit_shift): New static function.
+	(avr_shift_is_3op, avr_split_shift_p, avr_split_shift)
+	(make_avr_pass_split_after_peephole2): New functions.
+	* config/avr/avr-passes.def (avr_pass_split_after_peephole2):
+	Insert new pass after pass_peephole2.
+	* config/avr/avr-protos.h
+	(n_avr_fuse_add_executed, avr_shift_is_3op, avr_split_shift_p)
+	(avr_split_shift, avr_optimize_size_level)
+	(make_avr_pass_split_after_peephole2): New prototypes.
+	* config/avr/avr.cc (n_avr_fuse_add_executed): New global variable.
+	(avr_optimize_size_level): New function.
+	(avr_set_current_function): Set n_avr_fuse_add_executed
+	according to cfun->machine->n_avr_fuse_add_executed.
+	(ashlsi3_out) [case 15]: Output optimized code for this offset.
+	(avr_rtx_costs_1) [ASHIFT, SImode]: Adjust costs of oggsets 15, 16.
+	* config/avr/constraints.md (C4a, C4r, C4r): New constraints.
+	* pass_manager.h (pass_manager): Adjust comments.
+
+2024-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-passes.cc (absint_t::dump): Fix missing
+	newline in dump.
+
+2024-11-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116590
+	* config/riscv/vector.md (pred_mul_<optab>mode_undef): Drop
+	unnecessary alternatives.
+	(pred_<madd_msub><mode>): Likewise.
+	(pred_<macc_msac><mode>): Likewise.
+	(pred_<madd_msub><mode>_scalar): Likewise.
+	(pred_<macc_msac><mode>_scalar): Likewise.
+	(pred_mul_neg_<optab><mode>_undef): Likewise.
+	(pred_<nmsub_nmadd><mode>): Likewise.
+	(pred_<nmsac_nmacc><mode>): Likewise.
+	(pred_<nmsub_nmadd><mode>_scalar): Likewise.
+	(pred_<nmsac_nmacc><mode>_scalar): Likewise.
+
+2024-11-21  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Refactor sorts of unsigned SAT_ADD match pattern.
+
+2024-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-data-refs.cc (vect_get_data_access_cost): Pass NULL for SLP
+	node.
+	* tree-vect-stmts.cc (record_stmt_cost): Expose.
+	(vect_get_store_cost, vect_get_load_cost): Extend with SLP node.
+	(vectorizable_store, vectorizable_load): Pass SLP node to all costing.
+	* tree-vectorizer.h (record_stmt_cost): Always pass both SLP node and
+	stmt_vinfo to costing.
+	(vect_get_load_cost, vect_get_store_cost): Extend with SLP node.
+
+2024-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/102296
+	* config/i386/sol2.h (ASM_DECLARE_OBJECT_NAME): Use decl size
+	instead of type size.
+	* config/sparc/sol2.h (ASM_DECLARE_OBJECT_NAME): Likewise.
+
+2024-11-21  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* tree-ssa-forwprop.cc (struct _vec_perm_simplify_seq): New data
+	structure to store analysis results of a vec perm simplify sequence.
+	(get_vect_selector_index_map): Helper to get an index map from the
+	provided vector permute selector.
+	(recognise_vec_perm_simplify_seq): Helper to recognise a
+	vec perm simplify sequence.
+	(narrow_vec_perm_simplify_seq): Helper to pack the lanes more
+	tight.
+	(can_blend_vec_perm_simplify_seqs_p): Test if two vec perm
+	sequences can be blended.
+	(calc_perm_vec_perm_simplify_seqs): Helper to calculate the new
+	permutation indices.
+	(blend_vec_perm_simplify_seqs): Helper to blend two vec perm
+	simplify sequences.
+	(process_vec_perm_simplify_seq_list): Helper to process a list
+	of vec perm simplify sequences.
+	(append_vec_perm_simplify_seq_list): Helper to add a vec perm
+	simplify sequence to the list.
+	(pass_forwprop::execute): Integrate new functionality.
+
+2024-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117720
+	* tree-vect-stmts.cc (vectorizable_load): For VMAT_STRIDED_SLP
+	verify the choosen load type is OK with regard to alignment.
+
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-std=c23): Adjust documentation for
+	publication of the ISO/IEC 9899:2024 standard.
+	* doc/standards.texi: Likewise.  Document -std=gnu17 and
+	-std=gnu23 options.  Mention that -std=gnu23 rather than
+	-std=gnu17 is now the default for C.
+
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	PR tree-optimization/117612
+	* tree-ssa-phiopt.cc (spaceship_replacement): Handle
+	HONOR_NANS (TREE_TYPE (lhs1)) case when possible.
+
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	PR tree-optimization/117612
+	* tree-ssa-phiopt.cc (spaceship_replacement): Fix up
+	a pasto in check when arg1 is 2.
+
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117024
+	* coretypes.h (enum function_class): Add function_c2y_misc
+	enumerator.
+	* builtin-types.def (BT_FN_UINTMAX_INTMAX, BT_FN_ULONG_LONG,
+	BT_FN_ULONGLONG_LONGLONG): New DEF_FUNCTION_TYPE_1s.
+	* builtins.def (DEF_C2Y_BUILTIN): Define.
+	(BUILT_IN_UABS, BUILT_IN_UIMAXABS, BUILT_IN_ULABS,
+	BUILT_IN_ULLABS): New builtins.
+	* builtins.cc (fold_builtin_abs): Handle also folding of u*abs
+	to ABSU_EXPR.
+	(fold_builtin_1): Handle BUILT_IN_U{,L,LL,IMAX}ABS.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/114567
+	* config/rs6000/rs6000.md (expander signbit<FLOAT128:mode>2): Adjust.
+	(*signbit<mode>2_dm_mem): Rename to ...
+	(signbit<mode>2_dm_mem): ... this.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vadduqm): Rename to ...
+	(addv1ti3): ... this.
+	(altivec_vsubuqm): Rename to ...
+	(subv1ti3): ... this.
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_vadduqm):
+	Replace bif expander altivec_vadduqm with addv1ti3.
+	(__builtin_altivec_vsubuqm): Replace bif expander altivec_vsubuqm with
+	subv1ti3.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/altivec.md (mode attr for V1TI in VI_unit): Remove.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (*eqv<BOOL_128:mode>3_internal1): Generate
+	insn veqv if TARGET_ALTIVEC and operands are altivec_register_operand.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_IEEE): Remove.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Replace
+	ISA_3_0_MASKS_IEEE check with TARGET_P9_VECTOR.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Simplify
+	TARGET_P8_VECTOR && TARGET_DIRECT_MOVE as TARGET_P8_VECTOR.
+	(rs6000_output_move_128bit): Simplify TARGET_VSX && TARGET_DIRECT_MOVE
+	as TARGET_DIRECT_MOVE.
+	* config/rs6000/rs6000.h (TARGET_XSCVDPSPN): Simplify conditions
+	TARGET_DIRECT_MOVE || TARGET_P8_VECTOR as TARGET_P8_VECTOR.
+	(TARGET_XSCVSPDPN): Likewise.
+	(TARGET_DIRECT_MOVE_128): Simplify TARGET_DIRECT_MOVE &&
+	TARGET_POWERPC64 as TARGET_DIRECT_MOVE_64BIT.
+	(TARGET_VEXTRACTUB): Likewise.
+	(TARGET_DIRECT_MOVE_64BIT): Simplify TARGET_P8_VECTOR &&
+	TARGET_DIRECT_MOVE as TARGET_DIRECT_MOVE.
+	* config/rs6000/rs6000.md (signbit<mode>2, @signbit<mode>2_dm,
+	*signbit<mode>2_dm_mem, floatsi<mode>2_lfiwax,
+	floatsi<SFDF:mode>2_lfiwax_<QHI:mode>_mem_zext,
+	floatunssi<mode>2_lfiwzx, float<QHI:mode><SFDF:mode>2,
+	*float<QHI:mode><SFDF:mode>2_internal, floatuns<QHI:mode><SFDF:mode>2,
+	*floatuns<QHI:mode><SFDF:mode>2_internal, p8_mtvsrd_v16qidi2,
+	p8_mtvsrd_df, p8_xxpermdi_<mode>, reload_vsx_from_gpr<mode>,
+	p8_mtvsrd_sf, reload_vsx_from_gprsf, p8_mfvsrd_3_<mode>,
+	reload_gpr_from_vsx<mode>, reload_gpr_from_vsxsf, unpack<mode>_dm):
+	Simplify TARGET_DIRECT_MOVE && TARGET_POWERPC64 as
+	TARGET_DIRECT_MOVE_64BIT.
+	(unpack<mode>_nodm): Simplify !TARGET_DIRECT_MOVE || !TARGET_POWERPC64
+	as !TARGET_DIRECT_MOVE_64BIT.
+	(fix_trunc<mode>si2, fix_trunc<mode>si2_stfiwx,
+	fix_trunc<mode>si2_internal): Simplify TARGET_P8_VECTOR &&
+	TARGET_DIRECT_MOVE as TARGET_DIRECT_MOVE.
+	(fix_trunc<mode>si2_stfiwx, fixuns_trunc<mode>si2_stfiwx): Remove some
+	dead code as the guard TARGET_DIRECT_MOVE there never holds.
+	(fixuns_trunc<mode>si2_stfiwx): Change TARGET_P8_VECTOR with
+	TARGET_DIRECT_MOVE which is a better fit.
+	* config/rs6000/vsx.md (define_peephole2 for SFmode in GPR): Simplify
+	TARGET_DIRECT_MOVE && TARGET_POWERPC64 as TARGET_DIRECT_MOVE_64BIT.
+
 2024-11-20  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* tree-cfg.cc (assign_discriminators): Fix incorrect value passed to

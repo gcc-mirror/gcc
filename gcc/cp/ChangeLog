@@ -1,3 +1,17 @@
+2024-11-21  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (has_definition): Also true for inline vars.
+
+2024-11-21  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_in::core_vals) [STATEMENT_LIST]: Skip
+	DEBUG_BEGIN_STMT if !MAY_HAVE_DEBUG_MARKER_STMTS.
+
+2024-11-21  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (lookup_imported_hidden_friend): Call
+	lazy_load_pendings.
+
 2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* decl.cc (omp_declare_variant_finalize_one): Set adjust_args

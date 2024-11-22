@@ -1,3 +1,8 @@
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117024
+	* gcc-interface/utils.cc (flag_isoc2y): New variable.
+
 2024-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/117538

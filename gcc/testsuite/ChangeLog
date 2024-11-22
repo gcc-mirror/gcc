@@ -1,3 +1,216 @@
+2024-11-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117690
+	* gcc.target/riscv/pr117690.c: New test.
+	* gcc.target/riscv/synthesis-13.c: Adjust expected output.
+
+2024-11-21  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/114816
+	* gcc.dg/c2y-void-parm-1.c: New test.
+	* gcc.dg/noncompile/920616-2.c, gcc.dg/noncompile/921116-1.c,
+	gcc.dg/parm-incomplete-1.c: Update expected diagnostics.
+
+2024-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/print-stack.exp: New file.
+
+2024-11-21  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.dg/tree-ssa/satd-hadamard.c: Restrict to aarch64 and x86-64.
+	* gcc.dg/tree-ssa/vector-8.c: Likewise.
+	* gcc.dg/tree-ssa/vector-9.c: Likewise.
+
+2024-11-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/inline-1_a.C: New test.
+	* g++.dg/modules/inline-1_b.C: New test.
+
+2024-11-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116590
+	* gcc.target/riscv/pr116590.c: New test.
+
+2024-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/102296
+	* gcc.target/i386/struct-size.c: Enable on *-*-solaris*.
+
+2024-11-21  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.dg/tree-ssa/satd-hadamard.c: New test.
+	* gcc.dg/tree-ssa/vector-10.c: New test.
+	* gcc.dg/tree-ssa/vector-8.c: New test.
+	* gcc.dg/tree-ssa/vector-9.c: New test.
+	* gcc.target/aarch64/sve/satd-hadamard.c: New test.
+
+2024-11-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/apx-ndd-tls-1a.c: -std=gnu17.
+	* gcc.target/i386/apx-ndd-tls-1b.c: Likewise.
+
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	PR tree-optimization/117612
+	* gcc.dg/pr94589-5.c: New test.
+	* gcc.dg/pr94589-6.c: New test.
+	* g++.dg/opt/pr94589-5.C: New test.
+	* g++.dg/opt/pr94589-6.C: New test.
+
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117024
+	* gcc.c-torture/execute/builtins/lib/abs.c (uintmax_t): New typedef.
+	(uabs, ulabs, ullabs, uimaxabs): New functions.
+	* gcc.c-torture/execute/builtins/uabs-1.c: New test.
+	* gcc.c-torture/execute/builtins/uabs-1.x: New file.
+	* gcc.c-torture/execute/builtins/uabs-1-lib.c: New file.
+	* gcc.c-torture/execute/builtins/uabs-2.c: New test.
+	* gcc.c-torture/execute/builtins/uabs-2.x: New file.
+	* gcc.c-torture/execute/builtins/uabs-2-lib.c: New file.
+	* gcc.c-torture/execute/builtins/uabs-3.c: New test.
+	* gcc.c-torture/execute/builtins/uabs-3.x: New test.
+	* gcc.c-torture/execute/builtins/uabs-3-lib.c: New test.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/114567
+	* gcc.target/powerpc/pr114567.c: New test.
+
+2024-11-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/p8vector-int128-3.c: New test.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/opt/pr69175.C: Added option "-mcpu=unset".
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cortex-m55-nodsp-flag-hard.c: Added option
+	"-march=unset".
+	* gcc.target/arm/cortex-m55-nodsp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nodsp-nofp-flag-softfp.c: Likesie.
+	* gcc.target/arm/cortex-m55-nofp-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-nomve-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-softfp.c: Likewise.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/ext/pr57735.C: Use effective-target arm_cpu_xscale_arm.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.target/arm/mve/general-c++/nomve_fp_1.c: Added option
+	"-mcpu=unset".
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/vect-early-break-cbranch.c: Use
+	effective-target arm_arch_v8a_hard.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.target/arm/pr103676.C: Use effective-target
+	arm_cpu_cortex_m7.
+	* gcc.target/arm/no-volatile-in-it.c: Likewise.
+	* gcc.target/arm/fma-sp.c: Use effective-target
+	arm_cpu_cortex_m4_hard.
+	* gcc.target/arm/pr53859.c: Use effective-target
+	arm_cpu_cortex_m4.
+	* gcc.target/arm/mve/intrinsics/pr97327.c: Use effective-target
+	arm_cpu_cortex_m55.
+	* gcc.target/arm/pr65067.c: Use effective-target
+	arm_cpu_cortex_m3.
+	* lib/target-supports.exp: Define effective-target
+	arm_cpu_cortex_m3, arm_cpu_cortex_m4, arm_cpu_cortex_m4_hard,
+	arm_cpu_cortex_m7 and arm_cpu_cortex_m55.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/thumb2-slow-flash-data-2.c: Use
+	effective-target arm_arch_v7em_hard.
+	* gcc.target/arm/thumb2-slow-flash-data-3.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-4.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-5.c: Likewise.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/small-multiply-m0-1.c: Use effective-target
+	arm_arch_v6m and added option "-march=unset".
+	* gcc.target/arm/small-multiply-m0-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m0-3.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-1.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m0plus-3.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-1.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-2.c: Likewise.
+	* gcc.target/arm/small-multiply-m1-3.c: Likewise.
+	* lib/target-supports.exp: Define effective-target
+	arm_cpu_cortex_m0_small, arm_cpu_cortex_m0plus_small and
+	arm_cpu_cortex_m1_small.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pure-code/no-literal-pool-m0.c: Use
+	effective-target arm_cpu_cortex-m0.
+	* gcc.target/arm/pure-code/no-literal-pool-m23.c: Use
+	effective-target arm_cpu_cortex-m23.
+	* gcc.target/arm/pure-code/pr94538-1.c: Likewise.
+	* gcc.target/arm/pure-code/pr109800.c: Use effective-target
+	arm_arch_v7em_hard.
+	* lib/target-supports.exp: Define effective-target
+	arm_cpu_cortex_m0, arm_cpu_cortex_m23 and arm_arch_v7em_hard.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/acle/crc_hf_1.c: Use effective-target
+	arm_arch_v8a_crc_hard.
+	* lib/target-supports.exp: Define effective-target
+	arm_arch_v8a_crc_hard.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/acle/pacbti-m-predef-1.c: Use effective-target
+	arm_arch_v8_1m_main.
+	* gcc.target/arm/acle/pacbti-m-predef-2.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-3.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-4.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-5.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-6.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-8.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-9.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-10.c: Likewise.
+
+2024-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* gcc.target/arm/pac-1.c: Use effective-target
+	arm_arch_v8_1m_main_pacbti.
+	* gcc.target/arm/pac-2.c: Likewise.
+	* gcc.target/arm/pac-3.c: Likewise.
+	* gcc.target/arm/pac-4.c: Likewise.
+	* gcc.target/arm/pac-5.c: Likewise.
+	* gcc.target/arm/pac-7.c: Likewise.
+	* gcc.target/arm/pac-8.c: Likewise.
+	* gcc.target/arm/pac-9.c: Likewise.
+	* gcc.target/arm/pac-10.c: Likewise.
+	* gcc.target/arm/pac-11.c: Likewise.
+	* gcc.target/arm/pac-12.c: Added option "-mcpu=unset".
+	* gcc.target/arm/pac-13.c: Likewise.
+	* gcc.target/arm/pac-14.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_pacbti_hw): Likewise.
+	* gcc.target/arm/pac-6.c: Use effective-target
+	arm_arch_v8_1m_main.
+	* gcc.target/arm/pac-15.c: Use effective-target
+	arm_arch_v8_1m_main_pacbti and added option "-mcpu=unset".
+
 2024-11-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/83135

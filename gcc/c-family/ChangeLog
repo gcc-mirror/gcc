@@ -1,3 +1,8 @@
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (std=c23, std=gnu23, std=iso9899:2024): Adjust description
+	for publication of the ISO/IEC 9899:2024 standard.
+
 2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* c-attribs.cc (c_common_gnu_attributes): Add attribute for adjust_args
