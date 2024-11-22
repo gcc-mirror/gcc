@@ -25494,6 +25494,13 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
 	       && GET_MODE_SIZE (loop_vinfo->vector_mode) == 32)
 	m_suggested_epilogue_mode = V16QImode;
     }
+  /* When a 128bit SSE vectorized epilogue still has a VF of 16 or larger
+     enable a 64bit SSE epilogue.  */
+  if (loop_vinfo
+      && LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+      && GET_MODE_SIZE (loop_vinfo->vector_mode) == 16
+      && LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant () >= 16)
+    m_suggested_epilogue_mode = V8QImode;
 
   vector_costs::finish_cost (scalar_costs);
 }
