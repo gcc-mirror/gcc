@@ -31,7 +31,6 @@
 #include "convert.h"
 #include "print-tree.h"
 #include "rust-system.h"
-#include <functional>
 
 namespace Rust {
 namespace Compile {

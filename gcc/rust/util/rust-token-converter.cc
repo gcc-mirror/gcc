@@ -18,8 +18,7 @@
 #include "rust-token-converter.h"
 #include "bi-map.h"
 #include "line-map.h"
-
-#include <string>
+#include "rust-system.h"
 
 namespace Rust {
 

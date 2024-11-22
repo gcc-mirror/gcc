@@ -21,7 +21,6 @@
 #include "rust-unicode.h"
 #include "rust-diagnostics.h"
 #include "rust-system.h"
-#include <sstream>
 
 namespace Rust {
 namespace Compile {

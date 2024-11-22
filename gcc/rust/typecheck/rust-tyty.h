@@ -30,8 +30,6 @@
 #include "rust-system.h"
 #include "rust-hir.h"
 
-#include <limits>
-
 namespace Rust {
 
 namespace Resolver {
