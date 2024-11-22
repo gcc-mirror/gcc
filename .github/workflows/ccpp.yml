@@ -266,7 +266,7 @@ jobs:
               exit 0; \
             fi
 
-  build-and-check-gcc-48:
+  build-and-check-gcc-5:
 
     runs-on: ubuntu-22.04
     container: ubuntu:18.04
@@ -291,10 +291,10 @@ jobs:
                   libmpfr-dev \
                   libmpc-dev \
                   build-essential \
-                  gcc-4.8 \
-                  g++-4.8 \
-                  gcc-4.8-multilib \
-                  g++-4.8-multilib \
+                  gcc-5 \
+                  g++-5 \
+                  gcc-5-multilib \
+                  g++-5-multilib \
                   dejagnu;
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
@@ -307,8 +307,8 @@ jobs:
            mkdir -p gccrs-build;
            cd gccrs-build;
            ../configure \
-               CC='gcc-4.8' \
-               CXX='g++-4.8' \
+               CC='gcc-5' \
+               CXX='g++-5' \
                --enable-languages=rust \
                --disable-bootstrap \
                --enable-multilib
@@ -328,7 +328,7 @@ jobs:
     - name: Archive check-rust results
       uses: actions/upload-artifact@v3
       with:
-        name: check-rust-logs-4.8
+        name: check-rust-logs-5
         path: |
           gccrs-build/gcc/testsuite/rust/
 
