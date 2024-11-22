@@ -664,6 +664,24 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 }
 
 
+/* Return true if TYPE is the implementation's omp_interop_t.  */
+
+bool
+c_omp_interop_t_p (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  return (TREE_CODE (type) == ENUMERAL_TYPE
+	  && TYPE_NAME (type)
+	  && ((TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	       ? DECL_NAME (TYPE_NAME (type)) : TYPE_NAME (type))
+	      == get_identifier ("omp_interop_t"))
+	  && TYPE_FILE_SCOPE_P (type)
+	  && COMPLETE_TYPE_P (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && !compare_tree_int (TYPE_SIZE (type),
+				tree_to_uhwi (TYPE_SIZE (ptr_type_node))));
+}
+
 /* Return true if TYPE is the implementation's omp_depend_t.  */
 
 bool
@@ -4321,8 +4339,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, true },
   /* { "groupprivate", nullptr, nullptr, PRAGMA_OMP_GROUPPRIVATE,
     C_OMP_DIR_DECLARATIVE, false },  */
-  /* { "interop", nullptr, nullptr, PRAGMA_OMP_INTEROP,
-    C_OMP_DIR_STANDALONE, false },  */
+  { "interop", nullptr, nullptr, PRAGMA_OMP_INTEROP,
+    C_OMP_DIR_STANDALONE, false },
   { "loop", nullptr, nullptr, PRAGMA_OMP_LOOP,
     C_OMP_DIR_CONSTRUCT, true },
   { "masked", nullptr, nullptr, PRAGMA_OMP_MASKED,

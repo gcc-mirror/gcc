@@ -7208,6 +7208,77 @@ cp_oacc_check_attachments (tree c)
   return false;
 }
 
+/* Update OMP_CLAUSE_INIT_PREFER_TYPE in case template substitution
+   happened.  */
+
+static void
+cp_omp_init_prefer_type_update (tree c)
+{
+  if (processing_template_decl
+      || OMP_CLAUSE_INIT_PREFER_TYPE (c) == NULL_TREE
+      || TREE_CODE (OMP_CLAUSE_INIT_PREFER_TYPE (c)) != TREE_LIST)
+    return;
+
+  tree t = TREE_PURPOSE (OMP_CLAUSE_INIT_PREFER_TYPE (c));
+  char *str = const_cast<char *> (TREE_STRING_POINTER (t));
+  tree fr_list = TREE_VALUE (OMP_CLAUSE_INIT_PREFER_TYPE (c));
+  int len = TREE_VEC_LENGTH (fr_list);
+  int cnt = 0;
+
+  while (str[0] == (char) GOMP_INTEROP_IFR_SEPARATOR)
+    {
+      str++;
+      if (str[0] == (char) GOMP_INTEROP_IFR_UNKNOWN)
+	{
+	  /* Assume a no or a single 'fr'.  */
+	  gcc_checking_assert (str[1] == (char) GOMP_INTEROP_IFR_SEPARATOR);
+	  location_t loc = UNKNOWN_LOCATION;
+	  tree value = TREE_VEC_ELT (fr_list, cnt);
+	  if (value != NULL_TREE && value != error_mark_node)
+	    {
+	      loc = EXPR_LOCATION (value);
+	      if (value && TREE_CODE (value) == NOP_EXPR)
+		value = TREE_OPERAND (value, 0);
+	      value = cp_fully_fold (value);
+	    }
+	  if (value != NULL_TREE && value != error_mark_node)
+	    {
+	      if (TREE_CODE (value) != INTEGER_CST
+		  || !tree_fits_shwi_p (value))
+		error_at (loc,
+			  "expected string literal or "
+			  "constant integer expression instead of %qE", value); // FIXME of 'qE' and no 'loc'?
+	      else
+		{
+		  HOST_WIDE_INT n = tree_to_shwi (value);
+		  if (n < 1 || n > GOMP_INTEROP_IFR_LAST)
+		    {
+		      warning_at (loc, OPT_Wopenmp,
+				  "unknown foreign runtime identifier %qwd", n);
+		      n = GOMP_INTEROP_IFR_UNKNOWN;
+		    }
+		  str[0] = (char) n;
+		}
+	    }
+	  str++;
+	}
+      else if (str[0] != (char) GOMP_INTEROP_IFR_SEPARATOR)
+	{
+	  /* Assume a no or a single 'fr'.  */
+	  gcc_checking_assert (str[1] == (char) GOMP_INTEROP_IFR_SEPARATOR);
+	  str++;
+	}
+      str++;
+      while (str[0] != '\0')
+	str += strlen (str) + 1;
+      str++;
+      cnt++;
+      if (cnt >= len)
+	break;
+    }
+  OMP_CLAUSE_INIT_PREFER_TYPE (c) = t;
+}
+
 /* For all elements of CLAUSES, validate them vs OpenMP constraints.
    Remove any elements from the list that are invalid.  */
 
@@ -7239,6 +7310,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool target_in_reduction_seen = false;
   bool num_tasks_seen = false;
   bool partial_seen = false;
+  bool init_seen = false;
+  bool init_use_destroy_seen = false;
+  tree init_no_targetsync_clause = NULL_TREE;
+  tree depend_clause = NULL_TREE;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -8347,6 +8422,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  gcc_unreachable ();
 	case OMP_CLAUSE_DEPEND:
+	  depend_clause = c;
+	  /* FALLTHRU */
 	case OMP_CLAUSE_AFFINITY:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST
@@ -9356,7 +9433,37 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	  OMP_CLAUSE_PARTIAL_EXPR (c) = t;
 	  break;
-
+	case OMP_CLAUSE_INIT:
+	  init_seen = true;
+	  cp_omp_init_prefer_type_update (c);
+	  if (!OMP_CLAUSE_INIT_TARGETSYNC (c))
+	    init_no_targetsync_clause = c;
+	  /* FALLTHRU */
+	case OMP_CLAUSE_DESTROY:
+	case OMP_CLAUSE_USE:
+	  init_use_destroy_seen = true;
+	  t = OMP_CLAUSE_DECL (c);
+	  if (bitmap_bit_p (&generic_head, DECL_UID (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD appears more than once in action clauses", t);
+	      remove = true;
+	    }
+	  if (!processing_template_decl)
+	    {
+	      if (/* ort == C_ORT_OMP_INTEROP [uncomment for depobj init]  */
+		   !c_omp_interop_t_p (TREE_TYPE (OMP_CLAUSE_DECL (c))))
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD must be of %<omp_interop_t%>",
+			  OMP_CLAUSE_DECL (c));
+	      else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE
+		       && TREE_READONLY (OMP_CLAUSE_DECL (c)))
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD shall not be const", OMP_CLAUSE_DECL (c));
+	    }
+	  bitmap_set_bit (&generic_head, DECL_UID (t));
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -9793,6 +9900,19 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	else
 	  pc = &OMP_CLAUSE_CHAIN (c);
       }
+
+  if (ort == C_ORT_OMP_INTEROP
+      && depend_clause
+      && (!init_use_destroy_seen
+	  || (init_seen && init_no_targetsync_clause)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (depend_clause),
+		"%<depend%> clause requires action clauses with "
+		"%<targetsync%> interop-type");
+      if (init_no_targetsync_clause)
+	inform (OMP_CLAUSE_LOCATION (init_no_targetsync_clause),
+		"%<init%> clause lacks the %<targetsync%> modifier");
+    }
 
   bitmap_obstack_release (NULL);
   return clauses;

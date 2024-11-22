@@ -1555,6 +1555,9 @@ class auto_suppress_location_wrappers
 #define OMP_FOR_PRE_BODY(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 5)
 #define OMP_FOR_ORIG_DECLS(NODE)   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 6)
 
+#define OMP_INTEROP_CLAUSES(NODE)\
+  TREE_OPERAND (OMP_INTEROP_CHECK (NODE), 0)
+
 #define OMP_LOOPXFORM_CHECK(NODE) TREE_RANGE_CHECK (NODE, OMP_TILE, OMP_UNROLL)
 #define OMP_LOOPXFORM_LOWERED(NODE) \
   (OMP_LOOPXFORM_CHECK (NODE)->base.public_flag)
@@ -1830,6 +1833,15 @@ class auto_suppress_location_wrappers
 
 #define OMP_CLAUSE_MOTION_PRESENT(NODE) \
   (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_FROM, OMP_CLAUSE_TO)->base.deprecated_flag)
+
+#define OMP_CLAUSE_INIT_TARGET(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_INIT)->base.public_flag)
+#define OMP_CLAUSE_INIT_TARGETSYNC(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_INIT)->base.deprecated_flag)
+#define OMP_CLAUSE_INIT_PREFER_TYPE(NODE)				\
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
+					      OMP_CLAUSE_INIT,		\
+					      OMP_CLAUSE_INIT), 1)
 
 /* Nonzero if this map clause is for array (rather than pointer) based array
    section with zero bias.  Both the non-decl OMP_CLAUSE_MAP and corresponding

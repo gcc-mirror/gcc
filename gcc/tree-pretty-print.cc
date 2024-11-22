@@ -452,6 +452,49 @@ dump_omp_iterators (pretty_printer *pp, tree iter, int spc, dump_flags_t flags)
   pp_right_paren (pp);
 }
 
+/* Dump OpenMP's prefer_type of the init clause.  */
+
+static void
+dump_omp_init_prefer_type (pretty_printer *pp, tree t)
+{
+  if (t == NULL_TREE)
+    return;
+  pp_string (pp, "prefer_type(");
+  const char *str = TREE_STRING_POINTER (t);
+  while (str[0] == (char) GOMP_INTEROP_IFR_SEPARATOR)
+    {
+      bool has_fr = false;
+      pp_character (pp, '{');
+      str++;
+      while (str[0] != (char) GOMP_INTEROP_IFR_SEPARATOR)
+	{
+	  if (has_fr)
+	    pp_character (pp, ',');
+	  has_fr = true;
+	  pp_string (pp, "fr(\"");
+	  pp_string (pp, omp_get_name_from_fr_id (str[0]));
+	  pp_string (pp, "\")");
+	  str++;
+	}
+      str++;
+      if (has_fr && str[0] != '\0')
+	pp_character (pp, ',');
+      while (str[0] != '\0')
+	{
+	  pp_string (pp, "attr(\"");
+	  pp_string (pp, str);
+	  pp_string (pp, "\")");
+	  str += strlen (str) + 1;
+	  if (str[0] != '\0')
+	    pp_character (pp, ',');
+	}
+      str++;
+      pp_character (pp, '}');
+      if (str[0] != '\0')
+	pp_string (pp, ", ");
+    }
+  pp_right_paren (pp);
+}
 
 /* Dump OMP clause CLAUSE, without following OMP_CLAUSE_CHAIN.
 
@@ -601,6 +644,44 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	default: gcc_unreachable ();
 	}
       dump_generic_node (pp, OMP_CLAUSE_IF_EXPR (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
+    case OMP_CLAUSE_DESTROY:
+      pp_string (pp, "destroy(");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
+    case OMP_CLAUSE_INIT:
+      pp_string (pp, "init(");
+      dump_omp_init_prefer_type (pp, OMP_CLAUSE_INIT_PREFER_TYPE (clause));
+      if (OMP_CLAUSE_INIT_TARGET (clause))
+	{
+	  if (OMP_CLAUSE_INIT_PREFER_TYPE (clause))
+	    pp_string (pp, ", ");
+	  pp_string (pp, "target");
+	}
+      if (OMP_CLAUSE_INIT_TARGETSYNC (clause))
+	{
+	  if (OMP_CLAUSE_INIT_PREFER_TYPE (clause) || OMP_CLAUSE_INIT_TARGET (clause))
+	    pp_string (pp, ", ");
+	  pp_string (pp, "targetsync");
+	}
+      if (OMP_CLAUSE_INIT_PREFER_TYPE (clause)
+	  || OMP_CLAUSE_INIT_TARGET (clause)
+	  || OMP_CLAUSE_INIT_TARGETSYNC (clause))
+	pp_string (pp, ": ");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
+    case OMP_CLAUSE_USE:
+      pp_string (pp, "use(");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
       break;
@@ -3990,6 +4071,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, "#pragma omp dispatch");
       dump_omp_clauses (pp, OMP_DISPATCH_CLAUSES (node), spc, flags);
       goto dump_omp_body;
+
+    case OMP_INTEROP:
+      pp_string (pp, "#pragma omp interop");
+      dump_omp_clauses (pp, OMP_INTEROP_CLAUSES (node), spc, flags);
+      is_expr = false;
+      break;
 
     case OMP_SECTION:
       pp_string (pp, "#pragma omp section");

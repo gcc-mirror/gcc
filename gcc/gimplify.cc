@@ -19300,6 +19300,11 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    break;
 	  }
 
+	case OMP_INTEROP:
+	  sorry_at (EXPR_LOCATION (*expr_p),
+		    "%<#pragma omp interop%> not yet supported");
+	  ret = GS_ERROR;
+	  break;
 	case OMP_ATOMIC:
 	case OMP_ATOMIC_READ:
 	case OMP_ATOMIC_CAPTURE_OLD:

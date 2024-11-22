@@ -1296,9 +1296,11 @@ enum c_omp_region_type
   C_ORT_DECLARE_SIMD		= 1 << 2,
   C_ORT_TARGET			= 1 << 3,
   C_ORT_EXIT_DATA		= 1 << 4,
+  C_ORT_INTEROP			= 1 << 5,
   C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD,
   C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET,
   C_ORT_OMP_EXIT_DATA		= C_ORT_OMP | C_ORT_EXIT_DATA,
+  C_ORT_OMP_INTEROP		= C_ORT_OMP | C_ORT_INTEROP,
   C_ORT_ACC_TARGET		= C_ORT_ACC | C_ORT_TARGET
 };
 
@@ -1311,6 +1313,7 @@ extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
 				 tree, tree, tree, tree, tree, tree, bool,
 				 enum omp_memory_order, bool, bool = false);
+extern bool c_omp_interop_t_p (tree);
 extern bool c_omp_depend_t_p (tree);
 extern void c_finish_omp_depobj (location_t, tree, enum omp_clause_depend_kind,
 				 tree);

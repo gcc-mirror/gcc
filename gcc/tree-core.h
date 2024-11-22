@@ -374,6 +374,19 @@ enum omp_clause_code {
 
   /* Range END above for: OMP_CLAUSE_SIZE */
 
+  /* OpenMP clause: destroy (variable-list ).  */
+  OMP_CLAUSE_DESTROY,
+
+  /* Range START below for: OMP_CLAUSE_INIT_PREFER_TYPE  */
+
+  /* OpenMP clause: init ( [modifier-list : ] variable-list ).  */
+  OMP_CLAUSE_INIT,
+
+  /* Range END above for: OMP_CLAUSE_INIT_PREFER_TYPE  */
+
+  /* OpenMP clause: use (variable-list ).  */
+  OMP_CLAUSE_USE,
+
   /* OpenACC clause: gang [(gang-argument-list)].
      Where
       gang-argument-list: [gang-argument-list, ] gang-argument

@@ -21,19 +21,17 @@ program main
 use m
 implicit none
 
-!$omp requires reverse_offload
-
 integer(omp_interop_kind) :: obj1, obj2, obj3, obj4, obj5
 integer(omp_interop_kind) :: target, targetsync,prefer_type
 integer :: x
 
-!$omp interop init(obj1) init(target,targetsync,target,targetsync : obj2, obj3) nowait
+!$omp interop init(obj1) init(target,targetsync : obj2, obj3) nowait
 
-!$omp interop init(prefer_type("cu"//"da", omp_ifr_opencl, omp_ifr_level_zero, "hsa"), targetsync : obj1) &
+!$omp interop init(prefer_type(1_"cuda", omp_ifr_opencl, omp_ifr_level_zero, "hsa"), targetsync : obj1) &
 !$omp&        destroy(obj2, obj3) depend(inout: x) use(obj4, obj5) device(device_num: 0)
 
 !$omp assume contains(interop)
-  !$omp interop init(prefer_type("cu"//char(1)//"da") : obj3)  ! { dg-warning "Unknown foreign runtime identifier 'cu\\\\x01da'" }
+  !$omp interop init(prefer_type("cu da") : obj3)  ! { dg-warning "Unknown foreign runtime identifier 'cu da'" }
 !$omp end assume
 
 !$omp interop init(obj1, obj2, obj1), use(obj4) destroy(obj4)
@@ -42,7 +40,7 @@ integer :: x
 
 !$omp interop depend(inout: x)  ! { dg-error "DEPEND clause at .1. requires action clause with 'targetsync' interop-type" }
 
-!$omp interop depend(inout: x) , use(obj2), destroy(obj3) !  OK, use or destory might have 'targetsync'
+!$omp interop depend(inout: x) , use(obj2), destroy(obj3) !  OK, use or destroy might have 'targetsync'
 
 !$omp interop depend(inout: x) use(obj2), destroy(obj3) !  Likewise
 
@@ -53,7 +51,16 @@ integer :: x
 
 !$omp interop init(target, targetsync, prefer_type, obj1)
 !$omp interop init(prefer_type, obj1, target, targetsync)
-!$omp interop init(target, targetsync,target)  ! { dg-error "Symbol 'target' present on multiple clauses" }
+
+! Duplicated variable name or duplicated modifier:
+!$omp interop init(target, targetsync,target : obj1)  ! { dg-error "Duplicate 'target' at \\(1\\)" }
+!$omp interop init(target, targetsync,target)         ! { dg-error "Duplicate 'target' at \\(1\\)" }
+!$omp interop init(target : target, targetsync,target)  ! { dg-error "Symbol 'target' present on multiple clauses" }
+
+!$omp interop init(target, targetsync,targetsync : obj1)  ! { dg-error "Duplicate 'targetsync' at \\(1\\)" }
+!$omp interop init(target, targetsync,targetsync)         ! { dg-error "Duplicate 'targetsync' at \\(1\\)" }
+!$omp interop init(target : target, targetsync,targetsync)  ! { dg-error "Symbol 'targetsync' present on multiple clauses" }
+
 
 !$omp interop init(, targetsync, prefer_type, obj1, target)  ! { dg-error "Syntax error in OpenMP variable list" }
 end

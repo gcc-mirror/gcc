@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -1753,6 +1754,7 @@ static void c_parser_omp_allocate (c_parser *);
 static void c_parser_omp_assumes (c_parser *);
 static bool c_parser_omp_ordered (c_parser *, enum pragma_context, bool *);
 static tree c_parser_omp_dispatch (location_t, c_parser *);
+static void c_parser_omp_interop (c_parser *);
 static void c_parser_oacc_routine (c_parser *, enum pragma_context);
 
 /* These Objective-C parser functions are only ever called when
@@ -15384,6 +15386,15 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p,
       c_parser_omp_flush (parser);
       return false;
 
+    case PRAGMA_OMP_INTEROP:
+      if (context != pragma_compound)
+	{
+	  construct = "omp interop";
+	  goto in_compound;
+	}
+      c_parser_omp_interop (parser);
+      return false;
+
     case PRAGMA_OMP_TASKWAIT:
       if (context != pragma_compound)
 	{
@@ -15711,6 +15722,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OACC_CLAUSE_DELETE;
 	  else if (!strcmp ("depend", p))
 	    result = PRAGMA_OMP_CLAUSE_DEPEND;
+	  else if (!strcmp ("destroy", p))
+	    result = PRAGMA_OMP_CLAUSE_DESTROY;
 	  else if (!strcmp ("detach", p))
 	    result = PRAGMA_OACC_CLAUSE_DETACH;
 	  else if (!strcmp ("device", p))
@@ -15769,6 +15782,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OACC_CLAUSE_INDEPENDENT;
 	  else if (!strcmp ("indirect", p))
 	    result = PRAGMA_OMP_CLAUSE_INDIRECT;
+	  else if (!strcmp ("init", p))
+	    result = PRAGMA_OMP_CLAUSE_INIT;
 	  else if (!strcmp ("is_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR;
 	  break;
@@ -15889,6 +15904,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_UNIFORM;
 	  else if (!strcmp ("untied", p))
 	    result = PRAGMA_OMP_CLAUSE_UNTIED;
+	  else if (!strcmp ("use", p))
+	    result = PRAGMA_OMP_CLAUSE_USE;
 	  else if (!strcmp ("use_device", p))
 	    result = PRAGMA_OACC_CLAUSE_USE_DEVICE;
 	  else if (!strcmp ("use_device_addr", p))
@@ -20172,6 +20189,386 @@ c_parser_omp_clause_detach (c_parser *parser, tree list)
   return u;
 }
 
+/* OpenMP 5.0:
+   destroy ( variable-list ) */
+
+static tree
+c_parser_omp_clause_destroy (c_parser *parser, tree list)
+{
+  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_DESTROY, list);
+}
+
+/* OpenMP 5.1:
+     prefer_type ( const-int-expr-or-string-literal-list )
+
+   OpenMP 6.0:
+     prefer_type ( { preference-selector-list }, { ... } )
+
+   with preference-selector being:
+     fr ( identifier-or-string-literal-list )
+     attr ( string-list )
+
+   Data format:
+    For the foreign runtime identifiers, string values are converted to
+    their integer value; unknown string or integer values are set to
+    GOMP_INTEROP_IFR_KNOWN.
+
+    Each item (a) GOMP_INTEROP_IFR_SEPARATOR
+	      (b) for any 'fr', its integer value.
+		  Note: Spec only permits 1 'fr' entry (6.0; changed after TR13)
+	      (c) GOMP_INTEROP_IFR_SEPARATOR
+	      (d) list of \0-terminated non-empty strings for 'attr'
+	      (e) '\0'
+    Tailing '\0'.  */
+
+static tree
+c_parser_omp_modifier_prefer_type (c_parser *parser)
+{
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return error_mark_node;
+
+  std::string str;
+
+  /* Old Format: const-int-expr-or-string-literal-list */
+  if (!c_parser_next_token_is (parser, CPP_OPEN_BRACE))
+    while (true)
+      {
+	str += (char) GOMP_INTEROP_IFR_SEPARATOR;
+	if (c_parser_next_token_is (parser, CPP_STRING))
+	  {
+	    c_expr cval = c_parser_string_literal (parser, false, false);
+	    if (cval.value == error_mark_node)
+	      return error_mark_node;
+	    if ((size_t) TREE_STRING_LENGTH (cval.value)
+		!= strlen (TREE_STRING_POINTER (cval.value)) + 1)
+	      {
+		error_at (cval.get_location (), "string literal must "
+						"not contain %<\\0%>");
+		parser->error = true;
+		return error_mark_node;
+	      }
+
+	    char c = omp_get_fr_id_from_name (TREE_STRING_POINTER (cval.value));
+	    if (c == GOMP_INTEROP_IFR_UNKNOWN)
+	      warning_at (cval.get_location (), OPT_Wopenmp,
+			  "unknown foreign runtime identifier %qs",
+			  TREE_STRING_POINTER (cval.value));
+	    str += c;
+	  }
+	else
+	  {
+	    c_expr cval = c_parser_expr_no_commas (parser, NULL);
+	    tree value = c_fully_fold (cval.value, false, NULL);
+	    if (INTEGRAL_TYPE_P (TREE_TYPE (value))
+		&& TREE_CODE (value) != INTEGER_CST)
+	      value = convert_lvalue_to_rvalue (cval.get_start (), cval,
+						false, true).value;
+	    if (TREE_CODE (value) != INTEGER_CST
+		|| !tree_fits_shwi_p (value))
+	      {
+		c_parser_error (parser, "expected string literal or constant "
+					"integer expression");
+		return error_mark_node;
+	      }
+	    HOST_WIDE_INT n = tree_to_shwi (value);
+	    if (n < 1 || n > GOMP_INTEROP_IFR_LAST)
+	      {
+		warning_at (cval.get_location (), OPT_Wopenmp,
+			    "unknown foreign runtime identifier %qwd", n);
+		n = GOMP_INTEROP_IFR_UNKNOWN;
+	      }
+	    str += (char) n;
+	  }
+	str += (char) GOMP_INTEROP_IFR_SEPARATOR;
+	str += '\0';
+	if (c_parser_next_token_is (parser, CPP_COMMA))
+	  {
+	    c_parser_consume_token (parser);
+	    continue;
+	  }
+	if (!c_parser_require (parser, CPP_CLOSE_PAREN,
+			       "expected %<,%> or %<)%>"))
+	  return error_mark_node;
+	str += '\0';
+	tree res = build_string (str.length (), str.data ());
+	TREE_TYPE (res) = build_array_type_nelts (unsigned_char_type_node,
+						  str.length ());
+	return res;
+      }
+
+  /* New format. */
+  std::string str2;
+  while (true)
+    {
+      if (!c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
+	return error_mark_node;
+      str += (char) GOMP_INTEROP_IFR_SEPARATOR;
+      str2.clear ();
+      bool has_fr = false;
+      while (true)
+	{
+	  c_token *tok = c_parser_peek_token (parser);
+	  if (tok->type != CPP_NAME
+	      || (strcmp("fr", IDENTIFIER_POINTER (tok->value)) != 0
+		  && strcmp("attr", IDENTIFIER_POINTER (tok->value)) != 0))
+	    {
+	      c_parser_error (parser, "expected %<fr%> or %<attr%> preference "
+				      "selector");
+	      return error_mark_node;
+	    }
+	  c_parser_consume_token (parser);
+	  bool is_fr = IDENTIFIER_POINTER (tok->value)[0] == 'f';
+	  if (is_fr && has_fr)
+	    {
+	      c_parser_error (parser, "duplicated %<fr%> preference selector");
+	      return error_mark_node;
+	    }
+	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+	    return error_mark_node;
+	  while (true)
+	    {
+	      if (c_parser_next_token_is (parser, CPP_STRING))
+		{
+		  c_expr cval = c_parser_string_literal (parser, false, false);
+		  tree value = cval.value;
+		  if (value == error_mark_node)
+		    return error_mark_node;
+		  if ((size_t) TREE_STRING_LENGTH (value)
+		      != strlen (TREE_STRING_POINTER (value)) + 1)
+		    {
+		      error_at (cval.get_location (), "string literal must "
+						      "not contain %<\\0%>");
+		      parser->error = true;
+		      return error_mark_node;
+		    }
+		  if (!is_fr)
+		    {
+		      if (!startswith (TREE_STRING_POINTER (value), "ompx_"))
+			{
+			  error_at (cval.get_location (),
+				    "%<attr%> string literal must start with "
+				    "%<ompx_%>");
+			  parser->error = true;
+			  return error_mark_node;
+			}
+		      if (strchr (TREE_STRING_POINTER (value), ','))
+			{
+			  error_at (cval.get_location (),
+				    "%<attr%> string literal must not contain "
+				    "a comma");
+			  parser->error = true;
+			  return error_mark_node;
+			}
+		      str2 += TREE_STRING_POINTER (value);
+		      str2 += '\0';
+		    }
+		  else
+		    {
+		      if (*TREE_STRING_POINTER (value) == '\0')
+			{
+			  c_parser_error (parser, "non-empty string literal expected");
+			  return error_mark_node;
+			}
+		      char c = omp_get_fr_id_from_name (TREE_STRING_POINTER (value));
+		      if (c == GOMP_INTEROP_IFR_UNKNOWN)
+			warning_at (cval.get_location (), OPT_Wopenmp,
+				    "unknown foreign runtime identifier %qs",
+				    TREE_STRING_POINTER (value));
+		     str += c;
+		     has_fr = true;
+		    }
+		}
+	      else if (!is_fr)
+		{
+		  c_parser_error (parser, "expected string literal");
+		  return error_mark_node;
+		}
+	      else
+		{
+		  c_expr cval = c_parser_expr_no_commas (parser, NULL);
+		  tree value = c_fully_fold (cval.value, false, NULL);
+		  if (INTEGRAL_TYPE_P (TREE_TYPE (value))
+		      && TREE_CODE (value) != INTEGER_CST)
+		    value = convert_lvalue_to_rvalue (cval.get_start (), cval,
+						      false, true).value;
+
+		  if (TREE_CODE (value) != INTEGER_CST
+		      || !tree_fits_shwi_p (value))
+		    {
+		      c_parser_error (parser, "expected string literal or "
+					      "constant integer expression");
+		      return error_mark_node;
+		    }
+		  HOST_WIDE_INT n = tree_to_shwi (value);
+		  if (n < 1 || n > GOMP_INTEROP_IFR_LAST)
+		    {
+		      warning_at (cval.get_location (), OPT_Wopenmp,
+				  "unknown foreign runtime identifier %qwd", n);
+		      n = GOMP_INTEROP_IFR_UNKNOWN;
+		    }
+		  str += (char) n;
+		  has_fr = true;
+		}
+	      if (!is_fr
+		  && c_parser_next_token_is (parser, CPP_COMMA))
+		{
+		  c_parser_consume_token (parser);
+		  continue;
+		}
+	      if (!c_parser_require (parser, CPP_CLOSE_PAREN,
+				     is_fr ? G_("expected %<)%>")
+					   : G_("expected %<)%> or %<,%>")))
+		return error_mark_node;
+	      break;
+	    }
+	  if (c_parser_next_token_is (parser, CPP_COMMA))
+	    {
+	      c_parser_consume_token (parser);
+	      continue;
+	    }
+	  if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
+	    break;
+	  c_parser_error (parser, "expected %<,%> or %<}%>");
+	  return error_mark_node;
+	}
+      str += (char) GOMP_INTEROP_IFR_SEPARATOR;
+      str += str2;
+      str += '\0';
+      c_parser_consume_token (parser);
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	break;
+      if (!c_parser_require (parser, CPP_COMMA, "expected %<)%> or %<,%>"))
+	return error_mark_node;
+    }
+  c_parser_consume_token (parser);
+  str += '\0';
+  tree res = build_string (str.length (), str.data ());
+  TREE_TYPE (res) = build_array_type_nelts (unsigned_char_type_node,
+						  str.length ());
+  return res;
+}
+
+/* OpenMP 5.1:
+   init ( [init-modifier-list : ] variable-list )
+
+   Modifiers:
+     target
+     targetsync
+     prefer_type (preference-specification) */
+
+static tree
+c_parser_omp_clause_init (c_parser *parser, tree list)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  unsigned pos = 0, raw_pos = 1;
+  while (c_parser_peek_nth_token_raw (parser, raw_pos)->type == CPP_NAME)
+    {
+      pos++; raw_pos++;
+      if (c_parser_peek_nth_token_raw (parser, raw_pos)->type == CPP_OPEN_PAREN)
+	{
+	  raw_pos++;
+	  c_parser_check_balanced_raw_token_sequence (parser, &raw_pos);
+	  if (c_parser_peek_nth_token_raw (parser, raw_pos)->type != CPP_CLOSE_PAREN)
+	    {
+	      pos = 0;
+	      break;
+	    }
+	  raw_pos++;
+	}
+      if (c_parser_peek_nth_token_raw (parser, raw_pos)->type == CPP_COLON)
+	break;
+      if (c_parser_peek_nth_token_raw (parser, raw_pos)->type != CPP_COMMA)
+	{
+	  pos = 0;
+	  break;
+	}
+      pos++;
+      raw_pos++;
+    }
+
+  bool target = false;
+  bool targetsync = false;
+  tree prefer_type_tree = NULL_TREE;
+
+  for (unsigned pos2 = 0; pos2 < pos; ++pos2)
+    {
+      c_token *tok = c_parser_peek_token (parser);
+      if (tok->type == CPP_COMMA)
+	{
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+
+      const char *p = IDENTIFIER_POINTER (tok->value);
+      if (strcmp ("targetsync", p) == 0)
+	{
+	  if (targetsync)
+	    error_at (tok->location, "duplicate %<targetsync%> modifier");
+	  targetsync = true;
+	  c_parser_consume_token (parser);
+	}
+      else if (strcmp ("target", p) == 0)
+	{
+	  if (target)
+	    error_at (tok->location, "duplicate %<target%> modifier");
+	  target = true;
+	  c_parser_consume_token (parser);
+	}
+      else if (strcmp ("prefer_type", p) == 0)
+	{
+	  if (prefer_type_tree != NULL_TREE)
+	    error_at (tok->location, "duplicate %<prefer_type%> modifier");
+	  c_parser_consume_token (parser);
+	  prefer_type_tree = c_parser_omp_modifier_prefer_type (parser);
+	  if (prefer_type_tree == error_mark_node)
+	    return list;
+	}
+      else
+	{
+	  c_parser_error (parser, "%<init%> clause with modifier other than "
+				  "%<prefer_type%>, %<target%> or "
+				  "%<targetsync%>");
+	  parens.skip_until_found_close (parser);
+	  return list;
+	}
+    }
+  if (pos)
+    {
+      c_token *tok = c_parser_peek_token (parser);
+      gcc_checking_assert (tok->type == CPP_COLON);
+      c_parser_consume_token (parser);
+    }
+
+  tree nl = c_parser_omp_variable_list (parser, loc, OMP_CLAUSE_INIT, list,
+					 false);
+  parens.skip_until_found_close (parser);
+
+  for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (target)
+	OMP_CLAUSE_INIT_TARGET (c) = 1;
+      if (targetsync)
+	OMP_CLAUSE_INIT_TARGETSYNC (c) = 1;
+      if (prefer_type_tree)
+	OMP_CLAUSE_INIT_PREFER_TYPE (c) = prefer_type_tree;
+    }
+  return nl;
+}
+
+/* OpenMP 5.0:
+   use ( variable-list ) */
+
+static tree
+c_parser_omp_clause_use (c_parser *parser, tree list)
+{
+  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_USE, list);
+}
+
 /* Parse all OpenACC clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.  */
 
@@ -20667,6 +21064,18 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  clauses = c_parser_omp_clause_doacross (parser, clauses);
 	  c_name = "doacross";
 	  break;
+	case PRAGMA_OMP_CLAUSE_DESTROY:
+	  clauses = c_parser_omp_clause_destroy (parser, clauses);
+	  c_name = "destroy";
+	  break;
+	case PRAGMA_OMP_CLAUSE_INIT:
+	  clauses = c_parser_omp_clause_init (parser, clauses);
+	  c_name = "init";
+	  break;
+	case PRAGMA_OMP_CLAUSE_USE:
+	  clauses = c_parser_omp_clause_use (parser, clauses);
+	  c_name = "use";
+	  break;
 	case PRAGMA_OMP_CLAUSE_MAP:
 	  clauses = c_parser_omp_clause_map (parser, clauses);
 	  c_name = "map";
@@ -20773,6 +21182,8 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
     {
       if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_UNIFORM)) != 0)
 	return c_finish_omp_clauses (clauses, C_ORT_OMP_DECLARE_SIMD);
+      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_USE)) != 0)
+	return c_finish_omp_clauses (clauses, C_ORT_OMP_INTEROP);
       return c_finish_omp_clauses (clauses, C_ORT_OMP);
     }
 
@@ -24107,6 +24518,32 @@ c_parser_omp_masked (location_t loc, c_parser *parser,
   return c_finish_omp_masked (loc, c_parser_omp_structured_block (parser,
 								  if_p),
 			      clauses);
+}
+
+/* OpenMP 5.1:
+   # pragma omp interop clauses[opt] new-line */
+
+#define OMP_INTEROP_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DESTROY)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INIT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_USE))
+
+static void
+c_parser_omp_interop (c_parser *parser)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_parser_consume_pragma (parser);
+  tree clauses = c_parser_omp_all_clauses (parser,
+					   OMP_INTEROP_CLAUSE_MASK,
+					   "#pragma omp interop");
+  tree stmt = make_node (OMP_INTEROP);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_INTEROP_CLAUSES (stmt) = clauses;
+  SET_EXPR_LOCATION (stmt, loc);
+  add_stmt (stmt);
 }
 
 /* OpenMP 2.5:

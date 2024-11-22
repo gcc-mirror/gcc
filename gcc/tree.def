@@ -1246,7 +1246,7 @@ DEFTREECODE (OMP_TILE, "omp_tile", tcc_statement, 7)
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_UNROLL, "omp_unroll", tcc_statement, 7)
 
-/* OpenMP - #pragma acc loop [clause1 ... clauseN]
+/* OpenACC - #pragma acc loop [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OACC_LOOP, "oacc_loop", tcc_statement, 7)
 
@@ -1310,6 +1310,10 @@ DEFTREECODE (OMP_SCAN, "omp_scan", tcc_statement, 2)
    Operand 0: OMP_DISPATCH_BODY: Expression statement including a target call.
    Operand 1: OMP_DISPATCH_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_DISPATCH, "omp_dispatch", tcc_statement, 2)
+
+/* OpenMP - #pragma omp interop [clause1 ... clauseN]
+   Operand 0: OMP_INTEROP_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_INTEROP, "omp_inteorp", tcc_statement, 1)
 
 /* OpenMP - #pragma omp section
    Operand 0: OMP_SECTION_BODY: Section body.  */

@@ -17866,6 +17866,36 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	      = tsubst_stmt (OMP_CLAUSE_LINEAR_STEP (oc), args,
 			     complain, in_decl);
 	  break;
+	case OMP_CLAUSE_INIT:
+	  if (ort == C_ORT_OMP_INTEROP
+	      && OMP_CLAUSE_INIT_PREFER_TYPE (nc)
+	      && TREE_CODE (OMP_CLAUSE_INIT_PREFER_TYPE (nc)) == TREE_LIST
+	      && (OMP_CLAUSE_CHAIN (nc)  == NULL_TREE
+		  || OMP_CLAUSE_CODE (OMP_CLAUSE_CHAIN (nc) ) != OMP_CLAUSE_INIT
+		  || (OMP_CLAUSE_INIT_PREFER_TYPE (nc)
+		      != OMP_CLAUSE_INIT_PREFER_TYPE (OMP_CLAUSE_CHAIN (nc) ))))
+	    {
+	      tree pref_list = OMP_CLAUSE_INIT_PREFER_TYPE (nc);
+	      tree fr_list = TREE_VALUE (pref_list);
+	      int len = TREE_VEC_LENGTH (fr_list);
+	      for (int i = 0; i < len; i++)
+		{
+		  tree *fr_expr = &TREE_VEC_ELT (fr_list, i);
+		  /* Preserve NOP_EXPR to have a location.  */
+		  if (*fr_expr && TREE_CODE (*fr_expr) == NOP_EXPR)
+		    TREE_OPERAND (*fr_expr, 0)
+		      = tsubst_expr (TREE_OPERAND (*fr_expr, 0), args, complain,
+				     in_decl);
+		  else
+		    *fr_expr = tsubst_expr (*fr_expr, args, complain, in_decl);
+		}
+	    }
+	  /* FALLTHRU */
+	case OMP_CLAUSE_DESTROY:
+	case OMP_CLAUSE_USE:
+	  OMP_CLAUSE_OPERAND (nc, 0)
+	    = tsubst_stmt (OMP_CLAUSE_OPERAND (oc, 0), args, complain, in_decl);
+	  break;
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
@@ -19610,6 +19640,14 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
             RETURN (stmt);
           }
       }
+      break;
+
+    case OMP_INTEROP:
+      tmp = tsubst_omp_clauses (OMP_INTEROP_CLAUSES (t), C_ORT_OMP_INTEROP,
+				args, complain, in_decl);
+      t = copy_node (t);
+      OMP_INTEROP_CLAUSES (t) = tmp;
+      add_stmt (t);
       break;
 
     case MUST_NOT_THROW_EXPR:

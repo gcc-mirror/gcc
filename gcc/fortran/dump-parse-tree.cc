@@ -1544,63 +1544,42 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	    fputs ("target,", dumpfile);
 	  if (n->u.init.targetsync)
 	    fputs ("targetsync,", dumpfile);
-	  if (n->u2.init_interop_fr)
+	  if (n->u2.init_interop)
 	    {
-	      char *attr_str = n->u.init.attr;
-	      int idx = 0;
-	      int fr_id;
+	      char *str = n->u2.init_interop;
 	      fputs ("prefer_type(", dumpfile);
-	      do
+	      while (str[0] == (char) GOMP_INTEROP_IFR_SEPARATOR)
 		{
-		  fr_id = n->u2.init_interop_fr[idx];
+		  bool has_fr = false;
 		  fputc ('{', dumpfile);
-		  if (fr_id != GOMP_INTEROP_IFR_NONE)
+		  str++;
+		  while (str[0] != (char) GOMP_INTEROP_IFR_SEPARATOR)
 		    {
-		      fputs ("fr(", dumpfile);
-		      do
-			{
-			  const char *fr_str = omp_get_name_from_fr_id (fr_id);
-			  if (fr_str)
-			    fprintf (dumpfile, "\"%s\"", fr_str);
-			  else
-			    fprintf (dumpfile, "%d", fr_id);
-			  fr_id = n->u2.init_interop_fr[++idx];
-			  if (fr_id != GOMP_INTEROP_IFR_SEPARATOR)
-			    fputc (',', dumpfile);
-			}
-		      while (fr_id != GOMP_INTEROP_IFR_SEPARATOR);
-		      fputc (')', dumpfile);
-		      if (attr_str && (attr_str[0] != ' ' || attr_str[1] != '\0'))
+		      if (has_fr)
 			fputc (',', dumpfile);
+		      has_fr = true;
+		      fputs ("fr(\"", dumpfile);
+		      fputs (omp_get_name_from_fr_id (str[0]), dumpfile);
+		      fputs ("\")", dumpfile);
+		      str++;
 		    }
-		  else
-		    fr_id = n->u2.init_interop_fr[++idx];
-		  if (attr_str && attr_str[0] == ' ' && attr_str[1] == '\0')
-		    attr_str += 2;
-		  else if (attr_str)
+		  str++;
+		  if (has_fr && str[0] != '\0')
+		    fputc (',', dumpfile);
+		  while (str[0] != '\0')
 		    {
 		      fputs ("attr(\"", dumpfile);
-		      do
-			{
-			  fputs ((char *) attr_str, dumpfile);
-			  fputc ('"', dumpfile);
-			  attr_str += strlen (attr_str) + 1;
-			  if (attr_str[0] == '\0')
-			    break;
-			  fputs (",\"", dumpfile);
-			}
-		      while (true);
-		      fputc (')', dumpfile);
+		      fputs (str, dumpfile);
+		      fputs ("\")", dumpfile);
+		      str += strlen (str) + 1;
+		      if (str[0] != '\0')
+			fputc (',', dumpfile);
 		    }
+		  str++;
 		  fputc ('}', dumpfile);
-		  fr_id = n->u2.init_interop_fr[++idx];
-		  if (fr_id == GOMP_INTEROP_IFR_SEPARATOR)
-		    break;
-		  fputc (',', dumpfile);
-		  if (attr_str)
-		    ++attr_str;
+		  if (str[0] != '\0')
+		    fputs (", ", dumpfile);
 		}
-	      while (true);
 	      fputc (')', dumpfile);
 	    }
 	  fputc (':', dumpfile);
