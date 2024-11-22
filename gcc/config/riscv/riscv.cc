@@ -1315,6 +1315,34 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 	  cost = alt_cost;
 	}
 
+      /* If bit31 is on and the upper constant is one less than the lower
+	 constant, then we can exploit sign extending nature of the lower
+	 half to trivially generate the upper half with an ADD.
+
+	 Not appropriate for ZBKB since that won't use "add"
+	 at codegen time.  */
+      if (!TARGET_ZBKB
+	  && cost > 4
+	  && bit31
+	  && hival == loval - 1)
+	{
+	  alt_cost = 2 + riscv_build_integer_1 (alt_codes,
+						sext_hwi (loval, 32), mode);
+	  alt_codes[alt_cost - 3].save_temporary = true;
+	  alt_codes[alt_cost - 2].code = ASHIFT;
+	  alt_codes[alt_cost - 2].value = 32;
+	  alt_codes[alt_cost - 2].use_uw = false;
+	  alt_codes[alt_cost - 2].save_temporary = false;
+	  /* This will turn into an ADD.  */
+	  alt_codes[alt_cost - 1].code = CONCAT;
+	  alt_codes[alt_cost - 1].value = 32;
+	  alt_codes[alt_cost - 1].use_uw = false;
+	  alt_codes[alt_cost - 1].save_temporary = false;
+
+	  memcpy (codes, alt_codes, sizeof (alt_codes));
+	  cost = alt_cost;
+	}
+
       if (cost > 4 && !bit31 && TARGET_ZBA)
 	{
 	  int value = 0;
