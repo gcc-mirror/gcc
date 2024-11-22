@@ -22,9 +22,9 @@
 #include "rust-hir-path.h"
 #include "rust-hir-type.h"
 #include "rust-hir.h"
-#include <string>
 #include "rust-attribute-values.h"
 #include "tree/rust-hir-expr.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {

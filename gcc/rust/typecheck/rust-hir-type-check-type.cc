@@ -27,7 +27,7 @@
 #include "rust-mapping-common.h"
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
-#include <functional>
+#include "rust-system.h"
 
 namespace Rust {
 namespace Resolver {

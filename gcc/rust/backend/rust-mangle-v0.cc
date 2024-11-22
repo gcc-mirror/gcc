@@ -25,7 +25,6 @@
 #include "rust-unicode.h"
 #include "rust-punycode.h"
 #include "rust-compile-type.h"
-#include <sstream>
 
 namespace Rust {
 namespace Compile {

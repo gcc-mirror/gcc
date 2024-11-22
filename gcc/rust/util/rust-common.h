@@ -21,7 +21,6 @@
 #ifndef RUST_COMMON
 #define RUST_COMMON
 #include "rust-system.h"
-#include <string>
 
 namespace Rust {
 

@@ -17,7 +17,7 @@
 #ifndef RUST_TOKEN_CONVERTER_H
 #define RUST_TOKEN_CONVERTER_H
 
-#include <vector>
+#include "rust-system.h"
 #include "rust-token.h"
 #include "libproc_macro_internal/proc_macro.h"
 

@@ -32,7 +32,7 @@
 #include "rust-hir-type-bounds.h"
 
 #include "options.h"
-#include <functional>
+#include "rust-system.h"
 
 namespace Rust {
 namespace TyTy {

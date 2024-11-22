@@ -22,7 +22,7 @@
 #include "rust-ast.h"
 #include "rust-path.h"
 #include "rust-expr.h"
-#include <memory>
+#include "rust-system.h"
 
 namespace Rust {
 namespace AST {
