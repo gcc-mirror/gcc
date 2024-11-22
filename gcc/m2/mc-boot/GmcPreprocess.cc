@@ -24,9 +24,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _mcPreprocess_H
 #define _mcPreprocess_C
 
+#include "GmcPreprocess.h"
 #   include "GSYSTEM.h"
 #   include "GDynamicStrings.h"
 #   include "Glibc.h"
@@ -167,7 +167,7 @@ extern "C" DynamicStrings_String mcPreprocess_preprocessModule (DynamicStrings_S
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   listOfFiles = alists_initList ();
   if (! (M2RTS_InstallTerminationProcedure ((PROC ) {(PROC_t) removeFiles})))
@@ -177,6 +177,6 @@ extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc,__attrib
     }
 }
 
-extern "C" void _M2_mcPreprocess_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPreprocess_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

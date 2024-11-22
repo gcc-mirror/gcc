@@ -34,15 +34,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _Break_H
 #define _Break_C
 
+#include "GBreak.h"
 
 
-extern "C" void _M2_Break_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Break_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Break_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Break_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

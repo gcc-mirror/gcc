@@ -24,9 +24,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _mcDebug_H
 #define _mcDebug_C
 
+#include "GmcDebug.h"
 #   include "GStrIO.h"
 #   include "GmcOptions.h"
 #   include "GmcError.h"
@@ -78,10 +78,10 @@ extern "C" void mcDebug_writeDebug (const char *a_, unsigned int _a_high)
     }
 }
 
-extern "C" void _M2_mcDebug_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcDebug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcDebug_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcDebug_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

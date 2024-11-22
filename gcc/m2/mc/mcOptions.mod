@@ -752,7 +752,8 @@ BEGIN
       setOutputFile (Slice (arg, 3, 0))
    ELSIF optionIs ("--extended-opaque", arg)
    THEN
-      setExtendedOpaque (TRUE)
+      (* setExtendedOpaque (TRUE) *)
+      printf0 ("IGNORING --extended-opaque - this option is no longer implemented - please adjust the call to mc\n")
    ELSIF optionIs ("--debug-top", arg)
    THEN
       setDebugTopological (TRUE)

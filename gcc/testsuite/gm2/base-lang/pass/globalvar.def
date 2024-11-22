@@ -1,0 +1,3 @@
+DEFINITION MODULE globalvar ;  (*!m2pim*)
+
+END globalvar.

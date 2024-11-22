@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _MemUtils_H
 #define _MemUtils_C
 
+#include "GMemUtils.h"
 #   include "GSYSTEM.h"
 
 
@@ -118,10 +118,10 @@ extern "C" void MemUtils_MemZero (void * a, unsigned int length)
     }
 }
 
-extern "C" void _M2_MemUtils_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_MemUtils_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_MemUtils_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_MemUtils_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

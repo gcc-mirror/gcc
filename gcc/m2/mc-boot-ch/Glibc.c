@@ -110,23 +110,35 @@ tracedb_result (int result)
 #endif
 }
 
-EXTERN
-int
-libc_read (int fd, void *a, int nbytes)
+static
+void
+tracedb_zresult (size_t result)
 {
-  tracedb ("libc_read (%d, %p, %d)\n", fd, a, nbytes);
-  int result = read (fd, a, nbytes);
-  tracedb_result (result);
+#if defined(BUILD_MC_LIBC_TRACE)
+  tracedb (" result = %zd", result);
+  if (result == -1)
+    tracedb (", errno = %s", strerror (errno));
+  tracedb ("\n");
+#endif
+}
+
+EXTERN
+size_t
+libc_read (int fd, void *a, size_t nbytes)
+{
+  tracedb ("libc_read (%d, %p, %zd)\n", fd, a, nbytes);
+  size_t result = read (fd, a, nbytes);
+  tracedb_zresult (result);
   return result;
 }
 
 EXTERN
-int
-libc_write (int fd, void *a, int nbytes)
+size_t
+libc_write (int fd, void *a, size_t nbytes)
 {
-  tracedb ("libc_write (%d, %p, %d)\n", fd, a, nbytes);
-  int result = write (fd, a, nbytes);
-  tracedb_result (result);
+  tracedb ("libc_write (%d, %p, %zd)\n", fd, a, nbytes);
+  size_t result = write (fd, a, nbytes);
+  tracedb_zresult (result);
   return result;
 }
 
@@ -162,7 +174,7 @@ libc_abort ()
 }
 
 EXTERN
-int
+size_t
 libc_strlen (char *s)
 {
   return strlen (s);
@@ -184,14 +196,14 @@ libc_localtime (time_t *epochtime)
 
 EXTERN
 int
-libc_printf (char *_format, unsigned int _format_high, ...)
+libc_printf (const char *_format, unsigned int _format_high, ...)
 {
   va_list arg;
   int done;
   char format[_format_high + 1];
   unsigned int i = 0;
   unsigned int j = 0;
-  char *c;
+  const char *c;
 
   do
     {
@@ -221,14 +233,14 @@ libc_printf (char *_format, unsigned int _format_high, ...)
 
 EXTERN
 int
-libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_high, ...)
+libc_snprintf (char *dest, size_t length, const char *_format, unsigned int _format_high, ...)
 {
   va_list arg;
   int done;
   char format[_format_high + 1];
   unsigned int i = 0;
   unsigned int j = 0;
-  char *c;
+  const char *c;
 
   do
     {
@@ -258,7 +270,7 @@ libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_hi
 
 EXTERN
 void *
-libc_malloc (unsigned int size)
+libc_malloc (size_t size)
 {
   return malloc (size);
 }
@@ -300,7 +312,7 @@ libc_system (char *command)
 
 EXTERN
 void *
-libc_memcpy (void *dest, void *src, int n)
+libc_memcpy (void *dest, void *src, size_t n)
 {
   return memcpy (dest, src, n);
 }

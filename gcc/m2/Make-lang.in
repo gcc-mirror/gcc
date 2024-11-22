@@ -505,7 +505,7 @@ MC_ARGS= --olang=c++ \
  $(MC_COPYRIGHT) \
  --gcc-config-system
 
-MC_EXTENDED_OPAQUE=--extended-opaque
+MC_EXTENDED_OPAQUE=
 MCDEPS=m2/boot-bin/mc$(exeext)
 
 MC=m2/boot-bin/mc$(exeext) $(MC_ARGS)

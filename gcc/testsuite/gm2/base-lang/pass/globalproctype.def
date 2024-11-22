@@ -1,0 +1,7 @@
+DEFINITION MODULE globalproctype ;  (*!m2pim*)
+
+TYPE
+   myproc = PROCEDURE (CARDINAL) ;
+
+
+END globalproctype.

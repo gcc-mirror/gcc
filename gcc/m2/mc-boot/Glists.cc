@@ -41,9 +41,9 @@ Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _lists_H
 #define _lists_C
 
+#include "Glists.h"
 #   include "GStorage.h"
 
 typedef struct symbolKey_performOperation_p symbolKey_performOperation;
@@ -53,16 +53,13 @@ typedef struct lists__T1_r lists__T1;
 
 typedef struct lists__T2_a lists__T2;
 
-typedef lists__T1 *lists_list;
-
-typedef void (*symbolKey_performOperation_t) (void *);
-struct symbolKey_performOperation_p { symbolKey_performOperation_t proc; };
+typedef lists__T1 *lists_list__opaque;
 
 struct lists__T2_a { void * array[MaxnoOfelements-1+1]; };
 struct lists__T1_r {
                      unsigned int noOfelements;
                      lists__T2 elements;
-                     lists_list next;
+                     lists_list__opaque next;
                    };
 
 
@@ -140,14 +137,14 @@ extern "C" lists_list lists_duplicateList (lists_list l);
    removeItem - remove an element at index, i, from the list data type.
 */
 
-static void removeItem (lists_list p, lists_list l, unsigned int i);
+static void removeItem (lists_list__opaque p, lists_list__opaque l, unsigned int i);
 
 
 /*
    removeItem - remove an element at index, i, from the list data type.
 */
 
-static void removeItem (lists_list p, lists_list l, unsigned int i)
+static void removeItem (lists_list__opaque p, lists_list__opaque l, unsigned int i)
 {
   l->noOfelements -= 1;
   while (i <= l->noOfelements)
@@ -169,12 +166,12 @@ static void removeItem (lists_list p, lists_list l, unsigned int i)
 
 extern "C" lists_list lists_initList (void)
 {
-  lists_list l;
+  lists_list__opaque l;
 
   Storage_ALLOCATE ((void **) &l, sizeof (lists__T1));
   l->noOfelements = 0;
-  l->next = NULL;
-  return l;
+  l->next = static_cast<lists_list__opaque> (NULL);
+  return static_cast<lists_list> (l);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -188,9 +185,9 @@ extern "C" void lists_killList (lists_list *l)
 {
   if ((*l) != NULL)
     {
-      if ((*l)->next != NULL)
+      if (static_cast<lists_list__opaque> ((*l))->next != NULL)
         {
-          lists_killList (&(*l)->next);
+          lists_killList (reinterpret_cast<lists_list *> (&static_cast<lists_list__opaque> ((*l))->next));
         }
       Storage_DEALLOCATE ((void **) &(*l), sizeof (lists__T1));
     }
@@ -203,21 +200,21 @@ extern "C" void lists_killList (lists_list *l)
 
 extern "C" void lists_putItemIntoList (lists_list l, void * c)
 {
-  if (l->noOfelements < MaxnoOfelements)
+  if (static_cast<lists_list__opaque> (l)->noOfelements < MaxnoOfelements)
     {
-      l->noOfelements += 1;
-      l->elements.array[l->noOfelements-1] = c;
+      static_cast<lists_list__opaque> (l)->noOfelements += 1;
+      static_cast<lists_list__opaque> (l)->elements.array[static_cast<lists_list__opaque> (l)->noOfelements-1] = c;
     }
-  else if (l->next != NULL)
+  else if (static_cast<lists_list__opaque> (l)->next != NULL)
     {
       /* avoid dangling else.  */
-      lists_putItemIntoList (l->next, c);
+      lists_putItemIntoList (static_cast<lists_list> (static_cast<lists_list__opaque> (l)->next), c);
     }
   else
     {
       /* avoid dangling else.  */
-      l->next = lists_initList ();
-      lists_putItemIntoList (l->next, c);
+      static_cast<lists_list__opaque> (l)->next = static_cast<lists_list__opaque> (lists_initList ());
+      lists_putItemIntoList (static_cast<lists_list> (static_cast<lists_list__opaque> (l)->next), c);
     }
 }
 
@@ -230,17 +227,17 @@ extern "C" void * lists_getItemFromList (lists_list l, unsigned int n)
 {
   while (l != NULL)
     {
-      if (n <= l->noOfelements)
+      if (n <= static_cast<lists_list__opaque> (l)->noOfelements)
         {
-          return l->elements.array[n-1];
+          return static_cast<lists_list__opaque> (l)->elements.array[n-1];
         }
       else
         {
-          n -= l->noOfelements;
+          n -= static_cast<lists_list__opaque> (l)->noOfelements;
         }
-      l = l->next;
+      l = static_cast<lists_list> (static_cast<lists_list__opaque> (l)->next);
     }
-  return reinterpret_cast<void *> (0);
+  return static_cast<void *> (0);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -263,9 +260,9 @@ extern "C" unsigned int lists_getIndexOfList (lists_list l, void * c)
   else
     {
       i = 1;
-      while (i <= l->noOfelements)
+      while (i <= static_cast<lists_list__opaque> (l)->noOfelements)
         {
-          if (l->elements.array[i-1] == c)
+          if (static_cast<lists_list__opaque> (l)->elements.array[i-1] == c)
             {
               return i;
             }
@@ -274,7 +271,7 @@ extern "C" unsigned int lists_getIndexOfList (lists_list l, void * c)
               i += 1;
             }
         }
-      return l->noOfelements+(lists_getIndexOfList (l->next, c));
+      return static_cast<lists_list__opaque> (l)->noOfelements+(lists_getIndexOfList (static_cast<lists_list> (static_cast<lists_list__opaque> (l)->next), c));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -297,8 +294,8 @@ extern "C" unsigned int lists_noOfItemsInList (lists_list l)
     {
       t = 0;
       do {
-        t += l->noOfelements;
-        l = l->next;
+        t += static_cast<lists_list__opaque> (l)->noOfelements;
+        l = static_cast<lists_list> (static_cast<lists_list__opaque> (l)->next);
       } while (! (l == NULL));
       return t;
     }
@@ -328,33 +325,33 @@ extern "C" void lists_includeItemIntoList (lists_list l, void * c)
 
 extern "C" void lists_removeItemFromList (lists_list l, void * c)
 {
-  lists_list p;
+  lists_list__opaque p;
   unsigned int i;
   bool found;
 
   if (l != NULL)
     {
       found = false;
-      p = NULL;
+      p = static_cast<lists_list__opaque> (NULL);
       do {
         i = 1;
-        while ((i <= l->noOfelements) && (l->elements.array[i-1] != c))
+        while ((i <= static_cast<lists_list__opaque> (l)->noOfelements) && (static_cast<lists_list__opaque> (l)->elements.array[i-1] != c))
           {
             i += 1;
           }
-        if ((i <= l->noOfelements) && (l->elements.array[i-1] == c))
+        if ((i <= static_cast<lists_list__opaque> (l)->noOfelements) && (static_cast<lists_list__opaque> (l)->elements.array[i-1] == c))
           {
             found = true;
           }
         else
           {
-            p = l;
-            l = l->next;
+            p = static_cast<lists_list__opaque> (l);
+            l = static_cast<lists_list> (static_cast<lists_list__opaque> (l)->next);
           }
       } while (! ((l == NULL) || found));
       if (found)
         {
-          removeItem (p, l, i);
+          removeItem (p, static_cast<lists_list__opaque> (l), i);
         }
     }
 }
@@ -370,9 +367,9 @@ extern "C" bool lists_isItemInList (lists_list l, void * c)
 
   do {
     i = 1;
-    while (i <= l->noOfelements)
+    while (i <= static_cast<lists_list__opaque> (l)->noOfelements)
       {
-        if (l->elements.array[i-1] == c)
+        if (static_cast<lists_list__opaque> (l)->elements.array[i-1] == c)
           {
             return true;
           }
@@ -381,7 +378,7 @@ extern "C" bool lists_isItemInList (lists_list l, void * c)
             i += 1;
           }
       }
-    l = l->next;
+    l = static_cast<lists_list> (static_cast<lists_list__opaque> (l)->next);
   } while (! (l == NULL));
   return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -414,27 +411,27 @@ extern "C" void lists_foreachItemInListDo (lists_list l, symbolKey_performOperat
 
 extern "C" lists_list lists_duplicateList (lists_list l)
 {
-  lists_list m;
+  lists_list__opaque m;
   unsigned int n;
   unsigned int i;
 
-  m = lists_initList ();
+  m = static_cast<lists_list__opaque> (lists_initList ());
   n = lists_noOfItemsInList (l);
   i = 1;
   while (i <= n)
     {
-      lists_putItemIntoList (m, lists_getItemFromList (l, i));
+      lists_putItemIntoList (static_cast<lists_list> (m), lists_getItemFromList (l, i));
       i += 1;
     }
-  return m;
+  return static_cast<lists_list> (m);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_lists_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_lists_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_lists_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_lists_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

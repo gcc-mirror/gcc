@@ -41,9 +41,9 @@ see <https://www.gnu.org/licenses/>.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcp5_H
 #define _mcp5_C
 
+#include "Gmcp5.h"
 #   include "GDynamicStrings.h"
 #   include "GmcError.h"
 #   include "GnameKey.h"
@@ -5553,7 +5553,7 @@ static void SubDesignator (mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, m
     {
       ErrorArray ((const char *) "no expression found", 19);
       mcError_flushErrors ();
-      return ;
+      return;
     }
   type = decl_skipType (decl_getType (n));
   if (mcLexBuf_currenttoken == mcReserved_periodtok)
@@ -8568,10 +8568,10 @@ extern "C" bool mcp5_CompilationUnit (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcp5_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp5_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcp5_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp5_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

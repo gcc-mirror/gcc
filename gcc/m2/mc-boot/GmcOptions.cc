@@ -37,9 +37,9 @@ Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcOptions_H
 #define _mcOptions_C
 
+#include "GmcOptions.h"
 #   include "GSArgs.h"
 #   include "GmcSearch.h"
 #   include "Glibc.h"
@@ -885,7 +885,8 @@ static void handleOption (DynamicStrings_String arg)
   else if (optionIs ((const char *) "--extended-opaque", 17, arg))
     {
       /* avoid dangling else.  */
-      setExtendedOpaque (true);
+      /* setExtendedOpaque (TRUE)  */
+      mcPrintf_printf0 ((const char *) "IGNORING --extended-opaque - this option is no longer implemented - please adjust the call to mc\\n", 98);
     }
   else if (optionIs ((const char *) "--debug-top", 11, arg))
     {
@@ -1258,7 +1259,7 @@ extern "C" DynamicStrings_String mcOptions_getCShortRealType (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   langC = true;
   langCPP = false;
@@ -1293,6 +1294,6 @@ extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute
   CShortReal = DynamicStrings_InitString ((const char *) "float", 5);
 }
 
-extern "C" void _M2_mcOptions_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcOptions_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

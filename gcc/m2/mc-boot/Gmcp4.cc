@@ -41,9 +41,9 @@ see <https://www.gnu.org/licenses/>.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcp4_H
 #define _mcp4_C
 
+#include "Gmcp4.h"
 #   include "GDynamicStrings.h"
 #   include "GmcError.h"
 #   include "GnameKey.h"
@@ -7709,10 +7709,10 @@ extern "C" bool mcp4_CompilationUnit (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcp4_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp4_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcp4_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp4_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

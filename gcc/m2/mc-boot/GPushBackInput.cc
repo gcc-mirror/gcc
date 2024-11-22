@@ -42,9 +42,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _PushBackInput_H
 #define _PushBackInput_C
 
+#include "GPushBackInput.h"
 #   include "GFIO.h"
 #   include "GDynamicStrings.h"
 #   include "GASCII.h"
@@ -478,12 +478,12 @@ extern "C" unsigned int PushBackInput_GetCurrentLine (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   PushBackInput_SetDebug (false);
   Init ();
 }
 
-extern "C" void _M2_PushBackInput_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_PushBackInput_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

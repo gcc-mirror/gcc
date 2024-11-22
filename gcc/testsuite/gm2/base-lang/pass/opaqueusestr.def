@@ -1,0 +1,9 @@
+DEFINITION MODULE opaqueusestr ;  (*!m2pim*)
+
+FROM opaquestr IMPORT String ;
+
+PROCEDURE doDecimalPlaces (s: String; n: CARDINAL) : String ;
+PROCEDURE IntegerToString (i: INTEGER) : String ;
+
+
+END opaqueusestr.

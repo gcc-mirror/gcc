@@ -36,9 +36,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcMetaError_H
 #define _mcMetaError_C
 
+#include "GmcMetaError.h"
 #   include "GnameKey.h"
 #   include "GStrLib.h"
 #   include "GmcLexBuf.h"
@@ -1270,7 +1270,7 @@ static void ebnf (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_Str
             break;
 
           case '}':
-            return ;
+            return;
             break;
 
 
@@ -1872,10 +1872,10 @@ extern "C" void mcMetaError_metaErrorStringT4 (unsigned int tok, DynamicStrings_
   varargs_end (&sym);
 }
 
-extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcMetaError_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcMetaError_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

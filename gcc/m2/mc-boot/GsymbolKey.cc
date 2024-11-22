@@ -38,9 +38,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _symbolKey_H
 #define _symbolKey_C
 
+#include "GsymbolKey.h"
 #   include "GStorage.h"
 #   include "GStrIO.h"
 #   include "GNumberIO.h"
@@ -54,19 +54,13 @@ typedef struct symbolKey_performOperation_p symbolKey_performOperation;
 
 typedef struct symbolKey__T1_r symbolKey__T1;
 
-typedef symbolKey__T1 *symbolKey_symbolTree;
-
-typedef bool (*symbolKey_isSymbol_t) (void *);
-struct symbolKey_isSymbol_p { symbolKey_isSymbol_t proc; };
-
-typedef void (*symbolKey_performOperation_t) (void *);
-struct symbolKey_performOperation_p { symbolKey_performOperation_t proc; };
+typedef symbolKey__T1 *symbolKey_symbolTree__opaque;
 
 struct symbolKey__T1_r {
                          nameKey_Name name;
-                         void *key;
-                         symbolKey_symbolTree left;
-                         symbolKey_symbolTree right;
+                         void * key;
+                         symbolKey_symbolTree__opaque left;
+                         symbolKey_symbolTree__opaque right;
                        };
 
 extern "C" symbolKey_symbolTree symbolKey_initTree (void);
@@ -113,7 +107,7 @@ extern "C" void symbolKey_foreachNodeDo (symbolKey_symbolTree t, symbolKey_perfo
                              if an entry is found, father is set to the node above child.
 */
 
-static void findNodeAndParentInTree (symbolKey_symbolTree t, nameKey_Name n, symbolKey_symbolTree *child, symbolKey_symbolTree *father);
+static void findNodeAndParentInTree (symbolKey_symbolTree__opaque t, nameKey_Name n, symbolKey_symbolTree__opaque *child, symbolKey_symbolTree__opaque *father);
 
 /*
    searchForAny - performs the search required for doesTreeContainAny.
@@ -121,7 +115,7 @@ static void findNodeAndParentInTree (symbolKey_symbolTree t, nameKey_Name n, sym
                   therefore we must skip over it.
 */
 
-static bool searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
+static bool searchForAny (symbolKey_symbolTree__opaque t, symbolKey_isSymbol p);
 
 /*
    searchAndDo - searches all the nodes in symbolTree, t, and
@@ -129,7 +123,7 @@ static bool searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
                  It traverse the tree in order.
 */
 
-static void searchAndDo (symbolKey_symbolTree t, symbolKey_performOperation p);
+static void searchAndDo (symbolKey_symbolTree__opaque t, symbolKey_performOperation p);
 
 
 /*
@@ -137,7 +131,7 @@ static void searchAndDo (symbolKey_symbolTree t, symbolKey_performOperation p);
                              if an entry is found, father is set to the node above child.
 */
 
-static void findNodeAndParentInTree (symbolKey_symbolTree t, nameKey_Name n, symbolKey_symbolTree *child, symbolKey_symbolTree *father)
+static void findNodeAndParentInTree (symbolKey_symbolTree__opaque t, nameKey_Name n, symbolKey_symbolTree__opaque *child, symbolKey_symbolTree__opaque *father)
 {
   /* remember to skip the sentinal value and assign father and child  */
   (*father) = t;
@@ -171,7 +165,7 @@ static void findNodeAndParentInTree (symbolKey_symbolTree t, nameKey_Name n, sym
                   therefore we must skip over it.
 */
 
-static bool searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
+static bool searchForAny (symbolKey_symbolTree__opaque t, symbolKey_isSymbol p)
 {
   if (t == NULL)
     {
@@ -192,7 +186,7 @@ static bool searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
                  It traverse the tree in order.
 */
 
-static void searchAndDo (symbolKey_symbolTree t, symbolKey_performOperation p)
+static void searchAndDo (symbolKey_symbolTree__opaque t, symbolKey_performOperation p)
 {
   if (t != NULL)
     {
@@ -204,12 +198,12 @@ static void searchAndDo (symbolKey_symbolTree t, symbolKey_performOperation p)
 
 extern "C" symbolKey_symbolTree symbolKey_initTree (void)
 {
-  symbolKey_symbolTree t;
+  symbolKey_symbolTree__opaque t;
 
   Storage_ALLOCATE ((void **) &t, sizeof (symbolKey__T1));  /* The value entity  */
-  t->left = NULL;
-  t->right = NULL;
-  return t;
+  t->left = static_cast<symbolKey_symbolTree__opaque> (NULL);
+  t->right = static_cast<symbolKey_symbolTree__opaque> (NULL);
+  return static_cast<symbolKey_symbolTree> (t);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -218,17 +212,17 @@ extern "C" void symbolKey_killTree (symbolKey_symbolTree *t)
 {
   if ((*t) != NULL)
     {
-      symbolKey_killTree (&(*t)->left);
-      symbolKey_killTree (&(*t)->right);
+      symbolKey_killTree (reinterpret_cast<symbolKey_symbolTree *> (&static_cast<symbolKey_symbolTree__opaque> ((*t))->left));
+      symbolKey_killTree (reinterpret_cast<symbolKey_symbolTree *> (&static_cast<symbolKey_symbolTree__opaque> ((*t))->right));
       Storage_DEALLOCATE ((void **) &(*t), sizeof (symbolKey__T1));
-      (*t) = NULL;
+      (*t) = static_cast<symbolKey_symbolTree> (NULL);
     }
 }
 
 extern "C" void * symbolKey_getSymKey (symbolKey_symbolTree t, nameKey_Name name)
 {
-  symbolKey_symbolTree father;
-  symbolKey_symbolTree child;
+  symbolKey_symbolTree__opaque father;
+  symbolKey_symbolTree__opaque child;
 
   if (t == NULL)
     {
@@ -236,7 +230,7 @@ extern "C" void * symbolKey_getSymKey (symbolKey_symbolTree t, nameKey_Name name
     }
   else
     {
-      findNodeAndParentInTree (t, name, &child, &father);
+      findNodeAndParentInTree (static_cast<symbolKey_symbolTree__opaque> (t), name, &child, &father);
       if (child == NULL)
         {
           return symbolKey_NulKey;
@@ -252,10 +246,10 @@ extern "C" void * symbolKey_getSymKey (symbolKey_symbolTree t, nameKey_Name name
 
 extern "C" void symbolKey_putSymKey (symbolKey_symbolTree t, nameKey_Name name, void * key)
 {
-  symbolKey_symbolTree father;
-  symbolKey_symbolTree child;
+  symbolKey_symbolTree__opaque father;
+  symbolKey_symbolTree__opaque child;
 
-  findNodeAndParentInTree (t, name, &child, &father);
+  findNodeAndParentInTree (static_cast<symbolKey_symbolTree__opaque> (t), name, &child, &father);
   if (child == NULL)
     {
       /* no child found, now is name less than father or greater?  */
@@ -279,8 +273,8 @@ extern "C" void symbolKey_putSymKey (symbolKey_symbolTree t, nameKey_Name name, 
               father->right = child;
             }
         }
-      child->right = NULL;
-      child->left = NULL;
+      child->right = static_cast<symbolKey_symbolTree__opaque> (NULL);
+      child->left = static_cast<symbolKey_symbolTree__opaque> (NULL);
       child->key = key;
       child->name = name;
     }
@@ -300,11 +294,11 @@ extern "C" void symbolKey_putSymKey (symbolKey_symbolTree t, nameKey_Name name, 
 
 extern "C" void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name)
 {
-  symbolKey_symbolTree i;
-  symbolKey_symbolTree child;
-  symbolKey_symbolTree father;
+  symbolKey_symbolTree__opaque i;
+  symbolKey_symbolTree__opaque child;
+  symbolKey_symbolTree__opaque father;
 
-  findNodeAndParentInTree (t, name, &child, &father);  /* find father and child of the node  */
+  findNodeAndParentInTree (static_cast<symbolKey_symbolTree__opaque> (t), name, &child, &father);  /* find father and child of the node  */
   if ((child != NULL) && (child->name == name))
     {
       /* Have found the node to be deleted  */
@@ -364,7 +358,7 @@ extern "C" void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name)
 
 extern "C" bool symbolKey_isEmptyTree (symbolKey_symbolTree t)
 {
-  return t->left == NULL;
+  return static_cast<symbolKey_symbolTree__opaque> (t)->left == NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -380,7 +374,7 @@ extern "C" bool symbolKey_isEmptyTree (symbolKey_symbolTree t)
 
 extern "C" bool symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
 {
-  return searchForAny (t->left, p);
+  return searchForAny (static_cast<symbolKey_symbolTree__opaque> (t)->left, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -395,13 +389,13 @@ extern "C" bool symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_
 
 extern "C" void symbolKey_foreachNodeDo (symbolKey_symbolTree t, symbolKey_performOperation p)
 {
-  searchAndDo (t->left, p);
+  searchAndDo (static_cast<symbolKey_symbolTree__opaque> (t)->left, p);
 }
 
-extern "C" void _M2_symbolKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_symbolKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_symbolKey_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_symbolKey_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

@@ -46,9 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _FormatStrings_H
 #define _FormatStrings_C
 
+#include "GFormatStrings.h"
 #   include "GDynamicStrings.h"
 #   include "GStringConvert.h"
 #   include "GSYSTEM.h"
@@ -254,7 +254,7 @@ static void Cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
     {
       for (i=0; i<=_a_high; i++)
         {
-          a[i] = b[i];
+          const_cast<unsigned char *>(a)[i] = b[i];
         }
     }
   else
@@ -835,10 +835,10 @@ extern "C" DynamicStrings_String FormatStrings_HandleEscape (DynamicStrings_Stri
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_FormatStrings_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FormatStrings_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_FormatStrings_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FormatStrings_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

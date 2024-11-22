@@ -250,6 +250,21 @@ PROCEDURE hasHidden (n: node) : BOOLEAN ;
 
 
 (*
+   putTypeOpaque - marks type, des, as being an opaque type.
+                   TYPE des ;
+*)
+
+PROCEDURE putTypeOpaque (des: node) ;
+
+
+(*
+   isTypeOpaque - returns TRUE if type, n, is an opaque type.
+*)
+
+PROCEDURE isTypeOpaque (n: node) : BOOLEAN ;
+
+
+(*
    isVar - returns TRUE if node, n, is a type.
 *)
 

@@ -1,0 +1,7 @@
+DEFINITION MODULE opaqueuse ;  (*!m2pim*)
+
+FROM opaqueparam IMPORT List ;
+
+PROCEDURE extending (l: List) : List ;
+
+END opaqueuse.

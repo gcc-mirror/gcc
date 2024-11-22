@@ -24,9 +24,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _mcFileName_H
 #define _mcFileName_C
 
+#include "GmcFileName.h"
 #   include "GASCII.h"
 #   include "GDynamicStrings.h"
 
@@ -144,10 +144,10 @@ extern "C" DynamicStrings_String mcFileName_extractModule (DynamicStrings_String
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcFileName_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcFileName_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcFileName_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcFileName_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

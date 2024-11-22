@@ -50,7 +50,7 @@ PROCEDURE strtold (s: ADDRESS; VAR error: BOOLEAN) : LONGREAL ;
 *)
 
 PROCEDURE ldtoa (d        : LONGREAL;
-                 mode     : Mode;
+                 mode     : INTEGER;
                  ndigits  : INTEGER;
                  VAR decpt: INTEGER;
                  VAR sign : BOOLEAN) : ADDRESS ;

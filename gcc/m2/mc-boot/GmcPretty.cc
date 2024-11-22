@@ -38,9 +38,9 @@ Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcPretty_H
 #define _mcPretty_C
 
+#include "GmcPretty.h"
 #   include "GDynamicStrings.h"
 #   include "GStorage.h"
 
@@ -50,13 +50,7 @@ typedef struct mcPretty_writeLnProc_p mcPretty_writeLnProc;
 
 typedef struct mcPretty__T1_r mcPretty__T1;
 
-typedef mcPretty__T1 *mcPretty_pretty;
-
-typedef void (*mcPretty_writeProc_t) (char);
-struct mcPretty_writeProc_p { mcPretty_writeProc_t proc; };
-
-typedef void (*mcPretty_writeLnProc_t) (void);
-struct mcPretty_writeLnProc_p { mcPretty_writeLnProc_t proc; };
+typedef mcPretty__T1 *mcPretty_pretty__opaque;
 
 struct mcPretty__T1_r {
                         mcPretty_writeProc write_;
@@ -67,7 +61,7 @@ struct mcPretty__T1_r {
                         unsigned int curLine;
                         unsigned int curPos;
                         unsigned int indent;
-                        mcPretty_pretty stacked;
+                        mcPretty_pretty__opaque stacked;
                       };
 
 
@@ -162,20 +156,20 @@ extern "C" void mcPretty_raw (mcPretty_pretty p, DynamicStrings_String s);
    flushSpace -
 */
 
-static void flushSpace (mcPretty_pretty p);
+static void flushSpace (mcPretty_pretty__opaque p);
 
 /*
    flushIndent -
 */
 
-static void flushIndent (mcPretty_pretty p);
+static void flushIndent (mcPretty_pretty__opaque p);
 
 
 /*
    flushSpace -
 */
 
-static void flushSpace (mcPretty_pretty p)
+static void flushSpace (mcPretty_pretty__opaque p)
 {
   if (p->needsSpace)
     {
@@ -191,7 +185,7 @@ static void flushSpace (mcPretty_pretty p)
    flushIndent -
 */
 
-static void flushIndent (mcPretty_pretty p)
+static void flushIndent (mcPretty_pretty__opaque p)
 {
   unsigned int i;
 
@@ -215,7 +209,7 @@ static void flushIndent (mcPretty_pretty p)
 
 extern "C" mcPretty_pretty mcPretty_initPretty (mcPretty_writeProc w, mcPretty_writeLnProc l)
 {
-  mcPretty_pretty p;
+  mcPretty_pretty__opaque p;
 
   Storage_ALLOCATE ((void **) &p, sizeof (mcPretty__T1));
   p->write_ = w;
@@ -226,8 +220,8 @@ extern "C" mcPretty_pretty mcPretty_initPretty (mcPretty_writeProc w, mcPretty_w
   p->curLine = 0;
   p->seekPos = 0;
   p->indent = 0;
-  p->stacked = NULL;
-  return p;
+  p->stacked = static_cast<mcPretty_pretty__opaque> (NULL);
+  return static_cast<mcPretty_pretty> (p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -239,11 +233,11 @@ extern "C" mcPretty_pretty mcPretty_initPretty (mcPretty_writeProc w, mcPretty_w
 
 extern "C" mcPretty_pretty mcPretty_dupPretty (mcPretty_pretty p)
 {
-  mcPretty_pretty q;
+  mcPretty_pretty__opaque q;
 
   Storage_ALLOCATE ((void **) &q, sizeof (mcPretty__T1));
-  (*q) = (*p);
-  return q;
+  (*q) = (*static_cast<mcPretty_pretty__opaque> (p));
+  return static_cast<mcPretty_pretty> (q);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -256,10 +250,10 @@ extern "C" mcPretty_pretty mcPretty_dupPretty (mcPretty_pretty p)
 
 extern "C" void mcPretty_killPretty (mcPretty_pretty *p)
 {
-  (*p) = NULL;
-  return ;
+  (*p) = static_cast<mcPretty_pretty> (NULL);
+  return;
   Storage_DEALLOCATE ((void **) &(*p), sizeof (mcPretty__T1));
-  (*p) = NULL;
+  (*p) = static_cast<mcPretty_pretty> (NULL);
 }
 
 
@@ -269,11 +263,11 @@ extern "C" void mcPretty_killPretty (mcPretty_pretty *p)
 
 extern "C" mcPretty_pretty mcPretty_pushPretty (mcPretty_pretty p)
 {
-  mcPretty_pretty q;
+  mcPretty_pretty__opaque q;
 
-  q = mcPretty_dupPretty (p);
-  q->stacked = p;
-  return q;
+  q = static_cast<mcPretty_pretty__opaque> (mcPretty_dupPretty (p));
+  q->stacked = static_cast<mcPretty_pretty__opaque> (p);
+  return static_cast<mcPretty_pretty> (q);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -285,16 +279,16 @@ extern "C" mcPretty_pretty mcPretty_pushPretty (mcPretty_pretty p)
 
 extern "C" mcPretty_pretty mcPretty_popPretty (mcPretty_pretty p)
 {
-  mcPretty_pretty q;
+  mcPretty_pretty__opaque q;
 
-  q = p->stacked;
-  q->needsIndent = p->needsIndent;
-  q->needsSpace = p->needsSpace;
-  q->curPos = p->curPos;
-  q->seekPos = p->seekPos;
-  q->curLine = p->curLine;
+  q = static_cast<mcPretty_pretty__opaque> (p)->stacked;
+  q->needsIndent = static_cast<mcPretty_pretty__opaque> (p)->needsIndent;
+  q->needsSpace = static_cast<mcPretty_pretty__opaque> (p)->needsSpace;
+  q->curPos = static_cast<mcPretty_pretty__opaque> (p)->curPos;
+  q->seekPos = static_cast<mcPretty_pretty__opaque> (p)->seekPos;
+  q->curLine = static_cast<mcPretty_pretty__opaque> (p)->curLine;
   mcPretty_killPretty (&p);
-  return q;
+  return static_cast<mcPretty_pretty> (q);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -306,7 +300,7 @@ extern "C" mcPretty_pretty mcPretty_popPretty (mcPretty_pretty p)
 
 extern "C" unsigned int mcPretty_getindent (mcPretty_pretty p)
 {
-  return p->indent;
+  return static_cast<mcPretty_pretty__opaque> (p)->indent;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -318,7 +312,7 @@ extern "C" unsigned int mcPretty_getindent (mcPretty_pretty p)
 
 extern "C" void mcPretty_setindent (mcPretty_pretty p, unsigned int n)
 {
-  p->indent = n;
+  static_cast<mcPretty_pretty__opaque> (p)->indent = n;
 }
 
 
@@ -328,13 +322,13 @@ extern "C" void mcPretty_setindent (mcPretty_pretty p, unsigned int n)
 
 extern "C" unsigned int mcPretty_getcurpos (mcPretty_pretty s)
 {
-  if (s->needsSpace)
+  if (static_cast<mcPretty_pretty__opaque> (s)->needsSpace)
     {
-      return s->curPos+1;
+      return static_cast<mcPretty_pretty__opaque> (s)->curPos+1;
     }
   else
     {
-      return s->curPos;
+      return static_cast<mcPretty_pretty__opaque> (s)->curPos;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -347,7 +341,7 @@ extern "C" unsigned int mcPretty_getcurpos (mcPretty_pretty s)
 
 extern "C" unsigned int mcPretty_getseekpos (mcPretty_pretty s)
 {
-  return s->seekPos;
+  return static_cast<mcPretty_pretty__opaque> (s)->seekPos;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -359,7 +353,7 @@ extern "C" unsigned int mcPretty_getseekpos (mcPretty_pretty s)
 
 extern "C" unsigned int mcPretty_getcurline (mcPretty_pretty s)
 {
-  return s->curLine;
+  return static_cast<mcPretty_pretty__opaque> (s)->curLine;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -369,7 +363,7 @@ extern "C" void mcPretty_setNeedSpace (mcPretty_pretty s)
   /* 
    setneedSpace - sets needSpace flag to TRUE.
   */
-  s->needsSpace = true;
+  static_cast<mcPretty_pretty__opaque> (s)->needsSpace = true;
 }
 
 
@@ -379,7 +373,7 @@ extern "C" void mcPretty_setNeedSpace (mcPretty_pretty s)
 
 extern "C" void mcPretty_noSpace (mcPretty_pretty s)
 {
-  s->needsSpace = false;
+  static_cast<mcPretty_pretty__opaque> (s)->needsSpace = false;
 }
 
 
@@ -412,25 +406,25 @@ extern "C" void mcPretty_prints (mcPretty_pretty p, DynamicStrings_String s)
 
   l = DynamicStrings_Length (s);
   i = 0;
-  flushSpace (p);
+  flushSpace (static_cast<mcPretty_pretty__opaque> (p));
   while (i < l)
     {
       if ((((i+2) <= l) && ((DynamicStrings_char (s, static_cast<int> (i))) == '\\')) && ((DynamicStrings_char (s, static_cast<int> (i+1))) == 'n'))
         {
-          p->needsIndent = true;
-          p->needsSpace = false;
-          p->curPos = 0;
-          (*p->writeln.proc) ();
-          p->seekPos += 1;
-          p->curLine += 1;
+          static_cast<mcPretty_pretty__opaque> (p)->needsIndent = true;
+          static_cast<mcPretty_pretty__opaque> (p)->needsSpace = false;
+          static_cast<mcPretty_pretty__opaque> (p)->curPos = 0;
+          (*static_cast<mcPretty_pretty__opaque> (p)->writeln.proc) ();
+          static_cast<mcPretty_pretty__opaque> (p)->seekPos += 1;
+          static_cast<mcPretty_pretty__opaque> (p)->curLine += 1;
           i += 1;
         }
       else
         {
-          flushIndent (p);
-          (*p->write_.proc) (DynamicStrings_char (s, static_cast<int> (i)));
-          p->curPos += 1;
-          p->seekPos += 1;
+          flushIndent (static_cast<mcPretty_pretty__opaque> (p));
+          (*static_cast<mcPretty_pretty__opaque> (p)->write_.proc) (DynamicStrings_char (s, static_cast<int> (i)));
+          static_cast<mcPretty_pretty__opaque> (p)->curPos += 1;
+          static_cast<mcPretty_pretty__opaque> (p)->seekPos += 1;
         }
       i += 1;
     }
@@ -449,21 +443,21 @@ extern "C" void mcPretty_raw (mcPretty_pretty p, DynamicStrings_String s)
 
   l = DynamicStrings_Length (s);
   i = 0;
-  flushSpace (p);
-  flushIndent (p);
+  flushSpace (static_cast<mcPretty_pretty__opaque> (p));
+  flushIndent (static_cast<mcPretty_pretty__opaque> (p));
   while (i < l)
     {
-      (*p->write_.proc) (DynamicStrings_char (s, static_cast<int> (i)));
-      p->curPos += 1;
-      p->seekPos += 1;
+      (*static_cast<mcPretty_pretty__opaque> (p)->write_.proc) (DynamicStrings_char (s, static_cast<int> (i)));
+      static_cast<mcPretty_pretty__opaque> (p)->curPos += 1;
+      static_cast<mcPretty_pretty__opaque> (p)->seekPos += 1;
       i += 1;
     }
 }
 
-extern "C" void _M2_mcPretty_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPretty_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcPretty_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPretty_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

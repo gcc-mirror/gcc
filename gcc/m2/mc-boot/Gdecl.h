@@ -247,6 +247,19 @@ EXTERN bool decl_isTypeHidden (decl_node n);
 EXTERN bool decl_hasHidden (decl_node n);
 
 /*
+   putTypeOpaque - marks type, des, as being an opaque type.
+                   TYPE des ;
+*/
+
+EXTERN void decl_putTypeOpaque (decl_node des);
+
+/*
+   isTypeOpaque - returns TRUE if type, n, is an opaque type.
+*/
+
+EXTERN bool decl_isTypeOpaque (decl_node n);
+
+/*
    isVar - returns TRUE if node, n, is a type.
 */
 

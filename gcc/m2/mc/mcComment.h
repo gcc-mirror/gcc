@@ -22,6 +22,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #ifndef mcCommentH
 #define mcCommentH
 
+#include <stdbool.h>
+
 /* addText the text cs is appended to the current comment.  */
 
 extern void mcComment_addText (void *cd, char *cs);
@@ -34,7 +36,7 @@ extern void mcComment_addText (void *cd, char *cs);
    If onlySpaces is TRUE then an inbody comment is created.
    If onlySpaces is FALSE then an after statement comment is created.  */
 
-extern void *mcComment_initComment (unsigned int onlySpaces);
+extern void *mcComment_initComment (bool onlySpaces);
 
 
 #endif

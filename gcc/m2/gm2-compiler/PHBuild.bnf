@@ -664,7 +664,8 @@ Constructor :=                                                             % VAR
 
 ConstSetOrQualidentOrFunction :=                                           % PushAutoOn %
                                                                            % VAR tokpos: CARDINAL ; %
-                                 (                                         % tokpos := GetTokenNo () %
+                                                                           % tokpos := GetTokenNo () %
+                                 (
                                     Qualident
                                     [ Constructor |
                                        ConstActualParameters               % BuildConstFunctionCall %
@@ -678,8 +679,10 @@ ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" ConstAttributeExpression
 
 ConstAttributeExpression := Ident | "<" Qualident ',' Ident ">" =:
 
-ByteAlignment := '<*'                                                      % PushAutoOn %
-                      AttributeExpression                                  % BuildAlignment %
+ByteAlignment :=                                                           % VAR tokpos: CARDINAL ; %
+                 '<*'                                                      % PushAutoOn %
+                                                                           % tokpos := GetTokenNo () %
+                      AttributeExpression                                  % BuildAlignment (tokpos) %
                                           '*>'                             % PopAuto %
                =:
 
