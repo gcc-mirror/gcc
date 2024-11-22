@@ -1,3 +1,9 @@
+2024-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116731
+	* parser.cc (warn_for_range_copy): Check if TYPE is trivially
+	constructible, not copyable.
+
 2024-11-06  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:

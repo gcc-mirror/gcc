@@ -1,3 +1,8 @@
+2024-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116731
+	* g++.dg/warn/Wrange-loop-construct3.C: New test.
+
 2024-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
