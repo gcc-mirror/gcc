@@ -5640,6 +5640,7 @@ trees_out::core_bools (tree t, bits_out& bits)
 
       WB (t->function_decl.has_debug_args_flag);
       WB (t->function_decl.versioned_function);
+      WB (t->function_decl.replaceable_operator);
 
       /* decl_type is a (misnamed) 2 bit discriminator.	 */
       unsigned kind = t->function_decl.decl_type;
@@ -5796,6 +5797,7 @@ trees_in::core_bools (tree t, bits_in& bits)
 
       RB (t->function_decl.has_debug_args_flag);
       RB (t->function_decl.versioned_function);
+      RB (t->function_decl.replaceable_operator);
 
       /* decl_type is a (misnamed) 2 bit discriminator.	 */
       unsigned kind = 0;
