@@ -1415,45 +1415,29 @@ build_m2_char_node (void)
 static tree
 build_m2_short_real_node (void)
 {
-  tree c;
-
-  /* Define `REAL'.  */
-
-  c = make_node (REAL_TYPE);
-  TYPE_PRECISION (c) = FLOAT_TYPE_SIZE;
-  layout_type (c);
-  return c;
+  /* Define `SHORTREAL'.  */
+  ASSERT_CONDITION (TYPE_PRECISION (float_type_node) == FLOAT_TYPE_SIZE);
+  return float_type_node;
 }
 
 static tree
 build_m2_real_node (void)
 {
-  tree c;
-
   /* Define `REAL'.  */
-
-  c = make_node (REAL_TYPE);
-  TYPE_PRECISION (c) = DOUBLE_TYPE_SIZE;
-  layout_type (c);
-  return c;
+  ASSERT_CONDITION (TYPE_PRECISION (double_type_node) == DOUBLE_TYPE_SIZE);  
+  return double_type_node;
 }
 
 static tree
 build_m2_long_real_node (void)
 {
   tree longreal;
-
+  
   /* Define `LONGREAL'.  */
-  if (M2Options_GetIBMLongDouble ())
-    {
-      longreal = make_node (REAL_TYPE);
-      TYPE_PRECISION (longreal) = LONG_DOUBLE_TYPE_SIZE;
-    }
-  else if (M2Options_GetIEEELongDouble ())
+  if (M2Options_GetIEEELongDouble ())
     longreal = float128_type_node;
   else
     longreal = long_double_type_node;
-  layout_type (longreal);
   return longreal;
 }
 
