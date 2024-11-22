@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-additional-options -Wno-array-compare } */
 
 void link_error ();
 
