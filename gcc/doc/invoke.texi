@@ -213,7 +213,9 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control
--faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new
+-faligned-new=@var{n}  -fargs-in-order=@var{n}
+-fno-assume-sane-operators-new-delete
+-fchar8_t  -fcheck-new
 -fconcepts  -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
 -fno-elide-constructors
@@ -3162,6 +3164,35 @@ but few users will need to override the default of
 @code{alignof(std::max_align_t)}.
 
 This flag is enabled by default for @option{-std=c++17}.
+
+@opindex fno-assume-sane-operators-new-delete
+@opindex fassume-sane-operators-new-delete
+@item -fno-assume-sane-operators-new
+The C++ standard allows replacing the global @code{new}, @code{new[]},
+@code{delete} and @code{delete[]} operators, though a lot of C++ programs
+don't replace them and just use the implementation provided version.
+Furthermore, the C++ standard allows omitting those calls if they are
+made from new or delete expressions (and by extension the same is
+assumed if @code{__builtin_operator_new} or @code{__builtin_operator_delete}
+functions are used).
+This option allows control over some optimizations around calls
+to those operators.
+With @code{-fassume-sane-operators-new-delete} option GCC may assume that
+calls to the replaceable global operators from new or delete expressions or
+from @code{__builtin_operator_new} or @code{__builtin_operator_delete} calls
+don't read or modify any global variables or variables whose address could
+escape to the operators (global state; except for @code{errno} for the
+@code{new} and @code{new[]} operators).
+This allows most optimizations across those calls and is something that
+the implementation provided operators satisfy unless @code{malloc}
+implementation details are observable in the code or unless @code{malloc}
+hooks are used, but might not be satisfied if a program replaces those
+operators.  This behavior is enabled by default.
+With @code{-fno-assume-sane-operators-new-delete} option GCC must
+assume all these calls (whether from new or delete expressions or called
+directly) may read and write global state unless proven otherwise (e.g.@:
+when GCC compiles their implementation).  Use this option if those
+operators are or may be replaced and code needs to expect such behavior.
 
 @opindex fchar8_t
 @opindex fno-char8_t

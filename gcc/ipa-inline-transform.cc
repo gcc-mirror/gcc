@@ -391,17 +391,33 @@ inline_call (struct cgraph_edge *e, bool update_original,
       = DECL_FUNCTION_PERSONALITY (callee->decl);
 
   bool reload_optimization_node = false;
-  if (!opt_for_fn (callee->decl, flag_strict_aliasing)
-      && opt_for_fn (to->decl, flag_strict_aliasing))
+  bool remove_strict_aliasing
+    = (!opt_for_fn (callee->decl, flag_strict_aliasing)
+       && opt_for_fn (to->decl, flag_strict_aliasing));
+  bool remove_assume_sane_operators_new_delete
+    = (!opt_for_fn (callee->decl, flag_assume_sane_operators_new_delete)
+       && opt_for_fn (to->decl, flag_assume_sane_operators_new_delete));
+  if (remove_strict_aliasing || remove_assume_sane_operators_new_delete)
     {
       struct gcc_options opts = global_options;
       struct gcc_options opts_set = global_options_set;
 
       cl_optimization_restore (&opts, &opts_set, opts_for_fn (to->decl));
-      opts.x_flag_strict_aliasing = false;
-      if (dump_file)
-	fprintf (dump_file, "Dropping flag_strict_aliasing on %s\n",
-		 to->dump_name ());
+      if (remove_strict_aliasing)
+	{
+	  opts.x_flag_strict_aliasing = false;
+	  if (dump_file)
+	    fprintf (dump_file, "Dropping flag_strict_aliasing on %s\n",
+		     to->dump_name ());
+	}
+      if (remove_assume_sane_operators_new_delete)
+	{
+	  opts.x_flag_assume_sane_operators_new_delete = false;
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Dropping flag_assume_sane_operators_new_delete on %s\n",
+		     to->dump_name ());
+	}
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts, &opts_set);
       reload_optimization_node = true;

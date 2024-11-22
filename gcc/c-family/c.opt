@@ -1690,6 +1690,10 @@ fasm
 C ObjC C++ ObjC++ Var(flag_no_asm, 0)
 Recognize the \"asm\" keyword.
 
+fassume-sane-operators-new-delete
+C++ ObjC++ Optimization Var(flag_assume_sane_operators_new_delete) Init(1)
+Assume C++ replaceable global operators new, new[], delete, delete[] don't read or write visible global state.
+
 ; Define extra predefined macros for use in libgcc.
 fbuilding-libgcc
 C ObjC C++ ObjC++ Undocumented Var(flag_building_libgcc)
