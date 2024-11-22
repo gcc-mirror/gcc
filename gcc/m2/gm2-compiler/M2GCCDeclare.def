@@ -32,6 +32,7 @@ DEFINITION MODULE M2GCCDeclare ;
 
 FROM SYSTEM IMPORT WORD ;
 FROM m2tree IMPORT Tree ;
+FROM M2BasicBlock IMPORT BasicBlock ;
 
 TYPE
    WalkAction = PROCEDURE (WORD) ;
@@ -42,7 +43,7 @@ TYPE
    FoldConstants - a wrapper for ResolveConstantExpressions.
 *)
 
-PROCEDURE FoldConstants (start, end: CARDINAL) ;
+PROCEDURE FoldConstants (bb: BasicBlock) ;
 
 
 (*

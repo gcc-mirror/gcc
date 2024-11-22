@@ -32,15 +32,11 @@ DEFINITION MODULE M2BasicBlock ;
 *)
 
 FROM M2Scope IMPORT ScopeBlock ;
-EXPORT QUALIFIED BasicBlock, BasicBlockProc,
-                 InitBasicBlocks, InitBasicBlocksFromRange,
-		 KillBasicBlocks, FreeBasicBlocks,
-                 ForeachBasicBlockDo ;
 
 
 TYPE
    BasicBlock ;
-   BasicBlockProc = PROCEDURE (CARDINAL, CARDINAL) ;
+   BasicBlockProc = PROCEDURE (BasicBlock) ;
 
 
 (*
@@ -83,6 +79,34 @@ PROCEDURE FreeBasicBlocks (bb: BasicBlock) ;
 *)
 
 PROCEDURE ForeachBasicBlockDo (bb: BasicBlock; p: BasicBlockProc) ;
+
+
+(*
+   GetBasicBlockScope - return the scope associated with the basic block.
+*)
+
+PROCEDURE GetBasicBlockScope (bb: BasicBlock) : CARDINAL ;
+
+
+(*
+   GetBasicBlockStart - return the quad associated with the start of the basic block.
+*)
+
+PROCEDURE GetBasicBlockStart (bb: BasicBlock) : CARDINAL ;
+
+
+(*
+   GetBasicBlockEnd - return the quad associated with the end of the basic block.
+*)
+
+PROCEDURE GetBasicBlockEnd (bb: BasicBlock) : CARDINAL ;
+
+
+(*
+   IsBasicBlockFirst - return TRUE if this basic block is the first in the sequence.
+*)
+
+PROCEDURE IsBasicBlockFirst (bb: BasicBlock) : BOOLEAN ;
 
 
 END M2BasicBlock.

@@ -71,6 +71,8 @@ FROM Sets IMPORT Set, InitSet, KillSet,
                  NoOfElementsInSet, IsElementInSet, ForeachElementInSetDo,
                  DuplicateSet, EqualSet ;
 
+FROM M2BasicBlock IMPORT BasicBlock, InitBasicBlocks, KillBasicBlocks, ForeachBasicBlockDo ;
+
 FROM SymbolTable IMPORT NulSym,
                         ModeOfAddr,
                         GetMode,
@@ -252,6 +254,7 @@ VAR
    WatchList           : Set ;      (* Set of symbols being watched.  *)
    EnumerationIndex    : Index ;
    action              : IsAction ;
+   ConstantResolved,
    enumDeps            : BOOLEAN ;
 
 
@@ -1297,30 +1300,6 @@ END DeclareTypeFromPartial ;
 
 
 (*
-   DeclarePointerTypeFully - if, sym, is a pointer type then
-                             declare it.
-*)
-
-(*
-PROCEDURE DeclarePointerTypeFully (sym: CARDINAL) ;
-BEGIN
-   IF IsPointer(sym)
-   THEN
-      WatchIncludeList(sym, fullydeclared) ;
-      WatchRemoveList(sym, partiallydeclared) ;
-      WatchRemoveList(sym, todolist) ;
-      PreAddModGcc(sym, DeclarePointer(sym))
-   ELSE
-      (* place sym and all dependants on the todolist
-         providing they are not already on the FullyDeclared list
-      *)
-      TraverseDependants(sym)
-   END
-END DeclarePointerTypeFully ;
-*)
-
-
-(*
    CanBeDeclaredPartiallyViaPartialDependants - returns TRUE if, sym,
                                                 can be partially declared via
                                                 another partially declared type.
@@ -1476,22 +1455,6 @@ BEGIN
                             DeclareTypePartially)
       THEN
          (* continue looping *)
-(*
-      ELSIF ForeachTryDeclare (todolist,
-                               setarraynul,
-                               CanCreateSetArray,
-                               CreateSetArray)
-      THEN
-         (* Populates the finishedsetarray list with each set seen.  *)
-         (* Continue looping.  *)
-      ELSIF ForeachTryDeclare (finishedsetarray,
-                               setfully,
-                               CanCreateSet,
-                               CreateSet)
-      THEN
-         (* Populates the fullydeclared list with each set.  *)
-         (* Continue looping.  *)
-*)
       ELSIF ForeachTryDeclare (todolist,
                                arraynil,
                                CanDeclareArrayAsNil,
@@ -1902,25 +1865,15 @@ BEGIN
       IF (type#NulSym) AND (NOT CompletelyResolved(type))
       THEN
          TraverseDependants(sym) ;
-(*
-         WatchIncludeList(sym, todolist) ;
-         WatchIncludeList(type, todolist) ;
-*)
          RETURN
       END ;
       IF IsConstructor(sym) AND (NOT IsConstructorConstant(sym))
       THEN
          TraverseDependants(sym) ;
-(*
-         WatchIncludeList(sym, todolist) ;
-*)
          RETURN
       END ;
       IF (IsConstructor(sym) OR IsConstSet(sym)) AND (type=NulSym)
       THEN
-(*
-         WatchIncludeList(sym, todolist) ;
-*)
          TraverseDependants(sym) ;
          RETURN
       END ;
@@ -1936,10 +1889,7 @@ BEGIN
          THEN
             RETURN
          END ;
-         TraverseDependants(sym) ;
-(*
-         WatchIncludeList(sym, todolist)
-*)
+         TraverseDependants(sym)
       ELSE
          TryDeclareConst(tokenno, sym)
       END
@@ -2011,9 +1961,6 @@ BEGIN
          TryEvaluateValue(sym) ;
          IF NOT IsConstructorDependants(sym, IsFullyDeclared)
          THEN
-(*
-            WatchIncludeList(sym, todolist) ;
-*)
             TraverseDependants(sym) ;
             RETURN
          END ;
@@ -2159,38 +2106,6 @@ BEGIN
    ForeachOAFamily (oaf, WalkFamilyOfUnbounded) ;
    unboundedp := o
 END WalkAssociatedUnbounded ;
-
-
-(*
-   WalkProcedureParameterDependants -
-*)
-
-(*
-PROCEDURE WalkProcedureParameterDependants (sym: CARDINAL; p: WalkAction) ;
-VAR
-   son,
-   type,
-   n, i: CARDINAL ;
-BEGIN
-   IF IsProcedure(sym)
-   THEN
-      n := NoOfParam(sym) ;
-      i := n ;
-      WHILE i>0 DO
-         IF IsUnboundedParam(sym, i)
-         THEN
-            son := GetNthParam(sym, i)
-         ELSE
-            son := GetNth(sym, i) ;
-         END ;
-         type := GetSType(son) ;
-         p(type) ;
-         WalkDependants(type, p) ;
-         DEC(i)
-      END
-   END
-END WalkProcedureParameterDependants ;
-*)
 
 
 (*
@@ -2723,10 +2638,11 @@ END DeclareProcedure ;
    FoldConstants - a wrapper for ResolveConstantExpressions.
 *)
 
-PROCEDURE FoldConstants (start, end: CARDINAL) ;
+PROCEDURE FoldConstants (bb: BasicBlock) ;
 BEGIN
-   IF ResolveConstantExpressions(DeclareConstFully, start, end)
+   IF ResolveConstantExpressions (DeclareConstFully, bb)
    THEN
+      ConstantResolved := TRUE
    END
 END FoldConstants ;
 
@@ -2778,6 +2694,8 @@ CONST
 VAR
    copy: Group ;
    loop: CARDINAL ;
+   sb  : ScopeBlock ;
+   bb  : BasicBlock ;
 BEGIN
    IF TraceQuadruples
    THEN
@@ -2785,11 +2703,18 @@ BEGIN
    END ;
    loop := 0 ;
    copy := NIL ;
+   sb := InitScopeBlock (scope) ;
    REPEAT
+      (* Throw away any unreachable quad.  *)
+      bb := InitBasicBlocks (sb) ;
+      KillBasicBlocks (bb) ;
+      (* Now iterate over remaining quads in scope attempting to resolve constants.  *)
       copy := DupGroup (copy) ;
-      WHILE ResolveConstantExpressions (DeclareConstFully, start, end) DO
-      END ;
-      (* we need to evaluate some constant expressions to resolve these types *)
+      bb := InitBasicBlocks (sb) ;
+      ConstantResolved := FALSE ;
+      ForeachBasicBlockDo (bb, FoldConstants) ;
+      KillBasicBlocks (bb) ;
+      (* And now types.  *)
       IF DeclaredOutstandingTypes (FALSE)
       THEN
       END ;
@@ -2803,9 +2728,11 @@ BEGIN
          loop := 0
       END ;
       INC (loop)
-   UNTIL (NOT ResolveConstantExpressions (DeclareConstFully, start, end)) AND
-         EqualGroup (copy, GlobalGroup) ;
-   KillGroup (copy)
+   UNTIL (NOT ConstantResolved) AND EqualGroup (copy, GlobalGroup) ;
+   KillGroup (copy) ;
+   bb := InitBasicBlocks (sb) ;
+   KillBasicBlocks (bb) ;
+   KillScopeBlock (sb)
 END DeclareTypesConstantsProceduresInRange ;
 
 
@@ -5988,33 +5915,6 @@ BEGIN
       p(align)
    END
 END WalkRecordFieldDependants ;
-
-
-(*
-   WalkVarient -
-*)
-
-(*
-PROCEDURE WalkVarient (sym: CARDINAL; p: WalkAction) ;
-VAR
-   v    : CARDINAL ;
-   var,
-   align: CARDINAL ;
-BEGIN
-   p(sym) ;
-   v := GetVarient(sym) ;
-   IF v#NulSym
-   THEN
-      p(v)
-   END ;
-   var := GetRecordOfVarient(sym) ;
-   align := GetDefaultRecordFieldAlignment(var) ;
-   IF align#NulSym
-   THEN
-      p(align)
-   END
-END WalkVarient ;
-*)
 
 
 (*

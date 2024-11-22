@@ -123,7 +123,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsOptimizeOn,
                  IsPseudoQuad,
                  IsDefOrModFile,
-                 IsInitialisingConst,
+                 IsInitialisingConst, IsConstQuad, IsConditionalBooleanQuad,
                  IsQuadConstExpr,
                  IsBecomes,
                  IsDummy,
@@ -463,6 +463,20 @@ PROCEDURE GetQuadOp3 (QuadNo: CARDINAL) : CARDINAL ;
 *)
 
 PROCEDURE IsInitialisingConst (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstQuad - return TRUE if the quadruple is marked as a constexpr.
+*)
+
+PROCEDURE IsConstQuad (quad: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConditionalBooleanQuad - return TRUE if operand 1 is a boolean result.
+*)
+
+PROCEDURE IsConditionalBooleanQuad (quad: CARDINAL) : BOOLEAN ;
 
 
 (*
