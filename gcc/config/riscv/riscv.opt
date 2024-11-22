@@ -466,6 +466,8 @@ Mask(SVINVAL) Var(riscv_sv_subext)
 
 Mask(SVNAPOT) Var(riscv_sv_subext)
 
+Mask(SVVPTC) Var(riscv_sv_subext)
+
 TargetVariable
 int riscv_ztso_subext
 
