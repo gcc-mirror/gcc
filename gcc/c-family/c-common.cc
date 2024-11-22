@@ -7457,11 +7457,10 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
 
   size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (size == 16
-      && fetch
       && TREE_CODE (type) == BITINT_TYPE
       && !targetm.scalar_mode_supported_p (TImode))
     {
-      if (!orig_format)
+      if (fetch && !orig_format)
 	return -1;
       goto incompatible;
     }
