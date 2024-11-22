@@ -3160,7 +3160,9 @@ determine_visibility (tree decl)
 	      && !attr)
 	    {
 	      int depth = TMPL_ARGS_DEPTH (args);
-	      if (DECL_VISIBILITY_SPECIFIED (decl))
+	      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (TI_TEMPLATE (tinfo)))
+		/* Class template args don't affect template friends.  */;
+	      else if (DECL_VISIBILITY_SPECIFIED (decl))
 		{
 		  /* A class template member with explicit visibility
 		     overrides the class visibility, so we need to apply
