@@ -4933,7 +4933,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
 /* (X >> C1) << (C1 + C2) -> X << C2 if the low C1 bits of X are zero.  */
 (simplify
- (lshift (convert? (rshift (with_possible_nonzero_bits2 @0) INTEGER_CST@1))
+ (lshift (convert? (rshift with_possible_nonzero_bits@0 INTEGER_CST@1))
          INTEGER_CST@2)
  (if (INTEGRAL_TYPE_P (type)
       && wi::ltu_p (wi::to_wide (@1), element_precision (type))
@@ -4944,7 +4944,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (X >> C1) * (C2 << C1) -> X * C2 if the low C1 bits of X are zero.  */
 (simplify
- (mult (convert? (rshift (with_possible_nonzero_bits2 @0) INTEGER_CST@1))
+ (mult (convert? (rshift with_possible_nonzero_bits@0 INTEGER_CST@1))
        poly_int_tree_p@2)
  (with { poly_widest_int factor; }
   (if (INTEGRAL_TYPE_P (type)
@@ -5519,7 +5519,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
 /* X / (1 << C) -> X /[ex] (1 << C) if the low C bits of X are clear.  */
 (simplify
- (trunc_div (with_possible_nonzero_bits2 @0) integer_pow2p@1)
+ (trunc_div with_possible_nonzero_bits@0 integer_pow2p@1)
  (if (INTEGRAL_TYPE_P (type)
       && !TYPE_UNSIGNED (type)
       && wi::multiple_of_p (get_nonzero_bits (@0), wi::to_wide (@1), SIGNED))
