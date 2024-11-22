@@ -15786,6 +15786,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_INIT;
 	  else if (!strcmp ("is_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR;
+	  else if (!strcmp ("interop", p))
+	    result = PRAGMA_OMP_CLAUSE_INTEROP;
 	  break;
 	case 'l':
 	  if (!strcmp ("lastprivate", p))
@@ -20569,6 +20571,16 @@ c_parser_omp_clause_use (c_parser *parser, tree list)
   return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_USE, list);
 }
 
+/* OpenMP 6.0:
+   interop ( variable-list ) */
+
+static tree
+c_parser_omp_clause_interop (c_parser *parser, tree list)
+{
+  check_no_duplicate_clause (list, OMP_CLAUSE_INTEROP, "interop");
+  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_INTEROP, list);
+}
+
 /* Parse all OpenACC clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.  */
 
@@ -21075,6 +21087,10 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_USE:
 	  clauses = c_parser_omp_clause_use (parser, clauses);
 	  c_name = "use";
+	  break;
+	case PRAGMA_OMP_CLAUSE_INTEROP:
+	  clauses = c_parser_omp_clause_interop (parser, clauses);
+	  c_name = "interop";
 	  break;
 	case PRAGMA_OMP_CLAUSE_MAP:
 	  clauses = c_parser_omp_clause_map (parser, clauses);
@@ -25078,6 +25094,7 @@ c_parser_omp_dispatch_body (c_parser *parser)
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)                           \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOVARIANTS)                       \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOCONTEXT)                        \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INTEROP)                          \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)                    \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 

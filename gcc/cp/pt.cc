@@ -17893,6 +17893,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  /* FALLTHRU */
 	case OMP_CLAUSE_DESTROY:
 	case OMP_CLAUSE_USE:
+	case OMP_CLAUSE_INTEROP:
 	  OMP_CLAUSE_OPERAND (nc, 0)
 	    = tsubst_stmt (OMP_CLAUSE_OPERAND (oc, 0), args, complain, in_decl);
 	  break;

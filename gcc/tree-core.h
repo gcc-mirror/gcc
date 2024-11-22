@@ -387,6 +387,9 @@ enum omp_clause_code {
   /* OpenMP clause: use (variable-list ).  */
   OMP_CLAUSE_USE,
 
+  /* OpenMP clause: interop (variable-list).  */
+  OMP_CLAUSE_INTEROP,
+
   /* OpenACC clause: gang [(gang-argument-list)].
      Where
       gang-argument-list: [gang-argument-list, ] gang-argument

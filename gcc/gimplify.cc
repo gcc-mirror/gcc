@@ -4071,6 +4071,20 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
      vars there.  */
   bool returns_twice = call_expr_flags (*expr_p) & ECF_RETURNS_TWICE;
 
+  tree dispatch_interop = NULL_TREE;
+  if (flag_openmp
+      && gimplify_omp_ctxp != NULL
+      && gimplify_omp_ctxp->code == OMP_DISPATCH
+      && gimplify_omp_ctxp->clauses
+      && (dispatch_interop = omp_find_clause (gimplify_omp_ctxp->clauses,
+					      OMP_CLAUSE_INTEROP)) != NULL_TREE)
+    /* FIXME: When implementing 'append_args, use the 'device_num' of
+       the argument.  */
+    error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
+	      "number of list items in %<interop%> clause exceeds number of "
+	      "%<append_args%> items for %<declare variant%> candidate %qD",
+	      fndecl);
+
   /* Gimplify the function arguments.  */
   if (nargs > 0)
     {
@@ -13400,6 +13414,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_INTEROP:
 	  break;
 
 	case OMP_CLAUSE_ORDER:

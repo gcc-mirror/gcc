@@ -17091,16 +17091,27 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD appears more than once in action clauses", t);
 	      remove = true;
+	      break;
 	    }
-	  else if (/* ort == C_ORT_OMP_INTEROP [uncomment for depobj init]  */
-		   !c_omp_interop_t_p (TREE_TYPE (OMP_CLAUSE_DECL (c))))
-	    error_at (OMP_CLAUSE_LOCATION (c),
-		      "%qD must be of %<omp_interop_t%>", OMP_CLAUSE_DECL (c));
-	  else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE
-		   && TREE_READONLY (OMP_CLAUSE_DECL (c)))
-	    error_at (OMP_CLAUSE_LOCATION (c),
-		      "%qD shall not be const", OMP_CLAUSE_DECL (c));
 	  bitmap_set_bit (&generic_head, DECL_UID (t));
+	  /* FALLTHRU */
+	case OMP_CLAUSE_INTEROP:
+	  if (/* ort == C_ORT_OMP_INTEROP [uncomment for depobj init]  */
+		   !c_omp_interop_t_p (TREE_TYPE (OMP_CLAUSE_DECL (c))))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD must be of %<omp_interop_t%>",
+			OMP_CLAUSE_DECL (c));
+	      remove = true;
+	    }
+	  else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INIT
+		    || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DESTROY)
+		   && TREE_READONLY (OMP_CLAUSE_DECL (c)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qD shall not be const", OMP_CLAUSE_DECL (c));
+	      remove = true;
+	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  break;
 	default:

@@ -1578,7 +1578,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			 spc, flags, false);
       pp_right_paren (pp);
       break;
-
+    case OMP_CLAUSE_INTEROP:
+      pp_string (pp, "interop(");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause), spc, flags, false);
+      pp_right_paren (pp);
+      break;
     case OMP_CLAUSE_IF_PRESENT:
       pp_string (pp, "if_present");
       break;

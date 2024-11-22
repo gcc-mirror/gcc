@@ -38335,6 +38335,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_INDIRECT;
 	  else if (!strcmp ("init", p))
 	    result = PRAGMA_OMP_CLAUSE_INIT;
+	  else if (!strcmp ("interop", p))
+	    result = PRAGMA_OMP_CLAUSE_INTEROP;
 	  else if (!strcmp ("is_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR;
 	  break;
@@ -43335,6 +43337,13 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_USE:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_USE, clauses);
 	  c_name = "use";
+	  break;
+	case PRAGMA_OMP_CLAUSE_INTEROP:
+	  check_no_duplicate_clause (clauses, OMP_CLAUSE_INTEROP, "interop",
+				     token->location);
+	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_INTEROP,
+					    clauses);
+	  c_name = "interop";
 	  break;
 	case PRAGMA_OMP_CLAUSE_DETACH:
 	  clauses = cp_parser_omp_clause_detach (parser, clauses);
@@ -49728,6 +49737,7 @@ cp_parser_omp_dispatch_body (cp_parser *parser)
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)                           \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOVARIANTS)                       \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOCONTEXT)                        \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INTEROP)                          \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)                    \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
