@@ -16728,6 +16728,8 @@ package body Sem_Util is
    -----------------------------
 
    function Is_Effectively_Volatile (Id : Entity_Id) return Boolean is
+      Comp         : Entity_Id;
+      Has_Vol_Comp : Boolean := False;
    begin
       if Is_Type (Id) then
 
@@ -16773,6 +16775,35 @@ package body Sem_Util is
          elsif Is_Descendant_Of_Suspension_Object (Id) then
             return True;
 
+         --  A record type for which all components have an effectively
+         --  volatile type.
+
+         elsif Is_Record_Type (Id) then
+
+            --  Inspect all components defined in the scope of the type,
+            --  looking for those whose type is not effecively volatile.
+
+            Comp := First_Component (Id);
+            while Present (Comp) loop
+               if Comes_From_Source (Comp) then
+                  if Is_Effectively_Volatile (Etype (Comp)) then
+                     Has_Vol_Comp := True;
+
+                  --  The component is not effecively volatile
+
+                  else
+                     return False;
+                  end if;
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+
+            --  If we get here, then all components are of an effectively
+            --  volatile type.
+
+            return Has_Vol_Comp;
+
          --  Otherwise the type is not effectively volatile
 
          else
@@ -16801,6 +16832,7 @@ package body Sem_Util is
    function Is_Effectively_Volatile_For_Reading
      (Id : Entity_Id) return Boolean
    is
+      Comp : Entity_Id;
    begin
       --  A concurrent type is effectively volatile for reading
 
@@ -16839,6 +16871,23 @@ package body Sem_Util is
                  and then Is_Effectively_Volatile_For_Reading
                    (Component_Type (Anc));
             end;
+
+         --  In addition, a record type is effectively volatile for reading
+         --  if at least one component has an effectively volatile type for
+         --  reading.
+
+         elsif Is_Record_Type (Id) then
+            Comp := First_Component (Id);
+            while Present (Comp) loop
+               if Comes_From_Source (Comp)
+                 and then Is_Effectively_Volatile_For_Reading (Etype (Comp))
+               then
+                  return True;
+               end if;
+               Next_Component (Comp);
+            end loop;
+
+            return False;
          end if;
       end if;
 

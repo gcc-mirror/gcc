@@ -1968,6 +1968,8 @@ package Sem_Util is
    --    * Volatile without No_Caching
    --    * An array type subject to aspect Volatile_Components
    --    * An array type whose component type is effectively volatile
+   --    * A record type for which all components have an effectively volatile
+   --      type
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
 
@@ -1982,6 +1984,8 @@ package Sem_Util is
    --      Async_Writers and Effective_Reads set to False
    --    * An array type whose component type is effectively volatile for
    --      reading
+   --    * A record type for which at least one component has an effectively
+   --      volatile type for reading
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
 
