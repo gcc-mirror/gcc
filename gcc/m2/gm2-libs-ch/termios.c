@@ -281,7 +281,7 @@ int EXPORT (tcsetattr) (int fd, int option, struct termios *t)
 void EXPORT (cfmakeraw) (struct termios *t)
 {
 #if defined(HAVE_CFMAKERAW)
-  return cfmakeraw (t);
+  cfmakeraw (t);
 #endif
 }
 
