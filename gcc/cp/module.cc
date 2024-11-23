@@ -8637,6 +8637,10 @@ trees_in::decl_value ()
 	  TYPE_STUB_DECL (type) = stub_decl ? stub_decl : inner;
 	  if (stub_decl)
 	    TREE_TYPE (stub_decl) = type;
+
+	  /* Handle separate declarations with different attributes.  */
+	  tree &eattr = TYPE_ATTRIBUTES (TREE_TYPE (existing));
+	  eattr = merge_attributes (eattr, TYPE_ATTRIBUTES (type));
 	}
 
       if (inner_tag)
