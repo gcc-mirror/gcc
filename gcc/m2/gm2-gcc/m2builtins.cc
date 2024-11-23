@@ -138,7 +138,7 @@ struct builtin_function_entry
 /* Entries are added by examining gcc/builtins.def and copying those
    functions which can be applied to Modula-2.  */
 
-static struct builtin_function_entry list_of_builtins[] = {
+static struct GTY(()) builtin_function_entry list_of_builtins[] = {
   { "__builtin_alloca", BT_FN_PTR_SIZE, BUILT_IN_ALLOCA, BUILT_IN_NORMAL,
     "alloca", NULL, NULL, bf_extension_lib },
   { "__builtin_memcpy", BT_FN_TRAD_PTR_PTR_CONST_PTR_SIZE, BUILT_IN_MEMCPY,
@@ -1007,10 +1007,11 @@ static tree
 DoBuiltinMemCopy (location_t location, tree dest, tree src, tree bytes)
 {
   tree functype = TREE_TYPE (gm2_memcpy_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_memcpy_node);
   tree call
-      = m2treelib_DoCall3 (location, ptr_type_node, funcptr, dest, src, bytes);
+      = m2treelib_DoCall3 (location, rettype, funcptr, dest, src, bytes);
   return call;
 }
 
@@ -1018,10 +1019,10 @@ static tree
 DoBuiltinAlloca (location_t location, tree bytes)
 {
   tree functype = TREE_TYPE (gm2_alloca_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_alloca_node);
-  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, bytes);
-
+  tree call = m2treelib_DoCall1 (location, rettype, funcptr, bytes);
   return call;
 }
 
@@ -1029,10 +1030,10 @@ static tree
 DoBuiltinIsfinite (location_t location, tree value)
 {
   tree functype = TREE_TYPE (gm2_isfinite_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isfinite_node);
-  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
-
+  tree call = m2treelib_DoCall1 (location, rettype, funcptr, value);
   return call;
 }
 
@@ -1040,10 +1041,10 @@ static tree
 DoBuiltinIsnan (location_t location, tree value)
 {
   tree functype = TREE_TYPE (gm2_isnan_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isnan_node);
-  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
-
+  tree call = m2treelib_DoCall1 (location, rettype, funcptr, value);
   return call;
 }
 
@@ -1051,9 +1052,10 @@ tree
 m2builtins_BuiltInHugeVal (location_t location)
 {
   tree functype = TREE_TYPE (gm2_huge_val_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_huge_val_node);
-  tree call = m2treelib_DoCall0 (location, ptr_type_node, funcptr);
+  tree call = m2treelib_DoCall0 (location, rettype, funcptr);
   return call;
 }
 
@@ -1061,9 +1063,10 @@ tree
 m2builtins_BuiltInHugeValShort (location_t location)
 {
   tree functype = TREE_TYPE (gm2_huge_valf_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_huge_valf_node);
-  tree call = m2treelib_DoCall0 (location, ptr_type_node, funcptr);
+  tree call = m2treelib_DoCall0 (location, rettype, funcptr);
   return call;
 }
 
@@ -1071,9 +1074,10 @@ tree
 m2builtins_BuiltInHugeValLong (location_t location)
 {
   tree functype = TREE_TYPE (gm2_huge_vall_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_huge_vall_node);
-  tree call = m2treelib_DoCall0 (location, ptr_type_node, funcptr);
+  tree call = m2treelib_DoCall0 (location, rettype, funcptr);
   return call;
 }
 
