@@ -405,6 +405,7 @@ enum dwarf_source_language
     DW_LANG_P4 = 0x003c,
     DW_LANG_Metal = 0x003d,
     DW_LANG_C23 = 0x003e,
+    DW_LANG_Fortran23 = 0x003f,
     DW_LANG_Ruby = 0x0040,
     DW_LANG_Move = 0x0041,
     DW_LANG_Hylo = 0x0042,
