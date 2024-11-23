@@ -6,13 +6,13 @@ program test_g0_special
 
     call check_all("(g10.3)", "(f10.3)")
     call check_all("(g10.3e3)", "(f10.3)")
-    call check_all("(spg10.3)", "(spf10.3)")
-    call check_all("(spg10.3e3)", "(spf10.3)")
+    call check_all("(sp,g10.3)", "(sp,f10.3)")
+    call check_all("(sp,g10.3e3)", "(sp,f10.3)")
     !print *, "-----------------------------------"
     call check_all("(g0)", "(f0.0)")
     call check_all("(g0.15)", "(f0.0)")
-    call check_all("(spg0)", "(spf0.0)")
-    call check_all("(spg0.15)", "(spf0.0)")
+    call check_all("(sp,g0)", "(sp,f0.0)")
+    call check_all("(sp,g0.15)", "(sp,f0.0)")
 contains
     subroutine check_all(fmt1, fmt2)
         character(len=*), intent(in) :: fmt1, fmt2
