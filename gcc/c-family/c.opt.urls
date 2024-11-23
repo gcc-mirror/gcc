@@ -1003,6 +1003,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-faligned-new)
 fasm
 UrlSuffix(gcc/C-Dialect-Options.html#index-fasm)
 
+fassume-sane-operators-new-delete
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fassume-sane-operators-new-delete)
+
 ; skipping UrlSuffix for 'fbuiltin' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-fbuiltin'
 ;   duplicate: 'gcc/Other-Builtins.html#index-fno-builtin-3'
