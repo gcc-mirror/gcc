@@ -1,3 +1,83 @@
+2024-11-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115536
+	* gm2/iso/const/pass/constbool4.mod: New test.
+	* gm2/iso/const/pass/constbool5.mod: New test.
+	* gm2/iso/run/pass/condtest2.mod: New test.
+	* gm2/iso/run/pass/condtest3.mod: New test.
+	* gm2/iso/run/pass/condtest4.mod: New test.
+	* gm2/iso/run/pass/condtest5.mod: New test.
+	* gm2/iso/run/pass/constbool4.mod: New test.
+
+2024-11-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-11-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* gfortran.dg/null_actual_6.f90: New test.
+
+2024-11-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-06-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114529
+	* gm2/base-lang/pass/SYSTEM.def: New test.
+	* gm2/base-lang/pass/base-lang-test.sh: New test.
+	* gm2/base-lang/pass/globalproctype.def: New test.
+	* gm2/base-lang/pass/globalproctype.mod: New test.
+	* gm2/base-lang/pass/globalvar.def: New test.
+	* gm2/base-lang/pass/globalvar.mod: New test.
+	* gm2/base-lang/pass/globalvarassign.def: New test.
+	* gm2/base-lang/pass/globalvarassign.mod: New test.
+	* gm2/base-lang/pass/localproctype.def: New test.
+	* gm2/base-lang/pass/localproctype.mod: New test.
+	* gm2/base-lang/pass/localvar.def: New test.
+	* gm2/base-lang/pass/localvar.mod: New test.
+	* gm2/base-lang/pass/localvarassign.def: New test.
+	* gm2/base-lang/pass/localvarassign.mod: New test.
+	* gm2/base-lang/pass/opaquefield.def: New test.
+	* gm2/base-lang/pass/opaquefield.mod: New test.
+	* gm2/base-lang/pass/opaquenew.def: New test.
+	* gm2/base-lang/pass/opaquenew.mod: New test.
+	* gm2/base-lang/pass/opaqueparam.def: New test.
+	* gm2/base-lang/pass/opaqueparam.mod: New test.
+	* gm2/base-lang/pass/opaquestr.def: New test.
+	* gm2/base-lang/pass/opaqueuse.def: New test.
+	* gm2/base-lang/pass/opaqueuse.mod: New test.
+	* gm2/base-lang/pass/opaqueusestr.def: New test.
+	* gm2/base-lang/pass/opaqueusestr.mod: New test.
+	* gm2/base-lang/pass/opaquevariant.def: New test.
+	* gm2/base-lang/pass/opaquevariant.mod: New test.
+	* gm2/base-lang/pass/opaquevarparam.def: New test.
+	* gm2/base-lang/pass/opaquevarparam.mod: New test.
+	* gm2/base-lang/pass/simplelist.def: New test.
+	* gm2/base-lang/pass/simplelist.mod: New test.
+	* gm2/base-lang/pass/simplelistiter.def: New test.
+	* gm2/base-lang/pass/simplelistiter.mod: New test.
+	* gm2/base-lang/pass/simpleopaque.def: New test.
+	* gm2/base-lang/pass/simpleopaque.mod: New test.
+	* gm2/base-lang/pass/straddress.def: New test.
+	* gm2/base-lang/pass/straddress.mod: New test.
+	* gm2/base-lang/pass/straddressexport.def: New test.
+	* gm2/base-lang/pass/straddressexport.mod: New test.
+	* gm2/base-lang/pass/unboundedarray.def: New test.
+	* gm2/base-lang/pass/unboundedarray.mod: New test.
+
+2024-11-22  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-11-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vector/lsx/lsx-builtin.c (__lsx_vorn_v):
+	Change arguments and return value to v16u8.
+	* gcc.target/loongarch/vector/lasx/lasx-builtin.c
+	(__lasx_xvorn_v): Change arguments and return value to v32u8.
+
 2024-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	Backported from master:
