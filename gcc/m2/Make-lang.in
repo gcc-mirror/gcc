@@ -65,8 +65,7 @@ RSTSRC =  $(srcdir)/doc/gm2.texi \
           m2/Builtins.rst
 
 # Define the names for selecting modula-2 in LANGUAGES.
-m2 modula-2 modula2: gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext) \
-                 $(GCC_PASSES) $(GCC_PARTS)
+m2 modula-2 modula2: gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext) $(GCC_PASSES)
 m2.serial = cc1gm2$(exeext)
 
 m2.tags: force

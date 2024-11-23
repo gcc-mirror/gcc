@@ -793,7 +793,7 @@ gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS)
 	+$(GCC_LINK) -o $@ $(CFLAGS) ada/b_gnatb.o $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(GNATLIB)
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink
-gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
+gnattools: $(CONFIG_H) prefix.o force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 
