@@ -13901,7 +13901,7 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
     {
     case ARRAY_TYPE:
       /* Array types are the same if the element types are the same and
-	 the number of elements are the same.  */
+	 minimum and maximum index are the same.  */
       if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
 						trust_type_canonical)
 	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
@@ -13995,23 +13995,46 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 	     f1 || f2;
 	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	  {
-	    /* Skip non-fields and zero-sized fields.  */
+	    /* Skip non-fields and zero-sized fields, except zero-sized
+	       arrays at the end.  */
 	    while (f1 && (TREE_CODE (f1) != FIELD_DECL
 			  || (DECL_SIZE (f1)
-			      && integer_zerop (DECL_SIZE (f1)))))
+			      && integer_zerop (DECL_SIZE (f1))
+			      && (TREE_CHAIN (f1)
+				  || TREE_CODE (TREE_TYPE (f1))
+				     != ARRAY_TYPE))))
 	      f1 = TREE_CHAIN (f1);
 	    while (f2 && (TREE_CODE (f2) != FIELD_DECL
 			  || (DECL_SIZE (f2)
-			      && integer_zerop (DECL_SIZE (f2)))))
+			      && integer_zerop (DECL_SIZE (f2))
+			      && (TREE_CHAIN (f2)
+				  || TREE_CODE (TREE_TYPE (f2))
+				     != ARRAY_TYPE))))
 	      f2 = TREE_CHAIN (f2);
 	    if (!f1 || !f2)
 	      break;
-	    /* The fields must have the same name, offset and type.  */
+
+	    tree t1 = TREE_TYPE (f1);
+	    tree t2 = TREE_TYPE (f2);
+
+	    /* If the last element are arrays, we only compare the element
+	       types.  */
+	    if (TREE_CHAIN (f1) == NULL_TREE && TREE_CODE (t1) == ARRAY_TYPE
+		&& TREE_CHAIN (f2) == NULL_TREE && TREE_CODE (t2) == ARRAY_TYPE)
+	      {
+		/* If both arrays have zero size, this is a match.  */
+		if (DECL_SIZE (f1) && integer_zerop (DECL_SIZE (f1))
+		    && DECL_SIZE (f2) && integer_zerop (DECL_SIZE (f2)))
+		  return true;
+
+		t1 = TREE_TYPE (t1);
+		t2 = TREE_TYPE (t2);
+	      }
+
 	    if (DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
 		|| !gimple_compare_field_offset (f1, f2)
 		|| !gimple_canonical_types_compatible_p
-		      (TREE_TYPE (f1), TREE_TYPE (f2),
-		       trust_type_canonical))
+		      (t1, t2, trust_type_canonical))
 	      return false;
 	  }
 
