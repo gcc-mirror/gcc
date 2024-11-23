@@ -1,3 +1,58 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* access-diagram.cc (INCLUDE_MEMORY): Remove.
+	* analysis-plan.cc (INCLUDE_MEMORY): Remove.
+	* analyzer-language.cc (INCLUDE_MEMORY): Remove.
+	* analyzer-logging.cc (INCLUDE_MEMORY): Remove.
+	* analyzer-pass.cc (INCLUDE_MEMORY): Remove.
+	* analyzer-selftests.cc (INCLUDE_MEMORY): Remove.
+	* analyzer.cc (INCLUDE_MEMORY): Remove.
+	* bar-chart.cc (INCLUDE_MEMORY): Remove.
+	* bounds-checking.cc (INCLUDE_MEMORY): Remove.
+	* call-details.cc (INCLUDE_MEMORY): Remove.
+	* call-info.cc (INCLUDE_MEMORY): Remove.
+	* call-string.cc (INCLUDE_MEMORY): Remove.
+	* call-summary.cc (INCLUDE_MEMORY): Remove.
+	* checker-event.cc (INCLUDE_MEMORY): Remove.
+	* checker-path.cc (INCLUDE_MEMORY): Remove.
+	* complexity.cc (INCLUDE_MEMORY): Remove.
+	* constraint-manager.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-manager.cc (INCLUDE_MEMORY): Remove.
+	* engine.cc (INCLUDE_MEMORY): Remove.
+	* feasible-graph.cc (INCLUDE_MEMORY): Remove.
+	* infinite-loop.cc (INCLUDE_MEMORY): Remove.
+	* infinite-recursion.cc (INCLUDE_MEMORY): Remove.
+	* kf-analyzer.cc (INCLUDE_MEMORY): Remove.
+	* kf-lang-cp.cc (INCLUDE_MEMORY): Remove.
+	* kf.cc (INCLUDE_MEMORY): Remove.
+	* known-function-manager.cc (INCLUDE_MEMORY): Remove.
+	* pending-diagnostic.cc (INCLUDE_MEMORY): Remove.
+	* program-point.cc (INCLUDE_MEMORY): Remove.
+	* program-state.cc (INCLUDE_MEMORY): Remove.
+	* ranges.cc (INCLUDE_MEMORY): Remove.
+	* record-layout.cc (INCLUDE_MEMORY): Remove.
+	* region-model-asm.cc (INCLUDE_MEMORY): Remove.
+	* region-model-manager.cc (INCLUDE_MEMORY): Remove.
+	* region-model-reachability.cc (INCLUDE_MEMORY): Remove.
+	* region-model.cc (INCLUDE_MEMORY): Remove.
+	* region.cc (INCLUDE_MEMORY): Remove.
+	* sm-fd.cc (INCLUDE_MEMORY): Remove.
+	* sm-file.cc (INCLUDE_MEMORY): Remove.
+	* sm-malloc.cc (INCLUDE_MEMORY): Remove.
+	* sm-pattern-test.cc (INCLUDE_MEMORY): Remove.
+	* sm-sensitive.cc (INCLUDE_MEMORY): Remove.
+	* sm-signal.cc (INCLUDE_MEMORY): Remove.
+	* sm-taint.cc (INCLUDE_MEMORY): Remove.
+	* sm.cc (INCLUDE_MEMORY): Remove.
+	* state-purge.cc (INCLUDE_MEMORY): Remove.
+	* store.cc (INCLUDE_MEMORY): Remove.
+	* supergraph.cc (INCLUDE_MEMORY): Remove.
+	* svalue.cc (INCLUDE_MEMORY): Remove.
+	* symbol.cc (INCLUDE_MEMORY): Remove.
+	* trimmed-graph.cc (INCLUDE_MEMORY): Remove.
+	* varargs.cc (INCLUDE_MEMORY): Remove.
+
 2024-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (checker_path::debug): Explicitly use

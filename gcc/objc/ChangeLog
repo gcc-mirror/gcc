@@ -1,3 +1,14 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* objc-act.cc (INCLUDE_MEMORY): Remove.
+	* objc-encoding.cc (INCLUDE_MEMORY): Remove.
+	* objc-gnu-runtime-abi-01.cc (INCLUDE_MEMORY): Remove.
+	* objc-lang.cc (INCLUDE_MEMORY): Remove.
+	* objc-next-runtime-abi-01.cc (INCLUDE_MEMORY): Remove.
+	* objc-next-runtime-abi-02.cc (INCLUDE_MEMORY): Remove.
+	* objc-runtime-shared-support.cc (INCLUDE_MEMORY): Remove.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc-encoding.cc: Remove trailing whitespace.

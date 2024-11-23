@@ -1,3 +1,9 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* objcp-decl.cc (INCLUDE_MEMORY): Remove.
+	* objcp-lang.cc (INCLUDE_MEMORY): Remove.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* objcp-decl.cc: Remove trailing whitespace.

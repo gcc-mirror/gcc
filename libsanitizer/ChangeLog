@@ -1,3 +1,23 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR sanitizer/117731
+	* asan/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* asan/Makefile.in: Regenerate.
+	* hwasan/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* hwasan/Makefile.in: Regenerate.
+	* interception/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* libbacktrace/Makefile.in (AM_CXXFLAGS): Regenerate.
+	* lsan/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.am (AM_CXXFLAGS): Replace gnu++14 with gnu++17.
+	* ubsan/Makefile.in: Regenerate.
+
 2024-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/sanitizer_asm.h: Cherry-pick llvm-project revision

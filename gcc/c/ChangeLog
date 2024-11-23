@@ -1,3 +1,43 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* c-aux-info.cc (INCLUDE_MEMORY): Remove.
+	* c-convert.cc (INCLUDE_MEMORY): Remove.
+	* c-decl.cc (INCLUDE_MEMORY): Remove.
+	* c-errors.cc (INCLUDE_MEMORY): Remove.
+	* c-fold.cc (INCLUDE_MEMORY): Remove.
+	* c-lang.cc (INCLUDE_MEMORY): Remove.
+	* c-objc-common.cc (INCLUDE_MEMORY): Remove.
+	* c-parser.cc (INCLUDE_MEMORY): Remove.
+	* c-typeck.cc (INCLUDE_MEMORY): Remove.
+	* gimple-parser.cc (INCLUDE_MEMORY): Remove.
+
+2024-11-22  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112841
+	* c-parser.cc (c_parser_typeof_specifier): Call strip_array_types
+	when checking for type qualifiers for typeof_unqual.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_interop): New.
+	(c_parser_omp_clause_name, c_parser_omp_all_clauses,
+	c_parser_omp_dispatch_body): Handle 'interop' clause.
+	* c-typeck.cc (c_finish_omp_clauses): Likewise.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (INCLUDE_STRING): Define.
+	(c_parser_pragma): Handle 'interop' directive.
+	(c_parser_omp_clause_name): Handle init, use, and destroy clauses.
+	(c_parser_omp_all_clauses): Likewise; use C_ORT_OMP_INTEROP, if
+	'use' is permitted, for c_finish_omp_clauses.
+	(c_parser_omp_clause_destroy, c_parser_omp_modifier_prefer_type,
+	c_parser_omp_clause_init, c_parser_omp_clause_use,
+	OMP_INTEROP_CLAUSE_MASK, c_parser_omp_interop): New.
+	* c-typeck.cc (c_finish_omp_clauses): Add missing OPT_Wopenmp to
+	a warning; handle new clauses.
+
 2024-11-21  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/114816

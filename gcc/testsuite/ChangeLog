@@ -1,3 +1,95 @@
+2024-11-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/109279
+	* gcc.target/riscv/synthesis-16.c: New test.
+
+2024-11-22  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112841
+	* gcc.dg/c23-typeof-4.c: New test.
+
+2024-11-22  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/117355
+	* g++.dg/ext/builtin-object-size2.C (test9): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-3.c (test10): Adjust expected size.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110137
+	PR middle-end/101480
+	* g++.dg/tree-ssa/pr110137-1.C: New test.
+	* g++.dg/tree-ssa/pr110137-2.C: New test.
+	* g++.dg/tree-ssa/pr110137-3.C: New test.
+	* g++.dg/tree-ssa/pr110137-4.C: New test.
+	* g++.dg/torture/pr10148.C: Add -fno-assume-sane-operators-new-delete
+	as dg-additional-options.
+	* g++.dg/warn/Warray-bounds-16.C: Revert 2021-11-10 changes.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117420
+	* gcc.dg/torture/pr117420.c: New test.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117641
+	* gcc.dg/bitint-117.c: New test.
+
+2024-11-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/117603
+	* lib/target-supports.exp (riscv_get_arch): Add comment about
+	function purpose.  Add E ISA to list of possible
+	modifiers.
+	(check_vect_support_and_set_flags): Do not advertise vector
+	support if V extension cannot be enabled.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/dispatch-11.c: New test.
+	* c-c++-common/gomp/dispatch-12.c: New test.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/interop-1.f90: Update for parser changes,
+	spec changes and add new tests.
+	* gfortran.dg/gomp/interop-2.f90: Likewise.
+	* gfortran.dg/gomp/interop-3.f90: Likewise.
+	* c-c++-common/gomp/interop-1.c: New test.
+	* c-c++-common/gomp/interop-2.c: New test.
+	* c-c++-common/gomp/interop-3.c: New test.
+	* c-c++-common/gomp/interop-4.c: New test.
+	* g++.dg/gomp/interop-5.C: New test.
+	* gfortran.dg/gomp/interop-4.f90: New test.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117165
+	* gcc.target/i386/pr117165.c: New test.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/satd-hadamard.c: Add -msse2 as dg-additional-options
+	on x86.  Also scan-tree-dump on i?86-*-*.
+	* gcc.dg/tree-ssa/vector-8.c: Likewise.
+	* gcc.dg/tree-ssa/vector-9.c: Likewise.
+	* gcc.dg/tree-ssa/vector-10.c: Add -Wno-psabi to dg-additional-options.
+
+2024-11-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/117697
+	* gcc.target/i386/avx10_2-vmovd-1.c: Both check %esp and %ebp.
+	* gcc.target/i386/avx10_2-vmovw-1.c: Ditto.
+
+2024-11-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vector/lsx/lsx-builtin.c (__lsx_vorn_v):
+	Change arguments and return value to v16u8.
+	* gcc.target/loongarch/vector/lasx/lasx-builtin.c
+	(__lasx_xvorn_v): Change arguments and return value to v32u8.
+
 2024-11-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/117690

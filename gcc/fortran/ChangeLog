@@ -1,3 +1,68 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* arith.cc (INCLUDE_MEMORY): Remove.
+	* array.cc (INCLUDE_MEMORY): Remove.
+	* bbt.cc (INCLUDE_MEMORY): Remove.
+	* check.cc (INCLUDE_MEMORY): Remove.
+	* class.cc (INCLUDE_MEMORY): Remove.
+	* constructor.cc (INCLUDE_MEMORY): Remove.
+	* convert.cc (INCLUDE_MEMORY): Remove.
+	* cpp.cc (INCLUDE_MEMORY): Remove.
+	* data.cc (INCLUDE_MEMORY): Remove.
+	* decl.cc (INCLUDE_MEMORY): Remove.
+	* dependency.cc (INCLUDE_MEMORY): Remove.
+	* dump-parse-tree.cc (INCLUDE_MEMORY): Remove.
+	* error.cc (INCLUDE_MEMORY): Remove.
+	* expr.cc (INCLUDE_MEMORY): Remove.
+	* f95-lang.cc (INCLUDE_MEMORY): Remove.
+	* frontend-passes.cc (INCLUDE_MEMORY): Remove.
+	* interface.cc (INCLUDE_MEMORY): Remove.
+	* intrinsic.cc (INCLUDE_MEMORY): Remove.
+	* io.cc (INCLUDE_MEMORY): Remove.
+	* iresolve.cc (INCLUDE_MEMORY): Remove.
+	* match.cc (INCLUDE_MEMORY): Remove.
+	* matchexp.cc (INCLUDE_MEMORY): Remove.
+	* misc.cc (INCLUDE_MEMORY): Remove.
+	* module.cc (INCLUDE_MEMORY): Remove.
+	* openmp.cc (INCLUDE_MEMORY): Remove.
+	* options.cc (INCLUDE_MEMORY): Remove.
+	* parse.cc (INCLUDE_MEMORY): Remove.
+	* primary.cc (INCLUDE_MEMORY): Remove.
+	* resolve.cc (INCLUDE_MEMORY): Remove.
+	* scanner.cc (INCLUDE_MEMORY): Remove.
+	* simplify.cc (INCLUDE_MEMORY): Remove.
+	* st.cc (INCLUDE_MEMORY): Remove.
+	* symbol.cc (INCLUDE_MEMORY): Remove.
+	* target-memory.cc (INCLUDE_MEMORY): Remove.
+	* trans-array.cc (INCLUDE_MEMORY): Remove.
+	* trans-common.cc (INCLUDE_MEMORY): Remove.
+	* trans-const.cc (INCLUDE_MEMORY): Remove.
+	* trans-decl.cc (INCLUDE_MEMORY): Remove.
+	* trans-expr.cc (INCLUDE_MEMORY): Remove.
+	* trans-intrinsic.cc (INCLUDE_MEMORY): Remove.
+	* trans-io.cc (INCLUDE_MEMORY): Remove.
+	* trans-openmp.cc (INCLUDE_MEMORY): Remove.
+	* trans-stmt.cc (INCLUDE_MEMORY): Remove.
+	* trans-types.cc (INCLUDE_MEMORY): Remove.
+	* trans.cc (INCLUDE_MEMORY): Remove.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (gfc_omp_namelist): Cleanup interop internal
+	representation.
+	* dump-parse-tree.cc (show_omp_namelist): Update for changed
+	internal representation.
+	* match.cc (gfc_free_omp_namelist): Likewise.
+	* openmp.cc (gfc_match_omp_prefer_type, gfc_match_omp_init):
+	Likewise; also handle some corner cases better and update for
+	newer 6.0 changes related to 'fr'.
+	(resolve_omp_clauses): Add type-check for interop variables.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle init, use
+	and destroy clauses.
+	(gfc_trans_openmp_interop): New.
+	(gfc_trans_omp_directive): Call it.
+
 2024-11-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/83135

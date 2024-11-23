@@ -1,3 +1,69 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* call.cc (INCLUDE_MEMORY): Remove.
+	* class.cc (INCLUDE_MEMORY): Remove.
+	* constexpr.cc (INCLUDE_MEMORY): Remove.
+	* constraint.cc (INCLUDE_MEMORY): Remove.
+	* contracts.cc (INCLUDE_MEMORY): Remove.
+	* coroutines.cc (INCLUDE_MEMORY): Remove.
+	* cp-gimplify.cc (INCLUDE_MEMORY): Remove.
+	* cp-lang.cc (INCLUDE_MEMORY): Remove.
+	* cp-objcp-common.cc (INCLUDE_MEMORY): Remove.
+	* cp-ubsan.cc (INCLUDE_MEMORY): Remove.
+	* cvt.cc (INCLUDE_MEMORY): Remove.
+	* cxx-pretty-print.cc (INCLUDE_MEMORY): Remove.
+	* decl.cc (INCLUDE_MEMORY): Remove.
+	* decl2.cc (INCLUDE_MEMORY): Remove.
+	* dump.cc (INCLUDE_MEMORY): Remove.
+	* error.cc (INCLUDE_MEMORY): Remove.
+	* except.cc (INCLUDE_MEMORY): Remove.
+	* expr.cc (INCLUDE_MEMORY): Remove.
+	* friend.cc (INCLUDE_MEMORY): Remove.
+	* init.cc (INCLUDE_MEMORY): Remove.
+	* lambda.cc (INCLUDE_MEMORY): Remove.
+	* lex.cc (INCLUDE_MEMORY): Remove.
+	* logic.cc (INCLUDE_MEMORY): Remove.
+	* mangle.cc (INCLUDE_MEMORY): Remove.
+	* mapper-client.cc (INCLUDE_MEMORY): Remove.
+	* mapper-resolver.cc (INCLUDE_MEMORY): Remove.
+	* method.cc (INCLUDE_MEMORY): Remove.
+	* module.cc (INCLUDE_MEMORY): Remove.
+	* name-lookup.cc (INCLUDE_MEMORY): Remove.
+	* optimize.cc (INCLUDE_MEMORY): Remove.
+	* parser.cc (INCLUDE_MEMORY): Remove.
+	* pt.cc (INCLUDE_MEMORY): Remove.
+	* ptree.cc (INCLUDE_MEMORY): Remove.
+	* rtti.cc (INCLUDE_MEMORY): Remove.
+	* search.cc (INCLUDE_MEMORY): Remove.
+	* semantics.cc (INCLUDE_MEMORY): Remove.
+	* tree.cc (INCLUDE_MEMORY): Remove.
+	* typeck.cc (INCLUDE_MEMORY): Remove.
+	* typeck2.cc (INCLUDE_MEMORY): Remove.
+	* vtable-class-hierarchy.cc (INCLUDE_MEMORY): Remove.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_clause_name, cp_parser_omp_all_clauses,
+	cp_parser_omp_dispatch_body): Handle 'interop' clause.
+	* pt.cc (tsubst_omp_clauses): Likewise.
+	* semantics.cc (finish_omp_clauses): Likewise.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (INCLUDE_STRING): Define.
+	(cp_parser_omp_clause_name): Handle init, use, and destroy clauses.
+	(cp_parser_omp_all_clauses): Likewise; use C_ORT_OMP_INTEROP, if
+	'use' is permitted, for c_finish_omp_clauses.
+	(cp_parser_omp_modifier_prefer_type, cp_parser_omp_clause_init,
+	OMP_INTEROP_CLAUSE_MASK, cp_parser_omp_interop): New.
+	(cp_parser_pragma): Handle 'interop' directive.
+	* pt.cc (tsubst_omp_clauses): Handle init, use, and destroy clauses.
+	(tsubst_stmt): Handle OMP_INTEROP.
+	* semantics.cc (cp_omp_init_prefer_type_update): New.
+	(finish_omp_clauses): Handle  init, use, and destroy clauses
+	and add clause check for 'depend' on 'interop'.
+
 2024-11-21  Jason Merrill  <jason@redhat.com>
 
 	* module.cc (has_definition): Also true for inline vars.

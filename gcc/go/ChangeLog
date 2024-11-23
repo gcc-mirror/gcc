@@ -1,3 +1,9 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* go-backend.cc (INCLUDE_MEMORY): Remove.
+	* go-lang.cc (INCLUDE_MEMORY): Remove.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* go-gcc.cc: Remove trailing whitespace.

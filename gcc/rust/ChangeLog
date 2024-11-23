@@ -1,3 +1,10 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* resolve/rust-ast-resolve-expr.cc (INCLUDE_MEMORY): Remove.
+	* rust-attribs.cc (INCLUDE_MEMORY): Remove.
+	* rust-system.h (INCLUDE_MEMORY): Remove.
+
 2024-11-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/117361

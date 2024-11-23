@@ -1,3 +1,515 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* asan.cc (INCLUDE_MEMORY): Remove.
+	* attribs.cc (INCLUDE_MEMORY): Remove.
+	* auto-profile.cc (INCLUDE_MEMORY): Remove.
+	* calls.cc (INCLUDE_MEMORY): Remove.
+	* cfganal.cc (INCLUDE_MEMORY): Remove.
+	* cfgexpand.cc (INCLUDE_MEMORY): Remove.
+	* cfghooks.cc (INCLUDE_MEMORY): Remove.
+	* cfgloop.cc (INCLUDE_MEMORY): Remove.
+	* cgraph.cc (INCLUDE_MEMORY): Remove.
+	* cgraphclones.cc (INCLUDE_MEMORY): Remove.
+	* cgraphunit.cc (INCLUDE_MEMORY): Remove.
+	* collect-utils.cc (INCLUDE_MEMORY): Remove.
+	* collect2.cc (INCLUDE_MEMORY): Remove.
+	* common/config/aarch64/aarch64-common.cc (INCLUDE_MEMORY): Remove.
+	* common/config/arm/arm-common.cc (INCLUDE_MEMORY): Remove.
+	* common/config/avr/avr-common.cc (INCLUDE_MEMORY): Remove.
+	* config/aarch64/aarch64-cc-fusion.cc (INCLUDE_MEMORY): Remove.
+	* config/aarch64/aarch64-early-ra.cc (INCLUDE_MEMORY): Remove.
+	* config/aarch64/aarch64-sve-builtins.cc (INCLUDE_MEMORY): Remove.
+	* config/aarch64/aarch64.cc (INCLUDE_MEMORY): Remove.
+	* config/arc/arc.cc (INCLUDE_MEMORY): Remove.
+	* config/arm/aarch-common.cc (INCLUDE_MEMORY) Remove.:
+	* config/arm/arm-mve-builtins.cc (INCLUDE_MEMORY): Remove.
+	* config/arm/arm.cc (INCLUDE_MEMORY): Remove.
+	* config/avr/avr-devices.cc (INCLUDE_MEMORY): Remove.
+	* config/avr/driver-avr.cc (INCLUDE_MEMORY): Remove.
+	* config/bpf/bpf.cc (INCLUDE_MEMORY): Remove.
+	* config/bpf/btfext-out.cc (INCLUDE_MEMORY): Remove.
+	* config/bpf/core-builtins.cc (INCLUDE_MEMORY): Remove.
+	* config/darwin.cc (INCLUDE_MEMORY): Remove.
+	* config/gcn/mkoffload.cc (INCLUDE_MEMORY): Remove.
+	* config/i386/driver-i386.cc (INCLUDE_MEMORY): Remove.
+	* config/i386/i386-builtins.cc (INCLUDE_MEMORY): Remove.
+	* config/i386/i386-expand.cc (INCLUDE_MEMORY): Remove.
+	* config/i386/i386-features.cc (INCLUDE_MEMORY): Remove.
+	* config/i386/i386-options.cc (INCLUDE_MEMORY): Remove.
+	* config/i386/i386.cc (INCLUDE_MEMORY): Remove.
+	* config/loongarch/loongarch-builtins.cc (INCLUDE_MEMORY): Remove.
+	* config/loongarch/loongarch.cc (INCLUDE_MEMORY): Remove.
+	* config/mingw/winnt-cxx.cc (INCLUDE_MEMORY): Remove.
+	* config/mingw/winnt.cc (INCLUDE_MEMORY): Remove.
+	* config/mips/mips.cc (INCLUDE_MEMORY): Remove.
+	* config/msp430/driver-msp430.cc (INCLUDE_MEMORY): Remove.
+	* config/nvptx/mkoffload.cc (INCLUDE_MEMORY): Remove.
+	* config/nvptx/nvptx.cc (INCLUDE_MEMORY): Remove.
+	* config/riscv/riscv-avlprop.cc (INCLUDE_MEMORY): Remove.
+	* config/riscv/riscv-target-attr.cc (INCLUDE_MEMORY): Remove.
+	* config/riscv/riscv-vector-builtins.cc (INCLUDE_MEMORY): Remove.
+	* config/riscv/riscv-vector-costs.cc (INCLUDE_MEMORY): Remove.
+	* config/riscv/riscv-vsetvl.cc (INCLUDE_MEMORY): Remove.
+	* config/riscv/riscv.cc (INCLUDE_MEMORY): Remove.
+	* config/rs6000/driver-rs6000.cc (INCLUDE_MEMORY): Remove.
+	* config/rs6000/host-darwin.cc (INCLUDE_MEMORY): Remove.
+	* config/rs6000/rs6000-c.cc (INCLUDE_MEMORY): Remove.
+	* config/rs6000/rs6000.cc (INCLUDE_MEMORY): Remove.
+	* config/s390/s390-c.cc (INCLUDE_MEMORY): Remove.
+	* config/s390/s390.cc (INCLUDE_MEMORY): Remove.
+	* config/sol2-cxx.cc (INCLUDE_MEMORY): Remove.
+	* config/vms/vms-c.cc (INCLUDE_MEMORY): Remove.
+	* config/xtensa/xtensa-dynconfig.cc (INCLUDE_MEMORY): Remove.
+	* coroutine-passes.cc (INCLUDE_MEMORY): Remove.
+	* coverage.cc (INCLUDE_MEMORY): Remove.
+	* data-streamer-in.cc (INCLUDE_MEMORY): Remove.
+	* data-streamer-out.cc (INCLUDE_MEMORY): Remove.
+	* data-streamer.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-format-json.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-format-sarif.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-format-text.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-global-context.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-macro-unwinding.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-path.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-show-locus.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic-spec.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic.cc (INCLUDE_MEMORY): Remove.
+	* diagnostic.h: Remove check for INCLUDE_MEMORY.
+	* digraph.cc (INCLUDE_MEMORY): Remove.
+	* dumpfile.cc (INCLUDE_MEMORY): Remove.
+	* dwarf2out.cc (INCLUDE_MEMORY): Remove.
+	* edit-context.cc (INCLUDE_MEMORY): Remove.
+	* except.cc (INCLUDE_MEMORY): Remove.
+	* expr.cc (INCLUDE_MEMORY): Remove.
+	* file-prefix-map.cc (INCLUDE_MEMORY): Remove.
+	* final.cc (INCLUDE_MEMORY): Remove.
+	* fwprop.cc (INCLUDE_MEMORY): Remove.
+	* gcc-plugin.h (INCLUDE_MEMORY): Remove.
+	* gcc-rich-location.cc (INCLUDE_MEMORY): Remove.
+	* gcc-urlifier.cc (INCLUDE_MEMORY): Remove.
+	* gcc.cc (INCLUDE_MEMORY): Remove.
+	* gcov-dump.cc (INCLUDE_MEMORY): Remove.
+	* gcov-tool.cc (INCLUDE_MEMORY): Remove.
+	* gcov.cc (INCLUDE_MEMORY): Remove.
+	* gengtype.cc (open_base_files): Don't print `#define INCLUDE_MEMORY`.
+	* genmatch.cc (INCLUDE_MEMORY): Remove.
+	* gimple-fold.cc (INCLUDE_MEMORY): Remove.
+	* gimple-harden-conditionals.cc (INCLUDE_MEMORY): Remove.
+	* gimple-harden-control-flow.cc (INCLUDE_MEMORY): Remove.
+	* gimple-if-to-switch.cc (INCLUDE_MEMORY): Remove.
+	* gimple-loop-interchange.cc (INCLUDE_MEMORY): Remove.
+	* gimple-loop-jam.cc (INCLUDE_MEMORY): Remove.
+	* gimple-loop-versioning.cc (INCLUDE_MEMORY): Remove.
+	* gimple-lower-bitint.cc (INCLUDE_MEMORY): Remove.
+	* gimple-predicate-analysis.cc (INCLUDE_MEMORY): Remove.
+	* gimple-pretty-print.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-cache.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-edge.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-fold.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-gori.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-infer.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-op.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-path.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-phi.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range-trace.cc (INCLUDE_MEMORY): Remove.
+	* gimple-range.cc (INCLUDE_MEMORY): Remove.
+	* gimple-ssa-backprop.cc (INCLUDE_MEMORY): Remove.
+	* gimple-ssa-sprintf.cc (INCLUDE_MEMORY): Remove.
+	* gimple-ssa-store-merging.cc (INCLUDE_MEMORY): Remove.
+	* gimple-ssa-strength-reduction.cc (INCLUDE_MEMORY): Remove.
+	* gimple-ssa-warn-access.cc (INCLUDE_MEMORY): Remove.
+	* gimple-ssa-warn-alloca.cc (INCLUDE_MEMORY): Remove.
+	* gimple-ssa-warn-restrict.cc (INCLUDE_MEMORY): Remove.
+	* gimple-streamer-in.cc (INCLUDE_MEMORY): Remove.
+	* gimple-streamer-out.cc (INCLUDE_MEMORY): Remove.
+	* gimple.cc (INCLUDE_MEMORY): Remove.
+	* gimplify.cc (INCLUDE_MEMORY): Remove.
+	* graph.cc (INCLUDE_MEMORY): Remove.
+	* graphite-dependences.cc (INCLUDE_MEMORY): Remove.
+	* graphite-isl-ast-to-gimple.cc (INCLUDE_MEMORY): Remove.
+	* graphite-optimize-isl.cc (INCLUDE_MEMORY): Remove.
+	* graphite-poly.cc (INCLUDE_MEMORY): Remove.
+	* graphite-scop-detection.cc (INCLUDE_MEMORY): Remove.
+	* graphite-sese-to-poly.cc (INCLUDE_MEMORY): Remove.
+	* graphite.cc (INCLUDE_MEMORY): Remove.
+	* graphviz.cc (INCLUDE_MEMORY): Remove.
+	* input.cc (INCLUDE_MEMORY): Remove.
+	* ipa-cp.cc (INCLUDE_MEMORY): Remove.
+	* ipa-devirt.cc (INCLUDE_MEMORY): Remove.
+	* ipa-fnsummary.cc (INCLUDE_MEMORY): Remove.
+	* ipa-free-lang-data.cc (INCLUDE_MEMORY): Remove.
+	* ipa-icf-gimple.cc (INCLUDE_MEMORY): Remove.
+	* ipa-icf.cc (INCLUDE_MEMORY): Remove.
+	* ipa-inline-analysis.cc (INCLUDE_MEMORY): Remove.
+	* ipa-inline.cc (INCLUDE_MEMORY): Remove.
+	* ipa-modref-tree.cc (INCLUDE_MEMORY): Remove.
+	* ipa-modref.cc (INCLUDE_MEMORY): Remove.
+	* ipa-param-manipulation.cc (INCLUDE_MEMORY): Remove.
+	* ipa-polymorphic-call.cc (INCLUDE_MEMORY): Remove.
+	* ipa-predicate.cc (INCLUDE_MEMORY): Remove.
+	* ipa-profile.cc (INCLUDE_MEMORY): Remove.
+	* ipa-prop.cc (INCLUDE_MEMORY): Remove.
+	* ipa-pure-const.cc (INCLUDE_MEMORY): Remove.
+	* ipa-reference.cc (INCLUDE_MEMORY): Remove.
+	* ipa-split.cc (INCLUDE_MEMORY): Remove.
+	* ipa-sra.cc (INCLUDE_MEMORY): Remove.
+	* ipa-strub.cc (INCLUDE_MEMORY): Remove.
+	* ipa-utils.cc (INCLUDE_MEMORY): Remove.
+	* json-parsing.cc (INCLUDE_MEMORY): Remove.
+	* json.cc (INCLUDE_MEMORY): Remove.
+	* json.h: Don't check INCLUDE_MEMORY.
+	* langhooks.cc (INCLUDE_MEMORY): Remove.
+	* late-combine.cc (INCLUDE_MEMORY): Remove.
+	* lazy-diagnostic-path.cc (INCLUDE_MEMORY): Remove.
+	* libdiagnostics.cc (INCLUDE_MEMORY): Remove.
+	* libsarifreplay.cc (INCLUDE_MEMORY): Remove.
+	* lto-cgraph.cc (INCLUDE_MEMORY): Remove.
+	* lto-compress.cc (INCLUDE_MEMORY): Remove.
+	* lto-opts.cc (INCLUDE_MEMORY): Remove.
+	* lto-section-in.cc (INCLUDE_MEMORY): Remove.
+	* lto-section-out.cc (INCLUDE_MEMORY): Remove.
+	* lto-streamer-in.cc (INCLUDE_MEMORY): Remove.
+	* lto-streamer-out.cc (INCLUDE_MEMORY): Remove.
+	* lto-streamer.cc (INCLUDE_MEMORY): Remove.
+	* lto-wrapper.cc (INCLUDE_MEMORY): Remove.
+	* make-unique.h (GCC_MAKE_UNIQUE): Remove.
+	* multiple_target.cc (INCLUDE_MEMORY): Remove.
+	* omp-expand.cc (INCLUDE_MEMORY): Remove.
+	* omp-general.cc (INCLUDE_MEMORY): Remove.
+	* omp-low.cc (INCLUDE_MEMORY): Remove.
+	* omp-oacc-neuter-broadcast.cc (INCLUDE_MEMORY): Remove.
+	* omp-offload.cc (INCLUDE_MEMORY): Remove.
+	* omp-simd-clone.cc (INCLUDE_MEMORY): Remove.
+	* opt-problem.cc (INCLUDE_MEMORY): Remove.
+	* optinfo-emit-json.cc (INCLUDE_MEMORY): Remove.
+	* optinfo.cc (INCLUDE_MEMORY): Remove.
+	* optinfo.h: Don't check INCLUDE_MEMORY.
+	* opts-common.cc (INCLUDE_MEMORY): Remove.
+	* opts-diagnostic.cc (INCLUDE_MEMORY): Remove.
+	* opts-global.cc (INCLUDE_MEMORY): Remove.
+	* opts.cc (INCLUDE_MEMORY): Remove.
+	* pair-fusion.cc (INCLUDE_MEMORY): Remove.
+	* passes.cc (INCLUDE_MEMORY): Remove.
+	* pointer-query.cc (INCLUDE_MEMORY): Remove.
+	* predict.cc (INCLUDE_MEMORY): Remove.
+	* pretty-print.cc (INCLUDE_MEMORY): Remove.
+	* pretty-print.h: Don't check INCLUDE_MEMORY.
+	* print-rtl.cc (INCLUDE_MEMORY): Remove.
+	* print-tree.cc (INCLUDE_MEMORY): Remove.
+	* profile-count.cc (INCLUDE_MEMORY): Remove.
+	* range-op-float.cc (INCLUDE_MEMORY): Remove.
+	* range-op-ptr.cc (INCLUDE_MEMORY): Remove.
+	* range-op.cc (INCLUDE_MEMORY): Remove.
+	* range.cc (INCLUDE_MEMORY): Remove.
+	* read-rtl-function.cc (INCLUDE_MEMORY): Remove.
+	* rtl-error.cc (INCLUDE_MEMORY): Remove.
+	* rtl-ssa/accesses.cc (INCLUDE_MEMORY): Remove.
+	* rtl-ssa/blocks.cc (INCLUDE_MEMORY): Remove.
+	* rtl-ssa/changes.cc (INCLUDE_MEMORY): Remove.
+	* rtl-ssa/functions.cc (INCLUDE_MEMORY): Remove.
+	* rtl-ssa/insns.cc (INCLUDE_MEMORY): Remove.
+	* rtl-ssa/movement.cc (INCLUDE_MEMORY): Remove.
+	* rtl-tests.cc (INCLUDE_MEMORY): Remove.
+	* sanopt.cc (INCLUDE_MEMORY): Remove.
+	* sched-rgn.cc (INCLUDE_MEMORY): Remove.
+	* selftest-diagnostic-path.cc (INCLUDE_MEMORY): Remove.
+	* selftest-diagnostic.cc (INCLUDE_MEMORY): Remove.
+	* selftest-json.cc (INCLUDE_MEMORY): Remove.
+	* sese.cc (INCLUDE_MEMORY): Remove.
+	* simple-diagnostic-path.cc (INCLUDE_MEMORY): Remove.
+	* splay-tree-utils.cc (INCLUDE_MEMORY): Remove.
+	* sreal.cc (INCLUDE_MEMORY): Remove.
+	* stmt.cc (INCLUDE_MEMORY): Remove.
+	* substring-locations.cc (INCLUDE_MEMORY): Remove.
+	* symtab-clones.cc (INCLUDE_MEMORY): Remove.
+	* symtab-thunks.cc (INCLUDE_MEMORY): Remove.
+	* symtab.cc (INCLUDE_MEMORY): Remove.
+	* system.h: Include memory unconditionally for C++.
+	Also remove support for INCLUDE_MEMORY.
+	* targhooks.cc (INCLUDE_MEMORY): Remove.
+	* text-art/box-drawing.cc (INCLUDE_MEMORY): Remove.
+	* text-art/canvas.cc (INCLUDE_MEMORY): Remove.
+	* text-art/ruler.cc (INCLUDE_MEMORY): Remove.
+	* text-art/selftests.cc (INCLUDE_MEMORY): Remove.
+	* text-art/style.cc (INCLUDE_MEMORY): Remove.
+	* text-art/styled-string.cc (INCLUDE_MEMORY): Remove.
+	* text-art/table.cc (INCLUDE_MEMORY): Remove.
+	* text-art/theme.cc (INCLUDE_MEMORY): Remove.
+	* text-art/tree-widget.cc (INCLUDE_MEMORY): Remove.
+	* text-art/widget.cc (INCLUDE_MEMORY): Remove.
+	* timevar.cc (INCLUDE_MEMORY): Remove.
+	* toplev.cc (INCLUDE_MEMORY): Remove.
+	* trans-mem.cc (INCLUDE_MEMORY): Remove.
+	* tree-affine.cc (INCLUDE_MEMORY): Remove.
+	* tree-assume.cc (INCLUDE_MEMORY): Remove.
+	* tree-call-cdce.cc (INCLUDE_MEMORY): Remove.
+	* tree-cfg.cc (INCLUDE_MEMORY): Remove.
+	* tree-chrec.cc (INCLUDE_MEMORY): Remove.
+	* tree-data-ref.cc (INCLUDE_MEMORY): Remove.
+	* tree-dfa.cc (INCLUDE_MEMORY): Remove.
+	* tree-diagnostic-client-data-hooks.cc (INCLUDE_MEMORY): Remove.
+	* tree-diagnostic.cc (INCLUDE_MEMORY): Remove.
+	* tree-dump.cc (INCLUDE_MEMORY): Remove.
+	* tree-if-conv.cc (INCLUDE_MEMORY): Remove.
+	* tree-inline.cc (INCLUDE_MEMORY): Remove.
+	* tree-into-ssa.cc (INCLUDE_MEMORY): Remove.
+	* tree-logical-location.cc (INCLUDE_MEMORY): Remove.
+	* tree-loop-distribution.cc (INCLUDE_MEMORY): Remove.
+	* tree-nested.cc (INCLUDE_MEMORY): Remove.
+	* tree-nrv.cc (INCLUDE_MEMORY): Remove.
+	* tree-object-size.cc (INCLUDE_MEMORY): Remove.
+	* tree-outof-ssa.cc (INCLUDE_MEMORY): Remove.
+	* tree-parloops.cc (INCLUDE_MEMORY): Remove.
+	* tree-predcom.cc (INCLUDE_MEMORY): Remove.
+	* tree-pretty-print.cc (INCLUDE_MEMORY): Remove.
+	* tree-profile.cc (INCLUDE_MEMORY): Remove.
+	* tree-scalar-evolution.cc (INCLUDE_MEMORY): Remove.
+	* tree-sra.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-address.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-alias.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-ccp.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-coalesce.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-copy.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-dce.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-dom.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-dse.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-forwprop.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-ifcombine.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-live.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-ch.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-im.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-ivcanon.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-ivopts.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-manip.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-niter.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-prefetch.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-split.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-loop-unswitch.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-math-opts.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-operands.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-phiopt.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-phiprop.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-pre.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-propagate.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-reassoc.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-sccvn.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-scopedtables.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-sink.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-strlen.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-structalias.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-ter.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-threadbackward.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-threadupdate.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa-uninit.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssa.cc (INCLUDE_MEMORY): Remove.
+	* tree-ssanames.cc (INCLUDE_MEMORY): Remove.
+	* tree-stdarg.cc (INCLUDE_MEMORY): Remove.
+	* tree-streamer-in.cc (INCLUDE_MEMORY): Remove.
+	* tree-streamer-out.cc (INCLUDE_MEMORY): Remove.
+	* tree-streamer.cc (INCLUDE_MEMORY): Remove.
+	* tree-switch-conversion.cc (INCLUDE_MEMORY): Remove.
+	* tree-tailcall.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-data-refs.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-generic.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-loop-manip.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-loop.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-patterns.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-slp-patterns.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-slp.cc (INCLUDE_MEMORY): Remove.
+	* tree-vect-stmts.cc (INCLUDE_MEMORY): Remove.
+	* tree-vectorizer.cc (INCLUDE_MEMORY): Remove.
+	* tree-vrp.cc (INCLUDE_MEMORY): Remove.
+	* tree.cc (INCLUDE_MEMORY): Remove.
+	* ubsan.cc (INCLUDE_MEMORY): Remove.
+	* value-pointer-equiv.cc (INCLUDE_MEMORY): Remove.
+	* value-prof.cc (INCLUDE_MEMORY): Remove.
+	* value-query.cc (INCLUDE_MEMORY): Remove.
+	* value-range-pretty-print.cc (INCLUDE_MEMORY): Remove.
+	* value-range-storage.cc (INCLUDE_MEMORY): Remove.
+	* value-range.cc (INCLUDE_MEMORY): Remove.
+	* value-relation.cc (INCLUDE_MEMORY): Remove.
+	* var-tracking.cc (INCLUDE_MEMORY): Remove.
+	* varpool.cc (INCLUDE_MEMORY): Remove.
+	* vr-values.cc (INCLUDE_MEMORY): Remove.
+	* wide-int-print.cc (INCLUDE_MEMORY): Remove.
+
+2024-11-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/109279
+	* config/riscv/riscv.cc (riscv_build_integer): Handle another 64-bit
+	synthesis where high half is one less than the low half and the 32-bit
+	sign bit is on.
+
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* text-art/types.h: Fix comment.
+
+2024-11-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* common/config/avr/avr-common.cc: Tabify.
+
+2024-11-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117726
+	* config/avr/avr-passes.cc (avr_split_shift): Also handle
+	ASHIFTRT and LSHIFTRT codes for 4-byte shifts.
+	(constr_split_shift4): New code_attr.
+	(avr_emit_shift): Adjust to new shift capabilities.
+	* config/avr/predicates.md (scratch_or_d_register_operand):
+	rename to scratch_or_dreg_operand.
+	* config/avr/avr.md: Same.
+	(define_peephole2): Write the RTL scratch peephole for 2-byte and
+	4-byte shifts that generates *sh*<mode>3_const insns using code
+	iterator any_shift.
+	(*ashlhi3_const_split, *ashrhi3_const_split, *ashrhi3_const_split)
+	(*lshrsi3_const_split, *lshrhi3_const_split): Remove useless
+	split insns.
+	(define_split) [avropt_split_bit_shift]: Add splitters
+	for 4-byte ASHIFTRT and LSHIFTRT insns using avr_split_shift().
+	(ashrsi3, *ashrsi3, *ashrsi3_const): Add "r,0,C4a" and "r,r,C4a"
+	constraint alternatives depending on 2op, 3op.
+	(lshrsi3, *lshrsi3, *lshrsi3_const): Add "r,0,C4r" and "r,r,C4r"
+	constraint alternatives depending on 2op, 3op. Add "r,r,C15".
+	(lshrhi3, *lshrhi3, *lshrhi3_const, ashlhi3, *ashlhi3)
+	(*ashlhi3_const): Add "r,r,C7c" alternative.
+	(ashrpsi, *ashrpsi3): Add "r,r,C22" alternative.
+	(ashlqi, *ashlqi): Turn C06 alternative into "r,r,C06".
+	* config/avr/constraints.md (C14, C22, C30, C7c): New constraints.
+	* config/avr/avr.cc (ashlhi3_out, lshrhi3_out)
+	[case 7, 9, 10, 11, 12]: Support as 3-operand insn.
+	(lshrsi3_out) [case 15]: Same.
+	(ashrsi3_out) [case 30]: Same.
+	(ashrhi3_out) [case 14]: Same.
+	(ashrqi3_out) [case 6]: Same.
+	(avr_out_ashrpsi3) [case 22]: Same.
+	* config/avr/avr.h: Fix comment typo.
+	* doc/invoke.texi (AVR Options) <-msplit-bit-shift>: Document.
+
+2024-11-22  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/117355
+	* tree-object-size.cc (size_for_offset): New argument STRICT,
+	return SZ if it is set to false.
+	(plus_stmt_object_size): Adjust call to SIZE_FOR_OFFSET.
+
+2024-11-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt (avr_bits_e, avr_lra_p, avr_mmcu)
+	(avr_gasisr_prologues, avr_n_flash, avr_log_details)
+	(avr_branch_cost, avr_split_bit_shift, avr_strict_X)
+	(avr_flmap, avr_rodata_in_ram, avr_sp8, avr_fuse_add)
+	(avr_warn_addr_space_convert, avr_warn_misspelled_isr)
+	(avr_fuse_move, avr_double, avr_long_double): Rename
+	to respectively: avropt_bits_e, avropt_lra_p, avropt_mmcu,
+	avropt_gasisr_prologues, avropt_n_flash, avropt_log_details,
+	avropt_branch_cost, avropt_split_bit_shift, avropt_strict_X,
+	avropt_flmap, avropt_rodata_in_ram, avropt_sp8, avropt_fuse_add,
+	avropt_warn_addr_space_convert, avropt_warn_misspelled_isr,
+	avropt_fuse_move, avropt_double, avropt_long_double.
+	* config/avr/avr.h: Same.
+	* config/avr/avr.cc: Same.
+	* config/avr/avr.md: Same.
+	* config/avr/avr-passes.cc
+	* config/avr/avr-log.cc: Same.
+	* common/config/avr/avr-common.cc: Same.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110137
+	PR middle-end/101480
+	* doc/invoke.texi (-fassume-sane-operators-new-delete,
+	-fno-assume-sane-operators-new-delete): Document.
+	* gimple.cc (gimple_call_fnspec): Handle
+	-f{,no-}assume-sane-operators-new-delete.
+	* ipa-inline-transform.cc (inline_call): Also clear
+	flag_assume_sane_operators_new_delete on caller when inlining
+	-fno-assume-sane-operators-new-delete callee into
+	-fassume-sane-operators-new-delete caller.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117420
+	* match.pd ((X >> C1) << (C1 + C2) -> X << C2,
+	(X >> C1) * (C2 << C1) -> X * C2, X / (1 << C) -> X /[ex] (1 << C)):
+	Use with_possible_nonzero_bits@0 rather than
+	(with_possible_nonzero_bits2 @0).
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Add initial support for
+	dispatch's 'interop' clause.
+	(gimplify_scan_omp_clauses): Handle interop clause.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_INTEROP.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add interop.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_expr): Handle OMP_INTEROP by printing
+	"sorry, uninplemented".
+	* omp-api.h (omp_get_fr_id_from_name): Change return type to
+	'char'.
+	* omp-general.cc (omp_get_fr_id_from_name): Likewise; return
+	GOMP_INTEROP_IFR_UNKNOWN not 0 if not found.
+	(omp_get_name_from_fr_id): Return "<unknown>" not NULL
+	if not found (used for dumps).
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DESTROY,
+	OMP_CLAUSE_USE, and OMP_CLAUSE_INIT.
+	* tree-pretty-print.cc (dump_omp_init_prefer_type): New.
+	(dump_omp_clause): Handle init, use and destroy clauses.
+	(dump_generic_node): Handle interop directive.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add new
+	init/use/destroy clauses.
+	* tree.def (OACC_LOOP): Fix comment.
+	(OMP_INTEROP): Add.
+	* tree.h (OMP_INTEROP_CLAUSES, OMP_CLAUSE_INIT_TARGET,
+	OMP_CLAUSE_INIT_TARGETSYNC, OMP_CLAUSE_INIT_PREFER_TYPE): New.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117165
+	* config/i386/i386-builtin.def (IX86_BUILTIN_FNSTENV,
+	IX86_BUILTIN_FLDENV, IX86_BUILTIN_FNSTSW, IX86_BUILTIN_FNCLEX): Add
+	space to the end of the builtin name to make it really internal.
+
+2024-11-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116463
+	* tree-vect-slp-patterns.cc (complex_mul_pattern::matches,
+	complex_fms_pattern::matches): Try swapping operands on multiply.
+
+2024-11-22  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/invoke.texi: Remove the non-existent option
+	'-msmall-data-limit' and add a description of '-G'.
+
+2024-11-22  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-builtins.cc
+	(loongarch_builtin_vectorized_function): Delete.
+	(LARCH_GET_BUILTIN): Delete.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_builtin_vectorized_function): Delete.
+	* config/loongarch/loongarch.cc
+	(TARGET_ASM_ALIGNED_HI_OP): Delete.
+	(TARGET_ASM_ALIGNED_SI_OP): Delete.
+	(TARGET_ASM_ALIGNED_DI_OP): Delete.
+
+2024-11-22  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md: Fixed.
+	* config/loongarch/lsx.md: Fixed.
+
+2024-11-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-builtins.cc (vorn_v, xvorn_v): Use
+	unsigned vector modes.
+	* config/loongarch/lsxintrin.h (__lsx_vorn_v): Cast arguments to
+	v16u8.
+	* config/loongarch/lasxintrin.h (__lasx_xvorn_v): Cast arguments
+	to v32u8.
+
 2024-11-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/117690

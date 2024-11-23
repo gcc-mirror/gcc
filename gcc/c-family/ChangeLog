@@ -1,3 +1,50 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* c-ada-spec.cc (INCLUDE_MEMORY): Remove.
+	* c-attribs.cc (INCLUDE_MEMORY): Remove.
+	* c-common.cc (INCLUDE_MEMORY): Remove.
+	* c-format.cc (INCLUDE_MEMORY): Remove.
+	* c-gimplify.cc (INCLUDE_MEMORY): Remove.
+	* c-indentation.cc (INCLUDE_MEMORY): Remove.
+	* c-opts.cc (INCLUDE_MEMORY): Remove.
+	* c-pch.cc (INCLUDE_MEMORY): Remove.
+	* c-pragma.cc (INCLUDE_MEMORY): Remove.
+	* c-pretty-print.cc (INCLUDE_MEMORY): Remove.
+	* c-type-mismatch.cc (INCLUDE_MEMORY): Remove.
+	* c-warn.cc (INCLUDE_MEMORY): Remove.
+	* known-headers.cc (INCLUDE_MEMORY): Remove.
+	* name-hint.h: Remove check of INCLUDE_MEMORY.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110137
+	PR middle-end/101480
+	* c.opt (fassume-sane-operators-new-delete): New option.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117641
+	* c-common.cc (sync_resolve_size): For size 16 with _BitInt
+	on targets where TImode isn't supported, use goto incompatible if
+	!fetch.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_INTEROP.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-common.h (enum c_omp_region_type): Add C_ORT_INTEROP
+	and C_ORT_OMP_INTEROP.
+	(c_omp_interop_t_p): New prototype.
+	* c-omp.cc (c_omp_interop_t_p): Check whether the type is
+	omp_interop_t.
+	(c_omp_directives): Uncomment 'interop'.
+	* c-pragma.cc (omp_pragmas): Add 'interop'.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_INTEROP.
+	(enum pragma_omp_clause): Add init, use, and destroy clauses.
+
 2024-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (std=c23, std=gnu23, std=iso9899:2024): Adjust description

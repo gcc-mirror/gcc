@@ -1,3 +1,12 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* lto-common.cc (INCLUDE_MEMORY): Remove.
+	* lto-dump.cc (INCLUDE_MEMORY): Remove.
+	* lto-partition.cc (INCLUDE_MEMORY): Remove.
+	* lto-symtab.cc (INCLUDE_MEMORY): Remove.
+	* lto.cc (INCLUDE_MEMORY): Remove.
+
 2024-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117024

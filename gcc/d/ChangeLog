@@ -1,3 +1,23 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* d-attribs.cc (INCLUDE_MEMORY): Remove.
+	* d-builtins.cc (INCLUDE_MEMORY): Remove.
+	* d-codegen.cc (INCLUDE_MEMORY): Remove.
+	* d-convert.cc (INCLUDE_MEMORY): Remove.
+	* d-diagnostic.cc (INCLUDE_MEMORY): Remove.
+	* d-frontend.cc (INCLUDE_MEMORY): Remove.
+	* d-lang.cc (INCLUDE_MEMORY): Remove.
+	* d-longdouble.cc (INCLUDE_MEMORY): Remove.
+	* d-target.cc (INCLUDE_MEMORY): Remove.
+	* decl.cc (INCLUDE_MEMORY): Remove.
+	* expr.cc (INCLUDE_MEMORY): Remove.
+	* intrinsics.cc (INCLUDE_MEMORY): Remove.
+	* modules.cc (INCLUDE_MEMORY): Remove.
+	* toir.cc (INCLUDE_MEMORY): Remove.
+	* typeinfo.cc (INCLUDE_MEMORY): Remove.
+	* types.cc (INCLUDE_MEMORY): Remove.
+
 2024-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613
