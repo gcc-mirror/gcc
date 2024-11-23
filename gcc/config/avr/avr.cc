@@ -4055,11 +4055,11 @@ avr_out_movqi_r_mr_reg_disp_tiny (rtx_insn *insn, rtx op[], int *plen)
       rtx base2 = all_regs_rtx[1 ^ REGNO (dest)];
 
       if (!reg_unused_after (insn, base2))
-	avr_asm_len ("mov __tmp_reg__,%0" , &base2, plen, 1);
+	avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
       avr_asm_len (TINY_ADIW (%I1, %J1, %o1) CR_TAB
 		   "ld %0,%b1", op, plen, 3);
       if (!reg_unused_after (insn, base2))
-	avr_asm_len ("mov %0,__tmp_reg__" , &base2, plen, 1);
+	avr_asm_len ("mov %0,__tmp_reg__", &base2, plen, 1);
     }
 
   return "";
@@ -4086,40 +4086,66 @@ out_movqi_r_mr (rtx_insn *insn, rtx op[], int *plen)
     {
       /* memory access by reg+disp */
 
-      int disp = INTVAL (XEXP (x, 1));
-
       if (AVR_TINY)
 	return avr_out_movqi_r_mr_reg_disp_tiny (insn, op, plen);
 
+      if (plen)
+	*plen = 0;
+
+      int disp = INTVAL (XEXP (x, 1));
+      rtx base = XEXP (x, 0);
+      rtx base2 = all_regs_rtx[1 ^ REGNO (dest)];
+      bool partial_clobber = (reg_overlap_mentioned_p (dest, base)
+			      && ! reg_unused_after (insn, base2));
+
       if (disp - GET_MODE_SIZE (GET_MODE (src)) >= 63)
 	{
+	  // PR117744: The base register overlaps dest and is
+	  // only partially clobbered.
+	  if (partial_clobber)
+	    avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
+
 	  if (REGNO (XEXP (x, 0)) != REG_Y)
 	    fatal_insn ("incorrect insn:",insn);
 
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
-	    return avr_asm_len ("adiw r28,%o1-63" CR_TAB
-				"ldd %0,Y+63"     CR_TAB
-				"sbiw r28,%o1-63", op, plen, -3);
+	    avr_asm_len ("adiw r28,%o1-63" CR_TAB
+			 "ldd %0,Y+63"     CR_TAB
+			 "sbiw r28,%o1-63", op, plen, 3);
+	  else
+	    avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
+			 "sbci r29,hi8(-%o1)" CR_TAB
+			 "ld %0,Y"            CR_TAB
+			 "subi r28,lo8(%o1)"  CR_TAB
+			 "sbci r29,hi8(%o1)", op, plen, 5);
 
-	  return avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
-			      "sbci r29,hi8(-%o1)" CR_TAB
-			      "ld %0,Y"            CR_TAB
-			      "subi r28,lo8(%o1)"  CR_TAB
-			      "sbci r29,hi8(%o1)", op, plen, -5);
+	  if (partial_clobber)
+	    avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
+
+	  return "";
 	}
       else if (REGNO (XEXP (x, 0)) == REG_X)
 	{
 	  /* This is a paranoid case LEGITIMIZE_RELOAD_ADDRESS must exclude
 	     it but I have this situation with extremal optimizing options.  */
 
-	  avr_asm_len ("adiw r26,%o1" CR_TAB
-		       "ld %0,X", op, plen, -2);
+	  // PR117744: The base register overlaps dest and is
+	  // only partially clobbered.
+	  bool clobber_r26 = (partial_clobber
+			      && REGNO (base) == (REGNO (base) & ~1));
+	  if (partial_clobber
+	      && ! clobber_r26)
+	    avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
 
-	  if (!reg_overlap_mentioned_p (dest, XEXP (x, 0))
-	      && !reg_unused_after (insn, XEXP (x, 0)))
-	    {
-	      avr_asm_len ("sbiw r26,%o1", op, plen, 1);
-	    }
+	  avr_asm_len ("adiw r26,%o1" CR_TAB
+		       "ld %0,X", op, plen, 2);
+
+	  if (clobber_r26)
+	    avr_asm_len ("subi r26,lo8(%o1)", op, plen, 1);
+	  else if (partial_clobber)
+	    avr_asm_len ("mov %0,__tmp_reg__", &base2, plen, 1);
+	  else if (! reg_unused_after (insn, base))
+	    avr_asm_len ("sbiw r26,%o1", op, plen, 1);
 
 	  return "";
 	}
