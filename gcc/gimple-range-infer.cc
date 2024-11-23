@@ -400,7 +400,14 @@ void
 infer_range_manager::add_ranges (gimple *s, gimple_infer_range &infer)
 {
   for (unsigned x = 0; x < infer.num (); x++)
-    add_range (infer.name (x), s, infer.range (x));
+    {
+      tree arg = infer.name (x);
+      value_range r (TREE_TYPE (arg));
+      m_query->range_of_expr (r, arg, s);
+      // Only add the inferred range if it changes the current range.
+      if (r.intersect (infer.range (x)))
+	add_range (arg, s, infer.range (x));
+    }
 }
 
 // Add range R as an inferred range for NAME on stmt S.
