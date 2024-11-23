@@ -2978,9 +2978,6 @@ case "${target}" in
   mips*-*-*linux* | mips*-*-gnu*)
     target_makefile_frag="config/mt-mips-gnu"
     ;;
-  nios2-*-elf*)
-    target_makefile_frag="config/mt-nios2-elf"
-    ;;
   *-*-linux-android*)
     target_makefile_frag="config/mt-android"
     ;;

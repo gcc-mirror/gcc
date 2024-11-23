@@ -1,4 +1,4 @@
-/* { dg-do run { target { ! "m68k*-*-* mmix*-*-* bfin*-*-* v850*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* hppa*-*-* nios2*-*-* or1k*-*-* pru*-*-*"} } } */
+/* { dg-do run { target { ! "m68k*-*-* mmix*-*-* bfin*-*-* v850*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* hppa*-*-* or1k*-*-* pru*-*-*"} } } */
 
 /* { dg-options "-O2 -fno-inline -fdump-tree-reassoc1-details --param logical-op-non-short-circuit=1" } */
 /* { dg-additional-options "-mbranch-cost=2" { target branch_cost } } */

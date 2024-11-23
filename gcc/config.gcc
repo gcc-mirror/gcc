@@ -273,7 +273,6 @@ esac
 # Obsolete configurations.
 case ${target} in
      ia64*-*-hpux* | ia64*-*-*vms* | ia64*-*-elf*	\
-   | nios2*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -513,10 +512,6 @@ nds32*)
 	    ;;
 	esac
 	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o nds32-relax-opt.o nds32-utils.o"
-	;;
-nios2-*-*)
-	cpu_type=nios2
-	extra_options="${extra_options} g.opt"
 	;;
 nvptx-*-*)
 	cpu_type=nvptx
@@ -2912,23 +2907,6 @@ nds32*-*-*)
 	if test x${with_ext_dsp} = xyes; then
 		tm_defines="${tm_defines} TARGET_DEFAULT_EXT_DSP=1"
 	fi
-	;;
-nios2-*-*)
-	tm_file="elfos.h ${tm_file}"
-        tmake_file="${tmake_file} nios2/t-nios2"
-        case ${target} in
-        nios2-*-linux*)
-                tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h nios2/linux.h "
-                ;;
-	nios2-*-elf*)
-		tm_file="${tm_file} newlib-stdint.h nios2/elf.h"
-		extra_options="${extra_options} nios2/elf.opt"
-		;;
-	nios2-*-rtems*)
-		tm_file="${tm_file} newlib-stdint.h nios2/rtems.h rtems.h"
-		tmake_file="${tmake_file} t-rtems nios2/t-rtems"
-		;;
-        esac
 	;;
 nvptx-*)
 	tm_file="${tm_file} newlib-stdint.h"
@@ -5596,19 +5574,6 @@ case "${target}" in
 
 
 		;;
-	nios2*-*-*)
-		supported_defaults="arch"
-			case "$with_arch" in
-			"" | r1 | r2)
-				# OK
-				;;
-			*)
-				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
-				exit 1
-				;;
-			esac
-		;;
-
 	nvptx-*)
 		supported_defaults=arch
 		TM_MULTILIB_CONFIG=$with_arch

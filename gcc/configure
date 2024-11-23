@@ -27497,11 +27497,6 @@ foo:
 	move.l x@TLSLE(%a5),%a0'
 	tls_as_opt='--fatal-warnings'
 	;;
-  nios2-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits'
-	tls_as_opt="--fatal-warnings"
-	;;
   aarch64*-*-*)
     conftest_s='
 	.section ".tdata","awT",%progbits
@@ -30776,43 +30771,6 @@ $as_echo "#define HAVE_NEWLIB_NANO_FORMATTED_IO 1" >>confdefs.h
 
       fi
     ;;
-    nios2-*-*)
-    # Versions 2.33 and earlier lacked support for the %gotoff relocation
-    # syntax that is documented in the ABI specification.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for support for %gotoff relocations in constant data" >&5
-$as_echo_n "checking assembler for support for %gotoff relocations in constant data... " >&6; }
-if ${gcc_cv_as_nios2_gotoff_relocation+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_nios2_gotoff_relocation=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '	.extern foo
-	.data
-	.long %gotoff(foo)' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_nios2_gotoff_relocation=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_nios2_gotoff_relocation" >&5
-$as_echo "$gcc_cv_as_nios2_gotoff_relocation" >&6; }
-if test $gcc_cv_as_nios2_gotoff_relocation = yes; then
-
-$as_echo "#define HAVE_AS_NIOS2_GOTOFF_RELOCATION 1" >>confdefs.h
-
-fi
-
-    ;;
     riscv*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .attribute support" >&5
 $as_echo_n "checking assembler for .attribute support... " >&6; }
@@ -31451,7 +31409,7 @@ esac
 # version to the per-target configury.
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
-  | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
+  | m68k | microblaze | mips | nds32 | pa | riscv | rs6000 | score | sparc \
   | visium | xstormy16 | xtensa | ft32)
     insn="nop"
     ;;

@@ -102,8 +102,6 @@ moxie port              Anthony Green           <green@moxielogic.com>
 msp430 port             Nick Clifton            <nickc@redhat.com>
 nds32 port              Chung-Ju Wu             <jasonwucj@gmail.com>
 nds32 port              Shiva Chen              <shiva0217@gmail.com>
-nios2 port              Chung-Lin Tang          <cltang@baylibre.com>
-nios2 port              Sandra Loosemore        <sloosemore@baylibre.com>
 nvptx port              Tom de Vries            <tdevries@suse.de>
 nvptx port              Thomas Schwinge         <tschwinge@baylibre.com>
 or1k port               Stafford Horne          <shorne@gmail.com>

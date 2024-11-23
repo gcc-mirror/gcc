@@ -183,9 +183,6 @@ mips*-*-*)
 nds32*-*)
 	cpu_type=nds32
 	;;
-nios2*-*-*)
-	cpu_type=nios2
-	;;
 or1k*-*-*)
 	cpu_type=or1k
 	;;
@@ -1198,15 +1195,6 @@ nds32*-elf*)
 		exit 1
 		;;
 	esac
-	;;
-nios2-*-linux*)
-	tmake_file="$tmake_file nios2/t-nios2 nios2/t-linux t-libgcc-pic t-eh-dw2-dip t-slibgcc-libgcc"
-	tm_file="$tm_file nios2/elf-lib.h"
-	md_unwind_header=nios2/linux-unwind.h
-	;;
-nios2-*-*)
-	tmake_file="$tmake_file nios2/t-nios2 t-softfp-sfdf t-softfp-excl t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 or1k-*-linux*)
 	tmake_file="$tmake_file or1k/t-or1k or1k/t-crtstuff"

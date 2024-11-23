@@ -1,8 +1,0 @@
-LIB2ADD += $(srcdir)/config/nios2/lib2-divmod.c \
-	   $(srcdir)/config/nios2/lib2-divmod-hi.c \
-	   $(srcdir)/config/nios2/lib2-divtable.c \
-	   $(srcdir)/config/nios2/lib2-mul.c \
-	   $(srcdir)/config/nios2/tramp.c
-
-# Disable use of GP-relative addressing in startup code.
-CRTSTUFF_T_CFLAGS += -mno-gpopt

@@ -78,8 +78,6 @@ LIST = \
   moxie-uclinux moxie-rtems \
   msp430-elf msp430-elfbare \
   nds32le-elf nds32be-elf \
-  nios2-elfOPT-enable-obsolete nios2-linux-gnuOPT-enable-obsolete \
-  nios2-rtemsOPT-enable-obsolete \
   nvptx-none \
   or1k-elf or1k-linux-uclibc or1k-linux-musl or1k-rtems \
   pdp11-aout \

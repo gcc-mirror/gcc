@@ -3952,11 +3952,6 @@ foo:
 	move.l x@TLSLE(%a5),%a0'
 	tls_as_opt='--fatal-warnings'
 	;;
-  nios2-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits'
-	tls_as_opt="--fatal-warnings"
-	;;
   aarch64*-*-*)
     conftest_s='
 	.section ".tdata","awT",%progbits
@@ -5438,17 +5433,6 @@ pointers into PC-relative form.])
 configured with --enable-newlib-nano-formatted-io.])
       fi
     ;;
-    nios2-*-*)
-    # Versions 2.33 and earlier lacked support for the %gotoff relocation
-    # syntax that is documented in the ABI specification.
-    gcc_GAS_CHECK_FEATURE([support for %gotoff relocations in constant data],
-      gcc_cv_as_nios2_gotoff_relocation,,
-[	.extern foo
-	.data
-	.long %gotoff(foo)],,
-      [AC_DEFINE(HAVE_AS_NIOS2_GOTOFF_RELOCATION, 1,
-          [Define if your assembler supports %gotoff relocation syntax.])])
-    ;;
     riscv*-*-*)
     gcc_GAS_CHECK_FEATURE([.attribute support],
       gcc_cv_as_riscv_attribute,,
@@ -5618,7 +5602,7 @@ esac
 # version to the per-target configury.
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
-  | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
+  | m68k | microblaze | mips | nds32 | pa | riscv | rs6000 | score | sparc \
   | visium | xstormy16 | xtensa | ft32)
     insn="nop"
     ;;

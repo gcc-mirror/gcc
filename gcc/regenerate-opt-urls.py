@@ -248,7 +248,6 @@ TARGET_SPECIFIC_PAGES = {
     'gcc/MicroBlaze-Options.html' : 'gcc/config/microblaze/',
     'gcc/Moxie-Options.html' : 'gcc/config/moxie/',
     'gcc/NDS32-Options.html' : 'gcc/config/nds32/',
-    'gcc/Nios-II-Options.html' : 'gcc/config/nios2/',
     'gcc/Nvidia-PTX-Options.html' : 'gcc/config/nvptx/',
     'gcc/OpenRISC-Options.html' : 'gcc/config/or1k/',
     'gcc/PDP-11-Options.html' : 'gcc/config/pdp11',

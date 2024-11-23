@@ -689,12 +689,6 @@
 #endif
 
 
-/* Define if your assembler supports %gotoff relocation syntax. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_NIOS2_GOTOFF_RELOCATION
-#endif
-
-
 /* Define if your assembler supports the -no-mul-bug-abort option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_NO_MUL_BUG_ABORT_OPTION

@@ -827,7 +827,6 @@ proc check_profiling_available { test_what } {
 	     || [istarget moxie-*-elf*]
 	     || [istarget msp430-*-*]
 	     || [istarget nds32*-*-elf]
-	     || [istarget nios2-*-elf]
 	     || [istarget nvptx-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
