@@ -16,7 +16,7 @@ jobs:
   build-and-check-ubuntu-64bit:
 
     env:
-      # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
+      # Force locale, in particular for reproducible results re '.github/log_expected_warnings' (see below).
       LC_ALL: C.UTF-8
 
     runs-on: ubuntu-22.04
@@ -68,7 +68,7 @@ jobs:
       run: |
            cd gccrs-build
            < log grep 'warning: ' | sort > log_warnings
-           if diff -U0 ../.github/bors_log_expected_warnings log_warnings; then
+           if diff -U0 ../.github/log_expected_warnings log_warnings; then
                :
            else
                echo 'See <https://github.com/Rust-GCC/gccrs/pull/1026>.'
@@ -100,7 +100,7 @@ jobs:
   build-and-check-ubuntu-64bit-glibcxx:
 
     env:
-      # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
+      # Force locale, in particular for reproducible results re '.github/log_expected_warnings' (see below).
       LC_ALL: C.UTF-8
 
     runs-on: ubuntu-22.04
@@ -185,7 +185,7 @@ jobs:
   build-and-check-ubuntu-32bit:
 
     env:
-      # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
+      # Force locale, in particular for reproducible results re '.github/log_expected_warnings' (see below).
       LC_ALL: C.UTF-8
 
     runs-on: ubuntu-22.04
@@ -237,7 +237,7 @@ jobs:
       run: |
            cd gccrs-build
            < log grep 'warning: ' | sort > log_warnings
-           if diff -U0 ../.github/bors_log_expected_warnings log_warnings; then
+           if diff -U0 ../.github/log_expected_warnings log_warnings; then
                :
            else
                echo 'See <https://github.com/Rust-GCC/gccrs/pull/1026>.'
@@ -405,7 +405,7 @@ jobs:
   build-and-check-asan:
 
     env:
-      # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
+      # Force locale, in particular for reproducible results re '.github/log_expected_warnings' (see below).
       LC_ALL: C.UTF-8
 
     runs-on: ubuntu-22.04
@@ -459,7 +459,7 @@ jobs:
 #      run: |
 #           cd gccrs-build
 #           < log grep 'warning: ' | sort > log_warnings
-#           if diff -U0 ../.github/bors_log_expected_warnings log_warnings; then
+#           if diff -U0 ../.github/log_expected_warnings log_warnings; then
 #               :
 #           else
 #               echo 'See <https://github.com/Rust-GCC/gccrs/pull/1026>.'

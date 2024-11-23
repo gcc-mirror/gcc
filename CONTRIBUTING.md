@@ -39,7 +39,7 @@ and the link to the GitHub PR sent to the submitter.
 * The PR policy: Everything has to go through a PR
   - An exception to this rule will be the merge commits of updating the repo against upstream GCC
 
-* Reviewers/Maintainers of the project (aka people who have bors rights) should be pinged for reviews/questions.
+* Reviewers/Maintainers of the project should be pinged for reviews/questions.
 
 * A PR can have one or several commits (split should have a technical/logical reason, ie. no fixup-ish commit)
 
