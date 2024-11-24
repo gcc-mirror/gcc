@@ -16287,6 +16287,10 @@ resolve_fl_derived (gfc_symbol *sym)
       && sym->ns->proc_name
       && sym->ns->proc_name->attr.flavor == FL_MODULE
       && sym->attr.access != ACCESS_PRIVATE
+      && !(sym->attr.extension
+	   && sym->attr.zero_comp
+	   && !sym->f2k_derived->tb_sym_root
+	   && !sym->f2k_derived->tb_uop_root)
       && !(sym->attr.vtype || sym->attr.pdt_template))
     {
       gfc_symbol *vtab = gfc_find_derived_vtab (sym);
