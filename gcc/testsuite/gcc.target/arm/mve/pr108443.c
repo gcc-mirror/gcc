@@ -7,8 +7,8 @@
 void
 __attribute__ ((noipa)) partial_write_cst (uint32_t *a, uint32x4_t v)
 {
-  vstrwq_p_u32 (a, v, 0x00CC);
+  vstrwq_p_u32 (a, v, 0x00FF);
 }
 
-/* { dg-final { scan-assembler {mov\tr[0-9]+, #204} } } */
+/* { dg-final { scan-assembler {mov\tr[0-9]+, #255} } } */
 
