@@ -16,7 +16,7 @@ __attribute__ ((noipa)) partial_write (uint32_t *a, uint32x4_t v, unsigned short
 
 int main (void)
 {
-  unsigned short p = 0x00CC;
+  unsigned short p = 0x00FF;
   uint32_t a[] = {0, 0, 0, 0};
   uint32_t b[] = {0, 0, 0, 0};
   uint32x4_t v = vdupq_n_u32 (0xFFFFFFFFU);
