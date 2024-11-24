@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-mno-inline-strcmp -mno-inline-strncmp -march=rv32gc_zbb" { target { rv32 } } } */
 /* { dg-options "-mno-inline-strcmp -mno-inline-strncmp -march=rv64gc_zbb" { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Og" "-Oz" } } */

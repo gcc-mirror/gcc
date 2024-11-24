@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-O3 -march=rv64gcv -mrvv-max-lmul=m8 -Wno-overflow" } */
 
 #include "perm.h"

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { rv64 } } } */
+/* { dg-do compile { target { rv64 && { ! riscv_abi_e } } } } */
 /* { dg-options "-march=rv64gc_zbc" } */
 
 #include <stdint-gcc.h>

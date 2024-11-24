@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 /* { dg-options "-march=rv32gc" { target { rv32 } } } */
 /* { dg-options "-march=rv64gc" { target { rv64 } } } */

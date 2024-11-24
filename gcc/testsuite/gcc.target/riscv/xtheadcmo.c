@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-march=rv32gc_xtheadcmo" { target { rv32 } } } */
 /* { dg-options "-march=rv64gc_xtheadcmo" { target { rv64 } } } */
 
