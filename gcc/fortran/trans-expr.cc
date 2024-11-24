@@ -10232,7 +10232,7 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 	      vptr_expr = NULL;
 	      se.expr = gfc_class_vptr_get (GFC_DECL_SAVED_DESCRIPTOR (
 					     re->symtree->n.sym->backend_decl));
-	      if (to_len)
+	      if (to_len && UNLIMITED_POLY (re))
 		from_len = gfc_class_len_get (GFC_DECL_SAVED_DESCRIPTOR (
 					     re->symtree->n.sym->backend_decl));
 	    }
