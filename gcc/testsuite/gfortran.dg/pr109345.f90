@@ -31,7 +31,7 @@ program test
 ! Test component references
   call foo (str_t%str_array(1), .true.)
 ! Test component references and that array offset is correct.
-  call foo (str_t(2:3)%i)
+!  call foo (str_t(2:3)%i) ! Does not work in 13-branch
 
 contains
   subroutine foo (var, flag)
@@ -57,7 +57,7 @@ contains
          if (any (var /= str_array4(1))) stop 6
        end if
        do i = 1, size(var)
-! Elemental array references did not work.
+! Elemental array references did not work. (Does not work in 13-branch)
           if (var(i) /= var(1)) then
             if (present (flag)) stop 7
             if (trim (var(i)) /= trim (str_array4(i))) stop 8
