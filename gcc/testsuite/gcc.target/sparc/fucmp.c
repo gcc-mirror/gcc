@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mvis3" } */
+
 typedef unsigned char vec8 __attribute__((vector_size(8)));
 
 long test_fucmple8 (vec8 a, vec8 b)
@@ -22,7 +23,7 @@ long test_fucmpeq8 (vec8 a, vec8 b)
   return __builtin_vis_fucmpeq8 (a, b);
 }
 
-/* { dg-final { scan-assembler "fucmple8\t%" } } */
-/* { dg-final { scan-assembler "fucmpne8\t%" } } */
-/* { dg-final { scan-assembler "fucmpgt8\t%" } } */
-/* { dg-final { scan-assembler "fucmpeq8\t%" } } */
+/* { dg-final { scan-assembler "fpcmpule8\t%" } } */
+/* { dg-final { scan-assembler "fpcmpne8\t%" } } */
+/* { dg-final { scan-assembler "fpcmpugt8\t%" } } */
+/* { dg-final { scan-assembler "fpcmpeq8\t%" } } */

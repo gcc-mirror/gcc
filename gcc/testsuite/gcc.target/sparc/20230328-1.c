@@ -16,4 +16,4 @@ void foo (void)
     s.ub[i] = s.ub[i] > v;
 }
 
-/* { dg-final { scan-assembler "fucmpgt8\t%" } } */
+/* { dg-final { scan-assembler "fpcmpugt8\t%" } } */

@@ -106,7 +106,7 @@ extern void sparc_expand_compare_and_swap (rtx op[]);
 extern void sparc_expand_vector_init (rtx, rtx);
 extern void sparc_expand_vec_perm_bmask(machine_mode, rtx);
 extern bool sparc_expand_conditional_move (machine_mode, rtx *);
-extern void sparc_expand_vcond (machine_mode, rtx *, int, int);
+extern void sparc_expand_vcond_mask (machine_mode, rtx *, int);
 unsigned int sparc_regmode_natural_size (machine_mode);
 #endif /* RTX_CODE */
 
