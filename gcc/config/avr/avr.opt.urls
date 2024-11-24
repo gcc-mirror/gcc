@@ -44,6 +44,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mrelax)
 maccumulate-args
 UrlSuffix(gcc/AVR-Options.html#index-maccumulate-args)
 
+msplit-bit-shift
+UrlSuffix(gcc/AVR-Options.html#index-msplit-bit-shift)
+
 mstrict-X
 UrlSuffix(gcc/AVR-Options.html#index-mstrict-X)
 
