@@ -1,3 +1,21 @@
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* gimple.cc (get_tail_padding_adjustment): New function.
+	(DEFGSSTRUCT): Adjust the computation of gimple_ops_offset_ to be
+	correct in the presence of tail padding.
+
+2024-11-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117744
+	* config/avr/avr.cc (out_movqi_r_mr): Fix code when a load
+	only partially clobbers an address register due to
+	changing the address register temporally to accomodate for
+	faked addressing modes.
+
+2024-11-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* doc/rtl.texi: Add a note about quotes in braced strings.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

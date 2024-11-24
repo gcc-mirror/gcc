@@ -1,3 +1,37 @@
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* module.cc (bytes_out::loc): New function.
+	(bytes_in::loc): New function.
+	(struct span): Change int fields to location_diff_t.
+	(range_t): Change from "unsigned int" to "line_map_uint_t".
+	(struct ord_loc_info): Likewise.
+	(struct macro_loc_info): Likewise.
+	(class module_state): Likewise.
+	(dumper::operator()): Add new code 'K' for dumping a location_t.
+	(loc_spans::init): Use %K instead of %u for location_t dumps.
+	(loc_spans::open): Likewise.
+	(loc_spans::close): Likewise. Adjust bitwise expressions to support
+	64-bit location_t as well.
+	(struct module_state_config): Change ordinary_locs and macro_locs
+	from "unsigned int" to "line_map_uint_t".  Reorder fields to improve
+	packing.  Rather than changing the constructor initializer list to
+	match the new order, switch to NSDMI instead.
+	(module_state::note_location): Adjust to support 64-bit location_t.
+	(module_state::write_location): Use %K instead of %u for location_t
+	dumps. Use loc() instead of u() for streaming location_t.
+	(module_state::read_location): Likewise.
+	(module_state::write_ordinary_maps): Likewise.
+	(module_state::write_macro_maps): Likewise.
+	(module_state::write_config): Likewise.
+	(module_state::read_config): Likewise.
+	(module_state::write_prepare_maps): Use %K instead of %u for
+	location_t dumps. Adjust variable types and bitwise expressions to
+	support 64-bit location_t.
+	(module_state::read_ordinary_maps): Likewise.
+	(module_state::read_macro_maps): Likewise.
+	(preprocess_module): Adjust data types to support 64-bit number of
+	line maps.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

@@ -1,3 +1,73 @@
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/117118
+	* lex.cc (lex_raw_string): Treat an unterminated raw string the same
+	way for a deferred pragma as is done for other directives.
+
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* lex.cc (_cpp_commit_buff): Make sure that the buffer is properly
+	aligned for the next allocation.
+	* internal.h (struct dummy): Make sure alignment is large enough for
+	a location_t, just in case.
+
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/line-map.h (line_map_uint_t): New typedef, the same type
+	as location_t.
+	(location_diff_t): New typedef.
+	(line_map_suggested_range_bits): New constant.
+	(struct maps_info_ordinary): Change member types from "unsigned int"
+	to "line_map_uint_t".
+	(struct maps_info_macro): Likewise.
+	(struct location_adhoc_data_map): Likewise.
+	(LINEMAPS_ALLOCATED): Change return type from "unsigned int" to
+	"line_map_uint_t".
+	(LINEMAPS_ORDINARY_ALLOCATED): Likewise.
+	(LINEMAPS_MACRO_ALLOCATED): Likewise.
+	(LINEMAPS_USED): Likewise.
+	(LINEMAPS_ORDINARY_USED): Likewise.
+	(LINEMAPS_MACRO_USED): Likewise.
+	(linemap_lookup_macro_index): Likewise.
+	(LINEMAPS_MAP_AT): Change argument type from "unsigned int" to
+	"line_map_uint_t".
+	(LINEMAPS_ORDINARY_MAP_AT): Likewise.
+	(LINEMAPS_MACRO_MAP_AT): Likewise.
+	(line_map_new_raw): Likewise.
+	(linemap_module_restore): Likewise.
+	(linemap_dump): Likewise.
+	(line_table_dump): Likewise.
+	(LINEMAPS_LAST_MAP): Add a linemap_assert() for safety.
+	(SOURCE_COLUMN): Use a cast to ensure correctness if location_t
+	becomes a 64-bit type.
+	* line-map.cc (location_adhoc_data_hash): Don't truncate to 32-bit
+	prematurely when hashing.
+	(line_maps::get_or_create_combined_loc): Adapt types to support
+	potentially 64-bit location_t. Use MAX_LOCATION_T rather than a
+	hard-coded constant.
+	(line_maps::get_range_from_loc): Adapt types and constants to
+	support potentially 64-bit location_t.
+	(line_maps::pure_location_p): Likewise.
+	(line_maps::get_pure_location): Likewise.
+	(line_map_new_raw): Likewise.
+	(LAST_SOURCE_LINE_LOCATION): Likewise.
+	(linemap_add): Likewise.
+	(linemap_module_restore): Likewise.
+	(linemap_line_start): Likewise.
+	(linemap_position_for_column): Likewise.
+	(linemap_position_for_line_and_column): Likewise.
+	(linemap_position_for_loc_and_offset): Likewise.
+	(linemap_ordinary_map_lookup): Likewise.
+	(linemap_lookup_macro_index): Likewise.
+	(linemap_dump): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(line_table_dump): Likewise.
+	(linemap_compare_locations): Avoid signed int overflow in the result.
+	* macro.cc (num_expanded_macros_counter): Change type of global
+	variable from "unsigned int" to "line_map_uint_t".
+	(num_macro_tokens_counter): Likewise.
+
 2024-11-18  Jason Merrill  <jason@redhat.com>
 
 	* internal.h (_cpp_get_file_dir): Declare.

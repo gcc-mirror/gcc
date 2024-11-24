@@ -1,3 +1,27 @@
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/117118
+	* c-c++-common/raw-string-directive-3.c: New test.
+	* c-c++-common/raw-string-directive-4.c: New test.
+
+2024-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/88052
+	* gfortran.dg/comma_format_extension_4.f: Add missing comma.
+	* gfortran.dg/dollar_edit_descriptor_2.f: Likewise.
+	* gfortran.dg/fmt_error_9.f: Likewise.
+	* gfortran.dg/fmt_g0_5.f08: Likewise.
+	* gfortran.dg/fmt_t_2.f90: Likewise.
+	* gfortran.dg/pr88052.f90: New test.
+
+2024-11-23  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.c-torture/execute/memcpy-a1.c: New file.
+	* gcc.c-torture/execute/memcpy-a2.c: New file.
+	* gcc.c-torture/execute/memcpy-a4.c: New file.
+	* gcc.c-torture/execute/memcpy-a8.c: New file.
+	* gcc.c-torture/execute/memcpy-ax.h: New file.
+
 2024-11-22  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/109279

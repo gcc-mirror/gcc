@@ -1,3 +1,17 @@
+2024-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-indentation.cc (should_warn_for_misleading_indentation): Remove
+	comment about -flarge-source-files.
+	* c-lex.cc (cb_ident): Change "unsigned int" argument to type
+	"location_t".
+	(cb_def_pragma): Likewise.
+	(cb_define): Likewise.
+	(cb_undef): Likewise.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

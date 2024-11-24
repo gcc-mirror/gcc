@@ -1,3 +1,10 @@
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* checker-event.cc (checker_event::dump): Support printing either
+	32- or 64-bit location_t values.
+	* checker-path.cc (checker_path::inject_any_inlined_call_events):
+	Likewise.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

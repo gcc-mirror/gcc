@@ -1,3 +1,10 @@
+2024-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/88052
+	* io/format.c (parse_format_list): Reject missing comma in
+	format strings by default or if -std=f95 or higher. This is
+	a runtime error.
+
 2024-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* Makefile.am: Add files for unsigned MINLOC and MAXLOC.
