@@ -1,6 +1,6 @@
 ! { dg-do compile }
 !
-! Test the fix for PR85869, where line 19 segfaulted.
+! Test the fix for PR84869, where line 19 segfaulted.
 !
 ! Contributed by Gerhard Steinmetz  <gscfq@t-online.de>
 !
