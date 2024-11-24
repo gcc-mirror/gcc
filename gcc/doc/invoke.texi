@@ -13068,7 +13068,7 @@ rely on variables going to the data section---e.g., so that the
 resulting executable can find the beginning of that section and/or make
 assumptions based on that.
 
-The default is @option{-fzero-initialized-in-bss}.
+The default is @option{-fzero-initialized-in-bss} except in Ada.
 
 @opindex fthread-jumps
 @item -fthread-jumps

@@ -1264,9 +1264,14 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
       if ((sect->common.flags & SECTION_BSS)
 	  && !bss_initializer_p (decl, true))
 	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "only zero initializers are allowed in section %qs",
-		    sect->named.name);
+	  if (flag_zero_initialized_in_bss)
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "only zero initializers are allowed in section %qs",
+		      sect->named.name);
+	  else
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "no initializers are allowed in section %qs",
+		      sect->named.name);
 	  DECL_INITIAL (decl) = error_mark_node;
 	}
       return sect;
