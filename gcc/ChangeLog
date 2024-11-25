@@ -1,3 +1,64 @@
+2024-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.cc (ipa_duplicate_jump_function): New function.
+	(ipa_edge_args_sum_t::duplicate): Move individual jump function
+	copying to ipa_duplicate_jump_function.
+
+2024-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36503
+	* config/i386/i386.md (*ashl<mode>3_negcnt):
+	New define_insn_and_split pattern.
+	(*ashl<mode>3_negcnt_1): Ditto.
+	(*<insn><mode>3_negcnt): Ditto.
+	(*<insn><mode>3_negcnt_1): Ditto.
+
+2024-11-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/avr/avr.opt.urls: Regenerate.
+	* config/g.opt.urls: Regenerate.
+	* config/i386/nto.opt.urls: Regenerate.
+	* config/riscv/riscv.opt.urls: Regenerate.
+	* config/rx/rx.opt.urls: Regenerate.
+	* config/sol2.opt.urls: Regenerate.
+
+2024-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/117715
+	* config/sparc/sparc-protos.h (sparc_expand_vcond): Rename to...
+	(sparc_expand_vcond_mask): ...this.
+	* config/sparc/sparc.cc (TARGET_VECTORIZE_GET_MASK_MODE): Define.
+	(sparc_vis_init_builtins): Adjust the CODE_FOR_* identifiers.
+	(sparc_get_mask_mode): New function.
+	(sparc_expand_vcond): Rename to...
+	(sparc_expand_vcond_mask): ...this and adjust.
+	* config/sparc/sparc.md (unspec): Remove UNSPEC_FCMP & UNSPEC_FUCMP
+	and rename UNSPEC_FPUCMPSHL into UNSPEC_FPCMPUSHL.
+	(fcmp<gcond:code><GCM:gcm_name><P:mode>_vis): Merge into...
+	(fpcmp<gcond:code>8<P:mode>_vis): Merge into...
+	(fpcmp<fpcmpcond:code><FPCMP:vbits><P:mode>_vis): ...this.
+	(fucmp<gcond:code>8<P:mode>_vis): Merge into...
+	(fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis): Merge into...
+	(fpcmpu<fpcmpucond:signed_code><FPCMP:vbits><P:mode>_vis): ...this.
+	(vec_cmp<FPCMP:mode><P:mode>): New expander.
+	(vec_cmpu<FPCMP:mode><P:mode>): Likewise.
+	(vcond<GCM:mode><GCM:mode>): Delete.
+	(vcondv8qiv8qi): Likewise.
+	(vcondu<GCM:mode><GCM:mode>): Likewise.
+	(vconduv8qiv8qi): Likewise.
+	(vcond_mask_<FPCMP:mode><P:mode>): New expander.
+	(fpcmp<fpcscond:code><FPCSMODE:vbits><P:mode>shl): Adjust.
+	(fpcmpu<fpcsucond:code><FPCSMODE:vbits><P:mode>shl): Likewise.
+	(fpcmpde<FPCSMODE:vbits><P:mode>shl): Likewise.
+	(fpcmpur<FPCSMODE:vbits><P:mode>shl): Likewise.
+	* doc/md.texi (vcond_mask_len_): Fix pasto.
+
+2024-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (-fno-zero-initialized-in-bss): Adjust for Ada.
+	* varasm.cc (get_variable_section): Adjust the error message for an
+	initialized variable in .bss to -fno-zero-initialized-in-bss.
+
 2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* gimple.cc (get_tail_padding_adjustment): New function.

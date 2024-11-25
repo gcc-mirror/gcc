@@ -1,3 +1,19 @@
+2024-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85869
+	* trans-expr.cc (trans_class_vptr_len_assignment): To access
+	the '_len' field, re must be unlimited polymorphic.
+
+2024-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117730
+	PR fortran/84674
+	* class.cc (add_proc_comp): Only reject a non_overridable if it
+	has no overridden procedure and the component is already
+	present in the vtype.
+	* resolve.cc (resolve_fl_derived): Do not build a vtable for a
+	derived type extension that is completely empty.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

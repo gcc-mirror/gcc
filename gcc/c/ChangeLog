@@ -1,3 +1,9 @@
+2024-11-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/117741
+	* gimple-parser.cc (c_parser_gimple_compound_statement): Handle
+	CPP_CLOSE_PAREN/CPP_CLOSE_SQUARE with an error and skipping the token.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737
