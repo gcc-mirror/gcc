@@ -119,7 +119,7 @@ set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O2 -mrvv-vector-bits=scalable -mrvv-max-lmul=dynamic -ffast-math} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/gather-scatter/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/strided/*.\[cS\]]] \
     "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/sat/*.\[cS\]]] \
