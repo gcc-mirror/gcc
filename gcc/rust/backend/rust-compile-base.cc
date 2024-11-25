@@ -25,7 +25,8 @@
 #include "rust-compile-type.h"
 #include "rust-constexpr.h"
 #include "rust-diagnostics.h"
-#include "rust-expr.h"	// for AST::AttrInputLiteral
+#include "rust-expr.h" // for AST::AttrInputLiteral
+#include "rust-hir-map.h"
 #include "rust-macro.h" // for AST::MetaNameValueStr
 #include "rust-hir-path-probe.h"
 #include "rust-type-util.h"
@@ -38,6 +39,9 @@
 #include "attribs.h"
 #include "tree.h"
 #include "print-tree.h"
+
+// rust-name-resolution-2.0
+#include "options.h"
 
 namespace Rust {
 namespace Compile {
@@ -666,6 +670,11 @@ HIRCompileBase::compile_function (
       main_identifier_node = get_identifier (ir_symbol_name.c_str ());
     }
   std::string asm_name = fn_name;
+
+  auto &mappings = Analysis::Mappings::get ();
+
+  if (flag_name_resolution_2_0)
+    ir_symbol_name = mappings.get_current_crate_name () + "::" + ir_symbol_name;
 
   unsigned int flags = 0;
   tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name,

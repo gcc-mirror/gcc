@@ -1,7 +1,3 @@
-attr-mismatch-crate-name.rs
-attr_deprecated.rs
-attr_deprecated_2.rs
-bad=file-name.rs
 bounds1.rs
 break-rust2.rs
 break-rust3.rs
@@ -45,7 +41,6 @@ generics6.rs
 generics8.rs
 generics9.rs
 if_let_expr.rs
-infer-crate-name.rs
 issue-1019.rs
 issue-1031.rs
 issue-1034.rs
@@ -156,7 +151,6 @@ redef_error6.rs
 self-path1.rs
 self-path2.rs
 sizeof-stray-infer-var-bug.rs
-specify-crate-name.rs
 stmt_with_block_dot.rs
 struct-expr-parse.rs
 traits1.rs
