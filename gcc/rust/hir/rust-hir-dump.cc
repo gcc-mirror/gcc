@@ -1892,7 +1892,8 @@ Dump::visit (TraitItemFunc &e)
 
   do_traitfunctiondecl (e.get_decl ());
 
-  visit_field ("block_expr", e.get_block_expr ());
+  if (e.has_definition ())
+    visit_field ("block_expr", e.get_block_expr ());
 
   end ("TraitItemFunc");
 }
@@ -2007,7 +2008,8 @@ Dump::visit (ExternalFunctionItem &e)
 
   put_field ("has_variadics", std::to_string (e.is_variadic ()));
 
-  visit_field ("return_type", e.get_return_type ());
+  if (e.has_return_type ())
+    visit_field ("return_type", e.get_return_type ());
 
   end ("ExternalFunctionItem");
 }
@@ -2254,8 +2256,10 @@ Dump::visit (LetStmt &e)
 
   put_field ("variable_pattern", e.get_pattern ().as_string ());
 
-  visit_field ("type", e.get_type ());
-  visit_field ("init_expr", e.get_init_expr ());
+  if (e.has_type ())
+    visit_field ("type", e.get_type ());
+  if (e.has_init_expr ())
+    visit_field ("init_expr", e.get_init_expr ());
 
   end ("LetStmt");
 }
