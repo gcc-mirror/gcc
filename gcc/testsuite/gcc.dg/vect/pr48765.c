@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-additional-options "-O3 -mdejagnu-cpu=power6 -mno-vsx" } */
+/* { dg-additional-options "-O3 -mdejagnu-cpu=power6 -mno-vsx -std=gnu17" } */
 
 enum reg_class
 {

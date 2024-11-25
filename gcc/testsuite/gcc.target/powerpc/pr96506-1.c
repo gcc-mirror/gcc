@@ -1,7 +1,7 @@
 /* PR target/96506 */
 /* { dg-do compile } */
 /* { dg-require-effective-target power10_ok } */
-/* { dg-options "-mdejagnu-cpu=power10 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power10 -O2 -std=gnu17" } */
 
 extern void bar0();
 extern void bar1();
