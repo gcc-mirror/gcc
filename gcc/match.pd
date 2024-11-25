@@ -3086,27 +3086,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        || POINTER_TYPE_P (itype))
       && wi::eq_p (wi::to_wide (int_cst), wi::max_value (itype))))))
 
-/* SAT_ADD = usadd_left_part_2 | usadd_right_part_2, aka:
-   SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | (IMAGPART_EXPR <.ADD_OVERFLOW> != 0) */
-(match (usadd_left_part_2 @0 @1)
- (realpart (IFN_ADD_OVERFLOW:c @0 @1))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* SAT_ADD = usadd_left_part_2 | usadd_right_part_2, aka:
-   SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | (IMAGPART_EXPR <.ADD_OVERFLOW> != 0) */
-(match (usadd_right_part_2 @0 @1)
- (negate (convert (ne (imagpart (IFN_ADD_OVERFLOW:c @0 @1)) integer_zerop)))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* SAT_ADD = usadd_left_part_2 | usadd_right_part_2, aka:
-   SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | -IMAGPART_EXPR <.ADD_OVERFLOW> */
-(match (usadd_right_part_2 @0 @1)
- (negate (imagpart (IFN_ADD_OVERFLOW:c @0 @1)))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (match (usadd_overflow_mask @0 @1)
   /* SAT_U_ADD = (X + Y) | -(X > (X + Y)).
@@ -3150,38 +3129,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      wide_int max = wi::mask (precision, false, precision);
      wide_int sum = wi::add (cst_1, cst_2);
     }
-    (if (wi::eq_p (max, sum)))))))
-
-/* We cannot merge or overload usadd_left_part_1 and usadd_left_part_2
-   because the sub part of left_part_2 cannot work with right_part_1.
-   For example, left_part_2 pattern focus one .ADD_OVERFLOW but the
-   right_part_1 has nothing to do with .ADD_OVERFLOW.  */
-
-/* Unsigned saturation add, case 2 (branchless with .ADD_OVERFLOW):
-   SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | -IMAGPART_EXPR <.ADD_OVERFLOW> or
-   SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | (IMAGPART_EXPR <.ADD_OVERFLOW> != 0) */
-(match (unsigned_integer_sat_add @0 @1)
- (bit_ior:c (usadd_left_part_2 @0 @1) (usadd_right_part_2 @0 @1)))
-
-/* Unsigned saturation add, case 5 (branch with eq .ADD_OVERFLOW):
-   SAT_U_ADD = REALPART_EXPR <.ADD_OVERFLOW> == 0 ? .ADD_OVERFLOW : -1.  */
-(match (unsigned_integer_sat_add @0 @1)
- (cond^ (eq (imagpart (IFN_ADD_OVERFLOW:c @0 @1)) integer_zerop)
-  (usadd_left_part_2 @0 @1) integer_minus_onep))
-
-/* Unsigned saturation add, case 6 (branch with ne .ADD_OVERFLOW):
-   SAT_U_ADD = REALPART_EXPR <.ADD_OVERFLOW> != 0 ? -1 : .ADD_OVERFLOW.  */
-(match (unsigned_integer_sat_add @0 @1)
- (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c @0 @1)) integer_zerop)
-  integer_minus_onep (usadd_left_part_2 @0 @1)))
-
-/* Unsigned saturation add, case 10 (one op is imm):
-   SAT_U_ADD = __builtin_add_overflow (X, 3, &ret) == 0 ? ret : -1.  */
-(match (unsigned_integer_sat_add @0 @1)
- (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 INTEGER_CST@1)) integer_zerop)
-  integer_minus_onep (realpart @2))
-  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-       && types_match (type, @0) && int_fits_type_p (@1, type))))
+    (if (wi::eq_p (max, sum))))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SUM = ADD_OVERFLOW (X, Y)
+     SAT_U_ADD = REALPART (SUM) | -IMAGPART (SUM)   */
+  (bit_ior:c (realpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) (negate (imagpart @2)))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SUM = ADD_OVERFLOW (X, Y)
+     SAT_U_ADD = REALPART (SUM) | -(IMAGPART (SUM) != 0)   */
+  (bit_ior:c (realpart (IFN_ADD_OVERFLOW:c@2 @0 @1))
+	     (negate (convert (ne (imagpart @2) integer_zerop))))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SUM = ADD_OVERFLOW (X, Y)
+     SAT_U_ADD = IMAGPART (SUM) == 0 ? REALPART (SUM) : -1   */
+  (cond^ (eq (imagpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) integer_zerop)
+	 (realpart @2) integer_minus_onep)
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SUM = ADD_OVERFLOW (X, Y)
+     SAT_U_ADD = IMAGPART (SUM) != 0 ? -1 : REALPART (SUM)  */
+  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) integer_zerop)
+	 integer_minus_onep (realpart @2))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SUM = ADD_OVERFLOW (X, IMM)
+     SAT_U_ADD = IMAGPART (SUM) != 0 ? -1 : REALPART (SUM)  */
+  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c@2 @0 INTEGER_CST@1)) integer_zerop)
+	 integer_minus_onep (realpart @2))
+  (if (types_match (type, @0) && int_fits_type_p (@1, type)))))
 
 /* Signed saturation add, case 1:
    T sum = (T)((UT)X + (UT)Y)
