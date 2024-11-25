@@ -256,22 +256,8 @@ public:
     return it->second;
   }
 
-  void insert_lang_item (LangItem::Kind item_type, DefId id)
-  {
-    auto it = lang_item_mappings.find (item_type);
-    rust_assert (it == lang_item_mappings.end ());
-
-    lang_item_mappings[item_type] = id;
-  }
-
-  tl::optional<DefId &> lookup_lang_item (LangItem::Kind item_type)
-  {
-    auto it = lang_item_mappings.find (item_type);
-    if (it == lang_item_mappings.end ())
-      return tl::nullopt;
-
-    return it->second;
-  }
+  void insert_lang_item (LangItem::Kind item_type, DefId id);
+  tl::optional<DefId &> lookup_lang_item (LangItem::Kind item_type);
 
   // This will fatal_error when this lang item does not exist
   DefId get_lang_item (LangItem::Kind item_type, location_t locus);

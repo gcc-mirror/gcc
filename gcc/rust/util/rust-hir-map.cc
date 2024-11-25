@@ -1258,5 +1258,24 @@ Mappings::lookup_trait_item_lang_item (LangItem::Kind item, location_t locus)
   return lookup_trait_item_defid (trait_item_id);
 }
 
+void
+Mappings::insert_lang_item (LangItem::Kind item_type, DefId id)
+{
+  auto it = lang_item_mappings.find (item_type);
+  rust_assert (it == lang_item_mappings.end ());
+
+  lang_item_mappings[item_type] = id;
+}
+
+tl::optional<DefId &>
+Mappings::lookup_lang_item (LangItem::Kind item_type)
+{
+  auto it = lang_item_mappings.find (item_type);
+  if (it == lang_item_mappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
 } // namespace Analysis
 } // namespace Rust
