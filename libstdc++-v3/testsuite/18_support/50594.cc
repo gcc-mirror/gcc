@@ -1,4 +1,4 @@
-// { dg-options "-fwhole-program" }
+// { dg-options "-fwhole-program -fno-assume-sane-operators-new-delete" }
 // { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
 // { dg-require-effective-target std_allocator_new }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
