@@ -27,6 +27,8 @@
 #include "rust-system.h"
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
+#include "rust-ice-finalizer.h"
+#include "rust-ast.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -178,6 +180,34 @@ Late::visit (AST::SelfParam &param)
 }
 
 void
+Late::visit (AST::BreakExpr &expr)
+{
+  if (expr.has_break_expr ())
+    {
+      auto &break_expr = expr.get_break_expr ();
+      if (break_expr.get_expr_kind () == AST::Expr::Kind::Identifier)
+	{
+	  /* This is a break with an expression, and the expression is
+	     just a single identifier.  See if the identifier is either
+	     "rust" or "gcc", in which case we have "break rust" or "break
+	     gcc", and so may need to emit our funny error.  We cannot yet
+	     emit the error here though, because the identifier may still
+	     be in scope, and ICE'ing on valid programs would not be very
+	     funny.  */
+	  std::string ident
+	    = static_cast<AST::IdentifierExpr &> (expr.get_break_expr ())
+		.as_string ();
+	  if (ident == "rust" || ident == "gcc")
+	    funny_error = true;
+	}
+    }
+
+  DefaultResolver::visit (expr);
+
+  funny_error = false;
+}
+
+void
 Late::visit (AST::IdentifierExpr &expr)
 {
   // TODO: same thing as visit(PathInExpression) here?
@@ -191,6 +221,13 @@ Late::visit (AST::IdentifierExpr &expr)
   else if (auto type = ctx.types.get (expr.get_ident ()))
     {
       resolved = type;
+    }
+  else if (funny_error)
+    {
+      diagnostic_finalizer (global_dc) = Resolver::funny_ice_finalizer;
+      emit_diagnostic (DK_ICE_NOBT, expr.get_locus (), -1,
+		       "are you trying to break %s? how dare you?",
+		       expr.as_string ().c_str ());
     }
   else
     {
