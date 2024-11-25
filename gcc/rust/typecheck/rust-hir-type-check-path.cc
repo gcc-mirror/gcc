@@ -355,6 +355,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
   NodeId resolved_node_id = root_resolved_node_id;
   TyTy::BaseType *prev_segment = tyseg;
   bool reciever_is_generic = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
+  bool reciever_is_dyn = prev_segment->get_kind () == TyTy::TypeKind::DYNAMIC;
 
   for (size_t i = offset; i < segments.size (); i++)
     {
@@ -434,7 +435,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    }
 	}
 
-      if (associated_impl_block != nullptr)
+      if (associated_impl_block != nullptr && !reciever_is_dyn)
 	{
 	  // associated types
 	  HirId impl_block_id

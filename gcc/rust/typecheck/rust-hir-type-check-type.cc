@@ -133,11 +133,16 @@ TypeCheckType::visit (HIR::TypePath &path)
 
   // this can happen so we need to look up the root then resolve the
   // remaining segments if possible
+  bool wasBigSelf = false;
   size_t offset = 0;
   NodeId resolved_node_id = UNKNOWN_NODEID;
-  TyTy::BaseType *root = resolve_root_path (path, &offset, &resolved_node_id);
+  TyTy::BaseType *root
+    = resolve_root_path (path, &offset, &resolved_node_id, &wasBigSelf);
   if (root->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+    {
+      rust_debug_loc (path.get_locus (), "failed to resolve type-path type");
+      return;
+    }
 
   TyTy::BaseType *path_type = root->clone ();
   path_type->set_ref (path.get_mappings ().get_hirid ());
@@ -147,13 +152,18 @@ TypeCheckType::visit (HIR::TypePath &path)
   if (fully_resolved)
     {
       translated = path_type;
+      rust_debug_loc (path.get_locus (), "root resolved type-path to: [%s]",
+		      translated->debug_str ().c_str ());
       return;
     }
 
   translated
     = resolve_segments (resolved_node_id, path.get_mappings ().get_hirid (),
 			path.get_segments (), offset, path_type,
-			path.get_mappings (), path.get_locus ());
+			path.get_mappings (), path.get_locus (), wasBigSelf);
+
+  rust_debug_loc (path.get_locus (), "resolved type-path to: [%s]",
+		  translated->debug_str ().c_str ());
 }
 
 void
@@ -192,10 +202,11 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 	}
       rust_assert (ok);
 
-      translated = resolve_segments (root_resolved_node_id,
-				     path.get_mappings ().get_hirid (),
-				     path.get_segments (), 0, translated,
-				     path.get_mappings (), path.get_locus ());
+      translated
+	= resolve_segments (root_resolved_node_id,
+			    path.get_mappings ().get_hirid (),
+			    path.get_segments (), 0, translated,
+			    path.get_mappings (), path.get_locus (), false);
 
       return;
     }
@@ -356,12 +367,14 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   translated
     = resolve_segments (root_resolved_node_id,
 			path.get_mappings ().get_hirid (), path.get_segments (),
-			0, translated, path.get_mappings (), path.get_locus ());
+			0, translated, path.get_mappings (), path.get_locus (),
+			false);
 }
 
 TyTy::BaseType *
 TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
-				  NodeId *root_resolved_node_id)
+				  NodeId *root_resolved_node_id,
+				  bool *wasBigSelf)
 {
   TyTy::BaseType *root_tyty = nullptr;
   *offset = 0;
@@ -402,6 +415,9 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	    }
 	  return root_tyty;
 	}
+
+      if (seg->is_ident_only () && seg->as_string () == "Self")
+	*wasBigSelf = true;
 
       // node back to HIR
       tl::optional<HirId> hid = mappings.lookup_node_to_hir (ref_node_id);
@@ -509,12 +525,57 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
   return root_tyty;
 }
 
+bool
+TypeCheckType::resolve_associated_type (const std::string &search,
+					TypeCheckBlockContextItem &ctx,
+					TyTy::BaseType **result)
+{
+  if (ctx.is_trait_block ())
+    {
+      HIR::Trait &trait = ctx.get_trait ();
+      for (auto &item : trait.get_trait_items ())
+	{
+	  if (item->get_item_kind () != HIR::TraitItem::TraitItemKind::TYPE)
+	    continue;
+
+	  if (item->trait_identifier () == search)
+	    {
+	      HirId item_id = item->get_mappings ().get_hirid ();
+	      if (query_type (item_id, result))
+		return true;
+	    }
+	}
+
+      // FIXME
+      // query any parent trait?
+
+      return false;
+    }
+
+  // look for any segment in here which matches
+  HIR::ImplBlock &block = ctx.get_impl_block ();
+  for (auto &item : block.get_impl_items ())
+    {
+      if (item->get_impl_item_type () != HIR::ImplItem::TYPE_ALIAS)
+	continue;
+
+      if (item->get_impl_item_name () == search)
+	{
+	  HirId item_id = item->get_impl_mappings ().get_hirid ();
+	  if (query_type (item_id, result))
+	    return true;
+	}
+    }
+
+  return false;
+}
+
 TyTy::BaseType *
 TypeCheckType::resolve_segments (
   NodeId root_resolved_node_id, HirId expr_id,
   std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments, size_t offset,
   TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
-  location_t expr_locus)
+  location_t expr_locus, bool tySegIsBigSelf)
 {
   NodeId resolved_node_id = root_resolved_node_id;
   TyTy::BaseType *prev_segment = tyseg;
@@ -527,66 +588,84 @@ TypeCheckType::resolve_segments (
       bool probe_bounds = true;
       bool probe_impls = !reciever_is_generic;
       bool ignore_mandatory_trait_items = !reciever_is_generic;
+      bool first_segment = i == offset;
+      bool selfResolveOk = false;
 
-      // probe the path is done in two parts one where we search impls if no
-      // candidate is found then we search extensions from traits
-      auto candidates
-	= PathProbeType::Probe (prev_segment, seg->get_ident_segment (),
-				probe_impls, false,
-				ignore_mandatory_trait_items);
-      if (candidates.size () == 0)
+      if (first_segment && tySegIsBigSelf && context->have_block_context ()
+	  && context->peek_block_context ().is_impl_block ())
 	{
-	  candidates
-	    = PathProbeType::Probe (prev_segment, seg->get_ident_segment (),
-				    false, probe_bounds,
-				    ignore_mandatory_trait_items);
-
-	  if (candidates.size () == 0)
+	  TypeCheckBlockContextItem ctx = context->peek_block_context ();
+	  TyTy::BaseType *lookup = nullptr;
+	  selfResolveOk
+	    = resolve_associated_type (seg->as_string (), ctx, &lookup);
+	  if (selfResolveOk)
 	    {
-	      rust_error_at (
-		seg->get_locus (),
-		"failed to resolve path segment using an impl Probe");
-	      return new TyTy::ErrorType (expr_id);
+	      prev_segment = tyseg;
+	      tyseg = lookup;
 	    }
 	}
-
-      if (candidates.size () > 1)
+      if (!selfResolveOk)
 	{
-	  ReportMultipleCandidateError::Report (candidates,
-						seg->get_ident_segment (),
-						seg->get_locus ());
-	  return new TyTy::ErrorType (expr_id);
-	}
+	  // probe the path is done in two parts one where we search impls if no
+	  // candidate is found then we search extensions from traits
+	  auto candidates
+	    = PathProbeType::Probe (prev_segment, seg->get_ident_segment (),
+				    probe_impls, false,
+				    ignore_mandatory_trait_items);
+	  if (candidates.size () == 0)
+	    {
+	      candidates
+		= PathProbeType::Probe (prev_segment, seg->get_ident_segment (),
+					false, probe_bounds,
+					ignore_mandatory_trait_items);
+	      if (candidates.size () == 0)
+		{
+		  rust_error_at (
+		    seg->get_locus (),
+		    "failed to resolve path segment using an impl Probe");
+		  return new TyTy::ErrorType (expr_id);
+		}
+	    }
 
-      auto &candidate = *candidates.begin ();
-      prev_segment = tyseg;
-      tyseg = candidate.ty;
+	  if (candidates.size () > 1)
+	    {
+	      ReportMultipleCandidateError::Report (candidates,
+						    seg->get_ident_segment (),
+						    seg->get_locus ());
+	      return new TyTy::ErrorType (expr_id);
+	    }
 
-      if (candidate.is_enum_candidate ())
-	{
-	  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyseg);
-	  auto last_variant = adt->get_variants ();
-	  TyTy::VariantDef *variant = last_variant.back ();
+	  auto &candidate = *candidates.begin ();
+	  prev_segment = tyseg;
+	  tyseg = candidate.ty;
 
-	  rich_location richloc (line_table, seg->get_locus ());
-	  richloc.add_fixit_replace ("not a type");
+	  if (candidate.is_enum_candidate ())
+	    {
+	      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyseg);
+	      auto last_variant = adt->get_variants ();
+	      TyTy::VariantDef *variant = last_variant.back ();
 
-	  rust_error_at (richloc, ErrorCode::E0573,
-			 "expected type, found variant of %<%s::%s%>",
-			 adt->get_name ().c_str (),
-			 variant->get_identifier ().c_str ());
-	  return new TyTy::ErrorType (expr_id);
-	}
+	      rich_location richloc (line_table, seg->get_locus ());
+	      richloc.add_fixit_replace ("not a type");
 
-      if (candidate.is_impl_candidate ())
-	{
-	  resolved_node_id
-	    = candidate.item.impl.impl_item->get_impl_mappings ().get_nodeid ();
-	}
-      else
-	{
-	  resolved_node_id
-	    = candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
+	      rust_error_at (richloc, ErrorCode::E0573,
+			     "expected type, found variant of %<%s::%s%>",
+			     adt->get_name ().c_str (),
+			     variant->get_identifier ().c_str ());
+	      return new TyTy::ErrorType (expr_id);
+	    }
+
+	  if (candidate.is_impl_candidate ())
+	    {
+	      resolved_node_id
+		= candidate.item.impl.impl_item->get_impl_mappings ()
+		    .get_nodeid ();
+	    }
+	  else
+	    {
+	      resolved_node_id
+		= candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
+	    }
 	}
 
       if (seg->is_generic_segment ())
