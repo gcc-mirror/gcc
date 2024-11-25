@@ -23,12 +23,12 @@
 
 namespace Rust {
 
-// https://github.com/rust-lang/rust/blob/master/library/core/src/ops/arith.rs
 class LangItem
 {
 public:
   enum class Kind
   {
+    // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/arith.rs
     ADD,
     SUBTRACT,
     MULTIPLY,
