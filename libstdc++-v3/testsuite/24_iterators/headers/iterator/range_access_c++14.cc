@@ -20,13 +20,20 @@
 
 #include <iterator>
 
+#ifdef _GLIBCXX_RELEASE
+// Conditional noexcept on these functions is a libstdc++ extension
+# define NOTHROW(F) noexcept(noexcept(c.F()))
+#else
+# define NOTHROW(F)
+#endif
+
 namespace std
 {
-  template<class C> auto begin(C& c) -> decltype(c.begin());
-  template<class C> auto begin(const C& c) -> decltype(c.begin());
+  template<class C> auto begin(C& c) NOTHROW(begin) -> decltype(c.begin());
+  template<class C> auto begin(const C& c) NOTHROW(begin) -> decltype(c.begin());
 
-  template<class C> auto end(C& c) -> decltype(c.end());
-  template<class C> auto end(const C& c) -> decltype(c.end());
+  template<class C> auto end(C& c) NOTHROW(end) -> decltype(c.end());
+  template<class C> auto end(const C& c) NOTHROW(end) -> decltype(c.end());
 
   template<class T, size_t N> constexpr T* begin(T (&array)[N]) noexcept;
   template<class T, size_t N> constexpr T* end(T (&array)[N]) noexcept;

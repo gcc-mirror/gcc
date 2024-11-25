@@ -27,3 +27,13 @@ test01()
   std::begin({1, 2, 3});
   std::end({1, 2, 3});
 }
+
+void
+test02()
+{
+  static constexpr std::initializer_list<int> il{1};
+  static_assert( std::begin(il) == il.begin() );
+  static_assert( std::end(il) == il.end() );
+  static_assert( noexcept(std::begin(il)) );
+  static_assert( noexcept(std::end(il)) );
+}
