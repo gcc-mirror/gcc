@@ -205,4 +205,5 @@ issue-2953-2.rs
 issue-1773.rs
 issue-2905-1.rs
 issue-2905-2.rs
+issue-2907.rs
 # please don't delete the trailing newline

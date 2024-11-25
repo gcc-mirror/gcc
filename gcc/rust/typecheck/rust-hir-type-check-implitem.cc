@@ -335,7 +335,10 @@ TypeCheckImplItem::Resolve (
 
   // resolve
   TypeCheckImplItem resolver (parent, self, substitutions);
+  resolver.context->push_block_context (TypeCheckBlockContextItem (&parent));
   item.accept_vis (resolver);
+  resolver.context->pop_block_context ();
+
   return resolver.result;
 }
 
