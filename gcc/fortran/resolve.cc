@@ -3227,6 +3227,24 @@ pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
 static bool check_pure_function (gfc_expr *e)
 {
   const char *name = NULL;
+  code_stack *stack;
+  bool saw_block = false;
+  
+  /* A BLOCK construct within a DO CONCURRENT construct leads to 
+     gfc_do_concurrent_flag = 0 when the check for an impure function
+     occurs.  Check the stack to see if the source code has a nested
+     BLOCK construct.  */
+  for (stack = cs_base; stack; stack = stack->prev)
+    {
+      if (stack->current->op == EXEC_BLOCK) saw_block = true;
+      if (saw_block && stack->current->op == EXEC_DO_CONCURRENT)
+	{
+	  gfc_error ("Reference to impure function at %L inside a "
+		     "DO CONCURRENT", &e->where);
+	  return false;
+	}
+    }
+
   if (!gfc_pure_function (e, &name) && name)
     {
       if (forall_flag)
