@@ -421,14 +421,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a
    *  <a href="tables.html#67">sequence</a>, including the
    *  <a href="tables.html#68">optional sequence requirements</a> with the
-   *  %exception of @c at and @c operator[].
+   *  %exception of `at` and `operator[]`.
    *
    *  This is a @e singly @e linked %list.  Traversal up the
    *  %list requires linear time, but adding and removing elements (or
    *  @e nodes) is done in constant time, regardless of where the
    *  change takes place.  Unlike std::vector and std::deque,
-   *  random-access iterators are not provided, so subscripting ( @c
-   *  [] ) access is not allowed.  For algorithms which only need
+   *  random-access iterators are not provided, so subscripting (`[]`)
+   *  access is not allowed.  For algorithms which only need
    *  sequential access, this lack makes no difference.
    *
    *  Also unlike the other standard containers, std::forward_list provides
@@ -529,7 +529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __n   The number of elements to initially create.
        *  @param  __al  An allocator object.
        *
-       *  This constructor creates the %forward_list with @a __n default
+       *  This constructor creates the %forward_list with `__n` default
        *  constructed elements.
        */
       explicit
@@ -543,8 +543,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __value  An element to copy.
        *  @param  __al     An allocator object.
        *
-       *  This constructor fills the %forward_list with @a __n copies of
-       *  @a __value.
+       *  This constructor fills the %forward_list with `__n` copies of
+       *  `__value`.
        */
       forward_list(size_type __n, const _Tp& __value,
 		   const _Alloc& __al = _Alloc())
@@ -558,8 +558,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __al     An allocator object.
        *
        *  Create a %forward_list consisting of copies of the elements from
-       *  [@a __first,@a __last).  This is linear in N (where N is
-       *  distance(@a __first,@a __last)).
+       *  `[__first,__last)`.  This is linear in N (where N is
+       *  `distance(__first,__last)`).
        */
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
@@ -619,7 +619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __al  An allocator object.
        *
        *  Create a %forward_list consisting of copies of the elements
-       *  in the initializer_list @a __il.  This is linear in __il.size().
+       *  in the initializer_list `__il`.  This is linear in `__il.size()`.
        */
       forward_list(std::initializer_list<_Tp> __il,
 		   const _Alloc& __al = _Alloc())
@@ -637,7 +637,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __list  A %forward_list of identical element and allocator
        *                types.
        *
-       *  All the elements of @a __list are copied.
+       *  All the elements of `__list` are copied.
        *
        *  Whether the allocator is copied depends on the allocator traits.
        */
@@ -649,7 +649,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __list  A %forward_list of identical element and allocator
        *                types.
        *
-       *  The contents of @a __list are moved into this %forward_list
+       *  The contents of `__list` are moved into this %forward_list
        *  (without copying, if the allocators permit it).
        *
        *  Afterwards @a __list is a valid, but unspecified %forward_list
@@ -672,8 +672,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __il  An initializer_list of value_type.
        *
        *  Replace the contents of the %forward_list with copies of the
-       *  elements in the initializer_list @a __il.  This is linear in
-       *  __il.size().
+       *  elements in the initializer_list `__il`.  This is linear in
+       *  `__il.size()`.
        */
       forward_list&
       operator=(std::initializer_list<_Tp> __il)
@@ -688,7 +688,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __last   An input iterator.
        *
        *  This function fills a %forward_list with copies of the elements
-       *  in the range [@a __first,@a __last).
+       *  in the range `[ __first,__last)`.
        *
        *  Note that the assignment completely changes the %forward_list and
        *  that the number of elements of the resulting %forward_list is the
@@ -741,9 +741,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __n  Number of elements to be assigned.
        *  @param  __val  Value to be assigned.
        *
-       *  This function fills a %forward_list with @a __n copies of the
+       *  This function fills a %forward_list with `__n` copies of the
        *  given value.  Note that the assignment completely changes the
-       *  %forward_list, and that the resulting %forward_list has __n
+       *  %forward_list, and that the resulting %forward_list has `__n`
        *  elements.
        */
       void
@@ -755,8 +755,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __il  An initializer_list of value_type.
        *
        *  Replace the contents of the %forward_list with copies of the
-       *  elements in the initializer_list @a __il.  This is linear in
-       *  il.size().
+       *  elements in the initializer_list `__il`.  This is linear in
+       *  `__il.size()`.
        */
       void
       assign(std::initializer_list<_Tp> __il)
@@ -907,8 +907,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *          list.
        *  @param  __args  Arguments.
        *
-       *  This function will insert an object of type Tp constructed
-       *  with Tp(std::forward<Args>(args)...) at the front of the list
+       *  This function will insert an object of type `Tp` constructed
+       *  with `Tp(std::forward<Args>(args)...)` at the front of the list
        *  Due to the nature of a %forward_list this operation can
        *  be done in constant time, and does not invalidate iterators
        *  and references.
@@ -957,7 +957,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        * The inserted elements will be in the same order as in the range,
        * so they are not reversed as would happen with a simple loop calling
-       * emplace_front for each element of the range.
+       * `emplace_front` for each element of the range.
        *
        * No iterators to existing elements are invalidated by this function.
        * If the insertion fails due to an exception, no elements will be added
@@ -985,7 +985,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to the element being removed.
        *
        *  Note that no data is returned, and if the first element's data
-       *  is needed, it should be retrieved before pop_front() is
+       *  is needed, it should be retrieved before `pop_front()` is
        *  called.
        */
       void
@@ -999,8 +999,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __args  Arguments.
        *  @return  An iterator that points to the inserted data.
        *
-       *  This function will insert an object of type T constructed
-       *  with T(std::forward<Args>(args)...) after the specified
+       *  This function will insert an object of type `T` constructed
+       *  with `T(std::forward<Args>(args)...)` after the specified
        *  location.  Due to the nature of a %forward_list this operation can
        *  be done in constant time, and does not invalidate iterators
        *  and references.
@@ -1041,10 +1041,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __n  Number of elements to be inserted.
        *  @param  __val  Data to be inserted.
        *  @return  An iterator pointing to the last inserted copy of
-       *           @a val or @a pos if @a n == 0.
+       *           `val` or `pos` if `n == 0`.
        *
        *  This function will insert a specified number of copies of the
-       *  given data after the location specified by @a pos.
+       *  given data after the location specified by `pos`.
        *
        *  This operation is linear in the number of elements inserted and
        *  does not invalidate iterators and references.
@@ -1058,11 +1058,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __first  An input iterator.
        *  @param  __last   An input iterator.
        *  @return  An iterator pointing to the last inserted element or
-       *           @a __pos if @a __first == @a __last.
+       *           `__pos` if `__first ==  __last`.
        *
        *  This function will insert copies of the data in the range
-       *  [@a __first,@a __last) into the %forward_list after the
-       *  location specified by @a __pos.
+       *  `[ __first, __last)` into the %forward_list after the
+       *  location specified by `__pos.
        *
        *  This operation is linear in the number of elements inserted and
        *  does not invalidate iterators and references.
@@ -1079,11 +1079,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __pos  An iterator into the %forward_list.
        *  @param  __il  An initializer_list of value_type.
        *  @return  An iterator pointing to the last inserted element
-       *           or @a __pos if @a __il is empty.
+       *           or `__pos` if `__il` is empty.
        *
        *  This function will insert copies of the data in the
-       *  initializer_list @a __il into the %forward_list before the location
-       *  specified by @a __pos.
+       *  initializer_list `__il` into the %forward_list before the location
+       *  specified by `__pos`.
        *
        *  This operation is linear in the number of elements inserted and
        *  does not invalidate iterators and references.
@@ -1120,10 +1120,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Removes the element pointed to by the iterator following
-       *          @c pos.
+       *          `pos`.
        *  @param  __pos  Iterator pointing before element to be erased.
        *  @return  An iterator pointing to the element following the one
-       *           that was erased, or end() if no such element exists.
+       *           that was erased, or `end()` if no such element exists.
        *
        *  This function will erase the element at the given position and
        *  thus shorten the %forward_list by one.
@@ -1146,13 +1146,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *                 erased.
        *  @param  __last  Iterator pointing to one past the last element to be
        *                  erased.
-       *  @return  @ __last.
+       *  @return  `__last`
        *
        *  This function will erase the elements in the range
-       *  @a (__pos,__last) and shorten the %forward_list accordingly.
+       *  `(__pos,__last)` and shorten the %forward_list accordingly.
        *
        *  This operation is linear time in the size of the range and only
        *  invalidates iterators/references to the element being removed.
+       *
        *  The user is also cautioned that this function only erases the
        *  elements, and that if the elements themselves are pointers, the
        *  pointed-to memory is not touched in any way.  Managing the pointer
@@ -1171,8 +1172,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *                  types.
        *
        *  This exchanges the elements between two lists in constant
-       *  time.  Note that the global std::swap() function is
-       *  specialized such that std::swap(l1,l2) will feed to this
+       *  time.  Note that the global `std::swap()` function is
+       *  overloaded such that `std::swap(l1, l2)` will feed to this
        *  function.
        *
        *  Whether the allocators are swapped depends on the allocator traits.
@@ -1234,11 +1235,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __pos  Iterator referencing the element to insert after.
        *  @param  __list  Source list.
        *
-       *  The elements of @a list are inserted in constant time after
-       *  the element referenced by @a pos.  @a list becomes an empty
+       *  The elements of `list` are inserted in constant time after
+       *  the element referenced by `pos`.  `list` becomes an empty
        *  list.
        *
-       *  Requires this != @a x.
+       *  Requires `this != &x`.
        */
       void
       splice_after(const_iterator __pos, forward_list&& __list) noexcept
@@ -1258,8 +1259,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __i   Iterator referencing the element before the element
        *                to move.
        *
-       *  Removes the element in list @a list referenced by @a i and
-       *  inserts it into the current list after @a pos.
+       *  Removes the element in list `__list` referenced by `__i` and
+       *  inserts it into the current list after `__pos`.
        */
       void
       splice_after(const_iterator __pos, forward_list&& __list,
@@ -1275,13 +1276,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __pos  Iterator referencing the element to insert after.
        *  @param  __list  Source list.
        *  @param  __before  Iterator referencing before the start of range
-       *                    in list.
-       *  @param  __last  Iterator referencing the end of range in list.
+       *                    in `__list`.
+       *  @param  __last  Iterator referencing the end of range in `__list`.
        *
-       *  Removes elements in the range (__before,__last) and inserts them
-       *  after @a __pos in constant time.
+       *  Removes elements in the range `(__before,__last)` and inserts them
+       *  after `__pos` in constant time.
        *
-       *  Undefined if @a __pos is in (__before,__last).
+       *  Undefined if `__pos` is in `(__before,__last)`.
        *  @{
        */
       void
@@ -1310,7 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  Remove all elements equal to value.
        *  @param  __val  The value to remove.
        *
-       *  Removes every element in the list equal to @a __val.
+       *  Removes every element in the list equal to `__val`.
        *  Remaining elements stay in list order.  Note that this
        *  function only erases the elements, and that if the elements
        *  themselves are pointers, the pointed-to memory is not
@@ -1373,10 +1374,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  Merge sorted lists.
        *  @param  __list  Sorted list to merge.
        *
-       *  Assumes that both @a list and this list are sorted according to
-       *  operator<().  Merges elements of @a __list into this list in
-       *  sorted order, leaving @a __list empty when complete.  Elements in
-       *  this list precede elements in @a __list that are equal.
+       *  Assumes that both `__list` and this list are sorted according to
+       *  operator<().  Merges elements of `__list` into this list in
+       *  sorted order, leaving `__list` empty when complete.  Elements in
+       *  this list precede elements in `__list` that are equal.
        */
       void
       merge(forward_list&& __list)
@@ -1391,10 +1392,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __list  Sorted list to merge.
        *  @param  __comp Comparison function defining sort order.
        *
-       *  Assumes that both @a __list and this list are sorted according to
-       *  comp.  Merges elements of @a __list into this list
-       *  in sorted order, leaving @a __list empty when complete.  Elements
-       *  in this list precede elements in @a __list that are equivalent
+       *  Assumes that both `__list` and this list are sorted according to
+       *  comp.  Merges elements of `__list` into this list
+       *  in sorted order, leaving `__list` empty when complete.  Elements
+       *  in this list precede elements in `__list` that are equivalent
        *  according to comp().
        */
       template<typename _Comp>
@@ -1564,7 +1565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   /**
    *  @brief  Forward list equality comparison.
    *  @param  __lx  A %forward_list
-   *  @param  __ly  A %forward_list of the same type as @a __lx.
+   *  @param  __ly  A %forward_list of the same type as `__lx`.
    *  @return  True iff the elements of the forward lists are equal.
    *
    *  This is an equivalence relation.  It is linear in the number of
@@ -1603,12 +1604,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   /**
    *  @brief  Forward list ordering relation.
    *  @param  __lx  A %forward_list.
-   *  @param  __ly  A %forward_list of the same type as @a __lx.
-   *  @return  True iff @a __lx is lexicographically less than @a __ly.
+   *  @param  __ly  A %forward_list of the same type as `__lx`.
+   *  @return  True iff `__lx` is lexicographically less than `__ly`.
    *
    *  This is a total ordering relation.  It is linear in the number of
    *  elements of the forward lists.  The elements must be comparable
-   *  with @c <.
+   *  with `<`.
    *
    *  See std::lexicographical_compare() for how the determination is made.
    */
