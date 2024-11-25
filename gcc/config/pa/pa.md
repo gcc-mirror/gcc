@@ -5481,18 +5481,20 @@
 
 (define_insn "addti3"
   [(set (match_operand:TI 0 "register_operand" "=r")
-	(plus:TI (match_operand:TI 1 "register_operand" "r")
-		 (match_operand:TI 2 "register_operand" "r")))]
+	(plus:TI (match_operand:TI 1 "register_operand" "%r")
+		 (match_operand:TI 2 "arith11_operand" "rI")))]
   "TARGET_64BIT"
   "*
 {
-  operands[3] = gen_lowpart (DImode, operands[0]);
-  operands[4] = gen_lowpart (DImode, operands[1]);
-  operands[5] = gen_lowpart (DImode, operands[2]);
-  operands[0] = gen_highpart (DImode, operands[0]);
-  operands[1] = gen_highpart (DImode, operands[1]);
-  operands[2] = gen_highpart (DImode, operands[2]);
-  return \"add %4,%5,%3\;add,dc %1,%2,%0\";
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (INTVAL (operands[2]) >= 0)
+	return \"addi %2,%R1,%R0\;add,dc %1,%%r0,%0\";
+      else
+	return \"addi %2,%R1,%R0\;sub,db %1,%%r0,%0\";
+    }
+  else
+    return \"add %R2,%R1,%R0\;add,dc %2,%1,%0\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
@@ -5500,7 +5502,7 @@
 (define_insn "addvti3"
   [(set (match_operand:TI 0 "register_operand" "=r")
 	(plus:TI (match_operand:TI 1 "register_operand" "r")
-		 (match_operand:TI 2 "register_operand" "r")))
+		 (match_operand:TI 2 "arith11_operand" "rI")))
    (trap_if (ne (plus:OI (sign_extend:OI (match_dup 1))
 			 (sign_extend:OI (match_dup 2)))
 		(sign_extend:OI (plus:TI (match_dup 1)
@@ -5509,39 +5511,49 @@
   "TARGET_64BIT"
   "*
 {
-  operands[3] = gen_lowpart (DImode, operands[0]);
-  operands[4] = gen_lowpart (DImode, operands[1]);
-  operands[5] = gen_lowpart (DImode, operands[2]);
-  operands[0] = gen_highpart (DImode, operands[0]);
-  operands[1] = gen_highpart (DImode, operands[1]);
-  operands[2] = gen_highpart (DImode, operands[2]);
-  return \"add %4,%5,%3\;add,dc,tsv %1,%2,%0\";
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (INTVAL (operands[2]) >= 0)
+	return \"addi %2,%R1,%R0\;add,dc,tsv %1,%%r0,%0\";
+      else
+	return \"addi %2,%R1,%R0\;sub,db,tsv %1,%%r0,%0\";
+    }
+  else
+    return \"add %R2,%R1,%R0\;add,dc,tsv %2,%1,%0\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
 (define_insn "subti3"
-  [(set (match_operand:TI 0 "register_operand" "=r")
-	(minus:TI (match_operand:TI 1 "register_operand" "r")
-		  (match_operand:TI 2 "register_operand" "r")))]
+  [(set (match_operand:TI 0 "register_operand" "=r,&r")
+	(minus:TI (match_operand:TI 1 "arith11_operand" "r,I")
+		  (match_operand:TI 2 "reg_or_0_operand" "rM,rM")))]
   "TARGET_64BIT"
   "*
 {
-  operands[3] = gen_lowpart (DImode, operands[0]);
-  operands[4] = gen_lowpart (DImode, operands[1]);
-  operands[5] = gen_lowpart (DImode, operands[2]);
-  operands[0] = gen_highpart (DImode, operands[0]);
-  operands[1] = gen_highpart (DImode, operands[1]);
-  operands[2] = gen_highpart (DImode, operands[2]);
-  return \"sub %4,%5,%3\;sub,db %1,%2,%0\";
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      if (INTVAL (operands[1]) >= 0)
+	return \"subi %1,%R2,%R0\;sub,db %%r0,%2,%0\";
+      else
+	return \"ldi -1,%0\;subi %1,%R2,%R0\;sub,db %0,%2,%0\";
+    }
+  else
+    return \"sub %R1,%R2,%R0\;sub,db %1,%2,%0\";
 }"
   [(set_attr "type" "multi")
-   (set_attr "length" "8")])
+   (set (attr "length")
+	(if_then_else (eq_attr "alternative" "0")
+	  (const_int 8)
+	  (if_then_else (ge (symbol_ref "INTVAL (operands[1])")
+			    (const_int 0))
+	    (const_int 8)
+	    (const_int 12))))])
 
 (define_insn "subvti3"
-  [(set (match_operand:TI 0 "register_operand" "=r")
-	(minus:TI (match_operand:TI 1 "register_operand" "r")
-		  (match_operand:TI 2 "register_operand" "r")))
+  [(set (match_operand:TI 0 "register_operand" "=r,&r")
+	(minus:TI (match_operand:TI 1 "arith11_operand" "r,I")
+		  (match_operand:TI 2 "reg_or_0_operand" "rM,rM")))
    (trap_if (ne (minus:OI (sign_extend:OI (match_dup 1))
 			  (sign_extend:OI (match_dup 2)))
 		(sign_extend:OI (minus:TI (match_dup 1)
@@ -5550,16 +5562,24 @@
   "TARGET_64BIT"
   "*
 {
-  operands[3] = gen_lowpart (DImode, operands[0]);
-  operands[4] = gen_lowpart (DImode, operands[1]);
-  operands[5] = gen_lowpart (DImode, operands[2]);
-  operands[0] = gen_highpart (DImode, operands[0]);
-  operands[1] = gen_highpart (DImode, operands[1]);
-  operands[2] = gen_highpart (DImode, operands[2]);
-  return \"sub %4,%5,%3\;sub,db,tsv %1,%2,%0\";
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      if (INTVAL (operands[1]) >= 0)
+	return \"subi %1,%R2,%R0\;sub,db,tsv %%r0,%2,%0\";
+      else
+	return \"ldi -1,%0\;subi %1,%R2,%R0\;sub,db,tsv %0,%2,%0\";
+    }
+  else
+    return \"sub %R1,%R2,%R0\;sub,db,tsv %1,%2,%0\";
 }"
-  [(set_attr "type" "multi")
-   (set_attr "length" "8")])
+  [(set_attr "type" "multi,multi")
+   (set (attr "length")
+	(if_then_else (eq_attr "alternative" "0")
+	  (const_int 8)
+	  (if_then_else (ge (symbol_ref "INTVAL (operands[1])")
+			    (const_int 0))
+	    (const_int 8)
+	    (const_int 12))))])
 
 ;; Trap instructions.
 
@@ -6098,14 +6118,7 @@
   [(set (match_operand:TI 0 "register_operand" "=r")
 	(neg:TI (match_operand:TI 1 "register_operand" "r")))]
   "TARGET_64BIT"
-  "*
-{
-  operands[2] = gen_lowpart (DImode, operands[0]);
-  operands[3] = gen_lowpart (DImode, operands[1]);
-  operands[0] = gen_highpart (DImode, operands[0]);
-  operands[1] = gen_highpart (DImode, operands[1]);
-  return \"sub %%r0,%3,%2\;sub,db %%r0,%1,%0\";
-}"
+  "sub %%r0,%R1,%R0\;sub,db %%r0,%1,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
@@ -6147,14 +6160,7 @@
 		(sign_extend:OI (neg:TI (match_dup 1))))
 	    (const_int 0))]
   "TARGET_64BIT"
-  "*
-{
-  operands[2] = gen_lowpart (DImode, operands[0]);
-  operands[3] = gen_lowpart (DImode, operands[1]);
-  operands[0] = gen_highpart (DImode, operands[0]);
-  operands[1] = gen_highpart (DImode, operands[1]);
-  return \"sub %%r0,%3,%2\;sub,db,tsv %%r0,%1,%0\";
-}"
+  "sub %%r0,%R1,%R0\;sub,db,tsv %%r0,%1,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
