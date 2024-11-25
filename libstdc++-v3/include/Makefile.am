@@ -133,6 +133,7 @@ bits_freestanding = \
 	${bits_srcdir}/iterator_concepts.h \
 	${bits_srcdir}/max_size_type.h \
 	${bits_srcdir}/memoryfwd.h \
+	${bits_srcdir}/monostate.h \
 	${bits_srcdir}/move.h \
 	${bits_srcdir}/out_ptr.h \
 	${bits_srcdir}/predefined_ops.h \

@@ -45,6 +45,7 @@
 #include <bits/exception_defines.h>
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
+#include <bits/monostate.h>
 #include <bits/parse_numbers.h> // _Select_int
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
@@ -65,7 +66,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;
-  template <typename> struct hash;
 
   template<typename _Variant>
     struct variant_size;
@@ -1232,8 +1232,6 @@ namespace __variant
       return std::get_if<__n>(__ptr);
     }
 
-  struct monostate { };
-
 namespace __detail::__variant
 {
   template<typename _Ret, typename _Vp, typename _Op>
@@ -1354,8 +1352,6 @@ namespace __detail::__variant
 				  });
     }
 
-  constexpr bool operator==(monostate, monostate) noexcept { return true; }
-
 #ifdef __cpp_lib_three_way_comparison
   template<typename... _Types>
     requires (three_way_comparable<_Types> && ...)
@@ -1371,15 +1367,6 @@ namespace __detail::__variant
 				    return __l <=> __r;
 				  });
     }
-
-  constexpr strong_ordering
-  operator<=>(monostate, monostate) noexcept { return strong_ordering::equal; }
-#else
-  constexpr bool operator!=(monostate, monostate) noexcept { return false; }
-  constexpr bool operator<(monostate, monostate) noexcept { return false; }
-  constexpr bool operator>(monostate, monostate) noexcept { return false; }
-  constexpr bool operator<=(monostate, monostate) noexcept { return true; }
-  constexpr bool operator>=(monostate, monostate) noexcept { return true; }
 #endif
 
   template<typename _Visitor, typename... _Variants>
@@ -2029,22 +2016,6 @@ namespace __detail::__variant
 						index_sequence_for<_Types...>>
 #endif
     { };
-
-  template<>
-    struct hash<monostate>
-    {
-#if __cplusplus < 202002L
-      using result_type [[__deprecated__]] = size_t;
-      using argument_type [[__deprecated__]] = monostate;
-#endif
-
-      size_t
-      operator()(const monostate&) const noexcept
-      {
-	constexpr size_t __magic_monostate_hash = -7777;
-	return __magic_monostate_hash;
-      }
-    };
 
   template<typename... _Types>
     struct __is_fast_hash<hash<variant<_Types...>>>

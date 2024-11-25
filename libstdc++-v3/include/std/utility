@@ -81,6 +81,10 @@
 #include <ext/numeric_traits.h> // __is_standard_integer, __int_traits
 #endif
 
+#if __cplusplus > 202302L
+# include <bits/monostate.h>
+#endif
+
 #define __glibcxx_want_addressof_constexpr
 #define __glibcxx_want_as_const
 #define __glibcxx_want_constexpr_algorithms

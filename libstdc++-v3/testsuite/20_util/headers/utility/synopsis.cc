@@ -137,6 +137,11 @@ namespace std {
   struct in_place_t;
   template<class> struct in_place_type_t;
   template<size_t> struct in_place_index_t;
+
+#if __cplusplus > 202302L
+  struct monostate;
+  template<> struct hash<monostate>;
+#endif
 #endif
 #endif
 }
