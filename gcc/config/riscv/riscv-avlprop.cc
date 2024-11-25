@@ -351,7 +351,8 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	  if (!use_insn->can_be_optimized () || use_insn->is_asm ()
 	      || use_insn->is_call () || use_insn->has_volatile_refs ()
 	      || use_insn->has_pre_post_modify ()
-	      || !has_vl_op (use_insn->rtl ()))
+	      || !has_vl_op (use_insn->rtl ())
+	      || !avl_can_be_propagated_p (use_insn->rtl ()))
 	    return NULL_RTX;
 
 	  /* We should only propagate non-VLMAX AVL into VLMAX insn when
