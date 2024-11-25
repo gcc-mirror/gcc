@@ -1183,6 +1183,13 @@ ranger_cache::entry_range (vrange &r, tree name, basic_block bb,
       return;
     }
 
+  // If NAME is invariant, simply return the defining range.
+  if (!gori ().has_edge_range_p (name))
+    {
+      range_of_def (r, name);
+      return;
+    }
+
   // Look for the on-entry value of name in BB from the cache.
   // Otherwise pick up the best available global value.
   if (!m_on_entry.get_bb_range (r, name, bb))
