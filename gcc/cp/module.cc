@@ -4076,7 +4076,8 @@ static unsigned lazy_hard_limit; /* Hard limit on open modules.  */
    pass, but ICBW.  */
 #define LAZY_HEADROOM 15 /* File descriptor headroom.  */
 
-/* Vector of module state.  Indexed by OWNER.  Has at least 2 slots.  */
+/* Vector of module state.  Indexed by OWNER.  Index 0 is reserved for the
+   current TU; imports start at 1.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
 
 /* Hash of module state, findable by {name, parent}. */
@@ -19946,6 +19947,9 @@ get_originating_module (tree decl, bool for_mangle)
   gcc_checking_assert (!for_mangle || !(*modules)[mod]->is_header ());
   return mod;
 }
+
+/* DECL is imported, return which module imported it.
+   If FLEXIBLE, return -1 if not found, otherwise checking ICE.  */
 
 unsigned
 get_importing_module (tree decl, bool flexible)

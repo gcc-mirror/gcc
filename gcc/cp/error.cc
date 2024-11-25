@@ -285,7 +285,7 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   context->m_adjust_diagnostic_info = cp_adjust_diagnostic_info;
 }
 
-/* Dump an '@module' name suffix for DECL, if any.  */
+/* Dump an '@module' name suffix for DECL, if it's attached to an import.  */
 
 static void
 dump_module_suffix (cxx_pretty_printer *pp, tree decl)
