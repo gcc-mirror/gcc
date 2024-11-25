@@ -935,6 +935,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       operator=(const list& __x);
 
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       /**
        *  @brief  %List move assignment operator.
        *  @param  __x  A %list of identical element and allocator types.
@@ -952,9 +954,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	constexpr bool __move_storage =
 	  _Node_alloc_traits::_S_propagate_on_move_assign()
 	  || _Node_alloc_traits::_S_always_equal();
-	_M_move_assign(std::move(__x), __bool_constant<__move_storage>());
+	if constexpr (!__move_storage)
+	  {
+	    if (__x._M_get_Node_allocator() != this->_M_get_Node_allocator())
+	      {
+		// The rvalue's allocator cannot be moved, or is not equal,
+		// so we need to individually move each element.
+		_M_assign_dispatch(std::make_move_iterator(__x.begin()),
+				   std::make_move_iterator(__x.end()),
+				   __false_type{});
+		return *this;
+	      }
+	  }
+
+	this->clear();
+	this->_M_move_nodes(std::move(__x));
+
+	if constexpr (_Node_alloc_traits::_S_propagate_on_move_assign())
+	  this->_M_get_Node_allocator()
+	      = std::move(__x._M_get_Node_allocator());
+
 	return *this;
       }
+#pragma GCC diagnostic pop
 
       /**
        *  @brief  %List initializer list assignment operator.
@@ -2156,7 +2178,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       const_iterator
       _M_resize_pos(size_type& __new_size) const;
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L && ! _GLIBCXX_INLINE_VERSION
+      // XXX GLIBCXX_ABI Deprecated
+      // These are unused and only kept so that explicit instantiations will
+      // continue to define the symbols.
       void
       _M_move_assign(list&& __x, true_type) noexcept
       {
