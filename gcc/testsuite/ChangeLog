@@ -1,3 +1,16 @@
+2024-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84869
+	* gfortran.dg/pr84869.f90: Comment out test of component refs.
+
+2024-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/109345
+	* gfortran.dg/pr109345.f90: Comment out test of component refs.
+
 2024-11-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
