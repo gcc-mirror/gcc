@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-add-options "riscv_v" } */
 /* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model -fdump-tree-vect-details" } */
 
