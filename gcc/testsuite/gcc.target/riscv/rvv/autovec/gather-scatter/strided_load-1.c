@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d -O3 -mrvv-vector-bits=scalable -fno-vect-cost-model -ffast-math -fdump-tree-optimized-details" } */
+/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d -mrvv-vector-bits=scalable -fno-vect-cost-model -ffast-math -fdump-tree-optimized-details" } */
 
 #include <stdint-gcc.h>
 
@@ -40,6 +40,11 @@
 
 TEST_ALL (TEST_LOOP)
 
-/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 66 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 66 "optimized" { target { any-opts
+     "-O3"
+   } } } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 44 "optimized" { target { any-opts
+     "-O2"
+   } } } } */
 /* { dg-final { scan-tree-dump-not " \.GATHER_LOAD" "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_GATHER_LOAD" "optimized" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d -O3 -mrvv-vector-bits=scalable -fno-vect-cost-model -ffast-math -fdump-tree-optimized-details" } */
+/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d -mrvv-vector-bits=scalable -fno-vect-cost-model -ffast-math -fdump-tree-optimized-details" } */
 
 #include <stdint-gcc.h>
 
@@ -40,6 +40,18 @@
 
 TEST_ALL (TEST_LOOP)
 
-/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 33 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 64 "optimized" { target { any-opts {
+     "-mrvv-max-lmul=m8"
+     "-mrvv-max-lmul=dynamic"
+   } } } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 56 "optimized" { target { any-opts {
+     "-mrvv-max-lmul=m4"
+   } } } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 50 "optimized" { target { any-opts {
+     "-mrvv-max-lmul=m2"
+   } } } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 33 "optimized" { target { any-opts {
+     "-mrvv-max-lmul=m1"
+   } } } } */
 /* { dg-final { scan-tree-dump-not " \.GATHER_LOAD" "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_GATHER_LOAD" "optimized" } } */
