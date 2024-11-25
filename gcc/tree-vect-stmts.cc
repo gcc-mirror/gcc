@@ -8832,7 +8832,8 @@ vectorizable_store (vec_info *vinfo,
 		      if (nstores > 1)
 			inside_cost
 			  += record_stmt_cost (cost_vec, 1, vec_to_scalar,
-					       stmt_info, 0, vect_body);
+					       stmt_info, slp_node,
+					       0, vect_body);
 		      /* Take a single lane vector type store as scalar
 			 store to avoid ICE like 110776.  */
 		      if (VECTOR_TYPE_P (ltype)
