@@ -222,6 +222,9 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 #ifdef INCLUDE_FUNCTIONAL
 # include <functional>
 #endif
+#ifdef INCLUDE_SSTREAM
+# include <sstream>
+#endif
 # include <memory>
 # include <cstring>
 # include <initializer_list>
@@ -762,10 +765,6 @@ private:
 
 #ifdef INCLUDE_MUTEX
 # include <mutex>
-#endif
-
-#ifdef INCLUDE_SSTREAM
-# include <sstream>
 #endif
 
 #ifdef INCLUDE_MALLOC_H
