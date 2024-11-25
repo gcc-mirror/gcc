@@ -8693,6 +8693,12 @@ vectorizable_store (vec_info *vinfo,
 	      lnel = n;
 	      ltype = build_vector_type (elem_type, n);
 	      lvectype = vectype;
+	      int mis_align = dr_misalignment (first_dr_info, ltype);
+	      dr_alignment_support dr_align
+		= vect_supportable_dr_alignment (vinfo, dr_info, ltype,
+						 mis_align);
+	      alignment_support_scheme = dr_align;
+	      misalignment = mis_align;
 
 	      /* First check if vec_extract optab doesn't support extraction
 		 of vector elts directly.  */
@@ -8703,7 +8709,9 @@ vectorizable_store (vec_info *vinfo,
 					   n).exists (&vmode)
 		  || (convert_optab_handler (vec_extract_optab,
 					     TYPE_MODE (vectype), vmode)
-		      == CODE_FOR_nothing))
+		      == CODE_FOR_nothing)
+		  || !(dr_align == dr_aligned
+		       || dr_align == dr_unaligned_supported))
 		{
 		  /* Try to avoid emitting an extract of vector elements
 		     by performing the extracts using an integer type of the
@@ -8733,7 +8741,16 @@ vectorizable_store (vec_info *vinfo,
 		     Fewer stores are more important than avoiding spilling
 		     of the vector we extract from.  Compared to the
 		     construction case in vectorizable_load no store-forwarding
-		     issue exists here for reasonable archs.  */
+		     issue exists here for reasonable archs.  But only
+		     if the store is supported.  */
+		  else if (!(dr_align == dr_aligned
+			     || dr_align == dr_unaligned_supported))
+		    {
+		      nstores = const_nunits;
+		      lnel = 1;
+		      ltype = elem_type;
+		      lvectype = vectype;
+		    }
 		}
 	    }
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (elem_type));
@@ -10680,10 +10697,25 @@ vectorizable_load (vec_info *vinfo,
 						  &ptype);
 	      if (vtype != NULL_TREE)
 		{
-		  nloads = const_nunits / n;
-		  lnel = n;
-		  lvectype = vtype;
-		  ltype = ptype;
+		  dr_alignment_support dr_align = dr_aligned;
+		  int mis_align = 0;
+		  if (VECTOR_TYPE_P (ptype))
+		    {
+		      mis_align = dr_misalignment (first_dr_info, ptype);
+		      dr_align
+			= vect_supportable_dr_alignment (vinfo, dr_info, ptype,
+							 mis_align);
+		    }
+		  if (dr_align == dr_aligned
+		      || dr_align == dr_unaligned_supported)
+		    {
+		      nloads = const_nunits / n;
+		      lnel = n;
+		      lvectype = vtype;
+		      ltype = ptype;
+		      alignment_support_scheme = dr_align;
+		      misalignment = mis_align;
+		    }
 		}
 	    }
 	  /* Else fall back to the default element-wise access.  */
