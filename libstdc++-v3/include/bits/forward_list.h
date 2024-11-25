@@ -644,6 +644,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       forward_list&
       operator=(const forward_list& __list);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       /**
        *  @brief  The %forward_list move assignment operator.
        *  @param  __list  A %forward_list of identical element and allocator
@@ -663,7 +665,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	constexpr bool __move_storage =
 	  _Node_alloc_traits::_S_propagate_on_move_assign()
 	  || _Node_alloc_traits::_S_always_equal();
-	_M_move_assign(std::move(__list), __bool_constant<__move_storage>());
+	if constexpr (!__move_storage)
+	  {
+	    if (__list._M_get_Node_allocator() != this->_M_get_Node_allocator())
+	      {
+		// The rvalue's allocator cannot be moved, or is not equal,
+		// so we need to individually move each element.
+		this->assign(std::make_move_iterator(__list.begin()),
+			     std::make_move_iterator(__list.end()));
+		return *this;
+	      }
+	  }
+
+	clear();
+	this->_M_impl._M_head._M_next = __list._M_impl._M_head._M_next;
+	__list._M_impl._M_head._M_next = nullptr;
+	if constexpr (_Node_alloc_traits::_S_propagate_on_move_assign())
+	  this->_M_get_Node_allocator()
+	      = std::move(__list._M_get_Node_allocator());
 	return *this;
       }
 
@@ -699,9 +718,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-	  typedef is_assignable<_Tp, decltype(*__first)> __assignable;
-	  _M_assign(__first, __last, __assignable());
+	  if constexpr (is_assignable<_Tp, decltype(*__first)>::value)
+	    {
+	      auto __prev = before_begin();
+	      auto __curr = begin();
+	      auto __end = end();
+	      while (__curr != __end && __first != __last)
+		{
+		  *__curr = *__first;
+		  ++__prev;
+		  ++__curr;
+		  ++__first;
+		}
+	      if (__first != __last)
+		insert_after(__prev, __first, __last);
+	      else if (__curr != __end)
+		erase_after(__prev, __end);
+	    }
+	  else
+	    {
+	      clear();
+	      insert_after(cbefore_begin(), __first, __last);
+	    }
 	}
+#pragma GCC diagnostic pop
 
 #if __glibcxx_ranges_to_container // C++ >= 23
       /**
@@ -736,6 +776,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif // ranges_to_container
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       /**
        *  @brief  Assigns a given value to a %forward_list.
        *  @param  __n  Number of elements to be assigned.
@@ -748,7 +790,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       assign(size_type __n, const _Tp& __val)
-      { _M_assign_n(__n, __val, is_copy_assignable<_Tp>()); }
+      {
+	if constexpr (is_copy_assignable<_Tp>::value)
+	  {
+	    auto __prev = before_begin();
+	    auto __curr = begin();
+	    auto __end = end();
+	    while (__curr != __end && __n > 0)
+	      {
+		*__curr = __val;
+		++__prev;
+		++__curr;
+		--__n;
+	      }
+	    if (__n > 0)
+	      insert_after(__prev, __n, __val);
+	    else if (__curr != __end)
+	      erase_after(__prev, __end);
+	  }
+	else
+	  {
+	    clear();
+	    insert_after(cbefore_begin(), __n, __val);
+	  }
+      }
+#pragma GCC diagnostic pop
 
       /**
        *  @brief  Assigns an initializer_list to a %forward_list.
@@ -1460,7 +1526,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_default_insert_after(const_iterator __pos, size_type __n);
 
-      // Called by operator=(forward_list&&)
+#if ! _GLIBCXX_INLINE_VERSION
+      // XXX GLIBCXX_ABI Deprecated
+      // These members are unused by std::forward_list now, but we keep them
+      // here so that an explicit instantiation will define them.
+      // This ensures that explicit instantiations still define these symbols,
+      // so that explicit instantiation declarations of std::forward_list that
+      // were compiled with old versions of GCC can still find these symbols.
+
       void
       _M_move_assign(forward_list&& __list, true_type) noexcept
       {
@@ -1471,7 +1544,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			     __list._M_get_Node_allocator());
       }
 
-      // Called by operator=(forward_list&&)
       void
       _M_move_assign(forward_list&& __list, false_type)
       {
@@ -1484,39 +1556,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		       std::make_move_iterator(__list.end()));
       }
 
-      // Called by assign(_InputIterator, _InputIterator) if _Tp is
-      // CopyAssignable.
-      template<typename _InputIterator>
-	void
-	_M_assign(_InputIterator __first, _InputIterator __last, true_type)
-	{
-	  auto __prev = before_begin();
-	  auto __curr = begin();
-	  auto __end = end();
-	  while (__curr != __end && __first != __last)
-	    {
-	      *__curr = *__first;
-	      ++__prev;
-	      ++__curr;
-	      ++__first;
-	    }
-	  if (__first != __last)
-	    insert_after(__prev, __first, __last);
-	  else if (__curr != __end)
-	    erase_after(__prev, __end);
-	}
-
-      // Called by assign(_InputIterator, _InputIterator) if _Tp is not
-      // CopyAssignable.
-      template<typename _InputIterator>
-	void
-	_M_assign(_InputIterator __first, _InputIterator __last, false_type)
-	{
-	  clear();
-	  insert_after(cbefore_begin(), __first, __last);
-	}
-
-      // Called by assign(size_type, const _Tp&) if Tp is CopyAssignable
       void
       _M_assign_n(size_type __n, const _Tp& __val, true_type)
       {
@@ -1536,13 +1575,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  erase_after(__prev, __end);
       }
 
-      // Called by assign(size_type, const _Tp&) if Tp is non-CopyAssignable
       void
       _M_assign_n(size_type __n, const _Tp& __val, false_type)
       {
 	clear();
 	insert_after(cbefore_begin(), __n, __val);
       }
+#endif // ! _GLIBCXX_INLINE_VERSION
     };
 
 #if __cpp_deduction_guides >= 201606
