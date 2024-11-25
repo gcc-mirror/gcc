@@ -7398,7 +7398,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  /* Change AR_FULL to a (:,:,:) ref to force bounds update. */
 		  gfc_ref *ref;
 		  for (ref = e->ref; ref->next; ref = ref->next)
-		    ;
+		    {
+		      if (ref->next->type == REF_INQUIRY)
+			break;
+		    };
 		  if (ref->u.ar.type == AR_FULL
 		      && ref->u.ar.as->type != AS_ASSUMED_SIZE)
 		    ref->u.ar.type = AR_SECTION;
