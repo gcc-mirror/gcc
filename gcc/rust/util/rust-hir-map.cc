@@ -1241,6 +1241,9 @@ Mappings::lookup_builtin_marker ()
   return builtinMarker;
 }
 
+// FIXME: Before merging: Should we remove the `locus` parameter here? since
+// lang items are looked up mostly for code generation, it doesn't make sense to
+// error out on the locus of the node trying to access an inexistant lang item
 DefId
 Mappings::get_lang_item (LangItem::Kind item_type, location_t locus)
 {
@@ -1272,6 +1275,25 @@ Mappings::lookup_lang_item (LangItem::Kind item_type)
 {
   auto it = lang_item_mappings.find (item_type);
   if (it == lang_item_mappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+void
+Mappings::insert_lang_item_node (LangItem::Kind item_type, NodeId node_id)
+{
+  auto it = lang_item_nodes.find (item_type);
+  rust_assert (it == lang_item_nodes.end ());
+
+  lang_item_nodes.insert ({item_type, node_id});
+}
+
+tl::optional<NodeId &>
+Mappings::lookup_lang_item_node (LangItem::Kind item_type)
+{
+  auto it = lang_item_nodes.find (item_type);
+  if (it == lang_item_nodes.end ())
     return tl::nullopt;
 
   return it->second;
