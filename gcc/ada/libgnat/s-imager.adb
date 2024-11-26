@@ -49,14 +49,13 @@ package body System.Image_R is
 
    Maxdigs : constant Natural := 2 * Natural'Min (Uns'Width - 2, Num'Digits);
 
-   Maxscaling : constant := 5000;
-   --  Max decimal scaling required during conversion of floating-point
-   --  numbers to decimal. This is used to defend against infinite
-   --  looping in the conversion, as can be caused by erroneous executions.
-   --  The largest exponent used on any current system is 2**16383, which
-   --  is approximately 10**4932, and the highest number of decimal digits
-   --  is about 35 for 128-bit floating-point formats, so 5000 leaves
-   --  enough room for scaling such values
+   Maxscaling : constant Natural := 5000 + Maxdigs;
+   --  Maximum decimal scaling required during conversion of floating-point
+   --  numbers to decimal. This is used to defend against infinite looping
+   --  during the conversion, that could be caused by erroneous execution.
+   --  The largest decimal exponent in absolute value used on any current
+   --  system is 4966 (denormals of IEEE binary128) and we scale up to the
+   --  Maxdigs exponent during the conversion.
 
    package Double_Real is new System.Double_Real (Num);
    use type Double_Real.Double_T;
