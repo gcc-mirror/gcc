@@ -1081,8 +1081,8 @@ EXPORT (GetFlag) (struct termios *t, Flag f, int *b)
 /* SetFlag - sets a flag value in, t, to, b, and returns TRUE if this
    flag value is supported.  */
 
-int
-EXPORT (SetFlag) (struct termios *t, Flag f, int b)
+bool
+EXPORT (SetFlag) (struct termios *t, Flag f, bool b)
 {
   switch (f)
     {

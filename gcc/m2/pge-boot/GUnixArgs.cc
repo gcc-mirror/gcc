@@ -88,6 +88,6 @@ struct _M2_UnixArgs_ctor { _M2_UnixArgs_ctor (); } _M2_UnixArgs_ctor;
 
 _M2_UnixArgs_ctor::_M2_UnixArgs_ctor (void)
 {
-  M2RTS_RegisterModule ("UnixArgs", LIBNAME, _M2_UnixArgs_init, _M2_UnixArgs_fini,
-			_M2_UnixArgs_dep);
+  M2RTS_RegisterModule_Cstr ("UnixArgs", LIBNAME, _M2_UnixArgs_init,
+			     _M2_UnixArgs_fini, _M2_UnixArgs_dep);
 }

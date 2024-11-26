@@ -145,7 +145,7 @@ Selective_FdClr (int fd, fd_set *s)
 /* PROCEDURE FdIsSet (fd: INTEGER; SetOfFd) : BOOLEAN ; */
 
 EXTERN
-int
+bool
 Selective_FdIsSet (int fd, fd_set *s)
 {
   return FD_ISSET (fd, s);

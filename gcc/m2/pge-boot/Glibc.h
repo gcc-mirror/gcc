@@ -198,7 +198,7 @@ EXTERN ssize_t libc_lseek (int fd, ssize_t offset, int whence);
    perror - writes errno and string. (ARRAY OF CHAR is translated onto ADDRESS).
 */
 
-EXTERN void libc_perror (const char *string_, unsigned int _string_high);
+EXTERN void libc_perror (const char *str);
 
 /*
    readv - reads an io vector of bytes.
