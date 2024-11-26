@@ -178,7 +178,7 @@ EXTERN int libc_close (int d);
    open - open the file, filename with flag and mode.
 */
 
-EXTERN int libc_open (void * filename, int oflag, ...);
+EXTERN int libc_open (void * filename, int oflag, int mode);
 
 /*
    creat - creates a new file
