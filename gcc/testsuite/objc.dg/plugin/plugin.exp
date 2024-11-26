@@ -56,7 +56,7 @@ gcc_parallel_test_enable 0
 # Specify the plugin source file and the associated test files in a list.
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
-    { ../../gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c \
+    { ../../gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.cc \
 	  diagnostic-test-expressions-1.m } \
 ]
 

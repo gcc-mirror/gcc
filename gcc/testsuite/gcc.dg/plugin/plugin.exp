@@ -56,31 +56,31 @@ gcc_parallel_test_enable 0
 # Specify the plugin source file and the associated test files in a list.
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
-    { selfassign.c self-assign-test-1.c self-assign-test-2.c } \
-    { ggcplug.c ggcplug-test-1.c } \
-    { one_time_plugin.c one_time-test-1.c } \
-    { start_unit_plugin.c start_unit-test-1.c } \
-    { finish_unit_plugin.c finish_unit-test-1.c } \
-    { wide-int_plugin.c wide-int-test-1.c } \
-    { poly-int-01_plugin.c poly-int-test-1.c } \
-    { poly-int-02_plugin.c poly-int-test-1.c } \
-    { poly-int-03_plugin.c poly-int-test-1.c } \
-    { poly-int-04_plugin.c poly-int-test-1.c } \
-    { poly-int-05_plugin.c poly-int-test-1.c } \
-    { poly-int-06_plugin.c poly-int-test-1.c } \
-    { poly-int-07_plugin.c poly-int-test-1.c } \
-    { crash_test_plugin.c \
+    { selfassign.cc self-assign-test-1.c self-assign-test-2.c } \
+    { ggcplug.cc ggcplug-test-1.c } \
+    { one_time_plugin.cc one_time-test-1.c } \
+    { start_unit_plugin.cc start_unit-test-1.c } \
+    { finish_unit_plugin.cc finish_unit-test-1.c } \
+    { wide-int_plugin.cc wide-int-test-1.c } \
+    { poly-int-01_plugin.cc poly-int-test-1.c } \
+    { poly-int-02_plugin.cc poly-int-test-1.c } \
+    { poly-int-03_plugin.cc poly-int-test-1.c } \
+    { poly-int-04_plugin.cc poly-int-test-1.c } \
+    { poly-int-05_plugin.cc poly-int-test-1.c } \
+    { poly-int-06_plugin.cc poly-int-test-1.c } \
+    { poly-int-07_plugin.cc poly-int-test-1.c } \
+    { crash_test_plugin.cc \
 	  crash-test-ice-stderr.c \
 	  crash-test-write-though-null-stderr.c \
 	  crash-test-ice-sarif.c \
 	  crash-test-ice-in-header-sarif-2.1.c \
 	  crash-test-ice-in-header-sarif-2.2.c \
 	  crash-test-write-though-null-sarif.c } \
-    { diagnostic_plugin_xhtml_format.c \
+    { diagnostic_plugin_xhtml_format.cc \
 	  diagnostic-test-xhtml-1.c } \
-    { diagnostic_group_plugin.c \
+    { diagnostic_group_plugin.cc \
 	  diagnostic-group-test-1.c } \
-    { diagnostic_plugin_test_show_locus.c \
+    { diagnostic_plugin_test_show_locus.cc \
 	  diagnostic-test-show-locus-bw.c \
 	  diagnostic-test-show-locus-color.c \
 	  diagnostic-test-show-locus-no-labels.c \
@@ -91,30 +91,30 @@ set plugin_test_list [list \
 	  diagnostic-test-show-locus-GCC_EXTRA_DIAGNOSTIC_OUTPUT-fixits-v1.c \
 	  diagnostic-test-show-locus-GCC_EXTRA_DIAGNOSTIC_OUTPUT-fixits-v2.c \
 	  diagnostic-test-show-locus-generate-patch.c }\
-    { diagnostic_plugin_test_tree_expression_range.c \
+    { diagnostic_plugin_test_tree_expression_range.cc \
 	  diagnostic-test-expressions-1.c } \
-    { diagnostic_plugin_show_trees.c \
+    { diagnostic_plugin_show_trees.cc \
 	  diagnostic-test-show-trees-1.c } \
-    { diagnostic_plugin_test_string_literals.c \
+    { diagnostic_plugin_test_string_literals.cc \
 	  diagnostic-test-string-literals-1.c \
 	  diagnostic-test-string-literals-2.c \
 	  diagnostic-test-string-literals-3.c \
 	  diagnostic-test-string-literals-4.c } \
-    { diagnostic_plugin_test_inlining.c \
+    { diagnostic_plugin_test_inlining.cc \
 	  diagnostic-test-inlining-1.c \
 	  diagnostic-test-inlining-2.c \
 	  diagnostic-test-inlining-3.c \
 	  diagnostic-test-inlining-4.c } \
-    { diagnostic_plugin_test_metadata.c \
+    { diagnostic_plugin_test_metadata.cc
 	  diagnostic-test-metadata.c \
 	  diagnostic-test-metadata-sarif.c } \
-    { diagnostic_plugin_test_nesting.c \
+    { diagnostic_plugin_test_nesting.cc \
 	  diagnostic-test-nesting-text-plain.c \
 	  diagnostic-test-nesting-text-indented.c \
 	  diagnostic-test-nesting-text-indented-show-levels.c \
 	  diagnostic-test-nesting-text-indented-unicode.c \
 	  diagnostic-test-nesting-sarif.c } \
-    { diagnostic_plugin_test_paths.c \
+    { diagnostic_plugin_test_paths.cc \
 	  diagnostic-test-paths-1.c \
 	  diagnostic-test-paths-2.c \
 	  diagnostic-test-paths-3.c \
@@ -129,29 +129,29 @@ set plugin_test_list [list \
 	  diagnostic-path-format-inline-events-1.c \
 	  diagnostic-path-format-inline-events-2.c \
 	  diagnostic-path-format-inline-events-3.c } \
-    { diagnostic_plugin_test_text_art.c \
+    { diagnostic_plugin_test_text_art.cc \
 	  diagnostic-test-text-art-none.c \
 	  diagnostic-test-text-art-ascii-bw.c \
 	  diagnostic-test-text-art-ascii-color.c \
 	  diagnostic-test-text-art-unicode-bw.c \
 	  diagnostic-test-text-art-unicode-color.c } \
-    { location_overflow_plugin.c \
+    { location_overflow_plugin.cc \
 	  location-overflow-test-1.c \
 	  location-overflow-test-2.c \
 	  location-overflow-test-pr83173.c } \
-    { must_tail_call_plugin.c \
+    { must_tail_call_plugin.cc \
 	  must-tail-call-1.c \
 	  must-tail-call-2.c } \
-    { expensive_selftests_plugin.c \
+    { expensive_selftests_plugin.cc \
 	  expensive-selftests-1.c } \
-    { dump_plugin.c \
+    { dump_plugin.cc \
 	  dump-1.c \
 	  dump-2.c } \
-    { analyzer_gil_plugin.c \
+    { analyzer_gil_plugin.cc \
 	  gil-1.c } \
-    { analyzer_known_fns_plugin.c \
+    { analyzer_known_fns_plugin.cc \
 	  known-fns-1.c } \
-    { analyzer_kernel_plugin.c \
+    { analyzer_kernel_plugin.cc \
 	  copy_from_user-1.c \
 	  infoleak-1.c \
 	  infoleak-2.c \
@@ -187,7 +187,7 @@ set plugin_test_list [list \
 	  taint-pr112974.c \
 	  taint-pr112975.c \
 	  taint-pr112977.c } \
-    { analyzer_cpython_plugin.c \
+    { analyzer_cpython_plugin.cc \
 	  cpython-plugin-test-no-Python-h.c \
 	  cpython-plugin-test-PyList_Append.c \
 	  cpython-plugin-test-PyList_New.c \

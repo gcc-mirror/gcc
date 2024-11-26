@@ -56,31 +56,31 @@ gcc_parallel_test_enable 0
 # Specify the plugin source file and the associated test files in a list.
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
-    { attribute_plugin.c attribute_plugin-test-1.C } \
-    { pragma_plugin.c pragma_plugin-test-1.C } \
-    { selfassign.c self-assign-test-1.C self-assign-test-2.C self-assign-test-3.C } \
-    { dumb_plugin.c dumb-plugin-test-1.C } \
-    { header_plugin.c header-plugin-test.C } \
-    { decl_plugin.c decl-plugin-test.C } \
-    { def_plugin.c def-plugin-test.C } \
-    { ../../gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c \
+    { attribute_plugin.cc attribute_plugin-test-1.C } \
+    { pragma_plugin.cc pragma_plugin-test-1.C } \
+    { selfassign.cc self-assign-test-1.C self-assign-test-2.C self-assign-test-3.C } \
+    { dumb_plugin.cc dumb-plugin-test-1.C } \
+    { header_plugin.cc header-plugin-test.C } \
+    { decl_plugin.cc decl-plugin-test.C } \
+    { def_plugin.cc def-plugin-test.C } \
+    { ../../gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.cc \
 	  diagnostic-test-expressions-1.C } \
-    { ../../gcc.dg/plugin/diagnostic_plugin_test_inlining.c \
+    { ../../gcc.dg/plugin/diagnostic_plugin_test_inlining.cc \
 	  diagnostic-test-inlining-1.C } \
-    { ../../gcc.dg/plugin/diagnostic_plugin_test_string_literals.c \
+    { ../../gcc.dg/plugin/diagnostic_plugin_test_string_literals.cc \
 	  ../../gcc.dg/plugin/diagnostic-test-string-literals-1.c \
 	  ../../gcc.dg/plugin/diagnostic-test-string-literals-2.c \
 	  ../../gcc.dg/plugin/diagnostic-test-string-literals-3.c \
 	  ../../gcc.dg/plugin/diagnostic-test-string-literals-4.c } \
-    { ../../gcc.dg/plugin/location_overflow_plugin.c \
+    { ../../gcc.dg/plugin/location_overflow_plugin.cc \
 	  location-overflow-test-pr96391.c \
           location-overflow-test-pr100796.c } \
-    { show_template_tree_color_plugin.c \
+    { show_template_tree_color_plugin.cc \
     	  show-template-tree-color.C \
     	  show-template-tree-color-no-highlight-colors.C \
     	  show-template-tree-color-labels.C \
     	  show-template-tree-color-no-elide-type.C } \
-    { comment_plugin.c comments-1.C } \
+    { comment_plugin.cc comments-1.C } \
 ]
 
 foreach plugin_test $plugin_test_list {
