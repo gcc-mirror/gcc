@@ -891,7 +891,7 @@ wide_int_constant_multiple_p (const poly_widest_int &val,
 			      const poly_widest_int &div,
 			      bool *mult_set, poly_widest_int *mult)
 {
-  poly_widest_int rem, cst;
+  poly_widest_int cst;
 
   if (known_eq (val, 0))
     {
