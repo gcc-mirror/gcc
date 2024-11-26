@@ -977,8 +977,11 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 	 that.  (We also need an extra newline, so this looks like a regular
 	 file, which we do that to to make sure we don't fall off the end in the
 	 middle of a line.  */
-      static uchar newlines[] = "\n\n\n";
-      cpp_push_buffer (pfile, newlines, 2, true);
+      if (type != IT_CMDLINE)
+	{
+	  static uchar newlines[] = "\n\n\n";
+	  cpp_push_buffer (pfile, newlines, 2, true);
+	}
 
       size_t len = strlen (buf);
       buf[len] = '\n'; /* See above  */
@@ -986,6 +989,9 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 	= cpp_push_buffer (pfile, reinterpret_cast<unsigned char *> (buf),
 			   len, true);
       buffer->to_free = buffer->buf;
+      if (type == IT_CMDLINE)
+	/* Tell _cpp_pop_buffer to change files.  */
+	buffer->file = file;
 
       file->header_unit = +1;
       _cpp_mark_file_once_only (pfile, file);
