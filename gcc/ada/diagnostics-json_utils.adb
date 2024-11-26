@@ -64,6 +64,17 @@ package body Diagnostics.JSON_Utils is
       end if;
    end NL_And_Indent;
 
+   -----------------------------
+   -- Write_Boolean_Attribute --
+   -----------------------------
+
+   procedure Write_Boolean_Attribute (Name : String; Value : Boolean) is
+
+   begin
+      Write_Str ("""" & Name & """" & ": ");
+      Write_Str (if Value then "true" else "false");
+   end Write_Boolean_Attribute;
+
    -------------------------
    -- Write_Int_Attribute --
    -------------------------

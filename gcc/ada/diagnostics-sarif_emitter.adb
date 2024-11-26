@@ -632,9 +632,7 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print executionSuccessful
 
-      Write_String_Attribute
-        ("executionSuccessful",
-         (if Compilation_Errors then "false" else "true"));
+      Write_Boolean_Attribute ("executionSuccessful", Compilation_Errors);
 
       End_Block;
       NL_And_Indent;
