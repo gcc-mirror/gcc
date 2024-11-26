@@ -538,7 +538,7 @@ write_predicate_expr (rtx exp)
       break;
 
     case MATCH_TEST:
-      rtx_reader_ptr->print_c_condition (XSTR (exp, 0));
+      rtx_reader_ptr->print_c_condition (stdout, XSTR (exp, 0));
       break;
 
     default:
@@ -1344,7 +1344,7 @@ write_init_reg_class_start_regs ()
       for (unsigned int i = 0; i < register_filters.length (); ++i)
 	{
 	  printf ("      if (");
-	  rtx_reader_ptr->print_c_condition (register_filters[i]);
+	  rtx_reader_ptr->print_c_condition (stdout, register_filters[i]);
 	  printf (")\n"
 		  "        SET_HARD_REG_BIT (%s[%d], regno);\n",
 		  "this_target_constraints->register_filters", i);

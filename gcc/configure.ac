@@ -929,10 +929,10 @@ fi
 
 AC_SUBST(DEFAULT_MATCHPD_PARTITIONS)
 
-# Specify the number of splits of insn-emit.cc to generate.
+# Specify the number of splits of insn-emit.cc and insn-recog.cc to generate.
 AC_ARG_WITH(insnemit-partitions,
 [AS_HELP_STRING([--with-insnemit-partitions=num],
-[Set the number of partitions of insn-emit.cc for genemit to create. [default=10]])],
+[Set the number of partitions of insn-emit.cc for genemit and genrecog to create. [default=10]])],
 [DEFAULT_INSNEMIT_PARTITIONS="$with_insnemit_partitions"], [DEFAULT_INSNEMIT_PARTITIONS=10])
 if (test $DEFAULT_INSNEMIT_PARTITIONS -lt 1); then
   AC_MSG_ERROR(m4_normalize([

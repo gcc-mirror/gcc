@@ -205,7 +205,7 @@ class md_reader
 
   const char *join_c_conditions (const char *cond1, const char *cond2);
   void fprint_c_condition (FILE *outf, const char *cond);
-  void print_c_condition (const char *cond);
+  void print_c_condition (FILE *outf, const char *cond);
 
   /* Defined in read-rtl.cc.  */
   const char *apply_iterator_to_string (const char *string);

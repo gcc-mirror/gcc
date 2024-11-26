@@ -239,6 +239,12 @@ INSNEMIT_SEQ_SRC = $(patsubst %, insn-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
 INSNEMIT_SEQ_TMP = $(patsubst %, tmp-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
 INSNEMIT_SEQ_O = $(patsubst %, insn-emit-%.o, $(INSNEMIT_SPLITS_SEQ))
 
+# Re-use the split number for insn-recog as well.
+INSNRECOG_SPLITS_SEQ = $(wordlist 1,$(NUM_INSNEMIT_SPLITS),$(one_to_9999))
+INSNRECOG_SEQ_SRC = $(patsubst %, insn-recog-%.cc, $(INSNRECOG_SPLITS_SEQ))
+INSNRECOG_SEQ_TMP = $(patsubst %, tmp-recog-%.cc, $(INSNRECOG_SPLITS_SEQ))
+INSNRECOG_SEQ_O = $(patsubst %, insn-recog-%.o, $(INSNRECOG_SPLITS_SEQ))
+
 # These files are to have specific diagnostics suppressed, or are not to
 # be subject to -Werror:
 # flex output may yield harmless "no previous prototype" warnings
@@ -1385,7 +1391,7 @@ OBJS = \
 	insn-output.o \
 	insn-peep.o \
 	insn-preds.o \
-	insn-recog.o \
+	$(INSNRECOG_SEQ_O) \
 	insn-enums.o \
 	ggc-page.o \
 	adjust-alignment.o \
@@ -1909,8 +1915,8 @@ TREECHECKING = @TREECHECKING@
 FULL_DRIVER_NAME=$(target_noncanonical)-gcc-$(version)$(exeext)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
- insn-output.cc insn-recog.cc $(INSNEMIT_SEQ_SRC) \
- insn-extract.cc insn-peep.cc \
+ insn-output.cc $(INSNRECOG_SEQ_SRC) insn-recog.h \
+ $(INSNEMIT_SEQ_SRC) insn-extract.cc insn-peep.cc \
  insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
  insn-latencytab.cc insn-opinit.cc insn-opinit.h insn-preds.cc insn-constants.h \
  tm-preds.h tm-constrs.h checksum-options $(GIMPLE_MATCH_PD_SEQ_SRC) \
@@ -2677,7 +2683,8 @@ $(common_out_object_file): $(common_out_file)
 # and compile them.
 
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h insn-constants.h \
-  $(INSNEMIT_SEQ_SRC) insn-recog.cc insn-extract.cc insn-output.cc \
+  $(INSNEMIT_SEQ_SRC) insn-recog.h $(INSNRECOG_SEQ_SRC) \
+  insn-extract.cc insn-output.cc \
   insn-peep.cc insn-attr.h insn-attr-common.h insn-attrtab.cc \
   insn-dfatab.cc insn-latencytab.cc insn-preds.cc \
   $(GIMPLE_MATCH_PD_SEQ_SRC) $(GENERIC_MATCH_PD_SEQ_SRC) \
@@ -2706,7 +2713,7 @@ simple_rtl_generated_h	= insn-attr.h insn-attr-common.h insn-codes.h \
 
 simple_rtl_generated_c	= insn-automata.cc \
 			  insn-extract.cc insn-output.cc \
-			  insn-peep.cc insn-recog.cc
+			  insn-peep.cc
 
 simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h
 
@@ -2743,6 +2750,18 @@ s-tmp-emit: build/genemit$(build_exeext) $(MD_DEPS) insn-conditions.md
 	  $(SHELL) $(srcdir)/../move-if-change tmp-emit-$(id).cc \
 	  insn-emit-$(id).cc;)
 	$(STAMP) s-tmp-emit
+
+# Same for genrecog.
+$(INSNRECOG_SEQ_SRC): s-tmp-recog; @true
+insn-recog.h: s-tmp-recog; @true
+s-tmp-recog: build/genrecog$(build_exeext) $(MD_DEPS) insn-conditions.md
+	$(RUN_GEN) build/genrecog$(build_exeext) $(md_file) insn-conditions.md \
+	  -Hinsn-recog.h \
+	  $(addprefix -O,${INSNRECOG_SEQ_TMP})
+	$(foreach id, $(INSNRECOG_SPLITS_SEQ), \
+	  $(SHELL) $(srcdir)/../move-if-change tmp-recog-$(id).cc \
+	  insn-recog-$(id).cc;)
+	$(STAMP) s-tmp-recog
 
 # gencheck doesn't read the machine description, and the file produced
 # doesn't use the insn-* convention.

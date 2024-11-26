@@ -191,7 +191,7 @@ def_target_insn (const char *name, const char *prototype)
 	      printf ("target_have_%s (void)\n", name);
 	      printf ("{\n");
 	      printf ("  return ");
-	      rtx_reader_ptr->print_c_condition (test);
+	      rtx_reader_ptr->print_c_condition (stdout, test);
 	      printf (";\n");
 	      printf ("}\n");
 	    }

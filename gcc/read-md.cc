@@ -192,9 +192,9 @@ md_reader::fprint_c_condition (FILE *outf, const char *cond)
 /* Special fprint_c_condition for writing to STDOUT.  */
 
 void
-md_reader::print_c_condition (const char *cond)
+md_reader::print_c_condition (FILE *outf, const char *cond)
 {
-  fprint_c_condition (stdout, cond);
+  fprint_c_condition (outf, cond);
 }
 
 /* A vfprintf-like function for reporting an error against line LINENO

@@ -1873,7 +1873,7 @@ Optional Packages:
                           generic when splitting match.pd. [default=10]
   --with-insnemit-partitions=num
                           Set the number of partitions of insn-emit.cc for
-                          genemit to create. [default=10]
+                          genemit and genrecog to create. [default=10]
   --with-dwarf2           force the default debug format to be DWARF 2 (or
                           later)
   --with-specs=SPECS      add SPECS to driver command-line processing
@@ -7936,7 +7936,7 @@ fi
 
 
 
-# Specify the number of splits of insn-emit.cc to generate.
+# Specify the number of splits of insn-emit.cc and insn-recog.cc to generate.
 
 # Check whether --with-insnemit-partitions was given.
 if test "${with_insnemit_partitions+set}" = set; then :
