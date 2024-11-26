@@ -432,30 +432,39 @@ package body System.Image_R is
 
          --  Otherwise, do the conversion in two steps
 
-         else pragma Assert (X <= 10.0 ** Num'Digits * Num (Uns'Last));
+         else
             declare
-               Y : constant Uns := To_Unsigned (X / Powten (Num'Digits));
+               Halfdigs : constant Natural := Maxdigs / 2;
 
-               Buf : String (1 .. Num'Digits);
+               Buf : String (1 .. Halfdigs);
                Len : Natural;
+               Y   : Uns;
 
             begin
+               --  Compute upper Halfdigs stripped from leading zeros
+
+               Y := To_Unsigned (X / Powten (Halfdigs));
                Set_Image_Unsigned (Y, Digs, Ndigs);
 
-               X := X - From_Unsigned (Y) * Powten (Num'Digits);
+               --  Compute lower Halfdigs stripped from leading zeros
 
                Len := 0;
+               X := X - From_Unsigned (Y) * Powten (Halfdigs);
                Set_Image_Unsigned (To_Unsigned (X), Buf, Len);
+               pragma Assert (Len <= Halfdigs);
 
-               for J in 1 .. Num'Digits - Len loop
+               --  Concatenate unmodified upper part with zero-padded
+               --  lower part up to Halfdigs.
+
+               for J in 1 .. Halfdigs - Len loop
                   Digs (Ndigs + J) := '0';
                end loop;
 
                for J in 1 .. Len loop
-                  Digs (Ndigs + Num'Digits - Len + J) := Buf (J);
+                  Digs (Ndigs + Halfdigs - Len + J) := Buf (J);
                end loop;
 
-               Ndigs := Ndigs + Num'Digits;
+               Ndigs := Ndigs + Halfdigs;
             end;
          end if;
       end if;
