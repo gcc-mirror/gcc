@@ -2541,7 +2541,7 @@ csky_configure_build_target (struct csky_build_target *target,
 	 between different cpu & arch, should based on arch.  */
       if (csky_selected_arch
 	  && (csky_selected_cpu->base_arch != csky_selected_arch->base_arch))
-	warning (0, "cpu %s is not based on arch %s, ignoring the arch",
+	warning (0, "cpu %qs is not based on arch %qs, ignoring the arch",
 		 csky_selected_cpu->name, csky_selected_arch->name);
       if (!csky_selected_arch)
 	csky_selected_arch = &all_architectures[csky_selected_cpu->base_arch];
@@ -2607,7 +2607,7 @@ csky_option_override (void)
 		   || CSKY_TARGET_ARCH (CK860)))
     {
       flag_pic = 0;
-      warning (0, "%qs is not supported by arch %s",
+      warning (0, "%qs is not supported by arch %qs",
 	       "-fPIC", csky_active_target.arch_pp_name);
     }
 
@@ -2645,7 +2645,7 @@ csky_option_override (void)
 	}
 
       if (CSKY_TARGET_ARCH (CK801) || CSKY_TARGET_ARCH (CK802))
-	error ("%qs is not supported by arch %s",
+	error ("%qs is not supported by arch %qs",
 	       "-mhard-float", csky_active_target.arch_pp_name);
       else if (csky_fpu_index == TARGET_FPU_auto)
 	error ("%<-mhard-float%> is not supported by the selected CPU");
@@ -2710,7 +2710,7 @@ csky_option_override (void)
      pools are placed.  */
   if ((CSKY_TARGET_ARCH (CK801) || CSKY_TARGET_ARCH (CK802))
       && !TARGET_CONSTANT_POOL)
-    error ("%qs is not supported by arch %s",
+    error ("%qs is not supported by arch %qs",
 	   "-mno-constpool", csky_active_target.arch_pp_name);
   else if (TARGET_CONSTANT_POOL == -1)
     TARGET_CONSTANT_POOL = (CSKY_TARGET_ARCH (CK801)
@@ -2733,7 +2733,7 @@ csky_option_override (void)
       else if (TARGET_MINI_REGISTERS == -1)
 	TARGET_MINI_REGISTERS = 0;
       if (TARGET_HIGH_REGISTERS > 0)
-	warning (0, "%qs is not supported by arch %s",
+	warning (0, "%qs is not supported by arch %qs",
 		 "-mhigh-registers", csky_active_target.arch_pp_name);
       TARGET_HIGH_REGISTERS = 0;
     }
@@ -2750,7 +2750,7 @@ csky_option_override (void)
   if (CSKY_TARGET_ARCH (CK801))
     {
       if (TARGET_MULTIPLE_STLD > 0)
-	warning (0, "%qs is not supported by arch %s",
+	warning (0, "%qs is not supported by arch %qs",
 		 "-mmultiple-stld", csky_active_target.arch_pp_name);
       TARGET_MULTIPLE_STLD = 0;
     }
