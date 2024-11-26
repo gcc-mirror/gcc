@@ -1833,6 +1833,7 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 {
   gfc_ref *ref;
   gfc_ref *inquiry = NULL;
+  gfc_ref *inquiry_head;
   gfc_expr *tmp;
 
   tmp = gfc_copy_expr (p);
@@ -1858,6 +1859,7 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
       return false;
     }
 
+  inquiry_head = inquiry;
   gfc_resolve_expr (tmp);
 
   /* Leave these to the backend since the type and kind is not confirmed until
@@ -1930,7 +1932,7 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 		    mpc_imagref (tmp->value.complex), GFC_RND_MODE);
 	  break;
 	}
-      // TODO: Fix leaking expr tmp, when simplify is done twice.
+
       if (inquiry->next)
 	gfc_replace_expr (tmp, *newp);
     }
@@ -1944,10 +1946,12 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
     }
 
   gfc_free_expr (tmp);
+  gfc_free_ref_list (inquiry_head);
   return true;
 
 cleanup:
   gfc_free_expr (tmp);
+  gfc_free_ref_list (inquiry_head);
   return false;
 }
 
