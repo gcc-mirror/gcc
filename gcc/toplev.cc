@@ -1136,7 +1136,7 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
   linemap_init (line_table, BUILTINS_LOCATION);
   line_table->m_reallocator = realloc_for_line_map;
   line_table->m_round_alloc_size = ggc_round_alloc_size;
-  line_table->default_range_bits = 5;
+  line_table->default_range_bits = line_map_suggested_range_bits;
   init_ttree ();
 
   /* Initialize register usage now so switches may override.  */
