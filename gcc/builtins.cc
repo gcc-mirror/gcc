@@ -9008,29 +9008,34 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 	     (x == 0 ? FP_ZERO : FP_SUBNORMAL))).  */
 
   tmp = fold_build2_loc (loc, EQ_EXPR, integer_type_node, arg,
-		     build_real (type, dconst0));
+			 build_real (type, dconst0));
   res = fold_build3_loc (loc, COND_EXPR, integer_type_node,
-		     tmp, fp_zero, fp_subnormal);
+			 tmp, fp_zero, fp_subnormal);
 
-  sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (mode)->emin - 1);
-  real_from_string (&r, buf);
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    sprintf (buf, "1E%d", REAL_MODE_FORMAT (mode)->emin - 1);
+  else
+    sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (mode)->emin - 1);
+  real_from_string3 (&r, buf, mode);
   tmp = fold_build2_loc (loc, GE_EXPR, integer_type_node,
-		     arg, build_real (type, r));
-  res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp, fp_normal, res);
+			 arg, build_real (type, r));
+  res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
+			 fp_normal, res);
 
   if (tree_expr_maybe_infinite_p (arg))
     {
       real_inf (&r);
       tmp = fold_build2_loc (loc, EQ_EXPR, integer_type_node, arg,
-			 build_real (type, r));
+			     build_real (type, r));
       res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
-			 fp_infinite, res);
+			     fp_infinite, res);
     }
 
   if (tree_expr_maybe_nan_p (arg))
     {
       tmp = fold_build2_loc (loc, ORDERED_EXPR, integer_type_node, arg, arg);
-      res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp, res, fp_nan);
+      res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
+			     res, fp_nan);
     }
 
   return res;
