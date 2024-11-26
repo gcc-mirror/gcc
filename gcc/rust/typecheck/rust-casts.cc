@@ -200,6 +200,16 @@ TypeCastRules::cast_rules ()
 	  }
 	  break;
 
+	  case TyTy::TypeKind::FLOAT: {
+	    // can only do this for number types not char
+	    bool from_char
+	      = from.get_ty ()->get_kind () == TyTy::TypeKind::CHAR;
+	    if (!from_char)
+	      return TypeCoercionRules::CoercionResult{{},
+						       to.get_ty ()->clone ()};
+	  }
+	  break;
+
 	case TyTy::TypeKind::INFER:
 	case TyTy::TypeKind::USIZE:
 	case TyTy::TypeKind::ISIZE:
