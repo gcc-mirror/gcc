@@ -5521,16 +5521,13 @@ trees_out::core_bools (tree t, bits_out& bits)
 
 	    case VAR_DECL:
 	      if (TREE_PUBLIC (t)
-		  && !(TREE_STATIC (t)
-		       && DECL_FUNCTION_SCOPE_P (t)
-		       && DECL_DECLARED_INLINE_P (DECL_CONTEXT (t)))
-		  && !DECL_VAR_DECLARED_INLINE_P (t))
+		  && DECL_VTABLE_OR_VTT_P (t))
+		/* We handle vtable linkage specially.  */
 		is_external = true;
-	      break;
-
+	      gcc_fallthrough ();
 	    case FUNCTION_DECL:
 	      if (TREE_PUBLIC (t)
-		  && !DECL_DECLARED_INLINE_P (t))
+		  && !vague_linkage_p (t))
 		is_external = true;
 	      break;
 	    }
@@ -11950,11 +11947,15 @@ has_definition (tree decl)
 	       since there's no TU to emit them in otherwise.  */
 	    return true;
 
-	  if (!decl_maybe_constant_var_p (decl)
-	      && !DECL_INLINE_VAR_P (decl))
-	    return false;
+	  if (decl_maybe_constant_var_p (decl))
+	    /* We might need its constant value.  */
+	    return true;
 
-	  return true;
+	  if (vague_linkage_p (decl))
+	    /* These are emitted as needed.  */
+	    return true;
+
+	  return false;
 	}
       break;
 
