@@ -12068,31 +12068,34 @@ BEGIN
    PopTFtok (Sym, Type, tok) ;
    DebugLocation (tok, "expression") ;
    Type := SkipType (Type) ;
-
-   Ref := MakeTemporary (tok, LeftValue) ;
-   PutVar (Ref, Type) ;
-   IF GetMode (Sym) = LeftValue
-   THEN
-      (* Copy LeftValue.  *)
-      GenQuadO (tok, BecomesOp, Ref, NulSym, Sym, TRUE)
-   ELSE
-      (* Calculate the address of Sym.  *)
-      GenQuadO (tok, AddrOp, Ref, NulSym, Sym, TRUE)
-   END ;
-
-   PushWith (Sym, Type, Ref, tok) ;
-   DebugLocation (tok, "with ref") ;
    IF Type = NulSym
    THEN
-      MetaError1 ('{%1Ea} {%1d} has a no type, the {%kWITH} statement requires a variable or parameter of a {%kRECORD} type',
-                  Sym)
-   ELSIF NOT IsRecord(Type)
-   THEN
-      MetaError1 ('the {%kWITH} statement requires that {%1Ea} {%1d} be of a {%kRECORD} {%1tsa:type rather than {%1tsa}}',
-		   Sym)
+      MetaErrorT1 (tok,
+                   '{%1Aa} {%1d} has a no type, the {%kWITH} statement requires a variable or parameter of a {%kRECORD} type',
+                   Sym)
+   ELSE
+      Ref := MakeTemporary (tok, LeftValue) ;
+      PutVar (Ref, Type) ;
+      IF GetMode (Sym) = LeftValue
+      THEN
+         (* Copy LeftValue.  *)
+         GenQuadO (tok, BecomesOp, Ref, NulSym, Sym, TRUE)
+      ELSE
+         (* Calculate the address of Sym.  *)
+         GenQuadO (tok, AddrOp, Ref, NulSym, Sym, TRUE)
+      END ;
+
+      PushWith (Sym, Type, Ref, tok) ;
+      DebugLocation (tok, "with ref") ;
+      IF NOT IsRecord(Type)
+      THEN
+         MetaErrorT1 (tok,
+                      'the {%kWITH} statement requires that {%1Ea} {%1d} be of a {%kRECORD} {%1tsa:type rather than {%1tsa}}',
+                      Sym)
+      END ;
+      StartScope (Type)
    END ;
-   StartScope (Type)
- ; DisplayStack ;
+   DisplayStack ;
 END StartBuildWith ;
 
 

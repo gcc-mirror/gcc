@@ -1,0 +1,154 @@
+(* M2StateCheck.def provide state check tracking for declarations.
+
+Copyright (C) 2024 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2StateCheck ;
+
+(* This module provides state tracking for VAR, TYPE and CONST
+   declarations.  It should be used by any pass creating
+   symbols in these blocks and it will detect a constant
+   being created from a variable, type from a variable,
+   variable from a constant (instead of type) etc.  *)
+
+TYPE
+   StateCheck ;
+
+
+(*
+   InitState - returns a new initialized StateCheck.
+*)
+
+PROCEDURE InitState () : StateCheck ;
+
+
+(*
+   KillState - destructor for StateCheck.
+*)
+
+PROCEDURE KillState (VAR s: StateCheck) ;
+
+
+(*
+   PushState - duplicates the StateCheck s and chains the new copy to s.
+               Return the copy.
+*)
+
+PROCEDURE PushState (VAR s: StateCheck) ;
+
+
+(*
+   PopState - pops the current state.
+*)
+
+PROCEDURE PopState (VAR s: StateCheck) ;
+
+
+(*
+   InclVar - s := s + {var}.
+*)
+
+PROCEDURE InclVar (s: StateCheck) ;
+
+
+(*
+   InclConst - s := s + {const}.
+*)
+
+PROCEDURE InclConst (s: StateCheck) ;
+
+
+(*
+   InclType - s := s + {type}.
+*)
+
+PROCEDURE InclType (s: StateCheck) ;
+
+
+(*
+   InclConstFunc - s := s + {constfunc}.
+*)
+
+PROCEDURE InclConstFunc (s: StateCheck) ;
+
+
+(*
+   InclVarParam - s := s + {varparam}.
+*)
+
+PROCEDURE InclVarParam (s: StateCheck) ;
+
+
+(*
+   InclConstructor - s := s + {constructor}.
+*)
+
+PROCEDURE InclConstructor (s: StateCheck) ;
+
+
+(*
+   ExclVar - s := s + {var}.
+*)
+
+PROCEDURE ExclVar (s: StateCheck) ;
+
+
+(*
+   ExclConst - s := s + {const}.
+*)
+
+PROCEDURE ExclConst (s: StateCheck) ;
+
+
+(*
+   ExclType - s := s + {type}.
+*)
+
+PROCEDURE ExclType (s: StateCheck) ;
+
+
+(*
+   ExclConstFunc - s := s + {constfunc}.
+*)
+
+PROCEDURE ExclConstFunc (s: StateCheck) ;
+
+
+(*
+   ExclVarParam - s := s + {varparam}.
+*)
+
+PROCEDURE ExclVarParam (s: StateCheck) ;
+
+
+(*
+   ExclConstructor - s := s - {varparam}.
+*)
+
+PROCEDURE ExclConstructor (s: StateCheck) ;
+
+
+(*
+   CheckQualident - checks to see that qualident sym is allowed in the state s.
+*)
+
+PROCEDURE CheckQualident (tok: CARDINAL; s: StateCheck; sym: CARDINAL) ;
+
+
+END M2StateCheck.
