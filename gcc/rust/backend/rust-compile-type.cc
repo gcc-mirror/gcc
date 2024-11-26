@@ -22,6 +22,7 @@
 #include "rust-gcc.h"
 
 #include "tree.h"
+#include "stor-layout.h"
 
 namespace Rust {
 namespace Compile {
@@ -268,8 +269,8 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	  fields.push_back (std::move (f));
 	}
 
-      type_record = type.is_union () ? Backend::union_type (fields)
-				     : Backend::struct_type (fields);
+      type_record = type.is_union () ? Backend::union_type (fields, false)
+				     : Backend::struct_type (fields, false);
     }
   else
     {
@@ -359,7 +360,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	}
 
       // finally make the union or the enum
-      type_record = Backend::union_type (enum_fields);
+      type_record = Backend::union_type (enum_fields, false);
     }
 
   // Handle repr options
@@ -381,6 +382,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
       SET_TYPE_ALIGN (type_record, repr.align * 8);
       TYPE_USER_ALIGN (type_record) = 1;
     }
+  layout_type (type_record);
 
   std::string named_struct_str
     = type.get_ident ().path.get () + type.subst_as_string ();
