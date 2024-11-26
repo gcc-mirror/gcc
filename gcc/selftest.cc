@@ -63,6 +63,26 @@ fail_formatted (const location &loc, const char *fmt, ...)
   abort ();
 }
 
+/* Invoke "diff" to print the difference between VAL1 and VAL2
+   on stdout.  */
+
+static void
+print_diff (const location &loc, const char *val1, const char *val2)
+{
+  temp_source_file tmpfile1 (loc, ".txt", val1);
+  temp_source_file tmpfile2 (loc, ".txt", val2);
+  const char *args[] = {"diff",
+			"-up",
+			tmpfile1.get_filename (),
+			tmpfile2.get_filename (),
+			NULL};
+  int exit_status = 0;
+  int err = 0;
+  pex_one (PEX_SEARCH | PEX_LAST,
+	   args[0], CONST_CAST (char **, args),
+	   NULL, NULL, NULL, &exit_status, &err);
+}
+
 /* Implementation detail of ASSERT_STREQ.
    Compare val1 and val2 with strcmp.  They ought
    to be non-NULL; fail gracefully if either or both are NULL.  */
@@ -89,8 +109,12 @@ assert_streq (const location &loc,
 	if (strcmp (val1, val2) == 0)
 	  pass (loc, "ASSERT_STREQ");
 	else
-	  fail_formatted (loc, "ASSERT_STREQ (%s, %s)\n val1=\"%s\"\n val2=\"%s\"\n",
-			  desc_val1, desc_val2, val1, val2);
+	  {
+	    print_diff (loc, val1, val2);
+	    fail_formatted
+	      (loc, "ASSERT_STREQ (%s, %s)\n val1=\"%s\"\n val2=\"%s\"\n",
+	       desc_val1, desc_val2, val1, val2);
+	  }
       }
 }
 
