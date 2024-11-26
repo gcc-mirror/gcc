@@ -306,7 +306,7 @@ PROCEDURE GenerateError (tok: CARDINAL; s: StateCheck; sym: CARDINAL) ;
 VAR
    str: String ;
 BEGIN
-   str := InitString ('not expecting a {%1Ad} {%1a: }in a ') ;
+   str := InitString ('not expecting the {%1Ad} {%1a} in a ') ;
    IF const IN s^.state
    THEN
       str := ConCat (str, Mark (InitString ('{%kCONST} block')))
