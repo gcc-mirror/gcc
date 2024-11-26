@@ -961,8 +961,8 @@ tree
 gfc_get_array_span (tree desc, gfc_expr *expr)
 {
   tree tmp;
-  gfc_symbol *sym = expr->expr_type == EXPR_VARIABLE
-		    ? expr->symtree->n.sym : NULL;
+  gfc_symbol *sym = (expr && expr->expr_type == EXPR_VARIABLE) ?
+		    expr->symtree->n.sym : NULL;
 
   if (is_pointer_array (desc)
       || (get_CFI_desc (NULL, expr, &desc, NULL)
@@ -989,7 +989,7 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
     {
       /* Treat unlimited polymorphic expressions separately because
 	 the element size need not be the same as the span.  Obtain
-	 the class container, which is simplified here by their being
+	 the class container, which is simplified here by there being
 	 no component references.  */
       if (sym && sym->attr.dummy)
 	{
@@ -1013,12 +1013,16 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
       /* The descriptor is a class _data field. Use the vtable size
 	 since it is guaranteed to have been set and is always OK for
 	 class array descriptors that are not unlimited.  */
-      tmp = gfc_class_vptr_get (TREE_OPERAND (desc, 0));
+      tmp = gfc_get_vptr_from_expr (desc);
       tmp = gfc_vptr_size_get (tmp);
     }
-  else if (sym && sym->ts.type == BT_CLASS && sym->attr.dummy)
+  else if (sym && sym->ts.type == BT_CLASS
+	   && expr->ref->type == REF_COMPONENT
+	   && expr->ref->next->type == REF_ARRAY
+	   && expr->ref->next->next == NULL
+	   && CLASS_DATA (sym)->attr.dimension)
     {
-      /* Class dummys usually requires extraction from the saved
+      /* Class dummys usually require extraction from the saved
 	 descriptor, which gfc_class_vptr_get does for us.  */
       tmp = gfc_class_vptr_get (sym->backend_decl);
       tmp = gfc_vptr_size_get (tmp);
