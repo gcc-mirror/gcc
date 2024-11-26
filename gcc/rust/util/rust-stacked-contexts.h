@@ -71,6 +71,13 @@ public:
     return last;
   }
 
+  const T &peek ()
+  {
+    rust_assert (!stack.empty ());
+
+    return stack.back ();
+  }
+
   /**
    * Are we currently inside of a special context?
    */
