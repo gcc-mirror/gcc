@@ -1,3 +1,13 @@
+2024-11-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117777
+	* gm2-compiler/P0SyntaxCheck.bnf (AsmOperands): Allow term after
+	ConstExpression to be optional.
+	* gm2-compiler/P1Build.bnf (AsmOperands): Ditto.
+	* gm2-compiler/P2Build.bnf (AsmOperands): Ditto.
+	* gm2-compiler/PCBuild.bnf (AsmOperands): Ditto.
+	* gm2-compiler/PHBuild.bnf (AsmOperands): Ditto.
+
 2024-11-23  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* Make-lang.in (m2 modula-2 modula2): Remove $(GCC_PARTS).

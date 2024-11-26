@@ -1,3 +1,179 @@
+2024-11-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/117771
+	* system.h: Move the include of sstream above safe-ctype.h.
+
+2024-11-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/117098
+	* calls.cc (store_one_arg): Check partial != 0 for BLKmode argument
+	passed on stack.
+
+2024-11-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117645
+	* config/pa/pa.md (addti3): Revise pattern to support
+	arith11_operands.  Use "R" operand prefix to print least
+	significant register of TImode register pair.
+	(addvti3, subti3, subvti3): Likewise.
+	(negti2, negvti2): Use "R" operand prefix.
+
+2024-11-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/117105
+	* lra-constraints.cc (get_reload_reg): Create unique value reload
+	pseudos for early clobbered operands.
+
+2024-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*ashl<mode>3_negcnt):
+	For SImode shifts allow multiples of 32 (or multiples
+	of 64 for DImode shifts) for immediate operand 3.
+	(*ashl<mode>3_negcnt_1): Ditto.
+	(*<insn><mode>3_negcnt): Ditto.
+	(*<insn><mode>3_negcnt_1): Ditto.
+
+2024-11-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/g.opt.urls: Regenerate.
+	* config/i386/i386.opt.urls: Regenerate.
+	* config/i386/nto.opt.urls: Regenerate.
+	* config/nvptx/nvptx.opt.urls: Regenerate.
+	* config/riscv/riscv.opt.urls: Regenerate.
+	* config/s390/s390.opt.urls: Regenerate.
+	* config/sol2.opt.urls: Regenerate.
+
+2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* common/config/nios2/*: Delete entire directory.
+	* config/nios2/*: Delete entire directory.
+	* config.gcc: Remove references to nios2.
+	* configure.ac: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* regenerate-opt-urls.py: Likewise.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
+2024-11-25  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117544
+	* config/riscv/vector.md (*mov<mode>_whole): Split.
+	(*mov<mode>_fract): Ditto.
+	(*mov<mode>): Ditto.
+	(*mov<mode>_vls): Ditto.
+	(*mov<mode>_reg_whole_vtype): New pattern with vtype use.
+	(*mov<mode>_fract_vtype): Ditto.
+	(*mov<mode>_vtype): Ditto.
+	(*mov<mode>_vls_vtype): Ditto.
+
+2024-11-25  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/111600
+	* genemit.cc (handle_arg): Use files instead of filenames.
+	(main): Ditto.
+	* gensupport.cc (SIZED_BASED_CHUNKS): Define.
+	(choose_output): New function.
+	* gensupport.h (choose_output): Declare.
+
+2024-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR target/116760
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Scale vec_construct for single-lane VMAT_STRIDED_SLP the
+	same as VMAT_ELEMENTWISE.
+	* tree-vect-stmts.cc (vectorizable_store): Pass SLP node
+	down to costing for vec_to_scalar for VMAT_STRIDED_SLP.
+
+2024-11-25  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost): For an
+	128bit SSE epilogue request a 64bit SSE epilogue if the 128bit
+	SSE epilogue VF was 16 or higher.
+
+2024-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117767
+	* tree-vect-stmts.cc (vectorizable_store): Check for supported
+	alignment before using a an alternate store vector type.
+	(vectorizable_load): Likewise for loads.
+
+2024-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115825
+	* tree-ssa-loop-ivcanon.cc (loop_size::not_eliminatable_after_peeling):
+	New.
+	(loop_size::last_iteration_not_eliminatable_after_peeling): Likewise.
+	(tree_estimate_loop_size): Count stmts with side-effects as
+	not optimistically eliminatable.
+	(estimated_unrolled_size): Compute the number of stmts that can
+	be optimistically eliminated by followup transforms.
+	(try_unroll_loop_completely): Adjust.
+
+2024-11-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_asan_shadow_offset): Use dynamic
+	offset for RV64.
+	(riscv_asan_dynamic_shadow_offset_p): New.
+	(TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P): New.
+
+2024-11-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* asan.cc (asan_dynamic_shadow_offset_p): New.
+	(asan_shadow_memory_dynamic_address): New.
+	(asan_local_shadow_memory_dynamic_address): New.
+	(get_asan_shadow_memory_dynamic_address_decl): New.
+	(asan_maybe_insert_dynamic_shadow_at_function_entry): New.
+	(asan_emit_stack_protection): Support dynamic shadow offset.
+	(build_shadow_mem_access): Ditto.
+	* asan.h (asan_maybe_insert_dynamic_shadow_at_function_entry): New.
+	* doc/tm.texi (TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P): New.
+	* doc/tm.texi.in (TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P): Ditto.
+	* sanopt.cc (pass_sanopt::execute): Handle dynamic shadow offset.
+	* target.def (asan_dynamic_shadow_offset_p): New.
+	* toplev.cc (process_options): Handle dynamic shadow offset.
+
+2024-11-25  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New extension.
+	* common/config/riscv/riscv-ext-bitmask.def (RISCV_EXT_BITMASK): Ditto.
+	* config/riscv/riscv.opt: New mask.
+
+2024-11-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/pa/pa.cc (pa_section_type_flags): Remove.
+	(TARGET_SECTION_TYPE_FLAGS): Remove.
+
+2024-11-25  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* Makefile.in (OBJS): Add avoid-store-forwarding.o.
+	* common.opt (favoid-store-forwarding): New option.
+	* common.opt.urls: Regenerate.
+	* doc/invoke.texi: New param store-forwarding-max-distance.
+	* doc/passes.texi: Document new pass.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Document new pass.
+	* params.opt (store-forwarding-max-distance): New param.
+	* passes.def: Add pass_rtl_avoid_store_forwarding before
+	pass_early_remat.
+	* target.def (avoid_store_forwarding_p): New DEFHOOK.
+	* target.h (struct store_fwd_info): Declare.
+	* targhooks.cc (default_avoid_store_forwarding_p): New function.
+	* targhooks.h (default_avoid_store_forwarding_p): Declare.
+	* tree-pass.h (make_pass_rtl_avoid_store_forwarding): Declare.
+	* avoid-store-forwarding.cc: New file.
+	* avoid-store-forwarding.h: New file.
+	* timevar.def (TV_AVOID_STORE_FORWARDING): New timevar.
+
+2024-11-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117562
+	* config/i386/sse.md (vec_unpacks_hi_v4sf): Initialize
+	operands[2] with CONST0_RTX.
+
 2024-11-24  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.cc (ipa_duplicate_jump_function): New function.

@@ -1,3 +1,7 @@
+2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config-list.mk: Remove references to Nios II.
+
 2024-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/96032
