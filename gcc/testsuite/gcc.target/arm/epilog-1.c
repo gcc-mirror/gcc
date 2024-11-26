@@ -20,8 +20,10 @@ Below block is for non-armv8.1-m.main
 ** |
 
 Below block is for armv8.1-m.main
+**	adds	(r[0-9]+), r2, #1
 **	tst	r[0-9]+, #4
-**	csinc	r2, r2, r2, eq
+**	it	ne
+**	movne	r2, \1
 
 ** )
 **	bl	bar
