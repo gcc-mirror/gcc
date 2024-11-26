@@ -567,8 +567,8 @@ c_build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
       && lookup_attribute ("format", attrs))
     {
       warning_at (input_location, OPT_Wattributes,
-		  "%qs attribute cannot be applied to a function that "
-		  "does not take variable arguments", "format");
+		  "%qs attribute can only be applied to variadic functions",
+		  "format");
       attrs = remove_attribute ("format", attrs);
     }
   return c_build_type_attribute_variant (ntype, attrs);
