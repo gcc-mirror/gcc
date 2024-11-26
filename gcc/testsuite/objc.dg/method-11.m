@@ -29,5 +29,5 @@ void foo(void) {
      /* { dg-message "also found .\\-\\(id\\)initWithData:\\(Object2 \\*\\)data." "" { target *-*-* } Object3_initWithData } */
 
      /* The following error is a consequence of picking the "wrong" method signature.  */
-     /* { dg-error "void value not ignored as it ought to be" "" { target *-*-* } initWithData_message } */
+     /* { dg-error "invalid use of void expression" "" { target *-*-* } initWithData_message } */
 }

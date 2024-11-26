@@ -23,10 +23,10 @@ int main ()
 {
   struct A d;
 
-  d = ({ { bar (); } });		/* { dg-error "void value" } */
-  d = ({ if (1) { bar (); } });		/* { dg-error "void value" } */
-  d = ({ while (0) { bar (); } });	/* { dg-error "void value" } */
-  d = ({ do { bar (); } while (0); });	/* { dg-error "void value" } */
+  d = ({ { bar (); } });		/* { dg-error "invalid use of void expression" } */
+  d = ({ if (1) { bar (); } });		/* { dg-error "invalid use of void expression" } */
+  d = ({ while (0) { bar (); } });	/* { dg-error "invalid use of void expression" } */
+  d = ({ do { bar (); } while (0); });	/* { dg-error "invalid use of void expression" } */
   baz (&d);
   exit (0);
 }

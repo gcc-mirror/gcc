@@ -5070,13 +5070,16 @@ cas_loop:
   rhs = convert_for_assignment (loc, UNKNOWN_LOCATION, nonatomic_lhs_type,
 				rhs, NULL_TREE, ic_assign, false, NULL_TREE,
 				NULL_TREE, 0);
-  if (rhs != error_mark_node)
-    {
-      rhs = build4 (TARGET_EXPR, nonatomic_lhs_type, newval, rhs, NULL_TREE,
-		    NULL_TREE);
-      SET_EXPR_LOCATION (rhs, loc);
-      add_stmt (rhs);
-    }
+  /* The temporary variable for NEWVAL is only gimplified correctly (in
+     particular, given a DECL_CONTEXT) if used in a TARGET_EXPR.  To avoid
+     subsequent ICEs in nested function processing after an error, ensure such
+     a TARGET_EXPR is built even after an error.  */
+  if (rhs == error_mark_node)
+    rhs = old;
+  rhs = build4 (TARGET_EXPR, nonatomic_lhs_type, newval, rhs, NULL_TREE,
+		NULL_TREE);
+  SET_EXPR_LOCATION (rhs, loc);
+  add_stmt (rhs);
 
   /* if (__atomic_compare_exchange (addr, &old, &new, false, SEQ_CST, SEQ_CST))
        goto done;  */
@@ -7048,6 +7051,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 
   /* Types that aren't fully specified cannot be used in assignments.  */
   lhs = require_complete_type (location, lhs);
+  rhs = require_complete_type (location, rhs);
 
   /* Avoid duplicate error messages from operands that had errors.  */
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
