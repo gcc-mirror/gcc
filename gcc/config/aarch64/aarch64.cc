@@ -16627,16 +16627,6 @@ aarch64_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
   return new aarch64_vector_costs (vinfo, costing_for_scalar);
 }
 
-/* Return true if the current CPU should use the new costs defined
-   in GCC 11.  This should be removed for GCC 12 and above, with the
-   costs applying to all CPUs instead.  */
-static bool
-aarch64_use_new_vector_costs_p ()
-{
-  return (aarch64_tune_params.extra_tuning_flags
-	  & AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS);
-}
-
 /* Return the appropriate SIMD costs for vectors of type VECTYPE.  */
 static const simd_vec_cost *
 aarch64_simd_vec_costs (tree vectype)
@@ -17555,7 +17545,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
   /* Do one-time initialization based on the vinfo.  */
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
-  if (!m_analyzed_vinfo && aarch64_use_new_vector_costs_p ())
+  if (!m_analyzed_vinfo)
     {
       if (loop_vinfo)
 	analyze_loop_vinfo (loop_vinfo);
@@ -17573,7 +17563,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
   /* Try to get a more accurate cost by looking at STMT_INFO instead
      of just looking at KIND.  */
-  if (stmt_info && aarch64_use_new_vector_costs_p ())
+  if (stmt_info)
     {
       /* If we scalarize a strided store, the vectorizer costs one
 	 vec_to_scalar for each element.  However, we can store the first
@@ -17638,7 +17628,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   else
     m_num_last_promote_demote = 0;
 
-  if (stmt_info && aarch64_use_new_vector_costs_p ())
+  if (stmt_info)
     {
       /* Account for any extra "embedded" costs that apply additively
 	 to the base cost calculated above.  */
@@ -17999,9 +17989,7 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
 
   auto *scalar_costs
     = static_cast<const aarch64_vector_costs *> (uncast_scalar_costs);
-  if (loop_vinfo
-      && m_vec_flags
-      && aarch64_use_new_vector_costs_p ())
+  if (loop_vinfo && m_vec_flags)
     {
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);

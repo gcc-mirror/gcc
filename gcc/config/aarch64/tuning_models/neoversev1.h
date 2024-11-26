@@ -228,7 +228,6 @@ static const struct tune_params neoversev1_tunings =
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_BASE
    | AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
-   | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT
    | AARCH64_EXTRA_TUNE_AVOID_PRED_RMW),	/* tune_flags.  */
   &generic_armv9a_prefetch_tune,

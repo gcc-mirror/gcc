@@ -8834,22 +8834,7 @@ vectorizable_store (vec_info *vinfo,
 		{
 		  if (costing_p)
 		    {
-		      /* Only need vector extracting when there are more
-			 than one stores.  */
-		      if (nstores > 1)
-			inside_cost
-			  += record_stmt_cost (cost_vec, 1, vec_to_scalar,
-					       stmt_info, slp_node,
-					       0, vect_body);
-		      /* Take a single lane vector type store as scalar
-			 store to avoid ICE like 110776.  */
-		      if (VECTOR_TYPE_P (ltype)
-			  && known_ne (TYPE_VECTOR_SUBPARTS (ltype), 1U))
-			n_adjacent_stores++;
-		      else
-			inside_cost
-			  += record_stmt_cost (cost_vec, 1, scalar_store,
-					       stmt_info, 0, vect_body);
+		      n_adjacent_stores++;
 		      continue;
 		    }
 		  tree newref, newoff;
@@ -8905,9 +8890,26 @@ vectorizable_store (vec_info *vinfo,
       if (costing_p)
 	{
 	  if (n_adjacent_stores > 0)
-	    vect_get_store_cost (vinfo, stmt_info, slp_node, n_adjacent_stores,
-				 alignment_support_scheme, misalignment,
-				 &inside_cost, cost_vec);
+	    {
+	      /* Take a single lane vector type store as scalar
+		 store to avoid ICE like 110776.  */
+	      if (VECTOR_TYPE_P (ltype)
+		  && maybe_ne (TYPE_VECTOR_SUBPARTS (ltype), 1U))
+		vect_get_store_cost (vinfo, stmt_info, slp_node,
+				     n_adjacent_stores, alignment_support_scheme,
+				     misalignment, &inside_cost, cost_vec);
+	      else
+		inside_cost
+		  += record_stmt_cost (cost_vec, n_adjacent_stores,
+				       scalar_store, stmt_info, 0, vect_body);
+	      /* Only need vector extracting when there are more
+		 than one stores.  */
+	      if (nstores > 1)
+		inside_cost
+		  += record_stmt_cost (cost_vec, n_adjacent_stores,
+				       vec_to_scalar, stmt_info, slp_node,
+				       0, vect_body);
+	    }
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "vect_model_store_cost: inside_cost = %d, "
