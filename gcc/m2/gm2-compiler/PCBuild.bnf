@@ -47,7 +47,7 @@ IMPLEMENTATION MODULE PCBuild ;
 FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
                      InsertTokenAndRewind, GetTokenNo, MakeVirtualTok ;
 
-FROM M2Error IMPORT ErrorStringAt, WriteFormat1, WriteFormat2 ;
+FROM M2MetaError IMPORT MetaErrorStringT0 ;
 FROM NameKey IMPORT NulName, Name, makekey ;
 FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatChar ;
 FROM M2Printf IMPORT printf0 ;
@@ -102,7 +102,8 @@ FROM PCSymBuild IMPORT PCStartBuildProgModule,
                        PushConstType,
                        PushConstAttributeType,
                        PushConstAttributePairType,
-                       PushRType ;
+                       PushRType,
+                       CheckNotVar ;
 
 FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput,
                         PutGnuAsmOutput, PutGnuAsmTrash, PutGnuAsmVolatile,
@@ -127,13 +128,15 @@ CONST
    Pass1     = FALSE ;
 
 VAR
-   WasNoError  : BOOLEAN ;
+   InConstParameter,
+   InConstBlock,
+   seenError       : BOOLEAN ;
 
 
 PROCEDURE ErrorString (s: String) ;
 BEGIN
-   ErrorStringAt (s, GetTokenNo ()) ;
-   WasNoError := FALSE
+   MetaErrorStringT0 (GetTokenNo (), s) ;
+   seenError := TRUE
 END ErrorString ;
 
 
@@ -145,7 +148,7 @@ END ErrorArray ;
 
 PROCEDURE ErrorArrayAt (a: ARRAY OF CHAR; tok: CARDINAL) ;
 BEGIN
-   ErrorStringAt (InitString(a), tok)
+   MetaErrorStringT0 (tok, InitString (a))
 END ErrorArrayAt ;
 
 
@@ -220,7 +223,7 @@ BEGIN
    str := DescribeStop(s0, s1, s2) ;
 
    str := ConCat(InitString('syntax error,'), Mark(str)) ;
-   ErrorStringAt(str, GetTokenNo())
+   MetaErrorStringT0 (GetTokenNo (), str)
 END WarnMissingToken ;
 
 
@@ -338,9 +341,9 @@ END Expect ;
 
 PROCEDURE CompilationUnit () : BOOLEAN ;
 BEGIN
-   WasNoError := TRUE ;
+   seenError := FALSE ;
    FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
-   RETURN( WasNoError )
+   RETURN NOT seenError
 END CompilationUnit ;
 
 
@@ -403,6 +406,9 @@ BEGIN
 END Real ;
 
 % module PCBuild end
+BEGIN
+   InConstParameter := FALSE ;
+   InConstBlock := FALSE
 END PCBuild.
 % rules
 error       'ErrorArray' 'ErrorString'
@@ -591,6 +597,7 @@ Qualident :=                                                               % VAR
            =:
 
 ConstantDeclaration :=                                                     % VAR top: CARDINAL ; %
+                                                                           % InConstBlock := TRUE %
                                                                            % top := Top() %
                                                                            % PushAutoOn %
                        ( Ident "="                                         % StartDesConst %
@@ -600,6 +607,7 @@ ConstantDeclaration :=                                                     % VAR
                                                                            % EndDesConst %
                                                                            % PopAuto %
                                                                            % Assert(top=Top()) %
+                                                                           % InConstBlock := FALSE %
                      =:
 
 ConstExpression :=                                                         % VAR top: CARDINAL ; %
@@ -706,7 +714,10 @@ ConstSetOrQualidentOrFunction :=                                           % Pus
                                                                            % VAR tokpos: CARDINAL ; %
                                                                            % tokpos := GetTokenNo () %
                                  (
-                                   PushQualident
+                                   PushQualident                           % IF (NOT InConstParameter) AND InConstBlock
+                                                                             THEN
+                                                                                CheckNotVar (tokpos)
+                                                                             END %
                                    ( ConstructorOrConstActualParameters |  % PushConstType %
                                                                            % PopNothing %
                                                                           )
@@ -714,8 +725,13 @@ ConstSetOrQualidentOrFunction :=                                           % Pus
                                      Constructor )                         % PopAuto %
                                =:
 
-ConstActualParameters :=                                                   % PushT(0) %
-                         "(" [ ConstExpList ] ")" =:
+ConstActualParameters :=                                                   % VAR oldConstParameter: BOOLEAN ; %
+                                                                           % oldConstParameter := InConstParameter %
+                                                                           % InConstParameter := TRUE %
+                                                                           % PushT(0) %
+                         "(" [ ConstExpList ] ")"
+                                                                           % InConstParameter := oldConstParameter %
+                         =:
 
 ConstExpList :=                                                            % VAR n: CARDINAL ; %
                 ConstExpression                                            % PopT(n) %
