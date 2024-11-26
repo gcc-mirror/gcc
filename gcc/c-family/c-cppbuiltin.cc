@@ -357,17 +357,8 @@ builtin_define_decimal_float_constants (const char *name_prefix,
 
   /* Compute the maximum representable value.  */
   sprintf (name, "__%s_MAX__", name_prefix);
-  p = buf;
-  for (digits = fmt->p; digits; digits--)
-    {
-      *p++ = '9';
-      if (digits == fmt->p)
-	*p++ = '.';
-    }
-  *p = 0;
-  /* fmt->p plus 1, to account for the decimal point and fmt->emax
-     minus 1 because the digits are nines, not 1.0.  */
-  sprintf (&buf[fmt->p + 1], "E%d%s", fmt->emax - 1, suffix);
+  get_max_float (fmt, buf, sizeof (buf) - strlen (suffix), false);
+  strcat (buf, suffix);
   builtin_define_with_value (name, buf, 0);
 
   /* Compute epsilon (the difference between 1 and least value greater
