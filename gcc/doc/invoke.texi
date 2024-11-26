@@ -7072,8 +7072,8 @@ This warning is enabled by @option{-Wall}.
 Warn when @option{-fhardened} did not enable an option from its set (for
 which see @option{-fhardened}).  For instance, using @option{-fhardened}
 and @option{-fstack-protector} at the same time on the command line causes
-@option{-Whardened} to warn because @option{-fstack-protector-strong} is
-not enabled by @option{-fhardened}.
+@option{-Whardened} to warn because @option{-fstack-protector-strong} will
+not be enabled by @option{-fhardened}.
 
 This warning is enabled by default and has effect only when @option{-fhardened}
 is enabled.
