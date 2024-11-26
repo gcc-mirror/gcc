@@ -226,12 +226,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // mbsnrtowcs is *very* fast but stops if encounters NUL characters:
     // in case we advance past it and then continue, in a loop.
-    // NB: mbsnrtowcs is a GNU extension
+    // NB: mbsnrtowcs is in POSIX.1-2008
+
+    const size_t __to_len = 1024; // Size of alloca'd output buffer
 
     // A dummy internal buffer is needed in order for mbsnrtocws to consider
     // its fourth parameter (it wouldn't with NULL as first parameter).
     wchar_t* __to = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t)
-							   * __max));
+							   * __to_len));
     while (__from < __end && __max)
       {
 	const extern_type* __from_chunk_end;
@@ -244,7 +246,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const extern_type* __tmp_from = __from;
 	size_t __conv = mbsnrtowcs(__to, &__from,
 				   __from_chunk_end - __from,
-				   __max, &__state);
+				   __max > __to_len ? __to_len : __max,
+				   &__state);
 	if (__conv == static_cast<size_t>(-1))
 	  {
 	    // In case of error, in order to stop at the exact place we
