@@ -1,3 +1,12 @@
+2024-11-25  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-11-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117562
+	* config/i386/sse.md (vec_unpacks_hi_v4sf): Initialize
+	operands[2] with CONST0_RTX.
+
 2024-11-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
