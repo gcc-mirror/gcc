@@ -472,6 +472,11 @@ def get_vec_kind(val):
     else:
         assert False, f"unexpected vec kind {kind}"
 
+def strip_ref(gdbval):
+    if gdbval.type.code == gdb.TYPE_CODE_REF:
+        return gdbval.referenced_value ()
+    return gdbval
+
 class VecPrinter:
     #    -ex "up" -ex "p bb->preds"
     def __init__(self, gdbval):
@@ -483,10 +488,10 @@ class VecPrinter:
     def to_string (self):
         # A trivial implementation; prettyprinting the contents is done
         # by gdb calling the "children" method below.
-        return '0x%x' % intptr(self.gdbval)
+        return '0x%x' % intptr(strip_ref(self.gdbval))
 
     def children (self):
-        val = self.gdbval
+        val = strip_ref(self.gdbval)
         if intptr(val) != 0 and get_vec_kind(val) == VEC_KIND_PTR:
             val = val['m_vec']
 
