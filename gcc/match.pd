@@ -5450,8 +5450,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        canonicalized as bitwise and of a mask.  */
     (if (GIMPLE /* PR70366: doing this in GENERIC breaks -Wconversion.  */
 	 && final_int && inter_int && inside_int
-	 && final_prec == inside_prec
-	 && final_prec > inter_prec
+	 && final_prec >= inside_prec
+	 && inside_prec > inter_prec
 	 && inter_unsignedp)
      (convert (bit_and @0 { wide_int_to_tree
 	                      (inside_type,
