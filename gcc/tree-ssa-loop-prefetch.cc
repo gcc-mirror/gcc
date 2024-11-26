@@ -2103,7 +2103,7 @@ pass_loop_prefetch::execute (function *fun)
       if (!warned)
 	{
 	  warning (OPT_Wdisabled_optimization,
-		   "%<l1-cache-size%> parameter is not a power of two %d",
+		   "%<l1-cache-size%> parameter is not a power of two: %d",
 		   PREFETCH_BLOCK);
 	  warned = true;
 	}
