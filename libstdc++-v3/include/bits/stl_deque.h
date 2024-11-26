@@ -1266,7 +1266,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return this->_M_impl._M_finish - this->_M_impl._M_start; }
+      {
+	size_type __sz = this->_M_impl._M_finish - this->_M_impl._M_start;
+	if (__sz > max_size ())
+	  __builtin_unreachable ();
+	return __sz;
+      }
 
       /**  Returns the size() of the largest possible %deque.  */
       _GLIBCXX_NODISCARD

@@ -956,6 +956,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 				     + std::max(this->_M_impl._M_map_size,
 						__nodes_to_add) + 2;
 
+	  const size_t __bufsz = __deque_buf_size(sizeof(_Tp));
+	  if (__new_map_size > ((max_size() + __bufsz - 1) / __bufsz) * 2)
+	    __builtin_unreachable();
+
 	  _Map_pointer __new_map = this->_M_allocate_map(__new_map_size);
 	  __new_nstart = __new_map + (__new_map_size - __new_num_nodes) / 2
 			 + (__add_at_front ? __nodes_to_add : 0);
