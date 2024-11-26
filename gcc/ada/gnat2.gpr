@@ -49,6 +49,23 @@ project Gnat2 is
       --  of fresh source files from the run-time library. We need gnatcov to not instrument
       --  those files, so we add the clause below. It's unknown why only putting "GNAT" is sufficient???
       --  We also pull in GNAT.Lists for example, but specifying it here triggers a warning.
-      for Excluded_Units use ("Gnat");
+      Overridden_Runtime_Units := ("GNAT");
+
+      --  We don't want to instrument code generation tools
+      Codegen_Units :=
+        ("Gen_IL",
+         "Gen_IL.Gen",
+         "Gen_IL.Fields",
+         "Gen_IL.Gen.Gen_Entities",
+         "Gen_IL.Gen.Gen_Nodes",
+         "Gen_IL.Internals",
+         "Gen_IL.Main",
+         "Gen_IL.Types",
+         "XSnamesT",
+         "XUtil",
+         "XOSCons",
+         "XLeaps");
+
+      for Excluded_Units use Overridden_Runtime_Units & Codegen_Units;
    end Coverage;
 end Gnat2;
