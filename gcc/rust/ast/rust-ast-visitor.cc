@@ -1453,33 +1453,33 @@ DefaultASTVisitor::visit (AST::VariadicParam &param)
 void
 ContextualASTVisitor::visit (AST::Crate &crate)
 {
-  push_context (Context::CRATE);
+  ctx.enter (Kind::CRATE);
   DefaultASTVisitor::visit (crate);
-  pop_context ();
+  ctx.exit ();
 }
 
 void
 ContextualASTVisitor::visit (AST::InherentImpl &impl)
 {
-  push_context (Context::INHERENT_IMPL);
+  ctx.enter (Kind::INHERENT_IMPL);
   DefaultASTVisitor::visit (impl);
-  pop_context ();
+  ctx.exit ();
 }
 
 void
 ContextualASTVisitor::visit (AST::TraitImpl &impl)
 {
-  push_context (Context::TRAIT_IMPL);
+  ctx.enter (Kind::TRAIT_IMPL);
   DefaultASTVisitor::visit (impl);
-  pop_context ();
+  ctx.exit ();
 }
 
 void
 ContextualASTVisitor::visit (AST::Trait &trait)
 {
-  push_context (Context::TRAIT);
+  ctx.enter (Kind::TRAIT);
   DefaultASTVisitor::visit (trait);
-  pop_context ();
+  ctx.exit ();
 }
 
 } // namespace AST

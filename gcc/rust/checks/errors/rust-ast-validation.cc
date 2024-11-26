@@ -56,7 +56,7 @@ ASTValidation::visit (AST::LoopLabel &label)
 void
 ASTValidation::visit (AST::ConstantItem &const_item)
 {
-  if (!const_item.has_expr () && context.back () != Context::TRAIT_IMPL)
+  if (!const_item.has_expr () && ctx.peek () != Kind::TRAIT_IMPL)
     {
       rust_error_at (const_item.get_locus (),
 		     "associated constant in %<impl%> without body");
@@ -82,23 +82,19 @@ ASTValidation::visit (AST::Function &function)
 		   "functions cannot be both %<const%> and %<async%>");
 
   if (qualifiers.is_const ()
-      && (context.back () == Context::TRAIT_IMPL
-	  || context.back () == Context::TRAIT))
+      && (ctx.peek () == Kind::TRAIT_IMPL || ctx.peek () == Kind::TRAIT))
     rust_error_at (function.get_locus (), ErrorCode::E0379,
 		   "functions in traits cannot be declared %<const%>");
 
   // may change soon
   if (qualifiers.is_async ()
-      && (context.back () == Context::TRAIT_IMPL
-	  || context.back () == Context::TRAIT))
+      && (ctx.peek () == Kind::TRAIT_IMPL || ctx.peek () == Kind::TRAIT))
     rust_error_at (function.get_locus (), ErrorCode::E0706,
 		   "functions in traits cannot be declared %<async%>");
 
   // if not an associated function but has a self parameter
-  if (context.back () != Context::TRAIT
-      && context.back () != Context::TRAIT_IMPL
-      && context.back () != Context::INHERENT_IMPL
-      && function.has_self_param ())
+  if (ctx.peek () != Kind::TRAIT && ctx.peek () != Kind::TRAIT_IMPL
+      && ctx.peek () != Kind::INHERENT_IMPL && function.has_self_param ())
     rust_error_at (
       function.get_self_param ().get_locus (),
       "%<self%> parameter is only allowed in associated functions");
@@ -140,11 +136,11 @@ ASTValidation::visit (AST::Function &function)
     {
       if (!function.has_body ())
 	{
-	  if (context.back () == Context::INHERENT_IMPL
-	      || context.back () == Context::TRAIT_IMPL)
+	  if (ctx.peek () == Kind::INHERENT_IMPL
+	      || ctx.peek () == Kind::TRAIT_IMPL)
 	    rust_error_at (function.get_locus (),
 			   "associated function in %<impl%> without body");
-	  else if (context.back () != Context::TRAIT)
+	  else if (ctx.peek () != Kind::TRAIT)
 	    rust_error_at (function.get_locus (),
 			   "free function without a body");
 	}

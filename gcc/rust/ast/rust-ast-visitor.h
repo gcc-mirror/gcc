@@ -26,6 +26,7 @@
 #include "rust-item.h"
 #include "rust-path.h"
 #include "rust-system.h"
+#include "rust-stacked-contexts.h"
 
 namespace Rust {
 namespace AST {
@@ -452,7 +453,7 @@ public:
 class ContextualASTVisitor : public DefaultASTVisitor
 {
 protected:
-  enum class Context
+  enum class Kind
   {
     FUNCTION,
     INHERENT_IMPL,
@@ -461,6 +462,7 @@ protected:
     MODULE,
     CRATE,
   };
+
   using DefaultASTVisitor::visit;
 
   virtual void visit (AST::Crate &crate) override;
@@ -476,11 +478,7 @@ protected:
     DefaultASTVisitor::visit (item);
   }
 
-  std::vector<Context> context;
-
-  void push_context (Context ctx) { context.push_back (ctx); }
-
-  void pop_context () { context.pop_back (); }
+  StackedContexts<Kind> ctx;
 };
 
 } // namespace AST
