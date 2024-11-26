@@ -2929,6 +2929,10 @@ struct post_process_data {
   tree decl;
   location_t start_locus;
   location_t end_locus;
+  bool returns_value;
+  bool returns_null;
+  bool returns_abnormally;
+  bool infinite_loop;
 };
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
@@ -12263,10 +12267,16 @@ trees_out::write_function_def (tree decl)
     {
       unsigned flags = 0;
 
+      flags |= 1 * DECL_NOT_REALLY_EXTERN (decl);
       if (f)
-	flags |= 2;
-      if (DECL_NOT_REALLY_EXTERN (decl))
-	flags |= 1;
+	{
+	  flags |= 2;
+	  /* These flags are needed in tsubst_lambda_expr.  */
+	  flags |= 4 * f->language->returns_value;
+	  flags |= 8 * f->language->returns_null;
+	  flags |= 16 * f->language->returns_abnormally;
+	  flags |= 32 * f->language->infinite_loop;
+	}
 
       u (flags);
     }
@@ -12314,6 +12324,10 @@ trees_in::read_function_def (tree decl, tree maybe_template)
     {
       pdata.start_locus = state->read_location (*this);
       pdata.end_locus = state->read_location (*this);
+      pdata.returns_value = flags & 4;
+      pdata.returns_null = flags & 8;
+      pdata.returns_abnormally = flags & 16;
+      pdata.infinite_loop = flags & 32;
     }
 
   if (get_overrun ())
@@ -16232,6 +16246,10 @@ module_state::read_cluster (unsigned snum)
       cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
       cfun->function_start_locus = pdata.start_locus;
       cfun->function_end_locus = pdata.end_locus;
+      cfun->language->returns_value = pdata.returns_value;
+      cfun->language->returns_null = pdata.returns_null;
+      cfun->language->returns_abnormally = pdata.returns_abnormally;
+      cfun->language->infinite_loop = pdata.infinite_loop;
 
       if (abstract)
 	;
