@@ -1,5 +1,23 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* dump-parse-tree.cc (show_omp_namelist): Add iterator support for
+	OMP_LIST_MAP.
+	* match.cc (gfc_free_namelist): Free namespace for OMP_LIST_MAP.
+	* openmp.cc (gfc_free_omp_clauses): Free namespace in namelist for
+	OMP_LIST_MAP.
+	(gfc_match_omp_clauses): Parse 'iterator' modifier for 'map' clause.
+	(resolve_omp_clauses): Resolve iterators for OMP_LIST_MAP.
+	* trans-openmp.cc: Include tree-ssa-loop-niter.h.
+	(gfc_trans_omp_array_section): Add iterator argument.  Replace
+	instances of iterator variables with the initial value when
+	computing biases.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle iterators in
+	OMP_LIST_MAP clauses.  Add expressions to iter_block rather than
+	block.  Do not apply iterators to firstprivate maps.  Pass iterator
+	to gfc_trans_omp_array_section.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* trans-openmp.cc (gfc_trans_omp_array_section): Use temporaries only
 	when translating OpenACC.
 

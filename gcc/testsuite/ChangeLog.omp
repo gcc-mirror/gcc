@@ -1,5 +1,12 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gfortran.dg/gomp/target-map-iterators-1.f90: New.
+	* gfortran.dg/gomp/target-map-iterators-2.f90: New.
+	* gfortran.dg/gomp/target-map-iterators-3.f90: New.
+	* gfortran.dg/gomp/target-map-iterators-4.f90: New.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gfortran.dg/gomp/target-enter-exit-data.f90: Revert expected tree
 	dumps.
 

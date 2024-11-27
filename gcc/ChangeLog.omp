@@ -1,5 +1,23 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gimplify.cc (compute_omp_iterator_count): Account for difference
+	in loop boundaries in Fortran.
+	(build_omp_iterator_loop): Change upper boundary condition for
+	Fortran.  Insert block statements into innermost loop.
+	(remove_unused_omp_iterator_vars): Copy block subblocks of old
+	iterator to new iterator and remove original.
+	(contains_vars_1): New.
+	(contains_vars): New.
+	(extract_base_bit_offset): Add iterator argument.  Remove iterator
+	variables from base.  Do not set variable_offset if the offset
+	does not contain any remaining variables.
+	(omp_accumulate_sibling_list): Add iterator argument to
+	extract_base_bit_offset.
+	* tree-pretty-print.cc (dump_block_node): Ignore BLOCK_SUBBLOCKS
+	containing iterator block statements.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gimplify.cc (gimplify_scan_omp_clauses): Add argument for iterator
 	loop sequence.   Gimplify the clause decl and size into the iterator
 	loop if iterators are used.
