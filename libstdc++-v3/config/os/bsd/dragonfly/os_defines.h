@@ -29,6 +29,8 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
+#include <sys/cdefs.h> // For __LONG_LONG_SUPPORTED
+
 #define _GLIBCXX_USE_C99 1
 #define _GLIBCXX_USE_C99_STDIO 1
 #define _GLIBCXX_USE_C99_STDLIB 1
