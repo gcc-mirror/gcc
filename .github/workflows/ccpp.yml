@@ -269,7 +269,6 @@ jobs:
   build-and-check-gcc-5:
 
     runs-on: ubuntu-22.04
-    container: ubuntu:18.04
     env:
       # otherwise we hang when installing tzdata
       DEBIAN_FRONTEND: noninteractive
@@ -278,8 +277,8 @@ jobs:
 
     - name: Install Deps
       run: |
-          apt-get update;
-          apt-get install -y \
+          sudo apt-get update;
+          sudo apt-get install -y \
                   curl \
                   automake \
                   autoconf \
@@ -287,17 +286,37 @@ jobs:
                   autogen \
                   bison \
                   flex \
+                  libc6-dev \
+                  libc6-dev-i386 \
                   libgmp3-dev \
                   libmpfr-dev \
                   libmpc-dev \
                   build-essential \
-                  gcc-5 \
-                  g++-5 \
-                  gcc-5-multilib \
-                  g++-5-multilib \
                   dejagnu;
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
+
+    - name: Restore cached gcc-5.4
+      id: restore-gcc5
+      uses: actions/cache/restore@v4
+      with:
+        key: ce-tar-gcc-5
+        path: ~/gcc-5.4.0/
+
+    - name: Download and install gcc5.4
+      if: ${{ steps.restore-gcc5.outputs.cache-hit != 'true' }}
+      run: |
+        curl "https://s3.amazonaws.com/compiler-explorer/opt/gcc-5.4.0.tar.xz" -o /tmp/gcc.tar.xz;
+        cd ~;
+        tar xvf /tmp/gcc.tar.xz
+
+    - name: Store gcc-5.4 to cache
+      id: cache-gcc5
+      if: always() && steps.restore-gcc5.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        key: ce-tar-gcc-5
+        path: ~/gcc-5.4.0/
 
     - name: Make Source Read-Only
       run: chmod -R a-w ./*
@@ -306,24 +325,29 @@ jobs:
       run: |
            mkdir -p gccrs-build;
            cd gccrs-build;
-           ../configure \
-               CC='gcc-5' \
-               CXX='g++-5' \
-               --enable-languages=rust \
-               --disable-bootstrap \
-               --enable-multilib
+
+           # Add cargo to our path quickly
+           . "$HOME/.cargo/env";
+
+           PATH=$HOME/gcc-5.4.0/bin:$PATH \
+             ../configure \
+                 --enable-languages=rust \
+                 --disable-bootstrap \
+                 --enable-multilib
 
     - name: Build
       shell: bash
       run: |
            # Add cargo to our path quickly
            . "$HOME/.cargo/env";
-           make -C gccrs-build -j $(nproc)
+           PATH=$HOME/gcc-5.4.0/bin:$PATH \
+             make -C gccrs-build -j $(nproc)
 
     - name: Run Tests
       run: |
            cd gccrs-build; \
-           make check-rust RUNTESTFLAGS="--target_board=unix\{-m32,-m64}"
+           PATH=$HOME/gcc-5.4.0/bin:$PATH \
+             make check-rust RUNTESTFLAGS="--target_board=unix\{-m32,-m64}"
 
     - name: Archive check-rust results
       uses: actions/upload-artifact@v3
