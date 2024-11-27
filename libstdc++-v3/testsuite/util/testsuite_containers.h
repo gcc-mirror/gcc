@@ -183,9 +183,12 @@ namespace __gnu_test
     {
       forward_members_unordered(const typename _Tp::value_type& v)
       {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	// Make sure that even if rel_ops is injected there is no ambiguity
 	// when comparing iterators.
 	using namespace std::rel_ops;
+#pragma GCC diagnostic pop
 
 	typedef _Tp					test_type;
 	test_type container;
@@ -283,9 +286,12 @@ namespace __gnu_test
     {
       forward_members(_Tp& container)
       {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	// Make sure that even if rel_ops is injected there is no ambiguity
 	// when comparing iterators.
 	using namespace std::rel_ops;
+#pragma GCC diagnostic pop
 
 	typedef traits<_Tp> traits_type;
 	iterator_concept_checks<typename _Tp::iterator,
@@ -318,9 +324,12 @@ namespace __gnu_test
       category_members(_Tp& container)
 	: forward_members<_Tp>(container)
       {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	// Make sure that even if rel_ops is injected there is no ambiguity
 	// when comparing iterators.
 	using namespace std::rel_ops;
+#pragma GCC diagnostic pop
 
 	assert( !(container.begin() < container.begin()) );
 	assert( !(container.cbegin() < container.cbegin()) );

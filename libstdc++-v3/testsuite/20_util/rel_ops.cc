@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-using namespace std::rel_ops;
+using namespace std::rel_ops; // { dg-warning "deprecated" "" { target c++20 } }
 
 // libstdc++/3628
 void test01()

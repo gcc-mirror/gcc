@@ -63,7 +63,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  namespace rel_ops
+  namespace rel_ops _GLIBCXX20_DEPRECATED_SUGGEST("<=>")
   {
     /** @namespace std::rel_ops
      *  @brief  The generated relational operators are sequestered here.
