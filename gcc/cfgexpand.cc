@@ -2848,6 +2848,7 @@ expand_call_stmt (gcall *stmt)
       if (builtin_p
 	  && TREE_CODE (arg) == SSA_NAME
 	  && (def = get_gimple_for_ssa_name (arg))
+	  && is_gimple_assign (def)
 	  && gimple_assign_rhs_code (def) == ADDR_EXPR)
 	arg = gimple_assign_rhs1 (def);
       CALL_EXPR_ARG (exp, i) = arg;
@@ -4414,7 +4415,7 @@ avoid_deep_ter_for_debug (gimple *stmt, int depth)
       gimple *g = get_gimple_for_ssa_name (use);
       if (g == NULL)
 	continue;
-      if (depth > 6 && !stmt_ends_bb_p (g))
+      if ((depth > 6 || !is_gimple_assign (g)) && !stmt_ends_bb_p (g))
 	{
 	  if (deep_ter_debug_map == NULL)
 	    deep_ter_debug_map = new hash_map<tree, tree>;
@@ -5388,7 +5389,13 @@ expand_debug_expr (tree exp)
 		  t = *slot;
 	      }
 	    if (t == NULL_TREE)
-	      t = gimple_assign_rhs_to_tree (g);
+	      {
+		if (is_gimple_assign (g))
+		  t = gimple_assign_rhs_to_tree (g);
+		else
+		  /* expand_debug_expr doesn't handle CALL_EXPR right now.  */
+		  return NULL;
+	      }
 	    op0 = expand_debug_expr (t);
 	    if (!op0)
 	      return NULL;
@@ -5964,7 +5971,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	  /* Look for SSA names that have their last use here (TERed
 	     names always have only one real use).  */
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	    if ((def = get_gimple_for_ssa_name (op)))
+	    if ((def = get_gimple_for_ssa_name (op))
+		&& is_gimple_assign (def))
 	      {
 		imm_use_iterator imm_iter;
 		use_operand_p use_p;

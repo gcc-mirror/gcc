@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-coalesce.h"
 #include "tree-outof-ssa.h"
 #include "dojump.h"
+#include "internal-fn.h"
 
 /* FIXME: A lot of code here deals with expanding to RTL.  All that code
    should be in cfgexpand.cc.  */
@@ -60,8 +61,11 @@ ssa_is_replaceable_p (gimple *stmt)
   tree def;
   gimple *use_stmt;
 
-  /* Only consider modify stmts.  */
-  if (!is_gimple_assign (stmt))
+  /* Only consider modify stmts and direct internal fn calls.  */
+  if (!is_gimple_assign (stmt)
+      && (!is_gimple_call (stmt)
+	  || !gimple_call_internal_p (stmt)
+	  || !direct_internal_fn_p (gimple_call_internal_fn (stmt))))
     return false;
 
   /* If the statement may throw an exception, it cannot be replaced.  */
@@ -92,12 +96,9 @@ ssa_is_replaceable_p (gimple *stmt)
 
   /* An assignment with a register variable on the RHS is not
      replaceable.  */
-  if (gimple_assign_rhs_code (stmt) == VAR_DECL
+  if (is_gimple_assign (stmt)
+      && gimple_assign_rhs_code (stmt) == VAR_DECL
       && DECL_HARD_REGISTER (gimple_assign_rhs1 (stmt)))
-    return false;
-
-  /* No function calls can be replaced.  */
-  if (is_gimple_call (stmt))
     return false;
 
   /* Leave any stmt with volatile operands alone as well.  */

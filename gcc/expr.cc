@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtx-vector-builder.h"
 #include "tree-pretty-print.h"
 #include "flags.h"
+#include "internal-fn.h"
 
 
 /* If this is nonzero, we do not bother generating VOLATILE
@@ -3827,6 +3828,7 @@ get_def_for_expr (tree name, enum tree_code code)
 
   def_stmt = get_gimple_for_ssa_name (name);
   if (!def_stmt
+      || !is_gimple_assign (def_stmt)
       || gimple_assign_rhs_code (def_stmt) != code)
     return NULL;
 
@@ -3847,6 +3849,7 @@ get_def_for_expr_class (tree name, enum tree_code_class tclass)
 
   def_stmt = get_gimple_for_ssa_name (name);
   if (!def_stmt
+      || !is_gimple_assign (def_stmt)
       || TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt)) != tclass)
     return NULL;
 
@@ -5695,6 +5698,7 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
 
   srcstmt = get_gimple_for_ssa_name (src);
   if (!srcstmt
+      || !is_gimple_assign (srcstmt)
       || TREE_CODE_CLASS (gimple_assign_rhs_code (srcstmt)) != tcc_binary)
     return false;
 
@@ -11355,11 +11359,24 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && !SSA_NAME_IS_DEFAULT_DEF (exp)
 	  && (optimize || !SSA_NAME_VAR (exp)
 	      || DECL_IGNORED_P (SSA_NAME_VAR (exp)))
+	  && is_gimple_assign (SSA_NAME_DEF_STMT (exp))
 	  && stmt_is_replaceable_p (SSA_NAME_DEF_STMT (exp)))
 	g = SSA_NAME_DEF_STMT (exp);
-      if (g)
+      if (safe_is_a <gassign *> (g))
 	return expand_expr_real_gassign (as_a<gassign *> (g), target, tmode,
 					 modifier, alt_rtl, inner_reference_p);
+      else if (safe_is_a <gcall *> (g))
+	{
+	  /* ???  internal call expansion doesn't follow the usual API
+	     of returning the destination RTX and being passed a desired
+	     target.  */
+	  rtx dest = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+	  tree tmplhs = make_tree (TREE_TYPE (exp), dest);
+	  gimple_call_set_lhs (g, tmplhs);
+	  expand_internal_call (as_a <gcall *> (g));
+	  gimple_call_set_lhs (g, exp);
+	  return dest;
+	}
 
       ssa_name = exp;
       decl_rtl = get_rtx_for_ssa_name (ssa_name);
