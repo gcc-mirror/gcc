@@ -4443,9 +4443,19 @@ c_parser_typeof_specifier (c_parser *parser)
   parens.skip_until_found_close (parser);
   if (ret.spec != error_mark_node)
     {
-      if (is_unqual
-	  && TYPE_QUALS (strip_array_types (ret.spec)) != TYPE_UNQUALIFIED)
-	ret.spec = TYPE_MAIN_VARIANT (ret.spec);
+      if (is_unqual)
+	{
+	  bool is_array = TREE_CODE (ret.spec) == ARRAY_TYPE;
+	  int quals = TYPE_QUALS (strip_array_types (ret.spec));
+	  if ((is_array ? quals & ~TYPE_QUAL_ATOMIC : quals)
+	      != TYPE_UNQUALIFIED)
+	    {
+	      ret.spec = TYPE_MAIN_VARIANT (ret.spec);
+	      if (quals & TYPE_QUAL_ATOMIC && is_array)
+		ret.spec = c_build_qualified_type (ret.spec,
+						   TYPE_QUAL_ATOMIC);
+	    }
+	}
       if (is_std)
 	{
 	  /* In ISO C terms, _Noreturn is not part of the type of
