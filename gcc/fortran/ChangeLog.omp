@@ -1,6 +1,21 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Add iterator support for
+	OMP_LIST_TO and OMP_LIST_FROM.
+	* match.cc (gfc_free_namelist): Free namespace for OMP_LIST_TO and
+	OMP_LIST_FROM.
+	* openmp.cc (gfc_free_omp_clauses): Free namespace for OMP_LIST_TO
+	and OMP_LIST_FROM.
+	(gfc_match_motion_var_list): Parse 'iterator' modifier.
+	(resolve_omp_clauses): Resolve iterators for OMP_LIST_TO and
+	OMP_LIST_FROM.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle iterators in
+	OMP_LIST_TO and OMP_LIST_FROM clauses.  Add expressions to
+	iter_block rather than block.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Add iterator support for
 	OMP_LIST_MAP.
 	* match.cc (gfc_free_namelist): Free namespace for OMP_LIST_MAP.
 	* openmp.cc (gfc_free_omp_clauses): Free namespace in namelist for

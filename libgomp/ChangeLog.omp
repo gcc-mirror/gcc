@@ -1,5 +1,11 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* testsuite/libgomp.fortran/target-update-iterators-1.f90: New.
+	* testsuite/libgomp.fortran/target-update-iterators-2.f90: New.
+	* testsuite/libgomp.fortran/target-update-iterators-3.f90: New.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* target.c (kind_to_name): Handle GOMP_MAP_STRUCT and
 	GOMP_MAP_STRUCT_UNORD.
 	(gomp_add_map): New.
