@@ -764,9 +764,7 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	  kind = OMP_CLAUSE_DEPEND_KIND (clause);
 	  t = OMP_CLAUSE_DECL (clause);
 	  gcc_assert (t);
-	  if (TREE_CODE (t) == TREE_LIST
-	      && TREE_PURPOSE (t)
-	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	  if (OMP_ITERATOR_DECL_P (t))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (clause),
 			"%<iterator%> modifier may not be specified on "
