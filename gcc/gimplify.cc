@@ -13839,7 +13839,8 @@ omp_instantiate_implicit_mappers (splay_tree_node n, void *data)
 static void
 gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			   enum omp_region_type region_type,
-			   enum tree_code code)
+			   enum tree_code code,
+			   gimple_seq *loops_seq_p = NULL)
 {
   using namespace omp_addr_tokenizer;
   struct gimplify_omp_ctx *ctx, *outer_ctx;
@@ -14639,23 +14640,24 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
 	    OMP_CLAUSE_SIZE (c) = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
 				  : TYPE_SIZE_UNIT (TREE_TYPE (decl));
-	  if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
-			     NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+	  gimple_seq *seq_p;
+	  seq_p = enter_omp_iterator_loop_context (c, loops_seq_p, pre_p);
+	  if (gimplify_expr (&OMP_CLAUSE_SIZE (c), seq_p, NULL,
+			     is_gimple_val, fb_rvalue) == GS_ERROR)
 	    {
 	      remove = true;
+	      exit_omp_iterator_loop_context (c);
 	      break;
 	    }
 	  if (!DECL_P (decl))
 	    {
-	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p,
-				 NULL, is_gimple_lvalue, fb_lvalue)
-		  == GS_ERROR)
-		{
-		  remove = true;
-		  break;
-		}
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), seq_p, NULL,
+				 is_gimple_lvalue, fb_lvalue) == GS_ERROR)
+		remove = true;
+	      exit_omp_iterator_loop_context (c);
 	      break;
 	    }
+	  exit_omp_iterator_loop_context (c);
 	  goto do_notice;
 
 	case OMP_CLAUSE__MAPPER_BINDING_:
@@ -19395,7 +19397,7 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   if ((ort & ORT_ACC) == 0)
     in_omp_construct = false;
   gimplify_scan_omp_clauses (&OMP_CLAUSES (expr), pre_p, ort,
-			     TREE_CODE (expr));
+			     TREE_CODE (expr), &iterator_loops_seq);
   if (TREE_CODE (expr) == OMP_TARGET)
     optimize_target_teams (expr, pre_p);
   if ((ort & (ORT_TARGET | ORT_TARGET_DATA)) != 0
@@ -19643,10 +19645,16 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
     default:
       gcc_unreachable ();
     }
+
+  gimple_seq iterator_loops_seq = NULL;
+  remove_unused_omp_iterator_vars (&OMP_STANDALONE_CLAUSES (expr));
+  build_omp_iterators_loops (&OMP_STANDALONE_CLAUSES (expr),
+			     &iterator_loops_seq);
+
   gimplify_scan_omp_clauses (&OMP_STANDALONE_CLAUSES (expr), pre_p,
-			     ort, TREE_CODE (expr));
+			     ort, TREE_CODE (expr), &iterator_loops_seq);
   gimplify_adjust_omp_clauses (pre_p, NULL, &OMP_STANDALONE_CLAUSES (expr),
-			       TREE_CODE (expr));
+			       TREE_CODE (expr), &iterator_loops_seq);
   if (TREE_CODE (expr) == OACC_UPDATE
       && omp_find_clause (OMP_STANDALONE_CLAUSES (expr),
 			  OMP_CLAUSE_IF_PRESENT))
@@ -19710,7 +19718,8 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	      gcc_unreachable ();
 	    }
     }
-  stmt = gimple_build_omp_target (NULL, kind, OMP_STANDALONE_CLAUSES (expr));
+  stmt = gimple_build_omp_target (NULL, kind, OMP_STANDALONE_CLAUSES (expr),
+				  iterator_loops_seq);
 
   gimplify_seq_add_stmt (pre_p, stmt);
   *expr_p = NULL_TREE;
