@@ -590,14 +590,17 @@ namespace std
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)
-// Enable runtime assertion checks, and also check in constant expressions.
+// When _GLIBCXX_ASSERTIONS is defined we enable runtime assertion checks.
+// These checks will also be done during constant evaluation.
 # define __glibcxx_assert(cond)						\
   do {									\
     if (__builtin_expect(!bool(cond), false))				\
       _GLIBCXX_ASSERT_FAIL(cond);					\
   } while (false)
 #elif _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
-// Only check assertions during constant evaluation.
+// _GLIBCXX_ASSERTIONS is not defined, so assertions checks are only enabled
+// during constant evaluation. This ensures we diagnose undefined behaviour
+// in constant expressions.
 namespace std
 {
   __attribute__((__always_inline__,__visibility__("default")))
@@ -607,12 +610,12 @@ namespace std
 }
 # define __glibcxx_assert(cond)						\
   do {									\
-    if (std::__is_constant_evaluated())					\
-      if (__builtin_expect(!bool(cond), false))				\
-	std::__glibcxx_assert_fail();					\
+    if (std::__is_constant_evaluated() && !bool(cond))			\
+      std::__glibcxx_assert_fail();					\
   } while (false)
 #else
-// Don't check any assertions.
+// _GLIBCXX_ASSERTIONS is not defined and __is_constant_evaluated() doesn't
+// work so don't check any assertions.
 # define __glibcxx_assert(cond)
 #endif
 
