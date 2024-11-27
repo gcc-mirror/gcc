@@ -2366,12 +2366,6 @@ export namespace std
     using ranges::concat_view;
     namespace views { using views::concat; }
 #endif
-
-    // FIXME can we avoid this export using friends?
-    namespace views::__adaptor
-    {
-      using __adaptor::operator|;
-    }
   }
 }
 
