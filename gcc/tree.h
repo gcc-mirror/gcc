@@ -2214,6 +2214,12 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_OPERAND(NODE, I)				\
 	OMP_CLAUSE_ELT_CHECK (NODE, I)
 
+/* True if the clause decl NODE contains an OpenMP iterator.  */
+#define OMP_ITERATOR_DECL_P(NODE) \
+	(TREE_CODE (NODE) == TREE_LIST				\
+	 && TREE_PURPOSE (NODE)					\
+	 && TREE_CODE (TREE_PURPOSE (NODE)) == TREE_VEC)
+
 /* In a BLOCK (scope) node:
    Variables declared in the scope NODE.  */
 #define BLOCK_VARS(NODE) (BLOCK_CHECK (NODE)->block.vars)

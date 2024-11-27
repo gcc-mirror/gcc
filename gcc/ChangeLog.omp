@@ -1,3 +1,14 @@
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* gimplify.cc (gimplify_omp_affinity): Use OMP_ITERATOR_DECL_P.
+	(compute_omp_iterator_count): New.
+	(build_omp_iterator_loop): New.
+	(gimplify_omp_depend): Use OMP_ITERATOR_DECL_P,
+	compute_omp_iterator_count and build_omp_iterator_loop.
+	* tree-inline.cc (copy_tree_body_r): Use OMP_ITERATOR_DECL_P.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+	* tree.h (OMP_ITERATOR_DECL_P): New macro.
+
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

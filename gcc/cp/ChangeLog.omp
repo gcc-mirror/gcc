@@ -1,3 +1,9 @@
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* pt.cc (tsubst_omp_clause_decl): Use OMP_ITERATOR_DECL_P.
+	* semantics.cc (handle_omp_array_sections): Likewise.
+	(finish_omp_clauses): Likewise.
+
 2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
