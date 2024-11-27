@@ -610,7 +610,7 @@ namespace std
 {
 #pragma GCC visibility push(default)
   // Don't use <cassert> because this should be unaffected by NDEBUG.
-  extern "C++" _GLIBCXX_NORETURN
+  extern "C++" _GLIBCXX_NORETURN __attribute__((__cold__))
   void
   __glibcxx_assert_fail /* Called when a precondition violation is detected. */
     (const char* __file, int __line, const char* __function,

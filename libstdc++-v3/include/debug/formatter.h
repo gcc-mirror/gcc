@@ -571,7 +571,7 @@ namespace __gnu_debug
     _Error_formatter&
     _M_message(_Debug_msg_id __id) const throw ();
 
-    _GLIBCXX_NORETURN void
+    _GLIBCXX_NORETURN __attribute__((__cold__)) void
     _M_error() const;
 
 #if !_GLIBCXX_INLINE_VERSION
