@@ -7406,7 +7406,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 		   && (have_std_attrs = true)))
 	{
 	  if (last_label)
-	    pedwarn_c11 (c_parser_peek_token (parser)->location, OPT_Wpedantic,
+	    pedwarn_c11 (c_parser_peek_token (parser)->location, OPT_Wfree_labels,
 			 "a label can only be part of a statement and "
 			 "a declaration is not a statement");
 	  /* It's unlikely we'll see a nested loop in a declaration in
@@ -7553,7 +7553,8 @@ c_parser_compound_statement_nostart (c_parser *parser)
       parser->error = false;
     }
   if (last_label)
-    pedwarn_c11 (label_loc, OPT_Wpedantic, "label at end of compound statement");
+    pedwarn_c11 (label_loc, OPT_Wfree_labels,
+		 "label at end of compound statement");
   location_t endloc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
 

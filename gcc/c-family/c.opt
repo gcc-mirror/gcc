@@ -832,6 +832,10 @@ Wframe-address
 C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
 
+Wfree-labels
+C ObjC Var(warn_free_labels) Init(-1) Warning
+Warn about labels on declarations and at the end of compound statements.
+
 Wglobal-module
 C++ ObjC++ Var(warn_global_module) Warning Init(1)
 Warn about the global module fragment not containing only preprocessing directives.

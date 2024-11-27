@@ -421,6 +421,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wformat)
 Wframe-address
 UrlSuffix(gcc/Warning-Options.html#index-Wframe-address)
 
+Wfree-labels
+UrlSuffix(gcc/Warning-Options.html#index-Wfree-labels)
+
 Wglobal-module
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wglobal-module)
 

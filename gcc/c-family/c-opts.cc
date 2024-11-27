@@ -1005,6 +1005,11 @@ c_common_post_options (const char **pfilename)
       = ((pedantic && !flag_isoc23 && warn_c11_c23_compat != 0)
 	 || warn_c11_c23_compat > 0);
 
+  /* Likewise for -Wfree-labels.  */
+  if (warn_free_labels == -1)
+    warn_free_labels = ((pedantic && !flag_isoc23 && warn_c11_c23_compat != 0)
+			|| warn_c11_c23_compat > 0);
+
   if (warn_deprecated_non_prototype == -1)
     warn_deprecated_non_prototype = warn_c11_c23_compat > 0;
 
