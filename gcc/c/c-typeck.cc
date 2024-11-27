@@ -15303,7 +15303,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       /* We've reached the end of a list of expanded nodes.  Reset the group
 	 start pointer.  */
       if (c == grp_sentinel)
-	grp_start_p = NULL;
+	{
+	  if (grp_start_p
+	      && OMP_CLAUSE_HAS_ITERATORS (*grp_start_p))
+	    for (tree gc = *grp_start_p; gc != grp_sentinel;
+		 gc = OMP_CLAUSE_CHAIN (gc))
+	      OMP_CLAUSE_ITERATORS (gc) = OMP_CLAUSE_ITERATORS (*grp_start_p);
+	  grp_start_p = NULL;
+	}
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -16185,6 +16192,12 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_DIM
 	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_STRIDE)
 	    break;
+	  if (OMP_CLAUSE_ITERATORS (c)
+	      && c_omp_finish_iterators (OMP_CLAUSE_ITERATORS (c)))
+	    {
+	      t = error_mark_node;
+	      break;
+	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
@@ -16923,6 +16936,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
     }
+
+  if (grp_start_p
+      && OMP_CLAUSE_HAS_ITERATORS (*grp_start_p))
+    for (tree gc = *grp_start_p; gc; gc = OMP_CLAUSE_CHAIN (gc))
+      OMP_CLAUSE_ITERATORS (gc) = OMP_CLAUSE_ITERATORS (*grp_start_p);
 
   if (simdlen
       && safelen

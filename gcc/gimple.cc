@@ -1268,10 +1268,13 @@ gimple_build_omp_interop (tree clauses)
 
    BODY is the sequence of statements that will be executed.
    KIND is the kind of the region.
-   CLAUSES are any of the construct's clauses.  */
+   CLAUSES are any of the construct's clauses.
+   ITERATOR_LOOPS is an optional sequence containing constructed loops
+   for OpenMP iterators.  */
 
 gomp_target *
-gimple_build_omp_target (gimple_seq body, int kind, tree clauses)
+gimple_build_omp_target (gimple_seq body, int kind, tree clauses,
+			 gimple_seq iterator_loops)
 {
   gomp_target *p
     = as_a <gomp_target *> (gimple_alloc (GIMPLE_OMP_TARGET, 0));
@@ -1279,6 +1282,7 @@ gimple_build_omp_target (gimple_seq body, int kind, tree clauses)
     gimple_omp_set_body (p, body);
   gimple_omp_target_set_clauses (p, clauses);
   gimple_omp_target_set_kind (p, kind);
+  gimple_omp_target_set_iterator_loops (p, iterator_loops);
 
   return p;
 }

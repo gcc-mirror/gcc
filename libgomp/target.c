@@ -976,6 +976,105 @@ gomp_map_val (struct target_mem_desc *tgt, void **hostaddrs, size_t i)
     }
 }
 
+static const char *
+kind_to_name (unsigned short kind)
+{
+  if (GOMP_MAP_IMPLICIT_P (kind))
+    kind &= ~GOMP_MAP_IMPLICIT;
+
+  switch (kind & 0xff)
+    {
+    case GOMP_MAP_ALLOC: return "GOMP_MAP_ALLOC";
+    case GOMP_MAP_FIRSTPRIVATE: return "GOMP_MAP_FIRSTPRIVATE";
+    case GOMP_MAP_FIRSTPRIVATE_INT: return "GOMP_MAP_FIRSTPRIVATE_INT";
+    case GOMP_MAP_TO: return "GOMP_MAP_TO";
+    case GOMP_MAP_TO_PSET: return "GOMP_MAP_TO_PSET";
+    case GOMP_MAP_FROM: return "GOMP_MAP_FROM";
+    case GOMP_MAP_TOFROM: return "GOMP_MAP_TOFROM";
+    case GOMP_MAP_POINTER: return "GOMP_MAP_POINTER";
+    case GOMP_MAP_ATTACH: return "GOMP_MAP_ATTACH";
+    case GOMP_MAP_DETACH: return "GOMP_MAP_DETACH";
+    default: return "unknown";
+    }
+}
+
+/* Map entries containing expanded iterators will be flattened and merged into
+   HOSTADDRS, SIZES and KINDS, and MAPNUM updated.  Returns true if there are
+   any iterators found.  ITERATOR_COUNT holds the iteration count of the
+   iterator that generates each map (0 if not generated from an iterator).
+   HOSTADDRS, SIZES, KINDS and ITERATOR_COUNT must be freed afterwards if any
+   merging occurs.  */
+
+static bool
+gomp_merge_iterator_maps (size_t *mapnum, void ***hostaddrs, size_t **sizes,
+			  void **kinds, size_t **iterator_count)
+{
+  bool iterator_p = false;
+  size_t map_count = 0;
+  unsigned short **skinds = (unsigned short **) kinds;
+
+  for (size_t i = 0; i < *mapnum; i++)
+    if ((*sizes)[i] == SIZE_MAX)
+      {
+	uintptr_t *iterator_array = (*hostaddrs)[i];
+	map_count += iterator_array[0];
+	iterator_p = true;
+      }
+    else
+      map_count++;
+
+  if (!iterator_p)
+    return false;
+
+  gomp_debug (1,
+	      "Expanding iterator maps - number of map entries: %u -> %u\n",
+	      (int) *mapnum, (int) map_count);
+  void **new_hostaddrs = (void **) gomp_malloc (map_count * sizeof (void *));
+  size_t *new_sizes = (size_t *) gomp_malloc (map_count * sizeof (size_t));
+  unsigned short *new_kinds
+    = (unsigned short *) gomp_malloc (map_count * sizeof (unsigned short));
+  size_t new_idx = 0;
+  *iterator_count = (size_t *) gomp_malloc (map_count * sizeof (size_t));
+
+  for (size_t i = 0; i < *mapnum; i++)
+    {
+      if ((*sizes)[i] == SIZE_MAX)
+	{
+	  uintptr_t *iterator_array = (*hostaddrs)[i];
+	  size_t count = *iterator_array++;
+	  for (size_t j = 0; j < count; j++)
+	    {
+	      new_hostaddrs[new_idx] = (void *) *iterator_array++;
+	      new_sizes[new_idx] = *iterator_array++;
+	      new_kinds[new_idx] = (*skinds)[i];
+	      (*iterator_count)[new_idx] = j + 1;
+	      gomp_debug (1,
+			  "Expanding map %u <%s>: "
+			  "hostaddrs[%u] = %p, sizes[%u] = %lu\n",
+			  (int) i, kind_to_name (new_kinds[new_idx]),
+			  (int) new_idx, new_hostaddrs[new_idx],
+			  (int) new_idx, (unsigned long) new_sizes[new_idx]);
+	      new_idx++;
+	    }
+	}
+      else
+	{
+	  new_hostaddrs[new_idx] = (*hostaddrs)[i];
+	  new_sizes[new_idx] = (*sizes)[i];
+	  new_kinds[new_idx] = (*skinds)[i];
+	  (*iterator_count)[new_idx] = 0;
+	  new_idx++;
+	}
+    }
+
+  *mapnum = map_count;
+  *hostaddrs = new_hostaddrs;
+  *sizes = new_sizes;
+  *kinds = new_kinds;
+
+  return true;
+}
+
 static inline __attribute__((always_inline)) struct target_mem_desc *
 gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			struct goacc_asyncqueue *aq, size_t mapnum,
@@ -993,6 +1092,11 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   const int typemask = short_mapkind ? 0xff : 0x7;
   struct splay_tree_s *mem_map = &devicep->mem_map;
   struct splay_tree_key_s cur_node;
+  bool iterators_p = false;
+  size_t *iterator_count = NULL;
+  if (short_mapkind)
+    iterators_p = gomp_merge_iterator_maps (&mapnum, &hostaddrs, &sizes,
+					    &kinds, &iterator_count);
   struct target_mem_desc *tgt
     = gomp_malloc (sizeof (*tgt)
 		   + sizeof (tgt->list[0]) * (mapnum + nca_data_row_num));
@@ -2012,14 +2116,17 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 
   if (pragma_kind & GOMP_MAP_VARS_TARGET)
     {
+      size_t map_num = 0;
       for (i = 0; i < mapnum; i++)
-	{
-	  cur_node.tgt_offset = gomp_map_val (tgt, hostaddrs, i);
-	  gomp_copy_host2dev (devicep, aq,
-			      (void *) (tgt->tgt_start + i * sizeof (void *)),
-			      (void *) &cur_node.tgt_offset, sizeof (void *),
-			      true, cbufp);
-	}
+	if (!iterator_count || iterator_count[i] <= 1)
+	  {
+	    cur_node.tgt_offset = gomp_map_val (tgt, hostaddrs, i);
+	    gomp_copy_host2dev (devicep, aq,
+				(void *) (tgt->tgt_start + map_num * sizeof (void *)),
+				(void *) &cur_node.tgt_offset, sizeof (void *),
+				true, cbufp);
+	    map_num++;
+	  }
     }
 
   if (cbufp)
@@ -2051,6 +2158,15 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
     }
 
   gomp_mutex_unlock (&devicep->lock);
+
+  if (iterators_p)
+    {
+      free (hostaddrs);
+      free (sizes);
+      free (kinds);
+      free (iterator_count);
+    }
+
   return tgt;
 }
 

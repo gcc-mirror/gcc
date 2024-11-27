@@ -42606,16 +42606,34 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, enum gomp_map_kind kind)
 
   int pos = 1;
   int map_kind_pos = 0;
-  while (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_NAME
-	 || cp_lexer_peek_nth_token (parser->lexer, pos)->keyword == RID_DELETE)
+  int iterator_length = 0;
+  for (;;)
     {
-      if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type == CPP_COLON)
+      cp_token *tok = cp_lexer_peek_nth_token (parser->lexer, pos);
+      if (!(tok->type == CPP_NAME || tok->keyword == RID_DELETE))
+	break;
+
+      cp_token *next_tok = cp_lexer_peek_nth_token (parser->lexer, pos + 1);
+      if (tok->type == CPP_NAME
+	  && strcmp (IDENTIFIER_POINTER (tok->u.value), "iterator") == 0
+	  && next_tok->type == CPP_OPEN_PAREN)
+	{
+	  int n = cp_parser_skip_balanced_tokens (parser, pos + 1);
+	  if (n != pos + 1)
+	    {
+	      iterator_length = n - pos;
+	      pos = n - 1;
+	      next_tok = cp_lexer_peek_nth_token (parser->lexer, n);
+	    }
+	}
+
+      if (next_tok->type == CPP_COLON)
 	{
 	  map_kind_pos = pos;
 	  break;
 	}
 
-      if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type == CPP_COMMA)
+      if (next_tok->type == CPP_COMMA)
 	pos++;
       else if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type
 	       == CPP_OPEN_PAREN)
@@ -42628,6 +42646,7 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, enum gomp_map_kind kind)
   bool present_modifier = false;
   bool mapper_modifier = false;
   tree mapper_name = NULL_TREE;
+  tree iterators = NULL_TREE;
   for (int pos = 1; pos < map_kind_pos; ++pos)
     {
       cp_token *tok = cp_lexer_peek_token (parser->lexer);
@@ -42744,11 +42763,29 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, enum gomp_map_kind kind)
 	  present_modifier = true;
 	  cp_lexer_consume_token (parser->lexer);
 	}
+      else if (strcmp ("iterator", p) == 0
+	       && cp_lexer_peek_nth_token (parser->lexer, 2)->type
+		  == CPP_OPEN_PAREN)
+	{
+	  if (iterators)
+	    {
+	      cp_parser_error (parser, "too many %<iterator%> modifiers");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	  begin_scope (sk_omp, NULL);
+	  iterators = cp_parser_omp_iterators (parser);
+	  pos += iterator_length - 1;
+	  continue;
+	}
       else
 	{
 	  cp_parser_error (parser, "%<map%> clause with map-type modifier "
 				   "other than %<always%>, %<close%>, "
-				   "%<mapper%> or %<present%>");
+				   "%<iterator%>, %<mapper%> or %<present%>");
 	  cp_parser_skip_to_closing_parenthesis (parser,
 						 /*recovering=*/true,
 						 /*or_comma=*/false,
@@ -42814,9 +42851,19 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, enum gomp_map_kind kind)
 
   tree last_new = NULL_TREE;
 
+  if (iterators)
+    {
+      tree block = poplevel (1, 1, 0);
+      if (iterators == error_mark_node)
+	iterators = NULL_TREE;
+      else
+	TREE_VEC_ELT (iterators, 5) = block;
+    }
+
   for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
     {
       OMP_CLAUSE_SET_MAP_KIND (c, kind);
+      OMP_CLAUSE_ITERATORS (c) = iterators;
       last_new = c;
     }
 

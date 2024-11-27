@@ -1783,6 +1783,8 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
+      walk_body (convert_nonlocal_reference_stmt, convert_nonlocal_reference_op,
+		 info, gimple_omp_target_iterator_loops_ptr (as_a <gomp_target *> (stmt)));
       if (!is_gimple_omp_offloaded (stmt))
 	{
 	  save_suppress = info->suppress_expansion;
@@ -2516,6 +2518,9 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TARGET:
+      walk_body (convert_local_reference_stmt, convert_local_reference_op, info,
+		 gimple_omp_target_iterator_loops_ptr (as_a <gomp_target *> (stmt)));
+
       if (!is_gimple_omp_offloaded (stmt))
 	{
 	  save_suppress = info->suppress_expansion;
@@ -2912,6 +2917,9 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_TASK:
     do_parallel:
       {
+	if (gimple_code (stmt) == GIMPLE_OMP_TARGET)
+	  walk_body (convert_tramp_reference_stmt, convert_tramp_reference_op,
+		     info, gimple_omp_target_iterator_loops_ptr (as_a <gomp_target *> (stmt)));
 	tree save_local_var_chain = info->new_local_var_chain;
         walk_gimple_op (stmt, convert_tramp_reference_op, wi);
 	info->new_local_var_chain = NULL;

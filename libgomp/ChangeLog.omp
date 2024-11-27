@@ -1,3 +1,14 @@
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* target.c (kind_to_name): New.
+	(gomp_merge_iterator_maps): New.
+	(gomp_map_vars_internal): Call gomp_merge_iterator_maps.  Copy
+	address of only the first iteration to target vars.  Free allocated
+	variables.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-2.c: New.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-3.c: New.
+
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-3.C: Adjust.

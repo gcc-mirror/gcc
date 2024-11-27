@@ -448,6 +448,15 @@ dump_omp_iterators (pretty_printer *pp, tree iter, int spc, dump_flags_t flags)
       pp_colon (pp);
       dump_generic_node (pp, TREE_VEC_ELT (it, 3), spc, flags, false);
     }
+  if (TREE_VEC_LENGTH (iter) > 6)
+    {
+      pp_string (pp, ", loop_label=");
+      dump_generic_node (pp, TREE_VEC_ELT (iter, 6), spc, flags, false);
+      pp_string (pp, ", elems=");
+      dump_generic_node (pp, TREE_VEC_ELT (iter, 7), spc, flags, false);
+      pp_string (pp, ", index=");
+      dump_generic_node (pp, TREE_VEC_ELT (iter, 8), spc, flags, false);
+    }
   pp_right_paren (pp);
 }
 
@@ -1024,6 +1033,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	pp_string (pp, "readonly,");
       if (OMP_CLAUSE_MAP_POINTS_TO_READONLY (clause))
 	pp_string (pp, "pt_readonly,");
+      if (OMP_CLAUSE_ITERATORS (clause))
+	{
+	  dump_omp_iterators (pp, OMP_CLAUSE_ITERATORS (clause), spc, flags);
+	  pp_colon (pp);
+	}
       switch (OMP_CLAUSE_MAP_KIND (clause))
 	{
 	case GOMP_MAP_ALLOC:

@@ -1,5 +1,60 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gimple-pretty-print.cc (dump_gimple_omp_target): Print expanded
+	iterator loops.
+	* gimple.cc (gimple_build_omp_target): Add argument for iterator
+	loops sequence.  Initialize iterator loops field.
+	* gimple.def (GIMPLE_OMP_TARGET): Set GSS symbol to GSS_OMP_TARGET.
+	* gimple.h (gomp_target): Set GSS symbol to GSS_OMP_TARGET.  Add extra
+	field for iterator loops.
+	(gimple_build_omp_target): Add argument for iterator loops sequence.
+	(gimple_omp_target_iterator_loops): New.
+	(gimple_omp_target_iterator_loops_ptr): New.
+	(gimple_omp_target_set_iterator_loops): New.
+	* gimplify.cc (find_var_decl): New.
+	(copy_omp_iterator): New.
+	(remap_omp_iterator_var_1): New.
+	(remap_omp_iterator_var): New.
+	(remove_unused_omp_iterator_vars): New.
+	(struct iterator_loop_info_t): New type.
+	(iterator_loop_info_map_t): New type.
+	(build_omp_iterators_loops): New.
+	(enter_omp_iterator_loop_context_1): New.
+	(enter_omp_iterator_loop_context): New.
+	(enter_omp_iterator_loop_context): New.
+	(exit_omp_iterator_loop_context): New.
+	(gimplify_adjust_omp_clauses): Add argument for iterator loop
+	sequence.  Gimplify the clause decl and size into the iterator
+	loop if iterators are used.
+	(gimplify_omp_workshare): Call remove_unused_omp_iterator_vars and
+	build_omp_iterators_loops for OpenMP target expressions.  Add
+	loop sequence as argument when calling gimplify_adjust_omp_clauses
+	and building the Gimple statement.
+	* gimplify.h (enter_omp_iterator_loop_context): New prototype.
+	(exit_omp_iterator_loop_context): New prototype.
+	* gsstruct.def (GSS_OMP_TARGET): New.
+	* omp-low.cc (lower_omp_map_iterator_expr): New.
+	(lower_omp_map_iterator_size): New.
+	(finish_omp_map_iterators): New.
+	(lower_omp_target): Add sorry if iterators used with deep mapping.
+	Call lower_omp_map_iterator_expr before assigning to sender ref.
+	Call lower_omp_map_iterator_size before setting the size.  Insert
+	iterator loop sequence before the statements for the target clause.
+	* tree-nested.cc (convert_nonlocal_reference_stmt): Walk the iterator
+	loop sequence of OpenMP target statements.
+	(convert_local_reference_stmt): Likewise.
+	(convert_tramp_reference_stmt): Likewise.
+	* tree-pretty-print.cc (dump_omp_iterators): Dump extra iterator
+	information if present.
+	(dump_omp_clause): Call dump_omp_iterators for iterators in map
+	clauses.
+	* tree.cc (omp_clause_num_ops): Add operand for OMP_CLAUSE_MAP.
+	(walk_tree_1): Do not walk last operand of OMP_CLAUSE_MAP.
+	* tree.h (OMP_CLAUSE_HAS_ITERATORS): New.
+	(OMP_CLAUSE_ITERATORS): New.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gimplify.cc (gimplify_omp_affinity): Use OMP_ITERATOR_DECL_P.
 	(compute_omp_iterator_count): New.
 	(build_omp_iterator_loop): New.
