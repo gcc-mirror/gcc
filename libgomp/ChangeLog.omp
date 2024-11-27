@@ -1,5 +1,13 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* target.c (gomp_update): Call gomp_merge_iterator_maps.  Free
+	allocated variables.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-2.c: New.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-3.c: New.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* target.c (kind_to_name): New.
 	(gomp_merge_iterator_maps): New.
 	(gomp_map_vars_internal): Call gomp_merge_iterator_maps.  Copy

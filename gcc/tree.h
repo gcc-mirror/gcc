@@ -1635,11 +1635,13 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_LOCATION(NODE)  (OMP_CLAUSE_CHECK (NODE))->omp_clause.locus
 
 #define OMP_CLAUSE_HAS_ITERATORS(NODE) \
-  (OMP_CLAUSE_CODE (NODE) == OMP_CLAUSE_MAP				\
+  ((OMP_CLAUSE_CODE (NODE) == OMP_CLAUSE_FROM				\
+    || OMP_CLAUSE_CODE (NODE) == OMP_CLAUSE_TO				\
+    || OMP_CLAUSE_CODE (NODE) == OMP_CLAUSE_MAP)			\
    && OMP_CLAUSE_ITERATORS (NODE))
 #define OMP_CLAUSE_ITERATORS(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
-					      OMP_CLAUSE_MAP,		\
+					      OMP_CLAUSE_FROM,		\
 					      OMP_CLAUSE_MAP), 2)
 
 /* True on OMP_FOR and other OpenMP/OpenACC looping constructs if the loop nest

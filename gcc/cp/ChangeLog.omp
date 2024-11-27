@@ -1,5 +1,11 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* parser.cc (cp_parser_omp_clause_from_to): Parse 'iterator' modifier.
+	* semantics.cc (finish_omp_clauses): Finish iterators for to/from
+	clauses.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* parser.cc (cp_parser_omp_clause_map): Parse 'iterator' modifier.
 	* semantics.cc (finish_omp_clauses): Finish iterators.  Apply
 	iterators to generated clauses.

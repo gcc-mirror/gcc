@@ -42417,8 +42417,11 @@ cp_parser_omp_clause_doacross (cp_parser *parser, tree list, location_t loc)
    to ( variable-list )
 
    OpenMP 5.1:
-   from ( [present :] variable-list )
-   to ( [present :] variable-list ) */
+   from ( [motion-modifier[,] [motion-modifier[,]...]:] variable-list )
+   to ( [motion-modifier[,] [motion-modifier[,]...]:] variable-list )
+
+   motion-modifier:
+     present | iterator (iterators-definition)  */
 
 static tree
 cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
@@ -42429,14 +42432,25 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
 
   int pos = 1;
   int colon_pos = 0;
+  int iterator_length = 0;
 
   while (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_NAME)
     {
+      const char *identifier =
+	IDENTIFIER_POINTER (cp_lexer_peek_nth_token (parser->lexer,
+						     pos)->u.value);
+      if (cp_lexer_nth_token_is (parser->lexer, pos + 1, CPP_OPEN_PAREN))
+	{
+	  int n = cp_parser_skip_balanced_tokens (parser, pos + 1);
+	  if (n != pos + 1)
+	    {
+	      if (strcmp (identifier, "iterator") == 0)
+	      iterator_length = n - pos;
+	      pos = n - 1;
+	    }
+	}
       if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type == CPP_COMMA)
 	pos += 2;
-      else if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type
-	       == CPP_OPEN_PAREN)
-	pos = cp_parser_skip_balanced_tokens (parser, pos + 1);
       else
 	pos++;
       if (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_COLON)
@@ -42449,6 +42463,7 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
   bool present_modifier = false;
   bool mapper_modifier = false;
   tree mapper_name = NULL_TREE;
+  tree iterators = NULL_TREE;
 
   for (int pos = 1; pos < colon_pos; ++pos)
     {
@@ -42472,6 +42487,21 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
 	    }
 	  present_modifier = true;
 	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (strcmp ("iterator", p) == 0)
+	{
+	  if (iterators)
+	    {
+	      cp_parser_error (parser, "too many %<iterator%> modifiers");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	  begin_scope (sk_omp, NULL);
+	  iterators = cp_parser_omp_iterators (parser);
+	  pos += iterator_length - 1;
 	}
       else if (strcmp ("mapper", p) == 0)
 	{
@@ -42535,7 +42565,8 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
       else
 	{
 	  cp_parser_error (parser, "%<to%> or %<from%> clause with "
-			   "modifier other than %<present%> or %<mapper%>");
+			   "modifier other than %<iterator%>, "
+			   "%<mapper%> or %<present%>");
 	  cp_parser_skip_to_closing_parenthesis (parser,
 						 /*recovering=*/true,
 						 /*or_comma=*/false,
@@ -42573,6 +42604,19 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
       OMP_CLAUSE_CHAIN (name) = OMP_CLAUSE_CHAIN (last_new);
       OMP_CLAUSE_CHAIN (last_new) = name;
     }
+
+  if (iterators)
+    {
+      tree block = poplevel (1, 1, 0);
+      if (iterators == error_mark_node)
+	iterators = NULL_TREE;
+      else
+	TREE_VEC_ELT (iterators, 5) = block;
+    }
+
+  if (iterators)
+    for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_ITERATORS (c) = iterators;
 
   return nl;
 }

@@ -2449,12 +2449,18 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
   size_t i;
   struct splay_tree_key_s cur_node;
   const int typemask = short_mapkind ? 0xff : 0x7;
+  bool iterators_p = false;
+  size_t *iterator_count = NULL;
 
   if (!devicep)
     return;
 
   if (mapnum == 0)
     return;
+
+  if (short_mapkind)
+    iterators_p = gomp_merge_iterator_maps (&mapnum, &hostaddrs, &sizes,
+					    &kinds, &iterator_count);
 
   gomp_mutex_lock (&devicep->lock);
   if (devicep->state == GOMP_DEVICE_FINALIZED)
@@ -2593,6 +2599,14 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 	}
     }
   gomp_mutex_unlock (&devicep->lock);
+
+  if (iterators_p)
+    {
+      free (hostaddrs);
+      free (sizes);
+      free (kinds);
+      free (iterator_count);
+    }
 }
 
 static struct gomp_offload_icv_list *

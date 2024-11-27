@@ -1,5 +1,24 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gimplify.cc (gimplify_scan_omp_clauses): Add argument for iterator
+	loop sequence.   Gimplify the clause decl and size into the iterator
+	loop if iterators are used.
+	(gimplify_omp_workshare): Add argument for iterator loops sequence
+	in call to gimplify_scan_omp_clauses.
+	(gimplify_omp_target_update): Call remove_unused_omp_iterator_vars and
+	build_omp_iterators_loops.  Add loop sequence as argument when calling
+	gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses and building
+	the Gimple statement.
+	* tree-pretty-print.cc (dump_omp_clause): Call dump_omp_iterators
+	for to/from clauses with iterators.
+	* tree.cc (omp_clause_num_ops): Add extra operand for OMP_CLAUSE_FROM
+	and OMP_CLAUSE_TO.
+	* tree.h (OMP_CLAUSE_HAS_ITERATORS): Add check for OMP_CLAUSE_TO and
+	OMP_CLAUSE_FROM.
+	(OMP_CLAUSE_ITERATORS): Likewise.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gimple-pretty-print.cc (dump_gimple_omp_target): Print expanded
 	iterator loops.
 	* gimple.cc (gimple_build_omp_target): Add argument for iterator

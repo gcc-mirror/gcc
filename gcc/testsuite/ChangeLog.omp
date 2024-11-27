@@ -1,5 +1,11 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* c-c++-common/gomp/target-update-iterators-1.c: New.
+	* c-c++-common/gomp/target-update-iterators-2.c: New.
+	* c-c++-common/gomp/target-update-iterators-3.c: New.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* c-c++-common/gomp/map-6.c (foo): Amend expected error message.
 	* c-c++-common/gomp/target-map-iterators-1.c: New.
 	* c-c++-common/gomp/target-map-iterators-2.c: New.

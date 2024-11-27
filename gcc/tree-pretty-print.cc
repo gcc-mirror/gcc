@@ -1270,6 +1270,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "from(");
       if (OMP_CLAUSE_MOTION_PRESENT (clause))
 	pp_string (pp, "present:");
+      if (OMP_CLAUSE_ITERATORS (clause))
+	{
+	  dump_omp_iterators (pp, OMP_CLAUSE_ITERATORS (clause), spc, flags);
+	  pp_colon (pp);
+	}
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       goto print_clause_size;
@@ -1278,6 +1283,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "to(");
       if (OMP_CLAUSE_MOTION_PRESENT (clause))
 	pp_string (pp, "present:");
+      if (OMP_CLAUSE_ITERATORS (clause))
+	{
+	  dump_omp_iterators (pp, OMP_CLAUSE_ITERATORS (clause), spc, flags);
+	  pp_colon (pp);
+	}
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       goto print_clause_size;
