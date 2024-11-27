@@ -3820,8 +3820,9 @@ maybe_warn_sizeof_array_div (location_t loc, tree arr, tree arr_type,
 
 /* Warn about C++20 [depr.array.comp] array comparisons: "Equality
    and relational comparisons between two operands of array type are
-   deprecated."  We also warn in C and earlier C++ standards.  CODE is
-   the code for this comparison, OP0 and OP1 are the operands.  */
+   deprecated."  In C++26 this is a permerror.  We also warn in C and earlier
+   C++ standards.  CODE is the code for this comparison, OP0 and OP1 are
+   the operands.  */
 
 void
 do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
@@ -3834,10 +3835,22 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
     op1 = TREE_OPERAND (op1, 0);
 
   auto_diagnostic_group d;
-  if (warning_at (location, OPT_Warray_compare,
-		  (c_dialect_cxx () && cxx_dialect >= cxx20)
-		  ? G_("comparison between two arrays is deprecated in C++20")
-		  : G_("comparison between two arrays")))
+  diagnostic_t kind = DK_WARNING;
+  const char *msg;
+  if (c_dialect_cxx () && cxx_dialect >= cxx20)
+    {
+      /* P2865R5 made this comparison ill-formed in C++26.  */
+      if (cxx_dialect >= cxx26)
+	{
+	  msg = G_("comparison between two arrays is not allowed in C++26");
+	  kind = DK_PERMERROR;
+	}
+      else
+	msg = G_("comparison between two arrays is deprecated in C++20");
+    }
+  else
+    msg = G_("comparison between two arrays");
+  if (emit_diagnostic (kind, location, OPT_Warray_compare, msg))
     {
       /* C doesn't allow +arr.  */
       if (c_dialect_cxx ())
