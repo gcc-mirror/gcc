@@ -1,3 +1,48 @@
+2024-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117751
+	* testsuite/18_support/50594.cc: Edit dg-options to include the
+	-fno-assume-sane-operators-new-delete option.
+
+2024-11-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* include/bits/deque.tcc (std::deque::_M_reallocate_map): Add
+	__builtin_unreachable check to declare that maps are not very large.
+	* include/bits/stl_deque.h (std::deque::size): Add __builtin_unreachable
+	to check for maximal size of map.
+
+2024-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin, end, ssize): Add
+	conditional noexcept.
+	* testsuite/18_support/initializer_list/range_access.cc: Check
+	results and noexcept-specifier for std::begin and std::end.
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Check for conditional noexcept on std::begin and std::end.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Likewise.
+	* testsuite/24_iterators/range_access/range_access.cc: Check
+	conditional noexcept is correct.
+	* testsuite/24_iterators/range_access/range_access_cpp17.cc:
+	Check std::size, std::empty and std::data.
+	* testsuite/24_iterators/range_access/range_access_cpp20.cc:
+	Check conditional noexcept on std::ssize.
+
+2024-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/forward_list.h: Use Markdown in Doxygen comments.
+
+2024-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117630
+	* src/c++11/Makefile.am: Add new file.
+	* src/c++11/Makefile.in: Regnerate.
+	* src/c++11/cow-stdexcept.cc (error_category::_M_message): Move
+	member function definition to ...
+	* src/c++11/cow-system_error.cc: New file.
+
 2024-11-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_set.h (set::find): Use const_iterator in

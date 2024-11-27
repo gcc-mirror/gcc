@@ -1,3 +1,17 @@
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/94370
+	* c-typeck.cc (c_build_functype_attribute_variant): Reword
+	warning message to avoid double-negative.
+
+2024-11-26  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/98195
+	PR c/117755
+	* c-typeck.cc (build_atomic_assign): Always create a TARGET_EXPR
+	for newval even in case of error from binary operation.
+	(build_modify_expr): Check early for incomplete type of rhs.
+
 2024-11-24  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR c/117741

@@ -1,3 +1,66 @@
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.cc (selftest::print_diff): New function.
+	(selftest::assert_streq): Call it when we have non-equal
+	non-null strings.
+
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR translation/90160
+	* config/csky/csky.cc (csky_configure_build_target): Use %qs when
+	referring to cpu and arch names.
+	(csky_option_override): Likewise.
+
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR translation/80760
+	* tree-ssa-loop-prefetch.cc (pass_loop_prefetch::execute): Add
+	missing colon to not-a-power-of-two param warning.
+
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR plugins/93746
+	* plugin.cc (try_init_one_plugin): Add missing colon in error
+	message.
+
+2024-11-26  Alex Coplan  <alex.coplan@arm.com>
+
+	* gdbhooks.py (strip_ref): New. Use it ...
+	(VecPrinter.to_string): ... here,
+	(VecPrinter.children): ... and here.
+
+2024-11-26  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::get_vlmax_ta_preferred_avl):
+	Check whether the use insn is valid for propagation.
+
+2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102674
+	* builtins.cc (fold_builtin_fpclassify): Use real_from_string3 rather
+	than real_from_string.  Use "1E%d" format string rather than "0x1p%d"
+	for decimal float minimum.  Formatting fixes.
+
+2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* real.cc (get_max_float): Handle decimal float.
+	* builtins.cc (fold_builtin_interclass_mathfn): Use
+	real_from_string3 rather than real_from_string.  Use
+	"1E%d" format string rather than "0x1p%d" for decimal
+	float minimum.
+
+2024-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-affine.cc (wide_int_constant_multiple_p): Remove unused rem variable.
+
+2024-11-26  Cui, Lili  <lili.cui@intel.com>
+
+	PR target/116675
+	* config/i386/i386-expand.cc (expand_vec_perm_pand_pandn_por):
+	New subroutine.
+	(ix86_expand_vec_perm_const_1): Call expand_vec_perm_pand_pandn_por.
+
 2024-11-25  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/117771

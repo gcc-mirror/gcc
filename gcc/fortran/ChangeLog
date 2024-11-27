@@ -1,3 +1,26 @@
+2024-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	* expr.cc (find_inquiry_ref): Fix memleak introduced by scanning
+	the reference chain to find and simplify inquiry references.
+	* symbol.cc (gfc_copy_formal_args_intr): Free formal namespace
+	when not needed to avoid a front-end memleak.
+
+2024-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117774
+	* trans-expr.cc (gfc_conv_procedure_call): When passing an array
+	to an assumed-rank dummy, terminate search for array reference of
+	actual argument before an inquiry reference (e.g. INQUIRY_RE,
+	INQUIRY_IM) so that bounds update works properly.
+
+2024-11-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117763
+	* trans-array.cc (gfc_get_array_span): Guard against derefences
+	of 'expr'. Clean up some typos. Use 'gfc_get_vptr_from_expr'
+	for clarity and apply a functional reversion of last section
+	that deals with class dummies.
+
 2024-11-25  Steve Kargl  <kargls@comcast.net>
 
 	PR fortran/117765

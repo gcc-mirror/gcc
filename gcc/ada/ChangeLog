@@ -1,3 +1,165 @@
+2024-11-26  Eric Botcazou  <ebotcazou@adacore.come>
+
+	* gcc-interface/trans.cc (Attribute_to_gnu) <Attr_Access>: Do not
+	pass ATTR_ADDR_EXPR to build_unary_op for 'Unrestricted_Access.
+
+2024-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Do not insert the tag
+	assignment there if the object has the Address aspect.
+	* exp_ch7.adb: Add clauses for Aspect package.
+	(Build_Finalizer.Process_Object_Declaration): Deal with an object
+	with delayed freezing.
+	(Insert_Actions_In_Scope_Around): If the target is the declaration
+	of an object with address clause or aspect, move all the statements
+	that have been inserted after it into the Initialization_Statements
+	list of the object.
+	* freeze.adb (Check_Address_Clause): Do not reassign the tag here,
+	instead set the appropriate flag on the assignment statement.
+
+2024-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): Do not initialize Opnd_Type before
+	calling Get_Corresponding_Mutably_Tagged_Type_If_Present.
+
+2024-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Export_Import): Add explicit mention
+	of the declaration in the error message for the Import.
+	* sem_prag.adb (Process_Extended_Import_Export_Object_Pragma): Also
+	test Has_Init_Expression on the declaration node for Import_Object
+	and use the same wording as that of Import.
+	(Process_Import_Or_Interface): Also test Has_Init_Expression on the
+	declaration node for Import.
+
+2024-11-26  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch2.adb (Check_Ambiguous_Call): Replace code factorized
+	code by call to the new subprogram Is_Ambiguous_Operand.
+	* sem_res.ads (Is_Ambiguous_Operand): New subprogram that
+	factorizes previous code in Check_Ambiguous_Call and
+	Valid_Conversion.
+	* sem_res.adb (Is_Ambiguous_Operand): New subprogram.
+	(Valid_Tagged_Conversion): Replace factorized code by call to
+	the new subprogram Is_Ambiguous_Operand.
+	(Report_Error_N): New subprogram.
+	(Report_Error_NE): New subprogram.
+	(Report_Interpretation): New subprogram.
+	(Conversion_Error_N): Removed; replaced by Report_Error_N.
+	(Conversion_Error_NE): Removed; replaced by Report_Error_NE.
+	(Valid_Conversion): Update Opnd_Type after the call to
+	Is_Ambiguous_Operand in the overloaded case.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* errout.adb: Remove implmentation of Write_Error_Summary.
+	* erroutc.adb: Add implemenetation of Write_Error_Summary.
+	* erroutc.ads: Add spec of Write_Error_Summary.
+	* errutil.adb: Remove implementation for writing the error summary.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* errout.adb: Remove implemntation of Set_Msg_Insertion_Column.
+	* erroutc.adb: Add implementation of Set_Msg_Insertion_Column.
+	* erroutc.ads: Add spec of Set_Msg_Insertion_Column.
+	* errutil.adb: Remove implementation of Set_Msg_Insertion_Column.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* errout.adb: Set Warn_Err as true if Is_Runtime_Error was
+	set in the error message.
+	* erroutc.adb: Remove instances of Warn_Runtime_Raise.
+	* erroutc.ads: Likewise.
+	* errutil.adb: Likewise.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* errout.adb: Use Is_Redundant_Error_Message.
+	* erroutc.adb: Move the common code for checking if a message
+	can be removed to Is_Redundant_Error_Message.
+	* erroutc.ads: Add definition of Is_Redundant_Error_Message.
+	* errutil.adb: Use Is_Redundant_Error_Message.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* errout.ads: Remove Current_Node.
+	* errout.adb: Remove uses of Current_Node.
+	* par-ch6.adb: Same as above.
+	* par-ch7.adb: Same as above.
+	* par-ch9.adb: Same as above.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* err_vars.ads: Remove Raise_Exception_On_Error and
+	Error_Msg_Exception.
+	* errout.ads: Same as above.
+	* errout.adb: Remove uses of Raise_Exception_On_Error and
+	Error_Msg_Exception.
+	* errutil.adb: Same as above.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* diagnostics-converter.adb: Use new enum values instead
+	of the old attributes.
+	* diagnostics-switch_repository.adb: Same as above.
+	* diagnostics-utils.adb: Same as above.
+	* diagnostics.adb: Same as above.
+	* diagnostics.ads: Same as above.
+	* errout.adb: Same as above.
+	* erroutc.adb: Same as above.
+	* erroutc.ads: Remove old attriubtes and replace them
+	with Error_Msg_Kind.
+	* errutil.adb: Same as others.
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* errout.adb: Use Output_Msg_Location
+	* erroutc.adb: add common implementation for printing the
+	error message line.
+	* erroutc.ads: Add new method Output_Msg_Location
+	* errutil.adb: use Output_Msg_Location
+
+2024-11-26  Viljar Indus  <indus@adacore.com>
+
+	* diagnostics-converter.adb: Remove uses of Info_Warning type. Use
+	common constructors to simplify implementation.
+	* diagnostics-pretty_emitter.adb: Remove Info_Warning type.
+	* diagnostics-utils.adb: Remove uses of Info_Warning.
+	* diagnostics.adb: Simplify implementation of Primary_Location.
+	* diagnostics.ads: Remove Info_Warning type.
+
+2024-11-26  Jose Ruiz  <ruiz@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: The format of
+	the ali file is documented in lib-writ.ads.
+	* gnat_ugn.texi: Regenerate.
+
+2024-11-26  Ronan Desplanques  <desplanques@adacore.com>
+
+	* uname.ads (Is_Internal_Unit_Name, Is_Predefined_Unit_Name): Change
+	specifications to take a Unit_Name_Type as input.
+	(Encoded_Library_Unit_Name): New subprogram.
+	(Is_Predefined_Unit_Name): New overloaded subprogram.
+	(Get_External_Unit_Name_String): Make use of new
+	Encoded_Library_Unit_Name subprogram.
+	* uname.adb (Is_Internal_Unit_Name, Is_Predefined_Unit_Name): Adapt
+	bodies to specification changes.
+	* fname-uf.adb (Get_File_Name): Adapt to Uname interface changes.
+
+2024-11-26  Ronan Desplanques  <desplanques@adacore.com>
+
+	* fname-uf.adb (Get_File_Name): Use local name buffers.
+
+2024-11-26  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.adb (Get_Library_Unit_Name): Improve use of Uname.
+
+2024-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb: Remove clauses for Exp_Ch3.
+	(Check_Address_Clause): Always reassign the tag for an object of a
+	tagged type if there is an initialization expression.
+
 2024-11-23  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* gcc-interface/Make-lang.in (gnattools): Remove $(GCC_PARTS).

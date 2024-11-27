@@ -1,3 +1,185 @@
+2024-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* g++.dg/ext/sve-sizeless-2.C: Update the expected error message
+	for __builtin_launder.
+
+2024-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/fp8_scalar_1.c (stacktest1): Fix for new
+	improved code generation.
+
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Update for renaming
+	of all plugin implementation files from .c to .cc.
+	* g++.dg/plugin/attribute_plugin.c: Rename to...
+	* g++.dg/plugin/attribute_plugin.cc: ...this.
+	* g++.dg/plugin/comment_plugin.c: Rename to...
+	* g++.dg/plugin/comment_plugin.cc: ...this.
+	* g++.dg/plugin/decl_plugin.c: Rename to...
+	* g++.dg/plugin/decl_plugin.cc: ...this.
+	* g++.dg/plugin/def_plugin.c: Rename to...
+	* g++.dg/plugin/def_plugin.cc: ...this.
+	* g++.dg/plugin/dumb_plugin.c: Rename to...
+	* g++.dg/plugin/dumb_plugin.cc: ...this.
+	* g++.dg/plugin/header_plugin.c: Rename to...
+	* g++.dg/plugin/header_plugin.cc: ...this.
+	* g++.dg/plugin/pragma_plugin.c: Rename to...
+	* g++.dg/plugin/pragma_plugin.cc: ...this.
+	* g++.dg/plugin/selfassign.c: Rename to...
+	* g++.dg/plugin/selfassign.cc: ...this.
+	* g++.dg/plugin/show_template_tree_color_plugin.c: Rename to...
+	* g++.dg/plugin/show_template_tree_color_plugin.cc: ...this.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Update for renaming
+	of all plugin implementation files from .c to .cc.
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Rename to...
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: ...this.
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Rename to...
+	* gcc.dg/plugin/analyzer_gil_plugin.cc: ...this.
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: Rename to...
+	* gcc.dg/plugin/analyzer_kernel_plugin.cc: ...this.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: Rename to...
+	* gcc.dg/plugin/analyzer_known_fns_plugin.cc: ...this.
+	* gcc.dg/plugin/crash_test_plugin.c: Rename to...
+	* gcc.dg/plugin/crash_test_plugin.cc: ...this.
+	* gcc.dg/plugin/diagnostic_group_plugin.c: Rename to...
+	* gcc.dg/plugin/diagnostic_group_plugin.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_test_nesting.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_test_nesting.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c: Rename
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.cc: ..to
+	this.
+	* gcc.dg/plugin/diagnostic_plugin_test_text_art.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_test_text_art.cc: ...this.
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c:
+	Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.cc:
+	...this.
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c: Rename to...
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.cc: ...this.
+	* gcc.dg/plugin/dump_plugin.c: Rename to...
+	* gcc.dg/plugin/dump_plugin.cc: ...this.
+	* gcc.dg/plugin/expensive_selftests_plugin.c: Rename to...
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: ...this.
+	* gcc.dg/plugin/finish_unit_plugin.c: Rename to...
+	* gcc.dg/plugin/finish_unit_plugin.cc: ...this.
+	* gcc.dg/plugin/ggcplug.c: Rename to...
+	* gcc.dg/plugin/ggcplug.cc: ...this.
+	* gcc.dg/plugin/location_overflow_plugin.c: Rename to...
+	* gcc.dg/plugin/location_overflow_plugin.cc: ...this.
+	* gcc.dg/plugin/must_tail_call_plugin.c: Rename to...
+	* gcc.dg/plugin/must_tail_call_plugin.cc: ...this.
+	* gcc.dg/plugin/one_time_plugin.c: Rename to...
+	* gcc.dg/plugin/one_time_plugin.cc: ...this.
+	* gcc.dg/plugin/poly-int-01_plugin.c: Rename to...
+	* gcc.dg/plugin/poly-int-01_plugin.cc: ...this.
+	* gcc.dg/plugin/poly-int-02_plugin.c: Rename to...
+	* gcc.dg/plugin/poly-int-02_plugin.cc: ...this.
+	* gcc.dg/plugin/poly-int-03_plugin.c: Rename to...
+	* gcc.dg/plugin/poly-int-03_plugin.cc: ...this.
+	* gcc.dg/plugin/poly-int-04_plugin.c: Rename to...
+	* gcc.dg/plugin/poly-int-04_plugin.cc: ...this.
+	* gcc.dg/plugin/poly-int-05_plugin.c: Rename to...
+	* gcc.dg/plugin/poly-int-05_plugin.cc: ...this.
+	* gcc.dg/plugin/poly-int-06_plugin.c: Rename to...
+	* gcc.dg/plugin/poly-int-06_plugin.cc: ...this.
+	* gcc.dg/plugin/poly-int-07_plugin.c: Rename to...
+	* gcc.dg/plugin/poly-int-07_plugin.cc: ...this.
+	* gcc.dg/plugin/selfassign.c: Rename to...
+	* gcc.dg/plugin/selfassign.cc: ...this.
+	* gcc.dg/plugin/start_unit_plugin.c: Rename to...
+	* gcc.dg/plugin/start_unit_plugin.cc: ...this.
+	* gcc.dg/plugin/wide-int_plugin.c: Rename to...
+	* gcc.dg/plugin/wide-int_plugin.cc: ...this.
+	* obj-c++.dg/plugin/plugin.exp: Update for renaming of plugin
+	implementation file from .c to .cc.
+	* objc.dg/plugin/plugin.exp: Likewise.
+
+2024-11-26  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/predef-sf-2.c: Modify the char string.
+
+2024-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117774
+	* gfortran.dg/assumed_rank_25.f90: New test.
+
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/94370
+	* gcc.dg/format/proto.c: Update wording of message.
+
+2024-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR translation/80760
+	* gcc.dg/tree-ssa/pr79803.c: Add ':' to expected warning.
+
+2024-11-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-12-zvbb.c:
+	Adjust the dump check times.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-1.c:
+	Remove unnecessary option and add target no-opts/any-tops.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-2.c: Ditto.
+
+2024-11-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Fix the incorrect optimization
+	options passing to testcases.
+
+2024-11-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/deque-1.C: New test.
+	* g++.dg/tree-ssa/deque-2.C: New test.
+
+2024-11-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117763
+	* gfortran.dg/pr117763.f90: New test.
+
+2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102674
+	* gcc.dg/dfp/pr102674.c: New test.
+
+2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* gcc.dg/dfp/pr43374.c: New test.
+
+2024-11-26  Cui, Lili  <lili.cui@intel.com>
+
+	PR target/116675
+	* gcc.target/i386/pr116675.c: New test.
+
+2024-11-26  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8-2.c: Correct 128bit
+	mask usage.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8s-2.c: Ditto.
+
+2024-11-26  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/98195
+	PR c/117755
+	* gcc.dg/pr98195-1.c, gcc.dg/pr117755-1.c: New tests.
+	* gcc.dg/noncompile/20020207-1.c, gcc.dg/pr14765-1.c,
+	objc.dg/method-11.m: Update expected error messages.
+
 2024-11-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117777
