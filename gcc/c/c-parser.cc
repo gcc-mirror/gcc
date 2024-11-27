@@ -2129,6 +2129,43 @@ handle_assume_attribute (location_t here, tree attrs, bool nested)
   return remove_attribute ("gnu", "assume", attrs);
 }
 
+/* We might need to reclassify any previously-lexed identifier, e.g.
+   when we've left a for loop with an if-statement without else in the
+   body - we might have used a wrong scope for the token.  See PR67784.  */
+
+static void
+c_parser_maybe_reclassify_token (c_parser *parser)
+{
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      c_token *token = c_parser_peek_token (parser);
+
+      if (token->id_kind != C_ID_CLASSNAME)
+	{
+	  tree decl = lookup_name (token->value);
+
+	  token->id_kind = C_ID_ID;
+	  if (decl)
+	    {
+	      if (TREE_CODE (decl) == TYPE_DECL)
+		token->id_kind = C_ID_TYPENAME;
+	    }
+	  else if (c_dialect_objc ())
+	    {
+	      tree objc_interface_decl = objc_is_class_name (token->value);
+	      /* Objective-C class names are in the same namespace as
+		 variables and typedefs, and hence are shadowed by local
+		 declarations.  */
+	      if (objc_interface_decl)
+		{
+		  token->value = objc_interface_decl;
+		  token->id_kind = C_ID_CLASSNAME;
+		}
+	    }
+	}
+    }
+}
+
 /* Parse a declaration or function definition (C90 6.5, 6.7.1, C99
    6.7, 6.9.1, C11 6.7, 6.9.1).  If FNDEF_OK is true, a function definition
    is accepted; otherwise (old-style parameter declarations) only other
@@ -3021,6 +3058,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	 function definitions either.  */
       int save_debug_nonbind_markers_p = debug_nonbind_markers_p;
       debug_nonbind_markers_p = 0;
+      c_parser_maybe_reclassify_token (parser);
       while (c_parser_next_token_is_not (parser, CPP_EOF)
 	     && c_parser_next_token_is_not (parser, CPP_OPEN_BRACE))
 	c_parser_declaration_or_fndef (parser, false, false, false,
@@ -8357,43 +8395,6 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
 				    else_tinfo.location, RID_ELSE);
 
   return c_end_compound_stmt (body_loc, block, flag_isoc99);
-}
-
-/* We might need to reclassify any previously-lexed identifier, e.g.
-   when we've left a for loop with an if-statement without else in the
-   body - we might have used a wrong scope for the token.  See PR67784.  */
-
-static void
-c_parser_maybe_reclassify_token (c_parser *parser)
-{
-  if (c_parser_next_token_is (parser, CPP_NAME))
-    {
-      c_token *token = c_parser_peek_token (parser);
-
-      if (token->id_kind != C_ID_CLASSNAME)
-	{
-	  tree decl = lookup_name (token->value);
-
-	  token->id_kind = C_ID_ID;
-	  if (decl)
-	    {
-	      if (TREE_CODE (decl) == TYPE_DECL)
-		token->id_kind = C_ID_TYPENAME;
-	    }
-	  else if (c_dialect_objc ())
-	    {
-	      tree objc_interface_decl = objc_is_class_name (token->value);
-	      /* Objective-C class names are in the same namespace as
-		 variables and typedefs, and hence are shadowed by local
-		 declarations.  */
-	      if (objc_interface_decl)
-		{
-		  token->value = objc_interface_decl;
-		  token->id_kind = C_ID_CLASSNAME;
-		}
-	    }
-	}
-    }
 }
 
 /* Parse an if statement (C90 6.6.4, C99 6.8.4, C11 6.8.4).
