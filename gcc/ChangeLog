@@ -1,3 +1,10 @@
+2024-11-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-07-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/install.texi (GM2-prerequisite): Add GNU flex.
+
 2024-11-25  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

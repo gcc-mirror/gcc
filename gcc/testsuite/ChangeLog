@@ -1,3 +1,55 @@
+2024-11-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-08-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116378
+	* gm2/extensions/run/pass/testopen.mod: Add third argument
+	for open.
+	* gm2/isolib/run/pass/openlibc.mod: Ditto.
+	* gm2/pim/run/pass/testaddr3.mod: Ditto.
+
+2024-11-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/epilog-1.c: Corrected armv8.1.m-main asm.
+
+2024-11-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115823
+	* gm2/builtins/run/pass/testisnormal.mod: Change to an
+	implementation module.
+	* gm2/builtins/run/pass/testisnormal.def: New test.
+	* gm2/builtins/run/pass/testsinl.def: New test.
+	* gm2/builtins/run/pass/testsinl.mod: New test.
+
+2024-11-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116048
+	* gm2/errors/fail/errors-fail.exp: Remove -Wstudents
+	and add -Wuninit-variable-checking=all.
+	Replace gm2_init_pim with gm2_init_iso.
+	* gm2/errors/fail/testfio.mod: Modify test code to
+	provoke an error in the first basic block.
+	* gm2/errors/fail/testparam.mod: Ditto.
+	* gm2/errors/fail/array1.mod: Ditto.
+	* gm2/errors/fail/badtype.mod: New test.
+	* gm2/errors/fail/badvar.mod: New test.
+
+2024-11-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115957
+	* gm2/errors/fail/badconst.mod: New test.
+	* gm2/pim/fail/tinyadr.mod: New test.
+
 2024-11-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/117118
