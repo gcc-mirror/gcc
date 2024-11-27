@@ -14511,8 +14511,8 @@ verify_type (const_tree t)
 
 
 /* Return 1 if ARG interpreted as signed in its precision is known to be
-   always positive or 2 if ARG is known to be always negative, or 3 if
-   ARG may be positive or negative.  */
+   always non-negative or 2 if ARG is known to be always negative, or 3 if
+   ARG may be non-negative or negative.  */
 
 int
 get_range_pos_neg (tree arg)

@@ -18,7 +18,7 @@ TEST_CMP (f4, 8, 4, 200)
 
 /* { dg-final { scan-tree-dump-not {<[a-z]*_div_expr,} "optimized" } } */
 /* { dg-final { scan-tree-dump-not {<rshift_expr,} "optimized" } } */
-/* { dg-final { scan-tree-dump-not {<nop_expr,} "optimized" } } */
+/* { dg-final { scan-tree-dump-times {<nop_expr,} 8 "optimized" } } */
 /* { dg-final { scan-tree-dump {<mult_expr, [^,]*, [^,]*, 3,} "optimized" } } */
 /* { dg-final { scan-tree-dump {<mult_expr, [^,]*, [^,]*, 5,} "optimized" } } */
 /* { dg-final { scan-tree-dump {<mult_expr, [^,]*, [^,]*, 20,} "optimized" } } */

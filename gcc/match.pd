@@ -5577,7 +5577,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && TREE_CODE (@3) == INTEGER_CST
 	  && (mul = wi::mul (wi::to_wide (@2), wi::to_wide (@3),
 			     TYPE_SIGN (type), &overflow),
-	      !overflow))
+	      !overflow)
+	  && (TYPE_UNSIGNED (type)
+	      /* Not using unsigned arithmetics is unsafe if factor
+		 isn't 1 and if for op plus @0 and @2 could have different
+		 sign or for op minus @0 and @2 could have the same sign.  */
+	      || known_eq (factor, 1)
+	      || (get_range_pos_neg (@0)
+		  | (((op == PLUS_EXPR) ^ (tree_int_cst_sgn (@2) < 0))
+		     ? 1 : 2)) != 3))
       (op (mult @0 { wide_int_to_tree (type, factor); })
 	  { wide_int_to_tree (type, mul); })
       (with { tree utype = unsigned_type_for (type); }
