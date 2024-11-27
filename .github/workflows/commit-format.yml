@@ -13,7 +13,7 @@ jobs:
     name: check-changelogs
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -37,7 +37,7 @@ jobs:
     if: ${{ github.base_ref == 'gcc-patch-dev' }} # master commits don't need the gccrs prefix
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -62,7 +62,7 @@ jobs:
     name: check-commit-signoff
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -115,7 +115,7 @@ jobs:
     name: check-issue-reference
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
