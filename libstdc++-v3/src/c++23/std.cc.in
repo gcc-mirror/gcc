@@ -1736,15 +1736,6 @@ export namespace std
   using std::make_const_sentinel;
 #endif
 }
-// FIXME these should be friends of __normal_iterator to avoid exporting
-// __gnu_cxx.
-export namespace __gnu_cxx
-{
-  using __gnu_cxx::operator==;
-  using __gnu_cxx::operator<=>;
-  using __gnu_cxx::operator+;
-  using __gnu_cxx::operator-;
-}
 
 // <latch>
 export namespace std
