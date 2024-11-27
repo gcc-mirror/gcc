@@ -884,11 +884,21 @@ static void
 add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
 {
   gfc_component *c;
-
+  bool is_abstract = false;
 
   c = gfc_find_component (vtype, name, true, true, NULL);
 
-  if (tb->non_overridable && !tb->overridden && c)
+  /* If the present component typebound proc is abstract, the new version
+     should unconditionally be tested if it is a suitable replacement.  */
+  if (c && c->tb && c->tb->u.specific
+      && c->tb->u.specific->n.sym->attr.abstract)
+    is_abstract = true;
+
+  /* Pass on the new tb being not overridable if a component is found and
+     either there is not an overridden specific or the present component
+     tb is abstract. This ensures that possible, viable replacements are
+     loaded.  */
+  if (tb->non_overridable && !tb->overridden && !is_abstract && c)
     return;
 
   if (c == NULL)

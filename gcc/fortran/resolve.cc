@@ -3229,8 +3229,8 @@ static bool check_pure_function (gfc_expr *e)
   const char *name = NULL;
   code_stack *stack;
   bool saw_block = false;
-  
-  /* A BLOCK construct within a DO CONCURRENT construct leads to 
+
+  /* A BLOCK construct within a DO CONCURRENT construct leads to
      gfc_do_concurrent_flag = 0 when the check for an impure function
      occurs.  Check the stack to see if the source code has a nested
      BLOCK construct.  */
@@ -16305,10 +16305,6 @@ resolve_fl_derived (gfc_symbol *sym)
       && sym->ns->proc_name
       && sym->ns->proc_name->attr.flavor == FL_MODULE
       && sym->attr.access != ACCESS_PRIVATE
-      && !(sym->attr.extension
-	   && sym->attr.zero_comp
-	   && !sym->f2k_derived->tb_sym_root
-	   && !sym->f2k_derived->tb_uop_root)
       && !(sym->attr.vtype || sym->attr.pdt_template))
     {
       gfc_symbol *vtab = gfc_find_derived_vtab (sym);
