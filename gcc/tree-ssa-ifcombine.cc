@@ -973,6 +973,10 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 					    gimple_cond_rhs (outer_cond),
 					    gimple_bb (outer_cond))))
 	{
+	  /* Only combine conditions in this fallback case if the blocks are
+	     neighbors.  */
+	  if (single_pred (inner_cond_bb) != outer_cond_bb)
+	    return false;
 	  tree t1, t2;
 	  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
 	  if (param_logical_op_non_short_circuit != -1)
