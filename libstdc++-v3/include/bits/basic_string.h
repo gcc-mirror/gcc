@@ -1079,20 +1079,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return _M_string_length; }
+      {
+	size_type __sz = _M_string_length;
+	if (__sz > max_size ())
+	  __builtin_unreachable ();
+	return __sz;
+      }
 
       ///  Returns the number of characters in the string, not including any
       ///  null-termination.
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       length() const _GLIBCXX_NOEXCEPT
-      { return _M_string_length; }
+      { return size(); }
 
       ///  Returns the size() of the largest possible %string.
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
-      { return (_Alloc_traits::max_size(_M_get_allocator()) - 1) / 2; }
+      {
+	const size_t __diffmax
+	  = __gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_CharT);
+	const size_t __allocmax = _Alloc_traits::max_size(_M_get_allocator());
+	return (std::min)(__diffmax, __allocmax) - 1;
+      }
 
       /**
        *  @brief  Resizes the %string to the specified number of characters.
@@ -1184,8 +1194,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
       {
-	return _M_is_local() ? size_type(_S_local_capacity)
-	                     : _M_allocated_capacity;
+	size_t __sz = _M_is_local() ? size_type(_S_local_capacity)
+				     : _M_allocated_capacity;
+	if (__sz < _S_local_capacity || __sz > max_size ())
+	  __builtin_unreachable ();
+	return __sz;
       }
 
       /**
@@ -1234,7 +1247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       bool
       empty() const _GLIBCXX_NOEXCEPT
-      { return this->size() == 0; }
+      { return _M_string_length == 0; }
 
       // Element access:
       /**

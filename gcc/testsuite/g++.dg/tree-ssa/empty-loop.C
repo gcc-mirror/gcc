@@ -30,5 +30,8 @@ int foo (vector<string> &v, list<string> &l, set<string> &s, map<int, string> &m
 
   return 0;
 }
-/* { dg-final { scan-tree-dump-not "if" "cddce2"} } */
+/* Adding __builtin_unreachable to std::string::size() prevents cddce2 from
+   eliminating the loop early, see PR117764.  */
+/* { dg-final { scan-tree-dump-not "if" "cddce2" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not "if" "cddce3"} } */
 
