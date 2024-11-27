@@ -8872,13 +8872,11 @@ c_parser_sizeof_expression (c_parser *parser)
       finish = parser->tokens_buf[0].location;
       if (type_name == NULL)
 	{
-	  struct c_expr ret;
-	  c_inhibit_evaluation_warnings--;
-	  in_sizeof--;
-	  ret.set_error ();
-	  ret.original_code = ERROR_MARK;
-	  ret.original_type = NULL;
-	  return ret;
+	  /* Let c_expr_sizeof_expr call pop_maybe_used and fill in c_expr
+	     for parsing error; the parsing of the expression could have
+	     called record_maybe_used_decl.  */
+	  expr.set_error ();
+	  goto sizeof_expr;
 	}
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	{
