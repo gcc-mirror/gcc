@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -msse2 -mno-ssse3" } */
-/* { dg-final { scan-assembler-times "pand" 4 } } */
+/* { dg-options "-O2 -msse2 -mno-ssse3 -save-temps" } */
+/* { dg-final { scan-assembler-times "pand\t" 4 } } */
 /* { dg-final { scan-assembler-times "pandn" 4 } } */
 /* { dg-final { scan-assembler-times "por" 4 } } */
 
