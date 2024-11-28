@@ -3209,6 +3209,12 @@ expand_asm_stmt (gasm *stmt)
 		  rtx x = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
 		  clobber_rvec.safe_push (x);
 		}
+	      else if (j == -5)
+		{
+		  if (targetm.redzone_clobber)
+		    if (rtx x = targetm.redzone_clobber ())
+		      clobber_rvec.safe_push (x);
+		}
 	      else
 		{
 		  /* Otherwise we should have -1 == empty string

@@ -3376,6 +3376,16 @@ to be used.",
  bool, (machine_mode mode),
  NULL)
 
+DEFHOOK
+(redzone_clobber,
+ "Define this to return some RTL for the @code{redzone} @code{asm} clobber\n\
+if target has a red zone and wants to support the @code{redzone} clobber\n\
+or return NULL if the clobber should be ignored.\n\
+\n\
+The default is to ignore the @code{redzone} clobber.",
+ rtx, (),
+ NULL)
+
 /* Support for named address spaces.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_ADDR_SPACE_"

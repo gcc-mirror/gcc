@@ -7170,6 +7170,7 @@ ix86_compute_frame_layout (void)
   if (ix86_using_red_zone ()
       && crtl->sp_is_unchanging
       && crtl->is_leaf
+      && !cfun->machine->asm_redzone_clobber_seen
       && !ix86_pc_thunk_call_expanded
       && !ix86_current_function_calls_tls_descriptor)
     {
@@ -26419,6 +26420,22 @@ ix86_mode_can_transfer_bits (machine_mode mode)
   return true;
 }
 
+/* Implement TARGET_REDZONE_CLOBBER.  */
+static rtx
+ix86_redzone_clobber ()
+{
+  cfun->machine->asm_redzone_clobber_seen = true;
+  if (ix86_using_red_zone ())
+    {
+      rtx base = plus_constant (Pmode, stack_pointer_rtx,
+				GEN_INT (-RED_ZONE_SIZE));
+      rtx mem = gen_rtx_MEM (BLKmode, base);
+      set_mem_size (mem, RED_ZONE_SIZE);
+      return mem;
+    }
+  return NULL_RTX;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -27271,6 +27288,9 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_MODE_CAN_TRANSFER_BITS
 #define TARGET_MODE_CAN_TRANSFER_BITS ix86_mode_can_transfer_bits
+
+#undef TARGET_REDZONE_CLOBBER
+#define TARGET_REDZONE_CLOBBER ix86_redzone_clobber
 
 static bool
 ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)

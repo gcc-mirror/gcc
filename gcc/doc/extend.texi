@@ -11800,7 +11800,7 @@ asm volatile ("movc3 %0, %1, %2"
                    : "r0", "r1", "r2", "r3", "r4", "r5", "memory");
 @end example
 
-Also, there are two special clobber arguments:
+Also, there are three special clobber arguments:
 
 @table @code
 @item "cc"
@@ -11827,6 +11827,18 @@ memory barrier for the compiler.
 Note that this clobber does not prevent the @emph{processor} from doing 
 speculative reads past the @code{asm} statement. To prevent that, you need 
 processor-specific fence instructions.
+
+@item "redzone"
+The @code{"redzone"} clobber tells the compiler that the assembly code
+may write to the stack red zone, area below the stack pointer which on
+some architectures in some calling conventions is guaranteed not to be
+changed by signal handlers, interrupts or exceptions and so the compiler
+can store there temporaries in leaf functions.  On targets which have
+no concept of the stack red zone, the clobber is ignored.
+It should be used e.g.@: in case the assembly code uses call instructions
+or pushes something to the stack without taking the red zone into account
+by subtracting red zone size from the stack pointer first and restoring
+it afterwards.
 
 @end table
 

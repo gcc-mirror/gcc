@@ -968,9 +968,11 @@ set_user_assembler_name (tree decl, const char *name)
 
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
-   or -2 if the ASMSPEC is not `cc' or `memory' and is not recognized,
+   or -2 if the ASMSPEC is not `cc' or `memory' or `redzone' and is not
+   recognized,
    or -3 if ASMSPEC is `cc' and is not recognized,
-   or -4 if ASMSPEC is `memory' and is not recognized.
+   or -4 if ASMSPEC is `memory' and is not recognized,
+   or -5 if ASMSPEC is `redzone' and is not recognized.
    Accept an exact spelling or a decimal number.
    Prefixes such as % are optional.  */
 
@@ -1036,6 +1038,9 @@ decode_reg_name_and_count (const char *asmspec, int *pnregs)
 	    return table[i].number;
       }
 #endif /* ADDITIONAL_REGISTER_NAMES */
+
+      if (!strcmp (asmspec, "redzone"))
+	return -5;
 
       if (!strcmp (asmspec, "memory"))
 	return -4;
