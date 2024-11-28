@@ -613,7 +613,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       if (args)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
       const char *format
-	= (msg ? G_ ("ignoring return value of %qD, that must be used: %<%s%>")
+	= (msg ? G_ ("ignoring return value of %qD, that must be used: %qs")
 	       : G_ ("ignoring return value of %qD, that must be used"));
       const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
@@ -630,7 +630,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
       const char *format
 	= (msg ? G_ (
-	     "ignoring returned value of type %qT, that must be used: %<%s%>")
+	     "ignoring returned value of type %qT, that must be used: %qs")
 	       : G_ ("ignoring returned value of type %qT, that must be used"));
       const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;

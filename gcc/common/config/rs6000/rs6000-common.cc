@@ -222,7 +222,7 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case OPT_mabi_ieeelongdouble:
       if (opts->x_rs6000_long_double_type_size == 64)
 	{
-	  error_at (loc, "option %<%s%> requires %<-mlong-double-128%>",
+	  error_at (loc, "option %qs requires %<-mlong-double-128%>",
 		    decoded->orig_option_with_args_text);
 	  return true;
 	}

@@ -3708,7 +3708,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	      else
 		warned = warning_at (&richloc, OPT_Wvla_parameter,
 				     "argument %u of type %s declared "
-				     "with mismatched bound %<%s%>",
+				     "with mismatched bound %qs",
 				     parmpos + 1, newparmstr.c_str (),
 				     newbndstr);
 
@@ -3725,7 +3725,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 		    }
 		  else
 		    inform (&richloc, "previously declared as %s with bound "
-			    "%<%s%>", curparmstr.c_str (), curbndstr);
+			    "%qs", curparmstr.c_str (), curbndstr);
 
 		  continue;
 		}
@@ -3742,7 +3742,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 
 	      if (warning_at (newloc, OPT_Wvla_parameter,
 			      "argument %u of type %s declared with "
-			      "mismatched bound %<%s%>",
+			      "mismatched bound %qs",
 			      parmpos + 1, newparmstr.c_str (), newbndstr))
 		inform (origloc, "previously declared as %s with bound %qs",
 			curparmstr.c_str (), curbndstr);

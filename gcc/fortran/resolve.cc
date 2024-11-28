@@ -4278,7 +4278,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       CHECK_INTERFACES
-      gfc_error ("Operand of unary numeric operator %<%s%> at %L is %s",
+      gfc_error ("Operand of unary numeric operator %qs at %L is %s",
 		 gfc_op2string (e->value.op.op), &e->where, gfc_typename (e));
       return false;
 
@@ -4306,7 +4306,7 @@ resolve_operator (gfc_expr *e)
       if (flag_unsigned &&  gfc_invalid_unsigned_ops (op1, op2))
 	{
 	  CHECK_INTERFACES
-	  gfc_error ("Operands of binary numeric operator %<%s%> at %L are "
+	  gfc_error ("Operands of binary numeric operator %qs at %L are "
 		     "%s/%s", gfc_op2string (e->value.op.op), &e->where,
 		     gfc_typename (op1), gfc_typename (op2));
 	  return false;
@@ -4333,14 +4333,14 @@ resolve_operator (gfc_expr *e)
 	{
 	  CHECK_INTERFACES
 	  gfc_error ("Unexpected derived-type entities in binary intrinsic "
-		     "numeric operator %<%s%> at %L",
+		     "numeric operator %qs at %L",
 		     gfc_op2string (e->value.op.op), &e->where);
 	  return false;
 	}
       else
 	{
 	  CHECK_INTERFACES
-	  gfc_error ("Operands of binary numeric operator %<%s%> at %L are %s/%s",
+	  gfc_error ("Operands of binary numeric operator %qs at %L are %s/%s",
 		     gfc_op2string (e->value.op.op), &e->where, gfc_typename (op1),
 		     gfc_typename (op2));
 	  return false;
@@ -4399,7 +4399,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       CHECK_INTERFACES
-      gfc_error ("Operands of logical operator %<%s%> at %L are %s/%s",
+      gfc_error ("Operands of logical operator %qs at %L are %s/%s",
 		 gfc_op2string (e->value.op.op), &e->where, gfc_typename (op1),
 		 gfc_typename (op2));
       return false;
@@ -4564,7 +4564,7 @@ resolve_operator (gfc_expr *e)
       else
 	{
 	  CHECK_INTERFACES
-	  gfc_error ("Operands of comparison operator %<%s%> at %L are %s/%s",
+	  gfc_error ("Operands of comparison operator %qs at %L are %s/%s",
 		     gfc_op2string (e->value.op.op), &e->where, gfc_typename (op1),
 		     gfc_typename (op2));
 	}
@@ -4579,22 +4579,22 @@ resolve_operator (gfc_expr *e)
 	  guessed = lookup_uop_fuzzy (name, e->value.op.uop->ns->uop_root);
 	  CHECK_INTERFACES
 	  if (guessed)
-	    gfc_error ("Unknown operator %<%s%> at %L; did you mean "
-			"%<%s%>?", name, &e->where, guessed);
+	    gfc_error ("Unknown operator %qs at %L; did you mean "
+			"%qs?", name, &e->where, guessed);
 	  else
-	    gfc_error ("Unknown operator %<%s%> at %L", name, &e->where);
+	    gfc_error ("Unknown operator %qs at %L", name, &e->where);
 	}
       else if (op2 == NULL)
 	{
 	  CHECK_INTERFACES
-	  gfc_error ("Operand of user operator %<%s%> at %L is %s",
+	  gfc_error ("Operand of user operator %qs at %L is %s",
 		  e->value.op.uop->name, &e->where, gfc_typename (op1));
 	}
       else
 	{
 	  e->value.op.uop->op->sym->attr.referenced = 1;
 	  CHECK_INTERFACES
-	  gfc_error ("Operands of user operator %<%s%> at %L are %s/%s",
+	  gfc_error ("Operands of user operator %qs at %L are %s/%s",
 		    e->value.op.uop->name, &e->where, gfc_typename (op1),
 		    gfc_typename (op2));
 	}

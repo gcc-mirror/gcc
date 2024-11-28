@@ -135,7 +135,7 @@ UnifyRules::emit_abi_mismatch (const TyTy::FnType &expected,
   rich_location r (line_table, locus);
   r.add_range (lhs.get_locus ());
   r.add_range (rhs.get_locus ());
-  rust_error_at (r, "mistached abi %<%s%> got %<%s%>",
+  rust_error_at (r, "mistached abi %qs got %qs",
 		 get_string_from_abi (expected.get_abi ()).c_str (),
 		 get_string_from_abi (got.get_abi ()).c_str ());
 }

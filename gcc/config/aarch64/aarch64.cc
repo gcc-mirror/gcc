@@ -18929,7 +18929,7 @@ aarch64_validate_sls_mitigation (const char *const_str)
 	}
       else
 	{
-	  error ("invalid argument %<%s%> for %<-mharden-sls=%>", str);
+	  error ("invalid argument %qs for %<-mharden-sls=%>", str);
 	  break;
 	}
       str = strtok_r (NULL, ",", &token_save);
@@ -19160,7 +19160,7 @@ aarch64_override_options (void)
 	    = aarch64_get_extension_string_for_isa_flags (full_arch_flags,
 							  full_cpu_flags);
 	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch "
-		      "and resulted in options %<%s%> being added",
+		      "and resulted in options %qs being added",
 		       aarch64_cpu_string,
 		       aarch64_arch_string,
 		       ext_diff.c_str ());
@@ -19899,7 +19899,7 @@ aarch64_process_target_attr (tree args)
 	    = aarch64_parse_extension (with_plus.c_str (), &isa_temp, nullptr);
 
 	  if (ext_res == AARCH_PARSE_OK)
-	    error ("arch extension %<%s%> should be prefixed by %<+%>",
+	    error ("arch extension %qs should be prefixed by %<+%>",
 		   token);
 	  else
 	    error ("pragma or attribute %<target(\"%s\")%> is not valid", token);

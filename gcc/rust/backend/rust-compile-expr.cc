@@ -1501,7 +1501,7 @@ CompileExpr::compile_integer_literal (const HIR::LiteralExpr &expr,
   if (mpz_cmp (ival, type_min) < 0 || mpz_cmp (ival, type_max) > 0)
     {
       rust_error_at (expr.get_locus (),
-		     "integer overflows the respective type %<%s%>",
+		     "integer overflows the respective type %qs",
 		     tyty->get_name ().c_str ());
       return error_mark_node;
     }
@@ -1547,7 +1547,7 @@ CompileExpr::compile_float_literal (const HIR::LiteralExpr &expr,
   if (TREE_OVERFLOW (real_value) || real_value_overflow)
     {
       rust_error_at (expr.get_locus (),
-		     "decimal overflows the respective type %<%s%>",
+		     "decimal overflows the respective type %qs",
 		     tyty->get_name ().c_str ());
       return error_mark_node;
     }

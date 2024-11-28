@@ -279,7 +279,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       repeat_location.add_range (prev_field_locus);
 
       rust_error_at (repeat_location, ErrorCode::E0062,
-		     "field %<%s%> specified more than once",
+		     "field %qs specified more than once",
 		     field.field_name.as_string ().c_str ());
       return false;
     }
@@ -325,7 +325,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       repeat_location.add_range (prev_field_locus);
 
       rust_error_at (repeat_location, ErrorCode::E0062,
-		     "field %<%s%> specified more than once",
+		     "field %qs specified more than once",
 		     field_name.c_str ());
       return false;
     }
@@ -370,7 +370,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
       repeat_location.add_range (prev_field_locus);
 
       rust_error_at (repeat_location, ErrorCode::E0062,
-		     "field %<%s%> specified more than once",
+		     "field %qs specified more than once",
 		     field.get_field_name ().as_string ().c_str ());
       return false;
     }

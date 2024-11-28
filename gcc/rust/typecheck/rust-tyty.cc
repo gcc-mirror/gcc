@@ -408,7 +408,7 @@ BaseType::bounds_compatible (const BaseType &other, location_t locus,
       if (emit_error)
 	{
 	  rust_error_at (r, ErrorCode::E0277,
-			 "bounds not satisfied for %s %<%s%> is not satisfied",
+			 "bounds not satisfied for %s %qs is not satisfied",
 			 other.get_name ().c_str (), missing_preds.c_str ());
 	  // rust_assert (!emit_error);
 	}

@@ -457,7 +457,7 @@ maybe_warn_read_write_only (tree fndecl, gimple *stmt, tree arg, tree ptr)
 
       location_t parmloc = DECL_SOURCE_LOCATION (parm);
       inform (parmloc, "accessing argument %u of a function declared with "
-	      "attribute %<%s%>",
+	      "attribute %qs",
 	      argno + 1, access_str);
 
       break;
@@ -880,14 +880,14 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
 	    {
 	      location_t loc = DECL_SOURCE_LOCATION (fndecl);
 	      inform (loc, "in a call to %qD declared with "
-		      "attribute %<%s%> here", fndecl, access_str);
+		      "attribute %qs here", fndecl, access_str);
 	    }
 	  else
 	    {
 	      /* Handle calls through function pointers.  */
 	      location_t loc = gimple_location (stmt);
 	      inform (loc, "in a call to %qT declared with "
-		      "attribute %<%s%>", fntype, access_str);
+		      "attribute %qs", fntype, access_str);
 	    }
 	}
       else

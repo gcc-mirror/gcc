@@ -358,7 +358,7 @@ Gogo::set_package_name(const std::string& package_name,
   if (this->package_ != NULL)
     {
       if (this->package_->package_name() != package_name)
-	go_error_at(location, "expected package %<%s%>",
+	go_error_at(location, "expected package %qs",
 		    Gogo::message_name(this->package_->package_name()).c_str());
       return;
     }
@@ -8835,7 +8835,7 @@ Named_object::export_named_object(Export* exp) const
 
     case NAMED_OBJECT_TYPE_DECLARATION:
       go_error_at(this->type_declaration_value()->location(),
-		  "attempt to export %<%s%> which was declared but not defined",
+		  "attempt to export %qs which was declared but not defined",
 		  this->message_name().c_str());
       break;
 

@@ -60,7 +60,7 @@ TypeCheckCallExpr::visit (ADTType &type)
     {
       rust_error_at (
 	call.get_locus (), ErrorCode::E0423,
-	"expected function, tuple struct or tuple variant, found struct %<%s%>",
+	"expected function, tuple struct or tuple variant, found struct %qs",
 	type.get_name ().c_str ());
       return;
     }

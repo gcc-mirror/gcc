@@ -767,7 +767,7 @@ TypeCheckItem::validate_trait_impl_block (
 	    }
 
 	  rust_error_at (r, ErrorCode::E0046,
-			 "missing %s in implementation of trait %<%s%>",
+			 "missing %s in implementation of trait %qs",
 			 missing_items_buf.c_str (),
 			 trait_reference->get_name ().c_str ());
 	}

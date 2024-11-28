@@ -3157,7 +3157,7 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
 	  /* See <https://gcc.gnu.org/PR93465>; the semantics of combining
 	     OpenACC and OpenMP 'target' are not clear.  */
 	  error_at (loc,
-		    "cannot apply %<%s%> to %qD, which has also been"
+		    "cannot apply %qs to %qD, which has also been"
 		    " marked with an OpenMP 'declare target' directive",
 		    routine_str, fndecl);
 	  /* Incompatible.  */
@@ -3212,14 +3212,14 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
       if (c_diag != NULL_TREE)
 	error_at (OMP_CLAUSE_LOCATION (c_diag),
 		  "incompatible %qs clause when applying"
-		  " %<%s%> to %qD, which has already been"
+		  " %qs to %qD, which has already been"
 		  " marked with an OpenACC 'routine' directive",
 		  omp_clause_code_name[OMP_CLAUSE_CODE (c_diag)],
 		  routine_str, fndecl);
       else if (c_diag_p != NULL_TREE)
 	error_at (loc,
 		  "missing %qs clause when applying"
-		  " %<%s%> to %qD, which has already been"
+		  " %qs to %qD, which has already been"
 		  " marked with an OpenACC 'routine' directive",
 		  omp_clause_code_name[OMP_CLAUSE_CODE (c_diag_p)],
 		  routine_str, fndecl);

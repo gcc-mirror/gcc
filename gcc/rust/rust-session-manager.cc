@@ -147,7 +147,7 @@ validate_crate_name (const std::string &crate_name, Error &error)
       if (!(is_alphabetic (c.value) || is_numeric (c.value) || c.value == '_'))
 	{
 	  error = Error (UNDEF_LOCATION,
-			 "invalid character %<%s%> in crate name: %<%s%>",
+			 "invalid character %qs in crate name: %qs",
 			 c.as_string ().c_str (), crate_name.c_str ());
 	  return false;
 	}
@@ -1086,7 +1086,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   if (stream == NULL	       // No stream and
       && proc_macros.empty ()) // no proc macros
     {
-      rust_error_at (locus, "failed to locate crate %<%s%>",
+      rust_error_at (locus, "failed to locate crate %qs",
 		     import_name.c_str ());
       return UNKNOWN_NODEID;
     }
@@ -1110,7 +1110,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   const std::string current_crate_name = mappings->get_current_crate_name ();
   if (current_crate_name.compare (extern_crate.get_crate_name ()) == 0)
     {
-      rust_error_at (locus, "current crate name %<%s%> collides with this",
+      rust_error_at (locus, "current crate name %qs collides with this",
 		     current_crate_name.c_str ());
       return UNKNOWN_NODEID;
     }

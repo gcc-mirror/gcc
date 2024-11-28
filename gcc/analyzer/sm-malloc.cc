@@ -1320,7 +1320,7 @@ public:
   {
     /* CWE-416: Use After Free.  */
     ctxt.add_cwe (416);
-    return ctxt.warn ("use after %<%s%> of %qE",
+    return ctxt.warn ("use after %qs of %qE",
 		      m_deallocator->m_name, m_arg);
   }
 
@@ -1363,17 +1363,17 @@ public:
 	  gcc_unreachable ();
 	case WORDING_FREED:
 	  pp_printf (&pp,
-		     "use after %<%s%> of %qE; freed at %@",
+		     "use after %qs of %qE; freed at %@",
 		     funcname, ev.m_expr, &m_free_event);
 	  return true;
 	case WORDING_DELETED:
 	  pp_printf (&pp,
-		     "use after %<%s%> of %qE; deleted at %@",
+		     "use after %qs of %qE; deleted at %@",
 		     funcname, ev.m_expr, &m_free_event);
 	  return true;
 	case WORDING_DEALLOCATED:
 	  pp_printf (&pp,
-		     "use after %<%s%> of %qE;"
+		     "use after %qs of %qE;"
 		     " deallocated at %@",
 		     funcname, ev.m_expr, &m_free_event);
 	  return true;
@@ -1381,7 +1381,7 @@ public:
     else
       {
 	pp_printf (&pp,
-		   "use after %<%s%> of %qE",
+		   "use after %qs of %qE",
 		   funcname, ev.m_expr);
 	return true;
       }
@@ -1517,12 +1517,12 @@ public:
       case MEMSPACE_CODE:
       case MEMSPACE_GLOBALS:
       case MEMSPACE_READONLY_DATA:
-	return ctxt.warn ("%<%s%> of %qE which points to memory"
+	return ctxt.warn ("%qs of %qE which points to memory"
 			  " not on the heap",
 			  m_funcname, m_arg);
 	break;
       case MEMSPACE_STACK:
-	return ctxt.warn ("%<%s%> of %qE which points to memory"
+	return ctxt.warn ("%qs of %qE which points to memory"
 			  " on the stack",
 			  m_funcname, m_arg);
 	break;

@@ -2217,7 +2217,7 @@ pru_insert_attributes (tree node, tree *)
 	error ("only 32-bit access is supported "
 	       "for %<__regio_symbol%> address space");
       if (strcmp (name, "__R30") != 0 && strcmp (name, "__R31") != 0)
-	error ("register name %<%s%> not recognized "
+	error ("register name %qs not recognized "
 	       "in %<__regio_symbol%> address space", name);
     }
 

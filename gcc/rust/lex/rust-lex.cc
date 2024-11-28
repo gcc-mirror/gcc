@@ -1631,7 +1631,7 @@ Lexer::parse_partial_unicode_escape ()
       else
 	{
 	  rust_error_at (get_current_location (),
-			 "invalid character %<%s%> in unicode escape",
+			 "invalid character %qs in unicode escape",
 			 current_char.as_string ().c_str ());
 	  // TODO use utf-8 codepoint to skip whitespaces
 	  while (current_char != '}' && current_char != '{'
@@ -1896,7 +1896,7 @@ Lexer::parse_raw_byte_string (location_t loc)
       else if (current_char.value > 127)
 	{
 	  rust_error_at (get_current_location (),
-			 "character %<%s%> in raw byte string out of range",
+			 "character %qs in raw byte string out of range",
 			 current_char.as_string ().c_str ());
 	  current_char = 0;
 	}

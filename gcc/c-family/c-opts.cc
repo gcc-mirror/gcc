@@ -374,7 +374,7 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       if (!strcmp (arg, "p1689r5"))
 	cpp_opts->deps.fdeps_format = FDEPS_FMT_P1689R5;
       else
-	error ("%<-fdeps-format=%> unknown format %<%s%>", arg);
+	error ("%<-fdeps-format=%> unknown format %qs", arg);
       break;
 
     case OPT_fdeps_file_:

@@ -140,7 +140,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
 	      error_at (
 		m_loc,
 		"unexpected arch for %<target()%> attribute: bad "
-		"string found %<%s%>", token);
+		"string found %qs", token);
 	      goto fail;
 	    }
 

@@ -1086,7 +1086,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       const char *format
 	= (msg
 	   ? G_("ignoring return value of %qD, "
-		"declared with attribute %<nodiscard%>: %<%s%>")
+		"declared with attribute %<nodiscard%>: %qs")
 	   : G_("ignoring return value of %qD, "
 		"declared with attribute %<nodiscard%>%s"));
       const char *raw_msg = msg ? (const char *) msg : "";
@@ -1104,7 +1104,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       const char *format
 	= (msg
 	   ? G_("ignoring returned value of type %qT, "
-		"declared with attribute %<nodiscard%>: %<%s%>")
+		"declared with attribute %<nodiscard%>: %qs")
 	   : G_("ignoring returned value of type %qT, "
 		"declared with attribute %<nodiscard%>%s"));
       const char *raw_msg = msg ? (const char *) msg : "";

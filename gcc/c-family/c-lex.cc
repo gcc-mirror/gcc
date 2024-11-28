@@ -497,7 +497,7 @@ c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
       if (token->type != CPP_CLOSE_PAREN)
 	{
 	  cpp_error (pfile, CPP_DL_ERROR,
-		     "expected %<)%> after %<%s%>", name);
+		     "expected %<)%> after %qs", name);
 	  name = "";
 	}
     }

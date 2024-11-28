@@ -792,7 +792,7 @@ Gogo::initializer_for_embeds(Type* type,
 	{
 	  go_error_at(loc,
 		      ("invalid go:embed: build system did not "
-		       "map pattern %<%s%>"),
+		       "map pattern %qs"),
 		      pe->c_str());
 	  continue;
 	}
@@ -807,7 +807,7 @@ Gogo::initializer_for_embeds(Type* type,
 	    {
 	      go_error_at(loc,
 			  ("invalid go:embed: build system did not "
-			   "map file %<%s%>"),
+			   "map file %qs"),
 			  pf->c_str());
 	      continue;
 	    }

@@ -711,9 +711,9 @@ aarch_validate_mbranch_protection (
 	{
 	  res = false;
 	  if (strcmp (str, "") == 0)
-	    error ("missing feature or flag for %<%s%>", opt);
+	    error ("missing feature or flag for %qs", opt);
 	  else
-	    error ("invalid argument %<%s%> for %<%s%>", str, opt);
+	    error ("invalid argument %qs for %qs", str, opt);
 	  break;
 	}
 
@@ -724,7 +724,7 @@ aarch_validate_mbranch_protection (
       if (reject_alone && alone_str != NULL)
 	{
 	  res = false;
-	  error ("argument %<%s%> can only appear alone in %<%s%>",
+	  error ("argument %qs can only appear alone in %qs",
 		 alone_str, opt);
 	  break;
 	}
