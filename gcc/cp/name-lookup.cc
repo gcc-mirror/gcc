@@ -7179,6 +7179,17 @@ suggest_alternatives_for_1 (location_t location, tree name,
 	return hint;
     }
 
+  /* Look for exact matches for builtin defines that would have been
+     defined if the user had passed a command-line option (e.g. -fopenmp
+     for "_OPENMP").  */
+  diagnostic_option_id option_id
+    = get_option_for_builtin_define (IDENTIFIER_POINTER (name));
+  if (option_id.m_idx > 0)
+    return name_hint (nullptr,
+		      new suggest_missing_option (location,
+						  IDENTIFIER_POINTER (name),
+						  option_id));
+
   /* Otherwise, consider misspellings.  */
   if (!suggest_misspellings)
     return name_hint ();

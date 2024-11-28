@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/name-hint.h"
 #include "c-family/known-headers.h"
 #include "gcc-rich-location.h"
+#include "opts.h"
 
 /* An enum for distinguishing between the C and C++ stdlibs.  */
 
@@ -322,4 +323,31 @@ suggest_missing_header::~suggest_missing_header ()
 	  "%qs is defined in header %qs;"
 	  " this is probably fixable by adding %<#include %s%>",
 	  m_name_str, m_header_hint, m_header_hint);
+}
+
+/* Implementation of class suggest_missing_option.  */
+
+/* suggest_missing_option's ctor.  */
+
+suggest_missing_option::suggest_missing_option (location_t loc,
+						const char *macro_name,
+						diagnostic_option_id option_id)
+: deferred_diagnostic (loc), m_name_str (macro_name), m_option_id (option_id)
+{
+  gcc_assert (macro_name);
+  gcc_assert (option_id.m_idx > 0);
+}
+
+/* suggest_missing_option's dtor.  */
+
+suggest_missing_option::~suggest_missing_option ()
+{
+  if (is_suppressed_p ())
+    return;
+
+  const char *option_name = cl_options[m_option_id.m_idx].opt_text;
+  inform (get_location (),
+	  "%qs is defined when using option %qs;"
+	  " this is probably fixable by adding %qs to the command-line options",
+	  m_name_str, option_name, option_name);
 }

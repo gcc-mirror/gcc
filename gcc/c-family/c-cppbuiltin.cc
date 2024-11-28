@@ -1673,6 +1673,19 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "__DECIMAL_BID_FORMAT__");
 }
 
+/* Given NAME, return the command-line option that would make it be
+   a builtin define, or 0 if unrecognized.  */
+
+diagnostic_option_id
+get_option_for_builtin_define (const char *name)
+{
+  if (!strcmp (name, "_OPENACC"))
+    return OPT_fopenacc;
+  if (!strcmp (name, "_OPENMP"))
+    return OPT_fopenmp;
+  return 0;
+}
+
 /* Pass an object-like macro.  If it doesn't lie in the user's
    namespace, defines it unconditionally.  Otherwise define a version
    with two leading underscores, and another version with two leading
