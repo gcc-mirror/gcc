@@ -1,3 +1,65 @@
+2024-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36503
+	* config/i386/i386.md (*ashl<mode>3_add):
+	New define_insn_and_split pattern.
+	(*ashl<mode>3_add_1): Ditto.
+	(*<insn><mode>3_add): Ditto.
+	(*<insn><mode>3_add_1): Ditto.
+	(*ashl<mode>3_sub): Rename from *ashl<mode>3_negcnt.
+	(*ashl<mode>3_sub_1): Rename from *ashl<mode>3_negcnt_1.
+	(*<insn><mode>3_sub): Rename from *<insn><mode>3_negcnt.
+	(*<insn><mode>3_sub_1): Rename from *<insn><mode>3_negcnt_1.
+
+2024-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117776
+	* match.pd (nested int casts): Allow for the case
+	where the final prec is greater than the original
+	prec.
+
+2024-11-27  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Refactor sorts of unsigned SAT_ADD match pattern for
+	IFN ADD_OVERFLOW.
+
+2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117642
+	* builtins.cc (expand_builtin_sync_lock_release): Change return type
+	from void to rtx, return result of expand_atomic_store.
+	(expand_builtin) <case BUILT_IN_SYNC_LOCK_RELEASE_16>: If
+	expand_builtin_sync_lock_release returns NULL, do a break rather
+	than return const0_rtx.
+
+2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117692
+	* tree.cc (get_range_pos_neg): Adjust function comment, use
+	non-negative instead of positive.
+	* match.pd
+	(((X /[ex] C1) +- C2) * (C1 * C3) -> (X * C3) +- (C1 * C2 * C3)):
+	Use casts to utype if type is signed, factor isn't 1 and
+	C1 and C2 could have different sign for + or could have the
+	same sign for -.
+
+2024-11-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Avoid fallback
+	conjunction of noncontiguous conditions.
+
+2024-11-27  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi: Document -Wfree-labels.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+	    Andi Kleen  <ak@gcc.gnu.org>
+
+	PR bootstrap/117350
+	* tree.cc (need_assembler_name_p): Keep assembler name
+	for abstract declarations when autofdo is used.
+
 2024-11-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.cc (selftest::print_diff): New function.

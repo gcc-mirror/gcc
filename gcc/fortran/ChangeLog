@@ -1,3 +1,13 @@
+2024-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84674
+	PR fortran/117768
+	* class.cc (add_proc_comp): If the component points to a tbp
+	that is abstract, do not return since the new version is more
+	likely to be usable.
+	* resolve.cc (resolve_fl_derived): Remove the condition that
+	rejected a completely empty derived type extension.
+
 2024-11-26  Harald Anlauf  <anlauf@gmx.de>
 
 	* expr.cc (find_inquiry_ref): Fix memleak introduced by scanning

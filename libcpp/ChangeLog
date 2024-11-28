@@ -1,3 +1,8 @@
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* files.cc (_cpp_stack_file): Handle -include of header unit more
+	specially.
+
 2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/117118

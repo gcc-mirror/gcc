@@ -1,3 +1,71 @@
+2024-11-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* include/bits/basic_string.h (basic_string::size(),
+	basic_string::length(), basic_string::capacity()): Add
+	__builtin_unreachable to declare value ranges.
+	(basic_string::empty()): Implement directly
+	(basic_string::max_size()): Account correctly the terminating 0
+	and limits implied by ptrdiff_t.
+
+2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__glibcxx_assert): Remove useless
+	__builtin_expect from constexpr-only assertion. Improve
+	comments.
+
+2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117650
+	* include/bits/c++config (__glibcxx_assert_fail): Add cold
+	attribute.
+	* include/debug/formatter.h (_Error_formatter::_M_error):
+	Likewise.
+
+2024-11-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (views::__adaptor::_RangeAdaptorClosure):
+	Befriend both operator| overloads.
+	* src/c++23/std.cc.in: Don't export views::__adaptor::operator|.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* src/c++23/std.cc.in: Fix iter_move/swap.  Add fold_left_first, to,
+	concat, and some operators.
+
+2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/forward_list.h (forward_list::front): Add
+	non-empty assertions.
+	* include/bits/stl_list.h (list::front, list::back): Add
+	non-empty assertions.
+
+2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/forward_list.h (operator=(forward_list&&)): Use
+	if constexpr instead of dispatching to _M_move_assign.
+	(assign(InputIterator, InputIterator)): Use if constexpr instead
+	of dispatching to _M_assign.
+	(assign(size_type, const T&)): Use if constexpr instead of
+	dispatching to _M_assign_n.
+	(_M_move_assign, _M_assign_n): Do not define for versioned
+	namespace.
+	(_M_assign): Remove.
+
+2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (operator=(list&&)): Use if constexpr
+	instead of dispatching to _M_move_assign.
+	(_M_move_assign): Do not define for versioned namespace.
+
+2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105857
+	* config/locale/dragonfly/codecvt_members.cc (do_length): Limit
+	size of alloca buffer to 4k.
+	* config/locale/gnu/codecvt_members.cc (do_length): Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/105857.cc: New
+	test.
+
 2024-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/117751

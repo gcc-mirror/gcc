@@ -1,3 +1,8 @@
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_out::core_bools): Check vague_linkage_p.
+	(has_definition): Likewise.
+
 2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* module.cc (bytes_out::loc): New function.

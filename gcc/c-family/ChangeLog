@@ -1,3 +1,15 @@
+2024-11-27  Florian Weimer  <fweimer@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Initialize
+	warn_free_labels.
+	* c.opt (Wfree-labels): New option.
+	* c.opt.urls: Regenerate.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Enable -Warray-compare
+	in C++20.
+
 2024-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/43374

@@ -1,3 +1,82 @@
+2024-11-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/empty-loop.C: xfail optimization at cddce2 and check
+	it happens at cddce3.
+	* g++.dg/tree-ssa/string-1.C: New test.
+
+2024-11-27  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/91193
+	* gcc.dg/pr91193-1.c, gcc.dg/pr91193-2.c: New tests.
+
+2024-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36503
+	* gcc.target/i386/pr36503-3.c: New test.
+	* gcc.target/i386/pr36503-4.c: New test.
+
+2024-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117776
+	* g++.dg/vect/pr117776.cc: New test.
+	* gcc.dg/tree-ssa/cast-3.c: New test.
+
+2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117745
+	* gcc.dg/pr117745.c: New test.
+
+2024-11-27  Pan Li  <pan2.li@intel.com>
+
+	PR target/112600
+	* gcc.target/i386/pr112600-5-u16.c: New test.
+	* gcc.target/i386/pr112600-5-u32.c: New test.
+	* gcc.target/i386/pr112600-5-u64.c: New test.
+	* gcc.target/i386/pr112600-5-u8.c: New test.
+	* gcc.target/i386/pr112600-5.h: New test.
+
+2024-11-27  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117781
+	* gcc.dg/c23-typeof-5.c: New test.
+
+2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117642
+	* gcc.target/i386/pr117642-1.c: New test.
+	* gcc.target/i386/pr117642-2.c: New test.
+
+2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117692
+	* gcc.dg/tree-ssa/mulexactdiv-5.c: Expect 8 nop_exprs.
+	* gcc.dg/tree-ssa/pr117692.c: New test.
+
+2024-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117768
+	* gfortran.dg/pr117768.f90: New test.
+
+2024-11-27  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wfree-labels-1.c: New test.
+	* gcc.dg/Wfree-labels-2.c: New test.
+	* gcc.dg/Wfree-labels-3.c: New test.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/static-3_b.C: New test.
+	* g++.dg/modules/static-3_a.H: New test.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/tree-ssa/pr15791-1.C: Add -Wno-array-compare.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/dashinclude-1_b.C: Add an #error.
+	* g++.dg/modules/dashinclude-1_a.H: Remove dg-module-do run.
+
 2024-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* g++.dg/ext/sve-sizeless-2.C: Update the expected error message

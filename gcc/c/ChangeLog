@@ -1,3 +1,31 @@
+2024-11-27  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/91193
+	* c-parser.cc (c_parser_maybe_reclassify_token): Define earlier.
+	(c_parser_declaration_or_fndef): Call
+	c_parser_maybe_reclassify_token before parsing old-style parameter
+	definitions.
+
+2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117745
+	* c-parser.cc (c_parser_sizeof_expression): If type_name is NULL,
+	just expr.set_error () and goto sizeof_expr instead of doing error
+	recovery manually.
+
+2024-11-27  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117781
+	* c-parser.cc (c_parser_typeof_specifier): Do not remove _Atomic
+	from array element type for typeof_unqual.
+
+2024-11-27  Florian Weimer  <fweimer@redhat.com>
+
+	* c-parser.cc (c_parser_compound_statement_nostart): Use
+	OPT_Wfree_labels for warning about labels on declarations.
+	(c_parser_compound_statement_nostart): Use OPT_Wfree_labels
+	for warning about labels at end of compound statements.
+
 2024-11-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/94370
