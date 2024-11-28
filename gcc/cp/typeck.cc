@@ -1686,6 +1686,14 @@ structural_comptypes (tree t1, tree t2, int strict)
   return true;
 }
 
+/* C++ implementation of compatible_types_for_indirection_note_p.  */
+
+bool
+compatible_types_for_indirection_note_p (tree type1, tree type2)
+{
+  return same_type_p (type1, type2);
+}
+
 /* Return true if T1 and T2 are related as allowed by STRICT.  STRICT
    is a bitwise-or of the COMPARE_* flags.  */
 

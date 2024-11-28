@@ -35,3 +35,8 @@ void usage ()
                         |
                         int
      { dg-end-multiline-output "" } */
+  /* { dg-begin-multiline-output "" }
+   my_pointer<Foo> ptr (val);
+                        ^~~
+                        &
+     { dg-end-multiline-output "" } */

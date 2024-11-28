@@ -8584,6 +8584,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	  complained = permerror (&richloc,
 				  "invalid conversion from %qH to %qI",
 				  TREE_TYPE (expr), totype);
+	  if (complained)
+	    maybe_emit_indirection_note (loc, expr, totype);
 	}
       if (convs->kind == ck_ref_bind)
 	expr = convert_to_reference (totype, expr, CONV_IMPLICIT,

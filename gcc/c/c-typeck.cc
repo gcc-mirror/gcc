@@ -1438,6 +1438,14 @@ struct comptypes_data {
   const struct tagged_tu_seen_cache* cache;
 };
 
+/* C implementation of compatible_types_for_indirection_note_p.  */
+
+bool
+compatible_types_for_indirection_note_p (tree type1, tree type2)
+{
+  return comptypes (type1, type2) == 1;
+}
+
 /* Return 1 if TYPE1 and TYPE2 are compatible types for assignment
    or various other operations.  Return 2 if they are compatible
    but a warning may be needed if you use them together.  */
@@ -8487,7 +8495,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      if (permerror_opt (&richloc, OPT_Wint_conversion,
 				 "passing argument %d of %qE makes pointer "
 				 "from integer without a cast", parmnum, rname))
-		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+		{
+		  maybe_emit_indirection_note (expr_loc, rhs, type);
+		  inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+		}
 	    }
 	    break;
 	  case ic_assign:
@@ -8527,7 +8538,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    if (permerror_opt (&richloc, OPT_Wint_conversion,
 			       "passing argument %d of %qE makes integer from "
 			       "pointer without a cast", parmnum, rname))
-	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      {
+		maybe_emit_indirection_note (expr_loc, rhs, type);
+		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      }
 	  }
 	  break;
 	case ic_assign:

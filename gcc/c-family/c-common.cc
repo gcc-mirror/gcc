@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
 #include "tree-pretty-print-markup.h"
+#include "gcc-rich-location.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -9627,6 +9628,40 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
 
       richloc->set_range (0, hint_loc, SHOW_RANGE_WITH_CARET);
       richloc->add_range (old_loc);
+    }
+}
+
+/* Potentially emit a note about likely missing '&' or '*',
+   depending on EXPR and EXPECTED_TYPE.  */
+
+void
+maybe_emit_indirection_note (location_t loc,
+			     tree expr, tree expected_type)
+{
+  gcc_assert (expr);
+  gcc_assert (expected_type);
+
+  tree actual_type = TREE_TYPE (expr);
+
+  /* Missing '&'.  */
+  if (TREE_CODE (expected_type) == POINTER_TYPE
+      && compatible_types_for_indirection_note_p (actual_type,
+						  TREE_TYPE (expected_type))
+      && lvalue_p (expr))
+    {
+      gcc_rich_location richloc (loc);
+      richloc.add_fixit_insert_before ("&");
+      inform (&richloc, "possible fix: take the address with %qs", "&");
+    }
+
+  /* Missing '*'.  */
+  if (TREE_CODE (actual_type) == POINTER_TYPE
+      && compatible_types_for_indirection_note_p (TREE_TYPE (actual_type),
+						  expected_type))
+    {
+      gcc_rich_location richloc (loc);
+      richloc.add_fixit_insert_before ("*");
+      inform (&richloc, "possible fix: dereference with %qs", "*");
     }
 }
 
