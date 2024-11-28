@@ -36,8 +36,10 @@ test01()
 
 static_assert( std::allocator<void>::propagate_on_container_move_assignment(),
 	       "POCMA trait should always be present" );
+#if __cplusplus <= 202302L
 static_assert( std::allocator<void>::is_always_equal(),
-	       "is_always_equal trait should always be present" );
+	       "is_always_equal trait should be present before C++26" );
+#endif
 
 static_assert(
     std::is_same<std::allocator<void>::size_type, std::size_t>(),
