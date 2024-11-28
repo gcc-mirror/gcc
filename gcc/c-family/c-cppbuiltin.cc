@@ -1092,6 +1092,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_structured_bindings=202403L");
 	  cpp_define (pfile, "__cpp_deleted_function=202403L");
 	  cpp_define (pfile, "__cpp_variadic_friend=202403L");
+	  cpp_define (pfile, "__cpp_pack_indexing=202311L");
 	}
       if (flag_concepts && cxx_dialect > cxx14)
 	cpp_define (pfile, "__cpp_concepts=202002L");

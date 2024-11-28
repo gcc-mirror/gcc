@@ -622,3 +622,9 @@
 #elif __cpp_variadic_friend != 202403
 #  error "__cpp_variadic_friend != 202403"
 #endif
+
+#ifndef __cpp_pack_indexing
+# error "__cpp_pack_indexing"
+#elif __cpp_pack_indexing != 202311
+#  error "__cpp_pack_indexing != 202311"
+#endif
