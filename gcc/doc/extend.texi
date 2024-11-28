@@ -12283,15 +12283,10 @@ builtins (@pxref{__atomic Builtins}).  They should not be used for new
 code which should use the @samp{__atomic} builtins instead.
 
 Not all operations are supported by all target processors.  If a particular
-operation cannot be implemented on the target processor, a warning is
-generated and a call to an external function is generated.  The external
-function carries the same name as the built-in version,
-with an additional suffix
+operation cannot be implemented on the target processor, a call to an
+external function is generated.  The external function carries the same name
+as the built-in version, with an additional suffix
 @samp{_@var{n}} where @var{n} is the size of the data type.
-
-@c ??? Should we have a mechanism to suppress this warning?  This is almost
-@c useful for implementing the operation under the control of an external
-@c mutex.
 
 In most cases, these built-in functions are considered a @dfn{full barrier}.
 That is,
