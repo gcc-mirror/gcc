@@ -30742,7 +30742,7 @@ heap-allocated objects
 
 The @code{No_Raise} aspect can be applied to a subprogram to declare that this subprogram is not
 expected to raise any exceptions. Should an exception still occur during the execution of
-this subpropgram, @code{Program_Error} is raised.
+this subprogram, @code{Program_Error} is raised.
 
 @menu
 * New specification for Ada.Finalization.Controlled: New specification for Ada Finalization Controlled. 

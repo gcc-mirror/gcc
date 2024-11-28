@@ -1516,7 +1516,7 @@ No_Raise aspect
 
 The ``No_Raise`` aspect can be applied to a subprogram to declare that this subprogram is not
 expected to raise any exceptions. Should an exception still occur during the execution of
-this subpropgram, ``Program_Error`` is raised.
+this subprogram, ``Program_Error`` is raised.
 
 New specification for ``Ada.Finalization.Controlled``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
