@@ -1751,6 +1751,9 @@ static const scoped_attribute_specs *const rs6000_attribute_table[] =
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS rs6000_can_change_mode_class
 
+#undef TARGET_REDZONE_CLOBBER
+#define TARGET_REDZONE_CLOBBER rs6000_redzone_clobber
+
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT rs6000_constant_alignment
 
@@ -13723,6 +13726,24 @@ rs6000_can_change_mode_class (machine_mode from,
     return false;
 
   return true;
+}
+
+/* Implement TARGET_REDZONE_CLOBBER.  */
+
+static rtx
+rs6000_redzone_clobber ()
+{
+  cfun->machine->asm_redzone_clobber_seen = true;
+  if (DEFAULT_ABI != ABI_V4)
+    {
+      int red_zone_size = TARGET_32BIT ? 220 : 288;
+      rtx base = plus_constant (Pmode, stack_pointer_rtx,
+				GEN_INT (-red_zone_size));
+      rtx mem = gen_rtx_MEM (BLKmode, base);
+      set_mem_size (mem, red_zone_size);
+      return mem;
+    }
+  return NULL_RTX;
 }
 
 /* Debug version of rs6000_can_change_mode_class.  */

@@ -918,7 +918,7 @@ rs6000_stack_info (void)
   else if (DEFAULT_ABI == ABI_V4)
     info->push_p = non_fixed_size != 0;
 
-  else if (frame_pointer_needed)
+  else if (frame_pointer_needed || cfun->machine->asm_redzone_clobber_seen)
     info->push_p = 1;
 
   else

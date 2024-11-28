@@ -2421,6 +2421,7 @@ typedef struct GTY(()) machine_function
      global entry.  It helps to control the patchable area before and after
      local entry.  */
   bool global_entry_emitted;
+  bool asm_redzone_clobber_seen;
 } machine_function;
 #endif
 
