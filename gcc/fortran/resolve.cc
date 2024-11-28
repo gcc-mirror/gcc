@@ -3603,8 +3603,26 @@ resolve_function (gfc_expr *expr)
 static bool
 pure_subroutine (gfc_symbol *sym, const char *name, locus *loc)
 {
+  code_stack *stack;
+  bool saw_block = false;
+
   if (gfc_pure (sym))
     return true;
+
+  /* A BLOCK construct within a DO CONCURRENT construct leads to
+     gfc_do_concurrent_flag = 0 when the check for an impure subroutine
+     occurs.  Check the stack to see if the source code has a nested
+     BLOCK construct.  */
+  for (stack = cs_base; stack; stack = stack->prev)
+    {
+      if (stack->current->op == EXEC_BLOCK) saw_block = true;
+      if (saw_block && stack->current->op == EXEC_DO_CONCURRENT)
+	{
+	  gfc_error ("Subroutine call at %L in a DO CONCURRENT block "
+		     "is not PURE", loc);
+	  return false;
+	}
+    }
 
   if (forall_flag)
     {
