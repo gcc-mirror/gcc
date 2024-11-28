@@ -1909,18 +1909,33 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	    gcc_assert (TREE_CODE (s1) == FIELD_DECL);
 	    gcc_assert (TREE_CODE (s2) == FIELD_DECL);
 
+	    tree ft1 = TREE_TYPE (s1);
+	    tree ft2 = TREE_TYPE (s2);
+
 	    if (DECL_NAME (s1) != DECL_NAME (s2))
 	      return false;
 
 	    if (DECL_ALIGN (s1) != DECL_ALIGN (s2))
 	      return false;
 
+	    if (DECL_C_BIT_FIELD (s1) != DECL_C_BIT_FIELD (s2))
+	       return false;
+
+	    if (DECL_C_BIT_FIELD (s1))
+	      {
+		if (!tree_int_cst_equal (DECL_SIZE (s1), DECL_SIZE (s2)))
+		  return false;
+
+		ft1 = DECL_BIT_FIELD_TYPE (s1);
+		ft2 = DECL_BIT_FIELD_TYPE (s2);
+	      }
+
 	    data->anon_field = !DECL_NAME (s1);
 	    data->pointedto = false;
 
 	    const struct tagged_tu_seen_cache *cache = data->cache;
 	    data->cache = &entry;
-	    bool ret = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data);
+	    bool ret = comptypes_internal (ft1, ft2, data);
 	    data->cache = cache;
 	    if (!ret)
 	      return false;
