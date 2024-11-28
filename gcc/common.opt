@@ -3520,6 +3520,22 @@ fzero-call-used-regs=
 Common RejectNegative Joined
 Clear call-used registers upon function return.
 
+fzero-init-padding-bits=
+Common Joined RejectNegative Enum(zero_init_padding_bits_kind) Var(flag_zero_init_padding_bits) Init(ZERO_INIT_PADDING_BITS_STANDARD)
+-fzero-init-padding-bits=[standard|unions|all]	Zero padding bits in initializers.
+
+Enum
+Name(zero_init_padding_bits_kind) Type(enum zero_init_padding_bits_kind) UnknownError(unrecognized zero init padding bits kind %qs)
+
+EnumValue
+Enum(zero_init_padding_bits_kind) String(standard) Value(ZERO_INIT_PADDING_BITS_STANDARD)
+
+EnumValue
+Enum(zero_init_padding_bits_kind) String(unions) Value(ZERO_INIT_PADDING_BITS_UNIONS)
+
+EnumValue
+Enum(zero_init_padding_bits_kind) String(all) Value(ZERO_INIT_PADDING_BITS_ALL)
+
 g
 Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.

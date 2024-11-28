@@ -9489,6 +9489,9 @@ static int constructor_erroneous;
 /* 1 if this constructor is the universal zero initializer { 0 }.  */
 static int constructor_zeroinit;
 
+/* 1 if this constructor should have padding bits zeroed (C23 {}.  */
+static bool constructor_zero_padding_bits;
+
 /* Structure for managing pending initializer elements, organized as an
    AVL tree.  */
 
@@ -9559,6 +9562,7 @@ struct constructor_stack
   char outer;
   char incremental;
   char designated;
+  bool zero_padding_bits;
   int designator_depth;
 };
 
@@ -9734,6 +9738,7 @@ really_start_incremental_init (tree type)
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
+  p->zero_padding_bits = constructor_zero_padding_bits;
   p->designator_depth = designator_depth;
   p->next = 0;
   constructor_stack = p;
@@ -9747,6 +9752,7 @@ really_start_incremental_init (tree type)
   constructor_type = type;
   constructor_incremental = 1;
   constructor_designated = 0;
+  constructor_zero_padding_bits = false;
   constructor_zeroinit = 1;
   designator_depth = 0;
   designator_erroneous = 0;
@@ -9882,6 +9888,7 @@ push_init_level (location_t loc, int implicit,
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
+  p->zero_padding_bits = constructor_zero_padding_bits;
   p->designator_depth = designator_depth;
   p->next = constructor_stack;
   p->range_stack = 0;
@@ -9896,6 +9903,9 @@ push_init_level (location_t loc, int implicit,
   /* If the upper initializer is designated, then mark this as
      designated too to prevent bogus warnings.  */
   constructor_designated = p->designated;
+  /* If the upper initializer has padding bits zeroed, that includes
+     all nested initializers as well.  */
+  constructor_zero_padding_bits = p->zero_padding_bits;
   constructor_pending_elts = 0;
   if (!implicit)
     {
@@ -9942,6 +9952,7 @@ push_init_level (location_t loc, int implicit,
       constructor_simple = TREE_STATIC (value);
       constructor_nonconst = CONSTRUCTOR_NON_CONST (value);
       constructor_elements = CONSTRUCTOR_ELTS (value);
+      constructor_zero_padding_bits |= CONSTRUCTOR_ZERO_PADDING_BITS (value);
       if (!vec_safe_is_empty (constructor_elements)
 	  && (TREE_CODE (constructor_type) == RECORD_TYPE
 	      || TREE_CODE (constructor_type) == ARRAY_TYPE))
@@ -10200,6 +10211,8 @@ pop_init_level (location_t loc, int implicit,
 	    TREE_STATIC (ret.value) = 1;
 	  if (constructor_nonconst)
 	    CONSTRUCTOR_NON_CONST (ret.value) = 1;
+	  if (constructor_zero_padding_bits)
+	    CONSTRUCTOR_ZERO_PADDING_BITS (ret.value) = 1;
 	}
     }
 
@@ -10225,6 +10238,7 @@ pop_init_level (location_t loc, int implicit,
   constructor_erroneous = p->erroneous;
   constructor_incremental = p->incremental;
   constructor_designated = p->designated;
+  constructor_zero_padding_bits = p->zero_padding_bits;
   designator_depth = p->designator_depth;
   constructor_pending_elts = p->pending_elts;
   constructor_depth = p->depth;

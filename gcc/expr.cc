@@ -7226,6 +7226,28 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
   if (*p_complete && !complete_ctor_at_level_p (TREE_TYPE (ctor),
 						num_fields, elt_type))
     *p_complete = 0;
+  else if (TREE_CODE (TREE_TYPE (ctor)) == UNION_TYPE
+	   || TREE_CODE (TREE_TYPE (ctor)) == QUAL_UNION_TYPE)
+    {
+      if (*p_complete
+	  && CONSTRUCTOR_ZERO_PADDING_BITS (ctor)
+	  && (num_fields
+	      ? simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)),
+				  TYPE_SIZE (elt_type)) != 1
+	      : type_has_padding_at_level_p (TREE_TYPE (ctor))))
+	*p_complete = 0;
+      else if (*p_complete > 0
+	       && (num_fields
+		   ? simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)),
+				       TYPE_SIZE (elt_type)) != 1
+		   : type_has_padding_at_level_p (TREE_TYPE (ctor))))
+	*p_complete = -1;
+    }
+  else if (*p_complete
+	   && (CONSTRUCTOR_ZERO_PADDING_BITS (ctor)
+	       || flag_zero_init_padding_bits == ZERO_INIT_PADDING_BITS_ALL)
+	   && type_has_padding_at_level_p (TREE_TYPE (ctor)))
+    *p_complete = 0;
   else if (*p_complete > 0
 	   && type_has_padding_at_level_p (TREE_TYPE (ctor)))
     *p_complete = -1;
@@ -7300,19 +7322,32 @@ bool
 complete_ctor_at_level_p (const_tree type, HOST_WIDE_INT num_elts,
 			  const_tree last_type)
 {
-  if (TREE_CODE (type) == UNION_TYPE
-      || TREE_CODE (type) == QUAL_UNION_TYPE)
+  if (TREE_CODE (type) == UNION_TYPE || TREE_CODE (type) == QUAL_UNION_TYPE)
     {
       if (num_elts == 0)
-	return false;
+	{
+	  if (flag_zero_init_padding_bits >= ZERO_INIT_PADDING_BITS_UNIONS)
+	    return false;
+
+	  /* If the CONSTRUCTOR doesn't have any elts, it is
+	     incomplete if the union has at least one field.  */
+	  for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
+	    if (TREE_CODE (f) == FIELD_DECL)
+	      return false;
+
+	  return true;
+	}
 
       gcc_assert (num_elts == 1 && last_type);
 
-      /* ??? We could look at each element of the union, and find the
-	 largest element.  Which would avoid comparing the size of the
-	 initialized element against any tail padding in the union.
-	 Doesn't seem worth the effort...  */
-      return simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (last_type)) == 1;
+      if (flag_zero_init_padding_bits >= ZERO_INIT_PADDING_BITS_UNIONS)
+	/* ??? We could look at each element of the union, and find the
+	   largest element.  Which would avoid comparing the size of the
+	   initialized element against any tail padding in the union.
+	   Doesn't seem worth the effort...  */
+	return simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (last_type)) == 1;
+
+      return true;
     }
 
   return count_type_elements (type, true) == num_elts;

@@ -291,6 +291,13 @@ enum auto_init_type {
   AUTO_INIT_ZERO = 2
 };
 
+/* Initialization of padding bits with zeros.  */
+enum zero_init_padding_bits_kind {
+  ZERO_INIT_PADDING_BITS_STANDARD = 0,
+  ZERO_INIT_PADDING_BITS_UNIONS = 1,
+  ZERO_INIT_PADDING_BITS_ALL = 2
+};
+
 /* Different instrumentation modes.  */
 enum sanitize_code {
   /* AddressSanitizer.  */

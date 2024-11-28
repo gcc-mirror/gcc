@@ -123,9 +123,12 @@ void test_union_2a (void __user *dst, u8 v)
 
 void test_union_2b (void __user *dst, u8 v)
 {
-  union un_b u = {0};
+  union un_b u = {0}; /* { dg-message "region created on stack here" "where" } */
+  /* { dg-message "capacity: 4 bytes" "capacity" { target *-*-* } .-1 } */
   u.j = v;
-  copy_to_user(dst, &u, sizeof (union un_b));
+  copy_to_user(dst, &u, sizeof (union un_b)); /* { dg-warning "potential exposure of sensitive information by copying uninitialized data from stack" "warning" } */
+  /* { dg-message "3 bytes are uninitialized" "note how much" { target *-*-* } .-1 } */
+  /* { dg-message "bytes 1 - 3 are uninitialized" "note how much" { target *-*-* } .-2 } */
 }
 
 void test_union_3a (void __user *dst, u32 v)
@@ -150,8 +153,11 @@ void test_union_4a (void __user *dst, u8 v)
 
 void test_union_4b (void __user *dst, u8 v)
 {
-  union un_b u = {0};
-  copy_to_user(dst, &u, sizeof (union un_b)); /* { dg-bogus "" } */
+  union un_b u = {0}; /* { dg-message "region created on stack here" "where" } */
+  /* { dg-message "capacity: 4 bytes" "capacity" { target *-*-* } .-1 } */
+  copy_to_user(dst, &u, sizeof (union un_b)); /* { dg-warning "potential exposure of sensitive information by copying uninitialized data from stack" "warning" } */
+  /* { dg-message "3 bytes are uninitialized" "note how much" { target *-*-* } .-1 } */
+  /* { dg-message "bytes 1 - 3 are uninitialized" "note how much" { target *-*-* } .-2 } */
 }
 
 struct st_union_5

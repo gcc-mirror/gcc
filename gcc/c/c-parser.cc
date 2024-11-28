@@ -6281,6 +6281,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
   gcc_assert (c_parser_next_token_is (parser, CPP_OPEN_BRACE));
   bool save_c_omp_array_section_p = c_omp_array_section_p;
   c_omp_array_section_p = false;
+  bool zero_init_padding_bits = false;
   matching_braces braces;
   braces.consume_open (parser);
   if (nested_p)
@@ -6294,6 +6295,8 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
     {
       pedwarn_c11 (brace_loc, OPT_Wpedantic,
 		   "ISO C forbids empty initializer braces before C23");
+      if (flag_isoc23)
+	zero_init_padding_bits = true;
     }
   else
     {
@@ -6353,6 +6356,10 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
   location_t close_loc = next_tok->location;
   c_parser_consume_token (parser);
   ret = pop_init_level (brace_loc, 0, &braced_init_obstack, close_loc);
+  if (zero_init_padding_bits
+      && ret.value
+      && TREE_CODE (ret.value) == CONSTRUCTOR)
+    CONSTRUCTOR_ZERO_PADDING_BITS (ret.value) = 1;
   obstack_free (&braced_init_obstack, NULL);
   set_c_expr_source_range (&ret, brace_loc, close_loc);
   return ret;

@@ -1233,6 +1233,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (vec_safe_length (CONSTRUCTOR_ELTS (NODE)))
 #define CONSTRUCTOR_NO_CLEARING(NODE) \
   (CONSTRUCTOR_CHECK (NODE)->base.public_flag)
+/* True if even padding bits should be zeroed during initialization.  */
+#define CONSTRUCTOR_ZERO_PADDING_BITS(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.default_def_flag)
 
 /* Iterate through the vector V of CONSTRUCTOR_ELT elements, yielding the
    value of each element (stored within VAL). IX must be a scratch variable

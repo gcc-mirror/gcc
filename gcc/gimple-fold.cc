@@ -4858,12 +4858,22 @@ type_has_padding_at_level_p (tree type)
 	return false;
       }
     case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      bool any_fields;
+      any_fields = false;
       /* If any of the fields is smaller than the whole, there is padding.  */
       for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
-	if (TREE_CODE (f) == FIELD_DECL)
-	  if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (f)),
-				TREE_TYPE (type)) != 1)
-	    return true;
+	if (TREE_CODE (f) != FIELD_DECL)
+	  continue;
+	else if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (f)),
+				   TYPE_SIZE (type)) != 1)
+	  return true;
+	else
+	  any_fields = true;
+      /* If the union doesn't have any fields and still has non-zero size,
+	 all of it is padding.  */
+      if (!any_fields && !integer_zerop (TYPE_SIZE (type)))
+	return true;
       return false;
     case ARRAY_TYPE:
     case COMPLEX_TYPE:

@@ -751,7 +751,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftrampolines -ftrampoline-impl=@r{[}stack@r{|}heap@r{]}
 -ftrapv  -fwrapv
 -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
--fstrict-volatile-bitfields  -fsync-libcalls}
+-fstrict-volatile-bitfields  -fsync-libcalls
+-fzero-init-padding-bits=@var{value}}
 
 @item Developer Options
 @xref{Developer Options,,GCC Developer Options}.
@@ -19989,6 +19990,43 @@ family of functions.
 The default value of this option is enabled, thus the only useful form
 of the option is @option{-fno-sync-libcalls}.  This option is used in
 the implementation of the @file{libatomic} runtime library.
+
+@opindex fzero-init-padding-bits=@var{value}
+@item -fzero-init-padding-bits=@var{value}
+Guarantee zero initalization of padding bits in automatic variable
+initializers.
+Certain languages guarantee zero initialization of padding bits in
+certain cases, e.g. C23 when using empty initializers (@code{@{@}}),
+or C++ when using zero-initialization or C guarantees that fields
+not specified in an initializer have their padding bits zero initialized.
+This option allows to change when padding bits in initializers are
+guaranteed to be zero initialized.
+The default is @code{-fzero-init-padding-bits=standard}, which makes
+no further guarantees than the corresponding standard.  E.g.@:
+
+@smallexample
+  struct A @{ char a; unsigned long long b; char c; @};
+  union B @{ char a; unsigned long long b; @};
+  struct A a = @{@}; // C23 guarantees padding bits are zero.
+  struct A b = @{ 1, 2, 3 @}; // No guarantees.
+  union B c = @{@}; // C23 guarantees padding bits are zero.
+  union B d = @{ 1 @}; // No guarantees.
+@end smallexample
+
+@code{-fzero-init-padding-bits=unions} guarantees zero initialization
+of padding bits in unions on top of what the standards guarantee,
+if the initializer of an union is empty (then all bits of the union
+are zero initialized) or if the initialized member of the union is
+smaller than the size of the union (in that case guarantees padding
+bits outside of the initialized member to be zero initialized).
+This was the GCC behavior before GCC 15 and in the above example guarantees
+zero initialization of last @code{sizeof (unsigned long long) - 1}
+bytes in the union.
+
+@code{-fzero-init-padding-bits=all} guarantees additionally
+zero initialization of padding bits of other aggregates, so
+the padding in between @code{b.a} and @code{b.b} (if any) and
+tail padding in the structure (if any).
 
 @end table
 
