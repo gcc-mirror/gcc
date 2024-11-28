@@ -183,6 +183,30 @@ gimple_infer_range::gimple_infer_range (gimple *s, bool use_rangeops)
 	    }
 	  BITMAP_FREE (nonnullargs);
 	}
+      if (fntype)
+	for (tree attrs = TYPE_ATTRIBUTES (fntype);
+	     (attrs = lookup_attribute ("nonnull_if_nonzero", attrs));
+	     attrs = TREE_CHAIN (attrs))
+	  {
+	    tree args = TREE_VALUE (attrs);
+	    unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+	    unsigned int idx2
+	      = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	    if (idx < gimple_call_num_args (s)
+		&& idx2 < gimple_call_num_args (s))
+	      {
+		tree arg = gimple_call_arg (s, idx);
+		tree arg2 = gimple_call_arg (s, idx2);
+		if (!POINTER_TYPE_P (TREE_TYPE (arg))
+		    || !INTEGRAL_TYPE_P (TREE_TYPE (arg2))
+		    || integer_zerop (arg2))
+		  continue;
+		if (integer_nonzerop (arg2))
+		  add_nonzero (arg);
+		// FIXME: Can one query here whether arg2 has
+		// nonzero range if it is a SSA_NAME?
+	      }
+	  }
       // Fallthru and walk load/store ops now.
     }
 
