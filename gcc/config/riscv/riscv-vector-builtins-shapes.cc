@@ -1287,6 +1287,35 @@ struct crypto_vv_no_op_type_def : public build_base
   }
 };
 
+/* sf_vqmacc_def class.  */
+struct sf_vqmacc_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    /* vop --> vop_v.  */
+    b.append_name (operand_suffixes[instance.op_info->op]);
+
+    /* Return nullptr if it can not be overloaded.  */
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return b.finish_name ();
+
+    if (!overloaded_p)
+      {
+	/* vop_v --> vop_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    /* According to SIFIVE vector-intrinsic-doc, it adds "_tu" suffix
+       for vop_m C++ overloaded API.*/
+    b.append_name (predication_suffixes[instance.pred]);
+
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -1321,4 +1350,5 @@ SHAPE(seg_fault_load, seg_fault_load)
 SHAPE(crypto_vv, crypto_vv)
 SHAPE(crypto_vi, crypto_vi)
 SHAPE(crypto_vv_no_op_type, crypto_vv_no_op_type)
+SHAPE (sf_vqmacc, sf_vqmacc)
 } // end namespace riscv_vector

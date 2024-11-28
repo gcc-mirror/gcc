@@ -255,6 +255,12 @@ main (int argc, const char **argv)
       fprintf (fp, "  /*SHIFT*/ INVALID,\n");
       fprintf (fp, "  /*DOUBLE_TRUNC*/ INVALID,\n");
       fprintf (fp, "  /*QUAD_TRUNC*/ INVALID,\n");
+      fprintf (fp, "  /*QUAD_EMUL*/ INVALID,\n");
+      fprintf (fp, "  /*QUAD_EMUL_SIGNED*/ INVALID,\n");
+      fprintf (fp, "  /*QUAD_EMUL_UNSIGNED*/ INVALID,\n");
+      fprintf (fp, "  /*QUAD_FIX*/ INVALID,\n");
+      fprintf (fp, "  /*QUAD_FIX_SIGNED*/ INVALID,\n");
+      fprintf (fp, "  /*QUAD_FIX_UNSIGNED*/ INVALID,\n");
       fprintf (fp, "  /*OCT_TRUNC*/ INVALID,\n");
       fprintf (fp, "  /*DOUBLE_TRUNC_SCALAR*/ INVALID,\n");
       fprintf (fp, "  /*DOUBLE_TRUNC_SIGNED*/ INVALID,\n");
@@ -266,6 +272,9 @@ main (int argc, const char **argv)
       fprintf (fp, "  /*FLOAT*/ INVALID,\n");
       fprintf (fp, "  /*LMUL1*/ INVALID,\n");
       fprintf (fp, "  /*WLMUL1*/ INVALID,\n");
+      fprintf (fp, "  /*QLMUL1*/ INVALID,\n");
+      fprintf (fp, "  /*QLMUL1_SIGNED*/ INVALID,\n");
+      fprintf (fp, "  /*QLMUL1_UNSIGNED*/ INVALID,\n");
       for (unsigned eew : {8, 16, 32, 64})
 	fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 
@@ -322,6 +331,18 @@ main (int argc, const char **argv)
 		     same_ratio_eew_type (sew, lmul_log2, sew / 4, unsigned_p,
 					  false)
 		       .c_str ());
+	    fprintf (fp, "  /*QUAD_EMUL*/ %s,\n",
+		     inttype (8, lmul_log2 - 1, unsigned_p).c_str ());
+	    fprintf (fp, "  /*QUAD_EMUL_SIGNED*/ %s,\n",
+		     inttype (8, lmul_log2 - 1, false).c_str ());
+	    fprintf (fp, "  /*QUAD_EMUL_UNSIGNED*/ %s,\n",
+		     inttype (8, lmul_log2 - 1, true).c_str ());
+	    fprintf (fp, "  /*QUAD_FIX*/ %s,\n",
+		     inttype (8, lmul_log2, unsigned_p).c_str ());
+	    fprintf (fp, "  /*QUAD_FIX_SIGNED*/ %s,\n",
+		     inttype (8, lmul_log2, false).c_str ());
+	    fprintf (fp, "  /*QUAD_FIX_UNSIGNED*/ %s,\n",
+		     inttype (8, lmul_log2, true).c_str ());
 	    fprintf (fp, "  /*OCT_TRUNC*/ %s,\n",
 		     same_ratio_eew_type (sew, lmul_log2, sew / 8, unsigned_p,
 					  false)
@@ -352,6 +373,12 @@ main (int argc, const char **argv)
 		     inttype (sew, /*lmul_log2*/ 0, unsigned_p).c_str ());
 	    fprintf (fp, "  /*WLMUL1*/ %s,\n",
 		     inttype (sew * 2, /*lmul_log2*/ 0, unsigned_p).c_str ());
+	    fprintf (fp, "  /*QLMUL1*/ %s,\n",
+		     inttype (8, /*lmul_log2*/ 0, unsigned_p).c_str ());
+	    fprintf (fp, "  /*QLMUL1_SIGNED*/ %s,\n",
+		     inttype (8, /*lmul_log2*/ 0, false).c_str ());
+	    fprintf (fp, "  /*QLMUL1_UNSIGNED*/ %s,\n",
+		     inttype (8, /*lmul_log2*/ 0, true).c_str ());
 	    for (unsigned eew : {8, 16, 32, 64})
 	      {
 		if (eew == sew)
@@ -413,6 +440,12 @@ main (int argc, const char **argv)
 	fprintf (fp, "  /*DOUBLE_TRUNC*/ %s,\n",
 		 same_ratio_eew_type (16, lmul_log2, 8, false, true).c_str ());
 	fprintf (fp, "  /*QUAD_TRUNC*/ INVALID,\n");
+	fprintf (fp, "  /*QUAD_EMUL*/ INVALID,\n");
+	fprintf (fp, "  /*QUAD_EMUL_SIGNED*/ INVALID,\n");
+	fprintf (fp, "  /*QUAD_EMUL_UNSIGNED*/ INVALID,\n");
+	fprintf (fp, "  /*QUAD_FIX*/ INVALID,\n");
+	fprintf (fp, "  /*QUAD_FIX_SIGNED*/ INVALID,\n");
+	fprintf (fp, "  /*QUAD_FIX_UNSIGNED*/ INVALID,\n");
 	fprintf (fp, "  /*OCT_TRUNC*/ INVALID,\n");
 	fprintf (fp, "  /*DOUBLE_TRUNC_SCALAR*/ %s,\n",
 		 same_ratio_eew_type (16, lmul_log2, 8, false, true).c_str ());
@@ -430,6 +463,10 @@ main (int argc, const char **argv)
 		 bfloat16_type (/*lmul_log2*/ 0).c_str ());
 	fprintf (fp, "  /*WLMUL1*/ %s,\n",
 		 bfloat16_wide_type (/*lmul_log2*/ 0).c_str ());
+	fprintf (fp, "  /*QLMUL1*/ %s,\n",
+		 bfloat16_wide_type (/*lmul_log2*/ 0).c_str ());
+	fprintf (fp, "  /*QLMUL1_SIGNED*/ INVALID,\n");
+	fprintf (fp, "  /*QLMUL1_UNSIGNED*/ INVALID,\n");
 	for (unsigned eew : {8, 16, 32, 64})
 	  fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 
@@ -478,6 +515,12 @@ main (int argc, const char **argv)
 		   same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true)
 		     .c_str ());
 	  fprintf (fp, "  /*QUAD_TRUNC*/ INVALID,\n");
+	  fprintf (fp, "  /*QUAD_EMUL*/ INVALID,\n");
+	  fprintf (fp, "  /*QUAD_EMUL_SIGNED*/ INVALID,\n");
+	  fprintf (fp, "  /*QUAD_EMUL_UNSIGNED*/ INVALID,\n");
+	  fprintf (fp, "  /*QUAD_FIX*/ INVALID,\n");
+	  fprintf (fp, "  /*QUAD_FIX_SIGNED*/ INVALID,\n");
+	  fprintf (fp, "  /*QUAD_FIX_UNSIGNED*/ INVALID,\n");
 	  fprintf (fp, "  /*OCT_TRUNC*/ INVALID,\n");
 	  fprintf (fp, "  /*DOUBLE_TRUNC_SCALAR*/ %s,\n",
 		   same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true)
@@ -501,6 +544,10 @@ main (int argc, const char **argv)
 		   floattype (sew, /*lmul_log2*/ 0).c_str ());
 	  fprintf (fp, "  /*WLMUL1*/ %s,\n",
 		   floattype (sew * 2, /*lmul_log2*/ 0).c_str ());
+	  fprintf (fp, "  /*QLMUL1*/ %s,\n",
+		   floattype (sew / 4, /*lmul_log2*/ 0).c_str ());
+	  fprintf (fp, "  /*QLMUL1_SIGNED*/ INVALID,\n");
+	  fprintf (fp, "  /*QLMUL1_UNSIGNED*/ INVALID,\n");
 	  for (unsigned eew : {8, 16, 32, 64})
 	    fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 

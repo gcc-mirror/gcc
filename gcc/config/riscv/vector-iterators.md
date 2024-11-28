@@ -4755,3 +4755,35 @@
   (V256DF "v64df")
   (V512DF "v128df")
 ])
+
+(define_mode_iterator SF_VSI [
+  RVVM8SI RVVM4SI RVVM2SI RVVM1SI
+])
+
+(define_mode_attr SF_VQMACC_QOQ [
+  (RVVM8SI "RVVM4QI")
+  (RVVM4SI "RVVM2QI")
+  (RVVM2SI "RVVM1QI")
+  (RVVM1SI "RVVMF2QI")
+])
+
+(define_mode_attr sf_vqmacc_qoq [
+  (RVVM8SI "rvvm4qi")
+  (RVVM4SI "rvvm2qi")
+  (RVVM2SI "rvvm1qi")
+  (RVVM1SI "rvvmf2qi")
+])
+
+(define_mode_attr SF_VQMACC_DOD [
+  (RVVM8SI "RVVM8QI")
+  (RVVM4SI "RVVM4QI")
+  (RVVM2SI "RVVM2QI")
+  (RVVM1SI "RVVM1QI")
+])
+
+(define_mode_attr sf_vqmacc_dod [
+  (RVVM8SI "rvvm8qi")
+  (RVVM4SI "rvvm4qi")
+  (RVVM2SI "rvvm2qi")
+  (RVVM1SI "rvvm1qi")
+])
