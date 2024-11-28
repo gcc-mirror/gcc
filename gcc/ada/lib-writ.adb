@@ -1253,7 +1253,6 @@ package body Lib.Writ is
       if Task_Dispatching_Policy /= ' ' then
          Write_Info_Str  (" T");
          Write_Info_Char (Task_Dispatching_Policy);
-         Write_Info_Char (' ');
       end if;
 
       if GNATprove_Mode then
