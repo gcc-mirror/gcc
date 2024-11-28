@@ -37,6 +37,8 @@ dg-init
 set CFLAGS "$DEFAULT_CFLAGS -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
 	"" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xsfvector/*.\[cS\]]] \
+	"" $CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
