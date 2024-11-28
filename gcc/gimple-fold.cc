@@ -936,6 +936,8 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	}
       goto done;
     }
+  else if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
   else
     {
       /* We cannot (easily) change the type of the copy if it is a storage
@@ -1377,6 +1379,8 @@ gimple_fold_builtin_bcmp (gimple_stmt_iterator *gsi)
   /* Transform bcmp (a, b, len) into memcmp (a, b, len).  */
 
   gimple *stmt = gsi_stmt (*gsi);
+  if (!gimple_vuse (stmt) && gimple_in_ssa_p (cfun))
+    return false;
   tree a = gimple_call_arg (stmt, 0);
   tree b = gimple_call_arg (stmt, 1);
   tree len = gimple_call_arg (stmt, 2);
@@ -1403,6 +1407,8 @@ gimple_fold_builtin_bcopy (gimple_stmt_iterator *gsi)
      len) into memmove (dest, src, len).  */
 
   gimple *stmt = gsi_stmt (*gsi);
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
   tree src = gimple_call_arg (stmt, 0);
   tree dest = gimple_call_arg (stmt, 1);
   tree len = gimple_call_arg (stmt, 2);
@@ -1428,6 +1434,8 @@ gimple_fold_builtin_bzero (gimple_stmt_iterator *gsi)
   /* Transform bzero (dest, len) into memset (dest, 0, len).  */
 
   gimple *stmt = gsi_stmt (*gsi);
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
   tree dest = gimple_call_arg (stmt, 0);
   tree len = gimple_call_arg (stmt, 1);
 
@@ -1457,6 +1465,9 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
       return true;
     }
 
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
+
   if (! tree_fits_uhwi_p (len))
     return false;
 
@@ -1479,20 +1490,20 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
   if ((!INTEGRAL_TYPE_P (etype)
        && !POINTER_TYPE_P (etype))
       || TREE_CODE (etype) == BITINT_TYPE)
-    return NULL_TREE;
+    return false;
 
   if (! var_decl_component_p (var))
-    return NULL_TREE;
+    return false;
 
   length = tree_to_uhwi (len);
   if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (etype)) != length
       || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (etype))
 	  != GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (etype)))
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
-    return NULL_TREE;
+    return false;
 
   if (length > HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT)
-    return NULL_TREE;
+    return false;
 
   if (!type_has_mode_precision_p (etype))
     etype = lang_hooks.types.type_for_mode (SCALAR_INT_TYPE_MODE (etype),
@@ -2106,7 +2117,7 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
       return false;
     }
 
-  if (!len)
+  if (!len || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   len = fold_convert_loc (loc, size_type_node, len);
@@ -2181,7 +2192,7 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
 
   /* OK transform into builtin memcpy.  */
   tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
-  if (!fn)
+  if (!fn || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   len = fold_convert_loc (loc, size_type_node, len);
@@ -2235,7 +2246,7 @@ gimple_fold_builtin_strchr (gimple_stmt_iterator *gsi, bool is_strrchr)
       return true;
     }
 
-  if (!integer_zerop (c))
+  if (!integer_zerop (c) || (!gimple_vuse (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   /* Transform strrchr (s, 0) to strchr (s, 0) when optimizing for size.  */
@@ -2333,6 +2344,9 @@ gimple_fold_builtin_strstr (gimple_stmt_iterator *gsi)
       return true;
     }
 
+  if (!gimple_vuse (stmt) && gimple_in_ssa_p (cfun))
+    return false;
+
   /* Transform strstr (x, "c") into strchr (x, 'c').  */
   if (q[1] == '\0')
     {
@@ -2383,6 +2397,9 @@ gimple_fold_builtin_strcat (gimple_stmt_iterator *gsi, tree dst, tree src)
     }
 
   if (!optimize_bb_for_speed_p (gimple_bb (stmt)))
+    return false;
+
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
     return false;
 
   /* See if we can store by pieces into (dst + strlen(dst)).  */
@@ -2454,7 +2471,6 @@ gimple_fold_builtin_strcat_chk (gimple_stmt_iterator *gsi)
   tree fn;
   const char *p;
 
-
   p = c_getstr (src);
   /* If the SRC parameter is "", return DEST.  */
   if (p && *p == '\0')
@@ -2464,6 +2480,9 @@ gimple_fold_builtin_strcat_chk (gimple_stmt_iterator *gsi)
     }
 
   if (! tree_fits_uhwi_p (size) || ! integer_all_onesp (size))
+    return false;
+
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
     return false;
 
   /* If __builtin_strcat_chk is used, assume strcat is available.  */
@@ -2556,7 +2575,7 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 
   /* If the replacement _DECL isn't initialized, don't do the
      transformation.  */
-  if (!fn)
+  if (!fn || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   /* Otherwise, emit a call to strcat.  */
@@ -2587,6 +2606,9 @@ gimple_fold_builtin_strncat_chk (gimple_stmt_iterator *gsi)
       replace_call_with_value (gsi, dest);
       return true;
     }
+
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
 
   if (! integer_all_onesp (size))
     {
@@ -2677,6 +2699,9 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
       replace_call_with_value (gsi, integer_zero_node);
       return true;
     }
+
+  if (!gimple_vuse (stmt) && gimple_in_ssa_p (cfun))
+    return false;
 
   /* Initially set to the number of characters, including the terminating
      nul if each array has one.   LENx == strnlen (Sx, LENx) implies that
@@ -2970,7 +2995,7 @@ gimple_fold_builtin_fputs (gimple_stmt_iterator *gsi,
 	const char *p = c_getstr (arg0);
 	if (p != NULL)
 	  {
-	    if (!fn_fputc)
+	    if (!fn_fputc || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
 	      return false;
 
 	    gimple *repl
@@ -2989,7 +3014,7 @@ gimple_fold_builtin_fputs (gimple_stmt_iterator *gsi,
 	  return false;
 	/* New argument list transforming fputs(string, stream) to
 	   fwrite(string, 1, len, stream).  */
-	if (!fn_fwrite)
+	if (!fn_fwrite || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
 	  return false;
 
 	gimple *repl
@@ -3039,6 +3064,9 @@ gimple_fold_builtin_memory_chk (gimple_stmt_iterator *gsi,
 	  return true;
 	}
     }
+
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
 
   tree maxlen = get_maxval_strlen (len, SRK_INT_VALUE);
   if (! integer_all_onesp (size)
@@ -3138,6 +3166,9 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
       return true;
     }
 
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
+
   tree maxlen = get_maxval_strlen (src, SRK_STRLENMAX);
   if (! integer_all_onesp (size))
     {
@@ -3231,7 +3262,7 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
   /* If __builtin_st{r,p}ncpy_chk is used, assume st{r,p}ncpy is available.  */
   fn = builtin_decl_explicit (fcode == BUILT_IN_STPNCPY_CHK && !ignore
 			      ? BUILT_IN_STPNCPY : BUILT_IN_STRNCPY);
-  if (!fn)
+  if (!fn || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   gcall *repl = gimple_build_call (fn, 3, dest, src, len);
@@ -3251,6 +3282,9 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
   tree dest = gimple_call_arg (stmt, 0);
   tree src = gimple_call_arg (stmt, 1);
   tree fn, lenp1;
+
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
 
   /* If the result is unused, replace stpcpy with strcpy.  */
   if (gimple_call_lhs (stmt) == NULL_TREE)
@@ -3369,7 +3403,7 @@ gimple_fold_builtin_snprintf_chk (gimple_stmt_iterator *gsi,
      available.  */
   fn = builtin_decl_explicit (fcode == BUILT_IN_VSNPRINTF_CHK
 			      ? BUILT_IN_VSNPRINTF : BUILT_IN_SNPRINTF);
-  if (!fn)
+  if (!fn || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   /* Replace the called function and the first 5 argument by 3 retaining
@@ -3456,7 +3490,7 @@ gimple_fold_builtin_sprintf_chk (gimple_stmt_iterator *gsi,
   /* If __builtin_{,v}sprintf_chk is used, assume {,v}sprintf is available.  */
   fn = builtin_decl_explicit (fcode == BUILT_IN_VSPRINTF_CHK
 			      ? BUILT_IN_VSPRINTF : BUILT_IN_SPRINTF);
-  if (!fn)
+  if (!fn || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   /* Replace the called function and the first 4 argument by 2 retaining
@@ -3505,7 +3539,7 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
     return false;
 
   tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-  if (!fn)
+  if (!fn || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
@@ -3618,7 +3652,8 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
   tree orig = NULL_TREE;
   const char *fmt_str = NULL;
 
-  if (gimple_call_num_args (stmt) > 4)
+  if (gimple_call_num_args (stmt) > 4
+      || (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun)))
     return false;
 
   if (gimple_call_num_args (stmt) == 4)
@@ -3776,6 +3811,9 @@ gimple_fold_builtin_fprintf (gimple_stmt_iterator *gsi,
   if (!init_target_chars ())
     return false;
 
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
+
   /* If the format doesn't contain % args or %%, use strcpy.  */
   if (strchr (fmt_str, target_percent) == NULL)
     {
@@ -3853,6 +3891,9 @@ gimple_fold_builtin_printf (gimple_stmt_iterator *gsi, tree fmt,
 
   /* If the return value is used, don't do the transformation.  */
   if (gimple_call_lhs (stmt) != NULL_TREE)
+    return false;
+
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
     return false;
 
   /* Check whether the format is a literal string constant.  */
@@ -4095,6 +4136,9 @@ gimple_fold_builtin_realloc (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   tree arg = gimple_call_arg (stmt, 0);
   tree size = gimple_call_arg (stmt, 1);
+
+  if (!gimple_vdef (stmt) && gimple_in_ssa_p (cfun))
+    return false;
 
   if (operand_equal_p (arg, null_pointer_node, 0))
     {
