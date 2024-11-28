@@ -2057,13 +2057,14 @@ package body Sem_Aggr is
             --  In an iterated context, preanalyze a copy of the expression to
             --  verify legality. We use a copy because the expression will be
             --  analyzed anew when the enclosing aggregate is expanded and the
-            --  construct is rewritten as a loop with a new index variable.
+            --  construct is rewritten as a loop with a new iteration variable.
+            --  This does not apply to SPARK mode, where expansion is skipped.
 
             --  If the parent is a component association, we also temporarily
             --  point its Expression field to the copy, because analysis may
             --  expect this invariant to hold.
 
-            if Iterated_Expr then
+            if Iterated_Expr and then not GNATprove_Mode then
                declare
                   In_Assoc : constant Boolean :=
                     Nkind (Parent (Expr)) in N_Component_Association
