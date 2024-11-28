@@ -6409,6 +6409,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   type = TREE_TYPE (object);
   bool no_zero_init = true;
+  bool zero_padding_bits = false;
 
   auto_vec<tree *> ctors;
   releasing_vec indexes;
@@ -6421,6 +6422,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
+	  CONSTRUCTOR_ZERO_PADDING_BITS (*valp) = zero_padding_bits;
 	}
       else if (STRIP_ANY_LOCATION_WRAPPER (*valp),
 	       TREE_CODE (*valp) == STRING_CST)
@@ -6480,8 +6482,10 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	}
 
       /* If the value of object is already zero-initialized, any new ctors for
-	 subobjects will also be zero-initialized.  */
+	 subobjects will also be zero-initialized.  Similarly with zeroing of
+	 padding bits.  */
       no_zero_init = CONSTRUCTOR_NO_CLEARING (*valp);
+      zero_padding_bits = CONSTRUCTOR_ZERO_PADDING_BITS (*valp);
 
       if (code == RECORD_TYPE && is_empty_field (index))
 	/* Don't build a sub-CONSTRUCTOR for an empty base or field, as they
@@ -6666,6 +6670,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
+	  CONSTRUCTOR_ZERO_PADDING_BITS (*valp) = zero_padding_bits;
 	}
       new_ctx.ctor = empty_base ? NULL_TREE : *valp;
       new_ctx.object = target;
@@ -6707,6 +6712,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  /* But do make sure we have something in *valp.  */
 	  *valp = build_constructor (type, nullptr);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
+	  CONSTRUCTOR_ZERO_PADDING_BITS (*valp) = zero_padding_bits;
 	}
     }
   else if (*valp && TREE_CODE (*valp) == CONSTRUCTOR
@@ -6719,6 +6725,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
       CONSTRUCTOR_NO_CLEARING (*valp)
 	= CONSTRUCTOR_NO_CLEARING (init);
+      CONSTRUCTOR_ZERO_PADDING_BITS (*valp)
+        = CONSTRUCTOR_ZERO_PADDING_BITS (init);
     }
   else
     *valp = init;

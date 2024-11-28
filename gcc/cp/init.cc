@@ -248,6 +248,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
 
       /* Build a constructor to contain the initializations.  */
       init = build_constructor (type, v);
+      CONSTRUCTOR_ZERO_PADDING_BITS (init) = 1;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -466,7 +467,9 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	    }
 
 	  /* Build a constructor to contain the zero- initializations.  */
-	  return build_constructor (type, v);
+	  tree ret = build_constructor (type, v);
+	  CONSTRUCTOR_ZERO_PADDING_BITS (ret) = 1;
+	  return ret;
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
