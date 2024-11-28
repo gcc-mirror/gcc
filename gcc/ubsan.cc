@@ -2046,8 +2046,9 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
   for (unsigned int i = 0; i < gimple_call_num_args (stmt); i++)
     {
       tree arg = gimple_call_arg (stmt, i);
+      tree arg2;
       if (POINTER_TYPE_P (TREE_TYPE (arg))
-	  && infer_nonnull_range_by_attribute (stmt, arg))
+	  && infer_nonnull_range_by_attribute (stmt, arg, &arg2))
 	{
 	  gimple *g;
 	  if (!is_gimple_val (arg))
@@ -2056,6 +2057,13 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 	      gimple_set_location (g, loc[0]);
 	      gsi_safe_insert_before (gsi, g);
 	      arg = gimple_assign_lhs (g);
+	    }
+	  if (arg2 && !is_gimple_val (arg2))
+	    {
+	      g = gimple_build_assign (make_ssa_name (TREE_TYPE (arg2)), arg2);
+	      gimple_set_location (g, loc[0]);
+	      gsi_safe_insert_before (gsi, g);
+	      arg2 = gimple_assign_lhs (g);
 	    }
 
 	  basic_block then_bb, fallthru_bb;
@@ -2068,6 +2076,18 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 	  gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
 	  *gsi = gsi_after_labels (then_bb);
+	  if (arg2)
+	    {
+	      *gsi = create_cond_insert_point (gsi, true, false, true,
+					       &then_bb, &fallthru_bb);
+	      g = gimple_build_cond (NE_EXPR, arg2,
+				     build_zero_cst (TREE_TYPE (arg2)),
+				     NULL_TREE, NULL_TREE);
+	      gimple_set_location (g, loc[0]);
+	      gsi_insert_after (gsi, g, GSI_NEW_STMT);
+
+	      *gsi = gsi_after_labels (then_bb);
+	    }
 	  if (flag_sanitize_trap & SANITIZE_NONNULL_ATTRIBUTE)
 	    g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
 	  else

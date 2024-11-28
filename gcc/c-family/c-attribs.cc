@@ -138,6 +138,8 @@ static tree handle_vector_size_attribute (tree *, tree, tree, int,
 static tree handle_vector_mask_attribute (tree *, tree, tree, int,
 					  bool *) ATTRIBUTE_NONNULL(3);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nonnull_if_nonzero_attribute (tree *, tree, tree, int,
+						 bool *);
 static tree handle_nonstring_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_expected_throw_attribute (tree *, tree, tree, int, bool *);
@@ -487,6 +489,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      handle_tls_model_attribute, NULL },
   { "nonnull",                0, -1, false, true, true, false,
 			      handle_nonnull_attribute, NULL },
+  { "nonnull_if_nonzero",     2, 2, false, true, true, false,
+			      handle_nonnull_if_nonzero_attribute, NULL },
   { "nonstring",              0, 0, true, false, false, false,
 			      handle_nonstring_attribute, NULL },
   { "nothrow",                0, 0, true,  false, false, false,
@@ -5002,7 +5006,7 @@ handle_nonnull_attribute (tree *node, tree name,
       /* NEXT is null when the attribute includes just one argument.
 	 That's used to tell positional_argument to avoid mentioning
 	 the argument number in diagnostics (since there's just one
-	 mentioning it is unnecessary and coule be confusing).  */
+	 mentioning it is unnecessary and could be confusing).  */
       tree next = TREE_CHAIN (args);
       if (tree val = positional_argument (type, name, pos, POINTER_TYPE,
 					  next || i > 1 ? i : 0))
@@ -5014,6 +5018,29 @@ handle_nonnull_attribute (tree *node, tree name,
 	}
       args = next;
     }
+
+  return NULL_TREE;
+}
+
+/* Handle the "nonnull_if_nonzero" attribute.  */
+
+static tree
+handle_nonnull_if_nonzero_attribute (tree *node, tree name,
+				     tree args, int ARG_UNUSED (flags),
+				     bool *no_add_attrs)
+{
+  tree type = *node;
+  tree pos = TREE_VALUE (args);
+  tree pos2 = TREE_VALUE (TREE_CHAIN (args));
+  tree val = positional_argument (type, name, pos, POINTER_TYPE, 1);
+  tree val2 = positional_argument (type, name, pos2, INTEGER_TYPE, 2);
+  if (val && val2)
+    {
+      TREE_VALUE (args) = val;
+      TREE_VALUE (TREE_CHAIN (args)) = val2;
+    }
+  else
+    *no_add_attrs = true;
 
   return NULL_TREE;
 }

@@ -154,6 +154,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "internal-fn.h"
+#include "gimple-range.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -4546,6 +4547,7 @@ unsigned int
 pass_post_ipa_warn::execute (function *fun)
 {
   basic_block bb;
+  gimple_ranger *ranger = NULL;
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -4557,14 +4559,15 @@ pass_post_ipa_warn::execute (function *fun)
 	    continue;
 
 	  tree fntype = gimple_call_fntype (stmt);
-	  bitmap nonnullargs = get_nonnull_args (fntype);
-	  if (!nonnullargs)
+	  if (!fntype)
 	    continue;
+	  bitmap nonnullargs = get_nonnull_args (fntype);
 
 	  tree fndecl = gimple_call_fndecl (stmt);
 	  const bool closure = fndecl && DECL_LAMBDA_FUNCTION_P (fndecl);
 
-	  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
+	  for (unsigned i = nonnullargs ? 0 : ~0U;
+	       i < gimple_call_num_args (stmt); i++)
 	    {
 	      tree arg = gimple_call_arg (stmt, i);
 	      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
@@ -4612,8 +4615,67 @@ pass_post_ipa_warn::execute (function *fun)
 			fndecl, "nonnull");
 	    }
 	  BITMAP_FREE (nonnullargs);
+
+	  for (tree attrs = TYPE_ATTRIBUTES (fntype);
+	       (attrs = lookup_attribute ("nonnull_if_nonzero", attrs));
+	       attrs = TREE_CHAIN (attrs))
+	    {
+	      tree args = TREE_VALUE (attrs);
+	      unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+	      unsigned int idx2
+		= TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	      if (idx < gimple_call_num_args (stmt)
+		  && idx2 < gimple_call_num_args (stmt))
+		{
+		  tree arg = gimple_call_arg (stmt, idx);
+		  tree arg2 = gimple_call_arg (stmt, idx2);
+		  if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE
+		      || !integer_zerop (arg)
+		      || !INTEGRAL_TYPE_P (TREE_TYPE (arg2))
+		      || integer_zerop (arg2)
+		      || ((TREE_CODE (fntype) == METHOD_TYPE || closure)
+			  && (idx == 0 || idx2 == 0)))
+		    continue;
+		  if (!integer_nonzerop (arg2)
+		      && !tree_expr_nonzero_p (arg2))
+		    {
+		      if (TREE_CODE (arg2) != SSA_NAME || optimize < 2)
+			continue;
+		      if (!ranger)
+			ranger = enable_ranger (cfun);
+
+		      int_range_max vr;
+		      get_range_query (cfun)->range_of_expr (vr, arg2, stmt);
+		      if (range_includes_zero_p (vr))
+			continue;
+		    }
+		  unsigned argno = idx + 1;
+		  unsigned argno2 = idx2 + 1;
+		  location_t loc = (EXPR_HAS_LOCATION (arg)
+				    ? EXPR_LOCATION (arg)
+				    : gimple_location (stmt));
+		  auto_diagnostic_group d;
+
+		  if (!warning_at (loc, OPT_Wnonnull,
+				   "argument %u null where non-null "
+				   "expected because argument %u is "
+				   "nonzero", argno, argno2))
+		    continue;
+
+		  tree fndecl = gimple_call_fndecl (stmt);
+		  if (fndecl && DECL_IS_UNDECLARED_BUILTIN (fndecl))
+		    inform (loc, "in a call to built-in function %qD",
+			    fndecl);
+		  else if (fndecl)
+		    inform (DECL_SOURCE_LOCATION (fndecl),
+			    "in a call to function %qD declared %qs",
+			    fndecl, "nonnull_if_nonzero");
+		}
+	    }
 	}
     }
+  if (ranger)
+    disable_ranger (cfun);
   return 0;
 }
 

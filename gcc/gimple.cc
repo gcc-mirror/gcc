@@ -3142,10 +3142,17 @@ infer_nonnull_range_by_dereference (gimple *stmt, tree op)
 }
 
 /* Return true if OP can be inferred to be a non-NULL after STMT
-   executes by using attributes.  */
+   executes by using attributes.  If OP2 is non-NULL and nonnull_if_nonzero
+   is the only attribute implying OP being non-NULL and the corresponding
+   argument isn't non-zero INTEGER_CST, set *OP2 to the corresponding
+   argument and return true (in that case returning true doesn't mean
+   OP can be unconditionally inferred to be non-NULL, but conditionally).  */
 bool
-infer_nonnull_range_by_attribute (gimple *stmt, tree op)
+infer_nonnull_range_by_attribute (gimple *stmt, tree op, tree *op2)
 {
+  if (op2)
+    *op2 = NULL_TREE;
+
   /* We can only assume that a pointer dereference will yield
      non-NULL if -fdelete-null-pointer-checks is enabled.  */
   if (!flag_delete_null_pointer_checks
@@ -3162,9 +3169,10 @@ infer_nonnull_range_by_attribute (gimple *stmt, tree op)
 	  attrs = lookup_attribute ("nonnull", attrs);
 
 	  /* If "nonnull" wasn't specified, we know nothing about
-	     the argument.  */
+	     the argument, unless "nonnull_if_nonzero" attribute is
+	     present.  */
 	  if (attrs == NULL_TREE)
-	    return false;
+	    break;
 
 	  /* If "nonnull" applies to all the arguments, then ARG
 	     is non-null if it's in the argument list.  */
@@ -3189,6 +3197,37 @@ infer_nonnull_range_by_attribute (gimple *stmt, tree op)
 		  if (operand_equal_p (op, arg, 0))
 		    return true;
 		}
+	    }
+	}
+
+      for (attrs = TYPE_ATTRIBUTES (fntype);
+	   (attrs = lookup_attribute ("nonnull_if_nonzero", attrs));
+	   attrs = TREE_CHAIN (attrs))
+	{
+	  tree args = TREE_VALUE (attrs);
+	  unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+	  unsigned int idx2
+	    = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	  if (idx < gimple_call_num_args (stmt)
+	      && idx2 < gimple_call_num_args (stmt)
+	      && operand_equal_p (op, gimple_call_arg (stmt, idx), 0))
+	    {
+	      tree arg2 = gimple_call_arg (stmt, idx2);
+	      if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
+		return false;
+	      if (integer_nonzerop (arg2))
+		return true;
+	      if (integer_zerop (arg2))
+		return false;
+	      if (op2)
+		{
+		  /* This case is meant for ubsan instrumentation.
+		     The caller can check at runtime if *OP2 is
+		     non-zero and OP is null.  */
+		  *op2 = arg2;
+		  return true;
+		}
+	      return tree_expr_nonzero_p (arg2);
 	    }
 	}
     }

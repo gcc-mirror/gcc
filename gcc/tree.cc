@@ -14785,7 +14785,7 @@ get_nonnull_args (const_tree fntype)
   /* A function declaration can specify multiple attribute nonnull,
      each with zero or more arguments.  The loop below creates a bitmap
      representing a union of all the arguments.  An empty (but non-null)
-     bitmap means that all arguments have been declaraed nonnull.  */
+     bitmap means that all arguments have been declared nonnull.  */
   for ( ; attrs; attrs = TREE_CHAIN (attrs))
     {
       attrs = lookup_attribute ("nonnull", attrs);

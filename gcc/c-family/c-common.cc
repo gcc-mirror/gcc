@@ -5721,6 +5721,8 @@ struct nonnull_arg_ctx
   /* The function whose arguments are being checked and its type (used
      for calls through function pointers).  */
   const_tree fndecl, fntype;
+  /* For nonnull_if_nonzero, index of the other argument.  */
+  unsigned HOST_WIDE_INT other;
   /* True if a warning has been issued.  */
   bool warned_p;
 };
@@ -5759,23 +5761,19 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
     }
 
   tree attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (ctx.fntype));
-  if (attrs == NULL_TREE)
-    return ctx.warned_p;
 
   tree a = attrs;
   /* See if any of the nonnull attributes has no arguments.  If so,
      then every pointer argument is checked (in which case the check
      for pointer type is done in check_nonnull_arg).  */
-  if (TREE_VALUE (a) != NULL_TREE)
-    do
-      a = lookup_attribute ("nonnull", TREE_CHAIN (a));
-    while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE);
+  while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE)
+    a = lookup_attribute ("nonnull", TREE_CHAIN (a));
 
   if (a != NULL_TREE)
     for (int i = firstarg; i < nargs; i++)
       check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[i],
 					i + 1, OPT_Wnonnull);
-  else
+  else if (attrs)
     {
       /* Walk the argument list.  If we encounter an argument number we
 	 should check for non-null, do it.  */
@@ -5794,6 +5792,28 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 					      OPT_Wnonnull);
 	}
     }
+  if (a == NULL_TREE)
+    for (attrs = TYPE_ATTRIBUTES (ctx.fntype);
+	 (attrs = lookup_attribute ("nonnull_if_nonzero", attrs));
+	 attrs = TREE_CHAIN (attrs))
+      {
+	tree args = TREE_VALUE (attrs);
+	unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+	unsigned int idx2
+	  = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	if (idx < (unsigned) nargs - firstarg
+	    && idx2 < (unsigned) nargs - firstarg
+	    && INTEGRAL_TYPE_P (TREE_TYPE (argarray[firstarg + idx2]))
+	    && integer_nonzerop (argarray[firstarg + idx2]))
+	  {
+	    ctx.other = firstarg + idx2 + 1;
+	    check_function_arguments_recurse (check_nonnull_arg, &ctx,
+					      argarray[firstarg + idx],
+					      firstarg + idx + 1,
+					      OPT_Wnonnull);
+	    ctx.other = 0;
+	  }
+      }
   return ctx.warned_p;
 }
 
@@ -5975,13 +5995,23 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     }
   else
     {
-      warned = warning_at (loc, OPT_Wnonnull,
-			   "argument %u null where non-null expected",
-			   (unsigned) param_num);
+      if (pctx->other)
+	warned = warning_at (loc, OPT_Wnonnull,
+			     "argument %u null where non-null expected "
+			     "because argument %u is nonzero",
+			     (unsigned) param_num,
+			     TREE_CODE (pctx->fntype) == METHOD_TYPE
+			     ? (unsigned) pctx->other - 1
+			     : (unsigned) pctx->other);
+      else
+	warned = warning_at (loc, OPT_Wnonnull,
+			     "argument %u null where non-null expected",
+			     (unsigned) param_num);
       if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to function %qD declared %qs",
-		pctx->fndecl, "nonnull");
+		pctx->fndecl,
+		pctx->other ? "nonnull_if_nonzero" : "nonnull");
     }
 
   if (warned)
@@ -6227,7 +6257,7 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
      to do this if format checking is enabled.  */
   if (warn_nonnull)
     {
-      nonnull_arg_ctx ctx = { loc, fndecl, fntype, false };
+      nonnull_arg_ctx ctx = { loc, fndecl, fntype, 0, false };
       warned_p = check_function_nonnull (ctx, nargs, argarray);
     }
 
