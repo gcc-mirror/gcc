@@ -1013,11 +1013,23 @@
   [(set (match_operand:ILASX 0 "register_operand" "=f,f")
 	(lshiftrt:ILASX
 	  (match_operand:ILASX 1 "register_operand" "f,f")
-	  (match_operand:ILASX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILASX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LASX"
-  "@
-   xvsrl.<lasxfmt>\t%u0,%u1,%u2
-   xvsrli.<lasxfmt>\t%u0,%u1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "xvsrl.<lasxfmt>\t%u0,%u1,%u2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "xvsrli.<lasxfmt>\t%u0,%u1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -1026,11 +1038,23 @@
   [(set (match_operand:ILASX 0 "register_operand" "=f,f")
 	(ashiftrt:ILASX
 	  (match_operand:ILASX 1 "register_operand" "f,f")
-	  (match_operand:ILASX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILASX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LASX"
-  "@
-   xvsra.<lasxfmt>\t%u0,%u1,%u2
-   xvsrai.<lasxfmt>\t%u0,%u1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "xvsra.<lasxfmt>\t%u0,%u1,%u2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "xvsrai.<lasxfmt>\t%u0,%u1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -1039,11 +1063,23 @@
   [(set (match_operand:ILASX 0 "register_operand" "=f,f")
 	(ashift:ILASX
 	  (match_operand:ILASX 1 "register_operand" "f,f")
-	  (match_operand:ILASX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILASX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LASX"
-  "@
-   xvsll.<lasxfmt>\t%u0,%u1,%u2
-   xvslli.<lasxfmt>\t%u0,%u1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "xvsll.<lasxfmt>\t%u0,%u1,%u2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "xvslli.<lasxfmt>\t%u0,%u1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
