@@ -105,15 +105,15 @@ struct infinite_loop
 	    && m_loc == other.m_loc);
   }
 
-  json::object *
+  std::unique_ptr<json::object>
   to_json () const
   {
-    json::object *loop_obj = new json::object ();
+    auto loop_obj = ::make_unique<json::object> ();
     loop_obj->set_integer ("enode", m_enode.m_index);
-    json::array *edge_arr = new json::array ();
+    auto edge_arr = ::make_unique<json::array> ();
     for (auto eedge : m_eedge_vec)
       edge_arr->append (eedge->to_json ());
-    loop_obj->set ("eedges", edge_arr);
+    loop_obj->set ("eedges", std::move (edge_arr));
     return loop_obj;
   }
 

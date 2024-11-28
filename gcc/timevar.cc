@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "options.h"
 #include "json.h"
+#include "make-unique.h"
 
 /* Non-NULL if timevars should be used.  In GCC, this happens with
    the -ftime-report flag.  */
@@ -59,7 +60,7 @@ class timer::named_items
   void pop ();
   void print (FILE *fp, const timevar_time_def *total);
 
-  json::value *make_json () const;
+  std::unique_ptr<json::value> make_json () const;
 
  private:
   /* Which timer instance does this relate to?  */
@@ -135,10 +136,10 @@ timer::named_items::print (FILE *fp, const timevar_time_def *total)
 /* Create a json value representing this object, suitable for use
    in SARIF output.  */
 
-json::value *
+std::unique_ptr<json::value>
 timer::named_items::make_json () const
 {
-  json::array *arr = new json::array ();
+  auto arr = ::make_unique<json::array> ();
   for (const char *item_name : m_names)
     {
       hash_map_t &mut_map = const_cast <hash_map_t &> (m_hash_map);
@@ -695,10 +696,10 @@ timer::print (FILE *fp)
 /* Create a json value representing this object, suitable for use
    in SARIF output.  */
 
-json::object *
+std::unique_ptr<json::object>
 make_json_for_timevar_time_def (const timevar_time_def &ttd)
 {
-  json::object *obj = new json::object ();
+  auto obj = ::make_unique<json::object> ();
   obj->set_float ("wall", nanosec_to_floating_sec (ttd.wall));
   obj->set_integer ("ggc_mem", ttd.ggc_mem);
   return obj;
@@ -709,10 +710,10 @@ make_json_for_timevar_time_def (const timevar_time_def &ttd)
 /* Create a json value representing this object, suitable for use
    in SARIF output.  */
 
-json::value *
+std::unique_ptr<json::value>
 timer::timevar_def::make_json () const
 {
-  json::object *timevar_obj = new json::object ();
+  auto timevar_obj = ::make_unique<json::object> ();
   timevar_obj->set_string ("name", name);
   timevar_obj->set ("elapsed", make_json_for_timevar_time_def (elapsed));
 
@@ -727,20 +728,20 @@ timer::timevar_def::make_json () const
 	  }
       if (any_children_with_time)
 	{
-	  json::array *children_arr = new json::array ();
-	  timevar_obj->set ("children", children_arr);
+	  auto children_arr = ::make_unique<json::array> ();
 	  for (auto i : *children)
 	    {
 	      /* Don't emit timing variables if we're going to get a row of
 		 zeroes.  */
 	      if (all_zero (i.second))
 		continue;
-	      json::object *child_obj = new json::object;
-	      children_arr->append (child_obj);
+	      auto child_obj = ::make_unique<json::object> ();
 	      child_obj->set_string ("name", i.first->name);
 	      child_obj->set ("elapsed",
 			      make_json_for_timevar_time_def (i.second));
+	      children_arr->append (std::move (child_obj));
 	    }
+	  timevar_obj->set ("children", std::move (children_arr));
 	}
     }
 
@@ -750,11 +751,11 @@ timer::timevar_def::make_json () const
 /* Create a json value representing this object, suitable for use
    in SARIF output.  */
 
-json::value *
+std::unique_ptr<json::value>
 timer::make_json () const
 {
 #if defined (HAVE_WALL_TIME)
-  json::object *report_obj = new json::object ();
+  auto report_obj = ::make_unique<json::object> ();
   json::array *json_arr = new json::array ();
   report_obj->set ("timevars", json_arr);
 
@@ -798,10 +799,10 @@ timer::make_json () const
     get_time (&total_now);
     timevar_diff (&total_elapsed, m_timevars[TV_TOTAL].start_time, total_now);
 
-    json::object *total_obj = new json::object();
-    json_arr->append (total_obj);
+    auto total_obj = ::make_unique<json::object> ();
     total_obj->set_string ("name", "TOTAL");
     total_obj->set ("elapsed", make_json_for_timevar_time_def (total_elapsed));
+    json_arr->append (std::move (total_obj));
   }
 
   if (m_jit_client_items)

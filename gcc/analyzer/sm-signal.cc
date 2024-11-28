@@ -220,12 +220,6 @@ public:
     pp_string (pp, "signal delivered");
   }
 
-  json::object *to_json () const
-  {
-    json::object *custom_obj = new json::object ();
-    return custom_obj;
-  }
-
   bool update_model (region_model *model,
 		     const exploded_edge *eedge,
 		     region_model_context *) const final override

@@ -143,11 +143,11 @@ public:
     const final override
   {
     if (g_timer)
-      if (json::value *timereport_val = g_timer->make_json ())
+      if (auto timereport_val = g_timer->make_json ())
 	{
 	  sarif_property_bag &bag_obj
 	    = invocation_obj.get_or_create_properties ();
-	  bag_obj.set ("gcc/timeReport", timereport_val);
+	  bag_obj.set ("gcc/timeReport", std::move (timereport_val));
 
 	  /* If the user requested SARIF output, then assume they want the
 	     time report data in the SARIF output, and *not* later emitted on
