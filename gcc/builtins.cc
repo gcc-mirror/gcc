@@ -9946,9 +9946,11 @@ fold_builtin_iseqsig (location_t loc, tree arg0, tree arg1)
     /* Choose the wider of two real types.  */
     cmp_type = TYPE_PRECISION (type0) >= TYPE_PRECISION (type1)
       ? type0 : type1;
-  else if (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
+  else if (code0 == REAL_TYPE
+	   && (code1 == INTEGER_TYPE || code1 == BITINT_TYPE))
     cmp_type = type0;
-  else if (code0 == INTEGER_TYPE && code1 == REAL_TYPE)
+  else if ((code0 == INTEGER_TYPE || code0 == BITINT_TYPE)
+	   && code1 == REAL_TYPE)
     cmp_type = type1;
 
   arg0 = builtin_save_expr (fold_convert_loc (loc, cmp_type, arg0));
