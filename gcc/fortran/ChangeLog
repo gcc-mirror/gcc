@@ -1,3 +1,14 @@
+2024-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117763
+	* trans-array.cc (gfc_get_array_span): Guard against derefences
+	of 'expr'. Clean up some typos. Use 'gfc_get_vptr_from_expr'
+	for clarity and apply a functional reversion of last section
+	that deals with class dummies.
+
 2024-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84869
