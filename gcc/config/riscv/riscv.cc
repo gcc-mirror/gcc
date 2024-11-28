@@ -13502,6 +13502,163 @@ riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
   return default_use_by_pieces_infrastructure_p (size, alignment, op, speed_p);
 }
 
+/* Generate instruction sequence
+   which reflects the value of the OP using bswap and brev8 instructions.
+   OP's mode may be less than word_mode, to get the correct number,
+   after reflecting we shift right the value by SHIFT_VAL.
+   E.g. we have 1111 0001, after reflection (target 32-bit) we will get
+   1000 1111 0000 0000, if we shift-out 16 bits,
+   we will get the desired one: 1000 1111.  */
+
+void
+generate_reflecting_code_using_brev (rtx *op)
+{
+  machine_mode op_mode = GET_MODE (*op);
+  HOST_WIDE_INT shift_val = (BITS_PER_WORD
+			     - GET_MODE_BITSIZE (op_mode).to_constant ());
+  riscv_expand_op (BSWAP, word_mode, *op, *op, *op);
+  riscv_expand_op (LSHIFTRT, word_mode, *op, *op,
+		   gen_int_mode (shift_val, word_mode));
+  if (TARGET_64BIT)
+    emit_insn (gen_riscv_brev8_di (*op, *op));
+  else
+    emit_insn (gen_riscv_brev8_si (*op, *op));
+}
+
+
+/* Generate assembly to calculate CRC using clmul instruction.
+   The following code will be generated when the CRC and data sizes are equal:
+     li      a4,quotient
+     li      a5,polynomial
+     xor     a0,a1,a0
+     clmul   a0,a0,a4
+     srli    a0,a0,crc_size
+     clmul   a0,a0,a5
+     slli    a0,a0,word_mode_size - crc_size
+     srli    a0,a0,word_mode_size - crc_size
+     ret
+   crc_size may be 8, 16, 32.
+   Some instructions will be added for the cases when CRC's size is larger than
+   data's size.
+   OPERANDS[1] is input CRC,
+   OPERANDS[2] is data (message),
+   OPERANDS[3] is the polynomial without the leading 1.  */
+
+void
+expand_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
+			rtx *operands)
+{
+  /* Check and keep arguments.  */
+  gcc_assert (!CONST_INT_P (operands[0]));
+  gcc_assert (CONST_INT_P (operands[3]));
+  unsigned short crc_size = GET_MODE_BITSIZE (crc_mode);
+  gcc_assert (crc_size <= 32);
+  unsigned short data_size = GET_MODE_BITSIZE (data_mode);
+
+  /* Calculate the quotient.  */
+  unsigned HOST_WIDE_INT
+      q = gf2n_poly_long_div_quotient (UINTVAL (operands[3]), crc_size);
+
+  rtx crc_extended = gen_rtx_ZERO_EXTEND (word_mode, operands[1]);
+  rtx crc = gen_reg_rtx (word_mode);
+  if (crc_size > data_size)
+    riscv_expand_op (LSHIFTRT, word_mode, crc, crc_extended,
+		     gen_int_mode (crc_size - data_size, word_mode));
+  else
+    crc = gen_rtx_ZERO_EXTEND (word_mode, operands[1]);
+  rtx t0 = gen_reg_rtx (word_mode);
+  riscv_emit_move (t0, gen_int_mode (q, word_mode));
+  rtx t1 = gen_reg_rtx (word_mode);
+  riscv_emit_move (t1, operands[3]);
+
+  rtx a0 = gen_reg_rtx (word_mode);
+  rtx data = gen_rtx_ZERO_EXTEND (word_mode, operands[2]);
+  riscv_expand_op (XOR, word_mode, a0, crc, data);
+
+  if (TARGET_64BIT)
+    emit_insn (gen_riscv_clmul_di (a0, a0, t0));
+  else
+    emit_insn (gen_riscv_clmul_si (a0, a0, t0));
+
+  riscv_expand_op (LSHIFTRT, word_mode, a0, a0,
+		   gen_int_mode (crc_size, word_mode));
+  if (TARGET_64BIT)
+    emit_insn (gen_riscv_clmul_di (a0, a0, t1));
+  else
+    emit_insn (gen_riscv_clmul_si (a0, a0, t1));
+
+  if (crc_size > data_size)
+    {
+      rtx crc_part = gen_reg_rtx (word_mode);
+      riscv_expand_op (ASHIFT, word_mode, crc_part, operands[1],
+		       gen_int_mode (data_size, word_mode));
+      riscv_expand_op (XOR, word_mode, a0, a0, crc_part);
+    }
+  riscv_emit_move (operands[0], gen_lowpart (crc_mode, a0));
+}
+
+/* Generate assembly to calculate reversed CRC using clmul instruction.
+   OPERANDS[1] is input CRC,
+   OPERANDS[2] is data (message),
+   OPERANDS[3] is the polynomial without the leading 1.  */
+
+void
+expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
+				 rtx *operands)
+{
+  /* Check and keep arguments.  */
+  gcc_assert (!CONST_INT_P (operands[0]));
+  gcc_assert (CONST_INT_P (operands[3]));
+  unsigned short crc_size = GET_MODE_BITSIZE (crc_mode);
+  gcc_assert (crc_size <= 32);
+  unsigned short data_size = GET_MODE_BITSIZE (data_mode);
+  rtx polynomial = operands[3];
+
+  /* Calculate the quotient.  */
+  unsigned HOST_WIDE_INT
+  q = gf2n_poly_long_div_quotient (UINTVAL (polynomial), crc_size);
+  /* Reflect the calculated quotient.  */
+  q = reflect_hwi (q, crc_size + 1);
+  rtx t0 = gen_reg_rtx (word_mode);
+  riscv_emit_move (t0, gen_int_mode (q, word_mode));
+
+  /* Reflect the polynomial.  */
+  unsigned HOST_WIDE_INT
+  ref_polynomial = reflect_hwi (UINTVAL (polynomial),
+				crc_size);
+  rtx t1 = gen_reg_rtx (word_mode);
+  riscv_emit_move (t1, gen_int_mode (ref_polynomial << 1, word_mode));
+
+  rtx crc = gen_rtx_ZERO_EXTEND (word_mode, operands[1]);
+  rtx data = gen_rtx_ZERO_EXTEND (word_mode, operands[2]);
+  rtx a0 = gen_reg_rtx (word_mode);
+  riscv_expand_op (XOR, word_mode, a0, crc, data);
+
+  if (TARGET_64BIT)
+    emit_insn (gen_riscv_clmul_di (a0, a0, t0));
+  else
+    emit_insn (gen_riscv_clmul_si (a0, a0, t0));
+
+  rtx num_shift = gen_int_mode (GET_MODE_BITSIZE (word_mode) - data_size,
+				word_mode);
+  riscv_expand_op (ASHIFT, word_mode, a0, a0, num_shift);
+
+  if (TARGET_64BIT)
+    emit_insn (gen_riscv_clmulh_di (a0, a0, t1));
+  else
+    emit_insn (gen_riscv_clmulh_si (a0, a0, t1));
+
+  if (crc_size > data_size)
+    {
+      rtx data_size_shift = gen_int_mode (data_size, word_mode);
+      rtx crc_part = gen_reg_rtx (word_mode);
+      riscv_expand_op (LSHIFTRT, word_mode, crc_part, crc, data_size_shift);
+      riscv_expand_op (XOR, word_mode, a0, a0, crc_part);
+    }
+
+  riscv_emit_move (operands[0], gen_lowpart (crc_mode, a0));
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"

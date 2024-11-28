@@ -95,6 +95,10 @@
   ;; XTheadFmv moves
   UNSPEC_XTHEADFMV
   UNSPEC_XTHEADFMV_HW
+
+  ;; CRC unspecs
+  UNSPEC_CRC
+  UNSPEC_CRC_REV
 ])
 
 (define_c_enum "unspecv" [

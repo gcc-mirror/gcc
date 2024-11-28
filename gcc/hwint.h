@@ -284,6 +284,7 @@ extern HOST_WIDE_INT gcd (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT pos_mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT least_common_multiple (HOST_WIDE_INT, HOST_WIDE_INT);
+extern unsigned HOST_WIDE_INT reflect_hwi (unsigned HOST_WIDE_INT, unsigned);
 
 /* Like ctz_hwi, except 0 when x == 0.  */
 

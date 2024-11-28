@@ -2065,6 +2065,39 @@ proc check_effective_target_riscv_zvbb { } {
     }]
 }
 
+# Return 1 if the target arch supports the Zbc extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zbc { } {
+    return [check_no_compiler_messages riscv_ext_zbc assembly {
+       #ifndef __riscv_zbc
+       #error "Not __riscv_zbc"
+       #endif
+    }]
+}
+
+# Return 1 if the target arch supports the Zbkb extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zbkb { } {
+    return [check_no_compiler_messages riscv_ext_zbkb assembly {
+       #ifndef __riscv_zbkb
+       #error "Not __riscv_zbkb"
+       #endif
+    }]
+}
+
+# Return 1 if the target arch supports the Zbkc extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zbkc { } {
+    return [check_no_compiler_messages riscv_ext_zbkc assembly {
+       #ifndef __riscv_zbkc
+       #error "Not __riscv_zbkc"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the XTheadVector extension, 0 otherwise.
 # Cache the result.
 
@@ -2153,6 +2186,77 @@ proc check_effective_target_riscv_zvfh_ok { } {
     return 0
 }
 
+# Return 1 if we can execute code when using dg-add-options riscv_zbc
+
+proc check_effective_target_riscv_zbc_ok { } {
+    # If the target already supports zbc without any added options,
+    # we may assume we can execute just fine.
+    if { [check_effective_target_riscv_zbc] } {
+	return 1
+    }
+
+    # check if we can execute zbc insns with the given hardware or
+    # simulator
+    set gcc_march [riscv_get_arch]
+    if { [check_runtime ${gcc_march}_zbc_exec {
+	int main()
+	{
+	    asm ("clmul a0,a0,a1");
+	    asm ("clmulh a0,a0,a1");
+	    return 0;
+	} } "-march=${gcc_march}"] } {
+	    return 1
+	}
+    return 0
+}
+
+# Return 1 if we can execute code when using dg-add-options riscv_zbkb
+
+proc check_effective_target_riscv_zbkb_ok { } {
+    # If the target already supports zbkb without any added options,
+    # we may assume we can execute just fine.
+    if { [check_effective_target_riscv_zbkb] } {
+	return 1
+    }
+
+    # check if we can execute zbkb insns with the given hardware or
+    # simulator
+    set gcc_march [riscv_get_arch]
+    if { [check_runtime ${gcc_march}_zbkb_exec {
+	int main()
+	{
+	    asm ("brev8 a0,a0");
+	    return 0;
+	} } "-march=${gcc_march}"] } {
+	    return 1
+	}
+    return 0
+}
+
+# Return 1 if we can execute code when using dg-add-options riscv_zbkc
+
+proc check_effective_target_riscv_zbkc_ok { } {
+    # If the target already supports zbkc without any added options,
+    # we may assume we can execute just fine.
+    if { [check_effective_target_riscv_zbkc] } {
+	return 1
+    }
+
+    # check if we can execute zbkc insns with the given hardware or
+    # simulator
+    set gcc_march [riscv_get_arch]
+    if { [check_runtime ${gcc_march}_zbkc_exec {
+	int main()
+	{
+	    asm ("clmul a0,a0,a1");
+	    asm ("clmulh a0,a0,a1");
+	    return 0;
+	} } "-march=${gcc_march}"] } {
+	    return 1
+	}
+    return 0
+}
+
 # Return 1 if we can execute code when using dg-add-options riscv_zvbb
 
 proc check_effective_target_riscv_zvbb_ok { } {
@@ -2206,7 +2310,7 @@ proc check_effective_target_riscv_v_misalign_ok { } {
 proc riscv_get_arch { } {
     set gcc_march ""
     # ??? do we neeed to add more extensions to the list below?
-    foreach ext { i e m a f d q c b v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc zabha zacas } {
+    foreach ext { i e m a f d q c b v zicsr zifencei zfh zba zbb zbc zbkb zbkc zbs zvbb zvfh ztso zaamo zalrsc zabha zacas } {
 	if { [check_no_compiler_messages  riscv_ext_$ext assembly [string map [list DEF __riscv_$ext] {
 		#ifndef DEF
 		#error "Not DEF"

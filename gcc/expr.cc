@@ -14178,6 +14178,33 @@ int_expr_size (const_tree exp)
   return tree_to_shwi (size);
 }
 
+/* Return the quotient of polynomial long division of x^2N by POLYNOMIAL
+   in GF (2^N).
+   Author: Richard Sandiford <richard.sandiford@arm.com>  */
+
+unsigned HOST_WIDE_INT
+gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial,
+			     unsigned short n)
+{
+  /* The result has degree N, so needs N + 1 bits.  */
+  gcc_assert (n < 64);
+
+  /* Perform a division step for the x^2N coefficient.  At this point the
+     quotient and remainder have N implicit trailing zeros.  */
+  unsigned HOST_WIDE_INT quotient = 1;
+  unsigned HOST_WIDE_INT remainder = polynomial;
+
+  /* Process the coefficients for x^(2N-1) down to x^N, with each step
+     reducing the number of implicit trailing zeros by one.  */
+  for (unsigned int i = 0; i < n; ++i)
+    {
+      bool coeff = remainder & (HOST_WIDE_INT_1U << (n - 1));
+      quotient = (quotient << 1) | coeff;
+      remainder = (remainder << 1) ^ (coeff ? polynomial : 0);
+    }
+  return quotient;
+}
+
 /* Calculate CRC for the initial CRC and given POLYNOMIAL.
    CRC_BITS is CRC size.  */
 

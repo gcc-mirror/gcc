@@ -2548,6 +2548,24 @@ Test target architecture has support for the zacas extension.
 @item riscv_zalrsc
 Test target architecture has support for the zalrsc extension.
 
+@item riscv_zbc
+Test target architecture has support for the zbc extension.
+
+@item riscv_zbc_ok
+Test target architecture can execute code with zbc extension enabled.
+
+@item riscv_zbkb
+Test target architecture has support for the zbkb extension.
+
+@item riscv_zbkb_ok
+Test target architecture can execute code with zbkb extension enabled.
+
+@item riscv_zbkc
+Test target architecture has support for the zbkc extension.
+
+@item riscv_zbkc_ok
+Test target architecture can execute code with zbkc extension enabled.
+
 @item riscv_ztso
 Test target architecture has support for the ztso extension.
 

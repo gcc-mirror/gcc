@@ -1192,3 +1192,66 @@
   "TARGET_ZBC"
   "clmulr\t%0,%1,%2"
   [(set_attr "type" "clmul")])
+
+;; Reversed CRC 8, 16, 32 for TARGET_64
+(define_expand "crc_rev<ANYI1:mode><ANYI:mode>4"
+	;; return value (calculated CRC)
+  [(set (match_operand:ANYI 0 "register_operand" "=r")
+		      ;; initial CRC
+	(unspec:ANYI [(match_operand:ANYI 1 "register_operand" "r")
+		      ;; data
+		      (match_operand:ANYI1 2 "register_operand" "r")
+		      ;; polynomial without leading 1
+		      (match_operand:ANYI 3)]
+		      UNSPEC_CRC_REV))]
+  /* We don't support the case when data's size is bigger than CRC's size.  */
+  "<ANYI:MODE>mode >= <ANYI1:MODE>mode"
+{
+  /* If we have the ZBC or ZBKC extension (ie, clmul) and
+     it is possible to store the quotient within a single variable
+     (E.g.  CRC64's quotient may need 65 bits,
+     we can't keep it in 64 bit variable.)
+     then use clmul instruction to implement the CRC,
+     otherwise (TARGET_ZBKB) generate table based using brev.  */
+  if ((TARGET_ZBKC || TARGET_ZBC) && <ANYI:MODE>mode < word_mode)
+    expand_reversed_crc_using_clmul (<ANYI:MODE>mode, <ANYI1:MODE>mode,
+				     operands);
+  else if (TARGET_ZBKB)
+    /* Generate table-based CRC.
+       To reflect values use brev and bswap instructions.  */
+    expand_reversed_crc_table_based (operands[0], operands[1],
+				     operands[2], operands[3],
+				     GET_MODE (operands[2]),
+				     generate_reflecting_code_using_brev);
+  else
+    /* Generate table-based CRC.
+       To reflect values use standard reflecting algorithm.  */
+    expand_reversed_crc_table_based (operands[0], operands[1],
+				     operands[2], operands[3],
+				     GET_MODE (operands[2]),
+				     generate_reflecting_code_standard);
+  DONE;
+})
+
+;; CRC 8, 16, (32 for TARGET_64)
+(define_expand "crc<SUBX1:mode><SUBX:mode>4"
+	;; return value (calculated CRC)
+  [(set (match_operand:SUBX 0 "register_operand" "=r")
+		      ;; initial CRC
+	(unspec:SUBX [(match_operand:SUBX 1 "register_operand" "r")
+		      ;; data
+		      (match_operand:SUBX1 2 "register_operand" "r")
+		      ;; polynomial without leading 1
+		      (match_operand:SUBX 3)]
+		      UNSPEC_CRC))]
+  /* We don't support the case when data's size is bigger than CRC's size.  */
+  "(TARGET_ZBKC || TARGET_ZBC) && <SUBX:MODE>mode >= <SUBX1:MODE>mode"
+{
+  /* If we have the ZBC or ZBKC extension (ie, clmul) and
+     it is possible to store the quotient within a single variable
+     (E.g.  CRC64's quotient may need 65 bits,
+     we can't keep it in 64 bit variable.)
+     then use clmul instruction to implement the CRC.  */
+  expand_crc_using_clmul (<SUBX:MODE>mode, <SUBX1:MODE>mode, operands);
+  DONE;
+})
