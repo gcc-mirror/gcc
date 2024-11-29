@@ -7395,6 +7395,8 @@
       else
 	return "lw\t$0,%a0";
     }
+  if (operands[1] == const2_rtx)
+    operands[1] = const0_rtx;
   /* Loongson ext2 implementation pref instructions.  */
   if (TARGET_LOONGSON_EXT2)
     {

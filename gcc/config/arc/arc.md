@@ -5439,9 +5439,9 @@ archs4x, archs4xd"
 	     (match_operand:SI 2 "const_int_operand" "n"))]
   "TARGET_HS"
   {
-   if (INTVAL (operands[1]))
+    if ((INTVAL (operands[1]) & 1) != 0)
       return "prefetchw [%0]";
-   else
+    else
       return "prefetch [%0]";
   }
   [(set_attr "type" "load")
@@ -5454,9 +5454,9 @@ archs4x, archs4xd"
 	     (match_operand:SI 3 "const_int_operand" "n,n,n"))]
   "TARGET_HS"
   {
-   if (INTVAL (operands[2]))
+    if ((INTVAL (operands[2]) & 1) != 0)
       return "prefetchw\\t[%0, %1]";
-   else
+    else
       return "prefetch\\t[%0, %1]";
   }
   [(set_attr "type" "load")
@@ -5468,10 +5468,10 @@ archs4x, archs4xd"
 	     (match_operand:SI 2 "const_int_operand" "n"))]
   "TARGET_HS"
   {
-   operands[0] = gen_rtx_MEM (SImode, operands[0]);
-   if (INTVAL (operands[1]))
+    operands[0] = gen_rtx_MEM (SImode, operands[0]);
+    if ((INTVAL (operands[1]) & 1) != 0)
       return "prefetchw%U0\\t%0";
-   else
+    else
       return "prefetch%U0\\t%0";
    }
   [(set_attr "type" "load")

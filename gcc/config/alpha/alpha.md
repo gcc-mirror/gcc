@@ -5171,7 +5171,7 @@
     }
   };
 
-  bool write = INTVAL (operands[1]) != 0;
+  bool write = (INTVAL (operands[1]) & 1) != 0;
   bool lru = INTVAL (operands[2]) != 0;
 
   return alt[write][lru];

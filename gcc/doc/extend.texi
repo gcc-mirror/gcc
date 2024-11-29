@@ -15711,9 +15711,11 @@ be in the cache by the time it is accessed.
 
 The value of @var{addr} is the address of the memory to prefetch.
 There are two optional arguments, @var{rw} and @var{locality}.
-The value of @var{rw} is a compile-time constant one or zero; one
-means that the prefetch is preparing for a write to the memory address
-and zero, the default, means that the prefetch is preparing for a read.
+The value of @var{rw} is a compile-time constant zero, one or two; one
+means that the prefetch is preparing for a write to the memory address,
+two means that the prefetch is preparing for a shared read (expected to be
+read by at least one other processor before it is written if written at
+all) and zero, the default, means that the prefetch is preparing for a read.
 The value @var{locality} must be a compile-time constant integer between
 zero and three.  A value of zero means that the data has no temporal
 locality, so it need not be left in the cache after the access.  A value

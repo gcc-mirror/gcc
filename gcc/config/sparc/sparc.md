@@ -7832,9 +7832,9 @@
   int read_or_write = INTVAL (operands[1]);
   int locality = INTVAL (operands[2]);
 
-  gcc_assert (read_or_write == 0 || read_or_write == 1);
-  gcc_assert (locality >= 0 && locality < 4);
-  return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
+  gcc_assert (IN_RANGE (read_or_write, 0, 2));
+  gcc_assert (IN_RANGE (locality, 0, 3));
+  return prefetch_instr [read_or_write & 1][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")
    (set_attr "subtype" "prefetch")])
@@ -7858,9 +7858,9 @@
   int read_or_write = INTVAL (operands[1]);
   int locality = INTVAL (operands[2]);
 
-  gcc_assert (read_or_write == 0 || read_or_write == 1);
-  gcc_assert (locality >= 0 && locality < 4);
-  return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
+  gcc_assert (IN_RANGE (read_or_write, 0, 2));
+  gcc_assert (IN_RANGE (locality, 0, 3));
+  return prefetch_instr [read_or_write & 1][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")
    (set_attr "subtype" "prefetch")])

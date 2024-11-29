@@ -4219,7 +4219,8 @@
 {
   switch (INTVAL (operands[1]))
   {
-    case 0: return TARGET_ZIHINTNTL ? "%L2prefetch.r\t%a0" : "prefetch.r\t%a0";
+    case 0:
+    case 2: return TARGET_ZIHINTNTL ? "%L2prefetch.r\t%a0" : "prefetch.r\t%a0";
     case 1: return TARGET_ZIHINTNTL ? "%L2prefetch.w\t%a0" : "prefetch.w\t%a0";
     default: gcc_unreachable ();
   }

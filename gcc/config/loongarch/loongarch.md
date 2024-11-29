@@ -4091,7 +4091,8 @@
 {
   switch (INTVAL (operands[1]))
   {
-    case 0: return "preld\t0,%a0";
+    case 0:
+    case 2: return "preld\t0,%a0";
     case 1: return "preld\t8,%a0";
     default: gcc_unreachable ();
   }

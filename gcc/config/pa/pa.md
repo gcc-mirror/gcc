@@ -10354,7 +10354,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       "ldd 0(%0),%%r0"
     }
   };
-  int read_or_write = INTVAL (operands[1]) == 0 ? 0 : 1;
+  int read_or_write = INTVAL (operands[1]) & 1;
   int locality = INTVAL (operands[2]) == 0 ? 0 : 1;
 
   return instr [locality][read_or_write];
