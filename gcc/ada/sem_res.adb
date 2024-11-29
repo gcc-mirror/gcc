@@ -2435,14 +2435,7 @@ package body Sem_Res is
 
             Get_First_Interp (Name (Arg), I, It);
             while Present (It.Nam) loop
-               Error_Msg_Sloc := Sloc (It.Nam);
-
-               if Nkind (Parent (It.Nam)) = N_Full_Type_Declaration then
-                  Error_Msg_N ("interpretation (inherited) #!", Arg);
-               else
-                  Error_Msg_N ("interpretation #!", Arg);
-               end if;
-
+               Report_Interpretation (Arg, It.Nam, It.Typ);
                Get_Next_Interp (I, It);
             end loop;
          end if;
@@ -2823,13 +2816,10 @@ package body Sem_Res is
 
                         Ambiguous := True;
 
-                        if Nkind (Parent (Seen)) = N_Full_Type_Declaration then
-                           Error_Msg_N
-                             ("\\possible interpretation (inherited)#!", N);
-                        else
-                           Error_Msg_N -- CODEFIX
-                             ("\\possible interpretation#!", N);
-                        end if;
+                        Report_Interpretation
+                          (N   => N,
+                           Nam => Seen,
+                           Typ => Etype (Seen));
 
                         if Nkind (N) in N_Subprogram_Call
                           and then Present (Parameter_Associations (N))
@@ -2912,8 +2902,8 @@ package body Sem_Res is
                      elsif
                        Nkind (Parent (It.Nam)) = N_Full_Type_Declaration
                      then
-                        Error_Msg_N
-                          ("\\possible interpretation (inherited)#!", N);
+                        Report_Interpretation (N, It.Nam, It.Typ);
+
                      else
                         Error_Msg_N -- CODEFIX
                           ("\\possible interpretation#!", N);
