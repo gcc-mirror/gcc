@@ -71,12 +71,12 @@ public:
       {
 	auto &type = static_cast<AST::LangItemPath &> (type_path);
 
-	rust_debug ("[ARTHUR]: lang item kind: %s",
-		    LangItem::ToString (type.get_lang_item_kind ()).c_str ());
-
 	auto lang_item = Analysis::Mappings::get ()
 			   .lookup_lang_item_node (type.get_lang_item_kind ())
 			   .value ();
+
+	auto resolver = Resolver::get ();
+	resolver->insert_resolved_type (type.get_node_id (), lang_item);
 
 	return lang_item;
       }
