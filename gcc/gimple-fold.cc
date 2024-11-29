@@ -4863,7 +4863,7 @@ type_has_padding_at_level_p (tree type)
       any_fields = false;
       /* If any of the fields is smaller than the whole, there is padding.  */
       for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
-	if (TREE_CODE (f) != FIELD_DECL)
+	if (TREE_CODE (f) != FIELD_DECL || TREE_TYPE (f) == error_mark_node)
 	  continue;
 	else if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (f)),
 				   TYPE_SIZE (type)) != 1)
