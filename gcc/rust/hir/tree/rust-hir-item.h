@@ -1991,8 +1991,6 @@ public:
 
   const TraitFunctionDecl &get_decl () const { return decl; }
 
-  bool has_block_defined () const { return block_expr != nullptr; }
-
   BlockExpr &get_block_expr () { return *block_expr; }
 
   const std::string trait_identifier () const override final

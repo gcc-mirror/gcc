@@ -69,7 +69,7 @@ ResolveTraitItemToRef::visit (HIR::TraitItemFunc &fn)
 {
   // create trait-item-ref
   location_t locus = fn.get_locus ();
-  bool is_optional = fn.has_block_defined ();
+  bool is_optional = fn.has_definition ();
   std::string identifier = fn.get_decl ().get_function_name ().as_string ();
 
   resolved = TraitItemReference (identifier, is_optional,
