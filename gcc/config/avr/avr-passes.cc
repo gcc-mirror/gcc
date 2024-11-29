@@ -1391,10 +1391,10 @@ plies_t::emit_insns (const insninfo_t &ii, const memento_t &memo) const
 }
 
 
-// Helper for .emit_insns().  Emit an ior<mode>3 or and<mode>3 insns
+// Helper for .emit_insns().  Emit an ior<mode>3 or and<mode>3 insn
 // that's equivalent to a sequence of contiguous BLDs starting at
-// .plies[ISTART].  Updates N_INSNS according to the number of insns emitted
-// and returns the number of consumed plys in .plies[].
+// .plies[ISTART].  Updates N_INSNS according to the number of insns
+// emitted and returns the number of consumed plys in .plies[].
 int
 plies_t::emit_blds (const insninfo_t &ii, int &n_insns, int istart) const
 {
@@ -1448,7 +1448,7 @@ plies_t::emit_blds (const insninfo_t &ii, int &n_insns, int istart) const
 
 // Emit insns for a contiguous sequence of SET ply_t's starting at
 // .plies[ISTART].  Advances N_INSNS by the number of emitted insns.
-// MEMO ist the state of the GPRs before II es executed, where II
+// MEMO ist the state of the GPRs before II is executed, where II
 // represents the insn under optimization.
 // The emitted insns are "movqi_insn" or "*reload_inqi"
 // when .plies[ISTART].in_set_some is not set, and one "set_some" insn
@@ -1571,7 +1571,7 @@ plies_t::emit_sets (const insninfo_t &ii, int &n_insns, const memento_t &memo,
 
 // Try to find an operation such that  Y = op (X).
 // Shifts and rotates are regarded as unary operaions with
-// an implied 2nd operand.
+// an implied 2nd operand or 1 or 4, respectively.
 static rtx_code
 find_arith (uint8_t y, uint8_t x)
 {
@@ -1606,8 +1606,8 @@ find_arith2 (uint8_t z, uint8_t x, uint8_t y)
 }
 
 
-// Add plies to .plies[] that represent a MOVW, but only ones that reduce the
-// Hamming distance from REGNO[SIZE] to VAL by exactly DHAMM.
+// Add plies to .plies[] that represent a MOVW, but only ones that reduce
+// the Hamming distance from REGNO[SIZE] to VAL by exactly DHAMM.
 void
 plies_t::add_plies_movw (int regno, int size, uint64_t val,
 			 int dhamm, const memento_t &memo)
@@ -1871,7 +1871,7 @@ insninfo_t::emit_insn () const
   switch (m_code)
     {
     default:
-      gcc_unreachable();
+      gcc_unreachable ();
 
     case CONST_INT:
       xsrc = gen_int_mode (m_isrc, mode);
@@ -3430,7 +3430,7 @@ avr_2comparisons_rhs (rtx_code &cmp1, rtx xval1,
   switch (way)
     {
     default:
-      gcc_unreachable();
+      gcc_unreachable ();
 
       // cmp1 gets the LT, avoid difficult branches for cmp2.
       WAY (123, LT, EQ);
@@ -3767,7 +3767,7 @@ avr_pass_ifelse::execute (function *)
 {
   rtx_insn *next_insn;
 
-  for (rtx_insn *insn = get_insns(); insn; insn = next_insn)
+  for (rtx_insn *insn = get_insns (); insn; insn = next_insn)
     {
       next_insn = next_nonnote_nondebug_insn (insn);
 
@@ -3874,10 +3874,10 @@ avr_parallel_insn_from_insns (rtx_insn *i[5])
 {
   rtvec vec = gen_rtvec (5, PATTERN (i[0]), PATTERN (i[1]), PATTERN (i[2]),
 			 PATTERN (i[3]), PATTERN (i[4]));
-  start_sequence();
+  start_sequence ();
   emit (gen_rtx_PARALLEL (VOIDmode, vec));
-  rtx_insn *insn = get_insns();
-  end_sequence();
+  rtx_insn *insn = get_insns ();
+  end_sequence ();
 
   return insn;
 }
@@ -4040,7 +4040,7 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
   // original mode instead of in SImode.  Use a newly created pseudo.
   // This will replace insns[1..2].
 
-  start_sequence();
+  start_sequence ();
 
   rtx reg = copy_to_mode_reg (mode, xop[11]);
 
@@ -4057,9 +4057,9 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
   JUMP_LABEL (cbranch) = xop[4];
   ++LABEL_NUSES (xop[4]);
 
-  rtx_insn *seq1 = get_insns();
-  rtx_insn *last1 = get_last_insn();
-  end_sequence();
+  rtx_insn *seq1 = get_insns ();
+  rtx_insn *last1 = get_last_insn ();
+  end_sequence ();
 
   emit_insn_after (seq1, insns[2]);
 
@@ -4067,7 +4067,7 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
   // 16-bit index.  If QImode is used, extend it to HImode first.
   // This will replace insns[4].
 
-  start_sequence();
+  start_sequence ();
 
   if (QImode == mode)
     reg = force_reg (HImode, gen_rtx_fmt_e (code, HImode, reg));
@@ -4078,9 +4078,9 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
 
   emit_insn (pat_4);
 
-  rtx_insn *seq2 = get_insns();
-  rtx_insn *last2 = get_last_insn();
-  end_sequence();
+  rtx_insn *seq2 = get_insns ();
+  rtx_insn *last2 = get_last_insn ();
+  end_sequence ();
 
   emit_insn_after (seq2, insns[3]);
 

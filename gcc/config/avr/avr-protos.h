@@ -19,14 +19,14 @@
    <http://www.gnu.org/licenses/>.  */
 
 
-extern int avr_function_arg_regno_p (int r);
+extern bool avr_function_arg_regno_p (int r);
 extern void avr_cpu_cpp_builtins (cpp_reader * pfile);
 extern enum reg_class avr_regno_reg_class (int r);
 extern void asm_globalize_label (FILE *file, const char *name);
 extern void avr_adjust_reg_alloc_order (void);
 extern int avr_initial_elimination_offset (int from, int to);
 extern int avr_simple_epilogue (void);
-extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
+extern bool avr_hard_regno_rename_ok (unsigned int, unsigned int);
 extern rtx avr_return_addr_rtx (int count, rtx tem);
 extern void avr_register_target_pragmas (void);
 extern void avr_init_expanders (void);
@@ -102,7 +102,7 @@ extern void avr_expand_prologue (void);
 extern void avr_expand_epilogue (bool);
 extern bool avr_emit_cpymemhi (rtx*);
 extern void avr_emit_xior_with_shift (rtx_insn*, rtx*, int);
-extern int avr_epilogue_uses (int regno);
+extern bool avr_epilogue_uses (int regno);
 
 extern void avr_output_addr_vec (rtx_insn*, rtx);
 extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);
@@ -118,7 +118,7 @@ extern bool avr_popcount_each_byte (rtx, int, int);
 extern bool avr_xor_noclobber_dconst (rtx, int);
 extern bool avr_has_nibble_0xf (rtx);
 
-extern int extra_constraint_Q (rtx x);
+extern bool extra_constraint_Q (rtx x);
 extern int avr_adjust_insn_length (rtx_insn *insn, int len);
 extern void output_reload_in_const (rtx *, rtx clobber, int *len, bool clear_p);
 extern const char* output_reload_inhi (rtx*, rtx, int*);

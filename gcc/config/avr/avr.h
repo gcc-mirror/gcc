@@ -615,7 +615,7 @@ struct GTY(()) machine_function
      has been invoked.  The count is even increased when the optimization
      itself is not run.  The purpose of this variable is to provide
      information about where in the pass sequence we are.
-     It is used in insn / split conditons.  */
+     It is used in insn / split conditions.  */
   int n_avr_fuse_add_executed;
 };
 
