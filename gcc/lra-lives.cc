@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "insn-config.h"
 #include "regs.h"
 #include "ira.h"
+#include "ira-int.h"
 #include "recog.h"
 #include "cfganal.h"
 #include "sparseset.h"
@@ -989,6 +990,19 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	       reg dead before the insns.  */
 	    for (reg2 = curr_static_id->hard_regs; reg2 != NULL; reg2 = reg2->next)
 	      if (reg2->type != OP_OUT && reg2->regno == reg->regno)
+		break;
+	    if (reg2 != NULL)
+	      continue;
+
+	    HARD_REG_SET clobbered_regset;
+	    CLEAR_HARD_REG_SET (clobbered_regset);
+	    SET_HARD_REG_BIT (clobbered_regset, reg->regno);
+
+	    for (reg2 = curr_id->regs; reg2 != NULL; reg2 = reg2->next)
+	      if (reg2->type != OP_OUT && reg2->regno < FIRST_PSEUDO_REGISTER
+		  && ira_hard_reg_set_intersection_p (reg2->regno,
+						      reg2->biggest_mode,
+						      clobbered_regset))
 		break;
 	    if (reg2 == NULL)
 	      make_hard_regno_dead (reg->regno);
