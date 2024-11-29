@@ -775,9 +775,9 @@ public:
     tree pg = gimple_call_arg (f.call, 0);
     if (!f.type_suffix (0).unsigned_p && integer_minus_onep (op2))
       {
-	function_instance instance ("svneg", functions::svneg,
-				    shapes::unary, MODE_none,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+	function_instance instance ("svneg", functions::svneg, shapes::unary,
+				    MODE_none, f.type_suffix_ids, GROUP_none,
+				    f.pred, FPM_unused);
 	gcall *call = f.redirect_call (instance);
 	unsigned offset_index = 0;
 	if (f.pred == PRED_m)
@@ -805,7 +805,8 @@ public:
       {
 	function_instance instance ("svlsr", functions::svlsr,
 				    shapes::binary_uint_opt_n, MODE_n,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+				    f.type_suffix_ids, GROUP_none, f.pred,
+				    FPM_unused);
 	call = f.redirect_call (instance);
 	tree d = INTEGRAL_TYPE_P (TREE_TYPE (op2)) ? op2 : op2_cst;
 	new_divisor = wide_int_to_tree (TREE_TYPE (d), tree_log2 (d));
@@ -818,7 +819,8 @@ public:
 
 	function_instance instance ("svasrd", functions::svasrd,
 				    shapes::shift_right_imm, MODE_n,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+				    f.type_suffix_ids, GROUP_none, f.pred,
+				    FPM_unused);
 	call = f.redirect_call (instance);
 	new_divisor = wide_int_to_tree (scalar_types[VECTOR_TYPE_svuint64_t],
 					tree_log2 (op2_cst));
@@ -2100,9 +2102,9 @@ public:
       negated_op = op2;
     if (!f.type_suffix (0).unsigned_p && negated_op)
       {
-	function_instance instance ("svneg", functions::svneg,
-				    shapes::unary, MODE_none,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+	function_instance instance ("svneg", functions::svneg, shapes::unary,
+				    MODE_none, f.type_suffix_ids, GROUP_none,
+				    f.pred, FPM_unused);
 	gcall *call = f.redirect_call (instance);
 	unsigned offset_index = 0;
 	if (f.pred == PRED_m)
@@ -2143,7 +2145,8 @@ public:
 				      tree_log2 (shift_op2));
 	function_instance instance ("svlsl", functions::svlsl,
 				    shapes::binary_uint_opt_n, MODE_n,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+				    f.type_suffix_ids, GROUP_none, f.pred,
+				    FPM_unused);
 	gcall *call = f.redirect_call (instance);
 	gimple_call_set_arg (call, 1, shift_op1);
 	gimple_call_set_arg (call, 2, shift_op2);

@@ -126,9 +126,9 @@ public:
     tree op1 = gimple_call_arg (f.call, 0);
     if (!integer_zerop (op1))
       return NULL;
-    function_instance instance ("svabd", functions::svabd,
-				shapes::binary_opt_n, f.mode_suffix_id,
-				f.type_suffix_ids, GROUP_none, PRED_x);
+    function_instance instance ("svabd", functions::svabd, shapes::binary_opt_n,
+				f.mode_suffix_id, f.type_suffix_ids, GROUP_none,
+				PRED_x, FPM_unused);
     gcall *call = f.redirect_call (instance);
     /* Add a ptrue as predicate, because unlike svaba, svabd is
        predicated.  */
@@ -512,7 +512,8 @@ public:
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svqshl", functions::svqshl,
 					shapes::binary_int_opt_n, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    return f.redirect_call (instance);
 	  }
 	else
@@ -520,9 +521,9 @@ public:
 	    /* The saturation has no effect, and [SU]RSHL has immediate forms
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svrshl", functions::svrshl,
-					shapes::binary_int_opt_single_n,
-					MODE_n, f.type_suffix_ids, GROUP_none,
-					f.pred);
+					shapes::binary_int_opt_single_n, MODE_n,
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    return f.redirect_call (instance);
 	  }
       }
@@ -551,7 +552,8 @@ public:
 				       -wi::to_wide (amount));
 	    function_instance instance ("svasr", functions::svasr,
 					shapes::binary_uint_opt_n, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    if (f.type_suffix (0).unsigned_p)
 	      {
 		instance.base_name = "svlsr";
@@ -586,7 +588,8 @@ public:
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svlsl", functions::svlsl,
 					shapes::binary_uint_opt_n, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    gcall *call = f.redirect_call (instance);
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
@@ -599,7 +602,8 @@ public:
 				       -wi::to_wide (amount));
 	    function_instance instance ("svrshr", functions::svrshr,
 					shapes::shift_right_imm, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    gcall *call = f.redirect_call (instance);
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
@@ -635,7 +639,8 @@ public:
       return NULL;
     function_instance instance ("svlsr", functions::svlsr,
 				shapes::binary_uint_opt_n, MODE_n,
-				f.type_suffix_ids, GROUP_none, PRED_x);
+				f.type_suffix_ids, GROUP_none, PRED_x,
+				FPM_unused);
     if (!f.type_suffix (0).unsigned_p)
       {
 	instance.base_name = "svasr";

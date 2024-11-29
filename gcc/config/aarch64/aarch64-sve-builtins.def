@@ -37,8 +37,13 @@
 #define DEF_SVE_GROUP_SUFFIX(A, B, C)
 #endif
 
+#ifndef DEF_SVE_FUNCTION_GS_FPM
+#define DEF_SVE_FUNCTION_GS_FPM(A, B, C, D, E, F)
+#endif
+
 #ifndef DEF_SVE_FUNCTION_GS
-#define DEF_SVE_FUNCTION_GS(A, B, C, D, E)
+#define DEF_SVE_FUNCTION_GS(A, B, C, D, E) \
+  DEF_SVE_FUNCTION_GS_FPM(A, B, C, D, E, unused)
 #endif
 
 #ifndef DEF_SVE_NEON_TYPE_SUFFIX
@@ -164,6 +169,7 @@ DEF_SVE_GROUP_SUFFIX (vg4x4, 4, 4)
 
 #undef DEF_SVE_FUNCTION
 #undef DEF_SVE_FUNCTION_GS
+#undef DEF_SVE_FUNCTION_GS_FPM
 #undef DEF_SVE_GROUP_SUFFIX
 #undef DEF_SME_ZA_SUFFIX
 #undef DEF_SVE_NEON_TYPE_SUFFIX

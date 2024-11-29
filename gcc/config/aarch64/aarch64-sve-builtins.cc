@@ -933,9 +933,10 @@ static const predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
 
 /* A list of all arm_sve.h functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
-#define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+#define DEF_SVE_FUNCTION_GS_FPM(NAME, SHAPE, TYPES, GROUPS, PREDS, FPM_MODE) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
-    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS },
+    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS, \
+    FPM_##FPM_MODE },
 #include "aarch64-sve-builtins.def"
 };
 
@@ -943,7 +944,8 @@ static CONSTEXPR const function_group_info function_groups[] = {
 static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 #define DEF_NEON_SVE_FUNCTION(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &neon_sve_bridge_functions::NAME, &shapes::SHAPE, types_##TYPES, \
-    groups_##GROUPS, preds_##PREDS, aarch64_required_extensions::ssve (0) },
+    groups_##GROUPS, preds_##PREDS, aarch64_required_extensions::ssve (0), \
+    FPM_unused },
 #include "aarch64-neon-sve-bridge-builtins.def"
 };
 
@@ -951,12 +953,13 @@ static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 static CONSTEXPR const function_group_info sme_function_groups[] = {
 #define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
-    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS },
+    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS, \
+    FPM_unused },
 #define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
     groups_##GROUPS, preds_##PREDS, \
     aarch64_required_extensions::REQUIRED_EXTENSIONS \
-      .and_also (AARCH64_FL_ZA_ON) },
+      .and_also (AARCH64_FL_ZA_ON), FPM_unused },
 #include "aarch64-sve-builtins-sme.def"
 };
 
@@ -1238,6 +1241,7 @@ function_instance::hash () const
   h.add_int (type_suffix_ids[1]);
   h.add_int (group_suffix_id);
   h.add_int (pred);
+  h.add_int (fpm_mode);
   return h.end ();
 }
 
@@ -1668,7 +1672,8 @@ function_builder::add_overloaded_functions (const function_group_info &group,
     {
       function_instance instance (group.base_name, *group.base,
 				  *group.shape, mode, types,
-				  group_suffix_id, group.preds[pi]);
+				  group_suffix_id, group.preds[pi],
+				  group.fpm_mode);
       add_overloaded_function (instance, group.required_extensions);
     };
 
@@ -1845,8 +1850,8 @@ function_resolver::lookup_form (mode_suffix_index mode,
 				group_suffix_index group)
 {
   type_suffix_pair types = { type0, type1 };
-  function_instance instance (base_name, base, shape, mode, types,
-			      group, pred);
+  function_instance instance (base_name, base, shape, mode, types, group, pred,
+			      fpm_mode);
   registered_function *rfn
     = function_table->find_with_hash (instance, instance.hash ());
   return rfn ? rfn->decl : NULL_TREE;

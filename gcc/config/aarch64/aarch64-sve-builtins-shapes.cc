@@ -349,8 +349,8 @@ build_one (function_builder &b, const char *signature,
   /* Byte forms of svdupq take 16 arguments.  */
   auto_vec<tree, 16> argument_types;
   function_instance instance (group.base_name, *group.base, *group.shape,
-			      mode_suffix_id, group.types[ti],
-			      group.groups[gi], group.preds[pi]);
+			      mode_suffix_id, group.types[ti], group.groups[gi],
+			      group.preds[pi], group.fpm_mode);
   tree return_type = parse_signature (instance, signature, argument_types);
   apply_predication (instance, return_type, argument_types);
   b.add_unique_function (instance, return_type, argument_types,
