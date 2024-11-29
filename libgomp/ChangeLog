@@ -1,3 +1,8 @@
+2024-11-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-gcn.c
+	[!__cplusplus]: Don't 'typedef int bool;'.
+
 2024-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/libgomp.c/alloc-pinned-3.c [!__linux__]

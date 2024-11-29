@@ -1,3 +1,22 @@
+2024-11-28  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/117765
+	* resolve.cc (pure_subroutine): Check for an impure subroutine
+	call in a BLOCK construct nested within a DO CONCURRENT block.
+
+2024-11-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117791
+	* trans-io.cc (gfc_trans_transfer): When an array index depends on
+	a function evaluation or an expression, do not use optimized array
+	I/O of an array section and fall back to normal scalarization.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* resolve.cc (resolve_operator): Replace "%<%s%>" with "%qs" in
+	message wording.
+
 2024-11-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84674

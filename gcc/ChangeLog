@@ -1,3 +1,238 @@
+2024-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<any_shift:insn><mode>3_mask): Macroize
+	pattern from *ashl<mode>3_mask and *<any_shiftrt:insn><mode>3_mask
+	using any_shift code iterator.
+	(*<any_shift:insn><mode>3_mask_1): Macroize pattern
+	from *ashl<mode>3_mask_1 and *<any_shiftrt:insn><mode>3_mask_1
+	using any_shift code iterator.
+	(*<any_shift:insn><mode>3_add): Macroize pattern
+	from *ashl<mode>3_add and *<any_shiftrt:insn><mode>3_add
+	using any_shift code iterator.
+	(*<any_shift:insn><mode>3_add_1): Macroize pattern
+	from *ashl<mode>3_add_1 and *<any_shiftrt:insn><mode>3_add_1
+	using any_shift code iterator.
+	(*<insn><mode>3_sub): Macroize pattern
+	from *ashl<mode>3_sub and *<any_shiftrt:insn><mode>3_sub
+	using any_shift code iterator.
+	(*<any_shift:insn><mode>3_sub_1): Macroize pattern
+	from *ashl<mode>3_sub_1 and *<any_shiftrt:insn><mode>3_sub_1
+	using any_shift code iterator.
+
+2024-11-28  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* builtin-types.def (BT_FN_UINT8_UINT8_UINT8_CONST_SIZE): Define.
+	(BT_FN_UINT16_UINT16_UINT8_CONST_SIZE): Likewise.
+	(BT_FN_UINT16_UINT16_UINT16_CONST_SIZE): Likewise.
+	(BT_FN_UINT32_UINT32_UINT8_CONST_SIZE): Likewise.
+	(BT_FN_UINT32_UINT32_UINT16_CONST_SIZE): Likewise.
+	(BT_FN_UINT32_UINT32_UINT32_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT8_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT16_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT32_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT64_CONST_SIZE): Likewise.
+	* builtins.cc (associated_internal_fn): Handle CRC related builtins.
+	(expand_builtin_crc_table_based): New function.
+	(expand_builtin): Handle CRC related builtins.
+	* builtins.def (BUILT_IN_CRC8_DATA8): New builtin.
+	(BUILT_IN_CRC16_DATA8): Likewise.
+	(BUILT_IN_CRC16_DATA16): Likewise.
+	(BUILT_IN_CRC32_DATA8): Likewise.
+	(BUILT_IN_CRC32_DATA16): Likewise.
+	(BUILT_IN_CRC32_DATA32): Likewise.
+	(BUILT_IN_CRC64_DATA8): Likewise.
+	(BUILT_IN_CRC64_DATA16): Likewise.
+	(BUILT_IN_CRC64_DATA32): Likewise.
+	(BUILT_IN_CRC64_DATA64): Likewise.
+	(BUILT_IN_REV_CRC8_DATA8): New builtin.
+	(BUILT_IN_REV_CRC16_DATA8): Likewise.
+	(BUILT_IN_REV_CRC16_DATA16): Likewise.
+	(BUILT_IN_REV_CRC32_DATA8): Likewise.
+	(BUILT_IN_REV_CRC32_DATA16): Likewise.
+	(BUILT_IN_REV_CRC32_DATA32): Likewise.
+	(BUILT_IN_REV_CRC64_DATA8): Likewise.
+	(BUILT_IN_REV_CRC64_DATA16): Likewise.
+	(BUILT_IN_REV_CRC64_DATA32): Likewise.
+	(BUILT_IN_REV_CRC64_DATA64): Likewise.
+	* builtins.h (expand_builtin_crc_table_based): New function
+	declaration.
+	* doc/extend.texi: Add documentation for new CRC builtins.
+
+2024-11-28  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* doc/md.texi (crc@var{m}@var{n}4, crc_rev@var{m}@var{n}4): Document.
+	* expr.cc (calculate_crc): New function.
+	(assemble_crc_table): Likewise.
+	(generate_crc_table): Likewise.
+	(calculate_table_based_CRC): Likewise.
+	(expand_crc_table_based): Likewise.
+	(gen_common_operation_to_reflect): Likewise.
+	(reflect_64_bit_value): Likewise.
+	(reflect_32_bit_value): Likewise.
+	(reflect_16_bit_value): Likewise.
+	(reflect_8_bit_value): Likewise.
+	(generate_reflecting_code_standard): Likewise.
+	(expand_reversed_crc_table_based): Likewise.
+	* expr.h (generate_reflecting_code_standard): New function declaration.
+	(expand_crc_table_based): Likewise.
+	(expand_reversed_crc_table_based): Likewise.
+	* internal-fn.cc: (crc_direct): Define.
+	(direct_crc_optab_supported_p): Likewise.
+	(expand_crc_optab_fn): New function
+	* internal-fn.def (CRC, CRC_REV): New internal functions.
+	* optabs.def (crc_optab, crc_rev_optab): New optabs.
+	Signed-off-by: Mariam Arutunian <mariamarutunian@gmail.com>
+	Co-authored-by: Joern Rennecke <joern.rennecke@embecosm.com>
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117642
+	* doc/extend.texi: Remove documentation of warning for unimplemented
+	__sync_* operations, such warning has never been implemented.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* gimple-range-infer.cc (gimple_infer_range::gimple_infer_range):
+	Handle also nonnull_if_nonzero attributes.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* gimple.h (infer_nonnull_range_by_attribute): Add a tree *
+	argument defaulted to NULL.
+	* gimple.cc (infer_nonnull_range_by_attribute): Add op2 argument.
+	Handle also nonnull_if_nonzero attributes.
+	* tree.cc (get_nonnull_args): Fix comment typo.
+	* builtins.cc (validate_arglist): Handle nonnull_if_nonzero attribute.
+	* tree-ssa-ccp.cc (pass_post_ipa_warn::execute): Handle
+	nonnull_if_nonzero attributes.
+	* ubsan.cc (instrument_nonnull_arg): Adjust
+	infer_nonnull_range_by_attribute caller.  If it returned true and
+	filed in non-NULL arg2, check that arg2 is non-zero as another
+	condition next to checking that arg is zero.
+	* doc/extend.texi (nonnull_if_nonzero): Document new attribute.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.h (struct machine_function): Add
+	asm_redzone_clobber_seen member.
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Force
+	info->push_p if cfun->machine->asm_redzone_clobber_seen.
+	* config/rs6000/rs6000.cc (TARGET_REDZONE_CLOBBER): Redefine.
+	(rs6000_redzone_clobber): New function.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.def (redzone_clobber): New target hook.
+	* varasm.cc (decode_reg_name_and_count): Return -5 for
+	"redzone".
+	* cfgexpand.cc (expand_asm_stmt): Handle redzone clobber.
+	* config/i386/i386.h (struct machine_function): Add
+	asm_redzone_clobber_seen member.
+	* config/i386/i386.cc (ix86_compute_frame_layout): Don't
+	use red zone if cfun->machine->asm_redzone_clobber_seen.
+	(ix86_redzone_clobber): New function.
+	(TARGET_REDZONE_CLOBBER): Redefine.
+	* doc/extend.texi (Clobbers and Scratch Registers): Document
+	the "redzone" clobber.
+	* doc/tm.texi.in: Add @hook TARGET_REDZONE_CLOBBER.
+	* doc/tm.texi: Regenerate.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116416
+	* flag-types.h (enum zero_init_padding_bits_kind): New type.
+	* tree.h (CONSTRUCTOR_ZERO_PADDING_BITS): Define.
+	* common.opt (fzero-init-padding-bits=): New option.
+	* expr.cc (categorize_ctor_elements_1): Handle
+	CONSTRUCTOR_ZERO_PADDING_BITS or
+	flag_zero_init_padding_bits == ZERO_INIT_PADDING_BITS_ALL.  Fix
+	up *p_complete = -1; setting for unions.
+	(complete_ctor_at_level_p): Handle unions differently for
+	flag_zero_init_padding_bits == ZERO_INIT_PADDING_BITS_STANDARD.
+	* gimple-fold.cc (type_has_padding_at_level_p): Fix up UNION_TYPE
+	handling, return also true for UNION_TYPE with no FIELD_DECLs
+	and non-zero size, handle QUAL_UNION_TYPE like UNION_TYPE.
+	* doc/invoke.texi (-fzero-init-padding-bits=@var{value}): Document.
+
+2024-11-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/117557
+	* tree-vect-stmts.cc (vectorizable_store): Flatten the ncopies and
+	vec_num loops.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117358
+	* gimple-fold.cc (gimple_fold_builtin_memory_op): Punt if stmt has no
+	vdef in ssa form.
+	(gimple_fold_builtin_bcmp): Punt if stmt has no vuse in ssa form.
+	(gimple_fold_builtin_bcopy): Punt if stmt has no vdef in ssa form.
+	(gimple_fold_builtin_bzero): Likewise.
+	(gimple_fold_builtin_memset): Likewise.  Use return false instead of
+	return NULL_TREE.
+	(gimple_fold_builtin_strcpy): Punt if stmt has no vdef in ssa form.
+	(gimple_fold_builtin_strncpy): Likewise.
+	(gimple_fold_builtin_strchr): Punt if stmt has no vuse in ssa form.
+	(gimple_fold_builtin_strstr): Likewise.
+	(gimple_fold_builtin_strcat): Punt if stmt has no vdef in ssa form.
+	(gimple_fold_builtin_strcat_chk): Likewise.
+	(gimple_fold_builtin_strncat): Likewise.
+	(gimple_fold_builtin_strncat_chk): Likewise.
+	(gimple_fold_builtin_string_compare): Likewise.
+	(gimple_fold_builtin_fputs): Likewise.
+	(gimple_fold_builtin_memory_chk): Likewise.
+	(gimple_fold_builtin_stxcpy_chk): Likewise.
+	(gimple_fold_builtin_stxncpy_chk): Likewise.
+	(gimple_fold_builtin_stpcpy): Likewise.
+	(gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_fold_builtin_sprintf_chk): Likewise.
+	(gimple_fold_builtin_sprintf): Likewise.
+	(gimple_fold_builtin_snprintf): Likewise.
+	(gimple_fold_builtin_fprintf): Likewise.
+	(gimple_fold_builtin_printf): Likewise.
+	(gimple_fold_builtin_realloc): Likewise.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117802
+	* builtins.cc (fold_builtin_iseqsig): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* timevar.cc: Include "make-unique.h".
+	(timer::named_items::make_json): Convert return type to unique_ptr.
+	Avoid naked "new".
+	(make_json_for_timevar_time_def): Likewise.
+	(timer::timevar_def::make_json): Likewise.
+	(timer::make_json): Likewise.
+	* timevar.h (timer::make_json): Likewise.
+	(timer::timevar_def::make_json): Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Update for above changes.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* common/config/ia64/ia64-common.cc (ia64_handle_option): Replace
+	"%<%s%>" with "%qs" in message wording.
+	* common/config/rs6000/rs6000-common.cc (rs6000_handle_option):
+	Likewise.
+	* config/aarch64/aarch64.cc (aarch64_validate_sls_mitigation):
+	Likewise.
+	(aarch64_override_options): Likewise.
+	(aarch64_process_target_attr): Likewise.
+	* config/arm/aarch-common.cc (aarch_validate_mbranch_protection):
+	Likewise.
+	* config/pru/pru.cc (pru_insert_attributes): Likewise.
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attr_parser::parse_arch): Likewise.
+	* omp-general.cc (oacc_verify_routine_clauses): Likewise.
+	* tree-ssa-uninit.cc (maybe_warn_read_write_only): Likewise.
+	(maybe_warn_pass_by_reference): Likewise.
+
 2024-11-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36503

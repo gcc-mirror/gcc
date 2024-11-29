@@ -1,3 +1,32 @@
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116416
+	* c-parser.cc (c_parser_braced_init): Set CONSTRUCTOR_ZERO_PADDING_BITS
+	for flag_isoc23 empty initializers.
+	* c-typeck.cc (constructor_zero_padding_bits): New variable.
+	(struct constructor_stack): Add zero_padding_bits member.
+	(really_start_incremental_init): Save and clear
+	constructor_zero_padding_bits.
+	(push_init_level): Save constructor_zero_padding_bits.  Or into it
+	CONSTRUCTOR_ZERO_PADDING_BITS from previous value if implicit.
+	(pop_init_level): Set CONSTRUCTOR_ZERO_PADDING_BITS if
+	constructor_zero_padding_bits and restore
+	constructor_zero_padding_bits.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82892
+	* c-decl.cc (lookup_name_fuzzy): Provide hints for missing
+	command-line options.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87850
+	* c-typeck.cc (compatible_types_for_indirection_note_p): New
+	function.
+	(convert_for_assignment): Call maybe_emit_indirection_note for
+	pointer vs non-pointer diagnostics.
+
 2024-11-27  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/91193

@@ -1,3 +1,9 @@
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* pch.cc (cpp_valid_state): Replace "%<%s%>" with "%qs" in message
+	wording.
+
 2024-11-27  Jason Merrill  <jason@redhat.com>
 
 	* files.cc (_cpp_stack_file): Handle -include of header unit more

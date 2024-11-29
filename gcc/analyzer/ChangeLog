@@ -1,3 +1,18 @@
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (strongly_connected_components::to_json): Avoid naked
+	"new".
+	* infinite-loop.cc (infinite_loop::to_json): Convert return type
+	to unique_ptr.  Avoid naked "new".
+	* sm-signal.cc (signal_delivery_edge_info_t::to_json): Delete
+	unused function.
+	* supergraph.cc (supernode::to_json): Avoid naked "new".
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* sm-malloc.cc: Replace "%<%s%>" with "%qs" in message wording.
+
 2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* checker-event.cc (checker_event::dump): Support printing either

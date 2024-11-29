@@ -1,3 +1,45 @@
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* backend/rust-compile-expr.cc
+	(CompileExpr::compile_integer_literal): Replace "%<%s%>" with
+	"%qs" in message wording.
+	(CompileExpr::compile_float_literal): Likewise.
+	* backend/rust-compile-intrinsic.cc (Intrinsics::compile):
+	Likewise.
+	* backend/rust-tree.cc (maybe_warn_nodiscard): Likewise.
+	* checks/lints/rust-lint-scan-deadcode.h: Likewise.
+	* lex/rust-lex.cc (Lexer::parse_partial_unicode_escape): Likewise.
+	(Lexer::parse_raw_byte_string): Likewise.
+	* lex/rust-token.cc (Token::get_str): Likewise.
+	* metadata/rust-export-metadata.cc
+	(PublicInterface::write_to_path): Likewise.
+	* parse/rust-parse.cc
+	(peculiar_fragment_match_compatible_fragment): Likewise.
+	(peculiar_fragment_match_compatible): Likewise.
+	* resolve/rust-ast-resolve-path.cc (ResolvePath::resolve_path):
+	Likewise.
+	* resolve/rust-ast-resolve-toplevel.h: Likewise.
+	* resolve/rust-ast-resolve-type.cc (ResolveRelativeTypePath::go):
+	Likewise.
+	* rust-session-manager.cc (validate_crate_name): Likewise.
+	(Session::load_extern_crate): Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_fn_trait_call): Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc
+	(TypeCheckImplItemWithTrait::visit): Likewise.
+	* typecheck/rust-hir-type-check-item.cc
+	(TypeCheckItem::validate_trait_impl_block): Likewise.
+	* typecheck/rust-hir-type-check-struct.cc
+	(TypeCheckStructExpr::visit): Likewise.
+	* typecheck/rust-tyty-call.cc (TypeCheckCallExpr::visit):
+	Likewise.
+	* typecheck/rust-tyty.cc (BaseType::bounds_compatible): Likewise.
+	* typecheck/rust-unify.cc (UnifyRules::emit_abi_mismatch):
+	Likewise.
+	* util/rust-attributes.cc (AttributeChecker::visit): Likewise.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

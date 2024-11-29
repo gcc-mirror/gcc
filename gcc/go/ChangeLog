@@ -1,3 +1,15 @@
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* gofrontend/embed.cc (Gogo::initializer_for_embeds): Replace
+	"%<%s%>" with "%qs" in message wording.
+	* gofrontend/expressions.cc
+	(Selector_expression::lower_method_expression): Likewise.
+	* gofrontend/gogo.cc (Gogo::set_package_name): Likewise.
+	(Named_object::export_named_object): Likewise.
+	* gofrontend/parse.cc (Parse::struct_type): Likewise.
+	(Parse::parameter_list): Likewise.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

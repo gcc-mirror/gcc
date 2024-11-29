@@ -1,3 +1,46 @@
+2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::_M_impl::_M_resize):
+	Use std::_Destroy to destroy removed elements.
+
+2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Reorder registrations.
+
+2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117822
+	* include/std/stacktrace (stacktrace(stacktrace&&, const A&)):
+	Fix typo in qualified-id for is_always_equal trait.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Test
+	allocator-extended constructors and allocator propagation.
+
+2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_relops.h (rel_ops): Add deprecated attribute.
+	* testsuite/20_util/headers/utility/using_namespace_std_rel_ops.cc:
+	Add dg-warning for -Wdeprecated warnings.
+	* testsuite/20_util/rel_ops.cc: Likewise.
+	* testsuite/util/testsuite_containers.h: Disable -Wdeprecated
+	warnings when using rel_ops.
+
+2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h: Reduce duplication in doxygen
+	comments.
+
+2024-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113798
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
+	dg-prune-output.
+
+2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117210
+	* config/os/bsd/dragonfly/os_defines.h: Include <sys/cdefs.h>.
+	* config/os/bsd/freebsd/os_defines.h: Likewise.
+
 2024-11-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* include/bits/basic_string.h (basic_string::size(),

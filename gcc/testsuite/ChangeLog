@@ -1,3 +1,124 @@
+2024-11-28  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/117765
+	* gfortran.dg/impure_fcn_do_concurrent.f90: Update test to catch
+	calls to an impure subroutine.
+
+2024-11-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117791
+	* gfortran.dg/bounds_check_array_io.f90: New test.
+
+2024-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113798
+	* g++.dg/cpp26/feat-cxx26.C (__cpp_pack_indexing): Add test.
+
+2024-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113798
+	* g++.dg/cpp26/pack-indexing1.C: New test.
+	* g++.dg/cpp26/pack-indexing2.C: New test.
+	* g++.dg/cpp26/pack-indexing3.C: New test.
+	* g++.dg/cpp26/pack-indexing4.C: New test.
+	* g++.dg/cpp26/pack-indexing5.C: New test.
+	* g++.dg/cpp26/pack-indexing6.C: New test.
+	* g++.dg/cpp26/pack-indexing7.C: New test.
+	* g++.dg/cpp26/pack-indexing8.C: New test.
+	* g++.dg/cpp26/pack-indexing9.C: New test.
+	* g++.dg/cpp26/pack-indexing10.C: New test.
+	* g++.dg/cpp26/pack-indexing11.C: New test.
+	* g++.dg/modules/pack-index-1_a.C: New test.
+	* g++.dg/modules/pack-index-1_b.C: New test.
+
+2024-11-28  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* gcc.dg/crc-builtin-rev-target32.c: New test.
+	* gcc.dg/crc-builtin-rev-target64.c: New test.
+	* gcc.dg/crc-builtin-target32.c: New test.
+	* gcc.dg/crc-builtin-target64.c: New test.
+	Signed-off-by: Mariam Arutunian <mariamarutunian@gmail.com>
+	Co-authored-by: Joern Rennecke <joern.rennecke@embecosm.com>
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116675
+	* gcc.target/i386/pr116675.c: Add -save-temps to dg-options.
+	Scan for pand\t rather than pand.
+
+2024-11-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.dg/tree-ssa/empty-loop.C: Address UNRESOLVED.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* gcc.dg/nonnull-8.c: New test.
+	* gcc.dg/nonnull-9.c: New test.
+	* gcc.dg/nonnull-10.c: New test.
+	* c-c++-common/ubsan/nonnull-6.c: New test.
+	* c-c++-common/ubsan/nonnull-7.c: New test.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/asm-redzone-1.c: New test.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/asm-redzone-1.c: New test.
+	* gcc.target/i386/asm-redzone-1.c: New test.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78620
+	PR c++/117256
+	* g++.dg/cpp0x/zero-init1.C: New file.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116416
+	* gcc.dg/plugin/infoleak-1.c (test_union_2b, test_union_4b): Expect
+	diagnostics.
+	* gcc.dg/c23-empty-init-5.c: New test.
+	* gcc.dg/gnu11-empty-init-1.c: New test.
+	* gcc.dg/gnu11-empty-init-2.c: New test.
+	* gcc.dg/gnu11-empty-init-3.c: New test.
+	* gcc.dg/gnu11-empty-init-4.c: New test.
+
+2024-11-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/117557
+	* gcc.target/aarch64/pr117557.c: New test.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117358
+	* gcc.c-torture/compile/pr117358.c: New test.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117802
+	* gcc.dg/builtin-iseqsig-1.c: New test.
+	* gcc.dg/bitint-118.c: New test.
+
+2024-11-28  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117757
+	* gcc.dg/pr117757-1.c: New test.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82892
+	* c-c++-common/spellcheck-missing-option.c: New test.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87850
+	* c-c++-common/indirection-fixits.c: New test.
+	* g++.dg/template/error60.C: Add fix-it hint to expected output.
+	* g++.dg/template/error60a.C: Likewise.
+
 2024-11-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/empty-loop.C: xfail optimization at cddce2 and check

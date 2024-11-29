@@ -1,3 +1,54 @@
+2024-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113798
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_pack_indexing=202311L for C++26.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* c-attribs.cc (handle_nonnull_if_nonzero_attribute): New
+	function.
+	(c_common_gnu_attributes): Add nonnull_if_nonzero attribute.
+	(handle_nonnull_attribute): Fix comment typo.
+	* c-common.cc (struct nonnull_arg_ctx): Add other member.
+	(check_function_nonnull): Also check nonnull_if_nonzero attributes.
+	(check_nonnull_arg): Use different warning wording if pctx->other
+	is non-zero.
+	(check_function_arguments): Initialize ctx.other.
+
+2024-11-28  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117757
+	* c-gimplify.cc (c_gimplify_expr): Check for error_operand_p
+	before calling TYPE_MAIN_VARIANT for shifts.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82892
+	* c-common.h (get_option_for_builtin_define): New decl.
+	* c-cppbuiltin.cc (get_option_for_builtin_define): New.
+	* known-headers.cc: Include "opts.h".
+	(suggest_missing_option::suggest_missing_option): New.
+	(suggest_missing_option::~suggest_missing_option): New.
+	* known-headers.h (class suggest_missing_option): New.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87850
+	* c-common.cc: Include "gcc-rich-location.h".
+	(maybe_emit_indirection_note): New function.
+	* c-common.h (maybe_emit_indirection_note): New decl.
+	(compatible_types_for_indirection_note_p): New decl.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* c-lex.cc (c_common_lex_availability_macro): Replace "%<%s%>"
+	with "%qs" in message wording.
+	* c-opts.cc (c_common_handle_option): Likewise.
+	* c-warn.cc (warn_parm_array_mismatch): Likewise.
+
 2024-11-27  Florian Weimer  <fweimer@redhat.com>
 
 	* c-opts.cc (c_common_post_options): Initialize

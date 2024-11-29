@@ -1,3 +1,93 @@
+2024-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113798
+	* constexpr.cc (potential_constant_expression_1) <case PACK_INDEX_EXPR>:
+	New case.
+	* cp-objcp-common.cc (cp_common_init_ts): Mark PACK_INDEX_TYPE and
+	PACK_INDEX_EXPR.
+	* cp-tree.def (PACK_INDEX_TYPE): New.
+	(PACK_INDEX_EXPR): New.
+	* cp-tree.h (WILDCARD_TYPE_P): Also check PACK_INDEX_TYPE.
+	(PACK_INDEX_CHECK): Define.
+	(PACK_INDEX_P): Define.
+	(PACK_INDEX_PACK): Define.
+	(PACK_INDEX_INDEX): Define.
+	(PACK_INDEX_PARENTHESIZED_P): Define.
+	(make_pack_index): Declare.
+	(pack_index_element): Declare.
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression) <case
+	PACK_INDEX_EXPR>: New case.
+	(cxx_pretty_printer::type_id) <case PACK_INDEX_TYPE>: New case.
+	* error.cc (dump_type) <case PACK_INDEX_TYPE>: New case.
+	(dump_type_prefix): Handle PACK_INDEX_TYPE.
+	(dump_type_suffix): Likewise.
+	(dump_expr) <case PACK_INDEX_EXPR>: New case.
+	* mangle.cc (write_type) <case PACK_INDEX_TYPE>: New case.
+	* module.cc (trees_out::type_node) <case PACK_INDEX_TYPE>: New case.
+	(trees_in::tree_node) <case PACK_INDEX_TYPE>: New case.
+	* parser.cc (cp_parser_next_tokens_are_pack_index_p): New.
+	(cp_parser_pack_index): New.
+	(cp_parser_primary_expression): Handle a C++26 pack-index-expression.
+	(cp_parser_unqualified_id): Handle a C++26 pack-index-specifier.
+	(cp_parser_nested_name_specifier_opt): See if a pack-index-specifier
+	follows.
+	(cp_parser_qualifying_entity): Handle a C++26 pack-index-specifier.
+	(cp_parser_decltype_expr): Set id_expression_or_member_access_p for
+	pack indexing.
+	(cp_parser_mem_initializer_id): Handle a C++26 pack-index-specifier.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_base_specifier): Likewise.
+	* pt.cc (iterative_hash_template_arg) <case PACK_INDEX_TYPE,
+	PACK_INDEX_EXPR>: New case.
+	(find_parameter_packs_r) <case PACK_INDEX_TYPE, PACK_INDEX_EXPR>: New
+	case.
+	(make_pack_index): New.
+	(tsubst_pack_index): New.
+	(tsubst): Avoid tsubst on PACK_INDEX_TYPE.
+	<case TYPENAME_TYPE>: Add a call to error.
+	<case PACK_INDEX_TYPE>: New case.
+	(tsubst_expr) <case PACK_INDEX_EXPR>: New case.
+	(dependent_type_p_r): Return true for PACK_INDEX_TYPE.
+	(type_dependent_expression_p): Recurse on PACK_INDEX_PACK for
+	PACK_INDEX_EXPR.
+	* ptree.cc (cxx_print_type) <case PACK_INDEX_TYPE>: New case.
+	* semantics.cc (finish_parenthesized_expr): Set
+	PACK_INDEX_PARENTHESIZED_P for PACK_INDEX_EXPR.
+	(finish_type_pack_element): Adjust error messages.
+	(pack_index_element): New.
+	* tree.cc (cp_tree_equal) <case PACK_INDEX_EXPR>: New case.
+	(cp_walk_subtrees) <case PACK_INDEX_TYPE, PACK_INDEX_EXPR>: New case.
+	* typeck.cc (structural_comptypes) <case PACK_INDEX_TYPE>: New case.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78620
+	PR c++/117256
+	* init.cc (build_zero_init_1): Set CONSTRUCTOR_ZERO_PADDING_BITS.
+	(build_value_init_noctor): Likewise.
+	* constexpr.cc (cxx_eval_store_expression): Propagate
+	CONSTRUCTOR_ZERO_PADDING_BITS flag.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82892
+	* name-lookup.cc (suggest_alternatives_for_1): Provide hints for
+	missing command-line options.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87850
+	* call.cc (convert_like_real): Call maybe_emit_indirection_note
+	for "invalid conversion" diagnostic.
+	* typeck.cc (compatible_types_for_indirection_note_p): New
+	function.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* cvt.cc (maybe_warn_nodiscard): Replace "%<%s%>" with "%qs" in
+	message wording.
+
 2024-11-27  Jason Merrill  <jason@redhat.com>
 
 	* module.cc (trees_out::core_bools): Check vague_linkage_p.
