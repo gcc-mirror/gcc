@@ -68,6 +68,7 @@
 ;; ---- [INT] Shift-and-insert operations
 ;; ---- [INT] Sum of absolute differences
 ;; ---- [FP] Mfloat8 Multiply-and-accumulate operations
+;; ---- [FP] Mfloat8 dot products
 ;;
 ;; == Extending arithmetic
 ;; ---- [INT] Multi-register widening conversions
@@ -2071,6 +2072,46 @@
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , y ; *              ] <sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b[%4]
      [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b[%4]
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Mfloat8 dot products
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FDOT (4-way, vectors)
+;; - FDOT (4-way, indexed)
+;; - FDOT (2-way, vectors)
+;; - FDOT (2-way, indexed)
+;; -------------------------------------------------------------------------
+(define_insn "@aarch64_sve_dot<mode>"
+  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
+	(unspec:SVE_FULL_HSF
+	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_DOT_FP8))]
+  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , w ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b
+  }
+)
+
+(define_insn "@aarch64_sve_dot_lane<mode>"
+  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
+	(unspec:SVE_FULL_HSF
+	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_DOT_LANE_FP8))]
+  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , y ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b[%4]
   }
 )
 

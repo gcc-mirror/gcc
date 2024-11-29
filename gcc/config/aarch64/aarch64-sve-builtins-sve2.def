@@ -396,3 +396,17 @@ DEF_SVE_FUNCTION_GS_FPM (svmlallbb_lane, ternary_mfloat8_lane, s_float_mf8, none
 DEF_SVE_FUNCTION_GS_FPM (svmlallbt_lane, ternary_mfloat8_lane, s_float_mf8, none, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svmlalltb_lane, ternary_mfloat8_lane, s_float_mf8, none, none, set)
 #undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  streaming_compatible (AARCH64_FL_SVE2 | AARCH64_FL_FP8DOT4, \
+			AARCH64_FL_SSVE_FP8DOT4)
+DEF_SVE_FUNCTION_GS_FPM (svdot, ternary_mfloat8, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svdot_lane, ternary_mfloat8_lane_group_selection, s_float_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  streaming_compatible (AARCH64_FL_SVE2 | AARCH64_FL_FP8DOT2, \
+			AARCH64_FL_SSVE_FP8DOT2)
+DEF_SVE_FUNCTION_GS_FPM (svdot, ternary_mfloat8, h_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svdot_lane, ternary_mfloat8_lane_group_selection, h_float_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS

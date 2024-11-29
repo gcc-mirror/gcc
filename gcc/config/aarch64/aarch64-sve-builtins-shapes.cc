@@ -4005,6 +4005,34 @@ struct ternary_bfloat_def
 };
 SHAPE (ternary_bfloat)
 
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svmfloat8_t, svmfloat8_t).  */
+struct ternary_mfloat8_def
+    : public ternary_resize2_base<8, TYPE_mfloat, TYPE_mfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    gcc_assert (group.fpm_mode == FPM_set);
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vM,vM", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    type_suffix_index type;
+    if (!r.check_num_arguments (4)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES
+	|| !r.require_vector_type (1, VECTOR_TYPE_svmfloat8_t)
+	|| !r.require_vector_type (2, VECTOR_TYPE_svmfloat8_t)
+	|| !r.require_scalar_type (3, "uint64_t"))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type, TYPE_SUFFIX_mf8, GROUP_none);
+  }
+};
+SHAPE (ternary_mfloat8)
+
 /* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloat16_t, svbfloat16_t, uint64_t)
 
    where the final argument is an integer constant expression in the range
@@ -4056,6 +4084,26 @@ struct ternary_mfloat8_lane_def
   }
 };
 SHAPE (ternary_mfloat8_lane)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svmfloat8_t, svmfloat8_t, uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 7] or [0, 3].  */
+struct ternary_mfloat8_lane_group_selection_def
+    : public ternary_mfloat8_lane_def
+{
+  bool
+  check (function_checker &c) const override
+  {
+    machine_mode mode = c.vector_mode (0);
+    if (mode == E_VNx8HFmode)
+      return c.require_immediate_lane_index (3, 2, 2);
+    else if (mode == E_VNx4SFmode)
+      return c.require_immediate_lane_index (3, 2, 4);
+    gcc_unreachable ();
+  }
+};
+SHAPE (ternary_mfloat8_lane_group_selection)
 
 /* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloatt16_t, svbfloat16_t)
    sv<t0>_t svfoo[_n_t0](sv<t0>_t, svbfloat16_t, bfloat16_t).  */

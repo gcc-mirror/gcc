@@ -527,6 +527,24 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
   (((TARGET_SVE2 && TARGET_FP8FMA) || TARGET_STREAMING) \
    && (AARCH64_HAVE_ISA (SSVE_FP8FMA) || TARGET_NON_STREAMING))
 
+/* fp8 four way dot product enabled through +fp8dot4.  */
+#define TARGET_FP8DOT4 AARCH64_HAVE_ISA (FP8DOT4)
+
+/* Streaming versions of fp8 four way dot product instructions are enabled
+through +ssve-fp8dot4.  */
+#define TARGET_SSVE_FP8DOT4 ((\
+		(TARGET_SVE2 && TARGET_FP8DOT4) || TARGET_STREAMING) \
+		&& (AARCH64_HAVE_ISA(SSVE_FP8DOT4) || TARGET_NON_STREAMING))
+
+/* fp8 two way dot product enabled through +fp8dot2.  */
+#define TARGET_FP8DOT2 AARCH64_HAVE_ISA (FP8DOT2)
+
+/* Streaming versions of fp8 two way dot product instructions are enabled
+through +ssve-fp8dot2.  */
+#define TARGET_SSVE_FP8DOT2 ((\
+		(TARGET_SVE2 && TARGET_FP8DOT2) || TARGET_STREAMING) \
+		&& (AARCH64_HAVE_ISA(SSVE_FP8DOT2) || TARGET_NON_STREAMING))
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:

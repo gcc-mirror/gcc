@@ -962,6 +962,8 @@
     UNSPEC_COND_FCVTX	; Used in aarch64-sve2.md.
     UNSPEC_COND_FCVTXNT	; Used in aarch64-sve2.md.
     UNSPEC_COND_FLOGB	; Used in aarch64-sve2.md.
+    UNSPEC_DOT_FP8	; Used in aarch64-sve2.md.
+    UNSPEC_DOT_LANE_FP8	; Used in aarch64-sve2.md.
     UNSPEC_EORBT	; Used in aarch64-sve2.md.
     UNSPEC_EORTB	; Used in aarch64-sve2.md.
     UNSPEC_F1CVT	; Used in aarch64-sve2.md.

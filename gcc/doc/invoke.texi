@@ -21957,6 +21957,18 @@ Enable the fp8 (8-bit floating point) multiply accumulate extension.
 @item ssve-fp8fma
 Enable the fp8 (8-bit floating point) multiply accumulate extension in streaming
 mode.
+@item fp8dot4
+Enable the fp8 (8-bit floating point) to single-precision 4-way dot product
+extension.
+@item ssve-fp8dot4
+Enable the fp8 (8-bit floating point) to single-precision 4-way dot product
+extension in streaming mode.
+@item fp8dot2
+Enable the fp8 (8-bit floating point) to half-precision 2-way dot product
+extension.
+@item ssve-fp8dot2
+Enable the fp8 (8-bit floating point) to half-precision 2-way dot product
+extension in streaming mode.
 @item faminmax
 Enable the Floating Point Absolute Maximum/Minimum extension.
 @item sve-b16b16
