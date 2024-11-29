@@ -21493,19 +21493,20 @@ ix86_modes_tieable_p (machine_mode mode1, machine_mode mode2)
     return mode1 == SFmode;
 
   /* If MODE2 is only appropriate for an SSE register, then tie with
-     any other mode acceptable to SSE registers.  */
-  if (GET_MODE_SIZE (mode2) == 64
+     any vector modes or scalar floating point modes acceptable to SSE
+     registers, excluding scalar integer modes with SUBREG:
+	(subreg:QI (reg:TI 99) 0))
+	(subreg:HI (reg:TI 99) 0))
+	(subreg:SI (reg:TI 99) 0))
+	(subreg:DI (reg:TI 99) 0))
+     to avoid unnecessary move from SSE register to integer register.
+   */
+  if (GET_MODE_SIZE (mode2) >= 16
+      && (GET_MODE_SIZE (mode1) == GET_MODE_SIZE (mode2)
+	  || ((VECTOR_MODE_P (mode1) || SCALAR_FLOAT_MODE_P (mode1))
+	      && GET_MODE_SIZE (mode1) <= GET_MODE_SIZE (mode2)))
       && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
-    return (GET_MODE_SIZE (mode1) == 64
-	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
-  if (GET_MODE_SIZE (mode2) == 32
-      && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
-    return (GET_MODE_SIZE (mode1) == 32
-	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
-  if (GET_MODE_SIZE (mode2) == 16
-      && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
-    return (GET_MODE_SIZE (mode1) == 16
-	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
+    return ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1);
 
   /* If MODE2 is appropriate for an MMX register, then tie
      with any other mode acceptable to MMX registers.  */

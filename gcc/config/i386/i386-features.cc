@@ -3034,6 +3034,42 @@ ix86_rpad_gate ()
 	  && optimize_function_for_speed_p (cfun));
 }
 
+/* Generate a vector set, DEST = SRC, at entry of the nearest dominator
+   for basic block map BBS, which is in the fake loop that contains the
+   whole function, so that there is only a single vector set in the
+   whole function.   */
+
+static void
+ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs)
+{
+  basic_block bb = nearest_common_dominator_for_set (CDI_DOMINATORS, bbs);
+  while (bb->loop_father->latch
+	 != EXIT_BLOCK_PTR_FOR_FN (cfun))
+    bb = get_immediate_dominator (CDI_DOMINATORS,
+				  bb->loop_father->header);
+
+  rtx set = gen_rtx_SET (dest, src);
+
+  rtx_insn *insn = BB_HEAD (bb);
+  while (insn && !NONDEBUG_INSN_P (insn))
+    {
+      if (insn == BB_END (bb))
+	{
+	  insn = NULL;
+	  break;
+	}
+      insn = NEXT_INSN (insn);
+    }
+
+  rtx_insn *set_insn;
+  if (insn == BB_HEAD (bb))
+    set_insn = emit_insn_before (set, insn);
+  else
+    set_insn = emit_insn_after (set,
+				insn ? PREV_INSN (insn) : BB_END (bb));
+  df_insn_rescan (set_insn);
+}
+
 /* At entry of the nearest common dominator for basic blocks with
    conversions/rcp/sqrt/rsqrt/round, generate a single
 	vxorps %xmmN, %xmmN, %xmmN
@@ -3188,35 +3224,10 @@ remove_partial_avx_dependency (void)
       calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-      /* Generate a vxorps at entry of the nearest dominator for basic
-	 blocks with conversions, which is in the fake loop that
-	 contains the whole function, so that there is only a single
-	 vxorps in the whole function.   */
-      bb = nearest_common_dominator_for_set (CDI_DOMINATORS,
-					     convert_bbs);
-      while (bb->loop_father->latch
-	     != EXIT_BLOCK_PTR_FOR_FN (cfun))
-	bb = get_immediate_dominator (CDI_DOMINATORS,
-				      bb->loop_father->header);
+      ix86_place_single_vector_set (v4sf_const0,
+				    CONST0_RTX (V4SFmode),
+				    convert_bbs);
 
-      set = gen_rtx_SET (v4sf_const0, CONST0_RTX (V4SFmode));
-
-      insn = BB_HEAD (bb);
-      while (insn && !NONDEBUG_INSN_P (insn))
-	{
-	  if (insn == BB_END (bb))
-	    {
-	      insn = NULL;
-	      break;
-	    }
-	  insn = NEXT_INSN (insn);
-	}
-      if (insn == BB_HEAD (bb))
-	set_insn = emit_insn_before (set, insn);
-      else
-	set_insn = emit_insn_after (set,
-				    insn ? PREV_INSN (insn) : BB_END (bb));
-      df_insn_rescan (set_insn);
       loop_optimizer_finalize ();
 
       if (!control_flow_insns.is_empty ())
@@ -3286,6 +3297,240 @@ rtl_opt_pass *
 make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
 {
   return new pass_remove_partial_avx_dependency (ctxt);
+}
+
+/* Return a machine mode suitable for vector SIZE.  */
+
+static machine_mode
+ix86_get_vector_load_mode (unsigned int size)
+{
+  machine_mode mode;
+  if (size == 64)
+    mode = V64QImode;
+  else if (size == 32)
+    mode = V32QImode;
+  else
+    mode = V16QImode;
+  return mode;
+}
+
+/* Replace the source operand of instructions in VECTOR_INSNS with
+   VECTOR_CONST in VECTOR_MODE.  */
+
+static void
+replace_vector_const (machine_mode vector_mode, rtx vector_const,
+		      auto_bitmap &vector_insns)
+{
+  bitmap_iterator bi;
+  unsigned int id;
+
+  EXECUTE_IF_SET_IN_BITMAP (vector_insns, 0, id, bi)
+    {
+      rtx_insn *insn = DF_INSN_UID_GET (id)->insn;
+
+      /* Get the single SET instruction.  */
+      rtx set = single_set (insn);
+      rtx dest = SET_SRC (set);
+      machine_mode mode = GET_MODE (dest);
+
+      rtx replace;
+      /* Replace the source operand with VECTOR_CONST.  */
+      if (SUBREG_P (dest) || mode == vector_mode)
+	replace = vector_const;
+      else
+	replace = gen_rtx_SUBREG (mode, vector_const, 0);
+
+      /* NB: Don't run recog_memoized here since vector SUBREG may not
+	 be valid.  Let LRA handle vector SUBREG.  */
+      SET_SRC (set) = replace;
+      /* Drop possible dead definitions.  */
+      PATTERN (insn) = set;
+      df_insn_rescan (insn);
+    }
+}
+
+/* At entry of the nearest common dominator for basic blocks with vector
+   CONST0_RTX and integer CONSTM1_RTX uses, generate a single widest
+   vector set instruction for all CONST0_RTX and integer CONSTM1_RTX
+   uses.
+
+   NB: We want to generate only a single widest vector set to cover the
+   whole function.  The LCM algorithm isn't appropriate here since it
+   may place a vector set inside the loop.  */
+
+static unsigned int
+remove_redundant_vector_load (void)
+{
+  timevar_push (TV_MACH_DEP);
+
+  auto_bitmap zero_bbs;
+  auto_bitmap m1_bbs;
+  auto_bitmap zero_insns;
+  auto_bitmap m1_insns;
+
+  basic_block bb;
+  rtx_insn *insn;
+  unsigned HOST_WIDE_INT zero_count = 0;
+  unsigned HOST_WIDE_INT m1_count = 0;
+  unsigned int zero_size = 0;
+  unsigned int m1_size = 0;
+
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  rtx set = single_set (insn);
+	  if (!set)
+	    continue;
+
+	  /* Record single set vector instruction with CONST0_RTX and
+	     CONSTM1_RTX source.  Record basic blocks with CONST0_RTX and
+	     CONSTM1_RTX.  Count CONST0_RTX and CONSTM1_RTX.  Record the
+	     maximum size of CONST0_RTX and CONSTM1_RTX.  */
+
+	  rtx dest = SET_DEST (set);
+	  machine_mode mode = GET_MODE (dest);
+	  /* Skip non-vector instruction.  */
+	  if (!VECTOR_MODE_P (mode))
+	    continue;
+
+	  rtx src = SET_SRC (set);
+	  /* Skip non-vector load instruction.  */
+	  if (!REG_P (dest) && !SUBREG_P (dest))
+	    continue;
+
+	  if (src == CONST0_RTX (mode))
+	    {
+	      /* Record vector instruction with CONST0_RTX.  */
+	      bitmap_set_bit (zero_insns, INSN_UID (insn));
+
+	      /* Record the maximum vector size.  */
+	      if (zero_size < GET_MODE_SIZE (mode))
+		zero_size = GET_MODE_SIZE (mode);
+
+	      /* Record the basic block with CONST0_RTX.  */
+	      bitmap_set_bit (zero_bbs, bb->index);
+	      zero_count++;
+	    }
+	  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+		   && src == CONSTM1_RTX (mode))
+	    {
+	      /* Record vector instruction with CONSTM1_RTX.  */
+	      bitmap_set_bit (m1_insns, INSN_UID (insn));
+
+	      /* Record the maximum vector size.  */
+	      if (m1_size < GET_MODE_SIZE (mode))
+		m1_size = GET_MODE_SIZE (mode);
+
+	      /* Record the basic block with CONSTM1_RTX.  */
+	      bitmap_set_bit (m1_bbs, bb->index);
+	      m1_count++;
+	    }
+	}
+    }
+
+  if (zero_count > 1 || m1_count > 1)
+    {
+      machine_mode zero_mode, m1_mode;
+      rtx vector_const0, vector_constm1;
+
+      if (zero_count > 1)
+	{
+	  zero_mode = ix86_get_vector_load_mode (zero_size);
+	  vector_const0 = gen_reg_rtx (zero_mode);
+	  replace_vector_const (zero_mode, vector_const0, zero_insns);
+	}
+      else
+	{
+	  zero_mode = VOIDmode;
+	  vector_const0 = nullptr;
+	}
+
+      if (m1_count > 1)
+	{
+	  m1_mode = ix86_get_vector_load_mode (m1_size);
+	  vector_constm1 = gen_reg_rtx (m1_mode);
+	  replace_vector_const (m1_mode, vector_constm1, m1_insns);
+	}
+      else
+	{
+	  m1_mode = VOIDmode;
+	  vector_constm1 = nullptr;
+	}
+
+      /* (Re-)discover loops so that bb->loop_father can be used in the
+	 analysis below.  */
+      calculate_dominance_info (CDI_DOMINATORS);
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+      if (vector_const0)
+	ix86_place_single_vector_set (vector_const0,
+				      CONST0_RTX (zero_mode),
+				      zero_bbs);
+
+      if (vector_constm1)
+	ix86_place_single_vector_set (vector_constm1,
+				      CONSTM1_RTX (m1_mode),
+				      m1_bbs);
+
+      loop_optimizer_finalize ();
+
+      df_process_deferred_rescans ();
+    }
+
+  df_clear_flags (DF_DEFER_INSN_RESCAN);
+
+  timevar_pop (TV_MACH_DEP);
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_remove_redundant_vector_load =
+{
+  RTL_PASS, /* type */
+  "rrvl", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_remove_redundant_vector_load : public rtl_opt_pass
+{
+public:
+  pass_remove_redundant_vector_load (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_remove_redundant_vector_load, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *fun) final override
+    {
+      return (TARGET_SSE2
+	      && optimize
+	      && optimize_function_for_speed_p (fun));
+    }
+
+  unsigned int execute (function *) final override
+    {
+      return remove_redundant_vector_load ();
+    }
+}; // class pass_remove_redundant_vector_load
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_remove_redundant_vector_load (gcc::context *ctxt)
+{
+  return new pass_remove_redundant_vector_load (ctxt);
 }
 
 /* Convert legacy instructions that clobbers EFLAGS to APX_NF
