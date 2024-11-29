@@ -1077,7 +1077,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
     }
 
   /* The || form is characterized by a common then_bb with the
-     two edges leading to it mergable.  The latter is guaranteed
+     two edges leading to it mergeable.  The latter is guaranteed
      by matching PHI arguments in the then_bb and the inner cond_bb
      having no side-effects.  */
   if (phi_pred_bb != then_bb
@@ -1088,7 +1088,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 	   <outer_cond_bb>
 	     if (q) goto then_bb; else goto inner_cond_bb;
 	   <inner_cond_bb>
-	     if (q) goto then_bb; else goto ...;
+	     if (p) goto then_bb; else goto ...;
 	   <then_bb>
 	     ...
        */
@@ -1104,7 +1104,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 	   <outer_cond_bb>
 	     if (q) goto inner_cond_bb; else goto then_bb;
 	   <inner_cond_bb>
-	     if (q) goto then_bb; else goto ...;
+	     if (p) goto then_bb; else goto ...;
 	   <then_bb>
 	     ...
        */
@@ -1139,13 +1139,18 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
      Look for an OUTER_COND_BBs to combine with INNER_COND_BB.  They need not
      be contiguous, as long as inner and intervening blocks have no side
      effects, and are either single-entry-single-exit or conditionals choosing
-     between the same EXIT_BB with the same PHI args, and the path leading to
-     INNER_COND_BB.  ??? We could potentially handle multi-block
-     single-entry-single-exit regions, but the loop below only deals with
-     single-entry-single-exit individual intervening blocks.  Larger regions
-     without side effects are presumably rare, so it's probably not worth the
-     effort.  */
-  for (basic_block bb = inner_cond_bb, outer_cond_bb, exit_bb = NULL;
+     between the same EXIT_BB with the same PHI args, possibly through an
+     EXIT_PRED, and the path leading to INNER_COND_BB.  EXIT_PRED will be set
+     just before (along with a successful combination) or just after setting
+     EXIT_BB, to either THEN_BB, ELSE_BB, or INNER_COND_BB.  ??? We could
+     potentially handle multi-block single-entry-single-exit regions, but the
+     loop below only deals with single-entry-single-exit individual intervening
+     blocks.  Larger regions without side effects are presumably rare, so it's
+     probably not worth the effort.  */
+  for (basic_block bb = inner_cond_bb, outer_cond_bb, exit_bb = NULL,
+	 /* This initialization shouldn't be needed, but in case the compiler
+	    is not smart enough to tell, make it harmless.  */
+	 exit_pred = NULL;
        single_pred_p (bb) && bb_no_side_effects_p (bb);
        bb = outer_cond_bb)
     {
@@ -1186,10 +1191,13 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 	 checking of same phi args.  */
       if (known_succ_p (outer_cond_bb))
 	changed = false;
-      else if (tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb,
-					then_bb, else_bb, inner_cond_bb, bb))
-	changed = true;
-      else if (forwarder_block_to (else_bb, then_bb))
+      else if ((!exit_bb || exit_pred == inner_cond_bb)
+	       && tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb,
+					   then_bb, else_bb, inner_cond_bb, bb))
+	changed = true, exit_pred = inner_cond_bb;
+      else if (exit_bb
+	       ? exit_pred == else_bb
+	       : forwarder_block_to (else_bb, then_bb))
 	{
 	  /* Other possibilities for the && form, if else_bb is
 	     empty forwarder block to then_bb.  Compared to the above simpler
@@ -1199,9 +1207,11 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 	     edge from outer_cond_bb and the forwarder block.  */
 	  if (tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb, else_bb,
 				       then_bb, else_bb, bb))
-	    changed = true;
+	    changed = true, exit_pred = else_bb;
 	}
-      else if (forwarder_block_to (then_bb, else_bb))
+      else if (exit_bb
+	       ? exit_pred == then_bb
+	       : forwarder_block_to (then_bb, else_bb))
 	{
 	  /* Other possibilities for the || form, if then_bb is
 	     empty forwarder block to else_bb.  Compared to the above simpler
@@ -1211,7 +1221,7 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 	     edge from outer_cond_bb and the forwarder block.  */
 	  if (tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb, else_bb,
 				       then_bb, then_bb, bb))
-	    changed = true;
+	    changed = true, exit_pred = then_bb;
 	}
 
       if (changed)
@@ -1222,15 +1232,85 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
       if (changed && known_succ_p (inner_cond_bb))
 	break;
 
+      /* Starting at this point in the loop, we start preparing to attempt
+	 combinations in which OUTER_COND_BB will be an intervening block.
+	 Checking that it has a single predecessor is a very cheap test, unlike
+	 the PHI args tests below, so test it early and hopefully save the more
+	 expensive tests in case we won't be able to try other blocks.  */
+      if (!single_pred_p (outer_cond_bb))
+	break;
+
       /* Record the exit path taken by the outer condition.  */
       if (!exit_bb)
 	{
+	  /* If we have removed the outer condition entirely, we need not
+	     commit to an exit block yet, it's as if we'd merged the blocks and
+	     were starting afresh.  This is sound as long as we never replace
+	     the outer condition with a constant that leads away from the inner
+	     block.  Here's why we never do: when combining contiguous
+	     conditions, we replace the inner cond, and replace the outer cond
+	     with a constant that leads to inner, so this case is good.  When
+	     combining noncontiguous blocks, we normally modify outer, and
+	     replace inner with a constant or remainders of the original
+	     condition that couldn't be combined.  This test would normally not
+	     hit with noncontiguous blocks, because we'd have computed EXIT_BB
+	     before reaching the noncontiguous outer block.  However, if all
+	     intervening blocks are unconditional, including those just made
+	     unconditional, we may replace outer instead of inner with the
+	     combined condition.  If the combined noncontiguous conditions are
+	     mutually exclusive, we could end up with a constant outer
+	     condition, but then, the inner condition would also be a constant,
+	     and then we'd stop iterating because of the known_succ_p
+	     (inner_cond_bb) test above.  */
+	  if (changed && known_succ_p (outer_cond_bb))
+	    continue;
+
 	  if (recognize_if_then_else (outer_cond_bb, &then_bb, &bb, true))
 	    exit_bb = then_bb;
 	  else if (recognize_if_then_else (outer_cond_bb, &bb, &else_bb, true))
 	    exit_bb = else_bb;
 	  else
 	    break;
+
+	  /* Find out which path from INNER_COND_BB shares PHI args with the
+	     edge (OUTER_COND_BB->EXIT_BB).  That path may involve a forwarder
+	     block, whether THEN_BB or ELSE_BB, and we need to know which one
+	     satisfies the condition to avoid combinations that could use
+	     different forwarding arrangements, because they would be unsound.
+	     E.g., given (a ? 0 : b ? 1 : c ? 1 : 0), after trying to merge b
+	     and c, we test that both share the same exit block, with the same
+	     value 1.  Whether or not that involves a forwarder block, if we
+	     don't go through the same (possibly absent) forwarder block in
+	     subsequent attempted combinations, e.g. a with c, we could find
+	     that a and inverted c share the same exit block with a different
+	     value, namely 0, which would enable an unsound merge.  We need all
+	     of inner, intervening and outer blocks to reach the same exit with
+	     the same value for the transformation to be sound.  So here we
+	     determine how to get to EXIT_BB from outer and inner with the same
+	     PHI values, record that in EXIT_PRED, and then subsequent
+	     combination attempts that have OUTER_COND_BB as an intervening
+	     block will ensure the same path to exit is taken, skipping unsound
+	     transformations.  */
+	  if (changed)
+	    /* EXIT_PRED was set along with CHANGED, and the successful
+	       combination already checked for the same PHI args.  */;
+	  else if (same_phi_args_p (outer_cond_bb, inner_cond_bb, exit_bb))
+	    exit_pred = inner_cond_bb;
+	  else if (then_bb == exit_bb
+		   && forwarder_block_to (else_bb, then_bb)
+		   && same_phi_args_p (outer_cond_bb, else_bb, exit_bb))
+	    exit_pred = else_bb;
+	  else if (else_bb == exit_bb
+		   && forwarder_block_to (then_bb, else_bb)
+		   && same_phi_args_p (outer_cond_bb, then_bb, exit_bb))
+	    exit_pred = then_bb;
+	  else
+	    /* If none of the paths share the same PHI args, no combination is
+	       viable.  */
+	    break;
+	  /* Skip the PHI args test below, it's redundant with the tests we've
+	     just performed.  */
+	  continue;
 	}
 
       /* Before trying an earlier block, make sure INNER_COND_BB and the
@@ -1245,7 +1325,7 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 	 of outer, we'd get ([1 ? 0 :] b ? 1 : (a | c) ? 0 : -1), which would
 	 yield 1 rather than 0 when (a).  */
       if (!changed
-	  && !same_phi_args_p (outer_cond_bb, inner_cond_bb, exit_bb))
+	  && !same_phi_args_p (outer_cond_bb, exit_pred, exit_bb))
 	break;
     }
 
