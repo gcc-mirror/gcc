@@ -173,6 +173,7 @@ enum type_class_index
   TYPE_bfloat,
   TYPE_count,
   TYPE_float,
+  TYPE_mfloat,
   TYPE_signed,
   TYPE_unsigned,
   NUM_TYPE_CLASSES

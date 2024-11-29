@@ -6,6 +6,7 @@
 
 typedef int8_t svint8_t __attribute__ ((vector_size (32)));
 typedef uint8_t svuint8_t __attribute__ ((vector_size (32)));
+typedef __mfp8 svmfloat8_t __attribute__ ((vector_size (32)));
 
 typedef int16_t svint16_t __attribute__ ((vector_size (32)));
 typedef uint16_t svuint16_t __attribute__ ((vector_size (32)));
@@ -44,6 +45,15 @@ CALLEE (s8, svint8_t)
 **	ret
 */
 CALLEE (u8, svuint8_t)
+
+/*
+** callee_mf8:
+**	ptrue	(p[0-7])\.b, vl32
+**	ld1b	(z[0-9]+)\.b, \1/z, \[x0\]
+**	st1b	\2\.b, \1, \[x8\]
+**	ret
+*/
+CALLEE (mf8, svmfloat8_t)
 
 /*
 ** callee_s16:
@@ -165,6 +175,18 @@ CALLER (s8, svint8_t)
 **	ret
 */
 CALLER (u8, svuint8_t)
+
+/*
+** caller_mf8:
+**	...
+**	bl	callee_mf8
+**	...
+**	ld1b	(z[0-9]+\.b), (p[0-7])/z, \[[^]]*\]
+**	st1b	\1, \2, \[[^]]*\]
+**	...
+**	ret
+*/
+CALLER (mf8, svmfloat8_t)
 
 /*
 ** caller_s16:

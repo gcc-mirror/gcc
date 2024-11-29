@@ -3,6 +3,23 @@
 #include "test_sve_acle.h"
 
 /*
+** reinterpret_u8_mf8_tied1:
+**	ret
+*/
+TEST_DUAL_Z_REV (reinterpret_u8_mf8_tied1, svuint8_t, svmfloat8_t,
+		 z0_res = svreinterpret_u8_mf8 (z0),
+		 z0_res = svreinterpret_u8 (z0))
+
+/*
+** reinterpret_u8_mf8_untied:
+**	mov	z0\.d, z4\.d
+**	ret
+*/
+TEST_DUAL_Z (reinterpret_u8_mf8_untied, svuint8_t, svmfloat8_t,
+	     z0 = svreinterpret_u8_mf8 (z4),
+	     z0 = svreinterpret_u8 (z4))
+
+/*
 ** reinterpret_u8_bf16_tied1:
 **	ret
 */
@@ -213,6 +230,17 @@ TEST_DUAL_Z (reinterpret_u8_u64_untied, svuint8_t, svuint64_t,
 TEST_DUAL_Z_REV (reinterpret_u8_bf16_x2_tied1, svuint8x2_t, svbfloat16x2_t,
 		 z0_res = svreinterpret_u8_bf16_x2 (z0),
 		 z0_res = svreinterpret_u8 (z0))
+
+/*
+** reinterpret_u8_mf8_x3_untied:
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	ret
+*/
+TEST_DUAL_XN (reinterpret_u8_mf8_x3_untied, svuint8x3_t, svmfloat8x3_t, z18,
+	      svreinterpret_u8_mf8_x3 (z23),
+	      svreinterpret_u8 (z23))
 
 /*
 ** reinterpret_u8_f32_x2_untied:

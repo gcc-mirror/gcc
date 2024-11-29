@@ -253,10 +253,11 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_b_integer(S, D) \
   S (s8), TYPES_b_unsigned (S, D)
 
-/* _s8
+/* _mf8
+   _s8
    _u8.  */
 #define TYPES_b_data(S, D) \
-  TYPES_b_integer (S, D)
+  S (mf8), TYPES_b_integer (S, D)
 
 /* _s8 _s16
    _u8 _u16.  */
@@ -539,16 +540,18 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   D (u8, s32), \
   D (u16, s64)
 
-/* {     _bf16           }   {     _bf16           }
+/* { _mf8 _bf16          }   { _mf8 _bf16          }
    {      _f16 _f32 _f64 }   {      _f16 _f32 _f64 }
    { _s8  _s16 _s32 _s64 } x { _s8  _s16 _s32 _s64 }
    { _u8  _u16 _u32 _u64 }   { _u8  _u16 _u32 _u64 }.  */
 #define TYPES_reinterpret1(D, A) \
+  D (A, mf8), \
   D (A, bf16), \
   D (A, f16), D (A, f32), D (A, f64), \
   D (A, s8), D (A, s16), D (A, s32), D (A, s64), \
   D (A, u8), D (A, u16), D (A, u32), D (A, u64)
 #define TYPES_reinterpret(S, D) \
+  TYPES_reinterpret1 (D, mf8), \
   TYPES_reinterpret1 (D, bf16), \
   TYPES_reinterpret1 (D, f16), \
   TYPES_reinterpret1 (D, f32), \
