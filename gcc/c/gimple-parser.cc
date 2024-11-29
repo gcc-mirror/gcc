@@ -2208,7 +2208,12 @@ c_parser_gimple_declaration (gimple_parser &parser)
 				    specs->typespec_kind != ctsk_none,
 				    C_DTR_NORMAL, &dummy);
 
-  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+  if (!c_parser_next_token_is (parser, CPP_SEMICOLON))
+    {
+      c_parser_error (parser, "expected %<;%>");
+      return;
+    }
+  if (declarator)
     {
       /* Handle SSA name decls specially, they do not go into the identifier
          table but we simply build the SSA name for later lookup.  */
@@ -2252,11 +2257,6 @@ c_parser_gimple_declaration (gimple_parser &parser)
 	    finish_decl (decl, UNKNOWN_LOCATION, NULL_TREE, NULL_TREE,
 			 NULL_TREE);
 	}
-    }
-  else
-    {
-      c_parser_error (parser, "expected %<;%>");
-      return;
     }
 }
 
