@@ -15661,6 +15661,15 @@ avr_float_lib_compare_returns_bool (machine_mode mode, rtx_code)
 }
 
 
+/* Implement `TARGET_UNWIND_WORD_MODE'.  */
+
+static scalar_int_mode
+avr_unwind_word_mode ()
+{
+  return Pmode;
+}
+
+
 /* Implement `TARGET_LRA_P'.  */
 
 static bool
@@ -15866,6 +15875,9 @@ avr_use_lra_p ()
 
 #undef  TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON avr_canonicalize_comparison
+
+#undef  TARGET_UNWIND_WORD_MODE
+#define TARGET_UNWIND_WORD_MODE avr_unwind_word_mode
 
 /* According to the opening comment in PR86772, the following applies:
   "If the port does not (and never will in the future) need to mitigate
