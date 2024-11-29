@@ -108,6 +108,14 @@ namespace aarch64_sve
     extern const function_base *const svminqv;
     extern const function_base *const svmlalb;
     extern const function_base *const svmlalb_lane;
+    extern const function_base *const svmlallbb_lane;
+    extern const function_base *const svmlallbb;
+    extern const function_base *const svmlallbt_lane;
+    extern const function_base *const svmlallbt;
+    extern const function_base *const svmlalltb_lane;
+    extern const function_base *const svmlalltb;
+    extern const function_base *const svmlalltt_lane;
+    extern const function_base *const svmlalltt;
     extern const function_base *const svmlalt;
     extern const function_base *const svmlalt_lane;
     extern const function_base *const svmlslb;

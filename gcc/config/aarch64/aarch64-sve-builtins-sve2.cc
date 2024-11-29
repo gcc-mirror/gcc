@@ -990,16 +990,34 @@ FUNCTION (svminnmqv, reduction, (-1, -1, UNSPEC_FMINNMQV))
 FUNCTION (svminp, unspec_based_pred_function, (UNSPEC_SMINP, UNSPEC_UMINP,
 					       UNSPEC_FMINP))
 FUNCTION (svminqv, reduction, (UNSPEC_SMINQV, UNSPEC_UMINQV, UNSPEC_FMINQV))
-FUNCTION (svmlalb, unspec_based_mla_function, (UNSPEC_SMULLB,
-					       UNSPEC_UMULLB, UNSPEC_FMLALB))
-FUNCTION (svmlalb_lane, unspec_based_mla_lane_function, (UNSPEC_SMULLB,
-							 UNSPEC_UMULLB,
-							 UNSPEC_FMLALB))
-FUNCTION (svmlalt, unspec_based_mla_function, (UNSPEC_SMULLT,
-					       UNSPEC_UMULLT, UNSPEC_FMLALT))
-FUNCTION (svmlalt_lane, unspec_based_mla_lane_function, (UNSPEC_SMULLT,
-							 UNSPEC_UMULLT,
-							 UNSPEC_FMLALT))
+FUNCTION (svmlalb_lane, unspec_based_mla_lane_function,
+	  (UNSPEC_SMULLB, UNSPEC_UMULLB, UNSPEC_FMLALB,
+	   UNSPEC_FMLALB_FP8))
+FUNCTION (svmlalb, unspec_based_mla_function,
+	  (UNSPEC_SMULLB, UNSPEC_UMULLB, UNSPEC_FMLALB,
+	   UNSPEC_FMLALB_FP8))
+FUNCTION (svmlallbb_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBB_FP8))
+FUNCTION (svmlallbb, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBB_FP8))
+FUNCTION (svmlallbt_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBT_FP8))
+FUNCTION (svmlallbt, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBT_FP8))
+FUNCTION (svmlalltb_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTB_FP8))
+FUNCTION (svmlalltb, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTB_FP8))
+FUNCTION (svmlalltt_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTT_FP8))
+FUNCTION (svmlalltt, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTT_FP8))
+FUNCTION (svmlalt_lane, unspec_based_mla_lane_function,
+	  (UNSPEC_SMULLT, UNSPEC_UMULLT, UNSPEC_FMLALT,
+	   UNSPEC_FMLALT_FP8))
+FUNCTION (svmlalt, unspec_based_mla_function,
+	  (UNSPEC_SMULLT, UNSPEC_UMULLT, UNSPEC_FMLALT,
+	   UNSPEC_FMLALT_FP8))
 FUNCTION (svmlslb, unspec_based_mls_function, (UNSPEC_SMULLB,
 					       UNSPEC_UMULLB, UNSPEC_FMLSLB))
 FUNCTION (svmlslb_lane, unspec_based_mls_lane_function, (UNSPEC_SMULLB,
@@ -1072,15 +1090,15 @@ FUNCTION (svqrdmulh_lane, unspec_based_lane_function, (UNSPEC_SQRDMULH,
 						       -1, -1))
 FUNCTION (svqrshl, svqrshl_impl,)
 FUNCTION (svqrshr, unspec_based_uncond_function, (UNSPEC_SQRSHR,
-						  UNSPEC_UQRSHR, -1, 1))
+						  UNSPEC_UQRSHR, -1, -1, 1))
 FUNCTION (svqrshrn, unspec_based_uncond_function, (UNSPEC_SQRSHRN,
-						   UNSPEC_UQRSHRN, -1, 1))
+						   UNSPEC_UQRSHRN, -1, -1, 1))
 FUNCTION (svqrshrnb, unspec_based_function, (UNSPEC_SQRSHRNB,
 					     UNSPEC_UQRSHRNB, -1))
 FUNCTION (svqrshrnt, unspec_based_function, (UNSPEC_SQRSHRNT,
 					     UNSPEC_UQRSHRNT, -1))
-FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, -1, -1, 1))
-FUNCTION (svqrshrun, unspec_based_uncond_function, (UNSPEC_SQRSHRUN, -1, -1, 1))
+FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, -1, -1, -1, 1))
+FUNCTION (svqrshrun, unspec_based_uncond_function, (UNSPEC_SQRSHRUN, -1, -1, -1, 1))
 FUNCTION (svqrshrunb, unspec_based_function, (UNSPEC_SQRSHRUNB, -1, -1))
 FUNCTION (svqrshrunt, unspec_based_function, (UNSPEC_SQRSHRUNT, -1, -1))
 FUNCTION (svqshl, svqshl_impl,)

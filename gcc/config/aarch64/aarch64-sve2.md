@@ -67,6 +67,7 @@
 ;; ---- [INT] Shift-and-accumulate operations
 ;; ---- [INT] Shift-and-insert operations
 ;; ---- [INT] Sum of absolute differences
+;; ---- [FP] Mfloat8 Multiply-and-accumulate operations
 ;;
 ;; == Extending arithmetic
 ;; ---- [INT] Multi-register widening conversions
@@ -1990,6 +1991,86 @@
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , w ; *              ] <su>aba\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
      [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<su>aba\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Mfloat8 Multiply-and-accumulate operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FMLALB (vectors, FP8 to FP16)
+;; - FMLALT (vectors, FP8 to FP16)
+;; - FMLALB (indexed, FP8 to FP16)
+;; - FMLALT (indexed, FP8 to FP16)
+;; - FMLALLBB (vectors)
+;; - FMLALLBB (indexed)
+;; - FMLALLBT (vectors)
+;; - FMLALLBT (indexed)
+;; - FMLALLTB (vectors)
+;; - FMLALLTB (indexed)
+;; - FMLALLTT (vectors)
+;; - FMLALLTT (indexed)
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_add_<sve2_fp8_fma_op_vnx8hf><mode>"
+  [(set (match_operand:VNx8HF_ONLY 0 "register_operand")
+	(unspec:VNx8HF_ONLY
+	  [(match_operand:VNx8HF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SVE2_FP8_TERNARY_VNX8HF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , w ; *              ] <sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b
+  }
+)
+
+(define_insn "@aarch64_sve_add_<sve2_fp8_fma_op_vnx4sf><mode>"
+  [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
+	(unspec:VNx4SF_ONLY
+	  [(match_operand:VNx4SF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SVE2_FP8_TERNARY_VNX4SF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , w ; *              ] <sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b
+  }
+)
+
+(define_insn "@aarch64_sve_add_lane_<sve2_fp8_fma_op_vnx8hf><mode>"
+  [(set (match_operand:VNx8HF_ONLY 0 "register_operand")
+	(unspec:VNx8HF_ONLY
+	  [(match_operand:VNx8HF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SVE2_FP8_TERNARY_LANE_VNX8HF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , y ; *              ] <sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b[%4]
+  }
+)
+
+(define_insn "@aarch64_sve_add_lane_<sve2_fp8_fma_op_vnx4sf><mode>"
+  [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
+	(unspec:VNx4SF_ONLY
+	  [(match_operand:VNx4SF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SVE2_FP8_TERNARY_LANE_VNX4SF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , y ; *              ] <sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b[%4]
   }
 )
 

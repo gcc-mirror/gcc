@@ -245,6 +245,10 @@ AARCH64_OPT_EXTENSION("gcs", GCS, (), (), (), "gcs")
 
 AARCH64_OPT_EXTENSION("fp8", FP8, (SIMD), (), (), "fp8")
 
+AARCH64_OPT_EXTENSION("fp8fma", FP8FMA, (FP8), (), (), "fp8fma")
+
+AARCH64_OPT_EXTENSION("ssve-fp8fma", SSVE_FP8FMA, (SME2,FP8), (), (), "ssve-fp8fma")
+
 AARCH64_OPT_EXTENSION("faminmax", FAMINMAX, (SIMD), (), (), "faminmax")
 
 #undef AARCH64_OPT_FMV_EXTENSION

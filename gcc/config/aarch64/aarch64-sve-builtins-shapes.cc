@@ -96,6 +96,7 @@ apply_predication (const function_instance &instance, tree return_type,
    B       - bfloat16_t
    c       - a predicate-as-counter
    h<elt>  - a half-sized version of <elt>
+   M       - mfloat8_t
    p       - a predicate (represented as TYPE_SUFFIX_b)
    q<elt>  - a quarter-sized version of <elt>
    s<bits> - a signed type with the given number of bits
@@ -139,6 +140,9 @@ parse_element_type (const function_instance &instance, const char *&format)
 
   if (ch == 'B')
     return TYPE_SUFFIX_bf16;
+
+  if (ch == 'M')
+    return TYPE_SUFFIX_mf8;
 
   if (ch == 'q')
     {
@@ -4015,6 +4019,44 @@ SHAPE (ternary_bfloat_lane)
 typedef ternary_bfloat_lane_base<2> ternary_bfloat_lanex2_def;
 SHAPE (ternary_bfloat_lanex2)
 
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svmfloat8_t, svmfloat8_t, uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 15].  */
+struct ternary_mfloat8_lane_def
+    : public ternary_resize2_lane_base<8, TYPE_mfloat, TYPE_mfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    gcc_assert (group.fpm_mode == FPM_set);
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vM,vM,su64", group, MODE_none);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_lane_index (3, 2, 1);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    type_suffix_index type;
+    if (!r.check_num_arguments (5)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES
+	|| !r.require_vector_type (1, VECTOR_TYPE_svmfloat8_t)
+	|| !r.require_vector_type (2, VECTOR_TYPE_svmfloat8_t)
+	|| !r.require_integer_immediate (3)
+	|| !r.require_scalar_type (4, "uint64_t"))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type, TYPE_SUFFIX_mf8, GROUP_none);
+  }
+};
+SHAPE (ternary_mfloat8_lane)
+
 /* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloatt16_t, svbfloat16_t)
    sv<t0>_t svfoo[_n_t0](sv<t0>_t, svbfloat16_t, bfloat16_t).  */
 struct ternary_bfloat_opt_n_def
@@ -4029,6 +4071,42 @@ struct ternary_bfloat_opt_n_def
   }
 };
 SHAPE (ternary_bfloat_opt_n)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svmfloatt8_t, svmfloat8_t)
+   sv<t0>_t svfoo[_n_t0](sv<t0>_t, svmfloat8_t, bfloat8_t).  */
+struct ternary_mfloat8_opt_n_def
+    : public ternary_resize2_opt_n_base<8, TYPE_mfloat, TYPE_mfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    gcc_assert (group.fpm_mode == FPM_set);
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vM,vM", group, MODE_none);
+    build_all (b, "v0,v0,vM,sM", group, MODE_n);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    type_suffix_index type;
+    if (!r.check_num_arguments (4)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES
+	|| !r.require_vector_type (1, VECTOR_TYPE_svmfloat8_t)
+	|| !r.require_vector_or_scalar_type (2)
+	|| !r.require_scalar_type (3, "uint64_t"))
+      return error_mark_node;
+
+    auto mode = r.mode_suffix_id;
+    if (r.scalar_argument_p (2))
+      mode = MODE_n;
+    else if (!r.require_vector_type (2, VECTOR_TYPE_svmfloat8_t))
+      return error_mark_node;
+
+    return r.resolve_to (mode, type, TYPE_SUFFIX_mf8, GROUP_none);
+  }
+};
+SHAPE (ternary_mfloat8_opt_n)
 
 /* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:int:quarter>_t, sv<t0:uint:quarter>_t,
 		       uint64_t)

@@ -430,6 +430,7 @@
 (define_mode_iterator VNx16QI_ONLY [VNx16QI])
 (define_mode_iterator VNx16SI_ONLY [VNx16SI])
 (define_mode_iterator VNx8HI_ONLY [VNx8HI])
+(define_mode_iterator VNx8HF_ONLY [VNx8HF])
 (define_mode_iterator VNx8BF_ONLY [VNx8BF])
 (define_mode_iterator VNx8SI_ONLY [VNx8SI])
 (define_mode_iterator VNx8SF_ONLY [VNx8SF])
@@ -975,7 +976,13 @@
     UNSPEC_FMINNMP	; Used in aarch64-sve2.md.
     UNSPEC_FMINP	; Used in aarch64-sve2.md.
     UNSPEC_FMLALB	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALB_FP8	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALLBB_FP8	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALLBT_FP8	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALLTB_FP8	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALLTT_FP8	; Used in aarch64-sve2.md.
     UNSPEC_FMLALT	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALT_FP8	; Used in aarch64-sve2.md.
     UNSPEC_FMLSLB	; Used in aarch64-sve2.md.
     UNSPEC_FMLSLT	; Used in aarch64-sve2.md.
     UNSPEC_FP8FCVTN	; Used in aarch64-sve2.md.
@@ -4755,3 +4762,33 @@
    (UNSPEC_F2CVT "f2cvt")
    (UNSPEC_F1CVTLT "f1cvtlt")
    (UNSPEC_F2CVTLT "f2cvtlt")])
+
+(define_int_iterator SVE2_FP8_TERNARY_VNX8HF
+  [UNSPEC_FMLALB_FP8
+   UNSPEC_FMLALT_FP8])
+
+(define_int_iterator SVE2_FP8_TERNARY_VNX4SF
+  [UNSPEC_FMLALLBB_FP8
+   UNSPEC_FMLALLBT_FP8
+   UNSPEC_FMLALLTB_FP8
+   UNSPEC_FMLALLTT_FP8])
+
+(define_int_iterator SVE2_FP8_TERNARY_LANE_VNX8HF
+  [UNSPEC_FMLALB_FP8
+   UNSPEC_FMLALT_FP8])
+
+(define_int_iterator SVE2_FP8_TERNARY_LANE_VNX4SF
+  [UNSPEC_FMLALLBB_FP8
+   UNSPEC_FMLALLBT_FP8
+   UNSPEC_FMLALLTB_FP8
+   UNSPEC_FMLALLTT_FP8])
+
+(define_int_attr sve2_fp8_fma_op_vnx8hf
+  [(UNSPEC_FMLALB_FP8 "fmlalb")
+   (UNSPEC_FMLALT_FP8 "fmlalt")])
+
+(define_int_attr sve2_fp8_fma_op_vnx4sf
+  [(UNSPEC_FMLALLBB_FP8 "fmlallbb")
+   (UNSPEC_FMLALLBT_FP8 "fmlallbt")
+   (UNSPEC_FMLALLTB_FP8 "fmlalltb")
+   (UNSPEC_FMLALLTT_FP8 "fmlalltt")])

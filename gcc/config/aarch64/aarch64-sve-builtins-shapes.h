@@ -213,6 +213,8 @@ namespace aarch64_sve
     extern const function_shape *const ternary_lane_rotate;
     extern const function_shape *const ternary_long_lane;
     extern const function_shape *const ternary_long_opt_n;
+    extern const function_shape *const ternary_mfloat8_lane;
+    extern const function_shape *const ternary_mfloat8_opt_n;
     extern const function_shape *const ternary_opt_n;
     extern const function_shape *const ternary_qq_or_011_lane;
     extern const function_shape *const ternary_qq_lane_rotate;
