@@ -2649,6 +2649,8 @@ gfc_trans_transfer (gfc_code * code)
 		  case EXPR_FUNCTION:
 		  case EXPR_OP:
 		    goto scalarize;
+		  default:
+		    break;
 		  }
 	      }
 	}
