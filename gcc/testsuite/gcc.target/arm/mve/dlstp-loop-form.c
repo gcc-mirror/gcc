@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
-/* { dg-options "-Ofast" } */
+/* { dg-options "-Ofast -std=c99" } */
 /* { dg-add-options arm_v8_1m_mve_fp } */
 #pragma GCC arm "arm_mve_types.h"
 #pragma GCC arm "arm_mve.h" false
