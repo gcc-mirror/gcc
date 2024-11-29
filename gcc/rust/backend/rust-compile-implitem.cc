@@ -57,7 +57,7 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
 void
 CompileTraitItem::visit (HIR::TraitItemFunc &func)
 {
-  rust_assert (func.has_block_defined ());
+  rust_assert (func.has_definition ());
 
   rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
   TyTy::FnType *fntype = static_cast<TyTy::FnType *> (concrete);

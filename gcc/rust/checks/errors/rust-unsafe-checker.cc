@@ -776,7 +776,7 @@ UnsafeChecker::visit (StaticItem &static_item)
 void
 UnsafeChecker::visit (TraitItemFunc &item)
 {
-  if (item.has_block_defined ())
+  if (item.has_definition ())
     item.get_block_expr ().accept_vis (*this);
 }
 
