@@ -534,10 +534,7 @@ package body Exp_Aggr is
       end if;
 
       --  If the expression has side effects (e.g. contains calls with
-      --  potential side effects) reject as well. We only preanalyze the
-      --  expression to prevent the removal of intended side effects.
-
-      Preanalyze_And_Resolve (Expr, Ctyp);
+      --  potential side effects), then reject it as well.
 
       if not Side_Effect_Free (Expr) then
          return False;
