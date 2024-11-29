@@ -24,23 +24,31 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
-typedef void (*proc_con) (int, char **, char **);
-typedef void (*proc_dep) (void);
+#ifdef M2_MC
+/* These type definitions match those used by mc, they are defined differently
+   to satisfy -Wodr when building from the mc translated versions of m2
+   source.  */
+#include "GM2RTS.h"
+#else
+/* These type definitions match those used by cc1gm2, they will be the same
+   sizeof as those above (and also for all their dependants).  */
+typedef void (*M2RTS_ArgCVEnvP) (int, char **, char **);
+typedef void (*PROC) (void);
+#endif
 
 #define M2RTS_RegisterModule_Cstr(MODNAME,LIBNAME,init,fini,dep) \
   M2RTS_RegisterModule (reinterpret_cast <void *> (const_cast <char *> (MODNAME)), \
 			reinterpret_cast <void *> (const_cast <char *> (LIBNAME)), \
 			init, fini, dep)
 
-extern "C" void M2RTS_RequestDependant (const char *modulename, const char *dependancy);
+extern "C" void M2RTS_RequestDependant (const void *modulename, const void *dependancy);
 extern "C" void M2RTS_RegisterModule (void *modulename, void *libname,
-				      proc_con init, proc_con fini, proc_dep dependencies);
+				      M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
 extern "C" void _M2_M2RTS_init (void);
 
-extern "C" void M2RTS_ConstructModules (const char *,
+extern "C" void M2RTS_ConstructModules (const void *,
 					int argc, char *argv[], char *envp[]);
 extern "C" void M2RTS_Terminate (void);
 extern "C" void M2RTS_DeconstructModules (void);
 
-extern "C" void M2RTS_Halt (const char *, int, const char *, const char *) __attribute__ ((noreturn));
+extern "C" void M2RTS_Halt (const char *, const char *, const char *, int) __attribute__ ((noreturn));

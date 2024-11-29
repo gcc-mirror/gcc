@@ -29,9 +29,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define LIBNAME "m2pim"
 
-extern "C" int UnixArgs_GetArgC (void);
-extern "C" char **UnixArgs_GetArgV (void);
-extern "C" char **UnixArgs_GetEnvV (void);
+#include "gm2-libs-host.h"
+
+#include "GUnixArgs.h"
+#include "GM2RTS.h"
 
 static int UnixArgs_ArgC;
 static char **UnixArgs_ArgV;
@@ -49,7 +50,7 @@ UnixArgs_GetArgC (void)
 
 /* GetArgV returns argv.  */
 
-extern "C" char **
+extern "C" void *
 UnixArgs_GetArgV (void)
 {
   return UnixArgs_ArgV;
@@ -58,7 +59,7 @@ UnixArgs_GetArgV (void)
 
 /* GetEnvV returns envv.  */
 
-extern "C" char **
+extern "C" void *
 UnixArgs_GetEnvV (void)
 {
   return UnixArgs_EnvV;
