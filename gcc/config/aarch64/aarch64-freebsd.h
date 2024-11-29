@@ -47,6 +47,14 @@
     -X" SUBTARGET_EXTRA_LINK_SPEC "                             \
     %{mbig-endian:-EB} %{mlittle-endian:-EL}"
 
+#ifndef CC1_SPEC
+# define CC1_SPEC AARCH64_ERRATA_COMPILE_SPEC
+#endif
+
+#ifndef CC1PLUS_SPEC
+# define CC1PLUS_SPEC AARCH64_ERRATA_COMPILE_SPEC
+#endif
+
 #undef  LINK_SPEC
 #define LINK_SPEC FBSD_TARGET_LINK_SPEC AARCH64_ERRATA_LINK_SPEC
 

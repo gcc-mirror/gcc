@@ -1523,8 +1523,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    " %{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
 
 extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
-#define MCPU_TO_MARCH_SPEC_FUNCTIONS \
-  { "rewrite_mcpu", aarch64_rewrite_mcpu },
+extern const char *is_host_cpu_not_armv8_base (int argc, const char **argv);
+#define MCPU_TO_MARCH_SPEC_FUNCTIONS		       \
+  { "rewrite_mcpu",            aarch64_rewrite_mcpu }, \
+  { "is_local_not_armv8_base", is_host_cpu_not_armv8_base },
+
 
 #define ASM_CPU_SPEC \
    MCPU_TO_MARCH_SPEC

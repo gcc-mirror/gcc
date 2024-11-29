@@ -21494,7 +21494,9 @@ This option requires binutils 2.26 or newer.
 @itemx -mno-fix-cortex-a53-835769
 Enable or disable the workaround for the ARM Cortex-A53 erratum number 835769.
 This involves inserting a NOP instruction between memory instructions and
-64-bit integer multiply-accumulate instructions.
+64-bit integer multiply-accumulate instructions.  This flag will be ignored if
+an architecture or cpu is specified on the command line which does not need the
+workaround.
 
 @opindex mfix-cortex-a53-843419
 @opindex mno-fix-cortex-a53-843419
@@ -21502,7 +21504,10 @@ This involves inserting a NOP instruction between memory instructions and
 @itemx -mno-fix-cortex-a53-843419
 Enable or disable the workaround for the ARM Cortex-A53 erratum number 843419.
 This erratum workaround is made at link time and this will only pass the
-corresponding flag to the linker.
+corresponding flag to the linker.  This flag will be ignored if
+an architecture or cpu is specified on the command line which does not need the
+workaround.
+
 
 @opindex mlow-precision-recip-sqrt
 @opindex mno-low-precision-recip-sqrt
