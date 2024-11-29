@@ -105,9 +105,14 @@ INSERT_PASS_BEFORE (pass_split_after_reload, 1, avr_pass_ifelse);
 
 INSERT_PASS_AFTER (pass_peephole2, 1, avr_pass_fuse_move);
 
-  /* Run an instance of post-reload split prior to avr-fuse-move.
-     Purpose is to split 3-operand shift insns into a 3-operand shift
-     with a byte offset, and a 2-operand residual shift after
-	 RTL peepholes but prior to the avr-fuse-move pass.  */
+/* Run an instance of post-reload split prior to avr-fuse-move.
+   Purpose is to split the `3op' alternative (which allows 3 operands)
+   of shift insns into a 3-operand shift with a byte offset, and
+   a 2-operand residual shift.  This additional split pass runs after
+   the 1st RTL peephole pass but prior to avr-fuse-move.
+      The respective define_split patterns have a `n_avr_fuse_add_executed'
+   condition (amongst others) so that split passes that run before
+   the 1st RTL peephole pass won't split them.  Shifts with a constant
+   offset that is a multiple of 8 are split by avr-fuse-move.  */
 
 INSERT_PASS_AFTER (pass_peephole2, 1, avr_pass_split_after_peephole2);

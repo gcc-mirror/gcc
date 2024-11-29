@@ -283,6 +283,36 @@
   (and (match_code "const_int,symbol_ref,const")
        (match_test "const_0mod256_operand (op, HImode)")))
 
+(define_constraint "C2a"
+  "A constant integer shift offset for a 2-byte ASHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (2, ival, ASHIFTRT)")))
+
+(define_constraint "C2r"
+  "A constant integer shift offset for a 2-byte LSHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (2, ival, LSHIFTRT)")))
+
+(define_constraint "C2l"
+  "A constant integer shift offset for a 2-byte ASHIFT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (2, ival, ASHIFT)")))
+
+(define_constraint "C3a"
+  "A constant integer shift offset for a 3-byte ASHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (3, ival, ASHIFTRT)")))
+
+(define_constraint "C3r"
+  "A constant integer shift offset for a 3-byte LSHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (3, ival, LSHIFTRT)")))
+
+(define_constraint "C3l"
+  "A constant integer shift offset for a 3-byte ASHIFT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (3, ival, ASHIFT)")))
+
 (define_constraint "C4a"
   "A constant integer shift offset for a 4-byte ASHIFTRT that's opt to being split."
   (and (match_code "const_int")

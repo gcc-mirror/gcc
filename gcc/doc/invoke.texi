@@ -24320,11 +24320,11 @@ sbiw r26, const   ; X -= const
 
 @opindex msplit-bit-shift
 @item -msplit-bit-shift
-Split multi-byte shifts into a shift with a byte offset and a residual
-shift with a non-byte offset.  This optimization is turned on per default
-for @option{-O2} and higher, including @option{-Os} but excluding
-@option{-Oz}.  To date, only 4-byte shifts with a shift offset of
-at least 17 are split.  Splitting of shifts with an offset that is
+Split multi-byte shifts with a constant offset into a shift with
+a byte offset and a residual shift with a non-byte offset.
+This optimization is turned on per default for @option{-O2} and higher,
+including @option{-Os} but excluding @option{-Oz}.
+Splitting of shifts with a constant offset that is
 a multiple of 8 is controlled by @option{-mfuse-move}.
 
 @opindex mtiny-stack

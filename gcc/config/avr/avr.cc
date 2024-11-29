@@ -7045,6 +7045,7 @@ avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int *plen)
     {
       int reg0 = REGNO (op[0]);
       int reg1 = REGNO (op[1]);
+      bool reg1_unused_after = reg_unused_after (insn, op[1]);
 
       switch (INTVAL (op[2]))
 	{
@@ -7063,6 +7064,20 @@ avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int *plen)
 	    : avr_asm_len ("clr %A0"      CR_TAB
 			   "mov %B0,%A1"  CR_TAB
 			   "mov %C0,%B1", op, plen, 3);
+	case 15:
+	  avr_asm_len (reg1_unused_after
+		       ? "lsr %B1"
+		       : "bst %B1,0", op, plen, 1);
+	  if (reg0 + 2 != reg1)
+	    avr_asm_len ("mov %C0,%A1", op, plen, 1);
+	  avr_asm_len ("clr %A0"  CR_TAB
+		       "clr %B0"  CR_TAB
+		       "ror %C0"  CR_TAB
+		       "ror %B0", op, plen, 5);
+	  return reg1_unused_after
+	    ? ""
+	    : avr_asm_len ("bld %C0,7", op, plen, 1);
+
 	case 16:
 	  if (reg0 + 2 != reg1)
 	    avr_asm_len ("mov %C0,%A1", op, plen, 1);
@@ -7094,7 +7109,7 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
     {
       int reg0 = true_regnum (operands[0]);
       int reg1 = true_regnum (operands[1]);
-      bool reg1_unused_after_p = reg_unused_after (insn, operands[1]);
+      bool reg1_unused_after = reg_unused_after (insn, operands[1]);
 
       if (plen)
 	*plen = 0;
@@ -7124,7 +7139,7 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %C0,%B1"  CR_TAB
 			   "mov %D0,%C1", operands, plen, 4);
 	case 15:
-	  avr_asm_len (reg1_unused_after_p
+	  avr_asm_len (reg1_unused_after
 		       ? "lsr %C1"
 		       : "bst %C1,0", operands, plen, 1);
 	  if (reg0 + 2 != reg1)
@@ -7135,18 +7150,15 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 		avr_asm_len ("mov %C0,%A1"  CR_TAB
 			     "mov %D0,%B1", operands, plen, 2);
 	    }
-	  return reg1_unused_after_p
-	    ? avr_asm_len ("clr %A0"  CR_TAB
-			   "clr %B0"  CR_TAB
-			   "ror %D0"  CR_TAB
-			   "ror %C0"  CR_TAB
-			   "ror %B0", operands, plen, 5)
-	    : avr_asm_len ("clr %A0"  CR_TAB
-			   "clr %B0"  CR_TAB
-			   "lsr %D0"  CR_TAB
-			   "ror %C0"  CR_TAB
-			   "ror %B0"  CR_TAB
-			   "bld %D0,7", operands, plen, 6);
+	  avr_asm_len ("clr %A0"  CR_TAB
+		       "clr %B0"  CR_TAB
+		       "ror %D0"  CR_TAB
+		       "ror %C0"  CR_TAB
+		       "ror %B0", operands, plen, 5);
+	  return reg1_unused_after
+	    ? ""
+	    : avr_asm_len ("bld %D0,7", operands, plen, 1);
+
 	case 16:
 	  if (reg0 + 2 == reg1)
 	    return avr_asm_len ("clr %B0"  CR_TAB
@@ -7275,10 +7287,16 @@ ashrhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			      "rol %A0"             CR_TAB
 			      "rol %B0", operands, plen, 8);
 	case 7:
-	  return avr_asm_len ("lsl %A0"     CR_TAB
-			      "mov %A0,%B0" CR_TAB
-			      "rol %A0"     CR_TAB
-			      "sbc %B0,%B0", operands, plen, 4);
+	  return reg1_unused_after
+	    ? avr_asm_len ("lsl %A1"     CR_TAB
+			   "mov %A0,%B1" CR_TAB
+			   "rol %A0"     CR_TAB
+			   "sbc %B0,%B0", operands, plen, 4)
+	    : avr_asm_len ("mov %A0,%A1"     CR_TAB
+			   "lsl %A0"     CR_TAB
+			   "mov %A0,%B1" CR_TAB
+			   "rol %A0"     CR_TAB
+			   "sbc %B0,%B0", operands, plen, 5);
 	case 8:
 	  {
 	    int reg0 = true_regnum (operands[0]);
@@ -7422,13 +7440,30 @@ avr_out_ashrpsi3 (rtx_insn *insn, rtx *op, int *plen)
 			   "dec %C0"     CR_TAB
 			   "mov %B0,%C1" CR_TAB
 			   "mov %A0,%B1", op, plen, 5);
+	case 15:
+	  avr_asm_len (reg1_unused_after
+		       ? "lsl %B1"
+		       : "bst %B1,7", op, plen, 1);
+	  if (dest != src + 2)
+	    avr_asm_len ("mov %A0,%C1", op, plen, 1);
+	  avr_asm_len ("rol %A0"      CR_TAB
+		       "sbc %B0,%B0"  CR_TAB
+		       "sbc %C0,%C0", op, plen, 3);
+	  return reg1_unused_after
+	    ? ""
+	    : avr_asm_len ("bld %A0,0", op, plen, 1);
+
 	case 16:
 	  if (dest != src + 2)
 	    avr_asm_len ("mov %A0,%C1", op, plen, 1);
-	  return avr_asm_len ("clr %B0"     CR_TAB
-			      "sbrc %A0,7"  CR_TAB
-			      "com %B0"     CR_TAB
-			      "mov %C0,%B0", op, plen, 4);
+	  return reg1_unused_after && dest != src + 2
+	    ? avr_asm_len ("rol %C1"      CR_TAB
+			   "sbc %B0,%B0"  CR_TAB
+			   "sbc %C0,%C0", op, plen, 3)
+	    : avr_asm_len ("clr %B0"     CR_TAB
+			   "sbrc %A0,7"  CR_TAB
+			   "com %B0"     CR_TAB
+			   "mov %C0,%B0", op, plen, 4);
 	case 22:
 	  {
 	    rtx xop[2] = { op[0], op[1] };
@@ -7504,31 +7539,58 @@ ashrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %C0,%D1" CR_TAB
 			   "mov %B0,%C1" CR_TAB
 			   "mov %A0,%B1", operands, plen, 6);
+	case 15:
+	  avr_asm_len (reg1_unused_after
+		       ? "lsl %B1"
+		       : "bst %B1,7", operands, plen, 1);
+	  if (reg0 != reg1 + 2)
+	    {
+	      if (AVR_HAVE_MOVW)
+		avr_asm_len ("movw %A0,%C1", operands, plen, 1);
+	      else
+		avr_asm_len ("mov %A0,%C1"  CR_TAB
+			     "mov %B0,%D1", operands, plen, 2);
+	    }
+	  avr_asm_len ("rol %A0"     CR_TAB
+		       "rol %B0"     CR_TAB
+		       "sbc %C0,%C0" CR_TAB
+		       "sbc %D0,%D0", operands, plen, 4);
+	  return reg1_unused_after
+	    ? ""
+	    : avr_asm_len ("bld %A0,0", operands, plen, 1);
+
 	case 16:
 	  if (reg0 == reg1 + 2)
 	    return avr_asm_len ("clr %D0"     CR_TAB
 				"sbrc %B0,7"  CR_TAB
 				"com %D0"     CR_TAB
 				"mov %C0,%D0", operands, plen, 4);
-	  return AVR_HAVE_MOVW
-	    ? avr_asm_len ("movw %A0,%C1" CR_TAB
-			   "clr %D0"      CR_TAB
-			   "sbrc %B0,7"   CR_TAB
-			   "com %D0"      CR_TAB
-			   "mov %C0,%D0", operands, plen, 5)
-	    : avr_asm_len ("mov %B0,%D1" CR_TAB
-			   "mov %A0,%C1" CR_TAB
-			   "clr %D0"     CR_TAB
+	  if (AVR_HAVE_MOVW)
+	    avr_asm_len ("movw %A0,%C1", operands, plen, 1);
+	  else
+	    avr_asm_len ("mov %B0,%D1" CR_TAB
+			 "mov %A0,%C1", operands, plen, 2);
+	  return reg1_unused_after
+	    ? avr_asm_len ("lsl %D1"      CR_TAB
+			   "sbc %D0,%D0"  CR_TAB
+			   "mov %C0,%D0", operands, plen, 3)
+	    : avr_asm_len ("clr %D0"     CR_TAB
 			   "sbrc %B0,7"  CR_TAB
 			   "com %D0"     CR_TAB
-			   "mov %C0,%D0", operands, plen, 6);
+			   "mov %C0,%D0", operands, plen, 4);
 	case 24:
-	  return avr_asm_len ("mov %A0,%D1" CR_TAB
-			      "clr %D0"     CR_TAB
-			      "sbrc %A0,7"  CR_TAB
-			      "com %D0"     CR_TAB
-			      "mov %B0,%D0" CR_TAB
-			      "mov %C0,%D0", operands, plen, 6);
+	  return reg1_unused_after
+	    ? avr_asm_len ("mov %A0,%D1" CR_TAB
+			   "lsl %D1"     CR_TAB
+			   "sbc %D0,%D0" CR_TAB
+			   "mov %B0,%D0" CR_TAB
+			   "mov %C0,%D0", operands, plen, 5)
+	    : avr_asm_len ("mov %A0,%D1" CR_TAB
+			   "clr %D0"     CR_TAB
+			   "sbrc %A0,7"  CR_TAB
+			   "com %D0"     CR_TAB
+			   "mov %B0,%D0" CR_TAB
+			   "mov %C0,%D0", operands, plen, 6);
 	case 30:
 	  {
 	    rtx xop[2] = { operands[0], operands[1] };
@@ -7856,6 +7918,7 @@ avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int *plen)
 {
   int dest = REGNO (op[0]);
   int src = REGNO (op[1]);
+  bool src_unused_after_p = reg_unused_after (insn, op[1]);
 
   if (CONST_INT_P (op[2]))
     {
@@ -7873,6 +7936,19 @@ avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int *plen)
 	    return avr_asm_len ("clr %C0"     CR_TAB
 				"mov %B0,%C1" CR_TAB
 				"mov %A0,%B1", op, plen, 3);
+	case 15:
+	  avr_asm_len (src_unused_after_p
+		       ? "lsl %B1"
+		       : "bst %B1,7", op, plen, 1);
+	  if (dest != src + 2)
+	    avr_asm_len ("mov %A0,%C1", op, plen, 1);
+	  avr_asm_len ("clr %C0"  CR_TAB
+		       "clr %B0"  CR_TAB
+		       "rol %A0"  CR_TAB
+		       "rol %B0", op, plen, 4);
+	  return src_unused_after_p
+	    ? ""
+	    : avr_asm_len ("bld %A0,0", op, plen, 1);
 
 	case 16:
 	  if (dest != src + 2)
@@ -7912,7 +7988,7 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
     {
       int reg0 = true_regnum (operands[0]);
       int reg1 = true_regnum (operands[1]);
-      bool reg1_unused_after_p = reg_unused_after (insn, operands[1]);
+      bool reg1_unused_after = reg_unused_after (insn, operands[1]);
 
       if (plen)
 	*plen = 0;
@@ -7942,7 +8018,7 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %B0,%C1" CR_TAB
 			   "mov %A0,%B1", operands, plen, 4);
 	case 15:
-	  avr_asm_len (reg1_unused_after_p
+	  avr_asm_len (reg1_unused_after
 		       ? "lsl %B1"
 		       : "bst %B1,7", operands, plen, 1);
 	  if (reg0 != reg1 + 2)
@@ -7953,18 +8029,15 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 		avr_asm_len ("mov %A0,%C1"  CR_TAB
 			     "mov %B0,%D1", operands, plen, 2);
 	    }
-	  return reg1_unused_after_p
-	    ? avr_asm_len ("clr %D0"  CR_TAB
-			   "clr %C0"  CR_TAB
-			   "rol %A0"  CR_TAB
-			   "rol %B0"  CR_TAB
-			   "rol %C0", operands, plen, 5)
-	    : avr_asm_len ("clr %D0"  CR_TAB
-			   "clr %C0"  CR_TAB
-			   "lsl %A0"  CR_TAB
-			   "rol %B0"  CR_TAB
-			   "rol %C0"  CR_TAB
-			   "bld %A0,0", operands, plen, 6);
+	  avr_asm_len ("clr %D0"  CR_TAB
+		       "clr %C0"  CR_TAB
+		       "rol %A0"  CR_TAB
+		       "rol %B0"  CR_TAB
+		       "rol %C0", operands, plen, 5);
+	  return reg1_unused_after
+	    ? ""
+	    : avr_asm_len ("bld %A0,0", operands, plen, 1);
+
 	case 16:
 	  if (reg0 == reg1 + 2)
 	    return avr_asm_len ("clr %C0"  CR_TAB
@@ -12421,7 +12494,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ASHIFT:
       switch (mode)
 	{
-	case E_QImode:
+	case E_QImode: // ashlqi3
 	  if (speed
 	      && XEXP (x, 0) == const1_rtx
 	      && GET_CODE (XEXP (x, 1)) == AND)
@@ -12449,7 +12522,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case E_HImode:
+	case E_HImode: // ashlhi3
 	  if (AVR_HAVE_MUL)
 	    {
 	      if (const_2_to_7_operand (XEXP (x, 1), HImode)
@@ -12513,7 +12586,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-	case E_PSImode:
+	case E_PSImode: // ashlpsi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -12529,6 +12602,10 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      case 16:
 		*total = COSTS_N_INSNS (3);
 		break;
+	      case 9:
+	      case 15:
+		*total = COSTS_N_INSNS (6);
+		break;
 	      case 23:
 		*total = COSTS_N_INSNS (5);
 		break;
@@ -12538,7 +12615,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-	case E_SImode:
+	case E_SImode: // ashlsi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -12585,7 +12662,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ASHIFTRT:
       switch (mode)
 	{
-	case E_QImode:
+	case E_QImode: // ashrqi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -12605,7 +12682,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case E_HImode:
+	case E_HImode: // ashrhi3
 	  if (CONST_INT_P (XEXP (x, 0))
 	      && INTVAL (XEXP (x, 0)) == 128
 	      && GET_CODE (XEXP (x, 1)) == AND)
@@ -12659,7 +12736,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-	case E_PSImode:
+	case E_PSImode: // ashrpsi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -12673,9 +12750,12 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      case 1:
 		*total = COSTS_N_INSNS (3);
 		break;
-	      case 16:
 	      case 8:
+	      case 15:
 		*total = COSTS_N_INSNS (5);
+		break;
+	      case 16:
+		*total = COSTS_N_INSNS (4);
 		break;
 	      case 22:
 		*total = COSTS_N_INSNS (6);
@@ -12689,7 +12769,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-	case E_SImode:
+	case E_SImode: // ashrsi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -12706,9 +12786,16 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		*total = COSTS_N_INSNS (4);
 		break;
 	      case 8:
-	      case 16:
-	      case 24:
 		*total = COSTS_N_INSNS (6);
+		break;
+	      case 15:
+		*total = COSTS_N_INSNS (6 - AVR_HAVE_MOVW);
+		break;
+	      case 16:
+		*total = COSTS_N_INSNS (4 - AVR_HAVE_MOVW);
+		break;
+	      case 24:
+		*total = COSTS_N_INSNS (5);
 		break;
 	      case 2:
 		*total = COSTS_N_INSNS (!speed ? 7 : 8);
@@ -12740,7 +12827,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 
       switch (mode)
 	{
-	case E_QImode:
+	case E_QImode: // lshrqi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -12758,7 +12845,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case E_HImode:
+	case E_HImode: // lshrhi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 5 : 41);
@@ -12806,7 +12893,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-	case E_PSImode:
+	case E_PSImode: // lshrpsi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -12822,6 +12909,9 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      case 16:
 		*total = COSTS_N_INSNS (3);
 		break;
+	      case 15:
+		*total = COSTS_N_INSNS (6);
+		break;
 	      case 23:
 		*total = COSTS_N_INSNS (5);
 		break;
@@ -12831,7 +12921,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-	case E_SImode:
+	case E_SImode: // lshrsi3
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);

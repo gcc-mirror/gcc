@@ -4781,7 +4781,8 @@ avr_pass_fuse_add::execute1 (function *func)
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Split insns after peephole2 / befor avr-fuse-move.
+// Split shift insns after peephole2 / befor avr-fuse-move.
+
 static const pass_data avr_pass_data_split_after_peephole2 =
 {
   RTL_PASS,	    // type
@@ -4816,20 +4817,19 @@ public:
 } // anonymous namespace
 
 
-/* Whether some shift insn alternatives are a 3-operand insn or a
-   2-operand insn.  This 3op alternatives allow the source and the
-   destination register of the shift to be different right from the
-   start, because the splitter will split the 3op shift into a 3op byte
-   shift and a 2op residual bit shift.
-   (When the residual shift has an offset of one less than the bitsize,
-   then the residual shift is also a 3op insn.  */
+/* Whether some shift insn alternatives are a `3op' 3-operand insn.
+   This 3op alternatives allow the source and the destination register
+   of the shift to be different right from the start, because the splitter
+   will split the 3op shift into a 3-operand byte shift and a 2-operand
+   residual bit shift.  (When the residual shift has an offset of one
+   less than the bitsize, then the residual shift is also a 3op insn.)  */
 
 bool
 avr_shift_is_3op ()
 {
   // Don't split for OPTIMIZE_SIZE_MAX (-Oz).
   // For OPTIMIZE_SIZE_BALANCED (-Os), we still split because
-  // the size overhead (if exists at all) is marginal.
+  // the size overhead (if at all) is marginal.
 
   return (avropt_split_bit_shift
 	  && optimize > 0
@@ -4837,21 +4837,38 @@ avr_shift_is_3op ()
 }
 
 
-/* Implement constraints `C4a', `C4l' and `C4r'.
+/* Implement constraints `C2a', `C2l', `C2r' ... `C4a', `C4l', `C4r'.
    Whether we split an N_BYTES shift of code CODE in { ASHIFTRT,
    LSHIFTRT, ASHIFT } into a byte shift and a residual bit shift.  */
 
 bool
 avr_split_shift_p (int n_bytes, int offset, rtx_code code)
 {
-  gcc_assert (n_bytes == 4);
+  gcc_assert (n_bytes == 4 || n_bytes == 3 || n_bytes == 2);
 
-  if (avr_shift_is_3op ()
-      && offset % 8 != 0)
+  if (! avr_shift_is_3op ()
+      || offset % 8 == 0)
+    return false;
+
+  if (n_bytes == 4)
     return select<bool>()
-      : code == ASHIFT ? IN_RANGE (offset, 17, 30)
-      : code == ASHIFTRT ? IN_RANGE (offset, 9, 29)
+      : code == ASHIFT ? IN_RANGE (offset, 9, 30) && offset != 15
+      : code == ASHIFTRT ? IN_RANGE (offset, 9, 29) && offset != 15
       : code == LSHIFTRT ? IN_RANGE (offset, 9, 30) && offset != 15
+      : bad_case<bool> ();
+
+  if (n_bytes == 3)
+    return select<bool>()
+      : code == ASHIFT ? IN_RANGE (offset, 9, 22) && offset != 15
+      : code == ASHIFTRT ? IN_RANGE (offset, 9, 21) && offset != 15
+      : code == LSHIFTRT ? IN_RANGE (offset, 9, 22) && offset != 15
+      : bad_case<bool> ();
+
+  if (n_bytes == 2)
+    return select<bool>()
+      : code == ASHIFT ? IN_RANGE (offset, 9, 14)
+      : code == ASHIFTRT ? IN_RANGE (offset, 9, 13)
+      : code == LSHIFTRT ? IN_RANGE (offset, 9, 14)
       : bad_case<bool> ();
 
   return false;
@@ -4859,19 +4876,38 @@ avr_split_shift_p (int n_bytes, int offset, rtx_code code)
 
 
 /* Emit a DEST = SRC <code> OFF shift of QImode, HImode or PSImode.
-   SCRATCH is a QImode d-register, scratch:QI, or NULL_RTX.  */
+   SCRATCH is a QImode d-register, scratch:QI, or NULL_RTX.
+   This function is used to emit shifts that have been split into
+   a byte shift and a residual bit shift that operates on a mode
+   strictly smaller than the original shift.  */
 
 static void
 avr_emit_shift (rtx_code code, rtx dest, rtx src, int off, rtx scratch)
 {
   const machine_mode mode = GET_MODE (dest);
+  const int n_bits = GET_MODE_BITSIZE (mode);
   rtx xoff = GEN_INT (off);
-  bool is_3op = (off % 8 == 0
-		 || off == GET_MODE_BITSIZE (mode) - 1
-		 || (code == ASHIFTRT && off == GET_MODE_BITSIZE (mode) - 2)
-		 || (mode == HImode
-		     && (code == ASHIFT || code == LSHIFTRT)
-		     && satisfies_constraint_C7c (xoff) /* 7...12 */));
+
+  // Work out which alternatives can handle 3 operands independent
+  // of options.
+
+  const bool b16_is_3op = select<bool>()
+    : code == ASHIFT ? satisfies_constraint_C7c (xoff) // 7...12
+    : code == LSHIFTRT ? satisfies_constraint_C7c (xoff)
+    : code == ASHIFTRT ? off == 7
+    : bad_case<bool> ();
+
+  const bool b24_is_3op = select<bool>()
+    : code == ASHIFT ? off == 15
+    : code == LSHIFTRT ? off == 15
+    : code == ASHIFTRT ? false
+    : bad_case<bool> ();
+
+  const bool is_3op = (off % 8 == 0
+		       || off == n_bits - 1
+		       || (code == ASHIFTRT && off == n_bits - 2)
+		       || (n_bits == 16 && b16_is_3op)
+		       || (n_bits == 24 && b24_is_3op));
   rtx shift;
 
   if (is_3op)
@@ -4885,23 +4921,25 @@ avr_emit_shift (rtx_code code, rtx dest, rtx src, int off, rtx scratch)
       shift = gen_rtx_fmt_ee (code, mode, dest, xoff);
     }
 
+  if (n_bits == 8)
+    // 8-bit shifts don't have a scratch operand.
+    scratch = NULL_RTX;
+  else if (! scratch && n_bits == 24)
+    // 24-bit shifts always have a scratch operand.
+    scratch = gen_rtx_SCRATCH (QImode);
+
   emit_valid_move_clobbercc (dest, shift, scratch);
 }
 
 
-/* Worker for define_split that runs when -msplit-bit-shift is on.
-   Split a shift of code CODE into a 3op byte shift and a residual bit shift.
-   Return 'true' when a split has been performed and insns have been emitted.
-   Otherwise, return 'false'.  */
+/* Handle the 4-byte case of avr_split_shift below:
+   Split 4-byte shift  DEST = SRC <code> IOFF  into a 3-operand
+   byte shift and a residual shift in a smaller mode if possible.
+   SCRATCH is a QImode upper scratch register or NULL_RTX.  */
 
-bool
-avr_split_shift (rtx xop[], rtx scratch, rtx_code code)
+static bool
+avr_split_shift4 (rtx dest, rtx src, int ioff, rtx scratch, rtx_code code)
 {
-  scratch = scratch && REG_P (scratch) ? scratch : NULL_RTX;
-  rtx dest = xop[0];
-  rtx src = xop[1];
-  int ioff = INTVAL (xop[2]);
-
   gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 4);
 
   if (code == ASHIFT)
@@ -4923,6 +4961,8 @@ avr_split_shift (rtx xop[], rtx scratch, rtx_code code)
 	  emit_valid_move_clobbercc (avr_word (dest, 0), const0_rtx);
 	  return true;
 	}
+      // ...the 9...14 cases are only handled by define_split because
+      // for now, we don't exploit that the low byte is zero.
     }
   else if (code == ASHIFTRT
 	   || code == LSHIFTRT)
@@ -4965,11 +5005,9 @@ avr_split_shift (rtx xop[], rtx scratch, rtx_code code)
 	}
       else if (IN_RANGE (ioff, 9, 15))
 	{
-	  avr_emit_shift (code, dest, src, 8, NULL_RTX);
+	  avr_emit_shift (code, dest, src, 8, scratch);
 	  rtx dst24 = avr_chunk (PSImode, dest, 0);
 	  rtx src24 = avr_chunk (PSImode, dest, 0);
-	  if (! scratch)
-	    scratch = gen_rtx_SCRATCH (QImode);
 	  avr_emit_shift (code, dst24, src24, ioff - 8, scratch);
 	  return true;
 	}
@@ -4978,6 +5016,134 @@ avr_split_shift (rtx xop[], rtx scratch, rtx_code code)
     gcc_unreachable ();
 
   return false;
+}
+
+
+/* Handle the 3-byte case of avr_split_shift below:
+   Split 3-byte shift  DEST = SRC <code> IOFF  into a 3-operand
+   byte shift and a residual shift in a smaller mode if possible.
+   SCRATCH is a QImode upper scratch register or NULL_RTX.  */
+
+static bool
+avr_split_shift3 (rtx dest, rtx src, int ioff, rtx scratch, rtx_code code)
+{
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 3);
+
+  if (code == ASHIFT)
+    {
+      if (IN_RANGE (ioff, 17, 22))
+	{
+	  rtx dst8 = avr_byte (dest, 2);
+	  rtx src8 = avr_byte (src, 0);
+	  avr_emit_shift (code, dst8, src8, ioff - 16, NULL_RTX);
+	  emit_valid_move_clobbercc (avr_word (dest, 0), const0_rtx);
+	  return true;
+	}
+      // ...the 9...14 cases are only handled by define_split because
+      // for now, we don't exploit that the low byte is zero.
+    }
+  else if (code == ASHIFTRT
+	   || code == LSHIFTRT)
+    {
+      if (IN_RANGE (ioff, 17, 22))
+	{
+	  rtx dst8 = avr_byte (dest, 0);
+	  rtx src8 = avr_byte (src, 2);
+	  avr_emit_shift (code, dst8, src8, ioff - 16, NULL_RTX);
+	  if (code == ASHIFTRT)
+	    {
+	      rtx signs = avr_byte (dest, 1);
+	      avr_emit_shift (code, signs, src8, 7, NULL_RTX);
+	      emit_valid_move_clobbercc (avr_byte (dest, 2), signs);
+	    }
+	  else
+	    {
+	      emit_valid_move_clobbercc (avr_byte (dest, 1), const0_rtx);
+	      emit_valid_move_clobbercc (avr_byte (dest, 2), const0_rtx);
+	    }
+	  return true;
+	}
+      else if (IN_RANGE (ioff, 9, 15))
+	{
+	  avr_emit_shift (code, dest, src, 8, scratch);
+	  rtx dst16 = avr_chunk (HImode, dest, 0);
+	  rtx src16 = avr_chunk (HImode, dest, 0);
+	  avr_emit_shift (code, dst16, src16, ioff - 8, scratch);
+	  return true;
+	}
+    }
+  else
+    gcc_unreachable ();
+
+  return false;
+}
+
+
+/* Handle the 2-byte case of avr_split_shift below:
+   Split 2-byte shift  DEST = SRC <code> IOFF  into a 3-operand
+   byte shift and a residual shift in a smaller mode if possible.
+   SCRATCH is a QImode upper scratch register or NULL_RTX.  */
+
+static bool
+avr_split_shift2 (rtx dest, rtx src, int ioff, rtx /*scratch*/, rtx_code code)
+{
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 2);
+
+  if (code == ASHIFT)
+    {
+      if (IN_RANGE (ioff, 9, 14))
+	{
+	  rtx dst8 = avr_byte (dest, 1);
+	  rtx src8 = avr_byte (src, 0);
+	  avr_emit_shift (code, dst8, src8, ioff - 8, NULL_RTX);
+	  emit_valid_move_clobbercc (avr_byte (dest, 0), const0_rtx);
+	  return true;
+	}
+    }
+  else if (code == ASHIFTRT
+	   || code == LSHIFTRT)
+    {
+      if (IN_RANGE (ioff, 9, 14))
+	{
+	  rtx dst8 = avr_byte (dest, 0);
+	  rtx src8 = avr_byte (src, 1);
+	  rtx signs = const0_rtx;
+	  avr_emit_shift (code, dst8, src8, ioff - 8, NULL_RTX);
+	  if (code == ASHIFTRT)
+	    {
+	      signs = avr_byte (dest, 1);
+	      avr_emit_shift (code, signs, src8, 7, NULL_RTX);
+	    }
+	  emit_valid_move_clobbercc (avr_byte (dest, 1), signs);
+	  return true;
+	}
+    }
+  else
+    gcc_unreachable ();
+
+  return false;
+}
+
+
+/* Worker for a define_split that runs when -msplit-bit-shift is on.
+   Split a shift of code CODE into a 3op byte shift and a residual bit shift.
+   Return 'true' when a split has been performed and insns have been emitted.
+   Otherwise, return 'false'.  */
+
+bool
+avr_split_shift (rtx xop[], rtx scratch, rtx_code code)
+{
+  scratch = scratch && REG_P (scratch) ? scratch : NULL_RTX;
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int ioff = INTVAL (xop[2]);
+  int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
+
+  return select<bool>()
+    : n_bytes == 2 ? avr_split_shift2 (dest, src, ioff, scratch, code)
+    : n_bytes == 3 ? avr_split_shift3 (dest, src, ioff, scratch, code)
+    : n_bytes == 4 ? avr_split_shift4 (dest, src, ioff, scratch, code)
+    : bad_case<bool> ();
 }
 
 
