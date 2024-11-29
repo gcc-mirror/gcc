@@ -599,9 +599,6 @@ public:
     return Pattern::Kind::Path;
   }
 
-  location_t get_locus () const override { return locus; }
-  NodeId get_node_id () const override { return node_id; }
-
   std::unique_ptr<Path> clone_path ()
   {
     return std::unique_ptr<Path> (clone_path_impl ());
@@ -613,22 +610,19 @@ public:
   }
 
 protected:
-  location_t locus;
-  NodeId node_id;
-
-  Path (location_t locus, NodeId node_id) : locus (locus), node_id (node_id) {}
-
   virtual Path *clone_path_impl () const = 0;
 };
 
 class RegularPath : public Path
 {
   std::vector<PathExprSegment> segments;
+  NodeId node_id;
+  location_t locus;
 
 public:
   explicit RegularPath (std::vector<PathExprSegment> &&segments,
 			location_t locus, NodeId node_id)
-    : Path (locus, node_id), segments (std::move (segments))
+    : segments (std::move (segments)), node_id (node_id), locus (locus)
   {}
 
   std::string as_string () const override;
@@ -657,17 +651,25 @@ public:
     return new RegularPath (std::vector<PathExprSegment> (segments), locus,
 			    node_id);
   }
+
+  NodeId get_node_id () const override { return node_id; }
+  location_t get_locus () const override { return locus; }
 };
 
 class LangItemPath : public Path
 {
-  NodeId lang_item;
-
   LangItem::Kind kind;
+  NodeId node_id;
+  location_t locus;
+
+  LangItemPath (LangItem::Kind kind, NodeId node_id, location_t locus)
+    : kind (kind), node_id (node_id), locus (locus)
+  {}
 
 public:
   explicit LangItemPath (LangItem::Kind kind, location_t locus)
-    : Path (locus, Analysis::Mappings::get ().get_next_node_id ()), kind (kind)
+    : kind (kind), node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      locus (locus)
   {}
 
   Path::Kind get_path_kind () const override { return Path::Kind::LangItem; }
@@ -676,12 +678,15 @@ public:
 
   Path *clone_path_impl () const override
   {
-    return new LangItemPath (kind, locus);
+    return new LangItemPath (kind, node_id, locus);
   }
 
   std::string as_string () const override;
 
   LangItem::Kind get_lang_item_kind () { return kind; }
+
+  NodeId get_node_id () const override { return node_id; }
+  location_t get_locus () const override { return locus; }
 };
 
 /* AST node representing a path-in-expression pattern (path that allows
@@ -739,11 +744,10 @@ public:
   // Returns whether path in expression is in an error state.
   bool is_error () const
   {
-    // FIXME: Cleanup
     if (path->get_path_kind () == Path::Kind::Regular)
       return !static_cast<RegularPath &> (*path).has_segments ();
 
-    return false;
+    rust_unreachable ();
   }
 
   /* Converts PathInExpression to SimplePath if possible (i.e. no generic
@@ -822,7 +826,7 @@ public:
     if (path->get_path_kind () == Path::Kind::Regular)
       return static_cast<RegularPath &> (*path).get_segments ().size () == 1;
 
-    return false;
+    rust_unreachable ();
   }
 
   Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Path; }
@@ -1201,17 +1205,13 @@ public:
   }
 };
 
-// Path used inside types
 class TypePath : public TypeNoBounds, public Path
 {
   bool has_opening_scope_resolution;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
+  location_t locus;
 
 protected:
-  Kind get_path_kind () const override { return Kind::Type; }
-
-  Path *clone_path_impl () const override { return new TypePath (*this); }
-
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   TypePath *clone_type_no_bounds_impl () const override
@@ -1234,23 +1234,23 @@ public:
   static TypePath create_error ()
   {
     return TypePath (std::vector<std::unique_ptr<TypePathSegment> > (),
-		     UNKNOWN_LOCATION);
+		     UNDEF_LOCATION);
   }
 
   // Constructor
   TypePath (std::vector<std::unique_ptr<TypePathSegment> > segments,
 	    location_t locus, bool has_opening_scope_resolution = false)
     : TypeNoBounds (),
-      Path (locus, Analysis::Mappings::get ().get_next_node_id ()),
       has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (segments))
+      segments (std::move (segments)), locus (locus)
   {}
 
   // Copy constructor with vector clone
   TypePath (TypePath const &other)
-    : Path (other.locus, other.Path::get_node_id ()),
-      has_opening_scope_resolution (other.has_opening_scope_resolution)
+    : has_opening_scope_resolution (other.has_opening_scope_resolution),
+      locus (other.locus)
   {
+    node_id = other.node_id;
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
       segments.push_back (e->clone_type_path_segment ());
@@ -1259,7 +1259,9 @@ public:
   // Overloaded assignment operator with clone
   TypePath &operator= (TypePath const &other)
   {
+    node_id = other.node_id;
     has_opening_scope_resolution = other.has_opening_scope_resolution;
+    locus = other.locus;
 
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -1281,6 +1283,12 @@ public:
   // Creates a trait bound with a clone of this type path as its only element.
   TraitBound *to_trait_bound (bool in_parens) const override;
 
+  location_t get_locus () const override final { return locus; }
+  NodeId get_node_id () const override final { return node_id; }
+
+  void mark_for_strip () override {}
+  bool is_marked_for_strip () const override { return false; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this seems kinda dodgy
@@ -1294,20 +1302,10 @@ public:
   }
 
   size_t get_num_segments () const { return segments.size (); }
-  location_t get_locus () const override { return Path::get_locus (); }
 
-  // TypePath is both a Type and a Path, which is really annoying for a few
-  // methods. We need to override them and manually call either of them, which
-  // sucks. Oh well.
+  Path::Kind get_path_kind () const override { return Path::Kind::Type; }
 
-  void mark_for_strip () override { TypeNoBounds::mark_for_strip (); }
-
-  bool is_marked_for_strip () const override
-  {
-    return TypeNoBounds::is_marked_for_strip ();
-  }
-
-  NodeId get_node_id () const override { return TypeNoBounds::get_node_id (); }
+  Path *clone_path_impl () const override { return new TypePath (*this); }
 };
 
 struct QualifiedPathType
@@ -1496,7 +1494,7 @@ public:
     if (path->get_path_kind () == Path::Kind::Regular)
       return static_cast<RegularPath &> (*path).get_segments ().size () == 1;
 
-    return false;
+    rust_unreachable ();
   }
 
 protected:
