@@ -3160,6 +3160,95 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 integer_minus_onep (realpart @2))
   (if (types_match (type, @0) && int_fits_type_p (@1, type)))))
 
+(if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = X > Y ? X - Y : 0  */
+  (cond^ (gt @0 @1) (minus @0 @1) integer_zerop)
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = X >= Y ? X - Y : 0  */
+  (cond^ (ge @0 @1) (convert? (minus (convert1? @0) (convert1? @1)))
+		    integer_zerop)
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0)) && types_match (@0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = (X - Y) * (X > Y)  */
+  (mult:c (minus @0 @1) (convert (gt @0 @1)))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = (X - Y) * (X >= Y)  */
+  (mult:c (minus @0 @1) (convert (ge @0 @1)))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* DIFF = SUB_OVERFLOW (X, Y)
+     SAT_U_SUB = REALPART (DIFF) | (IMAGPART (DIFF) + (-1))  */
+  (bit_and:c (realpart (IFN_SUB_OVERFLOW@2 @0 @1))
+   (plus (imagpart @2) integer_minus_onep))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* DIFF = SUB_OVERFLOW (X, Y)
+     SAT_U_SUB = REALPART (DIFF) * (IMAGPART (DIFF) ^ (1))  */
+  (mult:c (realpart (IFN_SUB_OVERFLOW@2 @0 @1))
+   (bit_xor (imagpart @2) integer_onep))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* DIFF = SUB_OVERFLOW (X, Y)
+     SAT_U_SUB = IMAGPART (DIFF) == 0 ? REALPART (DIFF) : 0  */
+  (cond^ (eq (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
+	 (realpart @2) integer_zerop)
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* DIFF = SUB_OVERFLOW (X, Y)
+     SAT_U_SUB = IMAGPART (DIFF) != 0 ? 0 : REALPART (DIFF)  */
+  (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
+	 integer_zerop (realpart @2))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = IMM > Y ? (IMM - Y) : 0
+     SAT_U_SUB = IMM >= Y ? (IMM - Y) : 0  */
+  (cond^ (le @1 INTEGER_CST@2) (minus INTEGER_CST@0 @1) integer_zerop)
+  (if (types_match (type, @1) && int_fits_type_p (@0, type))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     wide_int max = wi::mask (precision, false, precision);
+     wide_int c0 = wi::to_wide (@0);
+     wide_int c2 = wi::to_wide (@2);
+     wide_int c2_add_1 = wi::add (c2, wi::uhwi (1, precision));
+     bool equal_p = wi::eq_p (c0, c2);
+     bool less_than_1_p = !wi::eq_p (c2, max) && wi::eq_p (c2_add_1, c0);
+    }
+    (if (equal_p || less_than_1_p)))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = (MAX - 1) >= Y ? ((MAX - 1) - Y) : 0  */
+  (cond^ (ne @1 INTEGER_CST@2) (minus INTEGER_CST@0 @1) integer_zerop)
+  (if (types_match (type, @1))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     wide_int max = wi::mask (precision, false, precision);
+     wide_int c0 = wi::to_wide (@0);
+     wide_int c2 = wi::to_wide (@2);
+     wide_int c0_add_1 = wi::add (c0, wi::uhwi (1, precision));
+    }
+    (if (wi::eq_p (c2, max) && wi::eq_p (c0_add_1, max))))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = 1 >= Y ? (1 - Y) : 0  */
+  (cond^ (le @1 integer_onep@0) (bit_xor @1 integer_onep@0) integer_zerop)
+  (if (types_match (type, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = X > IMM  ? (X - IMM) : 0.
+     SAT_U_SUB = X >= IMM ? (X - IMM) : 0.  */
+  (plus (max @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (types_match (type, @1) && int_fits_type_p (@1, type))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     wide_int c1 = wi::to_wide (@1);
+     wide_int c2 = wi::to_wide (@2);
+     wide_int sum = wi::add (c1, c2);
+    }
+    (if (wi::eq_p (sum, wi::uhwi (0, precision))))))))
+
 /* Signed saturation add, case 1:
    T sum = (T)((UT)X + (UT)Y)
    SAT_S_ADD = (X ^ sum) & !(X ^ Y) < 0 ? (-(T)(X < 0) ^ MAX) : sum;
@@ -3244,120 +3333,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value) @2)
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
      && wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0)))
-
-/* Unsigned saturation sub, case 1 (branch with gt):
-   SAT_U_SUB = X > Y ? X - Y : 0  */
-(match (unsigned_integer_sat_sub @0 @1)
- (cond^ (gt @0 @1) (minus @0 @1) integer_zerop)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Unsigned saturation sub, case 2 (branch with ge):
-   SAT_U_SUB = X >= Y ? X - Y : 0.  */
-(match (unsigned_integer_sat_sub @0 @1)
- (cond^ (ge @0 @1) (convert? (minus (convert1? @0) (convert1? @1))) integer_zerop)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && TYPE_UNSIGNED (TREE_TYPE (@0)) && types_match (@0, @1))))
-
-/* Unsigned saturation sub, case 3 (branchless with gt):
-   SAT_U_SUB = (X - Y) * (X > Y).  */
-(match (unsigned_integer_sat_sub @0 @1)
- (mult:c (minus @0 @1) (convert (gt @0 @1)))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Unsigned saturation sub, case 4 (branchless with ge):
-   SAT_U_SUB = (X - Y) * (X >= Y).  */
-(match (unsigned_integer_sat_sub @0 @1)
- (mult:c (minus @0 @1) (convert (ge @0 @1)))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Unsigned saturation sub, case 5 (branchless bit_and with .SUB_OVERFLOW).  */
-(match (unsigned_integer_sat_sub @0 @1)
- (bit_and:c (realpart (IFN_SUB_OVERFLOW@2 @0 @1))
-  (plus (imagpart @2) integer_minus_onep))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Unsigned saturation sub, case 6 (branchless mult with .SUB_OVERFLOW).  */
-(match (unsigned_integer_sat_sub @0 @1)
- (mult:c (realpart (IFN_SUB_OVERFLOW@2 @0 @1))
-  (bit_xor (imagpart @2) integer_onep))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Unsigned saturation sub, case 7 (branch eq with .SUB_OVERFLOW).  */
-(match (unsigned_integer_sat_sub @0 @1)
- (cond^ (eq (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
-  (realpart @2) integer_zerop)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Unsigned saturation sub, case 8 (branch ne with .SUB_OVERFLOW).  */
-(match (unsigned_integer_sat_sub @0 @1)
- (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
-   integer_zerop (realpart @2))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Unsigned saturation sub with op_0 imm, case 9 (branch with le):
-   SAT_U_SUB = IMM > Y  ? (IMM - Y) : 0.
-             = IMM >= Y ? (IMM - Y) : 0.  */
-(match (unsigned_integer_sat_sub @0 @1)
- (cond^ (le @1 INTEGER_CST@2) (minus INTEGER_CST@0 @1) integer_zerop)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-     && types_match (type, @1) && int_fits_type_p (@0, type))
- (with
-  {
-   unsigned precision = TYPE_PRECISION (type);
-   wide_int max = wi::mask (precision, false, precision);
-   wide_int c0 = wi::to_wide (@0);
-   wide_int c2 = wi::to_wide (@2);
-   wide_int c2_add_1 = wi::add (c2, wi::uhwi (1, precision));
-   bool equal_p = wi::eq_p (c0, c2);
-   bool less_than_1_p = !wi::eq_p (c2, max) && wi::eq_p (c2_add_1, c0);
-  }
-  (if (equal_p || less_than_1_p)))))
-
-/* The boundary condition for case 9: IMM = max -1  (branch with ne):
-   SAT_U_SUB = IMM >= Y ? (IMM - Y) : 0.  */
-(match (unsigned_integer_sat_sub @0 @1)
- (cond^ (ne @1 INTEGER_CST@2) (minus INTEGER_CST@0 @1) integer_zerop)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-     && types_match (type, @1))
-(with
-  {
-   unsigned precision = TYPE_PRECISION (type);
-   wide_int max = wi::mask (precision, false, precision);
-   wide_int c0 = wi::to_wide (@0);
-   wide_int c2 = wi::to_wide (@2);
-   wide_int c0_add_1 = wi::add (c0, wi::uhwi (1, precision));
-  }
-  (if (wi::eq_p (c2, max) && wi::eq_p (c0_add_1, max))))))
-
-/* The boundary condition for case 9: IMM = 1  (branch with le):
-   SAT_U_SUB = IMM >= Y ? (IMM - Y) : 0.  */
-(match (unsigned_integer_sat_sub @0 @1)
- (cond^ (le @1 integer_onep@0) (bit_xor @1 integer_onep@0) integer_zerop)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-     && types_match (type, @1))))
-
-/* Unsigned saturation sub with op_1 imm, case 10:
-   SAT_U_SUB = X > IMM  ? (X - IMM) : 0.
-             = X >= IMM ? (X - IMM) : 0.  */
-(match (unsigned_integer_sat_sub @0 @1)
- (plus (max @0 INTEGER_CST@1) INTEGER_CST@2)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-     && types_match (type, @1) && int_fits_type_p (@1, type))
- (with
-  {
-   unsigned precision = TYPE_PRECISION (type);
-   wide_int c1 = wi::to_wide (@1);
-   wide_int c2 = wi::to_wide (@2);
-   wide_int sum = wi::add (c1, c2);
-  }
-  (if (wi::eq_p (sum, wi::uhwi (0, precision)))))))
 
 /* The boundary condition for case 10: IMM = 1:
    SAT_U_SUB = X >= IMM ? (X - IMM) : 0.
