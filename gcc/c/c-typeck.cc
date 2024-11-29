@@ -791,6 +791,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	      DECL_ATTRIBUTES (f) = DECL_ATTRIBUTES (a);
 	      C_DECL_VARIABLE_SIZE (f) = C_TYPE_VARIABLE_SIZE (t);
 
+	      decl_attributes (&f, DECL_ATTRIBUTES (f), 0);
+
 	      finish_decl (f, input_location, NULL, NULL, NULL);
 
 	      if (DECL_C_BIT_FIELD (a))
