@@ -1,3 +1,27 @@
+2024-11-28  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-10-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117142
+	* gcc.dg/tree-ssa/pr117142.c: New test.
+
+2024-11-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2024-11-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/117105
+	* gcc.target/i386/pr117105.c: New test.
+
+2024-11-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2024-05-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/114942
+	* gcc.target/i386/pr114942.c: New.
+
 2024-11-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

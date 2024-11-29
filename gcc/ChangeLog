@@ -1,3 +1,35 @@
+2024-11-28  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-10-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117142
+	* tree-sra.cc (build_access_from_call_arg): Disqualify any
+	candidate passed to a function returning twice.
+
+2024-11-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2024-11-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/117105
+	* lra-constraints.cc (get_reload_reg): Create unique value reload
+	pseudos for early clobbered operands.
+
+2024-11-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2024-05-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/114942
+	* lra-constraints.cc (struct input_reload): Add new member early_clobber_p.
+	(get_reload_reg): Add new arg early_clobber_p, don't reuse input
+	reload with true early_clobber_p member value, use the arg for new
+	element of curr_insn_input_reloads.
+	(match_reload): Assign false to early_clobber_p member.
+	(process_addr_reg, simplify_operand_subreg, curr_insn_transform):
+	Adjust get_reload_reg calls.
+
 2024-11-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
