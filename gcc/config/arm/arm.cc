@@ -35847,7 +35847,8 @@ arm_attempt_dlstp_transform (rtx label)
 	  df_ref insn_uses = NULL;
 	  FOR_EACH_INSN_USE (insn_uses, insn)
 	  {
-	    if (rtx_equal_p (vctp_vpr_generated, DF_REF_REG (insn_uses)))
+	    if (reg_overlap_mentioned_p (vctp_vpr_generated,
+					 DF_REF_REG (insn_uses)))
 	      {
 		end_sequence ();
 		return 1;
