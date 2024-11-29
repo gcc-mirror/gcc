@@ -29,7 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "ansidecl.h"
 #include <stdbool.h>
-#include <arm_acle.h>
 
 #define AARCH64_DWARF_REGNUM_RA_STATE 34
 #define AARCH64_DWARF_RA_STATE_MASK   0x1
@@ -180,7 +179,7 @@ aarch64_demangle_return_addr (struct _Unwind_Context *context,
 }
 
 /* GCS enable flag for chkfeat instruction.  */
-
+#define _CHKFEAT_GCS 1
 /* SME runtime function local to libgcc, streaming compatible
    and preserves more registers than the base PCS requires, but
    we don't rely on that here.  */
