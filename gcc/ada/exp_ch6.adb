@@ -5392,6 +5392,16 @@ package body Exp_Ch6 is
          return;
       end if;
 
+      --  The same optimization: if the returned value is used to initialize a
+      --  dynamically allocated object, then no need to copy/readjust/finalize,
+      --  we can initialize it in place.
+
+      if Nkind (Par) = N_Qualified_Expression
+        and then Nkind (Parent (Par)) = N_Allocator
+      then
+         return;
+      end if;
+
       --  Avoid expansions to catch an error when the function call is on the
       --  left-hand side of an assignment.
 

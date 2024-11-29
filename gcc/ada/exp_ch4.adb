@@ -820,19 +820,6 @@ package body Exp_Ch4 is
          --  We analyze by hand the new internal allocator to avoid any
          --  recursion and inappropriate call to Initialize.
 
-         --  We don't want to remove side effects when the expression must be
-         --  built in place and we don't need it when there is no storage pool
-         --  or this is a return/secondary stack allocation.
-
-         if not Aggr_In_Place
-           and then not Delayed_Cond_Expr
-           and then Present (Storage_Pool (N))
-           and then not Is_RTE (Storage_Pool (N), RE_RS_Pool)
-           and then not Is_RTE (Storage_Pool (N), RE_SS_Pool)
-         then
-            Remove_Side_Effects (Exp);
-         end if;
-
          Temp := Make_Temporary (Loc, 'P', N);
 
          --  For a class wide allocation generate the following code:
@@ -1079,6 +1066,8 @@ package body Exp_Ch4 is
             Displace_Allocator_Pointer (N);
          end if;
 
+      --  Case of aggregate built in place
+
       elsif Aggr_In_Place then
          Temp := Make_Temporary (Loc, 'P', N);
          Build_Aggregate_In_Place (Temp, PtrT);
@@ -1099,26 +1088,29 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, PtrT);
          Apply_Predicate_Check (N, T, Deref => True);
 
-      elsif Is_Access_Type (T) and then Can_Never_Be_Null (T) then
-         Install_Null_Excluding_Check (Exp);
-
-      elsif Is_Access_Type (DesigT)
-        and then Nkind (Exp) = N_Allocator
-        and then Nkind (Expression (Exp)) /= N_Qualified_Expression
-      then
-         --  Apply constraint to designated subtype indication
-
-         Apply_Constraint_Check
-           (Expression (Exp), Designated_Type (DesigT), No_Sliding => True);
-
-         if Nkind (Expression (Exp)) = N_Raise_Constraint_Error then
-
-            --  Propagate constraint_error to enclosing allocator
-
-            Rewrite (Exp, New_Copy (Expression (Exp)));
-         end if;
+      --  Default case
 
       else
+         if Is_Access_Type (T) and then Can_Never_Be_Null (T) then
+            Install_Null_Excluding_Check (Exp);
+         end if;
+
+         if Is_Access_Type (DesigT)
+           and then Nkind (Exp) = N_Allocator
+           and then Nkind (Expression (Exp)) /= N_Qualified_Expression
+         then
+            --  Apply constraint to designated subtype indication
+
+            Apply_Constraint_Check
+              (Expression (Exp), Designated_Type (DesigT), No_Sliding => True);
+
+            --  Propagate Constraint_Error to enclosing allocator
+
+            if Nkind (Expression (Exp)) = N_Raise_Constraint_Error then
+               Rewrite (Exp, New_Copy (Expression (Exp)));
+            end if;
+         end if;
+
          Build_Allocate_Deallocate_Proc (N);
 
          --  For an access-to-unconstrained-packed-array type, build an

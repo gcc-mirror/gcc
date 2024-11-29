@@ -1079,10 +1079,11 @@ package body Exp_Util is
               Unchecked_Convert_To (RTE (RE_Storage_Offset),
                 Make_Attribute_Reference (Loc,
                   Prefix         =>
-                    (if No (Alloc_Expr) then
-                       Make_Explicit_Dereference (Loc, Relocate_Node (Expr))
+                    (if Is_Allocate then
+                       Duplicate_Subexpr_No_Checks (Expression (Alloc_Expr))
                      else
-                       Relocate_Node (Expression (Alloc_Expr))),
+                       Make_Explicit_Dereference (Loc,
+                         Duplicate_Subexpr_No_Checks (Expr))),
                   Attribute_Name => Name_Alignment)));
          end if;
 
@@ -1094,7 +1095,6 @@ package body Exp_Util is
 
                Flag_Expr : Node_Id;
                Param     : Node_Id;
-               Pref      : Node_Id;
                Temp      : Node_Id;
 
             begin
@@ -1136,7 +1136,7 @@ package body Exp_Util is
                   if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
                      Param :=
                        Make_Explicit_Dereference (Loc,
-                         Prefix => Relocate_Node (Temp));
+                         Prefix => Duplicate_Subexpr_No_Checks (Temp));
 
                   --  In the default case, obtain the tag of the object about
                   --  to be allocated / deallocated. Generate:
@@ -1149,16 +1149,14 @@ package body Exp_Util is
                   --  in the code that follows.
 
                   else
-                     Pref := Temp;
-
-                     if Nkind (Parent (Pref)) = N_Unchecked_Type_Conversion
+                     if Nkind (Parent (Temp)) = N_Unchecked_Type_Conversion
                      then
-                        Pref := Parent (Pref);
+                        Temp := Parent (Temp);
                      end if;
 
                      Param :=
                        Make_Attribute_Reference (Loc,
-                         Prefix         => Relocate_Node (Pref),
+                         Prefix         => Duplicate_Subexpr_No_Checks (Temp),
                          Attribute_Name => Name_Tag);
                   end if;
 
