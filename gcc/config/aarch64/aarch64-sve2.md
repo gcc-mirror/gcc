@@ -2936,6 +2936,14 @@
 ;; ---- [FP<-FP] Widening conversions
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - BF1CVT
+;; - BF1CVTLT
+;; - BF2CVT
+;; - BF2CVTLT
+;; - F1CVT
+;; - F1CVTLT
+;; - F2CVT
+;; - F2CVTLT
 ;; - FCVTLT
 ;; -------------------------------------------------------------------------
 
@@ -2999,6 +3007,16 @@
 	  UNSPEC_SEL))]
   "TARGET_SVE2"
   "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Ventype>"
+)
+
+(define_insn "@aarch64_sve2_fp8_cvt_<fp8_cvt_uns_op><mode>"
+  [(set (match_operand:SVE_FULL_HF 0 "register_operand" "=w")
+	(unspec:SVE_FULL_HF
+	  [(match_operand:VNx16QI 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	  FP8CVT_UNS))]
+  "TARGET_SSVE_FP8"
+  "<b><fp8_cvt_uns_op>\t%0.h, %1.b"
 )
 
 ;; -------------------------------------------------------------------------
@@ -3150,6 +3168,8 @@
 ;; - BFCVTN
 ;; - FCVT
 ;; - FCVTN
+;; - FCVTNB
+;; - FCVTNT
 ;; -------------------------------------------------------------------------
 
 (define_insn "truncvnx8sf<mode>2"
@@ -3167,6 +3187,37 @@
 	  UNSPEC_FCVTN))]
   "TARGET_STREAMING_SME2"
   "<b>fcvtn\t%0.h, %1"
+)
+
+(define_insn "@aarch64_sve2_fp8_cvtn<mode>"
+  [(set (match_operand:VNx16QI 0 "register_operand" "=w")
+	(unspec:VNx16QI
+	  [(match_operand:SVE_FULL_HFx2 1 "aligned_register_operand" "Uw2")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_FP8FCVTN))]
+  "TARGET_SSVE_FP8"
+  "<b>fcvtn\t%0.b, %1"
+)
+
+(define_insn "@aarch64_sve2_fp8_cvtnb<mode>"
+  [(set (match_operand:VNx16QI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx16QI_ONLY
+	  [(match_operand:VNx8SF 1 "aligned_register_operand" "Uw2")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_FCVTNB))]
+  "TARGET_SSVE_FP8"
+  "fcvtnb\t%0.b, %1"
+)
+
+(define_insn "@aarch64_sve_cvtnt<mode>"
+  [(set (match_operand:VNx16QI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx16QI_ONLY
+	  [(match_operand:VNx16QI_ONLY 1 "register_operand" "0")
+	   (match_operand:VNx8SF 2 "aligned_register_operand" "Uw2")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_FCVTNT))]
+  "TARGET_SSVE_FP8"
+  "fcvtnt\t%0.b, %2"
 )
 
 ;; -------------------------------------------------------------------------

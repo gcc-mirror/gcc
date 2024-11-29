@@ -75,7 +75,7 @@
 #define TEST_DUAL_Z(NAME, TYPE1, TYPE2, CODE1, CODE2)		\
   PROTO (NAME, TYPE1, (TYPE1 z0, TYPE1 z1, TYPE1 z2, TYPE1 z3,	\
 		       TYPE2 z4, TYPE2 z5, TYPE2 z6, TYPE2 z7,	\
-		       svbool_t p0, svbool_t p1))		\
+		       svbool_t p0, svbool_t p1, fpm_t fpm0))	\
   {								\
     INVOKE (CODE1, CODE2);					\
     return z0;							\

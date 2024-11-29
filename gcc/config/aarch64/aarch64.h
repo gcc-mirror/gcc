@@ -513,6 +513,11 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define TARGET_SSVE_B16B16 \
   (AARCH64_HAVE_ISA (SVE_B16B16) && TARGET_SVE2_OR_SME2)
 
+/* Some fp8 instructions require +fp8 and one of +sve2 or +sme2.  */
+#define TARGET_SSVE_FP8 (TARGET_FP8 \
+			 && (TARGET_SVE2 || TARGET_STREAMING) \
+			 && (TARGET_SME2 || TARGET_NON_STREAMING))
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:

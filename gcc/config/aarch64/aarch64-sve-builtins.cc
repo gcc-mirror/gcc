@@ -481,6 +481,20 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   D (f32, s32), \
   D (f32, u32)
 
+/* _f16_mf8
+   _bf16_mf8.  */
+#define TYPES_cvt_mf8(S, D) \
+  D (f16, mf8), D (bf16, mf8)
+
+/* _mf8_f16
+   _mf8_bf16.  */
+#define TYPES_cvtn_mf8(S, D) \
+  D (mf8, f16), D (mf8, bf16)
+
+/* _mf8_f32.  */
+#define TYPES_cvtnx_mf8(S, D) \
+  D (mf8, f32)
+
 /* { _s32 _s64 } x { _b8 _b16 _b32 _b64 }
    { _u32 _u64 }.  */
 #define TYPES_inc_dec_n1(D, A) \
@@ -793,9 +807,12 @@ DEF_SVE_TYPES_ARRAY (cvt_bfloat);
 DEF_SVE_TYPES_ARRAY (cvt_h_s_float);
 DEF_SVE_TYPES_ARRAY (cvt_f32_f16);
 DEF_SVE_TYPES_ARRAY (cvt_long);
+DEF_SVE_TYPES_ARRAY (cvt_mf8);
 DEF_SVE_TYPES_ARRAY (cvt_narrow_s);
 DEF_SVE_TYPES_ARRAY (cvt_narrow);
 DEF_SVE_TYPES_ARRAY (cvt_s_s);
+DEF_SVE_TYPES_ARRAY (cvtn_mf8);
+DEF_SVE_TYPES_ARRAY (cvtnx_mf8);
 DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (qcvt_x2);
 DEF_SVE_TYPES_ARRAY (qcvt_x4);
@@ -1428,6 +1445,8 @@ function_builder::get_name (const function_instance &instance,
   if (!overloaded_p || instance.shape->explicit_group_suffix_p ())
     append_name (instance.group_suffix ().string);
   append_name (pred_suffixes[instance.pred]);
+  if (instance.fpm_mode == FPM_set)
+    append_name ("_fpm");
   return finish_name ();
 }
 
@@ -3063,11 +3082,12 @@ function_resolver::check_gp_argument (unsigned int nops,
 {
   gcc_assert (pred != PRED_za_m);
   i = 0;
+  unsigned int nfpm_args = (fpm_mode == FPM_set)? 1:0;
   if (pred != PRED_none)
     {
       /* Unary merge operations should use resolve_unary instead.  */
       gcc_assert (!shape->has_merge_argument_p (*this, nops));
-      nargs = nops + 1;
+      nargs = nops + nfpm_args + 1;
       if (!check_num_arguments (nargs)
 	  || !require_vector_type (i, gp_type_index ()))
 	return false;
@@ -3075,7 +3095,7 @@ function_resolver::check_gp_argument (unsigned int nops,
     }
   else
     {
-      nargs = nops;
+      nargs = nops + nfpm_args;
       if (!check_num_arguments (nargs))
 	return false;
     }
@@ -4512,6 +4532,13 @@ function_expander::expand ()
   for (unsigned int i = 0; i < nargs; ++i)
     args.quick_push (expand_normal (CALL_EXPR_ARG (call_expr, i)));
 
+  if (fpm_mode == FPM_set)
+    {
+      /* The last element of these functions is always an fpm_t that must be
+         written to FPMR before the call to the instruction itself. */
+      gcc_assert (args.last ()->mode == DImode);
+      emit_move_insn (gen_rtx_REG (DImode, FPM_REGNUM), args.last ());
+    }
   return base->expand (*this);
 }
 

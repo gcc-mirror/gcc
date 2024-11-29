@@ -325,6 +325,8 @@ parse_signature (const function_instance &instance, const char *format,
 	argument_types.quick_push (argument_type);
     }
   gcc_assert (format[0] == 0);
+  if (instance.fpm_mode == FPM_set)
+    argument_types.quick_push (get_typenode_from_name (UINT64_TYPE));
   return return_type;
 }
 
@@ -4596,6 +4598,46 @@ struct unary_convert_narrowt_def : public overloaded_base<1>
 };
 SHAPE (unary_convert_narrowt)
 
+/* sv<t0>_t svfoo_t0[_t1_g](sv<t0>_t, sv<t1>x<g_t, fpm_t)
+
+   Similar to unary_convert_narrowt but for tuple arguments with support for
+   modal floating point.  */
+struct unary_convertxn_narrowt_def : public overloaded_base<1>
+{
+  bool
+  explicit_group_suffix_p () const override
+  {
+    return false;
+  }
+
+  bool
+  has_merge_argument_p (const function_instance &, unsigned int) const override
+  {
+    return true;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,t1", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    gcc_assert(r.fpm_mode == FPM_set);
+    sve_type type;
+    if (!r.check_num_arguments (3)
+        || !(type = r.infer_sve_type (1))
+	|| !r.require_scalar_type (2, "uint64_t"))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (unary_convertxn_narrowt)
+
 /* sv<t0>x<g0>_t svfoo_t0[_t1_g](sv<t1>x<g1>_t)
 
    where the target type <t0> must be specified explicitly but the
@@ -4627,6 +4669,42 @@ struct unary_convertxn_def : public unary_convert_def
   }
 };
 SHAPE (unary_convertxn)
+
+/* sv<t0>_t svfoo_t0[_t1_g](sv<t1>x<g1>_t)
+
+   where the target type <t0> must be specified explicitly but the
+   source type <t1> can be inferred.
+
+   Functions with a group suffix are unpredicated. */
+struct unary_convertxn_narrow_def : public unary_convert_def
+{
+  bool
+  explicit_group_suffix_p () const override
+  {
+    return false;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,t1", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    gcc_assert(r.fpm_mode == FPM_set);
+    sve_type type;
+    if (!r.check_num_arguments (2)
+        || !(type = r.infer_sve_type (0))
+	|| !r.require_scalar_type (1, "uint64_t"))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (unary_convertxn_narrow)
 
 /* sv<t0>_t svfoo_<t0>(sv<t0>_t, uint64_t)
 

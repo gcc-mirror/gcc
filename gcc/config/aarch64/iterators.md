@@ -477,6 +477,9 @@
 ;; Fully-packed SVE vector modes that have 16-bit float elements.
 (define_mode_iterator SVE_FULL_HF [VNx8BF VNx8HF])
 
+;; Pairs of the above.
+(define_mode_iterator SVE_FULL_HFx2 [VNx16BF VNx16HF])
+
 ;; Fully-packed SVE vector modes that have 16-bit, 32-bit or 64-bit elements.
 (define_mode_iterator SVE_FULL_HSD [VNx8HI VNx4SI VNx2DI
 				    VNx8BF VNx8HF VNx4SF VNx2DF])
@@ -960,7 +963,13 @@
     UNSPEC_COND_FLOGB	; Used in aarch64-sve2.md.
     UNSPEC_EORBT	; Used in aarch64-sve2.md.
     UNSPEC_EORTB	; Used in aarch64-sve2.md.
+    UNSPEC_F1CVT	; Used in aarch64-sve2.md.
+    UNSPEC_F1CVTLT	; Used in aarch64-sve2.md.
+    UNSPEC_F2CVT	; Used in aarch64-sve2.md.
+    UNSPEC_F2CVTLT	; Used in aarch64-sve2.md.
     UNSPEC_FADDP	; Used in aarch64-sve2.md.
+    UNSPEC_FCVTNB	; Used in aarch64-sve2.md.
+    UNSPEC_FCVTNT	; Used in aarch64-sve2.md.
     UNSPEC_FMAXNMP	; Used in aarch64-sve2.md.
     UNSPEC_FMAXP	; Used in aarch64-sve2.md.
     UNSPEC_FMINNMP	; Used in aarch64-sve2.md.
@@ -969,6 +978,7 @@
     UNSPEC_FMLALT	; Used in aarch64-sve2.md.
     UNSPEC_FMLSLB	; Used in aarch64-sve2.md.
     UNSPEC_FMLSLT	; Used in aarch64-sve2.md.
+    UNSPEC_FP8FCVTN	; Used in aarch64-sve2.md.
     UNSPEC_HISTCNT	; Used in aarch64-sve2.md.
     UNSPEC_HISTSEG	; Used in aarch64-sve2.md.
     UNSPEC_LD1_COUNT	; Used in aarch64-sve2.md.
@@ -4731,3 +4741,17 @@
 
 (define_code_attr faminmax_op
   [(smax "famax") (smin "famin")])
+
+;; Iterators and attributes for fp8 sve/sme conversions
+
+(define_int_iterator FP8CVT_UNS
+  [UNSPEC_F1CVT
+   UNSPEC_F2CVT
+   UNSPEC_F1CVTLT
+   UNSPEC_F2CVTLT])
+
+(define_int_attr fp8_cvt_uns_op
+  [(UNSPEC_F1CVT "f1cvt")
+   (UNSPEC_F2CVT "f2cvt")
+   (UNSPEC_F1CVTLT "f1cvtlt")
+   (UNSPEC_F2CVTLT "f2cvtlt")])

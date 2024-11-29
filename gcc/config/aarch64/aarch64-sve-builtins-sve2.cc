@@ -221,13 +221,34 @@ public:
   }
 };
 
+class svcvt_fp8_impl : public function_base
+{
+public:
+  CONSTEXPR
+  svcvt_fp8_impl (int unspec) : m_unspec (unspec) {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    auto icode = code_for_aarch64_sve2_fp8_cvt (m_unspec, e.result_mode ());
+    return e.use_exact_insn (icode);
+  }
+
+  int m_unspec;
+};
+
 class svcvtn_impl : public function_base
 {
 public:
   rtx
   expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_aarch64_sve_cvtn (e.result_mode ()));
+    insn_code icode;
+    if (e.fpm_mode == FPM_set)
+      icode = code_for_aarch64_sve2_fp8_cvtn (GET_MODE (e.args[0]));
+    else
+      icode = code_for_aarch64_sve_cvtn (e.result_mode ());
+    return e.use_exact_insn (icode);
   }
 };
 
@@ -922,9 +943,14 @@ FUNCTION (svbsl2n, CODE_FOR_MODE0 (aarch64_sve2_bsl2n),)
 FUNCTION (svcdot, svcdot_impl,)
 FUNCTION (svcdot_lane, svcdot_lane_impl,)
 FUNCTION (svclamp, svclamp_impl,)
-FUNCTION (svcvtlt, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTLT))
+FUNCTION (svcvt1, svcvt_fp8_impl, (UNSPEC_F1CVT))
+FUNCTION (svcvt2, svcvt_fp8_impl, (UNSPEC_F2CVT))
 FUNCTION (svcvtl, svcvtl_impl,)
+FUNCTION (svcvtlt1, svcvt_fp8_impl, (UNSPEC_F1CVTLT))
+FUNCTION (svcvtlt2, svcvt_fp8_impl, (UNSPEC_F2CVTLT))
+FUNCTION (svcvtlt, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTLT))
 FUNCTION (svcvtn, svcvtn_impl,)
+FUNCTION (svcvtnb, fixed_insn_function, (CODE_FOR_aarch64_sve2_fp8_cvtnbvnx16qi))
 FUNCTION (svcvtx, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTX))
 FUNCTION (svcvtxnt, CODE_FOR_MODE1 (aarch64_sve2_cvtxnt),)
 FUNCTION (svdup_laneq, svdup_laneq_impl,)

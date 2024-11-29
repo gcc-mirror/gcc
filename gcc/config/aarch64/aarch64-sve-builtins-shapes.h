@@ -229,7 +229,9 @@ namespace aarch64_sve
     extern const function_shape *const unary;
     extern const function_shape *const unary_convert;
     extern const function_shape *const unary_convert_narrowt;
+    extern const function_shape *const unary_convertxn_narrowt;
     extern const function_shape *const unary_convertxn;
+    extern const function_shape *const unary_convertxn_narrow;
     extern const function_shape *const unary_lane;
     extern const function_shape *const unary_long;
     extern const function_shape *const unary_n;
