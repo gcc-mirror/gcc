@@ -19,6 +19,7 @@
 #include "rust-hir-type-check-type.h"
 #include "options.h"
 #include "optional.h"
+#include "rust-hir-map.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-path-probe.h"
@@ -394,11 +395,10 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	{
 	  auto nr_ctx
 	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
 	  // assign the ref_node_id if we've found something
 	  nr_ctx.lookup (path.get_mappings ().get_nodeid ())
-	    .map ([&ref_node_id, &path] (NodeId resolved) {
-	      ref_node_id = resolved;
-	    });
+	    .map ([&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
 	}
       else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
 	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
