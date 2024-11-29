@@ -29,7 +29,7 @@ DEFINITION MODULE SymbolConversion ;
     Description: mapping between m2 symbols and gcc symbols.
 *)
 
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM SYSTEM IMPORT WORD ;
 
 
@@ -37,21 +37,21 @@ FROM SYSTEM IMPORT WORD ;
    Mod2Gcc - given a modula-2 symbol, sym, return the gcc equivalent.
 *)
 
-PROCEDURE Mod2Gcc (sym: CARDINAL) : Tree ;
+PROCEDURE Mod2Gcc (sym: CARDINAL) : tree ;
 
 
 (*
    Gcc2Mod - given a gcc tree return the modula-2 symbol.
 *)
 
-PROCEDURE Gcc2Mod (tree: Tree) : CARDINAL ;
+PROCEDURE Gcc2Mod (tree: tree) : CARDINAL ;
 
 
 (*
    AddModGcc - adds the tuple [ sym, gcc ] into the database.
 *)
 
-PROCEDURE AddModGcc (sym: CARDINAL; gcc: Tree) ;
+PROCEDURE AddModGcc (sym: CARDINAL; gcc: tree) ;
 
 
 (*

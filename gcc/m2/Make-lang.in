@@ -909,6 +909,7 @@ GM2-COMP-BOOT-MODS = \
 # The interface between the modula-2 front end and gimple/trees found in directory gm2-gcc.
 
 GM2-GCC-DEFS = \
+   gcctypes.def \
    m2block.def \
    m2builtins.def \
    m2color.def \
@@ -926,6 +927,7 @@ GM2-GCC-DEFS = \
    m2tree.def \
    m2treelib.def \
    m2type.def \
+   CDataTypes.def \
 
 # The following lists define the source files used to build gm2 using Modula-2
 # sources directly.
@@ -1235,6 +1237,7 @@ MC-LIB-DEFS = \
    Break.def  \
    COROUTINES.def \
    CmdArgs.def \
+   CDataTypes.def \
    Debug.def \
    DynamicStrings.def \
    Environment.def \
@@ -1588,7 +1591,7 @@ m2/gm2-compiler-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-compiler/%.def $(MCDEPS)
 	$(MC) -o=$@ $(srcdir)/m2/gm2-compiler/$*.def
 
 m2/gm2-compiler-boot/m2flex.o: m2/gm2-compiler/m2flex.c $(BUILD-BOOT-H) $(TIMEVAR_H) \
-        $(BUILD-LIBS-BOOT-H)  m2/gm2-compiler-boot/$(SRC_PREFIX)NameKey.h \
+        $(BUILD-LIBS-BOOT-H) m2/gm2-compiler-boot/$(SRC_PREFIX)NameKey.h \
         $(CONFIG_H) m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(COMPILER) $(CM2DEP) -c -g $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

@@ -23,7 +23,7 @@ DEFINITION MODULE M2Emit ;
 
 
 FROM DynamicStrings IMPORT String ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 
 
 (*

@@ -30,7 +30,7 @@ DEFINITION MODULE M2Base ;
 *)
 
 FROM NameKey IMPORT Name ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 
 EXPORT QUALIFIED Nil,                   (* Base constants          *)
                  Cardinal,              (* Base types              *)

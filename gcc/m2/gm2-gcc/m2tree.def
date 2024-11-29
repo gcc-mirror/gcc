@@ -22,20 +22,18 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 DEFINITION MODULE FOR "C" m2tree ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-
-TYPE
-   Tree = ADDRESS ;
+FROM gcctypes IMPORT tree ;
 
 
-PROCEDURE IsAConstant (t: Tree) : BOOLEAN ;
-PROCEDURE IsOrdinal (type: Tree) : BOOLEAN ;
-PROCEDURE IsTreeOverflow (value: Tree) : BOOLEAN ;
-PROCEDURE skip_const_decl (exp: Tree) : Tree ;
-PROCEDURE skip_type_decl (type: Tree) : Tree ;
-PROCEDURE is_type (type: Tree) : BOOLEAN ;
-PROCEDURE is_array (array: Tree) : BOOLEAN ;
-PROCEDURE is_var (var: Tree) : BOOLEAN ;
-PROCEDURE debug_tree (t: Tree) ;
+PROCEDURE IsAConstant (t: tree) : BOOLEAN ;
+PROCEDURE IsOrdinal (type: tree) : BOOLEAN ;
+PROCEDURE IstreeOverflow (value: tree) : BOOLEAN ;
+PROCEDURE skip_const_decl (exp: tree) : tree ;
+PROCEDURE skip_type_decl (type: tree) : tree ;
+PROCEDURE is_type (type: tree) : BOOLEAN ;
+PROCEDURE is_array (array: tree) : BOOLEAN ;
+PROCEDURE is_var (var: tree) : BOOLEAN ;
+PROCEDURE debug_tree (t: tree) ;
 
 
 END m2tree.

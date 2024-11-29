@@ -28,6 +28,20 @@ FROM nameKey IMPORT Name ;
 
 
 (*
+   useGccTree - indicate we have imported tree from gcctypes.
+*)
+
+PROCEDURE useGccTree ;
+
+
+(*
+   useGccLocation - indicate we have imported tree from gcctypes.
+*)
+
+PROCEDURE useGccLocation ;
+
+
+(*
    useUnistd - need to use unistd.h call using open/close/read/write require this header.
 *)
 

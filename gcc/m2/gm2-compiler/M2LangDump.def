@@ -21,7 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE M2LangDump ;
 
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM DynamicStrings IMPORT String ;
 FROM FIO IMPORT File ;
 
@@ -31,7 +31,7 @@ FROM FIO IMPORT File ;
                         If no filter is specified it will always return default.
 *)
 
-PROCEDURE IsDumpRequiredTree (tree: Tree; default: BOOLEAN) : BOOLEAN ;
+PROCEDURE IsDumpRequiredTree (gcctree: tree; default: BOOLEAN) : BOOLEAN ;
 
 
 (*

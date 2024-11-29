@@ -68,7 +68,7 @@ EXTERN double dtoa_strtod (void * s, bool *error);
           sign       does the string have a sign?
 */
 
-EXTERN void * dtoa_dtoa (double d, dtoa_Mode mode, int ndigits, int *decpt, bool *sign);
+EXTERN void * dtoa_dtoa (double d, int mode, int ndigits, int *decpt, bool *sign);
 #   ifdef __cplusplus
 }
 #   endif

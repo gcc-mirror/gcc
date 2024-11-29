@@ -23,7 +23,6 @@ IMPLEMENTATION MODULE M2Bitset ;
 
 
 FROM M2Debug IMPORT Assert ;
-FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM m2type IMPORT GetWordType ;
 FROM m2decl IMPORT GetBitsPerBitset ;

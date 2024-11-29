@@ -1739,7 +1739,9 @@ static void Priority (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_S
 
 /*
    Export := 'EXPORT' ( 'QUALIFIED' IdentList  | 
-                        'UNQUALIFIED' IdentList  | 
+                        'UNQUALIFIED' 
+                        % putDefUnqualified (curmodule)  %
+                        IdentList  | 
                         IdentList  ) ';' 
 
    first  symbols:exporttok
@@ -6753,7 +6755,9 @@ static void Priority (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_S
 
 /*
    Export := 'EXPORT' ( 'QUALIFIED' IdentList  | 
-                        'UNQUALIFIED' IdentList  | 
+                        'UNQUALIFIED' 
+                        % putDefUnqualified (curmodule)  %
+                        IdentList  | 
                         IdentList  ) ';' 
 
    first  symbols:exporttok
@@ -6773,6 +6777,7 @@ static void Export (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_Set
     {
       /* avoid dangling else.  */
       Expect (mcReserved_unqualifiedtok, stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
+      decl_putDefUnqualified (curmodule);
       IdentList (stopset0|(mcp1_SetOfStop0) ((1 << (mcReserved_semicolontok-mcReserved_eoftok))), stopset1, stopset2);
     }
   else if (mcLexBuf_currenttoken == mcReserved_identtok)

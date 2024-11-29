@@ -593,9 +593,9 @@ static void doPass (bool parseDefs, bool parseMain, unsigned int no, symbolKey_p
       if (parseDefs && (decl_isImp (decl_getMainModule ())))
         {
           /* we need to parse the definition module of a corresponding implementation module.  */
-          (*p.proc) (reinterpret_cast<void *> (decl_lookupDef (decl_getSymName (decl_getMainModule ()))));
+          (*p.proc) (reinterpret_cast <void *> (decl_lookupDef (decl_getSymName (decl_getMainModule ()))));
         }
-      (*p.proc) (reinterpret_cast<void *> (decl_getMainModule ()));
+      (*p.proc) (reinterpret_cast <void *> (decl_getMainModule ()));
     }
   if (parseDefs)
     {

@@ -21,7 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" init ;
 
-FROM SYSTEM IMPORT ADDRESS ;
+FROM CDataTypes IMPORT ConstCharStar ;
 
 
 (*
@@ -37,7 +37,7 @@ PROCEDURE FrontEndInit ;
                         This is to be called every time we compile a new file.
 *)
 
-PROCEDURE PerCompilationInit (filename: ADDRESS) ;
+PROCEDURE PerCompilationInit (filename: ConstCharStar) ;
 
 
 END init.

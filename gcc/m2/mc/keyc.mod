@@ -44,6 +44,8 @@ VAR
    initializedCP,
    initializedGCC,
 
+   seenGccTree,
+   seenGccLocation,
    seenIntMin,
    seenUIntMin,
    seenLongMin,
@@ -95,9 +97,30 @@ BEGIN
          initializedGCC := TRUE ;
          print (p, '#include "config.h"\n');
          print (p, '#include "system.h"\n');
+         checkGccTypes (p)
       END
    END
 END checkGccConfigSystem ;
+
+
+(*
+   useGccTree - indicate we have imported tree from gcctypes.
+*)
+
+PROCEDURE useGccTree ;
+BEGIN
+   seenGccTree := TRUE
+END useGccTree ;
+
+
+(*
+   useGccLocation - indicate we have imported tree from gcctypes.
+*)
+
+PROCEDURE useGccLocation ;
+BEGIN
+   seenGccLocation := TRUE
+END useGccLocation ;
 
 
 (*
@@ -412,6 +435,20 @@ END useCtype ;
 
 
 (*
+   checkGccTypes - if we have imported tree or location_t from gcctypes
+                   then we include the gcc headers.
+*)
+
+PROCEDURE checkGccTypes (p: pretty) ;
+BEGIN
+   IF seenGccTree OR seenGccLocation
+   THEN
+      print (p, '#include "gcc-consolidation.h"\n\n')
+   END
+END checkGccTypes ;
+
+
+(*
    checkCtype -
 *)
 
@@ -419,7 +456,7 @@ PROCEDURE checkCtype (p: pretty) ;
 BEGIN
    IF seenCtype
    THEN
-      checkGccConfigSystem (p);
+      checkGccConfigSystem (p) ;
       IF getGccConfigSystem ()
       THEN
          (* GCC header files use a safe variant.  *)
@@ -1149,6 +1186,8 @@ BEGIN
    seenSize_t := FALSE ;
    seenSSize_t := FALSE ;
    seenSysTypes := FALSE ;
+   seenGccTree := FALSE ;
+   seenGccLocation := FALSE ;
    initializedCP := FALSE ;
    initializedGCC := FALSE ;
 
