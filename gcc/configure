@@ -637,8 +637,8 @@ LD_PICFLAG
 PICFLAG
 enable_default_pie
 enable_host_bind_now
-LIBDIAGNOSTICS
-enable_libdiagnostics
+LIBGDIAGNOSTICS
+enable_libgdiagnostics
 enable_host_pie
 enable_host_shared
 enable_plugin
@@ -1053,7 +1053,7 @@ enable_version_specific_runtime_libs
 enable_plugin
 enable_host_shared
 enable_host_pie
-enable_libdiagnostics
+enable_libgdiagnostics
 enable_host_bind_now
 enable_libquadmath_support
 with_linker_hash_style
@@ -1829,7 +1829,8 @@ Optional Features:
   --enable-plugin         enable plugin support
   --enable-host-shared    build host code as shared libraries
   --enable-host-pie       build host code as PIE
-  --enable-libdiagnostics build libdiagnostics shared library
+  --enable-libgdiagnostics
+                          build libgdiagnostics shared library
   --enable-host-bind-now  link host code as BIND_NOW
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
@@ -21460,7 +21461,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21463 "configure"
+#line 21464 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21566,7 +21567,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21569 "configure"
+#line 21570 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -33800,8 +33801,8 @@ for language in $all_selected_languages
 do
 	check_languages="$check_languages check-$language"
 done
-if test x$enable_libdiagnostics = xyes; then
-	check_languages="$check_languages check-libdiagnostics check-sarif-replay"
+if test x$enable_libgdiagnostics = xyes; then
+	check_languages="$check_languages check-libgdiagnostics check-sarif-replay"
 fi
 
 selftest_languages=
@@ -34241,17 +34242,17 @@ fi
 
 
 
-# Check whether --enable-libdiagnostics was given.
-if test "${enable_libdiagnostics+set}" = set; then :
-  enableval=$enable_libdiagnostics;
+# Check whether --enable-libgdiagnostics was given.
+if test "${enable_libgdiagnostics+set}" = set; then :
+  enableval=$enable_libgdiagnostics;
 fi
 
 
 
-if test "$enable_libdiagnostics" = "yes"; then
-  LIBDIAGNOSTICS='libdiagnostics sarif-replay'
+if test "$enable_libgdiagnostics" = "yes"; then
+  LIBGDIAGNOSTICS='libgdiagnostics sarif-replay'
 else
-  LIBDIAGNOSTICS=''
+  LIBGDIAGNOSTICS=''
 fi
 
 

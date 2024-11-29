@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "version.h"
 #include "intl.h"
-#include "libdiagnostics++.h"
+#include "libgdiagnostics++.h"
 #include "libsarifreplay.h"
 
 static const char *progname;
@@ -98,9 +98,9 @@ print_usage ()
 static bool
 parse_options (int argc, char **argv,
 	       options &opts,
-	       libdiagnostics::text_sink control_text_sink)
+	       libgdiagnostics::text_sink control_text_sink)
 {
-  libdiagnostics::manager options_mgr;
+  libgdiagnostics::manager options_mgr;
   options_mgr.set_tool_name ("sarif-replay");
   options_mgr.add_text_sink (stderr, DIAGNOSTIC_COLORIZE_NO/*IF_TTY*/);
 
@@ -196,11 +196,11 @@ main (int argc, char **argv)
   progname = get_progname (argv[0]);
   xmalloc_set_program_name (progname);
 
-  libdiagnostics::manager control_mgr;
+  libgdiagnostics::manager control_mgr;
 
   control_mgr.set_tool_name (progname);
 
-  libdiagnostics::text_sink control_text_sink
+  libgdiagnostics::text_sink control_text_sink
     = control_mgr.add_text_sink (stderr, DIAGNOSTIC_COLORIZE_IF_TTY);
 
   options opts;
@@ -218,7 +218,7 @@ main (int argc, char **argv)
 	  auto note = control_mgr.begin_diagnostic (DIAGNOSTIC_LEVEL_NOTE);
 	  note.finish ("about to replay %qs...", filename);
 	}
-      libdiagnostics::manager playback_mgr;
+      libgdiagnostics::manager playback_mgr;
       playback_mgr.add_text_sink (stderr,
 				  opts.m_replay_opts.m_diagnostics_colorize);
 

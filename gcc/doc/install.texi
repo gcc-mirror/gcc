@@ -1231,8 +1231,8 @@ virtual calls in verifiable mode at all.  However the libvtv library will
 still be built (see @option{--disable-libvtv} to turn off building libvtv).
 @option{--disable-vtable-verify} is the default.
 
-@item --enable-libdiagnostics
-Specify whether to build @code{libdiagnostics}, a shared library exposing
+@item --enable-libgdiagnostics
+Specify whether to build @code{libgdiagnostics}, a shared library exposing
 GCC's diagnostics capabilities via a C API, and a C++ wrapper API adding
 ``syntactic sugar''.
 
@@ -1241,7 +1241,7 @@ This option requires @option{--enable-host-shared} on non-Windows hosts.
 This option also enables @code{sarif-replay}, a command-line tool for
 viewing @uref{https://sarif.info/,,SARIF files}.  @code{sarif-replay} takes
 one or more @code{.sarif} files as input and attempts to replay any
-diagnostics within them to stderr (via @code{libdiagnostics}) in the style
+diagnostics within them to stderr (via @code{libgdiagnostics}) in the style
 of GCC's diagnostics.
 
 @item --disable-gcov

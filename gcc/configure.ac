@@ -7364,8 +7364,8 @@ for language in $all_selected_languages
 do
 	check_languages="$check_languages check-$language"
 done
-if test x$enable_libdiagnostics = xyes; then
-	check_languages="$check_languages check-libdiagnostics check-sarif-replay"
+if test x$enable_libgdiagnostics = xyes; then
+	check_languages="$check_languages check-libgdiagnostics check-sarif-replay"
 fi
 
 selftest_languages=
@@ -7599,17 +7599,17 @@ AC_ARG_ENABLE(host-pie,
 		[build host code as PIE])])
 AC_SUBST(enable_host_pie)
 
-AC_ARG_ENABLE(libdiagnostics,
-[AS_HELP_STRING([--enable-libdiagnostics],
-		[build libdiagnostics shared library])])
-AC_SUBST(enable_libdiagnostics)
+AC_ARG_ENABLE(libgdiagnostics,
+[AS_HELP_STRING([--enable-libgdiagnostics],
+		[build libgdiagnostics shared library])])
+AC_SUBST(enable_libgdiagnostics)
 
-if test "$enable_libdiagnostics" = "yes"; then
-  LIBDIAGNOSTICS='libdiagnostics sarif-replay'
+if test "$enable_libgdiagnostics" = "yes"; then
+  LIBGDIAGNOSTICS='libgdiagnostics sarif-replay'
 else
-  LIBDIAGNOSTICS=''
+  LIBGDIAGNOSTICS=''
 fi
-AC_SUBST(LIBDIAGNOSTICS)
+AC_SUBST(LIBGDIAGNOSTICS)
 
 
 # Enable --enable-host-bind-now

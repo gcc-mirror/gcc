@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LIBSARIFREPLAY_H
 #define LIBSARIFREPLAY_H
 
-#include "libdiagnostics.h"
+#include "libgdiagnostics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,10 +47,10 @@ sarif_replay_path (const char *sarif_file,
 		   diagnostic_manager *output_manager,
 		   diagnostic_manager *control_manager,
 		   const replay_options *options)
-  LIBDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
-  LIBDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2)
-  LIBDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (3)
-  LIBDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (4);
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (3)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (4);
 
 #ifdef __cplusplus
 }
