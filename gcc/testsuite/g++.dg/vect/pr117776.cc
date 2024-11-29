@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-require-effective-target vect_int }
+// { dg-require-effective-target vect_unpack }
 
 // PR tree-optimization/117776
 
