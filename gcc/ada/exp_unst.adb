@@ -1069,14 +1069,14 @@ package body Exp_Unst is
                      end;
                   end if;
 
-                  --  A selected component can have an implicit up-level
-                  --  reference due to the bounds of previous fields in the
-                  --  record. We simplify the processing here by examining
-                  --  all components of the record.
+               --  A selected component can have an implicit up-level
+               --  reference due to the bounds of previous fields in the
+               --  record. We simplify the processing here by examining
+               --  all components of the record.
 
-                  --  Selected components appear as unit names and end labels
-                  --  for child units. Prefixes of these nodes denote parent
-                  --  units and carry no type information so they are skipped.
+               --  Selected components appear as unit names and end labels
+               --  for child units. Prefixes of these nodes denote parent
+               --  units and carry no type information so they are skipped.
 
                when N_Selected_Component =>
                   if Present (Etype (Prefix (N))) then

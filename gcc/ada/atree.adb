@@ -2444,7 +2444,7 @@ package body Atree is
    -----------------------------------
 
    function Internal_Traverse_With_Parent
-      (Node : Node_Id) return Traverse_Final_Result
+     (Node : Node_Id) return Traverse_Final_Result
    is
       Tail_Recursion_Counter : Natural := 0;
 

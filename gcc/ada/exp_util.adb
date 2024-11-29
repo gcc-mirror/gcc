@@ -141,14 +141,14 @@ package body Exp_Util is
    --  function body that computes image.
 
    procedure Build_Task_Image_Prefix
-      (Loc    : Source_Ptr;
-       Len    : out Entity_Id;
-       Res    : out Entity_Id;
-       Pos    : out Entity_Id;
-       Prefix : Entity_Id;
-       Sum    : Node_Id;
-       Decls  : List_Id;
-       Stats  : List_Id);
+     (Loc    : Source_Ptr;
+      Len    : out Entity_Id;
+      Res    : out Entity_Id;
+      Pos    : out Entity_Id;
+      Prefix : Entity_Id;
+      Sum    : Node_Id;
+      Decls  : List_Id;
+      Stats  : List_Id);
    --  Common processing for Task_Array_Image and Task_Record_Image. Create
    --  local variables and assign prefix of name to result string.
 
@@ -4516,14 +4516,14 @@ package body Exp_Util is
    -----------------------------
 
    procedure Build_Task_Image_Prefix
-      (Loc    : Source_Ptr;
-       Len    : out Entity_Id;
-       Res    : out Entity_Id;
-       Pos    : out Entity_Id;
-       Prefix : Entity_Id;
-       Sum    : Node_Id;
-       Decls  : List_Id;
-       Stats  : List_Id)
+     (Loc    : Source_Ptr;
+      Len    : out Entity_Id;
+      Res    : out Entity_Id;
+      Pos    : out Entity_Id;
+      Prefix : Entity_Id;
+      Sum    : Node_Id;
+      Decls  : List_Id;
+      Stats  : List_Id)
    is
    begin
       Len := Make_Temporary (Loc, 'L', Sum);
@@ -7505,9 +7505,9 @@ package body Exp_Util is
             --  type T identifies T.
 
             when N_Indexed_Component
-              |  N_Selected_Component
-              |  N_Aggregate
-              |  N_Extension_Aggregate
+               | N_Selected_Component
+               | N_Aggregate
+               | N_Extension_Aggregate
             =>
                return True;
 
@@ -8551,7 +8551,7 @@ package body Exp_Util is
       return Nkind (N) in N_Type_Conversion | N_Unchecked_Type_Conversion
         or else (Nkind (N) = N_Explicit_Dereference
                   and then Nkind (Prefix (N)) in N_Type_Conversion
-                                              |  N_Unchecked_Type_Conversion)
+                                               | N_Unchecked_Type_Conversion)
         or else (Is_Entity_Name (N)
                   and then Present (Entity (N))
                   and then Is_Formal (Entity (N)));
@@ -8562,7 +8562,7 @@ package body Exp_Util is
    --------------------------------------------------
 
    function Is_Expanded_Class_Wide_Interface_Object_Decl
-      (N : Node_Id) return Boolean is
+     (N : Node_Id) return Boolean is
    begin
       return not Comes_From_Source (N)
         and then Nkind (Original_Node (N)) = N_Object_Declaration

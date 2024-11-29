@@ -1723,7 +1723,7 @@ procedure Gnatchop is
       end;
    end Write_Unit;
 
-      procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+   procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
 --  Start of processing for gnatchop
 

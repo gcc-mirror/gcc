@@ -95,8 +95,8 @@ package body Exp_Pakd is
    --  This expression includes any required range checks.
 
    function Compute_Number_Components
-      (N   : Node_Id;
-       Typ : Entity_Id) return Node_Id;
+     (N   : Node_Id;
+      Typ : Entity_Id) return Node_Id;
    --  Build an expression that multiplies the length of the dimensions of the
    --  array, used to control array equality checks.
 
@@ -414,8 +414,8 @@ package body Exp_Pakd is
    -------------------------------
 
    function Compute_Number_Components
-      (N   : Node_Id;
-       Typ : Entity_Id) return Node_Id
+     (N   : Node_Id;
+      Typ : Entity_Id) return Node_Id
    is
       Loc      : constant Source_Ptr := Sloc (N);
       Len_Expr : Node_Id;

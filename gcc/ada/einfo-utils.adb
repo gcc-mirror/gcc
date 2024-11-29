@@ -954,7 +954,7 @@ package body Einfo.Utils is
    function Get_Class_Wide_Pragma
      (E  : Entity_Id;
       Id : Pragma_Id) return Node_Id
-    is
+   is
       Item  : Node_Id;
       Items : Node_Id;
 
@@ -3173,10 +3173,10 @@ package body Einfo.Utils is
             end;
 
          when Access_Kind =>
-               Write_Attribute
-                 ("   Directly Designated Type ",
-                  Directly_Designated_Type (Id));
-               Write_Eol;
+            Write_Attribute
+              ("   Directly Designated Type ",
+               Directly_Designated_Type (Id));
+            Write_Eol;
 
          when Overloadable_Kind =>
             if Present (Homonym (Id)) then

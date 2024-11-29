@@ -102,9 +102,9 @@ package body Exp_Aggr is
       Comp_Typ  : Node_Id;
       Init_Expr : Node_Id;
       Stmts     : List_Id);
-    --  Perform the initialization of component Comp with expected type
-    --  Comp_Typ of aggregate N. Init_Expr denotes the initialization
-    --  expression of the component. All generated code is added to Stmts.
+   --  Perform the initialization of component Comp with expected type
+   --  Comp_Typ of aggregate N. Init_Expr denotes the initialization
+   --  expression of the component. All generated code is added to Stmts.
 
    function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
    --  Returns true if N is an aggregate used to initialize the components
@@ -1079,9 +1079,9 @@ package body Exp_Aggr is
 
       function Get_Assoc_Expr (Assoc : Node_Id) return Node_Id;
       --  For an association with a box, use value given by aspect
-     --   Default_Component_Value of array type if specified, else use
-     --   value given by aspect Default_Value for component type itself
-     --   if specified, else return Empty.
+      --  Default_Component_Value of array type if specified, else use
+      --  value given by aspect Default_Value for component type itself
+      --  if specified, else return Empty.
 
       function Local_Compile_Time_Known_Value (E : Node_Id) return Boolean;
       function Local_Expr_Value               (E : Node_Id) return Uint;
@@ -1264,7 +1264,7 @@ package body Exp_Aggr is
       function Gen_Assign
         (Ind  : Node_Id;
          Expr : Node_Id) return List_Id
-       is
+      is
          function Add_Loop_Actions (Lis : List_Id) return List_Id;
          --  Collect insert_actions generated in the construction of a loop,
          --  and prepend them to the sequence of assignments to complete the
@@ -5803,13 +5803,13 @@ package body Exp_Aggr is
                          Constraints =>
                            New_List (Make_Range (Loc, Aggr_Lo, Aggr_Hi)))));
 
-               --  Create a temporary array of the above subtype which
-               --  will be used to capture the aggregate assignments.
+            --  Create a temporary array of the above subtype which
+            --  will be used to capture the aggregate assignments.
 
-               TmpD : constant Node_Id :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => TmpE,
-                   Object_Definition   => New_Occurrence_Of (SubE, Loc));
+            TmpD : constant Node_Id :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => TmpE,
+                Object_Definition   => New_Occurrence_Of (SubE, Loc));
 
          begin
             Insert_Actions (N, New_List (SubD, TmpD));

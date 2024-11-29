@@ -155,11 +155,11 @@ package body Sem_Ch4 is
    --  the operand of the operator node.
 
    procedure Analyze_One_Call
-      (N          : Node_Id;
-       Nam        : Entity_Id;
-       Report     : Boolean;
-       Success    : out Boolean;
-       Skip_First : Boolean := False);
+     (N          : Node_Id;
+      Nam        : Entity_Id;
+      Report     : Boolean;
+      Success    : out Boolean;
+      Skip_First : Boolean := False);
    --  Check one interpretation of an overloaded subprogram name for
    --  compatibility with the types of the actuals in a call. If there is a
    --  single interpretation which does not match, post error if Report is
@@ -3635,11 +3635,11 @@ package body Sem_Ch4 is
    ----------------------
 
    procedure Analyze_One_Call
-      (N          : Node_Id;
-       Nam        : Entity_Id;
-       Report     : Boolean;
-       Success    : out Boolean;
-       Skip_First : Boolean := False)
+     (N          : Node_Id;
+      Nam        : Entity_Id;
+      Report     : Boolean;
+      Success    : out Boolean;
+      Skip_First : Boolean := False)
    is
       Actuals : constant List_Id   := Parameter_Associations (N);
       Prev_T  : constant Entity_Id := Etype (N);

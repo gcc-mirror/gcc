@@ -85,9 +85,9 @@ package body Itypes is
    ---------------------------------
 
    function Create_Null_Excluding_Itype
-      (T           : Entity_Id;
-       Related_Nod : Node_Id;
-       Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
+     (T           : Entity_Id;
+      Related_Nod : Node_Id;
+      Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
    is
       I_Typ : Entity_Id;
 

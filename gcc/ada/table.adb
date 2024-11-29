@@ -296,8 +296,8 @@ package body Table is
       --------------
 
       procedure Set_Item
-         (Index : Table_Index_Type;
-          Item  : Table_Component_Type)
+        (Index : Table_Index_Type;
+         Item  : Table_Component_Type)
       is
          --  If Item is a value within the current allocation, and we are going
          --  to reallocate, then we must preserve an intermediate copy here

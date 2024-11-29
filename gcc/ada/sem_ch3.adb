@@ -50,7 +50,7 @@ with Layout;         use Layout;
 with Lib;            use Lib;
 with Lib.Writ;
 with Lib.Xref;       use Lib.Xref;
-with Mutably_Tagged;    use Mutably_Tagged;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -10597,8 +10597,8 @@ package body Sem_Ch3 is
       --  D within the discriminant list of the discriminated type T.
 
       procedure Process_Discriminant_Expression
-         (Expr : Node_Id;
-          D    : Entity_Id);
+        (Expr : Node_Id;
+         D    : Entity_Id);
       --  If this is a discriminant constraint on a partial view, do not
       --  generate an overflow check on the discriminant expression. The check
       --  will be generated when constraining the full view. Otherwise the
@@ -10634,8 +10634,8 @@ package body Sem_Ch3 is
       -------------------------------------
 
       procedure Process_Discriminant_Expression
-         (Expr : Node_Id;
-          D    : Entity_Id)
+        (Expr : Node_Id;
+         D    : Entity_Id)
       is
          BDT : constant Entity_Id := Base_Type (Etype (D));
 

@@ -16318,9 +16318,9 @@ package body Sem_Elab is
    --  to be the enclosing compilation unit of this scope.
 
    procedure Set_Elaboration_Constraint
-    (Call : Node_Id;
-     Subp : Entity_Id;
-     Scop : Entity_Id);
+     (Call : Node_Id;
+      Subp : Entity_Id;
+      Scop : Entity_Id);
    --  The current unit U may depend semantically on some unit P that is not
    --  in the current context. If there is an elaboration call that reaches P,
    --  we need to indicate that P requires an Elaborate_All, but this is not
@@ -16542,10 +16542,10 @@ package body Sem_Elab is
         (Msg_D : String;
          Msg_S : String;
          Ent   : Node_Or_Entity_Id);
-       --  Generate a call to Error_Msg_NE with parameters Msg_D or Msg_S (for
-       --  dynamic or static elaboration model), N and Ent. Msg_D is a real
-       --  warning (output if Msg_D is non-null and Elab_Warnings is set),
-       --  Msg_S is an info message (output if Elab_Info_Messages is set).
+      --  Generate a call to Error_Msg_NE with parameters Msg_D or Msg_S (for
+      --  dynamic or static elaboration model), N and Ent. Msg_D is a real
+      --  warning (output if Msg_D is non-null and Elab_Warnings is set),
+      --  Msg_S is an info message (output if Elab_Info_Messages is set).
 
       function Find_W_Scope return Entity_Id;
       --  Find top-level scope for called entity (not following renamings
@@ -19523,9 +19523,9 @@ package body Sem_Elab is
    --------------------------------
 
    procedure Set_Elaboration_Constraint
-    (Call : Node_Id;
-     Subp : Entity_Id;
-     Scop : Entity_Id)
+     (Call : Node_Id;
+      Subp : Entity_Id;
+      Scop : Entity_Id)
    is
       Elab_Unit : Entity_Id;
 

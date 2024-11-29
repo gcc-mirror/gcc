@@ -354,9 +354,9 @@ package body Switch.M is
                                  Ptr := Ptr + 1;
                               end if;
 
-                                 --  To normalize, always put a '=' after
-                                 --  -gnatep. Because that could lengthen the
-                                 --  switch string, declare a local variable.
+                              --  To normalize, always put a '=' after
+                              --  -gnatep. Because that could lengthen the
+                              --  switch string, declare a local variable.
 
                               declare
                                  To_Store : String (1 .. Max - Ptr + 9);
@@ -597,7 +597,7 @@ package body Switch.M is
                         Ptr := Ptr + 1;
                      end if;
 
-                     --  -gnat12
+                  --  -gnat12
 
                   when '1' =>
                      Last_Stored := First_Stored;
@@ -619,7 +619,7 @@ package body Switch.M is
                         Ptr := Ptr + 1;
                      end if;
 
-                     --  -gnat2005 -gnat2012
+                  --  -gnat2005 -gnat2012
 
                   when '2' =>
                      if Ptr + 3 /= Max then
@@ -1017,18 +1017,18 @@ package body Switch.M is
                   Verbose_Mode := True;
                   Verbosity_Level := Opt.High;
 
-                  --  Processing for x switch
+               --  Processing for x switch
 
                when 'x' =>
                   External_Unit_Compilation_Allowed := True;
                   Use_Include_Path_File := True;
 
-                  --  Processing for z switch
+               --  Processing for z switch
 
                when 'z' =>
                   No_Main_Subprogram := True;
 
-                  --  Any other small letter is an illegal switch
+               --  Any other small letter is an illegal switch
 
                when others =>
                   if C in 'a' .. 'z' then

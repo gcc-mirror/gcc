@@ -571,7 +571,7 @@ package body Exp_Imgv is
                                 Right_Opnd => New_Occurrence_Of (J, Loc))),
                        Right_Opnd => Make_Integer_Literal (Loc, Int (L1)))));
 
-            --  Generate loop
+               --  Generate loop
 
                Body_Stmts := New_List (
                  Make_Implicit_Loop_Statement (N,

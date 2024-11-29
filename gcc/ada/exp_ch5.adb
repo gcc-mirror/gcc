@@ -982,8 +982,8 @@ package body Exp_Ch5 is
 
          elsif Restriction_Active (No_Implicit_Conditionals) then
             declare
-                  T : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc, Chars => Name_T);
+               T : constant Entity_Id :=
+                  Make_Defining_Identifier (Loc, Chars => Name_T);
 
             begin
                Rewrite (N,

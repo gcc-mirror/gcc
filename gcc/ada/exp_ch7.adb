@@ -706,8 +706,8 @@ package body Exp_Ch7 is
                    else Empty);
 
       function Build_BIP_Cleanup_Stmts
-         (Func_Id  : Entity_Id;
-          Obj_Addr : Node_Id) return Node_Id;
+        (Func_Id  : Entity_Id;
+         Obj_Addr : Node_Id) return Node_Id;
       --  Func_Id denotes a build-in-place function. Generate the following
       --  cleanup code:
       --
@@ -3928,7 +3928,8 @@ package body Exp_Ch7 is
                   Set_Scope (Id, Block_Elab_Proc);
 
                when N_Object_Declaration
-                 | N_Object_Renaming_Declaration =>
+                  | N_Object_Renaming_Declaration
+               =>
                   Id := Defining_Entity (Stat);
                   if No (Block_Elab_Proc) then
                      Append_Elmt (Id, Maybe_Reset_Scopes_For_Decl);

@@ -258,10 +258,10 @@ package body Diagnostics.Utils is
    begin
       if Warning_Doc_Switch
         and then Diag.Kind in Default_Warning
-          | Info
-          | Restriction_Warning
-          | Style
-          | Warning
+                            | Info
+                            | Restriction_Warning
+                            | Style
+                            | Warning
       then
          if Diag.Switch = No_Switch_Id then
             if Diag.Kind = Restriction_Warning then

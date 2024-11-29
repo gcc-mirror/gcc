@@ -4981,7 +4981,7 @@ package body Sem_Util is
                   end if;
                end if;
 
-                  Next_Elmt (State_Elmt);
+               Next_Elmt (State_Elmt);
             end loop;
          end if;
       end Report_Unused_Body_States;
@@ -7440,7 +7440,7 @@ package body Sem_Util is
    -------------------------------
 
    function Enclosing_Lib_Unit_Entity
-      (E : Entity_Id := Current_Scope) return Entity_Id
+     (E : Entity_Id := Current_Scope) return Entity_Id
    is
       Unit_Entity : Entity_Id;
 
@@ -14793,26 +14793,25 @@ package body Sem_Util is
 
    procedure Inspect_Deferred_Constant_Completion (Decl : Node_Id) is
    begin
-         --  Deferred constant signature
+      --  Deferred constant signature
 
-         if Nkind (Decl) = N_Object_Declaration
-           and then Constant_Present (Decl)
-           and then No (Expression (Decl))
+      if Nkind (Decl) = N_Object_Declaration
+        and then Constant_Present (Decl)
+        and then No (Expression (Decl))
 
-            --  No need to check internally generated constants
+         --  No need to check internally generated constants
 
-           and then Comes_From_Source (Decl)
+        and then Comes_From_Source (Decl)
 
-            --  The constant is not completed. A full object declaration or a
-            --  pragma Import complete a deferred constant.
+         --  The constant is not completed. A full object declaration or a
+         --  pragma Import complete a deferred constant.
 
-           and then not Has_Completion (Defining_Identifier (Decl))
-         then
-            Error_Msg_N
-              ("constant declaration requires initialization expression",
-              Defining_Identifier (Decl));
-         end if;
-
+        and then not Has_Completion (Defining_Identifier (Decl))
+      then
+         Error_Msg_N
+           ("constant declaration requires initialization expression",
+           Defining_Identifier (Decl));
+      end if;
    end Inspect_Deferred_Constant_Completion;
 
    procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
@@ -25916,7 +25915,7 @@ package body Sem_Util is
    ----------------------------------
 
    function Predicate_Failure_Expression
-    (Typ : Entity_Id; Inherited_OK : Boolean) return Node_Id
+     (Typ : Entity_Id; Inherited_OK : Boolean) return Node_Id
    is
       PF_Aspect : constant Node_Id :=
         Find_Aspect (Typ, Aspect_Predicate_Failure);
@@ -26038,9 +26037,9 @@ package body Sem_Util is
       ----------------------
 
       function Trace_Components
-         (T     : Entity_Id;
-          Check : Boolean) return Entity_Id
-       is
+        (T     : Entity_Id;
+         Check : Boolean) return Entity_Id
+      is
          Btype     : constant Entity_Id := Base_Type (T);
          Component : Entity_Id;
          P         : Entity_Id;
@@ -29880,7 +29879,7 @@ package body Sem_Util is
       --  Does the given value lie within the given interval?
 
       procedure Normalize_Interval_List
-         (List : in out Discrete_Interval_List; Last : out Nat);
+        (List : in out Discrete_Interval_List; Last : out Nat);
       --  Perform sorting and merging as required by Check_Consistency
 
       -------------------------

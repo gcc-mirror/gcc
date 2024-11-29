@@ -315,21 +315,21 @@ package body Sem_Ch10 is
          Clause : Node_Id;
 
          procedure Process_Body_Clauses
-          (Context_List      : List_Id;
-           Clause            : Node_Id;
-           Used              : out Boolean;
-           Used_Type_Or_Elab : out Boolean);
+           (Context_List      : List_Id;
+            Clause            : Node_Id;
+            Used              : out Boolean;
+            Used_Type_Or_Elab : out Boolean);
          --  Examine the context clauses of a package body, trying to match the
          --  name entity of Clause with any list element. If the match occurs
          --  on a use package clause set Used to True, for a use type clause or
          --  pragma Elaborate[_All], set Used_Type_Or_Elab to True.
 
          procedure Process_Spec_Clauses
-          (Context_List : List_Id;
-           Clause       : Node_Id;
-           Used         : out Boolean;
-           Withed       : out Boolean;
-           Exit_On_Self : Boolean);
+           (Context_List : List_Id;
+            Clause       : Node_Id;
+            Used         : out Boolean;
+            Withed       : out Boolean;
+            Exit_On_Self : Boolean);
          --  Examine the context clauses of a package spec, trying to match
          --  the name entity of Clause with any list element. If the match
          --  occurs on a use package clause, set Used to True, for a with
@@ -344,10 +344,10 @@ package body Sem_Ch10 is
          --------------------------
 
          procedure Process_Body_Clauses
-          (Context_List      : List_Id;
-           Clause            : Node_Id;
-           Used              : out Boolean;
-           Used_Type_Or_Elab : out Boolean)
+           (Context_List      : List_Id;
+            Clause            : Node_Id;
+            Used              : out Boolean;
+            Used_Type_Or_Elab : out Boolean)
          is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
             Cont_Item : Node_Id;
@@ -468,11 +468,11 @@ package body Sem_Ch10 is
          --------------------------
 
          procedure Process_Spec_Clauses
-          (Context_List : List_Id;
-           Clause       : Node_Id;
-           Used         : out Boolean;
-           Withed       : out Boolean;
-           Exit_On_Self : Boolean)
+           (Context_List : List_Id;
+            Clause       : Node_Id;
+            Used         : out Boolean;
+            Withed       : out Boolean;
+            Exit_On_Self : Boolean)
          is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
             Cont_Item : Node_Id;

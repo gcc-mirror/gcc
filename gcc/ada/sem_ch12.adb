@@ -1404,7 +1404,7 @@ package body Sem_Ch12 is
                   | N_Formal_Package_Declaration
                   | N_Use_Package_Clause
                   | N_Use_Type_Clause
-                =>
+               =>
                   Action (F, Index);
                   Index := Index + 1;
                when N_Pragma =>
@@ -1461,7 +1461,7 @@ package body Sem_Ch12 is
                   | N_Full_Type_Declaration
                   | N_Private_Type_Declaration
                   | N_Private_Extension_Declaration
-                =>
+               =>
                   if Is_Internal_Name (Chars (Defining_Entity (F))) then
                      null;
                   else
@@ -2265,9 +2265,10 @@ package body Sem_Ch12 is
                            Infer_From_Access (Gen_Assocs, Index, F, A_Full);
 
                         when E_Access_Subtype
-                          | E_Access_Attribute_Type
-                          | E_Allocator_Type
-                          | E_Anonymous_Access_Type =>
+                           | E_Access_Attribute_Type
+                           | E_Allocator_Type
+                           | E_Anonymous_Access_Type
+                        =>
                            raise Program_Error;
 
                         when E_Array_Type | E_Array_Subtype =>
@@ -3202,9 +3203,9 @@ package body Sem_Ch12 is
    -----------------------------------
 
    procedure Analyze_Formal_Interface_Type
-      (N   : Node_Id;
-       T   : Entity_Id;
-       Def : Node_Id)
+     (N   : Node_Id;
+      T   : Entity_Id;
+      Def : Node_Id)
    is
       Loc   : constant Source_Ptr := Sloc (N);
       New_N : Node_Id;
@@ -10106,7 +10107,7 @@ package body Sem_Ch12 is
      (N         : Node_Id;
       Gen_Body  : Node_Id;
       Pack_Id   : Entity_Id)
-  is
+   is
       function Enclosing_Package_Body (N : Node_Id) return Node_Id;
       --  Find innermost package body that encloses the given node, and which
       --  is not a compilation unit. Freeze nodes for the instance, or for its
@@ -11344,8 +11345,8 @@ package body Sem_Ch12 is
       Parent_Spec : Node_Id;
 
       procedure Find_Matching_Actual
-       (F    : Node_Id;
-        Act  : in out Entity_Id);
+        (F    : Node_Id;
+         Act  : in out Entity_Id);
       --  We need to associate each formal entity in the formal package with
       --  the corresponding entity in the actual package. The actual package
       --  has been analyzed and possibly expanded, and as a result there is
@@ -11394,7 +11395,7 @@ package body Sem_Ch12 is
       procedure Find_Matching_Actual
         (F   : Node_Id;
          Act : in out Entity_Id)
-     is
+      is
          Formal_Ent : Entity_Id;
 
       begin

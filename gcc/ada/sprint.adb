@@ -4419,9 +4419,9 @@ package body Sprint is
                      Sprint_Node (X);
                      Set_Sloc (X, Old_Sloc);
 
-                     --  Array subtypes
+                  --  Array subtypes
 
-                     --  Preserve Sloc of index subtypes, as above
+                  --  Preserve Sloc of index subtypes, as above
 
                   when E_Array_Subtype =>
                      Write_Header (False);

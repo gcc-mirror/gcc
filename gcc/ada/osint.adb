@@ -2037,7 +2037,7 @@ package body Osint is
 
          when Binder
             | Gnatls
-          =>
+         =>
             Dir_Name := Normalize_Directory_Name (Dir_Name.all);
             Lib_Search_Directories.Table (Primary_Directory) := Dir_Name;
 

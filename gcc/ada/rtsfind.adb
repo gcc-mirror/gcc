@@ -456,7 +456,7 @@ package body Rtsfind is
       end if;
 
    exception
-         --  Generate error message if run-time unit not available
+      --  Generate error message if run-time unit not available
 
       when RE_Not_Available =>
          Error_Msg_N ("& not available", Nam);

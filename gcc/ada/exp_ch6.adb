@@ -334,8 +334,8 @@ package body Exp_Ch6 is
    --    --  formals; therefore Is_Build_In_Place_Function_Call returns False.
 
    procedure Replace_Renaming_Declaration_Id
-      (New_Decl  : Node_Id;
-       Orig_Decl : Node_Id);
+     (New_Decl  : Node_Id;
+      Orig_Decl : Node_Id);
    --  Replace the internal identifier of the new renaming declaration New_Decl
    --  with the identifier of its original declaration Orig_Decl exchanging the
    --  entities containing their defining identifiers to ensure the correct
@@ -9622,8 +9622,8 @@ package body Exp_Ch6 is
    -------------------------------------
 
    procedure Replace_Renaming_Declaration_Id
-      (New_Decl  : Node_Id;
-       Orig_Decl : Node_Id)
+     (New_Decl  : Node_Id;
+      Orig_Decl : Node_Id)
    is
       New_Id  : constant Entity_Id := Defining_Entity (New_Decl);
       Orig_Id : constant Entity_Id := Defining_Entity (Orig_Decl);
@@ -9818,7 +9818,7 @@ package body Exp_Ch6 is
             when N_Entry_Call_Statement
                | N_Procedure_Call_Statement
                | N_Function_Call
-              =>
+            =>
                declare
                   Call_Node : Node_Id renames Nod;
                   Subp      : Entity_Id;
@@ -9898,7 +9898,7 @@ package body Exp_Ch6 is
 
             when N_Procedure_Specification
                | N_Function_Specification
-              =>
+            =>
                return Skip;
 
             when N_Abstract_Subprogram_Declaration
@@ -9928,7 +9928,7 @@ package body Exp_Ch6 is
                | N_Use_Package_Clause
                | N_Use_Type_Clause
                | N_With_Clause
-              =>
+            =>
                return Skip;
 
             when others =>

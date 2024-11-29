@@ -887,8 +887,8 @@ package body Exp_Prag is
       --  type.
 
       function Get_Nth_Arg_Type
-         (Subprogram : Entity_Id;
-          N          : Positive) return Entity_Id;
+        (Subprogram : Entity_Id;
+         N          : Positive) return Entity_Id;
       --  Returns the type of the Nth argument of Subprogram
 
       function To_Addresses (Elmts : Elist_Id) return List_Id;
@@ -1147,8 +1147,8 @@ package body Exp_Prag is
       ----------------------
 
       function Get_Nth_Arg_Type
-         (Subprogram : Entity_Id;
-          N          : Positive) return Entity_Id
+        (Subprogram : Entity_Id;
+         N          : Positive) return Entity_Id
       is
          Argument : Entity_Id := First_Entity (Subprogram);
       begin

@@ -315,8 +315,8 @@ package body Sem_Dim is
    --  Return the dimension vector of node N
 
    function Dimensions_Msg_Of
-      (N                  : Node_Id;
-       Description_Needed : Boolean := False) return String;
+     (N                  : Node_Id;
+      Description_Needed : Boolean := False) return String;
    --  Given a node N, return the dimension symbols of N, preceded by "has
    --  dimension" if Description_Needed. If N is dimensionless, return "'[']",
    --  or "is dimensionless" if Description_Needed.
@@ -2672,8 +2672,8 @@ package body Sem_Dim is
    -----------------------
 
    function Dimensions_Msg_Of
-      (N                  : Node_Id;
-       Description_Needed : Boolean := False) return String
+     (N                  : Node_Id;
+      Description_Needed : Boolean := False) return String
    is
       Dims_Of_N      : constant Dimension_Type := Dimensions_Of (N);
       Dimensions_Msg : Name_Id;

@@ -6439,10 +6439,10 @@ package body Exp_Ch3 is
          Build_Record_Init_Proc (Typ_Decl, Typ);
       end if;
 
-     --  Create the body of TSS primitive Finalize_Address. This must be done
-     --  before the bodies of all predefined primitives are created. If Typ
-     --  is limited, Stream_Input and Stream_Read may produce build-in-place
-     --  allocations and for those the expander needs Finalize_Address.
+      --  Create the body of TSS primitive Finalize_Address. This must be done
+      --  before the bodies of all predefined primitives are created. If Typ
+      --  is limited, Stream_Input and Stream_Read may produce build-in-place
+      --  allocations and for those the expander needs Finalize_Address.
 
       if Is_Controlled (Typ) then
          Make_Finalize_Address_Body (Typ);
@@ -8809,23 +8809,23 @@ package body Exp_Ch3 is
 
                       Else_Statements => New_List (Guard_Except));
 
-                     --  If a separate initialization assignment was created
-                     --  earlier, append that following the assignment of the
-                     --  implicit access formal to the access object, to ensure
-                     --  that the return object is initialized in that case. In
-                     --  this situation, the target of the assignment must be
-                     --  rewritten to denote a dereference of the access to the
-                     --  return object passed in by the caller.
+                  --  If a separate initialization assignment was created
+                  --  earlier, append that following the assignment of the
+                  --  implicit access formal to the access object, to ensure
+                  --  that the return object is initialized in that case. In
+                  --  this situation, the target of the assignment must be
+                  --  rewritten to denote a dereference of the access to the
+                  --  return object passed in by the caller.
 
-                     if Present (Init_Stmt) then
-                        Set_Name (Init_Stmt,
-                          Make_Explicit_Dereference (Loc,
-                            Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
-                        Set_Assignment_OK (Name (Init_Stmt));
+                  if Present (Init_Stmt) then
+                     Set_Name (Init_Stmt,
+                       Make_Explicit_Dereference (Loc,
+                         Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
+                     Set_Assignment_OK (Name (Init_Stmt));
 
-                        Append_To (Then_Statements (Alloc_Stmt), Init_Stmt);
-                        Init_Stmt := Empty;
-                     end if;
+                     Append_To (Then_Statements (Alloc_Stmt), Init_Stmt);
+                     Init_Stmt := Empty;
+                  end if;
 
                   Insert_Action (N, Alloc_Stmt, Suppress => All_Checks);
 

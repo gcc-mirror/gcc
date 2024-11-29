@@ -2068,7 +2068,7 @@ package body Sem_Aggr is
                declare
                   In_Assoc : constant Boolean :=
                     Nkind (Parent (Expr)) in N_Component_Association
-                                          |  N_Iterated_Component_Association;
+                                           | N_Iterated_Component_Association;
                   New_Expr : constant Node_Id := Copy_Separate_Tree (Expr);
 
                begin
@@ -3784,9 +3784,9 @@ package body Sem_Aggr is
 
    procedure Resolve_Container_Aggregate (N : Node_Id; Typ : Entity_Id) is
       procedure Resolve_Iterated_Association
-       (Comp      : Node_Id;
-        Key_Type  : Entity_Id;
-        Elmt_Type : Entity_Id);
+        (Comp      : Node_Id;
+         Key_Type  : Entity_Id;
+         Elmt_Type : Entity_Id);
       --  Resolve choices and expression in an iterated component association
       --  or an iterated element association, which has a key_expression.
       --  This is similar but not identical to the handling of this construct
@@ -3809,9 +3809,9 @@ package body Sem_Aggr is
       ----------------------------------
 
       procedure Resolve_Iterated_Association
-       (Comp      : Node_Id;
-        Key_Type  : Entity_Id;
-        Elmt_Type : Entity_Id)
+        (Comp      : Node_Id;
+         Key_Type  : Entity_Id;
+         Elmt_Type : Entity_Id)
       is
          Loc           : constant Source_Ptr := Sloc (N);
          Choice        : Node_Id;

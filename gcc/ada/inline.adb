@@ -1369,8 +1369,8 @@ package body Inline is
    -------------------------------------------
 
    function Call_Can_Be_Inlined_In_GNATprove_Mode
-    (N    : Node_Id;
-     Subp : Entity_Id) return Boolean
+     (N    : Node_Id;
+      Subp : Entity_Id) return Boolean
    is
       function Has_Dereference (N : Node_Id) return Boolean;
       --  Return whether N contains an explicit dereference
@@ -3319,9 +3319,9 @@ package body Inline is
    -------------------------
 
    procedure Expand_Inlined_Call
-    (N         : Node_Id;
-     Subp      : Entity_Id;
-     Orig_Subp : Entity_Id)
+     (N         : Node_Id;
+      Subp      : Entity_Id;
+      Orig_Subp : Entity_Id)
    is
       Decls     : constant List_Id    := New_List;
       Is_Predef : constant Boolean    :=

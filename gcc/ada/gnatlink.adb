@@ -1224,11 +1224,11 @@ procedure Gnatlink is
                   begin
                      Path (1 .. File_Path'Length) := File_Path.all;
 
-                  --  To find the location of the shared version of libgcc, we
-                  --  look for "gcc-lib" in the path of the library. However,
-                  --  this subdirectory is no longer present in recent versions
-                  --  of GCC. So, we look for the last subdirectory "lib" in
-                  --  the path.
+                     --  To find the location of the shared version of libgcc,
+                     --  we look for "gcc-lib" in the path of the
+                     --  library. However, this subdirectory is no longer
+                     --  present in recent versions of GCC. So, we look for the
+                     --  last subdirectory "lib" in the path.
 
                      GCC_Index := Index (Path (1 .. Path_Last), "gcc-lib");
 
@@ -1268,8 +1268,8 @@ procedure Gnatlink is
                         end if;
                      end if;
 
-                  --  Look for an eventual run_path_option in
-                  --  the linker switches.
+                     --  Look for an eventual run_path_option in
+                     --  the linker switches.
 
                      if Separate_Run_Path_Options then
                         Linker_Options.Increment_Last;
@@ -1713,7 +1713,7 @@ begin
 
    begin
       for J in FN'Range loop
-            FN (J) := Csets.Fold_Lower (FN (J));
+         FN (J) := Csets.Fold_Lower (FN (J));
       end loop;
 
       --  For now we detect Windows by its executable suffix of .exe
