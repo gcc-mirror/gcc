@@ -7964,7 +7964,8 @@ insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
 	    edge nf = false_e;
 	    if (code == EQ_EXPR)
 	      std::swap (nt, nf);
-	    insert_predicates_for_cond (nc, nlhs, nrhs, nt, nf);
+	    if (lhs != nlhs)
+	      insert_predicates_for_cond (nc, nlhs, nrhs, nt, nf);
 	  }
       /* (a | b) == 0 ->
 	    on true edge assert: a == 0 & b == 0. */
