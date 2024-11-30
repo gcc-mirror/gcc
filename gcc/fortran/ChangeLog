@@ -1,3 +1,8 @@
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR fortran/117843
+	* trans-io.cc (gfc_trans_transfer): Add default case.
+
 2024-11-28  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/117765

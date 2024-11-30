@@ -1,3 +1,7 @@
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* decl.cc (reshape_init_array_1): Handle poly indices.
+
 2024-11-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113798

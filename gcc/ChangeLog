@@ -1,3 +1,460 @@
+2024-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in: Rename "libdiagnostics" to "libgdiagnostics".
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* doc/install.texi: Rename "libdiagnostics" to
+	"libgdiagnostics".
+	* doc/libdiagnostics/*: Rename to doc/libgdiagnostics, renaming
+	"libdiagnostics" to "libgdiagnostics" throughout.
+	* libdiagnostics++.h: Rename to...
+	* libgdiagnostics++.h: ...this, renaming "libdiagnostics" to
+	"libgdiagnostics" throughout.
+	* libdiagnostics.cc: Rename to...
+	* libgdiagnostics.cc: ...this, renaming "libdiagnostics" to
+	"libgdiagnostics" throughout.
+	* libdiagnostics.h: Rename to...
+	* libgdiagnostics.h: ...this, renaming "libdiagnostics" to
+	"libgdiagnostics" throughout.
+	* libdiagnostics.map: Rename to...
+	* libgdiagnostics.map: ...this, renaming "libdiagnostics" to
+	"libgdiagnostics" throughout.
+	* libsarifreplay.cc: Update for renaming of "libdiagnostics"
+	to "libgdiagnostics".
+	* libsarifreplay.h: Likewise.
+	* sarif-replay.cc: Likewise.
+	* doc/libgdiagnostics/Makefile: New file.
+	* doc/libgdiagnostics/conf.py: New file.
+	* doc/libgdiagnostics/index.rst: New file.
+	* doc/libgdiagnostics/make.bat: New file.
+	* doc/libgdiagnostics/topics/diagnostic-manager.rst: New file.
+	* doc/libgdiagnostics/topics/diagnostics.rst: New file.
+	* doc/libgdiagnostics/topics/execution-paths.rst: New file.
+	* doc/libgdiagnostics/topics/fix-it-hints.rst: New file.
+	* doc/libgdiagnostics/topics/index.rst: New file.
+	* doc/libgdiagnostics/topics/logical-locations.rst: New file.
+	* doc/libgdiagnostics/topics/message-formatting.rst: New file.
+	* doc/libgdiagnostics/topics/metadata.rst: New file.
+	* doc/libgdiagnostics/topics/physical-locations.rst: New file.
+	* doc/libgdiagnostics/topics/retrofitting.rst: New file.
+	* doc/libgdiagnostics/topics/sarif.rst: New file.
+	* doc/libgdiagnostics/topics/text-output.rst: New file.
+	* doc/libgdiagnostics/topics/ux.rst: New file.
+	* doc/libgdiagnostics/tutorial/01-hello-world.rst: New file.
+	* doc/libgdiagnostics/tutorial/02-physical-locations.rst: New file.
+	* doc/libgdiagnostics/tutorial/03-logical-locations.rst: New file.
+	* doc/libgdiagnostics/tutorial/04-notes.rst: New file.
+	* doc/libgdiagnostics/tutorial/05-warnings.rst: New file.
+	* doc/libgdiagnostics/tutorial/06-fix-it-hints.rst: New file.
+	* doc/libgdiagnostics/tutorial/07-execution-paths.rst: New file.
+	* doc/libgdiagnostics/tutorial/example-1.png: New file.
+	* doc/libgdiagnostics/tutorial/index.rst: New file.
+
+2024-11-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-c.cc: Fix some coding rule nits and typos.
+	* config/avr/avr-passes.cc: Same
+	* config/avr/avr.h: Same.
+	* config/avr/avr.cc: Same.
+	(avr_function_arg_regno_p, avr_hard_regno_rename_ok)
+	(avr_epilogue_uses, extra_constraint_Q): Return bool instead of int.
+	* config/avr/avr-protos.h (avr_function_arg_regno_p)
+	(avr_hard_regno_rename_ok, avr_epilogue_uses)
+	(extra_constraint_Q): Return bool instead of int.
+
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_data_intrinsics): Call
+	aarch64_get_attributes and update calls to aarch64_general_add_builtin.
+
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_prefetch_builtin):
+	Updete call to aarch64_general_add_builtin in AARCH64_INIT_PREFETCH_BUILTIN.
+	Add new variable prefetch_attrs.
+
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-builtins.cc (VREINTERPRET_BUILTIN): Use
+	FLAG_NONE instead of FLAG_AUTO_FP.
+	(VGET_LOW_BUILTIN): Likewise.
+	(VGET_HIGH_BUILTIN): Likewise.
+
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/117665
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_simd_builtin_functions):
+	Pass nothrow and leaf as attributes to aarch64_general_add_builtin for
+	__builtin_aarch64_im_lane_boundsi.
+
+2024-11-29  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/117770
+	* lra-lives.cc: Include ira-int.h.
+	(process_bb_lives): Check hard regs corresponding insn operands
+	for dying hard wired reg clobbers.
+
+2024-11-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117681
+	* config/avr/avr.cc (TARGET_UNWIND_WORD_MODE): Define to...
+	(avr_unwind_word_mode): ...this new static function.
+
+2024-11-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117726
+	* config/avr/avr-passes.cc (avr_shift_is_3op, avr_emit_shift):
+	Also handle 2-byte and 3-byte shifts.
+	(avr_split_shift4, avr_split_shift3, avr_split_shift2): New
+	local helper functions.
+	(avr_split_shift): Use them.
+	* config/avr/avr-passes.def (avr_pass_split_after_peephole2):
+	Adjust comments.
+	* config/avr/avr.cc (avr_out_ashlpsi3, avr_out_ashrpsi3)
+	(avr_out_lshrpsi3): Support offset 15.
+	(ashrhi3_out): Support offset 7 as 3-op.
+	(ashrsi3_out): Support offset 15.
+	(avr_rtx_costs_1): Adjust shift costs.
+	* config/avr/avr.md (2op): Remove attribute value and all such insn
+	alternatives.
+	(ashlhi3, *ashlhi3, *ashlhi3_const): Add 3-op alternatives like C2l.
+	(ashrhi3, *ashrhi3, *ashrhi3_const): Add 3-op alternatives like C2a.
+	(lshrhi3, *lshrhi3, *lshrhi3_const): Add 3-op alternatives like C2r.
+	(*ashlpsi3_split, *ashlpsi3): Add 3-op alternatives C15 and C3l.
+	(*ashrpsi3_split, *ashrpsi3): Add 3-op alternatives C15 and C3r.
+	(*lshrpsi3_split, *lshrpsi3): Add 3-op alternatives C15 and C3r.
+	(ashlsi3, *ashlsi3, *ashlsi3_const): Remove "2op" alternative.
+	(ashrsi3, *ashrsi3, *ashrsi3_const): Same.
+	(lshrsi3, *lshrsi3, *lshrsi3_const): Same.
+	(constr_split_suffix): Code attr morphed from constr_split_shift4.
+	* config/avr/constraints.md (C2a, C2r, C2l)
+	(C3a, C3r, C3l): New constraints.
+	* doc/invoke.texi (AVR Options) <-msplit-bit-shift>: Adjust doc.
+
+2024-11-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/117814
+	* config/arm/arm.cc (arm_attempt_dlstp_transform): Use
+	reg_overlap_mentioned_p instead of rtx_equal_p to detect uses of
+	vctp_vpr_generated inside subregs.
+
+2024-11-29  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* expr.cc (gf2n_poly_long_div_quotient): New function.
+	* expr.h (gf2n_poly_long_div_quotient):  New function declaration.
+	* hwint.cc (reflect_hwi): New function.
+	* hwint.h (reflect_hwi): New function declaration.
+	* config/riscv/bitmanip.md (crc_rev<ANYI1:mode><ANYI:mode>4): New
+	expander for reversed CRC.
+	(crc<SUBX1:mode><SUBX:mode>4): New expander for bit-forward CRC.
+	* config/riscv/iterators.md (SUBX1, ANYI1): New iterators.
+	* config/riscv/riscv-protos.h (generate_reflecting_code_using_brev):
+	New function declaration.
+	(expand_crc_using_clmul): Likewise.
+	(expand_reversed_crc_using_clmul): Likewise.
+	* config/riscv/riscv.cc (generate_reflecting_code_using_brev): New
+	function.
+	(expand_crc_using_clmul): Likewise.
+	(expand_reversed_crc_using_clmul): Likewise.
+	* config/riscv/riscv.md (UNSPEC_CRC, UNSPEC_CRC_REV):  New unspecs.
+	* doc/sourcebuild.texi: Document new target selectors.
+
+2024-11-29  yulong  <shiyulong@iscas.ac.cn>
+
+	* config.gcc: Add new SiFive *.o files.
+	* config/riscv/generic-vector-ooo.md: New reservation.
+	* config/riscv/genrvv-type-indexer.cc (main): New type.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct sf_vqmacc_def): New function.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_QMACC_OPS): New macros type.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_QMACC_OPS): New builtins def.
+	(DEF_RVV_TYPE_INDEX): Ditto.
+	(DEF_RVV_FUNCTION): Ditto.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TYPE_INDEX): New types def.
+	(4x8x4): New op type.
+	(2x8x2): Ditto.
+	(quad_emul_vector): New base type.
+	(quad_emul_signed_vector): Ditto.
+	(quad_emul_unsigned_vector): Ditto.
+	(quad_fixed_vector): Ditto.
+	(quad_fixed_signed_vector): Ditto.
+	(quad_fixed_unsigned_vector): Ditto.
+	(quad_lmul1_vector): Ditto.
+	(quad_lmul1_signed_vector): Ditto.
+	(quad_lmul1_unsigned_vector): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext): New extensions.
+	(required_ext_to_isa_name): Ditto.
+	(required_extensions_specified): Ditto.
+	(struct function_group_info): Ditto.
+	* config/riscv/riscv.md: New attr.
+	* config/riscv/t-riscv: Add include for SiFive files.
+	* config/riscv/vector-iterators.md: New iterator.
+	* config/riscv/vector.md: New include for SiFive file.
+	* config/riscv/sifive-vector-builtins-bases.cc: New file.
+	* config/riscv/sifive-vector-builtins-bases.h: New file.
+	* config/riscv/sifive-vector-builtins-functions.def: New file.
+	* config/riscv/sifive-vector.md: New file.
+
+2024-11-29  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-errata.h (TARGET_SUPPRESS_OPT_SPEC,
+	TARGET_TURN_OFF_OPT_SPEC, CA53_ERR_835769_COMPILE_SPEC,
+	CA53_ERR_843419_COMPILE_SPEC): New.
+	(CA53_ERR_835769_SPEC, CA53_ERR_843419_SPEC): Use them.
+	* config/aarch64/aarch64-elf-raw.h (CC1_SPEC, CC1PLUS_SPEC): Add
+	AARCH64_ERRATA_COMPILE_SPEC.
+	* config/aarch64/aarch64-freebsd.h (CC1_SPEC, CC1PLUS_SPEC): Likewise.
+	* config/aarch64/aarch64-gnu.h (CC1_SPEC, CC1PLUS_SPEC): Likewise.
+	* config/aarch64/aarch64-linux.h (CC1_SPEC, CC1PLUS_SPEC): Likewise.
+	* config/aarch64/aarch64-netbsd.h (CC1_SPEC, CC1PLUS_SPEC): Likewise.
+	* common/config/aarch64/aarch64-common.cc
+	(is_host_cpu_not_armv8_base): New.
+	* config/aarch64/driver-aarch64.cc: Remove extra newline
+	* config/aarch64/aarch64.h (is_host_cpu_not_armv8_base): New.
+	(MCPU_TO_MARCH_SPEC_FUNCTIONS): Add is_local_not_armv8_base.
+	(EXTRA_SPEC_FUNCTIONS): Add is_local_cpu_armv8_base.
+	* doc/invoke.texi: Document it.
+
+2024-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sme.md: In the section comments, add the
+	architecture requirements alongside some mnemonics.
+	* config/aarch64/aarch64-sve2.md: Likewise.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(fp8dot4, ssve-fp8dot4): Add new extensions.
+	(fp8dot2, ssve-fp8dot2): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdot_impl): Support fp8.
+	(svdotprod_lane_impl): Likewise.
+	(svdot_lane): Provide an unspec for fp8 types.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(ternary_mfloat8_def): Add new class.
+	(ternary_mfloat8): Add new shape.
+	(ternary_mfloat8_lane_group_selection_def): Add new class.
+	(ternary_mfloat8_lane_group_selection): Add new shape.
+	* config/aarch64/aarch64-sve-builtins-shapes.h
+	(ternary_mfloat8, ternary_mfloat8_lane_group_selection): Declare.
+	* config/aarch64/aarch64-sve-builtins-sve2.def
+	(svdot, svdot_lane): Add new DEF_SVE_FUNCTION_GS_FPM, twice to deal
+	with the combination of features providing support for 32 and 16 bit
+	floating point.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_dot<mode>): Add new.
+	(@aarch64_sve_dot_lane<mode>): Likewise.
+	* config/aarch64/aarch64.h:
+	(TARGET_FP8DOT4, TARGET_SSVE_FP8DOT4): Add new defines.
+	(TARGET_FP8DOT2, TARGET_SSVE_FP8DOT2): Likewise.
+	* config/aarch64/iterators.md
+	(UNSPEC_DOT_FP8, UNSPEC_DOT_LANE_FP8): Add new unspecs.
+	* doc/invoke.texi: Document fp8dot4, fp8dot2, ssve-fp8dot4, ssve-fp8dot2
+	extensions.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(fp8fma, ssve-fp8fma): Add new options.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(unspec_based_function_base): Add unspec_for_mfp8.
+	(unspec_for): Return unspec_for_mfp8 on fpm-using cases.
+	(sme_1mode_function): Fix call to parent ctor.
+	(sme_2mode_function_t): Likewise.
+	(unspec_based_mla_function, unspec_based_mla_lane_function): Handle
+	fpm-using cases.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(parse_element_type): Treat M as TYPE_SUFFIX_mf8
+	(ternary_mfloat8_lane_def): Add new class.
+	(ternary_mfloat8_opt_n_def): Likewise.
+	(ternary_mfloat8_lane): Add new shape.
+	(ternary_mfloat8_opt_n): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.h
+	(ternary_mfloat8_lane, ternary_mfloat8_opt_n): Declare.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svmlalb_lane, svmlalb, svmlalt_lane, svmlalt): Update definitions
+	with mfloat8_t unspec in ctor.
+	(svmlallbb_lane, svmlallbb, svmlallbt_lane, svmlallbt, svmlalltb_lane,
+	svmlalltb, svmlalltt_lane, svmlalltt, svmlal_impl): Add new FUNCTIONs.
+	(svqrshr, svqrshrn, svqrshru, svqrshrun): Update definitions with
+	nop mfloat8 unspec in ctor.
+	* config/aarch64/aarch64-sve-builtins-sve2.def
+	(svmlalb, svmlalt, svmlalb_lane, svmlalt_lane, svmlallbb, svmlallbt,
+	svmlalltb, svmlalltt, svmlalltt_lane, svmlallbb_lane, svmlallbt_lane,
+	svmlalltb_lane): Add new DEF_SVE_FUNCTION_GS_FPMs.
+	* config/aarch64/aarch64-sve-builtins-sve2.h
+	(svmlallbb_lane, svmlallbb, svmlallbt_lane, svmlallbt, svmlalltb_lane,
+	svmlalltb, svmlalltt_lane, svmlalltt): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(TYPES_h_float_mf8, TYPES_s_float_mf8): Add new types.
+	(h_float_mf8, s_float_mf8): Add new SVE_TYPES_ARRAY.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_add_<sve2_fp8_fma_op_vnx8hf><mode>): Add new.
+	(@aarch64_sve_add_<sve2_fp8_fma_op_vnx4sf><mode>): Add new.
+	(@aarch64_sve_add_lane_<sve2_fp8_fma_op_vnx8hf><mode>): Likewise.
+	(@aarch64_sve_add_lane_<sve2_fp8_fma_op_vnx4sf><mode>): Likewise.
+	* config/aarch64/aarch64.h
+	(TARGET_FP8FMA, TARGET_SSVE_FP8FMA): Likewise.
+	* config/aarch64/iterators.md
+	(VNx8HF_ONLY): Add new.
+	(UNSPEC_FMLALB_FP8, UNSPEC_FMLALLBB_FP8, UNSPEC_FMLALLBT_FP8,
+	UNSPEC_FMLALLTB_FP8, UNSPEC_FMLALLTT_FP8, UNSPEC_FMLALT_FP8): Likewise.
+	(SVE2_FP8_TERNARY_VNX8HF, SVE2_FP8_TERNARY_VNX4SF): Likewise.
+	(SVE2_FP8_TERNARY_LANE_VNX8HF, SVE2_FP8_TERNARY_LANE_VNX4SF): Likewise.
+	(sve2_fp8_fma_op_vnx8hf, sve2_fp8_fma_op_vnx4sf): Likewise.
+	* doc/invoke.texi: Document fp8fma and sve-fp8fma extensions.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(parse_signature): Add an fpm_t (uint64_t) argument to functions that
+	set the fpm register.
+	(unary_convertxn_narrowt_def): New class.
+	(unary_convertxn_narrowt): New shape.
+	(unary_convertxn_narrow_def): New class.
+	(unary_convertxn_narrow): New shape.
+	* config/aarch64/aarch64-sve-builtins-shapes.h
+	(unary_convertxn_narrowt): Declare.
+	(unary_convertxn_narrow): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svcvt_fp8_impl): New class.
+	(svcvtn_impl): Handle fp8 cases.
+	(svcvt1, svcvt2, svcvtlt1, svcvtlt2): Add new FUNCTION.
+	(svcvtnb): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def
+	(svcvt1, svcvt2, svcvtlt1, svcvtlt2): Add new DEF_SVE_FUNCTION_GS_FPM.
+	(svcvtn): Likewise.
+	(svcvtnb, svcvtnt): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.h
+	(svcvt1, svcvt2, svcvtlt1, svcvtlt2, svcvtnb, svcvtnt): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(TYPES_cvt_mf8, TYPES_cvtn_mf8, TYPES_cvtnx_mf8): Add new types arrays.
+	(function_builder::get_name): Append _fpm to functions that set fpmr.
+	(function_resolver::check_gp_argument): Deal with the fpm_t argument.
+	(function_expander::expand): Set the fpm register before
+	calling the insn if the function warrants it.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_fp8_cvt): Add new.
+	(@aarch64_sve2_fp8_cvtn): Likewise.
+	(@aarch64_sve2_fp8_cvtnb): Likewise.
+	(@aarch64_sve_cvtnt): Likewise.
+	* config/aarch64/aarch64.h (TARGET_SSVE_FP8): Add new.
+	* config/aarch64/iterators.md
+	(VNx8SF_ONLY, SVE_FULL_HFx2): New mode iterators.
+	(UNSPEC_F1CVT, UNSPEC_F1CVTLT, UNSPEC_F2CVT, UNSPEC_F2CVTLT): Add new.
+	(UNSPEC_FCVTNB, UNSPEC_FCVTNT): Likewise.
+	(UNSPEC_FP8FCVTN): Likewise.
+	(FP8CVT_UNS, fp8_cvt_uns_op): Likewise.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svdiv_impl): Specify FPM_unused when folding.
+	(svmul_impl): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(build_one): Use the group fpm_mode when creating function instances.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svaba_impl, svqrshl_impl, svqshl_impl,svrshl_impl, svsra_impl):
+	Specify FPM_unused when folding.
+	* config/aarch64/aarch64-sve-builtins.cc (function_groups): Set
+	fpm_mode on all elements.
+	(neon_sve_function_groups, sme_function_groups): Likewise.
+	(function_instance::hash): Include fpm_mode in hash.
+	(function_builder::add_overloaded_functions): Use the group fpm mode.
+	(function_resolver::lookup_form): Use the function instance fpm_mode
+	when looking up a function.
+	* config/aarch64/aarch64-sve-builtins.def
+	(DEF_SVE_FUNCTION_GS_FPM): add define.
+	(DEF_SVE_FUNCTION_GS): redefine against DEF_SVE_FUNCTION_GS_FPM.
+	* config/aarch64/aarch64-sve-builtins.h (fpm_mode_index): New.
+	(function_group_info): Add fpm_mode.
+	(function_instance): Likewise.
+	(function_instance::operator==): Handle fpm_mode.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_b_data): Add mf8.
+	(TYPES_reinterpret1, TYPES_reinterpret): Likewise.
+	* config/aarch64/aarch64-sve-builtins.def (svmfloat8_t): New type.
+	(mf8): New type suffix.
+	* config/aarch64/aarch64-sve-builtins.h (TYPE_mfloat): New
+	type_class_index.
+
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115438
+	* tree-vect-loop.cc (vect_transform_cycle_phi): For SLP also
+	try to do the reduction adjustment by the initial value
+	in the epilogue.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* tree.cc (build_vector_from_ctor): Add support to construct VLA vector
+	constants from init constructors.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gimple-fold.cc (maybe_canonicalize_mem_ref_addr): Handle variable
+	sized vector types in BIT_FIELD_REF canonicalization.
+	* tree-cfg.cc (verify_types_in_gimple_reference): Change object-size-
+	checking for BIT_FIELD_REF to error offsets that are known_gt to be
+	outside object-size.  Out-of-range offsets can happen in the case of
+	indices that reference VLA SVE vector elements that may be outside the
+	minimum vector size range and therefore maybe_gt is not appropirate
+	here.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types): Flip
+	TYPE_INDIVISBLE flag for SVE ACLE vector types.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_VECTOR_OPERATORS.
+
+2024-11-29  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/arm_acle.h (_CHKFEAT_GCS): New.
+
+2024-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117065
+	* gimple-fold.cc (type_has_padding_at_level_p) <case UNION_TYPE>:
+	Also continue if f has error_mark_node type.
+
+2024-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117608
+	* doc/extend.texi (__builtin_prefetch): Document that second
+	argument may be also 2 and its meaning.
+	* config/i386/i386.md (prefetch): Remove unreachable code.
+	Clear write set operands[1] to const0_rtx if !TARGET_MOVRS or
+	of locality is not 1.  Formatting fixes.
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Use IN_RANGE.
+	Call gen_prefetch even for TARGET_MOVRS.
+	* config/alpha/alpha.md (prefetch): Treat read_or_write 2 like 0.
+	* config/mips/mips.md (prefetch): Likewise.
+	* config/arc/arc.md (prefetch_1, prefetch_2, prefetch_3): Likewise.
+	* config/riscv/riscv.md (prefetch): Likewise.
+	* config/loongarch/loongarch.md (prefetch): Likewise.
+	* config/sparc/sparc.md (prefetch): Likewise.  Use IN_RANGE.
+	* config/ia64/ia64.md (prefetch): Likewise.
+	* config/pa/pa.md (prefetch): Likewise.
+	* config/aarch64/aarch64.md (prefetch): Likewise.
+	* config/rs6000/rs6000.md (prefetch): Likewise.
+
+2024-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/117723
+	* tree-ssa-ifcombine.cc (tree_ssa_ifcombine_bb): Record
+	forwarder blocks in path to exit, and stick to them.  Avoid
+	computing the exit if obviously not needed, and if that
+	enables additional optimizations.
+	(tree_ssa_ifcombine_bb_1): Fix typos.
+
 2024-11-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*<any_shift:insn><mode>3_mask): Macroize

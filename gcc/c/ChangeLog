@@ -1,3 +1,13 @@
+2024-11-29  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117828
+	* c-typeck.cc (tagged_types_tu_compatible_p): Add check.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* c-typeck.cc (process_init_element): Add check to restrict
+	constructor length to the minimum vector length allowed.
+
 2024-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/116416

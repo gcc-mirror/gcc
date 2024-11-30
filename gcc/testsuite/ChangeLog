@@ -1,3 +1,409 @@
+2024-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* libdiagnostics.dg/*: Rename to libgdiagnostics.dg, renaming
+	"libdiagnostics" to "libgdiagnostics" throughout.
+	* libgdiagnostics.dg/libgdiagnostics.exp: New file.
+	* libgdiagnostics.dg/sarif.py: New file.
+	* libgdiagnostics.dg/test-dump.c: New file.
+	* libgdiagnostics.dg/test-error-c.py: New file.
+	* libgdiagnostics.dg/test-error-with-note-c.py: New file.
+	* libgdiagnostics.dg/test-error-with-note.c: New file.
+	* libgdiagnostics.dg/test-error-with-note.cc: New file.
+	* libgdiagnostics.dg/test-error.c: New file.
+	* libgdiagnostics.dg/test-error.cc: New file.
+	* libgdiagnostics.dg/test-example-1.c: New file.
+	* libgdiagnostics.dg/test-fix-it-hint-c.py: New file.
+	* libgdiagnostics.dg/test-fix-it-hint.c: New file.
+	* libgdiagnostics.dg/test-fix-it-hint.cc: New file.
+	* libgdiagnostics.dg/test-helpers++.h: New file.
+	* libgdiagnostics.dg/test-helpers.h: New file.
+	* libgdiagnostics.dg/test-labelled-ranges.c: New file.
+	* libgdiagnostics.dg/test-labelled-ranges.cc: New file.
+	* libgdiagnostics.dg/test-labelled-ranges.py: New file.
+	* libgdiagnostics.dg/test-logical-location-c.py: New file.
+	* libgdiagnostics.dg/test-logical-location.c: New file.
+	* libgdiagnostics.dg/test-metadata-c.py: New file.
+	* libgdiagnostics.dg/test-metadata.c: New file.
+	* libgdiagnostics.dg/test-multiple-lines-c.py: New file.
+	* libgdiagnostics.dg/test-multiple-lines.c: New file.
+	* libgdiagnostics.dg/test-no-column-c.py: New file.
+	* libgdiagnostics.dg/test-no-column.c: New file.
+	* libgdiagnostics.dg/test-no-diagnostics-c.py: New file.
+	* libgdiagnostics.dg/test-no-diagnostics.c: New file.
+	* libgdiagnostics.dg/test-note-with-fix-it-hint-c.py: New file.
+	* libgdiagnostics.dg/test-note-with-fix-it-hint.c: New file.
+	* libgdiagnostics.dg/test-text-sink-options.c: New file.
+	* libgdiagnostics.dg/test-warning-c.py: New file.
+	* libgdiagnostics.dg/test-warning-with-path-c.py: New file.
+	* libgdiagnostics.dg/test-warning-with-path.c: New file.
+	* libgdiagnostics.dg/test-warning.c: New file.
+	* libgdiagnostics.dg/test-write-sarif-to-file-c.py: New file.
+	* libgdiagnostics.dg/test-write-sarif-to-file.c: New file.
+	* libgdiagnostics.dg/test-write-text-to-file.c: New file.
+
+2024-11-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.c-torture/execute/memcpy-a1.c
+	* gcc.c-torture/execute/memcpy-a2.c
+	* gcc.c-torture/execute/memcpy-a4.c
+	* gcc.c-torture/execute/memcpy-a8.c
+
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/117665
+	* g++.target/aarch64/lane-bound-1.C: New test.
+	* gcc.target/aarch64/lane-bound-3.c: New test.
+
+2024-11-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/117814
+	* gcc.target/arm/mve/dlstp-invalid-asm.c (test10): Renamed to...
+	(test10a): ... this.
+	(test10b): Variation of test10a with a small change to trigger wrong
+	codegen.
+
+2024-11-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/dlstp-loop-form.c: Add -std=c99 to avoid warning
+	message.
+
+2024-11-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/117814
+	* gcc.target/arm/mve/dlstp-compile-asm-2.c (test7): Add an optional
+	vmsr to the check-function-bodies.
+
+2024-11-29  Co-author: Jeff Law  <jlaw@ventanamicro.com>
+
+	* lib/target-supports.exp (check_effective_target_riscv_zbc): New
+	target supports predicate.
+	(check_effective_target_riscv_zbkb): Likewise.
+	(check_effective_target_riscv_zbkc): Likewise.
+	(check_effective_target_zbc_ok): Likewise.
+	(check_effective_target_zbkb_ok): Likewise.
+	(check_effective_target_zbkc_ok): Likewise.
+	(riscv_get_arch): Add zbkb and zbkc support.
+	* gcc.target/riscv/crc-builtin-zbc32.c: New file.
+	* gcc.target/riscv/crc-builtin-zbc64.c: Likewise.
+
+2024-11-29  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/rvv.exp:
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmacc_2x8x2.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmacc_4x8x4.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccsu_2x8x2.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccsu_4x8x4.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccu_2x8x2.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccu_4x8x4.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccus_2x8x2.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccus_4x8x4.c: New test.
+
+2024-11-29  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117828
+	* gcc.dg/c23-tag-bitfields-1.c: New test.
+	* gcc.dg/pr117828.c: New test.
+
+2024-11-29  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/cpunative/info_30: New test.
+	* gcc.target/aarch64/cpunative/info_31: New test.
+	* gcc.target/aarch64/cpunative/info_32: New test.
+	* gcc.target/aarch64/cpunative/info_33: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_30.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_31.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_32.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_33.c: New test.
+	* gcc.target/aarch64/erratas_opt_0.c: New test.
+	* gcc.target/aarch64/erratas_opt_1.c: New test.
+	* gcc.target/aarch64/erratas_opt_10.c: New test.
+	* gcc.target/aarch64/erratas_opt_11.c: New test.
+	* gcc.target/aarch64/erratas_opt_12.c: New test.
+	* gcc.target/aarch64/erratas_opt_13.c: New test.
+	* gcc.target/aarch64/erratas_opt_14.c: New test.
+	* gcc.target/aarch64/erratas_opt_15.c: New test.
+	* gcc.target/aarch64/erratas_opt_2.c: New test.
+	* gcc.target/aarch64/erratas_opt_3.c: New test.
+	* gcc.target/aarch64/erratas_opt_4.c: New test.
+	* gcc.target/aarch64/erratas_opt_5.c: New test.
+	* gcc.target/aarch64/erratas_opt_6.c: New test.
+	* gcc.target/aarch64/erratas_opt_7.c: New test.
+	* gcc.target/aarch64/erratas_opt_8.c: New test.
+	* gcc.target/aarch64/erratas_opt_9.c: New test.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_1.c: Add new.
+	gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_lane_group_selection_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/dot_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/dot_mf8.c: Likewise.
+	* lib/target-supports.exp: Add dg-require-effective-target support for
+	aarch64_asm_fp8dot2_ok, aarch64_asm_fp8dot4_ok,
+	aarch64_asm_ssve-fp8dot2_ok and aarch64_asm_ssve-fp8dot4_ok.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_lane_group_selection_1.c: New file.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h
+	(TEST_DUAL_Z_REV, TEST_DUAL_LANE_REG, TEST_DUAL_ZD) Add fpm0 argument.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_opt_n_1.c: Add
+	new shape test.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalb_lane_mf8.c: Add new test.
+	* gcc.target/aarch64/sve2/acle/asm/mlalb_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlallbb_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlallbb_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlallbt_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlallbt_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalltb_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalltb_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalltt_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalltt_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalt_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalt_mf8.c: Likewise.
+	* lib/target-supports.exp: Add check_effective_target for fp8fma and
+	ssve-fp8fma
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h
+	(TEST_DUAL_Z): Add fpm0 argument
+	* gcc.target/aarch64/sve/acle/general-c/unary_convertxn_narrow_1.c:
+	Add new tests.
+	* gcc.target/aarch64/sve/acle/general-c/unary_convertxn_narrowt_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/cvt_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/cvtlt_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/cvtn_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/cvtnb_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/cvtnt_mf8.c: Likewise.
+	* lib/target-supports.exp: Add aarch64_asm_fp8_ok check.
+
+2024-11-29  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_1.C: Test mangling
+	of svmfloat8_t.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_2.C: Likewise for
+	__SVMfloat8_t.
+	* gcc.target/aarch64/sve/acle/asm/clasta_mf8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/clastb_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create2_1.c (create2_mf8): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create3_1.c (create_mf8): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create4_1.c (create_mf8): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dupq_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ext_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get3_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get4_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/insr_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lasta_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lastb_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/len_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_bf16.c
+	(reinterpret_bf16_mf8_tied1, reinterpret_bf16_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f16.c
+	(reinterpret_f16_mf8_tied1, reinterpret_f16_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f32.c
+	(reinterpret_f32_mf8_tied1, reinterpret_f32_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f64.c
+	(reinterpret_f64_mf8_tied1, reinterpret_f64_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s16.c
+	(reinterpret_s16_mf8_tied1, reinterpret_s16_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s32.c
+	(reinterpret_s32_mf8_tied1, reinterpret_s32_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s64.c
+	(reinterpret_s64_mf8_tied1, reinterpret_s64_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s8.c
+	(reinterpret_s8_mf8_tied1, reinterpret_s8_mf8_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u16.c
+	(reinterpret_u16_mf8_tied1, reinterpret_u16_mf8_untied)
+	(reinterpret_u16_mf8_x3_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u32.c
+	(reinterpret_u32_mf8_tied1, reinterpret_u32_mf8_untied)
+	(reinterpret_u32_mf8_x3_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u64.c
+	(reinterpret_u64_mf8_tied1, reinterpret_u64_mf8_untied)
+	(reinterpret_u64_mf8_x3_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u8.c
+	(reinterpret_u8_mf8_tied1, reinterpret_u8_mf8_untied)
+	(reinterpret_u8_mf8_x3_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/rev_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sel_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set3_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set4_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/splice_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tbl_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef2_1.c (mfloat8_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef3_1.c (mfloat8_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef4_1.c (mfloat8_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef_1.c (mfloat8_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_1.c (ret_mf8, ret_mf8x2)
+	(ret_mf8x3, ret_mf8x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_2.c (fn_mf8, fn_mf8x2)
+	(fn_mf8x3, fn_mf8x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_3.c (fn_mf8, fn_mf8x2)
+	(fn_mf8x3, fn_mf8x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_4.c (fn_mf8, fn_mf8x2)
+	(fn_mf8x3, fn_mf8x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_5.c (fn_mf8, fn_mf8x2)
+	(fn_mf8x3, fn_mf8x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_6.c (fn_mf8, fn_mf8x2)
+	(fn_mf8x3, fn_mf8x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_7.c (fn_mf8, fn_mf8x2)
+	(fn_mf8x3, fn_mf8x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_1.c (mfloat8x32_t): New
+	typedef.
+	(mfloat8_callee, mfloat8_caller): New tests.
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_2.c (mfloat8x32_t): New
+	typedef.
+	(mfloat8_callee, mfloat8_caller): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_256.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_512.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_1024.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_2048.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_256.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_512.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_1024.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_2048.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5.c
+	(CALLER_NON_NUMERIC): Renamed CALLER_BF16 macro.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6.c (mfloat8_t): New typedef.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_128.c (mfloat8_t): New typedef.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_256.c (mfloat8_t): New typedef.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_512.c (mfloat8_t): New typedef.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_1024.c (mfloat8_t): New typedef.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_2048.c (mfloat8_t): New typedef.
+	(callee_mf8, caller_mf8): New tests.
+	* gcc.target/aarch64/sve/pcs/return_7.c (callee_mf8): New tests.
+	(caller_mf8): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_8.c (callee_mf8): Likewise
+	(caller_mf8): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_9.c (callee_mf8): Likewise
+	(caller_mf8): Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_mf8.c: New tests
+	* gcc.target/aarch64/sve2/acle/asm/tbl2_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/tbx_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_mf8.c: Likewise.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* g++.dg/ext/sve-sizeless-1.C: Update test to test initialize error.
+	* g++.dg/ext/sve-sizeless-2.C: Likewise.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_1.c: Update test.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_1.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_2.C: Likewise.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cops.c: New test.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Update test to
+	test initialize error.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/117844
+	* g++.dg/vect/pr117776.cc: Check vect_unpack.
+
+2024-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117065
+	* gcc.dg/pr117065.c: New test.
+
+2024-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117608
+	* gcc.dg/builtin-prefetch-1.c (good): Add tests with second argument
+	2.
+	* gcc.target/i386/pr117608-1.c: New test.
+	* gcc.target/i386/pr117608-2.c: New test.
+
+2024-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/117723
+	* gcc.dg/torture/ifcmb-1.c: New.
+
 2024-11-28  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/117765
