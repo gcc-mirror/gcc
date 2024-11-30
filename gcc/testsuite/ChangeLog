@@ -1,3 +1,59 @@
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117594
+	* gcc.dg/vect/pr117594.c: New testcase.
+
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117574
+	* gcc.dg/torture/pr117574-1.c: New testcase.
+
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117433
+	* gcc.dg/pr117433.c: New testcase.
+
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117417
+	* gcc.dg/torture/pr117417.c: New testcase.
+
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117333
+	* gcc.dg/torture/pr117333.c: New testcase.
+
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117307
+	* gcc.dg/vect/pr117307.c: New testcase.
+
+2024-11-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117254
+	* gcc.dg/pr117254.c: New testcase.
+
 2024-11-28  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
