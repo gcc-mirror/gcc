@@ -841,7 +841,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Ret, typename... _Args, typename... _BoundArgs>
-    struct _Bind_check_arity<_Ret (*)(_Args......), _BoundArgs...>
+    struct _Bind_check_arity<_Ret (*)(_Args..., ...), _BoundArgs...>
     {
       static_assert(sizeof...(_BoundArgs) >= sizeof...(_Args),
                    "Wrong number of arguments for function");

@@ -27,6 +27,7 @@ operator ""_Foo(const char16_t *);	// { dg-error "1:.Foo operator\"\"_Foo\\(cons
 
 Foo
 operator ""_Foo(char...);	// { dg-error "1:.Foo operator\"\"_Foo\\(char, \\.\\.\\.\\). has invalid argument list" }
+				// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } .-1 }
 
 Foo
 operator ""_Foo(unsigned long long int, char);	// { dg-error "1:.Foo operator\"\"_Foo\\(long long unsigned int, char\\). has invalid argument list" }

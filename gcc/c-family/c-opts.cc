@@ -1061,6 +1061,11 @@ c_common_post_options (const char **pfilename)
 		       warn_array_compare,
 		       warn_array_compare || deprecated_in (cxx20));
 
+  /* -Wdeprecated-variadic-comma-omission is enabled by default in C++26.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_deprecated_variadic_comma_omission,
+		       deprecated_in (cxx26));
+
   /* -Wtemplate-id-cdtor is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_template_id_cdtor,

@@ -4069,6 +4069,22 @@ string operator "" _i18n(const char*, std::size_t); // deprecated
 string operator ""_i18n(const char*, std::size_t); // preferred
 @end smallexample
 
+@opindex Wdeprecated-variadic-comma-omission
+@opindex Wno-deprecated-variadic-comma-omission
+@item -Wdeprecated-variadic-comma-omission @r{(C++ and Objective-C++ only)}
+Warn that omitting a comma before the varargs @code{...} at the end of
+a function parameter list is deprecated.  This warning is enabled by
+default in C++26, or with explicit @option{-Wdeprecated}.
+
+@smallexample
+void f1(int...); // deprecated
+void f1(int, ...); // preferred
+template <typename ...T>
+void f2(T...); // ok
+template <typename ...T>
+void f3(T......); // deprecated
+@end smallexample
+
 @opindex Welaborated-enum-base
 @opindex Wno-elaborated-enum-base
 @item -Wno-elaborated-enum-base
@@ -10348,8 +10364,9 @@ In C++, explicitly specifying @option{-Wdeprecated} also enables
 warnings about some features that are deprecated in later language
 standards, specifically @option{-Wcomma-subscript},
 @option{-Wvolatile}, @option{-Wdeprecated-enum-float-conversion},
-@option{-Wdeprecated-enum-enum-conversion}, and
-@option{-Wdeprecated-literal-operator}.
+@option{-Wdeprecated-enum-enum-conversion},
+@option{-Wdeprecated-literal-operator}, and
+@option{-Wdeprecated-variadic-comma-omission}.
 
 @opindex Wno-deprecated-declarations
 @opindex Wdeprecated-declarations

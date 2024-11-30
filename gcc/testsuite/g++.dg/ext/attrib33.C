@@ -5,7 +5,7 @@
 template <int N>
 struct T
 {
-  void foo (char const * ...) __attribute__ ((format (printf,2,3)));
+  void foo (char const * ...) __attribute__ ((format (printf,2,3)));	// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 };
 
 template struct T<3>;

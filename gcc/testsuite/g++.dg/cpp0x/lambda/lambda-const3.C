@@ -7,7 +7,7 @@ struct FF
 {
   template < class F, class ... Ts >
   void
-  operator () (F & ...)
+  operator () (F & ...)			// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
   {
     const int n = sizeof ... (Ts) + 1;
     void *mutexes[n];
