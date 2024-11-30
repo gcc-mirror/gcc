@@ -357,8 +357,8 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 Note that BIT need not be a power of two, consider a
 		 ZERO_EXTRACT destination.  */
 	      int start = (bit < 8 ? 0 : bit < 16 ? 1 : bit < 32 ? 2 : 3);
-	      int end = ((mask & ~0xffffffffULL) ? 4
-			 : (mask & 0xffff0000ULL) ? 3
+	      int end = ((mask & ~HOST_WIDE_INT_UC (0xffffffff)) ? 4
+			 : (mask & HOST_WIDE_INT_UC (0xffff0000)) ? 3
 			 : (mask & 0xff00) ? 2 : 1);
 	      bitmap_clear_range (livenow, 4 * rn + start, end - start);
 	    }
@@ -509,21 +509,21 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     case PLUS:
     case MINUS:
     case MULT:
-      return (2ULL << floor_log2 (mask)) - 1;
+      return (HOST_WIDE_INT_UC (2) << floor_log2 (mask)) - 1;
 
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case ASHIFT:
       if (CONST_INT_P (XEXP (x, 1))
-	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
-	return (HOST_WIDE_INT)mask >> INTVAL (XEXP (x, 1));
-      return (2ULL << floor_log2 (mask)) - 1;
+	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (smode))
+	return (HOST_WIDE_INT) mask >> INTVAL (XEXP (x, 1));
+      return (HOST_WIDE_INT_UC (2) << floor_log2 (mask)) - 1;
 
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case LSHIFTRT:
       if (CONST_INT_P (XEXP (x, 1))
-	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
+	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (smode))
 	return mmask & (mask << INTVAL (XEXP (x, 1)));
       return mmask;
 
@@ -531,12 +531,12 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
        count.  The count is handled specially.  */
     case ASHIFTRT:
       if (CONST_INT_P (XEXP (x, 1))
-	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
+	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (smode))
 	{
 	  HOST_WIDE_INT sign = 0;
 	  if (HOST_BITS_PER_WIDE_INT - clz_hwi (mask) + INTVAL (XEXP (x, 1))
-	      > GET_MODE_BITSIZE (mode).to_constant ())
-	    sign = 1ULL << (GET_MODE_BITSIZE (mode).to_constant () - 1);
+	      > GET_MODE_BITSIZE (smode))
+	    sign = HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (smode) - 1);
 	  return sign | (mmask & (mask << INTVAL (XEXP (x, 1))));
 	}
       return mmask;
@@ -550,14 +550,13 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
       if (CONST_INT_P (XEXP (x, 1)))
 	{
 	  if (pow2p_hwi (INTVAL (XEXP (x, 1))))
-	    return mmask & (mask << (GET_MODE_BITSIZE (mode).to_constant ()
+	    return mmask & (mask << (GET_MODE_BITSIZE (smode)
 				     - exact_log2 (INTVAL (XEXP (x, 1)))));
 
-	  int bits = (HOST_BITS_PER_WIDE_INT
-		      + GET_MODE_BITSIZE (mode).to_constant ()
+	  int bits = (HOST_BITS_PER_WIDE_INT + GET_MODE_BITSIZE (smode)
 		      - clz_hwi (mask) - ctz_hwi (INTVAL (XEXP (x, 1))));
-	  if (bits < GET_MODE_BITSIZE (mode).to_constant ())
-	    return (1ULL << bits) - 1;
+	  if (bits < GET_MODE_BITSIZE (smode))
+	    return (HOST_WIDE_INT_1U << bits) - 1;
 	}
       return mmask;
 
@@ -568,9 +567,10 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 
       /* We want the mode of the inner object.  We need to ensure its
 	 sign bit is on in MASK.  */
-      mode = GET_MODE (XEXP (x, 0));
-      if (mask & ~GET_MODE_MASK (GET_MODE_INNER (mode)))
-	mask |= 1ULL << (GET_MODE_BITSIZE (mode).to_constant () - 1);
+      mode = GET_MODE_INNER (GET_MODE (XEXP (x, 0)));
+      if (mask & ~GET_MODE_MASK (mode))
+	mask |= HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode).to_constant ()
+				     - 1);
 
       /* Recurse into the operand.  */
       return carry_backpropagate (mask, GET_CODE (XEXP (x, 0)), XEXP (x, 0));
@@ -588,13 +588,13 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     case SS_ASHIFT:
     case US_ASHIFT:
       if (CONST_INT_P (XEXP (x, 1))
-	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (mode).to_constant ())
+	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (smode))
 	{
-	  return ((mmask & ~((unsigned HOST_WIDE_INT)mmask
+	  return ((mmask & ~((unsigned HOST_WIDE_INT) mmask
 			     >> (INTVAL (XEXP (x, 1))
 				 + (XEXP (x, 1) != const0_rtx
 				    && code == SS_ASHIFT))))
-		  | ((HOST_WIDE_INT)mask >> INTVAL (XEXP (x, 1))));
+		  | ((HOST_WIDE_INT) mask >> INTVAL (XEXP (x, 1))));
 	}
       return mmask;
 
@@ -681,7 +681,8 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	      unsigned HOST_WIDE_INT dst_mask = 0;
 	      HOST_WIDE_INT rn = REGNO (dst);
 	      unsigned HOST_WIDE_INT mask_array[]
-		= { 0xff, 0xff00, 0xffff0000ULL, -0x100000000ULL };
+		= { 0xff, 0xff00, HOST_WIDE_INT_UC (0xffff0000),
+		    -HOST_WIDE_INT_UC (0x100000000) };
 	      for (int i = 0; i < 4; i++)
 		if (bitmap_bit_p (live_tmp, 4 * rn + i))
 		  dst_mask |= mask_array[i];
@@ -786,7 +787,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			{
 			  dst_mask <<= bit;
 			  if (!dst_mask)
-			    dst_mask = -0x100000000ULL;
+			    dst_mask = -HOST_WIDE_INT_UC (0x100000000);
 			}
 		      y = SUBREG_REG (y);
 		    }
@@ -811,9 +812,9 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			bitmap_set_bit (livenow, rn);
 		      if (tmp_mask & 0xff00)
 			bitmap_set_bit (livenow, rn + 1);
-		      if (tmp_mask & 0xffff0000ULL)
+		      if (tmp_mask & HOST_WIDE_INT_UC (0xffff0000))
 			bitmap_set_bit (livenow, rn + 2);
-		      if (tmp_mask & -0x100000000ULL)
+		      if (tmp_mask & -HOST_WIDE_INT_UC (0x100000000))
 			bitmap_set_bit (livenow, rn + 3);
 		    }
 		  else if (!CONSTANT_P (y))
