@@ -3208,6 +3208,8 @@ write_s_frameproc (void)
   fprint_whex (asm_out_file, 0);
   putc ('\n', asm_out_file);
 
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 }
 
@@ -3576,7 +3578,10 @@ write_s_inlinesite (dw_die_ref parent_func, dw_die_ref die)
   line_func = find_line_function (parent_func, die);
 
   if (line_func)
-    write_binary_annotations (line_func, func_id);
+    {
+      write_binary_annotations (line_func, func_id);
+      ASM_OUTPUT_ALIGN (asm_out_file, 2);
+    }
 #else
   (void) line_func;
 #endif
