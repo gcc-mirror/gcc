@@ -13,4 +13,5 @@ struct Focus
 void g(std::optional<Focus> f)
 {
   f = f;
+  f = std::move(f);
 }
