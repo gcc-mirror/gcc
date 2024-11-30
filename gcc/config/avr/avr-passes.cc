@@ -2912,6 +2912,14 @@ optimize_data_t::try_split_any (bbinfo_t *)
 	      xsrc = gen_rtx_REG (HImode, r16);
 	      i += step;
 	    }
+	  // ...or a reg-reg move from a multi-byte move...
+	  else if (r_src
+		   // Prefer a reg-reg move over a (potential) load
+		   // of a constant, because the subsequent RTL
+		   // peephole pass may combine it to a MOVW again.
+		   && AVR_HAVE_MOVW
+		   && REG_P (curr.ii.m_src))
+	    xsrc = gen_rtx_REG (QImode, r_src);
 	  // ...or a cheap constant...
 	  else if (val8 >= 0
 		   && AVRasm::constant_cost (SET, r_dest, val8) <= 1)
