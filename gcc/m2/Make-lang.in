@@ -1428,6 +1428,15 @@ GM2GCC = -I$(srcdir)/m2 -Im2 -I$(srcdir)/m2/gm2-gcc -Im2/gm2-gcc
 
 MCINCLUDES= -I$(srcdir)/m2/mc-boot-ch
 LOCAL_INCLUDES = -I. -I$(srcdir)/../include -I$(srcdir)
+GM2_BOOT_INCLUDES=-I. \
+  -I$(srcdir)/../include \
+  -I$(srcdir) \
+  -Im2/gm2-libs-boot \
+  -I$(srcdir)/m2/gm2-libs-ch \
+  -Im2/gm2-compiler-boot \
+  -I$(srcdir)m2/gm2-gcc \
+  -Im2/gm2-libiberty \
+  -I$(srcdir)/m2/gm2-libiberty
 
 GCC_COLOR=m2/gm2-gcc/m2color.o diagnostic-color.o
 
@@ -1553,37 +1562,28 @@ m2/gm2-compiler-boot/M2GCCDeclare.o: $(srcdir)/m2/gm2-compiler/M2GCCDeclare.mod 
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(MC) $(MC_EXTENDED_OPAQUE) -o=m2/gm2-compiler-boot/M2GCCDeclare.c $<
 	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
-            -I. -I$(srcdir)/../include -I$(srcdir) \
-            -I. -Im2/gm2-libs-boot -I$(srcdir)/m2/gm2-libs-ch -Im2/gm2-compiler-boot \
-            -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2GCCDeclare.c -o $@
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2GCCDeclare.c -o $@
 	$(POSTCOMPILE)
 
 m2/gm2-compiler-boot/M2Error.o: $(srcdir)/m2/gm2-compiler/M2Error.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(MC) $(MC_EXTENDED_OPAQUE) -o=m2/gm2-compiler-boot/M2Error.c $<
 	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
-            -I. -I$(srcdir)/../include -I$(srcdir) \
-            -I. -Im2/gm2-libs-boot -I$(srcdir)/m2/gm2-libs-ch -Im2/gm2-compiler-boot \
-            -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2Error.c -o $@
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2Error.c -o $@
 	$(POSTCOMPILE)
 
 m2/gm2-compiler-boot/%.o: $(srcdir)/m2/gm2-compiler/%.mod $(BUILD-BOOT-H) $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(MC) -o=m2/gm2-compiler-boot/$*.c $(srcdir)/m2/gm2-compiler/$*.mod
 	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
-            -I. -I$(srcdir)/../include -I$(srcdir) \
-            -I. -Im2/gm2-libs-boot -I$(srcdir)/m2/gm2-libs-ch -Im2/gm2-compiler-boot -Im2/gm2-libiberty \
-            -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/$*.c -o $@
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/$*.c -o $@
 	$(POSTCOMPILE)
 
 m2/gm2-compiler-boot/%.o: m2/gm2-compiler-boot/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(MC) -o=m2/gm2-compiler-boot/$*.c m2/gm2-compiler-boot/$*.mod
 	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
-            -I. -I$(srcdir)/../include -I$(srcdir) \
-            -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
-            -I$(srcdir)/m2/gm2-libs-ch \
-            -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/$*.c -o $@
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/$*.c -o $@
 	$(POSTCOMPILE)
 
 m2/gm2-compiler-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-compiler/%.def $(MCDEPS)
@@ -1595,8 +1595,7 @@ m2/gm2-compiler-boot/m2flex.o: m2/gm2-compiler/m2flex.c $(BUILD-BOOT-H) $(TIMEVA
         $(CONFIG_H) m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(COMPILER) $(CM2DEP) -c -g $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-          $(GM2GCC) $(INCLUDES) -I$(srcdir)/m2 \
-          -Im2 -Im2/gm2-compiler-boot -Im2/gm2-libs-boot $< -o $@
+          $(GM2GCC) $(INCLUDES) $(GM2_BOOT_INCLUDES) $< -o $@
 	$(POSTCOMPILE)
 
 m2/gm2-compiler/m2flex.c: $(srcdir)/m2/m2.flex $(TIMEVAR_H) insn-attr-common.h
