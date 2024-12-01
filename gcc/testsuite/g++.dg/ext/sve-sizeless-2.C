@@ -162,7 +162,7 @@ statements (int n)
   svint8_t init_sve_sc4 = sve_sh1; // { dg-error {cannot convert 'svint16_t' to 'svint8_t'} }
   svint8_t init_sve_sc5 = {};
   svint8_t init_sve_sc6 = { sve_sc1 };
-  svint8_t init_sve_sc7 = { sve_sh1 }; // { dg-error {cannot convert 'svint16_t' to 'svint8_t'} }
+  svint8_t init_sve_sc7 = { sve_sh1 }; // { dg-error {cannot convert 'svint16_t' to 'signed char'} }
   svint32_t init_sve_vc1 = { 0, 1 };
   svint32_t init_sve_vc2 = { 0, bar () };
   svint32_t init_sve_vc3 = { bar (), n };
