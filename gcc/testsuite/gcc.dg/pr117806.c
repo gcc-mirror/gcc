@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-excess-errors "warnings about ignored 'packed' attribute" { target default_packed } } */
 /* { dg-options "-std=c23" } */
 
 struct Test {
