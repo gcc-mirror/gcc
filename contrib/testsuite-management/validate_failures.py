@@ -62,7 +62,7 @@ import sys
 
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
 # <STATE>: <NAME> <DESCRIPTION"
-_VALID_TEST_RESULTS_REX = re.compile('(%s):\s*(\S+)\s*(.*)'
+_VALID_TEST_RESULTS_REX = re.compile(r'(%s):\s*(\S+)\s*(.*)'
                                      % "|".join(_VALID_TEST_RESULTS))
 
 # Formats of .sum file sections
@@ -71,11 +71,11 @@ _EXP_LINE_FORMAT = '\nRunning %s:%s ...\n'
 _SUMMARY_LINE_FORMAT = '\n\t\t=== %s Summary ===\n'
 
 # ... and their compiled regexs.
-_TOOL_LINE_REX = re.compile('^\t\t=== (.*) tests ===\n')
+_TOOL_LINE_REX = re.compile(r'^\t\t=== (.*) tests ===\n')
 # Match .exp file name, optionally prefixed by a "tool:" name and a
 # path ending with "testsuite/"
-_EXP_LINE_REX = re.compile('^Running (?:.*:)?(.*) \.\.\.\n')
-_SUMMARY_LINE_REX = re.compile('^\t\t=== (.*) Summary ===\n')
+_EXP_LINE_REX = re.compile(r'^Running (?:.*:)?(.*) \.\.\.\n')
+_SUMMARY_LINE_REX = re.compile(r'^\t\t=== (.*) Summary ===\n')
 
 # Subdirectory of srcdir in which to find the manifest file.
 _MANIFEST_SUBDIR = 'contrib/testsuite-management'
