@@ -174,6 +174,7 @@ extern int n_avr_fuse_add_executed;
 extern bool avr_shift_is_3op ();
 extern bool avr_split_shift_p (int n_bytes, int offset, rtx_code);
 extern bool avr_split_shift (rtx xop[], rtx xscratch, rtx_code);
+extern bool avr_split_ldst (rtx xop[]);
 
 extern int avr_optimize_size_level ();
 

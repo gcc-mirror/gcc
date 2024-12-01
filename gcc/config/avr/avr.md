@@ -1015,15 +1015,24 @@
                    (match_operand:MOVMODE 1 "general_operand"))
               (clobber (reg:CC REG_CC))])]
   "reload_completed
-   && avropt_fuse_add > 0
-   // Only split this for .split2 when we are before
-   // pass .avr-fuse-add (which runs after proep).
-   && ! epilogue_completed
    && (MEM_P (operands[0]) || MEM_P (operands[1]))"
   [(scratch)]
   {
-    if (avr_split_fake_addressing_move (curr_insn, operands))
+    if (avropt_fuse_add > 0
+        // Only split fake addressing for .split2 when we are before
+        // pass .avr-fuse-add (which runs after proep).
+        && ! epilogue_completed
+        && avr_split_fake_addressing_move (curr_insn, operands))
       DONE;
+
+    // Splitting multi-byte load / stores into 1-byte such insns
+    // provided non-volatile, addr-space = generic, no reg-overlap
+    // and the resulting addressings are natively supported.
+    if (avropt_split_ldst
+        && GET_MODE_SIZE (<MODE>mode) > 1
+        && avr_split_ldst (operands))
+      DONE;
+
     FAIL;
   })
 

@@ -5466,6 +5466,112 @@ avr_split_fake_addressing_move (rtx_insn * /*insn*/, rtx *xop)
 }
 
 
+/* Given memory reference mem(ADDR), return true when it can be split into
+   single-byte moves, and all resulting addresses are natively supported.
+   ADDR is in addr-space generic.  */
+
+static bool
+splittable_address_p (rtx addr, int n_bytes)
+{
+  if (CONSTANT_ADDRESS_P (addr)
+      || GET_CODE (addr) == PRE_DEC
+      || GET_CODE (addr) == POST_INC)
+    return true;
+
+  if (! AVR_TINY)
+    {
+      rtx base = select<rtx>()
+	: REG_P (addr) ? addr
+	: GET_CODE (addr) == PLUS ? XEXP (addr, 0)
+	: NULL_RTX;
+
+      int off = select<int>()
+	: REG_P (addr) ? 0
+	: GET_CODE (addr) == PLUS ? (int) INTVAL (XEXP (addr, 1))
+	: -1;
+
+      return (base && REG_P (base)
+	      && (REGNO (base) == REG_Y || REGNO (base) == REG_Z)
+	      && IN_RANGE (off, 0, 64 - n_bytes));
+    }
+
+  return false;
+}
+
+
+/* Like avr_byte(), but also knows how to split POST_INC and PRE_DEC
+   memory references.  */
+
+static rtx
+avr_byte_maybe_mem (rtx x, int n)
+{
+  rtx addr, b;
+  if (MEM_P (x)
+      && (GET_CODE (addr = XEXP (x, 0)) == POST_INC
+	  || GET_CODE (addr) == PRE_DEC))
+    b = gen_rtx_MEM (QImode, copy_rtx (addr));
+  else
+    b = avr_byte (x, n);
+
+  if (MEM_P (x))
+    gcc_assert (MEM_P (b));
+
+  return b;
+}
+
+
+/* Split multi-byte load / stores into 1-byte such insns
+   provided non-volatile, addr-space = generic, no reg-overlap
+   and the resulting addressings are all natively supported.
+   Returns true when the  XOP[0] = XOP[1]  insn has been split and
+   false, otherwise.  */
+
+bool
+avr_split_ldst (rtx *xop)
+{
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  machine_mode mode = GET_MODE (dest);
+  int n_bytes = GET_MODE_SIZE (mode);
+  rtx mem, reg_or_0;
+
+  if (MEM_P (dest) && reg_or_0_operand (src, mode))
+    {
+      mem = dest;
+      reg_or_0 = src;
+    }
+  else if (register_operand (dest, mode) && MEM_P (src))
+    {
+      reg_or_0 = dest;
+      mem = src;
+    }
+  else
+    return false;
+
+  rtx addr = XEXP (mem, 0);
+
+  if (MEM_VOLATILE_P (mem)
+      || ! ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (mem))
+      || ! IN_RANGE (n_bytes, 2, 4)
+      || ! splittable_address_p (addr, n_bytes)
+      || reg_overlap_mentioned_p (reg_or_0, addr))
+    return false;
+
+  const int step = GET_CODE (addr) == PRE_DEC ? -1 : 1;
+  const int istart = step > 0 ? 0 : n_bytes - 1;
+  const int iend = istart + step * n_bytes;
+
+  for (int i = istart; i != iend; i += step)
+    {
+      rtx di = avr_byte_maybe_mem (dest, i);
+      rtx si = avr_byte_maybe_mem (src, i);
+      emit_move_ccc (di, si);
+    }
+
+  return true;
+}
+
+
 
 // Functions  make_<pass-name> (gcc::context*)  where <pass-name> is
 // according to the pass declaration in avr-passes.def.  GCC's pass
