@@ -1,3 +1,70 @@
+2024-11-30  Joseph Myers  <josmyers@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c/100501
+	PR c/100792
+	* gcc.dg/pr100501-1.c, gcc.dg/pr100792-1.c: New tests.
+	* gcc.dg/pr48552-1.c, gcc.dg/pr48552-2.c,
+	gcc.dg/torture/pr98601.c: Update expected errors.
+
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117057
+	* gcc.dg/strlenopt-32.c: Remove xfail and vect_slp_v2qi_store_unalign
+	specific scan-tree-dump-times directive.
+	* gcc.dg/strlenopt-96.c: New test.
+
+2024-11-30  Jinyang He  <hejinyang@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-shift-sameimm-vec.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-shift-sameimm-vec.c: New test.
+
+2024-11-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/lasx-andn-iorn.c:
+	Add '-fdump-tree-optimized'.
+	* gcc.target/loongarch/lsx-andn-iorn.c:
+	Likewise.
+
+2024-11-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/vect-frint-scalar.c: Add
+	'-ffp-int-builtin-inexact'.
+
+2024-11-30  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117806
+	* gcc.dg/pr117806.c: New test.
+
+2024-11-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/117749
+	* gcc.dg/gimplefe-55.c: New test.
+
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/variadic-comma1.C: New test.
+	* g++.dg/cpp26/variadic-comma2.C: New test.
+	* g++.dg/cpp26/variadic-comma3.C: New test.
+	* g++.dg/cpp26/variadic-comma4.C: New test.
+	* g++.dg/cpp26/variadic-comma5.C: New test.
+	* g++.dg/cpp1z/fold10.C: Expect a warning for C++26.
+	* g++.dg/ext/attrib33.C: Likewise.
+	* g++.dg/cpp1y/lambda-generic-variadic19.C: Likewise.
+	* g++.dg/cpp2a/lambda-generic10.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-const3.C: Likewise.
+	* g++.dg/cpp0x/variadic164.C: Likewise.
+	* g++.dg/cpp0x/variadic17.C: Likewise.
+	* g++.dg/cpp0x/udlit-args-neg.C: Likewise.
+	* g++.dg/cpp0x/variadic28.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-33.C: Likewise.
+	* g++.dg/cpp23/explicit-obj-diagnostics3.C: Likewise.
+	* g++.old-deja/g++.law/operators15.C: Likewise.
+	* g++.old-deja/g++.mike/p811.C: Likewise.
+	* g++.old-deja/g++.mike/p12306.C (printf): Add , before ... .
+	* g++.dg/analyzer/fd-bind-pr107783.C (bind): Likewise.
+	* g++.dg/cpp0x/vt-65790.C (printf): Likewise.
+
 2024-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* libdiagnostics.dg/*: Rename to libgdiagnostics.dg, renaming

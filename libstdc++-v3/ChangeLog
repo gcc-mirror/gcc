@@ -1,3 +1,41 @@
+2024-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117858
+	* testsuite/20_util/optional/assignment/117858.cc: Also test
+	assignment from rvalue optional.
+
+2024-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117858
+	* include/std/optional (operator=(const optional<U>&)): Fix copy
+	and paste error in constraints.
+	(operator=(optional<U>&&)): Likewise.
+	* testsuite/20_util/optional/assignment/117858.cc: New test.
+
+2024-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add bits/monostate.h.
+	* include/Makefile.in: Regenerate.
+	* include/std/utility: Include <bits/monostate.h>.
+	* include/std/variant (monostate, hash<monostate>): Move
+	definitions to ...
+	* include/bits/monostate.h: New file.
+	* testsuite/20_util/headers/utility/synopsis.cc: Add monostate
+	and hash<monostate> declarations.
+	* testsuite/20_util/monostate/requirements.cc: New test.
+
+2024-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/headers/utility/synopsis.cc: Add
+	declarations from C++11 and later.
+
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/functional (_Bind_check_arity): Add , before ... .
+	* include/bits/refwrap.h (_Mem_fn_traits, _Weak_result_type_impl):
+	Likewise.
+	* include/tr1/type_traits (is_function): Likewise.
+
 2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stacktrace (basic_stacktrace::_M_impl::_M_resize):

@@ -1,3 +1,14 @@
+2024-11-30  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117806
+	* c-typeck.cc (composite_type_internal): Call decl_attributes.
+
+2024-11-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/117749
+	* gimple-parser.cc (c_parser_gimple_declaration): Check
+	declarator to be non-null.
+
 2024-11-29  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/117828

@@ -1,3 +1,10 @@
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wdeprecated-variadic-comma-omission): New option.
+	* c.opt.urls: Regenerate.
+	* c-opts.cc (c_common_post_options): Default to
+	-Wdeprecated-variadic-comma-omission for C++26 or -Wpedantic.
+
 2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* c-common.cc (convert_vector_to_array_for_subscript): Add
