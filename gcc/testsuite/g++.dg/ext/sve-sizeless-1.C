@@ -351,7 +351,7 @@ statements (int n)
   { typedef int f[__has_unique_object_representations (svint8_t) ? 1 : -1]; }
   { typedef int f[!__has_virtual_destructor (svint8_t) ? 1 : -1]; }
   { typedef int f[!__is_abstract (svint8_t) ? 1 : -1]; }
-  { typedef int f[!__is_aggregate (svint8_t) ? 1 : -1]; }
+  { typedef int f[__is_aggregate (svint8_t) ? 1 : -1]; }
   { typedef int f[!__is_base_of (svint8_t, svint8_t) ? 1 : -1]; }
   { typedef int f[!__is_base_of (svint8_t, svint16_t) ? 1 : -1]; }
   { typedef int f[!__is_class (svint8_t) ? 1 : -1]; }
