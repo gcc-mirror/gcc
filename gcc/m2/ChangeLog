@@ -1,3 +1,14 @@
+2024-11-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-09-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_BOOT_INCLUDES): New variable.
+	(m2/gm2-compiler-boot/M2GCCDeclare.o): Rewrite to use
+	GM2_BOOT_INCLUDES.
+	(m2/gm2-compiler-boot/M2Error.o): Ditto.
+	(m2/gm2-compiler-boot/%.o): Ditto.
+
 2024-11-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
