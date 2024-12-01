@@ -5368,13 +5368,7 @@ package body Exp_Ch6 is
       --  Note that simple return statements are distributed into conditional
       --  expressions but we may be invoked before this distribution is done.
 
-      if Nkind (Par) = N_Simple_Return_Statement
-        or else (Nkind (Par) = N_If_Expression
-                  and then Nkind (Parent (Par)) = N_Simple_Return_Statement)
-        or else (Nkind (Par) = N_Case_Expression_Alternative
-                  and then
-                    Nkind (Parent (Parent (Par))) = N_Simple_Return_Statement)
-      then
+      if Nkind (Unconditional_Parent (N)) = N_Simple_Return_Statement then
          return;
       end if;
 
@@ -5402,7 +5396,7 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      --  Avoid expansions to catch an error when the function call is on the
+      --  Avoid expansion to catch the error when the function call is on the
       --  left-hand side of an assignment.
 
       if Nkind (Par) = N_Assignment_Statement and then N = Name (Par) then

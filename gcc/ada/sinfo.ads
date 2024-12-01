@@ -1281,7 +1281,9 @@ package Sinfo is
    --    target of the assignment or initialization is used to generate the
    --    left-hand side of individual assignment to each subcomponent.
    --    Also set on conditional expressions whose dependent expressions are
-   --    nested aggregates, in order to avoid creating a temporary for them.
+   --    nested aggregates (recursively), or which are expressions of simple
+   --    return statements (recursively again), in order to avoid creating a
+   --    temporary for them.
 
    --  Expression_Copy
    --    Present in N_Pragma_Argument_Association nodes. Contains a copy of the

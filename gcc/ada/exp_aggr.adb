@@ -4217,7 +4217,7 @@ package body Exp_Aggr is
       --  First, climb the parent chain, looking through qualified expressions
       --  and dependent expressions of conditional expressions.
 
-      while True loop
+      loop
          case Nkind (Parent_Node) is
             when N_Case_Expression_Alternative =>
                null;
@@ -4276,25 +4276,13 @@ package body Exp_Aggr is
 
          or else Is_Build_In_Place_Aggregate_Return (Parent_Node)
       then
-         Node := N;
-
          --  Mark the aggregate, as well as all the intermediate conditional
          --  expressions, as having expansion delayed. This will block the
          --  usual (bottom-up) expansion of the marked nodes and replace it
          --  with a top-down expansion from the parent node.
 
-         while Node /= Parent_Node loop
-            if Nkind (Node) in N_Aggregate
-                             | N_Case_Expression
-                             | N_Extension_Aggregate
-                             | N_If_Expression
-            then
-               Set_Expansion_Delayed (Node);
-            end if;
-
-            Node := Parent (Node);
-         end loop;
-
+         Set_Expansion_Delayed (N);
+         Delay_Conditional_Expressions_Between (N, Parent_Node);
          return;
       end if;
 
@@ -8650,7 +8638,7 @@ package body Exp_Aggr is
       --  expansion has been delayed, analyze it again and expand it.
 
       if Is_Delayed_Conditional_Expression (Expression (Init_Stmt)) then
-         Set_Analyzed (Expression (Init_Stmt), False);
+         Unanalyze_Delayed_Conditional_Expression (Expression (Init_Stmt));
       end if;
 
       Append_To (Blk_Stmts, Init_Stmt);
@@ -8764,18 +8752,6 @@ package body Exp_Aggr is
       return Nkind (Unqual_N) in N_Aggregate | N_Extension_Aggregate
         and then Expansion_Delayed (Unqual_N);
    end Is_Delayed_Aggregate;
-
-   ---------------------------------------
-   -- Is_Delayed_Conditional_Expression --
-   ---------------------------------------
-
-   function Is_Delayed_Conditional_Expression (N : Node_Id) return Boolean is
-      Unqual_N : constant Node_Id := Unqualify (N);
-
-   begin
-      return Nkind (Unqual_N) in N_Case_Expression | N_If_Expression
-        and then Expansion_Delayed (Unqual_N);
-   end Is_Delayed_Conditional_Expression;
 
    ----------------------------------------
    -- Is_Static_Dispatch_Table_Aggregate --

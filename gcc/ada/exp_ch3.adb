@@ -7723,14 +7723,15 @@ package body Exp_Ch3 is
 
             if not Special_Ret_Obj then
                declare
+                  Rhs    : constant Node_Id := Relocate_Node (Expr);
                   Assign : constant Node_Id :=
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Def_Id, Loc),
-                      Expression => Relocate_Node (Expr));
+                      Expression => Rhs);
 
                begin
                   Set_Assignment_OK (Name (Assign));
-                  Set_Analyzed (Expression (Assign), False);
+                  Unanalyze_Delayed_Conditional_Expression (Rhs);
                   Set_No_Finalize_Actions (Assign);
                   Insert_Action_After (Init_After, Assign);
 

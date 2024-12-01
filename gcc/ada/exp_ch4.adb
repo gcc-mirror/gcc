@@ -4986,22 +4986,6 @@ package body Exp_Ch4 is
       Scop : constant Entity_Id  := Current_Scope;
       Typ  : constant Entity_Id  := Etype (N);
 
-      Optimize_Return_Stmt : constant Boolean :=
-        Nkind (Par) = N_Simple_Return_Statement;
-      --  Small optimization: when the case expression appears in the context
-      --  of a simple return statement, expand into
-
-      --    case X is
-      --       when A =>
-      --          return AX;
-      --       when B =>
-      --          return BX;
-      --       ...
-      --    end case;
-
-      --  This makes the expansion much easier when expressions are calls to
-      --  build-in-place functions.
-
       function Is_Copy_Type (Typ : Entity_Id) return Boolean;
       --  Return True if we can copy objects of this type when expanding a case
       --  expression.
@@ -5039,9 +5023,39 @@ package body Exp_Ch4 is
       --  This makes the expansion much more efficient in the context of an
       --  aggregate converted into assignments.
 
+      Optimize_Return_Stmt : Boolean := False;
+      --  Small optimization: when the case expression appears in the context
+      --  of a simple return statement, expand into
+
+      --    case X is
+      --       when A =>
+      --          return AX;
+      --       when B =>
+      --          return BX;
+      --       ...
+      --    end case;
+
+      --  This makes the expansion much easier when expressions are calls to
+      --  build-in-place functions.
+
    --  Start of processing for Expand_N_Case_Expression
 
    begin
+      --  If the expression is in the context of a simple return statement,
+      --  possibly through intermediate conditional expressions, we delay
+      --  expansion until the (immediate) parent is rewritten as a return
+      --  statement (or is already the return statement).
+
+      if not Expansion_Delayed (N) then
+         declare
+            Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+         begin
+            if Nkind (Uncond_Par) = N_Simple_Return_Statement then
+               Delay_Conditional_Expressions_Between (N, Uncond_Par);
+            end if;
+         end;
+      end if;
+
       --  If the expansion of the expression has been delayed, we wait for the
       --  rewriting of its parent as an assignment or return statement; when
       --  that's done, we optimize the assignment or the return statement (the
@@ -5051,8 +5065,8 @@ package body Exp_Ch4 is
          if Nkind (Par) = N_Assignment_Statement then
             Optimize_Assignment_Stmt := True;
 
-         elsif Optimize_Return_Stmt then
-            null;
+         elsif Nkind (Par) = N_Simple_Return_Statement then
+            Optimize_Return_Stmt := True;
 
          else
             return;
@@ -5211,7 +5225,7 @@ package body Exp_Ch4 is
                --  expansion has been delayed, analyze it again and expand it.
 
                if Is_Delayed_Conditional_Expression (Alt_Expr) then
-                  Set_Analyzed (Alt_Expr, False);
+                  Unanalyze_Delayed_Conditional_Expression (Alt_Expr);
                end if;
 
             --  Generate:
@@ -5226,7 +5240,7 @@ package body Exp_Ch4 is
                --  expansion has been delayed, analyze it again and expand it.
 
                if Is_Delayed_Conditional_Expression (Alt_Expr) then
-                  Set_Analyzed (Alt_Expr, False);
+                  Unanalyze_Delayed_Conditional_Expression (Alt_Expr);
                end if;
 
             --  Take the unrestricted access of the expression value for non-
@@ -5470,20 +5484,6 @@ package body Exp_Ch4 is
       Par   : constant Node_Id    := Parent (N);
       Typ   : constant Entity_Id  := Etype (N);
 
-      Optimize_Return_Stmt : constant Boolean :=
-        Nkind (Par) = N_Simple_Return_Statement;
-      --  Small optimization: when the if expression appears in the context of
-      --  a simple return statement, expand into
-
-      --    if cond then
-      --       return then-expr
-      --    else
-      --       return else-expr;
-      --    end if;
-
-      --  This makes the expansion much easier when expressions are calls to
-      --  build-in-place functions.
-
       Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
       --  Determine if we are dealing with a special case of a conditional
       --  expression used as an actual for an anonymous access type which
@@ -5537,9 +5537,38 @@ package body Exp_Ch4 is
       --  This makes the expansion much more efficient in the context of an
       --  aggregate converted into assignments.
 
+      Optimize_Return_Stmt : Boolean := False;
+      --  Small optimization: when the if expression appears in the context of
+      --  a simple return statement, expand into
+
+      --    if cond then
+      --       return then-expr
+      --    else
+      --       return else-expr;
+      --    end if;
+
+      --  This makes the expansion much easier when expressions are calls to
+      --  build-in-place functions.
+
    --  Start of processing for Expand_N_If_Expression
 
    begin
+      --  If the expression is in the context of a simple return statement,
+      --  possibly through intermediate conditional expressions, we delay
+      --  expansion until the (immediate) parent is rewritten as a return
+      --  statement (or is already the return statement). Note that this
+      --  deals with the case of the elsif part of the if expression.
+
+      if not Expansion_Delayed (N) then
+         declare
+            Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+         begin
+            if Nkind (Uncond_Par) = N_Simple_Return_Statement then
+               Delay_Conditional_Expressions_Between (N, Uncond_Par);
+            end if;
+         end;
+      end if;
+
       --  If the expansion of the expression has been delayed, we wait for the
       --  rewriting of its parent as an assignment or return statement; when
       --  that's done, we optimize the assignment or the return statement (the
@@ -5549,8 +5578,8 @@ package body Exp_Ch4 is
          if Nkind (Par) = N_Assignment_Statement then
             Optimize_Assignment_Stmt := True;
 
-         elsif Optimize_Return_Stmt then
-            null;
+         elsif Nkind (Par) = N_Simple_Return_Statement then
+            Optimize_Return_Stmt := True;
 
          else
             return;
@@ -5604,7 +5633,7 @@ package body Exp_Ch4 is
          --  expansion has been delayed, analyze it again and expand it.
 
          if Is_Delayed_Conditional_Expression (Expr) then
-            Set_Analyzed (Expr, False);
+            Unanalyze_Delayed_Conditional_Expression (Expr);
          end if;
 
          Insert_Actions (N, Actions);
@@ -5642,7 +5671,7 @@ package body Exp_Ch4 is
          --  expansion has been delayed, analyze it again and expand it.
 
          if Is_Delayed_Conditional_Expression (Expression (New_Then)) then
-            Set_Analyzed (Expression (New_Then), False);
+            Unanalyze_Delayed_Conditional_Expression (Expression (New_Then));
          end if;
 
          New_Else := New_Copy (Par);
@@ -5651,7 +5680,7 @@ package body Exp_Ch4 is
          Set_Expression (New_Else, Relocate_Node (Elsex));
 
          if Is_Delayed_Conditional_Expression (Expression (New_Else)) then
-            Set_Analyzed (Expression (New_Else), False);
+            Unanalyze_Delayed_Conditional_Expression (Expression (New_Else));
          end if;
 
          If_Stmt :=
@@ -5685,7 +5714,7 @@ package body Exp_Ch4 is
          --  expansion has been delayed, analyze it again and expand it.
 
          if Is_Delayed_Conditional_Expression (New_Then) then
-            Set_Analyzed (New_Then, False);
+            Unanalyze_Delayed_Conditional_Expression (New_Then);
          end if;
 
          New_Else := Relocate_Node (Elsex);
@@ -5694,7 +5723,7 @@ package body Exp_Ch4 is
          --  expansion has been delayed, analyze it again and expand it.
 
          if Is_Delayed_Conditional_Expression (New_Else) then
-            Set_Analyzed (New_Else, False);
+            Unanalyze_Delayed_Conditional_Expression (New_Else);
          end if;
 
          If_Stmt :=
@@ -10064,10 +10093,91 @@ package body Exp_Ch4 is
    -----------------------------------
 
    procedure Expand_N_Qualified_Expression (N : Node_Id) is
-      Operand     : constant Node_Id   := Expression (N);
-      Target_Type : constant Entity_Id := Entity (Subtype_Mark (N));
+      Loc         : constant Source_Ptr := Sloc (N);
+      Operand     : constant Node_Id    := Expression (N);
+      Target_Type : constant Entity_Id  := Entity (Subtype_Mark (N));
 
    begin
+      --  Nothing to do if the operand is an identical qualified expression
+
+      if Nkind (Operand) = N_Qualified_Expression
+        and then Entity (Subtype_Mark (Operand)) = Target_Type
+      then
+         Rewrite (N, Relocate_Node (Operand));
+         return;
+
+      --  An allocator expects a qualified expression in all cases
+
+      elsif Nkind (Parent (N)) = N_Allocator then
+         null;
+
+      --  Distribute the qualified expression into the dependent expressions
+      --  of a delayed conditional expression. The goal is to enable further
+      --  optimizations, for example within a return statement, by exposing
+      --  the conditional expression.
+
+      elsif Nkind (Operand) = N_Case_Expression
+        and then Expansion_Delayed (Operand)
+      then
+         declare
+            New_Alts : constant List_Id := New_List;
+            New_Case : constant Node_Id :=
+              Make_Case_Expression (Loc,
+                Expression   => Relocate_Node (Expression (Operand)),
+                Alternatives => New_Alts);
+
+            Alt     : Node_Id;
+            New_Alt : Node_Id;
+
+         begin
+            Alt := First (Alternatives (Operand));
+            while Present (Alt) loop
+               New_Alt :=
+                 Make_Case_Expression_Alternative (Sloc (Alt),
+                   Discrete_Choices => Discrete_Choices (Alt),
+                   Expression       =>
+                     Make_Qualified_Expression (Loc,
+                       Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                       Expression   => Relocate_Node (Expression (Alt))));
+               Append_To (New_Alts, New_Alt);
+               Set_Actions (New_Alt, Actions (Alt));
+
+               Next (Alt);
+            end loop;
+
+            Rewrite (N, New_Case);
+            Analyze_And_Resolve (N);
+            return;
+         end;
+
+      elsif Nkind (Operand) = N_If_Expression
+        and then Expansion_Delayed (Operand)
+      then
+         declare
+            Cond   : constant Node_Id := First (Expressions (Operand));
+            Thenx  : constant Node_Id := Next (Cond);
+            Elsex  : constant Node_Id := Next (Thenx);
+            New_If : constant Node_Id :=
+              Make_If_Expression (Loc,
+                Expressions => New_List (
+                  Relocate_Node (Cond),
+                  Make_Qualified_Expression (Loc,
+                    Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                    Expression   => Relocate_Node (Thenx)),
+                  Make_Qualified_Expression (Loc,
+                    Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                    Expression   => Relocate_Node (Elsex))));
+
+         begin
+            Set_Then_Actions (New_If, Then_Actions (Operand));
+            Set_Else_Actions (New_If, Else_Actions (Operand));
+
+            Rewrite (N, New_If);
+            Analyze_And_Resolve (N);
+            return;
+         end;
+      end if;
+
       --  Do validity check if validity checking operands
 
       if Validity_Checks_On and Validity_Check_Operands then
@@ -14298,7 +14408,9 @@ package body Exp_Ch4 is
          --  insert the finalization call after the return statement as
          --  this will render it unreachable.
 
-         if Nkind (Fin_Context) = N_Simple_Return_Statement then
+         if Nkind (Fin_Context) = N_Simple_Return_Statement
+           or else Nkind (Parent (Expr)) = N_Simple_Return_Statement
+         then
             null;
 
          --  Finalize the object after the context has been evaluated

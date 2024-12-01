@@ -54,10 +54,6 @@ package Exp_Aggr is
    --  Returns True if N is an aggregate of some kind whose Expansion_Delayed
    --  flag is set (see sinfo for meaning of flag).
 
-   function Is_Delayed_Conditional_Expression (N : Node_Id) return Boolean;
-   --  Returns True if N is a conditional expression whose Expansion_Delayed
-   --  flag is set (see sinfo for meaning of flag).
-
    function Is_Two_Pass_Aggregate (N : Node_Id) return Boolean;
    --  Return True if N is an aggregate that is to be expanded in two passes.
    --  This is the case if it consists only of iterated component associations

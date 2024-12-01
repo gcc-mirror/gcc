@@ -174,6 +174,57 @@ package Exp_Util is
    procedure Insert_Library_Level_Actions (L : List_Id);
    --  Similar, but inserts a list of actions
 
+   ------------------------
+   -- Delayed Expansion --
+   ------------------------
+
+   --  The default, bottom-up expansion of expressions is not appropriate for
+   --  some specific situations, either because it would generate problematic
+   --  constructs in the expanded code, for example temporaries of a limited
+   --  type, or because it would generate superfluous copy operations. These
+   --  situations involve either aggregates or conditional expressions (or a
+   --  combination of them) of composite types:
+
+   --    1. For aggregates, the default expansion model is to instantiate the
+   --       anonymous object where elaboration is performed, in other words to
+   --       create a temporary. This can be directly avoided if the aggregate
+   --       is the initialization expression of an object, but cannot be if the
+   --       aggregate is nested in another aggregate, or else is the dependent
+   --       expression of a conditional expression.
+
+   --    2. For (most) conditional expressions of composite types, the default
+   --       expansion model is to take 'Unrestricted_Access of their dependent
+   --       expressions and to replace them with the dereference of the access
+   --       value designating the dependent expression chosen by the condition.
+   --       Now taking 'Unrestricted_Access of an expression, for example again
+   --       an aggregate or a function call, forces the creation of a temporary
+   --       to hold the value of the expression.
+
+   --  In these specific situations, it is desirable, if not required, to delay
+   --  the expansion of the expression until after that of the parent construct
+   --  has started or has completed, so that it can drive this expansion in the
+   --  first case or completely rewrite the expression in the second case.
+
+   --  This is achieved by means of the Expansion_Delayed flag that may be set
+   --  on aggregates and conditional expressions: when the above situations are
+   --  recognized, expansion is blocked, the flag is set, and Expand returns
+   --  after setting the Analyzed flag on the expression as usual, which means
+   --  that it is up to the parent construct either to perform the expansion of
+   --  the expression directly (case of nested aggregates), or to reset the
+   --  Analyzed flag on the expression so that Expand can give it another try
+   --  in a modified context (case of conditional expressions).
+
+   procedure Delay_Conditional_Expressions_Between (From, To : Node_Id);
+   --  Mark all the conditional expressions in the tree between From and To
+   --  as having their expansion delayed (From included, To excluded).
+
+   function Is_Delayed_Conditional_Expression (N : Node_Id) return Boolean;
+   --  Returns True if N is a conditional expression whose Expansion_Delayed
+   --  flag is set.
+
+   procedure Unanalyze_Delayed_Conditional_Expression (N : Node_Id);
+   --  Schedule the reanalysis of the delayed conditional expression N
+
    -----------------------
    -- Other Subprograms --
    -----------------------
@@ -1285,6 +1336,11 @@ package Exp_Util is
    --  (see also Component_May_Be_Bit_Aligned for further details). The result
    --  is conservative, in that a result of False is decisive. A result of True
    --  means that such a component may or may not be present.
+
+   function Unconditional_Parent (N : Node_Id) return Node_Id;
+   --  Return the first parent of arbitrary node N that is not a conditional
+   --  expression, one of whose dependent expressions is N, and that is not
+   --  a qualified expression, whose expression is N, recursively.
 
    procedure Update_Primitives_Mapping
      (Inher_Id : Entity_Id;
