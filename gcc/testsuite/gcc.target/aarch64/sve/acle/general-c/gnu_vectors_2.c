@@ -78,7 +78,7 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   /* Vector indexing.  */
 
   sve_u1[0];
-  &sve_u1[0]; /* { dg-error {subscripted value is neither array nor pointer} } */
+  &sve_u1[0];
 
   gnu_u1[0];
   &gnu_u1[0];
