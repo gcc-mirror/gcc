@@ -4921,17 +4921,21 @@ package body Sem_Ch8 is
          then
             null;
 
-         --  Don't replace a non-qualified discriminant in strict preanalysis
-         --  mode since it can lead to errors during full analysis when the
-         --  discriminant gets referenced later.
+         --  Don't replace a non-qualified discriminant in preanalysis mode
+         --  since we may be preanalyzing a subtree that it is still not
+         --  placed in its final position in the tree, and therefore it can
+         --  lead to errors during full analysis when the discriminant gets
+         --  referenced later. We exclude preanalysis of pragma expressions
+         --  because they will not be moved.
 
          --  This can occur in situations where a protected type contains
          --  an expression function which references a non-prefixed
-         --  discriminant.
+         --  discriminant, or a task type sets the size of its secondary
+         --  stack with a value provided in a discriminant.
 
          elsif No (P)
            and then Preanalysis_Active
-           and then Inside_Preanalysis_Without_Freezing = 0
+           and then not In_Pragma_Expression (N)
          then
             null;
 

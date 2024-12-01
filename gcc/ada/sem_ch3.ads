@@ -239,6 +239,11 @@ package Sem_Ch3 is
    procedure Preanalyze_Assert_Expression (N : Node_Id; T : Entity_Id);
    --  Wrapper on Preanalyze_Spec_Expression for assertion expressions, so that
    --  In_Assertion_Expr can be properly adjusted.
+   --
+   --  This routine must not be called when N is the root of a subtree that is
+   --  not in its final place since it freezes static expression entities,
+   --  which would be misplaced in the tree. Preanalyze_And_Resolve must be
+   --  used in such a case to avoid reporting spurious errors.
 
    procedure Preanalyze_Assert_Expression (N : Node_Id);
    --  Similar to the above, but without forcing N to be of a particular type
@@ -252,6 +257,11 @@ package Sem_Ch3 is
    --  details. N is the expression to be analyzed, T is the expected type.
    --  This mechanism is also used for aspect specifications that have an
    --  expression parameter that needs similar preanalysis.
+   --
+   --  This routine must not be called when N is the root of a subtree that is
+   --  not in its final place since it freezes static expression entities,
+   --  which would be misplaced in the tree. Preanalyze_And_Resolve must be
+   --  used in such a case to avoid reporting spurious errors.
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is

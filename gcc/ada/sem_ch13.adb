@@ -11186,7 +11186,7 @@ package body Sem_Ch13 is
          elsif A_Id in Aspect_Default_Component_Value | Aspect_Default_Value
             and then Is_Private_Type (T)
          then
-            Preanalyze_Spec_Expression (End_Decl_Expr, Full_View (T));
+            Preanalyze_And_Resolve (End_Decl_Expr, Full_View (T));
 
          --  The following aspect expressions may contain references to
          --  components and discriminants of the type.
@@ -16181,11 +16181,11 @@ package body Sem_Ch13 is
 
                   when Aspect_Default_Value =>
                      Check_Aspect_Too_Late (ASN);
-                     Preanalyze_Spec_Expression (Expr, E);
+                     Preanalyze_And_Resolve (Expr, E);
 
                   when Aspect_Default_Component_Value =>
                      Check_Aspect_Too_Late (ASN);
-                     Preanalyze_Spec_Expression (Expr, Component_Type (E));
+                     Preanalyze_And_Resolve (Expr, Component_Type (E));
 
                   when Aspect_CPU
                      | Aspect_Interrupt_Priority

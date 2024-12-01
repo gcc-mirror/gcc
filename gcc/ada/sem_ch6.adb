@@ -225,10 +225,6 @@ package body Sem_Ch6 is
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
 
-   procedure Preanalyze_Formal_Expression (N : Node_Id; T : Entity_Id);
-   --  Preanalysis of default expressions of subprogram formals. N is the
-   --  expression to be analyzed and T is the expected type.
-
    procedure Set_Formal_Mode (Formal_Id : Entity_Id);
    --  Set proper Ekind to reflect formal mode (in, out, in out), and set
    --  miscellaneous other attributes.
@@ -544,7 +540,7 @@ package body Sem_Ch6 is
          else
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
-            Preanalyze_Formal_Expression (Expr, Typ);
+            Preanalyze_Spec_Expression (Expr, Typ);
             Check_Limited_Return (Orig_N, Expr, Typ);
             End_Scope;
          end if;
@@ -610,7 +606,7 @@ package body Sem_Ch6 is
                   begin
                      Set_Checking_Potentially_Static_Expression (True);
 
-                     Preanalyze_Formal_Expression (Exp_Copy, Typ);
+                     Preanalyze_Spec_Expression (Exp_Copy, Typ);
 
                      if not Is_Static_Expression (Exp_Copy) then
                         Error_Msg_N
@@ -12872,18 +12868,6 @@ package body Sem_Ch6 is
          end if;
    end New_Overloaded_Entity;
 
-   ----------------------------------
-   -- Preanalyze_Formal_Expression --
-   ----------------------------------
-
-   procedure Preanalyze_Formal_Expression (N : Node_Id; T : Entity_Id) is
-      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
-   begin
-      In_Spec_Expression := True;
-      Preanalyze_With_Freezing_And_Resolve (N, T);
-      In_Spec_Expression := Save_In_Spec_Expression;
-   end Preanalyze_Formal_Expression;
-
    ---------------------
    -- Process_Formals --
    ---------------------
@@ -13194,7 +13178,7 @@ package body Sem_Ch6 is
             --  Do the special preanalysis of the expression (see section on
             --  "Handling of Default Expressions" in the spec of package Sem).
 
-            Preanalyze_Formal_Expression (Default, Formal_Type);
+            Preanalyze_Spec_Expression (Default, Formal_Type);
 
             --  An access to constant cannot be the default for
             --  an access parameter that is an access to variable.

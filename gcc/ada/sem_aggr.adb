@@ -3103,19 +3103,15 @@ package body Sem_Aggr is
 
                elsif No (Etype (Expression (Assoc))) then
                   declare
-                     Save_Analysis : constant Boolean := Full_Analysis;
-                     Expr          : constant Node_Id :=
-                                       New_Copy_Tree (Expression (Assoc));
+                     Expr : constant Node_Id :=
+                              New_Copy_Tree (Expression (Assoc));
 
                   begin
-                     Expander_Mode_Save_And_Set (False);
-                     Full_Analysis := False;
-
-                     --  Analyze the expression, making sure it is properly
+                     --  Preanalyze the expression, making sure it is properly
                      --  attached to the tree before we do the analysis.
 
                      Set_Parent (Expr, Parent (Expression (Assoc)));
-                     Analyze (Expr);
+                     Preanalyze (Expr);
 
                      --  If the expression is a literal, propagate this info
                      --  to the expression in the association, to enable some
@@ -3125,11 +3121,8 @@ package body Sem_Aggr is
                        and then Present (Entity (Expr))
                        and then Ekind (Entity (Expr)) = E_Enumeration_Literal
                      then
-                        Analyze_And_Resolve (Expression (Assoc), Ctyp);
+                        Preanalyze_And_Resolve (Expression (Assoc), Ctyp);
                      end if;
-
-                     Full_Analysis := Save_Analysis;
-                     Expander_Mode_Restore;
 
                      --  Skip tagged checking for mutably tagged CW equivalent
                      --  types.

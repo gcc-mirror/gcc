@@ -13018,7 +13018,8 @@ package body Sem_Attr is
       if Attr_Id = Attribute_Elaborated then
          null;
 
-      --  Should this be restricted to Expander_Active???
+      --  Unconditionally freeze the prefix; required to freeze static
+      --  expressions when preanalyzing default expressions.
 
       else
          Freeze_Expression (P);

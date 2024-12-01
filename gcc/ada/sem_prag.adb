@@ -3326,7 +3326,7 @@ package body Sem_Prag is
       --  final place yet. A direct analysis may generate side effects and this
       --  is not desired at this point.
 
-      Preanalyze_Assert_Expression (Expr, Standard_Boolean);
+      Preanalyze_And_Resolve (Expr, Standard_Boolean);
       Set_Is_Analyzed_Pragma (N);
 
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
@@ -5209,7 +5209,7 @@ package body Sem_Prag is
 
             if Present (Arg2) then
                Check_Optional_Identifier (Arg2, Name_Message);
-               Preanalyze_Spec_Expression
+               Preanalyze_Assert_Expression
                  (Get_Pragma_Arg (Arg2), Standard_String);
             end if;
          end if;

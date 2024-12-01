@@ -1536,18 +1536,9 @@ package body Sem is
       --  unit. All with'ed units are analyzed with config restrictions reset
       --  and we need to restore these saved values at the end.
 
-      Save_Preanalysis_Counter : constant Nat :=
-                                   Inside_Preanalysis_Without_Freezing;
-      --  Saves the preanalysis nesting-level counter; required since we may
-      --  need to analyze a unit as a consequence of the preanalysis of an
-      --  expression without freezing (and the loaded unit must be fully
-      --  analyzed).
-
    --  Start of processing for Semantics
 
    begin
-      Inside_Preanalysis_Without_Freezing := 0;
-
       if Debug_Unit_Walk then
          if Already_Analyzed then
             Write_Str ("(done)");
@@ -1722,8 +1713,6 @@ package body Sem is
             Unit (Comp_Unit),
             Prefix => "<-- ");
       end if;
-
-      Inside_Preanalysis_Without_Freezing := Save_Preanalysis_Counter;
    end Semantics;
 
    --------

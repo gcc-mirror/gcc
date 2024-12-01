@@ -194,11 +194,15 @@
 --  that the expansion of inner expressions happens inside the newly generated
 --  node for the parent expression.
 
---  Note that the difference between processing of default expressions and
---  preanalysis of other expressions is that we do carry out freezing in
---  the latter but not in the former (except for static scalar expressions).
---  The routine that performs preanalysis and corresponding resolution is
---  called Preanalyze_And_Resolve and is in Sem_Res.
+--  Note that the difference between preanalysis of default expressions and
+--  strict preanalysis of other expressions is that we do carry out freezing
+--  in the former (for static scalar expressions) but not in the latter. The
+--  routine that performs preanalysis of default expressions is called
+--  Preanalyze_Spec_Expression and is in Sem_Ch3. The routine that performs
+--  strict preanalysis and corresponding resolution is in Sem_Res and it is
+--  called Preanalyze_And_Resolve. Preanalyze_Spec_Expression relaxes the
+--  strictness of Preanalyze_And_Resolve setting to True the global boolean
+--  variable In_Spec_Expression before calling Preanalyze_And_Resolve.
 
 with Alloc;
 with Einfo.Entities; use Einfo.Entities;
@@ -294,11 +298,6 @@ package Sem is
    Inside_Class_Condition_Preanalysis : Boolean := False;
    --  Flag indicating whether we are preanalyzing a class-wide precondition
    --  or postcondition.
-
-   Inside_Preanalysis_Without_Freezing : Nat := 0;
-   --  Flag indicating whether we are preanalyzing an expression performing no
-   --  freezing. Non-zero means we are inside (it is actually a level counter
-   --  to deal with nested calls).
 
    Unloaded_Subunits : Boolean := False;
    --  This flag is set True if we have subunits that are not loaded. This

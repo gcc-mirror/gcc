@@ -8405,11 +8405,15 @@ package body Checks is
 
       if Inside_A_Generic then
          return;
-      end if;
+
+      --  No check during preanalysis
+
+      elsif Preanalysis_Active then
+         return;
 
       --  No check needed if known to be non-null
 
-      if Known_Non_Null (N) then
+      elsif Known_Non_Null (N) then
          return;
       end if;
 
@@ -8567,6 +8571,11 @@ package body Checks is
       --  expansion is not desirable.
 
       if GNATprove_Mode then
+         return;
+
+      --  No check during preanalysis
+
+      elsif Preanalysis_Active then
          return;
 
       --  Do not generate an elaboration check if all checks have been

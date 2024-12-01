@@ -6445,9 +6445,11 @@ package body Freeze is
 
          goto Leave;
 
-      --  Do not freeze if we are preanalyzing without freezing
+      --  Do not freeze under strict preanalysis
 
-      elsif Inside_Preanalysis_Without_Freezing > 0 then
+      elsif Preanalysis_Active
+        and then not Within_Spec_Static_Expression (N)
+      then
          Result := No_List;
          goto Leave;
 
@@ -8532,29 +8534,21 @@ package body Freeze is
 
       if Must_Not_Freeze (N) then
          return;
-      end if;
 
-      --  If expression is non-static, then it does not freeze in a default
-      --  expression, see section "Handling of Default Expressions" in the
-      --  spec of package Sem for further details. Note that we have to make
-      --  sure that we actually have a real expression (if we have a subtype
-      --  indication, we can't test Is_OK_Static_Expression). However, we
-      --  exclude the case of the prefix of an attribute of a static scalar
-      --  subtype from this early return, because static subtype attributes
-      --  should always cause freezing, even in default expressions, but
-      --  the attribute may not have been marked as static yet (because in
-      --  Resolve_Attribute, the call to Eval_Attribute follows the call of
-      --  Freeze_Expression on the prefix).
+      elsif Preanalysis_Active then
 
-      if In_Spec_Exp
-        and then Nkind (N) in N_Subexpr
-        and then not Is_OK_Static_Expression (N)
-        and then (Nkind (Parent (N)) /= N_Attribute_Reference
-                   or else not (Is_Entity_Name (N)
-                                 and then Is_Type (Entity (N))
-                                 and then Is_OK_Static_Subtype (Entity (N))))
-      then
-         return;
+         --  Do not freeze under strict preanalysis
+
+         if not In_Spec_Exp then
+            return;
+
+         --  If expression is non-static, then it does not freeze in a default
+         --  expression, see section "Handling of Default Expressions" in the
+         --  spec of package Sem for further details.
+
+         elsif not Within_Spec_Static_Expression (N) then
+            return;
+         end if;
       end if;
 
       --  Freeze type of expression if not frozen already
@@ -9363,10 +9357,10 @@ package body Freeze is
          Push_Scope (Def_Id);
          Install_Formals (Def_Id);
 
-         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+         Preanalyze_And_Resolve (Dup_Expr, Typ);
          End_Scope;
       else
-         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+         Preanalyze_And_Resolve (Dup_Expr, Typ);
       end if;
 
       --  Restore certain attributes of Def_Id since the preanalysis may

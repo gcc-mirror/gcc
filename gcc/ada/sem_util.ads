@@ -1621,8 +1621,11 @@ package Sem_Util is
    function In_Package_Body return Boolean;
    --  Returns True if current scope is within a package body
 
-   function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean;
-   --  Returns true if the expression N occurs within a pragma with name Nam
+   function In_Pragma_Expression
+     (N : Node_Id; Nam : Name_Id := No_Name) return Boolean;
+   --  Returns true if the expression N occurs within a pragma. If Name /=
+   --  No_Name returns true if the expression occurs within a pragma with
+   --  the given name.
 
    function In_Pre_Post_Condition
      (N : Node_Id; Class_Wide_Only : Boolean := False) return Boolean;
@@ -3368,6 +3371,11 @@ package Sem_Util is
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
+
+   function Within_Spec_Static_Expression (N : Node_Id) return Boolean;
+   --  Returns True if we are preanalyzing a default expression, and N is
+   --  within a static expression. See "Handling of Default Expressions"
+   --  in the spec of package Sem for further details.
 
    procedure Warn_On_Hiding_Entity
      (N               : Node_Id;

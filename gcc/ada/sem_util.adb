@@ -13872,10 +13872,12 @@ package body Sem_Util is
    -- In_Pragma_Expression --
    --------------------------
 
-   function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean is
-      P : Node_Id;
+   function In_Pragma_Expression
+     (N : Node_Id; Nam : Name_Id := No_Name) return Boolean
+   is
+      P : Node_Id := Parent (N);
+
    begin
-      P := Parent (N);
       loop
          if No (P) then
             return False;
@@ -13885,7 +13887,9 @@ package body Sem_Util is
          elsif Is_Body_Or_Package_Declaration (P) then
             return False;
 
-         elsif Nkind (P) = N_Pragma and then Pragma_Name (P) = Nam then
+         elsif Nkind (P) = N_Pragma
+           and then (Nam = No_Name or else Pragma_Name (P) = Nam)
+         then
             return True;
 
          else
@@ -29384,6 +29388,51 @@ package body Sem_Util is
    begin
       return Scope_Within_Or_Same (Scope (E), S);
    end Within_Scope;
+
+   -----------------------------------
+   -- Within_Spec_Static_Expression --
+   -----------------------------------
+
+   function Within_Spec_Static_Expression (N : Node_Id) return Boolean is
+      P : Node_Id;
+
+   begin
+      if not In_Spec_Expression then
+         return False;
+
+      else
+         P := N;
+         loop
+            if No (P) then
+               return False;
+
+            --  Prevent the search from going too far
+
+            elsif Nkind (P) not in N_Subexpr then
+               return False;
+
+            elsif Is_OK_Static_Expression (P) then
+               return True;
+
+            --  Return True for static scalar subtypes that are prefixes of an
+            --  attribute (even if not yet marked static) since they will be
+            --  marked as static in Eval_Attribute (as called from Resolve_
+            --  Attribute).
+
+            elsif Present (Parent (P))
+              and then Nkind (Parent (P)) = N_Attribute_Reference
+              and then Is_Entity_Name (P)
+              and then Is_Type (Entity (P))
+              and then Is_OK_Static_Subtype (Entity (P))
+            then
+               return True;
+
+            else
+               P := Parent (P);
+            end if;
+         end loop;
+      end if;
+   end Within_Spec_Static_Expression;
 
    ----------------
    -- Wrong_Type --
