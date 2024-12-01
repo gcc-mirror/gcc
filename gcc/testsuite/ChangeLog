@@ -1,3 +1,11 @@
+2024-11-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/105054
+	* gfortran.dg/ptr_func_assign_6.f08: New test.
+
 2024-11-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
