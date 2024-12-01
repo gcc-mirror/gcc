@@ -124,6 +124,8 @@ void thrower2 () throw (svint8_t); // { dg-error {cannot throw or catch SVE type
 void thrower3 () throw (svint8_t); // { dg-error {cannot throw or catch SVE type 'svint8_t'} "" { target c++98_only } }
 #endif
 
+extern int bar (void);
+
 // Main tests for statements and expressions.
 
 void
