@@ -2893,6 +2893,10 @@ package body Checks is
 
       if Deref then
          Expr := Make_Explicit_Dereference (Loc, Prefix => Expr);
+
+         --  Preserve Comes_From_Source for Predicate_Check_In_Scope
+
+         Preserve_Comes_From_Source (Expr, N);
       end if;
 
       --  Disable checks to prevent an infinite recursion

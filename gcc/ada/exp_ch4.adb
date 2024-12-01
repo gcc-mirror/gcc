@@ -566,18 +566,25 @@ package body Exp_Ch4 is
       PtrT           : constant Entity_Id  := Etype (N);
       DesigT         : constant Entity_Id  := Designated_Type (PtrT);
       Special_Return : constant Boolean    := For_Special_Return_Object (N);
+      Static_Match   : constant Boolean    :=
+        not Is_Constrained (DesigT)
+          or else Subtypes_Statically_Match (T, DesigT);
 
       procedure Build_Aggregate_In_Place (Temp : Entity_Id; Typ : Entity_Id);
       --  If Exp is an aggregate to build in place, build the declaration of
-      --  Temp with Typ and initializing expression an uninitialized allocator
-      --  for Etype (Exp), then perform an in-place aggregate assignment of Exp
-      --  into the allocated memory.
+      --  object Temp with Typ and initialization expression an uninitialized
+      --  allocator for Etype (Exp), then perform in-place aggregate assignment
+      --  of Exp into the newly allocated memory.
 
       procedure Build_Explicit_Assignment (Temp : Entity_Id; Typ : Entity_Id);
       --  If Exp is a conditional expression whose expansion has been delayed,
-      --  build the declaration of Temp with Typ and initializing expression an
-      --  uninitialized allocator for Etype (Exp), then perform an assignment
-      --  of Exp into the allocated memory.
+      --  build the declaration of object Temp with Typ and initialization
+      --  expression an uninitialized allocator for Etype (Exp), then perform
+      --  assignment of Exp into the newly allocated memory.
+
+      procedure Build_Simple_Allocation (Temp : Entity_Id; Typ : Entity_Id);
+      --  Build the declaration of object Temp with Typ and initialization
+      --  expression the allocator N.
 
       ------------------------------
       -- Build_Aggregate_In_Place --
@@ -587,6 +594,7 @@ package body Exp_Ch4 is
          Temp_Decl : constant Node_Id :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
+             Constant_Present    => True,
              Object_Definition   => New_Occurrence_Of (Typ, Loc),
              Expression          =>
                Make_Allocator (Loc,
@@ -625,6 +633,7 @@ package body Exp_Ch4 is
          Temp_Decl : constant Node_Id :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
+             Constant_Present    => True,
              Object_Definition   => New_Occurrence_Of (Typ, Loc),
              Expression          =>
                Make_Allocator (Loc,
@@ -653,21 +662,41 @@ package body Exp_Ch4 is
          Insert_Action (N, Assign);
       end Build_Explicit_Assignment;
 
+      -----------------------------
+      -- Build_Simple_Allocation --
+      -----------------------------
+
+      procedure Build_Simple_Allocation (Temp : Entity_Id; Typ : Entity_Id) is
+         New_N     : constant Node_Id := Relocate_Node (N);
+         Temp_Decl : constant Node_Id :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Temp,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Typ, Loc),
+             Expression          => New_N);
+
+      begin
+         --  Avoid recursion in the mechanism
+
+         Set_Analyzed (New_N);
+
+         Insert_Action (N, Temp_Decl);
+      end Build_Simple_Allocation;
+
       --  Local variables
 
-      Adj_Call          : Node_Id;
       Aggr_In_Place     : Boolean;
       Container_Aggr    : Boolean;
       Delayed_Cond_Expr : Boolean;
-      Node              : Node_Id;
-      Temp              : Entity_Id;
-      Temp_Decl         : Node_Id;
 
       TagT : Entity_Id := Empty;
       --  Type used as source for tag assignment
 
       TagR : Node_Id := Empty;
       --  Target reference for tag assignment
+
+      Temp : Entity_Id;
+      --  Temporary used to hold the result of the allocator
 
    --  Start of processing for Expand_Allocator_Expression
 
@@ -688,31 +717,42 @@ package body Exp_Ch4 is
       --  both constraints. First check against the type of the qualified
       --  expression.
 
+      --  Note that we delay applying predicate checks, because this may
+      --  cause the creation of a temporary, which is illegal for limited
+      --  types and just inefficient in the other cases.
+
       Apply_Constraint_Check (Exp, T, No_Sliding => True);
 
-      Aggr_In_Place     := Is_Delayed_Aggregate (Exp);
-      Delayed_Cond_Expr := Is_Delayed_Conditional_Expression (Exp);
-      Container_Aggr    := Nkind (Exp) = N_Aggregate
-                             and then Has_Aspect (T, Aspect_Aggregate);
+      if Do_Range_Check (Exp) then
+         Generate_Range_Check (Exp, T, CE_Range_Check_Failed);
+      end if;
 
-      --  If the expression is an aggregate to be built in place, then we need
-      --  to delay applying predicate checks, because this would result in the
-      --  creation of a temporary, which is illegal for limited types and just
-      --  inefficient in the other cases. Likewise for a conditional expression
-      --  whose expansion has been delayed and for container aggregates.
+      --  A check is also needed in cases where the designated subtype is
+      --  constrained and differs from the subtype given in the qualified
+      --  expression. Note that the check on the qualified expression does
+      --  not allow sliding, but this check does (a relaxation from Ada 83).
 
-      if not Aggr_In_Place
-        and then not Delayed_Cond_Expr
-        and then not Container_Aggr
-      then
-         Apply_Predicate_Check (Exp, T);
+      if not Static_Match then
+         Apply_Constraint_Check (Exp, DesigT, No_Sliding => False);
+
+         if Do_Range_Check (Exp) then
+            Generate_Range_Check (Exp, DesigT, CE_Range_Check_Failed);
+         end if;
+      end if;
+
+      --  Propagate Constraint_Error and return
+
+      if Nkind (Exp) = N_Raise_Constraint_Error then
+         Rewrite (N, New_Copy (Exp));
+         Set_Etype (N, PtrT);
+         return;
       end if;
 
       --  Check that any anonymous access discriminants are suitable
       --  for use in an allocator.
 
-      --  Note: This check is performed here instead of during analysis so that
-      --  we can check against the fully resolved etype of Exp.
+      --  Note: This check is performed here instead of during analysis
+      --  so that we can check against the fully resolved Etype of Exp.
 
       if Is_Entity_Name (Exp)
         and then Has_Anonymous_Access_Discriminant (Etype (Exp))
@@ -740,49 +780,22 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      if Do_Range_Check (Exp) then
-         Generate_Range_Check (Exp, T, CE_Range_Check_Failed);
-      end if;
-
-      --  A check is also needed in cases where the designated subtype is
-      --  constrained and differs from the subtype given in the qualified
-      --  expression. Note that the check on the qualified expression does
-      --  not allow sliding, but this check does (a relaxation from Ada 83).
-
-      if Is_Constrained (DesigT)
-        and then not Subtypes_Statically_Match (T, DesigT)
-      then
-         Apply_Constraint_Check (Exp, DesigT, No_Sliding => False);
-
-         Apply_Predicate_Check (Exp, DesigT);
-
-         if Do_Range_Check (Exp) then
-            Generate_Range_Check (Exp, DesigT, CE_Range_Check_Failed);
-         end if;
-      end if;
-
-      if Nkind (Exp) = N_Raise_Constraint_Error then
-         Rewrite (N, New_Copy (Exp));
-         Set_Etype (N, PtrT);
-         return;
-      end if;
+      Aggr_In_Place     := Is_Delayed_Aggregate (Exp);
+      Delayed_Cond_Expr := Is_Delayed_Conditional_Expression (Exp);
+      Container_Aggr    := Nkind (Exp) = N_Aggregate
+                             and then Has_Aspect (T, Aspect_Aggregate);
 
       --  An allocator with a container aggregate as qualified expression must
       --  be rewritten into the form expected by Expand_Container_Aggregate.
 
       if Container_Aggr then
          Temp := Make_Temporary (Loc, 'P', N);
-         Temp_Decl :=
+         Set_Analyzed (Exp, False);
+         Insert_Action (N,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
              Object_Definition   => New_Occurrence_Of (PtrT, Loc),
-             Expression          => Relocate_Node (N));
-
-         Set_Analyzed (Exp, False);
-         Insert_Action (N, Temp_Decl);
-         Rewrite (N, New_Occurrence_Of (Temp, Loc));
-         Analyze_And_Resolve (N, PtrT);
-         Apply_Predicate_Check (N, T, Deref => True);
+             Expression          => Relocate_Node (N)));
 
       --  Case of tagged type or type requiring finalization
 
@@ -812,21 +825,11 @@ package body Exp_Ch4 is
             return;
          end if;
 
-         --  Actions inserted before:
-         --    Temp : constant PtrT := new T'(Expression);
-         --    Temp._tag = T'tag;  --  when not class-wide
-         --    [Deep_]Adjust (Temp.all);
-
-         --  We analyze by hand the new internal allocator to avoid any
-         --  recursion and inappropriate call to Initialize.
-
-         Temp := Make_Temporary (Loc, 'P', N);
-
          --  For a class wide allocation generate the following code:
 
          --    type Equiv_Record is record ... end record;
          --    implicit subtype CW is <Class_Wide_Subytpe>;
-         --    temp : PtrT := new CW'(CW!(expr));
+         --    Temp : PtrT := new CW'(CW!(expr));
 
          if Is_Class_Wide_Type (T) then
             Expand_Subtype_From_Expr (Empty, T, Indic, Exp);
@@ -859,6 +862,16 @@ package body Exp_Ch4 is
             Analyze_And_Resolve (Expression (N), Entity (Indic));
          end if;
 
+         --  Actions inserted before:
+         --    Temp : constant PtrT := new T'(Expression);
+         --    Temp._tag = T'tag;  --  when not class-wide
+         --    [Deep_]Adjust (Temp.all);
+
+         --  We analyze by hand the new internal allocator to avoid any
+         --  recursion and inappropriate call to Initialize.
+
+         Temp := Make_Temporary (Loc, 'P', N);
+
          --  Processing for allocators returning non-interface types
 
          if not Is_Interface (DesigT) then
@@ -869,17 +882,7 @@ package body Exp_Ch4 is
                Build_Explicit_Assignment (Temp, PtrT);
 
             else
-               Node := Relocate_Node (N);
-               Set_Analyzed (Node);
-
-               Temp_Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Temp,
-                   Constant_Present    => True,
-                   Object_Definition   => New_Occurrence_Of (PtrT, Loc),
-                   Expression          => Node);
-
-               Insert_Action (N, Temp_Decl);
+               Build_Simple_Allocation (Temp, PtrT);
             end if;
 
          --  Ada 2005 (AI-251): Handle allocators whose designated type is an
@@ -888,11 +891,11 @@ package body Exp_Ch4 is
 
          else
             declare
-               Def_Id   : constant Entity_Id := Make_Temporary (Loc, 'T');
-               New_Decl : Node_Id;
+               Def_Id   : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+               New_Temp : constant Entity_Id := Make_Temporary (Loc, 'P', N);
 
             begin
-               New_Decl :=
+               Insert_Action (N,
                  Make_Full_Type_Declaration (Loc,
                    Defining_Identifier => Def_Id,
                    Type_Definition     =>
@@ -900,11 +903,9 @@ package body Exp_Ch4 is
                        All_Present            => True,
                        Null_Exclusion_Present => False,
                        Constant_Present       =>
-                         Is_Access_Constant (Etype (N)),
+                         Is_Access_Constant (PtrT),
                        Subtype_Indication     =>
-                         New_Occurrence_Of (Etype (Exp), Loc)));
-
-               Insert_Action (N, New_Decl);
+                         New_Occurrence_Of (Etype (Exp), Loc))));
 
                --  Inherit the allocation-related attributes from the original
                --  access type.
@@ -918,23 +919,13 @@ package body Exp_Ch4 is
                --  Declare the object using the previous type declaration
 
                if Aggr_In_Place then
-                  Build_Aggregate_In_Place (Temp, Def_Id);
+                  Build_Aggregate_In_Place (New_Temp, Def_Id);
 
                elsif Delayed_Cond_Expr then
-                  Build_Explicit_Assignment (Temp, Def_Id);
+                  Build_Explicit_Assignment (New_Temp, Def_Id);
 
                else
-                  Node := Relocate_Node (N);
-                  Set_Analyzed (Node);
-
-                  Temp_Decl :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Temp,
-                      Constant_Present    => True,
-                      Object_Definition   => New_Occurrence_Of (Def_Id, Loc),
-                      Expression          => Node);
-
-                  Insert_Action (N, Temp_Decl);
+                  Build_Simple_Allocation (New_Temp, Def_Id);
                end if;
 
                --  Generate an additional object containing the address of the
@@ -944,18 +935,13 @@ package body Exp_Ch4 is
                --  this pointer to reference the component associated with the
                --  interface type will be done at the end of common processing.
 
-               New_Decl :=
+               Insert_Action (N,
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier => Make_Temporary (Loc, 'P'),
+                   Defining_Identifier => Temp,
                    Object_Definition   => New_Occurrence_Of (PtrT, Loc),
                    Expression          =>
                      Unchecked_Convert_To (PtrT,
-                       New_Occurrence_Of (Temp, Loc)));
-
-               Insert_Action (N, New_Decl);
-
-               Temp_Decl := New_Decl;
-               Temp      := Defining_Identifier (New_Decl);
+                       New_Occurrence_Of (New_Temp, Loc))));
             end;
          end if;
 
@@ -970,9 +956,8 @@ package body Exp_Ch4 is
          --  Ada 2005 (AI-251): Suppress the tag assignment with class-wide
          --  interface objects because in this case the tag does not change.
 
-         elsif Is_Interface (Directly_Designated_Type (Etype (N))) then
-            pragma Assert (Is_Class_Wide_Type
-                            (Directly_Designated_Type (Etype (N))));
+         elsif Is_Interface (DesigT) then
+            pragma Assert (Is_Class_Wide_Type (DesigT));
             null;
 
          --  Likewise if the allocator is made for a special return object
@@ -1022,21 +1007,23 @@ package body Exp_Ch4 is
            and then Nkind (Exp) /= N_Function_Call
            and then not Special_Return
          then
-            --  An unchecked conversion is needed in the classwide case because
-            --  the designated type can be an ancestor of the subtype mark of
-            --  the allocator.
+            declare
+               Adj_Call : constant Node_Id :=
+                 Make_Adjust_Call
+                   (Obj_Ref =>
+                      Unchecked_Convert_To (T,
+                        Make_Explicit_Dereference (Loc,
+                          Prefix => New_Occurrence_Of (Temp, Loc))),
+                    Typ     => T);
+               --  An unchecked conversion is needed in the CW case because
+               --  the designated type can be an ancestor of the subtype mark
+               --  of the allocator.
 
-            Adj_Call :=
-              Make_Adjust_Call
-                (Obj_Ref =>
-                   Unchecked_Convert_To (T,
-                     Make_Explicit_Dereference (Loc,
-                       Prefix => New_Occurrence_Of (Temp, Loc))),
-                 Typ     => T);
-
-            if Present (Adj_Call) then
-               Insert_Action (N, Adj_Call);
-            end if;
+            begin
+               if Present (Adj_Call) then
+                  Insert_Action (N, Adj_Call);
+               end if;
+            end;
          end if;
 
          --  This needs to done before generating the accessibility check below
@@ -1051,30 +1038,12 @@ package body Exp_Ch4 is
 
          Apply_Accessibility_Check_For_Allocator (N, Exp, Temp);
 
-         Rewrite (N, New_Occurrence_Of (Temp, Loc));
-         Analyze_And_Resolve (N, PtrT);
-
-         if Aggr_In_Place or else Delayed_Cond_Expr then
-            Apply_Predicate_Check (N, T, Deref => True);
-         end if;
-
-         --  Ada 2005 (AI-251): Displace the pointer to reference the record
-         --  component containing the secondary dispatch table of the interface
-         --  type.
-
-         if Is_Interface (DesigT) then
-            Displace_Allocator_Pointer (N);
-         end if;
-
       --  Case of aggregate built in place
 
       elsif Aggr_In_Place then
          Temp := Make_Temporary (Loc, 'P', N);
          Build_Aggregate_In_Place (Temp, PtrT);
          Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
-         Rewrite (N, New_Occurrence_Of (Temp, Loc));
-         Analyze_And_Resolve (N, PtrT);
-         Apply_Predicate_Check (N, T, Deref => True);
 
       --  If the initialization expression is a conditional expression whose
       --  expansion has been delayed, assign it explicitly to the allocator,
@@ -1084,13 +1053,19 @@ package body Exp_Ch4 is
          Temp := Make_Temporary (Loc, 'P', N);
          Build_Explicit_Assignment (Temp, PtrT);
          Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
-         Rewrite (N, New_Occurrence_Of (Temp, Loc));
-         Analyze_And_Resolve (N, PtrT);
-         Apply_Predicate_Check (N, T, Deref => True);
 
       --  Default case
 
       else
+         --  Ada 2005 (AI-318-02): If the initialization expression is a call
+         --  to a build-in-place function, then access to the allocated object
+         --  must be passed to the function.
+
+         if Is_Build_In_Place_Function_Call (Exp) then
+            Make_Build_In_Place_Call_In_Allocator (N, Exp);
+            return;
+         end if;
+
          if Is_Access_Type (T) and then Can_Never_Be_Null (T) then
             Install_Null_Excluding_Check (Exp);
          end if;
@@ -1111,8 +1086,6 @@ package body Exp_Ch4 is
             end if;
          end if;
 
-         Build_Allocate_Deallocate_Proc (N);
-
          --  For an access-to-unconstrained-packed-array type, build an
          --  expression with a constrained subtype in order for the code
          --  generator to compute the proper size for the allocator.
@@ -1132,13 +1105,37 @@ package body Exp_Ch4 is
             end;
          end if;
 
-         --  Ada 2005 (AI-318-02): If the initialization expression is a call
-         --  to a build-in-place function, then access to the allocated object
-         --  must be passed to the function.
+         --  ??? If the allocator is present inside a record type, then the
+         --  actions are attached to the current scope, to be inserted and
+         --  analyzed on exit from the scope, so we cannot do any rewriting.
 
-         if Is_Build_In_Place_Function_Call (Exp) then
-            Make_Build_In_Place_Call_In_Allocator (N, Exp);
+         if Is_Record_Type (Current_Scope)
+           and then not Is_Frozen (Current_Scope)
+         then
+            Build_Allocate_Deallocate_Proc (N);
+            return;
          end if;
+
+         Temp := Make_Temporary (Loc, 'P', N);
+         Build_Simple_Allocation (Temp, PtrT);
+         Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
+      end if;
+
+      Rewrite (N, New_Occurrence_Of (Temp, Loc));
+      Preserve_Comes_From_Source (N, Original_Node (N));
+      Analyze_And_Resolve (N, PtrT);
+
+      Apply_Predicate_Check (N, T, Deref => True);
+      if not Static_Match then
+         Apply_Predicate_Check (N, DesigT, Deref => True);
+      end if;
+
+      --  Ada 2005 (AI-251): Displace the pointer to reference the record
+      --  component containing the secondary dispatch table of the interface
+      --  type.
+
+      if Is_Interface (DesigT) then
+         Displace_Allocator_Pointer (N);
       end if;
 
    exception

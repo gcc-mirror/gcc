@@ -731,14 +731,14 @@ package body Sem_Ch4 is
          Check_Fully_Declared (Type_Id, N);
 
          --  Ada 2005 (AI-231): If the designated type is itself an access
-         --  type that excludes null, its default initialization will
-         --  be a null object, and we can insert an unconditional raise
+         --  type that excludes null, its default initialization (if any)
+         --  will be a null object and we can insert an unconditional raise
          --  before the allocator.
 
          --  Ada 2012 (AI-104): A not null indication here is altogether
          --  illegal.
 
-         if Can_Never_Be_Null (Type_Id) then
+         if Can_Never_Be_Null (Type_Id) and then not No_Initialization (N) then
             if Expander_Active then
                Apply_Compile_Time_Constraint_Error
                  (N, "null value not allowed here??", CE_Null_Not_Allowed);
