@@ -43,7 +43,7 @@ package System.Double_Real is
    pragma Pure;
 
    type Double_T is record
-     Hi, Lo : Num;
+      Hi, Lo : Num;
    end record;
 
    function To_Double (N : Num) return Double_T is ((Hi => N, Lo => 0.0));

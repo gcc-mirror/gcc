@@ -79,9 +79,9 @@ with Warnsw;         use Warnsw;
 package body Exp_Aggr is
 
    type Case_Bounds is record
-     Choice_Lo   : Node_Id;
-     Choice_Hi   : Node_Id;
-     Choice_Node : Node_Id;
+      Choice_Lo   : Node_Id;
+      Choice_Hi   : Node_Id;
+      Choice_Node : Node_Id;
    end record;
 
    type Case_Table_Type is array (Nat range <>) of Case_Bounds;

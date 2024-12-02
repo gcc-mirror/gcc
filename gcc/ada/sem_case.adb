@@ -58,9 +58,9 @@ with GNAT.Sets;
 package body Sem_Case is
 
    type Choice_Bounds is record
-     Lo   : Node_Id;
-     Hi   : Node_Id;
-     Node : Node_Id;
+      Lo   : Node_Id;
+      Hi   : Node_Id;
+      Node : Node_Id;
    end record;
    --  Represent one choice bounds entry with Lo and Hi values, Node points
    --  to the choice node itself.
