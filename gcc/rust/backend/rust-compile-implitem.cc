@@ -45,9 +45,16 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
   rust_assert (canonical_path);
 
   HIR::Expr &const_value_expr = constant.get_expr ();
+  TyTy::BaseType *expr_type = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    const_value_expr.get_mappings ().get_hirid (), &expr_type);
+  rust_assert (ok);
+
   tree const_expr
-    = compile_constant_item (resolved_type, *canonical_path, const_value_expr,
-			     constant.get_locus ());
+    = compile_constant_item (constant.get_mappings ().get_hirid (), expr_type,
+			     resolved_type, *canonical_path, const_value_expr,
+			     constant.get_locus (),
+			     const_value_expr.get_locus ());
   ctx->push_const (const_expr);
   ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
 

@@ -35,9 +35,15 @@ CompileItem::visit (HIR::StaticItem &var)
       return;
     }
 
+  HIR::Expr &const_value_expr = var.get_expr ();
+
   TyTy::BaseType *resolved_type = nullptr;
+  TyTy::BaseType *expr_type = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (var.get_mappings ().get_hirid (),
 					    &resolved_type);
+  rust_assert (ok);
+  ok = ctx->get_tyctx ()->lookup_type (
+    const_value_expr.get_mappings ().get_hirid (), &expr_type);
   rust_assert (ok);
 
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
@@ -60,10 +66,11 @@ CompileItem::visit (HIR::StaticItem &var)
 
   rust_assert (canonical_path.has_value ());
 
-  HIR::Expr &const_value_expr = var.get_expr ();
   ctx->push_const_context ();
-  tree value = compile_constant_item (resolved_type, *canonical_path,
-				      const_value_expr, var.get_locus ());
+  tree value
+    = compile_constant_item (var.get_mappings ().get_hirid (), expr_type,
+			     resolved_type, *canonical_path, const_value_expr,
+			     var.get_locus (), const_value_expr.get_locus ());
   ctx->pop_const_context ();
 
   std::string name = canonical_path->get ();
@@ -89,16 +96,21 @@ CompileItem::visit (HIR::StaticItem &var)
 void
 CompileItem::visit (HIR::ConstantItem &constant)
 {
+  HIR::Expr &const_value_expr = constant.get_expr ();
   auto &mappings = constant.get_mappings ();
 
   if (ctx->lookup_const_decl (mappings.get_hirid (), &reference))
     return;
 
   // resolve the type
-  TyTy::BaseType *resolved_type = nullptr;
+  TyTy::BaseType *constant_type = nullptr;
+  TyTy::BaseType *expr_type = nullptr;
 
   bool ok
-    = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &resolved_type);
+    = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &constant_type);
+  rust_assert (ok);
+  ok = ctx->get_tyctx ()->lookup_type (
+    const_value_expr.get_mappings ().get_hirid (), &expr_type);
   rust_assert (ok);
 
   // canonical path
@@ -120,11 +132,12 @@ CompileItem::visit (HIR::ConstantItem &constant)
 			 .value ();
     }
 
-  HIR::Expr &const_value_expr = constant.get_expr ();
   ctx->push_const_context ();
   tree const_expr
-    = compile_constant_item (resolved_type, canonical_path, const_value_expr,
-			     constant.get_locus ());
+    = compile_constant_item (mappings.get_hirid (), expr_type, constant_type,
+			     canonical_path, const_value_expr,
+			     constant.get_locus (),
+			     const_value_expr.get_locus ());
   ctx->pop_const_context ();
 
   ctx->push_const (const_expr);
