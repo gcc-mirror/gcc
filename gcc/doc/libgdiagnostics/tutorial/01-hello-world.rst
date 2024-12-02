@@ -41,7 +41,7 @@ using:
   $ gcc \
       tut01-hello-world.c \
       -o tut01-hello-world \
-      -ldiagnostics
+      -lgdiagnostics
 
 You should then be able to run the built program:
 
