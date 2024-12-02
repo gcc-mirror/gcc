@@ -81,7 +81,8 @@ BEGIN
    ELSE
       RTExceptions.Raise(ORD(M2EXCEPTION.coException),
                          ADR(__FILE__), __LINE__, __COLUMN__, ADR(__FUNCTION__),
-                         ADR('current coroutine is not in the exceptional execution state'))
+                         ADR('current coroutine is not in the exceptional execution state')) ;
+      RETURN VAL (ExceptionNumber, M2EXCEPTION.exException)
    END
 END CurrentNumber ;
 

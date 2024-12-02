@@ -496,6 +496,7 @@ extern "C" void M2RTS_Halt (const char *description_, unsigned int _description_
   memcpy (function, function_, _function_high+1);
 
   M2RTS_ErrorMessage ((const char *) description, _description_high, (const char *) filename, _filename_high, line, (const char *) function, _function_high);
+  libc_exit (1);
 }
 
 
@@ -508,6 +509,7 @@ extern "C" void M2RTS_Halt (const char *description_, unsigned int _description_
 extern "C" void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line)
 {
   ErrorMessageC (description, filename, line, function);
+  libc_exit (1);
 }
 
 
