@@ -6780,6 +6780,8 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 {
   if (CONST_INT_P (operands[2]))
     {
+      int reg0 = REGNO (operands[0]);
+      int reg1 = REGNO (operands[1]);
       bool ldreg_p = test_hard_reg_class (LD_REGS, operands[0]);
       int offs = INTVAL (operands[2]);
 
@@ -6787,7 +6789,7 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	*plen = 0;
 
       if (offs <= 3
-	  || (offs <= 6 && ! ldreg_p))
+	  || (offs <= 5 && ! ldreg_p))
 	{
 	  for (int i = 0; i < offs; ++i)
 	    avr_asm_len ("lsl %0", operands, plen, 1);
@@ -6814,10 +6816,28 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			      "lsl %0"  CR_TAB
 			      "andi %0,0xe0", operands, plen, 3);
 	case 6:
-	  return avr_asm_len ("swap %0" CR_TAB
-			      "lsl %0"  CR_TAB
-			      "lsl %0"  CR_TAB
-			      "andi %0,0xc0", operands, plen, 4);
+	  if (ldreg_p && reg0 == reg1)
+	    return avr_asm_len ("swap %0" CR_TAB
+				"lsl %0"  CR_TAB
+				"lsl %0"  CR_TAB
+				"andi %0,0xc0", operands, plen, 4);
+	  if (ldreg_p && reg0 != reg1 && AVR_HAVE_MUL)
+	    return avr_asm_len ("ldi %0,1<<6" CR_TAB
+				"mul %0,%1"   CR_TAB
+				"mov %0,r0"   CR_TAB
+				"clr __zero_reg__", operands, plen, 4);
+	  return reg0 != reg1
+	    ? avr_asm_len ("clr %0"    CR_TAB
+			   "bst %1,0"  CR_TAB
+			   "bld %0,6"  CR_TAB
+			   "bst %1,1"  CR_TAB
+			   "bld %0,7", operands, plen, 5)
+	    : avr_asm_len ("lsl %0"  CR_TAB
+			   "lsl %0"  CR_TAB
+			   "lsl %0"  CR_TAB
+			   "lsl %0"  CR_TAB
+			   "lsl %0"  CR_TAB
+			   "lsl %0", operands, plen, 6);
 	case 7:
 	  return avr_asm_len ("bst %1,0" CR_TAB
 			      "clr %0"   CR_TAB
@@ -7663,6 +7683,8 @@ lshrqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 {
   if (CONST_INT_P (operands[2]))
     {
+      int reg0 = REGNO (operands[0]);
+      int reg1 = REGNO (operands[1]);
       bool ldreg_p = test_hard_reg_class (LD_REGS, operands[0]);
       int offs = INTVAL (operands[2]);
 
@@ -7670,7 +7692,7 @@ lshrqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	*plen = 0;
 
       if (offs <= 3
-	  || (offs <= 6 && ! ldreg_p))
+	  || (offs <= 5 && ! ldreg_p))
 	{
 	  for (int i = 0; i < offs; ++i)
 	    avr_asm_len ("lsr %0", operands, plen, 1);
@@ -7697,10 +7719,28 @@ lshrqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			      "lsr %0"  CR_TAB
 			      "andi %0,0x7", operands, plen, 3);
 	case 6:
-	  return avr_asm_len ("swap %0" CR_TAB
-			      "lsr %0"  CR_TAB
-			      "lsr %0"  CR_TAB
-			      "andi %0,0x3", operands, plen, 4);
+	  if (ldreg_p && reg0 == reg1)
+	    return avr_asm_len ("swap %0" CR_TAB
+				"lsr %0"  CR_TAB
+				"lsr %0"  CR_TAB
+				"andi %0,0x3", operands, plen, 4);
+	  if (ldreg_p && reg0 != reg1 && AVR_HAVE_MUL)
+	    return avr_asm_len ("ldi %0,1<<2" CR_TAB
+				"mul %0,%1"   CR_TAB
+				"mov %0,r1"   CR_TAB
+				"clr __zero_reg__", operands, plen, 4);
+	  return reg0 != reg1
+	    ? avr_asm_len ("clr %0"    CR_TAB
+			   "bst %1,6"  CR_TAB
+			   "bld %0,0"  CR_TAB
+			   "bst %1,7"  CR_TAB
+			   "bld %0,1", operands, plen, 5)
+	    : avr_asm_len ("lsr %0"  CR_TAB
+			   "lsr %0"  CR_TAB
+			   "lsr %0"  CR_TAB
+			   "lsr %0"  CR_TAB
+			   "lsr %0"  CR_TAB
+			   "lsr %0", operands, plen, 6);
 	case 7:
 	  return avr_asm_len ("bst %1,7" CR_TAB
 			      "clr %0"   CR_TAB
@@ -12528,7 +12568,9 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    {
 	      if (val1 == 7)
 		*total = COSTS_N_INSNS (3);
-	      else if (val1 >= 0 && val1 <= 7)
+	      else if (val1 == 6)
+		*total = COSTS_N_INSNS (5 - AVR_HAVE_MUL);
+	      else if (val1 >= 0 && val1 <= 5)
 		*total = COSTS_N_INSNS (val1);
 	      else
 		*total = COSTS_N_INSNS (1);
@@ -12688,7 +12730,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		*total = COSTS_N_INSNS (4);
 	      else if (val1 == 7)
 		*total = COSTS_N_INSNS (2);
-	      else if (val1 >= 0 && val1 <= 7)
+	      else if (val1 >= 0 && val1 <= 5)
 		*total = COSTS_N_INSNS (val1);
 	      else
 		*total = COSTS_N_INSNS (1);
@@ -12851,7 +12893,9 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    {
 	      if (val1 == 7)
 		*total = COSTS_N_INSNS (3);
-	      else if (val1 >= 0 && val1 <= 7)
+	      else if (val1 == 6)
+		*total = COSTS_N_INSNS (5 - AVR_HAVE_MUL);
+	      else if (val1 >= 0 && val1 <= 5)
 		*total = COSTS_N_INSNS (val1);
 	      else
 		*total = COSTS_N_INSNS (1);

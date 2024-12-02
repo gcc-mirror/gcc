@@ -5122,9 +5122,9 @@
 ;; "*ashlqi3"
 ;; "*ashlqq3"  "*ashluqq3"
 (define_insn_and_split "*ashl<mode>3_split"
-  [(set (match_operand:ALL1 0 "register_operand"              "=r,r,r,r,r  ,!d,r,r")
-        (ashift:ALL1 (match_operand:ALL1 1 "register_operand"  "0,0,0,0,r  ,0 ,0,0")
-                     (match_operand:QI 2 "nop_general_operand" "r,L,P,K,C07,n ,n,Qm")))]
+  [(set (match_operand:ALL1 0 "register_operand"              "=r,r  ,r      ,r,r")
+        (ashift:ALL1 (match_operand:ALL1 1 "register_operand"  "0,0  ,r      ,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,LPK,C07 C06,n,Qm")))]
   ""
   "#"
   "&& reload_completed"
@@ -5134,15 +5134,15 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashl<mode>3"
-  [(set (match_operand:ALL1 0 "register_operand"              "=r,r,r,r,r  ,!d,r,r")
-        (ashift:ALL1 (match_operand:ALL1 1 "register_operand"  "0,0,0,0,r  ,0 ,0,0")
-                     (match_operand:QI 2 "nop_general_operand" "r,L,P,K,C07,n ,n,Qm")))
+  [(set (match_operand:ALL1 0 "register_operand"              "=r,r  ,r      ,r,r")
+        (ashift:ALL1 (match_operand:ALL1 1 "register_operand"  "0,0  ,r      ,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,LPK,C07 C06,n,Qm")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashlqi3_out (insn, operands, NULL);
   }
-  [(set_attr "length" "5,0,1,2,3,4,6,9")
+  [(set_attr "length" "9")
    (set_attr "adjust_len" "ashlqi")])
 
 ;; "ashlhi3"
@@ -5747,9 +5747,9 @@
 ;; "*lshrqq3"
 ;; "*lshruqq3"
 (define_insn_and_split "*lshr<mode>3_split"
-  [(set (match_operand:ALL1 0 "register_operand"                  "=r,r,r,r,r  ,!d,r,r")
-        (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0,0,0,r  ,0 ,0,0")
-                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,K,C07,n ,n,Qm")))]
+  [(set (match_operand:ALL1 0 "register_operand"                  "=r,r  ,r      ,r,r")
+        (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0  ,r      ,0,0")
+                       (match_operand:QI 2 "nop_general_operand"   "r,LPK,C07 C06,n,Qm")))]
   ""
   "#"
   "&& reload_completed"
@@ -5759,9 +5759,9 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*lshr<mode>3"
-  [(set (match_operand:ALL1 0 "register_operand"                  "=r,r,r,r,r  ,!d,r,r")
-        (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0,0,0,r  ,0 ,0,0")
-                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,K,C07,n ,n,Qm")))
+  [(set (match_operand:ALL1 0 "register_operand"                  "=r,r  ,r      ,r,r")
+        (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0  ,r      ,0,0")
+                       (match_operand:QI 2 "nop_general_operand"   "r,LPK,C07 C06,n,Qm")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {

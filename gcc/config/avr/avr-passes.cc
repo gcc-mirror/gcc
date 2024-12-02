@@ -4899,6 +4899,8 @@ avr_emit_shift (rtx_code code, rtx dest, rtx src, int off, rtx scratch)
   // Work out which alternatives can handle 3 operands independent
   // of options.
 
+  const bool b8_is_3op = off == 6;
+
   const bool b16_is_3op = select<bool>()
     : code == ASHIFT ? satisfies_constraint_C7c (xoff) // 7...12
     : code == LSHIFTRT ? satisfies_constraint_C7c (xoff)
@@ -4914,6 +4916,7 @@ avr_emit_shift (rtx_code code, rtx dest, rtx src, int off, rtx scratch)
   const bool is_3op = (off % 8 == 0
 		       || off == n_bits - 1
 		       || (code == ASHIFTRT && off == n_bits - 2)
+		       || (n_bits == 8 && b8_is_3op)
 		       || (n_bits == 16 && b16_is_3op)
 		       || (n_bits == 24 && b24_is_3op));
   rtx shift;
