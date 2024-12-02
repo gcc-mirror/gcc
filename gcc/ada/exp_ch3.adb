@@ -38,7 +38,6 @@ with Exp_Ch4;        use Exp_Ch4;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Ch9;        use Exp_Ch9;
-with Exp_Dbug;       use Exp_Dbug;
 with Exp_Disp;       use Exp_Disp;
 with Exp_Dist;       use Exp_Dist;
 with Exp_Put_Image;
@@ -9134,35 +9133,7 @@ package body Exp_Ch3 is
       --  illegal code if written by hand, but that's OK.
 
       if Rewrite_As_Renaming then
-         Rewrite (N,
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Subtype_Mark        => New_Occurrence_Of (Etype (Def_Id), Loc),
-             Name                => Expr_Q));
-
-         --  Keep original aspects
-
-         Move_Aspects (Original_Node (N), N);
-
-         --  We do not analyze this renaming declaration, because all its
-         --  components have already been analyzed, and if we were to go
-         --  ahead and analyze it, we would in effect be trying to generate
-         --  another declaration of X, which won't do.
-
-         Set_Renamed_Object (Def_Id, Expr_Q);
-         Set_Analyzed (N);
-
-         --  We do need to deal with debug issues for this renaming
-
-         --  First, if entity comes from source, then mark it as needing
-         --  debug information, even though it is defined by a generated
-         --  renaming that does not come from source.
-
-         Set_Debug_Info_Defining_Id (N);
-
-         --  Now call the routine to generate debug info for the renaming
-
-         Insert_Action (N, Debug_Renaming_Declaration (N));
+         Rewrite_Object_Declaration_As_Renaming (N, Expr_Q);
       end if;
 
    --  Exception on library entity not available

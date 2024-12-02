@@ -2546,7 +2546,8 @@ package body Exp_Ch7 is
                elsif Ekind (Obj_Id) = E_Variable
                  and then Is_RTE (Obj_Typ, RE_Master_Node)
                then
-                  Processing_Actions (Decl);
+                  Processing_Actions
+                    (Decl, Strict => not Is_Independent (Obj_Id));
 
                --  The object is of the form:
                --    Obj : [constant] Typ [:= Expr];
