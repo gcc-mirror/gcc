@@ -49,6 +49,8 @@ t-nvptx-gen-multilib-matches: $(srcdir)/config/nvptx/gen-multilib-matches.sh \
   Makefile \
   $(srcdir)/config/nvptx/nvptx-sm.def
 	$(SHELL) $< \
+	  --selftest
+	$(SHELL) $< \
 	  $(multilib_options_isa_default) \
 	  '$(multilib_options_isa_list)' \
 	  > $@
