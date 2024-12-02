@@ -4239,6 +4239,57 @@
   [(set_attr "type" "unknown")
    (set_attr "mode" "DI")])
 
+(define_insn "@rbit<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(bitreverse:GPR (match_operand:GPR 1 "register_operand" "r")))]
+  ""
+  "bitrev.<size>\t%0,%1"
+  [(set_attr "type" "unknown")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "rbitsi_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (bitreverse:SI (match_operand:SI 1 "register_operand" "r"))))]
+  "TARGET_64BIT"
+  "bitrev.w\t%0,%1"
+  [(set_attr "type" "unknown")
+   (set_attr "mode" "SI")])
+
+;; If we don't care high bits, bitrev.4b can reverse bits of values in
+;; QImode.
+(define_insn "rbitqi"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(bitreverse:QI (match_operand:QI 1 "register_operand" "r")))]
+  ""
+  "bitrev.4b\t%0,%1"
+  [(set_attr "type" "unknown")
+   (set_attr "mode" "SI")])
+
+;; For HImode it's a little complicated...
+(define_expand "rbithi"
+  [(match_operand:HI 0 "register_operand")
+   (match_operand:HI 1 "register_operand")]
+  ""
+  {
+    rtx t = gen_reg_rtx (word_mode);
+
+    /* Oh, using paradoxical subreg.  I learnt the trick from RISC-V,
+       hoping we won't be blown up altogether one day.  */
+    emit_insn (gen_rbit(word_mode, t,
+			gen_lowpart (word_mode, operands[1])));
+    t = expand_simple_binop (word_mode, LSHIFTRT, t,
+			     GEN_INT (GET_MODE_BITSIZE (word_mode) - 16),
+			     NULL_RTX, false, OPTAB_DIRECT);
+
+    t = gen_lowpart (HImode, t);
+    SUBREG_PROMOTED_VAR_P (t) = 1;
+    SUBREG_PROMOTED_SET (t, SRP_UNSIGNED);
+    emit_move_insn (operands[0], t);
+
+    DONE;
+  })
+
 (define_insn "@stack_tie<mode>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK [(match_operand:X 0 "register_operand" "r")
