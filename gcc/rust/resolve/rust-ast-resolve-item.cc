@@ -582,7 +582,14 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
   // Setup paths
   CanonicalPath self_cpath = CanonicalPath::create_empty ();
   bool ok = ResolveTypeToCanonicalPath::go (impl_block.get_type (), self_cpath);
-  rust_assert (ok);
+  if (!ok)
+    {
+      resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
+      return;
+    }
+
   rust_debug ("AST::InherentImpl resolve Self: {%s}",
 	      self_cpath.get ().c_str ());
 
@@ -671,12 +678,17 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
       return;
     }
 
-  bool ok;
   // setup paths
   CanonicalPath canonical_trait_type = CanonicalPath::create_empty ();
-  ok = ResolveTypeToCanonicalPath::go (impl_block.get_trait_path (),
-				       canonical_trait_type);
-  rust_assert (ok);
+  bool ok = ResolveTypeToCanonicalPath::go (impl_block.get_trait_path (),
+					    canonical_trait_type);
+  if (!ok)
+    {
+      resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
+      return;
+    }
 
   rust_debug ("AST::TraitImpl resolve trait type: {%s}",
 	      canonical_trait_type.get ().c_str ());
@@ -684,7 +696,13 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   CanonicalPath canonical_impl_type = CanonicalPath::create_empty ();
   ok = ResolveTypeToCanonicalPath::go (impl_block.get_type (),
 				       canonical_impl_type);
-  rust_assert (ok);
+  if (!ok)
+    {
+      resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
+      return;
+    }
 
   rust_debug ("AST::TraitImpl resolve self: {%s}",
 	      canonical_impl_type.get ().c_str ());
