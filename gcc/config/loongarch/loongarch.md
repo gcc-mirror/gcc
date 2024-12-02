@@ -4345,13 +4345,12 @@
 
 
 
-(define_mode_iterator QHSD [QI HI SI DI])
 (define_int_iterator CRC [UNSPEC_CRC UNSPEC_CRCC])
 (define_int_attr crc [(UNSPEC_CRC "crc") (UNSPEC_CRCC "crcc")])
 
 (define_insn "loongarch_<crc>_w_<size>_w"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(match_operand:QHSD 1 "register_operand" "r")
+	(unspec:SI [(match_operand:QHWD 1 "register_operand" "r")
 		   (match_operand:SI 2 "register_operand" "r")]
 		     CRC))]
   ""
@@ -4362,7 +4361,7 @@
 (define_insn "loongarch_<crc>_w_<size>_w_extended"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
-	  (unspec:SI [(match_operand:QHSD 1 "register_operand" "r")
+	  (unspec:SI [(match_operand:QHWD 1 "register_operand" "r")
 		      (match_operand:SI 2 "register_operand" "r")]
 		     CRC)))]
   "TARGET_64BIT"
