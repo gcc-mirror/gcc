@@ -27,6 +27,7 @@ nvptx_dir=$(dirname "$0")
 
 
 nvptx_sm_def="$nvptx_dir/nvptx-sm.def"
+gen_multilib_matches_tests="$nvptx_dir/gen-multilib-matches-tests"
 
 sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
 
@@ -88,5 +89,82 @@ print_multilib_matches() {
     echo "$multilib_matches"
 }
 
-multilib_matches=$(print_multilib_matches "$sms" "$@")
-echo "multilib_matches := $multilib_matches"
+
+selftest() {
+    [ $# = 0 ]
+
+    local sms_default
+    sms_default=$sms
+
+    local name
+    unset name
+    local sms
+    unset sms
+    local multilib_options_isa_default
+    unset multilib_options_isa_default
+    local multilib_options_isa_list
+    unset multilib_options_isa_list
+    local multilib_matches_expected
+    unset multilib_matches_expected
+
+    local line
+    line=0
+    local f1 f2
+    unset f1 f2
+    while read -r f1 f2; do
+	line=$((line + 1))
+	case "$f1 $f2" in
+	    ' ' | '#'* )
+		:
+		;;
+	    'BEGIN '* )
+		name=$f2
+		sms=$sms_default
+		unset multilib_options_isa_default
+		unset multilib_options_isa_list
+		unset multilib_matches_expected
+		;;
+	    'SSMS '* )
+		sms=$f2
+		;;
+	    'SMOID '* )
+		multilib_options_isa_default=$f2
+		;;
+	    'SMOIL '* )
+		multilib_options_isa_list=$f2
+		;;
+	    'AEMM '* )
+		multilib_matches_expected="$multilib_matches_expected $f2"
+		;;
+	    'CMMC ' )
+		local multilib_matches
+		multilib_matches=$(print_multilib_matches "${sms?}" "${multilib_options_isa_default?}" "${multilib_options_isa_list?}")
+		if [ "$multilib_matches" = "$multilib_matches_expected" ]; then
+		    echo >&2 "$0": selftest PASS "${name?}" at "$gen_multilib_matches_tests:$line"
+		else
+		    echo >&2 "$0": selftest FAIL "${name?}" at "$gen_multilib_matches_tests:$line"
+		    echo >&2 expected:"$multilib_matches_expected"
+		    echo >&2 actual:"$multilib_matches"
+		    exit 1
+		fi
+		;;
+	    * )
+		echo >&2 "$0": selftest ERROR at "$gen_multilib_matches_tests:$line"
+		echo >&2 invalid directive: "$f1 $f2"
+		exit 1
+		;;
+	esac
+    done < "$gen_multilib_matches_tests"
+}
+
+
+case "${1?}" in
+    --selftest )
+	shift
+	selftest "$@"
+	:;;
+    * )
+	multilib_matches=$(print_multilib_matches "$sms" "$@")
+	echo "multilib_matches := $multilib_matches"
+	;;
+esac
