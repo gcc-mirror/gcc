@@ -1316,6 +1316,33 @@ struct sf_vqmacc_def : public build_base
   }
 };
 
+/* sf_vfnrclip_def class. Handle instructions like vfnrclip.  */
+struct sf_vfnrclip_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    if (overloaded_p && (!instance.base->can_be_overloaded_p (instance.pred)
+			  || instance.pred == PRED_TYPE_m))
+      return b.finish_name ();
+
+    if (!overloaded_p)
+      {
+	vector_type_index ret_type_idx
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
+	/* v --> v_<type>.  */
+	b.append_name (type_suffixes[ret_type_idx].vector);
+      }
+
+    /* According to SIFIVE vector-intrinsic-doc, it adds "_m\_tu\
+       _tum\_tumu\_mu" suffixes for vop_m C++ overloaded API.*/
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -1351,4 +1378,5 @@ SHAPE(crypto_vv, crypto_vv)
 SHAPE(crypto_vi, crypto_vi)
 SHAPE(crypto_vv_no_op_type, crypto_vv_no_op_type)
 SHAPE (sf_vqmacc, sf_vqmacc)
+SHAPE (sf_vfnrclip, sf_vfnrclip)
 } // end namespace riscv_vector

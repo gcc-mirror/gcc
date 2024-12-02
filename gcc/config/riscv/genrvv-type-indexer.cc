@@ -250,6 +250,7 @@ main (int argc, const char **argv)
       fprintf (fp, "  /*MASK*/ %s,\n", mode.str ().c_str ());
       fprintf (fp, "  /*SIGNED*/ INVALID,\n");
       fprintf (fp, "  /*UNSIGNED*/ INVALID,\n");
+      fprintf (fp, "  /*SIGNED_EEW8_INDEX*/ INVALID,\n");
       for (unsigned eew : {8, 16, 32, 64})
 	fprintf (fp, "  /*EEW%d_INDEX*/ INVALID,\n", eew);
       fprintf (fp, "  /*SHIFT*/ INVALID,\n");
@@ -316,6 +317,10 @@ main (int argc, const char **argv)
 		     inttype (sew, lmul_log2, /*unsigned_p*/ false).c_str ());
 	    fprintf (fp, "  /*UNSIGNED*/ %s,\n",
 		     inttype (sew, lmul_log2, /*unsigned_p*/ true).c_str ());
+	    fprintf (fp, "  /*SIGNED_EEW8_INDEX*/ %s,\n",
+		     same_ratio_eew_type (sew, lmul_log2, 8,
+					  /*unsigned_p*/ false, false)
+		       .c_str ());
 	    for (unsigned eew : {8, 16, 32, 64})
 	      fprintf (fp, "  /*EEW%d_INDEX*/ %s,\n", eew,
 		       same_ratio_eew_type (sew, lmul_log2, eew,
@@ -432,6 +437,7 @@ main (int argc, const char **argv)
 		 inttype (16, lmul_log2, /*unsigned_p*/ false).c_str ());
 	fprintf (fp, "  /*UNSIGNED*/ %s,\n",
 		 inttype (16, lmul_log2, /*unsigned_p*/ true).c_str ());
+	fprintf (fp, "  /*SIGNED_EEW8_INDEX*/ INVALID,\n");
 	for (unsigned eew : {8, 16, 32, 64})
 	  fprintf (
 	    fp, "  /*EEW%d_INDEX*/ %s,\n", eew,
@@ -505,6 +511,10 @@ main (int argc, const char **argv)
 		   inttype (sew, lmul_log2, /*unsigned_p*/ false).c_str ());
 	  fprintf (fp, "  /*UNSIGNED*/ %s,\n",
 		   inttype (sew, lmul_log2, /*unsigned_p*/ true).c_str ());
+	  fprintf (fp, "  /*SIGNED_EEW8_INDEX*/ %s,\n",
+		   same_ratio_eew_type (sew, lmul_log2, 8,
+					/*unsigned_p*/ false, false)
+		     .c_str ());
 	  for (unsigned eew : {8, 16, 32, 64})
 	    fprintf (fp, "  /*EEW%d_INDEX*/ %s,\n", eew,
 		     same_ratio_eew_type (sew, lmul_log2, eew,

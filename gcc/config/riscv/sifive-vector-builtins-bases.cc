@@ -43,6 +43,7 @@
 #include "riscv-vector-builtins.h"
 #include "riscv-vector-builtins-shapes.h"
 #include "sifive-vector-builtins-bases.h"
+#include "riscv-vector-builtins-bases.h"
 
 using namespace riscv_vector;
 
@@ -147,10 +148,59 @@ public:
   }
 };
 
+/* Implements SiFive vfnrclip.  */
+template <int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
+class sf_vfnrclip_x_f_qf : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
+  bool may_require_frm_p () const override { return true; }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred != PRED_TYPE_none;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_sf_vfnrclip_x_f_qf (UNSPEC, e.vector_mode ()));
+  }
+};
+
+template <int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
+class sf_vfnrclip_xu_f_qf : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
+  bool may_require_frm_p () const override { return true; }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred != PRED_TYPE_none;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_sf_vfnrclip_x_f_qf (UNSPEC, e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const sf_vqmacc sf_vqmacc_obj;
 static CONSTEXPR const sf_vqmaccu sf_vqmaccu_obj;
 static CONSTEXPR const sf_vqmaccsu sf_vqmaccsu_obj;
 static CONSTEXPR const sf_vqmaccus sf_vqmaccus_obj;
+static CONSTEXPR const sf_vfnrclip_x_f_qf<UNSPEC_SF_VFNRCLIP> sf_vfnrclip_x_f_qf_obj;
+static CONSTEXPR const sf_vfnrclip_xu_f_qf<UNSPEC_SF_VFNRCLIPU> sf_vfnrclip_xu_f_qf_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -161,4 +211,6 @@ BASE (sf_vqmacc)
 BASE (sf_vqmaccu)
 BASE (sf_vqmaccsu)
 BASE (sf_vqmaccus)
+BASE (sf_vfnrclip_x_f_qf)
+BASE (sf_vfnrclip_xu_f_qf)
 } // end namespace riscv_vector

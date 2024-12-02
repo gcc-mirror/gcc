@@ -103,6 +103,9 @@
   UNSPEC_WREDUC_SUM_ORDERED
   UNSPEC_WREDUC_SUM_UNORDERED
   UNSPEC_SELECT_MASK
+
+  UNSPEC_SF_VFNRCLIP
+  UNSPEC_SF_VFNRCLIPU
 ])
 
 (define_c_enum "unspecv" [
@@ -3901,6 +3904,8 @@
 
 (define_int_iterator VNCLIP [UNSPEC_VNCLIP UNSPEC_VNCLIPU])
 
+(define_int_iterator SF_VFNRCLIP [UNSPEC_SF_VFNRCLIP UNSPEC_SF_VFNRCLIPU])
+
 (define_int_iterator VSLIDES [UNSPEC_VSLIDEUP UNSPEC_VSLIDEDOWN])
 (define_int_iterator VSLIDES1 [UNSPEC_VSLIDE1UP UNSPEC_VSLIDE1DOWN])
 (define_int_iterator VFSLIDES1 [UNSPEC_VFSLIDE1UP UNSPEC_VFSLIDE1DOWN])
@@ -3929,7 +3934,8 @@
 
 (define_int_attr v_su [(UNSPEC_VMULHS "") (UNSPEC_VMULHU "u") (UNSPEC_VMULHSU "su")
 		       (UNSPEC_VNCLIP "") (UNSPEC_VNCLIPU "u")
-		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")])
+		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")
+		       (UNSPEC_SF_VFNRCLIP "") (UNSPEC_SF_VFNRCLIPU "u")])
 (define_int_attr sat_op [(UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
 			 (UNSPEC_VASUBU "asubu") (UNSPEC_VASUB "asub")
 			 (UNSPEC_VSMUL "smul") (UNSPEC_VSSRL "ssrl")
@@ -4786,4 +4792,26 @@
   (RVVM4SI "rvvm4qi")
   (RVVM2SI "rvvm2qi")
   (RVVM1SI "rvvm1qi")
+])
+
+(define_mode_iterator SF_VF [
+  (RVVM8SF "TARGET_VECTOR_ELEN_FP_32") (RVVM4SF "TARGET_VECTOR_ELEN_FP_32") (RVVM2SF "TARGET_VECTOR_ELEN_FP_32")
+  (RVVM1SF "TARGET_VECTOR_ELEN_FP_32") (RVVMF2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+])
+
+
+(define_mode_attr SF_XFQF [
+  (RVVMF2SF "RVVMF8QI")
+  (RVVM1SF "RVVMF4QI")
+  (RVVM2SF "RVVMF2QI")
+  (RVVM4SF "RVVM1QI")
+  (RVVM8SF "RVVM2QI")
+])
+
+(define_mode_attr sf_xfqf [
+  (RVVMF2SF "rvvmf8qi")
+  (RVVM1SF "rvvmf4qi")
+  (RVVM2SF "rvvmf2qi")
+  (RVVM4SF "rvvm1qi")
+  (RVVM8SF "rvvm2qi")
 ])

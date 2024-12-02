@@ -58,12 +58,6 @@ enum lst_type
   LST_INDEXED,
 };
 
-enum frm_op_type
-{
-  NO_FRM,
-  HAS_FRM,
-};
-
 /* Helper function to fold vleff and vlsegff.  */
 static gimple *
 fold_fault_load (gimple_folder &f)

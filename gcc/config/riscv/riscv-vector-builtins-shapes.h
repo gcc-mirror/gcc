@@ -61,6 +61,7 @@ extern const function_shape *const crypto_vi;
 extern const function_shape *const crypto_vv_no_op_type;
 /* Sifive vendor extension.  */
 extern const function_shape *const sf_vqmacc;
+extern const function_shape *const sf_vfnrclip;
 }
 
 } // end namespace riscv_vector
