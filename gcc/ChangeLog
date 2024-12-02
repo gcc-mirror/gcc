@@ -1,3 +1,104 @@
+2024-12-01  Slava Barinov  <v.barinov@samsung.com>
+
+	* configure.ac: Only remove -O[0-9] if not preceded with comma
+	* configure: Regenerated
+
+2024-12-01  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
+
+	* tree-ssa-phiopt.cc (rhs_is_fed_for_value_replacement): Add a new
+	optimization opportunity for BIT_IOR_EXPR and a != b.
+	(operand_equal_for_value_replacement): Ditto.
+
+2024-12-01  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* gimple-crc-optimization.cc (optimize_crc_loop): New function.
+	(execute): Add optimize_crc_loop function call.
+
+2024-12-01  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* Makefile.in (OBJS): Add crc-verification.o.
+	* crc-verification.cc: New file.
+	* crc-verification.h: New file.
+	* gimple-crc-optimization.cc (loop_calculates_crc): New function.
+	(is_output_crc): Likewise.
+	(swap_crc_and_data_if_needed): Likewise.
+	(validate_crc_and_data): Likewise.
+	(optimize_crc_loop): Likewise.
+	(get_output_phi): Likewise.
+	(execute): Add check whether potential CRC loop calculates CRC.
+	* sym-exec/sym-exec-state.cc (create_reversed_lfsr): New function.
+	(create_forward_lfsr): Likewise.
+	(last_set_bit): Likewise.
+	(create_lfsr): Likewise.
+	* sym-exec/sym-exec-state.h (is_bit_vector): Reorder, make the function public and static.
+	(create_reversed_lfsr) New static function declaration.
+	(create_forward_lfsr) New static function declaration.
+
+2024-12-01  Matevos Mehrabyan  <matevosmehrabyan@gmail.com>
+
+	* Makefile.in (OBJS): Add sym-exec/sym-exec-expression.o,
+	sym-exec/sym-exec-state.o, sym-exec/sym-exec-condition.o.
+	* configure (sym-exec): New subdir.
+	* sym-exec/sym-exec-condition.cc: New file.
+	* sym-exec/sym-exec-condition.h: New file.
+	* sym-exec/sym-exec-expr-is-a-helper.h: New file.
+	* sym-exec/sym-exec-expression.cc: New file.
+	* sym-exec/sym-exec-expression.h: New file.
+	* sym-exec/sym-exec-state.cc: New file.
+	* sym-exec/sym-exec-state.h: New file.
+	Co-authored-by: Mariam Arutunian <mariamarutunian@gmail.com>
+
+2024-12-01  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* Makefile.in (OBJS): Add gimple-crc-optimization.o.
+	* common.opt (foptimize-crc): New option.
+	* common.opt.urls: Regenerate to add foptimize-crc.
+	* doc/invoke.texi (-foptimize-crc): Add documentation.
+	* gimple-crc-optimization.cc: New file.
+	* opts.cc (default_options_table): Add OPT_foptimize_crc.
+	(enable_fdo_optimizations): Enable optimize_crc.
+	* passes.def (pass_crc_optimization): Add new pass.
+	* timevar.def (TV_GIMPLE_CRC_OPTIMIZATION): New timevar.
+	* tree-pass.h (make_pass_crc_optimization): New extern function
+	declaration.
+
+2024-12-01  Mark Harmstone  <mark@harmstone.com>
+
+	* configure.ac (HAVE_GAS_CV_UCOMP): New check.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* dwarf2codeview.cc (enum binary_annotation_opcode): Define.
+	(struct codeview_function): Add htab_next and inline_loc;
+	(struct cv_func_hasher): Define.
+	(cv_func_htab): New global variable.
+	(new_codeview_function): Add new codeview_function to hash table.
+	(codeview_begin_block): Record location of inline block.
+	(codeview_end_block): Add dummy source line at end of inline block.
+	(find_line_function): New function.
+	(write_binary_annotations): New function.
+	(write_s_inlinesite): Call write_binary_annotations.
+	(codeview_debug_finish): Delete cv_func_htab.
+
+2024-12-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117859
+	* tree-ssa-sccvn.cc (insert_predicates_for_cond): If the
+	valueization for the new lhs for `lhs != 0`
+	is the same as the old ones, don't recurse.
+
+2024-12-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-loop-im.cc (move_computations_worker): While moving
+	phi, reuse the lhs of the conditional if it is a boolean type.
+
+2024-12-01  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR rtl-optimization/112398
+	PR rtl-optimization/117476
+	* simplify-rtx.cc (simplify_context::simplify_unary_operation_1):
+	Simplify ZERO_EXTEND (SUBREG (NOT X)) to XOR (X, GET_MODE_MASK(SUBREG))
+	when X doesn't have any non-zero bits outside of SUBREG mode.
+
 2024-11-30  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* diagnostic-show-locus.cc
