@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dce.h"
+#include "tree-ssa-loop-niter.h"
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
@@ -158,6 +159,16 @@ replace_phi_edge_with_variable (basic_block cond_block,
     }
   else
     gcc_unreachable ();
+
+  /* If we are removing the cond on a loop exit,
+     reset number of iteration information of the loop. */
+  if (loop_exits_from_bb_p (cond_block->loop_father, cond_block))
+    {
+      auto loop = cond_block->loop_father;
+      free_numbers_of_iterations_estimates (loop);
+      loop->any_upper_bound = false;
+      loop->any_likely_upper_bound = false;
+    }
 
   if (edge_to_remove && EDGE_COUNT (edge_to_remove->dest->preds) == 1)
     {
