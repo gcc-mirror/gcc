@@ -256,7 +256,8 @@ BEGIN
       RETURN( doValueReal(str) )
    ELSE
       EXCEPTIONS.RAISE(realConv, ORD(invalid),
-                       'RealConv.' + __FUNCTION__ + ': real number is invalid')
+                       'RealConv.' + __FUNCTION__ + ': real number is invalid') ;
+      RETURN 0.0
    END
 END ValueReal ;
 
