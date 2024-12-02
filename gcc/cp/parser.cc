@@ -18705,29 +18705,10 @@ get_unqualified_id (cp_declarator *declarator)
     return NULL_TREE;
 }
 
-/* Returns true if TYPE would declare a constrained constrained-parameter.  */
-
-static inline bool
-is_constrained_parameter (tree type)
-{
-  return (type
-          && TREE_CODE (type) == TYPE_DECL
-          && CONSTRAINED_PARM_CONCEPT (type)
-          && DECL_P (CONSTRAINED_PARM_CONCEPT (type)));
-}
-
-/* Returns true if PARM declares a constrained-parameter. */
-
-static inline bool
-is_constrained_parameter (cp_parameter_declarator *parm)
-{
-  return is_constrained_parameter (parm->decl_specifiers.type);
-}
-
 /* Check that the type parameter is only a declarator-id, and that its
    type is not cv-qualified. */
 
-bool
+static bool
 cp_parser_check_constrained_type_parm (cp_parser *parser,
 				       cp_parameter_declarator *parm)
 {
@@ -18765,36 +18746,6 @@ cp_parser_constrained_type_template_parm (cp_parser *parser,
     return error_mark_node;
 }
 
-static tree
-finish_constrained_template_template_parm (tree proto, tree id)
-{
-  /* FIXME: This should probably be copied, and we may need to adjust
-     the template parameter depths.  */
-  tree saved_parms = current_template_parms;
-  begin_template_parm_list ();
-  current_template_parms = DECL_TEMPLATE_PARMS (proto);
-  end_template_parm_list ();
-
-  tree parm = finish_template_template_parm (class_type_node, id);
-  current_template_parms = saved_parms;
-
-  return parm;
-}
-
-/* Finish parsing/processing a template template parameter by borrowing
-   the template parameter list from the prototype parameter.  */
-
-static tree
-cp_parser_constrained_template_template_parm (cp_parser *parser,
-                                              tree proto,
-                                              tree id,
-                                              cp_parameter_declarator *parmdecl)
-{
-  if (!cp_parser_check_constrained_type_parm (parser, parmdecl))
-    return error_mark_node;
-  return finish_constrained_template_template_parm (proto, id);
-}
-
 /* Create a new non-type template parameter from the given PARM
    declarator.  */
 
@@ -18828,9 +18779,6 @@ finish_constrained_parameter (cp_parser *parser,
   tree parm;
   if (TREE_CODE (proto) == TYPE_DECL)
     parm = cp_parser_constrained_type_template_parm (parser, id, parmdecl);
-  else if (TREE_CODE (proto) == TEMPLATE_DECL)
-    parm = cp_parser_constrained_template_template_parm (parser, proto, id,
-							 parmdecl);
   else
     parm = cp_parser_constrained_non_type_template_parm (is_non_type, parmdecl);
   if (parm == error_mark_node)
@@ -18844,24 +18792,26 @@ finish_constrained_parameter (cp_parser *parser,
   return parm;
 }
 
-/* Returns true if the parsed type actually represents the declaration
-   of a type template-parameter.  */
+/* Returns true if the TYPE would declare a constrained type
+   template-parameter.  */
 
 static bool
 declares_constrained_type_template_parameter (tree type)
 {
-  return (is_constrained_parameter (type)
+  return (type
+	  && TREE_CODE (type) == TYPE_DECL
+	  && CONSTRAINED_PARM_CONCEPT (type)
+	  && DECL_P (CONSTRAINED_PARM_CONCEPT (type))
 	  && TREE_CODE (TREE_TYPE (type)) == TEMPLATE_TYPE_PARM);
 }
 
-/* Returns true if the parsed type actually represents the declaration of
-   a template template-parameter.  */
+/* Returns true if PARM declares a constrained type template-parameter.  */
 
 static bool
-declares_constrained_template_template_parameter (tree type)
+declares_constrained_type_template_parameter (cp_parameter_declarator *parm)
 {
-  return (is_constrained_parameter (type)
-	  && TREE_CODE (TREE_TYPE (type)) == TEMPLATE_TEMPLATE_PARM);
+  tree type = parm->decl_specifiers.type;
+  return declares_constrained_type_template_parameter (type);
 }
 
 /* Parse a default argument for a type template-parameter.
@@ -19034,7 +18984,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
     }
 
   /* The parameter may have been constrained type parameter.  */
-  if (is_constrained_parameter (parameter_declarator))
+  if (declares_constrained_type_template_parameter (parameter_declarator))
     return finish_constrained_parameter (parser,
                                          parameter_declarator,
                                          is_non_type);
@@ -21123,13 +21073,26 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
     /* A concept-name with no arguments can't be an expression.  */
     tentative = false;
 
+  tree con = DECL_TEMPLATE_RESULT (tmpl);
+  tree proto = concept_prototype_parameter (con);
   tsubst_flags_t complain = tentative ? tf_none : tf_warning_or_error;
 
+  /* A type constraint constrains a contextually determined type or type
+     parameter pack.  */
+  if (TREE_CODE (proto) != TYPE_DECL)
+    {
+      if (!tentative)
+	{
+	  auto_diagnostic_group d;
+	  error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
+	  inform (DECL_SOURCE_LOCATION (con), "concept defined here");
+	}
+      return error_mark_node;
+    }
+
   /* Get the concept and prototype parameter for the constraint.  */
-  tree_pair info = finish_type_constraints (tmpl, args, complain);
-  tree con = info.first;
-  tree proto = info.second;
-  if (con == error_mark_node)
+  tree check = build_type_constraint (tmpl, args, complain);
+  if (check == error_mark_node)
     return error_mark_node;
 
   /* As per the standard, require auto or decltype(auto).  */
@@ -21143,19 +21106,6 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       parens.require_open (parser);
       cp_parser_require_keyword (parser, RID_AUTO, RT_AUTO);
       close_paren = parens.require_close (parser);
-    }
-
-  /* A type constraint constrains a contextually determined type or type
-     parameter pack.  */
-  if (TREE_CODE (proto) != TYPE_DECL)
-    {
-      if (!tentative)
-	{
-	  auto_diagnostic_group d;
-	  error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
-	  inform (DECL_SOURCE_LOCATION (con), "concept defined here");
-	}
-      return error_mark_node;
     }
 
   /* In a template parameter list, a type-parameter can be introduced
@@ -26278,12 +26228,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
       else if (declares_constrained_type_template_parameter (type))
         default_argument
           = cp_parser_default_type_template_argument (parser);
-
-      /* A constrained-type-specifier may declare a
-	 template-template-parameter.  */
-      else if (declares_constrained_template_template_parameter (type))
-        default_argument
-          = cp_parser_default_template_template_argument (parser);
 
       /* Outside of a class definition, we can just parse the
 	 assignment-expression.  */

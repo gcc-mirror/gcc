@@ -8584,16 +8584,6 @@ is_compatible_template_arg (tree parm, tree arg, tree args)
   return ttp_subsumes (parm_cons, arg);
 }
 
-// Convert a placeholder argument into a binding to the original
-// parameter. The original parameter is saved as the TREE_TYPE of
-// ARG.
-static inline tree
-convert_wildcard_argument (tree parm, tree arg)
-{
-  TREE_TYPE (arg) = parm;
-  return arg;
-}
-
 /* We can't fully resolve ARG given as a non-type template argument to TYPE,
    because one of them is dependent.  But we need to represent the
    conversion for the benefit of cp_tree_equal.  */
@@ -8647,10 +8637,6 @@ convert_template_argument (tree parm,
 
   if (parm == error_mark_node || error_operand_p (arg))
     return error_mark_node;
-
-  /* Trivially convert placeholders. */
-  if (TREE_CODE (arg) == WILDCARD_DECL)
-    return convert_wildcard_argument (parm, arg);
 
   if (arg == any_targ_node)
     return arg;
@@ -9032,16 +9018,6 @@ coerce_template_parameter_pack (tree parms,
         }
 
       packed_args = make_tree_vec (TREE_VEC_LENGTH (packed_parms));
-    }
-  /* Check if we have a placeholder pack, which indicates we're
-     in the context of a introduction list.  In that case we want
-     to match this pack to the single placeholder.  */
-  else if (arg_idx < nargs
-           && TREE_CODE (TREE_VEC_ELT (inner_args, arg_idx)) == WILDCARD_DECL
-           && WILDCARD_PACK_P (TREE_VEC_ELT (inner_args, arg_idx)))
-    {
-      nargs = arg_idx + 1;
-      packed_args = make_tree_vec (1);
     }
   else
     packed_args = make_tree_vec (nargs - arg_idx);
@@ -16558,13 +16534,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (code == TEMPLATE_TYPE_PARM)
 	      {
 		int quals;
-
-		/* When building concept checks for the purpose of
-		   deducing placeholders, we can end up with wildcards
-		   where types are expected. Adjust this to the deduced
-		   value.  */
-		if (TREE_CODE (arg) == WILDCARD_DECL)
-		  arg = TREE_TYPE (TREE_TYPE (arg));
 
 		gcc_assert (TYPE_P (arg));
 
@@ -28734,8 +28703,7 @@ type_dependent_expression_p (tree expression)
 
   /* An unresolved name is always dependent.  */
   if (identifier_p (expression)
-      || TREE_CODE (expression) == USING_DECL
-      || TREE_CODE (expression) == WILDCARD_DECL)
+      || TREE_CODE (expression) == USING_DECL)
     return true;
 
   /* A lambda-expression in template context is dependent.  dependent_type_p is
@@ -29738,11 +29706,8 @@ make_constrained_placeholder_type (tree type, tree con, tree args)
 {
   /* Build the constraint. */
   tree tmpl = DECL_TI_TEMPLATE (con);
-  tree expr = tmpl;
-  if (TREE_CODE (con) == FUNCTION_DECL)
-    expr = ovl_make (tmpl);
   ++processing_template_decl;
-  expr = build_concept_check (expr, type, args, tf_warning_or_error);
+  tree expr = build_concept_check (tmpl, type, args, tf_warning_or_error);
   --processing_template_decl;
 
   PLACEHOLDER_TYPE_CONSTRAINTS_INFO (type)
@@ -29787,8 +29752,7 @@ placeholder_type_constraint_dependent_p (tree t)
       args = expand_template_argument_pack (args);
       first = TREE_VEC_ELT (args, 0);
     }
-  gcc_checking_assert (TREE_CODE (first) == WILDCARD_DECL
-		       || is_auto (first));
+  gcc_checking_assert (is_auto (first));
   for (int i = 1; i < TREE_VEC_LENGTH (args); ++i)
     if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
       return true;

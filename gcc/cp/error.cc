@@ -1544,10 +1544,6 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       dump_simple_decl (pp, t, TREE_TYPE (t), flags);
       break;
 
-    case WILDCARD_DECL:
-      pp_string (pp, "<wildcard>");
-      break;
-
     case TEMPLATE_ID_EXPR:
       {
 	tree name = TREE_OPERAND (t, 0);
@@ -2347,7 +2343,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
     case LABEL_DECL:
-    case WILDCARD_DECL:
     case OVERLOAD:
     case TYPE_DECL:
     case USING_DECL:

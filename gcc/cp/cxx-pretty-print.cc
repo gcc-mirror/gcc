@@ -2349,8 +2349,8 @@ pp_cxx_constrained_type_spec (cxx_pretty_printer *pp, tree c)
       pp_cxx_ws_string(pp, "<unsatisfied-type-constraint>");
       return;
     }
-  tree t, a;
-  placeholder_extract_concept_and_args (c, t, a);
+  tree t = TREE_OPERAND (c, 0);
+  tree a = TREE_OPERAND (c, 1);
   pp->id_expression (t);
   pp_cxx_begin_template_argument_list (pp);
   pp_cxx_ws_string (pp, "<placeholder>");
