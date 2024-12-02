@@ -23,8 +23,7 @@
 set -e
 
 nvptx_sm_def="$1/nvptx-sm.def"
-multilib_options_isa_default=$2
-multilib_options_isa_list=$3
+shift
 
 sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
 
@@ -33,33 +32,57 @@ sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
 # ('misa=sm_SM'; thus not remapped), or has to be remapped to the "next lower"
 # variant that does get built.
 
-multilib_matches=
+print_multilib_matches() {
+    local sms
+    sms=${1?}
+    shift
+    local multilib_options_isa_default
+    multilib_options_isa_default=${1?}
+    shift
+    local multilib_options_isa_list
+    multilib_options_isa_list=${1?}
+    shift
+    [ $# = 0 ]
 
-# The "lowest" variant has to be built.
-sm_next_lower=INVALID
+    local multilib_matches
+    multilib_matches=
 
-for sm in $sms; do
-    if [ x"sm_$sm" = x"$multilib_options_isa_default" ]; then
-	sm_map=.
-    elif expr " $multilib_options_isa_list " : ".* sm_$sm " > /dev/null; then
-	sm_map=
-    else
-	sm_map=$sm_next_lower
-    fi
+    local sm_next_lower
+    unset sm_next_lower
 
-    if [ x"$sm_map" = x ]; then
-	sm_next_lower=$sm
-    else
-	# Output format as required for 'MULTILIB_MATCHES'.
-	if [ x"$sm_map" = x. ]; then
-	    multilib_matches_sm=".=misa?sm_$sm"
+    local sm
+    for sm in $sms; do
+	local sm_map
+	unset sm_map
+	if [ x"sm_$sm" = x"$multilib_options_isa_default" ]; then
+	    sm_map=.
+	elif expr " $multilib_options_isa_list " : ".* sm_$sm " > /dev/null; then
+	    sm_map=
 	else
-	    multilib_matches_sm="misa?sm_$sm_map=misa?sm_$sm"
+	    # Assert here that a "next lower" variant is available; the
+	    # "lowest" variant always does get built.
+	    sm_map=${sm_next_lower?}
 	fi
-	multilib_matches="$multilib_matches $multilib_matches_sm"
 
-	sm_next_lower=$sm_map
-    fi
-done
+	if [ x"${sm_map?}" = x ]; then
+	    sm_next_lower=$sm
+	else
+	    local multilib_matches_sm
+	    unset multilib_matches_sm
+	    # Output format as required for 'MULTILIB_MATCHES'.
+	    if [ x"$sm_map" = x. ]; then
+		multilib_matches_sm=".=misa?sm_$sm"
+	    else
+		multilib_matches_sm="misa?sm_$sm_map=misa?sm_$sm"
+	    fi
+	    multilib_matches="$multilib_matches ${multilib_matches_sm?}"
 
+	    sm_next_lower=$sm_map
+	fi
+    done
+
+    echo "$multilib_matches"
+}
+
+multilib_matches=$(print_multilib_matches "$sms" "$@")
 echo "multilib_matches := $multilib_matches"

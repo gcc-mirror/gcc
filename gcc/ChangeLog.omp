@@ -3,6 +3,11 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/gen-multilib-matches.sh: Encapsulate main logic.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/t-nvptx (multilib_matches): Don't use the 'shell'
 	function of 'make'.
 	* config/nvptx/gen-multilib-matches.sh: Adjust.
