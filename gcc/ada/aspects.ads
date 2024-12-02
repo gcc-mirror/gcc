@@ -96,6 +96,7 @@ package Aspects is
       Aspect_Dispatching_Domain,
       Aspect_Dynamic_Predicate,
       Aspect_Exceptional_Cases,             -- GNAT
+      Aspect_Exit_Cases,                    -- GNAT
       Aspect_External_Initialization,       -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
@@ -294,6 +295,7 @@ package Aspects is
       Aspect_Effective_Reads            => True,
       Aspect_Effective_Writes           => True,
       Aspect_Exceptional_Cases          => True,
+      Aspect_Exit_Cases                 => True,
       Aspect_Extended_Access            => True,
       Aspect_Extensions_Visible         => True,
       Aspect_External_Initialization    => True,
@@ -441,6 +443,7 @@ package Aspects is
       Aspect_Dispatching_Domain         => Expression,
       Aspect_Dynamic_Predicate          => Expression,
       Aspect_Exceptional_Cases          => Expression,
+      Aspect_Exit_Cases                 => Expression,
       Aspect_External_Initialization    => Expression,
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
@@ -540,6 +543,7 @@ package Aspects is
       Aspect_Dispatching_Domain           => False,
       Aspect_Dynamic_Predicate            => False,
       Aspect_Exceptional_Cases            => False,
+      Aspect_Exit_Cases                   => False,
       Aspect_Exclusive_Functions          => False,
       Aspect_Extended_Access              => True,
       Aspect_External_Initialization      => False,
@@ -715,6 +719,7 @@ package Aspects is
       Aspect_Effective_Writes             => Name_Effective_Writes,
       Aspect_Elaborate_Body               => Name_Elaborate_Body,
       Aspect_Exceptional_Cases            => Name_Exceptional_Cases,
+      Aspect_Exit_Cases                   => Name_Exit_Cases,
       Aspect_Exclusive_Functions          => Name_Exclusive_Functions,
       Aspect_Export                       => Name_Export,
       Aspect_Extended_Access              => Name_Extended_Access,
@@ -1054,6 +1059,7 @@ package Aspects is
       Aspect_Effective_Reads              => Never_Delay,
       Aspect_Effective_Writes             => Never_Delay,
       Aspect_Exceptional_Cases            => Never_Delay,
+      Aspect_Exit_Cases                   => Never_Delay,
       Aspect_Export                       => Never_Delay,
       Aspect_Extensions_Visible           => Never_Delay,
       Aspect_External_Initialization      => Never_Delay,

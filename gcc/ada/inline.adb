@@ -317,6 +317,7 @@ package body Inline is
    --    Global
    --    Depends
    --    Exceptional_Cases
+   --    Exit_Cases
    --    Postcondition
    --    Precondition
    --    Refined_Global
@@ -5267,6 +5268,7 @@ package body Inline is
                                         | Name_Global
                                         | Name_Depends
                                         | Name_Exceptional_Cases
+                                        | Name_Exit_Cases
                                         | Name_Postcondition
                                         | Name_Precondition
                                         | Name_Refined_Global

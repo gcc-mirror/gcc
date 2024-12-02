@@ -30938,6 +30938,7 @@ package body Sem_Util is
                           Pragma_Check
                         | Pragma_Contract_Cases
                         | Pragma_Exceptional_Cases
+                        | Pragma_Exit_Cases
                         | Pragma_Post
                         | Pragma_Postcondition
                         | Pragma_Post_Class

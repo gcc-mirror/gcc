@@ -560,6 +560,7 @@ package Snames is
    Name_Elaborate_All                  : constant Name_Id := N + $;
    Name_Elaborate_Body                 : constant Name_Id := N + $;
    Name_Exceptional_Cases              : constant Name_Id := N + $; -- GNAT
+   Name_Exit_Cases                     : constant Name_Id := N + $; -- GNAT
    Name_Export                         : constant Name_Id := N + $;
    Name_Export_Function                : constant Name_Id := N + $; -- GNAT
    Name_Export_Object                  : constant Name_Id := N + $; -- GNAT
@@ -816,6 +817,7 @@ package Snames is
    Name_Eliminated                     : constant Name_Id := N + $;
    Name_Ensures                        : constant Name_Id := N + $;
    Name_Entity                         : constant Name_Id := N + $;
+   Name_Exception_Raised               : constant Name_Id := N + $;
    Name_External_Name                  : constant Name_Id := N + $;
    Name_Form                           : constant Name_Id := N + $;
    Name_Gcc                            : constant Name_Id := N + $;
@@ -866,6 +868,7 @@ package Snames is
    Name_No_Vector                      : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
    Name_None                           : constant Name_Id := N + $;
+   Name_Normal_Return                  : constant Name_Id := N + $;
    Name_Null_Address                   : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
    Name_Optional                       : constant Name_Id := N + $;
@@ -1866,6 +1869,7 @@ package Snames is
       Pragma_Elaborate_All,
       Pragma_Elaborate_Body,
       Pragma_Exceptional_Cases,
+      Pragma_Exit_Cases,
       Pragma_Export,
       Pragma_Export_Function,
       Pragma_Export_Object,

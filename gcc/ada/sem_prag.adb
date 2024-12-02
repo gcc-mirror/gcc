@@ -2482,6 +2482,310 @@ package body Sem_Prag is
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Exceptional_Cases_In_Decl_Part;
 
+   -------------------------------------
+   -- Analyze_Exit_Cases_In_Decl_Part --
+   -------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
+   procedure Analyze_Exit_Cases_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty)
+   is
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
+
+      Others_Seen : Boolean := False;
+      --  This flag is set when an "others" choice is encountered. It is used
+      --  to detect multiple illegal occurrences of "others".
+
+      procedure Analyze_Exit_Contract (Exit_Contract : Node_Id);
+      --  Verify the legality of a single exit contract
+
+      ---------------------------
+      -- Analyze_Exit_Contract --
+      ---------------------------
+
+      procedure Analyze_Exit_Contract (Exit_Contract : Node_Id) is
+         Case_Guard  : Node_Id;
+         Exit_Kind   : Node_Id;
+         Errors      : Nat;
+         Extra_Guard : Node_Id;
+
+      begin
+         if Nkind (Exit_Contract) = N_Component_Association then
+            Case_Guard := First (Choices (Exit_Contract));
+            Exit_Kind  := Expression (Exit_Contract);
+
+            --  Each exit case must have exactly one case guard
+
+            Extra_Guard := Next (Case_Guard);
+
+            if Present (Extra_Guard) then
+               Error_Msg_N
+                 ("exit case must have exactly one case guard",
+                  Extra_Guard);
+            end if;
+
+            --  Check placement of OTHERS if available (SPARK RM 6.1.3(1))
+
+            if Nkind (Case_Guard) = N_Others_Choice then
+               if Others_Seen then
+                  Error_Msg_N
+                    ("only one OTHERS choice allowed in exit cases",
+                     Case_Guard);
+               else
+                  Others_Seen := True;
+               end if;
+
+            elsif Others_Seen then
+               Error_Msg_N
+                 ("OTHERS must be the last choice in exit cases", N);
+            end if;
+
+            --  Preanalyze the case guard
+
+            if Nkind (Case_Guard) /= N_Others_Choice then
+               Errors := Serious_Errors_Detected;
+               Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
+
+               --  Emit a clarification message when the case guard contains
+               --  at least one undefined reference, possibly due to contract
+               --  freezing.
+
+               if Errors /= Serious_Errors_Detected
+                 and then Present (Freeze_Id)
+                 and then Has_Undefined_Reference (Case_Guard)
+               then
+                  Contract_Freeze_Error (Spec_Id, Freeze_Id);
+               end if;
+            end if;
+
+            --  Check the exit kind. It shall be either an exception or the
+            --  identifiers Normal_Return or Any_Exception.
+
+            if Nkind (Exit_Kind) = N_Identifier then
+               if Chars (Exit_Kind) not in Name_Normal_Return
+                                         | Name_Exception_Raised
+               then
+                  Error_Msg_N
+                    ("exit kind should be Normal_Return or Exception_Raised",
+                     Exit_Kind);
+               end if;
+
+            elsif Nkind (Exit_Kind) = N_Aggregate
+              and then Present (Component_Associations (Exit_Kind))
+            then
+               declare
+                  Assoc  : constant Node_Id :=
+                    First (Component_Associations (Exit_Kind));
+                  Choice : constant Node_Id := First (Choice_List (Assoc));
+                  Exc    : constant Node_Id :=
+                    (if Box_Present (Assoc) then Assoc
+                     else Expression (Assoc));
+               begin
+                  if Present (Next (Assoc)) then
+                     Error_Msg_N
+                       ("exit kind should have a single association",
+                        Exit_Kind);
+
+                  elsif Present (Next (Choice))
+                    or else Nkind (Choice) /= N_Identifier
+                    or else Chars (Choice) /= Name_Exception_Raised
+                  then
+                     Error_Msg_N
+                       ("exit kind should have a single choice named "
+                        & "Exception_Raised",
+                        Exit_Kind);
+
+                  elsif Nkind (Exc) /= N_Identifier then
+                     Error_Msg_N
+                       ("exception name expected after Exception_Raised",
+                        Exc);
+
+                  else
+                     Analyze (Exc);
+
+                     if Is_Entity_Name (Exc)
+                       and then Ekind (Entity (Exc)) = E_Exception
+                     then
+                        if Present (Renamed_Entity (Entity (Exc)))
+                          and then Entity (Exc) = Standard_Numeric_Error
+                        then
+                           Check_Restriction (No_Obsolescent_Features, Exc);
+
+                           if Warn_On_Obsolescent_Feature then
+                              Error_Msg_N
+                                ("Numeric_Error is an obsolescent feature " &
+                                   "(RM J.6(1))?j?",
+                                 Exc);
+                              Error_Msg_N
+                                ("\use Constraint_Error instead?j?",
+                                 Exc);
+                           end if;
+                        end if;
+
+                        --  Check for exception declared within generic formal
+                        --  package (which is illegal, see RM 11.2(8)).
+
+                        declare
+                           Ent  : Entity_Id := Entity (Exc);
+                           Scop : Entity_Id;
+
+                        begin
+                           if Present (Renamed_Entity (Ent)) then
+                              Ent := Renamed_Entity (Ent);
+                           end if;
+
+                           Scop := Scope (Ent);
+                           while Scop /= Standard_Standard
+                             and then Ekind (Scop) = E_Package
+                           loop
+                              if Nkind (Declaration_Node (Scop)) =
+                                N_Package_Specification
+                                and then
+                                  Nkind (Original_Node (Parent
+                                         (Declaration_Node (Scop)))) =
+                                N_Formal_Package_Declaration
+                              then
+                                 Error_Msg_NE
+                                   ("exception& is declared in generic formal "
+                                    & "package", Exc, Ent);
+                                 Error_Msg_N
+                                   ("\and therefore cannot appear in contract "
+                                    & "(RM 11.2(8))", Exc);
+                                 exit;
+
+                              --  If the exception is declared in an inner
+                              --  instance, nothing else to check.
+
+                              elsif Is_Generic_Instance (Scop) then
+                                 exit;
+                              end if;
+
+                              Scop := Scope (Scop);
+                           end loop;
+                        end;
+                     else
+                        Error_Msg_N
+                          ("exception name expected after Exception_Raised",
+                           Exc);
+                     end if;
+                  end if;
+               end;
+
+            else
+               Error_Msg_N ("wrong syntax", Exit_Kind);
+            end if;
+
+         --  The exit case is malformed
+
+         else
+            Error_Msg_N ("wrong syntax in exit case", Exit_Contract);
+         end if;
+      end Analyze_Exit_Contract;
+
+      --  Local variables
+
+      Exit_Contracts : constant Node_Id :=
+        Expression (Get_Argument (N, Spec_Id));
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
+      Exit_Contract : Node_Id;
+      Restore_Scope : Boolean := False;
+
+   --  Start of processing for Analyze_Exit_Cases_In_Decl_Part
+
+   begin
+      --  Do not analyze the pragma multiple times
+
+      if Is_Analyzed_Pragma (N) then
+         return;
+      end if;
+
+      --  Set the Ghost mode in effect from the pragma. Due to the delayed
+      --  analysis of the pragma, the Ghost mode at point of declaration and
+      --  point of analysis may not necessarily be the same. Use the mode in
+      --  effect at the point of declaration.
+
+      Set_Ghost_Mode (N);
+
+      --  Single and multiple contracts must appear in aggregate form. If this
+      --  is not the case, then either the parser of the analysis of the pragma
+      --  failed to produce an aggregate, e.g. when the contract is "null" or a
+      --  "(null record)".
+
+      pragma Assert
+        (if Nkind (Exit_Contracts) = N_Aggregate
+         then Null_Record_Present (Exit_Contracts)
+           xor (Present (Component_Associations (Exit_Contracts))
+                  or
+                Present (Expressions (Exit_Contracts)))
+         else Nkind (Exit_Contracts) = N_Null);
+
+      --  Only clauses of the following form are allowed:
+      --
+      --    exit_contract ::=
+      --        case_condition => exit_kind
+      --
+      --  where
+      --
+      --    case_condition ::= Boolean_expression
+
+      if Nkind (Exit_Contracts) = N_Aggregate
+        and then Present (Component_Associations (Exit_Contracts))
+        and then No (Expressions (Exit_Contracts))
+      then
+
+         --  Check that the expression is a proper aggregate (no parentheses)
+
+         if Paren_Count (Exit_Contracts) /= 0 then
+            Error_Msg_F -- CODEFIX
+              ("redundant parentheses", Exit_Contracts);
+         end if;
+
+         --  Ensure that the formal parameters are visible when analyzing all
+         --  clauses. This falls out of the general rule of aspects pertaining
+         --  to subprogram declarations.
+
+         if not In_Open_Scopes (Spec_Id) then
+            Restore_Scope := True;
+            Push_Scope (Spec_Id);
+
+            if Is_Generic_Subprogram (Spec_Id) then
+               Install_Generic_Formals (Spec_Id);
+            else
+               Install_Formals (Spec_Id);
+            end if;
+         end if;
+
+         Exit_Contract :=
+           First (Component_Associations (Exit_Contracts));
+         while Present (Exit_Contract) loop
+            Analyze_Exit_Contract (Exit_Contract);
+            Next (Exit_Contract);
+         end loop;
+
+         if Restore_Scope then
+            End_Scope;
+         end if;
+
+      --  Otherwise the pragma is illegal
+
+      else
+         Error_Msg_N ("wrong syntax for exceptional cases", N);
+      end if;
+
+      Set_Is_Analyzed_Pragma (N);
+
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+   end Analyze_Exit_Cases_In_Decl_Part;
+
    --------------------------------------------
    -- Analyze_External_Property_In_Decl_Part --
    --------------------------------------------
@@ -17066,6 +17370,168 @@ package body Sem_Prag is
                Analyze_Exceptional_Cases_In_Decl_Part (N);
             end if;
          end Exceptional_Cases;
+
+         ----------------
+         -- Exit_Cases --
+         ----------------
+
+         --  pragma Exit_Cases ( EXIT_CONTRACT_LIST );
+
+         --    EXIT_CONTRACT_LIST ::=
+         --      ( EXIT_CONTRACT {, EXIT_CONTRACT })
+
+         --    EXIT_CONTRACT ::=
+         --      CASE_GUARD => EXIT_KIND
+         --
+         --    EXIT_KIND ::=
+         --      Normal_Return
+         --    | Exception_Raised
+         --    | (Exception_Raised => exception_name)
+         --
+         --  where
+         --
+         --    CASE_GUARD ::= boolean_EXPRESSION
+
+         --  Characteristics:
+
+         --    * Analysis - The annotation undergoes initial checks to verify
+         --    the legal placement and context. Secondary checks preanalyze the
+         --    expressions in:
+
+         --       Analyze_Exit_Cases_In_Decl_Part
+
+         --    * Expansion - The annotation is expanded during the expansion of
+         --    the related subprogram [body] contract as performed in:
+
+         --       Expand_Subprogram_Contract
+
+         --    * Template - The annotation utilizes the generic template of the
+         --    related subprogram [body] when it is:
+
+         --       aspect on subprogram declaration
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
+
+         --    The annotation must prepare its own template when it is:
+
+         --       pragma on subprogram declaration
+
+         --    * Globals - Capture of global references must occur after full
+         --    analysis.
+
+         --    * Instance - The annotation is instantiated automatically when
+         --    the related generic subprogram [body] is instantiated except for
+         --    the "pragma on subprogram declaration" case. In that scenario
+         --    the annotation must instantiate itself.
+
+         when Pragma_Exit_Cases => Exit_Cases : declare
+            Spec_Id   : Entity_Id;
+            Subp_Decl : Node_Id;
+            Subp_Spec : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Exit_Cases must be
+            --  associated with a subprogram declaration or a body that acts as
+            --  a spec.
+
+            Subp_Decl :=
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
+
+            --  Generic subprogram
+
+            if Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
+            then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            --  Subprogram
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               Subp_Spec := Specification (Subp_Decl);
+
+               --  Pragma Exit_Cases is forbidden on null procedures, as this
+               --  may lead to potential ambiguities in behavior when interface
+               --  null procedures are involved.
+
+               if Nkind (Subp_Spec) = N_Procedure_Specification
+                 and then Null_Present (Subp_Spec)
+               then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to null procedure"), N);
+                  return;
+               end if;
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+            --  In order to call Is_Function_With_Side_Effects, analyze pragma
+            --  Side_Effects if present.
+
+            Analyze_If_Present (Pragma_Side_Effects);
+
+            --  Pragma Exit_Cases is not allowed on functions without side
+            --  effects.
+
+            if Ekind (Spec_Id) in E_Function | E_Generic_Function
+              and then not Is_Function_With_Side_Effects (Spec_Id)
+            then
+               if Ekind (Spec_Id) = E_Function then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to function"), N);
+                     return;
+
+               elsif Ekind (Spec_Id) = E_Generic_Function then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to generic function"), N);
+                  return;
+               end if;
+            end if;
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Spec_Id);
+            Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
+
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Exit_Cases_In_Decl_Part.
+
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+
+            --  Fully analyze the pragma when it appears inside a subprogram
+            --  body because it cannot benefit from forward references.
+
+            if Nkind (Subp_Decl) in N_Subprogram_Body
+                                  | N_Subprogram_Body_Stub
+            then
+               --  The legality checks of pragma Exit_Cases are affected by the
+               --  SPARK mode in effect and the volatility of the context.
+               --  Analyze all pragmas in a specific order.
+
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_Exit_Cases_In_Decl_Part (N);
+            end if;
+         end Exit_Cases;
 
          ------------
          -- Export --
@@ -32997,6 +33463,7 @@ package body Sem_Prag is
       Pragma_Eliminate                      =>  0,
       Pragma_Enable_Atomic_Synchronization  =>  0,
       Pragma_Exceptional_Cases              => -1,
+      Pragma_Exit_Cases                     => -1,
       Pragma_Export                         => -1,
       Pragma_Export_Function                => -1,
       Pragma_Export_Object                  => -1,

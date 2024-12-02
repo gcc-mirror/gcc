@@ -1608,6 +1608,7 @@ package body Sem_Ch13 is
       --    Effective_Reads
       --    Effective_Writes
       --    Exceptional_Cases
+      --    Exit_Cases
       --    Extensions_Visible
       --    Ghost
       --    Global
@@ -1871,7 +1872,7 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Cases, Always_Terminates, Exceptional_Cases and
+      --  Contract_Cases, Always_Terminates, Exit_Cases, Exceptional_Cases and
       --  Subprogram_Variant aspects. In these cases, we do not have to worry
       --  about delay issues, since the pragmas themselves deal with delay of
       --  visibility for the expression analysis. Thus, we just insert the
@@ -4365,8 +4366,8 @@ package body Sem_Ch13 is
                --  Case 4: Aspects requiring special handling
 
                --  Pre/Post/Test_Case/Contract_Cases/Always_Terminates/
-               --  Exceptional_Cases and Subprogram_Variant whose corresponding
-               --  pragmas take care of the delay.
+               --  Exceptional_Cases/Exit_Cases and Subprogram_Variant whose
+               --  corresponding pragmas take care of the delay.
 
                --  Pre/Post
 
@@ -4554,6 +4555,19 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Exceptional_Cases);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Exit_Cases
+
+               when Aspect_Exit_Cases =>
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Exit_Cases);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -11297,6 +11311,7 @@ package body Sem_Ch13 is
             | Aspect_Dimension
             | Aspect_Dimension_System
             | Aspect_Exceptional_Cases
+            | Aspect_Exit_Cases
             | Aspect_External_Initialization
             | Aspect_Global
             | Aspect_GNAT_Annotate

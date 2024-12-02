@@ -266,6 +266,7 @@ package body Contracts is
          elsif Prag_Nam in Name_Always_Terminates
                          | Name_Contract_Cases
                          | Name_Exceptional_Cases
+                         | Name_Exit_Cases
                          | Name_Subprogram_Variant
                          | Name_Test_Case
          then
@@ -789,6 +790,9 @@ package body Contracts is
                else
                   Analyze_Contract_Cases_In_Decl_Part (Prag, Freeze_Id);
                end if;
+
+            elsif Prag_Nam = Name_Exit_Cases then
+               Analyze_Exit_Cases_In_Decl_Part (Prag);
 
             elsif Prag_Nam = Name_Exceptional_Cases then
                Analyze_Exceptional_Cases_In_Decl_Part (Prag);
@@ -2753,6 +2757,9 @@ package body Contracts is
 
                      elsif Pragma_Name (Prag) = Name_Exceptional_Cases then
                         Expand_Pragma_Exceptional_Cases (Prag);
+
+                     elsif Pragma_Name (Prag) = Name_Exit_Cases then
+                        Expand_Pragma_Exit_Cases (Prag);
 
                      elsif Pragma_Name (Prag) = Name_Subprogram_Variant then
                         Expand_Pragma_Subprogram_Variant

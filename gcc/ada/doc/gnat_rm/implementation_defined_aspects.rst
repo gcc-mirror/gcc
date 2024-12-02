@@ -255,6 +255,18 @@ with a specific postcondition.
 For the syntax and semantics of this aspect, see the SPARK 2014 Reference
 Manual, section 6.1.9.
 
+Aspect Exit_Cases
+=================
+.. index:: Exit_Cases
+
+This aspect may be specified for procedures and functions with side effects;
+it can be used to partition the input state into a list of cases and specify,
+for each case, how the subprogram is allowed to terminate (i.e. return normally
+or propagate an exception).
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 6.1.10.
+
 Aspect Extensions_Visible
 =========================
 .. index:: Extensions_Visible

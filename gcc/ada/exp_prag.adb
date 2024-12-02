@@ -2125,6 +2125,97 @@ package body Exp_Prag is
       Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
    end Expand_Pragma_Exceptional_Cases;
 
+   ------------------------------
+   -- Expand_Pragma_Exit_Cases --
+   ------------------------------
+
+   --  Aspect Exit_Cases shoule be expanded in the following manner:
+
+   --    subprogram S is
+   --       Count      : Natural := 0;
+   --       Flag_1     : Boolean := False;
+   --       . . .
+   --       Flag_N     : Boolean := False;
+   --       Flag_N[+1] : Boolean := False; --  if others present
+
+   --       <preconditions (if any)>
+
+   --       --  Evaluate all case guards
+
+   --       if Case_Guard_1 then
+   --          Flag_1 := True;
+   --          Count  := Count + 1;
+   --       end if;
+   --       . . .
+   --       if Case_Guard_N then
+   --          Flag_N := True;
+   --          Count  := Count + 1;
+   --       end if;
+
+   --       --  Emit errors depending on the number of case guards that
+   --       --  evaluated to True.
+
+   --       if Count = 0 then
+   --         Flag_N+1 := True;  --  if others present
+   --       elsif Count > 1 then
+   --          declare
+   --             Str_Base : constant String :=
+   --                      "exit cases overlap for subprogram S";
+   --             Str_Normal_Return : constant String :=
+   --                      (if Flag_... then
+   --                         Str_Base & "case guard at xxx evaluates to True"
+   --                       else Str_Base);
+   --             StrN : constant String :=
+   --                      (if Flag_... then
+   --                         StrN-1 & "case guard at xxx evaluates to True"
+   --                       else StrN-1);
+   --          begin
+   --             raise Assertion_Error with StrN;
+   --          end;
+   --       end if;
+
+   --       procedure _Postconditions is
+   --       begin
+   --          <postconditions (if any)>
+
+   --          if Flag_1 and then Exit_Kind_1 /= Normal_Return then
+   --             raise Assertion_Error with
+   --                 "subprogram returned normally, failed exit case at xxx";
+   --          end if;
+   --          . . .
+   --          if Flag_N[+1] and then Exit_Kind_N[+1] /= Normal_Return then
+   --             raise Assertion_Error with
+   --                 "subprogram returned normally, failed exit case at xxx";
+   --          end if;
+   --       end _Postconditions;
+   --    begin
+   --
+   --        --  normal body of of P
+   --        declare
+   --        ...
+   --        end;
+   --
+   --     exception
+   --        when E : Exp2 =>
+   --           if Flag_1
+   --             and then Exit_Kind_1 /= Exception_Raised
+   --             and then (Nkind (Exit_Kind_1) /= N_Associated_Component
+   --                 or else Expression (Exit_Kind_1) /= E)
+   --           then
+   --             raise Assertion_Error with
+   --                 "subprogram raised " & E & ", failed exit case at xxx";
+   --           end if;
+   --           . . .
+   --           raise;
+   --    end S;
+
+   procedure Expand_Pragma_Exit_Cases (Prag : Node_Id) is
+   begin
+      --  Currently we don't expand this pragma
+
+      Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
+   end Expand_Pragma_Exit_Cases;
+
    ---------------------------------------
    -- Expand_Pragma_Import_Or_Interface --
    ---------------------------------------

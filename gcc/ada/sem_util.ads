@@ -2368,6 +2368,7 @@ package Sem_Util is
    --    Contract_Cases
    --    Depends
    --    Exceptional_Cases
+   --    Exit_Cases
    --    Extensions_Visible
    --    Global
    --    Post

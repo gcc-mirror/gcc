@@ -267,6 +267,7 @@ package body Sem_Ch12 is
    --       Initial_Condition        Contract_Cases
    --       Initializes              Depends
    --                                Exceptional_Cases
+   --                                Exit_Cases
    --                                Extensions_Visible
    --                                Global
    --     package body               Post
