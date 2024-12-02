@@ -1365,7 +1365,8 @@ Dump::visit (ReturnExpr &e)
   begin ("ReturnExpr");
   do_mappings (e.get_mappings ());
 
-  visit_field ("return_expr", e.get_expr ());
+  if (e.has_return_expr ())
+    visit_field ("return_expr", e.get_expr ());
 
   end ("ReturnExpr");
 }
