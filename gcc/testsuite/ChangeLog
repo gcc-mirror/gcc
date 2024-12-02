@@ -1,3 +1,15 @@
+2024-12-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-09-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/fail/testarrayunbounded2.mod: New test.
+	* gm2/iso/fail/testarrayunbounded3.mod: New test.
+	* gm2/iso/fail/testarrayunbounded4.mod: New test.
+	* gm2/iso/fail/testarrayunbounded5.mod: New test.
+	* gm2/iso/fail/testarrayunbounded6.mod: New test.
+	* gm2/iso/pass/testarrayunbounded.mod: New test.
+
 2024-11-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
