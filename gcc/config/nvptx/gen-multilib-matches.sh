@@ -22,10 +22,14 @@
 
 set -e
 
-nvptx_sm_def="$1/nvptx-sm.def"
-shift
+
+nvptx_dir=$(dirname "$0")
+
+
+nvptx_sm_def="$nvptx_dir/nvptx-sm.def"
 
 sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
+
 
 # Every variant in 'sms' has to either be remapped to the default variant
 # ('.', which is always built), or does get built as non-default variant

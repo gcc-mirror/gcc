@@ -16,7 +16,7 @@ mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) 
 $(srcdir)/config/nvptx/nvptx.h: $(srcdir)/config/nvptx/nvptx-gen.h
 $(srcdir)/config/nvptx/nvptx-gen.h: s-nvptx-gen-h; @true
 s-nvptx-gen-h: $(srcdir)/config/nvptx/nvptx-sm.def
-	$(SHELL) $(srcdir)/config/nvptx/gen-h.sh "$(srcdir)/config/nvptx" \
+	$(SHELL) $(srcdir)/config/nvptx/gen-h.sh \
 	  > tmp-nvptx-gen.h
 	$(SHELL) $(srcdir)/../move-if-change \
 	  tmp-nvptx-gen.h $(srcdir)/config/nvptx/nvptx-gen.h
@@ -25,7 +25,7 @@ s-nvptx-gen-h: $(srcdir)/config/nvptx/nvptx-sm.def
 $(srcdir)/config/nvptx/nvptx-gen.opt: s-nvptx-gen-opt; @true
 s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def \
   $(srcdir)/config/nvptx/gen-opt.sh
-	$(SHELL) $(srcdir)/config/nvptx/gen-opt.sh "$(srcdir)/config/nvptx" \
+	$(SHELL) $(srcdir)/config/nvptx/gen-opt.sh \
 	  > tmp-nvptx-gen.opt
 	$(SHELL) $(srcdir)/../move-if-change \
 	  tmp-nvptx-gen.opt $(srcdir)/config/nvptx/nvptx-gen.opt
@@ -49,7 +49,6 @@ t-nvptx-gen-multilib-matches: $(srcdir)/config/nvptx/gen-multilib-matches.sh \
   Makefile \
   $(srcdir)/config/nvptx/nvptx-sm.def
 	$(SHELL) $< \
-	  $(dir $<) \
 	  $(multilib_options_isa_default) \
 	  '$(multilib_options_isa_list)' \
 	  > $@
