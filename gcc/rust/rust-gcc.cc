@@ -1106,6 +1106,17 @@ arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op, tree left,
   if (floating_point && extended_type != NULL_TREE)
     ret = convert (original_type, ret);
 
+  if (op == ArithmeticOrLogicalOperator::DIVIDE
+      && (integer_zerop (right) || fixed_zerop (right)))
+    {
+      rust_error_at (location, "division by zero");
+    }
+  else if (op == ArithmeticOrLogicalOperator::LEFT_SHIFT
+	   && (compare_tree_int (right, TYPE_PRECISION (TREE_TYPE (ret))) >= 0))
+    {
+      rust_error_at (location, "left shift count >= width of type");
+    }
+
   return ret;
 }
 
