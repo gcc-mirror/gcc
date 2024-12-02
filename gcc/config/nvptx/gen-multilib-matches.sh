@@ -33,6 +33,8 @@ sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
 # ('misa=sm_SM'; thus not remapped), or has to be remapped to the "next lower"
 # variant that does get built.
 
+multilib_matches=
+
 # The "lowest" variant has to be built.
 sm_next_lower=INVALID
 
@@ -50,11 +52,14 @@ for sm in $sms; do
     else
 	# Output format as required for 'MULTILIB_MATCHES'.
 	if [ x"$sm_map" = x. ]; then
-	    echo ".=misa?sm_$sm"
+	    multilib_matches_sm=".=misa?sm_$sm"
 	else
-	    echo "misa?sm_$sm_map=misa?sm_$sm"
+	    multilib_matches_sm="misa?sm_$sm_map=misa?sm_$sm"
 	fi
+	multilib_matches="$multilib_matches $multilib_matches_sm"
 
 	sm_next_lower=$sm_map
     fi
 done
+
+echo "multilib_matches := $multilib_matches"

@@ -43,12 +43,24 @@ MULTILIB_OPTIONS += mgomp
 multilib_options_isa_list := $(TM_MULTILIB_CONFIG)
 multilib_options_isa_default := $(word 1,$(multilib_options_isa_list))
 multilib_options_misa_list := $(addprefix misa=,$(multilib_options_isa_list))
+
+t-nvptx-gen-multilib-matches: $(srcdir)/config/nvptx/gen-multilib-matches.sh \
+  $(srcdir)/config/nvptx/t-nvptx \
+  Makefile \
+  $(srcdir)/config/nvptx/nvptx-sm.def
+	$(SHELL) $< \
+	  $(dir $<) \
+	  $(multilib_options_isa_default) \
+	  '$(multilib_options_isa_list)' \
+	  > $@
+
+include t-nvptx-gen-multilib-matches
+
 # Add the requested '-misa' variants as a multilib option ('misa=VAR1/misa=VAR2/misa=VAR3' etc.):
 empty :=
 space := $(empty) $(empty)
 MULTILIB_OPTIONS += $(subst $(space),/,$(multilib_options_misa_list))
 # ..., and remap '-misa' variants as appropriate:
-multilib_matches := $(shell $(srcdir)/config/nvptx/gen-multilib-matches.sh $(srcdir)/config/nvptx $(multilib_options_isa_default) "$(multilib_options_isa_list)")
 MULTILIB_MATCHES += $(multilib_matches)
 # ..., and don't actually build what's the default '-misa':
 MULTILIB_EXCEPTIONS += *misa=$(multilib_options_isa_default)*

@@ -3,6 +3,13 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/t-nvptx (multilib_matches): Don't use the 'shell'
+	function of 'make'.
+	* config/nvptx/gen-multilib-matches.sh: Adjust.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/117916
 	* config/nvptx/nvptx.opt (misa=, mptx=): Tag as 'Negative' of
 	themselves.
