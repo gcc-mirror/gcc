@@ -939,8 +939,7 @@ try_unroll_loop_completely (class loop *loop,
 	     1) It could increase register pressure.
 	     2) Big loop after completely unroll may not be vectorized
 	     by BB vectorizer.  */
-	  else if ((cunrolli && !loop->inner
-		    ? unr_insns : unr_insns - est_eliminated)
+	  else if ((cunrolli ? unr_insns : unr_insns - est_eliminated)
 		   > (unsigned) param_max_completely_peeled_insns)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1248,7 +1247,9 @@ try_peel_loop (class loop *loop,
 static bool
 canonicalize_loop_induction_variables (class loop *loop,
 				       bool create_iv, enum unroll_level ul,
-				       bool try_eval, bool allow_peel, bool cunrolli)
+				       bool try_eval, bool allow_peel,
+				       const_sbitmap innermost,
+				       bool cunrolli)
 {
   edge exit = NULL;
   tree niter;
@@ -1334,8 +1335,15 @@ canonicalize_loop_induction_variables (class loop *loop,
   modified |= remove_redundant_iv_tests (loop);
 
   dump_user_location_t locus = find_loop_location (loop);
+
+  bool innermost_cunrolli_p
+    = cunrolli
+      && (unsigned) loop->num < SBITMAP_SIZE (innermost)
+      && bitmap_bit_p (innermost, loop->num);
+
   if (try_unroll_loop_completely (loop, exit, niter, may_be_zero, ul,
-				  maxiter, locus, allow_peel, cunrolli))
+				  maxiter, locus, allow_peel,
+				  innermost_cunrolli_p))
     return true;
 
   if (create_iv
@@ -1372,14 +1380,19 @@ canonicalize_induction_variables (void)
   bool changed = false;
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
+  auto_sbitmap innermost (number_of_loops (cfun));
+  bitmap_clear (innermost);
 
   estimate_numbers_of_iterations (cfun);
 
   for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
-      changed |= canonicalize_loop_induction_variables (loop,
-							true, UL_SINGLE_ITER,
-							true, false, false);
+      changed
+	|= canonicalize_loop_induction_variables (loop,
+						  true, UL_SINGLE_ITER,
+						  true, false,
+						  (const_sbitmap) innermost,
+						  false);
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
@@ -1413,7 +1426,8 @@ canonicalize_induction_variables (void)
 
 static bool
 tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
-				bitmap father_bbs, class loop *loop, bool cunrolli)
+				bitmap father_bbs, class loop *loop,
+				const_sbitmap innermost, bool cunrolli)
 {
   class loop *loop_father;
   bool changed = false;
@@ -1431,7 +1445,8 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 	if (!child_father_bbs)
 	  child_father_bbs = BITMAP_ALLOC (NULL);
 	if (tree_unroll_loops_completely_1 (may_increase_size, unroll_outer,
-					    child_father_bbs, inner, cunrolli))
+					    child_father_bbs, inner,
+					    innermost, cunrolli))
 	  {
 	    bitmap_ior_into (father_bbs, child_father_bbs);
 	    bitmap_clear (child_father_bbs);
@@ -1477,7 +1492,8 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
     ul = UL_NO_GROWTH;
 
   if (canonicalize_loop_induction_variables
-      (loop, false, ul, !flag_tree_loop_ivcanon, unroll_outer, cunrolli))
+      (loop, false, ul, !flag_tree_loop_ivcanon, unroll_outer,
+       innermost, cunrolli))
     {
       /* If we'll continue unrolling, we need to propagate constants
 	 within the new basic blocks to fold away induction variable
@@ -1503,18 +1519,27 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 
 /* Unroll LOOPS completely if they iterate just few times.  Unless
    MAY_INCREASE_SIZE is true, perform the unrolling only if the
-   size of the code does not increase.  */
+   size of the code does not increase.
+   cunrolli is true when passs is cunrolli.  */
 
 static unsigned int
-tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
+tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer, bool cunrolli)
 {
   bitmap father_bbs = BITMAP_ALLOC (NULL);
   bool changed;
   int iteration = 0;
   bool irred_invalidated = false;
-  bool cunrolli = true;
+  auto_sbitmap innermost (number_of_loops (cfun));
+  bitmap_clear (innermost);
 
   estimate_numbers_of_iterations (cfun);
+
+  /* Mark all innermost loop at the begining.  */
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
+    {
+      if (!loop->inner)
+	bitmap_set_bit (innermost, loop->num);
+    }
 
   do
     {
@@ -1530,14 +1555,11 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
       changed = tree_unroll_loops_completely_1 (may_increase_size,
 						unroll_outer, father_bbs,
 						current_loops->tree_root,
+						(const_sbitmap) innermost,
 						cunrolli);
       if (changed)
 	{
 	  unsigned i;
-	  /* For the outer loop, considering that the inner loop is completely
-	     unrolled, it would expose more optimization opportunities, so it's
-	     better to keep 2/3 reduction of estimated unrolled size.  */
-	  cunrolli = false;
 
 	  unloop_loops (loops_to_unloop, loops_to_unloop_nunroll,
 			edges_to_remove, loop_closed_ssa_invalidated,
@@ -1697,7 +1719,7 @@ pass_complete_unroll::execute (function *fun)
      re-peeling the same loop multiple times.  */
   if (flag_peel_loops)
     peeled_loops = BITMAP_ALLOC (NULL);
-  unsigned int val = tree_unroll_loops_completely (flag_cunroll_grow_size, true);
+  unsigned int val = tree_unroll_loops_completely (flag_cunroll_grow_size, true, false);
   if (peeled_loops)
     {
       BITMAP_FREE (peeled_loops);
@@ -1753,7 +1775,7 @@ pass_complete_unrolli::execute (function *fun)
   if (number_of_loops (fun) > 1)
     {
       scev_initialize ();
-      ret = tree_unroll_loops_completely (optimize >= 3, false);
+      ret = tree_unroll_loops_completely (optimize >= 3, false, true);
       scev_finalize ();
     }
   loop_optimizer_finalize ();
