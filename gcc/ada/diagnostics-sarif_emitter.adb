@@ -23,17 +23,55 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Diagnostics.Utils;      use Diagnostics.Utils;
-with Diagnostics.JSON_Utils; use Diagnostics.JSON_Utils;
-with Gnatvsn;                use Gnatvsn;
-with Output;                 use Output;
-with Sinput;                 use Sinput;
-with Lib;                    use Lib;
-with Namet;                  use Namet;
-with Osint;                  use Osint;
-with Errout;                 use Errout;
+with Errout;                    use Errout;
+with Diagnostics.JSON_Utils;    use Diagnostics.JSON_Utils;
+with Diagnostics.Utils;         use Diagnostics.Utils;
+with Gnatvsn;                   use Gnatvsn;
+with Lib;                       use Lib;
+with Namet;                     use Namet;
+with Osint;                     use Osint;
+with Output;                    use Output;
+with Sinput;                    use Sinput;
+with System.OS_Lib;
 
 package body Diagnostics.SARIF_Emitter is
+
+   --  SARIF attribute names
+
+   N_ARTIFACT_CHANGES      : constant String := "artifactChanges";
+   N_ARTIFACT_LOCATION     : constant String := "artifactLocation";
+   N_COMMAND_LINE          : constant String := "commandLine";
+   N_DELETED_REGION        : constant String := "deletedRegion";
+   N_DESCRIPTION           : constant String := "description";
+   N_DRIVER                : constant String := "driver";
+   N_END_COLUMN            : constant String := "endColumn";
+   N_END_LINE              : constant String := "endLine";
+   N_EXECUTION_SUCCESSFUL  : constant String := "executionSuccessful";
+   N_FIXES                 : constant String := "fixes";
+   N_ID                    : constant String := "id";
+   N_INSERTED_CONTENT      : constant String := "insertedContent";
+   N_INVOCATIONS           : constant String := "invocations";
+   N_LOCATIONS             : constant String := "locations";
+   N_LEVEL                 : constant String := "level";
+   N_MESSAGE               : constant String := "message";
+   N_NAME                  : constant String := "name";
+   N_ORIGINAL_URI_BASE_IDS : constant String := "originalUriBaseIds";
+   N_PHYSICAL_LOCATION     : constant String := "physicalLocation";
+   N_REGION                : constant String := "region";
+   N_RELATED_LOCATIONS     : constant String := "relatedLocations";
+   N_REPLACEMENTS          : constant String := "replacements";
+   N_RESULTS               : constant String := "results";
+   N_RULES                 : constant String := "rules";
+   N_RULE_ID               : constant String := "ruleId";
+   N_RUNS                  : constant String := "runs";
+   N_SCHEMA                : constant String := "$schema";
+   N_START_COLUMN          : constant String := "startColumn";
+   N_START_LINE            : constant String := "strartLine";
+   N_TEXT                  : constant String := "text";
+   N_TOOL                  : constant String := "tool";
+   N_URI                   : constant String := "uri";
+   N_URI_BASE_ID           : constant String := "uriBaseId";
+   N_VERSION               : constant String := "version";
 
    --  We are currently using SARIF 2.1.0
 
@@ -43,21 +81,28 @@ package body Diagnostics.SARIF_Emitter is
      "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
    pragma Style_Checks ("M79");
 
+   URI_Base_Id_Name : constant String := "PWD";
+   --  We use the pwd as the originalUriBaseIds when providing absolute paths
+   --  in locations.
+
+   Current_Dir : constant String := Get_Current_Dir;
+   --  Cached value of the current directory that is used in the URI_Base_Id
+   --  and it is also the path that all other Uri attributes will be created
+   --  relative to.
+
    type Artifact_Change is record
-      File  : String_Ptr;
-      --  Name of the file
+      File_Index  : Source_File_Index;
+      --  Index for the source file
 
       Replacements : Edit_List;
       --  Regions of texts to be edited
    end record;
 
-   procedure Destroy (Elem : in out Artifact_Change);
+   procedure Destroy (Elem : in out Artifact_Change) is null;
    pragma Inline (Destroy);
 
    function Equals (L, R : Artifact_Change) return Boolean is
-     (L.File /= null
-      and then R.File /= null
-      and then L.File.all = R.File.all);
+     (L.File_Index = R.File_Index);
 
    package Artifact_Change_Lists is new Doubly_Linked_Lists
      (Element_Type    => Artifact_Change,
@@ -119,11 +164,12 @@ package body Diagnostics.SARIF_Emitter is
    --    replacements: [<Replacements>]
    --  }
 
-   procedure Print_Artifact_Location (File_Name : String);
+   procedure Print_Artifact_Location (Sfile : Source_File_Index);
    --  Print an artifactLocation node
    --
    --   "artifactLocation": {
-   --     "URI": <File_Name>
+   --     "uri": <File_Name>,
+   --     "uriBaseId": "PWD"
    --   }
 
    procedure Print_Location (Loc : Labeled_Span_Type;
@@ -140,7 +186,7 @@ package body Diagnostics.SARIF_Emitter is
    --    },
    --    "physicalLocation": {
    --      "artifactLocation": {
-   --        "URI": <File_Name (Loc)>
+   --        "uri": <File_Name (Loc)>
    --      },
    --      "region": {
    --        "startLine": <Line(Loc.Fst)>,
@@ -159,11 +205,23 @@ package body Diagnostics.SARIF_Emitter is
    --      <Location (Primary_Span (Diag))>
    --   ],
 
-   procedure Print_Message (Text : String; Name : String := "message");
-   --  Print a SARIF message node
+   procedure Print_Message (Text : String; Name : String := N_MESSAGE);
+   --  Print a SARIF message node.
    --
-   --  "message": {
+   --  There are many message type nodes in the SARIF report however they can
+   --  have a different node <Name>.
+   --
+   --  <Name>: {
    --    "text": <text>
+   --  },
+
+   procedure Print_Original_Uri_Base_Ids;
+   --  Print the originalUriBaseIds that holds the PWD value
+   --
+   --  "originalUriBaseIds": {
+   --    "PWD": {
+   --      "uri": "<current_working_directory>"
+   --    }
    --  },
 
    procedure Print_Related_Locations (Diag : Diagnostic_Type);
@@ -179,7 +237,7 @@ package body Diagnostics.SARIF_Emitter is
                            Start_Col  : Int;
                            End_Line   : Int;
                            End_Col    : Int;
-                           Name       : String := "region");
+                           Name       : String := N_REGION);
    --  Print a region node.
    --
    --  More specifically a text region node that specifies the textual
@@ -271,17 +329,6 @@ package body Diagnostics.SARIF_Emitter is
    --    }
    --  }
 
-   -------------
-   -- Destroy --
-   -------------
-
-   procedure Destroy (Elem : in out Artifact_Change)
-   is
-
-   begin
-      Free (Elem.File);
-   end Destroy;
-
    --------------------------
    -- Get_Artifact_Changes --
    --------------------------
@@ -304,7 +351,7 @@ package body Diagnostics.SARIF_Emitter is
          while Artifact_Change_Lists.Has_Next (It) loop
             Artifact_Change_Lists.Next (It, A);
 
-            if A.File.all = To_File_Name (E.Span.Ptr) then
+            if A.File_Index = Get_Source_File_Index (E.Span.Ptr) then
                Edit_Lists.Append (A.Replacements, E);
                return;
             end if;
@@ -316,7 +363,7 @@ package body Diagnostics.SARIF_Emitter is
             Edit_Lists.Append (Replacements, E);
             Artifact_Change_Lists.Append
               (Changes,
-               (File  => new String'(To_File_Name (E.Span.Ptr)),
+               (File_Index   => Get_Source_File_Index (E.Span.Ptr),
                 Replacements => Replacements));
          end;
       end Insert;
@@ -402,12 +449,12 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print artifactLocation
 
-      Print_Artifact_Location (A.File.all);
+      Print_Artifact_Location (A.File_Index);
 
       Write_Char (',');
       NL_And_Indent;
 
-      Write_Str ("""" & "replacements" & """" & ": " & "[");
+      Write_Str ("""" & N_REPLACEMENTS & """" & ": " & "[");
       Begin_Block;
       NL_And_Indent;
 
@@ -443,14 +490,53 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Artifact_Location --
    -----------------------------
 
-   procedure Print_Artifact_Location (File_Name : String) is
-
+   procedure Print_Artifact_Location (Sfile : Source_File_Index) is
+      Full_Name : constant String := Get_Name_String (Full_Ref_Name (Sfile));
    begin
-      Write_Str ("""" & "artifactLocation" & """" & ": " & "{");
+      Write_Str ("""" & N_ARTIFACT_LOCATION & """" & ": " & "{");
       Begin_Block;
       NL_And_Indent;
 
-      Write_String_Attribute ("uri", File_Name);
+      if System.OS_Lib.Is_Absolute_Path (Full_Name) then
+         declare
+            Abs_Name : constant String :=
+              System.OS_Lib.Normalize_Pathname
+                (Name => Full_Name, Resolve_Links => False);
+         begin
+            --  We cannot create relative paths between different drives on
+            --  Windows. If the path is on a different drive than the PWD print
+            --  the absolute path in the URI and omit the baseUriId attribute.
+
+            if Osint.On_Windows
+              and then Abs_Name (Abs_Name'First) =
+                Current_Dir (Current_Dir'First)
+            then
+               Write_String_Attribute
+                 (N_URI, To_File_Uri (Abs_Name));
+            else
+               Write_String_Attribute
+                 (N_URI,
+                  To_File_Uri
+                    (Relative_Path (Abs_Name, Current_Dir)));
+
+               Write_Char (',');
+               NL_And_Indent;
+
+               Write_String_Attribute
+                 (N_URI_BASE_ID, URI_Base_Id_Name);
+            end if;
+         end;
+      else
+         --  If the path was not absolute it was given relative to the
+         --  uriBaseId.
+
+         Write_String_Attribute (N_URI, To_File_Uri (Full_Name));
+
+         Write_Char (',');
+         NL_And_Indent;
+
+         Write_String_Attribute (N_URI_BASE_ID, URI_Base_Id_Name);
+      end if;
 
       End_Block;
       NL_And_Indent;
@@ -482,13 +568,13 @@ package body Diagnostics.SARIF_Emitter is
                     Start_Col  => Col_Fst,
                     End_Line   => Line_Lst,
                     End_Col    => Col_Lst,
-                    Name       => "deletedRegion");
+                    Name       => N_DELETED_REGION);
 
       if Replacement.Text /= null then
          Write_Char (',');
          NL_And_Indent;
 
-         Print_Message (Replacement.Text.all, "insertedContent");
+         Print_Message (Replacement.Text.all, N_INSERTED_CONTENT);
       end if;
 
       --  End replacement
@@ -512,7 +598,7 @@ package body Diagnostics.SARIF_Emitter is
       --  Print the message if the location has one
 
       if Fix.Description /= null then
-         Print_Message (Fix.Description.all, "description");
+         Print_Message (Fix.Description.all, N_DESCRIPTION);
 
          Write_Char (',');
          NL_And_Indent;
@@ -524,7 +610,7 @@ package body Diagnostics.SARIF_Emitter is
          A       : Artifact_Change;
          A_It    : Iterator := Iterate (Changes);
       begin
-         Write_Str ("""" & "artifactChanges" & """" & ": " & "[");
+         Write_Str ("""" & N_ARTIFACT_CHANGES & """" & ": " & "[");
          Begin_Block;
 
          while Has_Next (A_It) loop
@@ -564,7 +650,7 @@ package body Diagnostics.SARIF_Emitter is
 
       First : Boolean := True;
    begin
-      Write_Str ("""" & "fixes" & """" & ": " & "[");
+      Write_Str ("""" & N_FIXES & """" & ": " & "[");
       Begin_Block;
 
       if Present (Diag.Fixes) then
@@ -616,7 +702,7 @@ package body Diagnostics.SARIF_Emitter is
       end Compose_Command_Line;
 
    begin
-      Write_Str ("""" & "invocations" & """" & ": " & "[");
+      Write_Str ("""" & N_INVOCATIONS & """" & ": " & "[");
       Begin_Block;
       NL_And_Indent;
 
@@ -626,13 +712,13 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print commandLine
 
-      Write_String_Attribute ("commandLine", Compose_Command_Line);
+      Write_String_Attribute (N_COMMAND_LINE, Compose_Command_Line);
       Write_Char (',');
       NL_And_Indent;
 
       --  Print executionSuccessful
 
-      Write_Boolean_Attribute ("executionSuccessful", Compilation_Errors);
+      Write_Boolean_Attribute (N_EXECUTION_SUCCESSFUL, Compilation_Errors);
 
       End_Block;
       NL_And_Indent;
@@ -651,7 +737,7 @@ package body Diagnostics.SARIF_Emitter is
                            Start_Col  : Int;
                            End_Line   : Int;
                            End_Col    : Int;
-                           Name       : String := "region")
+                           Name       : String := N_REGION)
    is
 
    begin
@@ -659,22 +745,22 @@ package body Diagnostics.SARIF_Emitter is
       Begin_Block;
       NL_And_Indent;
 
-      Write_Int_Attribute ("startLine", Start_Line);
+      Write_Int_Attribute (N_START_LINE, Start_Line);
       Write_Char (',');
       NL_And_Indent;
 
-      Write_Int_Attribute ("startColumn", Start_Col);
+      Write_Int_Attribute (N_START_COLUMN, Start_Col);
       Write_Char (',');
       NL_And_Indent;
 
-      Write_Int_Attribute ("endLine", End_Line);
+      Write_Int_Attribute (N_END_LINE, End_Line);
       Write_Char (',');
       NL_And_Indent;
 
       --  Convert the end of the span to the definition of the endColumn
       --  for a SARIF region.
 
-      Write_Int_Attribute ("endColumn", End_Col + 1);
+      Write_Int_Attribute (N_END_COLUMN, End_Col + 1);
 
       End_Block;
       NL_And_Indent;
@@ -713,13 +799,13 @@ package body Diagnostics.SARIF_Emitter is
          NL_And_Indent;
       end if;
 
-      Write_Str ("""" & "physicalLocation" & """" & ": " & "{");
+      Write_Str ("""" & N_PHYSICAL_LOCATION & """" & ": " & "{");
       Begin_Block;
       NL_And_Indent;
 
       --  Print artifactLocation
 
-      Print_Artifact_Location (To_File_Name (Loc.Span.Ptr));
+      Print_Artifact_Location (Get_Source_File_Index (Loc.Span.Ptr));
 
       Write_Char (',');
       NL_And_Indent;
@@ -751,7 +837,7 @@ package body Diagnostics.SARIF_Emitter is
 
       First : Boolean := True;
    begin
-      Write_Str ("""" & "locations" & """" & ": " & "[");
+      Write_Str ("""" & N_LOCATIONS & """" & ": " & "[");
       Begin_Block;
 
       while Has_Next (It) loop
@@ -782,17 +868,42 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Message --
    -------------------
 
-   procedure Print_Message (Text : String; Name : String := "message") is
+   procedure Print_Message (Text : String; Name : String := N_MESSAGE) is
 
    begin
       Write_Str ("""" & Name & """" & ": " & "{");
       Begin_Block;
       NL_And_Indent;
-      Write_String_Attribute ("text", Text);
+      Write_String_Attribute (N_TEXT, Text);
       End_Block;
       NL_And_Indent;
       Write_Char ('}');
    end Print_Message;
+
+   ---------------------------------
+   -- Print_Original_Uri_Base_Ids --
+   ---------------------------------
+
+   procedure Print_Original_Uri_Base_Ids is
+   begin
+      Write_Str ("""" & N_ORIGINAL_URI_BASE_IDS & """" & ": " & "{");
+      Begin_Block;
+      NL_And_Indent;
+
+      Write_Str ("""" & URI_Base_Id_Name & """" & ": " & "{");
+      Begin_Block;
+      NL_And_Indent;
+
+      Write_String_Attribute (N_URI, To_File_Uri (Current_Dir));
+
+      End_Block;
+      NL_And_Indent;
+      Write_Char ('}');
+
+      End_Block;
+      NL_And_Indent;
+      Write_Char ('}');
+   end Print_Original_Uri_Base_Ids;
 
    -----------------------------
    -- Print_Related_Locations --
@@ -808,7 +919,7 @@ package body Diagnostics.SARIF_Emitter is
 
       First : Boolean := True;
    begin
-      Write_Str ("""" & "relatedLocations" & """" & ": " & "[");
+      Write_Str ("""" & N_RELATED_LOCATIONS & """" & ": " & "[");
       Begin_Block;
 
       --  Related locations are the non-primary spans of the diagnostic
@@ -908,14 +1019,14 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print ruleId
 
-      Write_String_Attribute ("ruleId", "[" & To_String (Diag.Id) & "]");
+      Write_String_Attribute (N_RULE_ID, "[" & To_String (Diag.Id) & "]");
 
       Write_Char (',');
       NL_And_Indent;
 
       --  Print level
 
-      Write_String_Attribute ("level", Kind_To_String (Diag));
+      Write_String_Attribute (N_LEVEL, Kind_To_String (Diag));
 
       Write_Char (',');
       NL_And_Indent;
@@ -964,7 +1075,7 @@ package body Diagnostics.SARIF_Emitter is
 
       First : Boolean := True;
    begin
-      Write_Str ("""" & "results" & """" & ": " & "[");
+      Write_Str ("""" & N_RESULTS & """" & ": " & "[");
       Begin_Block;
 
       if Present (Diags) then
@@ -998,14 +1109,14 @@ package body Diagnostics.SARIF_Emitter is
       Begin_Block;
       NL_And_Indent;
 
-      Write_String_Attribute ("id", "[" & To_String (Diag.Id) & "]");
+      Write_String_Attribute (N_ID, "[" & To_String (Diag.Id) & "]");
       Write_Char (',');
       NL_And_Indent;
 
       if Human_Id = null then
-         Write_String_Attribute ("name", "Uncategorized_Diagnostic");
+         Write_String_Attribute (N_NAME, "Uncategorized_Diagnostic");
       else
-         Write_String_Attribute ("name", Human_Id.all);
+         Write_String_Attribute (N_NAME, Human_Id.all);
       end if;
 
       End_Block;
@@ -1027,7 +1138,7 @@ package body Diagnostics.SARIF_Emitter is
 
       First : Boolean := True;
    begin
-      Write_Str ("""" & "rules" & """" & ": " & "[");
+      Write_Str ("""" & N_RULES & """" & ": " & "[");
       Begin_Block;
 
       while Has_Next (It) loop
@@ -1056,23 +1167,23 @@ package body Diagnostics.SARIF_Emitter is
    procedure Print_Tool (Diags : Diagnostic_List) is
 
    begin
-      Write_Str ("""" & "tool" & """" & ": " & "{");
+      Write_Str ("""" & N_TOOL & """" & ": " & "{");
       Begin_Block;
       NL_And_Indent;
 
       --  --  Attributes of tool
 
-      Write_Str ("""" & "driver" & """" & ": " & "{");
+      Write_Str ("""" & N_DRIVER & """" & ": " & "{");
       Begin_Block;
       NL_And_Indent;
 
       --  Attributes of tool.driver
 
-      Write_String_Attribute ("name", "GNAT");
+      Write_String_Attribute (N_NAME, "GNAT");
       Write_Char (',');
       NL_And_Indent;
 
-      Write_String_Attribute ("version", Gnat_Version_String);
+      Write_String_Attribute (N_VERSION, Gnat_Version_String);
       Write_Char (',');
       NL_And_Indent;
 
@@ -1100,7 +1211,7 @@ package body Diagnostics.SARIF_Emitter is
    procedure Print_Runs (Diags : Diagnostic_List) is
 
    begin
-      Write_Str ("""" & "runs" & """" & ": " & "[");
+      Write_Str ("""" & N_RUNS & """" & ": " & "[");
       Begin_Block;
       NL_And_Indent;
 
@@ -1121,6 +1232,10 @@ package body Diagnostics.SARIF_Emitter is
       --  A run consists of an invocation
       Print_Invocations;
 
+      Write_Char (',');
+      NL_And_Indent;
+
+      Print_Original_Uri_Base_Ids;
       Write_Char (',');
       NL_And_Indent;
 
@@ -1153,11 +1268,11 @@ package body Diagnostics.SARIF_Emitter is
       Begin_Block;
       NL_And_Indent;
 
-      Write_String_Attribute ("$schema", SARIF_Schema);
+      Write_String_Attribute (N_SCHEMA, SARIF_Schema);
       Write_Char (',');
       NL_And_Indent;
 
-      Write_String_Attribute ("version", SARIF_Version);
+      Write_String_Attribute (N_VERSION, SARIF_Version);
       Write_Char (',');
       NL_And_Indent;
 

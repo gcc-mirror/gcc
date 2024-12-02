@@ -166,6 +166,9 @@ package Osint is
    function Is_Directory_Separator (C : Character) return Boolean;
    --  Returns True if C is a directory separator
 
+   function Get_Current_Dir return String;
+   --  Returns the current working directory for the execution environment
+
    function Get_Directory (Name : File_Name_Type) return File_Name_Type;
    --  Get the prefix directory name (if any) from Name. The last separator
    --  is preserved. Return the normalized current directory if there is no
@@ -230,6 +233,10 @@ package Osint is
      (Canonical_File : String) return String_Access;
    --  Convert a canonical syntax file specification to host syntax
 
+   function Relative_Path (Path : String; Ref : String) return String;
+   --  Given an absolute path Path calculate its relative path from a reference
+   --  directory Ref.
+
    function Relocate_Path
      (Prefix : String;
       Path   : String) return String_Ptr;
@@ -242,6 +249,9 @@ package Osint is
    --  installation directory.
    --  If the above computation fails, return Path. This function assumes
    --  Prefix'First = Path'First.
+
+   function Root (Path : String) return String;
+   --  Return the root of an absolute Path.
 
    function Shared_Lib (Name : String) return String;
    --  Returns the runtime shared library in the form -l<name>-<version> where

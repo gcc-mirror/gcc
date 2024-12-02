@@ -49,6 +49,11 @@ package Diagnostics.JSON_Utils is
    procedure NL_And_Indent;
    --  Print a new line
 
+   function To_File_Uri (Path : String) return String;
+   --  Converts an absolute Path into a file URI string by adding the file
+   --  schema prefix "file:///" and replacing all of the URI reserved
+   --  characters in the absolute path.
+
    procedure Write_Boolean_Attribute (Name : String; Value : Boolean);
    --  Write a JSON attribute with a boolean value.
    --
