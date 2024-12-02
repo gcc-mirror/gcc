@@ -90,9 +90,11 @@ protected:
   void compile_function_body (tree fndecl, HIR::BlockExpr &function_body,
 			      TyTy::BaseType *fn_return_ty);
 
-  tree compile_constant_item (TyTy::BaseType *resolved_type,
+  tree compile_constant_item (HirId coercion_id, TyTy::BaseType *resolved_type,
+			      TyTy::BaseType *expected_type,
 			      const Resolver::CanonicalPath &canonical_path,
-			      HIR::Expr &const_value_expr, location_t locus);
+			      HIR::Expr &const_value_expr, location_t locus,
+			      location_t expr_locus);
 
   tree compile_function (const std::string &fn_name, HIR::SelfParam &self_param,
 			 std::vector<HIR::FunctionParam> &function_params,

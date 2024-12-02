@@ -777,13 +777,18 @@ HIRCompileBase::compile_function (
 
 tree
 HIRCompileBase::compile_constant_item (
-  TyTy::BaseType *resolved_type, const Resolver::CanonicalPath &canonical_path,
-  HIR::Expr &const_value_expr, location_t locus)
+  HirId coercion_id, TyTy::BaseType *resolved_type,
+  TyTy::BaseType *expected_type, const Resolver::CanonicalPath &canonical_path,
+  HIR::Expr &const_value_expr, location_t locus, location_t expr_locus)
 {
   const std::string &ident = canonical_path.get ();
 
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
   tree const_type = build_qualified_type (type, TYPE_QUAL_CONST);
+
+  tree actual_type = TyTyResolveCompile::compile (ctx, expected_type);
+  tree actual_const_type = build_qualified_type (actual_type, TYPE_QUAL_CONST);
+
   bool is_block_expr
     = const_value_expr.get_expression_type () == HIR::Expr::ExprType::Block;
 
@@ -851,7 +856,11 @@ HIRCompileBase::compile_constant_item (
   tree call = build_call_array_loc (locus, const_type, fndecl, 0, NULL);
   tree folded_expr = fold_expr (call);
 
-  return named_constant_expression (const_type, ident, folded_expr, locus);
+  // coercion site
+  tree coerced = coercion_site (coercion_id, folded_expr, resolved_type,
+				expected_type, locus, expr_locus);
+
+  return named_constant_expression (actual_const_type, ident, coerced, locus);
 }
 
 tree
