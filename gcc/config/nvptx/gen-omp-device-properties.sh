@@ -18,7 +18,11 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-nvptx_sm_def="$1/nvptx-sm.def"
+
+nvptx_dir=$(dirname "$0")
+
+
+nvptx_sm_def="$nvptx_dir/nvptx-sm.def"
 
 sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
 
