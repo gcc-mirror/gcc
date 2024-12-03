@@ -1,6 +1,7 @@
 /* Testing the correct usage of attribute counted_by.  */   
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target wchar } */
 
 #include <wchar.h>
 
