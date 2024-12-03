@@ -19,46 +19,55 @@
    <http://www.gnu.org/licenses/>.  */
 
 #undef ENTRY_BINARY
-#define ENTRY_BINARY(N, T0, T1, T2, U)		\
-  ENTRY (N, binary, T0, T1, T2, U)
+#define ENTRY_BINARY(N, T0, T1, T2, U, F)	\
+  ENTRY (N, binary, T0, T1, T2, U, F)
 
 #undef ENTRY_BINARY_LANE
-#define ENTRY_BINARY_LANE(N, T0, T1, T2, U)	\
-  ENTRY (N, binary_lane, T0, T1, T2, U)
+#define ENTRY_BINARY_LANE(N, T0, T1, T2, U, F)	\
+  ENTRY (N, binary_lane, T0, T1, T2, U, F)
 
 #undef ENTRY_BINARY_VHSDF
-#define ENTRY_BINARY_VHSDF(NAME, UNSPEC)	       \
-  ENTRY_BINARY (NAME##_f16, f16, f16, f16, UNSPEC)     \
-  ENTRY_BINARY (NAME##q_f16, f16q, f16q, f16q, UNSPEC) \
-  ENTRY_BINARY (NAME##_f32, f32, f32, f32, UNSPEC)     \
-  ENTRY_BINARY (NAME##q_f32, f32q, f32q, f32q, UNSPEC) \
-  ENTRY_BINARY (NAME##q_f64, f64q, f64q, f64q, UNSPEC)
+#define ENTRY_BINARY_VHSDF(NAME, UNSPEC, FLAGS)			\
+  ENTRY_BINARY (NAME##_f16, f16, f16, f16, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f16, f16q, f16q, f16q, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##_f32, f32, f32, f32, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f32, f32q, f32q, f32q, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f64, f64q, f64q, f64q, UNSPEC, FLAGS)
 
 #undef ENTRY_TERNARY_VLUT8
-#define ENTRY_TERNARY_VLUT8(T)						\
-  ENTRY_BINARY_LANE (vluti2_lane_##T##8, T##8q, T##8, u8, UNSPEC_LUTI2)	\
-  ENTRY_BINARY_LANE (vluti2_laneq_##T##8, T##8q, T##8, u8q, UNSPEC_LUTI2) \
-  ENTRY_BINARY_LANE (vluti2q_lane_##T##8, T##8q, T##8q, u8, UNSPEC_LUTI2) \
-  ENTRY_BINARY_LANE (vluti2q_laneq_##T##8, T##8q, T##8q, u8q, UNSPEC_LUTI2) \
-  ENTRY_BINARY_LANE (vluti4q_lane_##T##8, T##8q, T##8q, u8, UNSPEC_LUTI4) \
-  ENTRY_BINARY_LANE (vluti4q_laneq_##T##8, T##8q, T##8q, u8q, UNSPEC_LUTI4)
+#define ENTRY_TERNARY_VLUT8(T)					\
+  ENTRY_BINARY_LANE (vluti2_lane_##T##8, T##8q, T##8, u8,	\
+		     UNSPEC_LUTI2, NONE)			\
+  ENTRY_BINARY_LANE (vluti2_laneq_##T##8, T##8q, T##8, u8q,	\
+		     UNSPEC_LUTI2, NONE)			\
+  ENTRY_BINARY_LANE (vluti2q_lane_##T##8, T##8q, T##8q, u8,	\
+		     UNSPEC_LUTI2, NONE)			\
+  ENTRY_BINARY_LANE (vluti2q_laneq_##T##8, T##8q, T##8q, u8q,	\
+		     UNSPEC_LUTI2, NONE)			\
+  ENTRY_BINARY_LANE (vluti4q_lane_##T##8, T##8q, T##8q, u8,	\
+		     UNSPEC_LUTI4, NONE)			\
+  ENTRY_BINARY_LANE (vluti4q_laneq_##T##8, T##8q, T##8q, u8q,	\
+		     UNSPEC_LUTI4, NONE)
 
 #undef ENTRY_TERNARY_VLUT16
 #define ENTRY_TERNARY_VLUT16(T)						\
-  ENTRY_BINARY_LANE (vluti2_lane_##T##16, T##16q, T##16, u8, UNSPEC_LUTI2) \
-  ENTRY_BINARY_LANE (vluti2_laneq_##T##16, T##16q, T##16, u8q, UNSPEC_LUTI2) \
-  ENTRY_BINARY_LANE (vluti2q_lane_##T##16, T##16q, T##16q, u8, UNSPEC_LUTI2) \
+  ENTRY_BINARY_LANE (vluti2_lane_##T##16, T##16q, T##16, u8,		\
+		     UNSPEC_LUTI2, NONE)				\
+  ENTRY_BINARY_LANE (vluti2_laneq_##T##16, T##16q, T##16, u8q,		\
+		     UNSPEC_LUTI2, NONE)				\
+  ENTRY_BINARY_LANE (vluti2q_lane_##T##16, T##16q, T##16q, u8,		\
+		     UNSPEC_LUTI2, NONE)				\
   ENTRY_BINARY_LANE (vluti2q_laneq_##T##16, T##16q, T##16q, u8q,	\
-		     UNSPEC_LUTI2)					\
+		     UNSPEC_LUTI2, NONE)				\
   ENTRY_BINARY_LANE (vluti4q_lane_##T##16_x2, T##16q, T##16qx2, u8,	\
-		     UNSPEC_LUTI4)					\
+		     UNSPEC_LUTI4, NONE)				\
   ENTRY_BINARY_LANE (vluti4q_laneq_##T##16_x2, T##16q, T##16qx2, u8q,	\
-		     UNSPEC_LUTI4)
+		     UNSPEC_LUTI4, NONE)
 
 // faminmax
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
-ENTRY_BINARY_VHSDF (vamax, UNSPEC_FAMAX)
-ENTRY_BINARY_VHSDF (vamin, UNSPEC_FAMIN)
+ENTRY_BINARY_VHSDF (vamax, UNSPEC_FAMAX, FP)
+ENTRY_BINARY_VHSDF (vamin, UNSPEC_FAMIN, FP)
 #undef REQUIRED_EXTENSIONS
 
 // lut

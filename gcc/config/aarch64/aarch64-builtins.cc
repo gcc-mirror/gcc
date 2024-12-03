@@ -782,7 +782,7 @@ typedef struct
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 #undef ENTRY
-#define ENTRY(N, S, T0, T1, T2, U)		\
+#define ENTRY(N, S, T0, T1, T2, U, F)		\
   AARCH64_##N,
 
 enum aarch64_builtins
@@ -1651,9 +1651,10 @@ namespace simd_types {
 }
 
 #undef ENTRY
-#define ENTRY(N, S, T0, T1, T2, U) \
+#define ENTRY(N, S, T0, T1, T2, U, F) \
   {#N, aarch64_builtin_signatures::S, simd_types::T0, simd_types::T1, \
-   simd_types::T2, U, aarch64_required_extensions::REQUIRED_EXTENSIONS},
+   simd_types::T2, U, aarch64_required_extensions::REQUIRED_EXTENSIONS, \
+   FLAG_##F},
 
 /* Initialize pragma builtins.  */
 
@@ -1664,6 +1665,7 @@ struct aarch64_pragma_builtins_data
   simd_type types[3];
   int unspec;
   aarch64_required_extensions required_extensions;
+  unsigned int flags;
 };
 
 static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
@@ -1708,8 +1710,10 @@ aarch64_init_pragma_builtins ()
       auto data = aarch64_pragma_builtins[i];
       auto fntype = aarch64_fntype (data);
       auto code = AARCH64_PRAGMA_BUILTIN_START + i + 1;
+      auto flag_mode = data.types[0].mode;
+      auto attrs = aarch64_get_attributes (data.flags, flag_mode);
       aarch64_builtin_decls[code]
-	= aarch64_general_simulate_builtin (data.name, fntype, code);
+	= aarch64_general_simulate_builtin (data.name, fntype, code, attrs);
     }
 }
 
