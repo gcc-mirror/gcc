@@ -1,3 +1,11 @@
+2024-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2024-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Add Runtime Library Exception.
+	* config/arm/arm_mve_types.h: Likewise.
+
 2024-11-26  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
