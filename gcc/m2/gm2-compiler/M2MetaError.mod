@@ -1684,8 +1684,9 @@ END copySym ;
 
 
 (*
-   op := {'a'|'q'|'t'|'d'|'n'|'s'|'B'|'D'|'F'|'G'|'H'|'M'|'U'|'E'|'V'|'W'|'A'} then =:
-   op := {'a'|'q'|'t'|'d'|'n'|'s'| 'u' |'D'|'F'|'G'|'M'|'U'|'E'|'W'} then =:
+   op := {'!'|'a'|'c'|'d'|'k'|'q'|'t'|'p'|'n'|'s'|'u'|
+          'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'K'|'M'|'N'|
+          'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'} then =:
 *)
 
 PROCEDURE op (VAR eb: errorBlock;
@@ -1701,43 +1702,43 @@ BEGIN
 
       '!':  eb.positive := NOT eb.positive |
       'a':  doName (eb, sym, bol) |
+      'c':  eb.currentCol := readColor (eb) ;
+            DEC (eb.ini) |
+      'd':  doDesc (eb, sym, bol) |
+      'k':  unquotedKeyword (eb) ;
+            DEC (eb.ini) |
       'q':  doQualified (eb, sym, bol) |
       't':  doType (eb, sym, bol) |
-      'd':  doDesc (eb, sym, bol) |
+      'p':  popColor (eb) |
       'n':  doNumber (eb, sym, bol) |
-      'N':  doCount (eb, sym, bol) |
       's':  doSkipType (eb, sym, bol) |
-      'B':  declaredType (eb, sym, bol) |
-      'H':  declaredFull (eb, sym, bol) |
-      'V':  declaredVar (eb, sym, bol) |
-      'G':  declaredFor (eb, sym, bol) |
-      'M':  declaredMod (eb, sym, bol) |
-      'D':  declaredDef (eb, sym, bol) |
-      'U':  used (eb, sym, bol) |
-      'E':  eb.type := error |
+      'u':  eb.quotes := FALSE |
       'A':  eb.type := aborta ;
             seenAbort := TRUE |
-      'W':  eb.type := warning |
-      'O':  eb.type := note |
+      'B':  declaredType (eb, sym, bol) |
       'C':  eb.chain := TRUE |
+      'D':  declaredDef (eb, sym, bol) |
+      'E':  eb.type := error |
+      'F':  filename (eb) ;
+            DEC (eb.ini) |
+      'G':  declaredFor (eb, sym, bol) |
+      'H':  declaredFull (eb, sym, bol) |
+      'K':  keyword (eb) ;
+            DEC (eb.ini) |
+      'M':  declaredMod (eb, sym, bol) |
+      'N':  doCount (eb, sym, bol) |
+      'O':  eb.type := note |
+      'P':  pushColor (eb) |
+      'Q':  resetDictionary |
       'R':  eb.root := TRUE |
       'S':  doGetSkipType (eb, sym, bol) |
       'T':  doGetType (eb, sym, bol) |
-      'P':  pushColor (eb) |
-      'p':  popColor (eb) |
-      'c':  eb.currentCol := readColor (eb) ;
-            DEC (eb.ini) |
-      'K':  keyword (eb) ;
-            DEC (eb.ini) |
-      'k':  unquotedKeyword (eb) ;
-            DEC (eb.ini) |
-      'Q':  resetDictionary |
+      'U':  used (eb, sym, bol) |
+      'V':  declaredVar (eb, sym, bol) |
+      'W':  eb.type := warning |
       'X':  pushOutput (eb) |
       'Y':  processDefine (eb) |
       'Z':  popOutput (eb) |
-      'F':  filename (eb) ;
-            DEC (eb.ini) |
-      'u':  eb.quotes := FALSE |
       ':':  ifNonNulThen (eb, sym) ;
             DEC (eb.ini) |
       '1':  InternalError ('incorrect format spec, expecting %1 rather than % spec 1') |
