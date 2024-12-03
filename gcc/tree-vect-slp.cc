@@ -2292,6 +2292,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		}
 	    }
 	  /* 2. try to build children nodes, associating as necessary.  */
+	  /* 2a. prepare and perform early checks to avoid eating into
+	     discovery limit unnecessarily.  */
+	  vect_def_type *dts = XALLOCAVEC (vect_def_type, chain_len);
 	  for (unsigned n = 0; n < chain_len; ++n)
 	    {
 	      vect_def_type dt = chains[0][n].dt;
@@ -2319,6 +2322,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		    matches[0] = false;
 		  goto out;
 		}
+	      dts[n] = dt;
 	      if (dt == vect_constant_def
 		  || dt == vect_external_def)
 		{
@@ -2333,16 +2337,6 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		      matches[0] = false;
 		      goto out;
 		    }
-		  vec<tree> ops;
-		  ops.create (group_size);
-		  for (lane = 0; lane < group_size; ++lane)
-		    if (stmts[lane])
-		      ops.quick_push (chains[lane][n].op);
-		    else
-		      ops.quick_push (NULL_TREE);
-		  slp_tree child = vect_create_new_slp_node (ops);
-		  SLP_TREE_DEF_TYPE (child) = dt;
-		  children.safe_push (child);
 		}
 	      else if (dt != vect_internal_def)
 		{
@@ -2353,6 +2347,26 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  /* Soft-fail for now.  */
 		  hard_fail = false;
 		  goto out;
+		}
+	    }
+	  /* 2b. do the actual build.  */
+	  for (unsigned n = 0; n < chain_len; ++n)
+	    {
+	      vect_def_type dt = dts[n];
+	      unsigned lane;
+	      if (dt == vect_constant_def
+		  || dt == vect_external_def)
+		{
+		  vec<tree> ops;
+		  ops.create (group_size);
+		  for (lane = 0; lane < group_size; ++lane)
+		    if (stmts[lane])
+		      ops.quick_push (chains[lane][n].op);
+		    else
+		      ops.quick_push (NULL_TREE);
+		  slp_tree child = vect_create_new_slp_node (ops);
+		  SLP_TREE_DEF_TYPE (child) = dt;
+		  children.safe_push (child);
 		}
 	      else
 		{
@@ -2396,6 +2410,11 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 				term = true;
 				break;
 			      }
+			    if (dump_enabled_p ())
+			      dump_printf_loc (MSG_NOTE, vect_location,
+					       "swapping operand %d and %d "
+					       "of lane %d\n",
+					       n, n + perms[lane] + 1, lane);
 			    std::swap (chains[lane][n],
 				       chains[lane][n + perms[lane] + 1]);
 			    perms[lane]++;
