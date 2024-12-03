@@ -1,3 +1,69 @@
+2024-12-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-10-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116918
+	* gm2-compiler/M2Swig.mod (DoCheckUnbounded): Escape
+	the % character used in array_functions with %%.
+
+2024-12-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-10-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116918
+	* gm2-compiler/M2Swig.mod (AnnotateProcedure): Capitalize
+	the generated comment, split comment into multiple lines and
+	terminate the comment with ".  */".
+	(DoCheckUnbounded): Escape the % character with %%.
+	(DoWriteFile): Ditto.
+
+2024-12-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-09-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2/gm2-libs-boot/M2RTS.o): Remove
+	--suppress-noreturn.
+	* gm2-libs/M2RTS.mod (HaltC): Add noreturn attribute.
+	* gm2-libs-min/M2RTS.mod (HALT): Add LOOP END.
+
+2024-12-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-11-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117555
+	* gm2-libs-iso/EXCEPTIONS.mod (CurrentNumber): Add return
+	statement.
+	* gm2-libs-iso/IOChan.mod (ReadResult): Ditto.
+	(CurrentFlags): Ditto.
+	(DeviceError): Ditto.
+	* gm2-libs-iso/IOLink.mod (DeviceTablePtrValue): Ditto.
+	* gm2-libs-iso/LongConv.mod (ValueReal): Ditto.
+	* gm2-libs/M2RTS.mod (Halt): Add noreturn attribute.
+	Add exit (1).
+	(HaltC): Add exit (1).
+	* pge-boot/GM2RTS.cc (M2RTS_Halt): Add exit (1).
+	(M2RTS_HaltC): Ditto.
+
+2024-12-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117555
+	* gm2-libs-iso/M2EXCEPTION.mod (M2Exception): Add missing
+	return statement.
+	* gm2-libs-iso/RealConv.mod (ValueReal): Ditto.
+	* gm2-libs-iso/RndFile.mod (StartPos): Ditto.
+	(EndPos): Ditto.
+	(NewPos): Ditto.
+	* gm2-libs-iso/ShortConv.mod (ValueReal): Ditto.
+	* gm2-libs-iso/WholeConv.mod (ValueInt): Ditto.
+	(ValueCard): Ditto.
+
 2024-12-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

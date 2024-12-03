@@ -1,3 +1,231 @@
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (operator<=>): Use constexpr
+	instead of _GLIBCXX20_CONSTEXPR macro.
+
+2024-12-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* include/std/istream: Add cast to avoid -Wsign-compare.
+	* include/std/stacktrace: Likewise.
+
+2024-12-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/default_delete/void_neg.cc: Fix regexp quoting.
+
+2024-12-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* include/std/coroutine (coroutine_handle): Use nullptr instead of
+	0 as initializer for _M_fr_ptr.
+
+2024-12-02  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* include/decimal/decimal.h (_DEFINE_DECIMAL_BINARY_OP_WITH_INT):
+	Remove redundant semicolons.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/io_context: Remove name of unused
+	parameter.
+	* include/experimental/socket: Add [[maybe_unused]] attribute.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-ios_failure.cc (__iosfail_type_info): Unhide
+	the three-arg overload of __do_upcast.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/exception_ptr.h (__exception_ptr::_M_safe_bool_dummy):
+	Remove __attribute__((const)) from function returning void.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (to): Remove unused typedef.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_M_insert_unique_node): Improve
+	comment.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::begin): Fix constraint,
+	as per LWG 3589.
+	* testsuite/std/ranges/subrange/lwg3589.cc: New test.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unordered_map.h: Check __glibcxx_node_extract and
+	__glibcxx_unordered_map_try_emplace instead of __cplusplus.
+	* include/bits/unordered_set.h: Check __glibcxx_node_extract
+	instead of __cplusplus.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__is_byte<byte>): Guard with
+	__glibcxx_byte macro instead of checking __cplusplus.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__is_permutation_fn::operator()):
+	Short-circuit for sized ranges with different sizes, as per LWG
+	3560.
+	* include/bits/ranges_algobase.h (__equal_fn::operator()):
+	Likewise.
+	* include/bits/stl_algo.h (__is_permutation): Use if-constexpr
+	for random access iterator branches.
+	* include/bits/stl_algobase.h (__equal4): Likewise.
+	* testsuite/25_algorithms/equal/lwg3560.cc: New test.
+	* testsuite/25_algorithms/is_permutation/lwg3560.cc: New test.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106676
+	* include/bits/iterator_concepts.h (__cpp17_fwd_iterator): Use
+	is_reference instead of is_value_reference.
+	rvalue references.
+	* include/std/ranges (transform_view:__iter_cat::_S_iter_cat):
+	Likewise.
+	(zip_transform_view::__iter_cat::_S_iter_cat): Likewise.
+	(adjacent_transform_view::__iter_cat::_S_iter_cat): Likewise.
+	(join_with_view::__iter_cat::_S_iter_cat): Likewise.
+	* testsuite/std/ranges/adaptors/transform.cc: Check
+	iterator_category when the transformation function returns an
+	rvalue reference type.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc (resize_for_overwrite): Fix
+	-Wsign-compare warning.
+	* include/bits/cow_string.h (resize_for_overwrite): Likewise.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (emplace_back, emplace): Forward
+	parameter pack to preserve value category.
+	* testsuite/23_containers/vector/bool/emplace_rvalue.cc: New
+	test.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h: Fix spelling in comment.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h: Improve comments.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117560
+	* include/bits/fs_dir.h (enable_borrowed_range, enable_view):
+	Define specializations for directory iterators, as per LWG 3480.
+	* testsuite/27_io/filesystem/iterators/lwg3480.cc: New test.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h (time_counter): Add
+	comment about times.
+	(time_counter::system_time): Use correct split value.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h: Use
+	__gnu_cxx::__is_single_threaded instead of __gthread_active_p().
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (operator+): Add constraint to
+	move_iterator operator.
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc:
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117822
+	* include/std/stacktrace (stacktrace(stacktrace&&, const A&)):
+	Fix typo in qualified-id for is_always_equal trait.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Test
+	allocator-extended constructors and allocator propagation.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):
+	Do not assume allocators only throw std::bad_alloc.
+
 2024-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unicode.h (_Utf_iterator::_M_read_utf16): Add
