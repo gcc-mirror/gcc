@@ -523,6 +523,8 @@ procedure Gnat1drv is
          Restore_Warnings
            ((Warnings_Package.Elab_Warnings => True,
              Warnings_Package.Warn_On_Suspicious_Contract => True,
+             Warnings_Package.Warning_Doc_Switch =>
+               Warnsw.Warning_Doc_Switch,
              others => False));
 
          --  Suppress the generation of name tables for enumerations, which are
