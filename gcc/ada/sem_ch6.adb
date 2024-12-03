@@ -310,7 +310,7 @@ package body Sem_Ch6 is
       Typ      : Entity_Id := Empty;
 
       Def_Id : Entity_Id := Empty;
-      Prev   : Entity_Id;
+      Prev   : Entity_Id := Current_Entity_In_Scope (Defining_Entity (Spec));
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
 
@@ -325,10 +325,15 @@ package body Sem_Ch6 is
       Inline_Processing_Required := True;
 
       --  Create a specification for the generated body. This must be done
-      --  prior to the analysis of the initial declaration.
+      --  prior to the analysis of the initial declaration. We mark the
+      --  generated Defining_Unit_Name as Comes_From_Source to avoid
+      --  suppressing warnings on it. We do not do that in instances,
+      --  because of arcane interactions with ghost generics.
 
       New_Spec := Copy_Subprogram_Spec (Spec);
-      Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
+      if not In_Instance then
+         Set_Comes_From_Source (Defining_Unit_Name (New_Spec));
+      end if;
 
       --  Copy SPARK pragma from expression function
 
@@ -1363,11 +1368,10 @@ package body Sem_Ch6 is
       Form       : Node_Id;
       Null_Body  : Node_Id := Empty;
       Null_Stmt  : Node_Id := Null_Statement (Spec);
-      Prev       : Entity_Id;
+      Prev       : Entity_Id :=
+        Current_Entity_In_Scope (Defining_Entity (Spec));
 
    begin
-      Prev := Current_Entity_In_Scope (Defining_Entity (Spec));
-
       --  A null procedure is Ghost when it is stand-alone and is subject to
       --  pragma Ghost, or when the corresponding spec is Ghost. Set the mode
       --  now, to ensure that any nodes generated during analysis and expansion
