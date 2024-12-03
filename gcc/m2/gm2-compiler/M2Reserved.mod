@@ -197,6 +197,9 @@ BEGIN
    ForTok := MakeKey('FOR') ;
    AddKeyword(ForTok, fortok) ;
 
+   ForwardTok := MakeKey('FORWARD') ;
+   AddKeyword(ForwardTok, forwardtok) ;
+
    FromTok := MakeKey('FROM') ;
    AddKeyword(FromTok, fromtok) ;
 

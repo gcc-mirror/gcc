@@ -1,0 +1,5 @@
+DEFINITION MODULE badparam3 ;
+
+PROCEDURE foo (c: CARDINAL) ;
+
+END badparam3.

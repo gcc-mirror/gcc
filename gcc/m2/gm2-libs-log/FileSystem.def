@@ -269,7 +269,7 @@ PROCEDURE Doio (VAR f: File) ;
                   character was illegal.
 *)
 
-PROCEDURE FileNameChar (ch: CHAR) ;
+PROCEDURE FileNameChar (ch: CHAR) : CHAR ;
 
 
 END FileSystem.

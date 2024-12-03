@@ -1,0 +1,8 @@
+IMPLEMENTATION MODULE badparam ;
+
+PROCEDURE foo (c: CARDINAL) ;
+BEGIN
+
+END foo ;
+
+END badparam.

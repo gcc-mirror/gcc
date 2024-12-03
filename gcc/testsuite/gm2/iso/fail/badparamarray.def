@@ -1,0 +1,5 @@
+DEFINITION MODULE badparamarray ;
+
+PROCEDURE foo (a: ARRAY OF CHAR) ;
+
+END badparamarray.

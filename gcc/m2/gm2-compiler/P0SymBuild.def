@@ -104,6 +104,13 @@ PROCEDURE EndProcedure ;
 
 
 (*
+   EndForward - ends building a forward procedure.
+*)
+
+PROCEDURE EndForward ;
+
+
+(*
    P0Init -
 *)
 

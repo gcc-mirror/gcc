@@ -1123,6 +1123,13 @@ PROCEDURE PutVar (Sym: CARDINAL; VarType: CARDINAL) ;
 
 
 (*
+   PutVarTok - gives the VarSym symbol Sym a type Type at typetok.
+*)
+
+PROCEDURE PutVarTok (Sym: CARDINAL; VarType: CARDINAL; typetok: CARDINAL) ;
+
+
+(*
    PutLeftValueFrontBackType - gives the variable symbol a front and backend type.
                                The variable must be a LeftValue.
 *)
@@ -1353,7 +1360,7 @@ PROCEDURE IsReturnOptional (sym: CARDINAL) : BOOLEAN ;
 
 PROCEDURE PutParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
                     ParamName: Name; ParamType: CARDINAL;
-                    isUnbounded: BOOLEAN) : BOOLEAN ;
+                    isUnbounded: BOOLEAN; typetok: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -1367,7 +1374,7 @@ PROCEDURE PutParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
 
 PROCEDURE PutVarParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
                        ParamName: Name; ParamType: CARDINAL;
-                       isUnbounded: BOOLEAN) : BOOLEAN ;
+                       isUnbounded: BOOLEAN; typetok: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -1375,7 +1382,8 @@ PROCEDURE PutVarParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
                   ProcSym.
 *)
 
-PROCEDURE PutParamName (tok: CARDINAL; ProcSym: CARDINAL; no: CARDINAL; name: Name) ;
+PROCEDURE PutParamName (tok: CARDINAL; ProcSym: CARDINAL; no: CARDINAL;
+                        name: Name; typetok: CARDINAL) ;
 
 
 (*
@@ -1611,6 +1619,16 @@ PROCEDURE GetDeclaredDef (Sym: CARDINAL) : CARDINAL ;
 *)
 
 PROCEDURE GetDeclaredMod (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDeclaredFor - returns the token where this symbol was declared.
+                    It chooses the first from the forward declaration,
+                    implementation module, program module
+                    and definition module.
+*)
+
+PROCEDURE GetDeclaredFor (Sym: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -2212,9 +2230,8 @@ PROCEDURE AreParametersDefinedInDefinition (Sym: CARDINAL) : BOOLEAN ;
 
 
 (*
-   ParametersDefinedInImplementation - dictates to procedure symbol, Sym,
-                                       that its parameters have been defined in
-                                       a implementation module.
+   ParametersDefinedInImplementation - records that the parameters have been
+                                       defined in an implementation module.
 *)
 
 PROCEDURE ParametersDefinedInImplementation (Sym: CARDINAL) ;
@@ -2227,6 +2244,86 @@ PROCEDURE ParametersDefinedInImplementation (Sym: CARDINAL) ;
 *)
 
 PROCEDURE AreParametersDefinedInImplementation (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutParametersDefinedByForward - records that the parameters have been
+                                   defined in a FORWARD declaration.
+*)
+
+PROCEDURE PutParametersDefinedByForward (ProcSym: CARDINAL) ;
+
+
+(*
+   GetParametersDefinedByForward - return TRUE if ProcSym has had its parameters
+                                   defined by a FORWARD declaration.
+*)
+
+PROCEDURE GetParametersDefinedByForward (ProcSym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutParametersDefinedByProper - records that the parameters have been
+                                  defined in a FORWARD declaration.
+*)
+
+PROCEDURE PutParametersDefinedByProper (ProcSym: CARDINAL) ;
+
+
+(*
+   GetParametersDefinedByProper - return TRUE if ProcSym has had its parameters
+                                  defined by a FORWARD declaration.
+*)
+
+PROCEDURE GetParametersDefinedByProper (ProcSym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetProcedureDeclaredForward - return the token at which the forward
+                                 declaration procedure occurred.
+*)
+
+PROCEDURE GetProcedureDeclaredForward (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutProcedureDeclaredForward - places the tok to which the forward
+                                 declaration procedure occurred.
+*)
+
+PROCEDURE PutProcedureDeclaredForward (sym: CARDINAL; tok: CARDINAL) ;
+
+
+(*
+   GetProcedureDeclaredProper - return the token at which the forward
+                                declaration procedure occurred.
+*)
+
+PROCEDURE GetProcedureDeclaredProper (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutProcedureDeclaredProper - places the tok to which the forward
+                                declaration procedure occurred.
+*)
+
+PROCEDURE PutProcedureDeclaredProper (sym: CARDINAL; tok: CARDINAL) ;
+
+
+(*
+   GetProcedureDeclaredDefinition - return the token at which the forward
+                                    declaration procedure occurred.
+*)
+
+PROCEDURE GetProcedureDeclaredDefinition (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutProcedureDeclaredDefinition - places the tok to which the forward
+                                    declaration procedure occurred.
+*)
+
+PROCEDURE PutProcedureDeclaredDefinition (sym: CARDINAL; tok: CARDINAL) ;
 
 
 (*
@@ -3362,6 +3459,43 @@ PROCEDURE PutConstLitInternal (sym: CARDINAL; value: BOOLEAN) ;
 *)
 
 PROCEDURE IsConstLitInternal (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetVarDeclTypeTok - returns the TypeTok field associate with variable sym.
+*)
+
+PROCEDURE GetVarDeclTypeTok (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutVarDeclTypeTok - assigns the TypeTok field to typetok.
+                       sym can be a variable or parameter.
+*)
+
+PROCEDURE PutVarDeclTypeTok (sym: CARDINAL; typetok: CARDINAL) ;
+
+
+(*
+   GetVarDeclTok - returns the TypeTok field associate with variable sym.
+*)
+
+PROCEDURE GetVarDeclTok (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutVarDeclTok - assigns the VarTok field to vartok.
+                   sym can be a variable or parameter.
+*)
+
+PROCEDURE PutVarDeclTok (sym: CARDINAL; vartok: CARDINAL) ;
+
+
+(*
+   GetVarDeclFullTok - returns the full virtual token containing var: type.
+*)
+
+PROCEDURE GetVarDeclFullTok (sym: CARDINAL) : CARDINAL ;
 
 
 END SymbolTable.
