@@ -4860,23 +4860,23 @@ avr_split_shift_p (int n_bytes, int offset, rtx_code code)
 
   if (n_bytes == 4)
     return select<bool>()
-      : code == ASHIFT ? IN_RANGE (offset, 9, 30) && offset != 15
+      : code == ASHIFT ? IN_RANGE (offset, 9, 31) && offset != 15
       : code == ASHIFTRT ? IN_RANGE (offset, 9, 29) && offset != 15
-      : code == LSHIFTRT ? IN_RANGE (offset, 9, 30) && offset != 15
+      : code == LSHIFTRT ? IN_RANGE (offset, 9, 31) && offset != 15
       : bad_case<bool> ();
 
   if (n_bytes == 3)
     return select<bool>()
-      : code == ASHIFT ? IN_RANGE (offset, 9, 22) && offset != 15
+      : code == ASHIFT ? IN_RANGE (offset, 9, 23) && offset != 15
       : code == ASHIFTRT ? IN_RANGE (offset, 9, 21) && offset != 15
-      : code == LSHIFTRT ? IN_RANGE (offset, 9, 22) && offset != 15
+      : code == LSHIFTRT ? IN_RANGE (offset, 9, 23) && offset != 15
       : bad_case<bool> ();
 
   if (n_bytes == 2)
     return select<bool>()
-      : code == ASHIFT ? IN_RANGE (offset, 9, 14)
+      : code == ASHIFT ? IN_RANGE (offset, 9, 15)
       : code == ASHIFTRT ? IN_RANGE (offset, 9, 13)
-      : code == LSHIFTRT ? IN_RANGE (offset, 9, 14)
+      : code == LSHIFTRT ? IN_RANGE (offset, 9, 15)
       : bad_case<bool> ();
 
   return false;
@@ -4955,7 +4955,7 @@ avr_split_shift4 (rtx dest, rtx src, int ioff, rtx scratch, rtx_code code)
 
   if (code == ASHIFT)
     {
-      if (IN_RANGE (ioff, 25, 30))
+      if (IN_RANGE (ioff, 25, 31))
 	{
 	  rtx dst8 = avr_byte (dest, 3);
 	  rtx src8 = avr_byte (src, 0);
@@ -4978,7 +4978,7 @@ avr_split_shift4 (rtx dest, rtx src, int ioff, rtx scratch, rtx_code code)
   else if (code == ASHIFTRT
 	   || code == LSHIFTRT)
     {
-      if (IN_RANGE (ioff, 25, 30))
+      if (IN_RANGE (ioff, 25, 30 + (code == LSHIFTRT)))
 	{
 	  rtx dst8 = avr_byte (dest, 0);
 	  rtx src8 = avr_byte (src, 3);
@@ -5042,7 +5042,7 @@ avr_split_shift3 (rtx dest, rtx src, int ioff, rtx scratch, rtx_code code)
 
   if (code == ASHIFT)
     {
-      if (IN_RANGE (ioff, 17, 22))
+      if (IN_RANGE (ioff, 17, 23))
 	{
 	  rtx dst8 = avr_byte (dest, 2);
 	  rtx src8 = avr_byte (src, 0);
@@ -5056,7 +5056,7 @@ avr_split_shift3 (rtx dest, rtx src, int ioff, rtx scratch, rtx_code code)
   else if (code == ASHIFTRT
 	   || code == LSHIFTRT)
     {
-      if (IN_RANGE (ioff, 17, 22))
+      if (IN_RANGE (ioff, 17, 22 + (code == LSHIFTRT)))
 	{
 	  rtx dst8 = avr_byte (dest, 0);
 	  rtx src8 = avr_byte (src, 2);
@@ -5102,7 +5102,7 @@ avr_split_shift2 (rtx dest, rtx src, int ioff, rtx /*scratch*/, rtx_code code)
 
   if (code == ASHIFT)
     {
-      if (IN_RANGE (ioff, 9, 14))
+      if (IN_RANGE (ioff, 9, 15))
 	{
 	  rtx dst8 = avr_byte (dest, 1);
 	  rtx src8 = avr_byte (src, 0);
@@ -5114,7 +5114,7 @@ avr_split_shift2 (rtx dest, rtx src, int ioff, rtx /*scratch*/, rtx_code code)
   else if (code == ASHIFTRT
 	   || code == LSHIFTRT)
     {
-      if (IN_RANGE (ioff, 9, 14))
+      if (IN_RANGE (ioff, 9, 14 + (code == LSHIFTRT)))
 	{
 	  rtx dst8 = avr_byte (dest, 0);
 	  rtx src8 = avr_byte (src, 1);
