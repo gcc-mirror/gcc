@@ -71,9 +71,9 @@ foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/unop/*.\[cS\]]] \
     "" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/ternop/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/reduc/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cond/*.\[cS\]]] \
     "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/builtin/*.\[cS\]]] \
