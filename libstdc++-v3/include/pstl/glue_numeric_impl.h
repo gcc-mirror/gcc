@@ -111,7 +111,7 @@ exclusive_scan(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _ForwardIte
 {
     using namespace __pstl;
     return __internal::__pattern_transform_scan(
-        std::forward<_ExecutionPolicy>(__exec), __first, __last, __result, __pstl::__internal::__no_op(), __init,
+        std::forward<_ExecutionPolicy>(__exec), __first, __last, __result, __pstl::__internal::__no_op(), std::move(__init),
         __binary_op, /*inclusive=*/std::false_type(),
         __internal::__is_vectorization_preferred<_ExecutionPolicy, _ForwardIterator1, _ForwardIterator2>(__exec),
         __internal::__is_parallelization_preferred<_ExecutionPolicy, _ForwardIterator1, _ForwardIterator2>(__exec));
