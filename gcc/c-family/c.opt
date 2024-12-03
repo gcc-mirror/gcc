@@ -1881,7 +1881,7 @@ Enable the non-attribute syntax for contracts.
 
 fcontracts-nonattr-noconst
 C++ Var(flag_contracts_nonattr_noconst) Init(0)
-Disable the consitification of entities appearing in a contract condition.
+Disable the const-ification of entities appearing in a contract condition.
 
 fcontracts-nonattr-mutable-keyword
 C++ Var(flag_contracts_nonattr_mutable_keyword) Init(0)
