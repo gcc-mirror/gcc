@@ -780,7 +780,7 @@ typedef struct
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 #undef ENTRY
-#define ENTRY(N, S, M, U) \
+#define ENTRY(N, S, T0, T1, T2, U)		\
   AARCH64_##N,
 
 enum aarch64_builtins
@@ -1602,10 +1602,50 @@ enum class aarch64_builtin_signatures
   binary,
 };
 
+namespace {
+
+/* Pairs a machine mode with the information needed to turn it into a
+   function argument type or return type.  */
+struct simd_type {
+  tree type () const { return aarch64_simd_builtin_type (mode, qualifiers); }
+
+  machine_mode mode;
+  aarch64_type_qualifiers qualifiers;
+};
+
+namespace simd_types {
+  constexpr simd_type p8 { V8QImode, qualifier_poly };
+  constexpr simd_type p8q { V16QImode, qualifier_poly };
+  constexpr simd_type s8 { V8QImode, qualifier_none };
+  constexpr simd_type s8q { V16QImode, qualifier_none };
+  constexpr simd_type u8 { V8QImode, qualifier_unsigned };
+  constexpr simd_type u8q { V16QImode, qualifier_unsigned };
+
+  constexpr simd_type f16 { V4HFmode, qualifier_none };
+  constexpr simd_type f16q { V8HFmode, qualifier_none };
+  constexpr simd_type p16 { V4HImode, qualifier_poly };
+  constexpr simd_type p16q { V8HImode, qualifier_poly };
+  constexpr simd_type s16 { V4HImode, qualifier_none };
+  constexpr simd_type s16q { V8HImode, qualifier_none };
+  constexpr simd_type u16 { V4HImode, qualifier_unsigned };
+  constexpr simd_type u16q { V8HImode, qualifier_unsigned };
+
+  constexpr simd_type bf16 { V4BFmode, qualifier_none };
+  constexpr simd_type bf16q { V8BFmode, qualifier_none };
+
+  constexpr simd_type f32 { V2SFmode, qualifier_none };
+  constexpr simd_type f32q { V4SFmode, qualifier_none };
+  constexpr simd_type f64q { V2DFmode, qualifier_none };
+
+  constexpr simd_type none { VOIDmode, qualifier_none };
+}
+
+}
+
 #undef ENTRY
-#define ENTRY(N, S, M, U) \
-  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, \
-   aarch64_required_extensions::REQUIRED_EXTENSIONS},
+#define ENTRY(N, S, T0, T1, T2, U) \
+  {#N, aarch64_builtin_signatures::S, simd_types::T0, simd_types::T1, \
+   simd_types::T2, U, aarch64_required_extensions::REQUIRED_EXTENSIONS},
 
 /* Initialize pragma builtins.  */
 
@@ -1613,7 +1653,7 @@ struct aarch64_pragma_builtins_data
 {
   const char *name;
   aarch64_builtin_signatures signature;
-  machine_mode mode;
+  simd_type types[3];
   int unspec;
   aarch64_required_extensions required_extensions;
 };
@@ -1622,19 +1662,26 @@ static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
 #include "aarch64-simd-pragma-builtins.def"
 };
 
+/* Return the function type for BUILTIN_DATA.  */
 static tree
 aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
 {
-  auto type = aarch64_simd_builtin_type (builtin_data.mode, qualifier_none);
+  tree return_type = NULL_TREE;
+  auto_vec<tree, 8> arg_types;
   switch (builtin_data.signature)
     {
     case aarch64_builtin_signatures::binary:
-      return build_function_type_list (type, type, type, NULL_TREE);
-    default:
-      gcc_unreachable ();
+      return_type = builtin_data.types[0].type ();
+      for (int i = 1; i <= 2; ++i)
+	arg_types.quick_push (builtin_data.types[i].type ());
+      break;
     }
+  return build_function_type_array (return_type, arg_types.length (),
+				    arg_types.address ());
 }
 
+/* Simulate function definitions for all of the builtins in
+   aarch64_pragma_builtins.  */
 static void
 aarch64_init_pragma_builtins ()
 {
@@ -3376,23 +3423,39 @@ aarch64_expand_builtin_data_intrinsic (unsigned int fcode, tree exp, rtx target)
   return ops[0].value;
 }
 
+/* Expand CALL_EXPR EXP, given that it is a call to the function described
+   by BUILTIN_DATA, and return the function's return value.  Put the result
+   in TARGET if convenient.  */
 static rtx
 aarch64_expand_pragma_builtin (tree exp, rtx target,
-			       const aarch64_pragma_builtins_data *builtin_data)
+			       const aarch64_pragma_builtins_data &builtin_data)
 {
-  expand_operand ops[3];
-  auto mode = builtin_data->mode;
-  auto op1 = expand_normal (CALL_EXPR_ARG (exp, 0));
-  auto op2 = expand_normal (CALL_EXPR_ARG (exp, 1));
-  create_output_operand (&ops[0], target, mode);
-  create_input_operand (&ops[1], op1, mode);
-  create_input_operand (&ops[2], op2, mode);
+  unsigned int nargs = call_expr_nargs (exp);
 
-  auto unspec = builtin_data->unspec;
-  auto icode = code_for_aarch64 (unspec, mode);
-  expand_insn (icode, 3, ops);
+  auto_vec<expand_operand, 8> ops;
+  ops.safe_grow (nargs + 1);
+  create_output_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (exp)));
+  for (unsigned int i = 1; i <= nargs; ++i)
+    {
+      tree arg = CALL_EXPR_ARG (exp, i - 1);
+      create_input_operand (&ops[i], expand_normal (arg),
+			    TYPE_MODE (TREE_TYPE (arg)));
+    }
 
-  return target;
+  insn_code icode;
+  switch (builtin_data.unspec)
+    {
+    case UNSPEC_FAMAX:
+    case UNSPEC_FAMIN:
+      icode = code_for_aarch64 (builtin_data.unspec,
+				builtin_data.types[0].mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  expand_insn (icode, ops.length (), ops.address ());
+  return ops[0].value;
 }
 
 /* Expand an expression EXP as fpsr or fpcr setter (depending on
@@ -3632,7 +3695,7 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     return aarch64_expand_builtin_data_intrinsic (fcode, exp, target);
 
   if (auto builtin_data = aarch64_get_pragma_builtin (fcode))
-    return aarch64_expand_pragma_builtin (exp, target, builtin_data);
+    return aarch64_expand_pragma_builtin (exp, target, *builtin_data);
 
   gcc_unreachable ();
 }
@@ -4286,7 +4349,6 @@ aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
 #undef CF3
 #undef CF4
 #undef CF10
-#undef ENTRY_VHSDF
 #undef VAR1
 #undef VAR2
 #undef VAR3

@@ -18,16 +18,20 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#undef ENTRY_VHSDF
-#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC) \
-  ENTRY (NAME##_f16, SIGNATURE, V4HF, UNSPEC) \
-  ENTRY (NAME##q_f16, SIGNATURE, V8HF, UNSPEC) \
-  ENTRY (NAME##_f32, SIGNATURE, V2SF, UNSPEC) \
-  ENTRY (NAME##q_f32, SIGNATURE, V4SF, UNSPEC) \
-  ENTRY (NAME##q_f64, SIGNATURE, V2DF, UNSPEC)
+#undef ENTRY_BINARY
+#define ENTRY_BINARY(N, T0, T1, T2, U)		\
+  ENTRY (N, binary, T0, T1, T2, U)
+
+#undef ENTRY_BINARY_VHSDF
+#define ENTRY_BINARY_VHSDF(NAME, UNSPEC)	       \
+  ENTRY_BINARY (NAME##_f16, f16, f16, f16, UNSPEC)     \
+  ENTRY_BINARY (NAME##q_f16, f16q, f16q, f16q, UNSPEC) \
+  ENTRY_BINARY (NAME##_f32, f32, f32, f32, UNSPEC)     \
+  ENTRY_BINARY (NAME##q_f32, f32q, f32q, f32q, UNSPEC) \
+  ENTRY_BINARY (NAME##q_f64, f64q, f64q, f64q, UNSPEC)
 
 // faminmax
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
-ENTRY_VHSDF (vamax, binary, UNSPEC_FAMAX)
-ENTRY_VHSDF (vamin, binary, UNSPEC_FAMIN)
+ENTRY_BINARY_VHSDF (vamax, UNSPEC_FAMAX)
+ENTRY_BINARY_VHSDF (vamin, UNSPEC_FAMIN)
 #undef REQUIRED_EXTENSIONS
