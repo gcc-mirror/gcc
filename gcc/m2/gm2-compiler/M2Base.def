@@ -21,94 +21,11 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE M2Base ;
 
-(*
-   Author     : Gaius Mulley
-   Title      : M2Base
-   Date       : 22/5/87
-   Description: Implements the default Base Types and Base
-                procedures in the Modula-2 compiler.
-*)
+(* M2Base implements the default base types and base procedures in the
+   Modula-2 front end.  *)
 
 FROM NameKey IMPORT Name ;
 FROM gcctypes IMPORT location_t ;
-
-EXPORT QUALIFIED Nil,                   (* Base constants          *)
-                 Cardinal,              (* Base types              *)
-                 Integer,
-                 Boolean,
-                 True, False,
-                 Char,
-                 Proc,
-                 LongInt, LongCard,
-                 ShortInt, ShortCard,
-                 ZType, RType, CType,
-                 Real,
-                 LongReal, ShortReal,
-                 Complex,
-                 LongComplex,
-                 ShortComplex,
-                 High, IsOrd,           (* Base functions          *)
-                 LengthS,
-                 Convert,
-                 Re, Im, Cmplx,
-                 Cap, Abs, Odd,
-                 Chr, Val,
-                 IsTrunc, IsFloat,
-                 IsInt,
-                 Min, Max,
-                 New, Dispose,          (* Base procedures         *)
-                 Inc, Dec,
-                 Incl, Excl,
-                 IsPseudoBaseFunction,  (* Manipulation procedures *)
-                 IsPseudoBaseProcedure, (* Manipulation procedures *)
-                 IsBaseType,
-                 GetBaseTypeMinMax,
-                 InitBase,
-                 CannotCheckTypeInPass3,
-                 CheckExpressionCompatible,
-                 CheckAssignmentCompatible,
-                 CheckParameterCompatible,
-                 IsAssignmentCompatible,
-                 IsExpressionCompatible,
-                 IsParameterCompatible,
-                 IsComparisonCompatible,
-                 IsValidParameter,
-                 AssignmentRequiresWarning,
-                 IsMathType,
-                 IsRealType,
-                 IsOrdinalType,
-                 IsComplexType,
-                 GetCmplxReturnType,
-                 ComplexToScalar,
-                 ScalarToComplex,
-                 MixTypes, NegateType,
-                 TemplateProcedure,
-                 ActivationPointer,
-                 IsNeededAtRunTime,
-                 ExceptionAssign,
-                 ExceptionReturn,
-                 ExceptionInc,
-                 ExceptionDec,
-                 ExceptionIncl,
-                 ExceptionExcl,
-                 ExceptionShift,
-                 ExceptionRotate,
-                 ExceptionStaticArray,
-                 ExceptionDynamicArray,
-                 ExceptionForLoopBegin,
-                 ExceptionForLoopTo,
-                 ExceptionForLoopEnd,
-                 ExceptionPointerNil,
-                 ExceptionNoReturn,
-                 ExceptionCase,
-                 ExceptionNonPosDiv,
-                 ExceptionNonPosMod,
-                 ExceptionZeroDiv,
-                 ExceptionZeroRem,
-                 ExceptionWholeValue,
-                 ExceptionRealValue,
-                 ExceptionParameterBounds,
-                 ExceptionNo ;
 
 
 VAR
@@ -346,12 +263,24 @@ PROCEDURE CannotCheckTypeInPass3 (e: CARDINAL) : BOOLEAN ;
 
 
 (*
-   MixTypes - returns the type symbol that corresponds to the types t1 and t2.
+   MixTypes - given types leftType and rightType return a type symbol that
+              provides expression type compatibility.
               NearTok is used to identify the source position if a type
               incompatability occurs.
 *)
 
-PROCEDURE MixTypes (t1, t2: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+PROCEDURE MixTypes (leftType, rightType: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+
+
+(*
+   MixTypesDecl - returns a type symbol which provides expression compatibility
+                  between leftType and rightType.  An error is emitted if this
+                  is not possible.  left and right are the source (variable,
+                  constant) of leftType and rightType respectively.
+*)
+
+PROCEDURE MixTypesDecl (left, right, leftType, rightType: CARDINAL;
+                        NearTok: CARDINAL) : CARDINAL ;
 
 
 (*

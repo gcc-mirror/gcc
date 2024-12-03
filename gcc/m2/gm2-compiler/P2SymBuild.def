@@ -803,23 +803,7 @@ PROCEDURE EndBuildForward ;
    BuildNoReturnAttribute - provide an interface to the symbol table module.
 *)
 
-PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
-
-
-(*
-   BuildProcedureDefinedByForward - indicates that the parameters for ProcSym have
-                                    been defined using the FORWARD keyword.
-*)
-
-PROCEDURE BuildProcedureDefinedByForward (ProcSym: CARDINAL) ;
-
-
-(*
-   BuildProcedureDefinedByProper - indicates that the parameters for ProcSym have
-                                   been defined during a proper procedure declaration.
-*)
-
-PROCEDURE BuildProcedureDefinedByProper (ProcSym: CARDINAL) ;
+PROCEDURE BuildNoReturnAttribute ;
 
 
 (*

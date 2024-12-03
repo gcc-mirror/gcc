@@ -69,8 +69,6 @@ FROM SymbolTable IMPORT NulSym,
                         PutDoesNeedExportList, PutDoesNotNeedExportList,
                         DoesNotNeedExportList,
                         MakeProcedure,
-                        PutFunction, PutParam, PutVarParam,
-                        GetNthParam,
                         IsProcedure, IsConstString,
                         MakePointer, PutPointer,
                         MakeRecord, PutFieldRecord,
@@ -82,9 +80,9 @@ FROM SymbolTable IMPORT NulSym,
                         PutProcedureBuiltin, PutProcedureInline,
                         GetSymName,
                         ResolveImports, PutDeclared,
-                        GetProcedureDeclaredForward, PutProcedureDeclaredForward,
-                        GetProcedureDeclaredProper, PutProcedureDeclaredProper,
-                        GetProcedureDeclaredDefinition, PutProcedureDeclaredDefinition,
+                        ProcedureKind,
+                        PutProcedureDeclaredTok, GetProcedureDeclaredTok,
+                        PutProcedureDefined, GetProcedureDefined,
                         MakeError, MakeErrorS,
                         DisplayTrees ;
 
@@ -970,14 +968,15 @@ BEGIN
    StartScope (ProcSym) ;
    IF CompilingDefinitionModule ()
    THEN
-      IF GetProcedureDeclaredDefinition (ProcSym) = UnknownTokenNo
+      IF GetProcedureDefined (ProcSym, DefProcedure)
       THEN
-         PutProcedureDeclaredDefinition (ProcSym, tokno)
-      ELSE
-         MetaErrorT1 (GetProcedureDeclaredDefinition (ProcSym),
+         MetaErrorT1 (GetProcedureDeclaredTok (ProcSym, DefProcedure),
                       'first declaration of procedure {%1Ea} in the definition module', ProcSym) ;
          MetaErrorT1 (tokno,
                       'duplicate declaration of procedure {%1Ea} in the definition module', ProcSym)
+      ELSE
+         PutProcedureDeclaredTok (ProcSym, DefProcedure, tokno) ;
+         PutProcedureDefined (ProcSym, DefProcedure)
       END
    ELSE
       EnterBlock (name)
@@ -1018,7 +1017,7 @@ BEGIN
    PopTtok(NameEnd, end) ;
    PopTtok(ProcSym, tok) ;
    PopTtok(NameStart, start) ;
-   IF NameEnd#NameStart
+   IF NameEnd # NameStart
    THEN
       IF end # UnknownTokenNo
       THEN
@@ -1034,13 +1033,13 @@ BEGIN
       END
    END ;
    EndScope ;
-   IF GetProcedureDeclaredProper (ProcSym) = UnknownTokenNo
+   IF GetProcedureDefined (ProcSym, ProperProcedure)
    THEN
-      PutProcedureDeclaredProper (ProcSym, tok)
-   ELSE
-      MetaErrorT1 (GetProcedureDeclaredProper (ProcSym),
+      MetaErrorT1 (GetProcedureDeclaredTok (ProcSym, ProperProcedure),
                    'first proper declaration of procedure {%1Ea}', ProcSym) ;
       MetaErrorT1 (tok, 'procedure {%1Ea} has already been declared', ProcSym)
+   ELSE
+      PutProcedureDeclaredTok (ProcSym, ProperProcedure, tok)
    END ;
    Assert (NOT CompilingDefinitionModule()) ;
    LeaveBlock
@@ -1072,13 +1071,14 @@ VAR
 BEGIN
    ProcSym := OperandT (1) ;
    tok := OperandTok (1) ;
-   IF GetProcedureDeclaredForward (ProcSym) = UnknownTokenNo
+   IF GetProcedureDefined (ProcSym, ForwardProcedure)
    THEN
-      PutProcedureDeclaredForward (ProcSym, tok)
-   ELSE
-      MetaErrorT1 (GetProcedureDeclaredForward (ProcSym),
+      MetaErrorT1 (GetProcedureDeclaredTok (ProcSym, ForwardProcedure),
                    'first forward declaration of {%1Ea}', ProcSym) ;
       MetaErrorT1 (tok, 'forward declaration of procedure {%1Ea} has already occurred', ProcSym)
+   ELSE
+      PutProcedureDeclaredTok (ProcSym, ForwardProcedure, tok) ;
+      PutProcedureDefined (ProcSym, ForwardProcedure)
    END ;
    PopN (2) ;
    EndScope ;

@@ -29,7 +29,7 @@ FROM M2Debug IMPORT Assert, WriteDebug ;
 FROM M2Error IMPORT WriteFormat0, WriteFormat1, WriteFormat2, FlushErrors, InternalError ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 
-FROM SymbolTable IMPORT NulSym, ModeOfAddr,
+FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         StartScope, EndScope, GetScope, GetCurrentScope,
                         GetModuleScope,
                         SetCurrentModule, GetCurrentModule, SetFileModule,
@@ -45,7 +45,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr,
                         IsConst, IsConstructor, PutConst, PutConstructor,
                         PopValue, PushValue,
                         MakeTemporary, PutVar,
-                        PutSubrange,
+                        PutSubrange, GetProcedureKind,
                         GetSymName ;
 
 FROM M2Batch IMPORT MakeDefinitionSource,
@@ -692,10 +692,15 @@ END BuildVarAtAddress ;
 
 PROCEDURE BuildOptArgInitializer ;
 VAR
-   const: CARDINAL ;
+   tok    : CARDINAL ;
+   const,
+   ProcSym: CARDINAL ;
 BEGIN
-   PopT(const) ;
-   PutOptArgInit(GetCurrentScope(), const)
+   PopT (const) ;
+   PopTtok (ProcSym, tok) ;
+   Assert (IsProcedure (ProcSym)) ;
+   PushTtok (ProcSym, tok) ;
+   PutOptArgInit (GetCurrentScope (), const)
 END BuildOptArgInitializer ;
 
 

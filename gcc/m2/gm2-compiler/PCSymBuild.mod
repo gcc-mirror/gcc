@@ -52,7 +52,7 @@ FROM M2Reserved IMPORT PlusTok, MinusTok, TimesTok, DivTok, ModTok,
                        LessTok, GreaterTok, HashTok, LessGreaterTok,
                        InTok, NotTok ;
 
-FROM SymbolTable IMPORT NulSym, ModeOfAddr,
+FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         StartScope, EndScope, GetScope, GetCurrentScope,
                         GetModuleScope,
                         SetCurrentModule, GetCurrentModule, SetFileModule,
@@ -73,7 +73,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr,
                         CheckAnonymous,
                         IsProcedureBuiltin,
                         MakeProcType,
-                        NoOfParam,
+                        NoOfParamAny,
                         GetParam,
                         IsParameterVar, PutProcTypeParam,
                         PutProcTypeVarParam, IsParameterUnbounded,
@@ -1163,7 +1163,7 @@ BEGIN
       tok := GetTokenNo () ;
       t := MakeProcType (tok, CheckAnonymous (NulName)) ;
       i := 1 ;
-      n := NoOfParam(p) ;
+      n := NoOfParamAny (p) ;
       WHILE i<=n DO
          par := GetParam (p, i) ;
          IF IsParameterVar (par)
@@ -1176,7 +1176,7 @@ BEGIN
       END ;
       IF GetType (p) # NulSym
       THEN
-         PutFunction (t, GetType (p))
+         PutFunction (tok, t, ProperProcedure, GetType (p))
       END ;
       RETURN( t )
    ELSE

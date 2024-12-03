@@ -50,11 +50,12 @@ FROM Lists IMPORT List, InitList, GetItemFromList, PutItemIntoList,
                   RemoveItemFromList, ForeachItemInListDo, KillList, DuplicateList ;
 
 FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
+                        ProcedureKind, GetNthParam, NoOfParam,
                         GetNth, IsRecordField, IsSet, IsArray, IsProcedure,
                         GetVarScope, IsVarAParam, IsComponent, GetMode,
                         VarCheckReadInit, VarInitState, PutVarInitialized,
                         PutVarFieldInitialized, GetVarFieldInitialized,
-                        IsConst, IsConstString, NoOfParam, IsVarParam,
+                        IsConst, IsConstString, NoOfParamAny, IsVarParamAny,
                         ForeachLocalSymDo, ForeachParamSymDo,
                         IsTemporary, ModeOfAddr,
                         IsReallyPointer, IsUnbounded,
@@ -62,7 +63,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
                         IsVarArrayRef, GetSymName,
                         IsType, IsPointer,
                         GetParameterShadowVar, IsParameter, GetLType,
-                        GetParameterHeapVar ;
+                        GetParameterHeapVar, GetVarDeclTok ;
 
 FROM M2Quads IMPORT QuadOperator, GetQuadOtok, GetQuad, GetNextQuad,
                     IsNewLocalVar, IsReturn, IsKillLocalVar, IsConditional,
@@ -1303,11 +1304,11 @@ BEGIN
    SizeOp            : SetVarInitialized (op1, FALSE, op1tok) |
    AddrOp            : CheckAddr (op1tok, op1, op3tok, op3) |
    ReturnValueOp     : SetVarInitialized (op1, FALSE, op1tok) |
-   NewLocalVarOp     : |
+   NewLocalVarOp     : SetParameterVariablesInitialized (op3) |
    ParamOp           : CheckDeferredRecordAccess (op2tok, op2, FALSE, warning, i) ;
                        CheckDeferredRecordAccess (op3tok, op3, FALSE, warning, i) ;
-                       IF (op1 > 0) AND (op1 <= NoOfParam (op2)) AND
-                          IsVarParam (op2, op1)
+                       IF (op1 > 0) AND (op1 <= NoOfParamAny (op2)) AND
+                          IsVarParamAny (op2, op1)
                        THEN
                           SetVarInitialized (op3, TRUE, op3tok)
                        END |
@@ -1380,6 +1381,18 @@ BEGIN
    END ;
    RETURN FALSE
 END CheckReadBeforeInitQuad ;
+
+
+(*
+   SetParameterVariablesInitialized - sets all shadow variables for parameters as
+                                      initialized.
+*)
+
+PROCEDURE SetParameterVariablesInitialized (procSym: CARDINAL) ;
+BEGIN
+   ForeachLocalSymDo (procSym, SetVarUninitialized) ;
+   ForeachParamSymDo (procSym, SetVarLRInitialized) ;
+END SetParameterVariablesInitialized ;
 
 
 (*

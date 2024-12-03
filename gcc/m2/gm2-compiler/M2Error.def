@@ -33,25 +33,6 @@ FROM SYSTEM IMPORT BYTE ;
 FROM DynamicStrings IMPORT String ;
 FROM NameKey IMPORT Name ;
 
-EXPORT QUALIFIED Error, ErrorScope,
-                 InternalError,
-                 WriteFormat0, WriteFormat1, WriteFormat2, WriteFormat3,
-                 NewError, ErrorFormat0, ErrorFormat1, ErrorFormat2, ErrorFormat3,
-                 ErrorString,
-                 NewWarning, NewNote, SetColor,
-                 FlushErrors, FlushWarnings, ChainError,
-                 ErrorStringAt, ErrorStringAt2, ErrorStringsAt2,
-                 WarnStringAt, WarnStringAt2, WarnStringsAt2,
-                 ErrorAbort0,
-                 WarnFormat0, WarnFormat1, MoveError,
-                 AnnounceScope, EnterImplementationScope,
-                 EnterModuleScope, EnterDefinitionScope, EnterProgramScope,
-                 EnterProcedureScope, DepthScope, GetAnnounceScope,
-                 DefaultProgramModule, DefaultImplementationModule,
-                 DefaultDefinitionModule, DefaultInnerModule, DefaultProcedure,
-                 EnterErrorScope, GetCurrentErrorScope, ResetErrorScope,
-                 LeaveErrorScope ;
-
 
 TYPE
    Error ;

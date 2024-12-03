@@ -50,7 +50,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsDefImp, IsModule, IsInnerModule,
                         IsUnknown, IsType, IsProcedure, IsParameter,
                         IsParameterUnbounded, IsParameterVar, IsVarParam,
-                        IsUnboundedParam, IsPointer, IsRecord, IsVarient,
+                        IsUnboundedParamAny, IsPointer, IsRecord, IsVarient,
                         IsFieldVarient, IsEnumeration, IsFieldEnumeration,
                         IsUnbounded, IsArray, IsRecordField, IsProcType,
                         IsVar, IsConst, IsConstString, IsConstLit, IsConstSet,
@@ -2680,6 +2680,25 @@ BEGIN
    sym[3] := s4 ;
    RETURN wrapString (m, sym)
 END MetaString4 ;
+
+
+(*
+   MetaErrorDecl - if sym is a variable or parameter then generate a
+                   declaration error message.
+*)
+
+PROCEDURE MetaErrorDecl (sym: CARDINAL) ;
+BEGIN
+   IF (sym # NulSym) AND IsVar (sym)
+   THEN
+      IF IsVarAParam (sym)
+      THEN
+         MetaErrorT1 (GetVarDeclFullTok (sym), 'parameter declaration for {%1ad}', sym)
+      ELSE
+         MetaErrorT1 (GetVarDeclFullTok (sym), 'variable declaration for {%1ad}', sym)
+      END
+   END
+END MetaErrorDecl ;
 
 
 BEGIN
