@@ -491,8 +491,8 @@ namespace __detail
     {
       while (__first != __last)
 	{
-	  auto __v = __init;
-	  __init = __binary_op(__init, *__first);
+	  _Tp __v = std::move(__init);
+	  __init = __binary_op(__v, *__first);
 	  ++__first;
 	  *__result++ = std::move(__v);
 	}
