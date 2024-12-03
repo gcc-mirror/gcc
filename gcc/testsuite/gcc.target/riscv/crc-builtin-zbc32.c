@@ -1,4 +1,4 @@
-/* { dg-do compile { target { riscv32*-*-* } } } */
+/* { dg-do compile { target { rv32 } } } */
 /* { dg-options "-march=rv32gc_zbc" } */
 
 #include <stdint-gcc.h>
