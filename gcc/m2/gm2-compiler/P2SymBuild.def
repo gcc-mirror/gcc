@@ -21,15 +21,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE P2SymBuild ;
 
-(*
-   Title      : P2SymBuild
-   Author     : Gaius Mulley
-   Date       : 24/6/87
-   LastEdit   : Sat Dec  9 11:10:57 EST 1989
-   System     : UNIX (GNU Modula-2)
-   Description: pass 2 symbol creation.
-*)
-
 
 (*
    BlockStart - tokno is the module/procedure/implementation/definition token
