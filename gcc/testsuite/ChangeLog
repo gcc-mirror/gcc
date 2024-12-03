@@ -1,3 +1,119 @@
+2024-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.target/aarch64/pr94515-2.C: Add newline at the end of the file.
+	* g++.target/aarch64/return_address_sign_ab_exception.C: Likewise.
+	* gcc.target/arm/thumb2-switchstatement.c: Likewise.
+	* gcc.target/riscv/rvv/base/vssubu-2.c: Likewise.
+	* gcc.target/riscv/rvv/base/vssubu-1.c: Likewise.
+	* gcc.target/riscv/and-shift32.c: Likewise.
+	* gcc.target/riscv/crc-builtin-zbc32.c: Likewise.
+	* gcc.target/riscv/and-shift64.c: Likewise.
+	* gcc.target/riscv/xtheadbb-extu-4.c: Likewise.
+	* gcc.target/i386/avx2-bf16-vec-absneg.c: Likewise.
+	* gcc.target/i386/avx512f-bf16-vec-absneg.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_26.c: Likewise.
+	* gcc.target/aarch64/cpunative/info_26: Likewise.
+	* gcc.target/aarch64/cpunative/info_25: Likewise.
+	* g++.dg/contracts/pr116607.C: Likewise.
+	* gfortran.dg/pr108889.f90: Likewise.
+	* gcc.dg/crc-not-crc-14.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-13.c: Likewise.
+	* gcc.dg/crc-not-crc-25.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-29.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-10.c: Likewise.
+	* gcc.dg/crc-side-instr-10.c: Likewise.
+	* gcc.dg/crc-side-instr-1.c: Likewise.
+	* gcc.dg/crc-side-instr-3.c: Likewise.
+	* gcc.dg/crc-side-instr-2.c: Likewise.
+	* gcc.dg/crc-not-crc-17.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-7.c: Likewise.
+	* gcc.dg/crc-side-instr-12.c: Likewise.
+	* gcc.dg/crc-side-instr-16.c: Likewise.
+	* gcc.dg/crc-not-crc-16.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-4.c: Likewise.
+	* gcc.dg/crc-not-crc-20.c: Likewise.
+	* gcc.dg/crc-linux-3.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-27.c: Likewise.
+	* gcc.dg/pr109393.c: Likewise.
+	* gcc.dg/crc-side-instr-7.c: Likewise.
+	* gcc.dg/crc-side-instr-4.c: Likewise.
+	* gcc.dg/tree-ssa/ldexp.c: Likewise.
+	* gcc.dg/tree-ssa/pr114760-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr114760-1.c: Likewise.
+	* gcc.dg/crc-side-instr-15.c: Likewise.
+	* gcc.dg/crc-side-instr-9.c: Likewise.
+	* gcc.dg/crc-not-crc-26.c: Likewise.
+	* gcc.dg/crc-side-instr-8.c: Likewise.
+	* gcc.dg/crc-not-crc-23.c: Likewise.
+	* gcc.dg/crc-not-crc-19.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-22.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-16.c: Likewise.
+	* gcc.dg/crc-side-instr-11.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-5.c: Likewise.
+	* gcc.dg/crc-not-crc-22.c: Likewise.
+	* gcc.dg/crc-side-instr-17.c: Likewise.
+	* gcc.dg/crc-linux-4.c: Likewise.
+	* gcc.dg/crc-side-instr-14.c: Likewise.
+	* gcc.dg/crc-not-crc-18.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-23.c: Likewise.
+	* gcc.dg/crc-not-crc-21.c: Likewise.
+	* gcc.dg/crc-linux-2.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-1.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-30.c: Likewise.
+	* gcc.dg/torture/crc-11.c: Likewise.
+	* gcc.dg/torture/crc-27.c: Likewise.
+	* gcc.dg/torture/crc-2.c: Likewise.
+	* gcc.dg/torture/crc-24.c: Likewise.
+	* gcc.dg/torture/crc-crc8.c: Likewise.
+	* gcc.dg/torture/crc-crc8-data8-xorOustideFor.c: Likewise.
+	* gcc.dg/torture/crc-16.c: Likewise.
+	* gcc.dg/torture/crc-crc64-data64.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-32.c: Likewise.
+	* gcc.dg/crc-side-instr-6.c: Likewise.
+	* gcc.dg/crc-side-instr-5.c: Likewise.
+	* gcc.dg/crc-side-instr-13.c: Likewise.
+	* gcc.dg/crc-not-crc-15.c: Likewise.
+	* gcc.dg/crc-not-crc-13.c: Likewise.
+	* gcc.dg/crc-from-fedora-packages-6.c: Likewise.
+	* gcc.dg/crc-not-crc-24.c: Likewise.
+
+2024-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116352
+	PR tree-optimization/117876
+	* gcc.dg/vect/pr116352.c: New testcase.
+	* gcc.dg/vect/bb-slp-49.c: Remove vectorization check.
+
+2024-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/117663
+	* gcc.target/powerpc/rs6000-ldouble-2.c: Add -std=gnu17 to dg-options.
+
+2024-12-02  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/xsfvector/sf_vfnrclip_x_f_qf.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vfnrclip_xu_f_qf.c: New test.
+
+2024-12-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Fix the incorrect optimization
+	options passing to testcases.
+
+2024-12-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f16.c: Fix
+	the failed test by target any-opts and/or no-opts.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u8.c: Ditto
+
 2024-12-01  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
 
 	* gcc.dg/tree-ssa/phi-opt-11.c: Add more tests.

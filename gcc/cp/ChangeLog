@@ -1,3 +1,67 @@
+2024-12-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (resolve_concept_check): Remove.
+	(deduce_constrained_parameter): Remove.
+	(finish_type_constraints): Inline into its only caller
+	cp_parser_placeholder_type_specifier and remove.
+	(build_concept_check_arguments): Coding style tweaks.
+	(build_standard_check): Inline into its only caller ...
+	(build_concept_check): ... here.
+	(build_type_constraint): Use the prototype parameter as the
+	first template argument.
+	(finish_shorthand_constraint): Remove function concept
+	handling.  Use concept_prototype_parameter.
+	(placeholder_extract_concept_and_args): Inline into its
+	callers and remove.
+	(equivalent_placeholder_constraints): Adjust after
+	placeholder_extract_concept_and_args removal.
+	(iterative_hash_placeholder_constraint): Likewise.
+	* cp-objcp-common.cc (cp_common_init_ts): Remove WILDCARD_DECL
+	handling.
+	* cp-tree.def (WILDCARD_DECL): Remove.
+	* cp-tree.h (WILDCARD_PACK_P): Remove.
+	(type_uses_auto_or_concept): Remove declaration of nonexistent
+	function.
+	(append_type_to_template_for_access_check): Likewise.
+	(finish_type_constraints): Remove declaration.
+	(placeholder_extract_concept_and_args): Remove declaration.
+	(deduce_constrained_parameter): Remove declaration.
+	(resolve_constraint_check): Remove declaration.
+	(valid_requirements_p): Remove declaration of nonexistent
+	function.
+	(finish_concept_name): Likewise.
+	(concept_definition_p): Remove redundant overload.
+	(concept_prototype_parameter): Define.
+	* cxx-pretty-print.cc (pp_cxx_constrained_type_spec): Adjust
+	after placeholder_extract_concept_and_args.
+	* error.cc (dump_decl) <case WILDCARD_DECL>: Remove.
+	(dump_expr) <case WILDCARD_DECL>: Likewise.
+	* parser.cc (is_constrained_parameter): Inline into
+	declares_constrained_type_template_parameter and remove.
+	(cp_parser_check_constrained_type_parm): Declare static.
+	(finish_constrained_template_template_parm): Remove.
+	(cp_parser_constrained_template_template_parm): Remove.
+	(finish_constrained_parameter): Remove dead code guarded by
+	cp_parser_constrained_template_template_parm.
+	(declares_constrained_type_template_parameter): Adjust after
+	is_constrained_parameter removal.
+	(declares_constrained_template_template_parameter): Remove.
+	(cp_parser_placeholder_type_specifier): Adjust after
+	finish_type_constraints removal.  Check the prototype parameter
+	earlier, before build_type_constraint.
+	Use concept_prototype_parameter.
+	(cp_parser_parameter_declaration): Remove dead code guarded by
+	declares_constrained_template_template_parameter.
+	* pt.cc (convert_wildcard_argument): Remove.
+	(convert_template_argument): Remove WILDCARD_DECL handling.
+	(coerce_template_parameter_pack): Likewise.
+	(tsubst) <case TEMPLATE_TYPE_PARM>: Likewise.
+	(type_dependent_expression_p): Likewise.
+	(make_constrained_placeholder_type): Remove function concept
+	handling.
+	(placeholder_type_constraint_dependent_p): Remove WILDCARD_DECL
+	handling.
+
 2024-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc: Implement C++26 P3176R1 - The Oxford variadic comma.

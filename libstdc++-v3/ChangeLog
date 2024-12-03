@@ -1,3 +1,16 @@
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h (_Destroy(FwdIter, FwdIter)): Use
+	'if constexpr' instead of dispatching to a member function of a
+	class template.
+	(_Destroy_n(FwdIter, Size)): Likewise.
+	(_Destroy_aux, _Destroy_n_aux): Only define for C++98.
+
+2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/std.cc.in: Disable deprecated warnings when
+	exporting std::rel_ops members.
+
 2024-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/117858

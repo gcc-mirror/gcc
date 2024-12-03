@@ -1,3 +1,9 @@
+2024-12-02  Owen Avery  <powerboat9.gamer@gmail.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* typecheck/rust-hir-type-check-toplevel.cc: Removed.
+	* typecheck/rust-hir-type-check-toplevel.h: Removed.
+
 2024-11-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/104896

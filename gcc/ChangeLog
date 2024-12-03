@@ -1,3 +1,82 @@
+2024-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/libgdiagnostics/tutorial/01-hello-world.rst: Update linker
+	command for renaming.
+
+2024-12-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* configure.ac: Add sym-exec subdirectory.
+
+2024-12-02  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.md (movdi+1, movdf+1, movxf+2): Split
+	constraints so that the operands cannot both be "o".
+
+2024-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mingw/mingw-stdint.h: Add newline at the end of the file.
+	* config/mingw/winnt-dll.cc: Likewise.
+	* sym-exec/sym-exec-expression.h: Likewise.
+	* sym-exec/sym-exec-expression.cc: Likewise.
+	* sym-exec/sym-exec-condition.cc: Likewise.
+	* sym-exec/sym-exec-expr-is-a-helper.h: Likewise.
+	* sym-exec/sym-exec-condition.h: Likewise.
+	* hwint.cc: Likewise.
+	* crc-verification.cc: Likewise.
+	* sarif-spec-urls.def: Likewise.
+
+2024-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Add Runtime Library Exception.
+	* config/arm/arm_mve_types.h: Likewise.
+
+2024-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116352
+	PR tree-optimization/117876
+	* tree-vect-slp.cc (vect_slp_can_convert_to_external): New.
+	(vect_slp_convert_to_external): Call it.
+	(vect_build_slp_tree_2): Likewise.
+
+2024-12-02  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/generic-vector-ooo.md: New reservation.
+	* config/riscv/genrvv-type-indexer.cc (main): New type.
+	* config/riscv/riscv-vector-builtins-bases.cc (enum frm_op_type): Delete it.
+	* config/riscv/riscv-vector-builtins-bases.h (enum frm_op_type): Redefine in h file.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct sf_vfnrclip_def): New function.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_TYPE_INDEX): New builtins def.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TYPE_INDEX): New base def.
+	(signed_eew8_index): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext): New extension.
+	(required_ext_to_isa_name): Ditto.
+	(required_extensions_specified): Ditto.
+	(struct function_group_info): Ditto.
+	* config/riscv/riscv.md: New attr.
+	* config/riscv/sifive-vector-builtins-bases.cc (class sf_vfnrclip_x_f_qf): New function.
+	(class sf_vfnrclip_xu_f_qf): Ditto.
+	(BASE): New base_name.
+	* config/riscv/sifive-vector-builtins-bases.h: New function_base.
+	* config/riscv/sifive-vector-builtins-functions.def
+	(REQUIRED_EXTENSIONS): New intrinsics def.
+	(sf_vfnrclip_x_f_qf): Ditto.
+	(sf_vfnrclip_xu_f_qf): Ditto.
+	* config/riscv/sifive-vector.md (@pred_sf_vfnrclip<v_su><mode>_x_f_qf): New RTL mode.
+	* config/riscv/vector-iterators.md: New iterator.
+
+2024-12-02  Andreas Schwab  <schwab@suse.de>
+
+	* config/riscv/riscv.cc (fli_value_hf, fli_value_sf)
+	(fli_value_df): Use integer constants.  Constify.
+	(riscv_float_const_rtx_index_for_fli): Add const.
+
+2024-12-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-features.cc (pass_apx_nf_convert): Change
+	pass_rpad to pass_apx_nf_convert in comments.
+
 2024-12-01  Slava Barinov  <v.barinov@samsung.com>
 
 	* configure.ac: Only remove -O[0-9] if not preceded with comma
