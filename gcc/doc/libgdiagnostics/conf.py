@@ -7,8 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'libgdiagnostics'
-copyright = '2024, David Malcolm'
-author = 'David Malcolm'
+copyright = '2024 Free Software Foundation, Inc.'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
