@@ -493,11 +493,11 @@ set_bitmask (tree name, const wide_int &value, const wide_int &mask)
   set_range_info (name, r);
 }
 
-/* Return a widest_int with potentially non-zero bits in SSA_NAME
+/* Return a wide_int with potentially non-zero bits in SSA_NAME
    NAME, the constant for INTEGER_CST, or -1 if unknown.  */
 
-wide_int
-get_nonzero_bits (const_tree name)
+static wide_int
+get_nonzero_bits_1 (const_tree name)
 {
   if (TREE_CODE (name) == INTEGER_CST)
     return wi::to_wide (name);
@@ -508,6 +508,9 @@ get_nonzero_bits (const_tree name)
   /* Use element_precision instead of TYPE_PRECISION so complex and
      vector types get a non-zero precision.  */
   unsigned int precision = element_precision (TREE_TYPE (name));
+  if (TREE_CODE (name) != SSA_NAME)
+    return wi::shwi (-1, precision);
+
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
@@ -523,6 +526,81 @@ get_nonzero_bits (const_tree name)
   int_range_max tmp;
   range_info_get_range (name, tmp);
   return tmp.get_nonzero_bits ();
+}
+
+/* Return a wide_int with potentially non-zero bits in SSA_NAME
+   NAME, the constant for INTEGER_CST, or -1 if unknown.
+   In addition to what get_nonzero_bits_1 handles, this handles one
+   level of BIT_AND_EXPR, either as a def_stmt or tree directly.  */
+
+wide_int
+get_nonzero_bits (const_tree name)
+{
+  if (TREE_CODE (name) == BIT_AND_EXPR)
+    return (get_nonzero_bits_1 (TREE_OPERAND (name, 0))
+	    & get_nonzero_bits_1 (TREE_OPERAND (name, 1)));
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      gimple *g = SSA_NAME_DEF_STMT (name);
+      if (g
+	  && is_gimple_assign (g)
+	  && gimple_assign_rhs_code (g) == BIT_AND_EXPR)
+	return (get_nonzero_bits_1 (name)
+		& get_nonzero_bits_1 (gimple_assign_rhs1 (g))
+		& get_nonzero_bits_1 (gimple_assign_rhs2 (g)));
+    }
+  return get_nonzero_bits_1 (name);
+}
+
+/* Return a wide_int with known non-zero bits in SSA_NAME
+   NAME (bits whose values aren't known are also clear), the constant
+   for INTEGER_CST, or 0 if unknown.  */
+
+static wide_int
+get_known_nonzero_bits_1 (const_tree name)
+{
+  if (TREE_CODE (name) == INTEGER_CST)
+    return wi::to_wide (name);
+
+  /* Use element_precision instead of TYPE_PRECISION so complex and
+     vector types get a non-zero precision.  */
+  unsigned int precision = element_precision (TREE_TYPE (name));
+  if (TREE_CODE (name) != SSA_NAME || POINTER_TYPE_P (TREE_TYPE (name)))
+    return wi::shwi (0, precision);
+
+  if (!range_info_p (name) || !irange::supports_p (TREE_TYPE (name)))
+    return wi::shwi (0, precision);
+
+  int_range_max tmp;
+  range_info_get_range (name, tmp);
+  if (tmp.undefined_p ())
+    return wi::shwi (0, precision);
+  irange_bitmask bm = tmp.get_bitmask ();
+  return bm.value () & ~bm.mask ();
+}
+
+/* Return a wide_int with known non-zero bits in SSA_NAME
+   NAME, the constant for INTEGER_CST, or -1 if unknown.
+   In addition to what get_known_nonzero_bits_1 handles, this handles one
+   level of BIT_IOR_EXPR, either as a def_stmt or tree directly.  */
+
+wide_int
+get_known_nonzero_bits (const_tree name)
+{
+  if (TREE_CODE (name) == BIT_IOR_EXPR)
+    return (get_known_nonzero_bits_1 (TREE_OPERAND (name, 0))
+	    | get_known_nonzero_bits_1 (TREE_OPERAND (name, 1)));
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      gimple *g = SSA_NAME_DEF_STMT (name);
+      if (g
+	  && is_gimple_assign (g)
+	  && gimple_assign_rhs_code (g) == BIT_IOR_EXPR)
+	return (get_known_nonzero_bits_1 (name)
+		| get_known_nonzero_bits_1 (gimple_assign_rhs1 (g))
+		| get_known_nonzero_bits_1 (gimple_assign_rhs2 (g)));
+    }
+  return get_known_nonzero_bits_1 (name);
 }
 
 /* Return TRUE is OP, an SSA_NAME has a range of values [0..1], false
