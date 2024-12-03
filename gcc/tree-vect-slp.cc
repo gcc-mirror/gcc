@@ -1092,8 +1092,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   code_helper first_stmt_code = ERROR_MARK;
   code_helper alt_stmt_code = ERROR_MARK;
   code_helper first_cond_code = ERROR_MARK;
-  tree lhs;
   bool need_same_oprnds = false;
+  tree first_lhs = NULL_TREE;
   tree first_op1 = NULL_TREE;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
   bool first_stmt_ldst_p = false;
@@ -1101,6 +1101,29 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   int first_reduc_idx = -1;
   bool maybe_soft_fail = false;
   tree soft_fail_nunits_vectype = NULL_TREE;
+
+  tree vectype, nunits_vectype;
+  if (!vect_get_vector_types_for_stmt (vinfo, first_stmt_info, &vectype,
+				       &nunits_vectype, group_size))
+    {
+      /* Fatal mismatch.  */
+      matches[0] = false;
+      return false;
+    }
+  /* Record nunits required but continue analysis, producing matches[]
+     as if nunits was not an issue.  This allows splitting of groups
+     to happen.  */
+  if (nunits_vectype
+      && !vect_record_max_nunits (vinfo, first_stmt_info, group_size,
+				  nunits_vectype, max_nunits))
+    {
+      gcc_assert (is_a <bb_vec_info> (vinfo));
+      maybe_soft_fail = true;
+      soft_fail_nunits_vectype = nunits_vectype;
+    }
+
+  gcc_assert (vectype);
+  *node_vectype = vectype;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -1144,7 +1167,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
         }
 
       gcall *call_stmt = dyn_cast <gcall *> (stmt);
-      lhs = gimple_get_lhs (stmt);
+      tree lhs = gimple_get_lhs (stmt);
       if (lhs == NULL_TREE
 	  && (!call_stmt
 	      || !gimple_call_internal_p (stmt)
@@ -1160,30 +1183,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  matches[0] = false;
 	  return false;
 	}
-
-      tree vectype, nunits_vectype;
-      if (!vect_get_vector_types_for_stmt (vinfo, stmt_info, &vectype,
-					   &nunits_vectype, group_size))
-	{
-	  if (is_a <bb_vec_info> (vinfo) && i != 0)
-	    continue;
-	  /* Fatal mismatch.  */
-	  matches[0] = false;
-	  return false;
-	}
-      /* Record nunits required but continue analysis, producing matches[]
-	 as if nunits was not an issue.  This allows splitting of groups
-	 to happen.  */
-      if (nunits_vectype
-	  && !vect_record_max_nunits (vinfo, stmt_info, group_size,
-				      nunits_vectype, max_nunits))
-	{
-	  gcc_assert (is_a <bb_vec_info> (vinfo));
-	  maybe_soft_fail = true;
-	  soft_fail_nunits_vectype = nunits_vectype;
-	}
-
-      gcc_assert (vectype);
 
       if (call_stmt)
 	{
@@ -1241,7 +1240,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       /* Check the operation.  */
       if (i == 0)
 	{
-	  *node_vectype = vectype;
+	  first_lhs = lhs;
 	  first_stmt_code = rhs_code;
 	  first_stmt_ldst_p = ldst_p;
 	  first_stmt_phi_p = phi_p;
@@ -1432,7 +1431,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 
-	  if (!types_compatible_p (vectype, *node_vectype))
+	  if (first_lhs
+	      && lhs
+	      && !types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (first_lhs)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
