@@ -9999,3 +9999,28 @@
   "TARGET_FAMINMAX"
   "<faminmax_op>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
 )
+
+(define_insn "@aarch64_lut<VLUT:mode><VB:mode>"
+  [(set (match_operand:<VLUT:VCONQ> 0 "register_operand" "=w")
+        (unspec:<VLUT:VCONQ>
+	 [(match_operand:VLUT 1 "register_operand" "w")
+          (match_operand:VB 2 "register_operand" "w")
+          (match_operand:SI 3 "const_int_operand")
+	  (match_operand:SI 4 "const_int_operand")]
+         UNSPEC_LUTI))]
+  "TARGET_LUT && INTVAL (operands[4]) <= exact_log2 (<VLUT:nunits>)"
+  "luti%4\t%0<VLUT:Vconqtype>, {%1<VLUT:Vconqtype>}, %2[%3]"
+)
+
+;; lutx2
+(define_insn "@aarch64_lut<VLUTx2:mode><VB:mode>"
+  [(set (match_operand:<VSTRUCT_ELT> 0 "register_operand" "=w")
+        (unspec:<VSTRUCT_ELT>
+	 [(match_operand:VLUTx2 1 "register_operand" "w")
+          (match_operand:VB 2 "register_operand" "w")
+          (match_operand:SI 3 "const_int_operand")
+	  (match_operand:SI 4 "const_int_operand")]
+         UNSPEC_LUTI))]
+  "TARGET_LUT && INTVAL (operands[4]) == 4"
+  "luti%4\t%0.8h, {%S1.8h, %T1.8h}, %2[%3]"
+)

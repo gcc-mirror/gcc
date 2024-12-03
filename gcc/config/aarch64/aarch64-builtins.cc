@@ -50,6 +50,8 @@
 #include "builtins.h"
 #include "aarch64-builtins.h"
 
+using namespace aarch64;
+
 #define v8qi_UP  E_V8QImode
 #define v8di_UP  E_V8DImode
 #define v4hi_UP  E_V4HImode
@@ -1600,6 +1602,7 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
 enum class aarch64_builtin_signatures
 {
   binary,
+  binary_lane,
 };
 
 namespace {
@@ -1623,15 +1626,20 @@ namespace simd_types {
 
   constexpr simd_type f16 { V4HFmode, qualifier_none };
   constexpr simd_type f16q { V8HFmode, qualifier_none };
+  constexpr simd_type f16qx2 { V2x8HFmode, qualifier_none };
   constexpr simd_type p16 { V4HImode, qualifier_poly };
   constexpr simd_type p16q { V8HImode, qualifier_poly };
+  constexpr simd_type p16qx2 { V2x8HImode, qualifier_poly };
   constexpr simd_type s16 { V4HImode, qualifier_none };
   constexpr simd_type s16q { V8HImode, qualifier_none };
+  constexpr simd_type s16qx2 { V2x8HImode, qualifier_none };
   constexpr simd_type u16 { V4HImode, qualifier_unsigned };
   constexpr simd_type u16q { V8HImode, qualifier_unsigned };
+  constexpr simd_type u16qx2 { V2x8HImode, qualifier_unsigned };
 
   constexpr simd_type bf16 { V4BFmode, qualifier_none };
   constexpr simd_type bf16q { V8BFmode, qualifier_none };
+  constexpr simd_type bf16qx2 { V2x8BFmode, qualifier_none };
 
   constexpr simd_type f32 { V2SFmode, qualifier_none };
   constexpr simd_type f32q { V4SFmode, qualifier_none };
@@ -1671,9 +1679,19 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
   switch (builtin_data.signature)
     {
     case aarch64_builtin_signatures::binary:
+    case aarch64_builtin_signatures::binary_lane:
       return_type = builtin_data.types[0].type ();
       for (int i = 1; i <= 2; ++i)
 	arg_types.quick_push (builtin_data.types[i].type ());
+      break;
+    }
+  switch (builtin_data.signature)
+    {
+    case aarch64_builtin_signatures::binary_lane:
+      arg_types.quick_push (integer_type_node);
+      break;
+
+    default:
       break;
     }
   return build_function_type_array (return_type, arg_types.length (),
@@ -2522,16 +2540,108 @@ aarch64_general_required_extensions (unsigned int code)
   return ext::streaming_compatible (0);
 }
 
+/* Checks calls to intrinsics that are defined using
+   aarch64-simd-pragma-builtins.def.  */
+struct aarch64_pragma_builtins_checker
+{
+  aarch64_pragma_builtins_checker (location_t, tree, unsigned int, tree *,
+				   const aarch64_pragma_builtins_data &);
+
+  bool require_immediate_range (unsigned int, HOST_WIDE_INT,
+				HOST_WIDE_INT);
+
+  bool check ();
+
+  location_t location;
+  tree fndecl;
+  unsigned int nargs;
+  array_slice<tree> args;
+  const aarch64_pragma_builtins_data &builtin_data;
+};
+
+/* LOCATION is the location of the call; FNDECL is the FUNCTION_DECL
+   that is being called; NARGS is the number of arguments to the call,
+   which are in a vector starting at FIRST_ARG; and BUILTIN_DATA describes
+   the intrinsic.  */
+aarch64_pragma_builtins_checker::
+aarch64_pragma_builtins_checker (location_t location, tree fndecl,
+				 unsigned int nargs, tree *first_arg,
+				 const aarch64_pragma_builtins_data
+				    &builtin_data)
+  : location (location), fndecl (fndecl), nargs (nargs),
+    args (first_arg, nargs), builtin_data (builtin_data)
+{
+}
+
+/* Require argument ARGNO to be an integer constant expression in the
+   range [MIN, MAX].  Return true if it was.  */
+bool
+aarch64_pragma_builtins_checker::
+require_immediate_range (unsigned int argno, HOST_WIDE_INT min,
+			 HOST_WIDE_INT max)
+{
+  if (!tree_fits_shwi_p (args[argno]))
+    {
+      report_non_ice (location, fndecl, argno);
+      return false;
+    }
+
+  HOST_WIDE_INT actual = tree_to_shwi (args[argno]);
+  if (actual < min || actual > max)
+    {
+      report_out_of_range (location, fndecl, argno, actual, min, max);
+      return false;
+    }
+
+  return true;
+}
+
+/* Check the arguments to the intrinsic call and return true if they
+   are valid.  */
+bool
+aarch64_pragma_builtins_checker::check ()
+{
+  switch (builtin_data.unspec)
+    {
+    case UNSPEC_LUTI2:
+    case UNSPEC_LUTI4:
+      {
+	auto vector_to_index_mode = builtin_data.types[nargs - 1].mode;
+	int vector_to_index_nunits
+	  = GET_MODE_NUNITS (vector_to_index_mode).to_constant ();
+	int output_mode_nunits
+	  = GET_MODE_NUNITS (builtin_data.types[0].mode).to_constant ();
+
+	int high;
+	if (builtin_data.unspec == UNSPEC_LUTI2)
+	  high = (4 * vector_to_index_nunits / output_mode_nunits) - 1;
+	else
+	  high = (2 * vector_to_index_nunits / output_mode_nunits) - 1;
+
+	return require_immediate_range (nargs - 1, 0, high);
+      }
+
+    default:
+      return true;
+    }
+}
+
 bool
 aarch64_general_check_builtin_call (location_t location, vec<location_t>,
 				    unsigned int code, tree fndecl,
-				    unsigned int nargs ATTRIBUTE_UNUSED,
-				    tree *args)
+				    unsigned int nargs, tree *args)
 {
   tree decl = aarch64_builtin_decls[code];
   auto required_extensions = aarch64_general_required_extensions (code);
   if (!aarch64_check_required_extensions (location, decl, required_extensions))
     return false;
+
+  if (auto builtin_data = aarch64_get_pragma_builtin (code))
+    {
+      aarch64_pragma_builtins_checker checker (location, fndecl, nargs, args,
+					       *builtin_data);
+      return checker.check ();
+    }
 
   switch (code)
     {
@@ -3442,6 +3552,16 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 			    TYPE_MODE (TREE_TYPE (arg)));
     }
 
+  /* LUTI2 treats the first argument as a vector of 4 elements.  The forms
+     with 128-bit inputs are only provided as a convenience; the upper halves
+     don't actually matter.  */
+  if (builtin_data.unspec == UNSPEC_LUTI2
+      && known_eq (GET_MODE_BITSIZE (ops[1].mode), 128u))
+    {
+      ops[1].mode = aarch64_v64_mode (GET_MODE_INNER (ops[1].mode)).require ();
+      ops[1].value = gen_lowpart (ops[1].mode, ops[1].value);
+    }
+
   insn_code icode;
   switch (builtin_data.unspec)
     {
@@ -3450,6 +3570,14 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
       icode = code_for_aarch64 (builtin_data.unspec,
 				builtin_data.types[0].mode);
       break;
+
+    case UNSPEC_LUTI2:
+    case UNSPEC_LUTI4:
+      create_integer_operand (ops.safe_push ({}),
+			      builtin_data.unspec == UNSPEC_LUTI2 ? 2 : 4);
+      icode = code_for_aarch64_lut (ops[1].mode, ops[2].mode);
+      break;
+
     default:
       gcc_unreachable ();
     }

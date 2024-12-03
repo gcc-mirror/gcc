@@ -22007,6 +22007,8 @@ Enable the fp8 (8-bit floating point) to half-precision 2-way dot product
 extension in streaming mode.
 @item faminmax
 Enable the Floating Point Absolute Maximum/Minimum extension.
+@item lut
+Enable the Lookup Table extension.
 @item sve-b16b16
 Enable the SVE non-widening brain floating-point (@code{bf16}) extension.
 This only has an effect when @code{sve2} or @code{sme2} are also enabled.

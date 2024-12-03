@@ -426,6 +426,10 @@
 			     (V8HF "TARGET_SIMD_F16INST")
 			     V2SF V4SF])
 
+;; Modes available for Advanced SIMD lut operations.
+(define_mode_iterator VLUT [V8QI V16QI V4HI V4HF V4BF])
+(define_mode_iterator VLUTx2 [V2x8HI V2x8HF V2x8BF])
+
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator VNx16QI_ONLY [VNx16QI])
 (define_mode_iterator VNx16SI_ONLY [VNx16SI])
@@ -1109,6 +1113,9 @@
     UNSPEC_FCVTXN	; Used in aarch64-simd.md.
     UNSPEC_FAMAX       ; Used in aarch64-simd.md.
     UNSPEC_FAMIN       ; Used in aarch64-simd.md.
+    UNSPEC_LUTI		; Used in aarch64-simd.md.
+    UNSPEC_LUTI2	; Used in aarch64-simd.md.
+    UNSPEC_LUTI4	; Used in aarch64-simd.md.
 
     ;; All used in aarch64-sve2.md
     UNSPEC_ADDQV
@@ -1555,6 +1562,12 @@
 			  (QI   "8b")  (HI    "8b")
 			  (V4BF "8b")  (V8BF  "16b")])
 
+;; Mode to double type mapping.
+(define_mode_attr Vconqtype [(V8QI ".16b") (V16QI ".16b")
+			     (V4HI ".8h") (V8HI ".8h")
+			     (V4HF ".8h") (V8HF ".8h")
+			     (V4BF ".8h") (V8BF ".8h")])
+
 ;; Advanced SIMD vector structure to element modes.
 (define_mode_attr VSTRUCT_ELT [(V2x8QI "V8QI") (V2x4HI "V4HI")
 			       (V2x2SI "V2SI") (V2x1DI "DI")
@@ -1685,6 +1698,7 @@
 			 (V2SI "V4SI") (V4SI "V4SI")
 			 (DI   "V2DI") (V2DI "V2DI")
 			 (V4HF "V8HF") (V8HF "V8HF")
+			 (V4BF "V8BF") (V8BF "V8BF")
 			 (V2SF "V4SF") (V4SF "V4SF")
 			 (V2DF "V2DF") (SI   "V4SI")
 			 (HI   "V8HI") (QI   "V16QI")
