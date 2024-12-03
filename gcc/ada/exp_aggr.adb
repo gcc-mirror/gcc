@@ -5144,8 +5144,6 @@ package body Exp_Aggr is
 
                 Right_Opnd => Cond);
 
-            Set_Analyzed (Left_Opnd  (Left_Opnd (Cond)), False);
-            Set_Analyzed (Right_Opnd (Left_Opnd (Cond)), False);
             Insert_Action (N,
               Make_Raise_Constraint_Error (Loc,
                 Condition => Cond,
