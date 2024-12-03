@@ -234,6 +234,7 @@ bool avr_has_rodata_p = false;
    insn condition for shift insn splitters.  */
 int n_avr_fuse_add_executed = 0;
 
+static location_t avr_insn_location = UNKNOWN_LOCATION;
 
 
 /* Transform UP into lowercase and write the result to LO.
@@ -2712,12 +2713,17 @@ avr_print_operand (FILE *file, rtx x, int code)
 	    fatal_insn ("bad address, not a constant:", addr);
 	  /* Assembler template with m-code is data - not progmem section */
 	  if (text_segment_operand (addr, VOIDmode))
-	    if (warning (0, "accessing data memory with"
-			 " program memory address"))
-	      {
-		output_addr_const (stderr, addr);
-		fprintf(stderr,"\n");
-	      }
+	    {
+	      location_t loc = avr_insn_location != UNKNOWN_LOCATION
+		? avr_insn_location
+		: input_location;
+	      if (warning_at (loc, 0, "accessing data memory with"
+			      " program memory address"))
+		{
+		  output_addr_const (stderr, addr);
+		  fprintf (stderr,"\n");
+		}
+	    }
 	  output_addr_const (file, addr);
 	}
       else if (code == 'o')
@@ -2760,12 +2766,17 @@ avr_print_operand (FILE *file, rtx x, int code)
     {
       /* Constant progmem address - like used in jmp or call */
       if (text_segment_operand (x, VOIDmode) == 0)
-	if (warning (0, "accessing program memory"
-		     " with data memory address"))
-	  {
-	    output_addr_const (stderr, x);
-	    fprintf (stderr, "\n");
-	  }
+	{
+	  location_t loc = avr_insn_location != UNKNOWN_LOCATION
+	    ? avr_insn_location
+	    : input_location;
+	  if (warning_at (loc, 0, "accessing program memory"
+			  " with data memory address"))
+	    {
+	      output_addr_const (stderr, x);
+	      fprintf (stderr, "\n");
+	    }
+	}
       /* Use normal symbol for direct address no linker trampoline needed */
       output_addr_const (file, x);
     }
@@ -2954,6 +2965,8 @@ void
 avr_final_prescan_insn (rtx_insn *insn, rtx * /*operands*/,
 			int /*num_operands*/)
 {
+  avr_insn_location = LOCATION_LOCUS (INSN_LOCATION (insn));
+
   if (avr_log.rtx_costs)
     {
       rtx set = single_set (insn);
@@ -2982,6 +2995,9 @@ avr_final_prescan_insn (rtx_insn *insn, rtx * /*operands*/,
 static void
 avr_asm_final_postscan_insn (FILE *stream, rtx_insn *insn, rtx *, int)
 {
+  if (!next_real_insn (insn))
+    avr_insn_location = UNKNOWN_LOCATION;
+
   if (cfun->machine->gasisr.yes
       && !next_real_insn (insn))
     {

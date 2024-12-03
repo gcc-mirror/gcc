@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fipa-pta" } */
-/* { dg-skip-if "acessing data memory with program memory address" { "avr-*-*" } } */
 
 extern void a (void);
 
@@ -8,5 +7,5 @@ void b (void)
 {
   void *c;
   c = a;
-  *(char *)c = 1;
+  *(char *)c = 1; /* { dg-warning "accessing data memory with program memory address.*" "" { target avr-*-* } } */
 }
