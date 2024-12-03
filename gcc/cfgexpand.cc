@@ -804,9 +804,11 @@ vars_ssa_cache::operator() (tree name)
   bool changed;
   do {
     changed = false;
-    for (auto &e : update_cache_list)
+    unsigned int i;
+    std::pair<tree,tree> *e;
+    FOR_EACH_VEC_ELT_REVERSE (update_cache_list, i, e)
       {
-	if (update (e.second, e.first))
+	if (update (e->second, e->first))
 	  changed = true;
       }
   } while (changed);
