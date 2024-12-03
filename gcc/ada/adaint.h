@@ -240,7 +240,7 @@ extern int    __gnat_portable_wait                 (int *);
 extern int    __gnat_portable_no_block_wait        (int *);
 extern int    __gnat_current_process_id            (void);
 extern char  *__gnat_locate_exec                   (char *, char *);
-extern char  *__gnat_locate_exec_on_path           (char *);
+extern char  *__gnat_locate_exec_on_path           (char *, int);
 extern char  *__gnat_locate_regular_file           (char *, char *);
 extern void   __gnat_maybe_glob_args               (int *, char ***);
 extern void   __gnat_os_exit			   (int);
