@@ -8274,6 +8274,94 @@ avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
 }
 
 
+/* Output code for addition of a sign-bit
+
+      YOP[0] += YOP[1] <CMP> 0
+
+   or such a subtraction:
+
+      YOP[0] -= YOP[2] <CMP> 0
+
+   where CMP is in { GE, LT }.
+   If PLEN == NULL output the instructions.
+   If PLEN != NULL set *PLEN to the length of the sequence in words.  */
+
+const char *
+avr_out_add_msb (rtx_insn *insn, rtx *yop, rtx_code cmp, int *plen)
+{
+  const rtx_code add = GET_CODE (SET_SRC (single_set (insn)));
+  const machine_mode mode = GET_MODE (yop[0]);
+  const int n_bytes = GET_MODE_SIZE (mode);
+  rtx sigop = yop[add == PLUS ? 1 : 2];
+  rtx msb = avr_byte (sigop, GET_MODE_SIZE (GET_MODE (sigop)) - 1);
+  rtx op[3] = { yop[0], msb, nullptr };
+
+  if (plen)
+    *plen = 0;
+
+  if (n_bytes == 1
+      || (n_bytes == 2 && avr_adiw_reg_p (op[0])))
+    {
+      avr_asm_len (cmp == LT
+		   ? "sbrc %1,7"
+		   : "sbrs %1,7", op, plen, 1);
+      const char *s_add = add == PLUS
+	? n_bytes == 1 ? "inc %0" : "adiw %0,1"
+	: n_bytes == 1 ? "dec %0" : "sbiw %0,1";
+      return avr_asm_len (s_add, op, plen, 1);
+    }
+
+  bool labl_p = false;
+  const char *s_code0 = nullptr;
+
+  // Default code provided SREG.C = MSBit.
+  const char *s_code = add == PLUS
+    ? "adc %2,__zero_reg__"
+    : "sbc %2,__zero_reg__";
+
+  if (cmp == LT)
+    {
+      if (reg_unused_after (insn, sigop)
+	  && ! reg_overlap_mentioned_p (msb, op[0]))
+	avr_asm_len ("lsl %1", op, plen, 1);
+      else
+	avr_asm_len ("mov __tmp_reg__,%1" CR_TAB
+		     "lsl __tmp_reg__", op, plen, 2);
+    }
+  else if (test_hard_reg_class (LD_REGS, msb))
+    {
+      avr_asm_len ("cpi %1,0x80", op, plen, 1);
+    }
+  else if (test_hard_reg_class (LD_REGS, op[0]))
+    {
+      labl_p = true;
+      avr_asm_len ("tst %1" CR_TAB
+		   "brmi 0f", op, plen, 2);
+      s_code0 = add == PLUS ? "subi %2,-1" : "subi %2,1";
+      s_code  = add == PLUS ? "sbci %2,-1" : "sbci %2,0";
+    }
+  else
+    {
+      labl_p = true;
+      avr_asm_len ("tst %1"  CR_TAB
+		   "brmi 0f" CR_TAB
+		   "sec", op, plen, 3);
+    }
+
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      op[2] = avr_byte (op[0], i);
+      avr_asm_len (i == 0 && s_code0
+		   ? s_code0
+		   : s_code, op, plen, 1);
+    }
+
+  return labl_p
+    ? avr_asm_len ("0:", op, plen, 0)
+    : "";
+}
+
+
 /* Output addition of register XOP[0] and compile time constant XOP[2].
    INSN is a single_set insn or an insn pattern.
    CODE == PLUS:  perform addition by using ADD instructions or
@@ -10668,6 +10756,9 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_INSERT_BITS: avr_out_insert_bits (op, &len); break;
     case ADJUST_LEN_ADD_SET_ZN: avr_out_plus_set_ZN (op, &len); break;
     case ADJUST_LEN_ADD_SET_N:  avr_out_plus_set_N (op, &len); break;
+
+    case ADJUST_LEN_ADD_GE0: avr_out_add_msb (insn, op, GE, &len); break;
+    case ADJUST_LEN_ADD_LT0: avr_out_add_msb (insn, op, LT, &len); break;
 
     case ADJUST_LEN_INSV_NOTBIT: avr_out_insert_notbit (insn, op, &len); break;
 
