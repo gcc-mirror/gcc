@@ -22158,7 +22158,7 @@ c_parser_omp_allocate (c_parser *parser)
 		    "%<allocate%> directive", var);
 	  continue;
 	}
-      if (!c_check_in_current_scope (var))
+      if (!parser->in_omp_decl_attribute && !c_check_in_current_scope (var))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (nl),
 		    "%<allocate%> directive must be in the same scope as %qD",
@@ -22199,9 +22199,6 @@ c_parser_omp_allocate (c_parser *parser)
 	    = {EXPR_LOC_OR_LOC (allocator, OMP_CLAUSE_LOCATION (nl)), var};
 	  walk_tree (&allocator, c_check_omp_allocate_allocator_r, &data, NULL);
 	}
-      if (alignment)
-	SET_DECL_ALIGN (var, BITS_PER_UNIT * MAX (tree_to_uhwi (alignment),
-						  DECL_ALIGN_UNIT (var)));
       DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("omp allocate"),
 					 build_tree_list (allocator, alignment),
 					 DECL_ATTRIBUTES (var));

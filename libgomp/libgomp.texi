@@ -6731,6 +6731,12 @@ The description below applies to:
       compiled with @option{-fopenmp-allocators}.  Additionally, all files that
       might explicitly or implicitly deallocate memory allocated that way must
       also be compiled with that option.
+@item The used alignment is the maximum of the value the @code{align} clause
+      and the alignment of the type after honoring, if present, the
+      @code{aligned} (@code{GNU::aligned}) attribute and C's @code{_Alignas}
+      and C++'s @code{alignas}.  However, the @code{align} clause of the
+      @code{allocate} directive has no effect on the value of C's
+      @code{_Alignof} and C++'s @code{alignof}.
 @end itemize
 
 For the available predefined allocators and, as applicable, their associated
