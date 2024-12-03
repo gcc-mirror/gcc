@@ -638,8 +638,8 @@ class function_shape
 {
 public:
   /* Shape the function name according to function_instance.  */
-  virtual char *get_name (function_builder &, const function_instance &,
-			  bool) const
+  virtual const char *get_name (function_builder &, const function_instance &,
+				bool) const
     = 0;
 
   /* Define all functions associated with the given group.  */

@@ -142,8 +142,8 @@ struct build_base : public function_shape
 /* vsetvl_def class.  */
 struct vsetvl_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* vsetvl* instruction doesn't have C++ overloaded functions.  */
     if (overloaded_p)
@@ -157,8 +157,8 @@ struct vsetvl_def : public build_base
 /* loadstore_def class.  */
 struct loadstore_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -213,8 +213,8 @@ struct indexed_loadstore_def : public function_shape
       }
   }
 
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -301,8 +301,8 @@ struct th_loadstore_width_def : public build_base
       }
   }
 
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -352,8 +352,8 @@ struct th_indexed_loadstore_width_def : public function_shape
       }
   }
 
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
 
     /* Return nullptr if it can not be overloaded.  */
@@ -383,8 +383,8 @@ struct th_indexed_loadstore_width_def : public function_shape
 /* alu_def class.  */
 struct alu_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -461,8 +461,8 @@ struct build_frm_base : public build_base
 /* alu_frm_def class.  */
 struct alu_frm_def : public build_frm_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     char base_name[BASE_NAME_MAX_LEN] = {};
 
@@ -500,8 +500,8 @@ struct alu_frm_def : public build_frm_base
 /* widen_alu_frm_def class.  */
 struct widen_alu_frm_def : public build_frm_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     char base_name[BASE_NAME_MAX_LEN] = {};
 
@@ -535,8 +535,8 @@ struct widen_alu_frm_def : public build_frm_base
 /* narrow_alu_frm_def class.  */
 struct narrow_alu_frm_def : public build_frm_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     char base_name[BASE_NAME_MAX_LEN] = {};
 
@@ -573,8 +573,8 @@ struct narrow_alu_frm_def : public build_frm_base
 /* reduc_alu_frm_def class.  */
 struct reduc_alu_frm_def : public build_frm_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     char base_name[BASE_NAME_MAX_LEN] = {};
 
@@ -613,8 +613,8 @@ struct reduc_alu_frm_def : public build_frm_base
    'OP' suffix in overloaded API.  */
 struct widen_alu_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -638,8 +638,8 @@ struct widen_alu_def : public build_base
    doesn't need mask policy.  */
 struct no_mask_policy_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -659,8 +659,8 @@ struct no_mask_policy_def : public build_base
    is returning mask value.  */
 struct return_mask_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -686,8 +686,8 @@ struct return_mask_def : public build_base
 /* narrow_alu_def class. Handle narrowing instructions like vnsrl.wv.  */
 struct narrow_alu_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -729,8 +729,8 @@ struct narrow_alu_def : public build_base
 /* move_def class. Handle vmv.v.v/vmv.v.x.  */
 struct move_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* vmv.v.x/vfmv.v.f (PRED_none) can not be overloaded.  */
     if ((instance.op_info->op == OP_TYPE_x || instance.op_info->op == OP_TYPE_f)
@@ -757,8 +757,8 @@ struct move_def : public build_base
 /* mask_alu_def class.  */
 struct mask_alu_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -786,8 +786,8 @@ struct mask_alu_def : public build_base
 /* reduc_alu_def class.  */
 struct reduc_alu_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -813,8 +813,8 @@ struct reduc_alu_def : public build_base
 /* th_extract_def class.  */
 struct th_extract_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-      bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_name ("__riscv_th_");
     b.append_name (instance.base_name);
@@ -830,8 +830,8 @@ struct th_extract_def : public build_base
 /* scalar_move_def class.  */
 struct scalar_move_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
     if (overloaded_p)
@@ -846,8 +846,8 @@ struct scalar_move_def : public build_base
 /* vundefined_def class.  */
 struct vundefined_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     if (overloaded_p)
       return nullptr;
@@ -860,8 +860,8 @@ struct vundefined_def : public build_base
 /* misc_def class.  */
 struct misc_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -884,8 +884,8 @@ struct misc_def : public build_base
 /* vset_def class.  */
 struct vset_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -964,8 +964,8 @@ struct vcreate_def : public build_base
      }
   }
 
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     if (overloaded_p)
       return nullptr;
@@ -999,8 +999,8 @@ struct read_vl_def : public function_shape
 			   group.required_extensions);
   }
 
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     if (overloaded_p)
       return nullptr;
@@ -1012,8 +1012,8 @@ struct read_vl_def : public function_shape
 /* fault_load_def class.  */
 struct fault_load_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
       return nullptr;
@@ -1058,8 +1058,8 @@ struct vlenb_def : public function_shape
 			   group.required_extensions);
   }
 
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     if (overloaded_p)
       return nullptr;
@@ -1071,8 +1071,8 @@ struct vlenb_def : public function_shape
 /* seg_loadstore_def class.  */
 struct seg_loadstore_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -1114,8 +1114,8 @@ struct seg_loadstore_def : public build_base
 /* seg_indexed_loadstore_def class.  */
 struct seg_indexed_loadstore_def : public indexed_loadstore_def
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -1161,8 +1161,8 @@ struct seg_indexed_loadstore_def : public indexed_loadstore_def
 /* seg_fault_load_def class.  */
 struct seg_fault_load_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -1207,8 +1207,8 @@ struct seg_fault_load_def : public build_base
 /* vsm4r/vaes* class.  */
 struct crypto_vv_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-                  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -1241,8 +1241,8 @@ struct crypto_vv_def : public build_base
 /* vaeskf1/vaeskf2/vsm4k/vsm3c class.  */
 struct crypto_vi_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-                  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -1261,8 +1261,8 @@ struct crypto_vi_def : public build_base
 /* vaesz class.  */
 struct crypto_vv_no_op_type_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-                  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -1290,8 +1290,8 @@ struct crypto_vv_no_op_type_def : public build_base
 /* sf_vqmacc_def class.  */
 struct sf_vqmacc_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 
@@ -1319,8 +1319,8 @@ struct sf_vqmacc_def : public build_base
 /* sf_vfnrclip_def class. Handle instructions like vfnrclip.  */
 struct sf_vfnrclip_def : public build_base
 {
-  char *get_name (function_builder &b, const function_instance &instance,
-		  bool overloaded_p) const override
+  const char *get_name (function_builder &b, const function_instance &instance,
+			bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
 

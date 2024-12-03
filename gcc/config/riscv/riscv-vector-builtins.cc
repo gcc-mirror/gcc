@@ -3974,10 +3974,10 @@ function_builder::add_unique_function (const function_instance &instance,
 
   /* Also add the function under its overloaded alias, if we want
      a separate decl for each instance of an overloaded function.  */
-  char *overload_name = shape->get_name (*this, instance, true);
+  const char *overload_name = shape->get_name (*this, instance, true);
 
   /* Add the function under its full (unique) name.  */
-  char *name = shape->get_name (*this, instance, false);
+  const char *name = shape->get_name (*this, instance, false);
   tree fntype
     = build_function_type_array (return_type, argument_types.length (),
 				 argument_types.address ());
@@ -4020,7 +4020,7 @@ function_builder::add_overloaded_function (const function_instance &instance,
   if (!check_required_extensions (instance))
     return;
 
-  char *name = shape->get_name (*this, instance, true);
+  const char *name = shape->get_name (*this, instance, true);
 
   if (name)
     {
