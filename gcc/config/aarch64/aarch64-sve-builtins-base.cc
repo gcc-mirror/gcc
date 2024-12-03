@@ -996,7 +996,7 @@ private:
     tree lhs_type = TREE_TYPE (lhs);
     tree elt_type = TREE_TYPE (lhs_type);
     scalar_mode elt_mode = SCALAR_TYPE_MODE (elt_type);
-    machine_mode vq_mode = aarch64_vq_mode (elt_mode).require ();
+    machine_mode vq_mode = aarch64_v128_mode (elt_mode).require ();
     tree vq_type = build_vector_type_for_mode (elt_type, vq_mode);
 
     unsigned nargs = gimple_call_num_args (f.call);
@@ -1067,7 +1067,7 @@ public:
 
     /* Get the 128-bit Advanced SIMD vector for this data size.  */
     scalar_mode element_mode = GET_MODE_INNER (mode);
-    machine_mode vq_mode = aarch64_vq_mode (element_mode).require ();
+    machine_mode vq_mode = aarch64_v128_mode (element_mode).require ();
     gcc_assert (known_eq (elements_per_vq, GET_MODE_NUNITS (vq_mode)));
 
     /* Put the arguments into a 128-bit Advanced SIMD vector.  We want
@@ -1651,7 +1651,7 @@ public:
   machine_mode
   memory_vector_mode (const function_instance &fi) const override
   {
-    return aarch64_vq_mode (GET_MODE_INNER (fi.vector_mode (0))).require ();
+    return aarch64_v128_mode (GET_MODE_INNER (fi.vector_mode (0))).require ();
   }
 
   rtx
@@ -1685,7 +1685,7 @@ public:
 	tree eltype = TREE_TYPE (lhs_type);
 
 	scalar_mode elmode = GET_MODE_INNER (TYPE_MODE (lhs_type));
-	machine_mode vq_mode = aarch64_vq_mode (elmode).require ();
+	machine_mode vq_mode = aarch64_v128_mode (elmode).require ();
 	tree vectype = build_vector_type_for_mode (eltype, vq_mode);
 
 	tree elt_ptr_type

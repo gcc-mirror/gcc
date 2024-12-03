@@ -5737,7 +5737,7 @@ aarch64_expand_sve_const_vector (rtx target, rtx src)
 	 targets, the layout of the 128-bit vector in an Advanced SIMD
 	 register would be different from its layout in an SVE register,
 	 but this 128-bit vector is a memory value only.  */
-      machine_mode vq_mode = aarch64_vq_mode (elt_mode).require ();
+      machine_mode vq_mode = aarch64_v128_mode (elt_mode).require ();
       rtx vq_value = simplify_gen_subreg (vq_mode, src, mode, 0);
       if (vq_value && aarch64_expand_sve_ld1rq (target, vq_value))
 	return target;
@@ -5749,7 +5749,7 @@ aarch64_expand_sve_const_vector (rtx target, rtx src)
 	 See if we can load them using an Advanced SIMD move and then
 	 duplicate it to fill a vector.  This is better than using a GPR
 	 move because it keeps everything in the same register file.  */
-      machine_mode vq_mode = aarch64_vq_mode (elt_mode).require ();
+      machine_mode vq_mode = aarch64_v128_mode (elt_mode).require ();
       rtx_vector_builder builder (vq_mode, npatterns, 1);
       for (unsigned int i = 0; i < npatterns; ++i)
 	{
@@ -22509,10 +22509,34 @@ aarch64_full_sve_mode (scalar_mode mode)
     }
 }
 
+/* Return the 64-bit Advanced SIMD vector mode for element mode MODE,
+   if it exists.  */
+opt_machine_mode
+aarch64_v64_mode (scalar_mode mode)
+{
+  switch (mode)
+    {
+    case E_SFmode:
+      return V2SFmode;
+    case E_HFmode:
+      return V4HFmode;
+    case E_BFmode:
+      return V4BFmode;
+    case E_SImode:
+      return V2SImode;
+    case E_HImode:
+      return V4HImode;
+    case E_QImode:
+      return V8QImode;
+    default:
+      return {};
+    }
+}
+
 /* Return the 128-bit Advanced SIMD vector mode for element mode MODE,
    if it exists.  */
 opt_machine_mode
-aarch64_vq_mode (scalar_mode mode)
+aarch64_v128_mode (scalar_mode mode)
 {
   switch (mode)
     {
@@ -22551,25 +22575,9 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
   if (TARGET_BASE_SIMD)
     {
       if (known_eq (width, 128))
-	return aarch64_vq_mode (mode).else_mode (word_mode);
+	return aarch64_v128_mode (mode).else_mode (word_mode);
       else
-	switch (mode)
-	  {
-	  case E_SFmode:
-	    return V2SFmode;
-	  case E_HFmode:
-	    return V4HFmode;
-	  case E_BFmode:
-	    return V4BFmode;
-	  case E_SImode:
-	    return V2SImode;
-	  case E_HImode:
-	    return V4HImode;
-	  case E_QImode:
-	    return V8QImode;
-	  default:
-	    break;
-	  }
+	return aarch64_v64_mode (mode).else_mode (word_mode);
     }
   return word_mode;
 }
@@ -22629,7 +22637,7 @@ aarch64_preferred_simd_mode (scalar_mode mode)
   if (TARGET_SVE && aarch64_cmp_autovec_modes (VNx16QImode, V16QImode))
     return aarch64_full_sve_mode (mode).else_mode (word_mode);
   if (TARGET_SIMD)
-    return aarch64_vq_mode (mode).else_mode (word_mode);
+    return aarch64_v128_mode (mode).else_mode (word_mode);
   return word_mode;
 }
 
