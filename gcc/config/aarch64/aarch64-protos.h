@@ -1119,6 +1119,18 @@ bool aarch64_general_check_builtin_call (location_t, vec<location_t>,
 					 unsigned int, tree, unsigned int,
 					 tree *);
 
+namespace aarch64 {
+  void report_non_ice (location_t, tree, unsigned int);
+  void report_out_of_range (location_t, tree, unsigned int, HOST_WIDE_INT,
+			    HOST_WIDE_INT, HOST_WIDE_INT);
+  void report_neither_nor (location_t, tree, unsigned int, HOST_WIDE_INT,
+			   HOST_WIDE_INT, HOST_WIDE_INT);
+  void report_not_one_of (location_t, tree, unsigned int, HOST_WIDE_INT,
+			  HOST_WIDE_INT, HOST_WIDE_INT, HOST_WIDE_INT,
+			  HOST_WIDE_INT);
+  void report_not_enum (location_t, tree, unsigned int, HOST_WIDE_INT, tree);
+}
+
 namespace aarch64_sve {
   void init_builtins ();
   void handle_arm_sve_h (bool);

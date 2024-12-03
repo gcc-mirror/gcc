@@ -55,6 +55,8 @@
 #include "aarch64-sve-builtins-shapes.h"
 #include "aarch64-builtins.h"
 
+using namespace aarch64;
+
 namespace aarch64_sve {
 
 /* Static information about each single-predicate or single-vector
@@ -1149,69 +1151,6 @@ lookup_fndecl (tree fndecl)
   return &(*registered_functions)[subcode]->instance;
 }
 
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO
-   was not an integer constant expression.  ARGNO counts from zero.  */
-static void
-report_non_ice (location_t location, tree fndecl, unsigned int argno)
-{
-  error_at (location, "argument %d of %qE must be an integer constant"
-	    " expression", argno + 1, fndecl);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires a value in the range
-   [MIN, MAX].  ARGNO counts from zero.  */
-static void
-report_out_of_range (location_t location, tree fndecl, unsigned int argno,
-		     HOST_WIDE_INT actual, HOST_WIDE_INT min,
-		     HOST_WIDE_INT max)
-{
-  if (min == max)
-    error_at (location, "passing %wd to argument %d of %qE, which expects"
-	      " the value %wd", actual, argno + 1, fndecl, min);
-  else
-    error_at (location, "passing %wd to argument %d of %qE, which expects"
-	      " a value in the range [%wd, %wd]", actual, argno + 1, fndecl,
-	      min, max);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires either VALUE0 or
-   VALUE1.  ARGNO counts from zero.  */
-static void
-report_neither_nor (location_t location, tree fndecl, unsigned int argno,
-		    HOST_WIDE_INT actual, HOST_WIDE_INT value0,
-		    HOST_WIDE_INT value1)
-{
-  error_at (location, "passing %wd to argument %d of %qE, which expects"
-	    " either %wd or %wd", actual, argno + 1, fndecl, value0, value1);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires one of VALUE0..3.
-   ARGNO counts from zero.  */
-static void
-report_not_one_of (location_t location, tree fndecl, unsigned int argno,
-		   HOST_WIDE_INT actual, HOST_WIDE_INT value0,
-		   HOST_WIDE_INT value1, HOST_WIDE_INT value2,
-		   HOST_WIDE_INT value3)
-{
-  error_at (location, "passing %wd to argument %d of %qE, which expects"
-	    " %wd, %wd, %wd or %wd", actual, argno + 1, fndecl, value0, value1,
-	    value2, value3);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires a valid value of
-   enum type ENUMTYPE.  ARGNO counts from zero.  */
-static void
-report_not_enum (location_t location, tree fndecl, unsigned int argno,
-		 HOST_WIDE_INT actual, tree enumtype)
-{
-  error_at (location, "passing %wd to argument %d of %qE, which expects"
-	    " a valid %qT value", actual, argno + 1, fndecl, enumtype);
-}
 
 /* Try to fold constant arguments ARG1 and ARG2 using the given tree_code.
    Operations are not treated as overflowing.  */
