@@ -4632,7 +4632,8 @@ cp_binding_level_descriptor (cp_binding_level *scope)
     "template-parameter-scope",
     "template-explicit-spec-scope",
     "transaction-scope",
-    "openmp-scope"
+    "openmp-scope",
+    "contract-check-scope"
   };
   static_assert (ARRAY_SIZE (scope_kind_names) == sk_count,
 		 "must keep names aligned with scope_kind enum");
@@ -4722,6 +4723,7 @@ begin_scope (scope_kind kind, tree entity)
     case sk_scoped_enum:
     case sk_transaction:
     case sk_omp:
+    case sk_contract:
     case sk_stmt_expr:
       scope->keep = keep_next_level_flag;
       break;
