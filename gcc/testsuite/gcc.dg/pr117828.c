@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-g" } */
+/* { dg-require-effective-target int32plus } */
 
 struct {
   struct {

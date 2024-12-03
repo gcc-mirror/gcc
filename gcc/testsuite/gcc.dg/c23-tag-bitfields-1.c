@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c23" } */
+/* { dg-require-effective-target int32plus } */
 
 struct bar0 { int r : 16; };
 struct bar0 { int r : 16; };

@@ -5,6 +5,8 @@
 
 #include <stdlib.h>
 
+typedef __UINTPTR_TYPE__ uintptr_t;
+
 struct annotated {
   int b;
   char c[] __attribute__ ((counted_by (b)));
@@ -86,10 +88,10 @@ void __attribute__((__noinline__)) test (char a, char b)
   if (__alignof (array_nested_annotated->c) != __alignof (char))
     abort ();
 
-  if ((unsigned long) array_annotated->c != (unsigned long) &array_annotated->c)
+  if ((uintptr_t) array_annotated->c != (uintptr_t) &array_annotated->c)
     abort ();
-  if ((unsigned long) array_nested_annotated->c
-       != (unsigned long) &array_nested_annotated->c)
+  if ((uintptr_t) array_nested_annotated->c
+       != (uintptr_t) &array_nested_annotated->c)
     abort ();
 
   array_annotated->c[2] = a;
