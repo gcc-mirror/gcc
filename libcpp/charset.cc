@@ -1811,14 +1811,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		   (int) (str - base), base);
       result = 1;
     }
-  /* The C99 standard permits $, @ and ` to be specified as UCNs.  We use
-     hex escapes so that this also works with EBCDIC hosts.
-     C++0x permits everything below 0xa0 within literals;
-     ucn_valid_in_identifier will complain about identifiers.  */
-  else if ((result < 0xa0
-	    && !CPP_OPTION (pfile, cplusplus)
-	    && (result != 0x24 && result != 0x40 && result != 0x60))
-	   || (result & 0x80000000)
+  else if ((result & 0x80000000)
 	   || (result >= 0xD800 && result <= 0xDFFF))
     {
       cpp_error (pfile, CPP_DL_ERROR,
@@ -1826,13 +1819,34 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		 (int) (str - base), base);
       result = 1;
     }
+  /* The C99 standard permits $, @ and ` to be specified as UCNs.  We use
+     hex escapes so that this also works with EBCDIC hosts.
+     C++0x permits everything below 0xa0 within literals, as does C23;
+     ucn_valid_in_identifier will complain about identifiers.  */
+  else if (result < 0xa0
+	   && !identifier_pos
+	   && !CPP_OPTION (pfile, cplusplus)
+	   && (result != 0x24 && result != 0x40 && result != 0x60))
+    {
+      bool warned = false;
+      if (!CPP_OPTION (pfile, low_ucns) && CPP_OPTION (pfile, cpp_pedantic))
+	warned = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				 "%.*s is not a valid universal character"
+				 " name before C23", (int) (str - base), base);
+      if (!warned && CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
+	warned = cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
+			      "%.*s is not a valid universal character"
+			      " name before C23", (int) (str - base), base);
+    }
   else if (identifier_pos && result == 0x24
 	   && CPP_OPTION (pfile, dollars_in_ident)
 	   /* In C++26 when dollars are allowed in identifiers,
 	      we should still reject \u0024 as $ is part of the basic
-	      character set.  */
+	      character set.  C23 also does not allow \u0024 in
+	      identifiers.  */
 	   && !(CPP_OPTION (pfile, cplusplus)
-		&& CPP_OPTION (pfile, lang) > CLK_CXX23))
+		? CPP_OPTION (pfile, lang) > CLK_CXX23
+		: CPP_OPTION (pfile, low_ucns)))
     {
       if (CPP_OPTION (pfile, warn_dollars) && !pfile->state.skipping)
 	{

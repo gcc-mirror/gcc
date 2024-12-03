@@ -557,6 +557,9 @@ struct cpp_options
   /* Nonzero for C++23 named universal character escape sequences.  */
   unsigned char named_uc_escape_seqs;
 
+  /* Nonzero for C++ and C23 UCNs for characters below 0xa0.  */
+  unsigned char low_ucns;
+
   /* Nonzero for C2Y 0o prefixed octal integer constants.  */
   unsigned char octal_constants;
 

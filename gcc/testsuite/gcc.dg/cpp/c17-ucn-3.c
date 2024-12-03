@@ -1,6 +1,7 @@
-/* Test characters not permitted in UCNs in C23.  */
+/* Test characters not permitted in UCNs in C17: no warnings without
+   -pedantic.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c23 -pedantic-errors" } */
+/* { dg-options "-std=c17" } */
 
 #if U'\u0000'
 #endif
@@ -987,9 +988,11 @@ void *tUdfff = U"\U0000dfff"; /* { dg-error "is not a valid universal character"
 #endif
 void *tU10ffff = U"\U0010ffff";
 
-#if U'\U00110000' /* { dg-error "is outside the UCS codespace" } */
+/* It's less clear whether C requires this to be rejected before C23, but GCC
+   chooses to do so.  */
+#if U'\U00110000' /* { dg-warning "is outside the UCS codespace" } */
 #endif
-void *tU110000 = U"\U00110000"; /* { dg-error "is outside the UCS codespace" } */
+void *tU110000 = U"\U00110000"; /* { dg-warning "is outside the UCS codespace" } */
 
 #if U'\Uffffffff' /* { dg-error "is not a valid universal character" } */
 #endif
