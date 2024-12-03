@@ -990,16 +990,21 @@ decode_reg_name_and_count (const char *asmspec, int *pnregs)
       asmspec = strip_reg_name (asmspec);
 
       /* Allow a decimal number as a "register name".  */
-      for (i = strlen (asmspec) - 1; i >= 0; i--)
-	if (! ISDIGIT (asmspec[i]))
-	  break;
-      if (asmspec[0] != 0 && i < 0)
+      if (ISDIGIT (asmspec[0]))
 	{
-	  i = atoi (asmspec);
-	  if (i < FIRST_PSEUDO_REGISTER && i >= 0 && reg_names[i][0])
-	    return i;
-	  else
-	    return -2;
+	  char *pend;
+	  errno = 0;
+	  unsigned long j = strtoul (asmspec, &pend, 10);
+	  if (*pend == '\0')
+	    {
+	      static_assert (FIRST_PSEUDO_REGISTER <= INT_MAX, "");
+	      if (errno != ERANGE
+		  && j < FIRST_PSEUDO_REGISTER
+		  && reg_names[j][0])
+		return j;
+	      else
+		return -2;
+	    }
 	}
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
