@@ -2551,10 +2551,10 @@ PROCEDURE NoOfElements (Sym: CARDINAL) : CARDINAL ;
 
 
 (*
-   PutArray - places a type symbol into an Array.
+   PutArray - places a type symbol into an arraysym.
 *)
 
-PROCEDURE PutArray (Sym, TypeSymbol: CARDINAL) ;
+PROCEDURE PutArray (arraysym, typesym: CARDINAL) ;
 
 
 (*

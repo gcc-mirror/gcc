@@ -1281,7 +1281,7 @@ BEGIN
             THEN
                IF isunknown
                THEN
-                  MetaError2('attempting to declare a type {%1ad} to a type which is itself unknown {%2ad}',
+                  MetaError2('attempting to declare a type {%1ad} to a type which is itself and also unknown {%2ad}',
                              Sym, Type)
                ELSE
                   MetaError1('attempting to declare a type {%1ad} as itself', Sym)
@@ -2896,15 +2896,20 @@ END StartBuildArray ;
 
 PROCEDURE EndBuildArray ;
 VAR
+   typetok,
+   arraytok,
+   combinedtok: CARDINAL ;
    TypeSym,
-   ArraySym: CARDINAL ;
+   ArraySym   : CARDINAL ;
 BEGIN
-   PopT(TypeSym) ;
-   PopT(ArraySym) ;
-   Assert(IsArray(ArraySym)) ;
-   PutArray(ArraySym, TypeSym) ;
-   PushT(ArraySym) ;
-   Annotate("%1s(%1d)||array type")
+   PopTtok (TypeSym, typetok) ;
+   PopTtok (ArraySym, arraytok) ;
+   Assert (IsArray (ArraySym)) ;
+   combinedtok := MakeVirtual2Tok (arraytok, typetok) ;
+   PutArray (ArraySym, TypeSym) ;
+   PutDeclared (combinedtok, ArraySym) ;
+   PushTtok (ArraySym, combinedtok) ;
+   Annotate ("%1s(%1d)||array type")
 END EndBuildArray ;
 
 
@@ -2928,15 +2933,17 @@ END EndBuildArray ;
 
 PROCEDURE BuildFieldArray ;
 VAR
+   typetok,
+   arraytok  : CARDINAL ;
    Subscript,
    Type,
    Array     : CARDINAL ;
    name      : Name ;
 BEGIN
-   PopTF(Type, name) ;
-   PopT(Array) ;
-   Assert(IsArray(Array)) ;
-   Subscript := MakeSubscript() ;
+   PopTFtok (Type, name, typetok) ;
+   PopTtok (Array, arraytok) ;
+   Assert (IsArray (Array)) ;
+   Subscript := MakeSubscript () ;
    (*
       We cannot Assert(IsSubrange(Type)) as the subrange type might be
       declared later on in the file.
@@ -2946,10 +2953,10 @@ BEGIN
       However this works to our advantage as it preserves the
       actual declaration as specified by the source file.
    *)
-   PutSubscript(Subscript, Type) ;
-   PutArraySubscript(Array, Subscript) ;
-   PushT(Array) ;
-   Annotate("%1s(%1d)||array type")
+   PutSubscript (Subscript, Type) ;
+   PutArraySubscript (Array, Subscript) ;
+   PushTtok (Array, arraytok) ;
+   Annotate ("%1s(%1d)||array type")
 (* ; WriteString('Field Placed in Array') ; WriteLn *)
 END BuildFieldArray ;
 
