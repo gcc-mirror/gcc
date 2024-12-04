@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "expected.h"
-#include "rust-make-unique.h"
 #include "rust-macro-builtins-asm.h"
 #include "rust-ast-fragment.h"
 #include "rust-ast.h"
@@ -858,9 +857,9 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
       // properly.
       if (semicolon == AST::InvocKind::Semicoloned)
 	single_vec.emplace_back (AST::SingleASTNode (
-	  Rust::make_unique<AST::ExprStmt> (std::move (node), invoc_locus,
-					    semicolon
-					      == AST::InvocKind::Semicoloned)));
+	  std::make_unique<AST::ExprStmt> (std::move (node), invoc_locus,
+					   semicolon
+					     == AST::InvocKind::Semicoloned)));
       else
 	single_vec.emplace_back (AST::SingleASTNode (std::move (node)));
 

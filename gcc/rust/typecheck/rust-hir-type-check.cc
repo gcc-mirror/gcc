@@ -24,7 +24,6 @@
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-pattern.h"
 #include "rust-hir-type-check-struct-field.h"
-#include "rust-make-unique.h"
 #include "rust-immutable-name-resolution-context.h"
 
 // for flag_name_resolution_2_0
@@ -238,7 +237,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       // but we reuse the HIR identifier pattern which requires it
       HIR::SelfParam &self_param = function.get_self ();
       std::unique_ptr<HIR::Pattern> self_pattern
-	= Rust::make_unique<HIR::IdentifierPattern> (HIR::IdentifierPattern (
+	= std::make_unique<HIR::IdentifierPattern> (HIR::IdentifierPattern (
 	  mapping, {"self"}, self_param.get_locus (), self_param.is_ref (),
 	  self_param.is_mut () ? Mutability::Mut : Mutability::Imm,
 	  std::unique_ptr<HIR::Pattern> (nullptr)));

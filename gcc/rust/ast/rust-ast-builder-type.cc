@@ -20,7 +20,6 @@
 #include "rust-ast-builder.h"
 #include "rust-ast-full.h"
 #include "rust-common.h"
-#include "rust-make-unique.h"
 
 namespace Rust {
 namespace AST {

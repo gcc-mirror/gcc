@@ -69,7 +69,7 @@ TypeCheckEnumItem::visit (HIR::EnumItem &item)
 				 mappings.get_next_hir_id (
 				   item.get_mappings ().get_crate_num ()),
 				 item.get_mappings ().get_local_defid ());
-  auto discim_expr = Rust::make_unique<HIR::LiteralExpr> (
+  auto discim_expr = std::make_unique<HIR::LiteralExpr> (
     HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
 		      HIR::Literal::LitType::INT,
 		      PrimitiveCoreType::CORETYPE_I64, item.get_locus (), {}));
@@ -174,7 +174,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
 				 mappings.get_next_hir_id (
 				   item.get_mappings ().get_crate_num ()),
 				 item.get_mappings ().get_local_defid ());
-  auto discim_expr = Rust::make_unique<HIR::LiteralExpr> (
+  auto discim_expr = std::make_unique<HIR::LiteralExpr> (
     HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
 		      HIR::Literal::LitType::INT,
 		      PrimitiveCoreType::CORETYPE_I64, item.get_locus (), {}));
@@ -234,7 +234,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
 				 mappings.get_next_hir_id (
 				   item.get_mappings ().get_crate_num ()),
 				 item.get_mappings ().get_local_defid ());
-  auto discrim_expr = Rust::make_unique<HIR::LiteralExpr> (
+  auto discrim_expr = std::make_unique<HIR::LiteralExpr> (
     HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
 		      HIR::Literal::LitType::INT,
 		      PrimitiveCoreType::CORETYPE_I64, item.get_locus (), {}));

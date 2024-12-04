@@ -518,7 +518,7 @@ ASTLoweringExpr::visit (AST::StructExprStructFields &struct_expr)
       HIR::Expr *translated_base = ASTLoweringExpr::translate (
 	struct_expr.get_struct_base ().get_base_struct ());
       base = tl::optional<std::unique_ptr<HIR::StructBase>> (
-	Rust::make_unique<StructBase> (
+	std::make_unique<StructBase> (
 	  std::unique_ptr<HIR::Expr> (translated_base)));
     }
 

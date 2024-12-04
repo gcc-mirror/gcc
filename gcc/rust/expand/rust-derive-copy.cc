@@ -46,7 +46,7 @@ DeriveCopy::copy_impl (
   // `$crate::core::marker::Copy` instead
   auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
   segments.emplace_back (builder.type_path_segment ("Copy"));
-  auto copy = Rust::make_unique<LangItemPath> (LangItem::Kind::COPY, loc);
+  auto copy = std::make_unique<LangItemPath> (LangItem::Kind::COPY, loc);
 
   // we need to build up the generics for this impl block which will be just a
   // clone of the types specified ones

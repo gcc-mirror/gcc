@@ -7,7 +7,6 @@
 #include "rust-system.h"
 #include "rust-diagnostics.h"
 #include "rust-imports.h"
-#include "rust-make-unique.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -844,7 +843,7 @@ Import::find_archive_export_data (const std::string &filename, int fd,
   if (!afile.initialize ())
     return nullptr;
 
-  auto ret = Rust::make_unique<Stream_concatenate> ();
+  auto ret = std::make_unique<Stream_concatenate> ();
 
   bool any_data = false;
   bool any_members = false;
@@ -872,7 +871,7 @@ Import::find_archive_export_data (const std::string &filename, int fd,
   if (!any_members)
     {
       // It's normal to have an empty archive file when using gobuild.
-      return Rust::make_unique<Stream_from_string> ("");
+      return std::make_unique<Stream_from_string> ("");
     }
 
   if (!any_data)

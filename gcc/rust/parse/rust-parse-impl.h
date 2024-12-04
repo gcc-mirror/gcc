@@ -29,7 +29,6 @@
 #include "rust-token.h"
 #define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
-#include "rust-make-unique.h"
 #include "rust-dir-owner.h"
 #include "rust-attribute-values.h"
 #include "rust-keyword-values.h"
@@ -3683,7 +3682,7 @@ Parser<ManagedTokenSource>::parse_function_param ()
   if (lexer.peek_token ()->get_id () == ELLIPSIS) // Unnamed variadic
     {
       lexer.skip_token (); // Skip ellipsis
-      return Rust::make_unique<AST::VariadicParam> (
+      return std::make_unique<AST::VariadicParam> (
 	AST::VariadicParam (std::move (outer_attrs), locus));
     }
 
@@ -3705,7 +3704,7 @@ Parser<ManagedTokenSource>::parse_function_param ()
   if (lexer.peek_token ()->get_id () == ELLIPSIS) // Named variadic
     {
       lexer.skip_token (); // Skip ellipsis
-      return Rust::make_unique<AST::VariadicParam> (
+      return std::make_unique<AST::VariadicParam> (
 	AST::VariadicParam (std::move (param_pattern), std::move (outer_attrs),
 			    locus));
     }
@@ -3716,7 +3715,7 @@ Parser<ManagedTokenSource>::parse_function_param ()
 	{
 	  return nullptr;
 	}
-      return Rust::make_unique<AST::FunctionParam> (
+      return std::make_unique<AST::FunctionParam> (
 	AST::FunctionParam (std::move (param_pattern), std::move (param_type),
 			    std::move (outer_attrs), locus));
     }
@@ -7124,14 +7123,14 @@ Parser<ManagedTokenSource>::parse_self_param ()
 
   if (has_reference)
     {
-      return Rust::make_unique<AST::SelfParam> (std::move (lifetime), has_mut,
-						locus);
+      return std::make_unique<AST::SelfParam> (std::move (lifetime), has_mut,
+					       locus);
     }
   else
     {
       // note that type may be nullptr here and that's fine
-      return Rust::make_unique<AST::SelfParam> (std::move (type), has_mut,
-						locus);
+      return std::make_unique<AST::SelfParam> (std::move (type), has_mut,
+					       locus);
     }
 }
 
@@ -8693,10 +8692,10 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 
       std::vector<std::unique_ptr<AST::Expr>> exprs;
       auto array_elems
-	= Rust::make_unique<AST::ArrayElemsValues> (std::move (exprs), locus);
-      return Rust::make_unique<AST::ArrayExpr> (std::move (array_elems),
-						std::move (inner_attrs),
-						std::move (outer_attrs), locus);
+	= std::make_unique<AST::ArrayElemsValues> (std::move (exprs), locus);
+      return std::make_unique<AST::ArrayExpr> (std::move (array_elems),
+					       std::move (inner_attrs),
+					       std::move (outer_attrs), locus);
     }
   else
     {
