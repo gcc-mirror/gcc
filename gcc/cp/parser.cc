@@ -2983,7 +2983,7 @@ struct contract_modifier {
 };
 
 static contract_modifier cp_parser_function_contract_modifier_opt
-  (cp_parser *);
+  (cp_parser *, bool);
 
 static tree cp_parser_function_contract_specifier
   (cp_parser *);
@@ -13267,7 +13267,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      cp_token *token = cp_lexer_consume_token (parser->lexer);
 	      location_t loc = token->location;
 	      contract_modifier modifier
-		= cp_parser_function_contract_modifier_opt (parser);
+		= cp_parser_function_contract_modifier_opt (parser,
+							    /*attr_mode*/false);
 
 	      matching_parens parens;
 	      parens.require_open (parser);
@@ -13278,27 +13279,27 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      /* Do we have an override for const-ification?  */
 	      bool old_flag_contracts_nonattr_noconst
 		= flag_contracts_nonattr_noconst;
+
+	      bool should_constify = !flag_contracts_nonattr_noconst;
 	      if (!modifier.error_p
 		  && (modifier.mutable_p
 		      || (flag_contracts_nonattr_const_keyword
 			  && !modifier.const_p)))
-		flag_contracts_nonattr_noconst = true;
+		should_constify = false;
+	      flag_contracts_nonattr_noconst = !should_constify;
 
-	      /* if we have a current class object, constify it before processing
-	       *  the contract condition */
+	      /* If we have a current class object, see if we need to consider
+		 it const when processing the contract condition.  */
 	      tree current_class_ref_copy = current_class_ref;
-	      if (flag_contracts_nonattr
-		  && !flag_contracts_nonattr_noconst
-		  && current_class_ref)
-	        current_class_ref = view_as_const (current_class_ref);
+	      if (should_constify && current_class_ref_copy)
+		current_class_ref = view_as_const (current_class_ref_copy);
 
-	      /* Parse the condition, ensuring that parameters or the return variable
-	       aren't flagged for use outside the body of a function.  */
+	      /* Parse the condition.  */
 	      ++processing_contract_condition;
 	      cp_expr condition = cp_parser_conditional_expression (parser);
 	      --processing_contract_condition;
 
-	      /* revert (any) constification of the current class object */
+	      /* Revert (any) constification of the current class object.  */
 	      current_class_ref = current_class_ref_copy;
 
 	      flag_contracts_nonattr_noconst
@@ -31548,7 +31549,7 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
   /* For experimental modifiers on C++26 contracts.  */
   contract_modifier modifier
-    = cp_parser_function_contract_modifier_opt (parser);
+    = cp_parser_function_contract_modifier_opt (parser, attr_mode);
 
   matching_parens parens;
   if (flag_contracts_nonattr && !attr_mode)
@@ -31604,11 +31605,6 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* And its corresponding contract.  */
       contract = grok_contract (attribute, mode, identifier, condition, loc);
-      if (contract != error_mark_node && !modifier.error_p)
-	{
-	  set_contract_mutable (contract, modifier.mutable_p);
-	  set_contract_const (contract, modifier.const_p);
-	}
     }
   else
     {
@@ -31624,18 +31620,21 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	  ++processing_template_decl;
 	}
 
+      bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
+
+      /* Do we have an override for const-ification?  */
+      bool should_constify = !flag_contracts_nonattr_noconst;
+      if (!modifier.error_p
+	   && (modifier.mutable_p
+	       || (flag_contracts_nonattr_const_keyword && !modifier.const_p)))
+	should_constify = false;
+      flag_contracts_nonattr_noconst = !should_constify;
+
       /* Parse the condition, ensuring that parameters or the return variable
 	 aren't flagged for use outside the body of a function.  */
-      bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
       ++processing_contract_condition;
       if (postcondition_p)
 	++processing_contract_postcondition;
-      /* Do we have an override for const-ification?  */
-      if (!modifier.error_p
-	  && (modifier.mutable_p
-	      || (flag_contracts_nonattr_const_keyword && !modifier.const_p)))
-	flag_contracts_nonattr_noconst = true;
-
       cp_expr condition = cp_parser_conditional_expression (parser);
       if (postcondition_p)
 	--processing_contract_postcondition;
@@ -31654,11 +31653,6 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* Build the contract.  */
       contract = grok_contract (attribute, mode, result, condition, loc);
-      if (contract != error_mark_node && !modifier.error_p)
-	{
-	  set_contract_mutable (contract, modifier.mutable_p);
-	  set_contract_const (contract, modifier.const_p);
-	}
       /* Leave our temporary scope for the postcondition result.  */
       if (result)
 	{
@@ -31671,6 +31665,22 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
     {
       error_at (loc, "contracts are only available with %<-fcontracts%>");
       return error_mark_node;
+    }
+
+  if (contract != error_mark_node)
+    {
+      set_contract_mutable (contract, false);
+      set_contract_const (contract, false);
+      if (flag_contracts_nonattr && !attr_mode)
+	{
+	  if (!modifier.error_p)
+	    {
+	      set_contract_mutable (contract, modifier.mutable_p);
+	      set_contract_const (contract, modifier.const_p);
+	    }
+	  else
+	    set_contract_const (contract, !flag_contracts_nonattr_noconst);
+	}
     }
 
   return finish_contract_attribute (attribute, contract);
@@ -31715,12 +31725,10 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   bool mutable_p = get_contract_mutable (contract);
   bool const_p = get_contract_const (contract);
   bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
-  if (flag_contracts_nonattr && flag_contracts_nonattr_mutable_keyword &&
-      mutable_p)
-    flag_contracts_nonattr_noconst = 1;
-  if (flag_contracts_nonattr && flag_contracts_nonattr_const_keyword &&
-      !const_p)
-    flag_contracts_nonattr_noconst = 1;
+  if (flag_contracts_nonattr
+      && (mutable_p
+	  || (flag_contracts_nonattr_const_keyword && !const_p)))
+	flag_contracts_nonattr_noconst = true;
   
   /* In C++"0 contracts, 'this' is not allowed in preconditions of
      constructors or in postconditions of destructors.  Note that the
@@ -31755,7 +31763,9 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
   /* if we have a current class object, constify it before processing
    *  the contract condition */
-  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst && current_class_ref)
+  if (flag_contracts_nonattr
+      && !flag_contracts_nonattr_noconst
+      && current_class_ref)
     current_class_ref = view_as_const (current_class_ref);
 
   /* Parse the condition, ensuring that parameters or the return variable
@@ -31795,9 +31805,9 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 }
 
 static contract_modifier
-cp_parser_function_contract_modifier_opt (cp_parser * parser)
+cp_parser_function_contract_modifier_opt (cp_parser * parser, bool attr_mode)
 {
-  if (!flag_contracts_nonattr)
+  if (!flag_contracts_nonattr || attr_mode)
     return {};
 
   contract_modifier mod{};
