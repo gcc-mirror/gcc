@@ -13240,9 +13240,7 @@ package body Exp_Ch4 is
       --  cannot invoke Process_Transients_In_Expression on it since it is not
       --  a transient object (it has the lifetime of the original object).
 
-      if Nkind (Obj_Decl) = N_Object_Declaration
-        and then Needs_Finalization (Base_Type (Etype (Obj_Id)))
-      then
+      if Needs_Finalization (Base_Type (Etype (Obj_Id))) then
          Master_Node_Id := Make_Temporary (Loc, 'N');
          Master_Node_Decl :=
            Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
