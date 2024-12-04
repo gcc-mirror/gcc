@@ -649,18 +649,21 @@ package body Sem_Util is
       --  recursively print A.B.C, then print D.
    begin
       --  If E is not a source entity, then skip the simple name and just
-      --  recursively print its scope. However, subprogram instances have
-      --  Comes_From_Source = False, but we do want to print the simple name
-      --  of the instance.
+      --  recursively print its scope. However, certain entities have
+      --  Comes_From_Source = False, even though we DO want to print the
+      --  simple name; this happens for specless child subprogram bodies
+      --  and for subprogram instances.
 
       if not Comes_From_Source (E) then
-         if Is_Generic_Instance (E)
+         if Is_Compilation_Unit (E) then
+            null;
+         elsif Is_Generic_Instance (E)
            and then Ekind (E) in E_Function | E_Procedure
          then
             null;
          else
             Append_Entity_Name (Buf, Scope (E));
-            return;
+            return; -- skip the simple name
          end if;
       end if;
 
