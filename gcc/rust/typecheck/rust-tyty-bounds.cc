@@ -237,8 +237,8 @@ TypeCheckBase::get_predicate_from_bound (
 
 	std::vector<std::unique_ptr<HIR::Type>> inputs;
 	inputs.push_back (
-	  Rust::make_unique<HIR::TupleType> (mapping, std::move (params_copy),
-					     final_seg.get_locus ()));
+	  std::make_unique<HIR::TupleType> (mapping, std::move (params_copy),
+					    final_seg.get_locus ()));
 
 	// resolve the fn_once_output type which assumes there must be an output
 	// set

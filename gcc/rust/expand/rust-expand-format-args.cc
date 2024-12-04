@@ -120,7 +120,7 @@ expand_format_args (AST::FormatArgs &fmt,
   auto pieces = builder.ref (builder.array (std::move (static_pieces)));
   auto args_slice = builder.ref (builder.array (std::move (args_array)));
 
-  auto final_path = make_unique<AST::PathInExpression> (
+  auto final_path = std::make_unique<AST::PathInExpression> (
     builder.path_in_expression ({"core", "fmt", "Arguments", "new_v1"}));
   auto final_args = std::vector<std::unique_ptr<AST::Expr>> ();
   final_args.emplace_back (std::move (pieces));

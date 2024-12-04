@@ -80,7 +80,7 @@ void
 CompilePatternCheckExpr::visit (HIR::LiteralPattern &pattern)
 {
   // Compile the literal
-  auto litexpr = Rust::make_unique<HIR::LiteralExpr> (
+  auto litexpr = std::make_unique<HIR::LiteralExpr> (
     HIR::LiteralExpr (pattern.get_mappings (), pattern.get_literal (),
 		      pattern.get_locus (), std::vector<AST::Attribute> ()));
 

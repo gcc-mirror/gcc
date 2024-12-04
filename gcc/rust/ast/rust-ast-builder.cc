@@ -22,7 +22,6 @@
 #include "rust-expr.h"
 #include "rust-path.h"
 #include "rust-token.h"
-#include "rust-make-unique.h"
 
 namespace Rust {
 namespace AST {
@@ -73,7 +72,7 @@ Builder::call (std::unique_ptr<Path> &&path, std::unique_ptr<Expr> &&arg) const
 std::unique_ptr<Expr>
 Builder::array (std::vector<std::unique_ptr<Expr>> &&members) const
 {
-  auto elts = Rust::make_unique<ArrayElemsValues> (std::move (members), loc);
+  auto elts = std::make_unique<ArrayElemsValues> (std::move (members), loc);
 
   return std::unique_ptr<Expr> (new ArrayExpr (std::move (elts), {}, {}, loc));
 }

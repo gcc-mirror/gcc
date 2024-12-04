@@ -2710,8 +2710,8 @@ TypePath::to_trait_bound (bool in_parens) const
   // create clone FIXME is this required? or is copy constructor automatically
   // called?
   TypePath copy (*this);
-  return Rust::make_unique<TraitBound> (mappings, std::move (copy),
-					copy.get_locus (), in_parens);
+  return std::make_unique<TraitBound> (mappings, std::move (copy),
+				       copy.get_locus (), in_parens);
 }
 
 std::string

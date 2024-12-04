@@ -924,7 +924,7 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 				      param.get_mappings ().get_nodeid (),
 				      implicit_id,
 				      param.get_mappings ().get_local_defid ());
-      implicit_self_bound = Rust::make_unique<HIR::TypePath> (
+      implicit_self_bound = std::make_unique<HIR::TypePath> (
 	HIR::TypePath (mappings, {}, BUILTINS_LOCATION, false));
     }
 

@@ -21,7 +21,6 @@
 
 #include "rust-system.h"
 #include "rust-linemap.h"
-#include "rust-make-unique.h"
 #include "rust-unicode.h"
 
 namespace Rust {
@@ -268,7 +267,7 @@ private:
     : token_id (token_id), locus (location), type_hint (CORETYPE_UNKNOWN)
   {
     // Normalize identifier tokens
-    str = Rust::make_unique<std::string> (
+    str = std::make_unique<std::string> (
       nfc_normalize_token_string (location, token_id, paramStr));
   }
 
@@ -285,7 +284,7 @@ private:
     : token_id (token_id), locus (location), type_hint (CORETYPE_UNKNOWN)
   {
     // Normalize identifier tokens
-    str = Rust::make_unique<std::string> (
+    str = std::make_unique<std::string> (
       nfc_normalize_token_string (location, token_id,
 				  paramCodepoint.as_string ()));
   }
@@ -296,7 +295,7 @@ private:
     : token_id (token_id), locus (location), type_hint (parType)
   {
     // Normalize identifier tokens
-    str = Rust::make_unique<std::string> (
+    str = std::make_unique<std::string> (
       nfc_normalize_token_string (location, token_id, paramStr));
   }
 

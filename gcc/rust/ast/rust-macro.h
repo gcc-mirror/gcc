@@ -24,7 +24,6 @@
 #include "rust-ast-fragment.h"
 #include "rust-location.h"
 #include "rust-item.h"
-#include "rust-make-unique.h"
 #include "rust-macro-builtins.h"
 
 namespace Rust {
@@ -521,7 +520,7 @@ public:
   mbe (Identifier rule_name, DelimType delim_type, std::vector<MacroRule> rules,
        std::vector<Attribute> outer_attrs, location_t locus)
   {
-    return Rust::make_unique<MacroRulesDefinition> (
+    return std::make_unique<MacroRulesDefinition> (
       MacroRulesDefinition (rule_name, delim_type, rules, outer_attrs, locus,
 			    AST::MacroRulesDefinition::MacroKind::MBE,
 			    AST::Visibility::create_error ()));
@@ -532,7 +531,7 @@ public:
 	      std::vector<Attribute> outer_attrs, location_t locus,
 	      Visibility vis)
   {
-    return Rust::make_unique<MacroRulesDefinition> (MacroRulesDefinition (
+    return std::make_unique<MacroRulesDefinition> (MacroRulesDefinition (
       rule_name, AST::DelimType::CURLY, rules, outer_attrs, locus,
       AST::MacroRulesDefinition::MacroKind::DeclMacro, vis));
   }

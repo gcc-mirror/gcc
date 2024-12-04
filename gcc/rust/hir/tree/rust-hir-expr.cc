@@ -541,10 +541,10 @@ StructExprStructFields::StructExprStructFields (
 StructExprStructFields::StructExprStructFields (
   StructExprStructFields const &other)
   : StructExprStruct (other),
-    struct_base (
-      other.has_struct_base () ? tl::optional<std::unique_ptr<StructBase>> (
-	Rust::make_unique<StructBase> (*other.struct_base.value ()))
-			       : tl::nullopt),
+    struct_base (other.has_struct_base ()
+		   ? tl::optional<std::unique_ptr<StructBase>> (
+		     std::make_unique<StructBase> (*other.struct_base.value ()))
+		   : tl::nullopt),
     union_index (other.union_index)
 {
   fields.reserve (other.fields.size ());
@@ -558,7 +558,7 @@ StructExprStructFields::operator= (StructExprStructFields const &other)
   StructExprStruct::operator= (other);
   struct_base = other.has_struct_base ()
 		  ? tl::optional<std::unique_ptr<StructBase>> (
-		    Rust::make_unique<StructBase> (*other.struct_base.value ()))
+		    std::make_unique<StructBase> (*other.struct_base.value ()))
 		  : tl::nullopt;
   union_index = other.union_index;
 

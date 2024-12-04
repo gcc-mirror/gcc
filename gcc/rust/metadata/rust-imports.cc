@@ -21,7 +21,6 @@
 #include "rust-imports.h"
 #include "rust-object-export.h"
 #include "rust-export-metadata.h"
-#include "rust-make-unique.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -259,7 +258,7 @@ Import::find_export_data (const std::string &filename, int fd,
   //
   if (memcmp (buf, Metadata::kMagicHeader, sizeof (Metadata::kMagicHeader))
       == 0)
-    return Rust::make_unique<Stream_from_file> (fd);
+    return std::make_unique<Stream_from_file> (fd);
 
   // See if we can read this as an archive.
   if (Import::is_archive_magic (buf))
@@ -291,7 +290,7 @@ Import::find_object_export_data (const std::string &filename, int fd,
   if (buf == nullptr)
     return nullptr;
 
-  return Rust::make_unique<Stream_from_buffer> (buf, len);
+  return std::make_unique<Stream_from_buffer> (buf, len);
 }
 
 // Class Import.
