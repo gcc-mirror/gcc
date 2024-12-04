@@ -174,7 +174,7 @@ package body Uintp is
    --  K is as small as possible S.T. Right_Hat < Base * Base. It is required
    --  that Left >= Right for the algorithm to work.
 
-   function N_Digits (Input : Valid_Uint) return Int;
+   function N_Digits (Input : Valid_Uint) return Pos;
    pragma Inline (N_Digits);
    --  Returns number of "digits" in a Uint
 
@@ -603,7 +603,7 @@ package body Uintp is
    -- N_Digits --
    ---------------
 
-   function N_Digits (Input : Valid_Uint) return Int is
+   function N_Digits (Input : Valid_Uint) return Pos is
    begin
       if Direct (Input) then
          if Direct_Val (Input) >= Base then
