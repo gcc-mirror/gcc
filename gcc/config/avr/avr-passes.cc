@@ -979,12 +979,12 @@ struct insninfo_t
   // This is an insn that sets the m_size bytes of m_regno to either
   // - A compile time constant m_isrc (m_code = CONST_INT), or
   // - The contents of register number m_rsrc (m_code = REG).
-  int m_size;
+  int m_size = 0;
   int m_regno;
   int m_rsrc;
   rtx_code m_code;
   uint64_t m_isrc;
-  rtx_insn *m_insn;
+  rtx_insn *m_insn = nullptr;
   rtx m_set = NULL_RTX;
   rtx m_src = NULL_RTX;
   int m_scratch = 0; // 0 or the register number of a QImode scratch.
@@ -2466,7 +2466,8 @@ bbinfo_t::run_find_plies (const insninfo_t &ii, const memento_t &memo) const
 
   if (hamm == 0)
     {
-      avr_dump (";; Found redundant insn %d\n", INSN_UID (ii.m_insn));
+      avr_dump (";; Found redundant insn %d\n",
+		ii.m_insn ? INSN_UID (ii.m_insn) : 0);
       return true;
     }
 
