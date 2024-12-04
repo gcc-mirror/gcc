@@ -9448,7 +9448,7 @@ package body Sem_Attr is
       -----------
 
       --  Image is a scalar attribute, but is never static, because it is
-      --  not a static function (having a non-scalar argument (RM 4.9(22))
+      --  not a static function (having a non-scalar argument (RM 4.9(22)).
       --  However, we can constant-fold the image of an enumeration literal
       --  if names are available and default Image implementation has not
       --  been overridden.

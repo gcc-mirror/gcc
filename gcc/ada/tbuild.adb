@@ -492,7 +492,7 @@ package body Tbuild is
    -- Make_SC --
    -------------
 
-   function  Make_SC (Pre, Sel : Node_Id) return Node_Id is
+   function Make_SC (Pre, Sel : Node_Id) return Node_Id is
    begin
       return
         Make_Selected_Component (System_Location,
