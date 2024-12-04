@@ -11815,7 +11815,9 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       cp_lexer_consume_token (parser->lexer);
       first = false;
 
-      if (!(at_function_scope_p () || parsing_nsdmi ()))
+      if (!(at_function_scope_p ()
+	    || parsing_nsdmi ()
+	    || current_binding_level->kind == sk_contract))
 	error ("non-local lambda expression cannot have a capture-default");
     }
 
