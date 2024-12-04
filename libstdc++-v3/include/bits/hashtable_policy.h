@@ -1015,46 +1015,24 @@ namespace __detail
   /**
    *  Primary class template _Hashtable_ebo_helper.
    *
-   *  Helper class using EBO when it is not forbidden (the type is not
-   *  final) and when it is worth it (the type is empty.)
+   *  Helper class using [[no_unique_address]] to reduce object size.
    */
-  template<int _Nm, typename _Tp,
+  template<typename _Tp,
 	   bool __use_ebo = !__is_final(_Tp) && __is_empty(_Tp)>
-    struct _Hashtable_ebo_helper;
-
-  /// Specialization using EBO.
-  template<int _Nm, typename _Tp>
-    struct _Hashtable_ebo_helper<_Nm, _Tp, true>
-    : private _Tp
+    struct _Hashtable_ebo_helper
     {
-      _Hashtable_ebo_helper() noexcept(noexcept(_Tp())) : _Tp() { }
-
-      template<typename _OtherTp>
-	_Hashtable_ebo_helper(_OtherTp&& __tp)
-	: _Tp(std::forward<_OtherTp>(__tp))
-	{ }
-
-      const _Tp& _M_cget() const { return static_cast<const _Tp&>(*this); }
-      _Tp& _M_get() { return static_cast<_Tp&>(*this); }
+      [[__no_unique_address__]] _Tp _M_obj;
     };
 
-  /// Specialization not using EBO.
-  template<int _Nm, typename _Tp>
-    struct _Hashtable_ebo_helper<_Nm, _Tp, false>
+#if ! _GLIBCXX_INLINE_VERSION
+  // For ABI compatibility reasons, [[no_unique_address]] is only used
+  // for empty non-final types.
+  template<typename _Tp>
+    struct _Hashtable_ebo_helper<_Tp, false>
     {
-      _Hashtable_ebo_helper() = default;
-
-      template<typename _OtherTp>
-	_Hashtable_ebo_helper(_OtherTp&& __tp)
-	: _M_tp(std::forward<_OtherTp>(__tp))
-	{ }
-
-      const _Tp& _M_cget() const { return _M_tp; }
-      _Tp& _M_get() { return _M_tp; }
-
-    private:
-      _Tp _M_tp{};
+      _Tp _M_obj;
     };
+#endif
 
   /**
    *  Primary class template _Local_iterator_base.
@@ -1067,59 +1045,39 @@ namespace __detail
 	   bool __cache_hash_code>
     struct _Local_iterator_base;
 
-  /**
-   *  Primary class template _Hash_code_base.
-   *
-   *  Encapsulates two policy issues that aren't quite orthogonal.
-   *   (1) the difference between using a ranged hash function and using
-   *       the combination of a hash function and a range-hashing function.
-   *       In the former case we don't have such things as hash codes, so
-   *       we have a dummy type as placeholder.
-   *   (2) Whether or not we cache hash codes.  Caching hash codes is
-   *       meaningless if we have a ranged hash function.
-   *
-   *  We also put the key extraction objects here, for convenience.
-   *  Each specialization derives from one or more of the template
-   *  parameters to benefit from Ebo. This is important as this type
-   *  is inherited in some cases by the _Local_iterator_base type used
-   *  to implement local_iterator and const_local_iterator. As with
-   *  any iterator type we prefer to make it as small as possible.
-   */
+  // Wraps the _Hash object and provides some utility functions for using it.
   template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _Hash, typename _RangeHash, typename _Unused,
-	   bool __cache_hash_code>
+	   bool /* __cache_hash_code */>
     struct _Hash_code_base
-    : private _Hashtable_ebo_helper<1, _Hash>
     {
-    private:
-      using __ebo_hash = _Hashtable_ebo_helper<1, _Hash>;
-
       // Gives the local iterator implementation access to _M_bucket_index().
       friend struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 					 _Hash, _RangeHash, _Unused, false>;
-
     public:
-      typedef _Hash					hasher;
+      using hasher = _Hash;
 
       hasher
       hash_function() const
-      { return _M_hash(); }
+      { return _M_hash._M_obj; }
 
     protected:
+      [[__no_unique_address__]] _Hashtable_ebo_helper<_Hash> _M_hash{};
+
       typedef std::size_t 				__hash_code;
 
       // We need the default constructor for the local iterators and _Hashtable
       // default constructor.
       _Hash_code_base() = default;
 
-      _Hash_code_base(const _Hash& __hash) : __ebo_hash(__hash) { }
+      _Hash_code_base(const _Hash& __hash) : _M_hash{__hash} { }
 
       __hash_code
       _M_hash_code(const _Key& __k) const
       {
 	static_assert(__is_invocable<const _Hash&, const _Key&>{},
 	    "hash function must be invocable with an argument of key type");
-	return _M_hash()(__k);
+	return _M_hash._M_obj(__k);
       }
 
       template<typename _Kt>
@@ -1128,7 +1086,7 @@ namespace __detail
 	{
 	  static_assert(__is_invocable<const _Hash&, const _Kt&>{},
 	    "hash function must be invocable with an argument of key type");
-	  return _M_hash()(__k);
+	  return _M_hash._M_obj(__k);
 	}
 
       __hash_code
@@ -1174,16 +1132,6 @@ namespace __detail
       _M_copy_code(_Hash_node_code_cache<true>& __to,
 		   const _Hash_node_code_cache<true>& __from) const
       { __to._M_hash_code = __from._M_hash_code; }
-
-      void
-      _M_swap(_Hash_code_base& __x)
-      {
-	using std::swap;
-	swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get());
-      }
-
-      const _Hash&
-      _M_hash() const { return __ebo_hash::_M_cget(); }
     };
 
   /// Partial specialization used when nodes contain a cached hash code.
@@ -1461,15 +1409,13 @@ namespace __detail
    *
    *  Base class templates are:
    *    - __detail::_Hash_code_base
-   *    - __detail::_Hashtable_ebo_helper
    */
   template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _Equal, typename _Hash, typename _RangeHash,
 	   typename _Unused, typename _Traits>
     struct _Hashtable_base
     : public _Hash_code_base<_Key, _Value, _ExtractKey, _Hash, _RangeHash,
-			     _Unused, _Traits::__hash_cached::value>,
-      private _Hashtable_ebo_helper<0, _Equal>
+			     _Unused, _Traits::__hash_cached::value>
     {
     public:
       typedef _Key					key_type;
@@ -1487,14 +1433,13 @@ namespace __detail
 
       using __hash_code = typename __hash_code_base::__hash_code;
 
-    private:
-      using _EqualEBO = _Hashtable_ebo_helper<0, _Equal>;
-
     protected:
+      [[__no_unique_address__]] _Hashtable_ebo_helper<_Equal> _M_equal{};
+
       _Hashtable_base() = default;
 
       _Hashtable_base(const _Hash& __hash, const _Equal& __eq)
-      : __hash_code_base(__hash), _EqualEBO(__eq)
+      : __hash_code_base(__hash), _M_equal{__eq}
       { }
 
       bool
@@ -1560,27 +1505,18 @@ namespace __detail
       }
 #pragma GCC diagnostic pop
 
-      void
-      _M_swap(_Hashtable_base& __x)
-      {
-	__hash_code_base::_M_swap(__x);
-	using std::swap;
-	swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
-      }
-
       const _Equal&
-      _M_eq() const { return _EqualEBO::_M_cget(); }
+      _M_eq() const noexcept { return _M_equal._M_obj; }
     };
 
   /**
-   * This type deals with all allocation and keeps an allocator instance
-   * through inheritance to benefit from EBO when possible.
+   * This type deals with all allocation and keeps an allocator instance.
    */
   template<typename _NodeAlloc>
-    struct _Hashtable_alloc : private _Hashtable_ebo_helper<0, _NodeAlloc>
+    struct _Hashtable_alloc
     {
     private:
-      using __ebo_node_alloc = _Hashtable_ebo_helper<0, _NodeAlloc>;
+      [[__no_unique_address__]] _Hashtable_ebo_helper<_NodeAlloc> _M_alloc{};
 
       template<typename>
 	struct __get_value_type;
@@ -1611,16 +1547,16 @@ namespace __detail
 
       template<typename _Alloc>
 	_Hashtable_alloc(_Alloc&& __a)
-	: __ebo_node_alloc(std::forward<_Alloc>(__a))
+	: _M_alloc{std::forward<_Alloc>(__a)}
 	{ }
 
       __node_alloc_type&
       _M_node_allocator()
-      { return __ebo_node_alloc::_M_get(); }
+      { return _M_alloc._M_obj; }
 
       const __node_alloc_type&
       _M_node_allocator() const
-      { return __ebo_node_alloc::_M_cget(); }
+      { return _M_alloc._M_obj; }
 
       // Allocate a node and construct an element within it.
       template<typename... _Args>
