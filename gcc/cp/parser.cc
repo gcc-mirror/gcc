@@ -11972,7 +11972,9 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       first = false;
 
       tree scope = current_nonlambda_scope (/*only_skip_closures_p=*/true);
-      if (TREE_CODE (scope) != FUNCTION_DECL && !parsing_nsdmi ())
+      if (TREE_CODE (scope) != FUNCTION_DECL 
+	  && !parsing_nsdmi ()
+	  && current_binding_level->kind != sk_contract)
 	error ("non-local lambda expression cannot have a capture-default");
     }
 
