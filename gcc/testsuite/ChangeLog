@@ -1,3 +1,48 @@
+2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2/iso/fail/forloopbyvar.mod: New test.
+	* gm2/iso/fail/forloopbyvar4.mod: New test.
+	* gm2/iso/fail/forloopbyvar5.mod: New test.
+	* gm2/iso/pass/forloopbyvar3.mod: New test.
+
+2024-12-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-11-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/fail/badexpression3.mod: New test.
+	* gm2/iso/fail/badparam4.def: New test.
+	* gm2/iso/fail/badparam4.mod: New test.
+
+2024-12-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-10-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115328
+	* gm2/iso/fail/badparam.def: New test.
+	* gm2/iso/fail/badparam.mod: New test.
+	* gm2/iso/fail/badparam2.def: New test.
+	* gm2/iso/fail/badparam2.mod: New test.
+	* gm2/iso/fail/badparam3.def: New test.
+	* gm2/iso/fail/badparam3.mod: New test.
+	* gm2/iso/fail/badparamarray.def: New test.
+	* gm2/iso/fail/badparamarray.mod: New test.
+	* gm2/iso/fail/simpledef1.def: New test.
+	* gm2/iso/fail/simpledef1.mod: New test.
+	* gm2/iso/fail/simpleforward.mod: New test.
+	* gm2/iso/fail/simpleforward2.mod: New test.
+	* gm2/iso/fail/simpleforward3.mod: New test.
+	* gm2/iso/fail/simpleforward4.mod: New test.
+	* gm2/iso/fail/simpleforward5.mod: New test.
+	* gm2/iso/fail/simpleforward7.mod: New test.
+	* gm2/iso/pass/simpleforward.mod: New test.
+	* gm2/iso/pass/simpleforward6.mod: New test.
+
 2024-12-02  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

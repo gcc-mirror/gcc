@@ -1,3 +1,12 @@
+2024-12-03  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2024-11-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116463
+	* tree-vect-slp-patterns.cc (complex_mul_pattern::matches,
+	complex_fms_pattern::matches): Try swapping operands on multiply.
+
 2024-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:
