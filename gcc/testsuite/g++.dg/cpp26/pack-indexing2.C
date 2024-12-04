@@ -42,7 +42,7 @@ template<int N>
 int
 getT (auto... Ts)
 {
-  return Ts...[N]; // { dg-error "pack index is out of range" }
+  return Ts...[N]; // { dg-error "cannot index an empty pack" }
 }
 
 template<int N>
@@ -56,12 +56,26 @@ template<auto N, typename... Ts>
 void
 badtype ()
 {
-  Ts...[N] t; // { dg-error "pack index is out of range" }
+  Ts...[N] t; // { dg-error "cannot index an empty pack" }
 }
 
 template<auto N, typename... Ts>
 void
 badtype2 ()
+{
+  Ts...[N] t; // { dg-error "pack index is out of range" }
+}
+
+template<auto N, typename... Ts>
+void
+badtype3 ()
+{
+  Ts...[N] t; // { dg-error "cannot index an empty pack" }
+}
+
+template<auto N, typename... Ts>
+void
+badtype4 ()
 {
   Ts...[N] t; // { dg-error "pack index is negative" }
 }
@@ -97,12 +111,12 @@ int main()
 
   getT<0>(); // { dg-message "required from here" }
   getT<1>();  // { dg-message "required from here" }
-  getT2<-1>();  // { dg-message "required from here" }
+  getT2<-1>(1);  // { dg-message "required from here" }
 
   badtype<0>(); // { dg-message "required from here" }
-  badtype<1, int>(); // { dg-message "required from here" }
-  badtype2<-1>(); // { dg-message "required from here" }
-  badtype2<-1, int>(); // { dg-message "required from here" }
+  badtype2<1, int>(); // { dg-message "required from here" }
+  badtype3<-1>(); // { dg-message "required from here" }
+  badtype4<-1, int>(); // { dg-message "required from here" }
 
   badindex<int, int, int>();
 
