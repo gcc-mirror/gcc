@@ -12655,11 +12655,8 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
     /* We need to parse deferred contract conditions before we try to call
        finish_function (which will try to emit the contracts).  */
-    for (tree a = DECL_ATTRIBUTES (fco); a; a = TREE_CHAIN (a))
-      {
-	if (cxx_contract_attribute_p (a))
-	  cp_parser_late_contract_condition (parser, fco, a);
-      }
+    for (tree a = DECL_CONTRACTS (fco); a; a = CONTRACT_CHAIN (a))
+      cp_parser_late_contract_condition (parser, fco, a);
 
     finish_lambda_function (body);
   }
@@ -28082,11 +28079,8 @@ cp_parser_class_specifier (cp_parser* parser)
 	    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
 
 	  /* Now we can parse contract conditions.  */
-	  for (tree a = DECL_ATTRIBUTES (decl); a; a = TREE_CHAIN (a))
-	    {
-	      if (cxx_contract_attribute_p (a))
-		cp_parser_late_contract_condition (parser, decl, a);
-	    }
+	  for (tree a = DECL_CONTRACTS (decl); a; a = CONTRACT_CHAIN (a))
+	    cp_parser_late_contract_condition (parser, decl, a);
 
 	  /* Restore the state of local_variables_forbidden_p.  */
 	  parser->local_variables_forbidden_p = local_variables_forbidden_p;
