@@ -6612,12 +6612,6 @@ package body Sem_Ch3 is
                             N           => Access_Definition (Component_Def));
          Set_Is_Local_Anonymous_Access (Element_Type);
 
-         --  Propagate the parent. This field is needed if we have to generate
-         --  the master_id associated with an anonymous access to task type
-         --  component (see Expand_N_Full_Type_Declaration.Build_Master)
-
-         Copy_Parent (To => Element_Type, From => T);
-
          --  Ada 2005 (AI-230): In case of components that are anonymous access
          --  types the level of accessibility depends on the enclosing type
          --  declaration
