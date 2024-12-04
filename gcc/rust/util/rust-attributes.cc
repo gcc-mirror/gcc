@@ -29,6 +29,15 @@
 namespace Rust {
 namespace Analysis {
 
+bool
+Attributes::is_known (const std::string &attribute_path)
+{
+  const auto &lookup
+    = BuiltinAttributeMappings::get ()->lookup_builtin (attribute_path);
+
+  return !lookup.is_error ();
+}
+
 using Attrs = Values::Attributes;
 
 // https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_feature/builtin_attrs.rs.html#248
