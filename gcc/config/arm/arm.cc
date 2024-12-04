@@ -3012,17 +3012,17 @@ arm_option_check_internal (struct gcc_options *opts)
       /* We only support -mslow-flash-data on M-profile targets with
 	 MOVT.  */
       if (target_slow_flash_data && (!TARGET_HAVE_MOVT || common_unsupported_modes))
-	error ("%s only supports non-pic code on M-profile targets with the "
+	error ("%qs only supports non-pic code on M-profile targets with the "
 	       "MOVT instruction", flag);
 
       /* We only support -mpure-code on M-profile targets.  */
       if (target_pure_code && common_unsupported_modes)
-	error ("%s only supports non-pic code on M-profile targets", flag);
+	error ("%qs only supports non-pic code on M-profile targets", flag);
 
       /* Cannot load addresses: -mslow-flash-data forbids literal pool and
 	 -mword-relocations forbids relocation of MOVT/MOVW.  */
       if (target_word_relocations)
-	error ("%s incompatible with %<-mword-relocations%>", flag);
+	error ("%qs is incompatible with %<-mword-relocations%>", flag);
     }
 }
 
