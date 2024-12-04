@@ -658,8 +658,7 @@ package body Osint is
    is
    begin
       Get_Name_String (Name);
-      Name_Buffer (Name_Len + 1 .. Name_Len + Suffix'Length) := Suffix;
-      Name_Len := Name_Len + Suffix'Length;
+      Add_Str_To_Name_Buffer (Suffix);
       return Name_Find;
    end Append_Suffix_To_File_Name;
 
@@ -1225,12 +1224,8 @@ package body Osint is
                   declare
                      Full_Path : constant String :=
                                    Normalize_Pathname (Get_Name_String (N));
-                     Full_Size : constant Natural := Full_Path'Length;
-
                   begin
-                     Name_Buffer (1 .. Full_Size) := Full_Path;
-                     Name_Len := Full_Size;
-                     Found    := Name_Find;
+                     Found := Name_Find (Full_Path);
                   end;
                end if;
 
@@ -1446,9 +1441,7 @@ package body Osint is
          end if;
       end loop;
 
-      Name_Len := Hostparm.Normalized_CWD'Length;
-      Name_Buffer (1 .. Name_Len) := Hostparm.Normalized_CWD;
-      return Name_Find;
+      return Name_Find (Hostparm.Normalized_CWD);
    end Get_Directory;
 
    ------------------------------
@@ -2182,10 +2175,7 @@ package body Osint is
       Get_Name_String (N);
       Name_Len := Name_Len - ALI_Suffix'Length - 1;
 
-      for J in Target_Object_Suffix'Range loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Target_Object_Suffix (J);
-      end loop;
+      Add_Str_To_Name_Buffer (Target_Object_Suffix);
 
       return Name_Enter;
    end Object_File_Name;
@@ -2935,9 +2925,7 @@ package body Osint is
 
             --  Return part of Name that follows this last directory separator
 
-            Name_Buffer (1 .. Name_Len - J) := Name_Buffer (J + 1 .. Name_Len);
-            Name_Len := Name_Len - J;
-            return Name_Find;
+            return Name_Find (Name_Buffer (J + 1 .. Name_Len));
          end if;
       end loop;
 

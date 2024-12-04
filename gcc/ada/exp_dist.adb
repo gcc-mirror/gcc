@@ -2089,8 +2089,7 @@ package body Exp_Dist is
       --  disambiguated within their own scope.
 
       if Overload_Order > 1 then
-         Name_Buffer (Name_Len + 1 .. Name_Len + 2) := "__";
-         Name_Len := Name_Len + 2;
+         Add_Str_To_Name_Buffer ("__");
          Add_Nat_To_Name_Buffer (Overload_Order);
       end if;
 
@@ -11188,11 +11187,8 @@ package body Exp_Dist is
       -----------------------------------
 
       procedure Reserve_NamingContext_Methods is
-         Str_Resolve : constant String := "resolve";
       begin
-         Name_Buffer (1 .. Str_Resolve'Length) := Str_Resolve;
-         Name_Len := Str_Resolve'Length;
-         Overload_Counter_Table.Set (Name_Find, 1);
+         Overload_Counter_Table.Set (Name_Find ("resolve"), 1);
       end Reserve_NamingContext_Methods;
 
       -----------------------
