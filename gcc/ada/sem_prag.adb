@@ -13646,9 +13646,7 @@ package body Sem_Prag is
 
                function Process (N : Node_Id) return Traverse_Result is
                begin
-                  if Nkind (N) = N_Attribute_Reference
-                    and then Attribute_Name (N) = Name_Loop_Entry
-                  then
+                  if Is_Attribute_Loop_Entry (N) then
                      return Abandon;
                   else
                      return OK;

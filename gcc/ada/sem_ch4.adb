@@ -3053,9 +3053,7 @@ package body Sem_Ch4 is
       --  the indexed component denotes a loop name, the indexed form is turned
       --  into an attribute reference.
 
-      elsif Nkind (N) = N_Attribute_Reference
-        and then Attribute_Name (N) = Name_Loop_Entry
-      then
+      elsif Is_Attribute_Loop_Entry (N) then
          return;
       end if;
 
