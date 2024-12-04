@@ -3399,7 +3399,21 @@ cp_parser_name_lookup_error (cp_parser* parser,
 	error_at (location, "%<%T::%E%> has not been declared",
 		  parser->object_scope, name);
       else
-	error_at (location, "%qE has not been declared", name);
+	{
+	  auto_diagnostic_group d;
+	  name_hint hint
+	    = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME, location);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (location);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qE has not been declared; did you mean %qs?",
+			name, suggestion);
+	    }
+	  else
+	    error_at (location, "%qE has not been declared", name);
+	}
     }
   else if (parser->scope && parser->scope != global_namespace)
     {
