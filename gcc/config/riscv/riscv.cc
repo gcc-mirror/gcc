@@ -10616,6 +10616,10 @@ riscv_option_override (void)
 		       param_sched_pressure_algorithm,
 		       SCHED_PRESSURE_MODEL);
 
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_cycle_accurate_model,
+		       0);
+
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &riscv_init_machine_status;
 

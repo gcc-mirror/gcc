@@ -17211,6 +17211,16 @@ With @option{--param=openacc-privatization=quiet}, don't diagnose.
 This is the current default.
 With @option{--param=openacc-privatization=noisy}, do diagnose.
 
+@item cycle-accurate-model
+Specifies whether GCC should assume that the scheduling description is mostly
+a cycle-accurate model of the target processor, where the code is intended to
+run on, in the absence of cache misses.  Nonzero means that the selected
+scheduling model is accurate and likely describes an in-order processor,
+and that scheduling will aggressively spill to try and fill any pipeline
+bubbles.  This is the current default.  Zero could mean scheduling descrption
+might not be available/accurate or perhaps not applicale at all such as for
+modern out-of-order processors.
+
 @end table
 
 The following choices of @var{name} are available on AArch64 targets:
