@@ -589,6 +589,7 @@ public:
   {
     LangItem,
     Regular,
+    Type,
   };
 
   virtual Kind get_path_kind () const = 0;
@@ -598,8 +599,8 @@ public:
     return Pattern::Kind::Path;
   }
 
-  location_t get_locus () const override final { return locus; }
-  NodeId get_node_id () const override final { return node_id; }
+  location_t get_locus () const override { return locus; }
+  NodeId get_node_id () const override { return node_id; }
 
   std::unique_ptr<Path> clone_path ()
   {
@@ -661,11 +662,12 @@ public:
 class LangItemPath : public Path
 {
   NodeId lang_item;
-  // TODO: Add LangItemKind or w/ever here as well
 
-  // TODO: This constructor is wrong
-  explicit LangItemPath (NodeId lang_item, location_t locus)
-    : Path (locus, lang_item), lang_item (lang_item)
+  LangItem::Kind kind;
+
+public:
+  explicit LangItemPath (LangItem::Kind kind, location_t locus)
+    : Path (locus, Analysis::Mappings::get ().get_next_node_id ()), kind (kind)
   {}
 
   Path::Kind get_path_kind () const override { return Path::Kind::LangItem; }
@@ -674,10 +676,12 @@ class LangItemPath : public Path
 
   Path *clone_path_impl () const override
   {
-    return new LangItemPath (lang_item, locus);
+    return new LangItemPath (kind, locus);
   }
 
   std::string as_string () const override;
+
+  LangItem::Kind get_lang_item_kind () { return kind; }
 };
 
 /* AST node representing a path-in-expression pattern (path that allows
@@ -1198,13 +1202,16 @@ public:
 };
 
 // Path used inside types
-class TypePath : public TypeNoBounds
+class TypePath : public TypeNoBounds, public Path
 {
   bool has_opening_scope_resolution;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
-  location_t locus;
 
 protected:
+  Kind get_path_kind () const override { return Kind::Type; }
+
+  Path *clone_path_impl () const override { return new TypePath (*this); }
+
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   TypePath *clone_type_no_bounds_impl () const override
@@ -1227,23 +1234,23 @@ public:
   static TypePath create_error ()
   {
     return TypePath (std::vector<std::unique_ptr<TypePathSegment> > (),
-		     UNDEF_LOCATION);
+		     UNKNOWN_LOCATION);
   }
 
   // Constructor
   TypePath (std::vector<std::unique_ptr<TypePathSegment> > segments,
 	    location_t locus, bool has_opening_scope_resolution = false)
     : TypeNoBounds (),
+      Path (locus, Analysis::Mappings::get ().get_next_node_id ()),
       has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (segments)), locus (locus)
+      segments (std::move (segments))
   {}
 
   // Copy constructor with vector clone
   TypePath (TypePath const &other)
-    : has_opening_scope_resolution (other.has_opening_scope_resolution),
-      locus (other.locus)
+    : Path (other.locus, other.Path::get_node_id ()),
+      has_opening_scope_resolution (other.has_opening_scope_resolution)
   {
-    node_id = other.node_id;
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
       segments.push_back (e->clone_type_path_segment ());
@@ -1252,9 +1259,7 @@ public:
   // Overloaded assignment operator with clone
   TypePath &operator= (TypePath const &other)
   {
-    node_id = other.node_id;
     has_opening_scope_resolution = other.has_opening_scope_resolution;
-    locus = other.locus;
 
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -1276,8 +1281,6 @@ public:
   // Creates a trait bound with a clone of this type path as its only element.
   TraitBound *to_trait_bound (bool in_parens) const override;
 
-  location_t get_locus () const override final { return locus; }
-
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this seems kinda dodgy
@@ -1291,13 +1294,27 @@ public:
   }
 
   size_t get_num_segments () const { return segments.size (); }
+  location_t get_locus () const override { return Path::get_locus (); }
+
+  // TypePath is both a Type and a Path, which is really annoying for a few
+  // methods. We need to override them and manually call either of them, which
+  // sucks. Oh well.
+
+  void mark_for_strip () override { TypeNoBounds::mark_for_strip (); }
+
+  bool is_marked_for_strip () const override
+  {
+    return TypeNoBounds::is_marked_for_strip ();
+  }
+
+  NodeId get_node_id () const override { return TypeNoBounds::get_node_id (); }
 };
 
 struct QualifiedPathType
 {
 private:
   std::unique_ptr<Type> type_to_invoke_on;
-  TypePath trait_path;
+  std::unique_ptr<Path> trait_path;
   location_t locus;
   NodeId node_id;
 
@@ -1307,13 +1324,13 @@ public:
 		     location_t locus = UNDEF_LOCATION,
 		     TypePath trait_path = TypePath::create_error ())
     : type_to_invoke_on (std::move (invoke_on_type)),
-      trait_path (std::move (trait_path)), locus (locus),
-      node_id (Analysis::Mappings::get ().get_next_node_id ())
+      trait_path (std::unique_ptr<TypePath> (new TypePath (trait_path))),
+      locus (locus), node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor uses custom deep copy for Type to preserve polymorphism
   QualifiedPathType (QualifiedPathType const &other)
-    : trait_path (other.trait_path), locus (other.locus)
+    : trait_path (other.trait_path->clone_path ()), locus (other.locus)
   {
     node_id = other.node_id;
     // guard to prevent null dereference
@@ -1328,7 +1345,7 @@ public:
   QualifiedPathType &operator= (QualifiedPathType const &other)
   {
     node_id = other.node_id;
-    trait_path = other.trait_path;
+    trait_path = other.trait_path->clone_path ();
     locus = other.locus;
 
     // guard to prevent null dereference
@@ -1345,7 +1362,11 @@ public:
   QualifiedPathType &operator= (QualifiedPathType &&other) = default;
 
   // Returns whether the qualified path type has a rebind as clause.
-  bool has_as_clause () const { return !trait_path.is_error (); }
+  bool has_as_clause () const
+  {
+    rust_assert (trait_path->get_path_kind () == Path::Kind::Type);
+    return !static_cast<TypePath &> (*trait_path).is_error ();
+  }
 
   // Returns whether the qualified path type is in an error state.
   bool is_error () const { return type_to_invoke_on == nullptr; }
@@ -1374,10 +1395,10 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  TypePath &get_as_type_path ()
+  Path &get_as_type_path ()
   {
     rust_assert (has_as_clause ());
-    return trait_path;
+    return *trait_path;
   }
 
   NodeId get_node_id () const { return node_id; }
