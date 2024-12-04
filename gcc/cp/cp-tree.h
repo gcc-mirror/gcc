@@ -7222,9 +7222,10 @@ extern location_t location_of                   (tree);
 extern void qualified_name_lookup_error		(tree, tree, tree,
 						 location_t);
 
-using erroneous_templates_t
-  = hash_map<tree, location_t, simple_hashmap_traits<tree_decl_hash, location_t>>;
-extern erroneous_templates_t *erroneous_templates;
+struct decl_location_traits
+  : simple_cache_map_traits<tree_decl_hash, location_t> { };
+typedef hash_map<tree, location_t, decl_location_traits> erroneous_templates_t;
+extern GTY((cache)) erroneous_templates_t *erroneous_templates;
 
 extern bool cp_seen_error ();
 #define seen_error() cp_seen_error ()

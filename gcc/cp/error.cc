@@ -237,8 +237,8 @@ cp_adjust_diagnostic_info (diagnostic_context *context,
 
 	bool existed;
 	location_t &error_loc
-	  = hash_map_safe_get_or_insert<false> (erroneous_templates,
-						tmpl, &existed);
+	  = hash_map_safe_get_or_insert<true> (erroneous_templates,
+					       tmpl, &existed);
 	if (!existed)
 	  /* Remember that this template had a parse-time error so
 	     that we'll ensure a hard error has been issued upon
