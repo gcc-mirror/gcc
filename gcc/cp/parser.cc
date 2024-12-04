@@ -13295,9 +13295,13 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 		current_class_ref = view_as_const (current_class_ref_copy);
 
 	      /* Parse the condition.  */
+	      begin_scope (sk_contract, current_function_decl);
 	      ++processing_contract_condition;
+	      processing_postcondition = false;
+	      should_constify_contract = should_constify;
 	      cp_expr condition = cp_parser_conditional_expression (parser);
 	      --processing_contract_condition;
+	      pop_bindings_and_leave_scope ();
 
 	      /* Revert (any) constification of the current class object.  */
 	      current_class_ref = current_class_ref_copy;
@@ -31633,16 +31637,20 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* Parse the condition, ensuring that parameters or the return variable
 	 aren't flagged for use outside the body of a function.  */
+      begin_scope (sk_contract, current_function_decl);
       ++processing_contract_condition;
       if (postcondition_p)
 	++processing_contract_postcondition;
+      processing_postcondition = postcondition_p;
+      should_constify_contract = should_constify;
       cp_expr condition = cp_parser_conditional_expression (parser);
       if (postcondition_p)
 	--processing_contract_postcondition;
+      --processing_contract_condition;
+      pop_bindings_and_leave_scope ();
       /* Revert (any) constification of the current class object.  */
       current_class_ref = current_class_ref_copy;
       flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
-      --processing_contract_condition;
 
 	/* For natural syntax, we eat the parens here. For the attribute
 	syntax, it will be done one level up, we just need to skip to it. */
@@ -31752,6 +31760,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
   /* Parse the condition, ensuring that parameters or the return variable
      aren't flagged for use outside the body of a function.  */
+  begin_scope (sk_contract, fn);
   ++processing_contract_condition;
   if (POSTCONDITION_P (contract))
     ++processing_contract_postcondition;
@@ -31759,6 +31768,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   if (POSTCONDITION_P (contract))
     --processing_contract_postcondition;
   --processing_contract_condition;
+  pop_bindings_and_leave_scope ();
 
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
       error_at (input_location,
