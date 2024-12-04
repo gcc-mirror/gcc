@@ -5821,13 +5821,13 @@ package body Sem_Res is
               and then Nkind (Associated_Node_For_Itype (Typ)) =
                          N_Discriminant_Specification
             then
+               Check_Restriction (No_Coextensions, N);
+
                declare
                   Discr : constant Entity_Id :=
                     Defining_Identifier (Associated_Node_For_Itype (Typ));
 
                begin
-                  Check_Restriction (No_Coextensions, N);
-
                   --  Ada 2012 AI05-0052: If the designated type of the
                   --  allocator is limited, then the allocator shall not
                   --  be used to define the value of an access discriminant
