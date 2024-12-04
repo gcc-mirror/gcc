@@ -1,3 +1,195 @@
+2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_insn_location): New variable.
+	(avr_final_prescan_insn): Set avr_insn_location.
+	(avr_asm_final_postscan_insn): Unset avr_insn_location after last insn.
+	(avr_print_operand): Pass avr_insn_location to warning_at.
+
+2024-12-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/libgdiagnostics/conf.py: Remove "author".  Change
+	"copyright" field to the FSF.
+
+2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117726
+	* config/avr/avr-passes.cc (avr_split_shift_p)
+	[ASHIFT, LSHIFTRT]: Allow offsets of bitsize - 1.
+	(avr_split_shift4) [ASHIFT, LSHIFTRT]: Also split offset 31.
+	(avr_split_shift3) [ASHIFT, LSHIFTRT]: Also split offset 23.
+	(avr_split_shift2) [ASHIFT, LSHIFTRT]: Also split offset 15.
+
+2024-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117874
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Perform early
+	reassoc checks before eating into discovery limit.
+
+2024-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117874
+	* tree-vectorizer.h (vec_info_shared::n_stmts): Remove.
+	(LOOP_VINFO_N_STMTS): Likewise.
+	* tree-vectorizer.cc (vec_info_shared::vec_info_shared): Adjust.
+	* tree-vect-loop.cc (vect_get_datarefs_in_loop): Do not
+	count stmts.
+	(vect_analyze_loop_2): Adjust.  Pass stmt_vec_info.length ()
+	to vect_analyze_slp as SLP tree size limit.
+
+2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117726
+	* config/avr/avr-passes.cc (avr_emit_shift): All 8-bit shifts with
+	an offset of 6 have 3-operand alternatives.
+	* config/avr/avr.cc (ashlqi3_out, lshrqi3_out) [case 6]:
+	Implement as 3-operand insn.
+	(avr_rtx_costs_1) [QImode, ASHIFT + LSHIFTRT]: Adjust
+	costs for offset of 6.
+	* config/avr/avr.md (*ashlqi3_split, *ashlqi3)
+	(*lshrqi3_split, *lshrqi3): Add "r,r,C06" alternative.
+
+2024-12-03  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: (fp8): fix FEATURE_STRING.
+	(fp8fma, ssve-fp8fma): Likewise.
+	(fp8dot4, ssve-fp8dot4, fp8dot2, ssve-fp8dot2): Likewise.
+
+2024-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117420
+	* tree-ssanames.h (get_known_nonzero_bits): Declare.
+	* tree-ssanames.cc (get_nonzero_bits): New wrapper function.  Move old
+	definition to ...
+	(get_nonzero_bits_1): ... here, add static.  Change widest_int in
+	function comment to wide_int.
+	(get_known_nonzero_bits_1, get_known_nonzero_bits): New functions.
+	* match.pd (with_possible_nonzero_bits2): Rename to ...
+	(with_possible_nonzero_bits): ... this.  Guard the bit_and case with
+	#if GENERIC.  Change to a normal match predicate without parameters.
+	Rename the old with_possible_nonzero_bits match to ...
+	(with_possible_nonzero_bits_1): ... this.
+	(with_certain_nonzero_bits2): Remove.
+	(with_known_nonzero_bits_1, with_known_nonzero_bits): New match
+	predicates.
+	(X == C (or X & Z == Y | C) is impossible if ~nonzero(X) & C != 0):
+	Use with_known_nonzero_bits@0 instead of
+	(with_certain_nonzero_bits2 @1), use with_possible_nonzero_bits@0
+	instead of (with_possible_nonzero_bits2 @0) and
+	get_known_nonzero_bits (@1) instead of wi::to_wide (@1).
+
+2024-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117847
+	* gimple-lower-bitint.cc (gimple_lower_bitint) <case LROTATE_EXPR>:
+	Use m = (p - n) % p instead of m = p - n for the other shift count.
+
+2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* cgraphunit.cc (varpool_node::finalize_decl): Set alignment
+	based on OpenMP's 'omp allocate' attribute/directive.
+
+2024-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Add a flags
+	field to each entry.
+	* config/aarch64/aarch64-builtins.cc: Update includes accordingly.
+	(aarch64_pragma_builtins_data): Add a flags field.
+	(aarch64_init_pragma_builtins): Use the flags field to add attributes
+	to the function declaration.
+
+2024-12-03  Saurabh Jha  <saurabh.jha@arm.com>
+	    Vladimir Miloserdov  <vladimir.miloserdov@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_builtin_signatures): Add binary_lane.
+	(aarch64_fntype): Handle it.
+	(simd_types): Add 16-bit x2 types.
+	(aarch64_pragma_builtins_checker): New class.
+	(aarch64_general_check_builtin_call): Use it.
+	(aarch64_expand_pragma_builtin): Add support for lut unspecs.
+	* config/aarch64/aarch64-option-extensions.def
+	(AARCH64_OPT_EXTENSION): Add lut option.
+	* config/aarch64/aarch64-simd-pragma-builtins.def
+	(ENTRY_BINARY_LANE): Modify to use new ENTRY macro.
+	(ENTRY_TERNARY_VLUT8): Macro to declare lut intrinsics.
+	(ENTRY_TERNARY_VLUT16): Macro to declare lut intrinsics.
+	(REQUIRED_EXTENSIONS): Declare lut intrinsics.
+	* config/aarch64/aarch64-simd.md
+	(@aarch64_<vluti_uns_op><VLUT:mode><VB:mode>): Instruction
+	pattern for luti2 and luti4 intrinsics.
+	(@aarch64_lutx2<VLUT:mode><VB:mode>): Instruction pattern for
+	luti4x2 intrinsics.
+	* config/aarch64/aarch64.h
+	(TARGET_LUT): lut flag.
+	* config/aarch64/iterators.md: Iterators and attributes for lut.
+	* doc/invoke.texi: Document extension in AArch64 Options.
+
+2024-12-03  Saurabh Jha  <saurabh.jha@arm.com>
+	    Vladimir Miloserdov  <vladimir.miloserdov@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(ENTRY): Modify to add support of return and argument types.
+	(struct simd_type): New struct to declare types using mode and
+	qualifiers.
+	(struct aarch64_pragma_builtins_data): Replace mode with
+	the array of types to support return and argument types.
+	(aarch64_fntype): Modify to handle different signatures.
+	(aarch64_expand_pragma_builtin): Modify to handle different
+	signatures.
+	* config/aarch64/aarch64-simd-pragma-builtins.def
+	(ENTRY_VHSDF): Rename to ENTRY_BINARY_VHSDF.
+	(ENTRY_BINARY): New macro to declare binary intrinsics.
+	(ENTRY_BINARY_VHSDF): Remove signature argument and use
+	ENTRY_BINARY.
+
+2024-12-03  Saurabh Jha  <saurabh.jha@arm.com>
+	    Vladimir Miloserdov  <vladimir.miloserdov@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md: Reorder some declarations,
+	putting them under the associated heading comment.
+
+2024-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_v64_mode): Declare.
+	(aarch64_vq_mode): Rename to...
+	(aarch64_v128_mode): ...this.
+	* config/aarch64/aarch64.cc (aarch64_v64_mode): New function,
+	split out from...
+	(aarch64_simd_container_mode): ...here.
+	(aarch64_vq_mode): Rename to...
+	(aarch64_v128_mode): ...this and update callers.
+	* config/aarch64/aarch64-sve-builtins-base.cc: Likewise update calls.
+
+2024-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (report_non_ice)
+	(report_out_of_range, report_neither_nor, report_not_one_of)
+	(report_not_enum): Move to...
+	* config/aarch64/aarch64.cc: ...here, putting them in the aarch64
+	namespace, and...
+	* config/aarch64/aarch64-protos.h: ...declare them here.
+
+2024-12-03  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Refactor sorts of unsigned SAT_SUB match patterns.
+
+2024-12-03  Heiko Eißfeldt  <heiko@hexco.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114540
+	* varasm.cc (decode_reg_name_and_count): Use strtoul instead of atoi
+	and simplify verification that the whole asmspec contains just decimal
+	digits.
+
+2024-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117874
+	* tree-vect-loop.cc (vect_analyze_loop_2): When non-SLP
+	analysis fails, try single-lane SLP.
+
 2024-12-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/libgdiagnostics/tutorial/01-hello-world.rst: Update linker

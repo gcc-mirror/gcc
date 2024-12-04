@@ -1,3 +1,162 @@
+2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	PR testsuite/109123
+	PR testsuite/114661
+	PR testsuite/117828
+	PR testsuite/116481
+	PR testsuite/91069
+	* gcc.dg/Wuse-after-free-pr109123.c: Use size_t
+	instead of long unsigned int.
+	* gcc.dg/c23-tag-bitfields-1.c: Requires int32plus.
+	* gcc.dg/pr114661.c: Same.
+	* gcc.dg/pr117828.c: Same.
+	* gcc.dg/flex-array-counted-by-2.c: Use uintptr_t
+	instead of unsigned long.
+	* gcc.dg/pr116481.c: Same.
+	* gcc.dg/lto/tag-1_0.c: Use int32_t instead of int.
+	* gcc.dg/lto/tag-1_1.c: Use int16_t instead of short.
+	* gcc.dg/pr91069.c: Require double64.
+	* gcc.dg/type-convert-var.c: Require double64plus.
+
+2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.c-torture/execute/ieee/cdivchkd.x: New file.
+	* gcc.c-torture/execute/ieee/cdivchkf.x: New file.
+	* gcc.dg/flex-array-counted-by.c: Require wchar.
+	* gcc.dg/fold-copysign-1.c [avr]: Add -mdouble=64.
+
+2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/Warray-bounds-33.c: Adjust for avr diagnostics.
+	* gcc.dg/pr56228.c: Same.
+	* gcc.dg/pr86124.c: Same.
+	* gcc.dg/pr94291.c: Same.
+	* gcc.dg/tree-ssa/pr82059.c: Same.
+
+2024-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.dg/crc-linux-1.c: Moved to from gcc.dg/torture.
+	* gcc.dg/crc-linux-2.c: Likewise.
+	* gcc.dg/crc-linux-4.c: Likewise.
+	* gcc.dg/crc-linux-5.c: Likewise.
+	* gcc.dg/crc-not-crc-15.c: Likewise.
+	* gcc.dg/crc-side-instr-1.c: Likewise.
+	* gcc.dg/crc-side-instr-2.c: Likewise.
+	* gcc.dg/crc-side-instr-3.c: Likewise.
+	* gcc.dg/crc-side-instr-4.c: Likewise.
+	* gcc.dg/crc-side-instr-5.c: Likewise.
+	* gcc.dg/crc-side-instr-6.c: Likewise.
+	* gcc.dg/crc-side-instr-7.c: Likewise.
+	* gcc.dg/crc-side-instr-8.c: Likewise.
+	* gcc.dg/crc-side-instr-9.c: Likewise.
+	* gcc.dg/crc-side-instr-10.c: Likewise.
+	* gcc.dg/crc-side-instr-11.c: Likewise.
+	* gcc.dg/crc-side-instr-12.c: Likewise.
+	* gcc.dg/crc-side-instr-13.c: Likewise.
+	* gcc.dg/crc-side-instr-14.c: Likewise.
+	* gcc.dg/crc-side-instr-15.c: Likewise.
+	* gcc.dg/crc-side-instr-16.c: Likewise.
+	* gcc.dg/crc-side-instr-17.c: Likewise.
+	* gcc.dg/torture/crc-linux-1.c: New file.
+	* gcc.dg/torture/crc-linux-2.c: New file.
+	* gcc.dg/torture/crc-linux-4.c: New file.
+	* gcc.dg/torture/crc-linux-5.c: New file.
+	* gcc.dg/torture/crc-not-crc-15.c: New file.
+	* gcc.dg/torture/crc-side-instr-1.c: New file.
+	* gcc.dg/torture/crc-side-instr-10.c: New file.
+	* gcc.dg/torture/crc-side-instr-11.c: New file.
+	* gcc.dg/torture/crc-side-instr-12.c: New file.
+	* gcc.dg/torture/crc-side-instr-13.c: New file.
+	* gcc.dg/torture/crc-side-instr-14.c: New file.
+	* gcc.dg/torture/crc-side-instr-15.c: New file.
+	* gcc.dg/torture/crc-side-instr-16.c: New file.
+	* gcc.dg/torture/crc-side-instr-17.c: New file.
+	* gcc.dg/torture/crc-side-instr-2.c: New file.
+	* gcc.dg/torture/crc-side-instr-3.c: New file.
+	* gcc.dg/torture/crc-side-instr-4.c: New file.
+	* gcc.dg/torture/crc-side-instr-5.c: New file.
+	* gcc.dg/torture/crc-side-instr-6.c: New file.
+	* gcc.dg/torture/crc-side-instr-7.c: New file.
+	* gcc.dg/torture/crc-side-instr-8.c: New file.
+	* gcc.dg/torture/crc-side-instr-9.c: New file.
+
+2024-12-03  Nina Ranns  <dinka.ranns@googlemail.com>
+
+	PR c++/117579
+	* g++.dg/contracts/pr117579.C: New test.
+
+2024-12-03  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.target/riscv/crc-builtin-zbc32.c: Fix selector.
+	* gcc.target/riscv/crc-builtin-zbc64.c: Ditto.
+
+2024-12-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102689
+	* gfortran.dg/class_transformational_1.f90: New test for class-
+	valued reshape.
+	* gfortran.dg/class_transformational_2.f90: New test for other
+	class_valued transformational intrinsics.
+
+2024-12-03  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117162
+	* gcc.dg/cpp/c17-ucn-1.c, gcc.dg/cpp/c17-ucn-2.c,
+	gcc.dg/cpp/c17-ucn-3.c, gcc.dg/cpp/c17-ucn-4.c,
+	gcc.dg/cpp/c23-ucn-2.c, gcc.dg/cpp/c23-ucnid-2.c: New tests.
+	* c-c++-common/cpp/delimited-escape-seq-3.c,
+	c-c++-common/cpp/named-universal-char-escape-3.c,
+	gcc.dg/cpp/c23-ucn-1.c, gcc.dg/cpp/c2y-delimited-escape-seq-3.c:
+	Update expected messages
+	* gcc.dg/cpp/ucs.c: Use -pedantic-errors.  Update expected
+	messages.
+
+2024-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117420
+	* gcc.dg/tree-ssa/pr117420.c: New test.
+
+2024-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117847
+	* gcc.dg/torture/bitint-75.c: New test.
+
+2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/allocate-18.c: Check that alignof is unaffected
+	by 'omp allocate'.
+	* c-c++-common/gomp/allocate-19.c: Likewise.
+
+2024-12-03  Saurabh Jha  <saurabh.jha@arm.com>
+	    Vladimir Miloserdov  <vladimir.miloserdov@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/simd/lut-incorrect-range.c: New test.
+	* gcc.target/aarch64/simd/lut-no-flag.c: New test.
+	* gcc.target/aarch64/simd/lut.c: New test.
+
+2024-12-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Fix the incorrect optimization
+	options passing to testcases.
+
+2024-12-03  Heiko Eißfeldt  <heiko@hexco.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114540
+	* gcc.dg/pr114540.c: New test.
+
+2024-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117874
+	* gcc.dg/vect/pr117874.c: New testcase.
+
+2024-12-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Fix the incorrect optimization
+	options passing to testcases.
+
 2024-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.target/aarch64/pr94515-2.C: Add newline at the end of the file.

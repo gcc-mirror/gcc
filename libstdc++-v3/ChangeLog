@@ -1,3 +1,160 @@
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108236
+	* include/pstl/glue_numeric_impl.h (exclusive_scan): Pass __init
+	as rvalue.
+	* include/pstl/numeric_impl.h (__brick_transform_scan): Do not
+	write through __result until after reading through __first. Move
+	__init into return value.
+	(__pattern_transform_scan): Pass __init as rvalue.
+	* include/std/numeric (exclusive_scan): Move construct instead
+	of copy constructing.
+	* testsuite/26_numerics/exclusive_scan/2.cc: New test.
+	* testsuite/26_numerics/pstl/numeric_ops/108236.cc: New test.
+
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (__do_alloc_on_copy): Remove.
+	(__do_alloc_on_move __do_alloc_on_swap): Remove.
+	(__alloc_on_copy, __alloc_on_move, __alloc_on_swap): Use if
+	constexpr.
+
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/57272
+	* include/bits/forward_list.h (_GLIBCXX_USE_ALLOC_PTR_FOR_LIST):
+	Define.
+	(_Fwd_list_node_base::_M_base_ptr): New member functions.
+	(_Fwd_list_node::_M_node_ptr): New member function.
+	(_Fwd_list_iterator, _Fwd_list_const_iterator): Make internal
+	member functions and data member private. Declare forward_list
+	and _Fwd_list_base as friends.
+	(__fwdlist::_Node_base, __fwdlist::_Node, __fwdlist::_Iterator):
+	New class templates.
+	(__fwdlist::_Node_traits): New class template.
+	(_Fwd_list_base): Use _Node_traits to get types. Use _Base_ptr
+	instad of _Fwd_list_node_base*. Use _M_base_ptr() instead of
+	taking address of head node.
+	(forward_list): Likewise.
+	(_Fwd_list_base::_M_get_node): Do not define for versioned
+	namespace.
+	(_Fwd_list_base::_M_put_node): Only convert pointer if needed.
+	(_Fwd_list_base::_M_create_node): Use __allocate_guarded_obj.
+	(_Fwd_list_base::_M_destroy_node): New member function.
+	* include/bits/forward_list.tcc (_Fwd_list_base::_M_insert_after)
+	(forward_list::_M_splice_after, forward_list::insert_after): Use
+	const_iterator::_M_const_cast() instead of casting pointers.
+	(_Fwd_list_base::_M_erase_after): Use _M_destroy_node.
+	(forward_list::remove, forward_list::remove_if): Only do
+	downcasts when accessing the value.
+	(forward_list::sort): Likewise.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Check
+	max_size for new node type.
+	* testsuite/23_containers/forward_list/capacity/node_sizes.cc:
+	New test.
+	* testsuite/23_containers/forward_list/requirements/explicit_instantiation/alloc_ptr.cc:
+	New test.
+	* testsuite/23_containers/forward_list/requirements/explicit_instantiation/alloc_ptr_ignored.cc:
+	New test.
+	* testsuite/23_containers/forward_list/requirements/completeness.cc: New file.
+
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/57272
+	PR libstdc++/110952
+	* include/bits/allocated_ptr.h (__allocated_ptr::get): Add
+	const.
+	(__allocated_ptr::operator bool, __allocated_ptr::release): New
+	member functions.
+	(__allocate_guarded): Add inline.
+	(__allocated_obj): New class template.
+	(__allocate_guarded_obj): New function template.
+	* include/bits/list.tcc (_List_base::_M_clear()): Replace uses
+	of raw pointers. Use _M_destroy_node.
+	(list::emplace, list::insert): Likewise.
+	(list::sort): Adjust check for 0 or 1 wsize. Use template
+	argument list for _Scratch_list.
+	* include/bits/stl_list.h (_GLIBCXX_USE_ALLOC_PTR_FOR_LIST):
+	Define.
+	(_List_node_base::_Base_ptr): New typedef.
+	(_List_node_base::_M_base): New member functions.
+	(_List_node_header::_M_base): Make public and add
+	using-declaration for base class overload.
+	(__list::_Node_traits, __list::_Node_base)
+	(__list::_Node_header, __list::_Node, __list::_Iterator): New
+	class templates.
+	(_Scratch_list): Turn class into class template. Use _Base_ptr
+	typedef instead of _List_node_base*.
+	(_List_node::_Node_ptr): New typedef.
+	(_List_node::_M_node_ptr): New member function.
+	(_List_base, _List_impl): Use _Node_traits to get node types.
+	(_List_base::_M_put_node): Convert to fancy pointer if needed.
+	(_List_base::_M_destroy_node): New member function.
+	(_List_base(_List_base&&, _Node_alloc_type&&)): Use if constexpr
+	to make function a no-op for fancy pointers.
+	(_List_base::_S_distance, _List_base::_M_distance)
+	(_List_base::_M_node_count): Likewise.
+	(list): Use _Node_traits to get iterator, node and pointer
+	types.
+	(list::_M_create_node): Use _Node_ptr typedef instead of _Node*.
+	Use __allocate_guarded_obj instead of _M_get_node.
+	(list::end, list::cend, list::empty): Use node header's
+	_M_base() function instead of taking its address.
+	(list::swap): Use _Node_traits to get node base type.
+	(list::_M_create_node, list::_M_insert): Use _Node_ptr instead
+	of _Node*.
+	(list::_M_erase): Likewise. Use _M_destroy_node.
+	(__distance): Overload for __list::_Iterator.
+	(_Node_base::swap, _Node_base::_M_transfer): Define non-inline
+	member functions of class templates.
+	(_Node_header::_M_reverse): Likewise.
+	* testsuite/23_containers/list/capacity/29134.cc: Check max_size
+	for allocator of new node type.
+	* testsuite/23_containers/list/capacity/node_sizes.cc: New test.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/alloc_ptr.cc:
+	New test.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/alloc_ptr_ignored.cc:
+	New test.
+	* testsuite/23_containers/list/requirements/completeness.cc: New file.
+
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (_List_iterator): Remove _Self typedef
+	and just use injected-class-name instead.
+	(_List_const_iterator): Likewise.
+
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (_List_size): New struct.
+	(_List_node_header): Replace _M_size member with _List_size base
+	class.
+	(_List_node_header(_List_node_header&&)): Replace explicit uses
+	of _M_size with initializing the base.
+	(_List_node_header::_M_init): Likewise.
+	(_List_base::_S_distance, _List_base::_M_distance)
+	(_List_base::_M_node_count): Move to end of class body and add
+	comment.
+	(list::_S_distance, list::_M_node_count): Likewise.
+	(list::size): Inline _M_node_count effects to here.
+	(list::splice(iterator, list&, iterator, iterator)): Use #if and
+	call std::distance instead of _S_distance.
+
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (vector(const allocator_type&)):
+	Add noexcept, as per LWG 3778.
+	* testsuite/23_containers/vector/bool/cons/lwg3778.cc: New test.
+
+2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117889
+	PR libstdc++/117858
+	* include/std/optional (optional(const optional<U>&)): Fix copy
+	and paste error in constraints.
+	(optional(optional<U>&&)): Likewise.
+	* testsuite/20_util/optional/assignment/117858.cc: Move to ...
+	* testsuite/20_util/optional/cons/117858.cc: New test.
+
 2024-12-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_construct.h (_Destroy(FwdIter, FwdIter)): Use

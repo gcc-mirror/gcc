@@ -1,3 +1,9 @@
+2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Memory allocation): Mention (non-)effect of 'align'
+	on _Alignof.
+	* testsuite/libgomp.c/allocate-7.c: New test.
+
 2024-11-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-gcn.c

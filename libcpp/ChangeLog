@@ -1,3 +1,14 @@
+2024-12-03  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117162
+	* include/cpplib.h (struct cpp_options): Add low_ucns.
+	* init.cc (struct lang_flags, lang_defaults): Add low_ucns.
+	(cpp_set_lang): Set low_ucns
+	* charset.cc (_cpp_valid_ucn): For C, allow UCNs below 0xa0
+	outside identifiers, with a pedwarn if pedantic before C23 or a
+	warning with -Wc11-c23-compat.  Do not allow \u0024 in identifiers
+	for C23.
+
 2024-11-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/104896

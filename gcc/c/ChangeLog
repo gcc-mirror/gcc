@@ -1,3 +1,8 @@
+2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_allocate): Only check scope if
+	not in_omp_decl_attribute. Remove setting the alignment.
+
 2024-11-30  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/117806
