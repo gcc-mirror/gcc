@@ -40,7 +40,8 @@ FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrorStringT2,
                         MetaErrorString1, MetaErrorString2,
                         MetaErrorN1, MetaErrorN2,
-                        MetaErrorNT0, MetaErrorNT1, MetaErrorNT2 ;
+                        MetaErrorNT0, MetaErrorNT1, MetaErrorNT2,
+                        MetaErrorDecl ;
 
 FROM DynamicStrings IMPORT String, string, InitString, KillString,
                            ConCat, InitStringCharStar, Dup, Mark,
@@ -55,7 +56,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         MakeConstLit,
                         MakeConstString, MakeConstant, MakeConstVar,
                         MakeConstStringM2nul, MakeConstStringCnul,
-                        Make2Tuple,
+                        Make2Tuple, IsTuple,
                         RequestSym, MakePointer, PutPointer,
                         SkipType,
 			GetDType, GetSType, GetLType,
@@ -1399,7 +1400,9 @@ BEGIN
    IfGreEquOp : ManipulateReference(QuadNo, Oper3) ;
                 CheckAddVariableRead(Oper1, FALSE, QuadNo) ;
                 CheckAddVariableRead(Oper2, FALSE, QuadNo) |
-
+   LastForIteratorOp: CheckAddVariableWrite (Oper1, FALSE, QuadNo) ;
+                      CheckAddTuple2Read (Oper2, FALSE, QuadNo) ;
+                      CheckAddVariableRead (Oper3, FALSE, QuadNo) |
    TryOp,
    RetryOp,
    GotoOp     : ManipulateReference(QuadNo, Oper3) |
@@ -1733,6 +1736,22 @@ BEGIN
    END
 END CheckRemoveVariableReadLeftValue ;
 *)
+
+
+(*
+   CheckAddTuple2Read - checks to see whether symbol tuple contains variables or
+                        parameters and if so it then adds them to the quadruple
+                        variable list.
+*)
+
+PROCEDURE CheckAddTuple2Read (tuple: CARDINAL; canDereference: BOOLEAN; Quad: CARDINAL) ;
+BEGIN
+   IF IsTuple (tuple)
+   THEN
+      CheckAddVariableRead (GetNth (tuple, 1), canDereference, Quad) ;
+      CheckAddVariableRead (GetNth (tuple, 2), canDereference, Quad)
+   END
+END CheckAddTuple2Read ;
 
 
 (*
@@ -4613,140 +4632,6 @@ END BuildPseudoBy ;
 
 
 (*
-   BuildForLoopToRangeCheck - builds the range check to ensure that the id
-                              does not exceed the limits of its type.
-*)
-
-PROCEDURE BuildForLoopToRangeCheck ;
-VAR
-   d, dt,
-   e, et: CARDINAL ;
-BEGIN
-   PopTF (e, et) ;
-   PopTF (d, dt) ;
-   BuildRange (InitForLoopToRangeCheck (d, e)) ;
-   PushTF (d, dt) ;
-   PushTF (e, et)
-END BuildForLoopToRangeCheck ;
-
-
-(*
-   ForLoopLastIteratorVariable - assigns the last value of the index variable to
-                                 symbol LastIterator.
-                                 The For Loop is regarded:
-
-                                 For ident := e1 To e2 By BySym Do
-
-                                 End
-*)
-
-PROCEDURE ForLoopLastIteratorVariable (LastIterator, e1, e2, BySym, ByType: CARDINAL ;
-                                       e1tok, e2tok, bytok: CARDINAL) ;
-VAR
-   PBType,
-   PositiveBy,
-   ElseQuad,
-   t, f      : CARDINAL ;
-BEGIN
-   Assert (IsVar (LastIterator)) ;
-   (* If By > 0 then.  *)
-   (* q+1 if >=      by        0  q+3.  *)
-   (* q+2 GotoOp                  q+else.   *)
-   PushTFtok (BySym, ByType, bytok) ;  (* BuildRelOp  1st parameter *)
-   PushT (GreaterEqualTok) ;           (*             2nd parameter *)
-                                       (* 3rd parameter *)
-   PushZero (bytok, ByType) ;
-   BuildRelOp (e2tok) ;       (* Choose final expression position.  *)
-   PopBool (t, f) ;
-   BackPatch (t, NextQuad) ;
-
-   (* LastIterator := ((e2-e1) DIV By) * By + e1.  *)
-   PushTF (LastIterator, GetSType (LastIterator)) ;
-   PushTFtok (e2, GetSType (e2), e2tok) ;
-   PushT (MinusTok) ;
-   PushTFtok (e1, GetSType (e1), e1tok) ;
-   doBuildBinaryOp (TRUE, FALSE) ;
-   PushT (DivideTok) ;
-   PushTFtok (BySym, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   PushT (TimesTok) ;
-   PushTFtok (BySym, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   PushT (ArithPlusTok) ;
-   PushTFtok (e1, GetSType (e1), e1tok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   BuildForLoopToRangeCheck ;
-   BuildAssignmentWithoutBounds (e1tok, FALSE, FALSE) ;
-   GenQuad (GotoOp, NulSym, NulSym, 0) ;
-   ElseQuad := NextQuad-1 ;
-
-   (* Else.  *)
-
-   BackPatch (f, NextQuad) ;
-
-   PushTtok (MinusTok, bytok) ;
-   PushTFtok (BySym, ByType, bytok) ;
-   BuildUnaryOp ;
-   PopTF (PositiveBy, PBType) ;  (* PositiveBy := - BySym.  *)
-
-   (* LastIterator := e1 - ((e1-e2) DIV PositiveBy) * PositiveBy.  *)
-   PushTF (LastIterator, GetSType (LastIterator)) ;
-   PushTFtok (e1, GetSType (e1), e1tok) ;
-   PushT (MinusTok) ;
-   PushTFtok (e1, GetSType (e1), e1tok) ;
-   PushT (MinusTok) ;
-   PushTFtok (e2, GetSType (e2), e2tok) ;
-   doBuildBinaryOp (TRUE, FALSE) ;
-   PushT (DivideTok) ;
-   PushTFtok (PositiveBy, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   PushT (TimesTok) ;
-   PushTFtok (PositiveBy, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   BuildForLoopToRangeCheck ;
-   BuildAssignmentWithoutBounds (e1tok, FALSE, FALSE) ;
-   BackPatch (ElseQuad, NextQuad) ;
-
-   (* End.  *)
-END ForLoopLastIteratorVariable ;
-
-
-(*
-   ForLoopLastIteratorConstant - assigns the last value of the index variable to
-                                 symbol LastIterator.
-                                 The For Loop is regarded:
-
-                                 For ident := e1 To e2 By BySym Do
-
-                                 End
-*)
-
-PROCEDURE ForLoopLastIteratorConstant (LastIterator, e1, e2, BySym, ByType: CARDINAL;
-                                       e1tok, e2tok, bytok: CARDINAL) ;
-BEGIN
-   Assert (IsConst (LastIterator)) ;
-   (* LastIterator := VAL (GetType (LastIterator), ((e2-e1) DIV By) * By + e1)  *)
-   PushTF (LastIterator, GetSType (LastIterator)) ;
-   PushTFtok (e2, GetSType (e2), e2tok) ;
-   PushT (MinusTok) ;
-   PushTFtok (e1, GetSType (e1), e1tok) ;
-   doBuildBinaryOp (TRUE, FALSE) ;
-   PushT (DivideTok) ;
-   PushTFtok (BySym, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   PushT (TimesTok) ;
-   PushTFtok (BySym, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   PushT (ArithPlusTok) ;
-   PushTFtok (e1, GetSType (e1), e1tok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   BuildForLoopToRangeCheck ;
-   BuildAssignmentWithoutBounds (e1tok, FALSE, FALSE)
-END ForLoopLastIteratorConstant ;
-
-
-(*
    ForLoopLastIterator - calculate the last iterator value but avoid setting
                          LastIterator twice if it is a constant (in the quads).
                          In the ForLoopLastIteratorVariable case only one
@@ -4754,16 +4639,19 @@ END ForLoopLastIteratorConstant ;
                          generation we do not know the value of BySym.
 *)
 
-PROCEDURE ForLoopLastIterator (LastIterator, e1, e2, BySym, ByType: CARDINAL ;
+PROCEDURE ForLoopLastIterator (LastIterator, e1, e2, BySym: CARDINAL ;
                                e1tok, e2tok, bytok: CARDINAL) ;
 BEGIN
-   IF IsVar (LastIterator)
+   IF NOT IsConst (BySym)
    THEN
-      ForLoopLastIteratorVariable (LastIterator, e1, e2, BySym, ByType,
-                                   e1tok, e2tok, bytok)
+      MetaErrorT1 (bytok,
+                   '{%E}the {%kFOR} loop {%kBY} expression must be constant, the expression {%1a} is variable',
+                   BySym) ;
+      MetaErrorDecl (BySym, TRUE)
    ELSE
-      ForLoopLastIteratorConstant (LastIterator, e1, e2, BySym, ByType,
-                                   e1tok, e2tok, bytok)
+      GenQuadOTypetok (bytok, LastForIteratorOp, LastIterator,
+                       Make2Tuple (e1, e2), BySym, FALSE, FALSE,
+                       bytok, MakeVirtual2Tok (e1tok, e2tok), bytok)
    END
 END ForLoopLastIterator ;
 
@@ -4792,6 +4680,8 @@ END ForLoopLastIterator ;
 
 
                     x := e1 ;
+                    Note that LASTVALUE is calculated during M2GenGCC
+                         after all the types have been resolved.
                     LASTVALUE := ((e2-e1) DIV BySym) * BySym + e1
                     IF BySym<0
                     THEN
@@ -4817,7 +4707,7 @@ END ForLoopLastIterator ;
                     Quadruples:
 
                     q     BecomesOp  IdentSym  _  e1
-                    q+    LastValue  := ((e1-e2) DIV by) * by + e1
+                    q+    LastForIteratorOp  LastValue  := ((e1-e2) DIV by) * by + e1
                     q+1   if >=      by        0  q+..2
                     q+2   GotoOp                  q+3
                     q+3   If >=      e1  e2       q+5
@@ -4879,7 +4769,7 @@ BEGIN
    e1 := doConvert (etype, e1) ;
    e2 := doConvert (etype, e2) ;
 
-   ForLoopLastIterator (LastIterator, e1, e2, BySym, ByType, e1tok, e2tok, bytok) ;
+   ForLoopLastIterator (LastIterator, e1, e2, BySym, e1tok, e2tok, bytok) ;
 
    (* q+1 if >=      by        0  q+..2 *)
    (* q+2 GotoOp                  q+3   *)
@@ -14063,6 +13953,11 @@ BEGIN
       END ;
       CASE Operator OF
 
+      LastForIteratorOp: WriteOperand(Operand1) ;
+                         fprintf0 (GetDumpFile (), '  ') ;
+                         WriteOperand(Operand2) ;
+                         fprintf0 (GetDumpFile (), '  ') ;
+                         WriteOperand(Operand3) |
       HighOp           : WriteOperand(Operand1) ;
                          fprintf1 (GetDumpFile (), '  %4d  ', Operand2) ;
                          WriteOperand(Operand3) |
@@ -14213,6 +14108,7 @@ BEGIN
 
    ArithAddOp               : fprintf0 (GetDumpFile (), 'Arith +           ') |
    InitAddressOp            : fprintf0 (GetDumpFile (), 'InitAddress       ') |
+   LastForIteratorOp        : fprintf0 (GetDumpFile (), 'LastForIterator   ') |
    LogicalOrOp              : fprintf0 (GetDumpFile (), 'Or                ') |
    LogicalAndOp             : fprintf0 (GetDumpFile (), 'And               ') |
    LogicalXorOp             : fprintf0 (GetDumpFile (), 'Xor               ') |

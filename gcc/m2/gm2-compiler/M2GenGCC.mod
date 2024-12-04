@@ -41,7 +41,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         IsConstString, GetString, GetStringLength,
                         IsConstStringCnul, IsConstStringM2nul,
                         IsConst, IsConstSet, IsProcedure, IsProcType,
-                        IsVar, IsVarParamAny, IsTemporary,
+                        IsVar, IsVarParamAny, IsTemporary, IsTuple,
                         IsEnumeration,
                         IsUnbounded, IsArray, IsSet, IsConstructor,
                         IsProcedureVariable,
@@ -169,6 +169,7 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    GetPointerZero,
                    GetCardinalZero,
                    GetSizeOfInBits,
+                   TreeOverflow,
                    FoldAndStrip,
                    CompareTrees,
                    StringLength,
@@ -239,7 +240,7 @@ FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunct
 FROM m2type IMPORT ChainOnParamValue, GetPointerType, GetIntegerType, AddStatement,
                    GetCardinalType, GetWordType, GetM2ZType, GetM2RType, GetM2CType,
                    BuildCharConstant, AddStringToTreeList, BuildArrayStringConstructor,
-                   GetArrayNoOfElements ;
+                   GetArrayNoOfElements, GetTreeType ;
 
 FROM m2block IMPORT RememberConstant, pushGlobalScope, popGlobalScope, finishFunctionDecl,
                     pushFunctionScope, popFunctionScope,
@@ -386,11 +387,12 @@ VAR
                       and right if they are parameters or variables.
 *)
 
-PROCEDURE ErrorMessageDecl (tok: CARDINAL; message: ARRAY OF CHAR; left, right: CARDINAL) ;
+PROCEDURE ErrorMessageDecl (tok: CARDINAL; message: ARRAY OF CHAR;
+                            left, right: CARDINAL; iserror: BOOLEAN) ;
 BEGIN
    MetaErrorT2 (tok, message, left, right) ;
-   MetaErrorDecl (left) ;
-   MetaErrorDecl (right)
+   MetaErrorDecl (left, iserror) ;
+   MetaErrorDecl (right, iserror)
 END ErrorMessageDecl ;
 
 
@@ -455,6 +457,128 @@ BEGIN
    END ;
    RETURN sym # NulSym
 END IsCompilingMainModule ;
+
+
+(*
+   CodeLastForIterator - call PerformLastForIterator allowing for
+                         a non constant last iterator value.
+*)
+
+PROCEDURE CodeLastForIterator (quad: CARDINAL) ;
+BEGIN
+   PerformLastForIterator (quad, NoWalkProcedure, FALSE)
+END CodeLastForIterator ;
+
+
+(*
+   FoldLastForIterator - call PerformLastForIterator providing
+                         all operands are constant and are known by GCC.
+*)
+
+PROCEDURE FoldLastForIterator (quad: CARDINAL; p: WalkAction) ;
+VAR
+   op              : QuadOperator ;
+   e1, e2,
+   op1, tuple, incr: CARDINAL ;
+BEGIN
+   GetQuad (quad, op, op1, tuple, incr) ;
+   Assert (IsTuple (tuple)) ;
+   e1 := GetNth (tuple, 1) ;
+   e2 := GetNth (tuple, 2) ;
+   IF IsConst (op1) AND IsConst (e1) AND IsConst (e2) AND IsConst (incr) AND
+      GccKnowsAbout (e1) AND GccKnowsAbout (e2) AND GccKnowsAbout (incr)
+   THEN
+      PerformLastForIterator (quad, p, TRUE)
+   END
+END FoldLastForIterator ;
+
+
+(*
+   FoldLastForIterator - generates code to calculate the last iterator value
+                         in a for loop.  It examines the increment constant
+                         and generates different code depending whether it is
+                         negative or positive.
+*)
+
+PROCEDURE PerformLastForIterator (quad: CARDINAL; p: WalkAction; constant: BOOLEAN) ;
+VAR
+   success,
+   constExpr,
+   overflowChecking : BOOLEAN ;
+   op               : QuadOperator ;
+   lastpos, op1pos,
+   op2pos, incrpos,
+   last, tuple, incr: CARDINAL ;
+   e1, e2           : CARDINAL ;
+   lasttree,
+   e1tree, e2tree,
+   expr, incrtree   : tree ;
+   location         : location_t ;
+BEGIN
+   GetQuadOtok (quad, lastpos, op, last, tuple, incr,
+                overflowChecking, constExpr,
+                op1pos, op2pos, incrpos) ;
+   DeclareConstant (incrpos, incr) ;
+   lasttree := Mod2Gcc (last) ;
+   success := TRUE ;
+   IF IsConst (incr)
+   THEN
+      incrtree := Mod2Gcc (incr) ;
+      location := TokenToLocation (lastpos) ;
+      e1 := GetNth (tuple, 1) ;
+      e2 := GetNth (tuple, 2) ;
+      e1tree := Mod2Gcc (e1) ;
+      e2tree := Mod2Gcc (e2) ;
+      IF CompareTrees (incrtree, GetIntegerZero (location)) > 0
+      THEN
+         (* If incr > 0 then LastIterator := ((e2-e1) DIV incr) * incr + e1.  *)
+         expr := BuildSub (location, e2tree, e1tree, FALSE) ;
+         expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
+         expr := BuildMult (location, expr, incrtree, FALSE) ;
+         expr := BuildAdd (location, expr, e1tree, FALSE)
+      ELSE
+         (* Else use LastIterator := e1 - ((e1-e2) DIV PositiveBy) * PositiveBy
+            to avoid unsigned div signed arithmetic.  *)
+         expr := BuildSub (location, e1tree, e2tree, FALSE) ;
+         incrtree := BuildConvert (location, GetM2ZType (), incrtree, FALSE) ;
+         incrtree := BuildNegate (location, incrtree, FALSE) ;
+         incrtree := BuildConvert (location, GetTreeType (expr), incrtree, FALSE) ;
+         IF TreeOverflow (incrtree)
+         THEN
+            MetaErrorT0 (lastpos,
+                         'the intemediate calculation for the last iterator value in the {%kFOR} loop has caused an overflow') ;
+            NoChange := FALSE ;
+            SubQuad (quad) ;
+            success := FALSE
+         ELSE
+            expr := BuildSub (location, e1tree, e2tree, FALSE) ;
+            expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
+            expr := BuildMult (location, expr, incrtree, FALSE) ;
+            expr := BuildSub (location, e1tree, expr, FALSE)
+         END
+      END ;
+      IF success
+      THEN
+         IF IsConst (last)
+         THEN
+            AddModGcc (last, expr) ;
+            p (last) ;
+            NoChange := FALSE ;
+            SubQuad (quad)
+         ELSE
+            Assert (NOT constant) ;
+            BuildAssignmentStatement (location, lasttree, expr)
+         END
+      END
+   ELSE
+      MetaErrorT1 (lastpos,
+                   'the value {%1Ead} in the {%kBY} clause of the {%kFOR} loop must be constant',
+                   incr) ;
+      MetaErrorDecl (incr, TRUE) ;
+      NoChange := FALSE ;
+      SubQuad (quad)
+   END
+END PerformLastForIterator ;
 
 
 (*
@@ -523,6 +647,7 @@ BEGIN
    InclOp             : CodeIncl (op1, op3) |
    ExclOp             : CodeExcl (op1, op3) |
    NegateOp           : CodeNegateChecked (q, op1, op3) |
+   LastForIteratorOp  : CodeLastForIterator (q) |
    LogicalShiftOp     : CodeSetShift (q, op1, op2, op3) |
    LogicalRotateOp    : CodeSetRotate (q, op1, op2, op3) |
    LogicalOrOp        : CodeSetOr (q) |
@@ -665,7 +790,8 @@ BEGIN
          StatementNoteOp    : FoldStatementNote (op3) |
          StringLengthOp      : FoldStringLength (quad, p) |
          StringConvertM2nulOp: FoldStringConvertM2nul (quad, p) |
-         StringConvertCnulOp : FoldStringConvertCnul (quad, p)
+         StringConvertCnulOp : FoldStringConvertCnul (quad, p) |
+         LastForIteratorOp  : FoldLastForIterator (quad, p)
 
          ELSE
             (* ignore quadruple as it is not associated with a constant expression *)
@@ -3338,7 +3464,7 @@ BEGIN
          THEN
             ErrorMessageDecl (virtpos,
                               'illegal assignment error between {%1Etad} and {%2tad}',
-                              des, expr) ;
+                              des, expr, TRUE) ;
 	    RETURN( FALSE )
          END
       END
@@ -3824,7 +3950,7 @@ BEGIN
       THEN
          ErrorMessageDecl (subexprpos,
                            'expression mismatch between {%1Etad} and {%2tad}',
-                           left, right) ;
+                           left, right, TRUE) ;
          NoChange := FALSE ;
          SubQuad (quad) ;
          p (des) ;
@@ -3892,7 +4018,7 @@ BEGIN
    THEN
       ErrorMessageDecl (subexprpos,
                         'the types used in expression {%1Etad} {%kIN} {%2tad} are incompatible',
-                        left, right) ;
+                        left, right, TRUE) ;
       NoChange := FALSE ;
       SubQuad (quad) ;
       RETURN FALSE

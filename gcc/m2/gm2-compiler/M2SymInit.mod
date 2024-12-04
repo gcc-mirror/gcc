@@ -61,7 +61,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
                         IsReallyPointer, IsUnbounded,
                         IsVarient, IsFieldVarient, GetVarient,
                         IsVarArrayRef, GetSymName,
-                        IsType, IsPointer,
+                        IsType, IsPointer, IsTuple,
                         GetParameterShadowVar, IsParameter, GetLType,
                         GetParameterHeapVar, GetVarDeclTok ;
 
@@ -1166,6 +1166,21 @@ END CheckRecordField ;
 
 
 (*
+   CheckLastForIterator -
+*)
+
+PROCEDURE CheckLastForIterator (op1tok: CARDINAL; op1: CARDINAL;
+                                op2tok: CARDINAL; op2: CARDINAL;
+                                warning: BOOLEAN; i: CARDINAL) ;
+BEGIN
+   SetVarInitialized (op1, FALSE, op1tok) ;
+   Assert (IsTuple (op2)) ;
+   CheckDeferredRecordAccess (op2tok, GetNth (op2, 1), FALSE, warning, i) ;
+   CheckDeferredRecordAccess (op2tok, GetNth (op2, 2), FALSE, warning, i) ;
+END CheckLastForIterator ;
+
+
+(*
    CheckBecomes -
 *)
 
@@ -1282,6 +1297,9 @@ BEGIN
    IfLessEquOp,
    IfGreOp,
    IfGreEquOp        : CheckComparison (op1tok, op1, op2tok, op2, warning, i) |
+   LastForIteratorOp : CheckLastForIterator (op1tok, op1, op2tok, op2,
+                                             warning, i) ;
+                       Assert (IsConst (op3)) |
    TryOp,
    ReturnOp,
    CallOp,

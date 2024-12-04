@@ -2684,18 +2684,29 @@ END MetaString4 ;
 
 (*
    MetaErrorDecl - if sym is a variable or parameter then generate a
-                   declaration error message.
+                   declaration error or warning message.  If error is
+                   FALSE then a warning is issued.
 *)
 
-PROCEDURE MetaErrorDecl (sym: CARDINAL) ;
+PROCEDURE MetaErrorDecl (sym: CARDINAL; error: BOOLEAN) ;
 BEGIN
    IF (sym # NulSym) AND IsVar (sym)
    THEN
-      IF IsVarAParam (sym)
+      IF error
       THEN
-         MetaErrorT1 (GetVarDeclFullTok (sym), 'parameter declaration for {%1ad}', sym)
+         IF IsVarAParam (sym)
+         THEN
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'parameter declaration for {%1ad}', sym)
+         ELSE
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'variable declaration for {%1ad}', sym)
+         END
       ELSE
-         MetaErrorT1 (GetVarDeclFullTok (sym), 'variable declaration for {%1ad}', sym)
+         IF IsVarAParam (sym)
+         THEN
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'parameter declaration for {%1Wad}', sym)
+         ELSE
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'variable declaration for {%1Wad}', sym)
+         END
       END
    END
 END MetaErrorDecl ;
