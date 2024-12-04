@@ -1,6 +1,13 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/117916
+	* config/nvptx/nvptx.opt (misa=, mptx=): Tag as 'Negative' of
+	themselves.
+
+	Backported from trunk:
 	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document
