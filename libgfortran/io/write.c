@@ -1392,6 +1392,10 @@ write_b (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
     {
       n = extract_uint (source, len);
       p = btoa (n, itoa_buf, sizeof (itoa_buf));
+
+      /* Test for zero. Needed by write_boz.  */
+      if (n != 0)
+	n = 1;
       write_boz (dtp, f, p, n, len);
     }
 }
