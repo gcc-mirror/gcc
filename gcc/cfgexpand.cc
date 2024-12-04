@@ -766,7 +766,12 @@ vars_ssa_cache::operator() (tree name)
 
       /* If the cache exists for the use, don't try to recreate it. */
       if (exists (use))
-	continue;
+	{
+	  /* Update the cache here, this can reduce the number of
+	     times through the update loop below.  */
+	  update (old_name, use);
+	  continue;
+	}
 
       /* Create the cache bitmap for the use and also
 	 so we don't go into an infinite loop for some phi nodes with loops.  */
