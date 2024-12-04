@@ -25,6 +25,12 @@
 namespace Rust {
 namespace Analysis {
 
+class Attributes
+{
+public:
+  static bool is_known (const std::string &attribute_path);
+};
+
 enum CompilerPass
 {
   UNKNOWN,

@@ -27,17 +27,6 @@
 namespace Rust {
 namespace AST {
 
-// FIXME: Before merging: De-duplicate with function in rust-ast-lower-base.cc
-bool
-is_known_attribute (const std::string &attribute_path)
-{
-  const auto &lookup
-    = Analysis::BuiltinAttributeMappings::get ()->lookup_builtin (
-      attribute_path);
-
-  return !lookup.is_error ();
-}
-
 template <typename T>
 tl::optional<LangItem::Kind>
 get_lang_item_attr (const T &maybe_lang_item)
@@ -45,7 +34,7 @@ get_lang_item_attr (const T &maybe_lang_item)
   for (const auto &attr : maybe_lang_item.get_outer_attrs ())
     {
       const auto &str_path = attr.get_path ().as_string ();
-      if (!is_known_attribute (str_path))
+      if (!Analysis::Attributes::is_known (str_path))
 	{
 	  rust_error_at (attr.get_locus (), "unknown attribute");
 	  continue;

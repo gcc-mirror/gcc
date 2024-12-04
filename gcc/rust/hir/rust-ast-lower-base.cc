@@ -25,6 +25,7 @@
 #include "rust-diagnostics.h"
 #include "rust-item.h"
 #include "rust-system.h"
+#include "rust-attributes.h"
 
 namespace Rust {
 namespace HIR {
@@ -751,7 +752,7 @@ ASTLoweringBase::handle_outer_attributes (const ItemWrapper &item)
   for (const auto &attr : item.get_outer_attrs ())
     {
       const auto &str_path = attr.get_path ().as_string ();
-      if (!is_known_attribute (str_path))
+      if (!Analysis::Attributes::is_known (str_path))
 	{
 	  rust_error_at (attr.get_locus (), "unknown attribute");
 	  continue;
@@ -812,13 +813,6 @@ ASTLoweringBase::handle_lang_item_attribute (const ItemWrapper &item,
 			       item.get_mappings ().get_defid ());
   else
     rust_error_at (attr.get_locus (), "unknown lang item");
-}
-
-bool
-ASTLoweringBase::is_known_attribute (const std::string &attribute_path) const
-{
-  const auto &lookup = attr_mappings->lookup_builtin (attribute_path);
-  return !lookup.is_error ();
 }
 
 bool
