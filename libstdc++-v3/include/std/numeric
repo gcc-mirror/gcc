@@ -582,7 +582,7 @@ namespace __detail
     {
       if (__first != __last)
 	{
-	  auto __init = *__first;
+	  auto __init = std::move(*__first);
 	  *__result++ = __init;
 	  ++__first;
 	  if (__first != __last)
@@ -645,8 +645,8 @@ namespace __detail
     {
       while (__first != __last)
 	{
-	  auto __v = __init;
-	  __init = __binary_op(__init, __unary_op(*__first));
+	  auto __v = std::move(__init);
+	  __init = __binary_op(__v, __unary_op(*__first));
 	  ++__first;
 	  *__result++ = std::move(__v);
 	}
