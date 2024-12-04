@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-mcpu=sifive-s76" } */
 
 typedef char __attribute__((__vector_size__ (1))) V;
