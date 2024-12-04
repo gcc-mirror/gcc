@@ -2855,15 +2855,25 @@ void debug_dependencies (rtx_insn *head, rtx_insn *tail)
       else
 	print_reservation (sched_dump, insn);
 
-      fprintf (sched_dump, "\t: ");
+      fprintf (sched_dump, "\t: FW:");
       {
 	sd_iterator_def sd_it;
 	dep_t dep;
 
 	FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
-	  fprintf (sched_dump, "%d%s%s ", INSN_UID (DEP_CON (dep)),
+	  fprintf (sched_dump, " %d%s%s%s", INSN_UID (DEP_CON (dep)),
+		   DEP_TYPE (dep) == REG_DEP_TRUE ? "t" : "",
 		   DEP_NONREG (dep) ? "n" : "",
 		   DEP_MULTIPLE (dep) ? "m" : "");
+	if (sched_verbose >= 5)
+	  {
+	    fprintf (sched_dump, "\n;;\t\t\t\t\t\t: BK:");
+	    FOR_EACH_DEP (insn, SD_LIST_HARD_BACK, sd_it, dep)
+	      fprintf (sched_dump, " %d%s%s%s", INSN_UID (DEP_PRO (dep)),
+		       DEP_TYPE (dep) == REG_DEP_TRUE ? "t" : "",
+		       DEP_NONREG (dep) ? "n" : "",
+		       DEP_MULTIPLE (dep) ? "m" : "");
+	  }
       }
       fprintf (sched_dump, "\n");
     }

@@ -3762,10 +3762,10 @@ model_choose_insn (void)
       count = param_max_sched_ready_insns;
       while (count > 0 && insn)
 	{
-	  fprintf (sched_dump, ";;\t+---   %d [%d, %d, %d, %d]\n",
+	  fprintf (sched_dump, ";;\t+---   %d [%d, %d, %d, %d][%d]\n",
 		   INSN_UID (insn->insn), insn->model_priority,
 		   insn->depth + insn->alap, insn->depth,
-		   INSN_PRIORITY (insn->insn));
+		   INSN_PRIORITY (insn->insn), insn->unscheduled_preds);
 	  count--;
 	  insn = insn->next;
 	}
@@ -3859,11 +3859,11 @@ model_reset_queue_indices (void)
    to sched_dump.  */
 
 static void
-model_dump_pressure_summary (void)
+model_dump_pressure_summary (basic_block bb)
 {
   int pci, cl;
 
-  fprintf (sched_dump, ";; Pressure summary:");
+  fprintf (sched_dump, ";; Pressure summary (bb %d):", bb->index);
   for (pci = 0; pci < ira_pressure_classes_num; pci++)
     {
       cl = ira_pressure_classes[pci];
@@ -3902,7 +3902,7 @@ model_start_schedule (basic_block bb)
   model_curr_point = 0;
   initiate_reg_pressure_info (df_get_live_in (bb));
   if (sched_verbose >= 1)
-    model_dump_pressure_summary ();
+    model_dump_pressure_summary (bb);
 }
 
 /* Free the information associated with GROUP.  */
