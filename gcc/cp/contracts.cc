@@ -938,6 +938,27 @@ tree splice_out_contracts (tree attributes)
   return head;
 }
 
+/* Extract comtract attributes, leaving none in the original function decl.  */
+
+tree
+extract_contract_attributes (tree fndecl)
+{
+  if (!DECL_CONTRACTS (fndecl))
+    return NULL_TREE;
+  tree contracts = NULL_TREE;
+  tree other = NULL_TREE;
+  for (tree a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
+    {
+      tree list = tree_cons (TREE_PURPOSE (a), TREE_VALUE (a), NULL_TREE);
+      if (cxx_contract_attribute_p (a))
+	contracts = chainon (contracts, list);
+      else
+	other = chainon (other, list);
+    }
+  DECL_ATTRIBUTES (fndecl) = other;
+  return contracts;
+}
+
 /* Copy contract attributes from NEWDECL onto the attribute list of OLDDECL.  */
 
 void copy_contract_attributes (tree olddecl, tree newdecl)
@@ -1094,8 +1115,7 @@ remap_contracts (tree src, tree dst, tree contracts, bool duplicate_p)
 {
   for (tree attr = contracts; attr; attr = CONTRACT_CHAIN (attr))
     {
-      if (!cxx_contract_attribute_p (attr))
-	continue;
+      gcc_checking_assert (cxx_contract_attribute_p (attr));
       tree contract = CONTRACT_STATEMENT (attr);
       if (TREE_CODE (CONTRACT_CONDITION (contract)) != DEFERRED_PARSE)
 	remap_contract (src, dst, contract, duplicate_p);
@@ -1198,11 +1218,7 @@ check_for_mismatched_contracts (tree old_attr, tree new_attr,
 
   /* A deferred contract tentatively matches.  */
   if (CONTRACT_CONDITION_DEFERRED_P (new_contract))
-    {
-      /* If one is deferred, the other better be.  */
-//      gcc_checking_assert (CONTRACT_CONDITION_DEFERRED_P (old_contract));
-      return false;
-    }
+    return false;
 
   /* Compare the conditions of the contracts.  We fold immediately to avoid
      issues comparing contracts on overrides that use parameters -- see
@@ -3037,57 +3053,105 @@ finish_function_contracts (tree fndecl)
   }
 }
 
-void
-p2900_duplicate_contracts (location_t new_loc, tree new_contracts, tree newdecl,
-			   location_t old_loc, tree old_contracts, tree olddecl)
+static location_t
+get_contract_end_loc (tree contracts)
 {
+  tree last = NULL_TREE;
+  for (tree a = contracts; a; a = TREE_CHAIN (a))
+    last = a;
+  gcc_checking_assert (last);
+  last = CONTRACT_STATEMENT (last);
+  /* FIXME: We should have a location including the condition, but maybe it is
+     not available here.  */
+#if 0
+  if ((TREE_CODE (last) == POSTCONDITION_STMT)
+      || (TREE_CODE (last) == PRECONDITION_STMT))
+    last = CONTRACT_CONDITION (last);
+#endif
+  return EXPR_LOCATION (last);
+}
+
+struct contract_redecl
+{
+  tree original_contracts;
+  location_t note_loc;
+  tree pending_list;
+};
+
+static hash_map<tree_decl_hash, contract_redecl> redeclared_contracts;
+
+/* This is called from push decl, and is used to determine if two sets of
+    contract attributes match.  */
+void
+p2900_duplicate_contracts (tree newdecl, tree olddecl)
+{
+  /* Aggregate the contracts and strip them from the input decls.  */
+  tree new_contracts = extract_contract_attributes (newdecl);
+  tree old_contracts = extract_contract_attributes (olddecl);
+
+  if (!old_contracts && !new_contracts)
+    return;
+
+  location_t old_loc = DECL_SOURCE_LOCATION (olddecl);
+  location_t new_loc = DECL_SOURCE_LOCATION (newdecl);
+
+  /* We should always be comparing with the 'first' declaration - however re-
+     declarations are merged in, so keep a record of the first one.  This will
+     also be needed when we process deferred contracts.  */
+  bool existed = false;
+  contract_redecl& rd = redeclared_contracts.get_or_insert (olddecl, &existed);
+  if (!existed)
+    {
+      rd.original_contracts = old_contracts;
+      location_t cont_end = old_loc;
+      if (old_contracts)
+	cont_end = get_contract_end_loc (old_contracts);
+      rd.note_loc = make_location (old_loc, old_loc, cont_end);
+    }
+
   if (new_contracts && !old_contracts)
     {
       auto_diagnostic_group d;
-      /* In P2900, virtual functions do not inherit the contracts.
-	 Also, if a function has contracts, they must appear on the
-	 first declaration */
-      error_at (new_loc, "declaration adds contracts to %q#D", olddecl);
-      inform (DECL_SOURCE_LOCATION (olddecl), "previous definition here");
-      remove_contract_attributes (newdecl);
+      /* If a re-declaration has contracts, they must be the same as those that
+	 appear on the first declaration seen (they cannot be added).  */
+      location_t cont_end = get_contract_end_loc (new_contracts);
+      cont_end = make_location (new_loc, new_loc, cont_end);
+      error_at (cont_end, "declaration adds contracts to %q#D", olddecl);
+      inform (rd.note_loc , "first declared here");
+      /* We have stripped the contracts from the new decl, so that they will
+	 not be merged into the original decl (which had none).  */
       return;
     }
+
+  /* If have now parsed deferred contracts for the 'first' decl, update the
+     saved record.  */
+  if (rd.original_contracts
+      && contract_any_deferred_p (rd.original_contracts)
+      && old_contracts
+      && !contract_any_deferred_p (old_contracts))
+    rd.original_contracts = old_contracts;
 
   if (old_contracts && !new_contracts)
+    /* We allow re-declarations to omit contracts declared on the initial decl.
+       In fact, this is required if the conditions contain lambdas.  */
+    ;
+  else if (contract_any_deferred_p (new_contracts))
+    /* TODO: stash these and figure out how to process them later.  */
+    ;
+  else
     {
-      /* duplicate_decls () will overwrite (or merge) the attributes of
-	 old_decl with those of newdecl, so copy the contracts from old to
-	 new.  */
-      if (!DECL_ATTRIBUTES (newdecl))
-	{
-	  DECL_ATTRIBUTES (newdecl) = old_contracts;
-	  old_contracts = CONTRACT_CHAIN (olddecl);
-	}
-      for (; old_contracts; old_contracts = CONTRACT_CHAIN (olddecl))
-	DECL_ATTRIBUTES (newdecl)
-	  = attr_chainon (DECL_ATTRIBUTES (newdecl), old_contracts);
-      remove_contract_attributes (olddecl);
-      return;
+      location_t cont_end = get_contract_end_loc (new_contracts);
+      cont_end = make_location (new_loc, new_loc, cont_end);
+      /* We have two sets - they should match or we issue a diagnostic.  */
+      match_contract_conditions (rd.note_loc, rd.original_contracts,
+				 cont_end, new_contracts, cmc_declaration);
     }
 
-  /* So either they match or we should issue a diagnostic.  */
-  if (!match_contract_conditions (old_loc, old_contracts,
-				  new_loc, new_contracts, cmc_declaration))
-    {
-      /* We've issued a diagnostic - but because of the behaviour mentioned
-	 above, we need to copy the contracts from old -> new, otherwise any
-	 following comparisons and therefore diagnostics will be bogus.  */
-      remove_contract_attributes (newdecl);
-      if (!DECL_ATTRIBUTES (newdecl))
-	{
-	  DECL_ATTRIBUTES (newdecl) = old_contracts;
-	  old_contracts = CONTRACT_CHAIN (olddecl);
-	}
-      for (; old_contracts; old_contracts = CONTRACT_CHAIN (olddecl))
-	DECL_ATTRIBUTES (newdecl)
-	  = attr_chainon (DECL_ATTRIBUTES (newdecl), old_contracts);
-    }
-  remove_contract_attributes (olddecl);
+  /* We have maybe issued a diagnostic - but because the caller will smash the
+     attributes on the old decl with those on the new, we need to copy the old
+     ones onto the new.  */
+  DECL_ATTRIBUTES (newdecl)
+    = attr_chainon (DECL_ATTRIBUTES (newdecl), old_contracts);
   return;
 }
 
@@ -3102,6 +3166,12 @@ duplicate_contracts (tree newdecl, tree olddecl)
   if (TREE_CODE (olddecl) == TEMPLATE_DECL)
     olddecl = DECL_TEMPLATE_RESULT (olddecl);
 
+  if (flag_contracts_nonattr)
+    {
+      p2900_duplicate_contracts (newdecl, olddecl);
+      return;
+    }
+
   /* Compare contracts to see if they match.    */
   tree old_contracts = DECL_CONTRACTS (olddecl);
   tree new_contracts = DECL_CONTRACTS (newdecl);
@@ -3111,13 +3181,6 @@ duplicate_contracts (tree newdecl, tree olddecl)
 
   location_t old_loc = DECL_SOURCE_LOCATION (olddecl);
   location_t new_loc = DECL_SOURCE_LOCATION (newdecl);
-
-  if (flag_contracts_nonattr)
-    {
-      p2900_duplicate_contracts (new_loc, new_contracts, newdecl,
-				 old_loc, old_contracts, olddecl);
-      return;
-    }
 
   /* If both declarations specify contracts, ensure they match.
 
