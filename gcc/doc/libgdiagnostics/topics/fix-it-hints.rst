@@ -40,7 +40,7 @@ to add fix-it hints without each needing extensive checking.
 
 Fix-it hints are printed to text sinks, and are emitted by SARIF sinks
 as ``fix`` objects (see SARIF 2.1.0
-`3.55 fix object <https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141791131>`_).
+`§3.55 fix object <https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141791131>`_).
 
 Fix-it hints within a :type:`diagnostic` are "atomic": if any hints can't
 be applied, none of them will be, and no fix-its hints will be displayed

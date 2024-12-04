@@ -124,7 +124,7 @@ terminal, and the quotes will be internationalized, so that e.g. with
 
 .. code-block:: console
 
-  progname: erreur: can't find « free »
+  progname: erreur: can't find « foo »
 
 Note that:
 

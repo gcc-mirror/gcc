@@ -90,4 +90,4 @@ cross-references between events.  In particular FIXME
 
 Paths are printed to text sinks, and for SARIF sinks each path is added as
 a ``codeFlow`` object (see SARIF 2.1.0
-`3.36 codeFlow object <https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790990>`_).
+`§3.36 codeFlow object <https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790990>`_).

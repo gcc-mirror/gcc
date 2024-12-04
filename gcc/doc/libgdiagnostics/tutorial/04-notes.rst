@@ -24,7 +24,7 @@ Let's further extend the previous example to add a "note" to it.
 
 We want to generate output like this::
 
-   test-with-note.c:17:11: error: can't find 'foo'
+   test-with-note.c:17:11: error: can't find 'foo.h'
    17 | #include <foo.h>
       |           ^~~~~
    test-with-note.c:17:11: note: have you looked behind the couch?
@@ -42,7 +42,7 @@ to the diagnostics.
 
 On compiling and running the program, we should get the desired output::
 
-   test-with-note.c:17:11: error: can't find 'foo'
+   test-with-note.c:17:11: error: can't find 'foo.h'
    17 | #include <foo.h>
       |           ^~~~~
    test-with-note.c:17:11: note: have you looked behind the couch?

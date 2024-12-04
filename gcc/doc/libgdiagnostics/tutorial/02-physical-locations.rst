@@ -165,7 +165,7 @@ underling the pertinent part of the given line.
 
 If libgdiagnostics cannot open the file, it will merely print::
 
-   foo.c:17:8: error: can't find 'foo'
+   foo.c:17:8: error: can't find 'foo.h'
 
 A range can span multiple lines within the same file.
 

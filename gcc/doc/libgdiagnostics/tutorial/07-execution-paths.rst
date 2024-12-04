@@ -124,7 +124,7 @@ then we should get output to text sinks similar to the following::
          |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
 
 and for SARIF sinks the path will be added as a ``codeFlow`` object
-(see SARIF 2.1.0 `3.36 codeFlow object <https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790990>`_).
+(see SARIF 2.1.0 `§3.36 codeFlow object <https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790990>`_).
 
 Here's the above example in full:
 
