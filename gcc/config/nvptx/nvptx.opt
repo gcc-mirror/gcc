@@ -56,7 +56,7 @@ Target Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
 
 misa=
-Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_unset)
+Target RejectNegative Negative(misa=) ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_unset)
 Specify the PTX ISA target architecture to use.
 
 march=
@@ -140,7 +140,7 @@ EnumValue
 Enum(ptx_version) String(_) Value(PTX_VERSION_default)
 
 mptx=
-Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_unset)
+Target RejectNegative Negative(mptx=) ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_unset)
 Specify the PTX ISA version to use.
 
 minit-regs=
