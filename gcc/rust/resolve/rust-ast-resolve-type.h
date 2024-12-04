@@ -21,8 +21,10 @@
 
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-resolve-expr.h"
+#include "rust-diagnostics.h"
 #include "rust-hir-map.h"
 #include "rust-path.h"
+#include "util/rust-hir-map.h"
 
 namespace Rust {
 namespace Resolver {
@@ -69,9 +71,14 @@ public:
       {
 	auto &type = static_cast<AST::LangItemPath &> (type_path);
 
-	Analysis::Mappings::get_lang_item (type);
+	rust_debug ("[ARTHUR]: lang item kind: %s",
+		    LangItem::ToString (type.get_lang_item_kind ()).c_str ());
 
-	type.get_node_id ();
+	auto lang_item = Analysis::Mappings::get ()
+			   .lookup_lang_item_node (type.get_lang_item_kind ())
+			   .value ();
+
+	return lang_item;
       }
 
     rust_assert (type_path.get_path_kind () == AST::Path::Kind::Type);
