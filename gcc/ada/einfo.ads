@@ -526,12 +526,11 @@ package Einfo is
 --       references on this list are illegal due to the visible refinement.
 
 --    BIP_Initialization_Call
---       Defined in constants and variables whose corresponding declaration
---       is wrapped in a transient block and the inital value is provided by
+--       Defined in constants and variables whose initial value is provided by
 --       a build-in-place function call. Contains the relocated build-in-place
 --       call after the expansion has decoupled the call from the object. This
---       attribute is used by the finalization machinery to insert cleanup code
---       for all additional transient objects found in the transient block.
+--       attribute is used by the finalization machinery to insert the call to
+--       the routine that attaches the object to the finalization master.
 
 --    C_Pass_By_Copy [implementation base type only]
 --       Defined in record types. Set if a pragma Convention for the record

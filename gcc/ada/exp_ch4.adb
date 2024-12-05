@@ -5104,7 +5104,8 @@ package body Exp_Ch4 is
       --  If the expression is in the context of a simple return statement,
       --  possibly through intermediate conditional expressions, we delay
       --  expansion until the (immediate) parent is rewritten as a return
-      --  statement (or is already the return statement).
+      --  statement (or is already the return statement). Likewise if it is
+      --  in the context of an object declaration that can be optimized.
 
       if not Expansion_Delayed (N) then
          declare
@@ -5119,9 +5120,9 @@ package body Exp_Ch4 is
       end if;
 
       --  If the expansion of the expression has been delayed, we wait for the
-      --  rewriting of its parent as an assignment or return statement; when
-      --  that's done, we optimize the assignment or the return statement (the
-      --  very purpose of the manipulation).
+      --  rewriting of its parent as an assignment statement, or as as return
+      --  statement or as an object declaration; when that's done, we optimize
+      --  the assignment, return or declaration (the purpose of the delaying).
 
       if Expansion_Delayed (N) then
          if Nkind (Par) = N_Assignment_Statement then
@@ -5721,8 +5722,10 @@ package body Exp_Ch4 is
       --  If the expression is in the context of a simple return statement,
       --  possibly through intermediate conditional expressions, we delay
       --  expansion until the (immediate) parent is rewritten as a return
-      --  statement (or is already the return statement). Note that this
-      --  deals with the case of the elsif part of the if expression.
+      --  statement (or is already the return statement). Likewise if it is
+      --  in the context of an object declaration that can be optimized.
+      --  Note that this deals with the case of the elsif part of the if
+      --  expression, if it exists.
 
       if not Expansion_Delayed (N) then
          declare
@@ -5737,9 +5740,9 @@ package body Exp_Ch4 is
       end if;
 
       --  If the expansion of the expression has been delayed, we wait for the
-      --  rewriting of its parent as an assignment or return statement; when
-      --  that's done, we optimize the assignment or the return statement (the
-      --  very purpose of the manipulation).
+      --  rewriting of its parent as an assignment statement, or as as return
+      --  statement or as an object declaration; when that's done, we optimize
+      --  the assignment, return or declaration (the purpose of the delaying).
 
       if Expansion_Delayed (N) then
          if Nkind (Par) = N_Assignment_Statement then
