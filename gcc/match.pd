@@ -3262,6 +3262,58 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     }
     (if (wi::eq_p (sum, wi::uhwi (0, precision))))))))
 
+(if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+ (match (unsigned_integer_sat_trunc @0)
+  /* SAT_U_TRUNC = (NT)x | (NT)(-(X > (WT)(NT)(-1)))  */
+  (bit_ior:c (negate (convert (gt @0 INTEGER_CST@1))) (convert @0))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+   (with
+    {
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+     wide_int int_cst = wi::to_wide (@1, itype_precision);
+    }
+    (if (otype_precision < itype_precision && wi::eq_p (trunc_max, int_cst))))))
+ (match (unsigned_integer_sat_trunc @0)
+  /* SAT_U_TRUNC = (NT)(MIN_EXPR (X, IMM))
+     If Op_0 def is MIN_EXPR and not single_use.  Aka below pattern:
+
+     _18 = MIN_EXPR <left_8, 4294967295>; // op_0 def
+     iftmp.0_11 = (unsigned int) _18;     // op_0
+     stream.avail_out = iftmp.0_11;
+     left_37 = left_8 - _18;              // op_0 use
+
+     Transfer to .SAT_TRUNC will have MIN_EXPR still live.  Then the backend
+     (for example x86/riscv) will have 2-3 more insns generation for .SAT_TRUNC
+     besides the MIN_EXPR.  Thus,  keep the normal truncation as is should be
+     the better choose.  */
+  (convert (min@2 @0 INTEGER_CST@1))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0)) && single_use (@2))
+   (with
+    {
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+     wide_int int_cst = wi::to_wide (@1, itype_precision);
+    }
+    (if (otype_precision < itype_precision && wi::eq_p (trunc_max, int_cst))))))
+ (match (unsigned_integer_sat_trunc @0)
+  /* SAT_U_TRUNC = (NT)X | ((NT)(X <= (WT)-1) + (NT)-1)  */
+  (bit_ior:c (plus:c (convert (le @0 INTEGER_CST@1)) INTEGER_CST@2)
+	     (convert @0))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+   (with
+    {
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+     wide_int max = wi::mask (otype_precision, false, otype_precision);
+     wide_int int_cst_1 = wi::to_wide (@1);
+     wide_int int_cst_2 = wi::to_wide (@2);
+    }
+    (if (wi::eq_p (trunc_max, int_cst_1) && wi::eq_p (max, int_cst_2)))))))
+
 /* Signed saturation add, case 1:
    T sum = (T)((UT)X + (UT)Y)
    SAT_S_ADD = (X ^ sum) & !(X ^ Y) < 0 ? (-(T)(X < 0) ^ MAX) : sum;
@@ -3415,66 +3467,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		   max_value)
 	@2)
  (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Unsigned saturation truncate, case 1, sizeof (WT) > sizeof (NT).
-   SAT_U_TRUNC = (NT)x | (NT)(-(X > (WT)(NT)(-1))).  */
-(match (unsigned_integer_sat_trunc @0)
- (bit_ior:c (negate (convert (gt @0 INTEGER_CST@1)))
-   (convert @0))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && TYPE_UNSIGNED (TREE_TYPE (@0)))
- (with
-  {
-   unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
-   unsigned otype_precision = TYPE_PRECISION (type);
-   wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
-   wide_int int_cst = wi::to_wide (@1, itype_precision);
-  }
-  (if (otype_precision < itype_precision && wi::eq_p (trunc_max, int_cst))))))
-
-/* Unsigned saturation truncate, case 2, sizeof (WT) > sizeof (NT).
-   SAT_U_TRUNC = (NT)(MIN_EXPR (X, 255)).  */
-/* If Op_0 def is MIN_EXPR and not single_use.  Aka below pattern:
-
-     _18 = MIN_EXPR <left_8, 4294967295>; // op_0 def
-     iftmp.0_11 = (unsigned int) _18;     // op_0
-     stream.avail_out = iftmp.0_11;
-     left_37 = left_8 - _18;              // op_0 use
-
-   Transfer to .SAT_TRUNC will have MIN_EXPR still live.  Then the backend
-   (for example x86/riscv) will have 2-3 more insns generation for .SAT_TRUNC
-   besides the MIN_EXPR.  Thus,  keep the normal truncation as is should be
-   the better choose.  */
-(match (unsigned_integer_sat_trunc @0)
- (convert (min@2 @0 INTEGER_CST@1))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && TYPE_UNSIGNED (TREE_TYPE (@0)) && single_use (@2))
- (with
-  {
-   unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
-   unsigned otype_precision = TYPE_PRECISION (type);
-   wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
-   wide_int int_cst = wi::to_wide (@1, itype_precision);
-  }
-  (if (otype_precision < itype_precision && wi::eq_p (trunc_max, int_cst))))))
-
-/* Unsigned saturation truncate, case 3, sizeof (WT) > sizeof (NT).
-   SAT_U_TRUNC = (NT)X | ((NT)(X <= (WT)-1) + (NT)-1).  */
-(match (unsigned_integer_sat_trunc @0)
- (bit_ior:c (plus:c (convert (le @0 INTEGER_CST@1)) INTEGER_CST@2)
-	    (convert @0))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && TYPE_UNSIGNED (TREE_TYPE (@0)))
- (with
-  {
-   unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
-   unsigned otype_precision = TYPE_PRECISION (type);
-   wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
-   wide_int max = wi::mask (otype_precision, false, otype_precision);
-   wide_int int_cst_1 = wi::to_wide (@1);
-   wide_int int_cst_2 = wi::to_wide (@2);
-  }
-  (if (wi::eq_p (trunc_max, int_cst_1) && wi::eq_p (max, int_cst_2))))))
 
 /* Signed saturation truncate, case 1 and case 2, sizeof (WT) > sizeof (NT).
    SAT_S_TRUNC(X) = (unsigned)X + NT_MAX + 1  > Unsigned_MAX ? (NT)X.  */
