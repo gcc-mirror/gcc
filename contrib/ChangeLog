@@ -1,3 +1,8 @@
+2024-12-04  Filip Kastl  <fkastl@suse.cz>
+
+	* check-params-in-docs.py: 'params' -> 'help_params'.  Don't
+	convert 'help_params' to a list.
+
 2024-12-01  Gabi Falk  <gabifalk@gmx.com>
 
 	* testsuite-management/validate_failures.py: Change re.compile()

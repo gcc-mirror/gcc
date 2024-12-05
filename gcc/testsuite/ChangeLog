@@ -1,3 +1,31 @@
+2024-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/116771
+	* g++.dg/spellcheck-pr116771.C: New test.
+
+2024-12-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/114729
+	* gcc.target/riscv/riscv.exp: Enable new tests to build.
+	* gcc.target/riscv/sched1-spills/spill1.cpp: Add new test.
+
+2024-12-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117615
+	* g++.dg/cpp2a/constexpr-virtual22.C: New test.
+
+2024-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117243
+	PR tree-optimization/116749
+	* gcc.dg/torture/pr117243-1.c: New test.
+	* gcc.dg/torture/pr117243-2.c: New test.
+
+2024-12-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117820
+	* gfortran.dg/pr117820.f90: New test.
+
 2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR testsuite/52641

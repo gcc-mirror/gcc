@@ -1,3 +1,76 @@
+2024-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/libgdiagnostics/topics/execution-paths.rst: Add '§' before
+	references to section of SARIF spec.
+	* doc/libgdiagnostics/topics/fix-it-hints.rst: Likewise.
+	* doc/libgdiagnostics/tutorial/01-hello-world.rst: Fix typo.
+	* doc/libgdiagnostics/tutorial/02-physical-locations.rst: Likewise.
+	* doc/libgdiagnostics/tutorial/04-notes.rst: Likewise.
+	* doc/libgdiagnostics/tutorial/06-fix-it-hints.rst: Add link to
+	diagnostic_add_fix_it_hint_replace.
+	* doc/libgdiagnostics/tutorial/07-execution-paths.rst: Add '§'.
+
+2024-12-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* haifa-sched.cc (model_choose_insn): Dump unscheduled_preds.
+	(model_dump_pressure_summary): Dump bb->index.
+	(model_start_schedule): Pass bb.
+	* sched-rgn.cc (debug_dependencies): Dump SD_LIST_HARD_BACK deps.
+
+2024-12-04  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/11472
+	* params.opt (--param=cycle-accurate-model=): New opt.
+	* doc/invoke.texi (cycle-accurate-model): Document.
+	* haifa-sched.cc (model_excess_group_cost): Return negative
+	delta if param_cycle_accurate_model is 0.
+	(model_excess_cost): Ceil negative baseECC to 0 only if
+	param_cycle_accurate_model is 1.
+	Dump the actual ECC value.
+	* config/riscv/riscv.cc (riscv_option_override): Set param
+	to 0.
+
+2024-12-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/84211
+	* config/avr/avr-passes.cc (insninfo_t) <m_insn>: Preset to 0.
+	(run_find_plies) [hamm=0, dump_file]: Don't print INSN_UID
+	for a null m_insn.
+
+2024-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR translation/90160
+	* config/arm/arm.cc (arm_option_check_internal): Use quotes in
+	messages that refer to command-line options.  Tweak wording.
+
+2024-12-04  Andreas Schwab  <schwab@suse.de>
+
+	PR bootstrap/117893
+	* configure.ac: Use shell loop to remove -O flags.
+	* configure: Regenerate.
+
+2024-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116083
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Compute vector
+	type and max_nunits only once.  Remove check for matching
+	vector type of each lane and replace it with matching check
+	for LHS type.
+
+2024-12-04  Pan Li  <pan2.li@intel.com>
+
+	PR target/117878
+	* config/riscv/riscv-v.cc (vlmax_avl_type_p): Add assert for
+	out of range access.
+	(nonvlmax_avl_type_p): Ditto.
+
+2024-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117243
+	PR tree-optimization/116749
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): Reset loop
+	estimates if the cond_block was an exit to a loop.
+
 2024-12-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_insn_location): New variable.

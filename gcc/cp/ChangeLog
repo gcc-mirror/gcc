@@ -1,3 +1,25 @@
+2024-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/116771
+	* parser.cc (cp_parser_name_lookup_error): Provide suggestions for
+	the case of complete failure where there is no scope.
+
+2024-12-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117615
+	* constexpr.cc (cxx_eval_constant_expression): Don't reject
+	INTEGER_CSTs with type POINTER_TYPE to METHOD_TYPE.
+
+2024-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117826
+	* cp-tree.h (struct decl_location_traits): New type.
+	(erroneous_templates_t): Change using into typedef.
+	(erroneous_templates): Add GTY((cache)).
+	* error.cc (cp_adjust_diagnostic_info): Use
+	hash_map_safe_get_or_insert<true> rather than
+	hash_map_safe_get_or_insert<false> for erroneous_templates.
+
 2024-12-03  Nina Ranns  <dinka.ranns@googlemail.com>
 
 	PR c++/117579
