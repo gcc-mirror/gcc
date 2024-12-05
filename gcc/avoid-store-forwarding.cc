@@ -429,7 +429,7 @@ store_forwarding_analyzer::avoid_store_forwarding (basic_block bb)
 
       rtx set = single_set (insn);
 
-      if (!set)
+      if (!set || insn_could_throw_p (insn))
 	{
 	  store_exprs.truncate (0);
 	  continue;
