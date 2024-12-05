@@ -2091,7 +2091,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::swap(this->_M_impl._M_node_count, __t._M_impl._M_node_count);
 	}
       // No need to swap header's color as it does not change.
-      std::swap(this->_M_impl._M_key_compare, __t._M_impl._M_key_compare);
+
+      using std::swap;
+      swap(this->_M_impl._M_key_compare, __t._M_impl._M_key_compare);
 
       _Alloc_traits::_S_on_swap(_M_get_Node_allocator(),
 				__t._M_get_Node_allocator());
