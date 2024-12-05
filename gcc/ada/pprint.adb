@@ -64,9 +64,9 @@ package body Pprint is
       --  otherwise only consider the right-hand side of an expression. If
       --  Expand_Type is True and Expr is a type, try to expand Expr (an
       --  internally generated type) into a user understandable name.
-      --  If No_Parens is True, then suppress creating parentheses
-      --  around expression.  If False, check to see whether expression
-      --  should be parenthesized.
+      --  If No_Parens is True, then suppress creating parentheses around
+      --  expression. If False, check to see whether expression should be
+      --  parenthesized.
 
       function Count_Parentheses (S : String; C : Character) return Natural
         with Pre => C in '(' | ')';
@@ -153,8 +153,8 @@ package body Pprint is
             --  Print expression itself as "12345"
 
             else
+               --  Suppress parens if is the only parameter
                Append (Buf, Expr_Name (Elmt, No_Parens => List_Len = 1));
-                  --  Suppress parens if is the only parameter.
             end if;
 
             Next (Elmt);
@@ -189,24 +189,31 @@ package body Pprint is
          Expand_Type : Boolean := True;
          No_Parens   : Boolean := False) return String
       is
-         --  Define subtype matching logical operations
+         --  Define a subtype matching logical operations
          --  and [then], or [else], and xor.
-         subtype Not_Associative is N_Subexpr
+         --  In Ada, these operations are non associative -- they
+         --  all have the same precedence, so parentheses
+         --  are needed to indicate the association of
+         --  operands in a sequence of distinct operations.
+         subtype Non_Associative is N_Subexpr
            with Static_Predicate =>
-             Not_Associative in
+             Non_Associative in
                N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor;
       begin
          if not No_Parens
           and then
             (Paren_Count (Expr) > 0
               or else
-             (Nkind (Expr) in Not_Associative
+             (Nkind (Expr) in Non_Associative
                and then
-              Nkind (Parent (Expr)) in Not_Associative
+              Nkind (Parent (Expr)) in Non_Associative
                and then
               Nkind (Parent (Expr)) /= Nkind (Expr)))
          then
-            --  Parentheses are needed
+            --  Parentheses are needed, either because
+            --  Paren_Count is greater than zero, or because
+            --  this operation and its parent are non associative,
+            --  and are not the same operation.
             return '(' &
               Expr_Name (Expr, Take_Prefix, Expand_Type, No_Parens => True) &
               ')';
