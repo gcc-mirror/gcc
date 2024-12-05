@@ -14010,22 +14010,16 @@ package body Sem_Ch12 is
          -----------------------
 
          function Formal_Dimensions return Nat is
-            Num   : Nat := 0;
-            Index : Node_Id;
+            Dims : List_Id;
 
          begin
             if Nkind (Def) = N_Constrained_Array_Definition then
-               Index := First (Discrete_Subtype_Definitions (Def));
+               Dims := Discrete_Subtype_Definitions (Def);
             else
-               Index := First (Subtype_Marks (Def));
+               Dims := Subtype_Marks (Def);
             end if;
 
-            while Present (Index) loop
-               Num := Num + 1;
-               Next (Index);
-            end loop;
-
-            return Num;
+            return List_Length (Dims);
          end Formal_Dimensions;
 
       --  Start of processing for Validate_Array_Type_Instance
@@ -18079,7 +18073,6 @@ package body Sem_Ch12 is
                   Get_Attribute_Id (Attribute_Name (Def));
       T       : constant Entity_Id := Entity (Prefix (Def));
       Is_Fun  : constant Boolean := (Ekind (Nam) = E_Function);
-      F       : Entity_Id;
       Num_F   : Nat;
       OK      : Boolean;
 
@@ -18088,12 +18081,7 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      Num_F := 0;
-      F := First_Formal (Nam);
-      while Present (F) loop
-         Num_F := Num_F + 1;
-         Next_Formal (F);
-      end loop;
+      Num_F := Number_Formals (Nam);
 
       case Attr_Id is
          when Attribute_Adjacent

@@ -4300,10 +4300,9 @@ package body Exp_Ch3 is
            (SI         : Node_Id;
             Check_List : List_Id)
          is
-            C                     : constant Node_Id := Constraint (SI);
-            Number_Of_Constraints : Nat := 0;
-            Index                 : Node_Id;
-            S, T                  : Entity_Id;
+            C     : constant Node_Id := Constraint (SI);
+            Index : Node_Id;
+            S, T  : Entity_Id;
 
             procedure Constrain_Index
               (Index      : Node_Id;
@@ -4341,12 +4340,6 @@ package body Exp_Ch3 is
                T := Designated_Type (T);
             end if;
 
-            S := First (Constraints (C));
-            while Present (S) loop
-               Number_Of_Constraints := Number_Of_Constraints + 1;
-               Next (S);
-            end loop;
-
             --  In either case, the index constraint must provide a discrete
             --  range for each index of the array type and the type of each
             --  discrete range must be the same as that of the corresponding
@@ -4358,7 +4351,7 @@ package body Exp_Ch3 is
 
             --  Apply constraints to each index type
 
-            for J in 1 .. Number_Of_Constraints loop
+            while Present (S) loop
                Constrain_Index (Index, S, Check_List);
                Next (Index);
                Next (S);

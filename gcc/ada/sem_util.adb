@@ -2915,7 +2915,7 @@ package body Sem_Util is
                           Expr_Value (Low_Bound (Aggregate_Bounds (N)))
                then
                   declare
-                     Count_Components   : Uint := Uint_0;
+                     Count_Components   : Uint;
                      Num_Components     : Uint;
                      Others_Assoc       : Node_Id := Empty;
                      Others_Choice      : Node_Id := Empty;
@@ -2924,13 +2924,8 @@ package body Sem_Util is
                   begin
                      --  Count positional associations
 
-                     if Present (Expressions (N)) then
-                        Comp_Expr := First (Expressions (N));
-                        while Present (Comp_Expr) loop
-                           Count_Components := Count_Components + 1;
-                           Next (Comp_Expr);
-                        end loop;
-                     end if;
+                     Count_Components :=
+                       UI_From_Int (List_Length (Expressions (N)));
 
                      --  Count the rest of elements and locate the N_Others
                      --  choice (if any)
@@ -25044,8 +25039,8 @@ package body Sem_Util is
       First_Named : Node_Id := Empty;
       Found       : Boolean;
 
-      Formals_To_Match : Integer := 0;
-      Actuals_To_Match : Integer := 0;
+      Formals_To_Match : Int := 0;
+      Actuals_To_Match : Int := 0;
 
       procedure Chain (A : Node_Id);
       --  Add named actual at the proper place in the list, using the
@@ -25106,15 +25101,10 @@ package body Sem_Util is
          --  The name in the call is a function call that returns an access
          --  to subprogram. The designated type has the list of formals.
 
-         Formal := First_Formal (Designated_Type (S));
+         Formals_To_Match := Number_Formals (Designated_Type (S));
       else
-         Formal := First_Formal (S);
+         Formals_To_Match := Number_Formals (S);
       end if;
-
-      while Present (Formal) loop
-         Formals_To_Match := Formals_To_Match + 1;
-         Next_Formal (Formal);
-      end loop;
 
       --  Find if there is a named association, and verify that no positional
       --  associations appear after named ones.

@@ -8801,19 +8801,8 @@ package body Sem_Prag is
                   Minimum : constant Nat :=
                     Convention_Id'Pos (C) -
                       Convention_Id'Pos (Convention_C_Variadic_0);
-
-                  Count  : Nat;
-                  Formal : Entity_Id;
-
                begin
-                  Count := 0;
-                  Formal := First_Formal (Subp);
-                  while Present (Formal) loop
-                     Count := Count + 1;
-                     Next_Formal (Formal);
-                  end loop;
-
-                  if Count < Minimum then
+                  if Number_Formals (Subp) < Minimum then
                      Error_Msg_Uint_1 := UI_From_Int (Minimum);
                      Error_Pragma_Arg
                        ("argument of pragma% must have at least"

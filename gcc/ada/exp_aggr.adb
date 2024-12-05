@@ -5352,17 +5352,10 @@ package body Exp_Aggr is
                --  Count the number of discrete choices. Start with -1 because
                --  the others choice does not count.
 
-               --  Is there some reason we do not use List_Length here ???
-
                Nb_Choices := -1;
                Assoc := First (Component_Associations (Sub_Aggr));
                while Present (Assoc) loop
-                  Choice := First (Choice_List (Assoc));
-                  while Present (Choice) loop
-                     Nb_Choices := Nb_Choices + 1;
-                     Next (Choice);
-                  end loop;
-
+                  Nb_Choices := Nb_Choices + List_Length (Choice_List (Assoc));
                   Next (Assoc);
                end loop;
 
@@ -5379,12 +5372,7 @@ package body Exp_Aggr is
          --  choice then compute the number or positional elements.
 
          if Need_To_Check and then Present (Expressions (Sub_Aggr)) then
-            Expr := First (Expressions (Sub_Aggr));
-            Nb_Elements := Uint_0;
-            while Present (Expr) loop
-               Nb_Elements := Nb_Elements + 1;
-               Next (Expr);
-            end loop;
+            Nb_Elements := UI_From_Int (List_Length (Expressions (Sub_Aggr)));
 
          --  If the aggregate contains discrete choices and an others choice
          --  compute the smallest and largest discrete choice values.
@@ -5395,7 +5383,7 @@ package body Exp_Aggr is
                Table : Case_Table_Type (1 .. Nb_Choices);
                --  Used to sort all the different choice values
 
-               J    : Pos := 1;
+               J : Pos := 1;
 
             begin
                Assoc := First (Component_Associations (Sub_Aggr));

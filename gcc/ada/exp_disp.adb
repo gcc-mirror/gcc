@@ -4650,7 +4650,6 @@ package body Exp_Disp is
       Name_ITable        : Name_Id;
       Nb_Prim            : Nat := 0;
       New_Node           : Node_Id;
-      Num_Ifaces         : Nat := 0;
       Parent_Typ         : Entity_Id;
       Predef_Prims       : Entity_Id;
       Prim               : Entity_Id;
@@ -5494,23 +5493,18 @@ package body Exp_Disp is
 
          Collect_Interfaces (Typ, Typ_Ifaces);
 
-         AI := First_Elmt (Typ_Ifaces);
-         while Present (AI) loop
-            Num_Ifaces := Num_Ifaces + 1;
-            Next_Elmt (AI);
-         end loop;
-
-         if Num_Ifaces = 0 then
+         if Is_Empty_Elmt_List (Typ_Ifaces) then
             Iface_Table_Node := Make_Null (Loc);
 
          --  Generate the Interface_Table object
 
          else
             declare
-               TSD_Ifaces_List  : constant List_Id := New_List;
-               Elmt             : Elmt_Id;
-               Offset_To_Top    : Node_Id;
-               Sec_DT_Tag       : Node_Id;
+               Num_Ifaces      : constant Pos := List_Length (Typ_Ifaces);
+               TSD_Ifaces_List : constant List_Id := New_List;
+               Elmt            : Elmt_Id;
+               Offset_To_Top   : Node_Id;
+               Sec_DT_Tag      : Node_Id;
 
                Dummy_Object_Ifaces_List      : Elist_Id := No_Elist;
                Dummy_Object_Ifaces_Comp_List : Elist_Id := No_Elist;
