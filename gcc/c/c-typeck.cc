@@ -12309,9 +12309,37 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	      error_at (loc, "invalid use of void expression");
 	      output = error_mark_node;
 	    }
+	  if (allows_reg && current_function_decl == NULL_TREE)
+	    {
+	      error_at (loc, "constraint allows registers outside of "
+			     "a function");
+	      output = error_mark_node;
+	    }
 	}
       else
 	output = error_mark_node;
+
+      if (current_function_decl == NULL_TREE && output != error_mark_node)
+	{
+	  if (TREE_SIDE_EFFECTS (output))
+	    {
+	      error_at (loc, "side-effects in output operand outside "
+			     "of a function");
+	      output = error_mark_node;
+	    }
+	  else
+	    {
+	      tree addr = build_unary_op (loc, ADDR_EXPR, output, false);
+	      if (addr == error_mark_node)
+		output = error_mark_node;
+	      else if (!initializer_constant_valid_p (addr, TREE_TYPE (addr)))
+		{
+		  error_at (loc, "output operand outside of a function is not "
+				 "constant");
+		  output = error_mark_node;
+		}
+	    }
+	}
 
       TREE_VALUE (tail) = output;
     }
@@ -12352,9 +12380,37 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 		  input = error_mark_node;
 		}
 	    }
+	  if (allows_reg && current_function_decl == NULL_TREE)
+	    {
+	      error_at (loc, "constraint allows registers outside of "
+			     "a function");
+	      input = error_mark_node;
+	    }
 	}
       else
 	input = error_mark_node;
+
+      if (current_function_decl == NULL_TREE && input != error_mark_node)
+	{
+	  if (TREE_SIDE_EFFECTS (input))
+	    {
+	      error_at (loc, "side-effects in input operand outside "
+			     "of a function");
+	      input = error_mark_node;
+	    }
+	  else
+	    {
+	      tree tem = input;
+	      if (allows_mem && lvalue_p (input))
+		tem = build_unary_op (loc, ADDR_EXPR, input, false);
+	      if (!initializer_constant_valid_p (tem, TREE_TYPE (tem)))
+		{
+		  error_at (loc, "input operand outside of a function is not "
+				 "constant");
+		  input = error_mark_node;
+		}
+	    }
+	}
 
       TREE_VALUE (tail) = input;
     }

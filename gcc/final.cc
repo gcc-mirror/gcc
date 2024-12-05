@@ -149,7 +149,7 @@ extern const int length_unit_log; /* This is defined in insn-attrtab.cc.  */
 const rtx_insn *this_is_asm_operands;
 
 /* Number of operands of this insn, for an `asm' with operands.  */
-static unsigned int insn_noperands;
+unsigned int insn_noperands;
 
 /* Compare optimization flag.  */
 

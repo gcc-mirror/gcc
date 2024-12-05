@@ -2542,6 +2542,13 @@ lto_output_toplevel_asms (void)
 
   for (can = symtab->first_asm_symbol (); can; can = can->next)
     {
+      if (TREE_CODE (can->asm_str) != STRING_CST)
+	{
+	  sorry_at (EXPR_LOCATION (can->asm_str),
+		    "LTO streaming of toplevel extended %<asm%> "
+		    "unimplemented");
+	  continue;
+	}
       streamer_write_string_cst (ob, ob->main_stream, can->asm_str);
       streamer_write_hwi (ob, can->order);
     }

@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "opts.h"
 #include "asan.h"
+#include "recog.h"
+#include "gimple-expr.h"
 
 /* The (assembler) name of the first globally-visible object output.  */
 extern GTY(()) const char *first_global_object_name;
@@ -1685,16 +1687,167 @@ make_decl_rtl_for_debug (tree decl)
    for an `asm' keyword used between functions.  */
 
 void
-assemble_asm (tree string)
+assemble_asm (tree asm_str)
 {
   const char *p;
-  app_enable ();
 
-  if (TREE_CODE (string) == ADDR_EXPR)
-    string = TREE_OPERAND (string, 0);
+  if (TREE_CODE (asm_str) != ASM_EXPR)
+    {
+      app_enable ();
+      if (TREE_CODE (asm_str) == ADDR_EXPR)
+	asm_str = TREE_OPERAND (asm_str, 0);
 
-  p = TREE_STRING_POINTER (string);
-  fprintf (asm_out_file, "%s%s\n", p[0] == '\t' ? "" : "\t", p);
+      p = TREE_STRING_POINTER (asm_str);
+      fprintf (asm_out_file, "%s%s\n", p[0] == '\t' ? "" : "\t", p);
+    }
+  else
+    {
+      location_t save_loc = input_location;
+      int save_reload_completed = reload_completed;
+      int save_cse_not_expected = cse_not_expected;
+      input_location = EXPR_LOCATION (asm_str);
+      int noutputs = list_length (ASM_OUTPUTS (asm_str));
+      int ninputs = list_length (ASM_INPUTS (asm_str));
+      const char **constraints = NULL;
+      int i;
+      tree tail;
+      bool allows_mem, allows_reg, is_inout;
+      rtx *ops = NULL;
+      if (noutputs + ninputs > MAX_RECOG_OPERANDS)
+	{
+	  error ("more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
+	  goto done;
+	}
+      constraints = XALLOCAVEC (const char *, noutputs + ninputs);
+      ops = XALLOCAVEC (rtx, noutputs + ninputs);
+      memset (&recog_data, 0, sizeof (recog_data));
+      recog_data.n_operands = ninputs + noutputs;
+      recog_data.is_asm = true;
+      reload_completed = 0;
+      cse_not_expected = 1;
+      for (i = 0, tail = ASM_OUTPUTS (asm_str); tail;
+	   ++i, tail = TREE_CHAIN (tail))
+	{
+	  tree output = TREE_VALUE (tail);
+	  if (output == error_mark_node)
+	    goto done;
+	  constraints[i]
+	    = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
+	  if (!parse_output_constraint (&constraints[i], i, ninputs, noutputs,
+					&allows_mem, &allows_reg, &is_inout))
+	    goto done;
+	  if (is_inout)
+	    {
+	      error ("%qc in output operand outside of a function", '+');
+	      goto done;
+	    }
+	  if (strchr (constraints[i], '&'))
+	    {
+	      error ("%qc in output operand outside of a function", '&');
+	      goto done;
+	    }
+	  if (strchr (constraints[i], '%'))
+	    {
+	      error ("%qc in output operand outside of a function", '%');
+	      goto done;
+	    }
+	  output_addressed_constants (output, 0);
+	  if (!is_gimple_addressable (output))
+	    {
+	      error ("output number %d not directly addressable", i);
+	      goto done;
+	    }
+	  ops[i] = expand_expr (build_fold_addr_expr (output), NULL_RTX,
+				VOIDmode, EXPAND_INITIALIZER);
+	  ops[i] = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (output)), ops[i]);
+
+	  recog_data.operand[i] = ops[i];
+	  recog_data.operand_loc[i] = &ops[i];
+	  recog_data.constraints[i] = constraints[i];
+	  recog_data.operand_mode[i] = TYPE_MODE (TREE_TYPE (output));
+	}
+      for (i = 0, tail = ASM_INPUTS (asm_str); tail;
+	   ++i, tail = TREE_CHAIN (tail))
+	{
+	  tree input = TREE_VALUE (tail);
+	  if (input == error_mark_node)
+	    goto done;
+	  constraints[i + noutputs]
+	    = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
+	  if (!parse_input_constraint (&constraints[i + noutputs], i,
+				       ninputs, noutputs, 0, constraints,
+				       &allows_mem, &allows_reg))
+	    goto done;
+	  if (strchr (constraints[i], '%'))
+	    {
+	      error ("%qc in input operand outside of a function", '%');
+	      goto done;
+	    }
+	  const char *constraint = constraints[i + noutputs];
+	  size_t c_len = strlen (constraint);
+	  for (size_t j = 0; j < c_len;
+	       j += CONSTRAINT_LEN (constraint[j], constraint + j))
+	    if (constraint[j] >= '0' && constraint[j] <= '9')
+	      {
+		error ("matching constraint outside of a function");
+		goto done;
+	      }
+	  output_addressed_constants (input, 0);
+	  if (allows_mem && is_gimple_addressable (input))
+	    {
+	      ops[i + noutputs]
+		= expand_expr (build_fold_addr_expr (input), NULL_RTX,
+			       VOIDmode, EXPAND_INITIALIZER);
+	      ops[i + noutputs] = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (input)),
+					       ops[i + noutputs]);
+	    }
+	  else
+	    ops[i + noutputs] = expand_expr (input, NULL_RTX, VOIDmode,
+					     EXPAND_INITIALIZER);
+	  if (asm_operand_ok (ops[i + noutputs], constraint, NULL) <= 0)
+	    {
+	      if (!allows_mem)
+		warning (0, "%<asm%> operand %d probably does not "
+			    "match constraints", i + noutputs);
+	    }
+	  recog_data.operand[i + noutputs] = ops[i + noutputs];
+	  recog_data.operand_loc[i + noutputs] = &ops[i + noutputs];
+	  recog_data.constraints[i + noutputs] = constraints[i + noutputs];
+	  recog_data.operand_mode[i + noutputs]
+	    = TYPE_MODE (TREE_TYPE (input));
+	}
+      if (recog_data.n_operands > 0)
+	{
+	  const char *p = recog_data.constraints[0];
+	  recog_data.n_alternatives = 1;
+	  while (*p)
+	    recog_data.n_alternatives += (*p++ == ',');
+	}
+      for (i = 0; i < recog_data.n_operands; i++)
+	recog_data.operand_type[i]
+	  = recog_data.constraints[i][0] == '=' ? OP_OUT : OP_IN;
+      reload_completed = 1;
+      constrain_operands (1, ALL_ALTERNATIVES);
+      if (which_alternative < 0)
+	{
+	  error ("impossible constraint in %<asm%>");
+	  goto done;
+	}
+      this_is_asm_operands = make_insn_raw (gen_nop ());
+      insn_noperands = recog_data.n_operands;
+      if (TREE_STRING_POINTER (ASM_STRING (asm_str))[0])
+	{
+	  app_enable ();
+	  output_asm_insn (TREE_STRING_POINTER (ASM_STRING (asm_str)), ops);
+	}
+      insn_noperands = 0;
+      this_is_asm_operands = NULL;
+
+    done:
+      input_location = save_loc;
+      reload_completed = save_reload_completed;
+      cse_not_expected = save_cse_not_expected;
+    }
 }
 
 /* Write the address of the entity given by SYMBOL to SEC.  */

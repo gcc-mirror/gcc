@@ -10841,8 +10841,8 @@ statements.  A @dfn{basic @code{asm}} statement is one with no
 operands (@pxref{Basic Asm}), while an @dfn{extended @code{asm}}
 statement (@pxref{Extended Asm}) includes one or more operands.  
 The extended form is preferred for mixing C and assembly language
-within a function, but to include assembly language at
-top level you must use basic @code{asm}.
+within a function and can be used at top level as well with certain
+restrictions.
 
 You can also use the @code{asm} keyword to override the assembler name
 for a C symbol, or to place a C variable in a specific register.
@@ -10880,6 +10880,8 @@ can be used for code compiled with @option{-fno-asm}.
 @item volatile
 The optional @code{volatile} qualifier has no effect. 
 All basic @code{asm} blocks are implicitly volatile.
+Basic @code{asm} statements outside of functions may not use any
+qualifiers.
 
 @item inline
 If you use the @code{inline} qualifier, then for inlining purposes the size
@@ -10924,25 +10926,19 @@ void function()
 @subsubheading Remarks
 Using extended @code{asm} (@pxref{Extended Asm}) typically produces
 smaller, safer, and more efficient code, and in most cases it is a
-better solution than basic @code{asm}.  However, there are two
-situations where only basic @code{asm} can be used:
+better solution than basic @code{asm}.  However, functions declared
+with the @code{naked} attribute require only basic @code{asm}
+(@pxref{Function Attributes}).
 
-@itemize @bullet
-@item
-Extended @code{asm} statements have to be inside a C
-function, so to write inline assembly language at file scope (``top-level''),
-outside of C functions, you must use basic @code{asm}.
-You can use this technique to emit assembler directives,
+Extended @code{asm} statements may be used both inside a C
+function or at file scope (``top-level''), where
+you can use this technique to emit assembler directives,
 define assembly language macros that can be invoked elsewhere in the file,
 or write entire functions in assembly language.
-Basic @code{asm} statements outside of functions may not use any
-qualifiers.
-
-@item
-Functions declared
-with the @code{naked} attribute also require basic @code{asm}
-(@pxref{Function Attributes}).
-@end itemize
+Extended @code{asm} statements outside of functions may not use any
+qualifiers, may not specify clobbers, may not use @code{%}, @code{+} or
+@code{&} modifiers in constraints and can only use constraints which don't
+allow using any register.
 
 Safely accessing C data and calling functions from basic @code{asm} is more 
 complex than it may appear. To access C data, it is better to use extended 
