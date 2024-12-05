@@ -2166,7 +2166,7 @@ function_resolver::infer_neon128_vector_type (unsigned int argno)
       int neon_index = type_suffixes[suffix_i].neon128_type;
       if (neon_index != ARM_NEON_H_TYPES_LAST)
 	{
-	  tree type = aarch64_simd_types[neon_index].itype;
+	  tree type = aarch64_simd_types_trees[neon_index].itype;
 	  if (type && matches_type_p (type, actual))
 	    return type_suffix_index (suffix_i);
 	}

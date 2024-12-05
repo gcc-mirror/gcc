@@ -983,15 +983,19 @@ const char *aarch64_scalar_builtin_types[] = {
   NULL
 };
 
-extern GTY(()) aarch64_simd_type_info aarch64_simd_types[];
+extern const aarch64_simd_type_info aarch64_simd_types[];
+extern GTY(()) aarch64_simd_type_info_trees aarch64_simd_types_trees[];
 
 #undef ENTRY
 #define ENTRY(E, M, Q, G)  \
-  {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
-struct aarch64_simd_type_info aarch64_simd_types [] = {
+  {E, "__" #E, #G "__" #E, E_##M##mode, qualifier_##Q},
+const struct aarch64_simd_type_info aarch64_simd_types[] = {
 #include "aarch64-simd-builtin-types.def"
 };
 #undef ENTRY
+
+struct aarch64_simd_type_info_trees
+aarch64_simd_types_trees[ARRAY_SIZE (aarch64_simd_types)];
 
 static machine_mode aarch64_simd_tuple_modes[ARM_NEON_H_TYPES_LAST][3];
 static GTY(()) tree aarch64_simd_tuple_types[ARM_NEON_H_TYPES_LAST][3];
@@ -1133,7 +1137,7 @@ aarch64_lookup_simd_type_in_table (machine_mode mode,
     {
       if (aarch64_simd_types[i].mode == mode
 	  && aarch64_simd_types[i].q == q)
-	return aarch64_simd_types[i].itype;
+	return aarch64_simd_types_trees[i].itype;
       if (aarch64_simd_tuple_types[i][0] != NULL_TREE)
 	for (int j = 0; j < 3; j++)
 	  if (aarch64_simd_tuple_modes[i][j] == mode
@@ -1180,66 +1184,76 @@ aarch64_init_simd_builtin_types (void)
   tree tdecl;
 
   /* Init all the element types built by the front-end.  */
-  aarch64_simd_types[Int8x8_t].eltype = intQI_type_node;
-  aarch64_simd_types[Int8x16_t].eltype = intQI_type_node;
-  aarch64_simd_types[Int16x4_t].eltype = intHI_type_node;
-  aarch64_simd_types[Int16x8_t].eltype = intHI_type_node;
-  aarch64_simd_types[Int32x2_t].eltype = intSI_type_node;
-  aarch64_simd_types[Int32x4_t].eltype = intSI_type_node;
-  aarch64_simd_types[Int64x1_t].eltype = intDI_type_node;
-  aarch64_simd_types[Int64x2_t].eltype = intDI_type_node;
-  aarch64_simd_types[Uint8x8_t].eltype = unsigned_intQI_type_node;
-  aarch64_simd_types[Uint8x16_t].eltype = unsigned_intQI_type_node;
-  aarch64_simd_types[Uint16x4_t].eltype = unsigned_intHI_type_node;
-  aarch64_simd_types[Uint16x8_t].eltype = unsigned_intHI_type_node;
-  aarch64_simd_types[Uint32x2_t].eltype = unsigned_intSI_type_node;
-  aarch64_simd_types[Uint32x4_t].eltype = unsigned_intSI_type_node;
-  aarch64_simd_types[Uint64x1_t].eltype = unsigned_intDI_type_node;
-  aarch64_simd_types[Uint64x2_t].eltype = unsigned_intDI_type_node;
+  aarch64_simd_types_trees[Int8x8_t].eltype = intQI_type_node;
+  aarch64_simd_types_trees[Int8x16_t].eltype = intQI_type_node;
+  aarch64_simd_types_trees[Int16x4_t].eltype = intHI_type_node;
+  aarch64_simd_types_trees[Int16x8_t].eltype = intHI_type_node;
+  aarch64_simd_types_trees[Int32x2_t].eltype = intSI_type_node;
+  aarch64_simd_types_trees[Int32x4_t].eltype = intSI_type_node;
+  aarch64_simd_types_trees[Int64x1_t].eltype = intDI_type_node;
+  aarch64_simd_types_trees[Int64x2_t].eltype = intDI_type_node;
+  aarch64_simd_types_trees[Uint8x8_t].eltype = unsigned_intQI_type_node;
+  aarch64_simd_types_trees[Uint8x16_t].eltype = unsigned_intQI_type_node;
+  aarch64_simd_types_trees[Uint16x4_t].eltype = unsigned_intHI_type_node;
+  aarch64_simd_types_trees[Uint16x8_t].eltype = unsigned_intHI_type_node;
+  aarch64_simd_types_trees[Uint32x2_t].eltype = unsigned_intSI_type_node;
+  aarch64_simd_types_trees[Uint32x4_t].eltype = unsigned_intSI_type_node;
+  aarch64_simd_types_trees[Uint64x1_t].eltype = unsigned_intDI_type_node;
+  aarch64_simd_types_trees[Uint64x2_t].eltype = unsigned_intDI_type_node;
 
   /* Poly types are a world of their own.  */
-  aarch64_simd_types[Poly8_t].eltype = aarch64_simd_types[Poly8_t].itype =
-    build_distinct_type_copy (unsigned_intQI_type_node);
+  aarch64_simd_types_trees[Poly8_t].eltype
+    = aarch64_simd_types_trees[Poly8_t].itype
+    = build_distinct_type_copy (unsigned_intQI_type_node);
   /* Prevent front-ends from transforming Poly8_t arrays into string
      literals.  */
-  TYPE_STRING_FLAG (aarch64_simd_types[Poly8_t].eltype) = false;
+  TYPE_STRING_FLAG (aarch64_simd_types_trees[Poly8_t].eltype) = false;
 
-  aarch64_simd_types[Poly16_t].eltype = aarch64_simd_types[Poly16_t].itype =
-    build_distinct_type_copy (unsigned_intHI_type_node);
-  aarch64_simd_types[Poly64_t].eltype = aarch64_simd_types[Poly64_t].itype =
-    build_distinct_type_copy (unsigned_intDI_type_node);
-  aarch64_simd_types[Poly128_t].eltype = aarch64_simd_types[Poly128_t].itype =
-    build_distinct_type_copy (unsigned_intTI_type_node);
+  aarch64_simd_types_trees[Poly16_t].eltype
+    = aarch64_simd_types_trees[Poly16_t].itype
+    = build_distinct_type_copy (unsigned_intHI_type_node);
+  aarch64_simd_types_trees[Poly64_t].eltype
+    = aarch64_simd_types_trees[Poly64_t].itype
+    = build_distinct_type_copy (unsigned_intDI_type_node);
+  aarch64_simd_types_trees[Poly128_t].eltype
+    = aarch64_simd_types_trees[Poly128_t].itype
+    = build_distinct_type_copy (unsigned_intTI_type_node);
   /* Init poly vector element types with scalar poly types.  */
-  aarch64_simd_types[Poly8x8_t].eltype = aarch64_simd_types[Poly8_t].itype;
-  aarch64_simd_types[Poly8x16_t].eltype = aarch64_simd_types[Poly8_t].itype;
-  aarch64_simd_types[Poly16x4_t].eltype = aarch64_simd_types[Poly16_t].itype;
-  aarch64_simd_types[Poly16x8_t].eltype = aarch64_simd_types[Poly16_t].itype;
-  aarch64_simd_types[Poly64x1_t].eltype = aarch64_simd_types[Poly64_t].itype;
-  aarch64_simd_types[Poly64x2_t].eltype = aarch64_simd_types[Poly64_t].itype;
+  aarch64_simd_types_trees[Poly8x8_t].eltype
+    = aarch64_simd_types_trees[Poly8_t].itype;
+  aarch64_simd_types_trees[Poly8x16_t].eltype
+    = aarch64_simd_types_trees[Poly8_t].itype;
+  aarch64_simd_types_trees[Poly16x4_t].eltype
+    = aarch64_simd_types_trees[Poly16_t].itype;
+  aarch64_simd_types_trees[Poly16x8_t].eltype
+    = aarch64_simd_types_trees[Poly16_t].itype;
+  aarch64_simd_types_trees[Poly64x1_t].eltype
+    = aarch64_simd_types_trees[Poly64_t].itype;
+  aarch64_simd_types_trees[Poly64x2_t].eltype
+    = aarch64_simd_types_trees[Poly64_t].itype;
 
   /* Continue with standard types.  */
-  aarch64_simd_types[Float16x4_t].eltype = aarch64_fp16_type_node;
-  aarch64_simd_types[Float16x8_t].eltype = aarch64_fp16_type_node;
-  aarch64_simd_types[Float32x2_t].eltype = float_type_node;
-  aarch64_simd_types[Float32x4_t].eltype = float_type_node;
-  aarch64_simd_types[Float64x1_t].eltype = double_type_node;
-  aarch64_simd_types[Float64x2_t].eltype = double_type_node;
+  aarch64_simd_types_trees[Float16x4_t].eltype = aarch64_fp16_type_node;
+  aarch64_simd_types_trees[Float16x8_t].eltype = aarch64_fp16_type_node;
+  aarch64_simd_types_trees[Float32x2_t].eltype = float_type_node;
+  aarch64_simd_types_trees[Float32x4_t].eltype = float_type_node;
+  aarch64_simd_types_trees[Float64x1_t].eltype = double_type_node;
+  aarch64_simd_types_trees[Float64x2_t].eltype = double_type_node;
 
   /* Init Bfloat vector types with underlying __bf16 type.  */
-  aarch64_simd_types[Bfloat16x4_t].eltype = bfloat16_type_node;
-  aarch64_simd_types[Bfloat16x8_t].eltype = bfloat16_type_node;
+  aarch64_simd_types_trees[Bfloat16x4_t].eltype = bfloat16_type_node;
+  aarch64_simd_types_trees[Bfloat16x8_t].eltype = bfloat16_type_node;
 
   /* Init FP8 element types.  */
-  aarch64_simd_types[Mfloat8x8_t].eltype = aarch64_mfp8_type_node;
-  aarch64_simd_types[Mfloat8x16_t].eltype = aarch64_mfp8_type_node;
+  aarch64_simd_types_trees[Mfloat8x8_t].eltype = aarch64_mfp8_type_node;
+  aarch64_simd_types_trees[Mfloat8x16_t].eltype = aarch64_mfp8_type_node;
 
   for (i = 0; i < nelts; i++)
     {
-      tree eltype = aarch64_simd_types[i].eltype;
+      tree eltype = aarch64_simd_types_trees[i].eltype;
       machine_mode mode = aarch64_simd_types[i].mode;
 
-      if (aarch64_simd_types[i].itype == NULL)
+      if (aarch64_simd_types_trees[i].itype == NULL)
 	{
 	  tree type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
 	  type = build_distinct_type_copy (type);
@@ -1250,12 +1264,12 @@ aarch64_init_simd_builtin_types (void)
 	  TYPE_ATTRIBUTES (type)
 	    = tree_cons (get_identifier ("Advanced SIMD type"), value,
 			 TYPE_ATTRIBUTES (type));
-	  aarch64_simd_types[i].itype = type;
+	  aarch64_simd_types_trees[i].itype = type;
 	}
 
       tdecl = add_builtin_type (aarch64_simd_types[i].name,
-				aarch64_simd_types[i].itype);
-      TYPE_NAME (aarch64_simd_types[i].itype) = tdecl;
+				aarch64_simd_types_trees[i].itype);
+      TYPE_NAME (aarch64_simd_types_trees[i].itype) = tdecl;
     }
 
 #define AARCH64_BUILD_SIGNED_TYPE(mode)  \
@@ -1737,7 +1751,8 @@ aarch64_get_pragma_builtin (int code)
 static void
 register_tuple_type (unsigned int num_vectors, unsigned int type_index)
 {
-  aarch64_simd_type_info *type = &aarch64_simd_types[type_index];
+  const aarch64_simd_type_info *type = &aarch64_simd_types[type_index];
+  aarch64_simd_type_info_trees *trees = &aarch64_simd_types_trees[type_index];
 
   /* Synthesize the name of the user-visible vector tuple type.  */
   const char *vector_type_name = type->name;
@@ -1747,7 +1762,7 @@ register_tuple_type (unsigned int num_vectors, unsigned int type_index)
 	    num_vectors);
   tuple_type_name[0] = TOLOWER (tuple_type_name[0]);
 
-  tree vector_type = type->itype;
+  tree vector_type = trees->itype;
   tree array_type = build_array_type_nelts (vector_type, num_vectors);
   if (type->mode == DImode)
     {
@@ -4097,8 +4112,8 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	  {
 	    enum aarch64_simd_type mem_type
 	      = get_mem_type_for_load_store(fcode);
-	    aarch64_simd_type_info simd_type
-	      = aarch64_simd_types[mem_type];
+	    aarch64_simd_type_info_trees simd_type
+	      = aarch64_simd_types_trees[mem_type];
 	    tree elt_ptr_type = build_pointer_type_for_mode (simd_type.eltype,
 							     VOIDmode, true);
 	    tree zero = build_zero_cst (elt_ptr_type);
@@ -4123,8 +4138,8 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	  {
 	    enum aarch64_simd_type mem_type
 	      = get_mem_type_for_load_store(fcode);
-	    aarch64_simd_type_info simd_type
-	      = aarch64_simd_types[mem_type];
+	    aarch64_simd_type_info_trees simd_type
+	      = aarch64_simd_types_trees[mem_type];
 	    tree elt_ptr_type = build_pointer_type_for_mode (simd_type.eltype,
 							     VOIDmode, true);
 	    tree zero = build_zero_cst (elt_ptr_type);

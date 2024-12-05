@@ -272,14 +272,14 @@ parse_type (const function_instance &instance, const char *&format)
     {
       type_suffix_index suffix = parse_element_type (instance, format);
       int neon_index = type_suffixes[suffix].neon64_type;
-      return aarch64_simd_types[neon_index].itype;
+      return aarch64_simd_types_trees[neon_index].itype;
     }
 
   if (ch == 'Q')
     {
       type_suffix_index suffix = parse_element_type (instance, format);
       int neon_index = type_suffixes[suffix].neon128_type;
-      return aarch64_simd_types[neon_index].itype;
+      return aarch64_simd_types_trees[neon_index].itype;
     }
 
   gcc_unreachable ();
