@@ -541,9 +541,19 @@ BEGIN
       THEN
          (* If incr > 0 then LastIterator := ((e2-e1) DIV incr) * incr + e1.  *)
          expr := BuildSub (location, e2tree, e1tree, FALSE) ;
-         expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
-         expr := BuildMult (location, expr, incrtree, FALSE) ;
-         expr := BuildAdd (location, expr, e1tree, FALSE)
+         incrtree := BuildConvert (location, GetTreeType (expr), incrtree, FALSE) ;
+         IF TreeOverflow (incrtree)
+         THEN
+            MetaErrorT0 (lastpos,
+                         'the intemediate calculation for the last iterator value in the {%kFOR} loop has caused an overflow') ;
+            NoChange := FALSE ;
+            SubQuad (quad) ;
+            success := FALSE
+         ELSE
+            expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
+            expr := BuildMult (location, expr, incrtree, FALSE) ;
+            expr := BuildAdd (location, expr, e1tree, FALSE)
+         END
       ELSE
          (* Else use LastIterator := e1 - ((e1-e2) DIV PositiveBy) * PositiveBy
             to avoid unsigned div signed arithmetic.  *)
