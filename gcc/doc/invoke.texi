@@ -17122,6 +17122,11 @@ diagnostics.
 @item store-merging-max-size
 Maximum size of a single store merging region in bytes.
 
+@item store-forwarding-max-distance
+Maximum number of instruction distance that a small store forwarded to a larger
+load may stall. Value '0' disables the cost checks for the
+avoid-store-forwarding pass.
+
 @item hash-table-verification-limit
 The number of elements for which hash table verification is done
 for each searched element.
