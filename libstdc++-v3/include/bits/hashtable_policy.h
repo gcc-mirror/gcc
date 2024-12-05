@@ -1174,55 +1174,34 @@ namespace __detail
       _M_get_bucket() const { return _M_bucket; }  // for debug mode
     };
 
-  // Uninitialized storage for a _Hash_code_base.
-  // This type is DefaultConstructible and Assignable even if the
-  // _Hash_code_base type isn't, so that _Local_iterator_base<..., false>
-  // can be DefaultConstructible and Assignable.
-  template<typename _Tp, bool _IsEmpty = std::is_empty<_Tp>::value>
-    struct _Hash_code_storage
+  // Uninitialized storage for a _Hash object in a local iterator.
+  // This type is DefaultConstructible even if the _Hash type isn't,
+  // so that _Local_iterator_base<..., false> can be DefaultConstructible.
+  template<typename _Hash>
+    struct _Hash_obj_storage
     {
-      __gnu_cxx::__aligned_buffer<_Tp> _M_storage;
+      union _Uninit_storage
+      {
+	_Uninit_storage() noexcept { }
+	~_Uninit_storage() { }
 
-      _Tp*
-      _M_h() { return _M_storage._M_ptr(); }
+	[[__no_unique_address__]] _Hash _M_h;
+      };
 
-      const _Tp*
-      _M_h() const { return _M_storage._M_ptr(); }
+      [[__no_unique_address__]] _Uninit_storage _M_u;
     };
-
-  // Empty partial specialization for empty _Hash_code_base types.
-  template<typename _Tp>
-    struct _Hash_code_storage<_Tp, true>
-    {
-      static_assert( std::is_empty<_Tp>::value, "Type must be empty" );
-
-      // As _Tp is an empty type there will be no bytes written/read through
-      // the cast pointer, so no strict-aliasing violation.
-      _Tp*
-      _M_h() { return reinterpret_cast<_Tp*>(this); }
-
-      const _Tp*
-      _M_h() const { return reinterpret_cast<const _Tp*>(this); }
-    };
-
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _Hash, typename _RangeHash, typename _Unused>
-    using __hash_code_for_local_iter
-      = _Hash_code_storage<_Hash_code_base<_Key, _Value, _ExtractKey,
-					   _Hash, _RangeHash, _Unused, false>>;
 
   // Partial specialization used when hash codes are not cached
   template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _Hash, typename _RangeHash, typename _Unused>
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_Hash, _RangeHash, _Unused, false>
-    : __hash_code_for_local_iter<_Key, _Value, _ExtractKey, _Hash, _RangeHash,
-				 _Unused>
-    , _Node_iterator_base<_Value, false>
+    : _Hash_obj_storage<_Hash>, _Node_iterator_base<_Value, false>
     {
     protected:
       using __hash_code_base = _Hash_code_base<_Key, _Value, _ExtractKey,
 					     _Hash, _RangeHash, _Unused, false>;
+      using __hash_obj_storage = _Hash_obj_storage<_Hash>;
       using __node_iter_base = _Node_iterator_base<_Value, false>;
 
       _Local_iterator_base() : _M_bucket_count(-1) { }
@@ -1231,7 +1210,7 @@ namespace __detail
 			   _Hash_node<_Value, false>* __p,
 			   std::size_t __bkt, std::size_t __bkt_count)
       : __node_iter_base(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count)
-      { _M_init(__base); }
+      { _M_init(__base._M_hash._M_obj); }
 
       ~_Local_iterator_base()
       {
@@ -1244,7 +1223,7 @@ namespace __detail
       , _M_bucket_count(__iter._M_bucket_count)
       {
 	if (_M_bucket_count != size_t(-1))
-	  _M_init(*__iter._M_h());
+	  _M_init(__iter._M_h());
       }
 
       _Local_iterator_base&
@@ -1256,7 +1235,7 @@ namespace __detail
 	_M_bucket = __iter._M_bucket;
 	_M_bucket_count = __iter._M_bucket_count;
 	if (_M_bucket_count != size_t(-1))
-	  _M_init(*__iter._M_h());
+	  _M_init(__iter._M_h());
 	return *this;
       }
 
@@ -1266,8 +1245,8 @@ namespace __detail
 	__node_iter_base::_M_incr();
 	if (this->_M_cur)
 	  {
-	    std::size_t __bkt = this->_M_h()->_M_bucket_index(*this->_M_cur,
-							      _M_bucket_count);
+	    const auto __code = _M_h()(_ExtractKey{}(this->_M_cur->_M_v()));
+	    size_t __bkt = _RangeHash{}(__code, _M_bucket_count);
 	    if (__bkt != _M_bucket)
 	      this->_M_cur = nullptr;
 	  }
@@ -1277,11 +1256,14 @@ namespace __detail
       std::size_t _M_bucket_count;
 
       void
-      _M_init(const __hash_code_base& __base)
-      { ::new(this->_M_h()) __hash_code_base(__base); }
+      _M_init(const _Hash& __h)
+      { std::_Construct(std::__addressof(__hash_obj_storage::_M_u._M_h), __h); }
 
       void
-      _M_destroy() { this->_M_h()->~__hash_code_base(); }
+      _M_destroy() { __hash_obj_storage::_M_u._M_h.~_Hash(); }
+
+      const _Hash&
+      _M_h() const { return __hash_obj_storage::_M_u._M_h; }
 
     public:
       std::size_t
