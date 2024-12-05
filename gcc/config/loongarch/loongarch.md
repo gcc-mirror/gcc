@@ -4477,6 +4477,31 @@
     DONE;
   })
 
+(define_insn_and_split "*crc_combine"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(unspec:SI
+	  [(reg:SUBDI 0)
+	   (subreg:SI
+	     (xor:DI
+	       (match_operand:DI 1 "register_operand" "r,r")
+	       ; Our LOAD_EXTEND_OP makes this same as sign_extend
+	       ; if SUBDI is SI, or zero_extend if SUBDI is QI or HI.
+	       ; For the former the high bits in rk are ignored by
+	       ; crc.w.w.w anyway, for the latter the zero extension is
+	       ; necessary for the correctness of this transformation.
+	       (subreg:DI
+		 (match_operand:SUBDI 2 "memory_operand" "m,k") 0)) 0)]
+	  CRC))]
+  "TARGET_64BIT && loongarch_pre_reload_split ()"
+  "#"
+  "&& true"
+  [(set (match_dup 3) (match_dup 2))
+   (set (match_dup 0)
+	(unspec:SI [(match_dup 3) (subreg:SI (match_dup 1) 0)] CRC))]
+  {
+    operands[3] = gen_reg_rtx (<MODE>mode);
+  })
+
 ;; With normal or medium code models, if the only use of a pc-relative
 ;; address is for loading or storing a value, then relying on linker
 ;; relaxation is not better than emitting the machine instruction directly.
