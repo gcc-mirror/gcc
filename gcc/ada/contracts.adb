@@ -2122,9 +2122,7 @@ package body Contracts is
       if Nkind (Templ) = N_Generic_Package_Declaration then
          Mutate_Ekind (Templ_Id, E_Generic_Package);
 
-         if Present (Visible_Declarations (Specification (Templ))) then
-            Decl := First (Visible_Declarations (Specification (Templ)));
-         end if;
+         Decl := First (Visible_Declarations (Specification (Templ)));
 
       --  A generic package body carries contract-related source pragmas in its
       --  declarations.
@@ -2132,9 +2130,7 @@ package body Contracts is
       elsif Nkind (Templ) = N_Package_Body then
          Mutate_Ekind (Templ_Id, E_Package_Body);
 
-         if Present (Declarations (Templ)) then
-            Decl := First (Declarations (Templ));
-         end if;
+         Decl := First (Declarations (Templ));
 
       --  Generic subprogram declaration
 
@@ -2149,9 +2145,7 @@ package body Contracts is
          --  the Pragmas_After list for contract-related source pragmas.
 
          if Nkind (Context) = N_Compilation_Unit then
-            if Present (Aux_Decls_Node (Context))
-              and then Present (Pragmas_After (Aux_Decls_Node (Context)))
-            then
+            if Present (Aux_Decls_Node (Context)) then
                Decl := First (Pragmas_After (Aux_Decls_Node (Context)));
             end if;
 
@@ -2168,9 +2162,7 @@ package body Contracts is
       elsif Nkind (Templ) = N_Subprogram_Body then
          Mutate_Ekind (Templ_Id, E_Subprogram_Body);
 
-         if Present (Declarations (Templ)) then
-            Decl := First (Declarations (Templ));
-         end if;
+         Decl := First (Declarations (Templ));
       end if;
 
       --  Inspect the relevant declarations looking for contract-related source

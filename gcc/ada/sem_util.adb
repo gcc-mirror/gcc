@@ -25119,9 +25119,7 @@ package body Sem_Util is
       --  Find if there is a named association, and verify that no positional
       --  associations appear after named ones.
 
-      if Present (Actuals) then
-         Actual := First (Actuals);
-      end if;
+      Actual := First (Actuals);
 
       while Present (Actual)
         and then Nkind (Actual) /= N_Parameter_Association
@@ -25169,10 +25167,7 @@ package body Sem_Util is
          Next (Actual);
       end loop;
 
-      if Present (Actuals) then
-         Actual := First (Actuals);
-      end if;
-
+      Actual := First (Actuals);
       Formal := First_Formal (S);
       while Present (Formal) loop
 
