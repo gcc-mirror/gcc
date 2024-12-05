@@ -202,13 +202,13 @@ const unsigned int FLAG_WRITE_MEMORY = 1U << 4;
 
 /* Not all FP intrinsics raise FP exceptions or read FPCR register,
    use this flag to suppress it.  */
-const unsigned int FLAG_AUTO_FP = 1U << 5;
+const unsigned int FLAG_QUIET = 1U << 5;
 
 const unsigned int FLAG_FP = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS;
 const unsigned int FLAG_ALL = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS
   | FLAG_READ_MEMORY | FLAG_PREFETCH_MEMORY | FLAG_WRITE_MEMORY;
-const unsigned int FLAG_STORE = FLAG_WRITE_MEMORY | FLAG_AUTO_FP;
-const unsigned int FLAG_LOAD = FLAG_READ_MEMORY | FLAG_AUTO_FP;
+const unsigned int FLAG_STORE = FLAG_WRITE_MEMORY | FLAG_QUIET;
+const unsigned int FLAG_LOAD = FLAG_READ_MEMORY | FLAG_QUIET;
 
 typedef struct
 {
@@ -1322,7 +1322,7 @@ aarch64_init_simd_builtin_scalar_types (void)
 static unsigned int
 aarch64_call_properties (unsigned int flags, machine_mode mode)
 {
-  if (!(flags & FLAG_AUTO_FP) && FLOAT_MODE_P (mode))
+  if (!(flags & FLAG_QUIET) && FLOAT_MODE_P (mode))
     flags |= FLAG_FP;
 
   /* -fno-trapping-math means that we can assume any FP exceptions
@@ -4061,7 +4061,7 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
 
-     BUILTIN_VDC (BINOP, combine, 0, AUTO_FP)
+     BUILTIN_VDC (BINOP, combine, 0, QUIET)
      BUILTIN_VD_I (BINOPU, combine, 0, NONE)
      BUILTIN_VDC_P (BINOPP, combine, 0, NONE)
 	{
