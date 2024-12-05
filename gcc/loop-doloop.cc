@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "loop-unroll.h"
 #include "regs.h"
 #include "df.h"
+#include "targhooks.h"
 
 /* This module is used to modify loops with a determinable number of
    iterations to use special low-overhead looping instructions.
@@ -800,6 +801,18 @@ doloop_optimize (class loop *loop)
 
     basic_block loop_end = desc->out_edge->src;
     bool fail = bitmap_intersect_p (df_get_live_out (loop_end), modified);
+    /* iv_analysis_loop_init calls df_analyze_loop, which computes just
+       partial df for blocks of the loop only.  The above will catch if
+       any of the modified registers are use inside of the loop body, but
+       it will most likely not have accurate info on registers used
+       at the destination of the out_edge.  We call df_analyze on the
+       whole function at the start of the pass though and iterate only
+       on innermost loops or from innermost loops, so
+       live in on desc->out_edge->dest should be still unmodified from
+       the initial df_analyze.  */
+    if (!fail)
+      fail = bitmap_intersect_p (df_get_live_in (desc->out_edge->dest),
+				 modified);
     BITMAP_FREE (modified);
 
     if (fail)
@@ -825,7 +838,12 @@ doloop_optimize_loops (void)
       df_live_set_all_dirty ();
     }
 
-  for (auto loop : loops_list (cfun, 0))
+  df_analyze ();
+
+  for (auto loop : loops_list (cfun,
+			       targetm.can_use_doloop_p
+			       == can_use_doloop_if_innermost
+			       ? LI_ONLY_INNERMOST : LI_FROM_INNERMOST))
     doloop_optimize (loop);
 
   if (optimize == 1)
