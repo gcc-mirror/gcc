@@ -4947,10 +4947,19 @@ finish_id_expression_1 (tree id_expression,
 	}
       else if (TREE_CODE (decl) == FIELD_DECL)
 	{
+	  if (processing_contract_condition
+	  	       && scope_chain->x_contract_class_ptr == current_class_ptr)
+	    {
+	      error ("%qD this required when accessing a member within a constructor contract check", decl);
+		      return error_mark_node;
+	    }
 	  /* Since SCOPE is NULL here, this is an unqualified name.
 	     Access checking has been performed during name lookup
 	     already.  Turn off checking to avoid duplicate errors.  */
 	  push_deferring_access_checks (dk_no_check);
+
+
+
 	  decl = finish_non_static_data_member (decl, NULL_TREE,
 						/*qualifying_scope=*/NULL_TREE);
 	  pop_deferring_access_checks ();
@@ -4970,6 +4979,12 @@ finish_id_expression_1 (tree id_expression,
 		      && !shared_member_p (decl))))
 	    {
 	      /* A set of member functions.  */
+	      if (processing_contract_condition
+	           && scope_chain->x_contract_class_ptr == current_class_ptr)
+	         {
+	     	error ("%qD this required when accessing a member within a constructor contract check", decl);
+	           	      return error_mark_node;
+	         }
 	      decl = maybe_dummy_object (DECL_CONTEXT (first_fn), 0);
 	      return finish_class_member_access_expr (decl, id_expression,
 						      /*template_p=*/false,

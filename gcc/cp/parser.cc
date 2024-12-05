@@ -31720,13 +31720,17 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   /* 'this' is not allowed in preconditions of constructors or in postconditions
      of destructors.  Note that the previous value of this variable is
      established by the calling function, so we need to save it here.  */
-  tree saved_ccr = current_class_ref;
-  tree saved_ccp = current_class_ptr;
+  tree saved_ccp = scope_chain->x_contract_class_ptr;
+
+
   if ((DECL_CONSTRUCTOR_P (fn) && PRECONDITION_P (contract)) ||
        (DECL_DESTRUCTOR_P (fn) && POSTCONDITION_P (contract)))
     {
-      current_class_ref = current_class_ptr = NULL_TREE;
-      parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
+      scope_chain->x_contract_class_ptr = current_class_ptr;
+    }
+  else
+    {
+      scope_chain->x_contract_class_ptr = NULL_TREE;
     }
 
   push_unparsed_function_queues (parser);
@@ -31760,8 +31764,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   /* Restore the queue.  */
   pop_unparsed_function_queues (parser);
 
-  current_class_ref = saved_ccr;
-  current_class_ptr = saved_ccp;
+  scope_chain->x_contract_class_ptr = saved_ccp;
 
   /* Commit to changes.  */
   update_late_contract (contract, result, condition);
