@@ -1945,6 +1945,9 @@ struct GTY(()) saved_scope {
   tree x_current_class_ptr;
   tree x_current_class_ref;
 
+  /* Only used for uses of this in contract assertion.  */
+  tree x_contract_class_ptr;
+
   int x_processing_template_decl;
   int x_processing_specialization;
   int x_processing_constraint;
