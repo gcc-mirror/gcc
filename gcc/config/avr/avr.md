@@ -450,9 +450,11 @@
 
 (define_insn "pushhi1_insn"
   [(set (mem:HI (post_dec:HI (reg:HI REG_SP)))
-        (match_operand:HI 0 "register_operand" "r"))]
+        (match_operand:HI 0 "reg_or_0_operand" "r,Y00"))]
   ""
-  "push %B0\;push %A0"
+  "@
+	push %B0\;push %A0
+	push __zero_reg__\;push __zero_reg__"
   [(set_attr "length" "2")])
 
 ;; All modes for a multi-byte push.  We must include complex modes here too,
@@ -1029,6 +1031,9 @@
     // provided non-volatile, addr-space = generic, no reg-overlap
     // and the resulting addressings are natively supported.
     if (avropt_split_ldst
+        // Splitting too early may obfuscate some PRE_DEC / POST_INC
+        // opportunities, thus only split after avr-fuse-add.
+        && n_avr_fuse_add_executed > 0
         && GET_MODE_SIZE (<MODE>mode) > 1
         && avr_split_ldst (operands))
       DONE;

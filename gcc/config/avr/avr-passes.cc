@@ -434,6 +434,11 @@ static machine_mode size_to_mode (int size)
       Split all insns where the operation can be performed on individual
       bytes, like andsi3.  In example (4) the andhi3 can be optimized
       to an andqi3.
+
+   bbinfo_t::try_mem0_p
+      Try to fuse a mem = reg insn to mem = __zero_reg__.
+      This should only occur when -msplit-ldst is on, but may
+      also occur with pushes since push<mode>1 splits them.
 */
 
 
@@ -514,6 +519,7 @@ bool bbinfo_t::try_split_any_p;
 bool bbinfo_t::try_simplify_p;
 bool bbinfo_t::use_arith_p;
 bool bbinfo_t::use_set_some_p;
+bool bbinfo_t::try_mem0_p;
 
 
 // Abstract Interpretation of expressions.
@@ -1087,6 +1093,7 @@ struct optimize_data_t
   {}
 
   bool try_fuse (bbinfo_t *);
+  bool try_mem0 (bbinfo_t *);
   bool try_bin_arg1 (bbinfo_t *);
   bool try_simplify (bbinfo_t *);
   bool try_split_ldi (bbinfo_t *);
@@ -2509,6 +2516,44 @@ bbinfo_t::run_find_plies (const insninfo_t &ii, const memento_t &memo) const
 }
 
 
+// Try to propagate __zero_reg__ to a mem = reg insn's source.
+// Returns true on success and sets .n_new_insns.
+bool
+optimize_data_t::try_mem0 (bbinfo_t *)
+{
+  rtx_insn *insn = curr.ii.m_insn;
+  rtx set, mem, reg;
+  machine_mode mode;
+
+  if (insn
+      && (set = single_set (insn))
+      && MEM_P (mem = SET_DEST (set))
+      && REG_P (reg = SET_SRC (set))
+      && GET_MODE_SIZE (mode = GET_MODE (mem)) <= 4
+      && END_REGNO (reg) <= REG_32
+      && ! (regmask (reg) & memento_t::fixed_regs_mask)
+      && curr.regs.have_value (REGNO (reg), GET_MODE_SIZE (mode), 0x0))
+    {
+      avr_dump (";; Found insn %d: mem:%m = 0 = r%d\n", INSN_UID (insn),
+		mode, REGNO (reg));
+
+      // Some insns like PUSHes don't clobber REG_CC.
+      bool clobbers_cc = GET_CODE (PATTERN (insn)) == PARALLEL;
+
+      if (clobbers_cc)
+	emit_valid_move_clobbercc (mem, CONST0_RTX (mode));
+      else
+	emit_valid_insn (gen_rtx_SET (mem, CONST0_RTX (mode)));
+
+      n_new_insns = 1;
+
+      return true;
+    }
+
+  return false;
+}
+
+
 // Try to fuse two 1-byte insns .prev and .curr to one 2-byte insn (MOVW).
 // Returns true on success, and sets .n_new_insns, .ignore_mask etc.
 bool
@@ -3108,7 +3153,8 @@ bbinfo_t::optimize_one_block (bool &changed)
 		    || (bbinfo_t::try_bin_arg1_p && od.try_bin_arg1 (this))
 		    || (bbinfo_t::try_simplify_p && od.try_simplify (this))
 		    || (bbinfo_t::try_split_ldi_p && od.try_split_ldi (this))
-		    || (bbinfo_t::try_split_any_p && od.try_split_any (this)));
+		    || (bbinfo_t::try_split_any_p && od.try_split_any (this))
+		    || (bbinfo_t::try_mem0_p && od.try_mem0 (this)));
 
       rtx_insn *new_insns = get_insns ();
       end_sequence ();
@@ -3193,6 +3239,7 @@ bbinfo_t::optimize_one_function (function *func)
 
   // Which optimization(s) to perform.
   bbinfo_t::try_fuse_p = avropt_fuse_move & 0x1;      // Digit 0 in [0, 1].
+  bbinfo_t::try_mem0_p = avropt_fuse_move & 0x1;      // Digit 0 in [0, 1].
   bbinfo_t::try_bin_arg1_p = avropt_fuse_move & 0x2;  // Digit 1 in [0, 1].
   bbinfo_t::try_split_any_p = avropt_fuse_move & 0x4; // Digit 2 in [0, 1].
   bbinfo_t::try_split_ldi_p = avropt_fuse_move >> 3;    // Digit 3 in [0, 2].

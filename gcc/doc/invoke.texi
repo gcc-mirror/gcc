@@ -904,9 +904,9 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}
--mn_flash=@var{size}  -mno-interrupts
+-mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
--mrodata-in-ram  -mfract-convert-truncate  -msplit-bit-shift
+-mrodata-in-ram  -msplit-bit-shift  -msplit-ldst
 -mshort-calls  -mskip-bug  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
@@ -24374,6 +24374,11 @@ This optimization is turned on per default for @option{-O2} and higher,
 including @option{-Os} but excluding @option{-Oz}.
 Splitting of shifts with a constant offset that is
 a multiple of 8 is controlled by @option{-mfuse-move}.
+@opindex msplit-ldst
+
+@item -msplit-ldst
+Split multi-byte loads and stores into several byte loads and stores.
+This optimization is turned on per default for @option{-O2} and higher.
 
 @opindex mtiny-stack
 @item -mtiny-stack
