@@ -2481,7 +2481,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for first_op (bit_xor eq)
      second_op (eq bit_xor)
  (simplify
-  (first_op:c (bit_and:c truth_valued_p@0 truth_valued_p@1) (second_op:c @0 @1))
+  (first_op:c (bit_and:c truth_valued_p@0 truth_valued_p@1) (second_op @0 @1))
     (bit_not (bit_ior @0 @1))))
 
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
@@ -3841,7 +3841,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       cmp2 (gt eq ne ge eq ne)
       rcmp (ne le gt ne lt ge)
   (simplify
-   (op:c (cmp1:c @0 @1) (cmp2:c @0 @1))
+   (op:c (cmp1:c @0 @1) (cmp2 @0 @1))
    (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
     (rcmp @0 @1)))))
 
@@ -3850,7 +3850,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      cmp2 (gt eq ne ge eq ne)
      rcmp (eq gt le eq ge lt)
  (simplify
-  (eq:c (cmp1:c @0 @1) (cmp2:c @0 @1))
+  (eq:c (cmp1:c @0 @1) (cmp2 @0 @1))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
     (rcmp @0 @1))))
 
@@ -3879,7 +3879,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  (bit_xor:c @0 @1)
 	  tree_expr_nonzero_p@2)
 	@3)
-      (ne:c@4 @0 @1))
+      (ne@4 @0 @1))
     (bit_ior
       (cmp
 	{ build_zero_cst (TREE_TYPE (@0)); }
@@ -3893,7 +3893,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (cmp:c
 	(bit_xor:c @0 @1)
 	@2)
-      (ne:c@3 @0 @1))
+      (ne@3 @0 @1))
     (bit_ior
       (cmp
 	{ build_zero_cst (TREE_TYPE (@0)); }
@@ -5980,7 +5980,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cnd (cond vec_cond)
  (for eqne (eq ne)
   (simplify
-   (eqne:c (cnd @0 @1 @2) (cnd @3 @1 @2))
+   (eqne (cnd @0 @1 @2) (cnd @3 @1 @2))
     (if (!HONOR_NANS (@1)
 	 && types_match (TREE_TYPE (@0), TREE_TYPE (@3))
          && types_match (type, TREE_TYPE (@0)))
@@ -5988,7 +5988,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       { constant_boolean_node (eqne == NE_EXPR, type); }
       { constant_boolean_node (eqne != NE_EXPR, type); })))
   (simplify
-   (eqne:c (cnd @0 @1 @2) (cnd @3 @2 @1))
+   (eqne (cnd @0 @1 @2) (cnd @3 @2 @1))
     (if (!HONOR_NANS (@1)
 	 && types_match (TREE_TYPE (@0), TREE_TYPE (@3))
          && types_match (type, TREE_TYPE (@0)))
@@ -6440,7 +6440,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   @2)
  /* (a != b) ? (a ^ b) : 0 -> (a ^ b) */
  (simplify
-  (cnd (ne:c @0 @1) (bit_xor:c@2 @0 @1) integer_zerop)
+  (cnd (ne:c @0 @1) (bit_xor@2 @0 @1) integer_zerop)
   @2)
  /* (a != b) ? (a & b) : a -> (a & b) */
  /* (a != b) ? (a | b) : a -> (a | b) */
