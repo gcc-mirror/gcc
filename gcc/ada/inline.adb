@@ -2431,12 +2431,11 @@ package body Inline is
 
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
-             Defining_Identifier    =>
+             Defining_Identifier =>
                Make_Defining_Identifier (Loc, Chars (Obj_Id)),
-             In_Present             => False,
-             Out_Present            => not Constant_Present (Obj_Decl),
-             Null_Exclusion_Present => False,
-             Parameter_Type         => Typ_Def));
+             In_Present          => False,
+             Out_Present         => not Constant_Present (Obj_Decl),
+             Parameter_Type      => Typ_Def));
       end Build_Return_Object_Formal;
 
       --------------------------------------

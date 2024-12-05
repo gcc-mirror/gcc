@@ -909,11 +909,10 @@ package body Exp_Ch4 is
                    Defining_Identifier => Def_Id,
                    Type_Definition     =>
                      Make_Access_To_Object_Definition (Loc,
-                       All_Present            => True,
-                       Null_Exclusion_Present => False,
-                       Constant_Present       =>
+                       All_Present        => True,
+                       Constant_Present   =>
                          Is_Access_Constant (PtrT),
-                       Subtype_Indication     =>
+                       Subtype_Indication =>
                          New_Occurrence_Of (Etype (Exp), Loc))));
 
                --  Inherit the allocation-related attributes from the original
