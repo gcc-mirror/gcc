@@ -1,6 +1,22 @@
 2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
+	2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117660
+	* gm2/iso/fail/arraymismatch.mod: New test.
+
+2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2/iso/fail/forloopbyzero.mod: New test.
+
+2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
 	2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117371

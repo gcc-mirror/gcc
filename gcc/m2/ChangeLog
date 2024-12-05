@@ -1,6 +1,30 @@
 2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
+	2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117660
+	* gm2-compiler/P2Build.bnf (ArrayType): Update tok with the
+	composite token produced during array type declaration.
+	* gm2-compiler/P2SymBuild.mod (EndBuildArray): Create the
+	combinedtok and store it into the symbol table.
+	Also ensure combinedtok is pushed to the quad stack.
+	(BuildFieldArray): Preserve typetok.
+	* gm2-compiler/SymbolTable.def (PutArray): Rename parameters.
+	* gm2-compiler/SymbolTable.mod (PutArray): Rename parameters.
+
+2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2-compiler/M2GenGCC.mod (PerformLastForIterator):
+	Add check for zero step value and issue an error message.
+
+2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
 	2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117371
