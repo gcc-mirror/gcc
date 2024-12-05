@@ -1175,7 +1175,7 @@ gcn_vec_constant (machine_mode mode, int a)
   if (FLOAT_MODE_P (innermode))
     {
       REAL_VALUE_TYPE rv;
-      real_from_integer (&rv, NULL, a, SIGNED);
+      real_from_integer (&rv, VOIDmode, a, SIGNED);
       tem = const_double_from_real_value (rv, innermode);
     }
   else
