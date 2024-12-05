@@ -1,6 +1,12 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_vec_constant): Fix 'real_from_integer'
+	usage.
+
+	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/nvptx/nvptx-sm.def: Add '89'.
