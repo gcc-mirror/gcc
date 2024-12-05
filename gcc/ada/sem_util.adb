@@ -28232,11 +28232,7 @@ package body Sem_Util is
       end if;
 
       if Is_OK_Static_Expression (N) then
-         if not Raises_Constraint_Error (N) then
-            return Expr_Value (N);
-         else
-            return No_Uint;
-         end if;
+         return Expr_Value (N);
 
       elsif Etype (N) = Any_Type then
          return No_Uint;
@@ -28264,11 +28260,7 @@ package body Sem_Util is
       end if;
 
       if Is_OK_Static_Expression (N) then
-         if not Raises_Constraint_Error (N) then
-            return Expr_Value (N);
-         else
-            return No_Uint;
-         end if;
+         return Expr_Value (N);
 
       elsif Etype (N) = Any_Type then
          return No_Uint;
