@@ -193,22 +193,23 @@ using namespace aarch64;
 #define SIMD_MAX_BUILTIN_ARGS 5
 
 /* Flags that describe what a function might do.  */
-const unsigned int FLAG_DEFAULT = 0U;
 const unsigned int FLAG_READ_FPCR = 1U << 0;
 const unsigned int FLAG_RAISE_FP_EXCEPTIONS = 1U << 1;
 const unsigned int FLAG_READ_MEMORY = 1U << 2;
 const unsigned int FLAG_PREFETCH_MEMORY = 1U << 3;
 const unsigned int FLAG_WRITE_MEMORY = 1U << 4;
 
-/* Not all FP intrinsics raise FP exceptions or read FPCR register,
-   use this flag to suppress it.  */
-const unsigned int FLAG_QUIET = 1U << 5;
+/* Indicates that READ_FPCR and RAISE_FP_EXCEPTIONS should be set for
+   floating-point modes but not for integer modes.  */
+const unsigned int FLAG_AUTO_FP = 1U << 5;
 
+const unsigned int FLAG_QUIET = 0;
+const unsigned int FLAG_DEFAULT = FLAG_AUTO_FP;
 const unsigned int FLAG_FP = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS;
 const unsigned int FLAG_ALL = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS
   | FLAG_READ_MEMORY | FLAG_PREFETCH_MEMORY | FLAG_WRITE_MEMORY;
-const unsigned int FLAG_STORE = FLAG_WRITE_MEMORY | FLAG_QUIET;
-const unsigned int FLAG_LOAD = FLAG_READ_MEMORY | FLAG_QUIET;
+const unsigned int FLAG_STORE = FLAG_WRITE_MEMORY;
+const unsigned int FLAG_LOAD = FLAG_READ_MEMORY;
 
 typedef struct
 {
@@ -1322,7 +1323,7 @@ aarch64_init_simd_builtin_scalar_types (void)
 static unsigned int
 aarch64_call_properties (unsigned int flags, machine_mode mode)
 {
-  if (!(flags & FLAG_QUIET) && FLOAT_MODE_P (mode))
+  if ((flags & FLAG_AUTO_FP) && FLOAT_MODE_P (mode))
     flags |= FLAG_FP;
 
   /* -fno-trapping-math means that we can assume any FP exceptions
