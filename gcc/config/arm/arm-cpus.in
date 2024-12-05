@@ -1689,6 +1689,14 @@ begin cpu star-mc1
  architecture armv8-m.main+dsp+fp
  option nofp remove ALL_FP
  option nodsp remove armv7em
+ option cdecp0 add cdecp0
+ option cdecp1 add cdecp1
+ option cdecp2 add cdecp2
+ option cdecp3 add cdecp3
+ option cdecp4 add cdecp4
+ option cdecp5 add cdecp5
+ option cdecp6 add cdecp6
+ option cdecp7 add cdecp7
  isa quirk_no_asmcpu quirk_vlldm
  costs v7m
 end cpu star-mc1
