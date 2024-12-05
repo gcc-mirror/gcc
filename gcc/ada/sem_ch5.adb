@@ -4536,34 +4536,14 @@ package body Sem_Ch5 is
       ----------------
 
       function Check_Call (N : Node_Id) return Traverse_Result is
-         Nam  : Node_Id;
          Subp : Entity_Id;
-         Typ  : Entity_Id;
 
       begin
          if Nkind (N) = N_Function_Call then
-            Nam := Name (N);
-
-            --  Obtain the subprogram being invoked
-
-            loop
-               if Nkind (Nam) = N_Explicit_Dereference then
-                  Nam := Prefix (Nam);
-
-               elsif Nkind (Nam) = N_Selected_Component then
-                  Nam := Selector_Name (Nam);
-
-               else
-                  exit;
-               end if;
-            end loop;
-
-            Subp := Entity (Nam);
+            Subp := Get_Called_Entity (N);
 
             if Present (Subp) then
-               Typ := Etype (Subp);
-
-               if Requires_Transient_Scope (Typ) then
+               if Requires_Transient_Scope (Etype (Subp)) then
                   return Abandon;
 
                elsif Sec_Stack_Needed_For_Return (Subp) then
