@@ -2825,7 +2825,6 @@ package body Exp_Dist is
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => NVList,
-          Aliased_Present     => False,
           Object_Definition   =>
               New_Occurrence_Of (RTE (RE_NVList_Ref), Loc)));
 
@@ -7251,7 +7250,6 @@ package body Exp_Dist is
          Append_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Result,
-             Aliased_Present     => False,
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_NamedValue), Loc),
              Expression =>
@@ -7378,7 +7376,6 @@ package body Exp_Dist is
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Any,
-                      Aliased_Present     => False,
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Any), Loc),
                       Expression          => Expr));
@@ -7449,7 +7446,6 @@ package body Exp_Dist is
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Extra_Any_Parameter,
-                      Aliased_Present     => False,
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Any), Loc),
                       Expression          =>

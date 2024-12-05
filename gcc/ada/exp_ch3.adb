@@ -5687,7 +5687,6 @@ package body Exp_Ch3 is
 
                  Component_Definition =>
                    Make_Component_Definition (Loc,
-                     Aliased_Present => False,
                      Subtype_Indication => New_Occurrence_Of (Typ, Loc))),
 
              Expression =>
@@ -9318,7 +9317,6 @@ package body Exp_Ch3 is
           Defining_Identifier => Parent_N,
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present => False,
               Subtype_Indication => New_Occurrence_Of (Par_Subtype, Loc)));
 
       if Null_Present (Rec_Ext_Part) then
@@ -9376,7 +9374,6 @@ package body Exp_Ch3 is
           Defining_Identifier => First_Tag_Component (T),
           Component_Definition =>
             Make_Component_Definition (Sloc_N,
-              Aliased_Present => False,
               Subtype_Indication => New_Occurrence_Of (RTE (RE_Tag), Sloc_N)));
 
       if Null_Present (Comp_List)

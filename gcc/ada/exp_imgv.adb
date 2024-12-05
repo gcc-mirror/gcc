@@ -157,7 +157,6 @@ package body Exp_Imgv is
                      High_Bound => Make_Integer_Literal (Loc, UB))),
                  Component_Definition =>
                    Make_Component_Definition (Loc,
-                     Aliased_Present    => False,
                      Subtype_Indication => New_Occurrence_Of (Ctyp, Loc))),
              Expression          => Make_Aggregate (Loc, Expressions => V)));
       end Append_Table_To;
