@@ -4536,8 +4536,10 @@ package body Sem_Ch6 is
       --  may now appear in parameter and result profiles. Since the analysis
       --  of a subprogram body may use the parameter and result profile of the
       --  spec, swap any limited views with their non-limited counterpart.
+      --
+      --  Note that the non-limited view should also be exchanged in Ada 2005.
 
-      if Ada_Version >= Ada_2012 and then Present (Spec_Id) then
+      if Ada_Version >= Ada_2005 and then Present (Spec_Id) then
          Exch_Views := Exchange_Limited_Views (Spec_Id);
       end if;
 
