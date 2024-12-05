@@ -1527,7 +1527,6 @@ package body Exp_Disp is
                   Make_Access_To_Object_Definition (Loc,
                     All_Present            => True,
                     Null_Exclusion_Present => False,
-                    Constant_Present       => False,
                     Subtype_Indication     =>
                       New_Occurrence_Of (Desig_Typ, Loc)));
 
@@ -1974,7 +1973,6 @@ package body Exp_Disp is
                   Make_Access_To_Object_Definition (Loc,
                     All_Present            => True,
                     Null_Exclusion_Present => False,
-                    Constant_Present       => False,
                     Subtype_Indication     =>
                       New_Occurrence_Of (Ftyp, Loc)));
 
@@ -4922,7 +4920,7 @@ package body Exp_Disp is
       if not Building_Static_DT (Typ) then
 
          --  Generate:
-         --    DT     : No_Dispatch_Table_Wrapper;
+         --    DT     : aliased No_Dispatch_Table_Wrapper;
          --    DT_Ptr : Tag := !Tag (DT.NDT_Prims_Ptr'Address);
 
          if not Has_DT (Typ) then
@@ -4930,7 +4928,6 @@ package body Exp_Disp is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => DT,
                 Aliased_Present     => True,
-                Constant_Present    => False,
                 Object_Definition   =>
                   New_Occurrence_Of
                     (RTE (RE_No_Dispatch_Table_Wrapper), Loc)));
@@ -4973,7 +4970,7 @@ package body Exp_Disp is
             end if;
 
          --  Generate:
-         --    DT : Dispatch_Table_Wrapper (Nb_Prim);
+         --    DT : aliased Dispatch_Table_Wrapper (Nb_Prim);
          --    DT_Ptr : Tag := !Tag (DT.Prims_Ptr'Address);
 
          else
@@ -4992,7 +4989,6 @@ package body Exp_Disp is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => DT,
                 Aliased_Present     => True,
-                Constant_Present    => False,
                 Object_Definition   =>
                   Make_Subtype_Indication (Loc,
                     Subtype_Mark =>

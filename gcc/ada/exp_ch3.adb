@@ -2962,7 +2962,6 @@ package body Exp_Ch3 is
                   Make_Access_To_Object_Definition (Loc,
                     All_Present            => True,
                     Null_Exclusion_Present => False,
-                    Constant_Present       => False,
                     Subtype_Indication     =>
                       New_Occurrence_Of (Rec_Type, Loc)))));
 
