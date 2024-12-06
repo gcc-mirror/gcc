@@ -10806,36 +10806,26 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	  if (CONST_INT_P (addr))
 	    return false;
 	}
-      else if (GET_CODE (addr) == AND
-	       && const_32bit_mask (XEXP (addr, 1), DImode))
-	{
-	  addr = lowpart_subreg (SImode, XEXP (addr, 0), DImode);
-	  if (addr == NULL_RTX)
-	    return false;
-
-	  if (CONST_INT_P (addr))
-	    return false;
-	}
       else if (GET_CODE (addr) == AND)
 	{
-	  /* For ASHIFT inside AND, combine will not generate
-	     canonical zero-extend. Merge mask for AND and shift_count
-	     to check if it is canonical zero-extend.  */
-	  tmp = XEXP (addr, 0);
 	  rtx mask = XEXP (addr, 1);
-	  if (tmp && GET_CODE(tmp) == ASHIFT)
-	    {
-	      rtx shift_val = XEXP (tmp, 1);
-	      if (CONST_INT_P (mask) && CONST_INT_P (shift_val)
-		  && (((unsigned HOST_WIDE_INT) INTVAL(mask)
-		      | ((HOST_WIDE_INT_1U << INTVAL(shift_val)) - 1))
-		      == 0xffffffff))
-		{
-		  addr = lowpart_subreg (SImode, XEXP (addr, 0),
-					 DImode);
-		}
-	    }
+	  rtx shift_val;
 
+	  if (const_32bit_mask (mask, DImode)
+	      /* For ASHIFT inside AND, combine will not generate
+		 canonical zero-extend. Merge mask for AND and shift_count
+		 to check if it is canonical zero-extend.  */
+	      || (CONST_INT_P (mask)
+		  && GET_CODE (XEXP (addr, 0)) == ASHIFT
+		  && CONST_INT_P (shift_val = XEXP (XEXP (addr, 0), 1))
+		  && ((UINTVAL (mask)
+		       | ((HOST_WIDE_INT_1U << INTVAL (shift_val)) - 1))
+		      == HOST_WIDE_INT_UC (0xffffffff))))
+	    {
+	      addr = lowpart_subreg (SImode, XEXP (addr, 0), DImode);
+	      if (addr == NULL_RTX)
+		return false;
+	    }
 	}
     }
 
