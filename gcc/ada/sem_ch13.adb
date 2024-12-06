@@ -18870,39 +18870,6 @@ package body Sem_Ch13 is
    ------------------------------------
 
    procedure Validate_Unchecked_Conversions is
-      function Is_Null_Array (T : Entity_Id) return Boolean;
-      --  We want to warn in the case of converting to a wrong-sized array of
-      --  bytes, including the zero-size case. This returns True in that case,
-      --  which is necessary because a size of 0 is used to indicate both an
-      --  unknown size and a size of 0. It's OK for this to return True in
-      --  other zero-size cases, but we don't go out of our way; for example,
-      --  we don't bother with multidimensional arrays.
-
-      function Is_Null_Array (T : Entity_Id) return Boolean is
-      begin
-         if Is_Array_Type (T) and then Is_Constrained (T) then
-            declare
-               Index : constant Node_Id := First_Index (T);
-               R : Node_Id; -- N_Range
-            begin
-               case Nkind (Index) is
-                  when N_Range =>
-                     R := Index;
-                  when N_Subtype_Indication =>
-                     R := Range_Expression (Constraint (Index));
-                  when N_Identifier | N_Expanded_Name =>
-                     R := Scalar_Range (Entity (Index));
-                  when others =>
-                     raise Program_Error;
-               end case;
-
-               return Is_Null_Range (Low_Bound (R), High_Bound (R));
-            end;
-         end if;
-
-         return False;
-      end Is_Null_Array;
-
    begin
       for N in Unchecked_Conversions.First .. Unchecked_Conversions.Last loop
          declare
@@ -18933,9 +18900,8 @@ package body Sem_Ch13 is
                goto Continue;
             end if;
 
-            if (Known_Static_RM_Size (Source)
-                  and then Known_Static_RM_Size (Target))
-              or else Is_Null_Array (Target)
+            if Known_Static_RM_Size (Source)
+              and then Known_Static_RM_Size (Target)
             then
                --  This validation check, which warns if we have unequal sizes
                --  for unchecked conversion, and thus implementation dependent
@@ -18946,9 +18912,7 @@ package body Sem_Ch13 is
                Source_Siz := RM_Size (Source);
                Target_Siz := RM_Size (Target);
 
-               if Present (Source_Siz) and then Present (Target_Siz)
-                 and then Source_Siz /= Target_Siz
-               then
+               if Source_Siz /= Target_Siz then
                   Error_Msg
                     ("?z?types for unchecked conversion have different sizes!",
                      Eloc, Act_Unit);
