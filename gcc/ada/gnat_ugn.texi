@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 12, 2024
+GNAT User's Guide for Native Platforms , Jan 03, 2025
 
 AdaCore
 
@@ -16077,7 +16077,7 @@ equivalent @code{gnatmake} flag (@ref{d1,,Switches for gnatmake}).
 
 @item @code{-o `file'}
 
-Name the output file @code{file} (default is @code{b~`xxx}.adb`).
+Name the output file @code{file} (default is @code{b~`xxx'.adb}).
 Note that if this option is used, then linking must be done manually,
 gnatlink cannot be used.
 

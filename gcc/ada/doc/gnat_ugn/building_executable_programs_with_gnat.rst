@@ -6747,7 +6747,7 @@ be presented in subsequent sections.
   .. index:: -o   (gnatbind)
 
 :switch:`-o {file}`
-  Name the output file ``file`` (default is :file:`b~`xxx`.adb`).
+  Name the output file ``file`` (default is :file:`b~{xxx}.adb`).
   Note that if this option is used, then linking must be done manually,
   gnatlink cannot be used.
 
