@@ -9379,15 +9379,13 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  && TYPE_PRECISION (type) == CHAR_BIT)
 	for (unsigned int i = 0;
 	     i < (unsigned) RAW_DATA_LENGTH (inside_init); ++i)
-	  if (((const signed char *) RAW_DATA_POINTER (inside_init))[i] < 0)
+	  if (RAW_DATA_SCHAR_ELT (inside_init, i) < 0)
 	    warning_at (init_loc, OPT_Wconversion,
 			"conversion from %qT to %qT changes value from "
 			"%qd to %qd",
 			integer_type_node, type,
-			((const unsigned char *)
-			 RAW_DATA_POINTER (inside_init))[i],
-			((const signed char *)
-			 RAW_DATA_POINTER (inside_init))[i]);
+			RAW_DATA_UCHAR_ELT (inside_init, i),
+			RAW_DATA_SCHAR_ELT (inside_init, i));
       return inside_init;
     }
 
@@ -10593,8 +10591,7 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 		      tree origtype = p->origtype;
 		      if (start == 1)
 			p->value = build_int_cst (TREE_TYPE (v),
-						  *(const unsigned char *)
-						  RAW_DATA_POINTER (v));
+						  RAW_DATA_UCHAR_ELT (v, 0));
 		      else
 			{
 			  p->value = v;
@@ -10614,9 +10611,8 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 			    }
 			  else
 			    v = build_int_cst (TREE_TYPE (v),
-					       ((const unsigned char *)
-						RAW_DATA_POINTER (v))[plen
-								      - end]);
+					       RAW_DATA_UCHAR_ELT (v, plen
+								      - end));
 			  add_pending_init (loc, epurpose, v, origtype,
 					    implicit, braced_init_obstack);
 			}
@@ -10650,8 +10646,7 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 		      unsigned int l = RAW_DATA_LENGTH (p->value) - 1;
 		      p->value
 			= build_int_cst (TREE_TYPE (p->value),
-					 ((const unsigned char *)
-					  RAW_DATA_POINTER (p->value))[l]);
+					 RAW_DATA_UCHAR_ELT (p->value, l));
 		    }
 		  p->purpose = size_binop (PLUS_EXPR, p->purpose,
 					   bitsize_int (len));
@@ -10698,13 +10693,10 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 			  RAW_DATA_LENGTH (last->value) -= l;
 			  RAW_DATA_POINTER (last->value) += l;
 			  if (RAW_DATA_LENGTH (last->value) == 1)
-			    {
-			      const unsigned char *s
-				= ((const unsigned char *)
-				   RAW_DATA_POINTER (last->value));
-			      last->value
-				= build_int_cst (TREE_TYPE (last->value), *s);
-			    }
+			    last->value
+			      = build_int_cst (TREE_TYPE (last->value),
+					       RAW_DATA_UCHAR_ELT (last->value,
+								   0));
 			  last->purpose
 			    = size_binop (PLUS_EXPR, last->purpose,
 					  bitsize_int (l));
@@ -10718,8 +10710,7 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 					   > cnt);
 		      RAW_DATA_LENGTH (value) -= cnt;
 		      const unsigned char *s
-			= ((const unsigned char *) RAW_DATA_POINTER (value)
-			   + RAW_DATA_LENGTH (value));
+			= &RAW_DATA_UCHAR_ELT (value, RAW_DATA_LENGTH (value));
 		      unsigned int o = RAW_DATA_LENGTH (value);
 		      for (r = p; cnt--; ++o, ++s)
 			{
@@ -10731,8 +10722,7 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 			}
 		      if (RAW_DATA_LENGTH (value) == 1)
 			value = build_int_cst (TREE_TYPE (value),
-					       *((const unsigned char *)
-						 RAW_DATA_POINTER (value)));
+					       RAW_DATA_UCHAR_ELT (value, 0));
 		    }
 		}
 	      if (!implicit)
@@ -11662,8 +11652,7 @@ maybe_split_raw_data (tree value, tree *raw_data)
     return value;
   *raw_data = value;
   value = build_int_cst (integer_type_node,
-			 *(const unsigned char *)
-			 RAW_DATA_POINTER (*raw_data));
+			 RAW_DATA_UCHAR_ELT (*raw_data, 0));
   ++RAW_DATA_POINTER (*raw_data);
   --RAW_DATA_LENGTH (*raw_data);
   return value;

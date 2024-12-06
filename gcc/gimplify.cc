@@ -5533,8 +5533,7 @@ gimplify_init_ctor_eval (tree object, vec<constructor_elt, va_gc> *elts,
 		    tree init
 		      = build2 (INIT_EXPR, TREE_TYPE (cref), cref,
 				build_int_cst (TREE_TYPE (value),
-					       ((const unsigned char *)
-						RAW_DATA_POINTER (value))[i]));
+					       RAW_DATA_UCHAR_ELT (value, i)));
 		    gimplify_and_add (init, pre_p);
 		    ggc_free (init);
 		  }

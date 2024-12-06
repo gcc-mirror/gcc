@@ -14001,8 +14001,7 @@ fold (tree expr)
 		     - wi::to_offset (CONSTRUCTOR_ELT (op0, idx)->index));
 		gcc_checking_assert (o < RAW_DATA_LENGTH (val));
 		return build_int_cst (TREE_TYPE (val),
-				      ((const unsigned char *)
-				       RAW_DATA_POINTER (val))[o.to_uhwi ()]);
+				      RAW_DATA_UCHAR_ELT (val, o.to_uhwi ()));
 	      }
 	  }
 

@@ -10811,8 +10811,7 @@ c_parser_get_builtin_args (c_parser *parser, const char *bname,
 	  for (unsigned int i = 0; i < (unsigned) RAW_DATA_LENGTH (value); i++)
 	    {
 	      expr.value = build_int_cst (integer_type_node,
-					  ((const unsigned char *)
-					   RAW_DATA_POINTER (value))[i]);
+					  RAW_DATA_UCHAR_ELT (value, i));
 	      vec_safe_push (cexpr_list, expr);
 	    }
 	  c_parser_consume_token (parser);
@@ -13751,8 +13750,7 @@ c_parser_expression (c_parser *parser)
 	  tree val = embed->value;
 	  unsigned last = RAW_DATA_LENGTH (val) - 1;
 	  next.value = build_int_cst (TREE_TYPE (val),
-				      ((const unsigned char *)
-				       RAW_DATA_POINTER (val))[last]);
+				      RAW_DATA_UCHAR_ELT (val, last));
 	  next.original_type = integer_type_node;
 	  c_parser_consume_token (parser);
 	}
@@ -13881,8 +13879,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 		  && RAW_DATA_POINTER (value)[i] == 0)
 		*literal_zero_mask |= 1U << (idx + 1);
 	      expr.value = build_int_cst (integer_type_node,
-					  ((const unsigned char *)
-					   RAW_DATA_POINTER (value))[i]);
+					  RAW_DATA_UCHAR_ELT (value, i));
 	      vec_safe_push (ret, expr.value);
 	      if (orig_types)
 		vec_safe_push (orig_types, expr.original_type);

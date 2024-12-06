@@ -8389,9 +8389,7 @@ fold_array_ctor_reference (tree type, tree ctor,
 	    return NULL_TREE;
 	  *suboff += access_index.to_uhwi () * BITS_PER_UNIT;
 	  unsigned o = (access_index - wi::to_offset (elt->index)).to_uhwi ();
-	  return build_int_cst (TREE_TYPE (val),
-				((const unsigned char *)
-				 RAW_DATA_POINTER (val))[o]);
+	  return build_int_cst (TREE_TYPE (val), RAW_DATA_UCHAR_ELT (val, o));
 	}
       if (!size && TREE_CODE (val) != CONSTRUCTOR)
 	{
