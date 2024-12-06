@@ -14336,29 +14336,32 @@ generate_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
 void
 calculate_table_based_CRC (rtx *crc, const rtx &input_data,
 			   const rtx &polynomial,
-			   machine_mode crc_mode, machine_mode data_mode)
+			   machine_mode data_mode)
 {
-  unsigned short crc_bit_size = GET_MODE_BITSIZE (crc_mode).to_constant ();
-  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
   machine_mode mode = GET_MODE (*crc);
+  unsigned short crc_bit_size = GET_MODE_BITSIZE (mode).to_constant ();
+  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
   rtx tab = generate_crc_table (UINTVAL (polynomial), crc_bit_size);
 
   for (unsigned short i = 0; i < data_size; i++)
     {
       /* crc >> (crc_bit_size - 8).  */
-      *crc = force_reg (crc_mode, *crc);
+      *crc = force_reg (mode, *crc);
       rtx op1 = expand_shift (RSHIFT_EXPR, mode, *crc, crc_bit_size - 8,
 			      NULL_RTX, 1);
 
       /* data >> (8 * (GET_MODE_SIZE (data_mode).to_constant () - i - 1)).  */
       unsigned range_8 = 8 * (data_size - i - 1);
-      rtx data = force_reg (data_mode, input_data);
+      /* CRC's mode is always at least as wide as INPUT_DATA.  Convert
+	 INPUT_DATA into CRC's mode.  */
+      rtx data = gen_reg_rtx (mode);
+      convert_move (data, input_data, 1);
       data = expand_shift (RSHIFT_EXPR, mode, data, range_8, NULL_RTX, 1);
 
-      /* data >> (8 * (GET_MODE_SIZE (data_mode)
+      /* data >> (8 * (GET_MODE_SIZE (mode)
 					.to_constant () - i - 1)) & 0xFF.  */
       rtx data_final = expand_and (mode, data,
-				   gen_int_mode (255, data_mode), NULL_RTX);
+				   gen_int_mode (255, mode), NULL_RTX);
 
       /* (crc >> (crc_bit_size - 8)) ^ data_8bit.  */
       rtx in = expand_binop (mode, xor_optab, op1, data_final,
@@ -14367,7 +14370,7 @@ calculate_table_based_CRC (rtx *crc, const rtx &input_data,
       /* ((crc >> (crc_bit_size - 8)) ^ data_8bit) & 0xFF.  */
       rtx index = expand_and (mode, in, gen_int_mode (255, mode),
 			      NULL_RTX);
-      int log_crc_size = exact_log2 (GET_MODE_SIZE (crc_mode).to_constant ());
+      int log_crc_size = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
       index = expand_shift (LSHIFT_EXPR, mode, index,
 			    log_crc_size, NULL_RTX, 0);
 
@@ -14377,7 +14380,7 @@ calculate_table_based_CRC (rtx *crc, const rtx &input_data,
 			    0, OPTAB_DIRECT);
 
       /* crc_table[(crc >> (crc_bit_size - 8)) ^ data_8bit]  */
-      rtx tab_el = validize_mem (gen_rtx_MEM (crc_mode, addr));
+      rtx tab_el = validize_mem (gen_rtx_MEM (mode, addr));
 
       /* (crc << 8) if CRC is larger than 8, otherwise crc = 0.  */
       rtx high = NULL_RTX;
@@ -14420,7 +14423,7 @@ expand_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
   machine_mode crc_mode = GET_MODE (op0);
   rtx crc = gen_reg_rtx (crc_mode);
   convert_move (crc, op1, 0);
-  calculate_table_based_CRC (&crc, op2, op3, crc_mode, data_mode);
+  calculate_table_based_CRC (&crc, op2, op3, data_mode);
   convert_move (op0, crc, 0);
 }
 
@@ -14563,7 +14566,7 @@ expand_reversed_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
   convert_move (data, op2, 0);
   gen_reflecting_code (&data);
 
-  calculate_table_based_CRC (&crc, data, op3, crc_mode, data_mode);
+  calculate_table_based_CRC (&crc, data, op3, data_mode);
 
   gen_reflecting_code (&crc);
   convert_move (op0, crc, 0);
