@@ -18567,6 +18567,9 @@ s390_c_mode_for_floating_type (enum tree_index ti)
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE s390_c_mode_for_floating_type
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "S/390"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-s390.h"

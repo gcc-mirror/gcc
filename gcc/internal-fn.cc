@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -55,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const-call.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
+#include "gcc-urlifier.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -888,6 +890,7 @@ expand_TSAN_FUNC_EXIT (internal_fn, gcall *)
 static void
 expand_FALLTHROUGH (internal_fn, gcall *call)
 {
+  auto_urlify_attributes sentinel;
   error_at (gimple_location (call),
 	    "invalid use of attribute %<fallthrough%>");
 }

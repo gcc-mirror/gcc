@@ -1473,6 +1473,7 @@ OBJS = \
 	function-abi.o \
 	function-tests.o \
 	fwprop.o \
+	gcc-attribute-urlifier.o \
 	gcc-rich-location.o \
 	gcc-urlifier.o \
 	gcse.o \
@@ -3807,6 +3808,18 @@ regenerate-opt-urls: $(srcdir)/regenerate-opt-urls.py $(OPT_URLS_HTML_DEPS)
 .PHONY: regenerate-opt-urls-unit-test
 regenerate-opt-urls-unit-test: $(OPT_URLS_HTML_DEPS)
 	$(srcdir)/regenerate-opt-urls.py $(build_htmldir) $(shell dirname $(srcdir)) --unit-test
+
+# Regenerate attr-urls.def from the generated html.
+.PHONY: regenerate-attr-urls
+ATTR_URLS_HTML_DEPS = $(build_htmldir)/gcc/Concept-and-Symbol-Index.html
+
+regenerate-attr-urls: $(srcdir)/regenerate-attr-urls.py $(ATTR_URLS_HTML_DEPS)
+	$(srcdir)/regenerate-attr-urls.py $(build_htmldir) $(shell dirname $(srcdir))
+
+# Run the unit tests for regenerate-attr-urls.py
+.PHONY: regenerate-attr-urls-unit-test
+regenerate-attr-urls-unit-test: $(ATTR_URLS_HTML_DEPS)
+	$(srcdir)/regenerate-attr-urls.py $(build_htmldir) $(shell dirname $(srcdir)) --unit-test
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 \
            doc/fsf-funding.7 doc/gcov-tool.1 doc/gcov-dump.1 \

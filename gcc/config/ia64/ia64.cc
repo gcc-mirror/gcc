@@ -686,6 +686,9 @@ static const scoped_attribute_specs *const ia64_attribute_table[] =
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "IA-64"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Returns TRUE iff the target attribute indicated by ATTR_ID takes a plain

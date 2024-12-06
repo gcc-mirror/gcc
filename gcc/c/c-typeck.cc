@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "realmpfr.h"
 #include "tree-pretty-print-markup.h"
+#include "gcc-urlifier.h"
 
 /* Possible cases of implicit conversions.  Used to select diagnostic messages
    and control folding initializers in convert_for_assignment.  */
@@ -6421,6 +6422,7 @@ maybe_warn_nodiscard (location_t loc, tree expr)
       if (args)
 	args = TREE_VALUE (args);
       auto_diagnostic_group d;
+      auto_urlify_attributes sentinel;
       int warned;
       if (args)
 	warned = warning_at (loc, OPT_Wunused_result,
@@ -6443,6 +6445,7 @@ maybe_warn_nodiscard (location_t loc, tree expr)
       if (args)
 	args = TREE_VALUE (args);
       auto_diagnostic_group d;
+      auto_urlify_attributes sentinel;
       int warned;
       if (args)
 	warned = warning_at (loc, OPT_Wunused_result,

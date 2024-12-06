@@ -7935,6 +7935,9 @@ gcn_dwarf_register_span (rtx rtl)
 #undef  TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P gcn_vector_mode_supported_p
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "AMD GCN"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-gcn.h"

@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "symtab-thunks.h"
 #include "dbgcnt.h"
+#include "gcc-urlifier.h"
 
 /* Lattice values for const and pure functions.  Everything starts out
    being const, then may drop to pure and then neither depending on
@@ -215,6 +216,7 @@ suggest_attribute (diagnostic_option_id option, tree decl, bool known_finite,
   if (warned_about->contains (decl))
     return warned_about;
   warned_about->add (decl);
+  auto_urlify_attributes sentinel;
   warning_at (DECL_SOURCE_LOCATION (decl),
 	      option,
 	      known_finite

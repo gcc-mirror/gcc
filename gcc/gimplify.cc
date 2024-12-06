@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "context.h"
 #include "tree-nested.h"
+#include "gcc-urlifier.h"
 
 /* Identifier for a basic condition, mapping it to other basic conditions of
    its Boolean expression.  Basic conditions given the same uid (in the same
@@ -2912,6 +2913,8 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 static void
 expand_FALLTHROUGH (gimple_seq *seq_p)
 {
+  auto_urlify_attributes sentinel;
+
   struct walk_stmt_info wi;
   location_t loc[2];
   memset (&wi, 0, sizeof (wi));

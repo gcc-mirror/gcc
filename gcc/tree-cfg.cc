@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "profile.h"
 #include "sreal.h"
+#include "gcc-urlifier.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -9937,6 +9938,8 @@ do_warn_unused_result (gimple_seq seq)
 
 	  if (lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (ftype)))
 	    {
+	      auto_urlify_attributes sentinel;
+
 	      location_t loc = gimple_location (g);
 
 	      if (fdecl)

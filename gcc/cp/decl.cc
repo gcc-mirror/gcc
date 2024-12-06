@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
 #include "coroutines.h"
+#include "gcc-urlifier.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -6022,8 +6023,11 @@ start_decl (const cp_declarator *declarator,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning_at (DECL_SOURCE_LOCATION (decl), 0,
-		"inline function %qD given attribute %qs", decl, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning_at (DECL_SOURCE_LOCATION (decl), 0,
+		  "inline function %qD given attribute %qs", decl, "noinline");
+    }
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -18172,8 +18176,11 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
-    warning_at (DECL_SOURCE_LOCATION (decl1), 0,
-		"inline function %qD given attribute %qs", decl1, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning_at (DECL_SOURCE_LOCATION (decl1), 0,
+		  "inline function %qD given attribute %qs", decl1, "noinline");
+    }
 
   /* Handle gnu_inline attribute.  */
   if (GNU_INLINE_P (decl1))

@@ -29308,6 +29308,9 @@ rs6000_opaque_type_invalid_use_p (gimple *stmt)
   return false;
 }
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "PowerPC"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"

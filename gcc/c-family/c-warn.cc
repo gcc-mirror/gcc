@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-pretty-print.h"
 #include "langhooks.h"
+#include "gcc-urlifier.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -2676,6 +2677,7 @@ warn_duplicated_cond_add_or_warn (location_t loc, tree cond, vec<tree> **chain)
 bool
 diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 {
+  auto_urlify_attributes sentinel;
   bool warned = false;
 
   tree a1 = lookup_attribute ("optimize", DECL_ATTRIBUTES (olddecl));

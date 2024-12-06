@@ -12856,3 +12856,8 @@ This value is true if the target platform supports
 This value is true if the target platform supports
 libatomic.  The default value is false.
 @end deftypevr
+
+@deftypevr {Target Hook} {const char *} TARGET_DOCUMENTATION_NAME
+If non-NULL, this value is a string used for locating target-specific documentation for this target.
+The default value is NULL.
+@end deftypevr

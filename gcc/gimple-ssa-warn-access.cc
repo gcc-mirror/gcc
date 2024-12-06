@@ -56,6 +56,7 @@
 #include "attr-fnspec.h"
 #include "pointer-query.h"
 #include "pretty-print-markup.h"
+#include "gcc-urlifier.h"
 
 /* Return true if tree node X has an associated location.  */
 
@@ -4748,6 +4749,8 @@ pass_waccess::check_call_dangling (gcall *call)
 unsigned
 pass_waccess::execute (function *fun)
 {
+  auto_urlify_attributes sentinel;
+
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 

@@ -7821,6 +7821,9 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 #undef TARGET_HAVE_STRUB_SUPPORT_FOR
 #define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "Nvidia PTX"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-nvptx.h"

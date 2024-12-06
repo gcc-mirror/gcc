@@ -587,6 +587,14 @@ diagnostic_context::set_prefixing_rule (diagnostic_prefixing_rule_t rule)
       pp_prefixing_rule (sink->get_printer ()) = rule;
 }
 
+/* Set the urlifier without deleting the existing one.  */
+
+void
+diagnostic_context::override_urlifier (urlifier *urlifier)
+{
+  m_urlifier = urlifier;
+}
+
 void
 diagnostic_context::create_edit_context ()
 {

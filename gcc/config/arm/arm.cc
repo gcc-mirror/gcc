@@ -36096,6 +36096,9 @@ arm_mode_base_reg_class (machine_mode mode)
   return MODE_BASE_REG_REG_CLASS (mode);
 }
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "ARM"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */

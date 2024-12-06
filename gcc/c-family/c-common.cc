@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "tree-pretty-print-markup.h"
 #include "gcc-rich-location.h"
+#include "gcc-urlifier.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -6105,8 +6106,11 @@ parse_optimize_options (tree args, bool attr_p)
 		{
 		  ret = false;
 		  if (attr_p)
-		    warning (OPT_Wattributes,
-			     "bad option %qs to attribute %<optimize%>", p);
+		    {
+		      auto_urlify_attributes sentinel;
+		      warning (OPT_Wattributes,
+			       "bad option %qs to attribute %<optimize%>", p);
+		    }
 		  else
 		    warning (OPT_Wpragmas,
 			     "bad option %qs to pragma %<optimize%>", p);
@@ -6155,9 +6159,12 @@ parse_optimize_options (tree args, bool attr_p)
 	{
 	  ret = false;
 	  if (attr_p)
-	    warning (OPT_Wattributes,
-		     "bad option %qs to attribute %<optimize%>",
-		     decoded_options[i].orig_option_with_args_text);
+	    {
+	      auto_urlify_attributes sentinel;
+	      warning (OPT_Wattributes,
+		       "bad option %qs to attribute %<optimize%>",
+		       decoded_options[i].orig_option_with_args_text);
+	    }
 	  else
 	    warning (OPT_Wpragmas,
 		     "bad option %qs to pragma %<optimize%>",
@@ -6205,6 +6212,7 @@ attribute_fallthrough_p (tree attr)
   tree t = lookup_attribute ("", "fallthrough", attr);
   if (t == NULL_TREE)
     return false;
+  auto_urlify_attributes sentinel;
   /* It is no longer true that "this attribute shall appear at most once in
      each attribute-list", but we still give a warning.  */
   if (lookup_attribute ("", "fallthrough", TREE_CHAIN (t)))

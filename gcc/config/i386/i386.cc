@@ -27409,6 +27409,9 @@ ix86_cannot_copy_insn_p (rtx_insn *insn)
 #define TARGET_RUN_TARGET_SELFTESTS selftest::ix86_run_selftests
 #endif /* #if CHECKING_P */
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "x86"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-i386.h"

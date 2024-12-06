@@ -7486,6 +7486,15 @@ DEFHOOKPOD
 libatomic.  The default value is false.",
  bool, false)
 
+/* This value represents whether libatomic is available on
+   the target platform.  */
+DEFHOOKPOD
+(documentation_name,
+ "If non-NULL, this value is a string used for locating target-specific\
+ documentation for this target.\n\
+The default value is NULL.",
+ const char *, NULL)
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 

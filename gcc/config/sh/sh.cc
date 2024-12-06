@@ -668,6 +668,9 @@ TARGET_GNU_ATTRIBUTES (sh_attribute_table,
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE sh_c_mode_for_floating_type
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "SH"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
