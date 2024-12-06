@@ -30,6 +30,8 @@
 ;; direction of the user via a builtin.
 
 (define_c_enum "unspec" [
+  UNSPEC_3DNOW
+
   UNSPEC_MOVNTQ
   UNSPEC_PFRCP
   UNSPEC_PFRCPIT1
@@ -727,17 +729,20 @@
 })
 
 (define_expand "mmx_addv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand")
-	(plus:V2SF
-	  (match_operand:V2SF 1 "nonimmediate_operand")
-	  (match_operand:V2SF 2 "nonimmediate_operand")))]
+  [(parallel
+     [(set (match_operand:V2SF 0 "register_operand")
+	   (plus:V2SF
+	     (match_operand:V2SF 1 "nonimmediate_operand")
+	     (match_operand:V2SF 2 "nonimmediate_operand")))
+      (unspec [(const_int 0)] UNSPEC_3DNOW)])]
   "TARGET_3DNOW"
   "ix86_fixup_binary_operands_no_copy (PLUS, V2SFmode, operands);")
 
 (define_insn "*mmx_addv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
 	(plus:V2SF (match_operand:V2SF 1 "nonimmediate_operand" "%0")
-		   (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
+		   (match_operand:V2SF 2 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW && ix86_binary_operator_ok (PLUS, V2SFmode, operands)"
   "pfadd\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
@@ -745,21 +750,26 @@
    (set_attr "mode" "V2SF")])
 
 (define_expand "mmx_subv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand")
-        (minus:V2SF (match_operand:V2SF 1 "register_operand")
-		    (match_operand:V2SF 2 "nonimmediate_operand")))]
+  [(parallel
+     [(set (match_operand:V2SF 0 "register_operand")
+	   (minus:V2SF (match_operand:V2SF 1 "register_operand")
+		       (match_operand:V2SF 2 "nonimmediate_operand")))
+      (unspec [(const_int 0)] UNSPEC_3DNOW)])]
   "TARGET_3DNOW")
 
 (define_expand "mmx_subrv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand")
-        (minus:V2SF (match_operand:V2SF 2 "register_operand")
-		    (match_operand:V2SF 1 "nonimmediate_operand")))]
+  [(parallel
+     [(set (match_operand:V2SF 0 "register_operand")
+	   (minus:V2SF (match_operand:V2SF 2 "register_operand")
+		       (match_operand:V2SF 1 "nonimmediate_operand")))
+      (unspec [(const_int 0)] UNSPEC_3DNOW)])]
   "TARGET_3DNOW")
 
 (define_insn "*mmx_subv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y,y")
         (minus:V2SF (match_operand:V2SF 1 "nonimmediate_operand" "0,ym")
-		    (match_operand:V2SF 2 "nonimmediate_operand" "ym,0")))]
+		    (match_operand:V2SF 2 "nonimmediate_operand" "ym,0")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    pfsub\t{%2, %0|%0, %2}
@@ -769,16 +779,19 @@
    (set_attr "mode" "V2SF")])
 
 (define_expand "mmx_mulv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand")
-	(mult:V2SF (match_operand:V2SF 1 "nonimmediate_operand")
-		   (match_operand:V2SF 2 "nonimmediate_operand")))]
+  [(parallel
+     [(set (match_operand:V2SF 0 "register_operand")
+	   (mult:V2SF (match_operand:V2SF 1 "nonimmediate_operand")
+		      (match_operand:V2SF 2 "nonimmediate_operand")))
+      (unspec [(const_int 0)] UNSPEC_3DNOW)])]
   "TARGET_3DNOW"
   "ix86_fixup_binary_operands_no_copy (MULT, V2SFmode, operands);")
 
 (define_insn "*mmx_mulv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
 	(mult:V2SF (match_operand:V2SF 1 "nonimmediate_operand" "%0")
-		   (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
+		   (match_operand:V2SF 2 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW && ix86_binary_operator_ok (MULT, V2SFmode, operands)"
   "pfmul\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxmul")
@@ -808,7 +821,7 @@
 
 (define_expand "<code>v2sf3"
   [(set (match_operand:V2SF 0 "register_operand")
-        (smaxmin:V2SF
+	(smaxmin:V2SF
 	  (match_operand:V2SF 1 "register_operand")
 	  (match_operand:V2SF 2 "register_operand")))]
   "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
@@ -827,10 +840,11 @@
 })
 
 (define_expand "mmx_<code>v2sf3"
-  [(set (match_operand:V2SF 0 "register_operand")
-        (smaxmin:V2SF
-	  (match_operand:V2SF 1 "nonimmediate_operand")
-	  (match_operand:V2SF 2 "nonimmediate_operand")))]
+  [(parallel
+     [(set (match_operand:V2SF 0 "register_operand")
+	   (smaxmin:V2SF (match_operand:V2SF 1 "nonimmediate_operand")
+			 (match_operand:V2SF 2 "nonimmediate_operand")))
+      (unspec [(const_int 0)] UNSPEC_3DNOW)])]
   "TARGET_3DNOW"
 {
   if (!flag_finite_math_only || flag_signed_zeros)
@@ -851,9 +865,9 @@
 
 (define_insn "*mmx_<code>v2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
-        (smaxmin:V2SF
-	  (match_operand:V2SF 1 "nonimmediate_operand" "%0")
-	  (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
+	(smaxmin:V2SF (match_operand:V2SF 1 "nonimmediate_operand" "%0")
+		      (match_operand:V2SF 2 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW && ix86_binary_operator_ok (<CODE>, V2SFmode, operands)"
   "pf<maxmin_float>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
@@ -868,10 +882,11 @@
 
 (define_insn "mmx_ieee_<ieee_maxmin>v2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
-        (unspec:V2SF
+	(unspec:V2SF
 	  [(match_operand:V2SF 1 "register_operand" "0")
 	   (match_operand:V2SF 2 "nonimmediate_operand" "ym")]
-	  IEEE_MAXMIN))]
+	  IEEE_MAXMIN))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW"
   "pf<ieee_maxmin>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
@@ -880,7 +895,7 @@
 
 (define_insn "mmx_rcpv2sf2"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
-        (unspec:V2SF [(match_operand:V2SF 1 "nonimmediate_operand" "ym")]
+	(unspec:V2SF [(match_operand:V2SF 1 "nonimmediate_operand" "ym")]
 		     UNSPEC_PFRCP))]
   "TARGET_3DNOW"
   "pfrcp\t{%1, %0|%0, %1}"
@@ -1124,16 +1139,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "mmx_eqv2sf3"
-  [(set (match_operand:V2SI 0 "register_operand")
-	(eq:V2SI (match_operand:V2SF 1 "nonimmediate_operand")
-		 (match_operand:V2SF 2 "nonimmediate_operand")))]
-  "TARGET_3DNOW"
+  [(parallel
+     [(set (match_operand:V2SI 0 "register_operand")
+	   (eq:V2SI (match_operand:V2SF 1 "nonimmediate_operand")
+		    (match_operand:V2SF 2 "nonimmediate_operand")))
+      (unspec [(const_int 0)] UNSPEC_3DNOW)])]
+"TARGET_3DNOW"
   "ix86_fixup_binary_operands_no_copy (EQ, V2SFmode, operands);")
 
 (define_insn "*mmx_eqv2sf3"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
 	(eq:V2SI (match_operand:V2SF 1 "nonimmediate_operand" "%0")
-		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
+		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW && ix86_binary_operator_ok (EQ, V2SFmode, operands)"
   "pfcmpeq\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxcmp")
@@ -1143,7 +1161,8 @@
 (define_insn "mmx_gtv2sf3"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
 	(gt:V2SI (match_operand:V2SF 1 "register_operand" "0")
-		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
+		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW"
   "pfcmpgt\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxcmp")
@@ -1153,7 +1172,8 @@
 (define_insn "mmx_gev2sf3"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
 	(ge:V2SI (match_operand:V2SF 1 "register_operand" "0")
-		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
+		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW"
   "pfcmpge\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxcmp")
@@ -1485,7 +1505,8 @@
 
 (define_insn "mmx_fix_truncv2sfv2si2"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
-	(fix:V2SI (match_operand:V2SF 1 "nonimmediate_operand" "ym")))]
+	(fix:V2SI (match_operand:V2SF 1 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW"
   "pf2id\t{%1, %0|%0, %1}"
   [(set_attr "type" "mmxcvt")
@@ -1526,7 +1547,8 @@
 
 (define_insn "mmx_floatv2siv2sf2"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
-	(float:V2SF (match_operand:V2SI 1 "nonimmediate_operand" "ym")))]
+	(float:V2SF (match_operand:V2SI 1 "nonimmediate_operand" "ym")))
+   (unspec [(const_int 0)] UNSPEC_3DNOW)]
   "TARGET_3DNOW"
   "pi2fd\t{%1, %0|%0, %1}"
   [(set_attr "type" "mmxcvt")
