@@ -31727,20 +31727,30 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   if (flag_contracts_nonattr && flag_contracts_nonattr_const_keyword &&
       !const_p)
     flag_contracts_nonattr_noconst = 1;
-  /* 'this' is not allowed in preconditions of constructors or in postconditions
-     of destructors.  Note that the previous value of this variable is
-     established by the calling function, so we need to save it here.  */
-  tree saved_ccp = scope_chain->x_contract_class_ptr;
+  
+  /* In C++"0 contracts, 'this' is not allowed in preconditions of
+     constructors or in postconditions of destructors.  Note that the
+     previous value of this variable is established by the calling function,
+     so we need to save it here. P2900 contracts allow access to members
+     through explicit use of 'this' pointer. */
+   tree saved_ccr = current_class_ref;
+   tree saved_ccp = current_class_ptr;
+   tree saved_contract_ccp = contract_class_ptr;
 
-
-  if ((DECL_CONSTRUCTOR_P (fn) && PRECONDITION_P (contract)) ||
+   if ((DECL_CONSTRUCTOR_P (fn) && PRECONDITION_P (contract)) ||
        (DECL_DESTRUCTOR_P (fn) && POSTCONDITION_P (contract)))
     {
-      scope_chain->x_contract_class_ptr = current_class_ptr;
+      if (flag_contracts_nonattr)
+	contract_class_ptr = current_class_ptr;
+      else
+	{
+	  current_class_ref = current_class_ptr = NULL_TREE;
+	  parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
+	}
     }
   else
     {
-      scope_chain->x_contract_class_ptr = NULL_TREE;
+      contract_class_ptr = NULL_TREE;
     }
 
   push_unparsed_function_queues (parser);
@@ -31774,7 +31784,9 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   /* Restore the queue.  */
   pop_unparsed_function_queues (parser);
 
-  scope_chain->x_contract_class_ptr = saved_ccp;
+  current_class_ref = saved_ccr;
+  current_class_ptr = saved_ccp;
+  contract_class_ptr = saved_contract_ccp;
 
   /* Commit to changes.  */
   update_late_contract (contract, result, condition);
