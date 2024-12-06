@@ -2043,6 +2043,10 @@ extern GTY(()) struct saved_scope *scope_chain;
 
 #define current_ref_temp_count scope_chain->ref_temp_count
 
+/* Nonzero if we're parsing a precondition on a constructor or postcondition
+   on destructor.  */
+#define contract_class_ptr scope_chain->x_contract_class_ptr
+
 /* RAII sentinel to handle clearing processing_template_decl and restoring
    it when done.  */
 
