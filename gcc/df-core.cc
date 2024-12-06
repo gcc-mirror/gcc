@@ -872,7 +872,8 @@ make_pass_df_finish (gcc::context *ctxt)
    Given a BB_INDEX, do the dataflow propagation
    and set bits on for successors in PENDING for earlier
    and WORKLIST for later in bbindex_to_postorder
-   if the out set of the dataflow has changed.
+   if the out set of the dataflow has changed.  When WORKLIST
+   is NULL we are processing all later blocks.
 
    AGE specify time when BB was visited last time.
    AGE of 0 means we are visiting for first time and need to
@@ -925,7 +926,10 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
 	    {
 	      if (bbindex_to_postorder[bb_index]
 		  < bbindex_to_postorder[ob_index])
-		bitmap_set_bit (worklist, bbindex_to_postorder[ob_index]);
+		{
+		  if (worklist)
+		    bitmap_set_bit (worklist, bbindex_to_postorder[ob_index]);
+		}
 	      else
 		bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
 	    }
@@ -979,7 +983,10 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
 	    {
 	      if (bbindex_to_postorder[bb_index]
 		  < bbindex_to_postorder[ob_index])
-		bitmap_set_bit (worklist, bbindex_to_postorder[ob_index]);
+		{
+		  if (worklist)
+		    bitmap_set_bit (worklist, bbindex_to_postorder[ob_index]);
+		}
 	      else
 		bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
 	    }
@@ -1010,26 +1017,55 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
 
 static void
 df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
-			  	  bitmap pending,
                                   sbitmap considered,
                                   int *blocks_in_postorder,
 				  unsigned *bbindex_to_postorder,
-				  int n_blocks)
+				  unsigned n_blocks)
 {
   enum df_flow_dir dir = dataflow->problem->dir;
   int dcount = 0;
-  bitmap worklist = BITMAP_ALLOC (&df_bitmap_obstack);
   int age = 0;
   bool changed;
   vec<int> last_visit_age = vNULL;
   vec<int> last_change_age = vNULL;
   int prev_age;
 
+  bitmap worklist = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_tree_view (worklist);
+
   last_visit_age.safe_grow_cleared (n_blocks, true);
   last_change_age.safe_grow_cleared (n_blocks, true);
 
-  /* Double-queueing. Worklist is for the current iteration,
-     and pending is for the next. */
+  /* We start with processing all blocks, populating pending for the
+     next iteration.  */
+  bitmap pending = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_tree_view (pending);
+  for (unsigned index = 0; index < n_blocks; ++index)
+    {
+      unsigned bb_index = blocks_in_postorder[index];
+      dcount++;
+      prev_age = last_visit_age[index];
+      if (dir == DF_FORWARD)
+	changed = df_worklist_propagate_forward (dataflow, bb_index,
+						 bbindex_to_postorder,
+						 NULL, pending,
+						 considered,
+						 last_change_age,
+						 prev_age);
+      else
+	changed = df_worklist_propagate_backward (dataflow, bb_index,
+						  bbindex_to_postorder,
+						  NULL, pending,
+						  considered,
+						  last_change_age,
+						  prev_age);
+      last_visit_age[index] = ++age;
+      if (changed)
+	last_change_age[index] = age;
+    }
+
+  /* Double-queueing.  Worklist is for the current iteration,
+     and pending is for the next.  */
   while (!bitmap_empty_p (pending))
     {
       std::swap (pending, worklist);
@@ -1037,11 +1073,8 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
       do
 	{
 	  unsigned index = bitmap_clear_first_set_bit (worklist);
-
-	  unsigned bb_index;
+	  unsigned bb_index = blocks_in_postorder[index];
 	  dcount++;
-
-	  bb_index = blocks_in_postorder[index];
 	  prev_age = last_visit_age[index];
 	  if (dir == DF_FORWARD)
 	    changed = df_worklist_propagate_forward (dataflow, bb_index,
@@ -1091,7 +1124,6 @@ df_worklist_dataflow (struct dataflow *dataflow,
                       int *blocks_in_postorder,
                       int n_blocks)
 {
-  bitmap pending = BITMAP_ALLOC (&df_bitmap_obstack);
   bitmap_iterator bi;
   unsigned int *bbindex_to_postorder;
   int i;
@@ -1118,21 +1150,15 @@ df_worklist_dataflow (struct dataflow *dataflow,
 
   /* Initialize the mapping of block index to postorder.  */
   for (i = 0; i < n_blocks; i++)
-    {
-      bbindex_to_postorder[blocks_in_postorder[i]] = i;
-      /* Add all blocks to the worklist.  */
-      bitmap_set_bit (pending, i);
-    }
+    bbindex_to_postorder[blocks_in_postorder[i]] = i;
 
   /* Initialize the problem. */
   if (dataflow->problem->init_fun)
     dataflow->problem->init_fun (blocks_to_consider);
 
   /* Solve it.  */
-  df_worklist_dataflow_doublequeue (dataflow, pending, considered,
-				    blocks_in_postorder,
-				    bbindex_to_postorder,
-				    n_blocks);
+  df_worklist_dataflow_doublequeue (dataflow, considered, blocks_in_postorder,
+				    bbindex_to_postorder, n_blocks);
   free (bbindex_to_postorder);
 }
 
