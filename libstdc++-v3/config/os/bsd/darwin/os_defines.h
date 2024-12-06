@@ -54,4 +54,7 @@
 // No support for referencing weak symbols without a definition.
 #define _GLIBCXX_USE_WEAK_REF 0
 
+// read(2) can return EINVAL for n >= INT_MAX.
+#define _GLIBCXX_MAX_READ_SIZE (__INT_MAX__ - 1)
+
 #endif

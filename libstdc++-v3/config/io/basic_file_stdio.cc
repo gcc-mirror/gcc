@@ -338,6 +338,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if (__ret == 0 && ferror(this->file()))
       __ret = -1;
 #else
+
+#ifdef _GLIBCXX_MAX_READ_SIZE
+    if (__builtin_expect(__n > _GLIBCXX_MAX_READ_SIZE, 0))
+      __n = _GLIBCXX_MAX_READ_SIZE;
+#endif
+
     do
       __ret = read(this->fd(), __s, __n);
     while (__ret == -1L && errno == EINTR);
