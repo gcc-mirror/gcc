@@ -5331,16 +5331,17 @@ package body Exp_Ch6 is
 
       elsif Nkind (Call_Node) = N_Function_Call
         and then Nkind (Parent (Call_Node)) = N_Function_Call
+        and then Is_Entity_Name (Name (Parent (Call_Node)))
       then
          declare
             Aspect : constant Node_Id :=
               Find_Value_Of_Aspect
                 (Etype (Call_Node), Aspect_Constant_Indexing);
+            Subp   : constant Entity_Id := Entity (Name (Parent (Call_Node)));
 
          begin
             if Present (Aspect)
-              and then Is_Entity_Name (Name (Parent (Call_Node)))
-              and then Entity (Name (Parent (Call_Node))) = Entity (Aspect)
+              and then Subp = Ultimate_Alias (Entity (Aspect))
             then
                --  Resolution is now finished, make sure we don't start
                --  analysis again because of the duplication.

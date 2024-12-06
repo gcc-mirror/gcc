@@ -8945,7 +8945,7 @@ package body Exp_Util is
          Aspect := Find_Value_Of_Aspect (Typ, Aspect_Constant_Indexing);
 
          if Present (Aspect) then
-            Index := Entity (Aspect);
+            Index := Ultimate_Alias (Entity (Aspect));
 
             --  Examine the statements following the container object and
             --  look for a call to the default indexing routine where the
@@ -9030,7 +9030,7 @@ package body Exp_Util is
          Aspect := Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
 
          if Present (Aspect) then
-            Iter := Entity (Aspect);
+            Iter := Ultimate_Alias (Entity (Aspect));
 
             --  Examine the statements following the container object and
             --  look for a call to the default iterate routine where the
