@@ -1172,6 +1172,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (RAW_DATA_CST_CHECK (NODE)->raw_data_cst.str)
 #define RAW_DATA_OWNER(NODE) \
   (RAW_DATA_CST_CHECK (NODE)->raw_data_cst.owner)
+#define RAW_DATA_UCHAR_ELT(NODE, I) \
+  (((const unsigned char *) RAW_DATA_POINTER (NODE))[I])
+#define RAW_DATA_SCHAR_ELT(NODE, I) \
+  (((const signed char *) RAW_DATA_POINTER (NODE))[I])
 
 /* In a COMPLEX_CST node.  */
 #define TREE_REALPART(NODE) (COMPLEX_CST_CHECK (NODE)->complex.real)

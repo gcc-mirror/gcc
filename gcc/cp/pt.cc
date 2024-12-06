@@ -21958,6 +21958,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	RETURN (r);
       }
 
+    case RAW_DATA_CST:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	r = copy_node (t);
+	TREE_TYPE (r) = type;
+	RETURN (r);
+      }
+
     case PTRMEM_CST:
       /* These can sometimes show up in a partial instantiation, but never
 	 involve template parms.  */

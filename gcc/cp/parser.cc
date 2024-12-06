@@ -8520,6 +8520,19 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 	{
 	  while (true)
 	    {
+	      /* Handle #embed in the expression-list.  */
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+		{
+		  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+		  cp_lexer_consume_token (parser->lexer);
+		  vec_safe_reserve (expression_list,
+				    RAW_DATA_LENGTH (raw_data));
+		  for (tree argument : raw_data_range (raw_data))
+		    expression_list->quick_push (argument);
+		  cp_parser_require (parser, CPP_COMMA, RT_COMMA);
+		  continue;
+		}
+
 	      cp_expr expr
 		= cp_parser_parenthesized_expression_list_elt (parser,
 							       /*cast_p=*/
@@ -8987,12 +9000,27 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	/* At the beginning of attribute lists, check to see if the
 	   next token is an identifier.  */
 	if (is_attribute_list == id_attr
-	    && cp_lexer_peek_token (parser->lexer)->type == CPP_NAME)
+	    && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	  expr = cp_lexer_consume_token (parser->lexer)->u.value;
 	else if (is_attribute_list == assume_attr)
 	  expr = cp_parser_conditional_expression (parser);
 	else if (is_attribute_list == uneval_string_attr)
 	  expr = cp_parser_unevaluated_string_literal (parser);
+	else if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	  {
+	    /* Handle #embed in the argument list.  */
+	    tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+	    location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	    cp_lexer_consume_token (parser->lexer);
+	    vec_safe_reserve (expression_list, RAW_DATA_LENGTH (raw_data));
+	    for (tree arg : raw_data_range (raw_data))
+	      if (wrap_locations_p)
+		expression_list->quick_push (maybe_wrap_with_location (arg,
+								       loc));
+	      else
+		expression_list->quick_push (arg);
+	    goto get_comma;
+	  }
 	else
 	  expr
 	    = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
@@ -11103,8 +11131,24 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
       cp_expr assignment_expression;
 
       /* Parse the next assignment-expression.  */
-      assignment_expression
-	= cp_parser_assignment_expression (parser, pidk, cast_p, decltype_p);
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	{
+	  /* Users aren't interested in milions of -Wunused-value
+	     warnings when using #embed inside of a comma expression,
+	     and one CPP_NUMBER plus CPP_COMMA before it and one
+	     CPP_COMMA plus CPP_NUMBER after it is guaranteed by
+	     the preprocessor.  Thus, parse the whole CPP_EMBED just
+	     as a single INTEGER_CST, the last byte in it.  */
+	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	  cp_lexer_consume_token (parser->lexer);
+	  assignment_expression
+	    = *raw_data_iterator (raw_data, RAW_DATA_LENGTH (raw_data) - 1);
+	  assignment_expression.set_location (loc);
+	}
+      else
+	assignment_expression
+	  = cp_parser_assignment_expression (parser, pidk, cast_p, decltype_p);
 
       /* We don't create a temporary for a call that is the immediate operand
 	 of decltype or on the RHS of a comma.  But when we see a comma, we
@@ -19794,6 +19838,17 @@ cp_parser_template_argument_list (cp_parser* parser)
 	/* Consume the comma.  */
 	cp_lexer_consume_token (parser->lexer);
 
+      /* Handle #embed in the argument list.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	{
+	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+	  cp_lexer_consume_token (parser->lexer);
+	  args.reserve (RAW_DATA_LENGTH (raw_data), false);
+	  for (tree argument : raw_data_range (raw_data))
+	    args.quick_push (argument);
+	  continue;
+	}
+
       /* Parse the template-argument.  */
       tree argument = cp_parser_template_argument (parser);
 
@@ -26867,10 +26922,17 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
 	first_designator = designator;
 
       /* Parse the initializer.  */
-      initializer = cp_parser_initializer_clause (parser,
-						  (non_constant_p != nullptr
-						   ? &clause_non_constant_p
-						   : nullptr));
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	{
+	  initializer = cp_lexer_peek_token (parser->lexer)->u.value;
+	  clause_non_constant_p = false;
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else
+	initializer = cp_parser_initializer_clause (parser,
+						    (non_constant_p != nullptr
+						     ? &clause_non_constant_p
+						     : nullptr));
       /* If any clause is non-constant, so is the entire initializer.  */
       if (non_constant_p && clause_non_constant_p)
 	*non_constant_p = true;
@@ -39340,6 +39402,15 @@ cp_parser_oacc_clause_tile (cp_parser *parser, location_t clause_loc, tree list)
 	  cp_lexer_consume_token (parser->lexer);
 	  expr = integer_zero_node;
 	}
+      else if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	{
+	  /* Handle #embed in the size-expr-list.  */
+	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+	  cp_lexer_consume_token (parser->lexer);
+	  for (tree argument : raw_data_range (raw_data))
+	    tile = tree_cons (NULL_TREE, argument, tile);
+	  continue;
+	}
       else
 	expr = cp_parser_constant_expression (parser);
 
@@ -48491,6 +48562,16 @@ cp_parser_omp_tile_sizes (cp_parser *parser, location_t loc)
     {
       if (sizes && !cp_parser_require (parser, CPP_COMMA, RT_COMMA))
 	return error_mark_node;
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	{
+	  /* Handle #embed in the size-expr-list.  */
+	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+	  cp_lexer_consume_token (parser->lexer);
+	  for (tree argument : raw_data_range (raw_data))
+	    sizes = tree_cons (NULL_TREE, argument, sizes);
+	  continue;
+	}
 
       tree expr = cp_parser_constant_expression (parser);
       if (expr == error_mark_node)

@@ -3469,7 +3469,13 @@ reduced_constant_expression_p (tree t)
 		    return false;
 		  if (TREE_CODE (e.index) == RANGE_EXPR)
 		    cursor = TREE_OPERAND (e.index, 1);
-		  cursor = int_const_binop (PLUS_EXPR, cursor, size_one_node);
+		  if (TREE_CODE (e.value) == RAW_DATA_CST)
+		    cursor
+		      = int_const_binop (PLUS_EXPR, cursor,
+					 size_int (RAW_DATA_LENGTH (e.value)));
+		  else
+		    cursor = int_const_binop (PLUS_EXPR, cursor,
+					      size_one_node);
 		}
 	      if (find_array_ctor_elt (t, max) == -1)
 		return false;
@@ -4081,6 +4087,20 @@ array_index_cmp (tree key, tree index)
     }
 }
 
+/* Extract a single INTEGER_CST from RAW_DATA_CST RAW_DATA at
+   relative index OFF.  */
+
+static tree
+raw_data_cst_elt (tree raw_data, unsigned int off)
+{
+  return build_int_cst (TREE_TYPE (raw_data),
+			TYPE_UNSIGNED (TREE_TYPE (raw_data))
+			? (HOST_WIDE_INT)
+			  RAW_DATA_UCHAR_ELT (raw_data, off)
+			: (HOST_WIDE_INT)
+			  RAW_DATA_SCHAR_ELT (raw_data, off));
+}
+
 /* Returns the index of the constructor_elt of ARY which matches DINDEX, or -1
    if none.  If INSERT is true, insert a matching element rather than fail.  */
 
@@ -4105,10 +4125,11 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
       if (cindex == NULL_TREE)
 	{
 	  /* Verify that if the last index is missing, all indexes
-	     are missing.  */
+	     are missing and there is no RAW_DATA_CST.  */
 	  if (flag_checking)
 	    for (unsigned int j = 0; j < len - 1; ++j)
-	      gcc_assert ((*elts)[j].index == NULL_TREE);
+	      gcc_assert ((*elts)[j].index == NULL_TREE
+			  && TREE_CODE ((*elts)[j].value) != RAW_DATA_CST);
 	  if (i < end)
 	    return i;
 	  else
@@ -4131,6 +4152,11 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
 	{
 	  if (i < end)
 	    return i;
+	  tree value = (*elts)[end - 1].value;
+	  if (TREE_CODE (value) == RAW_DATA_CST
+	      && wi::to_offset (dindex) < (wi::to_offset (cindex)
+					   + RAW_DATA_LENGTH (value)))
+	    begin = end - 1;
 	  else
 	    begin = end;
 	}
@@ -4144,12 +4170,59 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
       tree idx = elt.index;
 
       int cmp = array_index_cmp (dindex, idx);
+      if (cmp > 0
+	  && TREE_CODE (elt.value) == RAW_DATA_CST
+	  && wi::to_offset (dindex) < (wi::to_offset (idx)
+				       + RAW_DATA_LENGTH (elt.value)))
+	cmp = 0;
       if (cmp < 0)
 	end = middle;
       else if (cmp > 0)
 	begin = middle + 1;
       else
 	{
+	  if (insert && TREE_CODE (elt.value) == RAW_DATA_CST)
+	    {
+	      /* We need to split the RAW_DATA_CST elt.  */
+	      constructor_elt e;
+	      gcc_checking_assert (TREE_CODE (idx) != RANGE_EXPR);
+	      unsigned int off = (wi::to_offset (dindex)
+				  - wi::to_offset (idx)).to_uhwi ();
+	      tree value = elt.value;
+	      unsigned int len = RAW_DATA_LENGTH (value);
+	      if (off > 1 && len >= off + 3)
+		value = copy_node (elt.value);
+	      if (off)
+		{
+		  if (off > 1)
+		    RAW_DATA_LENGTH (elt.value) = off;
+		  else
+		    elt.value = raw_data_cst_elt (elt.value, 0);
+		  e.index = size_binop (PLUS_EXPR, elt.index,
+					build_int_cst (TREE_TYPE (elt.index),
+						       off));
+		  e.value = NULL_TREE;
+		  ++middle;
+		  vec_safe_insert (CONSTRUCTOR_ELTS (ary), middle, e);
+		}
+	      (*elts)[middle].value = raw_data_cst_elt (value, off);
+	      if (len >= off + 2)
+		{
+		  e.index = (*elts)[middle].index;
+		  e.index = size_binop (PLUS_EXPR, e.index,
+					build_one_cst (TREE_TYPE (e.index)));
+		  if (len >= off + 3)
+		    {
+		      RAW_DATA_LENGTH (value) -= off + 1;
+		      RAW_DATA_POINTER (value) += off + 1;
+		      e.value = value;
+		    }
+		  else
+		    e.value = raw_data_cst_elt (value, off + 1);
+		  vec_safe_insert (CONSTRUCTOR_ELTS (ary), middle + 1, e);
+		}
+	      return middle;
+	    }
 	  if (insert && TREE_CODE (idx) == RANGE_EXPR)
 	    {
 	      /* We need to split the range.  */
@@ -4505,7 +4578,17 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
     {
       tree r;
       if (TREE_CODE (ary) == CONSTRUCTOR)
-	r = (*CONSTRUCTOR_ELTS (ary))[i].value;
+	{
+	  r = (*CONSTRUCTOR_ELTS (ary))[i].value;
+	  if (TREE_CODE (r) == RAW_DATA_CST)
+	    {
+	      tree ridx = (*CONSTRUCTOR_ELTS (ary))[i].index;
+	      gcc_checking_assert (ridx);
+	      unsigned int off
+		= (wi::to_offset (index) - wi::to_offset (ridx)).to_uhwi ();
+	      r = raw_data_cst_elt (r, off);
+	    }
+	}
       else if (TREE_CODE (ary) == VECTOR_CST)
 	r = VECTOR_CST_ELT (ary, i);
       else
