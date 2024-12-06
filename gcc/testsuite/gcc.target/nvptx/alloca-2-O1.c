@@ -1,9 +1,14 @@
-/* { dg-do compile } */
+/* { dg-do link } */
+/* { dg-do run { target nvptx_runtime_alloca_ptx } } */
 /* { dg-options {-O1 -mno-soft-stack} } */
+/* { dg-add-options nvptx_alloca_ptx } */
+/* { dg-additional-options -save-temps } */
 
 int
 main(void)
 {
   return !(__builtin_alloca(100) != __builtin_alloca(10));
-  /* { dg-message {sorry, unimplemented: target cannot support alloca} {} { target *-*-* } .-1 } */
 }
+/* { dg-final { scan-assembler-times {(?n)\talloca\.} 2 } }
+   { dg-final { scan-assembler-times {(?n)\talloca\.u64\t%r[0-9]+_local, 112;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)\talloca\.u64\t%r[0-9]+_local, 16;$} 1 } } */

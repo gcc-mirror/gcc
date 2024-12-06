@@ -1,3 +1,8 @@
+2024-12-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Adjust.
+
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

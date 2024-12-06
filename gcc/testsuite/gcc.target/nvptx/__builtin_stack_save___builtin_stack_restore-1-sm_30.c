@@ -2,7 +2,7 @@
 
 /* { dg-do assemble } */
 /* { dg-options {-O3 -mno-soft-stack} } */
-/* { dg-add-options nvptx_alloca_ptx } */
+/* { dg-additional-options -march=sm_30 } */
 /* { dg-additional-options -save-temps } */
 /* { dg-final { check-function-bodies {** } {} } } */
 
@@ -10,8 +10,10 @@ void *p;
 
 void f(void)
 {
+  // 0xdeadbeef
   p = __builtin_stack_save();
   asm volatile ("" : : : "memory");
+  // no-op
   __builtin_stack_restore(p);
   asm volatile ("" : : : "memory");
 }
@@ -20,10 +22,7 @@ void f(void)
 ** \.visible \.func f
 ** {
 ** 	\.reg\.u64 (%r[0-9]+);
-** 	\.reg\.u64 (%r[0-9]+);
-** 		stacksave\.u64	\1;
+** 		mov\.u64	\1, 3735928559;
 ** 		st\.global\.u64	\[p\], \1;
-** 		ld\.global\.u64	\2, \[p\];
-** 		stackrestore\.u64	\2;
 ** 	ret;
 */

@@ -6,6 +6,8 @@
 /* { dg-additional-options -save-temps } */
 /* { dg-final { check-function-bodies {** } {} } } */
 
+/* See 'gcc.c-torture/execute/pr36321.c', '-O0'.  */
+
 void sink(void *);
 
 void f(void)

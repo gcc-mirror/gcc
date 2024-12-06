@@ -2419,6 +2419,9 @@ nvptx code by default compiles for at least PTX ISA version 6.0.
 The nvptx runtime environment supports the PTX ISA directive
 @code{.alias}.
 
+@item nvptx_runtime_alloca_ptx
+The nvptx runtime environment supports PTX 'alloca'.
+
 @item nvptx_softstack
 nvptx @option{-msoft-stack} is enabled.
 @end table
@@ -3276,6 +3279,9 @@ Only MIPS targets support this feature, and only then in certain modes.
 
 @item nvptx_alias_ptx
 Enable using the PTX ISA directive @code{.alias} on nvptx targets.
+
+@item nvptx_alloca_ptx
+Enable PTX 'alloca' on nvptx targets.
 
 @item stack_size
 @anchor{stack_size_ao}

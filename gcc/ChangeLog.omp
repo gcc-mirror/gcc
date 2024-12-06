@@ -1,3 +1,22 @@
+2024-12-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* config/nvptx/nvptx.cc (nvptx_get_drap_rtx): Handle
+	'!TARGET_SOFT_STACK'.
+	* config/nvptx/nvptx.md (define_c_enum "unspec"): Add
+	'UNSPEC_STACKSAVE', 'UNSPEC_STACKRESTORE'.
+	(define_expand "allocate_stack", define_expand "save_stack_block")
+	(define_expand "save_stack_block"): Handle '!TARGET_SOFT_STACK',
+	PTX 'alloca'.
+	(define_insn "@nvptx_alloca_<mode>")
+	(define_insn "@nvptx_stacksave_<mode>")
+	(define_insn "@nvptx_stackrestore_<mode>"): New.
+	* doc/invoke.texi (Nvidia PTX Options): Update '-msoft-stack',
+	'-mno-soft-stack'.
+	* doc/sourcebuild.texi (nvptx-specific attributes): Document
+	'nvptx_runtime_alloca_ptx'.
+	(Add Options): Document 'nvptx_alloca_ptx'.
+
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/65181
