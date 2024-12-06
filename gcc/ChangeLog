@@ -1,3 +1,14 @@
+2024-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/64242
+	* config/avr/avr.md (nonlocal_goto): Don't restore
+	hard_frame_pointer_rtx directly, but copy it to local
+	register, and only set hard_frame_pointer_rtx from it
+	after emit_stack_restore().
+
 2024-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:
