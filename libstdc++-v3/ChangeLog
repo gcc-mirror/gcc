@@ -1,3 +1,15 @@
+2024-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117921
+	* include/bits/hashtable_policy.h (_Hash_code_base::_M_swap):
+	Use ADL swap for Hash members.
+	(_Hashtable_base::_M_swap): Use ADL swap for _Equal members.
+	* include/bits/stl_tree.h (_Rb_tree::swap): Use ADL swap for
+	_Compare members.
+	* testsuite/23_containers/set/modifiers/swap/adl.cc: New test.
+	* testsuite/23_containers/unordered_set/modifiers/swap-2.cc: New
+	test.
+
 2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108236

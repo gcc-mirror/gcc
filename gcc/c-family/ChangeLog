@@ -1,3 +1,9 @@
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107980
+	* c-common.h (enum rid): Add RID_C23_VA_START.
+	* c-common.cc (c_common_reswords): Add __builtin_c23_va_start.
+
 2024-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wdeprecated-variadic-comma-omission): New option.

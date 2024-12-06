@@ -1,3 +1,13 @@
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* cp-tree.h (finish_asm_stmt): Add TOPLEV_P argument.
+	* parser.cc (cp_parser_asm_definition): Parse also extended asm
+	without clobbers/labels outside of functions.
+	* semantics.cc (finish_asm_stmt): Add TOPLEV_P argument, if set,
+	check extra restrictions for extended asm outside of functions.
+	* pt.cc (tsubst_stmt): Adjust finish_asm_stmt caller.
+
 2024-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/116771

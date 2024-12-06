@@ -1,3 +1,39 @@
+2024-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117904
+	* gm2/iso/pass/forloopbyconst.mod: New test.
+
+2024-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117860
+	* gcc.target/i386/pr117860.c: New test.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113994
+	PR rtl-optimization/116799
+	* gcc.c-torture/execute/pr116799.c: New test.
+	* g++.dg/torture/pr113994.C: New test.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107980
+	* gcc.dg/c23-stdarg-4.c: Expect extra warning.
+	* gcc.dg/c23-stdarg-6.c: Likewise.
+	* gcc.dg/c23-stdarg-7.c: Likewise.
+	* gcc.dg/c23-stdarg-8.c: Likewise.
+	* gcc.dg/c23-stdarg-10.c: New test.
+	* gcc.dg/c23-stdarg-11.c: New test.
+	* gcc.dg/torture/c23-stdarg-split-1a.c: Expect extra warning.
+	* gcc.dg/torture/c23-stdarg-split-1b.c: Likewise.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* c-c++-common/toplevel-asm-1.c: New test.
+	* c-c++-common/toplevel-asm-2.c: New test.
+	* c-c++-common/toplevel-asm-3.c: New test.
+
 2024-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/116771

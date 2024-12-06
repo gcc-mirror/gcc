@@ -1,3 +1,17 @@
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107980
+	* c-parser.cc (c_parser_postfix_expression): Handle RID_C23_VA_START.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* c-parser.cc (c_parser_asm_string_literal): Add forward declaration.
+	(c_parser_asm_definition): Parse also extended asm without
+	clobbers/labels.
+	* c-typeck.cc (build_asm_expr): Allow extended asm outside of
+	functions and check extra restrictions.
+
 2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-parser.cc (c_parser_omp_allocate): Only check scope if

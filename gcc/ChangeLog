@@ -1,3 +1,211 @@
+2024-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117860
+	* config/i386/i386.cc (ix86_canonicalize_comparison): Swap
+	operands of GTU comparison to canonicalize addcarry/subborrow
+	comparison.
+	(ix86_cc_mode): Return CCCmode for the comparison of
+	addcarry/subborrow pattern.
+	* config/i386/i386.md (addcarry<mode>): Swap operands of
+	PLUS RTX to make it canonical.
+	(*addcarry<mode>_1): Ditto.
+	(addcarry peephole2s): Update RTXes for addcarry<mode>_1 change.
+	(*add<dwi>3_doubleword_cc_overflow_1): Ditto.
+	(*subborrow<mode>_1): New insn pattern.
+
+2024-12-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/mmintrin.h: Raise an error if this header is used.
+	Remove other content.
+
+2024-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd-pragma-builtins.def
+	(ENTRY_TERNARY_VLUT8): Use FLAG_QUIET rather than FLAG_DEFAULT.
+	(ENTRY_TERNARY_VLUT16): Likewise.
+
+2024-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (FLAG_QUIET): Redefine to 0,
+	replacing the old flag with...
+	(FLAG_AUTO_FP): ...this.
+	(FLAG_DEFAULT): Redefine to FLAG_AUTO_FP.
+	(aarch64_call_properties): Update accordingly.
+
+2024-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (FLAG_NONE): Rename to...
+	(FLAG_DEFAULT): ...this and update all references.
+	* config/aarch64/aarch64-simd-builtins.def: Update all references
+	here too.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Likewise.
+
+2024-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (FLAG_AUTO_FP): Rename to...
+	(FLAG_QUIET): ...this and update all references.
+	* config/aarch64/aarch64-simd-builtins.def: Update all references
+	here too.
+
+2024-12-05  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Refactor sorts of unsigned SAT_TRUNC match patterns.
+
+2024-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117801
+	* tree-outof-ssa.cc (ssa_is_replaceable_p): Make
+	direct internal function calls replaceable.
+	* expr.cc (get_def_for_expr): Handle replacements with calls.
+	(get_def_for_expr_class): Likewise.
+	(optimize_bitfield_assignment_op): Likewise.
+	(expand_expr_real_1): Likewise.  Properly expand direct
+	internal function defs.
+	* cfgexpand.cc (expand_call_stmt): Handle replacements with calls.
+	(avoid_deep_ter_for_debug): Likewise, always create a debug temp
+	for calls.
+	(expand_debug_expr): Likewise, give up for calls.
+	(expand_gimple_basic_block): Likewise.
+	* ccmp.cc (ccmp_candidate_p): Likewise.
+	(get_compare_parts): Likewise.
+
+2024-12-05  Arvin Zhong  <Arvin.Zhong@armchina.com>
+
+	* config/arm/arm-cpus.in (star-mc1): Add CDE options.
+	* doc/invoke.texi (cdecp options): Document for star-mc1.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113994
+	PR rtl-optimization/116799
+	* loop-doloop.cc: Include targhooks.h.
+	(doloop_optimize): Also punt on intersection of modified
+	with df_get_live_in (desc->out_edge->dest).
+	(doloop_optimize_loops): Call df_analyze.  Use
+	LI_ONLY_INNERMOST or LI_FROM_INNERMOST instead of 0 as
+	second loops_list argument.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107980
+	* ginclude/stdarg.h (va_start): For C23+ change parameters from
+	v, ... to just ... and define to __builtin_c23_va_start(__VA_ARGS__)
+	rather than __builtin_va_start(v, 0).
+
+2024-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/107957
+	* config/avr/avr-passes-fuse-move.h (bbinfo_t) <try_mem0_p>:
+	Add static property.
+	* config/avr/avr-passes.cc (bbinfo_t::try_mem0_p): Define it.
+	(optimize_data_t::try_mem0): New method.
+	(bbinfo_t::optimize_one_block) [bbinfo_t::try_mem0_p]: Run try_mem0.
+	(bbinfo_t::optimize_one_function): Set bbinfo_t::try_mem0_p.
+	* config/avr/avr.md (pushhi1_insn): Also allow zero as source.
+	(define_split) [avropt_split_ldst]: Only run avr_split_ldst()
+	when avr-fuse-move has been run at least once.
+	* doc/invoke.texi (AVR Options) <-msplit-ldst>: Document it.
+
+2024-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/107957
+	* config/avr/avr.opt (-msplit-ldst, avropt_split_ldst):
+	New option and associated var.
+	* common/config/avr/avr-common.cc (avr_option_optimization_table)
+	[OPT_LEVELS_2_PLUS]: Turn on -msplit_ldst.
+	* config/avr/avr-passes.cc (splittable_address_p)
+	(avr_byte_maybe_mem, avr_split_ldst): New functions.
+	* config/avr/avr-protos.h (avr_split_ldst): New proto.
+	* config/avr/avr.md (define_split) [avropt_split_ldst]: Run
+	avr_split_ldst().
+
+2024-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/64242
+	* config/avr/avr.md (nonlocal_goto): Don't restore
+	hard_frame_pointer_rtx directly, but copy it to local
+	register, and only set hard_frame_pointer_rtx from it
+	after emit_stack_restore().
+
+2024-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_out_add_msb): New proto.
+	* config/avr/avr.cc (avr_out_add_msb): New function.
+	(avr_adjust_insn_length) [ADJUST_LEN_ADD_GE0,
+	ADJUST_LEN_ADD_LT0]: Handle cases.
+	* config/avr/avr.md (adjust_len) <add_lt0, add_ge0>: New attr values.
+	(QISI2): New mode iterator.
+	(C_MSB): New mode_attr.
+	(*add<mode>3...msb_split, *add<mode>3.ge0, *add<mode>3.lt0)
+	(*sub<mode>3...msb_split, *sub<mode>3.ge0, *sub<mode>3.lt0): New
+	patterns replacing old ones, but with iterators and
+	using avr_out_add_msb() for asm out.
+
+2024-12-05  Filip Kastl  <fkastl@suse.cz>
+
+	* doc/invoke.texi: Add store-forwarding-max-distance.
+
+2024-12-05  Filip Kastl  <fkastl@suse.cz>
+
+	* params.opt: Add missing '=' after -param=cycle-accurate-model.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* output.h (insn_noperands): Declare.
+	* final.cc (insn_noperands): No longer static.
+	* varasm.cc (assemble_asm): Handle ASM_EXPR.
+	* lto-streamer-out.cc (lto_output_toplevel_asms): Add sorry_at
+	for non-STRING_CST toplevel asm for now.
+	* doc/extend.texi (Basic @code{asm}, Extended @code{asm}): Document
+	that extended asm is now allowed outside of functions with certain
+	restrictions.
+
+2024-12-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(vsetvl_def::get_name): Adjust return type.
+	(loadstore_def::get_name): Ditto.
+	(indexed_loadstore_def::get_name): Ditto.
+	(th_loadstore_width_def::get_name): Ditto.
+	(th_indexed_loadstore_width_def::get_name): Ditto.
+	(alu_def::get_name): Ditto.
+	(alu_frm_def::get_name): Ditto.
+	(widen_alu_frm_def::get_name): Ditto.
+	(narrow_alu_frm_def::get_name): Ditto.
+	(reduc_alu_frm_def::get_name): Ditto.
+	(widen_alu_def::get_name): Ditto.
+	(no_mask_policy_def::get_name): Ditto.
+	(return_mask_def::get_name): Ditto.
+	(narrow_alu_def::get_name): Ditto.
+	(move_def::get_name): Ditto.
+	(mask_alu_def::get_name): Ditto.
+	(reduc_alu_def::get_name): Ditto.
+	(th_extract_def::get_name): Ditto.
+	(scalar_move_def::get_name): Ditto.
+	(vundefined_def::get_name): Ditto.
+	(misc_def::get_name): Ditto.
+	(vset_def::get_name): Ditto.
+	(vcreate_def: Ditto.::get_name): Ditto.
+	(read_vl_def::get_name): Ditto.
+	(fault_load_def::get_name): Ditto.
+	(vlenb_def::get_name): Ditto.
+	(seg_loadstore_def::get_name): Ditto.
+	(seg_indexed_loadstore_def::get_name): Ditto.
+	(seg_fault_load_def::get_name): Ditto.
+	(crypto_vv_def::get_name): Ditto.
+	(crypto_vi_def::get_name): Ditto.
+	(crypto_vv_no_op_type_def::get_name): Ditto.
+	(sf_vqmacc_def::get_name): Ditto.
+	(sf_vqmacc_def::get_name): Ditto.
+	(sf_vfnrclip_def::get_name): Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_builder::add_unique_function): Adjust the type for the
+	function name holder.
+	(function_builder::add_overloaded_function): Ditto.
+	* config/riscv/riscv-vector-builtins.h (function_shape::get_name): Add
+	const to the return type.
+
 2024-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/libgdiagnostics/topics/execution-paths.rst: Add '§' before

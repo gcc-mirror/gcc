@@ -1,3 +1,9 @@
+2024-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117904
+	* gm2-compiler/M2GenGCC.mod (PerformLastForIterator): Add call to
+	BuildConvert when increment is > 0.
+
 2024-11-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117777
