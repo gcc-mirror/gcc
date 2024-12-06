@@ -317,6 +317,7 @@ DEFTIMEVAR (TV_TREE_LOOP_IFCVT       , "tree loop if-conversion")
 DEFTIMEVAR (TV_WARN_ACCESS           , "access analysis")
 DEFTIMEVAR (TV_GIMPLE_CRC_OPTIMIZATION, "crc optimization")
 DEFTIMEVAR (TV_EXT_DCE               , "ext dce")
+DEFTIMEVAR (TV_FOLD_MEM_OFFSETS      , "fold mem offsets")
 
 /* Everything else in rest_of_compilation not included above.  */
 DEFTIMEVAR (TV_EARLY_LOCAL	     , "early local passes")
