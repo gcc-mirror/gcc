@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options -mno-soft-stack } */
+/* { dg-additional-options -march=sm_30 } */
 
 void sink(void *);
 

@@ -1,4 +1,7 @@
 /* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
+/* See 'gcc.target/nvptx/__builtin_alloca_0-1-O0.c'.
+   { dg-xfail-if TODO { nvptx-*-* && { ! nvptx_softstack } } { "-O0" } { "" } } */
+
 extern void abort (void);
 
 extern __SIZE_TYPE__ strlen (const char *);

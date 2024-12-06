@@ -245,7 +245,7 @@ default_ptx_version_option (void)
      warp convergence.  */
   res = MAX (res, PTX_VERSION_6_0);
 
-  /* For sm_52+, pick at least 7.3.  */
+  /* For sm_52+, pick at least 7.3, to enable PTX 'alloca'.  */
   if (ptx_isa_option >= PTX_ISA_SM52)
     res = MAX (res, PTX_VERSION_7_3);
 
@@ -1797,7 +1797,7 @@ nvptx_function_ok_for_sibcall (tree, tree)
 static rtx
 nvptx_get_drap_rtx (void)
 {
-  if (TARGET_SOFT_STACK && stack_realign_drap)
+  if (stack_realign_drap)
     return arg_pointer_rtx;
   return NULL_RTX;
 }

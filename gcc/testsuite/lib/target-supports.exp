@@ -1009,9 +1009,37 @@ proc check_effective_target_alloca {} {
       return 0
     }
     if { [istarget nvptx-*-*] } {
+	# For nvptx, 'alloca' support depends on the configuration.  In case
+	# of PTX "native" stacks, for 'dg-do run', it additionally depends on
+	# runtime support.
 	if { ![check_effective_target_nvptx_softstack] } {
-	    return 0
+	    # '-mno-soft-stack': PTX "native" stacks
+
+	    # Not supported unless '-mptx=7.3'+ and '-march=sm_52'+.
+	    if { !([check_nvptx_default_ptx_isa_version_at_least 7 3]
+		   && [check_nvptx_default_ptx_isa_target_architecture_at_least sm_52]) } {
+		return 0
+	    }
+
+	    # Find 'dg-do-what' in an outer frame.
+	    set level 1
+	    while true {
+		upvar $level dg-do-what dg-do-what
+		if [info exists dg-do-what] then break
+		incr level
+	    }
+	    verbose "check_effective_target_alloca: found dg-do-what at level $level" 2
+
+	    if { [string equal [lindex ${dg-do-what} 0] run] } {
+		# For 'dg-do run', it additionally depends on runtime support.
+		# (If not supported, we don't try to demote 'run' to 'link',
+		# but instead simply fail the effective-target 'alloca' check.)
+		return [check_effective_target_nvptx_runtime_alloca_ptx]
+	    } else {
+		return 1
+	    }
 	} else {
+	    # '-msoft-stack'
 	    return 1
 	}
     }
@@ -14100,6 +14128,35 @@ proc check_effective_target_nvptx_default_ptx_isa_version_at_least_6_0 { } {
     return [check_nvptx_default_ptx_isa_version_at_least 6 0]
 }
 
+# Return 1 if nvptx code by default compiles for at least the specified PTX ISA
+# target architecture.
+
+proc check_nvptx_default_ptx_isa_target_architecture_at_least { ta } {
+    set name nvptx_default_ptx_isa_target_architecture_at_least_${ta}
+
+    if [regexp {^sm_(\d+)$} $ta dummy ptx_sm] {
+	set ptx_sm "${ptx_sm}0"
+    } else {
+	error "check_nvptx_default_ptx_isa_target_architecture_at_least: illegal argument: $ta"
+    }
+
+    set supported_p \
+	[concat \
+	     "(__PTX_SM__ >= $ptx_sm)"]
+
+    set src \
+	[list \
+	     "#if $supported_p" \
+	     "#else" \
+	     "#error unsupported" \
+	     "#endif"]
+    set src [join $src "\n"]
+    
+    set res [check_no_compiler_messages $name assembly $src ""]
+
+    return $res
+}
+
 # Return 1 if nvptx '-msoft-stack' is enabled.
 
 proc check_effective_target_nvptx_softstack { } {
@@ -14132,11 +14189,40 @@ proc check_nvptx_runtime_ptx_isa_version_at_least { major minor } {
     return $res
 }
 
+# Return 1 if nvptx code with the specified PTX ISA target architecture or
+# higher can be run.
+
+proc check_nvptx_runtime_ptx_isa_target_architecture_at_least { ta } {
+    set name nvptx_runtime_ptx_isa_target_architecture_${ta}
+
+    set default \
+	[check_nvptx_default_ptx_isa_target_architecture_at_least ${ta}]
+
+    if { $default } {
+	set flag ""
+    } else {
+	set flag "-march=$ta -mptx=_"
+    }
+
+    set res [check_runtime $name {
+	int main (void) { return 0; }
+    } $flag]
+
+    return $res
+}
+
 # Return 1 if the nvptx runtime environment supports the PTX ISA directive
 # '.alias'.
 
 proc check_effective_target_nvptx_runtime_alias_ptx { } {
     return [check_nvptx_runtime_ptx_isa_version_at_least 6 3]
+}
+
+# Return 1 if the nvptx runtime environment supports PTX 'alloca'.
+
+proc check_effective_target_nvptx_runtime_alloca_ptx { } {
+    return [expr { [check_nvptx_runtime_ptx_isa_version_at_least 7 3]
+		   && [check_nvptx_runtime_ptx_isa_target_architecture_at_least sm_52] }]
 }
 
 # Add options to enable nvptx using the PTX ISA directive '.alias'.
@@ -14146,6 +14232,23 @@ proc add_options_for_nvptx_alias_ptx { flags } {
 
     if { ![check_nvptx_default_ptx_isa_version_at_least 6 3] } {
 	append flags " -mptx=6.3"
+    }
+
+    return $flags
+}
+
+# Add options to enable nvptx using PTX 'alloca'.
+
+proc add_options_for_nvptx_alloca_ptx { flags } {
+    # We don't add '-mno-soft-stack' here; the users should take care of that
+    # explicitly.
+
+    if { ![check_nvptx_default_ptx_isa_version_at_least 7 3] } {
+	append flags " -mptx=7.3"
+    }
+
+    if { ![check_nvptx_default_ptx_isa_target_architecture_at_least sm_52] } {
+	append flags " -march=sm_52"
     }
 
     return $flags

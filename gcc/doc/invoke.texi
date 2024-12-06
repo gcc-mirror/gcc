@@ -30232,8 +30232,19 @@ Apply partitioned execution optimizations.  This is the default when any
 level of optimization is selected.
 
 @opindex msoft-stack
+@opindex mno-soft-stack
 @item -msoft-stack
-Generate code that does not use @code{.local} memory
+@itemx -mno-soft-stack
+For @option{-mno-soft-stack} (the default, unless @option{-mgomp} has
+been specified), use PTX ``native'' stacks, that is,
+generate code that uses @code{.local} memory or PTX @code{alloca}
+directly for stack storage.
+Unless @option{-mptx=7.3} or higher and @option{-march=sm_52} or
+higher are active, variable-length arrays and dynamically allocating
+memory on the stack with @code{alloca} are not supported.
+
+For @option{-msoft-stack} (implied by @option{-mgomp}),
+generate code that does not use @code{.local} memory or PTX @code{alloca}
 directly for stack storage. Instead, a per-warp stack pointer is
 maintained explicitly. This enables variable-length stack allocation (with
 variable-length arrays or @code{alloca}), and when global memory is used for
