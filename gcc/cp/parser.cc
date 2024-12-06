@@ -3387,8 +3387,25 @@ cp_parser_name_lookup_error (cp_parser* parser,
   if (decl == error_mark_node)
     {
       if (parser->scope && parser->scope != global_namespace)
-	error_at (location, "%<%E::%E%> has not been declared",
-		  parser->scope, name);
+	{
+	  auto_diagnostic_group sentinel;
+	  name_hint hint
+	    = suggest_alternative_in_explicit_scope (location, name,
+						     parser->scope);;
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      /* Ideally we'd have a fix-it hint here, but LOCATION
+		 isn't necessarily that of the name.  */
+	      error_at (location,
+			"%<%E::%E%> has not been declared;"
+			" did you mean %<%E::%s%>?",
+			parser->scope, name,
+			parser->scope, suggestion);
+	    }
+	  else
+	    error_at (location, "%<%E::%E%> has not been declared",
+		      parser->scope, name);
+	}
       else if (parser->scope == global_namespace)
 	error_at (location, "%<::%E%> has not been declared", name);
       else if (parser->object_scope

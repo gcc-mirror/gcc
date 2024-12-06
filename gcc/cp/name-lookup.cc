@@ -7351,6 +7351,9 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
   if (name == error_mark_node)
     return name_hint ();
 
+  if (TREE_CODE (scope) != NAMESPACE_DECL)
+    return name_hint ();
+
   /* Resolve any namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
 
