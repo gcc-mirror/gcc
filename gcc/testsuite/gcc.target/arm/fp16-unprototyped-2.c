@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mfp16-format=ieee" } */
+/* { dg-options "-mfp16-format=ieee -std=c17" } */
 
 extern int f ();
 
