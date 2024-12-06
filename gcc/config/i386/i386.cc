@@ -10825,6 +10825,9 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	      addr = lowpart_subreg (SImode, XEXP (addr, 0), DImode);
 	      if (addr == NULL_RTX)
 		return false;
+
+	      if (CONST_INT_P (addr))
+		return false;
 	    }
 	}
     }
