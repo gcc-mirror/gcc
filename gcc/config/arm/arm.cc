@@ -31803,50 +31803,6 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
     }
 }
 
-/* Expand a vcond or vcondu pattern with operands OPERANDS.
-   CMP_RESULT_MODE is the mode of the comparison result.  */
-
-void
-arm_expand_vcond (rtx *operands, machine_mode cmp_result_mode)
-{
-  /* When expanding for MVE, we do not want to emit a (useless) vpsel in
-     arm_expand_vector_compare, and another one here.  */
-  rtx mask;
-
-  if (TARGET_HAVE_MVE)
-    mask = gen_reg_rtx (arm_mode_to_pred_mode (cmp_result_mode).require ());
-  else
-    mask = gen_reg_rtx (cmp_result_mode);
-
-  bool inverted = arm_expand_vector_compare (mask, GET_CODE (operands[3]),
-					     operands[4], operands[5], true);
-  if (inverted)
-    std::swap (operands[1], operands[2]);
-  if (TARGET_NEON)
-  emit_insn (gen_neon_vbsl (GET_MODE (operands[0]), operands[0],
-			    mask, operands[1], operands[2]));
-  else
-    {
-      machine_mode cmp_mode = GET_MODE (operands[0]);
-
-      switch (GET_MODE_CLASS (cmp_mode))
-	{
-	case MODE_VECTOR_INT:
-	  emit_insn (gen_mve_q (VPSELQ_S, VPSELQ_S, cmp_mode, operands[0],
-				operands[1], operands[2], mask));
-	  break;
-	case MODE_VECTOR_FLOAT:
-	  if (TARGET_HAVE_MVE_FLOAT)
-	    emit_insn (gen_mve_q_f (VPSELQ_F, cmp_mode, operands[0],
-				    operands[1], operands[2], mask));
-	  else
-	    gcc_unreachable ();
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
-}
 
 #define MAX_VECT_LEN 16
 

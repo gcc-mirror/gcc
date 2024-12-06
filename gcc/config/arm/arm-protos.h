@@ -406,7 +406,6 @@ extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool);
 #endif /* RTX_CODE */
 
 extern bool arm_gen_setmem (rtx *);
-extern void arm_expand_vcond (rtx *, machine_mode);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 
 extern bool arm_autoinc_modes_ok_p (machine_mode, enum arm_auto_incmodes);
