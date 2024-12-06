@@ -3828,6 +3828,20 @@ print_instantiation_full_context (diagnostic_text_output_format &text_output)
   print_instantiation_partial_context (text_output, p, location);
 }
 
+static void
+print_location (diagnostic_text_output_format &text_output,
+		location_t loc)
+{
+  expanded_location xloc = expand_location (loc);
+  pretty_printer *const pp = text_output.get_printer ();
+  if (text_output.show_column_p ())
+    pp_verbatim (pp, _("%r%s:%d:%d:%R   "),
+		 "locus", xloc.file, xloc.line, xloc.column);
+  else
+    pp_verbatim (pp, _("%r%s:%d:%R   "),
+		 "locus", xloc.file, xloc.line);
+}
+
 /* Helper function of print_instantiation_partial_context() that
    prints a single line of instantiation context.  */
 
@@ -3839,16 +3853,9 @@ print_instantiation_partial_context_line (diagnostic_text_output_format &text_ou
   if (loc == UNKNOWN_LOCATION)
     return;
 
-  expanded_location xloc = expand_location (loc);
+  print_location (text_output, loc);
 
   pretty_printer *const pp = text_output.get_printer ();
-
-  if (text_output.show_column_p ())
-    pp_verbatim (pp, _("%r%s:%d:%d:%R   "),
-		 "locus", xloc.file, xloc.line, xloc.column);
-  else
-    pp_verbatim (pp, _("%r%s:%d:%R   "),
-		 "locus", xloc.file, xloc.line);
 
   if (t != NULL)
     {
@@ -3922,22 +3929,11 @@ print_instantiation_partial_context (diagnostic_text_output_format &text_output,
 	}
       if (t != NULL && skip > 0)
 	{
-	  expanded_location xloc;
-	  xloc = expand_location (loc);
-	  pretty_printer *const pp = text_output.get_printer ();
-	  if (text_output.show_column_p ())
-	    pp_verbatim (pp,
-			 _("%r%s:%d:%d:%R   [ skipping %d instantiation "
-			   "contexts, use -ftemplate-backtrace-limit=0 to "
-			   "disable ]\n"),
-			 "locus", xloc.file, xloc.line, xloc.column, skip);
-	  else
-	    pp_verbatim (pp,
-			 _("%r%s:%d:%R   [ skipping %d instantiation "
-			   "contexts, use -ftemplate-backtrace-limit=0 to "
-			   "disable ]\n"),
-			 "locus", xloc.file, xloc.line, skip);
-
+	  print_location (text_output, loc);
+	  pp_verbatim (text_output.get_printer (),
+		       _("[ skipping %d instantiation contexts,"
+			 " use -ftemplate-backtrace-limit=0 to disable ]\n"),
+		       skip);
 	  do {
 	    loc = t->locus;
 	    t = t->next;
@@ -3983,35 +3979,16 @@ maybe_print_constexpr_context (diagnostic_text_output_format &text_output)
 
   FOR_EACH_VEC_ELT (call_stack, ix, t)
     {
-      expanded_location xloc = expand_location (EXPR_LOCATION (t));
       const char *s = expr_as_string (t, 0);
       pretty_printer *const pp = text_output.get_printer ();
-      if (text_output.show_column_p ())
-	pp_verbatim (pp,
-		     _("%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"),
-		     "locus", xloc.file, xloc.line, xloc.column, s);
-      else
-	pp_verbatim (pp,
-		     _("%r%s:%d:%R   in %<constexpr%> expansion of %qs"),
-		     "locus", xloc.file, xloc.line, s);
+      print_location (text_output, EXPR_LOCATION (t));
+      pp_verbatim (pp,
+		   _("in %<constexpr%> expansion of %qs"),
+		   s);
       pp_newline (pp);
     }
 }
 
-
-static void
-print_location (diagnostic_text_output_format &text_output,
-		location_t loc)
-{
-  expanded_location xloc = expand_location (loc);
-  pretty_printer *const pp = text_output.get_printer ();
-  if (text_output.show_column_p ())
-    pp_verbatim (pp, _("%r%s:%d:%d:%R   "),
-                 "locus", xloc.file, xloc.line, xloc.column);
-  else
-    pp_verbatim (pp, _("%r%s:%d:%R   "),
-                 "locus", xloc.file, xloc.line);
-}
 
 static void
 print_constrained_decl_info (diagnostic_text_output_format &text_output,
