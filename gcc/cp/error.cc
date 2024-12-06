@@ -3647,6 +3647,8 @@ static void
 cp_diagnostic_text_starter (diagnostic_text_output_format &text_output,
 			    const diagnostic_info *diagnostic)
 {
+  pp_set_prefix (text_output.get_printer (),
+		 text_output.build_indent_prefix (true));
   text_output.report_current_module (diagnostic_location (diagnostic));
   cp_print_error_function (text_output, diagnostic);
   maybe_print_instantiation_context (text_output);
@@ -3814,13 +3816,19 @@ print_instantiation_full_context (diagnostic_text_output_format &text_output)
 
   if (p)
     {
+      bool show_file
+	= ((!text_output.show_nesting_p ())
+	   || text_output.show_locations_in_nesting_p ());
+      char *indent = text_output.build_indent_prefix (true);
       pp_verbatim (text_output.get_printer (),
 		   p->list_p ()
-		   ? _("%s: In substitution of %qS:\n")
-		   : _("%s: In instantiation of %q#D:\n"),
-		   LOCATION_FILE (location),
+		   ? _("%s%s%sIn substitution of %qS:\n")
+		   : _("%s%s%sIn instantiation of %q#D:\n"),
+		   indent,
+		   show_file ? LOCATION_FILE (location) : "",
+		   show_file ? ": " : "",
 		   p->get_node ());
-
+      free (indent);
       location = p->locus;
       p = p->next;
     }
@@ -3842,6 +3850,71 @@ print_location (diagnostic_text_output_format &text_output,
 		 "locus", xloc.file, xloc.line);
 }
 
+/* A RAII class for use when emitting a line of contextual information
+   via pp_verbatim to a diagnostic_text_output_format to add before/after
+   behaviors to the pp_verbatim calls.
+
+   If the text output has show_nesting_p (), then the ctor prints
+   leading indentation and a bullet point, and the dtor prints
+   the location on a new line, and calls diagnostic_show_locus, both
+   with indentation (and no bullet point).
+
+   Otherwise (when the text output has !show_nesting_p), the ctor prints
+   the location as leading information on the same line, and the
+   dtor optionally calls diagnostic_show_locus.  */
+
+class auto_context_line
+{
+public:
+  auto_context_line (diagnostic_text_output_format &text_output,
+		     location_t loc,
+		     bool show_locus = false)
+  : m_text_output (text_output),
+    m_loc (loc),
+    m_show_locus (show_locus)
+  {
+    char *indent = m_text_output.build_indent_prefix (true);
+    pp_verbatim (m_text_output.get_printer (), indent);
+    free (indent);
+    if (!m_text_output.show_nesting_p ())
+      print_location (m_text_output, m_loc);
+  }
+  ~auto_context_line ()
+  {
+    pretty_printer *const pp = m_text_output.get_printer ();
+    if (m_text_output.show_nesting_p ())
+      {
+	if (m_text_output.show_locations_in_nesting_p ())
+	  {
+	    char *indent = m_text_output.build_indent_prefix (false);
+	    pp_verbatim (pp, indent);
+	    print_location (m_text_output, m_loc);
+	    pp_newline (pp);
+
+	    char *saved_prefix = pp_take_prefix (pp);
+	    pp_set_prefix (pp, indent);
+	    gcc_rich_location rich_loc (m_loc);
+	    diagnostic_show_locus (&m_text_output.get_context (), &rich_loc,
+				   DK_NOTE, pp);
+	    pp_set_prefix (pp, saved_prefix);
+	  }
+      }
+    else if (m_show_locus)
+      {
+	char *saved_prefix = pp_take_prefix (pp);
+	pp_set_prefix (pp, nullptr);
+	gcc_rich_location rich_loc (m_loc);
+	diagnostic_show_locus (&m_text_output.get_context (), &rich_loc,
+			       DK_NOTE, pp);
+	pp_set_prefix (pp, saved_prefix);
+      }
+  }
+private:
+  diagnostic_text_output_format &m_text_output;
+  location_t m_loc;
+  bool m_show_locus;
+};
+
 /* Helper function of print_instantiation_partial_context() that
    prints a single line of instantiation context.  */
 
@@ -3853,7 +3926,7 @@ print_instantiation_partial_context_line (diagnostic_text_output_format &text_ou
   if (loc == UNKNOWN_LOCATION)
     return;
 
-  print_location (text_output, loc);
+  auto_context_line sentinel (text_output, loc, true);
 
   pretty_printer *const pp = text_output.get_printer ();
 
@@ -3879,10 +3952,6 @@ print_instantiation_partial_context_line (diagnostic_text_output_format &text_ou
 		   ? _("recursively required from here\n")
 		   : _("required from here\n"));
     }
-  gcc_rich_location rich_loc (loc);
-  char *saved_prefix = pp_take_prefix (pp);
-  diagnostic_show_locus (&text_output.get_context (), &rich_loc, DK_NOTE, pp);
-  pp_set_prefix (pp, saved_prefix);
 }
 
 /* Same as print_instantiation_full_context but less verbose.  */
@@ -3929,7 +3998,7 @@ print_instantiation_partial_context (diagnostic_text_output_format &text_output,
 	}
       if (t != NULL && skip > 0)
 	{
-	  print_location (text_output, loc);
+	  auto_context_line sentinel (text_output, loc);
 	  pp_verbatim (text_output.get_printer (),
 		       _("[ skipping %d instantiation contexts,"
 			 " use -ftemplate-backtrace-limit=0 to disable ]\n"),
@@ -3981,7 +4050,7 @@ maybe_print_constexpr_context (diagnostic_text_output_format &text_output)
     {
       const char *s = expr_as_string (t, 0);
       pretty_printer *const pp = text_output.get_printer ();
-      print_location (text_output, EXPR_LOCATION (t));
+      auto_context_line sentinel (text_output, EXPR_LOCATION (t));
       pp_verbatim (pp,
 		   _("in %<constexpr%> expansion of %qs"),
 		   s);
@@ -3994,7 +4063,7 @@ static void
 print_constrained_decl_info (diagnostic_text_output_format &text_output,
 			     tree decl)
 {
-  print_location (text_output, DECL_SOURCE_LOCATION (decl));
+  auto_context_line sentinel (text_output, DECL_SOURCE_LOCATION (decl));
   pretty_printer *const pp = text_output.get_printer ();
   pp_verbatim (pp, "required by the constraints of %q#D\n", decl);
 }
@@ -4007,7 +4076,7 @@ print_concept_check_info (diagnostic_text_output_format &text_output,
 
   tree tmpl = TREE_OPERAND (expr, 0);
 
-  print_location (text_output, DECL_SOURCE_LOCATION (tmpl));
+  auto_context_line sentinel (text_output, DECL_SOURCE_LOCATION (tmpl));
 
   cxx_pretty_printer *const pp
     = (cxx_pretty_printer *)text_output.get_printer ();
@@ -4031,7 +4100,7 @@ print_constraint_context_head (diagnostic_text_output_format &text_output,
   tree src = TREE_VALUE (cxt);
   if (!src)
     {
-      print_location (text_output, input_location);
+      auto_context_line sentinel (text_output, input_location);
       pretty_printer *const pp = text_output.get_printer ();
       pp_verbatim (pp, "required for constraint satisfaction\n");
       return NULL_TREE;
@@ -4059,7 +4128,7 @@ print_requires_expression_info (diagnostic_text_output_format &text_output,
   if (map == error_mark_node)
     return;
 
-  print_location (text_output, cp_expr_loc_or_input_loc (expr));
+  auto_context_line sentinel (text_output, cp_expr_loc_or_input_loc (expr));
   cxx_pretty_printer *const pp
     = static_cast <cxx_pretty_printer *> (text_output.get_printer ());
   pp_verbatim (pp, "in requirements ");

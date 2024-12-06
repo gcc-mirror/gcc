@@ -3886,18 +3886,18 @@ print_conversion_rejection (location_t loc, struct conversion_info *info,
       /* Conversion of implicit `this' argument failed.  */
       if (!TYPE_P (info->from))
 	/* A bad conversion for 'this' must be discarding cv-quals.  */
-	inform (loc, "  passing %qT as %<this%> "
+	inform (loc, "passing %qT as %<this%> "
 		"argument discards qualifiers",
 		from);
       else
-	inform (loc, "  no known conversion for implicit "
+	inform (loc, "no known conversion for implicit "
 		"%<this%> parameter from %qH to %qI",
 		from, info->to_type);
     }
   else if (!TYPE_P (info->from))
     {
       if (info->n_arg >= 0)
-	inform (loc, "  conversion of argument %d would be ill-formed:",
+	inform (loc, "conversion of argument %d would be ill-formed:",
 		info->n_arg + 1);
       iloc_sentinel ils = loc;
       perform_implicit_conversion (info->to_type, info->from,
@@ -3905,13 +3905,13 @@ print_conversion_rejection (location_t loc, struct conversion_info *info,
     }
   else if (info->n_arg == -2)
     /* Conversion of conversion function return value failed.  */
-    inform (loc, "  no known conversion from %qH to %qI",
+    inform (loc, "no known conversion from %qH to %qI",
 	    from, info->to_type);
   else
     {
       if (TREE_CODE (fn) == FUNCTION_DECL)
 	loc = get_fndecl_argument_location (fn, info->n_arg);
-      inform (loc, "  no known conversion for argument %d from %qH to %qI",
+      inform (loc, "no known conversion for argument %d from %qH to %qI",
 	      info->n_arg + 1, from, info->to_type);
     }
 }
@@ -3925,13 +3925,13 @@ print_arity_information (location_t loc, unsigned int have, unsigned int want,
 {
   if (least_p)
     inform_n (loc, want,
-	      "  candidate expects at least %d argument, %d provided",
-	      "  candidate expects at least %d arguments, %d provided",
+	      "candidate expects at least %d argument, %d provided",
+	      "candidate expects at least %d arguments, %d provided",
 	      want, have);
   else
     inform_n (loc, want,
-	      "  candidate expects %d argument, %d provided",
-	      "  candidate expects %d arguments, %d provided",
+	      "candidate expects %d argument, %d provided",
+	      "candidate expects %d arguments, %d provided",
 	      want, have);
 }
 
@@ -3987,11 +3987,12 @@ print_z_candidate (location_t loc, const char *msgstr,
   if (fn != candidate->fn)
     {
       cloc = location_of (candidate->fn);
-      inform (cloc, "  inherited here");
+      inform (cloc, "inherited here");
     }
   /* Give the user some information about why this candidate failed.  */
   if (candidate->reason != NULL)
     {
+      auto_diagnostic_nesting_level sentinel;
       struct rejection_reason *r = candidate->reason;
 
       switch (r->code)
@@ -4008,13 +4009,13 @@ print_z_candidate (location_t loc, const char *msgstr,
 	  print_conversion_rejection (cloc, &r->u.bad_conversion, fn);
 	  break;
 	case rr_explicit_conversion:
-	  inform (cloc, "  return type %qT of explicit conversion function "
+	  inform (cloc, "return type %qT of explicit conversion function "
 		  "cannot be converted to %qT with a qualification "
 		  "conversion", r->u.conversion.from,
 		  r->u.conversion.to_type);
 	  break;
 	case rr_template_conversion:
-	  inform (cloc, "  conversion from return type %qT of template "
+	  inform (cloc, "conversion from return type %qT of template "
 		  "conversion function specialization to %qT is not an "
 		  "exact match", r->u.conversion.from,
 		  r->u.conversion.to_type);
@@ -4025,33 +4026,39 @@ print_z_candidate (location_t loc, const char *msgstr,
 	     them here.  */
 	  if (r->u.template_unification.tmpl == NULL_TREE)
 	    {
-	      inform (cloc, "  substitution of deduced template arguments "
+	      inform (cloc, "substitution of deduced template arguments "
 		      "resulted in errors seen above");
 	      break;
 	    }
 	  /* Re-run template unification with diagnostics.  */
-	  inform (cloc, "  template argument deduction/substitution failed:");
-	  fn_type_unification (r->u.template_unification.tmpl,
-			       r->u.template_unification.explicit_targs,
-			       (make_tree_vec
-				(r->u.template_unification.num_targs)),
-			       r->u.template_unification.args,
-			       r->u.template_unification.nargs,
-			       r->u.template_unification.return_type,
-			       r->u.template_unification.strict,
-			       r->u.template_unification.flags,
-			       NULL, true, false);
+	  inform (cloc, "template argument deduction/substitution failed:");
+	  {
+	    auto_diagnostic_nesting_level sentinel;
+	    fn_type_unification (r->u.template_unification.tmpl,
+				 r->u.template_unification.explicit_targs,
+				 (make_tree_vec
+				  (r->u.template_unification.num_targs)),
+				 r->u.template_unification.args,
+				 r->u.template_unification.nargs,
+				 r->u.template_unification.return_type,
+				 r->u.template_unification.strict,
+				 r->u.template_unification.flags,
+				 NULL, true, false);
+	  }
 	  break;
 	case rr_invalid_copy:
 	  inform (cloc,
-		  "  a constructor taking a single argument of its own "
+		  "a constructor taking a single argument of its own "
 		  "class type is invalid");
 	  break;
 	case rr_constraint_failure:
-	  diagnose_constraints (cloc, fn, NULL_TREE);
+	  {
+	    auto_diagnostic_nesting_level sentinel;
+	    diagnose_constraints (cloc, fn, NULL_TREE);
+	  }
 	  break;
 	case rr_inherited_ctor:
-	  inform (cloc, "  an inherited constructor is not a candidate for "
+	  inform (cloc, "an inherited constructor is not a candidate for "
 		  "initialization from an expression of the same or derived "
 		  "type");
 	  break;
@@ -4123,6 +4130,8 @@ print_z_candidates (location_t loc, struct z_candidate *candidates,
      candidates couldn't have contributed to the ambiguity.  */
   if (only_viable_p.is_unknown ())
     only_viable_p = candidates->viable == 1;
+
+  auto_diagnostic_nesting_level sentinel;
 
   for (; candidates; candidates = candidates->next)
     {
@@ -8336,7 +8345,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 			  "passing NULL to non-pointer argument %P of %qD",
 			  argnum, fn))
 	    inform (get_fndecl_argument_location (fn, argnum),
-		    "  declared here");
+		    "declared here");
 	}
       else
 	warning_at (loc, OPT_Wconversion_null,
@@ -8355,7 +8364,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 			  "converting %<false%> to pointer type for argument "
 			  "%P of %qD", argnum, fn))
 	    inform (get_fndecl_argument_location (fn, argnum),
-		    "  declared here");
+		    "declared here");
 	}
       else
 	warning_at (loc, OPT_Wconversion_null,
@@ -8430,7 +8439,7 @@ maybe_inform_about_fndecl_for_bogus_argument_init (tree fn, int argnum,
       gcc_rich_location richloc (get_fndecl_argument_location (fn, argnum));
       richloc.set_highlight_color (highlight_color);
       inform (&richloc,
-	      "  initializing argument %P of %qD", argnum, fn);
+	      "initializing argument %P of %qD", argnum, fn);
     }
 }
 
