@@ -84,7 +84,7 @@ static struct module_htab_entry *cur_module;
 
 /* With -fcoarray=lib: For generating the registering call
    of static coarrays.  */
-static bool has_coarray_vars;
+static bool has_coarray_vars_or_accessors;
 static stmtblock_t caf_init_block;
 
 
@@ -135,12 +135,21 @@ tree gfor_fndecl_caf_this_image;
 tree gfor_fndecl_caf_num_images;
 tree gfor_fndecl_caf_register;
 tree gfor_fndecl_caf_deregister;
+
+// Deprecate start
 tree gfor_fndecl_caf_get;
 tree gfor_fndecl_caf_send;
 tree gfor_fndecl_caf_sendget;
 tree gfor_fndecl_caf_get_by_ref;
 tree gfor_fndecl_caf_send_by_ref;
 tree gfor_fndecl_caf_sendget_by_ref;
+// Deprecate end
+
+tree gfor_fndecl_caf_register_accessor;
+tree gfor_fndecl_caf_register_accessors_finish;
+tree gfor_fndecl_caf_get_remote_function_index;
+tree gfor_fndecl_caf_get_by_ct;
+
 tree gfor_fndecl_caf_sync_all;
 tree gfor_fndecl_caf_sync_memory;
 tree gfor_fndecl_caf_sync_images;
@@ -3982,11 +3991,12 @@ gfc_build_builtin_function_decls (void)
   /* Coarray library calls.  */
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      tree pint_type, pppchar_type;
+      tree pint_type, pppchar_type, psize_type;
 
       pint_type = build_pointer_type (integer_type_node);
       pppchar_type
 	= build_pointer_type (build_pointer_type (pchar_type_node));
+      psize_type = build_pointer_type (size_type_node);
 
       gfor_fndecl_caf_init = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_init")), ". W W ",
@@ -4015,6 +4025,7 @@ gfc_build_builtin_function_decls (void)
 	ppvoid_type_node, integer_type_node, pint_type, pchar_type_node,
 	size_type_node);
 
+      // Deprecate start
       gfor_fndecl_caf_get = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_get")), ". r . . r r w . . . w ",
 	void_type_node, 10,
@@ -4058,6 +4069,30 @@ gfc_build_builtin_function_decls (void)
 	    pvoid_type_node, integer_type_node, integer_type_node,
 	    boolean_type_node, pint_type, pint_type, integer_type_node,
 	    integer_type_node);
+      // Deprecate end
+
+      gfor_fndecl_caf_register_accessor
+	= gfc_build_library_function_decl_with_spec (
+	  get_identifier (PREFIX ("caf_register_accessor")), ". r r ",
+	  void_type_node, 2, integer_type_node, pvoid_type_node);
+
+      gfor_fndecl_caf_register_accessors_finish
+	= gfc_build_library_function_decl_with_spec (
+	  get_identifier (PREFIX ("caf_register_accessors_finish")), ". ",
+	  void_type_node, 0);
+
+      gfor_fndecl_caf_get_remote_function_index
+	= gfc_build_library_function_decl_with_spec (
+	  get_identifier (PREFIX ("caf_get_remote_function_index")), ". r ",
+	  integer_type_node, 1, integer_type_node);
+
+      gfor_fndecl_caf_get_by_ct = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_get_by_ct")),
+	". r r r r r w w w r r w r w r r ", void_type_node, 15, pvoid_type_node,
+	pvoid_type_node, psize_type, integer_type_node, size_type_node,
+	ppvoid_type_node, psize_type, pvoid_type_node, boolean_type_node,
+	integer_type_node, pvoid_type_node, size_type_node, pint_type,
+	pvoid_type_node, pint_type);
 
       gfor_fndecl_caf_sync_all = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_sync_all")), ". w w . ", void_type_node,
@@ -5554,7 +5589,7 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   if (sym->attr.codimension && !sym->attr.dummy && !sym->attr.allocatable
       && sym->attr.referenced && !sym->attr.use_assoc)
-    has_coarray_vars = true;
+    has_coarray_vars_or_accessors = true;
 }
 
 /* Emit debug information for USE statements.  */
@@ -5937,6 +5972,49 @@ generate_coarray_sym_init (gfc_symbol *sym)
     }
 }
 
+struct caf_accessor
+{
+  struct caf_accessor *next;
+  gfc_expr *hash, *fdecl;
+};
+
+static struct caf_accessor *caf_accessor_head = NULL;
+
+void
+gfc_add_caf_accessor (gfc_expr *h, gfc_expr *f)
+{
+  struct caf_accessor *n = XCNEW (struct caf_accessor);
+  n->next = caf_accessor_head;
+  n->hash = h;
+  n->fdecl = f;
+  caf_accessor_head = n;
+}
+
+void
+create_caf_accessor_register (stmtblock_t *block)
+{
+  gfc_se se;
+  tree hash, fdecl;
+  gfc_init_se (&se, NULL);
+  for (struct caf_accessor *curr = caf_accessor_head; curr;)
+    {
+      gfc_conv_expr (&se, curr->hash);
+      hash = se.expr;
+      gfc_conv_expr (&se, curr->fdecl);
+      fdecl = se.expr;
+      TREE_USED (fdecl) = 1;
+      TREE_STATIC (fdecl) = 1;
+      gcc_assert (FUNCTION_POINTER_TYPE_P (TREE_TYPE (fdecl)));
+      gfc_add_expr_to_block (
+	block, build_call_expr (gfor_fndecl_caf_register_accessor, 2, hash,
+				/*gfc_build_addr_expr (NULL_TREE,*/ fdecl));
+      curr = curr->next;
+      free (caf_accessor_head);
+      caf_accessor_head = curr;
+    }
+  gfc_add_expr_to_block (
+    block, build_call_expr (gfor_fndecl_caf_register_accessors_finish, 0));
+}
 
 /* Generate constructor function to initialize static, nonallocatable
    coarrays.  */
@@ -5972,6 +6050,8 @@ generate_coarray_init (gfc_namespace *ns)
 
   pushlevel ();
   gfc_init_block (&caf_init_block);
+
+  create_caf_accessor_register (&caf_init_block);
 
   gfc_traverse_ns (ns, generate_coarray_sym_init);
 
@@ -6028,13 +6108,13 @@ gfc_generate_module_vars (gfc_namespace * ns)
   /* Generate COMMON blocks.  */
   gfc_trans_common (ns);
 
-  has_coarray_vars = false;
+  has_coarray_vars_or_accessors = caf_accessor_head != NULL;
 
   /* Create decls for all the module variables.  */
   gfc_traverse_ns (ns, gfc_create_module_variable);
   gfc_traverse_ns (ns, create_module_nml_decl);
 
-  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
     generate_coarray_init (ns);
 
   cur_module = NULL;
@@ -6135,7 +6215,7 @@ generate_local_decl (gfc_symbol * sym)
     {
       if (sym->attr.codimension && !sym->attr.dummy && !sym->attr.allocatable
 	  && sym->attr.referenced && !sym->attr.use_assoc)
-	has_coarray_vars = true;
+	has_coarray_vars_or_accessors = true;
 
       if (!sym->attr.dummy && !sym->ns->proc_name->attr.entry_master)
 	generate_dependency_declarations (sym);
@@ -7889,10 +7969,10 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   gfc_generate_contained_functions (ns);
 
-  has_coarray_vars = false;
+  has_coarray_vars_or_accessors = caf_accessor_head != NULL;
   generate_local_vars (ns);
 
-  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
     generate_coarray_init (ns);
 
   /* Keep the parent fake result declaration in module functions
@@ -8113,7 +8193,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 	 If there are static coarrays in this function, the nested _caf_init
 	 function has already called cgraph_create_node, which also created
 	 the cgraph node for this function.  */
-      if (!has_coarray_vars || flag_coarray != GFC_FCOARRAY_LIB)
+      if (!has_coarray_vars_or_accessors || flag_coarray != GFC_FCOARRAY_LIB)
 	(void) cgraph_node::get_create (fndecl);
     }
   else
@@ -8240,11 +8320,11 @@ gfc_process_block_locals (gfc_namespace* ns)
   tree decl;
 
   saved_local_decls = NULL_TREE;
-  has_coarray_vars = false;
+  has_coarray_vars_or_accessors = caf_accessor_head != NULL;
 
   generate_local_vars (ns);
 
-  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
     generate_coarray_init (ns);
 
   decl = nreverse (saved_local_decls);

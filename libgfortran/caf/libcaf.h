@@ -237,6 +237,24 @@ void _gfortran_caf_sendget_by_ref (
 	int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
 	int *src_stat, int dst_type, int src_type);
 
+void _gfortran_caf_register_accessor (const int hash,
+				      void (*accessor) (void **, int32_t *,
+							void *, void *,
+							const size_t *,
+							size_t *));
+
+void _gfortran_caf_register_accessors_finish (void);
+
+int _gfortran_caf_get_remote_function_index (const int hash);
+
+void _gfortran_caf_get_by_ct (
+	caf_token_t token, const gfc_descriptor_t *opt_src_desc,
+	const size_t *opt_src_charlen, const int image_index,
+	const size_t dst_size, void **dst_data, size_t *opt_dst_charlen,
+	gfc_descriptor_t *opt_dst_desc, const bool may_realloc_dst,
+	const int getter_index, void *get_data, const size_t get_data_size,
+	int *stat, caf_team_t *team, int *team_number);
+
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);
 void _gfortran_caf_atomic_ref (caf_token_t, size_t, int, void *, int *,

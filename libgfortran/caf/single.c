@@ -57,6 +57,25 @@ typedef struct caf_single_token *caf_single_token_t;
 /* Global variables.  */
 caf_static_t *caf_static_list = NULL;
 
+typedef void (*accessor_t) (void **, int32_t *, void *, void *, const size_t *,
+			    size_t *);
+struct accessor_hash_t
+{
+  int hash;
+  int pad;
+  accessor_t accessor;
+};
+
+static struct accessor_hash_t *accessor_hash_table = NULL;
+static int aht_cap = 0;
+static int aht_size = 0;
+static enum {
+  AHT_UNINITIALIZED,
+  AHT_OPEN,
+  AHT_PREPARED
+} accessor_hash_table_state
+  = AHT_UNINITIALIZED;
+
 /* Keep in sync with mpi.c.  */
 static void
 caf_runtime_error (const char *message, ...)
@@ -1082,11 +1101,11 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 				  - dest->dim[j].lower_bound + 1))
 			      * dest->dim[j]._stride;
 	  extent = (dest->dim[j]._ubound - dest->dim[j].lower_bound + 1);
-          stride = dest->dim[j]._stride;
+	  stride = dest->dim[j]._stride;
 	}
-      array_offset_dst += (i / extent) * dest->dim[rank-1]._stride;
-      void *dst = (void *)((char *) MEMTOK (token) + offset
-			   + array_offset_dst*GFC_DESCRIPTOR_SIZE (dest));
+      array_offset_dst += (i / extent) * dest->dim[rank - 1]._stride;
+      void *dst = (void *) ((char *) MEMTOK (token) + offset
+			    + array_offset_dst * dest->span);
       void *sr;
       if (GFC_DESCRIPTOR_RANK (src) != 0)
 	{
@@ -1103,8 +1122,7 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 	      stride = src->dim[j]._stride;
 	    }
 	  array_offset_sr += (i / extent) * src->dim[rank-1]._stride;
-	  sr = (void *)((char *) src->base_addr
-			+ array_offset_sr*GFC_DESCRIPTOR_SIZE (src));
+	  sr = (void *) ((char *) src->base_addr + array_offset_sr * src->span);
 	}
       else
 	sr = src->base_addr;
@@ -2834,6 +2852,108 @@ _gfortran_caf_sendget_by_ref (caf_token_t dst_token, int dst_image_index,
     free (GFC_DESCRIPTOR_DATA (&temp));
 }
 
+void
+_gfortran_caf_register_accessor (const int hash, accessor_t accessor)
+{
+  if (accessor_hash_table_state == AHT_UNINITIALIZED)
+    {
+      aht_cap = 16;
+      accessor_hash_table = calloc (aht_cap, sizeof (struct accessor_hash_t));
+      accessor_hash_table_state = AHT_OPEN;
+    }
+  if (aht_size == aht_cap)
+    {
+      aht_cap += 16;
+      accessor_hash_table = realloc (accessor_hash_table,
+				     aht_cap * sizeof (struct accessor_hash_t));
+    }
+  if (accessor_hash_table_state == AHT_PREPARED)
+    {
+      accessor_hash_table_state = AHT_OPEN;
+    }
+  accessor_hash_table[aht_size].hash = hash;
+  accessor_hash_table[aht_size].accessor = accessor;
+  ++aht_size;
+}
+
+static int
+hash_compare (const struct accessor_hash_t *lhs,
+	      const struct accessor_hash_t *rhs)
+{
+  return lhs->hash < rhs->hash ? -1 : (lhs->hash > rhs->hash ? 1 : 0);
+}
+
+void
+_gfortran_caf_register_accessors_finish (void)
+{
+  if (accessor_hash_table_state == AHT_PREPARED
+      || accessor_hash_table_state == AHT_UNINITIALIZED)
+    return;
+
+  qsort (accessor_hash_table, aht_size, sizeof (struct accessor_hash_t),
+	 (int (*) (const void *, const void *)) hash_compare);
+  accessor_hash_table_state = AHT_PREPARED;
+}
+
+int
+_gfortran_caf_get_remote_function_index (const int hash)
+{
+  if (accessor_hash_table_state != AHT_PREPARED)
+    {
+      caf_runtime_error ("the accessor hash table is not prepared.");
+    }
+
+  struct accessor_hash_t cand;
+  cand.hash = hash;
+  struct accessor_hash_t *f
+    = bsearch (&cand, accessor_hash_table, aht_size,
+	       sizeof (struct accessor_hash_t),
+	       (int (*) (const void *, const void *)) hash_compare);
+
+  int index = f ? f - accessor_hash_table : -1;
+  return index;
+}
+
+void
+_gfortran_caf_get_by_ct (
+  caf_token_t token, const gfc_descriptor_t *opt_src_desc,
+  const size_t *opt_src_charlen, const int image_index __attribute__ ((unused)),
+  const size_t dst_size __attribute__ ((unused)), void **dst_data,
+  size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
+  const bool may_realloc_dst, const int getter_index, void *get_data,
+  const size_t get_data_size __attribute__ ((unused)), int *stat,
+  caf_team_t *team __attribute__ ((unused)),
+  int *team_number __attribute__ ((unused)))
+{
+  caf_single_token_t single_token = TOKEN (token);
+  void *src_ptr = opt_src_desc ? (void *) opt_src_desc : single_token->memptr;
+  int free_buffer;
+  void *dst_ptr = opt_dst_desc ? (void *)opt_dst_desc : dst_data;
+  void *old_dst_data_ptr = NULL;
+
+  if (stat)
+    *stat = 0;
+
+  if (opt_dst_desc && !may_realloc_dst)
+    {
+      old_dst_data_ptr = opt_dst_desc->base_addr;
+      opt_dst_desc->base_addr = NULL;
+    }
+
+  accessor_hash_table[getter_index].accessor (dst_ptr, &free_buffer, src_ptr,
+					      get_data, opt_src_charlen,
+					      opt_dst_charlen);
+  if (opt_dst_desc && old_dst_data_ptr && !may_realloc_dst
+      && opt_dst_desc->base_addr != old_dst_data_ptr)
+    {
+      size_t dsize = opt_dst_desc->span;
+      for (int i = 0; i < GFC_DESCRIPTOR_RANK (opt_dst_desc); ++i)
+	dsize *= GFC_DESCRIPTOR_EXTENT (opt_dst_desc, i);
+      memcpy (old_dst_data_ptr, opt_dst_desc->base_addr, dsize);
+      free (opt_dst_desc->base_addr);
+      opt_dst_desc->base_addr = old_dst_data_ptr;
+    }
+}
 
 void
 _gfortran_caf_atomic_define (caf_token_t token, size_t offset,

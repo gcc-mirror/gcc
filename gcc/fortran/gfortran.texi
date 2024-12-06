@@ -4190,10 +4190,14 @@ future implementation of teams.  It is about to change without further notice.
 * _gfortran_caf_stopped_images :: Get an array of the indexes of the stopped images
 * _gfortran_caf_register:: Registering coarrays
 * _gfortran_caf_deregister:: Deregistering coarrays
+* _gfortran_caf_register_accessor:: Register an accessor for remote access
+* _gfortran_caf_register_accessors_finish:: Finish registering accessor functions
+* _gfortran_caf_get_remote_function_index:: Get the index of an accessor
 * _gfortran_caf_is_present:: Query whether an allocatable or pointer component in a derived type coarray is allocated
 * _gfortran_caf_send:: Sending data from a local image to a remote image
 * _gfortran_caf_get:: Getting data from a remote image
 * _gfortran_caf_sendget:: Sending data between remote images
+* _gfortran_caf_get_by_ct:: Getting data from a remote image using a remote side accessor
 * _gfortran_caf_send_by_ref:: Sending data from a local image to a remote image using enhanced references
 * _gfortran_caf_get_by_ref:: Getting data from a remote image using enhanced references
 * _gfortran_caf_sendget_by_ref:: Sending data between remote images using enhanced references
@@ -4447,8 +4451,9 @@ in the @var{DESC}'s data-ptr is registered or allocate when the data-ptr is
 @code{NULL}.
 
 @item @emph{Syntax}:
-@code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
-gfc_descriptor_t *desc, int *stat, char *errmsg, size_t errmsg_len)}
+@code{void _gfortran_caf_register (size_t size, caf_register_t type,
+caf_token_t *token, gfc_descriptor_t *desc, int *stat, char *errmsg,
+size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4499,7 +4504,7 @@ not null.  The library is only expected to free memory it allocated itself
 during a call to @code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
-@code{void caf_deregister (caf_token_t *token, caf_deregister_t type,
+@code{void _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type,
 int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
@@ -4520,6 +4525,114 @@ For nonallocatable coarrays this function is never called.  If a cleanup is
 required, it has to be handled via the finish, stop and error stop functions,
 and via destructors.
 @end table
+
+
+@node _gfortran_caf_register_accessor
+@subsection @code{_gfortran_caf_register_accessor} --- Register an accessor for remote access
+@cindex Coarray, _gfortran_caf_register_accessor
+
+@table @asis
+@item @emph{Description}:
+Identification of access funtions across images is done using a unique hash.
+For each given hash an accessor has to be registered.  This routine is expected
+to register an accessor function pointer for the given hash in nearly constant
+time.  I.e. it is expected to add the hash and accessor to a buffer and return.
+Sorting shall be done in @code{_gfortran_caf_register_accessors_finish}.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_register_accessor (const int hash,
+void (*accessor)(void **, int32_t *, void *, void *, size_t *,
+size_t *))}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{hash} @tab intent(in)  The unique hash value this accessor is to be
+identified by.
+@item @var{accessor} @tab intent(in)  A pointer to the function on this image.
+The function has the signature @code{void accessor (void **dst_ptr,
+int32_t *free_dst, void *src_ptr, void *get_data, size_t *opt_src_charlen,
+size_t *opt_dst_charlen)}.  GFortran ensures that functions provided to
+@code{_gfortran_caf_register_accessor} adhere to this interface.
+@end multitable
+
+@item @emph{NOTES}
+This function is required to have a nearly constant runtime complexity, because
+it will be called to register multiple accessor in a sequence.  GFortran ensures
+that before the first remote accesses commences
+@code{_gfortran_caf_register_accessors_finish} is called at least once.  It is
+valid to register further accessors after a call to
+@code{_gfortran_caf_register_accessors_finish}.  It is invalid to call
+@code{_gfortran_caf_register_accessor} after the first remote access has been
+done.  See also @ref{_gfortran_caf_register_accessors_finish} and
+@ref{_gfortran_caf_get_remote_function_index}
+@end table
+
+
+@node _gfortran_caf_register_accessors_finish
+@subsection @code{_gfortran_caf_register_accessors_finish} --- Finish registering accessor functions
+@cindex Coarray, _gfortran_caf_register_accessors_finish
+
+@table @asis
+@item @emph{Description}:
+Called to finalize registering of accessor functions.  This function is expected
+to prepare a lookup table that has fast lookup time for the hash supplied to
+@code{_gfortran_caf_get_remote_function_index} and constant access time for
+indexing operations.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_register_accessors_finish ()}
+
+@item @emph{Arguments}:
+No arguments.
+
+@item @emph{NOTES}
+This function may be called multiple times with and without new hash-accessors-
+pairs being added.  The post-condition after each call has to be, that hashes
+can be looked up quickly and indexing on the lookup table of hash-accessor-pairs
+is a constant time operation.
+@end table
+
+
+@node _gfortran_caf_get_remote_function_index
+@subsection @code{_gfortran_caf_get_remote_function_index} --- Get the index of an accessor
+@cindex Coarray, _gfortran_caf_get_remote_function_index
+
+@table @asis
+@item @emph{Description}:
+Return the index of the accessor in the lookup table build by
+@ref{_gfortran_caf_register_accessor} and
+@ref{_gfortran_caf_register_accessors_finish}.  This function is expected to be
+fast, because it may be called often.  A log(N) lookup time for a given hash is
+preferred.  The reference implementation uses @code{bsearch ()}, for example.
+The index returned shall be an array index to be used by
+@ref{_gfortran_caf_get_by_ct}, i.e. a constant time operation is mandatory for
+quick access.
+
+The GFortran compiler ensures, that
+@code{_gfortran_caf_get_remote_function_index} is called once only for each
+hash and the result be stored in a static variable to prevent future redundant
+lookups.
+
+@item @emph{Syntax}:
+@code{int _gfortran_caf_get_remote_function_index (const int hash)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{hash} @tab intent(in)  The hash of the accessor desired.
+@end multitable
+
+@item @emph{Result}:
+The zero based index to access the accessor funtion in a lookup table.
+On error, @code{-1} can be returned.
+
+@item @emph{NOTES}
+The function's complexity is expected to be significantly smaller than N,
+where N is the number of all accessors registered.  Although returning @code{-1}
+is valid, will this most likely crash the Fortran program when accessing the
+-1-th accessor function.  It is therefore advised to terminate with an error
+message, when the hash could not be found.
+@end table
+
 
 
 @node _gfortran_caf_is_present
@@ -4847,6 +4960,81 @@ padding and different character kinds.
 Because of the more complicated references possible some operations may be
 unsupported by certain libraries.  The library is expected to issue a precise
 error message why the operation is not permitted.
+@end table
+
+
+@node _gfortran_caf_get_by_ct
+@subsection @code{_gfortran_caf_get_by_ct} --- Getting data from a remote image using a remote side accessor
+@cindex Coarray, _gfortran_caf_get_by_ct
+
+@table @asis
+@item @emph{Description}:
+Called to get a scalar, an array section or a whole array from a remote image
+identified by the @var{image_index}.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_get_by_ct (caf_token_t token,
+const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
+const int image_index, const size_t dst_size, void **dst_data,
+size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
+const bool may_realloc_dst, const int getter_index, void *get_data,
+const size_t get_data_size, int *stat, caf_team_t *team, int *team_number)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{opt_src_desc} @tab intent(in)  A pointer to the descriptor when the
+object identified by @var{token} is an array with a descriptor.  The parameter
+needs to be set to @code{NULL}, when @var{token} identifies a scalar.
+@item @var{opt_src_charlen} @tab intent(in) When the object to get is a char
+array with deferred length, then this parameter needs to be set to point to its
+length.  Else the parameter needs to be set to @code{NULL}.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.  @code{this_image ()} is valid.
+@item @var{dst_size} @tab intent(in) The size of data expected to be transferred
+from the remote image.  If the data type to get is a string or string array,
+then this needs to be set to the byte size of each character, i.e. @code{4} for
+a @code{CHARACTER (KIND=4)} string.  The length of the string is then returned
+in @code{opt_dst_charlen} (also for string arrays).
+@item @var{dst_data} @tab intent(inout) A pointer to the adress the data is
+stored.  To prevent copying of data into an output buffer the adress to the live
+data is returned here.  When a descriptor is provided also its data-member is
+set to that adress.  When @var{may_realloc_dst} is set, then the memory may be
+reallocated by the remote function, which needs to be replicated by this
+function.
+@item @var{opt_dst_charlen} @tab intent(inout)  When a char array is returned,
+this parameter is set to the length where applicable.  The value can also be
+read to prevent reallocation in the accessor.
+@item @var{opt_dst_desc} @tab intent(inout)  When a descriptor array is
+returned, it is stored in the memory pointed to by this optional parameter.
+When @var{may_realloc_dst} is set, then the descriptor may be changed, i.e.
+its bounds, but upto now not its rank.
+@item @var{may_realloc_dst} @tab intent(in)  Set when the returned data may
+require reallocation of the output buffer in @var{dst_data} or
+@var{opt_dst_desc}.
+@item @var{getter_index} @tab intent(in)  The index of the accessor to execute
+as returned by @code{_gfortran_caf_get_remote_function_index ()}.
+@item @var{get_data} @tab intent(inout)  Additional data needed in the accessor.
+I.e., when an array reference uses a local variable @var{v}, it is transported
+in this structure and all references in the accessor are rewritten to access the
+member.  The data in the structure of @var{get_data} may be changed by the
+accessor, but these changes are lost to the calling Fortran program.
+@item @var{get_data_size} @tab intent(in)  The size of the @var{get_data}
+structure.
+@item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
+operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
+error occurs, then an error message is printed and the program is terminated.
+@item @var{team} @tab intent(in)  The opaque team handle as returned by
+@code{FORM TEAM}.  Unused at the moment.
+@item @var{team_number} @tab intent(in)  The number of the team this access is
+to be part of.  Unused at the moment.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have @code{image_index} equal the current image; the memory
+to get and the memory to store the data may (partially) overlap.  The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory.
 @end table
 
 
