@@ -1,3 +1,12 @@
+2024-12-05  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-12-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117615
+	* constexpr.cc (cxx_eval_constant_expression): Don't reject
+	INTEGER_CSTs with type POINTER_TYPE to METHOD_TYPE.
+
 2024-11-06  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:

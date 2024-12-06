@@ -1,3 +1,11 @@
+2024-12-05  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-12-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117615
+	* g++.dg/cpp2a/constexpr-virtual22.C: New test.
+
 2024-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
