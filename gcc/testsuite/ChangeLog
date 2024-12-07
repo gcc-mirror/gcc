@@ -1,3 +1,27 @@
+2024-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2024-12-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117820
+	* gfortran.dg/pr117820.f90: New test.
+
+2024-12-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117904
+	* gm2/iso/pass/forloopbyconst.mod: New test.
+
+2024-12-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-11-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117791
+	* gfortran.dg/bounds_check_array_io.f90: New test.
+
 2024-12-05  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:
