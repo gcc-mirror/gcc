@@ -1513,6 +1513,8 @@ reemit_insn_block_notes (void)
 	  case NOTE_INSN_BEGIN_STMT:
 	  case NOTE_INSN_INLINE_ENTRY:
 	    this_block = LOCATION_BLOCK (NOTE_MARKER_LOCATION (insn));
+	    if (!this_block)
+	      continue;
 	    goto set_cur_block_to_this_block;
 
 	  default:
@@ -1538,7 +1540,6 @@ reemit_insn_block_notes (void)
 	    this_block = choose_inner_scope (this_block,
 					     insn_scope (body->insn (i)));
 	}
-    set_cur_block_to_this_block:
       if (! this_block)
 	{
 	  if (INSN_LOCATION (insn) == UNKNOWN_LOCATION)
@@ -1547,6 +1548,7 @@ reemit_insn_block_notes (void)
 	    this_block = DECL_INITIAL (cfun->decl);
 	}
 
+    set_cur_block_to_this_block:
       if (this_block != cur_block)
 	{
 	  change_scope (insn, cur_block, this_block);
