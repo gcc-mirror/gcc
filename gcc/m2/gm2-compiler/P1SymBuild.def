@@ -489,7 +489,7 @@ PROCEDURE BuildProcedureHeading ;
                                            Empty
 *)
 
-PROCEDURE EndBuildForward ;
+PROCEDURE EndBuildForward (forwardPos: CARDINAL) ;
 
 
 (*

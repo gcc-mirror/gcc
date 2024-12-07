@@ -878,7 +878,7 @@ ProcedureDeclaration :=                                                    % VAR
 
 PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
 
-ForwardDeclaration := "FORWARD"                                            % EndBuildForward %
+ForwardDeclaration := "FORWARD"                                            % EndBuildForward (GetTokenNo ()-1) %
                     =:
 
 ProperProcedure := ProcedureBlock                                          % PushAutoOn %
