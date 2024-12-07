@@ -320,7 +320,7 @@ public:
     linemap_init (&m_line_table, BUILTINS_LOCATION);
     m_line_table.m_reallocator = xrealloc;
     m_line_table.m_round_alloc_size = round_alloc_size;
-    m_line_table.default_range_bits = 5;
+    m_line_table.default_range_bits = line_map_suggested_range_bits;
   }
   ~diagnostic_manager ()
   {
@@ -500,7 +500,7 @@ private:
   impl_client_version_info m_client_version_info;
   std::vector<std::unique_ptr<sink>> m_sinks;
   hash_map<nofree_string_hash, diagnostic_file *> m_str_to_file_map;
-  hash_map<int_hash<location_t, UNKNOWN_LOCATION, UINT_MAX>,
+  hash_map<int_hash<location_t, UNKNOWN_LOCATION, location_t (-1)>,
 	   diagnostic_physical_location *> m_location_t_map;
   std::vector<std::unique_ptr<diagnostic_logical_location>> m_logical_locs;
   const diagnostic *m_current_diag;
