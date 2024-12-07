@@ -62,9 +62,10 @@ int lra_hard_reg_usage[FIRST_PSEUDO_REGISTER];
 /* A global flag whose true value says to build live ranges for all
    pseudos, otherwise the live ranges only for pseudos got memory is
    build.  True value means also building copies and setting up hard
-   register preferences.  The complete info is necessary only for the
-   assignment pass.  The complete info is not needed for the
-   coalescing and spill passes.	 */
+   register preferences.  The complete info is necessary for
+   assignment, rematerialization and spill to register passes.  The
+   complete info is not needed for the coalescing and spill to memory
+   passes.  */
 static bool complete_info_p;
 
 /* Pseudos live at current point in the RTL scan.  */

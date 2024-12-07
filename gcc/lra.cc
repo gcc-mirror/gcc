@@ -2556,7 +2556,7 @@ lra (FILE *f, int verbose)
       if (lra_remat ())
 	{
 	  /* We need full live info -- see the comment above.  */
-	  lra_create_live_ranges (lra_reg_spill_p, true);
+	  lra_create_live_ranges (true, true);
 	  live_p = true;
 	  if (! lra_need_for_spills_p ())
 	    {
