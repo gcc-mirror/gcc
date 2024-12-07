@@ -1,3 +1,10 @@
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc: Include "gcc-urlifier.h".
+	(reason_attr_access::emit): Use auto_urlify_attributes.
+	* sm-taint.cc: Include "gcc-urlifier.h".
+	(tainted_access_attrib_size::emit): Use auto_urlify_attributes.
+
 2024-11-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (strongly_connected_components::to_json): Avoid naked

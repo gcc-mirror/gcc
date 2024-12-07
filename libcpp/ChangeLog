@@ -1,3 +1,7 @@
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* files.cc (finish_embed): Use CPP_EMBED even for C++.
+
 2024-12-03  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/117162

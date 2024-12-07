@@ -1,3 +1,497 @@
+2024-12-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* libgdiagnostics.cc (struct diagnostic_manager): Use location_t(-1)
+	instead of UINT_MAX to support 64-bit location_t as well.
+	(diagnostic_manager::diagnostic_manager): Change hard-coded "5" to
+	line_map_suggested_range_bits.
+
+2024-12-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* rtl.def (DEBUG_INSN): Use new format code 'L' for location_t fields.
+	(INSN): Likewise.
+	(JUMP_INSN): Likewise.
+	(CALL_INSN): Likewise.
+	(ASM_INPUT): Likewise.
+	(ASM_OPERANDS): Likewise.
+	* rtl.h (union rtunion): Add new location_t RT_LOC member for use by
+	the 'L' format.
+	(struct rtx_debug_insn): Adjust comment.
+	(struct rtx_nonjump_insn): Adjust comment.
+	(struct rtx_call_insn): Adjust comment.
+	(XLOC): New accessor macro for rtunion::rt_loc.
+	(X0LOC): Likewise.
+	(XCLOC): Likewise.
+	(INSN_LOCATION): Use XLOC instead of XUINT to retrieve a location_t.
+	(NOTE_MARKER_LOCATION): Likewise for XCUINT -> XCLOC.
+	(ASM_OPERANDS_SOURCE_LOCATION): Likewise.
+	(ASM_INPUT_SOURCE_LOCATION):Likewise.
+	(gen_rtx_ASM_INPUT): Adjust to use sL format instead of si.
+	(gen_rtx_INSN): Adjust prototype to use location_r rather than int
+	for the location.
+	* cfgrtl.cc (force_nonfallthru_and_redirect): Change type of LOC
+	local variable from int to location_t.
+	* rtlhash.cc (add_rtx): Support 'L' format in the switch statement.
+	* var-tracking.cc (loc_cmp): Likewise.
+	* alias.cc (rtx_equal_for_memref_p): Likewise.
+	* config/alpha/alpha.cc (summarize_insn): Likewise.
+	* config/ia64/ia64.cc (rtx_needs_barrier): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_hash_constant): Likewise.
+	* cse.cc (hash_rtx): Likewise.
+	(exp_equiv_p): Likewise.
+	* cselib.cc (rtx_equal_for_cselib_1): Likewise.
+	(cselib_hash_rtx): Likewise.
+	(cselib_expand_value_rtx_1): Likewise.
+	* emit-rtl.cc (copy_insn_1): Likewise.
+	(gen_rtx_INSN): Change the location argument from int to location_t,
+	and call the corresponding gen_rtf_fmt_* function.
+	* final.cc (leaf_renumber_regs_insn): Support 'L' format in the
+	switch statement.
+	* genattrtab.cc (attr_rtx_1): Likewise.
+	* genemit.cc (gen_exp): Likewise.
+	* gengenrtl.cc (type_from_format): Likewise.
+	(accessor_from_format): Likewise.
+	* gengtype.cc (adjust_field_rtx_def): Likewise.
+	* genpeep.cc (match_rtx): Likewise; just mark gcc_unreachable() for
+	now.
+	* genrecog.cc (find_operand): Support 'L' format in the switch statement.
+	(find_matching_operand): Likewise.
+	(validate_pattern): Likewise.
+	* gensupport.cc (subst_pattern_match): Likewise.
+	(get_alternatives_number): Likewise.
+	(collect_insn_data): Likewise.
+	(alter_predicate_for_insn): Likewise.
+	(alter_constraints): Likewise.
+	(subst_dup): Likewise.
+	* jump.cc (rtx_renumbered_equal_p): Likewise.
+	* loop-invariant.cc (hash_invariant_expr_1): Likewise.
+	* lra-constraints.cc (operands_match_p): Likewise.
+	* lra.cc (lra_rtx_hash): Likewise.
+	* print-rtl.cc (rtx_writer::print_rtx_operand_code_i): Refactor
+	location_t-relevant code to...
+	(rtx_writer::print_rtx_operand_code_L): ...new function here.
+	(rtx_writer::print_rtx_operand): Support 'L' format in the switch statement.
+	* print-rtl.h (rtx_writer::print_rtx_operand_code_L): Add prototype
+	for new function.
+	* read-rtl-function.cc (function_reader::read_rtx_operand): Support
+	'L' format in the switch statement.
+	(function_reader::read_rtx_operand_i_or_n): Rename to...
+	(function_reader::read_rtx_operand_inL): ...this, and support 'L' as
+	well.
+	* read-rtl.cc (apply_int_iterator): Support 'L' format in the switch
+	statement.
+	(rtx_reader::read_rtx_operand): Likewise.
+	* reload.cc (operands_match_p): Likewise.
+	* rtl.cc (rtx_format): Add new code 'L'.
+	(rtx_equal_p): Support 'L' in the switch statement. Remove dead code
+	in the handling for 'i' and 'n'.
+
+2024-12-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* final.cc (reemit_insn_block_notes): Don't try to call
+	INSN_LOCATION on a NOTE rtl object. Don't call change_scope () for a
+	NOTE missing a location.
+
+2024-12-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* tree-parloops.cc (struct reduction_info): Store the result of the
+	reduction PHI rather than the PHI itself.
+	(reduction_info::reduc_phi): New member function.
+	(reduction_hasher::equal): Adapt to the change in struct reduction_info.
+	(reduction_phi): Likewise.
+	(initialize_reductions): Likewise.
+	(create_call_for_reduction_1): Likewise.
+	(transform_to_exit_first_loop_alt): Likewise.
+	(transform_to_exit_first_loop): Likewise.
+	(build_new_reduction): Likewise.
+	(set_reduc_phi_uids): Likewise.
+	(try_create_reduction_list): Likewise.
+	* tree-ssa-loop-split.cc (split_loop): Remember the PHI result
+	variable so that the PHI can be found in case it is resized and move
+	to a new address.
+	* tree-vect-loop-manip.cc (vect_loop_versioning): After calling
+	loop_version(), fix up stored PHI pointers in case they have
+	changed.
+	* tree-vectorizer.cc (vec_info::resync_stmt_addr): New function.
+	* tree-vectorizer.h (vec_info::resync_stmt_addr): Declare.
+
+2024-12-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117467
+	* gimple-range-infer.cc (infer_range_manager::add_ranges): Check
+	range_of_expr to see if the inferred range is needed.
+
+2024-12-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Create the
+	infer oracle using THIS as the range_query.
+	* gimple-range-infer.cc (gimple_infer_range::gimple_infer_range):
+	Add a range_query to the constructor and use it.
+	(infer_range_manager::infer_range_manager): Add a range_query.
+	* gimple-range-infer.h (gimple_infer_range): Adjust prototype.
+	(infer_range_manager): Add a range_query.
+	* value-query.cc (range_query::create_infer_oracle): Add a range_query.
+	* value-query.h (range_query::create_infer_oracle): Update prototype.
+
+2024-12-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117467
+	* gimple-range-cache.cc (ranger_cache::entry_range): Do not
+	invoke range_from_dom for invariant ssa-names.
+
+2024-12-06  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/117248
+	* lra-lives.cc (start_living, start_dying): Remove.
+	(insn_regnos, out_insn_regnos, insn_regnos_live_after): New.
+	(sparseset_contains_pseudos_p): Remove.
+	(make_hard_regno_live, make_hard_regno_dead): Return true if
+	something in liveness is changed.
+	(mark_pseudo_live,  mark_pseudo_dead): Ditto.
+	(mark_regno_live, mark_regno_dead): Ditto.
+	(clear_sparseset_regnos, regnos_in_sparseset_p): Use set instead
+	of dead_set.
+	(process_bb_lives): Rewrite dealing with reg notes.  Update
+	conflict hard regs even when clobber hard reg is not marked as
+	dead.
+	(lra_create_live_ranges_1): Add initialization/finalization of
+	insn_regnos, out_insn_regnos, insn_regnos_live_after.
+
+2024-12-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR tree-optimization/117895
+	* expr.cc (calculate_table_based_CRC): Drop CRC_MODE argument.
+	Convert DATA to CRC's mode, then do calculations in CRC's mode.
+	(expand_crc_table_based): Corresponding changes.
+	(expand_reversed_crc_table_based): Corresponding changes.
+
+2024-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_decompose_address):
+	Add missing part from my previous commit.
+
+2024-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_decompose_address): Eliminate
+	common code and use use UINTVAL and HOST_WIDE_INT_UC macros
+	in the condition for AND wrapped address.
+
+2024-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117926
+	* config/i386/mmx.md (UNSPEC_3DNOW): New unspec.
+	(mmx_addv2sf3): Tag insn with UNSPEC_3DNOW tag.
+	(*mmx_addv2sf3): Ditto.
+	(mmx_sub2vsf3): Ditto.
+	(mmx_subrv2sf3): Ditto.
+	(*mmx_subv2sf3): Ditto.
+	(mmx_mulv2sf3): Ditto.
+	(mmx_<smaxmin:code>v2sf3): Ditto.
+	(*mmx_<smaxmin:code>v2sf3): Ditto.
+	(mmx_ieee_<ieee_maxmin>v2sf3): Ditto.
+	(mmx_eqv2sf3): Ditto.
+	(*mmx_eqv2sf3): Ditto.
+	(mmx_gtv2sf3): Ditto.
+	(mmx_gev2sf3): Ditto.
+	(mmx_fix_truncv2sfv2si2): Ditto.
+	(mmx_floatv2siv2sf2): Ditto.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::override_urlifier): New.
+	* diagnostic.h (diagnostic_context::override_urlifier): New decl.
+	* doc/extend.texi (Nvidia PTX Function Attributes): Update
+	@cindex to specify that "kernel" is a function attribute and
+	"shared" is a variable attribute, so that these entries are
+	recognized by the regex in regenerate-attr-urls.py.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_DOCUMENTATION_NAME): New.
+	* gcc-attribute-urlifier.cc: New file.
+	* gcc-urlifier.cc: Include diagnostic.h.
+	(gcc_urlifier::make_doc): Convert to...
+	(make_doc_url): ...this.
+	(auto_override_urlifier::auto_override_urlifier): New.
+	(auto_override_urlifier::~auto_override_urlifier): New.
+	(selftest::gcc_urlifier_cc_tests): Split out body into...
+	(selftest::test_gcc_urlifier): ...this.
+	* gcc-urlifier.h: Include "pretty-print-urlifier.h" and "label-text.h".
+	(make_doc_url): New decl.
+	(class auto_override_urlifier): New.
+	(class attribute_urlifier): New.
+	(class auto_urlify_attributes): New.
+	* gimple-ssa-warn-access.cc: Include "gcc-urlifier.h".
+	(pass_waccess::execute): Use auto_urlify_attributes.
+	* gimplify.cc: Include "gcc-urlifier.h".
+	(expand_FALLTHROUGH): Use auto_urlify_attributes.
+	* internal-fn.cc: Define INCLUDE_MEMORY and include
+	"gcc-urlifier.h.
+	(expand_FALLTHROUGH): Use auto_urlify_attributes.
+	* ipa-pure-const.cc: Include "gcc-urlifier.h.
+	(suggest_attribute): Use auto_urlify_attributes.
+	* ipa-strub.cc: Include "gcc-urlifier.h.
+	(can_strub_p): Use auto_urlify_attributes.
+	* regenerate-attr-urls.py: New file.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	gcc_attribute_urlifier_cc_tests.
+	* selftest.h (selftest::gcc_attribute_urlifier_cc_tests): New
+	decl.
+	* target.def (documentation_name): New DEFHOOKPOD.
+	* tree-cfg.cc: Include "gcc-urlifier.h.
+	(do_warn_unused_result): Use auto_urlify_attributes.
+	* tree-ssa-uninit.cc: Include "gcc-urlifier.h.
+	(maybe_warn_read_write_only): Use auto_urlify_attributes.
+	(maybe_warn_pass_by_reference): Likewise.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add -attribute-urlifier.o.
+	(ATTR_URLS_HTML_DEPS): New.
+	(regenerate-attr-urls): New.
+	(regenerate-attr-urls-unit-test): New.
+	* attr-urls.def: New file.
+	* attribs.cc: Include "gcc-urlifier.h".
+	(decl_attributes): Use auto_urlify_attributes.
+	* config/aarch64/aarch64.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/arc/arc.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/arm/arm.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/bfin/bfin.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/bpf/bpf.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/epiphany/epiphany.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/gcn/gcn.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/h8300/h8300.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/i386/i386.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/ia64/ia64.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/m32c/m32c.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/m32r/m32r.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/m68k/m68k.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/mcore/mcore.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/microblaze/microblaze.cc (TARGET_DOCUMENTATION_NAME):
+	New.
+	* config/mips/mips.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/msp430/msp430.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/nds32/nds32.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/nvptx/nvptx.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/riscv/riscv.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/rl78/rl78.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/rs6000/rs6000.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/rx/rx.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/s390/s390.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/sh/sh.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/stormy16/stormy16.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/v850/v850.cc (TARGET_DOCUMENTATION_NAME): New.
+	* config/visium/visium.cc (TARGET_DOCUMENTATION_NAME): New.
+
+2024-12-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Rebuild.
+
+2024-12-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* common/config/avr/avr-common.cc
+	(avr_option_optimization_table): Default to -fno-optimize-crc.
+
+2024-12-06  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/117816
+	* avoid-store-forwarding.cc (store_forwarding_analyzer::avoid_store_forwarding):
+	Reject the transformation when having instructions that may
+	throw exceptions in the sequence.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-sm.def: Add '89'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_89, -march-map=sm_90)
+	(march-map=sm_90a): Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_89'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	'PTX_VERSION_7_8'.
+	* config/nvptx/nvptx.cc (ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h (TARGET_PTX_7_8): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'7.8' for 'PTX_VERSION_7_8'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=7.8'.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-sm.def: Add '52'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_52): Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_52'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-sm.def: Add '37'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_37, -march-map=sm_50):
+	Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_37'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	'PTX_VERSION_4_1'.
+	* config/nvptx/nvptx.cc (ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h (TARGET_PTX_4_1): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'4.1' for 'PTX_VERSION_4_1'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=4.1'.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.h (TARGET_PTX_4_2): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'4.2' for 'PTX_VERSION_4_2'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=4.2'.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Remove
+	'PTX_VERSION_3_0'.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm)
+	(default_ptx_version_option, ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h: Comment.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config.gcc: nvptx: Support '--with-multilib-list'.
+	* config/nvptx/gen-multilib-matches.sh: Adjust.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* doc/install.texi: Update.
+	* doc/invoke.texi: Align.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (gimplify_init_ctor_eval): Use RAW_DATA_UCHAR_ELT
+	macro.
+	* gimple-fold.cc (fold_array_ctor_reference): Likewise.
+	* tree-pretty-print.cc (dump_generic_node): Use RAW_DATA_UCHAR_ELT
+	and RAW_DATA_SCHAR_ELT macros.
+	* fold-const.cc (fold): Use RAW_DATA_UCHAR_ELT macro.
+
+2024-12-06  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Remove redundant :c, reported by genmatch as
+	duplicate patterns.
+
+2024-12-06  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (.SAT_ADD patterns using IFN_ADD_OVERFLOW): Remove :c that
+	only causes duplicate patterns.
+
+2024-12-06  Hau Hsu  <hau.hsu@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.gcc (riscv*-*-*): Add support for --with-cmodel configure option.
+	(all_defaults): Add cmodel.
+	* config/riscv/riscv.h (TARGET_DEFAULT_CMODEL): Remove.
+	* doc/install.texi: Document --with-cmodel configure option.
+	* doc/invoke.texi (-mcmodel): Mention --with-cmodel configure option.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/gen-multilib-matches.sh: Support '--selftest'.
+	* config/nvptx/t-nvptx (t-nvptx-gen-multilib-matches:): Invoke it.
+	* config/nvptx/gen-multilib-matches-tests: New.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/gen-h.sh: Don't pass in '$1'; compute it locally.
+	* config/nvptx/gen-multilib-matches.sh: Likewise.
+	* config/nvptx/gen-omp-device-properties.sh: Likewise.
+	* config/nvptx/gen-opt.sh: Likewise.
+	* config/nvptx/t-nvptx (s-nvptx-gen-h:, s-nvptx-gen-opt:)
+	(t-nvptx-gen-multilib-matches:): Adjust.
+	* config/nvptx/t-omp-device (omp-device-properties-nvptx):
+	Likewise.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/gen-multilib-matches.sh: Encapsulate main logic.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/t-nvptx (multilib_matches): Don't use the 'shell'
+	function of 'make'.
+	* config/nvptx/gen-multilib-matches.sh: Adjust.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/117916
+	* config/nvptx/nvptx.opt (misa=, mptx=): Tag as 'Negative' of
+	themselves.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/82250
+	* gimple-fold.cc (gimple_fold_builtin_acc_on_device): Revert last
+	change.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (RAW_DATA_UCHAR_ELT, RAW_DATA_SCHAR_ELT): Define.
+
+2024-12-06  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/106329
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svac_impl::fold): Add folding if pfalse predicate.
+	(svadda_impl::fold): Likewise.
+	(class svaddv_impl): Likewise.
+	(class svandv_impl): Likewise.
+	(svclast_impl::fold): Likewise.
+	(svcmp_impl::fold): Likewise.
+	(svcmp_wide_impl::fold): Likewise.
+	(svcmpuo_impl::fold): Likewise.
+	(svcntp_impl::fold): Likewise.
+	(class svcompact_impl): Likewise.
+	(class svcvtnt_impl): Likewise.
+	(class sveorv_impl): Likewise.
+	(class svminv_impl): Likewise.
+	(class svmaxnmv_impl): Likewise.
+	(class svmaxv_impl): Likewise.
+	(class svminnmv_impl): Likewise.
+	(class svorv_impl): Likewise.
+	(svpfirst_svpnext_impl::fold): Likewise.
+	(svptest_impl::fold): Likewise.
+	(class svsplice_impl): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(class svcvtxnt_impl): Likewise.
+	(svmatch_svnmatch_impl::fold): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(is_pfalse): Return true if tree is pfalse.
+	(gimple_folder::fold_pfalse): Fold calls with pfalse predicate.
+	(gimple_folder::fold_call_to): Fold call to lhs = t for given tree t.
+	(gimple_folder::fold_to_stmt_vops): Helper function that folds the
+	call to given stmt and adjusts virtual operands.
+	(gimple_folder::fold): Call fold_pfalse.
+	* config/aarch64/aarch64-sve-builtins.h (is_pfalse): Declare is_pfalse.
+
+2024-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117922
+	* timevar.def (TV_FOLD_MEM_OFFSETS): New.
+	* fold-mem-offsets.cc (pass_data_fold_mem): Use TV_FOLD_MEM_OFFSETS.
+
 2024-12-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/117860

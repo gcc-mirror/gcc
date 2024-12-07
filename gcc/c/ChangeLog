@@ -1,3 +1,24 @@
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc: Include "gcc-urlifier.h".
+	(start_decl): Use auto_urlify_attributes with OPT_Wattributes.
+	(start_function): Likewise.
+	* c-parser.cc: Include "gcc-urlifier.h".
+	(c_parser_statement_after_labels): Use auto_urlify_attributes with
+	OPT_Wattributes.
+	* c-typeck.cc: Include "gcc-urlifier.h".
+	(maybe_warn_nodiscard): Use auto_urlify_attributes with
+	OPT_Wunused_result.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_get_builtin_args, c_parser_expression,
+	c_parser_expr_list): Use RAW_DATA_UCHAR_ELT macro.
+	* c-typeck.cc (digest_init): Use RAW_DATA_UCHAR_ELT and
+	RAW_DATA_SCHAR_ELT macros.
+	(add_pending_init, maybe_split_raw_data): Use RAW_DATA_UCHAR_ELT
+	macro.
+
 2024-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/107980

@@ -1,3 +1,7 @@
+2024-12-06  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* clang-format: Set BraceWrapping.AfterCaseLabel.
+
 2024-12-04  Filip Kastl  <fkastl@suse.cz>
 
 	* check-params-in-docs.py: 'params' -> 'help_params'.  Don't

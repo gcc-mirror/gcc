@@ -1,3 +1,106 @@
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* call.cc (print_conversion_rejection): Remove leading space from
+	diagnostic messages.
+	(print_conversion_rejection): Likewise.
+	(print_arity_information): Likewise.
+	(print_z_candidate): Likewise.  Add auto_diagnostic_nesting_level
+	before calls to fn_type_unification and diagnose_constraints.
+	(print_z_candidates): Add auto_diagnostic_nesting_level before
+	looping over candidates.
+	(conversion_null_warnings): Remove leading space from
+	diagnostic messages.
+	(maybe_inform_about_fndecl_for_bogus_argument_init): Likewise.
+	* constraint.cc (tsubst_valid_expression_requirement): Add
+	auto_diagnostic_nesting_level when showing why the expression is
+	invalid.
+	(satisfy_disjunction): Likewise when showing operans, and again
+	when replaying each branch of the disjunction.
+	(diagnose_constraints): Likewise when replaying satisfaction.
+	* error.cc (cp_diagnostic_text_starter): Set prefix.
+	(print_instantiation_full_context): Only show the file
+	if we're not showing nesting or the user has opted in to
+	showing location information in nested diagnostics.
+	(class auto_context_line): New.
+	(print_instantiation_partial_context_line): Replace calls to
+	print_location and to diagnostic_show_locus with an
+	auto_context_line.
+	(print_instantiation_partial_context): Replace calls to
+	print_location with an auto_context_line.
+	(maybe_print_constexpr_context): Likewise.
+	(print_constrained_decl_info): Likewise.
+	(print_concept_check_info): Likewise.
+	(print_constraint_context_head): Likewise.
+	(print_requires_expression_info): Likewise.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-gimplify.cc: Include "gcc-urlifier.h".
+	(process_stmt_hotness_attribute): Use auto_urlify_attributes with
+	OPT_Wattributes.
+	* cvt.cc: Include "gcc-urlifier.h".
+	(maybe_warn_nodiscard): Use auto_urlify_attributes with
+	OPT_Wunused_result.
+	* decl.cc: Include "gcc-urlifier.h".
+	(start_decl): Use auto_urlify_attributes.
+	(start_preparsed_function): Likewise.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.cc (suggest_alternative_in_explicit_scope):
+	Gracefully handle non-namespaces, such as scoped enums.
+	* parser.cc (cp_parser_name_lookup_error): Provide
+	a name_hint for the case where we're in an explicit scope.
+	* std-name-hint.gperf: Add <concepts>.
+	* std-name-hint.h: Regenerate.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* error.cc (print_location): Move to earlier in the file.
+	(print_instantiation_partial_context_line): Replace
+	location-printing logic with a call to print_location.
+	(print_instantiation_partial_context): Likewise, splitting up
+	pp_verbatim calls.
+	(maybe_print_constexpr_context): Likewise.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (class raw_data_iterator): New type.
+	(class raw_data_range): New type.
+	* parser.cc (cp_parser_postfix_open_square_expression): Handle
+	parsing of CPP_EMBED.
+	(cp_parser_parenthesized_expression_list): Likewise.  Use
+	cp_lexer_next_token_is.
+	(cp_parser_expression): Handle parsing of CPP_EMBED.
+	(cp_parser_template_argument_list): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_oacc_clause_tile): Likewise.
+	(cp_parser_omp_tile_sizes): Likewise.
+	* pt.cc (tsubst_expr): Handle RAW_DATA_CST.
+	* constexpr.cc (reduced_constant_expression_p): Likewise.
+	(raw_data_cst_elt): New function.
+	(find_array_ctor_elt): Handle RAW_DATA_CST.
+	(cxx_eval_array_reference): Likewise.
+	* typeck2.cc (digest_init_r): Emit -Wnarrowing and/or -Wconversion
+	diagnostics.
+	(process_init_constructor_array): Handle RAW_DATA_CST.
+	* decl.cc (maybe_deduce_size_from_array_init): Likewise.
+	(is_direct_enum_init): Fail for RAW_DATA_CST.
+	(cp_maybe_split_raw_data): New function.
+	(consume_init): New function.
+	(reshape_init_array_1): Add VECTOR_P argument.  Handle RAW_DATA_CST.
+	(reshape_init_array): Adjust reshape_init_array_1 caller.
+	(reshape_init_vector): Likewise.
+	(reshape_init_class): Handle RAW_DATA_CST.
+	(reshape_init_r): Likewise.
+
+2024-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117898
+	* pt.cc (tsubst_pack_index): Detect indexing an empty pack.
+
 2024-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/41045

@@ -1,3 +1,14 @@
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-attribs.cc: Include "gcc-urlifier.h".
+	(positional_argument): Use auto_urlify_attributes.
+	* c-common.cc: Include "gcc-urlifier.h".
+	(parse_optimize_options): Use auto_urlify_attributes with
+	OPT_Wattributes.
+	(attribute_fallthrough_p): Use auto_urlify_attributes.
+	* c-warn.cc: Include "gcc-urlifier.h".
+	(diagnose_mismatched_attributes): Use auto_urlify_attributes.
+
 2024-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/107980

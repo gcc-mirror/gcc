@@ -1,3 +1,241 @@
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* g++.dg/concepts/nested-diagnostics-1-truncated.C: New test.
+	* g++.dg/concepts/nested-diagnostics-1.C: New test.
+	* g++.dg/concepts/nested-diagnostics-2.C: New test.
+
+2024-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr101716.c (dg-options): Add -dp.
+	(dg-final): Scan for zero_extendsidi.
+	(sample1): Change the code to use pseudos only.
+
+2024-12-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/dlstp-int8x16.c: Add -mtune=cortex-m55
+
+2024-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117926
+	* gcc.target/i386/pr117926.c: New test.
+
+2024-12-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/20031108-1.c: Add -std=c17.
+	* gcc.target/arm/fp16-unprototyped-1.c: Likewise.
+	* gcc.target/arm/fp16-unprototyped-2.c: Likewise.
+	* gcc.target/arm/neon-thumb2-move.c: Likewise.
+	* gcc.target/arm/pr67756.c: Likewise.
+	* gcc.target/arm/pr81863.c: Likewise.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/concepts/missing-header.C: New test.
+	* g++.dg/concepts/misspelled-concept.C: New test.
+
+2024-12-06  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/117816
+	* gcc.dg/pr117816.c: New test.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_89.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_90.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_90a.c: Likewise.
+	* gcc.target/nvptx/march=sm_89.c: New.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/mptx=7.8.c: New.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_52.c: Adjust.
+	* gcc.target/nvptx/march=sm_52.c: New.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_37.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_50.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_52.c: Likewise.
+	* gcc.target/nvptx/march=sm_37.c: New.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/mptx=4.1.c: New.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/mptx=4.2.c: New.
+
+2024-12-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/dlstp-compile-asm-1.c: Add -mtune=cortex-m55
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map.c: Remove; expanded into...
+	* gcc.target/nvptx/march-map=sm_50.c: ... this.
+	* gcc.target/nvptx/march-map=sm_30.c: New.
+	* gcc.target/nvptx/march-map=sm_32.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_35.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_37.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_52.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_53.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_60.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_61.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_62.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_70.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_72.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_75.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_80.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_86.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_87.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_89.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_90.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_90a.c: Likewise.
+	* gcc.target/nvptx/main.c: Remove.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/sm30.c: Remove; expanded into...
+	* gcc.target/nvptx/march=sm_30.c: ... this.
+	* gcc.target/nvptx/sm35.c: Remove; expanded into...
+	* gcc.target/nvptx/march=sm_35.c: ... this.
+	* gcc.target/nvptx/sm53.c: Remove; expanded into...
+	* gcc.target/nvptx/march=sm_53.c: ... this.
+	* gcc.target/nvptx/sm70.c: Remove; expanded into...
+	* gcc.target/nvptx/march=sm_70.c: ... this.
+	* gcc.target/nvptx/sm75.c: Remove; expanded into...
+	* gcc.target/nvptx/march=sm_75.c: ... this.
+	* gcc.target/nvptx/sm80.c: Remove; expanded into...
+	* gcc.target/nvptx/march=sm_80.c: ... this.
+	* gcc.target/nvptx/march.c: Remove.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/ptx31.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=3.1.c: ... this.
+	* gcc.target/nvptx/ptx60.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=6.0.c: ... this.
+	* gcc.target/nvptx/ptx63.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=6.3.c: ... this.
+	* gcc.target/nvptx/ptx70.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=7.0.c: ... this.
+	* gcc.target/nvptx/mptx=_.c: New.
+
+2024-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/117714
+	* gcc.dg/vect/slp-reduc-4.c: Add vect_no_int_min_max to the
+	XFAIL for the VEC_PERM_EXPR scan.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/embed-22.c: New test.
+	* c-c++-common/cpp/embed-23.c: New test.
+	* g++.dg/cpp/embed-4.C: New test.
+	* g++.dg/cpp/embed-5.C: New test.
+	* g++.dg/cpp/embed-6.C: New test.
+	* g++.dg/cpp/embed-7.C: New test.
+	* g++.dg/cpp/embed-8.C: New test.
+	* g++.dg/cpp/embed-9.C: New test.
+	* g++.dg/cpp/embed-10.C: New test.
+	* g++.dg/cpp/embed-11.C: New test.
+	* g++.dg/cpp/embed-12.C: New test.
+	* g++.dg/cpp/embed-13.C: New test.
+	* g++.dg/cpp/embed-14.C: New test.
+
+2024-12-06  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/106329
+	* gcc.target/aarch64/pfalse-binary_0.h: New test.
+	* gcc.target/aarch64/pfalse-unary_0.h: New test.
+	* gcc.target/aarch64/sve/pfalse-binary.c: New test.
+	* gcc.target/aarch64/sve/pfalse-binary_int_opt_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-binary_opt_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-binary_opt_single_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-binary_rotate.c: New test.
+	* gcc.target/aarch64/sve/pfalse-binary_uint64_opt_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-binary_uint_opt_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-binaryxn.c: New test.
+	* gcc.target/aarch64/sve/pfalse-clast.c: New test.
+	* gcc.target/aarch64/sve/pfalse-compare_opt_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-compare_wide_opt_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-count_pred.c: New test.
+	* gcc.target/aarch64/sve/pfalse-fold_left.c: New test.
+	* gcc.target/aarch64/sve/pfalse-load.c: New test.
+	* gcc.target/aarch64/sve/pfalse-load_ext.c: New test.
+	* gcc.target/aarch64/sve/pfalse-load_ext_gather_index.c: New test.
+	* gcc.target/aarch64/sve/pfalse-load_ext_gather_offset.c: New test.
+	* gcc.target/aarch64/sve/pfalse-load_gather_sv.c: New test.
+	* gcc.target/aarch64/sve/pfalse-load_gather_vs.c: New test.
+	* gcc.target/aarch64/sve/pfalse-load_replicate.c: New test.
+	* gcc.target/aarch64/sve/pfalse-prefetch.c: New test.
+	* gcc.target/aarch64/sve/pfalse-prefetch_gather_index.c: New test.
+	* gcc.target/aarch64/sve/pfalse-prefetch_gather_offset.c: New test.
+	* gcc.target/aarch64/sve/pfalse-ptest.c: New test.
+	* gcc.target/aarch64/sve/pfalse-rdffr.c: New test.
+	* gcc.target/aarch64/sve/pfalse-reduction.c: New test.
+	* gcc.target/aarch64/sve/pfalse-reduction_wide.c: New test.
+	* gcc.target/aarch64/sve/pfalse-shift_right_imm.c: New test.
+	* gcc.target/aarch64/sve/pfalse-store.c: New test.
+	* gcc.target/aarch64/sve/pfalse-store_scatter_index.c: New test.
+	* gcc.target/aarch64/sve/pfalse-store_scatter_offset.c: New test.
+	* gcc.target/aarch64/sve/pfalse-storexn.c: New test.
+	* gcc.target/aarch64/sve/pfalse-ternary_opt_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-ternary_rotate.c: New test.
+	* gcc.target/aarch64/sve/pfalse-unary.c: New test.
+	* gcc.target/aarch64/sve/pfalse-unary_convert_narrowt.c: New test.
+	* gcc.target/aarch64/sve/pfalse-unary_convertxn.c: New test.
+	* gcc.target/aarch64/sve/pfalse-unary_n.c: New test.
+	* gcc.target/aarch64/sve/pfalse-unary_pred.c: New test.
+	* gcc.target/aarch64/sve/pfalse-unary_to_uint.c: New test.
+	* gcc.target/aarch64/sve/pfalse-unaryxn.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary_int_opt_n.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary_int_opt_single_n.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary_opt_n.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary_opt_single_n.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary_to_uint.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary_uint_opt_n.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-binary_wide.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-compare.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-load_ext_gather_index_restricted.c:
+	New test.
+	* gcc.target/aarch64/sve2/pfalse-load_ext_gather_offset_restricted.c:
+	New test.
+	* gcc.target/aarch64/sve2/pfalse-load_gather_sv_restricted.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-load_gather_vs.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-shift_left_imm_to_uint.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-shift_right_imm.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-store_scatter_index_restricted.c:
+	New test.
+	* gcc.target/aarch64/sve2/pfalse-store_scatter_offset_restricted.c:
+	New test.
+	* gcc.target/aarch64/sve2/pfalse-unary.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-unary_convert.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-unary_convert_narrowt.c: New test.
+	* gcc.target/aarch64/sve2/pfalse-unary_to_int.c: New test.
+
+2024-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117898
+	* g++.dg/cpp26/pack-indexing2.C: Adjust.
+	* g++.dg/cpp26/pack-indexing12.C: New test.
+
+2024-12-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/bswap16-0.c: Update
+	the vector register RE to cover v10 - v31.
+
+2024-12-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Fix the incorrect optimization
+	options passing to testcases.
+
 2024-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117904
