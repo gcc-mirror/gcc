@@ -905,8 +905,7 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
   if (EDGE_COUNT (bb->preds) > 0)
     FOR_EACH_EDGE (e, ei, bb->preds)
       {
-	if (bbindex_to_postorder[e->src->index] < last_change_age.length ()
-	    && age <= last_change_age[bbindex_to_postorder[e->src->index]]
+	if ((!age || age <= last_change_age[e->src->index])
 	    && bitmap_bit_p (considered, e->src->index))
           changed |= dataflow->problem->con_fun_n (e);
       }
@@ -962,8 +961,7 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
   if (EDGE_COUNT (bb->succs) > 0)
     FOR_EACH_EDGE (e, ei, bb->succs)
       {
-	if (bbindex_to_postorder[e->dest->index] < last_change_age.length ()
-	    && age <= last_change_age[bbindex_to_postorder[e->dest->index]]
+	if ((!age || age <= last_change_age[e->dest->index])
 	    && bitmap_bit_p (considered, e->dest->index))
           changed |= dataflow->problem->con_fun_n (e);
       }
@@ -1028,13 +1026,17 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
   bool changed;
   vec<int> last_visit_age = vNULL;
   vec<int> last_change_age = vNULL;
-  int prev_age;
 
   bitmap worklist = BITMAP_ALLOC (&df_bitmap_obstack);
   bitmap_tree_view (worklist);
 
-  last_visit_age.safe_grow_cleared (n_blocks, true);
-  last_change_age.safe_grow_cleared (n_blocks, true);
+  last_visit_age.safe_grow (n_blocks, true);
+  last_change_age.safe_grow (last_basic_block_for_fn (cfun) + 1, true);
+  /* Make last_change_age defined - we can access uninit values for not
+     considered blocks but will make sure they are considered as well.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED
+		      (last_change_age.address (),
+		       sizeof (int) * last_basic_block_for_fn (cfun)));
 
   /* We start with processing all blocks, populating pending for the
      next iteration.  */
@@ -1044,24 +1046,23 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
     {
       unsigned bb_index = blocks_in_postorder[index];
       dcount++;
-      prev_age = last_visit_age[index];
       if (dir == DF_FORWARD)
 	changed = df_worklist_propagate_forward (dataflow, bb_index,
 						 bbindex_to_postorder,
 						 NULL, pending,
 						 considered,
-						 last_change_age,
-						 prev_age);
+						 last_change_age, 0);
       else
 	changed = df_worklist_propagate_backward (dataflow, bb_index,
 						  bbindex_to_postorder,
 						  NULL, pending,
 						  considered,
-						  last_change_age,
-						  prev_age);
+						  last_change_age, 0);
       last_visit_age[index] = ++age;
       if (changed)
-	last_change_age[index] = age;
+	last_change_age[bb_index] = age;
+      else
+	last_change_age[bb_index] = 0;
     }
 
   /* Double-queueing.  Worklist is for the current iteration,
@@ -1075,7 +1076,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
 	  unsigned index = bitmap_clear_first_set_bit (worklist);
 	  unsigned bb_index = blocks_in_postorder[index];
 	  dcount++;
-	  prev_age = last_visit_age[index];
+	  int prev_age = last_visit_age[index];
 	  if (dir == DF_FORWARD)
 	    changed = df_worklist_propagate_forward (dataflow, bb_index,
 						     bbindex_to_postorder,
@@ -1092,7 +1093,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
 						      prev_age);
 	  last_visit_age[index] = ++age;
 	  if (changed)
-	    last_change_age[index] = age;
+	    last_change_age[bb_index] = age;
 	}
       while (!bitmap_empty_p (worklist));
     }
