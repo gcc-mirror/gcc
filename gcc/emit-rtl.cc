@@ -511,10 +511,10 @@ gen_rtx_INSN_LIST (machine_mode mode, rtx insn, rtx insn_list)
 
 rtx_insn *
 gen_rtx_INSN (machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
-	      basic_block bb, rtx pattern, int location, int code,
+	      basic_block bb, rtx pattern, location_t location, int code,
 	      rtx reg_notes)
 {
-  return as_a <rtx_insn *> (gen_rtx_fmt_uuBeiie (INSN, mode,
+  return as_a <rtx_insn *> (gen_rtx_fmt_uuBeLie (INSN, mode,
 						 prev_insn, next_insn,
 						 bb, pattern, location, code,
 						 reg_notes));
@@ -5892,6 +5892,7 @@ copy_insn_1 (rtx orig)
       case 't':
       case 'w':
       case 'i':
+      case 'L':
       case 'p':
       case 's':
       case 'S':

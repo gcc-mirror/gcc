@@ -45,6 +45,7 @@ class rtx_writer
   void print_rtx_operand_code_e (const_rtx in_rtx, int idx);
   void print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx);
   void print_rtx_operand_code_i (const_rtx in_rtx, int idx);
+  void print_rtx_operand_code_L (const_rtx in_rtx, int idx);
   void print_rtx_operand_code_r (const_rtx in_rtx);
   void print_rtx_operand_code_u (const_rtx in_rtx, int idx);
   void print_rtx_operand (const_rtx in_rtx, int idx);

@@ -1801,6 +1801,11 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
+	    return false;
+	  break;
+
+	case 'L':
+	  if (XLOC (x, i) != XLOC (y, i))
 	    {
 	      if (((code == ASM_OPERANDS && i == 6)
 		   || (code == ASM_INPUT && i == 1)))

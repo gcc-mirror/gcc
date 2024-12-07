@@ -899,6 +899,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 	    return false;
 	  break;
 
+	case 'L':
+	  if (XLOC (x, i) != XLOC (y, i))
+	    return false;
+	  break;
+
 	case 'p':
 	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
 	    return false;

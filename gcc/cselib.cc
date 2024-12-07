@@ -1122,6 +1122,11 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode, int depth)
 	    return false;
 	  break;
 
+	case 'L':
+	  if (XLOC (x, i) != XLOC (y, i))
+	    return false;
+	  break;
+
 	case 'p':
 	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
 	    return false;
@@ -1563,6 +1568,10 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 
 	case 'i':
 	  hash.add_hwi (XINT (x, i));
+	  break;
+
+	case 'L':
+	  hash.add_hwi (XLOC (x, i));
 	  break;
 
 	case 'p':
@@ -2079,6 +2088,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
       case 't':
       case 'w':
       case 'i':
+      case 'L':
       case 's':
       case 'S':
       case 'T':

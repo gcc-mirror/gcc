@@ -51,6 +51,9 @@ type_from_format (int c)
     case 'i':
       return "int ";
 
+    case 'L':
+      return "location_t ";
+
     case 'w':
       return "HOST_WIDE_INT ";
 
@@ -83,6 +86,9 @@ accessor_from_format (int c)
     {
     case 'i':
       return "XINT";
+
+    case 'L':
+      return "XLOC";
 
     case 'w':
       return "XWINT";

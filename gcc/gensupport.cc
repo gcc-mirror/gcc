@@ -1496,7 +1496,7 @@ subst_pattern_match (rtx x, rtx pt, file_location loc)
 
       switch (fmt[i])
 	{
-	case 'r': case 'p': case 'i': case 'w': case 's':
+	case 'r': case 'p': case 'i': case 'w': case 's': case 'L':
 	  continue;
 
 	case 'e': case 'u':
@@ -1662,6 +1662,7 @@ get_alternatives_number (rtx pattern, int *n_alt, file_location loc)
 
 	case 'r': case 'p': case 'i': case 'w':
 	case '0': case 's': case 'S': case 'T':
+	case 'L':
 	  break;
 
 	default:
@@ -1722,6 +1723,7 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
 
 	case 'r': case 'p': case 'i': case 'w':
 	case '0': case 's': case 'S': case 'T':
+	case 'L':
 	  break;
 
 	default:
@@ -1806,7 +1808,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op,
 	    }
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:
@@ -1867,7 +1869,7 @@ alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
 	    }
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:
@@ -2785,6 +2787,7 @@ subst_dup (rtx pattern, int n_alt, int n_subst_alt)
 
 	case 'r': case 'p': case 'i': case 'w':
 	case '0': case 's': case 'S': case 'T':
+	case 'L':
 	  break;
 
 	default:

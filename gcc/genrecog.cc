@@ -388,7 +388,7 @@ find_operand (rtx pattern, int n, rtx stop)
 	      return r;
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:
@@ -439,7 +439,7 @@ find_matching_operand (rtx pattern, int n)
 	      return r;
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:
@@ -801,7 +801,7 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	    validate_pattern (XVECEXP (pattern, i, j), info, NULL_RTX, 0);
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:

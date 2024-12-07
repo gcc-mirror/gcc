@@ -4212,6 +4212,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
       case 's':
       case '0':
       case 'i':
+      case 'L':
       case 'w':
       case 'p':
       case 'n':

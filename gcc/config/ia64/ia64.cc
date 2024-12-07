@@ -6905,6 +6905,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	  case '0':	/* unused field */
 	  case 'i':	/* integer */
 	  case 'n':	/* note */
+	  case 'L':     /* location_t */
 	  case 'w':	/* wide integer */
 	  case 's':	/* pointer to string */
 	  case 'S':	/* optional pointer to string */

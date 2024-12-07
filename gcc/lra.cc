@@ -1749,6 +1749,10 @@ lra_rtx_hash (rtx x)
 	  val += XINT (x, i);
 	  break;
 
+	case 'L':
+	  val += XLOC (x, i);
+	  break;
+
 	case 'V':
 	case 'E':
 	  val += XVECLEN (x, i);

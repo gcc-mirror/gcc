@@ -104,7 +104,7 @@ class function_reader : public rtx_reader
   int parse_enum_value (int num_values, const char *const *strings);
 
   void read_rtx_operand_u (rtx x, int idx);
-  void read_rtx_operand_i_or_n (rtx x, int idx, char format_char);
+  void read_rtx_operand_inL (rtx x, int idx, char format_char);
   rtx read_rtx_operand_r (rtx x);
   rtx extra_parsing_for_operand_code_0 (rtx x, int idx);
 
@@ -902,7 +902,8 @@ function_reader::read_rtx_operand (rtx x, int idx)
 
     case 'i':
     case 'n':
-      read_rtx_operand_i_or_n (x, idx, format_char);
+    case 'L':
+      read_rtx_operand_inL (x, idx, format_char);
       /* Don't run regular parser for these codes.  */
       return x;
 
@@ -991,8 +992,7 @@ function_reader::parse_enum_value (int num_values, const char *const *strings)
    Special-cased handling of these, for reading function dumps.  */
 
 void
-function_reader::read_rtx_operand_i_or_n (rtx x, int idx,
-					  char format_char)
+function_reader::read_rtx_operand_inL (rtx x, int idx, char format_char)
 {
   /* Handle some of the extra information that print_rtx
      can write out for these cases.  */
@@ -1045,7 +1045,10 @@ function_reader::read_rtx_operand_i_or_n (rtx x, int idx,
   if (format_char == 'n')
     value = parse_note_insn_name (name.string);
   else
-    value = atoi (name.string);
+    {
+      gcc_checking_assert (format_char == 'i');
+      value = atoi (name.string);
+    }
   XINT (x, idx) = value;
 }
 

@@ -8642,6 +8642,7 @@ summarize_insn (rtx x, struct shadow_summary *sum, int set)
 	    break;
 
 	  case 'i':
+	  case 'L':
 	    break;
 
 	  default:

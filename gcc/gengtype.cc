@@ -1254,6 +1254,11 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      subname = "rt_int";
 	      break;
 
+	    case 'L':
+	      t = scalar_tp;
+	      subname = "rt_loc";
+	      break;
+
 	    case 'p':
 	      t = scalar_tp;
 	      subname = "rt_subreg";
