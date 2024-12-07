@@ -237,6 +237,35 @@ int n_avr_fuse_add_executed = 0;
 
 static location_t avr_insn_location = UNKNOWN_LOCATION;
 
+/* Similar to ctz_hwi etc, but as constexpr so we can use it in
+   static_assert.  */
+static constexpr int
+avr_ctz (uint64_t x)
+{
+#define TSTB(n) (x & ((uint64_t) 1 << n)) ? n
+  return
+    TSTB (0) : TSTB (1) : TSTB (2) : TSTB (3) : TSTB (4)
+    : TSTB (5) : TSTB (6) : TSTB (7) : TSTB (8) : TSTB (9)
+    : TSTB (10) : TSTB (11) : TSTB (12) : TSTB (13) : TSTB (14)
+    : TSTB (15) : TSTB (16) : TSTB (17) : TSTB (18) : TSTB (19)
+    : TSTB (20) : TSTB (21) : TSTB (22) : TSTB (23) : TSTB (24)
+    : TSTB (25) : TSTB (26) : TSTB (27) : TSTB (28) : TSTB (29)
+    : TSTB (30) : TSTB (31) : TSTB (32) : TSTB (33) : TSTB (34)
+    : TSTB (35) : TSTB (36) : TSTB (37) : TSTB (38) : TSTB (39)
+    : TSTB (40) : TSTB (41) : TSTB (42) : TSTB (43) : TSTB (44)
+    : TSTB (45) : TSTB (46) : TSTB (47) : TSTB (48) : TSTB (49)
+    : TSTB (50) : TSTB (51) : TSTB (52) : TSTB (53) : TSTB (54)
+    : TSTB (55) : TSTB (56) : TSTB (57) : TSTB (58) : TSTB (59)
+    : TSTB (60) : TSTB (61) : TSTB (62) : TSTB (63)
+    : 64;
+#undef TSTB
+}
+
+/* Make sure that there are enough section flags bits.  avr allocates 4.  */
+static_assert (8 * sizeof (decltype (section_common::flags))
+	       >= 4u + avr_ctz (SECTION_MACH_DEP),
+	       "section_common::flags is too narrow");
+
 
 /* Transform UP into lowercase and write the result to LO.
    You must provide enough space for LO.  Return LO.  */
