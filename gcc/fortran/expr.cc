@@ -1613,7 +1613,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	  /* Zero-sized arrays have no shape and no elements, stop early.  */
 	  if (!begin->shape)
 	    {
-	      mpz_init_set_ui (nelts, 0);
+	      mpz_set_ui (nelts, 0);
 	      break;
 	    }
 
@@ -1714,7 +1714,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
      constructor.  */
   for (idx = 0; idx < (int) mpz_get_si (nelts); idx++)
     {
-      mpz_init_set_ui (ptr, 0);
+      mpz_set_ui (ptr, 0);
 
       incr_ctr = true;
       for (d = 0; d < rank; d++)
