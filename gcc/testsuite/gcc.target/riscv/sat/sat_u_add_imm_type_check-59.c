@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64d -fdump-rtl-expand-details" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -fdump-tree-optimized" } */
 
 #include "sat_arith.h"
 
@@ -15,4 +15,4 @@ DEF_SAT_U_SUB_IMM_TYPE_CHECK_FMT_4 (6, uint32_t, -62l)
 DEF_SAT_U_SUB_IMM_TYPE_CHECK_FMT_4 (7, uint32_t, 4294967342ll)
 DEF_SAT_U_SUB_IMM_TYPE_CHECK_FMT_4 (8, uint32_t, 4394967342ull)
 
-/* { dg-final { scan-rtl-dump-not ".SAT_ADD " "expand" } } */
+/* { dg-final { scan-tree-dump-not ".SAT_ADD " "optimized" } } */
