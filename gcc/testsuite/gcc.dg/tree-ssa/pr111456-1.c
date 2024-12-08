@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized --param logical-op-non-short-circuit=1" } */
 /* PR tree-optimization/111456 */
 
 void foo(void);
