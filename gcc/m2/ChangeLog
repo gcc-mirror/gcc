@@ -1,3 +1,13 @@
+2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117948
+	* gm2-compiler/P1Build.bnf (ForwardDeclaration): Pass token
+	position of the FORWARD keyword to EndBuildForward.
+	* gm2-compiler/P1SymBuild.def (EndBuildForward): New parameter
+	forwardPos.
+	* gm2-compiler/P1SymBuild.mod (EndBuildForward): Issue an error at
+	forwardPos if the Iso boolean is false.
+
 2024-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117904

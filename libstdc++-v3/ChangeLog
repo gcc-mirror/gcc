@@ -1,3 +1,11 @@
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Fix typo in Doxygen comment.
+
+2024-12-07  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* .editorconfig: Adjust globbing style to standard syntax.
+
 2024-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/117921

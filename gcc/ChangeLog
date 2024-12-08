@@ -1,3 +1,75 @@
+2024-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (VIS4B instructions): Add comments.
+
+2024-12-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_print_operand_address): Use
+	avr_insn_location as location for late (during final) diagnostic.
+
+2024-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117930
+	* config/i386/i386.md (crotate): New define_code_attr.
+	(*<insn><mode>3_add, *<insn><mode>3_add_1,
+	*<insn><mode>3_sub, *<insn><mode>3_sub_1): New define_insn_and_split
+	patterns plus following define_split for constant first input
+	operand.
+
+2024-12-07  Denis Chertykov  <chertykov@gmail.com>
+
+	PR target/116778
+	* lra-lives.cc (complete_info_p): Clarification of the comment.
+	* lra.cc (lra): Create a full live info after rematerialization.
+
+2024-12-07  Kito Cheng  <kito.cheng@sifive.com>
+
+	Revert:
+	2024-12-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(vsetvl_def::get_name): Adjust return type.
+	(loadstore_def::get_name): Ditto.
+	(indexed_loadstore_def::get_name): Ditto.
+	(th_loadstore_width_def::get_name): Ditto.
+	(th_indexed_loadstore_width_def::get_name): Ditto.
+	(alu_def::get_name): Ditto.
+	(alu_frm_def::get_name): Ditto.
+	(widen_alu_frm_def::get_name): Ditto.
+	(narrow_alu_frm_def::get_name): Ditto.
+	(reduc_alu_frm_def::get_name): Ditto.
+	(widen_alu_def::get_name): Ditto.
+	(no_mask_policy_def::get_name): Ditto.
+	(return_mask_def::get_name): Ditto.
+	(narrow_alu_def::get_name): Ditto.
+	(move_def::get_name): Ditto.
+	(mask_alu_def::get_name): Ditto.
+	(reduc_alu_def::get_name): Ditto.
+	(th_extract_def::get_name): Ditto.
+	(scalar_move_def::get_name): Ditto.
+	(vundefined_def::get_name): Ditto.
+	(misc_def::get_name): Ditto.
+	(vset_def::get_name): Ditto.
+	(vcreate_def: Ditto.::get_name): Ditto.
+	(read_vl_def::get_name): Ditto.
+	(fault_load_def::get_name): Ditto.
+	(vlenb_def::get_name): Ditto.
+	(seg_loadstore_def::get_name): Ditto.
+	(seg_indexed_loadstore_def::get_name): Ditto.
+	(seg_fault_load_def::get_name): Ditto.
+	(crypto_vv_def::get_name): Ditto.
+	(crypto_vi_def::get_name): Ditto.
+	(crypto_vv_no_op_type_def::get_name): Ditto.
+	(sf_vqmacc_def::get_name): Ditto.
+	(sf_vqmacc_def::get_name): Ditto.
+	(sf_vfnrclip_def::get_name): Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_builder::add_unique_function): Adjust the type for the
+	function name holder.
+	(function_builder::add_overloaded_function): Ditto.
+	* config/riscv/riscv-vector-builtins.h (function_shape::get_name): Add
+	const to the return type.
+
 2024-12-07  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* libgdiagnostics.cc (struct diagnostic_manager): Use location_t(-1)

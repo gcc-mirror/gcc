@@ -1,3 +1,13 @@
+2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117948
+	* gm2/pim/fail/forward.mod: New test.
+
+2024-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117930
+	* gcc.target/i386/pr117930.c: New test.
+
 2024-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116253
