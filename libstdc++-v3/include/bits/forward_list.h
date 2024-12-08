@@ -420,25 +420,30 @@ namespace __fwdlist
       using value_type = typename pointer_traits<_ValPtr>::element_type;
       using _Node_ptr = __ptr_rebind<_ValPtr, _Node>;
 
-      _Node() { }
+      _Node() noexcept { }
       ~_Node() { }
       _Node(_Node&&) = delete;
 
-      union {
+      union _Uninit_storage
+      {
+	_Uninit_storage() noexcept { }
+	~_Uninit_storage() { }
+
 #if ! _GLIBCXX_INLINE_VERSION
 	// For ABI compatibility we need to overalign this member.
 	alignas(__alignof__(value_type)) // XXX GLIBCXX_ABI Deprecated
 #endif
 	value_type _M_data;
       };
+      _Uninit_storage _M_u;
 
       value_type*
       _M_valptr() noexcept
-      { return std::__addressof(_M_data); }
+      { return std::__addressof(_M_u._M_data); }
 
       const value_type*
       _M_valptr() const noexcept
-      { return std::__addressof(_M_data); }
+      { return std::__addressof(_M_u._M_data); }
 
       _Node_ptr
       _M_node_ptr()
@@ -486,7 +491,7 @@ namespace __fwdlist
       [[__nodiscard__]]
       constexpr reference
       operator*() const noexcept
-      { return static_cast<_Node&>(*this->_M_node)._M_data; }
+      { return static_cast<_Node&>(*this->_M_node)._M_u._M_data; }
 
       [[__nodiscard__]]
       constexpr pointer

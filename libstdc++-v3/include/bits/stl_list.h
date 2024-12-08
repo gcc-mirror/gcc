@@ -199,12 +199,12 @@ namespace __list
       swap(_Node_base& __x, _Node_base& __y) noexcept;
 
       void
-      _M_transfer(_Base_ptr const __first, _Base_ptr const __last);
+      _M_transfer(_Base_ptr const __first, _Base_ptr const __last) noexcept;
 
       void
       _M_hook(_Base_ptr const __position) noexcept
       {
-	auto __self = pointer_traits<_Base_ptr>::pointer_to(*this);
+	auto __self = this->_M_base();
 	this->_M_next = __position;
 	this->_M_prev = __position->_M_prev;
 	__position->_M_prev->_M_next = __self;
@@ -224,6 +224,8 @@ namespace __list
       // by std::list::empty(), where it doesn't escape, and by
       // std::list::end() const, where the pointer is used to initialize a
       // const_iterator and so constness is restored.
+      // The standard allows pointer_to to be potentially-throwing,
+      // but we have to assume it doesn't throw to implement std::list.
       _Base_ptr
       _M_base() const noexcept
       {
@@ -290,16 +292,24 @@ namespace __list
       using value_type = typename pointer_traits<_ValPtr>::element_type;
       using _Node_ptr = __ptr_rebind<_ValPtr, _Node>;
 
-      union {
-	value_type _M_data;
-      };
-
-      _Node() { }
+      _Node() noexcept { }
       ~_Node() { }
       _Node(_Node&&) = delete;
 
-      value_type*       _M_valptr()       { return std::__addressof(_M_data); }
-      value_type const* _M_valptr() const { return std::__addressof(_M_data); }
+      union _Uninit_storage
+      {
+	_Uninit_storage() noexcept { }
+	~_Uninit_storage() { }
+
+	value_type _M_data;
+      };
+      _Uninit_storage _M_u;
+
+      value_type*
+      _M_valptr() noexcept       { return std::__addressof(_M_u._M_data); }
+
+      value_type const*
+      _M_valptr() const noexcept { return std::__addressof(_M_u._M_data); }
 
       _Node_ptr
       _M_node_ptr()
@@ -349,7 +359,7 @@ namespace __list
       [[__nodiscard__]]
       constexpr reference
       operator*() const noexcept
-      { return static_cast<_Node&>(*_M_node)._M_data; }
+      { return static_cast<_Node&>(*_M_node)._M_u._M_data; }
 
       [[__nodiscard__]]
       constexpr pointer
@@ -748,6 +758,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	rebind<typename _Node_traits::_Node>::other _Node_alloc_type;
       typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
 
+#if __cplusplus < 201103L || ! _GLIBCXX_USE_ALLOC_PTR_FOR_LIST
+      typedef _List_node<_Tp>* _Node_ptr;
+#else
+      using _Node_ptr = typename _Node_alloc_traits::pointer;
+#endif
+
       struct _List_impl
       : public _Node_alloc_type
       {
@@ -797,42 +813,47 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_get_node()
       { return _Node_alloc_traits::allocate(_M_impl, 1); }
 
-#if __cplusplus < 201103L || _GLIBCXX_USE_ALLOC_PTR_FOR_LIST
       void
-      _M_put_node(typename _Node_alloc_traits::pointer __p) _GLIBCXX_NOEXCEPT
-      { _Node_alloc_traits::deallocate(_M_impl, __p, 1); }
-#else
-      void
-      _M_put_node(_List_node<_Tp>* __p)
+      _M_put_node(_Node_ptr __p) _GLIBCXX_NOEXCEPT
       {
-	// When not using the allocator's pointer type internally we must
-	// convert between _Node_ptr (i.e. _List_node*) and the allocator's
-	// pointer type.
-	using __alloc_pointer = typename _Node_alloc_traits::pointer;
-	auto __ap = pointer_traits<__alloc_pointer>::pointer_to(*__p);
-	_Node_alloc_traits::deallocate(_M_impl, __ap, 1);
-      }
-#endif
-
+#if __cplusplus < 201103L || _GLIBCXX_USE_ALLOC_PTR_FOR_LIST
+	_Node_alloc_traits::deallocate(_M_impl, __p, 1);
+#else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	using __alloc_pointer = typename _Node_alloc_traits::pointer;
+	if constexpr (is_same<_Node_ptr, __alloc_pointer>::value)
+	  _Node_alloc_traits::deallocate(_M_impl, __p, 1);
+	else
+	  {
+	    // When not using the allocator's pointer type internally we must
+	    // convert __p to __alloc_pointer so it can be deallocated.
+	    auto __ap = pointer_traits<__alloc_pointer>::pointer_to(*__p);
+	    _Node_alloc_traits::deallocate(_M_impl, __ap, 1);
+	  }
+#pragma GCC diagnostic pop
+#endif
+      }
+
       void
-      _M_destroy_node(typename _Node_alloc_traits::pointer __p)
+      _M_destroy_node(_Node_ptr __p)
       {
-#if __cplusplus >= 201103L
 	// Destroy the element
+#if __cplusplus < 201103L
+	_Tp_alloc_type(_M_impl).destroy(__p->_M_valptr());
+#else
 	_Node_alloc_traits::destroy(_M_impl, __p->_M_valptr());
 	// Only destroy the node if the pointers require it.
 	using _Node = typename _Node_traits::_Node;
 	using _Base_ptr = typename _Node_traits::_Node_base::_Base_ptr;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 	if constexpr (!is_trivially_destructible<_Base_ptr>::value)
 	  __p->~_Node();
-#else
-	_Tp_alloc_type(_M_impl).destroy(__p->_M_valptr());
+#pragma GCC diagnostic pop
 #endif
 	this->_M_put_node(__p);
       }
-#pragma GCC diagnostic pop
 
   public:
       typedef _Alloc allocator_type;
@@ -1084,12 +1105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  auto __guard = std::__allocate_guarded_obj(__alloc);
 	  _Node_alloc_traits::construct(__alloc, __guard->_M_valptr(),
 					std::forward<_Args>(__args)...);
-	  auto __p = __guard.release();
-#if _GLIBCXX_USE_ALLOC_PTR_FOR_LIST
-	  return __p;
-#else
-	  return std::__to_address(__p);
-#endif
+	  return __guard.release();
 	}
 #endif
 
@@ -2756,8 +2772,8 @@ namespace __list
     void
     _Node_base<_VoidPtr>::swap(_Node_base& __x, _Node_base& __y) noexcept
     {
-      auto __px = pointer_traits<_Base_ptr>::pointer_to(__x);
-      auto __py = pointer_traits<_Base_ptr>::pointer_to(__y);
+      auto __px = __x._M_base();
+      auto __py = __x._M_base();
 
       if (__x._M_next != __px)
 	{
@@ -2792,11 +2808,11 @@ namespace __list
   template<typename _VoidPtr>
     void
     _Node_base<_VoidPtr>::_M_transfer(_Base_ptr const __first,
-				      _Base_ptr const __last)
+				      _Base_ptr const __last) noexcept
     {
       __glibcxx_assert(__first != __last);
 
-      auto __self = pointer_traits<_Base_ptr>::pointer_to(*this);
+      auto __self = _M_base();
       if (__self != __last)
 	{
 	  // Remove [first, last) from its old position.

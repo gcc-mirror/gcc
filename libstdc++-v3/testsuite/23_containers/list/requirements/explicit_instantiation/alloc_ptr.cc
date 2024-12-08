@@ -57,6 +57,17 @@ struct Allocator
 
 template class std::list<int, Allocator<int>>;
 
+struct NonTrivial
+{
+  NonTrivial() { }
+  NonTrivial(const NonTrivial&) { }
+  ~NonTrivial() { }
+  bool operator==(const NonTrivial&) const { return true; } // for remove(T)
+  bool operator<(const NonTrivial&) const { return false; } // for sort()
+};
+
+template class std::list<NonTrivial, Allocator<NonTrivial>>;
+
 #include <testsuite_iterators.h>
 
 void
