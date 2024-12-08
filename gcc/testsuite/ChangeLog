@@ -1,3 +1,11 @@
+2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117948
+	* gm2/pim/fail/forward.mod: New test.
+
 2024-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
