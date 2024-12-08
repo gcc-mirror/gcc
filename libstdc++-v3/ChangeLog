@@ -1,3 +1,106 @@
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::__is_formattable_integer): New
+	variable template and specializations.
+	(template<integral, __char> struct formatter): Replace
+	constraints on first arg with __is_formattable_integer.
+	* testsuite/std/format/formatter/requirements.cc: Check that
+	std::formatter specializations for char8_t and const int are
+	disabled.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::begin): Fix constraint,
+	as per LWG 3589.
+	* testsuite/std/ranges/subrange/lwg3589.cc: New test.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (operator+): Add constraint to
+	move_iterator operator.
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc: Check
+	it's constrained.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117822
+	* include/std/stacktrace (stacktrace(stacktrace&&, const A&)):
+	Fix typo in qualified-id for is_always_equal trait.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Test
+	allocator-extended constructors and allocator propagation.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (emplace_back, emplace): Forward
+	parameter pack to preserve value category.
+	* testsuite/23_containers/vector/bool/emplace_rvalue.cc: New
+	test.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h: Use
+	__gnu_cxx::__is_single_threaded instead of __gthread_active_p().
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h (time_counter): Add
+	comment about times.
+	(time_counter::system_time): Use correct split value.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Insert_base::try_emplace):
+	Do not define for C++11 and C++14.
+	* include/debug/map.h (try_emplace): Use feature test macro.
+	* include/debug/unordered_map (try_emplace): Likewise.
+	* testsuite/17_intro/names.cc: Define try_emplace before C++17.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117560
+	* include/bits/fs_dir.h (enable_borrowed_range, enable_view):
+	Define specializations for directory iterators, as per LWG 3480.
+	* testsuite/27_io/filesystem/iterators/lwg3480.cc: New test.
+
+2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114394
+	* include/std/functional (bind): Use __invoke_result_t instead
+	of result_of::type.
+	* include/std/type_traits (__invoke_result_t): New alias
+	template.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust prune pattern.
+
 2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
