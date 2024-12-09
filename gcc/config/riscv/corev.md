@@ -871,7 +871,7 @@
 	[(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 		(unspec:SI [(match_operand:SI 1 "register_operand" "r,r,r,r")
 		(match_operand:SI 2 "register_operand" "r,r,r,r")
-		(match_operand:QI 3 "const_int2_operand" "J,c01,c02,c03")]
+		(match_operand:QI 3 "const_int2_operand" "J,k01,k02,k03")]
 	UNSPEC_CV_ADD_H))]
 	"TARGET_XCVSIMD && !TARGET_64BIT"
 	"@
@@ -924,7 +924,7 @@
 	[(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 		(unspec:SI [(match_operand:SI 1 "register_operand" "r,r,r,r")
 		(match_operand:SI 2 "register_operand" "r,r,r,r")
-		(match_operand:QI 3 "const_int2_operand" "J,c01,c02,c03")]
+		(match_operand:QI 3 "const_int2_operand" "J,k01,k02,k03")]
 	UNSPEC_CV_SUB_H))]
 	"TARGET_XCVSIMD && !TARGET_64BIT"
 	"@
@@ -2561,7 +2561,7 @@
 		(unspec:SI [(match_operand:SI 1 "register_operand" "r,r,r,r")
 		(match_operand:SI 2 "register_operand" "r,r,r,r")
 		(match_operand:SI 3 "register_operand" "0,0,0,0")
-		(match_operand:QI 4 "const_int2_operand" "J,c01,c02,c03")]
+		(match_operand:QI 4 "const_int2_operand" "J,k01,k02,k03")]
 	UNSPEC_CV_CPLXMUL_R))]
 	"TARGET_XCVSIMD && !TARGET_64BIT"
 	"@
@@ -2578,7 +2578,7 @@
 		(unspec:SI [(match_operand:SI 1 "register_operand" "r,r,r,r")
 		(match_operand:SI 2 "register_operand" "r,r,r,r")
 		(match_operand:SI 3 "register_operand" "0,0,0,0")
-		(match_operand:QI 4 "const_int2_operand" "J,c01,c02,c03")]
+		(match_operand:QI 4 "const_int2_operand" "J,k01,k02,k03")]
 	UNSPEC_CV_CPLXMUL_I))]
 	"TARGET_XCVSIMD && !TARGET_64BIT"
 	"@
@@ -2604,7 +2604,7 @@
 	[(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 		(unspec:SI [(match_operand:SI 1 "register_operand" "r,r,r,r")
 		(match_operand:SI 2 "register_operand" "r,r,r,r")
-		(match_operand:QI 3 "const_int2_operand" "J,c01,c02,c03")]
+		(match_operand:QI 3 "const_int2_operand" "J,k01,k02,k03")]
 	UNSPEC_CV_SUBROTMJ))]
 	"TARGET_XCVSIMD && !TARGET_64BIT"
 	"@

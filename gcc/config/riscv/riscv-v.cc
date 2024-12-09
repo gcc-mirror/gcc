@@ -5669,7 +5669,7 @@ splat_to_scalar_move_p (rtx *ops)
   return satisfies_constraint_Wc1 (ops[1])
 	 && satisfies_constraint_vu (ops[2])
 	 && !MEM_P (ops[3])
-	 && satisfies_constraint_c01 (ops[4])
+	 && satisfies_constraint_k01 (ops[4])
 	 && INTVAL (ops[7]) == NONVLMAX
 	 && known_ge (GET_MODE_SIZE (Pmode), GET_MODE_SIZE (GET_MODE (ops[3])));
 }
