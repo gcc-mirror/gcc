@@ -1859,7 +1859,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && CONST_INT_P (XEXP (*op0, 1))
       && CONST_INT_P (*op1)
       && INTVAL (XEXP (*op0, 1)) == -3
-      && *code == EQ)
+      && (*code == EQ || *code == NE))
     {
       if (INTVAL (*op1) == 0)
 	{
