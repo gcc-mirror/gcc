@@ -134,17 +134,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Chars, Name_Id, Default_No_Name)));
 
    Ab (N_Entity, N_Has_Etype,
-       (Sm (Next_Entity, Node_Id),
+       (Sy (Chars, Name_Id, Default_No_Name),
+        Sm (Next_Entity, Node_Id),
         Sm (Scope, Node_Id)));
 
-   Cc (N_Defining_Character_Literal, N_Entity,
-       (Sy (Chars, Name_Id, Default_No_Name)));
-
-   Cc (N_Defining_Identifier, N_Entity,
-       (Sy (Chars, Name_Id, Default_No_Name)));
-
-   Cc (N_Defining_Operator_Symbol, N_Entity,
-       (Sy (Chars, Name_Id, Default_No_Name)));
+   Cc (N_Defining_Character_Literal, N_Entity);
+   Cc (N_Defining_Identifier, N_Entity);
+   Cc (N_Defining_Operator_Symbol, N_Entity);
 
    Ab (N_Subexpr, N_Has_Etype,
    --  Nodes with expression fields
@@ -176,12 +172,12 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Redundant_Use, Flag)));
 
    Ab (N_Direct_Name, N_Has_Entity,
-       (Sm (Has_Private_View, Flag),
+       (Sy (Chars, Name_Id, Default_No_Name),
+        Sm (Has_Private_View, Flag),
         Sm (Has_Secondary_Private_View, Flag)));
 
    Cc (N_Identifier, N_Direct_Name,
-       (Sy (Chars, Name_Id, Default_No_Name),
-        Sm (Atomic_Sync_Required, Flag),
+       (Sm (Atomic_Sync_Required, Flag),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
@@ -189,174 +185,85 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Redundant_Use, Flag)));
 
    Cc (N_Operator_Symbol, N_Direct_Name,
-       (Sy (Chars, Name_Id, Default_No_Name),
-        Sy (Strval, String_Id)));
+       (Sy (Strval, String_Id)));
 
    Cc (N_Character_Literal, N_Direct_Name,
-       (Sy (Chars, Name_Id, Default_No_Name),
-        Sy (Char_Literal_Value, Unat)));
+       (Sy (Char_Literal_Value, Unat)));
 
    Ab (N_Op, N_Has_Entity,
-       (Sm (Do_Overflow_Check, Flag),
+       (Sm (Chars, Name_Id),
+        Sm (Do_Overflow_Check, Flag),
         Sm (Has_Private_View, Flag),
         Sm (Has_Secondary_Private_View, Flag)));
 
-   Ab (N_Binary_Op, N_Op);
-
-   Cc (N_Op_Add, N_Binary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
+   Ab (N_Binary_Op, N_Op,
+       (Sy (Left_Opnd, Node_Id),
         Sy (Right_Opnd, Node_Id)));
 
+   Cc (N_Op_Add, N_Binary_Op);
+
    Cc (N_Op_Concat, N_Binary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Is_Component_Left_Opnd, Flag),
+       (Sm (Is_Component_Left_Opnd, Flag),
         Sm (Is_Component_Right_Opnd, Flag)));
 
    Cc (N_Op_Expon, N_Binary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Is_Power_Of_2_For_Shift, Flag)));
+       (Sm (Is_Power_Of_2_For_Shift, Flag)));
 
-   Cc (N_Op_Subtract, N_Binary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+   Cc (N_Op_Subtract, N_Binary_Op);
 
    Ab (N_Multiplying_Operator, N_Binary_Op);
 
    Cc (N_Op_Divide, N_Multiplying_Operator,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Do_Division_Check, Flag),
+       (Sm (Do_Division_Check, Flag),
         Sm (Rounded_Result, Flag)));
 
    Cc (N_Op_Mod, N_Multiplying_Operator,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Do_Division_Check, Flag)));
+       (Sm (Do_Division_Check, Flag)));
 
    Cc (N_Op_Multiply, N_Multiplying_Operator,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Rounded_Result, Flag)));
+       (Sm (Rounded_Result, Flag)));
 
    Cc (N_Op_Rem, N_Multiplying_Operator,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Do_Division_Check, Flag)));
+       (Sm (Do_Division_Check, Flag)));
 
    Ab (N_Op_Boolean, N_Binary_Op);
    --  Binary operators that yield a result of a boolean type
 
    Cc (N_Op_And, N_Op_Boolean,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Do_Length_Check, Flag)));
+       (Sm (Do_Length_Check, Flag)));
 
-   Ab (N_Op_Compare, N_Op_Boolean);
+   Ab (N_Op_Compare, N_Op_Boolean,
+       (Sm (Compare_Type, Node_Id)));
 
-   Cc (N_Op_Eq, N_Op_Compare,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Compare_Type, Node_Id)));
-
-   Cc (N_Op_Ge, N_Op_Compare,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Compare_Type, Node_Id)));
-
-   Cc (N_Op_Gt, N_Op_Compare,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Compare_Type, Node_Id)));
-
-   Cc (N_Op_Le, N_Op_Compare,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Compare_Type, Node_Id)));
-
-   Cc (N_Op_Lt, N_Op_Compare,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Compare_Type, Node_Id)));
-
-   Cc (N_Op_Ne, N_Op_Compare,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Compare_Type, Node_Id)));
+   Cc (N_Op_Eq, N_Op_Compare);
+   Cc (N_Op_Ge, N_Op_Compare);
+   Cc (N_Op_Gt, N_Op_Compare);
+   Cc (N_Op_Le, N_Op_Compare);
+   Cc (N_Op_Lt, N_Op_Compare);
+   Cc (N_Op_Ne, N_Op_Compare);
 
    Cc (N_Op_Or, N_Op_Boolean,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Do_Length_Check, Flag)));
+       (Sm (Do_Length_Check, Flag)));
 
    Cc (N_Op_Xor, N_Op_Boolean,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Do_Length_Check, Flag)));
+       (Sm (Do_Length_Check, Flag)));
 
    Ab (N_Op_Shift, N_Binary_Op,
        (Sm (Shift_Count_OK, Flag)));
 
-   Cc (N_Op_Rotate_Left, N_Op_Shift,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+   Cc (N_Op_Rotate_Left, N_Op_Shift);
+   Cc (N_Op_Rotate_Right, N_Op_Shift);
+   Cc (N_Op_Shift_Left, N_Op_Shift);
+   Cc (N_Op_Shift_Right, N_Op_Shift);
+   Cc (N_Op_Shift_Right_Arithmetic, N_Op_Shift);
 
-   Cc (N_Op_Rotate_Right, N_Op_Shift,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+   Ab (N_Unary_Op, N_Op,
+       (Sy (Right_Opnd, Node_Id)));
 
-   Cc (N_Op_Shift_Left, N_Op_Shift,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
-
-   Cc (N_Op_Shift_Right, N_Op_Shift,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
-
-   Cc (N_Op_Shift_Right_Arithmetic, N_Op_Shift,
-       (Sm (Chars, Name_Id),
-        Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
-
-   Ab (N_Unary_Op, N_Op);
-
-   Cc (N_Op_Abs, N_Unary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Right_Opnd, Node_Id)));
-
-   Cc (N_Op_Minus, N_Unary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Right_Opnd, Node_Id)));
-
-   Cc (N_Op_Not, N_Unary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Right_Opnd, Node_Id)));
-
-   Cc (N_Op_Plus, N_Unary_Op,
-       (Sm (Chars, Name_Id),
-        Sy (Right_Opnd, Node_Id)));
+   Cc (N_Op_Abs, N_Unary_Op);
+   Cc (N_Op_Minus, N_Unary_Op);
+   Cc (N_Op_Not, N_Unary_Op);
+   Cc (N_Op_Plus, N_Unary_Op);
 
    Cc (N_Attribute_Reference, N_Has_Entity,
        (Sy (Prefix, Node_Id),
@@ -370,65 +277,47 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Must_Be_Byte_Aligned, Flag),
         Sm (Redundant_Use, Flag)));
 
-   Ab (N_Membership_Test, N_Subexpr);
-
-   Cc (N_In, N_Membership_Test,
+   Ab (N_Membership_Test, N_Subexpr,
        (Sy (Left_Opnd, Node_Id),
         Sy (Right_Opnd, Node_Id),
         Sy (Alternatives, List_Id, Default_No_List),
         Sy (No_Minimize_Eliminate, Flag)));
 
-   Cc (N_Not_In, N_Membership_Test,
-       (Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sy (Alternatives, List_Id, Default_No_List),
-        Sy (No_Minimize_Eliminate, Flag)));
+   Cc (N_In, N_Membership_Test);
+   Cc (N_Not_In, N_Membership_Test);
 
-   Ab (N_Short_Circuit, N_Subexpr);
-
-   Cc (N_And_Then, N_Short_Circuit,
+   Ab (N_Short_Circuit, N_Subexpr,
        (Sy (Left_Opnd, Node_Id),
         Sy (Right_Opnd, Node_Id),
         Sm (Actions, List_Id)));
 
-   Cc (N_Or_Else, N_Short_Circuit,
-       (Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id),
-        Sm (Actions, List_Id)));
+   Cc (N_And_Then, N_Short_Circuit);
+   Cc (N_Or_Else, N_Short_Circuit);
 
    Ab (N_Subprogram_Call, N_Subexpr,
-       (Sm (Controlling_Argument, Node_Id),
+       (Sy (Name, Node_Id, Default_Empty),
+        Sy (Parameter_Associations, List_Id, Default_No_List),
+        Sm (Controlling_Argument, Node_Id),
         Sm (First_Named_Actual, Node_Id),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
         Sm (Is_Known_Guaranteed_ABE, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
-        Sm (No_Elaboration_Check, Flag)));
+        Sm (No_Elaboration_Check, Flag),
+        Sm (Is_Expanded_Prefixed_Call, Flag)));
 
    Cc (N_Function_Call, N_Subprogram_Call,
-       (Sy (Name, Node_Id, Default_Empty),
-        Sy (Parameter_Associations, List_Id, Default_No_List),
-        Sm (Is_Expanded_Build_In_Place_Call, Flag),
-        Sm (Is_Expanded_Prefixed_Call, Flag)));
+       (Sm (Is_Expanded_Build_In_Place_Call, Flag)));
 
-   Cc (N_Procedure_Call_Statement, N_Subprogram_Call,
-       (Sy (Name, Node_Id, Default_Empty),
-        Sy (Parameter_Associations, List_Id, Default_No_List),
-        Sm (Is_Expanded_Prefixed_Call, Flag)));
+   Cc (N_Procedure_Call_Statement, N_Subprogram_Call);
 
-   Ab (N_Raise_xxx_Error, N_Subexpr);
-
-   Cc (N_Raise_Constraint_Error, N_Raise_xxx_Error,
+   Ab (N_Raise_xxx_Error, N_Subexpr,
        (Sy (Condition, Node_Id, Default_Empty),
         Sy (Reason, Unat)));
 
-   Cc (N_Raise_Program_Error, N_Raise_xxx_Error,
-       (Sy (Condition, Node_Id, Default_Empty),
-        Sy (Reason, Unat)));
-
-   Cc (N_Raise_Storage_Error, N_Raise_xxx_Error,
-       (Sy (Condition, Node_Id, Default_Empty),
-        Sy (Reason, Unat)));
+   Cc (N_Raise_Constraint_Error, N_Raise_xxx_Error);
+   Cc (N_Raise_Program_Error, N_Raise_xxx_Error);
+   Cc (N_Raise_Storage_Error, N_Raise_xxx_Error);
 
    Ab (N_Numeric_Or_String_Literal, N_Subexpr);
 
@@ -797,7 +686,10 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Aspect_Specifications, List_Id, Default_No_List)));
 
    Ab (N_Generic_Instantiation, N_Later_Decl_Item,
-       (Sm (Instance_Spec, Node_Id),
+       (Sy (Defining_Unit_Name, Node_Id),
+        Sy (Name, Node_Id, Default_Empty),
+        Sy (Generic_Associations, List_Id, Default_No_List),
+        Sm (Instance_Spec, Node_Id),
         Sm (Is_Declaration_Level_Node, Flag),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
@@ -805,29 +697,16 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_SPARK_Mode_On_Node, Flag),
         Sm (Parent_Spec, Node_Id)));
 
-   Ab (N_Subprogram_Instantiation, N_Generic_Instantiation);
-
-   Cc (N_Function_Instantiation, N_Subprogram_Instantiation,
-       (Sy (Defining_Unit_Name, Node_Id),
-        Sy (Name, Node_Id, Default_Empty),
-        Sy (Generic_Associations, List_Id, Default_No_List),
-        Sy (Must_Override, Flag),
+   Ab (N_Subprogram_Instantiation, N_Generic_Instantiation,
+       (Sy (Must_Override, Flag),
         Sy (Must_Not_Override, Flag),
         Sy (Aspect_Specifications, List_Id, Default_No_List)));
 
-   Cc (N_Procedure_Instantiation, N_Subprogram_Instantiation,
-       (Sy (Defining_Unit_Name, Node_Id),
-        Sy (Name, Node_Id, Default_Empty),
-        Sy (Generic_Associations, List_Id, Default_No_List),
-        Sy (Must_Override, Flag),
-        Sy (Must_Not_Override, Flag),
-        Sy (Aspect_Specifications, List_Id, Default_No_List)));
+   Cc (N_Function_Instantiation, N_Subprogram_Instantiation);
+   Cc (N_Procedure_Instantiation, N_Subprogram_Instantiation);
 
    Cc (N_Package_Instantiation, N_Generic_Instantiation,
-       (Sy (Defining_Unit_Name, Node_Id),
-        Sy (Name, Node_Id, Default_Empty),
-        Sy (Generic_Associations, List_Id, Default_No_List),
-        Sy (Aspect_Specifications, List_Id, Default_No_List)));
+       (Sy (Aspect_Specifications, List_Id, Default_No_List)));
 
    Ab (N_Proper_Body, N_Later_Decl_Item,
        (Sm (Corresponding_Spec, Node_Id),
@@ -1051,13 +930,11 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Entry_Call_Alternative, Node_Id),
         Sy (Else_Statements, List_Id, Default_No_List)));
 
-   Ab (N_Delay_Statement, N_Statement_Other_Than_Procedure_Call);
-
-   Cc (N_Delay_Relative_Statement, N_Delay_Statement,
+   Ab (N_Delay_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Expression, Node_Id, Default_Empty)));
 
-   Cc (N_Delay_Until_Statement, N_Delay_Statement,
-       (Sy (Expression, Node_Id, Default_Empty)));
+   Cc (N_Delay_Relative_Statement, N_Delay_Statement);
+   Cc (N_Delay_Until_Statement, N_Delay_Statement);
 
    Cc (N_Entry_Call_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Name, Node_Id, Default_Empty),
@@ -1183,21 +1060,16 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Pragmas_Before, List_Id, Default_No_List),
         Sy (Pragmas_After, List_Id, Default_No_List)));
 
-   Ab (N_Formal_Subprogram_Declaration, Node_Kind);
-
-   Cc (N_Formal_Abstract_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
+   Ab (N_Formal_Subprogram_Declaration, Node_Kind,
        (Sy (Specification, Node_Id),
         Sy (Default_Name, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag),
         Sy (Aspect_Specifications, List_Id, Default_No_List)));
 
-   Cc (N_Formal_Concrete_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
-       (Sy (Specification, Node_Id),
-        Sy (Default_Name, Node_Id, Default_Empty),
-        Sy (Expression, Node_Id, Default_Empty),
-        Sy (Box_Present, Flag),
-        Sy (Aspect_Specifications, List_Id, Default_No_List)));
+   Cc (N_Formal_Abstract_Subprogram_Declaration, N_Formal_Subprogram_Declaration);
+
+   Cc (N_Formal_Concrete_Subprogram_Declaration, N_Formal_Subprogram_Declaration);
 
    Ab (N_Push_Pop_xxx_Label, Node_Kind);
 
@@ -1205,17 +1077,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sm (Exception_Label, Node_Id)));
 
    Cc (N_Push_Constraint_Error_Label, N_Push_xxx_Label);
-
    Cc (N_Push_Program_Error_Label, N_Push_xxx_Label);
-
    Cc (N_Push_Storage_Error_Label, N_Push_xxx_Label);
 
    Ab (N_Pop_xxx_Label, N_Push_Pop_xxx_Label);
 
    Cc (N_Pop_Constraint_Error_Label, N_Pop_xxx_Label);
-
    Cc (N_Pop_Program_Error_Label, N_Pop_xxx_Label);
-
    Cc (N_Pop_Storage_Error_Label, N_Pop_xxx_Label);
 
    Ab (N_SCIL_Node, Node_Kind,
@@ -1437,11 +1305,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Interface_List, List_Id, Default_No_List)));
 
    Cc (N_Formal_Discrete_Type_Definition, Node_Kind);
-
    Cc (N_Formal_Floating_Point_Definition, Node_Kind);
-
    Cc (N_Formal_Modular_Type_Definition, Node_Kind);
-
    Cc (N_Formal_Ordinary_Fixed_Point_Definition, Node_Kind);
 
    Cc (N_Formal_Package_Declaration, Node_Kind,

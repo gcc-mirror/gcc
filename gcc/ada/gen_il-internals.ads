@@ -103,7 +103,11 @@ package Gen_IL.Internals is
             --  a concrete type, First=Last. For an abstract type, First..Last
             --  includes two or more types.
 
-            Fields : Field_Vector;
+            Imm_Fields,
+            --  Fields declared immediately within a given node type
+            Fields :
+            --  Includes inherited fields and Imm_Fields
+              Field_Vector;
 
             Nmake_Assert : String_Access; -- only for concrete node types
       end case;
