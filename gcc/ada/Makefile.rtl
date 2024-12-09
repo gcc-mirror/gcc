@@ -26,6 +26,12 @@ ifndef ADAC
 ADAC=$(CC)
 endif
 
+ifeq ($(LLVM_CONFIG),)
+LLVM_BUILD := $(shell $(ADAC) -v | grep ^llvm-gcc)
+else
+LLVM_BUILD := llvm-gcc
+endif
+
 # Objects needed only for tasking
 GNATRTL_TASKING_OBJS= \
   a-dispat$(objext) \
@@ -419,9 +425,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-comlin$(objext) \
   g-comver$(objext) \
   g-crc32$(objext) \
-  g-cpp$(objext) \
-  g-cppstd$(objext) \
-  g-cstyin$(objext) \
   g-ctrl_c$(objext) \
   g-curexc$(objext) \
   g-debpoo$(objext) \
@@ -3152,7 +3155,12 @@ ifeq ($(EH_MECHANISM),-gcc)
     s-excmac.ads<libgnat/s-excmac__gcc.ads \
     s-excmac.adb<libgnat/s-excmac__gcc.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
-  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
+ifeq ($(LLVM_BUILD),)
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o \
+    g-cpp$(objext) g-cppstd$(objext) g-cstyin$(objext)
+else
+  EXTRA_GNATRTL_NONTASKING_OBJS+=s-excmac.o
+endif
 endif
 
 ifeq ($(EH_MECHANISM),-arm)
@@ -3160,7 +3168,12 @@ ifeq ($(EH_MECHANISM),-arm)
     s-excmac.ads<libgnat/s-excmac__arm.ads \
     s-excmac.adb<libgnat/s-excmac__arm.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
-  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
+ifeq ($(LLVM_BUILD),)
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o \
+    g-cpp$(objext) g-cppstd$(objext) g-cstyin$(objext)
+else
+  EXTRA_GNATRTL_NONTASKING_OBJS+=s-excmac.o
+endif
 endif
 
 ifeq ($(strip $(filter-out linux%,$(target_os))),)

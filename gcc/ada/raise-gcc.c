@@ -48,6 +48,22 @@
 # endif
 #endif
 
+/* Arrange to include the Ada/G++ exceptions interoperability support only in
+   contexts where it is actually needed and supported, in particular not in
+   gnat-llvm, that doesn't support C++ imports.  This interoperability hasn't
+   been certified, so leave it out of CERT runtimes as well.  */
+
+#if !defined GXX_EH_INTEROP
+# if defined(__clang_major__) && defined(__clang_minor__)
+/* GNAT-LLVM does not support C++ imports.  */
+#  define GXX_EH_INTEROP 0
+# elif defined(CERT)
+#  define GXX_EH_INTEROP 0
+# else
+#  define GXX_EH_INTEROP 1
+# endif
+#endif
+
 #ifdef __cplusplus
 # include <cstdarg>
 # include <cstddef>
@@ -975,6 +991,8 @@ __gnat_exception_language_is_ada (_Unwind_Exception *except)
   return (exception_class_eq (except, GNAT_EXCEPTION_CLASS));
 }
 
+#if GXX_EH_INTEROP
+
 /* Check whether *THROWN_PTR of EXCEPT_TYPEINFO is to be caught by a
    CHOICE_TYPEINFO handler under LANG convention.
    Implemented by GNAT.CPP_Exception.Convert_Caught_Object.  */
@@ -1099,20 +1117,17 @@ __gnat_obtain_caught_object (int *success_p, void **thrown_ptr_p,
     }
 }
 
+#endif /* GXX_EH_INTEROP */
+
 /* Return how CHOICE matches PROPAGATED_EXCEPTION.  */
 
 static enum action_kind
 is_handled_by (Exception_Id choice,
-#ifndef CERT
+#if GXX_EH_INTEROP
 	       Exception_Id *eid,
-#endif
+#endif /* GXX_EH_INTEROP */
 	       _Unwind_Exception *propagated_exception)
 {
-#ifndef CERT
-  char lang;
-  bool primary;
-#endif
-
   /* All others choice match everything.  */
   if (choice == GNAT_ALL_OTHERS)
     return handler;
@@ -1144,7 +1159,10 @@ is_handled_by (Exception_Id choice,
       )
     return handler;
 
-#ifndef CERT
+#if GXX_EH_INTEROP
+  char lang;
+  bool primary;
+
   /* C++ exception occurrences with exact (C) or base (B) type matching.  */
   if (((primary = exception_class_eq (propagated_exception,
 				      CXX_EXCEPTION_CLASS))
@@ -1171,7 +1189,7 @@ is_handled_by (Exception_Id choice,
 	  return handler;
 	}
     }
-#endif
+#endif /* GXX_EH_INTEROP */
 
   return nothing;
 }
@@ -1259,9 +1277,9 @@ get_action_description_for (_Unwind_Ptr ip,
 		    = (Exception_Id) get_ttype_entry_for (region, ar_filter);
 
 		  act = is_handled_by (choice,
-#ifndef CERT
+#if GXX_EH_INTEROP
 				       eid,
-#endif
+#endif /* GXX_EH_INTEROP */
 				       uw_exception);
                   if (act != nothing)
                     {
