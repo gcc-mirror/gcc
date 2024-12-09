@@ -61,7 +61,7 @@ set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O2 -mrvv-max-lmul=dynamic} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/partial/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/binop/*.\[cS\]]] \
     "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cmp/*.\[cS\]]] \
