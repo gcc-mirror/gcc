@@ -16752,6 +16752,53 @@ resolve_fl_struct (gfc_symbol *sym)
   return true;
 }
 
+/* Figure if the derived type is using itself directly in one of its components
+   or through referencing other derived types.  The information is required to
+   generate the __deallocate and __final type bound procedures to ensure
+   freeing larger hierarchies of derived types with allocatable objects.  */
+
+static void
+resolve_cyclic_derived_type (gfc_symbol *derived)
+{
+  hash_set<gfc_symbol *> seen, to_examin;
+  gfc_component *c;
+  seen.add (derived);
+  to_examin.add (derived);
+  while (!to_examin.is_empty ())
+    {
+      gfc_symbol *cand = *to_examin.begin ();
+      to_examin.remove (cand);
+      for (c = cand->components; c; c = c->next)
+	if (c->ts.type == BT_DERIVED)
+	  {
+	    if (c->ts.u.derived == derived)
+	      {
+		derived->attr.recursive = 1;
+		return;
+	      }
+	    else if (!seen.contains (c->ts.u.derived))
+	      {
+		seen.add (c->ts.u.derived);
+		to_examin.add (c->ts.u.derived);
+	      }
+	  }
+	else if (c->ts.type == BT_CLASS)
+	  {
+	    if (!c->attr.class_ok)
+	      continue;
+	    if (CLASS_DATA (c)->ts.u.derived == derived)
+	      {
+		derived->attr.recursive = 1;
+		return;
+	      }
+	    else if (!seen.contains (CLASS_DATA (c)->ts.u.derived))
+	      {
+		seen.add (CLASS_DATA (c)->ts.u.derived);
+		to_examin.add (CLASS_DATA (c)->ts.u.derived);
+	      }
+	  }
+    }
+}
 
 /* Resolve the components of a derived type. This does not have to wait until
    resolution stage, but can be done as soon as the dt declaration has been
@@ -16790,6 +16837,10 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		 sym->name, &sym->declared_at);
       return false;
     }
+
+  /* Resolving components below, may create vtabs for which the cyclic type
+     information needs to be present.  */
+  resolve_cyclic_derived_type (sym);
 
   c = (sym->attr.is_class) ? CLASS_DATA (sym->components)
 			   : sym->components;
@@ -16865,7 +16916,6 @@ resolve_fl_derived0 (gfc_symbol *sym)
   return true;
 }
 
-
 /* The following procedure does the full resolution of a derived type,
    including resolution of all type-bound procedures (if present). In contrast
    to 'resolve_fl_derived0' this can only be done after the module has been
@@ -16940,9 +16990,9 @@ resolve_fl_derived (gfc_symbol *sym)
      being vtables or pdt templates. If this is not done class declarations
      in external procedures wind up with their own version and so SELECT TYPE
      fails because the vptrs do not have the same address.  */
-  if (gfc_option.allow_std & GFC_STD_F2003
-      && sym->ns->proc_name
-      && sym->ns->proc_name->attr.flavor == FL_MODULE
+  if (gfc_option.allow_std & GFC_STD_F2003 && sym->ns->proc_name
+      && (sym->ns->proc_name->attr.flavor == FL_MODULE
+	  || (sym->attr.recursive && sym->attr.alloc_comp))
       && sym->attr.access != ACCESS_PRIVATE
       && !(sym->attr.vtype || sym->attr.pdt_template))
     {

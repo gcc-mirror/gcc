@@ -5017,28 +5017,44 @@ is_non_empty_structure_constructor (gfc_expr * e)
 bool
 gfc_has_default_initializer (gfc_symbol *der)
 {
+  static hash_set<gfc_symbol *> seen_derived_types;
   gfc_component *c;
+  /* The rewrite to a result variable and breaks is only needed, because
+     there is no scope_guard in C++ yet.  */
+  bool result = false;
 
   gcc_assert (gfc_fl_struct (der->attr.flavor));
+  seen_derived_types.add (der);
   for (c = der->components; c; c = c->next)
-    if (gfc_bt_struct (c->ts.type))
+    if (gfc_bt_struct (c->ts.type)
+	&& !seen_derived_types.contains (c->ts.u.derived))
       {
-        if (!c->attr.pointer && !c->attr.proc_pointer
-	     && !(c->attr.allocatable && der == c->ts.u.derived)
-	     && ((c->initializer
-		  && is_non_empty_structure_constructor (c->initializer))
-		 || gfc_has_default_initializer (c->ts.u.derived)))
-	  return true;
+	if (!c->attr.pointer && !c->attr.proc_pointer
+	    && !(c->attr.allocatable && der == c->ts.u.derived)
+	    && ((c->initializer
+		 && is_non_empty_structure_constructor (c->initializer))
+		|| gfc_has_default_initializer (c->ts.u.derived)))
+	  {
+	    result = true;
+	    break;
+	  }
 	if (c->attr.pointer && c->initializer)
-	  return true;
+	  {
+	    result = true;
+	    break;
+	  }
       }
     else
       {
-        if (c->initializer)
-	  return true;
+	if (c->initializer)
+	  {
+	    result = true;
+	    break;
+	  }
       }
 
-  return false;
+  seen_derived_types.remove (der);
+  return result;
 }
 
 

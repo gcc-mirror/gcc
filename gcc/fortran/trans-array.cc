@@ -9784,6 +9784,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
   int caf_dereg_mode;
   symbol_attribute *attr;
   bool deallocate_called;
+  static hash_set<gfc_symbol *> seen_derived_types;
 
   gfc_init_block (&fnblock);
 
@@ -9906,13 +9907,17 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
     }
   /* Otherwise, act on the components or recursively call self to
      act on a chain of components.  */
+  seen_derived_types.add (der_type);
   for (c = der_type->components; c; c = c->next)
     {
       bool cmp_has_alloc_comps = (c->ts.type == BT_DERIVED
 				  || c->ts.type == BT_CLASS)
 				    && c->ts.u.derived->attr.alloc_comp;
-      bool same_type = (c->ts.type == BT_DERIVED && der_type == c->ts.u.derived)
-	|| (c->ts.type == BT_CLASS && der_type == CLASS_DATA (c)->ts.u.derived);
+      bool same_type
+	= (c->ts.type == BT_DERIVED
+	   && seen_derived_types.contains (c->ts.u.derived))
+	  || (c->ts.type == BT_CLASS
+	      && seen_derived_types.contains (CLASS_DATA (c)->ts.u.derived));
 
       bool is_pdt_type = c->ts.type == BT_DERIVED
 			 && c->ts.u.derived->attr.pdt_type;
@@ -10077,7 +10082,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	  if (c->ts.type == BT_CLASS)
 	    {
 	      attr = &CLASS_DATA (c)->attr;
-	      if (attr->class_pointer)
+	      if (attr->class_pointer || c->attr.proc_pointer)
 		continue;
 	    }
 	  else
@@ -10135,12 +10140,13 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      /* Handle all types of components besides components of the
 		 same_type as the current one, because those would create an
 		 endless loop.  */
-	      caf_dereg_mode
-		  = (caf_in_coarray (caf_mode) || attr->codimension)
-		  ? (gfc_caf_is_dealloc_only (caf_mode)
-		     ? GFC_CAF_COARRAY_DEALLOCATE_ONLY
-		     : GFC_CAF_COARRAY_DEREGISTER)
-		  : GFC_CAF_COARRAY_NOCOARRAY;
+	      caf_dereg_mode = (caf_in_coarray (caf_mode)
+				&& (attr->dimension || c->caf_token))
+				    || attr->codimension
+				 ? (gfc_caf_is_dealloc_only (caf_mode)
+				      ? GFC_CAF_COARRAY_DEALLOCATE_ONLY
+				      : GFC_CAF_COARRAY_DEREGISTER)
+				 : GFC_CAF_COARRAY_NOCOARRAY;
 
 	      caf_token = NULL_TREE;
 	      /* Coarray components are handled directly by
@@ -10922,6 +10928,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	  break;
 	}
     }
+  seen_derived_types.remove (der_type);
 
   return gfc_finish_block (&fnblock);
 }

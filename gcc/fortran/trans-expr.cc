@@ -165,7 +165,10 @@ gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
     }
 
   if (last_caf_ref == NULL)
-    return NULL_TREE;
+    {
+      gfc_free_expr (caf_expr);
+      return NULL_TREE;
+    }
 
   tree comp = last_caf_ref->u.c.component->caf_token
 		? gfc_comp_caf_token (last_caf_ref->u.c.component)
@@ -174,7 +177,10 @@ gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
   gfc_se se;
   bool comp_ref = !last_caf_ref->u.c.component->attr.dimension;
   if (comp == NULL_TREE && comp_ref)
-    return NULL_TREE;
+    {
+      gfc_free_expr (caf_expr);
+      return NULL_TREE;
+    }
   gfc_init_se (&se, outerse);
   gfc_free_ref_list (last_caf_ref->next);
   last_caf_ref->next = NULL;
