@@ -18,7 +18,8 @@ private:
 
 Y::operator X() const { return X(); }
 
-static_assert( std::is_trivial<X>::value, "" );
+static_assert( std::is_trivially_default_constructible<X>::value, "" );
+static_assert( std::is_trivially_copyable<X>::value, "" );
 
 void test01_pr102064()
 {
@@ -37,7 +38,8 @@ struct Z
   Z& operator=(int) = delete;
 };
 
-static_assert( std::is_trivial<Z>::value, "" );
+static_assert( std::is_trivially_default_constructible<Z>::value, "" );
+static_assert( std::is_trivially_copyable<Z>::value, "" );
 
 void test02_pr102064()
 {
