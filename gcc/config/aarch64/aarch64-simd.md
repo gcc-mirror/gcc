@@ -4357,7 +4357,7 @@
 ;; RTL uses GCC vector extension indices throughout so flip only for assembly.
 ;; Extracting lane zero is split into a simple move when it is between SIMD
 ;; registers or a store.
-(define_insn_and_split "aarch64_get_lane<mode>"
+(define_insn_and_split "@aarch64_get_lane<mode>"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=?r, w, Utv")
 	(vec_select:<VEL>
 	  (match_operand:VALL_F16 1 "register_operand" "w, w, w")
