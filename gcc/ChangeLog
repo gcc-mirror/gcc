@@ -1,3 +1,26 @@
+2024-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117926
+	* config/i386/mmx.md (UNSPEC_3DNOW): New unspec.
+	(mmx_addv2sf3): Tag insn with UNSPEC_3DNOW tag.
+	(*mmx_addv2sf3): Ditto.
+	(mmx_sub2vsf3): Ditto.
+	(mmx_subrv2sf3): Ditto.
+	(*mmx_subv2sf3): Ditto.
+	(mmx_mulv2sf3): Ditto.
+	(mmx_<smaxmin:code>v2sf3): Ditto.
+	(*mmx_<smaxmin:code>v2sf3): Ditto.
+	(mmx_ieee_<ieee_maxmin>v2sf3): Ditto.
+	(mmx_eqv2sf3): Ditto.
+	(*mmx_eqv2sf3): Ditto.
+	(mmx_gtv2sf3): Ditto.
+	(mmx_gev2sf3): Ditto.
+	(mmx_fix_truncv2sfv2si2): Ditto.
+	(mmx_floatv2siv2sf2): Ditto.
+
 2024-12-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
