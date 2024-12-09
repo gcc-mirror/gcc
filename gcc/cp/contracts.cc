@@ -2509,16 +2509,17 @@ maybe_reject_param_in_postcondition(tree decl)
 {
   if (flag_contracts_nonattr
       && processing_contract_postcondition
-      && !TREE_READONLY (decl) && !CP_TYPE_CONST_P (TREE_TYPE (decl))
+      && !dependent_type_p (TREE_TYPE (decl))
+      && !TREE_READONLY (decl)
+      && !CP_TYPE_CONST_P (TREE_TYPE (decl))
       && TREE_CODE (decl) == PARM_DECL
-      && !(REFERENCE_REF_P (decl) &&
-	   TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL))
-  {
+      && !(REFERENCE_REF_P (decl)
+	   && TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL))
+    {
       error_at (DECL_SOURCE_LOCATION (decl),
 		"a value parameter used in a postcondition must be const");
       return true;
-  }
-
+    }
   return false;
 }
 
