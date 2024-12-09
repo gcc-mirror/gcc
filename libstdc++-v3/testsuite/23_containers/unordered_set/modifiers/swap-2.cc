@@ -43,6 +43,7 @@ namespace adl
       using propagate_on_container_swap = std::true_type;
 
       friend void swap(Allocator&, Allocator&) { swapped = true; }
+      friend bool operator==(Allocator, Allocator) { return true; }
     };
 }
 
