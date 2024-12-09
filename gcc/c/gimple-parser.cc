@@ -133,11 +133,21 @@ c_parser_gimple_parse_bb_spec (tree val, int *index)
 {
   if (!startswith (IDENTIFIER_POINTER (val), "__BB"))
     return false;
-  for (const char *p = IDENTIFIER_POINTER (val) + 4; *p; ++p)
-    if (!ISDIGIT (*p))
-      return false;
-  *index = atoi (IDENTIFIER_POINTER (val) + 4);
-  return *index > 0;
+
+  const char *bb = IDENTIFIER_POINTER (val) + 4;
+  if (! ISDIGIT (*bb))
+    return false;
+
+  char *pend;
+  errno = 0;
+  const unsigned long number = strtoul (bb, &pend, 10);
+  if (errno == ERANGE
+      || *pend != '\0'
+      || number > INT_MAX)
+    return false;
+
+  *index = number;
+  return true;
 }
 
 /* See if VAL is an identifier matching __BB<num> and return <num>
