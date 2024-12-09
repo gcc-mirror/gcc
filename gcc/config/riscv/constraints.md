@@ -28,6 +28,10 @@
 (define_register_constraint "j" "SIBCALL_REGS"
   "@internal")
 
+(define_register_constraint "R" "GR_REGS"
+  "Even-odd general purpose register pair."
+  "regno % 2 == 0")
+
 ;; Avoid using register t0 for JALR's argument, because for some
 ;; microarchitectures that is a return-address stack hint.
 (define_register_constraint "l" "JALR_REGS"
