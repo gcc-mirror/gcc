@@ -108,9 +108,15 @@ test02()
   X i;
   std::atomic_ref<X> a0(i);
   std::atomic_ref<X> a1(i);
+  std::atomic_ref<const X> a1c(i);
+  std::atomic_ref<volatile X> a1v(i);
+  std::atomic_ref<const volatile X> a1cv(i);
   std::atomic_ref<X> a2(a0);
   a0 = 42;
   VERIFY( a1.load() == 42 );
+  VERIFY( a1c.load() == 42 );
+  VERIFY( a1v.load() == 42 );
+  VERIFY( a1cv.load() == 42 );
   VERIFY( a2.load() == 42 );
 }
 

@@ -19,22 +19,29 @@
 
 #include <atomic>
 
+template <typename T>
 void
-test01()
+test_impl(T v)
 {
-  int i = 0;
-  std::atomic_ref a0(i);
-  static_assert(std::is_same_v<decltype(a0), std::atomic_ref<int>>);
+  std::atomic_ref a(v);
+  static_assert(std::is_same_v<decltype(a), std::atomic_ref<T>>);
+}
 
-  float f = 1.0f;
-  std::atomic_ref a1(f);
-  static_assert(std::is_same_v<decltype(a1), std::atomic_ref<float>>);
+template <typename T>
+void
+test(T v)
+{
+  test_impl<T>(v);
+  test_impl<const T>(v);
+  test_impl<volatile T>(v);
+  test_impl<const volatile T>(v);
+}
 
-  int* p = &i;
-  std::atomic_ref a2(p);
-  static_assert(std::is_same_v<decltype(a2), std::atomic_ref<int*>>);
-
+int main()
+{
+  test<int>(0);
+  test<float>(1.0f);
+  test<int*>(nullptr);
   struct X { } x;
-  std::atomic_ref a3(x);
-  static_assert(std::is_same_v<decltype(a3), std::atomic_ref<X>>);
+  test<X>(x);
 }

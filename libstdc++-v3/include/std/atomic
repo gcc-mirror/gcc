@@ -217,6 +217,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(sizeof(_Tp) > 0,
 		    "Incomplete or zero-sized types are not supported");
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4069. std::atomic<volatile T> should be ill-formed
+      static_assert(is_same<_Tp, typename remove_cv<_Tp>::type>::value,
+		    "template argument for std::atomic must not be const or volatile");
+
 #if __cplusplus > 201703L
       static_assert(is_copy_constructible_v<_Tp>);
       static_assert(is_move_constructible_v<_Tp>);

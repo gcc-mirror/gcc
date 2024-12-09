@@ -19,7 +19,9 @@
 
 #include <atomic>
 
-std::atomic<const int> a; // { dg-error "here" }
+std::atomic<const int> ca; // { dg-error "here" }
+std::atomic<volatile int> va; // { dg-error "here" } 
+std::atomic<const volatile int> cva; // { dg-error "here" } 
 // { dg-error "assignment to read-only type" "" { target *-*-* } 0 }
 
 struct MoveOnly

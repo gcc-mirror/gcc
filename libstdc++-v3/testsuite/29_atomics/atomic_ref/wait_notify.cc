@@ -41,6 +41,16 @@ template<typename S>
         });
       a.wait(va);
       t.join();
+
+      std::atomic_ref<const S> b{ aa };
+      b.wait(va);
+      std::thread t2([&]
+        {
+	  a.store(va);
+	  a.notify_one();
+        });
+      b.wait(vb);
+      t2.join();
     }
   }
 

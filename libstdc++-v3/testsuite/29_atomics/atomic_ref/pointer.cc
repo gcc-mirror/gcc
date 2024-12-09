@@ -210,9 +210,15 @@ test03()
   int* ptr = 0;
   std::atomic_ref<int*> a0(ptr);
   std::atomic_ref<int*> a1(ptr);
+  std::atomic_ref<int* const> a1c(ptr);
+  std::atomic_ref<int* volatile> a1v(ptr);
+  std::atomic_ref<int* const volatile> a1cv(ptr);
   std::atomic_ref<int*> a2(a0);
   a0 = &i;
   VERIFY( a1 == &i );
+  VERIFY( a1c == &i );
+  VERIFY( a1v == &i );
+  VERIFY( a1cv == &i );
   VERIFY( a2 == &i );
 }
 
