@@ -1372,6 +1372,10 @@
 ;; Map a mode to a specific constraint character.
 (define_mode_attr cmode [(QI "q") (HI "h") (SI "s") (DI "d")])
 
+;; Map a mode to a specific constraint character for calling
+;; appropriate version of crc.
+(define_mode_attr crc_data_type [(QI "b") (HI "h") (SI "w") (DI "x")])
+
 ;; Map modes to Usg and Usj constraints for SISD right shifts
 (define_mode_attr cmode_simd [(SI "g") (DI "j")])
 

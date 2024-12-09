@@ -1231,6 +1231,9 @@ extern void aarch64_adjust_reg_alloc_order ();
 
 bool aarch64_optimize_mode_switching (aarch64_mode_entity);
 void aarch64_restore_za (rtx);
+void aarch64_expand_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
+void aarch64_expand_reversed_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
+
 
 extern bool aarch64_gcs_enabled ();
 

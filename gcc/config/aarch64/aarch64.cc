@@ -31016,6 +31016,137 @@ aarch64::report_not_enum (location_t location, tree fndecl, unsigned int argno,
 	    " a valid %qT value", actual, argno + 1, fndecl, enumtype);
 }
 
+/* Generate assembly to calculate CRC
+   using carry-less multiplication instruction.
+   OPERANDS[1] is input CRC,
+   OPERANDS[2] is data (message),
+   OPERANDS[3] is the polynomial without the leading 1.  */
+
+void
+aarch64_expand_crc_using_pmull (scalar_mode crc_mode,
+				scalar_mode data_mode,
+				rtx *operands)
+{
+  /* Check and keep arguments.  */
+  gcc_assert (!CONST_INT_P (operands[0]));
+  gcc_assert (CONST_INT_P (operands[3]));
+  rtx crc = operands[1];
+  rtx data = operands[2];
+  rtx polynomial = operands[3];
+
+  unsigned HOST_WIDE_INT crc_size = GET_MODE_BITSIZE (crc_mode);
+  unsigned HOST_WIDE_INT data_size = GET_MODE_BITSIZE (data_mode);
+  gcc_assert (crc_size <= 32);
+  gcc_assert (data_size <= crc_size);
+
+  /* Calculate the quotient.  */
+  unsigned HOST_WIDE_INT
+      q = gf2n_poly_long_div_quotient (UINTVAL (polynomial), crc_size);
+  /* CRC calculation's main part.  */
+  if (crc_size > data_size)
+    crc = expand_shift (RSHIFT_EXPR, DImode, crc, crc_size - data_size,
+			NULL_RTX, 1);
+
+  rtx t0 = force_reg (DImode, gen_int_mode (q, DImode));
+  polynomial = simplify_gen_unary (ZERO_EXTEND, DImode, polynomial,
+				   GET_MODE (polynomial));
+  rtx t1 = force_reg (DImode, polynomial);
+
+  rtx a0 = expand_binop (DImode, xor_optab, crc, data, NULL_RTX, 1,
+			 OPTAB_WIDEN);
+
+  rtx pmull_res = gen_reg_rtx (TImode);
+  emit_insn (gen_aarch64_crypto_pmulldi (pmull_res, a0, t0));
+  a0 = gen_lowpart (DImode, pmull_res);
+
+  a0 = expand_shift (RSHIFT_EXPR, DImode, a0, crc_size, NULL_RTX, 1);
+
+  emit_insn (gen_aarch64_crypto_pmulldi (pmull_res, a0, t1));
+  a0 = gen_lowpart (DImode, pmull_res);
+
+  if (crc_size > data_size)
+    {
+      rtx crc_part = expand_shift (LSHIFT_EXPR, DImode, operands[1], data_size,
+				   NULL_RTX, 0);
+      a0 = expand_binop (DImode, xor_optab, a0, crc_part, NULL_RTX, 1,
+			 OPTAB_DIRECT);
+    }
+
+  aarch64_emit_move (operands[0], gen_lowpart (crc_mode, a0));
+}
+
+/* Generate assembly to calculate reversed CRC
+   using carry-less multiplication instruction.
+   OPERANDS[1] is input CRC,
+   OPERANDS[2] is data,
+   OPERANDS[3] is the polynomial without the leading 1.  */
+
+void
+aarch64_expand_reversed_crc_using_pmull (scalar_mode crc_mode,
+					 scalar_mode data_mode,
+					 rtx *operands)
+{
+  /* Check and keep arguments.  */
+  gcc_assert (!CONST_INT_P (operands[0]));
+  gcc_assert (CONST_INT_P (operands[3]));
+  rtx crc = operands[1];
+  rtx data = operands[2];
+  rtx polynomial = operands[3];
+
+  unsigned HOST_WIDE_INT crc_size = GET_MODE_BITSIZE (crc_mode);
+  unsigned HOST_WIDE_INT data_size = GET_MODE_BITSIZE (data_mode);
+  gcc_assert (crc_size <= 32);
+  gcc_assert (data_size <= crc_size);
+
+  /* Calculate the quotient.  */
+  unsigned HOST_WIDE_INT
+      q = gf2n_poly_long_div_quotient (UINTVAL (polynomial), crc_size);
+  /* Reflect the calculated quotient.  */
+  q = reflect_hwi (q, crc_size + 1);
+  rtx t0 = force_reg (DImode, gen_int_mode (q, DImode));
+
+  /* Reflect the polynomial.  */
+  unsigned HOST_WIDE_INT ref_polynomial = reflect_hwi (UINTVAL (polynomial),
+						       crc_size);
+  /* An unshifted multiplier would require the final result to be extracted
+     using a shift right by DATA_SIZE - 1 bits.  Shift the multiplier left
+     so that the shift right can be by CRC_SIZE bits instead.  */
+  ref_polynomial <<= crc_size - data_size + 1;
+  rtx t1 = force_reg (DImode, gen_int_mode (ref_polynomial, DImode));
+
+  /* CRC calculation's main part.  */
+  rtx a0 = expand_binop (DImode, xor_optab, crc, data, NULL_RTX, 1,
+			 OPTAB_WIDEN);
+
+  /* Perform carry-less multiplication and get low part.  */
+  rtx pmull_res = gen_reg_rtx (TImode);
+  emit_insn (gen_aarch64_crypto_pmulldi (pmull_res, a0, t0));
+  a0 = gen_lowpart (DImode, pmull_res);
+
+  a0 = expand_binop (DImode, and_optab, a0,
+		     gen_int_mode (GET_MODE_MASK (data_mode), DImode),
+		     NULL_RTX, 1, OPTAB_WIDEN);
+
+  /* Perform carry-less multiplication.  */
+  emit_insn (gen_aarch64_crypto_pmulldi (pmull_res, a0, t1));
+
+  /* Perform a shift right by CRC_SIZE as an extraction of lane 1.  */
+  machine_mode crc_vmode = aarch64_v128_mode (crc_mode).require ();
+  a0 = (crc_size > data_size ? gen_reg_rtx (crc_mode) : operands[0]);
+  emit_insn (gen_aarch64_get_lane (crc_vmode, a0,
+				   gen_lowpart (crc_vmode, pmull_res),
+				   aarch64_endian_lane_rtx (crc_vmode, 1)));
+
+  if (crc_size > data_size)
+    {
+      rtx crc_part = expand_shift (RSHIFT_EXPR, crc_mode, crc, data_size,
+				   NULL_RTX, 1);
+      a0 = expand_binop (crc_mode, xor_optab, a0, crc_part, operands[0], 1,
+			 OPTAB_WIDEN);
+      aarch64_emit_move (operands[0], a0);
+    }
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
