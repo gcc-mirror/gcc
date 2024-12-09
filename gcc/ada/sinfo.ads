@@ -1770,7 +1770,7 @@ package Sinfo is
    --    in interpolated expressions.
 
    --  Is_Known_Guaranteed_ABE
-   --    NOTE: this flag is shared between the legacy ABE mechanism and the
+   --    Note: this flag is shared between the legacy ABE mechanism and the
    --    default ABE mechanism.
    --
    --    Present in the following nodes:
@@ -2058,14 +2058,18 @@ package Sinfo is
    --    Present in N_Assignment_Statement to indicate that neither Finalize
    --    nor Adjust should take place on this assignment even though the LHS
    --    and RHS are controlled. Also to indicate that the primitive _assign
-   --    should not be used for a tagged assignment. This flag is used in init
-   --    proc and aggregate expansion where the generated assignments are
+   --    should not be used for a tagged assignment. This flag is only used
+   --    in initialization procedures, and the expansion of aggregates, object
+   --    declarations and allocators, where the generated assignments are
    --    initializations, not real assignments. Note that it also suppresses
    --    the creation of transient scopes around the N_Assignment_Statement,
    --    in other words it disables all controlled actions for the assignment.
+   --    Additional note: the code generator should avoid creating a temporary
+   --    for the RHS when this flag is set on the N_Assignment_Statement node,
+   --    including when this RHS is a function call.
 
    --  No_Elaboration_Check
-   --    NOTE: this flag is relevant only for the legacy ABE mechanism and
+   --    Note: this flag is relevant only for the legacy ABE mechanism and
    --    should not be used outside of that context.
    --
    --    Present in N_Function_Call and N_Procedure_Call_Statement. Indicates
@@ -2086,10 +2090,14 @@ package Sinfo is
    --    Present in N_Assignment_Statement to indicate that no Finalize should
    --    take place on this assignment even though the LHS is controlled. Also
    --    to indicate that the primitive _assign should not be used for a tagged
-   --    assignment. This flag is only used in aggregates expansion where the
-   --    generated assignments are initializations, not real assignments. Note
-   --    that, unlike the No_Ctrl_Actions flag, it does *not* suppress the
+   --    assignment. This flag is only used in initialization procedures, and
+   --    the expansion of aggregates, object declarations and allocators, where
+   --    the generated assignments are initializations, not real assignments.
+   --    Note that, unlike No_Ctrl_Actions, this flag does *not* suppress the
    --    creation of transient scopes around the N_Assignment_Statement.
+   --    Additional note: the code generator should avoid creating a temporary
+   --    for the RHS when this flag is set on the N_Assignment_Statement node,
+   --    including when this RHS is a function call.
 
    --  No_Initialization
    --    Present in N_Object_Declaration and N_Allocator to indicate that the

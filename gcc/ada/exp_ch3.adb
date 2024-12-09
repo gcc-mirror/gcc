@@ -2618,11 +2618,10 @@ package body Exp_Ch3 is
          Default_Loc : constant Source_Ptr := Sloc (Default);
          Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
-         Adj_Call : Node_Id;
-         Exp      : Node_Id;
-         Exp_Q    : Node_Id;
-         Lhs      : Node_Id;
-         Res      : List_Id;
+         Exp   : Node_Id;
+         Exp_Q : Node_Id;
+         Lhs   : Node_Id;
+         Res   : List_Id;
 
       begin
          Lhs :=
@@ -2677,57 +2676,48 @@ package body Exp_Ch3 is
              Name       => Lhs,
              Expression => Exp));
 
-         Set_No_Ctrl_Actions (First (Res));
-
          Exp_Q := Unqualify (Exp);
 
-         --  Adjust the tag if tagged (because of possible view conversions).
-         --  Suppress the tag adjustment when not Tagged_Type_Expansion because
-         --  tags are represented implicitly in objects, and when the record is
-         --  initialized with a raise expression.
-
-         if Is_Tagged_Type (Typ)
-           and then Tagged_Type_Expansion
-           and then Nkind (Exp_Q) /= N_Raise_Expression
-         then
-            --  Get the relevant type for the call to
-            --  Make_Tag_Assignment_From_Type, which, for concurrent types is
-            --  their corresponding record.
-
-            declare
-               T : Entity_Id := Underlying_Type (Typ);
-            begin
-               if Ekind (T) in E_Protected_Type | E_Task_Type then
-                  T := Corresponding_Record_Type (T);
-               end if;
-
-               Append_To (Res,
-                 Make_Tag_Assignment_From_Type
-                   (Default_Loc,
-                    New_Copy_Tree (Lhs, New_Scope => Proc_Id),
-                    T));
-            end;
-         end if;
-
-         --  Adjust the component if controlled except if it is an aggregate
+         --  Adjust the component if controlled, except if it is an aggregate
          --  that will be expanded inline (but note that the case of container
-         --  aggregates does require component adjustment).
+         --  aggregates does require component adjustment), or a function call.
+         --  Note that, when we don't inhibit component adjustment, the tag
+         --  will be automatically inserted by Make_Tag_Ctrl_Assignment in the
+         --  tagged case. Otherwise, we have to generate a tag assignment here.
 
          if Needs_Finalization (Typ)
            and then (Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
                       or else Is_Container_Aggregate (Exp_Q))
            and then not Is_Build_In_Place_Function_Call (Exp)
+           and then Nkind (Exp) /= N_Function_Call
          then
-            Adj_Call :=
-              Make_Adjust_Call
-                (Obj_Ref => New_Copy_Tree (Lhs),
-                 Typ     => Etype (Id));
+            Set_No_Finalize_Actions (First (Res));
 
-            --  Guard against a missing [Deep_]Adjust when the component type
-            --  was not properly frozen.
+         else
+            Set_No_Ctrl_Actions (First (Res));
 
-            if Present (Adj_Call) then
-               Append_To (Res, Adj_Call);
+            --  Adjust the tag if tagged because of possible view conversions
+
+            if Is_Tagged_Type (Typ)
+              and then Tagged_Type_Expansion
+              and then Nkind (Exp_Q) /= N_Raise_Expression
+            then
+               declare
+                  Utyp : Entity_Id := Underlying_Type (Typ);
+
+               begin
+                  --  Get the relevant type for Make_Tag_Assignment_From_Type,
+                  --  which, for concurrent types is the corresponding record.
+
+                  if Ekind (Utyp) in E_Protected_Type | E_Task_Type then
+                     Utyp := Corresponding_Record_Type (Utyp);
+                  end if;
+
+                  Append_To (Res,
+                    Make_Tag_Assignment_From_Type (Default_Loc,
+                      New_Copy_Tree (Lhs, New_Scope => Proc_Id),
+                      Utyp));
+               end;
             end if;
          end if;
 

@@ -4278,8 +4278,8 @@ package Einfo is
 
 --    Returns_By_Ref
 --       Defined in subprogram type entities and functions. Set if a function
---       (or an access-to-function type) returns a result by reference, either
---       because the result is built in place, or its type is by-reference.
+--       (or a function type) returns a result by reference, either because the
+--       result is built in place or its type is limited in Ada 95.
 
 --    Reverse_Bit_Order [base type only]
 --       Defined in all record type entities. Set if entity has a Bit_Order

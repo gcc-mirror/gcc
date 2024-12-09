@@ -281,9 +281,16 @@ package body Exp_Ch6 is
    --  Does the main work of Expand_Call. Post_Call is as for Expand_Actuals.
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id; Use_Sec_Stack : Boolean);
-   --  N is a function call which returns a controlled object. Transform the
+   --  N is a function call that returns a controlled object. Transform the
    --  call into a temporary which retrieves the returned object from the
    --  primary or secondary stack (Use_Sec_Stack says which) using 'reference.
+
+   --  This expansion is necessary in all the cases where the constant object
+   --  denoted by the call needs finalization in the current subprogram, which
+   --  excludes return statements, and is not identified with another object
+   --  that will be finalized, which excludes (statically) declared objects,
+   --  dynamically allocated objects, and targets of assignments that are done
+   --  directly (without intermediate temporaries).
 
    procedure Expand_Non_Function_Return (N : Node_Id);
    --  Expand a simple return statement found in a procedure body, entry body,
@@ -5406,9 +5413,15 @@ package body Exp_Ch6 is
       end if;
 
       --  Avoid expansion to catch the error when the function call is on the
-      --  left-hand side of an assignment.
+      --  left-hand side of an assignment. Likewise if it is on the right-hand
+      --  side and no controlling actions will be performed for the assignment,
+      --  which means that this is an initialization of the target and it can
+      --  thus be performed directly. Note that the code generator should also
+      --  avoid creating a temporary for the right-hand side in this case.
 
-      if Nkind (Par) = N_Assignment_Statement and then N = Name (Par) then
+      if Nkind (Par) = N_Assignment_Statement
+        and then (N = Name (Par) or else No_Ctrl_Actions (Par))
+      then
          return;
       end if;
 
