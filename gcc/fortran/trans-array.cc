@@ -6104,7 +6104,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 		     stmtblock_t * descriptor_block, tree * overflow,
 		     tree expr3_elem_size, tree *nelems, gfc_expr *expr3,
 		     tree expr3_desc, bool e3_has_nodescriptor, gfc_expr *expr,
-		     tree *element_size)
+		     tree *element_size, bool explicit_ts)
 {
   tree type;
   tree tmp;
@@ -6164,7 +6164,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
       tmp = gfc_conv_descriptor_dtype (descriptor);
       gfc_add_modify (pblock, tmp, gfc_conv_descriptor_dtype (expr3_desc));
     }
-  else if (expr->ts.type == BT_CLASS
+  else if (expr->ts.type == BT_CLASS && !explicit_ts
 	   && expr3 && expr3->ts.type != BT_CLASS
 	   && expr3_elem_size != NULL_TREE && expr3_desc == NULL_TREE)
     {
@@ -6469,7 +6469,8 @@ bool
 gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 		    tree errlen, tree label_finish, tree expr3_elem_size,
 		    tree *nelems, gfc_expr *expr3, tree e3_arr_desc,
-		    bool e3_has_nodescriptor, gfc_omp_namelist *omp_alloc)
+		    bool e3_has_nodescriptor, gfc_omp_namelist *omp_alloc,
+		    bool explicit_ts)
 {
   tree tmp;
   tree pointer;
@@ -6601,7 +6602,8 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			      &offset, lower, upper,
 			      &se->pre, &set_descriptor_block, &overflow,
 			      expr3_elem_size, nelems, expr3, e3_arr_desc,
-			      e3_has_nodescriptor, expr, &element_size);
+			      e3_has_nodescriptor, expr, &element_size,
+			      explicit_ts);
 
   if (dimension)
     {

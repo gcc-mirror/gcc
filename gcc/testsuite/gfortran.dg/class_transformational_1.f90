@@ -169,7 +169,7 @@ contains
   end
 
   subroutine unlimited_rebar (arg)
-    class(*) :: arg(:)
+    class(*), allocatable :: arg(:)              ! Not having this allocatable => pr117901
     call class_bar (arg)
   end
 
