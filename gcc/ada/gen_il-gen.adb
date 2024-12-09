@@ -983,7 +983,8 @@ package body Gen_IL.Gen is
          end loop;
 
          Iterate_Types (Node_Kind, Pre => Check_Potential_Inheritance'Access);
-         Iterate_Types (Entity_Kind, Pre => Check_Potential_Inheritance'Access);
+         Iterate_Types
+           (Entity_Kind, Pre => Check_Potential_Inheritance'Access);
 
          if Could_Be_Inherited_Error then
             raise Illegal with "some fields could be inherited";
