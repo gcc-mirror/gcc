@@ -2197,7 +2197,7 @@ proc check_effective_target_riscv_zbc_ok { } {
 
     # check if we can execute zbc insns with the given hardware or
     # simulator
-    set gcc_march [riscv_get_arch]
+    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &zbc]
     if { [check_runtime ${gcc_march}_zbc_exec {
 	int main()
 	{
@@ -2221,7 +2221,7 @@ proc check_effective_target_riscv_zbkb_ok { } {
 
     # check if we can execute zbkb insns with the given hardware or
     # simulator
-    set gcc_march [riscv_get_arch]
+    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &zbkb]
     if { [check_runtime ${gcc_march}_zbkb_exec {
 	int main()
 	{
@@ -2244,7 +2244,7 @@ proc check_effective_target_riscv_zbkc_ok { } {
 
     # check if we can execute zbkc insns with the given hardware or
     # simulator
-    set gcc_march [riscv_get_arch]
+    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &zbkc]
     if { [check_runtime ${gcc_march}_zbkc_exec {
 	int main()
 	{
