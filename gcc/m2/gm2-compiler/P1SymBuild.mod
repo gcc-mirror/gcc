@@ -32,7 +32,7 @@ FROM M2MetaError IMPORT MetaErrorString2, MetaError0, MetaError1,
 
 FROM DynamicStrings IMPORT String, Slice, InitString, KillString, EqualCharStar, RIndex, Mark, ConCat ;
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
-FROM M2Options IMPORT Iso ;
+FROM M2Options IMPORT Iso, GetEnableForward ;
 
 FROM M2Reserved IMPORT ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
                        NulTok, VarTok, ArrayTok, BuiltinTok, InlineTok ;
@@ -1074,10 +1074,10 @@ VAR
 BEGIN
    ProcSym := OperandT (1) ;
    tok := OperandTok (1) ;
-   IF NOT Iso
+   IF NOT GetEnableForward ()
    THEN
       MetaErrorT0 (forwardPos,
-                   'forward declaration is only allowed in the ISO dialect of Modula-2')
+                   'forward declaration has not been enabled, use -fiso or -fenable-forward to enable forward procedure declarations')
    END ;
    IF GetProcedureDefined (ProcSym, ForwardProcedure)
    THEN
