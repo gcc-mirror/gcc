@@ -1,3 +1,19 @@
+2024-12-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* gimple.h (struct gphi): Update word marking comments to reflect
+	the new size of location_t.
+	(struct gimple): Likewise. Add a comment about padding.
+	* common.opt: Mark -flarge-source-files as Ignored.
+	* common.opt.urls: Regenerate.
+	* doc/invoke.texi: Remove -flarge-source-files.
+	* toplev.cc (process_options): Remove support for
+	-flarge-source-files.
+
+2024-12-08  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.cc (pru_print_operand): Implement c and n
+	inline assembly operand modifiers.
+
 2024-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (VIS4B instructions): Add comments.

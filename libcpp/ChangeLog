@@ -1,3 +1,21 @@
+2024-12-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/cpplib.h (struct cpp_token): Adjust comment about the
+	struct size.
+	* include/line-map.h (location_t): Change typedef from 32-bit to 64-bit
+	integer.
+	(LINE_MAP_MAX_COLUMN_NUMBER): Increase size to be appropriate for
+	64-bit location_t.
+	(LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES): Likewise.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Likewise.
+	(LINE_MAP_MAX_LOCATION): Likewise.
+	(MAX_LOCATION_T): Likewise.
+	(line_map_suggested_range_bits): Likewise.
+	(struct line_map): Adjust comment about the struct size.
+	(struct line_map_macro): Likewise.
+	(struct line_map_ordinary): Likewise. Rearrange fields to optimize
+	padding.
+
 2024-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* files.cc (finish_embed): Use CPP_EMBED even for C++.

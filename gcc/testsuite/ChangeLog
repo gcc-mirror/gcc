@@ -1,3 +1,18 @@
+2024-12-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* g++.dg/diagnostic/pr77949.C: Adapt the test for 64-bit location_t,
+	when the previously expected failure doesn't actually happen.
+	* g++.dg/modules/loc-prune-4.C: Adjust the expected output for the
+	64-bit location_t case.
+	* gcc.dg/plugin/expensive_selftests_plugin.cc: Don't try to test
+	the maximum supported column number in 64-bit location_t mode.
+	* gcc.dg/plugin/location_overflow_plugin.cc: Adjust the base_location
+	so it can effectively test 64-bit location_t.
+
+2024-12-08  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/asm-op-modifier.c: New test.
+
 2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117948
