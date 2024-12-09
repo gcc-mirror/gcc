@@ -13846,8 +13846,11 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
       || TREE_CODE (t1) == NULLPTR_TYPE)
     return true;
 
-  /* Can't be the same type if they have different mode.  */
-  if (TYPE_MODE (t1) != TYPE_MODE (t2))
+  /* Can't be compatible types if they have different mode.  Because of
+     flexible array members, we allow mismatching modes for structures or
+     unions.  */
+  if (!RECORD_OR_UNION_TYPE_P (t1)
+      && TYPE_MODE (t1) != TYPE_MODE (t2))
     return false;
 
   /* Non-aggregate types can be handled cheaply.  */
@@ -14150,8 +14153,11 @@ verify_type (const_tree t)
       debug_tree (ct);
       error_found = true;
     }
-
   if (COMPLETE_TYPE_P (t) && TYPE_CANONICAL (t)
+      /* We allow a mismatch for structure or union because of
+	 flexible array members.  */
+      && !RECORD_OR_UNION_TYPE_P (t)
+      && !RECORD_OR_UNION_TYPE_P (TYPE_CANONICAL (t))
       && TYPE_MODE (t) != TYPE_MODE (TYPE_CANONICAL (t)))
     {
       error ("%<TYPE_MODE%> of %<TYPE_CANONICAL%> is not compatible");
