@@ -22003,7 +22003,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      /* This can happen for a parameter name used later in a function
 		 declaration (such as in a late-specified return type).  Just
 		 make a dummy decl, since it's only used for its type.  */
-	      gcc_assert (cp_unevaluated_operand);
+	      gcc_assert (cp_unevaluated_operand
+			  || processing_contract_postcondition);
 	      r = tsubst_decl (t, args, complain);
 	      /* Give it the template pattern as its context; its true context
 		 hasn't been instantiated yet and this is good enough for
