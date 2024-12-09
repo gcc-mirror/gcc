@@ -2820,20 +2820,14 @@ package body Sem_Ch10 is
 
       Install_Elaboration_Model (Par_Unit);
 
-      --  The syntax rules require a proper body for a subprogram subunit
+      --  The syntax rules require a proper body for a subprogram subunit.
+      --  Note that we already checked for "is null" in the parser.
 
       if Nkind (Proper_Body (Sinfo.Nodes.Unit (N))) = N_Subprogram_Declaration
       then
-         if Null_Present (Specification (Proper_Body (Sinfo.Nodes.Unit (N))))
-         then
-            Error_Msg_N
-              ("null procedure not allowed as subunit",
-               Proper_Body (Unit (N)));
-         else
-            Error_Msg_N
-              ("subprogram declaration not allowed as subunit",
-               Defining_Unit_Name (Specification (Proper_Body (Unit (N)))));
-         end if;
+         Error_Msg_N
+           ("subprogram declaration not allowed as subunit",
+            Defining_Unit_Name (Specification (Proper_Body (Unit (N)))));
       end if;
 
       Analyze (Proper_Body (Unit (N)));

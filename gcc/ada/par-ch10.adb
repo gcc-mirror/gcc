@@ -532,6 +532,15 @@ package body Ch10 is
             Unit_Node := Specification (Unit_Node);
          end if;
 
+         --  Disallow null procedures as library units and subunits
+
+         if Nkind (Unit_Node) = N_Procedure_Specification
+           and then Null_Present (Unit_Node)
+         then
+            Error_Msg_N
+              ("null procedure cannot be used as compilation unit", Unit_Node);
+         end if;
+
          if Nkind (Unit_Node) in N_Task_Body
                                | N_Protected_Body
                                | N_Task_Type_Declaration
