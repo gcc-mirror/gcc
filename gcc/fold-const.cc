@@ -3470,7 +3470,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	  break;
 	}
 
-      return OP_SAME (0);
+      return OP_SAME_WITH_NULL (0);
 
 
     case tcc_comparison:
