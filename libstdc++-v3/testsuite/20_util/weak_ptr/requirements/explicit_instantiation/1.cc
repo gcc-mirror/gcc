@@ -28,3 +28,15 @@ template class std::weak_ptr<int>;
 template class std::weak_ptr<void>;
 template class std::weak_ptr<ClassType>;
 template class std::weak_ptr<IncompleteClass>;
+
+#if __cpp_lib_shared_ptr_arrays >= 201611L
+template class std::weak_ptr<ClassType []>;
+template class std::weak_ptr<ClassType [42]>;
+template class std::weak_ptr<ClassType const []>;
+template class std::weak_ptr<ClassType const [42]>;
+
+template class std::weak_ptr<IncompleteClass []>;
+template class std::weak_ptr<IncompleteClass [42]>;
+template class std::weak_ptr<IncompleteClass const []>;
+template class std::weak_ptr<IncompleteClass const [42]>;
+#endif

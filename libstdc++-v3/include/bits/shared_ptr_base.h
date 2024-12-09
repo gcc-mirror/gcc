@@ -2069,7 +2069,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __shared_ptr<_Tp, _Lp>
       lock() const noexcept
-      { return __shared_ptr<element_type, _Lp>(*this, std::nothrow); }
+      { return __shared_ptr<_Tp, _Lp>(*this, std::nothrow); }
 
       long
       use_count() const noexcept
