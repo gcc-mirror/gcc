@@ -24,4 +24,8 @@
 static_assert (std::is_pod<std::max_align_t>::value, "");
 #endif
 static_assert (std::is_standard_layout<std::max_align_t>::value, "");
+static_assert (std::is_trivially_copyable<std::max_align_t>::value, "");
+static_assert (std::is_trivially_default_constructible<std::max_align_t>::value, "");
+#if __cplusplus <= 202302L
 static_assert (std::is_trivial<std::max_align_t>::value, "");
+#endif

@@ -25,5 +25,8 @@
 namespace std
 {
   typedef short test_type;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template struct is_trivial<test_type>;
+#pragma GCC diagnostic pop
 }
