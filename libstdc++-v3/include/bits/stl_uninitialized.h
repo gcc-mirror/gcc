@@ -1248,7 +1248,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Also known as is_trivially_relocatable.
   template<typename _Tp, typename = void>
     struct __is_bitwise_relocatable
-    : is_trivial<_Tp> { };
+    : __and_<is_trivially_move_constructible<_Tp>, is_trivially_destructible<_Tp>> { };
 
   template <typename _InputIterator, typename _ForwardIterator,
 	    typename _Allocator>
