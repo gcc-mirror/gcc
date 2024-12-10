@@ -267,44 +267,4 @@ package body GNAT.CPP_Exceptions is
 
    end Get_Type_Info;
 
-   function Convert_Caught_Object (Choice, Except : Type_Info_Ptr;
-                                   Thrown         : in out Address;
-                                   Lang           : Character)
-                                   return           Interfaces.C.C_bool;
-   pragma Export (Cpp, Convert_Caught_Object, "__gnat_convert_caught_object");
-   --  Convert the exception object at Thrown, under Lang convention,
-   --  from type Except to type Choice, adjusting Thrown as needed and
-   --  returning True, or returning False in case the conversion fails.
-
-   ---------------------------
-   -- Convert_Caught_Object --
-   ---------------------------
-
-   function Convert_Caught_Object (Choice, Except : Type_Info_Ptr;
-                                   Thrown         : in out Address;
-                                   Lang           : Character)
-                                   return           Interfaces.C.C_bool is
-   begin
-      if Equals (Choice, Except) then
-         return C_bool'(True);
-      end if;
-
-      if Lang = 'B' then
-         if Is_Pointer_P (Except) then
-            declare
-               Thrown_Indirect : Address;
-               for Thrown_Indirect'Address use Thrown;
-            begin
-               Thrown := Thrown_Indirect;
-            end;
-         end if;
-
-         if Do_Catch (Choice, Except, Thrown, 1) then
-            return C_bool'(True);
-         end if;
-      end if;
-
-      return C_bool'(False);
-   end Convert_Caught_Object;
-
 end GNAT.CPP_Exceptions;

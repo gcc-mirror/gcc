@@ -30,13 +30,16 @@
 ------------------------------------------------------------------------------
 
 with System; use System;
+with System.Storage_Elements; use System.Storage_Elements;
 with Interfaces.C; use Interfaces.C;
-with Interfaces.C.Pointers;
 with Interfaces.C.Extensions; use Interfaces.C.Extensions;
 with Interfaces.C.Strings; use Interfaces.C.Strings;
 with Ada.Unchecked_Conversion;
 
 package body GNAT.CPP.Std.Type_Info is
+
+   function strcmp (L, R : chars_ptr) return Interfaces.C.int;
+   pragma Import (Intrinsic, strcmp, "__builtin_strcmp");
 
    function Name_Starts_With_Asterisk (this : access constant type_info'Class)
                                        return Boolean;
@@ -46,35 +49,27 @@ package body GNAT.CPP.Std.Type_Info is
 
    function To_Address is
       new Ada.Unchecked_Conversion (chars_ptr, System.Address);
-
-   type Char_Arr is array (Natural range <>) of aliased char;
-   package CharPtr is
-      new Interfaces.C.Pointers (Natural, char, Char_Arr, nul);
-   type Char_Pointer is new CharPtr.Pointer;
-
    function To_Pointer is
-      new Ada.Unchecked_Conversion (chars_ptr, Char_Pointer);
-   function To_chars_ptr is
-      new Ada.Unchecked_Conversion (Char_Pointer, chars_ptr);
+      new Ada.Unchecked_Conversion (System.Address, chars_ptr);
 
    function Name_Starts_With_Asterisk (this : access constant type_info'Class)
                                        return Boolean is
-      A : constant Address := To_Address (this.Raw_Name);
+      Addr : constant System.Address := To_Address (this.Raw_Name);
       C : aliased char;
-      for C'Address use A;
+      for C'Address use Addr;
    begin
       return C = '*';
    end Name_Starts_With_Asterisk;
 
    function Name_Past_Asterisk (this : access constant type_info'Class)
                                 return chars_ptr is
-      Addr : Char_Pointer := To_Pointer (this.Raw_Name);
+      Addr : System.Address := To_Address (this.Raw_Name);
    begin
       if this.Name_Starts_With_Asterisk then
-         Increment (Addr);
+         Addr := Addr + Storage_Offset (1);
       end if;
 
-      return To_chars_ptr (Addr);
+      return To_Pointer (Addr);
    end Name_Past_Asterisk;
 
    ------------
@@ -82,8 +77,8 @@ package body GNAT.CPP.Std.Type_Info is
    ------------
 
    function Name (this : access constant type_info'Class)
-                  return String
-   is (Value (this.Name_Past_Asterisk));
+                  return chars_ptr
+   is (this.Name_Past_Asterisk);
 
    --------------
    --  Before  --
@@ -92,10 +87,10 @@ package body GNAT.CPP.Std.Type_Info is
    function Before (this, that : access constant type_info'Class)
                     return       Boolean is
    begin
-      if this.Name_Starts_With_Asterisk
-        or else that.Name_Starts_With_Asterisk
+      if not this.Name_Starts_With_Asterisk
+        or else not that.Name_Starts_With_Asterisk
       then
-         return this.Name < that.Name;
+         return strcmp (this.Raw_Name, that.Raw_Name) < 0;
       end if;
 
       return To_Address (this.Raw_Name) < To_Address (that.Raw_Name);
@@ -116,7 +111,50 @@ package body GNAT.CPP.Std.Type_Info is
          return False;
       end if;
 
-      return this.Name = that.Name;
+      return strcmp (this.Raw_Name, that.Raw_Name) = 0;
    end Equals;
+
+   function Convert_Caught_Object (Choice, Except : access type_info'Class;
+                                   Thrown         : in out Address;
+                                   Lang           : Character)
+                                   return           Interfaces.C.C_bool;
+   pragma Export (Cpp, Convert_Caught_Object, "__gnat_convert_caught_object");
+   --  Convert the exception object at Thrown, under Lang convention,
+   --  from type Except to type Choice, adjusting Thrown as needed and
+   --  returning True, or returning False in case the conversion
+   --  fails.  This is called from raise-gcc, and it is placed here
+   --  rather than in GNAT.CPP_Exceptions to avoid dragging all that
+   --  in when the program doesn't use C++ exceptions.
+
+   ---------------------------
+   -- Convert_Caught_Object --
+   ---------------------------
+
+   function Convert_Caught_Object (Choice, Except : access type_info'Class;
+                                   Thrown         : in out Address;
+                                   Lang           : Character)
+                                   return           Interfaces.C.C_bool is
+   begin
+      if Choice.Equals (Except) then
+         return C_bool'(True);
+      end if;
+
+      if Lang = 'B' then
+         if Except.Is_Pointer_P then
+            declare
+               Thrown_Indirect : Address;
+               for Thrown_Indirect'Address use Thrown;
+            begin
+               Thrown := Thrown_Indirect;
+            end;
+         end if;
+
+         if Choice.Do_Catch (Except, Thrown, 1) then
+            return C_bool'(True);
+         end if;
+      end if;
+
+      return C_bool'(False);
+   end Convert_Caught_Object;
 
 end GNAT.CPP.Std.Type_Info;

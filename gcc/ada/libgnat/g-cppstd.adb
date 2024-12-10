@@ -34,6 +34,7 @@
 
 with GNAT.CPP.Std.Type_Info;
 with Ada.Unchecked_Conversion;
+with Interfaces.C.Strings; use Interfaces.C.Strings;
 
 package body GNAT.CPP.Std is
    ----------------------
@@ -53,7 +54,7 @@ package body GNAT.CPP.Std is
 
    function Name (this : Type_Info_Ptr)
                   return String
-   is (this.all.Name);
+   is (Value (this.all.Name));
 
    ---------------
    --  Before  ---

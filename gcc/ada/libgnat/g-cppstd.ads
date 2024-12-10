@@ -50,7 +50,8 @@ package GNAT.CPP.Std is
    function Name (this : Type_Info_Ptr)
                   --  return Interfaces.C.Strings.chars_ptr;
                   return String;
-   --  Exposed std::type_info member function.
+   --  Exposed std::type_info member function.  ??? Would it ever be
+   --  desirable to get direct access to the internal chars_ptr?
 
    function Before (this, that : Type_Info_Ptr)
                     --  return Interfaces.C.Extensions.bool;
@@ -89,6 +90,7 @@ private
 
    type Type_Info_Ptr is access constant Type_Info.type_info'Class;
    pragma No_Strict_Aliasing (Type_Info_Ptr);
+   pragma No_Heap_Finalization (Type_Info_Ptr);
 
    No_Type_Info : constant Type_Info_Ptr := null;
 

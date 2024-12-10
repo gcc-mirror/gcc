@@ -71,7 +71,7 @@ private package GNAT.CPP.Std.Type_Info is
    --  Reimplemented in Ada, using Ada types.
    function Name (this : access constant type_info'Class)
                   --  return Interfaces.C.Strings.chars_ptr;
-                  return String;
+                  return Interfaces.C.Strings.chars_ptr;
    --  pragma Import (CPP, Name, "_ZNKSt9type_info4nameEv");
    pragma Machine_Attribute (Name, "nothrow");
 
