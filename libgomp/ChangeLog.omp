@@ -1,6 +1,14 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-12-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_dev2dev, GOMP_OFFLOAD_async_run):
+	Handle omp_async_queue == NULL after call to maybe_init_omp_async.
+	(GOMP_OFFLOAD_openacc_async_construct): Use error not fatal error,
+	partially reverting r15-5392.
+
+	Backported from trunk:
 	2024-11-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_construct): In
