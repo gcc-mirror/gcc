@@ -1,3 +1,19 @@
+2024-12-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	Backported from master:
+	2024-12-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/ccusage.c: New test.
+
+2024-12-09  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-12-09  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117845
+	* g++.dg/asan/pr117845-2.C: New test.
+	* g++.dg/asan/pr117845.C: New test.
+
 2024-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

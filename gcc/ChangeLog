@@ -1,3 +1,20 @@
+2024-12-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	Backported from master:
+	2024-12-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_canonicalize_comparison): Add
+	missing UNSPEC_CC_TO_INT case.
+
+2024-12-09  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-12-09  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117845
+	* tree-eh.cc (honor_protect_cleanup_actions): Support empty
+	finally sequences.
+
 2024-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
