@@ -3197,19 +3197,18 @@ public:
       trait_path (std::move (trait_path)), impl_items (std::move (impl_items))
   {}
 
-  // Helper constructor with a typepath
+  // Delegating constructor for TypePath
   TraitImpl (TypePath trait_path, bool is_unsafe, bool has_exclam,
 	     std::vector<std::unique_ptr<AssociatedItem>> impl_items,
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	     Visibility vis, std::vector<Attribute> inner_attrs,
 	     std::vector<Attribute> outer_attrs, location_t locus)
-    : Impl (std::move (generic_params), std::move (trait_type),
-	    std::move (where_clause), std::move (vis), std::move (inner_attrs),
-	    std::move (outer_attrs), locus),
-      has_unsafe (is_unsafe), has_exclam (has_exclam),
-      trait_path (std::unique_ptr<TypePath> (new TypePath (trait_path))),
-      impl_items (std::move (impl_items))
+    : TraitImpl (std::unique_ptr<Path> (new TypePath (trait_path)), is_unsafe,
+		 has_exclam, std::move (impl_items), std::move (generic_params),
+		 std::move (trait_type), std::move (where_clause),
+		 std::move (vis), std::move (inner_attrs),
+		 std::move (outer_attrs), locus)
   {}
 
   // Copy constructor with vector clone
