@@ -1621,6 +1621,7 @@ enum class aarch64_builtin_signatures
   binary,
   binary_lane,
   ternary,
+  ternary_lane,
   unary,
 };
 
@@ -1713,6 +1714,7 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
       break;
 
     case aarch64_builtin_signatures::ternary:
+    case aarch64_builtin_signatures::ternary_lane:
       return_type = builtin_data.types[0].type ();
       for (int i = 1; i <= 3; ++i)
 	arg_types.quick_push (builtin_data.types[i].type ());
@@ -1726,6 +1728,7 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
   switch (builtin_data.signature)
     {
     case aarch64_builtin_signatures::binary_lane:
+    case aarch64_builtin_signatures::ternary_lane:
       arg_types.quick_push (integer_type_node);
       break;
 
@@ -2592,6 +2595,7 @@ struct aarch64_pragma_builtins_checker
 
   bool require_immediate_range (unsigned int, HOST_WIDE_INT,
 				HOST_WIDE_INT);
+  bool require_immediate_lane_index (unsigned int, unsigned int, unsigned int);
 
   bool check ();
 
@@ -2639,6 +2643,22 @@ require_immediate_range (unsigned int argno, HOST_WIDE_INT min,
   return true;
 }
 
+/* Require argument LANE_ARGNO to be an immediate lane index into vector
+   argument VEC_ARGNO, given that each index selects enough data to fill
+   one element of argument ELT_ARGNO.  Return true if the argument
+   is valid.  */
+bool
+aarch64_pragma_builtins_checker::
+require_immediate_lane_index (unsigned int lane_argno, unsigned vec_argno,
+			      unsigned int elt_argno)
+{
+  auto vec_mode = TYPE_MODE (TREE_TYPE (args[vec_argno]));
+  auto elt_mode = TYPE_MODE (TREE_TYPE (args[elt_argno]));
+  auto nunits = exact_div (GET_MODE_SIZE (vec_mode),
+			   GET_MODE_UNIT_SIZE (elt_mode)).to_constant ();
+  return require_immediate_range (lane_argno, 0, nunits - 1);
+}
+
 /* Check the arguments to the intrinsic call and return true if they
    are valid.  */
 bool
@@ -2646,6 +2666,9 @@ aarch64_pragma_builtins_checker::check ()
 {
   switch (builtin_data.unspec)
     {
+    case UNSPEC_FDOT_LANE_FP8:
+      return require_immediate_lane_index (nargs - 2, nargs - 3, 0);
+
     case UNSPEC_LUTI2:
     case UNSPEC_LUTI4:
       {
@@ -3656,6 +3679,7 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
     case UNSPEC_FAMIN:
     case UNSPEC_F1CVTL_FP8:
     case UNSPEC_F2CVTL_FP8:
+    case UNSPEC_FDOT_FP8:
     case UNSPEC_FSCALE:
       icode = code_for_aarch64 (builtin_data.unspec, ops[0].mode);
       break;
@@ -3688,6 +3712,11 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 	  icode = code_for_aarch64_high_le (unspec, mode);
 	break;
       }
+
+    case UNSPEC_FDOT_LANE_FP8:
+      icode = code_for_aarch64_lane (builtin_data.unspec,
+				     ops[0].mode, ops[3].mode);
+      break;
 
     case UNSPEC_LUTI2:
     case UNSPEC_LUTI4:

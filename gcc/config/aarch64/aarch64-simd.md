@@ -10097,3 +10097,30 @@
   "TARGET_FP8"
   "<insn>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
 )
+
+;; fpm vdot instructions.  The target requirements are enforced by
+;; VDQ_HSF_FDOT.
+(define_insn "@aarch64_<insn><mode>"
+  [(set (match_operand:VDQ_HSF_FDOT 0 "register_operand" "=w")
+	(unspec:VDQ_HSF_FDOT
+	 [(match_operand:VDQ_HSF_FDOT 1 "register_operand" "0")
+	  (match_operand:<VNARROWB> 2 "register_operand" "w")
+	  (match_operand:<VNARROWB> 3 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	 FPM_FDOT))]
+  ""
+  "<insn>\t%1.<Vtype>, %2.<Vnbtype>, %3.<Vnbtype>"
+)
+
+(define_insn "@aarch64_<insn>_lane<VDQ_HSF_FDOT:mode><VB:mode>"
+  [(set (match_operand:VDQ_HSF_FDOT 0 "register_operand" "=w")
+	(unspec:VDQ_HSF_FDOT
+	 [(match_operand:VDQ_HSF_FDOT 1 "register_operand" "0")
+	  (match_operand:<VDQ_HSF_FDOT:VNARROWB> 2 "register_operand" "w")
+	  (match_operand:VB 3 "register_operand" "w")
+	  (match_operand 4 "const_int_operand")
+	  (reg:DI FPM_REGNUM)]
+	 FPM_FDOT_LANE))]
+  ""
+  "<insn>\t%1.<VDQ_HSF_FDOT:Vtype>, %2.<VDQ_HSF_FDOT:Vnbtype>, %3.<VDQ_HSF_FDOT:Vnbsubtype>[%4]"
+)

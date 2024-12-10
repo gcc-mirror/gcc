@@ -30,6 +30,10 @@
 #define ENTRY_TERNARY(N, T0, T1, T2, T3, U, F)	\
   ENTRY (N, ternary, T0, T1, T2, T3, U, F)
 
+#undef ENTRY_TERNARY_LANE
+#define ENTRY_TERNARY_LANE(N, T0, T1, T2, T3, U, F)	\
+  ENTRY (N, ternary_lane, T0, T1, T2, T3, U, F)
+
 #undef ENTRY_UNARY
 #define ENTRY_UNARY(N, T0, T1, U, F)	\
   ENTRY (N, unary, T0, T1, none, none, U, F)
@@ -85,6 +89,21 @@
   ENTRY_UNARY (N##_bf16_mf8_fpm, bf16q, T1, UNSPEC, FLAGS)	\
   ENTRY_UNARY (N##_f16_mf8_fpm, f16q, T1, UNSPEC, FLAGS)
 
+#undef ENTRY_VDOT_FPM
+#define ENTRY_VDOT_FPM(T)						\
+  ENTRY_TERNARY (vdot_##T##_mf8_fpm, T, T, f8, f8,			\
+		 UNSPEC_FDOT_FP8, FP8)					\
+  ENTRY_TERNARY (vdotq_##T##_mf8_fpm, T##q, T##q, f8q, f8q,		\
+		 UNSPEC_FDOT_FP8, FP8)					\
+  ENTRY_TERNARY_LANE (vdot_lane_##T##_mf8_fpm, T, T, f8, f8,		\
+		      UNSPEC_FDOT_LANE_FP8, FP8)			\
+  ENTRY_TERNARY_LANE (vdot_laneq_##T##_mf8_fpm, T, T, f8, f8q,		\
+		      UNSPEC_FDOT_LANE_FP8, FP8)			\
+  ENTRY_TERNARY_LANE (vdotq_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8,	\
+		      UNSPEC_FDOT_LANE_FP8, FP8)			\
+  ENTRY_TERNARY_LANE (vdotq_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q,	\
+		      UNSPEC_FDOT_LANE_FP8, FP8)
+
 // faminmax
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
 ENTRY_BINARY_VHSDF (vamax, UNSPEC_FAMAX, FP)
@@ -124,4 +143,14 @@ ENTRY_TERNARY (vcvt_high_mf8_f32_fpm, f8q, f8, f32q, f32q,
 // fpm scaling
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8)
 ENTRY_BINARY_VHSDF_SIGNED (vscale, UNSPEC_FSCALE, FP)
+#undef REQUIRED_EXTENSIONS
+
+// fpm dot2 product
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8DOT2)
+ENTRY_VDOT_FPM (f16)
+#undef REQUIRED_EXTENSIONS
+
+// fpm dot4 product
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8DOT4)
+ENTRY_VDOT_FPM (f32)
 #undef REQUIRED_EXTENSIONS

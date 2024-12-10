@@ -188,6 +188,11 @@
 ;; Quad vector Float modes with half/single elements.
 (define_mode_iterator VQ_HSF [V8HF V4SF])
 
+(define_mode_iterator VDQ_HSF_FDOT [(V4HF "TARGET_FP8DOT2")
+				    (V8HF "TARGET_FP8DOT2")
+				    (V2SF "TARGET_FP8DOT4")
+				    (V4SF "TARGET_FP8DOT4")])
+
 ;; Modes suitable to use as the return type of a vcond expression.
 (define_mode_iterator VDQF_COND [V2SF V2SI V4SF V4SI V2DF V2DI])
 
@@ -728,6 +733,8 @@
     UNSPEC_F1CVTL2_FP8	; Used in aarch64-builtins.cc.
     UNSPEC_F2CVTL_FP8	; Used in aarch64-simd.md.
     UNSPEC_F2CVTL2_FP8	; Used in aarch64-builtins.cc.
+    UNSPEC_FDOT_FP8	; Used in aarch64-simd.md.
+    UNSPEC_FDOT_LANE_FP8 ; Used in aarch64-simd.md.
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMAXNMV	; Used in aarch64-simd.md.
     UNSPEC_FMAXV	; Used in aarch64-simd.md.
@@ -1812,6 +1819,18 @@
 ;; twice as many QI elements as the input.
 (define_mode_attr VPACKB [(V4HF "V8QI") (V8HF "V16QI") (V4SF "V8QI")])
 (define_mode_attr VPACKBtype [(V4HF "8b") (V8HF "16b") (V4SF "8b")])
+
+;; Modes narrowed all the way to bytes.
+(define_mode_attr VNARROWB [(V4HF "V8QI") (V8HF "V16QI")
+			    (V2SF "V8QI") (V4SF "V16QI")])
+
+;; Register suffix for modes narrowed to bytes.
+(define_mode_attr Vnbtype [(V4HF "8b") (V8HF "16b")
+			   (V2SF "8b") (V4SF "16b")])
+
+;; Register suffix representing one group of byte elements per wider element.
+(define_mode_attr Vnbsubtype [(V4HF "2b") (V8HF "2b")
+			      (V2SF "4b") (V4SF "4b")])
 
 ;; Widened modes of vector modes.
 (define_mode_attr VWIDE [(V8QI  "V8HI")  (V4HI  "V4SI")
@@ -3826,6 +3845,9 @@
 
 (define_int_iterator FSCALE_UNS [UNSPEC_FSCALE])
 
+(define_int_iterator FPM_FDOT [UNSPEC_FDOT_FP8])
+(define_int_iterator FPM_FDOT_LANE [UNSPEC_FDOT_LANE_FP8])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
@@ -3835,6 +3857,8 @@
   [(UNSPEC_F1CVTL_FP8 "f1cvtl")
    (UNSPEC_F2CVTL_FP8 "f2cvtl")
    (UNSPEC_FCVTN_FP8 "fcvtn")
+   (UNSPEC_FDOT_FP8 "fdot")
+   (UNSPEC_FDOT_LANE_FP8 "fdot")
    (UNSPEC_FSCALE "fscale")])
 
 ;; The optab associated with an operation.  Note that for ANDF, IORF
