@@ -2383,7 +2383,7 @@ loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
 	return factor;
 
       case ADDRESS_REG_REG:
-	return factor;
+	return factor * la_addr_reg_reg_cost;
 
       case ADDRESS_CONST_INT:
 	return lsx_p ? 0 : factor;

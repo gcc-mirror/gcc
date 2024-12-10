@@ -1010,6 +1010,9 @@ loongarch_target_option_override (struct loongarch_target *target,
   if (!opts_set->x_la_branch_cost)
     opts->x_la_branch_cost = loongarch_cost->branch_cost;
 
+  if (!opts_set->x_la_addr_reg_reg_cost)
+    opts->x_la_addr_reg_reg_cost = loongarch_cost->addr_reg_reg_cost;
+
   /* other stuff */
   if (ABI_LP64_P (target->abi.base))
     opts->x_flag_pcc_struct_return = 0;

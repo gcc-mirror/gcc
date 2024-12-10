@@ -1078,7 +1078,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-march=@var{arch-type}  -mtune=@var{tune-type} -mabi=@var{base-abi-type}
 -mfpu=@var{fpu-type} -msimd=@var{simd-type}
 -msoft-float -msingle-float -mdouble-float -mlsx -mno-lsx -mlasx -mno-lasx
--mbranch-cost=@var{n}  -mcheck-zero-division -mno-check-zero-division
+-mbranch-cost=@var{n} -maddr-reg-reg-cost=@var{n}  -mcheck-zero-division
+-mno-check-zero-division
 -mcond-move-int  -mno-cond-move-int
 -mcond-move-float  -mno-cond-move-float
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align -G @var{num}
@@ -27683,6 +27684,10 @@ they appear on the GCC driver's command line, deriving the final / canonicalized
 @opindex mbranch-cost
 @item -mbranch-cost=@var{n}
 Set the cost of branches to roughly @var{n} instructions.
+
+@opindex maddr-reg-reg-cost
+@item -maddr-reg-reg-cost=@var{n}
+Set the cost of ADDRESS_REG_REG to the value calculated by @var{n}.
 
 @opindex mcheck-zero-division
 @item -mcheck-zero-division

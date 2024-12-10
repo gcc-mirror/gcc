@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -maddr-reg-reg-cost=1" } */
 /* { dg-final { scan-assembler-times {stx\..\t\$r0} 2 } } */
 
 extern float arr_f[];
