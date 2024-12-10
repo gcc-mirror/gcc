@@ -1,6 +1,12 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/65181
+	* config/nvptx/nvptx.h (STACK_SAVEAREA_MODE): '#define'.
+	* config/nvptx/nvptx.md [!TARGET_SOFT_STACK]
+	(save_stack_function): 'define_expand'.
+	(restore_stack_function): Handle '!TARGET_SOFT_STACK'.
+
+	PR target/65181
 	* config/nvptx/nvptx.md [!TARGET_SOFT_STACK] (save_stack_block):
 	'define_expand'.
 
