@@ -33804,11 +33804,7 @@ package body Sem_Prag is
                State := Homonym (State);
             end loop;
 
-            --  A function can never act as a state. If the homonym chain does
-            --  not contain a corresponding state, then something went wrong in
-            --  the overloading mechanism.
-
-            raise Program_Error;
+            --  A function can never act as a state; it will be diagnosed later
          end if;
       end if;
    end Resolve_State;
