@@ -3330,90 +3330,66 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     }
     (if (wi::eq_p (trunc_max, int_cst_1) && wi::eq_p (max, int_cst_2)))))))
 
-/* Signed saturation add, case 1:
-   T sum = (T)((UT)X + (UT)Y)
-   SAT_S_ADD = (X ^ sum) & !(X ^ Y) < 0 ? (-(T)(X < 0) ^ MAX) : sum;
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_add @0 @1)
- (cond^ (lt (bit_and:c (bit_xor:c @0 (nop_convert@2 (plus (nop_convert @0)
-							  (nop_convert @1))))
-		       (bit_not (bit_xor:c @0 @1)))
-	    integer_zerop)
-	(bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)
-	@2)
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Signed saturation add, case 2:
-   T sum = (T)((UT)X + (UT)Y)
-   SAT_S_ADD = (X ^ sum) & !(X ^ Y) >= 0 ? sum : (-(T)(X < 0) ^ MAX);
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_add @0 @1)
- (cond^ (ge (bit_and:c (bit_xor @0 (nop_convert@2 (plus (nop_convert @0)
-							(nop_convert @1))))
-		       (bit_not (bit_xor:c @0 @1)))
-	    integer_zerop)
-	@2
-	(bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value))
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Signed saturation add, case 3:
-   T sum = (T)((UT)X + (UT)Y)
-   SAT_S_ADD = (X ^ Y) < 0 && (X ^ sum) >= 0 ? (-(T)(X < 0) ^ MAX) : sum;
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_add @0 @1)
- (cond^ (bit_and:c (lt (bit_xor @0 (nop_convert@2 (plus (nop_convert @0)
-							(nop_convert @1))))
-		       integer_zerop)
-		   (ge (bit_xor:c @0 @1) integer_zerop))
-	(bit_xor:c (nop_convert (negate (nop_convert (convert
-						      (lt @0 integer_zerop)))))
-		   max_value)
-	@2)
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Signed saturation add, case 4:
-   Z = .ADD_OVERFLOW (X, Y)
-   SAT_S_ADD = IMAGPART_EXPR (Z) != 0 ? (-(T)(X < 0) ^ MAX) : sum;  */
-(match (signed_integer_sat_add @0 @1)
- (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) integer_zerop)
-	(bit_xor:c (nop_convert?
-		    (negate (nop_convert? (convert (lt @0 integer_zerop)))))
-		   max_value)
-	(realpart @2))
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Signed saturation add, case 5:
-   T sum = (T)((UT)X + (UT)Y);
-   SAT_S_ADD = (X ^ sum) < 0 & ~((X ^ Y) < 0) ? (-(T)(X < 0) ^ MAX) : sum;
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_add @0 @1)
- (cond^ (bit_and:c (lt (bit_xor @0 (nop_convert@2 (plus (nop_convert @0)
+(if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
+ (match (signed_integer_sat_add @0 @1)
+  /* T SUM = (T)((UT)X + (UT)Y)
+     SAT_S_ADD = (X ^ SUM) & !(X ^ Y) < 0 ? (-(T)(X < 0) ^ MAX) : SUM  */
+  (cond^ (lt (bit_and:c (bit_xor:c @0 (nop_convert@2 (plus (nop_convert @0)
+							   (nop_convert @1))))
+			(bit_not (bit_xor:c @0 @1)))
+	     integer_zerop)
+	 (bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)
+	 @2))
+ (match (signed_integer_sat_add @0 @1)
+  /* T SUM = (T)((UT)X + (UT)Y)
+     SAT_S_ADD = (X ^ SUM) & !(X ^ Y) >= 0 ? SUM : (-(T)(X < 0) ^ MAX)  */
+  (cond^ (ge (bit_and:c (bit_xor @0 (nop_convert@2 (plus (nop_convert @0)
 							 (nop_convert @1))))
-		       integer_zerop)
-		   (bit_not (lt (bit_xor:c @0 @1) integer_zerop)))
-	(bit_xor:c (nop_convert (negate (nop_convert (convert
+			(bit_not (bit_xor:c @0 @1)))
+	     integer_zerop)
+	 @2
+	 (bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)))
+ (match (signed_integer_sat_add @0 @1)
+  /* T SUM = (T)((UT)X + (UT)Y)
+     SAT_S_ADD = (X ^ Y) < 0 && (X ^ SUM) >= 0 ? (-(T)(X < 0) ^ MAX) : SUM  */
+  (cond^ (bit_and:c (lt (bit_xor @0 (nop_convert@2 (plus (nop_convert @0)
+							 (nop_convert @1))))
+			integer_zerop)
+		    (ge (bit_xor:c @0 @1) integer_zerop))
+	 (bit_xor:c (nop_convert (negate (nop_convert (convert
 						      (lt @0 integer_zerop)))))
-		   max_value)
-	@2)
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Signed saturation add, case 6 (one op is imm):
-   T sum = (T)((UT)X + (UT)IMM);
-   SAT_S_ADD = (X ^ IMM) < 0 ? sum : (X ^ sum) >= 0 ? sum : (x < 0) ? MIN : MAX;
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-
-(match (signed_integer_sat_add @0 @1)
-(cond^ (lt (bit_and:c (bit_xor:c @0 (nop_convert@2 (plus (nop_convert @0)
-		       INTEGER_CST@1)))
-		       (bit_xor:c @0 INTEGER_CST@3)) integer_zerop)
-       (bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value) @2)
-(if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
-     && wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0)))
+		    max_value)
+	 @2))
+ (match (signed_integer_sat_add @0 @1)
+   /* SUM = .ADD_OVERFLOW (X, Y)
+      SAT_S_ADD = IMAGPART_EXPR (SUM) != 0 ? (-(T)(X < 0) ^ MAX) : SUM  */
+  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) integer_zerop)
+	 (bit_xor:c (nop_convert?
+		     (negate (nop_convert? (convert (lt @0 integer_zerop)))))
+		    max_value)
+	 (realpart @2)))
+ (match (signed_integer_sat_add @0 @1)
+  /* T SUM = (T)((UT)X + (UT)Y)
+     SAT_S_ADD = (X ^ SUM) < 0 & ~((X ^ Y) < 0) ? (-(T)(X < 0) ^ MAX) : SUM  */
+  (cond^ (bit_and:c (lt (bit_xor @0 (nop_convert@2 (plus (nop_convert @0)
+							 (nop_convert @1))))
+			integer_zerop)
+		    (bit_not (lt (bit_xor:c @0 @1) integer_zerop)))
+	 (bit_xor:c (nop_convert (negate (nop_convert (convert
+						       (lt @0 integer_zerop)))))
+		    max_value)
+	 @2))
+ (match (signed_integer_sat_add @0 @1)
+  /* T SUM = (T)((UT)X + (UT)IMM);
+     SAT_S_ADD = (X ^ IMM) < 0 ? SUM : (X ^ SUM) >= 0 ? SUM
+						      : (x < 0) ? MIN : MAX  */
+  (cond^ (lt (bit_and:c (bit_xor:c @0 (nop_convert@2 (plus (nop_convert @0)
+							   INTEGER_CST@1)))
+			(bit_xor:c @0 INTEGER_CST@3)) integer_zerop)
+	 (bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)
+	 @2)
+  (if (wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0)))
+)
 
 /* The boundary condition for case 10: IMM = 1:
    SAT_U_SUB = X >= IMM ? (X - IMM) : 0.
