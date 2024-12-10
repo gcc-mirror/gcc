@@ -1004,7 +1004,20 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
   libgdiagnostics::group g (m_output_mgr);
   auto err (m_output_mgr.begin_diagnostic (level));
   if (rule_id)
-    err.add_rule (rule_id->get_string (), nullptr);
+    {
+      const char *url = nullptr;
+      if (rule_obj)
+	{
+	  /* rule_obj should be a reportingDescriptor object (3.49).
+	     Get any §3.49.12 helpUri property.  */
+	  const property_spec_ref prop_help_uri
+	    ("reportingDescriptor", "helpUri", "3.49.12");
+	  if (auto url_val = get_optional_property<json::string>(*rule_obj,
+								 prop_help_uri))
+	    url = url_val->get_string ();
+	}
+      err.add_rule (rule_id->get_string (), url);
+    }
   err.set_location (physical_loc);
   err.set_logical_location (logical_loc);
   if (path.m_inner)
