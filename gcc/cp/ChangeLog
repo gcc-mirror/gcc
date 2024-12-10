@@ -1,3 +1,20 @@
+2024-12-09  Marek Polacek  <polacek@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116416
+	* cp-gimplify.cc (cp_fold_r) <case TARGET_EXPR>: Try to fold
+	TARGET_EXPR_INITIAL and replace it with the folded result if
+	it's TREE_CONSTANT.
+
+2024-12-09  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* call.cc (build_cxx_call):  Pass `complain` parameter to
+	check_builtin_function_arguments.  Take its value from the
+	`tsubst_flags_t` type `complain & tf_error`.
+	* semantics.cc (finish_call_expr):  Pass `complain` parameter to
+	resolve_overloaded_builtin.  Take its value from the
+	`tsubst_flags_t` type `complain & tf_error`.
+
 2024-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116253

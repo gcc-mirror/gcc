@@ -1,3 +1,128 @@
+2024-12-09  Mariam Arutunian  <mariamarutunian@gmail.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_crc_using_pmull): New
+	extern function declaration.
+	(aarch64_expand_reversed_crc_using_pmull):  Likewise.
+	* config/aarch64/aarch64.cc (aarch64_expand_crc_using_pmull): New
+	function.
+	(aarch64_expand_reversed_crc_using_pmull):  Likewise.
+	* config/aarch64/aarch64.md (crc_rev<ALLI:mode><ALLX:mode>4): New
+	expander for reversed CRC.
+	(crc<ALLI:mode><ALLX:mode>4): New expander for bit-forward CRC.
+	* config/aarch64/iterators.md (crc_data_type): New mode attribute.
+
+2024-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117942
+	* opts-common.cc (decode_cmdline_options_to_array): Also detect
+	--diagnostics-plain-output.
+
+2024-12-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_get_lane<mode>): Add
+	"@" to the name.
+
+2024-12-09  Richard Biener  <rguenther@suse.de>
+
+	* late-combine.cc (late_combine::execute): Delete RTL SSA.
+
+2024-12-09  Richard Biener  <rguenther@suse.de>
+
+	* timevar.def (TV_DUP_COMPGOTO): Add.
+	* bb-reorder.cc (pass_data_duplicate_computed_gotos): Use
+	TV_DUP_COMPGOTO.
+
+2024-12-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_canonicalize_comparison): Add
+	missing UNSPEC_CC_TO_INT case.
+
+2024-12-09  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* config/aarch64/aarch64-c.cc
+	(aarch64_resolve_overloaded_builtin,aarch64_check_builtin_call):
+	Add new unused boolean parameter to match target hook
+	definition.
+	* config/arm/arm-builtins.cc (arm_check_builtin_call): Likewise.
+	* config/arm/arm-c.cc (arm_resolve_overloaded_builtin):
+	Likewise.
+	* config/arm/arm-protos.h (arm_check_builtin_call): Likewise.
+	* config/avr/avr-c.cc (avr_resolve_overloaded_builtin):
+	Likewise.
+	* config/riscv/riscv-c.cc (riscv_check_builtin_call,
+	riscv_resolve_overloaded_builtin): Likewise.
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin):
+	Likewise.
+	* config/rs6000/rs6000-protos.h (altivec_resolve_overloaded_builtin):
+	Likewise.
+	* config/s390/s390-c.cc (s390_resolve_overloaded_builtin):
+	Likewise.
+	* doc/tm.texi: Regenerate.
+	* target.def (TARGET_RESOLVE_OVERLOADED_BUILTIN,
+	TARGET_CHECK_BUILTIN_CALL): Update prototype to include a
+	boolean parameter that indicates whether errors should be
+	emitted.  Update documentation to mention this fact.
+
+2024-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/117960
+	* doc/invoke.texi (fsanitize=hwaddress): Clarify on which targets
+	it is supported.
+
+2024-12-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/114189
+	* config/arm/arm-protos.h (arm_expand_vcond): Delete prototype.
+	* config/arm/arm.cc (arm_expand_vcond): Delete function.
+	* config/arm/vec-common.md (vcond<mode><mode>): Delete pattern
+	(vcond<V_cvtto><mode>): Likewise.
+	(vcond<VH_cvtto><mode>): Likewise.
+	(vcondu<mode><v_cmp_result>): Likewise.
+
+2024-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117932
+	* df-core.cc (df_worklist_propagate_forward): Elide
+	age check for the first iteration, adjust for
+	last_change_age change.
+	(df_worklist_propagate_backward): Likewise.
+	(df_worklist_dataflow_doublequeue): Make last_change_age
+	indexed by BB index, avoid clearing both age arrays.
+
+2024-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117932
+	* df-core.cc (df_worklist_propagate_forward): When WORKLIST
+	is NULL, do not set bits there.
+	(df_worklist_propagate_backward): Likewise.
+	(df_worklist_dataflow_doublequeue): Separate first pass
+	over all blocks with NULL worklist.
+	(df_worklist_dataflow): Do not initialize pending and adjust.
+
+2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config.gcc [nvptx-*]: Switch default from '-march=sm_30' to
+	'-march=sm_52'.
+	* doc/install.texi (Nvidia PTX Options): Update.
+
+2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_vec_constant): Fix 'real_from_integer'
+	usage.
+
+2024-12-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-option-extensions.def (sve-b16b16,
+	f32mm, f64mm, sve2p1, sme-f64f64, sme-i16i64, sme-b16b16,
+	sme-f16f16, mops): Update FEATURE_STRING field.
+
+2024-12-09  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117845
+	* tree-eh.cc (honor_protect_cleanup_actions): Support empty
+	finally sequences.
+
 2024-12-08  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* gimple.h (struct gphi): Update word marking comments to reflect

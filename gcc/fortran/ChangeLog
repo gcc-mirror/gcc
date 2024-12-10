@@ -1,3 +1,21 @@
+2024-12-09  Harald Anlauf  <anlauf@gmx.de>
+
+	* expr.cc (find_array_section): Do not initialize GMP variables
+	twice.
+
+2024-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/116261
+	* trans-array.cc (gfc_array_init_size): New arg 'explicit_ts',
+	to suppress the use of the expr3 element size in the descriptor
+	dtype.
+	(gfc_array_allocate): New arg 'explicit_ts', used in call to
+	gfc_array_init_size.
+	* trans-array.h : Modify prototype for gfc_array_allocate for new
+	bool argument.
+	* trans-stmt.cc (gfc_trans_allocate): Set new argument if the
+	typespec is explicit.
+
 2024-12-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/102689

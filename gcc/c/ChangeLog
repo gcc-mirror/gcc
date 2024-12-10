@@ -1,3 +1,10 @@
+2024-12-09  Heiko Eißfeldt  <heiko@hexco.de>
+
+	PR c/114541
+	* gimple-parser.cc (c_parser_gimple_parse_bb_spec):
+	Use strtoul with ERANGE check instead of atoi to avoid UB
+	and detect invalid __BB#.
+
 2024-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.cc: Include "gcc-urlifier.h".

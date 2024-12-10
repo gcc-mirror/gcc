@@ -1,3 +1,8 @@
+2024-12-09  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* clang-format: AlwaysBreakAfterReturnType set to
+	TopLevelDefinitions and BraceWrapping.BeforeWhile set to true.
+
 2024-12-06  Matthew Malcomson  <mmalcomson@nvidia.com>
 
 	* clang-format: Set BraceWrapping.AfterCaseLabel.

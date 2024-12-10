@@ -1,3 +1,19 @@
+2024-12-09  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* c-common.cc (builtin_function_validate_nargs,
+	check_builtin_function_arguments,
+	speculation_safe_value_resolve_call,
+	speculation_safe_value_resolve_params, sync_resolve_size,
+	sync_resolve_params, get_atomic_generic_size,
+	resolve_overloaded_atomic_exchange,
+	resolve_overloaded_atomic_compare_exchange,
+	resolve_overloaded_atomic_load, resolve_overloaded_atomic_store,
+	resolve_overloaded_builtin):  Add `complain` boolean parameter
+	and determine whether to emit errors based on its value.
+	* c-common.h (check_builtin_function_arguments,
+	resolve_overloaded_builtin):  Mention `complain` boolean
+	parameter in declarations.  Give it a default of `true`.
+
 2024-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-attribs.cc: Include "gcc-urlifier.h".

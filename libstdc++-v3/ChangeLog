@@ -1,3 +1,40 @@
+2024-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102259
+	* config/io/basic_file_stdio.cc (basic_file::xsgetn): Limit n to
+	_GLIBCXX_MAX_READ_SIZE if that macro is defined.
+	* config/os/bsd/darwin/os_defines.h (_GLIBCXX_MAX_READ_SIZE):
+	Define to INT_MAX-1.
+	* config/os/bsd/freebsd/os_defines.h (_GLIBCXX_MAX_READ_SIZE):
+	Likewise.
+
+2024-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h (allocator::is_always_equal): Do not
+	define for C++26.
+	(allocator<void>::is_always_equal): Likewise.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Check
+	that is_always_equal is not present in C++26.
+	* testsuite/20_util/allocator/void.cc: Do not require
+	is_always_equal for C++26.
+	* testsuite/23_containers/vector/bool/cons/constexpr.cc: Add
+	missing override of base's is_always_equal.
+	* testsuite/23_containers/vector/cons/constexpr.cc: Likewise.
+
+2024-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117962
+	* include/debug/safe_container.h: Make allocator-extended move
+	constructor a no-op during constant evaluation.
+
+2024-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117921
+	* testsuite/23_containers/set/modifiers/swap/adl.cc: Add
+	equality comparison for Allocator.
+	* testsuite/23_containers/unordered_set/modifiers/swap-2.cc:
+	Likewise.
+
 2024-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/format: Fix typo in Doxygen comment.

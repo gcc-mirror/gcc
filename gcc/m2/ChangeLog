@@ -1,3 +1,16 @@
+2024-12-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115328
+	* gm2-compiler/M2Options.def (GetEnableForward): New procedure
+	function.
+	(SetEnableForward): New procedure.
+	* gm2-compiler/M2Options.mod (GetEnableForward): New procedure
+	function.
+	(SetEnableForward): New procedure.
+	(EnableForward): New boolean.
+	* gm2-compiler/P1SymBuild.mod (EndBuildForward): Check
+	GetEnableForward and generate an error message if false.
+
 2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117948
