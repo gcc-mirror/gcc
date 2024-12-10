@@ -27026,36 +27026,6 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
   return false;
 }
 
-/* Expand an SVE vcond pattern with operands OPS.  DATA_MODE is the mode
-   of the data being selected and CMP_MODE is the mode of the values being
-   compared.  */
-
-void
-aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
-			  rtx *ops)
-{
-  machine_mode pred_mode = aarch64_get_mask_mode (cmp_mode).require ();
-  rtx pred = gen_reg_rtx (pred_mode);
-  if (FLOAT_MODE_P (cmp_mode))
-    {
-      if (aarch64_expand_sve_vec_cmp_float (pred, GET_CODE (ops[3]),
-					    ops[4], ops[5], true))
-	std::swap (ops[1], ops[2]);
-    }
-  else
-    aarch64_expand_sve_vec_cmp_int (pred, GET_CODE (ops[3]), ops[4], ops[5]);
-
-  if (!aarch64_sve_reg_or_dup_imm (ops[1], data_mode))
-    ops[1] = force_reg (data_mode, ops[1]);
-  /* The "false" value can only be zero if the "true" value is a constant.  */
-  if (register_operand (ops[1], data_mode)
-      || !aarch64_simd_reg_or_zero (ops[2], data_mode))
-    ops[2] = force_reg (data_mode, ops[2]);
-
-  rtvec vec = gen_rtvec (3, pred, ops[1], ops[2]);
-  emit_set_insn (ops[0], gen_rtx_UNSPEC (data_mode, vec, UNSPEC_SEL));
-}
-
 /* Return true if:
 
    (a) MODE1 and MODE2 use the same layout for bytes that are common

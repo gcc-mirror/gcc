@@ -2040,16 +2040,6 @@
 (define_mode_attr vq_int_equiv [(DF   "v2di")   (SF   "v4si")
 ])
 
-;; Floating-point equivalent of selected modes.
-(define_mode_attr V_FP_EQUIV [(VNx8HI "VNx8HF") (VNx8HF "VNx8HF")
-			      (VNx8BF "VNx8HF")
-			      (VNx4SI "VNx4SF") (VNx4SF "VNx4SF")
-			      (VNx2DI "VNx2DF") (VNx2DF "VNx2DF")])
-(define_mode_attr v_fp_equiv [(VNx8HI "vnx8hf") (VNx8HF "vnx8hf")
-			      (VNx8BF "vnx8hf")
-			      (VNx4SI "vnx4sf") (VNx4SF "vnx4sf")
-			      (VNx2DI "vnx2df") (VNx2DF "vnx2df")])
-
 ;; Maps full and partial vector modes of any element type to a full-vector
 ;; integer mode with the same number of units.
 (define_mode_attr V_INT_CONTAINER [(VNx16QI "VNx16QI") (VNx8QI "VNx8HI")
@@ -2078,16 +2068,6 @@
 				   (VNx2BF "vnx2di")
 				   (VNx4SF "vnx4si") (VNx2SF "vnx2di")
 				   (VNx2DF "vnx2di")])
-
-;; Mode for vector conditional operations where the comparison has
-;; different type from the lhs.
-(define_mode_attr V_cmp_mixed [(V2SI "V2SF") (V4SI "V4SF")
-			       (V2DI "V2DF") (V2SF "V2SI")
-			       (V4SF "V4SI") (V2DF "V2DI")])
-
-(define_mode_attr v_cmp_mixed [(V2SI "v2sf") (V4SI "v4sf")
-			       (V2DI "v2df") (V2SF "v2si")
-			       (V4SF "v4si") (V2DF "v2di")])
 
 ;; Lower case element modes (as used in shift immediate patterns).
 (define_mode_attr ve_mode [(V8QI "qi") (V16QI "qi")

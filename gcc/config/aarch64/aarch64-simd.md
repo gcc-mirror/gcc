@@ -1783,9 +1783,11 @@
       gcc_unreachable ();
     }
 
+  rtx mask = gen_reg_rtx (V2DImode);
   cmp_fmt = gen_rtx_fmt_ee (cmp_operator, V2DImode, operands[1], operands[2]);
-  emit_insn (gen_vcondv2div2di (operands[0], operands[1],
-              operands[2], cmp_fmt, operands[1], operands[2]));
+  emit_insn (gen_vec_cmpv2div2di (mask, cmp_fmt, operands[1], operands[2]));
+  emit_insn (gen_vcond_mask_v2div2di (operands[0], operands[1],
+				      operands[2], mask));
   DONE;
 })
 
@@ -4196,126 +4198,6 @@
 {
   emit_insn (gen_vec_cmp<mode><mode> (operands[0], operands[1],
 				      operands[2], operands[3]));
-  DONE;
-})
-
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VALLDI 0 "register_operand")
-	(if_then_else:VALLDI
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VALLDI 4 "register_operand")
-	     (match_operand:VALLDI 5 "nonmemory_operand")])
-	  (match_operand:VALLDI 1 "nonmemory_operand")
-	  (match_operand:VALLDI 2 "nonmemory_operand")))]
-  "TARGET_SIMD"
-{
-  rtx mask = gen_reg_rtx (<V_INT_EQUIV>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
-
-  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
-     it as well as switch operands 1/2 in order to avoid the additional
-     NOT instruction.  */
-  if (code == NE)
-    {
-      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
-				    operands[4], operands[5]);
-      std::swap (operands[1], operands[2]);
-    }
-  emit_insn (gen_vec_cmp<mode><v_int_equiv> (mask, operands[3],
-					     operands[4], operands[5]));
-  emit_insn (gen_vcond_mask_<mode><v_int_equiv> (operands[0], operands[1],
-						 operands[2], mask));
-
-  DONE;
-})
-
-(define_expand "vcond<v_cmp_mixed><mode>"
-  [(set (match_operand:<V_cmp_mixed> 0 "register_operand")
-	(if_then_else:<V_cmp_mixed>
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQF_COND 4 "register_operand")
-	     (match_operand:VDQF_COND 5 "nonmemory_operand")])
-	  (match_operand:<V_cmp_mixed> 1 "nonmemory_operand")
-	  (match_operand:<V_cmp_mixed> 2 "nonmemory_operand")))]
-  "TARGET_SIMD"
-{
-  rtx mask = gen_reg_rtx (<V_INT_EQUIV>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
-
-  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
-     it as well as switch operands 1/2 in order to avoid the additional
-     NOT instruction.  */
-  if (code == NE)
-    {
-      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
-				    operands[4], operands[5]);
-      std::swap (operands[1], operands[2]);
-    }
-  emit_insn (gen_vec_cmp<mode><v_int_equiv> (mask, operands[3],
-					     operands[4], operands[5]));
-  emit_insn (gen_vcond_mask_<v_cmp_mixed><v_int_equiv> (
-						operands[0], operands[1],
-						operands[2], mask));
-
-  DONE;
-})
-
-(define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VSDQ_I_DI 0 "register_operand")
-	(if_then_else:VSDQ_I_DI
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VSDQ_I_DI 4 "register_operand")
-	     (match_operand:VSDQ_I_DI 5 "nonmemory_operand")])
-	  (match_operand:VSDQ_I_DI 1 "nonmemory_operand")
-	  (match_operand:VSDQ_I_DI 2 "nonmemory_operand")))]
-  "TARGET_SIMD"
-{
-  rtx mask = gen_reg_rtx (<MODE>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
-
-  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
-     it as well as switch operands 1/2 in order to avoid the additional
-     NOT instruction.  */
-  if (code == NE)
-    {
-      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
-				    operands[4], operands[5]);
-      std::swap (operands[1], operands[2]);
-    }
-  emit_insn (gen_vec_cmp<mode><mode> (mask, operands[3],
-				      operands[4], operands[5]));
-  emit_insn (gen_vcond_mask_<mode><v_int_equiv> (operands[0], operands[1],
-						 operands[2], mask));
-  DONE;
-})
-
-(define_expand "vcondu<mode><v_cmp_mixed>"
-  [(set (match_operand:VDQF 0 "register_operand")
-	(if_then_else:VDQF
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:<V_cmp_mixed> 4 "register_operand")
-	     (match_operand:<V_cmp_mixed> 5 "nonmemory_operand")])
-	  (match_operand:VDQF 1 "nonmemory_operand")
-	  (match_operand:VDQF 2 "nonmemory_operand")))]
-  "TARGET_SIMD"
-{
-  rtx mask = gen_reg_rtx (<V_INT_EQUIV>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
-
-  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
-     it as well as switch operands 1/2 in order to avoid the additional
-     NOT instruction.  */
-  if (code == NE)
-    {
-      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
-				    operands[4], operands[5]);
-      std::swap (operands[1], operands[2]);
-    }
-  emit_insn (gen_vec_cmp<v_cmp_mixed><v_cmp_mixed> (
-						  mask, operands[3],
-						  operands[4], operands[5]));
-  emit_insn (gen_vcond_mask_<mode><v_int_equiv> (operands[0], operands[1],
-						 operands[2], mask));
   DONE;
 })
 
