@@ -1716,11 +1716,24 @@
   DONE;
 })
 
+(define_expand "save_stack_function"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "register_operand" "")]
+  "!TARGET_SOFT_STACK"
+{
+  /* See 'STACK_SAVEAREA_MODE'.  */
+  gcc_checking_assert (operands[0] == 0);
+  DONE;
+})
+
 (define_expand "restore_stack_function"
   [(match_operand 0 "register_operand" "")
    (match_operand 1 "register_operand" "")]
   ""
 {
+  if (!TARGET_SOFT_STACK)
+    /* See 'STACK_SAVEAREA_MODE'.  */
+    gcc_checking_assert (operands[1] == 0);
   DONE;
 })
 
