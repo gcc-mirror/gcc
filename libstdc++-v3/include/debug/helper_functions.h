@@ -168,6 +168,11 @@ namespace __gnu_debug
     __valid_range_aux(_InputIterator __first, _InputIterator __last,
 		      std::input_iterator_tag)
     {
+      // FIXME: The checks for singular iterators fail during constant eval
+      // due to PR c++/85944. e.g. PR libstdc++/109517 and PR libstdc++/109976.
+      if (std::__is_constant_evaluated())
+	return true;
+
       return __first == __last
 	|| (!__gnu_debug::__check_singular(__first)
 	      && !__gnu_debug::__check_singular(__last));
