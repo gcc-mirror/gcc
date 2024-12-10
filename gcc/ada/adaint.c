@@ -3079,7 +3079,8 @@ __gnat_locate_exec (char *exec_name, char *path_val)
 /* Locate an executable using the Systems default PATH.  */
 
 char *
-__gnat_locate_exec_on_path (char *exec_name, int current_dir_on_windows)
+__gnat_locate_exec_on_path (char *exec_name,
+				    int current_dir_on_windows ATTRIBUTE_UNUSED)
 {
   char *apath_val;
 
@@ -3110,10 +3111,6 @@ __gnat_locate_exec_on_path (char *exec_name, int current_dir_on_windows)
   }
 
 #else
-  /* Tell the compiler that we are not going to use this parameter
-     on non-windows platforms. */
-  (void)current_dir_on_windows;
-
   const char *path_val = getenv ("PATH");
 
   /* If PATH is not defined, proceed with __gnat_locate_exec anyway, so we can
