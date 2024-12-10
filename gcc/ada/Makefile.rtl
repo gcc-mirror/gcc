@@ -1686,7 +1686,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   SELECTED_PAIRS=x86-kfreebsd
 
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
@@ -1722,7 +1722,7 @@ ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os
   SELECTED_PAIRS=x86-gnuhurd
 
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__gnu.adb \
@@ -1757,7 +1757,7 @@ ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   SELECTED_PAIRS=x86_64-kfreebsd
 
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
@@ -1793,7 +1793,7 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   SELECTED_PAIRS=aarch64-freebsd
 
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1844,7 +1844,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   SELECTED_PAIRS=x86-freebsd
 
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
@@ -1880,7 +1880,7 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
   SELECTED_PAIRS=x86_64-freebsd
 
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
@@ -1918,7 +1918,7 @@ ifeq ($(strip $(filter-out %86_64 dragonfly%,$(target_cpu) $(target_os))),)
   SELECTED_PAIRS=x86_64-dragonfly
 
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__dragonfly.ads \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \

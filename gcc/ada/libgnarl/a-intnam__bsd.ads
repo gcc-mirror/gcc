@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the DragonFly BSD THREADS version of this package
+--  This is the BSD THREADS version of this package
 
 with System.OS_Interface;
 
