@@ -34445,6 +34445,30 @@ arm_coproc_ldc_stc_legitimate_address (rtx op)
   return false;
 }
 
+/* Return true if OP is a valid memory operand for LDRD/STRD without any
+   register overlap restrictions.  Allow [base] and [base, imm] for now.  */
+bool
+arm_ldrd_legitimate_address (rtx op)
+{
+  if (!MEM_P (op))
+    return false;
+
+  op = XEXP (op, 0);
+  if (REG_P (op))
+    return true;
+
+  if (GET_CODE (op) != PLUS)
+    return false;
+  if (!REG_P (XEXP (op, 0)) || !CONST_INT_P (XEXP (op, 1)))
+    return false;
+
+  HOST_WIDE_INT val = INTVAL (XEXP (op, 1));
+
+  if (TARGET_ARM)
+    return IN_RANGE (val, -255, 255);
+  return IN_RANGE (val, -1020, 1020) && (val & 3) == 0;
+}
+
 /* Return the diagnostic message string if conversion from FROMTYPE to
    TOTYPE is not allowed, NULL otherwise.  */
 
