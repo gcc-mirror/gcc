@@ -10024,3 +10024,76 @@
   "TARGET_LUT && INTVAL (operands[4]) == 4"
   "luti%4\t%0.8h, {%S1.8h, %T1.8h}, %2[%3]"
 )
+
+;; fpm unary instructions (low part).
+(define_insn "@aarch64_<insn><mode>"
+  [(set (match_operand:VQ_BHF 0 "register_operand" "=w")
+	(unspec:VQ_BHF
+	 [(match_operand:V8QI 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_UNARY_UNS))]
+  "TARGET_FP8"
+  "<b><insn>\t%0.<Vtype>, %1.8b"
+)
+
+;; fpm unary instructions (high part).
+(define_insn "@aarch64_<insn><mode>_high"
+  [(set (match_operand:VQ_BHF 0 "register_operand" "=w")
+	(unspec:VQ_BHF
+	 [(vec_select:V8QI
+	    (match_operand:V16QI 1 "register_operand" "w")
+	    (match_operand:V16QI 2 "vect_par_cnst_hi_half"))
+	  (reg:DI FPM_REGNUM)]
+	FPM_UNARY_UNS))]
+  "TARGET_FP8"
+  "<b><insn>2\t%0.<Vtype>, %1.16b"
+)
+
+;; fpm binary instructions.
+(define_insn "@aarch64_<insn><mode>"
+  [(set (match_operand:<VPACKB> 0 "register_operand" "=w")
+	(unspec:<VPACKB>
+	 [(match_operand:VCVTFPM 1 "register_operand" "w")
+	  (match_operand:VCVTFPM 2 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	 FPM_BINARY_UNS))]
+  "TARGET_FP8"
+  "<insn>\t%0.<VPACKBtype>, %1.<Vtype>, %2.<Vtype>"
+)
+
+;; fpm binary instructions & merge with low.
+(define_insn "@aarch64_<insn><mode>_high_le"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(vec_concat:V16QI
+	  (match_operand:V8QI 1 "register_operand" "0")
+	  (unspec:V8QI
+	    [(match_operand:V4SF_ONLY 2 "register_operand" "w")
+	     (match_operand:V4SF_ONLY 3 "register_operand" "w")
+	     (reg:DI FPM_REGNUM)]
+	    FPM_BINARY_UNS)))]
+  "TARGET_FP8 && !BYTES_BIG_ENDIAN"
+  "<insn>2\t%1.16b, %2.<V4SF_ONLY:Vtype>, %3.<V4SF_ONLY:Vtype>";
+)
+
+(define_insn "@aarch64_<insn><mode>_high_be"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(vec_concat:V16QI
+	  (unspec:V8QI
+	    [(match_operand:V4SF_ONLY 2 "register_operand" "w")
+	     (match_operand:V4SF_ONLY 3 "register_operand" "w")
+	     (reg:DI FPM_REGNUM)]
+	    FPM_BINARY_UNS)
+	  (match_operand:V8QI 1 "register_operand" "0")))]
+  "TARGET_FP8 && BYTES_BIG_ENDIAN"
+  "<insn>2\t%1.16b, %2.<V4SF_ONLY:Vtype>, %3.<V4SF_ONLY:Vtype>";
+)
+
+;; fscale instructions
+(define_insn "@aarch64_<insn><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
+		       (match_operand:<FCVT_TARGET> 2 "register_operand" "w")]
+		      FSCALE_UNS))]
+  "TARGET_FP8"
+  "<insn>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+)

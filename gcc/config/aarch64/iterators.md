@@ -41,6 +41,7 @@
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator SI_ONLY [SI])
 (define_mode_iterator DI_ONLY [DI])
+(define_mode_iterator V4SF_ONLY [V4SF])
 
 ;; Iterator for all integer modes (up to 64-bit)
 (define_mode_iterator ALLI [QI HI SI DI])
@@ -180,6 +181,9 @@
 
 ;; Advanced SIMD single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
+
+;; Quad vector float modes with half/bfloat elements.
+(define_mode_iterator VQ_BHF [V8HF V8BF])
 
 ;; Quad vector Float modes with half/single elements.
 (define_mode_iterator VQ_HSF [V8HF V4SF])
@@ -429,6 +433,9 @@
 ;; Modes available for Advanced SIMD lut operations.
 (define_mode_iterator VLUT [V8QI V16QI V4HI V4HF V4BF])
 (define_mode_iterator VLUTx2 [V2x8HI V2x8HF V2x8BF])
+
+;; Modes available for Advanced SIMD FP8 conversion operations.
+(define_mode_iterator VCVTFPM [V4HF V8HF V4SF])
 
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator VNx16QI_ONLY [VNx16QI])
@@ -715,6 +722,12 @@
     UNSPEC_ASHIFT_SIGNED	; Used in aarch-simd.md.
     UNSPEC_ASHIFT_UNSIGNED	; Used in aarch64-simd.md.
     UNSPEC_ABS		; Used in aarch64-simd.md.
+    UNSPEC_FCVTN_FP8	; Used in aarch64-simd.md.
+    UNSPEC_FCVTN2_FP8	; Used in aarch64-builtins.cc.
+    UNSPEC_F1CVTL_FP8	; Used in aarch64-simd.md.
+    UNSPEC_F1CVTL2_FP8	; Used in aarch64-builtins.cc.
+    UNSPEC_F2CVTL_FP8	; Used in aarch64-simd.md.
+    UNSPEC_F2CVTL2_FP8	; Used in aarch64-builtins.cc.
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMAXNMV	; Used in aarch64-simd.md.
     UNSPEC_FMAXV	; Used in aarch64-simd.md.
@@ -723,6 +736,7 @@
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
     UNSPEC_FNEG		; Used in aarch64-simd.md.
+    UNSPEC_FSCALE	; Used in aarch64-simd.md.
     UNSPEC_ADDV		; Used in aarch64-simd.md.
     UNSPEC_SMAXV	; Used in aarch64-simd.md.
     UNSPEC_SMINV	; Used in aarch64-simd.md.
@@ -1794,6 +1808,11 @@
 (define_mode_attr V2ntype [(V8HI "16b") (V4SI "8h")
 			   (V2DI "4s")])
 
+;; The result of FCVTN on two vectors of the given mode.  The result has
+;; twice as many QI elements as the input.
+(define_mode_attr VPACKB [(V4HF "V8QI") (V8HF "V16QI") (V4SF "V8QI")])
+(define_mode_attr VPACKBtype [(V4HF "8b") (V8HF "16b") (V4SF "8b")])
+
 ;; Widened modes of vector modes.
 (define_mode_attr VWIDE [(V8QI  "V8HI")  (V4HI  "V4SI")
 			 (V2SI  "V2DI")  (V16QI "V8HI")
@@ -2551,7 +2570,8 @@
 				 (V8HI "vec") (V2SI "vec") (V4SI "vec")
 				 (V2DI "vec") (DI "offset")])
 
-(define_mode_attr b [(VNx8BF "b") (VNx8HF "") (VNx4SF "") (VNx2DF "")
+(define_mode_attr b [(V4BF "b") (V4HF "") (V8BF "b") (V8HF "")
+		     (VNx8BF "b") (VNx8HF "") (VNx4SF "") (VNx2DF "")
 		     (VNx16BF "b") (VNx16HF "") (VNx8SF "") (VNx4DF "")
 		     (VNx32BF "b") (VNx32HF "") (VNx16SF "") (VNx8DF "")])
 
@@ -3798,9 +3818,24 @@
    UNSPEC_FMLALLTB_FP8
    UNSPEC_FMLALLTT_FP8])
 
+;; Iterators for fpm instructions
+
+(define_int_iterator FPM_UNARY_UNS [UNSPEC_F1CVTL_FP8 UNSPEC_F2CVTL_FP8])
+
+(define_int_iterator FPM_BINARY_UNS [UNSPEC_FCVTN_FP8])
+
+(define_int_iterator FSCALE_UNS [UNSPEC_FSCALE])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
+
+;; The AArch64 insn mnemonic associated with an unspec.
+(define_int_attr insn
+  [(UNSPEC_F1CVTL_FP8 "f1cvtl")
+   (UNSPEC_F2CVTL_FP8 "f2cvtl")
+   (UNSPEC_FCVTN_FP8 "fcvtn")
+   (UNSPEC_FSCALE "fscale")])
 
 ;; The optab associated with an operation.  Note that for ANDF, IORF
 ;; and XORF, the optab pattern is not actually defined; we just use this

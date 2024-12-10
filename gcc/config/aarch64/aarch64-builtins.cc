@@ -198,10 +198,11 @@ const unsigned int FLAG_RAISE_FP_EXCEPTIONS = 1U << 1;
 const unsigned int FLAG_READ_MEMORY = 1U << 2;
 const unsigned int FLAG_PREFETCH_MEMORY = 1U << 3;
 const unsigned int FLAG_WRITE_MEMORY = 1U << 4;
+const unsigned int FLAG_USES_FPMR = 1U << 5;
 
 /* Indicates that READ_FPCR and RAISE_FP_EXCEPTIONS should be set for
    floating-point modes but not for integer modes.  */
-const unsigned int FLAG_AUTO_FP = 1U << 5;
+const unsigned int FLAG_AUTO_FP = 1U << 6;
 
 const unsigned int FLAG_QUIET = 0;
 const unsigned int FLAG_DEFAULT = FLAG_AUTO_FP;
@@ -210,6 +211,7 @@ const unsigned int FLAG_ALL = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS
   | FLAG_READ_MEMORY | FLAG_PREFETCH_MEMORY | FLAG_WRITE_MEMORY;
 const unsigned int FLAG_STORE = FLAG_WRITE_MEMORY;
 const unsigned int FLAG_LOAD = FLAG_READ_MEMORY;
+const unsigned int FLAG_FP8 = FLAG_FP | FLAG_USES_FPMR;
 
 typedef struct
 {
@@ -783,7 +785,7 @@ typedef struct
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 #undef ENTRY
-#define ENTRY(N, S, T0, T1, T2, U, F)		\
+#define ENTRY(N, S, T0, T1, T2, T3, U, F)	\
   AARCH64_##N,
 
 enum aarch64_builtins
@@ -1618,6 +1620,8 @@ enum class aarch64_builtin_signatures
 {
   binary,
   binary_lane,
+  ternary,
+  unary,
 };
 
 namespace {
@@ -1632,6 +1636,8 @@ struct simd_type {
 };
 
 namespace simd_types {
+  constexpr simd_type f8 { V8QImode, qualifier_modal_float };
+  constexpr simd_type f8q { V16QImode, qualifier_modal_float };
   constexpr simd_type p8 { V8QImode, qualifier_poly };
   constexpr simd_type p8q { V16QImode, qualifier_poly };
   constexpr simd_type s8 { V8QImode, qualifier_none };
@@ -1658,7 +1664,11 @@ namespace simd_types {
 
   constexpr simd_type f32 { V2SFmode, qualifier_none };
   constexpr simd_type f32q { V4SFmode, qualifier_none };
+  constexpr simd_type s32 { V2SImode, qualifier_none };
+  constexpr simd_type s32q { V4SImode, qualifier_none };
+
   constexpr simd_type f64q { V2DFmode, qualifier_none };
+  constexpr simd_type s64q { V2DImode, qualifier_none };
 
   constexpr simd_type none { VOIDmode, qualifier_none };
 }
@@ -1666,10 +1676,10 @@ namespace simd_types {
 }
 
 #undef ENTRY
-#define ENTRY(N, S, T0, T1, T2, U, F) \
+#define ENTRY(N, S, T0, T1, T2, T3, U, F) \
   {#N, aarch64_builtin_signatures::S, simd_types::T0, simd_types::T1, \
-   simd_types::T2, U, aarch64_required_extensions::REQUIRED_EXTENSIONS, \
-   FLAG_##F},
+   simd_types::T2, simd_types::T3, U, \
+   aarch64_required_extensions::REQUIRED_EXTENSIONS, FLAG_##F},
 
 /* Initialize pragma builtins.  */
 
@@ -1677,7 +1687,7 @@ struct aarch64_pragma_builtins_data
 {
   const char *name;
   aarch64_builtin_signatures signature;
-  simd_type types[3];
+  simd_type types[4];
   int unspec;
   aarch64_required_extensions required_extensions;
   unsigned int flags;
@@ -1701,6 +1711,17 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
       for (int i = 1; i <= 2; ++i)
 	arg_types.quick_push (builtin_data.types[i].type ());
       break;
+
+    case aarch64_builtin_signatures::ternary:
+      return_type = builtin_data.types[0].type ();
+      for (int i = 1; i <= 3; ++i)
+	arg_types.quick_push (builtin_data.types[i].type ());
+      break;
+
+    case aarch64_builtin_signatures::unary:
+      return_type = builtin_data.types[0].type ();
+      arg_types.quick_push (builtin_data.types[1].type ());
+      break;
     }
   switch (builtin_data.signature)
     {
@@ -1711,6 +1732,8 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
     default:
       break;
     }
+  if (builtin_data.flags & FLAG_USES_FPMR)
+    arg_types.quick_push (uint64_type_node);
   return build_function_type_array (return_type, arg_types.length (),
 				    arg_types.address ());
 }
@@ -3553,6 +3576,36 @@ aarch64_expand_builtin_data_intrinsic (unsigned int fcode, tree exp, rtx target)
   return ops[0].value;
 }
 
+/* If OP is a 128-bit vector, convert it to the equivalent 64-bit vector.
+   Do nothing otherwise.  */
+static void
+aarch64_convert_to_v64 (expand_operand *op)
+{
+  if (known_eq (GET_MODE_BITSIZE (op->mode), 128u))
+    {
+      op->mode = aarch64_v64_mode (GET_MODE_INNER (op->mode)).require ();
+      op->value = gen_lowpart (op->mode, op->value);
+    }
+}
+
+/* UNSPEC is a high unspec, indicated by "2" in mnemonics and "_high" in
+   intrinsic names.  Return the equivalent low unspec.  */
+static int
+aarch64_get_low_unspec (int unspec)
+{
+  switch (unspec)
+    {
+    case UNSPEC_FCVTN2_FP8:
+      return UNSPEC_FCVTN_FP8;
+    case UNSPEC_F1CVTL2_FP8:
+      return UNSPEC_F1CVTL_FP8;
+    case UNSPEC_F2CVTL2_FP8:
+      return UNSPEC_F2CVTL_FP8;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Expand CALL_EXPR EXP, given that it is a call to the function described
    by BUILTIN_DATA, and return the function's return value.  Put the result
    in TARGET if convenient.  */
@@ -3572,14 +3625,28 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 			    TYPE_MODE (TREE_TYPE (arg)));
     }
 
-  /* LUTI2 treats the first argument as a vector of 4 elements.  The forms
-     with 128-bit inputs are only provided as a convenience; the upper halves
-     don't actually matter.  */
-  if (builtin_data.unspec == UNSPEC_LUTI2
-      && known_eq (GET_MODE_BITSIZE (ops[1].mode), 128u))
+  if (builtin_data.flags & FLAG_USES_FPMR)
     {
-      ops[1].mode = aarch64_v64_mode (GET_MODE_INNER (ops[1].mode)).require ();
-      ops[1].value = gen_lowpart (ops[1].mode, ops[1].value);
+      auto fpm_input = ops.pop ().value;
+      auto fpmr = gen_rtx_REG (DImode, FPM_REGNUM);
+      emit_move_insn (fpmr, fpm_input);
+    }
+
+  switch (builtin_data.unspec)
+    {
+    case UNSPEC_F1CVTL_FP8:
+    case UNSPEC_F2CVTL_FP8:
+      /* Convert _low forms (which take 128-bit vectors) to the base
+	 64-bit forms.  */
+      aarch64_convert_to_v64 (&ops[1]);
+      break;
+
+    case UNSPEC_LUTI2:
+      /* LUTI2 treats the first argument as a vector of 4 elements.  The forms
+	 with 128-bit inputs are only provided as a convenience; the upper
+	 halves don't actually matter.  */
+      aarch64_convert_to_v64 (&ops[1]);
+      break;
     }
 
   insn_code icode;
@@ -3587,9 +3654,40 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
     {
     case UNSPEC_FAMAX:
     case UNSPEC_FAMIN:
-      icode = code_for_aarch64 (builtin_data.unspec,
-				builtin_data.types[0].mode);
+    case UNSPEC_F1CVTL_FP8:
+    case UNSPEC_F2CVTL_FP8:
+    case UNSPEC_FSCALE:
+      icode = code_for_aarch64 (builtin_data.unspec, ops[0].mode);
       break;
+
+    case UNSPEC_F1CVTL2_FP8:
+    case UNSPEC_F2CVTL2_FP8:
+      {
+	/* Add a high-part selector for the vec_merge.  */
+	auto src_mode = ops.last ().mode;
+	auto nunits = GET_MODE_NUNITS (src_mode).to_constant ();
+	rtx par = aarch64_simd_vect_par_cnst_half (src_mode, nunits, true);
+	create_fixed_operand (ops.safe_push ({}), par);
+
+	auto unspec = aarch64_get_low_unspec (builtin_data.unspec);
+	icode = code_for_aarch64_high (unspec, ops[0].mode);
+	break;
+      }
+
+    case UNSPEC_FCVTN_FP8:
+      icode = code_for_aarch64 (builtin_data.unspec, ops[1].mode);
+      break;
+
+    case UNSPEC_FCVTN2_FP8:
+      {
+	auto unspec = aarch64_get_low_unspec (builtin_data.unspec);
+	auto mode = ops.last ().mode;
+	if (BYTES_BIG_ENDIAN)
+	  icode = code_for_aarch64_high_be (unspec, mode);
+	else
+	  icode = code_for_aarch64_high_le (unspec, mode);
+	break;
+      }
 
     case UNSPEC_LUTI2:
     case UNSPEC_LUTI4:
