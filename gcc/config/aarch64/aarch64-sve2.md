@@ -2013,37 +2013,37 @@
 ;; - FMLALLTT (indexed) (FP8FMA)
 ;; -------------------------------------------------------------------------
 
-(define_insn "@aarch64_sve_add_<sve2_fp8_fma_op_vnx8hf><mode>"
+(define_insn "@aarch64_sve_add_<insn><mode>"
   [(set (match_operand:VNx8HF_ONLY 0 "register_operand")
 	(unspec:VNx8HF_ONLY
 	  [(match_operand:VNx8HF 1 "register_operand")
 	   (match_operand:VNx16QI 2 "register_operand")
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (reg:DI FPM_REGNUM)]
-	  SVE2_FP8_TERNARY_VNX8HF))]
+	  FMLAL_FP8_HF))]
   "TARGET_SSVE_FP8FMA"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
-     [ w        , 0 , w , w ; *              ] <sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b
-     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b
+     [ w        , 0 , w , w ; *              ] <insn>\t%0.h, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<insn>\t%0.h, %2.b, %3.b
   }
 )
 
-(define_insn "@aarch64_sve_add_<sve2_fp8_fma_op_vnx4sf><mode>"
+(define_insn "@aarch64_sve_add_<insn><mode>"
   [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
 	(unspec:VNx4SF_ONLY
 	  [(match_operand:VNx4SF 1 "register_operand")
 	   (match_operand:VNx16QI 2 "register_operand")
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (reg:DI FPM_REGNUM)]
-	  SVE2_FP8_TERNARY_VNX4SF))]
+	  FMLALL_FP8_SF))]
   "TARGET_SSVE_FP8FMA"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
-     [ w        , 0 , w , w ; *              ] <sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b
-     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b
+     [ w        , 0 , w , w ; *              ] <insn>\t%0.s, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<insn>\t%0.s, %2.b, %3.b
   }
 )
 
-(define_insn "@aarch64_sve_add_lane_<sve2_fp8_fma_op_vnx8hf><mode>"
+(define_insn "@aarch64_sve_add_lane_<insn><mode>"
   [(set (match_operand:VNx8HF_ONLY 0 "register_operand")
 	(unspec:VNx8HF_ONLY
 	  [(match_operand:VNx8HF 1 "register_operand")
@@ -2051,15 +2051,15 @@
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (match_operand:SI 4 "const_int_operand")
 	   (reg:DI FPM_REGNUM)]
-	  SVE2_FP8_TERNARY_LANE_VNX8HF))]
+	  FMLAL_FP8_HF))]
   "TARGET_SSVE_FP8FMA"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
-     [ w        , 0 , w , y ; *              ] <sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b[%4]
-     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx8hf>\t%0.h, %2.b, %3.b[%4]
+     [ w        , 0 , w , y ; *              ] <insn>\t%0.h, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<insn>\t%0.h, %2.b, %3.b[%4]
   }
 )
 
-(define_insn "@aarch64_sve_add_lane_<sve2_fp8_fma_op_vnx4sf><mode>"
+(define_insn "@aarch64_sve_add_lane_<insn><mode>"
   [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
 	(unspec:VNx4SF_ONLY
 	  [(match_operand:VNx4SF 1 "register_operand")
@@ -2067,11 +2067,11 @@
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (match_operand:SI 4 "const_int_operand")
 	   (reg:DI FPM_REGNUM)]
-	  SVE2_FP8_TERNARY_LANE_VNX4SF))]
+	  FMLALL_FP8_SF))]
   "TARGET_SSVE_FP8FMA"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
-     [ w        , 0 , w , y ; *              ] <sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b[%4]
-     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<sve2_fp8_fma_op_vnx4sf>\t%0.s, %2.b, %3.b[%4]
+     [ w        , 0 , w , y ; *              ] <insn>\t%0.s, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<insn>\t%0.s, %2.b, %3.b[%4]
   }
 )
 

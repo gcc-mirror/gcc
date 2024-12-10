@@ -10124,3 +10124,66 @@
   ""
   "<insn>\t%1.<VDQ_HSF_FDOT:Vtype>, %2.<VDQ_HSF_FDOT:Vnbtype>, %3.<VDQ_HSF_FDOT:Vnbsubtype>[%4]"
 )
+
+;; fpm fma instructions.
+(define_insn "@aarch64_<insn><mode>"
+  [(set (match_operand:V8HF_ONLY 0 "register_operand" "=w")
+	(unspec:V8HF_ONLY
+	 [(match_operand:V8HF_ONLY 1 "register_operand" "0")
+	  (match_operand:V16QI 2 "register_operand" "w")
+	  (match_operand:V16QI 3 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FMLAL_FP8_HF))]
+  "TARGET_FP8FMA"
+  "<insn>\t%0.<Vtype>, %2.16b, %3.16b"
+)
+
+(define_insn "@aarch64_<insn>_lane<V8HF_ONLY:mode><VB:mode>"
+  [(set (match_operand:V8HF_ONLY 0 "register_operand" "=w")
+	(unspec:V8HF_ONLY
+	 [(match_operand:V8HF_ONLY 1 "register_operand" "0")
+	  (match_operand:V16QI 2 "register_operand" "w")
+	  (vec_duplicate:V16QI
+	    (vec_select:QI
+	      (match_operand:VB 3 "register_operand" "w")
+	      (parallel [(match_operand:SI 4 "immediate_operand")])))
+	  (reg:DI FPM_REGNUM)]
+	FMLAL_FP8_HF))]
+  "TARGET_FP8FMA"
+  {
+    operands[4] = aarch64_endian_lane_rtx (<VB:MODE>mode,
+					   INTVAL (operands[4]));
+    return "<insn>\t%0.<V8HF_ONLY:Vtype>, %2.16b, %3.b[%4]";
+  }
+)
+
+(define_insn "@aarch64_<insn><mode>"
+  [(set (match_operand:V4SF_ONLY 0 "register_operand" "=w")
+	(unspec:V4SF_ONLY
+	 [(match_operand:V4SF_ONLY 1 "register_operand" "0")
+	  (match_operand:V16QI 2 "register_operand" "w")
+	  (match_operand:V16QI 3 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FMLALL_FP8_SF))]
+  "TARGET_FP8FMA"
+  "<insn>\t%0.<Vtype>, %2.16b, %3.16b"
+)
+
+(define_insn "@aarch64_<insn>_lane<V4SF_ONLY:mode><VB:mode>"
+  [(set (match_operand:V4SF_ONLY 0 "register_operand" "=w")
+	(unspec:V4SF_ONLY
+	 [(match_operand:V4SF_ONLY 1 "register_operand" "0")
+	  (match_operand:V16QI 2 "register_operand" "w")
+	  (vec_duplicate:V16QI
+	    (vec_select:QI
+	      (match_operand:VB 3 "register_operand" "w")
+	      (parallel [(match_operand:SI 4 "immediate_operand")])))
+	  (reg:DI FPM_REGNUM)]
+	FMLALL_FP8_SF))]
+  "TARGET_FP8FMA"
+  {
+    operands[4] = aarch64_endian_lane_rtx (<VB:MODE>mode,
+					   INTVAL (operands[4]));
+    return "<insn>\t%0.<V4SF_ONLY:Vtype>, %2.16b, %3.b[%4]";
+  }
+)

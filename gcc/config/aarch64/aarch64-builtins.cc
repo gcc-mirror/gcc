@@ -2596,6 +2596,7 @@ struct aarch64_pragma_builtins_checker
   bool require_immediate_range (unsigned int, HOST_WIDE_INT,
 				HOST_WIDE_INT);
   bool require_immediate_lane_index (unsigned int, unsigned int, unsigned int);
+  bool require_immediate_lane_index (unsigned int, unsigned int);
 
   bool check ();
 
@@ -2659,6 +2660,16 @@ require_immediate_lane_index (unsigned int lane_argno, unsigned vec_argno,
   return require_immediate_range (lane_argno, 0, nunits - 1);
 }
 
+/* Require argument LANE_ARGNO to be an immediate lane index that selects
+   one element of argument VEC_ARGNO.  Return true if the argument
+   is valid.  */
+bool
+aarch64_pragma_builtins_checker::
+require_immediate_lane_index (unsigned int lane_argno, unsigned int vec_argno)
+{
+  return require_immediate_lane_index (lane_argno, vec_argno, vec_argno);
+}
+
 /* Check the arguments to the intrinsic call and return true if they
    are valid.  */
 bool
@@ -2668,6 +2679,19 @@ aarch64_pragma_builtins_checker::check ()
     {
     case UNSPEC_FDOT_LANE_FP8:
       return require_immediate_lane_index (nargs - 2, nargs - 3, 0);
+
+    case UNSPEC_FMLALB_FP8:
+    case UNSPEC_FMLALT_FP8:
+    case UNSPEC_FMLALLBB_FP8:
+    case UNSPEC_FMLALLBT_FP8:
+    case UNSPEC_FMLALLTB_FP8:
+    case UNSPEC_FMLALLTT_FP8:
+      if (builtin_data.signature == aarch64_builtin_signatures::ternary_lane)
+	return require_immediate_lane_index (nargs - 2, nargs - 3);
+      else if (builtin_data.signature == aarch64_builtin_signatures::ternary)
+	return true;
+      else
+	gcc_unreachable ();
 
     case UNSPEC_LUTI2:
     case UNSPEC_LUTI4:
@@ -3716,6 +3740,25 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
     case UNSPEC_FDOT_LANE_FP8:
       icode = code_for_aarch64_lane (builtin_data.unspec,
 				     ops[0].mode, ops[3].mode);
+      break;
+
+    case UNSPEC_FMLALB_FP8:
+    case UNSPEC_FMLALT_FP8:
+    case UNSPEC_FMLALLBB_FP8:
+    case UNSPEC_FMLALLBT_FP8:
+    case UNSPEC_FMLALLTB_FP8:
+    case UNSPEC_FMLALLTT_FP8:
+      if (builtin_data.signature == aarch64_builtin_signatures::ternary_lane)
+	{
+	  ops[4].value = aarch64_endian_lane_rtx (ops[3].mode,
+						  INTVAL (ops[4].value));
+	  icode = code_for_aarch64_lane (builtin_data.unspec,
+					 ops[0].mode, ops[3].mode);
+	}
+      else if (builtin_data.signature == aarch64_builtin_signatures::ternary)
+	icode = code_for_aarch64 (builtin_data.unspec, ops[0].mode);
+      else
+	gcc_unreachable ();
       break;
 
     case UNSPEC_LUTI2:

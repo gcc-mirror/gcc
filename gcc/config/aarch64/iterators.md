@@ -41,6 +41,7 @@
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator SI_ONLY [SI])
 (define_mode_iterator DI_ONLY [DI])
+(define_mode_iterator V8HF_ONLY [V8HF])
 (define_mode_iterator V4SF_ONLY [V4SF])
 
 ;; Iterator for all integer modes (up to 64-bit)
@@ -3817,21 +3818,11 @@
    UNSPEC_F1CVTLT
    UNSPEC_F2CVTLT])
 
-(define_int_iterator SVE2_FP8_TERNARY_VNX8HF
+(define_int_iterator FMLAL_FP8_HF
   [UNSPEC_FMLALB_FP8
    UNSPEC_FMLALT_FP8])
 
-(define_int_iterator SVE2_FP8_TERNARY_VNX4SF
-  [UNSPEC_FMLALLBB_FP8
-   UNSPEC_FMLALLBT_FP8
-   UNSPEC_FMLALLTB_FP8
-   UNSPEC_FMLALLTT_FP8])
-
-(define_int_iterator SVE2_FP8_TERNARY_LANE_VNX8HF
-  [UNSPEC_FMLALB_FP8
-   UNSPEC_FMLALT_FP8])
-
-(define_int_iterator SVE2_FP8_TERNARY_LANE_VNX4SF
+(define_int_iterator FMLALL_FP8_SF
   [UNSPEC_FMLALLBB_FP8
    UNSPEC_FMLALLBT_FP8
    UNSPEC_FMLALLTB_FP8
@@ -3859,6 +3850,12 @@
    (UNSPEC_FCVTN_FP8 "fcvtn")
    (UNSPEC_FDOT_FP8 "fdot")
    (UNSPEC_FDOT_LANE_FP8 "fdot")
+   (UNSPEC_FMLALB_FP8 "fmlalb")
+   (UNSPEC_FMLALT_FP8 "fmlalt")
+   (UNSPEC_FMLALLBB_FP8 "fmlallbb")
+   (UNSPEC_FMLALLBT_FP8 "fmlallbt")
+   (UNSPEC_FMLALLTB_FP8 "fmlalltb")
+   (UNSPEC_FMLALLTT_FP8 "fmlalltt")
    (UNSPEC_FSCALE "fscale")])
 
 ;; The optab associated with an operation.  Note that for ANDF, IORF
@@ -4858,13 +4855,3 @@
    (UNSPEC_F2CVT "f2cvt")
    (UNSPEC_F1CVTLT "f1cvtlt")
    (UNSPEC_F2CVTLT "f2cvtlt")])
-
-(define_int_attr sve2_fp8_fma_op_vnx8hf
-  [(UNSPEC_FMLALB_FP8 "fmlalb")
-   (UNSPEC_FMLALT_FP8 "fmlalt")])
-
-(define_int_attr sve2_fp8_fma_op_vnx4sf
-  [(UNSPEC_FMLALLBB_FP8 "fmlallbb")
-   (UNSPEC_FMLALLBT_FP8 "fmlallbt")
-   (UNSPEC_FMLALLTB_FP8 "fmlalltb")
-   (UNSPEC_FMLALLTT_FP8 "fmlalltt")])
