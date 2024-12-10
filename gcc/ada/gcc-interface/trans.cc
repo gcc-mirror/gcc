@@ -5517,10 +5517,17 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  gigi_checking_assert (!Do_Range_Check (gnat_node));
 
+	  /* If the parent is an initialization statement, we can use the
+	     return slot optimization.  */
+	  if (Nkind (gnat_parent) == N_Assignment_Statement
+	      && (No_Ctrl_Actions (gnat_parent)
+		  || No_Finalize_Actions (gnat_parent)))
+	    op_code = INIT_EXPR;
+
 	  /* ??? If the return type has variable size, then force the return
 	     slot optimization as we would not be able to create a temporary.
 	     That's what has been done historically.  */
-	  if (return_type_with_variable_size_p (gnu_result_type))
+	  else if (return_type_with_variable_size_p (gnu_result_type))
 	    op_code = INIT_EXPR;
 
 	  /* If this is a call to a pure function returning an array of scalar
@@ -7810,6 +7817,12 @@ gnat_to_gnu (Node_Id gnat_node)
 		  CALL_EXPR_ARG (gnu_result, 1)
 		    = build_unary_op (ADDR_EXPR, TREE_TYPE (arg), gnu_lhs);
 		}
+
+	      /* If the statement is an initialization, build one too.  */
+              else if (No_Ctrl_Actions (gnat_node)
+		       || No_Finalize_Actions (gnat_node))
+		gnu_result
+		  = build_binary_op (INIT_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
 
 	      /* Otherwise build a regular assignment.  */
 	      else
