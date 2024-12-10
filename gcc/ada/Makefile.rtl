@@ -1786,6 +1786,42 @@ ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
 endif
 endif
 
+# x86_64-pc-gnu i.e. GNU Hurd
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
+ifeq ($(strip $(filter-out x86_64 pc gnu,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=x86_64-gnuhurd
+
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<libgnarl/a-intnam__bsd.ads \
+  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
+  s-intman.adb<libgnarl/s-intman__posix.adb \
+  s-osinte.adb<libgnarl/s-osinte__gnu.adb \
+  s-osinte.ads<libgnarl/s-osinte__gnu.ads \
+  s-oslock.ads<libgnat/s-oslock__posix.ads \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
+  s-taprop.adb<libgnarl/s-taprop__posix.adb \
+  s-taspri.ads<libgnarl/s-taspri__posix.ads \
+  s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
+  $(ATOMICS_TARGET_PAIRS) \
+  $(X86_64_TARGET_PAIRS) \
+  $(GNATRTL_128BIT_PAIRS) \
+  system.ads<libgnat/system-gnu.ads
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
+
+  TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
+
+  EH_MECHANISM=-gcc
+  THREADSLIB = -lpthread
+  GNATLIB_SHARED = gnatlib-shared-dual
+  GMEM_LIB = gmemlib
+  LIBRARY_VERSION := $(LIB_VERSION)
+endif
+endif
+
 # aarch64 FreeBSD
 ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
