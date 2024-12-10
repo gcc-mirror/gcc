@@ -8499,7 +8499,21 @@ package body Exp_Ch6 is
             Chain   := Empty;
          end if;
 
-         Insert_Actions (Allocator, Actions);
+         --  See the Needs_Cleanup predicate in Expand_Allocator_Expression
+
+         if Alloc_Form = Caller_Allocation
+           and then not For_Special_Return_Object (Allocator)
+           and then not (Is_Entity_Name (Name (Func_Call))
+                          and then No_Raise (Entity (Name (Func_Call))))
+           and then RTE_Available (RE_Free)
+           and then not Debug_Flag_QQ
+         then
+            Insert_Action (Allocator,
+              Build_Cleanup_For_Allocator (Loc,
+                Return_Obj_Access, Storage_Pool (Allocator), Actions));
+         else
+            Insert_Actions (Allocator, Actions);
+         end if;
       end;
 
       --  When the function has a controlling result, an allocation-form

@@ -948,7 +948,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expression, Node_Id, Default_Empty),
         Sm (Actual_Designated_Subtype, Node_Id),
         Sm (Procedure_To_Call, Node_Id),
-        Sm (Storage_Pool, Node_Id)));
+        Sm (Storage_Pool, Node_Id),
+        Sm (For_Allocator, Flag)));
 
    Cc (N_Goto_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Name, Node_Id, Default_Empty),

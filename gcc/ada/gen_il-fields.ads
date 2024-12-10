@@ -192,6 +192,7 @@ package Gen_IL.Fields is
       Float_Truncate,
       Formal_Type_Definition,
       Forwards_OK,
+      For_Allocator,
       For_Special_Return_Object,
       From_Aspect_Specification,
       From_At_Mod,

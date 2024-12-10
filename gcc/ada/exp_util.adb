@@ -1281,6 +1281,11 @@ package body Exp_Util is
                      end if;
                   end;
 
+               --  Nothing to generate for the cleanup of an allocator
+
+               elsif For_Allocator (N) then
+                  null;
+
                --  Generate:
                --    if F then
                --       Detach_Object_From_Collection (Temp.all'Address);

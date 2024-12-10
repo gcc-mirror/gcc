@@ -437,6 +437,37 @@ package body Exp_Ch4 is
          return;
    end Build_Boolean_Array_Proc_Call;
 
+   ---------------------------------
+   -- Build_Cleanup_For_Allocator --
+   ---------------------------------
+
+   function Build_Cleanup_For_Allocator
+     (Loc     : Source_Ptr;
+      Obj_Id  : Entity_Id;
+      Pool    : Entity_Id;
+      Actions : List_Id) return Node_Id
+   is
+      Free_Stmt : constant Node_Id :=
+        Make_Free_Statement (Loc, New_Occurrence_Of (Obj_Id, Loc));
+
+   begin
+      Set_For_Allocator (Free_Stmt);
+      Set_Storage_Pool  (Free_Stmt, Pool);
+
+      return
+        Make_Block_Statement (Loc,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements         => Actions,
+              Exception_Handlers => New_List (
+                Make_Exception_Handler (Loc,
+                  Exception_Choices => New_List (
+                    Make_Others_Choice (Loc)),
+                  Statements        => New_List (
+                    Free_Stmt,
+                    Make_Raise_Statement (Loc))))));
+   end Build_Cleanup_For_Allocator;
+
    -----------------------
    -- Build_Eq_Call --
    -----------------------
@@ -574,7 +605,12 @@ package body Exp_Ch4 is
       T              : constant Entity_Id  := Entity (Indic);
       PtrT           : constant Entity_Id  := Etype (N);
       DesigT         : constant Entity_Id  := Designated_Type (PtrT);
+      Pool           : constant Node_Id    := Storage_Pool (N);
       Special_Return : constant Boolean    := For_Special_Return_Object (N);
+      Special_Pool   : constant Boolean    :=
+        Present (Pool)
+          and then
+            (Is_RTE (Pool, RE_RS_Pool) or else Is_RTE (Pool, RE_SS_Pool));
       Static_Match   : constant Boolean    :=
         not Is_Constrained (DesigT)
           or else Subtypes_Statically_Match (T, DesigT);
@@ -586,14 +622,29 @@ package body Exp_Ch4 is
       --  of Exp into the newly allocated memory.
 
       procedure Build_Explicit_Assignment (Temp : Entity_Id; Typ : Entity_Id);
-      --  If Exp is a conditional expression whose expansion has been delayed,
-      --  build the declaration of object Temp with Typ and initialization
+      --  Build the declaration of object Temp with Typ and initialization
       --  expression an uninitialized allocator for Etype (Exp), then perform
       --  assignment of Exp into the newly allocated memory.
 
       procedure Build_Simple_Allocation (Temp : Entity_Id; Typ : Entity_Id);
       --  Build the declaration of object Temp with Typ and initialization
       --  expression the allocator N.
+
+      function Needs_Cleanup return Boolean is
+        (not Special_Pool
+          and then Is_Definite_Subtype (T)
+          and then Nkind (Exp) = N_Function_Call
+          and then not (Is_Entity_Name (Name (Exp))
+                         and then No_Raise (Entity (Name (Exp))))
+          and then RTE_Available (RE_Free)
+          and then not Debug_Flag_QQ);
+      --  Return True if a cleanup needs to be built to deallocate the memory
+      --  when the evaluation of the expression raises an exception. This can
+      --  be done only if deallocation is available, but not for special pools
+      --  since such pools do not support deallocation. Moreover, this is not
+      --  needed for an indefinite allocation because the expression will be
+      --  evaluated first, in order to size the allocation. For now, we only
+      --  return True for a call to a function that may raise an exception.
 
       ------------------------------
       -- Build_Aggregate_In_Place --
@@ -665,10 +716,32 @@ package body Exp_Ch4 is
 
          --  Arrange for the expression to be analyzed again and expanded
 
+         if Is_Delayed_Conditional_Expression (Expression (Assign)) then
+            Unanalyze_Delayed_Conditional_Expression (Expression (Assign));
+         end if;
+
          Set_Assignment_OK (Name (Assign));
-         Set_Analyzed (Expression (Assign), False);
-         Set_No_Finalize_Actions (Assign);
-         Insert_Action (N, Assign);
+
+         --  If the initialization expression is a function call, we do not
+         --  adjust after the assignment but, in either case, we do not
+         --  finalize before since the target is newly allocated memory.
+
+         if Nkind (Exp) = N_Function_Call then
+            Set_No_Ctrl_Actions (Assign);
+         else
+            Set_No_Finalize_Actions (Assign);
+         end if;
+
+         --  Build a cleanup if the assignment may raise an exception
+
+         if Needs_Cleanup then
+            Insert_Action (N,
+              Build_Cleanup_For_Allocator (Loc,
+                Temp, Pool, New_List (Assign)),
+              Suppress => All_Checks);
+         else
+            Insert_Action (N, Assign, Suppress => All_Checks);
+         end if;
       end Build_Explicit_Assignment;
 
       -----------------------------
@@ -871,6 +944,20 @@ package body Exp_Ch4 is
             Analyze_And_Resolve (Expression (N), Entity (Indic));
          end if;
 
+         --  If the designated type is class-wide, then the alignment and the
+         --  controlled nature of the expression are computed dynamically by
+         --  the code generated by Build_Allocate_Deallocate_Proc, which will
+         --  thus need to remove side effects from Exp first. But the below
+         --  test on Exp needs to have its final form to decide whether or not
+         --  to generate an Adjust call, so we preventively remove them here.
+
+         if Is_Class_Wide_Type (DesigT)
+           and then Nkind (Exp) = N_Function_Call
+           and then not Special_Pool
+         then
+            Remove_Side_Effects (Exp);
+         end if;
+
          --  Actions inserted before:
          --    Temp : constant PtrT := new T'(Expression);
          --    Temp._tag = T'tag;  --  when not class-wide
@@ -887,7 +974,7 @@ package body Exp_Ch4 is
             if Aggr_In_Place then
                Build_Aggregate_In_Place (Temp, PtrT);
 
-            elsif Delayed_Cond_Expr then
+            elsif Delayed_Cond_Expr or else Needs_Cleanup then
                Build_Explicit_Assignment (Temp, PtrT);
 
             else
@@ -929,7 +1016,7 @@ package body Exp_Ch4 is
                if Aggr_In_Place then
                   Build_Aggregate_In_Place (New_Temp, Def_Id);
 
-               elsif Delayed_Cond_Expr then
+               elsif Delayed_Cond_Expr or else Needs_Cleanup then
                   Build_Explicit_Assignment (New_Temp, Def_Id);
 
                else
@@ -993,22 +1080,6 @@ package body Exp_Ch4 is
             Insert_Action (N,
               Make_Tag_Assignment_From_Type
                 (Loc, TagR, Underlying_Type (TagT)));
-         end if;
-
-         --  If the designated type is class-wide, then the alignment and the
-         --  controlled nature of the expression are computed dynamically by
-         --  the code generated by Build_Allocate_Deallocate_Proc, which will
-         --  thus need to remove side effects from Exp first. But the below
-         --  test on Exp needs to have its final form to decide whether or not
-         --  to generate an Adjust call, so we preventively remove them here.
-
-         if Nkind (Exp) = N_Function_Call
-           and then Is_Class_Wide_Type (DesigT)
-           and then Present (Storage_Pool (N))
-           and then not Is_RTE (Storage_Pool (N), RE_RS_Pool)
-           and then not Is_RTE (Storage_Pool (N), RE_SS_Pool)
-         then
-            Remove_Side_Effects (Exp);
          end if;
 
          --  Generate an Adjust call if the object will be moved. In Ada 2005,
@@ -1141,7 +1212,11 @@ package body Exp_Ch4 is
          end if;
 
          Temp := Make_Temporary (Loc, 'P', N);
-         Build_Simple_Allocation (Temp, PtrT);
+         if Needs_Cleanup then
+            Build_Explicit_Assignment (Temp, PtrT);
+         else
+            Build_Simple_Allocation (Temp, PtrT);
+         end if;
          Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
       end if;
 

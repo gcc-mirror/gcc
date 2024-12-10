@@ -1339,6 +1339,10 @@ package Sinfo is
    --    cannot figure it out. If both flags Forwards_OK and Backwards_OK are
    --    set, it means that the front end can assure no overlap of operands.
 
+   --  For_Allocator
+   --    Present in N_Free_Statement nodes. True if the statement is generated
+   --    for the cleanup of an allocator.
+
    --  For_Special_Return_Object
    --    Present in N_Allocator nodes. True if the allocator is generated for
    --    the initialization of a special return object.
@@ -8110,6 +8114,7 @@ package Sinfo is
       --  Storage_Pool
       --  Procedure_To_Call
       --  Actual_Designated_Subtype
+      --  For_Allocator
 
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the FREE keyword in the Sprint file output.

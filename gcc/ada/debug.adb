@@ -74,7 +74,7 @@ package body Debug is
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
-   --  dQ
+   --  dQ   Do not generate cleanups for qualified expressions of allocators
    --  dR   Bypass check for correct version of s-rpc
    --  dS   Never convert numbers to machine numbers in Sem_Eval
    --  dT   Convert to machine numbers only for constant declarations
@@ -639,6 +639,9 @@ package body Debug is
    --       RM 10.2.1(9) forbids the use of library level controlled objects
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
+
+   --  dQ   Do not generate cleanups to deallocate the memory in case qualified
+   --       expressions of allocators raise an exception.
 
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use
