@@ -5297,34 +5297,28 @@ or @code{vec_cmpu@var{m}@var{n}} instruction pattern is supported,
 it will be preferred over @code{vec_cmpeq@var{m}@var{n}}, so there is
 no need to define this instruction pattern if the others are supported.
 
-@cindex @code{vcond@var{m}@var{n}} instruction pattern
-@item @samp{vcond@var{m}@var{n}}
-Output a conditional vector move.  Operand 0 is the destination to
-receive a combination of operand 1 and operand 2, which are of mode @var{m},
-dependent on the outcome of the predicate in operand 3 which is a signed
-vector comparison with operands of mode @var{n} in operands 4 and 5.  The
-modes @var{m} and @var{n} should have the same size.  Operand 0
-will be set to the value @var{op1} & @var{msk} | @var{op2} & ~@var{msk}
-where @var{msk} is computed by element-wise evaluation of the vector
-comparison with a truth value of all-ones and a false value of all-zeros.
-
-@cindex @code{vcondu@var{m}@var{n}} instruction pattern
-@item @samp{vcondu@var{m}@var{n}}
-Similar to @code{vcond@var{m}@var{n}} but performs unsigned vector
-comparison.
-
-@cindex @code{vcondeq@var{m}@var{n}} instruction pattern
-@item @samp{vcondeq@var{m}@var{n}}
-Similar to @code{vcond@var{m}@var{n}} but performs equality or
-non-equality vector comparison only.  If @code{vcond@var{m}@var{n}}
-or @code{vcondu@var{m}@var{n}} instruction pattern is supported,
-it will be preferred over @code{vcondeq@var{m}@var{n}}, so there is
-no need to define this instruction pattern if the others are supported.
-
 @cindex @code{vcond_mask_@var{m}@var{n}} instruction pattern
 @item @samp{vcond_mask_@var{m}@var{n}}
-Similar to @code{vcond@var{m}@var{n}} but operand 3 holds a pre-computed
-result of vector comparison.
+Output a conditional vector move.  Operand 0 is the destination to
+receive a combination of operand 1 and operand 2, depending on the
+mask in operand 3.  Operands 0, 1, and 2 have mode @var{m} while
+operand 3 has mode @var{n}.
+
+Suppose that @var{m} has @var{e} elements.  There are then two
+supported forms of @var{n}.  The first form is an integer or
+boolean vector that also has @var{e} elements.  In this case, each
+element is -1 or 0, with -1 selecting elements from operand 1 and
+0 selecting elements from operand 2.  The second supported form
+of @var{n} is a scalar integer that has at least @var{e} bits.
+A set bit then selects from operand 1 and a clear bit selects
+from operand 2.  Bits @var{e} and above have no effect.
+
+Subject to those restrictions, the behavior is equivalent to:
+
+@smallexample
+for (i = 0; i < @var{e}; i++)
+  op0[i] = op3[i] ? op1[i] : op2[i];
+@end smallexample
 
 @cindex @code{vcond_mask_len_@var{m}@var{n}} instruction pattern
 @item @samp{vcond_mask_len_@var{m}@var{n}}
