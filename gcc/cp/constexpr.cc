@@ -8870,15 +8870,14 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   /* Turn off -frounding-math for manifestly constant evaluation.  */
   warning_sentinel rm (flag_rounding_math,
 		       ctx.manifestly_const_eval == mce_true);
-  tree type = initialized_type (t);
+  tree type = (object
+	       ? cv_unqualified (TREE_TYPE (object))
+	       : initialized_type (t));
   tree r = t;
   bool is_consteval = false;
   if (VOID_TYPE_P (type))
     {
-      if (constexpr_dtor)
-	/* Used for destructors of array elements.  */
-	type = TREE_TYPE (object);
-      else
+      if (!constexpr_dtor)
 	{
 	  if (cxx_dialect < cxx20)
 	    return t;
