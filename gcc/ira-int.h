@@ -868,7 +868,7 @@ public:
 
   /* Index (in ira_class_hard_regs; for given register class and hard
      register (in general case a hard register can belong to several
-     register classes;.  The index is negative for hard registers
+     register classes).  The index is negative for hard registers
      unavailable for the allocation.  */
   short x_ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
 

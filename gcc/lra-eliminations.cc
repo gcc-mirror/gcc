@@ -1428,6 +1428,25 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
   return n;
 }
 
+/* Return true if we have a pseudo assigned to hard frame pointer.  */
+bool
+lra_fp_pseudo_p (void)
+{
+  HARD_REG_SET set;
+
+  if (frame_pointer_needed)
+    /* At this stage it means we have no pseudos assigned to FP:  */
+    return false;
+  CLEAR_HARD_REG_SET (set);
+  add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
+  for (int i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
+    if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
+	&& overlaps_hard_reg_set_p (set, PSEUDO_REGNO_MODE (i),
+				    reg_renumber[i]))
+      return true;
+  return false;
+}
+
 /* Entry function to do final elimination if FINAL_P or to update
    elimination register offsets (FIRST_P if we are doing it the first
    time).  */
