@@ -61,7 +61,7 @@ ResolveTraitItems::visit (AST::Function &function)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   if (function.has_generics ())
     for (auto &generic : function.get_generic_params ())
@@ -216,7 +216,7 @@ ResolveItem::visit (AST::Module &module)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // FIXME: Should we reinsert a child here? Any reason we ResolveTopLevel::go
   // in ResolveTopLevel::visit (AST::Module) as well as here?
@@ -473,7 +473,7 @@ ResolveItem::visit (AST::Function &function)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   if (function.has_generics ())
     for (auto &generic : function.get_generic_params ())
@@ -648,7 +648,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   if (impl_block.has_generics ())
     for (auto &generic : impl_block.get_generic_params ())
@@ -1040,7 +1040,7 @@ ResolveExternItem::visit (AST::Function &function)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // resolve the generics
   if (function.has_generics ())

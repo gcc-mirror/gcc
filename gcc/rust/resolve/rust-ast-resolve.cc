@@ -75,7 +75,7 @@ NameResolution::go (AST::Crate &crate)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // get the root segment
   CanonicalPath crate_prefix
