@@ -4964,7 +4964,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		{
 		  vec_loop_masks *loop_masks = &LOOP_VINFO_MASKS (loop_vinfo);
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
-					     ncopies, vectype, j);
+					     ncopies, masktype, j);
 		}
 	      else
 		mask = vect_build_all_ones_mask (vinfo, stmt_info, masktype);
