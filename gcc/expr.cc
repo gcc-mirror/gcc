@@ -7966,12 +7966,9 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 
 	n_elts = TYPE_VECTOR_SUBPARTS (type);
 	if (REG_P (target)
-	    && VECTOR_MODE_P (mode)
-	    && n_elts.is_constant (&const_n_elts))
+	    && VECTOR_MODE_P (mode))
 	  {
-	    machine_mode emode = eltmode;
-	    bool vector_typed_elts_p = false;
-
+	    const_n_elts = 0;
 	    if (CONSTRUCTOR_NELTS (exp)
 		&& (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value))
 		    == VECTOR_TYPE))
@@ -7980,23 +7977,26 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		gcc_assert (known_eq (CONSTRUCTOR_NELTS (exp)
 				      * TYPE_VECTOR_SUBPARTS (etype),
 				      n_elts));
-		emode = TYPE_MODE (etype);
-		vector_typed_elts_p = true;
-	      }
-	    icode = convert_optab_handler (vec_init_optab, mode, emode);
-	    if (icode != CODE_FOR_nothing)
-	      {
-		unsigned int n = const_n_elts;
 
-		if (vector_typed_elts_p)
-		  {
-		    n = CONSTRUCTOR_NELTS (exp);
-		    vec_vec_init_p = true;
-		  }
-		vector = rtvec_alloc (n);
-		for (unsigned int k = 0; k < n; k++)
-		  RTVEC_ELT (vector, k) = CONST0_RTX (emode);
+		icode = convert_optab_handler (vec_init_optab, mode,
+					       TYPE_MODE (etype));
+		const_n_elts = CONSTRUCTOR_NELTS (exp);
+		vec_vec_init_p = icode != CODE_FOR_nothing;
 	      }
+	    else if (exact_div (n_elts, GET_MODE_NUNITS (eltmode))
+			.is_constant (&const_n_elts))
+	      {
+		/* For a non-const type vector, we check it is made up of
+		   similarly non-const type vectors. */
+		icode = convert_optab_handler (vec_init_optab, mode, eltmode);
+	      }
+
+	  if (const_n_elts && icode != CODE_FOR_nothing)
+	    {
+	      vector = rtvec_alloc (const_n_elts);
+	      for (unsigned int k = 0; k < const_n_elts; k++)
+		RTVEC_ELT (vector, k) = CONST0_RTX (eltmode);
+	    }
 	  }
 
 	/* Compute the size of the elements in the CTOR.  It differs
