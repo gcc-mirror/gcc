@@ -242,14 +242,21 @@ public:
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
-    resolver->get_type_scope ().insert (
-      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
-      Rib::ItemType::Type,
-      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	rich_location r (line_table, struct_decl.get_locus ());
-	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
-      });
+    auto duplicate_item
+      = [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
+      rich_location r (line_table, struct_decl.get_locus ());
+      r.add_range (locus);
+      rust_error_at (r, "redefined multiple times");
+    };
+
+    resolver->get_type_scope ().insert (path, struct_decl.get_node_id (),
+					struct_decl.get_locus (), false,
+					Rib::ItemType::Type, duplicate_item);
+
+    if (struct_decl.is_unit_struct ())
+      resolver->get_name_scope ().insert (path, struct_decl.get_node_id (),
+					  struct_decl.get_locus (), false,
+					  Rib::ItemType::Type, duplicate_item);
 
     NodeId current_module = resolver->peek_current_module_scope ();
     mappings.insert_module_child_item (current_module, decl);
