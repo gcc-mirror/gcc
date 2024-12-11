@@ -5009,34 +5009,34 @@
 
 ;; Unpredicated ASRD.
 (define_expand "sdiv_pow2<mode>3"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_VDQ_I 0 "register_operand")
+	(unspec:SVE_VDQ_I
 	  [(match_dup 3)
-	   (unspec:SVE_I
-	     [(match_operand:SVE_I 1 "register_operand")
+	   (unspec:SVE_VDQ_I
+	     [(match_operand:SVE_VDQ_I 1 "register_operand")
 	      (match_operand 2 "aarch64_simd_rshift_imm")]
 	     UNSPEC_ASRD)]
 	 UNSPEC_PRED_X))]
   "TARGET_SVE"
   {
-    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode, <MODE>mode);
   }
 )
 
 ;; Predicated ASRD.
 (define_insn "*sdiv_pow2<mode>3"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_VDQ_I 0 "register_operand")
+	(unspec:SVE_VDQ_I
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_I
-	     [(match_operand:SVE_I 2 "register_operand")
-	      (match_operand:SVE_I 3 "aarch64_simd_rshift_imm")]
+	   (unspec:SVE_VDQ_I
+	     [(match_operand:SVE_VDQ_I 2 "register_operand")
+	      (match_operand:SVE_VDQ_I 3 "aarch64_simd_rshift_imm")]
 	     UNSPEC_ASRD)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
-     [ w        , Upl , 0 ; *              ] asrd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
-     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;asrd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+     [ w        , Upl , 0 ; *              ] asrd\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, #%3
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%Z0, %Z2\;asrd\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, #%3
   }
 )
 

@@ -3778,6 +3778,22 @@ aarch64_ptrue_reg (machine_mode mode, unsigned int vl)
   return gen_lowpart (mode, reg);
 }
 
+/* Return a register of mode PRED_MODE for controlling data of mode DATA_MODE.
+
+   DATA_MODE can be a scalar, an Advanced SIMD vector, or an SVE vector.
+   If it's an N-byte scalar or an Advanced SIMD vector, the first N bits
+   of the predicate will be active and the rest will be inactive.
+   If DATA_MODE is an SVE mode, every bit of the predicate will be active.  */
+rtx
+aarch64_ptrue_reg (machine_mode pred_mode, machine_mode data_mode)
+{
+  if (aarch64_sve_mode_p (data_mode))
+    return aarch64_ptrue_reg (pred_mode);
+
+  auto size = GET_MODE_SIZE (data_mode).to_constant ();
+  return aarch64_ptrue_reg (pred_mode, size);
+}
+
 /* Return an all-false predicate register of mode MODE.  */
 
 rtx
