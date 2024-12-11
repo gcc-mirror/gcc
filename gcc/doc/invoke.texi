@@ -16500,6 +16500,9 @@ Switch initialization conversion refuses to create arrays that are
 bigger than @option{switch-conversion-max-branch-ratio} times the number of
 branches in the switch.
 
+@item switch-lower-slow-alg-max-cases
+Maximum number of cases for slow switch lowering algorithms to be used.
+
 @item max-partial-antic-length
 Maximum length of the partial antic set computed during the tree
 partial redundancy elimination optimization (@option{-ftree-pre}) when
