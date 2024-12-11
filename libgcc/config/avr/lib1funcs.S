@@ -101,6 +101,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define XIJMP  ijmp
 #endif
 
+;;; [R]JMP to label \labl when \reg is positive (\reg.7 = 0).
+;;; Otherwise, fallthrough.
+.macro  .branch_plus    reg, labl
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    ;; Some cores have a problem skipping 2-word instructions
+    tst     \reg
+    brmi    .L..\@
+#else
+    sbrs    \reg, 7
+#endif /* skip erratum */
+    XJMP    \labl
+.L..\@:
+.endm ; .branch_plus
+
 ;; Prologue stuff
 
 .macro do_prologue_saves n_pushed n_frame=0
@@ -2596,7 +2610,82 @@ ENDF __load_4
 
 #define HHI8  21
 
-.macro  .xload dest, n
+#if defined (L_xload_1)
+DEFUN __xload_1
+#if defined (__AVR_HAVE_LPMX__) && !defined (__AVR_HAVE_ELPM__)
+    sbrc    HHI8, 7
+    ld      D0, Z
+    sbrs    HHI8, 7
+    lpm     D0, Z
+    ret
+#else
+    .branch_plus HHI8, __fload_1
+    ld      D0, Z
+    ret
+#endif /* LPMx && ! ELPM */
+ENDF __xload_1
+#endif /* L_xload_1 */
+
+#if defined (L_xload_2)
+DEFUN __xload_2
+    .branch_plus HHI8, __fload_2
+    ld      D0, Z+
+    ld      D1, Z+
+    ret
+ENDF __xload_2
+#endif /* L_xload_2 */
+
+#if defined (L_xload_3)
+DEFUN __xload_3
+    .branch_plus HHI8, __fload_3
+    ld      D0, Z+
+    ld      D1, Z+
+    ld      D2, Z+
+    ret
+ENDF __xload_3
+#endif /* L_xload_3 */
+
+#if defined (L_xload_4)
+DEFUN __xload_4
+    .branch_plus HHI8, __fload_4
+    ld      D0, Z+
+    ld      D1, Z+
+    ld      D2, Z+
+    ld      D3, Z+
+    ret
+ENDF __xload_4
+#endif /* L_xload_4 */
+
+#endif /* L_xload_{1|2|3|4} */
+#endif /* if !defined (__AVR_TINY__) */
+
+#if !defined (__AVR_TINY__)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Loading n bytes from Flash;  n = 1,2,3,4
+;; R22... = Flash[R21:Z]
+;; Clobbers: __tmp_reg__, R21, R30, R31
+
+#if (defined (L_fload_1)            \
+     || defined (L_fload_2)         \
+     || defined (L_fload_3)         \
+     || defined (L_fload_4))
+
+;; Destination
+#define D0  22
+#define D1  D0+1
+#define D2  D0+2
+#define D3  D0+3
+
+;; Register containing bits 16+ of the address
+
+#define HHI8  21
+
+.macro  .fload dest, n
+#if defined (__AVR_HAVE_ELPM__)
+.if \dest == D0
+    out     __RAMPZ__, HHI8
+.endif
+#endif /* __AVR_HAVE_ELPM__ */
 #if defined (__AVR_HAVE_ELPMX__)
     elpm    \dest, Z+
 #elif defined (__AVR_HAVE_ELPM__)
@@ -2622,90 +2711,53 @@ ENDF __load_4
     out     __RAMPZ__, __zero_reg__
 .endif
 #endif
-.endm ; .xload
+.endm ; .fload
 
-#if defined (L_xload_1)
-DEFUN __xload_1
+#if defined (L_fload_1)
+DEFUN __fload_1
 #if defined (__AVR_HAVE_LPMX__) && !defined (__AVR_HAVE_ELPM__)
-    sbrc    HHI8, 7
-    ld      D0, Z
-    sbrs    HHI8, 7
     lpm     D0, Z
     ret
 #else
-    sbrc    HHI8, 7
-    rjmp    1f
-#if defined (__AVR_HAVE_ELPM__)
-    out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_ELPM__ */
-    .xload  D0, 1
-    ret
-1:  ld      D0, Z
+    .fload  D0, 1
     ret
 #endif /* LPMx && ! ELPM */
-ENDF __xload_1
-#endif /* L_xload_1 */
+ENDF __fload_1
+#endif /* L_fload_1 */
 
-#if defined (L_xload_2)
-DEFUN __xload_2
-    sbrc    HHI8, 7
-    rjmp    1f
-#if defined (__AVR_HAVE_ELPM__)
-    out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_ELPM__ */
-    .xload  D0, 2
-    .xload  D1, 2
+#if defined (L_fload_2)
+DEFUN __fload_2
+    .fload  D0, 2
+    .fload  D1, 2
     ret
-1:  ld      D0, Z+
-    ld      D1, Z+
-    ret
-ENDF __xload_2
-#endif /* L_xload_2 */
+ENDF __fload_2
+#endif /* L_fload_2 */
 
-#if defined (L_xload_3)
-DEFUN __xload_3
-    sbrc    HHI8, 7
-    rjmp    1f
-#if defined (__AVR_HAVE_ELPM__)
-    out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_ELPM__ */
-    .xload  D0, 3
-    .xload  D1, 3
-    .xload  D2, 3
+#if defined (L_fload_3)
+DEFUN __fload_3
+    .fload  D0, 3
+    .fload  D1, 3
+    .fload  D2, 3
     ret
-1:  ld      D0, Z+
-    ld      D1, Z+
-    ld      D2, Z+
-    ret
-ENDF __xload_3
-#endif /* L_xload_3 */
+ENDF __fload_3
+#endif /* L_fload_3 */
 
-#if defined (L_xload_4)
-DEFUN __xload_4
-    sbrc    HHI8, 7
-    rjmp    1f
-#if defined (__AVR_HAVE_ELPM__)
-    out     __RAMPZ__, HHI8
-#endif /* __AVR_HAVE_ELPM__ */
-    .xload  D0, 4
-    .xload  D1, 4
-    .xload  D2, 4
-    .xload  D3, 4
+#if defined (L_fload_4)
+DEFUN __fload_4
+    .fload  D0, 4
+    .fload  D1, 4
+    .fload  D2, 4
+    .fload  D3, 4
     ret
-1:  ld      D0, Z+
-    ld      D1, Z+
-    ld      D2, Z+
-    ld      D3, Z+
-    ret
-ENDF __xload_4
-#endif /* L_xload_4 */
+ENDF __fload_4
+#endif /* L_fload_4 */
 
-#endif /* L_xload_{1|2|3|4} */
+#endif /* L_fload_{1|2|3|4} */
 #endif /* if !defined (__AVR_TINY__) */
 
 #if !defined (__AVR_TINY__)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; memcopy from Address Space __pgmx to RAM
+;; memcopy from Address Space __memx to RAM
 ;; R23:Z = Source Address
 ;; X     = Destination Address
 ;; Clobbers: __tmp_reg__, R23, R24, R25, X, Z
@@ -2716,7 +2768,7 @@ ENDF __xload_4
 #define LOOP  24
 
 DEFUN __movmemx_qi
-    ;; #Bytes to copy fity in 8 Bits (1..255)
+    ;; #Bytes to copy fits in 8 Bits (1..255)
     ;; Zero-extend Loop Counter
     clr     LOOP+1
     ;; FALLTHRU
@@ -2724,9 +2776,41 @@ ENDF __movmemx_qi
 
 DEFUN __movmemx_hi
 
-;; Read from where?
-    sbrc    HHI8, 7
-    rjmp    1f
+    .branch_plus    HHI8, __movmemf_hi
+
+    ;; Read 1 Byte from RAM...
+1:  ld      r0, Z+
+    ;; and store that Byte to RAM Destination
+    st      X+, r0
+    sbiw    LOOP, 1
+    brne    1b
+    ret
+ENDF __movmemx_hi
+
+#undef HHI8
+#undef LOOP
+
+#endif /* L_movmemx */
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; memcopy from Address Space __flashx to RAM
+;; R23:Z = Source Address
+;; X     = Destination Address
+;; Clobbers: __tmp_reg__, R23, R24, R25, X, Z
+
+#if defined (L_movmemf)
+
+#define HHI8  23
+#define LOOP  24
+
+DEFUN __movmemf_qi
+    ;; #Bytes to copy fits in 8 Bits (1..255)
+    ;; Zero-extend Loop Counter
+    clr     LOOP+1
+    ;; FALLTHRU
+ENDF __movmemf_qi
+
+DEFUN __movmemf_hi
 
 ;; Read from Flash
 
@@ -2759,22 +2843,12 @@ DEFUN __movmemx_hi
     out	__RAMPZ__, __zero_reg__
 #endif /* ELPM && RAMPD */
     ret
-
-;; Read from RAM
-
-1:  ;; Read 1 Byte from RAM...
-    ld      r0, Z+
-    ;; and store that Byte to RAM Destination
-    st      X+, r0
-    sbiw    LOOP, 1
-    brne    1b
-    ret
-ENDF __movmemx_hi
+ENDF __movmemf_hi
 
 #undef HHI8
 #undef LOOP
 
-#endif /* L_movmemx */
+#endif /* L_movmemf */
 #endif /* !defined (__AVR_TINY__) */ 
 
 

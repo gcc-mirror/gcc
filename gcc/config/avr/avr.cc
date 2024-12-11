@@ -115,6 +115,7 @@ const avr_addrspace_t avr_addrspace[ADDR_SPACE_COUNT] =
   { ADDR_SPACE_FLASH3, 1, 2, "__flash3",  3, ".progmem3.data" },
   { ADDR_SPACE_FLASH4, 1, 2, "__flash4",  4, ".progmem4.data" },
   { ADDR_SPACE_FLASH5, 1, 2, "__flash5",  5, ".progmem5.data" },
+  { ADDR_SPACE_FLASHX, 1, 3, "__flashx",  0, ".progmemx.data" },
   { ADDR_SPACE_MEMX, 1, 3, "__memx",  0, ".progmemx.data" },
 };
 
@@ -646,7 +647,7 @@ avr_decl_flash_p (tree decl)
 
 
 /* Return TRUE if DECL is a VAR_DECL located in the 24-bit flash
-   address space and FALSE, otherwise.  */
+   address space __memx and FALSE, otherwise.  */
 
 static bool
 avr_decl_memx_p (tree decl)
@@ -661,6 +662,22 @@ avr_decl_memx_p (tree decl)
 }
 
 
+/* Return TRUE if DECL is a VAR_DECL located in the 24-bit flash
+   address space __flashx and FALSE, otherwise.  */
+
+static bool
+avr_decl_flashx_p (tree decl)
+{
+  if (TREE_CODE (decl) != VAR_DECL
+      || TREE_TYPE (decl) == error_mark_node)
+    {
+      return false;
+    }
+
+  return ADDR_SPACE_FLASHX == TYPE_ADDR_SPACE (TREE_TYPE (decl));
+}
+
+
 /* Return TRUE if X is a MEM rtx located in flash and FALSE, otherwise.  */
 
 bool
@@ -671,14 +688,25 @@ avr_mem_flash_p (rtx x)
 }
 
 
-/* Return TRUE if X is a MEM rtx located in the 24-bit flash
-   address space and FALSE, otherwise.  */
+/* Return TRUE if X is a MEM rtx located in the 24-bit
+   address space __memx and FALSE, otherwise.  */
 
 bool
 avr_mem_memx_p (rtx x)
 {
   return (MEM_P (x)
 	  && ADDR_SPACE_MEMX == MEM_ADDR_SPACE (x));
+}
+
+
+/* Return TRUE if X is a MEM rtx located in the 24-bit flash
+   address space __flashx and FALSE, otherwise.  */
+
+bool
+avr_mem_flashx_p (rtx x)
+{
+  return (MEM_P (x)
+	  && ADDR_SPACE_FLASHX == MEM_ADDR_SPACE (x));
 }
 
 
@@ -3204,7 +3232,8 @@ avr_load_libgcc_p (rtx op)
 }
 
 
-/* Return true if a value of mode MODE is read by __xload_* function.  */
+/* Return true if a value of mode MODE is read by __xload_* function
+   provided it is located in __memx.  */
 
 bool
 avr_xload_libgcc_p (machine_mode mode)
@@ -3213,6 +3242,66 @@ avr_xload_libgcc_p (machine_mode mode)
 
   return (n_bytes > 1
 	  || avropt_n_flash > 1);
+}
+
+
+/* Return true if a value of mode MODE is read by __fload_* function
+   provided it is located in __flashx.  */
+
+bool
+avr_fload_libgcc_p (machine_mode)
+{
+  return (! AVR_HAVE_ELPMX
+	  && ! AVR_HAVE_LPMX);
+}
+
+
+/* USE_LIBGCC = true:  Return true when MEM is a mem rtx for address space
+   AS that will be loaded using a libgcc support function.
+   USE_LIBGCC = false:  Return true when MEM is a mem rtx for address space
+   AS that will be loaded inline (without using a libgcc support function).  */
+
+bool
+avr_load_libgcc_mem_p (rtx mem, addr_space_t as, bool use_libgcc)
+{
+  if (MEM_P (mem))
+    {
+      machine_mode mode = GET_MODE (mem);
+      rtx addr = XEXP (mem, 0);
+
+      if (MEM_ADDR_SPACE (mem) != as
+	  || GET_MODE (addr) != targetm.addr_space.pointer_mode (as))
+	return false;
+
+      switch (as)
+	{
+	default:
+	  gcc_unreachable ();
+
+	case ADDR_SPACE_FLASH:
+	  return avr_load_libgcc_p (mem) == use_libgcc;
+
+	case ADDR_SPACE_MEMX:
+	  return avr_xload_libgcc_p (mode) == use_libgcc;
+
+	case ADDR_SPACE_FLASHX:
+	  return avr_fload_libgcc_p (mode) == use_libgcc;
+	}
+    }
+
+  return false;
+}
+
+
+/* Like `avr_load_libgcc_mem_p()', but for a single_set insn with
+   a SET_SRC according to avr_load_libgcc_mem_p.  */
+
+bool
+avr_load_libgcc_insn_p (rtx_insn *insn, addr_space_t as, bool use_libgcc)
+{
+  rtx set = single_set (insn);
+  return (set
+	  && avr_load_libgcc_mem_p (SET_SRC (set), as, use_libgcc));
 }
 
 
@@ -3677,7 +3766,9 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
 }
 
 
-/* Worker function for xload_8 insn.  */
+/* Load a value from 24-bit address space __memx and return "".
+   PLEN == 0: Output instructions.
+   PLEN != 0: Set *PLEN to the length of the sequence in words.  */
 
 const char *
 avr_out_xload (rtx_insn * /*insn*/, rtx *op, int *plen)
@@ -3702,6 +3793,53 @@ avr_out_xload (rtx_insn * /*insn*/, rtx *op, int *plen)
 
   if (REGNO (xop[0]) != REGNO (xop[3]))
     avr_asm_len ("mov %0,%3", xop, plen, 1);
+
+  return "";
+}
+
+
+/* Load a value from 24-bit address space __flashx and return "".
+   PLEN == 0: Output instructions.
+   PLEN != 0: Set *PLEN to the length of the sequence in words.  */
+
+const char *
+avr_out_fload (rtx_insn * /*insn*/, rtx *xop, int *plen)
+{
+  gcc_assert (AVR_HAVE_ELPMX
+	      || (! AVR_HAVE_ELPM && AVR_HAVE_LPMX));
+  if (plen)
+    *plen = 0;
+
+  if (AVR_HAVE_ELPMX)
+    avr_asm_len ("out __RAMPZ__,%1", xop, plen, 1);
+
+  const int n_bytes = GET_MODE_SIZE (GET_MODE (xop[0]));
+  const char *s_load = AVR_HAVE_ELPMX ? "elpm %0,Z" : "lpm %0,Z";
+  const char *s_load_inc = AVR_HAVE_ELPMX ? "elpm %0,Z+" : "lpm %0,Z+";
+  const char *s_load_tmp_inc = AVR_HAVE_ELPMX ? "elpm r0,Z+" : "lpm r0,Z+";
+  bool use_tmp_for_r30 = false;
+
+  // There are nasty cases where reload assigns a register to dest that
+  // overlaps Z, even though fmov<mode> clobbers REG_Z.
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      rtx b = avr_byte (xop[0], i);
+      if (i == n_bytes - 1)
+	avr_asm_len (s_load, &b, plen, 1);
+      else if (REGNO (b) == REG_30)
+	{
+	  avr_asm_len (s_load_tmp_inc, &b, plen, 1);
+	  use_tmp_for_r30 = true;
+	}
+      else
+	avr_asm_len (s_load_inc, &b, plen, 1);
+    }
+
+  if (use_tmp_for_r30)
+    avr_asm_len ("mov r30,r0", xop, plen, 1);
+
+  if (AVR_HAVE_ELPMX && AVR_HAVE_RAMPD)
+    avr_asm_len ("out __RAMPZ__,__zero_reg__", xop, plen, 1);
 
   return "";
 }
@@ -10726,6 +10864,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
     case ADJUST_LEN_CPYMEM: avr_out_cpymem (insn, op, &len); break;
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
+    case ADJUST_LEN_FLOAD: avr_out_fload (insn, op, &len); break;
     case ADJUST_LEN_SEXT: avr_out_sign_extend (insn, op, &len); break;
 
     case ADJUST_LEN_SFRACT: avr_out_fract (insn, op, true, &len); break;
@@ -11151,7 +11290,8 @@ avr_progmem_p (tree decl, tree attributes)
   if (TREE_CODE (decl) != VAR_DECL)
     return 0;
 
-  if (avr_decl_memx_p (decl))
+  if (avr_decl_memx_p (decl)
+      || avr_decl_flashx_p (decl))
     return 2;
 
   if (avr_decl_flash_p (decl))
@@ -14147,6 +14287,7 @@ avr_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
       break; /* FLASH */
 
     case ADDR_SPACE_MEMX:
+    case ADDR_SPACE_FLASHX:
       if (REG_P (x))
 	ok = (!strict
 	      && can_create_pseudo_p ());
@@ -14162,7 +14303,7 @@ avr_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
 		&& REGNO (lo) == REG_Z);
 	}
 
-      break; /* MEMX */
+      break; /* MEMX, FLASHX */
     }
 
   if (avr_log.legitimate_address_p)
@@ -14210,19 +14351,20 @@ avr_addr_space_legitimize_address (rtx x, rtx old_x,
 /* Implement `TARGET_ADDR_SPACE_CONVERT'.  */
 
 static rtx
-avr_addr_space_convert (rtx src, tree type_from, tree type_to)
+avr_addr_space_convert (rtx src, tree type_old, tree type_new)
 {
-  addr_space_t as_from = TYPE_ADDR_SPACE (TREE_TYPE (type_from));
-  addr_space_t as_to = TYPE_ADDR_SPACE (TREE_TYPE (type_to));
+  addr_space_t as_old = TYPE_ADDR_SPACE (TREE_TYPE (type_old));
+  addr_space_t as_new = TYPE_ADDR_SPACE (TREE_TYPE (type_new));
+  int size_old = GET_MODE_SIZE (targetm.addr_space.pointer_mode (as_old));
+  int size_new = GET_MODE_SIZE (targetm.addr_space.pointer_mode (as_new));
 
   if (avr_log.progmem)
     avr_edump ("\n%!: op = %r\nfrom = %t\nto = %t\n",
-	       src, type_from, type_to);
+	       src, type_old, type_new);
 
   /* Up-casting from 16-bit to 24-bit pointer.  */
 
-  if (as_from != ADDR_SPACE_MEMX
-      && as_to == ADDR_SPACE_MEMX)
+  if (size_old == 2 && size_new == 3)
     {
       rtx sym = src;
       rtx reg = gen_reg_rtx (PSImode);
@@ -14239,14 +14381,16 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
       if (SYMBOL_REF_P (sym)
 	  && ADDR_SPACE_FLASH == AVR_SYMBOL_GET_ADDR_SPACE (sym))
 	{
-	  as_from = ADDR_SPACE_FLASH;
+	  as_old = ADDR_SPACE_FLASH;
 	}
 
-      /* Linearize memory: RAM has bit 23 set.  */
+      /* Linearize memory: RAM has bit 23 set.  When as_new = __flashx then
+	 this is basically UB since __flashx mistreats RAM addresses, but there
+	 is no way to bail out.  (Though -Waddr-space-convert will tell.)  */
 
-      int msb = ADDR_SPACE_GENERIC_P (as_from)
+      int msb = ADDR_SPACE_GENERIC_P (as_old)
 	? 0x80
-	: avr_addrspace[as_from].segment;
+	: avr_addrspace[as_old].segment;
 
       src = force_reg (Pmode, src);
 
@@ -14259,8 +14403,7 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
 
   /* Down-casting from 24-bit to 16-bit throws away the high byte.  */
 
-  if (as_from == ADDR_SPACE_MEMX
-      && as_to != ADDR_SPACE_MEMX)
+  if (size_old == 3 && size_new == 2)
     {
       rtx new_src = gen_reg_rtx (Pmode);
 
@@ -14283,6 +14426,18 @@ avr_addr_space_subset_p (addr_space_t /*subset*/, addr_space_t /*superset*/)
   /* Allow any kind of pointer mess.  */
 
   return true;
+}
+
+
+/* Helps the next function.  */
+
+static bool
+avr_addr_space_contains (addr_space_t super, addr_space_t sub)
+{
+  return (super == sub
+	  || super == ADDR_SPACE_MEMX
+	  || (super == ADDR_SPACE_FLASHX
+	      && sub != ADDR_SPACE_MEMX && ! ADDR_SPACE_GENERIC_P (sub)));
 }
 
 
@@ -14326,8 +14481,7 @@ avr_convert_to_type (tree type, tree expr)
       if (avr_log.progmem)
 	avr_edump ("%?: type = %t\nexpr = %t\n\n", type, expr);
 
-      if (as_new != ADDR_SPACE_MEMX
-	  && as_new != as_old)
+      if (! avr_addr_space_contains (as_new, as_old))
 	{
 	  location_t loc = EXPR_LOCATION (expr);
 	  const char *name_old = avr_addrspace[as_old].name;
@@ -14511,9 +14665,18 @@ avr_emit_cpymemhi (rtx *xop)
   rtx a_src  = XEXP (xop[1], 0);
   rtx a_dest = XEXP (xop[0], 0);
 
-  if (PSImode == GET_MODE (a_src))
+  if (as == ADDR_SPACE_FLASHX
+      && ! AVR_HAVE_ELPM)
     {
-      gcc_assert (as == ADDR_SPACE_MEMX);
+      a_src = copy_to_mode_reg (Pmode, avr_word (a_src, 0));
+      as = ADDR_SPACE_FLASH;
+    }
+
+  machine_mode addr_mode = GET_MODE (a_src);
+
+  if (addr_mode == PSImode)
+    {
+      gcc_assert (as == ADDR_SPACE_MEMX || as == ADDR_SPACE_FLASHX);
 
       loop_mode = (count < 0x100) ? QImode : HImode;
       loop_reg = gen_rtx_REG (loop_mode, 24);
@@ -14561,7 +14724,7 @@ avr_emit_cpymemhi (rtx *xop)
 
   gcc_assert (TMP_REGNO == LPM_REGNO);
 
-  if (as != ADDR_SPACE_MEMX)
+  if (addr_mode == HImode)
     {
       /* Load instruction ([E]LPM or LD) is known at compile time:
 	 Do the copy-loop inline.  */
@@ -14576,7 +14739,7 @@ avr_emit_cpymemhi (rtx *xop)
       rtx (*fun) (rtx, rtx)
 	= QImode == loop_mode ? gen_cpymemx_qi : gen_cpymemx_hi;
 
-      emit_move_insn (gen_rtx_REG (QImode, 23), a_hi8);
+      emit_move_insn (gen_rtx_REG (QImode, REG_23), a_hi8);
 
       insn = fun (xas, GEN_INT (avr_addr.rampz));
     }

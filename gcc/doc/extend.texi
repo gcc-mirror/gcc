@@ -1525,6 +1525,14 @@ address space @code{__flash@var{N}}.
 The compiler sets the @code{RAMPZ} segment register appropriately 
 before reading data by means of the @code{ELPM} instruction.
 
+@cindex @code{__flashx} AVR Named Address Spaces
+@item __flashx
+
+This is a 24-bit flash address space locating data in section
+@code{.progmemx.data}.
+The compiler sets the @code{RAMPZ} segment register appropriately 
+before reading data by means of the @code{ELPM} instruction.
+
 @cindex @code{__memx} AVR Named Address Spaces
 @item __memx
 This is a 24-bit address space that linearizes flash and RAM:
@@ -1604,9 +1612,9 @@ together with attribute @code{progmem}.
 @item
 Reading across the 64@tie{}KiB section boundary of
 the @code{__flash} or @code{__flash@var{N}} address spaces
-shows undefined behavior. The only address space that
-supports reading across the 64@tie{}KiB flash segment boundaries is
-@code{__memx}.
+is not supported. The only address spaces that
+support reading across the 64@tie{}KiB flash segment boundaries are
+@code{__memx} and @code{__flashx}.
 
 @item
 If you use one of the @code{__flash@var{N}} address spaces

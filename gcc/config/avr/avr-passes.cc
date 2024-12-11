@@ -4359,7 +4359,8 @@ struct AVR_LdSt_Props
   AVR_LdSt_Props (int regno, bool store_p, bool volatile_p, addr_space_t as)
   {
     bool generic_p = ADDR_SPACE_GENERIC_P (as);
-    bool flashx_p = ! generic_p && as != ADDR_SPACE_MEMX;
+    bool flashx_p = (! generic_p
+		     && as != ADDR_SPACE_MEMX && as != ADDR_SPACE_FLASHX);
     has_postinc = generic_p || (flashx_p && regno == REG_Z);
     has_predec = generic_p;
     has_ldd = ! AVR_TINY && generic_p && (regno == REG_Y || regno == REG_Z);

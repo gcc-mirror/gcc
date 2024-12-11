@@ -90,8 +90,21 @@ test3 (const __as tree *pt)
     abort();
 }
 
+#ifdef __AVR_HAVE_ELPM__
+void eat_flash (void)
+{
+  __asm (".space 0x10000");
+}
+__attribute__((__used__))
+void (*pfun) (void);
+#endif
+
 int main (void)
 {
+#ifdef __AVR_HAVE_ELPM__
+  pfun = eat_flash;
+#endif
+
   const __as tree *t = &abcd;
   test1();
   test2 (&abcd);
