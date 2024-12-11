@@ -45,8 +45,8 @@ void
 file_cache::initialize_input_context (diagnostic_input_charset_callback ccb,
 				      bool should_skip_bom)
 {
-  in_context.ccb = (ccb ? ccb : default_charset_callback);
-  in_context.should_skip_bom = should_skip_bom;
+  m_input_context.ccb = (ccb ? ccb : default_charset_callback);
+  m_input_context.should_skip_bom = should_skip_bom;
 }
 
 /* This is a cache used by get_next_line to store the content of a
@@ -435,7 +435,7 @@ file_cache::add_file (const char *file_path)
 
   unsigned highest_use_count = 0;
   file_cache_slot *r = evicted_cache_tab_entry (&highest_use_count);
-  if (!r->create (in_context, file_path, fp, highest_use_count))
+  if (!r->create (m_input_context, file_path, fp, highest_use_count))
     return NULL;
   return r;
 }
