@@ -2065,6 +2065,20 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 		  || GFC_ARRAY_TYPE_P (TREE_TYPE (se.expr)));
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (sym->backend_decl)));
 
+      if (sym->ts.type == BT_CHARACTER)
+	{
+	  /* Emit a DECL_EXPR for the variable sized array type in so the
+	     gimplification of its type sizes works correctly.  */
+	  tree arraytype;
+	  tmp = TREE_TYPE (sym->backend_decl);
+	  arraytype = TREE_TYPE (GFC_TYPE_ARRAY_DATAPTR_TYPE (tmp));
+	  if (! TYPE_NAME (arraytype))
+	    TYPE_NAME (arraytype) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+						NULL_TREE, arraytype);
+	  gfc_add_expr_to_block (&se.pre, build1 (DECL_EXPR,
+				 arraytype, TYPE_NAME (arraytype)));
+	}
+
       if (GFC_ARRAY_TYPE_P (TREE_TYPE (se.expr)))
 	{
 	  if (INDIRECT_REF_P (se.expr))
