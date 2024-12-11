@@ -513,9 +513,6 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/a-numeri.o	\
  ada/libgnat/ada.o	\
  ada/libgnat/g-byorma.o	\
- ada/libgnat/g-cpp.o	\
- ada/libgnat/g-cppexc.o	\
- ada/libgnat/g-cppstd.o	\
  ada/libgnat/g-cstyin.o	\
  ada/libgnat/g-heasor.o	\
  ada/libgnat/g-htable.o	\
@@ -697,9 +694,6 @@ GNATBIND_OBJS +=  \
  ada/libgnat/a-numeri.o   \
  ada/libgnat/ada.o        \
  ada/libgnat/g-byorma.o   \
- ada/libgnat/g-cpp.o      \
- ada/libgnat/g-cppexc.o   \
- ada/libgnat/g-cppstd.o   \
  ada/libgnat/g-cstyin.o   \
  ada/libgnat/g-hesora.o   \
  ada/libgnat/g-htable.o   \
