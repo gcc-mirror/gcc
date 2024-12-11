@@ -416,13 +416,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept _Stateless_alloc = (allocator_traits<_All>::is_always_equal::value
 				&& default_initializable<_All>);
 
-    template<typename _Alloc>
+    template<typename _Allocator>
       class _Promise_alloc
       {
-	using _ATr = allocator_traits<_Alloc>;
-	using _Rebound = typename _ATr::template rebind_alloc<_Alloc_block>;
-	using _Rebound_ATr = typename _ATr
-	  ::template rebind_traits<_Alloc_block>;
+	using _Rebound = __alloc_rebind<_Allocator, _Alloc_block>;
+	using _Rebound_ATr = allocator_traits<_Rebound>;
 	static_assert(is_pointer_v<typename _Rebound_ATr::pointer>,
 		      "Must use allocators for true pointers with generators");
 
@@ -465,30 +463,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public:
 	void*
 	operator new(std::size_t __sz)
-	  requires default_initializable<_Rebound> // _Alloc is non-void
+	  requires default_initializable<_Rebound> // _Allocator is non-void
 	{ return _M_allocate({}, __sz); }
 
-	template<typename _Na, typename... _Args>
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3900. The allocator_arg_t overloads of promise_type::operator new
+	// should not be constrained
+	template<typename _Alloc, typename... _Args>
 	void*
 	operator new(std::size_t __sz,
-		     allocator_arg_t, const _Na& __na,
+		     allocator_arg_t, const _Alloc& __a,
 		     const _Args&...)
-	  requires convertible_to<const _Na&, _Alloc>
 	{
-	  return _M_allocate(static_cast<_Rebound>(static_cast<_Alloc>(__na)),
-			     __sz);
+	  static_assert(convertible_to<const _Alloc&, _Allocator>,
+			"the allocator argument to the coroutine must be "
+			"convertible to the generator's allocator type");
+	  return _M_allocate(_Rebound(_Allocator(__a)), __sz);
 	}
 
-	template<typename _This, typename _Na, typename... _Args>
+	template<typename _This, typename _Alloc, typename... _Args>
 	void*
 	operator new(std::size_t __sz,
 		     const _This&,
-		     allocator_arg_t, const _Na& __na,
+		     allocator_arg_t, const _Alloc& __a,
 		     const _Args&...)
-	  requires convertible_to<const _Na&, _Alloc>
 	{
-	  return _M_allocate(static_cast<_Rebound>(static_cast<_Alloc>(__na)),
-			     __sz);
+	  static_assert(convertible_to<const _Alloc&, _Allocator>,
+			"the allocator argument to the coroutine must be "
+			"convertible to the generator's allocator type");
+	  return _M_allocate(_Rebound(_Allocator(__a)), __sz);
 	}
 
 	void
@@ -578,20 +581,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
-	template<typename _Na>
+	template<typename _Alloc>
 	static void*
-	_M_allocate(const _Na& __na, std::size_t __csz)
+	_M_allocate(const _Alloc& __a, std::size_t __csz)
 	{
-	  using _Rebound = typename std::allocator_traits<_Na>
-	    ::template rebind_alloc<_Alloc_block>;
-	  using _Rebound_ATr = typename std::allocator_traits<_Na>
-	    ::template rebind_traits<_Alloc_block>;
+	  using _Rebound = __alloc_rebind<_Alloc, _Alloc_block>;
+	  using _Rebound_ATr = allocator_traits<_Rebound>;
 
 	  static_assert(is_pointer_v<typename _Rebound_ATr::pointer>,
 			"Must use allocators for true pointers with generators");
 
 	  _Dealloc_fn __d = &_M_deallocator<_Rebound>;
-	  auto __b = static_cast<_Rebound>(__na);
+	  auto __b = static_cast<_Rebound>(__a);
 	  auto __asz = _M_alloc_size<_Rebound>(__csz);
 	  auto __nblk = _Alloc_block::_M_cnt(__asz);
 	  void* __p = __b.allocate(__nblk);
@@ -619,20 +620,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __p;
 	}
 
-	template<typename _Na, typename... _Args>
+	template<typename _Alloc, typename... _Args>
 	void*
 	operator new(std::size_t __sz,
-		     allocator_arg_t, const _Na& __na,
+		     allocator_arg_t, const _Alloc& __a,
 		     const _Args&...)
-	{ return _M_allocate(__na, __sz); }
+	{ return _M_allocate(__a, __sz); }
 
-	template<typename _This, typename _Na, typename... _Args>
+	template<typename _This, typename _Alloc, typename... _Args>
 	void*
 	operator new(std::size_t __sz,
 		     const _This&,
-		     allocator_arg_t, const _Na& __na,
+		     allocator_arg_t, const _Alloc& __a,
 		     const _Args&...)
-	{ return _M_allocate(__na, __sz); }
+	{ return _M_allocate(__a, __sz); }
 
 	void
 	operator delete(void* __ptr, std::size_t __sz) noexcept
