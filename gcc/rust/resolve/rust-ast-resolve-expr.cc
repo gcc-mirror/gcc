@@ -209,7 +209,7 @@ ResolveExpr::visit (AST::IfLetExpr &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // We know expr.get_patterns () has one pattern at most
   // so there's no reason to handle it like an AltPattern.
@@ -239,7 +239,7 @@ ResolveExpr::visit (AST::IfLetExprConseqElse &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // We know expr.get_patterns () has one pattern at most
   // so there's no reason to handle it like an AltPattern.
@@ -268,7 +268,7 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   if (expr.has_label ())
     {
@@ -576,7 +576,7 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // resolve the expression
   PatternDeclaration::go (expr.get_pattern (), Rib::ItemType::Var);
@@ -642,7 +642,7 @@ ResolveExpr::visit (AST::MatchExpr &expr)
       resolver->get_label_scope ().push (scope_node_id);
       resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
       resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-      resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+      resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
       // resolve
       AST::MatchArm &arm = match_case.get_arm ();
@@ -711,7 +711,7 @@ ResolveExpr::visit (AST::ClosureExprInner &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
@@ -741,7 +741,7 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
