@@ -2,9 +2,9 @@
 
 // ICE copying an augmented lookup during ADL
 
-struct __normal_iterator get(); // { dg-message "candidate: .__normal_iterator get\\(\\)." }
+struct __normal_iterator get(); // { dg-message "candidate .: .__normal_iterator get\\(\\)." }
 namespace boost {
-template <class> void get(); // { dg-message "candidate: .template<class> void boost::get\\(\\)." }
+template <class> void get(); // { dg-message "candidate .: .template<class> void boost::get\\(\\)." }
 struct A {
   A(int);
 };
@@ -64,6 +64,6 @@ struct C {
   A graph1_;
   A graph2_;
 };
-template <typename> void get(); // { dg-message "candidate: .template<class> void get\\(\\)." }
+template <typename> void get(); // { dg-message "candidate .: .template<class> void get\\(\\)." }
 void test_vf2_sub_graph_iso() { C a(vf2_subgraph_iso(0, 0, a, 0, 0, 0, 0, 0));
 }

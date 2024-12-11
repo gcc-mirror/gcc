@@ -4133,6 +4133,16 @@ print_z_candidates (location_t loc, struct z_candidate *candidates,
 
   auto_diagnostic_nesting_level sentinel;
 
+  int num_candidates = 0;
+  for (auto iter = candidates; iter; iter = iter->next)
+    ++num_candidates;
+
+  inform_n (loc,
+	    num_candidates, "there is %i candidate", "there are %i candidates",
+	    num_candidates);
+  auto_diagnostic_nesting_level sentinel2;
+
+  int candidate_idx = 0;
   for (; candidates; candidates = candidates->next)
     {
       if (only_viable_p.is_true () && candidates->viable != 1)
@@ -4143,7 +4153,11 @@ print_z_candidates (location_t loc, struct z_candidate *candidates,
 		       "use %<-fdiagnostics-all-candidates%> to display them");
 	  break;
 	}
-      print_z_candidate (loc, N_("candidate:"), candidates);
+      pretty_printer pp;
+      pp_printf (&pp, N_("candidate %i:"), candidate_idx + 1);
+      const char *const msgstr = pp_formatted_text (&pp);
+      print_z_candidate (loc, msgstr, candidates);
+      ++candidate_idx;
     }
 }
 

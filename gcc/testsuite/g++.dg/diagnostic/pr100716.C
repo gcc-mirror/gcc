@@ -32,23 +32,23 @@ struct C
 int main()
 {
   A<int>().f(0); // { dg-error "no matching function for call to 'A<int>::f\\(int\\)'" }
-  // { dg-message "candidate: 'template<class U> void A<T>::f\\(\\) \\\[with T = int\\\]'" "" { target *-*-* } Af }
+  // { dg-message "candidate 1: 'template<class U> void A<T>::f\\(\\) \\\[with T = int\\\]'" "" { target *-*-* } Af }
 
   A<int>().g(); // { dg-error "no matching function for call to 'A<int>::g\\(\\)'" }
-  // { dg-message "candidate: 'template<class U> void A<T>::g\\(U\\) \\\[with T = int\\\]'" "" { target *-*-* } Ag }
+  // { dg-message "candidate 1: 'template<class U> void A<T>::g\\(U\\) \\\[with T = int\\\]'" "" { target *-*-* } Ag }
 
   B<int>().f(); // { dg-error "no matching function for call to 'B<int>::f\\(\\)'" }
-  // { dg-message "candidate: 'template<class U> void B<T>::f\\(U\\) \\\[with T = int\\\]'" "" { target *-*-* } Bf }
+  // { dg-message "candidate 1: 'template<class U> void B<T>::f\\(U\\) \\\[with T = int\\\]'" "" { target *-*-* } Bf }
 
   B<int>().g(); // { dg-error "no matching function for call to 'B<int>::g\\(\\)'" }
-  // { dg-message "candidate: 'template<class U> void B<T>::g\\(U, T\\) \\\[with T = int\\\]'" "" { target *-*-* } Bg }
+  // { dg-message "candidate 1: 'template<class U> void B<T>::g\\(U, T\\) \\\[with T = int\\\]'" "" { target *-*-* } Bg }
 
   B<float>().g(0); // { dg-error "no matching function for call to 'B<float>::g\\(int\\)'" }
-  // { dg-message "candidate: 'template<class U> void B<T>::g\\(U, T\\) \\\[with T = float\\\]'" "" { target *-*-* } Bg }
+  // { dg-message "candidate 1: 'template<class U> void B<T>::g\\(U, T\\) \\\[with T = float\\\]'" "" { target *-*-* } Bg }
 
   C().f(); // { dg-error "no matching function for call to 'C::f\\(\\)'" }
-  // { dg-message "candidate: 'template<class U> void C::f\\(U\\)'" "" { target *-*-* } Cf }
+  // { dg-message "candidate 1: 'template<class U> void C::f\\(U\\)'" "" { target *-*-* } Cf }
 
   C().g(0); // { dg-error "no matching function for call to 'C::g\\(int\\)'" }
-  // { dg-message "candidate: 'template<class U> void C::g\\(\\)'" "" { target *-*-* } Cg }
+  // { dg-message "candidate 1: 'template<class U> void C::g\\(\\)'" "" { target *-*-* } Cg }
 }

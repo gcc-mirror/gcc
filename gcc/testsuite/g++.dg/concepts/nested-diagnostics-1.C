@@ -27,25 +27,26 @@ int main() {
 }
 
 /* { dg-begin-multiline-output "" }
-  * note: candidate: 'template<class auto:1>  requires  pettable<auto:1> void pet(auto:1)'
-    * note: template argument deduction/substitution failed:
-      * note: constraints not satisfied
-        * In substitution of 'template<class auto:1>  requires  pettable<auto:1> void pet(auto:1) [with auto:1 = lizard]':
-        * required from here
-        * required for the satisfaction of 'pettable<auto:1>' [with auto:1 = lizard]
-        * note: no operand of the disjunction is satisfied
-          * note: the operand 'has_member_pet<T>' is unsatisfied because
-            * required for the satisfaction of 'has_member_pet<T>' [with T = lizard]
-            * required for the satisfaction of 'pettable<auto:1>' [with auto:1 = lizard]
-            * in requirements with 'T t' [with T = lizard]
-            * note: the required expression 't.pet()' is invalid, because
-              * error: 'struct lizard' has no member named 'pet'
-          * note: the operand 'has_default_pet<T>' is unsatisfied because
-            * required for the satisfaction of 'has_default_pet<T>' [with T = lizard]
-            * required for the satisfaction of 'pettable<auto:1>' [with auto:1 = lizard]
-            * error: 'is_pettable' is not a member of 'lizard'
-  * note: candidate: 'void pet(dog)'
-    * note: no known conversion for argument 1 from 'lizard' to 'dog'
-  * note: candidate: 'void pet(cat)'
-    * note: no known conversion for argument 1 from 'lizard' to 'cat'
+  * note: there are 3 candidates
+    * note: candidate 1: 'template<class auto:1>  requires  pettable<auto:1> void pet(auto:1)'
+      * note: template argument deduction/substitution failed:
+        * note: constraints not satisfied
+          * In substitution of 'template<class auto:1>  requires  pettable<auto:1> void pet(auto:1) [with auto:1 = lizard]':
+          * required from here
+          * required for the satisfaction of 'pettable<auto:1>' [with auto:1 = lizard]
+          * note: no operand of the disjunction is satisfied
+            * note: the operand 'has_member_pet<T>' is unsatisfied because
+              * required for the satisfaction of 'has_member_pet<T>' [with T = lizard]
+              * required for the satisfaction of 'pettable<auto:1>' [with auto:1 = lizard]
+              * in requirements with 'T t' [with T = lizard]
+              * note: the required expression 't.pet()' is invalid, because
+                * error: 'struct lizard' has no member named 'pet'
+            * note: the operand 'has_default_pet<T>' is unsatisfied because
+              * required for the satisfaction of 'has_default_pet<T>' [with T = lizard]
+              * required for the satisfaction of 'pettable<auto:1>' [with auto:1 = lizard]
+              * error: 'is_pettable' is not a member of 'lizard'
+    * note: candidate 2: 'void pet(dog)'
+      * note: no known conversion for argument 1 from 'lizard' to 'dog'
+    * note: candidate 3: 'void pet(cat)'
+      * note: no known conversion for argument 1 from 'lizard' to 'cat'
    { dg-end-multiline-output "" } */
