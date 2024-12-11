@@ -6418,6 +6418,14 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	    object = probe;
 	  else
 	    {
+	      tree pvar = tree_strip_any_location_wrapper (probe);
+	      if (VAR_P (pvar) && DECL_ANON_UNION_VAR_P (pvar))
+		{
+		  /* Stores to DECL_ANON_UNION_VAR_P var are allowed to change
+		     active union member.  */
+		  probe = DECL_VALUE_EXPR (pvar);
+		  break;
+		}
 	      probe = cxx_eval_constant_expression (ctx, probe, vc_glvalue,
 						    non_constant_p, overflow_p);
 	      evaluated = true;
