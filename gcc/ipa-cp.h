@@ -299,4 +299,17 @@ ipa_vr_supported_type_p (tree type)
   return irange::supports_p (type) || prange::supports_p (type);
 }
 
+class ipa_vr;
+
+bool ipa_vr_operation_and_type_effects (vrange &dst_vr,
+					const vrange &src_vr,
+					enum tree_code operation,
+					tree dst_type, tree src_type);
+bool ipa_vr_operation_and_type_effects (vrange &dst_vr,
+					const ipa_vr &src_vr,
+					enum tree_code operation,
+					tree dst_type, tree src_type);
+
+
+
 #endif /* IPA_CP_H */

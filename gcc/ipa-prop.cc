@@ -3471,6 +3471,24 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		  gcc_unreachable ();
 		}
 
+	      if (src->m_vr && src->m_vr->known_p ())
+		{
+		  value_range svr (src->m_vr->type ());
+		  if (!dst->m_vr || !dst->m_vr->known_p ())
+		    ipa_set_jfunc_vr (dst, *src->m_vr);
+		  else if (ipa_vr_operation_and_type_effects (svr, *src->m_vr,
+							   NOP_EXPR,
+							   dst->m_vr->type (),
+							   src->m_vr->type ()))
+		    {
+		      value_range dvr;
+		      dst->m_vr->get_vrange (dvr);
+		      dvr.intersect (svr);
+		      if (!dvr.undefined_p ())
+			ipa_set_jfunc_vr (dst, dvr);
+		    }
+		}
+
 	      if (src->agg.items
 		  && (dst_agg_p || !src->agg.by_ref))
 		{
