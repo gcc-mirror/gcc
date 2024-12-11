@@ -1791,6 +1791,16 @@ default_addr_space_convert (rtx op ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+
+/* The default hook for TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA.  */
+
+addr_space_t
+default_addr_space_for_artificial_rodata (tree, artificial_rodata)
+{
+  return ADDR_SPACE_GENERIC;
+}
+
+
 /* The defualt implementation of TARGET_HARD_REGNO_NREGS.  */
 
 unsigned int

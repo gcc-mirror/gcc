@@ -7375,6 +7375,8 @@ c_register_addr_space ("__ea", ADDR_SPACE_EA);
 
 @hook TARGET_ADDR_SPACE_DIAGNOSE_USAGE
 
+@hook TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous

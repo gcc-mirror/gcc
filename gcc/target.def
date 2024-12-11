@@ -3540,6 +3540,35 @@ The default implementation does nothing.",
  void, (addr_space_t as, location_t loc),
  default_addr_space_diagnose_usage)
 
+/* Function to patch the address space of some compiler-generated
+   read-only data.  Used for optimization purposes only.  */
+DEFHOOK
+(for_artificial_rodata,
+ "Define this hook to return a named address space to be used for\n\
+@var{type}, usually the type of an artificial lookup-table that would\n\
+reside in @code{.rodata} and in the generic address space.\n\
+\n\
+The hook can be used to put compiler-generated, artificial lookup tables in\n\
+static storage into a non-generic address space when it is better suited\n\
+than the generic address space.\n\
+The compiler will generate all accesses to the respective data\n\
+so that all associated accesses will also use the specified address space\n\
+and pointer mode.\n\
+\n\
+@var{type} is the type of the lookup table. @var{purpose} specifies\n\
+the purpose of the lookup table.  It is one of:\n\
+@table @code\n\
+@item ARTIFICIAL_RODATA_CSWITCH\n\
+@file{tree-switch-conversion.cc} lowered a GIMPLE_SWITCH expressions\n\
+to something more efficient than a jump table.\n\
+@item ARTIFICIAL_RODATA_CRC\n\
+@file{gimple-crc-optimization.cc} optimized a CRC computation by\n\
+using a polynomial lookup table.\n\
+@end table\n\
+The default implementation of the hook returns @code{ADDR_SPACE_GENERIC}.",
+ addr_space_t, (tree type, enum artificial_rodata purpose),
+ default_addr_space_for_artificial_rodata)
+
 HOOK_VECTOR_END (addr_space)
 
 #undef HOOK_PREFIX

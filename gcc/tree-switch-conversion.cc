@@ -1008,6 +1008,16 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
       default_type = TREE_TYPE (m_default_values[num]);
       value_type = array_value_type (default_type, num);
       array_type = build_array_type (value_type, arr_index_type);
+      addr_space_t as
+	= targetm.addr_space.for_artificial_rodata (array_type,
+						    ARTIFICIAL_RODATA_CSWITCH);
+      if (!ADDR_SPACE_GENERIC_P (as))
+	{
+	  int quals = (TYPE_QUALS_NO_ADDR_SPACE (value_type)
+		       | ENCODE_QUAL_ADDR_SPACE (as));
+	  value_type = build_qualified_type (value_type, quals);
+	  array_type = build_array_type (value_type, arr_index_type);
+	}
       if (default_type != value_type)
 	{
 	  unsigned int i;

@@ -120,6 +120,25 @@ const avr_addrspace_t avr_addrspace[ADDR_SPACE_COUNT] =
 };
 
 
+#ifdef HAVE_LD_AVR_AVRXMEGA2_FLMAP
+static const bool have_avrxmega2_flmap = true;
+#else
+static const bool have_avrxmega2_flmap = false;
+#endif
+
+#ifdef HAVE_LD_AVR_AVRXMEGA4_FLMAP
+static const bool have_avrxmega4_flmap = true;
+#else
+static const bool have_avrxmega4_flmap = false;
+#endif
+
+#ifdef HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
+static const bool have_avrxmega3_rodata_in_flash = true;
+#else
+static const bool have_avrxmega3_rodata_in_flash = false;
+#endif
+
+
 /* Holding RAM addresses of some SFRs used by the compiler and that
    are unique over all devices in an architecture like 'avr4'.  */
 
@@ -284,6 +303,36 @@ avr_tolower (char *lo, const char *up)
   *lo = '\0';
 
   return lo0;
+}
+
+
+/* Return TRUE when the .rodata sections are located in program memory (flash).
+   Otherwise, the .rodata input sections are located in RAM and FALSE is
+   returned.  Note that the FLMAP cases are a bit wonky since the libs are
+   compiled with the default but -mrodata-in-ram is not a multilib option.  */
+
+static bool
+avr_rodata_in_flash_p ()
+{
+  switch (avr_arch_index)
+    {
+    default:
+      break;
+
+    case ARCH_AVRTINY:
+      return true;
+
+    case ARCH_AVRXMEGA3:
+      return have_avrxmega3_rodata_in_flash;
+
+    case ARCH_AVRXMEGA2:
+      return avropt_flmap && have_avrxmega2_flmap && avropt_rodata_in_ram != 1;
+
+    case ARCH_AVRXMEGA4:
+      return avropt_flmap && have_avrxmega4_flmap && avropt_rodata_in_ram != 1;
+    }
+
+  return false;
 }
 
 
@@ -11482,6 +11531,18 @@ avr_addr_space_diagnose_usage (addr_space_t as, location_t loc)
 }
 
 
+/* Implement `TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA'.  */
+
+static addr_space_t
+avr_addr_space_for_artificial_rodata (tree /*type*/,
+				      artificial_rodata /*kind*/)
+{
+  return avr_rodata_in_flash_p ()
+    ? ADDR_SPACE_GENERIC
+    : avropt_n_flash > 1 ? ADDR_SPACE_FLASHX : ADDR_SPACE_FLASH;
+}
+
+
 /* Implement `TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID'.  Zero is a valid
    address in all address spaces. Even in ADDR_SPACE_FLASH1 etc..,
    a zero address is valid and means 0x<RAMPZ val>0000, where RAMPZ is
@@ -11821,49 +11882,6 @@ avr_insert_attributes (tree node, tree *attributes)
 		 " read-only section by means of %qs", node, reason);
 	}
     }
-}
-
-#ifdef HAVE_LD_AVR_AVRXMEGA2_FLMAP
-static const bool have_avrxmega2_flmap = true;
-#else
-static const bool have_avrxmega2_flmap = false;
-#endif
-
-#ifdef HAVE_LD_AVR_AVRXMEGA4_FLMAP
-static const bool have_avrxmega4_flmap = true;
-#else
-static const bool have_avrxmega4_flmap = false;
-#endif
-
-#ifdef HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
-static const bool have_avrxmega3_rodata_in_flash = true;
-#else
-static const bool have_avrxmega3_rodata_in_flash = false;
-#endif
-
-
-static bool
-avr_rodata_in_flash_p ()
-{
-  switch (avr_arch_index)
-    {
-    default:
-      break;
-
-    case ARCH_AVRTINY:
-      return true;
-
-    case ARCH_AVRXMEGA3:
-      return have_avrxmega3_rodata_in_flash;
-
-    case ARCH_AVRXMEGA2:
-      return avropt_flmap && have_avrxmega2_flmap && avropt_rodata_in_ram != 1;
-
-    case ARCH_AVRXMEGA4:
-      return avropt_flmap && have_avrxmega4_flmap && avropt_rodata_in_ram != 1;
-    }
-
-  return false;
 }
 
 
@@ -16810,6 +16828,10 @@ avr_unwind_word_mode ()
 
 #undef  TARGET_ADDR_SPACE_DIAGNOSE_USAGE
 #define TARGET_ADDR_SPACE_DIAGNOSE_USAGE avr_addr_space_diagnose_usage
+
+#undef  TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA
+#define TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA \
+  avr_addr_space_for_artificial_rodata
 
 #undef  TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
 #define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID avr_addr_space_zero_address_valid

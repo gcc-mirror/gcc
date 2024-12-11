@@ -11532,6 +11532,31 @@ the address space as registered with @code{c_register_addr_space}.
 The default implementation does nothing.
 @end deftypefn
 
+@deftypefn {Target Hook} addr_space_t TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA (tree @var{type}, enum artificial_rodata @var{purpose})
+Define this hook to return a named address space to be used for
+@var{type}, usually the type of an artificial lookup-table that would
+reside in @code{.rodata} and in the generic address space.
+
+The hook can be used to put compiler-generated, artificial lookup tables in
+static storage into a non-generic address space when it is better suited
+than the generic address space.
+The compiler will generate all accesses to the respective data
+so that all associated accesses will also use the specified address space
+and pointer mode.
+
+@var{type} is the type of the lookup table. @var{purpose} specifies
+the purpose of the lookup table.  It is one of:
+@table @code
+@item ARTIFICIAL_RODATA_CSWITCH
+@file{tree-switch-conversion.cc} lowered a GIMPLE_SWITCH expressions
+to something more efficient than a jump table.
+@item ARTIFICIAL_RODATA_CRC
+@file{gimple-crc-optimization.cc} optimized a CRC computation by
+using a polynomial lookup table.
+@end table
+The default implementation of the hook returns @code{ADDR_SPACE_GENERIC}.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous

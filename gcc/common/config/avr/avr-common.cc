@@ -29,12 +29,11 @@
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options avr_option_optimization_table[] =
   {
-    // The lookup table from tree-swicth-conversion.cc lives in .rodata
-    // and hence consumes RAM on almost all devices.  As PR49857 has
-    // been rejected several times for non-technical reasons, just
-    // disable -ftree-switch-conversion by default.  But even with PR49857
-    // in place there remains PR81540, which cannot be filtered out since
-    // the pass has no way to hook in.
+    // There is no way to filter out unwanted cswtch transformations:
+    // - Code bload as mentioned in PR81540.
+    // - When tree-switch-conversion.cc::build_one_array() finds a
+    //   linear function, it will use a formula that involves a
+    //   multiplication without even trying to work out the costs.
     { OPT_LEVELS_ALL, OPT_ftree_switch_conversion, NULL, 0 },
     // The only effect of -fcaller-saves might be that it triggers
     // a frame without need when it tries to be smart around calls.
