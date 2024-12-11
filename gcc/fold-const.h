@@ -278,6 +278,12 @@ protected:
      true is returned.  Then RET is set to corresponding comparsion result.  */
   bool verify_hash_value (const_tree arg0, const_tree arg1, unsigned int flags,
 			  bool *ret);
+
+private:
+  /* Return true if two operands are equal.  The flags fields can be used
+     to specify OEP flags described in tree-core.h.  */
+  bool operand_equal_p (tree, const_tree, tree, const_tree,
+			unsigned int flags);
 };
 
 #endif // GCC_FOLD_CONST_H

@@ -3169,6 +3169,17 @@ bool
 operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 				  unsigned int flags)
 {
+  return operand_equal_p (TREE_TYPE (arg0), arg0, TREE_TYPE (arg1), arg1, flags);
+}
+
+/* The same as operand_equal_p however the type of ARG0 and ARG1 are assumed to be
+   the TYPE0 and TYPE1 respectively.  */
+
+bool
+operand_compare::operand_equal_p (tree type0, const_tree arg0,
+				  tree type1, const_tree arg1,
+				  unsigned int flags)
+{
   bool r;
   if (verify_hash_value (arg0, arg1, flags, &r))
     return r;
@@ -3178,25 +3189,25 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 
   /* If either is ERROR_MARK, they aren't equal.  */
   if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK
-      || TREE_TYPE (arg0) == error_mark_node
-      || TREE_TYPE (arg1) == error_mark_node)
+      || type0 == error_mark_node
+      || type1 == error_mark_node)
     return false;
 
   /* Similar, if either does not have a type (like a template id),
      they aren't equal.  */
-  if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
+  if (!type0 || !type1)
     return false;
 
   /* Bitwise identity makes no sense if the values have different layouts.  */
   if ((flags & OEP_BITWISE)
-      && !tree_nop_conversion_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
+      && !tree_nop_conversion_p (type0, type1))
     return false;
 
   /* We cannot consider pointers to different address space equal.  */
-  if (POINTER_TYPE_P (TREE_TYPE (arg0))
-      && POINTER_TYPE_P (TREE_TYPE (arg1))
-      && (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg0)))
-	  != TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg1)))))
+  if (POINTER_TYPE_P (type0)
+      && POINTER_TYPE_P (type1)
+      && (TYPE_ADDR_SPACE (TREE_TYPE (type0))
+	  != TYPE_ADDR_SPACE (TREE_TYPE (type1))))
     return false;
 
   /* Check equality of integer constants before bailing out due to
@@ -3216,19 +3227,20 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	 because they may change the signedness of the arguments.  As pointers
 	 strictly don't have a signedness, require either two pointers or
 	 two non-pointers as well.  */
-      if (TYPE_UNSIGNED (TREE_TYPE (arg0)) != TYPE_UNSIGNED (TREE_TYPE (arg1))
-	  || POINTER_TYPE_P (TREE_TYPE (arg0))
-			     != POINTER_TYPE_P (TREE_TYPE (arg1)))
+      if (TYPE_UNSIGNED (type0) != TYPE_UNSIGNED (type1)
+	  || POINTER_TYPE_P (type0) != POINTER_TYPE_P (type1))
 	return false;
 
       /* If both types don't have the same precision, then it is not safe
 	 to strip NOPs.  */
-      if (element_precision (TREE_TYPE (arg0))
-	  != element_precision (TREE_TYPE (arg1)))
+      if (element_precision (type0) != element_precision (type1))
 	return false;
 
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
+
+      type0 = TREE_TYPE (arg0);
+      type1 = TREE_TYPE (arg1);
     }
 #if 0
   /* FIXME: Fortran FE currently produce ADDR_EXPR of NOP_EXPR. Enable the
@@ -3287,9 +3299,9 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 
   /* When not checking adddresses, this is needed for conversions and for
      COMPONENT_REF.  Might as well play it safe and always test this.  */
-  if (TREE_CODE (TREE_TYPE (arg0)) == ERROR_MARK
-      || TREE_CODE (TREE_TYPE (arg1)) == ERROR_MARK
-      || (TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1))
+  if (TREE_CODE (type0) == ERROR_MARK
+      || TREE_CODE (type1) == ERROR_MARK
+      || (TYPE_MODE (type0) != TYPE_MODE (type1)
 	  && !(flags & OEP_ADDRESS_OF)))
     return false;
 
@@ -3382,21 +3394,18 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	    return true;
 
 	  /* See sem_variable::equals in ipa-icf for a similar approach.  */
-	  tree typ0 = TREE_TYPE (arg0);
-	  tree typ1 = TREE_TYPE (arg1);
-
-	  if (TREE_CODE (typ0) != TREE_CODE (typ1))
+	  if (TREE_CODE (type0) != TREE_CODE (type1))
 	    return false;
-	  else if (TREE_CODE (typ0) == ARRAY_TYPE)
+	  else if (TREE_CODE (type0) == ARRAY_TYPE)
 	    {
 	      /* For arrays, check that the sizes all match.  */
-	      const HOST_WIDE_INT siz0 = int_size_in_bytes (typ0);
-	      if (TYPE_MODE (typ0) != TYPE_MODE (typ1)
+	      const HOST_WIDE_INT siz0 = int_size_in_bytes (type0);
+	      if (TYPE_MODE (type0) != TYPE_MODE (type1)
 		  || siz0 < 0
-		  || siz0 != int_size_in_bytes (typ1))
+		  || siz0 != int_size_in_bytes (type1))
 		return false;
 	    }
-	  else if (!types_compatible_p (typ0, typ1))
+	  else if (!types_compatible_p (type0, type1))
 	    return false;
 
 	  vec<constructor_elt, va_gc> *v0 = CONSTRUCTOR_ELTS (arg0);
@@ -3420,7 +3429,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 
 	      /* ... and that they apply to the same field!  */
 	      if (c0->index != c1->index
-		  && (TREE_CODE (typ0) == ARRAY_TYPE
+		  && (TREE_CODE (type0) == ARRAY_TYPE
 		      ? !operand_equal_p (c0->index, c1->index, flags)
 		      : !operand_equal_p (DECL_FIELD_OFFSET (c0->index),
 					  DECL_FIELD_OFFSET (c1->index),
@@ -3462,8 +3471,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
         {
 	CASE_CONVERT:
         case FIX_TRUNC_EXPR:
-	  if (TYPE_UNSIGNED (TREE_TYPE (arg0))
-	      != TYPE_UNSIGNED (TREE_TYPE (arg1)))
+	  if (TYPE_UNSIGNED (type0) != TYPE_UNSIGNED (type1))
 	    return false;
 	  break;
 	default:
@@ -3499,12 +3507,10 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	case INDIRECT_REF:
 	  if (!(flags & OEP_ADDRESS_OF))
 	    {
-	      if (TYPE_ALIGN (TREE_TYPE (arg0))
-		  != TYPE_ALIGN (TREE_TYPE (arg1)))
+	      if (TYPE_ALIGN (type0) != TYPE_ALIGN (type1))
 		return false;
 	      /* Verify that the access types are compatible.  */
-	      if (TYPE_MAIN_VARIANT (TREE_TYPE (arg0))
-		  != TYPE_MAIN_VARIANT (TREE_TYPE (arg1)))
+	      if (TYPE_MAIN_VARIANT (type0) != TYPE_MAIN_VARIANT (type1))
 		return false;
 	    }
 	  flags &= ~OEP_ADDRESS_OF;
@@ -3512,8 +3518,8 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 
 	case IMAGPART_EXPR:
 	  /* Require the same offset.  */
-	  if (!operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
-				TYPE_SIZE (TREE_TYPE (arg1)),
+	  if (!operand_equal_p (TYPE_SIZE (type0),
+				TYPE_SIZE (type1),
 				flags & ~OEP_ADDRESS_OF))
 	    return false;
 
@@ -3527,15 +3533,15 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	  if (!(flags & OEP_ADDRESS_OF))
 	    {
 	      /* Require equal access sizes */
-	      if (TYPE_SIZE (TREE_TYPE (arg0)) != TYPE_SIZE (TREE_TYPE (arg1))
-		  && (!TYPE_SIZE (TREE_TYPE (arg0))
-		      || !TYPE_SIZE (TREE_TYPE (arg1))
-		      || !operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
-					   TYPE_SIZE (TREE_TYPE (arg1)),
+	      if (TYPE_SIZE (type0) != TYPE_SIZE (type1)
+		  && (!TYPE_SIZE (type0)
+		      || !TYPE_SIZE (type1)
+		      || !operand_equal_p (TYPE_SIZE (type0),
+					   TYPE_SIZE (type1),
 					   flags)))
 		return false;
 	      /* Verify that access happens in similar types.  */
-	      if (!types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
+	      if (!types_compatible_p (type0, type1))
 		return false;
 	      /* Verify that accesses are TBAA compatible.  */
 	      if (!alias_ptr_types_compatible_p
@@ -3547,8 +3553,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		      != MR_DEPENDENCE_BASE (arg1)))
 		return false;
 	     /* Verify that alignment is compatible.  */
-	     if (TYPE_ALIGN (TREE_TYPE (arg0))
-		 != TYPE_ALIGN (TREE_TYPE (arg1)))
+	     if (TYPE_ALIGN (type0) != TYPE_ALIGN (type1))
 		return false;
 	    }
 	  flags &= ~OEP_ADDRESS_OF;
@@ -3684,8 +3689,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	     of op1.  Need to check to make sure they are the same.  */
 	  if (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
-	      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 1)))
-		 != TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 1))))
+	      && TYPE_PRECISION (type0) != TYPE_PRECISION (type1))
 	    return false;
 	  /* FALLTHRU */
 
@@ -3826,16 +3830,15 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	     indexed in increasing order and form an initial sequence.
 
 	     We make no effort to compare nonconstant ones in GENERIC.  */
-	  if (!VECTOR_TYPE_P (TREE_TYPE (arg0))
-	      || !VECTOR_TYPE_P (TREE_TYPE (arg1)))
+	  if (!VECTOR_TYPE_P (type0) || !VECTOR_TYPE_P (type1))
 	    return false;
 
 	  /* Be sure that vectors constructed have the same representation.
 	     We only tested element precision and modes to match.
 	     Vectors may be BLKmode and thus also check that the number of
 	     parts match.  */
-	  if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)),
-			TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1))))
+	  if (maybe_ne (TYPE_VECTOR_SUBPARTS (type0),
+			TYPE_VECTOR_SUBPARTS (type1)))
 	    return false;
 
 	  vec<constructor_elt, va_gc> *v0 = CONSTRUCTOR_ELTS (arg0);
