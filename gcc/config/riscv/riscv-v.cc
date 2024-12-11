@@ -3385,7 +3385,8 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
 
   insn_code icode = code_for_pred_compress (vmode);
   rtx ops[] = {d->target, merge, d->op0, mask};
-  emit_vlmax_insn (icode, COMPRESS_OP_MERGE, ops);
+  emit_nonvlmax_insn (icode, COMPRESS_OP_MERGE, ops,
+		      gen_int_mode (vlen, Pmode));
   return true;
 }
 
