@@ -25721,7 +25721,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
    slightly less desirable, etc.).  */
 
 static int
-ix86_simd_clone_usable (struct cgraph_node *node)
+ix86_simd_clone_usable (struct cgraph_node *node, machine_mode)
 {
   switch (node->simdclone->vecsize_mangle)
     {

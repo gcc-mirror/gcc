@@ -5653,7 +5653,8 @@ gcn_simd_clone_adjust (struct cgraph_node *ARG_UNUSED (node))
 /* Implement TARGET_SIMD_CLONE_USABLE.  */
 
 static int
-gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node))
+gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node),
+		       machine_mode ARG_UNUSED (vector_mode))
 {
   /* We don't need to do anything here because
      gcn_simd_clone_compute_vecsize_and_simdlen currently only returns one

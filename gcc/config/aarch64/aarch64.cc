@@ -29490,12 +29490,12 @@ aarch64_simd_clone_adjust (struct cgraph_node *node)
 /* Implement TARGET_SIMD_CLONE_USABLE.  */
 
 static int
-aarch64_simd_clone_usable (struct cgraph_node *node)
+aarch64_simd_clone_usable (struct cgraph_node *node, machine_mode vector_mode)
 {
   switch (node->simdclone->vecsize_mangle)
     {
     case 'n':
-      if (!TARGET_SIMD)
+      if (!TARGET_SIMD || aarch64_sve_mode_p (vector_mode))
 	return -1;
       return 0;
     default:

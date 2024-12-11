@@ -1645,10 +1645,10 @@ void, (struct cgraph_node *), NULL)
 DEFHOOK
 (usable,
 "This hook should return -1 if SIMD clone @var{node} shouldn't be used\n\
-in vectorized loops in current function, or non-negative number if it is\n\
-usable.  In that case, the smaller the number is, the more desirable it is\n\
-to use it.",
-int, (struct cgraph_node *), NULL)
+in vectorized loops in current function with @var{vector_mode}, or\n\
+non-negative number if it is usable.  In that case, the smaller the number\n\
+is, the more desirable it is to use it.",
+int, (struct cgraph_node *, machine_mode), NULL)
 
 HOOK_VECTOR_END (simd_clone)
 
