@@ -31188,8 +31188,17 @@ package body Sem_Util is
                            --  removal, e.g. by validity checks.
 
                            if not Comes_From_Source (Obj) then
-                              return
-                                Is_Known_On_Entry (Expression (Parent (Obj)));
+                              declare
+                                 D : constant Node_Id :=
+                                       Declaration_Node (Obj);
+                              begin
+                                 if Nkind (D) = N_Object_Renaming_Declaration
+                                 then
+                                    return Is_Known_On_Entry (Name (D));
+                                 else
+                                    return Is_Known_On_Entry (Expression (D));
+                                 end if;
+                              end;
                            end if;
 
                            --  return False if not "all views are constant".
