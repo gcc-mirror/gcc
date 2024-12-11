@@ -1,5 +1,10 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/65181
+	* gcc.target/nvptx/alloca-1-O0.c: New.
+	* gcc.target/nvptx/alloca-2-O1.c: Likewise.
+	* gcc.target/nvptx/vla-1-O0.c: Likewise.
+
 	Backported from trunk:
 	2024-06-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
