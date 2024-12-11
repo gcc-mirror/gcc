@@ -1,3 +1,19 @@
+2024-12-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117120
+	* gm2-compiler/M2CaseList.mod (CaseBoundsResolved): Rewrite.
+	(ConvertNulStr2NulChar): New procedure function.
+	(NulStr2NulChar): Ditto.
+	(GetCaseExpression): Ditto.
+	(OverlappingCaseBound): Rewrite.
+	* gm2-compiler/M2GCCDeclare.mod (CheckResolveSubrange): Allow
+	'' to be used as the subrange low limit.
+	* gm2-compiler/M2GenGCC.mod (FoldConvert): Rewrite.
+	(PopKindTree): Ditto.
+	(BuildHighFromString): Reformat.
+	* gm2-compiler/SymbolTable.mod (PushConstString): Add test for
+	length 0 and PushChar (nul).
+
 2024-12-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115328

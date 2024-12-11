@@ -1,3 +1,208 @@
+2024-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/117944
+	* libsarifreplay.cc (sarif_replayer::handle_result_obj): Get any
+	helpUri	from the rule_obj and pass it to add_rule.
+
+2024-12-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/117946
+	* lra-assigns.cc: (find_hard_regno_for_1): Use the biggest mode to
+	check ira_prohibited_class_mode_regs.
+
+2024-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117880
+	* fold-const.cc (operand_compare::operand_equal_p) <case tcc_unary>:
+	Use OP_SAME_WITH_NULL instead of OP_SAME.
+
+2024-12-10  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/117675
+	* config/arm/arm.cc (arm_ldrd_legitimate_address): New function.
+	* config/arm/arm-protos.h (arm_ldrd_legitimate_address): New prototype.
+	* config/arm/constraints.md: Add new Uo constraint.
+	* config/arm/predicates.md (arm_ldrd_memory_operand): Add new predicate.
+	* config/arm/sync.md (arm_atomic_loaddi2_ldrd): Use
+	arm_ldrd_memory_operand and Uo.
+
+2024-12-10  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNE_BASE): New define.
+	* config/aarch64/tuning_models/ampere1b.h: Use AARCH64_EXTRA_TUNE_BASE.
+	* config/aarch64/tuning_models/cortexx925.h: Likewise.
+	* config/aarch64/tuning_models/fujitsu_monaka.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv8_a.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv9_a.h: Likewise.
+	* config/aarch64/tuning_models/neoversen1.h: Likewise.
+	* config/aarch64/tuning_models/neoversen2.h: Likewise.
+	* config/aarch64/tuning_models/neoversen3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev1.h: Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3ae.h: Likewise.
+
+2024-12-10  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_EXPAND_ALIGNMENT): Remove.
+	(DATA_ALIGNMENT): Use aarch64_data_alignment.
+	(LOCAL_ALIGNMENT): Use aarch64_stack_alignment.
+	* config/aarch64/aarch64.cc (aarch64_data_alignment): New function.
+	(aarch64_stack_alignment): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_data_alignment): New prototype.
+	(aarch64_stack_alignment): Likewise.
+
+2024-12-10  Wilco Dijkstra  <wdijkstr@ip-10-252-53-150.eu-west-1.compute.internal>
+
+	* config/aarch64/aarch64.cc (aarch64_classify_address): Treat SIMD structs
+	identically in little and bigendian.
+	* config/aarch64/aarch64-simd.md (aarch64_mov<mode>): Remove VSTRUCT
+	instructions.
+	(aarch64_be_mov<mode>): Allow little-endian, rename to aarch64_mov<mode>.
+	(aarch64_be_movoi): Allow little-endian, rename to aarch64_movoi.
+	(aarch64_be_movci): Allow little-endian, rename to aarch64_movci.
+	(aarch64_be_movxi): Allow little-endian, rename to aarch64_movxi.
+	Remove big-endian special case in define_split variants.
+
+2024-12-10  Arsen Arsenović  <arsen@aarsen.me>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* dumpfile.cc (FIRST_ME_AUTO_NUMBERED_DUMP): Bump to 6 for sake
+	of the coroutine dump.
+
+2024-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi (vcond@var{m}@var{n}, vcondu@var{m}@var{n})
+	(vcondeq@var{m}@var{n}): Delete.
+	(vcond_mask_@var{m}@var{n}): Redocument in standalone form.
+	* internal-fn.def (VCOND, VCONDU, VCONDEQ): Delete.
+	* internal-fn.cc (expand_vec_cond_optab_fn): Delete.
+	* optabs.def (vcond_optab, vcondu_optab, vcondeq_optab): Delete.
+
+2024-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_sve_vcond): Delete.
+	* config/aarch64/aarch64-simd.md (<su><maxmin>v2di3): Expand into
+	separate vec_cmp and vcond_mask instructions, instead of using vcond.
+	(vcond<mode><mode>, vcond<v_cmp_mixed><mode>, vcondu<mode><mode>)
+	(vcondu<mode><v_cmp_mixed>): Delete.
+	* config/aarch64/aarch64-sve.md (vcond<SVE_ALL:mode><SVE_I:mode>)
+	(vcondu<SVE_ALL:mode><SVE_I:mode>, vcond<mode><v_fp_equiv>): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_expand_sve_vcond): Likewise.
+	* config/aarch64/iterators.md (V_FP_EQUIV, v_fp_equiv, V_cmp_mixed)
+	(v_cmp_mixed): Likewise.
+
+2024-12-10  Saurabh Jha  <saurabh.jha@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_pragma_builtins_checker::require_immediate_lane_index): New
+	overload.
+	(aarch64_pragma_builtins_checker::check): Add support for FP8FMA
+	intrinsics.
+	(aarch64_expand_pragma_builtins): Likewise.
+	* config/aarch64/aarch64-c.cc
+	(aarch64_update_cpp_builtins): Conditionally define TARGET_FP8FMA.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Add the FP8FMA
+	intrinsics.
+	* config/aarch64/aarch64-simd.md:
+	(@aarch64_<FMLAL_FP8_HF:insn><mode): New pattern.
+	(@aarch64_<FMLAL_FP8_HF:insn>_lane<V8HF_ONLY:mode><VB:mode>):
+	Likewise.
+	(@aarch64_<FMLALL_FP8_SF:insn><mode): Likewise.
+	(@aarch64_<FMLALL_FP8_SF:insn>_lane<V8HF_ONLY:mode><VB:mode>):
+	Likewise.
+	* config/aarch64/iterators.md (V8HF_ONLY): New mode iterator.
+	(SVE2_FP8_TERNARY_VNX8HF): Rename to...
+	(FMLAL_FP8_HF): ...this.
+	(SVE2_FP8_TERNARY_LANE_VNX8HF): Delete in favor of FMLAL_FP8_HF.
+	(SVE2_FP8_TERNARY_VNX4SF): Rename to...
+	(FMLALL_FP8_SF): ...this.
+	(SVE2_FP8_TERNARY_LANE_VNX4SF): Delete in favor of FMLALL_FP8_SF.
+	(sve2_fp8_fma_op_vnx8hf, sve2_fp8_fma_op_vnx4sf): Fold into...
+	(insn): ...here.
+	* config/aarch64/aarch64-sve2.md: Update uses accordingly.
+
+2024-12-10  Saurabh Jha  <saurabh.jha@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(enum class): Add ternary_lane.
+	(aarch64_fntype): Hnadle ternary_lane.
+	(aarch64_pragma_builtins_checker::require_immediate_lane_index): New
+	function.
+	(aarch64_pragma_builtins_checker::check): Handle the new intrinsics.
+	(aarch64_expand_pragma_builtin): Likewise.
+	* config/aarch64/aarch64-c.cc
+	(aarch64_update_cpp_builtins): Define TARGET_FP8DOT2 and
+	TARGET_FP8DOT4.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Define vdot
+	and vdot_lane intrinsics.
+	* config/aarch64/aarch64-simd.md
+	(@aarch64_<fpm_uns_op><mode>): New pattern.
+	(@aarch64_<fpm_uns_op>_lane<VQ_HSF_VDOT:mode><VB:mode>): Likewise.
+	* config/aarch64/iterators.md (VQ_HSF_VDOT): New mode iterator.
+	(UNSPEC_VDOT, UNSPEC_VDOT_LANE): New unspecs.
+	(fpm_uns_op): Handle them.
+	(VNARROWB, Vnbtype): New mode attributes.
+	(FPM_VDOT, FPM_VDOT_LANE): New int iterators.
+
+2024-12-10  Saurabh Jha  <saurabh.jha@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(FLAG_USES_FPMR, FLAG_FP8): New flags.
+	(ENTRY): Modified to support ternary operations.
+	(enum class): New variants to support new signatures.
+	(struct aarch64_pragma_builtins_data): Extend types to 4 elements.
+	(aarch64_fntype): Handle new signatures.
+	(aarch64_get_low_unspec): New function.
+	(aarch64_convert_to_v64): New function, split out from...
+	(aarch64_expand_pragma_builtin): ...here.  Handle new signatures.
+	* config/aarch64/aarch64-c.cc
+	(aarch64_update_cpp_builtins): New flag for FP8.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Define new fp8
+	intrinsics.
+	(ENTRY_BINARY, ENTRY_BINARY_LANE): Update for new ENTRY interface.
+	(ENTRY_UNARY, ENTRY_TERNARY, ENTRY_UNARY_FPM): New macros.
+	(ENTRY_BINARY_VHSDF_SIGNED): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(@aarch64_<fpm_uns_op><mode>): New pattern.
+	(@aarch64_<fpm_uns_op><mode>_high): Likewise.
+	(@aarch64_<fpm_uns_op><mode>_high_be): Likewise.
+	(@aarch64_<fpm_uns_op><mode>_high_le): Likewise.
+	* config/aarch64/iterators.md (V4SF_ONLY, VQ_BHF): New mode iterators.
+	(UNSPEC_FCVTN_FP8, UNSPEC_FCVTN2_FP8, UNSPEC_F1CVTL_FP8)
+	(UNSPEC_F1CVTL2_FP8, UNSPEC_F2CVTL_FP8, UNSPEC_F2CVTL2_FP8)
+	(UNSPEC_FSCALE): New unspecs.
+	(VPACKB, VPACKBtype): New mode attributes.
+	(b): Add support for V[48][BH]F.
+	(FPM_UNARY_UNS, FPM_BINARY_UNS, SCALE_UNS): New int iterators.
+	(insn): New int attribute.
+
+2024-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117912
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): For addresses
+	of zero-sized components do not set ->off if the object size pass
+	didn't run.
+	For OOB ARRAY_REF accesses in address expressions avoid setting
+	->off if the object size pass didn't run.
+	(valueize_refs_1): Likewise.
+
+2024-12-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/117923
+	* config/aarch64/aarch64-builtins.cc: Remove GTY marker on aarch64_simd_types,
+	aarch64_simd_types_trees (new variable), rename aarch64_simd_types to
+	aarch64_simd_types_trees.
+	* config/aarch64/aarch64-builtins.h: Remove GTY marker on aarch64_simd_types,
+	aarch64_simd_types_trees (new variable).
+	* config/aarch64/aarch64-sve-builtins-shapes.cc: Rename aarch64_simd_types to
+	aarch64_simd_types_trees.
+	* config/aarch64/aarch64-sve-builtins.cc: Rename aarch64_simd_types to
+	aarch64_simd_types_trees.
+
 2024-12-09  Mariam Arutunian  <mariamarutunian@gmail.com>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 

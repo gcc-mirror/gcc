@@ -1,3 +1,102 @@
+2024-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/memory_resource.h (polymoprhic_allocator): Use
+	feature test macro for P0339R6 features.
+
+2024-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117788
+	* testsuite/std/ranges/adaptors/conditionally_borrowed.cc: Add a
+	FIXME, adjust.
+
+2024-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (__is_bitwise_relocatable):
+	Revert to depending on is_trivial.
+
+2024-12-10  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/std/type_traits: Deprecate is_trivial and
+	is_trivial_v.
+	* include/experimental/type_traits: Suppress the deprecation
+	warning.
+	* testsuite/20_util/is_trivial/requirements/explicit_instantiation.cc:
+	Amend the test to suppress the deprecation warning.
+	* testsuite/20_util/is_trivial/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_trivial/value.cc: Likewise.
+	* testsuite/20_util/variable_templates_for_traits.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+	* testsuite/18_support/max_align_t/requirements/2.cc: Update the
+	test with P3247R2's new wording.
+
+2024-12-10  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/102064.cc:
+	Port away from is_trivial.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/102064.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default/94540.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_n/94540.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/102064.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/102064.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/94540.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct_n/94540.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/94540.cc: Likewise.
+	* testsuite/25_algorithms/copy/move_iterators/69478.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy_backward/move_iterators/69478.cc:
+	Likewise.
+	* testsuite/25_algorithms/move/69478.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/69478.cc: Likewise.
+	* testsuite/25_algorithms/rotate/constrained.cc: Likewise.
+	* testsuite/25_algorithms/rotate_copy/constrained.cc: Likewise.
+
+2024-12-10  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/ranges_uninitialized.h: port some if
+	constexpr away from is_trivial, and towards more specific
+	detections instead.
+
+2024-12-10  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/stl_uninitialized.h: Amended the
+	__is_bitwise_relocatable type trait.
+
+2024-12-10  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/pstl/algorithm_impl.h (__remove_elements): Port away
+	from is_trivial.
+	(__pattern_inplace_merge): Likewise.
+	* include/pstl/glue_memory_impl.h (uninitialized_copy): Likewise.
+	(uninitialized_copy_n): Likewise.
+	(uninitialized_move): Likewise.
+	(uninitialized_move_n): Likewise.
+	(uninitialized_default_construct): Likewise.
+	(uninitialized_default_construct_n): Likewise.
+	(uninitialized_value_construct): Likewise.
+	(uninitialized_value_construct_n): Likewise.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_construct.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_fill_destroy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc:
+	Likewise.
+
+2024-12-10  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/basic_string.h: Add a static_assert on the
+	char-like type.
+	* include/std/string_view: Port away from is_trivial.
+
 2024-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/102259

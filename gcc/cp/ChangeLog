@@ -1,3 +1,40 @@
+2024-12-10  Arsen Arsenović  <arsen@aarsen.me>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (dump_record_fields): New helper.  Iterates a
+	RECORD_TYPEs TYPE_FIELDS and pretty-prints them.
+	(dmp_str): New.  The lang-coro dump stream.
+	(coro_dump_id): New.  ID of the lang-coro dump.
+	(coro_dump_flags): New.  Flags passed to the lang-coro dump.
+	(coro_maybe_dump_initial_function): New helper.  Prints, if
+	dumping is enabled, the fndecl passed to it as the original
+	function.
+	(coro_maybe_dump_ramp): New.  Prints the ramp function passed to
+	it, if dumping is enabled.
+	(coro_maybe_dump_transformed_functions): New.
+	(cp_coroutine_transform::apply_transforms): Initialize the
+	lang-coro dump.  Call coro_maybe_dump_initial_function on the
+	original function, as well as coro_maybe_dump_ramp, after the
+	transformation into the ramp is finished.
+	(cp_coroutine_transform::finish_transforms): Call
+	coro_maybe_dump_transformed_functions on the built actor and
+	destroy.
+	* cp-objcp-common.cc (cp_register_dumps): Register the coroutine
+	dump.
+	* cp-tree.h (coro_dump_id): Declare as extern.
+	* cxx-pretty-print.cc (pp_cxx_template_parameter): Don't call
+	TREE_TYPE on a TREE_LIST cell.
+	(cxx_pretty_printer::declaration): Handle FIELD_DECL similar to
+	VAR_DECL.
+
+2024-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117788
+	* typeck.cc (cp_build_binary_op) <case EQ_EXPR>: Don't check
+	warn_array_compare.  Check tf_warning_or_error instead of just
+	tf_warning.  Maybe return an error_mark_node in C++26.
+	<case LE_EXPR>: Likewise.
+
 2024-12-09  Marek Polacek  <polacek@redhat.com>
 	    Patrick Palka  <ppalka@redhat.com>
 

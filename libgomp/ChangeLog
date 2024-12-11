@@ -1,3 +1,10 @@
+2024-12-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_dev2dev, GOMP_OFFLOAD_async_run):
+	Handle omp_async_queue == NULL after call to maybe_init_omp_async.
+	(GOMP_OFFLOAD_openacc_async_construct): Use error not fatal error,
+	partially reverting r15-5392.
+
 2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c/declare-variant-3-sm89.c: New.
