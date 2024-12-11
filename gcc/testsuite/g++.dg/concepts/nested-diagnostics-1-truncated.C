@@ -26,17 +26,17 @@ int main() {
 }
 
 /* { dg-begin-multiline-output "" }
-  * note: there are 3 candidates
-    * note: candidate 1: 'template<class auto:1>  requires  pettable<auto:1> void pet(auto:1)'
-      * note: template argument deduction/substitution failed:
-        * note: constraints not satisfied
+  * there are 3 candidates
+    * candidate 1: 'template<class auto:1>  requires  pettable<auto:1> void pet(auto:1)'
+      * template argument deduction/substitution failed:
+        * constraints not satisfied
           * In substitution of 'template<class auto:1>  requires  pettable<auto:1> void pet(auto:1) [with auto:1 = lizard]':
           * required from here
           * required for the satisfaction of 'pettable<auto:1>' [with auto:1 = lizard]
-          * note: no operand of the disjunction is satisfied
-          * note: set '-fconcepts-diagnostics-depth=' to at least 2 for more detail
-    * note: candidate 2: 'void pet(dog)'
-      * note: no known conversion for argument 1 from 'lizard' to 'dog'
-    * note: candidate 3: 'void pet(cat)'
-      * note: no known conversion for argument 1 from 'lizard' to 'cat'
+          * no operand of the disjunction is satisfied
+          * set '-fconcepts-diagnostics-depth=' to at least 2 for more detail
+    * candidate 2: 'void pet(dog)'
+      * no known conversion for argument 1 from 'lizard' to 'dog'
+    * candidate 3: 'void pet(cat)'
+      * no known conversion for argument 1 from 'lizard' to 'cat'
    { dg-end-multiline-output "" } */

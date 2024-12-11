@@ -21,18 +21,18 @@ int main() {
 }
 
 /* { dg-begin-multiline-output "" }
-  * note: there are 3 candidates
-    * note: candidate 1: 'template<class T>  requires  pettable<T> void pet(T)'
-      * note: template argument deduction/substitution failed:
-        * note: constraints not satisfied
+  * there are 3 candidates
+    * candidate 1: 'template<class T>  requires  pettable<T> void pet(T)'
+      * template argument deduction/substitution failed:
+        * constraints not satisfied
           * In substitution of 'template<class T>  requires  pettable<T> void pet(T) [with T = donkey]':
           * required from here
           * required for the satisfaction of 'pettable<T>' [with T = donkey]
           * in requirements with 'T t' [with T = donkey]
-          * note: the required expression 't.pet()' is invalid
-          * note: set '-fconcepts-diagnostics-depth=' to at least 2 for more detail
-    * note: candidate 2: 'void pet(dog)'
-      * note: no known conversion for argument 1 from 'donkey' to 'dog'
-    * note: candidate 3: 'void pet(cat)'
-      * note: no known conversion for argument 1 from 'donkey' to 'cat'
+          * the required expression 't.pet()' is invalid
+          * set '-fconcepts-diagnostics-depth=' to at least 2 for more detail
+    * candidate 2: 'void pet(dog)'
+      * no known conversion for argument 1 from 'donkey' to 'dog'
+    * candidate 3: 'void pet(cat)'
+      * no known conversion for argument 1 from 'donkey' to 'cat'
    { dg-end-multiline-output "" } */

@@ -309,6 +309,12 @@ build_prefix (const diagnostic_info &diagnostic) const
   if (m_show_nesting && nesting_level > 0)
     {
       char *indent_prefix = build_indent_prefix (true);
+
+      /* Reduce verbosity of nested diagnostics by not printing "note: "
+	 all the time.  */
+      if (diagnostic.kind == DK_NOTE)
+	return indent_prefix;
+
       char *result = build_message_string ("%s%s%s%s", indent_prefix,
 					   text_cs, text, text_ce);
       free (indent_prefix);
