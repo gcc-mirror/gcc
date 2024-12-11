@@ -40,7 +40,7 @@
 #if __cplusplus >= 202002L
 # include <compare>
 # if _GLIBCXX_HOSTED
-#  include <ostream>
+#  include <bits/ostream.h>
 # endif
 #endif
 

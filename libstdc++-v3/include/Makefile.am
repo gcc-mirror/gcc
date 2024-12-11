@@ -137,6 +137,7 @@ bits_freestanding = \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/monostate.h \
 	${bits_srcdir}/move.h \
+	${bits_srcdir}/ostream.h \
 	${bits_srcdir}/out_ptr.h \
 	${bits_srcdir}/predefined_ops.h \
 	${bits_srcdir}/parse_numbers.h \
