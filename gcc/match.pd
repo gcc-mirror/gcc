@@ -3391,6 +3391,46 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0)))
 )
 
+(if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
+ (match (signed_integer_sat_sub @0 @1)
+  /* T Z = (T)((UT)X - (UT)Y);
+     SAT_S_SUB = (X ^ Y) & (X ^ Z) < 0 ? (-(T)(X < 0) ^ MAX) : Z  */
+  (cond^ (lt (bit_and:c (bit_xor:c @0 @1)
+			(bit_xor @0 (nop_convert@2 (minus (nop_convert @0)
+							  (nop_convert @1)))))
+	     integer_zerop)
+	 (bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)
+	 @2))
+ (match (signed_integer_sat_sub @0 @1)
+  /* T Z = (T)((UT)X - (UT)Y);
+     SAT_S_SUB = (X ^ Y) & (X ^ Z) >= 0 ? Z : (-(T)(X < 0) ^ MAX)  */
+  (cond^ (ge (bit_and:c (bit_xor:c @0 @1)
+			(bit_xor @0 (nop_convert@2 (minus (nop_convert @0)
+							  (nop_convert @1)))))
+	     integer_zerop)
+	 @2
+	 (bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)))
+ (match (signed_integer_sat_sub @0 @1)
+  /* T Z = (T)((UT)X - (UT)Y);
+     SAT_S_SUB = (X ^ Y) < 0 & (X ^ Z) < 0 ? (-(T)(X < 0) ^ MAX) : Z  */
+  (cond^ (bit_and:c (lt (bit_xor @0 (nop_convert@2 (minus (nop_convert @0)
+							  (nop_convert @1))))
+			integer_zerop)
+		    (lt (bit_xor:c @0 @1) integer_zerop))
+	 (bit_xor:c (nop_convert (negate (nop_convert (convert
+						       (lt @0 integer_zerop)))))
+		    max_value)
+	 @2))
+ (match (signed_integer_sat_sub @0 @1)
+  /* Z = .SUB_OVERFLOW (X, Y)
+     SAT_S_SUB = IMAGPART (Z) != 0 ? (-(T)(X < 0) ^ MAX) : REALPART (Z)  */
+  (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
+	 (bit_xor:c (nop_convert?
+		    (negate (nop_convert? (convert (lt @0 integer_zerop)))))
+		    max_value)
+	 (realpart @2))
+  (if (types_match (type, @0, @1)))))
+
 /* The boundary condition for case 10: IMM = 1:
    SAT_U_SUB = X >= IMM ? (X - IMM) : 0.
    simplify (X != 0 ? X + ~0 : 0) to X - (X != 0).  */
@@ -3401,64 +3441,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type))
    (with { tree itype = TREE_TYPE (@2); }
     (convert (minus @2 (convert:itype @1))))))
-
-/* Signed saturation sub, case 1:
-   T minus = (T)((UT)X - (UT)Y);
-   SAT_S_SUB = (X ^ Y) & (X ^ minus) < 0 ? (-(T)(X < 0) ^ MAX) : minus;
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_sub @0 @1)
- (cond^ (lt (bit_and:c (bit_xor:c @0 @1)
-		       (bit_xor @0 (nop_convert@2 (minus (nop_convert @0)
-							 (nop_convert @1)))))
-	    integer_zerop)
-	(bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)
-	@2)
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Signed saturation sub, case 2:
-   T minus = (T)((UT)X - (UT)Y);
-   SAT_S_SUB = (X ^ Y) & (X ^ minus) < 0 ? (-(T)(X < 0) ^ MAX) : minus;
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_sub @0 @1)
- (cond^ (ge (bit_and:c (bit_xor:c @0 @1)
-		       (bit_xor @0 (nop_convert@2 (minus (nop_convert @0)
-							 (nop_convert @1)))))
-	    integer_zerop)
-	@2
-	(bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value))
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Signed saturation sub, case 3:
-   Z = .SUB_OVERFLOW (X, Y)
-   SAT_S_SUB = IMAGPART_EXPR (Z) != 0 ? (-(T)(X < 0) ^ MAX) : REALPART_EXPR (Z);
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_sub @0 @1)
- (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
-	(bit_xor:c (nop_convert?
-		    (negate (nop_convert? (convert (lt @0 integer_zerop)))))
-		   max_value)
-	(realpart @2))
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* Signed saturation sub, case 4:
-   T minus = (T)((UT)X - (UT)Y);
-   SAT_S_SUB = (X ^ Y) < 0 & (X ^ minus) < 0 ? (-(T)(X < 0) ^ MAX) : minus;
-
-   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
-(match (signed_integer_sat_sub @0 @1)
- (cond^ (bit_and:c (lt (bit_xor @0 (nop_convert@2 (minus (nop_convert @0)
-						         (nop_convert @1))))
-		       integer_zerop)
-		   (lt (bit_xor:c @0 @1) integer_zerop))
-	(bit_xor:c (nop_convert (negate (nop_convert (convert
-						      (lt @0 integer_zerop)))))
-		   max_value)
-	@2)
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
 
 /* Signed saturation truncate, case 1 and case 2, sizeof (WT) > sizeof (NT).
    SAT_S_TRUNC(X) = (unsigned)X + NT_MAX + 1  > Unsigned_MAX ? (NT)X.  */
