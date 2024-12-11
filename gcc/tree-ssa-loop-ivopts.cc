@@ -1624,8 +1624,8 @@ record_group_use (struct ivopts_data *data, tree *use_p,
 
 	  /* Check if it has the same stripped base and step.  */
 	  if (operand_equal_p (iv->base_object, use->iv->base_object, 0)
-	      && operand_equal_p (iv->step, use->iv->step, 0)
-	      && operand_equal_p (addr_base, use->addr_base, 0))
+	      && operand_equal_p (iv->step, use->iv->step, OEP_ASSUME_WRAPV)
+	      && operand_equal_p (addr_base, use->addr_base, OEP_ASSUME_WRAPV))
 	    break;
 	}
       if (i == data->vgroups.length ())
