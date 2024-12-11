@@ -204,6 +204,41 @@ public:
   void insert_captured_item (NodeId id);
   const std::set<NodeId> &get_captures (NodeId id) const;
 
+  std::string as_debug_string () const
+  {
+    std::stringstream ss;
+
+    ss << "Names:\n";
+    for (auto &n : name_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+    ss << "Types:\n";
+    for (auto &n : type_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+    ss << "Macros:\n";
+
+    for (auto &n : macro_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+
+    ss << "Labels:\n";
+
+    for (auto &n : label_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+
+    return ss.str ();
+  }
+
 protected:
   bool decl_needs_capture (NodeId decl_rib_node_id, NodeId closure_rib_node_id,
 			   const Scope &scope);
