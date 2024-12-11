@@ -1732,6 +1732,23 @@
   }
 )
 
+(define_insn "*aarch64_sve2_nbsl_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(not:VDQ_I
+	  (xor:VDQ_I
+	    (and:VDQ_I
+	      (xor:VDQ_I
+		(match_operand:VDQ_I 1 "register_operand")
+		(match_operand:VDQ_I 2 "register_operand"))
+	      (match_operand:VDQ_I 3 "register_operand"))
+	    (match_dup BSL_DUP))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] nbsl\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;nbsl\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
+  }
+)
+
 ;; Unpredicated bitwise select with inverted first operand.
 ;; (op3 ? ~bsl_mov : bsl_dup) == ((~(bsl_mov ^ bsl_dup) & op3) ^ bsl_dup)
 (define_expand "@aarch64_sve2_bsl1n<mode>"
@@ -1774,6 +1791,23 @@
   "&& !CONSTANT_P (operands[4])"
   {
     operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+(define_insn "*aarch64_sve2_bsl1n_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(xor:VDQ_I
+	  (and:VDQ_I
+	    (not:VDQ_I
+	      (xor:VDQ_I
+		(match_operand:VDQ_I 1 "register_operand")
+		(match_operand:VDQ_I 2 "register_operand")))
+	    (match_operand:VDQ_I 3 "register_operand"))
+	  (match_dup BSL_DUP)))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] bsl1n\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;bsl1n\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
   }
 )
 
@@ -1848,6 +1882,38 @@
   "&& !CONSTANT_P (operands[4])"
   {
     operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+(define_insn "*aarch64_sve2_bsl2n_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(ior:VDQ_I
+	  (and:VDQ_I
+	    (match_operand:VDQ_I 1 "register_operand")
+	    (match_operand:VDQ_I 2 "register_operand"))
+	  (and:VDQ_I
+	    (not:VDQ_I (match_operand:VDQ_I 3 "register_operand"))
+	    (not:VDQ_I (match_dup BSL_DUP)))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
+  }
+)
+
+(define_insn "*aarch64_sve2_bsl2n_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(ior:VDQ_I
+	  (and:VDQ_I
+	    (match_operand:VDQ_I 1 "register_operand")
+	    (match_operand:VDQ_I 2 "register_operand"))
+	  (and:VDQ_I
+	    (not:VDQ_I (match_dup BSL_DUP))
+	    (not:VDQ_I (match_operand:VDQ_I 3 "register_operand")))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
   }
 )
 
