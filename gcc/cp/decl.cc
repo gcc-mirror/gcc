@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
 #include "coroutines.h"
 #include "gcc-urlifier.h"
+#include "diagnostic-highlight-colors.h"
+#include "pretty-print-markup.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -12437,6 +12439,23 @@ check_decltype_auto (location_t loc, tree type)
   return false;
 }
 
+/* Issue an error about two mutually incompatible declspecs
+   with the given names and locations
+   e.g. "error: `signed' and `unsigned' specified together" */
+
+static void
+complain_about_incompatible_declspecs (const char *name_a, location_t loc_a,
+				       const char *name_b, location_t loc_b)
+{
+  gcc_rich_location richloc (loc_a, nullptr, highlight_colors::lhs);
+  richloc.add_range (loc_b, SHOW_RANGE_WITHOUT_CARET,
+		     nullptr, highlight_colors::rhs);
+  pp_element_quoted_string e_name_a (name_a, highlight_colors::lhs);
+  pp_element_quoted_string e_name_b (name_b, highlight_colors::rhs);
+  error_at (&richloc, "%e and %e specified together",
+	    &e_name_a, &e_name_b);
+}
+
 /* Given declspecs and a declarator (abstract or otherwise), determine
    the name and type of the object declared and construct a DECL node
    for it.
@@ -13070,18 +13089,13 @@ grokdeclarator (const cp_declarator *declarator,
       int ok = 0;
 
       if (signed_p && unsigned_p)
-	{
-	  gcc_rich_location richloc (declspecs->locations[ds_signed]);
-	  richloc.add_range (declspecs->locations[ds_unsigned]);
-	  error_at (&richloc,
-		    "%<signed%> and %<unsigned%> specified together");
-	}
+	complain_about_incompatible_declspecs
+	  ("signed", declspecs->locations[ds_signed],
+	   "unsigned", declspecs->locations[ds_unsigned]);
       else if (long_p && short_p)
-	{
-	  gcc_rich_location richloc (declspecs->locations[ds_long]);
-	  richloc.add_range (declspecs->locations[ds_short]);
-	  error_at (&richloc, "%<long%> and %<short%> specified together");
-	}
+	complain_about_incompatible_declspecs
+	  ("long", declspecs->locations[ds_long],
+	   "short", declspecs->locations[ds_short]);
       else if (TREE_CODE (type) != INTEGER_TYPE
 	       || type == char8_type_node
 	       || type == char16_type_node
