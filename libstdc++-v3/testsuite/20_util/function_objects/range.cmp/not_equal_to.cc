@@ -68,9 +68,26 @@ test02()
   VERIFY( ! f(x, x) );
 }
 
+struct A
+{
+  bool operator==(const A&) const noexcept { return true; }
+  bool operator==(A&&) const { return true; }
+};
+
+void
+test03()
+{
+  const A a{};
+  static_assert( noexcept(a == a) );
+  static_assert( ! noexcept(a == A{}) );
+  static_assert( noexcept(std::ranges::not_equal_to{}(a, a)) );
+  static_assert( ! noexcept(std::ranges::not_equal_to{}(a, A{})) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

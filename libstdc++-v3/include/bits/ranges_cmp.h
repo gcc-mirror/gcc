@@ -99,7 +99,7 @@ namespace ranges
       requires equality_comparable_with<_Tp, _Up>
       constexpr bool
       operator()(_Tp&& __t, _Up&& __u) const
-      noexcept(noexcept(std::declval<_Up>() == std::declval<_Tp>()))
+      noexcept(noexcept(std::declval<_Tp>() == std::declval<_Up>()))
       { return !equal_to{}(std::forward<_Tp>(__t), std::forward<_Up>(__u)); }
 
     using is_transparent = __is_transparent;
