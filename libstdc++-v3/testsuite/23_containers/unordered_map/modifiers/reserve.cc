@@ -40,7 +40,7 @@ void test01()
       m.reserve(bkts);
       VERIFY( m.bucket_count() == bkts );
 
-      for (++i; i < bkts; ++i)
+      for (++i; size_t(i) < bkts; ++i)
 	{
 	  m.insert(std::make_pair(i, i));
 
