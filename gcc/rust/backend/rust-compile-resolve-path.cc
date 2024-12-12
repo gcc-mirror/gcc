@@ -240,11 +240,9 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
   if (auto resolved_item = ctx->get_mappings ().lookup_hir_item (ref))
     {
       if (!lookup->has_substitutions_defined ())
-	return CompileItem::compile (*resolved_item, ctx, nullptr, true,
-				     expr_locus);
+	return CompileItem::compile (*resolved_item, ctx, nullptr, expr_locus);
       else
-	return CompileItem::compile (*resolved_item, ctx, lookup, true,
-				     expr_locus);
+	return CompileItem::compile (*resolved_item, ctx, lookup, expr_locus);
     }
   else if (auto hir_extern_item
 	   = ctx->get_mappings ().lookup_hir_extern_item (ref))

@@ -31,15 +31,13 @@ protected:
 public:
   static tree compile (HIR::Item *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
-		       bool is_query_mode = false,
 		       location_t ref_locus = UNDEF_LOCATION)
   {
     CompileItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
 
-    if (is_query_mode && compiler.reference == error_mark_node)
-      rust_internal_error_at (ref_locus, "failed to compile item: %s",
-			      item->as_string ().c_str ());
+    if (compiler.reference == error_mark_node)
+      rust_debug ("failed to compile item: %s", item->as_string ().c_str ());
 
     return compiler.reference;
   }
