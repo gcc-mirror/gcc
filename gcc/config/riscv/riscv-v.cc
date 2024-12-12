@@ -1439,9 +1439,11 @@ expand_const_vector (rtx target, rtx src)
 		  rtx shift_count
 		    = gen_int_mode (exact_log2 (builder.npatterns ()),
 				    builder.inner_mode ());
-		  rtx tmp1 = expand_simple_binop (builder.mode (), LSHIFTRT,
-						 vid, shift_count, NULL_RTX,
-						 false, OPTAB_DIRECT);
+		  rtx tmp1 = gen_reg_rtx (builder.mode ());
+		  rtx shift_ops[] = {tmp1, vid, shift_count};
+		  emit_vlmax_insn (code_for_pred_scalar
+				   (LSHIFTRT, builder.mode ()), BINARY_OP,
+				   shift_ops);
 
 		  /* Step 3: Generate tmp2 = tmp1 * step.  */
 		  rtx tmp2 = gen_reg_rtx (builder.mode ());
