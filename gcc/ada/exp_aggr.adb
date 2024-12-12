@@ -85,7 +85,7 @@ package body Exp_Aggr is
    end record;
 
    type Case_Table_Type is array (Nat range <>) of Case_Bounds;
-   --  Table type used by Check_Case_Choices procedure
+   --  Table type used by Sort_Case_Table procedure
 
    function Get_Base_Object (N : Node_Id) return Entity_Id;
    --  Return the base object, i.e. the outermost prefix object, that N refers
@@ -105,6 +105,17 @@ package body Exp_Aggr is
    --  Perform the initialization of component Comp with expected type
    --  Comp_Typ of aggregate N. Init_Expr denotes the initialization
    --  expression of the component. All generated code is added to Stmts.
+
+   function In_Place_Assign_OK
+     (N             : Node_Id;
+      Target_Object : Entity_Id := Empty) return Boolean;
+   --  Predicate to determine whether an aggregate assignment can be done in
+   --  place, because none of the new values can depend on the components of
+   --  the target of the assignment.
+
+   function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean;
+   --  Return True if N is a simple return whose expression needs to be built
+   --  in place in the return object, assuming the expression is an aggregate.
 
    function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
    --  Returns true if N is an aggregate used to initialize the components
@@ -162,14 +173,6 @@ package body Exp_Aggr is
    -- Local subprograms for Record Aggregate Expansion --
    ------------------------------------------------------
 
-   function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean;
-   --  Return True if N is a simple return whose expression needs to be built
-   --  in place in the return object, assuming the expression is an aggregate,
-   --  possibly qualified or a dependent expression of a conditional expression
-   --  (and possibly recursively). Such qualified and conditional expressions
-   --  are transparent for this purpose since an enclosing return is propagated
-   --  resp. distributed into these expressions by the expander.
-
    function Build_Record_Aggr_Code
      (N   : Node_Id;
       Typ : Entity_Id;
@@ -209,13 +212,6 @@ package body Exp_Aggr is
    --  Return true if one of the components is of a discriminated type with
    --  defaults. An aggregate for a type with mutable components must be
    --  expanded into individual assignments.
-
-   function In_Place_Assign_OK
-     (N             : Node_Id;
-      Target_Object : Entity_Id := Empty) return Boolean;
-   --  Predicate to determine whether an aggregate assignment can be done in
-   --  place, because none of the new values can depend on the components of
-   --  the target of the assignment.
 
    procedure Initialize_Discriminants (N : Node_Id; Typ : Entity_Id);
    --  If the type of the aggregate is a type extension with renamed discrimi-
@@ -310,8 +306,7 @@ package body Exp_Aggr is
    --  these are cases we handle in there.
 
    procedure Expand_Array_Aggregate (N : Node_Id);
-   --  This is the top-level routine for array aggregate expansion.
-   --  N is the N_Aggregate node to be expanded.
+   --  This is the top-level routine for array aggregate expansion
 
    procedure Expand_Delta_Array_Aggregate (N : Node_Id; Deltas : List_Id);
    --  This is the top-level routine for delta array aggregate expansion
@@ -351,8 +346,8 @@ package body Exp_Aggr is
    -- Aggr_Assignment_OK_For_Backend --
    ------------------------------------
 
-   --  Back-end processing by Gigi/gcc is possible only if all the following
-   --  conditions are met:
+   --  Back-end processing is possible only if all the following conditions
+   --  are met:
 
    --    1. N consists of a single OTHERS choice, possibly recursively, or
    --       of a single choice, possibly recursively, if it is surrounded by
@@ -806,8 +801,8 @@ package body Exp_Aggr is
    -- Backend_Processing_Possible --
    ---------------------------------
 
-   --  Backend processing by Gigi/gcc is possible only if all the following
-   --  conditions are met:
+   --  Back-end processing is possible only if all the following conditions
+   --  are met:
 
    --    1. N is fully positional
 
@@ -5829,6 +5824,8 @@ package body Exp_Aggr is
         or else Is_RTE (Ctyp, RE_Asm_Output_Operand)
       then
          return;
+
+      --  Aggregates that require a two-pass expansion are handled separately
 
       elsif Is_Two_Pass_Aggregate (N) then
          Two_Pass_Aggregate_Expansion (N);
