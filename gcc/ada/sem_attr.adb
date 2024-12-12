@@ -1448,9 +1448,10 @@ package body Sem_Attr is
                null;
 
             --  Attribute 'Result is allowed to appear in aspect
-            --  Relaxed_Initialization (SPARK RM 6.10).
+            --  Relaxed_Initialization (SPARK RM 6.10) and Potentially_Invalid.
 
-            elsif Prag_Nam = Name_Relaxed_Initialization
+            elsif (Prag_Nam = Name_Relaxed_Initialization
+                     or else Prag_Nam = Name_Potentially_Invalid)
               and then Aname = Name_Result
             then
                null;

@@ -538,6 +538,14 @@ Aspect Persistent_BSS
 
 This boolean aspect is equivalent to :ref:`pragma Persistent_BSS<Pragma-Persistent_BSS>`.
 
+Aspect Potentially_Invalid
+==========================
+.. index:: Potentially_Invalid
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 13.9.1.
+
+
 Aspect Predicate
 ================
 .. index:: Predicate

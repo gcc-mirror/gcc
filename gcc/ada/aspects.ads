@@ -127,6 +127,7 @@ package Aspects is
       Aspect_Part_Of,                       -- GNAT
       Aspect_Post,
       Aspect_Postcondition,
+      Aspect_Potentially_Invalid,           -- GNAT
       Aspect_Pre,
       Aspect_Precondition,
       Aspect_Predicate,                     -- GNAT
@@ -327,6 +328,7 @@ package Aspects is
       Aspect_Obsolescent                => True,
       Aspect_Part_Of                    => True,
       Aspect_Persistent_BSS             => True,
+      Aspect_Potentially_Invalid        => True,
       Aspect_Predicate                  => True,
       Aspect_Pure_Function              => True,
       Aspect_Refined_Depends            => True,
@@ -407,8 +409,11 @@ package Aspects is
    subtype Boolean_Aspects is
      Aspect_Id range Aspect_Always_Terminates .. Aspect_Id'Last;
 
-   subtype Pre_Post_Aspects is
-     Aspect_Id range Aspect_Post .. Aspect_Precondition;
+   subtype Pre_Post_Aspects is Aspect_Id
+   with Static_Predicate => Pre_Post_Aspects in Aspect_Post
+                                              | Aspect_Postcondition
+                                              | Aspect_Pre
+                                              | Aspect_Precondition;
 
    --  The following type is used for indicating allowed expression forms
 
@@ -477,6 +482,7 @@ package Aspects is
       Aspect_Part_Of                    => Expression,
       Aspect_Post                       => Expression,
       Aspect_Postcondition              => Expression,
+      Aspect_Potentially_Invalid        => Optional_Expression,
       Aspect_Pre                        => Expression,
       Aspect_Precondition               => Expression,
       Aspect_Predicate                  => Expression,
@@ -583,6 +589,7 @@ package Aspects is
       Aspect_Part_Of                      => False,
       Aspect_Post                         => False,
       Aspect_Postcondition                => False,
+      Aspect_Potentially_Invalid          => False,
       Aspect_Pre                          => False,
       Aspect_Precondition                 => False,
       Aspect_Predicate                    => False,
@@ -784,6 +791,7 @@ package Aspects is
       Aspect_Persistent_BSS               => Name_Persistent_BSS,
       Aspect_Post                         => Name_Post,
       Aspect_Postcondition                => Name_Postcondition,
+      Aspect_Potentially_Invalid          => Name_Potentially_Invalid,
       Aspect_Pre                          => Name_Pre,
       Aspect_Precondition                 => Name_Precondition,
       Aspect_Predicate                    => Name_Predicate,
@@ -1095,6 +1103,7 @@ package Aspects is
       Aspect_No_Tagged_Streams            => Never_Delay,
       Aspect_Obsolescent                  => Never_Delay,
       Aspect_Part_Of                      => Never_Delay,
+      Aspect_Potentially_Invalid          => Never_Delay,
       Aspect_Refined_Depends              => Never_Delay,
       Aspect_Refined_Global               => Never_Delay,
       Aspect_Refined_Post                 => Never_Delay,

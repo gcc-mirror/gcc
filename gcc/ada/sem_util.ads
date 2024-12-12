@@ -1521,6 +1521,12 @@ package Sem_Util is
    --  non-null), which causes the type to not have preelaborable
    --  initialization.
 
+   function Has_Potentially_Invalid (E : Entity_Id) return Boolean;
+   --  Returns True iff entity E is subject to the Potentially_Invalid aspect.
+   --  Entity E can be either variable, constant, subprogram or entry. For
+   --  private types and deferred constants E should be the private view,
+   --  because aspect can only be attached there.
+
    function Has_Preelaborable_Initialization
      (E                 : Entity_Id;
       Preelab_Init_Expr : Node_Id := Empty) return Boolean;
