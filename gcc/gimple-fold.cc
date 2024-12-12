@@ -7751,6 +7751,15 @@ make_bit_field_load (location_t loc, tree inner, tree orig_inner, tree type,
   if (!point)
     return ref;
 
+  /* If we're remaking the same load, reuse the SSA NAME it is already loaded
+     into.  */
+  if (gimple_assign_load_p (point)
+      && operand_equal_p (ref, gimple_assign_rhs1 (point)))
+    {
+      gcc_checking_assert (TREE_CODE (gimple_assign_lhs (point)) == SSA_NAME);
+      return gimple_assign_lhs (point);
+    }
+
   gimple_seq stmts = NULL;
   tree ret = force_gimple_operand (ref, &stmts, true, NULL_TREE);
 
@@ -8204,24 +8213,27 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
      to be relative to a field of that size.  */
   first_bit = MIN (ll_bitpos, rl_bitpos);
   end_bit = MAX (ll_bitpos + ll_bitsize, rl_bitpos + rl_bitsize);
-  if (get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-		     TYPE_ALIGN (TREE_TYPE (ll_inner)), BITS_PER_WORD,
-		     volatilep, &lnmode))
+  HOST_WIDE_INT ll_align = TYPE_ALIGN (TREE_TYPE (ll_inner));
+  poly_uint64 ll_end_region = 0;
+  if (TYPE_SIZE (TREE_TYPE (ll_inner))
+      && uniform_integer_cst_p (TYPE_SIZE (TREE_TYPE (ll_inner))))
+    ll_end_region = tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (ll_inner)));
+  if (get_best_mode (end_bit - first_bit, first_bit, 0, ll_end_region,
+		     ll_align, BITS_PER_WORD, volatilep, &lnmode))
     l_split_load = false;
   else
     {
       /* Consider the possibility of recombining loads if any of the
 	 fields straddles across an alignment boundary, so that either
 	 part can be loaded along with the other field.  */
-      HOST_WIDE_INT align = TYPE_ALIGN (TREE_TYPE (ll_inner));
       HOST_WIDE_INT boundary = compute_split_boundary_from_align
-	(align, ll_bitpos, ll_bitsize, rl_bitpos, rl_bitsize);
+	(ll_align, ll_bitpos, ll_bitsize, rl_bitpos, rl_bitsize);
 
       if (boundary < 0
-	  || !get_best_mode (boundary - first_bit, first_bit, 0, 0,
-			     align, BITS_PER_WORD, volatilep, &lnmode)
-	  || !get_best_mode (end_bit - boundary, boundary, 0, 0,
-			     align, BITS_PER_WORD, volatilep, &lnmode2))
+	  || !get_best_mode (boundary - first_bit, first_bit, 0, ll_end_region,
+			     ll_align, BITS_PER_WORD, volatilep, &lnmode)
+	  || !get_best_mode (end_bit - boundary, boundary, 0, ll_end_region,
+			     ll_align, BITS_PER_WORD, volatilep, &lnmode2))
 	return 0;
 
       /* If we can't have a single load, but can with two, figure out whether
@@ -8368,16 +8380,19 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	 and then we use two separate compares.  */
       first_bit = MIN (lr_bitpos, rr_bitpos);
       end_bit = MAX (lr_bitpos + lr_bitsize, rr_bitpos + rr_bitsize);
-      if (!get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-			  TYPE_ALIGN (TREE_TYPE (lr_inner)), BITS_PER_WORD,
-			  volatilep, &rnmode))
+      HOST_WIDE_INT lr_align = TYPE_ALIGN (TREE_TYPE (lr_inner));
+      poly_uint64 lr_end_region = 0;
+      if (TYPE_SIZE (TREE_TYPE (lr_inner))
+	  && uniform_integer_cst_p (TYPE_SIZE (TREE_TYPE (lr_inner))))
+	lr_end_region = tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (lr_inner)));
+      if (!get_best_mode (end_bit - first_bit, first_bit, 0, lr_end_region,
+			  lr_align, BITS_PER_WORD, volatilep, &rnmode))
 	{
 	  /* Consider the possibility of recombining loads if any of the
 	     fields straddles across an alignment boundary, so that either
 	     part can be loaded along with the other field.  */
-	  HOST_WIDE_INT align = TYPE_ALIGN (TREE_TYPE (lr_inner));
 	  HOST_WIDE_INT boundary = compute_split_boundary_from_align
-	    (align, lr_bitpos, lr_bitsize, rr_bitpos, rr_bitsize);
+	    (lr_align, lr_bitpos, lr_bitsize, rr_bitpos, rr_bitsize);
 
 	  if (boundary < 0
 	      /* If we're to split both, make sure the split point is
@@ -8385,10 +8400,11 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	      || (l_split_load
 		  && (boundary - lr_bitpos
 		      != (lnbitpos + GET_MODE_BITSIZE (lnmode)) - ll_bitpos))
-	      || !get_best_mode (boundary - first_bit, first_bit, 0, 0,
-				 align, BITS_PER_WORD, volatilep, &rnmode)
-	      || !get_best_mode (end_bit - boundary, boundary, 0, 0,
-				 align, BITS_PER_WORD, volatilep, &rnmode2))
+	      || !get_best_mode (boundary - first_bit, first_bit,
+				 0, lr_end_region,
+				 lr_align, BITS_PER_WORD, volatilep, &rnmode)
+	      || !get_best_mode (end_bit - boundary, boundary, 0, lr_end_region,
+				 lr_align, BITS_PER_WORD, volatilep, &rnmode2))
 	    return 0;
 
 	  r_split_load = true;
