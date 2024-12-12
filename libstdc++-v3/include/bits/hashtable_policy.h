@@ -1156,8 +1156,8 @@ namespace __detail
 	  }
       }
 
-      size_t _M_bucket;
-      size_t _M_bucket_count;
+      size_t _M_bucket = 0;
+      size_t _M_bucket_count = 0;
 
     public:
       size_t
@@ -1194,7 +1194,7 @@ namespace __detail
       using __hash_obj_storage = _Hash_obj_storage<_Hash>;
       using __node_iter_base = _Node_iterator_base<_Value, false>;
 
-      _Local_iterator_base() : _M_bucket_count(-1) { }
+      _Local_iterator_base() = default;
 
       _Local_iterator_base(const __hash_code_base& __base,
 			   _Hash_node<_Value, false>* __p,
@@ -1242,8 +1242,8 @@ namespace __detail
 	  }
       }
 
-      size_t _M_bucket;
-      size_t _M_bucket_count;
+      size_t _M_bucket = 0;
+      size_t _M_bucket_count = -1;
 
       void
       _M_init(const _Hash& __h)
