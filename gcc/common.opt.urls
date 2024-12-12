@@ -223,6 +223,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-suggest-attribute_003dnoreturn)
 Wsuggest-attribute=malloc
 UrlSuffix(gcc/Warning-Options.html#index-Wno-suggest-attribute_003dmalloc)
 
+Wsuggest-attribute=returns_nonnull
+UrlSuffix(gcc/Warning-Options.html#index-Wno-suggest-attribute_003dreturns_005fnonnull)
+
 Wsuggest-final-types
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-suggest-final-types)
 
@@ -234,6 +237,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-switch-unreachable)
 
 Wsystem-headers
 UrlSuffix(gcc/Warning-Options.html#index-Wno-system-headers)
+
+Wtautological-compare
+UrlSuffix(gcc/Warning-Options.html#index-Wno-tautological-compare)
 
 Wtrampolines
 UrlSuffix(gcc/Warning-Options.html#index-Wno-trampolines)

@@ -416,7 +416,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstring-compare
 -Wno-stringop-overflow -Wno-stringop-overread
 -Wno-stringop-truncation  -Wstrict-flex-arrays
--Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]}
+-Wsuggest-attribute=@var{attribute-name}
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand
 -Wsystem-headers  -Wtautological-compare  -Wtrailing-whitespace
@@ -8354,9 +8354,9 @@ even without optimization.
 
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}returns_nonnull@r{|}
+@item -Wsuggest-attribute=@var{attribute-name}
 Warn for cases where adding an attribute may be beneficial. The
-attributes currently supported are listed below.
+@var{attribute-name}s currently supported are listed below.
 
 @table @gcctabopt
 @opindex Wsuggest-attribute=pure
@@ -8369,16 +8369,18 @@ attributes currently supported are listed below.
 @opindex Wno-missing-noreturn
 @opindex Wsuggest-attribute=malloc
 @opindex Wno-suggest-attribute=malloc
+@opindex Wsuggest-attribute=returns_nonnull
+@opindex Wno-suggest-attribute=returns_nonnull
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
 @itemx -Wsuggest-attribute=noreturn
 @itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
 @itemx -Wsuggest-attribute=returns_nonnull
-@itemx -Wno-suggest-attribute=returns_nonnull
 
 Warn about functions that might be candidates for attributes
-@code{pure}, @code{const}, @code{noreturn}, @code{malloc} or @code{returns_nonnull}. The compiler
+@code{pure}, @code{const}, @code{noreturn}, @code{malloc} or
+@code{returns_nonnull}.  The compiler
 only warns for functions visible in other compilation units or (in the case of
 @code{pure} and @code{const}) if it cannot prove that the function returns
 normally. A function returns normally if it doesn't contain an infinite loop or
