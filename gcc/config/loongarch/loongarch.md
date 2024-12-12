@@ -518,6 +518,7 @@
 
 ;; These code iterators allow the signed and unsigned scc operations to use
 ;; the same template.
+(define_code_iterator any_ge [ge geu])
 (define_code_iterator any_gt [gt gtu])
 (define_code_iterator any_lt [lt ltu])
 (define_code_iterator any_le [le leu])
@@ -3527,6 +3528,15 @@
 		 (const_int 0)))]
   ""
   "sltu\t%0,%.,%1"
+  [(set_attr "type" "slt")
+   (set_attr "mode" "<X:MODE>")])
+
+(define_insn "*sge<u>_<X:mode><GPR:mode>"
+  [(set (match_operand:GPR           0 "register_operand" "=r")
+	(any_ge:GPR (match_operand:X 1 "register_operand" " r")
+		    (const_int 1)))]
+  ""
+  "slti<u>\t%0,zero,%1"
   [(set_attr "type" "slt")
    (set_attr "mode" "<X:MODE>")])
 

@@ -5289,27 +5289,39 @@ loongarch_canonicalize_int_order_test (enum rtx_code *code, rtx *cmp1,
   if (loongarch_int_order_operand_ok_p (*code, *cmp1))
     return true;
 
-  if (CONST_INT_P (*cmp1))
     switch (*code)
       {
       case LE:
-	plus_one = trunc_int_for_mode (UINTVAL (*cmp1) + 1, mode);
-	if (INTVAL (*cmp1) < plus_one)
+	if (CONST_INT_P (*cmp1))
 	  {
-	    *code = LT;
-	    *cmp1 = force_reg (mode, GEN_INT (plus_one));
-	    return true;
+	    plus_one = trunc_int_for_mode (UINTVAL (*cmp1) + 1, mode);
+	    if (INTVAL (*cmp1) < plus_one)
+	      {
+		*code = LT;
+		*cmp1 = force_reg (mode, GEN_INT (plus_one));
+		return true;
+	      }
 	  }
 	break;
 
       case LEU:
-	plus_one = trunc_int_for_mode (UINTVAL (*cmp1) + 1, mode);
-	if (plus_one != 0)
+	if (CONST_INT_P (*cmp1))
 	  {
-	    *code = LTU;
-	    *cmp1 = force_reg (mode, GEN_INT (plus_one));
-	    return true;
+	    plus_one = trunc_int_for_mode (UINTVAL (*cmp1) + 1, mode);
+	    if (plus_one != 0)
+	      {
+		*code = LTU;
+		*cmp1 = force_reg (mode, GEN_INT (plus_one));
+		return true;
+	      }
 	  }
+	break;
+
+      case GT:
+      case GTU:
+      case LT:
+      case LTU:
+	*cmp1 = force_reg (mode, *cmp1);
 	break;
 
       default:
@@ -5406,7 +5418,10 @@ loongarch_extend_comparands (rtx_code code, rtx *op0, rtx *op1)
       else
 	{
 	  *op0 = gen_rtx_SIGN_EXTEND (word_mode, *op0);
-	  if (*op1 != const0_rtx)
+	  /* Regardless of whether *op1 is any immediate number, it is not
+	     loaded into the register, in order to facilitate the generation
+	     of slt{u}i.  */
+	  if (!CONST_INT_P (*op1))
 	    *op1 = gen_rtx_SIGN_EXTEND (word_mode, *op1);
 	}
     }
