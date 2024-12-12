@@ -6228,8 +6228,17 @@ package body Sem_Util is
       --  Create a new entity for the defining unit name
 
       Def_Id := Defining_Unit_Name (Result);
-      Set_Defining_Unit_Name (Result,
-        Make_Defining_Identifier (Sloc (Def_Id), Chars (Def_Id)));
+
+      case Nkind (Def_Id) is
+         when N_Defining_Identifier =>
+            Def_Id := Make_Defining_Identifier (Sloc (Def_Id), Chars (Def_Id));
+         when N_Defining_Operator_Symbol =>
+            Def_Id :=
+              Make_Defining_Operator_Symbol (Sloc (Def_Id), Chars (Def_Id));
+         when others => raise Program_Error;
+      end case;
+
+      Set_Defining_Unit_Name (Result, Def_Id);
 
       --  Create new entities for the formal parameters
 
