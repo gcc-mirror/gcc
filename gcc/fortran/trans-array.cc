@@ -955,6 +955,26 @@ get_CFI_desc (gfc_symbol *sym, gfc_expr *expr,
 }
 
 
+/* A helper function for gfc_get_array_span that returns the array element size
+   of a class entity.  */
+static tree
+class_array_element_size (tree decl, bool unlimited)
+{
+  /* Class dummys usually require extraction from the saved descriptor,
+     which gfc_class_vptr_get does for us if necessary. This, of course,
+     will be a component of the class object.  */
+  tree vptr = gfc_class_vptr_get (decl);
+  /* If this is an unlimited polymorphic entity with a character payload,
+     the element size will be corrected for the string length.  */
+  if (unlimited)
+    return gfc_resize_class_size_with_len (NULL,
+					   TREE_OPERAND (vptr, 0),
+					   gfc_vptr_size_get (vptr));
+  else
+    return gfc_vptr_size_get (vptr);
+}
+
+
 /* Return the span of an array.  */
 
 tree
@@ -984,49 +1004,20 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
 	desc = build_fold_indirect_ref_loc (input_location, desc);
       tmp = gfc_conv_descriptor_span_get (desc);
     }
-  else if (UNLIMITED_POLY (expr)
-	   || (sym && UNLIMITED_POLY (sym)))
-    {
-      /* Treat unlimited polymorphic expressions separately because
-	 the element size need not be the same as the span.  Obtain
-	 the class container, which is simplified here by there being
-	 no component references.  */
-      if (sym && sym->attr.dummy)
-	{
-	  tmp = gfc_get_symbol_decl (sym);
-	  tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
-	  if (INDIRECT_REF_P (tmp))
-	    tmp = TREE_OPERAND (tmp, 0);
-	}
-      else
-	{
-	  gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)));
-	  tmp = TREE_OPERAND (desc, 0);
-	}
-      tmp = gfc_class_data_get (tmp);
-      tmp = gfc_conv_descriptor_span_get (tmp);
-    }
   else if (TREE_CODE (desc) == COMPONENT_REF
 	   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
 	   && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (desc, 0))))
-    {
-      /* The descriptor is a class _data field. Use the vtable size
-	 since it is guaranteed to have been set and is always OK for
-	 class array descriptors that are not unlimited.  */
-      tmp = gfc_get_vptr_from_expr (desc);
-      tmp = gfc_vptr_size_get (tmp);
-    }
+    /* The descriptor is the _data field of a class object.  */
+    tmp = class_array_element_size (TREE_OPERAND (desc, 0),
+				    UNLIMITED_POLY (expr));
   else if (sym && sym->ts.type == BT_CLASS
 	   && expr->ref->type == REF_COMPONENT
 	   && expr->ref->next->type == REF_ARRAY
 	   && expr->ref->next->next == NULL
 	   && CLASS_DATA (sym)->attr.dimension)
-    {
-      /* Class dummys usually require extraction from the saved
-	 descriptor, which gfc_class_vptr_get does for us.  */
-      tmp = gfc_class_vptr_get (sym->backend_decl);
-      tmp = gfc_vptr_size_get (tmp);
-    }
+    /* Having escaped the above, this can only be a class array dummy.  */
+    tmp = class_array_element_size (sym->backend_decl,
+				    UNLIMITED_POLY (sym));
   else
     {
       /* If none of the fancy stuff works, the span is the element
