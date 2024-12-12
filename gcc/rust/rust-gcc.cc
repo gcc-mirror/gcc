@@ -942,7 +942,7 @@ operator_to_tree_code (NegationOperator op)
     case NegationOperator::NEGATE:
       return NEGATE_EXPR;
     case NegationOperator::NOT:
-      return TRUTH_NOT_EXPR;
+      return BIT_NOT_EXPR;
     default:
       rust_unreachable ();
     }
