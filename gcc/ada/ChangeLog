@@ -1,3 +1,24 @@
+2024-12-11  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* Makefile.rtl: Add x86_64-pc-gnu section.
+
+2024-12-11  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* libgnat/system-gnu.ads: New file.
+	* Makefile.rtl (x86-gnuhurd): Use libgnat/system-gnu.ads instead of
+	libgnat/system-freebsd.ads.
+
+2024-12-11  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* libgnarl/a-intnam__freebsd.ads: Rename to...
+	* libgnarl/a-intnam__bsd.ads: ... new file.
+	* libgnarl/a-intnam__dragonfly.ads: Remove file.
+	* Makefile.rtl (x86-kfreebsd, x86-gnuhurd, x86_64-kfreebsd,
+	aarch64-freebsd, x86-freebsd, x86_64-freebsd): Use
+	libgnarl/a-intnam__bsd.ads instead of libgnarl/a-intnam__freebsd.ads.
+	(x86_64-dragonfly): Use libgnarl/a-intnam__bsd.ads instead of
+	libgnarl/a-intnam__dragonfly.ads.
+
 2024-11-26  Eric Botcazou  <ebotcazou@adacore.come>
 
 	* gcc-interface/trans.cc (Attribute_to_gnu) <Attr_Access>: Do not

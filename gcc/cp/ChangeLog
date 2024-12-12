@@ -1,3 +1,26 @@
+2024-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117614
+	* constexpr.cc (cxx_eval_store_expression): For stores to
+	DECL_ANON_UNION_VAR_P vars just continue with DECL_VALUE_EXPR
+	of it, without setting evaluated to true or full
+	cxx_eval_constant_expression.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* decl.cc: Add #include "diagnostic-highlight-colors.h"
+	and #include "pretty-print-markup.h".
+	(complain_about_incompatible_declspecs): New.
+	(grokdeclarator): Use it when complaining about both 'signed' and
+	'unsigned', and both 'long' and 'short'.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc (print_z_candidates): Count the number of
+	candidates and issue a note stating the count at an
+	intermediate nesting level.  Number the individual
+	candidates.
+
 2024-12-10  Arsen Arsenović  <arsen@aarsen.me>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

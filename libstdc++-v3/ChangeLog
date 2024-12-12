@@ -1,3 +1,47 @@
+2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109517
+	PR libstdc++/109976
+	* include/debug/helper_functions.h (__valid_range_aux): Treat
+	all input iterator ranges as valid during constant evaluation.
+
+2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106212
+	* include/std/array (operator==): Use std::__equal_aux1 instead
+	of std::equal.
+	* testsuite/23_containers/array/comparison_operators/106212.cc:
+	New test.
+
+2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117966
+	* include/std/span (span(T (&)[N])): Do not delegate to
+	constructor that performs redundant checks.
+	(span(array<T, N>&), span(const array<T, N>&)): Likewise.
+	(span(Range&&), span(const span<T, N>&)): Likewise.
+	* testsuite/23_containers/span/117966.cc: New test.
+
+2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/generator (_Promise_alloc): Rename template
+	parameter. Use __alloc_rebind to rebind allocator.
+	(_Promise_alloc::operator new): Replace constraints with a
+	static_assert in the body. Rename allocator parameter.
+	(_Promise_alloc<void>::_M_allocate): Rename allocator parameter.
+	Use __alloc_rebind to rebind allocator.
+	(_Promise_alloc<void>::operator new): Rename allocator
+	parameter.
+	* testsuite/24_iterators/range_generators/alloc.cc: New test.
+	* testsuite/24_iterators/range_generators/lwg3900.cc: New test.
+
+2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (println): Pass stream's locale to
+	std::format, as per LWG 4088.
+	* testsuite/27_io/basic_ostream/print/1.cc: Check std::println
+	with custom locale. Remove unused brit_punc class.
+
 2024-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/memory_resource.h (polymoprhic_allocator): Use

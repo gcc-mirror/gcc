@@ -1,3 +1,160 @@
+2024-12-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/116778
+	* ira-int.h (x_ira_class_hard_reg_index): Fix comment typo.
+	* lra-eliminations.cc (lra_fp_pseudo_p): New function.
+	* lra-int.h (lra_fp_pseudo_p): External declaration.
+	* lra-spills.cc (lra_need_for_spills_p): Fix formatting.
+	* lra.cc (lra): Use lra_fp_pseudo_p in lra_create_live_range after
+	lra_remat.
+
+2024-12-11  Filip Kastl  <fkastl@suse.cz>
+	    Andi Kleen  <ak@gcc.gnu.org>
+
+	PR middle-end/117091
+	PR middle-end/117352
+	* doc/invoke.texi: Add switch-lower-slow-alg-max-cases.
+	* params.opt: Add switch-lower-slow-alg-max-cases.
+	* tree-switch-conversion.cc (jump_table_cluster::find_jump_tables):
+	Note in a comment that we are looking for jump tables in
+	case sequences delimited by the already found bit tests.
+	(bit_test_cluster::find_bit_tests): Decide between
+	find_bit_tests_fast() and find_bit_tests_slow().
+	(bit_test_cluster::find_bit_tests_fast): New function.
+	(bit_test_cluster::find_bit_tests_slow): New function.
+	(switch_decision_tree::analyze_switch_statement): Report
+	exceeding the limit.
+	* tree-switch-conversion.h: Add find_bit_tests_fast() and
+	find_bit_tests_slow().
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-highlight-colors.h: Tweak comment.
+	* pretty-print-markup.h (class pp_element_quoted_string): New,
+	based on pretty-print.cc's selftest::test_element, adding an
+	optional highlight color.
+	* pretty-print.cc (class test_element): Drop.
+	(selftest::test_pp_format): Use pp_element_quoted_string.
+	(selftest::test_urlification): Likewise.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* diagnostic-format-text.cc (build_prefix): Don't add the
+	"note: " prefix when showing nested diagnostics.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* diagnostic-format-text.cc (on_report_diagnostic): When showing
+	locations for nested messages on new lines, don't print
+	UNKNOWN_LOCATION or BUILTINS_LOCATION.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.cc (file_cache::initialize_input_context): Rename member
+	"in_context" to "m_input_context".
+	(file_cache::add_file): Likewise.
+	* input.h (class file_cache): Likewise.
+
+2024-12-11  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.h: Forward declare class ipa_vr.
+	(ipa_vr_operation_and_type_effects) Declare.
+	* ipa-cp.cc (ipa_vr_operation_and_type_effects): Make public.
+	* ipa-prop.cc (update_jump_functions_after_inlining): Also update
+	value range jump functions.
+
+2024-12-11  Victor Do Nascimento  <victor.donascimento@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	* expr.cc (store_constructor): Enable poly_{u}int64 type usage.
+	(get_inner_reference): Ditto.
+
+2024-12-11  Victor Do Nascimento  <victor.donascimento@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	* expr.cc (store_constructor): add support for variable-length
+	vectors.
+
+2024-12-11  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR target/96342
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call):
+	s/vectype/masktype/ in call to vect_get_loop_mask.
+
+2024-12-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Victor Do Nascimento  <victor.donascimento@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	* target.def (TARGET_SIMD_CLONE_USABLE): Add argument.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Pass stmt_info to
+	call TARGET_SIMD_CLONE_USABLE.
+	* config/aarch64/aarch64.cc (aarch64_simd_clone_usable): Add argument
+	and use it to reject the use of SVE simd clones with Advanced SIMD
+	modes.
+	* config/gcn/gcn.cc (gcn_simd_clone_usable): Add unused argument.
+	* config/i386/i386.cc (ix86_simd_clone_usable): Likewise.
+	* doc/tm.texi: Regenerate
+
+2024-12-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114932
+	* fold-const.cc (operand_compare::operand_equal_p): Use it.
+	(operand_compare::verify_hash_value): Likewise.
+	(operand_compare::hash_operand): Likewise.
+	(test_operand_equality::test): New.
+	(fold_const_cc_tests): Use it.
+	* tree-core.h (enum operand_equal_flag): Add OEP_ASSUME_WRAPV.
+	* tree-ssa-loop-ivopts.cc (record_group_use): Check for structural eq.
+
+2024-12-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114932
+	* fold-const.cc (operand_compare::operand_equal_p): Split into one that
+	takes explicit type parameters and use that in public one.
+	* fold-const.h (class operand_compare): Add operand_equal_p private
+	overload.
+
+2024-12-11  Soumya AR  <soumyaa@nvidia.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_ptrue_reg): New overload.
+	* config/aarch64/aarch64-protos.h (aarch64_ptrue_reg): Likewise.
+	* config/aarch64/aarch64-sve.md: Extended sdiv_pow2<mode>3
+	and *sdiv_pow2<mode>3 to support Neon modes.
+
+2024-12-11  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64-sve2.md
+	(*aarch64_sve2_nbsl_unpred<mode>): New pattern to match unpredicated
+	form.
+	(*aarch64_sve2_bsl1n_unpred<mode>): Likewise.
+	(*aarch64_sve2_bsl2n_unpred<mode>): Likewise.
+
+2024-12-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/117888
+	* tree-ssa-loop-ivcanon.cc (try_unroll_loop_completely): Use
+	cunrolli instead of cunrolli && !loop->inner to check if it's
+	innermost loop.
+	(canonicalize_loop_induction_variables): Add new parameter
+	const_sbitmap innermost, and pass
+	cunrolli
+	&& (unsigned) loop->num < SBITMAP_SIZE (innermost)
+	&& bitmap_bit_p (innermost, loop->num) as "cunrolli" to
+	try_unroll_loop_completely
+	(canonicalize_induction_variables): Pass innermost to
+	canonicalize_loop_induction_variables.
+	(tree_unroll_loops_completely_1): Add new parameter
+	const_sbitmap innermost.
+	(tree_unroll_loops_completely): Move local variable cunrolli
+	to parameter to indicate it's from pass cunrolli, also track
+	all "original" innermost loop at the beginning.
+
 2024-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/117944

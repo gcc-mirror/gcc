@@ -1,3 +1,76 @@
+2024-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117901
+	* gfortran.dg/pr117901.f90: New test.
+
+2024-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117614
+	* g++.dg/cpp2a/constexpr-union8.C: New test.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/long-short-colorization.C: New test.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* g++.dg/concepts/nested-diagnostics-1-truncated.C: Update
+	expected output.
+	* g++.dg/concepts/nested-diagnostics-1.C: Likewise.
+	* g++.dg/concepts/nested-diagnostics-2.C: Likewise.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented-show-levels.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented-unicode.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented.c: Likewise.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/concepts/diagnostic9.C: Update expected
+	results for candidate count and numbering.
+	* g++.dg/concepts/nested-diagnostics-1-truncated.C:
+	* g++.dg/concepts/nested-diagnostics-1.C: Likewise.
+	* g++.dg/concepts/nested-diagnostics-2.C: Likewise.
+	* g++.dg/cpp23/explicit-obj-lambda11.C: Likewise.
+	* g++.dg/cpp2a/desig4.C: Likewise.
+	* g++.dg/cpp2a/desig6.C: Likewise.
+	* g++.dg/cpp2a/spaceship-eq15.C: Likewise.
+	* g++.dg/diagnostic/function-color1.C: Likewise.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Likewise.
+	* g++.dg/diagnostic/pr100716-1.C: Likewise.
+	* g++.dg/diagnostic/pr100716.C: Likewise.
+	* g++.dg/lookup/operator-2.C: Likewise.
+	* g++.dg/lookup/pr80891-5.C: Likewise.
+	* g++.dg/modules/adhoc-1_b.C: Likewise.
+	* g++.dg/modules/err-1_c.C: Likewise.
+	* g++.dg/modules/err-1_d.C: Likewise.
+	* g++.dg/other/return2.C: Likewise.
+	* g++.dg/overload/error6.C: Likewise.
+	* g++.dg/template/local6.C: Likewise.
+
+2024-12-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114932
+	* gfortran.dg/addressing-modes_2.f90: New test.
+
+2024-12-11  Soumya AR  <soumyaa@nvidia.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/sve-asrd.c: New test.
+
+2024-12-11  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/sve/bitsel.c: New test.
+
+2024-12-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr117888-2.c: New test.
+	* gcc.dg/vect/pr117888-1.c: Ditto.
+	* gcc.dg/tree-ssa/pr83403-1.c: Add
+	--param	max-completely-peeled-insns=300 for arm*-*-*.
+	* gcc.dg/tree-ssa/pr83403-2.c: Ditto.
+
 2024-12-10  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117120

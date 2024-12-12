@@ -1,3 +1,10 @@
+2024-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117901
+	* trans-stmt.cc (trans_associate_var): A variable character
+	length array associate name must generate a DECL expression for
+	the data pointer type.
+
 2024-12-09  Harald Anlauf  <anlauf@gmx.de>
 
 	* expr.cc (find_array_section): Do not initialize GMP variables
