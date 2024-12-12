@@ -10068,6 +10068,13 @@ struct iterator_loop_info_t
 
 typedef hash_map<tree, iterator_loop_info_t> iterator_loop_info_map_t;
 
+tree
+omp_iterator_elems_length (tree count)
+{
+  tree count_2 = size_binop (MULT_EXPR, count, size_int (2));
+  return size_binop (PLUS_EXPR, count_2, size_int (1));
+}
+
 /* Builds a loop to expand any OpenMP iterators in the clauses in LIST_P,
    reusing any previously built loops if they use the same set of iterators.
    Generated Gimple statements are placed into LOOPS_SEQ_P.  The clause
@@ -10123,27 +10130,21 @@ build_omp_iterators_loops (tree *list_p, gimple_seq *loops_seq_p)
 	}
 
       /* Create array to hold expanded values.  */
-      tree last_count_2 = size_binop (MULT_EXPR, loop.count, size_int (2));
-      tree arr_length = size_binop (PLUS_EXPR, last_count_2, size_int (1));
-      tree elems = NULL_TREE;
-      if (TREE_CONSTANT (arr_length))
-	{
-	  tree type = build_array_type (ptr_type_node,
-					build_index_type (arr_length));
-	  elems = create_tmp_var_raw (type, "omp_iter_data");
-	  TREE_ADDRESSABLE (elems) = 1;
-	  gimple_add_tmp_var (elems);
-	}
-      else
-	{
-	  /* Handle dynamic sizes.  */
-	  sorry ("dynamic iterator sizes not implemented yet");
-	}
+      tree arr_length = omp_iterator_elems_length (loop.count);
+      tree elems_type = TREE_CONSTANT (arr_length)
+		? build_array_type (ptr_type_node,
+				    build_index_type (arr_length))
+		: build_pointer_type (ptr_type_node);
+      tree elems = create_tmp_var_raw (elems_type, "omp_iter_data");
+      TREE_ADDRESSABLE (elems) = 1;
+      gimple_add_tmp_var (elems);
 
       /* BEFORE LOOP:  */
       /* elems[0] = count;  */
-      tree lhs = build4 (ARRAY_REF, ptr_type_node, elems, size_int (0),
-			 NULL_TREE, NULL_TREE);
+      tree lhs = TREE_CODE (TREE_TYPE (elems)) == ARRAY_TYPE
+	? build4 (ARRAY_REF, ptr_type_node, elems, size_int (0), NULL_TREE,
+		  NULL_TREE)
+	: build1 (INDIRECT_REF, ptr_type_node, elems);
       tree tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
 			     void_type_node, lhs, loop.count);
       gimplify_and_add (tem, loops_seq_p);
@@ -10151,10 +10152,11 @@ build_omp_iterators_loops (tree *list_p, gimple_seq *loops_seq_p)
       /* Make a copy of the iterator with extra info at the end.  */
       int elem_count = TREE_VEC_LENGTH (OMP_CLAUSE_ITERATORS (c));
       tree new_iterator = copy_omp_iterator (OMP_CLAUSE_ITERATORS (c),
-					     elem_count + 3);
+					     elem_count + 4);
       TREE_VEC_ELT (new_iterator, elem_count) = loop.body_label;
-      TREE_VEC_ELT (new_iterator, elem_count + 1) = elems;
-      TREE_VEC_ELT (new_iterator, elem_count + 2) = loop.index;
+      TREE_VEC_ELT (new_iterator, elem_count + 1) = loop.index;
+      TREE_VEC_ELT (new_iterator, elem_count + 2) = elems;
+      TREE_VEC_ELT (new_iterator, elem_count + 3) = loop.count;
       TREE_CHAIN (new_iterator) = TREE_CHAIN (OMP_CLAUSE_ITERATORS (c));
       OMP_CLAUSE_ITERATORS (c) = new_iterator;
 
