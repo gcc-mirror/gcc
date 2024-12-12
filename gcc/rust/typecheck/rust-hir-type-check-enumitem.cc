@@ -142,10 +142,11 @@ TypeCheckEnumItem::visit (HIR::EnumItemDiscriminant &item)
   rust_assert (canonical_path.has_value ());
 
   RustIdent ident{*canonical_path, item.get_locus ()};
-  variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-				  item.get_mappings ().get_defid (),
-				  item.get_identifier ().as_string (), ident,
-				  item.take_discriminant_expression ());
+  variant
+    = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+			    item.get_mappings ().get_defid (),
+			    item.get_identifier ().as_string (), ident,
+			    item.get_discriminant_expression ().clone_expr ());
 }
 
 void
