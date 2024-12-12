@@ -184,6 +184,8 @@ private:
       }
   }
 
+  void internal_comment (std::string node_name, std::function<void ()> visitor);
+
   void trailing_comma ();
   void newline ();
   void indentation ();
