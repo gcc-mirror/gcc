@@ -79,6 +79,7 @@ extern enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 extern tree omp_get_construct_context (void);
 int omp_has_novariants (void);
 
+extern tree omp_iterator_elems_length (tree count);
 extern gimple_seq *enter_omp_iterator_loop_context (tree, gomp_target *,
 						    gimple_seq * = NULL);
 extern void exit_omp_iterator_loop_context (tree);

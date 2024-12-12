@@ -13,5 +13,5 @@ void f (int ***x, float ***y, double **z)
 
 /* { dg-final { scan-tree-dump-times "if \\(i <= 9\\) goto <D\.\[0-9\]+>; else goto <D\.\[0-9\]+>;" 2 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "if \\(j <= 19\\) goto <D\.\[0-9\]+>; else goto <D\.\[0-9\]+>;" 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "to\\(iterator\\(int i=0:10:1, int j=0:20:1, loop_label=<D\.\[0-9\]+>, elems=omp_iter_data\.\[0-9\]+, index=D\.\[0-9\]+\\):\\*D\.\[0-9\]+" 2 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "from\\(iterator\\(int i=0:10:1, loop_label=<D\.\[0-9\]+>, elems=omp_iter_data\.\[0-9\]+, index=D\.\[0-9\]+\\):\\*D\.\[0-9\]+" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "to\\(iterator\\(int i=0:10:1, int j=0:20:1, loop_label=<D\.\[0-9\]+>, index=D\.\[0-9\]+, elems=omp_iter_data\.\[0-9\]+, elems_count=200\\):\\*D\.\[0-9\]+" 2 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "from\\(iterator\\(int i=0:10:1, loop_label=<D\.\[0-9\]+>, index=D\.\[0-9\]+, elems=omp_iter_data\.\[0-9\]+, elems_count=10\\):\\*D\.\[0-9\]+" 1 "gimple" } } */

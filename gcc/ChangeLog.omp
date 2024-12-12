@@ -1,5 +1,28 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gimplify.cc (omp_iterator_elems_length): New.
+	(build_omp_iterators_loops): Change type of elements
+	array to pointer of pointers if array length is non-constant, and
+	assign size with indirect reference.  Reorder elements added to
+	iterator vector and add element containing the iteration count.  Use
+	omp_iterator_elems_length to compute element array size required.
+	* gimplify.h (omp_iterator_elems_length): New prototype.
+	* omp-low.cc (lower_omp_map_iterator_expr): Reorder elements read
+	from iterator vector.  If elements field is a pointer type, assign
+	using pointer arithmetic followed by indirect reference, and return
+	the field directly.
+	(lower_omp_map_iterator_size): Reorder elements read from iterator
+	vector.  If elements field is a pointer type, assign using pointer
+	arithmetic followed by indirect reference.
+	(allocate_omp_iterator_elems): New.
+	(free_omp_iterator_elems): New.
+	(lower_omp_target): Call allocate_omp_iterator_elems before inserting
+	loops sequence, and call free_omp_iterator_elems afterwards.
+	* tree-pretty-print.cc (dump_omp_iterators): Print extra elements in
+	iterator vector.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gimplify.cc (compute_omp_iterator_count): Account for difference
 	in loop boundaries in Fortran.
 	(build_omp_iterator_loop): Change upper boundary condition for

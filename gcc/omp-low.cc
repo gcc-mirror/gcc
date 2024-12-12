@@ -13669,20 +13669,30 @@ lower_omp_map_iterator_expr (tree expr, tree c, gomp_target *stmt)
     return expr;
 
   tree iterator = OMP_CLAUSE_ITERATORS (c);
-  tree elems = TREE_VEC_ELT (iterator, 7);
-  tree index = TREE_VEC_ELT (iterator, 8);
+  tree index = TREE_VEC_ELT (iterator, 7);
+  tree elems = TREE_VEC_ELT (iterator, 8);
   gimple_seq *loop_body_p = enter_omp_iterator_loop_context (c, stmt);
 
    /* IN LOOP BODY:  */
    /* elems[idx] = <expr>;  */
-  tree lhs = build4 (ARRAY_REF, ptr_type_node, elems, index,
-		     NULL_TREE, NULL_TREE);
+  tree lhs;
+  if (TREE_CODE (TREE_TYPE (elems)) == ARRAY_TYPE)
+    lhs = build4 (ARRAY_REF, ptr_type_node, elems, index, NULL_TREE, NULL_TREE);
+  else
+    {
+      tree tmp = size_binop (MULT_EXPR, index, TYPE_SIZE_UNIT (ptr_type_node));
+      tmp = size_binop (POINTER_PLUS_EXPR, elems, tmp);
+      lhs = build1 (INDIRECT_REF, ptr_type_node, tmp);
+    }
   tree mod_expr = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
 			      void_type_node, lhs, expr);
   gimplify_and_add (mod_expr, loop_body_p);
   exit_omp_iterator_loop_context (c);
 
-  return build_fold_addr_expr_with_type (elems, ptr_type_node);
+  if (TREE_CODE (TREE_TYPE (elems)) == ARRAY_TYPE)
+    return build_fold_addr_expr_with_type (elems, ptr_type_node);
+  else
+    return elems;
 }
 
 /* Set SIZE as the size expression that should result from the clause C.
@@ -13696,21 +13706,87 @@ lower_omp_map_iterator_size (tree size, tree c, gomp_target *stmt)
     return size;
 
   tree iterator = OMP_CLAUSE_ITERATORS (c);
-  tree elems = TREE_VEC_ELT (iterator, 7);
-  tree index = TREE_VEC_ELT (iterator, 8);
+  tree index = TREE_VEC_ELT (iterator, 7);
+  tree elems = TREE_VEC_ELT (iterator, 8);
   gimple_seq *loop_body_p = enter_omp_iterator_loop_context (c, stmt);
 
   /* IN LOOP BODY:  */
   /* elems[idx+1] = <size>;  */
-  tree lhs = build4 (ARRAY_REF, ptr_type_node, elems,
-		     size_binop (PLUS_EXPR, index, size_int (1)),
-		     NULL_TREE, NULL_TREE);
+  tree lhs;
+  if (TREE_CODE (TREE_TYPE (elems)) == ARRAY_TYPE)
+    lhs = build4 (ARRAY_REF, ptr_type_node, elems,
+		  size_binop (PLUS_EXPR, index, size_int (1)),
+		  NULL_TREE, NULL_TREE);
+  else
+    {
+      tree index_1 = size_binop (PLUS_EXPR, index, size_int (1));
+      tree tmp = size_binop (MULT_EXPR, index_1,
+			     TYPE_SIZE_UNIT (ptr_type_node));
+      tmp = size_binop (POINTER_PLUS_EXPR, elems, tmp);
+      lhs = build1 (INDIRECT_REF, ptr_type_node, tmp);
+    }
   tree mod_expr = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
 			      void_type_node, lhs, size);
   gimplify_and_add (mod_expr, loop_body_p);
   exit_omp_iterator_loop_context (c);
 
   return size_int (SIZE_MAX);
+}
+
+static void
+allocate_omp_iterator_elems (tree clauses, gimple_seq loops_seq)
+{
+  for (tree c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (!OMP_CLAUSE_HAS_ITERATORS (c))
+	continue;
+      tree iters = OMP_CLAUSE_ITERATORS (c);
+      tree elems = TREE_VEC_ELT (iters, 8);
+      if (!POINTER_TYPE_P (TREE_TYPE (elems)))
+	continue;
+      tree arr_length = omp_iterator_elems_length (TREE_VEC_ELT (iters, 9));
+      tree call = builtin_decl_explicit (BUILT_IN_MALLOC);
+      tree size = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MULT_EXPR,
+				   size_type_node, arr_length,
+				   TYPE_SIZE_UNIT (ptr_type_node));
+      tree tmp = build_call_expr_loc (OMP_CLAUSE_LOCATION (c), call, 1,
+				      size);
+
+      /* Find the first statement '<index> = -1' in the pre-loop statements.  */
+      tree index = TREE_VEC_ELT (iters, 7);
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start (loops_seq); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (gimple_code (stmt) == GIMPLE_ASSIGN
+	      && gimple_assign_lhs (stmt) == index
+	      && gimple_assign_rhs1 (stmt) == size_int (-1))
+	    break;
+	}
+      gcc_assert (!gsi_end_p (gsi));
+
+      gimple_seq alloc_seq = NULL;
+      gimplify_assign (elems, tmp, &alloc_seq);
+      gsi_insert_seq_before (&gsi, alloc_seq, GSI_SAME_STMT);
+    }
+}
+
+static void
+free_omp_iterator_elems (tree clauses, gimple_seq *seq)
+{
+  for (tree c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (!OMP_CLAUSE_HAS_ITERATORS (c))
+	continue;
+      tree elems = TREE_VEC_ELT (OMP_CLAUSE_ITERATORS (c), 8);
+      if (!POINTER_TYPE_P (TREE_TYPE (elems)))
+	continue;
+      tree call = builtin_decl_explicit (BUILT_IN_FREE);
+      call = build_call_expr_loc (OMP_CLAUSE_LOCATION (c), call, 1, elems);
+      gimplify_and_add (call, seq);
+      tree clobber = build_clobber (TREE_TYPE (elems));
+      gimple_seq_add_stmt (seq, gimple_build_assign (elems, clobber));
+    }
 }
 
 /* Lower the GIMPLE_OMP_TARGET in the current statement
@@ -15878,9 +15954,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimple_omp_set_body (stmt, new_body);
     }
 
+  allocate_omp_iterator_elems (clauses,
+			       gimple_omp_target_iterator_loops (stmt));
   gsi_insert_seq_before (gsi_p, gimple_omp_target_iterator_loops (stmt),
 			 GSI_SAME_STMT);
   gimple_omp_target_set_iterator_loops (stmt, NULL);
+  free_omp_iterator_elems (clauses, &olist);
+
   bind = gimple_build_bind (NULL, NULL,
 			    tgt_bind ? gimple_bind_block (tgt_bind)
 				     : NULL_TREE);

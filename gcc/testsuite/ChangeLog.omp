@@ -1,5 +1,17 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* c-c++-common/gomp/target-map-iterators-3.c: Update expected Gimple
+	output.
+	* c-c++-common/gomp/target-map-iterators-5.c: New.
+	* c-c++-common/gomp/target-update-iterators-3.c: Update expected
+	Gimple output.
+	* gfortran.dg/gomp/target-map-iterators-3.f90: Likewise.
+	* gfortran.dg/gomp/target-map-iterators-5.f90: New.
+	* gfortran.dg/gomp/target-update-iterators-3.f90: Update expected
+	Gimple output.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gfortran.dg/gomp/target-update-iterators-1.f90: New.
 	* gfortran.dg/gomp/target-update-iterators-2.f90: New.
 	* gfortran.dg/gomp/target-update-iterators-3.f90: New.

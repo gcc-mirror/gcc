@@ -452,10 +452,12 @@ dump_omp_iterators (pretty_printer *pp, tree iter, int spc, dump_flags_t flags)
     {
       pp_string (pp, ", loop_label=");
       dump_generic_node (pp, TREE_VEC_ELT (iter, 6), spc, flags, false);
-      pp_string (pp, ", elems=");
-      dump_generic_node (pp, TREE_VEC_ELT (iter, 7), spc, flags, false);
       pp_string (pp, ", index=");
+      dump_generic_node (pp, TREE_VEC_ELT (iter, 7), spc, flags, false);
+      pp_string (pp, ", elems=");
       dump_generic_node (pp, TREE_VEC_ELT (iter, 8), spc, flags, false);
+      pp_string (pp, ", elems_count=");
+      dump_generic_node (pp, TREE_VEC_ELT (iter, 9), spc, flags, false);
     }
   pp_right_paren (pp);
 }
