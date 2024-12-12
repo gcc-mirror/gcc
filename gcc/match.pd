@@ -9636,13 +9636,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       cmp (lt ge)
   (simplify
    (op (clz:s@2 @0) INTEGER_CST@1)
-   (if (integer_zerop (@1) && single_use (@2))
-    /* clz(X) == 0 is (int)X < 0 and clz(X) != 0 is (int)X >= 0.  */
-    (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
-     (cmp (convert:stype @0) { build_zero_cst (stype); }))
-    /* clz(X) == (prec-1) is X == 1 and clz(X) != (prec-1) is X != 1.  */
-    (if (wi::to_wide (@1) == TYPE_PRECISION (TREE_TYPE (@0)) - 1)
-     (op @0 { build_one_cst (TREE_TYPE (@0)); }))))))
+   (if (!sanitize_flags_p (SANITIZE_BUILTIN)
+	/* For -fsanitize=builtin give ubsan pass a chance
+	   to instrument it first.  */
+	|| (cfun && (cfun->curr_properties & PROP_ssa) != 0))
+    (if (integer_zerop (@1) && single_use (@2))
+     /* clz(X) == 0 is (int)X < 0 and clz(X) != 0 is (int)X >= 0.  */
+     (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
+      (cmp (convert:stype @0) { build_zero_cst (stype); }))
+     /* clz(X) == (prec-1) is X == 1 and clz(X) != (prec-1) is X != 1.  */
+     (if (wi::to_wide (@1) == TYPE_PRECISION (TREE_TYPE (@0)) - 1)
+      (op @0 { build_one_cst (TREE_TYPE (@0)); })))))))
 (for op (eq ne)
      cmp (lt ge)
  (simplify
@@ -9682,7 +9686,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (op (ctz:s @0) INTEGER_CST@1)
     (with { bool ok = true;
 	    HOST_WIDE_INT val = 0;
-	    if (!tree_fits_shwi_p (@1))
+	    if (sanitize_flags_p (SANITIZE_BUILTIN)
+		/* For -fsanitize=builtin give ubsan pass a chance
+		   to instrument it first.  */
+		&& (!cfun
+		    || (cfun->curr_properties & PROP_ssa) == 0))
+	      ok = false;
+	    else if (!tree_fits_shwi_p (@1))
 	      ok = false;
 	    else
 	      {
@@ -9713,8 +9723,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (op (ctz:s @0) INTEGER_CST@1)
     (with { tree type0 = TREE_TYPE (@0);
 	    int prec = TYPE_PRECISION (type0);
+	    bool ok = true;
+	    if (sanitize_flags_p (SANITIZE_BUILTIN)
+		/* For -fsanitize=builtin give ubsan pass a chance
+		   to instrument it first.  */
+		&& (!cfun
+		    || (cfun->curr_properties & PROP_ssa) == 0))
+	      ok = false;
 	  }
-     (if (prec <= MAX_FIXED_MODE_SIZE)
+     (if (ok && prec <= MAX_FIXED_MODE_SIZE)
       (if (tree_int_cst_sgn (@1) < 0 || wi::to_widest (@1) >= prec)
        { constant_boolean_node (op == EQ_EXPR ? false : true, type); }
        (op (bit_and @0 { wide_int_to_tree (type0,
@@ -9815,7 +9832,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       else if (TYPE_PRECISION (type0)
 			== TYPE_PRECISION (long_long_unsigned_type_node))
 		 cfn = CFN_BUILT_IN_CTZLL;
-	     } }
+	     }
+	   if (sanitize_flags_p (SANITIZE_BUILTIN)
+	       /* For -fsanitize=builtin give ubsan pass a chance
+		  to instrument it first.  */
+	       && (!cfun
+		   || (cfun->curr_properties & PROP_ssa) == 0))
+	    cfn = CFN_LAST; }
     (if (cfn == CFN_CTZ)
      (IFN_CTZ (convert:type0 @0))
      (if (cfn == CFN_BUILT_IN_CTZ)
