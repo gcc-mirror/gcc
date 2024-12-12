@@ -3115,6 +3115,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        || POINTER_TYPE_P (itype))
       && wi::eq_p (wi::to_wide (int_cst), wi::max_value (itype))))))
 
+/* Saturation add for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (match (usadd_overflow_mask @0 @1)
   /* SAT_U_ADD = (X + Y) | -(X > (X + Y)).
@@ -3189,6 +3190,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 integer_minus_onep (realpart @2))
   (if (types_match (type, @0) && int_fits_type_p (@1, type)))))
 
+/* Saturation sub for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (match (unsigned_integer_sat_sub @0 @1)
   /* SAT_U_SUB = X > Y ? X - Y : 0  */
@@ -3278,6 +3280,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     }
     (if (wi::eq_p (sum, wi::uhwi (0, precision))))))))
 
+/* Saturation truncate for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (match (unsigned_integer_sat_trunc @0)
   /* SAT_U_TRUNC = (NT)x | (NT)(-(X > (WT)(NT)(-1)))  */
@@ -3337,6 +3340,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			    (nop_convert? (convert (lt @0 integer_zerop)))))
 	     max_value)))
 
+/* Saturation add for signed integer.  */
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
  (match (signed_integer_sat_add @0 @1)
   /* T SUM = (T)((UT)X + (UT)Y)
@@ -3391,6 +3395,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 @2)
   (if (wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0))))
 
+/* Saturation sub for signed integer.  */
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
  (match (signed_integer_sat_sub @0 @1)
   /* T Z = (T)((UT)X - (UT)Y);
@@ -3427,6 +3432,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 (realpart @2))
   (if (types_match (type, @0, @1)))))
 
+/* Saturation truncate for signed integer.  */
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
  (match (signed_integer_sat_trunc @0)
   /* SAT_S_TRUNC(X) = (unsigned)X + NT_MAX + 1  > Unsigned_MAX ? (NT)X  */
