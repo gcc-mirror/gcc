@@ -8498,11 +8498,14 @@ package body Sem_Ch8 is
 
             --  It is not an error if the prefix is the current instance of
             --  type name, e.g. the expression of a type aspect, when it is
-            --  analyzed within a generic unit. We still have to verify that a
-            --  component of that name exists, and decorate the node
+            --  analyzed within a generic unit. We still have to verify that
+            --  a component of that name exists, and decorate the node
             --  accordingly.
 
-            elsif Is_Entity_Name (P) and then Is_Current_Instance (P) then
+            elsif Inside_A_Generic
+              and then Is_Entity_Name (P)
+              and then Is_Current_Instance (P)
+            then
                declare
                   Comp : Entity_Id;
 
