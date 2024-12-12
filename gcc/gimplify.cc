@@ -4124,27 +4124,39 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 			arg_types = TREE_CHAIN (arg_types);
 
 		      bool need_device_ptr = false;
-		      for (tree arg
-			   = TREE_PURPOSE (TREE_VALUE (adjust_args_list));
-			   arg != NULL; arg = TREE_CHAIN (arg))
-			{
-			  if (TREE_VALUE (arg)
-			      && TREE_CODE (TREE_VALUE (arg)) == INTEGER_CST
-			      && wi::eq_p (i, wi::to_wide (TREE_VALUE (arg))))
-			    {
-			      need_device_ptr = true;
-			      break;
-			    }
-			}
+		      bool need_device_addr = false;
+		      for (int need_addr = 0; need_addr <= 1; need_addr++)
+			for (tree arg = need_addr
+					? TREE_VALUE (TREE_VALUE (
+					    adjust_args_list))
+					: TREE_PURPOSE (TREE_VALUE (
+					    adjust_args_list));
+			     arg != NULL; arg = TREE_CHAIN (arg))
+			  {
+			    if (TREE_VALUE (arg)
+				&& TREE_CODE (TREE_VALUE (arg)) == INTEGER_CST
+				&& wi::eq_p (i, wi::to_wide (TREE_VALUE (arg))))
+			      {
+				if (need_addr)
+				  need_device_addr = true;
+				else
+				  need_device_ptr = true;
+				break;
+			      }
+			  }
 
-		      if (need_device_ptr)
+		      if (need_device_ptr || need_device_addr)
 			{
 			  bool is_device_ptr = false;
+			  bool has_device_addr = false;
+
 			  for (tree c = gimplify_omp_ctxp->clauses; c;
 			       c = TREE_CHAIN (c))
 			    {
-			      if (OMP_CLAUSE_CODE (c)
-				  == OMP_CLAUSE_IS_DEVICE_PTR)
+			      if ((OMP_CLAUSE_CODE (c)
+				   == OMP_CLAUSE_IS_DEVICE_PTR)
+				  || (OMP_CLAUSE_CODE (c)
+				      == OMP_CLAUSE_HAS_DEVICE_ADDR))
 				{
 				  tree decl1 = DECL_NAME (OMP_CLAUSE_DECL (c));
 				  tree decl2
@@ -4155,15 +4167,42 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 				      || TREE_CODE (decl2) == PARM_DECL)
 				    {
 				      decl2 = DECL_NAME (decl2);
-				      if (decl1 == decl2)
-					is_device_ptr = true;
+				      if (decl1 == decl2
+					  && (OMP_CLAUSE_CODE (c)
+					      == OMP_CLAUSE_IS_DEVICE_PTR))
+					{
+					  if (need_device_addr)
+					    warning_at (
+					      OMP_CLAUSE_LOCATION (c),
+					      OPT_Wopenmp,
+					      "%<is_device_ptr%> for %qD does"
+					      " not imply %<has_device_addr%> "
+					      "required for "
+					      "%<need_device_addr%>",
+					       OMP_CLAUSE_DECL (c));
+					  is_device_ptr = true;
+					}
+				      else if (decl1 == decl2)
+					{
+					  if (need_device_ptr)
+					    warning_at (
+					      OMP_CLAUSE_LOCATION (c),
+					      OPT_Wopenmp,
+					      "%<has_device_addr%> for %qD does"
+					      " not imply %<is_device_ptr%> "
+					      "required for "
+					      "%<need_device_ptr%>",
+					      OMP_CLAUSE_DECL (c));
+					  has_device_addr = true;
+					}
 				    }
 				}
 			      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE)
 				device_num = OMP_CLAUSE_OPERAND (c, 0);
 			    }
 
-			  if (!is_device_ptr)
+			  if ((need_device_ptr && !is_device_ptr)
+			      || (need_device_addr && !has_device_addr))
 			    {
 			      if (device_num == NULL_TREE)
 				{

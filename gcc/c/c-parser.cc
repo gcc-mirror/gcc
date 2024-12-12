@@ -25271,6 +25271,7 @@ c_parser_omp_dispatch_body (c_parser *parser)
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)                           \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOVARIANTS)                       \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOCONTEXT)                        \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR)                  \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INTEROP)                          \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)                    \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
@@ -26963,6 +26964,9 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 		{
 		  error_at (c_parser_peek_token (parser)->location,
 			    "expected %<nothing%> or %<need_device_ptr%>");
+		  if (strcmp (p, "need_device_addr") == 0)
+		    inform (c_parser_peek_token (parser)->location,
+			    "%<need_device_addr%> is not valid for C");
 		  goto fail;
 		}
 	    }
