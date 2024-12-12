@@ -596,6 +596,12 @@ avr_init_expanders (void)
   rampy_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.rampy));
   rampz_rtx = gen_rtx_MEM (QImode, GEN_INT (avr_addr.rampz));
 
+  MEM_VOLATILE_P (sreg_rtx) = 1;
+  MEM_VOLATILE_P (rampd_rtx) = 1;
+  MEM_VOLATILE_P (rampx_rtx) = 1;
+  MEM_VOLATILE_P (rampy_rtx) = 1;
+  MEM_VOLATILE_P (rampz_rtx) = 1;
+
   xstring_empty = gen_rtx_CONST_STRING (VOIDmode, "");
   xstring_e = gen_rtx_CONST_STRING (VOIDmode, "e");
 
@@ -14857,9 +14863,16 @@ avr_out_cpymem (rtx_insn * /*insn*/, rtx *op, int *plen)
 		   "sbci %B1,0", xop, plen, 2);
     }
 
-  /* Loop until zero */
+  // Loop until zero.
+  avr_asm_len ("brne 0b", xop, plen, 1);
 
-  return avr_asm_len ("brne 0b", xop, plen, 1);
+
+  // Restore RAMPZ on EBI devices.
+  if (as >= ADDR_SPACE_FLASH1
+      && AVR_HAVE_ELPM && AVR_HAVE_RAMPD)
+    avr_asm_len ("out %i0,__zero_reg__", &rampz_rtx, plen, 1);
+
+  return "";
 }
 
 
