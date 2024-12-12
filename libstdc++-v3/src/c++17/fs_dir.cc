@@ -479,7 +479,7 @@ fs::recursive_directory_iterator::__erase(error_code* ecptr)
 
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
       // _Dir::unlink uses fs::remove which uses std::system_category() for
-      // Windows errror codes, so we can't just check for EPERM and EISDIR.
+      // Windows error codes, so we can't just check for EPERM and EISDIR.
       // Use directory_entry::refresh() here to check if we have a directory.
       // This can be a TOCTTOU race, but we don't have openat or unlinkat to
       // solve that on Windows, and generally don't support symlinks anyway.
