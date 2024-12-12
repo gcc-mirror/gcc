@@ -227,7 +227,7 @@ class crc_optimization {
 
   /* Attempts to optimize a CRC calculation loop by replacing it with a call to
      an internal function (IFN_CRC or IFN_CRC_REV).
-     Returns true if replacement is succeeded, otherwise false.  */
+     Returns true if replacement succeeded, otherwise false.  */
   bool optimize_crc_loop (gphi *output_crc);
 
  public:
@@ -1214,7 +1214,7 @@ crc_optimization::get_output_phi ()
 
 /* Attempts to optimize a CRC calculation loop by replacing it with a call to
    an internal function (IFN_CRC or IFN_CRC_REV).
-   Returns true if replacement is succeeded, otherwise false.  */
+   Returns true if replacement succeeded, otherwise false.  */
 
 bool
 crc_optimization::optimize_crc_loop (gphi *output_crc)
