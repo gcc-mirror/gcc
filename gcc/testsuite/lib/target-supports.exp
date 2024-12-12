@@ -1904,6 +1904,26 @@ proc check_effective_target_riscv_a { } {
     }]
 }
 
+# Return 1 if the ABI is either ILP32E or ILP64E, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_abi_e { } {
+    # If current ISA is E, then only E ABI is supported.
+    if { [check_no_compiler_messages riscv_abi_e assembly {
+	#ifndef __riscv_e
+	#error "Not __riscv_e"
+	#endif
+	}] } {
+	    return 1
+	}
+
+    # E ABI can be chosen by both E and I base ISA variants.
+    #
+    # TODO - check for I ISA and E ABI combination.
+
+    return 0
+}
+
 # Return 1 if the target arch supports the atomic LRSC extension, 0 otherwise.
 # Cache the result.
 
