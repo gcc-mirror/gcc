@@ -6208,8 +6208,8 @@ Other shift and rotate instructions, analogous to the
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
 
-@cindex @code{uabd@var{m}} instruction pattern
-@cindex @code{sabd@var{m}} instruction pattern
+@cindex @code{uabd@var{m}3} instruction pattern
+@cindex @code{sabd@var{m}3} instruction pattern
 @item @samp{uabd@var{m}}, @samp{sabd@var{m}}
 Signed and unsigned absolute difference instructions.  These
 instructions find the difference between operands 1 and 2
