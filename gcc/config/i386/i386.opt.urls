@@ -446,7 +446,8 @@ UrlSuffix(gcc/x86-Options.html#index-mstack-protector-guard-reg-3)
 mstack-protector-guard-offset=
 UrlSuffix(gcc/x86-Options.html#index-mstack-protector-guard-offset-4)
 
-; skipping UrlSuffix for 'mstack-protector-guard-symbol=' due to finding no URLs
+mstack-protector-guard-symbol=
+UrlSuffix(gcc/x86-Options.html#index-mstack-protector-guard-symbol)
 
 mgeneral-regs-only
 UrlSuffix(gcc/x86-Options.html#index-mgeneral-regs-only-2)
