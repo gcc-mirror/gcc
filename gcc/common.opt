@@ -812,6 +812,10 @@ Wsystem-headers
 Common Var(warn_system_headers) Warning
 Do not suppress warnings from system headers.
 
+Wtautological-compare
+Common Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn if a comparison always evaluates to true or false.
+
 Wtrampolines
 Common Var(warn_trampolines) Warning
 Warn whenever a trampoline is generated.

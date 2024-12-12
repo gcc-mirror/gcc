@@ -1477,10 +1477,6 @@ Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.
 
-Wtautological-compare
-C ObjC C++ ObjC++ Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn if a comparison always evaluates to true or false.
-
 Wtemplate-body
 C++ ObjC++ Var(warn_template_body) Warning Init(1)
 Diagnose errors when parsing a template.

@@ -137,7 +137,6 @@ static tree range_successor (tree);
 static tree fold_range_test (location_t, enum tree_code, tree, tree, tree);
 static tree fold_cond_expr_with_comparison (location_t, tree, enum tree_code,
 					    tree, tree, tree, tree);
-static tree unextend (tree, int, int, tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree, bool *);
 static tree extract_muldiv_1 (tree, tree, enum tree_code, tree, bool *);
 static tree fold_binary_op_with_conditional_arg (location_t,
@@ -4772,7 +4771,7 @@ invert_truthvalue_loc (location_t loc, tree arg)
    is the original memory reference used to preserve the alias set of
    the access.  */
 
-static tree
+tree
 make_bit_field_ref (location_t loc, tree inner, tree orig_inner, tree type,
 		    HOST_WIDE_INT bitsize, poly_int64 bitpos,
 		    int unsignedp, int reversep)
@@ -5022,136 +5021,6 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   return lhs;
 }
 
-/* Subroutine for fold_truth_andor_1: decode a field reference.
-
-   If EXP is a comparison reference, we return the innermost reference.
-
-   *PBITSIZE is set to the number of bits in the reference, *PBITPOS is
-   set to the starting bit number.
-
-   If the innermost field can be completely contained in a mode-sized
-   unit, *PMODE is set to that mode.  Otherwise, it is set to VOIDmode.
-
-   *PVOLATILEP is set to 1 if the any expression encountered is volatile;
-   otherwise it is not changed.
-
-   *PUNSIGNEDP is set to the signedness of the field.
-
-   *PREVERSEP is set to the storage order of the field.
-
-   *PMASK is set to the mask used.  This is either contained in a
-   BIT_AND_EXPR or derived from the width of the field.
-
-   *PAND_MASK is set to the mask found in a BIT_AND_EXPR, if any.
-
-   Return 0 if this is not a component reference or is one that we can't
-   do anything with.  */
-
-static tree
-decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
-			HOST_WIDE_INT *pbitpos, machine_mode *pmode,
-			int *punsignedp, int *preversep, int *pvolatilep,
-			tree *pmask, tree *pand_mask)
-{
-  tree exp = *exp_;
-  tree outer_type = 0;
-  tree and_mask = 0;
-  tree mask, inner, offset;
-  tree unsigned_type;
-  unsigned int precision;
-
-  /* All the optimizations using this function assume integer fields.
-     There are problems with FP fields since the type_for_size call
-     below can fail for, e.g., XFmode.  */
-  if (! INTEGRAL_TYPE_P (TREE_TYPE (exp)))
-    return NULL_TREE;
-
-  /* We are interested in the bare arrangement of bits, so strip everything
-     that doesn't affect the machine mode.  However, record the type of the
-     outermost expression if it may matter below.  */
-  if (CONVERT_EXPR_P (exp)
-      || TREE_CODE (exp) == NON_LVALUE_EXPR)
-    outer_type = TREE_TYPE (exp);
-  STRIP_NOPS (exp);
-
-  if (TREE_CODE (exp) == BIT_AND_EXPR)
-    {
-      and_mask = TREE_OPERAND (exp, 1);
-      exp = TREE_OPERAND (exp, 0);
-      STRIP_NOPS (exp); STRIP_NOPS (and_mask);
-      if (TREE_CODE (and_mask) != INTEGER_CST)
-	return NULL_TREE;
-    }
-
-  poly_int64 poly_bitsize, poly_bitpos;
-  inner = get_inner_reference (exp, &poly_bitsize, &poly_bitpos, &offset,
-			       pmode, punsignedp, preversep, pvolatilep);
-  if ((inner == exp && and_mask == 0)
-      || !poly_bitsize.is_constant (pbitsize)
-      || !poly_bitpos.is_constant (pbitpos)
-      || *pbitsize < 0
-      || offset != 0
-      || TREE_CODE (inner) == PLACEHOLDER_EXPR
-      /* We eventually want to build a larger reference and need to take
-	 the address of this.  */
-      || (!REFERENCE_CLASS_P (inner) && !DECL_P (inner))
-      /* Reject out-of-bound accesses (PR79731).  */
-      || (! AGGREGATE_TYPE_P (TREE_TYPE (inner))
-	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (inner)),
-			       *pbitpos + *pbitsize) < 0))
-    return NULL_TREE;
-
-  unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
-  if (unsigned_type == NULL_TREE)
-    return NULL_TREE;
-
-  *exp_ = exp;
-
-  /* If the number of bits in the reference is the same as the bitsize of
-     the outer type, then the outer type gives the signedness. Otherwise
-     (in case of a small bitfield) the signedness is unchanged.  */
-  if (outer_type && *pbitsize == TYPE_PRECISION (outer_type))
-    *punsignedp = TYPE_UNSIGNED (outer_type);
-
-  /* Compute the mask to access the bitfield.  */
-  precision = TYPE_PRECISION (unsigned_type);
-
-  mask = build_int_cst_type (unsigned_type, -1);
-
-  mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize));
-  mask = const_binop (RSHIFT_EXPR, mask, size_int (precision - *pbitsize));
-
-  /* Merge it with the mask we found in the BIT_AND_EXPR, if any.  */
-  if (and_mask != 0)
-    mask = fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type,
-			fold_convert_loc (loc, unsigned_type, and_mask), mask);
-
-  *pmask = mask;
-  *pand_mask = and_mask;
-  return inner;
-}
-
-/* Return nonzero if MASK represents a mask of SIZE ones in the low-order
-   bit positions and MASK is SIGNED.  */
-
-static bool
-all_ones_mask_p (const_tree mask, unsigned int size)
-{
-  tree type = TREE_TYPE (mask);
-  unsigned int precision = TYPE_PRECISION (type);
-
-  /* If this function returns true when the type of the mask is
-     UNSIGNED, then there will be errors.  In particular see
-     gcc.c-torture/execute/990326-1.c.  There does not appear to be
-     any documentation paper trail as to why this is so.  But the pre
-     wide-int worked with that restriction and it has been preserved
-     here.  */
-  if (size > precision || TYPE_SIGN (type) == UNSIGNED)
-    return false;
-
-  return wi::mask (size, false, precision) == wi::to_wide (mask);
-}
-
 /* Subroutine for fold: determine if VAL is the INTEGER_CONST that
    represents the sign bit of EXP's type.  If EXP represents a sign
    or zero extension, also test VAL against the unextended type.
@@ -6461,48 +6330,6 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
   return 0;
 }
 
-/* Subroutine for fold_truth_andor_1: C is an INTEGER_CST interpreted as a P
-   bit value.  Arrange things so the extra bits will be set to zero if and
-   only if C is signed-extended to its full width.  If MASK is nonzero,
-   it is an INTEGER_CST that should be AND'ed with the extra bits.  */
-
-static tree
-unextend (tree c, int p, int unsignedp, tree mask)
-{
-  tree type = TREE_TYPE (c);
-  int modesize = GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type));
-  tree temp;
-
-  if (p == modesize || unsignedp)
-    return c;
-
-  /* We work by getting just the sign bit into the low-order bit, then
-     into the high-order bit, then sign-extend.  We then XOR that value
-     with C.  */
-  temp = build_int_cst (TREE_TYPE (c),
-			wi::extract_uhwi (wi::to_wide (c), p - 1, 1));
-
-  /* We must use a signed type in order to get an arithmetic right shift.
-     However, we must also avoid introducing accidental overflows, so that
-     a subsequent call to integer_zerop will work.  Hence we must
-     do the type conversion here.  At this point, the constant is either
-     zero or one, and the conversion to a signed type can never overflow.
-     We could get an overflow if this conversion is done anywhere else.  */
-  if (TYPE_UNSIGNED (type))
-    temp = fold_convert (signed_type_for (type), temp);
-
-  temp = const_binop (LSHIFT_EXPR, temp, size_int (modesize - 1));
-  temp = const_binop (RSHIFT_EXPR, temp, size_int (modesize - p - 1));
-  if (mask != 0)
-    temp = const_binop (BIT_AND_EXPR, temp,
-			fold_convert (TREE_TYPE (c), mask));
-  /* If necessary, convert the type back to match the type of C.  */
-  if (TYPE_UNSIGNED (type))
-    temp = fold_convert (type, temp);
-
-  return fold_convert (type, const_binop (BIT_XOR_EXPR, c, temp));
-}
-
 /* For an expression that has the form
      (A && B) || ~B
    or
@@ -6573,19 +6400,12 @@ merge_truthop_with_opposite_arm (location_t loc, tree op, tree cmpop,
 			    lhs, rhs);
   return NULL_TREE;
 }
-
+
 /* Find ways of folding logical expressions of LHS and RHS:
    Try to merge two comparisons to the same innermost item.
    Look for range tests like "ch >= '0' && ch <= '9'".
    Look for combinations of simple terms on machines with expensive branches
    and evaluate the RHS unconditionally.
-
-   For example, if we have p->a == 2 && p->b == 4 and we can make an
-   object large enough to span both A and B, we can do this with a comparison
-   against the object ANDed with the a mask.
-
-   If we have p->a == q->a && p->b == q->b, we may be able to use bit masking
-   operations to do this with one comparison.
 
    We check for both normal comparisons and the BIT_AND_EXPRs made this by
    function and the one above.
@@ -6611,24 +6431,9 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
      convert EQ_EXPR to NE_EXPR so we need not reject the "wrong"
      comparison for one-bit fields.  */
 
-  enum tree_code wanted_code;
   enum tree_code lcode, rcode;
   tree ll_arg, lr_arg, rl_arg, rr_arg;
-  tree ll_inner, lr_inner, rl_inner, rr_inner;
-  HOST_WIDE_INT ll_bitsize, ll_bitpos, lr_bitsize, lr_bitpos;
-  HOST_WIDE_INT rl_bitsize, rl_bitpos, rr_bitsize, rr_bitpos;
-  HOST_WIDE_INT xll_bitpos, xlr_bitpos, xrl_bitpos, xrr_bitpos;
-  HOST_WIDE_INT lnbitsize, lnbitpos, rnbitsize, rnbitpos;
-  int ll_unsignedp, lr_unsignedp, rl_unsignedp, rr_unsignedp;
-  int ll_reversep, lr_reversep, rl_reversep, rr_reversep;
-  machine_mode ll_mode, lr_mode, rl_mode, rr_mode;
-  scalar_int_mode lnmode, rnmode;
-  tree ll_mask, lr_mask, rl_mask, rr_mask;
-  tree ll_and_mask, lr_and_mask, rl_and_mask, rr_and_mask;
-  tree l_const, r_const;
-  tree lntype, rntype, result;
-  HOST_WIDE_INT first_bit, end_bit;
-  int volatilep;
+  tree result;
 
   /* Start by getting the comparison codes.  Fail if anything is volatile.
      If one operand is a BIT_AND_EXPR with the constant one, treat it as if
@@ -6723,316 +6528,7 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 			   build_int_cst (TREE_TYPE (ll_arg), 0));
     }
 
-  /* See if the comparisons can be merged.  Then get all the parameters for
-     each side.  */
-
-  if ((lcode != EQ_EXPR && lcode != NE_EXPR)
-      || (rcode != EQ_EXPR && rcode != NE_EXPR))
-    return 0;
-
-  ll_reversep = lr_reversep = rl_reversep = rr_reversep = 0;
-  volatilep = 0;
-  ll_inner = decode_field_reference (loc, &ll_arg,
-				     &ll_bitsize, &ll_bitpos, &ll_mode,
-				     &ll_unsignedp, &ll_reversep, &volatilep,
-				     &ll_mask, &ll_and_mask);
-  lr_inner = decode_field_reference (loc, &lr_arg,
-				     &lr_bitsize, &lr_bitpos, &lr_mode,
-				     &lr_unsignedp, &lr_reversep, &volatilep,
-				     &lr_mask, &lr_and_mask);
-  rl_inner = decode_field_reference (loc, &rl_arg,
-				     &rl_bitsize, &rl_bitpos, &rl_mode,
-				     &rl_unsignedp, &rl_reversep, &volatilep,
-				     &rl_mask, &rl_and_mask);
-  rr_inner = decode_field_reference (loc, &rr_arg,
-				     &rr_bitsize, &rr_bitpos, &rr_mode,
-				     &rr_unsignedp, &rr_reversep, &volatilep,
-				     &rr_mask, &rr_and_mask);
-
-  /* It must be true that the inner operation on the lhs of each
-     comparison must be the same if we are to be able to do anything.
-     Then see if we have constants.  If not, the same must be true for
-     the rhs's.  */
-  if (volatilep
-      || ll_reversep != rl_reversep
-      || ll_inner == 0 || rl_inner == 0
-      || ! operand_equal_p (ll_inner, rl_inner, 0))
-    return 0;
-
-  if (TREE_CODE (lr_arg) == INTEGER_CST
-      && TREE_CODE (rr_arg) == INTEGER_CST)
-    {
-      l_const = lr_arg, r_const = rr_arg;
-      lr_reversep = ll_reversep;
-    }
-  else if (lr_reversep != rr_reversep
-	   || lr_inner == 0 || rr_inner == 0
-	   || ! operand_equal_p (lr_inner, rr_inner, 0))
-    return 0;
-  else
-    l_const = r_const = 0;
-
-  /* If either comparison code is not correct for our logical operation,
-     fail.  However, we can convert a one-bit comparison against zero into
-     the opposite comparison against that bit being set in the field.  */
-
-  wanted_code = (code == TRUTH_AND_EXPR ? EQ_EXPR : NE_EXPR);
-  if (lcode != wanted_code)
-    {
-      if (l_const && integer_zerop (l_const) && integer_pow2p (ll_mask))
-	{
-	  /* Make the left operand unsigned, since we are only interested
-	     in the value of one bit.  Otherwise we are doing the wrong
-	     thing below.  */
-	  ll_unsignedp = 1;
-	  l_const = ll_mask;
-	}
-      else
-	return 0;
-    }
-
-  /* This is analogous to the code for l_const above.  */
-  if (rcode != wanted_code)
-    {
-      if (r_const && integer_zerop (r_const) && integer_pow2p (rl_mask))
-	{
-	  rl_unsignedp = 1;
-	  r_const = rl_mask;
-	}
-      else
-	return 0;
-    }
-
-  /* See if we can find a mode that contains both fields being compared on
-     the left.  If we can't, fail.  Otherwise, update all constants and masks
-     to be relative to a field of that size.  */
-  first_bit = MIN (ll_bitpos, rl_bitpos);
-  end_bit = MAX (ll_bitpos + ll_bitsize, rl_bitpos + rl_bitsize);
-  if (!get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-		      TYPE_ALIGN (TREE_TYPE (ll_inner)), BITS_PER_WORD,
-		      volatilep, &lnmode))
-    return 0;
-
-  lnbitsize = GET_MODE_BITSIZE (lnmode);
-  lnbitpos = first_bit & ~ (lnbitsize - 1);
-  lntype = lang_hooks.types.type_for_size (lnbitsize, 1);
-  xll_bitpos = ll_bitpos - lnbitpos, xrl_bitpos = rl_bitpos - lnbitpos;
-
-  if (ll_reversep ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
-    {
-      xll_bitpos = lnbitsize - xll_bitpos - ll_bitsize;
-      xrl_bitpos = lnbitsize - xrl_bitpos - rl_bitsize;
-    }
-
-  ll_mask = const_binop (LSHIFT_EXPR, fold_convert_loc (loc, lntype, ll_mask),
-			 size_int (xll_bitpos));
-  rl_mask = const_binop (LSHIFT_EXPR, fold_convert_loc (loc, lntype, rl_mask),
-			 size_int (xrl_bitpos));
-  if (ll_mask == NULL_TREE || rl_mask == NULL_TREE)
-    return 0;
-
-  if (l_const)
-    {
-      l_const = fold_convert_loc (loc, lntype, l_const);
-      l_const = unextend (l_const, ll_bitsize, ll_unsignedp, ll_and_mask);
-      l_const = const_binop (LSHIFT_EXPR, l_const, size_int (xll_bitpos));
-      if (l_const == NULL_TREE)
-	return 0;
-      if (! integer_zerop (const_binop (BIT_AND_EXPR, l_const,
-					fold_build1_loc (loc, BIT_NOT_EXPR,
-							 lntype, ll_mask))))
-	{
-	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
-
-	  return constant_boolean_node (wanted_code == NE_EXPR, truth_type);
-	}
-    }
-  if (r_const)
-    {
-      r_const = fold_convert_loc (loc, lntype, r_const);
-      r_const = unextend (r_const, rl_bitsize, rl_unsignedp, rl_and_mask);
-      r_const = const_binop (LSHIFT_EXPR, r_const, size_int (xrl_bitpos));
-      if (r_const == NULL_TREE)
-	return 0;
-      if (! integer_zerop (const_binop (BIT_AND_EXPR, r_const,
-					fold_build1_loc (loc, BIT_NOT_EXPR,
-							 lntype, rl_mask))))
-	{
-	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
-
-	  return constant_boolean_node (wanted_code == NE_EXPR, truth_type);
-	}
-    }
-
-  /* If the right sides are not constant, do the same for it.  Also,
-     disallow this optimization if a size, signedness or storage order
-     mismatch occurs between the left and right sides.  */
-  if (l_const == 0)
-    {
-      if (ll_bitsize != lr_bitsize || rl_bitsize != rr_bitsize
-	  || ll_unsignedp != lr_unsignedp || rl_unsignedp != rr_unsignedp
-	  || ll_reversep != lr_reversep
-	  /* Make sure the two fields on the right
-	     correspond to the left without being swapped.  */
-	  || ll_bitpos - rl_bitpos != lr_bitpos - rr_bitpos)
-	return 0;
-
-      first_bit = MIN (lr_bitpos, rr_bitpos);
-      end_bit = MAX (lr_bitpos + lr_bitsize, rr_bitpos + rr_bitsize);
-      if (!get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-			  TYPE_ALIGN (TREE_TYPE (lr_inner)), BITS_PER_WORD,
-			  volatilep, &rnmode))
-	return 0;
-
-      rnbitsize = GET_MODE_BITSIZE (rnmode);
-      rnbitpos = first_bit & ~ (rnbitsize - 1);
-      rntype = lang_hooks.types.type_for_size (rnbitsize, 1);
-      xlr_bitpos = lr_bitpos - rnbitpos, xrr_bitpos = rr_bitpos - rnbitpos;
-
-      if (lr_reversep ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
-	{
-	  xlr_bitpos = rnbitsize - xlr_bitpos - lr_bitsize;
-	  xrr_bitpos = rnbitsize - xrr_bitpos - rr_bitsize;
-	}
-
-      lr_mask = const_binop (LSHIFT_EXPR, fold_convert_loc (loc,
-							    rntype, lr_mask),
-			     size_int (xlr_bitpos));
-      rr_mask = const_binop (LSHIFT_EXPR, fold_convert_loc (loc,
-							    rntype, rr_mask),
-			     size_int (xrr_bitpos));
-      if (lr_mask == NULL_TREE || rr_mask == NULL_TREE)
-	return 0;
-
-      /* Make a mask that corresponds to both fields being compared.
-	 Do this for both items being compared.  If the operands are the
-	 same size and the bits being compared are in the same position
-	 then we can do this by masking both and comparing the masked
-	 results.  */
-      ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask);
-      lr_mask = const_binop (BIT_IOR_EXPR, lr_mask, rr_mask);
-      if (lnbitsize == rnbitsize
-	  && xll_bitpos == xlr_bitpos
-	  && lnbitpos >= 0
-	  && rnbitpos >= 0)
-	{
-	  lhs = make_bit_field_ref (loc, ll_inner, ll_arg,
-				    lntype, lnbitsize, lnbitpos,
-				    ll_unsignedp || rl_unsignedp, ll_reversep);
-	  if (! all_ones_mask_p (ll_mask, lnbitsize))
-	    lhs = build2 (BIT_AND_EXPR, lntype, lhs, ll_mask);
-
-	  rhs = make_bit_field_ref (loc, lr_inner, lr_arg,
-				    rntype, rnbitsize, rnbitpos,
-				    lr_unsignedp || rr_unsignedp, lr_reversep);
-	  if (! all_ones_mask_p (lr_mask, rnbitsize))
-	    rhs = build2 (BIT_AND_EXPR, rntype, rhs, lr_mask);
-
-	  return build2_loc (loc, wanted_code, truth_type, lhs, rhs);
-	}
-
-      /* There is still another way we can do something:  If both pairs of
-	 fields being compared are adjacent, we may be able to make a wider
-	 field containing them both.
-
-	 Note that we still must mask the lhs/rhs expressions.  Furthermore,
-	 the mask must be shifted to account for the shift done by
-	 make_bit_field_ref.  */
-      if (((ll_bitsize + ll_bitpos == rl_bitpos
-	    && lr_bitsize + lr_bitpos == rr_bitpos)
-	   || (ll_bitpos == rl_bitpos + rl_bitsize
-	       && lr_bitpos == rr_bitpos + rr_bitsize))
-	  && ll_bitpos >= 0
-	  && rl_bitpos >= 0
-	  && lr_bitpos >= 0
-	  && rr_bitpos >= 0)
-	{
-	  tree type;
-
-	  lhs = make_bit_field_ref (loc, ll_inner, ll_arg, lntype,
-				    ll_bitsize + rl_bitsize,
-				    MIN (ll_bitpos, rl_bitpos),
-				    ll_unsignedp, ll_reversep);
-	  rhs = make_bit_field_ref (loc, lr_inner, lr_arg, rntype,
-				    lr_bitsize + rr_bitsize,
-				    MIN (lr_bitpos, rr_bitpos),
-				    lr_unsignedp, lr_reversep);
-
-	  ll_mask = const_binop (RSHIFT_EXPR, ll_mask,
-				 size_int (MIN (xll_bitpos, xrl_bitpos)));
-	  lr_mask = const_binop (RSHIFT_EXPR, lr_mask,
-				 size_int (MIN (xlr_bitpos, xrr_bitpos)));
-	  if (ll_mask == NULL_TREE || lr_mask == NULL_TREE)
-	    return 0;
-
-	  /* Convert to the smaller type before masking out unwanted bits.  */
-	  type = lntype;
-	  if (lntype != rntype)
-	    {
-	      if (lnbitsize > rnbitsize)
-		{
-		  lhs = fold_convert_loc (loc, rntype, lhs);
-		  ll_mask = fold_convert_loc (loc, rntype, ll_mask);
-		  type = rntype;
-		}
-	      else if (lnbitsize < rnbitsize)
-		{
-		  rhs = fold_convert_loc (loc, lntype, rhs);
-		  lr_mask = fold_convert_loc (loc, lntype, lr_mask);
-		  type = lntype;
-		}
-	    }
-
-	  if (! all_ones_mask_p (ll_mask, ll_bitsize + rl_bitsize))
-	    lhs = build2 (BIT_AND_EXPR, type, lhs, ll_mask);
-
-	  if (! all_ones_mask_p (lr_mask, lr_bitsize + rr_bitsize))
-	    rhs = build2 (BIT_AND_EXPR, type, rhs, lr_mask);
-
-	  return build2_loc (loc, wanted_code, truth_type, lhs, rhs);
-	}
-
-      return 0;
-    }
-
-  /* Handle the case of comparisons with constants.  If there is something in
-     common between the masks, those bits of the constants must be the same.
-     If not, the condition is always false.  Test for this to avoid generating
-     incorrect code below.  */
-  result = const_binop (BIT_AND_EXPR, ll_mask, rl_mask);
-  if (! integer_zerop (result)
-      && simple_cst_equal (const_binop (BIT_AND_EXPR, result, l_const),
-			   const_binop (BIT_AND_EXPR, result, r_const)) != 1)
-    {
-      if (wanted_code == NE_EXPR)
-	{
-	  warning (0, "%<or%> of unmatched not-equal tests is always 1");
-	  return constant_boolean_node (true, truth_type);
-	}
-      else
-	{
-	  warning (0, "%<and%> of mutually exclusive equal-tests is always 0");
-	  return constant_boolean_node (false, truth_type);
-	}
-    }
-
-  if (lnbitpos < 0)
-    return 0;
-
-  /* Construct the expression we will return.  First get the component
-     reference we will make.  Unless the mask is all ones the width of
-     that field, perform the mask operation.  Then compare with the
-     merged constant.  */
-  result = make_bit_field_ref (loc, ll_inner, ll_arg,
-			       lntype, lnbitsize, lnbitpos,
-			       ll_unsignedp || rl_unsignedp, ll_reversep);
-
-  ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask);
-  if (! all_ones_mask_p (ll_mask, lnbitsize))
-    result = build2_loc (loc, BIT_AND_EXPR, lntype, result, ll_mask);
-
-  return build2_loc (loc, wanted_code, truth_type, result,
-		     const_binop (BIT_IOR_EXPR, l_const, r_const));
+  return 0;
 }
 
 /* T is an integer expression that is being multiplied, divided, or taken a
