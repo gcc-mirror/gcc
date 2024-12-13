@@ -3,6 +3,11 @@
 	Backported from trunk:
 	2025-01-10  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/__builtin_frame_address_0-1.c: New.
+
+	Backported from trunk:
+	2025-01-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/__builtin_stack_address-1.c: New.
 
 	Backported from trunk:
