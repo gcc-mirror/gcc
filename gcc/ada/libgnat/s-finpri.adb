@@ -196,9 +196,7 @@ package body System.Finalization_Primitives is
    -- Finalize --
    --------------
 
-   overriding procedure Finalize
-     (Collection : in out Finalization_Collection)
-   is
+   procedure Finalize (Collection : in out Finalization_Collection) is
       Curr_Ptr                      : Collection_Node_Ptr;
       Exc_Occur                     : Exception_Occurrence;
       Finalization_Exception_Raised : Boolean := False;
@@ -380,9 +378,7 @@ package body System.Finalization_Primitives is
    -- Initialize --
    ----------------
 
-   overriding procedure Initialize
-     (Collection : in out Finalization_Collection)
-   is
+   procedure Initialize (Collection : in out Finalization_Collection) is
    begin
       --  The dummy head must point to itself in both directions
 
