@@ -6159,13 +6159,12 @@ pa_emit_hpdiv_const (rtx *operands, int unsignedp)
       emit
 	(gen_rtx_PARALLEL
 	 (VOIDmode,
-	  gen_rtvec (6, gen_rtx_SET (gen_rtx_REG (SImode, 29),
+	  gen_rtvec (5, gen_rtx_SET (gen_rtx_REG (SImode, 29),
 				     gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
 						     SImode,
 						     gen_rtx_REG (SImode, 26),
 						     operands[2])),
-		     gen_rtx_CLOBBER (VOIDmode, operands[4]),
-		     gen_rtx_CLOBBER (VOIDmode, operands[3]),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 1)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 26)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 25)),
 		     gen_rtx_CLOBBER (VOIDmode, ret))));

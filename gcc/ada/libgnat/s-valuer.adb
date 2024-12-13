@@ -585,7 +585,7 @@ package body System.Value_R is
            (Str, Index, Max, Base, False, Value, Scale, N,
             Char_As_Digit (Extra), Base_Violation);
 
-      --  A dot is allowed only if followed by a digit (RM 3.5(47))
+      --  A dot is allowed only if followed by a digit (RM 3.5(39.8))
 
       elsif Str (Index) = '.'
         and then Index < Max

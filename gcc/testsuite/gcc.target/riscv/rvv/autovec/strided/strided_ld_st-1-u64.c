@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -fno-vect-cost-model -fdump-rtl-expand-details" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -mno-vector-strict-align -fno-vect-cost-model -fdump-rtl-expand-details" } */
 
 #include "strided_ld_st.h"
 

@@ -2799,7 +2799,7 @@ const pass_data pass_data_duplicate_computed_gotos =
   RTL_PASS, /* type */
   "compgotos", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_REORDER_BLOCKS, /* tv_id */
+  TV_DUP_COMPGOTO, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */

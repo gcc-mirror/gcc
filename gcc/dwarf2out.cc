@@ -2865,7 +2865,7 @@ static void dwarf2out_undef (unsigned int, const char *);
 static void dwarf2out_start_source_file (unsigned, const char *);
 static void dwarf2out_end_source_file (unsigned);
 static void dwarf2out_function_decl (tree);
-static void dwarf2out_begin_block (unsigned, unsigned);
+static void dwarf2out_begin_block (unsigned, unsigned, tree);
 static void dwarf2out_end_block (unsigned, unsigned);
 static bool dwarf2out_ignore_block (const_tree);
 static void dwarf2out_set_ignored_loc (unsigned, unsigned, const char *);
@@ -2950,7 +2950,7 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   debug_nothing_int,
-  debug_nothing_int_int,	         /* begin_block */
+  debug_nothing_int_int_tree,	         /* begin_block */
   debug_nothing_int_int,	         /* end_block */
   debug_true_const_tree,	         /* ignore_block */
   dwarf2out_source_line,		 /* source_line */
@@ -23408,6 +23408,11 @@ dwarf2out_abstract_function (tree decl)
   if (DECL_IGNORED_P (decl))
     return;
 
+#ifdef CODEVIEW_DEBUGGING_INFO
+  if (codeview_debuginfo_p ())
+    codeview_abstract_function (decl);
+#endif
+
   /* In LTO we're all set.  We already created abstract instances
      early and we want to avoid creating a concrete instance of that
      if we don't output it.  */
@@ -27805,8 +27810,14 @@ dwarf2out_function_decl (tree decl)
 
 static void
 dwarf2out_begin_block (unsigned int line ATTRIBUTE_UNUSED,
-		       unsigned int blocknum)
+		       unsigned int blocknum,
+		       tree block ATTRIBUTE_UNUSED)
 {
+#ifdef CODEVIEW_DEBUGGING_INFO
+  if (codeview_debuginfo_p ())
+    codeview_begin_block (line, blocknum, block);
+#endif
+
   switch_to_section (current_function_section ());
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
 }
@@ -27817,6 +27828,11 @@ dwarf2out_begin_block (unsigned int line ATTRIBUTE_UNUSED,
 static void
 dwarf2out_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int blocknum)
 {
+#ifdef CODEVIEW_DEBUGGING_INFO
+  if (codeview_debuginfo_p ())
+    codeview_end_block (line, blocknum);
+#endif
+
   switch_to_section (current_function_section ());
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
 }

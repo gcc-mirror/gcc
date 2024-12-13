@@ -474,9 +474,6 @@ public:
   void save_datarefs();
   void check_datarefs();
 
-  /* The number of scalar stmts.  */
-  unsigned n_stmts;
-
   /* All data references.  Freed by free_data_refs, so not an auto_vec.  */
   vec<data_reference_p> datarefs;
   vec<data_reference> datarefs_copy;
@@ -500,6 +497,7 @@ public:
 
   stmt_vec_info add_stmt (gimple *);
   stmt_vec_info add_pattern_stmt (gimple *, stmt_vec_info);
+  stmt_vec_info resync_stmt_addr (gimple *);
   stmt_vec_info lookup_stmt (gimple *);
   stmt_vec_info lookup_def (tree);
   stmt_vec_info lookup_single_use (tree);
@@ -1070,7 +1068,6 @@ public:
 #define LOOP_VINFO_RGROUP_IV_TYPE(L)       (L)->rgroup_iv_type
 #define LOOP_VINFO_PARTIAL_VECTORS_STYLE(L) (L)->partial_vector_style
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
-#define LOOP_VINFO_N_STMTS(L)		   (L)->shared->n_stmts
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->shared->datarefs
 #define LOOP_VINFO_DDRS(L)                 (L)->shared->ddrs

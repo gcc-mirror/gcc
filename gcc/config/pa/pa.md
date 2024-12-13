@@ -5738,27 +5738,16 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_src_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_src_operand" ""))
    (parallel [(set (reg:SI 29) (div:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_dup 3))
-	      (clobber (match_dup 4))
+	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (match_dup 5))])
+	      (clobber (match_dup 3))])
    (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
-  operands[3] = gen_reg_rtx (SImode);
-  if (TARGET_64BIT)
-    {
-      operands[5] = gen_rtx_REG (SImode, 2);
-      operands[4] = operands[5];
-    }
-  else
-    {
-      operands[5] = gen_rtx_REG (SImode, 31);
-      operands[4] = gen_reg_rtx (SImode);
-    }
-  if (GET_CODE (operands[2]) == CONST_INT && pa_emit_hpdiv_const (operands, 0))
+  operands[3] = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
+  if (pa_emit_hpdiv_const (operands, 0))
     DONE;
 }")
 
@@ -5766,7 +5755,6 @@
   [(set (reg:SI 29)
 	(div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
    (clobber (match_operand:SI 1 "register_operand" "=a"))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5782,7 +5770,6 @@
   [(set (reg:SI 29)
 	(div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
    (clobber (match_operand:SI 1 "register_operand" "=a"))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
@@ -5798,28 +5785,16 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_src_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_src_operand" ""))
    (parallel [(set (reg:SI 29) (udiv:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_dup 3))
-	      (clobber (match_dup 4))
+	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (match_dup 5))])
+	      (clobber (match_dup 3))])
    (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
-  operands[3] = gen_reg_rtx (SImode);
-
-  if (TARGET_64BIT)
-    {
-      operands[5] = gen_rtx_REG (SImode, 2);
-      operands[4] = operands[5];
-    }
-  else
-    {
-      operands[5] = gen_rtx_REG (SImode, 31);
-      operands[4] = gen_reg_rtx (SImode);
-    }
-  if (GET_CODE (operands[2]) == CONST_INT && pa_emit_hpdiv_const (operands, 1))
+  operands[3] = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
+  if (pa_emit_hpdiv_const (operands, 1))
     DONE;
 }")
 
@@ -5827,7 +5802,6 @@
   [(set (reg:SI 29)
 	(udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
    (clobber (match_operand:SI 1 "register_operand" "=a"))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5843,7 +5817,6 @@
   [(set (reg:SI 29)
 	(udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
    (clobber (match_operand:SI 1 "register_operand" "=a"))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
@@ -5859,32 +5832,20 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_src_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_src_operand" ""))
    (parallel [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_dup 3))
-	      (clobber (match_dup 4))
+	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (match_dup 5))])
+	      (clobber (match_dup 3))])
    (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
-  if (TARGET_64BIT)
-    {
-      operands[5] = gen_rtx_REG (SImode, 2);
-      operands[4] = operands[5];
-    }
-  else
-    {
-      operands[5] = gen_rtx_REG (SImode, 31);
-      operands[4] = gen_reg_rtx (SImode);
-    }
-  operands[3] = gen_reg_rtx (SImode);
+  operands[3] = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
 }")
 
 (define_insn ""
   [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
-   (clobber (match_operand:SI 1 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5899,7 +5860,6 @@
 (define_insn ""
   [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
-   (clobber (match_operand:SI 1 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
@@ -5915,32 +5875,20 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_src_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_src_operand" ""))
    (parallel [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_dup 3))
-	      (clobber (match_dup 4))
+	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
-	      (clobber (match_dup 5))])
+	      (clobber (match_dup 3))])
    (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
-  if (TARGET_64BIT)
-    {
-      operands[5] = gen_rtx_REG (SImode, 2);
-      operands[4] = operands[5];
-    }
-  else
-    {
-      operands[5] = gen_rtx_REG (SImode, 31);
-      operands[4] = gen_reg_rtx (SImode);
-    }
-  operands[3] = gen_reg_rtx (SImode);
+  operands[3] = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
 }")
 
 (define_insn ""
   [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
-   (clobber (match_operand:SI 1 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5955,7 +5903,6 @@
 (define_insn ""
   [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
-   (clobber (match_operand:SI 1 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]

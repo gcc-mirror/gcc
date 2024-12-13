@@ -1,3 +1,20 @@
+2024-12-11  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-12-02  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac: Rename "libdiagnostics" to "libgdiagnostics".
+	* configure: Regenerate.
+
+2024-11-29  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
 2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* MAINTAINERS: Remove references to nios2.

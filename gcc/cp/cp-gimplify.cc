@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "omp-general.h"
 #include "opts.h"
+#include "gcc-urlifier.h"
 
 /* Keep track of forward references to immediate-escalating functions in
    case they become consteval.  This vector contains ADDR_EXPRs and
@@ -1469,13 +1470,19 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
       if (data->flags & ff_genericize)
 	cp_genericize_target_expr (stmt_p);
 
-      /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
-	 that case, strip it in favor of this one.  */
       if (tree &init = TARGET_EXPR_INITIAL (stmt))
 	{
 	  cp_walk_tree (&init, cp_fold_r, data, NULL);
 	  cp_walk_tree (&TARGET_EXPR_CLEANUP (stmt), cp_fold_r, data, NULL);
 	  *walk_subtrees = 0;
+	  if (!flag_no_inline)
+	    {
+	      tree folded = maybe_constant_init (init, TARGET_EXPR_SLOT (stmt));
+	      if (folded != init && TREE_CONSTANT (folded))
+		init = folded;
+	    }
+	  /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
+	     that case, strip it in favor of this one.  */
 	  if (TREE_CODE (init) == TARGET_EXPR)
 	    {
 	      tree sub = TARGET_EXPR_INITIAL (init);
@@ -3624,8 +3631,11 @@ process_stmt_hotness_attribute (tree std_attrs, location_t attrs_loc)
       SET_EXPR_LOCATION (pred, attrs_loc);
       add_stmt (pred);
       if (tree other = lookup_hotness_attribute (TREE_CHAIN (attr)))
-	warning (OPT_Wattributes, "ignoring attribute %qE after earlier %qE",
-		 get_attribute_name (other), name);
+	{
+	  auto_urlify_attributes sentinel;
+	  warning (OPT_Wattributes, "ignoring attribute %qE after earlier %qE",
+		   get_attribute_name (other), name);
+	}
       std_attrs = remove_hotness_attribute (std_attrs);
     }
   return std_attrs;

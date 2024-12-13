@@ -253,11 +253,21 @@ extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE
 extern tree_code minmax_from_comparison (tree_code, tree, tree,
 					 tree, tree);
 
+extern tree make_bit_field_ref (location_t, tree, tree, tree,
+				HOST_WIDE_INT, poly_int64, int, int);
+
 /* In gimple-fold.cc.  */
 extern void clear_type_padding_in_mask (tree, unsigned char *);
 extern bool clear_padding_type_may_have_padding_p (tree);
 extern bool arith_overflowed_p (enum tree_code, const_tree, const_tree,
 				const_tree);
+extern tree fold_truth_andor_for_ifcombine (enum tree_code, tree,
+					    location_t, enum tree_code,
+					    tree, tree,
+					    location_t, enum tree_code,
+					    tree, tree,
+					    tree *);
+
 
 /* Class used to compare gimple operands.  */
 
@@ -278,6 +288,12 @@ protected:
      true is returned.  Then RET is set to corresponding comparsion result.  */
   bool verify_hash_value (const_tree arg0, const_tree arg1, unsigned int flags,
 			  bool *ret);
+
+private:
+  /* Return true if two operands are equal.  The flags fields can be used
+     to specify OEP flags described in tree-core.h.  */
+  bool operand_equal_p (tree, const_tree, tree, const_tree,
+			unsigned int flags);
 };
 
 #endif // GCC_FOLD_CONST_H

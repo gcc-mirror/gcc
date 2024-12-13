@@ -367,3 +367,46 @@ DEF_SVE_FUNCTION_GS (svmaxnm, binary_opt_single_n, h_bfloat, x24, none)
 DEF_SVE_FUNCTION_GS (svmin, binary_opt_single_n, h_bfloat, x24, none)
 DEF_SVE_FUNCTION_GS (svminnm, binary_opt_single_n, h_bfloat, x24, none)
 #undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  sve_and_sme (AARCH64_FL_SVE2 | AARCH64_FL_FP8, \
+	       AARCH64_FL_SME2 | AARCH64_FL_FP8)
+DEF_SVE_FUNCTION_GS_FPM (svcvt1, unary_convert, cvt_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvt2, unary_convert, cvt_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvtlt1, unary_convert, cvt_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvtlt2, unary_convert, cvt_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvtn, unary_convertxn_narrow, cvtn_mf8, x2, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvtnb, unary_convertxn_narrow, cvtnx_mf8, x2, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvtnt, unary_convertxn_narrowt, cvtnx_mf8, x2, none, set)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  streaming_compatible (AARCH64_FL_SVE2 | AARCH64_FL_FP8FMA, \
+			AARCH64_FL_SSVE_FP8FMA)
+DEF_SVE_FUNCTION_GS_FPM (svmlalb, ternary_mfloat8_opt_n, h_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlalt, ternary_mfloat8_opt_n, h_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlalb_lane, ternary_mfloat8_lane, h_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlalt_lane, ternary_mfloat8_lane, h_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlallbb, ternary_mfloat8_opt_n, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlallbt, ternary_mfloat8_opt_n, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlalltb, ternary_mfloat8_opt_n, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlalltt, ternary_mfloat8_opt_n, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlalltt_lane, ternary_mfloat8_lane, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlallbb_lane, ternary_mfloat8_lane, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlallbt_lane, ternary_mfloat8_lane, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svmlalltb_lane, ternary_mfloat8_lane, s_float_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  streaming_compatible (AARCH64_FL_SVE2 | AARCH64_FL_FP8DOT4, \
+			AARCH64_FL_SSVE_FP8DOT4)
+DEF_SVE_FUNCTION_GS_FPM (svdot, ternary_mfloat8, s_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svdot_lane, ternary_mfloat8_lane_group_selection, s_float_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  streaming_compatible (AARCH64_FL_SVE2 | AARCH64_FL_FP8DOT2, \
+			AARCH64_FL_SSVE_FP8DOT2)
+DEF_SVE_FUNCTION_GS_FPM (svdot, ternary_mfloat8, h_float_mf8, none, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svdot_lane, ternary_mfloat8_lane_group_selection, h_float_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS

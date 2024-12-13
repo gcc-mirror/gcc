@@ -48,7 +48,7 @@ package System.Image_D is
    --  Computes fixed_type'Image (V), where V is the integer value (in units of
    --  delta) of a decimal type whose Scale is as given and stores the result
    --  S (1 .. P), updating P on return. The result is computed according to
-   --  the rules for image for fixed-point types (RM 3.5(34)). The caller
+   --  the rules for image for fixed-point types (RM 4.10(14)). The caller
    --  guarantees that S is long enough to hold the result and has a lower
    --  bound of 1.
 

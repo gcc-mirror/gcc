@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/constraint-manager.h"
 #include "diagnostic-format-sarif.h"
+#include "gcc-urlifier.h"
 
 #if ENABLE_ANALYZER
 
@@ -658,6 +659,7 @@ public:
     bool warned = tainted_size::emit (ctxt);
     if (warned)
       {
+	auto_urlify_attributes sentinel;
 	inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
 		"parameter %i of %qD marked as a size via attribute %qs",
 		m_size_argno + 1, m_callee_fndecl, m_access_str);

@@ -139,21 +139,21 @@ DEF_RTL_EXPR(ADDRESS, "address", "i", RTX_EXTRA)
    ---------------------------------------------------------------------- */
 
 /* An annotation for variable assignment tracking.  */
-DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "uuBeiie", RTX_INSN)
+DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "uuBeLie", RTX_INSN)
 
 /* An instruction that cannot jump.  */
-DEF_RTL_EXPR(INSN, "insn", "uuBeiie", RTX_INSN)
+DEF_RTL_EXPR(INSN, "insn", "uuBeLie", RTX_INSN)
 
 /* An instruction that can possibly jump.
    Fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "uuBeiie0", RTX_INSN)
+DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "uuBeLie0", RTX_INSN)
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
    Field ( rtx->u.fld[8] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "uuBeiiee", RTX_INSN)
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "uuBeLiee", RTX_INSN)
 
 /* Placeholder for tablejump JUMP_INSNs.  The pattern of this kind
    of rtx is always either an ADDR_VEC or an ADDR_DIFF_VEC.  These
@@ -202,7 +202,7 @@ DEF_RTL_EXPR(PARALLEL, "parallel", "E", RTX_EXTRA)
      These occur in an insn all by themselves as the PATTERN.
      They also appear inside an ASM_OPERANDS
      as a convenient way to hold a string.  */
-DEF_RTL_EXPR(ASM_INPUT, "asm_input", "si", RTX_EXTRA)
+DEF_RTL_EXPR(ASM_INPUT, "asm_input", "sL", RTX_EXTRA)
 
 /* An assembler instruction with operands.
    1st operand is the instruction template.
@@ -216,7 +216,7 @@ DEF_RTL_EXPR(ASM_INPUT, "asm_input", "si", RTX_EXTRA)
      and whose mode indicates the mode of the input operand.
    6th is a vector of labels that may be branched to by the asm.
    7th is the source line number.  */
-DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEEi", RTX_EXTRA)
+DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEEL", RTX_EXTRA)
 
 /* A machine-specific operation.
    1st operand is a vector of operands being used by the operation so that

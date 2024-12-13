@@ -11573,6 +11573,9 @@ arc_libm_function_max_error (unsigned cfn, machine_mode mode,
 #undef  TARGET_LIBM_FUNCTION_MAX_ERROR
 #define TARGET_LIBM_FUNCTION_MAX_ERROR arc_libm_function_max_error
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "ARC"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-arc.h"

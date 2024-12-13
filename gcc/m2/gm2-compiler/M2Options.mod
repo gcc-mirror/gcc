@@ -76,6 +76,7 @@ VAR
    UselistFilename,
    RuntimeModuleOverride,
    CppArgs              : String ;
+   EnableForward,
    DebugFunctionLineNumbers,
    DebugTraceQuad,   (* -fm2-debug-trace=quad.  *)
    DebugTraceLine,   (* -fm2-debug-trace=line.  *)
@@ -2008,6 +2009,26 @@ BEGIN
 END GetDumpDecl ;
 
 
+(*
+   GetEnableForward - return EnableForward.
+*)
+
+PROCEDURE GetEnableForward () : BOOLEAN ;
+BEGIN
+   RETURN EnableForward
+END GetEnableForward ;
+
+
+(*
+   SetEnableForward - set EnableForward to value.
+*)
+
+PROCEDURE SetEnableForward (value: BOOLEAN) ;
+BEGIN
+   EnableForward := value
+END SetEnableForward ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -2099,5 +2120,6 @@ BEGIN
    DumpQuad                          := FALSE ;
    DumpGimple                        := FALSE ;
    M2Dump                            := NIL ;
-   M2DumpFilter                      := NIL
+   M2DumpFilter                      := NIL ;
+   EnableForward                     := TRUE
 END M2Options.

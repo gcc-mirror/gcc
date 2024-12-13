@@ -42,6 +42,7 @@ with Exp_Dist;       use Exp_Dist;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Expander;       use Expander;
+with Fmap;
 with Freeze;         use Freeze;
 with Ghost;          use Ghost;
 with Itypes;         use Itypes;
@@ -54,6 +55,7 @@ with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
+with Osint;
 with Restrict;       use Restrict;
 with Rident;         use Rident;
 with Rtsfind;        use Rtsfind;
@@ -87,6 +89,7 @@ with Sinput.L;
 with Snames;         use Snames;
 with Stringt;
 with Strub;          use Strub;
+with System.OS_Lib;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
@@ -758,13 +761,6 @@ package body Sem_Ch3 is
       Enclosing_Prot_Type : Entity_Id := Empty;
 
    begin
-      if Is_Entry (Current_Scope)
-        and then Is_Task_Type (Etype (Scope (Current_Scope)))
-      then
-         Error_Msg_N ("task entries cannot have access parameters", N);
-         return Empty;
-      end if;
-
       --  Ada 2005: For an object declaration the corresponding anonymous
       --  type is declared in the current scope.
 
@@ -1104,7 +1100,9 @@ package body Sem_Ch3 is
                                 | N_Protected_Type_Declaration
       loop
          D_Ityp := Parent (D_Ityp);
-         pragma Assert (D_Ityp /= Empty);
+         if No (D_Ityp) then
+            raise Program_Error;
+         end if;
       end loop;
 
       Set_Associated_Node_For_Itype (Desig_Type, D_Ityp);
@@ -3885,6 +3883,7 @@ package body Sem_Ch3 is
 
          Expr : N_Subexpr_Id;
 
+         Data_Path : File_Name_Type;
       begin
          Remove (Specification);
 
@@ -3902,15 +3901,22 @@ package body Sem_Ch3 is
          Set_Expression (N, Error);
          E := Error;
 
-         if Nkind (Def) /= N_String_Literal then
-            Error_Msg_N
-              ("External_Initialization aspect expects a string literal value",
-               Specification);
-            return;
-         end if;
+         case Is_OK_Static_Expression_Of_Type (Def, Standard_String) is
+            when Static =>
+               null;
+
+            when Not_Static =>
+               Error_Msg_N
+                 ("External_Initialization aspect expects a static string",
+                  Specification);
+               return;
+
+            when Invalid =>
+               return;
+         end case;
 
          if not (Is_String_Type (T)
-           or else Is_RTE (Base_Type (T), RE_Stream_Element_Array))
+                  or else Is_RTE (Base_Type (T), RE_Stream_Element_Array))
          then
             Error_Msg_N
               ("External_Initialization aspect can only be applied to objects "
@@ -3919,13 +3925,43 @@ package body Sem_Ch3 is
             return;
          end if;
 
+         declare
+            S : constant String :=
+              Stringt.To_String (Strval (Expr_Value_S (Def)));
+         begin
+            if System.OS_Lib.Is_Absolute_Path (S) then
+               Data_Path := Name_Find (S);
+            else
+               declare
+                  Current_File_Name : constant File_Name_Type :=
+                    Unit_File_Name (Current_Sem_Unit);
+
+                  Current_File_Path : constant File_Name_Type :=
+                    Fmap.Mapped_Path_Name (Current_File_Name);
+
+                  Current_File_Directory : constant File_Name_Type :=
+                    Osint.Get_Directory (Current_File_Path);
+
+                  Absolute_Dir : constant String :=
+                    System.OS_Lib.Normalize_Pathname
+                      (Get_Name_String (Current_File_Directory),
+                       Resolve_Links => False);
+
+                  Data_Path_String : constant String :=
+                    Absolute_Dir
+                    & System.OS_Lib.Directory_Separator
+                    & Stringt.To_String (Strval (Def));
+
+               begin
+                  Data_Path := Name_Find (Data_Path_String);
+               end;
+            end if;
+         end;
+
          begin
             declare
-               Name : constant Valid_Name_Id :=
-                 Stringt.String_To_Name (Strval (Def));
-
                Source_File_I : constant Source_File_Index :=
-                 Sinput.L.Load_Source_File (File_Name_Type (Name));
+                 Sinput.L.Load_Source_File (Data_Path);
             begin
                if Source_File_I <= No_Source_File then
                   Error_Msg_N ("cannot find input file", Specification);

@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
 #include "c-parser.h"
+#include "gcc-urlifier.h"
 
 #include "tree-pretty-print.h"
 
@@ -5743,8 +5744,11 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning (OPT_Wattributes, "inline function %q+D given attribute %qs",
-	     decl, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning (OPT_Wattributes, "inline function %q+D given attribute %qs",
+	       decl, "noinline");
+    }
 
   /* C99 6.7.4p3: An inline definition of a function with external
      linkage shall not contain a definition of a modifiable object
@@ -10654,9 +10658,12 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   if (DECL_DECLARED_INLINE_P (decl1)
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
-    warning_at (loc, OPT_Wattributes,
-		"inline function %qD given attribute %qs",
-		decl1, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning_at (loc, OPT_Wattributes,
+		  "inline function %qD given attribute %qs",
+		  decl1, "noinline");
+    }
 
   /* Handle gnu_inline attribute.  */
   if (declspecs->inline_p

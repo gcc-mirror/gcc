@@ -69,7 +69,7 @@
 --  Operations
 --  ----------
 
---  [Wide_[Wide_]]Image attribute (see RM 3.5(27.1/2))
+--  [Wide_[Wide_]]Image attribute (see RM 4.10(30))
 
 --          These attributes return a decimal real literal best approximating
 --          the value (rounded away from zero if halfway between) with a

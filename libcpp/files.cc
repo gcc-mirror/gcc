@@ -1243,8 +1243,7 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
     limit = params->limit;
 
   size_t embed_tokens = 0;
-  if (!CPP_OPTION (pfile, cplusplus)
-      && CPP_OPTION (pfile, lang) != CLK_ASM
+  if (CPP_OPTION (pfile, lang) != CLK_ASM
       && limit >= 64)
     embed_tokens = ((limit - 2) / INT_MAX) + (((limit - 2) % INT_MAX) != 0);
 

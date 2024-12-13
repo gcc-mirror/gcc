@@ -1177,7 +1177,10 @@ namespace __detail
 
       void
       _M_swap(_Hash_code_base& __x)
-      { std::swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get()); }
+      {
+	using std::swap;
+	swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get());
+      }
 
       const _Hash&
       _M_hash() const { return __ebo_hash::_M_cget(); }
@@ -1299,12 +1302,12 @@ namespace __detail
       _Local_iterator_base&
       operator=(const _Local_iterator_base& __iter)
       {
-	if (_M_bucket_count != -1)
+	if (_M_bucket_count != size_t(-1))
 	  _M_destroy();
 	this->_M_cur = __iter._M_cur;
 	_M_bucket = __iter._M_bucket;
 	_M_bucket_count = __iter._M_bucket_count;
-	if (_M_bucket_count != -1)
+	if (_M_bucket_count != size_t(-1))
 	  _M_init(*__iter._M_h());
 	return *this;
       }
@@ -1561,7 +1564,8 @@ namespace __detail
       _M_swap(_Hashtable_base& __x)
       {
 	__hash_code_base::_M_swap(__x);
-	std::swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
+	using std::swap;
+	swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
       }
 
       const _Equal&

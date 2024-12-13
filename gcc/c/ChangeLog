@@ -1,3 +1,77 @@
+2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (OMP_DISPATCH_CLAUSE_MASK): Add has_device_addr clause.
+	(c_finish_omp_declare_variant): Add an 'inform' telling the user that
+	'need_device_addr' is invalid for C.
+
+2024-12-09  Heiko Eißfeldt  <heiko@hexco.de>
+
+	PR c/114541
+	* gimple-parser.cc (c_parser_gimple_parse_bb_spec):
+	Use strtoul with ERANGE check instead of atoi to avoid UB
+	and detect invalid __BB#.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc: Include "gcc-urlifier.h".
+	(start_decl): Use auto_urlify_attributes with OPT_Wattributes.
+	(start_function): Likewise.
+	* c-parser.cc: Include "gcc-urlifier.h".
+	(c_parser_statement_after_labels): Use auto_urlify_attributes with
+	OPT_Wattributes.
+	* c-typeck.cc: Include "gcc-urlifier.h".
+	(maybe_warn_nodiscard): Use auto_urlify_attributes with
+	OPT_Wunused_result.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_get_builtin_args, c_parser_expression,
+	c_parser_expr_list): Use RAW_DATA_UCHAR_ELT macro.
+	* c-typeck.cc (digest_init): Use RAW_DATA_UCHAR_ELT and
+	RAW_DATA_SCHAR_ELT macros.
+	(add_pending_init, maybe_split_raw_data): Use RAW_DATA_UCHAR_ELT
+	macro.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107980
+	* c-parser.cc (c_parser_postfix_expression): Handle RID_C23_VA_START.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* c-parser.cc (c_parser_asm_string_literal): Add forward declaration.
+	(c_parser_asm_definition): Parse also extended asm without
+	clobbers/labels.
+	* c-typeck.cc (build_asm_expr): Allow extended asm outside of
+	functions and check extra restrictions.
+
+2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_allocate): Only check scope if
+	not in_omp_decl_attribute. Remove setting the alignment.
+
+2024-11-30  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117806
+	* c-typeck.cc (composite_type_internal): Call decl_attributes.
+
+2024-11-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/117749
+	* gimple-parser.cc (c_parser_gimple_declaration): Check
+	declarator to be non-null.
+
+2024-11-29  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117828
+	* c-typeck.cc (tagged_types_tu_compatible_p): Add check.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* c-typeck.cc (process_init_element): Add check to restrict
+	constructor length to the minimum vector length allowed.
+
 2024-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/116416

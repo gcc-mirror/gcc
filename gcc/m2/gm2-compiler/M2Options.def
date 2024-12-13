@@ -1122,6 +1122,20 @@ PROCEDURE GetDebugFunctionLineNumbers () : BOOLEAN ;
 
 
 (*
+   GetEnableForward - return EnableForward.
+*)
+
+PROCEDURE GetEnableForward () : BOOLEAN ;
+
+
+(*
+   SetEnableForward - set EnableForward to value.
+*)
+
+PROCEDURE SetEnableForward (value: BOOLEAN) ;
+
+
+(*
    FinaliseOptions - once all options have been parsed we set any inferred
                      values.
 *)

@@ -1064,6 +1064,9 @@ crtoffloadend$(objext): $(srcdir)/offloadstuff.c
 
 crtoffloadtable$(objext): $(srcdir)/offloadstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_TABLE
+
+crtoffloadtableS$(objext): $(srcdir)/offloadstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $< -DCRT_TABLE
 endif
 
 ifeq ($(enable_vtable_verify),yes)

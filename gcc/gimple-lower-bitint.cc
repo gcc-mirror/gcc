@@ -6233,11 +6233,20 @@ gimple_lower_bitint (void)
 		  tree p = build_int_cst (TREE_TYPE (n),
 					  TYPE_PRECISION (type));
 		  if (TREE_CODE (n) == INTEGER_CST)
-		    m = fold_build2 (MINUS_EXPR, TREE_TYPE (n), p, n);
+		    {
+		      if (integer_zerop (n))
+			m = n;
+		      else
+			m = fold_build2 (MINUS_EXPR, TREE_TYPE (n), p, n);
+		    }
 		  else
 		    {
+		      tree tem = make_ssa_name (TREE_TYPE (n));
+		      g = gimple_build_assign (tem, MINUS_EXPR, p, n);
+		      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+		      gimple_set_location (g, loc);
 		      m = make_ssa_name (TREE_TYPE (n));
-		      g = gimple_build_assign (m, MINUS_EXPR, p, n);
+		      g = gimple_build_assign (m, TRUNC_MOD_EXPR, tem, p);
 		      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 		      gimple_set_location (g, loc);
 		    }

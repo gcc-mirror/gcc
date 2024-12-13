@@ -2,6 +2,7 @@ RISCV_BUILTINS_H = $(srcdir)/config/riscv/riscv-vector-builtins.h \
 		   $(srcdir)/config/riscv/riscv-vector-builtins.def \
 		   $(srcdir)/config/riscv/riscv-vector-builtins-functions.def \
        $(srcdir)/config/riscv/thead-vector-builtins-functions.def \
+       $(srcdir)/config/riscv/sifive-vector-builtins-functions.def \
 		   riscv-vector-type-indexer.gen.def
 
 riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.cc $(CONFIG_H) \
@@ -9,6 +10,7 @@ riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.cc $(CONFIG_H) \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) $(RISCV_BUILTINS_H) \
   $(srcdir)/config/riscv/riscv-ftypes.def \
   $(srcdir)/config/riscv/riscv-vector-builtins-types.def \
+  $(srcdir)/config/riscv/sifive-vector-builtins-functions.def \
   $(srcdir)/config/riscv/riscv-modes.def \
   $(srcdir)/config/riscv/riscv-cmo.def \
   $(srcdir)/config/riscv/riscv-scalar-crypto.def
@@ -23,7 +25,9 @@ riscv-vector-builtins.o: $(srcdir)/config/riscv/riscv-vector-builtins.cc \
   gimple.h gimple-iterator.h \
   $(srcdir)/config/riscv/riscv-vector-builtins-shapes.h \
   $(srcdir)/config/riscv/riscv-vector-builtins-bases.h \
+  $(srcdir)/config/riscv/sifive-vector-builtins-bases.h \
   $(srcdir)/config/riscv/riscv-vector-builtins-types.def \
+  $(srcdir)/config/riscv/sifive-vector-builtins-functions.def \
   $(RISCV_BUILTINS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-vector-builtins.cc
@@ -34,6 +38,7 @@ riscv-vector-builtins-shapes.o: \
   $(TM_P_H) memmodel.h insn-codes.h $(OPTABS_H) \
   $(srcdir)/config/riscv/riscv-vector-builtins-shapes.h \
   $(srcdir)/config/riscv/riscv-vector-builtins-bases.h \
+  $(srcdir)/config/riscv/sifive-vector-builtins-bases.h \
   $(RISCV_BUILTINS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-vector-builtins-shapes.cc
@@ -50,6 +55,19 @@ riscv-vector-builtins-bases.o: \
   $(RISCV_BUILTINS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-vector-builtins-bases.cc
+
+sifive-vector-builtins-bases.o: \
+  $(srcdir)/config/riscv/sifive-vector-builtins-bases.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
+  $(TM_P_H) memmodel.h insn-codes.h $(OPTABS_H) $(RECOG_H) \
+  $(EXPR_H) $(BASIC_BLOCK_H) $(FUNCTION_H) fold-const.h $(GIMPLE_H) \
+  gimple-iterator.h gimplify.h explow.h $(EMIT_RTL_H) tree-vector-builder.h \
+  rtx-vector-builder.h \
+  $(srcdir)/config/riscv/riscv-vector-builtins-shapes.h \
+  $(srcdir)/config/riscv/sifive-vector-builtins-bases.h \
+  $(RISCV_BUILTINS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/sifive-vector-builtins-bases.cc
 
 riscv-sr.o: $(srcdir)/config/riscv/riscv-sr.cc $(CONFIG_H) \
   $(SYSTEM_H) $(TM_H)
@@ -142,6 +160,8 @@ build/genrvv-type-indexer$(build_exeext): build/genrvv-type-indexer.o
 
 $(srcdir)/config/riscv/riscv-vector-builtins.def: riscv-vector-type-indexer.gen.def
 $(srcdir)/config/riscv/riscv-vector-builtins.h: $(srcdir)/config/riscv/riscv-vector-builtins.def
+$(srcdir)/config/riscv/sifive-vector-builtins-functions.def: riscv-vector-type-indexer.gen.def
+$(srcdir)/config/riscv/riscv-vector-builtins.h: $(srcdir)/config/riscv/sifive-vector-builtins-functions.def
 
 riscv-vector-type-indexer.gen.def: s-riscv-vector-type-indexer.gen.defs ; @true
 

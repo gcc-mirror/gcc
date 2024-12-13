@@ -31,8 +31,8 @@ extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern bool use_simple_return_p (void);
 extern enum reg_class arm_regno_class (int);
-extern bool arm_check_builtin_call (location_t , vec<location_t> , tree,
-				    tree, unsigned int, tree *);
+extern bool arm_check_builtin_call (location_t, vec<location_t>, tree, tree,
+				    unsigned int, tree *, bool);
 extern void arm_load_pic_register (unsigned long, rtx);
 extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
@@ -202,6 +202,7 @@ extern rtx arm_load_tp (rtx);
 extern bool arm_coproc_builtin_available (enum unspecv);
 extern bool arm_coproc_ldc_stc_legitimate_address (rtx);
 extern rtx arm_stack_protect_tls_canary_mem (bool);
+extern bool arm_ldrd_legitimate_address (rtx);
 
 
 #if defined TREE_CODE
@@ -406,7 +407,6 @@ extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool);
 #endif /* RTX_CODE */
 
 extern bool arm_gen_setmem (rtx *);
-extern void arm_expand_vcond (rtx *, machine_mode);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 
 extern bool arm_autoinc_modes_ok_p (machine_mode, enum arm_auto_incmodes);

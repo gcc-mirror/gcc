@@ -382,6 +382,9 @@ TARGET_GNU_ATTRIBUTES (m68k_attribute_table,
     m68k_handle_fndecl_attribute, NULL }
 });
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "m68k"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Base flags for 68k ISAs.  */

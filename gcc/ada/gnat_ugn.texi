@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 26, 2024
+GNAT User's Guide for Native Platforms , Dec 12, 2024
 
 AdaCore
 
@@ -239,6 +239,7 @@ Building Executable Programs with GNAT
 * Binding with gnatbind:: 
 * Linking with gnatlink:: 
 * Using the GNU make Utility:: 
+* GNAT with the LLVM Back End:: 
 
 Building with gnatmake
 
@@ -307,7 +308,6 @@ Using the GNU make Utility
 * Automatically Creating a List of Directories:: 
 * Generating the Command Line Switches:: 
 * Overcoming Command Line Length Limits:: 
-* GNAT with the LLVM Back End:: 
 
 GNAT Utility Programs
 
@@ -7060,6 +7060,7 @@ in a GNAT context (see @ref{71,,Using the GNU make Utility}).
 * Binding with gnatbind:: 
 * Linking with gnatlink:: 
 * Using the GNU make Utility:: 
+* GNAT with the LLVM Back End:: 
 
 @end menu
 
@@ -17255,7 +17256,7 @@ may be useful to control the exact invocation by using the verbose
 switch.
 @end table
 
-@node Using the GNU make Utility,,Linking with gnatlink,Building Executable Programs with GNAT
+@node Using the GNU make Utility,GNAT with the LLVM Back End,Linking with gnatlink,Building Executable Programs with GNAT
 @anchor{gnat_ugn/building_executable_programs_with_gnat id48}@anchor{12f}@anchor{gnat_ugn/building_executable_programs_with_gnat using-the-gnu-make-utility}@anchor{71}
 @section Using the GNU @code{make} Utility
 
@@ -17277,7 +17278,6 @@ is the same, these examples use some advanced features found only in
 * Automatically Creating a List of Directories:: 
 * Generating the Command Line Switches:: 
 * Overcoming Command Line Length Limits:: 
-* GNAT with the LLVM Back End:: 
 
 @end menu
 
@@ -17479,7 +17479,7 @@ all:
         gnatmake $@{GNATMAKE_SWITCHES@} main_unit
 @end example
 
-@node Overcoming Command Line Length Limits,GNAT with the LLVM Back End,Generating the Command Line Switches,Using the GNU make Utility
+@node Overcoming Command Line Length Limits,,Generating the Command Line Switches,Using the GNU make Utility
 @anchor{gnat_ugn/building_executable_programs_with_gnat id52}@anchor{136}@anchor{gnat_ugn/building_executable_programs_with_gnat overcoming-command-line-length-limits}@anchor{137}
 @subsection Overcoming Command Line Length Limits
 
@@ -17537,9 +17537,9 @@ all:
         gnatmake main_unit
 @end example
 
-@node GNAT with the LLVM Back End,,Overcoming Command Line Length Limits,Using the GNU make Utility
+@node GNAT with the LLVM Back End,,Using the GNU make Utility,Building Executable Programs with GNAT
 @anchor{gnat_ugn/building_executable_programs_with_gnat gnat-with-the-llvm-back-end}@anchor{138}@anchor{gnat_ugn/building_executable_programs_with_gnat gnatllvm}@anchor{7}
-@subsection GNAT with the LLVM Back End
+@section GNAT with the LLVM Back End
 
 
 This section outlines the usage of the GNAT compiler with the LLVM
@@ -29839,8 +29839,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{d2}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye

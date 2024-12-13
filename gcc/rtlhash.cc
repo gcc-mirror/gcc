@@ -87,6 +87,9 @@ add_rtx (const_rtx x, hash &hstate)
       case 'i':
 	hstate.add_int (XINT (x, i));
 	break;
+      case 'L':
+	hstate.add_hwi (XLOC (x, i));
+	break;
       case 'p':
 	hstate.add_poly_int (SUBREG_BYTE (x));
 	break;

@@ -985,11 +985,14 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		    poly_offset_int off
 		      = (wi::to_poly_offset (this_offset)
 			 + (wi::to_offset (bit_offset) >> LOG2_BITS_PER_UNIT));
-		    /* Probibit value-numbering zero offset components
+		    /* Prohibit value-numbering zero offset components
 		       of addresses the same before the pass folding
-		       __builtin_object_size had a chance to run.  */
+		       __builtin_object_size had a chance to run.  Likewise
+		       for components of zero size at arbitrary offset.  */
 		    if (TREE_CODE (orig) != ADDR_EXPR
-			|| maybe_ne (off, 0)
+			|| (TYPE_SIZE (temp.type)
+			    && integer_nonzerop (TYPE_SIZE (temp.type))
+			    && maybe_ne (off, 0))
 			|| (cfun->curr_properties & PROP_objsz))
 		      off.to_shwi (&temp.off);
 		  }
@@ -1010,9 +1013,31 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	    if (! temp.op2)
 	      temp.op2 = size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (eltype),
 				     size_int (TYPE_ALIGN_UNIT (eltype)));
+	    /* Prohibit value-numbering addresses of one-after-the-last
+	       element ARRAY_REFs the same as addresses of other components
+	       before the pass folding __builtin_object_size had a chance
+	       to run.  */
+	    bool avoid_oob = true;
+	    if (TREE_CODE (orig) != ADDR_EXPR
+		|| cfun->curr_properties & PROP_objsz)
+	      avoid_oob = false;
+	    else if (poly_int_tree_p (temp.op0))
+	      {
+		tree ub = array_ref_up_bound (ref);
+		if (ub
+		    && poly_int_tree_p (ub)
+		    /* ???  The C frontend for T[0] uses [0:] and the
+		       C++ frontend [0:-1U].  See layout_type for how
+		       awkward this is.  */
+		    && !integer_minus_onep (ub)
+		    && known_le (wi::to_poly_offset (temp.op0),
+				 wi::to_poly_offset (ub)))
+		  avoid_oob = false;
+	      }
 	    if (poly_int_tree_p (temp.op0)
 		&& poly_int_tree_p (temp.op1)
-		&& TREE_CODE (temp.op2) == INTEGER_CST)
+		&& TREE_CODE (temp.op2) == INTEGER_CST
+		&& !avoid_oob)
 	      {
 		poly_offset_int off = ((wi::to_poly_offset (temp.op0)
 					- wi::to_poly_offset (temp.op1))
@@ -1754,6 +1779,24 @@ re_valueize:
 	       && poly_int_tree_p (vro->op1)
 	       && TREE_CODE (vro->op2) == INTEGER_CST)
 	{
+	    /* Prohibit value-numbering addresses of one-after-the-last
+	       element ARRAY_REFs the same as addresses of other components
+	       before the pass folding __builtin_object_size had a chance
+	       to run.  */
+	  if (!(cfun->curr_properties & PROP_objsz)
+	      && (*orig)[0].opcode == ADDR_EXPR)
+	    {
+	      tree dom = TYPE_DOMAIN ((*orig)[i + 1].type);
+	      if (!dom
+		  || !TYPE_MAX_VALUE (dom)
+		  || !poly_int_tree_p (TYPE_MAX_VALUE (dom))
+		  || integer_minus_onep (TYPE_MAX_VALUE (dom)))
+		continue;
+	      if (!known_le (wi::to_poly_offset (vro->op0),
+			     wi::to_poly_offset (TYPE_MAX_VALUE (dom))))
+		continue;
+	    }
+
 	  poly_offset_int off = ((wi::to_poly_offset (vro->op0)
 				  - wi::to_poly_offset (vro->op1))
 				 * wi::to_offset (vro->op2)
@@ -7964,7 +8007,8 @@ insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
 	    edge nf = false_e;
 	    if (code == EQ_EXPR)
 	      std::swap (nt, nf);
-	    insert_predicates_for_cond (nc, nlhs, nrhs, nt, nf);
+	    if (lhs != nlhs)
+	      insert_predicates_for_cond (nc, nlhs, nrhs, nt, nf);
 	  }
       /* (a | b) == 0 ->
 	    on true edge assert: a == 0 & b == 0. */

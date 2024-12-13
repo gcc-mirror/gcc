@@ -294,7 +294,7 @@ riscv_pragma_intrinsic (cpp_reader *)
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 static bool
 riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
-			  tree, unsigned int nargs, tree *args)
+			  tree, unsigned int nargs, tree *args, bool)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
@@ -312,11 +312,10 @@ riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
 static tree
-riscv_resolve_overloaded_builtin (unsigned int uncast_location, tree fndecl,
-				  void *uncast_arglist)
+riscv_resolve_overloaded_builtin (location_t loc, tree fndecl,
+				  void *uncast_arglist, bool)
 {
   vec<tree, va_gc> empty = {};
-  location_t loc = (location_t) uncast_location;
   vec<tree, va_gc> *arglist = (vec<tree, va_gc> *) uncast_arglist;
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;

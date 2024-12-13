@@ -1653,7 +1653,7 @@ ipa_context_from_jfunc (ipa_node_params *info, cgraph_edge *cs, int csidx,
    DST_TYPE on value range in SRC_VR and store it to DST_VR.  Return true if
    the result is a range that is not VARYING nor UNDEFINED.  */
 
-static bool
+bool
 ipa_vr_operation_and_type_effects (vrange &dst_vr,
 				   const vrange &src_vr,
 				   enum tree_code operation,
@@ -1679,7 +1679,7 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
 /* Same as above, but the SRC_VR argument is an IPA_VR which must
    first be extracted onto a vrange.  */
 
-static bool
+bool
 ipa_vr_operation_and_type_effects (vrange &dst_vr,
 				   const ipa_vr &src_vr,
 				   enum tree_code operation,

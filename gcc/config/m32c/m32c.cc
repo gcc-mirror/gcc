@@ -4501,6 +4501,9 @@ m32c_output_compare (rtx_insn *insn, rtx *operands)
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS m32c_can_change_mode_class
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "M32C"
+
 /* The Global `targetm' Variable. */
 
 struct gcc_target targetm = TARGET_INITIALIZER;

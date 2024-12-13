@@ -226,11 +226,12 @@ on_report_diagnostic (const diagnostic_info &diagnostic,
       const int nesting_level = get_context ().get_diagnostic_nesting_level ();
       if (nesting_level > 0)
 	{
+	  location_t loc = diagnostic_location (&diagnostic);
 	  pp_set_prefix (pp, nullptr);
 	  char *indent_prefix = build_indent_prefix (false);
 	  /* Only print changes of location.  */
-	  if (diagnostic_location (&diagnostic)
-	      != get_context ().m_last_location)
+	  if (loc != get_context ().m_last_location
+	      && loc > BUILTINS_LOCATION)
 	    {
 	      const expanded_location s
 		= diagnostic_expand_location (&diagnostic);
@@ -308,6 +309,12 @@ build_prefix (const diagnostic_info &diagnostic) const
   if (m_show_nesting && nesting_level > 0)
     {
       char *indent_prefix = build_indent_prefix (true);
+
+      /* Reduce verbosity of nested diagnostics by not printing "note: "
+	 all the time.  */
+      if (diagnostic.kind == DK_NOTE)
+	return indent_prefix;
+
       char *result = build_message_string ("%s%s%s%s", indent_prefix,
 					   text_cs, text, text_ce);
       free (indent_prefix);

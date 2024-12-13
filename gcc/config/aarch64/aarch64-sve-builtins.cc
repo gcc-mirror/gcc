@@ -55,6 +55,8 @@
 #include "aarch64-sve-builtins-shapes.h"
 #include "aarch64-builtins.h"
 
+using namespace aarch64;
+
 namespace aarch64_sve {
 
 /* Static information about each single-predicate or single-vector
@@ -253,10 +255,11 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_b_integer(S, D) \
   S (s8), TYPES_b_unsigned (S, D)
 
-/* _s8
+/* _mf8
+   _s8
    _u8.  */
 #define TYPES_b_data(S, D) \
-  TYPES_b_integer (S, D)
+  S (mf8), TYPES_b_integer (S, D)
 
 /* _s8 _s16
    _u8 _u16.  */
@@ -346,9 +349,17 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   TYPES_s_data (S, D), \
   TYPES_d_data (S, D)
 
+/* _f16_mf8.  */
+#define TYPES_h_float_mf8(S, D) \
+  D (f16, mf8)
+
 /* _f32.  */
 #define TYPES_s_float(S, D) \
   S (f32)
+
+/* _f32_mf8.  */
+#define TYPES_s_float_mf8(S, D) \
+  D (f32, mf8)
 
 /*      _f32
    _s16 _s32 _s64
@@ -480,6 +491,20 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   D (f32, s32), \
   D (f32, u32)
 
+/* _f16_mf8
+   _bf16_mf8.  */
+#define TYPES_cvt_mf8(S, D) \
+  D (f16, mf8), D (bf16, mf8)
+
+/* _mf8_f16
+   _mf8_bf16.  */
+#define TYPES_cvtn_mf8(S, D) \
+  D (mf8, f16), D (mf8, bf16)
+
+/* _mf8_f32.  */
+#define TYPES_cvtnx_mf8(S, D) \
+  D (mf8, f32)
+
 /* { _s32 _s64 } x { _b8 _b16 _b32 _b64 }
    { _u32 _u64 }.  */
 #define TYPES_inc_dec_n1(D, A) \
@@ -539,16 +564,18 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   D (u8, s32), \
   D (u16, s64)
 
-/* {     _bf16           }   {     _bf16           }
+/* { _mf8 _bf16          }   { _mf8 _bf16          }
    {      _f16 _f32 _f64 }   {      _f16 _f32 _f64 }
    { _s8  _s16 _s32 _s64 } x { _s8  _s16 _s32 _s64 }
    { _u8  _u16 _u32 _u64 }   { _u8  _u16 _u32 _u64 }.  */
 #define TYPES_reinterpret1(D, A) \
+  D (A, mf8), \
   D (A, bf16), \
   D (A, f16), D (A, f32), D (A, f64), \
   D (A, s8), D (A, s16), D (A, s32), D (A, s64), \
   D (A, u8), D (A, u16), D (A, u32), D (A, u64)
 #define TYPES_reinterpret(S, D) \
+  TYPES_reinterpret1 (D, mf8), \
   TYPES_reinterpret1 (D, bf16), \
   TYPES_reinterpret1 (D, f16), \
   TYPES_reinterpret1 (D, f32), \
@@ -760,6 +787,7 @@ DEF_SVE_TYPES_ARRAY (bhs_widen);
 DEF_SVE_TYPES_ARRAY (c);
 DEF_SVE_TYPES_ARRAY (h_bfloat);
 DEF_SVE_TYPES_ARRAY (h_float);
+DEF_SVE_TYPES_ARRAY (h_float_mf8);
 DEF_SVE_TYPES_ARRAY (h_integer);
 DEF_SVE_TYPES_ARRAY (hs_signed);
 DEF_SVE_TYPES_ARRAY (hs_integer);
@@ -771,6 +799,7 @@ DEF_SVE_TYPES_ARRAY (hsd_integer);
 DEF_SVE_TYPES_ARRAY (hsd_data);
 DEF_SVE_TYPES_ARRAY (s_float);
 DEF_SVE_TYPES_ARRAY (s_float_hsd_integer);
+DEF_SVE_TYPES_ARRAY (s_float_mf8);
 DEF_SVE_TYPES_ARRAY (s_float_sd_integer);
 DEF_SVE_TYPES_ARRAY (s_signed);
 DEF_SVE_TYPES_ARRAY (s_unsigned);
@@ -790,9 +819,12 @@ DEF_SVE_TYPES_ARRAY (cvt_bfloat);
 DEF_SVE_TYPES_ARRAY (cvt_h_s_float);
 DEF_SVE_TYPES_ARRAY (cvt_f32_f16);
 DEF_SVE_TYPES_ARRAY (cvt_long);
+DEF_SVE_TYPES_ARRAY (cvt_mf8);
 DEF_SVE_TYPES_ARRAY (cvt_narrow_s);
 DEF_SVE_TYPES_ARRAY (cvt_narrow);
 DEF_SVE_TYPES_ARRAY (cvt_s_s);
+DEF_SVE_TYPES_ARRAY (cvtn_mf8);
+DEF_SVE_TYPES_ARRAY (cvtnx_mf8);
 DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (qcvt_x2);
 DEF_SVE_TYPES_ARRAY (qcvt_x4);
@@ -930,9 +962,10 @@ static const predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
 
 /* A list of all arm_sve.h functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
-#define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+#define DEF_SVE_FUNCTION_GS_FPM(NAME, SHAPE, TYPES, GROUPS, PREDS, FPM_MODE) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
-    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS },
+    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS, \
+    FPM_##FPM_MODE },
 #include "aarch64-sve-builtins.def"
 };
 
@@ -940,7 +973,8 @@ static CONSTEXPR const function_group_info function_groups[] = {
 static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 #define DEF_NEON_SVE_FUNCTION(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &neon_sve_bridge_functions::NAME, &shapes::SHAPE, types_##TYPES, \
-    groups_##GROUPS, preds_##PREDS, aarch64_required_extensions::ssve (0) },
+    groups_##GROUPS, preds_##PREDS, aarch64_required_extensions::ssve (0), \
+    FPM_unused },
 #include "aarch64-neon-sve-bridge-builtins.def"
 };
 
@@ -948,12 +982,13 @@ static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 static CONSTEXPR const function_group_info sme_function_groups[] = {
 #define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
-    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS },
+    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS, \
+    FPM_unused },
 #define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
     groups_##GROUPS, preds_##PREDS, \
     aarch64_required_extensions::REQUIRED_EXTENSIONS \
-      .and_also (AARCH64_FL_ZA_ON) },
+      .and_also (AARCH64_FL_ZA_ON), FPM_unused },
 #include "aarch64-sve-builtins-sme.def"
 };
 
@@ -1117,69 +1152,6 @@ lookup_fndecl (tree fndecl)
 }
 
 
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO
-   was not an integer constant expression.  ARGNO counts from zero.  */
-static void
-report_non_ice (location_t location, tree fndecl, unsigned int argno)
-{
-  error_at (location, "argument %d of %qE must be an integer constant"
-	    " expression", argno + 1, fndecl);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires a value in the range
-   [MIN, MAX].  ARGNO counts from zero.  */
-static void
-report_out_of_range (location_t location, tree fndecl, unsigned int argno,
-		     HOST_WIDE_INT actual, HOST_WIDE_INT min,
-		     HOST_WIDE_INT max)
-{
-  if (min == max)
-    error_at (location, "passing %wd to argument %d of %qE, which expects"
-	      " the value %wd", actual, argno + 1, fndecl, min);
-  else
-    error_at (location, "passing %wd to argument %d of %qE, which expects"
-	      " a value in the range [%wd, %wd]", actual, argno + 1, fndecl,
-	      min, max);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires either VALUE0 or
-   VALUE1.  ARGNO counts from zero.  */
-static void
-report_neither_nor (location_t location, tree fndecl, unsigned int argno,
-		    HOST_WIDE_INT actual, HOST_WIDE_INT value0,
-		    HOST_WIDE_INT value1)
-{
-  error_at (location, "passing %wd to argument %d of %qE, which expects"
-	    " either %wd or %wd", actual, argno + 1, fndecl, value0, value1);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires one of VALUE0..3.
-   ARGNO counts from zero.  */
-static void
-report_not_one_of (location_t location, tree fndecl, unsigned int argno,
-		   HOST_WIDE_INT actual, HOST_WIDE_INT value0,
-		   HOST_WIDE_INT value1, HOST_WIDE_INT value2,
-		   HOST_WIDE_INT value3)
-{
-  error_at (location, "passing %wd to argument %d of %qE, which expects"
-	    " %wd, %wd, %wd or %wd", actual, argno + 1, fndecl, value0, value1,
-	    value2, value3);
-}
-
-/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
-   the value ACTUAL, whereas the function requires a valid value of
-   enum type ENUMTYPE.  ARGNO counts from zero.  */
-static void
-report_not_enum (location_t location, tree fndecl, unsigned int argno,
-		 HOST_WIDE_INT actual, tree enumtype)
-{
-  error_at (location, "passing %wd to argument %d of %qE, which expects"
-	    " a valid %qT value", actual, argno + 1, fndecl, enumtype);
-}
-
 /* Try to fold constant arguments ARG1 and ARG2 using the given tree_code.
    Operations are not treated as overflowing.  */
 static tree
@@ -1235,6 +1207,7 @@ function_instance::hash () const
   h.add_int (type_suffix_ids[1]);
   h.add_int (group_suffix_id);
   h.add_int (pred);
+  h.add_int (fpm_mode);
   return h.end ();
 }
 
@@ -1421,6 +1394,8 @@ function_builder::get_name (const function_instance &instance,
   if (!overloaded_p || instance.shape->explicit_group_suffix_p ())
     append_name (instance.group_suffix ().string);
   append_name (pred_suffixes[instance.pred]);
+  if (instance.fpm_mode == FPM_set)
+    append_name ("_fpm");
   return finish_name ();
 }
 
@@ -1665,7 +1640,8 @@ function_builder::add_overloaded_functions (const function_group_info &group,
     {
       function_instance instance (group.base_name, *group.base,
 				  *group.shape, mode, types,
-				  group_suffix_id, group.preds[pi]);
+				  group_suffix_id, group.preds[pi],
+				  group.fpm_mode);
       add_overloaded_function (instance, group.required_extensions);
     };
 
@@ -1842,8 +1818,8 @@ function_resolver::lookup_form (mode_suffix_index mode,
 				group_suffix_index group)
 {
   type_suffix_pair types = { type0, type1 };
-  function_instance instance (base_name, base, shape, mode, types,
-			      group, pred);
+  function_instance instance (base_name, base, shape, mode, types, group, pred,
+			      fpm_mode);
   registered_function *rfn
     = function_table->find_with_hash (instance, instance.hash ());
   return rfn ? rfn->decl : NULL_TREE;
@@ -2190,7 +2166,7 @@ function_resolver::infer_neon128_vector_type (unsigned int argno)
       int neon_index = type_suffixes[suffix_i].neon128_type;
       if (neon_index != ARM_NEON_H_TYPES_LAST)
 	{
-	  tree type = aarch64_simd_types[neon_index].itype;
+	  tree type = aarch64_simd_types_trees[neon_index].itype;
 	  if (type && matches_type_p (type, actual))
 	    return type_suffix_index (suffix_i);
 	}
@@ -3055,11 +3031,12 @@ function_resolver::check_gp_argument (unsigned int nops,
 {
   gcc_assert (pred != PRED_za_m);
   i = 0;
+  unsigned int nfpm_args = (fpm_mode == FPM_set)? 1:0;
   if (pred != PRED_none)
     {
       /* Unary merge operations should use resolve_unary instead.  */
       gcc_assert (!shape->has_merge_argument_p (*this, nops));
-      nargs = nops + 1;
+      nargs = nops + nfpm_args + 1;
       if (!check_num_arguments (nargs)
 	  || !require_vector_type (i, gp_type_index ()))
 	return false;
@@ -3067,7 +3044,7 @@ function_resolver::check_gp_argument (unsigned int nops,
     }
   else
     {
-      nargs = nops;
+      nargs = nops + nfpm_args;
       if (!check_num_arguments (nargs))
 	return false;
     }
@@ -3541,6 +3518,15 @@ is_ptrue (tree v, unsigned int step)
 	  && vector_cst_all_same (v, step));
 }
 
+/* Return true if V is a constant predicate that acts as a pfalse.  */
+bool
+is_pfalse (tree v)
+{
+  return (TREE_CODE (v) == VECTOR_CST
+	  && TYPE_MODE (TREE_TYPE (v)) == VNx16BImode
+	  && integer_zerop (v));
+}
+
 gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
 			      gimple_stmt_iterator *gsi_in, gcall *call_in)
   : function_call_info (gimple_location (call_in), instance, fndecl),
@@ -3646,6 +3632,46 @@ gimple_folder::redirect_pred_x ()
   return redirect_call (instance);
 }
 
+/* Fold calls with predicate pfalse:
+   _m predication: lhs = op1.
+   _x or _z: lhs = {0, ...}.
+   Implicit predication that reads from memory: lhs = {0, ...}.
+   Implicit predication that writes to memory or prefetches: no-op.
+   Return the new gimple statement on success, else NULL.  */
+gimple *
+gimple_folder::fold_pfalse ()
+{
+  if (pred == PRED_none)
+    return nullptr;
+  tree arg0 = gimple_call_arg (call, 0);
+  if (pred == PRED_m)
+    {
+      /* Unary function shapes with _m predication are folded to the
+	 inactive vector (arg0), while other function shapes are folded
+	 to op1 (arg1).  */
+      tree arg1 = gimple_call_arg (call, 1);
+      if (is_pfalse (arg1))
+	return fold_call_to (arg0);
+      if (is_pfalse (arg0))
+	return fold_call_to (arg1);
+      return nullptr;
+    }
+  if ((pred == PRED_x || pred == PRED_z) && is_pfalse (arg0))
+    return fold_call_to (build_zero_cst (TREE_TYPE (lhs)));
+  if (pred == PRED_implicit && is_pfalse (arg0))
+    {
+      unsigned int flags = call_properties ();
+      /* Folding to lhs = {0, ...} is not appropriate for intrinsics with
+	 AGGREGATE types as lhs.  */
+      if ((flags & CP_READ_MEMORY)
+	  && !AGGREGATE_TYPE_P (TREE_TYPE (lhs)))
+	return fold_call_to (build_zero_cst (TREE_TYPE (lhs)));
+      if (flags & (CP_WRITE_MEMORY | CP_PREFETCH_MEMORY))
+	return fold_to_stmt_vops (gimple_build_nop ());
+    }
+  return nullptr;
+}
+
 /* Fold the call to constant VAL.  */
 gimple *
 gimple_folder::fold_to_cstu (poly_uint64 val)
@@ -3748,6 +3774,27 @@ gimple_folder::fold_active_lanes_to (tree x)
   return gimple_build_assign (lhs, VEC_COND_EXPR, pred, x, vec_inactive);
 }
 
+/* Fold call to assignment statement lhs = t.  */
+gimple *
+gimple_folder::fold_call_to (tree t)
+{
+  if (types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (t)))
+    return fold_to_stmt_vops (gimple_build_assign (lhs, t));
+
+  tree rhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), t);
+  return fold_to_stmt_vops (gimple_build_assign (lhs, VIEW_CONVERT_EXPR, rhs));
+}
+
+/* Fold call to G, incl. adjustments to the virtual operands.  */
+gimple *
+gimple_folder::fold_to_stmt_vops (gimple *g)
+{
+  gimple_seq stmts = NULL;
+  gimple_seq_add_stmt_without_update (&stmts, g);
+  gsi_replace_with_seq_vops (gsi, stmts);
+  return g;
+}
+
 /* Try to fold the call.  Return the new statement on success and null
    on failure.  */
 gimple *
@@ -3766,6 +3813,8 @@ gimple_folder::fold ()
 
   /* First try some simplifications that are common to many functions.  */
   if (auto *call = redirect_pred_x ())
+    return call;
+  if (auto *call = fold_pfalse ())
     return call;
 
   return base->fold (*this);
@@ -4504,6 +4553,13 @@ function_expander::expand ()
   for (unsigned int i = 0; i < nargs; ++i)
     args.quick_push (expand_normal (CALL_EXPR_ARG (call_expr, i)));
 
+  if (fpm_mode == FPM_set)
+    {
+      /* The last element of these functions is always an fpm_t that must be
+         written to FPMR before the call to the instruction itself. */
+      gcc_assert (args.last ()->mode == DImode);
+      emit_move_insn (gen_rtx_REG (DImode, FPM_REGNUM), args.last ());
+    }
   return base->expand (*this);
 }
 
@@ -4576,6 +4632,9 @@ register_builtin_types ()
 	      vectype = build_truth_vector_type_for_mode (BYTES_PER_SVE_VECTOR,
 							  VNx16BImode);
 	      num_pr = 1;
+	      /* Leave svbool_t as indivisible for now.  We don't yet support
+		 C/C++ operators on predicates.  */
+	      TYPE_INDIVISIBLE_P (vectype) = 1;
 	    }
 	  else
 	    {
@@ -4592,12 +4651,12 @@ register_builtin_types ()
 			  && TYPE_ALIGN (vectype) == 128
 			  && known_eq (size, BITS_PER_SVE_VECTOR));
 	      num_zr = 1;
+	      TYPE_INDIVISIBLE_P (vectype) = 0;
 	    }
 	  vectype = build_distinct_type_copy (vectype);
 	  gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
 	  SET_TYPE_STRUCTURAL_EQUALITY (vectype);
 	  TYPE_ARTIFICIAL (vectype) = 1;
-	  TYPE_INDIVISIBLE_P (vectype) = 1;
 	  make_type_sizeless (vectype);
 	}
       if (num_pr)

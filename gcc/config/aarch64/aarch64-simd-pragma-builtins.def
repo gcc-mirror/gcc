@@ -18,16 +18,155 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#undef ENTRY_VHSDF
-#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC) \
-  ENTRY (NAME##_f16, SIGNATURE, V4HF, UNSPEC) \
-  ENTRY (NAME##q_f16, SIGNATURE, V8HF, UNSPEC) \
-  ENTRY (NAME##_f32, SIGNATURE, V2SF, UNSPEC) \
-  ENTRY (NAME##q_f32, SIGNATURE, V4SF, UNSPEC) \
-  ENTRY (NAME##q_f64, SIGNATURE, V2DF, UNSPEC)
+#undef ENTRY_BINARY
+#define ENTRY_BINARY(N, T0, T1, T2, U, F)	\
+  ENTRY (N, binary, T0, T1, T2, none, U, F)
+
+#undef ENTRY_BINARY_LANE
+#define ENTRY_BINARY_LANE(N, T0, T1, T2, U, F)	\
+  ENTRY (N, binary_lane, T0, T1, T2, none, U, F)
+
+#undef ENTRY_TERNARY
+#define ENTRY_TERNARY(N, T0, T1, T2, T3, U, F)	\
+  ENTRY (N, ternary, T0, T1, T2, T3, U, F)
+
+#undef ENTRY_TERNARY_LANE
+#define ENTRY_TERNARY_LANE(N, T0, T1, T2, T3, U, F)	\
+  ENTRY (N, ternary_lane, T0, T1, T2, T3, U, F)
+
+#undef ENTRY_UNARY
+#define ENTRY_UNARY(N, T0, T1, U, F)	\
+  ENTRY (N, unary, T0, T1, none, none, U, F)
+
+#undef ENTRY_BINARY_VHSDF
+#define ENTRY_BINARY_VHSDF(NAME, UNSPEC, FLAGS)			\
+  ENTRY_BINARY (NAME##_f16, f16, f16, f16, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f16, f16q, f16q, f16q, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##_f32, f32, f32, f32, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f32, f32q, f32q, f32q, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f64, f64q, f64q, f64q, UNSPEC, FLAGS)
+
+#undef ENTRY_BINARY_VHSDF_SIGNED
+#define ENTRY_BINARY_VHSDF_SIGNED(NAME, UNSPEC, FLAGS)		\
+  ENTRY_BINARY (NAME##_f16, f16, f16, s16, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f16, f16q, f16q, s16q, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##_f32, f32, f32, s32, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f32, f32q, f32q, s32q, UNSPEC, FLAGS)	\
+  ENTRY_BINARY (NAME##q_f64, f64q, f64q, s64q, UNSPEC, FLAGS)
+
+#undef ENTRY_TERNARY_VLUT8
+#define ENTRY_TERNARY_VLUT8(T)					\
+  ENTRY_BINARY_LANE (vluti2_lane_##T##8, T##8q, T##8, u8,	\
+		     UNSPEC_LUTI2, QUIET)			\
+  ENTRY_BINARY_LANE (vluti2_laneq_##T##8, T##8q, T##8, u8q,	\
+		     UNSPEC_LUTI2, QUIET)			\
+  ENTRY_BINARY_LANE (vluti2q_lane_##T##8, T##8q, T##8q, u8,	\
+		     UNSPEC_LUTI2, QUIET)			\
+  ENTRY_BINARY_LANE (vluti2q_laneq_##T##8, T##8q, T##8q, u8q,	\
+		     UNSPEC_LUTI2, QUIET)			\
+  ENTRY_BINARY_LANE (vluti4q_lane_##T##8, T##8q, T##8q, u8,	\
+		     UNSPEC_LUTI4, QUIET)			\
+  ENTRY_BINARY_LANE (vluti4q_laneq_##T##8, T##8q, T##8q, u8q,	\
+		     UNSPEC_LUTI4, QUIET)
+
+#undef ENTRY_TERNARY_VLUT16
+#define ENTRY_TERNARY_VLUT16(T)						\
+  ENTRY_BINARY_LANE (vluti2_lane_##T##16, T##16q, T##16, u8,		\
+		     UNSPEC_LUTI2, QUIET)				\
+  ENTRY_BINARY_LANE (vluti2_laneq_##T##16, T##16q, T##16, u8q,		\
+		     UNSPEC_LUTI2, QUIET)				\
+  ENTRY_BINARY_LANE (vluti2q_lane_##T##16, T##16q, T##16q, u8,		\
+		     UNSPEC_LUTI2, QUIET)				\
+  ENTRY_BINARY_LANE (vluti2q_laneq_##T##16, T##16q, T##16q, u8q,	\
+		     UNSPEC_LUTI2, QUIET)				\
+  ENTRY_BINARY_LANE (vluti4q_lane_##T##16_x2, T##16q, T##16qx2, u8,	\
+		     UNSPEC_LUTI4, QUIET)				\
+  ENTRY_BINARY_LANE (vluti4q_laneq_##T##16_x2, T##16q, T##16qx2, u8q,	\
+		     UNSPEC_LUTI4, QUIET)
+
+#undef ENTRY_UNARY_VQ_BHF
+#define ENTRY_UNARY_VQ_BHF(N, T1, UNSPEC, FLAGS)		\
+  ENTRY_UNARY (N##_bf16_mf8_fpm, bf16q, T1, UNSPEC, FLAGS)	\
+  ENTRY_UNARY (N##_f16_mf8_fpm, f16q, T1, UNSPEC, FLAGS)
+
+#undef ENTRY_VDOT_FPM
+#define ENTRY_VDOT_FPM(T)						\
+  ENTRY_TERNARY (vdot_##T##_mf8_fpm, T, T, f8, f8,			\
+		 UNSPEC_FDOT_FP8, FP8)					\
+  ENTRY_TERNARY (vdotq_##T##_mf8_fpm, T##q, T##q, f8q, f8q,		\
+		 UNSPEC_FDOT_FP8, FP8)					\
+  ENTRY_TERNARY_LANE (vdot_lane_##T##_mf8_fpm, T, T, f8, f8,		\
+		      UNSPEC_FDOT_LANE_FP8, FP8)			\
+  ENTRY_TERNARY_LANE (vdot_laneq_##T##_mf8_fpm, T, T, f8, f8q,		\
+		      UNSPEC_FDOT_LANE_FP8, FP8)			\
+  ENTRY_TERNARY_LANE (vdotq_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8,	\
+		      UNSPEC_FDOT_LANE_FP8, FP8)			\
+  ENTRY_TERNARY_LANE (vdotq_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q,	\
+		      UNSPEC_FDOT_LANE_FP8, FP8)
+
+#undef ENTRY_FMA_FPM
+#define ENTRY_FMA_FPM(N, T, U)						\
+  ENTRY_TERNARY (N##q_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U, FP8)	\
+  ENTRY_TERNARY_LANE (N##q_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8, U, FP8) \
+  ENTRY_TERNARY_LANE (N##q_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U, FP8)
 
 // faminmax
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
-ENTRY_VHSDF (vamax, binary, UNSPEC_FAMAX)
-ENTRY_VHSDF (vamin, binary, UNSPEC_FAMIN)
+ENTRY_BINARY_VHSDF (vamax, UNSPEC_FAMAX, FP)
+ENTRY_BINARY_VHSDF (vamin, UNSPEC_FAMIN, FP)
+#undef REQUIRED_EXTENSIONS
+
+// lut
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_LUT)
+ENTRY_TERNARY_VLUT8 (p)
+ENTRY_TERNARY_VLUT8 (s)
+ENTRY_TERNARY_VLUT8 (u)
+
+ENTRY_TERNARY_VLUT16 (bf)
+ENTRY_TERNARY_VLUT16 (f)
+ENTRY_TERNARY_VLUT16 (p)
+ENTRY_TERNARY_VLUT16 (s)
+ENTRY_TERNARY_VLUT16 (u)
+#undef REQUIRED_EXTENSIONS
+
+// fpm conversion
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8)
+ENTRY_UNARY_VQ_BHF (vcvt1, f8, UNSPEC_F1CVTL_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt1_high, f8q, UNSPEC_F1CVTL2_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt1_low, f8q, UNSPEC_F1CVTL_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt2, f8, UNSPEC_F2CVTL_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt2_high, f8q, UNSPEC_F2CVTL2_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt2_low, f8q, UNSPEC_F2CVTL_FP8, FP8)
+
+ENTRY_BINARY (vcvt_mf8_f16_fpm, f8, f16, f16, UNSPEC_FCVTN_FP8, FP8)
+ENTRY_BINARY (vcvtq_mf8_f16_fpm, f8q, f16q, f16q, UNSPEC_FCVTN_FP8, FP8)
+ENTRY_BINARY (vcvt_mf8_f32_fpm, f8, f32q, f32q, UNSPEC_FCVTN_FP8, FP8)
+
+ENTRY_TERNARY (vcvt_high_mf8_f32_fpm, f8q, f8, f32q, f32q,
+	       UNSPEC_FCVTN2_FP8, FP8)
+#undef REQUIRED_EXTENSIONS
+
+// fpm scaling
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8)
+ENTRY_BINARY_VHSDF_SIGNED (vscale, UNSPEC_FSCALE, FP)
+#undef REQUIRED_EXTENSIONS
+
+// fpm dot2 product
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8DOT2)
+ENTRY_VDOT_FPM (f16)
+#undef REQUIRED_EXTENSIONS
+
+// fpm dot4 product
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8DOT4)
+ENTRY_VDOT_FPM (f32)
+#undef REQUIRED_EXTENSIONS
+
+// fp8 multiply-add
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8FMA)
+ENTRY_FMA_FPM (vmlalb, f16, UNSPEC_FMLALB_FP8)
+ENTRY_FMA_FPM (vmlalt, f16, UNSPEC_FMLALT_FP8)
+ENTRY_FMA_FPM (vmlallbb, f32, UNSPEC_FMLALLBB_FP8)
+ENTRY_FMA_FPM (vmlallbt, f32, UNSPEC_FMLALLBT_FP8)
+ENTRY_FMA_FPM (vmlalltb, f32, UNSPEC_FMLALLTB_FP8)
+ENTRY_FMA_FPM (vmlalltt, f32, UNSPEC_FMLALLTT_FP8)
 #undef REQUIRED_EXTENSIONS

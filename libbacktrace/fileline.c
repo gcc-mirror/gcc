@@ -48,8 +48,8 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #endif
 
 #ifdef HAVE_WINDOWS_H
-#ifndef WIN32_MEAN_AND_LEAN
-#define WIN32_MEAN_AND_LEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #endif
 
 #ifndef NOMINMAX

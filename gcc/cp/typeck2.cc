@@ -1311,6 +1311,36 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	 a parenthesized list.  */
       if (nested && !(flags & LOOKUP_AGGREGATE_PAREN_INIT))
 	flags |= LOOKUP_NO_NARROWING;
+      if (TREE_CODE (init) == RAW_DATA_CST && !TYPE_UNSIGNED (type))
+	{
+	  tree ret = init;
+	  if ((flags & LOOKUP_NO_NARROWING) || warn_conversion)
+	    for (unsigned int i = 0;
+		 i < (unsigned) RAW_DATA_LENGTH (init); ++i)
+	      if (RAW_DATA_SCHAR_ELT (init, i) < 0)
+		{
+		  if ((flags & LOOKUP_NO_NARROWING))
+		    {
+		      tree elt
+			= build_int_cst (integer_type_node,
+					 RAW_DATA_UCHAR_ELT (init, i));
+		      if (!check_narrowing (type, elt, complain, false))
+			{
+			  if (!(complain & tf_warning_or_error))
+			    ret = error_mark_node;
+			  continue;
+			}
+		    }
+		  if (warn_conversion)
+		    warning (OPT_Wconversion,
+			     "conversion from %qT to %qT changes value from "
+			     "%qd to %qd",
+			     integer_type_node, type,
+			     RAW_DATA_UCHAR_ELT (init, i),
+			     RAW_DATA_SCHAR_ELT (init, i));
+		}
+	  return ret;
+	}
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,
 					 complain);
@@ -1559,7 +1589,7 @@ static int
 process_init_constructor_array (tree type, tree init, int nested, int flags,
 				tsubst_flags_t complain)
 {
-  unsigned HOST_WIDE_INT i, len = 0;
+  unsigned HOST_WIDE_INT i, j, len = 0;
   int picflags = 0;
   bool unbounded = false;
   constructor_elt *ce;
@@ -1602,11 +1632,12 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	return PICFLAG_ERRONEOUS;
     }
 
+  j = 0;
   FOR_EACH_VEC_SAFE_ELT (v, i, ce)
     {
       if (!ce->index)
-	ce->index = size_int (i);
-      else if (!check_array_designated_initializer (ce, i))
+	ce->index = size_int (j);
+      else if (!check_array_designated_initializer (ce, j))
 	ce->index = error_mark_node;
       gcc_assert (ce->value);
       ce->value
@@ -1628,6 +1659,10 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
 	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value) = 0;
 	}
+      if (TREE_CODE (ce->value) == RAW_DATA_CST)
+	j += RAW_DATA_LENGTH (ce->value);
+      else
+	++j;
     }
 
   /* No more initializers. If the array is unbounded, we are done. Otherwise,

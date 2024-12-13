@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv7-a -mfloat-abi=softfp -mfpu=neon -fno-unsafe-math-optimizations -fdump-rtl-combine" { target { arm*-*-* } } } */
+/* { dg-options "-O2 -mcpu=unset -march=armv7-a -mfloat-abi=softfp -mfpu=neon -fno-unsafe-math-optimizations -fdump-rtl-combine" { target { arm*-*-* } } } */
 /* { dg-options "-O2 -fno-unsafe-math-optimizations -fdump-rtl-combine" { target { ! arm*-*-* } } } */
 
 

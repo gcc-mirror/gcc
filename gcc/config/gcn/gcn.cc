@@ -1175,7 +1175,7 @@ gcn_vec_constant (machine_mode mode, int a)
   if (FLOAT_MODE_P (innermode))
     {
       REAL_VALUE_TYPE rv;
-      real_from_integer (&rv, NULL, a, SIGNED);
+      real_from_integer (&rv, VOIDmode, a, SIGNED);
       tem = const_double_from_real_value (rv, innermode);
     }
   else
@@ -5653,7 +5653,8 @@ gcn_simd_clone_adjust (struct cgraph_node *ARG_UNUSED (node))
 /* Implement TARGET_SIMD_CLONE_USABLE.  */
 
 static int
-gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node))
+gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node),
+		       machine_mode ARG_UNUSED (vector_mode))
 {
   /* We don't need to do anything here because
      gcn_simd_clone_compute_vecsize_and_simdlen currently only returns one
@@ -7934,6 +7935,9 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_vector_alignment_reachable
 #undef  TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P gcn_vector_mode_supported_p
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "AMD GCN"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -70,6 +70,8 @@ const char * const rtx_format[NUM_RTX_CODE] = {
      "i" an integer
          prints the integer
      "n" like "i", but prints entries from `note_insn_name'
+     "L" like "i", but correctly sized to hold a location_t,
+	 which may be configured as 32- or 64-bit.
      "w" an integer of width HOST_BITS_PER_WIDE_INT
          prints the integer
      "s" a pointer to a string
@@ -355,6 +357,7 @@ copy_rtx (rtx orig)
       case 't':
       case 'w':
       case 'i':
+      case 'L':
       case 'p':
       case 's':
       case 'S':
@@ -506,15 +509,12 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	case 'n':
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
-	    {
-#ifndef GENERATOR_FILE
-	      if (((code == ASM_OPERANDS && i == 6)
-		   || (code == ASM_INPUT && i == 1))
-		  && XINT (x, i) == XINT (y, i))
-		break;
-#endif
-	      return false;
-	    }
+	    return false;
+	  break;
+
+	case 'L':
+	  if (XLOC (x, i) != XLOC (y, i))
+	    return false;
 	  break;
 
 	case 'p':

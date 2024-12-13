@@ -127,6 +127,9 @@ enum required_ext
   XTHEADVECTOR_EXT,	/* XTheadVector extension */
   ZVFBFMIN_EXT,		/* Zvfbfmin extension */
   ZVFBFWMA_EXT,		/* Zvfbfwma extension */
+  XSFVQMACCQOQ_EXT,	/* XSFVQMACCQOQ extension */
+  XSFVQMACCDOD_EXT,	/* XSFVQMACCDOD extension */
+  XSFVFNRCLIPXFQF_EXT,	/* XSFVFNRCLIPXFQF extension */
   /* Please update below to isa_name func when add or remove enum type(s).  */
 };
 
@@ -160,6 +163,12 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "zvfbfmin";
     case ZVFBFWMA_EXT:
       return "zvfbfwma";
+    case XSFVQMACCQOQ_EXT:
+      return "xsfvqmaccqoq";
+    case XSFVQMACCDOD_EXT:
+      return "xsfvqmaccdod";
+    case XSFVFNRCLIPXFQF_EXT:
+      return "xsfvfnrclipxfqf";
     default:
       gcc_unreachable ();
   }
@@ -197,6 +206,12 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_ZVFBFMIN;
     case ZVFBFWMA_EXT:
       return TARGET_ZVFBFWMA;
+    case XSFVQMACCQOQ_EXT:
+      return TARGET_XSFVQMACCQOQ;
+    case XSFVQMACCDOD_EXT:
+      return TARGET_XSFVQMACCDOD;
+    case XSFVFNRCLIPXFQF_EXT:
+      return TARGET_XSFVFNRCLIPXFQF;
     default:
       gcc_unreachable ();
   }
@@ -337,6 +352,12 @@ struct function_group_info
 	return TARGET_ZVFBFMIN;
       case ZVFBFWMA_EXT:
 	return TARGET_ZVFBFWMA;
+      case XSFVQMACCQOQ_EXT:
+	return TARGET_XSFVQMACCQOQ;
+      case XSFVQMACCDOD_EXT:
+	return TARGET_XSFVQMACCDOD;
+      case XSFVFNRCLIPXFQF_EXT:
+	return TARGET_XSFVFNRCLIPXFQF;
       default:
         gcc_unreachable ();
     }

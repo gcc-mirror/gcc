@@ -2398,11 +2398,18 @@ model_excess_group_cost (struct model_pressure_group *group,
   int pressure, cl;
 
   cl = ira_pressure_classes[pci];
-  if (delta < 0 && point >= group->limits[pci].point)
+  if (delta < 0)
     {
-      pressure = MAX (group->limits[pci].orig_pressure,
-		      curr_reg_pressure[cl] + delta);
-      return -model_spill_cost (cl, pressure, curr_reg_pressure[cl]);
+      if (point >= group->limits[pci].point)
+	{
+	  pressure = MAX (group->limits[pci].orig_pressure,
+			  curr_reg_pressure[cl] + delta);
+	  return -model_spill_cost (cl, pressure, curr_reg_pressure[cl]);
+	}
+      /* if target prefers fewer spills, return the -ve delta indicating
+	 pressure reduction.  */
+      else if (!param_cycle_accurate_model)
+	  return delta;
     }
 
   if (delta > 0)
@@ -2453,7 +2460,7 @@ model_excess_cost (rtx_insn *insn, bool print_p)
     }
 
   if (print_p)
-    fprintf (sched_dump, "\n");
+    fprintf (sched_dump, " ECC %d\n", cost);
 
   return cost;
 }
@@ -2489,8 +2496,9 @@ model_set_excess_costs (rtx_insn **insns, int count)
   bool print_p;
 
   /* Record the baseECC value for each instruction in the model schedule,
-     except that negative costs are converted to zero ones now rather than
-     later.  Do not assign a cost to debug instructions, since they must
+     except that for targets which prefer wider schedules (more spills)
+     negative costs are converted to zero ones now rather than later.
+     Do not assign a cost to debug instructions, since they must
      not change code-generation decisions.  Experiments suggest we also
      get better results by not assigning a cost to instructions from
      a different block.
@@ -2512,7 +2520,7 @@ model_set_excess_costs (rtx_insn **insns, int count)
 	    print_p = true;
 	  }
 	cost = model_excess_cost (insns[i], print_p);
-	if (cost <= 0)
+	if (param_cycle_accurate_model && cost <= 0)
 	  {
 	    priority = INSN_PRIORITY (insns[i]) - insn_delay (insns[i]) - cost;
 	    priority_base = MAX (priority_base, priority);
@@ -2522,6 +2530,14 @@ model_set_excess_costs (rtx_insn **insns, int count)
       }
   if (print_p)
     fprintf (sched_dump, MODEL_BAR);
+
+  /* Typically in-order cores have a good pipeline scheduling model and the
+     algorithm would try to use that to minimize bubbles, favoring spills.
+     MAX (baseECC, 0) below changes negative baseECC (pressure reduction)
+     to 0 (pressure neutral) thus tending to more spills.
+     Otherwise return.  */
+  if (!param_cycle_accurate_model)
+    return;
 
   /* Use MAX (baseECC, 0) and baseP to calculcate ECC for each
      instruction.  */
@@ -3746,10 +3762,10 @@ model_choose_insn (void)
       count = param_max_sched_ready_insns;
       while (count > 0 && insn)
 	{
-	  fprintf (sched_dump, ";;\t+---   %d [%d, %d, %d, %d]\n",
+	  fprintf (sched_dump, ";;\t+---   %d [%d, %d, %d, %d][%d]\n",
 		   INSN_UID (insn->insn), insn->model_priority,
 		   insn->depth + insn->alap, insn->depth,
-		   INSN_PRIORITY (insn->insn));
+		   INSN_PRIORITY (insn->insn), insn->unscheduled_preds);
 	  count--;
 	  insn = insn->next;
 	}
@@ -3843,11 +3859,11 @@ model_reset_queue_indices (void)
    to sched_dump.  */
 
 static void
-model_dump_pressure_summary (void)
+model_dump_pressure_summary (basic_block bb)
 {
   int pci, cl;
 
-  fprintf (sched_dump, ";; Pressure summary:");
+  fprintf (sched_dump, ";; Pressure summary (bb %d):", bb->index);
   for (pci = 0; pci < ira_pressure_classes_num; pci++)
     {
       cl = ira_pressure_classes[pci];
@@ -3886,7 +3902,7 @@ model_start_schedule (basic_block bb)
   model_curr_point = 0;
   initiate_reg_pressure_info (df_get_live_in (bb));
   if (sched_verbose >= 1)
-    model_dump_pressure_summary ();
+    model_dump_pressure_summary (bb);
 }
 
 /* Free the information associated with GROUP.  */

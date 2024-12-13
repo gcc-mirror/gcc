@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 18, 2024
+GNAT Reference Manual , Dec 12, 2024
 
 AdaCore
 
@@ -30979,7 +30979,7 @@ end P;
 mandatory @code{Path}: the path the compiler uses to access the binary resource.
 @end itemize
 
-@code{Path} is resolved according to the same rules the compiler uses for loading the source files.
+If @code{Path} is a relative path, it is interpreted relatively to the directory of the file that contains the aspect specification.
 
 @cartouche
 @quotation Attention 

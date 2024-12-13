@@ -28,6 +28,7 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+with Ada.Exceptions;
 
 --  This package defines exception types for CHERI-related errors
 
@@ -46,5 +47,34 @@ is
 
    Capability_Tag_Error : exception;
    --  An invalid capability was dereferenced
+
+private
+
+   --  Expose C names for exception identifiers to allow raising from signal
+   --  handlers in init.c.
+
+   Capability_Bound_Error_Id : constant Ada.Exceptions.Exception_Id :=
+                                 Capability_Bound_Error'Identity;
+   pragma Export (C,
+                  Capability_Bound_Error_Id,
+                  "capability_bound_error_id");
+
+   Capability_Permission_Error_Id : constant Ada.Exceptions.Exception_Id :=
+                                 Capability_Permission_Error'Identity;
+   pragma Export (C,
+                  Capability_Permission_Error_Id,
+                  "capability_permission_error_id");
+
+   Capability_Sealed_Error_Id : constant Ada.Exceptions.Exception_Id :=
+                                 Capability_Sealed_Error'Identity;
+   pragma Export (C,
+                  Capability_Sealed_Error_Id,
+                  "capability_sealed_error_id");
+
+   Capability_Tag_Error_Id : constant Ada.Exceptions.Exception_Id :=
+                                 Capability_Tag_Error'Identity;
+   pragma Export (C,
+                  Capability_Tag_Error_Id,
+                  "capability_tag_error_id");
 
 end Interfaces.CHERI.Exceptions;

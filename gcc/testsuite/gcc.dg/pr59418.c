@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Os -g" } */
-/* { dg-options "-march=armv7-a+fp -mfloat-abi=hard -Os -g" { target { arm*-*-* && { ! arm_thumb1 } } } } */
+/* { dg-options "-mcpu=unset -march=armv7-a+fp -mfloat-abi=hard -Os -g" { target { arm*-*-* && { ! arm_thumb1 } } } } */
 
 extern int printf (const char *__format, ...);
 double bar (const char *, int);

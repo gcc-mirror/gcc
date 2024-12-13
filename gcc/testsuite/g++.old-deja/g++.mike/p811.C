@@ -305,7 +305,7 @@ class ostream : public ios
     ostream& seekp(streampos);
     ostream& seekp(streamoff, _seek_dir);
     streampos tellp();
-    ostream& form(const char *format ...);
+    ostream& form(const char *format ...);		// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
     ostream& vform(const char *format, char*  args);
 };
 
@@ -460,7 +460,7 @@ class iostream : public ios {
 	{ return ((ostream*)this)->write((char*)s, n); }
     ostream& write(const void *s, int n)
 	{ return ((ostream*)this)->write((char*)s, n); }
-    ostream& form(const char *format ...);
+    ostream& form(const char *format ...);		// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
     ostream& vform(const char *format, char*  args)
 	{ return ((ostream*)this)->vform(format, args); }
     ostream& seekp(streampos pos) { return ((ostream*)this)->seekp(pos); }

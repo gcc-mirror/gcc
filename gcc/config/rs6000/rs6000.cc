@@ -17362,16 +17362,21 @@ rs6000_hash_constant (rtx k)
 	result = result * 613 + (unsigned) XINT (k, fidx);
 	break;
       case 'w':
-	if (sizeof (unsigned) >= sizeof (HOST_WIDE_INT))
-	  result = result * 613 + (unsigned) XWINT (k, fidx);
-	else
-	  {
-	    size_t i;
-	    for (i = 0; i < sizeof (HOST_WIDE_INT) / sizeof (unsigned); i++)
-	      result = result * 613 + (unsigned) (XWINT (k, fidx)
-						  >> CHAR_BIT * i);
-	  }
-	break;
+      case 'L':
+	{
+	  const HOST_WIDE_INT val
+	    = (format[fidx] == 'L' ? XLOC (k, fidx) : XWINT (k, fidx));
+	  if (sizeof (unsigned) >= sizeof (HOST_WIDE_INT))
+	    result = result * 613 + (unsigned) val;
+	  else
+	    {
+	      size_t i;
+	      for (i = 0; i < sizeof (HOST_WIDE_INT) / sizeof (unsigned); i++)
+		result = result * 613 + (unsigned) (val
+						    >> CHAR_BIT * i);
+	    }
+	  break;
+	}
       case '0':
 	break;
       default:
@@ -29307,6 +29312,9 @@ rs6000_opaque_type_invalid_use_p (gimple *stmt)
 
   return false;
 }
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "PowerPC"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

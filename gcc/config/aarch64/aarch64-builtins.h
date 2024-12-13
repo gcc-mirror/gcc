@@ -66,7 +66,7 @@ enum aarch64_simd_type
 };
 #undef ENTRY
 
-struct GTY(()) aarch64_simd_type_info
+struct aarch64_simd_type_info
 {
   enum aarch64_simd_type type;
 
@@ -83,12 +83,6 @@ struct GTY(()) aarch64_simd_type_info
      will get default mangled names.  */
   const char *mangle;
 
-  /* Internal type.  */
-  tree itype;
-
-  /* Element type.  */
-  tree eltype;
-
   /* Machine mode the internal type maps to.  */
   enum machine_mode mode;
 
@@ -96,6 +90,23 @@ struct GTY(()) aarch64_simd_type_info
   enum aarch64_type_qualifiers q;
 };
 
-extern aarch64_simd_type_info aarch64_simd_types[];
+/* This is in a different structure than aarch64_simd_type_info because we do
+   not want to reset the static members of aarch64_simd_type_info to their
+   default value.  We only want the tree types to be GC-ed.
+   This is necessary for libgccjit which can run multiple times in the same
+   process.  If the static values were GC-ed, the second run would ICE/segfault
+   because of their invalid value.
+ */
+struct GTY(()) aarch64_simd_type_info_trees
+{
+  /* Internal type.  */
+  tree itype;
+
+  /* Element type.  */
+  tree eltype;
+};
+
+extern const aarch64_simd_type_info aarch64_simd_types[];
+extern aarch64_simd_type_info_trees aarch64_simd_types_trees[];
 
 #endif

@@ -876,7 +876,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base(std::in_place, std::forward<_Up>(__t)) { }
 
       template<typename _Up>
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, const _Up&>
 	  && __construct_from_contained_value<_Up>
 	constexpr explicit(!is_convertible_v<const _Up&, _Tp>)
@@ -888,7 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, _Up>
 	  && __construct_from_contained_value<_Up>
 	constexpr explicit(!is_convertible_v<_Up, _Tp>)
@@ -1043,7 +1043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up>
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, const _Up&>
 	  && is_assignable_v<_Tp&, const _Up&>
 	  && (!__converts_from_optional<_Tp, _Up>::value)
@@ -1077,7 +1077,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up>
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, _Up>
 	  && is_assignable_v<_Tp&, _Up>
 	  && (!__converts_from_optional<_Tp, _Up>::value)

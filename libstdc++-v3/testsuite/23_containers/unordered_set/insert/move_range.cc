@@ -39,7 +39,7 @@ void test01()
 	   std::make_move_iterator(ref.end()));
 
   VERIFY( s.size() == ref.size() );
-  VERIFY( counter_type::move_count == ref.size() );
+  VERIFY( size_t(counter_type::move_count) == ref.size() );
 }
 
 int main()

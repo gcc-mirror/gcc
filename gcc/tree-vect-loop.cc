@@ -2499,10 +2499,8 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
 
 static opt_result
 vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
-			   vec<data_reference_p> *datarefs,
-			   unsigned int *n_stmts)
+			   vec<data_reference_p> *datarefs)
 {
-  *n_stmts = 0;
   for (unsigned i = 0; i < loop->num_nodes; i++)
     for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2510,7 +2508,6 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	gimple *stmt = gsi_stmt (gsi);
 	if (is_gimple_debug (stmt))
 	  continue;
-	++(*n_stmts);
 	opt_result res = vect_find_stmt_data_reference (loop, stmt, datarefs,
 							NULL, 0);
 	if (!res)
@@ -2786,8 +2783,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
     {
       opt_result res
 	= vect_get_datarefs_in_loop (loop, LOOP_VINFO_BBS (loop_vinfo),
-				     &LOOP_VINFO_DATAREFS (loop_vinfo),
-				     &LOOP_VINFO_N_STMTS (loop_vinfo));
+				     &LOOP_VINFO_DATAREFS (loop_vinfo));
       if (!res)
 	{
 	  if (dump_enabled_p ())
@@ -2898,7 +2894,7 @@ start_over:
     {
       /* Check the SLP opportunities in the loop, analyze and build
 	 SLP trees.  */
-      ok = vect_analyze_slp (loop_vinfo, LOOP_VINFO_N_STMTS (loop_vinfo),
+      ok = vect_analyze_slp (loop_vinfo, loop_vinfo->stmt_vec_infos.length (),
 			     slp == 1);
       if (!ok)
 	return ok;
@@ -3005,10 +3001,9 @@ start_over:
   ok = vect_analyze_loop_operations (loop_vinfo);
   if (!ok)
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "bad operation or unsupported loop bound.\n");
-      return ok;
+      ok = opt_result::failure_at (vect_location,
+				   "bad operation or unsupported loop bound\n");
+      goto again;
     }
 
   /* For now, we don't expect to mix both masking and length approaches for one
@@ -9193,6 +9188,20 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 	      tree neutral_op
 		= neutral_op_for_reduction (TREE_TYPE (vectype_out),
 					    code, initial_value);
+	      /* Try to simplify the vector initialization by applying an
+		 adjustment after the reduction has been performed.  This
+		 can also break a critical path but on the other hand
+		 requires to keep the initial value live across the loop.  */
+	      if (neutral_op
+		  && initial_values.length () == 1
+		  && !reduc_info->reused_accumulator
+		  && STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+		  && !operand_equal_p (neutral_op, initial_values[0]))
+		{
+		  STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info)
+		    = initial_values[0];
+		  initial_values[0] = neutral_op;
+		}
 	      get_initial_defs_for_reduction (loop_vinfo, reduc_info,
 					      &vec_initial_defs, vec_num,
 					      stmts.length (), neutral_op);

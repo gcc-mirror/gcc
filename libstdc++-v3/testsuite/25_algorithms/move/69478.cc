@@ -32,7 +32,8 @@ test01()
     trivial_rvalstruct(trivial_rvalstruct&&) = default;
     trivial_rvalstruct& operator=(trivial_rvalstruct&&) = default;
   };
-  static_assert(std::is_trivial<trivial_rvalstruct>::value, "");
+  static_assert(std::is_trivially_default_constructible<trivial_rvalstruct>::value, "");
+  static_assert(std::is_trivially_copyable<trivial_rvalstruct>::value, "");
 
   trivial_rvalstruct a[1], b[1];
   std::move(a, a + 1, b);

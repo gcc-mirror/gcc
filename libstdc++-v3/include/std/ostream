@@ -1028,8 +1028,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     println(ostream& __os, format_string<_Args...> __fmt, _Args&&... __args)
     {
-      std::print(__os, "{}\n",
-		 std::format(__fmt, std::forward<_Args>(__args)...));
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4088. println ignores the locale imbued in std::ostream
+      std::print(__os, "{}\n", std::format(__os.getloc(), __fmt,
+					   std::forward<_Args>(__args)...));
     }
 
   // Defined for C++26, supported as an extension to C++23.

@@ -416,7 +416,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstring-compare
 -Wno-stringop-overflow -Wno-stringop-overread
 -Wno-stringop-truncation  -Wstrict-flex-arrays
--Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]}
+-Wsuggest-attribute=@var{attribute-name}
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand
 -Wsystem-headers  -Wtautological-compare  -Wtrailing-whitespace
@@ -605,7 +605,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-peephole2  -fno-printf-return-value  -fno-sched-interblock
 -fno-sched-spec  -fno-signed-zeros
 -fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss
--fomit-frame-pointer  -foptimize-sibling-calls
+-fomit-frame-pointer  -foptimize-crc  -foptimize-sibling-calls
 -fpartial-inlining  -fpeel-loops  -fpredictive-commoning
 -fprefetch-loop-arrays
 -fprofile-correction
@@ -693,7 +693,7 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers
 -fexec-charset=@var{charset}  -fextended-identifiers
--finput-charset=@var{charset}  -flarge-source-files
+-finput-charset=@var{charset}
 -fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth}
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion
@@ -904,9 +904,9 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}
--mn_flash=@var{size}  -mno-interrupts
+-mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
--mrodata-in-ram  -mfract-convert-truncate  -msplit-bit-shift
+-mrodata-in-ram  -msplit-bit-shift  -msplit-ldst
 -mshort-calls  -mskip-bug  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
@@ -2980,16 +2980,22 @@ member for the purpose of accessing the elements of such an array.  The value
 of @var{level} controls the level of strictness.
 
 @option{-fstrict-flex-arrays} is equivalent to
-@option{-fstrict-flex-arrays=3}, which is the strictest; all
-trailing arrays of structures are treated as flexible array members.
+@option{-fstrict-flex-arrays=3}, which is the strictest;
+a trailing array is treated as a flexible array member only when
+it is declared as a flexible array member per C99 standard onwards.
 
 The negative form @option{-fno-strict-flex-arrays} is equivalent to
 @option{-fstrict-flex-arrays=0}, which is the least strict.  In this
-case a trailing array is treated as a flexible array member only when
-it is declared as a flexible array member per C99 standard onwards.
+case all trailing arrays of structures are treated as flexible array members.
 
-The possible values of @var{level} are the same as for the
-@code{strict_flex_array} attribute (@pxref{Variable Attributes}).
+There are two more levels in between 0 and 3, which are provided to
+support older code that uses the GCC zero-length array extension
+(@samp{[0]}) or one-element array as flexible array members
+(@samp{[1]}).  When @var{level} is 1, the trailing array is treated as
+a flexible array member when it is declared as either @samp{[]},
+@samp{[0]}, or @samp{[1]}.  When @var{level} is 2, the trailing array
+is treated as a flexible array member when it is declared as either
+@samp{[]}, or @samp{[0]}.
 
 You can control this behavior for a specific trailing array field of a
 structure by using the variable attribute @code{strict_flex_array} attribute
@@ -4067,6 +4073,22 @@ default in C++23, or with explicit @option{-Wdeprecated}.
 @smallexample
 string operator "" _i18n(const char*, std::size_t); // deprecated
 string operator ""_i18n(const char*, std::size_t); // preferred
+@end smallexample
+
+@opindex Wdeprecated-variadic-comma-omission
+@opindex Wno-deprecated-variadic-comma-omission
+@item -Wdeprecated-variadic-comma-omission @r{(C++ and Objective-C++ only)}
+Warn that omitting a comma before the varargs @code{...} at the end of
+a function parameter list is deprecated.  This warning is enabled by
+default in C++26, or with explicit @option{-Wdeprecated}.
+
+@smallexample
+void f1(int...); // deprecated
+void f1(int, ...); // preferred
+template <typename ...T>
+void f2(T...); // ok
+template <typename ...T>
+void f3(T......); // deprecated
 @end smallexample
 
 @opindex Welaborated-enum-base
@@ -8338,9 +8360,9 @@ even without optimization.
 
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}returns_nonnull@r{|}
+@item -Wsuggest-attribute=@var{attribute-name}
 Warn for cases where adding an attribute may be beneficial. The
-attributes currently supported are listed below.
+@var{attribute-name}s currently supported are listed below.
 
 @table @gcctabopt
 @opindex Wsuggest-attribute=pure
@@ -8353,16 +8375,18 @@ attributes currently supported are listed below.
 @opindex Wno-missing-noreturn
 @opindex Wsuggest-attribute=malloc
 @opindex Wno-suggest-attribute=malloc
+@opindex Wsuggest-attribute=returns_nonnull
+@opindex Wno-suggest-attribute=returns_nonnull
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
 @itemx -Wsuggest-attribute=noreturn
 @itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
 @itemx -Wsuggest-attribute=returns_nonnull
-@itemx -Wno-suggest-attribute=returns_nonnull
 
 Warn about functions that might be candidates for attributes
-@code{pure}, @code{const}, @code{noreturn}, @code{malloc} or @code{returns_nonnull}. The compiler
+@code{pure}, @code{const}, @code{noreturn}, @code{malloc} or
+@code{returns_nonnull}.  The compiler
 only warns for functions visible in other compilation units or (in the case of
 @code{pure} and @code{const}) if it cannot prove that the function returns
 normally. A function returns normally if it doesn't contain an infinite loop or
@@ -10348,8 +10372,9 @@ In C++, explicitly specifying @option{-Wdeprecated} also enables
 warnings about some features that are deprecated in later language
 standards, specifically @option{-Wcomma-subscript},
 @option{-Wvolatile}, @option{-Wdeprecated-enum-float-conversion},
-@option{-Wdeprecated-enum-enum-conversion}, and
-@option{-Wdeprecated-literal-operator}.
+@option{-Wdeprecated-enum-enum-conversion},
+@option{-Wdeprecated-literal-operator}, and
+@option{-Wdeprecated-variadic-comma-omission}.
 
 @opindex Wno-deprecated-declarations
 @opindex Wdeprecated-declarations
@@ -12670,6 +12695,7 @@ also turns on the following optimization flags:
 -fipa-ra  -fipa-sra  -fipa-vrp
 -fisolate-erroneous-paths-dereference
 -flra-remat
+-foptimize-crc
 -foptimize-sibling-calls
 -foptimize-strlen
 -fpartial-inlining
@@ -12842,6 +12868,19 @@ is used in all functions.  Several targets always omit the frame pointer in
 leaf functions.
 
 Enabled by default at @option{-O1} and higher.
+
+@opindex foptimize-crc
+@item -foptimize-crc
+Detect loops calculating CRC (performing polynomial long division) and
+replace them with a faster implementation.  Detect 8, 16, 32, and 64 bit CRC,
+with a constant polynomial without the leading 1 bit,
+for both bit-forward and bit-reversed cases.
+If the target supports a CRC instruction and the polynomial used in the source
+code matches the polynomial used in the CRC instruction, generate that CRC
+instruction.  Otherwise, if the target supports a carry-less-multiplication
+instruction, generate CRC using it; otherwise generate table-based CRC.
+
+Enabled by default at @option{-O2} and higher.
 
 @opindex foptimize-sibling-calls
 @item -foptimize-sibling-calls
@@ -16469,6 +16508,9 @@ Switch initialization conversion refuses to create arrays that are
 bigger than @option{switch-conversion-max-branch-ratio} times the number of
 branches in the switch.
 
+@item switch-lower-slow-alg-max-cases
+Maximum number of cases for slow switch lowering algorithms to be used.
+
 @item max-partial-antic-length
 Maximum length of the partial antic set computed during the tree
 partial redundancy elimination optimization (@option{-ftree-pre}) when
@@ -17091,6 +17133,11 @@ diagnostics.
 @item store-merging-max-size
 Maximum size of a single store merging region in bytes.
 
+@item store-forwarding-max-distance
+Maximum number of instruction distance that a small store forwarded to a larger
+load may stall. Value '0' disables the cost checks for the
+avoid-store-forwarding pass.
+
 @item hash-table-verification-limit
 The number of elements for which hash table verification is done
 for each searched element.
@@ -17179,6 +17226,16 @@ Control whether the @option{-fopt-info-omp-note} and applicable
 With @option{--param=openacc-privatization=quiet}, don't diagnose.
 This is the current default.
 With @option{--param=openacc-privatization=noisy}, do diagnose.
+
+@item cycle-accurate-model
+Specifies whether GCC should assume that the scheduling description is mostly
+a cycle-accurate model of the target processor, where the code is intended to
+run on, in the absence of cache misses.  Nonzero means that the selected
+scheduling model is accurate and likely describes an in-order processor,
+and that scheduling will aggressively spill to try and fill any pipeline
+bubbles.  This is the current default.  Zero could mean scheduling descrption
+might not be available/accurate or perhaps not applicale at all such as for
+modern out-of-order processors.
 
 @end table
 
@@ -17722,8 +17779,10 @@ the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
 The option cannot be combined with @option{-fsanitize=thread} or
-@option{-fsanitize=hwaddress}.  Note that the only target
-@option{-fsanitize=hwaddress} is currently supported on is AArch64.
+@option{-fsanitize=hwaddress}.  Note that the only targets
+@option{-fsanitize=hwaddress} is currently supported on are x86-64
+(only with @code{-mlam=u48} or @code{-mlam=u57} options) and AArch64,
+in both cases only in ABIs with 64-bit pointers.
 
 To get more accurate stack traces, it is possible to use options such as
 @option{-O0}, @option{-O1}, or @option{-Og} (which, for instance, prevent
@@ -18730,21 +18789,6 @@ This option may be useful in conjunction with the @option{-B} or
 @option{-wrapper} options to specify an alternate preprocessor or
 perform additional processing of the program source between
 normal preprocessing and compilation.
-
-@opindex flarge-source-files
-@item -flarge-source-files
-Adjust GCC to expect large source files, at the expense of slower
-compilation and higher memory usage.
-
-Specifically, GCC normally tracks both column numbers and line numbers
-within source files and it normally prints both of these numbers in
-diagnostics.  However, once it has processed a certain number of source
-lines, it stops tracking column numbers and only tracks line numbers.
-This means that diagnostics for later lines do not include column numbers.
-It also means that options like @option{-Wmisleading-indentation} cease to work
-at that point, although the compiler prints a note if this happens.
-Passing @option{-flarge-source-files} significantly increases the number
-of source lines that GCC can process before it stops tracking columns.
 
 @end table
 
@@ -21494,7 +21538,9 @@ This option requires binutils 2.26 or newer.
 @itemx -mno-fix-cortex-a53-835769
 Enable or disable the workaround for the ARM Cortex-A53 erratum number 835769.
 This involves inserting a NOP instruction between memory instructions and
-64-bit integer multiply-accumulate instructions.
+64-bit integer multiply-accumulate instructions.  This flag will be ignored if
+an architecture or cpu is specified on the command line which does not need the
+workaround.
 
 @opindex mfix-cortex-a53-843419
 @opindex mno-fix-cortex-a53-843419
@@ -21502,7 +21548,10 @@ This involves inserting a NOP instruction between memory instructions and
 @itemx -mno-fix-cortex-a53-843419
 Enable or disable the workaround for the ARM Cortex-A53 erratum number 843419.
 This erratum workaround is made at link time and this will only pass the
-corresponding flag to the linker.
+corresponding flag to the linker.  This flag will be ignored if
+an architecture or cpu is specified on the command line which does not need the
+workaround.
+
 
 @opindex mlow-precision-recip-sqrt
 @opindex mno-low-precision-recip-sqrt
@@ -21952,8 +22001,27 @@ Enable support for Armv8.9-a/9.4-a translation hardening extension.
 Enable the RCpc3 (Release Consistency) extension.
 @item fp8
 Enable the fp8 (8-bit floating point) extension.
+@item fp8fma
+Enable the fp8 (8-bit floating point) multiply accumulate extension.
+@item ssve-fp8fma
+Enable the fp8 (8-bit floating point) multiply accumulate extension in streaming
+mode.
+@item fp8dot4
+Enable the fp8 (8-bit floating point) to single-precision 4-way dot product
+extension.
+@item ssve-fp8dot4
+Enable the fp8 (8-bit floating point) to single-precision 4-way dot product
+extension in streaming mode.
+@item fp8dot2
+Enable the fp8 (8-bit floating point) to half-precision 2-way dot product
+extension.
+@item ssve-fp8dot2
+Enable the fp8 (8-bit floating point) to half-precision 2-way dot product
+extension in streaming mode.
 @item faminmax
 Enable the Floating Point Absolute Maximum/Minimum extension.
+@item lut
+Enable the Lookup Table extension.
 @item sve-b16b16
 Enable the SVE non-widening brain floating-point (@code{bf16}) extension.
 This only has an effect when @code{sve2} or @code{sme2} are also enabled.
@@ -23690,7 +23758,8 @@ on @samp{cortex-m52} and @samp{cortex-m85}.
 
 @item +nomve
 Disable the M-Profile Vector Extension (MVE) integer and single precision
-floating-point instructions on @samp{cortex-m52}, @samp{cortex-m55} and @samp{cortex-m85}.
+floating-point instructions on @samp{cortex-m52}, @samp{cortex-m55} and
+@samp{cortex-m85}.
 
 @item +nomve.fp
 Disable the M-Profile Vector Extension (MVE) single precision floating-point
@@ -23698,7 +23767,8 @@ instructions on @samp{cortex-m52}, @samp{cortex-m55} and @samp{cortex-m85}.
 
 @item +cdecp0, +cdecp1, ... , +cdecp7
 Enable the Custom Datapath Extension (CDE) on selected coprocessors according
-to the numbers given in the options in the range 0 to 7 on @samp{cortex-m52} and @samp{cortex-m55}.
+to the numbers given in the options in the range 0 to 7 on @samp{cortex-m52},
+@samp{cortex-m55} and @samp{star-mc1}.
 
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
@@ -24298,12 +24368,17 @@ sbiw r26, const   ; X -= const
 
 @opindex msplit-bit-shift
 @item -msplit-bit-shift
-Split multi-byte shifts into a shift with a byte offset and a residual
-shift with a non-byte offset.  This optimization is turned on per default
-for @option{-O2} and higher, including @option{-Os} but excluding
-@option{-Oz}.  To date, only 4-byte shifts with a shift offset of
-at least 17 are split.  Splitting of shifts with an offset that is
+Split multi-byte shifts with a constant offset into a shift with
+a byte offset and a residual shift with a non-byte offset.
+This optimization is turned on per default for @option{-O2} and higher,
+including @option{-Os} but excluding @option{-Oz}.
+Splitting of shifts with a constant offset that is
 a multiple of 8 is controlled by @option{-mfuse-move}.
+@opindex msplit-ldst
+
+@item -msplit-ldst
+Split multi-byte loads and stores into several byte loads and stores.
+This optimization is turned on per default for @option{-O2} and higher.
 
 @opindex mtiny-stack
 @item -mtiny-stack
@@ -29967,10 +30042,12 @@ supported.
 
 @opindex march
 @item -march=@var{architecture-string}
-Generate code for the specified PTX ISA target architecture
-(e.g.@: @samp{sm_35}).  Valid architecture strings are @samp{sm_30},
-@samp{sm_35}, @samp{sm_53}, @samp{sm_70}, @samp{sm_75} and
-@samp{sm_80}.
+Generate code for the specified PTX ISA target architecture.
+Valid architecture strings are
+@samp{sm_30}, @samp{sm_35}, @samp{sm_37},
+@samp{sm_52}, @samp{sm_53},
+@samp{sm_70}, @samp{sm_75},
+@samp{sm_80}, and @samp{sm_89}.
 The default depends on how the compiler has been configured, see
 @option{--with-arch}.
 
@@ -29991,9 +30068,13 @@ capable.  For instance, for @option{-march-map=sm_50} select
 
 @opindex mptx
 @item -mptx=@var{version-string}
-Generate code for the specified PTX ISA version (e.g.@: @samp{7.0}).
-Valid version strings include @samp{3.1}, @samp{6.0}, @samp{6.3}, and
-@samp{7.0}.  The default PTX ISA version is 6.0, unless a higher
+Generate code for the specified PTX ISA version.
+Valid version strings are
+@samp{3.1},
+@samp{4.1}, @samp{4.2},
+@samp{6.0}, @samp{6.3},
+@samp{7.0}, and @samp{7.8}.
+The default PTX ISA version is 6.0, unless a higher
 version is required for specified PTX ISA target architecture via
 option @option{-march=}.
 
@@ -31027,8 +31108,10 @@ element-misaligned vector memory access.
 @item -mcmodel=medlow
 Generate code for the medium-low code model. The program and its statically
 defined symbols must lie within a single 2 GiB address range and must lie
-between absolute addresses @minus{}2 GiB and +2 GiB. Programs can be
-statically or dynamically linked. This is the default code model.
+between absolute addresses @minus{}2 GiB and +2 GiB. Programs can be statically
+or dynamically linked. This is the default code model unless GCC has been
+configured with @option{--with-cmodel=} specifying a different default code
+model.
 
 @opindex mcmodel=medany
 @item -mcmodel=medany
@@ -32301,11 +32384,9 @@ The @option{-mno-compat-align-parm} option is the default.
 @opindex mstack-protector-guard
 @opindex mstack-protector-guard-reg
 @opindex mstack-protector-guard-offset
-@opindex mstack-protector-guard-symbol
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-reg=@var{reg}
 @itemx -mstack-protector-guard-offset=@var{offset}
-@itemx -mstack-protector-guard-symbol=@var{symbol}
 Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default with GNU libc version 2.4 or later).
@@ -32315,8 +32396,7 @@ With the latter choice the options
 @option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
 which register to use as base register for reading the canary, and from what
 offset from that base register. The default for those is as specified in the
-relevant ABI.  @option{-mstack-protector-guard-symbol=@var{symbol}} overrides
-the offset with a symbol reference to a canary in the TLS block.
+relevant ABI.
 
 @opindex mpcrel
 @opindex mno-pcrel
@@ -36141,9 +36221,11 @@ Split 32-byte AVX unaligned load and store.
 @opindex mstack-protector-guard
 @opindex mstack-protector-guard-reg
 @opindex mstack-protector-guard-offset
+@opindex mstack-protector-guard-symbol
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-reg=@var{reg}
 @itemx -mstack-protector-guard-offset=@var{offset}
+@itemx -mstack-protector-guard-symbol=@var{symbol}
 Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default).  This option has effect only when
@@ -36155,6 +36237,9 @@ With the latter choice the options
 which segment register (@code{%fs} or @code{%gs}) to use as base register
 for reading the canary, and from what offset from that base register.
 The default for those is as specified in the relevant ABI.
+
+@option{-mstack-protector-guard-symbol=@var{symbol}} overrides
+the offset with a symbol reference to a canary in the TLS block.
 
 @opindex mgeneral-regs-only
 @item -mgeneral-regs-only

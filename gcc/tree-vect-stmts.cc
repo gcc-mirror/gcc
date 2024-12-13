@@ -4297,7 +4297,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  this_badness += floor_log2 (num_calls) * 4096;
 	if (n->simdclone->inbranch)
 	  this_badness += 8192;
-	int target_badness = targetm.simd_clone.usable (n);
+
+	/* If STMT_VINFO_VECTYPE has not been set yet pass the general vector
+	   mode,  which for targets that use it will determine what ISA we can
+	   vectorize this code with.  */
+	machine_mode vector_mode = vinfo->vector_mode;
+	if (vectype)
+	  vector_mode = TYPE_MODE (vectype);
+	int target_badness = targetm.simd_clone.usable (n, vector_mode);
 	if (target_badness < 0)
 	  continue;
 	this_badness += target_badness * 512;
@@ -4957,7 +4964,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		{
 		  vec_loop_masks *loop_masks = &LOOP_VINFO_MASKS (loop_vinfo);
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
-					     ncopies, vectype, j);
+					     ncopies, masktype, j);
 		}
 	      else
 		mask = vect_build_all_ones_mask (vinfo, stmt_info, masktype);

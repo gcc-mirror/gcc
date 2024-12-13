@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-ssa-sccvn.h"
 #include "cfganal.h"
+#include "gcc-urlifier.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables.  The pass first collects the set of
@@ -455,6 +456,7 @@ maybe_warn_read_write_only (tree fndecl, gimple *stmt, tree arg, tree ptr)
       const char* const access_str =
 	TREE_STRING_POINTER (access->to_external_string ());
 
+      auto_urlify_attributes sentinel;
       location_t parmloc = DECL_SOURCE_LOCATION (parm);
       inform (parmloc, "accessing argument %u of a function declared with "
 	      "attribute %qs",
@@ -876,6 +878,7 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
 	  const char* const access_str =
 	    TREE_STRING_POINTER (access->to_external_string ());
 
+	  auto_urlify_attributes sentinel;
 	  if (fndecl)
 	    {
 	      location_t loc = DECL_SOURCE_LOCATION (fndecl);

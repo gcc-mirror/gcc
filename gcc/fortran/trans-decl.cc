@@ -830,9 +830,6 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       tree alloc = gfc_conv_constant_to_tree (n->u2.allocator);
       tree align = (n->u.align ? gfc_conv_constant_to_tree (n->u.align)
 			       : NULL_TREE);
-      if (align != NULL_TREE)
-	SET_DECL_ALIGN (decl, MAX (tree_to_uhwi (align),
-			DECL_ALIGN_UNIT (decl)) * BITS_PER_UNIT);
       DECL_ATTRIBUTES (decl)
 	= tree_cons (get_identifier ("omp allocate"),
 		     build_tree_list (alloc, align), DECL_ATTRIBUTES (decl));

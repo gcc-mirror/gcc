@@ -27,11 +27,12 @@
 ---
 Language: Cpp
 AccessModifierOffset: -2
-AlwaysBreakAfterReturnType: TopLevel
+AlwaysBreakAfterReturnType: TopLevelDefinitions
 BinPackArguments: true
 BinPackParameters: true
 BraceWrapping:
   AfterClass: true
+  AfterCaseLabel: true
   AfterControlStatement: true
   AfterEnum: true
   AfterFunction: true
@@ -41,6 +42,7 @@ BraceWrapping:
   AfterUnion: true
   BeforeCatch: true
   BeforeElse: true
+  BeforeWhile: true
   IndentBraces: true
   SplitEmptyFunction: false
 BreakBeforeBinaryOperators: All

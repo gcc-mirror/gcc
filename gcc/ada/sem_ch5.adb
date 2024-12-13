@@ -3303,7 +3303,10 @@ package body Sem_Ch5 is
                   --  set the appropriate flag to remove the loop entirely
                   --  during expansion.
 
-                  Set_Is_Null_Loop (Loop_Nod);
+                  if Nkind (Loop_Nod) = N_Loop_Statement then
+                     Set_Is_Null_Loop (Loop_Nod);
+                  end if;
+
                   Null_Range := True;
                end if;
 
@@ -3311,24 +3314,25 @@ package body Sem_Ch5 is
                --  instance, since in practice they tend to be dubious in these
                --  cases since they can result from intended parameterization.
 
-               if not Inside_A_Generic and then not In_Instance then
+               if Comes_From_Source (N)
+                 and then not Inside_A_Generic
+                 and then not In_Instance
+               then
 
                   --  Specialize msg if invalid values could make the loop
                   --  non-null after all.
 
                   if Null_Range then
-                     if Comes_From_Source (N) then
-                        Error_Msg_N
-                          ("??loop range is null, loop will not execute", DS);
-                     end if;
+                     Error_Msg_N
+                       ("??loop range is null, loop will not execute", DS);
 
                   --  Here is where the loop could execute because of
                   --  invalid values, so issue appropriate message.
 
-                  elsif Comes_From_Source (N) then
+                  else
                      Error_Msg_N
-                       ("??loop range may be null, loop may not execute",
-                        DS);
+                       ("??loop range may be null, loop may not execute", DS);
+
                      Error_Msg_N
                        ("??can only execute if invalid values are present",
                         DS);
@@ -3339,7 +3343,9 @@ package body Sem_Ch5 is
                --  since it is likely that these warnings will be inappropriate
                --  if the loop never actually executes, which is likely.
 
-               Set_Suppress_Loop_Warnings (Loop_Nod);
+               if Nkind (Loop_Nod) = N_Loop_Statement then
+                  Set_Suppress_Loop_Warnings (Loop_Nod);
+               end if;
 
                --  The other case for a warning is a reverse loop where the
                --  upper bound is the integer literal zero or one, and the
@@ -3441,12 +3447,13 @@ package body Sem_Ch5 is
                           Subtype_Mark (DS));
                      end if;
 
-                     Set_Is_Null_Loop (Loop_Nod);
-                     Null_Range := True;
+                     if Nkind (Loop_Nod) = N_Loop_Statement then
+                        Set_Is_Null_Loop (Loop_Nod);
 
-                     --  Suppress other warnings about the body of the loop, as
-                     --  it will never execute.
-                     Set_Suppress_Loop_Warnings (Loop_Nod);
+                        --  Suppress other warnings about the body of the loop,
+                        --  as it will never execute.
+                        Set_Suppress_Loop_Warnings (Loop_Nod);
+                     end if;
                   end if;
                end;
             end if;

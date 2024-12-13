@@ -338,6 +338,9 @@ extern rtx_insn *current_output_insn;
    The precise value is the insn being output, to pass to error_for_asm.  */
 extern const rtx_insn *this_is_asm_operands;
 
+/* Number of operands of this insn, for an `asm' with operands.  */
+extern unsigned int insn_noperands;
+
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */
 extern int size_directive_output;

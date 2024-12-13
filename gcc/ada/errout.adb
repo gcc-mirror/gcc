@@ -2372,7 +2372,8 @@ package body Errout is
          Write_Str ("{""file"":""");
          if Full_Path_Name_For_Brief_Errors then
             Write_JSON_Escaped_String
-              (System.OS_Lib.Normalize_Pathname (Get_Name_String (Name)));
+              (System.OS_Lib.Normalize_Pathname
+                 (Get_Name_String (Name), Resolve_Links => False));
          else
             Write_Name (Name);
          end if;

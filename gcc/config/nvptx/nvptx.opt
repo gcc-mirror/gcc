@@ -56,7 +56,7 @@ Target Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
 
 misa=
-Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_unset)
+Target RejectNegative Negative(misa=) ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_unset)
 Specify the PTX ISA target architecture to use.
 
 march=
@@ -73,13 +73,13 @@ march-map=sm_35
 Target RejectNegative Alias(misa=,sm_35)
 
 march-map=sm_37
-Target RejectNegative Alias(misa=,sm_35)
+Target RejectNegative Alias(misa=,sm_37)
 
 march-map=sm_50
-Target RejectNegative Alias(misa=,sm_35)
+Target RejectNegative Alias(misa=,sm_37)
 
 march-map=sm_52
-Target RejectNegative Alias(misa=,sm_35)
+Target RejectNegative Alias(misa=,sm_52)
 
 march-map=sm_53
 Target RejectNegative Alias(misa=,sm_53)
@@ -112,13 +112,13 @@ march-map=sm_87
 Target RejectNegative Alias(misa=,sm_80)
 
 march-map=sm_89
-Target RejectNegative Alias(misa=,sm_80)
+Target RejectNegative Alias(misa=,sm_89)
 
 march-map=sm_90
-Target RejectNegative Alias(misa=,sm_80)
+Target RejectNegative Alias(misa=,sm_89)
 
 march-map=sm_90a
-Target RejectNegative Alias(misa=,sm_80)
+Target RejectNegative Alias(misa=,sm_89)
 
 Enum
 Name(ptx_version) Type(enum ptx_version)
@@ -126,6 +126,12 @@ Known PTX ISA versions (for use with the -mptx= option):
 
 EnumValue
 Enum(ptx_version) String(3.1) Value(PTX_VERSION_3_1)
+
+EnumValue
+Enum(ptx_version) String(4.1) Value(PTX_VERSION_4_1)
+
+EnumValue
+Enum(ptx_version) String(4.2) Value(PTX_VERSION_4_2)
 
 EnumValue
 Enum(ptx_version) String(6.0) Value(PTX_VERSION_6_0)
@@ -137,10 +143,13 @@ EnumValue
 Enum(ptx_version) String(7.0) Value(PTX_VERSION_7_0)
 
 EnumValue
+Enum(ptx_version) String(7.8) Value(PTX_VERSION_7_8)
+
+EnumValue
 Enum(ptx_version) String(_) Value(PTX_VERSION_default)
 
 mptx=
-Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_unset)
+Target RejectNegative Negative(mptx=) ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_unset)
 Specify the PTX ISA version to use.
 
 minit-regs=

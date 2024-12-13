@@ -9,16 +9,16 @@ void test_nesting (void)
 }
 
 /* { dg-begin-multiline-output "" }
-  • note: child 0
-    • note: grandchild 0 0
-    • note: grandchild 0 1
-    • note: grandchild 0 2
-  • note: child 1
-    • note: grandchild 1 0
-    • note: grandchild 1 1
-    • note: grandchild 1 2
-  • note: child 2
-    • note: grandchild 2 0
-    • note: grandchild 2 1
-    • note: grandchild 2 2
+  • child 0
+    • grandchild 0 0
+    • grandchild 0 1
+    • grandchild 0 2
+  • child 1
+    • grandchild 1 0
+    • grandchild 1 1
+    • grandchild 1 2
+  • child 2
+    • grandchild 2 0
+    • grandchild 2 1
+    • grandchild 2 2
    { dg-end-multiline-output "" } */

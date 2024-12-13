@@ -23,7 +23,8 @@
 // Assume that 9MB is larger than the stack limit.
 struct X { char data[9*1024*1024]; };
 
-static_assert( std::is_trivial_v<X> );
+static_assert( std::is_trivially_copyable_v<X> );
+static_assert( std::is_trivially_default_constructible_v<X> );
 
 int main()
 {

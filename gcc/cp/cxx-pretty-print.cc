@@ -2294,7 +2294,7 @@ pp_cxx_template_parameter (cxx_pretty_printer *pp, tree t)
     {
     case TYPE_DECL:
       pp_cxx_ws_string (pp, "class");
-      if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (t)))
+      if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parameter)))
 	pp_cxx_ws_string (pp, "...");
       if (DECL_NAME (parameter))
 	pp_cxx_tree_identifier (pp, DECL_NAME (parameter));
@@ -2349,8 +2349,8 @@ pp_cxx_constrained_type_spec (cxx_pretty_printer *pp, tree c)
       pp_cxx_ws_string(pp, "<unsatisfied-type-constraint>");
       return;
     }
-  tree t, a;
-  placeholder_extract_concept_and_args (c, t, a);
+  tree t = TREE_OPERAND (c, 0);
+  tree a = TREE_OPERAND (c, 1);
   pp->id_expression (t);
   pp_cxx_begin_template_argument_list (pp);
   pp_cxx_ws_string (pp, "<placeholder>");
@@ -2480,6 +2480,7 @@ cxx_pretty_printer::declaration (tree t)
       }
   else switch (TREE_CODE (t))
     {
+    case FIELD_DECL:
     case VAR_DECL:
     case TYPE_DECL:
       pp_cxx_simple_declaration (this, t);

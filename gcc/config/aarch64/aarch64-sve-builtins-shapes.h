@@ -71,7 +71,11 @@ namespace aarch64_sve
        scalar displacement".
 
      - "_pred" indicates that the function takes an svbool_t argument
-       that does not act as a governing predicate..  */
+       that does not act as a governing predicate..
+
+     - "_group_selection" indicates that the function takes an imm integer
+       argument that selects a specific group of elements that fit a 128 bit
+       vector. */
   namespace shapes
   {
     extern const function_shape *const adr_index;
@@ -213,6 +217,10 @@ namespace aarch64_sve
     extern const function_shape *const ternary_lane_rotate;
     extern const function_shape *const ternary_long_lane;
     extern const function_shape *const ternary_long_opt_n;
+    extern const function_shape *const ternary_mfloat8;
+    extern const function_shape *const ternary_mfloat8_lane;
+    extern const function_shape *const ternary_mfloat8_lane_group_selection;
+    extern const function_shape *const ternary_mfloat8_opt_n;
     extern const function_shape *const ternary_opt_n;
     extern const function_shape *const ternary_qq_or_011_lane;
     extern const function_shape *const ternary_qq_lane_rotate;
@@ -229,7 +237,9 @@ namespace aarch64_sve
     extern const function_shape *const unary;
     extern const function_shape *const unary_convert;
     extern const function_shape *const unary_convert_narrowt;
+    extern const function_shape *const unary_convertxn_narrowt;
     extern const function_shape *const unary_convertxn;
+    extern const function_shape *const unary_convertxn_narrow;
     extern const function_shape *const unary_lane;
     extern const function_shape *const unary_long;
     extern const function_shape *const unary_n;

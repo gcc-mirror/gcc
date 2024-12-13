@@ -3045,4 +3045,7 @@ epiphany_starting_frame_offset (void)
   return epiphany_stack_offset;
 }
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "Epiphany"
+
 struct gcc_target targetm = TARGET_INITIALIZER;

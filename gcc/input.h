@@ -162,7 +162,7 @@ class file_cache
  private:
   static const size_t num_file_slots = 16;
   file_cache_slot *m_file_slots;
-  input_context in_context;
+  input_context m_input_context;
 };
 
 extern expanded_location

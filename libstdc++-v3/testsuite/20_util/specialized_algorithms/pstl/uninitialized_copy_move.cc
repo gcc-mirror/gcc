@@ -128,7 +128,7 @@ test_uninitialized_copy_move_by_type()
     {
         Sequence<T> in(n, [=](size_t k) -> T { return T(k); });
         std::unique_ptr<T[]> p(new T[n]);
-        invoke_on_all_policies(test_uninitialized_copy_move(), in.begin(), in.end(), p.get(), n, std::is_trivial<T>());
+        invoke_on_all_policies(test_uninitialized_copy_move(), in.begin(), in.end(), p.get(), n, std::conjunction<std::is_trivially_copyable<T>, std::is_trivially_default_constructible<T>>());
     }
 }
 

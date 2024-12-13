@@ -66,6 +66,10 @@ Enable asan stack protection.
 Common Joined UInteger Var(param_asan_use_after_return) Init(1) IntegerRange(0, 1) Param Optimization
 Enable asan detection of use-after-return bugs.
 
+-param=cycle-accurate-model=
+Common Joined UInteger Var(param_cycle_accurate_model) Init(1) IntegerRange(0, 1) Param Optimization
+Whether the scheduling description is mostly a cycle-accurate model of the target processor and is likely to be spill aggressively to fill any pipeline bubbles.
+
 -param=hwasan-instrument-stack=
 Common Joined UInteger Var(param_hwasan_instrument_stack) Init(1) IntegerRange(0, 1) Param Optimization
 Enable hwasan instrumentation of statically sized stack-allocated variables.
@@ -1047,6 +1051,10 @@ Maximum number of instruction distance that a small store forwarded to a larger 
 -param=switch-conversion-max-branch-ratio=
 Common Joined UInteger Var(param_switch_conversion_branch_ratio) Init(8) IntegerRange(1, 65536) Param Optimization
 The maximum ratio between array size and switch branches for a switch conversion to take place.
+
+-param=switch-lower-slow-alg-max-cases=
+Common Joined UInteger Var(param_switch_lower_slow_alg_max_cases) Init(1000) IntegerRange(1, 1000000000) Param Optimization
+Maximum number of cases for slow switch lowering algorithms to be used.
 
 -param=modref-max-bases=
 Common Joined UInteger Var(param_modref_max_bases) Init(32) Param Optimization

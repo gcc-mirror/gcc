@@ -34,7 +34,8 @@ uninitialized_copy(_ExecutionPolicy&& __exec, _InputIterator __first, _InputIter
     using __is_vector = typename decltype(__dispatch_tag)::__is_vector;
 
     return __pstl::__internal::__invoke_if_else(
-        std::integral_constant < bool, std::is_trivial<_ValueType1>::value&& std::is_trivial<_ValueType2>::value > (),
+        std::conjunction<std::is_trivially_copyable<_ValueType1>, std::is_trivially_default_constructible<_ValueType1>,
+                         std::is_trivially_copyable<_ValueType2>, std::is_trivially_default_constructible<_ValueType2>>(),
         [&]()
         {
             return __pstl::__internal::__pattern_walk2_brick(
@@ -65,7 +66,8 @@ uninitialized_copy_n(_ExecutionPolicy&& __exec, _InputIterator __first, _Size __
     using __is_vector = typename decltype(__dispatch_tag)::__is_vector;
 
     return __pstl::__internal::__invoke_if_else(
-        std::integral_constant < bool, std::is_trivial<_ValueType1>::value&& std::is_trivial<_ValueType2>::value > (),
+        std::conjunction<std::is_trivially_copyable<_ValueType1>, std::is_trivially_default_constructible<_ValueType1>,
+                         std::is_trivially_copyable<_ValueType2>, std::is_trivially_default_constructible<_ValueType2>>(),
         [&]()
         {
             return __pstl::__internal::__pattern_walk2_brick_n(
@@ -98,7 +100,8 @@ uninitialized_move(_ExecutionPolicy&& __exec, _InputIterator __first, _InputIter
     using __is_vector = typename decltype(__dispatch_tag)::__is_vector;
 
     return __pstl::__internal::__invoke_if_else(
-        std::integral_constant < bool, std::is_trivial<_ValueType1>::value&& std::is_trivial<_ValueType2>::value > (),
+        std::conjunction<std::is_trivially_copyable<_ValueType1>, std::is_trivially_default_constructible<_ValueType1>,
+                         std::is_trivially_copyable<_ValueType2>, std::is_trivially_default_constructible<_ValueType2>>(),
         [&]()
         {
             return __pstl::__internal::__pattern_walk2_brick(
@@ -129,7 +132,8 @@ uninitialized_move_n(_ExecutionPolicy&& __exec, _InputIterator __first, _Size __
     using __is_vector = typename decltype(__dispatch_tag)::__is_vector;
 
     return __pstl::__internal::__invoke_if_else(
-        std::integral_constant < bool, std::is_trivial<_ValueType1>::value&& std::is_trivial<_ValueType2>::value > (),
+        std::conjunction<std::is_trivially_copyable<_ValueType1>, std::is_trivially_default_constructible<_ValueType1>,
+                         std::is_trivially_copyable<_ValueType2>, std::is_trivially_default_constructible<_ValueType2>>(),
         [&]()
         {
             return __pstl::__internal::__pattern_walk2_brick_n(
@@ -254,7 +258,7 @@ uninitialized_default_construct(_ExecutionPolicy&& __exec, _ForwardIterator __fi
 
     auto __dispatch_tag = __pstl::__internal::__select_backend(__exec, __first);
 
-    __pstl::__internal::__invoke_if_not(std::is_trivial<_ValueType>(),
+    __pstl::__internal::__invoke_if_not(std::conjunction<std::is_trivially_copyable<_ValueType>, std::is_trivially_default_constructible<_ValueType>>(),
                                         [&]()
                                         {
                                             __pstl::__internal::__pattern_walk1(
@@ -273,7 +277,8 @@ uninitialized_default_construct_n(_ExecutionPolicy&& __exec, _ForwardIterator __
     auto __dispatch_tag = __pstl::__internal::__select_backend(__exec, __first);
 
     return __pstl::__internal::__invoke_if_else(
-        std::is_trivial<_ValueType>(), [&]() { return std::next(__first, __n); },
+        std::conjunction<std::is_trivially_copyable<_ValueType>, std::is_trivially_default_constructible<_ValueType>>(),
+        [&]() { return std::next(__first, __n); },
         [&]()
         {
             return __pstl::__internal::__pattern_walk1_n(
@@ -296,7 +301,7 @@ uninitialized_value_construct(_ExecutionPolicy&& __exec, _ForwardIterator __firs
     using __is_vector = typename decltype(__dispatch_tag)::__is_vector;
 
     __pstl::__internal::__invoke_if_else(
-        std::is_trivial<_ValueType>(),
+        std::conjunction<std::is_trivially_copyable<_ValueType>, std::is_trivially_default_constructible<_ValueType>>(),
         [&]()
         {
             __pstl::__internal::__pattern_walk_brick(
@@ -324,7 +329,7 @@ uninitialized_value_construct_n(_ExecutionPolicy&& __exec, _ForwardIterator __fi
     using __is_vector = typename decltype(__dispatch_tag)::__is_vector;
 
     return __pstl::__internal::__invoke_if_else(
-        std::is_trivial<_ValueType>(),
+        std::conjunction<std::is_trivially_copyable<_ValueType>, std::is_trivially_default_constructible<_ValueType>>(),
         [&]()
         {
             return __pstl::__internal::__pattern_walk_brick_n(

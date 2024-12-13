@@ -4148,9 +4148,8 @@ arm_general_check_builtin_call (unsigned int code)
 
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 bool
-arm_check_builtin_call (location_t loc, vec<location_t> arg_loc,
-			tree fndecl, tree orig_fndecl,
-			unsigned int nargs, tree *args)
+arm_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
+			tree orig_fndecl, unsigned int nargs, tree *args, bool)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> ARM_BUILTIN_SHIFT;

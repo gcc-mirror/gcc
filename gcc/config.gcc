@@ -552,7 +552,7 @@ riscv*)
 	cpu_type=riscv
 	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-string.o"
 	extra_objs="${extra_objs} riscv-v.o riscv-vsetvl.o riscv-vector-costs.o riscv-avlprop.o"
-	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
+	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o sifive-vector-builtins-bases.o"
 	extra_objs="${extra_objs} thead.o riscv-target-attr.o"
 	d_target_objs="riscv-d.o"
 	extra_headers="riscv_vector.h riscv_crypto.h riscv_bitmanip.h riscv_th_vector.h riscv_cmo.h"
@@ -4133,7 +4133,7 @@ if test x$with_arch = x ; then
       with_arch=mips2
       ;;
     nvptx-*)
-      with_arch=sm_30
+      with_arch=sm_52
       ;;
   esac
 
@@ -4711,7 +4711,7 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute isa_spec tls"
+		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
@@ -4867,6 +4867,25 @@ case "${target}" in
 				exit 1
 			esac
 		fi
+
+		# Handle --with-cmodel.
+		# Make sure --with-cmodel is valid.  If it was not specified,
+		# use medlow as the default value.
+		case "${with_cmodel}" in
+		"" | medlow)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_MEDLOW"
+			;;
+		medany)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_MEDANY"
+			;;
+		large)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_LARGE"
+			;;
+		*)
+			echo "invalid option for --with-cmodel: '${with_cmodel}', available values are 'medlow' 'medany' 'large'" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	mips*-*-*)
@@ -5576,21 +5595,70 @@ case "${target}" in
 		;;
 	nvptx-*)
 		supported_defaults=arch
-		TM_MULTILIB_CONFIG=$with_arch
-		#TODO 'sm_[...]' list per 'nvptx-sm.def'.
-		case $with_arch in
-			sm_30 )
-				# OK; default.
-				;;
-			sm_35 | sm_53 | sm_70 | sm_75 | sm_80 )
-				# OK, but we'd like 'sm_30', too.
-				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG sm_30"
+
+		nvptx_multilibs_default=sm_52
+
+		case "x${with_multilib_list}" in
+		x | xno)
+			nvptx_multilibs=
+			;;
+		xdefault | xyes)
+			nvptx_multilibs=default
+			;;
+		*)
+			nvptx_multilibs=$with_multilib_list
+			;;
+		esac
+		nvptx_multilibs=`echo $nvptx_multilibs | sed -e 's/,/ /g'`
+		# Expand 'default'.
+		nvptx_multilibs_expanded=
+		for nvptx_multilib in $nvptx_multilibs; do
+			case $nvptx_multilib in
+			default )
+				nvptx_multilibs_expanded="$nvptx_multilibs_expanded $nvptx_multilibs_default"
 				;;
 			* )
-				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
+				nvptx_multilibs_expanded="$nvptx_multilibs_expanded $nvptx_multilib"
+				;;
+			esac
+		done
+		# The '--with-arch=[...]' one comes first.
+		nvptx_multilibs=$with_arch$nvptx_multilibs_expanded
+		# Filter out any duplicates.
+		nvptx_multilibs_filtered=
+		for nvptx_multilib in $nvptx_multilibs; do
+			case " $nvptx_multilibs_filtered " in
+			*" $nvptx_multilib "* )
+				:
+				;;
+			* )
+				nvptx_multilibs_filtered="$nvptx_multilibs_filtered $nvptx_multilib"
+				;;
+			esac
+		done
+		nvptx_multilibs=$nvptx_multilibs_filtered
+		# Verify, and build 'TM_MULTILIB_CONFIG'.
+		TM_MULTILIB_CONFIG=
+		for nvptx_multilib in $nvptx_multilibs; do
+			case $nvptx_multilib in
+			#TODO 'sm_[...]' list per 'nvptx-sm.def'.
+			sm_30 | sm_35 | sm_37 \
+			| sm_52 | sm_53 \
+			| sm_70 | sm_75 \
+			| sm_80 | sm_89 )
+				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG $nvptx_multilib"
+				;;
+			$with_arch )
+				echo "Unknown arch used in --with-arch=$nvptx_multilib" 1>&2
 				exit 1
 				;;
-		esac
+			* )
+				echo "Unknown arch used in --with-multilib-list: $nvptx_multilib" 1>&2
+				exit 1
+				;;
+			esac
+		done
+		TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^ //'`
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
@@ -6046,7 +6114,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa cmodel"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

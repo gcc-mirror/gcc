@@ -26,8 +26,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-urlifier.h"
 #include "opts.h"
 #include "options.h"
+#include "diagnostic.h"
 #include "selftest.h"
 #include "make-unique.h"
+
+char *
+make_doc_url (const char *doc_url_suffix)
+{
+  if (!doc_url_suffix)
+    return nullptr;
+
+  return concat (DOCUMENTATION_ROOT_URL, doc_url_suffix, nullptr);
+}
 
 namespace {
 
@@ -49,9 +59,6 @@ public:
 
 private:
   label_text get_url_suffix_for_option (const char *p, size_t sz) const;
-
-  static char *
-  make_doc_url (const char *doc_url_suffix);
 
   unsigned int m_lang_mask;
 };
@@ -203,15 +210,6 @@ gcc_urlifier::get_url_suffix_for_option (const char *p, size_t sz) const
   return get_option_url_suffix (opt, m_lang_mask);
 }
 
-char *
-gcc_urlifier::make_doc_url (const char *doc_url_suffix)
-{
-  if (!doc_url_suffix)
-    return nullptr;
-
-  return concat (DOCUMENTATION_ROOT_URL, doc_url_suffix, nullptr);
-}
-
 } // anonymous namespace
 
 std::unique_ptr<urlifier>
@@ -220,16 +218,27 @@ make_gcc_urlifier (unsigned int lang_mask)
   return ::make_unique<gcc_urlifier> (lang_mask);
 }
 
+/* class auto_override_urlifier.  */
+
+auto_override_urlifier::auto_override_urlifier (urlifier *new_urlifier)
+: m_old_urlifier (global_dc->get_urlifier ())
+{
+  global_dc->override_urlifier (new_urlifier);
+}
+
+auto_override_urlifier::~auto_override_urlifier ()
+{
+  global_dc->override_urlifier (m_old_urlifier);
+}
+
 #if CHECKING_P
 
 namespace selftest {
 
 /* Selftests.  */
 
-/* Run all of the selftests within this file.  */
-
-void
-gcc_urlifier_cc_tests ()
+static void
+test_gcc_urlifier ()
 {
   /* Check that doc_urls.quoted_text is sorted.  */
   for (size_t idx = 1; idx < ARRAY_SIZE (doc_urls); idx++)
@@ -261,6 +270,14 @@ gcc_urlifier_cc_tests ()
   /* Check a "-fno-" variant of an option.  */
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("-fno-inline").get (),
 		"gcc/Optimize-Options.html#index-finline");
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+gcc_urlifier_cc_tests ()
+{
+  test_gcc_urlifier ();
 }
 
 } // namespace selftest

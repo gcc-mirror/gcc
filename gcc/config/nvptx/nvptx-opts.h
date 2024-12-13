@@ -30,16 +30,20 @@ enum ptx_isa
 #undef NVPTX_SM
 };
 
+/* 'PTX_VERSION_[...]'s smaller than 'PTX_VERSION_3_1' are not listed here:
+   our baseline is PTX ISA Version 3.1.  */
+
 enum ptx_version
 {
   PTX_VERSION_unset,
   PTX_VERSION_default = PTX_VERSION_unset,
-  PTX_VERSION_3_0,
   PTX_VERSION_3_1,
+  PTX_VERSION_4_1,
   PTX_VERSION_4_2,
   PTX_VERSION_6_0,
   PTX_VERSION_6_3,
-  PTX_VERSION_7_0
+  PTX_VERSION_7_0,
+  PTX_VERSION_7_8
 };
 
 #endif

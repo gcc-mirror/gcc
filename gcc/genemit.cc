@@ -238,6 +238,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info,
 	  fprintf (file, "%u", XINT (x, i));
 	  break;
 
+	case 'L':
+	  fprintf (file, "%llu", (unsigned long long) XLOC (x, i));
+	  break;
+
 	case 'r':
 	  fprintf (file, "%u", REGNO (x));
 	  break;

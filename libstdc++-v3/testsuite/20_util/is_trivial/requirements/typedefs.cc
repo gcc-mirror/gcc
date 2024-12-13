@@ -26,7 +26,10 @@
 void test01()
 {
   // Check for required typedefs
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   typedef std::is_trivial<int>                test_type;
+#pragma GCC diagnostic pop
   typedef test_type::value_type               value_type;
   typedef test_type::type                     type;
   typedef test_type::type::value_type         type_value_type;

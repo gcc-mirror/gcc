@@ -95,9 +95,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 2103. std::allocator propagate_on_container_move_assignment
       using propagate_on_container_move_assignment = true_type;
 
+#if __cplusplus <= 202302L
       using is_always_equal
 	_GLIBCXX20_DEPRECATED_SUGGEST("std::allocator_traits::is_always_equal")
 	= true_type;
+#endif
 
 #if __cplusplus >= 202002L
       // As noted above, these members are present for C++20 to provide the
@@ -152,9 +154,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 2103. std::allocator propagate_on_container_move_assignment
       using propagate_on_container_move_assignment = true_type;
 
+#if __cplusplus <= 202302L
       using is_always_equal
 	_GLIBCXX20_DEPRECATED_SUGGEST("std::allocator_traits::is_always_equal")
 	= true_type;
+#endif
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS

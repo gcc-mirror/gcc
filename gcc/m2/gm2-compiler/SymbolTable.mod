@@ -26,6 +26,7 @@ FROM SYSTEM IMPORT ADDRESS, ADR ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM M2Debug IMPORT Assert ;
 FROM libc IMPORT printf ;
+FROM ASCII IMPORT nul ;
 
 IMPORT Indexing ;
 
@@ -14958,12 +14959,15 @@ BEGIN
       CASE SymbolType OF
 
       ConstStringSym: WITH ConstString DO
-                         IF Length = 1
+                         IF Length = 0
+                         THEN
+                            PushChar (nul)
+                         ELSIF Length = 1
                          THEN
                             GetKey (Contents, a) ;
                             PushChar (a[0])
                          ELSE
-                            WriteFormat0 ('ConstString must be length 1')
+                            WriteFormat0 ('ConstString must be length 0 or 1')
                          END
                       END
 

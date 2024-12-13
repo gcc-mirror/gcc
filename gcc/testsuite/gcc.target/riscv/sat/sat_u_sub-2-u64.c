@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64d -fdump-rtl-expand-details -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -fdump-tree-optimized -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include "sat_arith.h"
@@ -14,4 +14,4 @@
 */
 DEF_SAT_U_SUB_FMT_2(uint64_t)
 
-/* { dg-final { scan-rtl-dump-times ".SAT_SUB " 2 "expand" } } */
+/* { dg-final { scan-tree-dump-times ".SAT_SUB " 1 "optimized" } } */

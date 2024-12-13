@@ -753,11 +753,11 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 {
   GFC_UINTEGER_LARGEST value, maxv, maxv_10;
   GFC_INTEGER_LARGEST v;
-  size_t w;
+  size_t w, padding;
   int negative;
   char c, *p;
 
-  w = f->u.w;
+  w = padding = f->u.w;
 
   /* This is a legacy extension, and the frontend will only allow such cases
    * through when -fdec-format-defaults is passed.
@@ -769,6 +769,10 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 
   if (p == NULL)
     return;
+
+  /* If the read was not the full width we may need to pad with blanks or zeros
+   * depending on the PAD mode.  Save the number of pad characters needed.  */
+  padding -= w;
 
   p = eat_leading_spaces (&w, p);
   if (w == 0)
@@ -807,7 +811,14 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
     {
       c = next_char (dtp, &p, &w);
       if (c == '\0')
-	break;
+	{
+	  if (dtp->u.p.blank_status == BLANK_ZERO)
+	    {
+	      for (size_t n = 0; n < padding; n++)
+		value = 10 * value;
+	    }
+	  break;
+	}
 
       if (c == ' ')
         {
@@ -864,11 +875,11 @@ read_decimal_unsigned (st_parameter_dt *dtp, const fnode *f, char *dest,
 		       int length)
 {
   GFC_UINTEGER_LARGEST value, old_value;
-  size_t w;
+  size_t w, padding;
   int negative;
   char c, *p;
 
-  w = f->u.w;
+  w = padding = f->u.w;
 
   /* This is a legacy extension, and the frontend will only allow such cases
    * through when -fdec-format-defaults is passed.
@@ -880,6 +891,10 @@ read_decimal_unsigned (st_parameter_dt *dtp, const fnode *f, char *dest,
 
   if (p == NULL)
     return;
+
+  /* If the read was not the full width we may need to pad with blanks or zeros
+   * depending on the PAD mode.  Save the number of pad characters needed.  */
+  padding -= w;
 
   p = eat_leading_spaces (&w, p);
   if (w == 0)
@@ -917,7 +932,14 @@ read_decimal_unsigned (st_parameter_dt *dtp, const fnode *f, char *dest,
     {
       c = next_char (dtp, &p, &w);
       if (c == '\0')
-	break;
+	{
+	  if (dtp->u.p.blank_status == BLANK_ZERO)
+	    {
+	      for (size_t n = 0; n < padding; n++)
+		value = 10 * value;
+	    }
+	  break;
+	}
 
       if (c == ' ')
 	{
@@ -981,16 +1003,20 @@ read_radix (st_parameter_dt *dtp, const fnode *f, char *dest, int length,
 {
   GFC_UINTEGER_LARGEST value, maxv, maxv_r;
   GFC_INTEGER_LARGEST v;
-  size_t w;
+  size_t w, padding;
   int negative;
   char c, *p;
 
-  w = f->u.w;
+  w = padding = f->u.w;
 
   p = read_block_form (dtp, &w);
 
   if (p == NULL)
     return;
+
+  /* If the read was not the full width we may need to pad with blanks or zeros
+   * depending on the PAD mode.  Save the number of pad characters needed.  */
+  padding -= w;
 
   p = eat_leading_spaces (&w, p);
   if (w == 0)
@@ -1029,7 +1055,14 @@ read_radix (st_parameter_dt *dtp, const fnode *f, char *dest, int length,
     {
       c = next_char (dtp, &p, &w);
       if (c == '\0')
-	break;
+	{
+	  if (dtp->u.p.blank_status == BLANK_ZERO)
+	    {
+	      for (size_t n = 0; n < padding; n++)
+		value = radix * value;
+	    }
+	  break;
+	}
       if (c == ' ')
         {
 	  if (dtp->u.p.blank_status == BLANK_NULL) continue;

@@ -2625,11 +2625,9 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	{
 	  if (TYPE_UNSIGNED (TREE_TYPE (node))
 	      || TYPE_PRECISION (TREE_TYPE (node)) > CHAR_BIT)
-	    pp_decimal_int (pp, ((const unsigned char *)
-				 RAW_DATA_POINTER (node))[i]);
+	    pp_decimal_int (pp, RAW_DATA_UCHAR_ELT (node, i));
 	  else
-	    pp_decimal_int (pp, ((const signed char *)
-				 RAW_DATA_POINTER (node))[i]);
+	    pp_decimal_int (pp, RAW_DATA_SCHAR_ELT (node, i));
 	  if (i == RAW_DATA_LENGTH (node) - 1U)
 	    break;
 	  else if (i == 9 && RAW_DATA_LENGTH (node) > 20)

@@ -235,25 +235,24 @@ namespace tr1
     struct is_function<_Res(_ArgTypes...)>
     : public true_type { };
   template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......)>
-    : public true_type { };
+    struct is_function<_Res(_ArgTypes..., ...)> : public true_type { };
   template<typename _Res, typename... _ArgTypes>
     struct is_function<_Res(_ArgTypes...) const>
     : public true_type { };
   template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const>
+    struct is_function<_Res(_ArgTypes..., ...) const>
     : public true_type { };
   template<typename _Res, typename... _ArgTypes>
     struct is_function<_Res(_ArgTypes...) volatile>
     : public true_type { };
   template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) volatile>
+    struct is_function<_Res(_ArgTypes..., ...) volatile>
     : public true_type { };
   template<typename _Res, typename... _ArgTypes>
     struct is_function<_Res(_ArgTypes...) const volatile>
     : public true_type { };
   template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const volatile>
+    struct is_function<_Res(_ArgTypes..., ...) const volatile>
     : public true_type { };
 
   // composite type traits [4.5.2].

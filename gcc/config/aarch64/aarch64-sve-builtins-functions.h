@@ -270,10 +270,12 @@ public:
   CONSTEXPR unspec_based_function_base (int unspec_for_sint,
 					int unspec_for_uint,
 					int unspec_for_fp,
+					int unspec_for_mfp8 = -1,
 					unsigned int suffix_index = 0)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
       m_unspec_for_fp (unspec_for_fp),
+      m_unspec_for_mfp8 (unspec_for_mfp8),
       m_suffix_index (suffix_index)
   {}
 
@@ -281,6 +283,9 @@ public:
   int
   unspec_for (const function_instance &instance) const
   {
+    if (instance.fpm_mode == FPM_set)
+      return m_unspec_for_mfp8;
+
     auto &suffix = instance.type_suffix (m_suffix_index);
     return (!suffix.integer_p ? m_unspec_for_fp
 	    : suffix.unsigned_p ? m_unspec_for_uint
@@ -292,6 +297,7 @@ public:
   int m_unspec_for_sint;
   int m_unspec_for_uint;
   int m_unspec_for_fp;
+  int m_unspec_for_mfp8;
 
   /* Which type suffix is used to choose between the unspecs.  */
   unsigned int m_suffix_index;
@@ -427,7 +433,7 @@ public:
 
   CONSTEXPR sme_1mode_function (int unspec_for_sint, int unspec_for_uint,
 				int unspec_for_fp)
-    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, 1)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, -1, 1)
   {}
 
   rtx
@@ -457,7 +463,7 @@ public:
 
   CONSTEXPR sme_2mode_function_t (int unspec_for_sint, int unspec_for_uint,
 				  int unspec_for_fp)
-    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, 1)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, -1, 1)
   {}
 
   rtx
@@ -496,7 +502,8 @@ public:
   {
     int unspec = unspec_for (e);
     insn_code icode;
-    if (e.type_suffix (m_suffix_index).float_p)
+    if (e.type_suffix (m_suffix_index).float_p
+	&& e.fpm_mode != FPM_set)
       {
 	/* Put the operands in the normal (fma ...) order, with the accumulator
 	   last.  This fits naturally since that's also the unprinted operand
@@ -526,7 +533,8 @@ public:
   {
     int unspec = unspec_for (e);
     insn_code icode;
-    if (e.type_suffix (m_suffix_index).float_p)
+    if (e.type_suffix (m_suffix_index).float_p
+	&& e.fpm_mode != FPM_set)
       {
 	/* Put the operands in the normal (fma ...) order, with the accumulator
 	   last.  This fits naturally since that's also the unprinted operand

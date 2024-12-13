@@ -971,7 +971,19 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 					    outer_cond_code,
 					    gimple_cond_lhs (outer_cond),
 					    gimple_cond_rhs (outer_cond),
-					    gimple_bb (outer_cond))))
+					    gimple_bb (outer_cond)))
+	  && !(t = (fold_truth_andor_for_ifcombine
+		    (TRUTH_ANDIF_EXPR, boolean_type_node,
+		     gimple_location (outer_cond),
+		     outer_cond_code,
+		     gimple_cond_lhs (outer_cond),
+		     gimple_cond_rhs (outer_cond),
+		     gimple_location (inner_cond),
+		     inner_cond_code,
+		     gimple_cond_lhs (inner_cond),
+		     gimple_cond_rhs (inner_cond),
+		     single_pred (inner_cond_bb) != outer_cond_bb
+		     ? &ts : 0))))
 	{
 	  /* Only combine conditions in this fallback case if the blocks are
 	     neighbors.  */

@@ -1,3 +1,16 @@
+2024-12-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR web/117883
+	* update_web_docs_git: Introduce SPHINX_VENV to make
+	it easier to test the script.  Add the libgdiagnostics docs
+	and testsuite to the files to be preserved.  Use sphinx to build
+	the libgdiagnostics docs as HTML.  Copy them into $DOCSDIR.
+
+2024-12-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* update_web_docs_git: Add the jit testsuite to the files to
+	be preserved, since this is used by the jit docs.
+
 2024-07-19  Richard Biener  <rguenther@suse.de>
 
 	* crontab: Remove entry for gcc-11 branch.

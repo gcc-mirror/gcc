@@ -242,88 +242,6 @@ get_concept_check_template (tree t)
 }
 
 /*---------------------------------------------------------------------------
-                    Resolution of qualified concept names
----------------------------------------------------------------------------*/
-
-/* This facility is used to resolve constraint checks from requirement
-   expressions.  A constraint check is a call to a function template declared
-   with the keyword 'concept'.
-
-   The result of resolution is a pair (a TREE_LIST) whose value is the
-   matched declaration, and whose purpose contains the coerced template
-   arguments that can be substituted into the call.  */
-
-/* Returns a pair containing the checked concept and its associated
-   prototype parameter.  The result is a TREE_LIST whose TREE_VALUE
-   is the concept (non-template) and whose TREE_PURPOSE contains
-   the converted template arguments, including the deduced prototype
-   parameter (in position 0).  */
-
-tree
-resolve_concept_check (tree check)
-{
-  gcc_assert (concept_check_p (check));
-  tree tmpl = TREE_OPERAND (check, 0);
-  tree args = TREE_OPERAND (check, 1);
-  tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
-  ++processing_template_decl;
-  tree result = coerce_template_parms (parms, args, tmpl, tf_none);
-  --processing_template_decl;
-  if (result == error_mark_node)
-    return error_mark_node;
-  return build_tree_list (result, DECL_TEMPLATE_RESULT (tmpl));
-}
-
-/* Given a call expression or template-id expression to a concept EXPR
-   possibly including a wildcard, deduce the concept being checked and
-   the prototype parameter.  Returns true if the constraint and prototype
-   can be deduced and false otherwise.  Note that the CHECK and PROTO
-   arguments are set to NULL_TREE if this returns false.  */
-
-bool
-deduce_constrained_parameter (tree expr, tree& check, tree& proto)
-{
-  tree info = resolve_concept_check (expr);
-  if (info && info != error_mark_node)
-    {
-      check = TREE_VALUE (info);
-      tree arg = TREE_VEC_ELT (TREE_PURPOSE (info), 0);
-      if (ARGUMENT_PACK_P (arg))
-	arg = TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg), 0);
-      proto = TREE_TYPE (arg);
-      return true;
-    }
-
-  check = proto = NULL_TREE;
-  return false;
-}
-
-/* Build a constrained placeholder type where SPEC is a type-constraint.
-   SPEC can be anything were concept_definition_p is true.
-
-   Returns a pair whose FIRST is the concept being checked and whose
-   SECOND is the prototype parameter.  */
-
-tree_pair
-finish_type_constraints (tree spec, tree args, tsubst_flags_t complain)
-{
-  gcc_assert (concept_definition_p (spec));
-
-  /* Build an initial concept check.  */
-  tree check = build_type_constraint (spec, args, complain);
-  if (check == error_mark_node)
-    return std::make_pair (error_mark_node, NULL_TREE);
-
-  /* Extract the concept and prototype parameter from the check.  */
-  tree con;
-  tree proto;
-  if (!deduce_constrained_parameter (check, con, proto))
-    return std::make_pair (error_mark_node, NULL_TREE);
-
-  return std::make_pair (con, proto);
-}
-
-/*---------------------------------------------------------------------------
                        Expansion of concept definitions
 ---------------------------------------------------------------------------*/
 
@@ -1161,10 +1079,11 @@ get_trailing_function_requirements (tree t)
 
 /* Construct a sequence of template arguments by prepending
    ARG to REST.  Either ARG or REST may be null.  */
+
 static tree
 build_concept_check_arguments (tree arg, tree rest)
 {
-  gcc_assert (rest ? TREE_CODE (rest) == TREE_VEC : true);
+  gcc_assert (!rest || TREE_CODE (rest) == TREE_VEC);
   tree args;
   if (arg)
     {
@@ -1178,49 +1097,32 @@ build_concept_check_arguments (tree arg, tree rest)
       SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (args, def + 1);
     }
   else
-    {
-      args = rest;
-    }
+    args = rest;
   return args;
 }
 
-/* Builds an id-expression of the form `C<Args...>` where C is a standard
-   concept.  */
+/* Construct an expression that checks TMPL using ARGS.  */
 
-static tree
-build_standard_check (tree tmpl, tree args, tsubst_flags_t complain)
+tree
+build_concept_check (tree tmpl, tree args, tsubst_flags_t complain)
 {
-  gcc_assert (concept_definition_p (tmpl));
-  gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
+  return build_concept_check (tmpl, NULL_TREE, args, complain);
+}
+
+/* Construct an expression that checks the concept given by TMPL.  */
+
+tree
+build_concept_check (tree tmpl, tree arg, tree rest, tsubst_flags_t complain)
+{
   if (TREE_DEPRECATED (DECL_TEMPLATE_RESULT (tmpl)))
     warn_deprecated_use (DECL_TEMPLATE_RESULT (tmpl), NULL_TREE);
-  tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
+
+  tree parms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
+  tree args = build_concept_check_arguments (arg, rest);
   args = coerce_template_parms (parms, args, tmpl, complain);
   if (args == error_mark_node)
     return error_mark_node;
   return build2 (TEMPLATE_ID_EXPR, boolean_type_node, tmpl, args);
-}
-
-/* Construct an expression that checks TARGET using ARGS.  */
-
-tree
-build_concept_check (tree target, tree args, tsubst_flags_t complain)
-{
-  return build_concept_check (target, NULL_TREE, args, complain);
-}
-
-/* Construct an expression that checks the concept given by DECL.  If
-   concept_definition_p (DECL) is false, this returns null.  */
-
-tree
-build_concept_check (tree decl, tree arg, tree rest, tsubst_flags_t complain)
-{
-  tree args = build_concept_check_arguments (arg, rest);
-
-  if (concept_definition_p (decl))
-    return build_standard_check (decl, args, complain);
-
-  return error_mark_node;
 }
 
 /* Build a template-id that can participate in a concept check.  */
@@ -1252,9 +1154,9 @@ build_concept_id (tree expr)
 tree
 build_type_constraint (tree decl, tree args, tsubst_flags_t complain)
 {
-  tree wildcard = build_nt (WILDCARD_DECL);
+  tree proto = template_parm_to_arg (concept_prototype_parameter (decl));
   ++processing_template_decl;
-  tree check = build_concept_check (decl, wildcard, args, complain);
+  tree check = build_concept_check (decl, proto, args, complain);
   --processing_template_decl;
   return check;
 }
@@ -1312,10 +1214,7 @@ finish_shorthand_constraint (tree decl, tree constr)
 
   /* Build the concept constraint-expression.  */
   tree tmpl = DECL_TI_TEMPLATE (con);
-  tree check = tmpl;
-  if (TREE_CODE (con) == FUNCTION_DECL)
-    check = ovl_make (tmpl);
-  check = build_concept_check (check, arg, args, tf_warning_or_error);
+  tree check = build_concept_check (tmpl, arg, args, tf_warning_or_error);
 
   /* Make the check a fold-expression if needed.
      Use UNKNOWN_LOCATION so write_template_args can tell the
@@ -1345,32 +1244,6 @@ get_shorthand_constraints (tree parms)
   return result;
 }
 
-/* Given the concept check T from a constrained-type-specifier, extract
-   its TMPL and ARGS.  FIXME why do we need two different forms of
-   constrained-type-specifier?  */
-
-void
-placeholder_extract_concept_and_args (tree t, tree &tmpl, tree &args)
-{
-  if (concept_check_p (t))
-    {
-      tmpl = TREE_OPERAND (t, 0);
-      args = TREE_OPERAND (t, 1);
-      return;
-    }
-
-  if (TREE_CODE (t) == TYPE_DECL)
-    {
-      /* A constrained parameter.  Build a constraint check
-         based on the prototype parameter and then extract the
-         arguments from that.  */
-      tree proto = CONSTRAINED_PARM_PROTOTYPE (t);
-      tree check = finish_shorthand_constraint (proto, t);
-      placeholder_extract_concept_and_args (check, tmpl, args);
-      return;
-    }
-}
-
 /* Returns true iff the placeholders C1 and C2 are equivalent.  C1
    and C2 can be either TEMPLATE_TYPE_PARM or template-ids.  */
 
@@ -1393,9 +1266,11 @@ equivalent_placeholder_constraints (tree c1, tree c2)
        placeholder constraints.  */
     return false;
 
-  tree t1, t2, a1, a2;
-  placeholder_extract_concept_and_args (c1, t1, a1);
-  placeholder_extract_concept_and_args (c2, t2, a2);
+  gcc_assert (concept_check_p (c1) && concept_check_p (c2));
+  tree t1 = TREE_OPERAND (c1, 0);
+  tree a1 = TREE_OPERAND (c1, 1);
+  tree t2 = TREE_OPERAND (c2, 0);
+  tree a2 = TREE_OPERAND (c2, 1);
 
   if (t1 != t2)
     return false;
@@ -1408,12 +1283,9 @@ equivalent_placeholder_constraints (tree c1, tree c2)
   /* Skip the first argument so we don't infinitely recurse.
      Also, they may differ in template parameter index.  */
   for (int i = 1; i < len1; ++i)
-    {
-      tree t1 = TREE_VEC_ELT (a1, i);
-      tree t2 = TREE_VEC_ELT (a2, i);
-      if (!template_args_equal (t1, t2))
+    if (!template_args_equal (TREE_VEC_ELT (a1, i),
+			      TREE_VEC_ELT (a2, i)))
       return false;
-    }
   return true;
 }
 
@@ -1422,8 +1294,9 @@ equivalent_placeholder_constraints (tree c1, tree c2)
 hashval_t
 iterative_hash_placeholder_constraint (tree c, hashval_t val)
 {
-  tree t, a;
-  placeholder_extract_concept_and_args (c, t, a);
+  gcc_assert (concept_check_p (c));
+  tree t = TREE_OPERAND (c, 0);
+  tree a = TREE_OPERAND (c, 1);
 
   /* Like hash_tmpl_and_args, but skip the first argument.  */
   val = iterative_hash_object (DECL_UID (t), val);
@@ -1451,6 +1324,7 @@ tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
       if (diagnosing_failed_constraint::replay_errors_p ())
 	{
 	  inform (loc, "the required expression %qE is invalid, because", t);
+	  auto_diagnostic_nesting_level sentinel;
 	  if (r == error_mark_node)
 	    tsubst_expr (t, args, info.complain, info.in_decl);
 	  else
@@ -2359,6 +2233,7 @@ satisfy_disjunction (tree t, tree args, sat_info info)
 	      "no operand of the disjunction is satisfied");
       if (diagnosing_failed_constraint::replay_errors_p ())
 	{
+	  auto_diagnostic_nesting_level sentinel;
 	  /* Replay the error in each branch of the disjunction.  */
 	  auto_vec<tree_pair> operands;
 	  collect_operands_of_disjunction (t, &operands);
@@ -2370,6 +2245,7 @@ satisfy_disjunction (tree t, tree args, sat_info info)
 					      disj_expr.get_start (),
 					      disj_expr.get_finish ());
 	      inform (loc, "the operand %qE is unsatisfied because", op);
+	      auto_diagnostic_nesting_level sentinel;
 	      satisfy_constraint_r (norm_op, args, info);
 	    }
 	}
@@ -3419,6 +3295,8 @@ diagnose_constraints (location_t loc, tree t, tree args)
 
   if (concepts_diagnostics_max_depth == 0)
     return;
+
+  auto_diagnostic_nesting_level sentinel;
 
   /* Replay satisfaction, but diagnose unsatisfaction.  */
   sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);

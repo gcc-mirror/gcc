@@ -98,6 +98,10 @@ msplit-bit-shift
 Target Var(avropt_split_bit_shift) Init(0) Optimization
 Optimization. Split shifts of 4-byte values into a byte shift and a residual bit shift.
 
+msplit-ldst
+Target Var(avropt_split_ldst) Init(0) Optimization
+Optimization. Split most of the load and store instructions into byte load and stores.
+
 mstrict-X
 Target Var(avropt_strict_X) Init(0) Optimization
 Optimization. When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.

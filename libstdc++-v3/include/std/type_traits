@@ -885,9 +885,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 #endif
 
-  /// is_trivial
+  /** is_trivial
+   * @deprecated Deprecated in C++26.
+   * Use a combination of one or more more specialized type traits instead,
+   * such as `is_trivially_default_constructible`,
+   * `is_trivially_copy_constructible`, `is_trivially_copy_assignable`,
+   * etc., depending on the exact check(s) needed.
+   */
   template<typename _Tp>
-    struct is_trivial
+    struct
+    _GLIBCXX26_DEPRECATED_SUGGEST("is_trivially_default_constructible && is_trivially_copyable")
+    is_trivial
     : public __bool_constant<__is_trivial(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
@@ -3518,6 +3526,7 @@ template <typename _Tp>
 #endif
 
 template <typename _Tp>
+  _GLIBCXX26_DEPRECATED_SUGGEST("is_trivially_default_constructible_v && is_trivially_copyable_v")
   inline constexpr bool is_trivial_v = __is_trivial(_Tp);
 template <typename _Tp>
   inline constexpr bool is_trivially_copyable_v = __is_trivially_copyable(_Tp);

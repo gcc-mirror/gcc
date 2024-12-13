@@ -787,7 +787,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _GLIBCXX20_CONSTEXPR
       explicit
-      vector(const allocator_type& __a)
+      vector(const allocator_type& __a) _GLIBCXX_NOEXCEPT
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L

@@ -291,6 +291,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_cd_dce, false /* update_address_taken_p */);
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_loop_distribution);
+	  NEXT_PASS (pass_crc_optimization);
 	  NEXT_PASS (pass_linterchange);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);

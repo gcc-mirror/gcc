@@ -3336,6 +3336,8 @@ v850_can_inline_p (tree caller, tree callee)
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P v850_can_inline_p
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "V850"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

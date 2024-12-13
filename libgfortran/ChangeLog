@@ -1,3 +1,17 @@
+2024-12-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117819
+	* io/read.c (read_decimal): If the read value is short of the
+	specified width and pad mode is PAD yes, check for BLANK ZERO
+	and adjust the value accordingly.
+	(read_decimal_unsigned): Likewise.
+	(read_radix): Likewise.
+
+2024-12-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117820
+	* io/write.c (write_b): Add test for zero needed by write_boz.
+
 2024-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/88052

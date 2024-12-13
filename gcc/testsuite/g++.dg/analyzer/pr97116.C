@@ -16,7 +16,7 @@ struct foo
 void test_1 (void)
 {
   foo *p = new(NULL) foo (42); // { dg-warning "non-null expected" "warning" }
-  // { dg-message "argument 'this' \\(\[^\n\]*\\) NULL where non-null expected" "final event" { target *-*-* } .-1 }
+  // { dg-message "argument 'this'( \\(\[^\n\]*\\))? NULL where non-null expected" "final event" { target *-*-* } .-1 }
 }
 
 int test_2 (void)

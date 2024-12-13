@@ -3151,6 +3151,8 @@ export namespace std
   using std::piecewise_construct_t;
   using std::tuple_element;
   using std::tuple_size;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   namespace rel_ops
   {
     using std::rel_ops::operator!=;
@@ -3158,6 +3160,7 @@ export namespace std
     using std::rel_ops::operator<=;
     using std::rel_ops::operator>=;
   }
+#pragma GCC diagnostic pop
 #if __cpp_lib_unreachable
   using std::unreachable;
 #endif

@@ -121,24 +121,11 @@
    of LSE instructions.  */
 #define TARGET_OUTLINE_ATOMICS (aarch64_flag_outline_atomics)
 
-/* Align definitions of arrays, unions and structures so that
-   initializations and copies can be made more efficient.  This is not
-   ABI-changing, so it only affects places where we can see the
-   definition.  Increasing the alignment tends to introduce padding,
-   so don't do this when optimizing for size/conserving stack space.  */
-#define AARCH64_EXPAND_ALIGNMENT(COND, EXP, ALIGN)			\
-  (((COND) && ((ALIGN) < BITS_PER_WORD)					\
-    && (TREE_CODE (EXP) == ARRAY_TYPE					\
-	|| TREE_CODE (EXP) == UNION_TYPE				\
-	|| TREE_CODE (EXP) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
+/* Align global data as an optimization.  */
+#define DATA_ALIGNMENT(EXP, ALIGN) aarch64_data_alignment (EXP, ALIGN)
 
-/* Align global data.  */
-#define DATA_ALIGNMENT(EXP, ALIGN)			\
-  AARCH64_EXPAND_ALIGNMENT (!optimize_size, EXP, ALIGN)
-
-/* Similarly, make sure that objects on the stack are sensibly aligned.  */
-#define LOCAL_ALIGNMENT(EXP, ALIGN)				\
-  AARCH64_EXPAND_ALIGNMENT (!flag_conserve_stack, EXP, ALIGN)
+/* Align stack data as an optimization.  */
+#define LOCAL_ALIGNMENT(EXP, ALIGN) aarch64_stack_alignment (EXP, ALIGN)
 
 #define STRUCTURE_SIZE_BOUNDARY		8
 
@@ -487,6 +474,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define TARGET_FAMINMAX AARCH64_HAVE_ISA (FAMINMAX)
 #define TARGET_SVE_FAMINMAX (TARGET_SVE && TARGET_FAMINMAX)
 
+/* Lookup table (LUTI) extension instructions are enabled through +lut.  */
+#define TARGET_LUT AARCH64_HAVE_ISA (LUT)
+
 /* Prefer different predicate registers for the output of a predicated
    operation over re-using an existing input predicate.  */
 #define TARGET_SVE_PRED_CLOBBER (TARGET_SVE \
@@ -512,6 +502,38 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 
 #define TARGET_SSVE_B16B16 \
   (AARCH64_HAVE_ISA (SVE_B16B16) && TARGET_SVE2_OR_SME2)
+
+/* Some fp8 instructions require +fp8 and one of +sve2 or +sme2.  */
+#define TARGET_SSVE_FP8 (TARGET_FP8 \
+			 && (TARGET_SVE2 || TARGET_STREAMING) \
+			 && (TARGET_SME2 || TARGET_NON_STREAMING))
+
+/* fp8 multiply-accumulate instructions are enabled through +fp8fma.  */
+#define TARGET_FP8FMA AARCH64_HAVE_ISA (FP8FMA)
+
+/* SVE2 versions of fp8 multiply-accumulate instructions are enabled for
+   non-streaming mode by +fp8fma and for streaming mode by +ssve-fp8fma.  */
+#define TARGET_SSVE_FP8FMA \
+  (((TARGET_SVE2 && TARGET_FP8FMA) || TARGET_STREAMING) \
+   && (AARCH64_HAVE_ISA (SSVE_FP8FMA) || TARGET_NON_STREAMING))
+
+/* fp8 four way dot product enabled through +fp8dot4.  */
+#define TARGET_FP8DOT4 AARCH64_HAVE_ISA (FP8DOT4)
+
+/* Streaming versions of fp8 four way dot product instructions are enabled
+through +ssve-fp8dot4.  */
+#define TARGET_SSVE_FP8DOT4 ((\
+		(TARGET_SVE2 && TARGET_FP8DOT4) || TARGET_STREAMING) \
+		&& (AARCH64_HAVE_ISA(SSVE_FP8DOT4) || TARGET_NON_STREAMING))
+
+/* fp8 two way dot product enabled through +fp8dot2.  */
+#define TARGET_FP8DOT2 AARCH64_HAVE_ISA (FP8DOT2)
+
+/* Streaming versions of fp8 two way dot product instructions are enabled
+through +ssve-fp8dot2.  */
+#define TARGET_SSVE_FP8DOT2 ((\
+		(TARGET_SVE2 && TARGET_FP8DOT2) || TARGET_STREAMING) \
+		&& (AARCH64_HAVE_ISA(SSVE_FP8DOT2) || TARGET_NON_STREAMING))
 
 /* Standard register usage.  */
 
@@ -1491,8 +1513,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    " %{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
 
 extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
-#define MCPU_TO_MARCH_SPEC_FUNCTIONS \
-  { "rewrite_mcpu", aarch64_rewrite_mcpu },
+extern const char *is_host_cpu_not_armv8_base (int argc, const char **argv);
+#define MCPU_TO_MARCH_SPEC_FUNCTIONS		       \
+  { "rewrite_mcpu",            aarch64_rewrite_mcpu }, \
+  { "is_local_not_armv8_base", is_host_cpu_not_armv8_base },
+
 
 #define ASM_CPU_SPEC \
    MCPU_TO_MARCH_SPEC

@@ -80,7 +80,7 @@ public:
   void destroy_relation_oracle ();
 
   inline class infer_range_oracle &infer_oracle () const { return *m_infer; }
-  void create_infer_oracle (bool do_search = TRUE);
+  void create_infer_oracle (range_query *q = NULL, bool do_search = true);
   void destroy_infer_oracle ();
 
   inline class gimple_outgoing_range &gori () const { return *m_gori; }

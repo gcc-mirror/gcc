@@ -1449,6 +1449,9 @@ bpf_expand_setmem (rtx *operands)
   return true;
 }
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "BPF"
+
 /* Finally, build the GCC target.  */
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -1011,6 +1011,18 @@ package Exp_Util is
    --  caller has to check whether stack checking is actually enabled in order
    --  to guide the expansion (typically of a function call).
 
+   procedure Move_To_Initialization_Statements (Decl, Stop : Node_Id);
+   --  Decl is an N_Object_Declaration node and Stop is a node past Decl in
+   --  the same list. Move all the nodes on the list between Decl and Stop
+   --  (excluded) into a compound statement inserted between Decl and Stop
+   --  and attached to the object by means of Initialization_Statements.
+
+   function Needs_Initialization_Statements (Decl : Node_Id) return Boolean;
+   --  Decl is the N_Object_Declaration node of an object initialized with an
+   --  aggregate or a call expanded in place. Return True if the statements
+   --  created by expansion need to be moved to the Initialization_Statements
+   --  of the object.
+
    function Name_Of_Controlled_Prim_Op
      (Typ : Entity_Id;
       Nam : Name_Id) return Name_Id

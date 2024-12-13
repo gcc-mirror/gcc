@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-thunks.h"
 #include "attr-fnspec.h"
 #include "target.h"
+#include "gcc-urlifier.h"
 
 /* This file introduces two passes that, together, implement
    machine-independent stack scrubbing, strub for short.  It arranges
@@ -674,6 +675,8 @@ can_strub_p (cgraph_node *node, bool report = false)
 
   if (!report && (!result || strub_always_inline_p (node)))
     return result;
+
+  auto_urlify_attributes sentinel;
 
   if (flag_split_stack)
     {

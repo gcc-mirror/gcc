@@ -5830,23 +5830,28 @@ cp_build_binary_op (const op_location_t &location,
 	warning_at (location, OPT_Wfloat_equal,
 		    "comparing floating-point with %<==%> "
 		    "or %<!=%> is unsafe");
-      if (complain & tf_warning)
-	{
-	  tree stripped_orig_op0 = tree_strip_any_location_wrapper (orig_op0);
-	  tree stripped_orig_op1 = tree_strip_any_location_wrapper (orig_op1);
-	  if ((TREE_CODE (stripped_orig_op0) == STRING_CST
-	       && !integer_zerop (cp_fully_fold (op1)))
-	      || (TREE_CODE (stripped_orig_op1) == STRING_CST
-		  && !integer_zerop (cp_fully_fold (op0))))
-	    warning_at (location, OPT_Waddress,
-			"comparison with string literal results in "
-			"unspecified behavior");
-	  else if (warn_array_compare
-		   && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
-		   && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE)
-	    do_warn_array_compare (location, code, stripped_orig_op0,
-				   stripped_orig_op1);
-	}
+      {
+	tree stripped_orig_op0 = tree_strip_any_location_wrapper (orig_op0);
+	tree stripped_orig_op1 = tree_strip_any_location_wrapper (orig_op1);
+	if ((complain & tf_warning_or_error)
+	    && ((TREE_CODE (stripped_orig_op0) == STRING_CST
+		 && !integer_zerop (cp_fully_fold (op1)))
+		|| (TREE_CODE (stripped_orig_op1) == STRING_CST
+		    && !integer_zerop (cp_fully_fold (op0)))))
+	  warning_at (location, OPT_Waddress,
+		      "comparison with string literal results in "
+		      "unspecified behavior");
+	else if (TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+		 && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE)
+	  {
+	    /* P2865R5 made array comparisons ill-formed in C++26.  */
+	    if (complain & tf_warning_or_error)
+	      do_warn_array_compare (location, code, stripped_orig_op0,
+				     stripped_orig_op1);
+	    else if (cxx_dialect >= cxx26)
+	      return error_mark_node;
+	  }
+      }
 
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
@@ -6125,14 +6130,17 @@ cp_build_binary_op (const op_location_t &location,
 			"comparison with string literal results "
 			"in unspecified behavior");
 	}
-      else if (warn_array_compare
-	       && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+      else if (TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
 	       && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE
-	       && code != SPACESHIP_EXPR
-	       && (complain & tf_warning))
-	do_warn_array_compare (location, code,
-			       tree_strip_any_location_wrapper (orig_op0),
-			       tree_strip_any_location_wrapper (orig_op1));
+	       && code != SPACESHIP_EXPR)
+	{
+	  if (complain & tf_warning_or_error)
+	    do_warn_array_compare (location, code,
+				   tree_strip_any_location_wrapper (orig_op0),
+				   tree_strip_any_location_wrapper (orig_op1));
+	  else if (cxx_dialect >= cxx26)
+	    return error_mark_node;
+	}
 
       if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	{

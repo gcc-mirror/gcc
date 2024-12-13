@@ -3592,26 +3592,6 @@ Finalize_methods::type(Type* t)
 	      }
 	  }
 
-	// Finalize the types of all methods that are declared but not
-	// defined, since we won't see the declarations otherwise.
-	if (nt->named_object()->package() == NULL
-	    && nt->local_methods() != NULL)
-	  {
-	    const Bindings* methods = nt->local_methods();
-	    for (Bindings::const_declarations_iterator p =
-		   methods->begin_declarations();
-		 p != methods->end_declarations();
-		 p++)
-	      {
-		if (p->second->is_function_declaration())
-		  {
-		    Type* mt = p->second->func_declaration_value()->type();
-		    if (Type::traverse(mt, this) == TRAVERSE_EXIT)
-		      return TRAVERSE_EXIT;
-		  }
-	      }
-	  }
-
 	return TRAVERSE_SKIP_COMPONENTS;
       }
 
@@ -8790,7 +8770,35 @@ Named_object::traverse(Traverse* traverse, bool is_global)
 
     case Named_object::NAMED_OBJECT_TYPE:
       if ((traverse_mask & e_or_t) != 0)
-	t = Type::traverse(this->type_value(), traverse);
+	{
+	  t = Type::traverse(this->type_value(), traverse);
+	  if (t == TRAVERSE_EXIT)
+	    return TRAVERSE_EXIT;
+
+	  // Traverse the types of any local methods that are declared
+	  // but not defined.  We will see defined methods as
+	  // NAMED_OBJECT_FUNC, but we won't see methods that are only
+	  // declared.
+	  if (this->package_ == NULL
+	      && this->type_value()->named_type()->local_methods() != NULL)
+	    {
+	      const Bindings* methods =
+		this->type_value()->named_type()->local_methods();
+	      for (Bindings::const_declarations_iterator p =
+		     methods->begin_declarations();
+		   p != methods->end_declarations();
+		   ++p)
+		{
+		  if (p->second->is_function_declaration())
+		    {
+		      Type* mt = p->second->func_declaration_value()->type();
+		      if (Type::traverse(mt, traverse) == TRAVERSE_EXIT)
+			return TRAVERSE_EXIT;
+		    }
+		}
+	    }
+	}
+
       break;
 
     case Named_object::NAMED_OBJECT_PACKAGE:

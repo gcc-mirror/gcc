@@ -4070,6 +4070,9 @@ microblaze_starting_frame_offset (void)
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET microblaze_starting_frame_offset
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "MicroBlaze"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-microblaze.h"

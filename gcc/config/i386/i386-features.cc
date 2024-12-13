@@ -3440,7 +3440,7 @@ public:
     {
       return ix86_apx_nf_convert ();
     }
-}; // class pass_rpad
+}; // class pass_apx_nf_convert
 
 } // anon namespace
 

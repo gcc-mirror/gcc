@@ -216,7 +216,12 @@ void test7 (int32_t *a, int32_t *b, int32_t *c, int n, int g)
 **...
 **	dlstp.32	lr, r3
 **	vldrw.32	q[0-9]+, \[r0\], #16
+** (
+**	vmsr	p0, .*
 **	vpst
+** |
+**	vpst
+** )
 **	vldrwt.32	q[0-9]+, \[r1\], #16
 **	vadd.i32	(q[0-9]+), q[0-9]+, q[0-9]+
 **	vstrw.32	\1, \[r2\], #16

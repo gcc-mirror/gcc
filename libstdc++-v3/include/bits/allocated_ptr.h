@@ -82,20 +82,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      explicit operator bool() const noexcept { return (bool)_M_ptr; }
+
       /// Get the address that the owned pointer refers to.
-      value_type* get() { return std::__to_address(_M_ptr); }
+      value_type* get() const { return std::__to_address(_M_ptr); }
+
+      pointer release() { return std::__exchange(_M_ptr, nullptr); }
 
     private:
       _Alloc* _M_alloc;
       pointer _M_ptr;
     };
 
-  /// Allocate space for a single object using __a
+  /// Allocate space for a single object using __a.
   template<typename _Alloc>
-    __allocated_ptr<_Alloc>
+    inline __allocated_ptr<_Alloc>
     __allocate_guarded(_Alloc& __a)
     {
       return { __a, std::allocator_traits<_Alloc>::allocate(__a, 1) };
+    }
+
+  /// RAII type for constructing/destroying an object with an allocated pointer
+  template<typename _Alloc>
+    struct __allocated_obj : __allocated_ptr<_Alloc>
+    {
+      using value_type = typename __allocated_ptr<_Alloc>::value_type;
+
+      __allocated_obj(__allocated_obj<_Alloc>&&) = default;
+
+      // Default-initialize a value_type at *__ptr
+      __allocated_obj(__allocated_ptr<_Alloc>&& __ptr)
+      : __allocated_ptr<_Alloc>(std::move(__ptr))
+      { ::new ((void*)this->get()) value_type; }
+
+      // Call the destructor if an object is owned.
+      ~__allocated_obj()
+      {
+	if (static_cast<bool>(*this))
+	  this->get()->~value_type();
+      }
+
+      using __allocated_ptr<_Alloc>::operator=;
+
+      value_type& operator*() const { return *this->get(); }
+      value_type* operator->() const { return this->get(); }
+    };
+
+  /// Construct an object in storage allocated using __a.
+  template<typename _Alloc>
+    inline __allocated_obj<_Alloc>
+    __allocate_guarded_obj(_Alloc& __a)
+    {
+      return { std::__allocate_guarded(__a) };
     }
 
 /// @endcond

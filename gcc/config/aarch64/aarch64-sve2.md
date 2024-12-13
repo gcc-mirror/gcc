@@ -67,6 +67,8 @@
 ;; ---- [INT] Shift-and-accumulate operations
 ;; ---- [INT] Shift-and-insert operations
 ;; ---- [INT] Sum of absolute differences
+;; ---- [FP] Mfloat8 Multiply-and-accumulate operations
+;; ---- [FP] Mfloat8 dot products
 ;;
 ;; == Extending arithmetic
 ;; ---- [INT] Multi-register widening conversions
@@ -140,7 +142,7 @@
 ;; ---- Predicate to vector moves
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - PMOV (to vector)
+;; - PMOV (to vector) (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_pmov_to_<mode>"
@@ -167,7 +169,7 @@
 ;; ---- Vector to predicate moves
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - PMOV (from vector)
+;; - PMOV (from vector) (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_pmov_from_<mode>"
@@ -197,8 +199,8 @@
 ;; ---- 128-bit extending loads
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - LD1W (to .Q)
-;; - LD1D (to .Q)
+;; - LD1W (to .Q) (SVE2p1)
+;; - LD1D (to .Q) (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 ;; There isn't really a natural way of representing these instructions
@@ -231,9 +233,9 @@
 ;; ---- 128-bit structure loads
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - LD2Q
-;; - LD3Q
-;; - LD4Q
+;; - LD2Q (SVE2p1)
+;; - LD3Q (SVE2p1)
+;; - LD4Q (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 ;; Predicated LD[234]Q.
@@ -328,7 +330,7 @@
 ;; ---- 128-bit gather loads
 ;; -------------------------------------------------------------------------
 ;; Includes gather forms of:
-;; - LD1Q
+;; - LD1Q (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 ;; Model this as operating on the largest valid element size, which is DI.
@@ -415,8 +417,8 @@
 ;; ---- 128-bit truncating stores
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - ST1W (from .Q)
-;; - ST1D (from .Q)
+;; - ST1W (from .Q) (SVE2p1)
+;; - ST1D (from .Q) (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 ;; See the comment above the corresponding loads for a discussion about the
@@ -436,9 +438,9 @@
 ;; ---- 128-bit structure stores
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - ST2Q
-;; - ST3Q
-;; - ST4Q
+;; - ST2Q (SVE2p1)
+;; - ST3Q (SVE2p1)
+;; - ST4Q (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 ;; Predicated ST[234].
@@ -513,7 +515,7 @@
 ;; ---- 128-bit scatter stores
 ;; -------------------------------------------------------------------------
 ;; Includes scatter form of:
-;; - ST1Q
+;; - ST1Q (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 (define_insn "aarch64_scatter_st1q"
@@ -1324,12 +1326,12 @@
 ;; ---- [FP] Non-widening bfloat16 arithmetic
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - BFADD
-;; - BFMAX
-;; - BFMAXNM
-;; - BFMIN
-;; - BFMINNM
-;; - BFMUL
+;; - BFADD (SVE_B16B16)
+;; - BFMAX (SVE_B16B16)
+;; - BFMAXNM (SVE_B16B16)
+;; - BFMIN (SVE_B16B16)
+;; - BFMINNM (SVE_B16B16)
+;; - BFMUL (SVE_B16B16)
 ;; -------------------------------------------------------------------------
 
 ;; Predicated B16B16 binary operations.
@@ -1730,6 +1732,23 @@
   }
 )
 
+(define_insn "*aarch64_sve2_nbsl_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(not:VDQ_I
+	  (xor:VDQ_I
+	    (and:VDQ_I
+	      (xor:VDQ_I
+		(match_operand:VDQ_I 1 "register_operand")
+		(match_operand:VDQ_I 2 "register_operand"))
+	      (match_operand:VDQ_I 3 "register_operand"))
+	    (match_dup BSL_DUP))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] nbsl\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;nbsl\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
+  }
+)
+
 ;; Unpredicated bitwise select with inverted first operand.
 ;; (op3 ? ~bsl_mov : bsl_dup) == ((~(bsl_mov ^ bsl_dup) & op3) ^ bsl_dup)
 (define_expand "@aarch64_sve2_bsl1n<mode>"
@@ -1772,6 +1791,23 @@
   "&& !CONSTANT_P (operands[4])"
   {
     operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+(define_insn "*aarch64_sve2_bsl1n_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(xor:VDQ_I
+	  (and:VDQ_I
+	    (not:VDQ_I
+	      (xor:VDQ_I
+		(match_operand:VDQ_I 1 "register_operand")
+		(match_operand:VDQ_I 2 "register_operand")))
+	    (match_operand:VDQ_I 3 "register_operand"))
+	  (match_dup BSL_DUP)))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] bsl1n\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;bsl1n\t%Z0.d, %Z0.d, %Z<bsl_dup>.d, %Z3.d
   }
 )
 
@@ -1846,6 +1882,38 @@
   "&& !CONSTANT_P (operands[4])"
   {
     operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+(define_insn "*aarch64_sve2_bsl2n_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(ior:VDQ_I
+	  (and:VDQ_I
+	    (match_operand:VDQ_I 1 "register_operand")
+	    (match_operand:VDQ_I 2 "register_operand"))
+	  (and:VDQ_I
+	    (not:VDQ_I (match_operand:VDQ_I 3 "register_operand"))
+	    (not:VDQ_I (match_dup BSL_DUP)))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
+  }
+)
+
+(define_insn "*aarch64_sve2_bsl2n_unpred<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand")
+	(ior:VDQ_I
+	  (and:VDQ_I
+	    (match_operand:VDQ_I 1 "register_operand")
+	    (match_operand:VDQ_I 2 "register_operand"))
+	  (and:VDQ_I
+	    (not:VDQ_I (match_dup BSL_DUP))
+	    (not:VDQ_I (match_operand:VDQ_I 3 "register_operand")))))]
+  "TARGET_SVE2"
+  {@ [ cons: =0 , 1         , 2         , 3 ; attrs: movprfx ]
+     [ w        , <bsl_1st> , <bsl_2nd> , w ; *              ] bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
+     [ ?&w      , w         , w         , w ; yes            ] movprfx\t%Z0, %Z<bsl_mov>\;bsl2n\t%Z0.d, %Z0.d, %Z3.d, %Z<bsl_dup>.d
   }
 )
 
@@ -1990,6 +2058,126 @@
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , w ; *              ] <su>aba\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
      [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<su>aba\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Mfloat8 Multiply-and-accumulate operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FMLALB (vectors, FP8 to FP16) (FP8FMA)
+;; - FMLALT (vectors, FP8 to FP16) (FP8FMA)
+;; - FMLALB (indexed, FP8 to FP16) (FP8FMA)
+;; - FMLALT (indexed, FP8 to FP16) (FP8FMA)
+;; - FMLALLBB (vectors) (FP8FMA)
+;; - FMLALLBB (indexed) (FP8FMA)
+;; - FMLALLBT (vectors) (FP8FMA)
+;; - FMLALLBT (indexed) (FP8FMA)
+;; - FMLALLTB (vectors) (FP8FMA)
+;; - FMLALLTB (indexed) (FP8FMA)
+;; - FMLALLTT (vectors) (FP8FMA)
+;; - FMLALLTT (indexed) (FP8FMA)
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_add_<insn><mode>"
+  [(set (match_operand:VNx8HF_ONLY 0 "register_operand")
+	(unspec:VNx8HF_ONLY
+	  [(match_operand:VNx8HF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (reg:DI FPM_REGNUM)]
+	  FMLAL_FP8_HF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , w ; *              ] <insn>\t%0.h, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<insn>\t%0.h, %2.b, %3.b
+  }
+)
+
+(define_insn "@aarch64_sve_add_<insn><mode>"
+  [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
+	(unspec:VNx4SF_ONLY
+	  [(match_operand:VNx4SF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (reg:DI FPM_REGNUM)]
+	  FMLALL_FP8_SF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , w ; *              ] <insn>\t%0.s, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<insn>\t%0.s, %2.b, %3.b
+  }
+)
+
+(define_insn "@aarch64_sve_add_lane_<insn><mode>"
+  [(set (match_operand:VNx8HF_ONLY 0 "register_operand")
+	(unspec:VNx8HF_ONLY
+	  [(match_operand:VNx8HF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  FMLAL_FP8_HF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , y ; *              ] <insn>\t%0.h, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<insn>\t%0.h, %2.b, %3.b[%4]
+  }
+)
+
+(define_insn "@aarch64_sve_add_lane_<insn><mode>"
+  [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
+	(unspec:VNx4SF_ONLY
+	  [(match_operand:VNx4SF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  FMLALL_FP8_SF))]
+  "TARGET_SSVE_FP8FMA"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , y ; *              ] <insn>\t%0.s, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;<insn>\t%0.s, %2.b, %3.b[%4]
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Mfloat8 dot products
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FDOT (4-way, vectors) (FP8DOT4)
+;; - FDOT (4-way, indexed) (FP8DOT4)
+;; - FDOT (2-way, vectors) (FP8DOT2)
+;; - FDOT (2-way, indexed) (FP8DOT2)
+;; -------------------------------------------------------------------------
+(define_insn "@aarch64_sve_dot<mode>"
+  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
+	(unspec:SVE_FULL_HSF
+	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_DOT_FP8))]
+  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , w ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b
+  }
+)
+
+(define_insn "@aarch64_sve_dot_lane<mode>"
+  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
+	(unspec:SVE_FULL_HSF
+	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+	   (match_operand:VNx16QI 2 "register_operand")
+	   (match_operand:VNx16QI 3 "register_operand")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_DOT_LANE_FP8))]
+  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , y ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b[%4]
+     [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b[%4]
   }
 )
 
@@ -2454,10 +2642,10 @@
 ;; ---- [INT] Multi-vector narrowing unary arithmetic
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - SQCVT
-;; - SQCVTN
-;; - UQCVT
-;; - UQCVTN
+;; - SQCVT (SME2)
+;; - SQCVTN (SME2)
+;; - UQCVT (SME2)
+;; - UQCVTN (SME2)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sve_<optab><VNx16QI_ONLY:mode><VNx16SI_ONLY:mode>"
@@ -2589,12 +2777,12 @@
 ;; ---- [INT] Multi-vector narrowing right shifts
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - SQRSHR
-;; - SQRSHRN
-;; - SQRSHRU
-;; - SQRSHRUN
-;; - UQRSHR
-;; - UQRSHRN
+;; - SQRSHR (SME2)
+;; - SQRSHRN (SVE2p1, SME2)
+;; - SQRSHRU (SME2)
+;; - SQRSHRUN (SVE2p1, SME2)
+;; - UQRSHR (SME2)
+;; - UQRSHRN (SVE2p1, SME2)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sve_<sve_int_op><mode>"
@@ -2936,6 +3124,14 @@
 ;; ---- [FP<-FP] Widening conversions
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - BF1CVT (FP8)
+;; - BF1CVTLT (FP8)
+;; - BF2CVT (FP8)
+;; - BF2CVTLT (FP8)
+;; - F1CVT (FP8)
+;; - F1CVTLT (FP8)
+;; - F2CVT (FP8)
+;; - F2CVTLT (FP8)
 ;; - FCVTLT
 ;; -------------------------------------------------------------------------
 
@@ -2999,6 +3195,16 @@
 	  UNSPEC_SEL))]
   "TARGET_SVE2"
   "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Ventype>"
+)
+
+(define_insn "@aarch64_sve2_fp8_cvt_<fp8_cvt_uns_op><mode>"
+  [(set (match_operand:SVE_FULL_HF 0 "register_operand" "=w")
+	(unspec:SVE_FULL_HF
+	  [(match_operand:VNx16QI 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	  FP8CVT_UNS))]
+  "TARGET_SSVE_FP8"
+  "<b><fp8_cvt_uns_op>\t%0.h, %1.b"
 )
 
 ;; -------------------------------------------------------------------------
@@ -3121,8 +3327,8 @@
 ;; ---- [FP<-FP] Multi-vector widening conversions
 ;; -------------------------------------------------------------------------
 ;; Includes the multi-register forms of:
-;; - FCVT
-;; - FCVTL
+;; - FCVT (SME_F16F16)
+;; - FCVTL (SME_F16F16)
 ;; -------------------------------------------------------------------------
 
 (define_insn "extendvnx8hfvnx8sf2"
@@ -3146,10 +3352,12 @@
 ;; ---- [FP<-FP] Multi-vector narrowing conversions
 ;; -------------------------------------------------------------------------
 ;; Includes the multi-register forms of:
-;; - BFCVT
-;; - BFCVTN
-;; - FCVT
-;; - FCVTN
+;; - BFCVT (SME2)
+;; - BFCVTN (SME2)
+;; - FCVT (SME2)
+;; - FCVTN (SME2)
+;; - FCVTNB (FP8)
+;; - FCVTNT (FP8)
 ;; -------------------------------------------------------------------------
 
 (define_insn "truncvnx8sf<mode>2"
@@ -3169,8 +3377,43 @@
   "<b>fcvtn\t%0.h, %1"
 )
 
+(define_insn "@aarch64_sve2_fp8_cvtn<mode>"
+  [(set (match_operand:VNx16QI 0 "register_operand" "=w")
+	(unspec:VNx16QI
+	  [(match_operand:SVE_FULL_HFx2 1 "aligned_register_operand" "Uw2")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_FP8FCVTN))]
+  "TARGET_SSVE_FP8"
+  "<b>fcvtn\t%0.b, %1"
+)
+
+(define_insn "@aarch64_sve2_fp8_cvtnb<mode>"
+  [(set (match_operand:VNx16QI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx16QI_ONLY
+	  [(match_operand:VNx8SF 1 "aligned_register_operand" "Uw2")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_FCVTNB))]
+  "TARGET_SSVE_FP8"
+  "fcvtnb\t%0.b, %1"
+)
+
+(define_insn "@aarch64_sve_cvtnt<mode>"
+  [(set (match_operand:VNx16QI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx16QI_ONLY
+	  [(match_operand:VNx16QI_ONLY 1 "register_operand" "0")
+	   (match_operand:VNx8SF 2 "aligned_register_operand" "Uw2")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_FCVTNT))]
+  "TARGET_SSVE_FP8"
+  "fcvtnt\t%0.b, %2"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP<-INT] Multi-vector conversions
+;; -------------------------------------------------------------------------
+;; Includes the multi-register forms of:
+;; - SCVTF (SME2)
+;; - UCVTF (SME2)
 ;; -------------------------------------------------------------------------
 
 (define_insn "<optab><v_int_equiv><mode>2"
@@ -3183,6 +3426,10 @@
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT<-FP] Multi-vector conversions
+;; -------------------------------------------------------------------------
+;; Includes the multi-register forms of:
+;; - FCVTZS (SME2)
+;; - FCVTZU (SME2)
 ;; -------------------------------------------------------------------------
 
 (define_insn "<optab><mode><v_int_equiv>2"
@@ -3456,14 +3703,14 @@
 ;; ---- [INT] Reduction to 128-bit vector
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - ADDQV
-;; - ANDQV
-;; - EORQV
-;; - ORQV
-;; - SMAXQV
-;; - SMINQV
-;; - UMAXQV
-;; - UMINQV
+;; - ADDQV (SVE2p1)
+;; - ANDQV (SVE2p1)
+;; - EORQV (SVE2p1)
+;; - ORQV (SVE2p1)
+;; - SMAXQV (SVE2p1)
+;; - SMINQV (SVE2p1)
+;; - UMAXQV (SVE2p1)
+;; - UMINQV (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_pred_reduc_<optab>_<mode>"
@@ -3480,11 +3727,11 @@
 ;; ---- [FP] Reduction to 128-bit vector
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - FADDQV
-;; - FMAXNMQV
-;; - FMAXQV
-;; - FMINNMQV
-;; - FMINQV
+;; - FADDQV (SVE2p1)
+;; - FMAXNMQV (SVE2p1)
+;; - FMAXQV (SVE2p1)
+;; - FMINNMQV (SVE2p1)
+;; - FMINQV (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_pred_reduc_<optab>_<mode>"
@@ -3543,8 +3790,8 @@
 ;; ---- [INT,FP] HVLA permutes
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - DUPQ
-;; - EXTQ
+;; - DUPQ (SVE2p1)
+;; - EXTQ (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sve_dupq<mode>"

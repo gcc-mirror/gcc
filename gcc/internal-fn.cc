@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -55,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const-call.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
+#include "gcc-urlifier.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -888,6 +890,7 @@ expand_TSAN_FUNC_EXIT (internal_fn, gcall *)
 static void
 expand_FALLTHROUGH (internal_fn, gcall *call)
 {
+  auto_urlify_attributes sentinel;
   error_at (gimple_location (call),
 	    "invalid use of attribute %<fallthrough%>");
 }
@@ -3134,58 +3137,6 @@ expand_partial_store_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab
 #define expand_mask_store_lanes_optab_fn expand_mask_store_optab_fn
 #define expand_len_store_optab_fn expand_partial_store_optab_fn
 #define expand_mask_len_store_optab_fn expand_partial_store_optab_fn
-
-/* Expand VCOND, VCONDU and VCONDEQ optab internal functions.
-   The expansion of STMT happens based on OPTAB table associated.  */
-
-static void
-expand_vec_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
-{
-  class expand_operand ops[6];
-  insn_code icode;
-  tree lhs = gimple_call_lhs (stmt);
-  tree op0a = gimple_call_arg (stmt, 0);
-  tree op0b = gimple_call_arg (stmt, 1);
-  tree op1 = gimple_call_arg (stmt, 2);
-  tree op2 = gimple_call_arg (stmt, 3);
-  enum tree_code tcode = (tree_code) int_cst_value (gimple_call_arg (stmt, 4));
-
-  tree vec_cond_type = TREE_TYPE (lhs);
-  tree op_mode = TREE_TYPE (op0a);
-  bool unsignedp = TYPE_UNSIGNED (op_mode);
-
-  machine_mode mode = TYPE_MODE (vec_cond_type);
-  machine_mode cmp_op_mode = TYPE_MODE (op_mode);
-
-  icode = convert_optab_handler (optab, mode, cmp_op_mode);
-  rtx comparison
-    = vector_compare_rtx (VOIDmode, tcode, op0a, op0b, unsignedp, icode, 4);
-  /* vector_compare_rtx legitimizes operands, preserve equality when
-     expanding op1/op2.  */
-  rtx rtx_op1, rtx_op2;
-  if (operand_equal_p (op1, op0a))
-    rtx_op1 = XEXP (comparison, 0);
-  else if (operand_equal_p (op1, op0b))
-    rtx_op1 = XEXP (comparison, 1);
-  else
-    rtx_op1 = expand_normal (op1);
-  if (operand_equal_p (op2, op0a))
-    rtx_op2 = XEXP (comparison, 0);
-  else if (operand_equal_p (op2, op0b))
-    rtx_op2 = XEXP (comparison, 1);
-  else
-    rtx_op2 = expand_normal (op2);
-
-  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_call_lhs_operand (&ops[0], target, mode);
-  create_input_operand (&ops[1], rtx_op1, mode);
-  create_input_operand (&ops[2], rtx_op2, mode);
-  create_fixed_operand (&ops[3], comparison);
-  create_fixed_operand (&ops[4], XEXP (comparison, 0));
-  create_fixed_operand (&ops[5], XEXP (comparison, 1));
-  expand_insn (icode, 6, ops);
-  assign_call_lhs (lhs, target, &ops[0]);
-}
 
 /* Expand VCOND_MASK optab internal function.
    The expansion of STMT happens based on OPTAB table associated.  */

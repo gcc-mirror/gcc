@@ -480,8 +480,7 @@ vec_info::~vec_info ()
 }
 
 vec_info_shared::vec_info_shared ()
-  : n_stmts (0),
-    datarefs (vNULL),
+  : datarefs (vNULL),
     datarefs_copy (vNULL),
     ddrs (vNULL)
 {
@@ -539,6 +538,29 @@ vec_info::add_pattern_stmt (gimple *stmt, stmt_vec_info stmt_info)
   set_vinfo_for_stmt (stmt, res, false);
   STMT_VINFO_RELATED_STMT (res) = stmt_info;
   return res;
+}
+
+/* If STMT was previously associated with a stmt_vec_info and STMT now resides
+   at a different address than before (e.g., because STMT is a phi node that has
+   been resized), update the stored address to match the new one.  It is not
+   possible to use lookup_stmt () to perform this task, because that function
+   returns NULL if the stored stmt pointer does not match the one being looked
+   up.  */
+
+stmt_vec_info
+vec_info::resync_stmt_addr (gimple *stmt)
+{
+  unsigned int uid = gimple_uid (stmt);
+  if (uid > 0 && uid - 1 < stmt_vec_infos.length ())
+    {
+      stmt_vec_info res = stmt_vec_infos[uid - 1];
+      if (res && res->stmt)
+	{
+	  res->stmt = stmt;
+	  return res;
+	}
+    }
+  return nullptr;
 }
 
 /* If STMT has an associated stmt_vec_info, return that vec_info, otherwise

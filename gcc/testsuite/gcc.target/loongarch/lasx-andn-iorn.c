@@ -3,7 +3,7 @@
 #include "./lsx-andn-iorn.c"
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlasx -ftree-vectorize" } */
+/* { dg-options "-O2 -mlasx -ftree-vectorize -fdump-tree-optimized" } */
 
 /* We should produce a BIT_ANDC and BIT_IORC here.  */
 

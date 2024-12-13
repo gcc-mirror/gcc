@@ -3535,6 +3535,14 @@ loc_cmp (rtx x, rtx y)
 	else
 	  return 1;
 
+      case 'L':
+	if (XLOC (x, i) == XLOC (y, i))
+	  break;
+	else if (XLOC (x, i) < XLOC (y, i))
+	  return -1;
+	else
+	  return 1;
+
       case 'p':
 	r = compare_sizes_for_sort (SUBREG_BYTE (x), SUBREG_BYTE (y));
 	if (r != 0)

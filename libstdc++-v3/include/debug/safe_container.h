@@ -64,10 +64,13 @@ namespace __gnu_debug
       _Safe_container(_Safe_container&& __x, const _Alloc& __a, std::false_type)
       : _Safe_container()
       {
-	if (__x._M_cont().get_allocator() == __a)
-	  _Base::_M_swap(__x);
-	else if (!std::__is_constant_evaluated())
-	  __x._M_invalidate_all();
+	if (!std::__is_constant_evaluated())
+	  {
+	    if (__x._M_cont().get_allocator() == __a)
+	      _Base::_M_swap(__x);
+	    else
+	      __x._M_invalidate_all();
+	  }
       }
 
     protected:

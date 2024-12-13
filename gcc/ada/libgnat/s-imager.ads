@@ -56,7 +56,7 @@ package System.Image_R is
       Aft : Natural);
    --  Computes fixed_type'Image (V) and returns the result in S (1 .. P)
    --  updating P on return. The result is computed according to the rules for
-   --  image for fixed-point types (RM 3.5(34)), where Aft is the value of the
+   --  image for fixed-point types (RM 4.10(14)), where Aft is the value of the
    --  Aft attribute for the fixed-point type. The caller guarantees that S is
    --  long enough to hold the result and has a lower bound of 1.
    --
@@ -69,9 +69,9 @@ package System.Image_R is
       Digs : Natural);
    --  Computes Uns'Image (V) and returns the result in S (1 .. P) updating P
    --  on return. The result is computed according to the rules for image for
-   --  floating-point types (RM 3.5(33)), where Digs is the value of the Digits
-   --  attribute for the floating-point type. The caller guarantees that S is
-   --  long enough to hold the result and has a lower bound of 1.
+   --  floating-point types (RM 4.10(13)), where Digs is the value of the
+   --  Digits attribute for the floating-point type. The caller guarantees that
+   --  S is long enough to hold the result and has a lower bound of 1.
 
    procedure Set_Image_Real
      (V    : Num;

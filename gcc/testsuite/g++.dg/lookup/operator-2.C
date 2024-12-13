@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 
 struct R{};
-bool operator! (R); // { dg-message "candidate:" }
+bool operator! (R); // { dg-message "candidate .:" }
 
 template <typename T> bool Foo (T x)
 {

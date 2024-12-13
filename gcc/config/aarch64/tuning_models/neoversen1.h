@@ -51,7 +51,7 @@ static const struct tune_params neoversen1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_BASE),	/* tune_flags.  */
   &generic_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */
   AARCH64_LDP_STP_POLICY_ALWAYS    /* stp_policy_model.  */

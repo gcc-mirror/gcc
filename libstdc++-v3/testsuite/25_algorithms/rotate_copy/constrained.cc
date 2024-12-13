@@ -41,7 +41,7 @@ struct X
   }
 };
 
-static_assert(!std::is_trivial_v<X>);
+static_assert(!std::is_trivially_default_constructible_v<X>);
 
 template<template<typename, template<typename> typename> typename container,
 	 template<typename> typename wrapper,

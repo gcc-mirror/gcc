@@ -8824,6 +8824,8 @@ package body Sem_Attr is
       --  unconstrained arrays. Furthermore, it is essential to fold this
       --  in the packed case, since otherwise the value will be incorrect.
       --  Moreover, the exact same reasoning can be applied to Alignment.
+      --  Likewise for the various size attributes, although folding will
+      --  never succeed for them with unconstrained arrays.
 
       elsif Id = Attribute_Atomic_Always_Lock_Free      or else
             Id = Attribute_Definite                     or else
@@ -8835,7 +8837,12 @@ package body Sem_Attr is
             Id = Attribute_Type_Class                   or else
             Id = Attribute_Unconstrained_Array          or else
             Id = Attribute_Component_Size               or else
-            Id = Attribute_Alignment
+            Id = Attribute_Alignment                    or else
+            Id = Attribute_Machine_Size                 or else
+            Id = Attribute_Object_Size                  or else
+            Id = Attribute_Size                         or else
+            Id = Attribute_VADS_Size                    or else
+            Id = Attribute_Value_Size
       then
          Static := False;
          Set_Is_Static_Expression (N, False);
@@ -10717,7 +10724,7 @@ package body Sem_Attr is
                else
                   --  For floating-point, we have +N.dddE+nnn where length
                   --  of ddd is determined by type'Digits - 1, but is one
-                  --  if Digits is one (RM 3.5 (33)).
+                  --  if Digits is one (RM 4.10 (13)).
 
                   --  nnn is set to 2 for Short_Float and Float (32 bit
                   --  floats), and 3 for Long_Float and Long_Long_Float.
@@ -10755,7 +10762,8 @@ package body Sem_Attr is
                --  The non-null case depends on the specific real type
 
                else
-                  --  For fixed-point type width is Fore + 1 + Aft (RM 3.5(34))
+                  --  For fixed-point type width is Fore + 1 + Aft
+                  --  (RM 4.10(14)).
 
                   Fold_Uint
                     (N, UI_From_Int (Fore_Value + 1) + Aft_Value (P_Type),

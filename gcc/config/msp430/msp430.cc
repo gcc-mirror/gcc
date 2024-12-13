@@ -4516,6 +4516,9 @@ msp430_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "MSP430"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-msp430.h"

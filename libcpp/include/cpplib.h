@@ -255,8 +255,10 @@ struct GTY(()) cpp_identifier {
        spelling;
 };
 
-/* A preprocessing token.  This has been carefully packed and should
-   occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
+/* A preprocessing token.  This occupies 32 bytes on a 64-bit host.  On a
+   32-bit host it occupies 20 or 24 bytes, depending whether a uint64_t
+   requires 4- or 8-byte alignment.  */
+
 struct GTY(()) cpp_token {
 
   /* Location of first char of token, together with range of full token.  */
@@ -556,6 +558,9 @@ struct cpp_options
 
   /* Nonzero for C++23 named universal character escape sequences.  */
   unsigned char named_uc_escape_seqs;
+
+  /* Nonzero for C++ and C23 UCNs for characters below 0xa0.  */
+  unsigned char low_ucns;
 
   /* Nonzero for C2Y 0o prefixed octal integer constants.  */
   unsigned char octal_constants;

@@ -3,6 +3,23 @@
 #include "test_sve_acle.h"
 
 /*
+** reinterpret_u64_mf8_tied1:
+**	ret
+*/
+TEST_DUAL_Z_REV (reinterpret_u64_mf8_tied1, svuint64_t, svmfloat8_t,
+		 z0_res = svreinterpret_u64_mf8 (z0),
+		 z0_res = svreinterpret_u64 (z0))
+
+/*
+** reinterpret_u64_mf8_untied:
+**	mov	z0\.d, z4\.d
+**	ret
+*/
+TEST_DUAL_Z (reinterpret_u64_mf8_untied, svuint64_t, svmfloat8_t,
+	     z0 = svreinterpret_u64_mf8 (z4),
+	     z0 = svreinterpret_u64 (z4))
+
+/*
 ** reinterpret_u64_bf16_tied1:
 **	ret
 */
@@ -228,6 +245,17 @@ TEST_DUAL_Z_REV (reinterpret_u64_bf16_x2_tied1, svuint64x2_t, svbfloat16x2_t,
 TEST_DUAL_XN (reinterpret_u64_f32_x2_untied, svuint64x2_t, svfloat32x2_t, z0,
 	      svreinterpret_u64_f32_x2 (z4),
 	      svreinterpret_u64 (z4))
+
+/*
+** reinterpret_u64_mf8_x3_untied:
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	ret
+*/
+TEST_DUAL_XN (reinterpret_u64_mf8_x3_untied, svuint64x3_t, svmfloat8x3_t, z18,
+	      svreinterpret_u64_mf8_x3 (z23),
+	      svreinterpret_u64 (z23))
 
 /*
 ** reinterpret_u64_s64_x3_tied1:

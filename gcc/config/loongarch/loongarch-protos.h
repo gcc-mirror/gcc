@@ -113,8 +113,9 @@ extern rtx loongarch_return_addr (int, rtx);
 
 extern bool loongarch_const_vector_same_val_p (rtx, machine_mode);
 extern bool loongarch_const_vector_same_bytes_p (rtx, machine_mode);
-extern bool loongarch_const_vector_same_int_p (rtx, machine_mode, HOST_WIDE_INT,
-					  HOST_WIDE_INT);
+extern bool loongarch_const_vector_same_int_p (rtx, machine_mode,
+			   HOST_WIDE_INT low = HOST_WIDE_INT_MIN,
+			   HOST_WIDE_INT high = HOST_WIDE_INT_MAX);
 extern bool loongarch_const_vector_shuffle_set_p (rtx, machine_mode);
 extern bool loongarch_const_vector_bitimm_set_p (rtx, machine_mode);
 extern bool loongarch_const_vector_bitimm_clr_p (rtx, machine_mode);

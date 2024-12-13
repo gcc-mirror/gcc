@@ -37,6 +37,8 @@ dg-init
 set CFLAGS "$DEFAULT_CFLAGS -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
 	"" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xsfvector/*.\[cS\]]] \
+	"" $CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
@@ -59,23 +61,23 @@ set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O2 -mrvv-max-lmul=dynamic} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/partial/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/binop/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cmp/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/conversions/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/unop/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/ternop/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/reduc/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cond/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/builtin/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
 }
 
 # widening operation only test on LMUL < 8
@@ -88,7 +90,7 @@ set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O2 -mrvv-max-lmul=m4} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/widen/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
 }
 
 # VLS-VLMAX tests

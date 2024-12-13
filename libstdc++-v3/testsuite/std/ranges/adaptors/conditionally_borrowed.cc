@@ -61,7 +61,10 @@ void
 test02()
 {
   std::pair<int, std::string_view> a[2]{ {1,"two"}, {3,"four"}};
-  auto pos = ranges::find(a | views::values, "four");
+  // FIXME: We should be able to get rid of the decay via the + here.
+  // But we'd end up comparing two array types in equality_comparable_with
+  // -> __weakly_eq_cmp_with which is ill-formed in C++26 due to P2865.
+  auto pos = ranges::find(a | views::values, +"four");
   VERIFY( *pos == "four" );
 
   static_assert( ranges::borrowed_range<decltype(a | views::keys)> );

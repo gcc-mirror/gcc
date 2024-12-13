@@ -26,10 +26,13 @@ FROM ASCII IMPORT nul ;
 FROM NameKey IMPORT Name, WriteKey, MakeKey, KeyToCharStar, NulName ;
 FROM M2Debug IMPORT Assert, WriteDebug ;
 FROM M2LexBuf IMPORT GetFileName, GetTokenNo, UnknownTokenNo ;
-FROM M2MetaError IMPORT MetaErrorString2, MetaError0, MetaError1, MetaError2, MetaErrorT1, MetaErrorT2 ;
+
+FROM M2MetaError IMPORT MetaErrorString2, MetaError0, MetaError1,
+                        MetaError2, MetaErrorT0, MetaErrorT1, MetaErrorT2 ;
+
 FROM DynamicStrings IMPORT String, Slice, InitString, KillString, EqualCharStar, RIndex, Mark, ConCat ;
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
-FROM M2Options IMPORT Iso ;
+FROM M2Options IMPORT Iso, GetEnableForward ;
 
 FROM M2Reserved IMPORT ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
                        NulTok, VarTok, ArrayTok, BuiltinTok, InlineTok ;
@@ -1064,13 +1067,18 @@ END EndBuildProcedure ;
                                            Empty
 *)
 
-PROCEDURE EndBuildForward ;
+PROCEDURE EndBuildForward (forwardPos: CARDINAL) ;
 VAR
    ProcSym: CARDINAL ;
    tok    : CARDINAL ;
 BEGIN
    ProcSym := OperandT (1) ;
    tok := OperandTok (1) ;
+   IF NOT GetEnableForward ()
+   THEN
+      MetaErrorT0 (forwardPos,
+                   'forward declaration has not been enabled, use -fiso or -fenable-forward to enable forward procedure declarations')
+   END ;
    IF GetProcedureDefined (ProcSym, ForwardProcedure)
    THEN
       MetaErrorT1 (GetProcedureDeclaredTok (ProcSym, ForwardProcedure),

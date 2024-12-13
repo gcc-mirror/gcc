@@ -102,6 +102,39 @@ weak_ordering, "<compare>", cxx20
 # <complex>
 complex, "<complex>", cxx98
 complex_literals, "<complex>", cxx14
+# <concepts>
+same_as, "<concepts>", cxx20
+derived_from, "<concepts>", cxx20
+convertible_to, "<concepts>", cxx20
+common_reference_with, "<concepts>", cxx20
+common_with, "<concepts>", cxx20
+integral, "<concepts>", cxx20
+signed_integral, "<concepts>", cxx20
+unsigned_integral, "<concepts>", cxx20
+floating_point, "<concepts>", cxx20
+assignable_from, "<concepts>", cxx20
+swappable, "<concepts>", cxx20
+swappable_with, "<concepts>", cxx20
+destructible, "<concepts>", cxx20
+constructible_from, "<concepts>", cxx20
+default_initializable, "<concepts>", cxx20
+move_constructible, "<concepts>", cxx20
+copy_constructible, "<concepts>", cxx20
+equality_comparable, "<concepts>", cxx20
+equality_comparable_with, "<concepts>", cxx20
+totally_ordered, "<concepts>", cxx20
+totally_ordered_with, "<concepts>", cxx20
+movable, "<concepts>", cxx20
+copyable, "<concepts>", cxx20
+semiregular, "<concepts>", cxx20
+regular, "<concepts>", cxx20
+invocable, "<concepts>", cxx20
+regular_invocable, "<concepts>", cxx20
+predicate, "<concepts>", cxx20
+relation, "<concepts>", cxx20
+equivalence_relation, "<concepts>", cxx20
+strict_weak_order, "<concepts>", cxx20
+ranges::swap, "<concepts>", cxx20
 # <condition_variable>
 condition_variable, "<condition_variable>", cxx11
 condition_variable_any, "<condition_variable>", cxx11

@@ -1092,13 +1092,16 @@ copy_file (const char *dest, const char *src)
    the copy to the linker.  */
 
 static void
-find_crtoffloadtable (int save_temps, const char *dumppfx)
+find_crtoffloadtable (int save_temps, bool pie_or_shared, const char *dumppfx)
 {
   char **paths = NULL;
   const char *library_path = getenv ("LIBRARY_PATH");
   if (!library_path)
     return;
-  unsigned n_paths = parse_env_var (library_path, &paths, "/crtoffloadtable.o");
+  unsigned n_paths = parse_env_var (library_path, &paths,
+				    pie_or_shared
+				    ? "/crtoffloadtableS.o"
+				    : "/crtoffloadtable.o");
 
   unsigned i;
   for (i = 0; i < n_paths; i++)
@@ -1117,7 +1120,8 @@ find_crtoffloadtable (int save_temps, const char *dumppfx)
       }
   if (i == n_paths)
     fatal_error (input_location,
-		 "installation error, cannot find %<crtoffloadtable.o%>");
+		 "installation error, cannot find %<crtoffloadtable%s.o%>",
+		 pie_or_shared ? "S" : "");
 
   free_array_of_ptrs ((void **) paths, n_paths);
 }
@@ -1423,6 +1427,11 @@ run_gcc (unsigned argc, char *argv[])
   char **lto_argv, **ltoobj_argv;
   bool linker_output_rel = false;
   bool skip_debug = false;
+#ifdef ENABLE_DEFAULT_PIE
+  bool pie_or_shared = true;
+#else
+  bool pie_or_shared = false;
+#endif
   const char *incoming_dumppfx = dumppfx = NULL;
   static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 
@@ -1592,6 +1601,16 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_fdiagnostics_show_highlight_colors:
 	  global_dc->set_show_highlight_colors (option->value);
+	  break;
+
+	case OPT_pie:
+	case OPT_shared:
+	case OPT_static_pie:
+	  pie_or_shared = true;
+	  break;
+
+	case OPT_no_pie:
+	  pie_or_shared = false;
 	  break;
 
 	default:
@@ -1802,7 +1821,7 @@ cont1:
 
       if (offload_names)
 	{
-	  find_crtoffloadtable (save_temps, dumppfx);
+	  find_crtoffloadtable (save_temps, pie_or_shared, dumppfx);
 	  for (i = 0; offload_names[i]; i++)
 	    printf ("%s\n", offload_names[i]);
 	  free_array_of_ptrs ((void **) offload_names, i);

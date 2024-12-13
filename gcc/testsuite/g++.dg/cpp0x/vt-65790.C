@@ -1,7 +1,7 @@
 // PR c++/65790
 // { dg-do compile { target c++11 } }
 
-extern "C" int printf(const char* ...);
+extern "C" int printf(const char*, ...);
 
 namespace std
 {

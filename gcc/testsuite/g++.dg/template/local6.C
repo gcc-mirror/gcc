@@ -1,6 +1,6 @@
 template <class T> struct PCVector2 // { dg-message "note" }
 {
-    template <class T2> PCVector2(const PCVector2<T> &cv) ; // { dg-message "candidate:" }
+    template <class T2> PCVector2(const PCVector2<T> &cv) ; // { dg-message "candidate .:" }
     // { dg-message "(candidate|expects 1 argument, 2 provided|cannot convert)" "candidate note" { target *-*-* } .-1 }
 
     PCVector2<T> operator- (const PCVector2<T> &ov) const 

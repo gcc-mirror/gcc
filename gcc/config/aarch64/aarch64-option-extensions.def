@@ -166,13 +166,13 @@ AARCH64_FMV_FEATURE("rpres", RPRES, ())
 AARCH64_OPT_FMV_EXTENSION("sve", SVE, (SIMD, F16), (), (), "sve")
 
 /* This specifically does not imply +sve.  */
-AARCH64_OPT_EXTENSION("sve-b16b16", SVE_B16B16, (), (), (), "")
+AARCH64_OPT_EXTENSION("sve-b16b16", SVE_B16B16, (), (), (), "sveb16b16")
 
-AARCH64_OPT_EXTENSION("f32mm", F32MM, (SVE), (), (), "f32mm")
+AARCH64_OPT_EXTENSION("f32mm", F32MM, (SVE), (), (), "svef32mm")
 
 AARCH64_FMV_FEATURE("f32mm", SVE_F32MM, (F32MM))
 
-AARCH64_OPT_EXTENSION("f64mm", F64MM, (SVE), (), (), "f64mm")
+AARCH64_OPT_EXTENSION("f64mm", F64MM, (SVE), (), (), "svef64mm")
 
 AARCH64_FMV_FEATURE("f64mm", SVE_F64MM, (F64MM))
 
@@ -195,7 +195,7 @@ AARCH64_OPT_EXTENSION("sve2-sm4", SVE2_SM4, (SVE2, SM4), (), (), "svesm4")
 
 AARCH64_FMV_FEATURE("sve2-sm4", SVE_SM4, (SVE2_SM4))
 
-AARCH64_OPT_EXTENSION("sve2p1", SVE2p1, (SVE2), (), (), "")
+AARCH64_OPT_EXTENSION("sve2p1", SVE2p1, (SVE2), (), (), "sve2p1")
 
 AARCH64_OPT_FMV_EXTENSION("sme", SME, (BF16, SVE2), (), (), "sme")
 
@@ -215,11 +215,11 @@ AARCH64_OPT_EXTENSION("pauth", PAUTH, (), (), (), "paca pacg")
 
 AARCH64_OPT_EXTENSION("ls64", LS64, (), (), (), "")
 
-AARCH64_OPT_EXTENSION("sme-f64f64", SME_F64F64, (SME), (), (), "")
+AARCH64_OPT_EXTENSION("sme-f64f64", SME_F64F64, (SME), (), (), "smef64f64")
 
 AARCH64_FMV_FEATURE("sme-f64f64", SME_F64, (SME_F64F64))
 
-AARCH64_OPT_EXTENSION("sme-i16i64", SME_I16I64, (SME), (), (), "")
+AARCH64_OPT_EXTENSION("sme-i16i64", SME_I16I64, (SME), (), (), "smei16i64")
 
 AARCH64_FMV_FEATURE("sme-i16i64", SME_I64, (SME_I16I64))
 
@@ -227,11 +227,11 @@ AARCH64_OPT_FMV_EXTENSION("sme2", SME2, (SME), (), (), "sme2")
 
 AARCH64_OPT_EXTENSION("sme2p1", SME2p1, (SME2), (), (), "sme2p1")
 
-AARCH64_OPT_EXTENSION("sme-b16b16", SME_B16B16, (SME2, SVE_B16B16), (), (), "")
+AARCH64_OPT_EXTENSION("sme-b16b16", SME_B16B16, (SME2, SVE_B16B16), (), (), "smeb16b16")
 
-AARCH64_OPT_EXTENSION("sme-f16f16", SME_F16F16, (SME2), (), (), "")
+AARCH64_OPT_EXTENSION("sme-f16f16", SME_F16F16, (SME2), (), (), "smef16f16")
 
-AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
+AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "mops")
 
 AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
 
@@ -243,9 +243,23 @@ AARCH64_OPT_EXTENSION("the", THE, (), (), (), "the")
 
 AARCH64_OPT_EXTENSION("gcs", GCS, (), (), (), "gcs")
 
-AARCH64_OPT_EXTENSION("fp8", FP8, (SIMD), (), (), "fp8")
+AARCH64_OPT_EXTENSION("fp8", FP8, (SIMD), (), (), "f8cvt")
+
+AARCH64_OPT_EXTENSION("fp8fma", FP8FMA, (FP8), (), (), "f8fma")
+
+AARCH64_OPT_EXTENSION("ssve-fp8fma", SSVE_FP8FMA, (SME2,FP8), (), (), "smesf8fma")
 
 AARCH64_OPT_EXTENSION("faminmax", FAMINMAX, (SIMD), (), (), "faminmax")
+
+AARCH64_OPT_EXTENSION("fp8dot4", FP8DOT4, (FP8FMA), (), (), "f8dp4")
+
+AARCH64_OPT_EXTENSION("ssve-fp8dot4", SSVE_FP8DOT4, (SSVE_FP8FMA), (), (), "smesf8dp4")
+
+AARCH64_OPT_EXTENSION("fp8dot2", FP8DOT2, (FP8DOT4), (), (), "f8dp2")
+
+AARCH64_OPT_EXTENSION("ssve-fp8dot2", SSVE_FP8DOT2, (SSVE_FP8DOT4), (), (), "smesf8dp2")
+
+AARCH64_OPT_EXTENSION("lut", LUT, (SIMD), (), (), "lut")
 
 #undef AARCH64_OPT_FMV_EXTENSION
 #undef AARCH64_OPT_EXTENSION

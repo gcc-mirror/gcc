@@ -29,8 +29,12 @@
 #undef  ASAN_CC1_SPEC
 #define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
 
-#undef  CC1_SPEC
-#define CC1_SPEC GNU_USER_TARGET_CC1_SPEC ASAN_CC1_SPEC
+#undef CC1_SPEC
+#define CC1_SPEC GNU_USER_TARGET_CC1_SPEC ASAN_CC1_SPEC \
+    AARCH64_ERRATA_COMPILE_SPEC
+
+#undef CC1PLUS_SPEC
+#define CC1PLUS_SPEC AARCH64_ERRATA_COMPILE_SPEC
 
 #define CPP_SPEC "%{pthread:-D_REENTRANT}"
 

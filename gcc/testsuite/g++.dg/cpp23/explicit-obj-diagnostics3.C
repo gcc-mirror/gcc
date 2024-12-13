@@ -24,7 +24,7 @@ void S::f12(this S s = {}) {} // { dg-error "an explicit object parameter may no
 
 struct S0 {
   template<typename Selves>
-  void f(this Selves...) {}
+  void f(this Selves...) {}	    // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void g(this Selves... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -37,7 +37,7 @@ struct S0 {
   void k(this Selves...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
 
   template<typename Selves>
-  void fd(this Selves...);
+  void fd(this Selves...);	   // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void gd(this Selves... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -52,7 +52,7 @@ struct S0 {
 
 struct S1 {
   template<typename Selves>
-  void f(this Selves&...) {}
+  void f(this Selves&...) {}	     // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void g(this Selves&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -65,7 +65,7 @@ struct S1 {
   void k(this Selves&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
 
   template<typename Selves>
-  void fd(this Selves&...);
+  void fd(this Selves&...);	    // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void gd(this Selves&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -80,7 +80,7 @@ struct S1 {
 
 struct S2 {
   template<typename Selves>
-  void f(this Selves&&...) {}
+  void f(this Selves&&...) {}	      // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void g(this Selves&&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -93,7 +93,7 @@ struct S2 {
   void k(this Selves&&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
 
   template<typename Selves>
-  void fd(this Selves&&...);
+  void fd(this Selves&&...);	     // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void gd(this Selves&&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -108,7 +108,7 @@ struct S2 {
 
 struct S3 {
   template<typename Selves>
-  void f(this Selves const&...) {}
+  void f(this Selves const&...) {}	   // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void g(this Selves const&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -121,7 +121,7 @@ struct S3 {
   void k(this Selves const&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
 
   template<typename Selves>
-  void fd(this Selves const&...);
+  void fd(this Selves const&...);	  // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void gd(this Selves const&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -136,7 +136,7 @@ struct S3 {
 
 struct S4 {
   template<typename Selves>
-  void f(this Selves const&&...) {}
+  void f(this Selves const&&...) {}	    // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void g(this Selves const&&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
@@ -149,7 +149,7 @@ struct S4 {
   void k(this Selves const&&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
 
   template<typename Selves>
-  void fd(this Selves const&&...);
+  void fd(this Selves const&&...);	   // { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
   template<typename Selves>
   void gd(this Selves const&&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }

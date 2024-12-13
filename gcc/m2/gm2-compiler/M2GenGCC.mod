@@ -541,9 +541,19 @@ BEGIN
       THEN
          (* If incr > 0 then LastIterator := ((e2-e1) DIV incr) * incr + e1.  *)
          expr := BuildSub (location, e2tree, e1tree, FALSE) ;
-         expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
-         expr := BuildMult (location, expr, incrtree, FALSE) ;
-         expr := BuildAdd (location, expr, e1tree, FALSE)
+         incrtree := BuildConvert (location, GetTreeType (expr), incrtree, FALSE) ;
+         IF TreeOverflow (incrtree)
+         THEN
+            MetaErrorT0 (lastpos,
+                         'the intemediate calculation for the last iterator value in the {%kFOR} loop has caused an overflow') ;
+            NoChange := FALSE ;
+            SubQuad (quad) ;
+            success := FALSE
+         ELSE
+            expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
+            expr := BuildMult (location, expr, incrtree, FALSE) ;
+            expr := BuildAdd (location, expr, e1tree, FALSE)
+         END
       ELSE
          (* Else use LastIterator := e1 - ((e1-e2) DIV PositiveBy) * PositiveBy
             to avoid unsigned div signed arithmetic.  *)
@@ -6410,12 +6420,12 @@ PROCEDURE BuildHighFromString (operand: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(operand)) ;
-   IF GccKnowsAbout(operand) AND (StringLength(Mod2Gcc(operand))>0)
+   location := TokenToLocation (GetDeclaredMod (operand)) ;
+   IF GccKnowsAbout (operand) AND (StringLength (Mod2Gcc (operand)) > 0)
    THEN
-      RETURN( BuildIntegerConstant(StringLength(Mod2Gcc(operand))-1) )
+      RETURN( BuildIntegerConstant (StringLength (Mod2Gcc (operand))-1) )
    ELSE
-      RETURN( GetIntegerZero(location) )
+      RETURN( GetIntegerZero (location) )
    END
 END BuildHighFromString ;
 
@@ -6755,96 +6765,102 @@ PROCEDURE PopKindTree (op: CARDINAL; tokenno: CARDINAL) : tree ;
 VAR
    type: CARDINAL ;
 BEGIN
-   type := SkipType (GetType (op)) ;
-   IF IsSet (type)
+   IF IsConst (op) AND IsConstString (op)
    THEN
-      RETURN( PopSetTree (tokenno) )
-   ELSIF IsRealType (type)
-   THEN
-      RETURN( PopRealTree () )
+      (* Converting a nul char or char for example.  *)
+      RETURN PopIntegerTree ()
    ELSE
-      RETURN( PopIntegerTree () )
+      type := SkipType (GetType (op)) ;
+      IF IsSet (type)
+      THEN
+         RETURN( PopSetTree (tokenno) )
+      ELSIF IsRealType (type)
+      THEN
+         RETURN( PopRealTree () )
+      ELSE
+         RETURN( PopIntegerTree () )
+      END
    END
 END PopKindTree ;
 
 
 (*
-   FoldConvert - attempts to fold op3 to type op2 placing the result into
-                 op1, providing that op1 and op3 are constants.
-                 Convert will, if need be, alter the machine representation
-                 of op3 to comply with TYPE op2.
+   FoldConvert - attempts to fold expr to type into result
+                 providing that result and expr are constants.
+                 If required convert will alter the machine representation
+                 of expr to comply with type.
 *)
 
 PROCEDURE FoldConvert (tokenno: CARDINAL; p: WalkAction;
-                       quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+                       quad: CARDINAL; result, type, expr: CARDINAL) ;
 
 VAR
    tl      : tree ;
    location: location_t ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
-   (* firstly ensure that constant literals are declared *)
-   TryDeclareConstant(tokenno, op3) ;
-   IF IsConstant(op3)
+   location := TokenToLocation (tokenno) ;
+   (* First ensure that constant literals are declared.  *)
+   TryDeclareConstant (tokenno, expr) ;
+   IF IsConstant (expr)
    THEN
-      IF GccKnowsAbout(op2) AND
-         (IsProcedure(op3) OR IsValueSolved(op3)) AND
-         GccKnowsAbout(SkipType(op2))
+      IF GccKnowsAbout (type) AND
+         (IsProcedure (expr) OR IsValueSolved (expr)) AND
+         GccKnowsAbout (SkipType (type))
       THEN
-         (* fine, we can take advantage of this and fold constant *)
-         IF IsConst(op1)
+         (* The type is known and expr is resolved so fold the convert.  *)
+         IF IsConst (result)
          THEN
-            PutConst(op1, op2) ;
-            tl := Mod2Gcc(SkipType(op2)) ;
-            IF IsProcedure(op3)
+            PutConst (result, type) ;   (* Change result type just in case.  *)
+            tl := Mod2Gcc (SkipType (type)) ;
+            IF IsProcedure (expr)
             THEN
-               AddModGcc(op1, BuildConvert(location, tl, Mod2Gcc(op3), TRUE))
+               AddModGcc (result, BuildConvert (location, tl, Mod2Gcc (expr), TRUE))
             ELSE
-               PushValue(op3) ;
-               IF IsConstSet(op3)
+               PushValue (expr) ;
+               IF IsConstSet (expr)
                THEN
-                  IF IsSet(SkipType(op2))
+                  IF IsSet (SkipType (type))
                   THEN
-                     WriteFormat0('cannot convert values between sets')
+                     WriteFormat0 ('cannot convert values between sets')
                   ELSE
-                     PushIntegerTree(FoldAndStrip(BuildConvert(location, tl, PopSetTree(tokenno), TRUE))) ;
-                     PopValue(op1) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopIntegerTree())
+                     PushIntegerTree (FoldAndStrip (BuildConvert (location, tl, PopSetTree (tokenno), TRUE))) ;
+                     PopValue (result) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopIntegerTree())
                   END
                ELSE
-                  IF IsSet(SkipType(op2))
+                  IF IsSet (SkipType (type))
                   THEN
-                     PushSetTree(tokenno,
-                                 FoldAndStrip(BuildConvert(location, tl, PopKindTree(op3, tokenno),
-                                                           TRUE)), SkipType(op2)) ;
-                     PopValue(op1) ;
-                     PutConstSet(op1) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopSetTree(tokenno))
-                  ELSIF IsRealType(SkipType(op2))
+                     PushSetTree (tokenno,
+                                  FoldAndStrip (BuildConvert (location, tl, PopKindTree (expr, tokenno),
+                                                              TRUE)), SkipType (type)) ;
+                     PopValue (result) ;
+                     PutConstSet (result) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopSetTree (tokenno))
+                  ELSIF IsRealType (SkipType (type))
                   THEN
-                     PushRealTree(FoldAndStrip(BuildConvert(location, tl, PopKindTree(op3, tokenno),
-                                                            TRUE))) ;
-                     PopValue(op1) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopKindTree(op1, tokenno))
+                     PushRealTree (FoldAndStrip (BuildConvert (location, tl, PopKindTree (expr, tokenno),
+                                                               TRUE))) ;
+                     PopValue (result) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopKindTree (result, tokenno))
                   ELSE
-                     (* we let CheckOverflow catch a potential overflow rather than BuildConvert *)
-                     PushIntegerTree(FoldAndStrip(BuildConvert(location, tl,
-                                                               PopKindTree(op3, tokenno),
-                                                               FALSE))) ;
-                     PopValue(op1) ;
-                     PushValue(op1) ;
-                     CheckOrResetOverflow(tokenno, PopKindTree(op1, tokenno), MustCheckOverflow(quad)) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopKindTree(op1, tokenno))
+                     (* Let CheckOverflow catch a potential overflow rather than BuildConvert.  *)
+                     PushIntegerTree (FoldAndStrip (BuildConvert (location, tl,
+                                                                  PopKindTree (expr, tokenno),
+                                                                  FALSE))) ;
+                     PopValue (result) ;
+                     PushValue (result) ;
+                     CheckOrResetOverflow (tokenno, PopKindTree (result, tokenno), MustCheckOverflow (quad)) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopKindTree (result, tokenno))
                   END
                END
             END ;
-            p(op1) ;
+            p (result) ;
             NoChange := FALSE ;
-            SubQuad(quad)
+            SubQuad (quad)
          END
       END
    END

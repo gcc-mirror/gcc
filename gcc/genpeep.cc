@@ -273,6 +273,8 @@ match_rtx (rtx x, struct link *path, int fail_label)
 	  printf ("  if (XINT (x, %d) != %d) goto L%d;\n",
 		  i, XINT (x, i), fail_label);
 	}
+      else if (fmt[i] == 'L')
+	gcc_unreachable ();
       else if (fmt[i] == 'r')
 	{
 	  gcc_assert (i == 0);

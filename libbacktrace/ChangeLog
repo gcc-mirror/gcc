@@ -1,3 +1,8 @@
+2024-11-29  Ian Lance Taylor  <iant@golang.org>
+
+	* fileline.c: Use WIN32_LEAN_AND_MEAN, not WIN32_MEAN_AND_LEAN.
+	* pecoff.c: Likewise.
+
 2024-10-25  Ian Lance Taylor  <iant@golang.org>
 
 	* macho.c (dwarf_section_names): Add __debug_addr and

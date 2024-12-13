@@ -67,6 +67,7 @@ static int vectorizable_slp_permutation_1 (vec_info *, gimple_stmt_iterator *,
 static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
 static void vect_print_slp_tree (dump_flags_t, dump_location_t, slp_tree);
+static bool vect_slp_can_convert_to_external (const vec<stmt_vec_info> &);
 
 static object_allocator<_slp_tree> *slp_tree_pool;
 static slp_tree slp_first_node;
@@ -1091,8 +1092,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   code_helper first_stmt_code = ERROR_MARK;
   code_helper alt_stmt_code = ERROR_MARK;
   code_helper first_cond_code = ERROR_MARK;
-  tree lhs;
   bool need_same_oprnds = false;
+  tree first_lhs = NULL_TREE;
   tree first_op1 = NULL_TREE;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
   bool first_stmt_ldst_p = false;
@@ -1100,6 +1101,29 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   int first_reduc_idx = -1;
   bool maybe_soft_fail = false;
   tree soft_fail_nunits_vectype = NULL_TREE;
+
+  tree vectype, nunits_vectype;
+  if (!vect_get_vector_types_for_stmt (vinfo, first_stmt_info, &vectype,
+				       &nunits_vectype, group_size))
+    {
+      /* Fatal mismatch.  */
+      matches[0] = false;
+      return false;
+    }
+  /* Record nunits required but continue analysis, producing matches[]
+     as if nunits was not an issue.  This allows splitting of groups
+     to happen.  */
+  if (nunits_vectype
+      && !vect_record_max_nunits (vinfo, first_stmt_info, group_size,
+				  nunits_vectype, max_nunits))
+    {
+      gcc_assert (is_a <bb_vec_info> (vinfo));
+      maybe_soft_fail = true;
+      soft_fail_nunits_vectype = nunits_vectype;
+    }
+
+  gcc_assert (vectype);
+  *node_vectype = vectype;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -1143,7 +1167,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
         }
 
       gcall *call_stmt = dyn_cast <gcall *> (stmt);
-      lhs = gimple_get_lhs (stmt);
+      tree lhs = gimple_get_lhs (stmt);
       if (lhs == NULL_TREE
 	  && (!call_stmt
 	      || !gimple_call_internal_p (stmt)
@@ -1159,30 +1183,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  matches[0] = false;
 	  return false;
 	}
-
-      tree vectype, nunits_vectype;
-      if (!vect_get_vector_types_for_stmt (vinfo, stmt_info, &vectype,
-					   &nunits_vectype, group_size))
-	{
-	  if (is_a <bb_vec_info> (vinfo) && i != 0)
-	    continue;
-	  /* Fatal mismatch.  */
-	  matches[0] = false;
-	  return false;
-	}
-      /* Record nunits required but continue analysis, producing matches[]
-	 as if nunits was not an issue.  This allows splitting of groups
-	 to happen.  */
-      if (nunits_vectype
-	  && !vect_record_max_nunits (vinfo, stmt_info, group_size,
-				      nunits_vectype, max_nunits))
-	{
-	  gcc_assert (is_a <bb_vec_info> (vinfo));
-	  maybe_soft_fail = true;
-	  soft_fail_nunits_vectype = nunits_vectype;
-	}
-
-      gcc_assert (vectype);
 
       if (call_stmt)
 	{
@@ -1240,7 +1240,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       /* Check the operation.  */
       if (i == 0)
 	{
-	  *node_vectype = vectype;
+	  first_lhs = lhs;
 	  first_stmt_code = rhs_code;
 	  first_stmt_ldst_p = ldst_p;
 	  first_stmt_phi_p = phi_p;
@@ -1431,7 +1431,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 
-	  if (!types_compatible_p (vectype, *node_vectype))
+	  if (first_lhs
+	      && lhs
+	      && !types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (first_lhs)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2291,6 +2293,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		}
 	    }
 	  /* 2. try to build children nodes, associating as necessary.  */
+	  /* 2a. prepare and perform early checks to avoid eating into
+	     discovery limit unnecessarily.  */
+	  vect_def_type *dts = XALLOCAVEC (vect_def_type, chain_len);
 	  for (unsigned n = 0; n < chain_len; ++n)
 	    {
 	      vect_def_type dt = chains[0][n].dt;
@@ -2318,6 +2323,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		    matches[0] = false;
 		  goto out;
 		}
+	      dts[n] = dt;
 	      if (dt == vect_constant_def
 		  || dt == vect_external_def)
 		{
@@ -2332,16 +2338,6 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		      matches[0] = false;
 		      goto out;
 		    }
-		  vec<tree> ops;
-		  ops.create (group_size);
-		  for (lane = 0; lane < group_size; ++lane)
-		    if (stmts[lane])
-		      ops.quick_push (chains[lane][n].op);
-		    else
-		      ops.quick_push (NULL_TREE);
-		  slp_tree child = vect_create_new_slp_node (ops);
-		  SLP_TREE_DEF_TYPE (child) = dt;
-		  children.safe_push (child);
 		}
 	      else if (dt != vect_internal_def)
 		{
@@ -2352,6 +2348,26 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  /* Soft-fail for now.  */
 		  hard_fail = false;
 		  goto out;
+		}
+	    }
+	  /* 2b. do the actual build.  */
+	  for (unsigned n = 0; n < chain_len; ++n)
+	    {
+	      vect_def_type dt = dts[n];
+	      unsigned lane;
+	      if (dt == vect_constant_def
+		  || dt == vect_external_def)
+		{
+		  vec<tree> ops;
+		  ops.create (group_size);
+		  for (lane = 0; lane < group_size; ++lane)
+		    if (stmts[lane])
+		      ops.quick_push (chains[lane][n].op);
+		    else
+		      ops.quick_push (NULL_TREE);
+		  slp_tree child = vect_create_new_slp_node (ops);
+		  SLP_TREE_DEF_TYPE (child) = dt;
+		  children.safe_push (child);
 		}
 	      else
 		{
@@ -2395,6 +2411,11 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 				term = true;
 				break;
 			      }
+			    if (dump_enabled_p ())
+			      dump_printf_loc (MSG_NOTE, vect_location,
+					       "swapping operand %d and %d "
+					       "of lane %d\n",
+					       n, n + perms[lane] + 1, lane);
 			    std::swap (chains[lane][n],
 				       chains[lane][n + perms[lane] + 1]);
 			    perms[lane]++;
@@ -2887,7 +2908,8 @@ fail:
 	  for (j = 0; j < group_size; ++j)
 	    if (!matches[j])
 	      break;
-	  if (!known_ge (j, TYPE_VECTOR_SUBPARTS (vectype)))
+	  if (!known_ge (j, TYPE_VECTOR_SUBPARTS (vectype))
+	      && vect_slp_can_convert_to_external (oprnd_info->def_stmts))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
@@ -7764,6 +7786,24 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 			    node, node_instance, cost_vec);
 }
 
+/* Verify if we can externalize a set of internal defs.  */
+
+static bool
+vect_slp_can_convert_to_external (const vec<stmt_vec_info> &stmts)
+{
+  basic_block bb = NULL;
+  for (stmt_vec_info stmt : stmts)
+    if (!stmt)
+      return false;
+    /* Constant generation uses get_later_stmt which can only handle
+       defs from the same BB.  */
+    else if (!bb)
+      bb = gimple_bb (stmt->stmt);
+    else if (gimple_bb (stmt->stmt) != bb)
+      return false;
+  return true;
+}
+
 /* Try to build NODE from scalars, returning true on success.
    NODE_INSTANCE is the SLP instance that contains NODE.  */
 
@@ -7779,12 +7819,9 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
       || !SLP_TREE_SCALAR_STMTS (node).exists ()
       || vect_contains_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (node))
       /* Force the mask use to be built from scalars instead.  */
-      || VECTOR_BOOLEAN_TYPE_P (SLP_TREE_VECTYPE (node)))
+      || VECTOR_BOOLEAN_TYPE_P (SLP_TREE_VECTYPE (node))
+      || !vect_slp_can_convert_to_external (SLP_TREE_SCALAR_STMTS (node)))
     return false;
-
-  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-    if (!stmt_info)
-      return false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,

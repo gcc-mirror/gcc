@@ -28,6 +28,14 @@ CALLEE (s8, svint8_t)
 CALLEE (u8, svuint8_t)
 
 /*
+** callee_mf8:
+**	ptrue	(p[0-7])\.b, all
+**	ld1b	z0\.b, \1/z, \[x0\]
+**	ret
+*/
+CALLEE (mf8, svmfloat8_t)
+
+/*
 ** callee_s16:
 **	ptrue	(p[0-7])\.b, all
 **	ld1h	z0\.h, \1/z, \[x0\]
@@ -115,7 +123,7 @@ CALLEE (f64, svfloat64_t)
     return svaddv (svptrue_b8 (), callee_##SUFFIX (ptr1));	\
   }
 
-#define CALLER_BF16(SUFFIX, TYPE)				\
+#define CALLER_NON_NUMERIC(SUFFIX, TYPE)				\
   typeof (svlasta (svptrue_b8 (), *(TYPE *) 0))			\
   __attribute__((noipa))					\
   caller_##SUFFIX (TYPE *ptr1)					\
@@ -146,6 +154,15 @@ CALLER (s8, svint8_t)
 **	ret
 */
 CALLER (u8, svuint8_t)
+
+/*
+** caller_mf8:
+**	...
+**	bl	callee_mf8
+**	ldp	x29, x30, \[sp\], 16
+**	ret
+*/
+CALLER_NON_NUMERIC (mf8, svmfloat8_t)
 
 /*
 ** caller_s16:
@@ -189,7 +206,7 @@ CALLER (f16, svfloat16_t)
 **	ldp	x29, x30, \[sp\], 16
 **	ret
 */
-CALLER_BF16 (bf16, svbfloat16_t)
+CALLER_NON_NUMERIC (bf16, svbfloat16_t)
 
 /*
 ** caller_s32:

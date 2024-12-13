@@ -578,10 +578,24 @@ ix86_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	{
 	  std::swap (*op0, *op1);
 	  *code = (int) scode;
+	  return;
 	}
     }
+
+  /* Swap operands of GTU comparison to canonicalize
+     addcarry/subborrow comparison.  */
+  if (!op0_preserve_value
+      && *code == GTU
+      && GET_CODE (*op0) == PLUS
+      && ix86_carry_flag_operator (XEXP (*op0, 0), VOIDmode)
+      && GET_CODE (XEXP (*op0, 1)) == ZERO_EXTEND
+      && GET_CODE (*op1) == ZERO_EXTEND)
+    {
+      std::swap (*op0, *op1);
+      *code = (int) swap_condition ((enum rtx_code) *code);
+      return;
+    }
 }
-
 
 /* Hook to determine if one function can safely inline another.  */
 
@@ -10792,36 +10806,29 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	  if (CONST_INT_P (addr))
 	    return false;
 	}
-      else if (GET_CODE (addr) == AND
-	       && const_32bit_mask (XEXP (addr, 1), DImode))
-	{
-	  addr = lowpart_subreg (SImode, XEXP (addr, 0), DImode);
-	  if (addr == NULL_RTX)
-	    return false;
-
-	  if (CONST_INT_P (addr))
-	    return false;
-	}
       else if (GET_CODE (addr) == AND)
 	{
-	  /* For ASHIFT inside AND, combine will not generate
-	     canonical zero-extend. Merge mask for AND and shift_count
-	     to check if it is canonical zero-extend.  */
-	  tmp = XEXP (addr, 0);
 	  rtx mask = XEXP (addr, 1);
-	  if (tmp && GET_CODE(tmp) == ASHIFT)
-	    {
-	      rtx shift_val = XEXP (tmp, 1);
-	      if (CONST_INT_P (mask) && CONST_INT_P (shift_val)
-		  && (((unsigned HOST_WIDE_INT) INTVAL(mask)
-		      | ((HOST_WIDE_INT_1U << INTVAL(shift_val)) - 1))
-		      == 0xffffffff))
-		{
-		  addr = lowpart_subreg (SImode, XEXP (addr, 0),
-					 DImode);
-		}
-	    }
+	  rtx shift_val;
 
+	  if (const_32bit_mask (mask, DImode)
+	      /* For ASHIFT inside AND, combine will not generate
+		 canonical zero-extend. Merge mask for AND and shift_count
+		 to check if it is canonical zero-extend.  */
+	      || (CONST_INT_P (mask)
+		  && GET_CODE (XEXP (addr, 0)) == ASHIFT
+		  && CONST_INT_P (shift_val = XEXP (XEXP (addr, 0), 1))
+		  && ((UINTVAL (mask)
+		       | ((HOST_WIDE_INT_1U << INTVAL (shift_val)) - 1))
+		      == HOST_WIDE_INT_UC (0xffffffff))))
+	    {
+	      addr = lowpart_subreg (SImode, XEXP (addr, 0), DImode);
+	      if (addr == NULL_RTX)
+		return false;
+
+	      if (CONST_INT_P (addr))
+		return false;
+	    }
 	}
     }
 
@@ -16478,6 +16485,13 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	       && GET_MODE (XEXP (XEXP (op0, 0), 0)) == CCCmode
 	       && GET_CODE (op1) == GEU
 	       && GET_MODE (XEXP (op1, 0)) == CCCmode)
+	return CCCmode;
+      /* Similarly for the comparison of addcarry/subborrow pattern.  */
+      else if (code == LTU
+	       && GET_CODE (op0) == ZERO_EXTEND
+	       && GET_CODE (op1) == PLUS
+	       && ix86_carry_flag_operator (XEXP (op1, 0), VOIDmode)
+	       && GET_CODE (XEXP (op1, 1)) == ZERO_EXTEND)
 	return CCCmode;
       else
 	return CCmode;
@@ -25707,7 +25721,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
    slightly less desirable, etc.).  */
 
 static int
-ix86_simd_clone_usable (struct cgraph_node *node)
+ix86_simd_clone_usable (struct cgraph_node *node, machine_mode)
 {
   switch (node->simdclone->vecsize_mangle)
     {
@@ -27387,6 +27401,9 @@ ix86_cannot_copy_insn_p (rtx_insn *insn)
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::ix86_run_selftests
 #endif /* #if CHECKING_P */
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "x86"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -5174,6 +5174,9 @@ vlmax_avl_type_p (rtx_insn *rinsn)
   int index = get_attr_avl_type_idx (rinsn);
   if (index == INVALID_ATTRIBUTE)
     return false;
+
+  gcc_assert (index < recog_data.n_operands);
+
   rtx avl_type = recog_data.operand[index];
   return INTVAL (avl_type) == VLMAX;
 }
@@ -5222,6 +5225,9 @@ nonvlmax_avl_type_p (rtx_insn *rinsn)
   int index = get_attr_avl_type_idx (rinsn);
   if (index == INVALID_ATTRIBUTE)
     return false;
+
+  gcc_assert (index < recog_data.n_operands);
+
   rtx avl_type = recog_data.operand[index];
   return INTVAL (avl_type) == NONVLMAX;
 }

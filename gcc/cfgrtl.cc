@@ -1512,7 +1512,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   edge new_edge;
   int abnormal_edge_flags = 0;
   bool asm_goto_edge = false;
-  int loc;
 
   /* In the case the last instruction is conditional jump to the next
      instruction, first redirect the jump itself and then continue
@@ -1697,7 +1696,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   else
     jump_block = e->src;
 
-  loc = e->goto_locus;
+  const location_t loc = e->goto_locus;
   e->flags &= ~EDGE_FALLTHRU;
   if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {

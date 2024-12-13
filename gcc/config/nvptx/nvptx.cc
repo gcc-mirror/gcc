@@ -212,9 +212,12 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
   switch (sm)
     {
     case PTX_ISA_SM30:
-      return PTX_VERSION_3_0;
+      return /* PTX_VERSION_3_0 not defined */ PTX_VERSION_3_1;
     case PTX_ISA_SM35:
       return PTX_VERSION_3_1;
+    case PTX_ISA_SM37:
+    case PTX_ISA_SM52:
+      return PTX_VERSION_4_1;
     case PTX_ISA_SM53:
       return PTX_VERSION_4_2;
     case PTX_ISA_SM70:
@@ -223,6 +226,8 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
       return PTX_VERSION_6_3;
     case PTX_ISA_SM80:
       return PTX_VERSION_7_0;
+    case PTX_ISA_SM89:
+      return PTX_VERSION_7_8;
     default:
       gcc_unreachable ();
     }
@@ -235,9 +240,6 @@ default_ptx_version_option (void)
 
   /* Pick a version that supports the sm.  */
   enum ptx_version res = first;
-
-  /* Pick at least 3.1.  This has been the smallest version historically.  */
-  res = MAX (res, PTX_VERSION_3_1);
 
   /* Pick at least 6.0, to enable using bar.warp.sync to have a way to force
      warp convergence.  */
@@ -253,10 +255,10 @@ ptx_version_to_string (enum ptx_version v)
 {
   switch (v)
     {
-    case PTX_VERSION_3_0:
-      return "3.0";
     case PTX_VERSION_3_1:
       return "3.1";
+    case PTX_VERSION_4_1:
+      return "4.1";
     case PTX_VERSION_4_2:
       return "4.2";
     case PTX_VERSION_6_0:
@@ -265,6 +267,8 @@ ptx_version_to_string (enum ptx_version v)
       return "6.3";
     case PTX_VERSION_7_0:
       return "7.0";
+    case PTX_VERSION_7_8:
+      return "7.8";
     default:
       gcc_unreachable ();
     }
@@ -275,10 +279,10 @@ ptx_version_to_number (enum ptx_version v, bool major_p)
 {
   switch (v)
     {
-    case PTX_VERSION_3_0:
-      return major_p ? 3 : 0;
     case PTX_VERSION_3_1:
       return major_p ? 3 : 1;
+    case PTX_VERSION_4_1:
+      return major_p ? 4 : 1;
     case PTX_VERSION_4_2:
       return major_p ? 4 : 2;
     case PTX_VERSION_6_0:
@@ -287,6 +291,8 @@ ptx_version_to_number (enum ptx_version v, bool major_p)
       return major_p ? 6 : 3;
     case PTX_VERSION_7_0:
       return major_p ? 7 : 0;
+    case PTX_VERSION_7_8:
+      return major_p ? 7 : 8;
     default:
       gcc_unreachable ();
     }
@@ -7814,6 +7820,9 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 
 #undef TARGET_HAVE_STRUB_SUPPORT_FOR
 #define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "Nvidia PTX"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

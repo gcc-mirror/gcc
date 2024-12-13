@@ -63,17 +63,13 @@ test_richloc (rich_location *richloc)
 static void
 test_fixit_on_very_long_line (const line_table_case &case_)
 {
-  /* Various interesting column/line-width values, to try to tickle
-     out bugs.  */
+  /* Various interesting column/line-width values, to try to tickle out bugs. In
+     64-bit location mode, we can't test the max because the maximum supported
+     column is unreasonably large.  */
   const int VERY_LONG_LINE = 8192;
   const int columns[] = {0,
 			 1,
 			 80,
-			 LINE_MAP_MAX_COLUMN_NUMBER - 2,
-			 LINE_MAP_MAX_COLUMN_NUMBER - 1,
-			 LINE_MAP_MAX_COLUMN_NUMBER,
-			 LINE_MAP_MAX_COLUMN_NUMBER + 1,
-			 LINE_MAP_MAX_COLUMN_NUMBER + 2,
 			 VERY_LONG_LINE,
 			 VERY_LONG_LINE + 5};
   for (unsigned int width_idx = 0; width_idx < ARRAY_SIZE (columns);

@@ -60,6 +60,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
 #include "coroutines.h"
+#include "gcc-urlifier.h"
+#include "diagnostic-highlight-colors.h"
+#include "pretty-print-markup.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -6022,8 +6025,11 @@ start_decl (const cp_declarator *declarator,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning_at (DECL_SOURCE_LOCATION (decl), 0,
-		"inline function %qD given attribute %qs", decl, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning_at (DECL_SOURCE_LOCATION (decl), 0,
+		  "inline function %qD given attribute %qs", decl, "noinline");
+    }
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -6486,18 +6492,22 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	{
 	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initializer);
 	  constructor_elt *ce;
-	  HOST_WIDE_INT i;
+	  HOST_WIDE_INT i, j = 0;
 	  FOR_EACH_VEC_SAFE_ELT (v, i, ce)
 	    {
 	      if (instantiation_dependent_expression_p (ce->index))
 		return;
-	      if (!check_array_designated_initializer (ce, i))
+	      if (!check_array_designated_initializer (ce, j))
 		failure = 1;
 	      /* If an un-designated initializer is type-dependent, we can't
 		 check brace elision yet.  */
 	      if (ce->index == NULL_TREE
 		  && type_dependent_expression_p (ce->value))
 		return;
+	      if (TREE_CODE (ce->value) == RAW_DATA_CST)
+		j += RAW_DATA_LENGTH (ce->value);
+	      else
+		++j;
 	    }
 	}
 
@@ -6853,6 +6863,7 @@ is_direct_enum_init (tree type, tree init)
       && TREE_CODE (init) == CONSTRUCTOR
       && CONSTRUCTOR_IS_DIRECT_INIT (init)
       && CONSTRUCTOR_NELTS (init) == 1
+      && TREE_CODE (CONSTRUCTOR_ELT (init, 0)->value) != RAW_DATA_CST
       /* DR 2374: The single element needs to be implicitly
 	 convertible to the underlying type of the enum.  */
       && !type_dependent_expression_p (CONSTRUCTOR_ELT (init, 0)->value)
@@ -6864,6 +6875,36 @@ is_direct_enum_init (tree type, tree init)
   return false;
 }
 
+/* Helper function for reshape_init*.  Split first element of
+   RAW_DATA_CST and save the rest to d->cur->value.  */
+
+static tree
+cp_maybe_split_raw_data (reshape_iter *d)
+{
+  if (TREE_CODE (d->cur->value) != RAW_DATA_CST)
+    return NULL_TREE;
+  tree ret = *raw_data_iterator (d->cur->value, 0);
+  ++RAW_DATA_POINTER (d->cur->value);
+  --RAW_DATA_LENGTH (d->cur->value);
+  if (RAW_DATA_LENGTH (d->cur->value) == 1)
+    d->cur->value = *raw_data_iterator (d->cur->value, 0);
+  return ret;
+}
+
+/* Wrapper around that which for RAW_DATA_CST in INIT
+   (as well as in D->cur->value) peels off the first element
+   of the raw data and returns it, otherwise increments
+   D->cur and returns INIT.  */
+
+static tree
+consume_init (tree init, reshape_iter *d)
+{
+  if (tree raw_init = cp_maybe_split_raw_data (d))
+    return raw_init;
+  d->cur++;
+  return init;
+}
+
 /* Subroutine of reshape_init_array and reshape_init_vector, which does
    the actual work. ELT_TYPE is the element type of the array. MAX_INDEX is an
    INTEGER_CST representing the size of the array minus one (the maximum index),
@@ -6872,7 +6913,8 @@ is_direct_enum_init (tree type, tree init)
 
 static tree
 reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
-		      tree first_initializer_p, tsubst_flags_t complain)
+		      tree first_initializer_p, bool vector_p,
+		      tsubst_flags_t complain)
 {
   tree new_init;
   bool sized_array_p = (max_index && TREE_CONSTANT (max_index));
@@ -6894,17 +6936,23 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 
   if (sized_array_p)
     {
+      poly_uint64 midx;
       /* Minus 1 is used for zero sized arrays.  */
       if (integer_all_onesp (max_index))
 	return new_init;
 
-      if (tree_fits_uhwi_p (max_index))
-	max_index_cst = tree_to_uhwi (max_index);
+      if (tree_fits_poly_uint64_p (max_index))
+	midx = tree_to_poly_uint64 (max_index);
       /* sizetype is sign extended, not zero extended.  */
       else
-	max_index_cst = tree_to_uhwi (fold_convert (size_type_node, max_index));
+	midx = tree_to_poly_uint64 (fold_convert (size_type_node, max_index));
+
+      /* For VLA vectors, we restict the number of elements in the constructor
+	 to lower bound of the VLA elements.  */
+      max_index_cst = constant_lower_bound (midx);
     }
 
+  constructor_elt *first_cur = d->cur;
   /* Loop until there are no more initializers.  */
   for (index = 0;
        d->cur != d->end && (!sized_array_p || index <= max_index_cst);
@@ -6912,16 +6960,78 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
     {
       tree elt_init;
       constructor_elt *old_cur = d->cur;
+      const char *old_raw_data_ptr = NULL;
+
+      if (TREE_CODE (d->cur->value) == RAW_DATA_CST)
+	old_raw_data_ptr = RAW_DATA_POINTER (d->cur->value);
 
       if (d->cur->index)
 	CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
       check_array_designated_initializer (d->cur, index);
-      elt_init = reshape_init_r (elt_type, d,
-				 /*first_initializer_p=*/NULL_TREE,
-				 complain);
+      if (TREE_CODE (d->cur->value) == RAW_DATA_CST
+	  && (TREE_CODE (elt_type) == INTEGER_TYPE
+	      || is_byte_access_type (elt_type))
+	  && TYPE_PRECISION (elt_type) == CHAR_BIT
+	  && (!sized_array_p || index < max_index_cst)
+	  && !vector_p)
+	{
+	  elt_init = d->cur->value;
+	  if (!sized_array_p
+	      || ((unsigned) RAW_DATA_LENGTH (d->cur->value)
+		  <= max_index_cst - index + 1))
+	    d->cur++;
+	  else
+	    {
+	      unsigned int len = max_index_cst - index + 1;
+	      if ((unsigned) RAW_DATA_LENGTH (d->cur->value) == len + 1)
+		d->cur->value
+		  = build_int_cst (integer_type_node,
+				   *(const unsigned char *)
+				   RAW_DATA_POINTER (d->cur->value) + len);
+	      else
+		{
+		  d->cur->value = copy_node (elt_init);
+		  RAW_DATA_LENGTH (d->cur->value) -= len;
+		  RAW_DATA_POINTER (d->cur->value) += len;
+		}
+	      RAW_DATA_LENGTH (elt_init) = len;
+	    }
+	  TREE_TYPE (elt_init) = elt_type;
+	}
+      else
+	elt_init = reshape_init_r (elt_type, d,
+				   /*first_initializer_p=*/NULL_TREE,
+				   complain);
       if (elt_init == error_mark_node)
 	return error_mark_node;
       tree idx = size_int (index);
+      if (reuse && old_raw_data_ptr && d->cur == old_cur)
+	{
+	  /* We need to stop reusing as some RAW_DATA_CST in the original
+	     ctor had to be split.  */
+	  new_init = build_constructor (init_list_type_node, NULL);
+	  if (index)
+	    {
+	      vec_safe_grow (CONSTRUCTOR_ELTS (new_init), index);
+	      memcpy (CONSTRUCTOR_ELT (new_init, 0), first_cur,
+		      (d->cur - first_cur)
+		      * sizeof (*CONSTRUCTOR_ELT (new_init, 0)));
+	      if (CONSTRUCTOR_IS_DESIGNATED_INIT (first_initializer_p))
+		{
+		  unsigned int j;
+		  tree nidx, nval;
+		  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (new_init),
+					    j, nidx, nval)
+		    if (nidx)
+		      {
+			CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = 1;
+			(void) nval;
+			break;
+		      }
+		}
+	    }
+	  reuse = false;
+	}
       if (reuse)
 	{
 	  old_cur->index = idx;
@@ -6934,8 +7044,15 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 	TREE_CONSTANT (new_init) = false;
 
       /* This can happen with an invalid initializer (c++/54501).  */
-      if (d->cur == old_cur && !sized_array_p)
+      if (d->cur == old_cur
+	  && !sized_array_p
+	  && (old_raw_data_ptr == NULL
+	      || (TREE_CODE (d->cur->value) == RAW_DATA_CST
+		  && RAW_DATA_POINTER (d->cur->value) == old_raw_data_ptr)))
 	break;
+
+      if (TREE_CODE (elt_init) == RAW_DATA_CST)
+	index += RAW_DATA_LENGTH (elt_init) - 1;
     }
 
   return new_init;
@@ -6956,7 +7073,7 @@ reshape_init_array (tree type, reshape_iter *d, tree first_initializer_p,
     max_index = array_type_nelts_minus_one (type);
 
   return reshape_init_array_1 (TREE_TYPE (type), max_index, d,
-			       first_initializer_p, complain);
+			       first_initializer_p, false, complain);
 }
 
 /* Subroutine of reshape_init_r, processes the initializers for vectors.
@@ -6988,7 +7105,7 @@ reshape_init_vector (tree type, reshape_iter *d, tsubst_flags_t complain)
     max_index = size_int (TYPE_VECTOR_SUBPARTS (type) - 1);
 
   return reshape_init_array_1 (TREE_TYPE (type), max_index, d,
-			       NULL_TREE, complain);
+			       NULL_TREE, true, complain);
 }
 
 /* Subroutine of reshape_init*: We're initializing an element with TYPE from
@@ -7061,7 +7178,11 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
     {
       tree field_init;
       constructor_elt *old_cur = d->cur;
+      const char *old_raw_data_ptr = NULL;
       bool direct_desig = false;
+
+      if (TREE_CODE (d->cur->value) == RAW_DATA_CST)
+	old_raw_data_ptr = RAW_DATA_POINTER (d->cur->value);
 
       /* Handle C++20 designated initializers.  */
       if (d->cur->index)
@@ -7176,6 +7297,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	     is initialized by the designated-initializer-list { D }, where D
 	     is the designated- initializer-clause naming a member of the
 	     anonymous union member."  */
+	  gcc_checking_assert (TREE_CODE (d->cur->value) != RAW_DATA_CST);
 	  field_init = reshape_single_init (TREE_TYPE (field),
 					    d->cur->value, complain);
 	  d->cur++;
@@ -7188,7 +7310,11 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
       if (field_init == error_mark_node)
 	return error_mark_node;
 
-      if (d->cur == old_cur && d->cur->index)
+      if (d->cur == old_cur
+	  && d->cur->index
+	  && (old_raw_data_ptr == NULL
+	      || (TREE_CODE (d->cur->value) == RAW_DATA_CST
+		  && RAW_DATA_POINTER (d->cur->value) == old_raw_data_ptr)))
 	{
 	  /* This can happen with an invalid initializer for a flexible
 	     array member (c++/54441).  */
@@ -7223,8 +7349,11 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
      correspond to all remaining elements of the initializer list (if any).  */
   if (last_was_pack_expansion)
     {
+      tree init = d->cur->value;
+      if (tree raw_init = cp_maybe_split_raw_data (d))
+	init = raw_init;
       CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
-			      last_was_pack_expansion, d->cur->value);
+			      last_was_pack_expansion, init);
       while (d->cur != d->end)
 	d->cur++;
     }
@@ -7276,7 +7405,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
     {
       /* A complex type can be initialized from one or two initializers,
 	 but braces are not elided.  */
-      d->cur++;
+      init = consume_init (init, d);
       if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init))
 	{
 	  if (CONSTRUCTOR_NELTS (stripped_init) > 2)
@@ -7291,10 +7420,13 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	{
 	  vec<constructor_elt, va_gc> *v = 0;
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
-	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, d->cur->value);
+	  tree raw_init = cp_maybe_split_raw_data (d);
+	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+				  raw_init ? raw_init : d->cur->value);
 	  if (has_designator_problem (d, complain))
 	    return error_mark_node;
-	  d->cur++;
+	  if (!raw_init)
+	    d->cur++;
 	  init = build_constructor (init_list_type_node, v);
 	}
       return init;
@@ -7342,9 +7474,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	  else
 	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 	}
-
-      d->cur++;
-      return init;
+      return consume_init (init, d);
     }
 
   /* "If T is a class type and the initializer list has a single element of
@@ -7355,6 +7485,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
       /* But not if it's a designated init.  */
       && !d->cur->index
       && d->end - d->cur == 1
+      && TREE_CODE (init) != RAW_DATA_CST
       && reference_related_p (type, TREE_TYPE (init)))
     {
       d->cur++;
@@ -7376,12 +7507,14 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	 valid aggregate initialization.  */
       && !first_initializer_p
       && (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (init))
-	  || can_convert_arg (type, TREE_TYPE (init), init, LOOKUP_NORMAL,
-			      complain)))
-    {
-      d->cur++;
-      return init;
-    }
+	  || can_convert_arg (type, TREE_TYPE (init),
+			      TREE_CODE (init) == RAW_DATA_CST
+			      ? build_int_cst (integer_type_node,
+					       *(const unsigned char *)
+					       RAW_DATA_POINTER (init))
+			      : init,
+			      LOOKUP_NORMAL, complain)))
+    return consume_init (init, d);
 
   /* [dcl.init.string]
 
@@ -7481,7 +7614,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
   else if (VECTOR_TYPE_P (type))
     new_init = reshape_init_vector (type, d, complain);
   else
-    gcc_unreachable();
+    gcc_unreachable ();
 
   if (braces_elided_p
       && TREE_CODE (new_init) == CONSTRUCTOR)
@@ -12306,6 +12439,23 @@ check_decltype_auto (location_t loc, tree type)
   return false;
 }
 
+/* Issue an error about two mutually incompatible declspecs
+   with the given names and locations
+   e.g. "error: `signed' and `unsigned' specified together" */
+
+static void
+complain_about_incompatible_declspecs (const char *name_a, location_t loc_a,
+				       const char *name_b, location_t loc_b)
+{
+  gcc_rich_location richloc (loc_a, nullptr, highlight_colors::lhs);
+  richloc.add_range (loc_b, SHOW_RANGE_WITHOUT_CARET,
+		     nullptr, highlight_colors::rhs);
+  pp_element_quoted_string e_name_a (name_a, highlight_colors::lhs);
+  pp_element_quoted_string e_name_b (name_b, highlight_colors::rhs);
+  error_at (&richloc, "%e and %e specified together",
+	    &e_name_a, &e_name_b);
+}
+
 /* Given declspecs and a declarator (abstract or otherwise), determine
    the name and type of the object declared and construct a DECL node
    for it.
@@ -12939,18 +13089,13 @@ grokdeclarator (const cp_declarator *declarator,
       int ok = 0;
 
       if (signed_p && unsigned_p)
-	{
-	  gcc_rich_location richloc (declspecs->locations[ds_signed]);
-	  richloc.add_range (declspecs->locations[ds_unsigned]);
-	  error_at (&richloc,
-		    "%<signed%> and %<unsigned%> specified together");
-	}
+	complain_about_incompatible_declspecs
+	  ("signed", declspecs->locations[ds_signed],
+	   "unsigned", declspecs->locations[ds_unsigned]);
       else if (long_p && short_p)
-	{
-	  gcc_rich_location richloc (declspecs->locations[ds_long]);
-	  richloc.add_range (declspecs->locations[ds_short]);
-	  error_at (&richloc, "%<long%> and %<short%> specified together");
-	}
+	complain_about_incompatible_declspecs
+	  ("long", declspecs->locations[ds_long],
+	   "short", declspecs->locations[ds_short]);
       else if (TREE_CODE (type) != INTEGER_TYPE
 	       || type == char8_type_node
 	       || type == char16_type_node
@@ -18045,8 +18190,11 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
-    warning_at (DECL_SOURCE_LOCATION (decl1), 0,
-		"inline function %qD given attribute %qs", decl1, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning_at (DECL_SOURCE_LOCATION (decl1), 0,
+		  "inline function %qD given attribute %qs", decl1, "noinline");
+    }
 
   /* Handle gnu_inline attribute.  */
   if (GNU_INLINE_P (decl1))

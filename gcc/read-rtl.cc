@@ -327,6 +327,9 @@ apply_int_iterator (rtx x, unsigned int index, HOST_WIDE_INT value)
     case 'n':
       XINT (x, index) = value;
       break;
+    case 'L':
+      XLOC (x, index) = value;
+      break;
     case 'w':
       XWINT (x, index) = value;
       break;
@@ -2053,6 +2056,7 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
     case 'n':
     case 'w':
     case 'p':
+    case 'L':
       {
 	/* Can be an iterator or an integer constant.  */
 	file_location loc = read_name (&name);

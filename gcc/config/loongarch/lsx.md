@@ -879,11 +879,23 @@
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
 	(lshiftrt:ILSX
 	  (match_operand:ILSX 1 "register_operand" "f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILSX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LSX"
-  "@
-   vsrl.<lsxfmt>\t%w0,%w1,%w2
-   vsrli.<lsxfmt>\t%w0,%w1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "vsrl.<lsxfmt>\t%w0,%w1,%w2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "vsrli.<lsxfmt>\t%w0,%w1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -891,11 +903,23 @@
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
 	(ashiftrt:ILSX
 	  (match_operand:ILSX 1 "register_operand" "f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILSX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LSX"
-  "@
-   vsra.<lsxfmt>\t%w0,%w1,%w2
-   vsrai.<lsxfmt>\t%w0,%w1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "vsra.<lsxfmt>\t%w0,%w1,%w2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "vsrai.<lsxfmt>\t%w0,%w1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -903,11 +927,23 @@
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
 	(ashift:ILSX
 	  (match_operand:ILSX 1 "register_operand" "f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILSX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LSX"
-  "@
-   vsll.<lsxfmt>\t%w0,%w1,%w2
-   vslli.<lsxfmt>\t%w0,%w1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "vsll.<lsxfmt>\t%w0,%w1,%w2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "vslli.<lsxfmt>\t%w0,%w1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 

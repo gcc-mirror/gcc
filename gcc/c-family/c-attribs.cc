@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-pretty-print.h"
 #include "gcc-rich-location.h"
+#include "gcc-urlifier.h"
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocommon_attribute (tree *, tree, tree, int, bool *);
@@ -737,6 +738,8 @@ positional_argument (const_tree fn, const_tree atname, tree &pos,
 		     tree_code code, int argno /* = 0 */,
 		     int flags /* = posargflags () */)
 {
+  auto_urlify_attributes sentinel;
+
   const_tree fndecl = TYPE_P (fn) ? NULL_TREE : fn;
   const_tree fntype = TYPE_P (fn) ? fn : TREE_TYPE (fn);
   if (pos && TREE_CODE (pos) != IDENTIFIER_NODE

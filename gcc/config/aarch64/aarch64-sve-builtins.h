@@ -28,6 +28,7 @@
    - the "mode" suffix ("_n", "_index", etc.)
    - the type suffixes ("_s32", "_b8", etc.)
    - the predication suffix ("_x", "_z", etc.)
+   - the "_fpm" suffix when the floating point mode register is set
 
    Each piece of information is individually useful, so we retain this
    classification throughout:
@@ -41,6 +42,8 @@
 
    - prediction_index extends the predication suffix with an additional
      alternative: PRED_implicit for implicitly-predicated operations
+
+   - fpm_mode represents whether the fpm register is set or not
 
    In addition to its unique full name, a function may have a shorter
    overloaded alias.  This alias removes pieces of the suffixes that
@@ -164,6 +167,14 @@ enum predication_index
   NUM_PREDS
 };
 
+/* Classifies intrinsics on whether they set the FPM register */
+enum fpm_mode_index
+{
+  FPM_unused,
+  FPM_set,
+  NUM_FPM_MODES
+};
+
 /* Classifies element types, based on type suffixes with the bit count
    removed.  "count" isn't really an element type, but we pretend it is
    for consistency.  */
@@ -173,6 +184,7 @@ enum type_class_index
   TYPE_bfloat,
   TYPE_count,
   TYPE_float,
+  TYPE_mfloat,
   TYPE_signed,
   TYPE_unsigned,
   NUM_TYPE_CLASSES
@@ -365,6 +377,9 @@ struct function_group_info
 
   /* The architecture extensions that the functions require.  */
   aarch64_required_extensions required_extensions;
+
+  /* Whether the floating point register is set */
+  fpm_mode_index fpm_mode;
 };
 
 /* Describes a single fully-resolved function (i.e. one that has a
@@ -375,7 +390,7 @@ public:
   function_instance (const char *, const function_base *,
 		     const function_shape *, mode_suffix_index,
 		     const type_suffix_pair &, group_suffix_index,
-		     predication_index);
+		     predication_index, fpm_mode_index);
 
   bool operator== (const function_instance &) const;
   bool operator!= (const function_instance &) const;
@@ -419,6 +434,7 @@ public:
   type_suffix_pair type_suffix_ids;
   group_suffix_index group_suffix_id;
   predication_index pred;
+  fpm_mode_index fpm_mode;
 };
 
 class registered_function;
@@ -632,6 +648,7 @@ public:
 
   gcall *redirect_call (const function_instance &);
   gimple *redirect_pred_x ();
+  gimple *fold_pfalse ();
 
   gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();
@@ -639,6 +656,8 @@ public:
   gimple *fold_to_vl_pred (unsigned int);
   gimple *fold_const_binary (enum tree_code);
   gimple *fold_active_lanes_to (tree);
+  gimple *fold_call_to (tree);
+  gimple *fold_to_stmt_vops (gimple *);
 
   gimple *fold ();
 
@@ -832,6 +851,7 @@ extern tree acle_svprfop;
 
 bool vector_cst_all_same (tree, unsigned int);
 bool is_ptrue (tree, unsigned int);
+bool is_pfalse (tree);
 const function_instance *lookup_fndecl (tree);
 
 /* Try to find a mode with the given mode_suffix_info fields.  Return the
@@ -875,16 +895,15 @@ tuple_type_field (tree type)
 }
 
 inline function_instance::
-function_instance (const char *base_name_in,
-		   const function_base *base_in,
+function_instance (const char *base_name_in, const function_base *base_in,
 		   const function_shape *shape_in,
 		   mode_suffix_index mode_suffix_id_in,
 		   const type_suffix_pair &type_suffix_ids_in,
 		   group_suffix_index group_suffix_id_in,
-		   predication_index pred_in)
+		   predication_index pred_in, fpm_mode_index fpm_mode_in)
   : base_name (base_name_in), base (base_in), shape (shape_in),
     mode_suffix_id (mode_suffix_id_in), group_suffix_id (group_suffix_id_in),
-    pred (pred_in)
+    pred (pred_in), fpm_mode (fpm_mode_in)
 {
   memcpy (type_suffix_ids, type_suffix_ids_in, sizeof (type_suffix_ids));
 }
@@ -898,7 +917,8 @@ function_instance::operator== (const function_instance &other) const
 	  && type_suffix_ids[0] == other.type_suffix_ids[0]
 	  && type_suffix_ids[1] == other.type_suffix_ids[1]
 	  && group_suffix_id == other.group_suffix_id
-	  && pred == other.pred);
+	  && pred == other.pred
+	  && fpm_mode == other.fpm_mode);
 }
 
 inline bool

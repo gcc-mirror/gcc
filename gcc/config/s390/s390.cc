@@ -1859,7 +1859,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && CONST_INT_P (XEXP (*op0, 1))
       && CONST_INT_P (*op1)
       && INTVAL (XEXP (*op0, 1)) == -3
-      && *code == EQ)
+      && (*code == EQ || *code == NE))
     {
       if (INTVAL (*op1) == 0)
 	{
@@ -18566,6 +18566,9 @@ s390_c_mode_for_floating_type (enum tree_index ti)
 
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE s390_c_mode_for_floating_type
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "S/390"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

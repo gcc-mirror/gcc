@@ -69,7 +69,7 @@
 
 ;; Vector float multiplication and FMA.
 (define_insn_reservation "vec_fmul" 6
-  (eq_attr "type" "vfmul,vfwmul,vfmuladd,vfwmuladd,vfwmaccbf16")
+  (eq_attr "type" "vfmul,vfwmul,vfmuladd,vfwmuladd,vfwmaccbf16,sf_vqmacc,sf_vfnrclip")
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector crypto, assumed to be a generic operation for now.

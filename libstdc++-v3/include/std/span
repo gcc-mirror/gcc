@@ -190,21 +190,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires (_Extent == dynamic_extent || _ArrayExtent == _Extent)
 	constexpr
 	span(type_identity_t<element_type> (&__arr)[_ArrayExtent]) noexcept
-	: span(static_cast<pointer>(__arr), _ArrayExtent)
+	: _M_ptr(__arr), _M_extent(_ArrayExtent)
 	{ }
 
       template<typename _Tp, size_t _ArrayExtent>
 	requires __is_compatible_array<_Tp, _ArrayExtent>::value
 	constexpr
 	span(array<_Tp, _ArrayExtent>& __arr) noexcept
-	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
+	: _M_ptr(__arr.data()), _M_extent(_ArrayExtent)
 	{ }
 
       template<typename _Tp, size_t _ArrayExtent>
 	requires __is_compatible_array<const _Tp, _ArrayExtent>::value
 	constexpr
 	span(const array<_Tp, _ArrayExtent>& __arr) noexcept
-	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
+	: _M_ptr(__arr.data()), _M_extent(_ArrayExtent)
 	{ }
 
       template<typename _Range>
@@ -218,7 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	span(_Range&& __range)
 	noexcept(noexcept(ranges::data(__range))
 		  && noexcept(ranges::size(__range)))
-	: span(ranges::data(__range), ranges::size(__range))
+	: _M_ptr(ranges::data(__range)), _M_extent(ranges::size(__range))
 	{
 	  if constexpr (extent != dynamic_extent)
 	    {
@@ -236,7 +236,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr
 	explicit(extent != dynamic_extent && _OExtent == dynamic_extent)
 	span(const span<_OType, _OExtent>& __s) noexcept
-	: _M_extent(__s.size()), _M_ptr(__s.data())
+	: _M_ptr(__s.data()), _M_extent(__s.size())
 	{
 	  if constexpr (extent != dynamic_extent)
 	    {

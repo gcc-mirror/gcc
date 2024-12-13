@@ -5,14 +5,14 @@ root = true
 end_of_line = lf
 insert_final_newline = true
 
-[*.h,*.cc]
+[*.{h,cc}]
 charset = utf-8
 indent_style = tab
 indent_size = 2
 tab_width = 8
 trim_trailing_whitespace = true
 
-[Makefile*,ChangeLog*]
+[{Makefile,ChangeLog}*]
 indent_style = tab
 indent_size = 8
 trim_trailing_whitespace = true

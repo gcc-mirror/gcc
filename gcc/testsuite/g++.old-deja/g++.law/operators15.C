@@ -6,7 +6,7 @@
 // Subject: bug report
 // Date: Wed, 27 Jan 1993 16:37:30 -0500
 
-extern "C" int printf(const char* ...);
+extern "C" int printf(const char* ...);	// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 
 int     delete_counter = -1;
 

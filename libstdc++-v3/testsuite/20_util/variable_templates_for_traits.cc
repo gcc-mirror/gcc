@@ -129,8 +129,12 @@ private:
   int i2;
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+// Deprecated in C++26
 static_assert(is_trivial_v<int> && is_trivial<int>::value, "");
 static_assert(!is_trivial_v<NType> && !is_trivial<NType>::value, "");
+#pragma GCC diagnostic pop
 
 static_assert(is_trivially_copyable_v<int>
 	      && is_trivially_copyable<int>::value, "");

@@ -463,12 +463,28 @@ ACX_PROG_GDC([-I"$srcdir"/d])
 # Do configure tests with the C++ compiler, since that's what we build with.
 AC_LANG(C++)
 
-# Remove the -O2: for historical reasons, unless bootstrapping we prefer
+# Remove all -O flags: for historical reasons, unless bootstrapping we prefer
 # optimizations to be activated explicitly by the toplevel.
 case "$CC" in
   */prev-gcc/xgcc*) ;;
-  *) CFLAGS=`echo "$CFLAGS " | sed -e "s/-Ofast[[ 	]]//" -e "s/-O[[gs]][[ 	]]//" -e "s/-O[[0-9]]*[[ 	]]//" `
-     CXXFLAGS=`echo "$CXXFLAGS " | sed -e "s/-Ofast[[ 	]]//" -e "s/-O[[gs]][[ 	]]//" -e "s/-O[[0-9]]*[[ 	]]//" ` ;;
+  *)
+    new_CFLAGS=
+    for flag in $CFLAGS; do
+      case $flag in
+	-O*) ;;
+	*) new_CFLAGS="$new_CFLAGS $flag" ;;
+      esac
+    done
+    CFLAGS=$new_CFLAGS
+    new_CXXFLAGS=
+    for flag in $CXXFLAGS; do
+      case $flag in
+	-O*) ;;
+	*) new_CXXFLAGS="$new_CXXFLAGS $flag" ;;
+      esac
+    done
+    CXXFLAGS=$new_CXXFLAGS
+    ;;
 esac
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -1202,7 +1218,7 @@ if test "x$enable_offload_defaulted" = xyes; then
 fi
 
 AC_ARG_WITH(multilib-list,
-[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, ARM, AVR, OR1K, RISC-V, SH and x86-64 only)])],
+[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, ARM, AVR, nvptx, OR1K, RISC-V, SH and x86-64 only)])],
 :,
 with_multilib_list=default)
 
@@ -1381,7 +1397,7 @@ AC_CHECK_HEADERS(ext/hash_map)
 ZW_CREATE_DEPDIR
 AC_CONFIG_COMMANDS([gccdepdir],[
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common analyzer text-art rtl-ssa
+  for lang in $subdirs c-family common analyzer text-art rtl-ssa sym-exec
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
@@ -3064,6 +3080,9 @@ gcc_GAS_CHECK_FEATURE([.base64], gcc_cv_as_base64,,
  [	.section .rodata
  	.base64 "Tm9uIHB1ZG9yIGVzdCBuaWwgc2NpcmUsIHB1ZG9yIG5pbCBkaXNjZXJlIHZlbGxlLgo="],,
 [AC_DEFINE(HAVE_GAS_BASE64, 1, [Define if your assembler supports .base64.])])
+
+gcc_GAS_CHECK_FEATURE([.cv_ucomp], gcc_cv_as_cv_ucomp,,[.cv_ucomp 0],,
+[AC_DEFINE(HAVE_GAS_CV_UCOMP, 1, [Define if your assembler supports .cv_ucomp.])])
 
 # gnu_indirect_function type is an extension proposed at
 # http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
@@ -7364,8 +7383,8 @@ for language in $all_selected_languages
 do
 	check_languages="$check_languages check-$language"
 done
-if test x$enable_libdiagnostics = xyes; then
-	check_languages="$check_languages check-libdiagnostics check-sarif-replay"
+if test x$enable_libgdiagnostics = xyes; then
+	check_languages="$check_languages check-libgdiagnostics check-sarif-replay"
 fi
 
 selftest_languages=
@@ -7599,17 +7618,17 @@ AC_ARG_ENABLE(host-pie,
 		[build host code as PIE])])
 AC_SUBST(enable_host_pie)
 
-AC_ARG_ENABLE(libdiagnostics,
-[AS_HELP_STRING([--enable-libdiagnostics],
-		[build libdiagnostics shared library])])
-AC_SUBST(enable_libdiagnostics)
+AC_ARG_ENABLE(libgdiagnostics,
+[AS_HELP_STRING([--enable-libgdiagnostics],
+		[build libgdiagnostics shared library])])
+AC_SUBST(enable_libgdiagnostics)
 
-if test "$enable_libdiagnostics" = "yes"; then
-  LIBDIAGNOSTICS='libdiagnostics sarif-replay'
+if test "$enable_libgdiagnostics" = "yes"; then
+  LIBGDIAGNOSTICS='libgdiagnostics sarif-replay'
 else
-  LIBDIAGNOSTICS=''
+  LIBGDIAGNOSTICS=''
 fi
-AC_SUBST(LIBDIAGNOSTICS)
+AC_SUBST(LIBGDIAGNOSTICS)
 
 
 # Enable --enable-host-bind-now

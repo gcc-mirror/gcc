@@ -495,12 +495,6 @@ DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
 /* Used to represent information associated with constrained declarations. */
 DEFTREECODE (CONSTRAINT_INFO, "constraint_info", tcc_exceptional, 0)
 
-/* A wildcard declaration is a placeholder for a template parameter
-   used to resolve constrained-type-names in concepts.  During
-   resolution, the matching argument is saved as the TREE_TYPE
-   of the wildcard.  */
-DEFTREECODE (WILDCARD_DECL, "wildcard_decl", tcc_declaration, 0)
-
 /* A requires-expr has three operands. The first operand is
    its parameter list (possibly NULL). The second is a list of
    requirements, which are denoted by the _REQ* tree codes

@@ -89,6 +89,7 @@
 (define_predicate "nox_general_operand"
   (and (match_operand 0 "general_operand")
        (not (match_test "avr_load_libgcc_p (op)"))
+       (not (match_test "avr_mem_flashx_p (op)"))
        (not (match_test "avr_mem_memx_p (op)"))))
 
 ;; Return 1 if OP is the zero constant for MODE.

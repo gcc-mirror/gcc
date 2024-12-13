@@ -5736,4 +5736,7 @@ pre_incdec_with_reg (rtx op, unsigned int reg)
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE h8300_c_mode_for_floating_type
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "H8/300"
+
 struct gcc_target targetm = TARGET_INITIALIZER;

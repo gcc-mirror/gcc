@@ -435,10 +435,10 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
   m_indent -= 2;
 }
 
-/* Subroutine of print_rtx_operand for handling code 'i'.  */
+/* Subroutine of print_rtx_operand for handling code 'L'.  */
 
 void
-rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
+rtx_writer::print_rtx_operand_code_L (const_rtx in_rtx, int idx)
 {
   if (idx == 4 && INSN_P (in_rtx))
     {
@@ -478,7 +478,16 @@ rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
 		 LOCATION_LINE (ASM_INPUT_SOURCE_LOCATION (in_rtx)));
 #endif
     }
-  else if (idx == 5 && NOTE_P (in_rtx))
+  else
+    gcc_unreachable ();
+}
+
+/* Subroutine of print_rtx_operand for handling code 'i'.  */
+
+void
+rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
+{
+  if (idx == 5 && NOTE_P (in_rtx))
     {
       /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	 other times often contains garbage from INSN->NOTE death.  */
@@ -694,6 +703,10 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
 
     case 'i':
       print_rtx_operand_code_i (in_rtx, idx);
+      break;
+
+    case 'L':
+      print_rtx_operand_code_L (in_rtx, idx);
       break;
 
     case 'p':

@@ -607,6 +607,7 @@ public:
   void set_text_art_charset (enum diagnostic_text_art_charset charset);
   void set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks);
   void set_urlifier (std::unique_ptr<urlifier>);
+  void override_urlifier (urlifier *);
   void create_edit_context ();
   void set_warning_as_error_requested (bool val)
   {
@@ -664,6 +665,7 @@ public:
     return m_client_data_hooks;
   }
   urlifier *get_urlifier () const { return m_urlifier; }
+
   text_art::theme *get_diagram_theme () const { return m_diagrams.m_theme; }
 
   int &diagnostic_count (diagnostic_t kind)

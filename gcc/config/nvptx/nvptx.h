@@ -88,9 +88,14 @@
 
 #include "nvptx-gen.h"
 
+/* There are no 'TARGET_PTX_3_1' and smaller conditionals: our baseline is
+   PTX ISA Version 3.1.  */
+#define TARGET_PTX_4_1 (ptx_version_option >= PTX_VERSION_4_1)
+#define TARGET_PTX_4_2 (ptx_version_option >= PTX_VERSION_4_2)
 #define TARGET_PTX_6_0 (ptx_version_option >= PTX_VERSION_6_0)
 #define TARGET_PTX_6_3 (ptx_version_option >= PTX_VERSION_6_3)
 #define TARGET_PTX_7_0 (ptx_version_option >= PTX_VERSION_7_0)
+#define TARGET_PTX_7_8 (ptx_version_option >= PTX_VERSION_7_8)
 
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.

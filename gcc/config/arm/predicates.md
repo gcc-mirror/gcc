@@ -849,6 +849,10 @@
   (and (match_operand 0 "memory_operand")
        (match_code "reg" "0")))
 
+;; True if the operand is memory reference suitable for a ldrd/strd.
+(define_predicate "arm_ldrd_memory_operand"
+  (match_test "arm_ldrd_legitimate_address (op)"))
+
 ;; Predicates for parallel expanders based on mode.
 (define_special_predicate "vect_par_constant_high" 
   (match_code "parallel")

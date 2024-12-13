@@ -126,9 +126,9 @@ public:
     tree op1 = gimple_call_arg (f.call, 0);
     if (!integer_zerop (op1))
       return NULL;
-    function_instance instance ("svabd", functions::svabd,
-				shapes::binary_opt_n, f.mode_suffix_id,
-				f.type_suffix_ids, GROUP_none, PRED_x);
+    function_instance instance ("svabd", functions::svabd, shapes::binary_opt_n,
+				f.mode_suffix_id, f.type_suffix_ids, GROUP_none,
+				PRED_x, FPM_unused);
     gcall *call = f.redirect_call (instance);
     /* Add a ptrue as predicate, because unlike svaba, svabd is
        predicated.  */
@@ -221,13 +221,46 @@ public:
   }
 };
 
+class svcvt_fp8_impl : public function_base
+{
+public:
+  CONSTEXPR
+  svcvt_fp8_impl (int unspec) : m_unspec (unspec) {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    auto icode = code_for_aarch64_sve2_fp8_cvt (m_unspec, e.result_mode ());
+    return e.use_exact_insn (icode);
+  }
+
+  int m_unspec;
+};
+
 class svcvtn_impl : public function_base
 {
 public:
   rtx
   expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_aarch64_sve_cvtn (e.result_mode ()));
+    insn_code icode;
+    if (e.fpm_mode == FPM_set)
+      icode = code_for_aarch64_sve2_fp8_cvtn (GET_MODE (e.args[0]));
+    else
+      icode = code_for_aarch64_sve_cvtn (e.result_mode ());
+    return e.use_exact_insn (icode);
+  }
+};
+
+class svcvtxnt_impl : public CODE_FOR_MODE1 (aarch64_sve2_cvtxnt)
+{
+public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (f.pred == PRED_x && is_pfalse (gimple_call_arg (f.call, 1)))
+      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+    return NULL;
   }
 };
 
@@ -368,6 +401,14 @@ class svmatch_svnmatch_impl : public function_base
 {
 public:
   CONSTEXPR svmatch_svnmatch_impl (int unspec) : m_unspec (unspec) {}
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree pg = gimple_call_arg (f.call, 0);
+    if (is_pfalse (pg))
+      return f.fold_call_to (pg);
+    return NULL;
+  }
 
   rtx
   expand (function_expander &e) const override
@@ -512,7 +553,8 @@ public:
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svqshl", functions::svqshl,
 					shapes::binary_int_opt_n, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    return f.redirect_call (instance);
 	  }
 	else
@@ -520,9 +562,9 @@ public:
 	    /* The saturation has no effect, and [SU]RSHL has immediate forms
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svrshl", functions::svrshl,
-					shapes::binary_int_opt_single_n,
-					MODE_n, f.type_suffix_ids, GROUP_none,
-					f.pred);
+					shapes::binary_int_opt_single_n, MODE_n,
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    return f.redirect_call (instance);
 	  }
       }
@@ -551,7 +593,8 @@ public:
 				       -wi::to_wide (amount));
 	    function_instance instance ("svasr", functions::svasr,
 					shapes::binary_uint_opt_n, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    if (f.type_suffix (0).unsigned_p)
 	      {
 		instance.base_name = "svlsr";
@@ -586,7 +629,8 @@ public:
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svlsl", functions::svlsl,
 					shapes::binary_uint_opt_n, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    gcall *call = f.redirect_call (instance);
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
@@ -599,7 +643,8 @@ public:
 				       -wi::to_wide (amount));
 	    function_instance instance ("svrshr", functions::svrshr,
 					shapes::shift_right_imm, MODE_n,
-					f.type_suffix_ids, GROUP_none, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred,
+					FPM_unused);
 	    gcall *call = f.redirect_call (instance);
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
@@ -635,7 +680,8 @@ public:
       return NULL;
     function_instance instance ("svlsr", functions::svlsr,
 				shapes::binary_uint_opt_n, MODE_n,
-				f.type_suffix_ids, GROUP_none, PRED_x);
+				f.type_suffix_ids, GROUP_none, PRED_x,
+				FPM_unused);
     if (!f.type_suffix (0).unsigned_p)
       {
 	instance.base_name = "svasr";
@@ -917,11 +963,16 @@ FUNCTION (svbsl2n, CODE_FOR_MODE0 (aarch64_sve2_bsl2n),)
 FUNCTION (svcdot, svcdot_impl,)
 FUNCTION (svcdot_lane, svcdot_lane_impl,)
 FUNCTION (svclamp, svclamp_impl,)
-FUNCTION (svcvtlt, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTLT))
+FUNCTION (svcvt1, svcvt_fp8_impl, (UNSPEC_F1CVT))
+FUNCTION (svcvt2, svcvt_fp8_impl, (UNSPEC_F2CVT))
 FUNCTION (svcvtl, svcvtl_impl,)
+FUNCTION (svcvtlt1, svcvt_fp8_impl, (UNSPEC_F1CVTLT))
+FUNCTION (svcvtlt2, svcvt_fp8_impl, (UNSPEC_F2CVTLT))
+FUNCTION (svcvtlt, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTLT))
 FUNCTION (svcvtn, svcvtn_impl,)
+FUNCTION (svcvtnb, fixed_insn_function, (CODE_FOR_aarch64_sve2_fp8_cvtnbvnx16qi))
 FUNCTION (svcvtx, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTX))
-FUNCTION (svcvtxnt, CODE_FOR_MODE1 (aarch64_sve2_cvtxnt),)
+FUNCTION (svcvtxnt, svcvtxnt_impl,)
 FUNCTION (svdup_laneq, svdup_laneq_impl,)
 FUNCTION (sveor3, CODE_FOR_MODE0 (aarch64_sve2_eor3),)
 FUNCTION (sveorbt, unspec_based_function, (UNSPEC_EORBT, UNSPEC_EORBT, -1))
@@ -959,16 +1010,34 @@ FUNCTION (svminnmqv, reduction, (-1, -1, UNSPEC_FMINNMQV))
 FUNCTION (svminp, unspec_based_pred_function, (UNSPEC_SMINP, UNSPEC_UMINP,
 					       UNSPEC_FMINP))
 FUNCTION (svminqv, reduction, (UNSPEC_SMINQV, UNSPEC_UMINQV, UNSPEC_FMINQV))
-FUNCTION (svmlalb, unspec_based_mla_function, (UNSPEC_SMULLB,
-					       UNSPEC_UMULLB, UNSPEC_FMLALB))
-FUNCTION (svmlalb_lane, unspec_based_mla_lane_function, (UNSPEC_SMULLB,
-							 UNSPEC_UMULLB,
-							 UNSPEC_FMLALB))
-FUNCTION (svmlalt, unspec_based_mla_function, (UNSPEC_SMULLT,
-					       UNSPEC_UMULLT, UNSPEC_FMLALT))
-FUNCTION (svmlalt_lane, unspec_based_mla_lane_function, (UNSPEC_SMULLT,
-							 UNSPEC_UMULLT,
-							 UNSPEC_FMLALT))
+FUNCTION (svmlalb_lane, unspec_based_mla_lane_function,
+	  (UNSPEC_SMULLB, UNSPEC_UMULLB, UNSPEC_FMLALB,
+	   UNSPEC_FMLALB_FP8))
+FUNCTION (svmlalb, unspec_based_mla_function,
+	  (UNSPEC_SMULLB, UNSPEC_UMULLB, UNSPEC_FMLALB,
+	   UNSPEC_FMLALB_FP8))
+FUNCTION (svmlallbb_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBB_FP8))
+FUNCTION (svmlallbb, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBB_FP8))
+FUNCTION (svmlallbt_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBT_FP8))
+FUNCTION (svmlallbt, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLBT_FP8))
+FUNCTION (svmlalltb_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTB_FP8))
+FUNCTION (svmlalltb, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTB_FP8))
+FUNCTION (svmlalltt_lane, unspec_based_mla_lane_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTT_FP8))
+FUNCTION (svmlalltt, unspec_based_mla_function,
+	  (-1, -1, -1, UNSPEC_FMLALLTT_FP8))
+FUNCTION (svmlalt_lane, unspec_based_mla_lane_function,
+	  (UNSPEC_SMULLT, UNSPEC_UMULLT, UNSPEC_FMLALT,
+	   UNSPEC_FMLALT_FP8))
+FUNCTION (svmlalt, unspec_based_mla_function,
+	  (UNSPEC_SMULLT, UNSPEC_UMULLT, UNSPEC_FMLALT,
+	   UNSPEC_FMLALT_FP8))
 FUNCTION (svmlslb, unspec_based_mls_function, (UNSPEC_SMULLB,
 					       UNSPEC_UMULLB, UNSPEC_FMLSLB))
 FUNCTION (svmlslb_lane, unspec_based_mls_lane_function, (UNSPEC_SMULLB,
@@ -1041,15 +1110,15 @@ FUNCTION (svqrdmulh_lane, unspec_based_lane_function, (UNSPEC_SQRDMULH,
 						       -1, -1))
 FUNCTION (svqrshl, svqrshl_impl,)
 FUNCTION (svqrshr, unspec_based_uncond_function, (UNSPEC_SQRSHR,
-						  UNSPEC_UQRSHR, -1, 1))
+						  UNSPEC_UQRSHR, -1, -1, 1))
 FUNCTION (svqrshrn, unspec_based_uncond_function, (UNSPEC_SQRSHRN,
-						   UNSPEC_UQRSHRN, -1, 1))
+						   UNSPEC_UQRSHRN, -1, -1, 1))
 FUNCTION (svqrshrnb, unspec_based_function, (UNSPEC_SQRSHRNB,
 					     UNSPEC_UQRSHRNB, -1))
 FUNCTION (svqrshrnt, unspec_based_function, (UNSPEC_SQRSHRNT,
 					     UNSPEC_UQRSHRNT, -1))
-FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, -1, -1, 1))
-FUNCTION (svqrshrun, unspec_based_uncond_function, (UNSPEC_SQRSHRUN, -1, -1, 1))
+FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, -1, -1, -1, 1))
+FUNCTION (svqrshrun, unspec_based_uncond_function, (UNSPEC_SQRSHRUN, -1, -1, -1, 1))
 FUNCTION (svqrshrunb, unspec_based_function, (UNSPEC_SQRSHRUNB, -1, -1))
 FUNCTION (svqrshrunt, unspec_based_function, (UNSPEC_SQRSHRUNT, -1, -1))
 FUNCTION (svqshl, svqshl_impl,)

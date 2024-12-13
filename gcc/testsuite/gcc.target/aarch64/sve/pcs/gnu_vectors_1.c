@@ -2,6 +2,7 @@
 
 #include <arm_sve.h>
 
+typedef mfloat8_t mfloat8x32_t __attribute__((vector_size (32)));
 typedef bfloat16_t bfloat16x16_t __attribute__((vector_size (32)));
 typedef float16_t float16x16_t __attribute__((vector_size (32)));
 typedef float32_t float32x8_t __attribute__((vector_size (32)));
@@ -15,6 +16,7 @@ typedef uint16_t uint16x16_t __attribute__((vector_size (32)));
 typedef uint32_t uint32x8_t __attribute__((vector_size (32)));
 typedef uint64_t uint64x4_t __attribute__((vector_size (32)));
 
+void mfloat8_callee (mfloat8x32_t);
 void bfloat16_callee (bfloat16x16_t);
 void float16_callee (float16x16_t);
 void float32_callee (float32x8_t);
@@ -27,6 +29,12 @@ void uint8_callee (uint8x32_t);
 void uint16_callee (uint16x16_t);
 void uint32_callee (uint32x8_t);
 void uint64_callee (uint64x4_t);
+
+void
+mfloat8_caller (mfloat8_t val)
+{
+  mfloat8_callee (svdup_mf8 (val));
+}
 
 void
 bfloat16_caller (bfloat16_t val)
@@ -100,8 +108,8 @@ uint64_caller (void)
   uint64_callee (svindex_u64 (1, 4));
 }
 
-/* { dg-final { scan-assembler-times {\tst1b\tz[0-9]+\.b, p[0-7], \[x0\]} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1b\tz[0-9]+\.b, p[0-7], \[x0\]} 3 } } */
 /* { dg-final { scan-assembler-times {\tst1h\tz[0-9]+\.h, p[0-7], \[x0\]} 4 } } */
 /* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+\.s, p[0-7], \[x0\]} 3 } } */
 /* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d, p[0-7], \[x0\]} 3 } } */
-/* { dg-final { scan-assembler-times {\tadd\tx0, sp, #?16\n} 12 } } */
+/* { dg-final { scan-assembler-times {\tadd\tx0, sp, #?16\n} 13 } } */

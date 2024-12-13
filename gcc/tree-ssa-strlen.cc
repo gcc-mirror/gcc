@@ -4629,7 +4629,7 @@ strlen_pass::count_nonzero_bytes (tree exp, tree vuse, gimple *stmt,
 	return false;
 
       unsigned HOST_WIDE_INT byte_size = tree_to_uhwi (size);
-      if (byte_size < offset)
+      if (byte_size <= offset)
 	return false;
 
       nbytes = byte_size - offset;
@@ -4682,7 +4682,7 @@ strlen_pass::count_nonzero_bytes (tree exp, tree vuse, gimple *stmt,
   if (TREE_CODE (exp) == STRING_CST)
     {
       unsigned nchars = TREE_STRING_LENGTH (exp);
-      if (nchars < offset)
+      if (nchars <= offset)
 	return false;
 
       if (!nbytes)
@@ -4700,7 +4700,7 @@ strlen_pass::count_nonzero_bytes (tree exp, tree vuse, gimple *stmt,
   unsigned char buf[256];
   if (!prep)
     {
-      if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
+      if (CHAR_BIT != 8 || BITS_PER_UNIT != 8 || offset > INT_MAX)
 	return false;
       /* If the pointer to representation hasn't been set above
 	 for STRING_CST point it at the buffer.  */
@@ -4710,11 +4710,75 @@ strlen_pass::count_nonzero_bytes (tree exp, tree vuse, gimple *stmt,
       unsigned repsize = native_encode_expr (exp, buf, sizeof buf, offset);
       if (repsize < nbytes)
 	{
-	  /* This should only happen when REPSIZE is zero because EXP
-	     doesn't denote an object with a known initializer, except
-	     perhaps when the reference reads past its end.  */
-	  lenrange[0] = 0;
-	  prep = NULL;
+	  /* Handle vector { 0x12345678, 0x23003412, x_1(D), y_2(D) }
+	     and similar cases.  Even when not all the elements are constant,
+	     we can perhaps figure out something from the constant ones
+	     and assume the others can be anything.  */
+	  if (TREE_CODE (exp) == CONSTRUCTOR
+	      && CONSTRUCTOR_NELTS (exp)
+	      && VECTOR_TYPE_P (TREE_TYPE (exp))
+	      && nbytes <= sizeof buf)
+	    {
+	      tree v0 = CONSTRUCTOR_ELT (exp, 0)->value;
+	      unsigned HOST_WIDE_INT elt_sz
+		= int_size_in_bytes (TREE_TYPE (v0));
+	      unsigned int i, s = 0;
+	      tree v, idx;
+	      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (exp), i, idx, v)
+		{
+		  if (idx
+		      && (VECTOR_TYPE_P (TREE_TYPE (v0))
+			  || !tree_fits_uhwi_p (idx)
+			  || tree_to_uhwi (idx) != i))
+		    {
+		      s = 0;
+		      break;
+		    }
+		  if ((i + 1) * elt_sz <= offset)
+		    continue;
+		  unsigned int o = 0;
+		  if (i * elt_sz < offset)
+		    o = offset % elt_sz;
+		  repsize = native_encode_expr (v, buf + s,
+						sizeof (buf) - s, o);
+		  if (repsize != elt_sz - o)
+		    break;
+		  s += repsize;
+		}
+	      if (s != 0 && s < nbytes)
+		{
+		  unsigned HOST_WIDE_INT n = strnlen (prep, s);
+		  if (n < lenrange[0])
+		    lenrange[0] = n;
+		  if (lenrange[1] < n && n != s)
+		    lenrange[1] = n;
+		  if (lenrange[2] < nbytes)
+		    lenrange[2] = nbytes;
+		  /* We haven't processed all bytes, the rest are unknown.
+		     So, clear NULTERM if none of the initial bytes are
+		     zero, and clear ALLNUL and ALLNONNULL because we don't
+		     know about the remaining bytes.  */
+		  if (n == s)
+		    *nulterm = false;
+		  *allnul = false;
+		  *allnonnul = false;
+		  return true;
+		}
+	      else if (s != nbytes)
+		{
+		  /* See below.  */
+		  lenrange[0] = 0;
+		  prep = NULL;
+		}
+	    }
+	  else
+	    {
+	      /* This should only happen when REPSIZE is zero because EXP
+		 doesn't denote an object with a known initializer, except
+		 perhaps when the reference reads past its end.  */
+	      lenrange[0] = 0;
+	      prep = NULL;
+	    }
 	}
       else if (!nbytes)
 	nbytes = repsize;

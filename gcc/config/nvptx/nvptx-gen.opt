@@ -30,6 +30,12 @@ EnumValue
 Enum(ptx_isa) String(sm_35) Value(PTX_ISA_SM35)
 
 EnumValue
+Enum(ptx_isa) String(sm_37) Value(PTX_ISA_SM37)
+
+EnumValue
+Enum(ptx_isa) String(sm_52) Value(PTX_ISA_SM52)
+
+EnumValue
 Enum(ptx_isa) String(sm_53) Value(PTX_ISA_SM53)
 
 EnumValue
@@ -40,3 +46,6 @@ Enum(ptx_isa) String(sm_75) Value(PTX_ISA_SM75)
 
 EnumValue
 Enum(ptx_isa) String(sm_80) Value(PTX_ISA_SM80)
+
+EnumValue
+Enum(ptx_isa) String(sm_89) Value(PTX_ISA_SM89)

@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "asan.h"
 #include "c-family/c-ubsan.h"
+#include "gcc-urlifier.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1662,6 +1663,7 @@ static struct c_arg_info *c_parser_parms_declarator (c_parser *, bool, tree,
 static struct c_arg_info *c_parser_parms_list_declarator (c_parser *, tree,
 							  tree, bool);
 static struct c_parm *c_parser_parameter_declaration (c_parser *, tree, bool);
+static tree c_parser_asm_string_literal (c_parser *);
 static tree c_parser_simple_asm_expr (c_parser *);
 static tree c_parser_gnu_attributes (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *, tree);
@@ -3142,12 +3144,74 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 
    asm-definition:
      simple-asm-expr ;
-*/
+     asm ( toplevel-asm-argument ) ;
+
+   toplevel-asm-argument:
+     asm-string-literal
+     asm-string-literal : asm-operands[opt]
+     asm-string-literal : asm-operands[opt] : asm-operands[opt]
+
+   The :: token is considered equivalent to two consecutive : tokens.  */
 
 static void
 c_parser_asm_definition (c_parser *parser)
 {
-  tree asm_str = c_parser_simple_asm_expr (parser);
+  location_t asm_loc = c_parser_peek_token (parser)->location;
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_ASM));
+  c_parser_consume_token (parser);
+  matching_parens parens;
+  tree asm_str = NULL_TREE;
+  tree outputs = NULL_TREE, inputs = NULL_TREE;
+  if (!parens.require_open (parser))
+    goto done;
+  asm_str = c_parser_asm_string_literal (parser);
+  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+    {
+      parens.require_close (parser);
+      goto done;
+    }
+  for (int section = 0; section < 2; ++section)
+    {
+      if (c_parser_next_token_is (parser, CPP_SCOPE))
+	{
+	  ++section;
+	  if (section == 2)
+	    {
+	      c_parser_error (parser, "expected %<)%>");
+	    error_close_paren:
+	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	      asm_str = NULL_TREE;
+	      goto done;
+	    }
+	  c_parser_consume_token (parser);
+	}
+      else if (!c_parser_require (parser, CPP_COLON,
+				  "expected %<:%> or %<)%>",
+				  UNKNOWN_LOCATION, false))
+	goto error_close_paren;
+      if (!c_parser_next_token_is (parser, CPP_COLON)
+	  && !c_parser_next_token_is (parser, CPP_SCOPE)
+	  && !c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	{
+	  if (section)
+	    inputs = c_parser_asm_operands (parser);
+	  else
+	    outputs = c_parser_asm_operands (parser);
+	}
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	break;
+    }
+
+  if (!parens.require_close (parser))
+    {
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+      asm_str = NULL_TREE;
+    }
+
+  if (asm_str)
+    asm_str = build_asm_expr (asm_loc, asm_str, outputs, inputs,
+			      NULL_TREE, NULL_TREE, false, false);
+done:
   if (asm_str)
     symtab->finalize_toplevel_asm (asm_str);
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
@@ -8084,6 +8148,7 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 		  attrs = handle_assume_attribute (loc, attrs, true);
 		else
 		  {
+		    auto_urlify_attributes sentinel;
 		    warning_at (loc, OPT_Wattributes,
 				"%<assume%> attribute not followed by %<;%>");
 		    has_assume = false;
@@ -8101,17 +8166,23 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 		    c_parser_consume_token (parser);
 		  }
 		else
-		  warning_at (loc, OPT_Wattributes,
-			      "%<fallthrough%> attribute not followed "
-			      "by %<;%>");
+		  {
+		    auto_urlify_attributes sentinel;
+		    warning_at (loc, OPT_Wattributes,
+				"%<fallthrough%> attribute not followed "
+				"by %<;%>");
+		  }
 	      }
 	    else if (has_assume)
 	      /* Eat the ';'.  */
 	      c_parser_consume_token (parser);
 	    else if (attrs != NULL_TREE)
-	      warning_at (loc, OPT_Wattributes,
-			  "only attribute %<fallthrough%> or %<assume%> can "
-			  "be applied to a null statement");
+	      {
+		auto_urlify_attributes sentinel;
+		warning_at (loc, OPT_Wattributes,
+			    "only attribute %<fallthrough%> or %<assume%> can "
+			    "be applied to a null statement");
+	      }
 	    break;
 	  }
 	default:
@@ -10748,8 +10819,7 @@ c_parser_get_builtin_args (c_parser *parser, const char *bname,
 	  for (unsigned int i = 0; i < (unsigned) RAW_DATA_LENGTH (value); i++)
 	    {
 	      expr.value = build_int_cst (integer_type_node,
-					  ((const unsigned char *)
-					   RAW_DATA_POINTER (value))[i]);
+					  RAW_DATA_UCHAR_ELT (value, i));
 	      vec_safe_push (cexpr_list, expr);
 	    }
 	  c_parser_consume_token (parser);
@@ -11415,6 +11485,101 @@ c_parser_postfix_expression (c_parser *parser)
 	      }
 	  }
 	  break;
+	case RID_C23_VA_START:
+	  {
+	    c_parser_consume_token (parser);
+	    matching_parens parens;
+	    if (!parens.require_open (parser))
+	      {
+		expr.set_error ();
+		break;
+	      }
+	    e1 = c_parser_expr_no_commas (parser, NULL);
+	    e1 = convert_lvalue_to_rvalue (e1.get_location (), e1, true, true);
+	    if (!c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	      {
+		location_t cloc = c_parser_peek_token (parser)->location;
+		if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+		  {
+		    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+		    expr.set_error ();
+		    break;
+		  }
+		if (c_parser_next_token_is (parser, CPP_NAME)
+		    && c_parser_peek_token (parser)->id_kind == C_ID_ID
+		    && (c_parser_peek_2nd_token (parser)->type
+			== CPP_CLOSE_PAREN))
+		  {
+		    tree name = c_parser_peek_token (parser)->value;
+		    location_t nloc = c_parser_peek_token (parser)->location;
+		    tree decl = lookup_name (name);
+		    tree last_parm
+		      = tree_last (DECL_ARGUMENTS (current_function_decl));
+		    if (!last_parm || decl != last_parm)
+		      warning_at (nloc, OPT_Wvarargs,
+				  "optional second parameter of %<va_start%> "
+				  "not last named argument");
+		    else if (DECL_REGISTER (decl))
+		      warning_at (nloc, OPT_Wvarargs,
+				  "undefined behavior when second parameter "
+				  "of %<va_start%> is declared with "
+				  "%<register%> storage");
+		    c_parser_consume_token (parser);
+		  }
+		else
+		  {
+		    unsigned nesting_depth = 0;
+		    location_t sloc = c_parser_peek_token (parser)->location;
+		    location_t eloc = sloc;
+
+		    /* For va_start (ap,) the ) comes from stdarg.h.
+		       Use location of , in that case, otherwise without
+		       -Wsystem-headers nothing is reported.  After all,
+		       the problematic token is the comma in that case.  */
+		    if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+		      sloc = eloc = cloc;
+		    while (true)
+		      {
+			c_token *token = c_parser_peek_token (parser);
+			if (token->type == CPP_CLOSE_PAREN && !nesting_depth)
+			  break;
+
+			if (token->type == CPP_EOF)
+			  break;
+			if (token->type == CPP_OPEN_PAREN)
+			  ++nesting_depth;
+			else if (token->type == CPP_CLOSE_PAREN)
+			  --nesting_depth;
+			eloc = token->location;
+			c_parser_consume_token (parser);
+		      }
+		    if (sloc != eloc)
+		      sloc = make_location (sloc, sloc, eloc);
+		    warning_at (sloc, OPT_Wvarargs,
+				"%<va_start%> macro used with additional "
+				"arguments other than identifier of the "
+				"last named argument");
+		  }
+	      }
+	    parens.skip_until_found_close (parser);
+	    tree fndecl = builtin_decl_explicit (BUILT_IN_VA_START);
+	    vec<tree, va_gc> *params;
+	    vec_alloc (params, 2);
+	    params->quick_push (e1.value);
+	    params->quick_push (integer_zero_node);
+	    auto_vec<location_t> arg_loc (2);
+	    arg_loc.quick_push (e1.get_location ());
+	    arg_loc.quick_push (UNKNOWN_LOCATION);
+	    expr.value = c_build_function_call_vec (loc, arg_loc, fndecl,
+						    params, NULL);
+	    set_c_expr_source_range (&expr, loc,
+				     parser->tokens_buf[0].get_finish ());
+	    expr.m_decimal = 0;
+	    expr.original_code = ERROR_MARK;
+	    expr.original_type = NULL;
+	    release_tree_vector (params);
+	    break;
+	  }
 	case RID_OFFSETOF:
 	  {
 	    c_parser_consume_token (parser);
@@ -13593,8 +13758,7 @@ c_parser_expression (c_parser *parser)
 	  tree val = embed->value;
 	  unsigned last = RAW_DATA_LENGTH (val) - 1;
 	  next.value = build_int_cst (TREE_TYPE (val),
-				      ((const unsigned char *)
-				       RAW_DATA_POINTER (val))[last]);
+				      RAW_DATA_UCHAR_ELT (val, last));
 	  next.original_type = integer_type_node;
 	  c_parser_consume_token (parser);
 	}
@@ -13723,8 +13887,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 		  && RAW_DATA_POINTER (value)[i] == 0)
 		*literal_zero_mask |= 1U << (idx + 1);
 	      expr.value = build_int_cst (integer_type_node,
-					  ((const unsigned char *)
-					   RAW_DATA_POINTER (value))[i]);
+					  RAW_DATA_UCHAR_ELT (value, i));
 	      vec_safe_push (ret, expr.value);
 	      if (orig_types)
 		vec_safe_push (orig_types, expr.original_type);
@@ -22158,7 +22321,7 @@ c_parser_omp_allocate (c_parser *parser)
 		    "%<allocate%> directive", var);
 	  continue;
 	}
-      if (!c_check_in_current_scope (var))
+      if (!parser->in_omp_decl_attribute && !c_check_in_current_scope (var))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (nl),
 		    "%<allocate%> directive must be in the same scope as %qD",
@@ -22199,9 +22362,6 @@ c_parser_omp_allocate (c_parser *parser)
 	    = {EXPR_LOC_OR_LOC (allocator, OMP_CLAUSE_LOCATION (nl)), var};
 	  walk_tree (&allocator, c_check_omp_allocate_allocator_r, &data, NULL);
 	}
-      if (alignment)
-	SET_DECL_ALIGN (var, BITS_PER_UNIT * MAX (tree_to_uhwi (alignment),
-						  DECL_ALIGN_UNIT (var)));
       DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("omp allocate"),
 					 build_tree_list (allocator, alignment),
 					 DECL_ATTRIBUTES (var));
@@ -25111,6 +25271,7 @@ c_parser_omp_dispatch_body (c_parser *parser)
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)                           \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOVARIANTS)                       \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOCONTEXT)                        \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR)                  \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INTEROP)                          \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)                    \
    | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
@@ -26803,6 +26964,9 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 		{
 		  error_at (c_parser_peek_token (parser)->location,
 			    "expected %<nothing%> or %<need_device_ptr%>");
+		  if (strcmp (p, "need_device_addr") == 0)
+		    inform (c_parser_peek_token (parser)->location,
+			    "%<need_device_addr%> is not valid for C");
 		  goto fail;
 		}
 	    }

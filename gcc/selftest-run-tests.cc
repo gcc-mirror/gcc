@@ -127,6 +127,7 @@ selftest::run_tests ()
 
   text_art_tests ();
   gcc_urlifier_cc_tests ();
+  gcc_attribute_urlifier_cc_tests ();
 
   /* Run the analyzer selftests (if enabled).  */
   ana::selftest::run_analyzer_selftests ();

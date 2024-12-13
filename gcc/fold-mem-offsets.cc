@@ -100,7 +100,7 @@ const pass_data pass_data_fold_mem =
   RTL_PASS, /* type */
   "fold_mem_offsets", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
+  TV_FOLD_MEM_OFFSETS, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */

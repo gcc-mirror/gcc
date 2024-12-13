@@ -4396,6 +4396,10 @@ package body Exp_Util is
                  Nkind (Parent (Id_Ref)) = N_Assignment_Statement
                    and then
                  Nkind (Expression (Parent (Id_Ref))) = N_Allocator;
+      Id     : constant Node_Id :=
+        (if Nkind (Id_Ref) = N_Expanded_Name then Selector_Name (Id_Ref)
+         else Id_Ref);
+      --  Replace expanded_name X.Y with Y
 
       Component_Suffix_Index : constant Int :=
         (if In_Init_Proc then -1 else 0);
@@ -4421,11 +4425,10 @@ package body Exp_Util is
                Expression =>
                  Make_String_Literal (Loc,
                    Strval => String_From_Name_Buffer)));
+      end if;
 
-      else
-         if Nkind (Id_Ref) = N_Identifier
-           or else Nkind (Id_Ref) = N_Defining_Identifier
-         then
+      case Nkind (Id) is
+         when N_Identifier | N_Defining_Identifier =>
             --  For a simple variable, the image of the task is built from
             --  the name of the variable. To avoid possible conflict with the
             --  anonymous type created for a single protected object, add a
@@ -4433,29 +4436,31 @@ package body Exp_Util is
 
             T_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Id_Ref), 'T', 1));
+                New_External_Name (Chars (Id), 'T', 1));
 
-            Get_Name_String (Chars (Id_Ref));
+            Get_Name_String (Chars (Id));
 
             Expr :=
               Make_String_Literal (Loc,
                 Strval => String_From_Name_Buffer);
 
-         elsif Nkind (Id_Ref) = N_Selected_Component then
+         when N_Selected_Component =>
             T_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Selector_Name (Id_Ref)), 'T',
+                New_External_Name (Chars (Selector_Name (Id)), 'T',
                   Suffix_Index => Component_Suffix_Index));
-            Fun := Build_Task_Record_Image (Loc, Id_Ref, Is_Dyn);
+            Fun := Build_Task_Record_Image (Loc, Id, Is_Dyn);
 
-         elsif Nkind (Id_Ref) = N_Indexed_Component then
+         when N_Indexed_Component =>
             T_Id :=
               Make_Defining_Identifier (Loc,
                 New_External_Name (Chars (A_Type), 'N'));
 
-            Fun := Build_Task_Array_Image (Loc, Id_Ref, A_Type, Is_Dyn);
-         end if;
-      end if;
+            Fun := Build_Task_Array_Image (Loc, Id, A_Type, Is_Dyn);
+
+         when others =>
+            raise Program_Error;
+      end case;
 
       if Present (Fun) then
          Append (Fun, Decls);
@@ -11558,6 +11563,27 @@ package body Exp_Util is
       return True;
    end May_Generate_Large_Temp;
 
+   ---------------------------------------
+   -- Move_To_Initialization_Statements --
+   ---------------------------------------
+
+   procedure Move_To_Initialization_Statements (Decl, Stop : Node_Id) is
+      Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+      Stmts  : constant List_Id   := New_List;
+      Stmt   : constant Node_Id   :=
+                 Make_Compound_Statement (Sloc (Decl), Actions => Stmts);
+
+   begin
+      while Next (Decl) /= Stop loop
+         Append_To (Stmts, Remove_Next (Decl));
+      end loop;
+
+      pragma Assert (No (Initialization_Statements (Obj_Id)));
+
+      Insert_After (Decl, Stmt);
+      Set_Initialization_Statements (Obj_Id, Stmt);
+   end Move_To_Initialization_Statements;
+
    --------------------------------
    -- Name_Of_Controlled_Prim_Op --
    --------------------------------
@@ -11662,6 +11688,22 @@ package body Exp_Util is
          return True;
       end if;
    end Needs_Constant_Address;
+
+   -------------------------------------
+   -- Needs_Initialization_Statements --
+   -------------------------------------
+
+   function Needs_Initialization_Statements (Decl : Node_Id) return Boolean is
+      Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+
+   begin
+      --  See the documentation of Initialization_Statements in Einfo
+
+      return Comes_From_Source (Decl)
+        and then (Has_Delayed_Aspects (Obj_Id)
+                   or else Present (Following_Address_Clause (Decl))
+                   or else Init_Or_Norm_Scalars);
+   end Needs_Initialization_Statements;
 
    ----------------------------
    -- New_Class_Wide_Subtype --

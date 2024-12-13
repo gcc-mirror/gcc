@@ -179,8 +179,7 @@ aarch64_demangle_return_addr (struct _Unwind_Context *context,
 }
 
 /* GCS enable flag for chkfeat instruction.  */
-#define CHKFEAT_GCS 1
-
+#define _CHKFEAT_GCS 1
 /* SME runtime function local to libgcc, streaming compatible
    and preserves more registers than the base PCS requires, but
    we don't rely on that here.  */
@@ -194,7 +193,7 @@ void __libgcc_arm_za_disable (void);
   do							\
     {							\
       __libgcc_arm_za_disable ();			\
-      if (__builtin_aarch64_chkfeat (CHKFEAT_GCS) == 0)	\
+      if (__builtin_aarch64_chkfeat (_CHKFEAT_GCS) == 0)	\
 	{						\
 	  for (_Unwind_Word n = (x); n != 0; n--)	\
 	    __builtin_aarch64_gcspopm ();		\
@@ -233,7 +232,7 @@ void __libgcc_arm_za_disable (void);
   do							\
     {							\
       frames++;						\
-      if (__builtin_aarch64_chkfeat (CHKFEAT_GCS) != 0	\
+      if (__builtin_aarch64_chkfeat (_CHKFEAT_GCS) != 0	\
 	  || exc->exception_class == 0			\
 	  || _Unwind_GetIP (context) == 0)		\
 	break;						\

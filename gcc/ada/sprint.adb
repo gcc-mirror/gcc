@@ -4712,6 +4712,10 @@ package body Sprint is
                         Write_Str (");");
                      end;
 
+                  when E_Private_Subtype =>
+                     Write_Header (False);
+                     Write_Name_With_Col_Check (Chars (Full_View (Typ)));
+
                   --  For all other Itypes, print a triple ? (fill in later
                   --  if needed).
 

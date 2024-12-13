@@ -1,3 +1,48 @@
+2024-12-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117120
+	* gm2-compiler/M2CaseList.mod (CaseBoundsResolved): Rewrite.
+	(ConvertNulStr2NulChar): New procedure function.
+	(NulStr2NulChar): Ditto.
+	(GetCaseExpression): Ditto.
+	(OverlappingCaseBound): Rewrite.
+	* gm2-compiler/M2GCCDeclare.mod (CheckResolveSubrange): Allow
+	'' to be used as the subrange low limit.
+	* gm2-compiler/M2GenGCC.mod (FoldConvert): Rewrite.
+	(PopKindTree): Ditto.
+	(BuildHighFromString): Reformat.
+	* gm2-compiler/SymbolTable.mod (PushConstString): Add test for
+	length 0 and PushChar (nul).
+
+2024-12-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115328
+	* gm2-compiler/M2Options.def (GetEnableForward): New procedure
+	function.
+	(SetEnableForward): New procedure.
+	* gm2-compiler/M2Options.mod (GetEnableForward): New procedure
+	function.
+	(SetEnableForward): New procedure.
+	(EnableForward): New boolean.
+	* gm2-compiler/P1SymBuild.mod (EndBuildForward): Check
+	GetEnableForward and generate an error message if false.
+
+2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117948
+	* gm2-compiler/P1Build.bnf (ForwardDeclaration): Pass token
+	position of the FORWARD keyword to EndBuildForward.
+	* gm2-compiler/P1SymBuild.def (EndBuildForward): New parameter
+	forwardPos.
+	* gm2-compiler/P1SymBuild.mod (EndBuildForward): Issue an error at
+	forwardPos if the Iso boolean is false.
+
+2024-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117904
+	* gm2-compiler/M2GenGCC.mod (PerformLastForIterator): Add call to
+	BuildConvert when increment is > 0.
+
 2024-11-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117777

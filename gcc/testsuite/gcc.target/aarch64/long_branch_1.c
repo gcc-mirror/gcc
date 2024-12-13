@@ -1,6 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-timeout-factor 2.0 } */
-/* { dg-options "-O1 -fno-reorder-blocks -fno-tree-cselim --save-temps" } */
+/* { dg-options "-O1 -fno-reorder-blocks -fno-tree-cselim -fdisable-tree-ifcombine --save-temps" } */
 
 
 __attribute__((noinline, noclone)) int

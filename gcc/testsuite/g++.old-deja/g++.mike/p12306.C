@@ -4,7 +4,7 @@
 void *ptr1, *ptr2;
 int fail = 0;
 
-extern "C" int printf(const char *...);
+extern "C" int printf(const char *, ...);
 
 class RWSlist { };
 

@@ -1077,7 +1077,9 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
       /* Expand -fdiagnostics-plain-output to its constituents.  This needs
 	 to happen here so that prune_options can handle -fdiagnostics-color
 	 specially.  */
-      if (!strcmp (opt, "-fdiagnostics-plain-output"))
+      if (opt[0] == '-'
+	  && (opt[1] == '-' || opt[1] == 'f')
+	  && !strcmp (opt + 2, "diagnostics-plain-output"))
 	{
 	  /* If you have changed the default diagnostics output, and this new
 	     output is not appropriately "plain" (e.g., the change needs to be

@@ -1,3 +1,300 @@
+2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (OMP_DISPATCH_CLAUSE_MASK): Add has_device_addr clause.
+
+2024-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117614
+	* constexpr.cc (cxx_eval_store_expression): For stores to
+	DECL_ANON_UNION_VAR_P vars just continue with DECL_VALUE_EXPR
+	of it, without setting evaluated to true or full
+	cxx_eval_constant_expression.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* decl.cc: Add #include "diagnostic-highlight-colors.h"
+	and #include "pretty-print-markup.h".
+	(complain_about_incompatible_declspecs): New.
+	(grokdeclarator): Use it when complaining about both 'signed' and
+	'unsigned', and both 'long' and 'short'.
+
+2024-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc (print_z_candidates): Count the number of
+	candidates and issue a note stating the count at an
+	intermediate nesting level.  Number the individual
+	candidates.
+
+2024-12-10  Arsen Arsenović  <arsen@aarsen.me>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (dump_record_fields): New helper.  Iterates a
+	RECORD_TYPEs TYPE_FIELDS and pretty-prints them.
+	(dmp_str): New.  The lang-coro dump stream.
+	(coro_dump_id): New.  ID of the lang-coro dump.
+	(coro_dump_flags): New.  Flags passed to the lang-coro dump.
+	(coro_maybe_dump_initial_function): New helper.  Prints, if
+	dumping is enabled, the fndecl passed to it as the original
+	function.
+	(coro_maybe_dump_ramp): New.  Prints the ramp function passed to
+	it, if dumping is enabled.
+	(coro_maybe_dump_transformed_functions): New.
+	(cp_coroutine_transform::apply_transforms): Initialize the
+	lang-coro dump.  Call coro_maybe_dump_initial_function on the
+	original function, as well as coro_maybe_dump_ramp, after the
+	transformation into the ramp is finished.
+	(cp_coroutine_transform::finish_transforms): Call
+	coro_maybe_dump_transformed_functions on the built actor and
+	destroy.
+	* cp-objcp-common.cc (cp_register_dumps): Register the coroutine
+	dump.
+	* cp-tree.h (coro_dump_id): Declare as extern.
+	* cxx-pretty-print.cc (pp_cxx_template_parameter): Don't call
+	TREE_TYPE on a TREE_LIST cell.
+	(cxx_pretty_printer::declaration): Handle FIELD_DECL similar to
+	VAR_DECL.
+
+2024-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117788
+	* typeck.cc (cp_build_binary_op) <case EQ_EXPR>: Don't check
+	warn_array_compare.  Check tf_warning_or_error instead of just
+	tf_warning.  Maybe return an error_mark_node in C++26.
+	<case LE_EXPR>: Likewise.
+
+2024-12-09  Marek Polacek  <polacek@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116416
+	* cp-gimplify.cc (cp_fold_r) <case TARGET_EXPR>: Try to fold
+	TARGET_EXPR_INITIAL and replace it with the folded result if
+	it's TREE_CONSTANT.
+
+2024-12-09  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* call.cc (build_cxx_call):  Pass `complain` parameter to
+	check_builtin_function_arguments.  Take its value from the
+	`tsubst_flags_t` type `complain & tf_error`.
+	* semantics.cc (finish_call_expr):  Pass `complain` parameter to
+	resolve_overloaded_builtin.  Take its value from the
+	`tsubst_flags_t` type `complain & tf_error`.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* call.cc (print_conversion_rejection): Remove leading space from
+	diagnostic messages.
+	(print_conversion_rejection): Likewise.
+	(print_arity_information): Likewise.
+	(print_z_candidate): Likewise.  Add auto_diagnostic_nesting_level
+	before calls to fn_type_unification and diagnose_constraints.
+	(print_z_candidates): Add auto_diagnostic_nesting_level before
+	looping over candidates.
+	(conversion_null_warnings): Remove leading space from
+	diagnostic messages.
+	(maybe_inform_about_fndecl_for_bogus_argument_init): Likewise.
+	* constraint.cc (tsubst_valid_expression_requirement): Add
+	auto_diagnostic_nesting_level when showing why the expression is
+	invalid.
+	(satisfy_disjunction): Likewise when showing operans, and again
+	when replaying each branch of the disjunction.
+	(diagnose_constraints): Likewise when replaying satisfaction.
+	* error.cc (cp_diagnostic_text_starter): Set prefix.
+	(print_instantiation_full_context): Only show the file
+	if we're not showing nesting or the user has opted in to
+	showing location information in nested diagnostics.
+	(class auto_context_line): New.
+	(print_instantiation_partial_context_line): Replace calls to
+	print_location and to diagnostic_show_locus with an
+	auto_context_line.
+	(print_instantiation_partial_context): Replace calls to
+	print_location with an auto_context_line.
+	(maybe_print_constexpr_context): Likewise.
+	(print_constrained_decl_info): Likewise.
+	(print_concept_check_info): Likewise.
+	(print_constraint_context_head): Likewise.
+	(print_requires_expression_info): Likewise.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-gimplify.cc: Include "gcc-urlifier.h".
+	(process_stmt_hotness_attribute): Use auto_urlify_attributes with
+	OPT_Wattributes.
+	* cvt.cc: Include "gcc-urlifier.h".
+	(maybe_warn_nodiscard): Use auto_urlify_attributes with
+	OPT_Wunused_result.
+	* decl.cc: Include "gcc-urlifier.h".
+	(start_decl): Use auto_urlify_attributes.
+	(start_preparsed_function): Likewise.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.cc (suggest_alternative_in_explicit_scope):
+	Gracefully handle non-namespaces, such as scoped enums.
+	* parser.cc (cp_parser_name_lookup_error): Provide
+	a name_hint for the case where we're in an explicit scope.
+	* std-name-hint.gperf: Add <concepts>.
+	* std-name-hint.h: Regenerate.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* error.cc (print_location): Move to earlier in the file.
+	(print_instantiation_partial_context_line): Replace
+	location-printing logic with a call to print_location.
+	(print_instantiation_partial_context): Likewise, splitting up
+	pp_verbatim calls.
+	(maybe_print_constexpr_context): Likewise.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (class raw_data_iterator): New type.
+	(class raw_data_range): New type.
+	* parser.cc (cp_parser_postfix_open_square_expression): Handle
+	parsing of CPP_EMBED.
+	(cp_parser_parenthesized_expression_list): Likewise.  Use
+	cp_lexer_next_token_is.
+	(cp_parser_expression): Handle parsing of CPP_EMBED.
+	(cp_parser_template_argument_list): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_oacc_clause_tile): Likewise.
+	(cp_parser_omp_tile_sizes): Likewise.
+	* pt.cc (tsubst_expr): Handle RAW_DATA_CST.
+	* constexpr.cc (reduced_constant_expression_p): Likewise.
+	(raw_data_cst_elt): New function.
+	(find_array_ctor_elt): Handle RAW_DATA_CST.
+	(cxx_eval_array_reference): Likewise.
+	* typeck2.cc (digest_init_r): Emit -Wnarrowing and/or -Wconversion
+	diagnostics.
+	(process_init_constructor_array): Handle RAW_DATA_CST.
+	* decl.cc (maybe_deduce_size_from_array_init): Likewise.
+	(is_direct_enum_init): Fail for RAW_DATA_CST.
+	(cp_maybe_split_raw_data): New function.
+	(consume_init): New function.
+	(reshape_init_array_1): Add VECTOR_P argument.  Handle RAW_DATA_CST.
+	(reshape_init_array): Adjust reshape_init_array_1 caller.
+	(reshape_init_vector): Likewise.
+	(reshape_init_class): Handle RAW_DATA_CST.
+	(reshape_init_r): Likewise.
+
+2024-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117898
+	* pt.cc (tsubst_pack_index): Detect indexing an empty pack.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* cp-tree.h (finish_asm_stmt): Add TOPLEV_P argument.
+	* parser.cc (cp_parser_asm_definition): Parse also extended asm
+	without clobbers/labels outside of functions.
+	* semantics.cc (finish_asm_stmt): Add TOPLEV_P argument, if set,
+	check extra restrictions for extended asm outside of functions.
+	* pt.cc (tsubst_stmt): Adjust finish_asm_stmt caller.
+
+2024-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/116771
+	* parser.cc (cp_parser_name_lookup_error): Provide suggestions for
+	the case of complete failure where there is no scope.
+
+2024-12-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117615
+	* constexpr.cc (cxx_eval_constant_expression): Don't reject
+	INTEGER_CSTs with type POINTER_TYPE to METHOD_TYPE.
+
+2024-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117826
+	* cp-tree.h (struct decl_location_traits): New type.
+	(erroneous_templates_t): Change using into typedef.
+	(erroneous_templates): Add GTY((cache)).
+	* error.cc (cp_adjust_diagnostic_info): Use
+	hash_map_safe_get_or_insert<true> rather than
+	hash_map_safe_get_or_insert<false> for erroneous_templates.
+
+2024-12-03  Nina Ranns  <dinka.ranns@googlemail.com>
+
+	PR c++/117579
+	* parser.cc (cp_parser_statement): Replace assertion with a
+	conditional check that the statement containing a contract assert
+	is empty.
+
+2024-12-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (resolve_concept_check): Remove.
+	(deduce_constrained_parameter): Remove.
+	(finish_type_constraints): Inline into its only caller
+	cp_parser_placeholder_type_specifier and remove.
+	(build_concept_check_arguments): Coding style tweaks.
+	(build_standard_check): Inline into its only caller ...
+	(build_concept_check): ... here.
+	(build_type_constraint): Use the prototype parameter as the
+	first template argument.
+	(finish_shorthand_constraint): Remove function concept
+	handling.  Use concept_prototype_parameter.
+	(placeholder_extract_concept_and_args): Inline into its
+	callers and remove.
+	(equivalent_placeholder_constraints): Adjust after
+	placeholder_extract_concept_and_args removal.
+	(iterative_hash_placeholder_constraint): Likewise.
+	* cp-objcp-common.cc (cp_common_init_ts): Remove WILDCARD_DECL
+	handling.
+	* cp-tree.def (WILDCARD_DECL): Remove.
+	* cp-tree.h (WILDCARD_PACK_P): Remove.
+	(type_uses_auto_or_concept): Remove declaration of nonexistent
+	function.
+	(append_type_to_template_for_access_check): Likewise.
+	(finish_type_constraints): Remove declaration.
+	(placeholder_extract_concept_and_args): Remove declaration.
+	(deduce_constrained_parameter): Remove declaration.
+	(resolve_constraint_check): Remove declaration.
+	(valid_requirements_p): Remove declaration of nonexistent
+	function.
+	(finish_concept_name): Likewise.
+	(concept_definition_p): Remove redundant overload.
+	(concept_prototype_parameter): Define.
+	* cxx-pretty-print.cc (pp_cxx_constrained_type_spec): Adjust
+	after placeholder_extract_concept_and_args.
+	* error.cc (dump_decl) <case WILDCARD_DECL>: Remove.
+	(dump_expr) <case WILDCARD_DECL>: Likewise.
+	* parser.cc (is_constrained_parameter): Inline into
+	declares_constrained_type_template_parameter and remove.
+	(cp_parser_check_constrained_type_parm): Declare static.
+	(finish_constrained_template_template_parm): Remove.
+	(cp_parser_constrained_template_template_parm): Remove.
+	(finish_constrained_parameter): Remove dead code guarded by
+	cp_parser_constrained_template_template_parm.
+	(declares_constrained_type_template_parameter): Adjust after
+	is_constrained_parameter removal.
+	(declares_constrained_template_template_parameter): Remove.
+	(cp_parser_placeholder_type_specifier): Adjust after
+	finish_type_constraints removal.  Check the prototype parameter
+	earlier, before build_type_constraint.
+	Use concept_prototype_parameter.
+	(cp_parser_parameter_declaration): Remove dead code guarded by
+	declares_constrained_template_template_parameter.
+	* pt.cc (convert_wildcard_argument): Remove.
+	(convert_template_argument): Remove WILDCARD_DECL handling.
+	(coerce_template_parameter_pack): Likewise.
+	(tsubst) <case TEMPLATE_TYPE_PARM>: Likewise.
+	(type_dependent_expression_p): Likewise.
+	(make_constrained_placeholder_type): Remove function concept
+	handling.
+	(placeholder_type_constraint_dependent_p): Remove WILDCARD_DECL
+	handling.
+
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc: Implement C++26 P3176R1 - The Oxford variadic comma.
+	(cp_parser_parameter_declaration_clause): Emit
+	-Wdeprecated-variadic-comma-omission warnings.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* decl.cc (reshape_init_array_1): Handle poly indices.
+
 2024-11-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113798

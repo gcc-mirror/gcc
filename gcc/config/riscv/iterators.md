@@ -62,8 +62,14 @@
 ;; Iterator for hardware integer modes narrower than XLEN.
 (define_mode_iterator SUBX [QI HI (SI "TARGET_64BIT")])
 
+;; Iterator for hardware integer modes narrower than XLEN, same as SUBX.
+(define_mode_iterator SUBX1 [QI HI (SI "TARGET_64BIT")])
+
 ;; Iterator for hardware-supported integer modes.
 (define_mode_iterator ANYI [QI HI SI (DI "TARGET_64BIT")])
+
+;; Iterator for hardware integer modes narrower than XLEN, same as ANYI.
+(define_mode_iterator ANYI1 [QI HI SI (DI "TARGET_64BIT")])
 
 (define_mode_iterator ANYI_DOUBLE_TRUNC [HI SI (DI "TARGET_64BIT")])
 

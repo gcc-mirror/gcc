@@ -668,6 +668,7 @@ static const struct default_options default_options_table[] =
       VECT_COST_MODEL_VERY_CHEAP },
     { OPT_LEVELS_2_PLUS, OPT_finline_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_foptimize_crc, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_flate_combine_instructions, NULL, 1 },
 
     /* -O2 and above optimizations, but not -Os or -Og.  */
@@ -2099,6 +2100,7 @@ enable_fdo_optimizations (struct gcc_options *opts,
   SET_OPTION_IF_UNSET (opts, opts_set, flag_loop_interchange, value);
   SET_OPTION_IF_UNSET (opts, opts_set, flag_unroll_jam, value);
   SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_distribution, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_optimize_crc, value);
 }
 
 /* -f{,no-}sanitize{,-recover}= suboptions.  */

@@ -227,6 +227,9 @@ TARGET_GNU_ATTRIBUTES (m32r_attribute_table,
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "M32R/D"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by m32r_option_override to initialize various things.  */

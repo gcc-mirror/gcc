@@ -88,6 +88,14 @@ extern struct Exception_Data numeric_error;
 extern struct Exception_Data program_error;
 extern struct Exception_Data storage_error;
 
+/* Exception IDs for CHERI Ada exceptions (see Interfaces.CHERI.Exceptions) */
+#ifdef __CHERI__
+extern Exception_Id capability_bound_error_id;
+extern Exception_Id capability_permission_error_id;
+extern Exception_Id capability_sealed_error_id;
+extern Exception_Id capability_tag_error_id;
+#endif
+
 /* For the Cert run time we use the regular raise exception routine because
    __gnat_raise_from_signal_handler is not available.  */
 #ifdef CERT
@@ -1678,10 +1686,16 @@ __gnat_is_vms_v7 (void)
 #include <sys/ucontext.h>
 #include <unistd.h>
 
+#ifdef __CHERI__
 static void
+__gnat_error_handler (int sig,
+		      siginfo_t *si,
+		      void *ucontext ATTRIBUTE_UNUSED)
+#else
 __gnat_error_handler (int sig,
 		      siginfo_t *si ATTRIBUTE_UNUSED,
 		      void *ucontext ATTRIBUTE_UNUSED)
+#endif /* __CHERI__ */
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -1707,6 +1721,67 @@ __gnat_error_handler (int sig,
       exception = &storage_error;
       msg = "SIGBUS: possible stack overflow";
       break;
+
+#ifdef __CHERI__
+    case SIGPROT:
+      switch (si->si_code)
+        {
+        case PROT_CHERI_TAG:
+          exception = capability_tag_error_id;
+          msg = "Capability tag fault";
+          break;
+
+        case PROT_CHERI_SEALED:
+          exception = capability_sealed_error_id;
+          msg = "Capability sealed fault";
+          break;
+
+        case PROT_CHERI_UNALIGNED_BASE:
+          exception = &storage_error;
+          msg = "SIGPROT: unaligned base address";
+          break;
+
+        case PROT_CHERI_BOUNDS:
+          exception = capability_bound_error_id;
+          msg = "Capability bounds fault";
+          break;
+
+        case PROT_CHERI_IMPRECISE:
+          exception = capability_bound_error_id;
+          msg = "Imprecise capability bounds fault";
+          break;
+
+        case PROT_CHERI_TYPE:
+          exception = capability_permission_error_id;
+          msg = "Capability type mismatch fault";
+          break;
+
+        case PROT_CHERI_PERM:
+          exception = capability_permission_error_id;
+          msg = "Capability permission fault";
+          break;
+
+        case PROT_CHERI_STORELOCAL:
+          exception = capability_permission_error_id;
+          msg = "Capability store-local fault";
+          break;
+
+        case PROT_CHERI_CINVOKE:
+          exception = capability_permission_error_id;
+          msg = "CInvoke fault";
+          break;
+
+        case PROT_CHERI_SYSREG:
+          exception = capability_permission_error_id;
+          msg = "Capability system register fault";
+          break;
+
+        default:
+          exception = &program_error;
+          msg = "SIGPROT: unhandled signal code";
+        }
+      break;
+#endif /* __CHERI__ */
 
     default:
       exception = &program_error;
@@ -1734,6 +1809,10 @@ __gnat_install_handler (void)
   (void) sigaction (SIGFPE,  &act, NULL);
   (void) sigaction (SIGSEGV, &act, NULL);
   (void) sigaction (SIGBUS,  &act, NULL);
+
+#ifdef __CHERI__
+  (void) sigaction (SIGPROT, &act, NULL);
+#endif
 
   __gnat_handler_installed = 1;
 }

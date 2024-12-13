@@ -2534,6 +2534,10 @@ hash_rtx (const_rtx x, machine_mode mode,
 	  hash += (unsigned int) XINT (x, i);
 	  break;
 
+	case 'L':
+	  hash += (unsigned int) XLOC (x, i);
+	  break;
+
 	case 'p':
 	  hash += constant_lower_bound (SUBREG_BYTE (x));
 	  break;
@@ -2763,6 +2767,11 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
+	    return false;
+	  break;
+
+	case 'L':
+	  if (XLOC (x, i) != XLOC (y, i))
 	    return false;
 	  break;
 

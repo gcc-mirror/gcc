@@ -201,6 +201,15 @@ class svac_impl : public function_base
 public:
   CONSTEXPR svac_impl (int unspec) : m_unspec (unspec) {}
 
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree pg = gimple_call_arg (f.call, 0);
+    if (is_pfalse (pg))
+      return f.fold_call_to (pg);
+    return NULL;
+  }
+
   rtx
   expand (function_expander &e) const override
   {
@@ -216,6 +225,14 @@ public:
 class svadda_impl : public function_base
 {
 public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (gimple_call_arg (f.call, 1));
+    return NULL;
+  }
+
   rtx
   expand (function_expander &e) const override
   {
@@ -224,6 +241,21 @@ public:
     machine_mode mode = e.vector_mode (0);
     insn_code icode = direct_optab_handler (mask_fold_left_plus_optab, mode);
     return e.use_exact_insn (icode);
+  }
+};
+
+class svaddv_impl : public reduction
+{
+public:
+  CONSTEXPR svaddv_impl ()
+    : reduction (UNSPEC_SADDV, UNSPEC_UADDV, UNSPEC_FADDV) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+    return NULL;
   }
 };
 
@@ -245,9 +277,23 @@ public:
     e.args.quick_push (expand_vector_broadcast (mode, shift));
     return e.use_exact_insn (code_for_aarch64_adr_shift (mode));
   }
-
   /* How many bits left to shift the vector displacement.  */
   unsigned int m_shift;
+};
+
+
+class svandv_impl : public reduction
+{
+public:
+  CONSTEXPR svandv_impl () : reduction (UNSPEC_ANDV) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (build_all_ones_cst (TREE_TYPE (f.lhs)));
+    return NULL;
+  }
 };
 
 class svbic_impl : public function_base
@@ -332,6 +378,14 @@ class svclast_impl : public quiet<function_base>
 {
 public:
   CONSTEXPR svclast_impl (int unspec) : m_unspec (unspec) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (gimple_call_arg (f.call, 1));
+    return NULL;
+  }
 
   rtx
   expand (function_expander &e) const override
@@ -425,6 +479,8 @@ public:
 	return gimple_build_assign (f.lhs, m_code, rhs1, rhs2);
       }
 
+    if (is_pfalse (pg))
+      return f.fold_call_to (pg);
     return NULL;
   }
 
@@ -464,6 +520,15 @@ public:
     : m_code (code), m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint) {}
 
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree pg = gimple_call_arg (f.call, 0);
+    if (is_pfalse (pg))
+      return f.fold_call_to (pg);
+    return NULL;
+  }
+
   rtx
   expand (function_expander &e) const override
   {
@@ -502,6 +567,16 @@ public:
 class svcmpuo_impl : public quiet<function_base>
 {
 public:
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree pg = gimple_call_arg (f.call, 0);
+    if (is_pfalse (pg))
+      return f.fold_call_to (pg);
+    return NULL;
+  }
+
   rtx
   expand (function_expander &e) const override
   {
@@ -598,6 +673,16 @@ public:
 class svcntp_impl : public function_base
 {
 public:
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree pg = gimple_call_arg (f.call, 0);
+    if (is_pfalse (pg))
+      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+    return NULL;
+  }
+
   rtx
   expand (function_expander &e) const override
   {
@@ -610,6 +695,19 @@ public:
     machine_mode mode = e.vector_mode (0);
     e.add_ptrue_hint (0, mode);
     return e.use_exact_insn (code_for_aarch64_pred_cntp (mode));
+  }
+};
+
+class svcompact_impl
+  : public QUIET_CODE_FOR_MODE0 (aarch64_sve_compact)
+{
+public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+    return NULL;
   }
 };
 
@@ -749,6 +847,18 @@ public:
   }
 };
 
+class svcvtnt_impl : public CODE_FOR_MODE0 (aarch64_sve_cvtnt)
+{
+public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (f.pred == PRED_x && is_pfalse (gimple_call_arg (f.call, 1)))
+      f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+    return NULL;
+  }
+};
+
 class svdiv_impl : public rtx_code_function
 {
 public:
@@ -775,9 +885,9 @@ public:
     tree pg = gimple_call_arg (f.call, 0);
     if (!f.type_suffix (0).unsigned_p && integer_minus_onep (op2))
       {
-	function_instance instance ("svneg", functions::svneg,
-				    shapes::unary, MODE_none,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+	function_instance instance ("svneg", functions::svneg, shapes::unary,
+				    MODE_none, f.type_suffix_ids, GROUP_none,
+				    f.pred, FPM_unused);
 	gcall *call = f.redirect_call (instance);
 	unsigned offset_index = 0;
 	if (f.pred == PRED_m)
@@ -805,7 +915,8 @@ public:
       {
 	function_instance instance ("svlsr", functions::svlsr,
 				    shapes::binary_uint_opt_n, MODE_n,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+				    f.type_suffix_ids, GROUP_none, f.pred,
+				    FPM_unused);
 	call = f.redirect_call (instance);
 	tree d = INTEGRAL_TYPE_P (TREE_TYPE (op2)) ? op2 : op2_cst;
 	new_divisor = wide_int_to_tree (TREE_TYPE (d), tree_log2 (d));
@@ -818,7 +929,8 @@ public:
 
 	function_instance instance ("svasrd", functions::svasrd,
 				    shapes::shift_right_imm, MODE_n,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+				    f.type_suffix_ids, GROUP_none, f.pred,
+				    FPM_unused);
 	call = f.redirect_call (instance);
 	new_divisor = wide_int_to_tree (scalar_types[VECTOR_TYPE_svuint64_t],
 					tree_log2 (op2_cst));
@@ -836,21 +948,26 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    /* In the optab, the multiplication operands come before the accumulator
-       operand.  The optab is keyed off the multiplication mode.  */
-    e.rotate_inputs_left (0, 3);
     insn_code icode;
-    if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
-      icode = e.convert_optab_handler_for_sign (sdot_prod_optab,
-						udot_prod_optab,
-						0, e.result_mode (),
-						GET_MODE (e.args[0]));
+    if (e.fpm_mode == aarch64_sve::FPM_set)
+      icode = code_for_aarch64_sve_dot (e.result_mode ());
     else
-      icode = (e.type_suffix (0).float_p
-	       ? CODE_FOR_aarch64_sve_fdotvnx4sfvnx8hf
-	       : e.type_suffix (0).unsigned_p
-	       ? CODE_FOR_udot_prodvnx4sivnx8hi
-	       : CODE_FOR_sdot_prodvnx4sivnx8hi);
+      {
+	/* In the optab, the multiplication operands come before the accumulator
+	   operand.  The optab is keyed off the multiplication mode.  */
+	e.rotate_inputs_left (0, 3);
+	if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
+	  icode = e.convert_optab_handler_for_sign (sdot_prod_optab,
+						    udot_prod_optab,
+						    0, e.result_mode (),
+						    GET_MODE (e.args[0]));
+	else
+	  icode = (e.type_suffix (0).float_p
+		   ? CODE_FOR_aarch64_sve_fdotvnx4sfvnx8hf
+		   : e.type_suffix (0).unsigned_p
+		   ? CODE_FOR_udot_prodvnx4sivnx8hi
+		   : CODE_FOR_sdot_prodvnx4sivnx8hi);
+      }
     return e.use_unpred_insn (icode);
   }
 };
@@ -863,17 +980,24 @@ public:
   rtx
   expand (function_expander &e) const override
   {
+    insn_code icode;
     machine_mode mode0 = GET_MODE (e.args[0]);
     machine_mode mode1 = GET_MODE (e.args[1]);
-    /* Use the same ordering as the dot_prod_optab, with the
-       accumulator last.  */
-    e.rotate_inputs_left (0, 4);
-    int unspec = unspec_for (e);
-    insn_code icode;
-    if (unspec == UNSPEC_FDOT)
-      icode = CODE_FOR_aarch64_fdot_prod_lanevnx4sfvnx8hf;
+    if (e.fpm_mode == aarch64_sve::FPM_set)
+      {
+	icode = code_for_aarch64_sve_dot_lane (mode0);
+      }
     else
-      icode = code_for_aarch64_dot_prod_lane (unspec, mode0, mode1);
+      {
+	/* Use the same ordering as the dot_prod_optab, with the
+	   accumulator last.  */
+	e.rotate_inputs_left (0, 4);
+	int unspec = unspec_for (e);
+	if (unspec == UNSPEC_FDOT)
+	  icode = CODE_FOR_aarch64_fdot_prod_lanevnx4sfvnx8hf;
+	else
+	  icode = code_for_aarch64_dot_prod_lane (unspec, mode0, mode1);
+      }
     return e.use_exact_insn (icode);
   }
 };
@@ -982,7 +1106,7 @@ private:
     tree lhs_type = TREE_TYPE (lhs);
     tree elt_type = TREE_TYPE (lhs_type);
     scalar_mode elt_mode = SCALAR_TYPE_MODE (elt_type);
-    machine_mode vq_mode = aarch64_vq_mode (elt_mode).require ();
+    machine_mode vq_mode = aarch64_v128_mode (elt_mode).require ();
     tree vq_type = build_vector_type_for_mode (elt_type, vq_mode);
 
     unsigned nargs = gimple_call_num_args (f.call);
@@ -1053,7 +1177,7 @@ public:
 
     /* Get the 128-bit Advanced SIMD vector for this data size.  */
     scalar_mode element_mode = GET_MODE_INNER (mode);
-    machine_mode vq_mode = aarch64_vq_mode (element_mode).require ();
+    machine_mode vq_mode = aarch64_v128_mode (element_mode).require ();
     gcc_assert (known_eq (elements_per_vq, GET_MODE_NUNITS (vq_mode)));
 
     /* Put the arguments into a 128-bit Advanced SIMD vector.  We want
@@ -1138,6 +1262,20 @@ public:
     e.args[0] = gen_lowpart (VNx2DImode, e.args[0]);
     e.args[1] = index;
     return e.use_exact_insn (CODE_FOR_aarch64_sve_tblvnx2di);
+  }
+};
+
+class sveorv_impl : public reduction
+{
+public:
+  CONSTEXPR sveorv_impl () : reduction (UNSPEC_XORV) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+    return NULL;
   }
 };
 
@@ -1383,7 +1521,8 @@ public:
      BIT_FIELD_REF lowers to Advanced SIMD element extract, so we have to
      ensure the index of the element being accessed is in the range of a
      Advanced SIMD vector width.  */
-  gimple *fold (gimple_folder & f) const override
+  gimple *
+  fold (gimple_folder & f) const override
   {
     tree pred = gimple_call_arg (f.call, 0);
     tree val = gimple_call_arg (f.call, 1);
@@ -1637,7 +1776,7 @@ public:
   machine_mode
   memory_vector_mode (const function_instance &fi) const override
   {
-    return aarch64_vq_mode (GET_MODE_INNER (fi.vector_mode (0))).require ();
+    return aarch64_v128_mode (GET_MODE_INNER (fi.vector_mode (0))).require ();
   }
 
   rtx
@@ -1671,7 +1810,7 @@ public:
 	tree eltype = TREE_TYPE (lhs_type);
 
 	scalar_mode elmode = GET_MODE_INNER (TYPE_MODE (lhs_type));
-	machine_mode vq_mode = aarch64_vq_mode (elmode).require ();
+	machine_mode vq_mode = aarch64_v128_mode (elmode).require ();
 	tree vectype = build_vector_type_for_mode (eltype, vq_mode);
 
 	tree elt_ptr_type
@@ -1959,6 +2098,80 @@ public:
   }
 };
 
+class svminv_impl : public reduction
+{
+public:
+  CONSTEXPR svminv_impl ()
+    : reduction (UNSPEC_SMINV, UNSPEC_UMINV, UNSPEC_FMINV) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      {
+	tree rhs = f.type_suffix (0).integer_p
+	  ? TYPE_MAX_VALUE (TREE_TYPE (f.lhs))
+	  : build_real (TREE_TYPE (f.lhs), dconstinf);
+	return f.fold_call_to (rhs);
+      }
+    return NULL;
+  }
+};
+
+class svmaxnmv_impl : public reduction
+{
+public:
+  CONSTEXPR svmaxnmv_impl () : reduction (UNSPEC_FMAXNMV) {}
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      {
+	REAL_VALUE_TYPE rnan = dconst0;
+	rnan.cl = rvc_nan;
+	return f.fold_call_to (build_real (TREE_TYPE (f.lhs), rnan));
+      }
+    return NULL;
+  }
+};
+
+class svmaxv_impl : public reduction
+{
+public:
+  CONSTEXPR svmaxv_impl ()
+    : reduction (UNSPEC_SMAXV, UNSPEC_UMAXV, UNSPEC_FMAXV) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      {
+	tree rhs = f.type_suffix (0).integer_p
+	  ? TYPE_MIN_VALUE (TREE_TYPE (f.lhs))
+	  : build_real (TREE_TYPE (f.lhs), dconstninf);
+	return f.fold_call_to (rhs);
+      }
+    return NULL;
+  }
+};
+
+class svminnmv_impl : public reduction
+{
+public:
+  CONSTEXPR svminnmv_impl () : reduction (UNSPEC_FMINNMV) {}
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      {
+	REAL_VALUE_TYPE rnan = dconst0;
+	rnan.cl = rvc_nan;
+	return f.fold_call_to (build_real (TREE_TYPE (f.lhs), rnan));
+      }
+    return NULL;
+  }
+};
+
 class svmla_impl : public function_base
 {
 public:
@@ -2100,9 +2313,9 @@ public:
       negated_op = op2;
     if (!f.type_suffix (0).unsigned_p && negated_op)
       {
-	function_instance instance ("svneg", functions::svneg,
-				    shapes::unary, MODE_none,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+	function_instance instance ("svneg", functions::svneg, shapes::unary,
+				    MODE_none, f.type_suffix_ids, GROUP_none,
+				    f.pred, FPM_unused);
 	gcall *call = f.redirect_call (instance);
 	unsigned offset_index = 0;
 	if (f.pred == PRED_m)
@@ -2143,7 +2356,8 @@ public:
 				      tree_log2 (shift_op2));
 	function_instance instance ("svlsl", functions::svlsl,
 				    shapes::binary_uint_opt_n, MODE_n,
-				    f.type_suffix_ids, GROUP_none, f.pred);
+				    f.type_suffix_ids, GROUP_none, f.pred,
+				    FPM_unused);
 	gcall *call = f.redirect_call (instance);
 	gimple_call_set_arg (call, 1, shift_op1);
 	gimple_call_set_arg (call, 2, shift_op2);
@@ -2207,6 +2421,20 @@ public:
   }
 };
 
+class svorv_impl : public reduction
+{
+public:
+  CONSTEXPR svorv_impl () : reduction (UNSPEC_IORV) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+    return NULL;
+  }
+};
+
 class svpfalse_impl : public function_base
 {
 public:
@@ -2231,6 +2459,16 @@ class svpfirst_svpnext_impl : public function_base
 {
 public:
   CONSTEXPR svpfirst_svpnext_impl (int unspec) : m_unspec (unspec) {}
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree pg = gimple_call_arg (f.call, 0);
+    if (is_pfalse (pg))
+      return f.fold_call_to (m_unspec == UNSPEC_PFIRST
+			     ? gimple_call_arg (f.call, 1)
+			     : pg);
+    return NULL;
+  }
 
   rtx
   expand (function_expander &e) const override
@@ -2311,6 +2549,13 @@ class svptest_impl : public function_base
 {
 public:
   CONSTEXPR svptest_impl (rtx_code compare) : m_compare (compare) {}
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (boolean_false_node);
+    return NULL;
+  }
 
   rtx
   expand (function_expander &e) const override
@@ -2723,6 +2968,18 @@ public:
   {
     e.args.quick_push (CONSTM1_RTX (VNx16BImode));
     return e.use_exact_insn (CODE_FOR_aarch64_wrffr);
+  }
+};
+
+class svsplice_impl : public QUIET_CODE_FOR_MODE0 (aarch64_sve_splice)
+{
+public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (is_pfalse (gimple_call_arg (f.call, 0)))
+      return f.fold_call_to (gimple_call_arg (f.call, 2));
+    return NULL;
   }
 };
 
@@ -3179,13 +3436,13 @@ FUNCTION (svacle, svac_impl, (UNSPEC_COND_FCMLE))
 FUNCTION (svaclt, svac_impl, (UNSPEC_COND_FCMLT))
 FUNCTION (svadd, rtx_code_function, (PLUS, PLUS, UNSPEC_COND_FADD))
 FUNCTION (svadda, svadda_impl,)
-FUNCTION (svaddv, reduction, (UNSPEC_SADDV, UNSPEC_UADDV, UNSPEC_FADDV))
+FUNCTION (svaddv, svaddv_impl,)
 FUNCTION (svadrb, svadr_bhwd_impl, (0))
 FUNCTION (svadrd, svadr_bhwd_impl, (3))
 FUNCTION (svadrh, svadr_bhwd_impl, (1))
 FUNCTION (svadrw, svadr_bhwd_impl, (2))
 FUNCTION (svand, rtx_code_function, (AND, AND))
-FUNCTION (svandv, reduction, (UNSPEC_ANDV))
+FUNCTION (svandv, svandv_impl,)
 FUNCTION (svasr, rtx_code_function, (ASHIFTRT, ASHIFTRT))
 FUNCTION (svasr_wide, shift_wide, (ASHIFTRT, UNSPEC_ASHIFTRT_WIDE))
 FUNCTION (svasrd, unspec_based_function, (UNSPEC_ASRD, -1, -1))
@@ -3242,23 +3499,23 @@ FUNCTION (svcnth_pat, svcnt_bhwd_pat_impl, (VNx8HImode))
 FUNCTION (svcntp, svcntp_impl,)
 FUNCTION (svcntw, svcnt_bhwd_impl, (VNx4SImode))
 FUNCTION (svcntw_pat, svcnt_bhwd_pat_impl, (VNx4SImode))
-FUNCTION (svcompact, QUIET_CODE_FOR_MODE0 (aarch64_sve_compact),)
+FUNCTION (svcompact, svcompact_impl,)
 FUNCTION (svcreate2, svcreate_impl, (2))
 FUNCTION (svcreate3, svcreate_impl, (3))
 FUNCTION (svcreate4, svcreate_impl, (4))
 FUNCTION (svcvt, svcvt_impl,)
-FUNCTION (svcvtnt, CODE_FOR_MODE0 (aarch64_sve_cvtnt),)
+FUNCTION (svcvtnt, svcvtnt_impl,)
 FUNCTION (svdiv, svdiv_impl,)
 FUNCTION (svdivr, rtx_code_function_rotated, (DIV, UDIV, UNSPEC_COND_FDIV))
 FUNCTION (svdot, svdot_impl,)
 FUNCTION (svdot_lane, svdotprod_lane_impl, (UNSPEC_SDOT, UNSPEC_UDOT,
-					    UNSPEC_FDOT))
+					    UNSPEC_FDOT, UNSPEC_DOT_LANE_FP8))
 FUNCTION (svdup, svdup_impl,)
 FUNCTION (svdup_lane, svdup_lane_impl,)
 FUNCTION (svdupq, svdupq_impl,)
 FUNCTION (svdupq_lane, svdupq_lane_impl,)
 FUNCTION (sveor, rtx_code_function, (XOR, XOR, -1))
-FUNCTION (sveorv, reduction, (UNSPEC_XORV))
+FUNCTION (sveorv, sveorv_impl,)
 FUNCTION (svexpa, unspec_based_function, (-1, -1, UNSPEC_FEXPA))
 FUNCTION (svext, QUIET_CODE_FOR_MODE0 (aarch64_sve_ext),)
 FUNCTION (svextb, svext_bhw_impl, (QImode))
@@ -3322,14 +3579,14 @@ FUNCTION (svmax, rtx_code_function, (SMAX, UMAX, UNSPEC_COND_FMAX,
 				     UNSPEC_FMAX))
 FUNCTION (svmaxnm, cond_or_uncond_unspec_function, (UNSPEC_COND_FMAXNM,
 						    UNSPEC_FMAXNM))
-FUNCTION (svmaxnmv, reduction, (UNSPEC_FMAXNMV))
-FUNCTION (svmaxv, reduction, (UNSPEC_SMAXV, UNSPEC_UMAXV, UNSPEC_FMAXV))
+FUNCTION (svmaxnmv, svmaxnmv_impl,)
+FUNCTION (svmaxv, svmaxv_impl,)
 FUNCTION (svmin, rtx_code_function, (SMIN, UMIN, UNSPEC_COND_FMIN,
 				     UNSPEC_FMIN))
 FUNCTION (svminnm, cond_or_uncond_unspec_function, (UNSPEC_COND_FMINNM,
 						    UNSPEC_FMINNM))
-FUNCTION (svminnmv, reduction, (UNSPEC_FMINNMV))
-FUNCTION (svminv, reduction, (UNSPEC_SMINV, UNSPEC_UMINV, UNSPEC_FMINV))
+FUNCTION (svminnmv, svminnmv_impl,)
+FUNCTION (svminv, svminv_impl,)
 FUNCTION (svmla, svmla_impl,)
 FUNCTION (svmla_lane, svmla_lane_impl,)
 FUNCTION (svmls, svmls_impl,)
@@ -3352,7 +3609,7 @@ FUNCTION (svnor, svnor_impl,)
 FUNCTION (svnot, svnot_impl,)
 FUNCTION (svorn, svorn_impl,)
 FUNCTION (svorr, rtx_code_function, (IOR, IOR))
-FUNCTION (svorv, reduction, (UNSPEC_IORV))
+FUNCTION (svorv, svorv_impl,)
 FUNCTION (svpfalse, svpfalse_impl,)
 FUNCTION (svpfirst, svpfirst_svpnext_impl, (UNSPEC_PFIRST))
 FUNCTION (svpnext, svpfirst_svpnext_impl, (UNSPEC_PNEXT))
@@ -3414,7 +3671,7 @@ FUNCTION (svset2, svset_impl, (2))
 FUNCTION (svset3, svset_impl, (3))
 FUNCTION (svset4, svset_impl, (4))
 FUNCTION (svsetffr, svsetffr_impl,)
-FUNCTION (svsplice, QUIET_CODE_FOR_MODE0 (aarch64_sve_splice),)
+FUNCTION (svsplice, svsplice_impl,)
 FUNCTION (svsqrt, rtx_code_function, (SQRT, SQRT, UNSPEC_COND_FSQRT))
 FUNCTION (svst1, svst1_impl,)
 FUNCTION (svst1_scatter, svst1_scatter_impl,)

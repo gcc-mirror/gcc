@@ -1136,7 +1136,7 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
   linemap_init (line_table, BUILTINS_LOCATION);
   line_table->m_reallocator = realloc_for_line_map;
   line_table->m_round_alloc_size = ggc_round_alloc_size;
-  line_table->default_range_bits = 5;
+  line_table->default_range_bits = line_map_suggested_range_bits;
   init_ttree ();
 
   /* Initialize register usage now so switches may override.  */
@@ -1764,9 +1764,6 @@ process_options ()
   if (flag_checking >= 2)
     hash_table_sanitize_eq_limit
       = param_hash_table_verification_limit;
-
-  if (flag_large_source_files)
-    line_table->default_range_bits = 0;
 
   diagnose_options (&global_options, &global_options_set, UNKNOWN_LOCATION);
 

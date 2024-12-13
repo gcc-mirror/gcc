@@ -16,7 +16,7 @@ mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) 
 $(srcdir)/config/nvptx/nvptx.h: $(srcdir)/config/nvptx/nvptx-gen.h
 $(srcdir)/config/nvptx/nvptx-gen.h: s-nvptx-gen-h; @true
 s-nvptx-gen-h: $(srcdir)/config/nvptx/nvptx-sm.def
-	$(SHELL) $(srcdir)/config/nvptx/gen-h.sh "$(srcdir)/config/nvptx" \
+	$(SHELL) $(srcdir)/config/nvptx/gen-h.sh \
 	  > tmp-nvptx-gen.h
 	$(SHELL) $(srcdir)/../move-if-change \
 	  tmp-nvptx-gen.h $(srcdir)/config/nvptx/nvptx-gen.h
@@ -25,7 +25,7 @@ s-nvptx-gen-h: $(srcdir)/config/nvptx/nvptx-sm.def
 $(srcdir)/config/nvptx/nvptx-gen.opt: s-nvptx-gen-opt; @true
 s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def \
   $(srcdir)/config/nvptx/gen-opt.sh
-	$(SHELL) $(srcdir)/config/nvptx/gen-opt.sh "$(srcdir)/config/nvptx" \
+	$(SHELL) $(srcdir)/config/nvptx/gen-opt.sh \
 	  > tmp-nvptx-gen.opt
 	$(SHELL) $(srcdir)/../move-if-change \
 	  tmp-nvptx-gen.opt $(srcdir)/config/nvptx/nvptx-gen.opt
@@ -43,12 +43,25 @@ MULTILIB_OPTIONS += mgomp
 multilib_options_isa_list := $(TM_MULTILIB_CONFIG)
 multilib_options_isa_default := $(word 1,$(multilib_options_isa_list))
 multilib_options_misa_list := $(addprefix misa=,$(multilib_options_isa_list))
+
+t-nvptx-gen-multilib-matches: $(srcdir)/config/nvptx/gen-multilib-matches.sh \
+  $(srcdir)/config/nvptx/t-nvptx \
+  Makefile \
+  $(srcdir)/config/nvptx/nvptx-sm.def
+	$(SHELL) $< \
+	  --selftest
+	$(SHELL) $< \
+	  $(multilib_options_isa_default) \
+	  '$(multilib_options_isa_list)' \
+	  > $@
+
+include t-nvptx-gen-multilib-matches
+
 # Add the requested '-misa' variants as a multilib option ('misa=VAR1/misa=VAR2/misa=VAR3' etc.):
 empty :=
 space := $(empty) $(empty)
 MULTILIB_OPTIONS += $(subst $(space),/,$(multilib_options_misa_list))
 # ..., and remap '-misa' variants as appropriate:
-multilib_matches := $(shell $(srcdir)/config/nvptx/gen-multilib-matches.sh $(srcdir)/config/nvptx $(multilib_options_isa_default) "$(multilib_options_isa_list)")
 MULTILIB_MATCHES += $(multilib_matches)
 # ..., and don't actually build what's the default '-misa':
 MULTILIB_EXCEPTIONS += *misa=$(multilib_options_isa_default)*

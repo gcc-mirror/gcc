@@ -66,19 +66,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _List_base<_Tp, _Alloc>::
     _M_clear() _GLIBCXX_NOEXCEPT
     {
-      typedef _List_node<_Tp>  _Node;
-      __detail::_List_node_base* __cur = _M_impl._M_node._M_next;
-      while (__cur != &_M_impl._M_node)
+      typedef typename _Node_traits::_Node  _Node;
+      typedef typename _Node_traits::_Node_base  _Node_base;
+      typename _Node_base::_Base_ptr __cur = _M_impl._M_node._M_next;
+      while (__cur != _M_impl._M_node._M_base())
 	{
-	  _Node* __tmp = static_cast<_Node*>(__cur);
-	  __cur = __tmp->_M_next;
-	  _Tp* __val = __tmp->_M_valptr();
-#if __cplusplus >= 201103L
-	  _Node_alloc_traits::destroy(_M_get_Node_allocator(), __val);
-#else
-	  _Tp_alloc_type(_M_get_Node_allocator()).destroy(__val);
-#endif
-	  _M_put_node(__tmp);
+	  _Node& __tmp = static_cast<_Node&>(*__cur);
+	  __cur = __tmp._M_next;
+	  this->_M_destroy_node(__tmp._M_node_ptr());
 	}
     }
 
@@ -89,10 +84,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       list<_Tp, _Alloc>::
       emplace(const_iterator __position, _Args&&... __args)
       {
-	_Node* __tmp = _M_create_node(std::forward<_Args>(__args)...);
+	_Node_ptr __tmp = _M_create_node(std::forward<_Args>(__args)...);
 	__tmp->_M_hook(__position._M_const_cast()._M_node);
 	this->_M_inc_size(1);
-	return iterator(__tmp);
+	return iterator(__tmp->_M_base());
       }
 #endif
 
@@ -105,10 +100,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     insert(iterator __position, const value_type& __x)
 #endif
     {
-      _Node* __tmp = _M_create_node(__x);
+      _Node_ptr __tmp = _M_create_node(__x);
       __tmp->_M_hook(__position._M_const_cast()._M_node);
       this->_M_inc_size(1);
-      return iterator(__tmp);
+      return iterator(__tmp->_M_base());
     }
 
 #if __cplusplus >= 201103L
@@ -482,10 +477,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     sort()
     {
       // Do nothing if the list has length 0 or 1.
-      if (this->_M_impl._M_node._M_next != &this->_M_impl._M_node
-	  && this->_M_impl._M_node._M_next->_M_next != &this->_M_impl._M_node)
+      if (empty() || ++begin() == end())
+	return;
+
       {
-	using __detail::_Scratch_list;
+	typedef __list::_Scratch_list<typename _Node_traits::_Node_base>
+	  _Scratch_list;
+
 	// The algorithm used here is largely unchanged from the SGI STL
 	// and is described in The C++ Standard Template Library by Plauger,
 	// Stepanov, Lee, Musser.
@@ -499,7 +497,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Scratch_list* __fill = __tmp;
 	_Scratch_list* __counter;
 
-	_Scratch_list::_Ptr_cmp<iterator, void> __ptr_comp;
+	typename _Scratch_list::template _Ptr_cmp<iterator, void> __ptr_comp;
 
 	__try
 	  {
@@ -614,17 +612,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       sort(_StrictWeakOrdering __comp)
       {
 	// Do nothing if the list has length 0 or 1.
-	if (this->_M_impl._M_node._M_next != &this->_M_impl._M_node
-	    && this->_M_impl._M_node._M_next->_M_next != &this->_M_impl._M_node)
+	if (empty() || ++begin() == end())
+	  return;
+
 	{
-	  using __detail::_Scratch_list;
+	  typedef __list::_Scratch_list<typename _Node_traits::_Node_base>
+	    _Scratch_list;
+
 	  _Scratch_list __carry;
 	  _Scratch_list __tmp[64];
 	  _Scratch_list* __fill = __tmp;
 	  _Scratch_list* __counter;
 
-	_Scratch_list::_Ptr_cmp<iterator, _StrictWeakOrdering> __ptr_comp
-	  = { __comp };
+	  typename _Scratch_list::
+	    template _Ptr_cmp<iterator, _StrictWeakOrdering> __ptr_comp
+	    = { __comp };
 
 	  __try
 	    {

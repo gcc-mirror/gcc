@@ -672,6 +672,10 @@ Wdeprecated-non-prototype
 C ObjC Var(warn_deprecated_non_prototype) Init(-1) Warning
 Warn about calls with arguments to functions declared without parameters.
 
+Wdeprecated-variadic-comma-omission
+C++ ObjC++ Var(warn_deprecated_variadic_comma_omission) Warning
+Warn about deprecated omission of comma before ... in varargs function declaration.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
@@ -1472,10 +1476,6 @@ C ObjC C++ ObjC++ Warning
 Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.
-
-Wtautological-compare
-C ObjC C++ ObjC++ Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn if a comparison always evaluates to true or false.
 
 Wtemplate-body
 C++ ObjC++ Var(warn_template_body) Warning Init(1)

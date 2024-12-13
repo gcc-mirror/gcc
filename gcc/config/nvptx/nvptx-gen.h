@@ -23,7 +23,10 @@
 
 #define TARGET_SM30 (ptx_isa_option >= PTX_ISA_SM30)
 #define TARGET_SM35 (ptx_isa_option >= PTX_ISA_SM35)
+#define TARGET_SM37 (ptx_isa_option >= PTX_ISA_SM37)
+#define TARGET_SM52 (ptx_isa_option >= PTX_ISA_SM52)
 #define TARGET_SM53 (ptx_isa_option >= PTX_ISA_SM53)
 #define TARGET_SM70 (ptx_isa_option >= PTX_ISA_SM70)
 #define TARGET_SM75 (ptx_isa_option >= PTX_ISA_SM75)
 #define TARGET_SM80 (ptx_isa_option >= PTX_ISA_SM80)
+#define TARGET_SM89 (ptx_isa_option >= PTX_ISA_SM89)

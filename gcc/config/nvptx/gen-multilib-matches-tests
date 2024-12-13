@@ -1,0 +1,300 @@
+# Test cases for 'gen-multilib-matches.sh'.
+
+# Blank lines and lines beginning with '#' are ignored.
+
+# 'BEGIN [name]': clear state, begin test [name].
+# 'SSMS 30 35 53': set 'sms' to '30 35 53'.  Default: per 'nvptx-sm.def'.
+# 'SMOID sm_30': set 'multilib_options_isa_default' to 'sm_30'.  Default: unset.
+# 'SMOIL sm_35 sm_30': set 'multilib_options_isa_list' to 'sm_35 sm_30'.  Default: unset.
+# 'AEMM .=misa?sm_30': append '.=misa?sm_30' to expected "multilib matches".  Default: unset.
+# 'CMMC': compute "multilib matches" per the current settings, and compare to the expected.
+
+
+BEGIN '--with-arch=sm_30', '--with-multilib-list=sm_30'
+SMOID sm_30
+SMOIL sm_30
+AEMM .=misa?sm_30
+AEMM .=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_30', '--with-multilib-list=sm_30,sm_89'
+SMOID sm_30
+SMOIL sm_30 sm_89
+AEMM .=misa?sm_30
+AEMM .=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+CMMC
+
+BEGIN '--with-arch=sm_30', '--with-multilib-list=sm_30,sm_35,sm_37,sm_52,sm_53,sm_70,sm_75,sm_80,sm_89'
+SMOID sm_30
+SMOIL sm_30 sm_35 sm_37 sm_52 sm_53 sm_70 sm_75 sm_80 sm_89
+AEMM .=misa?sm_30
+CMMC
+
+
+BEGIN '--with-arch=sm_35', '--with-multilib-list=sm_35'
+SMOID sm_35
+SMOIL sm_35
+AEMM .=misa?sm_30
+AEMM .=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_35', '--with-multilib-list=sm_35,sm_30'
+SMOID sm_35
+SMOIL sm_35 sm_30
+AEMM .=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+
+BEGIN '--with-arch=sm_37', '--with-multilib-list=sm_37,sm_30'
+SMOID sm_37
+SMOIL sm_37 sm_30
+AEMM misa?sm_30=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+
+BEGIN '--with-arch=sm_52', '--with-multilib-list=sm_52,sm_75,sm_35'
+SMOID sm_52
+SMOIL sm_52 sm_75 sm_35
+AEMM misa?sm_35=misa?sm_30
+AEMM misa?sm_35=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM misa?sm_75=misa?sm_80
+AEMM misa?sm_75=misa?sm_89
+CMMC
+
+
+BEGIN '--with-arch=sm_53', '--with-multilib-list=sm_53,sm_30'
+SMOID sm_53
+SMOIL sm_53 sm_30
+AEMM misa?sm_30=misa?sm_35
+AEMM misa?sm_30=misa?sm_37
+AEMM misa?sm_30=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_53', '--with-multilib-list=sm_53,sm_37'
+SMOID sm_53
+SMOIL sm_53 sm_37
+AEMM misa?sm_37=misa?sm_30
+AEMM misa?sm_37=misa?sm_35
+AEMM misa?sm_37=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_53', '--with-multilib-list=sm_53=sm_30,sm_35,sm_37,sm_52,sm_70,sm_75,sm_80,sm_89'
+SMOID sm_53
+SMOIL sm_53 sm_30 sm_35 sm_37 sm_52 sm_70 sm_75 sm_80 sm_89
+AEMM .=misa?sm_53
+CMMC
+
+
+BEGIN '--with-arch=sm_70', '--with-multilib-list=sm_70'
+SMOID sm_70
+SMOIL sm_70
+AEMM .=misa?sm_30
+AEMM .=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_70', '--with-multilib-list=sm_70,sm_30'
+SMOID sm_70
+SMOIL sm_70 sm_30
+AEMM misa?sm_30=misa?sm_35
+AEMM misa?sm_30=misa?sm_37
+AEMM misa?sm_30=misa?sm_52
+AEMM misa?sm_30=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_70', '--with-multilib-list=sm_70,sm_53'
+SMOID sm_70
+SMOIL sm_70 sm_53
+AEMM misa?sm_53=misa?sm_30
+AEMM misa?sm_53=misa?sm_35
+AEMM misa?sm_53=misa?sm_37
+AEMM misa?sm_53=misa?sm_52
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_70', '--with-multilib-list=sm_70,sm_53,sm_30'
+SMOID sm_70
+SMOIL sm_70 sm_53 sm_30
+AEMM misa?sm_30=misa?sm_35
+AEMM misa?sm_30=misa?sm_37
+AEMM misa?sm_30=misa?sm_52
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+
+BEGIN '--with-arch=sm_75', '--with-multilib-list=sm_75,sm_30'
+SMOID sm_75
+SMOIL sm_75 sm_30
+AEMM misa?sm_30=misa?sm_35
+AEMM misa?sm_30=misa?sm_37
+AEMM misa?sm_30=misa?sm_52
+AEMM misa?sm_30=misa?sm_53
+AEMM misa?sm_30=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_75', '--with-multilib-list=sm_75,sm_53'
+SMOID sm_75
+SMOIL sm_75 sm_53
+AEMM misa?sm_53=misa?sm_30
+AEMM misa?sm_53=misa?sm_35
+AEMM misa?sm_53=misa?sm_37
+AEMM misa?sm_53=misa?sm_52
+AEMM misa?sm_53=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_75', '--with-multilib-list=sm_75,sm_30,sm_53'
+SMOID sm_75
+SMOIL sm_75 sm_30 sm_53
+AEMM misa?sm_30=misa?sm_35
+AEMM misa?sm_30=misa?sm_37
+AEMM misa?sm_30=misa?sm_52
+AEMM misa?sm_53=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+
+BEGIN '--with-arch=sm_80', '--with-multilib-list=sm_80'
+SMOID sm_80
+SMOIL sm_80
+AEMM .=misa?sm_30
+AEMM .=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_80', '--with-multilib-list=sm_80,sm_30'
+SMOID sm_80
+SMOIL sm_80 sm_30
+AEMM misa?sm_30=misa?sm_35
+AEMM misa?sm_30=misa?sm_37
+AEMM misa?sm_30=misa?sm_52
+AEMM misa?sm_30=misa?sm_53
+AEMM misa?sm_30=misa?sm_70
+AEMM misa?sm_30=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_80', '--with-multilib-list=sm_80,sm_75'
+SMOID sm_80
+SMOIL sm_80 sm_75
+AEMM misa?sm_75=misa?sm_30
+AEMM misa?sm_75=misa?sm_35
+AEMM misa?sm_75=misa?sm_37
+AEMM misa?sm_75=misa?sm_52
+AEMM misa?sm_75=misa?sm_53
+AEMM misa?sm_75=misa?sm_70
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+
+BEGIN '--with-arch=sm_89', '--with-multilib-list=sm_89'
+SMOID sm_89
+SMOIL sm_89
+AEMM .=misa?sm_30
+AEMM .=misa?sm_35
+AEMM .=misa?sm_37
+AEMM .=misa?sm_52
+AEMM .=misa?sm_53
+AEMM .=misa?sm_70
+AEMM .=misa?sm_75
+AEMM .=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+BEGIN '--with-arch=sm_89', '--with-multilib-list=sm_89,sm_52'
+SMOID sm_89
+SMOIL sm_89 sm_52
+AEMM misa?sm_52=misa?sm_30
+AEMM misa?sm_52=misa?sm_35
+AEMM misa?sm_52=misa?sm_37
+AEMM misa?sm_52=misa?sm_53
+AEMM misa?sm_52=misa?sm_70
+AEMM misa?sm_52=misa?sm_75
+AEMM misa?sm_52=misa?sm_80
+AEMM .=misa?sm_89
+CMMC
+
+
+BEGIN '--with-arch=sm_89', '--with-multilib-list=sm_89,sm_30,sm_35,sm_37,sm_52,sm_53,sm_70,sm_75,sm_80'
+SMOID sm_89
+SMOIL sm_89 sm_30 sm_35 sm_37 sm_52 sm_53 sm_70 sm_75 sm_80
+AEMM .=misa?sm_89
+CMMC

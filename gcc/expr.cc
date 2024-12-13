@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtx-vector-builder.h"
 #include "tree-pretty-print.h"
 #include "flags.h"
+#include "internal-fn.h"
 
 
 /* If this is nonzero, we do not bother generating VOLATILE
@@ -3827,6 +3828,7 @@ get_def_for_expr (tree name, enum tree_code code)
 
   def_stmt = get_gimple_for_ssa_name (name);
   if (!def_stmt
+      || !is_gimple_assign (def_stmt)
       || gimple_assign_rhs_code (def_stmt) != code)
     return NULL;
 
@@ -3847,6 +3849,7 @@ get_def_for_expr_class (tree name, enum tree_code_class tclass)
 
   def_stmt = get_gimple_for_ssa_name (name);
   if (!def_stmt
+      || !is_gimple_assign (def_stmt)
       || TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt)) != tclass)
     return NULL;
 
@@ -5695,6 +5698,7 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
 
   srcstmt = get_gimple_for_ssa_name (src);
   if (!srcstmt
+      || !is_gimple_assign (srcstmt)
       || TREE_CODE_CLASS (gimple_assign_rhs_code (srcstmt)) != tcc_binary)
     return false;
 
@@ -7897,15 +7901,14 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
       {
 	unsigned HOST_WIDE_INT idx;
 	constructor_elt *ce;
-	int i;
 	bool need_to_clear;
 	insn_code icode = CODE_FOR_nothing;
 	tree elt;
 	tree elttype = TREE_TYPE (type);
 	int elt_size = vector_element_bits (type);
 	machine_mode eltmode = TYPE_MODE (elttype);
-	HOST_WIDE_INT bitsize;
-	HOST_WIDE_INT bitpos;
+	poly_int64 bitsize;
+	poly_int64 bitpos;
 	rtvec vector = NULL;
 	poly_uint64 n_elts;
 	unsigned HOST_WIDE_INT const_n_elts;
@@ -7962,12 +7965,9 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 
 	n_elts = TYPE_VECTOR_SUBPARTS (type);
 	if (REG_P (target)
-	    && VECTOR_MODE_P (mode)
-	    && n_elts.is_constant (&const_n_elts))
+	    && VECTOR_MODE_P (mode))
 	  {
-	    machine_mode emode = eltmode;
-	    bool vector_typed_elts_p = false;
-
+	    const_n_elts = 0;
 	    if (CONSTRUCTOR_NELTS (exp)
 		&& (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value))
 		    == VECTOR_TYPE))
@@ -7976,23 +7976,26 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		gcc_assert (known_eq (CONSTRUCTOR_NELTS (exp)
 				      * TYPE_VECTOR_SUBPARTS (etype),
 				      n_elts));
-		emode = TYPE_MODE (etype);
-		vector_typed_elts_p = true;
-	      }
-	    icode = convert_optab_handler (vec_init_optab, mode, emode);
-	    if (icode != CODE_FOR_nothing)
-	      {
-		unsigned int n = const_n_elts;
 
-		if (vector_typed_elts_p)
-		  {
-		    n = CONSTRUCTOR_NELTS (exp);
-		    vec_vec_init_p = true;
-		  }
-		vector = rtvec_alloc (n);
-		for (unsigned int k = 0; k < n; k++)
-		  RTVEC_ELT (vector, k) = CONST0_RTX (emode);
+		icode = convert_optab_handler (vec_init_optab, mode,
+					       TYPE_MODE (etype));
+		const_n_elts = CONSTRUCTOR_NELTS (exp);
+		vec_vec_init_p = icode != CODE_FOR_nothing;
 	      }
+	    else if (exact_div (n_elts, GET_MODE_NUNITS (eltmode))
+			.is_constant (&const_n_elts))
+	      {
+		/* For a non-const type vector, we check it is made up of
+		   similarly non-const type vectors. */
+		icode = convert_optab_handler (vec_init_optab, mode, eltmode);
+	      }
+
+	  if (const_n_elts && icode != CODE_FOR_nothing)
+	    {
+	      vector = rtvec_alloc (const_n_elts);
+	      for (unsigned int k = 0; k < const_n_elts; k++)
+		RTVEC_ELT (vector, k) = CONST0_RTX (eltmode);
+	    }
 	  }
 
 	/* Compute the size of the elements in the CTOR.  It differs
@@ -8002,7 +8005,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 			 ? TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value)
 			 : elttype);
 	if (VECTOR_TYPE_P (val_type))
-	  bitsize = tree_to_uhwi (TYPE_SIZE (val_type));
+	  bitsize = tree_to_poly_uint64 (TYPE_SIZE (val_type));
 	else
 	  bitsize = elt_size;
 
@@ -8015,12 +8018,12 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	  need_to_clear = true;
 	else
 	  {
-	    unsigned HOST_WIDE_INT count = 0, zero_count = 0;
+	    poly_uint64 count = 0, zero_count = 0;
 	    tree value;
 
 	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
 	      {
-		int n_elts_here = bitsize / elt_size;
+		poly_int64 n_elts_here = exact_div (bitsize, elt_size);
 		count += n_elts_here;
 		if (mostly_zeros_p (value))
 		  zero_count += n_elts_here;
@@ -8029,7 +8032,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    /* Clear the entire vector first if there are any missing elements,
 	       or if the incidence of zero elements is >= 75%.  */
 	    need_to_clear = (maybe_lt (count, n_elts)
-			     || 4 * zero_count >= 3 * count);
+			     || maybe_gt (4 * zero_count, 3 * count));
 	  }
 
 	if (need_to_clear && maybe_gt (size, 0) && !vector)
@@ -8056,9 +8059,13 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 
         /* Store each element of the constructor into the corresponding
 	   element of TARGET, determined by counting the elements.  */
-	for (idx = 0, i = 0;
-	     vec_safe_iterate (CONSTRUCTOR_ELTS (exp), idx, &ce);
-	     idx++, i += bitsize / elt_size)
+	HOST_WIDE_INT chunk_size = 0;
+	bool chunk_multiple_p = constant_multiple_p (bitsize, elt_size,
+						     &chunk_size);
+	gcc_assert (chunk_multiple_p || vec_vec_init_p);
+
+	for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (exp), idx, &ce);
+	     idx++)
 	  {
 	    HOST_WIDE_INT eltpos;
 	    tree value = ce->value;
@@ -8069,7 +8076,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    if (ce->index)
 	      eltpos = tree_to_uhwi (ce->index);
 	    else
-	      eltpos = i;
+	      eltpos = idx * chunk_size;
 
 	    if (vector)
 	      {
@@ -8457,10 +8464,8 @@ get_inner_reference (tree exp, poly_int64 *pbitsize,
 
   if (size_tree != 0)
     {
-      if (! tree_fits_uhwi_p (size_tree))
+      if (!poly_int_tree_p (size_tree, pbitsize))
 	mode = BLKmode, *pbitsize = -1;
-      else
-	*pbitsize = tree_to_uhwi (size_tree);
     }
 
   *preversep = reverse_storage_order_for_component_p (exp);
@@ -11355,11 +11360,24 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && !SSA_NAME_IS_DEFAULT_DEF (exp)
 	  && (optimize || !SSA_NAME_VAR (exp)
 	      || DECL_IGNORED_P (SSA_NAME_VAR (exp)))
+	  && is_gimple_assign (SSA_NAME_DEF_STMT (exp))
 	  && stmt_is_replaceable_p (SSA_NAME_DEF_STMT (exp)))
 	g = SSA_NAME_DEF_STMT (exp);
-      if (g)
+      if (safe_is_a <gassign *> (g))
 	return expand_expr_real_gassign (as_a<gassign *> (g), target, tmode,
 					 modifier, alt_rtl, inner_reference_p);
+      else if (safe_is_a <gcall *> (g))
+	{
+	  /* ???  internal call expansion doesn't follow the usual API
+	     of returning the destination RTX and being passed a desired
+	     target.  */
+	  rtx dest = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+	  tree tmplhs = make_tree (TREE_TYPE (exp), dest);
+	  gimple_call_set_lhs (g, tmplhs);
+	  expand_internal_call (as_a <gcall *> (g));
+	  gimple_call_set_lhs (g, exp);
+	  return dest;
+	}
 
       ssa_name = exp;
       decl_rtl = get_rtx_for_ssa_name (ssa_name);
@@ -14178,6 +14196,33 @@ int_expr_size (const_tree exp)
   return tree_to_shwi (size);
 }
 
+/* Return the quotient of polynomial long division of x^2N by POLYNOMIAL
+   in GF (2^N).
+   Author: Richard Sandiford <richard.sandiford@arm.com>  */
+
+unsigned HOST_WIDE_INT
+gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial,
+			     unsigned short n)
+{
+  /* The result has degree N, so needs N + 1 bits.  */
+  gcc_assert (n < 64);
+
+  /* Perform a division step for the x^2N coefficient.  At this point the
+     quotient and remainder have N implicit trailing zeros.  */
+  unsigned HOST_WIDE_INT quotient = 1;
+  unsigned HOST_WIDE_INT remainder = polynomial;
+
+  /* Process the coefficients for x^(2N-1) down to x^N, with each step
+     reducing the number of implicit trailing zeros by one.  */
+  for (unsigned int i = 0; i < n; ++i)
+    {
+      bool coeff = remainder & (HOST_WIDE_INT_1U << (n - 1));
+      quotient = (quotient << 1) | coeff;
+      remainder = (remainder << 1) ^ (coeff ? polynomial : 0);
+    }
+  return quotient;
+}
+
 /* Calculate CRC for the initial CRC and given POLYNOMIAL.
    CRC_BITS is CRC size.  */
 
@@ -14292,29 +14337,32 @@ generate_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
 void
 calculate_table_based_CRC (rtx *crc, const rtx &input_data,
 			   const rtx &polynomial,
-			   machine_mode crc_mode, machine_mode data_mode)
+			   machine_mode data_mode)
 {
-  unsigned short crc_bit_size = GET_MODE_BITSIZE (crc_mode).to_constant ();
-  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
   machine_mode mode = GET_MODE (*crc);
+  unsigned short crc_bit_size = GET_MODE_BITSIZE (mode).to_constant ();
+  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
   rtx tab = generate_crc_table (UINTVAL (polynomial), crc_bit_size);
 
   for (unsigned short i = 0; i < data_size; i++)
     {
       /* crc >> (crc_bit_size - 8).  */
-      *crc = force_reg (crc_mode, *crc);
+      *crc = force_reg (mode, *crc);
       rtx op1 = expand_shift (RSHIFT_EXPR, mode, *crc, crc_bit_size - 8,
 			      NULL_RTX, 1);
 
       /* data >> (8 * (GET_MODE_SIZE (data_mode).to_constant () - i - 1)).  */
       unsigned range_8 = 8 * (data_size - i - 1);
-      rtx data = force_reg (data_mode, input_data);
+      /* CRC's mode is always at least as wide as INPUT_DATA.  Convert
+	 INPUT_DATA into CRC's mode.  */
+      rtx data = gen_reg_rtx (mode);
+      convert_move (data, input_data, 1);
       data = expand_shift (RSHIFT_EXPR, mode, data, range_8, NULL_RTX, 1);
 
-      /* data >> (8 * (GET_MODE_SIZE (data_mode)
+      /* data >> (8 * (GET_MODE_SIZE (mode)
 					.to_constant () - i - 1)) & 0xFF.  */
       rtx data_final = expand_and (mode, data,
-				   gen_int_mode (255, data_mode), NULL_RTX);
+				   gen_int_mode (255, mode), NULL_RTX);
 
       /* (crc >> (crc_bit_size - 8)) ^ data_8bit.  */
       rtx in = expand_binop (mode, xor_optab, op1, data_final,
@@ -14323,7 +14371,7 @@ calculate_table_based_CRC (rtx *crc, const rtx &input_data,
       /* ((crc >> (crc_bit_size - 8)) ^ data_8bit) & 0xFF.  */
       rtx index = expand_and (mode, in, gen_int_mode (255, mode),
 			      NULL_RTX);
-      int log_crc_size = exact_log2 (GET_MODE_SIZE (crc_mode).to_constant ());
+      int log_crc_size = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
       index = expand_shift (LSHIFT_EXPR, mode, index,
 			    log_crc_size, NULL_RTX, 0);
 
@@ -14333,7 +14381,7 @@ calculate_table_based_CRC (rtx *crc, const rtx &input_data,
 			    0, OPTAB_DIRECT);
 
       /* crc_table[(crc >> (crc_bit_size - 8)) ^ data_8bit]  */
-      rtx tab_el = validize_mem (gen_rtx_MEM (crc_mode, addr));
+      rtx tab_el = validize_mem (gen_rtx_MEM (mode, addr));
 
       /* (crc << 8) if CRC is larger than 8, otherwise crc = 0.  */
       rtx high = NULL_RTX;
@@ -14376,7 +14424,7 @@ expand_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
   machine_mode crc_mode = GET_MODE (op0);
   rtx crc = gen_reg_rtx (crc_mode);
   convert_move (crc, op1, 0);
-  calculate_table_based_CRC (&crc, op2, op3, crc_mode, data_mode);
+  calculate_table_based_CRC (&crc, op2, op3, data_mode);
   convert_move (op0, crc, 0);
 }
 
@@ -14519,7 +14567,7 @@ expand_reversed_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
   convert_move (data, op2, 0);
   gen_reflecting_code (&data);
 
-  calculate_table_based_CRC (&crc, data, op3, crc_mode, data_mode);
+  calculate_table_based_CRC (&crc, data, op3, data_mode);
 
   gen_reflecting_code (&crc);
   convert_move (op0, crc, 0);

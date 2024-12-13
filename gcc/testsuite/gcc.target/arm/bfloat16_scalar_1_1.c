@@ -1,8 +1,7 @@
 /* { dg-do assemble { target { arm*-*-* } } } */
-/* { dg-require-effective-target arm_hard_ok } */
-/* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
-/* { dg-add-options arm_v8_2a_bf16_neon }  */
-/* { dg-additional-options "-O3 --save-temps -std=gnu90 -mfloat-abi=hard" } */
+/* { dg-require-effective-target arm_arch_v8_2a_bf16_hard_ok } */
+/* { dg-add-options arm_arch_v8_2a_bf16_hard } */
+/* { dg-additional-options "-O3 --save-temps -std=gnu90" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include <arm_bf16.h>

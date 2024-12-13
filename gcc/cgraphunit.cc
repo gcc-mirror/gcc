@@ -983,6 +983,18 @@ varpool_node::finalize_decl (tree decl)
 	  && !DECL_ARTIFICIAL (node->decl)))
     node->force_output = true;
 
+  if (flag_openmp)
+    {
+      tree attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (decl));
+      if (attr)
+	{
+	  tree align = TREE_VALUE (TREE_VALUE (attr));
+	  if (align)
+	    SET_DECL_ALIGN (decl, MAX (tree_to_uhwi (align) * BITS_PER_UNIT,
+				       DECL_ALIGN (decl)));
+	}
+    }
+
   if (symtab->state == CONSTRUCTION
       && (node->needed_p () || node->referred_to_p ()))
     enqueue_node (node);

@@ -895,7 +895,7 @@ parloops_force_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info
 struct reduction_info
 {
   gimple *reduc_stmt;		/* reduction statement.  */
-  gimple *reduc_phi;		/* The phi node defining the reduction.  */
+  tree reduc_phi_name;		/* The result of the phi node defining the reduction.  */
   enum tree_code reduction_code;/* code for the reduction operation.  */
   unsigned reduc_version;	/* SSA_NAME_VERSION of original reduc_phi
 				   result.  */
@@ -910,6 +910,12 @@ struct reduction_info
 				   will be passed to the atomic operation.  Represents
 				   the local result each thread computed for the reduction
 				   operation.  */
+
+  gphi *
+  reduc_phi () const
+  {
+    return as_a<gphi *> (SSA_NAME_DEF_STMT (reduc_phi_name));
+  }
 };
 
 /* Reduction info hashtable helpers.  */
@@ -925,7 +931,7 @@ struct reduction_hasher : free_ptr_hash <reduction_info>
 inline bool
 reduction_hasher::equal (const reduction_info *a, const reduction_info *b)
 {
-  return (a->reduc_phi == b->reduc_phi);
+  return (a->reduc_phi_name == b->reduc_phi_name);
 }
 
 inline hashval_t
@@ -949,10 +955,10 @@ reduction_phi (reduction_info_table_type *reduction_list, gimple *phi)
       || gimple_uid (phi) == 0)
     return NULL;
 
-  tmpred.reduc_phi = phi;
+  tmpred.reduc_phi_name = gimple_phi_result (phi);
   tmpred.reduc_version = gimple_uid (phi);
   red = reduction_list->find (&tmpred);
-  gcc_assert (red == NULL || red->reduc_phi == phi);
+  gcc_assert (red == NULL || red->reduc_phi () == phi);
 
   return red;
 }
@@ -1294,7 +1300,7 @@ initialize_reductions (reduction_info **slot, class loop *loop)
      from the preheader with the reduction initialization value.  */
 
   /* Initialize the reduction.  */
-  type = TREE_TYPE (PHI_RESULT (reduc->reduc_phi));
+  type = TREE_TYPE (reduc->reduc_phi_name);
   init = omp_reduction_init_op (gimple_location (reduc->reduc_stmt),
 				reduc->reduction_code, type);
   reduc->init = init;
@@ -1308,11 +1314,11 @@ initialize_reductions (reduction_info **slot, class loop *loop)
      computing is done.  */
 
   e = loop_preheader_edge (loop);
-  arg = PHI_ARG_DEF_FROM_EDGE (reduc->reduc_phi, e);
+  const auto phi = reduc->reduc_phi ();
+  arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
   /* Create new variable to hold the initial value.  */
 
-  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE
-	   (reduc->reduc_phi, loop_preheader_edge (loop)), init);
+  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, loop_preheader_edge (loop)), init);
   reduc->initial_value = arg;
   return 1;
 }
@@ -1795,7 +1801,7 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
 {
   struct reduction_info *const reduc = *slot;
   gimple_stmt_iterator gsi;
-  tree type = TREE_TYPE (PHI_RESULT (reduc->reduc_phi));
+  tree type = TREE_TYPE (reduc->reduc_phi_name);
   tree load_struct;
   basic_block bb;
   basic_block new_bb;
@@ -2424,8 +2430,9 @@ transform_to_exit_first_loop_alt (class loop *loop,
       if (red)
 	{
 	  /* Register the new reduction phi.  */
-	  red->reduc_phi = nphi;
-	  gimple_set_uid (red->reduc_phi, red->reduc_version);
+	  red->reduc_phi_name = res_c;
+	  gcc_checking_assert (red->reduc_phi () == nphi);
+	  gimple_set_uid (nphi, red->reduc_version);
 	}
     }
   gcc_assert (gsi_end_p (gsi) && !v->iterate (i, &vm));
@@ -2651,6 +2658,8 @@ transform_to_exit_first_loop (class loop *loop,
       phi = gsi.phi ();
       res = PHI_RESULT (phi);
       t = copy_ssa_name (res, phi);
+      if (auto red = reduction_phi (reduction_list, phi))
+	red->reduc_phi_name = t;
       SET_PHI_RESULT (phi, t);
       nphi = create_phi_node (res, orig_header);
       add_phi_arg (nphi, t, hpred, UNKNOWN_LOCATION);
@@ -3263,8 +3272,9 @@ build_new_reduction (reduction_info_table_type *reduction_list,
   new_reduction = XCNEW (struct reduction_info);
 
   new_reduction->reduc_stmt = reduc_stmt;
-  new_reduction->reduc_phi = phi;
-  new_reduction->reduc_version = SSA_NAME_VERSION (gimple_phi_result (phi));
+  const auto phi_name = gimple_phi_result (phi);
+  new_reduction->reduc_phi_name = phi_name;
+  new_reduction->reduc_version = SSA_NAME_VERSION (phi_name);
   new_reduction->reduction_code = reduction_code;
   slot = reduction_list->find_slot (new_reduction, INSERT);
   *slot = new_reduction;
@@ -3276,7 +3286,7 @@ int
 set_reduc_phi_uids (reduction_info **slot, void *data ATTRIBUTE_UNUSED)
 {
   struct reduction_info *const red = *slot;
-  gimple_set_uid (red->reduc_phi, red->reduc_version);
+  gimple_set_uid (red->reduc_phi (), red->reduc_version);
   return 1;
 }
 
@@ -3559,7 +3569,7 @@ try_create_reduction_list (loop_p loop,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "reduction phi is  ");
-	      print_gimple_stmt (dump_file, red->reduc_phi, 0);
+	      print_gimple_stmt (dump_file, red->reduc_phi (), 0);
 	      fprintf (dump_file, "reduction stmt is  ");
 	      print_gimple_stmt (dump_file, red->reduc_stmt, 0);
 	    }

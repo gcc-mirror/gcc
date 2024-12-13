@@ -32,6 +32,8 @@ static const struct default_options avr_option_optimization_table[] =
     // The only effect of -fcaller-saves might be that it triggers
     // a frame without need when it tries to be smart around calls.
     { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
+    // Avoid large lookup tables in RAM from -foptimize-crc.
+    { OPT_LEVELS_ALL, OPT_foptimize_crc, NULL, 0 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_mgas_isr_prologues, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_mmain_is_OS_task, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_mfuse_add_, NULL, 1 },
@@ -39,6 +41,7 @@ static const struct default_options avr_option_optimization_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_mfuse_move_, NULL, 3 },
     { OPT_LEVELS_2_PLUS, OPT_mfuse_move_, NULL, 23 },
     { OPT_LEVELS_2_PLUS, OPT_msplit_bit_shift, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_msplit_ldst, NULL, 1 },
     // Stick to the "old" placement of the subreg lowering pass.
     { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types_early, NULL, 1 },
     /* Allow optimizer to introduce store data races. This used to be the

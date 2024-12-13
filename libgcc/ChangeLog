@@ -1,3 +1,32 @@
+2024-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118001
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _fload_1, _fload_2,
+	_fload_3, _fload_4, _movmemf.
+	* config/avr/lib1funcs.S (.branch_plus): New .macro.
+	(__xload_1, __xload_2, __xload_3, __xload_4): When the address is
+	located in flash, then forward to...
+	(__fload_1, __fload_2, __fload_3, __fload_4): ...these new
+	functions, respectively.
+	(__movmemx_hi): When the address is located in flash, forward to...
+	(__movmemf_hi): ...this new function.
+
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/117851
+	* configure.ac (extra_parts): Add crtoffloadtableS.o.
+	* Makefile.in (crtoffloadtableS$(objext)): New goal.
+	* configure: Regenerated.
+
+2024-11-29  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (_CHKFEAT_GCS): Add.
+
+2024-11-29  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (_Unwind_Frames_Extra): Update.
+	(_Unwind_Frames_Increment): Update
+
 2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* config/nios2/*: Delete entire directory.

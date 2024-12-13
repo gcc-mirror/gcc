@@ -2208,7 +2208,7 @@ namespace __format
   template<> inline constexpr bool __is_formattable_integer<char16_t> = false;
   template<> inline constexpr bool __is_formattable_integer<char32_t> = false;
 }
-/// ~endcond
+/// @endcond
 
   /// Format an integer.
   template<typename _Tp, __format::__char _CharT>

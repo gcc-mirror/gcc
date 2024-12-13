@@ -160,11 +160,12 @@ __brick_transform_scan(_ForwardIterator __first, _ForwardIterator __last, _Outpu
 {
     for (; __first != __last; ++__first, ++__result)
     {
-        *__result = __init;
+	_Tp __v = std::move(__init);
         _PSTL_PRAGMA_FORCEINLINE
-        __init = __binary_op(__init, __unary_op(*__first));
+        __init = __binary_op(__v, __unary_op(*__first));
+        *__result = std::move(__v);
     }
-    return std::make_pair(__result, __init);
+    return std::make_pair(__result, std::move(__init));
 }
 
 // Inclusive form
@@ -225,7 +226,7 @@ __pattern_transform_scan(_Tag, _ExecutionPolicy&&, _ForwardIterator __first, _Fo
                          _OutputIterator __result, _UnaryOperation __unary_op, _Tp __init, _BinaryOperation __binary_op,
                          _Inclusive) noexcept
 {
-    return __internal::__brick_transform_scan(__first, __last, __result, __unary_op, __init, __binary_op, _Inclusive(),
+    return __internal::__brick_transform_scan(__first, __last, __result, __unary_op, std::move(__init), __binary_op, _Inclusive(),
                                               typename _Tag::__is_vector{})
         .first;
 }

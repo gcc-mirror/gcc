@@ -31,8 +31,21 @@ const __as volatile a_t V =
 a_t A2;
 volatile a_t V2;
 
+#ifdef __AVR_HAVE_ELPM__
+void eat_flash (void)
+{
+  __asm (".space 0x10000");
+}
+__attribute__((__used__))
+void (*pfun) (void);
+#endif
+
 int main (void)
 {
+#ifdef __AVR_HAVE_ELPM__
+  pfun = eat_flash;
+#endif
+
   if (A.i1 != 12
       || A.i1 != V.i1 -1)
     abort();

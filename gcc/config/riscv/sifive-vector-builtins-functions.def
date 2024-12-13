@@ -1,0 +1,58 @@
+/* Intrinsic define macros for SiFive custom 'V' Extension for GNU compiler.
+   Copyright (C) 2024 Free Software Foundation, Inc.
+   Contributed by SiFive and PLCT Lab.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3. If not see
+<http://www.gnu.org/licenses/>. */
+
+/* Use "DEF_RVV_FUNCTION" macro to define RVV intrinsic functions.
+
+     - NAME not only describes the base_name of the functions
+       but also point to the name of the function_base class.
+
+     - SHAPE point to the function_shape class.
+
+     - PREDS describes the predication types that are supported in the
+       functions.
+
+     - OPS_INFO describes all information of return type and each
+       argument type.
+
+*/
+#ifndef DEF_RVV_FUNCTION
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)
+#endif
+
+#define REQUIRED_EXTENSIONS XSFVQMACCQOQ_EXT
+DEF_RVV_FUNCTION (sf_vqmacc, sf_vqmacc, none_tu_preds, i_qqvv_ops)
+DEF_RVV_FUNCTION (sf_vqmaccu, sf_vqmacc, none_tu_preds, u_qqvv_ops)
+DEF_RVV_FUNCTION (sf_vqmaccsu, sf_vqmacc, none_tu_preds, i_su_qqvv_ops)
+DEF_RVV_FUNCTION (sf_vqmaccus, sf_vqmacc, none_tu_preds, i_us_qqvv_ops)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS XSFVQMACCDOD_EXT
+DEF_RVV_FUNCTION (sf_vqmacc, sf_vqmacc, none_tu_preds, i_qdvv_ops)
+DEF_RVV_FUNCTION (sf_vqmaccu, sf_vqmacc, none_tu_preds, u_qdvv_ops)
+DEF_RVV_FUNCTION (sf_vqmaccsu, sf_vqmacc, none_tu_preds, i_su_qdvv_ops)
+DEF_RVV_FUNCTION (sf_vqmaccus, sf_vqmacc, none_tu_preds, i_us_qdvv_ops)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS XSFVFNRCLIPXFQF_EXT
+DEF_RVV_FUNCTION (sf_vfnrclip_x_f_qf, sf_vfnrclip, full_preds, i_clip_qf_ops)
+DEF_RVV_FUNCTION (sf_vfnrclip_xu_f_qf, sf_vfnrclip, full_preds, u_clip_qf_ops)
+#undef REQUIRED_EXTENSIONS
+
+#undef DEF_RVV_FUNCTION

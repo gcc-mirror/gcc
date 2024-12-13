@@ -7627,7 +7627,7 @@ package body Exp_Attr is
          --  Floating-point case. This case is handled by the Valid attribute
          --  code in the floating-point attribute run-time library.
 
-         if Is_Floating_Point_Type (Ptyp) then
+         if Is_Floating_Point_Type (PBtyp) then
             Float_Valid : declare
                Pkg : RE_Id;
                Ftp : Entity_Id;
@@ -7652,7 +7652,7 @@ package body Exp_Attr is
             --  Start of processing for Float_Valid
 
             begin
-               Find_Fat_Info (Ptyp, Ftp, Pkg);
+               Find_Fat_Info (PBtyp, Ftp, Pkg);
 
                --  If the prefix is a reverse SSO component, or is possibly
                --  unaligned, first create a temporary copy that is in

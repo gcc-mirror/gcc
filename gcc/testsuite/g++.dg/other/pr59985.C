@@ -1,7 +1,8 @@
 /* { dg-do compile { target arm*-*-* } } */
-/* { dg-skip-if "incompatible options" { arm_thumb1 } } */
-/* { dg-options "-g -fcompare-debug -O2 -march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=hard" } */
-/* { dg-skip-if "need hardfp abi" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
+/* { dg-require-effective-target arm_arch_v7a_fp_hard_ok } */
+/* { dg-options "-g -fcompare-debug -O2" } */
+/* { dg-add-options arm_arch_v7a_fp_hard } */
+/* { dg-additional-options "-mtune=cortex-a9" } */
 
 extern void *f1 (unsigned long, unsigned long);
 extern const struct line_map *f2 (void *, int, unsigned int, const char *, unsigned int);

@@ -193,15 +193,19 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SIMD_RDMA, "__ARM_FEATURE_QRDMX", pfile);
   aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE", pfile);
   cpp_undef (pfile, "__ARM_FEATURE_SVE_BITS");
+  cpp_undef (pfile, "__ARM_FEATURE_SVE_VECTOR_OPERATORS");
   if (TARGET_SVE)
     {
       int bits;
+      int ops = 1;
       if (!BITS_PER_SVE_VECTOR.is_constant (&bits))
-	bits = 0;
+	{
+	  bits = 0;
+	  ops = 2;
+	}
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
+      builtin_define_with_int_value ("__ARM_FEATURE_SVE_VECTOR_OPERATORS", ops);
     }
-  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE_VECTOR_OPERATORS",
-			pfile);
   aarch64_def_or_undef (TARGET_SVE_I8MM,
 			"__ARM_FEATURE_SVE_MATMUL_INT8", pfile);
   aarch64_def_or_undef (TARGET_SVE_F32MM,
@@ -263,6 +267,14 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_BF16", pfile);
   aarch64_def_or_undef (TARGET_SVE_BF16,
 			"__ARM_FEATURE_SVE_BF16", pfile);
+
+  aarch64_def_or_undef (TARGET_FP8, "__ARM_FEATURE_FP8", pfile);
+
+  aarch64_def_or_undef (TARGET_FP8DOT2, "__ARM_FEATURE_FP8DOT2", pfile);
+
+  aarch64_def_or_undef (TARGET_FP8DOT4, "__ARM_FEATURE_FP8DOT4", pfile);
+
+  aarch64_def_or_undef (TARGET_FP8FMA, "__ARM_FEATURE_FP8FMA", pfile);
 
   aarch64_def_or_undef (TARGET_LS64,
 			"__ARM_FEATURE_LS64", pfile);
@@ -378,11 +390,10 @@ aarch64_pragma_aarch64 (cpp_reader *)
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
 static tree
-aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
-				    tree fndecl, void *uncast_arglist)
+aarch64_resolve_overloaded_builtin (location_t location,
+				    tree fndecl, void *uncast_arglist, bool)
 {
   vec<tree, va_gc> empty = {};
-  location_t location = (location_t) uncast_location;
   vec<tree, va_gc> *arglist = (uncast_arglist
 			       ? (vec<tree, va_gc> *) uncast_arglist
 			       : &empty);
@@ -408,8 +419,8 @@ aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 static bool
 aarch64_check_builtin_call (location_t loc, vec<location_t> arg_loc,
-			    tree fndecl, tree orig_fndecl,
-			    unsigned int nargs, tree *args)
+			    tree fndecl, tree orig_fndecl, unsigned int nargs,
+			    tree *args, bool)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;

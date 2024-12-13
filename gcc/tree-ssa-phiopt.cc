@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dce.h"
 #include "calls.h"
+#include "tree-ssa-loop-niter.h"
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
@@ -151,6 +152,16 @@ replace_phi_edge_with_variable (basic_block cond_block,
     }
   else
     gcc_unreachable ();
+
+  /* If we are removing the cond on a loop exit,
+     reset number of iteration information of the loop. */
+  if (loop_exits_from_bb_p (cond_block->loop_father, cond_block))
+    {
+      auto loop = cond_block->loop_father;
+      free_numbers_of_iterations_estimates (loop);
+      loop->any_upper_bound = false;
+      loop->any_likely_upper_bound = false;
+    }
 
   if (edge_to_remove && EDGE_COUNT (edge_to_remove->dest->preds) == 1)
     {
@@ -1077,17 +1088,18 @@ jump_function_from_stmt (tree *arg, gimple *stmt)
   return false;
 }
 
-/* RHS is a source argument in a BIT_AND_EXPR which feeds a conditional
-   of the form SSA_NAME NE 0.
+/* RHS is a source argument in a BIT_AND_EXPR or BIT_IOR_EXPR which feeds
+   a conditional of the form SSA_NAME NE 0.
 
-   If RHS is fed by a simple EQ_EXPR comparison of two values, see if
-   the two input values of the EQ_EXPR match arg0 and arg1.
+   If RHS is fed by a simple EQ_EXPR or NE_EXPR comparison of two values,
+   see if the two input values of the comparison match arg0 and arg1.
 
    If so update *code and return TRUE.  Otherwise return FALSE.  */
 
 static bool
 rhs_is_fed_for_value_replacement (const_tree arg0, const_tree arg1,
-				  enum tree_code *code, const_tree rhs)
+				  enum tree_code *code, const_tree rhs,
+				  enum tree_code bit_expression_code)
 {
   /* Obviously if RHS is not an SSA_NAME, we can't look at the defining
      statement.  */
@@ -1095,11 +1107,15 @@ rhs_is_fed_for_value_replacement (const_tree arg0, const_tree arg1,
     {
       gimple *def1 = SSA_NAME_DEF_STMT (rhs);
 
-      /* Verify the defining statement has an EQ_EXPR on the RHS.  */
-      if (is_gimple_assign (def1) && gimple_assign_rhs_code (def1) == EQ_EXPR)
+      /* Verify the defining statement has an EQ_EXPR or NE_EXPR on the RHS.  */
+      if (is_gimple_assign (def1)
+	  && ((bit_expression_code == BIT_AND_EXPR
+	       && gimple_assign_rhs_code (def1) == EQ_EXPR)
+	      || (bit_expression_code == BIT_IOR_EXPR
+		  && gimple_assign_rhs_code (def1) == NE_EXPR)))
 	{
-	  /* Finally verify the source operands of the EQ_EXPR are equal
-	     to arg0 and arg1.  */
+	  /* Finally verify the source operands of the EQ_EXPR or NE_EXPR
+	     are equal to arg0 and arg1.  */
 	  tree op0 = gimple_assign_rhs1 (def1);
 	  tree op1 = gimple_assign_rhs2 (def1);
 	  if ((operand_equal_for_phi_arg_p (arg0, op0)
@@ -1118,8 +1134,9 @@ rhs_is_fed_for_value_replacement (const_tree arg0, const_tree arg1,
 
 /* Return TRUE if arg0/arg1 are equal to the rhs/lhs or lhs/rhs of COND.
 
-   Also return TRUE if arg0/arg1 are equal to the source arguments of a
-   an EQ comparison feeding a BIT_AND_EXPR which feeds COND.
+   Also return TRUE if arg0/arg1 are equal to the source arguments of an
+   EQ comparison feeding a BIT_AND_EXPR, or NE comparison feeding a
+   BIT_IOR_EXPR which feeds COND.
 
    Return FALSE otherwise.  */
 
@@ -1138,27 +1155,33 @@ operand_equal_for_value_replacement (const_tree arg0, const_tree arg1,
     return true;
 
   /* Now handle more complex case where we have an EQ comparison
-     which feeds a BIT_AND_EXPR which feeds COND.
+     feeding a BIT_AND_EXPR, or a NE comparison feeding a BIT_IOR_EXPR,
+     which then feeds into COND.
 
      First verify that COND is of the form SSA_NAME NE 0.  */
   if (*code != NE_EXPR || !integer_zerop (rhs)
       || TREE_CODE (lhs) != SSA_NAME)
     return false;
 
-  /* Now ensure that SSA_NAME is set by a BIT_AND_EXPR.  */
+  /* Now ensure that SSA_NAME is set by a BIT_AND_EXPR or BIT_OR_EXPR.  */
   def = SSA_NAME_DEF_STMT (lhs);
-  if (!is_gimple_assign (def) || gimple_assign_rhs_code (def) != BIT_AND_EXPR)
+  if (!is_gimple_assign (def)
+      || (gimple_assign_rhs_code (def) != BIT_AND_EXPR
+	  && gimple_assign_rhs_code (def) != BIT_IOR_EXPR))
     return false;
 
-  /* Now verify arg0/arg1 correspond to the source arguments of an
-     EQ comparison feeding the BIT_AND_EXPR.  */
+  /* Now verify arg0/arg1 correspond to the source arguments of an EQ
+     comparison feeding the BIT_AND_EXPR or a NE comparison feeding the
+     BIT_IOR_EXPR.  */
 
   tree tmp = gimple_assign_rhs1 (def);
-  if (rhs_is_fed_for_value_replacement (arg0, arg1, code, tmp))
+  if (rhs_is_fed_for_value_replacement (arg0, arg1, code, tmp,
+					gimple_assign_rhs_code (def)))
     return true;
 
   tmp = gimple_assign_rhs2 (def);
-  if (rhs_is_fed_for_value_replacement (arg0, arg1, code, tmp))
+  if (rhs_is_fed_for_value_replacement (arg0, arg1, code, tmp,
+					gimple_assign_rhs_code (def)))
     return true;
 
   return false;

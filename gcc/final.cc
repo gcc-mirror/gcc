@@ -149,7 +149,7 @@ extern const int length_unit_log; /* This is defined in insn-attrtab.cc.  */
 const rtx_insn *this_is_asm_operands;
 
 /* Number of operands of this insn, for an `asm' with operands.  */
-static unsigned int insn_noperands;
+unsigned int insn_noperands;
 
 /* Compare optimization flag.  */
 
@@ -1513,6 +1513,8 @@ reemit_insn_block_notes (void)
 	  case NOTE_INSN_BEGIN_STMT:
 	  case NOTE_INSN_INLINE_ENTRY:
 	    this_block = LOCATION_BLOCK (NOTE_MARKER_LOCATION (insn));
+	    if (!this_block)
+	      continue;
 	    goto set_cur_block_to_this_block;
 
 	  default:
@@ -1538,7 +1540,6 @@ reemit_insn_block_notes (void)
 	    this_block = choose_inner_scope (this_block,
 					     insn_scope (body->insn (i)));
 	}
-    set_cur_block_to_this_block:
       if (! this_block)
 	{
 	  if (INSN_LOCATION (insn) == UNKNOWN_LOCATION)
@@ -1547,6 +1548,7 @@ reemit_insn_block_notes (void)
 	    this_block = DECL_INITIAL (cfun->decl);
 	}
 
+    set_cur_block_to_this_block:
       if (this_block != cur_block)
 	{
 	  change_scope (insn, cur_block, this_block);
@@ -2299,7 +2301,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	      /* Output debugging info about the symbol-block beginning.  */
 	      if (!DECL_IGNORED_P (current_function_decl))
-		debug_hooks->begin_block (last_linenum, n);
+		debug_hooks->begin_block (last_linenum, n, NOTE_BLOCK (insn));
 
 	      /* Mark this block as output.  */
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
@@ -4210,6 +4212,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
       case 's':
       case '0':
       case 'i':
+      case 'L':
       case 'w':
       case 'p':
       case 'n':

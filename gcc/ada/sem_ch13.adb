@@ -2581,35 +2581,22 @@ package body Sem_Ch13 is
             ----------------------------------------
 
             procedure Check_Expr_Is_OK_Static_Expression
-              (Expr : Node_Id;
-               Typ  : Entity_Id := Empty)
-            is
+              (Expr : Node_Id; Typ : Entity_Id := Empty) is
             begin
-               if Present (Typ) then
-                  Analyze_And_Resolve (Expr, Typ);
-               else
-                  Analyze_And_Resolve (Expr);
-               end if;
+               case Is_OK_Static_Expression_Of_Type (Expr, Typ) is
+                  when Static =>
+                     null;
 
-               --  An expression cannot be considered static if its resolution
-               --  failed or if it's erroneous. Stop the analysis of the
-               --  related aspect.
+                  when Not_Static =>
+                     Error_Msg_Name_1 := Nam;
+                     Flag_Non_Static_Expr
+                       ("entity for aspect% must be a static expression!",
+                        Expr);
+                     raise Aspect_Exit;
 
-               if Etype (Expr) = Any_Type or else Error_Posted (Expr) then
-                  raise Aspect_Exit;
-
-               elsif Is_OK_Static_Expression (Expr) then
-                  return;
-
-               --  Finally, we have a real error
-
-               else
-                  Error_Msg_Name_1 := Nam;
-                  Flag_Non_Static_Expr
-                    ("entity for aspect% must be a static expression!",
-                     Expr);
-                  raise Aspect_Exit;
-               end if;
+                  when Invalid =>
+                     raise Aspect_Exit;
+               end case;
             end Check_Expr_Is_OK_Static_Expression;
 
             ------------------------
@@ -2868,11 +2855,12 @@ package body Sem_Ch13 is
                   --  For non-Boolean aspects, if the expression has the form
                   --  of an integer literal, then do not delay, since we know
                   --  the value cannot change. This optimization catches most
-                  --  rep clause cases.
+                  --  rep clause cases. Likewise for a string literal.
 
                   elsif A_Id not in Boolean_Aspects
                     and then Present (Expr)
-                    and then Nkind (Expr) = N_Integer_Literal
+                    and then
+                      Nkind (Expr) in N_Integer_Literal | N_String_Literal
                   then
                      Delay_Required := False;
 

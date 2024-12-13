@@ -2270,10 +2270,14 @@ package Einfo is
 --       call wrapper if available.
 
 --    Initialization_Statements
---       Defined in constants and variables. For a composite object initialized
---       with an aggregate that has been converted to a sequence of
---       assignments, points to a compound statement containing the
---       assignments.
+--       Defined in constants and variables. For a composite object coming from
+--       source and initialized with an aggregate or a call expanded in place,
+--       points to a compound statement containing the assignment(s). This is
+--       used for a couple of purposes: 1) to defer the initialization to the
+--       freeze point if an address clause or a delayed aspect is present for
+--       the object, 2) to cancel initialization of imported objects generated
+--       by Initialize_Scalars or Normalize_Scalars before the pragma Import is
+--       encountered for the object.
 
 --    Inner_Instances
 --       Defined in generic units. Contains element list of units that are

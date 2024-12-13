@@ -812,6 +812,10 @@ Wsystem-headers
 Common Var(warn_system_headers) Warning
 Do not suppress warnings from system headers.
 
+Wtautological-compare
+Common Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn if a comparison always evaluates to true or false.
+
 Wtrampolines
 Common Var(warn_trampolines) Warning
 Warn whenever a trampoline is generated.
@@ -1808,9 +1812,8 @@ Common Undocumented Var(flag_keep_gc_roots_live) Optimization
 ; Always keep a pointer to a live memory block
 
 flarge-source-files
-Common Var(flag_large_source_files) Init(0)
-Improve GCC's ability to track column numbers in large source files,
-at the expense of slower compilation.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 flate-combine-instructions
 Common Var(flag_late_combine_instructions) Optimization Init(0)
@@ -2421,6 +2424,16 @@ Common Joined RejectNegative Var(common_deferred_options) Defer
 fsave-optimization-record
 Common Var(flag_save_optimization_record) Optimization
 Write a SRCFILE.opt-record.json file detailing what optimizations were performed.
+
+foptimize-crc
+Common Var(flag_optimize_crc) Optimization
+Detect loops calculating CRC and replace with faster implementation.
+If the target supports CRC instruction and the CRC loop uses the same
+polynomial as the one used in the CRC instruction, directly replace with the
+corresponding CRC instruction.
+Otherwise, if the target supports carry-less-multiplication instruction,
+generate CRC using it.
+If neither case applies, generate table-based CRC.
 
 foptimize-register-move
 Common Ignore

@@ -4993,6 +4993,9 @@ rl78_c_mode_for_floating_type (enum tree_index ti)
 #undef TARGET_HAVE_STRUB_SUPPORT_FOR
 #define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
 
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "RL78"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"

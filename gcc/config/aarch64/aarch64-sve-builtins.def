@@ -37,8 +37,13 @@
 #define DEF_SVE_GROUP_SUFFIX(A, B, C)
 #endif
 
+#ifndef DEF_SVE_FUNCTION_GS_FPM
+#define DEF_SVE_FUNCTION_GS_FPM(A, B, C, D, E, F)
+#endif
+
 #ifndef DEF_SVE_FUNCTION_GS
-#define DEF_SVE_FUNCTION_GS(A, B, C, D, E)
+#define DEF_SVE_FUNCTION_GS(A, B, C, D, E) \
+  DEF_SVE_FUNCTION_GS_FPM(A, B, C, D, E, unused)
 #endif
 
 #ifndef DEF_SVE_NEON_TYPE_SUFFIX
@@ -81,6 +86,7 @@ DEF_SVE_MODE (vnum, none, none, vectors)
 
 DEF_SVE_TYPE (svbool_t, 10, __SVBool_t, boolean_type_node)
 DEF_SVE_TYPE (svcount_t, 11, __SVCount_t, boolean_type_node)
+DEF_SVE_TYPE (svmfloat8_t, 13, __SVMfloat8_t, aarch64_mfp8_type_node)
 DEF_SVE_TYPE (svbfloat16_t, 14, __SVBfloat16_t, bfloat16_type_node)
 DEF_SVE_TYPE (svfloat16_t, 13, __SVFloat16_t, aarch64_fp16_type_node)
 DEF_SVE_TYPE (svfloat32_t, 13, __SVFloat32_t, float_type_node)
@@ -107,6 +113,8 @@ DEF_SVE_TYPE_SUFFIX (c8, svcount_t, count, 8, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (c16, svcount_t, count, 16, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (c32, svcount_t, count, 32, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (c64, svcount_t, count, 64, VNx16BImode)
+DEF_SVE_NEON_TYPE_SUFFIX (mf8, svmfloat8_t, mfloat, 8, VNx16QImode,
+			  Mfloat8x8_t, Mfloat8x16_t)
 DEF_SVE_NEON_TYPE_SUFFIX (bf16, svbfloat16_t, bfloat, 16, VNx8BFmode,
 			  Bfloat16x4_t, Bfloat16x8_t)
 DEF_SVE_NEON_TYPE_SUFFIX (f16, svfloat16_t, float, 16, VNx8HFmode,
@@ -161,6 +169,7 @@ DEF_SVE_GROUP_SUFFIX (vg4x4, 4, 4)
 
 #undef DEF_SVE_FUNCTION
 #undef DEF_SVE_FUNCTION_GS
+#undef DEF_SVE_FUNCTION_GS_FPM
 #undef DEF_SVE_GROUP_SUFFIX
 #undef DEF_SME_ZA_SUFFIX
 #undef DEF_SVE_NEON_TYPE_SUFFIX

@@ -1,3 +1,22 @@
+2024-12-09  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/Cargo.toml: Change Rust edition from 2021 to 2018.
+	* libformat_parser/generic_format_parser/Cargo.toml: Likewise.
+	* libformat_parser/generic_format_parser/src/lib.rs: Remove usage of
+	then-unstable std features and language constructs.
+	* libformat_parser/src/lib.rs: Likewise, plus provide extension trait
+	for String::leak.
+
+2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* libformat_parser/src/lib.rs: Work around 'error[E0599]:
+	no method named `leak` found for struct `std::string::String` in the current scope'.
+
+2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* libformat_parser/generic_format_parser/src/lib.rs: Work around
+	'error[E0658]: `let...else` statements are unstable'.
+
 2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* libformat_parser/src/lib.rs: Use new Handle struct and expose it.

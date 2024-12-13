@@ -27,9 +27,12 @@ void test01()
   using std::is_trivial;
   using namespace __gnu_test;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   static_assert(test_category<is_trivial, TType>(true), "");
   static_assert(test_category<is_trivial, PODType>(true), "");
 
   static_assert(test_category<is_trivial, NType>(false), "");
   static_assert(test_category<is_trivial, SLType>(false), "");
+#pragma GCC diagnostic pop
 }

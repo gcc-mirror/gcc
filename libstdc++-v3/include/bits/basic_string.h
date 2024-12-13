@@ -88,6 +88,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     class basic_string
     {
 #if __cplusplus >= 202002L
+      static_assert(is_trivially_copyable_v<_CharT>
+	  && is_trivially_default_constructible_v<_CharT>
+	  && is_standard_layout_v<_CharT>);
       static_assert(is_same_v<_CharT, typename _Traits::char_type>);
       static_assert(is_same_v<_CharT, typename _Alloc::value_type>);
       using _Char_alloc_type = _Alloc;

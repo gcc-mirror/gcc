@@ -1,3 +1,79 @@
+2024-12-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117797
+	* trans-array.cc (class_array_element_size): New function.
+	(gfc_get_array_span): Refactor, using class_array_element_size
+	to return the span for descriptors that are the _data component
+	of a class expression and then class dummy references. Revert
+	the conditions to those before r15-5083 tidying up using 'sym'.
+
+2024-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117901
+	* trans-stmt.cc (trans_associate_var): A variable character
+	length array associate name must generate a DECL expression for
+	the data pointer type.
+
+2024-12-09  Harald Anlauf  <anlauf@gmx.de>
+
+	* expr.cc (find_array_section): Do not initialize GMP variables
+	twice.
+
+2024-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/116261
+	* trans-array.cc (gfc_array_init_size): New arg 'explicit_ts',
+	to suppress the use of the expr3 element size in the descriptor
+	dtype.
+	(gfc_array_allocate): New arg 'explicit_ts', used in call to
+	gfc_array_init_size.
+	* trans-array.h : Modify prototype for gfc_array_allocate for new
+	bool argument.
+	* trans-stmt.cc (gfc_trans_allocate): Set new argument if the
+	typespec is explicit.
+
+2024-12-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102689
+	* trans-array.cc (get_array_ref_dim_for_loop_dim): Use the arg1
+	class container carried in ss->info as the seed for a lhs in
+	class valued transformational intrinsic calls that are not the
+	rhs of an assignment. Otherwise, the lhs variable expression is
+	taken from the loop chain. For this latter case, the _vptr and
+	_len fields are set.
+	(gfc_trans_create_temp_array): Use either the lhs expression
+	seeds to build a class variable that will take the returned
+	descriptor as its _data field. In the case that the arg1 expr.
+	is used, 'atmp' must be marked as unused, a typespec built with
+	the correct rank and the _vptr and _len fields set. The element
+	size is provided for the temporary allocation and to set the
+	descriptor span.
+	(gfc_array_init_size): When an intrinsic type scalar expr3 is
+	used in allocation of a class array, use its element size in
+	the descriptor dtype.
+	* trans-expr.cc (gfc_conv_class_to_class): Class valued
+	transformational intrinsics return the pointer to the array
+	descriptor as the _data field of a class temporary. Extract
+	directly and return the address of the class temporary.
+	(gfc_conv_procedure_call): store the expression for the first
+	argument of a class valued transformational intrinsic function
+	in the ss info class_container field. Later, use its type  as
+	the element type in the call to gfc_trans_create_temp_array.
+	(fcncall_realloc_result): Add a dtype argument and use it in
+	the descriptor, when available.
+	(gfc_trans_arrayfunc_assign): For class lhs, build a dtype with
+	the lhs rank and the rhs element size and use it in the call to
+	fcncall_realloc_result.
+
+2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-decl.cc (gfc_finish_var_decl): Remove setting the alignment.
+
+2024-11-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR fortran/117843
+	* trans-io.cc (gfc_trans_transfer): Add default case.
+
 2024-11-28  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/117765
