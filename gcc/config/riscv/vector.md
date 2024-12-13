@@ -2381,6 +2381,7 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:V_VLS
 	    [(match_operand:V_VLS 3 "memory_operand"         "     m,     m,     m,    m,     m,     m")
+	     (mem:BLK (scratch))
 	     (match_operand 4 "<V_VLS:stride_predicate>"     "<V_VLS:stride_load_constraint>")] UNSPEC_STRIDED)
 	  (match_operand:V_VLS 2 "vector_merge_operand"      "     0,    vu,    vu,    0,    vu,    vu")))]
   "TARGET_VECTOR"
