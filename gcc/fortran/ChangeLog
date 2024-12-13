@@ -1,3 +1,12 @@
+2024-12-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117797
+	* trans-array.cc (class_array_element_size): New function.
+	(gfc_get_array_span): Refactor, using class_array_element_size
+	to return the span for descriptors that are the _data component
+	of a class expression and then class dummy references. Revert
+	the conditions to those before r15-5083 tidying up using 'sym'.
+
 2024-12-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/117901

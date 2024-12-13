@@ -1,3 +1,145 @@
+2024-12-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_emit_hpdiv_const): Clobber r1, r25,
+	r25 and return register.
+	* config/pa/pa.md (divsi3): Revise clobbers and operands.
+	Remove second clobber from div:SI insns.
+	(udivsi3, modsi3, umodsi3): Likewise.
+
+2024-12-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* attr-urls.def: Regenerate.
+
+2024-12-12  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Peter Eisentraut  <peter@eisentraut.org>
+
+	PR c/115532
+	* common.opt.urls: Regenerated.
+	* doc/invoke.texi (Option Summary): Don't try to list all the
+	-Wsuggest-attribute= variants inline here.
+	(Warning Options): Likewise.  Add @opindex for
+	Wsuggest-attribute=returns_nonnull and its no- form.  Remove
+	@itemx for no- form.
+
+2024-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/115127
+	* match.pd (clz (X) == C, ctz (X) == C, ctz (X) >= C): Don't
+	optimize if -fsanitize=builtin and not yet in SSA form.
+
+2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): When handling OpenMP's dispatch,
+	add diagnostic when there is a ptr vs. addr mismatch between
+	need_device_{addr,ptr} and {is,has}_device_{ptr,addr}, respectively.
+
+2024-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118000
+	* config/avr/avr.cc (avr_init_expanders) <sreg_rtx>
+	<rampd_rtx, rampx_rtx, rampy_rtx, rampz_rtx>: Set MEM_VOLATILE_P.
+	(avr_out_cpymem) [ELPM && EBI]: Restore RAMPZ to 0 after.
+
+2024-12-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Limit the
+	size of the bitregion in get_best_mode calls by the inner
+	object's type size, if known.
+	(make_bit_field_load): Reuse SSA_NAME if we're attempting to
+	issue an identical load.
+
+2024-12-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* fold-const.cc (make_bit_field): Export.
+	(unextend, all_ones_mask_p): Drop.
+	(decode_field_reference, fold_truth_andor_1): Move
+	field compare merging logic...
+	* gimple-fold.cc: (fold_truth_andor_for_ifcombine) ... here,
+	with -Wtautological-compare warning guards, and...
+	(decode_field_reference): ... here.  Rework for gimple.
+	(gimple_convert_def_p, gimple_binop_def_p): New.
+	(compute_split_boundary_from_align): New.
+	(make_bit_field_load, build_split_load): New.
+	(reuse_split_load): New.
+	* fold-const.h: (make_bit_field_ref): Declare
+	(fold_truth_andor_for_ifcombine): Declare.
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Try
+	fold_truth_andor_for_ifcombine.
+	* common.opt (Wtautological-compare): Move here.
+
+2024-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_ctz): New constexpr function.
+	(section_common::flags): Assert minimal bit width.
+
+2024-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118001
+	* doc/extend.texi (AVR Named Address Spaces): Document __flashx.
+	* config/avr/avr.h (ADDR_SPACE_FLASHX): New enum value.
+	* config/avr/avr-protos.h (avr_out_fload, avr_mem_flashx_p)
+	(avr_fload_libgcc_p, avr_load_libgcc_mem_p)
+	(avr_load_libgcc_insn_p): New.
+	* config/avr/avr.cc (avr_addrspace): Add ADDR_SPACE_FLASHX.
+	(avr_decl_flashx_p, avr_mem_flashx_p, avr_fload_libgcc_p)
+	(avr_load_libgcc_mem_p, avr_load_libgcc_insn_p, avr_out_fload):
+	New functions.
+	(avr_adjust_insn_length) [ADJUST_LEN_FLOAD]: Handle case.
+	(avr_progmem_p) [avr_decl_flashx_p]: return 2.
+	(avr_addr_space_legitimate_address_p) [ADDR_SPACE_FLASHX]:
+	Has same behavior like ADDR_SPACE_MEMX.
+	(avr_addr_space_convert): Use pointer sizes rather then ASes.
+	(avr_addr_space_contains): New function.
+	(avr_convert_to_type): Use it.
+	(avr_emit_cpymemhi): Handle ADDR_SPACE_FLASHX.
+	* config/avr/avr.md (adjust_len) <fload>: New attr value.
+	(gen_load<mode>_libgcc): Renamed from load<mode>_libgcc.
+	(xload8<mode>_A): Iterate over MOVMODE rather than over ALL1.
+	(fxmov<mode>_A): New from xloadv<mode>_A.
+	(xmov<mode>_8): New from xload<mode>_A.
+	(fmov<mode>): New insns.
+	(fxload<mode>_A): New from xload<mode>_A.
+	(fxload_<mode>_libgcc): New from xload_<mode>_libgcc.
+	(*fxload_<mode>_libgcc): New from *xload_<mode>_libgcc.
+	(mov<mode>) [avr_mem_flashx_p]: Hande ADDR_SPACE_FLASHX.
+	(cpymemx_<mode>): Make sure the address space is not lost
+	when splitting.
+	(*cpymemx_<mode>) [ADDR_SPACE_FLASHX]: Use __movmemf_<mode> for asm.
+	(*ashlqi.1.zextpsi_split): New combine pattern.
+	* config/avr/predicates.md (nox_general_operand): Don't match
+	when avr_mem_flashx_p is true.
+	* config/avr/avr-passes.cc (AVR_LdSt_Props):
+	ADDR_SPACE_FLASHX has no post_inc.
+
+2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113688
+	PR c/114014
+	PR c/114713
+	PR c/117724
+	* tree.cc (gimple_canonical_types_compatible_p): Add exception.
+
+2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	* tree.cc (gimple_canonical_types_compatible_p): Add exception.
+	(verify_type): Add exception.
+
+2024-12-12  Sam James  <sam@gentoo.org>
+
+	* config/i386/i386.opt.urls: Regenerate.
+
+2024-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-crc-optimization.cc (crc_optimization::optimize_crc_loop):
+	Comment spelling fix, is succeeded -> succeeded.
+
+2024-12-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR target/117150
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Move description
+	of -mstack-protector-guard-symbol from here...
+	(x86 Options): ...to here.
+
 2024-12-11  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/116778

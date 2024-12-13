@@ -1,3 +1,222 @@
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117996
+	* libgnat/a-ngrear.adb (Jacobi): Remove default value for
+	Compute_Vectors formal parameter.
+	(Sort_Eigensystem): Add Compute_Vectors formal parameter.  Do not
+	modify the Vectors if Compute_Vectors is False.
+	(Eigensystem): Pass True as Compute_Vectors to Sort_Eigensystem.
+	(Eigenvalues): Pass False as Compute_Vectors to Sort_Eigensystem.
+
+2024-12-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch5.adb (Test_Statement_Required): Fix comment.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_Aggr_In_Object_Decl): Clear the component
+	referenced on the right-hand side of the first assignment generated
+	for a bit-packed array, if any.
+	(Expand_Array_Aggregate): Do not exclude aggregates of bit-packed
+	array types in object declarations from in-place expansion.
+	* sem_eval.adb (Eval_Indexed_Component): Do not attempt a constant
+	evaluation for a bit-packed array type.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): Replace assertion with
+	more defensive code.
+
+2024-12-12  Viljar Indus  <indus@adacore.com>
+
+	* errout.adb (Write_JSON_Location): Avoid going through
+	symbolic links when printing the full name.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-imager.adb (Image_Floating_Point): Tweak display of
+	invalid floating point values.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): Remove test for task entry context.
+	* sem_ch6.adb (Process_Formals): Add improved test for task entry
+	context.
+
+2024-12-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Move call
+	to Comes_From_Source to the outer if-statement.
+
+2024-12-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Only set
+	flag Is_Null_Loop when loop parameter specification comes from
+	a loop and not from a quantified expression.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Do not exclude aggregates
+	of bit-packed array types in allocators from in-place expansion.
+
+2024-12-12  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Move
+	the LLVM chapter one level up.
+	* gnat_ugn.texi: Regenerate.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_eval.ads (Is_OK_Static_Expression_Of_Type): New function.
+	* sem_eval.adb (Is_OK_Static_Expression_Of_Type): Likewise.
+	* sem_ch13.adb (Check_Expr_Is_OK_Static_Expression): Use new function.
+	* sem_prag.adb (Check_Expr_Is_OK_Static_Expression): Likewise.
+	* sem_ch3.adb (Apply_External_Initialization): Accept static strings
+	for the parameter.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/a-tifiio.adb: Fix comment.
+	* libgnat/a-tifiio__128.adb: Likewise.
+	* libgnat/s-imaged.ads (Image_Decimal): Likewise.
+	* libgnat/s-imagef.ads (Image_Fixed): Likewise.
+	* libgnat/s-imager.ads (Image_Fixed_Point): Likewise.
+	* libgnat/s-imde32.ads (Image_Decimal32): Likewise.
+	* libgnat/s-imfi64.ads (Image_Fixed64): Likewise.
+	* libgnat/s-imgcha.adb (Image_Character): Likewise.
+	* libgnat/s-valuer.adb (Scan_Raw_Real): Likewise.
+	* sem_attr.adb (Eval_Attribute): Likewise.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Treat the various size attributes
+	like Component_Size for nonstatic array types.
+
+2024-12-12  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Is_Ambiguous_Operand): Add missing decoration of
+	the operand when it is labeled overloaded but has just one
+	interpretation.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Add Target formal
+	parameter and check that it is not a bit-aligned component or slice.
+	Return False in CodePeer mode as well.
+	(Build_Array_Aggr_Code): Remove redundant tests done in conjunction
+	with a call to Aggr_Assignment_OK_For_Backend.
+	(Expand_Array_Aggregate): Likewise.  Add a couple of comments and
+	improve formatting.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Fix computation of type
+	category.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* aspects.ads (Is_Representation_Aspect): True for External_Name.
+	(Aspect_Delay): Use Rep_Aspect for External_Name, Link_Name and
+	Linker_Section.
+	* einfo.ads (Initialization_Statements): Document extended usage.
+	* exp_util.adb (Needs_Initialization_Statements): Return True for
+	all delayed aspects.
+	* freeze.adb (Check_Address_Clause): Do not move the initialization
+	expression here...
+	(Freeze_Object_Declaration): ...but here instead, as well as for all
+	delayed aspects.  Remove test for pragma Linker_Section.
+	* sem_ch13.adb (Analyze_One_Aspect): Do not delay in the Rep_Aspect
+	case if the expression is a string literal.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-valuti.ads (Scan_Sign): Fix documentation comment.
+
+2024-12-12  Bob Duff  <duff@adacore.com>
+
+	* exp_util.adb (Build_Task_Image_Decls):
+	Deal properly with the case of an expanded name.
+	Minor cleanup: use a case statement instead of if/elsif chain.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Traverse_Proc_For_Aggregate): New generic procedure.
+	(Replace_Discriminants): Instantiate it instead of Traverse_Proc.
+	(Replace_Self_Reference): Likewise.
+	(Convert_To_Assignments): Remove limitation for nested aggregates
+	that contain self-references.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Remove obsolete comment
+	about C code generation.  Do not create a useless target type if
+	the parent statement is rewritten instead of the expression.  Use
+	a nonnull accesss type for the expansion done for composite types.
+	(Expand_N_If_Expression): Simplify the expansion when the condition
+	is known at compile time.  Apply the expansion done for by-reference
+	types to indefinite types and remove the obsolete special case for
+	unconstrained array types  Use a nonnull access type in this case.
+	Rename New_If local variable to If_Stmt for the sake of consistency.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Make_Address_For_Finalize): Look at the underlying
+	subtype to detect the unconstrained array type case.
+	* sprint.adb (Write_Itype) <E_Private_Subtype>: New case.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Update
+	External_Initialization section.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* fname.adb (Is_Predefined_File_Name): Tweak test.
+
+2024-12-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Apply_External_Initialization): Restrict File lookup.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Initialization_Statements): Document usage precisely.
+	* exp_aggr.adb (Convert_Aggr_In_Object_Decl): Do not create a
+	compound statement in most cases, do it only if necessary.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Remove a couple of
+	useless statements.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Use the Initialization_Statements mechanism if necessary.
+	* exp_ch7.adb: Remove clauses for Aspects package.
+	(Insert_Actions_In_Scope_Around): Use the support code of Exp_Util
+	for the Initialization_Statements mechanism.
+	* exp_prag.adb (Undo_Initialization): Remove obsolete code.
+	* exp_util.ads (Move_To_Initialization_Statements): New procedure.
+	(Needs_Initialization_Statements): New function.
+	* exp_util.adb (Move_To_Initialization_Statements): New procedure.
+	(Needs_Initialization_Statements): New predicate.
+
+2024-12-12  Viljar Indus  <indus@adacore.com>
+
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Avoid expansion
+	of controlled types when the LHS is a function call.
+
+2024-12-12  Daniel King  <dmking@adacore.com>
+
+	* init.c (__gnat_error_handler): Handle SIGPROT
+	(__gnat_install_handler): Install SIGPROT handler
+
+2024-12-12  Daniel King  <dmking@adacore.com>
+
+	* libgnat/i-cheri-exceptions.ads: Export CHERI exception IDs.
+
+2024-12-12  Johannes Kliemann  <kliemann@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Take
+	Minimum_Stack_Size into account when preallocating task stacks.
+	* rtsfind.ads (RE_Id, RE_Unit_Table): Add RE_Minimum_Stack_Size.
+
 2024-12-11  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* Makefile.rtl: Add x86_64-pc-gnu section.

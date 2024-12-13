@@ -1,3 +1,7 @@
+2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (OMP_DISPATCH_CLAUSE_MASK): Add has_device_addr clause.
+
 2024-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/117614

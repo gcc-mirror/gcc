@@ -1,3 +1,148 @@
+2024-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/115127
+	* c-c++-common/ubsan/builtin-2.c: New test.
+
+2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/adjust-args-3.c: New test.
+	* gcc.dg/gomp/adjust-args-2.c: New test.
+
+2024-12-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117797
+	* gfortran.dg/pr117797.f90: New test.
+
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/matrix1.adb: New test.
+
+2024-12-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/field-merge-1.c: New.
+	* gcc.dg/field-merge-2.c: New.
+	* gcc.dg/field-merge-3.c: New.
+	* gcc.dg/field-merge-4.c: New.
+	* gcc.dg/field-merge-5.c: New.
+	* gcc.dg/field-merge-6.c: New.
+	* gcc.dg/field-merge-7.c: New.
+	* gcc.dg/field-merge-8.c: New.
+	* gcc.dg/field-merge-9.c: New.
+	* gcc.dg/field-merge-10.c: New.
+	* gcc.dg/field-merge-11.c: New.
+	* gcc.dg/field-merge-12.c: New.
+	* gcc.target/aarch64/long_branch_1.c: Disable ifcombine.
+
+2024-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118001
+	* gcc.target/avr/torture/addr-space-1.h [AVR_HAVE_ELPM]:
+	Use a function to bump .progmemx.data to a high address.
+	* gcc.target/avr/torture/addr-space-2.h: Same.
+	* gcc.target/avr/torture/addr-space-1-fx.c: New test.
+	* gcc.target/avr/torture/addr-space-2-fx.c: New test.
+
+2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113688
+	PR c/114014
+	PR c/114713
+	PR c/117724
+	* gcc.dg/pr113688.c: New test.
+	* gcc.dg/pr114014.c: New test.
+	* gcc.dg/pr114713.c: New test.
+	* gcc.dg/pr117724.c: New test.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/thumb-ifcvt.c: Use -mtune=cortex-m4.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/thumb2-slow-flash-data-3.c: Added argument to
+	fn1 to avoid compile error.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/thumb1-far-jump-2.c: Write to volatile memmory
+	in macro to avoid optimization.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/lto/pr96939_0.c: Use effective-target
+	arm_arch_v8a.
+	* gcc.target/arm/lto/pr96939_1.c: Remove dg-options.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/94531
+	* gcc.target/arm/its.c: Removed.
+	* gcc.target/arm/its-1.c: Copy of gcc.target/arm/its.c. Use
+	effective-target arm_cpu_cortex_m7.
+	* gcc.target/arm/its-2.c: Copy of gcc.target/arm/its.c. Use
+	effective-target arm_cpu_cortex_m3.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/pr41574.c: Added option "-mcpu=unset".
+	* gcc.dg/pr59418.c: Likewise.
+	* lib/target-supports.exp (add_options_for_vect_early_break):
+	Likewise.
+	(add_options_for_arm_v8_neon): Likewise.
+	(check_effective_target_arm_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_simd32_ok_nocache): Likewise.
+	(check_effective_target_arm_sat_ok_nocache): Likewise.
+	(check_effective_target_arm_dsp_ok_nocache): Likewise.
+	(check_effective_target_arm_crc_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_1m_mve_fp_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_1a_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_2a_fp16_neon_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_1m_mve_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_2a_i8mm_ok_nocache): Likewise.
+	(check_effective_target_arm_fp16fml_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_2a_bf16_neon_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8m_main_cde_ok_nocache): Likewise.
+	(check_effective_target_arm_v8m_main_cde_fp_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_1m_main_cde_mve_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_1m_main_cde_mve_fp_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_3a_complex_neon_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_1_lob_ok): Likewise.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/bfloat16_scalar_1_1.c: Use effective-target
+	arm_arch_v8_2a_bf16_hard.
+	* gcc.target/arm/bfloat16_scalar_2_1.c: Likewise.
+	* gcc.target/arm/bfloat16_scalar_3_1.c: Likewise.
+	* gcc.target/arm/bfloat16_scalar_1_2.c: Use effective-target
+	arm_arch_v8_2a_bf16.
+	* gcc.target/arm/bfloat16_scalar_2_2.c: Likewise.
+	* gcc.target/arm/bfloat16_scalar_3_2.c: Likewise.
+	* lib/target-supports.exp: Define effective-target
+	v8_2a_bf16 and v8_2a_bf16_hard.
+
+2024-12-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/other/pr56184.C: Use effective-target
+	arm_arch_v7a_neon_thumb.
+	* g++.dg/other/pr59985.C: Use effective-target
+	arm_arch_v7a_fp_hard.
+	* lib/target-supports.exp: Define effective-target
+	arm_arch_v7a_fp_hard, arm_arch_v7a_neon_thumb
+
 2024-12-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/117901

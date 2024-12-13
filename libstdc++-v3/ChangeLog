@@ -1,3 +1,21 @@
+2024-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/modifiers/reserve.cc:
+	Cast to size_t to fix -Wsign-compare warning.
+	* testsuite/23_containers/unordered_set/hash_policy/71181.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/insert/move_range.cc:
+	Likewise.
+
+2024-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Local_iterator_base): Fix
+	-Wsign-compare warnings.
+
+2024-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc: Fix typo in comment.
+
 2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/109517

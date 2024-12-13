@@ -1,3 +1,13 @@
+2024-12-12  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Peter Eisentraut  <peter@eisentraut.org>
+
+	PR c/115532
+	* c.opt.urls: Regenerated.
+
+2024-12-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* c.opt (Wtautological-compare): Move to ../common.opt.
+
 2024-12-10  Arsen Arsenović  <arsen@aarsen.me>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

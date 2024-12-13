@@ -1,3 +1,9 @@
+2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (OMP_DISPATCH_CLAUSE_MASK): Add has_device_addr clause.
+	(c_finish_omp_declare_variant): Add an 'inform' telling the user that
+	'need_device_addr' is invalid for C.
+
 2024-12-09  Heiko Eißfeldt  <heiko@hexco.de>
 
 	PR c/114541
