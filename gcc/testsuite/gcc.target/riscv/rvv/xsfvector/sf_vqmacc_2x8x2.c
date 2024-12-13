@@ -7,6 +7,7 @@
 /*
 ** test_sf_vqmacc_2x8x2_i32m1_vint32m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m1,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -20,6 +21,7 @@ test_sf_vqmacc_2x8x2_i32m1_vint32m1_t (vint32m1_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_i32m2_vint32m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m2,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -33,6 +35,7 @@ test_sf_vqmacc_2x8x2_i32m2_vint32m2_t (vint32m2_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_i32m4_vint32m4_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m4,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -46,6 +49,7 @@ test_sf_vqmacc_2x8x2_i32m4_vint32m4_t (vint32m4_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_i32m8_vint32m8_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m8,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -59,6 +63,7 @@ test_sf_vqmacc_2x8x2_i32m8_vint32m8_t (vint32m8_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_vint32m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m1,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -72,6 +77,7 @@ test_sf_vqmacc_2x8x2_vint32m1_t (vint32m1_t vd, vint8m1_t vs1, vint8m1_t vs2,
 /*
 ** test_sf_vqmacc_2x8x2_vint32m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m2,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -85,6 +91,7 @@ test_sf_vqmacc_2x8x2_vint32m2_t (vint32m2_t vd, vint8m1_t vs1, vint8m2_t vs2,
 /*
 ** test_sf_vqmacc_2x8x2_vint32m4_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m4,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -98,6 +105,7 @@ test_sf_vqmacc_2x8x2_vint32m4_t (vint32m4_t vd, vint8m1_t vs1, vint8m4_t vs2,
 /*
 ** test_sf_vqmacc_2x8x2_vint32m8_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m8,ta,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -111,6 +119,7 @@ test_sf_vqmacc_2x8x2_vint32m8_t (vint32m8_t vd, vint8m1_t vs1, vint8m8_t vs2,
 /*
 ** test_sf_vqmacc_2x8x2_i32m1_tu_vint32m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m1,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -124,6 +133,7 @@ test_sf_vqmacc_2x8x2_i32m1_tu_vint32m1_t (vint32m1_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_i32m2_tu_vint32m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m2,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -137,6 +147,7 @@ test_sf_vqmacc_2x8x2_i32m2_tu_vint32m2_t (vint32m2_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_i32m4_tu_vint32m4_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m4,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -150,6 +161,7 @@ test_sf_vqmacc_2x8x2_i32m4_tu_vint32m4_t (vint32m4_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_i32m8_tu_vint32m8_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m8,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -163,6 +175,7 @@ test_sf_vqmacc_2x8x2_i32m8_tu_vint32m8_t (vint32m8_t vd, vint8m1_t vs1,
 /*
 ** test_sf_vqmacc_2x8x2_tu_vint32m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m1,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -176,6 +189,7 @@ test_sf_vqmacc_2x8x2_tu_vint32m1_t (vint32m1_t vd, vint8m1_t vs1, vint8m1_t vs2,
 /*
 ** test_sf_vqmacc_2x8x2_tu_vint32m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m2,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -189,6 +203,7 @@ test_sf_vqmacc_2x8x2_tu_vint32m2_t (vint32m2_t vd, vint8m1_t vs1, vint8m2_t vs2,
 /*
 ** test_sf_vqmacc_2x8x2_tu_vint32m4_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m4,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */
@@ -202,6 +217,7 @@ test_sf_vqmacc_2x8x2_tu_vint32m4_t (vint32m4_t vd, vint8m1_t vs1, vint8m4_t vs2,
 /*
 ** test_sf_vqmacc_2x8x2_tu_vint32m8_t:
 ** ...
+** vsetivli\s+zero+,0+,e32+,m8,tu,ma+
 ** sf\.vqmacc\.2x8x2\tv[0-9]+,v[0-9]+,v[0-9]+
 ** ...
 */

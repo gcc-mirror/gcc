@@ -7,6 +7,7 @@
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf8_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -17,6 +18,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_i8mf8_vint8mf8_t(vfloat32mf2_t vs2, float rs1
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf4_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -27,6 +29,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_i8mf4_vint8mf4_t(vfloat32m1_t vs2, float rs1,
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf2_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -37,6 +40,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_i8mf2_vint8mf2_t(vfloat32m2_t vs2, float rs1,
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m1_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -47,6 +51,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_i8m1_vint8m1_t(vfloat32m4_t vs2, float rs1, si
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m2_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -57,6 +62,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_i8m2_vint8m2_t(vfloat32m8_t vs2, float rs1, si
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf8_m_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -67,6 +73,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_i8mf8_m_vint8mf8_t(vbool64_t mask, vfloat32mf
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf4_m_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -77,6 +84,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_i8mf4_m_vint8mf4_t(vbool32_t mask, vfloat32m1
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf2_m_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -87,6 +95,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_i8mf2_m_vint8mf2_t(vbool16_t mask, vfloat32m2
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m1_m_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -97,6 +106,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_i8m1_m_vint8m1_t(vbool8_t mask, vfloat32m4_t v
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m2_m_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -107,6 +117,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_i8m2_m_vint8m2_t(vbool4_t mask, vfloat32m8_t v
 /*
 ** test_sf_vfnrclip_x_f_qf_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -117,6 +128,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_vint8mf8_t(vfloat32mf2_t vs2, float rs1, size
 /*
 ** test_sf_vfnrclip_x_f_qf_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -127,6 +139,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_vint8mf4_t(vfloat32m1_t vs2, float rs1, size_
 /*
 ** test_sf_vfnrclip_x_f_qf_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -137,6 +150,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_vint8mf2_t(vfloat32m2_t vs2, float rs1, size_
 /*
 ** test_sf_vfnrclip_x_f_qf_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -147,6 +161,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_vint8m1_t(vfloat32m4_t vs2, float rs1, size_t 
 /*
 ** test_sf_vfnrclip_x_f_qf_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -157,6 +172,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_vint8m2_t(vfloat32m8_t vs2, float rs1, size_t 
 /*
 ** test_sf_vfnrclip_x_f_qf_mask_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -167,6 +183,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_mask_vint8mf8_t(vbool64_t mask, vfloat32mf2_t
 /*
 ** test_sf_vfnrclip_x_f_qf_mask_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -177,6 +194,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_mask_vint8mf4_t(vbool32_t mask, vfloat32m1_t 
 /*
 ** test_sf_vfnrclip_x_f_qf_mask_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -187,6 +205,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_mask_vint8mf2_t(vbool16_t mask, vfloat32m2_t 
 /*
 ** test_sf_vfnrclip_x_f_qf_mask_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -197,6 +216,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_mask_vint8m1_t(vbool8_t mask, vfloat32m4_t vs2
 /*
 ** test_sf_vfnrclip_x_f_qf_mask_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,ta+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -207,6 +227,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_mask_vint8m2_t(vbool4_t mask,vfloat32m8_t vs2,
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf8_tu_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -217,6 +238,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_i8mf8_tu_vint8mf8_t(vint8mf8_t maskedoff, vfl
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf4_tu_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -227,6 +249,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_i8mf4_tu_vint8mf4_t(vint8mf4_t maskedoff, vfl
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf2_tu_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -237,6 +260,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_i8mf2_tu_vint8mf2_t(vint8mf2_t maskedoff, vfl
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m1_tu_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -247,6 +271,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_i8m1_tu_vint8m1_t(vint8m1_t maskedoff, vfloat3
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m2_tu_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -257,6 +282,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_i8m2_tu_vint8m2_t(vint8m2_t maskedoff, vfloat3
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf8_tum_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -267,6 +293,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_i8mf8_tum_vint8mf8_t(vbool64_t mask, vint8mf8
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf4_tum_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -277,6 +304,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_i8mf4_tum_vint8mf4_t(vbool32_t mask, vint8mf4
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf2_tum_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -287,6 +315,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_i8mf2_tum_vint8mf2_t(vbool16_t mask, vint8mf2
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m1_tum_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -297,6 +326,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_i8m1_tum_vint8m1_t(vbool8_t mask, vint8m1_t ma
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m2_tum_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -307,6 +337,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_i8m2_tum_vint8m2_t(vbool4_t mask, vint8m2_t ma
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf8_tumu_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -317,6 +348,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_i8mf8_tumu_vint8mf8_t(vbool64_t mask, vint8mf
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf4_tumu_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -327,6 +359,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_i8mf4_tumu_vint8mf4_t(vbool32_t mask, vint8mf
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf2_tumu_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -337,6 +370,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_i8mf2_tumu_vint8mf2_t(vbool16_t mask, vint8mf
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m1_tumu_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -347,6 +381,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_i8m1_tumu_vint8m1_t(vbool8_t mask, vint8m1_t m
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m2_tumu_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -357,6 +392,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_i8m2_tumu_vint8m2_t(vbool4_t mask, vint8m2_t m
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf8_mu_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -367,6 +403,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_i8mf8_mu_vint8mf8_t(vbool64_t mask, vint8mf8_
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf4_mu_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -377,6 +414,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_i8mf4_mu_vint8mf4_t(vbool32_t mask, vint8mf4_
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf2_mu_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -387,6 +425,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_i8mf2_mu_vint8mf2_t(vbool16_t mask, vint8mf2_
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m1_mu_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -397,6 +436,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_i8m1_mu_vint8m1_t(vbool8_t mask, vint8m1_t mas
 /*
 ** test_sf_vfnrclip_x_f_qf_i8m2_mu_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -407,6 +447,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_i8m2_mu_vint8m2_t(vbool4_t mask, vint8m2_t mas
 /*
 ** test_sf_vfnrclip_x_f_qf_tu_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -417,6 +458,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_tu_vint8mf8_t(vint8mf8_t maskedoff, vfloat32m
 /*
 ** test_sf_vfnrclip_x_f_qf_tu_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -427,6 +469,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_tu_vint8mf4_t(vint8mf4_t maskedoff, vfloat32m
 /*
 ** test_sf_vfnrclip_x_f_qf_tu_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -437,6 +480,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_tu_vint8mf2_t(vint8mf2_t maskedoff, vfloat32m
 /*
 ** test_sf_vfnrclip_x_f_qf_tu_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -447,6 +491,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_tu_vint8m1_t(vint8m1_t maskedoff, vfloat32m4_t
 /*
 ** test_sf_vfnrclip_x_f_qf_tu_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+
 ** ...
 */
@@ -457,6 +502,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_tu_vint8m2_t(vint8m2_t maskedoff, vfloat32m8_t
 /*
 ** test_sf_vfnrclip_x_f_qf_tum_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -467,6 +513,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_tum_vint8mf8_t(vbool64_t mask, vint8mf8_t mas
 /*
 ** test_sf_vfnrclip_x_f_qf_tum_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -477,6 +524,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_tum_vint8mf4_t(vbool32_t mask, vint8mf4_t mas
 /*
 ** test_sf_vfnrclip_x_f_qf_tum_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -487,6 +535,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_tum_vint8mf2_t(vbool16_t mask, vint8mf2_t mas
 /*
 ** test_sf_vfnrclip_x_f_qf_tum_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -497,6 +546,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_tum_vint8m1_t(vbool8_t mask, vint8m1_t maskedo
 /*
 ** test_sf_vfnrclip_x_f_qf_tum_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,tu+,ma+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -508,6 +558,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_tum_vint8m2_t(vbool4_t mask, vint8m2_t maskedo
 /*
 ** test_sf_vfnrclip_x_f_qf_tumu_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -518,6 +569,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_tumu_vint8mf8_t(vbool64_t mask, vint8mf8_t ma
 /*
 ** test_sf_vfnrclip_x_f_qf_i8mf4_tumu_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -528,6 +580,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_tumu_vint8mf4_t(vbool32_t mask, vint8mf4_t ma
 /*
 ** test_sf_vfnrclip_x_f_qf_tumu_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -538,6 +591,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_tumu_vint8mf2_t(vbool16_t mask, vint8mf2_t ma
 /*
 ** test_sf_vfnrclip_x_f_qf_tumu_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -548,6 +602,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_tumu_vint8m1_t(vbool8_t mask, vint8m1_t masked
 /*
 ** test_sf_vfnrclip_x_f_qf_tumu_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,tu+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -558,6 +613,7 @@ vint8m2_t test_sf_vfnrclip_x_f_qf_tumu_vint8m2_t(vbool4_t mask, vint8m2_t masked
 /*
 ** test_sf_vfnrclip_x_f_qf_mu_vint8mf8_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf8+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -568,6 +624,7 @@ vint8mf8_t test_sf_vfnrclip_x_f_qf_mu_vint8mf8_t(vbool64_t mask, vint8mf8_t mask
 /*
 ** test_sf_vfnrclip_x_f_qf_mu_vint8mf4_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf4+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -578,6 +635,7 @@ vint8mf4_t test_sf_vfnrclip_x_f_qf_mu_vint8mf4_t(vbool32_t mask, vint8mf4_t mask
 /*
 ** test_sf_vfnrclip_x_f_qf_mu_vint8mf2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,mf2+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -588,6 +646,7 @@ vint8mf2_t test_sf_vfnrclip_x_f_qf_mu_vint8mf2_t(vbool16_t mask, vint8mf2_t mask
 /*
 ** test_sf_vfnrclip_x_f_qf_mu_vint8m1_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m1+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
@@ -598,6 +657,7 @@ vint8m1_t test_sf_vfnrclip_x_f_qf_mu_vint8m1_t(vbool8_t mask, vint8m1_t maskedof
 /*
 ** test_sf_vfnrclip_x_f_qf_mu_vint8m2_t:
 ** ...
+** vsetivli\s+zero+,0+,e8+,m2+,ta+,mu+
 ** sf\.vfnrclip\.x\.f\.qf\tv[0-9]+,v[0-9]+,fa[0-9]+,v0.t
 ** ...
 */
