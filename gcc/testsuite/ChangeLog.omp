@@ -2,6 +2,10 @@
 
 	PR target/65181
 	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1.c:
+	Adjust.
+
+	PR target/65181
+	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1.c:
 	Add.
 
 	PR target/65181

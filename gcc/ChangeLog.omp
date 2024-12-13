@@ -1,5 +1,9 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/65181
+	* config/nvptx/nvptx.md [!TARGET_SOFT_STACK] (save_stack_block):
+	'define_expand'.
+
 	Backported from trunk:
 	2024-08-09  Andrew Stubbs  <ams@baylibre.com>
 
