@@ -2980,16 +2980,22 @@ member for the purpose of accessing the elements of such an array.  The value
 of @var{level} controls the level of strictness.
 
 @option{-fstrict-flex-arrays} is equivalent to
-@option{-fstrict-flex-arrays=3}, which is the strictest; all
-trailing arrays of structures are treated as flexible array members.
+@option{-fstrict-flex-arrays=3}, which is the strictest;
+a trailing array is treated as a flexible array member only when
+it is declared as a flexible array member per C99 standard onwards.
 
 The negative form @option{-fno-strict-flex-arrays} is equivalent to
 @option{-fstrict-flex-arrays=0}, which is the least strict.  In this
-case a trailing array is treated as a flexible array member only when
-it is declared as a flexible array member per C99 standard onwards.
+case all trailing arrays of structures are treated as flexible array members.
 
-The possible values of @var{level} are the same as for the
-@code{strict_flex_array} attribute (@pxref{Variable Attributes}).
+There are two more levels in between 0 and 3, which are provided to
+support older code that uses the GCC zero-length array extension
+(@samp{[0]}) or one-element array as flexible array members
+(@samp{[1]}).  When @var{level} is 1, the trailing array is treated as
+a flexible array member when it is declared as either @samp{[]},
+@samp{[0]}, or @samp{[1]}.  When @var{level} is 2, the trailing array
+is treated as a flexible array member when it is declared as either
+@samp{[]}, or @samp{[0]}.
 
 You can control this behavior for a specific trailing array field of a
 structure by using the variable attribute @code{strict_flex_array} attribute
