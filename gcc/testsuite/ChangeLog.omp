@@ -1,6 +1,10 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/65181
+	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1.c:
+	Add.
+
+	PR target/65181
 	* gcc.target/nvptx/__builtin_alloca_0-1-O0.c: New.
 	* gcc.target/nvptx/__builtin_alloca_0-1-O1.c: Likewise.
 
