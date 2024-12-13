@@ -164,8 +164,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "@pred_sf_vfnrclip<v_su><mode>_x_f_qf"
-  [(set (match_operand:<SF_XFQF> 0 "register_operand"        "=vd, vd, vr, vr")
-	(if_then_else:<SF_XFQF>
+  [(set (match_operand:SF_XF 0 "register_operand"        "=vd, vd, vr, vr")
+	(if_then_else:SF_XF
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand"     " vm, vm,Wc1,Wc1")
 	     (match_operand 5 "vector_length_operand"        " rK, rK, rK, rK")
@@ -174,10 +174,10 @@
 	     (match_operand 8 "const_int_operand"            "  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:<SF_XFQF>
+	  (unspec:SF_XF
 	    [(match_operand:SF 4 "register_operand"          "  f,  f,  f,  f")
-	     (match_operand:SF_VF 3 "register_operand"       " vr, vr, vr, vr")] SF_VFNRCLIP)
-	  (match_operand:<SF_XFQF> 2 "vector_merge_operand"  " vu,  0, vu,  0")))]
+	     (match_operand:<SF_XFQF> 3 "register_operand"       " vr, vr, vr, vr")] SF_VFNRCLIP)
+	  (match_operand:SF_XF 2 "vector_merge_operand"  " vu,  0, vu,  0")))]
   "TARGET_VECTOR && TARGET_XSFVFNRCLIPXFQF"
   "sf.vfnrclip.x<v_su>.f.qf\t%0,%3,%4%p1"
   [(set_attr "type" "sf_vfnrclip")

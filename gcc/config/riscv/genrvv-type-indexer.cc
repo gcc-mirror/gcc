@@ -165,6 +165,18 @@ floattype (unsigned sew, int lmul_log2)
 }
 
 std::string
+expand_floattype (unsigned sew, int lmul_log2, unsigned nf)
+{
+  if (sew != 8 || nf!= 1
+      || (!valid_type (sew * 4, lmul_log2 + 2, /*float_t*/ true)))
+    return "INVALID";
+
+  std::stringstream mode;
+  mode << "vfloat" << sew * 4 << to_lmul (lmul_log2 + 2) << "_t";
+  return mode.str ();
+}
+
+std::string
 floattype (unsigned sew, int lmul_log2, unsigned nf)
 {
   if (!valid_type (sew, lmul_log2, nf, /*float_t*/ true))
@@ -276,6 +288,7 @@ main (int argc, const char **argv)
       fprintf (fp, "  /*QLMUL1*/ INVALID,\n");
       fprintf (fp, "  /*QLMUL1_SIGNED*/ INVALID,\n");
       fprintf (fp, "  /*QLMUL1_UNSIGNED*/ INVALID,\n");
+      fprintf (fp, "  /*XFQF*/ INVALID,\n");
       for (unsigned eew : {8, 16, 32, 64})
 	fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 
@@ -384,6 +397,8 @@ main (int argc, const char **argv)
 		     inttype (8, /*lmul_log2*/ 0, false).c_str ());
 	    fprintf (fp, "  /*QLMUL1_UNSIGNED*/ %s,\n",
 		     inttype (8, /*lmul_log2*/ 0, true).c_str ());
+	    fprintf (fp, "  /*XFQF*/ %s,\n",
+		     expand_floattype (sew, lmul_log2, nf).c_str ());
 	    for (unsigned eew : {8, 16, 32, 64})
 	      {
 		if (eew == sew)
@@ -473,6 +488,7 @@ main (int argc, const char **argv)
 		 bfloat16_wide_type (/*lmul_log2*/ 0).c_str ());
 	fprintf (fp, "  /*QLMUL1_SIGNED*/ INVALID,\n");
 	fprintf (fp, "  /*QLMUL1_UNSIGNED*/ INVALID,\n");
+	fprintf (fp, "  /*XFQF*/ INVALID,\n");
 	for (unsigned eew : {8, 16, 32, 64})
 	  fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 
@@ -558,6 +574,7 @@ main (int argc, const char **argv)
 		   floattype (sew / 4, /*lmul_log2*/ 0).c_str ());
 	  fprintf (fp, "  /*QLMUL1_SIGNED*/ INVALID,\n");
 	  fprintf (fp, "  /*QLMUL1_UNSIGNED*/ INVALID,\n");
+	  fprintf (fp, "  /*XFQF*/ INVALID,\n");
 	  for (unsigned eew : {8, 16, 32, 64})
 	    fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 

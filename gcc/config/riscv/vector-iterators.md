@@ -4853,24 +4853,23 @@
   (RVVM1SI "rvvm1qi")
 ])
 
-(define_mode_iterator SF_VF [
-  (RVVM8SF "TARGET_VECTOR_ELEN_FP_32") (RVVM4SF "TARGET_VECTOR_ELEN_FP_32") (RVVM2SF "TARGET_VECTOR_ELEN_FP_32")
-  (RVVM1SF "TARGET_VECTOR_ELEN_FP_32") (RVVMF2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+(define_mode_iterator SF_XF [
+  RVVM2QI RVVM1QI RVVMF2QI RVVMF4QI (RVVMF8QI "TARGET_MIN_VLEN > 32")
 ])
 
 
 (define_mode_attr SF_XFQF [
-  (RVVMF2SF "RVVMF8QI")
-  (RVVM1SF "RVVMF4QI")
-  (RVVM2SF "RVVMF2QI")
-  (RVVM4SF "RVVM1QI")
-  (RVVM8SF "RVVM2QI")
+  (RVVMF8QI "RVVMF2SF")
+  (RVVMF4QI "RVVM1SF")
+  (RVVMF2QI "RVVM2SF")
+  (RVVM1QI  "RVVM4SF")
+  (RVVM2QI  "RVVM8SF")
 ])
 
 (define_mode_attr sf_xfqf [
-  (RVVMF2SF "rvvmf8qi")
-  (RVVM1SF "rvvmf4qi")
-  (RVVM2SF "rvvmf2qi")
-  (RVVM4SF "rvvm1qi")
-  (RVVM8SF "rvvm2qi")
+  (RVVMF8QI "rvvmf2sf")
+  (RVVMF4QI "rvvm1sf")
+  (RVVMF2QI "rvvm2sf")
+  (RVVM1QI  "rvvm4sf")
+  (RVVM2QI  "rvvm8sf")
 ])

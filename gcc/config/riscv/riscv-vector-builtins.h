@@ -296,6 +296,7 @@ struct rvv_arg_type_info
   tree get_vector_type (vector_type_index) const;
   tree get_tree_type (vector_type_index) const;
   tree get_tuple_subpart_type (vector_type_index) const;
+  tree get_xfqf_float_type (vector_type_index) const;
 };
 
 /* Static information for each operand.  */

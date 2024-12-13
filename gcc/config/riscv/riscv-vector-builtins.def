@@ -75,7 +75,7 @@ along with GCC; see the file COPYING3.  If not see
   QUAD_FIX_UNSIGNED, OCT_TRUNC, DOUBLE_TRUNC_SCALAR, DOUBLE_TRUNC_SIGNED,      \
   DOUBLE_TRUNC_UNSIGNED, DOUBLE_TRUNC_UNSIGNED_SCALAR,                         \
   DOUBLE_TRUNC_BFLOAT_SCALAR, DOUBLE_TRUNC_BFLOAT, DOUBLE_TRUNC_FLOAT, FLOAT,  \
-  LMUL1, WLMUL1, QLMUL1, QLMUL1_SIGNED, QLMUL1_UNSIGNED, EEW8_INTERPRET,       \
+  LMUL1, WLMUL1, QLMUL1, QLMUL1_SIGNED, QLMUL1_UNSIGNED, XFQF, EEW8_INTERPRET, \
   EEW16_INTERPRET, EEW32_INTERPRET, EEW64_INTERPRET, BOOL1_INTERPRET,          \
   BOOL2_INTERPRET, BOOL4_INTERPRET, BOOL8_INTERPRET, BOOL16_INTERPRET,         \
   BOOL32_INTERPRET, BOOL64_INTERPRET, SIGNED_EEW8_LMUL1_INTERPRET,             \
@@ -700,6 +700,7 @@ DEF_RVV_BASE_TYPE (widen_lmul1_vector, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (quad_lmul1_vector, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (quad_lmul1_signed_vector, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (quad_lmul1_unsigned_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (xfqf_vector, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (eew8_interpret, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (eew16_interpret, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (eew32_interpret, get_vector_type (type_idx))
@@ -727,6 +728,7 @@ DEF_RVV_BASE_TYPE (vlmul_ext_x32, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (vlmul_ext_x64, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (size_ptr, build_pointer_type (size_type_node))
 DEF_RVV_BASE_TYPE (tuple_subpart, get_tuple_subpart_type (type_idx))
+DEF_RVV_BASE_TYPE (xfqf_float, get_xfqf_float_type (type_idx))
 
 DEF_RVV_VXRM_ENUM (RNU, VXRM_RNU)
 DEF_RVV_VXRM_ENUM (RNE, VXRM_RNE)

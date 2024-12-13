@@ -551,6 +551,12 @@ static const rvv_type_info qmacc_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of signed integer will be registered for intrinsic functions. */
+static const rvv_type_info xfqf_ops[] = {
+#define DEF_RVV_XFQF_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -720,7 +726,8 @@ static CONSTEXPR const rvv_arg_type_info shift_wv_args[]
      rvv_arg_type_info_end};
 
 static CONSTEXPR const rvv_arg_type_info clip_args[]
-  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_scalar),
+  = {rvv_arg_type_info (RVV_BASE_xfqf_vector),
+     rvv_arg_type_info (RVV_BASE_xfqf_float),
      rvv_arg_type_info_end};
 
 /* A list of args for vector_type func (vector_type) function.  */
@@ -2549,17 +2556,17 @@ static CONSTEXPR const rvv_op_info i_narrow_shift_vwx_ops
 /* A static operand information for double demote type func (vector_type,
  * shift_type) function registration. */
 static CONSTEXPR const rvv_op_info u_clip_qf_ops
-  = {f32_ops,				      /* Types */
+  = {xfqf_ops,				      /* Types */
      OP_TYPE_none,			      /* Suffix */
-     rvv_arg_type_info (RVV_BASE_eew8_index), /* Return type */
+     rvv_arg_type_info (RVV_BASE_unsigned_vector), /* Return type */
      clip_args /* Args */};
 
 /* A static operand information for double demote type func (vector_type,
  * shift_type) function registration. */
 static CONSTEXPR const rvv_op_info i_clip_qf_ops
-  = {f32_ops,					     /* Types */
+  = {xfqf_ops,					     /* Types */
      OP_TYPE_none,				     /* Suffix */
-     rvv_arg_type_info (RVV_BASE_signed_eew8_index), /* Return type */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      clip_args /* Args */};
 
 /* A static operand information for double demote type func (vector_type,
@@ -3008,7 +3015,7 @@ static CONSTEXPR const function_type_info function_types[] = {
   QUAD_FIX_UNSIGNED, OCT_TRUNC, DOUBLE_TRUNC_SCALAR, DOUBLE_TRUNC_SIGNED,      \
   DOUBLE_TRUNC_UNSIGNED, DOUBLE_TRUNC_UNSIGNED_SCALAR,                         \
   DOUBLE_TRUNC_BFLOAT_SCALAR, DOUBLE_TRUNC_BFLOAT, DOUBLE_TRUNC_FLOAT, FLOAT,  \
-  LMUL1, WLMUL1, QLMUL1, QLMUL1_SIGNED, QLMUL1_UNSIGNED, EEW8_INTERPRET,       \
+  LMUL1, WLMUL1, QLMUL1, QLMUL1_SIGNED, QLMUL1_UNSIGNED, XFQF, EEW8_INTERPRET, \
   EEW16_INTERPRET, EEW32_INTERPRET, EEW64_INTERPRET, BOOL1_INTERPRET,          \
   BOOL2_INTERPRET, BOOL4_INTERPRET, BOOL8_INTERPRET, BOOL16_INTERPRET,         \
   BOOL32_INTERPRET, BOOL64_INTERPRET, SIGNED_EEW8_LMUL1_INTERPRET,             \
@@ -3060,6 +3067,7 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##QLMUL1,                                                      \
     VECTOR_TYPE_##QLMUL1_SIGNED,                                               \
     VECTOR_TYPE_##QLMUL1_UNSIGNED,                                             \
+    VECTOR_TYPE_##XFQF,                                                        \
     VECTOR_TYPE_##EEW8_INTERPRET,                                              \
     VECTOR_TYPE_##EEW16_INTERPRET,                                             \
     VECTOR_TYPE_##EEW32_INTERPRET,                                             \
@@ -3577,6 +3585,19 @@ rvv_arg_type_info::get_scalar_const_ptr_type (vector_type_index type_idx) const
     return builtin_types[VECTOR_TYPE_vuint8mf8_t].scalar_const_ptr;
   else
     return builtin_types[type_idx].scalar_const_ptr;
+}
+
+tree
+rvv_arg_type_info::get_xfqf_float_type (vector_type_index type_idx) const
+{
+  /* Convert vint8 types into float types.
+     Note:
+     - According to riscv-vector-builtins-types.def, the index of an unsigned
+       type is always one greater than its corresponding signed type.  */
+  if (type_idx >= VECTOR_TYPE_vint8mf8_t && type_idx <= VECTOR_TYPE_vuint8m2_t)
+    return builtin_types[VECTOR_TYPE_vfloat32m1_t].scalar;
+  else
+    return NULL_TREE;
 }
 
 vector_type_index

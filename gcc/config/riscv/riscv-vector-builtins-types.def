@@ -363,6 +363,12 @@ along with GCC; see the file COPYING3. If not see
 #define DEF_RVV_QMACC_OPS(TYPE, REQUIRE)
 #endif
 
+/* Use "DEF_RVV_XFQF_OPS" macro include signed integer which will
+   be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_XFQF_OPS
+#define DEF_RVV_XFQF_OPS(TYPE, REQUIRE)
+#endif
+
 DEF_RVV_I_OPS (vint8mf8_t, RVV_REQUIRE_MIN_VLEN_64)
 DEF_RVV_I_OPS (vint8mf4_t, 0)
 DEF_RVV_I_OPS (vint8mf2_t, 0)
@@ -1451,6 +1457,12 @@ DEF_RVV_QMACC_OPS (vint32m2_t, 0)
 DEF_RVV_QMACC_OPS (vint32m4_t, 0)
 DEF_RVV_QMACC_OPS (vint32m8_t, 0)
 
+DEF_RVV_XFQF_OPS (vint8mf8_t, 0)
+DEF_RVV_XFQF_OPS (vint8mf4_t, 0)
+DEF_RVV_XFQF_OPS (vint8mf2_t, 0)
+DEF_RVV_XFQF_OPS (vint8m1_t, 0)
+DEF_RVV_XFQF_OPS (vint8m2_t, 0)
+
 #undef DEF_RVV_I_OPS
 #undef DEF_RVV_U_OPS
 #undef DEF_RVV_F_OPS
@@ -1506,3 +1518,4 @@ DEF_RVV_QMACC_OPS (vint32m8_t, 0)
 #undef DEF_RVV_CRYPTO_SEW64_OPS
 #undef DEF_RVV_F32_OPS
 #undef DEF_RVV_QMACC_OPS
+#undef DEF_RVV_XFQF_OPS
