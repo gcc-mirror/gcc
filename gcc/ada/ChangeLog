@@ -1,3 +1,13 @@
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117996
+	* libgnat/a-ngrear.adb (Jacobi): Remove default value for
+	Compute_Vectors formal parameter.
+	(Sort_Eigensystem): Add Compute_Vectors formal parameter.  Do not
+	modify the Vectors if Compute_Vectors is False.
+	(Eigensystem): Pass True as Compute_Vectors to Sort_Eigensystem.
+	(Eigenvalues): Pass False as Compute_Vectors to Sort_Eigensystem.
+
 2024-11-26  Arsen Arsenović  <arsen@aarsen.me>
 
 	Backported from master:
