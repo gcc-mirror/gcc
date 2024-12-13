@@ -52071,7 +52071,18 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   char p_name[sizeof "#pragma omp teams distribute parallel for simd"];
   omp_clause_mask mask (0);
 
-  switch (cp_parser_pragma_kind (pragma_tok))
+  unsigned int id = cp_parser_pragma_kind (pragma_tok);
+  if (current_function_decl
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && id >= PRAGMA_OMP__START_
+      && id <= PRAGMA_OMP__LAST_)
+    {
+      error_at (cp_lexer_peek_token (parser->lexer)->location,
+		"OpenMP directives may not appear in %<constexpr%> functions");
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return;
+    }
+  switch (id)
     {
     case PRAGMA_OACC_ATOMIC:
       cp_parser_omp_atomic (parser, pragma_tok, true);
@@ -52596,6 +52607,17 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return false;
     }
+  if (current_function_decl
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && id >= PRAGMA_OMP__START_
+      && id <= PRAGMA_OMP__LAST_)
+    {
+      error_at (cp_lexer_peek_token (parser->lexer)->location,
+		"OpenMP directives may not appear in %<constexpr%> functions");
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return false;
+    }
+
   if (id != PRAGMA_OMP_DECLARE && id != PRAGMA_OACC_ROUTINE)
     cp_ensure_no_omp_declare_simd (parser);
   switch (id)
