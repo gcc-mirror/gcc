@@ -1,6 +1,11 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from trunk:
+	2025-01-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/__builtin_stack_address-1.c: New.
+
+	Backported from trunk:
 	2025-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.dg/torture/stackalign/global-1.c: Re-enable for nvptx.
