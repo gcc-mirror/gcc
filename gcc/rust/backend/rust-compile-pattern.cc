@@ -614,6 +614,92 @@ CompilePatternBindings::visit (HIR::IdentifierPattern &pattern)
 }
 
 void
+CompilePatternBindings::visit (HIR::TuplePattern &pattern)
+{
+  rust_assert (pattern.has_tuple_pattern_items ());
+
+  // lookup the type
+  TyTy::BaseType *ty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (pattern.get_mappings ().get_hirid (),
+				      &ty);
+  rust_assert (ok);
+
+  switch (pattern.get_items ().get_item_type ())
+    {
+      case HIR::TuplePatternItems::ItemType::RANGED: {
+	size_t tuple_idx = 0;
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+
+	auto &items_lower = items.get_lower_patterns ();
+	auto &items_upper = items.get_upper_patterns ();
+
+	for (auto &sub : items_lower)
+	  {
+	    TyTy::BaseType *ty_sub = nullptr;
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
+	    rust_assert (ok);
+
+	    tree sub_init
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_idx, sub->get_locus ());
+
+	    CompilePatternBindings::Compile (*sub.get (), sub_init, ctx);
+	    tuple_idx++;
+	  }
+
+	rust_assert (ty->get_kind () == TyTy::TypeKind::TUPLE);
+	tuple_idx = static_cast<TyTy::TupleType &> (*ty).num_fields ()
+		    - items_upper.size ();
+
+	for (auto &sub : items_upper)
+	  {
+	    TyTy::BaseType *ty_sub = nullptr;
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
+	    rust_assert (ok);
+
+	    tree sub_init
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_idx, sub->get_locus ());
+	    CompilePatternBindings::Compile (*sub.get (), sub_init, ctx);
+	    tuple_idx++;
+	  }
+
+	return;
+      }
+      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+	size_t tuple_idx = 0;
+	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
+	  pattern.get_items ());
+
+	for (auto &sub : items.get_patterns ())
+	  {
+	    TyTy::BaseType *ty_sub = nullptr;
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
+	    rust_assert (ok);
+
+	    tree sub_init
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_idx, sub->get_locus ());
+	    CompilePatternBindings::Compile (*sub.get (), sub_init, ctx);
+	    tuple_idx++;
+	  }
+
+	return;
+      }
+      default: {
+	rust_unreachable ();
+      }
+    }
+}
+
+//
+
+void
 CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
 {
   Bvariable *var = nullptr;
