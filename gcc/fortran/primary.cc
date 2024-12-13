@@ -2423,6 +2423,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	 component name 're' or 'im' could be found.  */
       if (tgt_expr
 	  && (tgt_expr->expr_type == EXPR_FUNCTION
+	      || tgt_expr->expr_type == EXPR_ARRAY
 	      || (!resolved && tgt_expr->expr_type == EXPR_OP))
 	  && (sym->ts.type == BT_UNKNOWN
 	      || (inferred_type && sym->ts.type != BT_COMPLEX))
