@@ -32,7 +32,7 @@
 #include <debug/safe_unordered_base.h>
 
 #define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs) \
-  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular()	\
+  _GLIBCXX_DEBUG_VERIFY((!_Lhs._M_singular() && !_Rhs._M_singular())	\
 			|| (_Lhs._M_value_initialized()			\
 			    && _Rhs._M_value_initialized()),		\
 			_M_message(__msg_iter_compare_bad)		\
