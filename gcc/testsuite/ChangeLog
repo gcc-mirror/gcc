@@ -1,3 +1,7 @@
+2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/matrix1.adb: New test.
+
 2024-12-05  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:
