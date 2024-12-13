@@ -168,7 +168,7 @@ template<typename _CharT, typename _Traits>
 	}
       else
 	{
-	  off_type __base;
+	  off_type __base{};
 	  __which &= (ios_base::in|ios_base::out);
 
 	  if (__which == ios_base::out)
@@ -182,11 +182,13 @@ template<typename _CharT, typename _Traits>
 	    }
 	  else if (__way == ios_base::end)
 	    __base = _M_buf.size();
-
-	  if (__builtin_add_overflow(__base, __off, &__off))
+	  else /* way is not ios::beg, ios::cur, or ios::end */ [[unlikely]]
 	    return __ret;
 
-	  if (__off < 0 || __off > _M_buf.size())
+	  if (__builtin_add_overflow(__base, __off, &__off)) [[unlikely]]
+	    return __ret;
+
+	  if (__off < 0 || __off > _M_buf.size()) [[unlikely]]
 	    return __ret;
 
 	  if (__which & ios_base::in)
