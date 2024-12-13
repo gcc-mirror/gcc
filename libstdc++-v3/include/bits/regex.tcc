@@ -444,7 +444,7 @@ namespace __detail
 		      __num *= 10;
 		      __num += __traits.value(*__next++, 10);
 		    }
-		  if (0 <= __num && __num < this->size())
+		  if (0 <= __num && size_t(__num) < this->size())
 		    __output(__num);
 		}
 	      else
