@@ -188,19 +188,6 @@ static const struct cpu_vector_cost neoversev2_vector_cost =
   &neoversev2_vec_issue_info /* issue_info  */
 };
 
-/* Prefetch settings.  Disable software prefetch generation but set L1 cache
-   line size.  */
-static const cpu_prefetch_tune neoversev2_prefetch_tune =
-{
-  0,			/* num_slots  */
-  -1,			/* l1_cache_size  */
-  64,			/* l1_cache_line_size  */
-  -1,			/* l2_cache_size  */
-  true,			/* prefetch_dynamic_strides */
-  -1,			/* minimum_stride */
-  -1			/* default_opt_level  */
-};
-
 static const struct tune_params neoversev2_tunings =
 {
   &cortexa76_extra_costs,
@@ -236,7 +223,7 @@ static const struct tune_params neoversev2_tunings =
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT
    | AARCH64_EXTRA_TUNE_AVOID_PRED_RMW
    | AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA),	/* tune_flags.  */
-  &neoversev2_prefetch_tune,
+  &generic_armv9a_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */
   AARCH64_LDP_STP_POLICY_ALWAYS	   /* stp_policy_model.  */
 };
