@@ -6612,7 +6612,15 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	  && EDGE_COUNT (bb->succs) == 2
 	  && JUMP_P (insn)
 	  && single_set (insn)
-	  && any_condjump_p (insn))
+	  && any_condjump_p (insn)
+	  /* single_set may return non-NULL even for multiple sets
+	     if there are REG_UNUSED notes.  record_jump_equiv only
+	     looks at pc_set and doesn't consider other sets that
+	     could affect the value, and the recorded equivalence
+	     can extend the lifetime of the compared REG, so use
+	     also !multiple_sets check to verify it is exactly one
+	     set.  */
+	  && !multiple_sets (insn))
 	{
 	  basic_block next_bb = ebb_data->path[path_entry + 1].bb;
 	  bool taken = (next_bb == BRANCH_EDGE (bb)->dest);
