@@ -73,10 +73,35 @@ test03()
   VERIFY( ranges::max({2,3,1,4}, ranges::greater{}, std::negate<>{}) == 4 );
 }
 
+void
+test04()
+{
+  // PR libstdc++/112349 - ranges::max/min make unnecessary copies
+  static int copies, moves;
+  struct A {
+    A(int m) : m(m) { }
+    A(const A& other) : m(other.m) { ++copies; }
+    A(A&& other) : m(other.m) { ++moves; }
+    A& operator=(const A& other) { m = other.m; ++copies; return *this; }
+    A& operator=(A&& other) { m = other.m; ++moves; return *this; }
+    int m;
+  };
+  A r[5] = {5, 4, 3, 2, 1};
+  ranges::max(r, ranges::less{}, &A::m);
+  VERIFY( copies == 1 );
+  VERIFY( moves == 0 );
+  copies = moves = 0;
+  A s[5] = {1, 2, 3, 4, 5};
+  ranges::max(s, ranges::less{}, &A::m);
+  VERIFY( copies == 5 );
+  VERIFY( moves == 0 );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }
