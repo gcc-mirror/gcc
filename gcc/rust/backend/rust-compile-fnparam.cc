@@ -69,24 +69,35 @@ CompileFnParam::visit (HIR::WildcardPattern &pattern)
 }
 
 void
+CompileFnParam::visit (HIR::TuplePattern &pattern)
+{
+  compiled_param = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (
+    pattern, Backend::var_expression (compiled_param, locus), ctx);
+}
+
+void
 CompileFnParam::visit (HIR::StructPattern &pattern)
 {
-  tree tmp_param_var = create_tmp_param_var (decl_type);
-  CompilePatternBindings::Compile (pattern, tmp_param_var, ctx);
+  compiled_param = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (
+    pattern, Backend::var_expression (compiled_param, locus), ctx);
 }
 
 void
 CompileFnParam::visit (HIR::TupleStructPattern &pattern)
 {
-  tree tmp_param_var = create_tmp_param_var (decl_type);
-  CompilePatternBindings::Compile (pattern, tmp_param_var, ctx);
+  compiled_param = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (
+    pattern, Backend::var_expression (compiled_param, locus), ctx);
 }
 
 void
 CompileFnParam::visit (HIR::ReferencePattern &pattern)
 {
-  tree tmp_param_var = create_tmp_param_var (decl_type);
-  CompilePatternBindings::Compile (pattern, tmp_param_var, ctx);
+  compiled_param = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (
+    pattern, Backend::var_expression (compiled_param, locus), ctx);
 }
 
 Bvariable *
@@ -102,7 +113,7 @@ CompileSelfParam::compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
   return Backend::parameter_variable (fndecl, "self", decl_type, locus);
 }
 
-tree
+Bvariable *
 CompileFnParam::create_tmp_param_var (tree decl_type)
 {
   // generate the anon param
@@ -110,10 +121,8 @@ CompileFnParam::create_tmp_param_var (tree decl_type)
   std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
 
   decl_type = Backend::immutable_type (decl_type);
-  compiled_param = Backend::parameter_variable (fndecl, cpp_str_identifier,
-						decl_type, locus);
-
-  return Backend::var_expression (compiled_param, locus);
+  return Backend::parameter_variable (fndecl, cpp_str_identifier, decl_type,
+				      locus);
 }
 
 } // namespace Compile
