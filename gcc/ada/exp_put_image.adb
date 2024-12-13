@@ -1176,11 +1176,28 @@ package body Exp_Put_Image is
       declare
          U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
       begin
-         if Has_Aspect (U_Type, Aspect_Put_Image) then
+         if Has_Aspect (U_Type, Aspect_Put_Image)
+           or else not Is_Scalar_Type (U_Type)
+         then
             return True;
          end if;
 
-         return not Is_Scalar_Type (U_Type);
+         --  Deal with Itypes. One case where this is needed is for a
+         --  fixed-point type with a Put_Image aspect specification.
+
+         --  ??? Should we be checking for Itype case here, or in Has_Aspect?
+         --  In other words, do we want to do what we are doing here for all
+         --  aspects, not just for Put_Image?
+
+         if Is_Itype (U_Type)
+           and then Has_Aspect (Defining_Identifier
+                                  (Associated_Node_For_Itype (U_Type)),
+                                Aspect_Put_Image)
+         then
+            return True;
+         end if;
+
+         return False;
       end;
    end Image_Should_Call_Put_Image;
 
