@@ -115,7 +115,7 @@ package body System.Image_F is
    --     Q * 10**(-D)
 
    --  This value can be written to the output file or to the result string
-   --  according to the format described in RM A.3.10. The details of this
+   --  according to the format described in RM A.10.9. The details of this
    --  operation are omitted here.
 
    --  A 64-bit value can represent all integers with 18 decimal digits, but
