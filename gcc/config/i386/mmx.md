@@ -1132,6 +1132,54 @@
   DONE;
 })
 
+(define_expand "vec_fmaddsubv2sf4"
+  [(match_operand:V2SF 0 "register_operand")
+   (match_operand:V2SF 1 "nonimmediate_operand")
+   (match_operand:V2SF 2 "nonimmediate_operand")
+   (match_operand:V2SF 3 "nonimmediate_operand")]
+  "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512VL)
+   && TARGET_MMX_WITH_SSE
+   && ix86_partial_vec_fp_math"
+{
+  rtx op3 = gen_reg_rtx (V4SFmode);
+  rtx op2 = gen_reg_rtx (V4SFmode);
+  rtx op1 = gen_reg_rtx (V4SFmode);
+  rtx op0 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_movq_v2sf_to_sse (op3, operands[3]));
+  emit_insn (gen_movq_v2sf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v2sf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_vec_fmaddsubv4sf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2SFmode, op0, V4SFmode));
+  DONE;
+})
+
+(define_expand "vec_fmsubaddv2sf4"
+  [(match_operand:V2SF 0 "register_operand")
+   (match_operand:V2SF 1 "nonimmediate_operand")
+   (match_operand:V2SF 2 "nonimmediate_operand")
+   (match_operand:V2SF 3 "nonimmediate_operand")]
+  "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512VL)
+   && TARGET_MMX_WITH_SSE
+   && ix86_partial_vec_fp_math"
+{
+  rtx op3 = gen_reg_rtx (V4SFmode);
+  rtx op2 = gen_reg_rtx (V4SFmode);
+  rtx op1 = gen_reg_rtx (V4SFmode);
+  rtx op0 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_movq_v2sf_to_sse (op3, operands[3]));
+  emit_insn (gen_movq_v2sf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v2sf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_vec_fmsubaddv4sf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2SFmode, op0, V4SFmode));
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point comparisons
