@@ -218,7 +218,7 @@ static const struct tune_params neoversev2_tunings =
     2 /* store_pred.  */
   }, /* memmov_cost.  */
   5, /* issue_rate  */
-  (AARCH64_FUSE_BASE | AARCH64_FUSE_CMP_CSEL | AARCH64_FUSE_CMP_CSET), /* fusible_ops  */
+  AARCH64_FUSE_NEOVERSE_BASE, /* fusible_ops  */
   "32:16",	/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */

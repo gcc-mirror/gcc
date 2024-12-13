@@ -45,4 +45,8 @@ AARCH64_FUSION_PAIR ("cmp+cset", CMP_CSET)
 /* Baseline fusion settings suitable for all cores.  */
 #define AARCH64_FUSE_BASE (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC)
 
+/* Baseline fusion settings suitable for all Neoverse cores.  */
+#define AARCH64_FUSE_NEOVERSE_BASE (AARCH64_FUSE_BASE | AARCH64_FUSE_CMP_CSEL \
+				    | AARCH64_FUSE_CMP_CSET)
+
 #define AARCH64_FUSE_MOVK (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_MOVK_MOVK)

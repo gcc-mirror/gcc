@@ -205,7 +205,7 @@ static const struct tune_params neoversev3ae_tunings =
     2 /* store_pred.  */
   }, /* memmov_cost.  */
   10, /* issue_rate  */
-  AARCH64_FUSE_BASE, /* fusible_ops  */
+  AARCH64_FUSE_NEOVERSE_BASE, /* fusible_ops  */
   "32:16",	/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */
