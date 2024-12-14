@@ -6398,7 +6398,7 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 static void
 conv_null_actual (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym)
 {
-  gcc_assert (fsym && !fsym->attr.optional);
+  gcc_assert (fsym && e->expr_type == EXPR_NULL);
 
   /* Obtain the character length for a NULL() actual with a character
      MOLD argument.  Otherwise substitute a suitable dummy length.
@@ -6459,6 +6459,44 @@ conv_null_actual (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym)
 	      gfc_add_modify (&parmse->pre, parmse->string_length,
 			      build_zero_cst (gfc_charlen_type_node));
 	    }
+	}
+    }
+  else if (fsym->ts.type == BT_DERIVED)
+    {
+      if (e->ts.type != BT_UNKNOWN)
+	/* MOLD is present.  Pass a corresponding temporary NULL pointer.
+	   For an assumed-rank dummy we provide a descriptor that passes
+	   the correct rank.  */
+	{
+	  tree rank;
+	  tree tmp = parmse->expr;
+
+	  tmp = gfc_conv_scalar_to_descriptor (parmse, tmp, gfc_expr_attr (e));
+	  rank = gfc_conv_descriptor_rank (tmp);
+	  gfc_add_modify (&parmse->pre, rank,
+			  build_int_cst (TREE_TYPE (rank), e->rank));
+	  gfc_conv_descriptor_data_set (&parmse->pre, tmp, null_pointer_node);
+	  parmse->expr = gfc_build_addr_expr (NULL_TREE, tmp);
+	}
+      else
+	/* MOLD is not present.  Use attributes from dummy argument, which is
+	   not allowed to be assumed-rank.  */
+	{
+	  int dummy_rank;
+	  tree tmp = parmse->expr;
+
+	  if (fsym->attr.allocatable && fsym->attr.intent == INTENT_UNKNOWN)
+	    fsym->attr.intent = INTENT_IN;
+	  tmp = gfc_conv_scalar_to_descriptor (parmse, tmp, fsym->attr);
+	  dummy_rank = fsym->as ? fsym->as->rank : 0;
+	  if (dummy_rank > 0)
+	    {
+	      tree rank = gfc_conv_descriptor_rank (tmp);
+	      gfc_add_modify (&parmse->pre, rank,
+			      build_int_cst (TREE_TYPE (rank), dummy_rank));
+	    }
+	  gfc_conv_descriptor_data_set (&parmse->pre, tmp, null_pointer_node);
+	  parmse->expr = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
     }
 }
@@ -6698,6 +6736,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 							  0);
 		}
 	    }
+	}
+      else if (e->expr_type == EXPR_NULL
+	       && (e->ts.type == BT_UNKNOWN || e->ts.type == BT_DERIVED)
+	       && fsym && attr && (attr->pointer || attr->allocatable)
+	       && fsym->ts.type == BT_DERIVED)
+	{
+	  gfc_init_se (&parmse, NULL);
+	  gfc_conv_expr_reference (&parmse, e);
+	  conv_null_actual (&parmse, e, fsym);
 	}
       else if (arg->expr->expr_type == EXPR_NULL
 	       && fsym && !fsym->attr.pointer

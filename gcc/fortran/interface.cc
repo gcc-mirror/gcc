@@ -2756,7 +2756,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   rank_check = where != NULL && !is_elemental && formal_as
     && (formal_as->type == AS_ASSUMED_SHAPE
 	|| formal_as->type == AS_DEFERRED)
-    && actual->expr_type != EXPR_NULL;
+    && !(actual->expr_type == EXPR_NULL
+	 && actual->ts.type == BT_UNKNOWN);
 
   /* Skip rank checks for NO_ARG_CHECK.  */
   if (formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
@@ -3230,6 +3231,7 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   gfc_array_ref *actual_arr_ref;
   gfc_array_spec *fas, *aas;
   bool pointer_dummy, pointer_arg, allocatable_arg;
+  bool procptr_dummy, optional_dummy, allocatable_dummy;
 
   bool ok = true;
 
@@ -3382,15 +3384,33 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  goto match;
 	}
 
+      /* Allow passing of NULL() as disassociated pointer, procedure
+	 pointer, or unallocated allocatable (F2008+) to a respective dummy
+	 argument.  */
+      pointer_dummy = ((f->sym->ts.type != BT_CLASS
+			&& f->sym->attr.pointer)
+		       || (f->sym->ts.type == BT_CLASS
+			   && CLASS_DATA (f->sym)->attr.class_pointer));
+
+      procptr_dummy = ((f->sym->ts.type != BT_CLASS
+			&& f->sym->attr.proc_pointer)
+		       || (f->sym->ts.type == BT_CLASS
+			   && CLASS_DATA (f->sym)->attr.proc_pointer));
+
+      optional_dummy = f->sym->attr.optional;
+
+      allocatable_dummy = ((f->sym->ts.type != BT_CLASS
+			    && f->sym->attr.allocatable)
+			   || (f->sym->ts.type == BT_CLASS
+			       && CLASS_DATA (f->sym)->attr.allocatable));
+
       if (a->expr->expr_type == EXPR_NULL
-	  && ((f->sym->ts.type != BT_CLASS && !f->sym->attr.pointer
-	       && (f->sym->attr.allocatable || !f->sym->attr.optional
-		   || (gfc_option.allow_std & GFC_STD_F2008) == 0))
-	      || (f->sym->ts.type == BT_CLASS
-		  && !CLASS_DATA (f->sym)->attr.class_pointer
-		  && (CLASS_DATA (f->sym)->attr.allocatable
-		      || !f->sym->attr.optional
-		      || (gfc_option.allow_std & GFC_STD_F2008) == 0))))
+	  && !pointer_dummy
+	  && !procptr_dummy
+	  && !(optional_dummy
+	       && (gfc_option.allow_std & GFC_STD_F2008) != 0)
+	  && !(allocatable_dummy
+	       && (gfc_option.allow_std & GFC_STD_F2008) != 0))
 	{
 	  if (where
 	      && (!f->sym->attr.optional
@@ -3589,7 +3609,9 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  pointer_dummy = f->sym->attr.pointer;
 	}
 
-      if (a->expr->expr_type != EXPR_VARIABLE)
+      if (a->expr->expr_type != EXPR_VARIABLE
+	  && !(a->expr->expr_type == EXPR_NULL
+	       && a->expr->ts.type != BT_UNKNOWN))
 	{
 	  aas = NULL;
 	  pointer_arg = false;
