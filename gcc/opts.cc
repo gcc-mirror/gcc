@@ -444,9 +444,6 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 
   /* Initialize whether `char' is signed.  */
   opts->x_flag_signed_char = DEFAULT_SIGNED_CHAR;
-  /* Set this to a special "uninitialized" value.  The actual default
-     is set after target options have been processed.  */
-  opts->x_flag_short_enums = 2;
 
   /* Initialize target_flags before default_options_optimization
      so the latter can modify it.  */

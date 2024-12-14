@@ -283,7 +283,7 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   /* Unfortunately the post_options hook is called before the value of
      flag_short_enums is autodetected, if need be.  Mimic the process
      for our private flag_short_enums.  */
-  if (flag_short_enums == 2)
+  if (!OPTION_SET_P (flag_short_enums))
     flag_short_enums = targetm.default_short_enums ();
 
   return false;

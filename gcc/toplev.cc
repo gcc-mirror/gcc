@@ -1300,7 +1300,7 @@ process_options ()
       flag_section_anchors = 0;
     }
 
-  if (flag_short_enums == 2)
+  if (!OPTION_SET_P (flag_short_enums))
     flag_short_enums = targetm.default_short_enums ();
 
   /* Set aux_base_name if not already set.  */
