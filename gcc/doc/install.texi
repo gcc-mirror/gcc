@@ -1119,7 +1119,7 @@ yielding a slightly slower compiler (but faster than
 at random addresses each time they are executed, therefore provide additional
 protection against Return Oriented Programming (ROP) attacks.
 
-@option{--enable-host-pie}) may be used with @option{--enable-host-shared}),
+@option{--enable-host-pie} may be used with @option{--enable-host-shared},
 in which case @option{-fPIC} is used when compiling, and @option{-pie} when
 linking.
 
