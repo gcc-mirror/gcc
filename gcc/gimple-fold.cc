@@ -7643,7 +7643,9 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
       /* Reject out-of-bound accesses (PR79731).  */
       || (! AGGREGATE_TYPE_P (TREE_TYPE (inner))
 	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (inner)),
-			       bp + bs) < 0))
+			       bp + bs) < 0)
+      || (INTEGRAL_TYPE_P (TREE_TYPE (inner))
+	  && !type_has_mode_precision_p (TREE_TYPE (inner))))
     return NULL_TREE;
 
   *pbitsize = bs;
