@@ -1084,7 +1084,8 @@ bpf_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 #define TARGET_EXPAND_BUILTIN bpf_expand_builtin
 
 static tree
-bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
+bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist,
+				bool complain ATTRIBUTE_UNUSED)
 {
   int code = DECL_MD_FUNCTION_CODE (fndecl);
   if (code > BPF_CORE_BUILTINS_MARKER)
