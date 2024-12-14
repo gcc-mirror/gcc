@@ -1,3 +1,21 @@
+2024-12-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117942
+	* opts-common.cc (decode_cmdline_options_to_array): Also detect
+	--diagnostics-plain-output.
+
+2024-12-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117880
+	* fold-const.cc (operand_compare::operand_equal_p) <case tcc_unary>:
+	Use OP_SAME_WITH_NULL instead of OP_SAME.
+
 2024-12-09  Juergen Christ  <jchrist@linux.ibm.com>
 
 	Backported from master:

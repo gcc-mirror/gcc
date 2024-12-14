@@ -1,3 +1,20 @@
+2024-12-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117880
+	* g++.dg/warn/Wduplicated-branches8.C: New test.
+
+2024-12-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-12-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115328
+	* gm2/pim/fail/forward.mod: Move to...
+	* gm2/pim/pass/forward.mod: ...here.
+
 2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/matrix1.adb: New test.
