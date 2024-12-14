@@ -1,3 +1,38 @@
+2024-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112349
+	* include/bits/ranges_algo.h (__min_fn::operator()): Turn local
+	object __tmp into a reference.
+	* include/bits/ranges_util.h (__max_fn::operator()): Likewise.
+	* testsuite/25_algorithms/max/constrained.cc (test04): New test.
+	* testsuite/25_algorithms/min/constrained.cc (test04): New test.
+
+2024-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/spanstream (basic_spanbuf::seekoff): Return an
+	error for invalid seekdir values.
+
+2024-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_cmp.h (not_equal_to): Make order of
+	expressions in noexcept-specifier match the body.
+	* testsuite/20_util/function_objects/range.cmp/not_equal_to.cc:
+	Check noexcept.
+
+2024-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.tcc: Fix -Wsign-compare warning.
+
+2024-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/pstl/parallel_backend_tbb.h (__merge_func): Fix order
+	of mem-initializers.
+
+2024-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/entropy.cc: Fix
+	indentation to avoid -Wmisleading-indentation warning.
+
 2024-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/unordered_map/modifiers/reserve.cc:

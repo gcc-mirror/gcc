@@ -1,3 +1,1056 @@
+2024-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117095
+	* cse.cc (cse_extended_basic_block): Don't call record_jump_equiv
+	if multiple_sets (insn).
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114801
+	* config/arm/arm-mve-builtins.cc
+	(function_expander::add_input_operand): Handle CONST_INT
+	predicates.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (class vst24_impl): New.
+	(class vld24_impl): New.
+	(vld2q, vld4q, vst2q, vst4q): New.
+	* config/arm/arm-mve-builtins-base.def (vld2q, vld4q, vst2q)
+	(vst4q): New.
+	* config/arm/arm-mve-builtins-base.h (vld2q, vld4q, vst2q, vst4q):
+	New.
+	* config/arm/arm-mve-builtins.cc (register_builtin_tuple_types):
+	Add more asserts.
+	* config/arm/arm.cc (TARGET_ARRAY_MODE): New.
+	(output_move_neon): Handle MVE struct modes.
+	(arm_print_operand_address): Likewise.
+	(arm_hard_regno_mode_ok): Likewise.
+	(arm_array_mode): New.
+	* config/arm/arm.h (VALID_MVE_STRUCT_MODE): Likewise.
+	* config/arm/arm_mve.h (vst4q): Delete.
+	(vst2q): Delete.
+	(vld2q): Delete.
+	(vld4q): Delete.
+	(vst4q_s8): Delete.
+	(vst4q_s16): Delete.
+	(vst4q_s32): Delete.
+	(vst4q_u8): Delete.
+	(vst4q_u16): Delete.
+	(vst4q_u32): Delete.
+	(vst4q_f16): Delete.
+	(vst4q_f32): Delete.
+	(vst2q_s8): Delete.
+	(vst2q_u8): Delete.
+	(vld2q_s8): Delete.
+	(vld2q_u8): Delete.
+	(vld4q_s8): Delete.
+	(vld4q_u8): Delete.
+	(vst2q_s16): Delete.
+	(vst2q_u16): Delete.
+	(vld2q_s16): Delete.
+	(vld2q_u16): Delete.
+	(vld4q_s16): Delete.
+	(vld4q_u16): Delete.
+	(vst2q_s32): Delete.
+	(vst2q_u32): Delete.
+	(vld2q_s32): Delete.
+	(vld2q_u32): Delete.
+	(vld4q_s32): Delete.
+	(vld4q_u32): Delete.
+	(vld4q_f16): Delete.
+	(vld2q_f16): Delete.
+	(vst2q_f16): Delete.
+	(vld4q_f32): Delete.
+	(vld2q_f32): Delete.
+	(vst2q_f32): Delete.
+	(__arm_vst4q_s8): Delete.
+	(__arm_vst4q_s16): Delete.
+	(__arm_vst4q_s32): Delete.
+	(__arm_vst4q_u8): Delete.
+	(__arm_vst4q_u16): Delete.
+	(__arm_vst4q_u32): Delete.
+	(__arm_vst2q_s8): Delete.
+	(__arm_vst2q_u8): Delete.
+	(__arm_vld2q_s8): Delete.
+	(__arm_vld2q_u8): Delete.
+	(__arm_vld4q_s8): Delete.
+	(__arm_vld4q_u8): Delete.
+	(__arm_vst2q_s16): Delete.
+	(__arm_vst2q_u16): Delete.
+	(__arm_vld2q_s16): Delete.
+	(__arm_vld2q_u16): Delete.
+	(__arm_vld4q_s16): Delete.
+	(__arm_vld4q_u16): Delete.
+	(__arm_vst2q_s32): Delete.
+	(__arm_vst2q_u32): Delete.
+	(__arm_vld2q_s32): Delete.
+	(__arm_vld2q_u32): Delete.
+	(__arm_vld4q_s32): Delete.
+	(__arm_vld4q_u32): Delete.
+	(__arm_vst4q_f16): Delete.
+	(__arm_vst4q_f32): Delete.
+	(__arm_vld4q_f16): Delete.
+	(__arm_vld2q_f16): Delete.
+	(__arm_vst2q_f16): Delete.
+	(__arm_vld4q_f32): Delete.
+	(__arm_vld2q_f32): Delete.
+	(__arm_vst2q_f32): Delete.
+	(__arm_vst4q): Delete.
+	(__arm_vst2q): Delete.
+	(__arm_vld2q): Delete.
+	(__arm_vld4q): Delete.
+	* config/arm/arm_mve_builtins.def (vst4q, vst2q, vld4q, vld2q):
+	Delete.
+	* config/arm/iterators.md (VSTRUCT): Add V2x16QI, V2x8HI, V2x4SI,
+	V2x8HF, V2x4SF, V4x16QI, V4x8HI, V4x4SI, V4x8HF, V4x4SF.
+	(MVE_VLD2_VST2, MVE_vld2_vst2, MVE_VLD4_VST4, MVE_vld4_vst4): New.
+	* config/arm/mve.md (mve_vst4q<mode>): Update into ...
+	(@mve_vst4q<mode>): ... this.
+	(mve_vst2q<mode>): Update into ...
+	(@mve_vst2q<mode>): ... this.
+	(mve_vld2q<mode>): Update into ...
+	(@mve_vld2q<mode>): ... this.
+	(mve_vld4q<mode>): Update into ...
+	(@mve_vld4q<mode>): ... this.
+	* config/arm/vec-common.md (vec_load_lanesoi<mode>) Remove MVE
+	support.
+	(vec_load_lanesxi<mode>): Likewise.
+	(vec_store_lanesoi<mode>): Likewise.
+	(vec_store_lanesxi<mode>): Likewise.
+	(vec_load_lanes<MVE_vld2_vst2><mode>):
+	New.
+	(vec_store_lanes<MVE_vld2_vst2><mode>): New.
+	(vec_load_lanes<MVE_vld4_vst4><mode>): New.
+	(vec_store_lanes<MVE_vld4_vst4><mode>): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (struct store_def): Add
+	support for tuples.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (parse_type): Fix access
+	to acle_vector_types.
+	* config/arm/arm-mve-builtins.cc (wrap_type_in_struct): New.
+	(register_type_decl): New.
+	(register_builtin_tuple_types): Fix support for tuples.
+	(function_resolver::infer_tuple_type): New.
+	* config/arm/arm-mve-builtins.h
+	(function_resolver::infer_tuple_type): Declare.
+	(function_instance::tuple_type): Fix access to acle_vector_types.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-modes.def (MVE_STRUCT_MODES): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (MVE_vecs): Remove V2DF.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/mve.md (mve_vec_extract_sext_internal): Fix
+	condition.
+	(mve_vec_extract_zext_internal): Likewise.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (vstrq_impl): Remove
+	call_properties.
+	(vldrq_impl): Likewise.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_ldrgbwbxu_qualifiers)
+	(arm_ldrgbwbxu_z_qualifiers, arm_ldrgbwbs_qualifiers)
+	(arm_ldrgbwbu_qualifiers, arm_ldrgbwbs_z_qualifiers)
+	(arm_ldrgbwbu_z_qualifiers): Delete.
+	* config/arm/arm-mve-builtins-base.cc (vldrq_gather_base_impl):
+	Add support for MODE_wb.
+	* config/arm/arm-mve-builtins-shapes.cc (struct
+	load_gather_base_def): Likewise.
+	* config/arm/arm_mve.h (vldrdq_gather_base_wb_s64): Delete.
+	(vldrdq_gather_base_wb_u64): Delete.
+	(vldrdq_gather_base_wb_z_s64): Delete.
+	(vldrdq_gather_base_wb_z_u64): Delete.
+	(vldrwq_gather_base_wb_f32): Delete.
+	(vldrwq_gather_base_wb_s32): Delete.
+	(vldrwq_gather_base_wb_u32): Delete.
+	(vldrwq_gather_base_wb_z_f32): Delete.
+	(vldrwq_gather_base_wb_z_s32): Delete.
+	(vldrwq_gather_base_wb_z_u32): Delete.
+	(__arm_vldrdq_gather_base_wb_s64): Delete.
+	(__arm_vldrdq_gather_base_wb_u64): Delete.
+	(__arm_vldrdq_gather_base_wb_z_s64): Delete.
+	(__arm_vldrdq_gather_base_wb_z_u64): Delete.
+	(__arm_vldrwq_gather_base_wb_s32): Delete.
+	(__arm_vldrwq_gather_base_wb_u32): Delete.
+	(__arm_vldrwq_gather_base_wb_z_s32): Delete.
+	(__arm_vldrwq_gather_base_wb_z_u32): Delete.
+	(__arm_vldrwq_gather_base_wb_f32): Delete.
+	(__arm_vldrwq_gather_base_wb_z_f32): Delete.
+	* config/arm/arm_mve_builtins.def (vldrwq_gather_base_nowb_z_u)
+	(vldrdq_gather_base_nowb_z_u, vldrwq_gather_base_nowb_u)
+	(vldrdq_gather_base_nowb_u, vldrwq_gather_base_nowb_z_s)
+	(vldrwq_gather_base_nowb_z_f, vldrdq_gather_base_nowb_z_s)
+	(vldrwq_gather_base_nowb_s, vldrwq_gather_base_nowb_f)
+	(vldrdq_gather_base_nowb_s, vldrdq_gather_base_wb_z_s)
+	(vldrdq_gather_base_wb_z_u, vldrdq_gather_base_wb_s)
+	(vldrdq_gather_base_wb_u, vldrwq_gather_base_wb_z_s)
+	(vldrwq_gather_base_wb_z_f, vldrwq_gather_base_wb_z_u)
+	(vldrwq_gather_base_wb_s, vldrwq_gather_base_wb_f)
+	(vldrwq_gather_base_wb_u): Delete
+	* config/arm/iterators.md (supf): Remove VLDRWQGBWB_S,
+	VLDRWQGBWB_U, VLDRDQGBWB_S, VLDRDQGBWB_U.
+	(VLDRWGBWBQ, VLDRDGBWBQ): Delete.
+	* config/arm/mve.md (mve_vldrwq_gather_base_wb_<supf>v4si): Delete.
+	(mve_vldrwq_gather_base_nowb_<supf>v4si): Delete.
+	(mve_vldrwq_gather_base_wb_<supf>v4si_insn): Delete.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si): Delete.
+	(mve_vldrwq_gather_base_nowb_z_<supf>v4si): Delete.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si_insn): Delete.
+	(mve_vldrwq_gather_base_wb_fv4sf): Delete.
+	(mve_vldrwq_gather_base_nowb_fv4sf): Delete.
+	(mve_vldrwq_gather_base_wb_fv4sf_insn): Delete.
+	(mve_vldrwq_gather_base_wb_z_fv4sf): Delete.
+	(mve_vldrwq_gather_base_nowb_z_fv4sf): Delete.
+	(mve_vldrwq_gather_base_wb_z_fv4sf_insn): Delete.
+	(mve_vldrdq_gather_base_wb_<supf>v2di): Delete.
+	(mve_vldrdq_gather_base_nowb_<supf>v2di): Delete.
+	(mve_vldrdq_gather_base_wb_<supf>v2di_insn): Delete.
+	(mve_vldrdq_gather_base_wb_z_<supf>v2di): Delete.
+	(mve_vldrdq_gather_base_nowb_z_<supf>v2di): Delete.
+	(mve_vldrdq_gather_base_wb_z_<supf>v2di_insn): Delete.
+	(@mve_vldrq_gather_base_wb_<mode>): New.
+	(@mve_vldrq_gather_base_wb_z_<mode>): New.
+	* config/arm/unspecs.md (VLDRWQGBWB_S, VLDRWQGBWB_U, VLDRWQGBWB_F)
+	(VLDRDQGBWB_S, VLDRDQGBWB_U): Delete
+	(VLDRGBWBQ, VLDRGBWBQ_Z): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_ldrgbs_qualifiers)
+	(arm_ldrgbu_qualifiers, arm_ldrgbs_z_qualifiers)
+	(arm_ldrgbu_z_qualifiers): Delete.
+	* config/arm/arm-mve-builtins-base.cc (class
+	vldrq_gather_base_impl): New.
+	(vldrdq_gather_base, vldrwq_gather_base): New.
+	* config/arm/arm-mve-builtins-base.def (vldrdq_gather_base)
+	(vldrwq_gather_base): New.
+	* config/arm/arm-mve-builtins-base.h: (vldrdq_gather_base)
+	(vldrwq_gather_base): New.
+	* config/arm/arm_mve.h (vldrwq_gather_base_s32): Delete.
+	(vldrwq_gather_base_u32): Delete.
+	(vldrwq_gather_base_z_u32): Delete.
+	(vldrwq_gather_base_z_s32): Delete.
+	(vldrdq_gather_base_s64): Delete.
+	(vldrdq_gather_base_u64): Delete.
+	(vldrdq_gather_base_z_s64): Delete.
+	(vldrdq_gather_base_z_u64): Delete.
+	(vldrwq_gather_base_f32): Delete.
+	(vldrwq_gather_base_z_f32): Delete.
+	(__arm_vldrwq_gather_base_s32): Delete.
+	(__arm_vldrwq_gather_base_u32): Delete.
+	(__arm_vldrwq_gather_base_z_s32): Delete.
+	(__arm_vldrwq_gather_base_z_u32): Delete.
+	(__arm_vldrdq_gather_base_s64): Delete.
+	(__arm_vldrdq_gather_base_u64): Delete.
+	(__arm_vldrdq_gather_base_z_s64): Delete.
+	(__arm_vldrdq_gather_base_z_u64): Delete.
+	(__arm_vldrwq_gather_base_f32): Delete.
+	(__arm_vldrwq_gather_base_z_f32): Delete.
+	* config/arm/arm_mve_builtins.def (vldrwq_gather_base_s)
+	(vldrwq_gather_base_u, vldrwq_gather_base_z_s)
+	(vldrwq_gather_base_z_u, vldrdq_gather_base_s)
+	(vldrwq_gather_base_f, vldrdq_gather_base_z_s)
+	(vldrwq_gather_base_z_f, vldrdq_gather_base_u)
+	(vldrdq_gather_base_z_u): Delete.
+	* config/arm/iterators.md (supf): Remove VLDRWQGB_S, VLDRWQGB_U,
+	VLDRDQGB_S, VLDRDQGB_U.
+	(VLDRWGBQ, VLDRDGBQ): Delete.
+	* config/arm/mve.md (mve_vldrwq_gather_base_<supf>v4si): Delete.
+	(mve_vldrwq_gather_base_z_<supf>v4si): Delete.
+	(mve_vldrdq_gather_base_<supf>v2di): Delete.
+	(mve_vldrdq_gather_base_z_<supf>v2di): Delete.
+	(mve_vldrwq_gather_base_fv4sf): Delete.
+	(mve_vldrwq_gather_base_z_fv4sf): Delete.
+	(@mve_vldrq_gather_base_<mode>): New.
+	(@mve_vldrq_gather_base_z_<mode>): New.
+	* config/arm/unspecs.md (VLDRWQGB_S, VLDRWQGB_U, VLDRDQGB_S)
+	(VLDRDQGB_U, VLDRWQGB_F): Delete.
+	(VLDRGBQ, VLDRGBQ_Z): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (struct
+	load_gather_base_def): New.
+	* config/arm/arm-mve-builtins-shapes.h: (load_gather_base): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_ldrgu_qualifiers)
+	(arm_ldrgs_qualifiers, arm_ldrgs_z_qualifiers)
+	(arm_ldrgu_z_qualifiers): Delete.
+	* config/arm/arm-mve-builtins-base.cc (vldrq_gather_impl): Add
+	support for shifted version.
+	(vldrdq_gather_shifted, vldrhq_gather_shifted)
+	(vldrwq_gather_shifted): New.
+	* config/arm/arm-mve-builtins-base.def (vldrdq_gather_shifted)
+	(vldrhq_gather_shifted, vldrwq_gather_shifted): New.
+	* config/arm/arm-mve-builtins-base.h (vldrdq_gather_shifted)
+	(vldrhq_gather_shifted, vldrwq_gather_shifted): New.
+	* config/arm/arm_mve.h (vldrhq_gather_shifted_offset): Delete.
+	(vldrhq_gather_shifted_offset_z): Delete.
+	(vldrdq_gather_shifted_offset): Delete.
+	(vldrdq_gather_shifted_offset_z): Delete.
+	(vldrwq_gather_shifted_offset): Delete.
+	(vldrwq_gather_shifted_offset_z): Delete.
+	(vldrhq_gather_shifted_offset_s32): Delete.
+	(vldrhq_gather_shifted_offset_s16): Delete.
+	(vldrhq_gather_shifted_offset_u32): Delete.
+	(vldrhq_gather_shifted_offset_u16): Delete.
+	(vldrhq_gather_shifted_offset_z_s32): Delete.
+	(vldrhq_gather_shifted_offset_z_s16): Delete.
+	(vldrhq_gather_shifted_offset_z_u32): Delete.
+	(vldrhq_gather_shifted_offset_z_u16): Delete.
+	(vldrdq_gather_shifted_offset_s64): Delete.
+	(vldrdq_gather_shifted_offset_u64): Delete.
+	(vldrdq_gather_shifted_offset_z_s64): Delete.
+	(vldrdq_gather_shifted_offset_z_u64): Delete.
+	(vldrhq_gather_shifted_offset_f16): Delete.
+	(vldrhq_gather_shifted_offset_z_f16): Delete.
+	(vldrwq_gather_shifted_offset_f32): Delete.
+	(vldrwq_gather_shifted_offset_s32): Delete.
+	(vldrwq_gather_shifted_offset_u32): Delete.
+	(vldrwq_gather_shifted_offset_z_f32): Delete.
+	(vldrwq_gather_shifted_offset_z_s32): Delete.
+	(vldrwq_gather_shifted_offset_z_u32): Delete.
+	(__arm_vldrhq_gather_shifted_offset_s32): Delete.
+	(__arm_vldrhq_gather_shifted_offset_s16): Delete.
+	(__arm_vldrhq_gather_shifted_offset_u32): Delete.
+	(__arm_vldrhq_gather_shifted_offset_u16): Delete.
+	(__arm_vldrhq_gather_shifted_offset_z_s32): Delete.
+	(__arm_vldrhq_gather_shifted_offset_z_s16): Delete.
+	(__arm_vldrhq_gather_shifted_offset_z_u32): Delete.
+	(__arm_vldrhq_gather_shifted_offset_z_u16): Delete.
+	(__arm_vldrdq_gather_shifted_offset_s64): Delete.
+	(__arm_vldrdq_gather_shifted_offset_u64): Delete.
+	(__arm_vldrdq_gather_shifted_offset_z_s64): Delete.
+	(__arm_vldrdq_gather_shifted_offset_z_u64): Delete.
+	(__arm_vldrwq_gather_shifted_offset_s32): Delete.
+	(__arm_vldrwq_gather_shifted_offset_u32): Delete.
+	(__arm_vldrwq_gather_shifted_offset_z_s32): Delete.
+	(__arm_vldrwq_gather_shifted_offset_z_u32): Delete.
+	(__arm_vldrhq_gather_shifted_offset_f16): Delete.
+	(__arm_vldrhq_gather_shifted_offset_z_f16): Delete.
+	(__arm_vldrwq_gather_shifted_offset_f32): Delete.
+	(__arm_vldrwq_gather_shifted_offset_z_f32): Delete.
+	(__arm_vldrhq_gather_shifted_offset): Delete.
+	(__arm_vldrhq_gather_shifted_offset_z): Delete.
+	(__arm_vldrdq_gather_shifted_offset): Delete.
+	(__arm_vldrdq_gather_shifted_offset_z): Delete.
+	(__arm_vldrwq_gather_shifted_offset): Delete.
+	(__arm_vldrwq_gather_shifted_offset_z): Delete.
+	* config/arm/arm_mve_builtins.def
+	(vldrhq_gather_shifted_offset_z_u, vldrhq_gather_shifted_offset_u)
+	(vldrhq_gather_shifted_offset_z_s, vldrhq_gather_shifted_offset_s)
+	(vldrdq_gather_shifted_offset_s, vldrhq_gather_shifted_offset_f)
+	(vldrwq_gather_shifted_offset_f, vldrwq_gather_shifted_offset_s)
+	(vldrdq_gather_shifted_offset_z_s)
+	(vldrhq_gather_shifted_offset_z_f)
+	(vldrwq_gather_shifted_offset_z_f)
+	(vldrwq_gather_shifted_offset_z_s, vldrdq_gather_shifted_offset_u)
+	(vldrwq_gather_shifted_offset_u, vldrdq_gather_shifted_offset_z_u)
+	(vldrwq_gather_shifted_offset_z_u): Delete.
+	* config/arm/iterators.md (supf): Remove VLDRHQGSO_S, VLDRHQGSO_U,
+	VLDRDQGSO_S, VLDRDQGSO_U, VLDRWQGSO_S, VLDRWQGSO_U.
+	(VLDRHGSOQ, VLDRDGSOQ, VLDRWGSOQ): Delete.
+	* config/arm/mve.md
+	(mve_vldrhq_gather_shifted_offset_<supf><mode>): Delete.
+	(mve_vldrhq_gather_shifted_offset_z_<supf><mode>): Delete.
+	(mve_vldrdq_gather_shifted_offset_<supf>v2di): Delete.
+	(mve_vldrdq_gather_shifted_offset_z_<supf>v2di): Delete.
+	(mve_vldrhq_gather_shifted_offset_fv8hf): Delete.
+	(mve_vldrhq_gather_shifted_offset_z_fv8hf): Delete.
+	(mve_vldrwq_gather_shifted_offset_fv4sf): Delete.
+	(mve_vldrwq_gather_shifted_offset_<supf>v4si): Delete.
+	(mve_vldrwq_gather_shifted_offset_z_fv4sf): Delete.
+	(mve_vldrwq_gather_shifted_offset_z_<supf>v4si): Delete.
+	(@mve_vldrq_gather_shifted_offset_<mode>): New.
+	(@mve_vldrq_gather_shifted_offset_extend_v4si<US>): New.
+	(@mve_vldrq_gather_shifted_offset_z_<mode>): New.
+	(@mve_vldrq_gather_shifted_offset_z_extend_v4si<US>): New.
+	* config/arm/unspecs.md (VLDRHQGSO_S, VLDRHQGSO_U, VLDRDQGSO_S)
+	(VLDRDQGSO_U, VLDRHQGSO_F, VLDRWQGSO_F, VLDRWQGSO_S, VLDRWQGSO_U):
+	Delete.
+	(VLDRGSOQ, VLDRGSOQ_Z, VLDRGSOQ_EXT, VLDRGSOQ_EXT_Z): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (class vldrq_gather_impl):
+	New.
+	(vldrbq_gather, vldrdq_gather, vldrhq_gather, vldrwq_gather): New.
+	* config/arm/arm-mve-builtins-base.def (vldrbq_gather)
+	(vldrdq_gather, vldrhq_gather, vldrwq_gather): New.
+	* config/arm/arm-mve-builtins-base.h (vldrbq_gather)
+	(vldrdq_gather, vldrhq_gather, vldrwq_gather): New.
+	* config/arm/arm_mve.h (vldrbq_gather_offset): Delete.
+	(vldrbq_gather_offset_z): Delete.
+	(vldrhq_gather_offset): Delete.
+	(vldrhq_gather_offset_z): Delete.
+	(vldrdq_gather_offset): Delete.
+	(vldrdq_gather_offset_z): Delete.
+	(vldrwq_gather_offset): Delete.
+	(vldrwq_gather_offset_z): Delete.
+	(vldrbq_gather_offset_u8): Delete.
+	(vldrbq_gather_offset_s8): Delete.
+	(vldrbq_gather_offset_u16): Delete.
+	(vldrbq_gather_offset_s16): Delete.
+	(vldrbq_gather_offset_u32): Delete.
+	(vldrbq_gather_offset_s32): Delete.
+	(vldrbq_gather_offset_z_s16): Delete.
+	(vldrbq_gather_offset_z_u8): Delete.
+	(vldrbq_gather_offset_z_s32): Delete.
+	(vldrbq_gather_offset_z_u16): Delete.
+	(vldrbq_gather_offset_z_u32): Delete.
+	(vldrbq_gather_offset_z_s8): Delete.
+	(vldrhq_gather_offset_s32): Delete.
+	(vldrhq_gather_offset_s16): Delete.
+	(vldrhq_gather_offset_u32): Delete.
+	(vldrhq_gather_offset_u16): Delete.
+	(vldrhq_gather_offset_z_s32): Delete.
+	(vldrhq_gather_offset_z_s16): Delete.
+	(vldrhq_gather_offset_z_u32): Delete.
+	(vldrhq_gather_offset_z_u16): Delete.
+	(vldrdq_gather_offset_s64): Delete.
+	(vldrdq_gather_offset_u64): Delete.
+	(vldrdq_gather_offset_z_s64): Delete.
+	(vldrdq_gather_offset_z_u64): Delete.
+	(vldrhq_gather_offset_f16): Delete.
+	(vldrhq_gather_offset_z_f16): Delete.
+	(vldrwq_gather_offset_f32): Delete.
+	(vldrwq_gather_offset_s32): Delete.
+	(vldrwq_gather_offset_u32): Delete.
+	(vldrwq_gather_offset_z_f32): Delete.
+	(vldrwq_gather_offset_z_s32): Delete.
+	(vldrwq_gather_offset_z_u32): Delete.
+	(__arm_vldrbq_gather_offset_u8): Delete.
+	(__arm_vldrbq_gather_offset_s8): Delete.
+	(__arm_vldrbq_gather_offset_u16): Delete.
+	(__arm_vldrbq_gather_offset_s16): Delete.
+	(__arm_vldrbq_gather_offset_u32): Delete.
+	(__arm_vldrbq_gather_offset_s32): Delete.
+	(__arm_vldrbq_gather_offset_z_s8): Delete.
+	(__arm_vldrbq_gather_offset_z_s32): Delete.
+	(__arm_vldrbq_gather_offset_z_s16): Delete.
+	(__arm_vldrbq_gather_offset_z_u8): Delete.
+	(__arm_vldrbq_gather_offset_z_u32): Delete.
+	(__arm_vldrbq_gather_offset_z_u16): Delete.
+	(__arm_vldrhq_gather_offset_s32): Delete.
+	(__arm_vldrhq_gather_offset_s16): Delete.
+	(__arm_vldrhq_gather_offset_u32): Delete.
+	(__arm_vldrhq_gather_offset_u16): Delete.
+	(__arm_vldrhq_gather_offset_z_s32): Delete.
+	(__arm_vldrhq_gather_offset_z_s16): Delete.
+	(__arm_vldrhq_gather_offset_z_u32): Delete.
+	(__arm_vldrhq_gather_offset_z_u16): Delete.
+	(__arm_vldrdq_gather_offset_s64): Delete.
+	(__arm_vldrdq_gather_offset_u64): Delete.
+	(__arm_vldrdq_gather_offset_z_s64): Delete.
+	(__arm_vldrdq_gather_offset_z_u64): Delete.
+	(__arm_vldrwq_gather_offset_s32): Delete.
+	(__arm_vldrwq_gather_offset_u32): Delete.
+	(__arm_vldrwq_gather_offset_z_s32): Delete.
+	(__arm_vldrwq_gather_offset_z_u32): Delete.
+	(__arm_vldrhq_gather_offset_f16): Delete.
+	(__arm_vldrhq_gather_offset_z_f16): Delete.
+	(__arm_vldrwq_gather_offset_f32): Delete.
+	(__arm_vldrwq_gather_offset_z_f32): Delete.
+	(__arm_vldrbq_gather_offset): Delete.
+	(__arm_vldrbq_gather_offset_z): Delete.
+	(__arm_vldrhq_gather_offset): Delete.
+	(__arm_vldrhq_gather_offset_z): Delete.
+	(__arm_vldrdq_gather_offset): Delete.
+	(__arm_vldrdq_gather_offset_z): Delete.
+	(__arm_vldrwq_gather_offset): Delete.
+	(__arm_vldrwq_gather_offset_z): Delete.
+	* config/arm/arm_mve_builtins.def (vldrbq_gather_offset_u)
+	(vldrbq_gather_offset_s, vldrbq_gather_offset_z_s)
+	(vldrbq_gather_offset_z_u, vldrhq_gather_offset_z_u)
+	(vldrhq_gather_offset_u, vldrhq_gather_offset_z_s)
+	(vldrhq_gather_offset_s, vldrdq_gather_offset_s)
+	(vldrhq_gather_offset_f, vldrwq_gather_offset_f)
+	(vldrwq_gather_offset_s, vldrdq_gather_offset_z_s)
+	(vldrhq_gather_offset_z_f, vldrwq_gather_offset_z_f)
+	(vldrwq_gather_offset_z_s, vldrdq_gather_offset_u)
+	(vldrwq_gather_offset_u, vldrdq_gather_offset_z_u)
+	(vldrwq_gather_offset_z_u): Delete.
+	* config/arm/iterators.md (MVE_u_elem): New.
+	(supf): Remove VLDRBQGO_S, VLDRBQGO_U, VLDRHQGO_S, VLDRHQGO_U,
+	VLDRDQGO_S, VLDRDQGO_U, VLDRWQGO_S, VLDRWQGO_U.
+	(VLDRBGOQ, VLDRHGOQ, VLDRDGOQ, VLDRWGOQ): Delete.
+	* config/arm/mve.md (mve_vldrbq_gather_offset_<supf><mode>):
+	Delete.
+	(mve_vldrbq_gather_offset_z_<supf><mode>): Delete.
+	(mve_vldrhq_gather_offset_<supf><mode>): Delete.
+	(mve_vldrhq_gather_offset_z_<supf><mode>): Delete.
+	(mve_vldrdq_gather_offset_<supf>v2di): Delete.
+	(mve_vldrdq_gather_offset_z_<supf>v2di): Delete.
+	(mve_vldrhq_gather_offset_fv8hf): Delete.
+	(mve_vldrhq_gather_offset_z_fv8hf): Delete.
+	(mve_vldrwq_gather_offset_fv4sf): Delete.
+	(mve_vldrwq_gather_offset_<supf>v4si): Delete.
+	(mve_vldrwq_gather_offset_z_fv4sf): Delete.
+	(mve_vldrwq_gather_offset_z_<supf>v4si): Delete.
+	(@mve_vldrq_gather_offset_<mode>): New.
+	(@mve_vldrq_gather_offset_extend_<mode><US>): New.
+	(@mve_vldrq_gather_offset_z_<mode>): New.
+	(@mve_vldrq_gather_offset_z_extend_<mode><US>): New.
+	* config/arm/unspecs.md (VLDRBQGO_S, VLDRBQGO_U, VLDRHQGO_S)
+	(VLDRHQGO_U, VLDRDQGO_S, VLDRDQGO_U, VLDRHQGO_F, VLDRWQGO_F)
+	(VLDRWQGO_S, VLDRWQGO_U): Delete.
+	(VLDRGOQ, VLDRGOQ_Z, VLDRGOQ_EXT, VLDRGOQ_EXT_Z): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (struct load_ext_gather):
+	New.
+	(struct load_ext_gather_offset_def): New.
+	* config/arm/arm-mve-builtins-shapes.h (load_ext_gather_offset):
+	New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_strsbwbs_qualifiers)
+	(arm_strsbwbu_qualifiers, arm_strsbwbs_p_qualifiers)
+	(arm_strsbwbu_p_qualifiers): Delete.
+	* config/arm/arm-mve-builtins-base.cc (vstrq_scatter_base_impl):
+	Add support for MODE_wb.
+	* config/arm/arm-mve-builtins-shapes.cc (parse_type): Add support
+	for 'b' type.
+	(store_scatter_base): Add support for MODE_wb.
+	* config/arm/arm-mve-builtins.cc
+	(function_resolver::require_pointer_to_type): New.
+	* config/arm/arm-mve-builtins.h
+	(function_resolver::require_pointer_to_type): New.
+	* config/arm/arm_mve.h (vstrdq_scatter_base_wb): Delete.
+	(vstrdq_scatter_base_wb_p): Delete.
+	(vstrwq_scatter_base_wb_p): Delete.
+	(vstrwq_scatter_base_wb): Delete.
+	(vstrdq_scatter_base_wb_p_s64): Delete.
+	(vstrdq_scatter_base_wb_p_u64): Delete.
+	(vstrdq_scatter_base_wb_s64): Delete.
+	(vstrdq_scatter_base_wb_u64): Delete.
+	(vstrwq_scatter_base_wb_p_s32): Delete.
+	(vstrwq_scatter_base_wb_p_f32): Delete.
+	(vstrwq_scatter_base_wb_p_u32): Delete.
+	(vstrwq_scatter_base_wb_s32): Delete.
+	(vstrwq_scatter_base_wb_u32): Delete.
+	(vstrwq_scatter_base_wb_f32): Delete.
+	(__arm_vstrdq_scatter_base_wb_s64): Delete.
+	(__arm_vstrdq_scatter_base_wb_u64): Delete.
+	(__arm_vstrdq_scatter_base_wb_p_s64): Delete.
+	(__arm_vstrdq_scatter_base_wb_p_u64): Delete.
+	(__arm_vstrwq_scatter_base_wb_p_s32): Delete.
+	(__arm_vstrwq_scatter_base_wb_p_u32): Delete.
+	(__arm_vstrwq_scatter_base_wb_s32): Delete.
+	(__arm_vstrwq_scatter_base_wb_u32): Delete.
+	(__arm_vstrwq_scatter_base_wb_f32): Delete.
+	(__arm_vstrwq_scatter_base_wb_p_f32): Delete.
+	(__arm_vstrdq_scatter_base_wb): Delete.
+	(__arm_vstrdq_scatter_base_wb_p): Delete.
+	(__arm_vstrwq_scatter_base_wb_p): Delete.
+	(__arm_vstrwq_scatter_base_wb): Delete.
+	* config/arm/arm_mve_builtins.def (vstrwq_scatter_base_wb_u)
+	(vstrdq_scatter_base_wb_u, vstrwq_scatter_base_wb_p_u)
+	(vstrdq_scatter_base_wb_p_u, vstrwq_scatter_base_wb_s)
+	(vstrwq_scatter_base_wb_f, vstrdq_scatter_base_wb_s)
+	(vstrwq_scatter_base_wb_p_s, vstrwq_scatter_base_wb_p_f)
+	(vstrdq_scatter_base_wb_p_s): Delete.
+	* config/arm/iterators.md (supf): Remove VSTRWQSBWB_S,
+	VSTRWQSBWB_U, VSTRDQSBWB_S, VSTRDQSBWB_U.
+	(VSTRDSBQ, VSTRWSBWBQ, VSTRDSBWBQ): Delete.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_wb_<supf>v4si): Delete.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si): Delete.
+	(mve_vstrwq_scatter_base_wb_fv4sf): Delete.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Delete.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di): Delete.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Delete.
+	(@mve_vstrq_scatter_base_wb_<mode>): New.
+	(@mve_vstrq_scatter_base_wb_p_<mode>): New.
+	* config/arm/unspecs.md (VSTRWQSBWB_S, VSTRWQSBWB_U, VSTRWQSBWB_F)
+	(VSTRDQSBWB_S, VSTRDQSBWB_U): Delete.
+	(VSTRSBWBQ, VSTRSBWBQ_P): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_strsbs_qualifiers)
+	(arm_strsbu_qualifiers, arm_strsbs_p_qualifiers)
+	(arm_strsbu_p_qualifiers): Delete.
+	* config/arm/arm-mve-builtins-base.cc (class
+	vstrq_scatter_base_impl): New.
+	(vstrwq_scatter_base, vstrdq_scatter_base): New.
+	* config/arm/arm-mve-builtins-base.def (vstrwq_scatter_base)
+	(vstrdq_scatter_base): New.
+	* config/arm/arm-mve-builtins-base.h (vstrwq_scatter_base)
+	(vstrdq_scatter_base): New.
+	* config/arm/arm_mve.h (vstrwq_scatter_base): Delete.
+	(vstrwq_scatter_base_p): Delete.
+	(vstrdq_scatter_base_p): Delete.
+	(vstrdq_scatter_base): Delete.
+	(vstrwq_scatter_base_s32): Delete.
+	(vstrwq_scatter_base_u32): Delete.
+	(vstrwq_scatter_base_p_s32): Delete.
+	(vstrwq_scatter_base_p_u32): Delete.
+	(vstrdq_scatter_base_p_s64): Delete.
+	(vstrdq_scatter_base_p_u64): Delete.
+	(vstrdq_scatter_base_s64): Delete.
+	(vstrdq_scatter_base_u64): Delete.
+	(vstrwq_scatter_base_f32): Delete.
+	(vstrwq_scatter_base_p_f32): Delete.
+	(__arm_vstrwq_scatter_base_s32): Delete.
+	(__arm_vstrwq_scatter_base_u32): Delete.
+	(__arm_vstrwq_scatter_base_p_s32): Delete.
+	(__arm_vstrwq_scatter_base_p_u32): Delete.
+	(__arm_vstrdq_scatter_base_p_s64): Delete.
+	(__arm_vstrdq_scatter_base_p_u64): Delete.
+	(__arm_vstrdq_scatter_base_s64): Delete.
+	(__arm_vstrdq_scatter_base_u64): Delete.
+	(__arm_vstrwq_scatter_base_f32): Delete.
+	(__arm_vstrwq_scatter_base_p_f32): Delete.
+	(__arm_vstrwq_scatter_base): Delete.
+	(__arm_vstrwq_scatter_base_p): Delete.
+	(__arm_vstrdq_scatter_base_p): Delete.
+	(__arm_vstrdq_scatter_base): Delete.
+	* config/arm/arm_mve_builtins.def (vstrwq_scatter_base_s)
+	(vstrwq_scatter_base_u, vstrwq_scatter_base_p_s)
+	(vstrwq_scatter_base_p_u, vstrdq_scatter_base_s)
+	(vstrwq_scatter_base_f, vstrdq_scatter_base_p_s)
+	(vstrwq_scatter_base_p_f, vstrdq_scatter_base_u)
+	(vstrdq_scatter_base_p_u): Delete.
+	* config/arm/iterators.md (MVE_4): New.
+	(supf): Remove VSTRWQSB_S, VSTRWQSB_U.
+	(VSTRWSBQ): Delete.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_<supf>v4si): Delete.
+	(mve_vstrwq_scatter_base_p_<supf>v4si): Delete.
+	(mve_vstrdq_scatter_base_p_<supf>v2di): Delete.
+	(mve_vstrdq_scatter_base_<supf>v2di): Delete.
+	(mve_vstrwq_scatter_base_fv4sf): Delete.
+	(mve_vstrwq_scatter_base_p_fv4sf): Delete.
+	(@mve_vstrq_scatter_base_<mode>): New.
+	(@mve_vstrq_scatter_base_p_<mode>): New.
+	* config/arm/unspecs.md (VSTRWQSB_S, VSTRWQSB_U, VSTRWQSB_F):
+	Delete.
+	(VSTRSBQ, VSTRSBQ_P): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (store_scatter_base): New.
+	* config/arm/arm-mve-builtins-shapes.h (store_scatter_base): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins.cc (report_out_of_range_multiple):
+	New.
+	(function_checker::require_signed_immediate): New.
+	(function_checker::require_immediate_range_multiple): New.
+	* config/arm/arm-mve-builtins.h
+	(function_checker::require_immediate_range_multiple): New.
+	(function_checker::require_signed_immediate): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_strss_qualifiers)
+	(arm_strsu_qualifiers, arm_strsu_p_qualifiers)
+	(arm_strss_p_qualifiers): Delete.
+	* config/arm/arm-mve-builtins-base.cc (class vstrq_scatter_impl):
+	Add support for shifted version.
+	(vstrdq_scatter_shifted, vstrhq_scatter_shifted)
+	(vstrwq_scatter_shifted): New.
+	* config/arm/arm-mve-builtins-base.def (vstrhq_scatter_shifted)
+	(vstrwq_scatter_shifted, vstrdq_scatter_shifted): New.
+	* config/arm/arm-mve-builtins-base.h (vstrhq_scatter_shifted)
+	(vstrwq_scatter_shifted, vstrdq_scatter_shifted): New.
+	* config/arm/arm_mve.h (vstrhq_scatter_shifted_offset): Delete.
+	(vstrhq_scatter_shifted_offset_p): Delete.
+	(vstrdq_scatter_shifted_offset_p): Delete.
+	(vstrdq_scatter_shifted_offset): Delete.
+	(vstrwq_scatter_shifted_offset_p): Delete.
+	(vstrwq_scatter_shifted_offset): Delete.
+	(vstrhq_scatter_shifted_offset_s32): Delete.
+	(vstrhq_scatter_shifted_offset_s16): Delete.
+	(vstrhq_scatter_shifted_offset_u32): Delete.
+	(vstrhq_scatter_shifted_offset_u16): Delete.
+	(vstrhq_scatter_shifted_offset_p_s32): Delete.
+	(vstrhq_scatter_shifted_offset_p_s16): Delete.
+	(vstrhq_scatter_shifted_offset_p_u32): Delete.
+	(vstrhq_scatter_shifted_offset_p_u16): Delete.
+	(vstrdq_scatter_shifted_offset_p_s64): Delete.
+	(vstrdq_scatter_shifted_offset_p_u64): Delete.
+	(vstrdq_scatter_shifted_offset_s64): Delete.
+	(vstrdq_scatter_shifted_offset_u64): Delete.
+	(vstrhq_scatter_shifted_offset_f16): Delete.
+	(vstrhq_scatter_shifted_offset_p_f16): Delete.
+	(vstrwq_scatter_shifted_offset_f32): Delete.
+	(vstrwq_scatter_shifted_offset_p_f32): Delete.
+	(vstrwq_scatter_shifted_offset_p_s32): Delete.
+	(vstrwq_scatter_shifted_offset_p_u32): Delete.
+	(vstrwq_scatter_shifted_offset_s32): Delete.
+	(vstrwq_scatter_shifted_offset_u32): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_s32): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_s16): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_u32): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_u16): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_p_s32): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_p_s16): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_p_u32): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_p_u16): Delete.
+	(__arm_vstrdq_scatter_shifted_offset_p_s64): Delete.
+	(__arm_vstrdq_scatter_shifted_offset_p_u64): Delete.
+	(__arm_vstrdq_scatter_shifted_offset_s64): Delete.
+	(__arm_vstrdq_scatter_shifted_offset_u64): Delete.
+	(__arm_vstrwq_scatter_shifted_offset_p_s32): Delete.
+	(__arm_vstrwq_scatter_shifted_offset_p_u32): Delete.
+	(__arm_vstrwq_scatter_shifted_offset_s32): Delete.
+	(__arm_vstrwq_scatter_shifted_offset_u32): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_f16): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_p_f16): Delete.
+	(__arm_vstrwq_scatter_shifted_offset_f32): Delete.
+	(__arm_vstrwq_scatter_shifted_offset_p_f32): Delete.
+	(__arm_vstrhq_scatter_shifted_offset): Delete.
+	(__arm_vstrhq_scatter_shifted_offset_p): Delete.
+	(__arm_vstrdq_scatter_shifted_offset_p): Delete.
+	(__arm_vstrdq_scatter_shifted_offset): Delete.
+	(__arm_vstrwq_scatter_shifted_offset_p): Delete.
+	(__arm_vstrwq_scatter_shifted_offset): Delete.
+	* config/arm/arm_mve_builtins.def
+	(vstrhq_scatter_shifted_offset_p_u)
+	(vstrhq_scatter_shifted_offset_u)
+	(vstrhq_scatter_shifted_offset_p_s)
+	(vstrhq_scatter_shifted_offset_s, vstrdq_scatter_shifted_offset_s)
+	(vstrhq_scatter_shifted_offset_f, vstrwq_scatter_shifted_offset_f)
+	(vstrwq_scatter_shifted_offset_s)
+	(vstrdq_scatter_shifted_offset_p_s)
+	(vstrhq_scatter_shifted_offset_p_f)
+	(vstrwq_scatter_shifted_offset_p_f)
+	(vstrwq_scatter_shifted_offset_p_s)
+	(vstrdq_scatter_shifted_offset_u, vstrwq_scatter_shifted_offset_u)
+	(vstrdq_scatter_shifted_offset_p_u)
+	(vstrwq_scatter_shifted_offset_p_u): Delete.
+	* config/arm/iterators.md (MVE_VLD_ST_scatter_shifted): New.
+	(MVE_scatter_shift): New.
+	(supf): Remove VSTRHQSSO_S, VSTRHQSSO_U, VSTRDQSSO_S, VSTRDQSSO_U,
+	VSTRWQSSO_U, VSTRWQSSO_S.
+	(VSTRHSSOQ, VSTRDSSOQ, VSTRWSSOQ): Delete.
+	* config/arm/mve.md (mve_vstrhq_scatter_shifted_offset_p_<supf><mode>): Delete.
+	(mve_vstrhq_scatter_shifted_offset_p_<supf><mode>_insn): Delete.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>): Delete.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn): Delete.
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di): Delete.
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn): Delete.
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di): Delete.
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn): Delete.
+	(mve_vstrhq_scatter_shifted_offset_fv8hf): Delete.
+	(mve_vstrhq_scatter_shifted_offset_fv8hf_insn): Delete.
+	(mve_vstrhq_scatter_shifted_offset_p_fv8hf): Delete.
+	(mve_vstrhq_scatter_shifted_offset_p_fv8hf_insn): Delete.
+	(mve_vstrwq_scatter_shifted_offset_fv4sf): Delete.
+	(mve_vstrwq_scatter_shifted_offset_fv4sf_insn): Delete.
+	(mve_vstrwq_scatter_shifted_offset_p_fv4sf): Delete.
+	(mve_vstrwq_scatter_shifted_offset_p_fv4sf_insn): Delete.
+	(mve_vstrwq_scatter_shifted_offset_p_<supf>v4si): Delete.
+	(mve_vstrwq_scatter_shifted_offset_p_<supf>v4si_insn): Delete.
+	(mve_vstrwq_scatter_shifted_offset_<supf>v4si): Delete.
+	(mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn): Delete.
+	(@mve_vstrq_scatter_shifted_offset_<mode>): New.
+	(@mve_vstrq_scatter_shifted_offset_p_<mode>): New.
+	(mve_vstrq_truncate_scatter_shifted_offset_v4si): New.
+	(mve_vstrq_truncate_scatter_shifted_offset_p_v4si): New.
+	* config/arm/unspecs.md (VSTRDQSSO_S, VSTRDQSSO_U, VSTRWQSSO_S)
+	(VSTRWQSSO_U, VSTRHQSSO_F, VSTRWQSSO_F, VSTRHQSSO_S, VSTRHQSSO_U):
+	Delete.
+	(VSTRSSOQ, VSTRSSOQ_P, VSTRSSOQ_TRUNC, VSTRSSOQ_TRUNC_P): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (class vstrq_scatter_impl):
+	New.
+	(vstrbq_scatter, vstrhq_scatter, vstrwq_scatter, vstrdq_scatter):
+	New.
+	* config/arm/arm-mve-builtins-base.def (vstrbq_scatter)
+	(vstrhq_scatter, vstrwq_scatter, vstrdq_scatter): New.
+	* config/arm/arm-mve-builtins-base.h (vstrbq_scatter)
+	(vstrhq_scatter, vstrwq_scatter, vstrdq_scatter): New.
+	* config/arm/arm-mve-builtins.cc (integer_64): New.
+	* config/arm/arm_mve.h (vstrbq_scatter_offset): Delete.
+	(vstrbq_scatter_offset_p): Delete.
+	(vstrhq_scatter_offset): Delete.
+	(vstrhq_scatter_offset_p): Delete.
+	(vstrdq_scatter_offset_p): Delete.
+	(vstrdq_scatter_offset): Delete.
+	(vstrwq_scatter_offset_p): Delete.
+	(vstrwq_scatter_offset): Delete.
+	(vstrbq_scatter_offset_s8): Delete.
+	(vstrbq_scatter_offset_u8): Delete.
+	(vstrbq_scatter_offset_u16): Delete.
+	(vstrbq_scatter_offset_s16): Delete.
+	(vstrbq_scatter_offset_u32): Delete.
+	(vstrbq_scatter_offset_s32): Delete.
+	(vstrbq_scatter_offset_p_s8): Delete.
+	(vstrbq_scatter_offset_p_s32): Delete.
+	(vstrbq_scatter_offset_p_s16): Delete.
+	(vstrbq_scatter_offset_p_u8): Delete.
+	(vstrbq_scatter_offset_p_u32): Delete.
+	(vstrbq_scatter_offset_p_u16): Delete.
+	(vstrhq_scatter_offset_s32): Delete.
+	(vstrhq_scatter_offset_s16): Delete.
+	(vstrhq_scatter_offset_u32): Delete.
+	(vstrhq_scatter_offset_u16): Delete.
+	(vstrhq_scatter_offset_p_s32): Delete.
+	(vstrhq_scatter_offset_p_s16): Delete.
+	(vstrhq_scatter_offset_p_u32): Delete.
+	(vstrhq_scatter_offset_p_u16): Delete.
+	(vstrdq_scatter_offset_p_s64): Delete.
+	(vstrdq_scatter_offset_p_u64): Delete.
+	(vstrdq_scatter_offset_s64): Delete.
+	(vstrdq_scatter_offset_u64): Delete.
+	(vstrhq_scatter_offset_f16): Delete.
+	(vstrhq_scatter_offset_p_f16): Delete.
+	(vstrwq_scatter_offset_f32): Delete.
+	(vstrwq_scatter_offset_p_f32): Delete.
+	(vstrwq_scatter_offset_p_s32): Delete.
+	(vstrwq_scatter_offset_p_u32): Delete.
+	(vstrwq_scatter_offset_s32): Delete.
+	(vstrwq_scatter_offset_u32): Delete.
+	(__arm_vstrbq_scatter_offset_s8): Delete.
+	(__arm_vstrbq_scatter_offset_s32): Delete.
+	(__arm_vstrbq_scatter_offset_s16): Delete.
+	(__arm_vstrbq_scatter_offset_u8): Delete.
+	(__arm_vstrbq_scatter_offset_u32): Delete.
+	(__arm_vstrbq_scatter_offset_u16): Delete.
+	(__arm_vstrbq_scatter_offset_p_s8): Delete.
+	(__arm_vstrbq_scatter_offset_p_s32): Delete.
+	(__arm_vstrbq_scatter_offset_p_s16): Delete.
+	(__arm_vstrbq_scatter_offset_p_u8): Delete.
+	(__arm_vstrbq_scatter_offset_p_u32): Delete.
+	(__arm_vstrbq_scatter_offset_p_u16): Delete.
+	(__arm_vstrhq_scatter_offset_s32): Delete.
+	(__arm_vstrhq_scatter_offset_s16): Delete.
+	(__arm_vstrhq_scatter_offset_u32): Delete.
+	(__arm_vstrhq_scatter_offset_u16): Delete.
+	(__arm_vstrhq_scatter_offset_p_s32): Delete.
+	(__arm_vstrhq_scatter_offset_p_s16): Delete.
+	(__arm_vstrhq_scatter_offset_p_u32): Delete.
+	(__arm_vstrhq_scatter_offset_p_u16): Delete.
+	(__arm_vstrdq_scatter_offset_p_s64): Delete.
+	(__arm_vstrdq_scatter_offset_p_u64): Delete.
+	(__arm_vstrdq_scatter_offset_s64): Delete.
+	(__arm_vstrdq_scatter_offset_u64): Delete.
+	(__arm_vstrwq_scatter_offset_p_s32): Delete.
+	(__arm_vstrwq_scatter_offset_p_u32): Delete.
+	(__arm_vstrwq_scatter_offset_s32): Delete.
+	(__arm_vstrwq_scatter_offset_u32): Delete.
+	(__arm_vstrhq_scatter_offset_f16): Delete.
+	(__arm_vstrhq_scatter_offset_p_f16): Delete.
+	(__arm_vstrwq_scatter_offset_f32): Delete.
+	(__arm_vstrwq_scatter_offset_p_f32): Delete.
+	(__arm_vstrbq_scatter_offset): Delete.
+	(__arm_vstrbq_scatter_offset_p): Delete.
+	(__arm_vstrhq_scatter_offset): Delete.
+	(__arm_vstrhq_scatter_offset_p): Delete.
+	(__arm_vstrdq_scatter_offset_p): Delete.
+	(__arm_vstrdq_scatter_offset): Delete.
+	(__arm_vstrwq_scatter_offset_p): Delete.
+	(__arm_vstrwq_scatter_offset): Delete.
+	* config/arm/arm_mve_builtins.def (vstrbq_scatter_offset_s)
+	(vstrbq_scatter_offset_u, vstrbq_scatter_offset_p_s)
+	(vstrbq_scatter_offset_p_u, vstrhq_scatter_offset_p_u)
+	(vstrhq_scatter_offset_u, vstrhq_scatter_offset_p_s)
+	(vstrhq_scatter_offset_s, vstrdq_scatter_offset_s)
+	(vstrhq_scatter_offset_f, vstrwq_scatter_offset_f)
+	(vstrwq_scatter_offset_s, vstrdq_scatter_offset_p_s)
+	(vstrhq_scatter_offset_p_f, vstrwq_scatter_offset_p_f)
+	(vstrwq_scatter_offset_p_s, vstrdq_scatter_offset_u)
+	(vstrwq_scatter_offset_u, vstrdq_scatter_offset_p_u)
+	(vstrwq_scatter_offset_p_u) Delete.
+	* config/arm/iterators.md (MVE_VLD_ST_scatter): New.
+	(MVE_scatter_offset): New.
+	(MVE_elem_ch): Add entry for V2DI.
+	(supf): Remove VSTRBQSO_S, VSTRBQSO_U, VSTRHQSO_S, VSTRHQSO_U,
+	VSTRDQSO_S, VSTRDQSO_U, VSTRWQSO_U, VSTRWQSO_S.
+	(VSTRBSOQ, VSTRHSOQ, VSTRDSOQ, VSTRWSOQ): Delete.
+	* config/arm/mve.md (mve_vstrbq_scatter_offset_<supf><mode>):
+	Delete.
+	(mve_vstrbq_scatter_offset_<supf><mode>_insn): Delete.
+	(mve_vstrbq_scatter_offset_p_<supf><mode>): Delete.
+	(mve_vstrbq_scatter_offset_p_<supf><mode>_insn): Delete.
+	(mve_vstrhq_scatter_offset_p_<supf><mode>): Delete.
+	(mve_vstrhq_scatter_offset_p_<supf><mode>_insn): Delete.
+	(mve_vstrhq_scatter_offset_<supf><mode>): Delete.
+	(mve_vstrhq_scatter_offset_<supf><mode>_insn): Delete.
+	(mve_vstrdq_scatter_offset_p_<supf>v2di): Delete.
+	(mve_vstrdq_scatter_offset_p_<supf>v2di_insn): Delete.
+	(mve_vstrdq_scatter_offset_<supf>v2di): Delete.
+	(mve_vstrdq_scatter_offset_<supf>v2di_insn): Delete.
+	(mve_vstrhq_scatter_offset_fv8hf): Delete.
+	(mve_vstrhq_scatter_offset_fv8hf_insn): Delete.
+	(mve_vstrhq_scatter_offset_p_fv8hf): Delete.
+	(mve_vstrhq_scatter_offset_p_fv8hf_insn): Delete.
+	(mve_vstrwq_scatter_offset_fv4sf): Delete.
+	(mve_vstrwq_scatter_offset_fv4sf_insn): Delete.
+	(mve_vstrwq_scatter_offset_p_fv4sf): Delete.
+	(mve_vstrwq_scatter_offset_p_fv4sf_insn): Delete.
+	(mve_vstrwq_scatter_offset_p_<supf>v4si): Delete.
+	(mve_vstrwq_scatter_offset_p_<supf>v4si_insn): Delete.
+	(mve_vstrwq_scatter_offset_<supf>v4si): Delete.
+	(mve_vstrwq_scatter_offset_<supf>v4si_insn): Delete.
+	(@mve_vstrq_scatter_offset_<mode>): New.
+	(@mve_vstrq_scatter_offset_p_<mode>): New.
+	(@mve_vstrq_truncate_scatter_offset_<mode>): New.
+	(@mve_vstrq_truncate_scatter_offset_p_<mode>): New.
+	* config/arm/unspecs.md (VSTRBQSO_S, VSTRBQSO_U, VSTRHQSO_S)
+	(VSTRDQSO_S, VSTRDQSO_U, VSTRWQSO_S, VSTRWQSO_U, VSTRHQSO_F)
+	(VSTRWQSO_F, VSTRHQSO_U): Delete.
+	(VSTRQSO, VSTRQSO_P, VSTRQSO_TRUNC, VSTRQSO_TRUNC_P): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (struct store_scatter): New.
+	(struct store_scatter_offset_def): New.
+	* config/arm/arm-mve-builtins-shapes.h (store_scatter_offset): New.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (struct
+	nonoverloaded_base): Implement mode_after_pred.
+	(struct overloaded_base): Likewise.
+	* config/arm/arm-mve-builtins.cc (function_builder::get_name):
+	Call mode_after_pred as needed.
+	* config/arm/arm-mve-builtins.h (function_shape): Add
+	mode_after_pred.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/111600
+	* Makefile.in:  Add insn-recog split.
+	* configure: Regenerate.
+	* configure.ac: Document that the number of insnemit partitions is
+	used for insn-recog as well.
+	* genconditions.cc (write_one_condition): Use fprintf.
+	* genpreds.cc (write_predicate_expr): Ditto.
+	(write_init_reg_class_start_regs): Ditto.
+	* genrecog.cc (write_header): Add header file to includes.
+	(printf_indent): Use fprintf.
+	(change_state): Ditto.
+	(print_code): Ditto.
+	(print_host_wide_int): Ditto.
+	(print_parameter_value): Ditto.
+	(print_test_rtx): Ditto.
+	(print_nonbool_test): Ditto.
+	(print_label_value): Ditto.
+	(print_test): Ditto.
+	(print_decision): Ditto.
+	(print_state): Ditto.
+	(print_subroutine_call): Ditto.
+	(print_acceptance): Ditto.
+	(print_subroutine_start): Ditto.
+	(print_pattern): Ditto.
+	(print_subroutine): Ditto.
+	(print_subroutine_group): Ditto.
+	(handle_arg): Add -O and -H for output and header file handling.
+	(main): Use callback.
+	* gentarget-def.cc (def_target_insn): Use fprintf.
+	* read-md.cc (md_reader::print_c_condition): Ditto.
+	* read-md.h (class md_reader): Ditto.
+
+2024-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/tuning_models/cortexx925.h: Set L1 cache size to 64b.
+	* config/aarch64/tuning_models/neoverse512tvb.h: Likewise.
+	* config/aarch64/tuning_models/neoversen1.h: Likewise.
+	* config/aarch64/tuning_models/neoversen2.h: Likewise.
+	* config/aarch64/tuning_models/neoversen3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev1.h: Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+	(neoversev2_prefetch_tune): Removed.
+	* config/aarch64/tuning_models/neoversev3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3ae.h: Likewise.
+
+2024-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-fusion-pairs.def (AARCH64_FUSE_NEOVERSE_BASE):
+	New.
+	* config/aarch64/tuning_models/neoverse512tvb.h: Use it.
+	* config/aarch64/tuning_models/neoversen2.h: Use it.
+	* config/aarch64/tuning_models/neoversen3.h: Use it.
+	* config/aarch64/tuning_models/neoversev1.h: Use it.
+	* config/aarch64/tuning_models/neoversev2.h: Use it.
+	* config/aarch64/tuning_models/neoversev3.h: Use it.
+	* config/aarch64/tuning_models/neoversev3ae.h: Use it.
+	* config/aarch64/tuning_models/cortexx925.h: Add fusions.
+	* config/aarch64/tuning_models/generic_armv9_a.h: Add fusions.
+
+2024-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116979
+	* config/i386/mmx.md (vec_fmaddsubv2sf4, vec_fmsubaddv2sf4): New
+	define_expand patterns.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-protos.h (riscv_register_move_cost):
+	Export.
+	* config/riscv/riscv-v.cc (shuffle_extract_and_slide1up_patterns):
+	Rename...
+	(shuffle_off_by_one_patterns): ... to this and add slideup/slidedown
+	variant.
+	(expand_vec_perm_const_1): Call renamed function.
+	* config/riscv/riscv.cc (riscv_secondary_memory_needed): Remove
+	static.
+	(riscv_register_move_cost): Add VR<->GR/FR handling.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (shuffle_even_odd_patterns): New
+	function.
+	(expand_vec_perm_const_1): Use new function.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (shuffle_interleave_patterns): New
+	function.
+	(expand_vec_perm_const_1): Use new function.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (shuffle_slide_patterns): New.
+	(expand_vec_perm_const_1): Call new function.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117353
+	PR target/117878
+	* config/riscv/riscv-v.cc (expand_const_vector): Use predicated
+	instead of simple shift.
+
+2024-12-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/117990
+	* config/riscv/vector.md: Add the (mem:BLK (scratch)) to the
+	vector strided load.
+
+2024-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/111659
+	* doc/extend.texi (Common Variable Attributes): Copy-edit description
+	of the strict_flex_array attribute levels.
+	* doc/invoke.texi (C Dialect Options): Swap documented behavior for
+	levels 0 and 3.  Copy the description for the other levels from the
+	attribute instead of indirecting to it.
+
 2024-12-12  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_emit_hpdiv_const): Clobber r1, r25,

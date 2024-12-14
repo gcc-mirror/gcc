@@ -1,3 +1,76 @@
+2024-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117095
+	* gcc.c-torture/execute/pr117095.c: New test.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114801
+	* gcc.target/arm/mve/pr108443.c: Update predicate constant.
+	* gcc.target/arm/mve/pr108443-run.c: Likewise.
+	* gcc.target/arm/mve/pr114801.c: New test.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_s64.c:
+	Update expected output.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_u64.c:
+	Likewise.
+
+2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_s64.c: Update
+	expected output.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_u64.c:
+	Likewise.
+
+2024-12-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/pr108607.C: Update dg-error.
+	* g++.dg/gomp/pr79664.C: Update dg-error.
+	* g++.dg/gomp/omp-constexpr.C: New test.
+
+2024-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116979
+	* gcc.target/i386/pr116979.c: New test.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr112599-2.c: Adjust test
+	expectation.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-evenodd-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-evenodd.c: New test.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-interleave-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-interleave.c: New test.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slide-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slide.c: New test.
+
+2024-12-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117353
+	PR target/117878
+	* gcc.target/riscv/rvv/autovec/pr117353.c: New test.
+
+2024-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/embed-1.c: Use #error rather than #errror.
+
+2024-12-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/117990
+	* gcc.target/riscv/rvv/base/pr117990-run-1.c: New test.
+
 2024-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/115127
