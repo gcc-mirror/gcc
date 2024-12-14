@@ -1934,7 +1934,7 @@ BEGIN
    IF IsConstStringKnown (sym)
    THEN
       size := GetStringLength (tokenno, sym) ;
-      IF size=1
+      IF size = 1
       THEN
          DeclareCharConstant (tokenno, sym)
       ELSE
@@ -5570,7 +5570,7 @@ BEGIN
          IF IsConstString (low) AND IsConstStringKnown (low)
          THEN
             size := GetStringLength (tokenno, low) ;
-            IF size=1
+            IF size <= 1
             THEN
                PutSubrange(sym, low, high, Char)
             ELSE

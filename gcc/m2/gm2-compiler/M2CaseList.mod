@@ -27,10 +27,10 @@ FROM M2GCCDeclare IMPORT TryDeclareConstant, GetTypeMin, GetTypeMax ;
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3, MetaErrorT4, MetaErrorStringT0, MetaErrorString1 ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Range IMPORT OverlapsRange, IsEqual, IsGreater ;
-FROM M2ALU IMPORT PushIntegerTree, PopIntegerTree, Addn, Sub, PushInt ;
+FROM M2ALU IMPORT PushIntegerTree, PopIntegerTree, Addn, Sub, PushInt, PushCard ;
 FROM Indexing IMPORT Index, InitIndex, PutIndice, GetIndice, ForeachIndiceInIndexDo, HighIndice ;
 FROM Lists IMPORT InitList, IncludeItemIntoList, RemoveItemFromList, NoOfItemsInList, GetItemFromList ;
-FROM NameKey IMPORT KeyToCharStar ;
+FROM NameKey IMPORT NulName, KeyToCharStar ;
 FROM SymbolConversion IMPORT GccKnowsAbout, Mod2Gcc, AddModGcc ;
 FROM DynamicStrings IMPORT InitString, InitStringCharStar, InitStringChar, ConCat, Mark, KillString ;
 FROM gcctypes IMPORT tree ;
@@ -44,7 +44,8 @@ FROM NumberIO IMPORT WriteCard ;
 
 FROM SymbolTable IMPORT NulSym, IsConst, IsFieldVarient, IsRecord, IsRecordField, GetVarientTag, GetType,
                         ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType, NoOfElements, GetNth,
-                        IsSubrange ;
+                        IsSubrange, MakeConstLit, IsConstString, GetStringLength, MakeConstVar, PutConst,
+                        PopValue ;
 
 TYPE
    RangePair = POINTER TO RECORD
@@ -64,6 +65,7 @@ TYPE
               END ;
 
    CaseDescriptor = POINTER TO RECORD
+                       resolved     : BOOLEAN ;
                        elseClause   : BOOLEAN ;
                        elseField    : CARDINAL ;
                        record       : CARDINAL ;
@@ -110,6 +112,7 @@ BEGIN
       InternalError ('out of memory error')
    ELSE
       WITH c^ DO
+         resolved := FALSE ;
          elseClause := FALSE ;
          elseField := NulSym ;
          record := rec ;
@@ -244,7 +247,30 @@ END GetVariantTagType ;
 
 PROCEDURE CaseBoundsResolved (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
 VAR
-   resolved: BOOLEAN ;
+   p: CaseDescriptor ;
+BEGIN
+   p := GetIndice (caseArray, c) ;
+   IF p^.resolved
+   THEN
+      RETURN TRUE
+   ELSE
+      IF CheckCaseBoundsResolved (tokenno, c)
+      THEN
+         ConvertNulStr2NulChar (tokenno, c) ;
+         RETURN TRUE
+      ELSE
+         RETURN FALSE
+      END
+   END
+END CaseBoundsResolved ;
+
+
+(*
+   CheckCaseBoundsResolved - return TRUE if all constants in the case list c are known to GCC.
+*)
+
+PROCEDURE CheckCaseBoundsResolved (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+VAR
    p       : CaseDescriptor ;
    q       : CaseList ;
    r       : RangePair ;
@@ -327,7 +353,62 @@ BEGIN
       END
    END ;
    RETURN( TRUE )
-END CaseBoundsResolved ;
+END CheckCaseBoundsResolved ;
+
+
+(*
+   ConvertNulStr2NulChar -
+*)
+
+PROCEDURE ConvertNulStr2NulChar (tokenno: CARDINAL; c: CARDINAL) ;
+VAR
+   p   : CaseDescriptor ;
+   q   : CaseList ;
+   r   : RangePair ;
+   i, j: CARDINAL ;
+BEGIN
+   p := GetIndice (caseArray, c) ;
+   WITH p^ DO
+      i := 1 ;
+      WHILE i <= maxCaseId DO
+         q := GetIndice (caseListArray, i) ;
+         j := 1 ;
+         WHILE j<=q^.maxRangeId DO
+            r := GetIndice (q^.rangeArray, j) ;
+            r^.low := NulStr2NulChar (tokenno, r^.low) ;
+            r^.high := NulStr2NulChar (tokenno, r^.high) ;
+            INC (j)
+         END ;
+         INC (i)
+      END
+   END
+END ConvertNulStr2NulChar ;
+
+
+(*
+   NulStr2NulChar - if sym is a const string of length 0 then return
+                    a nul char instead otherwise return sym.
+*)
+
+PROCEDURE NulStr2NulChar (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
+BEGIN
+   IF sym # NulSym
+   THEN
+      IF IsConst (sym) AND IsConstString (sym) AND GccKnowsAbout (sym)
+      THEN
+         IF GetStringLength (tok, sym) = 0
+         THEN
+            sym := MakeConstVar (tok, NulName) ;
+            PutConst (sym, Char) ;
+            PushCard (0) ;
+            PopValue (sym) ;
+            TryDeclareConstant (tok, sym) ;
+            Assert (GccKnowsAbout (sym))
+         END
+      END
+   END ;
+   RETURN sym
+END NulStr2NulChar ;
 
 
 (*
@@ -440,6 +521,26 @@ END Overlaps ;
 
 
 (*
+   GetCaseExpression - return the type from the expression.
+*)
+
+PROCEDURE GetCaseExpression (p: CaseDescriptor) : CARDINAL ;
+VAR
+   type: CARDINAL ;
+BEGIN
+   WITH p^ DO
+      IF expression = NulSym
+      THEN
+         type := NulSym
+      ELSE
+         type := SkipType (GetType (expression))
+      END
+   END ;
+   RETURN type
+END GetCaseExpression ;
+
+
+(*
    OverlappingCaseBound - returns TRUE if, r, overlaps any case bound in the
                           case statement, c.
 *)
@@ -488,15 +589,15 @@ VAR
    i, j   : CARDINAL ;
    overlap: BOOLEAN ;
 BEGIN
-   p := GetIndice(caseArray, c) ;
+   p := GetIndice (caseArray, c) ;
    overlap := FALSE ;
    WITH p^ DO
       i := 1 ;
       WHILE i<=maxCaseId DO
-         q := GetIndice(caseListArray, i) ;
+         q := GetIndice (caseListArray, i) ;
          j := 1 ;
          WHILE j<=q^.maxRangeId DO
-            r := GetIndice(q^.rangeArray, j) ;
+            r := GetIndice (q^.rangeArray, j) ;
             IF OverlappingCaseBound (r, c)
             THEN
                overlap := TRUE
@@ -1121,27 +1222,24 @@ BEGIN
    WITH p^ DO
       IF NOT elseClause
       THEN
-         IF expression # NulSym
+         type := GetCaseExpression (p) ;
+         IF type # NulSym
          THEN
-            type := SkipType (GetType (expression)) ;
-            IF type # NulSym
+            IF IsEnumeration (type) OR IsSubrange (type)
             THEN
-               IF IsEnumeration (type) OR IsSubrange (type)
+               (* A case statement sequence without an else clause but
+                  selecting using an enumeration type.  *)
+               set := NewSet (type) ;
+               set := ExcludeCaseRanges (set, p) ;
+               IF set # NIL
                THEN
-                  (* A case statement sequence without an else clause but
-                     selecting using an enumeration type.  *)
-                  set := NewSet (type) ;
-                  set := ExcludeCaseRanges (set, p) ;
-                  IF set # NIL
-                  THEN
-                     missing := TRUE ;
-                     MetaErrorT1 (tokenno,
-                                  'not all {%1Wd} values in the {%kCASE} statements are specified, hint you either need to specify each value of {%1ad} or use an {%kELSE} clause',
-                                  type) ;
-                     EmitMissingRangeErrors (tokenno, type, set)
-                  END ;
-                  set := DisposeRanges (set)
-               END
+                  missing := TRUE ;
+                  MetaErrorT1 (tokenno,
+                               'not all {%1Wd} values in the {%kCASE} statements are specified, hint you either need to specify each value of {%1ad} or use an {%kELSE} clause',
+                               type) ;
+                  EmitMissingRangeErrors (tokenno, type, set)
+               END ;
+               set := DisposeRanges (set)
             END
          END
       END
