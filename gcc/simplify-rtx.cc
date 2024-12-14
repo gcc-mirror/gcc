@@ -2941,6 +2941,35 @@ simplify_rotate_op (rtx op0, rtx op1, machine_mode mode)
   return NULL_RTX;
 }
 
+/* Returns true if OP0 and OP1 match the pattern (OP (plus (A - 1)) (neg A)),
+   and the pattern can be simplified (there are no side effects).  */
+
+static bool
+match_plus_neg_pattern (rtx op0, rtx op1, machine_mode mode)
+{
+  /* Remove SUBREG from OP0 and OP1, if needed.  */
+  if (GET_CODE (op0) == SUBREG
+      && GET_CODE (op1) == SUBREG
+      && subreg_lowpart_p (op0)
+      && subreg_lowpart_p (op1))
+    {
+      op0 = XEXP (op0, 0);
+      op1 = XEXP (op1, 0);
+    }
+
+  /* Check for the pattern (OP (plus (A - 1)) (neg A)).  */
+  if (((GET_CODE (op1) == NEG
+	&& GET_CODE (op0) == PLUS
+	&& XEXP (op0, 1) == CONSTM1_RTX (mode))
+       || (GET_CODE (op0) == NEG
+	   && GET_CODE (op1) == PLUS
+	   && XEXP (op1, 1) == CONSTM1_RTX (mode)))
+      && rtx_equal_p (XEXP (op0, 0), XEXP (op1, 0))
+      && !side_effects_p (XEXP (op0, 0)))
+    return true;
+  return false;
+}
+
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
    CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
    OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
@@ -3553,6 +3582,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && GET_MODE_CLASS (mode) != MODE_CC)
 	return CONSTM1_RTX (mode);
 
+      /* Convert (ior (plus (A - 1)) (neg A)) to -1.  */
+      if (match_plus_neg_pattern (op0, op1, mode))
+	return CONSTM1_RTX (mode);
+
       /* (ior A C) is C if all bits of A that might be nonzero are on in C.  */
       if (CONST_INT_P (op1)
 	  && HWI_COMPUTABLE_MODE_P (mode)
@@ -3713,6 +3746,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && (nonzero_bits (op0, mode)
 	      & nonzero_bits (op1, mode)) == 0)
 	return (simplify_gen_binary (IOR, mode, op0, op1));
+
+      /* Convert (xor (plus (A - 1)) (neg A)) to -1.  */
+      if (match_plus_neg_pattern (op0, op1, mode))
+	return CONSTM1_RTX (mode);
 
       /* Convert (XOR (NOT x) (NOT y)) to (XOR x y).
 	 Also convert (XOR (NOT x) y) to (NOT (XOR x y)), similarly for
@@ -3979,6 +4016,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	   || (GET_CODE (op1) == NOT && rtx_equal_p (XEXP (op1, 0), op0)))
 	  && ! side_effects_p (op0)
 	  && GET_MODE_CLASS (mode) != MODE_CC)
+	return CONST0_RTX (mode);
+
+      /* Convert (and (plus (A - 1)) (neg A)) to 0.  */
+      if (match_plus_neg_pattern (op0, op1, mode))
 	return CONST0_RTX (mode);
 
       /* Transform (and (extend X) C) into (zero_extend (and X C)) if
