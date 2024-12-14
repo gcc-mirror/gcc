@@ -40,7 +40,6 @@ using std::wint_t;
 using std::btowc;
 using std::wctob;
 using std::fgetwc;
-using std::fgetwc;
 using std::fgetws;
 using std::fputwc;
 using std::fputws;
