@@ -683,7 +683,7 @@ package body Repinfo is
                         Print_Expr (Node.Op2);
                         Write_Str (" else ");
                         Print_Expr (Node.Op3);
-                        Write_Str (" end)");
+                        Write_Str (")");
                      end if;
 
                   when Plus_Expr =>
