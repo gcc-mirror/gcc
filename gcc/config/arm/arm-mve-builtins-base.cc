@@ -308,7 +308,7 @@ public:
   rtx expand (function_expander &e) const override
   {
     insn_code icode;
-    rtx insns, base_ptr, new_base;
+    rtx insns, base_ptr, new_base = NULL_RTX;
     machine_mode base_mode;
 
     if ((e.mode_suffix_id != MODE_none)
@@ -483,7 +483,7 @@ public:
   rtx expand (function_expander &e) const override
   {
     insn_code icode;
-    rtx insns, base_ptr, new_base;
+    rtx insns, base_ptr, new_base = NULL_RTX;
     machine_mode base_mode;
 
     if ((e.mode_suffix_id != MODE_none)
