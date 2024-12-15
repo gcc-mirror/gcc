@@ -1670,9 +1670,6 @@ enum omp_clause_linear_kind
 struct GTY(()) tree_exp {
   struct tree_typed typed;
   location_t locus;
-  /* Discriminator for basic conditions in a Boolean expressions.  Trees that
-     are operands of the same Boolean expression should have the same uid.  */
-  unsigned condition_uid;
   tree GTY ((length ("TREE_OPERAND_LENGTH ((tree)&%h)"))) operands[1];
 };
 

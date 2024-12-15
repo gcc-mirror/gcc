@@ -76,14 +76,20 @@ along with GCC; see the file COPYING3.  If not see
    its Boolean expression.  Basic conditions given the same uid (in the same
    function) are parts of the same ANDIF/ORIF expression.  Used for condition
    coverage.  */
-static unsigned nextuid = 1;
+static unsigned nextconduid = 1;
+
+/* Annotated gconds so that basic conditions in the same expression map to
+   the same uid.  This is used for condition coverage.  */
+static hash_map <tree, unsigned> *cond_uids;
+
 /* Get a fresh identifier for a new condition expression.  This is used for
    condition coverage.  */
 static unsigned
 next_cond_uid ()
 {
-    return nextuid++;
+  return nextconduid++;
 }
+
 /* Reset the condition uid to the value it should have when compiling a new
    function.  0 is already the default/untouched value, so start at non-zero.
    A valid and set id should always be > 0.  This is used for condition
@@ -91,7 +97,24 @@ next_cond_uid ()
 static void
 reset_cond_uid ()
 {
-    nextuid = 1;
+  nextconduid = 1;
+}
+
+/* Associate the condition STMT with the discriminator UID.  STMTs that are
+   broken down with ANDIF/ORIF from the same Boolean expression should be given
+   the same UID; 'if (a && b && c) { if (d || e) ... } ...' should yield the
+   { a: 1, b: 1, c: 1, d: 2, e: 2 } when gimplification is done.  This is used
+   for condition coverage.  */
+static void
+tree_associate_condition_with_expr (tree stmt, unsigned uid)
+{
+  if (!condition_coverage_flag)
+    return;
+
+  if (!cond_uids)
+    cond_uids = new hash_map <tree, unsigned> ();
+
+  cond_uids->put (stmt, uid);
 }
 
 /* Hash set of poisoned variables in a bind expr.  */
@@ -4443,7 +4466,7 @@ shortcut_cond_r (tree pred, tree *true_label_p, tree *false_label_p,
 		     shortcut_cond_r (TREE_OPERAND (pred, 2), true_label_p,
 				      false_label_p, new_locus,
 				      condition_uid));
-      SET_EXPR_UID (expr, condition_uid);
+      tree_associate_condition_with_expr (expr, condition_uid);
     }
   else
     {
@@ -4451,7 +4474,7 @@ shortcut_cond_r (tree pred, tree *true_label_p, tree *false_label_p,
 		     build_and_jump (true_label_p),
 		     build_and_jump (false_label_p));
       SET_EXPR_LOCATION (expr, locus);
-      SET_EXPR_UID (expr, condition_uid);
+      tree_associate_condition_with_expr (expr, condition_uid);
     }
 
   if (local_label)
@@ -4523,13 +4546,13 @@ tag_shortcut_cond (tree pred, unsigned condition_uid)
 	  || TREE_CODE (fst) == TRUTH_ORIF_EXPR)
 	tag_shortcut_cond (fst, condition_uid);
       else if (TREE_CODE (fst) == COND_EXPR)
-	SET_EXPR_UID (fst, condition_uid);
+	tree_associate_condition_with_expr (fst, condition_uid);
 
       if (TREE_CODE (lst) == TRUTH_ANDIF_EXPR
 	  || TREE_CODE (lst) == TRUTH_ORIF_EXPR)
 	tag_shortcut_cond (lst, condition_uid);
       else if (TREE_CODE (lst) == COND_EXPR)
-	SET_EXPR_UID (lst, condition_uid);
+	tree_associate_condition_with_expr (lst, condition_uid);
     }
 }
 
@@ -4599,7 +4622,7 @@ shortcut_cond_expr (tree expr, unsigned condition_uid)
     }
 
   /* The expr tree should also have the expression id set.  */
-  SET_EXPR_UID (expr, condition_uid);
+  tree_associate_condition_with_expr (expr, condition_uid);
 
   /* If we're done, great.  */
   if (TREE_CODE (pred) != TRUTH_ANDIF_EXPR
@@ -5040,7 +5063,10 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
   else
     label_false = create_artificial_label (UNKNOWN_LOCATION);
 
-  unsigned cond_uid = EXPR_COND_UID (expr);
+  unsigned cond_uid = 0;
+  if (cond_uids)
+    if (unsigned *v = cond_uids->get (expr))
+      cond_uid = *v;
   if (cond_uid == 0)
     cond_uid = next_cond_uid ();
 
@@ -20178,6 +20204,11 @@ gimplify_function_tree (tree fndecl)
     push_struct_function (fndecl);
 
   reset_cond_uid ();
+  if (cond_uids)
+    {
+      delete cond_uids;
+      cond_uids = NULL;
+    }
 
   /* Tentatively set PROP_gimple_lva here, and reset it in gimplify_va_arg_expr
      if necessary.  */
