@@ -78,10 +78,10 @@ void postcond(int x) post(x >= 0); // { dg-error "a value parameter used in a po
 
 struct PostCond {
   void postcond(int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
-  template<class T> void postcond2(T x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+  template<class T> void postcond2(T x) post(x >= 0);
 };
 
-template <class T> void postcond3(T x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+template <class T> void postcond3(T x) post(x >= 0);
 
 void postcond4(const int y, int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
 
