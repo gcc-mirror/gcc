@@ -12596,13 +12596,20 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       && (expr2->ts.type == BT_CLASS || gfc_may_be_finalized (expr2->ts)))
     {
       expr2->must_finalize = 1;
+      /* F2023 7.5.6.3: If an executable construct references a nonpointer
+	 function, the result is finalized after execution of the innermost
+	 executable construct containing the reference.  */
+      if (expr2->expr_type == EXPR_FUNCTION
+	  && (gfc_expr_attr (expr2).pointer
+	      || (expr2->ts.type == BT_CLASS && CLASS_DATA (expr2)->attr.class_pointer)))
+	expr2->must_finalize = 0;
       /* F2008 4.5.6.3 para 5: If an executable construct references a
 	 structure constructor or array constructor, the entity created by
 	 the constructor is finalized after execution of the innermost
 	 executable construct containing the reference.
 	 These finalizations were later deleted by the Combined Techical
 	 Corrigenda 1 TO 4 for fortran 2008 (f08/0011).  */
-      if (gfc_notification_std (GFC_STD_F2018_DEL)
+      else if (gfc_notification_std (GFC_STD_F2018_DEL)
 	  && (expr2->expr_type == EXPR_STRUCTURE
 	      || expr2->expr_type == EXPR_ARRAY))
 	expr2->must_finalize = 0;
