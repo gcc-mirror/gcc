@@ -1,3 +1,10 @@
+2024-12-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/90321
+	* decl.cc (find_decomp_class_base): Check for decomposing a
+	lambda closure type.  Report base class chains if needed.
+	(cp_finish_decomp): Remove no-longer-needed check.
+
 2024-12-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	* parser.cc (cp_parser_omp_construct, cp_parser_pragma): Reject

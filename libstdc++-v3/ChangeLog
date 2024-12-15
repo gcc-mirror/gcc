@@ -1,3 +1,8 @@
+2024-12-14  Abdo Eid  <abdoeid.eg@ieee.org>
+
+	* include/c_compatibility/wchar.h (fgetwc): Remove duplicate
+	using-declaration.
+
 2024-12-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/112349

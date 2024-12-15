@@ -1,3 +1,8 @@
+2024-12-14  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/117812
+	* zstdtest.c (test_large): Use 3 rather than ZSTD_CLEVEL_DEFAULT
+
 2024-11-29  Ian Lance Taylor  <iant@golang.org>
 
 	* fileline.c: Use WIN32_LEAN_AND_MEAN, not WIN32_MEAN_AND_LEAN.

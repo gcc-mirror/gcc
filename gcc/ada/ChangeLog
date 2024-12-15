@@ -1,3 +1,9 @@
+2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/118011
+	* gcc-interface/misc.cc (gnat_post_options): Test
+	!OPTION_SET_P (flag_short_enums) rather than flag_short_enums == 2.
+
 2024-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.cc (compare_elmt_bitpos): Deal specially with

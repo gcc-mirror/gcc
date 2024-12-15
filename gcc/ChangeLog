@@ -1,3 +1,42 @@
+2024-12-14  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
+
+	* match.pd: New pattern.
+	* simplify-rtx.cc (match_plus_neg_pattern): New helper function.
+	(simplify_context::simplify_binary_operation_1): New
+	code to handle (a - 1) & -a, (a - 1) | -a and (a - 1) ^ -a.
+
+2024-12-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_resolve_overloaded_builtin): Add argument
+	`complain'.
+
+2024-12-14  Heiko Eißfeldt  <heiko@hexco.de>
+
+	* doc/install.texi (Configuration): Fix typos in documentation
+	for --enable-host-pie.
+
+2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118023
+	* gimple-fold.cc (decode_field_reference): Return NULL_TREE if
+	inner has non-type_has_mode_precision_p integral type.
+
+2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118024
+	* gimple-ssa-warn-access.cc (matching_alloc_calls_p): Walk malloc
+	attributes of alloc_decl and dealloc_decl in separate loops rather
+	than in lock-step.  Use common_deallocs.contains rather than
+	common_deallocs.add in the second loop.
+
+2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/118011
+	* opts.cc (init_options_struct): Don't set opts->x_flag_short_enums to
+	2.
+	* toplev.cc (process_options): Test !OPTION_SET_P (flag_short_enums)
+	rather than flag_short_enums == 2.
+
 2024-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/117095

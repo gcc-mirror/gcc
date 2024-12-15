@@ -1,3 +1,22 @@
+2024-12-14  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
+
+	* gcc.dg/tree-ssa/bitops-11.c: New test.
+
+2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118023
+	* gcc.dg/bitint-119.c: New test.
+
+2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118024
+	* gcc.dg/pr118024.c: New test.
+
+2024-12-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/90321
+	* g++.dg/cpp1z/decomp62.C: New test.
+
 2024-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/117095
