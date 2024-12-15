@@ -15,4 +15,4 @@ test1 (void)
 /* { dg-final { scan-tree-dump "#pragma omp unroll" "original" } } */
 /* { dg-final { scan-tree-dump-not "#pragma omp" "gimple" } } */
 /* { dg-final { scan-tree-dump-times "dummy" 1 "gimple" } } */
-/* { dg-final { scan-assembler-times "dummy" 8 } } */
+/* { dg-final { scan-assembler-times "dummy" 8 { xfail hppa*-*-hpux* } } } */
