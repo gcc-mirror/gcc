@@ -209,6 +209,7 @@ static HOST_WIDE_INT pa_starting_frame_offset (void);
 static section* pa_elf_select_rtx_section(machine_mode, rtx, unsigned HOST_WIDE_INT) ATTRIBUTE_UNUSED;
 static void pa_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool pa_use_lra_p (void);
+static bool pa_frame_pointer_required (void);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -393,6 +394,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_DELEGITIMIZE_ADDRESS pa_delegitimize_address
 #undef TARGET_INTERNAL_ARG_POINTER
 #define TARGET_INTERNAL_ARG_POINTER pa_internal_arg_pointer
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED pa_frame_pointer_required
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE pa_can_eliminate
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
@@ -11332,6 +11335,19 @@ static bool
 pa_use_lra_p ()
 {
   return pa_lra_p;
+}
+
+/* Implement TARGET_FRAME_POINTER_REQUIRED.  */
+
+bool
+pa_frame_pointer_required (void)
+{
+  /* If the function receives nonlocal gotos, it needs to save the frame
+     pointer in the argument save area.  */
+  if (cfun->has_nonlocal_label)
+    return true;
+
+  return false;
 }
 
 #include "gt-pa.h"
