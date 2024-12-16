@@ -2433,6 +2433,9 @@ nvptx code by default compiles for at least PTX ISA version 6.0.
 @item nvptx_runtime_alias_ptx
 The nvptx runtime environment supports the PTX ISA directive
 @code{.alias}.
+
+@item nvptx_softstack
+nvptx @option{-msoft-stack} is enabled.
 @end table
 
 @subsubsection PowerPC-specific attributes

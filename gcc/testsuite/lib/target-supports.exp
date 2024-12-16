@@ -1009,10 +1009,11 @@ proc check_effective_target_alloca {} {
       return 0
     }
     if { [istarget nvptx-*-*] } {
-	return [check_no_compiler_messages alloca assembly {
-	    void f (void*);
-	    void g (int n) { f (__builtin_alloca (n)); }
-	}]
+	if { ![check_effective_target_nvptx_softstack] } {
+	    return 0
+	} else {
+	    return 1
+	}
     }
     return 1
 }
@@ -14097,6 +14098,16 @@ proc check_nvptx_default_ptx_isa_version_at_least { major minor } {
 
 proc check_effective_target_nvptx_default_ptx_isa_version_at_least_6_0 { } {
     return [check_nvptx_default_ptx_isa_version_at_least 6 0]
+}
+
+# Return 1 if nvptx '-msoft-stack' is enabled.
+
+proc check_effective_target_nvptx_softstack { } {
+    return [check_no_compiler_messages nvptx_softstack assembly {
+	#if !defined(__nvptx_softstack__)
+	#error !__nvptx_softstack__
+	#endif
+    }]
 }
 
 # Return 1 if nvptx code with PTX ISA version major.minor or higher can be run.
