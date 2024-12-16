@@ -4420,6 +4420,63 @@
   [(set_attr "type" "unknown")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "crc_rev<mode>si4"
+  [(match_operand:SI	0 "register_operand")	; new_chksum
+   (match_operand:SI	1 "register_operand")	; old_chksum
+   (match_operand:SUBDI	2 "reg_or_0_operand")	; msg
+   (match_operand	3 "const_int_operand")]	; poly
+  ""
+  {
+    unsigned HOST_WIDE_INT poly = UINTVAL (operands[3]);
+    rtx msg = operands[2];
+    rtx (*crc_insn)(rtx, rtx, rtx) = nullptr;
+
+    /* TODO: Review this when adding LA32 support.  If we're going to
+       support CRC instructions on LA32 we'll need a "-mcrc" switch as
+       they are optional on LA32.  */
+
+    if (TARGET_64BIT)
+      {
+	if (poly == reflect_hwi (0xedb88320u, 32))
+	  crc_insn = gen_loongarch_crc_w_<size>_w;
+	else if (poly == reflect_hwi (0x82f63b78u, 32))
+	  crc_insn = gen_loongarch_crcc_w_<size>_w;
+      }
+
+    if (crc_insn)
+      {
+	/* We cannot make crc_insn to accept const0_rtx easily:
+	   it's not possible to figure out the mode of const0_rtx so we'd
+	   have to separate both UNSPEC_CRC and UNSPEC_CRCC to 4 different
+	   UNSPECs.  Instead just hack it around here.  */
+	if (msg == const0_rtx)
+	  msg = gen_rtx_REG (<MODE>mode, 0);
+
+	emit_insn (crc_insn (operands[0], msg, operands[1]));
+      }
+    else
+      {
+	/* No CRC instruction is suitable, use the generic table-based
+	   implementation but optimize bit reversion.  */
+	auto rbit = [](rtx *r)
+	  {
+	    /* Well, this is ugly.  The problem is
+	       expand_reversed_crc_table_based only accepts one helper
+	       for reversing data elements and CRC states.  */
+	    auto mode = GET_MODE (*r);
+	    auto rbit = (mode == <MODE>mode ? gen_rbit<mode> : gen_rbitsi);
+	    rtx out = gen_reg_rtx (mode);
+
+	    emit_insn (rbit (out, *r));
+	    *r = out;
+	  };
+	expand_reversed_crc_table_based (operands[0], operands[1],
+					 msg, operands[3], <MODE>mode,
+					 rbit);
+      }
+    DONE;
+  })
+
 ;; With normal or medium code models, if the only use of a pc-relative
 ;; address is for loading or storing a value, then relying on linker
 ;; relaxation is not better than emitting the machine instruction directly.
