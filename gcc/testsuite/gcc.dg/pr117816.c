@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { int32plus } } } */
 /* { dg-options "-O -fnon-call-exceptions -favoid-store-forwarding -fno-forward-propagate -finstrument-functions" } */
 
 char *p;
