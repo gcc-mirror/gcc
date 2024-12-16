@@ -28885,6 +28885,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	  tree first_attribute;
 	  tree initializer;
 	  bool named_bitfld = false;
+	  bool decl_was_initialized_p = false;
 
 	  /* Peek at the next token.  */
 	  token = cp_lexer_peek_token (parser->lexer);
@@ -29054,9 +29055,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		 pure-specifier.  It is not correct to parse the
 		 initializer before registering the member declaration
 		 since the member declaration should be in scope while
-		 its initializer is processed.  However, the rest of the
-		 front end does not yet provide an interface that allows
-		 us to handle this correctly.  */
+		 its initializer is processed.  As such we might build
+		 decl pre-emptively.  */
 	      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
 		{
 		  /* In [class.mem]:
@@ -29083,18 +29083,31 @@ cp_parser_member_declaration (cp_parser* parser)
 		    initializer = cp_parser_pure_specifier (parser);
 		  else if (decl_specifiers.storage_class != sc_static)
 		    initializer = cp_parser_save_nsdmi (parser);
-		  else if (cxx_dialect >= cxx11)
-		    {
-		      /* Don't require a constant rvalue in C++11, since we
-			 might want a reference constant.  We'll enforce
-		         constancy later.  */
-		      cp_lexer_consume_token (parser->lexer);
-		      /* Parse the initializer.  */
-		      initializer = cp_parser_initializer_clause (parser);
-		    }
 		  else
-		    /* Parse the initializer.  */
-		    initializer = cp_parser_constant_initializer (parser);
+		    {
+		      decl = start_initialized_static_member (declarator,
+							      &decl_specifiers,
+							      attributes);
+		      start_lambda_scope (decl);
+
+		      if (cxx_dialect >= cxx11)
+			{
+			  /* Don't require a constant rvalue in C++11, since we
+			     might want a reference constant.  We'll enforce
+			     constancy later.  */
+			  cp_lexer_consume_token (parser->lexer);
+			  /* Parse the initializer.  */
+			  initializer = cp_parser_initializer_clause (parser);
+			}
+		      else
+			/* Parse the initializer.  */
+			initializer = cp_parser_constant_initializer (parser);
+
+		      finish_lambda_scope ();
+		      finish_initialized_static_member (decl, initializer,
+							asm_specification);
+		      decl_was_initialized_p = true;
+		    }
 		}
 	      else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
 		       && !function_declarator_p (declarator))
@@ -29104,7 +29117,17 @@ cp_parser_member_declaration (cp_parser* parser)
 		  if (decl_specifiers.storage_class != sc_static)
 		    initializer = cp_parser_save_nsdmi (parser);
 		  else
-		    initializer = cp_parser_initializer (parser);
+		    {
+		      decl = start_initialized_static_member (declarator,
+							      &decl_specifiers,
+							      attributes);
+		      start_lambda_scope (decl);
+		      initializer = cp_parser_initializer (parser);
+		      finish_lambda_scope ();
+		      finish_initialized_static_member (decl, initializer,
+							asm_specification);
+		      decl_was_initialized_p = true;
+		    }
 		}
 	      /* Detect invalid bit-field cases such as
 
@@ -29179,16 +29202,19 @@ cp_parser_member_declaration (cp_parser* parser)
 		  declarator->id_loc = token->location;
 
 	      /* Create the declaration.  */
-	      decl = grokfield (declarator, &decl_specifiers,
-				initializer, /*init_const_expr_p=*/true,
-				asm_specification, attributes);
-
-	      if (parser->fully_implicit_function_template_p)
+	      if (!decl_was_initialized_p)
 		{
-		  if (friend_p)
-		    finish_fully_implicit_template (parser, 0);
-		  else
-		    decl = finish_fully_implicit_template (parser, decl);
+		  decl = grokfield (declarator, &decl_specifiers,
+				    initializer, /*init_const_expr_p=*/true,
+				    asm_specification, attributes);
+
+		  if (parser->fully_implicit_function_template_p)
+		    {
+		      if (friend_p)
+			finish_fully_implicit_template (parser, 0);
+		      else
+			decl = finish_fully_implicit_template (parser, decl);
+		    }
 		}
 	    }
 
@@ -29242,7 +29268,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      assume_semicolon = true;
 	    }
 
-	  if (decl)
+	  if (decl && !decl_was_initialized_p)
 	    {
 	      /* Add DECL to the list of members.  */
 	      if (!friend_p

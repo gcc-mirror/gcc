@@ -3020,6 +3020,9 @@ that have additional context.
 Version 19, which first appeard in G++ 14, fixes manglings of structured
 bindings to include ABI tags.
 
+Version 20, which first appeared in G++ 15, fixes manglings of lambdas
+in static data member initializers.
+
 See also @option{-Wabi}.
 
 @opindex fabi-compat-version

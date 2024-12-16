@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "target.h"
 #include "decl.h"
+#include "flags.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -1546,13 +1547,35 @@ finish_lambda_scope (void)
 void
 record_lambda_scope (tree lambda)
 {
-  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope.scope;
-  if (lambda_scope.scope)
+  tree closure = LAMBDA_EXPR_CLOSURE (lambda);
+  gcc_checking_assert (closure);
+
+  /* Before ABI v20, lambdas in static data member initializers did not
+     get a dedicated lambda scope.  */
+  tree scope = lambda_scope.scope;
+  if (scope
+      && VAR_P (scope)
+      && DECL_CLASS_SCOPE_P (scope)
+      && DECL_INITIALIZED_IN_CLASS_P (scope))
     {
-      tree closure = LAMBDA_EXPR_CLOSURE (lambda);
-      gcc_checking_assert (closure);
-      maybe_key_decl (lambda_scope.scope, TYPE_NAME (closure));
+      if (!abi_version_at_least (20))
+	scope = NULL_TREE;
+      if (warn_abi && abi_version_crosses (20) && !processing_template_decl)
+	{
+	  if (abi_version_at_least (20))
+	    warning_at (location_of (closure), OPT_Wabi,
+			"the mangled name of %qT changed in "
+			"%<-fabi-version=20%> (GCC 15.1)", closure);
+	  else
+	    warning_at (location_of (closure), OPT_Wabi,
+			"the mangled name of %qT changes in "
+			"%<-fabi-version=20%> (GCC 15.1)", closure);
+	}
     }
+
+  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = scope;
+  if (scope)
+    maybe_key_decl (scope, TYPE_NAME (closure));
 }
 
 // Compare lambda template heads TMPL_A and TMPL_B, used for both

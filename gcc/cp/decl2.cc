@@ -1252,6 +1252,83 @@ grokfield (const cp_declarator *declarator,
   return NULL_TREE;
 }
 
+/* Like grokfield, but just for the initial grok of an initialized static
+   member.  Used to be able to push the new decl before parsing the
+   initialiser.  */
+
+tree
+start_initialized_static_member (const cp_declarator *declarator,
+				 cp_decl_specifier_seq *declspecs,
+				 tree attrlist)
+{
+  tree value = grokdeclarator (declarator, declspecs, FIELD, SD_INITIALIZED,
+			       &attrlist);
+  if (!value || error_operand_p (value))
+    return error_mark_node;
+  if (TREE_CODE (value) == TYPE_DECL)
+    {
+      error_at (declarator->init_loc,
+		"typedef %qD is initialized (use %qs instead)",
+		value, "decltype");
+      return error_mark_node;
+    }
+  else if (TREE_CODE (value) == FUNCTION_DECL)
+    {
+      if (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE)
+	error_at (declarator->init_loc,
+		  "invalid initializer for member function %qD",
+		  value);
+      else if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE)
+	error_at (declarator->init_loc,
+		  "initializer specified for static member function %qD",
+		  value);
+      else
+	gcc_unreachable ();
+      return error_mark_node;
+    }
+  else if (TREE_CODE (value) == FIELD_DECL)
+    {
+      /* NSDM marked 'static', grokdeclarator has already errored.  */
+      gcc_checking_assert (seen_error ());
+      return error_mark_node;
+    }
+  gcc_checking_assert (VAR_P (value));
+
+  DECL_CONTEXT (value) = current_class_type;
+  if (processing_template_decl)
+    {
+      value = push_template_decl (value);
+      if (error_operand_p (value))
+	return error_mark_node;
+    }
+
+  if (attrlist)
+    cplus_decl_attributes (&value, attrlist, 0);
+
+  finish_member_declaration (value);
+  DECL_INITIALIZED_IN_CLASS_P (value) = true;
+
+  return value;
+}
+
+/* Finish a declaration prepared with start_initialized_static_member.  */
+
+void
+finish_initialized_static_member (tree decl, tree init, tree asmspec)
+{
+  if (decl == error_mark_node)
+    return;
+  gcc_checking_assert (VAR_P (decl));
+
+  int flags;
+  if (init && DIRECT_LIST_INIT_P (init))
+    flags = LOOKUP_NORMAL;
+  else
+    flags = LOOKUP_IMPLICIT;
+  finish_static_data_member_decl (decl, init, /*init_const_expr_p=*/true,
+				  asmspec, flags);
+}
+
 /* Like `grokfield', but for bitfields.
    WIDTH is the width of the bitfield, a constant expression.
    The other parameters are as for grokfield.  */
