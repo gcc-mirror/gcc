@@ -92,6 +92,12 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"str", Kind::STR},
   {"f32_runtime", Kind::F32_RUNTIME},
   {"f64_runtime", Kind::F64_RUNTIME},
+
+  {"Some", Kind::OPTION_SOME},
+  {"None", Kind::OPTION_NONE},
+
+  {"into_iter", Kind::INTOITER_INTOITER},
+  {"next", Kind::ITERATOR_NEXT},
 }};
 
 tl::optional<LangItem::Kind>
