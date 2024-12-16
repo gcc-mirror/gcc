@@ -2211,6 +2211,72 @@ package body Sem_Prag is
       procedure Check_Duplication (Id : Node_Id; Contracts : List_Id);
       --  Iterate through the identifiers in each contract to find duplicates
 
+      function Check_Param (N : Node_Id) return Traverse_Result;
+      --  Parameters of modes OUT or IN OUT of the subprogram shall not occur
+      --  in the consequences of an exceptional contract unless they are either
+      --  passed by reference or occur in the prefix of a reference to the 'Old
+      --  attribute or as direct prefixes of attributes that do not actually
+      --  read data from the object (SPARK RM 6.1.9(1)).
+
+      -----------------
+      -- Check_Param --
+      -----------------
+
+      function Check_Param (N : Node_Id) return Traverse_Result is
+      begin
+         case Nkind (N) is
+            when N_Identifier | N_Expanded_Name =>
+               declare
+                  Id : constant Entity_Id := Entity (N);
+               begin
+                  if Present (Id)
+                    and then Ekind (Id) in E_Out_Parameter
+                                         | E_In_Out_Parameter
+                    and then Scope (Id) = Spec_Id
+                    and then not Is_By_Reference_Type (Etype (Id))
+                    and then not Is_Aliased (Id)
+                  then
+                     declare
+                        Mode : constant String :=
+                          (if Ekind (Id) = E_Out_Parameter then "out"
+                           else "in out");
+                     begin
+                        Error_Msg_N
+                          ("formal parameter of mode """ & Mode
+                           & """ in consequence of Exceptional_Cases", N);
+                        Error_Msg_N
+                          ("\only parameters passed by reference are allowed",
+                           N);
+                     end;
+                  end if;
+               end;
+
+            when N_Attribute_Reference =>
+               case Attribute_Name (N) is
+                  when Name_Old =>
+                     return Skip;
+                  when Name_Constrained
+                     | Name_First
+                     | Name_Last
+                     | Name_Length
+                     | Name_Range
+                  =>
+                     if Nkind (Prefix (N)) in N_Identifier
+                                            | N_Expanded_Name
+                     then
+                        return Skip;
+                     end if;
+                  when others => null;
+               end case;
+
+            when others => null;
+         end case;
+
+         return OK;
+      end Check_Param;
+
+      procedure Check_Params is new Traverse_More_Proc (Check_Param);
+
       ----------------------------------
       -- Analyze_Exceptional_Contract --
       ----------------------------------
@@ -2323,6 +2389,8 @@ package body Sem_Prag is
          --  Preanalyze_Assert_Expression enforcing the expression type
 
          Preanalyze_Assert_Expression (Consequence, Any_Boolean);
+
+         Check_Params (Consequence);
 
          --  Emit a clarification message when the consequence contains at
          --  least one undefined reference, possibly due to contract freezing.
