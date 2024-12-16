@@ -4575,6 +4575,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__wc['d'] = L'd';
 	__wc['e'] = L'e';
 	__wc['f'] = L'f';
+	__wc['i'] = L'i'; // for "inf"
 	__wc['n'] = L'n'; // for "nan" and "inf"
 	__wc['p'] = L'p'; // for hexfloats "0x1p1"
 	__wc['x'] = L'x';
@@ -4584,6 +4585,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__wc['D'] = L'D';
 	__wc['E'] = L'E';
 	__wc['F'] = L'F';
+	__wc['I'] = L'I';
 	__wc['N'] = L'N';
 	__wc['P'] = L'P';
 	__wc['X'] = L'X';
