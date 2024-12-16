@@ -21155,10 +21155,6 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (EXT_REX_SSE_REGNO_P (regno))
 	return false;
 
-      /* Use pinsrw/pextrw to mov 16-bit data from/to sse to/from integer.  */
-      if (TARGET_SSE2 && mode == HImode)
-	return true;
-
       /* OImode and AVX modes are available only when AVX is enabled.  */
       return ((TARGET_AVX
 	       && VALID_AVX256_REG_OR_OI_MODE (mode))
