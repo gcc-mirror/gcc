@@ -1,3 +1,30 @@
+2024-12-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/118018
+	* config/pa/pa.cc (pa_frame_pointer_required): Declare and
+	implement.
+	(TARGET_FRAME_POINTER_REQUIRED): Define.
+
+2024-12-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (expand): Initialize new_base.
+
+2024-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (struct tree_exp): Remove condition_uid member.
+	* tree.h (SET_EXPR_UID, EXPR_COND_UID): Remove.
+	* gimplify.cc (nextuid): Rename to ...
+	(nextconduid): ... this.
+	(cond_uids): New static variable.
+	(next_cond_uid, reset_cond_uid): Adjust for the renaming,
+	formatting fix.
+	(tree_associate_condition_with_expr): New function.
+	(shortcut_cond_r, tag_shortcut_cond, shortcut_cond_expr): Use it
+	instead of SET_EXPR_UID.
+	(gimplify_cond_expr): Look up cond_uid in cond_uids hash map if
+	non-NULL instead of using EXPR_COND_UID.
+	(gimplify_function_tree): Delete cond_uids and set it to NULL.
+
 2024-12-14  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
 
 	* match.pd: New pattern.

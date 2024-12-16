@@ -1,3 +1,9 @@
+2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117897
+	* trans-expr.cc (gfc_trans_assignment_1): RHS pointer function
+	results must not be finalized.
+
 2024-12-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/117797

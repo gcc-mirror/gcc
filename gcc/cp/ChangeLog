@@ -1,3 +1,23 @@
+2024-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc
+	(cp_coroutine_transform::wrap_original_function_body): Use
+	finish_if_stmt instead of manually applying the same process.
+
+2024-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (expand_one_await_expression): Update the
+	resume index before checking if the coroutine is ready.
+
+2024-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98935
+	* coroutines.cc (register_local_var_uses): Add a pset to the
+	tree walk to avoid visiting the same BIND_EXPR twice.  Make
+	an early exit for cases that the callback does not apply.
+	(cp_coroutine_transform::apply_transforms): Add a pset to the
+	tree walk for register_local_vars.
+
 2024-12-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/90321

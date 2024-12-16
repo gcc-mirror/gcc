@@ -1,3 +1,27 @@
+2024-12-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/ivopts-1.c: Enable TImode tests on hppa64.
+
+2024-12-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-c++-common/gomp/unroll-4.c: xfail scan-assembler-times
+	"dummy" for hppa*-*-hpux*.
+	* c-c++-common/gomp/unroll-5.c: Likewise.
+
+2024-12-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/enum-14.C: Require lto.
+
+2024-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98935
+	* g++.dg/coroutines/pr98935.C: New test.
+
+2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117897
+	* gfortran.dg/finalize_59.f90: New test.
+
 2024-12-14  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
 
 	* gcc.dg/tree-ssa/bitops-11.c: New test.
