@@ -238,11 +238,7 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
 	{
 	  start_sequence ();
 
-	  /* We can use a paradoxical subreg to force this to a wider mode, as
-	     the only use will be inserting the bits (i.e., we don't care about
-	     the value of the higher bits).  */
-	  rtx ext0 = lowpart_subreg (GET_MODE (dest), it->mov_reg,
-				     GET_MODE (it->mov_reg));
+	  rtx ext0 = gen_rtx_ZERO_EXTEND (GET_MODE (dest), it->mov_reg);
 	  if (ext0)
 	    {
 	      rtx_insn *move0 = emit_move_insn (dest, ext0);
