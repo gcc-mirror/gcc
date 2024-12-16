@@ -2320,8 +2320,7 @@ package body Sem_Prag is
 
          Errors := Serious_Errors_Detected;
 
-         --  Preanalyze_Assert_Expression, but without enforcing any of the two
-         --  acceptable types.
+         --  Preanalyze_Assert_Expression enforcing the expression type
 
          Preanalyze_Assert_Expression (Consequence, Any_Boolean);
 
@@ -31380,7 +31379,7 @@ package body Sem_Prag is
 
          Errors := Serious_Errors_Detected;
 
-         --  Preanalyze_Assert_Expression, but without enforcing any of the two
+         --  Preanalyze_Assert_Expression, but without enforcing any of the
          --  acceptable types.
 
          Preanalyze_Assert_Expression (Expr);
