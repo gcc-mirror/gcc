@@ -138,6 +138,9 @@ class file_cache
   file_cache ();
   ~file_cache ();
 
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const;
+
   file_cache_slot *lookup_or_add_file (const char *file_path);
   void forcibly_evict_file (const char *file_path);
 

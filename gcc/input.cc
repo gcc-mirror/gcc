@@ -57,6 +57,9 @@ public:
   file_cache_slot ();
   ~file_cache_slot ();
 
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
+
   bool read_line_num (size_t line_num,
 		      char ** line, ssize_t *line_len);
 
@@ -524,6 +527,22 @@ file_cache::~file_cache ()
   delete[] m_file_slots;
 }
 
+void
+file_cache::dump (FILE *out, int indent) const
+{
+  for (size_t i = 0; i < num_file_slots; ++i)
+    {
+      fprintf (out, "%*sslot[%i]:\n", indent, "", (int)i);
+      m_file_slots[i].dump (out, indent + 2);
+    }
+}
+
+void
+file_cache::dump () const
+{
+  dump (stderr, 0);
+}
+
 /* Lookup the cache used for the content of a given file accessed by
    caret diagnostic.  If no cached file was found, create a new cache
    for this file, add it to the array of cached file and return
@@ -568,6 +587,33 @@ file_cache_slot::~file_cache_slot ()
       m_data = 0;
     }
   m_line_record.release ();
+}
+
+void
+file_cache_slot::dump (FILE *out, int indent) const
+{
+  if (!m_fp)
+    {
+      fprintf (out, "%*s(unused)\n", indent, "");
+      return;
+    }
+  fprintf (out, "%*sfile_path: %s\n", indent, "", m_file_path);
+  fprintf (out, "%*sneeds_read_p: %i\n", indent, "", (int)needs_read_p ());
+  fprintf (out, "%*sneeds_grow_p: %i\n", indent, "", (int)needs_grow_p ());
+  fprintf (out, "%*suse_count: %i\n", indent, "", m_use_count);
+  fprintf (out, "%*ssize: %zi\n", indent, "", m_size);
+  fprintf (out, "%*snb_read: %zi\n", indent, "", m_nb_read);
+  fprintf (out, "%*sstart_line_idx: %zi\n", indent, "", m_line_start_idx);
+  fprintf (out, "%*sline_num: %zi\n", indent, "", m_line_num);
+  fprintf (out, "%*stotal_lines: %zi\n", indent, "", m_total_lines);
+  fprintf (out, "%*smissing_trailing_newline: %i\n",
+	   indent, "", (int)m_missing_trailing_newline);
+  fprintf (out, "%*sline records (%i):\n",
+	   indent, "", m_line_record.length ());
+  for (auto &line : m_line_record)
+    fprintf (out, "%*sline %zi: byte offsets: %zi-%zi\n",
+	     indent + 2, "",
+	     line.line_num, line.start_pos, line.end_pos);
 }
 
 /* Returns TRUE iff the cache would need to be filled with data coming

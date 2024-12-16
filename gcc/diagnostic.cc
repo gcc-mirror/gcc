@@ -449,6 +449,11 @@ diagnostic_context::dump (FILE *out) const
     m_diagnostic_buffer->dump (out, 4);
   else
     fprintf (out, "    (none):\n");
+  fprintf (out, "  file cache:\n");
+  if (m_file_cache)
+    m_file_cache->dump (out, 4);
+  else
+    fprintf (out, "    (none):\n");
 }
 
 /* Return true if sufficiently severe diagnostics have been seen that
