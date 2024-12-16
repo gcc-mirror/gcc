@@ -26,6 +26,9 @@ namespace Rust {
 class LangItem
 {
 public:
+  // FIXME: We should clean up that enum to make it more inline with the list of
+  // lang-items in Rust 1.49
+  // https://github.com/rust-lang/rust/blob/1.49.0/compiler/rustc_hir/src/lang_items.rs
   enum class Kind
   {
     // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/arith.rs
@@ -117,6 +120,12 @@ public:
     STR,
     F32_RUNTIME,
     F64_RUNTIME,
+
+    OPTION_SOME,
+    OPTION_NONE,
+
+    INTOITER_INTOITER,
+    ITERATOR_NEXT,
   };
 
   static const BiMap<std::string, Kind> lang_items;
