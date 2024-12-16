@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MAP
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -43,6 +44,15 @@ public:
   : m_str (str ? ::xstrdup (str) : nullptr)
   {
   }
+  owned_nullable_string (const owned_nullable_string &other)
+  : m_str (other.xstrdup ())
+  {
+  }
+  owned_nullable_string (owned_nullable_string &&other)
+  {
+    m_str = other.m_str;
+    other.m_str = nullptr;
+  }
 
   ~owned_nullable_string ()
   {
@@ -60,6 +70,16 @@ public:
   char *xstrdup () const
   {
     return m_str ? ::xstrdup (m_str) : nullptr;
+  }
+
+  bool
+  operator< (const owned_nullable_string &other) const
+  {
+    if (m_str && other.m_str)
+      return strcmp (m_str, other.m_str) < 0;
+    if (m_str == nullptr && other.m_str != nullptr)
+      return true;
+    return false;
   }
 
 private:
@@ -203,6 +223,23 @@ struct diagnostic_logical_location : public logical_location
   label_text get_name_for_path_output () const
   {
     return label_text::borrow (m_short_name.get_str ());
+  }
+
+  bool
+  operator< (const diagnostic_logical_location &other) const
+  {
+    if (m_kind < other.m_kind)
+      return true;
+    if (m_parent < other.m_parent)
+      return true;
+    if (m_short_name < other.m_short_name)
+      return true;
+    if (m_fully_qualified_name < other.m_fully_qualified_name)
+      return true;
+    if (m_decorated_name < other.m_decorated_name)
+      return true;
+
+    return false;
   }
 
 private:
@@ -445,6 +482,16 @@ public:
 			const char *fully_qualified_name,
 			const char *decorated_name)
   {
+    /* Use m_logical_locs to "uniquify" instances.  */
+    diagnostic_logical_location key (kind,
+				     parent,
+				     short_name,
+				     fully_qualified_name,
+				     decorated_name);
+    auto iter = m_logical_locs.find (key);
+    if (iter != m_logical_locs.end ())
+      return (*iter).second.get ();
+
     std::unique_ptr<diagnostic_logical_location> logical_loc
       = ::make_unique<diagnostic_logical_location> (kind,
 						    parent,
@@ -452,7 +499,9 @@ public:
 						    fully_qualified_name,
 						    decorated_name);
     const diagnostic_logical_location *result = logical_loc.get ();
-    m_logical_locs.push_back (std::move (logical_loc));
+    m_logical_locs.insert
+      (logical_locs_map_t::value_type (std::move (key),
+				       std::move (logical_loc)));
     return result;
   }
 
@@ -552,7 +601,9 @@ private:
   hash_map<nofree_string_hash, diagnostic_file *> m_str_to_file_map;
   hash_map<int_hash<location_t, UNKNOWN_LOCATION, location_t (-1)>,
 	   diagnostic_physical_location *> m_location_t_map;
-  std::vector<std::unique_ptr<diagnostic_logical_location>> m_logical_locs;
+  typedef std::map<diagnostic_logical_location,
+		   std::unique_ptr<diagnostic_logical_location>> logical_locs_map_t;
+  logical_locs_map_t m_logical_locs;
   const diagnostic *m_current_diag;
   const diagnostic_logical_location *m_prev_diag_logical_loc;
   std::unique_ptr<edit_context> m_edit_context;
@@ -758,8 +809,7 @@ struct diagnostic_execution_path : public diagnostic_path
     const logical_location *logical_loc_b
       = m_events[event_idx_b]->get_logical_location ();
 
-    // TODO:
-    /* Pointer equality, so we may want to uniqify logical loc ptrs.  */
+    /* Pointer equality, as we uniqify logical location instances.  */
     return logical_loc_a == logical_loc_b;
   }
 

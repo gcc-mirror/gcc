@@ -19,6 +19,8 @@ PRINT "hello world!";
 */
 const int line_num = __LINE__ - 2;
 
+#include <assert.h>
+
 int
 main ()
 {
@@ -59,6 +61,17 @@ main ()
 
   diagnostic_finish (d, "can't find %qs", "foo");
   /* end quoted source */
+
+  /* Verify that creating a diagnostic_logical_location with equal values 
+     yields the same instance.  */
+  const diagnostic_logical_location *dup
+    = diagnostic_manager_new_logical_location (diag_mgr,
+					       DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION,
+					       NULL, /* parent */
+					       "test_short_name",
+					       "test_qualified_name",
+					       "test_decorated_name");
+  assert (dup == logical_loc); 
 
   return end_test ();
 }
