@@ -1,3 +1,12 @@
+2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117730
+	PR fortran/84674
+	* class.cc (add_proc_comp): If the present typebound procedure
+	component is abstract, unconditionally check the replacement.
+	Only reject a non_overridable if it has no overridden procedure
+	and the component is already present in the vtype.
+
 2024-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
