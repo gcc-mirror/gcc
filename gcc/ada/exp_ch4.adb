@@ -636,6 +636,7 @@ package body Exp_Ch4 is
           and then Nkind (Exp) = N_Function_Call
           and then not (Is_Entity_Name (Name (Exp))
                          and then No_Raise (Entity (Name (Exp))))
+          and then not Restriction_Active (No_Exception_Propagation)
           and then RTE_Available (RE_Free)
           and then not Debug_Flag_QQ);
       --  Return True if a cleanup needs to be built to deallocate the memory

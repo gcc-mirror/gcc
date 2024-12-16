@@ -8505,6 +8505,7 @@ package body Exp_Ch6 is
            and then not For_Special_Return_Object (Allocator)
            and then not (Is_Entity_Name (Name (Func_Call))
                           and then No_Raise (Entity (Name (Func_Call))))
+           and then not Restriction_Active (No_Exception_Propagation)
            and then RTE_Available (RE_Free)
            and then not Debug_Flag_QQ
          then
