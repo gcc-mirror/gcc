@@ -601,6 +601,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			  std::forward_iterator_tag)
       {
 	const size_type __n = std::distance(__first, __last);
+	if (__builtin_expect(__n == 0, 0))
+	  return;
+
 	if (__pos._M_cur == this->_M_impl._M_start._M_cur)
 	  {
 	    iterator __new_start = _M_reserve_elements_at_front(__n);
