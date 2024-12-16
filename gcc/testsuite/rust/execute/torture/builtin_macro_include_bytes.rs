@@ -25,7 +25,7 @@ fn print_int(value: i32) {
 fn check_bytes(bytes: &[u8; 16]) {
     let the_bytes = b"hello, include!\n";
 
-    let x = true;
+    let mut x = true;
     let mut i = 0;
 
     // X is true iff bytes == the_bytes

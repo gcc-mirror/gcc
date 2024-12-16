@@ -19,9 +19,12 @@
 #include "rust-readonly-check.h"
 #include "rust-tree.h"
 #include "rust-gcc.h"
+#include "print-tree.h"
 
 namespace Rust {
 namespace Analysis {
+
+static std::map<tree, int> assignment_map = {};
 
 // ported over from c-family/c-warn.cc
 void
@@ -106,37 +109,68 @@ readonly_error (location_t loc, tree arg, enum lvalue_use use)
 }
 
 static void
+emit_error (tree *t, tree lhs, enum lvalue_use use)
+{
+  readonly_error (EXPR_LOCATION (*t), lhs, use);
+  TREE_OPERAND (*t, 0) = error_mark_node;
+}
+
+static void
+check_modify_expr (tree *t)
+{
+  tree lhs = TREE_OPERAND (*t, 0);
+  if (TREE_CODE (lhs) == ARRAY_REF || TREE_CODE (lhs) == COMPONENT_REF)
+    lhs = TREE_OPERAND (lhs, 0);
+
+  tree lhs_type = TREE_TYPE (lhs);
+  if (TYPE_READONLY (lhs_type) || TREE_READONLY (lhs) || TREE_CONSTANT (lhs))
+    {
+      if (TREE_CODE (lhs) != VAR_DECL)
+	emit_error (t, lhs, lv_assign);
+      else if (!DECL_ARTIFICIAL (lhs))
+	{
+	  if (DECL_INITIAL (lhs) != NULL)
+	    emit_error (t, lhs, lv_assign);
+	  else
+	    {
+	      if (assignment_map.find (lhs) == assignment_map.end ())
+		{
+		  assignment_map.insert ({lhs, 0});
+		}
+	      assignment_map[lhs]++;
+
+	      if (assignment_map[lhs] > 1)
+		emit_error (t, lhs, lv_assign);
+	    }
+	}
+    }
+}
+
+static void
 check_decl (tree *t)
 {
-  if (TREE_CODE (*t) == MODIFY_EXPR)
+  switch (TREE_CODE (*t))
     {
-      tree lhs = TREE_OPERAND (*t, 0);
-      if (TREE_READONLY (lhs) || TREE_CONSTANT (lhs))
-	{
-	  readonly_error (EXPR_LOCATION (*t), lhs, lv_assign);
-	  TREE_OPERAND (*t, 0) = error_mark_node;
-	}
+    case MODIFY_EXPR:
+      check_modify_expr (t);
+      break;
+
+    default:
+      break;
     }
 }
 
 static tree
 readonly_walk_fn (tree *t, int *, void *)
 {
-  switch (TREE_CODE (*t))
-    {
-    case MODIFY_EXPR:
-      check_decl (t);
-      break;
-
-    default:
-      break;
-    }
+  check_decl (t);
   return NULL_TREE;
 }
 
 void
 ReadonlyCheck::Lint (Compile::Context &ctx)
 {
+  assignment_map.clear ();
   for (auto &fndecl : ctx.get_func_decls ())
     {
       for (tree p = DECL_ARGUMENTS (fndecl); p != NULL_TREE; p = DECL_CHAIN (p))
@@ -148,12 +182,14 @@ ReadonlyCheck::Lint (Compile::Context &ctx)
 				    &readonly_walk_fn, &ctx);
     }
 
+  assignment_map.clear ();
   for (auto &var : ctx.get_var_decls ())
     {
       tree decl = var->get_decl ();
       check_decl (&decl);
     }
 
+  assignment_map.clear ();
   for (auto &const_decl : ctx.get_const_decls ())
     {
       check_decl (&const_decl);
