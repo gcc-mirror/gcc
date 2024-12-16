@@ -2216,7 +2216,8 @@ package body Sem_Prag is
       --  in the consequences of an exceptional contract unless they are either
       --  passed by reference or occur in the prefix of a reference to the 'Old
       --  attribute or as direct prefixes of attributes that do not actually
-      --  read data from the object (SPARK RM 6.1.9(1)).
+      --  read data from the object (SPARK RM 6.1.9(1)). References to
+      --  attribute Result should not occur either.
 
       -----------------
       -- Check_Param --
@@ -2266,6 +2267,10 @@ package body Sem_Prag is
                      then
                         return Skip;
                      end if;
+                  when Name_Result =>
+                     Error_Msg_N
+                       ("attribute Result in consequence of Exceptional_Cases",
+                        N);
                   when others => null;
                end case;
 
