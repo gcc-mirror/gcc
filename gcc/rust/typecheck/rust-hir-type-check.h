@@ -22,6 +22,7 @@
 #include "rust-hir-map.h"
 #include "rust-tyty.h"
 #include "rust-hir-trait-reference.h"
+#include "rust-stacked-contexts.h"
 #include "rust-autoderef.h"
 #include "rust-tyty-region.h"
 #include "rust-tyty-variance-analysis.h"
@@ -186,10 +187,7 @@ public:
 			 TyTy::BaseType *return_type);
   void pop_return_type ();
 
-  bool have_block_context () const;
-  TypeCheckBlockContextItem peek_block_context ();
-  void push_block_context (TypeCheckBlockContextItem item);
-  void pop_block_context ();
+  StackedContexts<TypeCheckBlockContextItem> &block_context ();
 
   void iterate (std::function<bool (HirId, TyTy::BaseType *)> cb);
 
@@ -282,7 +280,7 @@ private:
   std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>
     return_type_stack;
   std::vector<TyTy::BaseType *> loop_type_stack;
-  std::vector<TypeCheckBlockContextItem> block_stack;
+  StackedContexts<TypeCheckBlockContextItem> block_stack;
   std::map<DefId, TraitReference> trait_context;
   std::map<HirId, TyTy::BaseType *> receiver_context;
   std::map<HirId, AssociatedImplTrait> associated_impl_traits;

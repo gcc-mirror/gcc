@@ -278,7 +278,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
     }
   self->inherit_bounds (specified_bounds);
 
-  context->push_block_context (TypeCheckBlockContextItem (trait_reference));
+  context->block_context ().enter (TypeCheckBlockContextItem (trait_reference));
   std::vector<TraitItemReference> item_refs;
   for (auto &item : trait_reference->get_trait_items ())
     {
@@ -308,7 +308,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   // resolve the blocks of functions etc because it can end up in a recursive
   // loop of trying to resolve traits as required by the types
   tref->on_resolved ();
-  context->pop_block_context ();
+  context->block_context ().exit ();
 
   return tref;
 }

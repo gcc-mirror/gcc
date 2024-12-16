@@ -177,30 +177,10 @@ TypeCheckContext::peek_context ()
   return return_type_stack.back ().first;
 }
 
-bool
-TypeCheckContext::have_block_context () const
+StackedContexts<TypeCheckBlockContextItem> &
+TypeCheckContext::block_context ()
 {
-  return !block_stack.empty ();
-}
-
-TypeCheckBlockContextItem
-TypeCheckContext::peek_block_context ()
-{
-  rust_assert (!block_stack.empty ());
-  return block_stack.back ();
-}
-
-void
-TypeCheckContext::push_block_context (TypeCheckBlockContextItem block)
-{
-  block_stack.push_back (block);
-}
-
-void
-TypeCheckContext::pop_block_context ()
-{
-  rust_assert (!block_stack.empty ());
-  block_stack.pop_back ();
+  return block_stack;
 }
 
 void
