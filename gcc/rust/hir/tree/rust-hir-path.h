@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_PATH_H
 #define RUST_HIR_PATH_H
 
+#include "rust-hir-map.h"
 #include "rust-hir-simple-path.h"
 #include "rust-hir-type-no-bounds.h"
 #include "rust-hir-pattern-abstract.h"
@@ -230,15 +231,34 @@ public:
 // HIR node representing a pattern that involves a "path" - abstract base class
 class PathPattern : public Pattern
 {
+public:
+  enum class Kind
+  {
+    Segmented,
+    LangItem
+  };
+
+private:
   std::vector<PathExprSegment> segments;
+  tl::optional<LangItem::Kind> lang_item;
+  Kind kind;
 
 protected:
   PathPattern (std::vector<PathExprSegment> segments)
-    : segments (std::move (segments))
+    : segments (std::move (segments)), lang_item (tl::nullopt),
+      kind (Kind::Segmented)
+  {}
+
+  PathPattern (LangItem::Kind lang_item)
+    : segments ({}), lang_item (lang_item), kind (Kind::LangItem)
   {}
 
   // Returns whether path has segments.
-  bool has_segments () const { return !segments.empty (); }
+  bool has_segments () const
+  {
+    rust_assert (kind == Kind::Segmented);
+    return !segments.empty ();
+  }
 
   /* Converts path segments to their equivalent SimplePath segments if possible,
    * and creates a SimplePath from them. */
@@ -248,26 +268,61 @@ protected:
 public:
   /* Returns whether the path is a single segment (excluding qualified path
    * initial as segment). */
-  bool is_single_segment () const { return segments.size () == 1; }
+  bool is_single_segment () const
+  {
+    rust_assert (kind == Kind::Segmented);
+    return segments.size () == 1;
+  }
 
   std::string as_string () const override;
 
   void iterate_path_segments (std::function<bool (PathExprSegment &)> cb);
 
-  size_t get_num_segments () const { return segments.size (); }
+  size_t get_num_segments () const
+  {
+    rust_assert (kind == Kind::Segmented);
+    return segments.size ();
+  }
 
-  std::vector<PathExprSegment> &get_segments () { return segments; }
+  std::vector<PathExprSegment> &get_segments ()
+  {
+    rust_assert (kind == Kind::Segmented);
+    return segments;
+  }
 
-  const std::vector<PathExprSegment> &get_segments () const { return segments; }
+  const std::vector<PathExprSegment> &get_segments () const
+  {
+    rust_assert (kind == Kind::Segmented);
+    return segments;
+  }
 
-  PathExprSegment &get_root_seg () { return segments.at (0); }
+  PathExprSegment &get_root_seg ()
+  {
+    rust_assert (kind == Kind::Segmented);
+    return segments.at (0);
+  }
 
-  const PathExprSegment &get_final_segment () const { return segments.back (); }
+  const PathExprSegment &get_final_segment () const
+  {
+    rust_assert (kind == Kind::Segmented);
+    return segments.back ();
+  }
+
+  LangItem::Kind get_lang_item () const
+  {
+    rust_assert (kind == Kind::LangItem);
+
+    return *lang_item;
+  }
 
   PatternType get_pattern_type () const override final
   {
     return PatternType::PATH;
   }
+
+  bool is_lang_item () const { return kind == Kind::LangItem; }
+
+  Kind get_path_kind () const { return kind; }
 };
 
 /* HIR node representing a path-in-expression pattern (path that allows generic
@@ -283,6 +338,13 @@ public:
   // Constructor
   PathInExpression (Analysis::NodeMapping mappings,
 		    std::vector<PathExprSegment> path_segments,
+		    location_t locus = UNDEF_LOCATION,
+		    bool has_opening_scope_resolution = false,
+		    std::vector<AST::Attribute> outer_attrs
+		    = std::vector<AST::Attribute> ());
+
+  // lang-item Constructor
+  PathInExpression (Analysis::NodeMapping mappings, LangItem::Kind kind,
 		    location_t locus = UNDEF_LOCATION,
 		    bool has_opening_scope_resolution = false,
 		    std::vector<AST::Attribute> outer_attrs
@@ -697,6 +759,14 @@ public:
   QualifiedPathInExpression (Analysis::NodeMapping mappings,
 			     QualifiedPathType qual_path_type,
 			     std::vector<PathExprSegment> path_segments,
+			     location_t locus = UNDEF_LOCATION,
+			     std::vector<AST::Attribute> outer_attrs
+			     = std::vector<AST::Attribute> ());
+
+  // lang-item constructor
+  QualifiedPathInExpression (Analysis::NodeMapping mappings,
+			     QualifiedPathType qual_path_type,
+			     LangItem::Kind lang_item,
 			     location_t locus = UNDEF_LOCATION,
 			     std::vector<AST::Attribute> outer_attrs
 			     = std::vector<AST::Attribute> ());

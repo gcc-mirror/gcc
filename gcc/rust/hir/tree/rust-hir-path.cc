@@ -133,6 +133,8 @@ PathExprSegment::operator= (PathExprSegment const &other)
 void
 PathPattern::iterate_path_segments (std::function<bool (PathExprSegment &)> cb)
 {
+  rust_assert (kind == Kind::Segmented);
+
   for (auto it = segments.begin (); it != segments.end (); it++)
     {
       if (!cb (*it))
@@ -146,6 +148,15 @@ PathInExpression::PathInExpression (Analysis::NodeMapping mappings,
 				    bool has_opening_scope_resolution,
 				    std::vector<AST::Attribute> outer_attrs)
   : PathPattern (std::move (path_segments)),
+    PathExpr (std::move (mappings), std::move (outer_attrs)),
+    has_opening_scope_resolution (has_opening_scope_resolution), locus (locus)
+{}
+
+PathInExpression::PathInExpression (Analysis::NodeMapping mappings,
+				    LangItem::Kind lang_item, location_t locus,
+				    bool has_opening_scope_resolution,
+				    std::vector<AST::Attribute> outer_attrs)
+  : PathPattern (lang_item),
     PathExpr (std::move (mappings), std::move (outer_attrs)),
     has_opening_scope_resolution (has_opening_scope_resolution), locus (locus)
 {}
@@ -354,6 +365,15 @@ QualifiedPathInExpression::QualifiedPathInExpression (
   std::vector<PathExprSegment> path_segments, location_t locus,
   std::vector<AST::Attribute> outer_attrs)
   : PathPattern (std::move (path_segments)),
+    PathExpr (std::move (mappings), std::move (outer_attrs)),
+    path_type (std::move (qual_path_type)), locus (locus)
+{}
+
+QualifiedPathInExpression::QualifiedPathInExpression (
+  Analysis::NodeMapping mappings, QualifiedPathType qual_path_type,
+  LangItem::Kind lang_item, location_t locus,
+  std::vector<AST::Attribute> outer_attrs)
+  : PathPattern (lang_item),
     PathExpr (std::move (mappings), std::move (outer_attrs)),
     path_type (std::move (qual_path_type)), locus (locus)
 {}

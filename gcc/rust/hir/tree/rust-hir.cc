@@ -19,6 +19,7 @@
 #include "rust-ast-full.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-full.h"
+#include "rust-hir-path.h"
 #include "rust-hir-visitor.h"
 #include "rust-diagnostics.h"
 
@@ -1210,6 +1211,9 @@ ClosureExpr::as_string () const
 std::string
 PathPattern::as_string () const
 {
+  if (is_lang_item ())
+    return LangItem::PrettyString (*lang_item);
+
   std::string str;
 
   for (const auto &segment : segments)
@@ -2187,6 +2191,8 @@ TypeParam::as_string () const
 AST::SimplePath
 PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
 {
+  rust_assert (kind == Kind::Segmented);
+
   if (!has_segments ())
     {
       return AST::SimplePath::create_empty ();
