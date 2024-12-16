@@ -526,9 +526,18 @@ TypeCheckExpr::visit (HIR::IfExpr &expr)
 				    expr.get_if_condition ().get_locus ()),
 	      expr.get_locus ());
 
-  TypeCheckExpr::Resolve (expr.get_if_block ());
+  TyTy::BaseType *block_type = TypeCheckExpr::Resolve (expr.get_if_block ());
 
-  infered = TyTy::TupleType::get_unit_type ();
+  TyTy::BaseType *unit_ty = nullptr;
+  ok = context->lookup_builtin ("()", &unit_ty);
+  rust_assert (ok);
+
+  infered
+    = coercion_site (expr.get_mappings ().get_hirid (),
+		     TyTy::TyWithLocation (unit_ty),
+		     TyTy::TyWithLocation (block_type,
+					   expr.get_if_block ().get_locus ()),
+		     expr.get_locus ());
 }
 
 void
