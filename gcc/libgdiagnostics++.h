@@ -67,17 +67,19 @@ public:
   diagnostic_text_sink *m_inner;
 };
 
-/* Wrapper around a const diagnostic_file *.  */
+/* Wrapper around a diagnostic_file *.  */
 
 class file
 {
 public:
   file () : m_inner (nullptr) {}
-  file (const diagnostic_file *file) : m_inner (file) {}
+  file (diagnostic_file *file) : m_inner (file) {}
   file (const file &other) : m_inner (other.m_inner) {}
   file &operator= (const file &other) { m_inner = other.m_inner; return *this; }
 
-  const diagnostic_file * m_inner;
+  void set_buffered_content (const char *data, size_t sz);
+
+  diagnostic_file * m_inner;
 };
 
 /* Wrapper around a const diagnostic_physical_location *.  */
@@ -361,6 +363,14 @@ public:
 };
 
 // Implementation
+
+// class file
+
+inline void
+file::set_buffered_content (const char *data, size_t sz)
+{
+  diagnostic_file_set_buffered_content (m_inner, data, sz);
+}
 
 // class execution_path
 

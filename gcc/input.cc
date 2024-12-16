@@ -77,6 +77,7 @@ public:
   bool create (const file_cache::input_context &in_context,
 	       const char *file_path, FILE *fp, unsigned highest_use_count);
   void evict ();
+  void set_content (const char *buf, size_t sz);
 
  private:
   /* These are information used to store a line boundary.  */
@@ -187,6 +188,9 @@ public:
   }
 
 };
+
+static const char *
+find_end_of_line (const char *s, size_t len);
 
 /* Current position in real source file.  */
 
@@ -368,6 +372,25 @@ file_cache::missing_trailing_newline_p (const char *file_path)
 }
 
 void
+file_cache::add_buffered_content (const char *file_path,
+				  const char *buffer,
+				  size_t sz)
+{
+  gcc_assert (file_path);
+
+  file_cache_slot *r = lookup_file (file_path);
+  if (!r)
+    {
+      unsigned highest_use_count = 0;
+      r = evicted_cache_tab_entry (&highest_use_count);
+      if (!r->create (m_input_context, file_path, nullptr, highest_use_count))
+	return;
+    }
+
+  r->set_content (buffer, sz);
+}
+
+void
 file_cache_slot::evict ()
 {
   m_file_path = NULL;
@@ -512,6 +535,32 @@ file_cache_slot::create (const file_cache::input_context &in_context,
   return true;
 }
 
+void
+file_cache_slot::set_content (const char *buf, size_t sz)
+{
+  m_data = (char *)xmalloc (sz);
+  memcpy (m_data, buf, sz);
+  m_nb_read = m_size = sz;
+  m_alloc_offset = 0;
+
+  if (m_fp)
+    {
+      fclose (m_fp);
+      m_fp = nullptr;
+    }
+
+  /* Compute m_total_lines based on content of buffer.  */
+  m_total_lines = 0;
+  const char *line_start = m_data;
+  size_t remaining_size = sz;
+  while (const char *line_end = find_end_of_line (line_start, remaining_size))
+    {
+      ++m_total_lines;
+      remaining_size -= line_end + 1 - line_start;
+      line_start = line_end + 1;
+    }
+}
+
 /* file_cache's ctor.  */
 
 file_cache::file_cache ()
@@ -592,12 +641,13 @@ file_cache_slot::~file_cache_slot ()
 void
 file_cache_slot::dump (FILE *out, int indent) const
 {
-  if (!m_fp)
+  if (!m_file_path)
     {
       fprintf (out, "%*s(unused)\n", indent, "");
       return;
     }
   fprintf (out, "%*sfile_path: %s\n", indent, "", m_file_path);
+  fprintf (out, "%*sfp: %p\n", indent, "", (void *)m_fp);
   fprintf (out, "%*sneeds_read_p: %i\n", indent, "", (int)needs_read_p ());
   fprintf (out, "%*sneeds_grow_p: %i\n", indent, "", (int)needs_grow_p ());
   fprintf (out, "%*suse_count: %i\n", indent, "", m_use_count);
@@ -701,8 +751,8 @@ file_cache_slot::maybe_read_data ()
    terminator was not found.  We need to determine line endings in the same
    manner that libcpp does: any of \n, \r\n, or \r is a line ending.  */
 
-static char *
-find_end_of_line (char *s, size_t len)
+static const char *
+find_end_of_line (const char *s, size_t len)
 {
   for (const auto end = s + len; s != end; ++s)
     {
@@ -748,11 +798,11 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
     /* There is no more data to process.  */
     return false;
 
-  char *line_start = m_data + m_line_start_idx;
+  const char *line_start = m_data + m_line_start_idx;
 
-  char *next_line_start = NULL;
+  const char *next_line_start = NULL;
   size_t len = 0;
-  char *line_end = find_end_of_line (line_start, remaining_size);
+  const char *line_end = find_end_of_line (line_start, remaining_size);
   if (line_end == NULL)
     {
       /* We haven't found an end-of-line delimiter in the cache.
@@ -806,7 +856,7 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
   len = line_end - line_start;
 
   if (m_line_start_idx < m_nb_read)
-    *line = line_start;
+    *line = const_cast<char *> (line_start);
 
   ++m_line_num;
 
@@ -2338,6 +2388,38 @@ test_reading_source_line ()
 			 source_line.get_buffer (), source_line.length ()));
 
   source_line = fc.get_source_line (tmp.get_filename (), 4);
+  ASSERT_FALSE (source_line);
+  ASSERT_TRUE (source_line.get_buffer () == NULL);
+}
+
+/* Verify reading from buffers (e.g. for sarif-replay).  */
+
+static void
+test_reading_source_buffer ()
+{
+  const char *text = ("01234567890123456789\n"
+		      "This is the test text\n"
+		      "This is the 3rd line");
+  const char *filename = "foo.txt";
+  file_cache fc;
+  fc.add_buffered_content (filename, text, strlen (text));
+
+  /* Read back a specific line from the tempfile.  */
+  char_span source_line = fc.get_source_line (filename, 3);
+  ASSERT_TRUE (source_line);
+  ASSERT_TRUE (source_line.get_buffer () != NULL);
+  ASSERT_EQ (20, source_line.length ());
+  ASSERT_TRUE (!strncmp ("This is the 3rd line",
+			 source_line.get_buffer (), source_line.length ()));
+
+  source_line = fc.get_source_line (filename, 2);
+  ASSERT_TRUE (source_line);
+  ASSERT_TRUE (source_line.get_buffer () != NULL);
+  ASSERT_EQ (21, source_line.length ());
+  ASSERT_TRUE (!strncmp ("This is the test text",
+			 source_line.get_buffer (), source_line.length ()));
+
+  source_line = fc.get_source_line (filename, 4);
   ASSERT_FALSE (source_line);
   ASSERT_TRUE (source_line.get_buffer () == NULL);
 }
@@ -4227,6 +4309,7 @@ input_cc_tests ()
   for_each_line_table_case (test_lexer_char_constants);
 
   test_reading_source_line ();
+  test_reading_source_buffer ();
 
   test_line_offset_overflow ();
 

@@ -54,7 +54,7 @@ Source files
 Given these declarations::
 
   static diagnostic_manager *diag_mgr;
-  static const diagnostic_file *main_file;
+  static diagnostic_file *main_file;
 
 we can create a :type:`diagnostic_file` describing an input file ``foo.c``
 via :func:`diagnostic_manager_new_file`::

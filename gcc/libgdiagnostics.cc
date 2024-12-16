@@ -66,12 +66,34 @@ private:
   char *m_str;
 };
 
+class content_buffer
+{
+public:
+  content_buffer (const char *data, size_t sz)
+  : m_data (xmalloc (sz)),
+    m_sz (sz)
+  {
+    memcpy (m_data, data, sz);
+  }
+  ~content_buffer ()
+  {
+    free (m_data);
+  }
+
+  void *m_data;
+  size_t m_sz;
+};
+
 /* This has to be a "struct" as it is exposed in the C API.  */
 
 struct diagnostic_file
 {
-  diagnostic_file (const char *name, const char *sarif_source_language)
-  : m_name (name), m_sarif_source_language (sarif_source_language)
+  diagnostic_file (diagnostic_manager &mgr,
+		   const char *name,
+		   const char *sarif_source_language)
+  : m_mgr (mgr),
+    m_name (name),
+    m_sarif_source_language (sarif_source_language)
   {
   }
 
@@ -81,9 +103,18 @@ struct diagnostic_file
     return m_sarif_source_language.get_str ();
   }
 
+  const content_buffer *
+  get_content () const
+  {
+    return m_content.get ();
+  }
+  void set_buffered_content (const char *buf, size_t sz);
+
 private:
+  diagnostic_manager &m_mgr;
   owned_nullable_string m_name;
   owned_nullable_string m_sarif_source_language;
+  std::unique_ptr<content_buffer> m_content;
 };
 
 /* This has to be a "struct" as it is exposed in the C API.  */
@@ -365,13 +396,14 @@ public:
   void emit (diagnostic &diag, const char *msgid, va_list *args)
     LIBGDIAGNOSTICS_PARAM_GCC_FORMAT_STRING(3, 0);
 
-  const diagnostic_file *
+  diagnostic_file *
   new_file (const char *name,
 	    const char *sarif_source_language)
   {
     if (diagnostic_file **slot = m_str_to_file_map.get (name))
       return *slot;
-    diagnostic_file *file = new diagnostic_file (name, sarif_source_language);
+    diagnostic_file *file
+      = new diagnostic_file (*this, name, sarif_source_language);
     m_str_to_file_map.put (file->get_name (), file);
     return file;
   }
@@ -851,6 +883,16 @@ diagnostic_t_from_diagnostic_level (enum diagnostic_level level)
     }
 }
 
+void
+diagnostic_file::set_buffered_content (const char *buf, size_t sz)
+{
+  m_content = ::make_unique<content_buffer> (buf, sz);
+
+  // Populate file_cache:
+  file_cache &fc = m_mgr.get_dc ().get_file_cache ();
+  fc.add_buffered_content (m_name.get_str (), buf, sz);
+}
+
 /* class impl_diagnostic_client_data_hooks.  */
 
 const client_version_info *
@@ -1192,7 +1234,7 @@ diagnostic_manager_write_patch (diagnostic_manager *diag_mgr,
 
 /* Public entrypoint.  */
 
-const diagnostic_file *
+diagnostic_file *
 diagnostic_manager_new_file (diagnostic_manager *diag_mgr,
 			     const char *name,
 			     const char *sarif_source_language)
@@ -1203,6 +1245,19 @@ diagnostic_manager_new_file (diagnostic_manager *diag_mgr,
   return diag_mgr->new_file (name, sarif_source_language);
 }
 
+/* Public entrypoint.  */
+
+void
+diagnostic_file_set_buffered_content (diagnostic_file *file,
+				      const char *buf,
+				      size_t sz)
+{
+  FAIL_IF_NULL (file);
+  FAIL_IF_NULL (buf);
+
+  file->set_buffered_content (buf, sz);
+}
+
 void
 diagnostic_manager_debug_dump_file (diagnostic_manager *,
 				    const diagnostic_file *file,
@@ -1211,17 +1266,14 @@ diagnostic_manager_debug_dump_file (diagnostic_manager *,
   FAIL_IF_NULL (out);
   if (file)
     {
+      fprintf (out, "file(name=\"%s\"",
+	       file->get_name ());
       if (file->get_sarif_source_language ())
-	{
-	  fprintf (out, "file(name=\"%s\", sarif_source_language=\"%s\")",
-		   file->get_name (),
-		   file->get_sarif_source_language ());
-	}
-      else
-	{
-	  fprintf (out, "file(name=\"%s\")",
-		   file->get_name ());
-	}
+	fprintf (out, ", sarif_source_language=\"%s\"",
+		 file->get_sarif_source_language ());
+      if (const content_buffer *buf = file->get_content ())
+	fprintf (out, ", content=(size=%zi)", buf->m_sz);
+      fprintf (out, ")");
     }
   else
     fprintf (out, "(null)");

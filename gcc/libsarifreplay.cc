@@ -270,6 +270,10 @@ private:
   enum status
   handle_tool_obj (const json::object &tool_obj);
 
+  // "artifact" object (§3.24).  */
+  void
+  handle_artifact_obj (const json::object &artifact_obj);
+
   // "result" object (§3.27)
   enum status
   handle_result_obj (const json::object &result_obj,
@@ -546,7 +550,7 @@ private:
   replayer_location_map m_json_location_map;
 
   const json::object *m_driver_obj;
-  const json::value *m_artifacts_arr;
+  const json::array *m_artifacts_arr;
 };
 
 static const char *
@@ -766,10 +770,18 @@ sarif_replayer::handle_run_obj (const json::object &run_obj)
   if (!m_driver_obj)
     return status::err_invalid_sarif;
 
-#if 0
-  m_artifacts_arr = get_optional_property<json::array>
-    (run_obj, property_spec_ref ("run", "artifacts","3.14.15"));
-#endif
+  const property_spec_ref prop_artifacts ("run", "artifacts", "3.14.15");
+  m_artifacts_arr
+    = get_optional_property<json::array> (run_obj, prop_artifacts);
+  if (m_artifacts_arr)
+    for (auto element : *m_artifacts_arr)
+      {
+	if (const json::object *artifact_obj
+	    = require_object_for_element (*element, prop_artifacts))
+	  handle_artifact_obj (*artifact_obj);
+	else
+	  return status::err_invalid_sarif;
+      }
 
   /* If present, run.results must be null or be an array.  */
   const property_spec_ref prop_results ("run", "results", "3.14.23");
@@ -803,6 +815,58 @@ sarif_replayer::handle_run_obj (const json::object &run_obj)
       }
 
   return status::ok;
+}
+
+/* Process an artifact object (SARIF v2.1.0 section 3.24).
+   Create a libgdiagnostics::file for each artifact that has a uri,
+   effectively prepopulating a cache with source language and contents.  */
+
+void
+sarif_replayer::handle_artifact_obj (const json::object &artifact_obj)
+{
+  const property_spec_ref location ("artifact", "location", "3.24.2");
+  auto artifact_loc_obj
+    = get_optional_property<json::object> (artifact_obj, location);
+  if (!artifact_loc_obj)
+    return;
+
+  // we should now have an artifactLocation object (§3.4)
+
+  // 3.4.3 uri property
+  const property_spec_ref prop_uri ("artifactLocation", "uri", "3.4.3");
+  auto artifact_loc_uri
+    = get_optional_property<json::string> (*artifact_loc_obj, prop_uri);
+  if (!artifact_loc_uri)
+    return;
+
+  const char *sarif_source_language = nullptr;
+  const property_spec_ref prop_source_lang
+    ("artifact", "sourceLanguage", "3.24.10");
+  if (auto source_lang_jstr
+      = get_optional_property<json::string> (artifact_obj,
+					     prop_source_lang))
+    sarif_source_language = source_lang_jstr->get_string ();
+
+  /* Create the libgdiagnostics::file.  */
+  auto file = m_output_mgr.new_file (artifact_loc_uri->get_string (),
+				     sarif_source_language);
+
+  // Set contents, if available
+  const property_spec_ref prop_contents
+    ("artifact", "contents", "3.24.8");
+  if (auto content_obj
+      = get_optional_property<json::object> (artifact_obj,
+					     prop_contents))
+    {
+      // We should have an artifactContent object (§3.3)
+      const property_spec_ref prop_text
+	("artifactContent", "text", "3.3.2");
+      if (auto text_jstr
+	  = get_optional_property<json::string> (*content_obj,
+						 prop_text))
+	file.set_buffered_content (text_jstr->get_string (),
+				   text_jstr->get_length ());
+    }
 }
 
 /* Process a tool object (SARIF v2.1.0 section 3.18).  */

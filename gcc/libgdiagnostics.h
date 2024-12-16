@@ -359,13 +359,24 @@ diagnostic_manager_write_patch (diagnostic_manager *diag_mgr,
    See SARIF v2.1.0 Appendix J for suggested values for various
    programmming languages.  */
 
-extern const diagnostic_file *
+extern diagnostic_file *
 diagnostic_manager_new_file (diagnostic_manager *diag_mgr,
 			     const char *name,
 			     const char *sarif_source_language)
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2)
   LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (3);
+
+/* Populate the source-quoting cache for FILE, specifying the
+   given buffer as the content of the file (rather than
+   attempting to read the content from the filesystem).  */
+
+extern void
+diagnostic_file_set_buffered_content (diagnostic_file *file,
+				      const char *buf,
+				      size_t sz)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2);
 
 /* Write a representation of FILE to OUT, for debugging.  */
 

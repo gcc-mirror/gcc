@@ -36,6 +36,7 @@ LIBGDIAGNOSTICS_ABI_0
     diagnostic_manager_add_sarif_sink;
     diagnostic_manager_write_patch;
     diagnostic_manager_new_file;
+    diagnostic_file_set_buffered_content;
     diagnostic_manager_debug_dump_file;
     diagnostic_manager_new_location_from_file_and_line;
     diagnostic_manager_new_location_from_file_line_column;

@@ -35,9 +35,9 @@ locations.
 
    A :type:`diagnostic_file` is an opaque type describing a particular input file.
 
-.. function:: const diagnostic_file * diagnostic_manager_new_file (diagnostic_manager *diag_mgr, \
-                                                                   const char *name, \
-                                                                   const char *sarif_source_language)
+.. function:: diagnostic_file * diagnostic_manager_new_file (diagnostic_manager *diag_mgr, \
+                                                             const char *name, \
+                                                             const char *sarif_source_language)
 
    Create a new :type:`diagnostic_file` for file ``name``. Repeated calls
    with strings that match ``name`` will return the same object.
