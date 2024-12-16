@@ -1,0 +1,25 @@
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "hand-written"}},
+           "results": [{"message": {"text": "001: this is a test"},
+	   	        "locations": []},
+/* { dg-begin-multiline-output "" }
+hand-written: warning: 001: this is a test
+   { dg-end-multiline-output "" } */
+
+                       /* Without the fix from https://github.com/oasis-tcs/sarif-spec/issues/656 */
+                       {"message": {"text": "002: Prohibited term used in [para\\[0\\]\\\\spans\\[2\\](1)."},
+	   	        "locations": []},
+/* { dg-begin-multiline-output "" }
+hand-written: warning: 002: Prohibited term used in [para\[0\]\\spans\[2\](1).
+   { dg-end-multiline-output "" } */
+                       
+                       /* With the fix from https://github.com/oasis-tcs/sarif-spec/issues/656 */
+                       {"message": {"text": "003: Prohibited term used in [para\\[0\\]\\\\spans\\[2\\]](1)."},
+	   	        "locations": []}
+/* { dg-begin-multiline-output "" }
+hand-written: warning: 003: Prohibited term used in para[0]\spans[2].
+   { dg-end-multiline-output "" } */
+
+]}]}
+

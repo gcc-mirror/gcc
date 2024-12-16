@@ -1176,11 +1176,91 @@ maybe_consume_placeholder (const char *&iter_src, unsigned *out_arg_idx)
   return false;
 }
 
+struct embedded_link
+{
+  std::string text;
+  std::string destination;
+};
+
+/*  If ITER_SRC starts with an embedded link as per §3.11.6, advance ITER_SRC
+    to immediately beyond the link, and return the link.
+
+    Otherwise, leave ITER_SRC untouched and return nullptr.  */
+
+static std::unique_ptr<embedded_link>
+maybe_consume_embedded_link (const char *&iter_src)
+{
+  if (*iter_src != '[')
+    return nullptr;
+
+  /* This *might* be an embedded link.
+     See §3.11.6 ("Messages with embedded links") and
+     https://github.com/oasis-tcs/sarif-spec/issues/657 */
+
+  /* embedded link = "[", link text, "](", link destination, ")"; */
+
+  embedded_link result;
+
+  /* Try to get the link text.  */
+  const char *iter = iter_src + 1;
+  while (char ch = *(iter++))
+    {
+      if (ch == '\\')
+	{
+	  char next_ch = *iter;
+	  switch (next_ch)
+	    {
+	    case '\\':
+	    case '[':
+	    case ']':
+	      /* escaped link character = "\" | "[" | "]";  */
+	      result.text += next_ch;
+	      iter++;
+	      continue;
+
+	    default:
+	      /* Malformed link text; assume this is not an
+		 embedded link.  */
+	      return nullptr;
+	    }
+	}
+      else if (ch == ']')
+	/* End of link text.  */
+	break;
+      else
+	result.text += ch;
+    }
+
+  if (*iter++ != '(')
+    return nullptr;
+
+  /* Try to get the link destination.  */
+  while (1)
+    {
+      char ch = *(iter++);
+      if (ch == '\0')
+	{
+	  /* String ended before terminating ')'.
+	     Assume this is not an embedded link.  */
+	  return nullptr;
+	}
+      else if (ch == ')')
+	/* Terminator.  */
+	break;
+      else
+	result.destination += ch;
+    }
+
+  iter_src = iter;
+  return ::make_unique<embedded_link> (std::move (result));
+}
+
 /* Lookup the plain text string within a result.message (§3.27.11),
-   and substitute for any placeholders (§3.11.5).
+   and substitute for any placeholders (§3.11.5) and handle any
+   embedded links (§3.11.6).
 
    Limitations:
-   - we don't yet support embedded links
+   - we don't preserve destinations within embedded links
 
    MESSAGE_OBJ is "theMessage"
    RULE_OBJ is "theRule".  */
@@ -1254,6 +1334,13 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 				    ch);
 	      return label_text::borrow (nullptr);
 	    }
+	}
+      else if (auto link = maybe_consume_embedded_link (iter_src))
+	{
+	  accum += link->text;
+	  /* TODO: use the destination.  */
+	  /* TODO: potentially could try to convert
+	     intra-sarif links into event ids.  */
 	}
       else
 	{
