@@ -1,5 +1,8 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	'nvptx_softstack'.
+
 	PR target/65181
 	* config/nvptx/nvptx.h (STACK_SAVEAREA_MODE): '#define'.
 	* config/nvptx/nvptx.md [!TARGET_SOFT_STACK]

@@ -1,5 +1,9 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* lib/target-supports.exp
+	(check_effective_target_nvptx_softstack): New.
+	(check_effective_target_alloca) [nvptx]: Use it.
+
 	PR target/65181
 	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1.c:
 	Adjust.
