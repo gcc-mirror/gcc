@@ -1,3 +1,14 @@
+2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117730
+	PR fortran/84674
+	* gfortran.dg/pr117730_a.f90: New test.
+	* gfortran.dg/pr117730_b.f90: New test.
+	* gfortran.dg/pr84674.f90: New test.
+
 2024-12-13  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
