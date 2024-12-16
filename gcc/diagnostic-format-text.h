@@ -33,12 +33,16 @@ class diagnostic_text_output_format : public diagnostic_output_format
 {
 public:
   diagnostic_text_output_format (diagnostic_context &context,
+				 diagnostic_source_printing_options *source_printing = nullptr,
 				 bool follows_reference_printer = false)
   : diagnostic_output_format (context),
     m_saved_output_buffer (nullptr),
     m_column_policy (context),
     m_last_module (nullptr),
     m_includes_seen (nullptr),
+    m_source_printing (source_printing
+		       ? *source_printing
+		       : context.m_source_printing),
     m_follows_reference_printer (follows_reference_printer),
     m_show_nesting (false),
     m_show_nesting_levels (false)
@@ -105,6 +109,15 @@ public:
 
   label_text get_location_text (const expanded_location &s) const;
 
+  diagnostic_source_printing_options &get_source_printing_options ()
+  {
+    return m_source_printing;
+  }
+  const diagnostic_source_printing_options &get_source_printing_options () const
+  {
+    return m_source_printing;
+  }
+
 protected:
   void print_any_cwe (const diagnostic_info &diagnostic);
   void print_any_rules (const diagnostic_info &diagnostic);
@@ -125,6 +138,8 @@ protected:
   /* Include files that report_current_module has already listed the
      include path for.  */
   hash_set<location_t, false, location_hash> *m_includes_seen;
+
+  diagnostic_source_printing_options &m_source_printing;
 
   /* If true, this is the initial default text output format created
      when the diagnostic_context was created, and, in particular, before

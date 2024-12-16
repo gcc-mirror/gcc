@@ -283,7 +283,8 @@ diagnostic_context::initialize (int n_opts)
   m_diagnostic_groups.m_group_nesting_depth = 0;
   m_diagnostic_groups.m_diagnostic_nesting_level = 0;
   m_diagnostic_groups.m_emission_count = 0;
-  m_output_sinks.safe_push (new diagnostic_text_output_format (*this, true));
+  m_output_sinks.safe_push
+    (new diagnostic_text_output_format (*this, nullptr, true));
   m_set_locations_cb = nullptr;
   m_client_data_hooks = nullptr;
   m_diagrams.m_theme = nullptr;
@@ -439,11 +440,17 @@ diagnostic_context::dump (FILE *out) const
   m_diagnostic_counters.dump (out, 2);
   fprintf (out, "  reference printer:\n");
   m_reference_printer->dump (out, 4);
-  for (unsigned i = 0; i < m_output_sinks.length (); ++i)
+  fprintf (out, "  output sinks:\n");
+  if (m_output_sinks.length () > 0)
     {
-      fprintf (out, "  sink %i:\n", i);
-      m_output_sinks[i]->dump (out, 4);
+      for (unsigned i = 0; i < m_output_sinks.length (); ++i)
+	{
+	  fprintf (out, "  sink %i:\n", i);
+	  m_output_sinks[i]->dump (out, 4);
+	}
     }
+  else
+    fprintf (out, "    (none):\n");
   fprintf (out, "  diagnostic buffer:\n");
   if (m_diagnostic_buffer)
     m_diagnostic_buffer->dump (out, 4);
@@ -470,11 +477,17 @@ diagnostic_context::execution_failed_p () const
 }
 
 void
-diagnostic_context::
-set_output_format (std::unique_ptr<diagnostic_output_format> output_format)
+diagnostic_context::remove_all_output_sinks ()
 {
   while (!m_output_sinks.is_empty ())
     delete m_output_sinks.pop ();
+}
+
+void
+diagnostic_context::
+set_output_format (std::unique_ptr<diagnostic_output_format> output_format)
+{
+  remove_all_output_sinks ();
   m_output_sinks.safe_push (output_format.release ());
 }
 

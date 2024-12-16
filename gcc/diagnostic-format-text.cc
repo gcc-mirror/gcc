@@ -432,7 +432,8 @@ diagnostic_text_output_format::append_note (location_t location,
   pp_destroy_prefix (pp);
   pp_set_prefix (pp, saved_prefix);
   pp_newline (pp);
-  diagnostic_show_locus (context, &richloc, DK_NOTE, pp);
+  diagnostic_show_locus (context, get_source_printing_options (),
+			 &richloc, DK_NOTE, pp);
   va_end (ap);
 }
 
@@ -458,6 +459,8 @@ update_printer ()
   pp_show_color (m_printer.get ()) = show_color;
   m_printer->set_url_format (url_format);
   // ...etc
+
+  m_source_printing = get_context ().m_source_printing;
 }
 
 /* If DIAGNOSTIC has a CWE identifier, print it.
@@ -720,6 +723,7 @@ default_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
   pp_set_prefix (pp, NULL);
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
+			 text_output.get_source_printing_options (),
 			 diagnostic->richloc, diagnostic->kind, pp);
   pp_set_prefix (pp, saved_prefix);
   pp_flush (pp);

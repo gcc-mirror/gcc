@@ -630,7 +630,8 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
     auto pre = ::make_unique<xml::element> ("pre", true);
     pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
     // TODO: ideally we'd like to capture elements within the following:
-    diagnostic_show_locus (&m_context, diagnostic.richloc, diagnostic.kind,
+    diagnostic_show_locus (&m_context, m_context.m_source_printing,
+			   diagnostic.richloc, diagnostic.kind,
 			   m_printer);
     pre->add_text
       (label_text::take (xstrdup (pp_formatted_text (m_printer))));

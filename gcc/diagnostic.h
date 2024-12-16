@@ -402,6 +402,8 @@ class diagnostic_source_print_policy
 {
 public:
   diagnostic_source_print_policy (const diagnostic_context &);
+  diagnostic_source_print_policy (const diagnostic_context &,
+				  const diagnostic_source_printing_options &);
 
   void
   print (pretty_printer &pp,
@@ -596,6 +598,7 @@ public:
   }
 
   void maybe_show_locus (const rich_location &richloc,
+			 const diagnostic_source_printing_options &opts,
 			 diagnostic_t diagnostic_kind,
 			 pretty_printer &pp,
 			 diagnostic_source_effect_info *effect_info);
@@ -760,6 +763,8 @@ public:
 
   void
   add_sink (std::unique_ptr<diagnostic_output_format>);
+
+  void remove_all_output_sinks ();
 
   bool supports_fnotice_on_stderr_p () const;
 
@@ -1093,6 +1098,7 @@ diagnostic_finish (diagnostic_context *context)
 
 inline void
 diagnostic_show_locus (diagnostic_context *context,
+		       const diagnostic_source_printing_options &opts,
 		       rich_location *richloc,
 		       diagnostic_t diagnostic_kind,
 		       pretty_printer *pp,
@@ -1101,7 +1107,7 @@ diagnostic_show_locus (diagnostic_context *context,
   gcc_assert (context);
   gcc_assert (richloc);
   gcc_assert (pp);
-  context->maybe_show_locus (*richloc, diagnostic_kind, *pp, effect_info);
+  context->maybe_show_locus (*richloc, opts, diagnostic_kind, *pp, effect_info);
 }
 
 /* Because we read source files a second time after the frontend did it the

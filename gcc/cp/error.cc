@@ -3894,7 +3894,9 @@ public:
 	    char *saved_prefix = pp_take_prefix (pp);
 	    pp_set_prefix (pp, indent);
 	    gcc_rich_location rich_loc (m_loc);
-	    diagnostic_show_locus (&m_text_output.get_context (), &rich_loc,
+	    diagnostic_show_locus (&m_text_output.get_context (),
+				   m_text_output.get_source_printing_options (),
+				   &rich_loc,
 				   DK_NOTE, pp);
 	    pp_set_prefix (pp, saved_prefix);
 	  }
@@ -3904,7 +3906,9 @@ public:
 	char *saved_prefix = pp_take_prefix (pp);
 	pp_set_prefix (pp, nullptr);
 	gcc_rich_location rich_loc (m_loc);
-	diagnostic_show_locus (&m_text_output.get_context (), &rich_loc,
+	diagnostic_show_locus (&m_text_output.get_context (),
+			       m_text_output.get_source_printing_options (),
+			       &rich_loc,
 			       DK_NOTE, pp);
 	pp_set_prefix (pp, saved_prefix);
       }

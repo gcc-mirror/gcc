@@ -190,28 +190,10 @@ as_diagnostic_event_id (diagnostic_event_id_t id)
 
 class sink
 {
-public:
-  virtual ~sink ();
-
-  void begin_group ()
-  {
-    m_dc.begin_group ();
-  }
-  void end_group ()
-  {
-    m_dc.end_group ();
-  }
-
-  void emit (diagnostic &diag, const char *msgid, va_list *args)
-    LIBGDIAGNOSTICS_PARAM_GCC_FORMAT_STRING (3, 0);
-
 protected:
-  sink (diagnostic_manager &mgr);
+  sink (diagnostic_manager &mgr) : m_mgr (mgr) {}
 
   diagnostic_manager &m_mgr;
-
-  /* One context per sink.  */
-  diagnostic_context m_dc;
 };
 
 /* This has to be a "struct" as it is exposed in the C API.  */
@@ -223,20 +205,21 @@ public:
 			FILE *dst_stream,
 			enum diagnostic_colorize colorize);
 
-  void
-  on_begin_text_diagnostic (diagnostic_text_output_format &text_format,
-			    const diagnostic_info *info);
-
   diagnostic_source_printing_options &get_source_printing_options ()
   {
-    return m_dc.m_source_printing;
+    return m_source_printing;
   }
 
   void
   set_colorize (enum diagnostic_colorize colorize);
 
+  static void
+  text_starter (diagnostic_text_output_format &text_output,
+		const diagnostic_info *diagnostic);
+
 private:
-  const diagnostic_logical_location *m_current_logical_loc;
+  diagnostic_text_output_format *m_inner_sink; // borrowed from dc
+  diagnostic_source_printing_options m_source_printing;
 };
 
 class sarif_sink : public sink
@@ -314,17 +297,48 @@ struct diagnostic_manager
 {
 public:
   diagnostic_manager ()
-    : m_current_diag (nullptr),
-      m_edit_context (m_file_cache)
+  : m_current_diag (nullptr),
+    m_prev_diag_logical_loc (nullptr)
   {
     linemap_init (&m_line_table, BUILTINS_LOCATION);
     m_line_table.m_reallocator = xrealloc;
     m_line_table.m_round_alloc_size = round_alloc_size;
     m_line_table.default_range_bits = line_map_suggested_range_bits;
+
+    diagnostic_initialize (&m_dc, 0);
+    m_dc.remove_all_output_sinks ();
+
+    /* Get defaults from environemt.  These might be
+       overridden by individual sinks.  */
+    diagnostic_color_init (&m_dc, DIAGNOSTICS_COLOR_AUTO);
+    diagnostic_urls_init (&m_dc);
+
+    m_dc.set_show_cwe (true);
+    m_dc.set_show_rules (true);
+    m_dc.m_show_column = true;
+    m_dc.m_source_printing.enabled = true;
+    m_dc.m_source_printing.colorize_source_p = true;
+
+    /* We don't currently expose a way for clients to manipulate the
+       following.  */
+    m_dc.m_source_printing.show_labels_p = true;
+    m_dc.m_source_printing.show_line_numbers_p = true;
+    m_dc.m_source_printing.min_margin_width = 6;
+    m_dc.set_path_format (DPF_INLINE_EVENTS);
+
+    m_dc.m_client_aux_data = this;
+    m_dc.set_client_data_hooks
+      (::make_unique<impl_diagnostic_client_data_hooks> (*this));
+
+    diagnostic_text_starter (&m_dc) = diagnostic_text_sink::text_starter;
+
+    m_edit_context = ::make_unique <edit_context> (m_dc.get_file_cache ());
   }
+
   ~diagnostic_manager ()
   {
-    /* Clean up sinks first, as they can use other fields. */
+    diagnostic_finish (&m_dc);
+
     for (size_t i = 0; i < m_sinks.size (); i++)
       m_sinks[i] = nullptr;
 
@@ -339,7 +353,7 @@ public:
   }
 
   line_maps *get_line_table () { return &m_line_table; }
-  file_cache *get_file_cache () { return &m_file_cache; }
+  diagnostic_context &get_dc () { return m_dc; }
 
   void write_patch (FILE *dst_stream);
 
@@ -415,14 +429,12 @@ public:
 
   void begin_group ()
   {
-    for (auto &sink : m_sinks)
-      sink->begin_group ();
+    m_dc.begin_group ();
   }
 
   void end_group ()
   {
-    for (auto &sink : m_sinks)
-      sink->end_group ();
+    m_dc.end_group ();
   }
 
   const char *
@@ -463,6 +475,12 @@ public:
     line_table = const_cast<line_maps *> (&m_line_table);
   }
 
+  const diagnostic_logical_location *
+  get_prev_diag_logical_loc () const
+  {
+    return m_prev_diag_logical_loc;
+  }
+
 private:
   void
   ensure_linemap_for_file_and_line (const diagnostic_file *file,
@@ -495,8 +513,8 @@ private:
     return phys_loc;
   }
 
+  diagnostic_context m_dc;
   line_maps m_line_table;
-  file_cache m_file_cache;
   impl_client_version_info m_client_version_info;
   std::vector<std::unique_ptr<sink>> m_sinks;
   hash_map<nofree_string_hash, diagnostic_file *> m_str_to_file_map;
@@ -504,7 +522,8 @@ private:
 	   diagnostic_physical_location *> m_location_t_map;
   std::vector<std::unique_ptr<diagnostic_logical_location>> m_logical_locs;
   const diagnostic *m_current_diag;
-  edit_context m_edit_context;
+  const diagnostic_logical_location *m_prev_diag_logical_loc;
+  std::unique_ptr<edit_context> m_edit_context;
 };
 
 class impl_rich_location : public rich_location
@@ -862,134 +881,75 @@ add_sarif_invocation_properties (sarif_object &) const
   // No-op.
 }
 
-/* class sink.  */
-
-void
-sink::emit (diagnostic &diag, const char *msgid, va_list *args)
-{
-  diagnostic_info info;
-GCC_DIAGNOSTIC_PUSH_IGNORED(-Wsuggest-attribute=format)
-  diagnostic_set_info (&info, msgid, args, diag.get_rich_location (),
-		       diagnostic_t_from_diagnostic_level (diag.get_level ()));
-GCC_DIAGNOSTIC_POP
-  info.metadata = diag.get_metadata ();
-  diagnostic_report_diagnostic (&m_dc, &info);
-}
-
-sink::sink (diagnostic_manager &mgr)
-: m_mgr (mgr)
-{
-  diagnostic_initialize (&m_dc, 0);
-  m_dc.m_client_aux_data = this;
-  m_dc.set_client_data_hooks
-    (::make_unique<impl_diagnostic_client_data_hooks> (mgr));
-}
-
-sink::~sink ()
-{
-  diagnostic_finish (&m_dc);
-}
-
 /* struct diagnostic_text_sink : public sink.  */
-
-static diagnostic_color_rule_t
-get_color_rule (enum diagnostic_colorize colorize)
-{
-  switch (colorize)
-    {
-    default:
-      gcc_unreachable ();
-    case DIAGNOSTIC_COLORIZE_IF_TTY:
-      return DIAGNOSTICS_COLOR_AUTO;
-      break;
-    case DIAGNOSTIC_COLORIZE_NO:
-      return DIAGNOSTICS_COLOR_NO;
-      break;
-    case DIAGNOSTIC_COLORIZE_YES:
-      return DIAGNOSTICS_COLOR_YES;
-      break;
-    }
-}
 
 diagnostic_text_sink::diagnostic_text_sink (diagnostic_manager &mgr,
 					    FILE *dst_stream,
 					    enum diagnostic_colorize colorize)
 : sink (mgr),
-  m_current_logical_loc (nullptr)
+  m_source_printing (mgr.get_dc ().m_source_printing)
 {
-  m_dc.set_show_cwe (true);
-  m_dc.set_show_rules (true);
-
-  diagnostic_color_init (&m_dc, get_color_rule (colorize));
-  diagnostic_urls_init (&m_dc);
-
-  auto text_format = ::make_unique<diagnostic_text_output_format> (m_dc, true);
-  text_format->get_printer ()->set_output_stream (dst_stream);
-  m_dc.set_output_format (std::move (text_format));
-  diagnostic_text_starter (&m_dc)
-    = [] (diagnostic_text_output_format &text_format,
-	  const diagnostic_info *info)
-      {
-	diagnostic_context &dc = text_format.get_context ();
-	diagnostic_text_sink *sink
-	  = static_cast<diagnostic_text_sink *> (dc.m_client_aux_data);
-	sink->on_begin_text_diagnostic (text_format, info);
-      };
-  m_dc.set_show_cwe (true);
-  m_dc.set_show_rules (true);
-  m_dc.m_show_column = true;
-  m_dc.m_source_printing.enabled = true;
-  m_dc.m_source_printing.colorize_source_p = true;
-
-  /* We don't currently expose a way for clients to manipulate the
-     following.  */
-  m_dc.m_source_printing.show_labels_p = true;
-  m_dc.m_source_printing.show_line_numbers_p = true;
-  m_dc.m_source_printing.min_margin_width = 6;
-  m_dc.set_path_format (DPF_INLINE_EVENTS);
+  auto inner_sink
+    = ::make_unique<diagnostic_text_output_format> (mgr.get_dc (),
+						    &m_source_printing);
+  inner_sink->get_printer ()->set_output_stream (dst_stream);
+  m_inner_sink = inner_sink.get ();
+  set_colorize (colorize);
+  mgr.get_dc ().add_sink (std::move (inner_sink));
 }
 
 void
 diagnostic_text_sink::set_colorize (enum diagnostic_colorize colorize)
 {
-  diagnostic_color_init (&m_dc, get_color_rule (colorize));
+  pretty_printer *const pp = m_inner_sink->get_printer ();
+  switch (colorize)
+    {
+    default:
+      gcc_unreachable ();
+    case DIAGNOSTIC_COLORIZE_IF_TTY:
+      pp_show_color (pp)
+	= pp_show_color (m_mgr.get_dc ().get_reference_printer ());
+      break;
+    case DIAGNOSTIC_COLORIZE_NO:
+      pp_show_color (pp) = false;
+      break;
+    case DIAGNOSTIC_COLORIZE_YES:
+      pp_show_color (pp) = true;
+      break;
+    }
 }
 
 void
-diagnostic_text_sink::
-on_begin_text_diagnostic (diagnostic_text_output_format &text_format,
-			  const diagnostic_info *info)
+diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
+				    const diagnostic_info *info)
 {
-  const diagnostic *diag = m_mgr.get_current_diag ();
-  gcc_assert (diag);
-  pretty_printer *pp = text_format.get_printer ();
+  gcc_assert (info->x_data);
+  const diagnostic &diag = *static_cast<const diagnostic *> (info->x_data);
+  pretty_printer *pp = text_output.get_printer ();
   const diagnostic_logical_location *diag_logical_loc
-    = diag->get_logical_location ();
-  if (m_current_logical_loc != diag_logical_loc)
+    = diag.get_logical_location ();
+  diagnostic_manager &mgr = diag.get_manager ();
+  if (diag_logical_loc && diag_logical_loc != mgr.get_prev_diag_logical_loc ())
     {
-      m_current_logical_loc = diag_logical_loc;
-      if (m_current_logical_loc)
+      pp_set_prefix (pp, nullptr);
+      switch (diag_logical_loc->get_kind ())
 	{
-	  pp_set_prefix (pp, nullptr);
-	  switch (m_current_logical_loc->get_kind ())
+	default:
+	  break;
+	case LOGICAL_LOCATION_KIND_FUNCTION:
+	  if (const char *name
+	      = diag_logical_loc->get_name_with_scope ())
 	    {
-	    default:
-	      break;
-	    case LOGICAL_LOCATION_KIND_FUNCTION:
-	      if (const char *name
-		  = m_current_logical_loc->get_name_with_scope ())
-		{
-		  pp_printf (pp, _("In function %qs"), name);
-		  pp_character (pp, ':');
-		  pp_newline (pp);
-		}
-	      break;
-	      // TODO: handle other cases
+	      pp_printf (pp, _("In function %qs"), name);
+	      pp_character (pp, ':');
+	      pp_newline (pp);
 	    }
+	  break;
+	  // TODO: handle other cases
 	}
     }
   pp_set_prefix (pp,
-		 text_format.build_prefix (*info));
+		 text_output.build_prefix (*info));
 }
 
 /* class sarif_sink : public sink.  */
@@ -1000,13 +960,14 @@ sarif_sink::sarif_sink (diagnostic_manager &mgr,
 			enum sarif_version version)
 : sink (mgr)
 {
-  const char *main_input_filename = main_input_file->get_name ();
-  diagnostic_output_format_init_sarif_stream (m_dc,
-					      mgr.get_line_table (),
-					      main_input_filename,
-					      true,
-					      version,
-					      dst_stream);
+  diagnostic_output_file output_file (dst_stream, false,
+				      label_text::borrow ("sarif_sink"));
+  auto inner_sink = make_sarif_sink (mgr.get_dc (),
+				     *mgr.get_line_table (),
+				     main_input_file->get_name (),
+				     version,
+				     std::move (output_file));
+  mgr.get_dc ().add_sink (std::move (inner_sink));
 }
 
 /* struct diagnostic_manager.  */
@@ -1016,7 +977,7 @@ diagnostic_manager::write_patch (FILE *dst_stream)
 {
   pretty_printer pp;
   pp.set_output_stream (dst_stream);
-  m_edit_context.print_diff (&pp, true);
+  m_edit_context->print_diff (&pp, true);
   pp_flush (&pp);
 }
 
@@ -1026,17 +987,27 @@ diagnostic_manager::emit (diagnostic &diag, const char *msgid, va_list *args)
   set_line_table_global ();
 
   m_current_diag = &diag;
-  for (auto &sink : m_sinks)
-    {
-      va_list arg_copy;
-      va_copy (arg_copy, *args);
-      sink->emit (diag, msgid, &arg_copy);
-    }
+
+  {
+    m_dc.begin_group ();
+
+    diagnostic_info info;
+GCC_DIAGNOSTIC_PUSH_IGNORED(-Wsuggest-attribute=format)
+    diagnostic_set_info (&info, msgid, args, diag.get_rich_location (),
+			 diagnostic_t_from_diagnostic_level (diag.get_level ()));
+GCC_DIAGNOSTIC_POP
+    info.metadata = diag.get_metadata ();
+    info.x_data = &diag;
+    diagnostic_report_diagnostic (&m_dc, &info);
+
+    m_dc.end_group ();
+  }
 
   rich_location *rich_loc = diag.get_rich_location ();
   if (rich_loc->fixits_can_be_auto_applied_p ())
-    m_edit_context.add_fixits (rich_loc);
+    m_edit_context->add_fixits (rich_loc);
 
+  m_prev_diag_logical_loc = diag.get_logical_location ();
   m_current_diag = nullptr;
 }
 

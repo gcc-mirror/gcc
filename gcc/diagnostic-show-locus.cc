@@ -3253,7 +3253,8 @@ add_location_if_nearby (const diagnostic_context &dc,
 			bool restrict_to_current_line_spans,
 			const range_label *label)
 {
-  diagnostic_source_print_policy source_policy (dc);
+  diagnostic_source_print_policy source_policy (dc,
+						dc.m_source_printing);
   return add_location_if_nearby (source_policy, loc,
 				 restrict_to_current_line_spans, label);
 }
@@ -3264,13 +3265,14 @@ add_location_if_nearby (const diagnostic_context &dc,
 
 void
 diagnostic_context::maybe_show_locus (const rich_location &richloc,
+				      const diagnostic_source_printing_options &opts,
 				      diagnostic_t diagnostic_kind,
 				      pretty_printer &pp,
 				      diagnostic_source_effect_info *effects)
 {
   const location_t loc = richloc.get_loc ();
   /* Do nothing if source-printing has been disabled.  */
-  if (!m_source_printing.enabled)
+  if (!opts.enabled)
     return;
 
   /* Don't attempt to print source for UNKNOWN_LOCATION and for builtins.  */
@@ -3287,13 +3289,25 @@ diagnostic_context::maybe_show_locus (const rich_location &richloc,
 
   m_last_location = loc;
 
-  diagnostic_source_print_policy source_policy (*this);
+  diagnostic_source_print_policy source_policy (*this, opts);
   source_policy.print (pp, richloc, diagnostic_kind, effects);
 }
 
 diagnostic_source_print_policy::
 diagnostic_source_print_policy (const diagnostic_context &dc)
 : m_options (dc.m_source_printing),
+  m_location_policy (dc),
+  m_start_span_cb (dc.m_text_callbacks.m_start_span),
+  m_file_cache (dc.get_file_cache ()),
+  m_diagram_theme (dc.get_diagram_theme ()),
+  m_escape_format (dc.get_escape_format ())
+{
+}
+
+diagnostic_source_print_policy::
+diagnostic_source_print_policy (const diagnostic_context &dc,
+				const diagnostic_source_printing_options &opts)
+: m_options (opts),
   m_location_policy (dc),
   m_start_span_cb (dc.m_text_callbacks.m_start_span),
   m_file_cache (dc.get_file_cache ()),

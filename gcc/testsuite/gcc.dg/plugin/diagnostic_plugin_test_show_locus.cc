@@ -142,6 +142,7 @@ custom_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
   pp_set_prefix (pp, NULL);
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
+			 text_output.get_source_printing_options (),
 			 diagnostic->richloc, diagnostic->kind, pp);
   pp_show_color (pp) = old_show_color;
   pp_set_prefix (pp, saved_prefix);

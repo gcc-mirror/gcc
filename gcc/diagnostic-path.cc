@@ -689,7 +689,8 @@ struct event_range
       }
 
     /* Call diagnostic_show_locus to show the events using labels.  */
-    diagnostic_show_locus (&dc, &m_richloc, DK_DIAGNOSTIC_PATH, &pp,
+    diagnostic_show_locus (&dc, text_output.get_source_printing_options (),
+			   &m_richloc, DK_DIAGNOSTIC_PATH, &pp,
 			   effect_info);
 
     /* If we have a macro expansion, show the expansion to the user.  */
@@ -1194,8 +1195,7 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
 	pretty_printer *const pp = get_printer ();
 	const bool check_rich_locations = true;
 	const bool colorize = pp_show_color (pp);
-	const bool show_event_links
-	  = get_context ().m_source_printing.show_event_links_p;
+	const bool show_event_links = m_source_printing.show_event_links_p;
 	path_summary summary (policy,
 			      *pp,
 			      path,
@@ -1307,7 +1307,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
 
   {
     test_diagnostic_context dc;
-    diagnostic_text_output_format text_output (dc, false);
+    diagnostic_text_output_format text_output (dc, nullptr, false);
     path_print_policy policy (text_output);
     path_summary summary (policy, *event_pp, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 9);
