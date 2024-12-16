@@ -5955,21 +5955,24 @@ foreach { armfunc armflag armdefs } {
 #        /* { dg-add-options arm_cpu_xscale } */
 #	 /* { dg-require-effective-target arm_xscale_multilib } */
 
+# NOTE: -mcpu does not override -mtune, so to ensure the tuning is consistent 
+# for tests using these flags all entries should set -mcpu and -mtune explicitly
+
 # This table should only be used to set -mcpu= (and associated
 # flags).  See above for setting -march=.
 foreach { armfunc armflag armdefs } {
-	    xscale_arm "-mcpu=xscale -mfloat-abi=soft -marm" "__XSCALE__ && !__thumb__"
-	    cortex_a57 "-mcpu=cortex-a57" __ARM_ARCH_8A__
-	    cortex_m0 "-mcpu=cortex-m0 -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
-	    cortex_m0_small "-mcpu=cortex-m0.small-multiply -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
-	    cortex_m0plus_small "-mcpu=cortex-m0plus.small-multiply -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
-	    cortex_m1_small "-mcpu=cortex-m1.small-multiply -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
-	    cortex_m3 "-mcpu=cortex-m3 -mfloat-abi=soft -mthumb" "__ARM_ARCH_7M__"
-	    cortex_m4 "-mcpu=cortex-m4 -mfpu=auto -mthumb" "__ARM_ARCH_7EM__"
-	    cortex_m4_hard "-mcpu=cortex-m4 -mfpu=auto -mfloat-abi=hard -mthumb" "__ARM_ARCH_7EM__"
-	    cortex_m7 "-mcpu=cortex-m7 -mfpu=auto -mthumb" "__ARM_ARCH_7EM__"
-	    cortex_m23 "-mcpu=cortex-m23 -mfloat-abi=soft -mthumb" "__ARM_ARCH_8M_BASE__  && __thumb__"
-	    cortex_m55 "-mcpu=cortex-m55 -mfpu=auto -mthumb" "__ARM_ARCH_8M_MAIN__  && __thumb__"
+	    xscale_arm "-mcpu=xscale -mtune=xscale -mfloat-abi=soft -marm" "__XSCALE__ && !__thumb__"
+	    cortex_a57 "-mcpu=cortex-a57 -mtune=cortex-a57" __ARM_ARCH_8A__
+	    cortex_m0 "-mcpu=cortex-m0 -mtune=cortex-m0 -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
+	    cortex_m0_small "-mcpu=cortex-m0.small-multiply -mtune=cortex-m0.small-multiply -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
+	    cortex_m0plus_small "-mcpu=cortex-m0plus.small-multiply -mtune=cortex-m0plus.small-multiply -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
+	    cortex_m1_small "-mcpu=cortex-m1.small-multiply -mtune=cortex-m1.small-multiply -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
+	    cortex_m3 "-mcpu=cortex-m3 -mtune=cortex-m3 -mfloat-abi=soft -mthumb" "__ARM_ARCH_7M__"
+	    cortex_m4 "-mcpu=cortex-m4 -mtune=cortex-m4 -mfpu=auto -mthumb" "__ARM_ARCH_7EM__"
+	    cortex_m4_hard "-mcpu=cortex-m4 -mtune=cortex-m4 -mfpu=auto -mfloat-abi=hard -mthumb" "__ARM_ARCH_7EM__"
+	    cortex_m7 "-mcpu=cortex-m7 -mtune=cortex-m7 -mfpu=auto -mthumb" "__ARM_ARCH_7EM__"
+	    cortex_m23 "-mcpu=cortex-m23 -mtune=cortex-m23 -mfloat-abi=soft -mthumb" "__ARM_ARCH_8M_BASE__  && __thumb__"
+	    cortex_m55 "-mcpu=cortex-m55 -mtune=cortex-m55 -mfpu=auto -mthumb" "__ARM_ARCH_8M_MAIN__  && __thumb__"
 	} {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_cpu_FUNC_ok { } {
