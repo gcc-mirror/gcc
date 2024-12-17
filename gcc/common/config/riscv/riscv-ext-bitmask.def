@@ -79,6 +79,5 @@ RISCV_EXT_BITMASK ("zcd",		1,  4)
 RISCV_EXT_BITMASK ("zcf",		1,  5)
 RISCV_EXT_BITMASK ("zcmop",		1,  6)
 RISCV_EXT_BITMASK ("zawrs",		1,  7)
-RISCV_EXT_BITMASK ("svvptc",		1,  8)
 
 #undef RISCV_EXT_BITMASK
