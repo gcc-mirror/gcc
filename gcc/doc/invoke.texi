@@ -30201,7 +30201,7 @@ Alias of @option{-march=}.
 @item -march-map=@var{architecture-string}
 Select the closest available @option{-march=} value that is not more
 capable.  For instance, for @option{-march-map=sm_50} select
-@option{-march=sm_35}, and for @option{-march-map=sm_53} select
+@option{-march=sm_37}, and for @option{-march-map=sm_53} select
 @option{-march=sm_53}.
 
 @opindex mptx
