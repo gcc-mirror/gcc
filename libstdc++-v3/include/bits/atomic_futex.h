@@ -170,11 +170,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool __equal, memory_order __mo,
 	const chrono::time_point<std::chrono::system_clock, _Dur>& __atime)
     {
-      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-      // XXX correct?
+      auto __d = __atime.time_since_epoch();
+      if (__d < __d.zero()) [[__unlikely__]]
+	return false;
+      auto __s = chrono::duration_cast<chrono::seconds>(__d);
+      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__d - __s);
       return _M_load_and_test_until(__assumed, __operand, __equal, __mo,
-	  true, __s.time_since_epoch(), __ns);
+				    true, __s, __ns);
     }
 
     template<typename _Dur>
@@ -183,11 +185,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool __equal, memory_order __mo,
 	const chrono::time_point<std::chrono::steady_clock, _Dur>& __atime)
     {
-      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-      // XXX correct?
+      auto __d = __atime.time_since_epoch();
+      if (__d < __d.zero()) [[__unlikely__]]
+	return false;
+      auto __s = chrono::duration_cast<chrono::seconds>(__d);
+      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__d - __s);
       return _M_load_and_test_until_steady(__assumed, __operand, __equal, __mo,
-	  true, __s.time_since_epoch(), __ns);
+	  true, __s, __ns);
     }
 
   public:

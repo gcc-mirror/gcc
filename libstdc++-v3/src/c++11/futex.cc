@@ -128,7 +128,7 @@ namespace
 	if (!futex_clock_realtime_unavailable.load(std::memory_order_relaxed))
 	  {
 	    // futex sets errno=EINVAL for absolute timeouts before the epoch.
-	    if (__s.count() < 0)
+	    if (__s.count() < 0 || __ns.count() < 0) [[unlikely]]
 	      return false;
 
 	    syscall_timespec rt;
@@ -204,7 +204,7 @@ namespace
 	if (!futex_clock_monotonic_unavailable.load(std::memory_order_relaxed))
 	  {
 	    // futex sets errno=EINVAL for absolute timeouts before the epoch.
-	    if (__s.count() < 0) [[unlikely]]
+	    if (__s.count() < 0 || __ns.count() < 0) [[unlikely]]
 	      return false;
 
 	    syscall_timespec rt;
