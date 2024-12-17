@@ -332,6 +332,15 @@ TopLevel::visit (AST::EnumItemDiscriminant &variant)
 void
 TopLevel::visit (AST::Enum &enum_item)
 {
+  auto generic_vis = [this, &enum_item] () {
+    for (auto &g : enum_item.get_generic_params ())
+      {
+	g->accept_vis (*this);
+      }
+  };
+
+  ctx.scoped (Rib::Kind::Item, enum_item.get_node_id (), generic_vis);
+
   insert_or_error_out (enum_item.get_identifier (), enum_item,
 		       Namespace::Types);
 
