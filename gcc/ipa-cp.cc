@@ -1693,11 +1693,14 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
 
 /* Given a PASS_THROUGH jump function JFUNC that takes as its source SRC_VR of
    SRC_TYPE and the result needs to be DST_TYPE, if any value range information
-   can be deduced at all, intersect VR with it.  */
+   can be deduced at all, intersect VR with it.  CONTEXT_NODE is the call graph
+   node representing the function for which optimization flags should be
+   evaluated.  */
 
 static void
 ipa_vr_intersect_with_arith_jfunc (vrange &vr,
 				   ipa_jump_func *jfunc,
+				   cgraph_node *context_node,
 				   const value_range &src_vr,
 				   tree src_type,
 				   tree dst_type)
@@ -1720,7 +1723,7 @@ ipa_vr_intersect_with_arith_jfunc (vrange &vr,
   if (!handler)
     return;
   value_range op_vr (TREE_TYPE (operand));
-  ipa_range_set_and_normalize (op_vr, operand);
+  ipa_get_range_from_ip_invariant (op_vr, operand, context_node);
 
   tree operation_type;
   if (TREE_CODE_CLASS (operation) == tcc_comparison)
@@ -1776,7 +1779,8 @@ ipa_value_range_from_jfunc (vrange &vr,
       value_range srcvr;
       (*sum->m_vr)[idx].get_vrange (srcvr);
 
-      ipa_vr_intersect_with_arith_jfunc (vr, jfunc, srcvr, src_type, parm_type);
+      ipa_vr_intersect_with_arith_jfunc (vr, jfunc, cs->caller, srcvr, src_type,
+					 parm_type);
     }
 }
 
@@ -2562,7 +2566,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 
       if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR
 	  || !ipa_edge_within_scc (cs))
-	ipa_vr_intersect_with_arith_jfunc (vr, jfunc,
+	ipa_vr_intersect_with_arith_jfunc (vr, jfunc, cs->caller,
 					   src_lats->m_value_range.m_vr,
 					   operand_type, param_type);
     }

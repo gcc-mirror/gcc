@@ -431,6 +431,10 @@ public:
   /* Return true if ONE and TWO are part of the same COMDAT group.  */
   inline bool in_same_comdat_group_p (symtab_node *target);
 
+  /* Return true if symbol is known to be nonzero, assume that
+     flag_delete_null_pointer_checks is equal to delete_null_pointer_checks.  */
+  bool nonzero_address (bool delete_null_pointer_checks);
+
   /* Return true if symbol is known to be nonzero.  */
   bool nonzero_address ();
 

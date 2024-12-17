@@ -2312,6 +2312,43 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, const ipa_vr &vr)
   ipa_set_jfunc_vr (jf, tmp);
 }
 
+/* Given VAL that conforms to is_gimple_ip_invariant, produce a VRANGE that
+   represents it as a range.  CONTEXT_NODE is the call graph node representing
+   the function for which optimization flags should be evaluated.  */
+
+void
+ipa_get_range_from_ip_invariant (vrange &r, tree val, cgraph_node *context_node)
+{
+  if (TREE_CODE (val) == ADDR_EXPR)
+    {
+      symtab_node *symbol;
+      tree base = TREE_OPERAND (val, 0);
+      if (!DECL_P (base))
+	{
+	  r.set_varying (TREE_TYPE (val));
+	  return;
+	}
+      if (!decl_in_symtab_p (base))
+	{
+	  r.set_nonzero (TREE_TYPE (val));
+	  return;
+	}
+      if (!(symbol = symtab_node::get (base)))
+	{
+	  r.set_varying (TREE_TYPE (val));
+	  return;
+	}
+
+      bool delete_null_pointer_checks
+	= opt_for_fn (context_node->decl, flag_delete_null_pointer_checks);
+      if (symbol->nonzero_address (delete_null_pointer_checks))
+	r.set_nonzero (TREE_TYPE (val));
+      else
+	r.set_varying (TREE_TYPE (val));
+    }
+  else
+    r.set (val, val);
+}
 
 /* If T is an SSA_NAME that is the result of a simple type conversion statement
    from an integer type to another integer type which is known to be able to

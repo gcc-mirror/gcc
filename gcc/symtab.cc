@@ -2207,10 +2207,11 @@ symtab_node::get_partitioning_class (void)
   return SYMBOL_PARTITION;
 }
 
-/* Return true when symbol is known to be non-zero.  */
+/* Return true when symbol is known to be non-zero, assume that
+   flag_delete_null_pointer_checks is equal to delete_null_pointer_checks.  */
 
 bool
-symtab_node::nonzero_address ()
+symtab_node::nonzero_address (bool delete_null_pointer_checks)
 {
   /* Weakrefs may be NULL when their target is not defined.  */
   if (alias && weakref)
@@ -2234,7 +2235,7 @@ symtab_node::nonzero_address ()
 	  if (target->resolution != LDPR_UNKNOWN
 	      && target->resolution != LDPR_UNDEF
 	      && !target->can_be_discarded_p ()
-	      && flag_delete_null_pointer_checks)
+	      && delete_null_pointer_checks)
 	    return true;
 	  return false;
 	}
@@ -2251,7 +2252,7 @@ symtab_node::nonzero_address ()
 
      When parsing, beware the cases when WEAK attribute is added later.  */
   if ((!DECL_WEAK (decl) || DECL_COMDAT (decl))
-      && flag_delete_null_pointer_checks)
+      && delete_null_pointer_checks)
     {
       refuse_visibility_changes = true;
       return true;
@@ -2262,7 +2263,7 @@ symtab_node::nonzero_address ()
      Play safe for flag_delete_null_pointer_checks where weak definition may
      be re-defined by NULL.  */
   if (definition && !DECL_EXTERNAL (decl)
-      && (flag_delete_null_pointer_checks || !DECL_WEAK (decl)))
+      && (delete_null_pointer_checks || !DECL_WEAK (decl)))
     {
       if (!DECL_WEAK (decl))
         refuse_visibility_changes = true;
@@ -2273,9 +2274,17 @@ symtab_node::nonzero_address ()
   if (resolution != LDPR_UNKNOWN
       && resolution != LDPR_UNDEF
       && !can_be_discarded_p ()
-      && flag_delete_null_pointer_checks)
+      && delete_null_pointer_checks)
     return true;
   return false;
+}
+
+/* Return true when symbol is known to be non-zero.  */
+
+bool
+symtab_node::nonzero_address ()
+{
+  return nonzero_address (flag_delete_null_pointer_checks);
 }
 
 /* Return 0 if symbol is known to have different address than S2,

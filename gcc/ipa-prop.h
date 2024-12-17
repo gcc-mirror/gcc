@@ -1258,7 +1258,7 @@ tree ipcp_get_aggregate_const (struct function *func, tree parm, bool by_ref,
 			       HOST_WIDE_INT bit_size);
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
-
+void ipa_get_range_from_ip_invariant (vrange &r, tree val, cgraph_node *node);
 void ipa_prop_cc_finalize (void);
 
 /* From tree-sra.cc:  */
@@ -1267,19 +1267,6 @@ tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 
 /* In ipa-cp.cc  */
 void ipa_cp_cc_finalize (void);
-
-/* Set R to the range of [VAL, VAL] while normalizing addresses to
-   non-zero.  */
-
-inline void
-ipa_range_set_and_normalize (vrange &r, tree val)
-{
-  if (TREE_CODE (val) == ADDR_EXPR)
-    r.set_nonzero (TREE_TYPE (val));
-  else
-    r.set (val, val);
-}
-
 bool ipa_return_value_range (value_range &range, tree decl);
 void ipa_record_return_value_range (value_range val);
 bool ipa_jump_functions_equivalent_p (ipa_jump_func *jf1, ipa_jump_func *jf2);
