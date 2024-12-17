@@ -1,3 +1,9 @@
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* error.cc (gfc_diagnostic_text_starter): Use source-printing
+	options from text_output.
+
 2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/117897

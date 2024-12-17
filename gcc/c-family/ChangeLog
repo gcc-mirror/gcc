@@ -1,3 +1,11 @@
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* c-format.cc (selftest::test_type_mismatch_range_labels): Use
+	dc.m_source_printing.
+	* c-opts.cc (c_diagnostic_text_finalizer): Use source-printing
+	options from text_output.
+
 2024-12-12  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Peter Eisentraut  <peter@eisentraut.org>
 

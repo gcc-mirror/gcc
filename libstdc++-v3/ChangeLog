@@ -1,3 +1,65 @@
+2024-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Local_iterator_base): Use
+	default member-initializers.
+
+2024-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h: Replace typedefs with
+	alias-declarations. Remove redundant std:: qualification.
+	(_Mod_range_hashing, _Mask_range_hashing): Remove adaptable
+	function object typedefs.
+
+2024-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Hash_code_storage): Remove.
+	(_Hash_obj_storage): New class template. Store the hash
+	function as a union member instead of using a byte buffer.
+	(_Local_iterator_base): Use _Hash_obj_storage instead of
+	_Hash_code_storage, adjust members that construct and destroy
+	the hash object.
+	(_Local_iterator_base::_M_incr): Calculate bucket index.
+
+2024-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable::swap): Swap hash
+	function and equality predicate here. Inline allocator swap
+	instead of using __alloc_on_swap.
+	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper):
+	Replace EBO with no_unique_address attribute. Remove NTTP.
+	(_Hash_code_base): Replace base class with data member using
+	no_unique_address attribute.
+	(_Hash_code_base::_M_swap): Remove.
+	(_Hash_code_base::_M_hash): Remove.
+	(_Hashtable_base): Replace base class with data member using
+	no_unique_address attribute.
+	(_Hashtable_base::_M_swap): Remove.
+	(_Hashtable_alloc): Replace base class with data member using
+	no_unique_address attribute.
+
+2024-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/57272
+	* include/bits/forward_list.h (__fwd_list::_Node): Add
+	user-provided special member functions to union.
+	* include/bits/stl_list.h (__list::_Node): Likewise.
+	(_Node_base::_M_hook, _Node_base::swap): Use _M_base() instead
+	of std::pointer_traits::pointer_to.
+	(_Node_base::_M_transfer): Likewise. Add noexcept.
+	(_List_base::_M_put_node): Use 'if constexpr' to avoid using
+	pointer_traits::pointer_to when not necessary.
+	(_List_base::_M_destroy_node): Fix parameter to be the pointer
+	type used internally, not the allocator's pointer.
+	(list::_M_create_node): Likewise.
+	* testsuite/23_containers/forward_list/requirements/explicit_instantiation/alloc_ptr.cc:
+	Check explicit instantiation of non-trivial value type.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/alloc_ptr.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/requirements/explicit_instantiation/alloc_ptr_ignored.cc:
+	Fix macro name.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/alloc_ptr_ignored.cc:
+	Likewise.
+
 2024-12-14  Abdo Eid  <abdoeid.eg@ieee.org>
 
 	* include/c_compatibility/wchar.h (fgetwc): Remove duplicate

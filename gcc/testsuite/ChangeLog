@@ -1,3 +1,65 @@
+2024-12-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR tree-optimization/118055
+	* gcc.dg/tree-ssa/pr83403-1.c, gcc.dg/tree-ssa/pr83403-2.c: Add
+	cris-*-* to targets passing --param=max-completely-peeled-insns=300.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/2.1.0-valid/3.11.6-embedded-links.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/malloc-vs-local-4.c.sarif: Update
+	expected output for handling the embedded links.
+	* sarif-replay.dg/2.1.0-valid/spec-example-4.sarif: Likewise.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgdiagnostics.dg/test-logical-location.c: Include <assert.h>.
+	Verify that creating a diagnostic_logical_location with equal
+	values yields the same instance.
+	* sarif-replay.dg/2.1.0-valid/malloc-vs-local-4.c.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.moved.sarif: Update
+	expected output to show logical location and for consolidation of
+	events into runs.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-valid/spec-example-4.sarif: Likewise.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* sarif-replay.dg/2.1.0-valid/error-with-note.sarif: Update
+	expected output to include quoted source code and underlines.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.moved.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.sarif: Update expected
+	output to include quoted source code and underlines.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc
+	(custom_diagnostic_text_finalizer): Use source-printing options
+	from text_output.
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.cc
+	(xhtml_builder::make_element_for_diagnostic): Use source-printing
+	options from diagnostic_context.
+	* gcc.dg/plugin/expensive_selftests_plugin.cc (test_richloc):
+	Likewise.
+
+2024-12-16  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/pr117816.c: Require effective target int32plus.
+
+2024-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117383
+	* gcc.target/riscv/rvv/autovec/binop/vcompress-avlprop-1.c:
+	Expect tu.
+	* gcc.target/riscv/rvv/autovec/pr117383.c: New test.
+
+2024-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118019
+	* gcc.target/riscv/rvv/autovec/pr118019.c: New test.
+
 2024-12-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/ivopts-1.c: Enable TImode tests on hppa64.

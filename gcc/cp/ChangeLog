@@ -1,3 +1,9 @@
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* error.cc (auto_context_line::~auto_context_line): Use
+	source-printing options from text_output.
+
 2024-12-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc

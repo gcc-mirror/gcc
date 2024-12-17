@@ -1,3 +1,194 @@
+2024-12-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md: Fix tabs vs. spaces.
+
+2024-12-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_hard_regno_mode_ok):
+	Remove explicit HImode handling for SSE2 XMM regnos.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Add HImode.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (struct embedded_link): New.
+	(maybe_consume_embedded_link): New.
+	(sarif_replayer::make_plain_text_within_result_message): Handle
+	embedded links by using the link text, for now.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/libgdiagnostics/topics/logical-locations.rst
+	(diagnostic_manager_new_logical_location): Add note about repeated
+	calls.
+	* libgdiagnostics.cc: Define INCLUDE_MAP.
+	(class owned_nullable_string): Add copy ctor and move ctor.
+	(owned_nullable_string::operator<): New.
+	(diagnostic_logical_location::operator<): New.
+	(diagnostic_manager::new_logical_location): Use m_logical_locs to
+	"uniquify" instances, converting it to a std::map.
+	(diagnostic_manager::logical_locs_map_t): New typedef.
+	(diagnostic_manager::t m_logical_locs): Convert from a std::vector
+	to a std::map.
+	(diagnostic_execution_path::same_function_p): Update comment.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* doc/libgdiagnostics/topics/physical-locations.rst
+	(diagnostic_manager_new_file): Drop "const" from return type.
+	* doc/libgdiagnostics/tutorial/02-physical-locations.rst: Drop
+	"const" from "main_file" decl.
+	* input.cc (file_cache::add_buffered_content): New.
+	(file_cache_slot::set_content): New.
+	(file_cache_slot::dump): Use m_file_path being null rather than
+	m_fp to determine empty slots.  Dump m_fp.
+	(find_end_of_line): Drop "const" from return type and param.  Add
+	forward decl.
+	(file_cache_slot::get_next_line): Fix "const"-ness.
+	(selftest::test_reading_source_buffer): New.
+	(selftest::input_cc_tests): Call it.
+	* input.h (file_cache::add_buffered_content): New decl.
+	* libgdiagnostics++.h (class file): Drop const-ness from m_inner.
+	(file::set_buffered_content): New.
+	* libgdiagnostics.cc (class content_buffer): New.
+	(diagnostic_file::diagnostic_file): Add "mgr" param.
+	(diagnostic_file::get_content): New.
+	(diagnostic_file::set_buffered_content): New.
+	(diagnostic_file::m_mgr): New.
+	(diagnostic_file::m_content): New.
+	(diagnostic_manager::new_file): Drop const-ness.  Pass *this to
+	ctor.
+	(diagnostic_file::set_buffered_content): New.
+	(diagnostic_manager_new_file): Drop "const" from return type.
+	(diagnostic_file_set_buffered_content): New entrypoint.
+	(diagnostic_manager_debug_dump_file): Dump the content size,
+	if any.
+	* libgdiagnostics.h (diagnostic_manager_new_file): Drop "const"
+	from return type.
+	(diagnostic_file_set_buffered_content): New decl.
+	* libgdiagnostics.map (diagnostic_file_set_buffered_content): New
+	symbol.
+	* libsarifreplay.cc (sarif_replayer::m_artifacts_arr): Convert
+	from json::value to json::array.
+	(sarif_replayer::handle_run_obj): Call handle_artifact_obj
+	on all artifacts.
+	(sarif_replayer::handle_artifact_obj): New.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* diagnostic-format-text.cc
+	(diagnostic_text_output_format::append_note): Use source-printing
+	options from text_output.
+	(diagnostic_text_output_format::update_printer): Copy
+	source-printing options from dc.
+	(default_diagnostic_text_finalizer): Use source-printing
+	options from text_output.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::diagnostic_text_output_format):
+	Add optional diagnostic_source_printing_options param, using
+	the context's if null.
+	(diagnostic_text_output_format::get_source_printing_options): New
+	accessor.
+	(diagnostic_text_output_format::m_source_printing): New field.
+	* diagnostic-path.cc (event_range::print): Use source-printing
+	options from text_output.
+	(selftest::test_interprocedural_path_1): Use source-printing
+	options from dc.
+	* diagnostic-show-locus.cc
+	(gcc_rich_location::add_location_if_nearby): Likewise.
+	(diagnostic_context::maybe_show_locus): Add "opts" param
+	and use in place of m_source_printing.  Pass it to source_policy
+	ctor.
+	(diagnostic_source_print_policy::diagnostic_source_print_policy):
+	Add overload taking a const diagnostic_source_printing_options &.
+	* diagnostic.cc (diagnostic_context::initialize): Pass nullptr
+	for source options when creating text sink, so that it uses
+	the dc's options.
+	(diagnostic_context::dump): Add an "output sinks:" heading and
+	print "(none)" if there aren't any.
+	(diagnostic_context::set_output_format): Split out code into...
+	(diagnostic_context::remove_all_output_sinks): ...this new
+	function.
+	* diagnostic.h
+	(diagnostic_source_print_policy::diagnostic_source_print_policy):
+	Add overload taking a const diagnostic_source_printing_options &.
+	(diagnostic_context::maybe_show_locus): Add "opts" param.
+	(diagnostic_context::remove_all_output_sinks): New decl.
+	(diagnostic_context::m_source_printing): New field.
+	(diagnostic_show_locus): Add "opts" param and pass to
+	maybe_show_locus.
+	* libgdiagnostics.cc (sink::~sink): Delete.
+	(sink::begin_group): Delete.
+	(sink::end_group): Delete.
+	(sink::emit): Delete.
+	(sink::m_dc): Drop field.
+	(diagnostic_text_sink::on_begin_text_diagnostic): Delete.
+	(diagnostic_text_sink::get_source_printing_options): Use
+	m_souece_printing.
+	(diagnostic_text_sink::m_current_logical_loc): Drop field.
+	(diagnostic_text_sink::m_inner_sink): New field.
+	(diagnostic_text_sink::m_source_printing): New field.
+	(diagnostic_manager::diagnostic_manager): Update for changes
+	to fields.  Initialize m_dc.
+	(diagnostic_manager::~diagnostic_manager): Call diagnostic_finish.
+	(diagnostic_manager::get_file_cache): Drop.
+	(diagnostic_manager::get_dc): New accessor.
+	(diagnostic_manager::begin_group): Reimplement.
+	(diagnostic_manager::end_group): Reimplement.
+	(diagnostic_manager::get_prev_diag_logical_loc): New accessor.
+	(diagnostic_manager::m_dc): New field.
+	(diagnostic_manager::m_file_cache): Drop field.
+	(diagnostic_manager::m_edit_context): Convert to a std::unique_ptr
+	so that object can be constructed after m_dc is initialized.
+	(diagnostic_manager::m_prev_diag_logical_loc): New field.
+	(diagnostic_text_sink::diagnostic_text_sink): Reimplement.
+	(get_color_rule): Delete.
+	(diagnostic_text_sink::set_colorize): Reimplement.
+	(diagnostic_text_sink::text_starter): New.
+	(sarif_sink::sarif_sink): Reimplement.
+	(diagnostic_manager::write_patch): Update for change to
+	m_edit_context.
+	(diagnostic_manager::emit): Update now that each sink has a
+	corresponding diagnostic_output_format object within m_dc.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::dump): Dump m_file_cache.
+	* input.cc (file_cache_slot::dump): New decls and implementations.
+	(file_cache::dump): New.
+	* input.h (file_cache::dump): New decl.
+
+2024-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* doc/md.texi: Add "3" suffix.
+
+2024-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/112694
+	PR target/116611.
+	* config/riscv/riscv-v.cc (expand_vec_perm_const): Remove early
+	return.
+	* tree-vect-slp.cc (can_duplicate_and_interleave_p): Return
+	false when we cannot create sub-elements.
+
+2024-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117383
+	* config/riscv/riscv-protos.h (enum insn_type): Use TU policy.
+	* config/riscv/riscv-v.cc (shuffle_compress_patterns): Set VL.
+
+2024-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118019
+	* config/riscv/riscv.cc (riscv_builtin_vectorization_cost):
+	Increase vec_construct cost.
+
+2024-12-16  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (write_s_frameproc): Align output.
+	(write_s_inlinesite): Align output.
+
 2024-12-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/118018
