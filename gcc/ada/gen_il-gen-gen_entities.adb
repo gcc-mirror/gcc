@@ -1281,6 +1281,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Related_Instance, Node_Id),
         Sm (Renamed_In_Spec, Flag),
         Sm (Renamed_Or_Alias, Node_Id),
+        Sm (Renames_Limited_View, Flag),
         Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Aux_Pragma, Node_Id),
         Sm (SPARK_Aux_Pragma_Inherited, Flag),

@@ -1665,8 +1665,7 @@ package body Sem_Ch8 is
          Set_Etype (New_P, Standard_Void_Type);
 
       elsif Present (Renamed_Entity (Old_P))
-        and then (From_Limited_With (Renamed_Entity (Old_P))
-                    or else Has_Limited_View (Renamed_Entity (Old_P)))
+        and then Renames_Limited_View (Old_P)
         and then not
           Unit_Is_Visible (Cunit (Get_Source_Unit (Renamed_Entity (Old_P))))
       then
@@ -1691,8 +1690,10 @@ package body Sem_Ch8 is
 
          if Present (Renamed_Entity (Old_P)) then
             Set_Renamed_Entity (New_P, Renamed_Entity (Old_P));
+            Set_Renames_Limited_View (New_P, Renames_Limited_View (Old_P));
          else
             Set_Renamed_Entity (New_P, Old_P);
+            Set_Renames_Limited_View (New_P, From_Limited_With (Old_P));
          end if;
 
          --  The package renaming declaration may become Ghost if it renames a
@@ -7077,7 +7078,7 @@ package body Sem_Ch8 is
               ("renaming of limited view of package & not usable in this"
                & " context (RM 8.5.3(3.1/2))", Prefix (N), P_Name);
 
-         elsif Has_Limited_View (P_Name)
+         elsif Renames_Limited_View (Entity (Prefix (N)))
            and then not Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
            and then not Is_Visible_Through_Renamings (P_Name)
          then

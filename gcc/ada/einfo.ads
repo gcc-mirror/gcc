@@ -4247,6 +4247,15 @@ package Einfo is
 --       within an accept statement. For all remaining cases (discriminants,
 --       loop parameters) the field is Empty.
 
+--    Renames_Limited_View
+--       Defined in package entities. True for a package renaming if either
+--       a) the renamed package is not itself a renaming, and the renaming
+--          denotes a limited view of the renamed package (as seen at the
+--          point of the renaming declaration, as opposed to later on when
+--          the renaming is referenced); or
+--       b) the renamed package is itself a renaming and the
+--          Renames_Limited_View flag is True for the renamed package.
+
 --    Requires_Overriding
 --       Defined in all subprograms and entries. Set for subprograms that
 --       require overriding as defined by RM-2005-3.9.3(6/2). Note that this
