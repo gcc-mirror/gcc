@@ -2396,28 +2396,27 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
       value_range vr (TREE_TYPE (arg));
       if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
-	  bool addr_nonzero = false;
-	  bool strict_overflow = false;
-
-	  if (TREE_CODE (arg) == SSA_NAME
-	      && param_type
-	      && get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
-	      && vr.nonzero_p ())
-	    addr_nonzero = true;
-	  else if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
-	    addr_nonzero = true;
-
-	  if (addr_nonzero)
-	    vr.set_nonzero (TREE_TYPE (arg));
-
+	  if (!get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
+	      || vr.varying_p ()
+	      || vr.undefined_p ())
+	    {
+	      bool strict_overflow = false;
+	      if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
+		vr.set_nonzero (TREE_TYPE (arg));
+	      else
+		vr.set_varying (TREE_TYPE (arg));
+	    }
+	  gcc_assert (!vr.undefined_p ());
 	  unsigned HOST_WIDE_INT bitpos;
-	  unsigned align, prec = TYPE_PRECISION (TREE_TYPE (arg));
+	  unsigned align = BITS_PER_UNIT;
 
-	  get_pointer_alignment_1 (arg, &align, &bitpos);
+	  if (!vr.singleton_p ())
+	    get_pointer_alignment_1 (arg, &align, &bitpos);
 
 	  if (align > BITS_PER_UNIT
 	      && opt_for_fn (cs->caller->decl, flag_ipa_bit_cp))
 	    {
+	      unsigned prec = TYPE_PRECISION (TREE_TYPE (arg));
 	      wide_int mask
 		= wi::bit_and_not (wi::mask (prec, false, prec),
 				   wide_int::from (align / BITS_PER_UNIT - 1,
@@ -2425,12 +2424,10 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      wide_int value = wide_int::from (bitpos / BITS_PER_UNIT, prec,
 					       UNSIGNED);
 	      irange_bitmask bm (value, mask);
-	      if (!addr_nonzero)
-		vr.set_varying (TREE_TYPE (arg));
 	      vr.update_bitmask (bm);
 	      ipa_set_jfunc_vr (jfunc, vr);
 	    }
-	  else if (addr_nonzero)
+	  else if (!vr.varying_p ())
 	    ipa_set_jfunc_vr (jfunc, vr);
 	  else
 	    gcc_assert (!jfunc->m_vr);
