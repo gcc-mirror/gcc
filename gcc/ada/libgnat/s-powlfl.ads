@@ -36,7 +36,7 @@ package System.Powten_LFlt is
 
    Maxpow_Exact : constant := 22;
    --  Largest power of five exactly representable with Long_Float. It is equal
-   --  to floor (M * log 2 / log 5), when M is the size of the mantissa (53).
+   --  to floor (M * log 2 / log 5), where M is the size of the mantissa (53).
    --  It also works for any number of the form 5*(2**N) and in particular 10.
 
    Maxpow : constant := Maxpow_Exact * 2;

@@ -336,6 +336,7 @@ package body System.Val_Real is
       pragma Import (Ada, Powfive_300);
       for Powfive_300'Address use Powfive_300_Address;
 
+      H : Double_T;
       R : Double_T;
       E : Natural;
 
@@ -359,8 +360,15 @@ package body System.Val_Real is
          E := Exp - Maxpow;
       end if;
 
+      --  Accumulate 5**Maxpow into R until E <= Maxpow or R saturates to +Inf
+
       while E > Maxpow loop
+         H := R;
          R := R * Powfive (Maxpow);
+         if R = H then
+            E := Maxpow;
+            exit;
+         end if;
          E := E - Maxpow;
       end loop;
 
@@ -381,6 +389,7 @@ package body System.Val_Real is
       pragma Import (Ada, Powfive);
       for Powfive'Address use Powfive_Address;
 
+      H : Double_T;
       R : Double_T;
       E : Natural;
 
@@ -407,8 +416,15 @@ package body System.Val_Real is
          S := 0;
       end if;
 
+      --  Accumulate 5**Maxpow into R until E <= Maxpow or R saturates to +Inf
+
       while E > Maxpow loop
+         H := R;
          R := R * Powfive (Maxpow);
+         if R = H then
+            E := Maxpow;
+            exit;
+         end if;
          E := E - Maxpow;
       end loop;
 
