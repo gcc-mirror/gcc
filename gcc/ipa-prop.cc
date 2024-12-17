@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attr-fnspec.h"
 #include "gimple-range.h"
 #include "value-range-storage.h"
+#include "vr-values.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -2311,6 +2312,44 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, const ipa_vr &vr)
   ipa_set_jfunc_vr (jf, tmp);
 }
 
+
+/* If T is an SSA_NAME that is the result of a simple type conversion statement
+   from an integer type to another integer type which is known to be able to
+   represent the values the operand of the conversion can hold, return the
+   operand of that conversion, otherwise return T.  */
+
+static tree
+skip_a_safe_conversion_op (tree t)
+{
+  if (TREE_CODE (t) != SSA_NAME
+      || SSA_NAME_IS_DEFAULT_DEF (t))
+    return t;
+
+  gimple *def = SSA_NAME_DEF_STMT (t);
+  if (!is_gimple_assign (def)
+      || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (t))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (def))))
+    return t;
+
+  tree rhs1 = gimple_assign_rhs1 (def);
+  if (TYPE_PRECISION (TREE_TYPE (t))
+      >= TYPE_PRECISION (TREE_TYPE (rhs1)))
+    return gimple_assign_rhs1 (def);
+
+  value_range vr (TREE_TYPE (rhs1));
+  if (!get_range_query (cfun)->range_of_expr (vr, rhs1, def)
+      || vr.undefined_p ())
+    return t;
+
+  irange &ir = as_a <irange> (vr);
+  if (range_fits_type_p (&ir, TYPE_PRECISION (TREE_TYPE (t)),
+			 TYPE_SIGN (TREE_TYPE (t))))
+      return gimple_assign_rhs1 (def);
+
+  return t;
+}
+
 /* Compute jump function for all arguments of callsite CS and insert the
    information in the jump_functions array in the ipa_edge_args corresponding
    to this callsite.  */
@@ -2415,6 +2454,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    gcc_assert (!jfunc->m_vr);
 	}
 
+      arg = skip_a_safe_conversion_op (arg);
       if (is_gimple_ip_invariant (arg)
 	  || (VAR_P (arg)
 	      && is_global_var (arg)
