@@ -1,3 +1,11 @@
+2024-12-16  Heiko Eißfeldt  <heiko@hexco.de>
+
+	Backported from master:
+	2024-12-14  Heiko Eißfeldt  <heiko@hexco.de>
+
+	* doc/install.texi (Configuration): Fix typos in documentation
+	for --enable-host-pie.
+
 2024-12-13  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
