@@ -3173,6 +3173,21 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_expr_list (pp, t, flags);
       break;
 
+    case NONTYPE_ARGUMENT_PACK:
+      {
+	tree args = ARGUMENT_PACK_ARGS (t);
+	int len = TREE_VEC_LENGTH (args);
+	pp_cxx_left_brace (pp);
+	for (int i = 0; i < len; ++i)
+	  {
+	    if (i > 0)
+	      pp_separate_with_comma (pp);
+	    dump_expr (pp, TREE_VEC_ELT (args, i), flags);
+	  }
+	pp_cxx_right_brace (pp);
+	break;
+      }
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
