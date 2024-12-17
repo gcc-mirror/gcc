@@ -6129,7 +6129,6 @@ package body Exp_Aggr is
         Nkind (Parent_Node) = N_Assignment_Statement
           and then (Is_Limited_Type (Typ)
                      or else (not Has_Default_Init_Comps (N)
-                               and then not Is_Bit_Packed_Array (Typ)
                                and then
                                  In_Place_Assign_OK
                                    (N, Get_Base_Object (Name (Parent_Node)))));
