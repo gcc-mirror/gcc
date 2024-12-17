@@ -2054,9 +2054,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       _M_insert_aux(iterator __pos, const value_type& __x);
 #else
+      iterator
+      _M_insert_aux(iterator __pos, const value_type& __x)
+      { return _M_emplace_aux(__pos, __x); }
+
       template<typename... _Args>
 	iterator
-	_M_insert_aux(iterator __pos, _Args&&... __args);
+	_M_emplace_aux(iterator __pos, _Args&&... __args);
 #endif
 
       // called by insert(p,n,x) via fill_insert
