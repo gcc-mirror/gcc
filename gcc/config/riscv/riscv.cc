@@ -598,6 +598,28 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   NULL,						/* loop_align */
 };
 
+/* Costs to use when optimizing for Tenstorrent Ascalon 8 wide.  */
+static const struct riscv_tune_param tt_ascalon_d8_tune_info = {
+  {COSTS_N_INSNS (2), COSTS_N_INSNS (2)},	/* fp_add */
+  {COSTS_N_INSNS (3), COSTS_N_INSNS (3)},	/* fp_mul */
+  {COSTS_N_INSNS (9), COSTS_N_INSNS (16)},	/* fp_div */
+  {COSTS_N_INSNS (3), COSTS_N_INSNS (3)},	/* int_mul */
+  {COSTS_N_INSNS (13), COSTS_N_INSNS (13)},	/* int_div */
+  8,						/* issue_rate */
+  3,						/* branch_cost */
+  4,						/* memory_cost */
+  4,						/* fmv_cost */
+  false,					/* slow_unaligned_access */
+  true,						/* vector_unaligned_access */
+  true,						/* use_divmod_expansion */
+  true,						/* overlap_op_by_pieces */
+  RISCV_FUSE_NOTHING,                           /* fusible_ops */
+  &generic_vector_cost,				/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
+};
+
 /* Costs to use when optimizing for size.  */
 static const struct riscv_tune_param optimize_size_tune_info = {
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* fp_add */
