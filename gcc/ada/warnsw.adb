@@ -110,6 +110,7 @@ package body Warnsw is
       X.Warning_Doc_Switch |
       X.Warn_On_Ada_2022_Compatibility |
       X.Warn_On_Elab_Access |
+      X.Warn_On_GNAT_Extension_Compatibility |
       X.No_Warn_On_Non_Local_Exception => False,
       others => True);
    --  Warning_Doc_Switch is not really a warning to be enabled, but controls

@@ -134,6 +134,9 @@ package body Scans is
       --  Ada 2012 reserved words
 
       Set_Reserved (Name_Some, Tok_Some);
+
+      --  GNAT extensions reserved words
+      Set_Reserved (Name_Finally, Tok_Finally);
    end Initialize_Ada_Keywords;
 
    ------------------

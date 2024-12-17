@@ -137,6 +137,10 @@ package Sinfo.Utils is
    --  for the argument. This is Arg itself, or, in the case where Arg is a
    --  pragma argument association node, the expression from this node.
 
+   function Lowest_Common_Ancestor (N1, N2 : Node_Id) return Union_Id;
+   --  Returns the list or node that is the lowest common ancestor of N1 and
+   --  N2 in the syntax tree.
+
    -----------------------
    -- Utility Functions --
    -----------------------

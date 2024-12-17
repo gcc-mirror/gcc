@@ -199,6 +199,14 @@ package body Util is
          end if;
       end if;
 
+      if Ada_Version < Ada_With_All_Extensions then
+         if Token_Name = Name_Finally then
+            Error_Msg_N
+              ("& is a reserved word with all extensions enabled?",
+               Token_Node);
+         end if;
+      end if;
+
       --  Note: we deliberately do not emit these warnings when operating in
       --  Ada 83 mode because in that case we assume the user is building
       --  legacy code anyway and is not interested in updating Ada versions.

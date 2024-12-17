@@ -1301,6 +1301,18 @@ package body Exp_Ch11 is
          pragma Assert (not Is_Thunk (Current_Scope));
          Expand_Cleanup_Actions (Parent (N));
       end if;
+
+      if Present (Finally_Statements (N)) then
+         Prepend_To
+           (Finally_Statements (N),
+            Build_Runtime_Call (Sloc (N), RE_Abort_Defer));
+
+         Append_To
+           (Finally_Statements (N),
+            Build_Runtime_Call (Sloc (N), RE_Abort_Undefer));
+
+         Analyze_List (Finally_Statements (N));
+      end if;
    end Expand_N_Handled_Sequence_Of_Statements;
 
    -------------------------------------

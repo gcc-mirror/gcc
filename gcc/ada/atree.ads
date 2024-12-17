@@ -456,6 +456,11 @@ package Atree is
    --  Parent has the same name as the one in Nlists; Node_Parent can be used
    --  more easily in the debugger.
 
+   function Parent_Or_List_Containing (X : Union_Id) return Union_Id;
+   --  X must be in Node_Range or in List_Range. If X is in Node_Range and is
+   --  contained in a list, returns that list, otherwise return the parent of
+   --  the list or node represented by X.
+
    function Paren_Count (N : Node_Id) return Nat;
    pragma Inline (Paren_Count);
    --  Number of parentheses that surround an expression

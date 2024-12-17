@@ -1349,6 +1349,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Statements, List_Id, Default_Empty_List),
         Sy (End_Label, Node_Id, Default_Empty),
         Sy (Exception_Handlers, List_Id, Default_No_List),
+        Sy (Finally_Statements, List_Id, Default_No_List),
         Sy (At_End_Proc, Node_Id, Default_Empty)));
 
    Cc (N_Index_Or_Discriminant_Constraint, Node_Kind,

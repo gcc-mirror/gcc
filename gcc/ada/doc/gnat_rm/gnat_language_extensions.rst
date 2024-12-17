@@ -1723,3 +1723,46 @@ Example:
 If ``Path`` is a relative path, it is interpreted relatively to the directory of the file that contains the aspect specification.
 
 .. attention:: The maximum size of loaded files is limited to 2\ :sup:`31` bytes.
+
+
+Finally construct
+-----------------
+
+The ``finally`` keyword makes it possible to have a sequence of statements be executed when
+another sequence of statements is completed, whether normally or abnormally.
+
+This feature is similar to the one with the same name in other languages such as Java.
+
+Syntax
+^^^^^^
+
+.. code-block:: text
+
+   handled_sequence_of_statements ::=
+        sequence_of_statements
+     [exception
+        exception_handler
+       {exception_handler}]
+     [finally
+       sequence_of_statements]
+
+Legality Rules
+^^^^^^^^^^^^^^
+
+Return statements in the ``sequence_of_statements`` attached to the finally that would cause control
+to be transferred outside the finally part are forbidden.
+
+Goto & exit where the target is outside of the finally's ``sequence_of_statements`` are forbidden
+
+Dynamic Semantics
+^^^^^^^^^^^^^^^^^
+
+Statements in the optional ``sequence_of_statements`` contained in the ``finally`` branch will be
+executed unconditionally, after the main ``sequence_of_statements`` is executed, and after any
+potential ``exception_handler`` is executed.
+
+If an exception is raised in the finally part, it cannot be caught by the ``exception_handler``.
+
+Abort/ATC (asynchronous transfer of control) cannot interrupt a finally block, nor prevent its
+execution, that is the finally block must be executed in full even if the containing task is
+aborted, or if the control is transferred out of the block.

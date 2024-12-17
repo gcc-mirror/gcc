@@ -431,7 +431,9 @@ package body Snames is
                    --  for compatibility with Ada 95 compilers implementing
                    --  only this Ada 2005 extension.
         and then (Ada_Version >= Ada_2012
-                   or else N not in Ada_2012_Reserved_Words);
+                   or else N not in Ada_2012_Reserved_Words)
+        and then (Ada_Version >= Ada_With_All_Extensions
+                   or else N not in GNAT_Extensions_Reserved_Words);
    end Is_Keyword_Name;
 
    --------------------------------

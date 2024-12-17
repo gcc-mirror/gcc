@@ -443,6 +443,10 @@ package body Sem_Ch11 is
       elsif Present (At_End_Proc (N)) then
          Analyze (At_End_Proc (N));
       end if;
+
+      if Present (Finally_Statements (N)) then
+         Analyze_Statements (Finally_Statements (N));
+      end if;
    end Analyze_Handled_Statements;
 
    ------------------------------

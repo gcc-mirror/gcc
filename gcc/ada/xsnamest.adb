@@ -28,7 +28,7 @@
 --  which the numbers are all written as $, and generates a new version of the
 --  spec file snames.ads (written to snames.ns). It also reads snames.adb-tmpl
 --  and generates an updated body (written to snames.nb), and snames.h-tmpl and
---  generates an updated C header file (written to snames.nh).
+--  generates an updated C header file (written to snames.h).
 
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;

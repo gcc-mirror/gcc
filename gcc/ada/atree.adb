@@ -2076,6 +2076,21 @@ package body Atree is
       end if;
    end Node_Parent;
 
+   -------------------------------
+   -- Parent_Or_List_Containing --
+   -------------------------------
+
+   function Parent_Or_List_Containing (X : Union_Id) return Union_Id is
+   begin
+      if X in Node_Range then
+         return Link (Node_Id (X));
+      elsif X in List_Range then
+         return Union_Id (List_Parent (List_Id (X)));
+      else
+         raise Program_Error;
+      end if;
+   end Parent_Or_List_Containing;
+
    -------------
    -- Present --
    -------------

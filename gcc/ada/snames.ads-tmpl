@@ -1432,6 +1432,16 @@ package Snames is
    subtype Ada_2012_Reserved_Words is Name_Id
      range First_2012_Reserved_Word .. Last_2012_Reserved_Word;
 
+   --  GNAT extensions reserved words
+
+   First_GNAT_Extensions_Reserved_Word   : constant Name_Id := N + $;
+   Name_Finally                          : constant Name_Id := N + $;
+   Last_GNAT_Extensions_Reserved_Word    : constant Name_Id := N + $;
+
+   subtype GNAT_Extensions_Reserved_Words is Name_Id
+     range First_GNAT_Extensions_Reserved_Word ..
+       Last_GNAT_Extensions_Reserved_Word;
+
    --  Mark last defined name for consistency check in Snames body
 
    Last_Predefined_Name                  : constant Name_Id := N + $;

@@ -1249,9 +1249,12 @@ package body Sem_Ch5 is
 
       begin
          --  Initialize unblocked exit count for statements of begin block
-         --  plus one for each exception handler that is present.
+         --  plus one for each exception handler that is present, plus one for
+         --  the finally part if it present.
 
-         Unblocked_Exit_Count := 1 + List_Length (EH);
+         Unblocked_Exit_Count :=
+           1 + List_Length (EH)
+           + (if Present (Finally_Statements (HSS)) then 1 else 0);
 
          --  If a label is present analyze it and mark it as referenced
 
@@ -1706,6 +1709,33 @@ package body Sem_Ch5 is
          end if;
       end loop;
 
+      Finally_Legality_Check : declare
+         --  The following value can actually be a block statement due to
+         --  expansion, but we call it Target_Loop_Statement because it was
+         --  originally a loop statement.
+         Target_Loop_Statement : constant Node_Id :=
+           (if Present (U_Name) then Label_Construct ((Parent (U_Name)))
+            else Empty);
+
+         X : Node_Id := N;
+      begin
+         while Present (X) loop
+            if Nkind (X) = N_Loop_Statement
+              and then (No (Target_Loop_Statement)
+                        or else X = Target_Loop_Statement)
+            then
+               exit;
+            elsif Nkind (Parent (X)) = N_Handled_Sequence_Of_Statements
+              and then Is_List_Member (X)
+              and then List_Containing (X) = Finally_Statements (Parent (X))
+            then
+               Error_Msg_N ("cannot exit out of finally part", N);
+               exit;
+            end if;
+            X := Parent (X);
+         end loop;
+      end Finally_Legality_Check;
+
       --  Verify that if present the condition is a Boolean expression
 
       if Present (Cond) then
@@ -1766,6 +1796,28 @@ package body Sem_Ch5 is
          Error_Msg_N ("target of goto statement is not reachable", Label);
          return;
       end if;
+
+      Finally_Legality_Check : declare
+         LCA : constant Union_Id :=
+           Lowest_Common_Ancestor (N, Label_Construct (Parent (Label_Ent)));
+
+         N1 : Union_Id := Union_Id (N);
+         N2 : Union_Id;
+      begin
+         while N1 /= LCA loop
+            N2 := Parent_Or_List_Containing (N1);
+
+            if N2 in Node_Range
+              and then Nkind (Node_Id (N2)) = N_Handled_Sequence_Of_Statements
+              and then Union_Id (Finally_Statements (Node_Id (N2))) = N1
+            then
+               Error_Msg_N ("cannot goto out of finally part", N);
+               exit;
+            end if;
+
+            N1 := N2;
+         end loop;
+      end Finally_Legality_Check;
 
       --  Here if goto passes initial validity checks
 

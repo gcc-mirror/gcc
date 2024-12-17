@@ -184,6 +184,7 @@ package Gen_IL.Fields is
       Expression_Copy,
       Expressions,
       File_Index,
+      Finally_Statements,
       First_Bit,
       First_Inlined_Subprogram,
       First_Name,

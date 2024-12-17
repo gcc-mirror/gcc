@@ -1300,6 +1300,10 @@ package Sinfo is
    --    Present in N_External_Initializer nodes. Contains a Source_File_Index
    --    that references the file the external initializer points to.
 
+   --  Finally_Statements
+   --    Present in N_Handled_Statement_Sequences nodes. Points to a list
+   --    containing statements.
+
    --  First_Inlined_Subprogram
    --    Present in the N_Compilation_Unit node for the main program. Points
    --    to a chain of entities for subprograms that are to be inlined. The

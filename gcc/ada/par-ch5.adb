@@ -408,6 +408,25 @@ package body Ch5 is
 
                   exit;
 
+               --  Case of finally
+
+               when Tok_Finally =>
+                  Test_Statement_Required;
+
+                  --  See the analogous comment in the Tok_Exception branch.
+
+                  if not SS_Flags.Fitm
+                    and then Start_Column >= Scopes (Scope.Last).Ecol
+                  then
+                     Error_Msg_SC ("finally construct not permitted here");
+                     Scan; -- past FINALLY
+                     Discard_Junk_List (P_Sequence_Of_Statements (SS_Sreq));
+                  end if;
+
+                  --  We exit like in the exception branch, should we really???
+
+                  exit;
+
                --  Case of OR
 
                when Tok_Or =>

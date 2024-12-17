@@ -159,6 +159,7 @@ package Scans is
       Tok_End,             -- END          Eterm, Sterm, After_SM
       Tok_Exception,       -- EXCEPTION    Eterm, Sterm, After_SM
       Tok_Exit,            -- EXIT         Eterm, Sterm, After_SM
+      Tok_Finally,         -- FINALLY      Eterm, Sterm, After_SM
       Tok_Goto,            -- GOTO         Eterm, Sterm, After_SM
       Tok_If,              -- IF           Eterm, Sterm, After_SM
       Tok_Pragma,          -- PRAGMA       Eterm, Sterm, After_SM

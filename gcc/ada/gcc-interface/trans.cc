@@ -5674,6 +5674,29 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	set_expr_location_from_node (gnu_result, gnat_node, true);
     }
 
+  if (Present (Finally_Statements (gnat_node)))
+    {
+      tree finally_stmts;
+      location_t locus;
+
+      start_stmt_group ();
+      for (gnat_temp = First_Non_Pragma (Finally_Statements (gnat_node));
+           Present (gnat_temp);
+           gnat_temp = Next_Non_Pragma (gnat_temp))
+        add_stmt (gnat_to_gnu (gnat_temp));
+      finally_stmts = end_stmt_group ();
+
+      gnu_result
+        = build2 (TRY_FINALLY_EXPR, void_type_node, gnu_result, finally_stmts);
+
+      /* Do as above for the TRY_CATCH_EXPR case.  */
+      if (Present (End_Label (gnat_node))
+          && Sloc_to_locus (Sloc (End_Label (gnat_node)), &locus))
+        SET_EXPR_LOCATION (gnu_result, locus);
+      else
+        set_expr_location_from_node (gnu_result, gnat_node, true);
+    }
+
   /* Process the At_End_Proc, if any.  */
   if (at_end)
     {
