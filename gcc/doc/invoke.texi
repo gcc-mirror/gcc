@@ -150,6 +150,7 @@ listing and explanation of the binary and decimal byte size prefixes.
 * C++ Dialect Options:: Variations on C++.
 * Objective-C and Objective-C++ Dialect Options:: Variations on Objective-C
                         and Objective-C++.
+* OpenMP and OpenACC Options:: Controlling multiprocessing and offloading.
 * Diagnostic Message Formatting Options:: Controlling how diagnostics should
                         be formatted.
 * Warning Options::     How picky should the compiler be?
@@ -202,9 +203,6 @@ in the following sections.
 -fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch
 -ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted
 -flax-vector-conversions  -fms-extensions
--foffload=@var{arg}  -foffload-options=@var{arg}
--fopenacc  -fopenacc-dim=@var{geom}
--fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]}
 -fpermitted-flt-eval-methods=@var{standard}
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields
 -fsigned-char  -funsigned-char  -fstrict-flex-arrays[=@var{n}]
@@ -300,6 +298,12 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-protocol -Wobjc-root-class -Wselector
 -Wstrict-selector-match
 -Wundeclared-selector}
+
+@item OpenMP and OpenACC Options
+@xref{OpenMP and OpenACC Options,,Options Controlling OpenMP and OpenACC}.
+@gccoptlist{-foffload=@var{arg}  -foffload-options=@var{arg}
+-fopenacc  -fopenacc-dim=@var{geom}
+-fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]}}
 
 @item Diagnostic Message Formatting Options
 @xref{Diagnostic Message Formatting Options,,Options to Control Diagnostic Messages Formatting}.
@@ -2758,116 +2762,6 @@ fields within structs/unions}, for details.
 Note that this option is off for all targets except for x86
 targets using ms-abi.
 
-@opindex foffload
-@cindex Offloading targets
-@cindex OpenACC offloading targets
-@cindex OpenMP offloading targets
-@item -foffload=disable
-@itemx -foffload=default
-@itemx -foffload=@var{target-list}
-Specify for which OpenMP and OpenACC offload targets code should be generated.
-The default behavior, equivalent to @option{-foffload=default}, is to generate
-code for all supported offload targets.  The @option{-foffload=disable} form
-generates code only for the host fallback, while
-@option{-foffload=@var{target-list}} generates code only for the specified
-comma-separated list of offload targets.
-
-Offload targets are specified in GCC's internal target-triplet format. You can
-run the compiler with @option{-v} to show the list of configured offload targets
-under @code{OFFLOAD_TARGET_NAMES}.
-
-@opindex foffload-options
-@cindex Offloading options
-@cindex OpenACC offloading options
-@cindex OpenMP offloading options
-@item -foffload-options=@var{options}
-@itemx -foffload-options=@var{target-triplet-list}=@var{options}
-
-With @option{-foffload-options=@var{options}}, GCC passes the specified
-@var{options} to the compilers for all enabled offloading targets.  You can
-specify options that apply only to a specific target or targets by using
-the @option{-foffload-options=@var{target-list}=@var{options}} form.  The
-@var{target-list} is a comma-separated list in the same format as for the
-@option{-foffload=} option.
-
-Typical command lines are
-
-@smallexample
--foffload-options='-fno-math-errno -ffinite-math-only' -foffload-options=nvptx-none=-latomic
--foffload-options=amdgcn-amdhsa=-march=gfx906
-@end smallexample
-
-@opindex fopenacc
-@cindex OpenACC accelerator programming
-@item -fopenacc
-Enable handling of OpenACC directives @samp{#pragma acc} in C/C++ and
-@samp{!$acc} in free-form Fortran and @samp{!$acc}, @samp{c$acc} and
-@samp{*$acc} in fixed-form Fortran.  When @option{-fopenacc} is specified,
-the compiler generates accelerated code according to the OpenACC Application
-Programming Interface v2.6 @w{@uref{https://www.openacc.org}}.  This option
-implies @option{-pthread}, and thus is only supported on targets that
-have support for @option{-pthread}.
-
-@opindex fopenacc-dim
-@cindex OpenACC accelerator programming
-@item -fopenacc-dim=@var{geom}
-Specify default compute dimensions for parallel offload regions that do
-not explicitly specify.  The @var{geom} value is a triple of
-':'-separated sizes, in order 'gang', 'worker' and, 'vector'.  A size
-can be omitted, to use a target-specific default value.
-
-@opindex fopenmp
-@cindex OpenMP parallel
-@item -fopenmp
-Enable handling of OpenMP directives @samp{#pragma omp},
-@samp{[[omp::directive(...)]]}, @samp{[[omp::sequence(...)]]} and
-@samp{[[omp::decl(...)]]} in C/C++ and @samp{!$omp} in Fortran.  It
-additionally enables the conditional compilation sentinel @samp{!$} in
-Fortran.  In fixed source form Fortran, the sentinels can also start with
-@samp{c} or @samp{*}.  When @option{-fopenmp} is specified, the
-compiler generates parallel code according to the OpenMP Application
-Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
-implies @option{-pthread}, and thus is only supported on targets that
-have support for @option{-pthread}. @option{-fopenmp} implies
-@option{-fopenmp-simd}.
-
-@opindex fopenmp-simd
-@cindex OpenMP SIMD
-@cindex SIMD
-@item -fopenmp-simd
-Enable handling of OpenMP's @code{simd}, @code{declare simd},
-@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan}
-and @code{loop} directive, and of combined or composite directives with
-@code{simd} as constituent with @code{#pragma omp},
-@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
-@code{[[omp::decl(...)]]} in C/C++ and @code{!$omp} in Fortran.  It
-additionally enables the conditional compilation sentinel @samp{!$} in
-Fortran.  In fixed source form Fortran, the sentinels can also start with
-@samp{c} or @samp{*}.  Other OpenMP directives are ignored.  Unless
-@option{-fopenmp} is additionally specified, the @code{loop} region binds
-to the current task region, independent of the specified @code{bind} clause.
-
-@opindex fopenmp-target-simd-clone
-@cindex OpenMP target SIMD clone
-@item -fopenmp-target-simd-clone
-@item -fopenmp-target-simd-clone=@var{device-type}
-In addition to generating SIMD clones for functions marked with the
-@code{declare simd} directive, GCC also generates clones
-for functions marked with the OpenMP @code{declare target} directive
-that are suitable for vectorization when this option is in effect.  The
-@var{device-type} may be one of @code{none}, @code{host}, @code{nohost},
-and @code{any}, which correspond to keywords for the @code{device_type}
-clause of the @code{declare target} directive; clones are generated for
-the intersection of devices specified.
-@option{-fopenmp-target-simd-clone} is equivalent to
-@option{-fopenmp-target-simd-clone=any} and
-@option{-fno-openmp-target-simd-clone} is equivalent to
-@option{-fopenmp-target-simd-clone=none}.
-
-At @option{-O2} and higher (but not @option{-Os} or @option{-Og}) this
-optimization defaults to @option{-fopenmp-target-simd-clone=nohost}; otherwise
-it is disabled by default.
-
 @opindex fpermitted-flt-eval-methods
 @opindex fpermitted-flt-eval-methods=c11
 @opindex fpermitted-flt-eval-methods=ts-18661-3
@@ -5274,6 +5168,126 @@ that methods and selectors must be declared before being used.
 @item -print-objc-runtime-info
 Generate C header describing the largest structure that is passed by
 value, if any.
+
+@end table
+
+@node OpenMP and OpenACC Options
+@section Options Controlling OpenMP and OpenACC
+@cindex OpenMP options
+@cindex OpenACC options
+
+GCC supports OpenMP extensions to the C, C++, and Fortran languages
+with the @option{-fopenmp} option.  Similarly, OpenACC extensions are
+supported in all three languages with @option{-fopenacc}.
+@xref{OpenMP} and @ref{OpenACC} for an overview of these extensions.
+
+@table @gcctabopt
+@opindex foffload
+@cindex Offloading targets
+@cindex OpenACC offloading targets
+@cindex OpenMP offloading targets
+@item -foffload=disable
+@itemx -foffload=default
+@itemx -foffload=@var{target-list}
+Specify for which OpenMP and OpenACC offload targets code should be generated.
+The default behavior, equivalent to @option{-foffload=default}, is to generate
+code for all supported offload targets.  The @option{-foffload=disable} form
+generates code only for the host fallback, while
+@option{-foffload=@var{target-list}} generates code only for the specified
+comma-separated list of offload targets.
+
+Offload targets are specified in GCC's internal target-triplet format. You can
+run the compiler with @option{-v} to show the list of configured offload targets
+under @code{OFFLOAD_TARGET_NAMES}.
+
+@opindex foffload-options
+@cindex Offloading options
+@cindex OpenACC offloading options
+@cindex OpenMP offloading options
+@item -foffload-options=@var{options}
+@itemx -foffload-options=@var{target-triplet-list}=@var{options}
+
+With @option{-foffload-options=@var{options}}, GCC passes the specified
+@var{options} to the compilers for all enabled offloading targets.  You can
+specify options that apply only to a specific target or targets by using
+the @option{-foffload-options=@var{target-list}=@var{options}} form.  The
+@var{target-list} is a comma-separated list in the same format as for the
+@option{-foffload=} option.
+
+Typical command lines are
+
+@smallexample
+-foffload-options='-fno-math-errno -ffinite-math-only' \
+        -foffload-options=nvptx-none=-latomic
+-foffload-options=amdgcn-amdhsa=-march=gfx906
+@end smallexample
+
+@opindex fopenacc
+@cindex OpenACC accelerator programming
+@item -fopenacc
+Enable handling of OpenACC directives @samp{#pragma acc} in C/C++ and
+@samp{!$acc} in free-form Fortran and @samp{!$acc}, @samp{c$acc} and
+@samp{*$acc} in fixed-form Fortran.  This option
+implies @option{-pthread}, and thus is only supported on targets that
+have support for @option{-pthread}.
+
+@opindex fopenacc-dim
+@item -fopenacc-dim=@var{geom}
+Specify default compute dimensions for parallel offload regions that do
+not explicitly specify them.  The @var{geom} value is a triple of
+@samp{:}-separated sizes, in order @var{gang}, @var{worker}, and @var{vector}.
+A size can be omitted, to use a target-specific default value.
+
+@opindex fopenmp
+@cindex OpenMP parallel
+@item -fopenmp
+Enable handling of OpenMP directives @samp{#pragma omp},
+@samp{[[omp::directive(...)]]}, @samp{[[omp::decl(...)]]},
+and @samp{[[omp::sequence(...)]]} in C/C++.  In Fortran, it enables
+@samp{!$omp} and the conditional compilation sentinel @samp{!$}.
+In fixed source form Fortran, the sentinels can also start with
+@samp{c} or @samp{*}.
+
+This option implies @option{-pthread}, and thus is only supported on
+targets that have support for @option{-pthread}. @option{-fopenmp}
+implies @option{-fopenmp-simd}.
+
+@opindex fopenmp-simd
+@cindex OpenMP SIMD
+@cindex SIMD
+@item -fopenmp-simd
+Enable handling of OpenMP's @code{simd}, @code{declare simd},
+@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan}
+and @code{loop} directive, and of combined or composite directives with
+@code{simd} as constituent with @code{#pragma omp},
+@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
+@code{[[omp::decl(...)]]} in C/C++ and @code{!$omp} in Fortran.  It
+additionally enables the conditional compilation sentinel @samp{!$} in
+Fortran.  In fixed source form Fortran, the sentinels can also start with
+@samp{c} or @samp{*}.  Other OpenMP directives are ignored.  Unless
+@option{-fopenmp} is additionally specified, the @code{loop} region binds
+to the current task region, independent of the specified @code{bind} clause.
+
+@opindex fopenmp-target-simd-clone
+@cindex OpenMP target SIMD clone
+@item -fopenmp-target-simd-clone
+@item -fopenmp-target-simd-clone=@var{device-type}
+In addition to generating SIMD clones for functions marked with the
+@code{declare simd} directive, GCC also generates clones
+for functions marked with the OpenMP @code{declare target} directive
+that are suitable for vectorization when this option is in effect.  The
+@var{device-type} may be one of @code{none}, @code{host}, @code{nohost},
+and @code{any}, which correspond to keywords for the @code{device_type}
+clause of the @code{declare target} directive; clones are generated for
+the intersection of devices specified.
+@option{-fopenmp-target-simd-clone} is equivalent to
+@option{-fopenmp-target-simd-clone=any} and
+@option{-fno-openmp-target-simd-clone} is equivalent to
+@option{-fopenmp-target-simd-clone=none}.
+
+At @option{-O2} and higher (but not @option{-Os} or @option{-Og}) this
+optimization defaults to @option{-fopenmp-target-simd-clone=nohost}; otherwise
+it is disabled by default.
 
 @end table
 

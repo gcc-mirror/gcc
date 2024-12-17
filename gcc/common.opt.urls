@@ -1005,19 +1005,19 @@ fnon-call-exceptions
 UrlSuffix(gcc/Code-Gen-Options.html#index-fnon-call-exceptions)
 
 foffload=
-UrlSuffix(gcc/C-Dialect-Options.html#index-foffload)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-foffload)
 
 foffload-options=
-UrlSuffix(gcc/C-Dialect-Options.html#index-foffload-options)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-foffload-options)
 
 fomit-frame-pointer
 UrlSuffix(gcc/Optimize-Options.html#index-fomit-frame-pointer)
 
 fopenmp-target-simd-clone
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp-target-simd-clone)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-target-simd-clone)
 
 fopenmp-target-simd-clone=
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp-target-simd-clone)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-target-simd-clone)
 
 fopt-info
 UrlSuffix(gcc/Developer-Options.html#index-fopt-info)

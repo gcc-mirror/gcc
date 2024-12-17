@@ -439,13 +439,6 @@ language standard, including full support for the Technical Specification
 More details on support for these standards can be
 found in the following sections of the documentation.
 
-Additionally, the GNU Fortran compilers supports the OpenMP specification
-(version 4.5 and partial support of the features of the 5.0 version,
-@url{https://openmp.org/@/specifications/}).
-There also is support for the OpenACC specification (targeting
-version 2.6, @uref{https://www.openacc.org/}).  See
-@uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
-
 @node Fortran 95 status
 @subsection Fortran 95 status
 @cindex Varying length strings
@@ -1823,19 +1816,21 @@ architectures, including Unix and Microsoft Windows platforms.
 It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
-GNU Fortran strives to be compatible to the
-@uref{https://openmp.org/specifications/,
-OpenMP Application Program Interface v4.5}.
+GNU Fortran implements all of the @uref{https://openmp.org/specifications/,
+OpenMP Application Program Interface v4.5}, and many features from later
+versions of the OpenMP specification.
+@xref{OpenMP Implementation Status,,,libgomp,
+GNU Offloading and Multi Processing Runtime Library},
+for more details about currently supported OpenMP features.
 
 To enable the processing of the OpenMP directive @code{!$omp} in
 free-form source code; the @code{c$omp}, @code{*$omp} and @code{!$omp}
 directives in fixed form; the @code{!$} conditional compilation sentinels
 in free form; and the @code{c$}, @code{*$} and @code{!$} sentinels
 in fixed form, @command{gfortran} needs to be invoked with the
-@option{-fopenmp}.  This also arranges for automatic linking of the
-GNU Offloading and Multi Processing Runtime Library
-@ref{Top,,libgomp,libgomp,GNU Offloading and Multi Processing Runtime
-Library}.
+@option{-fopenmp} option.  This option also arranges for automatic linking
+of the OpenMP runtime library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
 
 The OpenMP Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{omp_lib} and in a form of
@@ -1855,20 +1850,24 @@ SUBROUTINE A1(N, A, B)
 END SUBROUTINE A1
 @end smallexample
 
+@xref{OpenMP and OpenACC Options,,,gcc,
+Using the GNU Compiler Collection (GCC)}, for additional options useful with
+@option{-fopenmp}.
+
 Please note:
 @itemize
 @item
 @option{-fopenmp} implies @option{-frecursive}, i.e., all local arrays
-will be allocated on the stack.  When porting existing code to OpenMP,
-this may lead to surprising results, especially to segmentation faults
-if the stacksize is limited.
+are allocated on the stack.  When porting existing code to OpenMP,
+this may lead to surprising results, especially segmentation faults
+if the stack size is limited.
 
 @item
-On glibc-based systems, OpenMP enabled applications cannot be statically
-linked due to limitations of the underlying pthreads-implementation.  It
+On glibc-based systems, OpenMP-enabled applications cannot be statically
+linked due to limitations of the underlying pthreads implementation.  It
 might be possible to get a working solution if
 @command{-Wl,--whole-archive -lpthread -Wl,--no-whole-archive} is added
-to the command line.  However, this is not supported by @command{gcc} and
+to the command line.  However, this is not supported by GCC and
 thus not recommended.
 @end itemize
 
@@ -1881,7 +1880,7 @@ offloading of code to accelerator devices.  It consists of a set of
 compiler directives, library routines, and environment variables that
 influence run-time behavior.
 
-GNU Fortran strives to be compatible to the
+GNU Fortran strives to be compatible with the
 @uref{https://www.openacc.org/, OpenACC Application Programming
 Interface v2.6}.
 
@@ -1890,14 +1889,17 @@ free-form source code; the @code{c$acc}, @code{*$acc} and @code{!$acc}
 directives in fixed form; the @code{!$} conditional compilation
 sentinels in free form; and the @code{c$}, @code{*$} and @code{!$}
 sentinels in fixed form, @command{gfortran} needs to be invoked with
-the @option{-fopenacc}.  This also arranges for automatic linking of
-the GNU Offloading and Multi Processing Runtime Library
-@ref{Top,,libgomp,libgomp,GNU Offloading and Multi Processing Runtime
-Library}.
+the @option{-fopenacc} option.  This option also arranges for automatic
+linking of the OpenACC runtime library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
 
 The OpenACC Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{openacc} and in a form of a
 Fortran @code{include} file named @file{openacc_lib.h}.
+
+@xref{OpenMP and OpenACC Options,,,gcc,
+Using the GNU Compiler Collection (GCC)}, for additional options useful with
+@option{-fopenacc}.
 
 @node Argument list functions
 @subsection Argument list functions @code{%VAL}, @code{%REF} and @code{%LOC}

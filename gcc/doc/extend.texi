@@ -98,6 +98,8 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Unnamed Fields::      Unnamed struct/union fields within structs/unions.
 * Thread-Local::        Per-thread variables.
 * Binary constants::    Binary constants using the @samp{0b} prefix.
+* OpenMP::              Multiprocessing extensions.
+* OpenACC::             Extensions for offloading code to accelerator devices.
 @end menu
 
 @node Statement Exprs
@@ -10209,6 +10211,10 @@ prefix their names with @samp{gnu::}, such as @code{gnu::section}.
 Refer to the relevant language standards for exact details on the
 placement of @samp{[[]]} attributes within your code, as they differ
 in some details from the rules for the GNU attribute syntax.
+
+With the @option{-fopenmp} option, GCC additionally recognizes OpenMP
+directives, with names prefixed with @samp{omp::}, using the standard
+@samp{[[]]} syntax.  @xref{OpenMP}.
 
 The remainder of this section describes the details of the GNU extension
 @code{__attribute__} syntax,
@@ -28346,6 +28352,10 @@ The GNU C preprocessor recognizes several pragmas in addition to the
 compiler pragmas documented here.  Refer to the CPP manual for more
 information.
 
+GCC additionally recognizes OpenMP pragmas when the @option{-fopenmp}
+option is specified, and OpenACC pragmas when the @option{-fopenacc}
+option is specified.  @xref{OpenMP}, and @ref{OpenACC}.
+
 @menu
 * AArch64 Pragmas::
 * ARM Pragmas::
@@ -29350,6 +29360,57 @@ i = 0b101010;
 The type of these constants follows the same rules as for octal or
 hexadecimal integer constants, so suffixes like @samp{L} or @samp{UL}
 can be applied.
+
+@node OpenMP
+@section OpenMP
+@cindex OpenMP extension support
+
+OpenMP (Open Multi-Processing) is an application programming
+interface (API) that supports multi-platform shared memory
+multiprocessing programming in C/C++ and Fortran on many
+architectures, including Unix and Microsoft Windows platforms.
+It consists of a set of compiler directives, library routines,
+and environment variables that influence run-time behavior.
+
+GCC implements all of the @uref{https://openmp.org/specifications/,
+OpenMP Application Program Interface v4.5}, and many features from later
+versions of the OpenMP specification.
+@xref{OpenMP Implementation Status,,,libgomp,
+GNU Offloading and Multi Processing Runtime Library},
+for more details about currently supported OpenMP features.
+
+To enable the processing of OpenMP directives @samp{#pragma omp},
+@samp{[[omp::directive(...)]]}, @samp{[[omp::decl(...)]]},
+and @samp{[[omp::sequence(...)]]} in C and C++,
+GCC needs to be invoked with the @option{-fopenmp} option.
+This option also arranges for automatic linking of the OpenMP
+runtime library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+
+@xref{OpenMP and OpenACC Options}, for additional options useful with
+@option{-fopenmp}.
+
+@node OpenACC
+@section OpenACC
+@cindex OpenACC extension support
+
+OpenACC is an application programming interface (API) that supports
+offloading of code to accelerator devices.  It consists of a set of
+compiler directives, library routines, and environment variables that
+influence run-time behavior.
+
+GCC strives to be compatible with the
+@uref{https://www.openacc.org/, OpenACC Application Programming
+Interface v2.6}.
+
+To enable the processing of OpenACC directives @samp{#pragma omp}
+in C and C++, GCC needs to be invoked with the @option{-fopenacc} option.
+This option also arranges for automatic linking of the OpenACC runtime
+library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+
+@xref{OpenMP and OpenACC Options}, for additional options useful with
+@option{-fopenacc}.
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language
