@@ -1,6 +1,5 @@
 /* { dg-require-effective-target vect_complex_add_double } */
 /* { dg-add-options arm_v8_3a_complex_neon } */
-/* { dg-add-options arm_v8_3a_complex_neon } */
 
 #include <stdio.h>
 #include <complex.h>
