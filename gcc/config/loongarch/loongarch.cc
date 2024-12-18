@@ -10399,19 +10399,29 @@ loongarch_expand_lsx_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
       switch (cond)
 	{
 	case NE:
+	  if (!loongarch_const_vector_same_int_p (op1, cmp_mode, -16, 15))
+	    op1 = force_reg (cmp_mode, op1);
 	  cond = reverse_condition (cond);
 	  negate = true;
 	  break;
 	case EQ:
 	case LT:
 	case LE:
+	  if (!loongarch_const_vector_same_int_p (op1, cmp_mode, -16, 15))
+	    op1 = force_reg (cmp_mode, op1);
+	  break;
 	case LTU:
 	case LEU:
+	  if (!loongarch_const_vector_same_int_p (op1, cmp_mode, 0, 31))
+	    op1 = force_reg (cmp_mode, op1);
 	  break;
 	case GE:
 	case GT:
 	case GEU:
 	case GTU:
+	  /* Only supports reg-reg comparison.  */
+	  if (!register_operand (op1, cmp_mode))
+	    op1 = force_reg (cmp_mode, op1);
 	  std::swap (op0, op1);
 	  cond = swap_condition (cond);
 	  break;
@@ -10427,6 +10437,8 @@ loongarch_expand_lsx_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
     case E_V2DFmode:
     case E_V8SFmode:
     case E_V4DFmode:
+      if (!register_operand (op1, cmp_mode))
+	op1 = force_reg (cmp_mode, op1);
       loongarch_emit_binary (cond, dest, op0, op1);
       break;
 

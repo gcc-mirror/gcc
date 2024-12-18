@@ -183,9 +183,6 @@
    (V8HI "V2DI")
    (V16QI "V4SI")])
 
-;; All vector modes with 128 bits.
-(define_mode_iterator LSX      [V2DF V4SF V2DI V4SI V8HI V16QI])
-
 ;; Only used for vilvh and splitting insert_d and copy_{u,s}.d.
 (define_mode_iterator LSX_D    [V2DI V2DF])
 
@@ -505,28 +502,6 @@
   rtx index = GEN_INT (1 << INTVAL (operands[2]));
   emit_insn (gen_lsx_vextrins_<lsxfmt_f>_scalar (operands[0], operands[1],
 						 operands[0], index));
-  DONE;
-})
-
-(define_expand "vec_cmp<mode><mode_i>"
-  [(set (match_operand:<VIMODE> 0 "register_operand")
-	(match_operator 1 ""
-	  [(match_operand:LSX 2 "register_operand")
-	   (match_operand:LSX 3 "register_operand")]))]
-  "ISA_HAS_LSX"
-{
-  loongarch_expand_vec_cmp (operands);
-  DONE;
-})
-
-(define_expand "vec_cmpu<ILSX:mode><mode_i>"
-  [(set (match_operand:<VIMODE> 0 "register_operand")
-	(match_operator 1 ""
-	  [(match_operand:ILSX 2 "register_operand")
-	   (match_operand:ILSX 3 "register_operand")]))]
-  "ISA_HAS_LSX"
-{
-  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 
