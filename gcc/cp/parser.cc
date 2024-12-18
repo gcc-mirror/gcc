@@ -25642,9 +25642,24 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 		  || tok->type == CPP_EQ || tok->type == CPP_OPEN_BRACE)
 		break;
 	    }
-	  type_specifier_seq->attributes
-	    = attr_chainon (type_specifier_seq->attributes,
-			    cp_parser_attributes_opt (parser));
+	  location_t attr_loc = cp_lexer_peek_token (parser->lexer)->location;
+	  tree attrs = cp_parser_attributes_opt (parser);
+	  if (seen_type_specifier
+	      && is_declaration
+	      && cxx11_attribute_p (attrs))
+	    {
+	      type_specifier_seq->std_attributes
+		= attr_chainon (type_specifier_seq->std_attributes, attrs);
+	      if (type_specifier_seq->locations[ds_std_attribute] == 0)
+		type_specifier_seq->locations[ds_std_attribute] = attr_loc;
+	    }
+	  else
+	    {
+	      type_specifier_seq->attributes
+		= attr_chainon (type_specifier_seq->attributes, attrs);
+	      if (type_specifier_seq->locations[ds_attribute] == 0)
+		type_specifier_seq->locations[ds_attribute] = attr_loc;
+	    }
 	  continue;
 	}
 
@@ -29927,7 +29942,12 @@ cp_parser_exception_declaration (cp_parser* parser)
   if (!type_specifiers.any_specifiers_p)
     return error_mark_node;
 
-  return grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1, NULL);
+  tree decl = grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1,
+			      &type_specifiers.attributes);
+  if (decl != error_mark_node && type_specifiers.attributes)
+    cplus_decl_attributes (&decl, type_specifiers.attributes, 0);
+
+  return decl;
 }
 
 /* Parse a throw-expression.
