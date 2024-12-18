@@ -7680,7 +7680,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	tree type;
 	cp_expr expression;
 	const char *saved_message;
-	bool saved_in_type_id_in_expr_p;
 
 	/* All of these can be handled in the same way from the point
 	   of view of parsing.  Begin by consuming the token
@@ -7695,11 +7694,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* Look for the opening `<'.  */
 	cp_parser_require (parser, CPP_LESS, RT_LESS);
 	/* Parse the type to which we are casting.  */
-	saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-	parser->in_type_id_in_expr_p = true;
-	type = cp_parser_type_id (parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
-				  NULL);
-	parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
+	{
+	  type_id_in_expr_sentinel s (parser);
+	  type = cp_parser_type_id (parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
+				    NULL);
+	}
 	/* Look for the closing `>'.  */
 	cp_parser_require_end_of_template_parameter_list (parser);
 	/* Restore the old message.  */
@@ -7769,7 +7768,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
       {
 	tree type;
 	const char *saved_message;
-	bool saved_in_type_id_in_expr_p;
 
 	/* Consume the `typeid' token.  */
 	cp_lexer_consume_token (parser->lexer);
@@ -7784,10 +7782,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	   expression.  */
 	cp_parser_parse_tentatively (parser);
 	/* Try a type-id first.  */
-	saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-	parser->in_type_id_in_expr_p = true;
-	type = cp_parser_type_id (parser);
-	parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
+	{
+	  type_id_in_expr_sentinel s (parser);
+	  type = cp_parser_type_id (parser);
+	}
 	/* Look for the `)' token.  Otherwise, we can't be sure that
 	   we're not looking at an expression: consider `typeid (int
 	   (3))', for example.  */
@@ -8077,10 +8075,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    else
 	      {
 		/* Parse the type.  */
-		bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-		parser->in_type_id_in_expr_p = true;
+		type_id_in_expr_sentinel s (parser);
 		type = cp_parser_type_id (parser);
-		parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 		parens.require_close (parser);
 	      }
 
@@ -9697,11 +9693,11 @@ cp_parser_has_attribute_expression (cp_parser *parser)
      expression.  */
   cp_parser_parse_tentatively (parser);
 
-  bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-  parser->in_type_id_in_expr_p = true;
-  /* Look for the type-id.  */
-  oper = cp_parser_type_id (parser);
-  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
+  {
+    type_id_in_expr_sentinel s (parser);
+    /* Look for the type-id.  */
+    oper = cp_parser_type_id (parser);
+  }
 
   cp_parser_parse_definitely (parser);
 
@@ -10463,15 +10459,13 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	cp_parser_simulate_error (parser);
       else
 	{
-	  bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-	  parser->in_type_id_in_expr_p = true;
+	  type_id_in_expr_sentinel s (parser);
 	  /* Look for the type-id.  */
 	  type = cp_parser_type_id (parser);
 	  /* Look for the closing `)'.  */
 	  cp_token *close_paren = parens.require_close (parser);
 	  if (close_paren)
 	    close_paren_loc = close_paren->location;
-	  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	}
 
       /* Restore the saved message.  */
@@ -34591,13 +34585,11 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
 	cp_parser_simulate_error (parser);
       else
 	{
-	  bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-	  parser->in_type_id_in_expr_p = true;
+	  type_id_in_expr_sentinel s (parser);
 	  /* Look for the type-id.  */
 	  type = cp_parser_type_id (parser);
 	  /* Look for the closing `)'.  */
 	  parens.require_close (parser);
-	  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	}
 
       /* If all went well, then we're done.  */
