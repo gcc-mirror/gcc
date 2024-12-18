@@ -38,7 +38,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    inexact - and we optionally ignore underflow, cf. thread starting at
    http://mailman.j3-fortran.org/pipermail/j3/2013-June/006452.html.  */
 
-static void
+extern void report_exception (void);
+iexport_proto (report_exception);
+
+void
 report_exception (void)
 {
   struct iovec iov[8];
@@ -108,7 +111,7 @@ report_exception (void)
 
   estr_writev (iov, iovcnt);
 }
-
+iexport (report_exception);
 
 /* A numeric STOP statement.  */
 

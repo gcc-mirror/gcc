@@ -1997,4 +1997,5 @@ GFORTRAN_15 {
     _gfortran_sminloc1_8_m2;
     _gfortran_sminloc1_8_m4;
     _gfortran_sminloc1_8_m8;
+    _gfortran_report_exception;
 } GFORTRAN_14;

@@ -986,6 +986,9 @@ internal_proto(filename_from_unit);
 
 /* stop.c */
 
+extern void report_exception (void);
+iexport_proto (report_exception);
+
 extern _Noreturn void stop_string (const char *, size_t, bool);
 export_proto(stop_string);
 

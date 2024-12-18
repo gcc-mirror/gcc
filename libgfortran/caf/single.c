@@ -263,13 +263,17 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
     *stat = 0;
 }
 
+extern void _gfortran_report_exception (void);
 
 void
 _gfortran_caf_stop_numeric(int stop_code, bool quiet)
 {
   if (!quiet)
-    fprintf (stderr, "STOP %d\n", stop_code);
-  exit (0);
+    {
+      _gfortran_report_exception ();
+      fprintf (stderr, "STOP %d\n", stop_code);
+    }
+  exit (stop_code);
 }
 
 
@@ -278,6 +282,7 @@ _gfortran_caf_stop_str(const char *string, size_t len, bool quiet)
 {
   if (!quiet)
     {
+      _gfortran_report_exception ();
       fputs ("STOP ", stderr);
       while (len--)
 	fputc (*(string++), stderr);
@@ -292,6 +297,7 @@ _gfortran_caf_error_stop_str (const char *string, size_t len, bool quiet)
 {
   if (!quiet)
     {
+      _gfortran_report_exception ();
       fputs ("ERROR STOP ", stderr);
       while (len--)
 	fputc (*(string++), stderr);
@@ -373,7 +379,10 @@ void
 _gfortran_caf_error_stop (int error, bool quiet)
 {
   if (!quiet)
-    fprintf (stderr, "ERROR STOP %d\n", error);
+    {
+      _gfortran_report_exception ();
+      fprintf (stderr, "ERROR STOP %d\n", error);
+    }
   exit (error);
 }
 
@@ -2131,14 +2140,16 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      /* Assume that the rank and the dimensions fit for copying src
 		 to dst.  */
 	      GFC_DESCRIPTOR_DTYPE (dst) = GFC_DESCRIPTOR_DTYPE (src);
+	      GFC_DESCRIPTOR_SPAN (dst) = GFC_DESCRIPTOR_SPAN (src);
 	      stride_dst = 1;
+	      dst->offset = 0;
 	      for (size_t d = 0; d < src_rank; ++d)
 		{
 		  extent_dst = GFC_DIMENSION_EXTENT (src->dim[d]);
 		  GFC_DIMENSION_LBOUND (dst->dim[d]) = 1;
 		  GFC_DIMENSION_UBOUND (dst->dim[d]) = extent_dst;
 		  GFC_DIMENSION_STRIDE (dst->dim[d]) = stride_dst;
-		  dst->offset = -extent_dst;
+		  dst->offset -= stride_dst;
 		  stride_dst *= extent_dst;
 		}
 	      /* Null the data-pointer to make register_component allocate
