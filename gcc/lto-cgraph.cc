@@ -143,7 +143,6 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
 			        symtab_node *node)
 {
   int index;
-  lto_encoder_entry last_node;
 
   size_t *slot = encoder->map->get (node);
   if (slot == NULL || !*slot)
@@ -154,7 +153,7 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
 
   /* Remove from vector. We do this by swapping node with the last element
      of the vector.  */
-  last_node = encoder->nodes.pop ();
+  lto_encoder_entry last_node = encoder->nodes.pop ();
   if (last_node.node != node)
     {
       bool existed = encoder->map->put (last_node.node, index + 1);

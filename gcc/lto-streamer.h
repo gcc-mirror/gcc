@@ -443,8 +443,7 @@ struct lto_stats_d
 /* Entry of LTO symtab encoder.  */
 struct lto_encoder_entry
 {
-  /* Constructors.  */
-  lto_encoder_entry () {}
+  /* Constructor.  */
   lto_encoder_entry (symtab_node* n)
     : node (n), in_partition (false), body (false), only_for_inlining (true),
       initializer (false)
