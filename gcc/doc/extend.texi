@@ -29403,7 +29403,7 @@ GCC strives to be compatible with the
 @uref{https://www.openacc.org/, OpenACC Application Programming
 Interface v2.6}.
 
-To enable the processing of OpenACC directives @samp{#pragma omp}
+To enable the processing of OpenACC directives @samp{#pragma acc}
 in C and C++, GCC needs to be invoked with the @option{-fopenacc} option.
 This option also arranges for automatic linking of the OpenACC runtime
 library.
