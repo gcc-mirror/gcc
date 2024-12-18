@@ -3823,7 +3823,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
   void write_ordinary_maps (elf_out *to, range_t &,
 			    bool, unsigned *crc_ptr);
-  bool read_ordinary_maps (unsigned, unsigned);
+  bool read_ordinary_maps (line_map_uint_t, unsigned);
   void write_macro_maps (elf_out *to, range_t &, unsigned *crc_ptr);
   bool read_macro_maps (line_map_uint_t);
 
@@ -17093,7 +17093,8 @@ module_state::write_macro_maps (elf_out *to, range_t &info, unsigned *crc_p)
 }
 
 bool
-module_state::read_ordinary_maps (unsigned num_ord_locs, unsigned range_bits)
+module_state::read_ordinary_maps (line_map_uint_t num_ord_locs,
+				  unsigned range_bits)
 {
   bytes_in sec;
 
