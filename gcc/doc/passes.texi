@@ -959,6 +959,12 @@ global constant and  copy propagation.
 The source file for this pass is @file{gcse.cc}, and the LCM routines
 are in @file{lcm.cc}.
 
+A third version of this pass is run on some targets to optimise assignments to
+specific hard registers.  This can be used in cases where a register has a
+single purpose, such as specifying a mode as an extra input for specific
+instructions (@pxref{mode switching optimization} for another way of handling
+instruction modes).
+
 @item Loop optimization
 
 This pass performs several loop related optimizations.
@@ -1018,6 +1024,7 @@ combination approaches as well.
 The pass runs twice, once before register allocation and once after
 register allocation.  The code is located in @file{late-combine.cc}.
 
+@anchor{mode switching optimization}
 @item Mode switching optimization
 
 This pass looks for instructions that require the processor to be in a
