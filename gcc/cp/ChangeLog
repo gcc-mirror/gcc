@@ -1,3 +1,21 @@
+2024-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118073
+	* error.cc (dump_expr) <case NONTYPE_ARGUMENT_PACK>: New case.
+
+2024-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117985
+	* init.cc (build_vec_init): Pop CLEANUP_FLAGS if we're not
+	generating the loop.
+
+2024-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116108
+	* decl.cc (grokdeclarator): Pass TYYPE_MAIN_VARIANT (type)
+	rather than type to same_type_p when checking if the non-static
+	data member doesn't have current class type.
+
 2024-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR sarif-replay/117943

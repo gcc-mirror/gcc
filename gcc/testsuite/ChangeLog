@@ -1,3 +1,60 @@
+2024-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118073
+	* g++.dg/diagnostic/arg-pack1.C: New test.
+
+2024-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117985
+	* g++.dg/cpp0x/initlist-array23.C: New test.
+	* g++.dg/cpp0x/initlist-array24.C: New test.
+
+2024-12-17  Oliver Kozul  <Oliver.Kozul@rt-rk.com>
+
+	* gcc.target/riscv/pr114087-1.c: New test.
+
+2024-12-17  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/torture/pr81812.C: Add xfail for thumb1.
+
+2024-12-17  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* gcc.target/riscv/mcpu-tt-ascalon-d8.c: New test.
+
+2024-12-17  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/target-supports.exp: Added corresponding -mtune= option
+	for each fo the arm_cpu_* effective targets.
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/constraint-R.c: New.
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/modifier-N-fpr.c: New.
+	* gcc.target/riscv/modifier-N-vr.c: New.
+	* gcc.target/riscv/modifier-N.c: New.
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/constraint-cf-zfinx.c: New.
+	* gcc.target/riscv/constraint-cf.c: New.
+	* gcc.target/riscv/constraint-cr.c: New.
+
+2024-12-17  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/vrp9.c: New test.
+
+2024-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116108
+	* g++.dg/cpp1z/class-deduction117.C: New test.
+
+2024-12-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/associate_71.f90: New test.
+
 2024-12-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR tree-optimization/118055

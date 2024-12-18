@@ -1,3 +1,131 @@
+2024-12-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/26154
+	* common.opt.urls: Regenerated.
+	* doc/extend.texi (C Extensions): Adjust menu for new sections.
+	(Attribute Syntax): Mention OpenMP directives.
+	(Pragmas): Mention OpenMP and OpenACC directives.
+	(OpenMP): New section.
+	(OpenACC): New section.
+	* doc/invoke.texi (Invoking GCC): Adjust menu for new section.
+	(Option Summary): Move OpenMP and OpenACC options to their own
+	category.
+	(C Dialect Options): Move documentation for -foffload, -fopenacc,
+	-fopenacc-dim, -fopenmp, -fopenmd-simd, and
+	-fopenmp-target-simd-clone to...
+	(OpenMP and OpenACC Options): ...this new section.  Light
+	copy-editing of the option descriptions.
+
+2024-12-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118062
+	* tree-vect-generic.cc (expand_vector_piecewise): Properly
+	compute delta.
+
+2024-12-17  Oliver Kozul  <Oliver.Kozul@rt-rk.com>
+
+	* config/riscv/riscv.md (*lui_constraint<ANYI:mode>_and_to_or): New pattern
+
+2024-12-17  Yangyu Chen  <cyy@cyyself.name>
+
+	* common/config/riscv/riscv-ext-bitmask.def (RISCV_EXT_BITMASK): Remove svvptc.
+
+2024-12-17  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* config/riscv/riscv-cores.def: Add tt-ascalon-d8.
+	* config/riscv/riscv.cc (tt_ascalon_d8_tune_info): New.
+	* doc/invoke.texi (RISC-V): Add tt-ascalon-d8 to -mcpu.
+
+2024-12-17  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* doc/invoke.texi (RISC-V): Add thead-c906, xiangshan-nanhu to
+	-mcpu, add generic-ooo and remove thead-c906 from -mtune.
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/constraints.md (R): New constraint.
+	* doc/md.texi: Document new constraint `R`.
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_print_operand): Add N.
+	* doc/extend.texi: Document for N,
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/corev.md (*cv_branch<mode>): Update modifier.
+	(*branch<mode>): Ditto.
+	* config/riscv/riscv.cc (riscv_print_operand): Update modifier.
+	* config/riscv/riscv.md (*branch<mode>): Update modifier.
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/constraints.md (cr): New.
+	(cf): New.
+	* config/riscv/riscv.h (reg_class): Add RVC_GR_REGS and
+	RVC_FP_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	* doc/md.texi: Document cr and cf constraint.
+	* config/riscv/riscv.cc (riscv_regno_to_class): Update
+	FP_REGS to RVC_FP_REGS since it smaller set.
+	(riscv_secondary_memory_needed): Handle RVC_FP_REGS.
+	(riscv_register_move_cost): Ditto.
+
+2024-12-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/constraints.md (c01): Rename to...
+	(k01): ...this.
+	(c02): Rename to...
+	(k02): ...this.
+	(c03): Rename to...
+	(k03): ...this.
+	(c04): Rename to...
+	(k04): ...this.
+	(c08): Rename to...
+	(k08): ...this.
+	* config/riscv/corev.md (riscv_cv_simd_add_h_si): Update
+	constraints.
+	(riscv_cv_simd_sub_h_si): Ditto.
+	(riscv_cv_simd_cplxmul_i_si): Ditto.
+	(riscv_cv_simd_subrotmj_si): Ditto.
+	* config/riscv/riscv-v.cc (splat_to_scalar_move_p): Update
+	constraints.
+	* config/riscv/vector-iterators.md (stride_load_constraint):
+	Update constraints.
+	(stride_store_constraint): Ditto.
+
+2024-12-17  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (symtab_node): Add a new overload of nonzero_address.
+	* symtab.cc (symtab_node::nonzero_address): Add a new overload whith a
+	parameter for delete_null_pointer_checks.  Make the original overload
+	call the new one which has retains the actual implementation.
+	* ipa-prop.h (ipa_get_range_from_ip_invariant): Declare.
+	(ipa_range_set_and_normalize): Remove.
+	* ipa-prop.cc (ipa_get_range_from_ip_invariant): New function.
+	(ipa_range_set_and_normalize): Remove.
+	* ipa-cp.cc (ipa_vr_intersect_with_arith_jfunc): Add a new parameter
+	context_node. Use ipa_get_range_from_ip_invariant instead of
+	ipa_range_set_and_normalize and pass to it the new parameter.
+	(ipa_value_range_from_jfunc): Pass cs->caller as the context_node to
+	ipa_vr_intersect_with_arith_jfunc.
+	(propagate_vr_across_jump_function): Likewise.
+	(ipa_get_range_from_ip_invariant): New function.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Use
+	ipa_get_range_from_ip_invariant instead of ipa_range_set_and_normalize
+
+2024-12-17  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Try harder to
+	use the value range obtained from ranger for pointer values.
+
+2024-12-17  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.cc: Include vr-values.h.
+	(skip_a_safe_conversion_op): New function.
+	(ipa_compute_jump_functions_for_edge): Use it.
+
 2024-12-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md: Fix tabs vs. spaces.

@@ -1,3 +1,18 @@
+2024-12-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/26154
+	* gfortran.texi (Standards): Remove redundant info about
+	OpenMP/OpenACC standard support.
+	(OpenMP): Copy-editing and update version info.
+	(OpenACC): Likewise.
+	* lang.opt.urls: Regenerated.
+
+2024-12-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/117347
+	* primary.cc (gfc_match_varspec): Add array constructors for
+	guessing their type like with unresolved function calls.
+
 2024-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR sarif-replay/117943

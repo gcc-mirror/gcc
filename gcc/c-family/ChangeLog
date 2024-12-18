@@ -1,3 +1,8 @@
+2024-12-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/26154
+	* c.opt.urls: Regenerated.
+
 2024-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR sarif-replay/117943

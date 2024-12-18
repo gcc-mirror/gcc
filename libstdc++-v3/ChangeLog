@@ -1,3 +1,16 @@
+2024-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/safe_local_iterator.h (_GLIBCXX_DEBUG_VERIFY_OPERANDS):
+	Add parentheses to avoid -Wparentheses warning.
+
+2024-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118035
+	* include/bits/deque.tcc (_M_range_insert_aux): Return
+	immediately if inserting an empty range.
+	* testsuite/23_containers/deque/modifiers/insert/118035.cc: New
+	test.
+
 2024-12-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/hashtable_policy.h (_Local_iterator_base): Use
