@@ -1,5 +1,6 @@
 // PR c++/71513
 // { dg-do compile { target c++11 } }
+// { dg-options "" }
 
 template < int N, typename T >
 struct A

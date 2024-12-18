@@ -5114,6 +5114,35 @@ handle_likeliness_attribute (tree *node, tree name, tree args,
     return error_mark_node;
 }
 
+/* The C++11 alignment specifier.  It mostly maps to GNU aligned attribute,
+   but we need to do some extra pedantic checking.  */
+
+static tree
+handle_alignas_attribute (tree *node, tree name, tree args, int flags,
+			  bool *no_add_attrs)
+{
+  tree t = *node;
+  tree ret = handle_aligned_attribute (node, name, args, flags, no_add_attrs);
+  if (pedantic)
+    {
+      if (TREE_CODE (*node) == FUNCTION_DECL)
+	pedwarn (input_location, OPT_Wattributes,
+		 "%<alignas%> on function declaration");
+      else if (TREE_CODE (*node) == ENUMERAL_TYPE)
+	pedwarn (input_location, OPT_Wattributes,
+		 "%<alignas%> on enumerated type");
+      else if (TYPE_P (*node) && t != *node)
+	pedwarn (input_location, OPT_Wattributes,
+		 "%<alignas%> on a type other than class");
+      else if (TREE_CODE (*node) == FIELD_DECL && DECL_C_BIT_FIELD (*node))
+	pedwarn (input_location, OPT_Wattributes, "%<alignas%> on bit-field");
+      else if (TREE_CODE (t) == TYPE_DECL)
+	pedwarn (input_location, OPT_Wattributes,
+		 "%<alignas%> on a type alias");
+    }
+  return ret;
+}
+
 /* Table of valid C++ attributes.  */
 static const attribute_spec cxx_gnu_attributes[] =
 {
@@ -5160,6 +5189,18 @@ static const attribute_spec std_attributes[] =
 const scoped_attribute_specs std_attribute_table =
 {
   nullptr, { std_attributes }
+};
+
+/* Table of internal attributes.  */
+static const attribute_spec internal_attributes[] =
+{
+  { "aligned", 0, 1, false, false, false, false,
+    handle_alignas_attribute, attr_aligned_exclusions }
+};
+
+const scoped_attribute_specs internal_attribute_table =
+{
+  "internal ", { internal_attributes }
 };
 
 /* Handle an "init_priority" attribute; arguments as in

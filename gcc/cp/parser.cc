@@ -29945,7 +29945,15 @@ cp_parser_exception_declaration (cp_parser* parser)
   tree decl = grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1,
 			      &type_specifiers.attributes);
   if (decl != error_mark_node && type_specifiers.attributes)
-    cplus_decl_attributes (&decl, type_specifiers.attributes, 0);
+    {
+      cplus_decl_attributes (&decl, type_specifiers.attributes, 0);
+      if (pedantic && lookup_attribute ("internal ", "aligned",
+					DECL_ATTRIBUTES (decl)))
+	pedwarn (type_specifiers.locations[ds_attribute]
+		 ? type_specifiers.locations[ds_attribute]
+		 : input_location, OPT_Wpedantic,
+		 "%<alignas%> on exception declaration");
+    }
 
   return decl;
 }
@@ -31396,7 +31404,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       /* Build the C++-11 representation of an 'aligned'
 	 attribute.  */
       attributes
-	= build_tree_list (build_tree_list (gnu_identifier,
+	= build_tree_list (build_tree_list (internal_identifier,
 					    aligned_identifier), alignas_expr);
     }
 

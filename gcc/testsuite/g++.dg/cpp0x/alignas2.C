@@ -1,5 +1,6 @@
 // PR c++/65734
 // { dg-do compile { target c++11 } }
+// { dg-options "" }
 
 template <typename T>
 struct BVector

@@ -101,7 +101,6 @@ static tree handle_destructor_attribute (tree *, tree, tree, int, bool *);
 static tree handle_mode_attribute (tree *, tree, tree, int, bool *);
 static tree handle_section_attribute (tree *, tree, tree, int, bool *);
 static tree handle_special_var_sec_attribute (tree *, tree, tree, int, bool *);
-static tree handle_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_if_not_aligned_attribute (tree *, tree, tree,
 						  int, bool *);
 static tree handle_strict_flex_array_attribute (tree *, tree, tree,
@@ -195,7 +194,7 @@ static tree handle_null_terminated_string_arg_attribute (tree *, tree, tree, int
   { name, function, type, variable }
 
 /* Define attributes that are mutually exclusive with one another.  */
-static const struct attribute_spec::exclusions attr_aligned_exclusions[] =
+extern const struct attribute_spec::exclusions attr_aligned_exclusions[] =
 {
   /* Attribute name     exclusion applies to:
 	                function, type, variable */
@@ -2816,7 +2815,7 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
 /* Handle a "aligned" attribute; arguments as in
    struct attribute_spec.handler.  */
 
-static tree
+tree
 handle_aligned_attribute (tree *node, tree name, tree args,
 			  int flags, bool *no_add_attrs)
 {
