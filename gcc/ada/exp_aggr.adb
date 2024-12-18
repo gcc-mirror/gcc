@@ -7345,12 +7345,13 @@ package body Exp_Aggr is
 
          --  If a transient scope has been created around the declaration, we
          --  need to attach the code to it so that the finalization actions of
-         --  the declaration will be inserted after it. Otherwise, we directly
-         --  insert it after the declaration and it will be analyzed only once
-         --  the declaration is processed.
+         --  the declaration will be inserted after it; otherwise, we directly
+         --  insert it after the declaration. In both cases, the code will be
+         --  analyzed after the declaration is processed, i.e. once the actual
+         --  subtype of the object is established.
 
          if Scope_Is_Transient and then Par = Node_To_Be_Wrapped then
-            Insert_Actions_After (Par, Aggr_Code);
+            Store_After_Actions_In_Scope_Without_Analysis (Aggr_Code);
          else
             Insert_List_After (Par, Aggr_Code);
          end if;
