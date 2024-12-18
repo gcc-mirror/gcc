@@ -7572,7 +7572,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 	/* Not much we can do when xor appears in the right-hand compare
 	   operand.  */
 	return NULL_TREE;
-      else
+      else if (integer_zerop (*xor_cmp_op))
 	{
 	  *xor_p = true;
 	  exp = res_ops[0];
