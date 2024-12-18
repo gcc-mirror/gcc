@@ -16813,13 +16813,13 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		      diagnose_misapplied_contracts (attrs);
 		      attrs = NULL_TREE;
 		    }
-		  else if (decl_specs->type && CLASS_TYPE_P (decl_specs->type))
+		  else if (decl_specs->type
+			   && decl_specs->type_definition_p
+			   && OVERLOAD_TYPE_P (decl_specs->type))
 		    {
-		      /*  This is an attribute following a
-			  class-specifier.  */
-		      if (decl_specs->type_definition_p)
-			warn_misplaced_attr_for_class_type (token->location,
-							    decl_specs->type);
+		      /* This is an attribute following a class-specifier.  */
+		      warn_misplaced_attr_for_class_type (token->location,
+							  decl_specs->type);
 		      attrs = NULL_TREE;
 		    }
 		  else
