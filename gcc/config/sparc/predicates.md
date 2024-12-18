@@ -527,3 +527,37 @@
 ;; and (xor ... (not ...)) to (not (xor ...)).
 (define_predicate "cc_arith_not_operator"
   (match_code "and,ior"))
+
+;; Return true if OP is an operator for a vec_cmp pattern
+;; VIS 4 is required for ordering comparisons if the mode is V8QI
+(define_predicate "vec_cmp_operator"
+  (match_operand 0 "comparison_operator")
+{
+  const enum rtx_code code = GET_CODE (op);
+
+  switch (GET_MODE (XEXP (op, 0)))
+    {
+    case V8QImode:
+      return code == EQ || code == NE || TARGET_VIS4;
+
+    default:
+      return true;
+    }
+})
+
+;; Return true if OP is an operator for a vec_cmpu pattern
+;; VIS 4 is required for ordering comparisons if the mode is not V8QI
+(define_predicate "vec_cmpu_operator"
+  (match_operand 0 "comparison_operator")
+{
+  const enum rtx_code code = GET_CODE (op);
+
+  switch (GET_MODE (XEXP (op, 0)))
+    {
+    case V8QImode:
+      return true;
+
+    default:
+      return code == EQ || code == NE || TARGET_VIS4;
+    }
+})

@@ -9000,16 +9000,12 @@
 
 (define_expand "vec_cmp<FPCMP:mode><P:mode>"
   [(set (match_operand:P 0 "register_operand" "")
-        (match_operator:P 1 "comparison_operator"
+        (match_operator:P 1 "vec_cmp_operator"
           [(match_operand:FPCMP 2 "register_operand" "")
            (match_operand:FPCMP 3 "register_operand" "")]))]
   "TARGET_VIS3"
 {
   enum rtx_code code = GET_CODE (operands[1]);
-
-  /* VIS 4 is required for ordering comparisons if the mode is V8QI.  */
-  if (<FPCMP:MODE>mode == V8QImode && code != EQ && code != NE && !TARGET_VIS4)
-    FAIL;
 
   if (code == LT || code == GE)
     {
@@ -9028,16 +9024,12 @@
 
 (define_expand "vec_cmpu<FPCMP:mode><P:mode>"
   [(set (match_operand:P 0 "register_operand" "")
-        (match_operator:P 1 "comparison_operator"
+        (match_operator:P 1 "vec_cmpu_operator"
           [(match_operand:FPCMP 2 "register_operand" "")
            (match_operand:FPCMP 3 "register_operand" "")]))]
   "TARGET_VIS3"
 {
   enum rtx_code code = GET_CODE (operands[1]);
-
-  /* VIS 4 is required for ordering comparisons if the mode is not V8QI.  */
-  if (<FPCMP:MODE>mode != V8QImode && code != EQ && code != NE && !TARGET_VIS4)
-    FAIL;
 
   if (code == LTU || code == GEU)
     {
