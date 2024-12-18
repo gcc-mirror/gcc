@@ -2177,7 +2177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (this->_M_equals(__k, __code, *__p))
 	    return __prev_p;
 
-	  if (!__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt)
+	  if (__builtin_expect (!__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt, 0))
 	    break;
 	  __prev_p = __p;
 	}
@@ -2207,7 +2207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (this->_M_equals_tr(__k, __code, *__p))
 	      return __prev_p;
 
-	    if (!__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt)
+	    if (__builtin_expect (!__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt, 0))
 	      break;
 	    __prev_p = __p;
 	  }
