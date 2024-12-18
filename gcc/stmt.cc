@@ -277,6 +277,10 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	  error ("matching constraint not valid in output operand");
 	  return false;
 
+	case ':':
+	  error ("%<:%> constraint used for output operand");
+	  return false;
+
 	case '<':  case '>':
 	  /* ??? Before flow, auto inc/dec insns are not supposed to exist,
 	     excepting those that expand_call created.  So match memory
@@ -324,6 +328,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
   size_t c_len = strlen (constraint);
   size_t j;
   bool saw_match = false;
+  bool at_checked = false;
 
   /* Assume the constraint doesn't allow the use of either
      a register or memory.  */
@@ -359,6 +364,21 @@ parse_input_constraint (const char **constraint_p, int input_num,
       case 's':  case 'i':  case 'n':
       case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
       case 'N':  case 'O':  case 'P':  case ',':
+	break;
+
+      case ':':
+	/* Verify that if : is used, it is just ":" or say ":,:" but not
+	   mixed with other constraints or say ",:,," etc.  */
+	if (!at_checked)
+	  {
+	    for (size_t k = 0; k < c_len; ++k)
+	      if (constraint[k] != ((k & 1) ? ',' : ':') || (c_len & 1) == 0)
+		{
+		  error ("%<:%> constraint mixed with other constraints");
+		  return false;
+		} 
+	    at_checked = true;
+	  }
 	break;
 
 	/* Whether or not a numeric constraint allows a register is

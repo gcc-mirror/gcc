@@ -1504,6 +1504,13 @@ as the predicate in the @code{match_operand}.  This predicate interprets
 the mode specified in the @code{match_operand} as the mode of the memory
 reference for which the address would be valid.
 
+@cindex @samp{:} in constraint
+@item @samp{:}
+This constraint, allowed only in input operands, says the inline @code{asm}
+pattern defines specific function or variable symbol.  The constraint
+shouldn't be mixed with other constraints on the same operand and
+the operand should be address of a function or non-automatic variable.
+
 @cindex other register constraints
 @cindex extensible constraints
 @item @var{other-letters}

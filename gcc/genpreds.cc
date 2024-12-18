@@ -753,6 +753,7 @@ mangle (const char *name)
       case '_': obstack_grow (rtl_obstack, "__", 2); break;
       case '<':	obstack_grow (rtl_obstack, "_l", 2); break;
       case '>':	obstack_grow (rtl_obstack, "_g", 2); break;
+      case ':': obstack_grow (rtl_obstack, "_c", 2); break;
       default: obstack_1grow (rtl_obstack, *name); break;
       }
 
@@ -797,12 +798,13 @@ add_constraint (const char *name, const char *regclass,
   for (p = name; *p; p++)
     if (!ISALNUM (*p))
       {
-	if (*p == '<' || *p == '>' || *p == '_')
+	if (*p == '<' || *p == '>' || *p == '_' || *p == ':')
 	  need_mangled_name = true;
 	else
 	  {
 	    error_at (loc, "constraint name '%s' must be composed of letters,"
-		      " digits, underscores, and angle brackets", name);
+		      " digits, underscores, colon and angle brackets",
+		      name);
 	    return;
 	  }
       }

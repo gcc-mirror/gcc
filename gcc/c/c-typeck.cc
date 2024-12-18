@@ -12378,6 +12378,20 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 			     "a function");
 	      input = error_mark_node;
 	    }
+	  if (constraint[0] == ':' && input != error_mark_node)
+	    {
+	      tree t = input;
+	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) != ADDR_EXPR
+		  || !(TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL
+		       || (VAR_P (TREE_OPERAND (t, 0))
+			   && is_global_var (TREE_OPERAND (t, 0)))))
+		{
+		  error_at (loc, "%<:%> constraint operand is not address "
+				 "of a function or non-automatic variable");
+		  input = error_mark_node;
+		}
+	    }
 	}
       else
 	input = error_mark_node;
