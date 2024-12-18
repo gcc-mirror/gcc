@@ -3493,7 +3493,10 @@ output_asm_insn (const char *templ, rtx *operands)
 	    int letter = *p++;
 	    unsigned long opnum;
 	    char *endptr;
+	    int letter2 = 0;
 
+	    if (letter == 'c' && *p == 'c')
+	      letter2 = *p++;
 	    opnum = strtoul (p, &endptr, 10);
 
 	    if (endptr == p)
@@ -3507,7 +3510,7 @@ output_asm_insn (const char *templ, rtx *operands)
 	      output_address (VOIDmode, operands[opnum]);
 	    else if (letter == 'c')
 	      {
-		if (CONSTANT_ADDRESS_P (operands[opnum]))
+		if (letter2 == 'c' || CONSTANT_ADDRESS_P (operands[opnum]))
 		  output_addr_const (asm_out_file, operands[opnum]);
 		else
 		  output_operand (operands[opnum], 'c');

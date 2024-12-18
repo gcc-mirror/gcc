@@ -1510,6 +1510,13 @@ This constraint, allowed only in input operands, says the inline @code{asm}
 pattern defines specific function or variable symbol.  The constraint
 shouldn't be mixed with other constraints on the same operand and
 the operand should be address of a function or non-automatic variable.
+Best used with the @samp{cc} modifier when printing the operand, so that
+even in position independent code it prints as a label.
+
+@smallexample
+void foo (void);
+asm (".globl %cc0; %cc0: ret" : : ":" (foo));
+@end smallexample
 
 @cindex other register constraints
 @cindex extensible constraints

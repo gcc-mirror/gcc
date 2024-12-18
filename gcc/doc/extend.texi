@@ -12141,6 +12141,11 @@ The following table shows the modifiers supported by all targets and their effec
 @item @code{c}
 @tab Require a constant operand and print the constant expression with no punctuation.
 @tab @code{%c0}
+@item @code{cc}
+@tab Like @samp{%c} except try harder to print it with no punctuation.
+@samp{%c} can e.g.@: fail to print constant addresses in position independent code on
+some architectures.
+@tab @code{%cc0}
 @item @code{n}
 @tab Like @samp{%c} except that the value of the constant is negated before printing.
 @tab @code{%n0}
