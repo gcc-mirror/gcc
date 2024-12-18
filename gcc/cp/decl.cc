@@ -5820,6 +5820,17 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
 	warn_misplaced_attr_for_class_type (loc, declared_type);
     }
 
+  if (declspecs->std_attributes
+      && declared_type
+      && any_nonignored_attribute_p (declspecs->std_attributes))
+    {
+      auto_diagnostic_group d;
+      if (warning_at (declspecs->locations[ds_std_attribute], OPT_Wattributes,
+		      "attribute ignored"))
+	inform (declspecs->locations[ds_std_attribute],
+		"an attribute that appertains to a type-specifier is ignored");
+    }
+
   /* Diagnose invalid application of contracts, if any.  */
   if (find_contract (declspecs->attributes))
     diagnose_misapplied_contracts (declspecs->attributes);
