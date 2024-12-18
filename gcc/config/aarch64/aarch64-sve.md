@@ -3317,6 +3317,61 @@
 ;; - REVW
 ;; -------------------------------------------------------------------------
 
+(define_split
+  [(set (match_operand:SVE_FULL_HSDI 0 "register_operand")
+	(rotate:SVE_FULL_HSDI
+	  (match_operand:SVE_FULL_HSDI 1 "register_operand")
+	  (match_operand:SVE_FULL_HSDI 2 "aarch64_constant_vector_operand")))]
+  "TARGET_SVE && can_create_pseudo_p ()"
+  [(set (match_dup 3)
+	(ashift:SVE_FULL_HSDI (match_dup 1)
+			      (match_dup 2)))
+   (set (match_dup 0)
+	(plus:SVE_FULL_HSDI
+	  (lshiftrt:SVE_FULL_HSDI (match_dup 1)
+				  (match_dup 4))
+	  (match_dup 3)))]
+  {
+    if (aarch64_emit_opt_vec_rotate (operands[0], operands[1], operands[2]))
+      DONE;
+
+    if (!TARGET_SVE2)
+      FAIL;
+
+    operands[3] = gen_reg_rtx (<MODE>mode);
+    HOST_WIDE_INT shift_amount =
+      INTVAL (unwrap_const_vec_duplicate (operands[2]));
+    int bitwidth = GET_MODE_UNIT_BITSIZE (<MODE>mode);
+    operands[4] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+						     bitwidth - shift_amount);
+  }
+)
+
+;; The RTL combiners are able to combine "ior (ashift, ashiftrt)" to a "bswap".
+;; Match that as well.
+(define_insn_and_split "*v_revvnx8hi"
+  [(parallel
+    [(set (match_operand:VNx8HI 0 "register_operand" "=w")
+	  (bswap:VNx8HI (match_operand 1 "register_operand" "w")))
+     (clobber (match_scratch:VNx8BI 2 "=Upl"))])]
+  "TARGET_SVE"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VNx8HI
+	  [(match_dup 2)
+	   (unspec:VNx8HI
+	     [(match_dup 1)]
+	     UNSPEC_REVB)]
+	  UNSPEC_PRED_X))]
+  {
+    if (!can_create_pseudo_p ())
+      emit_move_insn (operands[2], CONSTM1_RTX (VNx8BImode));
+    else
+      operands[2] = aarch64_ptrue_reg (VNx8BImode);
+  }
+)
+
 ;; Predicated integer unary operations.
 (define_insn "@aarch64_pred_<optab><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand")

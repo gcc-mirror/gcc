@@ -6324,7 +6324,8 @@ expand_rotate_as_vec_perm (machine_mode mode, rtx dst, rtx x, rtx amt)
 			     qimode, perm_dst);
   if (!res)
     return NULL_RTX;
-  emit_move_insn (dst, lowpart_subreg (mode, res, qimode));
+  if (!rtx_equal_p (res, perm_dst))
+    emit_move_insn (dst, lowpart_subreg (mode, res, qimode));
   return dst;
 }
 

@@ -27091,11 +27091,17 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   d.op_mode = op_mode;
   d.op_vec_flags = aarch64_classify_vector_mode (d.op_mode);
   d.target = target;
-  d.op0 = op0 ? force_reg (op_mode, op0) : NULL_RTX;
+  d.op0 = op0;
+  if (d.op0 && !register_operand (d.op0, op_mode))
+    d.op0 = force_reg (op_mode, d.op0);
   if (op0 && d.one_vector_p)
     d.op1 = copy_rtx (d.op0);
   else
-    d.op1 = op1 ? force_reg (op_mode, op1) : NULL_RTX;
+    {
+      d.op1 = op1;
+      if (d.op1 && !register_operand (d.op1, op_mode))
+       d.op1 = force_reg (op_mode, d.op1);
+    }
   d.testing_p = !target;
 
   if (!d.testing_p)
