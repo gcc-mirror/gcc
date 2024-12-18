@@ -36,16 +36,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "gimple-pretty-print.h"
 
-// An assume query utilizes the current range query to implelemtn the assume
+// An assume query utilizes the current range query to implement the assume
 // keyword.
 // For any return value of 1 from the function, it attempts to determine
-// which paths leads to a 1 value being returned. On those paths, what
+// which paths lead to a 1 value being returned. On those paths, it determines
 // the ranges of any ssa_names listed in bitmap P (usually the parm list for
-// the function) are, and combined them all.
+// the function), and combines them all.
 // These ranges are then set as the global ranges for those parms in this
 // function.
-// Other functions which then refer to this function in an assume builtin
-// will then pick up these ranges for the paramters via the inferred range
+// Other functions which refer to this function in an assume builtin
+// will then pick up these ranges for the parameters via the inferred range
 // mechanism.
 //   See gimple-range-infer.cc::gimple_infer_range::check_assume_func ()
 //
@@ -57,11 +57,11 @@ along with GCC; see the file COPYING3.  If not see
 //
 // a small temporary assume function consisting of
 // assume_f1 (int x) { return x == 1 || x == 4; }
-// is constructed by the front end, and optimzed, at the very end of
+// is constructed by the front end, and optimized, at the very end of
 // optimization, instead of generating code, we instead invoke the assume pass
 // which uses this query to set the the global value of parm x to [1,1][4,4]
 //
-// Meanwhile., my_Fund has been rewritten to be:
+// Meanwhile., my_func has been rewritten to be:
 //
 // my_func (int x_2)
 // {
@@ -70,12 +70,12 @@ along with GCC; see the file COPYING3.  If not see
 //   if (x_2 == 3)
 //
 // When ranger is processing the assume_builtin_call, it looks up the global
-// value of the paramter in assume_f1, which is [1,1][4,4].  It then registers
+// value of the parameter in assume_f1, which is [1,1][4,4].  It then registers
 // and inferred range at this statement setting the value x_2 to [1,1][4,4]
 //
-// Any uses of x_2 after this statement will now utilzie this inferred range.
+// Any uses of x_2 after this statement will now utilize this inferred range.
 //
-// When VRP precoesses if (x_2 == 3), it picks up the inferred range, and
+// When VRP processes if (x_2 == 3), it picks up the inferred range, and
 // determines that x_2 can never be 3, and will rewrite the branch to
 //   if (0 != 0)
 
@@ -109,7 +109,7 @@ assume_query::assume_query (function *f, bitmap p) : m_parm_list (p),
 						     m_func (f)
 {
   basic_block exit_bb = EXIT_BLOCK_PTR_FOR_FN (f);
-  // If there is more than one precessor to the exit block, bail.
+  // If there is more than one predecessor to the exit block, bail.
   if (!single_pred_p (exit_bb))
     return;
 
@@ -130,7 +130,7 @@ assume_query::assume_query (function *f, bitmap p) : m_parm_list (p),
   if (!irange::supports_p (lhs_type))
     return;
 
-  // Only values of interest are when the return value is 1.  The defintion
+  // Only values of interest are when the return value is 1.  The definition
   // of the return value must be in the same block, or we have
   // complicated flow control we don't understand, and just return.
   unsigned prec = TYPE_PRECISION (lhs_type);
@@ -169,7 +169,7 @@ assume_query::assume_query (function *f, bitmap p) : m_parm_list (p),
    }
 }
 
-// This function Will update all the current value of interesting parameters.
+// This function will update all the current values of interesting parameters.
 // It tries, in order:
 //    a) a range found via path calculations.
 //    b) range of the parm at SRC point in the IL. (either edge or stmt)
@@ -423,9 +423,9 @@ public:
   bool gate (function *fun) final override { return fun->assume_function; }
   unsigned int execute (function *fun) final override
     {
-      // Create a bitmap of all the paramters in this function.
-      // Invoke the assume_query to detemine what values these parameters
-      // have when the function returns TRUE, and set the globals value of
+      // Create a bitmap of all the parameters in this function.
+      // Invoke the assume_query to determine what values these parameters
+      // have when the function returns TRUE, and set the global values of
       // those parameters in this function based on that.  This will later be
       // utilized by ranger when processing builtin IFN_ASSUME function calls.
       // See gimple-range-infer.cc::check_assume_func ().
