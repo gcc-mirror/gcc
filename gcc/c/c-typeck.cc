@@ -12332,6 +12332,11 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 		}
 	    }
 	}
+      else if (output != error_mark_node && strstr (constraint, "-"))
+	{
+	  error_at (loc, "%<-%> modifier used inside of a function");
+	  output = error_mark_node;
+	}
 
       TREE_VALUE (tail) = output;
     }
@@ -12416,6 +12421,11 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 		  input = error_mark_node;
 		}
 	    }
+	}
+      else if (input != error_mark_node && strstr (constraint, "-"))
+	{
+	  error_at (loc, "%<-%> modifier used inside of a function");
+	  input = error_mark_node;
 	}
 
       TREE_VALUE (tail) = input;

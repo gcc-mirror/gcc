@@ -92,13 +92,13 @@
 (define_constraint "i"
   "Matches a general integer constant."
   (and (match_test "CONSTANT_P (op)")
-       (match_test "!flag_pic || LEGITIMATE_PIC_OPERAND_P (op)")))
+       (match_test "!flag_pic || raw_constraint_p || LEGITIMATE_PIC_OPERAND_P (op)")))
 
 (define_constraint "s"
   "Matches a symbolic integer constant."
   (and (match_test "CONSTANT_P (op)")
        (match_test "!CONST_SCALAR_INT_P (op)")
-       (match_test "!flag_pic || LEGITIMATE_PIC_OPERAND_P (op)")))
+       (match_test "!flag_pic || raw_constraint_p || LEGITIMATE_PIC_OPERAND_P (op)")))
 
 (define_constraint ":"
   "Defines a symbol."
@@ -108,7 +108,7 @@
 (define_constraint "n"
   "Matches a non-symbolic integer constant."
   (and (match_test "CONST_SCALAR_INT_P (op)")
-       (match_test "!flag_pic || LEGITIMATE_PIC_OPERAND_P (op)")))
+       (match_test "!flag_pic || raw_constraint_p || LEGITIMATE_PIC_OPERAND_P (op)")))
 
 (define_constraint "E"
   "Matches a floating-point constant."

@@ -1889,6 +1889,28 @@ register preferences.
   @dots{})
 @end smallexample
 @end ifset
+
+@cindex @samp{-} in constraint
+@item -
+Says that the selected following constraints within the same alternative
+should be matched differently.  Normally in PIC code symbolic operands
+in constraints like @samp{i}, @samp{s} or @samp{n} are not allowed at all
+or severely restricted.  The @samp{-} modifier, which is only allowed
+outside of functions, allows symbolic operands even in PIC code.  This
+modifier is usually used together with the @code{cc} operand modifier.
+
+@smallexample
+extern void foo (void), bar (void);
+int v;
+extern int w;
+asm (".globl %cc0, %cc2; .text; %cc0: call %cc1; ret; .data; %cc2: .word %cc3"
+     :: ":" (foo), "-s" (&bar), ":" (&w), "-i" (&v));
+@end smallexample
+
+This asm declaration tells the compiler it defines function @code{foo} and
+variable @code{w} and uses function @code{bar} and variable @code{v}.  This
+will compile even with PIC, but it is up to the user to ensure it will
+assemble correctly and have the expected behavior.
 @end table
 
 @node Machine Constraints

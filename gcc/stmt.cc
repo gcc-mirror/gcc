@@ -268,7 +268,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	case 'E':  case 'F':  case 'G':  case 'H':
 	case 's':  case 'i':  case 'n':
 	case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
-	case 'N':  case 'O':  case 'P':  case ',':
+	case 'N':  case 'O':  case 'P':  case ',':  case '-':
 	  break;
 
 	case '0':  case '1':  case '2':  case '3':  case '4':
@@ -363,7 +363,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
       case 'E':  case 'F':  case 'G':  case 'H':
       case 's':  case 'i':  case 'n':
       case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
-      case 'N':  case 'O':  case 'P':  case ',':
+      case 'N':  case 'O':  case 'P':  case ',':  case '-':
 	break;
 
       case ':':

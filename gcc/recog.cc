@@ -86,6 +86,9 @@ static operand_alternative asm_op_alt[MAX_RECOG_OPERANDS
 
 int which_alternative;
 
+/* True for inline asm operands with - constraint modifier.  */
+bool raw_constraint_p;
+
 /* Nonzero after end of reload pass.
    Set to 1 or 0 by toplev.cc.
    Controls the significance of (SUBREG (MEM)).  */
@@ -2287,6 +2290,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
       switch (c)
 	{
 	case ',':
+	  raw_constraint_p = false;
 	  constraint++;
 	  continue;
 
@@ -2336,6 +2340,11 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  if (general_operand (op, VOIDmode))
 	    result = 1;
 	  break;
+
+	case '-':
+	  raw_constraint_p = true;
+	  constraint++;
+	  continue;
 
 	case '<':
 	case '>':
@@ -2394,8 +2403,12 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	constraint++;
       while (--len && *constraint && *constraint != ',');
       if (len)
-	return 0;
+	{
+	  raw_constraint_p = false;
+	  return 0;
+	}
     }
+  raw_constraint_p = false;
 
   /* For operands without < or > constraints reject side-effects.  */
   if (AUTO_INC_DEC && !incdec_ok && result && MEM_P (op))
@@ -3189,6 +3202,9 @@ constrain_operands (int strict, alternative_mask alternatives)
 	      case ',':
 		c = '\0';
 		break;
+	      case '-':
+		raw_constraint_p = true;
+		break;
 
 	      case '#':
 		/* Ignore rest of this alternative as far as
@@ -3344,6 +3360,7 @@ constrain_operands (int strict, alternative_mask alternatives)
 	      }
 	  while (p += len, c);
 
+	  raw_constraint_p = false;
 	  constraints[opno] = p;
 	  /* If this operand did not win somehow,
 	     this alternative loses.  */

@@ -2255,6 +2255,11 @@ finish_asm_stmt (location_t loc, int volatile_p, tree string,
 		    }
 		}
 	    }
+	  else if (operand != error_mark_node && strstr (constraint, "-"))
+	    {
+	      error_at (loc, "%<-%> modifier used inside of a function");
+	      operand = error_mark_node;
+	    }
 
 	  TREE_VALUE (t) = operand;
 	}
@@ -2382,6 +2387,11 @@ finish_asm_stmt (location_t loc, int volatile_p, tree string,
 		      operand = error_mark_node;
 		    }
 		}
+	    }
+	  else if (operand != error_mark_node && strstr (constraint, "-"))
+	    {
+	      error_at (loc, "%<-%> modifier used inside of a function");
+	      operand = error_mark_node;
 	    }
 
 	  TREE_VALUE (t) = operand;

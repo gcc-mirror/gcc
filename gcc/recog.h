@@ -362,6 +362,9 @@ private:
    matched.  */
 extern int which_alternative;
 
+/* True for inline asm operands with - constraint modifier.  */
+extern bool raw_constraint_p;
+
 /* The following vectors hold the results from insn_extract.  */
 
 struct recog_data_d
