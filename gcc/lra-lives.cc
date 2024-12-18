@@ -1006,7 +1006,15 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 						      clobbered_regset))
 		break;
 	    if (reg2 == NULL)
-	      make_hard_regno_dead (reg->regno);
+	      {
+		make_hard_regno_dead (reg->regno);
+	      }
+	    else
+	      {
+		EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
+		  SET_HARD_REG_BIT (lra_reg_info[j].conflict_hard_regs,
+				    reg->regno);
+	      }
 	  }
 
       /* Increment the current program point if we must.  */
