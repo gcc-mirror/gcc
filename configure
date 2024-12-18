@@ -10924,6 +10924,11 @@ if echo " ${target_configdirs} " | grep " libgomp " > /dev/null 2>&1 ; then
   bootstrap_target_libs=${bootstrap_target_libs}target-libgomp,
 fi
 
+# If we are building libatomic, bootstrap it.
+if echo " ${target_configdirs} " | grep " libatomic " > /dev/null 2>&1 ; then
+  bootstrap_target_libs=${bootstrap_target_libs}target-libatomic,
+fi
+
 # If we are building libsanitizer and $BUILD_CONFIG contains bootstrap-asan
 # or bootstrap-ubsan, bootstrap it.
 if echo " ${target_configdirs} " | grep " libsanitizer " > /dev/null 2>&1; then

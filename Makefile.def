@@ -656,6 +656,26 @@ lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };
 // a dependency on libgcc for native targets to configure.
 lang_env_dependencies = { module=libiberty; no_c=true; };
 
+dependencies = { module=configure-target-libbacktrace; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgloss; on=all-target-libatomic; };
+dependencies = { module=configure-target-newlib; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgomp; on=all-target-libatomic; };
+dependencies = { module=configure-target-libitm; on=all-target-libatomic; };
+dependencies = { module=configure-target-libstdc++v3; on=all-target-libatomic; };
+dependencies = { module=configure-target-libsanitizer; on=all-target-libatomic; };
+dependencies = { module=configure-target-libvtv; on=all-target-libatomic; };
+dependencies = { module=configure-target-libssp; on=all-target-libatomic; };
+dependencies = { module=configure-target-libquadmath; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgfortran; on=all-target-libatomic; };
+dependencies = { module=configure-target-libffi; on=all-target-libatomic; };
+dependencies = { module=configure-target-libobjc; on=all-target-libatomic; };
+dependencies = { module=configure-target-libada; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgm2; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgo; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgrust; on=all-target-libatomic; };
+dependencies = { module=configure-target-libphobos; on=all-target-libatomic; };
+dependencies = { module=configure-target-zlib; on=all-target-libatomic; };
+
 dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=configure-target-libgo; on=configure-target-libffi; };

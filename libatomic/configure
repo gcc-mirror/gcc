@@ -3415,6 +3415,26 @@ esac
 # the wrong, non-multilib-adjusted value will be used in multilibs.
 # As a side effect, we have to subst CFLAGS ourselves.
 
+# AC_PROG_CC sets CFLAGS to "-g -O2" by default (if unset), and
+# then compile conftests with default CFLAGS, leaving no place to temporarily
+# modify CFLAGS and restore them later. However we need to pass
+# -fno-link-libatomic in CFLAGS so conftests compiled in AC_PROG_CC don't fail.
+# Assert that CFLAGS is always set by user so the default setting of CFLAGS by
+# AC_PROG_CC won't be applicable anyway.
+if test -z "${CFLAGS}"; then
+  as_fn_error $? "CFLAGS must be set." "$LINENO" 5
+fi
+
+# In order to override CFLAGS_FOR_TARGET, all of our special flags go
+# in XCFLAGS.  But we need them in CFLAGS during configury.  So put them
+# in both places for now and restore CFLAGS at the end of config.
+save_CFLAGS="$CFLAGS"
+
+# Append -fno-link-libatomic to avoid automatically linking libatomic,
+# while building libatomic itself.
+XCFLAGS="$XCFLAGS -fno-link-libatomic"
+CFLAGS="$save_CFLAGS $XCFLAGS"
+
 
 
 ac_ext=c
@@ -4592,11 +4612,6 @@ fi
 
 
 
-
-# In order to override CFLAGS_FOR_TARGET, all of our special flags go
-# in XCFLAGS.  But we need them in CFLAGS during configury.  So put them
-# in both places for now and restore CFLAGS at the end of config.
-save_CFLAGS="$CFLAGS"
 
 # Find other programs we need.
 if test -n "$ac_tool_prefix"; then
@@ -11456,7 +11471,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11459 "configure"
+#line 11474 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11562,7 +11577,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11565 "configure"
+#line 11580 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

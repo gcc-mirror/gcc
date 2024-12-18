@@ -69,7 +69,7 @@ libatomic_darwin_rpath += -Wl,-rpath,@loader_path
 endif
 
 libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
-	$(lt_host_flags) $(libatomic_darwin_rpath)
+	-Wc,-fno-link-libatomic $(lt_host_flags) $(libatomic_darwin_rpath)
 libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c init.c \
 	fenv.c fence.c flag.c
 
@@ -161,6 +161,11 @@ libatomic_convenience_la_LIBADD = $(libatomic_la_LIBADD)
 # makefile fragments to avoid broken *.Ppo getting included into the Makefile
 # when it is reloaded during the build of all-multi.
 all-multi: $(libatomic_la_LIBADD)
+
+gcc_objdir = $(MULTIBUILDTOP)../../$(host_subdir)/gcc
+all: all-multi libatomic.la
+	$(INSTALL_DATA) .libs/libatomic.a $(gcc_objdir)/
+	chmod 644 $(gcc_objdir)/libatomic.a
 
 # target overrides
 -include $(tmake_file)

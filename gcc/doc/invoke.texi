@@ -206,7 +206,7 @@ in the following sections.
 -fpermitted-flt-eval-methods=@var{standard}
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields
 -fsigned-char  -funsigned-char  -fstrict-flex-arrays[=@var{n}]
--fsso-struct=@var{endianness}}
+-flink-libatomic -fsso-struct=@var{endianness}}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -2898,6 +2898,10 @@ structure by using the variable attribute @code{strict_flex_array} attribute
 The @option{-fstrict_flex_arrays} option interacts with the
 @option{-Wstrict-flex-arrays} option.  @xref{Warning Options}, for more
 information.
+
+@opindex flink-libatomic
+@item -flink-libatomic
+Enable linking of libatomic if it's supported by target. Enabled by default.
 
 @opindex fsso-struct
 @item -fsso-struct=@var{endianness}

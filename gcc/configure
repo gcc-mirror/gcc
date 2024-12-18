@@ -33420,6 +33420,12 @@ $as_echo "#define ENABLE_DEFAULT_SSP 1" >>confdefs.h
 fi
 
 
+if echo " ${TARGET_CONFIGDIRS} " | grep " libatomic " > /dev/null 2>&1 ; then
+
+$as_echo "#define TARGET_PROVIDES_LIBATOMIC 1" >>confdefs.h
+
+fi
+
 # Test for <sys/sdt.h> on the target.
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking sys/sdt.h in the target C library" >&5

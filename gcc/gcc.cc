@@ -980,6 +980,13 @@ proper position among the other output files.  */
 
 /* Here is the spec for running the linker, after compiling all files.  */
 
+#if defined(TARGET_PROVIDES_LIBATOMIC) && defined(USE_LD_AS_NEEDED)
+#define LINK_LIBATOMIC_SPEC "%{!fno-link-libatomic:" LD_AS_NEEDED_OPTION \
+			    " -latomic " LD_NO_AS_NEEDED_OPTION "} "
+#else
+#define LINK_LIBATOMIC_SPEC ""
+#endif
+
 /* This is overridable by the target in case they need to specify the
    -lgcc and -lc order specially, yet not require them to override all
    of LINK_COMMAND_SPEC.  */
