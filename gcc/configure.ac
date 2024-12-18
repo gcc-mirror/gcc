@@ -7011,11 +7011,6 @@ if test x$enable_default_ssp = xyes ; then
 fi
 AC_SUBST([enable_default_ssp])
 
-if echo " ${TARGET_CONFIGDIRS} " | grep " libatomic " > /dev/null 2>&1 ; then
-  AC_DEFINE(TARGET_PROVIDES_LIBATOMIC, 1,
-	    [Define if libatomic is built for the target])
-fi
-
 # Test for <sys/sdt.h> on the target.
 GCC_TARGET_TEMPLATE([HAVE_SYS_SDT_H])
 AC_CACHE_CHECK([sys/sdt.h in the target C library], [gcc_cv_sys_sdt_h], [
