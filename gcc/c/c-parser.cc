@@ -20630,6 +20630,73 @@ c_parser_omp_modifier_prefer_type (c_parser *parser)
   return res;
 }
 
+/* OpenMP 5.1
+     modifiers of the 'init' clause, used by the 'init' and the
+     'append_args' clauses.
+
+   Modifiers:
+     target
+     targetsync
+     prefer_type (preference-specification)
+
+  Returns 'false' if an error has been issued.  */
+
+static bool
+c_parser_omp_clause_init_modifiers (c_parser *parser, bool *target,
+				    bool *targetsync, tree *prefer_type_tree)
+{
+  *target = false;
+  *targetsync = false;
+  *prefer_type_tree = NULL_TREE;
+
+  do
+    {
+      c_token *tok = c_parser_peek_token (parser);
+      if (tok->type != CPP_NAME)
+	goto fail;
+      const char *p = IDENTIFIER_POINTER (tok->value);
+      if (strcmp ("targetsync", p) == 0)
+	{
+	  if (*targetsync)
+	    error_at (tok->location, "duplicate %<targetsync%> modifier");
+	  *targetsync = true;
+	  c_parser_consume_token (parser);
+	}
+      else if (strcmp ("target", p) == 0)
+	{
+	  if (*target)
+	    error_at (tok->location, "duplicate %<target%> modifier");
+	  *target = true;
+	  c_parser_consume_token (parser);
+	}
+      else if (strcmp ("prefer_type", p) == 0)
+	{
+	  if (*prefer_type_tree != NULL_TREE)
+	    error_at (tok->location, "duplicate %<prefer_type%> modifier");
+	  c_parser_consume_token (parser);
+	  *prefer_type_tree = c_parser_omp_modifier_prefer_type (parser);
+	  if (*prefer_type_tree == error_mark_node)
+	    return false;
+	}
+      else
+	goto fail;
+      tok = c_parser_peek_token (parser);
+      if (tok->type == CPP_COMMA)
+	{
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+      /* Unknown token - either done or an error; handle it in the caller.  */
+      return true;
+    }
+  while (true);
+
+fail:
+  c_parser_error (parser, "%<init%> clause with modifier other than "
+			  "%<prefer_type%>, %<target%> or %<targetsync%>");
+  return false;
+}
+
 /* OpenMP 5.1:
    init ( [init-modifier-list : ] variable-list )
 
@@ -20647,17 +20714,17 @@ c_parser_omp_clause_init (c_parser *parser, tree list)
   if (!parens.require_open (parser))
     return list;
 
-  unsigned pos = 0, raw_pos = 1;
+  unsigned raw_pos = 1;
   while (c_parser_peek_nth_token_raw (parser, raw_pos)->type == CPP_NAME)
     {
-      pos++; raw_pos++;
+      raw_pos++;
       if (c_parser_peek_nth_token_raw (parser, raw_pos)->type == CPP_OPEN_PAREN)
 	{
 	  raw_pos++;
 	  c_parser_check_balanced_raw_token_sequence (parser, &raw_pos);
 	  if (c_parser_peek_nth_token_raw (parser, raw_pos)->type != CPP_CLOSE_PAREN)
 	    {
-	      pos = 0;
+	      raw_pos = 0;
 	      break;
 	    }
 	  raw_pos++;
@@ -20666,10 +20733,9 @@ c_parser_omp_clause_init (c_parser *parser, tree list)
 	break;
       if (c_parser_peek_nth_token_raw (parser, raw_pos)->type != CPP_COMMA)
 	{
-	  pos = 0;
+	  raw_pos = 0;
 	  break;
 	}
-      pos++;
       raw_pos++;
     }
 
@@ -20677,57 +20743,18 @@ c_parser_omp_clause_init (c_parser *parser, tree list)
   bool targetsync = false;
   tree prefer_type_tree = NULL_TREE;
 
-  for (unsigned pos2 = 0; pos2 < pos; ++pos2)
+  if (raw_pos > 1
+      && (!c_parser_omp_clause_init_modifiers (parser, &target, &targetsync,
+					       &prefer_type_tree)
+	  || !c_parser_require (parser, CPP_COLON, "expected %<:%>")))
     {
-      c_token *tok = c_parser_peek_token (parser);
-      if (tok->type == CPP_COMMA)
-	{
-	  c_parser_consume_token (parser);
-	  continue;
-	}
-
-      const char *p = IDENTIFIER_POINTER (tok->value);
-      if (strcmp ("targetsync", p) == 0)
-	{
-	  if (targetsync)
-	    error_at (tok->location, "duplicate %<targetsync%> modifier");
-	  targetsync = true;
-	  c_parser_consume_token (parser);
-	}
-      else if (strcmp ("target", p) == 0)
-	{
-	  if (target)
-	    error_at (tok->location, "duplicate %<target%> modifier");
-	  target = true;
-	  c_parser_consume_token (parser);
-	}
-      else if (strcmp ("prefer_type", p) == 0)
-	{
-	  if (prefer_type_tree != NULL_TREE)
-	    error_at (tok->location, "duplicate %<prefer_type%> modifier");
-	  c_parser_consume_token (parser);
-	  prefer_type_tree = c_parser_omp_modifier_prefer_type (parser);
-	  if (prefer_type_tree == error_mark_node)
-	    return list;
-	}
-      else
-	{
-	  c_parser_error (parser, "%<init%> clause with modifier other than "
-				  "%<prefer_type%>, %<target%> or "
-				  "%<targetsync%>");
-	  parens.skip_until_found_close (parser);
-	  return list;
-	}
-    }
-  if (pos)
-    {
-      c_token *tok = c_parser_peek_token (parser);
-      gcc_checking_assert (tok->type == CPP_COLON);
-      c_parser_consume_token (parser);
+      if (prefer_type_tree != error_mark_node)
+	parens.skip_until_found_close (parser);
+      return list;
     }
 
   tree nl = c_parser_omp_variable_list (parser, loc, OMP_CLAUSE_INIT, list,
-					 false);
+					false);
   parens.skip_until_found_close (parser);
 
   for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
@@ -20758,7 +20785,13 @@ static tree
 c_parser_omp_clause_interop (c_parser *parser, tree list)
 {
   check_no_duplicate_clause (list, OMP_CLAUSE_INTEROP, "interop");
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_INTEROP, list);
+  tree nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_INTEROP, list);
+  for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+    {
+      TREE_USED (OMP_CLAUSE_DECL (c)) = 1;
+      DECL_READ_P (OMP_CLAUSE_DECL (c)) = 1;
+    }
+  return nl;
 }
 
 /* Parse all OpenACC clauses.  The set clauses allowed by the directive
@@ -26322,7 +26355,7 @@ check_clauses:
 
    OpenMP 5.1
    # pragma omp declare variant (identifier) match(context-selector) \
-      adjust_args(adjust-op:argument-list) new-line
+      adjust_args(adjust-op:argument-list) append_args(interop-list) new-line
    */
 
 #define OMP_DECLARE_SIMD_CLAUSE_MASK				\
@@ -26786,10 +26819,15 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 
   parens.require_close (parser);
 
+  tree append_args_tree = NULL_TREE;
+  tree append_args_last;
   vec<tree> adjust_args_list = vNULL;
   bool has_match = false, has_adjust_args = false;
   location_t adjust_args_loc = UNKNOWN_LOCATION;
-  tree need_device_ptr_list = make_node (TREE_LIST);
+  location_t append_args_loc = UNKNOWN_LOCATION;
+  location_t match_loc = UNKNOWN_LOCATION;
+  tree need_device_ptr_list = NULL_TREE;
+  tree ctx = error_mark_node;
 
   do
     {
@@ -26798,26 +26836,36 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	c_parser_consume_token (parser);
 
       const char *clause = "";
-      location_t match_loc = c_parser_peek_token (parser)->location;
+      location_t loc = c_parser_peek_token (parser)->location;
       if (c_parser_next_token_is (parser, CPP_NAME))
 	clause = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
 
       enum clause
       {
 	match,
-	adjust_args
+	adjust_args,
+	append_args
       } ccode;
 
       if (strcmp (clause, "match") == 0)
-	ccode = match;
+	{
+	  ccode = match;
+	  match_loc = loc;
+	}
       else if (strcmp (clause, "adjust_args") == 0)
 	{
 	  ccode = adjust_args;
-	  adjust_args_loc = match_loc;
+	  adjust_args_loc = loc;
+	}
+      else if (strcmp (clause, "append_args") == 0)
+	{
+	  ccode = append_args;
+	  append_args_loc = loc;
 	}
       else
 	{
-	  c_parser_error (parser, "expected %<match%> clause");
+	  c_parser_error (parser, "expected %<match%>, %<adjust_args%> or "
+				  "%<append_args%> clause");
 	  goto fail;
 	}
 
@@ -26834,8 +26882,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  if (has_match)
 	    error_at (match_loc, "too many %<match%> clauses");
 	  has_match = true;
-	  tree ctx
-	    = c_parser_omp_context_selector_specification (parser, parms);
+	  ctx  = c_parser_omp_context_selector_specification (parser, parms);
 	  if (ctx == error_mark_node)
 	    goto fail;
 	  ctx = omp_check_context_selector (match_loc, ctx);
@@ -26862,40 +26909,6 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 			    variant);
 		  variant = error_mark_node;
 		}
-	      else if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
-						  OMP_TRAIT_CONSTRUCT_SIMD))
-		{
-		  if (comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
-		    {
-		      if (TYPE_ARG_TYPES (TREE_TYPE (variant)) == NULL_TREE)
-			TYPE_ARG_TYPES (TREE_TYPE (variant))
-			  = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-		    }
-		  else
-		    {
-		      error_at (token->location,
-				"variant %qD and base %qD have "
-				"incompatible types",
-				variant, fndecl);
-		      variant = error_mark_node;
-		    }
-		}
-	      if (variant != error_mark_node)
-		{
-		  C_DECL_USED (variant) = 1;
-		  tree construct
-		    = omp_get_context_selector_list (ctx,
-						     OMP_TRAIT_SET_CONSTRUCT);
-		  omp_mark_declare_variant (match_loc, variant, construct);
-		  if (omp_context_selector_matches (ctx))
-		    {
-		      tree attr = tree_cons (get_identifier (
-					       "omp declare variant base"),
-					     build_tree_list (variant, ctx),
-					     DECL_ATTRIBUTES (fndecl));
-		      DECL_ATTRIBUTES (fndecl) = attr;
-		    }
-		}
 	    }
 	}
       else if (ccode == adjust_args)
@@ -26912,7 +26925,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 		  c_parser_consume_token (parser); // need_device_ptr
 		  c_parser_consume_token (parser); // :
 
-		  location_t loc = c_parser_peek_token (parser)->location;
+		  loc = c_parser_peek_token (parser)->location;
 		  tree list
 		    = c_parser_omp_variable_list (parser, loc, OMP_CLAUSE_ERROR,
 						  NULL_TREE);
@@ -26978,19 +26991,180 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	      goto fail;
 	    }
 	}
+      else if (ccode == append_args)
+	{
+	  if (append_args_tree)
+	    error_at (append_args_loc, "too many %qs clauses", "append_args");
+	  do
+	    {
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      if (!c_parser_next_token_is (parser, CPP_NAME)
+		  || strcmp ("interop",
+			     IDENTIFIER_POINTER (
+			       c_parser_peek_token (parser)->value)))
+		{
+		  error_at (loc, "expected %<interop%>");
+		  goto fail;
+		}
+	      c_parser_consume_token (parser);
+
+	      if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		goto fail;
+	      bool target = false;
+	      bool targetsync = false;
+	      tree prefer_type_tree = NULL_TREE;
+	      if (!c_parser_omp_clause_init_modifiers (parser, &target,
+						       &targetsync,
+						       &prefer_type_tree)
+		  || !c_parser_require (parser, CPP_CLOSE_PAREN,
+					"expected %<)%> or %<,%>"))
+		goto fail;
+	      tree t = build_omp_clause (loc, OMP_CLAUSE_INIT);
+	      if (append_args_tree)
+		OMP_CLAUSE_CHAIN (append_args_last) = t;
+	      else
+		append_args_tree = append_args_last = t;
+	      if (target)
+		OMP_CLAUSE_INIT_TARGET (t) = 1;
+	      if (targetsync)
+		OMP_CLAUSE_INIT_TARGETSYNC (t) = 1;
+	      if (prefer_type_tree)
+		OMP_CLAUSE_INIT_PREFER_TYPE (t) = prefer_type_tree;
+	      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+		break;
+	      if (!c_parser_require (parser, CPP_COMMA, "expected %<)%> or %<,%>"))
+		goto fail;
+	    }
+	  while (true);
+	}
 
       parens.require_close (parser);
   } while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL));
   c_parser_skip_to_pragma_eol (parser);
 
-  if (has_adjust_args)
+  if ((ctx != error_mark_node && variant != error_mark_node)
+      && !omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
+				    OMP_TRAIT_CONSTRUCT_SIMD))
+    {
+      bool fail = false;
+      if (append_args_tree
+	  && TYPE_ARG_TYPES (TREE_TYPE (fndecl)) != NULL_TREE
+	  && TYPE_ARG_TYPES (TREE_TYPE (variant)) != NULL_TREE)
+	{
+	  int nappend_args = 0;
+	  int nbase_args = 0;
+	  for (tree t = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	       t && TREE_VALUE (t) != void_type_node; t = TREE_CHAIN (t))
+	    nbase_args++;
+	  for (tree t = append_args_tree; t; t = TREE_CHAIN (t))
+	    nappend_args++;
+
+	  tree args, arg;
+	  args = arg = TYPE_ARG_TYPES (TREE_TYPE (variant));
+	  for (int j = 0; j < nbase_args && arg; j++, arg = TREE_CHAIN (arg))
+	    args = arg;
+	  for (int i = 0; i < nappend_args && arg; i++)
+	    arg = TREE_CHAIN (arg);
+	  tree saved_args;
+	  if (nbase_args)
+	    {
+	      saved_args = TREE_CHAIN (args);
+	      TREE_CHAIN (args) = arg;
+	    }
+	  else
+	    {
+	      saved_args = args;
+	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = arg;
+	    }
+	  if (!comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
+	    fail = true;
+	  if (nbase_args)
+	    TREE_CHAIN (args) = saved_args;
+	  else
+	    TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_args;
+	  arg = saved_args;
+	  if (!fail)
+	    for (int i = 0; i < nappend_args; i++, arg = TREE_CHAIN (arg))
+	      if (!arg || !c_omp_interop_t_p (TREE_VALUE (arg)))
+		{
+		  error_at (DECL_SOURCE_LOCATION (variant),
+			    "argument %d of %qD must be of %<omp_interop_t%>",
+			    nbase_args + i + 1, variant);
+		  inform (append_args_loc, "%<append_args%> specified here");
+		  break;
+		}
+	}
+      else
+	{
+	  if (comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
+	    {
+	      if (TYPE_ARG_TYPES (TREE_TYPE (variant)) == NULL_TREE
+		  && TYPE_ARG_TYPES (TREE_TYPE (fndecl)) != NULL_TREE)
+		{
+		  if (!append_args_tree)
+		    TYPE_ARG_TYPES (TREE_TYPE (variant))
+		      = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+		  else
+		    {
+		      tree new_args = NULL_TREE;
+		      tree arg, last_arg = NULL_TREE;
+		      for (arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+			   arg && arg != void_type_node; arg = TREE_CHAIN (arg))
+			{
+			  if (new_args == NULL_TREE)
+			    new_args = last_arg = copy_node (arg);
+			  else
+			    {
+			      TREE_CHAIN (last_arg) = copy_node (arg);
+			      last_arg = TREE_CHAIN (last_arg);
+			    }
+			}
+		      for (tree t3 = append_args_tree; t3; t3 = TREE_CHAIN (t3))
+			{
+			  tree type = lookup_name (get_identifier ("omp_interop_t"));
+			  type = type ? TREE_TYPE (type) : ptr_type_node;
+			  last_arg = tree_cons (NULL_TREE, type, last_arg);
+			}
+		      TREE_CHAIN (last_arg) = arg;
+		      TYPE_ARG_TYPES (TREE_TYPE (variant)) = new_args;
+		    }
+		}
+	    }
+	  else
+	    fail = true;
+	}
+      if (fail)
+	{
+	  error_at (token->location,
+		    "variant %qD and base %qD have incompatible types",
+		    variant, fndecl);
+	  variant = error_mark_node;
+	}
+    }
+  if (ctx != error_mark_node && variant != error_mark_node)
+    {
+      C_DECL_USED (variant) = 1;
+      tree construct = omp_get_context_selector_list (ctx,
+						      OMP_TRAIT_SET_CONSTRUCT);
+      omp_mark_declare_variant (match_loc, variant, construct);
+      if (omp_context_selector_matches (ctx))
+	{
+	  tree attr = tree_cons (get_identifier ("omp declare variant base"),
+				 build_tree_list (variant, ctx),
+				 DECL_ATTRIBUTES (fndecl));
+	  DECL_ATTRIBUTES (fndecl) = attr;
+	}
+    }
+
+  if (has_adjust_args || append_args_tree)
     {
       if (!has_match)
 	{
-	  error_at (adjust_args_loc,
-		    "an %<adjust_args%> clause requires a %<match%> clause");
+	  error_at (has_adjust_args ? adjust_args_loc : append_args_loc,
+		    "an %qs clause requires a %<match%> clause",
+		    has_adjust_args ? "adjust_args" : "append_args");
 	}
-      else
+      else if (ctx != error_mark_node && variant != error_mark_node)
 	{
 	  tree attr = lookup_attribute ("omp declare variant base",
 					DECL_ATTRIBUTES (fndecl));
@@ -26999,23 +27173,24 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	      tree ctx = TREE_VALUE (TREE_VALUE (attr));
 	      if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
 					     OMP_TRAIT_CONSTRUCT_DISPATCH))
-		error_at (
-		  adjust_args_loc,
-		  "an %<adjust_args%> clause can only be specified if the "
-		  "%<dispatch%> selector of the %<construct%> selector set "
-		  "appears in the %<match%> clause");
+		error_at (has_adjust_args ? adjust_args_loc : append_args_loc,
+			  "an %qs clause can only be specified if the "
+			  "%<dispatch%> selector of the %<construct%> selector "
+			  "set appears in the %<match%> clause",
+			  has_adjust_args ? "adjust_args" : "append_args");
 	    }
 	}
     }
 
-  if (TREE_CHAIN (need_device_ptr_list) != NULL_TREE
-      && variant != error_mark_node)
+  if ((ctx != error_mark_node && variant != error_mark_node)
+      && (need_device_ptr_list || append_args_tree))
     {
       tree variant_decl = tree_strip_nop_conversions (variant);
+      tree t = build_tree_list (need_device_ptr_list,
+				NULL_TREE /* need_device_addr */);
+      TREE_CHAIN (t) = append_args_tree;
       DECL_ATTRIBUTES (variant_decl)
-	= tree_cons (get_identifier ("omp declare variant variant adjust_args"),
-		     build_tree_list (need_device_ptr_list,
-				      NULL_TREE /*need_device_addr */),
+	= tree_cons (get_identifier ("omp declare variant variant args"), t,
 		     DECL_ATTRIBUTES (variant_decl));
     }
 }

@@ -12094,6 +12094,15 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       tree chain = TREE_CHAIN (val);
       location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
       tree ctx = copy_list (TREE_VALUE (val));
+      tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
+      if (append_args_list)
+	{
+	  append_args_list = TREE_VALUE (append_args_list);
+	  if (append_args_list)
+	    TREE_CHAIN (append_args_list)
+	      = tsubst_omp_clauses (TREE_CHAIN (append_args_list),
+				    C_ORT_OMP_DECLARE_SIMD, args, complain, in_decl);
+	}
       for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
 	{
 	  enum omp_tss_code set = OMP_TSS_CODE (tss);
@@ -17916,7 +17925,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 			     complain, in_decl);
 	  break;
 	case OMP_CLAUSE_INIT:
-	  if (ort == C_ORT_OMP_INTEROP
+	  if ((ort == C_ORT_OMP_INTEROP  || ort == C_ORT_OMP_DECLARE_SIMD)
 	      && OMP_CLAUSE_INIT_PREFER_TYPE (nc)
 	      && TREE_CODE (OMP_CLAUSE_INIT_PREFER_TYPE (nc)) == TREE_LIST
 	      && (OMP_CLAUSE_CHAIN (nc)  == NULL_TREE

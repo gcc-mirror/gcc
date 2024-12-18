@@ -669,6 +669,8 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 bool
 c_omp_interop_t_p (tree type)
 {
+  if (type == error_mark_node)
+    return false;
   type = TYPE_MAIN_VARIANT (type);
   return (TREE_CODE (type) == ENUMERAL_TYPE
 	  && TYPE_NAME (type)
