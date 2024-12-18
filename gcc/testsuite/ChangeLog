@@ -1,3 +1,18 @@
+2024-12-17  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-12-17  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/torture/pr81812.C: Add xfail for thumb1.
+
+2024-12-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117897
+	* gfortran.dg/finalize_59.f90: New test.
+
 2024-12-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/117730
