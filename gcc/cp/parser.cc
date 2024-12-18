@@ -735,6 +735,12 @@ cp_lexer_new_main (void)
   gcc_assert (!the_parser);
   the_parser = cp_parser_new (lexer);
 
+  unsigned raw_data_tokens = 0;
+  char *raw_data_buf = NULL;
+  const unsigned int raw_data_max_len
+    = 131072 - offsetof (struct tree_string, str) - 1;
+  const unsigned int raw_data_min_len = 128;
+
   /* Get the remaining tokens from the preprocessor.  */
   while (tok->type != CPP_EOF)
     {
@@ -743,6 +749,99 @@ cp_lexer_new_main (void)
 	module_token_lang (tok->type, tok->keyword, tok->u.value,
 			   tok->location, filter);
 
+      /* Attempt to optimize long lists of 0-255 integers
+	 separated by commas into CPP_EMBED.
+	 In particular, when we see
+	 CPP_NUMBER CPP_COMMA ( CPP_NUMBER CPP_COMMA ){n} CPP_NUMBER
+	 where n is in [raw_data_min_len, raw_data_max_len - 2]
+	 and all CPP_NUMBER tokens have int type and value in [0, UCHAR_MAX]
+	 it is changed into
+	 CPP_NUMBER CPP_COMMA CPP_EMBED CPP_COMMA CPP_NUMBER.  */
+    recheck:
+      if (tok->type == CPP_NUMBER
+	  && (raw_data_tokens & 1) == 0
+	  && TREE_CODE (tok->u.value) == INTEGER_CST
+	  && TREE_TYPE (tok->u.value) == integer_type_node
+	  && !wi::neg_p (wi::to_wide (tok->u.value))
+	  && wi::to_widest (tok->u.value) <= UCHAR_MAX
+	  && raw_data_tokens < raw_data_max_len * 2)
+	{
+	  raw_data_tokens++;
+	  /* * 2 comes from each byte in the middle represented by 2 tokens,
+	     CPP_NUMBER and CPP_COMMA, while + 3 stands for the
+	     CPP_NUMBER CPP_COMMA at the start and CPP_NUMBER at the end.  */
+	  if (raw_data_tokens >= raw_data_min_len * 2 + 3)
+	    {
+	      unsigned int len = lexer->buffer->length ();
+	      unsigned int new_len;
+	      if (raw_data_tokens == raw_data_min_len * 2 + 3)
+		{
+		  if (raw_data_buf == NULL)
+		    raw_data_buf = XNEWVEC (char, raw_data_max_len);
+		  for (unsigned i = len - raw_data_tokens, j = 0;
+		       i < len; i += 2, ++j)
+		    raw_data_buf[j]
+		      = (char) tree_to_uhwi ((*lexer->buffer)[i].u.value);
+		  /* + 5 stands for
+		     CPP_NUMBER CPP_COMMA CPP_EMBED CPP_COMMA CPP_NUMBER
+		     tokens that will replace the original raw_data_tokens
+		     tokens.  */
+		  new_len = len - raw_data_tokens + 5;
+		}
+	      else
+		{
+		  raw_data_buf[raw_data_tokens / 2]
+		    = (char) tree_to_uhwi (tok->u.value);
+		  new_len = len - 2;
+		}
+	      /* The last 2 tokens are always CPP_COMMA CPP_NUMBER.  */
+	      (*lexer->buffer)[new_len - 2] = (*lexer->buffer)[len - 2];
+	      (*lexer->buffer)[new_len - 1] = (*lexer->buffer)[len - 1];
+	      lexer->buffer->truncate (new_len);
+	    }
+	}
+      else if (tok->type == CPP_COMMA && (raw_data_tokens & 1) == 1)
+	raw_data_tokens++;
+      else if (raw_data_tokens >= raw_data_min_len * 2 + 3)
+	{
+	  unsigned last_number = (raw_data_tokens & 1);
+	  /* Index of the CPP_EMBED token.  From the above code, that
+	     future CPP_EMBED slot is followed by at least CPP_COMMA CPP_NUMBER
+	     tokens and if !last_number by another CPP_COMMA and then
+	     by the current token which is either not a CPP_NUMBER (e.g.
+	     often CPP_CLOSE_BRACE), or CPP_NUMBER with non-int type or with
+	     value not in [0, UCHAR_MAX], or reaching the raw_data_max_len
+	     limit.  So we need to substract 1 (to get at the current token
+	     index) plus 3 + !last_number to get at the CPP_EMBED index.  */
+	  unsigned int idx = lexer->buffer->length () - 4 - !last_number;
+	  if (!last_number)
+	    --raw_data_tokens;
+	  /* Number of bytes in the sequence, including the first and last
+	     CPP_NUMBER.  Those two bytes are included in the underlying
+	     STRING_CST but not in RAW_DATA_CST.  */
+	  raw_data_tokens = raw_data_tokens / 2 + 1;
+	  tree raw = make_node (RAW_DATA_CST);
+	  TREE_TYPE (raw) = integer_type_node;
+	  /* Minus the first and last bytes which have their own CPP_NUMBER
+	     tokens.  */
+	  RAW_DATA_LENGTH (raw) = raw_data_tokens - 2;
+	  tree owner = build_string (raw_data_tokens, raw_data_buf);
+	  TREE_TYPE (owner) = build_array_type_nelts (unsigned_char_type_node,
+						      raw_data_tokens);
+	  RAW_DATA_OWNER (raw) = owner;
+	  /* Skip over the first byte which has its own CPP_NUMBER token.  */
+	  RAW_DATA_POINTER (raw) = TREE_STRING_POINTER (owner) + 1;
+	  (*lexer->buffer)[idx].type = CPP_EMBED;
+	  (*lexer->buffer)[idx].u.value = raw;
+	  raw_data_tokens = 0;
+	  goto recheck;
+	}
+      else if (raw_data_tokens)
+	{
+	  raw_data_tokens = 0;
+	  goto recheck;
+	}
+
       /* Check for early pragmas that need to be handled now.  */
       if (tok->type == CPP_PRAGMA_EOL)
 	cp_lexer_handle_early_pragma (lexer);
@@ -750,6 +849,8 @@ cp_lexer_new_main (void)
       tok = vec_safe_push (lexer->buffer, cp_token ());
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
+
+  XDELETEVEC (raw_data_buf);
 
   lexer->next_token = lexer->buffer->address ();
   lexer->last_token = lexer->next_token
