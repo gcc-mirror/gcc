@@ -38,6 +38,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 _GLIBCXX_END_NAMESPACE_CXX11
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 namespace __detail
 {
   /**
@@ -221,9 +223,9 @@ namespace __detail
       _CharT
       _M_translate(_CharT __ch) const
       {
-	if _GLIBCXX17_CONSTEXPR (__icase)
+	if constexpr (__icase)
 	  return _M_traits.translate_nocase(__ch);
-	else if _GLIBCXX17_CONSTEXPR (__collate)
+	else if constexpr (__collate)
 	  return _M_traits.translate(__ch);
 	else
 	  return __ch;
@@ -285,7 +287,7 @@ namespace __detail
       bool
       _M_match_range(_CharT __first, _CharT __last, _CharT __ch) const
       {
-	if _GLIBCXX17_CONSTEXPR (!__icase)
+	if constexpr (!__icase)
 	  return __first <= __ch && __ch <= __last;
 	else
 	  return this->_M_in_range_icase(__first, __last, __ch);
@@ -376,26 +378,20 @@ namespace __detail
 
       bool
       operator()(_CharT __ch) const
-      { return _M_apply(__ch, typename is_same<_CharT, char>::type()); }
-
-      bool
-      _M_apply(_CharT __ch, true_type) const
       {
-	auto __c = _M_translator._M_translate(__ch);
-	auto __n = _M_translator._M_translate('\n');
-	auto __r = _M_translator._M_translate('\r');
-	return __c != __n && __c != __r;
-      }
-
-      bool
-      _M_apply(_CharT __ch, false_type) const
-      {
-	auto __c = _M_translator._M_translate(__ch);
-	auto __n = _M_translator._M_translate('\n');
-	auto __r = _M_translator._M_translate('\r');
-	auto __u2028 = _M_translator._M_translate(u'\u2028');
-	auto __u2029 = _M_translator._M_translate(u'\u2029');
-	return __c != __n && __c != __r && __c != __u2028 && __c != __u2029;
+	const auto __c = _M_translator._M_translate(__ch);
+	if (__c == _M_translator._M_translate('\n'))
+	  return false;
+	if (__c == _M_translator._M_translate('\r'))
+	  return false;
+	if constexpr (!is_same<_CharT, char>::value)
+	  {
+	    if (__c == _M_translator._M_translate(u'\u2028')) // line sep
+	      return false;
+	    if (__c == _M_translator._M_translate(u'\u2029')) // para sep
+	      return false;
+	  }
+	return true;
       }
 
       _TransT _M_translator;
@@ -441,7 +437,10 @@ namespace __detail
       operator()(_CharT __ch) const
       {
 	_GLIBCXX_DEBUG_ASSERT(_M_is_ready);
-	return _M_apply(__ch, _UseCache());
+	if constexpr (_UseCache::value)
+	  if (!(__ch & 0x80)) [[__likely__]]
+	    return _M_cache[static_cast<_UnsignedCharT>(__ch)];
+	return _M_apply(__ch);
       }
 
       void
@@ -512,7 +511,9 @@ namespace __detail
 	std::sort(_M_char_set.begin(), _M_char_set.end());
 	auto __end = std::unique(_M_char_set.begin(), _M_char_set.end());
 	_M_char_set.erase(__end, _M_char_set.end());
-	_M_make_cache(_UseCache());
+	if constexpr (_UseCache::value)
+	  for (unsigned __i = 0; __i < 128; __i++) // Only cache 7-bit chars
+	    _M_cache[__i] = _M_apply(static_cast<_CharT>(__i));
 	_GLIBCXX_DEBUG_ONLY(_M_is_ready = true);
       }
 
@@ -531,22 +532,7 @@ namespace __detail
       using _UnsignedCharT = typename std::make_unsigned<_CharT>::type;
 
       bool
-      _M_apply(_CharT __ch, false_type) const;
-
-      bool
-      _M_apply(_CharT __ch, true_type) const
-      { return _M_cache[static_cast<_UnsignedCharT>(__ch)]; }
-
-      void
-      _M_make_cache(true_type)
-      {
-	for (unsigned __i = 0; __i < _M_cache.size(); __i++)
-	  _M_cache[__i] = _M_apply(static_cast<_CharT>(__i), false_type());
-      }
-
-      void
-      _M_make_cache(false_type)
-      { }
+      _M_apply(_CharT __ch) const;
 
     private:
       _GLIBCXX_STD_C::vector<_CharT>            _M_char_set;
@@ -565,6 +551,7 @@ namespace __detail
 
  ///@} regex-detail
 } // namespace __detail
+#pragma GCC diagnostic pop
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
