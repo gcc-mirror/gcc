@@ -82,5 +82,13 @@ CollectLangItems::visit (AST::TraitItemType &item)
   DefaultASTVisitor::visit (item);
 }
 
+void
+CollectLangItems::visit (AST::Function &item)
+{
+  maybe_add_lang_item (item);
+
+  DefaultASTVisitor::visit (item);
+}
+
 } // namespace AST
 } // namespace Rust
