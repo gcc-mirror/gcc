@@ -1087,6 +1087,14 @@ namespace __detail
     concept __container_compatible_range
       = ranges::input_range<_Rg>
 	  && convertible_to<ranges::range_reference_t<_Rg>, _Tp>;
+
+  template<ranges::input_range _Range>
+    using __range_key_type
+      = remove_const_t<typename ranges::range_value_t<_Range>::first_type>;
+
+  template<ranges::input_range _Range>
+    using __range_mapped_type
+      = typename ranges::range_value_t<_Range>::second_type;
 }
 /// @endcond
 #endif
