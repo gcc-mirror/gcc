@@ -1302,14 +1302,25 @@ package body Exp_Ch11 is
          Expand_Cleanup_Actions (Parent (N));
       end if;
 
-      if Present (Finally_Statements (N)) then
-         Prepend_To
-           (Finally_Statements (N),
-            Build_Runtime_Call (Sloc (N), RE_Abort_Defer));
+      if Present (Finally_Statements (N)) and then Abort_Allowed then
+         if Exceptions_OK then
+            Set_Finally_Statements
+              (N,
+               New_List
+                 (Build_Runtime_Call (Sloc (N), RE_Abort_Defer),
+                  Build_Abort_Undefer_Block
+                    (Sloc (N),
+                     Stmts   => Finally_Statements (N),
+                     Context => N)));
+         else
+            Prepend_To
+              (Finally_Statements (N),
+               Build_Runtime_Call (Sloc (N), RE_Abort_Defer));
 
-         Append_To
-           (Finally_Statements (N),
-            Build_Runtime_Call (Sloc (N), RE_Abort_Undefer));
+            Append_To
+              (Finally_Statements (N),
+               Build_Runtime_Call (Sloc (N), RE_Abort_Undefer));
+         end if;
 
          Analyze_List (Finally_Statements (N));
       end if;
