@@ -2396,18 +2396,17 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "@pred_strided_store<mode>"
-  [(set (match_operand:V_VLS 0 "memory_operand"                 "+m,    m")
-	(if_then_else:V_VLS
-	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,    vmWc1")
-	     (match_operand 4 "vector_length_operand"    "   rK,       rK")
-	     (match_operand 5 "const_int_operand"        "    i,        i")
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(match_operand:V_VLS   0 "memory_operand"           "   +m,     m")
+	   (unspec:<VM>
+	    [(match_operand:<VM>  1 "vector_mask_operand"      "vmWc1, vmWc1")
+	     (match_operand       4 "vector_length_operand"    "   rK,    rK")
+	     (match_operand       5 "const_int_operand"        "    i,     i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:V_VLS
-	    [(match_operand 2 "<V_VLS:stride_predicate>"     "<V_VLS:stride_store_constraint>")
-	     (match_operand:V_VLS 3 "register_operand"       "   vr,       vr")] UNSPEC_STRIDED)
-	  (match_dup 0)))]
+	   (match_operand         2 "<V_VLS:stride_predicate>" "<V_VLS:stride_store_constraint>")
+	   (match_operand:V_VLS   3 "register_operand"         "   vr,    vr")] UNSPEC_STRIDED))]
   "TARGET_VECTOR"
   "@
   vsse<sew>.v\t%3,%0,%z2%p1
