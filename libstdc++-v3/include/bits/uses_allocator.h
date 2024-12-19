@@ -134,6 +134,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       uses_allocator<_Tp, _Alloc>::value;
 #endif // C++17
 
+#if __cpp_concepts
+  template<typename _Alloc, typename... _Ts>
+    concept __allocator_for = (uses_allocator_v<_Ts, _Alloc> && ...);
+#endif
+
   template<template<typename...> class _Predicate,
 	   typename _Tp, typename _Alloc, typename... _Args>
     struct __is_uses_allocator_predicate

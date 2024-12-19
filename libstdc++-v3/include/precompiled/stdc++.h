@@ -225,6 +225,7 @@
 
 #if __cplusplus > 202002L
 #include <expected>
+#include <flat_map>
 #include <generator>
 #include <print>
 #include <spanstream>

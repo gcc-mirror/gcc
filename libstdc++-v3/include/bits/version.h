@@ -1835,6 +1835,16 @@
 #endif /* !defined(__cpp_lib_adaptor_iterator_pair_constructor) && defined(__glibcxx_want_adaptor_iterator_pair_constructor) */
 #undef __glibcxx_want_adaptor_iterator_pair_constructor
 
+#if !defined(__cpp_lib_flat_map)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_flat_map 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_flat_map)
+#   define __cpp_lib_flat_map 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_flat_map) && defined(__glibcxx_want_flat_map) */
+#undef __glibcxx_want_flat_map
+
 #if !defined(__cpp_lib_formatters)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_formatters 202302L

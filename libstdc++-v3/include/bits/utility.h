@@ -308,6 +308,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   _GLIBCXX17_INLINE constexpr _Swallow_assign ignore{};
 
+#if __glibcxx_flat_map || __glibcxx_flat_set // >= C++23
+  struct sorted_unique_t { explicit sorted_unique_t() = default; };
+  inline constexpr sorted_unique_t sorted_unique{};
+
+  struct sorted_equivalent_t { explicit sorted_equivalent_t() = default; };
+  inline constexpr sorted_equivalent_t sorted_equivalent{};
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

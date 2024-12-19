@@ -957,6 +957,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename _Alloc::value_type;
       __a.deallocate(__a.allocate(1u), 1u);
     };
+
+  template<typename _Alloc>
+    concept __not_allocator_like = !__allocator_like<_Alloc>;
 #endif
   /// @endcond
 #endif // C++11

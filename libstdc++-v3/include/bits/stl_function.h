@@ -1426,6 +1426,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Func, typename _SfinaeType>
     using __has_is_transparent_t
       = typename __has_is_transparent<_Func, _SfinaeType>::type;
+
+#if __cpp_concepts
+  template<typename _Func>
+    concept __transparent_comparator
+      = requires { typename _Func::is_transparent; };
+#endif
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

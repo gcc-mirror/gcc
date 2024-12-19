@@ -253,6 +253,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __enable_if_t<is_convertible<__iter_category_t<_InIter>,
 				   input_iterator_tag>::value>;
 
+#if __cpp_concepts
+  template<typename _InIter>
+    concept __has_input_iter_cat
+      = is_convertible_v<__iter_category_t<_InIter>, input_iterator_tag>;
+#endif
+
   template<typename _It,
 	   typename _Cat = __iter_category_t<_It>>
     struct __is_random_access_iter

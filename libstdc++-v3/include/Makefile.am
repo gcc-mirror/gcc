@@ -70,6 +70,7 @@ std_headers = \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
 	${std_srcdir}/filesystem \
+	${std_srcdir}/flat_map \
 	${std_srcdir}/format \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
