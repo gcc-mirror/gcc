@@ -1,3 +1,16 @@
+2024-12-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2024-12-10  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/117675
+	* config/arm/arm.cc (arm_ldrd_legitimate_address): New function.
+	* config/arm/arm-protos.h (arm_ldrd_legitimate_address): New prototype.
+	* config/arm/constraints.md: Add new Uo constraint.
+	* config/arm/predicates.md (arm_ldrd_memory_operand): Add new predicate.
+	* config/arm/sync.md (arm_atomic_loaddi2_ldrd): Use
+	arm_ldrd_memory_operand and Uo.
+
 2024-12-16  Heiko Eißfeldt  <heiko@hexco.de>
 
 	Backported from master:
