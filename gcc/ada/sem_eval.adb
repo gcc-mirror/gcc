@@ -2927,7 +2927,7 @@ package body Sem_Eval is
             | Name_Source_Location
          =>
             if Inside_A_Generic
-              or else In_Spec_Expression
+              or else Preanalysis_Active
             then
                null;
             else

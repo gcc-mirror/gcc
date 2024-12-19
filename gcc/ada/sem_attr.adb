@@ -2106,11 +2106,12 @@ package body Sem_Attr is
             --  designated type of the access type, since the type of the
             --  referenced array is this type (see AI95-00106).
 
-            --  As done elsewhere, freezing must not happen when preanalyzing
-            --  a pre- or postcondition or a default value for an object or for
-            --  a formal parameter.
+            --    However, we must not freeze the designated type during
+            --    preanalysis; neither under strict preanalysis nor when
+            --    preanalyzing a pre- or postcondition or a default value
+            --    for an object or for a formal parameter.
 
-            if not In_Spec_Expression then
+            if not Preanalysis_Active then
                Freeze_Before (N, Designated_Type (P_Type));
             end if;
 
@@ -8139,6 +8140,13 @@ package body Sem_Attr is
 
       if Nkind (N) /= N_Attribute_Reference then
          return;
+
+      --  No evaluation required under strict preanalysis because locating
+      --  static expressions is not needed; this also minimizes making tree
+      --  modifications during strict preanalysis.
+
+      elsif In_Strict_Preanalysis then
+         return;
       end if;
 
       Aname := Attribute_Name (N);
@@ -11342,10 +11350,11 @@ package body Sem_Attr is
                   end loop;
 
                   --  If Prefix is a subprogram name, this reference freezes,
-                  --  but not if within spec expression mode. The profile of
-                  --  the subprogram is not frozen at this point.
+                  --  but not during preanalysis (including preanalysis of
+                  --  spec expressions). The profile of the subprogram is not
+                  --  frozen at this point.
 
-                  if not In_Spec_Expression then
+                  if not Preanalysis_Active then
                      Freeze_Before (N, Entity (P), Do_Freeze_Profile => False);
                   end if;
 
@@ -11354,7 +11363,7 @@ package body Sem_Attr is
                --  If it is an object, complete its resolution.
 
                elsif Is_Overloadable (Entity (P)) then
-                  if not In_Spec_Expression then
+                  if not Preanalysis_Active then
                      Freeze_Before (N, Entity (P), Do_Freeze_Profile => False);
                   end if;
 

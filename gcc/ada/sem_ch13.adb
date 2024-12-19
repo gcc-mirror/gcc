@@ -10039,7 +10039,7 @@ package body Sem_Ch13 is
 
                   --  If the predicate pragma comes from an aspect, replace the
                   --  saved expression because we need the subtype references
-                  --  replaced for the calls to Preanalyze_Spec_Expression in
+                  --  replaced for the calls to Preanalyze_And_Resolve in
                   --  Check_Aspect_At_xxx routines.
 
                   if Present (Asp) then
@@ -10853,12 +10853,12 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
             then
                Push_Type (Ent);
-               Preanalyze_Spec_Expression (Freeze_Expr, Standard_Boolean);
+               Preanalyze_And_Resolve (Freeze_Expr, Standard_Boolean);
                Pop_Type (Ent);
 
             elsif A_Id = Aspect_Priority then
                Push_Type (Ent);
-               Preanalyze_Spec_Expression (Freeze_Expr, Any_Integer);
+               Preanalyze_And_Resolve (Freeze_Expr, Any_Integer);
                Pop_Type (Ent);
 
             else
@@ -10916,13 +10916,14 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
          then
             Push_Type (Ent);
-            Preanalyze_Spec_Expression (End_Decl_Expr, T);
+            Preanalyze_And_Resolve (End_Decl_Expr, T);
             Pop_Type (Ent);
 
          elsif A_Id = Aspect_Predicate_Failure then
-            Preanalyze_Spec_Expression (End_Decl_Expr, Standard_String);
+            Preanalyze_And_Resolve (End_Decl_Expr, Standard_String);
+
          elsif Present (End_Decl_Expr) then
-            Preanalyze_Spec_Expression (End_Decl_Expr, T);
+            Preanalyze_And_Resolve (End_Decl_Expr, T);
          end if;
 
          Err :=
@@ -11346,7 +11347,7 @@ package body Sem_Ch13 is
       --  Do the preanalyze call
 
       if Present (Expression (ASN)) then
-         Preanalyze_Spec_Expression (Expression (ASN), T);
+         Preanalyze_And_Resolve (Expression (ASN), T);
       end if;
    end Check_Aspect_At_Freeze_Point;
 
@@ -16341,19 +16342,16 @@ package body Sem_Ch13 is
                      --  name resolution errors if the predicate function has
                      --  not been built yet.
 
-                     --  Note that we cannot use Preanalyze_Spec_Expression
+                     --  Note that we cannot use Preanalyze_And_Resolve
                      --  directly because of the special handling required for
                      --  quantifiers (see comments on Resolve_Aspect_Expression
                      --  above) but we need to emulate it properly.
 
                      if No (Predicate_Function (E)) then
                         declare
-                           Save_In_Spec_Expression : constant Boolean :=
-                                                       In_Spec_Expression;
                            Save_Full_Analysis : constant Boolean :=
                                                   Full_Analysis;
                         begin
-                           In_Spec_Expression := True;
                            Full_Analysis := False;
                            Expander_Mode_Save_And_Set (False);
                            Push_Type (E);
@@ -16361,7 +16359,6 @@ package body Sem_Ch13 is
                            Pop_Type (E);
                            Expander_Mode_Restore;
                            Full_Analysis := Save_Full_Analysis;
-                           In_Spec_Expression := Save_In_Spec_Expression;
                         end;
                      end if;
 
@@ -16404,7 +16401,7 @@ package body Sem_Ch13 is
                      | Aspect_Priority
                   =>
                      Push_Type (E);
-                     Preanalyze_Spec_Expression (Expr, Any_Integer);
+                     Preanalyze_And_Resolve (Expr, Any_Integer);
                      Pop_Type (E);
 
                   --  Ditto for Storage_Size. Any other aspects that carry
@@ -16412,7 +16409,7 @@ package body Sem_Ch13 is
                   --  relevant to the misuse of deferred constants.
 
                   when Aspect_Storage_Size =>
-                     Preanalyze_Spec_Expression (Expr, Any_Integer);
+                     Preanalyze_And_Resolve (Expr, Any_Integer);
 
                   when others =>
                      if Present (Expr) then

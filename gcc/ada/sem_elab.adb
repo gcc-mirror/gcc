@@ -17389,7 +17389,7 @@ package body Sem_Elab is
       --  Nothing to do if call is being preanalyzed, as when within a
       --  pre/postcondition, a predicate, or an invariant.
 
-      elsif In_Spec_Expression then
+      elsif Preanalysis_Active then
          return;
       end if;
 

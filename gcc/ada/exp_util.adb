@@ -7708,20 +7708,20 @@ package body Exp_Util is
          return;
       end if;
 
-      --  Insert the action when the context is "Handling of Default and Per-
-      --  Object Expressions" only when requested by the caller.
-
-      if Spec_Expr_OK then
-         null;
-
       --  Ignore insert of actions from inside default expression (or other
       --  similar "spec expression") in the special spec-expression analyze
       --  mode. Any insertions at this point have no relevance, since we are
       --  only doing the analyze to freeze the types of any static expressions.
       --  See section "Handling of Default and Per-Object Expressions" in the
-      --  spec of package Sem for further details.
+      --  spec of package Sem for further details. However, if the user does
+      --  nevertheless request the insert, then obey it.
 
-      elsif In_Spec_Expression then
+      --  Under strict preanalysis we cannot ignore insert of actions because
+      --  we may be adding to the tree a subtype declaration that is required
+      --  for proper preanalysis (see Sem_Ch3.Find_Type_Of_Object).
+
+      if In_Spec_Expression and then not Spec_Expr_OK then
+         pragma Assert (not In_Strict_Preanalysis);
          return;
       end if;
 

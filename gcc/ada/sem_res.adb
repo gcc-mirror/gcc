@@ -8147,7 +8147,7 @@ package body Sem_Res is
            and then Comes_From_Source (E)
            and then No (Constant_Value (E))
            and then Is_Frozen (Etype (E))
-           and then not In_Spec_Expression
+           and then not Preanalysis_Active
            and then not Is_Imported (E)
            and then Nkind (Parent (E)) /= N_Object_Renaming_Declaration
          then

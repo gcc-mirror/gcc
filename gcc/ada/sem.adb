@@ -1338,13 +1338,22 @@ package body Sem is
       Scope_Stack.Locked := True;
    end Lock;
 
+   ---------------------------
+   -- In_Strict_Preanalysis --
+   ---------------------------
+
+   function In_Strict_Preanalysis return Boolean is
+   begin
+      return Preanalysis_Active and then not In_Spec_Expression;
+   end In_Strict_Preanalysis;
+
    ------------------------
    -- Preanalysis_Active --
    ------------------------
 
    function Preanalysis_Active return Boolean is
    begin
-      return not Full_Analysis and not Expander_Active;
+      return not Full_Analysis and then not Expander_Active;
    end Preanalysis_Active;
 
    ----------------

@@ -2177,6 +2177,7 @@ package body Sem_Cat is
         or else not Comes_From_Source (N)
         or else In_Subprogram_Or_Concurrent_Unit
         or else Ekind (Current_Scope) = E_Block
+        or else In_Strict_Preanalysis
       then
          return;
 

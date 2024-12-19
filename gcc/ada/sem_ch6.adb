@@ -533,29 +533,6 @@ package body Sem_Ch6 is
          Set_Corresponding_Body (N, Defining_Entity (New_Body));
          Set_Corresponding_Spec (New_Body, Def_Id);
 
-         --  Within a generic preanalyze the original expression for name
-         --  capture. The body is also generated but plays no role in
-         --  this because it is not part of the original source.
-         --  If this is an ignored Ghost entity, analysis of the generated
-         --  body is needed to hide external references (as is done in
-         --  Analyze_Subprogram_Body) after which the subprogram profile
-         --  can be frozen, which is needed to expand calls to such an ignored
-         --  Ghost subprogram.
-
-         if Inside_A_Generic then
-            Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
-            Push_Scope (Def_Id);
-            Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Typ);
-            End_Scope;
-         else
-            Push_Scope (Def_Id);
-            Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Typ);
-            Check_Limited_Return (Orig_N, Expr, Typ);
-            End_Scope;
-         end if;
-
          --  If this is a wrapper created in an instance for a formal
          --  subprogram, insert body after declaration, to be analyzed when the
          --  enclosing instance is analyzed.
@@ -589,6 +566,29 @@ package body Sem_Ch6 is
 
                Insert_After (Last (Decls), New_Body);
             end;
+         end if;
+
+         --  Within a generic preanalyze the original expression for name
+         --  capture. The body is also generated but plays no role in
+         --  this because it is not part of the original source.
+         --  If this is an ignored Ghost entity, analysis of the generated
+         --  body is needed to hide external references (as is done in
+         --  Analyze_Subprogram_Body) after which the subprogram profile
+         --  can be frozen, which is needed to expand calls to such an ignored
+         --  Ghost subprogram.
+
+         if Inside_A_Generic then
+            Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Spec_Expression (Expr, Typ);
+            End_Scope;
+         else
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Spec_Expression (Expr, Typ);
+            Check_Limited_Return (Orig_N, Expr, Typ);
+            End_Scope;
          end if;
 
          --  In the case of an expression function marked with the aspect

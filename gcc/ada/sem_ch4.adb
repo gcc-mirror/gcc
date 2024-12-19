@@ -1795,7 +1795,7 @@ package body Sem_Ch4 is
 
       if Is_OK_Static_Subtype (Exp_Type)
         and then Has_Static_Predicate_Aspect (Exp_Type)
-        and then In_Spec_Expression
+        and then Preanalysis_Active
       then
          null;
 
