@@ -475,7 +475,7 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
 static void
 ifcombine_mark_ssa_name (bitmap used, tree name, basic_block outer)
 {
-  if (SSA_NAME_IS_DEFAULT_DEF (name))
+  if (!name || TREE_CODE (name) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (name))
     return;
 
   gimple *def = SSA_NAME_DEF_STMT (name);
@@ -502,8 +502,7 @@ ifcombine_mark_ssa_name_walk (tree *t, int *, void *data_)
 {
   ifcombine_mark_ssa_name_t *data = (ifcombine_mark_ssa_name_t *)data_;
 
-  if (*t && TREE_CODE (*t) == SSA_NAME)
-    ifcombine_mark_ssa_name (data->used, *t, data->outer);
+  ifcombine_mark_ssa_name (data->used, *t, data->outer);
 
   return NULL;
 }
