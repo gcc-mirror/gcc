@@ -27762,35 +27762,40 @@ thumb2_expand_return (bool simple_return)
       /* TODO: Verify that this path is never taken for cmse_nonsecure_entry
 	 functions or adapt code to handle according to ACLE.  This path should
 	 not be reachable for cmse_nonsecure_entry functions though we prefer
-	 to assert it for now to ensure that future code changes do not silently
-	 change this behavior.  */
+	 to assert it for now to ensure that future code changes do not
+	 silently change this behavior.  */
       gcc_assert (!IS_CMSE_ENTRY (arm_current_func_type ()));
       if (arm_current_function_pac_enabled_p ())
-        {
-          gcc_assert (!(saved_regs_mask & (1 << PC_REGNUM)));
-          arm_emit_multi_reg_pop (saved_regs_mask);
-          emit_insn (gen_aut_nop ());
-          emit_jump_insn (simple_return_rtx);
-        }
-      else if (num_regs == 1)
-        {
-          rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-          rtx reg = gen_rtx_REG (SImode, PC_REGNUM);
-          rtx addr = gen_rtx_MEM (SImode,
-                                  gen_rtx_POST_INC (SImode,
-                                                    stack_pointer_rtx));
-          set_mem_alias_set (addr, get_frame_alias_set ());
-          XVECEXP (par, 0, 0) = ret_rtx;
-          XVECEXP (par, 0, 1) = gen_rtx_SET (reg, addr);
-          RTX_FRAME_RELATED_P (XVECEXP (par, 0, 1)) = 1;
-          emit_jump_insn (par);
-        }
+	{
+	  gcc_assert (!(saved_regs_mask & (1 << PC_REGNUM)));
+	  arm_emit_multi_reg_pop (saved_regs_mask);
+	  emit_insn (gen_aut_nop ());
+	  emit_jump_insn (simple_return_rtx);
+	}
+      /* Use LDR PC, [sp], #4.  Only do this if not optimizing for size and
+	 there's a known performance benefit (we don't know this exactly, but
+	 preferring LDRD/STRD over LDM/STM is a reasonable proxy).  */
+      else if (num_regs == 1
+	       && !optimize_size
+	       && current_tune->prefer_ldrd_strd)
+	{
+	  rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+	  rtx reg = gen_rtx_REG (SImode, PC_REGNUM);
+	  rtx addr = gen_rtx_MEM (SImode,
+				  gen_rtx_POST_INC (SImode,
+						    stack_pointer_rtx));
+	  set_mem_alias_set (addr, get_frame_alias_set ());
+	  XVECEXP (par, 0, 0) = ret_rtx;
+	  XVECEXP (par, 0, 1) = gen_rtx_SET (reg, addr);
+	  RTX_FRAME_RELATED_P (XVECEXP (par, 0, 1)) = 1;
+	  emit_jump_insn (par);
+	}
       else
-        {
-          saved_regs_mask &= ~ (1 << LR_REGNUM);
-          saved_regs_mask |=   (1 << PC_REGNUM);
-          arm_emit_multi_reg_pop (saved_regs_mask);
-        }
+	{
+	  saved_regs_mask &= ~ (1 << LR_REGNUM);
+	  saved_regs_mask |=   (1 << PC_REGNUM);
+	  arm_emit_multi_reg_pop (saved_regs_mask);
+	}
     }
   else
     {
@@ -28204,7 +28209,10 @@ arm_expand_epilogue (bool really_return)
           return_in_pc = true;
         }
 
-      if (num_regs == 1 && (!IS_INTERRUPT (func_type) || !return_in_pc))
+      if (num_regs == 1
+	  && !optimize_size
+	  && current_tune->prefer_ldrd_strd
+	  && !(IS_INTERRUPT (func_type) && return_in_pc))
         {
           for (i = 0; i <= LAST_ARM_REGNUM; i++)
             if (saved_regs_mask & (1 << i))
