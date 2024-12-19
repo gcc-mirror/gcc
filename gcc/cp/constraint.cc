@@ -512,6 +512,27 @@ normalize_concept_check (tree check, tree args, norm_info info)
   return norm;
 }
 
+/* A structural hasher for ATOMIC_CONSTRs.  */
+
+struct atom_hasher : default_hash_traits<tree>
+{
+  static hashval_t hash (tree t)
+  {
+    ++comparing_specializations;
+    hashval_t val = hash_atomic_constraint (t);
+    --comparing_specializations;
+    return val;
+  }
+
+  static bool equal (tree t1, tree t2)
+  {
+    ++comparing_specializations;
+    bool eq = atomic_constraints_identical_p (t1, t2);
+    --comparing_specializations;
+    return eq;
+  }
+};
+
 /* Used by normalize_atom to cache ATOMIC_CONSTRs.  */
 
 static GTY((deletable)) hash_table<atom_hasher> *atom_cache;

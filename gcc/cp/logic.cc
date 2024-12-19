@@ -203,7 +203,7 @@ struct clause
   }
 
   std::list<tree> m_terms; /* The list of terms.  */
-  hash_set<tree, false, atom_hasher> m_set; /* The set of atomic constraints.  */
+  hash_set<tree> m_set; /* The set of atomic constraints.  */
   iterator m_current; /* The current term.  */
 };
 

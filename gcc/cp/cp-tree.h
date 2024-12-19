@@ -8715,27 +8715,6 @@ extern void diagnose_constraints                (location_t, tree, tree);
 
 extern void note_failed_type_completion_for_satisfaction (tree);
 
-/* A structural hasher for ATOMIC_CONSTRs.  */
-
-struct atom_hasher : default_hash_traits<tree>
-{
-  static hashval_t hash (tree t)
-  {
-    ++comparing_specializations;
-    hashval_t val = hash_atomic_constraint (t);
-    --comparing_specializations;
-    return val;
-  }
-
-  static bool equal (tree t1, tree t2)
-  {
-    ++comparing_specializations;
-    bool eq = atomic_constraints_identical_p (t1, t2);
-    --comparing_specializations;
-    return eq;
-  }
-};
-
 /* in logic.cc */
 extern bool subsumes                            (tree, tree);
 
