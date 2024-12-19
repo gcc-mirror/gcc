@@ -1,3 +1,16 @@
+2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-omp.cc (c_omp_interop_t_p): Handle error_mark_node.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* c-common.h (attr_aligned_exclusions): Declare.
+	(handle_aligned_attribute): Likewise.
+	* c-attribs.cc (handle_aligned_attribute): No longer
+	static.
+	(attr_aligned_exclusions): Use extern instead of static.
+
 2024-12-17  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR c/26154

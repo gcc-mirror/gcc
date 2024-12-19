@@ -1,3 +1,90 @@
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118081
+	* gcc.dg/pr118081.c: New test.
+
+2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Update dg-error msg.
+	* c-c++-common/gomp/dispatch-12.c: Likewise.
+	* c-c++-common/gomp/dispatch-11.c: Likewise and extend a bit.
+	* c-c++-common/gomp/append-args-1.c: New test.
+	* c-c++-common/gomp/append-args-2.c: New test.
+	* c-c++-common/gomp/append-args-3.c: New test.
+	* g++.dg/gomp/append-args-1.C: New test.
+	* g++.dg/gomp/append-args-2.C: New test.
+	* g++.dg/gomp/append-args-3.C: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/alignas1.C: Add dg-options "".
+	* g++.dg/cpp0x/alignas2.C: Likewise.
+	* g++.dg/cpp0x/alignas7.C: Likewise.
+	* g++.dg/cpp0x/alignas21.C: New test.
+	* g++.dg/ext/bitfield9.C: Expect a warning.
+	* g++.dg/cpp2a/is-layout-compatible3.C: Add dg-options -pedantic.
+	Expect a warning.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-likely1.C: New test.
+	* g++.dg/cpp0x/attr-unlikely1.C: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-fallthrough1.C: New test.
+	* g++.dg/cpp0x/attr-fallthrough2.C: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-carries_dependency2.C: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-assume1.C: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/gen-attrs-86.C: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/gen-attrs-85.C: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* c-c++-common/toplevel-asm-4.c: Add missing %cc2 use in template, add
+	bar, x, &y operands with "-i" and "-s" constraints.
+	(x, y): New variables.
+	(bar): Declare.
+	* c-c++-common/toplevel-asm-7.c: New test.
+	* c-c++-common/toplevel-asm-8.c: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/toplevel-asm-4.c: Don't use -fno-pie option.
+	Use cc modifier instead of c.
+	(v, w): Add extern keyword.
+	* c-c++-common/toplevel-asm-6.c: New test.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/toplevel-asm-4.c: New test.
+	* c-c++-common/toplevel-asm-5.c: New test.
+
+2024-12-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* g++.target/loongarch/crc.C: New test.
+	* g++.target/loongarch/crc-scan.C: New test.
+
 2024-12-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/118073

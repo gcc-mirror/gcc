@@ -1,3 +1,201 @@
+2024-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/118096
+	* config/sparc/predicates.md (vec_cmp_operator): New predicate.
+	(vec_cmpu_operator): Likewise.
+	* config/sparc/sparc.md (vec_cmp<FPCMP:mode><P:mode>): Use the
+	vec_cmp_operator predicate instead of FAILing the expansion.
+	(vec_cmpu<FPCMP:mode><P:mode>): Likewise for vec_cmpu_operator.
+
+2024-12-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/117248
+	* lra-lives.cc (process_bb_lives): Update conflict hard regs even
+	when clobber hard reg is not marked as dead.
+
+2024-12-18  Michal Jires  <mjires@suse.cz>
+
+	* lto-cgraph.cc (lto_symtab_encoder_delete_node):
+	Declare var later when initialized.
+	* lto-streamer.h (struct lto_encoder_entry):
+	Remove empty constructor.
+
+2024-12-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2024-12-06  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/117248
+	* lra-lives.cc (start_living, start_dying): Remove.
+	(insn_regnos, out_insn_regnos, insn_regnos_live_after): New.
+	(sparseset_contains_pseudos_p): Remove.
+	(make_hard_regno_live, make_hard_regno_dead): Return true if
+	something in liveness is changed.
+	(mark_pseudo_live,  mark_pseudo_dead): Ditto.
+	(mark_regno_live, mark_regno_dead): Ditto.
+	(clear_sparseset_regnos, regnos_in_sparseset_p): Use set instead
+	of dead_set.
+	(process_bb_lives): Rewrite dealing with reg notes.  Update
+	conflict hard regs even when clobber hard reg is not marked as
+	dead.
+	(lra_create_live_ranges_1): Add initialization/finalization of
+	insn_regnos, out_insn_regnos, insn_regnos_live_after.
+
+2024-12-18  Michal Jires  <mjires@suse.cz>
+
+	* ipa-devirt.cc (ipa_odr_summary_write):
+	Add unused argument.
+	* ipa-fnsummary.cc (ipa_fn_summary_write): Likewise.
+	* ipa-icf.cc (sem_item_optimizer::write_summary): Likewise.
+	* ipa-modref.cc (modref_write): Likewise.
+	* ipa-prop.cc (ipa_prop_write_jump_functions): Likewise.
+	(ipcp_write_transformation_summaries): Likewise.
+	* ipa-sra.cc (ipa_sra_write_summary): Likewise.
+	* lto-cgraph.cc (lto_symtab_encoder_delete): Delete remap.
+	(lto_output_node): Remap order.
+	(lto_output_varpool_node): Likewise.
+	(output_cgraph_opt_summary): Add unused argument.
+	* lto-streamer-out.cc (produce_symbol_asm): Renamed. Use remapped order.
+	(produce_asm): Rename. New wrapper.
+	(output_function): Propagate remapped order.
+	(output_constructor): Likewise.
+	(copy_function_or_variable): Likewise.
+	(cmp_int): New.
+	(create_order_remap): New.
+	(lto_output): Create remap. Remap order.
+	* lto-streamer.h (struct lto_symtab_encoder_d): Remap hash_map.
+	(produce_asm): Add order argument.
+
+2024-12-18  Michal Jires  <mjires@suse.cz>
+
+	* cgraph.h (symbol_table::register_symbol):
+	Order can be already set.
+	* cgraphclones.cc (cgraph_node::create_clone):
+	Reuse order for clones.
+
+2024-12-18  Michal Jires  <mjires@suse.cz>
+
+	* ipa-strub.cc (ipa_strub_set_mode_for_new_functions): Replace
+	order with uid.
+	(pass_ipa_strub_mode::execute): Likewise.
+
+2024-12-18  Michal Jires  <mjires@suse.cz>
+
+	* Makefile.in: Add lto-ltrans-cache.o.
+	* common.opt: New flags for configuring cache.
+	* lto-opts.cc (lto_write_options): Don't stream the flags.
+	* lto-wrapper.cc: Use ltrans cache.
+	* lto-ltrans-cache.cc: New file.
+	* lto-ltrans-cache.h: New file.
+
+2024-12-18  Michal Jires  <mjires@suse.cz>
+
+	* Makefile.in: Add lockfile.o.
+	* lockfile.cc: New file.
+	* lockfile.h: New file.
+
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	Revert:
+	2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+		    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* common.opt: New option -flink-libatomic.
+	* gcc.cc (LINK_LIBATOMIC_SPEC): New macro.
+	* config/gnu-user.h (GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC): Use
+	LINK_LIBATOMIC_SPEC.
+	* doc/invoke.texi: Document -flink-libatomic.
+	* configure.ac: Define TARGET_PROVIDES_LIBATOMIC.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2024-12-18  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* config/arm/thumb1.md (thumb1_cbz): Escape the semicolon.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118081
+	* gimple-fold.cc (decode_field_reference): Only set *xor_p to true
+	if *xor_cmp_op is integer_zerop.
+
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* common.opt: New option -flink-libatomic.
+	* gcc.cc (LINK_LIBATOMIC_SPEC): New macro.
+	* config/gnu-user.h (GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC): Use
+	LINK_LIBATOMIC_SPEC.
+	* doc/invoke.texi: Document -flink-libatomic.
+	* configure.ac: Define TARGET_PROVIDES_LIBATOMIC.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Update for OpenMP's
+	append_args; cleanup of OpenMP's dispatch clause handling.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* stmt.cc (parse_output_constraint, parse_input_constraint): Handle
+	- modifier.
+	* recog.h (raw_constraint_p): Declare.
+	* recog.cc (raw_constraint_p): New variable.
+	(asm_operand_ok, constrain_operands): Handle - modifier.
+	* common.md (i, s, n): For raw_constraint_p don't require
+	LEGITIMATE_PIC_OPERAND_P.
+	* doc/md.texi: Document - constraint modifier.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* final.cc (output_asm_insn): Add support for cc operand modifier.
+	* doc/extend.texi (Generic Operand Modifiers): Document cc operand
+	modifier.
+	* doc/md.texi (@samp{:} in constraint): Mention the cc operand
+	modifier and add small example.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* genpreds.cc (mangle): Add ':' mangling.
+	(add_constraint): Allow : constraint.
+	* common.md (:): New define_constraint.
+	* stmt.cc (parse_output_constraint): Diagnose "=:".
+	(parse_input_constraint): Handle ":" and diagnose invalid
+	uses.
+	* doc/md.texi (Simple Constraints): Document ":" constraint.
+
+2024-12-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (*crc_combine): New
+	define_insn_and_split.
+
+2024-12-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (crc_rev<mode:SUBDI>si4): New
+	define_expand.
+
+2024-12-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (@rbit<mode:GPR>): New
+	define_insn template.
+	(rbitsi_extended): New define_insn.
+	(rbitqi): New define_insn.
+	(rbithi): New define_expand.
+
+2024-12-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (QHSD): Remove.
+	(loongarch_<crc>_w_<size>_w): Use QHSD instead of QHWD.
+	(loongarch_<crc>_w_<size>_w_extended): Likewise.
+
+2024-12-18  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi (OpenACC): Fix paste-o.
+
 2024-12-17  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR c/26154

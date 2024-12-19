@@ -1,3 +1,94 @@
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_lexer_new_main): Attempt to optimize large sequences
+	of CPP_NUMBER with int type and values 0-255 separated by CPP_COMMA
+	into CPP_EMBED with RAW_DATA_CST u.value.
+
+2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* decl.cc (omp_declare_variant_finalize_one): Handle
+	append_args.
+	* parser.cc (cp_parser_omp_clause_init_modifiers): New;
+	split of from ...
+	(cp_parser_omp_clause_init):  ... here; call it.
+	(cp_parser_omp_all_clauses): Replace interop parsing by
+	a call to ...
+	(cp_parser_omp_clause_interop): ... this new function;
+	set tree used/read.
+	(cp_finish_omp_declare_variant): Parse 'append_args' clause.
+	(cp_parser_omp_declare): Update comment.
+	* pt.cc (tsubst_attribute, tsubst_omp_clauses): Handle template
+	substitution also for declare variant's append_args clause,
+	using for 'init' the same code as for interop's init clause.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_postfix_expression): Use
+	type_id_in_expr_sentinel instead of manually saving+setting/restoring
+	parser->in_type_id_in_expr_p around cp_parser_type_id calls.
+	(cp_parser_has_attribute_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_sizeof_operand): Likewise.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* cp-tree.h (enum cp_tree_index): Add CPTI_INTERNAL_IDENTIFIER.
+	(internal_identifier): Define.
+	(internal_attribute_table): Declare.
+	* parser.cc (cp_parser_exception_declaration): Error on alignas
+	on exception declaration.
+	(cp_parser_std_attribute_spec): Turn alignas into internal
+	ns aligned attribute rather than gnu.
+	* decl.cc (initialize_predefined_identifiers): Initialize
+	internal_identifier.
+	* tree.cc (handle_alignas_attribute): New function.
+	(internal_attributes): New variable.
+	(internal_attribute_table): Likewise.
+	* cp-objcp-common.h (cp_objcp_attribute_table): Add
+	internal_attribute_table entry.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* parser.cc (cp_parser_type_specifier_seq): Chain cxx11_attribute_p
+	attributes after any type specifier in the is_declaration case
+	to std_attributes rather than attributes.  Set also ds_attribute
+	or ds_std_attribute locations if not yet set.
+	(cp_parser_exception_declaration): Pass &type_specifiers.attributes
+	instead of NULL as last argument, call cp_decl_attributes.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* decl.cc (check_tag_decl): Diagnose std_attributes.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* parser.cc (cp_parser_decl_specifier_seq): Call
+	warn_misplaced_attr_for_class_type for all OVERLOAD_TYPE_P
+	types, not just CLASS_TYPE_P.  When not calling
+	warn_misplaced_attr_for_class_type, don't clear attrs and
+	add it to decl_specs->std_attributes instead.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41045
+	* semantics.cc (finish_asm_stmt): Reject - constraint modifier inside
+	of a function.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.cc (finish_asm_stmt): Diagnose invalid ":" constraint
+	uses.
+
+2024-12-18  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/117970
+	* module.cc (module_state::read_ordinary_maps): Change argument to
+	line_map_uint_t instead of unsigned int.
+
 2024-12-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/118073

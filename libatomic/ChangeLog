@@ -1,3 +1,26 @@
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	Revert:
+	2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+		    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.am: Pass -fno-link-libatomic.
+	New rule all.
+	* configure.ac: Assert that CFLAGS is set and pass -fno-link-libatomic.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.am: Pass -fno-link-libatomic.
+	New rule all.
+	* configure.ac: Assert that CFLAGS is set and pass -fno-link-libatomic.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2024-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libatomic.exp: Add

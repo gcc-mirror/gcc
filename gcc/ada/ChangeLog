@@ -1,3 +1,9 @@
+2024-12-18  Simon Wright  <simon@pushface.org>
+
+	PR target/117538
+	* libgnat/s-trasym.adb (Symbolic_Traceback): Prepend the load
+	address of the executable if it is not null.
+
 2024-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/118011
