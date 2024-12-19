@@ -4,6 +4,8 @@
 /* Check that we don't crash when trying to handle masks that don't match the
    width of the original type.  */
 
+#include <stdbool.h>
+
 struct s {
   long long q;
 };
