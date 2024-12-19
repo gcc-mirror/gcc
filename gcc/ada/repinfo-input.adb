@@ -341,7 +341,8 @@ package body Repinfo.Input is
 
          else
             declare
-               S : String (Integer (Lo) .. Integer (Hi));
+               S : constant String (Integer (Lo) .. Integer (Hi));
+               pragma Import (Ada, S);
                for S'Address use Text (Lo)'Address;
 
             begin
@@ -627,7 +628,8 @@ package body Repinfo.Input is
 
          else
             declare
-               S : String (Integer (Lo) .. Integer (Hi));
+               S : constant String (Integer (Lo) .. Integer (Hi));
+               pragma Import (Ada, S);
                for S'Address use Text (Lo)'Address;
 
             begin
