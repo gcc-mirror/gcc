@@ -45,6 +45,8 @@ public:
 
     NEGATION,
     NOT,
+    EQ,
+    PARTIAL_ORD,
 
     ADD_ASSIGN,
     SUB_ASSIGN,
@@ -136,6 +138,9 @@ public:
   static Kind
   CompoundAssignmentOperatorToLangItem (ArithmeticOrLogicalOperator op);
   static Kind NegationOperatorToLangItem (NegationOperator op);
+  static Kind ComparisonToLangItem (ComparisonOperator op);
+
+  static std::string ComparisonToSegment (ComparisonOperator op);
 };
 
 } // namespace Rust

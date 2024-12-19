@@ -2816,6 +2816,8 @@ public:
 
   OperatorExprMeta (HIR::ArrayIndexExpr &expr);
 
+  OperatorExprMeta (HIR::ComparisonExpr &expr);
+
   const Analysis::NodeMapping &get_mappings () const { return node_mappings; }
 
   const Analysis::NodeMapping &get_lvalue_mappings () const

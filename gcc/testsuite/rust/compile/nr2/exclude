@@ -196,4 +196,5 @@ additional-trait-bounds2.rs
 auto_traits2.rs
 auto_traits3.rs
 issue-3140.rs
+cmp1.rs
 # please don't delete the trailing newline

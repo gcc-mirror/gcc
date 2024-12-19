@@ -99,7 +99,9 @@ protected:
   tree resolve_operator_overload (
     LangItem::Kind lang_item_type, HIR::OperatorExprMeta expr, tree lhs,
     tree rhs, HIR::Expr &lhs_expr,
-    tl::optional<std::reference_wrapper<HIR::Expr>> rhs_expr);
+    tl::optional<std::reference_wrapper<HIR::Expr>> rhs_expr,
+    HIR::PathIdentSegment specified_segment
+    = HIR::PathIdentSegment::create_error ());
 
   tree compile_bool_literal (const HIR::LiteralExpr &expr,
 			     const TyTy::BaseType *tyty);
