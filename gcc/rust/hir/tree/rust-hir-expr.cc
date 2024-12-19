@@ -1298,6 +1298,12 @@ OperatorExprMeta::OperatorExprMeta (HIR::ArrayIndexExpr &expr)
     locus (expr.get_locus ())
 {}
 
+OperatorExprMeta::OperatorExprMeta (HIR::ComparisonExpr &expr)
+  : node_mappings (expr.get_mappings ()),
+    lvalue_mappings (expr.get_expr ().get_mappings ()),
+    locus (expr.get_locus ())
+{}
+
 AnonConst::AnonConst (NodeId id, std::unique_ptr<Expr> expr)
   : id (id), expr (std::move (expr))
 {

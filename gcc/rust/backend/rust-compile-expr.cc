@@ -279,6 +279,26 @@ CompileExpr::visit (HIR::ComparisonExpr &expr)
   auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
   auto location = expr.get_locus ();
 
+  // this might be an operator overload situation lets check
+  TyTy::FnType *fntype;
+  bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
+    expr.get_mappings ().get_hirid (), &fntype);
+  if (is_op_overload)
+    {
+      auto seg_name = LangItem::ComparisonToSegment (expr.get_expr_type ());
+      auto segment = HIR::PathIdentSegment (seg_name);
+      auto lang_item_type
+	= LangItem::ComparisonToLangItem (expr.get_expr_type ());
+
+      rhs = address_expression (rhs, EXPR_LOCATION (rhs));
+
+      translated = resolve_operator_overload (
+	lang_item_type, expr, lhs, rhs, expr.get_lhs (),
+	tl::optional<std::reference_wrapper<HIR::Expr>> (expr.get_rhs ()),
+	segment);
+      return;
+    }
+
   translated = Backend::comparison_expression (op, lhs, rhs, location);
 }
 
@@ -1478,7 +1498,8 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 tree
 CompileExpr::resolve_operator_overload (
   LangItem::Kind lang_item_type, HIR::OperatorExprMeta expr, tree lhs, tree rhs,
-  HIR::Expr &lhs_expr, tl::optional<std::reference_wrapper<HIR::Expr>> rhs_expr)
+  HIR::Expr &lhs_expr, tl::optional<std::reference_wrapper<HIR::Expr>> rhs_expr,
+  HIR::PathIdentSegment specified_segment)
 {
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
@@ -1499,7 +1520,10 @@ CompileExpr::resolve_operator_overload (
     }
 
   // lookup compiled functions since it may have already been compiled
-  HIR::PathIdentSegment segment_name (LangItem::ToString (lang_item_type));
+  HIR::PathIdentSegment segment_name
+    = specified_segment.is_error ()
+	? HIR::PathIdentSegment (LangItem::ToString (lang_item_type))
+	: specified_segment;
   tree fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
 
   // lookup the autoderef mappings

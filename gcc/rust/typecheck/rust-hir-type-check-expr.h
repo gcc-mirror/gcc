@@ -97,7 +97,9 @@ public:
 protected:
   bool resolve_operator_overload (LangItem::Kind lang_item_type,
 				  HIR::OperatorExprMeta expr,
-				  TyTy::BaseType *lhs, TyTy::BaseType *rhs);
+				  TyTy::BaseType *lhs, TyTy::BaseType *rhs,
+				  HIR::PathIdentSegment specified_segment
+				  = HIR::PathIdentSegment::create_error ());
 
   bool resolve_fn_trait_call (HIR::CallExpr &expr,
 			      TyTy::BaseType *function_tyty,

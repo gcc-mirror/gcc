@@ -98,6 +98,9 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
 
   {"into_iter", Kind::INTOITER_INTOITER},
   {"next", Kind::ITERATOR_NEXT},
+
+  {"eq", Kind::EQ},
+  {"partial_ord", Kind::PARTIAL_ORD},
 }};
 
 tl::optional<LangItem::Kind>
@@ -140,6 +143,47 @@ LangItem::OperatorToLangItem (ArithmeticOrLogicalOperator op)
       return LangItem::Kind::SHL;
     case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
       return LangItem::Kind::SHR;
+    }
+
+  rust_unreachable ();
+}
+
+LangItem::Kind
+LangItem::ComparisonToLangItem (ComparisonOperator op)
+{
+  switch (op)
+    {
+    case ComparisonOperator::NOT_EQUAL:
+    case ComparisonOperator::EQUAL:
+      return LangItem::Kind::EQ;
+
+    case ComparisonOperator::GREATER_THAN:
+    case ComparisonOperator::LESS_THAN:
+    case ComparisonOperator::GREATER_OR_EQUAL:
+    case ComparisonOperator::LESS_OR_EQUAL:
+      return LangItem::Kind::PARTIAL_ORD;
+    }
+
+  rust_unreachable ();
+}
+
+std::string
+LangItem::ComparisonToSegment (ComparisonOperator op)
+{
+  switch (op)
+    {
+    case ComparisonOperator::NOT_EQUAL:
+      return "ne";
+    case ComparisonOperator::EQUAL:
+      return "eq";
+    case ComparisonOperator::GREATER_THAN:
+      return "gt";
+    case ComparisonOperator::LESS_THAN:
+      return "lt";
+    case ComparisonOperator::GREATER_OR_EQUAL:
+      return "ge";
+    case ComparisonOperator::LESS_OR_EQUAL:
+      return "le";
     }
 
   rust_unreachable ();
