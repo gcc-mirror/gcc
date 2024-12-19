@@ -8674,9 +8674,10 @@ package body Exp_Disp is
 
    begin
       --  Protect this procedure against wrong usage. Required because it will
-      --  be used directly from GDB
+      --  be used directly from GDB.
 
-      if not (Typ <= Last_Node_Id)
+      if Typ not in First_Node_Id .. Last_Node_Id
+        or else Nkind (Typ) not in N_Entity
         or else not Is_Tagged_Type (Typ)
       then
          Write_Str ("wrong usage: Write_DT must be used with tagged types");
