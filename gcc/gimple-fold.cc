@@ -7440,26 +7440,42 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 }
 
 /* Return TRUE and set op[0] if T, following all SSA edges, is a type
-   conversion.  */
+   conversion.  Reject loads if LOAD is NULL, otherwise set *LOAD if a
+   converting load is found.  */
 
 static bool
-gimple_convert_def_p (tree t, tree op[1])
+gimple_convert_def_p (tree t, tree op[1], gimple **load = NULL)
 {
+  bool ret = false;
+
   if (TREE_CODE (t) == SSA_NAME
       && !SSA_NAME_IS_DEFAULT_DEF (t))
     if (gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (t)))
-      switch (gimple_assign_rhs_code (def))
-	{
-	CASE_CONVERT:
-	  op[0] = gimple_assign_rhs1 (def);
-	  return true;
-	case VIEW_CONVERT_EXPR:
-	  op[0] = TREE_OPERAND (gimple_assign_rhs1 (def), 0);
-	  return true;
-	default:
-	  break;
-	}
-  return false;
+      {
+	bool load_p = gimple_assign_load_p (def);
+	if (load_p && !load)
+	  return false;
+	switch (gimple_assign_rhs_code (def))
+	  {
+	  CASE_CONVERT:
+	    op[0] = gimple_assign_rhs1 (def);
+	    ret = true;
+	    break;
+
+	  case VIEW_CONVERT_EXPR:
+	    op[0] = TREE_OPERAND (gimple_assign_rhs1 (def), 0);
+	    ret = true;
+	    break;
+
+	  default:
+	    break;
+	  }
+
+	if (ret && load_p)
+	  *load = def;
+      }
+
+  return ret;
 }
 
 /* Return TRUE and set op[*] if T, following all SSA edges, resolves to a
@@ -7604,19 +7620,23 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 	return NULL_TREE;
     }
 
-  /* Yet another chance to drop conversions.  */
-  if (gimple_convert_def_p (exp, res_ops))
+  /* Yet another chance to drop conversions.  This one is allowed to
+     match a converting load, subsuming the load identification block
+     below.  */
+  if (gimple_convert_def_p (exp, res_ops, load))
     {
       if (!outer_type)
 	{
 	  outer_type = TREE_TYPE (exp);
 	  loc[0] = gimple_location (SSA_NAME_DEF_STMT (exp));
 	}
+      if (*load)
+	loc[3] = gimple_location (*load);
       exp = res_ops[0];
     }
 
   /* Identify the load, if there is one.  */
-  if (TREE_CODE (exp) == SSA_NAME
+  if (!(*load) && TREE_CODE (exp) == SSA_NAME
       && !SSA_NAME_IS_DEFAULT_DEF (exp))
     {
       gimple *def = SSA_NAME_DEF_STMT (exp);
@@ -8056,13 +8076,37 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   /* It must be true that the inner operation on the lhs of each
      comparison must be the same if we are to be able to do anything.
      Then see if we have constants.  If not, the same must be true for
-     the rhs's.  */
+     the rhs's.  If one is a load and the other isn't, we have to be
+     conservative and avoid the optimization, otherwise we could get
+     SRAed fields wrong.  */
   if (volatilep
       || ll_reversep != rl_reversep
-      || ll_inner == 0 || rl_inner == 0
-      || ! operand_equal_p (ll_inner, rl_inner, 0)
-      || (ll_load && rl_load
-	  && gimple_vuse (ll_load) != gimple_vuse (rl_load)))
+      || ll_inner == 0 || rl_inner == 0)
+    return 0;
+
+  if (! operand_equal_p (ll_inner, rl_inner, 0))
+    {
+      /* Try swapping the operands.  */
+      if (ll_reversep != rr_reversep
+	  || !rr_inner
+	  || !operand_equal_p (ll_inner, rr_inner, 0))
+	return 0;
+
+      rcode = swap_tree_comparison (rcode);
+      std::swap (rl_arg, rr_arg);
+      std::swap (rl_inner, rr_inner);
+      std::swap (rl_bitsize, rr_bitsize);
+      std::swap (rl_bitpos, rr_bitpos);
+      std::swap (rl_unsignedp, rr_unsignedp);
+      std::swap (rl_reversep, rr_reversep);
+      std::swap (rl_and_mask, rr_and_mask);
+      std::swap (rl_load, rr_load);
+      std::swap (rl_loc, rr_loc);
+    }
+
+  if ((ll_load && rl_load)
+      ? gimple_vuse (ll_load) != gimple_vuse (rl_load)
+      : (!ll_load != !rl_load))
     return 0;
 
   if (TREE_CODE (lr_arg) == INTEGER_CST
@@ -8083,8 +8127,9 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   else if (lr_reversep != rr_reversep
 	   || lr_inner == 0 || rr_inner == 0
 	   || ! operand_equal_p (lr_inner, rr_inner, 0)
-	   || (lr_load && rr_load
-	       && gimple_vuse (lr_load) != gimple_vuse (rr_load)))
+	   || ((lr_load && rr_load)
+	       ? gimple_vuse (lr_load) != gimple_vuse (rr_load)
+	       : (!lr_load != !rr_load)))
     return 0;
 
   /* If we found sign tests, finish turning them into bit tests.  */
