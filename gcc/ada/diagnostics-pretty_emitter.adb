@@ -327,7 +327,6 @@ package body Diagnostics.Pretty_Emitter is
    is
       Cur_Loc : Source_Ptr := Get_Line_End (Buf, Loc);
    begin
-
       while Cur_Loc > Buf'First
         and then Buf (Cur_Loc) in ASCII.LF | ASCII.CR
       loop

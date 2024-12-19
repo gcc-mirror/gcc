@@ -2968,8 +2968,8 @@ package body Sem_Aggr is
                               Scope_Parent : Node_Id;
                            begin
                               if Nkind (Exp) /= N_Identifier
-                                or else not Present (Entity (Exp))
-                                or else not Present (Scope (Entity (Exp)))
+                                or else No (Entity (Exp))
+                                or else No (Scope (Entity (Exp)))
                                 or else Ekind (Scope (Entity (Exp))) /= E_Loop
                               then
                                  return OK;
