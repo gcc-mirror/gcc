@@ -14267,6 +14267,30 @@ adjacent_mem_locations (rtx a, rtx b)
   return 0;
 }
 
+/* Helper routine for ldm_stm_operation_p.  Decompose a simple offset
+   address into the base register and the offset.  Return false iff
+   it is more complex than this.  */
+static inline bool
+decompose_addr_for_ldm_stm (rtx addr, rtx *base, HOST_WIDE_INT *offset)
+{
+  if (REG_P (addr))
+    {
+      *base = addr;
+      *offset = 0;
+      return true;
+    }
+  else if (GET_CODE (addr) == PLUS
+      && REG_P (XEXP (addr, 0))
+      && CONST_INT_P (XEXP (addr, 1)))
+    {
+      *base = XEXP (addr, 0);
+      *offset = INTVAL (XEXP (addr, 1));
+      return true;
+    }
+
+  return false;
+}
+
 /* Return true if OP is a valid load or store multiple operation.  LOAD is true
    for load operations, false for store operations.  CONSECUTIVE is true
    if the register numbers in the operation must be consecutive in the register
@@ -14282,23 +14306,25 @@ adjacent_mem_locations (rtx a, rtx b)
      1.  If offset is 0, first insn should be (SET (R_d0) (MEM (src_addr))).
      2.  REGNO (R_d0) < REGNO (R_d1) < ... < REGNO (R_dn).
      3.  If consecutive is TRUE, then for kth register being loaded,
-         REGNO (R_dk) = REGNO (R_d0) + k.
+	 REGNO (R_dk) = REGNO (R_d0) + k.
    The pattern for store is similar.  */
 bool
 ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
-                     bool consecutive, bool return_pc)
+		     bool consecutive, bool return_pc)
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  rtx reg, mem, addr;
-  unsigned regno;
-  unsigned first_regno;
-  HOST_WIDE_INT i = 1, base = 0, offset = 0;
+  int count = XVECLEN (op, 0);
+  rtx reg, mem;
+  rtx addr_base;
+  int reg_loc, mem_loc;
+  unsigned prev_regno;
+  HOST_WIDE_INT addr_offset;
   rtx elt;
   bool addr_reg_in_reglist = false;
   bool update = false;
-  int reg_increment;
-  int offset_adj;
-  int regs_per_val;
+  int reg_bytes;
+  int words_per_reg;  /* How many words in memory a register takes.  */
+  int elt_num = 0;
+  int base_elt_num;  /* Element number of the first transfer operation.  */
 
   /* If not in SImode, then registers must be consecutive
      (e.g., VLDM instructions for DFmode).  */
@@ -14306,138 +14332,140 @@ ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
   /* Setting return_pc for stores is illegal.  */
   gcc_assert (!return_pc || load);
 
-  /* Set up the increments and the regs per val based on the mode.  */
-  reg_increment = GET_MODE_SIZE (mode);
-  regs_per_val = reg_increment / 4;
-  offset_adj = return_pc ? 1 : 0;
+  /* Set up the increments and sizes for the mode.  */
+  reg_bytes = GET_MODE_SIZE (mode);
+  words_per_reg = ARM_NUM_REGS (mode);
 
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, offset_adj)) != SET
-      || (load && !REG_P (SET_DEST (XVECEXP (op, 0, offset_adj)))))
+  /* If this is a return, then the first element in the par must be
+     (return).  */
+  if (return_pc)
+    {
+      if (GET_CODE (XVECEXP (op, 0, 0)) != RETURN)
+	return false;
+      elt_num++;
+    }
+
+  if (elt_num >= count)
     return false;
 
   /* Check if this is a write-back.  */
-  elt = XVECEXP (op, 0, offset_adj);
+  elt = XVECEXP (op, 0, elt_num);
+  if (GET_CODE (elt) != SET)
+    return false;
   if (GET_CODE (SET_SRC (elt)) == PLUS)
     {
-      i++;
-      base = 1;
+      elt_num++;
       update = true;
 
       /* The offset adjustment must be the number of registers being
-         popped times the size of a single register.  */
+	 popped times the size of a single register.  */
       if (!REG_P (SET_DEST (elt))
-          || !REG_P (XEXP (SET_SRC (elt), 0))
-          || (REGNO (SET_DEST (elt)) != REGNO (XEXP (SET_SRC (elt), 0)))
-          || !CONST_INT_P (XEXP (SET_SRC (elt), 1))
-          || INTVAL (XEXP (SET_SRC (elt), 1)) !=
-             ((count - 1 - offset_adj) * reg_increment))
-        return false;
+	  || !REG_P (XEXP (SET_SRC (elt), 0))
+	  || (REGNO (SET_DEST (elt)) != REGNO (XEXP (SET_SRC (elt), 0)))
+	  || !CONST_INT_P (XEXP (SET_SRC (elt), 1))
+	  /* ??? Can't this be negative for a PUSH?  */
+	  || (INTVAL (XEXP (SET_SRC (elt), 1)) !=
+	      ((count - elt_num) * reg_bytes)))
+	return false;
     }
 
-  i = i + offset_adj;
-  base = base + offset_adj;
-  /* Perform a quick check so we don't blow up below. If only one reg is loaded,
-     success depends on the type: VLDM can do just one reg,
-     LDM must do at least two.  */
-  if ((count <= i) && (mode == SImode))
-      return false;
+  base_elt_num = elt_num;
+  /* There must be at least one register to transfer.  */
+  if (base_elt_num >= count)
+    return false;
 
-  elt = XVECEXP (op, 0, i - 1);
+  elt = XVECEXP (op, 0, elt_num);
   if (GET_CODE (elt) != SET)
     return false;
 
+  /* Where to look for the register and memory elements.  These save us
+     needing to check LOAD multiple times in the loop.  */
   if (load)
     {
-      reg = SET_DEST (elt);
-      mem = SET_SRC (elt);
+      reg_loc = 0;  /* SET_DEST.  */
+      mem_loc = 1;  /* SET_SRC.  */
     }
   else
     {
-      reg = SET_SRC (elt);
-      mem = SET_DEST (elt);
+      mem_loc = 0;  /* SET_DEST.  */
+      reg_loc = 1;  /* SET_SRC.  */
     }
+
+  reg = XEXP (elt, reg_loc);
+  mem = XEXP (elt, mem_loc);
 
   if (!REG_P (reg) || !MEM_P (mem))
     return false;
 
-  regno = REGNO (reg);
-  first_regno = regno;
-  addr = XEXP (mem, 0);
-  if (GET_CODE (addr) == PLUS)
+  prev_regno = REGNO (reg);
+  if (!decompose_addr_for_ldm_stm (XEXP (mem, 0), &addr_base, &addr_offset))
+    return false;
+
+  /* Don't allow SP to be loaded unless it is also the base register.
+     Otherwise SP will not be correctly restored if an LDM instruction is
+     interrupted (low latency interrupt or address fault), which can result in
+     stack corruption.  */
+  if (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr_base) != SP_REGNUM))
+    return false;
+
+  addr_reg_in_reglist = (prev_regno == REGNO (addr_base));
+
+  for (elt_num++; elt_num < count; elt_num++)
     {
-      if (!CONST_INT_P (XEXP (addr, 1)))
+      rtx elt_base;
+      HOST_WIDE_INT elt_offset;
+
+      elt = XVECEXP (op, 0, elt_num);
+      if (GET_CODE (elt) != SET)
 	return false;
 
-      offset = INTVAL (XEXP (addr, 1));
-      addr = XEXP (addr, 0);
-    }
-
-  if (!REG_P (addr))
-    return false;
-
-  /* Don't allow SP to be loaded unless it is also the base register. It
-     guarantees that SP is reset correctly when an LDM instruction
-     is interrupted. Otherwise, we might end up with a corrupt stack.  */
-  if (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr) != SP_REGNUM))
-    return false;
-
-  if (regno == REGNO (addr))
-    addr_reg_in_reglist = true;
-
-  for (; i < count; i++)
-    {
-      elt = XVECEXP (op, 0, i);
-      if (GET_CODE (elt) != SET)
-        return false;
-
-      if (load)
-        {
-          reg = SET_DEST (elt);
-          mem = SET_SRC (elt);
-        }
-      else
-        {
-          reg = SET_SRC (elt);
-          mem = SET_DEST (elt);
-        }
+      reg = XEXP (elt, reg_loc);
+      mem = XEXP (elt, mem_loc);
 
       if (!REG_P (reg)
-          || GET_MODE (reg) != mode
-          || REGNO (reg) <= regno
-          || (consecutive
-              && (REGNO (reg) !=
-                  (unsigned int) (first_regno + regs_per_val * (i - base))))
-          /* Don't allow SP to be loaded unless it is also the base register. It
-             guarantees that SP is reset correctly when an LDM instruction
-             is interrupted. Otherwise, we might end up with a corrupt stack.  */
-          || (load && (REGNO (reg) == SP_REGNUM) && (REGNO (addr) != SP_REGNUM))
-          || !MEM_P (mem)
-          || GET_MODE (mem) != mode
-          || ((GET_CODE (XEXP (mem, 0)) != PLUS
-	       || !rtx_equal_p (XEXP (XEXP (mem, 0), 0), addr)
-	       || !CONST_INT_P (XEXP (XEXP (mem, 0), 1))
-	       || (INTVAL (XEXP (XEXP (mem, 0), 1)) !=
-                   offset + (i - base) * reg_increment))
-	      && (!REG_P (XEXP (mem, 0))
-		  || offset + (i - base) * reg_increment != 0)))
-        return false;
+	  || GET_MODE (reg) != mode
+	  || REGNO (reg) <= prev_regno
+	  || (consecutive
+	      && REGNO (reg) != prev_regno + words_per_reg)
+	  /* Don't allow SP to be loaded unless it is also the base register
+	     (see similar comment above).  */
+	  || (load
+	      && (REGNO (reg) == SP_REGNUM)
+	      && (REGNO (addr_base) != SP_REGNUM))
+	  || !MEM_P (mem)
+	  || GET_MODE (mem) != mode
+	  || !decompose_addr_for_ldm_stm (XEXP (mem, 0), &elt_base,
+					  &elt_offset)
+	  || REGNO (addr_base) != REGNO (elt_base)
+	  || addr_offset + (elt_num - base_elt_num) * reg_bytes != elt_offset)
+	return false;
 
-      regno = REGNO (reg);
-      if (regno == REGNO (addr))
-        addr_reg_in_reglist = true;
+      prev_regno = REGNO (reg);
+      if (prev_regno == REGNO (addr_base))
+	{
+	  /* Storing the base register is unpredictable if it is not the first
+	     transfer register and the base register is being modified.  */
+	  if (update && !load)
+	    return false;
+	  addr_reg_in_reglist = true;
+	}
     }
 
   if (load)
     {
       if (update && addr_reg_in_reglist)
-        return false;
+	return false;
 
-      /* For Thumb-1, address register is always modified - either by write-back
-         or by explicit load.  If the pattern does not describe an update,
-         then the address register must be in the list of loaded registers.  */
+      /* A return instruction must load PC last.  */
+      if (return_pc && prev_regno != PC_REGNUM)
+	return false;
+
+      /* For Thumb-1, address register is always modified - either by
+	 write-back or by explicit load.  If the pattern does not describe an
+	 update, then the address register must be in the list of loaded
+	 registers.  */
       if (TARGET_THUMB1)
-        return update || addr_reg_in_reglist;
+	return update || addr_reg_in_reglist;
     }
 
   return true;
