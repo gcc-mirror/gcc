@@ -6687,9 +6687,10 @@ smaller number.  On non-host devices, the value of the
 @c has to be implemented; cf. also PR target/105640.
 @c For offload devices, add *additionally* gcc/config/*/t-omp-device.
 
-For the host compiler, @code{kind} always matches @code{host}; for the
-offloading architectures AMD GCN and Nvidia PTX, @code{kind} always matches
-@code{gpu}.  For the x86 family of computers, AMD GCN and Nvidia PTX
+For the host compiler, @code{kind} always matches @code{host}, @code{cpu}
+and @code{any}; for the offloading architectures AMD GCN and Nvidia PTX,
+@code{kind} always matches @code{nohost}, @code{gpu} and @code{any}.
+For the x86 family of computers, AMD GCN and Nvidia PTX
 the following traits are supported in addition; while OpenMP is supported
 on more architectures, GCC currently does not match any @code{arch} or
 @code{isa} traits for those.
