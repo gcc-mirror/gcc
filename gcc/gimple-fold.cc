@@ -7550,17 +7550,18 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   if (! INTEGRAL_TYPE_P (TREE_TYPE (exp)))
     return NULL_TREE;
 
-  /* Drop casts, only save the outermost type.  We need not worry about
-     narrowing then widening casts, or vice-versa, for those that are not
-     essential for the compare have already been optimized out at this
-     point.  */
-  if (gimple_convert_def_p (exp, res_ops))
+  /* Drop casts, saving only the outermost type, effectively used in
+     the compare.  We can deal with at most one conversion, and it may
+     appear at various points in the chain of recognized preparation
+     statements.  Earlier optimizers will often have already dropped
+     unneeded extensions, but they may survive, as in PR118046.  ???
+     Can we do better and allow multiple conversions, perhaps taking
+     note of the narrowest intermediate type, sign extensions and
+     whatnot?  */
+  if (!outer_type && gimple_convert_def_p (exp, res_ops))
     {
-      if (!outer_type)
-	{
-	  outer_type = TREE_TYPE (exp);
-	  loc[0] = gimple_location (SSA_NAME_DEF_STMT (exp));
-	}
+      outer_type = TREE_TYPE (exp);
+      loc[0] = gimple_location (SSA_NAME_DEF_STMT (exp));
       exp = res_ops[0];
     }
 
@@ -7597,13 +7598,10 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
     }
 
   /* Another chance to drop conversions.  */
-  if (gimple_convert_def_p (exp, res_ops))
+  if (!outer_type && gimple_convert_def_p (exp, res_ops))
     {
-      if (!outer_type)
-	{
-	  outer_type = TREE_TYPE (exp);
-	  loc[0] = gimple_location (SSA_NAME_DEF_STMT (exp));
-	}
+      outer_type = TREE_TYPE (exp);
+      loc[0] = gimple_location (SSA_NAME_DEF_STMT (exp));
       exp = res_ops[0];
     }
 
@@ -7623,13 +7621,10 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   /* Yet another chance to drop conversions.  This one is allowed to
      match a converting load, subsuming the load identification block
      below.  */
-  if (gimple_convert_def_p (exp, res_ops, load))
+  if (!outer_type && gimple_convert_def_p (exp, res_ops, load))
     {
-      if (!outer_type)
-	{
-	  outer_type = TREE_TYPE (exp);
-	  loc[0] = gimple_location (SSA_NAME_DEF_STMT (exp));
-	}
+      outer_type = TREE_TYPE (exp);
+      loc[0] = gimple_location (SSA_NAME_DEF_STMT (exp));
       if (*load)
 	loc[3] = gimple_location (*load);
       exp = res_ops[0];
