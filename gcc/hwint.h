@@ -397,4 +397,30 @@ mul_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b, bool *overflow)
 #endif
 }
 
+/* Compute the saturated sum of signed A and B, i.e. upon overflow clamp
+   the result to the corresponding extremum.  */
+
+inline HOST_WIDE_INT
+add_sat_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b)
+{
+  bool overflow;
+  HOST_WIDE_INT result = add_hwi (a, b, &overflow);
+  if (!overflow)
+    return result;
+  return (a < 0) ? HOST_WIDE_INT_MIN : HOST_WIDE_INT_MAX;
+}
+
+/* Compute the saturated product of signed A and B, i.e. upon overflow clamp
+   the result to the corresponding extremum.  */
+
+inline HOST_WIDE_INT
+mul_sat_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b)
+{
+  bool overflow;
+  HOST_WIDE_INT result = mul_hwi (a, b, &overflow);
+  if (!overflow)
+    return result;
+  return ((a < 0) != (b < 0)) ? HOST_WIDE_INT_MIN : HOST_WIDE_INT_MAX;
+}
+
 #endif /* ! GCC_HWINT_H */
