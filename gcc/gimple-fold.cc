@@ -7509,8 +7509,10 @@ gimple_binop_def_p (enum tree_code code, tree t, tree op[2])
 
    *PREVERSEP is set to the storage order of the field.
 
-   *PAND_MASK is set to the mask found in a BIT_AND_EXPR, if any.
-   If PAND_MASK *is NULL, BIT_AND_EXPR is not recognized.
+   *PAND_MASK is set to the mask found in a BIT_AND_EXPR, if any.  If
+   PAND_MASK *is NULL, BIT_AND_EXPR is not recognized.  If *PAND_MASK
+   is initially set to a mask with nonzero precision, that mask is
+   combined with the found mask, or adjusted in precision to match.
 
    *XOR_P is to be FALSE if EXP might be a XOR used in a compare, in which
    case, if XOR_CMP_OP is a zero constant, it will be overridden with *PEXP,
@@ -7565,14 +7567,30 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
       exp = res_ops[0];
     }
 
-  /* Recognize and save a masking operation.  */
+  /* Recognize and save a masking operation.  Combine it with an
+     incoming mask.  */
   if (pand_mask && gimple_binop_def_p (BIT_AND_EXPR, exp, res_ops)
       && uniform_integer_cst_p (res_ops[1]))
     {
       loc[1] = gimple_location (SSA_NAME_DEF_STMT (exp));
       exp = res_ops[0];
       and_mask = wi::to_wide (res_ops[1]);
+      unsigned prec_in = pand_mask->get_precision ();
+      if (prec_in)
+	{
+	  unsigned prec_op = and_mask.get_precision ();
+	  if (prec_in >= prec_op)
+	    {
+	      if (prec_in > prec_op)
+		and_mask = wide_int::from (and_mask, prec_in, UNSIGNED);
+	      and_mask &= *pand_mask;
+	    }
+	  else
+	    and_mask &= wide_int::from (*pand_mask, prec_op, UNSIGNED);
+	}
     }
+  else if (pand_mask)
+    and_mask = *pand_mask;
 
   /* Turn (a ^ b) [!]= 0 into a [!]= b.  */
   if (xor_p && gimple_binop_def_p (BIT_XOR_EXPR, exp, res_ops)
@@ -8023,6 +8041,8 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       return 0;
     }
 
+  /* Prepare to turn compares of signed quantities with zero into
+     sign-bit tests.  */
   bool lsignbit = false, rsignbit = false;
   if ((lcode == LT_EXPR || lcode == GE_EXPR)
       && integer_zerop (lr_arg)
@@ -8032,6 +8052,31 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       lsignbit = true;
       lcode = (lcode == LT_EXPR ? NE_EXPR : EQ_EXPR);
     }
+  /* Turn compares of unsigned quantities with powers of two into
+     equality tests of masks.  */
+  else if ((lcode == LT_EXPR || lcode == GE_EXPR)
+	   && INTEGRAL_TYPE_P (TREE_TYPE (ll_arg))
+	   && TYPE_UNSIGNED (TREE_TYPE (ll_arg))
+	   && uniform_integer_cst_p (lr_arg)
+	   && wi::popcount (wi::to_wide (lr_arg)) == 1)
+    {
+      ll_and_mask = ~(wi::to_wide (lr_arg) - 1);
+      lcode = (lcode == GE_EXPR ? NE_EXPR : EQ_EXPR);
+      lr_arg = wide_int_to_tree (TREE_TYPE (ll_arg), ll_and_mask * 0);
+    }
+  /* Turn compares of unsigned quantities with powers of two minus one
+     into equality tests of masks.  */
+  else if ((lcode == LE_EXPR || lcode == GT_EXPR)
+	   && INTEGRAL_TYPE_P (TREE_TYPE (ll_arg))
+	   && TYPE_UNSIGNED (TREE_TYPE (ll_arg))
+	   && uniform_integer_cst_p (lr_arg)
+	   && wi::popcount (wi::to_wide (lr_arg) + 1) == 1)
+    {
+      ll_and_mask = ~wi::to_wide (lr_arg);
+      lcode = (lcode == GT_EXPR ? NE_EXPR : EQ_EXPR);
+      lr_arg = wide_int_to_tree (TREE_TYPE (ll_arg), ll_and_mask * 0);
+    }
+  /* Likewise for the second compare.  */
   if ((rcode == LT_EXPR || rcode == GE_EXPR)
       && integer_zerop (rr_arg)
       && INTEGRAL_TYPE_P (TREE_TYPE (rl_arg))
@@ -8039,6 +8084,26 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
     {
       rsignbit = true;
       rcode = (rcode == LT_EXPR ? NE_EXPR : EQ_EXPR);
+    }
+  else if ((rcode == LT_EXPR || rcode == GE_EXPR)
+	   && INTEGRAL_TYPE_P (TREE_TYPE (rl_arg))
+	   && TYPE_UNSIGNED (TREE_TYPE (rl_arg))
+	   && uniform_integer_cst_p (rr_arg)
+	   && wi::popcount (wi::to_wide (rr_arg)) == 1)
+    {
+      rl_and_mask = ~(wi::to_wide (rr_arg) - 1);
+      rcode = (rcode == GE_EXPR ? NE_EXPR : EQ_EXPR);
+      rr_arg = wide_int_to_tree (TREE_TYPE (rl_arg), rl_and_mask * 0);
+    }
+  else if ((rcode == LE_EXPR || rcode == GT_EXPR)
+	   && INTEGRAL_TYPE_P (TREE_TYPE (rl_arg))
+	   && TYPE_UNSIGNED (TREE_TYPE (rl_arg))
+	   && uniform_integer_cst_p (rr_arg)
+	   && wi::popcount (wi::to_wide (rr_arg) + 1) == 1)
+    {
+      rl_and_mask = ~wi::to_wide (rr_arg);
+      rcode = (rcode == GT_EXPR ? NE_EXPR : EQ_EXPR);
+      rr_arg = wide_int_to_tree (TREE_TYPE (rl_arg), rl_and_mask * 0);
     }
 
   /* See if the comparisons can be merged.  Then get all the parameters for
