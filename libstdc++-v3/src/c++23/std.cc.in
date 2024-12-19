@@ -1276,6 +1276,17 @@ export namespace std
 #endif
 
 // <flat_set>
+#if __cpp_lib_flat_set
+export namespace std
+{
+  using std::flat_set;
+  using std::flat_multiset;
+  using std::sorted_equivalent;
+  using std::sorted_equivalent_t;
+  using std::sorted_unique;
+  using std::sorted_unique_t;
+}
+#endif
 
 // <format>
 export namespace std
