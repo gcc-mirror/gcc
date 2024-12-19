@@ -5344,15 +5344,20 @@ static bool
 symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym, bool lsym_pointer,
 		     bool lsym_target, bool rsym_pointer, bool rsym_target)
 {
-  /* Aliasing isn't possible if the symbols have different base types.  */
-  if (gfc_compare_types (&lsym->ts, &rsym->ts) == 0)
-    return 0;
+  /* Aliasing isn't possible if the symbols have different base types,
+     except for complex types where an inquiry reference (%RE, %IM) could
+     alias with a real type with the same kind parameter.  */
+  if (!gfc_compare_types (&lsym->ts, &rsym->ts)
+      && !(((lsym->ts.type == BT_COMPLEX && rsym->ts.type == BT_REAL)
+	    || (lsym->ts.type == BT_REAL && rsym->ts.type == BT_COMPLEX))
+	   && lsym->ts.kind == rsym->ts.kind))
+    return false;
 
   /* Pointers can point to other pointers and target objects.  */
 
   if ((lsym_pointer && (rsym_pointer || rsym_target))
       || (rsym_pointer && (lsym_pointer || lsym_target)))
-    return 1;
+    return true;
 
   /* Special case: Argument association, cf. F90 12.4.1.6, F2003 12.4.1.7
      and F2008 12.5.2.13 items 3b and 4b. The pointer case (a) is already
@@ -5363,9 +5368,9 @@ symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym, bool lsym_pointer,
 	  || (rsym->attr.dummy && !rsym->attr.contiguous
 	      && (!rsym->attr.dimension
 		  || rsym->as->type == AS_ASSUMED_SHAPE))))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 
