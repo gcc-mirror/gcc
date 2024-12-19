@@ -8,7 +8,12 @@ enum E { E0, E1 = sizeof (struct S) + 15 };
 int v[42];
 void foo (void) {}
 
+/* Not all targets can use %cN even in non-pic code.  */
+#if defined(__riscv)
+asm ("# %0 %1 %2 %cc3 %cc4 %5 %% %="
+#else
 asm ("# %0 %1 %2 %c3 %c4 %5 %% %="
+#endif
      :: "i" (sizeof (struct S)),
 	"i" (__builtin_offsetof (struct S, c)),
 	"i" (E1),
