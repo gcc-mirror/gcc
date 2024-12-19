@@ -899,7 +899,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       else if (bits1 == name2)
 	std::swap (name1, bits1);
       else
-	return false;
+	goto bits_test_failed;
 
       /* As we strip non-widening conversions in finding a common
          name that is tested make sure to end up with an integral
@@ -944,7 +944,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
     }
 
   /* See if we have two comparisons that we can merge into one.  */
-  else if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
+  else bits_test_failed:
+    if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
 	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison)
     {
       tree t, ts = NULL_TREE;

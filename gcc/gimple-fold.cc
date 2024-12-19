@@ -7514,6 +7514,9 @@ gimple_binop_def_p (enum tree_code code, tree t, tree op[2])
    is initially set to a mask with nonzero precision, that mask is
    combined with the found mask, or adjusted in precision to match.
 
+   *PSIGNBIT is set to TRUE if, before clipping to *PBITSIZE, the mask
+   encompassed bits that corresponded to extensions of the sign bit.
+
    *XOR_P is to be FALSE if EXP might be a XOR used in a compare, in which
    case, if XOR_CMP_OP is a zero constant, it will be overridden with *PEXP,
    *XOR_P will be set to TRUE, and the left-hand operand of the XOR will be
@@ -7533,7 +7536,8 @@ static tree
 decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 			HOST_WIDE_INT *pbitpos,
 			bool *punsignedp, bool *preversep, bool *pvolatilep,
-			wide_int *pand_mask, bool *xor_p, tree *xor_cmp_op,
+			wide_int *pand_mask, bool *psignbit,
+			bool *xor_p, tree *xor_cmp_op,
 			gimple **load, location_t loc[4])
 {
   tree exp = *pexp;
@@ -7545,6 +7549,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   machine_mode mode;
 
   *load = NULL;
+  *psignbit = false;
 
   /* All the optimizations using this function assume integer fields.
      There are problems with FP fields since the type_for_size call
@@ -7712,12 +7717,23 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   if (outer_type && *pbitsize == TYPE_PRECISION (outer_type))
     *punsignedp = TYPE_UNSIGNED (outer_type);
 
-  /* Make the mask the expected width.  */
-  if (and_mask.get_precision () != 0)
-    and_mask = wide_int::from (and_mask, *pbitsize, UNSIGNED);
-
   if (pand_mask)
-    *pand_mask = and_mask;
+    {
+      /* Make the mask the expected width.  */
+      if (and_mask.get_precision () != 0)
+	{
+	  /* If the AND_MASK encompasses bits that would be extensions of
+	     the sign bit, set *PSIGNBIT.  */
+	  if (!unsignedp
+	      && and_mask.get_precision () > *pbitsize
+	      && (and_mask
+		  & wi::mask (*pbitsize, true, and_mask.get_precision ())) != 0)
+	    *psignbit = true;
+	  and_mask = wide_int::from (and_mask, *pbitsize, UNSIGNED);
+	}
+
+      *pand_mask = and_mask;
+    }
 
   return inner;
 }
@@ -7999,6 +8015,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   HOST_WIDE_INT rnbitsize, rnbitpos, rnprec;
   bool ll_unsignedp, lr_unsignedp, rl_unsignedp, rr_unsignedp;
   bool ll_reversep, lr_reversep, rl_reversep, rr_reversep;
+  bool ll_signbit, lr_signbit, rl_signbit, rr_signbit;
   scalar_int_mode lnmode, lnmode2, rnmode;
   wide_int ll_and_mask, lr_and_mask, rl_and_mask, rr_and_mask;
   wide_int l_const, r_const;
@@ -8118,19 +8135,19 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   bool l_xor = false, r_xor = false;
   ll_inner = decode_field_reference (&ll_arg, &ll_bitsize, &ll_bitpos,
 				     &ll_unsignedp, &ll_reversep, &volatilep,
-				     &ll_and_mask, &l_xor, &lr_arg,
+				     &ll_and_mask, &ll_signbit, &l_xor, &lr_arg,
 				     &ll_load, ll_loc);
   lr_inner = decode_field_reference (&lr_arg, &lr_bitsize, &lr_bitpos,
 				     &lr_unsignedp, &lr_reversep, &volatilep,
-				     &lr_and_mask, &l_xor, 0,
+				     &lr_and_mask, &lr_signbit, &l_xor, 0,
 				     &lr_load, lr_loc);
   rl_inner = decode_field_reference (&rl_arg, &rl_bitsize, &rl_bitpos,
 				     &rl_unsignedp, &rl_reversep, &volatilep,
-				     &rl_and_mask, &r_xor, &rr_arg,
+				     &rl_and_mask, &rl_signbit, &r_xor, &rr_arg,
 				     &rl_load, rl_loc);
   rr_inner = decode_field_reference (&rr_arg, &rr_bitsize, &rr_bitpos,
 				     &rr_unsignedp, &rr_reversep, &volatilep,
-				     &rr_and_mask, &r_xor, 0,
+				     &rr_and_mask, &rr_signbit, &r_xor, 0,
 				     &rr_load, rr_loc);
 
   /* It must be true that the inner operation on the lhs of each
@@ -8160,6 +8177,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       std::swap (rl_unsignedp, rr_unsignedp);
       std::swap (rl_reversep, rr_reversep);
       std::swap (rl_and_mask, rr_and_mask);
+      std::swap (rl_signbit, rr_signbit);
       std::swap (rl_load, rr_load);
       std::swap (rl_loc, rr_loc);
     }
@@ -8168,6 +8186,37 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       ? gimple_vuse (ll_load) != gimple_vuse (rl_load)
       : (!ll_load != !rl_load))
     return 0;
+
+  /* ??? Can we do anything with these?  */
+  if (lr_signbit || rr_signbit)
+    return 0;
+
+  /* If the mask encompassed extensions of the sign bit before
+     clipping, try to include the sign bit in the test.  If we're not
+     comparing with zero, don't even try to deal with it (for now?).
+     If we've already commited to a sign test, the extended (before
+     clipping) mask could already be messing with it.  */
+  if (ll_signbit)
+    {
+      if (!integer_zerop (lr_arg) || lsignbit)
+	return 0;
+      wide_int sign = wi::mask (ll_bitsize - 1, true, ll_bitsize);
+      if (!ll_and_mask.get_precision ())
+	ll_and_mask = sign;
+      else
+	ll_and_mask |= sign;
+    }
+
+  if (rl_signbit)
+    {
+      if (!integer_zerop (rr_arg) || rsignbit)
+	return 0;
+      wide_int sign = wi::mask (rl_bitsize - 1, true, rl_bitsize);
+      if (!rl_and_mask.get_precision ())
+	rl_and_mask = sign;
+      else
+	rl_and_mask |= sign;
+    }
 
   if (TREE_CODE (lr_arg) == INTEGER_CST
       && TREE_CODE (rr_arg) == INTEGER_CST)
