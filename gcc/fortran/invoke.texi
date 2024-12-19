@@ -98,9 +98,9 @@ one is not the default.
 * Directory Options::   Where to find module files
 * Link Options ::       Influencing the linking step
 * Runtime Options::     Influencing runtime behavior
+* Developer Options::   Printing GNU Fortran specific info, debugging dumps.
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
-* Developer Options::   Printing GNU Fortran specific info, debugging dumps.
 * Interoperability Options::  Options for interoperability with other
                               languages.
 * Environment Variables:: Environment variables that affect @command{gfortran}.
@@ -188,12 +188,12 @@ and warnings}.
 @gccoptlist{-faggressive-function-elimination -fblas-matmul-limit=@var{n}
 -fbounds-check -ftail-call-workaround -ftail-call-workaround=@var{n}
 -fcheck-array-temporaries
--fcheck=@var{<all|array-temps|bits|bounds|do|mem|pointer|recursion>}
--fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
+-fcheck=<all|array-temps|bits|bounds|do|mem|pointer|recursion>
+-fcoarray=<none|single|lib> -fexternal-blas -ff2c
 -ffrontend-loop-interchange -ffrontend-optimize
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero
--finit-derived -finit-logical=@var{<true|false>}
--finit-real=@var{<zero|inf|-inf|nan|snan>}
+-finit-derived -finit-logical=<true|false>
+-finit-real=<zero|inf|-inf|nan|snan>
 -finline-intrinsics[=<@var{minloc},@var{maxloc}>]
 -finline-matmul-limit=@var{n}
 -finline-arg-packing -fmax-array-constructor=@var{n}
@@ -304,32 +304,36 @@ instead where possible.
 
 @opindex fdec-intrinsic-ints
 @item -fdec-intrinsic-ints
-Enable B/I/J/K kind variants of existing integer functions (e.g. BIAND, IIAND,
-JIAND, etc...). For a complete list of intrinsics see the full documentation.
+Enable B/I/J/K kind variants of existing integer functions
+(e.g. @code{BIAND}, @code{IIAND}, @code{JIAND}, etc...).
+For a complete list of intrinsics see @ref{Intrinsic Procedures}.
 
 @opindex fdec-math
 @item -fdec-math
 Obsolete flag.  The purpose of this option was to
-enable legacy math intrinsics such as COTAN and degree-valued trigonometric
-functions (e.g. TAND, ATAND, etc...) for compatability with older code. This
+enable legacy math intrinsics such as @code{COTAN} and degree-valued
+trigonometric functions (e.g. @code{TAND}, @code{ATAND}, etc...)
+for compatibility with older code. This
 option is no longer operable. The trigonometric functions are now either
 part of Fortran 2023 or GNU extensions.
 
 @opindex fdec-static
 @item -fdec-static
-Enable DEC-style STATIC and AUTOMATIC attributes to explicitly specify
+Enable DEC-style @code{STATIC} and @code{AUTOMATIC}
+attributes to explicitly specify
 the storage of variables and other objects.
 
 @opindex fdec-include
 @item -fdec-include
-Enable parsing of INCLUDE as a statement in addition to parsing it as
-INCLUDE line.  When parsed as INCLUDE statement, INCLUDE does not have to
+Enable parsing of @code{INCLUDE} as a statement in addition to parsing it as
+@code{INCLUDE} line.
+When parsed as @code{INCLUDE} statement, @code{INCLUDE} does not have to
 be on a single line and can use line continuations.
 
 @opindex fdec-format-defaults
 @item -fdec-format-defaults
-Enable format specifiers F, G and I to be used without width specifiers,
-default widths will be used instead.
+Enable format specifiers @samp{F}, @samp{G} and @samp{I}
+to be used without width specifiers; default widths are used instead.
 
 @opindex fdec-blank-format-item
 @item -fdec-blank-format-item
@@ -352,14 +356,14 @@ Using @samp{$} in @code{IMPLICIT} statements is also rejected.
 @item -fbackslash
 Change the interpretation of backslashes in string literals from a single
 backslash character to ``C-style'' escape characters. The following
-combinations are expanded @code{\a}, @code{\b}, @code{\f}, @code{\n},
-@code{\r}, @code{\t}, @code{\v}, @code{\\}, and @code{\0} to the ASCII
+combinations are expanded: @samp{\a}, @samp{\b}, @samp{\f}, @samp{\n},
+@samp{\r}, @samp{\t}, @samp{\v}, @samp{\\}, and @samp{\0} to the ASCII
 characters alert, backspace, form feed, newline, carriage return,
 horizontal tab, vertical tab, backslash, and NUL, respectively.
-Additionally, @code{\x}@var{nn}, @code{\u}@var{nnnn} and
-@code{\U}@var{nnnnnnnn} (where each @var{n} is a hexadecimal digit) are
+Additionally, @samp{\x@var{nn}}, @samp{\u@var{nnnn}} and
+@samp{\U@var{nnnnnnnn}} (where each @var{n} is a hexadecimal digit) are
 translated into the Unicode characters corresponding to the specified code
-points. All other combinations of a character preceded by \ are
+points. All other combinations of a character preceded by @samp{\} are
 unexpanded.
 
 @opindex fmodule-private
@@ -1134,14 +1138,16 @@ This currently produces a warning under the following circumstances:
 
 @itemize @bullet
 @item
-An INTEGER SELECT construct has a CASE that can never be matched as its
+An @code{INTEGER}-typed @code{SELECT CASE} construct has a @code{CASE}
+that can never be matched as its
 lower value is greater than its upper value.
 
 @item
-A LOGICAL SELECT construct has three CASE statements.
+A @code{LOGICAL}-typed @code{SELECT CASE} construct has three @code{CASE}
+statements.
 
 @item
-A TRANSFER specifies a source that is shorter than the destination.
+A @code{TRANSFER} specifies a source that is shorter than the destination.
 
 @item
 The type of a function result is declared more than once with the same type.  If
@@ -1171,7 +1177,8 @@ active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @opindex Wundefined-do-loop
 @cindex warnings, undefined do loop
 @item -Wundefined-do-loop
-Warn if a DO loop with step either 1 or -1 yields an underflow or an overflow
+Warn if a @code{DO} loop with step either 1 or -1 yields an underflow
+or an overflow
 during iteration of an induction variable of the loop.
 This option is implied by @option{-Wall}.
 
@@ -1179,8 +1186,9 @@ This option is implied by @option{-Wall}.
 @cindex warnings, underflow
 @cindex underflow
 @item -Wunderflow
-Produce a warning when numerical constant expressions are
-encountered, which yield an UNDERFLOW during compilation. Enabled by default.
+Produce a warning when numerical constant expressions
+that yield an underflow are encountered during compilation.
+Enabled by default.
 
 @opindex Wintrinsic-shadow
 @cindex warnings, intrinsic
@@ -1267,7 +1275,7 @@ time.  This option is implied by @option{-Wall}.
 
 @opindex Wdo-subscript
 @item -Wdo-subscript
-Warn if an array subscript inside a DO loop could lead to an
+Warn if an array subscript inside a @code{DO} loop could lead to an
 out-of-bounds access even if the compiler cannot prove that the
 statement is actually executed, in cases like
 @smallexample
@@ -1288,7 +1296,7 @@ Turns all warnings into errors.
 
 @xref{Warning Options,,Options to Request or Suppress Errors and
 Warnings, gcc,Using the GNU Compiler Collection (GCC)}, for information on
-more options offered by the GBE shared by @command{gfortran}, @command{gcc}
+more options offered by the back end shared by @command{gfortran}, @command{gcc}
 and other GNU compilers.
 
 Some of these have no effect when compiling programs written in Fortran.
@@ -1493,9 +1501,9 @@ commas.  Those are
 @code{REAL(KIND=16)}.
 @end itemize
 
-@emph{This option has an effect only when used in the main program.
-The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment
-variable override the default specified by @option{-fconvert}.}
+This option has an effect only when used in the main program.
+The @code{CONVERT} specifier and the @env{GFORTRAN_CONVERT_UNIT} environment
+variable override the default specified by @option{-fconvert}.
 
 @opindex frecord-marker=@var{length}
 @item -frecord-marker=@var{length}
@@ -1607,7 +1615,7 @@ it.
 @cindex @code{SAVE} statement
 @cindex statement, @code{SAVE}
 @item -fno-automatic
-Treat each program unit (except those marked as RECURSIVE) as if the
+Treat each program unit (except those marked as @code{RECURSIVE}) as if the
 @code{SAVE} statement were specified for every local variable and array
 referenced in it. Does not affect common blocks. (Some Fortran compilers
 provide this option under the name @option{-static} or @option{-save}.)
@@ -1907,8 +1915,10 @@ The default value for @var{n} is 65535.
 @item -fmax-stack-var-size=@var{n}
 This option specifies the size in bytes of the largest array that will be put
 on the stack; if the size is exceeded static memory is used (except in
-procedures marked as RECURSIVE). Use the option @option{-frecursive} to
-allow for recursive procedures which do not have a RECURSIVE attribute or
+procedures marked as @code{RECURSIVE}).
+Use the option @option{-frecursive} to
+allow for recursive procedures which do not have a
+@code{RECURSIVE} attribute or
 for parallel programs. Use @option{-fno-automatic} to never use the stack.
 
 This option currently only affects local arrays declared with constant
@@ -2016,7 +2026,7 @@ optimization over a library function.  With @code{-finline-intrinsics=...} or
 present in the comma-separated list provided as argument.
 
 For each intrinsic, if no choice of implementation was made through either of
-the flag variants, a default behaviour is chosen depending on optimization:
+the flag variants, a default behavior is chosen depending on optimization:
 library calls are generated when not optimizing or when optimizing for size;
 otherwise inline code is preferred.
 
@@ -2058,8 +2068,8 @@ on the stack. This flag cannot be used together with
 @item -finit-local-zero
 @itemx -finit-derived
 @itemx -finit-integer=@var{n}
-@itemx -finit-real=@var{<zero|inf|-inf|nan|snan>}
-@itemx -finit-logical=@var{<true|false>}
+@itemx -finit-real=<zero|inf|-inf|nan|snan>
+@itemx -finit-logical=<true|false>
 @itemx -finit-character=@var{n}
 The @option{-finit-local-zero} option instructs the compiler to
 initialize local @code{INTEGER}, @code{REAL}, and @code{COMPLEX}
@@ -2067,9 +2077,9 @@ variables to zero, @code{LOGICAL} variables to false, and
 @code{CHARACTER} variables to a string of null bytes.  Finer-grained
 initialization options are provided by the
 @option{-finit-integer=@var{n}},
-@option{-finit-real=@var{<zero|inf|-inf|nan|snan>}} (which also initializes
+@option{-finit-real=<zero|inf|-inf|nan|snan>} (which also initializes
 the real and imaginary parts of local @code{COMPLEX} variables),
-@option{-finit-logical=@var{<true|false>}}, and
+@option{-finit-logical=<true|false>}, and
 @option{-finit-character=@var{n}} (where @var{n} is an ASCII character
 value) options.
 
@@ -2081,7 +2091,7 @@ an explicit @option{-finit-*} flag will be treated as described above with
 These options do not initialize
 @itemize @bullet
 @item
-objects with the POINTER attribute
+objects with the @code{POINTER} attribute
 @item
 allocatable arrays
 @item
@@ -2174,7 +2184,7 @@ At the moment, this option only affects @code{FORALL} and
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
 gcc,Using the GNU Compiler Collection (GCC)}, for information on more options
-offered by the GBE
+offered by the back end
 shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 
 @c man end
@@ -2182,7 +2192,7 @@ shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 @node Interoperability Options
 @section Options for interoperability with other languages
 
-@table @asis
+@table @gcctabopt
 
 @opindex c-prototypes
 @cindex Generating C prototypes from Fortran BIND(C) enteties
