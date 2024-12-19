@@ -2437,7 +2437,19 @@ riscv_get_valid_option_values (int option_code,
 
 	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
 	for (;cpu_info->name; ++cpu_info)
-	  v.safe_push (cpu_info->name);
+	  {
+	    /* Skip duplicates.  */
+	    bool skip = false;
+	    int i;
+	    const char *str;
+	    FOR_EACH_VEC_ELT (v, i, str)
+	      {
+		if (!strcmp (str, cpu_info->name))
+		  skip = true;
+	      }
+	    if (!skip)
+	      v.safe_push (cpu_info->name);
+	  }
       }
       break;
     case OPT_mcpu_:
