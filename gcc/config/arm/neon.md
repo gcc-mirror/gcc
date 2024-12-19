@@ -215,8 +215,8 @@
 })
 
 (define_split
-  [(set (match_operand:OI 0 "s_register_operand" "")
-	(match_operand:OI 1 "s_register_operand" ""))]
+  [(set (match_operand:VSTRUCT2 0 "s_register_operand" "")
+	(match_operand:VSTRUCT2 1 "s_register_operand" ""))]
   "(TARGET_NEON || TARGET_HAVE_MVE)&& reload_completed"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))]
@@ -256,8 +256,8 @@
 })
 
 (define_split
-  [(set (match_operand:XI 0 "s_register_operand" "")
-	(match_operand:XI 1 "s_register_operand" ""))]
+  [(set (match_operand:VSTRUCT4 0 "s_register_operand" "")
+	(match_operand:VSTRUCT4 1 "s_register_operand" ""))]
   "(TARGET_NEON || TARGET_HAVE_MVE) && reload_completed"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))

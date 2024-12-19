@@ -152,6 +152,24 @@
 			       (V4x4SF "TARGET_HAVE_MVE_FLOAT")
 			       ])
 
+;; Structure types of the same size as OImode
+(define_mode_iterator VSTRUCT2 [OI
+			       (V2x16QI "TARGET_HAVE_MVE")
+			       (V2x8HI "TARGET_HAVE_MVE")
+			       (V2x4SI "TARGET_HAVE_MVE")
+			       (V2x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V2x4SF "TARGET_HAVE_MVE_FLOAT")
+			       ])
+
+;; Structure types of the same size as XImode
+(define_mode_iterator VSTRUCT4 [XI
+			       (V4x16QI "TARGET_HAVE_MVE")
+			       (V4x8HI "TARGET_HAVE_MVE")
+			       (V4x4SI "TARGET_HAVE_MVE")
+			       (V4x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V4x4SF "TARGET_HAVE_MVE_FLOAT")
+			       ])
+
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
 

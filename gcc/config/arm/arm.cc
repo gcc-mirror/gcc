@@ -20775,11 +20775,13 @@ output_move_neon (rtx *operands)
   nregs = REG_NREGS (reg) / 2;
   gcc_assert (VFP_REGNO_OK_FOR_DOUBLE (regno)
 	      || NEON_REGNO_OK_FOR_QUAD (regno));
-  gcc_assert (VALID_NEON_DREG_MODE (mode)
-	      || VALID_NEON_QREG_MODE (mode)
-	      || VALID_NEON_STRUCT_MODE (mode)
+  gcc_assert ((TARGET_NEON
+	       && (VALID_NEON_DREG_MODE (mode)
+		   || VALID_NEON_QREG_MODE (mode)
+		   || VALID_NEON_STRUCT_MODE (mode)))
 	      || (TARGET_HAVE_MVE
-		  && VALID_MVE_STRUCT_MODE (mode)));
+		  && (VALID_MVE_MODE (mode)
+		      || VALID_MVE_STRUCT_MODE (mode))));
   gcc_assert (MEM_P (mem));
 
   addr = XEXP (mem, 0);
@@ -20882,8 +20884,9 @@ output_move_neon (rtx *operands)
   return "";
 }
 
-/* Compute and return the length of neon_mov<mode>, where <mode> is
-   one of VSTRUCT modes: EI, OI, CI or XI.  */
+/* Compute and return the length of neon_mov<mode>, where <mode> is one of
+   VSTRUCT modes: EI, OI, CI or XI for Neon, and V2x16QI, V2x8HI, V2x4SI,
+   V2x8HF, V2x4SF, V2x16QI, V2x8HI, V2x4SI, V2x8HF, V2x4SF for MVE.  */
 int
 arm_attr_length_move_neon (rtx_insn *insn)
 {
@@ -20900,10 +20903,20 @@ arm_attr_length_move_neon (rtx_insn *insn)
 	{
 	case E_EImode:
 	case E_OImode:
+	case E_V2x16QImode:
+	case E_V2x8HImode:
+	case E_V2x4SImode:
+	case E_V2x8HFmode:
+	case E_V2x4SFmode:
 	  return 8;
 	case E_CImode:
 	  return 12;
 	case E_XImode:
+	case E_V4x16QImode:
+	case E_V4x8HImode:
+	case E_V4x4SImode:
+	case E_V4x8HFmode:
+	case E_V4x4SFmode:
 	  return 16;
 	default:
 	  gcc_unreachable ();
