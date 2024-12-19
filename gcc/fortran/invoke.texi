@@ -1664,6 +1664,8 @@ source file by appending underscores to them.
 With @option{-funderscoring} in effect, GNU Fortran appends one
 underscore to external names.  This is done to ensure
 compatibility with code produced by many UNIX Fortran compilers.
+Note this does not apply to names declared with C binding, or within
+a module.
 
 @emph{Caution}: The default behavior of GNU Fortran is
 incompatible with @command{f2c} and @command{g77}, please use the
@@ -1678,12 +1680,12 @@ and so on).
 
 For example, with @option{-funderscoring}, and assuming that @code{j()} and
 @code{max_count()} are external functions while @code{my_var} and
-@code{lvar} are local variables, a statement like
+@code{lvar} are local variables, a Fortran statement like
 @smallexample
 I = J() + MAX_COUNT (MY_VAR, LVAR)
 @end smallexample
 @noindent
-is implemented as something akin to:
+is implemented as something akin to the C code:
 @smallexample
 i = j_() + max_count_(&my_var, &lvar);
 @end smallexample
@@ -1715,11 +1717,10 @@ could make finding unresolved-reference bugs quite difficult in some
 cases---they might occur at program run time, and show up only as
 buggy behavior at run time.
 
-In future versions of GNU Fortran we hope to improve naming and linking
-issues so that debugging always involves using the names as they appear
-in the source, even if the names as seen by the linker are mangled to
-prevent accidental linking between procedures with incompatible
-interfaces.
+@xref{Naming and argument-passing conventions}, for more information.
+Also note that declaring symbols as @code{bind(C)} is a more robust way to
+interface with code written in other languages or compiled with different
+Fortran compilers than the command-line options documented in this section.
 
 @opindex fsecond-underscore
 @cindex underscore
@@ -1731,20 +1732,18 @@ interfaces.
 @cindex libf2c calling convention
 @item -fsecond-underscore
 By default, GNU Fortran appends an underscore to external
-names.  If this option is used GNU Fortran appends two
-underscores to names with underscores and one underscore to external names
-with no underscores.  GNU Fortran also appends two underscores to
-internal names with underscores to avoid naming collisions with external
-names.
+names.  If this option is used, GNU Fortran appends two
+underscores to names with underscores and one underscore to names
+with no underscores.
 
-This option has no effect if @option{-fno-underscoring} is
-in effect.  It is implied by the @option{-ff2c} option.
-
-Otherwise, with this option, an external name such as @code{MAX_COUNT}
+For example, an external name such as @code{MAX_COUNT}
 is implemented as a reference to the link-time external symbol
 @code{max_count__}, instead of @code{max_count_}.  This is required
 for compatibility with @command{g77} and @command{f2c}, and is implied
 by use of the @option{-ff2c} option.
+
+This option has no effect if @option{-fno-underscoring} is
+in effect.  It is implied by the @option{-ff2c} option.
 
 @opindex fcoarray
 @cindex coarrays
