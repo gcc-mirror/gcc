@@ -1854,6 +1854,20 @@ proc check_effective_target_fortran_integer_16 { } {
     }]
 }
 
+# Check if long double on the target defaults to the IBM extended format.
+
+proc check_effective_target_long_double_is_ibm128 { } {
+    if { ![istarget powerpc*-*-*] } {
+      return 0
+    }
+
+    return [check_no_compiler_messages long_double_is_ibm128 assembly {
+      #ifndef __LONG_DOUBLE_IBM128__
+      #error "__LONG_DOUBLE_IBM128__ not defined"
+      #endif
+    }]
+}
+
 # Return 1 if we can statically link libgfortran, 0 otherwise.
 #
 # When the target name changes, replace the cached result.
