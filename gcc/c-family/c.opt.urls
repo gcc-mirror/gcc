@@ -870,6 +870,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-body)
 Wtemplate-id-cdtor
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-id-cdtor)
 
+Wtemplate-names-tu-local
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-names-tu-local)
+
 Wterminate
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-terminate)
 
