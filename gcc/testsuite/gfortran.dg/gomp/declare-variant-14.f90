@@ -1,6 +1,5 @@
-! { dg-do compile { target vect_simd_clones } }
-! { dg-additional-options "-O0 -fdump-tree-gimple -fdump-tree-optimized" }
-! { dg-additional-options "-mno-sse3" { target { i?86-*-* x86_64-*-* } } }
+! { dg-do compile { target { { i?86-*-* x86_64-*-* } && vect_simd_clones } } } */
+! { dg-additional-options "-mno-sse3 -O0 -fdump-tree-gimple -fdump-tree-optimized" }
 
 module main
   implicit none
@@ -40,10 +39,8 @@ contains
     ! call f03 (score 6), the sse2/avx/avx2 clones too, but avx512f clones
     ! shall call f01 with score 8.
     ! { dg-final { scan-tree-dump-not "f04 \\\(x" "optimized" } }
-    ! { dg-final { scan-tree-dump-times "f03 \\\(x" 14 "optimized" { target { !aarch64*-*-* } } } }
-    ! { dg-final { scan-tree-dump-times "f03 \\\(x" 6 "optimized" { target { aarch64*-*-* } } } }
-    ! { dg-final { scan-tree-dump-times "f01 \\\(x" 4 "optimized" { target { !aarch64*-*-* } } } }
-    ! { dg-final { scan-tree-dump-times "f01 \\\(x" 0 "optimized" { target { aarch64*-*-* } } } }
+    ! { dg-final { scan-tree-dump-times "f03 \\\(x" 14 "optimized" } }
+    ! { dg-final { scan-tree-dump-times "f01 \\\(x" 4 "optimized" } }
     a = f04 (x)
     b = f04 (x)
     test1 = a + b
