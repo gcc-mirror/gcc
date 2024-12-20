@@ -2839,6 +2839,16 @@
   }
 )
 
+(define_expand "vec_init<mode><Vhalf>"
+  [(match_operand:SVE_NO2E 0 "register_operand")
+   (match_operand 1 "")]
+  "TARGET_SVE"
+  {
+    aarch64_sve_expand_vector_init_subvector (operands[0], operands[1]);
+    DONE;
+  }
+)
+
 ;; Shift an SVE vector left and insert a scalar into element 0.
 (define_insn "vec_shl_insert_<mode>"
   [(set (match_operand:SVE_FULL 0 "register_operand")
@@ -9287,6 +9297,19 @@
 	  UNSPEC_PACK))]
   "TARGET_SVE"
   "uzp1\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
+)
+
+;; Integer partial pack packing two partial SVE types into a single full SVE
+;; type of the same element type.  Use UZP1 on the wider type, which discards
+;; the high part of each wide element.  This allows to concat SVE partial types
+;; into a wider vector.
+(define_insn "@aarch64_pack_partial<mode>"
+  [(set (match_operand:SVE_NO2E 0 "register_operand" "=w")
+	(vec_concat:SVE_NO2E
+	  (match_operand:<VHALF> 1 "register_operand" "w")
+	  (match_operand:<VHALF> 2 "register_operand" "w")))]
+  "TARGET_SVE"
+  "uzp1\t%0.<Vctype>, %1.<Vctype>, %2.<Vctype>"
 )
 
 ;; -------------------------------------------------------------------------

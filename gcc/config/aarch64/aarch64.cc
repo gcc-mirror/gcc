@@ -24870,6 +24870,30 @@ aarch64_sve_expand_vector_init (rtx target, rtx vals)
     aarch64_sve_expand_vector_init_insert_elems (target, v, nelts);
 }
 
+/* Initialize register TARGET from the two vector subelements in PARALLEL
+   rtx VALS.  */
+
+void
+aarch64_sve_expand_vector_init_subvector (rtx target, rtx vals)
+{
+  machine_mode mode = GET_MODE (target);
+  int nelts = XVECLEN (vals, 0);
+
+  gcc_assert (nelts == 2);
+
+  rtx arg0 = XVECEXP (vals, 0, 0);
+  rtx arg1 = XVECEXP (vals, 0, 1);
+
+  /* If we have two elements and are concatting vector.  */
+  machine_mode elem_mode = GET_MODE (arg0);
+  gcc_assert (VECTOR_MODE_P (elem_mode));
+
+  arg0 = force_reg (elem_mode, arg0);
+  arg1 = force_reg (elem_mode, arg1);
+  emit_insn (gen_aarch64_pack_partial (mode, target, arg0, arg1));
+  return;
+}
+
 /* Check whether VALUE is a vector constant in which every element
    is either a power of 2 or a negated power of 2.  If so, return
    a constant vector of log2s, and flip CODE between PLUS and MINUS

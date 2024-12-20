@@ -140,6 +140,10 @@
 ;; VQ without 2 element modes.
 (define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V8HF V4SF V8BF])
 
+;; SVE modes without 2 element modes.
+(define_mode_iterator SVE_NO2E [VNx16QI VNx8QI VNx4QI VNx8HI VNx4HI VNx8HF
+				VNx4HF VNx8BF VNx4BF VNx4SI VNx4SF])
+
 ;; 2 element quad vector modes.
 (define_mode_iterator VQ_2E [V2DI V2DF])
 
@@ -1737,7 +1741,13 @@
 			 (V2DI "DI")    (V2SF  "SF")
 			 (V4SF "V2SF")  (V4HF "V2HF")
 			 (V8HF "V4HF")  (V2DF  "DF")
-			 (V8BF "V4BF")])
+			 (V8BF "V4BF")
+			 (VNx16QI "VNx8QI") (VNx8QI "VNx4QI")
+			 (VNx4QI "VNx2QI")
+			 (VNx8HI "VNx4HI")  (VNx4HI "VNx2HI")
+			 (VNx8HF "VNx4HF")  (VNx4HF "VNx2HF")
+			 (VNx8BF "VNx4BF")  (VNx4BF "VNx2BF")
+			 (VNx4SI "VNx2SI")  (VNx4SF "VNx2SF")])
 
 ;; Half modes of all vector modes, in lower-case.
 (define_mode_attr Vhalf [(V8QI "v4qi")  (V16QI "v8qi")
@@ -1745,7 +1755,13 @@
 			 (V8HF  "v4hf") (V8BF  "v4bf")
 			 (V2SI "si")    (V4SI  "v2si")
 			 (V2DI "di")    (V2SF  "sf")
-			 (V4SF "v2sf")  (V2DF  "df")])
+			 (V4SF "v2sf")  (V2DF  "df")
+			 (VNx16QI "vnx8qi") (VNx8QI "vnx4qi")
+			 (VNx4QI "vnx2qi")
+			 (VNx8HI "vnx4hi")  (VNx4HI "vnx2hi")
+			 (VNx8HF "vnx4hf")  (VNx4HF "vnx2hf")
+			 (VNx8BF "vnx4bf")  (VNx4BF "vnx2bf")
+			 (VNx4SI "vnx2si")  (VNx4SF "vnx2sf")])
 
 ;; Single-element half modes of quad vector modes.
 (define_mode_attr V1HALF [(V2DI "V1DI")  (V2DF  "V1DF")])
