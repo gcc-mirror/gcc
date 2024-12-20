@@ -4369,9 +4369,11 @@ add_insn_before (rtx_insn *insn, rtx_insn *before, basic_block bb)
 {
   add_insn_before_nobb (insn, before);
 
+  if (BARRIER_P (insn))
+    return;
+
   if (!bb
-      && !BARRIER_P (before)
-      && !BARRIER_P (insn))
+      && !BARRIER_P (before))
     bb = BLOCK_FOR_INSN (before);
 
   if (bb)
