@@ -354,13 +354,13 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 {
   NodeId resolved_node_id = root_resolved_node_id;
   TyTy::BaseType *prev_segment = tyseg;
-  bool reciever_is_generic = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
-  bool reciever_is_dyn = prev_segment->get_kind () == TyTy::TypeKind::DYNAMIC;
+  bool receiver_is_generic = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
+  bool receiver_is_dyn = prev_segment->get_kind () == TyTy::TypeKind::DYNAMIC;
 
   for (size_t i = offset; i < segments.size (); i++)
     {
       HIR::PathExprSegment &seg = segments.at (i);
-      bool probe_impls = !reciever_is_generic;
+      bool probe_impls = !receiver_is_generic;
 
       // probe the path is done in two parts one where we search impls if no
       // candidate is found then we search extensions from traits
@@ -435,7 +435,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    }
 	}
 
-      if (associated_impl_block != nullptr && !reciever_is_dyn)
+      if (associated_impl_block != nullptr && !receiver_is_dyn)
 	{
 	  // associated types
 	  HirId impl_block_id
@@ -492,7 +492,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	    return;
 	}
-      else if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
+      else if (tyseg->needs_generic_substitutions () && !receiver_is_generic)
 	{
 	  location_t locus = seg.get_locus ();
 	  tyseg = SubstMapper::InferSubst (tyseg, locus);
