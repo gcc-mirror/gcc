@@ -8962,9 +8962,6 @@ package body Exp_Aggr is
       Typ  : constant Entity_Id  := Etype (N);
       Ctyp : constant Entity_Id  := Component_Type (Typ);
 
-      Not_Handled : exception;
-      --  Exception raised if this aggregate cannot be handled
-
    begin
       --  Handle one- or two dimensional bit packed array
 
@@ -8997,7 +8994,7 @@ package body Exp_Aggr is
          --  Given a expression value N of the component type Ctyp, returns a
          --  value of Csiz (component size) bits representing this value. If
          --  the value is nonstatic or any other reason exists why the value
-         --  cannot be returned, then Not_Handled is raised.
+         --  cannot be returned, then No_Uint is returned.
 
          -----------------------
          -- Get_Component_Val --
@@ -9020,7 +9017,7 @@ package body Exp_Aggr is
             if not Compile_Time_Known_Value (N)
               or else Nkind (N) = N_String_Literal
             then
-               raise Not_Handled;
+               return No_Uint;
             end if;
 
             Val := Expr_Rep_Value (N);
@@ -9098,6 +9095,9 @@ package body Exp_Aggr is
                --  justified modular type processing), so we do not have to
                --  worry about that here.
 
+               Val : Uint;
+               --  Temporary value
+
                Lit : Node_Id;
                --  Integer literal for resulting constructed value
 
@@ -9146,16 +9146,23 @@ package body Exp_Aggr is
 
                if Len = 0 then
                   Aggregate_Val := Uint_0;
+
                else
                   Expr := First (Expressions (N));
-                  Aggregate_Val := Get_Component_Val (Expr) * Uint_2 ** Shift;
+                  Val := Get_Component_Val (Expr);
+                  if No (Val) then
+                     return False;
+                  end if;
+                  Aggregate_Val := Val * Uint_2 ** Shift;
 
                   for J in 2 .. Len loop
                      Shift := Shift + Incr;
                      Next (Expr);
-                     Aggregate_Val :=
-                       Aggregate_Val +
-                       Get_Component_Val (Expr) * Uint_2 ** Shift;
+                     Val := Get_Component_Val (Expr);
+                     if No (Val) then
+                        return False;
+                     end if;
+                     Aggregate_Val := Aggregate_Val + Val * Uint_2 ** Shift;
                   end loop;
                end if;
 
@@ -9182,10 +9189,6 @@ package body Exp_Aggr is
             end;
          end;
       end;
-
-   exception
-      when Not_Handled =>
-         return False;
    end Packed_Array_Aggregate_Handled;
 
    ----------------------------
