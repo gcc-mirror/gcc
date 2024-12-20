@@ -6216,7 +6216,17 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       emit_insn_after_noloc (gen_move_insn (dummy, dummy), last, NULL);
     }
 
-  do_pending_stack_adjust ();
+  /* A __builtin_unreachable () will insert a barrier that should end
+     the basic block.  In gimple, any code after it will have already
+     deleted, even without optimization.  If we emit additional code
+     here, as we would to adjust the stack after a call, it should be
+     eventually deleted, but it confuses internal checkers (PR118006)
+     and optimizers before it does, because we don't expect to find
+     barriers inside basic blocks.  */
+  if (!BARRIER_P (get_last_insn ()))
+    do_pending_stack_adjust ();
+  else
+    discard_pending_stack_adjust ();
 
   /* Find the block tail.  The last insn in the block is the insn
      before a barrier and/or table jump insn.  */
