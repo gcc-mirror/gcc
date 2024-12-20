@@ -2881,12 +2881,13 @@ pass_ipa_strub::execute (function *)
 		   && (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
 		       <= 4 * UNITS_PER_WORD))))
 	{
-	  /* No point in indirecting pointer types.  Presumably they
-	     won't ever pass the size-based test above, but check the
-	     assumption here, because getting this wrong would mess
-	     with attribute access and possibly others.  We deal with
-	     fn spec below.  */
-	  gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (nparm)));
+	  /* No point in indirecting pointer types, unless they're
+	     volatile.  Presumably they won't ever pass the size-based
+	     test above, but check the assumption here, because
+	     getting this wrong would mess with attribute access and
+	     possibly others.  We deal with fn spec below.  */
+	  gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (nparm))
+			       || TREE_THIS_VOLATILE (parm));
 
 	  indirect_nparms.add (nparm);
 
