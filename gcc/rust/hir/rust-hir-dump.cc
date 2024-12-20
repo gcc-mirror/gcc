@@ -315,6 +315,14 @@ Dump::do_functionparam (FunctionParam &e)
 void
 Dump::do_pathpattern (PathPattern &e)
 {
+  if (e.get_path_kind () == PathPattern::Kind::LangItem)
+    {
+      put_field ("segments", "#[lang = \""
+			       + LangItem::ToString (e.get_lang_item ())
+			       + "\"]");
+      return;
+    }
+
   std::string str = "";
 
   for (const auto &segment : e.get_segments ())
@@ -405,9 +413,12 @@ void
 Dump::do_qualifiedpathtype (QualifiedPathType &e)
 {
   do_mappings (e.get_mappings ());
-  visit_field ("type", e.get_type ());
+  if (e.has_type ())
+    visit_field ("type", e.get_type ());
+  else
+    put_field ("type", "none");
 
-  if (e.has_as_clause ())
+  if (e.has_trait ())
     visit_field ("trait", e.get_trait ());
 }
 
@@ -527,6 +538,8 @@ Dump::do_traitfunctiondecl (TraitFunctionDecl &e)
 
   if (e.has_return_type ())
     visit_field ("return_type", e.get_return_type ());
+  else
+    put_field ("return_type", "none");
 
   if (e.has_where_clause ())
     put_field ("where_clause", e.get_where_clause ().as_string ());
@@ -1306,6 +1319,8 @@ Dump::visit (BreakExpr &e)
 
   if (e.has_break_expr ())
     visit_field ("break_expr ", e.get_expr ());
+  else
+    put_field ("break_expr", "none");
 
   end ("BreakExpr");
 }

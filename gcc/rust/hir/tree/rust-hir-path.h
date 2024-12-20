@@ -733,13 +733,20 @@ public:
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
+  bool has_type () { return type != nullptr; }
+  bool has_trait () { return trait != nullptr; }
+
   Type &get_type ()
   {
     rust_assert (type);
     return *type;
   }
 
-  TypePath &get_trait () { return *trait; }
+  TypePath &get_trait ()
+  {
+    rust_assert (trait);
+    return *trait;
+  }
 
   bool trait_has_generic_args () const;
 
