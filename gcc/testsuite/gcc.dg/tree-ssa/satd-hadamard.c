@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3 -fdump-tree-forwprop4-details" } */
+/* { dg-options "-O3 -fdump-tree-forwprop4-details" } */
 /* { dg-additional-options "-msse2" { target i?86-*-* x86_64-*-* } } */
 
 #include <stdint.h>

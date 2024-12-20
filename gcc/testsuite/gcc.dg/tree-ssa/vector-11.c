@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3 -fdump-tree-forwprop1-details -Wno-psabi" } */
+/* { dg-options "-O3 -fdump-tree-forwprop1-details -Wno-psabi" } */
+/* { dg-additional-options "-msse2" { target i?86-*-* x86_64-*-* } } */
 
 typedef int vec __attribute__((vector_size (4 * sizeof (int))));
 
@@ -26,9 +27,6 @@ void f1 (vec *p_v_in, vec *p_v_out_1, vec *p_v_out_2)
   v_x = v_2 - v_1;
   v_y = v_1 + v_2;
   v_out_2 = __builtin_shuffle (v_y, v_x, sel);
-
-  /* Won't blend because the narrowed sequence
-     utilizes three of the four lanes.  */
 
   *p_v_out_1 = v_out_1;
   *p_v_out_2 = v_out_2;

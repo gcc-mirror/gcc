@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3 -fdump-tree-forwprop1-details -Wno-psabi" } */
+/* { dg-options "-O3 -fdump-tree-forwprop1-details -Wno-psabi" } */
+/* { dg-additional-options "-msse2" { target i?86-*-* x86_64-*-* } } */
 
 typedef int vec __attribute__((vector_size (4 * sizeof (int))));
 
@@ -105,7 +106,7 @@ void f4 (vec *p_v_in_1, vec *p_v_out_1, vec *p_v_out_2)
   v_y = v_1 - v_2;
   v_out_1 = __builtin_shuffle (v_x, v_y, sel);
 
-  /* Won't merge because of dependency.  */
+  /* Won't blend because of dependency.  */
   v_in_2 = foo (v_out_1);
 
   /* Second vec perm sequence.  */
