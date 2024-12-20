@@ -782,7 +782,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Use_Package_Clause, N_Later_Decl_Item,
        (Sy (Name, Node_Id, Default_Empty),
-        Sy (Is_Effective_Use_Clause, Flag),
+        Sm (Is_Effective_Use_Clause, Flag),
         Sm (Entity_Or_Associated_Node, Node_Id), -- just Associated_Node
         Sm (Hidden_By_Use_Clause, Elist_Id),
         Sm (More_Ids, Flag),
@@ -1497,8 +1497,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Use_Type_Clause, Node_Kind,
        (Sy (Subtype_Mark, Node_Id, Default_Empty),
-        Sy (Is_Effective_Use_Clause, Flag),
         Sy (All_Present, Flag),
+        Sm (Is_Effective_Use_Clause, Flag),
         Sm (Hidden_By_Use_Clause, Elist_Id),
         Sm (More_Ids, Flag),
         Sm (Next_Use_Clause, Node_Id),
