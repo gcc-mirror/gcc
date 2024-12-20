@@ -31457,10 +31457,11 @@ package body Sem_Util is
 
                   Allocator :=
                     Make_Allocator (Loc,
-                      Make_Qualified_Expression
-                        (Loc,
-                         Subtype_Mark => Designated_Subtype_Mark,
-                         Expression   => Expression));
+                      Expression =>
+                        Make_Qualified_Expression
+                          (Loc,
+                           Subtype_Mark => Designated_Subtype_Mark,
+                           Expression   => Expression));
 
                   --  Allocate saved prefix value on the secondary stack
                   --  in order to avoid introducing a storage leak. This

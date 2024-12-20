@@ -12399,7 +12399,10 @@ package body Exp_Ch3 is
       --  on the body to add the appropriate stuff.
 
       elsif For_Body then
-         return Make_Subprogram_Body (Loc, Spec, Empty_List, Empty);
+         return Make_Subprogram_Body (Loc,
+                  Specification              => Spec,
+                  Declarations               => Empty_List,
+                  Handled_Statement_Sequence => Empty);
 
       --  For the case of an Input attribute predefined for an abstract type,
       --  generate an abstract specification. This will never be called, but we
