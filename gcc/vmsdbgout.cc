@@ -1231,10 +1231,10 @@ vmsdbgout_end_epilogue (unsigned int line, const char *file)
 
 static void
 vmsdbgout_begin_block (unsigned line, unsigned blocknum,
-		       tree block ATTRIBUTE_UNUSED)
+		       tree block)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.begin_block) (line, blocknum);
+    (*dwarf2_debug_hooks.begin_block) (line, blocknum, block);
 
   if (debug_info_level > DINFO_LEVEL_TERSE)
     targetm.asm_out.internal_label (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
