@@ -29323,7 +29323,7 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					int num, bool explicit_p)
 {
   tree t, ret_type;
-  unsigned int nds_elt_bits;
+  unsigned int nds_elt_bits, wds_elt_bits;
   unsigned HOST_WIDE_INT const_simdlen;
 
   if (!TARGET_SIMD)
@@ -29368,10 +29368,14 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   if (TREE_CODE (ret_type) != VOID_TYPE)
     {
       nds_elt_bits = lane_size (SIMD_CLONE_ARG_TYPE_VECTOR, ret_type);
+      wds_elt_bits = nds_elt_bits;
       vec_elts.safe_push (std::make_pair (ret_type, nds_elt_bits));
     }
   else
-    nds_elt_bits = POINTER_SIZE;
+    {
+      nds_elt_bits = POINTER_SIZE;
+      wds_elt_bits = 0;
+    }
 
   int i;
   tree type_arg_types = TYPE_ARG_TYPES (TREE_TYPE (node->decl));
@@ -29379,44 +29383,65 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   for (t = (decl_arg_p ? DECL_ARGUMENTS (node->decl) : type_arg_types), i = 0;
        t && t != void_list_node; t = TREE_CHAIN (t), i++)
     {
-      tree arg_type = decl_arg_p ? TREE_TYPE (t) : TREE_VALUE (t);
+      tree type = decl_arg_p ? TREE_TYPE (t) : TREE_VALUE (t);
       if (clonei->args[i].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM
-	  && !supported_simd_type (arg_type))
+	  && !supported_simd_type (type))
 	{
 	  if (!explicit_p)
 	    ;
-	  else if (COMPLEX_FLOAT_TYPE_P (ret_type))
+	  else if (COMPLEX_FLOAT_TYPE_P (type))
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 			"GCC does not currently support argument type %qT "
-			"for simd", arg_type);
+			"for simd", type);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 			"unsupported argument type %qT for simd",
-			arg_type);
+			type);
 	  return 0;
 	}
-      unsigned lane_bits = lane_size (clonei->args[i].arg_type, arg_type);
+      unsigned lane_bits = lane_size (clonei->args[i].arg_type, type);
       if (clonei->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
-	vec_elts.safe_push (std::make_pair (arg_type, lane_bits));
+	vec_elts.safe_push (std::make_pair (type, lane_bits));
       if (nds_elt_bits > lane_bits)
 	nds_elt_bits = lane_bits;
+      if (wds_elt_bits < lane_bits)
+	wds_elt_bits = lane_bits;
     }
 
-  clonei->vecsize_mangle = 'n';
+  /* If we could not determine the WDS type from available parameters/return,
+     then fallback to using uintptr_t.  */
+  if (wds_elt_bits == 0)
+    wds_elt_bits = POINTER_SIZE;
+
   clonei->mask_mode = VOIDmode;
   poly_uint64 simdlen;
-  auto_vec<poly_uint64> simdlens (2);
+  typedef struct
+    {
+      poly_uint64 len;
+      char mangle;
+    } aarch64_clone_info;
+  auto_vec<aarch64_clone_info, 3> clones;
+
   /* Keep track of the possible simdlens the clones of this function can have,
      and check them later to see if we support them.  */
   if (known_eq (clonei->simdlen, 0U))
     {
       simdlen = exact_div (poly_uint64 (64), nds_elt_bits);
       if (maybe_ne (simdlen, 1U))
-	simdlens.safe_push (simdlen);
-      simdlens.safe_push (simdlen * 2);
+	clones.safe_push ({simdlen, 'n'});
+      clones.safe_push ({simdlen * 2, 'n'});
+      /* Only create an SVE simd clone if we aren't dealing with an unprototyped
+	 function.
+	 We have also disabled support for creating SVE simdclones for functions
+	 with function bodies and any simdclones when -msve-vector-bits is used.
+	 TODO: add support for these.  */
+      if (prototype_p (TREE_TYPE (node->decl))
+	  && !node->definition
+	  && !aarch64_sve_vg.is_constant ())
+	clones.safe_push ({exact_div (BITS_PER_SVE_VECTOR, wds_elt_bits), 's'});
     }
   else
-    simdlens.safe_push (clonei->simdlen);
+    clones.safe_push ({clonei->simdlen, 'n'});
 
   clonei->vecsize_int = 0;
   clonei->vecsize_float = 0;
@@ -29430,11 +29455,12 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
      simdclone would cause a vector type to be larger than 128-bits, and reject
      such a clone.  */
   unsigned j = 0;
-  while (j < simdlens.length ())
+  while (j < clones.length ())
     {
       bool remove_simdlen = false;
       for (auto elt : vec_elts)
-	if (known_gt (simdlens[j] * elt.second, 128U))
+	if (clones[j].mangle == 'n'
+	    && known_gt (clones[j].len * elt.second, 128U))
 	  {
 	    /* Don't issue a warning for every simdclone when there is no
 	       specific simdlen clause.  */
@@ -29442,18 +29468,17 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 			  "GCC does not currently support simdlen %wd for "
 			  "type %qT",
-			  constant_lower_bound (simdlens[j]), elt.first);
+			  constant_lower_bound (clones[j].len), elt.first);
 	    remove_simdlen = true;
 	    break;
 	  }
       if (remove_simdlen)
-	simdlens.ordered_remove (j);
+	clones.ordered_remove (j);
       else
 	j++;
     }
 
-
-  int count = simdlens.length ();
+  int count = clones.length ();
   if (count == 0)
     {
       if (explicit_p && known_eq (clonei->simdlen, 0U))
@@ -29470,21 +29495,112 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
     }
 
   gcc_assert (num < count);
-  clonei->simdlen = simdlens[num];
+  clonei->simdlen = clones[num].len;
+  clonei->vecsize_mangle = clones[num].mangle;
+  /* SVE simdclones always have a Mask, so set inbranch to 1.  */
+  if (clonei->vecsize_mangle == 's')
+    clonei->inbranch = 1;
   return count;
 }
 
-/* Implement TARGET_SIMD_CLONE_ADJUST.  */
+/* Helper function to adjust an SVE vector type of an SVE simd clone.  Returns
+   an SVE vector type based on the element type of the vector TYPE, with SIMDLEN
+   number of elements.  If IS_MASK, returns an SVE mask type appropriate for use
+   with the SVE type it would otherwise return.  */
 
+static tree
+simd_clone_adjust_sve_vector_type (tree type, bool is_mask, poly_uint64 simdlen)
+{
+  unsigned int num_zr = 0;
+  unsigned int num_pr = 0;
+  machine_mode vector_mode;
+  type = TREE_TYPE (type);
+  scalar_mode scalar_m = SCALAR_TYPE_MODE (type);
+  vector_mode = aarch64_sve_data_mode (scalar_m, simdlen).require ();
+  type = build_vector_type_for_mode (type, vector_mode);
+  if (is_mask)
+    {
+      type = truth_type_for (type);
+      num_pr = 1;
+    }
+  else
+    num_zr = 1;
+
+  /* We create new types here with the SVE type attribute instead of using ACLE
+     types as we need to support unpacked vectors which aren't available as
+     ACLE SVE types.  */
+
+  /* ??? This creates anonymous "SVE type" attributes for all types,
+     even those that correspond to <arm_sve.h> types.  This affects type
+     compatibility in C/C++, but not in gimple.  (Gimple type equivalence
+     is instead decided by TARGET_COMPATIBLE_VECTOR_TYPES_P.)
+
+     Thus a C/C++ definition of the implementation function will have a
+     different function type from the declaration that this code creates.
+     However, it doesn't seem worth trying to fix that until we have a
+     way of handling implementations that operate on unpacked types.  */
+  type = build_distinct_type_copy (type);
+  aarch64_sve::add_sve_type_attribute (type, num_zr, num_pr, NULL, NULL);
+  return type;
+}
+
+/* Implement TARGET_SIMD_CLONE_ADJUST.  */
 static void
 aarch64_simd_clone_adjust (struct cgraph_node *node)
 {
-  /* Add aarch64_vector_pcs target attribute to SIMD clones so they
-     use the correct ABI.  */
-
   tree t = TREE_TYPE (node->decl);
-  TYPE_ATTRIBUTES (t) = make_attribute ("aarch64_vector_pcs", "default",
-					TYPE_ATTRIBUTES (t));
+
+  if (node->simdclone->vecsize_mangle == 's')
+    {
+      /* This is additive and has no effect if SVE, or a superset thereof, is
+	 already enabled.  */
+      tree target = build_string (strlen ("+sve") + 1, "+sve");
+      if (!aarch64_option_valid_attribute_p (node->decl, NULL_TREE, target, 0))
+	gcc_unreachable ();
+      push_function_decl (node->decl);
+    }
+  else
+    {
+      /* Add aarch64_vector_pcs target attribute to SIMD clones so they
+	 use the correct ABI.  */
+      TYPE_ATTRIBUTES (t) = make_attribute ("aarch64_vector_pcs", "default",
+					    TYPE_ATTRIBUTES (t));
+    }
+
+  cgraph_simd_clone *sc = node->simdclone;
+
+  for (unsigned i = 0; i < sc->nargs; ++i)
+    {
+      bool is_mask = false;
+      tree type;
+      switch (sc->args[i].arg_type)
+	{
+	case SIMD_CLONE_ARG_TYPE_MASK:
+	  is_mask = true;
+	  gcc_fallthrough ();
+	case SIMD_CLONE_ARG_TYPE_VECTOR:
+	case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP:
+	case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP:
+	  type = sc->args[i].vector_type;
+	  gcc_assert (VECTOR_TYPE_P (type));
+	  if (node->simdclone->vecsize_mangle == 's')
+	    type = simd_clone_adjust_sve_vector_type (type, is_mask,
+						      sc->simdlen);
+	  sc->args[i].vector_type = type;
+	  break;
+	default:
+	  continue;
+	}
+    }
+  if (node->simdclone->vecsize_mangle == 's')
+    {
+      tree ret_type = TREE_TYPE (t);
+      if (VECTOR_TYPE_P (ret_type))
+	TREE_TYPE (t)
+	  = simd_clone_adjust_sve_vector_type (ret_type, false,
+					       node->simdclone->simdlen);
+      pop_function_decl ();
+    }
 }
 
 /* Implement TARGET_SIMD_CLONE_USABLE.  */
@@ -29496,6 +29612,11 @@ aarch64_simd_clone_usable (struct cgraph_node *node, machine_mode vector_mode)
     {
     case 'n':
       if (!TARGET_SIMD || aarch64_sve_mode_p (vector_mode))
+	return -1;
+      return 0;
+    case 's':
+      if (!TARGET_SVE
+	  || !aarch64_sve_mode_p (vector_mode))
 	return -1;
       return 0;
     default:

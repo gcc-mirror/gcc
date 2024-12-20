@@ -1032,15 +1032,18 @@ static GTY(()) hash_map<tree, registered_function *> *overload_names[2];
 
 /* Record that TYPE is an ABI-defined SVE type that contains NUM_ZR SVE vectors
    and NUM_PR SVE predicates.  MANGLED_NAME, if nonnull, is the ABI-defined
-   mangling of the type.  ACLE_NAME is the <arm_sve.h> name of the type.  */
-static void
+   mangling of the type.  mangling of the type.  ACLE_NAME is the <arm_sve.h>
+   name of the type, or null if <arm_sve.h> does not provide the type.  */
+void
 add_sve_type_attribute (tree type, unsigned int num_zr, unsigned int num_pr,
 			const char *mangled_name, const char *acle_name)
 {
   tree mangled_name_tree
     = (mangled_name ? get_identifier (mangled_name) : NULL_TREE);
+  tree acle_name_tree
+    = (acle_name ? get_identifier (acle_name) : NULL_TREE);
 
-  tree value = tree_cons (NULL_TREE, get_identifier (acle_name), NULL_TREE);
+  tree value = tree_cons (NULL_TREE, acle_name_tree, NULL_TREE);
   value = tree_cons (NULL_TREE, mangled_name_tree, value);
   value = tree_cons (NULL_TREE, size_int (num_pr), value);
   value = tree_cons (NULL_TREE, size_int (num_zr), value);
