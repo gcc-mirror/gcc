@@ -6120,6 +6120,10 @@ type_hash_canon_hash (tree type)
       hstate.add_poly_int (TYPE_VECTOR_SUBPARTS (type));
       break;
 
+    case REFERENCE_TYPE:
+      hstate.add_flag (TYPE_REF_IS_RVALUE (type));
+      break;
+
     default:
       break;
     }
@@ -6162,7 +6166,6 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
     case OPAQUE_TYPE:
     case COMPLEX_TYPE:
     case POINTER_TYPE:
-    case REFERENCE_TYPE:
     case NULLPTR_TYPE:
       return true;
 
@@ -6251,6 +6254,9 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
 				  TYPE_ARG_TYPES (b->type))))
 	break;
       return false;
+
+    case REFERENCE_TYPE:
+      return TYPE_REF_IS_RVALUE (a->type) == TYPE_REF_IS_RVALUE (b->type);
 
     default:
       return false;

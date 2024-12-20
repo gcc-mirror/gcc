@@ -81,6 +81,7 @@ int g2 alignas (int) [2];
 int corge () alignas (int);			// { dg-error "'alignas' on a type other than class" }
 int *alignas (int) h;				// { dg-error "'alignas' on a type other than class" }
 int & alignas (int) i = f;			// { dg-error "'alignas' on a type other than class" }
+int && alignas (int) j = 0;			// { dg-error "'alignas' on a type other than class" }
 int S::* alignas (int) k;			// { dg-error "'alignas' on a type other than class" }
 auto l = sizeof (int [2] alignas (int));	// { dg-error "'alignas' on a type other than class" }
 int freddy (alignas (int) int a,		// { dg-error "alignment may not be specified for 'a'" }

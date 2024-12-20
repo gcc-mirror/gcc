@@ -5162,6 +5162,27 @@ handle_std_deprecated_attribute (tree *node, tree name, tree args, int flags,
   return ret;
 }
 
+/* The C++17 [[maybe_unused]] attribute mostly maps to the GNU unused
+   attribute.  */
+
+static tree
+handle_maybe_unused_attribute (tree *node, tree name, tree args, int flags,
+			       bool *no_add_attrs)
+{
+  tree t = *node;
+  tree ret = handle_unused_attribute (node, name, args, flags, no_add_attrs);
+  if (TYPE_P (*node) && t != *node)
+    pedwarn (input_location, OPT_Wattributes,
+	     "%qE on a type other than class or enumeration definition", name);
+  else if (TREE_CODE (*node) == FIELD_DECL && DECL_UNNAMED_BIT_FIELD (*node))
+    pedwarn (input_location, OPT_Wattributes, "%qE on unnamed bit-field",
+	     name);
+  else if (TREE_CODE (*node) == LABEL_DECL && DECL_NAME (*node) == NULL_TREE)
+    pedwarn (input_location, OPT_Wattributes,
+	     "%qE on %<case%> or %<default%> label", name);
+  return ret;
+}
+
 /* Table of valid C++ attributes.  */
 static const attribute_spec cxx_gnu_attributes[] =
 {
@@ -5188,7 +5209,7 @@ static const attribute_spec std_attributes[] =
   { "deprecated", 0, 1, false, false, false, false,
     handle_std_deprecated_attribute, NULL },
   { "maybe_unused", 0, 0, false, false, false, false,
-    handle_unused_attribute, NULL },
+    handle_maybe_unused_attribute, NULL },
   { "nodiscard", 0, 1, false, false, false, false,
     handle_nodiscard_attribute, NULL },
   { "no_unique_address", 0, 0, true, false, false, false,
