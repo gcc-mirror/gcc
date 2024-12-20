@@ -1,3 +1,30 @@
+2024-12-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114801
+	* gcc.target/arm/mve/pr108443.c: Update predicate constant.
+	* gcc.target/arm/mve/pr108443-run.c: Likewise.
+	* gcc.target/arm/mve/pr114801.c: New test.
+
+2024-12-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-12-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/memset-inline-4.c: Only check assembler output.
+	* gcc.target/arm/memset-inline-5.c: Likewise.
+	* gcc.target/arm/memset-inline-6.c: Likewise.
+	* gcc.target/arm/memset-inline-8.c: Likewise.
+	* gcc.target/arm/memset-inline-9.c: Likewise.
+	* gcc.target/arm/memset-inline-4-exe.c: New test.
+	* gcc.target/arm/memset-inline-5-exe.c: Likewise.
+	* gcc.target/arm/memset-inline-6-exe.c: Likewise.
+	* gcc.target/arm/memset-inline-8-exe.c: Likewise.
+	* gcc.target/arm/memset-inline-9-exe.c: Likewise.
+
 2024-12-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	Backported from master:

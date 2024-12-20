@@ -1,3 +1,18 @@
+2024-12-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114801
+	* config/arm/arm-mve-builtins.cc
+	(function_expander::add_input_operand): Handle CONST_INT
+	predicates.
+
+2024-12-19  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-assume.cc: Fix comment typos.
+
 2024-12-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	Backported from master:
