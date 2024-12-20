@@ -36264,7 +36264,6 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 
 	  /* If we run out of tokens, issue an error message.  */
 	case CPP_EOF:
-	case CPP_PRAGMA_EOL:
 	  error_at (token->location, "file ends in default argument");
 	  return error_mark_node;
 
