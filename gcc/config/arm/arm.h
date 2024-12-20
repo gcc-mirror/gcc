@@ -1128,7 +1128,10 @@ extern const int arm_arch_cde_coproc_bits[];
    || (MODE) == CImode || (MODE) == XImode)
 
 #define VALID_MVE_STRUCT_MODE(MODE)			    \
-  ((MODE) == V2x16QImode				    \
+  ((MODE) == TImode					    \
+   || (MODE) == OImode					    \
+   || (MODE) == XImode					    \
+   || (MODE) == V2x16QImode				    \
    || (MODE) == V2x8HImode				    \
    || (MODE) == V2x4SImode				    \
    || (MODE) == V2x8HFmode				    \
