@@ -39,6 +39,7 @@
 #endif
 
 #define __glibcxx_want_span
+#define __glibcxx_want_span_initializer_list
 #include <bits/version.h>
 
 #ifdef __cpp_lib_span // C++ >= 20 && concepts
@@ -46,6 +47,9 @@
 #include <cstddef>
 #include <bits/stl_iterator.h>
 #include <bits/ranges_base.h>
+#ifdef __cpp_lib_span_initializer_list
+# include <initializer_list>
+#endif
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -227,6 +231,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  && noexcept(ranges::size(__range)))
 	: _M_ptr(ranges::data(__range)), _M_extent(ranges::size(__range))
 	{ }
+
+#if __cpp_lib_span_initializer_list >= 202311L // >= C++26
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-list-lifetime"
+	constexpr
+	explicit(extent != dynamic_extent)
+	span(initializer_list<value_type> __il)
+	requires (is_const_v<_Type>)
+	: _M_ptr(__il.begin()), _M_extent(__il.size())
+	{
+	}
+#pragma GCC diagnostic pop
+#endif
 
       constexpr
       span(const span&) noexcept = default;

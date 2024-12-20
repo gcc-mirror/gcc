@@ -2075,6 +2075,16 @@
 #endif /* !defined(__cpp_lib_saturation_arithmetic) && defined(__glibcxx_want_saturation_arithmetic) */
 #undef __glibcxx_want_saturation_arithmetic
 
+#if !defined(__cpp_lib_span_initializer_list)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_span_initializer_list 202311L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_span_initializer_list)
+#   define __cpp_lib_span_initializer_list 202311L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_span_initializer_list) && defined(__glibcxx_want_span_initializer_list) */
+#undef __glibcxx_want_span_initializer_list
+
 #if !defined(__cpp_lib_text_encoding)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (_GLIBCXX_USE_NL_LANGINFO_L)
 #  define __glibcxx_text_encoding 202306L

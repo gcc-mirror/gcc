@@ -1870,6 +1870,14 @@ ftms = {
 };
 
 ftms = {
+  name = span_initializer_list;
+  values = {
+    v = 202311;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = text_encoding;
   values = {
     v = 202306;
