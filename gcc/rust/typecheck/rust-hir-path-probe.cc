@@ -168,7 +168,7 @@ PathProbeType::Probe (const TyTy::BaseType *receiver,
   if (!probe_bounds)
     return probe.candidates;
 
-  if (!probe.is_reciever_generic ())
+  if (!probe.is_receiver_generic ())
     {
       std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> probed_bounds
 	= TypeBoundsProbe::Probe (receiver);
@@ -433,7 +433,7 @@ PathProbeType::union_bounds (
 }
 
 bool
-PathProbeType::is_reciever_generic () const
+PathProbeType::is_receiver_generic () const
 {
   const TyTy::BaseType *root = receiver->get_root ();
   bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;

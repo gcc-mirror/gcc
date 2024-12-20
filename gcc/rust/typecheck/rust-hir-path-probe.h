@@ -145,7 +145,7 @@ protected:
     const std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>> b)
     const;
 
-  bool is_reciever_generic () const;
+  bool is_receiver_generic () const;
 
   const TyTy::BaseType *receiver;
   const HIR::PathIdentSegment &search;
