@@ -1,3 +1,65 @@
+2024-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118069
+	* hwint.h (add_sat_hwi): New function.
+	(mul_sat_hwi): Likewise.
+
+2024-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (vendor_properties): Add "nec".
+
+2024-12-19  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-assume.cc: Fix comment typos.
+
+2024-12-19  Pan Li  <pan2.li@intel.com>
+
+	PR target/118075
+	* config/riscv/vector.md: Add the (mem:BLK (scratch)) as the
+	lhs of strided store define insn.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (decode_field_reference): Add psignbit
+	parameter.  Set it if the mask references sign-extending
+	bits.
+	(fold_truth_andor_for_ifcombine): Adjust calls with new
+	variables.  Swap them along with other r?_* variables.  Handle
+	extended sign bit compares with zero.
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): If bits_test
+	fails in a way that doesn't prevent other ifcombine strategies
+	from passing, give them a try.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (decode_field_reference): Accept incoming
+	mask.
+	(fold_truth_andor_for_ifcombine): Handle some compares with
+	powers of two, minus 1 or 0, like masked compares with zero.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/117915
+	* tree-ssa-ifcombine.cc (ifcombine_mark_ssa_name): Move
+	preconditions from...
+	(ifcombine_mark_ssa_name_walk): ... here.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118046
+	* gimple-fold.cc (decode_field_reference): Don't follow more
+	than one conversion.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (gimple_convert_def_p): Reject load stmts
+	unless requested.
+	(decode_field_reference): Accept a converting load at the last
+	conversion matcher, subsuming the load identification.
+	(fold_truth_andor_for_ifcombine): Refuse to merge operands
+	when only one of them has an associated load stmt.  Swap
+	operands of one of the compares if that helps them match.
+
 2024-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/118096

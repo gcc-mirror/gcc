@@ -1,3 +1,73 @@
+2024-12-19  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/117980
+	* g++.dg/cpp0x/constexpr-prvalue2.C: New test.
+	* g++.dg/cpp0x/constexpr-prvalue3.C: New test.
+
+2024-12-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/memset-inline-4.c: Only check assembler output.
+	* gcc.target/arm/memset-inline-5.c: Likewise.
+	* gcc.target/arm/memset-inline-6.c: Likewise.
+	* gcc.target/arm/memset-inline-8.c: Likewise.
+	* gcc.target/arm/memset-inline-9.c: Likewise.
+	* gcc.target/arm/memset-inline-4-exe.c: New test.
+	* gcc.target/arm/memset-inline-5-exe.c: Likewise.
+	* gcc.target/arm/memset-inline-6-exe.c: Likewise.
+	* gcc.target/arm/memset-inline-8-exe.c: Likewise.
+	* gcc.target/arm/memset-inline-9-exe.c: Likewise.
+
+2024-12-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/abi/arm_rtti1.C: Check for expected symbol in C++26.
+
+2024-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/toplevel-asm-1.c: Use %cc3 %cc4 instead of %c3 %c4
+	on riscv.
+
+2024-12-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f64.c: Adjust
+	the vsse check times based on optimization option.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u64.c: Ditto.
+
+2024-12-19  Pan Li  <pan2.li@intel.com>
+
+	PR target/118075
+	* gcc.target/riscv/rvv/base/pr118075-run-1.c: New test.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/field-merge-16.c: New.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/field-merge-15.c: New.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/117915
+	* gcc.dg/pr117915.c: New.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/118025
+	* gcc.dg/field-merge-9.c (q): Drop overcorrection for
+	big-endian.
+	* gcc.dg/field-merge-12.c: Include stdbool.h.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118046
+	* gcc.dg/field-merge-14.c: New.
+
+2024-12-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/field-merge-13.c: New.
+
 2024-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/118081

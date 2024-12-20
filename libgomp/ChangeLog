@@ -1,3 +1,8 @@
+2024-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Document that 'kind' also
+	accepts 'cpu'/'any' on host and 'any'/'nohost' on 'nohost' devices.
+
 2024-12-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_dev2dev, GOMP_OFFLOAD_async_run):

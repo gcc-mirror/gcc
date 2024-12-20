@@ -1,3 +1,92 @@
+2024-12-19  François Dumont  <frs.dumont@gmail.com>
+
+	PR libstdc++/57272
+	* include/bits/stl_tree.h
+	[_GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE]: New macro to control usage of the
+	code required to support fancy allocator pointer type.
+	(_Rb_tree_node_base::_Const_Base_ptr): Remove.
+	(_Rb_tree_node_base::_S_minimum, _Rb_tree_node_base::_S_maximum): Remove
+	overloads for _Const_Base_ptr.
+	(_Rb_tree_node_base::_M_base_ptr()): New.
+	(_Rb_tree_node::_Link_type): Remove.
+	(_Rb_tree_node::_M_node_ptr()): New.
+	(__rb_tree::_Node_base<>): New.
+	(__rb_tree::_Header<>): New.
+	(__rb_tree::_Node<>): New.
+	(_Rb_tree_increment(const _Rb_tree_node_base*)): Remove declaration.
+	(_Rb_tree_decrement(const _Rb_tree_node_base*)): Remove declaration.
+	(_Rb_tree_iterator<>::_Self): Remove.
+	(_Rb_tree_iterator<>::_Link_type): Rename into...
+	(_Rb_tree_iterator<>::_Node_ptr): ...this.
+	(_Rb_tree_const_iterator<>::_Link_type): Rename into...
+	(_Rb_tree_const_iterator<>::_Node_ptr): ...this.
+	(_Rb_tree_const_iterator<>::_M_const_cast): Remove.
+	(_Rb_tree_const_iterator<>::_M_node): Change type into _Base_ptr.
+	(__rb_tree::_Iterator<>): New.
+	(__rb_tree::_Node_traits<>): New.
+	(_Rb_tree<>::_Node_base, _Rb_tree::_Node): New.
+	(_Rb_tree<>::_Link_type): Rename into...
+	(_Rb_tree<>::_Node_ptr): ...this.
+	(_Rb_tree<>::_Const_Base_ptr, _Rb_tree<>::_Const_Node_ptr): Remove.
+	(_Rb_tree<>::_M_mbegin): Remove.
+	(_Rb_tree<>::_M_begin_node()): New.
+	(_S_key(const _Node&)): New.
+	(_S_key(_Base_ptr)): New, call latter.
+	(_S_key(_Node_ptr)): Likewise.
+	(_Rb_tree<>::_S_left(_Const_Base_ptr)): Remove.
+	(_Rb_tree<>::_S_right(_Const_Base_ptr)): Remove.
+	(_Rb_tree<>::_S_maximum(_Const_Base_ptr)): Remove.
+	(_Rb_tree<>::_S_minimum(_Const_Base_ptr)): Remove.
+	* testsuite/23_containers/map/allocator/ext_ptr.cc: New test case.
+	* testsuite/23_containers/multimap/allocator/ext_ptr.cc: New test case.
+	* testsuite/23_containers/multiset/allocator/ext_ptr.cc: New test case.
+	* testsuite/23_containers/set/allocator/ext_ptr.cc: New test case.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/alloc_ptr.cc:
+	New test case.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/alloc_ptr_ignored.cc:
+	New test case.
+
+2024-12-19  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header <flat_set>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/version.def (__cpp_flat_set): Define.
+	* include/bits/version.h: Regenerate
+	* include/precompiled/stdc++.h: Include <flat_set>.
+	* include/std/flat_set: New file.
+	* src/c++23/std.cc.in: Export <flat_set>.
+	* testsuite/23_containers/flat_multiset/1.cc: New test.
+	* testsuite/23_containers/flat_set/1.cc: New test.
+
+2024-12-19  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header <flat_map>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/alloc_traits.h (__not_allocator_like): New concept.
+	* include/bits/stl_function.h (__transparent_comparator): Likewise.
+	* include/bits/stl_iterator_base_types.h (__has_input_iter_cat):
+	Likewise.
+	* include/bits/uses_allocator.h (__allocator_for): Likewise.
+	* include/bits/utility.h (sorted_unique_t): Define for C++23.
+	(sorted_unique): Likewise.
+	(sorted_equivalent_t): Likewise.
+	(sorted_equivalent): Likewise.
+	* include/bits/version.def (flat_map): Define.
+	* include/bits/version.h: Regenerate.
+	* include/precompiled/stdc++.h: Include <flat_map>.
+	* include/std/flat_map: New file.
+	* src/c++23/std.cc.in: Export <flat_map>.
+	* testsuite/23_containers/flat_map/1.cc: New test.
+	* testsuite/23_containers/flat_multimap/1.cc: New test.
+
+2024-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (__detail::__range_key_type):
+	Define as per P1206R7.
+	(__detail::__range_mapped_type): Likewise.
+
 2024-12-18  François Dumont  <frs.dumont@gmail.com>
 
 	* include/bits/move.h (std::addressof): Call __builtin_addressof.

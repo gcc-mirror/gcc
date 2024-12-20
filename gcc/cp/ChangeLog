@@ -1,3 +1,28 @@
+2024-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118069
+	* constraint.cc (atom_hasher): Define here, instead of ...
+	* cp-tree.h (atom_hasher): ... here.
+	* logic.cc (clause::m_set): Use pointer instead of structural
+	hashing.
+
+2024-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118069
+	* logic.cc (dnf_size_r): Use HOST_WIDE_INT instead of int, and
+	handle overflow gracefully via add_sat_hwi and mul_sat_hwi.
+	(cnf_size_r): Likewise.
+	(dnf_size): Use HOST_WIDE_INT instead of int.
+	(cnf_size): Likewise.
+
+2024-12-19  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/117980
+	* constexpr.cc (cxx_eval_outermost_constant_expr): If there's
+	an object to initialize, take its type.  Don't set the type
+	in the constexpr dtor case.
+
 2024-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (cp_lexer_new_main): Attempt to optimize large sequences
