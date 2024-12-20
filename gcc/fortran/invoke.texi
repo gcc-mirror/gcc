@@ -236,7 +236,7 @@ form is determined by the file extension.
 @item -fall-intrinsics
 This option causes all intrinsic procedures (including the GNU-specific
 extensions) to be accepted.  This can be useful with @option{-std=} to
-force standard-compliance but get access to the full range of intrinsics
+force standard compliance but get access to the full range of intrinsics
 available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
 is ignored and no user-defined procedure with the same name as any
 intrinsic is called except when it is explicitly declared @code{EXTERNAL}.
@@ -245,7 +245,7 @@ intrinsic is called except when it is explicitly declared @code{EXTERNAL}.
 @item -fallow-argument-mismatch
 Some code contains calls to external procedures with mismatches
 between the calls and the procedure definition, or with mismatches
-between different calls. Such code is non-conforming, and is usually
+between different calls. Such code is nonconforming, and is usually
 flagged with an error.  This options degrades the error to a
 warning, which can only be disabled by disabling all warnings via
 @option{-w}.  Only a single occurrence per argument is flagged by this
@@ -277,7 +277,7 @@ comment lines.
 @item -fdec
 DEC compatibility mode. Enables extensions and other features that mimic
 the default behavior of older compilers (such as DEC).
-These features are non-standard and should be avoided at all costs.
+These features are nonstandard and should be avoided at all costs.
 For details on GNU Fortran's implementation of these extensions see the
 full documentation.
 
@@ -602,7 +602,7 @@ Fortran standard that includes all of the extensions supported by GNU
 Fortran, although warnings are given for obsolete extensions not
 recommended for use in new code.  The @samp{legacy} value is
 equivalent but without the warnings for obsolete extensions, and may
-be useful for old non-standard programs.  The @samp{f95}, @samp{f2003},
+be useful for old nonstandard programs.  The @samp{f95}, @samp{f2003},
 @samp{f2008}, @samp{f2018}, and @samp{f2023} values specify strict
 conformance to the Fortran 95, Fortran 2003, Fortran 2008, Fortran 2018
 and Fortran 2023 standards, respectively; errors are given for all extensions
@@ -658,12 +658,12 @@ compiler.  See @ref{Top,,Overview,cpp,The C Preprocessor} for details.
 GNU Fortran supports a number of @code{INTEGER} and @code{REAL} kind types
 in additional to the kind types required by the Fortran standard.
 The availability of any given kind type is architecture dependent.  The
-following pre-defined preprocessor macros can be used to conditionally
+following predefined preprocessor macros can be used to conditionally
 include code for these additional kind types: @code{__GFC_INT_1__},
 @code{__GFC_INT_2__}, @code{__GFC_INT_8__}, @code{__GFC_INT_16__},
 @code{__GFC_REAL_10__}, and @code{__GFC_REAL_16__}.
 
-While CPP is the de-facto standard for preprocessing Fortran code,
+While CPP is the de facto standard for preprocessing Fortran code,
 Part 3 of the Fortran 95 standard (ISO/IEC 1539-3:1998) defines
 Conditional Compilation, which is not widely used and not directly
 supported by the GNU Fortran compiler.  You can use the program coco
@@ -687,7 +687,7 @@ To disable preprocessing of files with any of the above listed extensions,
 use the negative form: @option{-nocpp}.
 
 The preprocessor is run in traditional mode. Any restrictions of the
-file-format, especially the limits on line length, apply for
+file format, especially the limits on line length, apply for
 preprocessed output as well, so it might be advisable to use the
 @option{-ffree-line-length-none} or @option{-ffixed-line-length-none}
 options.
@@ -1105,7 +1105,7 @@ Warn if a constant integer division truncates its result.
 As an example, 3/5 evaluates to 0.
 
 @opindex Wintrinsics-std
-@cindex warnings, non-standard intrinsics
+@cindex warnings, nonstandard intrinsics
 @cindex warnings, intrinsics of other standards
 @item -Wintrinsics-std
 Warn if @command{gfortran} finds a procedure named like an intrinsic not
@@ -1315,7 +1315,7 @@ your program.
 @item -fdebug-aux-vars
 Renames internal variables created by the gfortran front end and makes
 them accessible to a debugger.  The name of the internal variables then
-start with upper-case letters followed by an underscore.  This option is
+start with uppercase letters followed by an underscore.  This option is
 useful for debugging the compiler's code generation together with
 @code{-fdump-tree-original} and enabling debugging of the executable
 program by using @code{-g} or @code{-ggdb3}.
@@ -2131,12 +2131,12 @@ To avoid potential alignment issues in @code{COMMON} blocks, it is recommended t
 objects from largest to smallest.
 
 @opindex fno-protect-parens
-@cindex re-association of parenthesized expressions
+@cindex reassociation of parenthesized expressions
 @item -fno-protect-parens
 By default the parentheses in expression are honored for all optimization
-levels such that the compiler does not do any re-association. Using
+levels such that the compiler does not do any reassociation. Using
 @option{-fno-protect-parens} allows the compiler to reorder @code{REAL} and
-@code{COMPLEX} expressions to produce faster code. Note that for the re-association
+@code{COMPLEX} expressions to produce faster code. Note that for the reassociation
 optimization @option{-fno-signed-zeros} and @option{-fno-trapping-math}
 need to be in effect. The parentheses protection is enabled by default, unless
 @option{-Ofast} is given.

@@ -163,7 +163,7 @@ the GNU Fortran compiler.  You can find in this manual how to invoke
 
 @ifset DEVELOPMENT
 @emph{Warning:} This document, and the compiler it describes, are still
-under development.  While efforts are made to keep it up-to-date, it might
+under development.  While efforts are made to keep it up to date, it might
 not accurately reflect the status of the most recent GNU Fortran compiler.
 @end ifset
 
@@ -1163,7 +1163,7 @@ sytems, such as Linux, it is necessary to specify @option{-pthread},
 Integer overflow is prohibited by the Fortran standard.  The behavior
 of gfortran on integer overflow is undefined by default.  Traditional
 code, like linear congruential pseudo-random number generators in old
-programs that rely on specific, non-standard behavior may generate
+programs that rely on specific, nonstandard behavior may generate
 unexpected results.  The @option{-fsanitize=undefined} option can be
 used to detect such code at runtime.
 
@@ -1606,12 +1606,12 @@ and @code{CHARACTER}.
 @cindex conversion, to character
 
 Allowing character literals to be used in a similar way to Hollerith constants
-is a non-standard extension.  This feature is enabled using
+is a nonstandard extension.  This feature is enabled using
 -fdec-char-conversions and only applies to character literals of @code{kind=1}.
 
 Character literals can be used in @code{DATA} statements and assignments with
 numeric (@code{INTEGER}, @code{REAL}, or @code{COMPLEX}) or @code{LOGICAL}
-variables. Like Hollerith constants they are copied byte-wise fashion. The
+variables. Like Hollerith constants they are copied bytewise fashion. The
 constant is padded with spaces or truncated to fit the size of the
 variable in which it is stored.
 
@@ -1629,7 +1629,7 @@ Examples:
 @subsection Cray pointers
 @cindex pointer, Cray
 
-Cray pointers are part of a non-standard extension that provides a
+Cray pointers are part of a nonstandard extension that provides a
 C-like pointer in Fortran.  This is accomplished through a pair of
 variables: an integer ``pointer'' that holds a memory address, and a
 ``pointee'' that is used to dereference the pointer.
@@ -2126,7 +2126,7 @@ the initializer list.
 @cindex @code{MAP}
 
 Unions are an old vendor extension which were commonly used with the
-non-standard @ref{STRUCTURE and RECORD} extensions. Use of @code{UNION} and
+nonstandard @ref{STRUCTURE and RECORD} extensions. Use of @code{UNION} and
 @code{MAP} is automatically enabled with @option{-fdec-structure}.
 
 A @code{UNION} declaration occurs within a structure; within the definition of
@@ -2667,7 +2667,7 @@ c
 
 Some Fortran compilers, including @command{g77}, let the user declare
 complex functions with the syntax @code{COMPLEX FUNCTION name*16()}, as
-well as @code{COMPLEX*16 FUNCTION name()}.  Both are non-standard, legacy
+well as @code{COMPLEX*16 FUNCTION name()}.  Both are nonstandard legacy
 extensions.  @command{gfortran} accepts the latter form, which is more
 common, but not the former.
 
@@ -3838,7 +3838,7 @@ dollar sign (@code{$}) is additionally permitted with the option
 @option{-fdollar-ok}, but not as first character and only if the
 target system supports it.
 
-By default, the procedure name is the lower-cased Fortran name with an
+By default, the procedure name is the lowercased Fortran name with an
 appended underscore (@code{_}); using @option{-fno-underscoring} no
 underscore is appended while @code{-fsecond-underscore} appends two
 underscores.  Depending on the target system and the calling convention,
@@ -3848,12 +3848,12 @@ number is appended.  For the changing the calling convention, see
 @pxref{GNU Fortran Compiler Directives}.
 
 For common blocks, the same convention is used, i.e. by default an
-underscore is appended to the lower-cased Fortran name.  Blank commons
+underscore is appended to the lowercased Fortran name.  Blank commons
 have the name @code{__BLNK__}.
 
 For procedures and variables declared in the specification space of a
-module, the name is formed by @code{__}, followed by the lower-cased
-module name, @code{_MOD_}, and the lower-cased Fortran name.  Note that
+module, the name is formed by @code{__}, followed by the lowercased
+module name, @code{_MOD_}, and the lowercased Fortran name.  Note that
 no underscore is appended.
 
 
@@ -4039,8 +4039,8 @@ The values @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and
 in derived type coarrays only.  The first one sets up the token without
 allocating memory for allocatable component.  The latter one only allocates the
 memory for an allocatable component in a derived type coarray.  The token
-needs to be setup previously by the REGISTER_ONLY.  This allows to have
-allocatable components un-allocated on some images.  The status whether an
+needs to be set up previously by the REGISTER_ONLY.  This allows having
+allocatable components unallocated on some images.  The status of whether an
 allocatable component is allocated on a remote image can be queried by
 @code{_caf_is_present} which used internally by the @code{ALLOCATED}
 intrinsic.
@@ -4164,11 +4164,11 @@ comply to the Fortran standard.
 @emph{NOTES}
 The member @code{STATIC_ARRAY_TYPE} is used only when the @code{TYPE} is
 @code{CAF_REF_STATIC_ARRAY}.  The member gives the type of the data referenced.
-Because no array descriptor is available for a descriptor-less array and
+Because no array descriptor is available for a descriptorless array and
 type conversion still needs to take place the type is transported here.
 
 At the moment @code{CAF_ARR_REF_VECTOR} is not implemented in the front end for
-descriptor-less arrays.  The library caf_single has untested support for it.
+descriptorless arrays.  The library caf_single has untested support for it.
 
 @node caf_team_t
 @subsection @code{caf_team_t}
@@ -4289,7 +4289,7 @@ This function returns the current image number, which is a positive number.
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{distance} @tab As specified for the @code{this_image} intrinsic
-in TS18508.  Shall be a non-negative number.
+in TS18508.  Shall be a nonnegative number.
 @end multitable
 
 @item @emph{NOTES}
@@ -4351,7 +4351,7 @@ performed.
 
 @item @emph{NOTES}
 This function follows TS18508.  Because team-functionality is not yet
-implemented a null-pointer is passed for the @var{team} argument at the moment.
+implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
 
 
@@ -4379,7 +4379,7 @@ performed.
 
 @item @emph{NOTES}
 This function follows TS18508.  Because team-functionality is not yet
-implemented a null-pointer is passed for the @var{team} argument at the moment.
+implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
 
 
@@ -4407,7 +4407,7 @@ performed.
 
 @item @emph{NOTES}
 This function follows TS18508.  Because team-functionality is not yet
-implemented a null-pointer is passed for the @var{team} argument at the moment.
+implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
 
 
@@ -4473,7 +4473,7 @@ no static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
 complicated struct.  The library may also store the array descriptor
-@var{DESC} when its rank is non-zero.
+@var{DESC} when its rank is nonzero.
 
 For lock types, the value shall only be used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
@@ -4584,7 +4584,7 @@ overlap or overlap (fully or partially) such that walking @var{src} and
 @var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{stat} @tab intent(out) when non-NULL give the result of the
-operation, i.e., zero on success and non-zero on error.  When NULL and an error
+operation, i.e., zero on success and nonzero on error.  When NULL and an error
 occurs, then an error message is printed and the program is terminated.
 @end multitable
 
@@ -4599,8 +4599,8 @@ temporary variable, unless additional checks show that this is not required
 contiguous and @code{memmove} takes care of overlap issues).
 
 Note that the assignment of a scalar to an array is permitted. In addition,
-the library has to handle numeric-type conversion and for strings, padding
-and different character kinds.
+the library has to handle numeric type conversion, and padding
+and different character kinds for strings.
 @end table
 
 
@@ -4641,7 +4641,7 @@ overlap or overlap (fully or partially) such that walking @var{src} and
 @var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{stat} @tab intent(out) When non-NULL give the result of the
-operation, i.e., zero on success and non-zero on error.  When NULL and an error
+operation, i.e., zero on success and nonzero on error.  When NULL and an error
 occurs, then an error message is printed and the program is terminated.
 @end multitable
 
@@ -4709,7 +4709,7 @@ overlap or overlap (fully or partially) such that walking @var{src} and
 @var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{stat} @tab intent(out) when non-NULL give the result of the
-operation, i.e., zero on success and non-zero on error.  When NULL and an error
+operation, i.e., zero on success and nonzero on error.  When NULL and an error
 occurs, then an error message is printed and the program is terminated.
 @end multitable
 
@@ -4762,7 +4762,7 @@ lead to wrong results.  Otherwise, the value is @code{true}.
 allocatable or pointer type and the refs allow reallocation, i.e., the ref
 is a full array or component ref.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
-operation, i.e., zero on success and non-zero on error.  When @code{NULL} and
+operation, i.e., zero on success and nonzero on error.  When @code{NULL} and
 an error occurs, then an error message is printed and the program is terminated.
 @item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
 the destination is not an array, than the precise type, e.g. of a component in
@@ -4824,7 +4824,7 @@ lead to wrong results.  Otherwise, the value is @code{true}.
 allocatable or pointer type and its refs allow reallocation, i.e., the full
 array or a component is referenced.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
-operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
+operation, i.e., zero on success and nonzero on error.  When @code{NULL} and an
 error occurs, then an error message is printed and the program is terminated.
 @item @var{src_type} @tab intent(in)  Give the type of the source.  When the
 source is not an array, than the precise type, e.g. of a component in a
@@ -4889,11 +4889,11 @@ overlap or overlap (fully or partially) such that walking @var{src} and
 @var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{dst_stat} @tab intent(out) when non-@code{NULL} give the result of
-the send-operation, i.e., zero on success and non-zero on error.  When
+the send-operation, i.e., zero on success and nonzero on error.  When
 @code{NULL} and an error occurs, then an error message is printed and the
 program is terminated.
 @item @var{src_stat} @tab intent(out) When non-@code{NULL} give the result of
-the get-operation, i.e., zero on success and non-zero on error.  When
+the get-operation, i.e., zero on success and nonzero on error.  When
 @code{NULL} and an error occurs, then an error message is printed and the
 program is terminated.
 @item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
