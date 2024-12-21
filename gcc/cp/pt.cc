@@ -5637,8 +5637,7 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
        local scope.  */
     return true;
 
-  if ((TREE_CODE (decl) == TYPE_DECL
-       && TREE_TYPE (decl)
+  if ((DECL_IMPLICIT_TYPEDEF_P (decl)
        && LAMBDA_TYPE_P (TREE_TYPE (decl)))
       || (TREE_CODE (decl) == FUNCTION_DECL
 	  && LAMBDA_FUNCTION_P (decl)))
@@ -5924,7 +5923,7 @@ push_template_decl (tree decl, bool is_friend)
          template <typename T> friend void A<T>::f();
        is not primary.  */
     ;
-  else if (TREE_CODE (decl) == TYPE_DECL && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+  else if (DECL_IMPLICIT_TYPEDEF_P (decl) && LAMBDA_TYPE_P (TREE_TYPE (decl)))
     /* Lambdas are not primary.  */
     ;
   else
@@ -6077,7 +6076,8 @@ push_template_decl (tree decl, bool is_friend)
   else if (!ctx
 	   || TREE_CODE (ctx) == FUNCTION_DECL
 	   || (CLASS_TYPE_P (ctx) && TYPE_BEING_DEFINED (ctx))
-	   || (TREE_CODE (decl) == TYPE_DECL && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+	   || (DECL_IMPLICIT_TYPEDEF_P (decl)
+	       && LAMBDA_TYPE_P (TREE_TYPE (decl)))
 	   || (is_friend && !(DECL_LANG_SPECIFIC (decl)
 			      && DECL_TEMPLATE_INFO (decl))))
     {
