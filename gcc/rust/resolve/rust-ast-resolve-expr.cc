@@ -536,7 +536,7 @@ ResolveExpr::visit (AST::BreakExpr &expr)
     {
       bool funny_error = false;
       auto &break_expr = expr.get_break_expr ();
-      if (break_expr.get_ast_kind () == AST::Kind::IDENTIFIER)
+      if (break_expr.get_expr_kind () == AST::Expr::Kind::Identifier)
 	{
 	  /* This is a break with an expression, and the expression is
 	     just a single identifier.  See if the identifier is either

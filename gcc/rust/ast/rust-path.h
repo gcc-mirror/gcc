@@ -850,6 +850,11 @@ public:
 
   Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Path; }
 
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::PathInExpression;
+  }
+
 protected:
   PathInExpression (std::vector<Attribute> &&outer_attrs,
 		    bool has_opening_scope_resolution, location_t locus,
@@ -1514,6 +1519,11 @@ public:
       return static_cast<RegularPath &> (*path).get_segments ().size () == 1;
 
     rust_unreachable ();
+  }
+
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::QualifiedPathInExpression;
   }
 
 protected:

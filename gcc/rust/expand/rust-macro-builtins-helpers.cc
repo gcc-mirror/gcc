@@ -36,7 +36,7 @@ check_for_eager_invocations (
   std::vector<std::unique_ptr<AST::MacroInvocation>> pending;
 
   for (auto &expr : expressions)
-    if (expr->get_ast_kind () == AST::Kind::MACRO_INVOCATION)
+    if (expr->get_expr_kind () == AST::Expr::Kind::MacroInvocation)
       pending.emplace_back (std::unique_ptr<AST::MacroInvocation> (
 	static_cast<AST::MacroInvocation *> (expr->clone_expr ().release ())));
 

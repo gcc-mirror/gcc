@@ -70,35 +70,11 @@ namespace AST {
 class ASTVisitor;
 using AttrVec = std::vector<Attribute>;
 
-// The available kinds of AST Nodes
-enum class Kind
-{
-  UNKNOWN,
-  MODULE,
-  MACRO_RULES_DEFINITION,
-  MACRO_INVOCATION,
-  IDENTIFIER,
-};
-
 class Visitable
 {
 public:
   virtual ~Visitable () = default;
   virtual void accept_vis (ASTVisitor &vis) = 0;
-};
-
-// Abstract base class for all AST elements
-class Node : public Visitable
-{
-public:
-  /**
-   * Get the kind of Node this is. This is used to differentiate various AST
-   * elements with very little overhead when extracting the derived type
-   * through static casting is not necessary.
-   */
-  // FIXME: Mark this as `= 0` in the future to make sure every node
-  // implements it
-  virtual Kind get_ast_kind () const { return Kind::UNKNOWN; }
 };
 
 // Delimiter types - used in macros and whatever.
@@ -1092,7 +1068,7 @@ class MetaListNameValueStr;
 /* Base statement abstract class. Note that most "statements" are not allowed
  * in top-level module scope - only a subclass of statements called "items"
  * are. */
-class Stmt : public Node
+class Stmt : public Visitable
 {
 public:
   enum class Kind
@@ -1141,6 +1117,28 @@ protected:
 class Item : public Stmt
 {
 public:
+  enum class Kind
+  {
+    MacroRulesDefinition,
+    MacroInvocation,
+    Module,
+    ExternCrate,
+    UseDeclaration,
+    Function,
+    TypeAlias,
+    Struct,
+    EnumItem,
+    Enum,
+    Union,
+    ConstantItem,
+    StaticItem,
+    Trait,
+    Impl,
+    ExternBlock,
+  };
+
+  virtual Kind get_item_kind () const = 0;
+
   // Unique pointer custom clone function
   std::unique_ptr<Item> clone_item () const
   {
@@ -1221,14 +1219,54 @@ public:
   {
     return outer_attrs;
   }
+
+  virtual Item::Kind get_item_kind () const override = 0;
 };
+
 // forward decl of ExprWithoutBlock
 class ExprWithoutBlock;
 
 // Base expression AST node - abstract
-class Expr : public Node
+class Expr : public Visitable
 {
 public:
+  enum class Kind
+  {
+    PathInExpression,
+    QualifiedPathInExpression,
+    Literal,
+    Operator,
+    Grouped,
+    Array,
+    ArrayIndex,
+    Tuple,
+    TupleIndex,
+    Struct,
+    Call,
+    MethodCall,
+    FieldAccess,
+    Closure,
+    Block,
+    Continue,
+    Break,
+    Range,
+    Box,
+    Return,
+    UnsafeBlock,
+    Loop,
+    If,
+    IfLet,
+    Match,
+    Await,
+    AsyncBlock,
+    InlineAsm,
+    Identifier,
+    FormatArgs,
+    MacroInvocation,
+  };
+
+  virtual Kind get_expr_kind () const = 0;
+
   // Unique pointer custom clone function
   std::unique_ptr<Expr> clone_expr () const
   {
@@ -1343,7 +1381,7 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  Kind get_ast_kind () const override { return Kind::IDENTIFIER; }
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Identifier; }
 
 protected:
   // Clone method implementation
@@ -1410,7 +1448,7 @@ protected:
 class TraitBound;
 
 // Base class for types as represented in AST - abstract
-class Type : public Node
+class Type : public Visitable
 {
 public:
   // Unique pointer custom clone function

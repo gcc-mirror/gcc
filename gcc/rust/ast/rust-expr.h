@@ -15,7 +15,7 @@ namespace AST {
 
 // Loop label expression AST node used with break and continue expressions
 // TODO: inline?
-class LoopLabel /*: public Node*/
+class LoopLabel /*: public Visitable*/
 {
   Lifetime label; // or type LIFETIME_OR_LABEL
   location_t locus;
@@ -116,6 +116,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Literal; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -365,6 +367,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Operator; }
 };
 
 /* Unary prefix & or &mut (or && and &&mut) borrow operator. Cannot be
@@ -1090,6 +1094,8 @@ public:
     return expr_in_parens;
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Grouped; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1319,6 +1325,8 @@ public:
     return internal_elements;
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Array; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1424,6 +1432,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::ArrayIndex; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1520,6 +1530,8 @@ public:
 
   bool is_unit () const { return tuple_elems.size () == 0; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Tuple; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1607,6 +1619,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::TupleIndex; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1650,6 +1664,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Struct; }
 };
 
 // Actual AST node of the struct creator (with no fields). Not abstract!
@@ -2131,6 +2147,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Call; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2234,6 +2252,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::MethodCall; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2318,6 +2338,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::FieldAccess; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2454,6 +2476,8 @@ public:
   }
 
   bool get_has_move () const { return has_move; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Closure; }
 };
 
 // Represents a non-type-specified closure expression AST node
@@ -2675,6 +2699,8 @@ public:
   bool has_label () { return !label.is_error (); }
   LoopLabel &get_label () { return label; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Block; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2828,6 +2854,8 @@ public:
 
   Lifetime &get_label () { return label; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Continue; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2924,6 +2952,8 @@ public:
 
   LoopLabel &get_label () { return label; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Break; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2956,6 +2986,8 @@ public:
   {
     rust_assert (false);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Range; }
 };
 
 // Range from (inclusive) and to (exclusive) expression AST node object
@@ -3404,6 +3436,8 @@ public:
     return *expr;
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Box; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3491,6 +3525,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Return; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3572,6 +3608,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::UnsafeBlock; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3661,6 +3699,18 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Loop; }
+
+  enum class Kind
+  {
+    Loop,
+    While,
+    WhileLet,
+    For
+  };
+
+  virtual Kind get_loop_kind () const = 0;
 };
 
 // 'Loop' expression (i.e. the infinite loop) AST node
@@ -3678,6 +3728,11 @@ public:
   {}
 
   void accept_vis (ASTVisitor &vis) override;
+
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::Loop;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3735,6 +3790,11 @@ public:
   {
     rust_assert (condition != nullptr);
     return *condition;
+  }
+
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::While;
   }
 
 protected:
@@ -3820,6 +3880,11 @@ public:
     return match_arm_patterns;
   }
 
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::WhileLet;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3887,6 +3952,11 @@ public:
   {
     rust_assert (pattern != nullptr);
     return *pattern;
+  }
+
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::For;
   }
 
 protected:
@@ -4011,6 +4081,8 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::If; }
 
 protected:
   // Base clone function but still concrete as concrete base class
@@ -4205,6 +4277,8 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::IfLet; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4535,6 +4609,8 @@ public:
   const std::vector<MatchCase> &get_match_cases () const { return match_arms; }
   std::vector<MatchCase> &get_match_cases () { return match_arms; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Match; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4613,6 +4689,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Await; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4695,6 +4773,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::AsyncBlock; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -5209,6 +5289,8 @@ public:
   {
     return new InlineAsm (*this);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::InlineAsm; }
 };
 
 } // namespace AST

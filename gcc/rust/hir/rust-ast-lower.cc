@@ -104,7 +104,11 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
 
   for (auto &s : expr.get_statements ())
     {
-      if (s->get_ast_kind () == AST::Kind::MACRO_INVOCATION)
+      // FIXME: We basically need to do that check for *every* single node in
+      // the AST. this isn't realistic and this should be turned into an
+      // optional, debug-visitor instead, which goes through the entire AST and
+      // checks if any of the nodes are macro invocations
+      if (s->get_stmt_kind () == AST::Stmt::Kind::MacroInvocation)
 	rust_fatal_error (
 	  s->get_locus (),
 	  "macro invocations should not get lowered to HIR - At "
