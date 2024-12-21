@@ -235,6 +235,12 @@ TypeCastRules::cast_rules ()
     case TyTy::TypeKind::FLOAT:
       switch (to.get_ty ()->get_kind ())
 	{
+	case TyTy::TypeKind::USIZE:
+	case TyTy::TypeKind::ISIZE:
+	case TyTy::TypeKind::UINT:
+	case TyTy::TypeKind::INT:
+	  return TypeCoercionRules::CoercionResult{{}, to.get_ty ()->clone ()};
+
 	case TyTy::TypeKind::FLOAT:
 	  return TypeCoercionRules::CoercionResult{{}, to.get_ty ()->clone ()};
 
