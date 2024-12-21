@@ -17,7 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-early-name-resolver.h"
-#include "rust-ast-full.h"
+#include "rust-pattern.h"
 #include "rust-name-resolver.h"
 #include "rust-macro-builtins.h"
 #include "rust-attribute-values.h"
@@ -53,7 +53,7 @@ EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
   scoped (module.get_node_id (), [&module, &escaped_macros, this] {
     for (auto &item : module.get_items ())
       {
-	if (item->get_ast_kind () == AST::Kind::MODULE)
+	if (item->get_item_kind () == AST::Item::Kind::Module)
 	  {
 	    auto &module = *static_cast<AST::Module *> (item.get ());
 	    auto new_macros = accumulate_escaped_macros (module);
@@ -64,7 +64,7 @@ EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
 	    continue;
 	  }
 
-	if (item->get_ast_kind () == AST::Kind::MACRO_RULES_DEFINITION)
+	if (item->get_item_kind () == AST::Item::Kind::MacroRulesDefinition)
 	  escaped_macros.emplace_back (item->clone_item ());
       }
   });
@@ -113,7 +113,7 @@ EarlyNameResolver::visit (AST::Crate &crate)
       {
 	auto new_macros = std::vector<std::unique_ptr<AST::Item>> ();
 
-	if (item->get_ast_kind () == AST::Kind::MODULE)
+	if (item->get_item_kind () == AST::Item::Kind::Module)
 	  new_macros = accumulate_escaped_macros (
 	    *static_cast<AST::Module *> (item.get ()));
 
@@ -300,7 +300,7 @@ EarlyNameResolver::visit (AST::Module &module)
       {
 	auto new_macros = std::vector<std::unique_ptr<AST::Item>> ();
 
-	if (item->get_ast_kind () == AST::Kind::MODULE)
+	if (item->get_item_kind () == AST::Item::Kind::Module)
 	  new_macros = accumulate_escaped_macros (
 	    *static_cast<AST::Module *> (item.get ()));
 

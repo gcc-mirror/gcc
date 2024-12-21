@@ -758,8 +758,6 @@ public:
 
   Identifier get_name () const { return module_name; }
 
-  AST::Kind get_ast_kind () const override { return AST::Kind::MODULE; }
-
 private:
   Identifier module_name;
   location_t locus;
@@ -899,6 +897,8 @@ public:
   void mark_for_strip () override { module_name = {""}; }
   bool is_marked_for_strip () const override { return module_name.empty (); }
 
+  Item::Kind get_item_kind () const override { return Item::Kind::Module; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -959,6 +959,8 @@ public:
   {
     return referenced_crate.empty ();
   }
+
+  Item::Kind get_item_kind () const override { return Item::Kind::ExternCrate; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1301,6 +1303,11 @@ public:
   void mark_for_strip () override { use_tree = nullptr; }
   bool is_marked_for_strip () const override { return use_tree == nullptr; }
 
+  Item::Kind get_item_kind () const override
+  {
+    return Item::Kind::UseDeclaration;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1459,6 +1466,8 @@ public:
   // ExternalItem::node_id is same as Stmt::node_id
   NodeId get_node_id () const override { return Stmt::node_id; }
 
+  Item::Kind get_item_kind () const override { return Item::Kind::Function; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1590,6 +1599,8 @@ public:
 
   Identifier get_new_type_name () const { return new_type_name; }
 
+  Item::Kind get_item_kind () const override { return Item::Kind::TypeAlias; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1648,6 +1659,8 @@ public:
   WhereClause &get_where_clause () { return where_clause; }
 
   Identifier get_identifier () const { return struct_name; }
+
+  Item::Kind get_item_kind () const override { return Item::Kind::Struct; }
 
 protected:
   Struct (Identifier struct_name,
@@ -2058,6 +2071,8 @@ public:
   void mark_for_strip () override { variant_name = {""}; }
   bool is_marked_for_strip () const override { return variant_name.empty (); }
 
+  Item::Kind get_item_kind () const override { return Item::Kind::EnumItem; }
+
 protected:
   EnumItem *clone_item_impl () const override { return new EnumItem (*this); }
 };
@@ -2321,6 +2336,8 @@ public:
   // TODO: is this better? Or is a "vis_block" better?
   WhereClause &get_where_clause () { return where_clause; }
 
+  Item::Kind get_item_kind () const override { return Item::Kind::Enum; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2419,6 +2436,8 @@ public:
   WhereClause &get_where_clause () { return where_clause; }
 
   Identifier get_identifier () const { return union_name; }
+
+  Item::Kind get_item_kind () const override { return Item::Kind::Union; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2541,6 +2560,11 @@ public:
 
   std::string get_identifier () const { return identifier; }
 
+  Item::Kind get_item_kind () const override
+  {
+    return Item::Kind::ConstantItem;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2661,6 +2685,8 @@ public:
   bool is_mutable () const { return has_mut; }
 
   Identifier get_identifier () const { return name; }
+
+  Item::Kind get_item_kind () const override { return Item::Kind::StaticItem; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -3025,6 +3051,8 @@ public:
 
   AST::TypeParam &get_implicit_self () { return self_param; }
 
+  Item::Kind get_item_kind () const override { return Item::Kind::Trait; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -3096,6 +3124,8 @@ public:
     rust_assert (trait_type != nullptr);
     return trait_type;
   }
+
+  Item::Kind get_item_kind () const override { return Item::Kind::Impl; }
 
 protected:
   // Mega-constructor
@@ -3981,6 +4011,8 @@ public:
   // TODO: think of better way to do this
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
+
+  Item::Kind get_item_kind () const override { return Item::Kind::ExternBlock; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
