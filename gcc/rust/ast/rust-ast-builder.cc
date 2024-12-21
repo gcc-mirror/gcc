@@ -20,6 +20,7 @@
 #include "rust-ast-builder-type.h"
 #include "rust-common.h"
 #include "rust-expr.h"
+#include "rust-path.h"
 #include "rust-token.h"
 #include "rust-make-unique.h"
 
@@ -43,6 +44,33 @@ Builder::call (std::unique_ptr<Expr> &&path,
 }
 
 std::unique_ptr<Expr>
+Builder::call (std::unique_ptr<Path> &&path,
+	       std::vector<std::unique_ptr<Expr>> &&args) const
+{
+  return call (std::unique_ptr<Expr> (
+		 new PathInExpression (std::move (path), {}, loc)),
+	       std::move (args));
+}
+
+std::unique_ptr<Expr>
+Builder::call (std::unique_ptr<Expr> &&path, std::unique_ptr<Expr> &&arg) const
+{
+  auto args = std::vector<std::unique_ptr<Expr>> ();
+  args.emplace_back (std::move (arg));
+
+  return call (std::move (path), std::move (args));
+}
+
+std::unique_ptr<Expr>
+Builder::call (std::unique_ptr<Path> &&path, std::unique_ptr<Expr> &&arg) const
+{
+  auto args = std::vector<std::unique_ptr<Expr>> ();
+  args.emplace_back (std::move (arg));
+
+  return call (std::move (path), std::move (args));
+}
+
+std::unique_ptr<Expr>
 Builder::array (std::vector<std::unique_ptr<Expr>> &&members) const
 {
   auto elts = Rust::make_unique<ArrayElemsValues> (std::move (members), loc);
@@ -54,6 +82,13 @@ std::unique_ptr<Expr>
 Builder::identifier (std::string name) const
 {
   return std::unique_ptr<Expr> (new IdentifierExpr (name, {}, loc));
+}
+
+std::unique_ptr<Pattern>
+Builder::identifier_pattern (std::string name, bool mut) const
+{
+  return std::unique_ptr<Pattern> (
+    new IdentifierPattern (name, loc, false, mut));
 }
 
 std::unique_ptr<Expr>
@@ -115,6 +150,22 @@ Builder::path_in_expression (std::vector<std::string> &&segments) const
     path_segments.emplace_back (path_segment (seg));
 
   return PathInExpression (std::move (path_segments), {}, loc);
+}
+
+PathInExpression
+Builder::path_in_expression (LangItem::Kind lang_item) const
+{
+  return PathInExpression (lang_item, {}, loc);
+}
+
+std::unique_ptr<Expr>
+Builder::block (std::unique_ptr<Stmt> &&stmt,
+		std::unique_ptr<Expr> &&tail_expr) const
+{
+  auto stmts = std::vector<std::unique_ptr<Stmt>> ();
+  stmts.emplace_back (std::move (stmt));
+
+  return block (std::move (stmts), std::move (tail_expr));
 }
 
 std::unique_ptr<Expr>
@@ -187,6 +238,46 @@ std::unique_ptr<Pattern>
 Builder::wildcard () const
 {
   return std::unique_ptr<Pattern> (new WildcardPattern (loc));
+}
+
+std::unique_ptr<Path>
+Builder::lang_item_path (LangItem::Kind kind) const
+{
+  return std::unique_ptr<Path> (new LangItemPath (kind, loc));
+}
+
+std::unique_ptr<Expr>
+Builder::match (std::unique_ptr<Expr> &&scrutinee,
+		std::vector<MatchCase> &&cases)
+{
+  return std::unique_ptr<Expr> (
+    new MatchExpr (std::move (scrutinee), std::move (cases), {}, {}, loc));
+}
+
+MatchArm
+Builder::match_arm (std::unique_ptr<Pattern> &&pattern)
+{
+  auto patterns = std::vector<std::unique_ptr<Pattern>> ();
+  patterns.emplace_back (std::move (pattern));
+
+  return MatchArm (std::move (patterns), loc);
+}
+
+MatchCase
+Builder::match_case (std::unique_ptr<Pattern> &&pattern,
+		     std::unique_ptr<Expr> &&expr)
+{
+  return MatchCase (match_arm (std::move (pattern)), std::move (expr));
+}
+
+std::unique_ptr<Expr>
+Builder::loop (std::vector<std::unique_ptr<Stmt>> &&stmts)
+{
+  auto block = std::unique_ptr<BlockExpr> (
+    new BlockExpr (std::move (stmts), nullptr, {}, {}, LoopLabel::error (), loc,
+		   loc));
+
+  return std::unique_ptr<Expr> (new LoopExpr (std::move (block), loc));
 }
 
 std::unique_ptr<Type>

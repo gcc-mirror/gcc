@@ -20,6 +20,7 @@
 #define AST_BUILDER_H
 
 #include "rust-ast-full.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace AST {
@@ -38,6 +39,8 @@ public:
 
   /* Create an identifier expression (`variable`) */
   std::unique_ptr<Expr> identifier (std::string name) const;
+  std::unique_ptr<Pattern> identifier_pattern (std::string name,
+					       bool mut = false) const;
 
   /* Create a tuple index expression (`receiver.0`) */
   std::unique_ptr<Expr> tuple_idx (std::string receiver, int idx) const;
@@ -53,6 +56,9 @@ public:
   std::unique_ptr<Expr> block (std::vector<std::unique_ptr<Stmt>> &&stmts,
 			       std::unique_ptr<Expr> &&tail_expr
 			       = nullptr) const;
+  std::unique_ptr<Expr> block (std::unique_ptr<Stmt> &&stmt,
+			       std::unique_ptr<Expr> &&tail_expr
+			       = nullptr) const;
 
   /* Create a let binding with an optional type and initializer (`let <name> :
    * <type> = <init>`) */
@@ -66,6 +72,12 @@ public:
    */
   std::unique_ptr<Expr> call (std::unique_ptr<Expr> &&path,
 			      std::vector<std::unique_ptr<Expr>> &&args) const;
+  std::unique_ptr<Expr> call (std::unique_ptr<Path> &&path,
+			      std::vector<std::unique_ptr<Expr>> &&args) const;
+  std::unique_ptr<Expr> call (std::unique_ptr<Expr> &&path,
+			      std::unique_ptr<Expr> &&arg) const;
+  std::unique_ptr<Expr> call (std::unique_ptr<Path> &&path,
+			      std::unique_ptr<Expr> &&arg) const;
 
   /**
    * Create an array expression (`[member0, member1, member2]`)
@@ -100,6 +112,11 @@ public:
   PathInExpression
   path_in_expression (std::vector<std::string> &&segments) const;
 
+  /**
+   * Create a path in expression from a lang item.
+   */
+  PathInExpression path_in_expression (LangItem::Kind lang_item) const;
+
   /* Create a struct expression for unit structs (`S`) */
   std::unique_ptr<Expr> struct_expr_struct (std::string struct_name) const;
 
@@ -121,6 +138,19 @@ public:
 
   /* Create a wildcard pattern (`_`) */
   std::unique_ptr<Pattern> wildcard () const;
+
+  /* Create a lang item path usable as a general path */
+  std::unique_ptr<Path> lang_item_path (LangItem::Kind) const;
+
+  /* Create match expressions and their components */
+  std::unique_ptr<Expr> match (std::unique_ptr<Expr> &&scrutinee,
+			       std::vector<MatchCase> &&cases);
+  MatchArm match_arm (std::unique_ptr<Pattern> &&pattern);
+  MatchCase match_case (std::unique_ptr<Pattern> &&pattern,
+			std::unique_ptr<Expr> &&expr);
+
+  /* Create a loop expression */
+  std::unique_ptr<Expr> loop (std::vector<std::unique_ptr<Stmt>> &&stmts);
 
   static std::unique_ptr<Type> new_type (Type &type);
 
