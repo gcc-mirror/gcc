@@ -1905,13 +1905,23 @@ elf_in::begin (location_t loc)
 void
 elf_out::create_mapping (unsigned ext, bool extending)
 {
-#ifndef HAVE_POSIX_FALLOCATE
-#define posix_fallocate(fd,off,len) ftruncate (fd, off + len)
+  /* A wrapper around posix_fallocate, falling back to ftruncate
+     if the underlying filesystem does not support the operation.  */
+  auto allocate = [](int fd, off_t offset, off_t length)
+    {
+#ifdef HAVE_POSIX_FALLOCATE
+      int result = posix_fallocate (fd, offset, length);
+      if (result != EINVAL)
+	return result == 0;
+      /* Not supported by the underlying filesystem, fallback to ftruncate.  */
 #endif
+      return ftruncate (fd, offset + length) == 0;
+    };
+
   void *mapping = MAP_FAILED;
   if (extending && ext < 1024 * 1024)
     {
-      if (!posix_fallocate (fd, offset, ext * 2))
+      if (allocate (fd, offset, ext * 2))
 	mapping = mmap (NULL, ext * 2, PROT_READ | PROT_WRITE,
 			MAP_SHARED, fd, offset);
       if (mapping != MAP_FAILED)
@@ -1919,7 +1929,7 @@ elf_out::create_mapping (unsigned ext, bool extending)
     }
   if (mapping == MAP_FAILED)
     {
-      if (!extending || !posix_fallocate (fd, offset, ext))
+      if (!extending || allocate (fd, offset, ext))
 	mapping = mmap (NULL, ext, PROT_READ | PROT_WRITE,
 			MAP_SHARED, fd, offset);
       if (mapping == MAP_FAILED)
@@ -1929,7 +1939,6 @@ elf_out::create_mapping (unsigned ext, bool extending)
 	  ext = 0;
 	}
     }
-#undef posix_fallocate
   hdr.buffer = (char *)mapping;
   extent = ext;
 }
