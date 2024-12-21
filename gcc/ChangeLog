@@ -1,3 +1,88 @@
+2024-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/118007
+	* ipa-strub.cc (pass_ipa_strub::execute): Accept indirecting
+	volatile args of pointer types.
+
+2024-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/113506
+	* emit-rtl.cc (add_insn_before): Don't set the block of a
+	barrier.
+
+2024-12-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/118067
+	* config/i386/i386.md (*movdi_internal):
+	Disable alternatives from/to mask registers without AVX512BW.
+	(*movsi_internal): Ditto.
+
+2024-12-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	* config/aarch64/aarch64-protos.h
+	(aarch64_sve_expand_vector_init_subvector): New.
+	* config/aarch64/aarch64-sve.md (vec_init<mode><Vhalf>): New.
+	(@aarch64_pack_partial<mode>): New.
+	* config/aarch64/aarch64.cc (aarch64_sve_expand_vector_init_subvector): New.
+	* config/aarch64/iterators.md (SVE_NO2E): New.
+	(VHALF, Vhalf): Add SVE partial vectors.
+
+2024-12-20  Tamar Christina  <tamar.christina@arm.com>
+	    Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR target/96342
+	* config/aarch64/aarch64-protos.h (add_sve_type_attribute): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc (add_sve_type_attribute): Make
+	visibility global and support use for non_acle types.
+	* config/aarch64/aarch64.cc
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Create VLA simd clone
+	when no simdlen is provided, according to ABI rules.
+	(simd_clone_adjust_sve_vector_type): New helper function.
+	(aarch64_simd_clone_adjust): Add '+sve' attribute to SVE simd clones
+	and modify types to use SVE types.
+	* omp-simd-clone.cc (simd_clone_mangle): Print 'x' for VLA simdlen.
+	(simd_clone_adjust): Adapt safelen check to be compatible with VLA
+	simdlen.
+
+2024-12-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/118131
+	* config/arm/arm.cc (output_move_neon): Check TARGET_NEON as
+	needed.
+	(arm_attr_length_move_neon): Add support for V2x and V4x MVE tuple
+	modes.
+	* config/arm/iterators.md (VSTRUCT2, VSTRUCT4): New.
+	* config/arm/neon.md: Use VSTRUCT2 instead of OI and VSTRUCT4
+	instead of XI in define_split.
+
+2024-12-20  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* tree-ssa-forwprop.cc (get_vect_selector_index_map): Removed.
+	(recognise_vec_perm_simplify_seq): Fix calculation of vec-perm
+	selectors of narrowed sequence.
+	(calc_perm_vec_perm_simplify_seqs): Fixing calculation of
+	vec-perm selectors of the blended sequence.
+	(process_vec_perm_simplify_seq_list): Add whitespace to dump
+	string to avoid bad formatted dump output.
+
+2024-12-20  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc (riscv_get_valid_option_values):
+	Skip adding mtune entries that are already in the list.
+
+2024-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* tree.cc (type_hash_canon_hash): Hash TYPE_REF_IS_RVALUE for
+	REFERENCE_TYPE.
+	(type_cache_hasher::equal): Compare TYPE_REF_IS_RVALUE for
+	REFERENCE_TYPE.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* doc/invoke.texi: Document -Wtemplate-names-tu-local.
+
 2024-12-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/118069

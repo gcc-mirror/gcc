@@ -1,3 +1,142 @@
+2024-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* tree.cc (handle_maybe_unused_attribute): New function.
+	(std_attributes): Use handle_maybe_unused_attribute instead
+	of handle_unused_attribute for maybe_unused attribute.
+
+2024-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* parser.cc (cp_parser_std_attribute): Don't transform
+	[[deprecated]] into [[gnu::deprecated]].
+	* tree.cc (handle_std_deprecated_attribute): New function.
+	(std_attributes): Add deprecated entry.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116401
+	* decl.cc (grokfndecl): Mark deduction guides as 'inline'.
+	* module.cc (check_module_decl_linkage): Implement checks for
+	non-inline external linkage definitions in headers.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (check_module_decl_linkage): Declare.
+	* decl2.cc (finish_static_data_member_decl): Check linkage.
+	* module.cc (set_originating_module): Adjust comment.
+	(check_module_decl_linkage): New function.
+	* name-lookup.cc (do_namespace_alias): Build alias with
+	specified location, check linkage.
+	(pushtag): Check linkage.
+	(push_namespace): Slightly clarify error message.
+	* name-lookup.h (do_namespace_alias): Add location parameter.
+	* parser.cc (cp_parser_namespace_alias_definition): Pass
+	identifier location to do_namespace_alias.
+	(cp_parser_alias_declaration): Check linkage.
+	(cp_parser_init_declarator): Check linkage.
+	(cp_parser_function_definition_after_declarator): Check linkage.
+	(cp_parser_save_member_function_body): Check linkage.
+	* pt.cc (finish_concept_definition): Mark as public, check
+	linkage.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (depset::hash::add_binding_entity): Also walk
+	unnamed namespaces.
+	(module_state::write_namespaces): Adjust assertion.
+	* name-lookup.cc (push_namespace): Move anon using-directive
+	handling to...
+	(make_namespace_finish): ...here.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-objcp-common.cc (cp_tree_size): Add TU_LOCAL_ENTITY.
+	* cp-tree.def (TU_LOCAL_ENTITY): New tree code.
+	* cp-tree.h (DECL_TEMPLATE_INSTANTIATIONS): Update comment.
+	(struct tree_tu_local_entity): New type.
+	(TU_LOCAL_ENTITY_NAME): New accessor.
+	(TU_LOCAL_ENTITY_LOCATION): New accessor.
+	(enum cp_tree_node_structure_enum): Add TS_CP_TU_LOCAL_ENTITY.
+	(union GTY): Add tu_local_entity field.
+	* module.cc (enum tree_tag): New flag DB_REFS_TU_LOCAL_BIT.
+	(depset::has_defn): Override for TU-local entities.
+	(depset::refs_tu_local): New accessor.
+	(depset::hash::ignore_tu_local): New field.
+	(depset::hash::hash): Initialize it.
+	(trees_out::tree_tag::tt_tu_local): New flag.
+	(trees_out::writing_local_entities): New field.
+	(trees_out::is_initial_scan): New function.
+	(trees_out::tu_local_count): New counter.
+	(trees_out::trees_out): Initialize writing_local_entities.
+	(dumper::impl::nested_name): Handle TU_LOCAL_ENTITY.
+	(trees_out::instrument): Report TU-local entity counts.
+	(trees_out::decl_value): Early exit for TU-local entities.
+	(trees_in::decl_value): Handle typedefs of TU-local entities.
+	(trees_out::decl_node): Adjust assertion to cope with early exit
+	of TU-local deps.  Always write TU-local entities by value.
+	(trees_out::type_node): Handle TU-local types.
+	(trees_out::has_tu_local_dep): New function.
+	(trees_out::find_tu_local_decl): New function.
+	(trees_out::tree_node): Intercept TU-local entities and write
+	placeholder values for them instead of normal streaming.
+	(trees_in::tree_node): Handle TU-local entities and TU-local
+	template results.
+	(trees_out::write_function_def): Ignore exposures in non-inline
+	function bodies.
+	(trees_out::write_var_def): Ignore exposures in initializers.
+	(trees_out::write_class_def): Ignore exposures in friend decls.
+	(trees_in::read_class_def): Skip TU-local friends.
+	(trees_out::write_definition): Record whether we're writing a
+	decl which refers to TU-local entities.
+	(depset::hash::add_dependency): Only mark as exposure if we're not
+	ignoring TU-local entities.
+	(depset::hash::find_dependencies): Use depset's own is_key_order
+	function rather than delegating via walker.  Pass whether the
+	decl has ignored TU-local entities in its definition.
+	(template_has_explicit_inst): New function.
+	(depset::hash::finalize_dependencies): Implement new warning
+	Wtemplate-names-tu-local.
+	(module_state::intercluster_seed): Don't seed TU-local deps.
+	(module_state::write_cluster): Pass whether the decl has ignored
+	TU-local entities in its definition.
+	* pt.cc (register_specialization): Always register in a module.
+	(complain_about_tu_local_entity): New function.
+	(expr_contains_tu_local_entity): New function.
+	(function_contains_tu_local_entity): New function.
+	(instantiate_class_template): Skip TU-local friends.
+	(tsubst_decl): Handle typedefs of TU-local entities.
+	(tsubst): Complain about TU-local entities.
+	(dependent_operand_p): Early exit for TU-local entities so we
+	don't attempt to constant-evaluate them.
+	(tsubst_expr): Detect and complain about TU-local entities.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* tree.cc (decl_linkage): Treat DECL_SELF_REFERENCE_P like
+	DECL_IMPLICIT_TYPEDEF_P.
+	* name-lookup.cc (do_namespace_alias): Fix linkage.
+	* module.cc (DB_IS_INTERNAL_BIT): Rename to...
+	(DB_TU_LOCAL_BIT): ...this.
+	(DB_REFS_INTERNAL_BIT): Rename to...
+	(DB_EXPOSURE_BIT): ...this.
+	(depset::hash::is_internal): Rename to...
+	(depset::hash::is_tu_local): ...this.
+	(depset::hash::refs_internal): Rename to...
+	(depset::hash::is_exposure): ...this.
+	(depset::hash::is_tu_local_entity): New function.
+	(depset::hash::has_tu_local_tmpl_arg): New function.
+	(depset::hash::is_tu_local_value): New function.
+	(depset::hash::make_dependency): Check for TU-local entities.
+	(depset::hash::add_dependency): Make current an exposure
+	whenever it references a TU-local entity.
+	(depset::hash::add_binding_entity): Don't create bindings for
+	any TU-local entity.
+	(depset::hash::finalize_dependencies): Rename flags and adjust
+	diagnostic messages to report exposures of TU-local entities.
+	(depset::tarjan::connect): Don't include any TU-local depsets.
+	(depset::hash::connect): Likewise.
+
 2024-12-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/118069

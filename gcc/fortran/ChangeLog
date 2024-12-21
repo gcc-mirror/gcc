@@ -1,3 +1,37 @@
+2024-12-20  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.texi: Get rid of some unnecessary hyphens throughout
+	the file.
+	* invoke.texi: Likewise.
+
+2024-12-20  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.texi: Use the present tense throughout; fix some
+	markup issues and awkward wording.
+	* invoke.texi: Likewise.
+
+2024-12-20  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.texi: Fix markup, typos, and indexing throughout the
+	file.
+	* invoke.texi: Likewise.
+
+2024-12-20  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/51820
+	PR fortran/89632
+	PR fortran/109216
+	* invoke.texi (Code Gen Options): Further cleanups of the discussion
+	of what -funderscoring and -fsecond-underscore do.
+
+2024-12-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118120
+	PR fortran/113928
+	* trans-array.cc (symbols_could_alias): If one symbol refers to a
+	complex type and the other to a real type of the same kind, do not
+	a priori exclude the possibility of aliasing.
+
 2024-12-17  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR c/26154

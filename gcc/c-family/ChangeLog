@@ -1,3 +1,11 @@
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* c.opt: New warning '-Wtemplate-names-tu-local'.
+
 2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-omp.cc (c_omp_interop_t_p): Handle error_mark_node.

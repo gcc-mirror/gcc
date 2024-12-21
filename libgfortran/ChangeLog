@@ -1,3 +1,15 @@
+2024-12-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/57598
+	* caf/single.c (_gfortran_caf_stop_numeric): Report exceptions
+	on stop. And fix send_by_ref.
+	(_gfortran_caf_stop_str): Same.
+	(_gfortran_caf_error_stop_str): Same.
+	(_gfortran_caf_error_stop): Same.
+	* gfortran.map: Add report_exception for export.
+	* libgfortran.h (report_exception): Add to internal export.
+	* runtime/stop.c (report_exception): Same.
+
 2024-12-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/117819

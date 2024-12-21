@@ -1,3 +1,125 @@
+2024-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/118007
+	* gcc.dg/strub-pr118007.c: New.
+
+2024-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/113506
+	* gcc.target/riscv/pr113506.c: New.
+
+2024-12-20  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.dg/tree-ssa/satd-hadamard.c: Rename dg-additional-options
+	to dg-options.
+	* gcc.dg/tree-ssa/vector-10.c: Rename dg-additional-options
+	to dg-options and add -msse2 to it.
+	* gcc.dg/tree-ssa/vector-11.c: Likewise.
+	* gcc.dg/tree-ssa/vector-8.c: Rename dg-additional-options
+	to dg-options.
+	* gcc.dg/tree-ssa/vector-9.c: Likewise.
+
+2024-12-20  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.dg/tree-ssa/pr118149-2.c: New test.
+	* gcc.dg/tree-ssa/pr118149.c: New test.
+
+2024-12-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118120
+	PR fortran/113928
+	* gfortran.dg/aliasing_complex_pointer.f90: New test.
+
+2024-12-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	* gcc.target/aarch64/vect-simd-clone-2.c: New test.
+
+2024-12-20  Tamar Christina  <tamar.christina@arm.com>
+	    Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR target/96342
+	* gcc.target/aarch64/declare-simd-2.c: Add SVE clone scan.
+	* gcc.target/aarch64/vect-simd-clone-1.c: New test.
+	* g++.target/aarch64/vect-simd-clone-1.C: New test.
+
+2024-12-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	* c-c++-common/gomp/declare-variant-14.c: Make i?86 and x86_64 target
+	only test.
+	* gfortran.dg/gomp/declare-variant-14.f90: Likewise.
+
+2024-12-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f16.c: Take
+	tree-optimized pass for standard name check, and adjust the times.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u8.c: Ditto
+
+2024-12-20  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.dg/tree-ssa/vector-11.c: New test.
+
+2024-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-maybe_unused1.C: New test.
+	* g++.dg/cpp0x/alignas21.C: Add test for int && alignas (int).
+
+2024-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-deprecated1.C: New test.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116401
+	* g++.dg/modules/macro-4_c.H: Add missing 'inline'.
+	* g++.dg/modules/pr106761.h: Likewise.
+	* g++.dg/modules/pr98843_b.H: Likewise.
+	* g++.dg/modules/pr99468.H: Likewise.
+	* g++.dg/modules/pragma-1_a.H: Likewise.
+	* g++.dg/modules/tpl-ary-1.h: Likewise.
+	* g++.dg/modules/hdr-2.H: New test.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/export-3.C: Adjust error message.
+	* g++.dg/modules/export-6.C: New test.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/internal-9_a.H: New test.
+	* g++.dg/modules/internal-9_b.C: New test.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/internal-5_a.C: New test.
+	* g++.dg/modules/internal-5_b.C: New test.
+	* g++.dg/modules/internal-6.C: New test.
+	* g++.dg/modules/internal-7_a.C: New test.
+	* g++.dg/modules/internal-7_b.C: New test.
+	* g++.dg/modules/internal-8_a.C: New test.
+	* g++.dg/modules/xtreme-header-8.C: New test.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/block-decl-2.C: Adjust messages.
+	* g++.dg/modules/internal-1.C: Adjust messages, remove XFAILs.
+	* g++.dg/modules/linkage-2.C: Adjust messages, remove XFAILS.
+	* g++.dg/modules/internal-3.C: New test.
+	* g++.dg/modules/internal-4_a.H: New test.
+	* g++.dg/modules/internal-4_b.C: New test.
+
 2024-12-19  Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
