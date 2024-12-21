@@ -715,6 +715,24 @@ public:
       marked_for_strip (false)
   {}
 
+  PathInExpression (LangItem::Kind lang_item_kind,
+		    std::vector<Attribute> outer_attrs, location_t locus)
+    : outer_attrs (std::move (outer_attrs)),
+      has_opening_scope_resolution (false), locus (locus),
+      _node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      path (Rust::make_unique<LangItemPath> (lang_item_kind, locus)),
+      marked_for_strip (false)
+  {}
+
+  PathInExpression (std::unique_ptr<Path> path,
+		    std::vector<Attribute> outer_attrs, location_t locus,
+		    bool has_opening_scope_resolution = false)
+    : outer_attrs (std::move (outer_attrs)),
+      has_opening_scope_resolution (has_opening_scope_resolution),
+      locus (locus), _node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      path (std::move (path)), marked_for_strip (false)
+  {}
+
   PathInExpression (const PathInExpression &other)
     : outer_attrs (other.outer_attrs),
       has_opening_scope_resolution (other.has_opening_scope_resolution),
@@ -738,7 +756,8 @@ public:
   // Creates an error state path in expression.
   static PathInExpression create_error ()
   {
-    return PathInExpression ({}, {}, UNDEF_LOCATION);
+    return PathInExpression (std::vector<PathExprSegment> (), {},
+			     UNDEF_LOCATION);
   }
 
   // Returns whether path in expression is in an error state.
