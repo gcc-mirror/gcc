@@ -95,7 +95,7 @@ package System is
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority           : constant Positive := 0;
+   Max_Priority           : constant Positive := 60;
    Max_Interrupt_Priority : constant Positive := 63;
 
    subtype Any_Priority       is Integer      range  0 .. 63;
