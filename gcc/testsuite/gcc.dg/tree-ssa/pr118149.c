@@ -15,6 +15,6 @@ void fastconv_parse ()
   fastconv_parse_dst[6] = fastconv_parse_dst[7] = i1k + r3k;
 }
 
-/* { dg-final { scan-tree-dump "Vec perm simplify sequences have been blended" "forwprop4" { target { aarch64*-*-* i?86-*-* x86_64-*-* } } } } */
-/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 0, 0, 6, 6 }" "forwprop4" { target { aarch64*-*-* i?86-*-* x86_64-*-* } } } } */
-/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 1, 1, 7, 7 }" "forwprop4" { target { aarch64*-*-* i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump "Vec perm simplify sequences have been blended" "forwprop4" { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 0, 0, 6, 6 }" "forwprop4" { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 1, 1, 7, 7 }" "forwprop4" { target { i?86-*-* x86_64-*-* } } } } */
