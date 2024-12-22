@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "Don't inline memset using neon instructions" { ! arm_tune_string_ops_prefer_neon } } */
-/* { dg-options "-save-temps -O2 -fno-inline"  } */
+/* { dg-options "-save-temps -Os -fno-inline"  } */
 /* { dg-add-options "arm_neon" } */
 
 #include <string.h>
@@ -37,6 +37,6 @@ main(void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-not "bl?\[ \t\]*memset" { target { arm_thumb2_ok } } } } */
-/* { dg-final { scan-assembler "vst1" { target { arm_little_endian && arm_neon } } } } */
-/* { dg-final { scan-assembler-not "vstr" { target { arm_little_endian && arm_neon } } } } */
+/* { dg-final { scan-assembler-not "\tbl?\[ \t\]*memset" { target { arm_thumb2_ok } } } } */
+/* { dg-final { scan-assembler "\tvst1" { target { arm_little_endian && arm_neon } } } } */
+/* { dg-final { scan-assembler-not "\tvstr" { target { arm_little_endian && arm_neon } } } } */
