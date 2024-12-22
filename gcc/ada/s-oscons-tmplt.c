@@ -86,7 +86,7 @@ pragma Style_Checks ("N");
  ** a number of non-POSIX but useful/required features.
  **/
 
-#if defined (__linux__) || defined (__ANDROID__)
+#if defined (__linux__) || defined (__ANDROID__) || defined (__GNU__)
 
 /* Define _XOPEN_SOURCE to get IOV_MAX */
 # if !defined (_XOPEN_SOURCE)
@@ -96,7 +96,7 @@ pragma Style_Checks ("N");
 /* Define _BSD_SOURCE to get CRTSCTS */
 # define _BSD_SOURCE
 
-#endif /* defined (__linux__) || defined (__ANDROID__) */
+#endif /* defined (__linux__) || defined (__ANDROID__) || defined (__GNU__) */
 
 /* Include gsocket.h before any system header so it can redefine FD_SETSIZE */
 
@@ -160,7 +160,7 @@ pragma Style_Checks ("N");
 #endif
 
 #if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__) \
-  || defined (__rtems__)
+  || defined (__rtems__) || defined (__GNU__)
 # include <pthread.h>
 # include <signal.h>
 #endif
@@ -1469,7 +1469,7 @@ CND(MSG_WAITALL, "Wait for full reception")
 #endif
 CND(MSG_NOSIGNAL, "No SIGPIPE on send")
 
-#if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__)
+#if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__) || defined (__GNU__)
 # define MSG_Forced_Flags "MSG_NOSIGNAL"
 #else
 # define MSG_Forced_Flags "0"
@@ -1938,7 +1938,7 @@ CST(Poll_Linkname, "")
 
 #endif /* HAVE_SOCKETS */
 
-#if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__)
+#if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__) || defined (__GNU__)
 #define SIZEOF_sigset (sizeof (sigset_t))
 CND(SIZEOF_sigset, "sigset")
 #endif
@@ -1999,7 +1999,7 @@ CNS(CLOCK_RT_Ada, "")
 
 #if defined (__APPLE__) || defined (__ANDROID__) || defined (DUMMY) \
   || defined (__FreeBSD__) || defined (__linux__) \
-  || defined (__QNX__) || defined (__rtems__)
+  || defined (__QNX__) || defined (__rtems__) || defined (__GNU__)
 
 /*
 
@@ -2044,7 +2044,7 @@ CND(PTHREAD_RWLOCK_SIZE,     "pthread_rwlock_t")
 CND(PTHREAD_ONCE_SIZE,       "pthread_once_t")
 
 #endif /* __APPLE__ || __ANDROID__ || __FreeBSD ||__linux__
-          || __QNX__|| __rtems__ */
+          || __QNX__|| __rtems__ || __GNU__ */
 
 /*
 
