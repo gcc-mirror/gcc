@@ -235,6 +235,7 @@ GRS_OBJS = \
 	rust/rust-expand-format-args.o \
 	rust/rust-lang-item.o \
 	rust/rust-collect-lang-items.o \
+	rust/rust-desugar-for-loops.o \
     $(END)
 # removed object files from here
 

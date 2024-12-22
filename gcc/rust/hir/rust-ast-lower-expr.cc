@@ -591,7 +591,7 @@ ASTLoweringExpr::visit (AST::WhileLoopExpr &expr)
 void
 ASTLoweringExpr::visit (AST::ForLoopExpr &expr)
 {
-  translated = ASTLoweringExprWithBlock::translate (expr, &terminated);
+  rust_unreachable ();
 }
 
 void
