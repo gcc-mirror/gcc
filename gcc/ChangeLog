@@ -1,3 +1,24 @@
+2024-12-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR middle-end/109224
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Strip
+	DEMANGLE_COMPONENT_TEMPLATE from the operator new and operator
+	after demangling.
+
+2024-12-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR middle-end/118084
+	* config/riscv/riscv.cc (generate_reflecting_code_using_brev): Handle
+	sub-word sized objects correctly.
+
+2024-12-21  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Refactor sorts of signed SAT_ADD match patterns.
+
+2024-12-21  Mark Harmstone  <mark@harmstone.com>
+
+	* vmsdbgout.cc (vmsdbgout_begin_block): Fix compilation error.
+
 2024-12-20  Alexandre Oliva  <oliva@adacore.com>
 
 	PR middle-end/118007

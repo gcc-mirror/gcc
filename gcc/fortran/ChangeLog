@@ -1,3 +1,16 @@
+2024-12-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* interface.cc (compare_parameter): For the rank check, NULL()
+	inherits the rank of a provided MOLD argument.
+	(gfc_compare_actual_formal): Adjust check of NULL() actual argument
+	against formal to accept F2008 enhancements (allocatable dummy).
+	NULL() with MOLD argument retains a pointer/allocatable attribute.
+	* trans-expr.cc (conv_null_actual): Implement passing NULL() to
+	derived-type dummy with pointer/allocatable attribute, and ensure
+	that the actual rank is passed to an assumed-rank dummy.
+	(gfc_conv_procedure_call): Use it.
+
 2024-12-20  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* gfortran.texi: Get rid of some unnecessary hyphens throughout

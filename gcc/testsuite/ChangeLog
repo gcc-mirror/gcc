@@ -1,3 +1,19 @@
+2024-12-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR middle-end/109224
+	* g++.dg/warn/Wmismatched-new-delete-9.C: New test.
+	* g++.dg/warn/pr109224.C: New file.
+
+2024-12-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* gfortran.dg/null_actual_7.f90: New test.
+
+2024-12-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR middle-end/118084
+	* gcc.target/riscv/pr118084.c: New test.
+
 2024-12-20  Alexandre Oliva  <oliva@adacore.com>
 
 	PR middle-end/118007
