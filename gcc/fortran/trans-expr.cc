@@ -11445,6 +11445,9 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
      character lengths are the same.  */
   if (expr2->ts.type == BT_CHARACTER && expr2->rank > 0)
     {
+      if (UNLIMITED_POLY (expr1))
+	return true;
+
       if (expr1->ts.u.cl->length == NULL
 	    || expr1->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 	return true;

@@ -1632,9 +1632,20 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
       tree class_data;
       tree dtype;
       gfc_expr *expr1 = fcn_ss ? fcn_ss->info->expr : NULL;
+      bool rank_changer;
+
+      /* Pick out these transformational functions because they change the rank
+	 or shape of the first argument. This requires that the class type be
+	 changed, the dtype updated and the correct rank used.  */
+      rank_changer = expr1 && expr1->expr_type == EXPR_FUNCTION
+		     && expr1->value.function.isym
+		     && (expr1->value.function.isym->id == GFC_ISYM_RESHAPE
+			 || expr1->value.function.isym->id == GFC_ISYM_SPREAD
+			 || expr1->value.function.isym->id == GFC_ISYM_PACK
+			 || expr1->value.function.isym->id == GFC_ISYM_UNPACK);
 
       /* Create a class temporary for the result using the lhs class object.  */
-      if (class_expr != NULL_TREE)
+      if (class_expr != NULL_TREE && !rank_changer)
 	{
 	  tmp = gfc_create_var (TREE_TYPE (class_expr), "ctmp");
 	  gfc_add_modify (pre, tmp, class_expr);
@@ -1672,33 +1683,29 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 	  elemsize = gfc_evaluate_now (elemsize, pre);
 	}
 
+      class_data = gfc_class_data_get (tmp);
+
+      if (rank_changer)
+	{
+	  /* Take the dtype from the class expression.  */
+	  dtype = gfc_conv_descriptor_dtype (gfc_class_data_get (class_expr));
+	  tmp = gfc_conv_descriptor_dtype (desc);
+	  gfc_add_modify (pre, tmp, dtype);
+
+	  /* These transformational functions change the rank.  */
+	  tmp = gfc_conv_descriptor_rank (desc);
+	  gfc_add_modify (pre, tmp,
+			  build_int_cst (TREE_TYPE (tmp), ss->loop->dimen));
+	  fcn_ss->info->class_container = NULL_TREE;
+	}
+
       /* Assign the new descriptor to the _data field. This allows the
 	 vptr _copy to be used for scalarized assignment since the class
 	 temporary can be found from the descriptor.  */
-      class_data = gfc_class_data_get (tmp);
       tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
 			     TREE_TYPE (desc), desc);
       gfc_add_modify (pre, class_data, tmp);
 
-      if (expr1 && expr1->expr_type == EXPR_FUNCTION
-	  && expr1->value.function.isym
-	  && (expr1->value.function.isym->id == GFC_ISYM_RESHAPE
-	      || expr1->value.function.isym->id == GFC_ISYM_UNPACK))
-	{
-	  /* Take the dtype from the class expression.  */
-	  dtype = gfc_conv_descriptor_dtype (gfc_class_data_get (class_expr));
-	  tmp = gfc_conv_descriptor_dtype (class_data);
-	  gfc_add_modify (pre, tmp, dtype);
-
-	  /* Transformational functions reshape and reduce can change the rank.  */
-	  if (fcn_ss && fcn_ss->info && fcn_ss->info->class_container)
-	    {
-	      tmp = gfc_conv_descriptor_rank (class_data);
-	      gfc_add_modify (pre, tmp,
-			      build_int_cst (TREE_TYPE (tmp), ss->loop->dimen));
-	      fcn_ss->info->class_container = NULL_TREE;
-	    }
-	}
       /* Point desc to the class _data field.  */
       desc = class_data;
     }
