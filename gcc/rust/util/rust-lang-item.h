@@ -146,15 +146,18 @@ public:
   static const BiMap<std::string, Kind> lang_items;
 
   static tl::optional<Kind> Parse (const std::string &item);
+
   static std::string ToString (Kind type);
   static std::string PrettyString (Kind type);
+
   static Kind OperatorToLangItem (ArithmeticOrLogicalOperator op);
   static Kind
   CompoundAssignmentOperatorToLangItem (ArithmeticOrLogicalOperator op);
   static Kind NegationOperatorToLangItem (NegationOperator op);
   static Kind ComparisonToLangItem (ComparisonOperator op);
-
   static std::string ComparisonToSegment (ComparisonOperator op);
+
+  static bool IsEnumVariant (Kind type);
 };
 
 } // namespace Rust
