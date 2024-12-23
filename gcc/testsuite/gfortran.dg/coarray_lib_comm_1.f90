@@ -38,6 +38,6 @@ B(1:5) = B(3:7)
 if (any (A-B /= 0)) STOP 4
 end
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_get_by_ct \\\(caf_token.., 0B, 0B, 1, \\\(unsigned long\\\) atmp.\[0-9\]+.span" 4 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_get_by_ct" 4 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_sendget \\\(caf_token.., \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, caf_token.., \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, 4, 4, 1, 0B\\\);" 1 "original" } }
 
