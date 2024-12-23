@@ -1319,6 +1319,9 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     {
       if (CLASS_TYPE_P (to) && conv->kind == ck_rvalue)
 	conv->type = qualified_to;
+      else if (from != to)
+	/* Use TO in order to not lose TO in diagnostics.  */
+	conv->type = to;
       return conv;
     }
 
@@ -8486,6 +8489,37 @@ maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
 static tree convert_like (conversion *, tree, tree, int, bool, bool, bool,
 			  tsubst_flags_t);
 
+/* Adjust the result EXPR of a conversion to the expected type TOTYPE, which
+   must be equivalent but might be a typedef.  */
+
+static tree
+maybe_adjust_type_name (tree type, tree expr, conversion_kind kind)
+{
+  if (expr == error_mark_node
+      || processing_template_decl)
+    return expr;
+
+  tree etype = TREE_TYPE (expr);
+  if (etype == type)
+    return expr;
+
+  gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p (etype, type)
+		       || is_bitfield_expr_with_lowered_type (expr)
+		       || seen_error ());
+
+  if (SCALAR_TYPE_P (type)
+      && (kind == ck_rvalue
+	  /* ??? We should be able to do this for ck_identity of more prvalue
+	     expressions, but checking !obvalue_p here breaks, so for now let's
+	     just handle NON_LVALUE_EXPR (such as the location wrapper for a
+	     literal).  Maybe we want to express already-rvalue in the
+	     conversion somehow?  */
+	  || TREE_CODE (expr) == NON_LVALUE_EXPR))
+    expr = build_nop (type, expr);
+
+  return expr;
+}
+
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
    ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
    indicates the `this' argument of a method.  INNER is nonzero when
@@ -8747,7 +8781,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	   continue to warn about uses of EXPR as an integer, rather than as a
 	   pointer.  */
 	expr = build_int_cst (totype, 0);
-      return expr;
+      return maybe_adjust_type_name (totype, expr, convs->kind);
     case ck_ambig:
       /* We leave bad_p off ck_ambig because overload resolution considers
 	 it valid, it just fails when we try to perform it.  So we need to
@@ -8885,8 +8919,22 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	  return error_mark_node;
 	}
 
+      if ((complain & tf_warning) && fn
+	  && warn_suggest_attribute_format)
+	{
+	  tree rhstype = TREE_TYPE (expr);
+	  const enum tree_code coder = TREE_CODE (rhstype);
+	  const enum tree_code codel = TREE_CODE (totype);
+	  if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
+	      && coder == codel
+	      && check_missing_format_attribute (totype, rhstype))
+	    warning (OPT_Wsuggest_attribute_format,
+		     "argument of function call might be a candidate "
+		     "for a format attribute");
+	}
+
       if (! MAYBE_CLASS_TYPE_P (totype))
-	return expr;
+	return maybe_adjust_type_name (totype, expr, convs->kind);
 
       /* Don't introduce copies when passing arguments along to the inherited
 	 constructor.  */
@@ -9512,21 +9560,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
     val = cp_perform_integral_promotions (val, complain);
   if (complain & tf_warning)
-    {
-      if (warn_suggest_attribute_format)
-	{
-	  tree rhstype = TREE_TYPE (val);
-	  const enum tree_code coder = TREE_CODE (rhstype);
-	  const enum tree_code codel = TREE_CODE (type);
-	  if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
-	      && coder == codel
-	      && check_missing_format_attribute (type, rhstype))
-	    warning (OPT_Wsuggest_attribute_format,
-		     "argument of function call might be a candidate "
-		     "for a format attribute");
-	}
-      maybe_warn_parm_abi (type, cp_expr_loc_or_input_loc (val));
-    }
+    maybe_warn_parm_abi (type, cp_expr_loc_or_input_loc (val));
 
   if (complain & tf_warning)
     warn_for_address_of_packed_member (type, val);

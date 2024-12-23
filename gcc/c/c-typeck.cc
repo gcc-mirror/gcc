@@ -7831,6 +7831,9 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
     {
       warn_for_address_of_packed_member (type, orig_rhs);
+      if (type != rhstype)
+	/* Convert RHS to TYPE in order to not lose TYPE in diagnostics.  */
+	rhs = convert (type, rhs);
       return rhs;
     }
 
