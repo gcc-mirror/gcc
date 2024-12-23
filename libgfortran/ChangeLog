@@ -1,3 +1,25 @@
+2024-12-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_register_accessor): New function
+	to register access routines at runtime.
+	(_gfortran_caf_register_accessors_finish): New function to
+	finish registration of access routine and sort hash map.
+	(_gfortran_caf_get_remote_function_index): New function to
+	convert an hash to an index.
+	(_gfortran_caf_get_by_ct): New function to get data from a
+	remote image using the access routine given by an index.
+	* caf/single.c (struct accessor_hash_t): Hashmap type.
+	(_gfortran_caf_send): Fixed formatting.
+	(_gfortran_caf_register_accessor): Register a hash accessor
+	routine.
+	(hash_compare): Compare two hashes for sort() and bsearch().
+	(_gfortran_caf_register_accessors_finish): Sort the hashmap to
+	allow bsearch()'s quick lookup.
+	(_gfortran_caf_get_remote_function_index): Map a hash to an
+	index.
+	(_gfortran_caf_get_by_ct): Get data from a remote image using
+	the index provided by get_remote_function_index().
+
 2024-12-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/57598

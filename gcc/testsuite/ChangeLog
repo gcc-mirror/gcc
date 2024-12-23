@@ -1,3 +1,16 @@
+2024-12-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/103298
+	* gcc.target/arm/pr43920-2.c: Change to assembler pattern
+	"(cmp|mov|orr|and)(eq|ne)" for the check. Remove size check.
+
+2024-12-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_atomic_5.f90: Adapted to look for
+	get_by_ct.
+	* gfortran.dg/coarray_lib_comm_1.f90: Same.
+	* gfortran.dg/coarray_stat_function.f90: Same.
+
 2024-12-21  Arsen Arsenović  <arsen@aarsen.me>
 
 	PR middle-end/109224

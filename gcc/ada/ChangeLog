@@ -1,3 +1,15 @@
+2024-12-22  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* libgnat/system-gnu.ads: Set Max_Priority to 60.
+
+2024-12-22  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* s-oscons-tmplt.c [__GNU__] (_XOPEN_SOURCE, _BSD_SOURCE): Define.
+	[__GNU__]: Include <pthread.h> and <signal.h>
+	[__GNU__]: Set MSG_Forced_Flags to "MSG_NOSIGNAL".
+	[__GNU__]: Define SIZEOF_sigset.
+	[__GNU__]: Define PTHREAD_*SIZE
+
 2024-12-18  Simon Wright  <simon@pushface.org>
 
 	PR target/117538

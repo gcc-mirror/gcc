@@ -1,3 +1,85 @@
+2024-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	* check.cc (gfc_check_random_seed): Clear gmp variables returned by
+	gfc_array_size.
+	* expr.cc (gfc_check_pointer_assign): Likewise.
+
+2024-12-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* gfortran.h (gfc_add_caf_accessor): New function.
+	* gfortran.texi: Document new API routines.
+	* resolve.cc (get_arrayspec_from_expr): Synthesize the arrayspec
+	resulting from an expression, i.e. not only the rank, but also
+	the bounds.
+	(remove_coarray_from_derived_type): Remove coarray ref from a
+	derived type to access it in access routine.
+	(convert_coarray_class_to_derived_type): Same but for classes.
+	The result is a derived type.
+	(split_expr_at_caf_ref): Split an expression at the coarray
+	reference to move the reference after the coarray ref into the
+	access routine.
+	(check_add_new_component): Helper to add variables as
+	components to derived type transfered to the access routine.
+	(create_get_parameter_type): Create the derived type to transfer
+	addressing data to the access routine.
+	(create_get_callback): Create the access routine.
+	(add_caf_get_intrinsic): Use access routine instead of old
+	caf_get.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Register new
+	API routines.
+	(gfc_create_module_variable): Use renamed flag.
+	(gfc_emit_parameter_debug_info):
+	(struct caf_accessor): Linked list of hash-access routine pairs.
+	(gfc_add_caf_accessor): Add a hash-access routine pair to above
+	linked list.
+	(create_caf_accessor_register): Add all registered hash-access
+	routine pairs to the current caf_init.
+	(generate_coarray_init): Use routine above.
+	(gfc_generate_module_vars): Use renamed flag.
+	(generate_local_decl): Same.
+	(gfc_generate_function_code): Same.
+	(gfc_process_block_locals): Same.
+	* trans-intrinsic.cc (conv_shape_to_cst): Build the product of a
+	shape.
+	(gfc_conv_intrinsic_caf_get): Create call to access routine.
+	(conv_caf_send): Adapt to caf_get using less arguments.
+	(gfc_conv_intrinsic_function): Same.
+	* trans.cc (gfc_trans_force_lval): Helper to ensure that an
+	expression can be used as an lvalue-ref.
+	* trans.h (gfc_trans_force_lval): See above.
+
+2024-12-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* gfortran.h (gfc_comp_caf_token): Convenient macro for
+	accessing caf_token's tree.
+	* resolve.cc (gfc_resolve_ref): Backup caf_lhs when resolving
+	expr in array_ref.
+	(remove_caf_get_intrinsic): Removed.
+	(resolve_variable): Set flag caf_lhs when resolving lhs of
+	assignment to prevent insertion of caf_get.
+	(resolve_lock_unlock_event): Same, but the lhs is the parameter.
+	(resolve_ordinary_assign): Move conversion to caf_send to
+	resolve_codes.
+	(resolve_codes): Adress caf_get and caf_send here.
+	(resolve_fl_derived0): Set component's caf_token when token is
+	necessary.
+	* trans-array.cc (gfc_conv_array_parameter): Get a coarray for
+	expression that have a corank.
+	(structure_alloc_comps): Use macro to get caf_token's tree.
+	(gfc_alloc_allocatable_for_assignment): Same.
+	* trans-expr.cc (gfc_get_ultimate_alloc_ptr_comps_caf_token):
+	Same.
+	(gfc_trans_structure_assign): Same.
+	* trans-intrinsic.cc (conv_expr_ref_to_caf_ref): Same.
+	(has_ref_after_cafref): New function to figure that after a
+	reference of a coarray another reference is present.
+	(conv_caf_send): Get rhs from correct place, when caf_get is
+	not removed.
+	* trans-types.cc (gfc_get_derived_type): Get caf_token from
+	component and no longer guessing.
+
 2024-12-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104819

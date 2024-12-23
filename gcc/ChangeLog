@@ -1,3 +1,8 @@
+2024-12-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Align the operand for strided
+	load/store pattern.
+
 2024-12-21  Arsen Arsenović  <arsen@aarsen.me>
 
 	PR middle-end/109224
