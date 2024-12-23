@@ -10,6 +10,8 @@ program null_actual
   end type t
   type(t), pointer     :: p2(:,:) => NULL()
   type(t), allocatable :: a2(:,:)
+  type(t), pointer     :: p0 => NULL ()
+  type(t), allocatable :: a0
 
   ! Basic tests passing unallocated allocatable / disassociated pointer
   stop_base = 0
@@ -27,6 +29,16 @@ program null_actual
   call chk2_t_p (p2)
   call opt2_t_a (a2)
   call opt2_t_p (p2)
+  ! ... to rank-0 dummy:
+  stop_base = 60
+  call chk0_t_a (a0)
+  call chk0_t_p (p0)
+  call opt0_t_a (a0)
+  call opt0_t_p (p0)
+  call chk0_t_a_i (a0)
+  call chk0_t_p_i (p0)
+  call opt0_t_a_i (a0)
+  call opt0_t_p_i (p0)
 
   ! Test NULL with MOLD argument
   stop_base = 20
@@ -43,12 +55,32 @@ program null_actual
   call opt2_t_a (null(a2))
   call opt2_t_p (null(p2))
 
+  stop_base = 80
+  call chk0_t_a (null(a0))
+  call chk0_t_p (null(p0))
+  call opt0_t_a (null(a0))
+  call opt0_t_p (null(p0))
+  call chk0_t_a_i (null(a0))
+  call chk0_t_p_i (null(p0))
+  call opt0_t_a_i (null(a0))
+  call opt0_t_p_i (null(p0))
+
   ! Test NULL without MOLD argument
   stop_base = 40
   call chk2_t_a (null())
   call chk2_t_p (null())
   call opt2_t_a (null())
   call opt2_t_p (null())
+
+  stop_base = 100
+  call chk0_t_a (null())
+  call chk0_t_p (null())
+  call opt0_t_a (null())
+  call opt0_t_p (null())
+  call chk0_t_a_i (null())
+  call chk0_t_p_i (null())
+  call opt0_t_a_i (null())
+  call opt0_t_p_i (null())
 
 contains
   ! Check assumed-rank dummy:
@@ -120,4 +152,49 @@ contains
     if (.not. present (x)) stop stop_base + 19
     if (associated (x))    stop stop_base + 20
   end subroutine opt2_t_p
+
+  ! Checks for rank-0 dummy:
+  subroutine chk0_t_p (x)
+    type(t), pointer :: x
+    if (associated (x)) stop stop_base + 1
+  end subroutine chk0_t_p
+
+  subroutine chk0_t_p_i (x)
+    type(t), pointer, intent(in) :: x
+    if (associated (x)) stop stop_base + 2
+  end subroutine chk0_t_p_i
+
+  subroutine opt0_t_p (x)
+    type(t), pointer, optional :: x
+    if (.not. present (x)) stop stop_base + 3
+    if (associated (x))    stop stop_base + 4
+  end subroutine opt0_t_p
+
+  subroutine opt0_t_p_i (x)
+    type(t), pointer, optional, intent(in) :: x
+    if (.not. present (x)) stop stop_base + 5
+    if (associated (x))    stop stop_base + 6
+  end subroutine opt0_t_p_i
+
+  subroutine chk0_t_a (x)
+    type(t), allocatable :: x
+    if (allocated (x)) stop stop_base + 7
+  end subroutine chk0_t_a
+
+  subroutine chk0_t_a_i (x)
+    type(t), allocatable, intent(in) :: x
+    if (allocated (x)) stop stop_base + 8
+  end subroutine chk0_t_a_i
+
+  subroutine opt0_t_a (x)
+    type(t), allocatable, optional :: x
+    if (.not. present (x)) stop stop_base +  9
+    if (allocated (x))     stop stop_base + 10
+  end subroutine opt0_t_a
+
+  subroutine opt0_t_a_i (x)
+    type(t), allocatable, optional, intent(in) :: x
+    if (.not. present (x)) stop stop_base + 11
+    if (allocated (x))     stop stop_base + 12
+  end subroutine opt0_t_a_i
 end

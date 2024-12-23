@@ -6488,7 +6488,8 @@ conv_null_actual (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym)
 	  int dummy_rank;
 	  tree tmp = parmse->expr;
 
-	  if (fsym->attr.allocatable && fsym->attr.intent == INTENT_UNKNOWN)
+	  if ((fsym->attr.allocatable || fsym->attr.pointer)
+	      && fsym->attr.intent == INTENT_UNKNOWN)
 	    fsym->attr.intent = INTENT_IN;
 	  tmp = gfc_conv_scalar_to_descriptor (parmse, tmp, fsym->attr);
 	  dummy_rank = fsym->as ? fsym->as->rank : 0;
