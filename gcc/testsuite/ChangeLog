@@ -1,3 +1,11 @@
+2024-12-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-12-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117797
+	* gfortran.dg/pr117797.f90: New test.
+
 2024-12-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
