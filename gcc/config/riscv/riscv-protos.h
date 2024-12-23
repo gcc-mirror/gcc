@@ -639,7 +639,7 @@ void expand_vec_cmp (rtx, rtx_code, rtx, rtx, rtx = nullptr, rtx = nullptr);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_unop (unsigned, rtx *);
 void expand_cond_len_binop (unsigned, rtx *);
-void expand_reduction (unsigned, unsigned, rtx *, rtx);
+void expand_reduction (unsigned, unsigned, unsigned, rtx *, rtx);
 void expand_vec_ceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_floor (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_nearbyint (rtx, rtx, machine_mode, machine_mode);

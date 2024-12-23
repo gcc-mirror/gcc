@@ -2185,7 +2185,9 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_SUM, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_SUM,
+				  UNSPEC_REDUC_SUM_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 }
@@ -2198,7 +2200,9 @@
 {
   int prec = GET_MODE_PRECISION (<VEL>mode);
   rtx min = immed_wide_int_const (wi::min_value (prec, SIGNED), <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX,
+				  UNSPEC_REDUC_MAX_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, min);
   DONE;
 })
@@ -2208,7 +2212,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAXU, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAXU,
+				  UNSPEC_REDUC_MAXU_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 })
@@ -2220,7 +2226,9 @@
 {
   int prec = GET_MODE_PRECISION (<VEL>mode);
   rtx max = immed_wide_int_const (wi::max_value (prec, SIGNED), <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN,
+				  UNSPEC_REDUC_MIN_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, max);
   DONE;
 })
@@ -2232,7 +2240,9 @@
 {
   int prec = GET_MODE_PRECISION (<VEL>mode);
   rtx max = immed_wide_int_const (wi::max_value (prec, UNSIGNED), <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MINU, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MINU,
+				  UNSPEC_REDUC_MINU_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, max);
   DONE;
 })
@@ -2242,7 +2252,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_AND, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_AND,
+				  UNSPEC_REDUC_AND_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONSTM1_RTX (<VEL>mode));
   DONE;
 })
@@ -2252,7 +2264,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_OR, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_OR,
+				  UNSPEC_REDUC_OR_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 })
@@ -2262,7 +2276,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_XOR, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_XOR,
+				  UNSPEC_REDUC_XOR_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 })
@@ -2287,6 +2303,7 @@
   [(const_int 0)]
 {
   riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_UNORDERED,
+				  UNSPEC_REDUC_SUM_UNORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
@@ -2301,7 +2318,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, true);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX,
+				  UNSPEC_REDUC_MAX_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2314,7 +2333,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, false);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN,
+				  UNSPEC_REDUC_MIN_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2327,7 +2348,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, true);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX,
+				  UNSPEC_REDUC_MAX_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2340,7 +2363,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, false);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN,
+				  UNSPEC_REDUC_MIN_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2366,6 +2391,7 @@
 {
   rtx ops[] = {operands[0], operands[2]};
   riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_ORDERED,
+				  UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   ops, operands[1]);
   DONE;
@@ -2393,6 +2419,7 @@
     {
       rtx ops[] = {operands[0], operands[2], operands[3], operands[4]};
       riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_ORDERED,
+				      UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE,
                                       riscv_vector::REDUCE_OP_M_FRM_DYN,
                                       ops, operands[1]);
     }
