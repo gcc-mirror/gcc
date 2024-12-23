@@ -49,6 +49,7 @@ public:
   void visit (AST::TraitItemType &item) override;
   void visit (AST::Function &item) override;
   void visit (AST::StructStruct &item) override;
+  void visit (AST::EnumItem &item) override;
 
 private:
   template <typename T> void maybe_add_lang_item (const T &item);
