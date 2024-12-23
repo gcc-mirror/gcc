@@ -4066,8 +4066,8 @@ package body Contracts is
 
          begin
             Spec := Build_Call_Helper_Spec (Helper_Id);
-            Set_Must_Override      (Spec, False);
-            Set_Must_Not_Override  (Spec, False);
+            Set_Must_Override     (Spec, False);
+            Set_Must_Not_Override (Spec, False);
             Set_Is_Inlined (Helper_Id);
             Set_Is_Public  (Helper_Id);
 

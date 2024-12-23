@@ -1409,10 +1409,10 @@ package body Sem_Ch3 is
                begin
                   Decl :=
                     Make_Subtype_Declaration (Loc,
-                      Defining_Identifier => Nam,
-                      Subtype_Indication  =>
+                      Defining_Identifier    => Nam,
+                      Null_Exclusion_Present => True,
+                      Subtype_Indication     =>
                         New_Occurrence_Of (Entity (S), Loc));
-                  Set_Null_Exclusion_Present (Decl);
                   Insert_Before (Parent (Def), Decl);
                   Analyze (Decl);
                   Set_Entity (S, Nam);
@@ -12191,11 +12191,10 @@ package body Sem_Ch3 is
          else
             Type_Def :=
               Make_Access_To_Object_Definition (Loc,
+                All_Present        => All_Present (Access_Def),
+                Constant_Present   => Constant_Present (Access_Def),
                 Subtype_Indication =>
-                   Relocate_Node (Subtype_Mark (Access_Def)));
-
-            Set_Constant_Present (Type_Def, Constant_Present (Access_Def));
-            Set_All_Present (Type_Def, All_Present (Access_Def));
+                  Relocate_Node (Subtype_Mark (Access_Def)));
          end if;
 
          Set_Null_Exclusion_Present

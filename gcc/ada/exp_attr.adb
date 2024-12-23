@@ -6422,10 +6422,10 @@ package body Exp_Attr is
                begin
                   Iter :=
                     Make_Iterator_Specification (Loc,
-                    Defining_Identifier => Elem,
-                    Name => Relocate_Node (Prefix (N)),
-                    Subtype_Indication => Empty);
-                  Set_Of_Present (Iter);
+                      Defining_Identifier => Elem,
+                      Subtype_Indication  => Empty,
+                      Of_Present          => True,
+                      Name                => Relocate_Node (Prefix (N)));
 
                   New_Loop := Make_Loop_Statement (Loc,
                     Iteration_Scheme =>

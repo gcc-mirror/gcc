@@ -1349,9 +1349,8 @@ package body Exp_Ch3 is
 
          Append_To (Component_Associations (Aggr),
            Make_Component_Association (Loc,
-             Choices    => New_List (Make_Others_Choice (Loc)),
-             Expression => Empty));
-         Set_Box_Present (Last (Component_Associations (Aggr)));
+             Choices     => New_List (Make_Others_Choice (Loc)),
+             Box_Present => True));
 
          if Typ /= Full_Typ then
             Analyze_And_Resolve (Aggr, Full_View (Base_Type (Full_Typ)));

@@ -3097,13 +3097,11 @@ package body Sem_Ch12 is
              Defining_Identifier           => T,
              Discriminant_Specifications   => Discriminant_Specifications (N),
              Unknown_Discriminants_Present => Unk_Disc,
+             Abstract_Present              => Abstract_Present (Def),
+             Limited_Present               => Limited_Present (Def),
              Subtype_Indication            => Subtype_Mark (Def),
+             Synchronized_Present          => Synchronized_Present (Def),
              Interface_List                => Interface_List (Def));
-
-         Set_Abstract_Present     (New_N, Abstract_Present     (Def));
-         Set_Limited_Present      (New_N, Limited_Present      (Def));
-         Set_Synchronized_Present (New_N, Synchronized_Present (Def));
-
       else
          New_N :=
            Make_Full_Type_Declaration (Loc,
@@ -3112,12 +3110,9 @@ package body Sem_Ch12 is
                Discriminant_Specifications (Parent (T)),
              Type_Definition             =>
                Make_Derived_Type_Definition (Loc,
+                 Abstract_Present   => Abstract_Present (Def),
+                 Limited_Present    => Limited_Present (Def),
                  Subtype_Indication => Subtype_Mark (Def)));
-
-         Set_Abstract_Present
-           (Type_Definition (New_N), Abstract_Present (Def));
-         Set_Limited_Present
-           (Type_Definition (New_N), Limited_Present  (Def));
       end if;
 
       Rewrite (N, New_N);
