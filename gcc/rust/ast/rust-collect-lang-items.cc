@@ -19,6 +19,7 @@
 #include "rust-collect-lang-items.h"
 #include "optional.h"
 #include "rust-ast-collector.h"
+#include "rust-ast-visitor.h"
 #include "rust-ast.h"
 #include "rust-attribute-values.h"
 #include "rust-attributes.h"
@@ -94,6 +95,14 @@ CollectLangItems::visit (AST::Function &item)
 
 void
 CollectLangItems::visit (AST::StructStruct &item)
+{
+  maybe_add_lang_item (item);
+
+  DefaultASTVisitor::visit (item);
+}
+
+void
+CollectLangItems::visit (AST::EnumItem &item)
 {
   maybe_add_lang_item (item);
 
