@@ -248,4 +248,13 @@ LangItem::NegationOperatorToLangItem (NegationOperator op)
   rust_unreachable ();
 }
 
+bool
+LangItem::IsEnumVariant (LangItem::Kind type)
+{
+  const static std::set<LangItem::Kind> enum_variants
+    = {Kind::OPTION_NONE, Kind::OPTION_SOME, Kind::RESULT_OK, Kind::RESULT_ERR};
+
+  return enum_variants.find (type) != enum_variants.end ();
+}
+
 } // namespace Rust
