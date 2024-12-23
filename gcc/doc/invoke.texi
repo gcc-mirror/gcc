@@ -26840,8 +26840,7 @@ HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 @opindex mlinker-opt
 @item -mlinker-opt
 Enable the optimization pass in the HP-UX linker.  Note this makes symbolic
-debugging impossible.  It also triggers a bug in the HP-UX 8 and HP-UX 9
-linkers in which they give bogus error messages when linking some programs.
+debugging impossible.
 
 @opindex mno-long-calls
 @opindex mlong-calls
