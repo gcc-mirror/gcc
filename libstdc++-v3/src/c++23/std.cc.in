@@ -806,6 +806,7 @@ export namespace std
     using chrono::parse;
     using chrono::from_stream;
     using chrono::clock_time_conversion;
+#if __cpp_lib_chrono >= 201907L
     using chrono::tzdb;
     using chrono::tzdb_list;
     using chrono::get_tzdb;
@@ -828,6 +829,7 @@ export namespace std
     using chrono::get_leap_second_info;
     using chrono::time_zone_link;
     using chrono::local_time_format;
+#endif
     using chrono::is_clock;
     using chrono::is_clock_v;
   }
