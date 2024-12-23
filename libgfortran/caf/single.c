@@ -2927,7 +2927,7 @@ _gfortran_caf_get_by_ct (
 {
   caf_single_token_t single_token = TOKEN (token);
   void *src_ptr = opt_src_desc ? (void *) opt_src_desc : single_token->memptr;
-  int free_buffer;
+  int32_t free_buffer;
   void *dst_ptr = opt_dst_desc ? (void *)opt_dst_desc : dst_data;
   void *old_dst_data_ptr = NULL;
 
