@@ -7456,6 +7456,7 @@ extern tree get_copy_assign			(tree);
 extern tree get_default_ctor			(tree);
 extern tree get_dtor				(tree, tsubst_flags_t);
 extern tree build_stub_object			(tree);
+extern bool is_stub_object			(tree);
 extern tree build_invoke			(tree, const_tree,
 						 tsubst_flags_t);
 extern tree strip_inheriting_ctors		(tree);

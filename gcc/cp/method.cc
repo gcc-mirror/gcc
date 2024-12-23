@@ -1914,6 +1914,18 @@ build_stub_object (tree reftype)
   return convert_from_reference (stub);
 }
 
+/* True iff EXPR is the result of build_stub_object.  */
+
+bool
+is_stub_object (tree expr)
+{
+  if (!REFERENCE_REF_P (expr))
+    return false;
+  expr = TREE_OPERAND (expr, 0);
+  return (TREE_CODE (expr) == CONVERT_EXPR
+	  && TREE_OPERAND (expr, 0) == integer_one_node);
+}
+
 /* Build a std::declval<TYPE>() expression and return it.  */
 
 tree

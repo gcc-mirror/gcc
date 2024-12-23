@@ -2604,6 +2604,15 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	  dump_expr (pp, CALL_EXPR_FN (t), flags | TFF_EXPR_IN_PARENS);
 	  dump_call_expr_args (pp, t, flags, true);
 	}
+      else if (is_stub_object (t))
+	{
+	  pp_string (pp, "std::declval<");
+	  if (lvalue_p (t)) /* T& */
+	    dump_type (pp, TREE_TYPE (STRIP_REFERENCE_REF (t)), flags);
+	  else /* T */
+	    dump_type (pp, TREE_TYPE (t), flags);
+	  pp_string (pp, ">()");
+	}
       else
 	{
 	  if (TREE_OPERAND (t,0) != NULL_TREE
