@@ -65,7 +65,6 @@ package Gen_IL.Fields is
       Activation_Chain_Entity,
       Acts_As_Spec,
       Actual_Designated_Subtype,
-      Address_Warning_Posted,
       Aggregate_Bounds_Or_Ancestor_Type,
       Aliased_Present,
       All_Others,

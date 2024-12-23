@@ -98,7 +98,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Name, Node_Id, Default_Empty),
         Sy (Chars, Name_Id, Default_No_Name),
         Sy (Expression, Node_Id, Default_Empty),
-        Sm (Address_Warning_Posted, Flag),
         Sm (Check_Address_Alignment, Flag),
         Sm (Entity_Or_Associated_Node, Node_Id), -- just Entity
         Sm (From_Aspect_Specification, Flag),

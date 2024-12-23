@@ -788,11 +788,6 @@ package Sinfo is
    --    created for the expansion of an allocator with a subtype_indication
    --    and the designated subtype is an unconstrained composite type.
 
-   --  Address_Warning_Posted
-   --    Present in N_Attribute_Definition nodes. Set to indicate that we have
-   --    posted a warning for the address clause regarding size or alignment
-   --    issues. Used to inhibit multiple redundant messages.
-
    --  Aggregate_Bounds
    --    Present in array N_Aggregate nodes. If the bounds of the aggregate are
    --    known at compile time, this field points to an N_Range node with those
@@ -7549,7 +7544,6 @@ package Sinfo is
       --  Check_Address_Alignment
       --  From_Aspect_Specification
       --  Is_Delayed_Aspect
-      --  Address_Warning_Posted
 
       --  Note: if From_Aspect_Specification is set, then Sloc points to the
       --  aspect name, and Entity is resolved already to reference the entity

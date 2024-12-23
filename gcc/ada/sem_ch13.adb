@@ -18055,11 +18055,9 @@ package body Sem_Ch13 is
             X_Offs : Uint;
 
          begin
-            --  Skip processing of this entry if warning already posted, or if
-            --  alignments are not set.
+            --  Skip processing of this entry if alignments are not set
 
-            if not Address_Warning_Posted (ACCR.N)
-              and then Known_Alignment (ACCR.X)
+            if Known_Alignment (ACCR.X)
               and then Known_Alignment (ACCR.Y)
             then
                Expr := Original_Node (Expression (ACCR.N));
