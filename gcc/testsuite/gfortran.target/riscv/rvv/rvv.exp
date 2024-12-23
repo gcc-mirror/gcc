@@ -39,7 +39,7 @@ dg-init
 
 # Main loop.
 gfortran-dg-runtest [lsort \
-   [glob -nocomplain $srcdir/$subdir/fortran/*.\[fF\]{,90,95,03,08} ] ] "" ""
+   [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" ""
 
 # All done.
 dg-finish
