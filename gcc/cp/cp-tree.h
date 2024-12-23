@@ -8438,7 +8438,7 @@ extern tree build_x_shufflevector               (location_t,
 extern tree build_simple_component_ref		(tree, tree);
 extern tree build_ptrmemfunc_access_expr	(tree, tree);
 extern tree build_address			(tree);
-extern tree build_nop				(tree, tree);
+extern tree build_nop				(tree, tree CXX_MEM_STAT_INFO);
 extern tree non_reference			(tree);
 extern tree lookup_anon_field			(tree, tree);
 extern bool invalid_nonstatic_memfn_p		(location_t, tree,

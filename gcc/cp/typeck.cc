@@ -7149,11 +7149,11 @@ build_address (tree t)
 /* Return a NOP_EXPR converting EXPR to TYPE.  */
 
 tree
-build_nop (tree type, tree expr)
+build_nop (tree type, tree expr MEM_STAT_DECL)
 {
   if (type == error_mark_node || error_operand_p (expr))
     return expr;
-  return build1_loc (EXPR_LOCATION (expr), NOP_EXPR, type, expr);
+  return build1_loc (EXPR_LOCATION (expr), NOP_EXPR, type, expr PASS_MEM_STAT);
 }
 
 /* Take the address of ARG, whatever that means under C++ semantics.
