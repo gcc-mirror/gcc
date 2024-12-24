@@ -717,6 +717,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	swap(__other._M_coro, this->_M_coro);
 	swap(__other._M_began, this->_M_began);
+	return *this;
       }
 
       _Iterator
