@@ -1,3 +1,15 @@
+2024-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118069
+	* logic.cc (dnf_size_r): Use HOST_WIDE_INT instead of int, and
+	handle overflow gracefully via add_sat_hwi and mul_sat_hwi.
+	(cnf_size_r): Likewise.
+	(dnf_size): Use HOST_WIDE_INT instead of int.
+	(cnf_size): Likewise.
+
 2024-12-05  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:

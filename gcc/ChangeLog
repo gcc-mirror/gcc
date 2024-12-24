@@ -1,3 +1,23 @@
+2024-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118069
+	* hwint.h (add_sat_hwi): New function.
+	(mul_sat_hwi): Likewise.
+
+2024-12-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Revert:
+	2024-12-19  Christophe Lyon  <christophe.lyon@linaro.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114801
+	* config/arm/arm-mve-builtins.cc
+	(function_expander::add_input_operand): Handle CONST_INT
+	predicates.
+
 2024-12-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
