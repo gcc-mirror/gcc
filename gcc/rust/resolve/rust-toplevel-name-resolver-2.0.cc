@@ -280,11 +280,8 @@ TopLevel::visit (AST::StructStruct &struct_item)
 void
 TopLevel::visit (AST::TypeParam &type_param)
 {
-  // Hacky and weird, find a better solution
-  // We should probably not even insert self in the first place ?
-  if (type_param.get_type_representation ().as_string () != "Self")
-    insert_or_error_out (type_param.get_type_representation (), type_param,
-			 Namespace::Types);
+  insert_or_error_out (type_param.get_type_representation (), type_param,
+		       Namespace::Types);
 }
 
 void
