@@ -289,6 +289,19 @@ Late::visit (AST::TypePath &type)
 }
 
 void
+Late::visit (AST::Trait &trait)
+{
+  // kind of weird how this is done
+  // names are resolved to the node id of trait.get_implicit_self ()
+  // which is then resolved to the node id of trait
+  // we set up the latter mapping here
+  ctx.map_usage (Usage (trait.get_implicit_self ().get_node_id ()),
+		 Definition (trait.get_node_id ()));
+
+  DefaultResolver::visit (trait);
+}
+
+void
 Late::visit (AST::StructStruct &s)
 {
   auto s_vis = [this, &s] () { AST::DefaultASTVisitor::visit (s); };

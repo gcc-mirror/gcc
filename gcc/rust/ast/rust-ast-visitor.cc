@@ -997,6 +997,8 @@ DefaultASTVisitor::visit (AST::Trait &trait)
 
   visit_inner_attrs (trait);
 
+  visit (trait.get_implicit_self ());
+
   for (auto &generic : trait.get_generic_params ())
     visit (generic);
 
