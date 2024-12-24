@@ -5093,8 +5093,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
 	  if (parm.rv_ref || parm.pt_ref)
 	    /* Initialise the frame reference field directly.  */
-	    r = cp_build_modify_expr (fn_start, TREE_OPERAND (fld_idx, 0),
-				      INIT_EXPR, arg, tf_warning_or_error);
+	    r = build2 (INIT_EXPR, TREE_TYPE (arg),
+			TREE_OPERAND (fld_idx, 0), arg);
 	  else
 	    {
 	      r = forward_parm (arg);
