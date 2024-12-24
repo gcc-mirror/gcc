@@ -8466,12 +8466,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
     parm = DECL_CHAIN (parm);
   for (; parm; parm = DECL_CHAIN (parm))
-    if (type_dependent_expression_p (parm))
-      vec_safe_push (args, build_constructor (TREE_TYPE (parm), NULL));
-    else if (MAYBE_CLASS_TYPE_P (TREE_TYPE (parm)))
-      vec_safe_push (args, build_local_temp (TREE_TYPE (parm)));
-    else
-      vec_safe_push (args, build_zero_cst (TREE_TYPE (parm)));
+    vec_safe_push (args, build_stub_object (TREE_TYPE (parm)));
 
   unsigned nappend_args = 0;
   tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
@@ -8502,7 +8497,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	      return true;
 	    }
 	  for (unsigned i = 0; i < nappend_args; i++)
-	    vec_safe_push (args, build_zero_cst (TREE_TYPE (type)));
+	    vec_safe_push (args, build_stub_object (TREE_TYPE (type)));
 	}
     }
 

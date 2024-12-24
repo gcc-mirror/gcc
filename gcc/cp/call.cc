@@ -8581,6 +8581,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				   /*issue_conversion_warnings=*/false,
 				   /*c_cast_p=*/false, /*nested_p=*/true,
 				   complain);
+	      break;
 	    }
 	  else if (t->kind == ck_user || !t->bad_p)
 	    {
