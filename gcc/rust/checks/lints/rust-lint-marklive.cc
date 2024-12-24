@@ -22,6 +22,8 @@
 #include "rust-lint-marklive.h"
 #include "options.h"
 #include "rust-hir-full.h"
+#include "rust-hir-map.h"
+#include "rust-hir-path.h"
 #include "rust-name-resolver.h"
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-system.h"
@@ -99,15 +101,21 @@ MarkLive::visit (HIR::PathInExpression &expr)
 {
   // We should iterate every path segment in order to mark the struct which
   // is used in expression like Foo::bar(), we should mark the Foo alive.
-  expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
-    return visit_path_segment (seg);
-  });
+  if (!expr.is_lang_item ())
+    expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
+      return visit_path_segment (seg);
+    });
 
   // after iterate the path segments, we should mark functions and associated
   // functions alive.
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
-  find_ref_node_id (ast_node_id, ref_node_id);
+
+  if (expr.is_lang_item ())
+    ref_node_id
+      = Analysis::Mappings::get ().get_lang_item_node (expr.get_lang_item ());
+  else
+    find_ref_node_id (ast_node_id, ref_node_id);
 
   // node back to HIR
   tl::optional<HirId> hid = mappings.lookup_node_to_hir (ref_node_id);
