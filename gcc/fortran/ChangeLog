@@ -1,3 +1,22 @@
+2024-12-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118179
+	* trans-expr.cc (conv_null_actual): Suppress copying back of
+	pointer address for unspecified intent.
+
+2024-12-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/116254
+	PR fortran/118059
+	* trans-array.cc (gfc_trans_create_temp_array): Make sure that
+	transformational intrinsics of class objects that change rank,
+	most particularly spread, go through the correct code path. Re-
+	factor so that changes to the dtype are done on the temporary
+	before the class data of the result points to it.
+	* trans-expr.cc (arrayfunc_assign_needs_temporary): Character
+	array function expressions assigned to an unlimited polymorphic
+	variable require a temporary.
+
 2024-12-22  Harald Anlauf  <anlauf@gmx.de>
 
 	* check.cc (gfc_check_random_seed): Clear gmp variables returned by

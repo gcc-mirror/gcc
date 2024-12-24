@@ -1,3 +1,20 @@
+2024-12-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118179
+	* gfortran.dg/null_actual_7.f90: Extend testcase to also cover
+	scalar variants with pointer or allocatable dummy with or without
+	specified intent.
+
+2024-12-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* gfortran.dg/coarray_lib_comm_1.f90: Use less complicated
+	pattern, because all we need is the right count.
+
+2024-12-23  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.dg/tree-ssa/pr118149.c: Disable for AArch64.
+
 2024-12-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	PR testsuite/103298

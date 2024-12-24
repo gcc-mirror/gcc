@@ -1,3 +1,8 @@
+2024-12-23  Simon Martin  <simon@nasilyan.com>
+
+	* Makefile.am: Remove reference to deleted marshall-c.h.
+	* Makefile.in: Regenerate.
+
 2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* libcp1plugin.cc (plugin_add_namespace_alias): Call

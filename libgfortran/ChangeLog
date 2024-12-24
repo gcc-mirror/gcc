@@ -1,3 +1,8 @@
+2024-12-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* caf/single.c (_gfortran_caf_get_by_ct): Correct type of free_buffer
+	to int32_t.
+
 2024-12-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/libcaf.h (_gfortran_caf_register_accessor): New function

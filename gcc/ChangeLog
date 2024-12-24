@@ -1,3 +1,8 @@
+2024-12-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (HPPA Options): Remove references
+	to HP-UX 8 and HP-UX 9.
+
 2024-12-22  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec.md: Align the operand for strided
