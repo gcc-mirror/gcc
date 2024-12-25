@@ -108,6 +108,11 @@ public:
     line_info ()
       :line_num (0), start_pos (0), end_pos (0)
     {}
+
+    static bool less_than(const line_info &a, const line_info &b)
+    {
+      return a.line_num < b.line_num;
+    }
   };
 
   bool needs_read_p () const;
@@ -178,10 +183,8 @@ public:
   /* This is a record of the beginning and end of the lines we've seen
      while reading the file.  This is useful to avoid walking the data
      from the beginning when we are asked to read a line that is
-     before LINE_START_IDX above.  Note that the maximum size of this
-     record is line_record_size, so that the memory consumption
-     doesn't explode.  We thus scale total_lines down to
-     line_record_size.  */
+     before LINE_START_IDX above.  When the lines exceed line_record_size
+     this is scaled down dynamically, with the line_info becoming anchors.  */
   vec<line_info, va_heap> m_line_record;
 
   void offset_buffer (int offset)
@@ -885,38 +888,33 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 
   ++m_line_num;
 
-  /* Before we update our line record, make sure the hint about the
-     total number of lines of the file is correct.  If it's not, then
-     we give up recording line boundaries from now on.  */
-  bool update_line_record = true;
-  if (m_line_num > m_total_lines)
-    update_line_record = false;
-
-    /* Now update our line record so that re-reading lines from the
+  /* Now update our line record so that re-reading lines from the
      before m_line_start_idx is faster.  */
-  if (update_line_record
-      && m_line_record.length () < line_record_size)
+  size_t rlen = m_line_record.length ();
+  /* Only update when beyond the previously cached region.  */
+  if (rlen == 0 || m_line_record[rlen - 1].line_num < m_line_num)
     {
-      /* If the file lines fits in the line record, we just record all
-	 its lines ...*/
-      if (m_total_lines <= line_record_size
-	  && m_line_num > m_line_record.length ())
+      size_t spacing = rlen >= 2 ?
+	m_line_record[rlen - 1].line_num - m_line_record[rlen - 2].line_num : 1;
+      size_t delta = rlen >= 1 ?
+	m_line_num - m_line_record[rlen - 1].line_num : 1;
+
+      /* If we're too far beyond drop half of the lines to rebalance.  */
+      if (rlen == line_record_size && delta >= spacing*2)
+	{
+	  size_t j = 0;
+	  for (size_t i = 1; i < rlen; i += 2)
+	    m_line_record[j++] = m_line_record[i];
+	  m_line_record.truncate (j);
+	  rlen = j;
+	  spacing *= 2;
+	}
+
+      if (rlen < line_record_size && delta >= spacing)
 	m_line_record.safe_push
 	  (file_cache_slot::line_info (m_line_num,
 				       m_line_start_idx,
 				       line_end - m_data));
-      else if (m_total_lines > line_record_size)
-	{
-	  /* ... otherwise, we just scale total_lines down to
-	     (line_record_size lines.  */
-	  size_t n = (m_line_num * line_record_size) / m_total_lines;
-	  if (m_line_record.length () == 0
-	      || n >= m_line_record.length ())
-	    m_line_record.safe_push
-	      (file_cache_slot::line_info (m_line_num,
-					   m_line_start_idx,
-					   line_end - m_data));
-	}
     }
 
   /* Update m_line_start_idx so that it points to the next line to be
@@ -966,69 +964,26 @@ file_cache_slot::read_line_num (size_t line_num,
 
   if (line_num <= m_line_num)
     {
-      /* We've been asked to read lines that are before m_line_num.
-	 So lets use our line record (if it's not empty) to try to
-	 avoid re-reading the file from the beginning again.  */
-
-      if (m_line_record.is_empty ())
+      line_info l (line_num, 0, 0);
+      int i = m_line_record.lower_bound (l, line_info::less_than);
+      if (i == 0)
 	{
 	  m_line_start_idx = 0;
 	  m_line_num = 0;
 	}
-      else
+      else if (m_line_record[i - 1].line_num == line_num)
 	{
-	  file_cache_slot::line_info *i = NULL;
-	  if (m_total_lines <= line_record_size)
-	    {
-	      /* In languages where the input file is not totally
-		 preprocessed up front, the m_total_lines hint
-		 can be smaller than the number of lines of the
-		 file.  In that case, only the first
-		 m_total_lines have been recorded.
-
-		 Otherwise, the first m_total_lines we've read have
-		 their start/end recorded here.  */
-	      i = (line_num <= m_total_lines)
-		? &m_line_record[line_num - 1]
-		: &m_line_record[m_total_lines - 1];
-	      gcc_assert (i->line_num <= line_num);
-	    }
-	  else
-	    {
-	      /*  So the file had more lines than our line record
-		  size.  Thus the number of lines we've recorded has
-		  been scaled down to line_record_size.  Let's
-		  pick the start/end of the recorded line that is
-		  closest to line_num.  */
-	      size_t n = (line_num <= m_total_lines)
-		? line_num * line_record_size / m_total_lines
-		: m_line_record.length () - 1;
-	      if (n < m_line_record.length ())
-		{
-		  i = &m_line_record[n];
-		  gcc_assert (i->line_num <= line_num);
-		}
-	    }
-
-	  if (i && i->line_num == line_num)
-	    {
-	      /* We have the start/end of the line.  */
-	      *line = m_data + i->start_pos;
-	      *line_len = i->end_pos - i->start_pos;
-	      return true;
-	    }
-
-	  if (i)
-	    {
-	      m_line_start_idx = i->start_pos;
-	      m_line_num = i->line_num - 1;
-	    }
-	  else
-	    {
-	      m_line_start_idx = 0;
-	      m_line_num = 0;
-	    }
+	  /* We have the start/end of the line.  */
+	  *line = m_data + m_line_record[i - 1].start_pos;
+	  *line_len = m_line_record[i - 1].end_pos - m_line_record[i - 1].start_pos;
+	  return true;
 	}
+      else
+       {
+	 gcc_assert (m_line_record[i - 1].line_num < m_line_num);
+	 m_line_start_idx = m_line_record[i - 1].start_pos;
+	 m_line_num = m_line_record[i - 1].line_num - 1;
+       }
     }
 
   /*  Let's walk from line m_line_num up to line_num - 1, without
@@ -1037,8 +992,7 @@ file_cache_slot::read_line_num (size_t line_num,
     if (!goto_next_line ())
       return false;
 
-  /* The line we want is the next one.  Let's read and copy it back to
-     the caller.  */
+  /* The line we want is the next one.  Let's read it.  */
   return get_next_line (line, line_len);
 }
 
