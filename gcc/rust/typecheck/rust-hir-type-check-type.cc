@@ -757,6 +757,11 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
   std::vector<TyTy::TypeBoundPredicate> specified_bounds;
   for (auto &bound : type.get_type_param_bounds ())
     {
+      // TODO: here we need to check if there are additional bounds that aren't
+      // auto traits. this is an error. for example, `dyn A + Sized + Sync` is
+      // okay, because Sized and Sync are both auto traits but `dyn A + Copy +
+      // Clone` is not okay and should error out.
+
       if (bound->get_bound_type ()
 	  != HIR::TypeParamBound::BoundType::TRAITBOUND)
 	continue;
