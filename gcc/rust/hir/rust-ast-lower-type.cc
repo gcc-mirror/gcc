@@ -19,6 +19,7 @@
 #include "rust-ast-lower-type.h"
 #include "rust-hir-map.h"
 #include "rust-hir-path.h"
+#include "rust-hir-type.h"
 #include "rust-path.h"
 #include "rust-pattern.h"
 
@@ -469,6 +470,24 @@ ASTLoweringType::visit (AST::TraitObjectType &type)
 
   translated = new HIR::TraitObjectType (mapping, std::move (bounds),
 					 type.get_locus (), type.is_dyn ());
+}
+
+void
+ASTLoweringType::visit (AST::ParenthesisedType &type)
+{
+  auto *inner = ASTLoweringType::translate (*type.get_type_in_parens (),
+					    default_to_static_lifetime);
+
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  // FIXME: Do we actually need to know if a type is parenthesized in the HIR?
+  // or can we just use the type in parens?
+  translated
+    = new HIR::ParenthesisedType (mapping, std::unique_ptr<HIR::Type> (inner),
+				  type.get_locus ());
 }
 
 HIR::GenericParam *
