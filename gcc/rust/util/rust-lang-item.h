@@ -82,6 +82,7 @@ public:
     COPY,
     CLONE,
     SIZED,
+    SYNC,
 
     // https://github.com/Rust-GCC/gccrs/issues/1896
     // https://github.com/rust-lang/rust/commit/afbecc0f68c4dcfc4878ba5bcb1ac942544a1bdc
