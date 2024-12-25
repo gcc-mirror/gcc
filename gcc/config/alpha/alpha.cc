@@ -4076,6 +4076,12 @@ alpha_expand_block_clear (rtx operands[])
           else if (a >= 16)
 	    align = a, alignofs = 2 - c % 2;
 	}
+
+      if (MEM_P (orig_dst) && MEM_ALIGN (orig_dst) < align)
+	{
+	  orig_dst = shallow_copy_rtx (orig_dst);
+	  set_mem_align (orig_dst, align);
+	}
     }
 
   /* Handle an unaligned prefix first.  */
