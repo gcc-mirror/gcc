@@ -24,6 +24,7 @@
 #include "rust-diagnostics.h"
 #include "rust-hir-map.h"
 #include "rust-path.h"
+#include "rust-type.h"
 #include "util/rust-hir-map.h"
 
 namespace Rust {
@@ -142,6 +143,8 @@ public:
   void visit (AST::TraitObjectTypeOneBound &type) override;
 
   void visit (AST::TraitObjectType &type) override;
+
+  void visit (AST::ParenthesisedType &type) override;
 
   void visit (AST::SliceType &type) override;
 

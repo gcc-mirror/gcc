@@ -207,4 +207,6 @@ issue-2907.rs
 issue-2423.rs
 issue-266.rs
 additional-trait-bounds2.rs
+auto_traits2.rs
+auto_traits3.rs
 # please don't delete the trailing newline
