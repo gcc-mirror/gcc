@@ -3625,10 +3625,6 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
   rtx sreg, areg, tmp, smema;
   HOST_WIDE_INT i;
 
-  smema = XEXP (smem, 0);
-  if (GET_CODE (smema) == LO_SUM)
-    smema = force_reg (Pmode, smema);
-
   /* Generate all the tmp registers we need.  */
   for (i = 0; i < words; ++i)
     {
@@ -3639,6 +3635,10 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
 
   if (ofs != 0)
     smem = adjust_address (smem, GET_MODE (smem), ofs);
+
+  smema = XEXP (smem, 0);
+  if (GET_CODE (smema) == LO_SUM)
+    smema = force_reg (Pmode, smema);
 
   /* Load up all of the source data.  */
   for (i = 0; i < words; ++i)
@@ -3698,10 +3698,6 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
   rtx st_addr_1, st_addr_2, dmema;
   HOST_WIDE_INT i;
 
-  dmema = XEXP (dmem, 0);
-  if (GET_CODE (dmema) == LO_SUM)
-    dmema = force_reg (Pmode, dmema);
-
   /* Generate all the tmp registers we need.  */
   if (data_regs != NULL)
     for (i = 0; i < words; ++i)
@@ -3711,6 +3707,10 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
 
   if (ofs != 0)
     dmem = adjust_address (dmem, GET_MODE (dmem), ofs);
+
+  dmema = XEXP (dmem, 0);
+  if (GET_CODE (dmema) == LO_SUM)
+    dmema = force_reg (Pmode, dmema);
 
   st_addr_2 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode,
