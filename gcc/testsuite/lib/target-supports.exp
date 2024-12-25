@@ -4431,6 +4431,7 @@ proc check_effective_target_vect_early_break { } {
 	|| [check_effective_target_sse4]
 	|| [istarget amdgcn-*-*]
 	|| [check_effective_target_riscv_v]
+	|| [check_effective_target_loongarch_sx]
 	}}]
 }
 
@@ -4447,6 +4448,7 @@ proc check_effective_target_vect_early_break_hw { } {
 	|| [check_sse4_hw_available]
 	|| [istarget amdgcn-*-*]
 	|| [check_effective_target_riscv_v_ok]
+	|| [check_effective_target_loongarch_sx_hw]
 	}}]
 }
 

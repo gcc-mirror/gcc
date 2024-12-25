@@ -516,6 +516,36 @@
   DONE;
 })
 
+;; cbranch
+(define_expand "cbranch<mode>4"
+ [(set (pc)
+       (if_then_else
+         (match_operator 0 "equality_operator"
+           [(match_operand:IVEC 1 "register_operand")
+            (match_operand:IVEC 2 "reg_or_vector_same_val_operand")])
+         (label_ref (match_operand 3 ""))
+         (pc)))]
+ ""
+{
+  RTX_CODE code = GET_CODE (operands[0]);
+  rtx tmp = operands[1];
+  rtx const0 = CONST0_RTX (SImode);
+
+  /* If comparing against a non-zero vector we have to do a comparison first
+    so we can have a != 0 comparison with the result.  */
+  if (operands[2] != CONST0_RTX (<MODE>mode))
+    {
+      tmp = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_xor<mode>3 (tmp, operands[1], operands[2]));
+    }
+
+  if (code == NE)
+    emit_jump_insn (gen_<simd_isa>_<x>bnz_v_b (operands[3], tmp, const0));
+  else
+    emit_jump_insn (gen_<simd_isa>_<x>bz_v_b (operands[3], tmp, const0));
+  DONE;
+})
+
 ; The LoongArch SX Instructions.
 (include "lsx.md")
 
