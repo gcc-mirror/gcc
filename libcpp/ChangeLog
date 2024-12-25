@@ -1,3 +1,7 @@
+2024-12-24  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* macro.cc (tokens_buff_new): Fix length argument to XNEWVEC.
+
 2024-12-08  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* include/cpplib.h (struct cpp_token): Adjust comment about the

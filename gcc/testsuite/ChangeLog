@@ -1,3 +1,7 @@
+2024-12-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/memcmp-1.c: Pass -DRUN_FRACTION=7 when testing in a simulator.
+
 2024-12-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/118179
