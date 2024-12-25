@@ -18,6 +18,8 @@
 
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-expr.h"
+#include "rust-canonical-path.h"
+#include "rust-type.h"
 
 namespace Rust {
 namespace Resolver {
@@ -495,10 +497,59 @@ ResolveTypeToCanonicalPath::visit (AST::TraitObjectTypeOneBound &type)
 }
 
 void
-ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &)
+ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &type)
 {
-  // FIXME is this actually allowed? dyn A+B
-  rust_unreachable ();
+  rust_assert (!type.get_type_param_bounds ().empty ());
+
+  auto &first_bound = type.get_type_param_bounds ().front ();
+
+  // Is it allowed or even possible to have a lifetime bound as a first bound?
+  if (first_bound->get_bound_type () == AST::TraitBound::LIFETIME)
+    rust_unreachable ();
+
+  auto &trait = static_cast<AST::TraitBound &> (*first_bound);
+
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok = ResolveTypeToCanonicalPath::go (trait.get_type_path (), path);
+
+  // right?
+  rust_assert (ok);
+
+  auto slice_path = "<dyn " + path.get ();
+
+  for (size_t idx = 1; idx < type.get_type_param_bounds ().size (); idx++)
+    {
+      auto &additional_bound = type.get_type_param_bounds ()[idx];
+
+      std::string str;
+
+      switch (additional_bound->get_bound_type ())
+	{
+	  case AST::TypeParamBound::TRAIT: {
+	    auto bound_path = CanonicalPath::create_empty ();
+
+	    auto &bound_type_path
+	      = static_cast<AST::TraitBound &> (*additional_bound)
+		  .get_type_path ();
+	    bool ok
+	      = ResolveTypeToCanonicalPath::go (bound_type_path, bound_path);
+
+	    if (!ok)
+	      continue;
+
+	    str = bound_path.get ();
+	    break;
+	  }
+	case AST::TypeParamBound::LIFETIME:
+	  rust_unreachable ();
+	  break;
+	}
+      slice_path += " + " + str;
+    }
+
+  slice_path += ">";
+
+  result = CanonicalPath::new_seg (type.get_node_id (), slice_path);
 }
 
 void
