@@ -1190,6 +1190,8 @@ package body Exp_Put_Image is
          --  aspects, not just for Put_Image?
 
          if Is_Itype (U_Type)
+           and then Nkind (Associated_Node_For_Itype (U_Type)) in
+                      N_Full_Type_Declaration | N_Subtype_Declaration
            and then Has_Aspect (Defining_Identifier
                                   (Associated_Node_For_Itype (U_Type)),
                                 Aspect_Put_Image)

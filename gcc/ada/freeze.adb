@@ -9389,14 +9389,16 @@ package body Freeze is
       --  pre/postconditions during expansion of the subprogram body, the
       --  subprogram is already installed.
 
+      --  Call Preanalyze_Spec_Expression instead of Preanalyze_And_Resolve
+      --  for the sake of consistency with Analyze_Expression_Function.
+
       if Def_Id /= Current_Scope then
          Push_Scope (Def_Id);
          Install_Formals (Def_Id);
-
-         Preanalyze_And_Resolve (Dup_Expr, Typ);
+         Preanalyze_Spec_Expression (Dup_Expr, Typ);
          End_Scope;
       else
-         Preanalyze_And_Resolve (Dup_Expr, Typ);
+         Preanalyze_Spec_Expression (Dup_Expr, Typ);
       end if;
 
       --  Restore certain attributes of Def_Id since the preanalysis may
