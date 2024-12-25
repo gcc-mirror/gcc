@@ -282,7 +282,8 @@ Late::visit (AST::TypePath &type)
     ctx.map_usage (Usage (type.get_node_id ()),
 		   Definition (resolved->get_node_id ()));
   else
-    rust_unreachable ();
+    rust_error_at (type.get_locus (), "could not resolve type path %qs",
+		   str.c_str ());
 
   DefaultResolver::visit (type);
 }
