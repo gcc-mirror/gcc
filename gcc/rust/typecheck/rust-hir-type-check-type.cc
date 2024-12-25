@@ -791,6 +791,12 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 }
 
 void
+TypeCheckType::visit (HIR::ParenthesisedType &type)
+{
+  translated = TypeCheckType::Resolve (type.get_type_in_parens ());
+}
+
+void
 TypeCheckType::visit (HIR::ArrayType &type)
 {
   auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ());

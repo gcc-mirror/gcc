@@ -59,6 +59,7 @@ public:
   void visit (HIR::InferredType &type) override;
   void visit (HIR::NeverType &type) override;
   void visit (HIR::TraitObjectType &type) override;
+  void visit (HIR::ParenthesisedType &type) override;
 
   void visit (HIR::TypePathSegmentFunction &segment) override
   { /* TODO */
@@ -67,9 +68,6 @@ public:
   { /* TODO */
   }
   void visit (HIR::ImplTraitType &type) override
-  { /* TODO */
-  }
-  void visit (HIR::ParenthesisedType &type) override
   { /* TODO */
   }
   void visit (HIR::ImplTraitTypeOneBound &type) override

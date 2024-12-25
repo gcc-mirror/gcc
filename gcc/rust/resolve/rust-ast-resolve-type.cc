@@ -51,6 +51,12 @@ ResolveType::visit (AST::TraitObjectType &type)
 }
 
 void
+ResolveType::visit (AST::ParenthesisedType &type)
+{
+  resolved_node = ResolveType::go (*type.get_type_in_parens ());
+}
+
+void
 ResolveType::visit (AST::ReferenceType &type)
 {
   resolved_node = ResolveType::go (type.get_type_referenced ());
