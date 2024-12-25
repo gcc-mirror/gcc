@@ -4626,7 +4626,7 @@
   [(set (zero_extract:DI (match_operand:BLK 0 "memory_operand")
 			 (match_operand:DI 1 "const_int_operand")
 			 (match_operand:DI 2 "const_int_operand"))
-	(match_operand:DI 3 "register_operand"))]
+	(match_operand:DI 3 "reg_or_0_operand"))]
   ""
 {
   /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
