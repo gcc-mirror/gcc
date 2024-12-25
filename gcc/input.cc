@@ -79,6 +79,10 @@ public:
   void evict ();
   void set_content (const char *buf, size_t sz);
 
+  static void tune(size_t line_record_size_) {
+      line_record_size = line_record_size_;
+  }
+
  private:
   /* These are information used to store a line boundary.  */
   class line_info
@@ -116,7 +120,7 @@ public:
   bool goto_next_line ();
 
   static const size_t buffer_size = 4 * 1024;
-  static const size_t line_record_size = 100;
+  static size_t line_record_size;
 
   /* The number of time this file has been accessed.  This is used
      to designate which file cache to evict from the cache
@@ -191,6 +195,18 @@ public:
   }
 
 };
+
+size_t file_cache_slot::line_record_size = 100;
+
+/* Tune file_cache.  */
+void
+file_cache::tune (size_t num_file_slots_, size_t lines)
+{
+  num_file_slots = num_file_slots_;
+  file_cache_slot::tune (lines);
+}
+
+size_t file_cache::num_file_slots = 16;
 
 static const char *
 find_end_of_line (const char *s, size_t len);
