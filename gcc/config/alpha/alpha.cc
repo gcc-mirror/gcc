@@ -3771,6 +3771,78 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
   emit_move_insn (st_addr_1, st_tmp_1);
 }
 
+/* Get the base alignment and offset of EXPR in A and O respectively.
+   Check for any pseudo register pointer alignment and for any tree
+   node information and return the largest alignment determined and
+   its associated offset.  */
+
+static void
+alpha_get_mem_rtx_alignment_and_offset (rtx expr, int &a, HOST_WIDE_INT &o)
+{
+  HOST_WIDE_INT tree_offset = 0, reg_offset = 0, mem_offset = 0;
+  int tree_align = 0, reg_align = 0, mem_align = MEM_ALIGN (expr);
+
+  gcc_assert (MEM_P (expr));
+
+  rtx addr = XEXP (expr, 0);
+  switch (GET_CODE (addr))
+    {
+    case REG:
+      reg_align = REGNO_POINTER_ALIGN (REGNO (addr));
+      break;
+
+    case PLUS:
+      if (REG_P (XEXP (addr, 0)) && CONST_INT_P (XEXP (addr, 1)))
+	{
+	  reg_offset = INTVAL (XEXP (addr, 1));
+	  reg_align = REGNO_POINTER_ALIGN (REGNO (XEXP (addr, 0)));
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  tree mem = MEM_EXPR (expr);
+  if (mem != NULL_TREE)
+    switch (TREE_CODE (mem))
+      {
+      case MEM_REF:
+	tree_offset = mem_ref_offset (mem).force_shwi ();
+	tree_align = get_object_alignment (get_base_address (mem));
+	break;
+
+      case COMPONENT_REF:
+	{
+	  tree byte_offset = component_ref_field_offset (mem);
+	  tree bit_offset = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (mem, 1));
+	  poly_int64 offset;
+	  if (!byte_offset
+	      || !poly_int_tree_p (byte_offset, &offset)
+	      || !tree_fits_shwi_p (bit_offset))
+	    break;
+	  tree_offset = offset + tree_to_shwi (bit_offset) / BITS_PER_UNIT;
+	}
+	tree_align = get_object_alignment (get_base_address (mem));
+	break;
+
+      default:
+	break;
+      }
+
+  if (reg_align > mem_align)
+    {
+      mem_offset = reg_offset;
+      mem_align = reg_align;
+    }
+  if (tree_align > mem_align)
+    {
+      mem_offset = tree_offset;
+      mem_align = tree_align;
+    }
+  o = mem_offset;
+  a = mem_align;
+}
 
 /* Expand string/block move operations.
 
@@ -3799,27 +3871,19 @@ alpha_expand_block_move (rtx operands[])
   else if (orig_bytes > MAX_MOVE_WORDS * UNITS_PER_WORD)
     return 0;
 
-  /* Look for additional alignment information from recorded register info.  */
+  /* Look for stricter alignment.  */
+  HOST_WIDE_INT c;
+  int a;
 
-  tmp = XEXP (orig_src, 0);
-  if (REG_P (tmp))
-    src_align = MAX (src_align, REGNO_POINTER_ALIGN (REGNO (tmp)));
-  else if (GET_CODE (tmp) == PLUS
-	   && REG_P (XEXP (tmp, 0))
-	   && CONST_INT_P (XEXP (tmp, 1)))
+  alpha_get_mem_rtx_alignment_and_offset (orig_src, a, c);
+  if (a > src_align)
     {
-      unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
-      unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
-
-      if (a > src_align)
-	{
-          if (a >= 64 && c % 8 == 0)
-	    src_align = 64;
-          else if (a >= 32 && c % 4 == 0)
-	    src_align = 32;
-          else if (a >= 16 && c % 2 == 0)
-	    src_align = 16;
-	}
+      if (a >= 64 && c % 8 == 0)
+	src_align = 64;
+      else if (a >= 32 && c % 4 == 0)
+	src_align = 32;
+      else if (a >= 16 && c % 2 == 0)
+	src_align = 16;
 
       if (MEM_P (orig_src) && MEM_ALIGN (orig_src) < src_align)
 	{
@@ -3828,25 +3892,15 @@ alpha_expand_block_move (rtx operands[])
 	}
     }
 
-  tmp = XEXP (orig_dst, 0);
-  if (REG_P (tmp))
-    dst_align = MAX (dst_align, REGNO_POINTER_ALIGN (REGNO (tmp)));
-  else if (GET_CODE (tmp) == PLUS
-	   && REG_P (XEXP (tmp, 0))
-	   && CONST_INT_P (XEXP (tmp, 1)))
+  alpha_get_mem_rtx_alignment_and_offset (orig_dst, a, c);
+  if (a > dst_align)
     {
-      unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
-      unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
-
-      if (a > dst_align)
-	{
-          if (a >= 64 && c % 8 == 0)
-	    dst_align = 64;
-          else if (a >= 32 && c % 4 == 0)
-	    dst_align = 32;
-          else if (a >= 16 && c % 2 == 0)
-	    dst_align = 16;
-	}
+      if (a >= 64 && c % 8 == 0)
+	dst_align = 64;
+      else if (a >= 32 && c % 4 == 0)
+	dst_align = 32;
+      else if (a >= 16 && c % 2 == 0)
+	dst_align = 16;
 
       if (MEM_P (orig_dst) && MEM_ALIGN (orig_dst) < dst_align)
 	{
@@ -4048,7 +4102,6 @@ alpha_expand_block_clear (rtx operands[])
   HOST_WIDE_INT align = INTVAL (align_rtx) * BITS_PER_UNIT;
   HOST_WIDE_INT alignofs = 0;
   rtx orig_dst = operands[0];
-  rtx tmp;
   int i, words, ofs = 0;
 
   if (orig_bytes <= 0)
@@ -4057,25 +4110,18 @@ alpha_expand_block_clear (rtx operands[])
     return 0;
 
   /* Look for stricter alignment.  */
-  tmp = XEXP (orig_dst, 0);
-  if (REG_P (tmp))
-    align = MAX (align, REGNO_POINTER_ALIGN (REGNO (tmp)));
-  else if (GET_CODE (tmp) == PLUS
-	   && REG_P (XEXP (tmp, 0))
-	   && CONST_INT_P (XEXP (tmp, 1)))
-    {
-      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
-      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+  HOST_WIDE_INT c;
+  int a;
 
-      if (a > align)
-	{
-          if (a >= 64)
-	    align = a, alignofs = 8 - c % 8;
-          else if (a >= 32)
-	    align = a, alignofs = 4 - c % 4;
-          else if (a >= 16)
-	    align = a, alignofs = 2 - c % 2;
-	}
+  alpha_get_mem_rtx_alignment_and_offset (orig_dst, a, c);
+  if (a > align)
+    {
+      if (a >= 64)
+	align = a, alignofs = -c & 7;
+      else if (a >= 32)
+	align = a, alignofs = -c & 3;
+      else if (a >= 16)
+	align = a, alignofs = -c & 1;
 
       if (MEM_P (orig_dst) && MEM_ALIGN (orig_dst) < align)
 	{

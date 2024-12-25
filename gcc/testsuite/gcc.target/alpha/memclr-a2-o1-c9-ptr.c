@@ -43,8 +43,8 @@ memclr_a2_o1_c9 (u_t *u)
    that is with a byte store at offset 1 and with two unaligned load/store
    pairs at offsets 2 and 9 each.  */
 
-/* { dg-final { scan-assembler-times "\\sldq_u\\s\\\$\[0-9\]+,2\\\(\\\$16\\\)\\s" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "\\sldq_u\\s\\\$\[0-9\]+,9\\\(\\\$16\\\)\\s" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "\\sstb\\s\\\$31,1\\\(\\\$16\\\)\\s" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "\\sstq_u\\s\\\$\[0-9\]+,2\\\(\\\$16\\\)\\s" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "\\sstq_u\\s\\\$\[0-9\]+,9\\\(\\\$16\\\)\\s" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "\\sldq_u\\s\\\$\[0-9\]+,2\\\(\\\$16\\\)\\s" 1 } } */
+/* { dg-final { scan-assembler-times "\\sldq_u\\s\\\$\[0-9\]+,9\\\(\\\$16\\\)\\s" 1 } } */
+/* { dg-final { scan-assembler-times "\\sstb\\s\\\$31,1\\\(\\\$16\\\)\\s" 1 } } */
+/* { dg-final { scan-assembler-times "\\sstq_u\\s\\\$\[0-9\]+,2\\\(\\\$16\\\)\\s" 1 } } */
+/* { dg-final { scan-assembler-times "\\sstq_u\\s\\\$\[0-9\]+,9\\\(\\\$16\\\)\\s" 1 } } */
