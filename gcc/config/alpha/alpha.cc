@@ -4236,40 +4236,23 @@ alpha_expand_block_clear (rtx operands[])
 
   /* If we have appropriate alignment (and it wouldn't take too many
      instructions otherwise), mask out the bytes we need.  */
-  if (TARGET_BWX ? words > 2 : bytes > 0)
+  if ((TARGET_BWX ? words > 2 : bytes > 0)
+      && (align >= 64 || (align >= 32 && bytes < 4)))
     {
-      if (align >= 64)
-	{
-	  rtx mem, tmp;
-	  HOST_WIDE_INT mask;
+      machine_mode mode = (align >= 64 ? DImode : SImode);
+      rtx mem, tmp;
+      HOST_WIDE_INT mask;
 
-	  mem = adjust_address (orig_dst, DImode, ofs);
-	  set_mem_alias_set (mem, 0);
+      mem = adjust_address (orig_dst, mode, ofs);
+      set_mem_alias_set (mem, 0);
 
-	  mask = HOST_WIDE_INT_M1U << (bytes * 8);
+      mask = HOST_WIDE_INT_M1U << (bytes * 8);
 
-	  tmp = expand_binop (DImode, and_optab, mem, GEN_INT (mask),
-			      NULL_RTX, 1, OPTAB_WIDEN);
+      tmp = expand_binop (mode, and_optab, mem, GEN_INT (mask),
+			  NULL_RTX, 1, OPTAB_WIDEN);
 
-	  emit_move_insn (mem, tmp);
-	  return 1;
-	}
-      else if (align >= 32 && bytes < 4)
-	{
-	  rtx mem, tmp;
-	  HOST_WIDE_INT mask;
-
-	  mem = adjust_address (orig_dst, SImode, ofs);
-	  set_mem_alias_set (mem, 0);
-
-	  mask = HOST_WIDE_INT_M1U << (bytes * 8);
-
-	  tmp = expand_binop (SImode, and_optab, mem, GEN_INT (mask),
-			      NULL_RTX, 1, OPTAB_WIDEN);
-
-	  emit_move_insn (mem, tmp);
-	  return 1;
-	}
+      emit_move_insn (mem, tmp);
+      return 1;
     }
 
   if (!TARGET_BWX && bytes >= 4)
