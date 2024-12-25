@@ -165,16 +165,6 @@ public:
      means we've read no line so far.  */
   size_t m_line_num;
 
-  /* This is the total number of lines of the current file.  At the
-     moment, we try to get this information from the line map
-     subsystem.  Note that this is just a hint.  When using the C++
-     front-end, this hint is correct because the input file is then
-     completely tokenized before parsing starts; so the line map knows
-     the number of lines before compilation really starts.  For e.g,
-     the C front-end, it can happen that we start emitting diagnostics
-     before the line map has seen the end of the file.  */
-  size_t m_total_lines;
-
   /* Could this file be missing a trailing newline on its final line?
      Initially true (to cope with empty files), set to true/false
      as each line is read.  */
@@ -317,25 +307,6 @@ expand_location_1 (const line_maps *set,
   return xloc;
 }
 
-/* Return the total lines number that have been read so far by the
-   line map (in the preprocessor) so far.  For languages like C++ that
-   entirely preprocess the input file before starting to parse, this
-   equals the actual number of lines of the file.  */
-
-static size_t
-total_lines_num (const char *file_path)
-{
-  size_t r = 0;
-  location_t l = 0;
-  if (linemap_get_file_highest_location (line_table, file_path, &l))
-    {
-      gcc_assert (l >= RESERVED_LOCATION_COUNT);
-      expanded_location xloc = expand_location (l);
-      r = xloc.line;
-    }
-  return r;
-}
-
 /* Lookup the cache used for the content of a given file accessed by
    caret diagnostic.  Return the found cached file, or NULL if no
    cached file was found.  */
@@ -425,7 +396,6 @@ file_cache_slot::evict ()
   m_line_num = 0;
   m_line_record.truncate (0);
   m_use_count = 0;
-  m_total_lines = 0;
   m_missing_trailing_newline = true;
 }
 
@@ -525,7 +495,6 @@ file_cache_slot::create (const file_cache::input_context &in_context,
   /* Ensure that this cache entry doesn't get evicted next time
      add_file_to_cache_tab is called.  */
   m_use_count = ++highest_use_count;
-  m_total_lines = total_lines_num (file_path);
   m_missing_trailing_newline = true;
 
 
@@ -571,17 +540,6 @@ file_cache_slot::set_content (const char *buf, size_t sz)
     {
       fclose (m_fp);
       m_fp = nullptr;
-    }
-
-  /* Compute m_total_lines based on content of buffer.  */
-  m_total_lines = 0;
-  const char *line_start = m_data;
-  size_t remaining_size = sz;
-  while (const char *line_end = find_end_of_line (line_start, remaining_size))
-    {
-      ++m_total_lines;
-      remaining_size -= line_end + 1 - line_start;
-      line_start = line_end + 1;
     }
 }
 
@@ -639,7 +597,7 @@ file_cache::lookup_or_add_file (const char *file_path)
 file_cache_slot::file_cache_slot ()
 : m_use_count (0), m_file_path (NULL), m_fp (NULL), m_error (false), m_data (0),
   m_alloc_offset (0), m_size (0), m_nb_read (0), m_line_start_idx (0),
-  m_line_num (0), m_total_lines (0), m_missing_trailing_newline (true)
+  m_line_num (0), m_missing_trailing_newline (true)
 {
   m_line_record.create (0);
 }
@@ -679,7 +637,6 @@ file_cache_slot::dump (FILE *out, int indent) const
   fprintf (out, "%*snb_read: %zi\n", indent, "", m_nb_read);
   fprintf (out, "%*sstart_line_idx: %zi\n", indent, "", m_line_start_idx);
   fprintf (out, "%*sline_num: %zi\n", indent, "", m_line_num);
-  fprintf (out, "%*stotal_lines: %zi\n", indent, "", m_total_lines);
   fprintf (out, "%*smissing_trailing_newline: %i\n",
 	   indent, "", (int)m_missing_trailing_newline);
   fprintf (out, "%*sline records (%i):\n",
