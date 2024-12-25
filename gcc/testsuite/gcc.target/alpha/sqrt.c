@@ -2,7 +2,7 @@
    When using software completions, we have to prevent assembler to match
    input and output operands of sqrtt/sqrtf insn.  Fixed in glibc 2.26.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fno-builtin-sqrt -mieee" } */
+/* { dg-options "-fno-builtin-sqrt -mieee" } */
 
 double sqrt (double);
 

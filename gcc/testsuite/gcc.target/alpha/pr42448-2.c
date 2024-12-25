@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mcpu=21064 -O0" } */
+/* { dg-options "-mcpu=21064" } */
 
 extern void abort (void);
 

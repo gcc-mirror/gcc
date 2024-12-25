@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mieee" } */
+/* { dg-options "-mieee" } */
 
 void foo (int *dimensions, double **params, int hh)
 {

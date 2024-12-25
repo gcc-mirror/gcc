@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftrapv -mcpu=ev4" } */
+/* { dg-options "-ftrapv -mcpu=ev4" } */
 
 typedef struct tnode_t {
         struct tnode_t *tn_left, *tn_right;

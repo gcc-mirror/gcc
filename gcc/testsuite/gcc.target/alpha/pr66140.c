@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=ev4" } */
+/* { dg-options "-mcpu=ev4" } */
 
 struct scsi_cmnd {
 	int sc_data_direction;

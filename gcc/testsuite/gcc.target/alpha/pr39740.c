@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99 -mexplicit-relocs" } */
+/* { dg-options "-std=c99 -mexplicit-relocs" } */
 
 typedef int R_len_t;
 typedef unsigned int SEXPTYPE;

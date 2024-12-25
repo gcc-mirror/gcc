@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=ev4" } */
+/* { dg-options "-mcpu=ev4" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 struct S {
     long l;

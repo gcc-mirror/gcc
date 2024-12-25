@@ -1,7 +1,7 @@
 /* Test float on alpha. */
 
 /* { dg-do run } */
-/* { dg-options "-mieee -O2" } */
+/* { dg-options "-mieee" } */
 
 extern void abort(void);
 extern int printf(const char *, ...);
