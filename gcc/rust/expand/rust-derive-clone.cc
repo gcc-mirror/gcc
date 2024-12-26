@@ -263,7 +263,7 @@ DeriveClone::visit_union (Union &item)
     {StructField (
       Identifier ("_t"),
       builder.single_generic_type_path (
-	"PhantomData",
+	LangItem::Kind::PHANTOM_DATA,
 	GenericArgs (
 	  {}, {GenericArg::create_type (builder.single_type_path ("T"))}, {})),
       Visibility::create_private (), item.get_locus ())});
