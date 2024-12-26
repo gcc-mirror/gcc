@@ -1180,8 +1180,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 
 	      last_visited_node++;
 
-	      gcc_assert (node->definition || node->weakref
-			  || node->declare_variant_alt);
+	      gcc_assert (node->definition || node->weakref);
 
 	      /* Compute boundary cost of callgraph edges.  */
 	      for (edge = node->callees; edge; edge = edge->next_callee)
@@ -1292,7 +1291,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		int index;
 
 		node = dyn_cast <cgraph_node *> (ref->referring);
-		gcc_assert (node->definition || node->declare_variant_alt);
+		gcc_assert (node->definition);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   node);
 		if (index != LCC_NOT_FOUND

@@ -550,8 +550,6 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->merged_extern_inline, 1);
   bp_pack_value (&bp, node->thunk, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
-  bp_pack_value (&bp, node->declare_variant_alt, 1);
-  bp_pack_value (&bp, node->calls_declare_variant_alt, 1);
   bp_pack_value (&bp, node->has_omp_variant_constructs, 1);
 
   /* Stream thunk info always because we use it in
@@ -783,9 +781,6 @@ output_refs (lto_symtab_encoder_t encoder)
 	  for (int i = 0; node->iterate_reference (i, ref); i++)
 	    lto_output_ref (ob, ref, encoder);
 	}
-      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
-	if (cnode->declare_variant_alt)
-	  omp_lto_output_declare_variant_alt (ob, cnode, encoder);
     }
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -1259,8 +1254,6 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->merged_extern_inline = bp_unpack_value (bp, 1);
   node->thunk = bp_unpack_value (bp, 1);
   node->parallelized_function = bp_unpack_value (bp, 1);
-  node->declare_variant_alt = bp_unpack_value (bp, 1);
-  node->calls_declare_variant_alt = bp_unpack_value (bp, 1);
   node->has_omp_variant_constructs = bp_unpack_value (bp, 1);
   *has_thunk_info = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
@@ -1671,9 +1664,6 @@ input_refs (class lto_input_block *ib,
 	  input_ref (ib, node, nodes);
 	  count--;
 	}
-      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
-	if (cnode->declare_variant_alt)
-	  omp_lto_input_declare_variant_alt (ib, cnode, nodes);
     }
 }
 

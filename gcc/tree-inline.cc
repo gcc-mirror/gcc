@@ -5048,8 +5048,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
   if (src_properties != prop_mask)
     dst_cfun->curr_properties &= src_properties | ~prop_mask;
   dst_cfun->calls_eh_return |= id->src_cfun->calls_eh_return;
-  id->dst_node->calls_declare_variant_alt
-    |= id->src_node->calls_declare_variant_alt;
   id->dst_node->has_omp_variant_constructs
     |= id->src_node->has_omp_variant_constructs;
 
@@ -6352,8 +6350,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
   DECL_ARGUMENTS (new_decl) = DECL_ARGUMENTS (old_decl);
   initialize_cfun (new_decl, old_decl,
 		   new_entry ? new_entry->count : old_entry_block->count);
-  new_version_node->calls_declare_variant_alt
-    = old_version_node->calls_declare_variant_alt;
   new_version_node->has_omp_variant_constructs
     = old_version_node->has_omp_variant_constructs;
   if (DECL_STRUCT_FUNCTION (new_decl)->gimple_df)

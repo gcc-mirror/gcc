@@ -2700,8 +2700,6 @@ execute_omp_device_lower ()
   bool regimplify = false;
   basic_block bb;
   gimple_stmt_iterator gsi;
-  bool calls_declare_variant_alt
-    = cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
 #ifdef ACCEL_COMPILER
   bool omp_redirect_indirect_calls = vec_safe_length (offload_ind_funcs) > 0;
   tree map_ptr_fn
@@ -2726,8 +2724,6 @@ execute_omp_device_lower ()
 	  continue;
 	if (!gimple_call_internal_p (stmt))
 	  {
-	    /* FIXME: this is a leftover of obsolete code.  */
-	    gcc_assert (!calls_declare_variant_alt);
 #ifdef ACCEL_COMPILER
 	    if (omp_redirect_indirect_calls
 		&& gimple_call_fndecl (stmt) == NULL_TREE)
@@ -2902,9 +2898,7 @@ public:
 #endif
       return (!(fun->curr_properties & PROP_gimple_lomp_dev)
 	      || (flag_openmp
-		  && (node->calls_declare_variant_alt
-		      || node->has_omp_variant_constructs
-		      || offload_ind_funcs_p)));
+		  && (node->has_omp_variant_constructs || offload_ind_funcs_p)));
     }
   unsigned int execute (function *) final override
     {

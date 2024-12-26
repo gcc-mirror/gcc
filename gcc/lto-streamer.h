@@ -946,12 +946,6 @@ bool reachable_from_this_partition_p (struct cgraph_node *,
 lto_symtab_encoder_t compute_ltrans_boundary (lto_symtab_encoder_t encoder);
 void select_what_to_stream (void);
 
-/* In omp-general.cc.  */
-void omp_lto_output_declare_variant_alt (lto_simple_output_block *,
-					 cgraph_node *, lto_symtab_encoder_t);
-void omp_lto_input_declare_variant_alt (lto_input_block *, cgraph_node *,
-					vec<symtab_node *>);
-
 /* In options-save.cc.  */
 void cl_target_option_stream_out (struct output_block *, struct bitpack_d *,
 				  struct cl_target_option *);
