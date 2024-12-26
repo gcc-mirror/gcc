@@ -261,6 +261,7 @@ public:
 
   void insert_lang_item_node (LangItem::Kind item_type, NodeId node_id);
   tl::optional<NodeId &> lookup_lang_item_node (LangItem::Kind item_type);
+  NodeId get_lang_item_node (LangItem::Kind item_type);
 
   // This will fatal_error when this lang item does not exist
   DefId get_lang_item (LangItem::Kind item_type, location_t locus);
