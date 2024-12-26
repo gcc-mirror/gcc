@@ -948,7 +948,7 @@ reduction_phi (reduction_info_table_type *reduction_list, gimple *phi)
 {
   struct reduction_info tmpred, *red;
 
-  if (reduction_list->is_empty () || phi == NULL)
+  if (reduction_list->is_empty () || phi == NULL || !is_a <gphi *> (phi))
     return NULL;
 
   if (gimple_uid (phi) == (unsigned int)-1
