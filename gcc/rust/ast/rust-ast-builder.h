@@ -21,9 +21,34 @@
 
 #include "rust-ast-full.h"
 #include "rust-expr.h"
+#include "rust-ast.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace AST {
+
+template <typename T>
+std::vector<std::unique_ptr<T>>
+vec (std::unique_ptr<T> &&t)
+{
+  auto v = std::vector<std::unique_ptr<T>> ();
+
+  v.emplace_back (std::move (t));
+
+  return v;
+}
+
+template <typename T>
+std::vector<std::unique_ptr<T>>
+vec (std::unique_ptr<T> &&t1, std::unique_ptr<T> &&t2)
+{
+  auto v = std::vector<std::unique_ptr<T>> ();
+
+  v.emplace_back (std::move (t1));
+  v.emplace_back (std::move (t2));
+
+  return v;
+}
 
 // TODO: Use this builder when expanding regular macros
 /* Builder class with helper methods to create AST nodes. This builder is
@@ -112,6 +137,12 @@ public:
    * Create a path in expression from a lang item.
    */
   PathInExpression path_in_expression (LangItem::Kind lang_item) const;
+
+  /* Create a new struct */
+  std::unique_ptr<Stmt>
+  struct_struct (std::string struct_name,
+		 std::vector<std::unique_ptr<GenericParam>> &&generics,
+		 std::vector<StructField> &&fields);
 
   /* Create a struct expression for unit structs (`S`) */
   std::unique_ptr<Expr> struct_expr_struct (std::string struct_name) const;
