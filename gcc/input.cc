@@ -126,6 +126,7 @@ public:
 
   static const size_t buffer_size = 4 * 1024;
   static size_t line_record_size;
+  static size_t recent_cached_lines_shift;
 
   /* The number of time this file has been accessed.  This is used
      to designate which file cache to evict from the cache
@@ -177,6 +178,13 @@ public:
      this is scaled down dynamically, with the line_info becoming anchors.  */
   vec<line_info, va_heap> m_line_record;
 
+  /* A cache of the recently seen lines. This is maintained as a ring
+     buffer. */
+  vec<line_info, va_heap> m_line_recent;
+
+  /* First and last valid entry in m_line_recent.  */
+  size_t m_line_recent_last, m_line_recent_first;
+
   void offset_buffer (int offset)
   {
     gcc_assert (offset < 0 ? m_alloc_offset + offset >= 0
@@ -190,6 +198,7 @@ public:
 };
 
 size_t file_cache_slot::line_record_size = 0;
+size_t file_cache_slot::recent_cached_lines_shift = 8;
 
 /* Tune file_cache.  */
 void
@@ -395,6 +404,8 @@ file_cache_slot::evict ()
   m_line_start_idx = 0;
   m_line_num = 0;
   m_line_record.truncate (0);
+  m_line_recent_first = 0;
+  m_line_recent_last = 0;
   m_use_count = 0;
   m_missing_trailing_newline = true;
 }
@@ -491,6 +502,8 @@ file_cache_slot::create (const file_cache::input_context &in_context,
   m_nb_read = 0;
   m_line_start_idx = 0;
   m_line_num = 0;
+  m_line_recent_first = 0;
+  m_line_recent_last = 0;
   m_line_record.truncate (0);
   /* Ensure that this cache entry doesn't get evicted next time
      add_file_to_cache_tab is called.  */
@@ -597,9 +610,13 @@ file_cache::lookup_or_add_file (const char *file_path)
 file_cache_slot::file_cache_slot ()
 : m_use_count (0), m_file_path (NULL), m_fp (NULL), m_error (false), m_data (0),
   m_alloc_offset (0), m_size (0), m_nb_read (0), m_line_start_idx (0),
-  m_line_num (0), m_missing_trailing_newline (true)
+  m_line_num (0), m_missing_trailing_newline (true),
+  m_line_recent_last (0), m_line_recent_first (0)
 {
   m_line_record.create (0);
+  m_line_recent.create (1U << recent_cached_lines_shift);
+  for (int i = 0; i < 1 << recent_cached_lines_shift; i++)
+    m_line_recent.quick_push (file_cache_slot::line_info (0, 0, 0));
 }
 
 /* Destructor for a cache of file used by caret diagnostic.  */
@@ -618,6 +635,7 @@ file_cache_slot::~file_cache_slot ()
       m_data = 0;
     }
   m_line_record.release ();
+  m_line_recent.release ();
 }
 
 void
@@ -879,6 +897,20 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 				       line_end - m_data));
     }
 
+  /* Cache recent tail lines separately for fast access. This assumes
+     most accesses do not skip backwards.  */
+  if (m_line_recent_last == m_line_recent_first
+	|| m_line_recent[m_line_recent_last].line_num == m_line_num - 1)
+    {
+      size_t mask = ((size_t)1 << recent_cached_lines_shift) - 1;
+      m_line_recent_last = (m_line_recent_last + 1) & mask;
+      if (m_line_recent_last == m_line_recent_first)
+	m_line_recent_first = (m_line_recent_first + 1) & mask;
+      m_line_recent[m_line_recent_last] =
+	file_cache_slot::line_info (m_line_num, m_line_start_idx,
+				    line_end - m_data);
+    }
+
   /* Update m_line_start_idx so that it points to the next line to be
      read.  */
   if (next_line_start)
@@ -923,6 +955,23 @@ file_cache_slot::read_line_num (size_t line_num,
 		       char ** line, ssize_t *line_len)
 {
   gcc_assert (line_num > 0);
+
+  /* Is the line in the recent line cache?
+     This assumes the main file processing is only using
+     a single contiguous cursor with only temporary excursions.  */
+  if (m_line_recent_first != m_line_recent_last
+	&& m_line_recent[m_line_recent_first].line_num <= line_num
+	&& m_line_recent[m_line_recent_last].line_num >= line_num)
+    {
+      line_info &last = m_line_recent[m_line_recent_last];
+      size_t mask = (1U << recent_cached_lines_shift) - 1;
+      size_t idx = (m_line_recent_last - (last.line_num - line_num)) & mask;
+      line_info &recent = m_line_recent[idx];
+      gcc_assert (recent.line_num == line_num);
+      *line = m_data + recent.start_pos;
+      *line_len = recent.end_pos - recent.start_pos;
+      return true;
+    }
 
   if (line_num <= m_line_num)
     {
