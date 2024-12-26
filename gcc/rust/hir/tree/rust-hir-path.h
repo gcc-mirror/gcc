@@ -355,7 +355,8 @@ public:
 
 private:
   Analysis::NodeMapping mappings;
-  PathIdentSegment ident_segment;
+  tl::optional<PathIdentSegment> ident_segment;
+  tl::optional<LangItem::Kind> lang_item;
   location_t locus;
 
 protected:
@@ -384,14 +385,27 @@ public:
 		   PathIdentSegment ident_segment,
 		   bool has_separating_scope_resolution, location_t locus);
 
+  TypePathSegment (Analysis::NodeMapping mappings, LangItem::Kind lang_item,
+		   location_t locus);
+
   TypePathSegment (Analysis::NodeMapping mappings, std::string segment_name,
 		   bool has_separating_scope_resolution, location_t locus);
 
-  virtual std::string as_string () const { return ident_segment.as_string (); }
+  virtual std::string as_string () const
+  {
+    if (ident_segment)
+      return ident_segment->as_string ();
+
+    return LangItem::PrettyString (*lang_item);
+  }
 
   /* Returns whether the type path segment is in an error state. May be virtual
    * in future. */
-  bool is_error () const { return ident_segment.is_error (); }
+  bool is_error () const
+  {
+    rust_assert (ident_segment);
+    return ident_segment->is_error ();
+  }
 
   /* Returns whether segment is identifier only (as opposed to generic args or
    * function). Overriden in derived classes with other segments. */
@@ -404,12 +418,24 @@ public:
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
-  const PathIdentSegment &get_ident_segment () const { return ident_segment; }
+  const PathIdentSegment &get_ident_segment () const
+  {
+    rust_assert (ident_segment);
+    return *ident_segment;
+  }
+
+  const LangItem::Kind &get_lang_item () const
+  {
+    rust_assert (lang_item);
+    return *lang_item;
+  }
 
   bool is_generic_segment () const
   {
     return get_type () == SegmentType::GENERIC;
   }
+
+  bool is_lang_item () const { return lang_item.has_value (); }
 };
 
 // Segment used in type path with generic args
@@ -427,6 +453,10 @@ public:
 			  PathIdentSegment ident_segment,
 			  bool has_separating_scope_resolution,
 			  GenericArgs generic_args, location_t locus);
+
+  TypePathSegmentGeneric (Analysis::NodeMapping mappings,
+			  LangItem::Kind lang_item, GenericArgs generic_args,
+			  location_t locus);
 
   // Constructor from segment name and all args
   TypePathSegmentGeneric (Analysis::NodeMapping mappings,

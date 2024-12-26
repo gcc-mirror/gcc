@@ -539,19 +539,6 @@ TokenCollector::visit (PathInExpression &path)
 }
 
 void
-TokenCollector::visit (RegularPath &path)
-{
-  // FIXME: We probably want to have a proper implementation here, and call this
-  // function from things like the PathInExpression visitor
-}
-
-void
-TokenCollector::visit (LangItemPath &path)
-{
-  // TODO: Implement proper token collection for lang item paths
-}
-
-void
 TokenCollector::visit (TypePathSegment &segment)
 {
   // Syntax:

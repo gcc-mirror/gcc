@@ -20,6 +20,7 @@
 #include "rust-ast-resolve-expr.h"
 #include "rust-canonical-path.h"
 #include "rust-type.h"
+#include "rust-hir-map.h"
 
 namespace Rust {
 namespace Resolver {
@@ -99,45 +100,57 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
   for (size_t i = 0; i < path.get_segments ().size (); i++)
     {
       auto &segment = path.get_segments ().at (i);
-      const AST::PathIdentSegment &ident_seg = segment->get_ident_segment ();
       bool is_first_segment = i == 0;
+      NodeId crate_scope_id = resolver->peek_crate_module_scope ();
+      auto ident_string = segment->is_lang_item ()
+			    ? LangItem::PrettyString (segment->get_lang_item ())
+			    : segment->get_ident_segment ().as_string ();
+
       resolved_node_id = UNKNOWN_NODEID;
 
-      bool in_middle_of_path = i > 0;
-      if (in_middle_of_path && segment->is_lower_self_seg ())
+      if (segment->is_lang_item ())
 	{
-	  rust_error_at (segment->get_locus (), ErrorCode::E0433,
-			 "failed to resolve: %qs in paths can only be used "
-			 "in start position",
-			 segment->as_string ().c_str ());
-	  return false;
+	  resolved_node_id = Analysis::Mappings::get ().get_lang_item_node (
+	    segment->get_lang_item ());
+	  previous_resolved_node_id = resolved_node_id;
 	}
-
-      NodeId crate_scope_id = resolver->peek_crate_module_scope ();
-      if (segment->is_crate_path_seg ())
+      else
 	{
-	  // what is the current crate scope node id?
-	  module_scope_id = crate_scope_id;
-	  previous_resolved_node_id = module_scope_id;
-	  resolver->insert_resolved_name (segment->get_node_id (),
-					  module_scope_id);
-
-	  continue;
-	}
-      else if (segment->is_super_path_seg ())
-	{
-	  if (module_scope_id == crate_scope_id)
+	  bool in_middle_of_path = i > 0;
+	  if (in_middle_of_path && segment->is_lower_self_seg ())
 	    {
-	      rust_error_at (segment->get_locus (),
-			     "cannot use super at the crate scope");
+	      rust_error_at (segment->get_locus (), ErrorCode::E0433,
+			     "failed to resolve: %qs in paths can only be used "
+			     "in start position",
+			     segment->as_string ().c_str ());
 	      return false;
 	    }
 
-	  module_scope_id = resolver->peek_parent_module_scope ();
-	  previous_resolved_node_id = module_scope_id;
-	  resolver->insert_resolved_name (segment->get_node_id (),
-					  module_scope_id);
-	  continue;
+	  if (segment->is_crate_path_seg ())
+	    {
+	      // what is the current crate scope node id?
+	      module_scope_id = crate_scope_id;
+	      previous_resolved_node_id = module_scope_id;
+	      resolver->insert_resolved_name (segment->get_node_id (),
+					      module_scope_id);
+
+	      continue;
+	    }
+	  else if (segment->is_super_path_seg ())
+	    {
+	      if (module_scope_id == crate_scope_id)
+		{
+		  rust_error_at (segment->get_locus (),
+				 "cannot use super at the crate scope");
+		  return false;
+		}
+
+	      module_scope_id = resolver->peek_parent_module_scope ();
+	      previous_resolved_node_id = module_scope_id;
+	      resolver->insert_resolved_name (segment->get_node_id (),
+					      module_scope_id);
+	      continue;
+	    }
 	}
 
       switch (segment->get_type ())
@@ -177,8 +190,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	  // name scope first
 	  NodeId resolved_node = UNKNOWN_NODEID;
 	  const CanonicalPath path
-	    = CanonicalPath::new_seg (segment->get_node_id (),
-				      ident_seg.as_string ());
+	    = CanonicalPath::new_seg (segment->get_node_id (), ident_string);
 	  if (resolver->get_type_scope ().lookup (path, &resolved_node))
 	    {
 	      resolver->insert_resolved_type (segment->get_node_id (),
@@ -191,7 +203,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 					      resolved_node);
 	      resolved_node_id = resolved_node;
 	    }
-	  else if (segment->is_lower_self_seg ())
+	  else if (!segment->is_lang_item () && segment->is_lower_self_seg ())
 	    {
 	      // what is the current crate scope node id?
 	      module_scope_id = crate_scope_id;
@@ -207,8 +219,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	  && previous_resolved_node_id == module_scope_id)
 	{
 	  tl::optional<CanonicalPath &> resolved_child
-	    = mappings.lookup_module_child (module_scope_id,
-					    ident_seg.as_string ());
+	    = mappings.lookup_module_child (module_scope_id, ident_string);
 	  if (resolved_child.has_value ())
 	    {
 	      NodeId resolved_node = resolved_child->get_node_id ();

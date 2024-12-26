@@ -682,28 +682,15 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 
   // setup paths
   CanonicalPath canonical_trait_type = CanonicalPath::create_empty ();
-  if (impl_block.get_trait_path ().get_path_kind ()
-      == AST::Path::Kind::LangItem)
-    {
-      auto &lang_item
-	= static_cast<AST::LangItemPath &> (impl_block.get_trait_path ());
 
-      canonical_trait_type
-	= CanonicalPath::new_seg (lang_item.get_node_id (),
-				  LangItem::ToString (
-				    lang_item.get_lang_item_kind ()));
-    }
-  else
+  ok = ResolveTypeToCanonicalPath::go (impl_block.get_trait_path (),
+				       canonical_trait_type);
+  if (!ok)
     {
-      ok = ResolveTypeToCanonicalPath::go (impl_block.get_trait_path_type (),
-					   canonical_trait_type);
-      if (!ok)
-	{
-	  resolver->get_name_scope ().pop ();
-	  resolver->get_type_scope ().pop ();
-	  resolver->get_label_scope ().pop ();
-	  return;
-	}
+      resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
+      return;
     }
 
   rust_debug ("AST::TraitImpl resolve trait type: {%s}",

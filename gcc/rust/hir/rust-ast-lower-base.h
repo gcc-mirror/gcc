@@ -84,8 +84,6 @@ public:
   //  virtual void visit(TraitImplItem& trait_impl_item);
 
   // rust-path.h
-  virtual void visit (AST::RegularPath &path);
-  virtual void visit (AST::LangItemPath &path);
   virtual void visit (AST::PathInExpression &path);
   virtual void visit (AST::TypePathSegment &segment);
   virtual void visit (AST::TypePathSegmentGeneric &segment);

@@ -33,22 +33,18 @@ protected:
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::TypePath *translate (AST::Path &type);
+  static HIR::TypePath *translate (AST::TypePath &type);
 
   void visit (AST::TypePathSegmentFunction &segment) override;
   void visit (AST::TypePathSegment &segment) override;
   void visit (AST::TypePathSegmentGeneric &segment) override;
   void visit (AST::TypePath &path) override;
-  void visit (AST::LangItemPath &path) override;
 
 protected:
   HIR::TypePathSegment *translated_segment;
 
 private:
   HIR::TypePath *translated;
-
-  static HIR::TypePath *translate_type_path (AST::TypePath &type);
-  static HIR::TypePath *translate_lang_item_type_path (AST::LangItemPath &type);
 };
 
 class ASTLowerQualifiedPathInType : public ASTLowerTypePath

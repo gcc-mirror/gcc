@@ -1299,7 +1299,7 @@ TraitImpl::as_string () const
   else
     str += "false";
 
-  str += "\n TypePath (to trait): " + trait_path->as_string ();
+  str += "\n TypePath (to trait): " + trait_path.as_string ();
 
   str += "\n Type (struct to impl on): " + trait_type->as_string ();
 
@@ -1561,7 +1561,7 @@ QualifiedPathType::as_string () const
   str += type_to_invoke_on->as_string ();
 
   if (has_as_clause ())
-    str += " as " + trait_path->as_string ();
+    str += " as " + trait_path.as_string ();
 
   return str + ">";
 }

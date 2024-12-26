@@ -46,7 +46,6 @@ public:
   // resolutions
   void visit (AST::IdentifierExpr &) override;
   void visit (AST::PathInExpression &) override;
-  void visit (AST::LangItemPath &) override;
   void visit (AST::TypePath &) override;
   void visit (AST::Trait &) override;
   void visit (AST::StructExprStruct &) override;

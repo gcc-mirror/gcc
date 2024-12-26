@@ -410,7 +410,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	    {
 	      rust_error_at (seg->get_locus (),
 			     "unknown reference for resolved name: %qs",
-			     seg->get_ident_segment ().as_string ().c_str ());
+			     seg->as_string ().c_str ());
 	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
 	    }
 	  return root_tyty;

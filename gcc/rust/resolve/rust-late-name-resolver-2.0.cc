@@ -249,25 +249,6 @@ Late::visit (AST::PathInExpression &expr)
 }
 
 void
-Late::visit (AST::LangItemPath &type)
-{
-  auto &mappings = Rust::Analysis::Mappings::get ();
-  auto lang_item = mappings.lookup_lang_item_node (type.get_lang_item_kind ());
-
-  if (!lang_item)
-    {
-      rust_fatal_error (
-	type.get_locus (), "use of undeclared lang item %qs",
-	LangItem::ToString (type.get_lang_item_kind ()).c_str ());
-      return;
-    }
-
-  ctx.map_usage (Usage (type.get_node_id ()), Definition (lang_item.value ()));
-
-  DefaultResolver::visit (type);
-}
-
-void
 Late::visit (AST::TypePath &type)
 {
   // should we add type path resolution in `ForeverStack` directly? Since it's

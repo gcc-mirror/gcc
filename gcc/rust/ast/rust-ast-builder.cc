@@ -43,25 +43,7 @@ Builder::call (std::unique_ptr<Expr> &&path,
 }
 
 std::unique_ptr<Expr>
-Builder::call (std::unique_ptr<Path> &&path,
-	       std::vector<std::unique_ptr<Expr>> &&args) const
-{
-  return call (std::unique_ptr<Expr> (
-		 new PathInExpression (std::move (path), {}, loc)),
-	       std::move (args));
-}
-
-std::unique_ptr<Expr>
 Builder::call (std::unique_ptr<Expr> &&path, std::unique_ptr<Expr> &&arg) const
-{
-  auto args = std::vector<std::unique_ptr<Expr>> ();
-  args.emplace_back (std::move (arg));
-
-  return call (std::move (path), std::move (args));
-}
-
-std::unique_ptr<Expr>
-Builder::call (std::unique_ptr<Path> &&path, std::unique_ptr<Expr> &&arg) const
 {
   auto args = std::vector<std::unique_ptr<Expr>> ();
   args.emplace_back (std::move (arg));
@@ -242,7 +224,7 @@ Builder::wildcard () const
 std::unique_ptr<Path>
 Builder::lang_item_path (LangItem::Kind kind) const
 {
-  return std::unique_ptr<Path> (new LangItemPath (kind, loc));
+  return std::unique_ptr<Path> (new PathInExpression (kind, {}, loc));
 }
 
 std::unique_ptr<Expr>
