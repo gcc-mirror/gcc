@@ -1,3 +1,39 @@
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha.cc
+	(alpha_get_mem_rtx_alignment_and_offset): New function.
+	(alpha_expand_block_move, alpha_expand_block_clear): Use it for
+	alignment retrieval.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha.cc (alpha_expand_unaligned_load_words):
+	Move address extraction until after the MEM referred has been
+	adjusted for the offset supplied.
+	(alpha_expand_unaligned_store_words): Likewise.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR target/115459
+	* config/alpha/alpha.cc (alpha_expand_block_clear): Adjust MEM
+	to match inferred alignment.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha.cc (alpha_expand_block_clear): Fold two
+	legs of a conditional together.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha.md (insvmisaligndi): Use "reg_or_0_operand"
+	rather than "register_operand" for operand 3.
+
+2024-12-25  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_ira_change_pseudo_allocno_class): New function.
+	(TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): Define macro.
+
 2024-12-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (HPPA Options): Remove references

@@ -1,3 +1,65 @@
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/memclr-a2-o1-c9-ptr.c: Remove XFAILs.
+	* gcc.target/alpha/memcpy-di-aligned.c: New file.
+	* gcc.target/alpha/memcpy-di-unaligned.c: New file.
+	* gcc.target/alpha/memcpy-di-unaligned-dst.c: New file.
+	* gcc.target/alpha/memcpy-di-unaligned-src.c: New file.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/memclr-a2-o1-c9-ptr.c: New file.
+	* gcc.target/alpha/memclr-a2-o1-c9-run.c: New file.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/stlx0.c: New file.
+	* gcc.target/alpha/stqx0.c: New file.
+	* gcc.target/alpha/stwx0.c: New file.
+	* gcc.target/alpha/stwx0-bwx.c: New file.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.c-torture/execute/misalign.c: New file.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.c-torture/execute/memclr.c: New file.
+
+2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/alpha.exp: Use `gcc-dg-runtest' rather than
+	`dg-runtest'.  Add `-Og -g' and `-Oz' variants via
+	ADDITIONAL_TORTURE_OPTIONS.
+	* gcc.target/alpha/20000715-1.c: Adjust test options
+	accordingly.
+	* gcc.target/alpha/20011018-1.c: Likewise.
+	* gcc.target/alpha/980217-1.c: Likewise.
+	* gcc.target/alpha/asm-1.c: Likewise.
+	* gcc.target/alpha/pr105209.c: Likewise.
+	* gcc.target/alpha/pr106966.c: Likewise.
+	* gcc.target/alpha/pr115297.c: Likewise.
+	* gcc.target/alpha/pr115526.c: Likewise.
+	* gcc.target/alpha/pr19518.c: Likewise.
+	* gcc.target/alpha/pr22093.c: Likewise.
+	* gcc.target/alpha/pr24178.c: Likewise.
+	* gcc.target/alpha/pr39740.c: Likewise.
+	* gcc.target/alpha/pr42113.c: Likewise.
+	* gcc.target/alpha/pr42269-1.c: Likewise.
+	* gcc.target/alpha/pr42448-1.c: Likewise.
+	* gcc.target/alpha/pr42448-2.c: Likewise.
+	* gcc.target/alpha/pr42774.c: Likewise.
+	* gcc.target/alpha/pr61586.c: Likewise.
+	* gcc.target/alpha/pr66140.c: Likewise.
+	* gcc.target/alpha/pr83628-1.c: Likewise.
+	* gcc.target/alpha/pr83628-2.c: Likewise.
+	* gcc.target/alpha/pr83628-3.c: Likewise.
+	* gcc.target/alpha/pr86984.c: Likewise.
+	* gcc.target/alpha/sqrt.c: Likewise.
+	* gcc.target/alpha/base-2.c: Remove file.
+	* gcc.target/alpha/cix-2.c: Remove file.
+	* gcc.target/alpha/max-2.c: Remove file.
+
 2024-12-24  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/memcmp-1.c: Pass -DRUN_FRACTION=7 when testing in a simulator.
