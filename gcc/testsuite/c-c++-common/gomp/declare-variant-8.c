@@ -1,4 +1,4 @@
-/* { dg-do compile { target c } } */
+/* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
 
 void f01 (void);
@@ -102,7 +102,7 @@ void
 test3 (void)
 {
   #pragma omp parallel
-  f20 ();	/* { dg-final { scan-tree-dump-times "f20 \\\(\\\);" 1 "gimple" } } */
+  f20 ();	/* { dg-final { scan-tree-dump-times "f19 \\\(\\\);" 1 "gimple" } } */
 }
 
 void

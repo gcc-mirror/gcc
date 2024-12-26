@@ -592,8 +592,6 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      handle_omp_declare_target_attribute, NULL },
   { "omp declare target nohost", 0, 0, true, false, false, false,
 			      handle_omp_declare_target_attribute, NULL },
-  { "omp declare target block", 0, 0, true, false, false, false,
-			      handle_omp_declare_target_attribute, NULL },
   { "non overlapping",	      0, 0, true, false, false, false,
 			      handle_non_overlapping_attribute, NULL },
   { "alloc_align",	      1, 1, false, true, true, false,

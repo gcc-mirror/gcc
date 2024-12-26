@@ -1786,13 +1786,8 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	      = tree_cons (get_identifier ("omp declare target implicit"),
 			   NULL_TREE, attributes);
 	  else
-	    {
-	      attributes = tree_cons (get_identifier ("omp declare target"),
-				      NULL_TREE, attributes);
-	      attributes
-		= tree_cons (get_identifier ("omp declare target block"),
-			     NULL_TREE, attributes);
-	    }
+	    attributes = tree_cons (get_identifier ("omp declare target"),
+				    NULL_TREE, attributes);
 	  if (TREE_CODE (*decl) == FUNCTION_DECL)
 	    {
 	      cp_omp_declare_target_attr &last

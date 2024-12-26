@@ -3026,7 +3026,7 @@ omp_complete_construct_context (tree construct_context, bool *completep)
 	}
 
       /* Add target trait when in a target variant.  */
-      if (lookup_attribute ("omp declare target block", attributes))
+      if (lookup_attribute ("omp declare target", attributes))
 	construct_context = make_trait_selector (OMP_TRAIT_CONSTRUCT_TARGET,
 						 NULL_TREE, NULL_TREE,
 						 construct_context);
