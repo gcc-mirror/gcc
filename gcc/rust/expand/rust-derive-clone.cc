@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-derive-clone.h"
+#include "rust-ast.h"
+#include "rust-ast-dump.h"
 #include "rust-item.h"
 
 namespace Rust {
@@ -238,13 +240,40 @@ void
 DeriveClone::visit_union (Union &item)
 {
   // FIXME: Should be $crate::core::clone::AssertParamIsCopy (or similar)
+  // (Rust-GCC#3329)
+
+  auto copy_path = TypePath (vec (builder.type_path_segment ("Copy")), loc);
+  auto sized_path = TypePath (vec (builder.type_path_segment ("Sized")), loc);
+
+  auto copy_bound = std::unique_ptr<TypeParamBound> (
+    new TraitBound (copy_path, item.get_locus ()));
+  auto sized_bound = std::unique_ptr<TypeParamBound> (
+    new TraitBound (sized_path, item.get_locus (), false, true));
+
+  auto bounds = std::vector<std::unique_ptr<TypeParamBound>> ();
+  bounds.emplace_back (std::move (copy_bound));
+  bounds.emplace_back (std::move (sized_bound));
+
+  // struct AssertParamIsCopy<T: Copy + ?Sized> { _t: PhantomData<T> }
+  auto assert_param_is_copy = "AssertParamIsCopy";
+  auto t = std::unique_ptr<GenericParam> (
+    new TypeParam (Identifier ("T"), item.get_locus (), std::move (bounds)));
+  auto assert_param_is_copy_struct = builder.struct_struct (
+    assert_param_is_copy, vec (std::move (t)),
+    {StructField (
+      Identifier ("_t"),
+      builder.single_generic_type_path (
+	"PhantomData",
+	GenericArgs (
+	  {}, {GenericArg::create_type (builder.single_type_path ("T"))}, {})),
+      Visibility::create_private (), item.get_locus ())});
 
   // <Self>
   auto arg = GenericArg::create_type (builder.single_type_path ("Self"));
 
   // AssertParamIsCopy::<Self>
   auto type = std::unique_ptr<TypePathSegment> (
-    new TypePathSegmentGeneric (PathIdentSegment ("AssertParamIsCopy", loc),
+    new TypePathSegmentGeneric (PathIdentSegment (assert_param_is_copy, loc),
 				false, GenericArgs ({}, {arg}, {}, loc), loc));
   auto type_paths = std::vector<std::unique_ptr<TypePathSegment>> ();
   type_paths.emplace_back (std::move (type));
@@ -252,10 +281,11 @@ DeriveClone::visit_union (Union &item)
   auto full_path
     = std::unique_ptr<Type> (new TypePath ({std::move (type_paths)}, loc));
 
-  auto stmts = std::vector<std::unique_ptr<Stmt>> ();
-  stmts.emplace_back (
-    builder.let (builder.wildcard (), std::move (full_path), nullptr));
   auto tail_expr = builder.deref (builder.identifier ("self"));
+
+  auto stmts
+    = vec (std::move (assert_param_is_copy_struct),
+	   builder.let (builder.wildcard (), std::move (full_path), nullptr));
 
   auto block = builder.block (std::move (stmts), std::move (tail_expr));
 
