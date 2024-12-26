@@ -134,6 +134,7 @@ public:
 
   static tl::optional<Kind> Parse (const std::string &item);
   static std::string ToString (Kind type);
+  static std::string PrettyString (Kind type);
   static Kind OperatorToLangItem (ArithmeticOrLogicalOperator op);
   static Kind
   CompoundAssignmentOperatorToLangItem (ArithmeticOrLogicalOperator op);
