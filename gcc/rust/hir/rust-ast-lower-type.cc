@@ -27,22 +27,10 @@ namespace Rust {
 namespace HIR {
 
 HIR::TypePath *
-ASTLowerTypePath::translate (AST::Path &type)
+ASTLowerTypePath::translate (AST::TypePath &type)
 {
   ASTLowerTypePath resolver;
-
-  switch (type.get_path_kind ())
-    {
-    case AST::Path::Kind::LangItem:
-      resolver.visit (static_cast<AST::LangItemPath &> (type));
-      break;
-    case AST::Path::Kind::Type:
-      resolver.visit (static_cast<AST::TypePath &> (type));
-      break;
-    default:
-      rust_unreachable ();
-    }
-
+  type.accept_vis (resolver);
   rust_assert (resolver.translated != nullptr);
   return resolver.translated;
 }
@@ -98,10 +86,6 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
 {
   std::vector<HIR::GenericArgsBinding> binding_args; // TODO
 
-  std::string segment_name = segment.get_ident_segment ().as_string ();
-  bool has_separating_scope_resolution
-    = segment.get_separating_scope_resolution ();
-
   auto generic_args = lower_generic_args (segment.get_generic_args ());
 
   auto crate_num = mappings.get_current_crate ();
@@ -109,10 +93,24 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
   Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated_segment
-    = new HIR::TypePathSegmentGeneric (std::move (mapping), segment_name,
-				       has_separating_scope_resolution,
-				       generic_args, segment.get_locus ());
+  if (segment.is_lang_item ())
+    {
+      translated_segment
+	= new HIR::TypePathSegmentGeneric (std::move (mapping),
+					   segment.get_lang_item (),
+					   generic_args, segment.get_locus ());
+    }
+  else
+    {
+      std::string segment_name = segment.get_ident_segment ().as_string ();
+      bool has_separating_scope_resolution
+	= segment.get_separating_scope_resolution ();
+
+      translated_segment
+	= new HIR::TypePathSegmentGeneric (std::move (mapping), segment_name,
+					   has_separating_scope_resolution,
+					   generic_args, segment.get_locus ());
+    }
 }
 
 void
@@ -141,25 +139,26 @@ ASTLowerTypePath::visit (AST::TypePath &path)
 			 path.has_opening_scope_resolution_op ());
 }
 
-void
-ASTLowerTypePath::visit (AST::LangItemPath &path)
-{
-  auto crate_num = mappings.get_current_crate ();
-  auto hirid = mappings.get_next_hir_id (crate_num);
+// void
+// ASTLowerTypePath::visit (AST::LangItemPath &path)
+// {
+//   auto crate_num = mappings.get_current_crate ();
+//   auto hirid = mappings.get_next_hir_id (crate_num);
 
-  Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
-				 mappings.get_next_localdef_id (crate_num));
+//   Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
+// 				 mappings.get_next_localdef_id (crate_num));
 
-  std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
-  translated_segments.emplace_back (std::unique_ptr<HIR::TypePathSegment> (
-    new HIR::TypePathSegment (mapping,
-			      LangItem::ToString (path.get_lang_item_kind ()),
-			      false, path.get_locus ())));
+//   std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
+//   translated_segments.emplace_back (std::unique_ptr<HIR::TypePathSegment> (
+//     new HIR::TypePathSegment (mapping,
+// 			      LangItem::ToString (path.get_lang_item_kind ()),
+// 			      false, path.get_locus ())));
 
-  translated
-    = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
-			 path.get_locus ());
-}
+//   translated
+//     = new HIR::TypePath (std::move (mapping), std::move
+//     (translated_segments),
+// 			 path.get_locus ());
+// }
 
 HIR::QualifiedPathInType *
 ASTLowerQualifiedPathInType::translate (AST::QualifiedPathInType &type)

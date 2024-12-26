@@ -136,8 +136,11 @@ PathExprSegment::as_string () const
 }
 
 std::string
-RegularPath::as_string () const
+Path::as_string () const
 {
+  // FIXME: Impl for lang items
+  rust_assert (kind == Kind::Regular);
+
   std::string str;
 
   for (const auto &segment : segments)
@@ -149,15 +152,11 @@ RegularPath::as_string () const
   return str;
 }
 
-std::string
-LangItemPath::as_string () const
-{
-  return "#[lang = \"" + LangItem::ToString (kind) + "\"]";
-}
-
 SimplePath
-RegularPath::convert_to_simple_path (bool with_opening_scope_resolution) const
+Path::convert_to_simple_path (bool with_opening_scope_resolution) const
 {
+  rust_assert (kind == Kind::Regular);
+
   if (!has_segments ())
     return SimplePath::create_empty ();
 
@@ -191,18 +190,6 @@ RegularPath::convert_to_simple_path (bool with_opening_scope_resolution) const
 }
 
 void
-RegularPath::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-LangItemPath::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 PathInExpression::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
@@ -216,7 +203,7 @@ PathInExpression::as_string () const
   if (has_opening_scope_resolution)
     str = "::";
 
-  return str + path->as_string ();
+  return str + Path::as_string ();
 }
 
 std::string
@@ -316,7 +303,7 @@ TypePathFunction::as_string () const
 std::string
 QualifiedPathInExpression::as_string () const
 {
-  return path_type.as_string () + "::" + path->as_string ();
+  return path_type.as_string () + "::" + Path::as_string ();
 }
 
 std::string

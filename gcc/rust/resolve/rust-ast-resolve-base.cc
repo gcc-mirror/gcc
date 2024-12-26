@@ -72,14 +72,6 @@ ResolverBase::visit (AST::ConstGenericParam &)
 {}
 
 void
-ResolverBase::visit (AST::RegularPath &)
-{}
-
-void
-ResolverBase::visit (AST::LangItemPath &)
-{}
-
-void
 ResolverBase::visit (AST::PathInExpression &)
 {}
 

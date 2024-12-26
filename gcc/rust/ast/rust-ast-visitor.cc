@@ -86,17 +86,6 @@ DefaultASTVisitor::visit (AST::ConstGenericParam &const_param)
 }
 
 void
-DefaultASTVisitor::visit (AST::RegularPath &path)
-{
-  for (auto &segment : path.get_segments ())
-    visit (segment);
-}
-
-void
-DefaultASTVisitor::visit (AST::LangItemPath &path)
-{}
-
-void
 DefaultASTVisitor::visit (AST::PathInExpression &path)
 {
   visit_outer_attrs (path);

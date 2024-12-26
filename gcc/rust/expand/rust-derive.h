@@ -81,8 +81,6 @@ private:
   virtual void visit (Lifetime &lifetime) override final{};
   virtual void visit (LifetimeParam &lifetime_param) override final{};
   virtual void visit (ConstGenericParam &const_param) override final{};
-  virtual void visit (RegularPath &path) override final{};
-  virtual void visit (LangItemPath &path) override final{};
   virtual void visit (PathInExpression &path) override final{};
   virtual void visit (TypePathSegment &segment) override final{};
   virtual void visit (TypePathSegmentGeneric &segment) override final{};

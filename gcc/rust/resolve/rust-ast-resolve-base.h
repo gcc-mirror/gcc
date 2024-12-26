@@ -40,8 +40,6 @@ public:
   void visit (AST::Lifetime &);
   void visit (AST::LifetimeParam &);
   void visit (AST::ConstGenericParam &);
-  void visit (AST::RegularPath &);
-  void visit (AST::LangItemPath &);
   void visit (AST::PathInExpression &);
   void visit (AST::TypePathSegment &);
   void visit (AST::TypePathSegmentGeneric &);

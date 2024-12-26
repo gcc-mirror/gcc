@@ -61,37 +61,6 @@ class ResolveType : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::TypePath &type_path)
-  {
-    return ResolveType::go ((AST::Type &) type_path);
-  }
-
-  static NodeId go (AST::Path &type_path)
-  {
-    if (type_path.get_path_kind () == AST::Path::Kind::LangItem)
-      {
-	auto &type = static_cast<AST::LangItemPath &> (type_path);
-
-	auto lang_item = Analysis::Mappings::get ()
-			   .lookup_lang_item_node (type.get_lang_item_kind ())
-			   .value ();
-
-	auto resolver = Resolver::get ();
-	resolver->insert_resolved_type (type.get_node_id (), lang_item);
-
-	return lang_item;
-      }
-
-    rust_assert (type_path.get_path_kind () == AST::Path::Kind::Type);
-
-    // We have to do this dance to first downcast to a typepath, and then upcast
-    // to a Type. The altnernative is to split `go` into `go` and `go_inner` or
-    // something, but eventually this will need to change as we'll need
-    // `ResolveType::` to resolve other kinds of `Path`s as well.
-    return ResolveType::go (
-      (AST::Type &) static_cast<AST::TypePath &> (type_path));
-  }
-
   static NodeId go (AST::Type &type)
   {
     ResolveType resolver;

@@ -72,11 +72,7 @@ public:
    */
   std::unique_ptr<Expr> call (std::unique_ptr<Expr> &&path,
 			      std::vector<std::unique_ptr<Expr>> &&args) const;
-  std::unique_ptr<Expr> call (std::unique_ptr<Path> &&path,
-			      std::vector<std::unique_ptr<Expr>> &&args) const;
   std::unique_ptr<Expr> call (std::unique_ptr<Expr> &&path,
-			      std::unique_ptr<Expr> &&arg) const;
-  std::unique_ptr<Expr> call (std::unique_ptr<Path> &&path,
 			      std::unique_ptr<Expr> &&arg) const;
 
   /**
