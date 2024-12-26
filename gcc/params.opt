@@ -136,10 +136,10 @@ Maximal estimated growth of function body caused by early inlining of single cal
 
 -param=file-cache-files=
 Common Joined UInteger Var(param_file_cache_files) Init(16) Param
-Max number of files in the file cache.
+Max number of files in the file cache. When 0 this is automatically sized.
 
 -param=file-cache-lines=
-Common Joined UInteger Var(param_file_cache_lines) Init(100) Param
+Common Joined UInteger Var(param_file_cache_lines) Init(0) Param
 Max number of lines to index into file cache.
 
 -param=fsm-scale-path-stmts=
