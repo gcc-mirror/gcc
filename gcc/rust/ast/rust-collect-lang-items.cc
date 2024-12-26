@@ -23,6 +23,7 @@
 #include "rust-attribute-values.h"
 #include "rust-attributes.h"
 #include "rust-hir-map.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace AST {
@@ -85,6 +86,14 @@ CollectLangItems::visit (AST::TraitItemType &item)
 
 void
 CollectLangItems::visit (AST::Function &item)
+{
+  maybe_add_lang_item (item);
+
+  DefaultASTVisitor::visit (item);
+}
+
+void
+CollectLangItems::visit (AST::StructStruct &item)
 {
   maybe_add_lang_item (item);
 
