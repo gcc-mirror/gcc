@@ -5344,6 +5344,7 @@ tree_node_can_be_shared (tree t)
       || TREE_CODE (t) == SSA_NAME
       || TREE_CODE (t) == IDENTIFIER_NODE
       || TREE_CODE (t) == CASE_LABEL_EXPR
+      || TREE_CODE (t) == OMP_NEXT_VARIANT
       || is_gimple_min_invariant (t))
     return true;
 

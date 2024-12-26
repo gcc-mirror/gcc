@@ -4052,6 +4052,8 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
       return;
     case BLOCK:
     case OMP_CLAUSE:
+    case OMP_NEXT_VARIANT:
+    case OMP_TARGET_DEVICE_MATCHES:
       /* Ignore.  */
       return;
     case TREE_LIST:

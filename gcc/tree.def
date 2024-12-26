@@ -1365,6 +1365,12 @@ DEFTREECODE (OMP_TARGET_ENTER_DATA, "omp_target_enter_data", tcc_statement, 1)
    Operand 0: OMP_TARGET_EXIT_DATA_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_TARGET_EXIT_DATA, "omp_target_exit_data", tcc_statement, 1)
 
+/* OpenMP - #pragma omp metadirective [variant1 ... variantN]
+   Operand 0: OMP_METADIRECTIVE_VARIANTS: List of selectors and directive
+   variants.  The variants are internally TREE_LISTs, but use
+   make_omp_metadirective_variant to build them.  */
+DEFTREECODE (OMP_METADIRECTIVE, "omp_metadirective", tcc_statement, 1)
+
 /* OMP_ATOMIC through OMP_ATOMIC_CAPTURE_NEW must be consecutive,
    or OMP_ATOMIC_SEQ_CST needs adjusting.  */
 
@@ -1397,6 +1403,34 @@ DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 
 /* An OpenMP array section.  */
 DEFTREECODE (OMP_ARRAY_SECTION, "omp_array_section", tcc_expression, 3)
+
+/* OpenMP variant construct selector, used only in the middle end in the
+   expansions of variant constructs that can't be resolved until the
+   ompdevlow pass.  These variants are converted into switch expressions
+   that use OMP_NEXT_VARIANT as a placeholder for the index of next variant
+   to try if a dynamic selector does not match.  The ompdevlow pass
+   replaces these nodes with constant integers after resolution.
+   Operand 0: OMP_NEXT_VARIANT_INDEX: an INTEGER_CST holding the switch
+   index of the current variant.
+   Operand 1: OMP_NEXT_VARIANT_STATE: a TREE_LIST that is shared among all
+   OMP_NEXT_VARIANT expressions for the same variant directive.  The
+   TREE_PURPOSE of this node holds the resolved lookup table, while
+   TREE_VALUE holds the saved construct context and TREE_CHAIN the
+   original vector of selectors that are used to fill in the table.  */
+DEFTREECODE (OMP_NEXT_VARIANT, "omp_next_variant", tcc_expression, 2)
+
+/* OpenMP target_device match placeholder, similarly used only in the middle
+   end in the expansions of variant constructs that need to be resolved in
+   the ompdevlow pass.
+   Operand 0: OMP_TARGET_DEVICE_MATCHES_SELECTOR: INTEGER_CST encoding one
+   of OMP_TRAIT_DEVICE_KIND, OMP_TRAIT_DEVICE_ARCH, or OMP_TRAIT_DEVICE_ISA.
+   Operand 1: OMP_TARGET_DEVICE_MATCHES_PROPERTIES: A TREE_LIST of strings
+   and/or identifiers, corresponding to the OMP_TS_PROPERTIES for the trait
+   selector.
+   This resolves to a boolean truth value if the properties match the
+   trait selector for the offload compiler.  */
+DEFTREECODE (OMP_TARGET_DEVICE_MATCHES, "omp_target_device_matches",
+	     tcc_expression, 2)
 
 /* TRANSACTION_EXPR tree code.
    Operand 0: BODY: contains body of the transaction.  */

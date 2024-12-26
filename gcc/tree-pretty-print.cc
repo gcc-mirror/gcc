@@ -4180,6 +4180,87 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       is_expr = false;
       break;
 
+    case OMP_METADIRECTIVE:
+      {
+	pp_string (pp, "#pragma omp metadirective");
+	newline_and_indent (pp, spc + 2);
+	pp_left_brace (pp);
+
+	tree variant = OMP_METADIRECTIVE_VARIANTS (node);
+	while (variant != NULL_TREE)
+	  {
+	    tree selector = OMP_METADIRECTIVE_VARIANT_SELECTOR (variant);
+	    tree directive = OMP_METADIRECTIVE_VARIANT_DIRECTIVE (variant);
+	    tree body = OMP_METADIRECTIVE_VARIANT_BODY (variant);
+
+	    newline_and_indent (pp, spc + 4);
+	    if (selector == NULL_TREE)
+	      pp_string (pp, "otherwise:");
+	    else
+	      {
+		pp_string (pp, "when (");
+		dump_omp_context_selector (pp, selector, spc + 4, flags);
+		pp_string (pp, "):");
+	      }
+	    newline_and_indent (pp, spc + 6);
+
+	    dump_generic_node (pp, directive, spc + 6, flags, false);
+	    newline_and_indent (pp, spc + 6);
+	    dump_generic_node (pp, body, spc + 6, flags, false);
+	    variant = TREE_CHAIN (variant);
+	  }
+	newline_and_indent (pp, spc + 2);
+	pp_right_brace (pp);
+      }
+      break;
+
+    case OMP_NEXT_VARIANT:
+      {
+	pp_string (pp, "OMP_NEXT_VARIANT <");
+	dump_generic_node (pp, OMP_NEXT_VARIANT_INDEX (node), spc,
+			   flags, false);
+	pp_string (pp, ", ");
+	tree state = OMP_NEXT_VARIANT_STATE (node);
+	gcc_assert (state && TREE_CODE (state) == TREE_LIST);
+	if (TREE_PURPOSE (state))
+	  {
+	    newline_and_indent (pp, spc + 2);
+	    pp_string (pp, "resolution map = ");
+	    dump_generic_node (pp, TREE_PURPOSE (state), spc, flags, false);
+	  }
+	newline_and_indent (pp, spc + 2);
+	pp_string (pp, "construct context = ");
+	if (TREE_VALUE (state))
+	  dump_generic_node (pp, TREE_VALUE (state), spc, flags, false);
+	else
+	  pp_string (pp, "NULL");
+
+	tree selectors = TREE_CHAIN (state);
+	for (int i = 0; i < TREE_VEC_LENGTH (selectors); i++)
+	  {
+	    newline_and_indent (pp, spc + 2);
+	    pp_decimal_int (pp, i + 1);
+	    pp_string (pp, ": ");
+	    dump_omp_context_selector (pp, TREE_VEC_ELT (selectors, i),
+				       spc + 4, flags);
+	  }
+	pp_string (pp, ">");
+      }
+      break;
+
+    case OMP_TARGET_DEVICE_MATCHES:
+      pp_string (pp, "OMP_TARGET_DEVICE_MATCHES <");
+      dump_generic_node (pp, OMP_TARGET_DEVICE_MATCHES_SELECTOR (node), spc,
+			 flags, false);
+      for (tree p = OMP_TARGET_DEVICE_MATCHES_PROPERTIES (node);
+	   p; p = TREE_CHAIN (p))
+	{
+	  pp_string (pp, ", ");
+	  dump_generic_node (pp, OMP_TP_VALUE (p), spc, flags, false);
+	}
+      pp_string (pp, ")>");
+      break;
+
     case TRANSACTION_EXPR:
       if (TRANSACTION_EXPR_OUTER (node))
 	pp_string (pp, "__transaction_atomic [[outer]]");

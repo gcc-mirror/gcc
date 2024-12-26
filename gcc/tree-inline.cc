@@ -1160,6 +1160,13 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 
 	  *walk_subtrees = 0;
 	}
+      else if (TREE_CODE (*tp) == OMP_NEXT_VARIANT)
+	{
+	  /* Neither operand is interesting, and walking the selector
+	     causes problems because it's not an expression.  */
+	  gcc_assert (TREE_CODE (TREE_OPERAND (*tp, 0)) == INTEGER_CST);
+	  *walk_subtrees = 0;
+	}
     }
 
   /* Update the TREE_BLOCK for the cloned expr.  */

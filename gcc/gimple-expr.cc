@@ -841,6 +841,11 @@ is_gimple_val (tree t)
       && !is_gimple_reg (t))
     return false;
 
+  /* These eventually expand into constants, so treat them like that.  */
+  if (TREE_CODE (t) == OMP_NEXT_VARIANT
+      || TREE_CODE (t) == OMP_TARGET_DEVICE_MATCHES)
+    return true;
+
   return (is_gimple_variable (t) || is_gimple_min_invariant (t));
 }
 

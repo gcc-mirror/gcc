@@ -2500,7 +2500,9 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == OBJ_TYPE_REF						    \
       || (SYM) == ADDR_EXPR						    \
       || (SYM) == WITH_SIZE_EXPR					    \
-      || (SYM) == SSA_NAME) ? GIMPLE_SINGLE_RHS				    \
+      || (SYM) == SSA_NAME						    \
+      || (SYM) == OMP_NEXT_VARIANT					    \
+      || (SYM) == OMP_TARGET_DEVICE_MATCHES) ? GIMPLE_SINGLE_RHS	    \
    : GIMPLE_INVALID_RHS),
 #define END_OF_BASE_TREE_CODES (unsigned char) GIMPLE_INVALID_RHS,
 
