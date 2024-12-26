@@ -118,6 +118,12 @@ LangItem::ToString (LangItem::Kind type)
   return str.value ();
 }
 
+std::string
+LangItem::PrettyString (LangItem::Kind type)
+{
+  return "#[lang = \"" + LangItem::ToString (type) + "\"]";
+}
+
 LangItem::Kind
 LangItem::OperatorToLangItem (ArithmeticOrLogicalOperator op)
 {
