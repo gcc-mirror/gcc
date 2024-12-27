@@ -27038,12 +27038,12 @@ $as_echo "$gcc_cv_as_shf_merge" >&6; }
 
 
 if test $gcc_cv_as_shf_merge = no; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section merging support" >&5
-$as_echo_n "checking assembler for section merging support... " >&6; }
-if ${gcc_cv_as_shf_merge+:} false; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section merging support (%progbits)" >&5
+$as_echo_n "checking assembler for section merging support (%progbits)... " >&6; }
+if ${gcc_cv_as_shf_merge_percent+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  gcc_cv_as_shf_merge=no
+  gcc_cv_as_shf_merge_percent=no
   if test x$gcc_cv_as != x; then
     $as_echo '.section .rodata.str, "aMS", %progbits, 1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
@@ -27053,7 +27053,7 @@ else
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_shf_merge=yes
+	gcc_cv_as_shf_merge_percent=yes
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -27061,14 +27061,15 @@ else
     rm -f conftest.o conftest.s
   fi
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_shf_merge" >&5
-$as_echo "$gcc_cv_as_shf_merge" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_shf_merge_percent" >&5
+$as_echo "$gcc_cv_as_shf_merge_percent" >&6; }
 
 
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_GAS_SHF_MERGE `if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`
+#define HAVE_GAS_SHF_MERGE `if test $gcc_cv_as_shf_merge = yes \
+    || test $gcc_cv_as_shf_merge_percent = yes; then echo 1; else echo 0; fi`
 _ACEOF
 
 
