@@ -1,3 +1,14 @@
+2024-12-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/118050
+	* timevar.cc (get_time): Only use CLOCK_MONOTONIC if
+	'_POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)'.
+	Otherise, use CLOCK_REALTIME.
+
+2024-12-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (Dialect): Move PM4 link to https.
+
 2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* config/alpha/alpha.cc
