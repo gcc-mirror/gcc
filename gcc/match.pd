@@ -3461,7 +3461,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			(bit_xor:c @0 INTEGER_CST@3)) integer_zerop)
 	 (signed_integer_sat_val @0)
 	 @2)
-  (if (wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0))))
+  (if (wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0)))
+
+(match (signed_integer_sat_add @0 @1)
+  /* T SUM = (T)((UT)X + (UT)-1);
+     SAT_S_ADD = (X ^ -1) < 0 ? SUM : (X ^ SUM) >= 0 ? SUM
+						      : (x < 0) ? MIN : MAX  */
+  (convert (cond^ (lt (bit_and:c @0 (nop_convert (negate (nop_convert @0))))
+             integer_zerop)
+	 INTEGER_CST@2
+	 (plus (nop_convert @0) integer_all_onesp@1)))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     wide_int c1 = wi::to_wide (@1);
+     wide_int c2 = wi::to_wide (@2);
+     wide_int sum = wi::add (c1, c2);
+    }
+    (if (wi::eq_p (sum, wi::max_value (precision, SIGNED)))))))
 
 /* Saturation sub for signed integer.  */
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
