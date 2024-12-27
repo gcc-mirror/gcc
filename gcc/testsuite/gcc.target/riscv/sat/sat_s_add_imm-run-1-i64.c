@@ -7,6 +7,7 @@ DEF_SAT_S_ADD_IMM_FMT_1(0, int64_t, uint64_t, (-9223372036854775807ll - 1), INT6
 DEF_SAT_S_ADD_IMM_FMT_1(1, int64_t, uint64_t, 9223372036854775807ll, INT64_MIN, INT64_MAX)
 DEF_SAT_S_ADD_IMM_FMT_1(2, int64_t, uint64_t, 100, INT64_MIN, INT64_MAX)
 DEF_SAT_S_ADD_IMM_FMT_1(3, int64_t, uint64_t, -100, INT64_MIN, INT64_MAX)
+DEF_SAT_S_ADD_IMM_FMT_1(4, int64_t, uint64_t, -1, INT64_MIN, INT64_MAX)
 
 #define T                       int64_t
 #define RUN(INDEX,T, x, expect) RUN_SAT_S_ADD_IMM_FMT_1(INDEX, T, x, expect)
@@ -21,6 +22,8 @@ T d[][2] = {
   {     -1,                               99, },
   {      0,                             -100, },
   {    100,                                0, },
+  {      0,                               -1, },
+  {    100,                               99, },
 };
 
 int
@@ -37,6 +40,9 @@ main ()
 
   RUN (3, T, d[6][0], d[6][1]);
   RUN (3, T, d[7][0], d[7][1]);
+
+  RUN (4, T, d[8][0], d[8][1]);
+  RUN (4, T, d[9][0], d[9][1]);
 
   return 0;
 }
