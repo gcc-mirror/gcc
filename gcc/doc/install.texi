@@ -4376,21 +4376,17 @@ Some versions of the AIX binder (linker) can fail with a relocation
 overflow severe error when the @option{-bbigtoc} option is used to link
 GCC-produced object files into an executable that overflows the TOC@.  A fix
 for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
-available from IBM Customer Support and from its
-@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
-website as PTF U455193.
+available as PTF U455193.
 
 The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
 with a segmentation fault when invoked by any version of GCC@.  A fix for
-APAR IX87327 is available from IBM Customer Support and from its
-@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
-website as PTF U461879.  This fix is incorporated in AIX 4.3.3 and above.
+APAR IX87327 is available as PTF U461879.  This fix is incorporated in
+AIX 4.3.3 and above.
 
 The initial assembler shipped with AIX 4.3.0 generates incorrect object
 files.  A fix for APAR IX74254 (64BIT DISASSEMBLED OUTPUT FROM COMPILER FAILS
-TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
-@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
-website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
+TO ASSEMBLE/BIND) is available as PTF U453956. This fix is incorporated in
+AIX 4.3.1 and above.
 
 AIX provides National Language Support (NLS)@.  Compilers and assemblers
 use NLS to support locale-specific representations of various data
