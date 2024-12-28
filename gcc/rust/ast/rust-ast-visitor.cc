@@ -1039,6 +1039,7 @@ DefaultASTVisitor::visit (AST::TraitImpl &impl)
   if (impl.has_where_clause ())
     visit (impl.get_where_clause ());
   visit (impl.get_type ());
+  visit (impl.get_trait_path ());
   visit_inner_attrs (impl);
   for (auto &item : impl.get_impl_items ())
     visit (item);
