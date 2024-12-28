@@ -4197,9 +4197,9 @@ future implementation of teams.  It is about to change without further notice.
 * _gfortran_caf_send:: Sending data from a local image to a remote image
 * _gfortran_caf_get:: Getting data from a remote image
 * _gfortran_caf_sendget:: Sending data between remote images
-* _gfortran_caf_get_by_ct:: Getting data from a remote image using a remote side accessor
 * _gfortran_caf_send_by_ref:: Sending data from a local image to a remote image using enhanced references
 * _gfortran_caf_get_by_ref:: Getting data from a remote image using enhanced references
+* _gfortran_caf_get_by_ct:: Getting data from a remote image using a remote side accessor
 * _gfortran_caf_sendget_by_ref:: Sending data between remote images using enhanced references
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
