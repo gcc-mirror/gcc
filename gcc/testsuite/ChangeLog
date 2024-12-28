@@ -1,3 +1,7 @@
+2024-12-27  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-vcond-3.c: New test.
+
 2024-12-25  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* gcc.target/alpha/memclr-a2-o1-c9-ptr.c: Remove XFAILs.

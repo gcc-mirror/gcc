@@ -1,3 +1,15 @@
+2024-12-27  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_cmp<mode><mode256_i>): Remove.
+	(vec_cmpu<ILASX:mode><mode256_i>): Remove.
+	* config/loongarch/loongarch.cc (loongarch_expand_lsx_cmp):
+	Ensure vector comparison instructions support CMP_OP1.
+	* config/loongarch/lsx.md (vec_cmp<mode><mode_i>): Remove.
+	(vec_cmpu<ILSX:mode><mode_i>): Remove.
+	* config/loongarch/simd.md (ALLVEC, allmode_i): New mode iterators.
+	(vec_cmp<mode><allmode_i>): New define_expand.
+	(vec_cmpu<mode><allmode_i>): Likewise.
+
 2024-12-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/118050
