@@ -1,5 +1,5 @@
 // { dg-do compile { target c++23 } }
-#include "<generator>"
+#include <generator>
 
 std::generator<int>
 generator();
