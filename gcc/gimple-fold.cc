@@ -9707,9 +9707,8 @@ fold_array_ctor_reference (tree type, tree ctor,
 	  constructor_elt *elt = CONSTRUCTOR_ELT (ctor, ctor_idx);
 	  if (elt->index == NULL_TREE || TREE_CODE (elt->index) != INTEGER_CST)
 	    return NULL_TREE;
-	  *suboff += access_index.to_uhwi () * BITS_PER_UNIT;
 	  unsigned o = (access_index - wi::to_offset (elt->index)).to_uhwi ();
-	  return build_int_cst (TREE_TYPE (val), RAW_DATA_UCHAR_ELT (val, o));
+	  val = build_int_cst (TREE_TYPE (val), RAW_DATA_UCHAR_ELT (val, o));
 	}
       if (!size && TREE_CODE (val) != CONSTRUCTOR)
 	{
