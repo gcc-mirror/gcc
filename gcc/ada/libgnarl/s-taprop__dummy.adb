@@ -37,7 +37,6 @@
 package body System.Task_Primitives.Operations is
 
    use System.Tasking;
-   use System.Parameters;
 
    pragma Warnings (Off);
    --  Turn off warnings since so many unreferenced parameters
@@ -480,10 +479,7 @@ package body System.Task_Primitives.Operations is
       null;
    end Unlock;
 
-   procedure Unlock
-     (L           : not null access RTS_Lock;
-      Global_Lock : Boolean := False)
-   is
+   procedure Unlock (L : not null access RTS_Lock) is
    begin
       null;
    end Unlock;
@@ -522,10 +518,7 @@ package body System.Task_Primitives.Operations is
       Ceiling_Violation := False;
    end Write_Lock;
 
-   procedure Write_Lock
-     (L           : not null access RTS_Lock;
-      Global_Lock : Boolean := False)
-   is
+   procedure Write_Lock (L : not null access RTS_Lock) is
    begin
       null;
    end Write_Lock;
