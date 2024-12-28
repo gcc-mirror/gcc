@@ -705,7 +705,7 @@ the modes are the same as for the @code{CONVERT} specifier:
 for unformatted files.
 @item @code{BIG_ENDIAN} Use the big-endian format for unformatted files.
 @end itemize
-For POWER systems which support @option{-mabi=ieeelongdouble},
+For POWER systems that support @option{-mabi=ieeelongdouble},
 there are additional options, which can be combined with the
 others with commas. Those are
 @itemize @w{}
@@ -800,7 +800,7 @@ The default value is 131072.
 @chapter Compiler Characteristics
 
 This chapter describes certain characteristics of the GNU Fortran
-compiler, that are not specified by the Fortran standard, but which
+compiler that are not specified by the Fortran standard, but which
 might in some way or another become visible to the programmer.
 
 @menu
@@ -1140,7 +1140,7 @@ end program main
 
 Asynchronous I/O is supported if the program is linked against the
 POSIX thread library. If that is not the case, all I/O is performed
-as synchronous. On systems which do not support pthread condition
+as synchronous. On systems that do not support pthread condition
 variables, such as AIX, I/O is also performed as synchronous.
 
 On some systems, such as Darwin or Solaris, the POSIX thread library
@@ -1305,7 +1305,7 @@ are:
       DATA i/1/, j/2/, x/3*0.,1./
 @end smallexample
 
-Note that variables which are explicitly initialized in declarations
+Note that variables that are explicitly initialized in declarations
 or in @code{DATA} statements automatically acquire the @code{SAVE}
 attribute.
 
@@ -1776,7 +1776,7 @@ for unformatted files.
 @item @code{CONVERT='BIG_ENDIAN'} Use the big-endian representation for
 unformatted files.
 @end itemize
-On POWER systems which support @option{-mabi=ieeelongdouble},
+On POWER systems that support @option{-mabi=ieeelongdouble},
 there are additional options, which can be combined with the others
 with commas. Those are
 @itemize @w{}
@@ -2049,7 +2049,7 @@ rules and exceptions:
 Otherwise they may contain no specifiers.
 
 @item Structures may contain a special field with the name @code{%FILL}.
-This creates an anonymous component which cannot be accessed but occupies
+This creates an anonymous component that cannot be accessed but occupies
 space just as if a component of the same type was declared in its place, useful
 for alignment purposes.  As an example, the following structure consists
 of at least sixteen bytes:
@@ -2622,7 +2622,7 @@ c     ... Code that sets A, B and C
 @subsection Variable @code{FORMAT} expressions
 @cindex @code{FORMAT}
 
-A variable @code{FORMAT} expression is format statement which includes
+A variable @code{FORMAT} expression is format statement that includes
 angle brackets enclosing a Fortran expression: @code{FORMAT(I<N>)}.  GNU
 Fortran does not support this legacy extension.  The effect of variable
 format expressions can be reproduced by using the more powerful (and
@@ -2719,7 +2719,7 @@ reading from the position marked previously.
 @section Experimental features future Fortran versions
 @cindex Future Fortran versions
 
-GNU Fortran supports some experimental features which have been
+GNU Fortran supports some experimental features that have been
 proposed and accepted by the J3 standards committee.  These
 exist to give users a chance to try them out, and to provide
 a reference implementation.
@@ -2784,7 +2784,7 @@ as index variables in @code{DO} loops and as array indices.
 Unsigned numbers can be read and written using list-directed,
 formatted and unformatted I/O.  For formatted I/O, the @samp{B},
 @samp{I}, @samp{O} and @samp{Z} descriptors are valid.  Negative
-values and values which would overflow are rejected with
+values and values that would overflow are rejected with
 @code{-pedantic}.
 
 @code{SELECT CASE} is supported for unsigned integers.
@@ -3203,7 +3203,7 @@ foobar ()
 @}
 @end smallexample
 
-A matching implementation for @code{get_values} in Fortran, that correctly
+A matching implementation for @code{get_values} in Fortran that correctly
 receives the procedure pointer from C and is able to call it, is given
 in the following @code{MODULE}:
 
@@ -3241,7 +3241,7 @@ END MODULE m
 @end smallexample
 
 Next, we want to call a C routine that expects a procedure pointer argument
-and pass it a Fortran procedure (which clearly must be interoperable!).
+and pass it a Fortran procedure (that clearly must be interoperable!).
 Again, the C function may be:
 
 @smallexample
@@ -3345,7 +3345,7 @@ The Fortran standard describes how a conforming program shall
 behave; however, the exact implementation is not standardized.  In order
 to allow the user to choose specific implementation details, compiler
 directives can be used to set attributes of variables and procedures
-which are not part of the standard.  Whether a given attribute is
+that are not part of the standard.  Whether a given attribute is
 supported and its exact effects depend on both the operating system and
 on the processor; see
 @ref{Top,,C Extensions,gcc,Using the GNU Compiler Collection (GCC)}
@@ -3542,7 +3542,7 @@ it may also change in GCC minor releases.
 When you compile a @code{PROGRAM} with GNU Fortran, a function
 with the name @code{main} (in the symbol table of the object file)
 is generated, which initializes the libgfortran library and then
-calls the actual program which uses the name @code{MAIN__}, for
+calls the actual program that uses the name @code{MAIN__}, for
 historic reasons.  If you link GNU Fortran compiled procedures
 to, e.g., a C or C++ program or to a Fortran program compiled by
 a different compiler, the libgfortran library is not initialized
@@ -3949,11 +3949,11 @@ passed by value.
 
 For @code{OPTIONAL} dummy arguments, an absent argument is denoted
 by a NULL pointer, except for scalar dummy arguments of intrinsic type
-which have the @code{VALUE} attribute.  For those, a hidden Boolean
+that have the @code{VALUE} attribute.  For those, a hidden Boolean
 argument (@code{logical(kind=C_bool),value}) is used to indicate
 whether the argument is present.
 
-Arguments which are assumed-shape, assumed-rank or deferred-rank
+Arguments that are assumed-shape, assumed-rank or deferred-rank
 arrays or, with @option{-fcoarray=lib}, allocatable scalar coarrays use
 an array descriptor.  All other arrays pass the address of the
 first element of the array.  With @option{-fcoarray=lib}, the token
@@ -4587,7 +4587,7 @@ No arguments.
 
 @item @emph{NOTES}
 This function may be called multiple times with and without new hash-accessors-
-pairs being added.  The post-condition after each call has to be, that hashes
+pairs being added.  The post-condition after each call has to be that hashes
 can be looked up quickly and indexing on the lookup table of hash-accessor-pairs
 is a constant time operation.
 @end table
@@ -4608,7 +4608,7 @@ The index returned shall be an array index to be used by
 @ref{_gfortran_caf_get_by_ct}, i.e. a constant time operation is mandatory for
 quick access.
 
-The GFortran compiler ensures, that
+The GFortran compiler ensures that
 @code{_gfortran_caf_get_remote_function_index} is called once only for each
 hash and the result be stored in a static variable to prevent future redundant
 lookups.
@@ -4678,7 +4678,7 @@ int *stat)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number.
@@ -4735,7 +4735,7 @@ int *stat)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number.
@@ -4794,7 +4794,7 @@ bool may_require_tmp, int *stat)}
 @multitable @columnfractions .15 .70
 @item @var{dst_token} @tab intent(in)  An opaque pointer identifying the
 destination coarray.
-@item @var{dst_offset} @tab intent(in)  By which amount of bytes the actual data
+@item @var{dst_offset} @tab intent(in)  The number of bytes the actual data
 is shifted compared to the base address of the destination coarray.
 @item @var{dst_image_index} @tab intent(in)  The ID of the destination remote
 image; must be a positive number.
@@ -4806,7 +4806,7 @@ subscript of the destination array; the values are relative to the dimension
 triplet of the @var{dest} argument.
 @item @var{src_token} @tab intent(in)  An opaque pointer identifying the source
 coarray.
-@item @var{src_offset} @tab intent(in)  By which amount of bytes the actual data
+@item @var{src_offset} @tab intent(in)  The number of bytes the actual data
 is shifted compared to the base address of the source coarray.
 @item @var{src_image_index} @tab intent(in)  The ID of the source remote image;
 must be a positive number.
@@ -5123,7 +5123,7 @@ given array element for an array-valued variable.  If the @var{acquired_lock}
 is @code{NULL}, the function returns after having obtained the lock.  If it is
 non-@code{NULL}, then @var{acquired_lock} is assigned the value true (one) when
 the lock could be obtained and false (zero) otherwise.  Locking a lock variable
-which has already been locked by the same image is an error.
+that has already been locked by the same image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
@@ -5158,7 +5158,7 @@ images for critical-block locking variables.
 @item @emph{Description}:
 Release a lock on the given image on a scalar locking variable or for the
 given array element for an array-valued variable. Unlocking a lock variable
-which is unlocked or has been locked by a different image is an error.
+that is unlocked or has been locked by a different image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
@@ -5238,7 +5238,7 @@ int until_count, int *stat, char *errmsg, size_t errmsg_len)}
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
 @item @var{index} @tab intent(in)  Array index; first array index is 0.  For
 scalars, it is always 0.
-@item @var{until_count} @tab intent(in)  The number of events which have to be
+@item @var{until_count} @tab intent(in)  The number of events that have to be
 available before the function returns.
 @item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
 @item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
@@ -5341,7 +5341,7 @@ char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{count} @tab intent(in)  The number of images which are provided in
+@item @var{count} @tab intent(in)  The number of images that are provided in
 the next argument.  For a zero-sized array, the value is zero.  For
 @code{sync images (*)}, the value is @math{-1}.
 @item @var{images} @tab intent(in)  An array with the images provided by the
@@ -5387,7 +5387,7 @@ an error message; may be NULL.
 
 @table @asis
 @item @emph{Description}:
-Invoked for an @code{ERROR STOP} statement which has an integer argument.  The
+Invoked for an @code{ERROR STOP} statement that has an integer argument.  The
 function should terminate the program with the specified exit code.
 
 
@@ -5408,7 +5408,7 @@ function should terminate the program with the specified exit code.
 
 @table @asis
 @item @emph{Description}:
-Invoked for an @code{ERROR STOP} statement which has a string as argument.  The
+Invoked for an @code{ERROR STOP} statement that has a string as argument.  The
 function should terminate the program with a nonzero-exit code.
 
 @item @emph{Syntax}:
@@ -5456,7 +5456,7 @@ int image_index, void *value, int *stat, int type, int kind)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
@@ -5485,7 +5485,7 @@ int image_index, void *value, int *stat, int type, int kind)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
@@ -5518,11 +5518,11 @@ int type, int kind)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
-@item @var{old} @tab intent(out)  The value which the atomic variable had
+@item @var{old} @tab intent(out)  The value the atomic variable had
 just before the cas operation.
 @item @var{compare} @tab intent(in)  The value used for comparison.
 @item @var{new_val} @tab intent(in)  The new value for the atomic variable,
@@ -5560,11 +5560,11 @@ int image_index, void *value, void *old, int *stat, int type, int kind)}
 @code{GFC_CAF_ATOMIC_ADD} (1), @code{GFC_CAF_ATOMIC_AND} (2),
 @code{GFC_CAF_ATOMIC_OR} (3), @code{GFC_CAF_ATOMIC_XOR} (4).
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
-@item @var{old} @tab intent(out)  The value which the atomic variable had
+@item @var{old} @tab intent(out)  The value the atomic variable had
 just before the atomic operation.
 @item @var{val} @tab intent(in)  The new value for the atomic variable,
 assigned to the atomic variable, if @code{compare} equals the value of the

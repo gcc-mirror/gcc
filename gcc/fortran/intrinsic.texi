@@ -344,7 +344,7 @@ The enumeration of the @code{KIND} type parameter is processor defined in
 the Fortran 95 standard.  GNU Fortran defines the default integer type and
 default real type by @code{INTEGER(KIND=4)} and @code{REAL(KIND=4)},
 respectively.  The standard mandates that both data types shall have
-another kind, which have more precision.  On typical target architectures
+another kind that has more precision.  On typical target architectures
 supported by @command{gfortran}, this kind type parameter is @code{KIND=8}.
 Hence, @code{REAL(KIND=8)} and @code{DOUBLE PRECISION} are equivalent.
 In the description of generic intrinsic procedures, the kind type parameter
@@ -4050,7 +4050,7 @@ None
 
 @item @emph{Return value}:
 The return value is a default-kind string with system-dependent length.
-It contains the compiler flags used to compile the file, which called
+It contains the compiler flags used to compile the file that called
 the @code{COMPILER_OPTIONS} intrinsic.
 
 @item @emph{Example}:
@@ -5284,7 +5284,7 @@ sufficiently small limits that overflows (wrap around) are possible, such as
 become, negative, or numerically less than previous values, during a single
 run of the compiled program.
 
-Please note, that this implementation is thread safe if used within OpenMP
+Please note that this implementation is thread safe if used within OpenMP
 directives, i.e., its state is consistent while called from multiple
 threads. However, if @code{DTIME} is called from multiple threads, the result
 is still the time since the last invocation. This may not give the intended
@@ -6205,7 +6205,7 @@ Transformational function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array of intrinsic type.
-@item @var{VALUE} @tab A scalar of intrinsic type which is in type
+@item @var{VALUE} @tab A scalar of intrinsic type that is in type
 conformance with @var{ARRAY}.
 @item @var{DIM} @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
@@ -8272,7 +8272,7 @@ the corank of @var{COARRAY}.
 
 
 @item @emph{Return value}:
-Scalar default integer with the value of the image index which corresponds
+Scalar default integer with the value of the image index that corresponds
 to the cosubscripts. For invalid cosubscripts the result is zero.
 
 @item @emph{Example}:
@@ -8687,7 +8687,7 @@ Inquiry function
 @end multitable
 
 @item @emph{Return value}:
-Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
+Returns a @code{LOGICAL} of the default kind, which is @code{.TRUE.} if
 @var{ARRAY} is contiguous and false otherwise.
 
 @item @emph{Example}:
@@ -8739,8 +8739,8 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
-@var{I} has the value which indicates an end of file condition for
+Returns a @code{LOGICAL} of the default kind, which is @code{.TRUE.} if
+@var{I} has the value that indicates an end of file condition for
 @code{IOSTAT=} specifiers, and is @code{.FALSE.} otherwise.
 
 @item @emph{Example}:
@@ -8784,8 +8784,8 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
-@var{I} has the value which indicates an end of file condition for
+Returns a @code{LOGICAL} of the default kind, which is @code{.TRUE.} if
+@var{I} has the value that indicates an end of file condition for
 @code{IOSTAT=} specifiers, and is @code{.FALSE.} otherwise.
 
 @item @emph{Example}:
@@ -11405,11 +11405,11 @@ Transformational function
 Scalar default-kind integer.  If @var{DISTANCE} is not present or has value 0,
 the number of images in the current team is returned. For values smaller or
 equal distance to the initial team, it returns the number of images index
-on the ancestor team which has a distance of @var{DISTANCE} from the invoking
+on the ancestor team that has a distance of @var{DISTANCE} from the invoking
 team. If @var{DISTANCE} is larger than the distance to the initial team, the
 number of images of the initial team is returned. If @var{FAILED} is not present
 the total number of images is returned; if it has the value @code{.TRUE.},
-the number of failed images is returned, otherwise, the number of images which
+the number of failed images is returned, otherwise, the number of images that
 do have not the failed status.
 
 @item @emph{Example}:
@@ -14447,7 +14447,7 @@ Default integer. If @var{COARRAY} is not present, it is scalar; if
 @var{DISTANCE} is not present or has value 0, its value is the image index on
 the invoking image for the current team, for values smaller or equal
 distance to the initial team, it returns the image index on the ancestor team
-which has a distance of @var{DISTANCE} from the invoking team. If
+that has a distance of @var{DISTANCE} from the invoking team. If
 @var{DISTANCE} is larger than the distance to the initial team, the image
 index of the initial team is returned. Otherwise when the @var{COARRAY} is
 present, if @var{DIM} is not present, a rank-1 array with corank elements is
@@ -14764,7 +14764,7 @@ Transformational function
 @end multitable
 
 @item @emph{Return value}:
-A scalar of type @code{CHARACTER} which length is that of @var{STRING}
+A scalar of type @code{CHARACTER} that is the length of @var{STRING}
 less the number of trailing blanks.
 
 @item @emph{Example}:
@@ -15497,8 +15497,8 @@ modules are only provided on the following supported platforms:
 
 @itemize @bullet
 @item i386 and x86_64 processors
-@item platforms which use the GNU C Library (glibc)
-@item platforms with support for SysV/386 routines for floating point
+@item platforms that use the GNU C Library (glibc)
+@item platforms with support for SysV/386 routines for floating-point
 interface (including Solaris and BSDs)
 @item platforms with the AIX OS
 @end itemize
