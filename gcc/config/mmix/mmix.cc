@@ -990,10 +990,18 @@ mmix_setup_incoming_varargs (cumulative_args_t args_so_farp_v,
 {
   CUMULATIVE_ARGS *args_so_farp = get_cumulative_args (args_so_farp_v);
 
-  /* The last named variable has been handled, but
-     args_so_farp has not been advanced for it.  */
-  if (args_so_farp->regs + 1 < MMIX_MAX_ARGS_IN_REGS)
-    *pretend_sizep = (MMIX_MAX_ARGS_IN_REGS - (args_so_farp->regs + 1)) * 8;
+  /* Better pay special attention to (...) functions and not fold that
+     case into the general case in the else-arm.  */
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    {
+      *pretend_sizep = MMIX_MAX_ARGS_IN_REGS * 8;
+      gcc_assert (args_so_farp->regs == 0);
+    }
+  else
+    /* The last named variable has been handled, but
+       args_so_farp has not been advanced for it.  */
+    if (args_so_farp->regs + 1 < MMIX_MAX_ARGS_IN_REGS)
+      *pretend_sizep = (MMIX_MAX_ARGS_IN_REGS - (args_so_farp->regs + 1)) * 8;
 
   /* We assume that one argument takes up one register here.  That should
      be true until we start messing with multi-reg parameters.  */
