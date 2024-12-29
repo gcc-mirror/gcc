@@ -89,6 +89,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef _PTRDIFF_T_
 #endif
 
+#if defined (__APPLE__)
+# if defined(__has_feature) && __has_feature(modules)
+#  if defined (__need_ptrdiff_t)
+#   undef __PTRDIFF_T
+#  endif
+#  if defined (__need_size_t)
+#   undef __SIZE_T
+#  endif
+# endif
+#endif
+
 /* On VxWorks, <type/vxTypesBase.h> may have defined macros like
    _TYPE_size_t which will typedef size_t.  fixincludes patched the
    vxTypesBase.h so that this macro is only defined if _GCC_SIZE_T is
