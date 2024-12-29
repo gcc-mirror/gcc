@@ -35,7 +35,7 @@ final class CParser(AST) : Parser!AST
     AST.Dsymbols* symbols;      // symbols declared in current scope
 
     bool addFuncName;           /// add declaration of __func__ to function symbol table
-    bool importBuiltins;        /// seen use of C compiler builtins, so import __builtins;
+    bool importBuiltins;        /// seen use of C compiler builtins, so import __importc_builtins;
 
     private
     {
@@ -89,6 +89,9 @@ final class CParser(AST) : Parser!AST
         this.wchar_tsize = target.wchar_tsize;
 
         // C `char` is always unsigned in ImportC
+
+        // We know that we are parsing out C, due the parent not knowing this, we have to setup tables here.
+        charLookup = compileEnv.cCharLookupTable;
     }
 
     /********************************************
@@ -125,7 +128,7 @@ final class CParser(AST) : Parser!AST
                     /* Seen references to C builtin functions.
                      * Import their definitions
                      */
-                    auto s = new AST.Import(Loc.initial, null, Id.builtins, null, false);
+                    auto s = new AST.Import(Loc.initial, null, Id.importc_builtins, null, false);
                     wrap.push(s);
                 }
 
@@ -1919,6 +1922,14 @@ final class CParser(AST) : Parser!AST
                 auto s = cparseFunctionDefinition(id, dt.isTypeFunction(), specifier);
                 typedefTab.setDim(typedefTabLengthSave);
                 symbols = symbolsSave;
+                if (specifier.mod & MOD.x__stdcall)
+                {
+                    // If this function is __stdcall, wrap it in a LinkDeclaration so that
+                    // it's extern(Windows) when imported in D.
+                    auto decls = new AST.Dsymbols(1);
+                    (*decls)[0] = s;
+                    s = new AST.LinkDeclaration(s.loc, LINK.windows, decls);
+                }
                 symbols.push(s);
                 return;
             }
@@ -2071,13 +2082,14 @@ final class CParser(AST) : Parser!AST
                     }
                 }
                 s = applySpecifier(s, specifier);
-                if (level == LVL.local)
+                if (level == LVL.local || (specifier.mod & MOD.x__stdcall))
                 {
-                    // Wrap the declaration in `extern (C) { declaration }`
+                    // Wrap the declaration in `extern (C/Windows) { declaration }`
                     // Necessary for function pointers, but harmless to apply to all.
                     auto decls = new AST.Dsymbols(1);
                     (*decls)[0] = s;
-                    s = new AST.LinkDeclaration(s.loc, linkage, decls);
+                    const lkg = specifier.mod & MOD.x__stdcall ? LINK.windows : linkage;
+                    s = new AST.LinkDeclaration(s.loc, lkg, decls);
                 }
                 symbols.push(s);
             }
@@ -5860,13 +5872,15 @@ final class CParser(AST) : Parser!AST
 
         const(char)* endp = &slice[length - 7];
 
+        AST.Dsymbols newSymbols;
+
         size_t[void*] defineTab;    // hash table of #define's turned into Symbol's
-                                    // indexed by Identifier, returns index into symbols[]
+                                    // indexed by Identifier, returns index into newSymbols[]
                                     // The memory for this is leaked
 
-        void addVar(AST.Dsymbol s)
+        void addSym(AST.Dsymbol s)
         {
-            //printf("addVar() %s\n", s.toChars());
+            //printf("addSym() %s\n", s.toChars());
             if (auto v = s.isVarDeclaration())
                 v.isCmacro(true);       // mark it as coming from a C #define
             /* If it's already defined, replace the earlier
@@ -5874,13 +5888,22 @@ final class CParser(AST) : Parser!AST
              */
             if (size_t* pd = cast(void*)s.ident in defineTab)
             {
-                //printf("replacing %s\n", v.toChars());
-                (*symbols)[*pd] = s;
+                //printf("replacing %s\n", s.toChars());
+                newSymbols[*pd] = s;
                 return;
             }
-            assert(symbols, "symbols is null");
-            defineTab[cast(void*)s.ident] = symbols.length;
-            symbols.push(s);
+            defineTab[cast(void*)s.ident] = newSymbols.length;
+            newSymbols.push(s);
+        }
+
+        void removeSym(Identifier ident)
+        {
+            //printf("removeSym() %s\n", ident.toChars());
+            if (size_t* pd = cast(void*)ident in defineTab)
+            {
+                //printf("removing %s\n", ident.toChars());
+                newSymbols[*pd] = null;
+            }
         }
 
         while (p < endp)
@@ -5924,7 +5947,7 @@ final class CParser(AST) : Parser!AST
                                  */
                                 AST.Expression e = new AST.IntegerExp(scanloc, intvalue, t);
                                 auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
-                                addVar(v);
+                                addSym(v);
                                 ++p;
                                 continue;
                             }
@@ -5947,7 +5970,7 @@ final class CParser(AST) : Parser!AST
                                  */
                                 AST.Expression e = new AST.RealExp(scanloc, floatvalue, t);
                                 auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
-                                addVar(v);
+                                addSym(v);
                                 ++p;
                                 continue;
                             }
@@ -5965,7 +5988,7 @@ final class CParser(AST) : Parser!AST
                                  */
                                 AST.Expression e = new AST.StringExp(scanloc, str[0 .. len], len, 1, postfix);
                                 auto v = new AST.VarDeclaration(scanloc, null, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
-                                addVar(v);
+                                addSym(v);
                                 ++p;
                                 continue;
                             }
@@ -6001,7 +6024,7 @@ final class CParser(AST) : Parser!AST
                             AST.TemplateParameters* tpl = new AST.TemplateParameters();
                             AST.Expression constraint = null;
                             auto tempdecl = new AST.TemplateDeclaration(exp.loc, id, tpl, constraint, decldefs, false);
-                            addVar(tempdecl);
+                            addSym(tempdecl);
                             ++p;
                             continue;
                         }
@@ -6092,7 +6115,7 @@ final class CParser(AST) : Parser!AST
                             AST.Dsymbols* decldefs = new AST.Dsymbols();
                             decldefs.push(fd);
                             auto tempdecl = new AST.TemplateDeclaration(exp.loc, id, tpl, null, decldefs, false);
-                            addVar(tempdecl);
+                            addSym(tempdecl);
 
                             ++p;
                             continue;
@@ -6103,11 +6126,29 @@ final class CParser(AST) : Parser!AST
                     }
                 }
             }
+            else if (p[0 .. 6] == "#undef")
+            {
+                p += 6;
+                nextToken();
+                //printf("undef %s\n", token.toChars());
+                if (token.value == TOK.identifier)
+                    removeSym(token.ident);
+            }
             // scan to end of line
             while (*p)
                 ++p;
             ++p; // advance to start of next line
             scanloc.linnum = scanloc.linnum + 1;
+        }
+
+        if (newSymbols.length)
+        {
+            assert(symbols, "symbols is null");
+            symbols.reserve(newSymbols.length);
+
+            foreach (sym; newSymbols)
+                if (sym) // undefined entries are null
+                    symbols.push(sym);
         }
 
         scanloc = scanlocSave;

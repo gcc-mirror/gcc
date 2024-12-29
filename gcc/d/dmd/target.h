@@ -198,7 +198,7 @@ public:
     unsigned fieldalign(Type *type);
     Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
     int isVectorTypeSupported(int sz, Type *type);
-    bool isVectorOpSupported(Type *type, EXP op, Type *t2 = NULL);
+    bool isVectorOpSupported(Type *type, EXP op, Type *t2 = nullptr);
     // ABI and backend.
     LINK systemLinkage();
     TypeTuple *toArgTypes(Type *t);

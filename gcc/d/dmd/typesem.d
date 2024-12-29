@@ -1686,7 +1686,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
             if (!ClassDeclaration.object)
             {
-                .error(Loc.initial, "missing or corrupt object.d");
+                ObjectNotFound(Loc.initial, cd.ident);
                 return error();
             }
 

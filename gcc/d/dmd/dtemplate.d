@@ -5767,7 +5767,7 @@ struct TemplateInstanceBox
         assert(this.ti.hash);
     }
 
-    size_t toHash() const @trusted pure nothrow
+    size_t toHash() const @safe pure nothrow
     {
         assert(ti.hash);
         return ti.hash;

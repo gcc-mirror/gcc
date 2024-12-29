@@ -28,6 +28,14 @@ enum PKG
     PKGpackage  // already determined that's an actual package
 };
 
+enum class Edition : unsigned char
+{
+    none = 0u,
+    legacy = 1u,
+    v2024 = 2u,
+    latest = 2u,
+};
+
 class Package : public ScopeDsymbol
 {
 public:
@@ -75,6 +83,7 @@ public:
     FileType filetype;  // source file type
     d_bool hasAlwaysInlines; // contains references to functions that must be inlined
     d_bool isPackageFile; // if it is a package.d
+    Edition edition;    // language edition that this module is compiled with
     Package *pkg;       // if isPackageFile is true, the Package that contains this package.d
     Strings contentImportedFiles;  // array of files whose content was imported
     int needmoduleinfo;

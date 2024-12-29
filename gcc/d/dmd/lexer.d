@@ -22,9 +22,11 @@ import dmd.errorsink;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
+import dmd.common.smallbuffer;
+import dmd.common.outbuffer;
+import dmd.common.charactertables;
 import dmd.root.array;
 import dmd.root.ctfloat;
-import dmd.common.outbuffer;
 import dmd.root.port;
 import dmd.root.rmem;
 import dmd.root.utf;
@@ -42,6 +44,8 @@ version (DMDLIB)
  */
 struct CompileEnv
 {
+    import dmd.common.charactertables;
+
     uint versionNumber;      /// __VERSION__
     const(char)[] date;      /// __DATE__
     const(char)[] time;      /// __TIME__
@@ -51,6 +55,10 @@ struct CompileEnv
     bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
     bool ddocOutput;         /// collect embedded documentation comments
     bool masm;               /// use MASM inline asm syntax
+
+    // these need a default otherwise tests won't work.
+    IdentifierCharLookup cCharLookupTable; /// C identifier table (set to the lexer by the C parser)
+    IdentifierCharLookup dCharLookupTable; /// D identifier table
 }
 
 /***********************************************************
@@ -65,6 +73,8 @@ class Lexer
     const(char)* p;         // current character
 
     Token token;
+
+    IdentifierCharLookup charLookup; /// Character table for identifiers
 
     // For ImportC
     bool Ccompile;              /// true if compiling ImportC
@@ -142,6 +152,8 @@ class Lexer
         {
             this.compileEnv.versionNumber = 1;
             this.compileEnv.vendor = "DLF";
+            this.compileEnv.cCharLookupTable = IdentifierCharLookup.forTable(IdentifierTable.LR);
+            this.compileEnv.dCharLookupTable = IdentifierCharLookup.forTable(IdentifierTable.LR);
         }
         //initKeywords();
         /* If first line starts with '#!', ignore the line
@@ -175,6 +187,11 @@ class Lexer
             }
             endOfLine();
         }
+
+        // setup the identifier table lookup functions
+        // C tables are setup in its parser constructor
+        // Due to us not knowing if we're in C at this point in time.
+        charLookup = this.compileEnv.dCharLookupTable;
     }
 
     /***********************
@@ -306,6 +323,8 @@ class Lexer
         t.blockComment = null;
         t.lineComment = null;
 
+        size_t universalCharacterName4, universalCharacterName8;
+
         while (1)
         {
             t.ptr = p;
@@ -395,10 +414,35 @@ class Lexer
                 continue; // skip white space
 
             case '\\':
-                if (Ccompile && (p[1] == '\r' || p[1] == '\n'))
+                if (Ccompile)
                 {
-                    ++p; // ignore \ followed by new line, like VC does
-                    continue;
+                    if (p[1] == '\r' || p[1] == '\n')
+                    {
+                        ++p; // ignore \ followed by new line, like VC does
+                        continue;
+                    }
+                    else if (p[1] == 'u')
+                    {
+                        // Universal Character Name (C) 2 byte
+                        // \uXXXX
+                        // let the main case handling for identifiers process this
+
+                        // case_indent will always increment, so subtract to prevent branching on the fast path
+                        p--;
+
+                        goto case_ident;
+                    }
+                    else if (p[1] == 'U')
+                    {
+                        // Universal Character Name (C) 4 byte
+                        // \UXXXXXXXX
+                        // let the main case handling for identifiers process this
+
+                        // case_indent will always increment, so subtract to prevent branching on the fast path
+                        p--;
+
+                        goto case_ident;
+                    }
                 }
                 goto default;
 
@@ -586,23 +630,161 @@ class Lexer
             case '_':
             case_ident:
                 {
-                    while (1)
+        IdentLoop: while (1)
                     {
+                        // If this is changed, change the decrement in C's universal character name code above
+                        // For syntax \uXXXX and \UXXXXXXXX
                         const c = *++p;
+
+                        // Is this the first character of the identifier
+                        // For the universal character name this will line up,
+                        //  for the main switch it won't since it wasn't the first,
+                        //  for the default it won't either because a decode increments.
+                        const isStartCharacter = t.ptr is p;
+
                         if (isidchar(c))
                             continue;
                         else if (c & 0x80)
                         {
                             const s = p;
                             const u = decodeUTF();
-                            if (isUniAlpha(u))
-                                continue;
-                            error(t.loc, "char 0x%04x not allowed in identifier", u);
+
+                            if (isStartCharacter)
+                            {
+                                if (charLookup.isStart(u))
+                                    continue;
+                                error(t.loc, "character 0x%04x is not allowed as a start character in an identifier", u);
+                            }
+                            else
+                            {
+                                if (charLookup.isContinue(u))
+                                    continue;
+                                error(t.loc, "character 0x%04x is not allowed as a continue character in an identifier", u);
+                            }
+
                             p = s;
+                        }
+                        else if (Ccompile && c == '\\')
+                        {
+                            uint times;
+                            const s = p;
+                            p++;
+
+                            if (*p == 'u')
+                            {
+                                // Universal Character Name (C) 2 byte
+                                // \uXXXX
+                                p++;
+                                times = 4;
+                            }
+                            else if (*p == 'U')
+                            {
+                                // Universal Character Name (C) 4 byte
+                                // \UXXXXXXXX
+                                p++;
+                                times = 8;
+                            }
+                            else
+                            {
+                                error(t.loc, "char 0x%x is not allowed to follow '\\' expecting a C universal character name in format \\uXXXX or \\UXXXXXXXX with hex digits instead of X with invalid u/U", *p);
+                                p = s;
+                                break;
+                            }
+
+                            foreach(_; 0 .. times)
+                            {
+                                const hc = *p;
+                                p++;
+
+                                if ((hc >= '0' && hc <= '9') || (hc >= 'a' && hc <= 'f') || (hc >= 'A' && hc <= 'F'))
+                                    continue;
+
+                                error(t.loc, "char 0x%x is not allowed to follow '\\' expecting a C universal character name in format \\uXXXX or \\UXXXXXXXX with hex digits instead of X with invalid hex digit", hc);
+                                p = s;
+                                break IdentLoop;
+                            }
+
+                            continue;
                         }
                         break;
                     }
-                    Identifier id = Identifier.idPool((cast(char*)t.ptr)[0 .. p - t.ptr], false);
+
+                    Identifier id;
+
+                    if (universalCharacterName4 > 0 || universalCharacterName8 > 0)
+                    {
+                        auto priorValidation = t.ptr[0 .. p - t.ptr];
+                        const(char)* priorVPtr = priorValidation.ptr;
+                        const possibleLength = (
+                            priorValidation.length - (
+                                (universalCharacterName4 * 6) +
+                                (universalCharacterName8 * 10)
+                            )) + (
+                                (universalCharacterName4 * 3) +
+                                (universalCharacterName8 * 4)
+                            );
+
+                        char[64] buffer = void;
+                        SmallBuffer!char sb = SmallBuffer!char(possibleLength, buffer[]);
+
+                        char[] storage = sb.extent;
+                        size_t offset;
+
+                        while(priorVPtr < &priorValidation[$-1] + 1)
+                        {
+                            if (*priorVPtr == '\\')
+                            {
+                                dchar tempDchar = 0;
+                                uint times;
+
+                                // universal character name (C)
+                                if (priorVPtr[1] == 'u')
+                                    times = 4;
+                                else if (priorVPtr[1] == 'U')
+                                    times = 8;
+                                else
+                                    assert(0, "ICE: Universal character name is 2 or 4 bytes only");
+                                priorVPtr += 2;
+
+                                foreach(_; 0 .. times)
+                                {
+                                    char c = *++priorVPtr;
+                                    if (c >= '0' && c <= '9')
+                                        c -= '0';
+                                    else if (c >= 'a' && c <= 'f')
+                                        c -= 'a' - 10;
+                                    else if (c >= 'A' && c <= 'F')
+                                        c -= 'A' - 10;
+
+                                    tempDchar <<= 4;
+                                    tempDchar |= c;
+                                }
+
+                                utf_encodeChar(&storage[offset], tempDchar);
+                                offset += utf_codeLengthChar(tempDchar);
+
+                                // Could be an error instead of a warning,
+                                //  but hey it was written specifically so why worry?
+                                if (priorVPtr is priorValidation.ptr)
+                                {
+                                    if (!charLookup.isStart(tempDchar))
+                                        warning(t.loc, "char 0x%x is not allowed start character for an identifier", tempDchar);
+                                }
+                                else
+                                {
+                                    if (!charLookup.isContinue(tempDchar))
+                                        warning(t.loc, "char 0x%x is not allowed continue character for an identifier", tempDchar);
+                                }
+                            }
+                            else
+                                storage[offset++] = *++priorVPtr;
+                        }
+
+                        id = Identifier.idPool(storage[0 .. offset], false);
+                    }
+                    else
+                        id = Identifier.idPool((cast(char*)t.ptr)[0 .. p - t.ptr], false);
+
                     t.ident = id;
                     t.value = cast(TOK)id.getValue();
 
@@ -1174,9 +1356,11 @@ class Lexer
                     if (c & 0x80)
                     {
                         c = decodeUTF();
-                        // Check for start of unicode identifier
-                        if (isUniAlpha(c))
+
+                        // Check for start of an identifier
+                        if (charLookup.isStart(c))
                             goto case_ident;
+
                         if (c == PS || c == LS)
                         {
                             endOfLine();
@@ -1688,7 +1872,7 @@ class Lexer
                     delimright = ']';
                 else if (c == '<')
                     delimright = '>';
-                else if (isalpha(c) || c == '_' || (c >= 0x80 && isUniAlpha(c)))
+                else if (isalpha(c) || c == '_' || (c >= 0x80 && charLookup.isStart(c)))
                 {
                     // Start of identifier; must be a heredoc
                     Token tok;
@@ -1736,7 +1920,9 @@ class Lexer
                 }
                 else if (c == delimright)
                     goto Ldone;
-                if (startline && (isalpha(c) || c == '_' || (c >= 0x80 && isUniAlpha(c))) && hereid)
+
+                // we're looking for a new identifier token
+                if (startline && (isalpha(c) || c == '_' || (c >= 0x80 && charLookup.isStart(c))) && hereid)
                 {
                     Token tok;
                     auto psave = p;
@@ -2988,6 +3174,11 @@ class Lexer
         eSink.deprecation(loc, format, args);
     }
 
+    void warning(T...)(const ref Loc loc, const(char)* format, T args)
+    {
+        eSink.warning(loc, format, args);
+    }
+
     void deprecation(T...)(const(char)* format, T args)
     {
         eSink.deprecation(token.loc, format, args);
@@ -3414,124 +3605,6 @@ class Lexer
         }
         printf("\n");
     }
-}
-
-
-/******************************* Private *****************************************/
-
-private:
-
-private enum LS = 0x2028;       // UTF line separator
-private enum PS = 0x2029;       // UTF paragraph separator
-
-/********************************************
- * Do our own char maps
- */
-private static immutable cmtable = ()
-{
-    ubyte[256] table;
-    foreach (const c; 0 .. table.length)
-    {
-        if ('0' <= c && c <= '7')
-            table[c] |= CMoctal;
-        if (c_isxdigit(c))
-            table[c] |= CMhex;
-        if (c_isalnum(c) || c == '_')
-            table[c] |= CMidchar;
-
-        switch (c)
-        {
-            case 'x': case 'X':
-            case 'b': case 'B':
-                table[c] |= CMzerosecond;
-                break;
-
-            case '0': .. case '9':
-            case 'e': case 'E':
-            case 'f': case 'F':
-            case 'l': case 'L':
-            case 'p': case 'P':
-            case 'u': case 'U':
-            case 'i':
-            case '.':
-            case '_':
-                table[c] |= CMzerosecond | CMdigitsecond;
-                break;
-
-            default:
-                break;
-        }
-
-        switch (c)
-        {
-            case '\\':
-            case '\n':
-            case '\r':
-            case 0:
-            case 0x1A:
-            case '\'':
-                break;
-            default:
-                if (!(c & 0x80))
-                    table[c] |= CMsinglechar;
-                break;
-        }
-    }
-    return table;
-}();
-
-private
-{
-    enum CMoctal  = 0x1;
-    enum CMhex    = 0x2;
-    enum CMidchar = 0x4;
-    enum CMzerosecond = 0x8;
-    enum CMdigitsecond = 0x10;
-    enum CMsinglechar = 0x20;
-}
-
-private bool isoctal(const char c) pure @nogc @safe
-{
-    return (cmtable[c] & CMoctal) != 0;
-}
-
-private bool ishex(const char c) pure @nogc @safe
-{
-    return (cmtable[c] & CMhex) != 0;
-}
-
-private bool isidchar(const char c) pure @nogc @safe
-{
-    return (cmtable[c] & CMidchar) != 0;
-}
-
-private bool isZeroSecond(const char c) pure @nogc @safe
-{
-    return (cmtable[c] & CMzerosecond) != 0;
-}
-
-private bool isDigitSecond(const char c) pure @nogc @safe
-{
-    return (cmtable[c] & CMdigitsecond) != 0;
-}
-
-private bool issinglechar(const char c) pure @nogc @safe
-{
-    return (cmtable[c] & CMsinglechar) != 0;
-}
-
-private bool c_isxdigit(const int c) pure @nogc @safe
-{
-    return (( c >= '0' && c <= '9') ||
-            ( c >= 'a' && c <= 'f') ||
-            ( c >= 'A' && c <= 'F'));
-}
-
-private bool c_isalnum(const int c) pure @nogc @safe
-{
-    return (( c >= '0' && c <= '9') ||
-            ( c >= 'a' && c <= 'z') ||
-            ( c >= 'A' && c <= 'Z'));
 }
 
 /******************************* Unittest *****************************************/

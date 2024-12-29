@@ -3274,7 +3274,7 @@ if (canSwapEndianness!T && n == T.sizeof)
     assert(c == littleEndianToNative!dchar(swappedC));
 }
 
-private T endianToNativeImpl(bool swap, T, size_t n)(ubyte[n] val) @nogc nothrow pure @safe
+private T endianToNativeImpl(bool swap, T, size_t n)(ubyte[n] val) @nogc nothrow pure @trusted
 if (__traits(isIntegral, T) && n == T.sizeof)
 {
     if (!__ctfe)

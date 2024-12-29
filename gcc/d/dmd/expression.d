@@ -3824,6 +3824,7 @@ extern (C++) final class CastExp : UnaExp
 {
     Type to;                    // type to cast to
     ubyte mod = cast(ubyte)~0;  // MODxxxxx
+    bool trusted; // assume cast is safe
 
     extern (D) this(const ref Loc loc, Expression e, Type t) @safe
     {

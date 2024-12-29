@@ -42,7 +42,7 @@ D_ATTRIBUTE_FORMAT(1, 2) void message(const char *format, ...);
 D_ATTRIBUTE_FORMAT(2, 3) void message(const Loc& loc, const char *format, ...);
 D_ATTRIBUTE_FORMAT(1, 2) void tip(const char *format, ...);
 
-D_ATTRIBUTE_FORMAT(2, 0) void verrorReport(const Loc& loc, const char *format, va_list ap, ErrorKind kind, const char *p1 = NULL, const char *p2 = NULL);
+D_ATTRIBUTE_FORMAT(2, 0) void verrorReport(const Loc& loc, const char *format, va_list ap, ErrorKind kind, const char *p1 = nullptr, const char *p2 = nullptr);
 D_ATTRIBUTE_FORMAT(2, 0) void verrorReportSupplemental(const Loc& loc, const char* format, va_list ap, ErrorKind kind);
 
 #if defined(__GNUC__) || defined(__clang__)

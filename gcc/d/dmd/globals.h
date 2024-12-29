@@ -13,6 +13,7 @@
 #include "root/dcompat.h"
 #include "root/ctfloat.h"
 #include "common/outbuffer.h"
+#include "common/charactertables.h"
 #include "root/filename.h"
 #include "compiler.h"
 
@@ -80,6 +81,16 @@ enum class FeatureState : unsigned char
     default_ = 0,  /// Not specified by the user
     disabled = 1,  /// Specified as `-revert=`
     enabled  = 2,  /// Specified as `-preview=`
+};
+
+/// Different identifier tables specifiable by CLI
+enum class CLIIdentifierTable : unsigned char
+{
+    default_ = 0, /// Not specified by user
+    C99      = 1, /// Tables from C99 standard
+    C11      = 2, /// Tables from C11 standard
+    UAX31    = 3, /// Tables from the Unicode Standard Annex 31: UNICODE IDENTIFIERS AND SYNTAX
+    All      = 4, /// The least restrictive set of all other tables
 };
 
 struct Output
@@ -200,6 +211,9 @@ struct Param
 
     CHECKACTION checkAction;       // action to take when bounds, asserts or switch defaults are violated
 
+    CLIIdentifierTable dIdentifierTable;
+    CLIIdentifierTable cIdentifierTable;
+
     DString  argv0;    // program name
     Array<const char *> modFileAliasStrings; // array of char*'s of -I module filename alias strings
     Array<const char *> imppath;     // array of char*'s of where to look for import modules
@@ -274,6 +288,9 @@ struct CompileEnv
     DString timestamp;
     d_bool previewIn;
     d_bool ddocOutput;
+    d_bool masm;
+    IdentifierCharLookup cCharLookupTable;
+    IdentifierCharLookup dCharLookupTable;
 };
 
 struct Global
@@ -290,6 +307,7 @@ struct Global
 
     Param params;
     unsigned errors;         // number of errors reported so far
+    unsigned deprecations;   // number of deprecations reported so far
     unsigned warnings;       // number of warnings reported so far
     unsigned gag;            // !=0 means gag reporting of errors & warnings
     unsigned gaggedErrors;   // number of errors reported while gagged

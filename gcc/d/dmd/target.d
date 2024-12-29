@@ -25,7 +25,8 @@
 
 module dmd.target;
 
-import dmd.globals : Param, CHECKENABLE;
+import dmd.astenums : CHECKENABLE;
+import dmd.globals : Param;
 
 enum CPU : ubyte
 {

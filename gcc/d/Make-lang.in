@@ -84,6 +84,7 @@ D_FRONTEND_OBJS = \
 	d/arrayop.o \
 	d/arraytypes.o \
 	d/attrib.o \
+	d/attribsem.o \
 	d/ast_node.o \
 	d/astcodegen.o \
 	d/astenums.o \
@@ -94,7 +95,9 @@ D_FRONTEND_OBJS = \
 	d/chkformat.o \
 	d/clone.o \
 	d/common-bitfields.o \
+	d/common-charactertables.o \
 	d/common-file.o \
+	d/common-identifiertables.o \
 	d/common-outbuffer.o \
 	d/common-smallbuffer.o \
 	d/compiler.o \

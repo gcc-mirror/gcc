@@ -424,9 +424,12 @@ private extern(C++) final class Semantic3Visitor : Visitor
                             .error(funcdecl.loc, "%s `%s` `object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions", funcdecl.kind, funcdecl.toPrettyChars);
                         else
                             .error(funcdecl.loc, "%s `%s` `object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions", funcdecl.kind, funcdecl.toPrettyChars);
-                        fatal();
+                        funcdecl.errors = true;
                     }
+                }
 
+                if (!funcdecl.errors && f.linkage == LINK.d)
+                {
                     // Declare _arguments[]
                     funcdecl.v_arguments = new VarDeclaration(funcdecl.loc, Type.typeinfotypelist.type, Id._arguments_typeinfo, null);
                     funcdecl.v_arguments.storage_class |= STC.temp | STC.parameter;
@@ -442,7 +445,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     sc2.insert(_arguments);
                     _arguments.parent = funcdecl;
                 }
-                if (f.linkage == LINK.d || f.parameterList.length)
+                if (!funcdecl.errors && (f.linkage == LINK.d || f.parameterList.length))
                 {
                     // Declare _argptr
                     Type t = target.va_listType(funcdecl.loc, sc);
@@ -906,26 +909,26 @@ private extern(C++) final class Semantic3Visitor : Visitor
                             }
                         }
 
-                        const hasCopyCtor = exp.type.ty == Tstruct && (cast(TypeStruct)exp.type).sym.hasCopyCtor;
-                        // if a copy constructor is present, the return type conversion will be handled by it
-                        if (!(hasCopyCtor && exp.isLvalue()))
+                        // Function returns a reference
+                        if (f.isref)
                         {
-                            if (f.isref && !MODimplicitConv(exp.type.mod, tret.mod) && !tret.isTypeSArray())
+                            if (!MODimplicitConv(exp.type.mod, tret.mod) && !tret.isTypeSArray())
                                 error(exp.loc, "expression `%s` of type `%s` is not implicitly convertible to return type `ref %s`",
                                       exp.toChars(), exp.type.toChars(), tret.toChars());
                             else
                                 exp = exp.implicitCastTo(sc2, tret);
-                        }
 
-                        if (f.isref)
-                        {
-                            // Function returns a reference
                             exp = exp.toLvalue(sc2, "`ref` return");
-                            checkReturnEscapeRef(sc2, exp, false);
+                            checkReturnEscapeRef(*sc2, exp, false);
                             exp = exp.optimize(WANTvalue, /*keepLvalue*/ true);
                         }
                         else
                         {
+                            // if a copy constructor is present, the return type conversion will be handled by it
+                            const hasCopyCtor = exp.type.ty == Tstruct && (cast(TypeStruct)exp.type).sym.hasCopyCtor;
+                            if (!hasCopyCtor || !exp.isLvalue())
+                                exp = exp.implicitCastTo(sc2, tret);
+
                             exp = exp.optimize(WANTvalue);
 
                             /* https://issues.dlang.org/show_bug.cgi?id=10789
@@ -935,7 +938,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                                 exp = doCopyOrMove(sc2, exp, f.next);
 
                             if (tret.hasPointers())
-                                checkReturnEscape(sc2, exp, false);
+                                checkReturnEscape(*sc2, exp, false);
                         }
 
                         exp = checkGC(sc2, exp);

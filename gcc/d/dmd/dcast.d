@@ -69,7 +69,7 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
 {
     Expression visit(Expression e)
     {
-        // printf("Expression.implicitCastTo(%s of type %s) => %s\n", e.toChars(), e.type.toChars(), t.toChars());
+        //printf("Expression.implicitCastTo(%s of type %s) => %s\n", e.toChars(), e.type.toChars(), t.toChars());
         if (const match = (sc && sc.flags & SCOPE.Cfile) ? e.cimplicitConvTo(t) : e.implicitConvTo(t))
         {
             // no need for an extra cast when matching is exact
@@ -2257,7 +2257,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         Type tb = t.toBasetype();
         if (tb.ty == Tarray)
         {
-            if (checkArrayLiteralEscape(sc, ae, false))
+            if (checkArrayLiteralEscape(*sc, ae, false))
             {
                 return ErrorExp.get();
             }

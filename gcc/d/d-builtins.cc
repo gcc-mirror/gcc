@@ -522,6 +522,7 @@ d_init_versions (void)
   targetdm.d_cpu_versions ();
   targetdm.d_os_versions ();
 
+  VersionCondition::addPredefinedGlobalIdent ("CppRuntime_GNU");
   VersionCondition::addPredefinedGlobalIdent ("CppRuntime_Gcc");
 }
 

@@ -10,6 +10,9 @@
  */
 module dmd.root.string;
 
+import core.stdc.string;
+import dmd.root.rmem;
+
 /// Slices a `\0`-terminated C-string, excluding the terminator
 inout(char)[] toDString (inout(char)* s) pure nothrow @nogc
 {
@@ -85,6 +88,23 @@ unittest
     assert("Hello world".toCStringThen!((v) => v == "Hello world\0"));
     assert("Hello world\0".toCStringThen!((v) => v == "Hello world\0\0"));
     assert(null.toCStringThen!((v) => v == "\0"));
+}
+
+/*********************************************
+ * Convert a D string to a C string by allocating memory,
+ * copying it, and adding a terminating 0.
+ * Params:
+ *      s = string to copy
+ * Result:
+ *      0-terminated copy of s
+ */
+char[] toCString(scope const(char)[] s) nothrow
+{
+    const length = s.length;
+    char* p = cast(char*)mem.xmalloc_noscan(length + 1);
+    memcpy(p, s.ptr, length);
+    p[length] = 0;
+    return p[0 .. length];
 }
 
 /**
@@ -274,6 +294,15 @@ do
     return true;
 }
 
+///ditto
+nothrow @nogc pure @safe
+bool startsWith(scope const(char)[] str, scope const(char)[] prefix)
+{
+    if (str.length < prefix.length)
+        return false;
+    return str[0 .. prefix.length] == prefix;
+}
+
 ///
 @system pure nothrow @nogc
 unittest
@@ -285,4 +314,171 @@ unittest
     assert(ptr.startsWith("12"));
     assert(ptr.startsWith("123"));
     assert(!ptr.startsWith("1234"));
+}
+
+/**********************************
+ * Take `text` and turn it into an InputRange that emits
+ * slices into `text` for each line.
+ * Params:
+ *  text = array of characters
+ * Returns:
+ *  InputRange accessing `text` as a sequence of lines
+ * Reference:
+ *  `std.string.splitLines()`
+ */
+auto splitLines(const char[] text)
+{
+    struct Range
+    {
+      @safe:
+      @nogc:
+      nothrow:
+      pure:
+      private:
+
+        const char[] text;
+        size_t index;       // index of start of line
+        size_t eolIndex;    // index of end of line before newline characters
+        size_t nextIndex;   // index past end of line
+
+        public this(const char[] text)
+        {
+            this.text = text;
+        }
+
+        public bool empty() { return index == text.length; }
+
+        public void popFront() { advance(); index = nextIndex; }
+
+        public const(char)[] front() { advance(); return text[index .. eolIndex]; }
+
+        private void advance()
+        {
+            if (index != nextIndex) // if already advanced
+                return;
+
+            for (size_t i = index; i < text.length; ++i)
+            {
+                switch (text[i])
+                {
+                    case '\v', '\f', '\n':
+                        eolIndex = i;
+                        nextIndex = i + 1;
+                        return;
+
+                    case '\r':
+                        if (i + 1 < text.length && text[i + 1] == '\n') // decode "\r\n"
+                        {
+                            eolIndex = i;
+                            nextIndex = i + 2;
+                            return;
+                        }
+                        eolIndex = i;
+                        nextIndex = i + 1;
+                        return;
+
+                    /* Manually decode:
+                     *  NEL is C2 85
+                     */
+                    case 0xC2:
+                        if (i + 1 < text.length && text[i + 1] == 0x85)
+                        {
+                            eolIndex = i;
+                            nextIndex = i + 2;
+                            return;
+                        }
+                        break;
+
+                    /* Manually decode:
+                     *  lineSep is E2 80 A8
+                     *  paraSep is E2 80 A9
+                     */
+                    case 0xE2:
+                        if (i + 2 < text.length &&
+                            text[i + 1] == 0x80 &&
+                            (text[i + 2] == 0xA8 || text[i + 2] == 0xA9)
+                           )
+                        {
+                            eolIndex = i;
+                            nextIndex = i + 3;
+                            return;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    return Range(text);
+}
+
+private struct FindSplit
+{
+@nogc nothrow pure @safe:
+    const(char)[][3] elem;
+
+    ref const(char)[] opIndex(size_t i) scope return { return elem[i]; }
+    bool opCast() const scope { return elem[1].length > 0; }
+}
+
+/**
+Find a substring in a string and split the string into before and after parts.
+Params:
+  str = string to look into
+  needle = substring to find in str (must not be empty)
+Returns:
+   a `FindSplit` object that casts to `true` iff `needle` was found inside `str`.
+   In that case, `split[1]` is the needle, and `split[0]`/`split[2]` are before/after the needle.
+*/
+FindSplit findSplit(return scope const(char)[] str, scope const(char)[] needle)
+{
+    if (needle.length > str.length)
+        return FindSplit([str, null, null]);
+
+    foreach (i; 0 .. str.length - needle.length + 1)
+    {
+        if (str[i .. i+needle.length] == needle[])
+            return FindSplit([ str[0 .. i], str[i .. i+needle.length], str[i+needle.length .. $] ]);
+    }
+    return FindSplit([str, null, null]);
+}
+
+unittest
+{
+    auto s = findSplit("a b c", "c");
+    assert(s[0] == "a b ");
+    assert(s[1] == "c");
+    assert(s[2] == "");
+    auto s1 = findSplit("a b c", "b");
+    assert(s1[0] == "a ");
+    assert(s1[1] == "b");
+    assert(s1[2] == " c");
+    assert(!findSplit("a b c", "d"));
+    assert(!findSplit("", "d"));
+}
+
+/**
+Find a string inbetween two substrings
+Params:
+  str = string to look into
+  l = substring to find on the left
+  r = substring to find on the right
+Returns:
+   substring of `str` inbetween `l` and `r`
+*/
+const(char)[] findBetween(const(char)[] str, const(char)[] l, const(char)[] r)
+{
+    if (auto s0 = str.findSplit(l))
+        if (auto s1 = s0[2].findSplit(r))
+            return s1[0];
+    return null;
+}
+
+unittest
+{
+    assert(findBetween("a b c", "a ", " c") == "b");
+    assert(findBetween("a b c", "a ", " d") == null);
 }

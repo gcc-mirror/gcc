@@ -476,7 +476,7 @@ struct Token
         Identifier *ident;
     };
 
-    Token() : next(NULL) {}
+    Token() : next(nullptr) {}
     const char *toChars() const;
 
     static const char *toChars(TOK value);

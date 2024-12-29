@@ -141,7 +141,7 @@ struct OutBuffer
     memory buffer. The config variables `notlinehead`, `doindent` etc. are
     not changed.
     */
-    extern (C++) void destroy() pure nothrow @trusted
+    extern (C++) void destroy() pure nothrow
     {
         dtor();
         fileMapping = null;
@@ -247,7 +247,7 @@ struct OutBuffer
     /**
      * Writes a 16 bit value, no reserve check.
      */
-    @trusted nothrow
+    nothrow
     void write16n(int v)
     {
         auto x = cast(ushort) v;
@@ -367,7 +367,6 @@ struct OutBuffer
     }
 
     // Position buffer to accept the specified number of bytes at offset
-    @trusted
     void position(size_t where, size_t nbytes) nothrow
     {
         if (where + nbytes > data.length)
@@ -382,7 +381,7 @@ struct OutBuffer
     /**
      * Writes an 8 bit byte, no reserve check.
      */
-    extern (C++) @trusted nothrow
+    extern (C++) nothrow @safe
     void writeByten(int b)
     {
         this.data[offset++] = cast(ubyte) b;

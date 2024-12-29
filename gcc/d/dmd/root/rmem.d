@@ -318,7 +318,7 @@ Params:
 
 Returns: A null-terminated copy of the input array.
 */
-extern (D) char[] xarraydup(const(char)[] s) pure nothrow
+extern (D) char[] xarraydup(scope const(char)[] s) pure nothrow
 {
     if (!s)
         return null;

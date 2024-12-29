@@ -448,6 +448,8 @@ immutable Msgtable[] msgtable =
     { "outp"},
     { "outpl"},
     { "outpw"},
+    { "builtinsModuleName", "builtins" },
+    { "ctfeWrite", "__ctfeWrite" },
 
     // Traits
     { "isAbstractClass" },
@@ -529,6 +531,9 @@ immutable Msgtable[] msgtable =
     { "udaMustUse", "mustuse" },
     { "udaStandalone", "standalone" },
 
+    // Editions
+    { "__edition_latest_do_not_use", },
+
     // C names, for undefined identifier error messages
     { "NULL" },
     { "TRUE" },
@@ -553,7 +558,7 @@ immutable Msgtable[] msgtable =
     { "_align", "align" },
     { "aligned" },
     { "__pragma", "pragma" },
-    { "builtins", "__builtins" },
+    { "importc_builtins", "__importc_builtins" },
     { "builtin_va_list", "__builtin_va_list" },
     { "builtin_va_arg", "__builtin_va_arg" },
     { "va_list_tag", "__va_list_tag" },

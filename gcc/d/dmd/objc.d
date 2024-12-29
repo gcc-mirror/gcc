@@ -17,6 +17,7 @@ import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
+import dmd.attribsem;
 import dmd.cond;
 import dmd.dclass;
 import dmd.declaration;

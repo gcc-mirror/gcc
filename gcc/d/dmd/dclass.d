@@ -26,6 +26,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.errors;
 import dmd.func;
+import dmd.funcsem;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;

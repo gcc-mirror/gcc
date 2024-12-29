@@ -109,6 +109,7 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                                      | Purpose                                                           |
 |-------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| [attribsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/attribsem.d)               | Attribute semantics                                               |
 | [dsymbolsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dsymbolsem.d)             | Do semantic 1 pass (symbol identifiers/types)                     |
 | [enumsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/enumsem.d)                   | Enum semantics                                                    |
 | [funcsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/funcsem.d)                   | Function semantics                                                |

@@ -35,7 +35,6 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.errors;
 import dmd.expression;
-import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
 import dmd.hdrgen : visibilityToBuffer;
@@ -1121,21 +1120,6 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
         return udas;
     }
 
-    Expressions* getAttributes()
-    {
-        if (auto sc = _scope)
-        {
-            _scope = null;
-            arrayExpressionSemantic(atts.peekSlice(), sc);
-        }
-        auto exps = new Expressions();
-        if (userAttribDecl && userAttribDecl !is this)
-            exps.push(new TupleExp(Loc.initial, userAttribDecl.getAttributes()));
-        if (atts && atts.length)
-            exps.push(new TupleExp(Loc.initial, atts));
-        return exps;
-    }
-
     override const(char)* kind() const
     {
         return "UserAttribute";
@@ -1229,43 +1213,6 @@ bool isCoreUda(Dsymbol sym, Identifier ident)
 
     auto _module = sym.parent.isModule();
     return _module && _module.isCoreModule(Id.attribute);
-}
-
-/**
- * Iterates the UDAs attached to the given symbol.
- *
- * Params:
- *  sym = the symbol to get the UDAs from
- *  sc = scope to use for semantic analysis of UDAs
- *  dg = called once for each UDA
- *
- * Returns:
- *  If `dg` returns `!= 0`, stops the iteration and returns that value.
- *  Otherwise, returns 0.
- */
-int foreachUda(Dsymbol sym, Scope* sc, int delegate(Expression) dg)
-{
-    if (!sym.userAttribDecl)
-        return 0;
-
-    auto udas = sym.userAttribDecl.getAttributes();
-    arrayExpressionSemantic(udas.peekSlice(), sc, true);
-
-    return udas.each!((uda) {
-        if (!uda.isTupleExp())
-            return 0;
-
-        auto exps = uda.isTupleExp().exps;
-
-        return exps.each!((e) {
-            assert(e);
-
-            if (auto result = dg(e))
-                return result;
-
-            return 0;
-        });
-    });
 }
 
 /**

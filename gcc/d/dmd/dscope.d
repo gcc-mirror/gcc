@@ -830,12 +830,18 @@ extern (C++) struct Scope
     /// Returns: whether to raise DIP1000 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
     extern (D) FeatureState useDIP1000()
     {
-        return (flags & SCOPE.dip1000) ? FeatureState.enabled : FeatureState.disabled;
+        return (flags & SCOPE.dip1000 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
     }
 
     /// Returns: whether to raise DIP25 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
     extern (D) FeatureState useDIP25()
     {
-        return (flags & SCOPE.dip25) ? FeatureState.enabled : FeatureState.disabled;
+        return (flags & SCOPE.dip25 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
+    }
+
+    /// Returns: whether this scope compiles with `edition` or later
+    extern (D) bool hasEdition(Edition edition)
+    {
+        return _module && _module.edition >= edition;
     }
 }

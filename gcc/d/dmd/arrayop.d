@@ -145,7 +145,10 @@ Expression arrayOp(BinExp e, Scope* sc)
         if (auto te = id.isTemplateExp())
             arrayOp = te.td;
         else
-            ObjectNotFound(idArrayOp);   // fatal error
+        {
+            ObjectNotFound(e.loc, idArrayOp);   // fatal error
+            return ErrorExp.get();
+        }
     }
 
     auto fd = resolveFuncCall(e.loc, sc, arrayOp, tiargs, null, ArgumentList(args), FuncResolveFlag.standard);

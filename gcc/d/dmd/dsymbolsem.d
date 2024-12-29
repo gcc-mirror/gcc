@@ -21,6 +21,7 @@ import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.astenums;
 import dmd.attrib;
+import dmd.attribsem;
 import dmd.clone;
 import dmd.cond;
 import dmd.dcast;
@@ -1072,8 +1073,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // Calculate type size + safety checks
         if (sc && sc.func)
         {
-            if (dsym._init && dsym._init.isVoidInitializer())
+            if (dsym._init && dsym._init.isVoidInitializer() && !(dsym.storage_class & STC.temp))
             {
+                // Don't do these checks for STC.temp vars because the generated `opAssign`
+                // for a struct with postblit and destructor void initializes a temporary
+                // __swap variable, which can be trusted
 
                 if (dsym.type.hasPointers()) // also computes type size
                     sc.setUnsafe(false, dsym.loc,
@@ -1081,9 +1085,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 else if (dsym.type.hasInvariant())
                     sc.setUnsafe(false, dsym.loc,
                         "`void` initializers for structs with invariants are not allowed in safe functions");
-                else if (dsym.type.hasSystemFields())
+                else if (dsym.type.toBasetype().ty == Tbool)
                     sc.setUnsafePreview(global.params.systemVariables, false, dsym.loc,
-                        "`void` initializers for `@system` variables not allowed in safe functions");
+                        "a `bool` must be 0 or 1, so void intializing it is not allowed in safe functions");
+                else if (dsym.type.hasUnsafeBitpatterns())
+                    sc.setUnsafePreview(global.params.systemVariables, false, dsym.loc,
+                        "`void` initializers for types with unsafe bit patterns are not allowed in safe functions");
             }
             else if (!dsym._init &&
                      !(dsym.storage_class & (STC.static_ | STC.extern_ | STC.gshared | STC.manifest | STC.field | STC.parameter)) &&
@@ -1251,7 +1258,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                                 {
                                     import dmd.escape : setUnsafeDIP1000;
                                     const inSafeFunc = sc.func && sc.func.isSafeBypassingInference();   // isSafeBypassingInference may call setUnsafe().
-                                    if (sc.setUnsafeDIP1000(false, dsym.loc, "`scope` allocation of `%s` requires that constructor be annotated with `scope`", dsym))
+                                    if (setUnsafeDIP1000(*sc, false, dsym.loc, "`scope` allocation of `%s` requires that constructor be annotated with `scope`", dsym))
                                         errorSupplemental(ne.member.loc, "is the location of the constructor");
                                 }
                                 ne.onstack = 1;
@@ -3379,8 +3386,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             {
                 void badObjectDotD()
                 {
-                    .error(cldec.loc, "%s `%s` missing or corrupt object.d", cldec.kind, cldec.toPrettyChars);
-                    fatal();
+                    ObjectNotFound(cldec.loc, cldec.ident);
                 }
 
                 if (!cldec.object || cldec.object.errors)
@@ -5295,6 +5301,24 @@ void aliasSemantic(AliasDeclaration ds, Scope* sc)
     // Detect `alias sym = sym;` to prevent creating loops in overload overnext lists.
     if (auto tident = ds.type.isTypeIdentifier())
     {
+        if (sc.hasEdition(Edition.v2024) && tident.idents.length)
+        {
+            alias mt = tident;
+            Dsymbol pscopesym;
+            Dsymbol s = sc.search(ds.loc, mt.ident, pscopesym);
+            // detect `alias a = var1.member_var;` which confusingly resolves to
+            // `typeof(var1).member_var`, which can be valid inside the aggregate type
+            if (s && s.isVarDeclaration() &&
+                mt.ident != Id.This && mt.ident != Id._super)
+            {
+                s = tident.toDsymbol(sc);
+                if (s && s.isVarDeclaration()) {
+                    error(mt.loc, "cannot alias member of variable `%s`", mt.ident.toChars());
+                    errorSupplemental(mt.loc, "Use `typeof(%s)` instead to preserve behaviour",
+                        mt.ident.toChars());
+                }
+            }
+        }
         // Selective imports are allowed to alias to the same name `import mod : sym=sym`.
         if (!ds._import)
         {

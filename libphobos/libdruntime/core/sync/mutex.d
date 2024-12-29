@@ -317,7 +317,7 @@ unittest
             cargo = 42;
         }
 
-        void useResource() shared @safe nothrow @nogc
+        void useResource() shared @trusted nothrow @nogc
         {
             mtx.lock_nothrow();
             (cast() cargo) += 1;

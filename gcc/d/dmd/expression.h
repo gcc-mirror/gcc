@@ -474,7 +474,7 @@ public:
     d_bool isOriginal;            // used when moving instances to indicate `this is this.origin`
     OwnedBy ownedByCtfe;
 
-    static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = NULL);
+    static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = nullptr);
     bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
 

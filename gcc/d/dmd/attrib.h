@@ -17,6 +17,11 @@ class Expression;
 class Condition;
 class StaticForeach;
 
+namespace dmd
+{
+    Expressions *getAttributes(UserAttributeDeclaration *a);
+}
+
 /**************************************************************/
 
 class AttribDeclaration : public Dsymbol
@@ -226,7 +231,6 @@ public:
 
     UserAttributeDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    Expressions *getAttributes();
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };

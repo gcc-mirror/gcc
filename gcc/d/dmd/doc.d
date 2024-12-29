@@ -2107,42 +2107,12 @@ int getMarkdownIndent(ref OutBuffer buf, size_t from, size_t to) @safe
 }
 
 /************************************************
- * Scan forward to one of:
- *      start of identifier
- *      beginning of next line
- *      end of buf
- */
-size_t skiptoident(ref OutBuffer buf, size_t i) @safe
-{
-    const slice = buf[];
-    while (i < slice.length)
-    {
-        dchar c;
-        size_t oi = i;
-        if (utf_decodeChar(slice, i, c))
-        {
-            /* Ignore UTF errors, but still consume input
-             */
-            break;
-        }
-        if (c >= 0x80)
-        {
-            if (!isUniAlpha(c))
-                continue;
-        }
-        else if (!(isalpha(c) || c == '_' || c == '\n'))
-            continue;
-        i = oi;
-        break;
-    }
-    return i;
-}
-
-/************************************************
  * Scan forward past end of identifier.
  */
 size_t skippastident(ref OutBuffer buf, size_t i) @safe
 {
+    import dmd.common.charactertables;
+
     const slice = buf[];
     while (i < slice.length)
     {
@@ -2156,7 +2126,8 @@ size_t skippastident(ref OutBuffer buf, size_t i) @safe
         }
         if (c >= 0x80)
         {
-            if (isUniAlpha(c))
+            // we don't care if it is start/continue here
+            if (isAnyIdentifierCharacter(c))
                 continue;
         }
         else if (isalnum(c) || c == '_')
@@ -2173,6 +2144,8 @@ size_t skippastident(ref OutBuffer buf, size_t i) @safe
  */
 size_t skipPastIdentWithDots(ref OutBuffer buf, size_t i) @safe
 {
+    import dmd.common.charactertables;
+
     const slice = buf[];
     bool lastCharWasDot;
     while (i < slice.length)
@@ -2203,7 +2176,8 @@ size_t skipPastIdentWithDots(ref OutBuffer buf, size_t i) @safe
         {
             if (c >= 0x80)
             {
-                if (isUniAlpha(c))
+                // we don't care if it is start/continue here
+                if (isAnyIdentifierCharacter(c))
                 {
                     lastCharWasDot = false;
                     continue;
@@ -5249,6 +5223,8 @@ bool isCVariadicArg(const(char)[] p) @nogc nothrow pure @safe
 @trusted
 bool isIdStart(const(char)* p) @nogc nothrow pure
 {
+    import dmd.common.charactertables;
+
     dchar c = *p;
     if (isalpha(c) || c == '_')
         return true;
@@ -5257,7 +5233,7 @@ bool isIdStart(const(char)* p) @nogc nothrow pure
         size_t i = 0;
         if (utf_decodeChar(p[0 .. 4], i, c))
             return false; // ignore errors
-        if (isUniAlpha(c))
+        if (isAnyStart(c))
             return true;
     }
     return false;
@@ -5269,6 +5245,8 @@ bool isIdStart(const(char)* p) @nogc nothrow pure
 @trusted
 bool isIdTail(const(char)* p) @nogc nothrow pure
 {
+    import dmd.common.charactertables;
+
     dchar c = *p;
     if (isalnum(c) || c == '_')
         return true;
@@ -5277,7 +5255,7 @@ bool isIdTail(const(char)* p) @nogc nothrow pure
         size_t i = 0;
         if (utf_decodeChar(p[0 .. 4], i, c))
             return false; // ignore errors
-        if (isUniAlpha(c))
+        if (isAnyContinue(c))
             return true;
     }
     return false;

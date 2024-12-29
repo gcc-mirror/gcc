@@ -233,6 +233,15 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     }
                     else
                     {
+                        static if (is(typeof(mod.edition)))
+                            if (exps && exps.length > 0)
+                                if (auto id = (*exps)[0].isIdentifierExp())
+                                    if (id.ident == Id.__edition_latest_do_not_use)
+                                    {
+                                        mod.edition = Edition.latest;
+                                        continue;
+                                    }
+
                         udas = AST.UserAttributeDeclaration.concat(udas, exps);
                     }
                     if (stc)
@@ -5960,9 +5969,18 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 goto Lexp;
             goto case;
 
+        // FunctionLiteral `auto ref (`
+        case TOK.auto_:
+            if (peekNext() == TOK.ref_ && peekNext2() == TOK.leftParenthesis)
+                goto Lexp;
+            goto Ldeclaration;
+        case TOK.ref_:
+            if (peekNext() == TOK.leftParenthesis)
+                goto Lexp;
+            goto Ldeclaration;
+
         case TOK.alias_:
         case TOK.const_:
-        case TOK.auto_:
         case TOK.abstract_:
         case TOK.extern_:
         case TOK.align_:
@@ -5972,7 +5990,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         case TOK.deprecated_:
         case TOK.nothrow_:
         case TOK.pure_:
-        case TOK.ref_:
         case TOK.gshared:
         case TOK.at:
         case TOK.struct_:
@@ -9580,9 +9597,9 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
     void usageOfBodyKeyword()
     {
-        version (none)  // disable obsolete warning
+        if (mod.edition >= Edition.v2024)
         {
-            eSink.warning(token.loc, "usage of identifer `body` as a keyword is obsolete. Use `do` instead.");
+            eSink.error(token.loc, "usage of identifer `body` as a keyword is obsolete. Use `do` instead.");
         }
     }
 }

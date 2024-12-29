@@ -934,6 +934,10 @@ d_post_options (const char ** fn)
      fields with params.  */
   global.compileEnv.previewIn = global.params.previewIn;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
+  global.compileEnv.cCharLookupTable =
+    IdentifierCharLookup::forTable (IdentifierTable::C11);
+  global.compileEnv.dCharLookupTable =
+    IdentifierCharLookup::forTable (IdentifierTable::LR);
 
   if (warn_return_type == -1)
     warn_return_type = 0;

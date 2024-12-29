@@ -19,11 +19,13 @@ import core.sys.posix.fcntl;
 import core.sys.posix.unistd;
 import core.sys.windows.winbase;
 import core.sys.windows.winnt;
+
 import dmd.root.filename;
 import dmd.root.rmem;
 import dmd.root.string;
 
 import dmd.common.file;
+import dmd.common.outbuffer;
 import dmd.common.smallbuffer;
 
 nothrow:
@@ -76,62 +78,52 @@ struct File
     }
 
 nothrow:
-    /// Read the full content of a file.
-    static ReadResult read(const(char)[] name)
+    /** Read the full content of a file, and append it to `buffer`
+     * Params:
+     *  name = name of file
+     *  buffer = file contents appended to it
+     * Returns:
+     *  false = success, true = failed
+     */
+    static bool read(const char[] name, ref OutBuffer buffer)
     {
-        ReadResult result;
+        enum Success = false;
+        enum Failure = true;
 
         version (Posix)
         {
-            size_t size;
-            stat_t buf;
-            ssize_t numread;
-            //printf("File::read('%s')\n",name);
+            //printf("File::read('%.*s')\n", cast(int)name.length, name.ptr);
             int fd = name.toCStringThen!(slice => open(slice.ptr, O_RDONLY));
             if (fd == -1)
             {
                 //perror("\topen error");
-                return result;
+                return Failure;
             }
             //printf("\tfile opened\n");
-            if (fstat(fd, &buf))
+            stat_t statbuf;
+            if (fstat(fd, &statbuf))
             {
                 //perror("\tfstat error");
                 close(fd);
-                return result;
+                return Failure;
             }
-            size = cast(size_t)buf.st_size;
-            ubyte* buffer = cast(ubyte*)mem.xmalloc_noscan(size + 4);
-            numread = .read(fd, buffer, size);
+            size_t size = cast(size_t)statbuf.st_size;
+            auto buf = buffer.allocate(size);
+            ssize_t numread = .read(fd, buf.ptr, size);
             if (numread != size)
             {
                 //perror("\tread error");
-                goto err2;
+                close(fd);
+                return Failure;
             }
             if (close(fd) == -1)
             {
                 //perror("\tclose error");
-                goto err;
+                return Failure;
             }
-            // Always store a wchar ^Z past end of buffer so scanner has a
-            // sentinel, although ^Z got obselete, so fill with two 0s and add
-            // two more so lexer doesn't read pass the buffer.
-            buffer[size .. size + 4] = 0;
-
-            result.success = true;
-            result.buffer.data = buffer[0 .. size];
-            return result;
-        err2:
-            close(fd);
-        err:
-            mem.xfree(buffer);
-            return result;
         }
         else version (Windows)
         {
-            DWORD size;
-            DWORD numread;
-
             // work around Windows file path length limitation
             // (see documentation for extendedPathThen).
             HANDLE h = name.extendedPathThen!
@@ -143,32 +135,24 @@ nothrow:
                                   FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
                                   null));
             if (h == INVALID_HANDLE_VALUE)
-                return result;
-            size = GetFileSize(h, null);
-            ubyte* buffer = cast(ubyte*)mem.xmalloc_noscan(size + 4);
-            if (ReadFile(h, buffer, size, &numread, null) != TRUE)
-                goto err2;
-            if (numread != size)
-                goto err2;
+                return Failure;
+            DWORD size = GetFileSize(h, null);
+            auto buf = buffer.allocate(size);
+            DWORD numread;
+            if (ReadFile(h, buf.ptr, size, &numread, null) != TRUE ||
+                numread != size)
+            {
+                CloseHandle(h);
+                return Failure;
+            }
             if (!CloseHandle(h))
-                goto err;
-            // Always store a wchar ^Z past end of buffer so scanner has a
-            // sentinel, although ^Z got obselete, so fill with two 0s and add
-            // two more so lexer doesn't read pass the buffer.
-            buffer[size .. size + 4] = 0;
-            result.success = true;
-            result.buffer.data = buffer[0 .. size];
-            return result;
-        err2:
-            CloseHandle(h);
-        err:
-            mem.xfree(buffer);
-            return result;
+                return Failure;
         }
         else
         {
-            assert(0);
+            static assert(0);
         }
+        return Success;
     }
 
     /// Write a file, returning `true` on success.

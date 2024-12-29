@@ -13,6 +13,7 @@ module dmd.root.filename;
 
 import core.stdc.ctype;
 import core.stdc.errno;
+import core.stdc.stdio;
 import core.stdc.string;
 
 import dmd.common.file;
@@ -270,6 +271,20 @@ nothrow:
     }
 
     /********************************
+     * Slice of file name without extension.
+     * Params:
+     *  filename = file name
+     * Returns:
+     *  the slice
+     */
+    extern (D) static const(char)[] sansExt(const char[] filename)
+    {
+        auto e = ext(filename);
+        size_t length = e.length;
+        return filename[0 .. filename.length - (length ? length + 1 : 0)]; // +1 for .
+    }
+
+    /********************************
      * Return filename name excluding path (read-only).
      */
     extern (C++) static const(char)* name(const(char)* str) pure @nogc
@@ -452,17 +467,15 @@ nothrow:
             assert(buildPath("a/", "bb", "ccc") == "a/bb/ccc");
     }
 
-    // Split a path into an Array of paths
-    extern (C++) static Strings* splitPath(const(char)* path)
+    // Split a path and append the results to `array`
+    extern (C++) static void appendSplitPath(const(char)* path, ref Strings array)
     {
-        auto array = new Strings();
         int sink(const(char)* p) nothrow
         {
             array.push(p);
             return 0;
         }
         splitPath(&sink, path);
-        return array;
     }
 
     /****
@@ -846,6 +859,7 @@ nothrow:
     {
         if (!name.length)
             return 0;
+        //static int count; printf("count: %d %.*s\n", ++count, cast(int)name.length, name.ptr);
         version (Posix)
         {
             stat_t st;

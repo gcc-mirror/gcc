@@ -1891,6 +1891,309 @@ Expression addInvariant(AggregateDeclaration ad, VarDeclaration vthis)
     return e;
 }
 
+/********************************************
+ * Find function in overload list that exactly matches t.
+ */
+FuncDeclaration overloadExactMatch(FuncDeclaration thisfd, Type t)
+{
+    FuncDeclaration fd;
+    overloadApply(thisfd, (Dsymbol s)
+    {
+        auto f = s.isFuncDeclaration();
+        if (!f)
+            return 0;
+        if (f.storage_class & STC.disable)
+            return 0;
+        if (t.equals(f.type))
+        {
+            fd = f;
+            return 1;
+        }
+        /* Allow covariant matches, as long as the return type
+         * is just a const conversion.
+         * This allows things like pure functions to match with an impure function type.
+         */
+        if (t.ty == Tfunction)
+        {
+            auto tf = cast(TypeFunction)f.type;
+            if (tf.covariant(t) == Covariant.yes &&
+                tf.nextOf().implicitConvTo(t.nextOf()) >= MATCH.constant)
+            {
+                fd = f;
+                return 1;
+            }
+        }
+        return 0;
+    });
+    return fd;
+}
+
+/********************************************
+ * Find function in overload list that matches to the 'this' modifier.
+ * There's four result types.
+ *
+ * 1. If the 'tthis' matches only one candidate, it's an "exact match".
+ *    Returns the function and 'hasOverloads' is set to false.
+ *      eg. If 'tthis" is mutable and there's only one mutable method.
+ * 2. If there's two or more match candidates, but a candidate function will be
+ *    a "better match".
+ *    Returns the better match function but 'hasOverloads' is set to true.
+ *      eg. If 'tthis' is mutable, and there's both mutable and const methods,
+ *          the mutable method will be a better match.
+ * 3. If there's two or more match candidates, but there's no better match,
+ *    Returns null and 'hasOverloads' is set to true to represent "ambiguous match".
+ *      eg. If 'tthis' is mutable, and there's two or more mutable methods.
+ * 4. If there's no candidates, it's "no match" and returns null with error report.
+ *      e.g. If 'tthis' is const but there's no const methods.
+ */
+FuncDeclaration overloadModMatch(FuncDeclaration thisfd, const ref Loc loc, Type tthis, ref bool hasOverloads)
+{
+    //printf("FuncDeclaration::overloadModMatch('%s')\n", toChars());
+    MatchAccumulator m;
+    overloadApply(thisfd, (Dsymbol s)
+    {
+        auto f = s.isFuncDeclaration();
+        if (!f || f == m.lastf) // skip duplicates
+            return 0;
+        auto tf = f.type.toTypeFunction();
+        //printf("tf = %s\n", tf.toChars());
+        MATCH match;
+        if (tthis) // non-static functions are preferred than static ones
+        {
+            if (f.needThis())
+                match = f.isCtorDeclaration() ? MATCH.exact : MODmethodConv(tthis.mod, tf.mod);
+            else
+                match = MATCH.constant; // keep static function in overload candidates
+        }
+        else // static functions are preferred than non-static ones
+        {
+            if (f.needThis())
+                match = MATCH.convert;
+            else
+                match = MATCH.exact;
+        }
+        if (match == MATCH.nomatch)
+            return 0;
+        if (match > m.last) goto LcurrIsBetter;
+        if (match < m.last) goto LlastIsBetter;
+        // See if one of the matches overrides the other.
+        if (m.lastf.overrides(f)) goto LlastIsBetter;
+        if (f.overrides(m.lastf)) goto LcurrIsBetter;
+        //printf("\tambiguous\n");
+        m.nextf = f;
+        m.count++;
+        return 0;
+    LlastIsBetter:
+        //printf("\tlastbetter\n");
+        m.count++; // count up
+        return 0;
+    LcurrIsBetter:
+        //printf("\tisbetter\n");
+        if (m.last <= MATCH.convert)
+        {
+            // clear last secondary matching
+            m.nextf = null;
+            m.count = 0;
+        }
+        m.last = match;
+        m.lastf = f;
+        m.count++; // count up
+        return 0;
+    });
+    if (m.count == 1)       // exact match
+    {
+        hasOverloads = false;
+    }
+    else if (m.count > 1)   // better or ambiguous match
+    {
+        hasOverloads = true;
+    }
+    else                    // no match
+    {
+        hasOverloads = true;
+        auto tf = thisfd.type.toTypeFunction();
+        assert(tthis);
+        assert(!MODimplicitConv(tthis.mod, tf.mod)); // modifier mismatch
+        {
+            OutBuffer thisBuf, funcBuf;
+            MODMatchToBuffer(&thisBuf, tthis.mod, tf.mod);
+            MODMatchToBuffer(&funcBuf, tf.mod, tthis.mod);
+            .error(loc, "%smethod %s is not callable using a %sobject", thisfd.kind, thisfd.toPrettyChars,
+                funcBuf.peekChars(), thisfd.toPrettyChars(), thisBuf.peekChars());
+        }
+    }
+    return m.lastf;
+}
+
+/***********************************
+ * Determine lexical level difference from `fd` to nested function `target`.
+ * Issue error if `fd` cannot call `target`.
+ *
+ * Params:
+ *      fd = function
+ *      loc = location for error messages
+ *      sc = context
+ *      target = target of call
+ *      decl = The `Declaration` that triggered this check.
+ *             Used to provide a better error message only.
+ * Returns:
+ *      0       same level
+ *      >0      decrease nesting by number
+ *      -1      increase nesting by 1 (`target` is nested within 'fd')
+ *      LevelError  error
+ */
+int getLevelAndCheck(FuncDeclaration fd, const ref Loc loc, Scope* sc, FuncDeclaration target,
+                     Declaration decl)
+{
+    int level = fd.getLevel(target, sc.intypeof);
+    if (level != fd.LevelError)
+        return level;
+    // Don't give error if in template constraint
+    if (!(sc.flags & SCOPE.constraint))
+    {
+        const(char)* xstatic = fd.isStatic() ? "`static` " : "";
+        // better diagnostics for static functions
+        .error(loc, "%s%s `%s` cannot access %s `%s` in frame of function `%s`",
+               xstatic, fd.kind(), fd.toPrettyChars(), decl.kind(), decl.toChars(),
+               target.toPrettyChars());
+            .errorSupplemental(decl.loc, "`%s` declared here", decl.toChars());
+        return fd.LevelError;
+    }
+    return 1;
+}
+
+/**********************************
+ * Decide if attributes for this function can be inferred from examining
+ * the function body.
+ * Returns:
+ *  true if can
+ */
+bool canInferAttributes(FuncDeclaration fd, Scope* sc)
+{
+    if (!fd.fbody)
+        return false;
+    if (fd.isVirtualMethod() &&
+        /*
+         * https://issues.dlang.org/show_bug.cgi?id=21719
+         *
+         * If we have an auto virtual function we can infer
+         * the attributes.
+         */
+        !(fd.inferRetType && !fd.isCtorDeclaration()))
+        return false;               // since they may be overridden
+    if (sc.func &&
+        /********** this is for backwards compatibility for the moment ********/
+        (!fd.isMember() || sc.func.isSafeBypassingInference() && !fd.isInstantiated()))
+        return true;
+    if (fd.isFuncLiteralDeclaration() ||               // externs are not possible with literals
+        (fd.storage_class & STC.inference) ||           // do attribute inference
+        (fd.inferRetType && !fd.isCtorDeclaration()))
+        return true;
+    if (fd.isInstantiated())
+    {
+        auto ti = fd.parent.isTemplateInstance();
+        if (ti is null || ti.isTemplateMixin() || ti.tempdecl.ident == fd.ident)
+            return true;
+    }
+    return false;
+}
+
+/*********************************************
+ * In the current function, we are calling 'this' function.
+ * 1. Check to see if the current function can call 'this' function, issue error if not.
+ * 2. If the current function is not the parent of 'this' function, then add
+ *    the current function to the list of siblings of 'this' function.
+ * 3. If the current function is a literal, and it's accessing an uplevel scope,
+ *    then mark it as a delegate.
+ * Returns true if error occurs.
+ */
+bool checkNestedReference(FuncDeclaration fd, Scope* sc, const ref Loc loc)
+{
+    //printf("FuncDeclaration::checkNestedReference() %s\n", toPrettyChars());
+    if (auto fld = fd.isFuncLiteralDeclaration())
+    {
+        if (fld.tok == TOK.reserved)
+        {
+            fld.tok = TOK.function_;
+            fld.vthis = null;
+        }
+    }
+    if (!fd.parent || fd.parent == sc.parent)
+        return false;
+    if (fd.ident == Id.require || fd.ident == Id.ensure)
+        return false;
+    if (!fd.isThis() && !fd.isNested())
+        return false;
+    // The current function
+    FuncDeclaration fdthis = sc.parent.isFuncDeclaration();
+    if (!fdthis)
+        return false; // out of function scope
+    Dsymbol p = fd.toParentLocal();
+    Dsymbol p2 = fd.toParent2();
+    // Function literals from fdthis to p must be delegates
+    ensureStaticLinkTo(fdthis, p);
+    if (p != p2)
+        ensureStaticLinkTo(fdthis, p2);
+    if (fd.isNested())
+    {
+        // The function that this function is in
+        bool checkEnclosing(FuncDeclaration fdv)
+        {
+            if (!fdv)
+                return false;
+            if (fdv == fdthis)
+                return false;
+            //printf("this = %s in [%s]\n", this.toChars(), this.loc.toChars());
+            //printf("fdv  = %s in [%s]\n", fdv .toChars(), fdv .loc.toChars());
+            //printf("fdthis = %s in [%s]\n", fdthis.toChars(), fdthis.loc.toChars());
+            // Add this function to the list of those which called us
+            if (fdthis != fd)
+            {
+                bool found = false;
+                for (size_t i = 0; i < fd.siblingCallers.length; ++i)
+                {
+                    if (fd.siblingCallers[i] == fdthis)
+                        found = true;
+                }
+                if (!found)
+                {
+                    //printf("\tadding sibling %s to %s\n", fdthis.toPrettyChars(), toPrettyChars());
+                    if (!sc.intypeof && !(sc.flags & SCOPE.compile))
+                    {
+                        fd.siblingCallers.push(fdthis);
+                        fd.computedEscapingSiblings = false;
+                    }
+                }
+            }
+            const lv = fdthis.getLevelAndCheck(loc, sc, fdv, fd);
+            if (lv == fd.LevelError)
+                return true; // error
+            if (lv == -1)
+                return false; // downlevel call
+            if (lv == 0)
+                return false; // same level call
+            return false; // Uplevel call
+        }
+        if (checkEnclosing(p.isFuncDeclaration()))
+            return true;
+        if (checkEnclosing(p == p2 ? null : p2.isFuncDeclaration()))
+            return true;
+    }
+    return false;
+}
+
+/****************************************************
+ * Check whether result variable can be built.
+ * Returns:
+ *     `true` if the function has a return type that
+ *     is different from `void`.
+ */
+private bool canBuildResultVar(FuncDeclaration fd)
+{
+    auto f = cast(TypeFunction)fd.type;
+    return f && f.nextOf() && f.nextOf().toBasetype().ty != Tvoid;
+}
+
 /****************************************************
  * Declare result variable lazily.
  */
@@ -1921,5 +2224,514 @@ void buildResultVar(FuncDeclaration fd, Scope* sc, Type tret)
         if (!sc.insert(fd.vresult))
             .error(fd.loc, "%s `%s` out result %s is already defined", fd.kind, fd.toPrettyChars, fd.vresult.toChars());
         assert(fd.vresult.parent == fd);
+    }
+}
+
+/****************************************************
+ * Merge into this function the 'in' contracts of all it overrides.
+ * 'in's are OR'd together, i.e. only one of them needs to pass.
+ */
+Statement mergeFrequire(FuncDeclaration fd, Statement sf, Expressions* params)
+{
+    /* If a base function and its override both have an IN contract, then
+     * only one of them needs to succeed. This is done by generating:
+     *
+     * void derived.in() {
+     *  try {
+     *    base.in();
+     *  }
+     *  catch () {
+     *    ... body of derived.in() ...
+     *  }
+     * }
+     *
+     * So if base.in() doesn't throw, derived.in() need not be executed, and the contract is valid.
+     * If base.in() throws, then derived.in()'s body is executed.
+     */
+    foreach (fdv; fd.foverrides)
+    {
+        /* The semantic pass on the contracts of the overridden functions must
+         * be completed before code generation occurs.
+         * https://issues.dlang.org/show_bug.cgi?id=3602
+         */
+        if (fdv.frequires && fdv.semanticRun != PASS.semantic3done)
+        {
+            assert(fdv._scope);
+            Scope* sc = fdv._scope.push();
+            sc.stc &= ~STC.override_;
+            fdv.semantic3(sc);
+            sc.pop();
+        }
+        sf = fdv.mergeFrequire(sf, params);
+        if (!sf || !fdv.fdrequire)
+            return null;
+        //printf("fdv.frequire: %s\n", fdv.frequire.toChars());
+        /* Make the call:
+            *   try { __require(params); }
+            *   catch (Throwable) { frequire; }
+            */
+        params = Expression.arraySyntaxCopy(params);
+        Expression e = new CallExp(fd.loc, new VarExp(fd.loc, fdv.fdrequire, false), params);
+        Statement s2 = new ExpStatement(fd.loc, e);
+        auto c = new Catch(fd.loc, getThrowable(), null, sf);
+        c.internalCatch = true;
+        auto catches = new Catches();
+        catches.push(c);
+        sf = new TryCatchStatement(fd.loc, s2, catches);
+    }
+    return sf;
+}
+
+/****************************************************
+ * Merge into this function the 'in' contracts of all it overrides.
+ */
+Statement mergeFrequireInclusivePreview(FuncDeclaration fd, Statement sf, Expressions* params)
+{
+    /* If a base function and its override both have an IN contract, then
+     * the override in contract must widen the guarantee of the base contract.
+     * This is checked by generating:
+     *
+     * void derived.in() {
+     *  try {
+     *    ... body of derived.in() ...
+     *  }
+     *  catch () {
+     *    // derived in rejected this argument. so parent must also reject it, or we've tightened the contract.
+     *    base.in();
+     *    assert(false, "Logic error: " ~ thr.msg);
+     *  }
+     * }
+     */
+    foreach (fdv; fd.foverrides)
+    {
+        /* The semantic pass on the contracts of the overridden functions must
+         * be completed before code generation occurs.
+         * https://issues.dlang.org/show_bug.cgi?id=3602
+         */
+        if (fdv.frequires && fdv.semanticRun != PASS.semantic3done)
+        {
+            assert(fdv._scope);
+            Scope* sc = fdv._scope.push();
+            sc.stc &= ~STC.override_;
+            fdv.semantic3(sc);
+            sc.pop();
+        }
+        sf = fdv.mergeFrequireInclusivePreview(sf, params);
+        if (sf && fdv.fdrequire)
+        {
+            const loc = fd.fdrequire.loc;
+            //printf("fdv.frequire: %s\n", fdv.frequire.toChars());
+            /* Make the call:
+             *   try { frequire; }
+             *   catch (Throwable thr) { __require(params); assert(false, "Logic error: " ~ thr.msg); }
+             */
+            Identifier id = Identifier.generateId("thr");
+            params = Expression.arraySyntaxCopy(params);
+            Expression e = new CallExp(loc, new VarExp(loc, fdv.fdrequire, false), params);
+            Statement s2 = new ExpStatement(loc, e);
+            // assert(false, ...)
+            // TODO make this a runtime helper to allow:
+            // - chaining the original expression
+            // - nogc concatenation
+            Expression msg = new StringExp(loc, "Logic error: in-contract was tighter than parent in-contract");
+            Statement fail = new ExpStatement(loc, new AssertExp(loc, IntegerExp.literal!0, msg));
+            Statement s3 = new CompoundStatement(loc, s2, fail);
+            auto c = new Catch(loc, getThrowable(), id, s3);
+            c.internalCatch = true;
+            auto catches = new Catches();
+            catches.push(c);
+            sf = new TryCatchStatement(loc, sf, catches);
+        }
+        else
+            return null;
+    }
+    return sf;
+}
+
+/****************************************************
+ * Rewrite contracts as statements.
+ */
+void buildEnsureRequire(FuncDeclaration thisfd)
+{
+    if (thisfd.frequires)
+    {
+        /*   in { statements1... }
+         *   in { statements2... }
+         *   ...
+         * becomes:
+         *   in { { statements1... } { statements2... } ... }
+         */
+        assert(thisfd.frequires.length);
+        auto loc = (*thisfd.frequires)[0].loc;
+        auto s = new Statements;
+        foreach (r; *thisfd.frequires)
+        {
+            s.push(new ScopeStatement(r.loc, r, r.loc));
+        }
+        thisfd.frequire = new CompoundStatement(loc, s);
+    }
+    if (thisfd.fensures)
+    {
+        /*   out(id1) { statements1... }
+         *   out(id2) { statements2... }
+         *   ...
+         * becomes:
+         *   out(__result) { { ref id1 = __result; { statements1... } }
+         *                   { ref id2 = __result; { statements2... } } ... }
+         */
+        assert(thisfd.fensures.length);
+        auto loc = (*thisfd.fensures)[0].ensure.loc;
+        auto s = new Statements;
+        foreach (r; *thisfd.fensures)
+        {
+            if (r.id && thisfd.canBuildResultVar())
+            {
+                auto rloc = r.ensure.loc;
+                auto resultId = new IdentifierExp(rloc, Id.result);
+                auto init = new ExpInitializer(rloc, resultId);
+                auto stc = STC.ref_ | STC.temp | STC.result;
+                auto decl = new VarDeclaration(rloc, null, r.id, init, stc);
+                auto sdecl = new ExpStatement(rloc, decl);
+                s.push(new ScopeStatement(rloc, new CompoundStatement(rloc, sdecl, r.ensure), rloc));
+            }
+            else
+            {
+                s.push(r.ensure);
+            }
+        }
+        thisfd.fensure = new CompoundStatement(loc, s);
+    }
+    if (!thisfd.isVirtual())
+        return;
+    /* Rewrite contracts as nested functions, then call them. Doing it as nested
+     * functions means that overriding functions can call them.
+     */
+    TypeFunction f = cast(TypeFunction) thisfd.type;
+    /* Make a copy of the parameters and make them all ref */
+    static Parameters* toRefCopy(ParameterList parameterList)
+    {
+        auto result = new Parameters();
+        foreach (n, p; parameterList)
+        {
+            p = p.syntaxCopy();
+            if (!p.isLazy())
+                p.storageClass = (p.storageClass | STC.ref_) & ~STC.out_;
+            p.defaultArg = null; // won't be the same with ref
+            result.push(p);
+        }
+        return result;
+    }
+    if (thisfd.frequire)
+    {
+        /*   in { ... }
+         * becomes:
+         *   void __require(ref params) { ... }
+         *   __require(params);
+         */
+        Loc loc = thisfd.frequire.loc;
+        thisfd.fdrequireParams = new Expressions();
+        if (thisfd.parameters)
+        {
+            foreach (vd; *thisfd.parameters)
+                thisfd.fdrequireParams.push(new VarExp(loc, vd));
+        }
+        auto fo = cast(TypeFunction)(thisfd.originalType ? thisfd.originalType : f);
+        auto fparams = toRefCopy(fo.parameterList);
+        auto tf = new TypeFunction(ParameterList(fparams), Type.tvoid, LINK.d);
+        tf.isnothrow = f.isnothrow;
+        tf.isnogc = f.isnogc;
+        tf.purity = f.purity;
+        tf.trust = f.trust;
+        auto fd = new FuncDeclaration(loc, loc, Id.require, STC.undefined_, tf);
+        fd.fbody = thisfd.frequire;
+        Statement s1 = new ExpStatement(loc, fd);
+        Expression e = new CallExp(loc, new VarExp(loc, fd, false), thisfd.fdrequireParams);
+        Statement s2 = new ExpStatement(loc, e);
+        thisfd.frequire = new CompoundStatement(loc, s1, s2);
+        thisfd.fdrequire = fd;
+    }
+    /* We need to set fdensureParams here and not in the block below to
+     * have the parameters available when calling a base class ensure(),
+     * even if this function doesn't have an out contract.
+     */
+    thisfd.fdensureParams = new Expressions();
+    if (thisfd.canBuildResultVar())
+        thisfd.fdensureParams.push(new IdentifierExp(thisfd.loc, Id.result));
+    if (thisfd.parameters)
+    {
+        foreach (vd; *thisfd.parameters)
+            thisfd.fdensureParams.push(new VarExp(thisfd.loc, vd));
+    }
+    if (thisfd.fensure)
+    {
+        /*   out (result) { ... }
+         * becomes:
+         *   void __ensure(ref tret result, ref params) { ... }
+         *   __ensure(result, params);
+         */
+        Loc loc = thisfd.fensure.loc;
+        auto fparams = new Parameters();
+        if (thisfd.canBuildResultVar())
+        {
+            Parameter p = new Parameter(loc, STC.ref_ | STC.const_, f.nextOf(), Id.result, null, null);
+            fparams.push(p);
+        }
+        auto fo = cast(TypeFunction)(thisfd.originalType ? thisfd.originalType : f);
+        fparams.pushSlice((*toRefCopy(fo.parameterList))[]);
+        auto tf = new TypeFunction(ParameterList(fparams), Type.tvoid, LINK.d);
+        tf.isnothrow = f.isnothrow;
+        tf.isnogc = f.isnogc;
+        tf.purity = f.purity;
+        tf.trust = f.trust;
+        auto fd = new FuncDeclaration(loc, loc, Id.ensure, STC.undefined_, tf);
+        fd.fbody = thisfd.fensure;
+        Statement s1 = new ExpStatement(loc, fd);
+        Expression e = new CallExp(loc, new VarExp(loc, fd, false), thisfd.fdensureParams);
+        Statement s2 = new ExpStatement(loc, e);
+        thisfd.fensure = new CompoundStatement(loc, s1, s2);
+        thisfd.fdensure = fd;
+    }
+}
+
+/****************************************************
+ * Merge into this function the 'out' contracts of all it overrides.
+ * 'out's are AND'd together, i.e. all of them need to pass.
+ */
+Statement mergeFensure(FuncDeclaration fd, Statement sf, Identifier oid, Expressions* params)
+{
+    /* Same comments as for mergeFrequire(), except that we take care
+     * of generating a consistent reference to the 'result' local by
+     * explicitly passing 'result' to the nested function as a reference
+     * argument.
+     * This won't work for the 'this' parameter as it would require changing
+     * the semantic code for the nested function so that it looks on the parameter
+     * list for the 'this' pointer, something that would need an unknown amount
+     * of tweaking of various parts of the compiler that I'd rather leave alone.
+     */
+    foreach (fdv; fd.foverrides)
+    {
+        /* The semantic pass on the contracts of the overridden functions must
+         * be completed before code generation occurs.
+         * https://issues.dlang.org/show_bug.cgi?id=3602 and
+         * https://issues.dlang.org/show_bug.cgi?id=5230
+         */
+        if (fd.needsFensure(fdv) && fdv.semanticRun != PASS.semantic3done)
+        {
+            assert(fdv._scope);
+            Scope* sc = fdv._scope.push();
+            sc.stc &= ~STC.override_;
+            fdv.semantic3(sc);
+            sc.pop();
+        }
+        sf = fdv.mergeFensure(sf, oid, params);
+        if (fdv.fdensure)
+        {
+            //printf("fdv.fensure: %s\n", fdv.fensure.toChars());
+            // Make the call: __ensure(result, params)
+            params = Expression.arraySyntaxCopy(params);
+            if (fd.canBuildResultVar())
+            {
+                Type t1 = fdv.type.nextOf().toBasetype();
+                Type t2 = fd.type.nextOf().toBasetype();
+                if (t1.isBaseOf(t2, null))
+                {
+                    /* Making temporary reference variable is necessary
+                     * in covariant return.
+                     * https://issues.dlang.org/show_bug.cgi?id=5204
+                     * https://issues.dlang.org/show_bug.cgi?id=10479
+                     */
+                    Expression* eresult = &(*params)[0];
+                    auto ei = new ExpInitializer(Loc.initial, *eresult);
+                    auto v = new VarDeclaration(Loc.initial, t1, Identifier.generateId("__covres"), ei);
+                    v.storage_class |= STC.temp;
+                    auto de = new DeclarationExp(Loc.initial, v);
+                    auto ve = new VarExp(Loc.initial, v);
+                    *eresult = new CommaExp(Loc.initial, de, ve);
+                }
+            }
+            Expression e = new CallExp(fd.loc, new VarExp(fd.loc, fdv.fdensure, false), params);
+            Statement s2 = new ExpStatement(fd.loc, e);
+            if (sf)
+            {
+                sf = new CompoundStatement(sf.loc, s2, sf);
+            }
+            else
+                sf = s2;
+        }
+    }
+    return sf;
+}
+
+/*******************************
+ * Modify all expression type of return statements to tret.
+ *
+ * On function literals, return type may be modified based on the context type
+ * after its semantic3 is done, in FuncExp::implicitCastTo.
+ *
+ *  A function() dg = (){ return new B(); } // OK if is(B : A) == true
+ *
+ * If B to A conversion is convariant that requires offseet adjusting,
+ * all return statements should be adjusted to return expressions typed A.
+ */
+void modifyReturns(FuncLiteralDeclaration fld, Scope* sc, Type tret)
+{
+    import dmd.statement_rewrite_walker;
+    extern (C++) final class RetWalker : StatementRewriteWalker
+    {
+        alias visit = typeof(super).visit;
+    public:
+        Scope* sc;
+        Type tret;
+        FuncLiteralDeclaration fld;
+        override void visit(ReturnStatement s)
+        {
+            Expression exp = s.exp;
+            if (exp && !exp.type.equals(tret))
+                s.exp = exp.implicitCastTo(sc, tret);
+        }
+    }
+    if (fld.semanticRun < PASS.semantic3done)
+        return;
+    if (fld.fes)
+        return;
+    scope RetWalker w = new RetWalker();
+    w.sc = sc;
+    w.tret = tret;
+    w.fld = fld;
+    fld.fbody.accept(w);
+    // Also update the inferred function type to match the new return type.
+    // This is required so the code generator does not try to cast the
+    // modified returns back to the original type.
+    if (fld.inferRetType && fld.type.nextOf() != tret)
+        fld.type.toTypeFunction().next = tret;
+}
+
+/**************************************
+ * When a traits(compiles) is used on a function literal call
+ * we need to take into account if the body of the function
+ * violates any attributes, however, we must not affect the
+ * attribute inference on the outer function. The attributes
+ * of the function literal still need to be inferred, therefore
+ * we need a way to check for the scope that the traits compiles
+ * introduces.
+ *
+ * Params:
+ *   sc = scope to be checked for
+ *
+ * Returns: `true` if the provided scope is the root
+ * of the traits compiles list of scopes.
+ */
+bool isRootTraitsCompilesScope(Scope* sc)
+{
+    return (sc.flags & SCOPE.compile) && !(sc.func.flags & SCOPE.compile);
+}
+
+/**************************************
+ * A statement / expression in this scope is not `@safe`,
+ * so mark the enclosing function as `@system`
+ *
+ * Params:
+ *   sc = scope that the unsafe statement / expression is in
+ *   gag = surpress error message (used in escape.d)
+ *   loc = location of error
+ *   fmt = printf-style format string
+ *   arg0  = (optional) argument for first %s format specifier
+ *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
+ * Returns: whether there's a safe error
+ */
+bool setUnsafe(Scope* sc,
+    bool gag = false, Loc loc = Loc.init, const(char)* fmt = null,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+{
+    if (sc.intypeof)
+        return false; // typeof(cast(int*)0) is safe
+
+    if (sc.flags & SCOPE.debug_) // debug {} scopes are permissive
+        return false;
+
+    if (!sc.func)
+    {
+        if (sc.varDecl)
+        {
+            if (sc.varDecl.storage_class & STC.safe)
+            {
+                .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+                return true;
+            }
+            else if (!(sc.varDecl.storage_class & STC.trusted))
+            {
+                sc.varDecl.storage_class |= STC.system;
+                sc.varDecl.systemInferred = true;
+            }
+        }
+        return false;
+    }
+
+
+    if (isRootTraitsCompilesScope(sc)) // __traits(compiles, x)
+    {
+        if (sc.func.isSafeBypassingInference())
+        {
+            // Message wil be gagged, but still call error() to update global.errors and for
+            // -verrors=spec
+            .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            return true;
+        }
+        return false;
+    }
+
+    return sc.func.setUnsafe(gag, loc, fmt, arg0, arg1, arg2);
+}
+
+/***************************************
+ * Like `setUnsafe`, but for safety errors still behind preview switches
+ *
+ * Given a `FeatureState fs`, for example dip1000 / dip25 / systemVariables,
+ * the behavior changes based on the setting:
+ *
+ * - In case of `-revert=fs`, it does nothing.
+ * - In case of `-preview=fs`, it's the same as `setUnsafe`
+ * - By default, print a deprecation in `@safe` functions, or store an attribute violation in inferred functions.
+ *
+ * Params:
+ *   sc = used to find affected function/variable, and for checking whether we are in a deprecated / speculative scope
+ *   fs = feature state from the preview flag
+ *   gag = surpress error message
+ *   loc = location of error
+ *   msg = printf-style format string
+ *   arg0  = (optional) argument for first %s format specifier
+ *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
+ * Returns: whether an actual safe error (not deprecation) occured
+ */
+bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+{
+    //printf("setUnsafePreview() fs:%d %s\n", fs, msg);
+    with (FeatureState) final switch (fs)
+    {
+      case disabled:
+        return false;
+
+      case enabled:
+        return sc.setUnsafe(gag, loc, msg, arg0, arg1, arg2);
+
+      case default_:
+        if (!sc.func)
+            return false;
+        if (sc.func.isSafeBypassingInference())
+        {
+            if (!gag && !sc.isDeprecated())
+            {
+                deprecation(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            }
+        }
+        else if (!sc.func.safetyViolation)
+        {
+            import dmd.func : AttributeViolation;
+            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);
+        }
+        return false;
     }
 }
