@@ -790,18 +790,6 @@
   "<bit_optab>i\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
 
-;; As long as the SImode operand is not a partial subreg, we can use a
-;; bseti without postprocessing, as the middle end is smart enough to
-;; stay away from the signbit.
-(define_insn "*<bit_optab>idisi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(any_or:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		   (match_operand 2 "single_bit_mask_operand" "i")))]
-  "TARGET_ZBS && TARGET_64BIT
-   && !partial_subreg_p (operands[1])"
-  "<bit_optab>i\t%0,%1,%S2"
-  [(set_attr "type" "bitmanip")])
-
 ;; We can easily handle zero extensions
 (define_split
   [(set (match_operand:DI 0 "register_operand")
