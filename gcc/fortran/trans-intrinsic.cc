@@ -10024,11 +10024,39 @@ gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
 }
 
 
-/* The following routine generates code for the intrinsic
-   functions from the ISO_C_BINDING module:
-    * C_LOC
-    * C_FUNLOC
-    * C_ASSOCIATED  */
+/* Specialized trim for f_c_string.  */
+
+static void
+conv_trim (gfc_se *tse, gfc_se *str)
+{
+  tree cond, plen, pvar, tlen, ttmp, tvar;
+
+  tlen = gfc_create_var (gfc_charlen_type_node, "tlen");
+  plen = gfc_build_addr_expr (NULL_TREE, tlen);
+
+  tvar = gfc_create_var (pchar_type_node, "tstr");
+  pvar = gfc_build_addr_expr (ppvoid_type_node, tvar);
+
+  ttmp = build_call_expr_loc (input_location, gfor_fndecl_string_trim, 4,
+			      plen, pvar, str->string_length, str->expr);
+
+  gfc_add_expr_to_block (&tse->pre, ttmp);
+
+  /* Free the temporary afterwards, if necessary.  */
+  cond = fold_build2_loc (input_location, GT_EXPR, logical_type_node,
+			  tlen, build_int_cst (TREE_TYPE (tlen), 0));
+  ttmp = gfc_call_free (tvar);
+  ttmp = build3_v (COND_EXPR, cond, ttmp, build_empty_stmt (input_location));
+  gfc_add_expr_to_block (&tse->post, ttmp);
+
+  tse->expr = tvar;
+  tse->string_length = tlen;
+}
+
+
+/* The following routine generates code for the intrinsic functions from
+   the ISO_C_BINDING module: C_LOC, C_FUNLOC, C_ASSOCIATED, and
+   F_C_STRING.  */
 
 static void
 conv_isocbinding_function (gfc_se *se, gfc_expr *expr)
@@ -10102,6 +10130,149 @@ conv_isocbinding_function (gfc_se *se, gfc_expr *expr)
 				      logical_type_node,
 				      not_null_expr, eq_expr);
 	}
+    }
+  else if (expr->value.function.isym->id == GFC_ISYM_F_C_STRING)
+    {
+      /* There are three cases:
+	 f_c_string(string)          -> trim(string) // c_null_char
+	 f_c_string(string, .false.) -> trim(string) // c_null_char
+	 f_c_string(string, .true.)  -> string       // c_null_char  */
+
+      gfc_se lse, rse, tse;
+      tree len, tmp, var;
+      gfc_expr *string = arg->expr;
+      gfc_expr *asis = arg->next->expr;
+      gfc_expr *cnc;
+
+      /* Convert string. */
+      gfc_init_se (&lse, se);
+      gfc_conv_expr (&lse, string);
+      gfc_conv_string_parameter (&lse);
+
+      /* Create a string for C_NULL_CHAR and convert it.  */
+      cnc = gfc_get_character_expr (gfc_default_character_kind,
+				    &string->where, "\0", 1);
+      gfc_init_se (&rse, se);
+      gfc_conv_expr (&rse, cnc);
+      gfc_conv_string_parameter (&rse);
+      gfc_free_expr (cnc);
+
+#ifdef cnode
+#undef cnode
+#endif
+#define cnode gfc_charlen_type_node
+      if (asis)
+	{
+	  stmtblock_t block;
+	  gfc_se asis_se, vse;
+	  tree elen, evar, tlen, tvar;
+	  tree else_branch, then_branch;
+
+	  elen = evar = tlen = tvar = NULL_TREE;
+
+	  /* f_c_string(string, .true.) -> string // c_null_char  */
+
+	  gfc_init_block (&block);
+
+	  gfc_add_block_to_block (&block, &lse.pre);
+	  gfc_add_block_to_block (&block, &rse.pre);
+
+	  tlen = fold_build2_loc (input_location, PLUS_EXPR, cnode,
+				  fold_convert (cnode, lse.string_length),
+				  fold_convert (cnode, rse.string_length));
+
+	  gfc_init_se (&vse, se);
+	  tvar = gfc_conv_string_tmp (&vse, pchar_type_node, tlen);
+	  gfc_add_block_to_block (&block, &vse.pre);
+
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_concat_string,
+				     6, tlen, tvar,
+				     lse.string_length, lse.expr,
+				     rse.string_length, rse.expr);
+	  gfc_add_expr_to_block (&block, tmp);
+
+	  then_branch = gfc_finish_block (&block);
+
+	  /* f_c_string(string, .false.) = trim(string) // c_null_char  */
+
+	  gfc_init_block (&block);
+
+	  gfc_init_se (&tse, se);
+	  conv_trim (&tse, &lse);
+	  gfc_add_block_to_block (&block, &tse.pre);
+	  gfc_add_block_to_block (&block, &rse.pre);
+
+	  elen = fold_build2_loc (input_location, PLUS_EXPR, cnode,
+				  fold_convert (cnode, tse.string_length),
+				  fold_convert (cnode, rse.string_length));
+
+	  gfc_init_se (&vse, se);
+	  evar = gfc_conv_string_tmp (&vse, pchar_type_node, elen);
+	  gfc_add_block_to_block (&block, &vse.pre);
+
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_concat_string,
+				     6, elen, evar,
+				     tse.string_length, tse.expr,
+				     rse.string_length, rse.expr);
+	  gfc_add_expr_to_block (&block, tmp);
+
+	  else_branch = gfc_finish_block (&block);
+
+	  gfc_init_se (&asis_se, se);
+	  gfc_conv_expr (&asis_se, asis);
+	  if (asis->expr_type == EXPR_VARIABLE
+	    && asis->symtree->n.sym->attr.dummy
+	    && asis->symtree->n.sym->attr.optional)
+	    {
+	      tree present = gfc_conv_expr_present (asis->symtree->n.sym);
+	      asis_se.expr = build3_loc (input_location, COND_EXPR,
+					 logical_type_node, present,
+					 asis_se.expr,
+					 build_int_cst (logical_type_node, 0));
+	    }
+	  gfc_add_block_to_block (&se->pre, &asis_se.pre);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 asis_se.expr, then_branch, else_branch);
+
+	  gfc_add_expr_to_block (&se->pre, tmp);
+
+	  var = fold_build3_loc (input_location, COND_EXPR, pchar_type_node,
+				 asis_se.expr, tvar, evar);
+	  gfc_add_expr_to_block (&se->pre, var);
+
+	  len = fold_build3_loc (input_location, COND_EXPR, cnode,
+				 asis_se.expr, tlen, elen);
+	  gfc_add_expr_to_block (&se->pre, len);
+	}
+      else
+	{
+	  /* f_c_string(string) = trim(string) // c_null_char  */
+
+	  gfc_add_block_to_block (&se->pre, &lse.pre);
+	  gfc_add_block_to_block (&se->pre, &rse.pre);
+
+	  gfc_init_se (&tse, se);
+	  conv_trim (&tse, &lse);
+	  gfc_add_block_to_block (&se->pre, &tse.pre);
+	  gfc_add_block_to_block (&se->post, &tse.post);
+
+	  len = fold_build2_loc (input_location, PLUS_EXPR, cnode,
+				 fold_convert (cnode, tse.string_length),
+				 fold_convert (cnode, rse.string_length));
+
+	  var = gfc_conv_string_tmp (se, pchar_type_node, len);
+
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_concat_string,
+				     6, len, var,
+				     tse.string_length, tse.expr,
+				     rse.string_length, rse.expr);
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	}
+
+      se->expr = var;
+      se->string_length = len;
+
+#undef cnode
     }
   else
     gcc_unreachable ();
@@ -11243,6 +11414,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_C_ASSOCIATED:
     case GFC_ISYM_C_FUNLOC:
     case GFC_ISYM_C_LOC:
+    case GFC_ISYM_F_C_STRING:
       conv_isocbinding_function (se, expr);
       break;
 

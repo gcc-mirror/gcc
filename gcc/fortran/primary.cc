@@ -4039,12 +4039,11 @@ gfc_match_rvalue (gfc_expr **result)
 	}
 
       /* Check here for the existence of at least one argument for the
-         iso_c_binding functions C_LOC, C_FUNLOC, and C_ASSOCIATED.  The
-         argument(s) given will be checked in gfc_iso_c_func_interface,
-         during resolution of the function call.  */
+	 iso_c_binding functions C_LOC, C_FUNLOC, and C_ASSOCIATED.  */
       if (sym->attr.is_iso_c == 1
 	  && (sym->from_intmod == INTMOD_ISO_C_BINDING
 	      && (sym->intmod_sym_id == ISOCBINDING_LOC
+		  || sym->intmod_sym_id == ISOCBINDING_F_C_STRING
 		  || sym->intmod_sym_id == ISOCBINDING_FUNLOC
 		  || sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)))
         {

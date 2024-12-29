@@ -71,6 +71,7 @@ bool gfc_check_dshift (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_dtime_etime (gfc_expr *);
 bool gfc_check_event_query (gfc_expr *, gfc_expr *, gfc_expr *);
+bool gfc_check_f_c_string (gfc_expr *, gfc_expr *);
 bool gfc_check_failed_or_stopped_images (gfc_expr *, gfc_expr *);
 bool gfc_check_fgetputc (gfc_expr *, gfc_expr *);
 bool gfc_check_fgetput (gfc_expr *);

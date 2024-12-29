@@ -3145,6 +3145,14 @@ add_functions (void)
 	     x, BT_UNKNOWN, 0, REQUIRED);
   make_from_module();
 
+  add_sym_2 ("f_c_string", GFC_ISYM_F_C_STRING, CLASS_TRANSFORMATIONAL,
+	     ACTUAL_NO,
+	     BT_CHARACTER, dc, GFC_STD_F2023,
+	     gfc_check_f_c_string, NULL, NULL,
+	     stg, BT_CHARACTER, dc, REQUIRED,
+	     "asis", BT_CHARACTER, dc, OPTIONAL);
+  make_from_module();
+
   add_sym_1 ("c_sizeof", GFC_ISYM_C_SIZEOF, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_INTEGER, gfc_index_integer_kind, GFC_STD_F2008,
 	     gfc_check_c_sizeof, gfc_simplify_sizeof, NULL,
@@ -3301,7 +3309,8 @@ add_functions (void)
 
   make_generic ("transpose", GFC_ISYM_TRANSPOSE, GFC_STD_F95);
 
-  add_sym_1 ("trim", GFC_ISYM_TRIM, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_CHARACTER, dc, GFC_STD_F95,
+  add_sym_1 ("trim", GFC_ISYM_TRIM, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_CHARACTER, dc, GFC_STD_F95,
 	     gfc_check_trim, gfc_simplify_trim, gfc_resolve_trim,
 	     stg, BT_CHARACTER, dc, REQUIRED);
 

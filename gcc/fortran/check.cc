@@ -1829,6 +1829,42 @@ gfc_check_image_status (gfc_expr *image, gfc_expr *team)
 }
 
 
+/* Check the arguments for f_c_string.  */
+
+bool
+gfc_check_f_c_string (gfc_expr *string, gfc_expr *asis)
+{
+
+  if (gfc_invalid_null_arg (string))
+    return false;
+
+  if (!scalar_check (string, 0))
+    return false;
+
+  if (string->ts.type != BT_CHARACTER
+      || (string->ts.type == BT_CHARACTER
+	  && (string->ts.kind != gfc_default_character_kind)))
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L shall have "
+		 "a type of CHARACTER(KIND=C_CHAR)",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &string->where);
+      return false;
+    }
+
+  if (asis)
+    {
+      if (!type_check (asis, 1, BT_LOGICAL))
+	return false;
+
+      if (!scalar_check (asis, 1))
+	return false;
+    }
+
+  return true;
+}
+
+
 bool
 gfc_check_failed_or_stopped_images (gfc_expr *team, gfc_expr *kind)
 {
