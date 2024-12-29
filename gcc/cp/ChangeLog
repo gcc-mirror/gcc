@@ -1,3 +1,18 @@
+2024-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100358
+	PR c++/115008
+	* module.cc (elf_out::create_mapping): Fallback to ftruncate if
+	posix_fallocate fails.
+
+2024-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106221
+	PR c++/110680
+	* pt.cc (check_default_tmpl_args): Check this is actually a
+	lambda declaration and not just a typedef.
+	(push_template_decl): Likewise.
+
 2024-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert:

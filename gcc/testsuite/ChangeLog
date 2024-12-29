@@ -1,3 +1,15 @@
+2024-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106221
+	PR c++/110680
+	* g++.dg/cpp2a/lambda-uneval19.C: New test.
+
+2024-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118207
+	* gcc.dg/pr118207.c: New test.
+	* c-c++-common/cpp/embed-29.c: New file.
+
 2024-12-27  Jiahao Xu  <xujiahao@loongson.cn>
 
 	* gcc.target/loongarch/vector/lasx/lasx-vcond-3.c: New test.

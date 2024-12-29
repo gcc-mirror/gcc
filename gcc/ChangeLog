@@ -1,3 +1,15 @@
+2024-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118207
+	* gimple-fold.cc (fold_array_ctor_reference): For RAW_DATA_CST,
+	just set val to build_int_cst and fall through to the normal
+	element handling code instead of returning build_int_cst right away.
+
+2024-12-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific) <*-ibm-aix*>: Drop verbose
+	references to PTFs for AIX.
+
 2024-12-27  Jiahao Xu  <xujiahao@loongson.cn>
 
 	* config/loongarch/lasx.md (vec_cmp<mode><mode256_i>): Remove.
