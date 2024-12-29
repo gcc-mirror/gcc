@@ -200,6 +200,7 @@ static void m68k_asm_final_postscan_insn (FILE *, rtx_insn *insn, rtx [], int);
 static HARD_REG_SET m68k_zero_call_used_regs (HARD_REG_SET);
 static machine_mode m68k_c_mode_for_floating_type (enum tree_index);
 static bool m68k_use_lra_p (void);
+static bool m68k_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t rclass);
 
 /* Initialize the GCC target structure.  */
 
@@ -369,6 +370,9 @@ static bool m68k_use_lra_p (void);
 
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE m68k_c_mode_for_floating_type
+
+#undef  TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS m68k_can_change_mode_class
 
 TARGET_GNU_ATTRIBUTES (m68k_attribute_table,
 {
@@ -7267,6 +7271,24 @@ static bool
 m68k_use_lra_p ()
 {
   return m68k_lra_p;
+}
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+
+static bool
+m68k_can_change_mode_class (machine_mode from,
+			    machine_mode to,
+			    reg_class_t rclass)
+{
+  if (from == to)
+    return true;
+
+  /* 68881 registers can't do subreg at all, as all values are reformatted
+     to extended precision.  */
+  if (reg_classes_intersect_p(rclass, FP_REGS))
+    return false;
+
+  return true;
 }
 
 #include "gt-m68k.h"
