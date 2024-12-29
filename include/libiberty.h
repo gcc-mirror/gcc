@@ -199,6 +199,10 @@ extern int fdmatch (int fd1, int fd2);
 extern int ffs(int);
 #endif
 
+#if defined (HAVE_DECL_MKSTEMPS) && !HAVE_DECL_MKSTEMPS
+extern int mkstemps(char *, int);
+#endif
+
 /* Get the working directory.  The result is cached, so don't call
    chdir() between calls to getpwd().  */
 

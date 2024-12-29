@@ -1164,6 +1164,13 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'mkstemps', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_MKSTEMPS
+#endif
+
+
 /* Define to 1 if we found a declaration for 'putchar_unlocked', otherwise
    define to 0. */
 #ifndef USED_FOR_TARGET
