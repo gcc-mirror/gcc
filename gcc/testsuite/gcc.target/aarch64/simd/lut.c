@@ -197,6 +197,70 @@ test_vluti2q_laneqp8(poly8x16_t a, uint8x16_t b, poly8x16_t results[])
 }
 
 /*
+** test_vluti2_lanemf8:
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[0\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[1\]
+**	...
+**	ret
+*/
+void
+test_vluti2_lanemf8(mfloat8x8_t a, uint8x8_t b, mfloat8x16_t results[])
+{
+  results[0] = vluti2_lane_mf8(a, b, 0);
+  results[1] = vluti2_lane_mf8(a, b, 1);
+}
+
+/*
+** test_vluti2_laneqmf8:
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[0\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[1\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[2\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[3\]
+**	...
+**	ret
+*/
+void
+test_vluti2_laneqmf8(mfloat8x8_t a, uint8x16_t b, mfloat8x16_t results[])
+{
+  results[0] = vluti2_laneq_mf8(a, b, 0);
+  results[1] = vluti2_laneq_mf8(a, b, 1);
+  results[2] = vluti2_laneq_mf8(a, b, 2);
+  results[3] = vluti2_laneq_mf8(a, b, 3);
+}
+
+/*
+** test_vluti2q_lanemf8:
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[0\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[1\]
+**	...
+**	ret
+*/
+void
+test_vluti2q_lanemf8(mfloat8x16_t a, uint8x8_t b, mfloat8x16_t results[])
+{
+  results[0] = vluti2q_lane_mf8(a, b, 0);
+  results[1] = vluti2q_lane_mf8(a, b, 1);
+}
+
+/*
+** test_vluti2q_laneqmf8:
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[0\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[1\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[2\]
+**	luti2	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[3\]
+**	...
+**	ret
+*/
+void
+test_vluti2q_laneqmf8(mfloat8x16_t a, uint8x16_t b, mfloat8x16_t results[])
+{
+  results[0] = vluti2q_laneq_mf8(a, b, 0);
+  results[1] = vluti2q_laneq_mf8(a, b, 1);
+  results[2] = vluti2q_laneq_mf8(a, b, 2);
+  results[3] = vluti2q_laneq_mf8(a, b, 3);
+}
+
+/*
 ** test_vluti2_laneu16:
 **	luti2	v[0-9]+\.8h, {v[0-9]+\.8h}, v[0-9]+\[0\]
 **	luti2	v[0-9]+\.8h, {v[0-9]+\.8h}, v[0-9]+\[1\]
@@ -686,6 +750,32 @@ test_vluti4q_laneqp8(poly8x16_t a, uint8x16_t b, poly8x16_t results[])
 {
   results[0] = vluti4q_laneq_p8(a, b, 0);
   results[1] = vluti4q_laneq_p8(a, b, 1);
+}
+
+/*
+** test_vluti4q_lanemf8:
+**	luti4	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[0\]
+**	...
+**	ret
+*/
+void
+test_vluti4q_lanemf8(mfloat8x16_t a, uint8x8_t b, mfloat8x16_t results[])
+{
+  results[0] = vluti4q_lane_mf8(a, b, 0);
+}
+
+/*
+** test_vluti4q_laneqmf8:
+**	luti4	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[0\]
+**	luti4	v[0-9]+\.16b, {v[0-9]+\.16b}, v[0-9]+\[1\]
+**	...
+**	ret
+*/
+void
+test_vluti4q_laneqmf8(mfloat8x16_t a, uint8x16_t b, mfloat8x16_t results[])
+{
+  results[0] = vluti4q_laneq_mf8(a, b, 0);
+  results[1] = vluti4q_laneq_mf8(a, b, 1);
 }
 
 /*

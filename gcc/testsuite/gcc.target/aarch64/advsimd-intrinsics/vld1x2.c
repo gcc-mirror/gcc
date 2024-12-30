@@ -4,6 +4,7 @@
 /* { dg-options "-O3" } */
 
 #include <arm_neon.h>
+#include "arm-neon-ref.h"
 
 extern void abort (void);
 
@@ -16,14 +17,14 @@ test_vld##SUFFIX##_x2 ()			\
   BASE##x##ELTS##x##2##_t vectors;		\
   int i,j;					\
   for (i = 0; i < ELTS * 2; i++)		\
-    data [i] = (BASE##_t) 2*i + 1;		\
+    data [i] = CONVERT (BASE##_t, 2*i + 1);	\
   asm volatile ("" : : : "memory");		\
   vectors = vld1##SUFFIX##_x2 (data);		\
   vst1##SUFFIX (temp, vectors.val[0]);		\
   vst1##SUFFIX (&temp[ELTS], vectors.val[1]);	\
   asm volatile ("" : : : "memory");		\
   for (j = 0; j < ELTS * 2; j++)		\
-    if (temp[j] != data[j])			\
+    if (!BITEQUAL (temp[j], data[j]))		\
       return 1;					\
   return 0;					\
 }
@@ -56,6 +57,8 @@ VARIANT (float32, 4, q_f32)
 
 #ifdef __aarch64__
 #define VARIANTS(VARIANT) VARIANTS_1(VARIANT)	\
+VARIANT (mfloat8, 8, _mf8)			\
+VARIANT (mfloat8, 16, q_mf8)			\
 VARIANT (float64, 1, _f64)			\
 VARIANT (float64, 2, q_f64)
 #else
@@ -65,14 +68,14 @@ VARIANT (float64, 2, q_f64)
 /* Tests of vld1_x2 and vld1q_x2.  */
 VARIANTS (TESTMETH)
 
-#define CHECK(BASE, ELTS, SUFFIX)	\
+#define CHECKS(BASE, ELTS, SUFFIX)	\
   if (test_vld##SUFFIX##_x2 () != 0)	\
     abort ();
 
 int
 main (int argc, char **argv)
 {
-  VARIANTS (CHECK)
+  VARIANTS (CHECKS)
 
   return 0;
 }

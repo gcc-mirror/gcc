@@ -17,7 +17,7 @@ test_vld##SUFFIX##_x3 ()			\
   BASE##x##ELTS##x##3##_t vectors;		\
   int i,j;					\
   for (i = 0; i < ELTS * 3; i++)		\
-    data [i] = (BASE##_t) 3*i;		\
+    data [i] = CONVERT (BASE##_t, 3*i);		\
   asm volatile ("" : : : "memory");		\
   vectors = vld1##SUFFIX##_x3 (data);		\
   vst1##SUFFIX (temp, vectors.val[0]);		\
@@ -25,7 +25,7 @@ test_vld##SUFFIX##_x3 ()			\
   vst1##SUFFIX (&temp[ELTS * 2], vectors.val[2]);	\
   asm volatile ("" : : : "memory");		\
   for (j = 0; j < ELTS * 3; j++)		\
-    if (temp[j] != data[j]) 			\
+    if (!BITEQUAL (temp[j], data[j]))		\
       return 1;					\
   return 0;					\
 }
@@ -58,6 +58,8 @@ VARIANT (float32, 4, q_f32)
 
 #ifdef __aarch64__
 #define VARIANTS(VARIANT) VARIANTS_1(VARIANT)	\
+VARIANT (mfloat8, 8, _mf8)			\
+VARIANT (mfloat8, 16, q_mf8)			\
 VARIANT (float64, 1, _f64)			\
 VARIANT (float64, 2, q_f64)
 #else
@@ -70,7 +72,7 @@ VARIANTS (TESTMETH)
 
 #define CHECKS(BASE, ELTS, SUFFIX)	\
   if (test_vld##SUFFIX##_x3 () != 0)	\
-    fprintf (stderr, "test_vld1##SUFFIX##_x3");
+    fprintf (stderr, "test_vld1##SUFFIX##_x3"), abort ();
 
 int
 main (int argc, char **argv)

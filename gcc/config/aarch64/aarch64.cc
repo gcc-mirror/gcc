@@ -1802,7 +1802,7 @@ aarch64_ldn_stn_vectors (machine_mode mode)
 
 /* Given an Advanced SIMD vector mode MODE and a tuple size NELEMS, return the
    corresponding vector structure mode.  */
-static opt_machine_mode
+opt_machine_mode
 aarch64_advsimd_vector_array_mode (machine_mode mode,
 				   unsigned HOST_WIDE_INT nelems)
 {

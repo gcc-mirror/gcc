@@ -18,6 +18,10 @@ VECT_VAR_DECL(expected_vld2_0,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected_vld2_0,poly,8,8) [] = { 0xf0, 0xf1, 0xf0, 0xf1,
 					0xf0, 0xf1, 0xf0, 0xf1 };
 VECT_VAR_DECL(expected_vld2_0,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff0, 0xfff1 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld2_0,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf0, 0xf1,
+						  0xf0, 0xf1, 0xf0, 0xf1 };
+#endif
 VECT_VAR_DECL(expected_vld2_0,hfloat,16,4) [] = {0xcc00, 0xcb80, 0xcc00, 0xcb80 };
 VECT_VAR_DECL(expected_vld2_0,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
 
@@ -36,6 +40,10 @@ VECT_VAR_DECL(expected_vld2_1,poly,8,8) [] = { 0xf0, 0xf1, 0xf0, 0xf1,
 					       0xf0, 0xf1, 0xf0, 0xf1 };
 VECT_VAR_DECL(expected_vld2_1,poly,16,4) [] = { 0xfff0, 0xfff1,
 						0xfff0, 0xfff1 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld2_1,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf0, 0xf1,
+						  0xf0, 0xf1, 0xf0, 0xf1 };
+#endif
 VECT_VAR_DECL(expected_vld2_1,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0xcc00, 0xcb80 };
 VECT_VAR_DECL(expected_vld2_1,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
 
@@ -56,6 +64,10 @@ VECT_VAR_DECL(expected_vld3_0,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf0,
 					       0xf1, 0xf2, 0xf0, 0xf1 };
 VECT_VAR_DECL(expected_vld3_0,poly,16,4) [] = { 0xfff0, 0xfff1,
 						0xfff2, 0xfff0 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld3_0,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf0,
+						  0xf1, 0xf2, 0xf0, 0xf1 };
+#endif
 VECT_VAR_DECL(expected_vld3_0,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0xcb00, 0xcc00 };
 VECT_VAR_DECL(expected_vld3_0,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
 
@@ -76,6 +88,10 @@ VECT_VAR_DECL(expected_vld3_1,poly,8,8) [] = { 0xf2, 0xf0, 0xf1, 0xf2,
 					       0xf0, 0xf1, 0xf2, 0xf0 };
 VECT_VAR_DECL(expected_vld3_1,poly,16,4) [] = { 0xfff1, 0xfff2,
 						0xfff0, 0xfff1 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld3_1,hmfloat,8,8) [] = { 0xf2, 0xf0, 0xf1, 0xf2,
+						  0xf0, 0xf1, 0xf2, 0xf0 };
+#endif
 VECT_VAR_DECL(expected_vld3_1,hfloat,16,4) [] = { 0xcb80, 0xcb00, 0xcc00, 0xcb80 };
 VECT_VAR_DECL(expected_vld3_1,hfloat,32,2) [] = { 0xc1600000, 0xc1800000 };
 
@@ -96,6 +112,10 @@ VECT_VAR_DECL(expected_vld3_2,poly,8,8) [] = { 0xf1, 0xf2, 0xf0, 0xf1,
 					       0xf2, 0xf0, 0xf1, 0xf2 };
 VECT_VAR_DECL(expected_vld3_2,poly,16,4) [] = { 0xfff2, 0xfff0,
 						0xfff1, 0xfff2 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld3_2,hmfloat,8,8) [] = { 0xf1, 0xf2, 0xf0, 0xf1,
+						  0xf2, 0xf0, 0xf1, 0xf2 };
+#endif
 VECT_VAR_DECL(expected_vld3_2,hfloat,16,4) [] = { 0xcb00, 0xcc00, 0xcb80, 0xcb00 };
 VECT_VAR_DECL(expected_vld3_2,hfloat,32,2) [] = { 0xc1700000, 0xc1600000 };
 
@@ -114,6 +134,10 @@ VECT_VAR_DECL(expected_vld4_0,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected_vld4_0,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_0,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld4_0,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+						  0xf0, 0xf1, 0xf2, 0xf3 };
+#endif
 VECT_VAR_DECL(expected_vld4_0,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80 };
 VECT_VAR_DECL(expected_vld4_0,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
 
@@ -131,6 +155,10 @@ VECT_VAR_DECL(expected_vld4_1,uint,64,1) [] = { 0xfffffffffffffff1 };
 VECT_VAR_DECL(expected_vld4_1,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_1,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld4_1,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+						  0xf0, 0xf1, 0xf2, 0xf3 };
+#endif
 VECT_VAR_DECL(expected_vld4_1,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80 };
 VECT_VAR_DECL(expected_vld4_1,hfloat,32,2) [] = { 0xc1600000, 0xc1500000 };
 
@@ -148,6 +176,10 @@ VECT_VAR_DECL(expected_vld4_2,uint,64,1) [] = { 0xfffffffffffffff2 };
 VECT_VAR_DECL(expected_vld4_2,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_2,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld4_2,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+						  0xf0, 0xf1, 0xf2, 0xf3 };
+#endif
 VECT_VAR_DECL(expected_vld4_2,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80 };
 VECT_VAR_DECL(expected_vld4_2,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
 
@@ -165,6 +197,10 @@ VECT_VAR_DECL(expected_vld4_3,uint,64,1) [] = { 0xfffffffffffffff3 };
 VECT_VAR_DECL(expected_vld4_3,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_3,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vld4_3,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+						  0xf0, 0xf1, 0xf2, 0xf3 };
+#endif
 VECT_VAR_DECL(expected_vld4_3,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80 };
 VECT_VAR_DECL(expected_vld4_3,hfloat,32,2) [] = { 0xc1600000, 0xc1500000 };
 
@@ -208,6 +244,7 @@ void exec_vldX_dup (void)
   DECL_VLDX_DUP(uint, 64, 1, X);		\
   DECL_VLDX_DUP(poly, 8, 8, X);			\
   DECL_VLDX_DUP(poly, 16, 4, X);		\
+  MFLOAT8_ONLY(DECL_VLDX_DUP(mfloat, 8, 8, X));	\
   DECL_VLDX_DUP(float, 32, 2, X)
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -229,6 +266,7 @@ void exec_vldX_dup (void)
   TEST_VLDX_DUP(, uint, u, 64, 1, X);		\
   TEST_VLDX_DUP(, poly, p, 8, 8, X);		\
   TEST_VLDX_DUP(, poly, p, 16, 4, X);		\
+  MFLOAT8_ONLY(TEST_VLDX_DUP(, mfloat, mf, 8, 8, X)); \
   TEST_VLDX_DUP(, float, f, 32, 2, X)
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -250,6 +288,7 @@ void exec_vldX_dup (void)
   TEST_EXTRA_CHUNK(uint, 64, 1, X, Y);		\
   TEST_EXTRA_CHUNK(poly, 8, 8, X, Y);		\
   TEST_EXTRA_CHUNK(poly, 16, 4, X, Y);		\
+  MFLOAT8_ONLY(TEST_EXTRA_CHUNK(mfloat, 8, 8, X, Y)); \
   TEST_EXTRA_CHUNK(float, 32, 2, X, Y)
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -272,6 +311,7 @@ void exec_vldX_dup (void)
     CHECK(test_name, uint, 64, 1, PRIx64, EXPECTED, comment);		\
     CHECK_POLY(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);	\
     CHECK_POLY(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);	\
+    MFLOAT8_ONLY(CHECK_FP(test_name, mfloat, 8, 8, PRIx8, EXPECTED, comment)); \
     CHECK_FP(test_name, float, 32, 2, PRIx32, EXPECTED, comment)
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -313,6 +353,12 @@ void exec_vldX_dup (void)
   PAD(buffer_vld2_pad, poly, 8, 8);
   VECT_ARRAY_INIT2(buffer_vld2, poly, 16, 4);
   PAD(buffer_vld2_pad, poly, 16, 4);
+#if MFLOAT8_SUPPORTED
+  VECT_ARRAY(buffer_vld2, mfloat, 8, 8, 2);
+  __builtin_memcpy (VECT_ARRAY_VAR(buffer_vld2, mfloat, 8, 8, 2),
+		    VECT_ARRAY_VAR(buffer_vld2, int, 8, 8, 2), 8 * 2);
+  PAD(buffer_vld2_pad, mfloat, 8, 8);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VECT_ARRAY_INIT2(buffer_vld2, float, 16, 4);
   PAD(buffer_vld2_pad, float, 16, 4);
@@ -340,6 +386,12 @@ void exec_vldX_dup (void)
   PAD(buffer_vld2_pad, poly, 8, 16);
   VECT_ARRAY_INIT2(buffer_vld2, poly, 16, 8);
   PAD(buffer_vld2_pad, poly, 16, 8);
+#if MFLOAT8_SUPPORTED
+  VECT_ARRAY(buffer_vld2, mfloat, 8, 16, 2);
+  PAD(buffer_vld2_pad, mfloat, 8, 16);
+  __builtin_memcpy (VECT_ARRAY_VAR(buffer_vld2, mfloat, 8, 16, 2),
+		    VECT_ARRAY_VAR(buffer_vld2, int, 8, 16, 2), 16 * 2);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VECT_ARRAY_INIT2(buffer_vld2, float, 16, 8);
   PAD(buffer_vld2_pad, float, 16, 8);
@@ -368,6 +420,12 @@ void exec_vldX_dup (void)
   PAD(buffer_vld3_pad, poly, 8, 8);
   VECT_ARRAY_INIT3(buffer_vld3, poly, 16, 4);
   PAD(buffer_vld3_pad, poly, 16, 4);
+#if MFLOAT8_SUPPORTED
+  VECT_ARRAY(buffer_vld3, mfloat, 8, 8, 3);
+  PAD(buffer_vld3_pad, mfloat, 8, 8);
+  __builtin_memcpy (VECT_ARRAY_VAR(buffer_vld3, mfloat, 8, 8, 3),
+		    VECT_ARRAY_VAR(buffer_vld3, int, 8, 8, 3), 8 * 3);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VECT_ARRAY_INIT3(buffer_vld3, float, 16, 4);
   PAD(buffer_vld3_pad, float, 16, 4);
@@ -395,6 +453,12 @@ void exec_vldX_dup (void)
   PAD(buffer_vld3_pad, poly, 8, 16);
   VECT_ARRAY_INIT3(buffer_vld3, poly, 16, 8);
   PAD(buffer_vld3_pad, poly, 16, 8);
+#if MFLOAT8_SUPPORTED
+  VECT_ARRAY(buffer_vld3, mfloat, 8, 16, 3);
+  PAD(buffer_vld3_pad, mfloat, 8, 16);
+  __builtin_memcpy (VECT_ARRAY_VAR(buffer_vld3, mfloat, 8, 16, 3),
+		    VECT_ARRAY_VAR(buffer_vld3, int, 8, 16, 3), 16 * 3);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VECT_ARRAY_INIT3(buffer_vld3, float, 16, 8);
   PAD(buffer_vld3_pad, float, 16, 8);
@@ -423,6 +487,12 @@ void exec_vldX_dup (void)
   PAD(buffer_vld4_pad, poly, 8, 8);
   VECT_ARRAY_INIT4(buffer_vld4, poly, 16, 4);
   PAD(buffer_vld4_pad, poly, 16, 4);
+#if MFLOAT8_SUPPORTED
+  VECT_ARRAY(buffer_vld4, mfloat, 8, 8, 4);
+  PAD(buffer_vld4_pad, mfloat, 8, 8);
+  __builtin_memcpy (VECT_ARRAY_VAR(buffer_vld4, mfloat, 8, 8, 4),
+		    VECT_ARRAY_VAR(buffer_vld4, int, 8, 8, 4), 8 * 4);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VECT_ARRAY_INIT4(buffer_vld4, float, 16, 4);
   PAD(buffer_vld4_pad, float, 16, 4);
@@ -450,6 +520,12 @@ void exec_vldX_dup (void)
   PAD(buffer_vld4_pad, poly, 8, 16);
   VECT_ARRAY_INIT4(buffer_vld4, poly, 16, 8);
   PAD(buffer_vld4_pad, poly, 16, 8);
+#if MFLOAT8_SUPPORTED
+  VECT_ARRAY(buffer_vld4, mfloat, 8, 16, 4);
+  PAD(buffer_vld4_pad, mfloat, 8, 16);
+  __builtin_memcpy (VECT_ARRAY_VAR(buffer_vld4, mfloat, 8, 16, 4),
+		    VECT_ARRAY_VAR(buffer_vld4, int, 8, 16, 4), 16 * 4);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VECT_ARRAY_INIT4(buffer_vld4, float, 16, 8);
   PAD(buffer_vld4_pad, float, 16, 8);

@@ -6,6 +6,48 @@
 
 extern void abort (void);
 
+mfloat8x8_t __attribute__ ((noinline))
+wrap_vdup_n_mf8 (mfloat8_t a)
+{
+  return vdup_n_mf8 (a);
+}
+
+int __attribute__ ((noinline))
+test_vdup_n_mf8 (mfloat8_t a)
+{
+  mfloat8x8_t b;
+  mfloat8_t c[8];
+  int i;
+
+  b = wrap_vdup_n_mf8 (a);
+  vst1_mf8 (c, b);
+  for (i = 0; i < 8; i++)
+    if (__builtin_memcmp (&a, &c[i], 1) != 0)
+      return 1;
+  return 0;
+}
+
+mfloat8x16_t __attribute__ ((noinline))
+wrap_vdupq_n_mf8 (mfloat8_t a)
+{
+  return vdupq_n_mf8 (a);
+}
+
+int __attribute__ ((noinline))
+test_vdupq_n_mf8 (mfloat8_t a)
+{
+  mfloat8x16_t b;
+  mfloat8_t c[16];
+  int i;
+
+  b = wrap_vdupq_n_mf8 (a);
+  vst1q_mf8 (c, b);
+  for (i = 0; i < 16; i++)
+    if (__builtin_memcmp (&a, &c[i], 1) != 0)
+      return 1;
+  return 0;
+}
+
 float32x2_t __attribute__ ((noinline))
 wrap_vdup_n_f32 (float32_t a)
 {
@@ -537,6 +579,16 @@ test_vdupq_n_u64 ()
 int
 main ()
 {
+  mfloat8_t a, c;
+  uint8_t b = 11;
+  uint8_t d = 12;
+  __builtin_memcpy(&a, &b, 1);
+  __builtin_memcpy(&c, &d, 1);
+
+  if (test_vdup_n_mf8(a))
+    abort ();
+  if (test_vdupq_n_mf8(c))
+    abort ();
   if (test_vdup_n_f32 ())
     abort ();
   if (test_vdup_n_f64 ())
@@ -591,11 +643,15 @@ main ()
 /* No asm checks for vdup_n_f32, vdupq_n_f32, vdup_n_f64 and vdupq_n_f64.
    Cannot force floating point value in general purpose regester.  */
 
-/* Asm check for test_vdup_n_p8, test_vdup_n_s8, test_vdup_n_u8.  */
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, w\[0-9\]+" 3 } } */
+/* Asm check for test_vdup_n_mf8, test_vdup_n_p8, test_vdup_n_s8,
+   test_vdup_n_u8.  */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, w\[0-9\]+" 5 } } */
 
 /* Asm check for test_vdupq_n_p8, test_vdupq_n_s8, test_vdupq_n_u8.  */
 /* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, w\[0-9\]+" 3 } } */
+
+/* Asm check for test_vdupq_n_mf8.  */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, v\[0-9\]+\.b\\\[0\\\]" 1 } } */
 
 /* Asm check for test_vdup_n_p16, test_vdup_n_s16, test_vdup_n_u16.  */
 /* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.4h, w\[0-9\]+" 3 } } */

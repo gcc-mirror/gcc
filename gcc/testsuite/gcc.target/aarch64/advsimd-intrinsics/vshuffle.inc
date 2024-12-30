@@ -41,6 +41,7 @@ void FNNAME (INSN_NAME) (void)
   DECL_VSHUFFLE(uint, 32, 2);				\
   DECL_VSHUFFLE(poly, 8, 8);				\
   DECL_VSHUFFLE(poly, 16, 4);				\
+  MFLOAT8_ONLY(DECL_VSHUFFLE(mfloat, 8, 8));		\
   DECL_VSHUFFLE(float, 32, 2);				\
   DECL_VSHUFFLE(int, 8, 16);				\
   DECL_VSHUFFLE(int, 16, 8);				\
@@ -50,6 +51,7 @@ void FNNAME (INSN_NAME) (void)
   DECL_VSHUFFLE(uint, 32, 4);				\
   DECL_VSHUFFLE(poly, 8, 16);				\
   DECL_VSHUFFLE(poly, 16, 8);				\
+  MFLOAT8_ONLY(DECL_VSHUFFLE(mfloat, 8, 16));		\
   DECL_VSHUFFLE(float, 32, 4)
 
   DECL_ALL_VSHUFFLE();
@@ -60,6 +62,10 @@ void FNNAME (INSN_NAME) (void)
 
   /* Initialize input "vector" from "buffer".  */
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector1, buffer);
+#if MFLOAT8_SUPPORTED
+  VLOAD (vector1, buffer, , mfloat, mf, 8, 8);
+  VLOAD (vector1, buffer, q, mfloat, mf, 8, 16);
+#endif
 #if defined (FP16_SUPPORTED)
   VLOAD (vector1, buffer, , float, f, 16, 4);
   VLOAD (vector1, buffer, q, float, f, 16, 8);
@@ -76,6 +82,7 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, , uint, u, 32, 2, 0x77);
   VDUP(vector2, , poly, p, 8, 8, 0x55);
   VDUP(vector2, , poly, p, 16, 4, 0x66);
+  MFLOAT8_ONLY(VDUP(vector2, , mfloat, mf, 8, 8, MFLOAT8(0xaa)));
 #if defined (FP16_SUPPORTED)
   VDUP (vector2, , float, f, 16, 4, 14.6f);   /* 14.6f is 0x4b4d.  */
 #endif
@@ -89,6 +96,7 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, q, uint, u, 32, 4, 0x77);
   VDUP(vector2, q, poly, p, 8, 16, 0x55);
   VDUP(vector2, q, poly, p, 16, 8, 0x66);
+  MFLOAT8_ONLY(VDUP(vector2, q, mfloat, mf, 8, 16, MFLOAT8(0xbc)));
 #if defined (FP16_SUPPORTED)
   VDUP (vector2, q, float, f, 16, 8, 14.6f);
 #endif
@@ -103,6 +111,7 @@ void FNNAME (INSN_NAME) (void)
   TEST_VSHUFFLE(INSN, , uint, u, 32, 2);		\
   TEST_VSHUFFLE(INSN, , poly, p, 8, 8);			\
   TEST_VSHUFFLE(INSN, , poly, p, 16, 4);		\
+  MFLOAT8_ONLY(TEST_VSHUFFLE(INSN, , mfloat, mf, 8, 8)); \
   TEST_VSHUFFLE(INSN, , float, f, 32, 2);		\
   TEST_VSHUFFLE(INSN, q, int, s, 8, 16);		\
   TEST_VSHUFFLE(INSN, q, int, s, 16, 8);		\
@@ -112,6 +121,7 @@ void FNNAME (INSN_NAME) (void)
   TEST_VSHUFFLE(INSN, q, uint, u, 32, 4);		\
   TEST_VSHUFFLE(INSN, q, poly, p, 8, 16);		\
   TEST_VSHUFFLE(INSN, q, poly, p, 16, 8);		\
+  MFLOAT8_ONLY(TEST_VSHUFFLE(INSN, q, mfloat, mf, 8, 16)); \
   TEST_VSHUFFLE(INSN, q, float, f, 32, 4)
 
 #define TEST_VSHUFFLE_FP16(INSN)		\
@@ -127,6 +137,7 @@ void FNNAME (INSN_NAME) (void)
   TEST_EXTRA_CHUNK(uint, 32, 2, 1);		\
   TEST_EXTRA_CHUNK(poly, 8, 8, 1);		\
   TEST_EXTRA_CHUNK(poly, 16, 4, 1);		\
+  MFLOAT8_ONLY(TEST_EXTRA_CHUNK(mfloat, 8, 8, 1)); \
   TEST_EXTRA_CHUNK(float, 32, 2, 1);		\
   TEST_EXTRA_CHUNK(int, 8, 16, 1);		\
   TEST_EXTRA_CHUNK(int, 16, 8, 1);		\
@@ -136,6 +147,7 @@ void FNNAME (INSN_NAME) (void)
   TEST_EXTRA_CHUNK(uint, 32, 4, 1);		\
   TEST_EXTRA_CHUNK(poly, 8, 16, 1);		\
   TEST_EXTRA_CHUNK(poly, 16, 8, 1);		\
+  MFLOAT8_ONLY(TEST_EXTRA_CHUNK(mfloat, 8, 16, 1)); \
   TEST_EXTRA_CHUNK(float, 32, 4, 1)
 
   /* vshuffle support all vector types except [u]int64x1 and
@@ -150,6 +162,7 @@ void FNNAME (INSN_NAME) (void)
     CHECK(test_name, uint, 32, 2, PRIx32, EXPECTED, comment);		\
     CHECK_POLY(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);		\
     CHECK_POLY(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);		\
+    MFLOAT8_ONLY(CHECK_FP(test_name, mfloat, 8, 8, PRIx8, EXPECTED, comment)); \
     CHECK_FP(test_name, float, 32, 2, PRIx32, EXPECTED, comment);	\
 									\
     CHECK(test_name, int, 8, 16, PRIx8, EXPECTED, comment);		\
@@ -160,6 +173,7 @@ void FNNAME (INSN_NAME) (void)
     CHECK(test_name, uint, 32, 4, PRIx32, EXPECTED, comment);		\
     CHECK_POLY(test_name, poly, 8, 16, PRIx8, EXPECTED, comment);		\
     CHECK_POLY(test_name, poly, 16, 8, PRIx16, EXPECTED, comment);		\
+    MFLOAT8_ONLY(CHECK_FP(test_name, mfloat, 8, 16, PRIx8, EXPECTED, comment)); \
     CHECK_FP(test_name, float, 32, 4, PRIx32, EXPECTED, comment);	\
   }
 

@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf7, 0xf7, 0xf7, 0xf7,
 					0xf7, 0xf7, 0xf7, 0xf7 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff3, 0xfff3, 0xfff3, 0xfff3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xf6, 0xf6, 0xf6, 0xf6,
+					   0xf6, 0xf6, 0xf6, 0xf6 };
+#endif
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1700000, 0xc1700000 };
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 4) [] = { 0xca80, 0xca80,
@@ -47,6 +51,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xf5, 0xf5, 0xf5, 0xf5,
 					 0xf5, 0xf5, 0xf5, 0xf5 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff1, 0xfff1, 0xfff1, 0xfff1,
 					 0xfff1, 0xfff1, 0xfff1, 0xfff1 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xf7, 0xf7, 0xf7, 0xf7,
+					    0xf7, 0xf7, 0xf7, 0xf7,
+					    0xf7, 0xf7, 0xf7, 0xf7,
+					    0xf7, 0xf7, 0xf7, 0xf7 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 8) [] = { 0xca80, 0xca80,
 					       0xca80, 0xca80,
@@ -73,6 +83,7 @@ void exec_vdup_lane (void)
   clean_results ();
 
   TEST_MACRO_64BITS_VARIANTS_2_5(VLOAD, vector, buffer);
+  MFLOAT8_ONLY(VLOAD(vector, buffer, , mfloat, mf, 8, 8);)
 #if defined (FP16_SUPPORTED)
   VLOAD(vector, buffer, , float, f, 16, 4);
 #endif
@@ -89,6 +100,7 @@ void exec_vdup_lane (void)
   TEST_VDUP_LANE(, uint, u, 64, 1, 1, 0);
   TEST_VDUP_LANE(, poly, p, 8, 8, 8, 7);
   TEST_VDUP_LANE(, poly, p, 16, 4, 4, 3);
+  MFLOAT8_ONLY(TEST_VDUP_LANE(, mfloat, mf, 8, 8, 8, 6);)
 #if defined (FP16_SUPPORTED)
   TEST_VDUP_LANE(, float, f, 16, 4, 4, 3);
 #endif
@@ -104,6 +116,7 @@ void exec_vdup_lane (void)
   TEST_VDUP_LANE(q, uint, u, 64, 2, 1, 0);
   TEST_VDUP_LANE(q, poly, p, 8, 16, 8, 5);
   TEST_VDUP_LANE(q, poly, p, 16, 8, 4, 1);
+  MFLOAT8_ONLY(TEST_VDUP_LANE(q, mfloat, mf, 8, 16, 8, 7);)
 #if defined (FP16_SUPPORTED)
   TEST_VDUP_LANE(q, float, f, 16, 8, 4, 3);
 #endif
@@ -134,6 +147,10 @@ VECT_VAR_DECL(expected2,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected2,poly,8,8) [] = { 0xf7, 0xf7, 0xf7, 0xf7,
 					 0xf7, 0xf7, 0xf7, 0xf7 };
 VECT_VAR_DECL(expected2,poly,16,4) [] = { 0xfff3, 0xfff3, 0xfff3, 0xfff3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected2,hmfloat,8,8) [] = { 0xfb, 0xfb, 0xfb, 0xfb,
+					    0xfb, 0xfb, 0xfb, 0xfb };
+#endif
 VECT_VAR_DECL(expected2,hfloat,32,2) [] = { 0xc1700000, 0xc1700000 };
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected2, hfloat, 16, 4) [] = { 0xca80, 0xca80,
@@ -165,6 +182,12 @@ VECT_VAR_DECL(expected2,poly,8,16) [] = { 0xf5, 0xf5, 0xf5, 0xf5,
 					  0xf5, 0xf5, 0xf5, 0xf5 };
 VECT_VAR_DECL(expected2,poly,16,8) [] = { 0xfff1, 0xfff1, 0xfff1, 0xfff1,
 					  0xfff1, 0xfff1, 0xfff1, 0xfff1 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected2,hmfloat,8,16) [] = { 0xfc, 0xfc, 0xfc, 0xfc,
+					     0xfc, 0xfc, 0xfc, 0xfc,
+					     0xfc, 0xfc, 0xfc, 0xfc,
+					     0xfc, 0xfc, 0xfc, 0xfc };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected2, hfloat, 16, 8) [] = { 0xc880, 0xc880,
 						0xc880, 0xc880,
@@ -188,6 +211,7 @@ VECT_VAR_DECL(expected2,hfloat,32,4) [] = { 0xc1700000, 0xc1700000,
   clean_results ();
 
   TEST_MACRO_128BITS_VARIANTS_2_5(VLOAD, vector, buffer);
+  MFLOAT8_ONLY(VLOAD(vector, buffer, q, mfloat, mf, 8, 16);)
 #if defined (FP16_SUPPORTED)
   VLOAD(vector, buffer, q, float, f, 16, 8);
 #endif
@@ -204,6 +228,7 @@ VECT_VAR_DECL(expected2,hfloat,32,4) [] = { 0xc1700000, 0xc1700000,
   TEST_VDUP_LANEQ(, uint, u, 64, 1, 2, 0);
   TEST_VDUP_LANEQ(, poly, p, 8, 8, 16, 7);
   TEST_VDUP_LANEQ(, poly, p, 16, 4, 8, 3);
+  MFLOAT8_ONLY(TEST_VDUP_LANEQ(, mfloat, mf, 8, 8, 16, 11);)
 #if defined (FP16_SUPPORTED)
   TEST_VDUP_LANEQ(, float, f, 16, 4, 8, 3);
 #endif
@@ -219,6 +244,7 @@ VECT_VAR_DECL(expected2,hfloat,32,4) [] = { 0xc1700000, 0xc1700000,
   TEST_VDUP_LANEQ(q, uint, u, 64, 2, 2, 0);
   TEST_VDUP_LANEQ(q, poly, p, 8, 16, 16, 5);
   TEST_VDUP_LANEQ(q, poly, p, 16, 8, 8, 1);
+  MFLOAT8_ONLY(TEST_VDUP_LANEQ(q, mfloat, mf, 8, 16, 16, 12);)
 #if defined (FP16_SUPPORTED)
   TEST_VDUP_LANEQ(q, float, f, 16, 8, 8, 7);
 #endif

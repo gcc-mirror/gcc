@@ -6,6 +6,92 @@
 
 extern void abort (void);
 
+mfloat8x8_t __attribute__ ((noinline))
+wrap_vdup_lane_mf8_0 (mfloat8x8_t a)
+{
+  return vdup_lane_mf8 (a, 0);
+}
+
+mfloat8x8_t __attribute__ ((noinline))
+wrap_vdup_lane_mf8_1 (mfloat8x8_t a)
+{
+  return vdup_lane_mf8 (a, 1);
+}
+
+int __attribute__ ((noinline))
+test_vdup_lane_mf8 ()
+{
+  mfloat8_t m;
+  uint8_t n = 11;
+  mfloat8x8_t a;
+  mfloat8x8_t b;
+  int i;
+  /* Only two first cases are interesting.  */
+  mfloat8_t c[8];
+  mfloat8_t d[8];
+
+  __builtin_memcpy(&m, &n, 1);
+  b = vdup_n_mf8 (m);
+  vst1_mf8 (d, b);
+
+  a = vld1_mf8 (c);
+  b = wrap_vdup_lane_mf8_0 (a);
+  vst1_mf8 (d, b);
+  for (i = 0; i < 8; i++)
+    if (__builtin_memcmp (&c[0], &d[i], 1) != 0)
+      return 1;
+
+  b = wrap_vdup_lane_mf8_1 (a);
+  vst1_mf8 (d, b);
+  for (i = 0; i < 8; i++)
+    if (__builtin_memcmp (&c[1], &d[i], 1) != 0)
+      return 1;
+  return 0;
+}
+
+mfloat8x16_t __attribute__ ((noinline))
+wrap_vdupq_lane_mf8_0 (mfloat8x8_t a)
+{
+  return vdupq_lane_mf8 (a, 0);
+}
+
+mfloat8x16_t __attribute__ ((noinline))
+wrap_vdupq_lane_mf8_1 (mfloat8x8_t a)
+{
+  return vdupq_lane_mf8 (a, 1);
+}
+
+int __attribute__ ((noinline))
+test_vdupq_lane_mf8 ()
+{
+  mfloat8_t m;
+  uint8_t n = 11;
+  mfloat8x8_t a;
+  mfloat8x16_t b;
+  int i;
+  /* Only two first cases are interesting.  */
+  mfloat8_t c[8];
+  mfloat8_t d[16];
+
+  __builtin_memcpy(&m, &n, 1);
+  b = vdupq_n_mf8 (m);
+  vst1q_mf8 (d, b);
+
+  a = vld1_mf8 (c);
+  b = wrap_vdupq_lane_mf8_0 (a);
+  vst1q_mf8 (d, b);
+  for (i = 0; i < 16; i++)
+    if (__builtin_memcmp (&c[0], &d[i], 1) != 0)
+      return 1;
+
+  b = wrap_vdupq_lane_mf8_1 (a);
+  vst1q_mf8 (d, b);
+  for (i = 0; i < 16; i++)
+    if (__builtin_memcmp (&c[1], &d[i], 1) != 0)
+      return 1;
+  return 0;
+}
+
 float32x2_t __attribute__ ((noinline))
 wrap_vdup_lane_f32_0 (float32x2_t a)
 {
@@ -350,7 +436,10 @@ test_vdupq_lane_s64 ()
 int
 main ()
 {
-
+  if (test_vdup_lane_mf8 ())
+    abort ();
+  if (test_vdupq_lane_mf8 ())
+    abort ();
   if (test_vdup_lane_f32 ())
     abort ();
   if (test_vdup_lane_s8 ())
@@ -376,12 +465,12 @@ main ()
 }
 
 /* Asm check for test_vdup_lane_s8.  */
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, v\[0-9\]+\.b\\\[0\\\]" 1 } } */
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, v\[0-9\]+\.b\\\[1\\\]" 1 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, v\[0-9\]+\.b\\\[0\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, v\[0-9\]+\.b\\\[1\\\]" 2 } } */
 
 /* Asm check for test_vdupq_lane_s8.  */
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, v\[0-9\]+\.b\\\[0\\\]" 1 } } */
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, v\[0-9\]+\.b\\\[1\\\]" 1 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, v\[0-9\]+\.b\\\[0\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, v\[0-9\]+\.b\\\[1\\\]" 2 } } */
 
 /* Asm check for test_vdup_lane_s16.  */
 /* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.4h, v\[0-9\]+\.h\\\[0\\\]" 1 } } */

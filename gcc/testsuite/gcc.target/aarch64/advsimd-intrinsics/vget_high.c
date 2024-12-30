@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff1 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf8, 0xf9, 0xfa, 0xfb,
 					0xfc, 0xfd, 0xfe, 0xff };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff4, 0xfff5, 0xfff6, 0xfff7 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xf8, 0xf9, 0xfa, 0xfb,
+					   0xfc, 0xfd, 0xfe, 0xff };
+#endif
 VECT_VAR_DECL(expected,hfloat,16,4) [] = { 0xca00, 0xc980, 0xc900, 0xc880 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1600000, 0xc1500000 };
 
@@ -32,6 +36,7 @@ void exec_vget_high (void)
   DECL_VARIABLE_128BITS_VARIANTS(vector128);
 
   TEST_MACRO_128BITS_VARIANTS_2_5(VLOAD, vector128, buffer);
+  MFLOAT8_ONLY(VLOAD(vector128, buffer, q, mfloat, mf, 8, 16);)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VLOAD(vector128, buffer, q, float, f, 16, 8);
 #endif

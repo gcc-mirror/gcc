@@ -20,6 +20,10 @@ VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf0, 0x55, 0xf1, 0x55,
 					0xf2, 0x55, 0xf3, 0x55 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff0, 0x66, 0xfff1, 0x66 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1800000, 0x42066666 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xf0, 0xf9, 0xf1, 0xf9,
+					   0xf2, 0xf9, 0xf3, 0xf9 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 4) [] = { 0xcc00, 0x4b4d,
 					       0xcb80, 0x4b4d };
@@ -50,6 +54,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xf0, 0x55, 0xf1, 0x55,
 					 0xf6, 0x55, 0xf7, 0x55 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff0, 0x66, 0xfff1, 0x66,
 					 0xfff2, 0x66, 0xfff3, 0x66 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xf0, 0xd6, 0xf1, 0xd6,
+					    0xf2, 0xd6, 0xf3, 0xd6,
+					    0xf4, 0xd6, 0xf5, 0xd6,
+					    0xf6, 0xd6, 0xf7, 0xd6 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 8) [] = { 0xcc00, 0x4b4d,
 					       0xcb80, 0x4b4d,
@@ -82,6 +92,10 @@ void exec_vzip_half (void)
   CLEAN(expected, uint, 64, 1);
 
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector, buffer);
+#if MFLOAT8_SUPPORTED
+  VLOAD(vector, buffer, , mfloat, mf, 8, 8);
+  VLOAD(vector, buffer, q, mfloat, mf, 8, 16);
+#endif
 #if defined (FP16_SUPPORTED)
   VLOAD(vector, buffer, , float, f, 16, 4);
   VLOAD(vector, buffer, q, float, f, 16, 8);
@@ -99,6 +113,7 @@ void exec_vzip_half (void)
   VDUP(vector2, , uint, u, 32, 2, 0x77);
   VDUP(vector2, , poly, p, 8, 8, 0x55);
   VDUP(vector2, , poly, p, 16, 4, 0x66);
+  MFLOAT8_ONLY(VDUP(vector2, , mfloat, mf, 8, 8, MFLOAT8(0xf9)));
 #if defined (FP16_SUPPORTED)
   VDUP (vector2, , float, f, 16, 4, 14.6f);   /* 14.6f is 0x4b4d.  */
 #endif
@@ -114,6 +129,7 @@ void exec_vzip_half (void)
   VDUP(vector2, q, uint, u, 64, 2, 0x88);
   VDUP(vector2, q, poly, p, 8, 16, 0x55);
   VDUP(vector2, q, poly, p, 16, 8, 0x66);
+  MFLOAT8_ONLY(VDUP(vector2, q, mfloat, mf, 8, 16, MFLOAT8(0xd6)));
 #if defined (FP16_SUPPORTED)
   VDUP (vector2, q, float, f, 16, 8, 14.6f);
 #endif
@@ -128,6 +144,7 @@ void exec_vzip_half (void)
   TEST_VZIP1(, uint, u, 32, 2);
   TEST_VZIP1(, poly, p, 8, 8);
   TEST_VZIP1(, poly, p, 16, 4);
+  MFLOAT8_ONLY(TEST_VZIP1(, mfloat, mf, 8, 8));
 #if defined (FP16_SUPPORTED)
   TEST_VZIP1(, float, f, 16, 4);
 #endif
@@ -143,6 +160,7 @@ void exec_vzip_half (void)
   TEST_VZIP1(q, uint, u, 64, 2);
   TEST_VZIP1(q, poly, p, 8, 16);
   TEST_VZIP1(q, poly, p, 16, 8);
+  MFLOAT8_ONLY(TEST_VZIP1(q, mfloat, mf, 8, 16));
 #if defined (FP16_SUPPORTED)
   TEST_VZIP1(q, float, f, 16, 8);
 #endif
@@ -175,6 +193,10 @@ VECT_VAR_DECL(expected2,poly,8,8) [] = { 0xf4, 0x55, 0xf5, 0x55,
 					 0xf6, 0x55, 0xf7, 0x55 };
 VECT_VAR_DECL(expected2,poly,16,4) [] = { 0xfff2, 0x66, 0xfff3, 0x66 };
 VECT_VAR_DECL(expected2,hfloat,32,2) [] = { 0xc1700000, 0x42066666 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected2,hmfloat,8,8) [] = { 0xf4, 0xf9, 0xf5, 0xf9,
+					    0xf6, 0xf9, 0xf7, 0xf9 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected2, hfloat, 16, 4) [] = { 0xcb00, 0x4b4d,
 						0xca80, 0x4b4d };
@@ -205,6 +227,12 @@ VECT_VAR_DECL(expected2,poly,8,16) [] = { 0xf8, 0x55, 0xf9, 0x55,
 					  0xfe, 0x55, 0xff, 0x55 };
 VECT_VAR_DECL(expected2,poly,16,8) [] = { 0xfff4, 0x66, 0xfff5, 0x66,
 					  0xfff6, 0x66, 0xfff7, 0x66 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected2,hmfloat,8,16) [] = { 0xf8, 0xd6, 0xf9, 0xd6,
+					     0xfa, 0xd6, 0xfb, 0xd6,
+					     0xfc, 0xd6, 0xfd, 0xd6,
+					     0xfe, 0xd6, 0xff, 0xd6 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected2, hfloat, 16, 8) [] = { 0xca00, 0x4b4d,
 						0xc980, 0x4b4d,
@@ -225,6 +253,7 @@ VECT_VAR_DECL(expected2,hfloat,32,4) [] = { 0xc1600000, 0x42073333,
   TEST_VZIP2(, uint, u, 32, 2);
   TEST_VZIP2(, poly, p, 8, 8);
   TEST_VZIP2(, poly, p, 16, 4);
+  MFLOAT8_ONLY(TEST_VZIP2(, mfloat, mf, 8, 8));
 #if defined (FP16_SUPPORTED)
   TEST_VZIP2(, float, f, 16, 4);
 #endif
@@ -240,6 +269,7 @@ VECT_VAR_DECL(expected2,hfloat,32,4) [] = { 0xc1600000, 0x42073333,
   TEST_VZIP2(q, uint, u, 64, 2);
   TEST_VZIP2(q, poly, p, 8, 16);
   TEST_VZIP2(q, poly, p, 16, 8);
+  MFLOAT8_ONLY(TEST_VZIP2(q, mfloat, mf, 8, 16));
 #if defined (FP16_SUPPORTED)
   TEST_VZIP2(q, float, f, 16, 8);
 #endif

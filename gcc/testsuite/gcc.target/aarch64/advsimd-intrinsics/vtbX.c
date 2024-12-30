@@ -9,6 +9,10 @@ VECT_VAR_DECL(expected_vtbl1,uint,8,8) [] = { 0x0, 0xf3, 0xf3, 0xf3,
 					      0x0, 0x0, 0xf3, 0xf3 };
 VECT_VAR_DECL(expected_vtbl1,poly,8,8) [] = { 0x0, 0xf3, 0xf3, 0xf3,
 					      0x0, 0x0, 0xf3, 0xf3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbl1,hmfloat,8,8) [] = { 0x0, 0xf3, 0xf3, 0xf3,
+						 0x0, 0x0, 0xf3, 0xf3 };
+#endif
 
 /* Expected results for vtbl2.  */
 VECT_VAR_DECL(expected_vtbl2,int,8,8) [] = { 0xf6, 0xf3, 0xf3, 0xf3,
@@ -17,6 +21,10 @@ VECT_VAR_DECL(expected_vtbl2,uint,8,8) [] = { 0xf6, 0xf5, 0xf5, 0xf5,
 					      0x0, 0x0, 0xf5, 0xf5 };
 VECT_VAR_DECL(expected_vtbl2,poly,8,8) [] = { 0xf6, 0xf5, 0xf5, 0xf5,
 					      0x0, 0x0, 0xf5, 0xf5 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbl2,hmfloat,8,8) [] = { 0xf6, 0xf5, 0xf5, 0xf5,
+						 0x0, 0x0, 0xf5, 0xf5 };
+#endif
 
 /* Expected results for vtbl3.  */
 VECT_VAR_DECL(expected_vtbl3,int,8,8) [] = { 0xf8, 0xf4, 0xf4, 0xf4,
@@ -25,6 +33,10 @@ VECT_VAR_DECL(expected_vtbl3,uint,8,8) [] = { 0xf8, 0xf7, 0xf7, 0xf7,
 					      0xff, 0x0, 0xf7, 0xf7 };
 VECT_VAR_DECL(expected_vtbl3,poly,8,8) [] = { 0xf8, 0xf7, 0xf7, 0xf7,
 					      0xff, 0x0, 0xf7, 0xf7 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbl3,hmfloat,8,8) [] = { 0xf8, 0xf7, 0xf7, 0xf7,
+						 0xff, 0x0, 0xf7, 0xf7 };
+#endif
 
 /* Expected results for vtbl4.  */
 VECT_VAR_DECL(expected_vtbl4,int,8,8) [] = { 0xfa, 0xf5, 0xf5, 0xf5,
@@ -33,6 +45,10 @@ VECT_VAR_DECL(expected_vtbl4,uint,8,8) [] = { 0xfa, 0xf9, 0xf9, 0xf9,
 					     0x3, 0x0, 0xf9, 0xf9 };
 VECT_VAR_DECL(expected_vtbl4,poly,8,8) [] = { 0xfa, 0xf9, 0xf9, 0xf9,
 					     0x3, 0x0, 0xf9, 0xf9 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbl4,hmfloat,8,8) [] = { 0xfa, 0xf9, 0xf9, 0xf9,
+						 0x3, 0x0, 0xf9, 0xf9 };
+#endif
 
 /* Expected results for vtbx1.  */
 VECT_VAR_DECL(expected_vtbx1,int,8,8) [] = { 0x33, 0xf2, 0xf2, 0xf2,
@@ -41,6 +57,10 @@ VECT_VAR_DECL(expected_vtbx1,uint,8,8) [] = { 0xcc, 0xf3, 0xf3, 0xf3,
 					     0xcc, 0xcc, 0xf3, 0xf3 };
 VECT_VAR_DECL(expected_vtbx1,poly,8,8) [] = { 0xcc, 0xf3, 0xf3, 0xf3,
 					     0xcc, 0xcc, 0xf3, 0xf3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbx1,hmfloat,8,8) [] = { 0x55, 0xf3, 0xf3, 0xf3,
+						 0x55, 0x55, 0xf3, 0xf3 };
+#endif
 
 /* Expected results for vtbx2.  */
 VECT_VAR_DECL(expected_vtbx2,int,8,8) [] = { 0xf6, 0xf3, 0xf3, 0xf3,
@@ -49,6 +69,10 @@ VECT_VAR_DECL(expected_vtbx2,uint,8,8) [] = { 0xf6, 0xf5, 0xf5, 0xf5,
 					     0xcc, 0xcc, 0xf5, 0xf5 };
 VECT_VAR_DECL(expected_vtbx2,poly,8,8) [] = { 0xf6, 0xf5, 0xf5, 0xf5,
 					     0xcc, 0xcc, 0xf5, 0xf5 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbx2,hmfloat,8,8) [] = { 0xf6, 0xf5, 0xf5, 0xf5,
+						 0x55, 0x55, 0xf5, 0xf5 };
+#endif
 
 /* Expected results for vtbx3.  */
 VECT_VAR_DECL(expected_vtbx3,int,8,8) [] = { 0xf8, 0xf4, 0xf4, 0xf4,
@@ -57,6 +81,10 @@ VECT_VAR_DECL(expected_vtbx3,uint,8,8) [] = { 0xf8, 0xf7, 0xf7, 0xf7,
 					     0xff, 0xcc, 0xf7, 0xf7 };
 VECT_VAR_DECL(expected_vtbx3,poly,8,8) [] = { 0xf8, 0xf7, 0xf7, 0xf7,
 					     0xff, 0xcc, 0xf7, 0xf7 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbx3,hmfloat,8,8) [] = { 0xf8, 0xf7, 0xf7, 0xf7,
+						 0xff, 0x55, 0xf7, 0xf7 };
+#endif
 
 /* Expected results for vtbx4.  */
 VECT_VAR_DECL(expected_vtbx4,int,8,8) [] = { 0xfa, 0xf5, 0xf5, 0xf5,
@@ -65,6 +93,10 @@ VECT_VAR_DECL(expected_vtbx4,uint,8,8) [] = { 0xfa, 0xf9, 0xf9, 0xf9,
 					      0x3, 0xcc, 0xf9, 0xf9 };
 VECT_VAR_DECL(expected_vtbx4,poly,8,8) [] = { 0xfa, 0xf9, 0xf9, 0xf9,
 					      0x3, 0xcc, 0xf9, 0xf9 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected_vtbx4,hmfloat,8,8) [] = { 0xfa, 0xf9, 0xf9, 0xf9,
+						 0x3, 0x55, 0xf9, 0xf9 };
+#endif
 
 void exec_vtbX (void)
 {
@@ -105,32 +137,38 @@ void exec_vtbX (void)
   DECL_VARIABLE(vector_res, int, 8, 8);
   DECL_VARIABLE(vector_res, uint, 8, 8);
   DECL_VARIABLE(vector_res, poly, 8, 8);
+  MFLOAT8_ONLY(DECL_VARIABLE(vector_res, mfloat, 8, 8));
 
   /* For vtbl1.  */
   DECL_VARIABLE(table_vector, int, 8, 8);
   DECL_VARIABLE(table_vector, uint, 8, 8);
   DECL_VARIABLE(table_vector, poly, 8, 8);
+  MFLOAT8_ONLY(DECL_VARIABLE(table_vector, mfloat, 8, 8));
 
   /* For vtbx*.  */
   DECL_VARIABLE(default_vector, int, 8, 8);
   DECL_VARIABLE(default_vector, uint, 8, 8);
   DECL_VARIABLE(default_vector, poly, 8, 8);
+  MFLOAT8_ONLY(DECL_VARIABLE(default_vector, mfloat, 8, 8));
 
   /* We need only 8 bits variants.  */
 #define DECL_ALL_VTBLX(X)			\
   DECL_VTBX(int, 8, 8, X);			\
   DECL_VTBX(uint, 8, 8, X);			\
-  DECL_VTBX(poly, 8, 8, X)
+  DECL_VTBX(poly, 8, 8, X);			\
+  MFLOAT8_ONLY(DECL_VTBX(mfloat, 8, 8, X))
 
 #define TEST_ALL_VTBL1()			\
   TEST_VTBL1(int, s, int, 8, 8);		\
   TEST_VTBL1(uint, u, uint, 8, 8);		\
-  TEST_VTBL1(poly, p, uint, 8, 8)
+  TEST_VTBL1(poly, p, uint, 8, 8);		\
+  MFLOAT8_ONLY(TEST_VTBL1(mfloat, mf, uint, 8, 8))
 
 #define TEST_ALL_VTBLX(X)			\
   TEST_VTBLX(int, s, int, 8, 8, X);		\
   TEST_VTBLX(uint, u, uint, 8, 8, X);		\
-  TEST_VTBLX(poly, p, uint, 8, 8, X)
+  TEST_VTBLX(poly, p, uint, 8, 8, X);		\
+  MFLOAT8_ONLY(TEST_VTBLX(mfloat, mf, uint, 8, 8, X))
 
   /* Declare the temporary buffers / variables.  */
   DECL_ALL_VTBLX(2);
@@ -168,6 +206,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl1, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl1, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl1, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbl1, ""));
 
   /* Check vtbl2.  */
   clean_results ();
@@ -178,6 +217,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl2, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl2, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl2, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbl2, ""));
 
   /* Check vtbl3.  */
   clean_results ();
@@ -188,6 +228,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl3, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl3, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl3, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbl3, ""));
 
   /* Check vtbl4.  */
   clean_results ();
@@ -198,6 +239,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl4, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl4, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl4, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbl4, ""));
 
 
   /* Now test VTBX.  */
@@ -229,17 +271,20 @@ void exec_vtbX (void)
 #define TEST_ALL_VTBX1()			\
   TEST_VTBX1(int, s, int, 8, 8);		\
   TEST_VTBX1(uint, u, uint, 8, 8);		\
-  TEST_VTBX1(poly, p, uint, 8, 8)
+  TEST_VTBX1(poly, p, uint, 8, 8);		\
+  MFLOAT8_ONLY(TEST_VTBX1(mfloat, mf, uint, 8, 8))
 
 #define TEST_ALL_VTBXX(X)			\
   TEST_VTBXX(int, s, int, 8, 8, X);		\
   TEST_VTBXX(uint, u, uint, 8, 8, X);		\
-  TEST_VTBXX(poly, p, uint, 8, 8, X)
+  TEST_VTBXX(poly, p, uint, 8, 8, X);		\
+  MFLOAT8_ONLY(TEST_VTBXX(mfloat, mf, uint, 8, 8, X))
 
   /* Choose init value arbitrarily, will be used as default value.  */
   VDUP(default_vector, , int, s, 8, 8, 0x33);
   VDUP(default_vector, , uint, u, 8, 8, 0xCC);
   VDUP(default_vector, , poly, p, 8, 8, 0xCC);
+  MFLOAT8_ONLY(VDUP(default_vector, , mfloat, mf, 8, 8, MFLOAT8(0x55)));
 
   /* Check vtbx1.  */
   clean_results ();
@@ -250,6 +295,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx1, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx1, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx1, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbx1, ""));
 
   /* Check vtbx2.  */
   clean_results ();
@@ -260,6 +306,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx2, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx2, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx2, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbx2, ""));
 
   /* Check vtbx3.  */
   clean_results ();
@@ -270,6 +317,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx3, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx3, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx3, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbx3, ""));
 
   /* Check vtbx4.  */
   clean_results ();
@@ -280,6 +328,7 @@ void exec_vtbX (void)
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx4, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx4, "");
   CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx4, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 8, PRIx8, expected_vtbx4, ""));
 }
 
 int main (void)

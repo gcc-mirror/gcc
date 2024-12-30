@@ -26,6 +26,26 @@
 #define ENTRY_BINARY_LANE(N, T0, T1, T2, U, F)	\
   ENTRY (N, binary_lane, T0, T1, T2, none, U, F)
 
+#undef ENTRY_BINARY_TWO_LANES
+#define ENTRY_BINARY_TWO_LANES(N, T0, T1, T2, U, F)	\
+  ENTRY (N, binary_two_lanes, T0, T1, T2, none, U, F)
+
+#undef ENTRY_LOAD
+#define ENTRY_LOAD(N, T0, T1, U)			\
+  ENTRY (N, load, T0, T1, none, none, U, LOAD)
+
+#undef ENTRY_LOAD_LANE
+#define ENTRY_LOAD_LANE(N, T0, T1, T2, U)		\
+  ENTRY (N, load_lane, T0, T1, T2, none, U, LOAD)
+
+#undef ENTRY_STORE
+#define ENTRY_STORE(N, T0, T1, U)			\
+  ENTRY (N, store, T0, T1, none, none, U, STORE)
+
+#undef ENTRY_STORE_LANE
+#define ENTRY_STORE_LANE(N, T0, T1, U)			\
+  ENTRY (N, store_lane, T0, T1, none, none, U, STORE)
+
 #undef ENTRY_TERNARY
 #define ENTRY_TERNARY(N, T0, T1, T2, T3, U, F)	\
   ENTRY (N, ternary, T0, T1, T2, T3, U, F)
@@ -37,6 +57,10 @@
 #undef ENTRY_UNARY
 #define ENTRY_UNARY(N, T0, T1, U, F)	\
   ENTRY (N, unary, T0, T1, none, none, U, F)
+
+#undef ENTRY_UNARY_LANE
+#define ENTRY_UNARY_LANE(N, T0, T1, U, F)	\
+  ENTRY (N, unary_lane, T0, T1, none, none, U, F)
 
 #undef ENTRY_BINARY_VHSDF
 #define ENTRY_BINARY_VHSDF(NAME, UNSPEC, FLAGS)			\
@@ -121,6 +145,7 @@ ENTRY_BINARY_VHSDF (vamin, UNSPEC_FAMIN, FP)
 ENTRY_TERNARY_VLUT8 (p)
 ENTRY_TERNARY_VLUT8 (s)
 ENTRY_TERNARY_VLUT8 (u)
+ENTRY_TERNARY_VLUT8 (mf)
 
 ENTRY_TERNARY_VLUT16 (bf)
 ENTRY_TERNARY_VLUT16 (f)
@@ -169,4 +194,225 @@ ENTRY_FMA_FPM (vmlallbb, f32, UNSPEC_FMLALLBB_FP8)
 ENTRY_FMA_FPM (vmlallbt, f32, UNSPEC_FMLALLBT_FP8)
 ENTRY_FMA_FPM (vmlalltb, f32, UNSPEC_FMLALLTB_FP8)
 ENTRY_FMA_FPM (vmlalltt, f32, UNSPEC_FMLALLTT_FP8)
+#undef REQUIRED_EXTENSIONS
+
+// bsl
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_TERNARY (vbsl_mf8, mf8, u8, mf8, mf8, UNSPEC_BSL, QUIET)
+ENTRY_TERNARY (vbslq_mf8, mf8q, u8q, mf8q, mf8q, UNSPEC_BSL, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// combine
+#define REQUIRED_EXTENSIONS nonstreaming_only (NONE)
+ENTRY_BINARY (vcombine_mf8, mf8q, mf8, mf8, UNSPEC_COMBINE, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// copy_lane
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_BINARY_TWO_LANES (vcopy_lane_mf8, mf8, mf8, mf8,
+			UNSPEC_VEC_COPY, QUIET)
+ENTRY_BINARY_TWO_LANES (vcopyq_lane_mf8, mf8q, mf8q, mf8,
+			UNSPEC_VEC_COPY, QUIET)
+ENTRY_BINARY_TWO_LANES (vcopy_laneq_mf8, mf8, mf8, mf8q,
+			UNSPEC_VEC_COPY, QUIET)
+ENTRY_BINARY_TWO_LANES (vcopyq_laneq_mf8, mf8q, mf8q, mf8q,
+			UNSPEC_VEC_COPY, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// create
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_UNARY (vcreate_mf8, mf8, u64_scalar, UNSPEC_VCREATE, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// dup
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_UNARY (vdup_n_mf8, mf8, mf8_scalar, UNSPEC_DUP, QUIET)
+ENTRY_UNARY (vdupq_n_mf8, mf8q, mf8_scalar, UNSPEC_DUP, QUIET)
+
+ENTRY_UNARY_LANE (vdup_lane_mf8, mf8, mf8, UNSPEC_DUP_LANE, QUIET)
+ENTRY_UNARY_LANE (vdupq_lane_mf8, mf8q, mf8, UNSPEC_DUP_LANE, QUIET)
+ENTRY_UNARY_LANE (vdup_laneq_mf8, mf8, mf8q, UNSPEC_DUP_LANE, QUIET)
+ENTRY_UNARY_LANE (vdupq_laneq_mf8, mf8q, mf8q, UNSPEC_DUP_LANE, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// dupb_lane
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_UNARY_LANE (vdupb_lane_mf8, mf8_scalar, mf8, UNSPEC_GET_LANE, QUIET)
+ENTRY_UNARY_LANE (vdupb_laneq_mf8, mf8_scalar, mf8q, UNSPEC_GET_LANE, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// ext
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_BINARY_LANE (vext_mf8, mf8, mf8, mf8, UNSPEC_EXT, QUIET)
+ENTRY_BINARY_LANE (vextq_mf8, mf8q, mf8q, mf8q, UNSPEC_EXT, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// ld1
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_LOAD (vld1_mf8, mf8, mf8_scalar_const_ptr, UNSPEC_LD1)
+ENTRY_LOAD (vld1q_mf8, mf8q, mf8_scalar_const_ptr, UNSPEC_LD1)
+ENTRY_LOAD (vld1_dup_mf8, mf8, mf8_scalar_const_ptr, UNSPEC_DUP)
+ENTRY_LOAD (vld1q_dup_mf8, mf8q, mf8_scalar_const_ptr, UNSPEC_DUP)
+
+ENTRY_LOAD_LANE (vld1_lane_mf8, mf8, mf8_scalar_const_ptr, mf8,
+		 UNSPEC_SET_LANE)
+ENTRY_LOAD_LANE (vld1q_lane_mf8, mf8q, mf8_scalar_const_ptr, mf8q,
+		 UNSPEC_SET_LANE)
+#undef REQUIRED_EXTENSIONS
+
+// ld<n>
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_LOAD (vld1_mf8_x2, mf8x2, mf8_scalar_const_ptr, UNSPEC_LD1x2)
+ENTRY_LOAD (vld1q_mf8_x2, mf8qx2, mf8_scalar_const_ptr, UNSPEC_LD1x2)
+ENTRY_LOAD (vld2_mf8, mf8x2, mf8_scalar_const_ptr, UNSPEC_LD2)
+ENTRY_LOAD (vld2q_mf8, mf8qx2, mf8_scalar_const_ptr, UNSPEC_LD2)
+ENTRY_LOAD (vld2_dup_mf8, mf8x2, mf8_scalar_const_ptr, UNSPEC_LD2_DUP)
+ENTRY_LOAD (vld2q_dup_mf8, mf8qx2, mf8_scalar_const_ptr, UNSPEC_LD2_DUP)
+ENTRY_LOAD_LANE (vld2_lane_mf8, mf8x2, mf8_scalar_const_ptr, mf8x2,
+		 UNSPEC_LD2_LANE)
+ENTRY_LOAD_LANE (vld2q_lane_mf8, mf8qx2, mf8_scalar_const_ptr, mf8qx2,
+		 UNSPEC_LD2_LANE)
+
+ENTRY_LOAD (vld1_mf8_x3, mf8x3, mf8_scalar_const_ptr, UNSPEC_LD1x3)
+ENTRY_LOAD (vld1q_mf8_x3, mf8qx3, mf8_scalar_const_ptr, UNSPEC_LD1x3)
+ENTRY_LOAD (vld3_mf8, mf8x3, mf8_scalar_const_ptr, UNSPEC_LD3)
+ENTRY_LOAD (vld3q_mf8, mf8qx3, mf8_scalar_const_ptr, UNSPEC_LD3)
+ENTRY_LOAD (vld3_dup_mf8, mf8x3, mf8_scalar_const_ptr, UNSPEC_LD3_DUP)
+ENTRY_LOAD (vld3q_dup_mf8, mf8qx3, mf8_scalar_const_ptr, UNSPEC_LD3_DUP)
+ENTRY_LOAD_LANE (vld3_lane_mf8, mf8x3, mf8_scalar_const_ptr, mf8x3,
+		 UNSPEC_LD3_LANE)
+ENTRY_LOAD_LANE (vld3q_lane_mf8, mf8qx3, mf8_scalar_const_ptr, mf8qx3,
+		 UNSPEC_LD3_LANE)
+
+ENTRY_LOAD (vld1_mf8_x4, mf8x4, mf8_scalar_const_ptr, UNSPEC_LD1x4)
+ENTRY_LOAD (vld1q_mf8_x4, mf8qx4, mf8_scalar_const_ptr, UNSPEC_LD1x4)
+ENTRY_LOAD (vld4_mf8, mf8x4, mf8_scalar_const_ptr, UNSPEC_LD4)
+ENTRY_LOAD (vld4q_mf8, mf8qx4, mf8_scalar_const_ptr, UNSPEC_LD4)
+ENTRY_LOAD (vld4_dup_mf8, mf8x4, mf8_scalar_const_ptr, UNSPEC_LD4_DUP)
+ENTRY_LOAD (vld4q_dup_mf8, mf8qx4, mf8_scalar_const_ptr, UNSPEC_LD4_DUP)
+ENTRY_LOAD_LANE (vld4_lane_mf8, mf8x4, mf8_scalar_const_ptr, mf8x4,
+		 UNSPEC_LD4_LANE)
+ENTRY_LOAD_LANE (vld4q_lane_mf8, mf8qx4, mf8_scalar_const_ptr, mf8qx4,
+		 UNSPEC_LD4_LANE)
+#undef REQUIRED_EXTENSIONS
+
+// mov
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_UNARY (vmov_n_mf8, mf8, mf8_scalar, UNSPEC_DUP, QUIET)
+ENTRY_UNARY (vmovq_n_mf8, mf8q, mf8_scalar, UNSPEC_DUP, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// rev
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_UNARY (vrev64_mf8, mf8, mf8, UNSPEC_REV64, QUIET)
+ENTRY_UNARY (vrev64q_mf8, mf8q, mf8q, UNSPEC_REV64, QUIET)
+
+ENTRY_UNARY (vrev32_mf8, mf8, mf8, UNSPEC_REV32, QUIET)
+ENTRY_UNARY (vrev32q_mf8, mf8q, mf8q, UNSPEC_REV32, QUIET)
+
+ENTRY_UNARY (vrev16_mf8, mf8, mf8, UNSPEC_REV16, QUIET)
+ENTRY_UNARY (vrev16q_mf8, mf8q, mf8q, UNSPEC_REV16, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// set_lane
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_BINARY_LANE (vset_lane_mf8, mf8, mf8_scalar, mf8, UNSPEC_SET_LANE, QUIET)
+ENTRY_BINARY_LANE (vsetq_lane_mf8, mf8q, mf8_scalar, mf8q, UNSPEC_SET_LANE, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// st1
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_STORE (vst1_mf8, mf8_scalar_ptr, mf8, UNSPEC_ST1)
+ENTRY_STORE (vst1q_mf8, mf8_scalar_ptr, mf8q, UNSPEC_ST1)
+
+ENTRY_STORE_LANE (vst1_lane_mf8, mf8_scalar_ptr, mf8, UNSPEC_ST1_LANE)
+ENTRY_STORE_LANE (vst1q_lane_mf8, mf8_scalar_ptr, mf8q, UNSPEC_ST1_LANE)
+#undef REQUIRED_EXTENSIONS
+
+// st<n>
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_STORE (vst2_mf8, mf8_scalar_ptr, mf8x2, UNSPEC_ST2)
+ENTRY_STORE (vst2q_mf8, mf8_scalar_ptr, mf8qx2, UNSPEC_ST2)
+ENTRY_STORE (vst1_mf8_x2, mf8_scalar_ptr, mf8x2, UNSPEC_ST1x2)
+ENTRY_STORE (vst1q_mf8_x2, mf8_scalar_ptr, mf8qx2, UNSPEC_ST1x2)
+ENTRY_STORE_LANE (vst2_lane_mf8, mf8_scalar_ptr, mf8x2, UNSPEC_ST2_LANE)
+ENTRY_STORE_LANE (vst2q_lane_mf8, mf8_scalar_ptr, mf8qx2, UNSPEC_ST2_LANE)
+
+ENTRY_STORE (vst3_mf8, mf8_scalar_ptr, mf8x3, UNSPEC_ST3)
+ENTRY_STORE (vst3q_mf8, mf8_scalar_ptr, mf8qx3, UNSPEC_ST3)
+ENTRY_STORE (vst1_mf8_x3, mf8_scalar_ptr, mf8x3, UNSPEC_ST1x3)
+ENTRY_STORE (vst1q_mf8_x3, mf8_scalar_ptr, mf8qx3, UNSPEC_ST1x3)
+ENTRY_STORE_LANE (vst3_lane_mf8, mf8_scalar_ptr, mf8x3, UNSPEC_ST3_LANE)
+ENTRY_STORE_LANE (vst3q_lane_mf8, mf8_scalar_ptr, mf8qx3, UNSPEC_ST3_LANE)
+
+ENTRY_STORE (vst4_mf8, mf8_scalar_ptr, mf8x4, UNSPEC_ST4)
+ENTRY_STORE (vst4q_mf8, mf8_scalar_ptr, mf8qx4, UNSPEC_ST4)
+ENTRY_STORE (vst1_mf8_x4, mf8_scalar_ptr, mf8x4, UNSPEC_ST1x4)
+ENTRY_STORE (vst1q_mf8_x4, mf8_scalar_ptr, mf8qx4, UNSPEC_ST1x4)
+ENTRY_STORE_LANE (vst4_lane_mf8, mf8_scalar_ptr, mf8x4, UNSPEC_ST4_LANE)
+ENTRY_STORE_LANE (vst4q_lane_mf8, mf8_scalar_ptr, mf8qx4, UNSPEC_ST4_LANE)
+#undef REQUIRED_EXTENSIONS
+
+// tbl<n>
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_BINARY (vtbl1_mf8, mf8, mf8, u8, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vtbl2_mf8, mf8, mf8x2, u8, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vtbl3_mf8, mf8, mf8x3, u8, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vtbl4_mf8, mf8, mf8x4, u8, UNSPEC_TBL, QUIET)
+
+ENTRY_BINARY (vqtbl1_mf8, mf8, mf8q, u8, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vqtbl1q_mf8, mf8q, mf8q, u8q, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vqtbl2_mf8, mf8, mf8qx2, u8, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vqtbl2q_mf8, mf8q, mf8qx2, u8q, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vqtbl3_mf8, mf8, mf8qx3, u8, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vqtbl3q_mf8, mf8q, mf8qx3, u8q, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vqtbl4_mf8, mf8, mf8qx4, u8, UNSPEC_TBL, QUIET)
+ENTRY_BINARY (vqtbl4q_mf8, mf8q, mf8qx4, u8q, UNSPEC_TBL, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// tbx<n>
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_TERNARY (vtbx1_mf8, mf8, mf8, mf8, u8, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vtbx2_mf8, mf8, mf8, mf8x2, u8, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vtbx3_mf8, mf8, mf8, mf8x3, u8, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vtbx4_mf8, mf8, mf8, mf8x4, u8, UNSPEC_TBX, QUIET)
+
+ENTRY_TERNARY (vqtbx1_mf8, mf8, mf8, mf8q, u8, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vqtbx1q_mf8, mf8q, mf8q, mf8q, u8q, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vqtbx2_mf8, mf8, mf8, mf8qx2, u8, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vqtbx2q_mf8, mf8q, mf8q, mf8qx2, u8q, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vqtbx3_mf8, mf8, mf8, mf8qx3, u8, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vqtbx3q_mf8, mf8q, mf8q, mf8qx3, u8q, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vqtbx4_mf8, mf8, mf8, mf8qx4, u8, UNSPEC_TBX, QUIET)
+ENTRY_TERNARY (vqtbx4q_mf8, mf8q, mf8q, mf8qx4, u8q, UNSPEC_TBX, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// trn<n>
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_BINARY (vtrn1_mf8, mf8, mf8, mf8, UNSPEC_TRN1, QUIET)
+ENTRY_BINARY (vtrn1q_mf8, mf8q, mf8q, mf8q, UNSPEC_TRN1, QUIET)
+ENTRY_BINARY (vtrn2_mf8, mf8, mf8, mf8, UNSPEC_TRN2, QUIET)
+ENTRY_BINARY (vtrn2q_mf8, mf8q, mf8q, mf8q, UNSPEC_TRN2, QUIET)
+ENTRY_BINARY (vtrn_mf8, mf8x2, mf8, mf8, UNSPEC_TRN, QUIET)
+ENTRY_BINARY (vtrnq_mf8, mf8qx2, mf8q, mf8q, UNSPEC_TRN, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// uzp<n>
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_BINARY (vuzp1_mf8, mf8, mf8, mf8, UNSPEC_UZP1, QUIET)
+ENTRY_BINARY (vuzp1q_mf8, mf8q, mf8q, mf8q, UNSPEC_UZP1, QUIET)
+ENTRY_BINARY (vuzp2_mf8, mf8, mf8, mf8, UNSPEC_UZP2, QUIET)
+ENTRY_BINARY (vuzp2q_mf8, mf8q, mf8q, mf8q, UNSPEC_UZP2, QUIET)
+ENTRY_BINARY (vuzp_mf8, mf8x2, mf8, mf8, UNSPEC_UZP, QUIET)
+ENTRY_BINARY (vuzpq_mf8, mf8qx2, mf8q, mf8q, UNSPEC_UZP, QUIET)
+#undef REQUIRED_EXTENSIONS
+
+// zip<n>
+#define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
+ENTRY_BINARY (vzip1_mf8, mf8, mf8, mf8, UNSPEC_ZIP1, QUIET)
+ENTRY_BINARY (vzip1q_mf8, mf8q, mf8q, mf8q, UNSPEC_ZIP1, QUIET)
+ENTRY_BINARY (vzip2_mf8, mf8, mf8, mf8, UNSPEC_ZIP2, QUIET)
+ENTRY_BINARY (vzip2q_mf8, mf8q, mf8q, mf8q, UNSPEC_ZIP2, QUIET)
+ENTRY_BINARY (vzip_mf8, mf8x2, mf8, mf8, UNSPEC_ZIP, QUIET)
+ENTRY_BINARY (vzipq_mf8, mf8qx2, mf8q, mf8q, UNSPEC_ZIP, QUIET)
 #undef REQUIRED_EXTENSIONS

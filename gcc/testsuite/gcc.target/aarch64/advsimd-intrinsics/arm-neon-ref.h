@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 /* helper type, to help write floating point results in integer form.  */
+typedef uint8_t hmfloat8_t;
 typedef uint16_t hfloat16_t;
 typedef uint32_t hfloat32_t;
 typedef uint64_t hfloat64_t;
@@ -38,9 +39,23 @@ extern size_t strlen(const char *);
    Use this macro to guard against them.  */
 #ifdef __aarch64__
 #define AARCH64_ONLY(X) X
+#define MFLOAT8_SUPPORTED 1
 #else
 #define AARCH64_ONLY(X)
+#define MFLOAT8_SUPPORTED 0
 #endif
+
+#if MFLOAT8_SUPPORTED
+#define MFLOAT8_ONLY(X) X
+#define MFLOAT8(X) (((union { uint8_t x; mfloat8_t y; }) { X }).y)
+#define CONVERT(T, X) \
+  ((T) _Generic ((T){}, mfloat8_t: MFLOAT8(X), default: X))
+#else
+#define MFLOAT8_ONLY(X)
+#define CONVERT(T, X) ((T) X)
+#endif
+
+#define BITEQUAL(X, Y) (__builtin_memcmp (&X, &Y, sizeof(X)) == 0)
 
 #define xSTR(X) #X
 #define STR(X) xSTR(X)
@@ -182,6 +197,9 @@ static ARRAY(result, poly, 16, 4);
 #if defined (__ARM_FEATURE_CRYPTO)
 static ARRAY(result, poly, 64, 1);
 #endif
+#if MFLOAT8_SUPPORTED
+static ARRAY(result, mfloat, 8, 8);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 static ARRAY(result, float, 16, 4);
 #endif
@@ -201,6 +219,9 @@ static ARRAY(result, poly, 8, 16);
 static ARRAY(result, poly, 16, 8);
 #if defined (__ARM_FEATURE_CRYPTO)
 static ARRAY(result, poly, 64, 2);
+#endif
+#if MFLOAT8_SUPPORTED
+static ARRAY(result, mfloat, 8, 16);
 #endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 static ARRAY(result, float, 16, 8);
@@ -222,6 +243,9 @@ extern ARRAY(expected, uint, 32, 2);
 extern ARRAY(expected, uint, 64, 1);
 extern ARRAY(expected, poly, 8, 8);
 extern ARRAY(expected, poly, 16, 4);
+#if MFLOAT8_SUPPORTED
+extern ARRAY(expected, hmfloat, 8, 8);
+#endif
 extern ARRAY(expected, hfloat, 16, 4);
 extern ARRAY(expected, hfloat, 32, 2);
 extern ARRAY(expected, hfloat, 64, 1);
@@ -235,6 +259,9 @@ extern ARRAY(expected, uint, 32, 4);
 extern ARRAY(expected, uint, 64, 2);
 extern ARRAY(expected, poly, 8, 16);
 extern ARRAY(expected, poly, 16, 8);
+#if MFLOAT8_SUPPORTED
+extern ARRAY(expected, hmfloat, 8, 16);
+#endif
 extern ARRAY(expected, hfloat, 16, 8);
 extern ARRAY(expected, hfloat, 32, 4);
 extern ARRAY(expected, hfloat, 64, 2);
@@ -251,6 +278,8 @@ extern ARRAY(expected, hfloat, 64, 2);
     CHECK(test_name, uint, 64, 1, PRIx64, EXPECTED, comment);		\
     CHECK_POLY(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);	\
     CHECK_POLY(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);	\
+    MFLOAT8_ONLY(CHECK_FP(test_name, mfloat, 8, 8, PRIx8,		\
+			  EXPECTED, comment);)				\
     CHECK_FP(test_name, float, 32, 2, PRIx32, EXPECTED, comment);	\
 									\
     CHECK(test_name, int, 8, 16, PRIx8, EXPECTED, comment);		\
@@ -263,6 +292,8 @@ extern ARRAY(expected, hfloat, 64, 2);
     CHECK(test_name, uint, 64, 2, PRIx64, EXPECTED, comment);		\
     CHECK_POLY(test_name, poly, 8, 16, PRIx8, EXPECTED, comment);	\
     CHECK_POLY(test_name, poly, 16, 8, PRIx16, EXPECTED, comment);	\
+    MFLOAT8_ONLY(CHECK_FP(test_name, mfloat, 8, 16, PRIx8,		\
+			  EXPECTED, comment);)				\
     CHECK_FP(test_name, float, 32, 4, PRIx32, EXPECTED, comment);	\
   }									\
 
@@ -372,6 +403,9 @@ static void clean_results (void)
 #if defined (__ARM_FEATURE_CRYPTO)
   CLEAN(result, poly, 64, 1);
 #endif
+#if MFLOAT8_SUPPORTED
+  CLEAN(result, mfloat, 8, 8);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CLEAN(result, float, 16, 4);
 #endif
@@ -389,6 +423,9 @@ static void clean_results (void)
   CLEAN(result, poly, 16, 8);
 #if defined (__ARM_FEATURE_CRYPTO)
   CLEAN(result, poly, 64, 2);
+#endif
+#if MFLOAT8_SUPPORTED
+  CLEAN(result, mfloat, 8, 16);
 #endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CLEAN(result, float, 16, 8);
@@ -460,6 +497,7 @@ static void clean_results (void)
   DECL_VARIABLE(VAR, poly, 8, 8);		\
   DECL_VARIABLE(VAR, poly, 16, 4);		\
   DECL_VARIABLE_CRYPTO(VAR, poly, 64, 1);	\
+  MFLOAT8_ONLY(DECL_VARIABLE(VAR, mfloat, 8, 8);) \
   DECL_VARIABLE(VAR, float, 16, 4);		\
   DECL_VARIABLE(VAR, float, 32, 2)
 #else
@@ -480,6 +518,7 @@ static void clean_results (void)
   DECL_VARIABLE(VAR, poly, 8, 16);		\
   DECL_VARIABLE(VAR, poly, 16, 8);		\
   DECL_VARIABLE_CRYPTO(VAR, poly, 64, 2);	\
+  MFLOAT8_ONLY(DECL_VARIABLE(VAR, mfloat, 8, 16);) \
   DECL_VARIABLE(VAR, float, 16, 8);		\
   DECL_VARIABLE(VAR, float, 32, 4);		\
   AARCH64_ONLY(DECL_VARIABLE(VAR, float, 64, 2))
@@ -490,6 +529,7 @@ static void clean_results (void)
   DECL_VARIABLE(VAR, poly, 8, 16);		\
   DECL_VARIABLE(VAR, poly, 16, 8);		\
   DECL_VARIABLE_CRYPTO(VAR, poly, 64, 2);	\
+  MFLOAT8_ONLY(DECL_VARIABLE(VAR, mfloat, 8, 16);) \
   DECL_VARIABLE(VAR, float, 32, 4);		\
   AARCH64_ONLY(DECL_VARIABLE(VAR, float, 64, 2))
 #endif

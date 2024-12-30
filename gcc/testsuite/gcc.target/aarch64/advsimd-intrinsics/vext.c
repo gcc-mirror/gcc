@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf6, 0xf7, 0x55, 0x55,
 					0x55, 0x55, 0x55, 0x55 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff2, 0xfff3, 0x66, 0x66 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xf5, 0xf6, 0xf7, 0x77,
+					   0x77, 0x77, 0x77, 0x77 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 4) [] = { 0xcb00, 0xca80,
 					       0x4b4d, 0x4b4d };
@@ -43,6 +47,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xfc, 0xfd, 0xfe, 0xff,
 					 0x55, 0x55, 0x55, 0x55 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff6, 0xfff7, 0x66, 0x66,
 					 0x66, 0x66, 0x66, 0x66 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xf9, 0xfa, 0xfb, 0xfc,
+					    0xfd, 0xfe, 0xff, 0xaa,
+					    0xaa, 0xaa, 0xaa, 0xaa,
+					    0xaa, 0xaa, 0xaa, 0xaa };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 8) [] = { 0xc880, 0x4b4d,
 					       0x4b4d, 0x4b4d,
@@ -70,6 +80,10 @@ void exec_vext (void)
   clean_results ();
 
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector1, buffer);
+#if MFLOAT8_SUPPORTED
+  VLOAD(vector1, buffer, , mfloat, mf, 8, 8);
+  VLOAD(vector1, buffer, q, mfloat, mf, 8, 16);
+#endif
 #ifdef FP16_SUPPORTED
   VLOAD(vector1, buffer, , float, f, 16, 4);
   VLOAD(vector1, buffer, q, float, f, 16, 8);
@@ -88,6 +102,7 @@ void exec_vext (void)
   VDUP(vector2, , uint, u, 64, 1, 0x88);
   VDUP(vector2, , poly, p, 8, 8, 0x55);
   VDUP(vector2, , poly, p, 16, 4, 0x66);
+  MFLOAT8_ONLY(VDUP(vector2, , mfloat, mf, 8, 8, MFLOAT8(0x77)));
 #if defined (FP16_SUPPORTED)
   VDUP (vector2, , float, f, 16, 4, 14.6f);   /* 14.6f is 0x4b4d.  */
 #endif
@@ -103,6 +118,7 @@ void exec_vext (void)
   VDUP(vector2, q, uint, u, 64, 2, 0x88);
   VDUP(vector2, q, poly, p, 8, 16, 0x55);
   VDUP(vector2, q, poly, p, 16, 8, 0x66);
+  MFLOAT8_ONLY(VDUP(vector2, q, mfloat, mf, 8, 16, MFLOAT8(0xaa)));
 #if defined (FP16_SUPPORTED)
   VDUP (vector2, q, float, f, 16, 8, 14.6f);
 #endif
@@ -119,6 +135,7 @@ void exec_vext (void)
   TEST_VEXT(, uint, u, 64, 1, 0);
   TEST_VEXT(, poly, p, 8, 8, 6);
   TEST_VEXT(, poly, p, 16, 4, 2);
+  MFLOAT8_ONLY(TEST_VEXT(, mfloat, mf, 8, 8, 5));
 #if defined (FP16_SUPPORTED)
   TEST_VEXT(, float, f, 16, 4, 2);
 #endif
@@ -134,6 +151,7 @@ void exec_vext (void)
   TEST_VEXT(q, uint, u, 64, 2, 1);
   TEST_VEXT(q, poly, p, 8, 16, 12);
   TEST_VEXT(q, poly, p, 16, 8, 6);
+  MFLOAT8_ONLY(TEST_VEXT(q, mfloat, mf, 8, 16, 9));
 #if defined (FP16_SUPPORTED)
   TEST_VEXT(q, float, f, 16, 8, 7);
 #endif
