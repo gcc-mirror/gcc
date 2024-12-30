@@ -814,9 +814,14 @@ md_reader::handle_overloaded_name (rtx original, vec<mapping *> *iterators)
 	  pending_underscore_p = false;
 	}
 
-      /* Record an argument for ITERATOR.  */
-      iterators->safe_push (iterator);
-      tmp_oname.arg_types.safe_push (iterator->group->type);
+      /* Skip define_subst iterators, since define_substs are allowed to
+	 add new match_operands in their output templates.  */
+      if (iterator->group != &substs)
+	{
+	  /* Record an argument for ITERATOR.  */
+	  iterators->safe_push (iterator);
+	  tmp_oname.arg_types.safe_push (iterator->group->type);
+	}
     }
   if (base == copy)
     fatal_with_file_and_line ("no iterator attributes in name `%s'", name);
@@ -951,6 +956,7 @@ apply_iterators (rtx original, vec<rtx> *queue)
       /* We apply subst iterator after RTL-template is copied, as during
 	 subst-iterator processing, we could add an attribute to the
 	 RTL-template, and we don't want to do it in the original one.  */
+      bool add_oname = true;
       FOR_EACH_VEC_ELT (iterator_uses, i, iuse)
 	{
 	  v = iuse->iterator->current_value;
@@ -961,10 +967,14 @@ apply_iterators (rtx original, vec<rtx> *queue)
 	      current_iterator_name = iuse->iterator->name;
 	      iuse->iterator->group->apply_iterator (iuse->x, iuse->index,
 						     v->number);
+	      /* Only handle '@' overloading for the default value.
+		 See handle_overloaded_name for details.  */
+	      if (v != iuse->iterator->values)
+		add_oname = false;
 	    }
 	}
 
-      if (oname)
+      if (oname && add_oname)
 	add_overload_instance (oname, iterators, x);
 
       /* Add the new rtx to the end of the queue.  */

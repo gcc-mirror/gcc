@@ -12405,4 +12405,9 @@ output and three inputs).  This combination would produce separate
 each operand count, but it would still produce a single
 @samp{maybe_code_for_@var{name}} and a single @samp{code_for_@var{name}}.
 
+Currently, these @code{@@} patterns only take into account patterns for
+which no @code{define_subst} has been applied (@pxref{Define Subst}).
+Any @samp{<@dots{}>} placeholders that refer to subst attributes
+(@pxref{Subst Iterators}) are ignored.
+
 @end ifset
