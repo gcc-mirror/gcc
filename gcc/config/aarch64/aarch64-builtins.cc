@@ -1648,7 +1648,7 @@ namespace simd_types {
   constexpr simd_type BASE##qx4 { V4x##Q##MODE, QUALIFIERS };	\
   constexpr simd_type BASE##_scalar { MODE, QUALIFIERS };
 
-  VARIANTS (f8, 8, 16, QImode, qualifier_modal_float)
+  VARIANTS (mf8, 8, 16, QImode, qualifier_modal_float)
   VARIANTS (p8, 8, 16, QImode, qualifier_poly)
   VARIANTS (s8, 8, 16, QImode, qualifier_none)
   VARIANTS (u8, 8, 16, QImode, qualifier_unsigned)

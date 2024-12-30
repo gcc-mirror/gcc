@@ -91,24 +91,24 @@
 
 #undef ENTRY_VDOT_FPM
 #define ENTRY_VDOT_FPM(T)						\
-  ENTRY_TERNARY (vdot_##T##_mf8_fpm, T, T, f8, f8,			\
+  ENTRY_TERNARY (vdot_##T##_mf8_fpm, T, T, mf8, mf8,			\
 		 UNSPEC_FDOT_FP8, FP8)					\
-  ENTRY_TERNARY (vdotq_##T##_mf8_fpm, T##q, T##q, f8q, f8q,		\
+  ENTRY_TERNARY (vdotq_##T##_mf8_fpm, T##q, T##q, mf8q, mf8q,		\
 		 UNSPEC_FDOT_FP8, FP8)					\
-  ENTRY_TERNARY_LANE (vdot_lane_##T##_mf8_fpm, T, T, f8, f8,		\
+  ENTRY_TERNARY_LANE (vdot_lane_##T##_mf8_fpm, T, T, mf8, mf8,		\
 		      UNSPEC_FDOT_LANE_FP8, FP8)			\
-  ENTRY_TERNARY_LANE (vdot_laneq_##T##_mf8_fpm, T, T, f8, f8q,		\
+  ENTRY_TERNARY_LANE (vdot_laneq_##T##_mf8_fpm, T, T, mf8, mf8q,	\
 		      UNSPEC_FDOT_LANE_FP8, FP8)			\
-  ENTRY_TERNARY_LANE (vdotq_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8,	\
+  ENTRY_TERNARY_LANE (vdotq_lane_##T##_mf8_fpm, T##q, T##q, mf8q, mf8,	\
 		      UNSPEC_FDOT_LANE_FP8, FP8)			\
-  ENTRY_TERNARY_LANE (vdotq_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q,	\
+  ENTRY_TERNARY_LANE (vdotq_laneq_##T##_mf8_fpm, T##q, T##q, mf8q, mf8q,\
 		      UNSPEC_FDOT_LANE_FP8, FP8)
 
 #undef ENTRY_FMA_FPM
 #define ENTRY_FMA_FPM(N, T, U)						\
-  ENTRY_TERNARY (N##q_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U, FP8)	\
-  ENTRY_TERNARY_LANE (N##q_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8, U, FP8) \
-  ENTRY_TERNARY_LANE (N##q_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U, FP8)
+  ENTRY_TERNARY (N##q_##T##_mf8_fpm, T##q, T##q, mf8q, mf8q, U, FP8)	\
+  ENTRY_TERNARY_LANE (N##q_lane_##T##_mf8_fpm, T##q, T##q, mf8q, mf8, U, FP8) \
+  ENTRY_TERNARY_LANE (N##q_laneq_##T##_mf8_fpm, T##q, T##q, mf8q, mf8q, U, FP8)
 
 // faminmax
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
@@ -131,18 +131,18 @@ ENTRY_TERNARY_VLUT16 (u)
 
 // fpm conversion
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8)
-ENTRY_UNARY_VQ_BHF (vcvt1, f8, UNSPEC_F1CVTL_FP8, FP8)
-ENTRY_UNARY_VQ_BHF (vcvt1_high, f8q, UNSPEC_F1CVTL2_FP8, FP8)
-ENTRY_UNARY_VQ_BHF (vcvt1_low, f8q, UNSPEC_F1CVTL_FP8, FP8)
-ENTRY_UNARY_VQ_BHF (vcvt2, f8, UNSPEC_F2CVTL_FP8, FP8)
-ENTRY_UNARY_VQ_BHF (vcvt2_high, f8q, UNSPEC_F2CVTL2_FP8, FP8)
-ENTRY_UNARY_VQ_BHF (vcvt2_low, f8q, UNSPEC_F2CVTL_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt1, mf8, UNSPEC_F1CVTL_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt1_high, mf8q, UNSPEC_F1CVTL2_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt1_low, mf8q, UNSPEC_F1CVTL_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt2, mf8, UNSPEC_F2CVTL_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt2_high, mf8q, UNSPEC_F2CVTL2_FP8, FP8)
+ENTRY_UNARY_VQ_BHF (vcvt2_low, mf8q, UNSPEC_F2CVTL_FP8, FP8)
 
-ENTRY_BINARY (vcvt_mf8_f16_fpm, f8, f16, f16, UNSPEC_FCVTN_FP8, FP8)
-ENTRY_BINARY (vcvtq_mf8_f16_fpm, f8q, f16q, f16q, UNSPEC_FCVTN_FP8, FP8)
-ENTRY_BINARY (vcvt_mf8_f32_fpm, f8, f32q, f32q, UNSPEC_FCVTN_FP8, FP8)
+ENTRY_BINARY (vcvt_mf8_f16_fpm, mf8, f16, f16, UNSPEC_FCVTN_FP8, FP8)
+ENTRY_BINARY (vcvtq_mf8_f16_fpm, mf8q, f16q, f16q, UNSPEC_FCVTN_FP8, FP8)
+ENTRY_BINARY (vcvt_mf8_f32_fpm, mf8, f32q, f32q, UNSPEC_FCVTN_FP8, FP8)
 
-ENTRY_TERNARY (vcvt_high_mf8_f32_fpm, f8q, f8, f32q, f32q,
+ENTRY_TERNARY (vcvt_high_mf8_f32_fpm, mf8q, mf8, f32q, f32q,
 	       UNSPEC_FCVTN2_FP8, FP8)
 #undef REQUIRED_EXTENSIONS
 
