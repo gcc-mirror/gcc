@@ -3111,13 +3111,14 @@
 
 (define_insn "bstrpick_alsl_paired"
   [(set (match_operand:DI 0 "register_operand" "=&r")
-	(plus:DI (match_operand:DI 1 "register_operand" "r")
-		 (and:DI (ashift:DI (match_operand:DI 2 "register_operand" "r")
-				    (match_operand 3 "const_immalsl_operand" ""))
-			 (match_operand 4 "immediate_operand" ""))))]
+	(plus:DI
+	  (and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+			     (match_operand 2 "const_immalsl_operand" ""))
+		  (match_operand 3 "immediate_operand" ""))
+	  (match_operand:DI 4 "register_operand" "r")))]
   "TARGET_64BIT
-   && ((INTVAL (operands[4]) >> INTVAL (operands[3])) == 0xffffffff)"
-  "bstrpick.d\t%0,%2,31,0\n\talsl.d\t%0,%0,%1,%3"
+   && ((INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff)"
+  "bstrpick.d\t%0,%1,31,0\n\talsl.d\t%0,%0,%4,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")
    (set_attr "insn_count" "2")])
@@ -4219,6 +4220,16 @@
 			(const_int bytepick_d_ashift_amount))))]
   "TARGET_64BIT"
   "bytepick.d\t%0,%1,%2,<bytepick_imm>"
+  [(set_attr "mode" "DI")])
+
+(define_insn "bytepick_d_<bytepick_imm>_rev"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI (ashift (match_operand:DI 1 "register_operand" "r")
+			(const_int bytepick_d_ashift_amount))
+		(lshiftrt (match_operand:DI 2 "register_operand" "r")
+			  (const_int <bytepick_d_lshiftrt_amount>))))]
+  "TARGET_64BIT"
+  "bytepick.d\t%0,%2,%1,<bytepick_imm>"
   [(set_attr "mode" "DI")])
 
 (define_insn "bitrev_4b"
