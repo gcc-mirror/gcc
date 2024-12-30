@@ -282,10 +282,24 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 #define CODE_FOR_lsx_vftintrz_l_d CODE_FOR_fix_truncv2dfv2di2
 #define CODE_FOR_lsx_vftintrz_wu_s CODE_FOR_fixuns_truncv4sfv4si2
 #define CODE_FOR_lsx_vftintrz_lu_d CODE_FOR_fixuns_truncv2dfv2di2
+#define CODE_FOR_lsx_vftintrz_w_d CODE_FOR_vec_pack_sfix_trunc_v2df
+#define CODE_FOR_lsx_vftintrzh_l_s CODE_FOR_vec_unpack_sfix_trunc_hi_v4sf
+#define CODE_FOR_lsx_vftintrzl_l_s CODE_FOR_vec_unpack_sfix_trunc_lo_v4sf
 #define CODE_FOR_lsx_vffint_s_w CODE_FOR_floatv4siv4sf2
 #define CODE_FOR_lsx_vffint_d_l CODE_FOR_floatv2div2df2
 #define CODE_FOR_lsx_vffint_s_wu CODE_FOR_floatunsv4siv4sf2
 #define CODE_FOR_lsx_vffint_d_lu CODE_FOR_floatunsv2div2df2
+#define CODE_FOR_lsx_vffint_s_l CODE_FOR_vec_packs_float_v2di
+#define CODE_FOR_lsx_vffinth_d_w CODE_FOR_vec_unpacks_float_hi_v4si
+#define CODE_FOR_lsx_vffintl_d_w CODE_FOR_vec_unpacks_float_lo_v4si
+#define CODE_FOR_lsx_vexth_h_b CODE_FOR_vec_unpacks_hi_v16qi
+#define CODE_FOR_lsx_vexth_w_h CODE_FOR_vec_unpacks_hi_v8hi
+#define CODE_FOR_lsx_vexth_d_w CODE_FOR_vec_unpacks_hi_v4si
+#define CODE_FOR_lsx_vexth_hu_bu CODE_FOR_vec_unpacku_hi_v16qi
+#define CODE_FOR_lsx_vexth_wu_hu CODE_FOR_vec_unpacku_hi_v8hi
+#define CODE_FOR_lsx_vexth_du_wu CODE_FOR_vec_unpacku_hi_v4si
+#define CODE_FOR_lsx_vfcvth_d_s CODE_FOR_vec_unpacks_hi_v4sf
+#define CODE_FOR_lsx_vfcvtl_d_s CODE_FOR_vec_unpacks_lo_v4sf
 #define CODE_FOR_lsx_vfsub_s CODE_FOR_subv4sf3
 #define CODE_FOR_lsx_vfsub_d CODE_FOR_subv2df3
 #define CODE_FOR_lsx_vfmul_s CODE_FOR_mulv4sf3
@@ -563,6 +577,12 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 #define CODE_FOR_lasx_xvffint_d_l CODE_FOR_floatv4div4df2
 #define CODE_FOR_lasx_xvffint_s_wu CODE_FOR_floatunsv8siv8sf2
 #define CODE_FOR_lasx_xvffint_d_lu CODE_FOR_floatunsv4div4df2
+#define CODE_FOR_lasx_vext2xv_h_b CODE_FOR_vec_unpacks_lo_v32qi
+#define CODE_FOR_lasx_vext2xv_w_h CODE_FOR_vec_unpacks_lo_v16hi
+#define CODE_FOR_lasx_vext2xv_d_w CODE_FOR_vec_unpacks_lo_v8si
+#define CODE_FOR_lasx_vext2xv_hu_bu CODE_FOR_vec_unpacku_lo_v32qi
+#define CODE_FOR_lasx_vext2xv_wu_hu CODE_FOR_vec_unpacku_lo_v16hi
+#define CODE_FOR_lasx_vext2xv_du_wu CODE_FOR_vec_unpacku_lo_v8si
 #define CODE_FOR_lasx_xvfsub_s CODE_FOR_subv8sf3
 #define CODE_FOR_lasx_xvfsub_d CODE_FOR_subv4df3
 #define CODE_FOR_lasx_xvfmul_s CODE_FOR_mulv8sf3
@@ -2757,6 +2777,8 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vpickod_h:
     case CODE_FOR_lsx_vpickod_w:
     case CODE_FOR_lsx_vandn_v:
+    case CODE_FOR_lsx_vftintrz_w_d:
+    case CODE_FOR_lsx_vffint_s_l:
     case CODE_FOR_lasx_xvilvh_b:
     case CODE_FOR_lasx_xvilvh_h:
     case CODE_FOR_lasx_xvilvh_w:

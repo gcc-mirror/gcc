@@ -9759,7 +9759,7 @@ loongarch_expand_vector_reduc (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
 /* Expand an integral vector unpack operation.  */
 
 void
-loongarch_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
+loongarch_expand_vec_unpack (rtx operands[2], bool unsigned_p)
 {
   machine_mode imode = GET_MODE (operands[1]);
   rtx (*unpack) (rtx, rtx, rtx);
@@ -9768,31 +9768,32 @@ loongarch_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
   rtx (*swap_hi_lo) (rtx, rtx, rtx, rtx);
   rtx tmp, dest;
 
+  /* In LASX, only vec_unpacks_hi_<mode> requires expander.  */
   if (ISA_HAS_LASX && GET_MODE_SIZE (imode) == 32)
     {
       switch (imode)
 	{
 	case E_V8SImode:
 	  if (unsigned_p)
-	    extend = gen_lasx_vext2xv_du_wu;
+	    extend = gen_vec_unpacku_lo_v8si;
 	  else
-	    extend = gen_lasx_vext2xv_d_w;
+	    extend = gen_vec_unpacks_lo_v8si;
 	  swap_hi_lo = gen_lasx_xvpermi_q_v8si;
 	  break;
 
 	case E_V16HImode:
 	  if (unsigned_p)
-	    extend = gen_lasx_vext2xv_wu_hu;
+	    extend = gen_vec_unpacku_lo_v16hi;
 	  else
-	    extend = gen_lasx_vext2xv_w_h;
+	    extend = gen_vec_unpacks_lo_v16hi;
 	  swap_hi_lo = gen_lasx_xvpermi_q_v16hi;
 	  break;
 
 	case E_V32QImode:
 	  if (unsigned_p)
-	    extend = gen_lasx_vext2xv_hu_bu;
+	    extend = gen_vec_unpacku_lo_v32qi;
 	  else
-	    extend = gen_lasx_vext2xv_h_b;
+	    extend = gen_vec_unpacks_lo_v32qi;
 	  swap_hi_lo = gen_lasx_xvpermi_q_v32qi;
 	  break;
 
@@ -9801,46 +9802,28 @@ loongarch_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 	  break;
 	}
 
-      if (high_p)
-	{
-	  tmp = gen_reg_rtx (imode);
-	  emit_insn (swap_hi_lo (tmp, tmp, operands[1], const1_rtx));
-	  emit_insn (extend (operands[0], tmp));
-	  return;
-	}
-
-      emit_insn (extend (operands[0], operands[1]));
+      tmp = gen_reg_rtx (imode);
+      emit_insn (swap_hi_lo (tmp, tmp, operands[1], const1_rtx));
+      emit_insn (extend (operands[0], tmp));
       return;
-
     }
-  else if (ISA_HAS_LSX)
+  /* In LSX, only vec_unpacks_lo_<mode> requires expander.  */
+  else if (ISA_HAS_LSX && !ISA_HAS_LASX)
     {
       switch (imode)
 	{
 	case E_V4SImode:
-	  if (high_p != 0)
-	    unpack = gen_lsx_vilvh_w;
-	  else
-	    unpack = gen_lsx_vilvl_w;
-
+	  unpack = gen_lsx_vilvl_w;
 	  cmpFunc = gen_lsx_vslt_w;
 	  break;
 
 	case E_V8HImode:
-	  if (high_p != 0)
-	    unpack = gen_lsx_vilvh_h;
-	  else
-	    unpack = gen_lsx_vilvl_h;
-
+	  unpack = gen_lsx_vilvl_h;
 	  cmpFunc = gen_lsx_vslt_h;
 	  break;
 
 	case E_V16QImode:
-	  if (high_p != 0)
-	    unpack = gen_lsx_vilvh_b;
-	  else
-	    unpack = gen_lsx_vilvl_b;
-
+	  unpack = gen_lsx_vilvl_b;
 	  cmpFunc = gen_lsx_vslt_b;
 	  break;
 
