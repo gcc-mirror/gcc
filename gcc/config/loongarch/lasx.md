@@ -37,16 +37,12 @@
   UNSPEC_LASX_XVFCVTH
   UNSPEC_LASX_XVFCVTL
   UNSPEC_LASX_XVFLOGB
-  UNSPEC_LASX_XVFRECIP
   UNSPEC_LASX_XVFRECIPE
-  UNSPEC_LASX_XVFRINT
   UNSPEC_LASX_XVFRSQRT
   UNSPEC_LASX_XVFRSQRTE
   UNSPEC_LASX_XVFTINT_U
-  UNSPEC_LASX_XVCLO
   UNSPEC_LASX_XVSAT_S
   UNSPEC_LASX_XVSAT_U
-  UNSPEC_LASX_XVREPLVE0
   UNSPEC_LASX_XVREPL128VEI
   UNSPEC_LASX_XVSRAR
   UNSPEC_LASX_XVSRARI
@@ -57,7 +53,6 @@
   UNSPEC_LASX_BRANCH
   UNSPEC_LASX_BRANCH_V
 
-  UNSPEC_LASX_MXVEXTW_U
   UNSPEC_LASX_XVSLLWIL_S
   UNSPEC_LASX_XVSLLWIL_U
   UNSPEC_LASX_XVSRAN
@@ -130,7 +125,6 @@
   UNSPEC_LASX_XVADD_Q
   UNSPEC_LASX_XVSUB_Q
   UNSPEC_LASX_XVREPLVE
-  UNSPEC_LASX_XVSHUF4
   UNSPEC_LASX_XVMSKGEZ
   UNSPEC_LASX_XVMSKNZ
   UNSPEC_LASX_XVEXTH_Q_D
@@ -212,11 +206,6 @@
    (V8SI "V4SI")
    (V4DI "V2DI")])
 
-;;attribute gives half float modes for vector modes.
-(define_mode_attr VFHMODE256
-   [(V8SF "V4SF")
-   (V4DF "V2DF")])
-
 ;; The attribute gives half int/float modes for vector modes.
 (define_mode_attr VHMODE256_ALL
   [(V32QI "V16QI")
@@ -252,20 +241,6 @@
    (V4DF "V8DF")
    (V4DI "V8DI")])
 
-;; This attribute gives the mode of the result for "copy_s_b, copy_u_b" etc.
-(define_mode_attr VRES256
-  [(V4DF "DF")
-   (V8SF "SF")
-   (V4DI "DI")
-   (V8SI "SI")
-   (V16HI "SI")
-   (V32QI "SI")])
-
-;; Only used with LASX_D iterator.
-(define_mode_attr lasx_d
-  [(V4DI "reg_or_0")
-   (V4DF "register")])
-
 ;; This attribute gives the 256 bit integer vector mode with same size.
 (define_mode_attr mode256_i
   [(V4DF "v4di")
@@ -274,14 +249,6 @@
    (V8SI "v8si")
    (V16HI "v16hi")
    (V32QI "v32qi")])
-
-
-;; This attribute gives the 256 bit float vector mode with same size.
-(define_mode_attr mode256_f
-  [(V4DF "v4df")
-   (V8SF "v8sf")
-   (V4DI "v4df")
-   (V8SI "v8sf")])
 
 ;; This attribute gives V32QI mode and V16HI mode with half size.
 (define_mode_attr mode256_i_half
@@ -339,14 +306,6 @@
 (define_mode_attr lasxfmt_f
   [(V4DF "d_f")
    (V8SF "w_f")
-   (V4DI "d")
-   (V8SI "w")
-   (V16HI "h")
-   (V32QI "b")])
-
-(define_mode_attr flasxfmt_f
-  [(V4DF "d_f")
-   (V8SF "s_f")
    (V4DI "d")
    (V8SI "w")
    (V16HI "h")
@@ -437,27 +396,6 @@
    (V8SI  "uimm5")
    (V4DI  "uimm6")])
 
-
-(define_mode_attr d2lasxfmt
-  [(V8SI "q")
-   (V16HI "d")
-   (V32QI "w")])
-
-(define_mode_attr d2lasxfmt_u
-  [(V8SI "qu")
-   (V16HI "du")
-   (V32QI "wu")])
-
-(define_mode_attr VD2MODE256
-  [(V8SI "V4DI")
-   (V16HI "V4DI")
-   (V32QI "V8SI")])
-
-(define_mode_attr lasxfmt_wd
-  [(V4DI "d")
-   (V8SI "w")
-   (V16HI "w")
-   (V32QI "w")])
 
 ;; Half modes of all LASX vector modes, in lower-case.
 (define_mode_attr lasxhalf [(V32QI "v16qi")  (V16HI "v8hi")
@@ -1401,10 +1339,6 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "cnv_mode" "<FINTCNV256>")
    (set_attr "mode" "<MODE>")])
-
-(define_mode_attr FFQ256
-  [(V4SF "V16HI")
-   (V2DF "V8SI")])
 
 (define_insn "lasx_xvreplgr2vr_<lasxfmt_f>"
   [(set (match_operand:ILASX 0 "register_operand" "=f,f")

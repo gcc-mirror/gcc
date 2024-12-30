@@ -39,15 +39,12 @@
   UNSPEC_LSX_VFCVTH
   UNSPEC_LSX_VFCVTL
   UNSPEC_LSX_VFLOGB
-  UNSPEC_LSX_VFRECIP
   UNSPEC_LSX_VFRECIPE
-  UNSPEC_LSX_VFRINT
   UNSPEC_LSX_VFRSQRT
   UNSPEC_LSX_VFRSQRTE
   UNSPEC_LSX_VFTINT_U
   UNSPEC_LSX_VSAT_S
   UNSPEC_LSX_VSAT_U
-  UNSPEC_LSX_VREPLVEI
   UNSPEC_LSX_VSRAR
   UNSPEC_LSX_VSRARI
   UNSPEC_LSX_VSRLR
@@ -167,22 +164,6 @@
    (V8HI "wu")
    (V16QI "hu")])
 
-(define_mode_attr d2lsxfmt
-  [(V4SI "q")
-   (V8HI "d")
-   (V16QI "w")])
-
-(define_mode_attr d2lsxfmt_u
-  [(V4SI "qu")
-   (V8HI "du")
-   (V16QI "wu")])
-
-;; The attribute gives two double modes for vector modes.
-(define_mode_attr VD2MODE
-  [(V4SI "V2DI")
-   (V8HI "V2DI")
-   (V16QI "V4SI")])
-
 ;; Only used for vilvh and splitting insert_d and copy_{u,s}.d.
 (define_mode_iterator LSX_D    [V2DI V2DF])
 
@@ -299,23 +280,11 @@
    (V8HI "h")
    (V16QI "b")])
 
-(define_mode_attr flsxfmt_f
-  [(V2DF "d_f")
-   (V4SF "s_f")
-   (V2DI "d")
-   (V4SI "w")
-   (V8HI "h")
-   (V16QI "b")])
-
 (define_mode_attr flsxfmt
   [(V2DF "d")
    (V4SF "s")
    (V2DI "d")
    (V4SI "s")])
-
-(define_mode_attr flsxfrint
-  [(V2DF "d")
-   (V4SF "s")])
 
 (define_mode_attr ilsxfmt
   [(V2DF "l")
@@ -1274,10 +1243,6 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "cnv_mode" "<FINTCNV>")
    (set_attr "mode" "<MODE>")])
-
-(define_mode_attr FFQ
-  [(V4SF "V8HI")
-   (V2DF "V4SI")])
 
 (define_insn "lsx_vreplgr2vr_<lsxfmt_f>"
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
