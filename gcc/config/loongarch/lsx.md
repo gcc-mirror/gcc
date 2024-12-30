@@ -20,8 +20,6 @@
 ;;
 
 (define_c_enum "unspec" [
-  UNSPEC_LSX_ABSD_S
-  UNSPEC_LSX_VABSD_U
   UNSPEC_LSX_VAVG_S
   UNSPEC_LSX_VAVG_U
   UNSPEC_LSX_VAVGR_S
@@ -190,6 +188,11 @@
   [(V8HI "V16QI")
    (V4SI "V8HI")
    (V2DI "V4SI")])
+
+;; Signed and unsigned max operations.
+(define_code_iterator SU_MAX [smax umax])
+
+(define_code_attr su_min [(smax "smin") (umax "umin")])
 
 ;; The attribute gives double modes for vector modes.
 (define_mode_attr VDMODE
@@ -976,23 +979,17 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vabsd_s_<lsxfmt>"
+(define_insn "<su>abd<mode>3"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_ABSD_S))]
+	(minus:ILSX
+	  (SU_MAX:ILSX
+	    (match_operand:ILSX 1 "register_operand" "f")
+	    (match_operand:ILSX 2 "register_operand" "f"))
+	  (<su_min>:ILSX
+	    (match_dup 1)
+	    (match_dup 2))))]
   "ISA_HAS_LSX"
-  "vabsd.<lsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vabsd_u_<lsxfmt_u>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VABSD_U))]
-  "ISA_HAS_LSX"
-  "vabsd.<lsxfmt_u>\t%w0,%w1,%w2"
+  "vabsd.<lsxfmt><u>\t%w0,%w1,%w2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
@@ -3181,7 +3178,7 @@
   rtx t1 = gen_reg_rtx (V16QImode);
   rtx t2 = gen_reg_rtx (V8HImode);
   rtx t3 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_lsx_vabsd_u_bu (t1, operands[1], operands[2]));
+  emit_insn (gen_uabdv16qi3 (t1, operands[1], operands[2]));
   emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
   emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
@@ -3198,7 +3195,7 @@
   rtx t1 = gen_reg_rtx (V16QImode);
   rtx t2 = gen_reg_rtx (V8HImode);
   rtx t3 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_lsx_vabsd_s_b (t1, operands[1], operands[2]));
+  emit_insn (gen_sabdv16qi3 (t1, operands[1], operands[2]));
   emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
   emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));

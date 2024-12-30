@@ -20,8 +20,6 @@
 ;;
 
 (define_c_enum "unspec" [
-  UNSPEC_LASX_XVABSD_S
-  UNSPEC_LASX_XVABSD_U
   UNSPEC_LASX_XVAVG_S
   UNSPEC_LASX_XVAVG_U
   UNSPEC_LASX_XVAVGR_S
@@ -1125,23 +1123,17 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvabsd_s_<lasxfmt>"
+(define_insn "<su>abd<mode>3"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVABSD_S))]
+	(minus:ILASX
+	  (SU_MAX:ILASX
+	    (match_operand:ILASX 1 "register_operand" "f")
+	    (match_operand:ILASX 2 "register_operand" "f"))
+	  (<su_min>:ILASX
+	    (match_dup 1)
+	    (match_dup 2))))]
   "ISA_HAS_LASX"
-  "xvabsd.<lasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvabsd_u_<lasxfmt_u>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVABSD_U))]
-  "ISA_HAS_LASX"
-  "xvabsd.<lasxfmt_u>\t%u0,%u1,%u2"
+  "xvabsd.<lasxfmt><u>\t%u0,%u1,%u2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
@@ -4926,7 +4918,7 @@
   rtx t1 = gen_reg_rtx (V32QImode);
   rtx t2 = gen_reg_rtx (V16HImode);
   rtx t3 = gen_reg_rtx (V8SImode);
-  emit_insn (gen_lasx_xvabsd_u_bu (t1, operands[1], operands[2]));
+  emit_insn (gen_uabdv32qi3 (t1, operands[1], operands[2]));
   emit_insn (gen_lasx_xvhaddw_hu_bu (t2, t1, t1));
   emit_insn (gen_lasx_xvhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv8si3 (operands[0], t3, operands[3]));
@@ -4943,7 +4935,7 @@
   rtx t1 = gen_reg_rtx (V32QImode);
   rtx t2 = gen_reg_rtx (V16HImode);
   rtx t3 = gen_reg_rtx (V8SImode);
-  emit_insn (gen_lasx_xvabsd_s_b (t1, operands[1], operands[2]));
+  emit_insn (gen_sabdv32qi3 (t1, operands[1], operands[2]));
   emit_insn (gen_lasx_xvhaddw_hu_bu (t2, t1, t1));
   emit_insn (gen_lasx_xvhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv8si3 (operands[0], t3, operands[3]));

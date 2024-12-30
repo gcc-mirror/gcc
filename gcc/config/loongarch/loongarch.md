@@ -527,13 +527,15 @@
 		     (gt "") (gtu "u")
 		     (ge "") (geu "u")
 		     (lt "") (ltu "u")
-		     (le "") (leu "u")])
+		     (le "") (leu "u")
+		     (smax "") (umax "u")])
 
 ;; <U> is like <u> except uppercase.
 (define_code_attr U [(sign_extend "") (zero_extend "U")])
 
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
-(define_code_attr su [(sign_extend "s") (zero_extend "u")])
+(define_code_attr su [(sign_extend "s") (zero_extend "u")
+                      (smax "s") (umax "u")])
 
 (define_code_attr u_bool [(sign_extend "false") (zero_extend "true")])
 
