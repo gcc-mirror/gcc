@@ -1,3 +1,14 @@
+2024-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/html/manual/profile_mode_diagnostics.html: Delete.
+
+2024-12-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* testsuite/std/time/year_month_day/3.cc (test01): Add ifdeffery to
+	limit the tested dates.  For simulators, pass start and end dates
+	limiting the tested range to 100000 days, centered on days (0).
+	* testsuite/std/time/year_month_day/4.cc: Ditto.
+
 2024-12-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/118196

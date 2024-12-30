@@ -1,3 +1,13 @@
+2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116715
+	* gcc.target/riscv/pr116715.c: New test.
+
+2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116720
+	* gcc.target/riscv/pr116720.c: New test.
+
 2024-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/106221

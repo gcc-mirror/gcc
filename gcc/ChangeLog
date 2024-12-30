@@ -1,3 +1,22 @@
+2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116715
+	* config/riscv/bitmanip.md: Drop bogus pattern.
+
+2024-12-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/118121
+	* configure.ac: Check for mkstemps declaration.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116720
+	* config/riscv/thead.cc (th_mempair_operands_p): Test for
+	aligned memory after swapping operands.  Simplify test for
+	first memory access as well.
+
 2024-12-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/118207
