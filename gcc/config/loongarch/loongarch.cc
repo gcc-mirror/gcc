@@ -5294,6 +5294,81 @@ loongarch_expand_conditional_move (rtx *operands)
     loongarch_emit_float_compare (&code, &op0, &op1);
   else
     {
+      /* Optimize to reduce the number of instructions for ternary operations.
+	 Mainly implemented based on noce_try_cmove_arith.
+	 For dest = (condition) ? value_if_true : value_if_false;
+	 the optimization requires:
+	  a. value_if_false = var;
+	  b. value_if_true = var OP C (a positive integer power of 2).
+
+	 Situations similar to the following:
+	    if (condition)
+	      dest += 1 << imm;
+	 to:
+	    dest += (condition ? 1 : 0) << imm;  */
+
+      rtx_insn *insn;
+      HOST_WIDE_INT val = 0; /* The value of rtx C.  */
+      /* INSN with operands[2] as the output.  */
+      rtx_insn *value_if_true_insn = NULL;
+      /* INSN with operands[3] as the output.  */
+      rtx_insn *value_if_false_insn = NULL;
+      rtx value_if_true_insn_src = NULL_RTX;
+      /* Common operand var in value_if_true and value_if_false.  */
+      rtx comm_var = NULL_RTX;
+      bool can_be_optimized = false;
+
+      /* Search value_if_true_insn and value_if_false_insn.  */
+      struct sequence_stack *seq = get_current_sequence ()->next;
+      for (insn = seq->last; insn; insn = PREV_INSN (insn))
+	{
+	  if (single_set (insn))
+	    {
+	      rtx set_dest = SET_DEST (single_set (insn));
+	      if (rtx_equal_p (set_dest, operands[2]))
+		value_if_true_insn = insn;
+	      else if (rtx_equal_p (set_dest, operands[3]))
+		value_if_false_insn = insn;
+	      if (value_if_true_insn && value_if_false_insn)
+		break;
+	    }
+	}
+
+      /* Check if the optimization conditions are met.  */
+      if (value_if_true_insn
+	  && value_if_false_insn
+	  /* Make sure that value_if_false and var are the same.  */
+	  && BINARY_P (value_if_true_insn_src
+		       = SET_SRC (single_set (value_if_true_insn)))
+	  /* Make sure that both value_if_true and value_if_false
+	     has the same var.  */
+	  && rtx_equal_p (XEXP (value_if_true_insn_src, 0),
+			  SET_SRC (single_set (value_if_false_insn))))
+	{
+	  comm_var = SET_SRC (single_set (value_if_false_insn));
+	  rtx src = XEXP (value_if_true_insn_src, 1);
+	  rtx imm = NULL_RTX;
+	  if (CONST_INT_P (src))
+	    imm = src;
+	  else
+	    for (insn = seq->last; insn; insn = PREV_INSN (insn))
+	      {
+		rtx set = single_set (insn);
+		if (set && rtx_equal_p (SET_DEST (set), src))
+		  {
+		    imm = SET_SRC (set);
+		    break;
+		  }
+	      }
+	  if (imm && CONST_INT_P (imm))
+	    {
+	      val = INTVAL (imm);
+	      /* Make sure that imm is a positive integer power of 2.  */
+	      if (val > 0 && !(val & (val - 1)))
+		can_be_optimized = true;
+	    }
+	}
+
       if (GET_MODE_SIZE (GET_MODE (op0)) < UNITS_PER_WORD)
 	{
 	  promote_op[0] = (REG_P (op0) && REG_P (operands[2]) &&
@@ -5314,21 +5389,47 @@ loongarch_expand_conditional_move (rtx *operands)
       op0_extend = op0;
       op1_extend = force_reg (word_mode, op1);
 
+      rtx target = gen_reg_rtx (GET_MODE (op0));
+
       if (code == EQ || code == NE)
 	{
 	  op0 = loongarch_zero_if_equal (op0, op1);
 	  op1 = const0_rtx;
+	  /* For EQ, set target to 1 if op0 and op1 are the same,
+	     otherwise set to 0.
+	     For NE, set target to 0 if op0 and op1 are the same,
+	     otherwise set to 1.  */
+	  if (can_be_optimized)
+	    loongarch_emit_binary (code, target, op0, const0_rtx);
 	}
       else
 	{
 	  /* The comparison needs a separate scc instruction.  Store the
 	     result of the scc in *OP0 and compare it against zero.  */
 	  bool invert = false;
-	  rtx target = gen_reg_rtx (GET_MODE (op0));
 	  loongarch_emit_int_order_test (code, &invert, target, op0, op1);
+	  if (can_be_optimized && invert)
+	    loongarch_emit_binary (EQ, target, target, const0_rtx);
 	  code = invert ? EQ : NE;
 	  op0 = target;
 	  op1 = const0_rtx;
+	}
+
+      if (can_be_optimized)
+	{
+	  /* Perform (condition ? 1 : 0) << log2 (C).  */
+	  loongarch_emit_binary (ASHIFT, target, target,
+				 GEN_INT (exact_log2 (val)));
+	  /* Shift-related insn patterns only support SImode operands[2].  */
+	  enum rtx_code opcode = GET_CODE (value_if_true_insn_src);
+	  if (opcode == ASHIFT || opcode == ASHIFTRT || opcode == LSHIFTRT
+	      || opcode == ROTATE || opcode == ROTATERT)
+	    target = gen_lowpart (SImode, target);
+	  /* Perform target = target OP ((condition ? 1 : 0) << log2 (C)).  */
+	  loongarch_emit_binary (opcode, operands[0],
+				 force_reg (GET_MODE (operands[3]), comm_var),
+				 target);
+	  return;
 	}
     }
 
