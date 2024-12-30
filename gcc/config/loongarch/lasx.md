@@ -2281,21 +2281,20 @@
 
 (define_insn "lasx_xvrepl128vei_b_internal"
   [(set (match_operand:V32QI 0 "register_operand" "=f")
-	(vec_duplicate:V32QI
-	  (vec_select:V32QI
-	    (match_operand:V32QI 1 "register_operand" "f")
-	    (parallel [(match_operand 2 "const_uimm4_operand" "")
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_operand 3 "const_16_to_31_operand" "")
-		       (match_dup 3) (match_dup 3) (match_dup 3)
-		       (match_dup 3) (match_dup 3) (match_dup 3)
-		       (match_dup 3) (match_dup 3) (match_dup 3)
-		       (match_dup 3) (match_dup 3) (match_dup 3)
-		       (match_dup 3) (match_dup 3) (match_dup 3)]))))]
+	(vec_select:V32QI
+	  (match_operand:V32QI 1 "register_operand" "f")
+	  (parallel [(match_operand 2 "const_uimm4_operand" "")
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_operand 3 "const_16_to_31_operand" "")
+		     (match_dup 3) (match_dup 3) (match_dup 3)
+		     (match_dup 3) (match_dup 3) (match_dup 3)
+		     (match_dup 3) (match_dup 3) (match_dup 3)
+		     (match_dup 3) (match_dup 3) (match_dup 3)
+		     (match_dup 3) (match_dup 3) (match_dup 3)])))]
   "ISA_HAS_LASX && ((INTVAL (operands[3]) - INTVAL (operands[2])) == 16)"
   "xvrepl128vei.b\t%u0,%u1,%2"
   [(set_attr "type" "simd_splat")
@@ -2303,17 +2302,16 @@
 
 (define_insn "lasx_xvrepl128vei_h_internal"
   [(set (match_operand:V16HI 0 "register_operand" "=f")
-	(vec_duplicate:V16HI
-	  (vec_select:V16HI
-	    (match_operand:V16HI 1 "register_operand" "f")
-	    (parallel [(match_operand 2 "const_uimm3_operand" "")
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_dup 2)
-		       (match_operand 3 "const_8_to_15_operand" "")
-		       (match_dup 3) (match_dup 3) (match_dup 3)
-		       (match_dup 3) (match_dup 3) (match_dup 3)
-		       (match_dup 3)]))))]
+	(vec_select:V16HI
+	  (match_operand:V16HI 1 "register_operand" "f")
+	  (parallel [(match_operand 2 "const_uimm3_operand" "")
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_dup 2)
+		     (match_operand 3 "const_8_to_15_operand" "")
+		     (match_dup 3) (match_dup 3) (match_dup 3)
+		     (match_dup 3) (match_dup 3) (match_dup 3)
+		     (match_dup 3)])))]
   "ISA_HAS_LASX && ((INTVAL (operands[3]) - INTVAL (operands[2])) == 8)"
   "xvrepl128vei.h\t%u0,%u1,%2"
   [(set_attr "type" "simd_splat")
@@ -2321,13 +2319,12 @@
 
 (define_insn "lasx_xvrepl128vei_w_internal"
   [(set (match_operand:V8SI 0 "register_operand" "=f")
-	(vec_duplicate:V8SI
-	  (vec_select:V8SI
-	    (match_operand:V8SI 1 "register_operand" "f")
-	    (parallel [(match_operand 2 "const_0_to_3_operand" "")
-		       (match_dup 2) (match_dup 2) (match_dup 2)
-		       (match_operand 3 "const_4_to_7_operand" "")
-		       (match_dup 3) (match_dup 3) (match_dup 3)]))))]
+	(vec_select:V8SI
+	  (match_operand:V8SI 1 "register_operand" "f")
+	  (parallel [(match_operand 2 "const_0_to_3_operand" "")
+		     (match_dup 2) (match_dup 2) (match_dup 2)
+		     (match_operand 3 "const_4_to_7_operand" "")
+		     (match_dup 3) (match_dup 3) (match_dup 3)])))]
   "ISA_HAS_LASX && ((INTVAL (operands[3]) - INTVAL (operands[2])) == 4)"
   "xvrepl128vei.w\t%u0,%u1,%2"
   [(set_attr "type" "simd_splat")
@@ -2335,13 +2332,12 @@
 
 (define_insn "lasx_xvrepl128vei_d_internal"
   [(set (match_operand:V4DI 0 "register_operand" "=f")
-	(vec_duplicate:V4DI
-	  (vec_select:V4DI
-	    (match_operand:V4DI 1 "register_operand" "f")
-	    (parallel [(match_operand 2 "const_0_or_1_operand" "")
-		       (match_dup 2)
-		       (match_operand 3 "const_2_or_3_operand" "")
-		       (match_dup 3)]))))]
+	(vec_select:V4DI
+	  (match_operand:V4DI 1 "register_operand" "f")
+	  (parallel [(match_operand 2 "const_0_or_1_operand" "")
+		     (match_dup 2)
+		     (match_operand 3 "const_2_or_3_operand" "")
+		     (match_dup 3)])))]
   "ISA_HAS_LASX && ((INTVAL (operands[3]) - INTVAL (operands[2])) == 2)"
   "xvrepl128vei.d\t%u0,%u1,%2"
   [(set_attr "type" "simd_splat")
