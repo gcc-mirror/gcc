@@ -4183,10 +4183,10 @@
 	(any_extend:V16HI
 	  (vec_select:V16QI
 	    (match_operand:V32QI 1 "register_operand" "f")
-	      (parallel [(const_int 16) (const_int 17)
-			 (const_int 18) (const_int 19)
-			 (const_int 20) (const_int 21)
-			 (const_int 22) (const_int 23)
+	      (parallel [(const_int 8) (const_int 9)
+			 (const_int 10) (const_int 11)
+			 (const_int 12) (const_int 13)
+			 (const_int 14) (const_int 15)
 			 (const_int 24) (const_int 25)
 			 (const_int 26) (const_int 27)
 			 (const_int 28) (const_int 29)
@@ -4201,8 +4201,8 @@
 	(any_extend:V8SI
 	  (vec_select:V8HI
 	    (match_operand:V16HI 1 "register_operand" "f")
-	    (parallel [(const_int 8) (const_int 9)
-		       (const_int 10) (const_int 11)
+	    (parallel [(const_int 4) (const_int 5)
+		       (const_int 6) (const_int 7)
 		       (const_int 12) (const_int 13)
 		       (const_int 14) (const_int 15)]))))]
   "ISA_HAS_LASX"
@@ -4215,7 +4215,7 @@
 	(any_extend:V4DI
 	  (vec_select:V4SI
 	    (match_operand:V8SI 1 "register_operand" "f")
-	    (parallel [(const_int 4) (const_int 5)
+	    (parallel [(const_int 2) (const_int 3)
 		       (const_int 6) (const_int 7)]))))]
   "ISA_HAS_LASX"
   "xvexth.d<u>.w<u>\t%u0,%u1"
