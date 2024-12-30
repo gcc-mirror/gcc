@@ -861,19 +861,19 @@
 ;; Transform (X & C1) + C2 into (X | ~C1) - (-C2 | ~C1)
 ;; Where C1 is not a LUI operand, but ~C1 is a LUI operand
 
-(define_insn_and_split "*lui_constraint<ANYI:mode>_and_to_or"
-	[(set (match_operand:ANYI 0 "register_operand" "=r")
-	(plus:ANYI (and:ANYI (match_operand:ANYI 1 "register_operand" "r")
-			 (match_operand 2 "const_int_operand"))
-		 (match_operand 3 "const_int_operand")))
+(define_insn_and_split "*lui_constraint<X:mode>_and_to_or"
+	[(set (match_operand:X 0 "register_operand" "=r")
+	(plus:X (and:X (match_operand:X 1 "register_operand" "r")
+		       (match_operand 2 "const_int_operand"))
+		(match_operand 3 "const_int_operand")))
    (clobber (match_scratch:X 4 "=&r"))]
-  "LUI_OPERAND (~INTVAL (operands[2]))
-   && ((INTVAL (operands[2]) & (-INTVAL (operands[3])))
-   == (-INTVAL (operands[3])))
-   && riscv_const_insns (operands[3], false)
-   && (riscv_const_insns
-   (GEN_INT (~INTVAL (operands[2]) | -INTVAL (operands[3])), false)
-   <= riscv_const_insns (operands[3], false))"
+  "(LUI_OPERAND (~INTVAL (operands[2]))
+    && ((INTVAL (operands[2]) & (-INTVAL (operands[3])))
+	== (-INTVAL (operands[3])))
+    && riscv_const_insns (operands[3], false)
+    && (riscv_const_insns (GEN_INT (~INTVAL (operands[2])
+				    | -INTVAL (operands[3])), false)
+	<= riscv_const_insns (operands[3], false)))"
   "#"
   "&& reload_completed"
   [(set (match_dup 4) (match_dup 5))
