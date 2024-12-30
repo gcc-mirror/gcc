@@ -1637,41 +1637,40 @@ struct simd_type {
 };
 
 namespace simd_types {
-  constexpr simd_type f8 { V8QImode, qualifier_modal_float };
-  constexpr simd_type f8q { V16QImode, qualifier_modal_float };
-  constexpr simd_type p8 { V8QImode, qualifier_poly };
-  constexpr simd_type p8q { V16QImode, qualifier_poly };
-  constexpr simd_type s8 { V8QImode, qualifier_none };
-  constexpr simd_type s8q { V16QImode, qualifier_none };
-  constexpr simd_type u8 { V8QImode, qualifier_unsigned };
-  constexpr simd_type u8q { V16QImode, qualifier_unsigned };
+#define VARIANTS(BASE, D, Q, MODE, QUALIFIERS)			\
+  constexpr simd_type BASE { V##D##MODE, QUALIFIERS };		\
+  constexpr simd_type BASE##x2 { V2x##D##MODE, QUALIFIERS };	\
+  constexpr simd_type BASE##x3 { V3x##D##MODE, QUALIFIERS };	\
+  constexpr simd_type BASE##x4 { V4x##D##MODE, QUALIFIERS };	\
+  constexpr simd_type BASE##q { V##Q##MODE, QUALIFIERS };	\
+  constexpr simd_type BASE##qx2 { V2x##Q##MODE, QUALIFIERS };	\
+  constexpr simd_type BASE##qx3 { V3x##Q##MODE, QUALIFIERS };	\
+  constexpr simd_type BASE##qx4 { V4x##Q##MODE, QUALIFIERS };	\
+  constexpr simd_type BASE##_scalar { MODE, QUALIFIERS };
 
-  constexpr simd_type f16 { V4HFmode, qualifier_none };
-  constexpr simd_type f16q { V8HFmode, qualifier_none };
-  constexpr simd_type f16qx2 { V2x8HFmode, qualifier_none };
-  constexpr simd_type p16 { V4HImode, qualifier_poly };
-  constexpr simd_type p16q { V8HImode, qualifier_poly };
-  constexpr simd_type p16qx2 { V2x8HImode, qualifier_poly };
-  constexpr simd_type s16 { V4HImode, qualifier_none };
-  constexpr simd_type s16q { V8HImode, qualifier_none };
-  constexpr simd_type s16qx2 { V2x8HImode, qualifier_none };
-  constexpr simd_type u16 { V4HImode, qualifier_unsigned };
-  constexpr simd_type u16q { V8HImode, qualifier_unsigned };
-  constexpr simd_type u16qx2 { V2x8HImode, qualifier_unsigned };
+  VARIANTS (f8, 8, 16, QImode, qualifier_modal_float)
+  VARIANTS (p8, 8, 16, QImode, qualifier_poly)
+  VARIANTS (s8, 8, 16, QImode, qualifier_none)
+  VARIANTS (u8, 8, 16, QImode, qualifier_unsigned)
 
-  constexpr simd_type bf16 { V4BFmode, qualifier_none };
-  constexpr simd_type bf16q { V8BFmode, qualifier_none };
-  constexpr simd_type bf16qx2 { V2x8BFmode, qualifier_none };
+  VARIANTS (bf16, 4, 8, BFmode, qualifier_none)
+  VARIANTS (f16, 4, 8, HFmode, qualifier_none)
+  VARIANTS (p16, 4, 8, HImode, qualifier_poly)
+  VARIANTS (s16, 4, 8, HImode, qualifier_none)
+  VARIANTS (u16, 4, 8, HImode, qualifier_unsigned)
 
-  constexpr simd_type f32 { V2SFmode, qualifier_none };
-  constexpr simd_type f32q { V4SFmode, qualifier_none };
-  constexpr simd_type s32 { V2SImode, qualifier_none };
-  constexpr simd_type s32q { V4SImode, qualifier_none };
+  VARIANTS (f32, 2, 4, SFmode, qualifier_none)
+  VARIANTS (p32, 2, 4, SImode, qualifier_poly)
+  VARIANTS (s32, 2, 4, SImode, qualifier_none)
+  VARIANTS (u32, 2, 4, SImode, qualifier_unsigned)
 
-  constexpr simd_type f64q { V2DFmode, qualifier_none };
-  constexpr simd_type s64q { V2DImode, qualifier_none };
+  VARIANTS (f64, 1, 2, DFmode, qualifier_none)
+  VARIANTS (p64, 1, 2, DImode, qualifier_poly)
+  VARIANTS (s64, 1, 2, DImode, qualifier_none)
+  VARIANTS (u64, 1, 2, DImode, qualifier_unsigned)
 
   constexpr simd_type none { VOIDmode, qualifier_none };
+#undef VARIANTS
 }
 
 }
