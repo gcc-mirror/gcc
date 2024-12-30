@@ -808,7 +808,7 @@ Objective-C and Objective-C++ Dialects}.
 @c Try and put the significant identifier (CPU or system) first,
 @c so users have a clue at guessing where the ones they want will be.
 
-@emph{AArch64 Options}
+@emph{AArch64 Options} (@ref{AArch64 Options})
 @gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian
 -mgeneral-regs-only
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large
@@ -829,7 +829,7 @@ Objective-C and Objective-C++ Dialects}.
 -mstack-protector-guard-offset=@var{offset} -mtrack-speculation
 -moutline-atomics -mearly-ldp-fusion -mlate-ldp-fusion}
 
-@emph{Adapteva Epiphany Options}
+@emph{Adapteva Epiphany Options} (@ref{Adapteva Epiphany Options})
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs
 -mbranch-cost=@var{num}  -mcmove  -mnops=@var{num}  -msoft-cmpsf
 -msplit-lohi  -mpost-inc  -mpost-modify  -mstack-offset=@var{num}
@@ -837,10 +837,10 @@ Objective-C and Objective-C++ Dialects}.
 -mfp-mode=@var{mode}  -mvect-double  -max-vect-align=@var{num}
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
-@emph{AMD GCN Options}
+@emph{AMD GCN Options} (@ref{AMD GCN Options})
 @gccoptlist{-march=@var{gpu} -mtune=@var{gpu} -mstack-size=@var{bytes}}
 
-@emph{ARC Options}
+@emph{ARC Options} (@ref{ARC Options})
 @gccoptlist{-mbarrel-shifter  -mjli-always
 -mcpu=@var{cpu}  -mA6  -mARC600  -mA7  -mARC700
 -mdpfp  -mdpfp-compact  -mdpfp-fast  -mno-dpfp-lrsr
@@ -860,7 +860,7 @@ Objective-C and Objective-C++ Dialects}.
 -munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo}
 -mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu}  -mrf16  -mbranch-index}
 
-@emph{ARM Options}
+@emph{ARM Options} (@ref{ARM Options})
 @gccoptlist{-mapcs-frame  -mno-apcs-frame
 -mabi=@var{name}
 -mapcs-stack-check  -mno-apcs-stack-check
@@ -903,7 +903,7 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
 [+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]}
 
-@emph{AVR Options}
+@emph{AVR Options} (@ref{AVR Options})
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
 -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
@@ -914,7 +914,7 @@ Objective-C and Objective-C++ Dialects}.
 -mshort-calls  -mskip-bug  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
-@emph{Blackfin Options}
+@emph{Blackfin Options} (@ref{Blackfin Options})
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]}
 -msim  -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer
 -mspecld-anomaly  -mno-specld-anomaly  -mcsync-anomaly  -mno-csync-anomaly
@@ -925,11 +925,11 @@ Objective-C and Objective-C++ Dialects}.
 -mfast-fp  -minline-plt  -mmulticore  -mcorea  -mcoreb  -msdram
 -micplb}
 
-@emph{C6X Options}
+@emph{C6X Options} (@ref{C6X Options})
 @gccoptlist{-mbig-endian  -mlittle-endian  -march=@var{cpu}
 -msim  -msdata=@var{sdata-type}}
 
-@emph{CRIS Options}
+@emph{CRIS Options} (@ref{CRIS Options})
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}
 -mtune=@var{cpu} -mmax-stack-frame=@var{n}
 -metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects
@@ -938,7 +938,7 @@ Objective-C and Objective-C++ Dialects}.
 -melf  -maout  -sim  -sim2
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
-@emph{C-SKY Options}
+@emph{C-SKY Options} (@ref{C-SKY Options})
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}
 -mbig-endian  -EB  -mlittle-endian  -EL
 -mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu
@@ -949,7 +949,12 @@ Objective-C and Objective-C++ Dialects}.
 -mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt
 -mbranch-cost=@var{n}  -mcse-cc  -msched-prolog -msim}
 
-@emph{Darwin Options}
+@emph{Cygwin and MinGW Options} (@ref{Cygwin and MinGW Options})
+@gccoptlist{-mconsole  -mcrtdll=@var{library}  -mdll
+-mnop-fun-dllimport  -mthread
+-municode  -mwin32  -mwindows  -fno-set-stack-executable}
+
+@emph{Darwin Options} (@ref{Darwin Options})
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal
 -arch_only  -bind_at_load  -bundle  -bundle_loader
 -client_name  -compatibility_version  -current_version
@@ -976,7 +981,7 @@ Objective-C and Objective-C++ Dialects}.
 -whatsloaded  -F  -gused  -gfull  -mmacosx-version-min=@var{version}
 -mkernel  -mone-byte-bool}
 
-@emph{DEC Alpha Options}
+@emph{DEC Alpha Options} (@ref{DEC Alpha Options})
 @gccoptlist{-mno-fp-regs  -msoft-float
 -mieee  -mieee-with-inexact  -mieee-conformant
 -mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode}
@@ -988,19 +993,19 @@ Objective-C and Objective-C++ Dialects}.
 -msmall-text  -mlarge-text
 -mmemory-latency=@var{time}}
 
-@emph{eBPF Options}
+@emph{eBPF Options} (@ref{eBPF Options})
 @gccoptlist{-mbig-endian -mlittle-endian
 -mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
 -mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -msmov -mcpu=@var{version}
 -masm=@var{dialect} -minline-memops-threshold=@var{bytes}}
 
-@emph{FR30 Options}
+@emph{FR30 Options} (@ref{FR30 Options})
 @gccoptlist{-msmall-model  -mno-lsim}
 
-@emph{FT32 Options}
+@emph{FT32 Options} (@ref{FT32 Options})
 @gccoptlist{-msim  -mlra  -mnodiv  -mft32b  -mcompress  -mnopm}
 
-@emph{FRV Options}
+@emph{FRV Options} (@ref{FRV Options})
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64
 -mhard-float  -msoft-float
 -malloc-cc  -mfixed-cc  -mdword  -mno-dword
@@ -1018,14 +1023,14 @@ Objective-C and Objective-C++ Dialects}.
 -mTLS  -mtls
 -mcpu=@var{cpu}}
 
-@emph{GNU/Linux Options}
+@emph{GNU/Linux Options} (@ref{GNU/Linux Options})
 @gccoptlist{-mglibc  -muclibc  -mmusl  -mbionic  -mandroid
 -tno-android-cc  -tno-android-ld}
 
-@emph{H8/300 Options}
+@emph{H8/300 Options} (@ref{H8/300 Options})
 @gccoptlist{-mrelax  -mh  -ms  -mn  -mexr  -mno-exr  -mint32  -malign-300}
 
-@emph{HPPA Options}
+@emph{HPPA Options} (@ref{HPPA Options})
 @gccoptlist{-march=@var{architecture-type}
 -matomic-libcalls  -mbig-switch
 -mcaller-copies  -mdisable-fpregs  -mdisable-indexing
@@ -1041,7 +1046,7 @@ Objective-C and Objective-C++ Dialects}.
 -mschedule=@var{cpu-type}  -mspace-regs  -msoft-mult  -msio  -mwsio
 -munix=@var{unix-std}  -nolibdld  -static  -threads}
 
-@emph{IA-64 Options}
+@emph{IA-64 Options} (@ref{IA-64 Options})
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic
 -mvolatile-asm-stop  -mregister-names  -msdata  -mno-sdata
 -mconstant-gp  -mauto-pic  -mfused-madd
@@ -1064,11 +1069,11 @@ Objective-C and Objective-C++ Dialects}.
 -msel-sched-dont-check-control-spec  -msched-fp-mem-deps-zero-cost
 -msched-max-memory-insns-hard-limit  -msched-max-memory-insns=@var{max-insns}}
 
-@emph{LM32 Options}
+@emph{LM32 Options} (@ref{LM32 Options})
 @gccoptlist{-mbarrel-shift-enabled  -mdivide-enabled  -mmultiply-enabled
 -msign-extend-enabled  -muser-enabled}
 
-@emph{LoongArch Options}
+@emph{LoongArch Options} (@ref{LoongArch Options})
 @gccoptlist{-march=@var{arch-type}  -mtune=@var{tune-type} -mabi=@var{base-abi-type}
 -mfpu=@var{fpu-type} -msimd=@var{simd-type}
 -msoft-float -msingle-float -mdouble-float -mlsx -mno-lsx -mlasx -mno-lasx
@@ -1084,7 +1089,10 @@ Objective-C and Objective-C++ Dialects}.
 -mlam-bh -mno-lam-bh -mlamcas -mno-lamcas -mld-seq-sa -mno-ld-seq-sa
 -mtls-dialect=@var{opt} -mannotate-tablejump -mno-annotate-tablejump}
 
-@emph{M32R/D Options}
+@emph{M32C Options} (@ref{M32C Options})
+@gccoptlist{-mcpu=@var{cpu}  -msim  -memregs=@var{number}}
+
+@emph{M32R/D Options} (@ref{M32R/D Options})
 @gccoptlist{-m32r2  -m32rx  -m32r
 -mdebug
 -malign-loops  -mno-align-loops
@@ -1096,10 +1104,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-flush-trap  -mflush-trap=@var{number}
 -G @var{num}}
 
-@emph{M32C Options}
-@gccoptlist{-mcpu=@var{cpu}  -msim  -memregs=@var{number}}
-
-@emph{M680x0 Options}
+@emph{M680x0 Options} (@ref{M680x0 Options})
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune}
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
 -m68060  -mcpu32  -m5200  -m5206e  -m528x  -m5307  -m5407
@@ -1110,14 +1115,14 @@ Objective-C and Objective-C++ Dialects}.
 -mshared-library-id=n  -mid-shared-library  -mno-id-shared-library
 -mxgot  -mno-xgot  -mlong-jump-table-offsets}
 
-@emph{MCore Options}
+@emph{MCore Options} (@ref{MCore Options})
 @gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates
 -mno-relax-immediates  -mwide-bitfields  -mno-wide-bitfields
 -m4byte-functions  -mno-4byte-functions  -mcallgraph-data
 -mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim
 -mlittle-endian  -mbig-endian  -m210  -m340  -mstack-increment}
 
-@emph{MicroBlaze Options}
+@emph{MicroBlaze Options} (@ref{MicroBlaze Options})
 @gccoptlist{-msoft-float  -mhard-float  -msmall-divides  -mcpu=@var{cpu}
 -mmemcpy  -mxl-soft-mul  -mxl-soft-div  -mxl-barrel-shift
 -mxl-pattern-compare  -mxl-stack-check  -mxl-gp-opt  -mno-clearbss
@@ -1125,7 +1130,7 @@ Objective-C and Objective-C++ Dialects}.
 -mbig-endian  -mlittle-endian  -mxl-reorder  -mxl-mode-@var{app-model}
 -mpic-data-is-text-relative}
 
-@emph{MIPS Options}
+@emph{MIPS Options} (@ref{MIPS Options})
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch}
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5
 -mips32r6  -mips64  -mips64r2  -mips64r3  -mips64r5  -mips64r6
@@ -1185,30 +1190,30 @@ Objective-C and Objective-C++ Dialects}.
 -mrelax-pic-calls  -mno-relax-pic-calls  -mmcount-ra-address
 -mframe-header-opt  -mno-frame-header-opt}
 
-@emph{MMIX Options}
+@emph{MMIX Options} (@ref{MMIX Options})
 @gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu
 -mabi=mmixware  -mzero-extend  -mknuthdiv  -mtoplevel-symbols
 -melf  -mbranch-predict  -mno-branch-predict  -mbase-addresses
 -mno-base-addresses  -msingle-exit  -mno-single-exit}
 
-@emph{MN10300 Options}
+@emph{MN10300 Options} (@ref{MN10300 Options})
 @gccoptlist{-mmult-bug  -mno-mult-bug
 -mno-am33  -mam33  -mam33-2  -mam34
 -mtune=@var{cpu-type}
 -mreturn-pointer-on-d0
 -mno-crt0  -mrelax  -mliw  -msetlb}
 
-@emph{Moxie Options}
+@emph{Moxie Options} (@ref{Moxie Options})
 @gccoptlist{-meb  -mel  -mmul.x  -mno-crt0}
 
-@emph{MSP430 Options}
+@emph{MSP430 Options} (@ref{MSP430 Options})
 @gccoptlist{-msim  -masm-hex  -mmcu=  -mcpu=  -mlarge  -msmall  -mrelax
 -mwarn-mcu
 -mcode-region=  -mdata-region=
 -msilicon-errata=  -msilicon-errata-warn=
 -mhwmult=  -minrt  -mtiny-printf  -mmax-inline-shift=}
 
-@emph{NDS32 Options}
+@emph{NDS32 Options} (@ref{NDS32 Options})
 @gccoptlist{-mbig-endian  -mlittle-endian
 -mreduced-regs  -mfull-regs
 -mcmov  -mno-cmov
@@ -1223,17 +1228,17 @@ Objective-C and Objective-C++ Dialects}.
 -mcmodel=@var{code-model}
 -mctor-dtor  -mrelax}
 
-@emph{Nvidia PTX Options}
+@emph{Nvidia PTX Options} (@ref{Nvidia PTX Options})
 @gccoptlist{-m64  -mmainkernel  -moptimize}
 
-@emph{OpenRISC Options}
+@emph{OpenRISC Options} (@ref{OpenRISC Options})
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div
 -msoft-mul  -msoft-div
 -msoft-float  -mhard-float  -mdouble-float -munordered-float
 -mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm
 -mcmodel=@var{code-model}}
 
-@emph{PDP-11 Options}
+@emph{PDP-11 Options} (@ref{PDP-11 Options})
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10
 -mint32  -mno-int16  -mint16  -mno-int32
 -msplit  -munix-asm  -mdec-asm  -mgnu-asm  -mlra}
@@ -1241,11 +1246,11 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PowerPC Options}
 See RS/6000 and PowerPC Options.
 
-@emph{PRU Options}
+@emph{PRU Options} (@ref{PRU Options})
 @gccoptlist{-mmcu=@var{mcu}  -minrt  -mno-relax  -mloop
 -mabi=@var{variant}}
 
-@emph{RISC-V Options}
+@emph{RISC-V Options} (@ref{RISC-V Options})
 @gccoptlist{-mbranch-cost=@var{N-instruction}
 -mplt  -mno-plt
 -mabi=@var{ABI-string}
@@ -1276,12 +1281,12 @@ See RS/6000 and PowerPC Options.
 -minline-strncmp  -mno-inline-strncmp
 -mtls-dialect=desc  -mtls-dialect=trad}
 
-@emph{RL78 Options}
+@emph{RL78 Options} (@ref{RL78 Options})
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
 -mcpu=g10  -mcpu=g13  -mcpu=g14  -mg10  -mg13  -mg14
 -m64bit-doubles  -m32bit-doubles  -msave-mduc-in-interrupts}
 
-@emph{RS/6000 and PowerPC Options}
+@emph{RS/6000 and PowerPC Options} (@ref{RS/6000 and PowerPC Options})
 @gccoptlist{-mcpu=@var{cpu-type}
 -mtune=@var{cpu-type}
 -mcmodel=@var{code-model}
@@ -1342,7 +1347,7 @@ See RS/6000 and PowerPC Options.
 -mpcrel -mno-pcrel -mmma -mno-mmma -mrop-protect -mno-rop-protect
 -mprivileged -mno-privileged}
 
-@emph{RX Options}
+@emph{RX Options} (@ref{RX Options})
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu
 -mcpu=
 -mbig-endian-data  -mlittle-endian-data
@@ -1358,7 +1363,7 @@ See RS/6000 and PowerPC Options.
 -mno-warn-multiple-fast-interrupts
 -msave-acc-in-interrupts}
 
-@emph{S/390 and zSeries Options}
+@emph{S/390 and zSeries Options} (@ref{S/390 and zSeries Options})
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type}
 -mhard-float  -msoft-float  -mhard-dfp  -mno-hard-dfp
 -mlong-double-64  -mlong-double-128
@@ -1371,7 +1376,7 @@ See RS/6000 and PowerPC Options.
 -mwarn-framesize  -mwarn-dynamicstack  -mstack-size  -mstack-guard
 -mhotpatch=@var{halfwords},@var{halfwords}}
 
-@emph{SH Options}
+@emph{SH Options} (@ref{SH Options})
 @gccoptlist{-m1  -m2  -m2e
 -m2a-nofpu  -m2a-single-only  -m2a-single  -m2a
 -m3  -m3e
@@ -1389,11 +1394,11 @@ See RS/6000 and PowerPC Options.
 -mfused-madd  -mno-fused-madd  -mfsca  -mno-fsca  -mfsrra  -mno-fsrra
 -mpretend-cmove  -mtas}
 
-@emph{Solaris 2 Options}
+@emph{Solaris 2 Options} (@ref{Solaris 2 Options})
 @gccoptlist{-mclear-hwcap  -mno-clear-hwcap  -mimpure-text  -mno-impure-text
 -pthreads}
 
-@emph{SPARC Options}
+@emph{SPARC Options} (@ref{SPARC Options})
 @gccoptlist{-mcpu=@var{cpu-type}
 -mtune=@var{cpu-type}
 -mcmodel=@var{code-model}
@@ -1413,10 +1418,10 @@ See RS/6000 and PowerPC Options.
 -mpopc  -mno-popc  -msubxc  -mno-subxc
 -mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc}
 
-@emph{System V Options}
+@emph{System V Options} (@ref{System V Options})
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
-@emph{V850 Options}
+@emph{V850 Options} (@ref{V850 Options})
 @gccoptlist{-mlong-calls  -mno-long-calls  -mep  -mno-ep
 -mprolog-function  -mno-prolog-function  -mspace
 -mtda=@var{n}  -msda=@var{n}  -mzda=@var{n}
@@ -1433,22 +1438,22 @@ See RS/6000 and PowerPC Options.
 -mrh850-abi
 -mbig-switch}
 
-@emph{VAX Options}
+@emph{VAX Options} (@ref{VAX Options})
 @gccoptlist{-munix  -mgnu  -md  -md-float  -mg  -mg-float  -mlra}
 
-@emph{Visium Options}
+@emph{Visium Options} (@ref{Visium Options})
 @gccoptlist{-mdebug  -msim  -mfpu  -mno-fpu  -mhard-float  -msoft-float
 -mcpu=@var{cpu-type}  -mtune=@var{cpu-type}  -msv-mode  -muser-mode}
 
-@emph{VMS Options}
+@emph{VMS Options} (@ref{VMS Options})
 @gccoptlist{-mvms-return-codes  -mdebug-main=@var{prefix}  -mmalloc64
 -mpointer-size=@var{size}}
 
-@emph{VxWorks Options}
+@emph{VxWorks Options} (@ref{VxWorks Options})
 @gccoptlist{-mrtp  -msmp  -non-static  -Bstatic  -Bdynamic
 -Xbind-lazy  -Xbind-now}
 
-@emph{x86 Options}
+@emph{x86 Options} (@ref{x86 Options})
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type}
 -mtune-ctrl=@var{feature-list}  -mdump-tune-features  -mno-default
 -mfpmath=@var{unit}
@@ -1507,16 +1512,12 @@ See RS/6000 and PowerPC Options.
 -munroll-only-small-loops -mlam=@var{choice}}
 
 @emph{x86 Windows Options}
+See Cygwin and MinGW Options.
 
-@emph{Cygwin and MinGW Options}
-@gccoptlist{-mconsole  -mcrtdll=@var{library}  -mdll
--mnop-fun-dllimport  -mthread
--municode  -mwin32  -mwindows  -fno-set-stack-executable}
-
-@emph{Xstormy16 Options}
+@emph{Xstormy16 Options} (@ref{Xstormy16 Options})
 @gccoptlist{-msim}
 
-@emph{Xtensa Options}
+@emph{Xtensa Options} (@ref{Xtensa Options})
 @gccoptlist{-mconst16  -mno-const16
 -mfused-madd  -mno-fused-madd
 -mforce-no-pic
@@ -25482,6 +25483,112 @@ to ELF compiler only.
 
 @end table
 
+@node Cygwin and MinGW Options
+@subsection Cygwin and MinGW Options
+@cindex Cygwin and MinGW Options
+@cindex Options for Cygwin and MinGW
+
+These additional options are available for Microsoft Windows targets:
+
+@table @gcctabopt
+@opindex mconsole
+@item -mconsole
+This option
+specifies that a console application is to be generated, by
+instructing the linker to set the PE header subsystem type
+required for console applications.
+This option is available for Cygwin and MinGW targets and is
+enabled by default on those targets.
+
+@opindex mcrtdll
+@item -mcrtdll=@var{library}
+Preprocess, compile or link with specified C RunTime DLL @var{library}.
+This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__},
+@code{_UCRT} and @code{__MSVCRT_VERSION__} for specified CRT @var{library},
+choose start file for CRT @var{library} and link with CRT @var{library}.
+Recognized CRT library names for proprocessor are:
+@code{crtdll*}, @code{msvcrt10*}, @code{msvcrt20*}, @code{msvcrt40*},
+@code{msvcr40*}, @code{msvcrtd*}, @code{msvcrt-os*},
+@code{msvcr70*}, @code{msvcr71*}, @code{msvcr80*}, @code{msvcr90*},
+@code{msvcr100*}, @code{msvcr110*}, @code{msvcr120*} and @code{ucrt*}.
+If this options is not specified then the default MinGW import library
+@code{msvcrt} is used for linking and no other adjustment for
+preprocessor is done. MinGW import library @code{msvcrt} is just a
+symlink to (or a copy of) another MinGW CRT import library
+chosen during MinGW compilation. MinGW import library @code{msvcrt-os}
+is for Windows system CRT DLL library @code{msvcrt.dll} and
+in most cases is the default MinGW import library.
+Generally speaking, changing the CRT DLL requires recompiling
+the entire MinGW CRT. This option is for experimental and testing
+purposes only.
+This option is available for MinGW targets.
+
+@opindex mdll
+@item -mdll
+This option is available for Cygwin and MinGW targets.  It
+specifies that a DLL---a dynamic link library---is to be
+generated, enabling the selection of the required runtime
+startup object and entry point.
+
+@opindex mnop-fun-dllimport
+@item -mnop-fun-dllimport
+This option is available for Cygwin and MinGW targets.  It
+specifies that the @code{dllimport} attribute should be ignored.
+
+@opindex mthreads
+@item -mthreads
+This option is available for MinGW targets. It specifies
+that MinGW-specific thread support is to be used.
+
+@opindex municode
+@item -municode
+This option is available for MinGW-w64 targets.  It causes
+the @code{UNICODE} preprocessor macro to be predefined, and
+chooses Unicode-capable runtime startup code.
+
+@opindex mwin32
+@item -mwin32
+This option is available for Cygwin and MinGW targets.  It
+specifies that the typical Microsoft Windows predefined macros are to
+be set in the pre-processor, but does not influence the choice
+of runtime library/startup code.
+
+@opindex mwindows
+@item -mwindows
+This option is available for Cygwin and MinGW targets.  It
+specifies that a GUI application is to be generated by
+instructing the linker to set the PE header subsystem type
+appropriately.
+
+@opindex fno-set-stack-executable
+@opindex fset-stack-executable
+@item -fno-set-stack-executable
+This option is available for MinGW targets. It specifies that
+the executable flag for the stack used by nested functions isn't
+set. This is necessary for binaries running in kernel mode of
+Microsoft Windows, as there the User32 API, which is used to set executable
+privileges, isn't available.
+
+@opindex fno-writable-relocated-rdata
+@opindex fwritable-relocated-rdata
+@item -fwritable-relocated-rdata
+This option is available for MinGW and Cygwin targets.  It specifies
+that relocated-data in read-only section is put into the @code{.data}
+section.  This is a necessary for older runtimes not supporting
+modification of @code{.rdata} sections for pseudo-relocation.
+
+@opindex mpe-aligned-commons
+@item -mpe-aligned-commons
+This option is available for Cygwin and MinGW targets.  It
+specifies that the GNU extension to the PE file format that
+permits the correct alignment of COMMON variables should be
+used when generating code.  It is enabled by default if
+GCC detects that the target assembler found during configuration
+supports the feature.
+@end table
+
+See also under @ref{x86 Options} for standard options.
+
 @node Darwin Options
 @subsection Darwin Options
 @cindex Darwin options
@@ -36487,112 +36594,6 @@ positions 62:57 can be used for metadata.
 @cindex Windows Options for x86
 
 @xref{Cygwin and MinGW Options}.
-
-@node Cygwin and MinGW Options
-@subsection Cygwin and MinGW Options
-@cindex Cygwin and MinGW Options
-@cindex Options for Cygwin and MinGW
-
-These additional options are available for Microsoft Windows targets:
-
-@table @gcctabopt
-@opindex mconsole
-@item -mconsole
-This option
-specifies that a console application is to be generated, by
-instructing the linker to set the PE header subsystem type
-required for console applications.
-This option is available for Cygwin and MinGW targets and is
-enabled by default on those targets.
-
-@opindex mcrtdll
-@item -mcrtdll=@var{library}
-Preprocess, compile or link with specified C RunTime DLL @var{library}.
-This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__},
-@code{_UCRT} and @code{__MSVCRT_VERSION__} for specified CRT @var{library},
-choose start file for CRT @var{library} and link with CRT @var{library}.
-Recognized CRT library names for proprocessor are:
-@code{crtdll*}, @code{msvcrt10*}, @code{msvcrt20*}, @code{msvcrt40*},
-@code{msvcr40*}, @code{msvcrtd*}, @code{msvcrt-os*},
-@code{msvcr70*}, @code{msvcr71*}, @code{msvcr80*}, @code{msvcr90*},
-@code{msvcr100*}, @code{msvcr110*}, @code{msvcr120*} and @code{ucrt*}.
-If this options is not specified then the default MinGW import library
-@code{msvcrt} is used for linking and no other adjustment for
-preprocessor is done. MinGW import library @code{msvcrt} is just a
-symlink to (or a copy of) another MinGW CRT import library
-chosen during MinGW compilation. MinGW import library @code{msvcrt-os}
-is for Windows system CRT DLL library @code{msvcrt.dll} and
-in most cases is the default MinGW import library.
-Generally speaking, changing the CRT DLL requires recompiling
-the entire MinGW CRT. This option is for experimental and testing
-purposes only.
-This option is available for MinGW targets.
-
-@opindex mdll
-@item -mdll
-This option is available for Cygwin and MinGW targets.  It
-specifies that a DLL---a dynamic link library---is to be
-generated, enabling the selection of the required runtime
-startup object and entry point.
-
-@opindex mnop-fun-dllimport
-@item -mnop-fun-dllimport
-This option is available for Cygwin and MinGW targets.  It
-specifies that the @code{dllimport} attribute should be ignored.
-
-@opindex mthreads
-@item -mthreads
-This option is available for MinGW targets. It specifies
-that MinGW-specific thread support is to be used.
-
-@opindex municode
-@item -municode
-This option is available for MinGW-w64 targets.  It causes
-the @code{UNICODE} preprocessor macro to be predefined, and
-chooses Unicode-capable runtime startup code.
-
-@opindex mwin32
-@item -mwin32
-This option is available for Cygwin and MinGW targets.  It
-specifies that the typical Microsoft Windows predefined macros are to
-be set in the pre-processor, but does not influence the choice
-of runtime library/startup code.
-
-@opindex mwindows
-@item -mwindows
-This option is available for Cygwin and MinGW targets.  It
-specifies that a GUI application is to be generated by
-instructing the linker to set the PE header subsystem type
-appropriately.
-
-@opindex fno-set-stack-executable
-@opindex fset-stack-executable
-@item -fno-set-stack-executable
-This option is available for MinGW targets. It specifies that
-the executable flag for the stack used by nested functions isn't
-set. This is necessary for binaries running in kernel mode of
-Microsoft Windows, as there the User32 API, which is used to set executable
-privileges, isn't available.
-
-@opindex fno-writable-relocated-rdata
-@opindex fwritable-relocated-rdata
-@item -fwritable-relocated-rdata
-This option is available for MinGW and Cygwin targets.  It specifies
-that relocated-data in read-only section is put into the @code{.data}
-section.  This is a necessary for older runtimes not supporting
-modification of @code{.rdata} sections for pseudo-relocation.
-
-@opindex mpe-aligned-commons
-@item -mpe-aligned-commons
-This option is available for Cygwin and MinGW targets.  It
-specifies that the GNU extension to the PE file format that
-permits the correct alignment of COMMON variables should be
-used when generating code.  It is enabled by default if
-GCC detects that the target assembler found during configuration
-supports the feature.
-@end table
-
-See also under @ref{x86 Options} for standard options.
 
 @node Xstormy16 Options
 @subsection Xstormy16 Options
