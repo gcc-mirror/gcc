@@ -4772,6 +4772,8 @@ loongarch_output_move (rtx dest, rtx src)
 		      gcc_unreachable ();
 		    }
 		}
+	      if (ISA_HAS_LSX && src == CONST0_RTX (GET_MODE (src)))
+		return "vxor.v\t%w0,%w0,%w0";
 
 	      return dbl_p ? "movgr2fr.d\t%0,%z1" : "movgr2fr.w\t%0,%z1";
 	    }
