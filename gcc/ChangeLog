@@ -1,3 +1,132 @@
+2024-12-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/106544
+	* config/riscv/riscv.cc (riscv_print_operand): Issue an error for
+	invalid operands rather than invalidly accessing INTVAL of an
+	object that is not a CONST_INT.  Fix one error string for 'N'.
+
+2024-12-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118122
+	* config/riscv/riscv.md (lui_constraint<X:mode>_and_to_or): Use
+	X iterator rather than ANYI consistently.  Fix formatting.
+
+2024-12-30  Richard Sandiford  <richard.sandiford@arm.com>
+	    Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64.md (UNSPEC_BSL, UNSPEC_COMBINE, UNSPEC_DUP)
+	(UNSPEC_DUP_LANE, UNSPEC_GET_LANE, UNSPEC_LD1_DUP, UNSPEC_LD1x2)
+	(UNSPEC_LD1x3, UNSPEC_LD1x4, UNSPEC_SET_LANE, UNSPEC_ST1_LANE)
+	(USNEPC_ST1x2, UNSPEC_ST1x3, UNSPEC_ST1x4, UNSPEC_VCREATE)
+	(UNSPEC_VEC_COPY): New unspecs.
+	* config/aarch64/iterators.md (UNSPEC_TBL): Likewise.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Add definitions
+	of the mf8 data movement intrinsics.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_advsimd_vector_array_mode): Declare.
+	* config/aarch64/aarch64.cc
+	(aarch64_advsimd_vector_array_mode): Make public.
+	* config/aarch64/aarch64-builtins.h (qualifier_const_pointer): New
+	aarch64_type_qualifiers member.
+	* config/aarch64/aarch64-builtins.cc (AARCH64_SIMD_VGET_LOW_BUILTINS)
+	(AARCH64_SIMD_VGET_HIGH_BUILTINS): Add mf8 variants.
+	(aarch64_int_or_fp_type): Handle qualifier_modal_float.
+	(aarch64_num_lanes): New function.
+	(binary_two_lanes, load, load_lane, store, store_lane): New signatures.
+	(unary_lane): Likewise.
+	(simd_type::nunits): New member function.
+	(simd_types): Add pointer types.
+	(aarch64_fntype): Handle the new signatures.
+	(require_immediate_lane_index): Use aarch64_num_lanes.
+	(aarch64_pragma_builtins_checker::check): Handle the new intrinsics.
+	(aarch64_convert_address): (aarch64_dereference_pointer):
+	(aarch64_canonicalize_lane, aarch64_convert_to_lane_mask)
+	(aarch64_pack_into_v128s, aarch64_expand_permute_pair)
+	(aarch64_expand_tbl_tbx): New functions.
+	(aarch64_expand_pragma_builtin): Handle the new intrinsics.
+	(aarch64_force_gimple_val, aarch64_copy_vops, aarch64_fold_to_val)
+	(aarch64_dereference, aarch64_get_lane_bit_index, aarch64_get_lane)
+	(aarch64_set_lane, aarch64_fold_combine, aarch64_fold_load)
+	(aarch64_fold_store, aarch64_ext_index, aarch64_rev_index)
+	(aarch64_trn_index, aarch64_uzp_index, aarch64_zip_index)
+	(aarch64_fold_permute): New functions, some split out from
+	aarch64_general_gimple_fold_builtin.
+	(aarch64_gimple_fold_pragma_builtin): New function.
+	(aarch64_general_gimple_fold_builtin): Use the new functions above.
+	* config/aarch64/aarch64-simd.md (aarch64_dup_lane<mode>)
+	(aarch64_dup_lane_<vswap_width_name><mode>): Add "@" to name.
+	(aarch64_simd_vec_set<mode>): Likewise.
+	(*aarch64_simd_vec_copy_lane_<vswap_width_name><mode>): Likewise.
+	(aarch64_simd_bsl<mode>): Likewise.
+	(aarch64_combine<mode>): Likewise.
+	(aarch64_cm<optab><mode><vczle><vczbe>): Likewise.
+	(aarch64_simd_ld2r<vstruct_elt>): Likewise.
+	(aarch64_vec_load_lanes<mode>_lane<vstruct_elt>): Likewise.
+	(aarch64_simd_ld3r<vstruct_elt>): Likewise.
+	(aarch64_simd_ld4r<vstruct_elt>): Likewise.
+	(aarch64_ld1x3<vstruct_elt>): Likewise.
+	(aarch64_ld1x4<vstruct_elt>): Likewise.
+	(aarch64_st1x2<vstruct_elt>): Likewise.
+	(aarch64_st1x3<vstruct_elt>): Likewise.
+	(aarch64_st1x4<vstruct_elt>): Likewise.
+	(aarch64_ld<nregs><vstruct_elt>): Likewise.
+	(aarch64_ld1<VALL_F16: Likewise.mode>): Likewise.
+	(aarch64_ld1x2<vstruct_elt>): Likewise.
+	(aarch64_ld<nregs>_lane<vstruct_elt>): Likewise.
+	(aarch64_<PERMUTE: Likewise.perm_insn><mode><vczle><vczbe>): Likewise.
+	(aarch64_ext<mode>): Likewise.
+	(aarch64_rev<REVERSE: Likewise.rev_op><mode><vczle><vczbe>): Likewise.
+	(aarch64_st<nregs><vstruct_elt>): Likewise.
+	(aarch64_st<nregs>_lane<vstruct_elt>): Likewise.
+	(aarch64_st1<VALL_F16: Likewise.mode>): Likewise.
+
+2024-12-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/t-aarch64 (aarch64-builtins.o): Depend on
+	aarch64-simd-pragma-builtins.def.
+
+2024-12-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (simd_types::f8): Rename to...
+	(simd_types::mf8): ...this.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Update accordingly.
+
+2024-12-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (simd_types): Use one macro
+	invocation for each element type.
+
+2024-12-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* read-rtl.cc (md_reader::handle_overloaded_name): Don't add
+	arguments for uses of subst attributes.
+	(apply_iterators): Only add instructions to an overloaded helper
+	if they use the default subst iterator values.
+	* doc/md.texi: Update documentation accordingly.
+	* config/i386/i386-expand.cc (expand_vec_perm_broadcast_1): Update
+	accordingly.
+
+2024-12-30  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/117835
+	PR rtl-optimization/117872
+	* avoid-store-forwarding.cc
+	(store_forwarding_analyzer::process_store_forwarding):
+	Zero-extend the value stored in the base register instead of
+	using a paradoxical subreg.
+
+2024-12-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/117618
+	* config/mmix/mmix.cc (mmix_setup_incoming_varargs):
+	Correct handling of C23 (...)-functions.
+
+2024-12-30  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR tree-optimization/118205
+	* tree-parloops.cc (reduction_phi): Return NULL if PHI parameter is
+	not a phi node.
+
 2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116715

@@ -1,3 +1,82 @@
+2024-12-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR testsuite/114182
+	* gcc.c-torture/compile/attr-complex-method.c: Use
+	"large_double" to select between scan outputs.
+	* gcc.c-torture/compile/attr-complex-method-2.c: Similarly.
+
+2024-12-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/106544
+	* gcc.target/riscv/pr106544.c: New test.
+
+2024-12-30  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/117643
+	* gfortran.dg/f_c_string1.f90: New test.
+	* gfortran.dg/f_c_string2.f90: New test.
+
+2024-12-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118122
+	* gcc.target/riscv/pr118122.c: New test.
+
+2024-12-30  Richard Sandiford  <richard.sandiford@arm.com>
+	    Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Add mfloat8
+	support.
+	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vbsl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcombine.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcreate.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup-vmov.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vext.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_high.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1_dup.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vrev.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vset_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshuffle.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x4.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vtbX.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn_half.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp_half.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip_half.c: Likewise.
+	* gcc.target/aarch64/simd/lut.c: Likewise.
+	* gcc.target/aarch64/vdup_lane_1.c: Likewise.
+	* gcc.target/aarch64/vdup_lane_2.c: Likewise.
+	* gcc.target/aarch64/vdup_n_1.c: Likewise.
+	* gcc.target/aarch64/vect_copy_lane_1.c: Likewise.
+	* gcc.target/aarch64/simd/mf8_data_1.c: New test.
+	* gcc.target/aarch64/simd/mf8_data_2.c: Likewise.
+
+2024-12-30  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/117835
+	PR rtl-optimization/117872
+	* gcc.target/i386/pr117835.c: New test.
+
+2024-12-30  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR tree-optimization/118205
+	* c-c++-common/pr118205.c: New test.
+
 2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116715

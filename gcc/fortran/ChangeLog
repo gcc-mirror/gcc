@@ -1,3 +1,19 @@
+2024-12-30  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/117643
+	* check.cc (gfc_check_f_c_string): Check arguments of f_c_string().
+	* gfortran.h (enum gfc_isym_id): New symbol GFC_ISYM_F_C_STRING.
+	* intrinsic.cc (add_functions): Add the ISO C Binding routine f_c_string().
+	Wrap nearby long line to less than 80 characters.
+	* intrinsic.h (gfc_check_f_c_string): Prototype for gfc_check_f_c_string().
+	* iso-c-binding.def (NAMED_FUNCTION): Declare for ISO C Binding
+	routine f_c_string().
+	* primary.cc (gfc_match_rvalue): Fix comment that has been untrue since 2011.
+	Add ISOCBINDING_F_C_STRING to conditional.
+	* trans-intrinsic.cc (conv_trim): Specialized version of trim() for
+	f_c_string().
+	(gfc_conv_intrinsic_function): Use GFC_ISYM_F_C_STRING to trigger in-lining.
+
 2024-12-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/118179
