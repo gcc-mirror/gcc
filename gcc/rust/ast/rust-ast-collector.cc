@@ -543,10 +543,14 @@ TokenCollector::visit (TypePathSegment &segment)
 {
   // Syntax:
   //    PathIdentSegment
-  auto ident_segment = segment.get_ident_segment ();
-  auto id = ident_segment.as_string ();
-  push (
-    Rust::Token::make_identifier (ident_segment.get_locus (), std::move (id)));
+
+  auto locus = segment.is_lang_item ()
+		 ? segment.get_locus ()
+		 : segment.get_ident_segment ().get_locus ();
+  auto segment_string = segment.is_lang_item ()
+			  ? LangItem::PrettyString (segment.get_lang_item ())
+			  : segment.get_ident_segment ().as_string ();
+  push (Rust::Token::make_identifier (locus, std::move (segment_string)));
 }
 
 void
@@ -558,10 +562,13 @@ TokenCollector::visit (TypePathSegmentGeneric &segment)
   //    `<` `>`
   //    | `<` ( GenericArg `,` )* GenericArg `,`? `>`
 
-  auto ident_segment = segment.get_ident_segment ();
-  auto id = ident_segment.as_string ();
-  push (
-    Rust::Token::make_identifier (ident_segment.get_locus (), std::move (id)));
+  auto locus = segment.is_lang_item ()
+		 ? segment.get_locus ()
+		 : segment.get_ident_segment ().get_locus ();
+  auto segment_string = segment.is_lang_item ()
+			  ? LangItem::PrettyString (segment.get_lang_item ())
+			  : segment.get_ident_segment ().as_string ();
+  push (Rust::Token::make_identifier (locus, std::move (segment_string)));
 
   if (segment.get_separating_scope_resolution ())
     push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
