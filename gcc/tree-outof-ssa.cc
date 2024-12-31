@@ -61,11 +61,14 @@ ssa_is_replaceable_p (gimple *stmt)
   tree def;
   gimple *use_stmt;
 
-  /* Only consider modify stmts and direct internal fn calls.  */
+  /* Only consider modify stmts and direct internal fn calls that are
+     not also tail-calls.  */
+  gcall *call;
   if (!is_gimple_assign (stmt)
-      && (!is_gimple_call (stmt)
-	  || !gimple_call_internal_p (stmt)
-	  || !direct_internal_fn_p (gimple_call_internal_fn (stmt))))
+      && (!(call = dyn_cast <gcall *> (stmt))
+	  || gimple_call_tail_p (call)
+	  || !gimple_call_internal_p (call)
+	  || !direct_internal_fn_p (gimple_call_internal_fn (call))))
     return false;
 
   /* If the statement may throw an exception, it cannot be replaced.  */
