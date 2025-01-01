@@ -1,3 +1,17 @@
+2024-12-31  Jiahao Xu  <xujiahao@loongson.cn>
+	    Deng Jianbo  <dengjianbo@loongson.cn>
+
+	* lib/target-supports.exp (check_effective_target_vect_early_break_hw,
+	check_effective_target_vect_early_break): Support LoongArch LSX.
+	* gcc.target/loongarch/vector/lasx/lasx-vseteqz.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vseteqz.c: New test.
+
+2024-12-31  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115375
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-9.c: Adjust expected
+	output.
+
 2024-12-30  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR testsuite/114182

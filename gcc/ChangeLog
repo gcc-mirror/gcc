@@ -1,3 +1,14 @@
+2024-12-31  Jiahao Xu  <xujiahao@loongson.cn>
+	    Deng Jianbo  <dengjianbo@loongson.cn>
+
+	* config/loongarch/simd.md (cbranch<mode>4): New expander.
+
+2024-12-31  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/118036
+	* varasm.cc (output_constant_pool_2): Use native_encode_rtx for
+	building the memory image of a const vector mask.
+
 2024-12-30  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/106544
