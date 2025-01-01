@@ -1341,7 +1341,7 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (bbg_file_stamp);
 	  /* Use an arbitrary checksum */
 	  gcov_write_unsigned (0);
-	  gcov_write_string (getpwd ());
+	  gcov_write_string (remap_profile_filename (getpwd ()));
 
 	  /* Do not support has_unexecuted_blocks for Ada.  */
 	  gcov_write_unsigned (strcmp (lang_hooks.name, "GNU Ada") != 0);
