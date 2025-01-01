@@ -40,12 +40,7 @@ get_lang_item_attr (const T &maybe_lang_item)
 	  continue;
 	}
 
-      bool is_lang_item = str_path == Values::Attributes::LANG
-			  && attr.has_attr_input ()
-			  && attr.get_attr_input ().get_attr_input_type ()
-			       == AST::AttrInput::AttrInputType::LITERAL;
-
-      if (is_lang_item)
+      if (Analysis::Attributes::is_lang_item (str_path, attr))
 	{
 	  auto &literal
 	    = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());

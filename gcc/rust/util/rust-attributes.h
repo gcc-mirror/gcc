@@ -29,6 +29,8 @@ class Attributes
 {
 public:
   static bool is_known (const std::string &attribute_path);
+  static bool is_lang_item (const std::string &attribute_path,
+			    const AST::Attribute &attr);
 };
 
 enum CompilerPass
