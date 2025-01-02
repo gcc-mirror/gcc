@@ -6884,8 +6884,6 @@ Wed Jan  7 23:47:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	(expand_throw): Use it.  Protect exception init with terminate.
 	* typeck.c (build_modify_expr): Remove code that ignores trivial
 	methods.
-
-
 
 Copyright (C) 1998 Free Software Foundation, Inc.
 

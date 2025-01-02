@@ -3519,7 +3519,6 @@
 	PR middle-end/17544
 	* decl.c (finish_function): Fix comment.  Annotate the compiler
 	generated return with the current file name and line 0.
-
 
 Copyright (C) 2005 Free Software Foundation, Inc.
 

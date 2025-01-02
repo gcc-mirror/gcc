@@ -5402,8 +5402,6 @@ Mon Jan  3 22:22:32 1994  Gerald Baumgartner  <gb@cygnus.com>
 	* gcc.texi: Changed the last-modification date.
 	* invoke.texi: Added `-fhandle-signatures' in the list of
 	C++ language options.  Added explanation for this option.
-
-
 
 Copyright (C) 1994 Free Software Foundation, Inc.
 

@@ -848,7 +848,6 @@
 	(ReturnStatement::toIR): Don't call postblit on nrvo returns.
 	(DtorExpStatement::toIR): Don't call destructor if var is returned as
 	the nrvo variable.
-
 
 Copyright (C) 2012 Free Software Foundation, Inc.
 

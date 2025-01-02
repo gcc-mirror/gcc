@@ -8345,7 +8345,6 @@
 	constexpr.
 	* testsuite/23_containers/array/element_access/constexpr_c++17.cc: Check
 	std::array<T, 0>::data().
-
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 

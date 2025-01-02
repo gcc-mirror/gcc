@@ -1253,7 +1253,6 @@
 	function attributes.
 	* d-codegen.h (LibCallFlag): Remove type.
 	* runtime.def: Replace LibCallFlag with ECF everywhere.
-
 
 Copyright (C) 2016 Free Software Foundation, Inc.
 

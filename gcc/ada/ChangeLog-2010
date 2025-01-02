@@ -10078,8 +10078,6 @@
 	PR ada/42626
 	* gcc-interface/Makefile.in (gnatlib-shared-darwin): Add missing
 	end-quote.
-
-
 
 Copyright (C) 2010 Free Software Foundation, Inc.
 

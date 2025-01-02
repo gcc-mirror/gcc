@@ -727,7 +727,6 @@
 	PR middle-end/108300
 	* intrinsics/sleep.c: Define `WIN32_LEAN_AND_MEAN` before
 	<windows.h>.
-
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 

@@ -1,0 +1,466 @@
+2024-12-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* caf/single.c (_gfortran_caf_get_by_ct): Correct type of free_buffer
+	to int32_t.
+
+2024-12-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_register_accessor): New function
+	to register access routines at runtime.
+	(_gfortran_caf_register_accessors_finish): New function to
+	finish registration of access routine and sort hash map.
+	(_gfortran_caf_get_remote_function_index): New function to
+	convert an hash to an index.
+	(_gfortran_caf_get_by_ct): New function to get data from a
+	remote image using the access routine given by an index.
+	* caf/single.c (struct accessor_hash_t): Hashmap type.
+	(_gfortran_caf_send): Fixed formatting.
+	(_gfortran_caf_register_accessor): Register a hash accessor
+	routine.
+	(hash_compare): Compare two hashes for sort() and bsearch().
+	(_gfortran_caf_register_accessors_finish): Sort the hashmap to
+	allow bsearch()'s quick lookup.
+	(_gfortran_caf_get_remote_function_index): Map a hash to an
+	index.
+	(_gfortran_caf_get_by_ct): Get data from a remote image using
+	the index provided by get_remote_function_index().
+
+2024-12-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/57598
+	* caf/single.c (_gfortran_caf_stop_numeric): Report exceptions
+	on stop. And fix send_by_ref.
+	(_gfortran_caf_stop_str): Same.
+	(_gfortran_caf_error_stop_str): Same.
+	(_gfortran_caf_error_stop): Same.
+	* gfortran.map: Add report_exception for export.
+	* libgfortran.h (report_exception): Add to internal export.
+	* runtime/stop.c (report_exception): Same.
+
+2024-12-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117819
+	* io/read.c (read_decimal): If the read value is short of the
+	specified width and pad mode is PAD yes, check for BLANK ZERO
+	and adjust the value accordingly.
+	(read_decimal_unsigned): Likewise.
+	(read_radix): Likewise.
+
+2024-12-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117820
+	* io/write.c (write_b): Add test for zero needed by write_boz.
+
+2024-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/88052
+	* io/format.c (parse_format_list): Reject missing comma in
+	format strings by default or if -std=f95 or higher. This is
+	a runtime error.
+
+2024-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Add files for unsigned MINLOC and MAXLOC.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add files for unsigned MINLOC and MAXLOC.
+	* generated/maxloc0_16_m1.c: New file.
+	* generated/maxloc0_16_m16.c: New file.
+	* generated/maxloc0_16_m2.c: New file.
+	* generated/maxloc0_16_m4.c: New file.
+	* generated/maxloc0_16_m8.c: New file.
+	* generated/maxloc0_4_m1.c: New file.
+	* generated/maxloc0_4_m16.c: New file.
+	* generated/maxloc0_4_m2.c: New file.
+	* generated/maxloc0_4_m4.c: New file.
+	* generated/maxloc0_4_m8.c: New file.
+	* generated/maxloc0_8_m1.c: New file.
+	* generated/maxloc0_8_m16.c: New file.
+	* generated/maxloc0_8_m2.c: New file.
+	* generated/maxloc0_8_m4.c: New file.
+	* generated/maxloc0_8_m8.c: New file.
+	* generated/maxloc1_16_m1.c: New file.
+	* generated/maxloc1_16_m2.c: New file.
+	* generated/maxloc1_16_m4.c: New file.
+	* generated/maxloc1_16_m8.c: New file.
+	* generated/maxloc1_4_m1.c: New file.
+	* generated/maxloc1_4_m16.c: New file.
+	* generated/maxloc1_4_m2.c: New file.
+	* generated/maxloc1_4_m4.c: New file.
+	* generated/maxloc1_4_m8.c: New file.
+	* generated/maxloc1_8_m1.c: New file.
+	* generated/maxloc1_8_m16.c: New file.
+	* generated/maxloc1_8_m2.c: New file.
+	* generated/maxloc1_8_m4.c: New file.
+	* generated/maxloc1_8_m8.c: New file.
+	* generated/minloc0_16_m1.c: New file.
+	* generated/minloc0_16_m16.c: New file.
+	* generated/minloc0_16_m2.c: New file.
+	* generated/minloc0_16_m4.c: New file.
+	* generated/minloc0_16_m8.c: New file.
+	* generated/minloc0_4_m1.c: New file.
+	* generated/minloc0_4_m16.c: New file.
+	* generated/minloc0_4_m2.c: New file.
+	* generated/minloc0_4_m4.c: New file.
+	* generated/minloc0_4_m8.c: New file.
+	* generated/minloc0_8_m1.c: New file.
+	* generated/minloc0_8_m16.c: New file.
+	* generated/minloc0_8_m2.c: New file.
+	* generated/minloc0_8_m4.c: New file.
+	* generated/minloc0_8_m8.c: New file.
+	* generated/minloc1_16_m1.c: New file.
+	* generated/minloc1_16_m16.c: New file.
+	* generated/minloc1_16_m2.c: New file.
+	* generated/minloc1_16_m4.c: New file.
+	* generated/minloc1_16_m8.c: New file.
+	* generated/minloc1_4_m1.c: New file.
+	* generated/minloc1_4_m16.c: New file.
+	* generated/minloc1_4_m2.c: New file.
+	* generated/minloc1_4_m4.c: New file.
+	* generated/minloc1_4_m8.c: New file.
+	* generated/minloc1_8_m1.c: New file.
+	* generated/minloc1_8_m16.c: New file.
+	* generated/minloc1_8_m2.c: New file.
+	* generated/minloc1_8_m4.c: New file.
+	* generated/minloc1_8_m8.c: New file.
+
+2024-10-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Add minval and maxval files.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add new functions.
+	* generated/maxval_m1.c: New file.
+	* generated/maxval_m16.c: New file.
+	* generated/maxval_m2.c: New file.
+	* generated/maxval_m4.c: New file.
+	* generated/maxval_m8.c: New file.
+	* generated/minval_m1.c: New file.
+	* generated/minval_m16.c: New file.
+	* generated/minval_m2.c: New file.
+	* generated/minval_m4.c: New file.
+	* generated/minval_m8.c: New file.
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.map: Add _gfortran_random_m1, _gfortran_random_m2,
+	_gfortran_random_m4, _gfortran_random_m8 and _gfortran_random_m16.
+	* intrinsics/random.c (random_m1): New function.
+	(random_m2): New function.
+	(random_m4): New function.
+	(random_m8): New function.
+	(random_m16): New function.
+	(arandom_m1): New function.
+	(arandom_m2): New function.
+	(arandom_m4): New function.
+	(arandom_m8): New funciton.
+	(arandom_m16): New function.
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* generated/product_c10.c: Regenerated.
+	* generated/product_c16.c: Regenerated.
+	* generated/product_c17.c: Regenerated.
+	* generated/product_c4.c: Regenerated.
+	* generated/product_c8.c: Regenerated.
+	* generated/product_i1.c: Regenerated.
+	* generated/product_i16.c: Regenerated.
+	* generated/product_i2.c: Regenerated.
+	* generated/product_i4.c: Regenerated.
+	* generated/product_i8.c: Regenarated.
+	* generated/product_r10.c: Regenerated.
+	* generated/product_r16.c: Regenerated.
+	* generated/product_r17.c: Regenerated.
+	* generated/product_r4.c: Regenerated.
+	* generated/product_r8.c: Regenarated.
+	* generated/sum_c10.c: Regenerated.
+	* generated/sum_c16.c: Regenerated.
+	* generated/sum_c17.c: Regenerated.
+	* generated/sum_c4.c: Regenerated.
+	* generated/sum_c8.c: Regenerated.
+	* generated/sum_i1.c: Regenerated.
+	* generated/sum_i16.c: Regenerated.
+	* generated/sum_i2.c: Regenerated.
+	* generated/sum_i4.c: Regenerated.
+	* generated/sum_i8.c: Regenerated.
+	* generated/sum_r10.c: Regenerated.
+	* generated/sum_r16.c: Regenerated.
+	* generated/sum_r17.c: Regenerated.
+	* generated/sum_r4.c: Regenerated.
+	* generated/sum_r8.c: Regenerated.
+	* m4/ifunction.m4: Whitespace fix.
+	* m4/product.m4: If type is integer, change to unsigned.
+	* m4/sum.m4: Likewise.
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* m4/iparm.m4: Add UNSIGED if type is m.
+	* m4/matmul.m4: If type is GFC_INTEGER, use GFC_UINTEGER instead.
+	Whitespace fixes.
+	* m4/matmul_internal.m4: Whitespace fixes.
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Regenerated.
+	* generated/matmul_c17.c: Regenerated.
+	* generated/matmul_c4.c: Regenerated.
+	* generated/matmul_c8.c: Regeneraated.
+	* generated/matmul_i1.c: Regenerated.
+	* generated/matmul_i16.c: Regenerated.
+	* generated/matmul_i2.c: Regenerated.
+	* generated/matmul_i4.c: Regenerated.
+	* generated/matmul_i8.c: Regenerated.
+	* generated/matmul_r10.c: Regenerated.
+	* generated/matmul_r16.c: Regenerated.
+	* generated/matmul_r17.c: Regenerated.
+	* generated/matmul_r4.c: Regenerated.
+	* generated/matmul_r8.c: Regenerated.
+	* libgfortran.h: Add array types for unsiged.
+
+2024-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.map: Add _gfortran_transfer_unsgned and
+	_gfortran_transfer-signed.
+	* io/io.h (set_unsigned): New prototype.
+	(us_max): New prototype.
+	(read_decimal_unsigned): New prototype.
+	(write_iu): New prototype.
+	* io/list_read.c (convert_unsigned): New function.
+	(read_integer): Also handle unsigneds.
+	(list_formatted_read_scalar): Handle unsigneds.
+	(nml_read_obj): Likewise.
+	* io/read.c (set_unsigned): New function.
+	(us_max): New function.
+	(read_utf8): Whitespace fixes.
+	(read_default_char1): Whitespace fixes.
+	(read_a_char4): Whitespace fixes.
+	(next_char): Whiltespace fixes.
+	(read_decimal_unsigned): New function.
+	(read_f): Whitespace fixes.
+	(read_x): Whitespace fixes.
+	* io/transfer.c (transfer_unsigned): New function.
+	(transfer_unsigned_write): New function.
+	(require_one_of_two_types): New function.
+	(formatted_transfer_scalar_read): Use it.
+	(formatted_transfer_scalar_write): Also use it.
+	* io/write.c (write_decimal_unsigned): New function.
+	(write_iu): New function.
+	(write_unsigned): New function.
+	(list_formatted_write_scalar): Adjust for unsigneds.
+	* libgfortran.h (GFC_UINTEGER_1_HUGE): Define.
+	(GFC_UINTEGER_2_HUGE): Define.
+	(GFC_UINTEGER_4_HUGE): Define.
+	(GFC_UINTEGER_8_HUGE): Define.
+	(GFC_UINTEGER_16_HUGE): Define.
+	(HAVE_GFC_UINTEGER_1): Undefine (done by mk-kind-h.sh)
+	(HAVE_GFC_UINTEGER_4): Likewise.
+	* mk-kinds-h.sh: Add GFC_UINTEGER_*_HUGE.
+
+2024-08-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/84246
+	* caf/single.c (send_by_ref): Created array's lbound is now 1
+	and the offset set correctly.
+
+2024-08-18  Sergey Fedorov  <vital.had@gmail.com>
+
+	* config/fpu-macppc.h (new file): initial support for powerpc-darwin.
+	* configure.host: enable ieee_support for powerpc-darwin case,
+	set fpu_host='fpu-macppc'.
+
+2024-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105361
+	* io/list_read.c (finish_list_read): Add a condition check for
+	a user defined derived type IO operation to avoid calling the
+	EOF error.
+
+2024-07-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/96992
+	* Makefile.am: Add in_un-/pack_class.c to build.
+	* Makefile.in: Regenerated from Makefile.am.
+	* gfortran.map: Added new functions and bumped ABI.
+	* libgfortran.h (GFC_CLASS_T): Added for generating class
+	representation at runtime.
+	* runtime/in_pack_class.c: New file.
+	* runtime/in_unpack_class.c: New file.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Andrew Stubbs  <ams@gcc.gnu.org>
+
+	* configure.ac: No longer set 'LIBGFOR_MINIMAL' for nvptx.
+	* configure: Regenerate.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/85463
+	* runtime/minimal.c [__nvptx__] (exit): Don't override.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBGFOR_USE_SYMVER_SUN} (gfortran.ver-sun): Pass
+	$(libgfortran_la_OBJECTS), $(libgfortran_la_LIBADD) to
+	make_sunver.pl unmodified.
+	* Makefile.in: Regenerate.
+
+2024-05-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/t-aix (all-local, libcaf_single): Explicitly reference
+	caf/.libs/single.o
+
+2024-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBGFOR_USE_SYMVER_SUN] (gfortran.ver-sun): Handle
+	objects in subdirs.
+	* Makefile.in: Regenerate.
+
+2024-05-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* Makefile.am: Use sub-dirs, amend recipies accordingly.
+	* Makefile.in: Regenerate.
+
+2024-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.map: Add _gfortran_selected_logical_kind.
+	* intrinsics/selected_int_kind.f90: Add SELECTED_LOGICAL_KIND.
+
+2024-04-12  Ian McInerney  <i.mcinerney17@imperial.ac.uk>
+
+	* runtime/error.c (gf_vsnprintf): Fix compilation
+
+2024-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libfortran/114304
+	* io/list_read.c (eat_separator): Accept tab as alternative to space.
+
+2024-04-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/114304
+	PR libfortran/105473
+	* io/list_read.c (eat_separator): Add logic to handle spaces
+	preceding a comma or semicolon such that that a 'null' read
+	occurs without error at the end of comma or semicolon
+	terminated input lines. Add check and error message for ';'.
+	(list_formatted_read_scalar): Treat comma as a decimal point
+	when specified by the decimal mode on the first item.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.host: Fix duplicated words; the the -> the.
+
+2024-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/107031
+	* io/file_pos.c (st_endfile): Remove call to next_record().
+
+2024-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105437
+	PR libfortran/114304
+	* io/list_read.c (eat_separator): Remove check for decimal
+	point mode and semicolon used as a seprator. Removes
+	the regression.
+
+2024-03-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Use fstrcpy
+	from libgfortran/runtime/string.c to replace snprintf.
+	(nml_read_obj): Likewise.
+	* io/transfer.c (unformatted_read): Likewise.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write): Likewise.
+	* io/write.c (list_formatted_write_scalar): Likewise.
+	(nml_write_obj): Likewise.
+
+2024-03-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/io.h (IOMSG_LEN): Moved to here.
+	* io/list_read.c (MSGLEN): Removed MSGLEN.
+	(convert_integer): Changed MSGLEN to IOMSG_LEN.
+	(parse_repeat): Likewise.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(read_character): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(check_type): Likewise.
+	(list_formatted_read_scalar): Adjust to IOMSG_LEN.
+	(nml_read_obj): Add user defined error message.
+	* io/transfer.c (unformatted_read): Add user defined error
+	message.
+	(unformatted_write): Add user defined error message.
+	(formatted_transfer_scalar_read): Add user defined error message.
+	(formatted_transfer_scalar_write): Add user defined error message.
+	* io/write.c (list_formatted_write_scalar): Add user defined error message.
+	(nml_write_obj): Add user defined error message.
+
+2024-02-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Add checks
+	for the case where a user defines their own error codes
+	and error messages and generate the runtime error.
+	* io/transfer.c (st_read_done): Whitespace.
+
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105473
+	* io/list_read.c (eat_separator): Reject comma as a
+	seprator when it is being used as a decimal point.
+	(parse_real): Reject a '.' when is should be a comma.
+	(read_real): Likewise.
+	* io/read.c (read_f): Add more checks for ',' and '.'
+	conditions.
+
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/107068
+	* io/list_read.c (read_logical): When looking for a possible
+	variable name, check for left paren, indicating a possible
+	array reference.
+
+2024-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/99210
+	* io/read.c (read_x): If UTF-8 encoding is enabled, use
+	read_utf8 to move one character over in the read buffer.
+
+2024-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (formatted_transfer_scalar_write): Adjust
+	bytes_used and pos variable for stream access.
+
+2024-02-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/111022
+	* io/format.c (get_fnode): Update initialization of fnode.
+	(parse_format_list): Initialization.
+	* io/format.h (struct fnode): Added the new 'pushed' component.
+	* io/write.c (select_buffer): Whitespace.
+	(write_real): Whitespace.
+	(write_real_w0): Adjust logic for the d == 0 condition.
+	* io/write_float.def (determine_precision): Whitespace.
+	(build_float_string): Calculate width of ..E0 exponents and
+	adjust logic accordingly.
+	(build_infnan_string): Whitespace.
+	(CALCULATE_EXP): Whitespace.
+	(quadmath_snprintf): Whitespace.
+	(determine_en_precision): Whitespace.
+
+2024-01-15  Lipeng Zhu  <lipeng.zhu@intel.com>
+
+	* io/io.h (dec_waiting_unlocked): Use
+	__gthread_rwlock_wrlock/__gthread_rwlock_unlock or
+	__gthread_mutex_lock/__gthread_mutex_unlock functions
+	to replace WRLOCK and RWUNLOCK macros.
+
+2024-01-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/write.c (namelist_write): If internal_unit precede with space.
+
+Copyright (C) 2024 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

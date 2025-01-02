@@ -40854,7 +40854,6 @@
 	PR middle-end/42559
 	* builtins.c (get_object_alignment): Do not use DECL_ALIGN
 	for LABEL_DECLs.
-
 
 Copyright (C) 2010 Free Software Foundation, Inc.
 

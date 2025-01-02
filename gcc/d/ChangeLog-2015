@@ -762,7 +762,6 @@
 2015-01-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-codegen.h (build_boolop): Don't eagerly fold comparison expressions.
-
 
 Copyright (C) 2015 Free Software Foundation, Inc.
 

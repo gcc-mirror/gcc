@@ -2844,7 +2844,6 @@
 	PR fortran/13251
 	* trans-expr.c (gfc_conv_variable): Take the type kind of a substring
 	reference from the expression.
-
 
 Copyright (C) 2004 Free Software Foundation, Inc.
 

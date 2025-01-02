@@ -32122,7 +32122,6 @@ Mon Jan  3 02:54:40 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* expmed.c (emit_store_flag): Prevent losing a pending stack
 	adjust the same way we prevent losing queued increments.
-
 
 Copyright (C) 2000 Free Software Foundation, Inc.
 

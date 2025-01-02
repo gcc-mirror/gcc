@@ -4081,7 +4081,6 @@
 	PR fortran/46408
 	* class.c (gfc_find_derived_vtab): Use EXEC_INIT_ASSIGN for __copy_
 	routine.
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

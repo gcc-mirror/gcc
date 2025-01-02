@@ -1,0 +1,294 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* d-attribs.cc (INCLUDE_MEMORY): Remove.
+	* d-builtins.cc (INCLUDE_MEMORY): Remove.
+	* d-codegen.cc (INCLUDE_MEMORY): Remove.
+	* d-convert.cc (INCLUDE_MEMORY): Remove.
+	* d-diagnostic.cc (INCLUDE_MEMORY): Remove.
+	* d-frontend.cc (INCLUDE_MEMORY): Remove.
+	* d-lang.cc (INCLUDE_MEMORY): Remove.
+	* d-longdouble.cc (INCLUDE_MEMORY): Remove.
+	* d-target.cc (INCLUDE_MEMORY): Remove.
+	* decl.cc (INCLUDE_MEMORY): Remove.
+	* expr.cc (INCLUDE_MEMORY): Remove.
+	* intrinsics.cc (INCLUDE_MEMORY): Remove.
+	* modules.cc (INCLUDE_MEMORY): Remove.
+	* toir.cc (INCLUDE_MEMORY): Remove.
+	* typeinfo.cc (INCLUDE_MEMORY): Remove.
+	* types.cc (INCLUDE_MEMORY): Remove.
+
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Update for
+	m_printer becoming reference printer.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* d-attribs.cc: Add #define INCLUDE_MEMORY.
+	* d-builtins.cc: Likewise.
+	* d-codegen.cc: Likewise.
+	* d-convert.cc: Likewise.
+	* d-diagnostic.cc: Likewise.
+	* d-frontend.cc: Likewise.
+	* d-lang.cc: Likewise.
+	* d-longdouble.cc: Likewise.
+	* d-target.cc: Likewise.
+	* decl.cc: Likewise.
+	* expr.cc: Likewise.
+	* intrinsics.cc: Likewise.
+	* modules.cc: Likewise.
+	* toir.cc: Likewise.
+	* typeinfo.cc: Likewise.
+	* types.cc: Likewise.
+
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* lang.opt.urls: Regenerate.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Update for
+	renaming of diagnostic_info field.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Rename
+	diagnostic_context's "printer" field to "m_printer".
+
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* toir.cc (IRVisitor): Rename ASM_INPUT_P to ASM_BASIC_P.
+
+2024-07-21  Sam James  <sam@gentoo.org>
+
+	* Make-lang.in (WARN_DFLAGS): Drop NOCOMMON_FLAG.
+
+2024-06-05  Kewen Lin  <linkw@linux.ibm.com>
+	    Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::_init): Use int_size_in_bytes of
+	long_double_type_node to replace the expression with
+	LONG_DOUBLE_TYPE_SIZE for c.long_doublesize assignment.
+
+2024-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/111650
+	* decl.cc (get_fndecl_arguments): Move generation of frame type to ...
+	(DeclVisitor::visit (FuncDeclaration *)): ... here, after the call to
+	build_closure.
+
+2024-04-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd b65767825f.
+	* dmd/VERSION: Bump version to v2.108.0.
+
+2024-03-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 855353a1d9.
+	* dmd/VERSION:
+
+2024-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/112285
+	PR d/112290
+	* d-target.cc (Target::preferPassByRef): Return true for all static
+	array and struct types.
+
+2024-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd f8bae04558.
+	* dmd/VERSION: Bump version to v2.108.0-beta.1.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* d-codegen.cc (build_assert_call): Likewise.
+	* d-convert.cc (d_array_convert): Likewise.
+	* decl.cc (get_vtable_decl): Likewise.
+	* expr.cc (ExprVisitor::visit (EqualExp *)): Likewise.
+	(ExprVisitor::visit (VarExp *)): Likewise.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Likewise.
+	(ExprVisitor::visit (AssocArrayLiteralExp)): Likewise.
+	* intrinsics.cc (build_shuffle_mask_type): Likewise.
+	(maybe_warn_intrinsic_mismatch): Likewise.
+	* runtime.cc (get_libcall_type): Likewise.
+	* typeinfo.cc (TypeInfoVisitor::layout_string): Likewise.
+	(TypeInfoVisitor::visit(TypeInfoTupleDeclaration *)): Likewise.
+
+2024-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/114171
+	* d-codegen.cc (lower_struct_comparison): Keep alignment of original
+	type in reinterpret cast for comparison.
+
+2024-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd ceff48bf7d.
+
+2024-02-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 9471b25db9.
+	* dmd/VERSION: Bump version to v2.107.1-rc.1.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/cxxfrontend.o.
+	* d-attribs.cc (build_attributes): Update for new front-end interface.
+	* d-builtins.cc (build_frontend_type): Likewise.
+	(strip_type_modifiers): Likewise.
+	(covariant_with_builtin_type_p): Likewise.
+	* d-codegen.cc (declaration_type): Likewise.
+	(parameter_type): Likewise.
+	(build_array_struct_comparison): Likewise.
+	(void_okay_p): Likewise.
+	* d-convert.cc (convert_expr): Likewise.
+	(check_valist_conversion): Likewise.
+	* d-lang.cc (d_generate_ddoc_file): Likewise.
+	(d_parse_file): Likewise.
+	* d-target.cc (TargetCPP::toMangle): Likewise.
+	(TargetCPP::typeInfoMangle): Likewise.
+	(TargetCPP::thunkMangle): Likewise.
+	(TargetCPP::parameterType): Likewise.
+	* decl.cc (d_mangle_decl): Likewise.
+	(DeclVisitor::visit): Likewise.
+	(DeclVisitor::visit (CAsmDeclaration *)): New method.
+	(get_symbol_decl): Update for new front-end interface.
+	(layout_class_initializer): Likewise.
+	* expr.cc (ExprVisitor::visit): Likewise.
+	* intrinsics.cc (maybe_set_intrinsic): Likewise.
+	(expand_intrinsic_rotate): Likewise.
+	* modules.cc (layout_moduleinfo_fields): Likewise.
+	(layout_moduleinfo): Likewise.
+	* runtime.cc (get_libcall_type): Likewise.
+	* typeinfo.cc (make_frontend_typeinfo): Likewise.
+	(TypeInfoVisitor::visit): Likewise.
+	(create_typeinfo): Likewise.
+	* types.cc (same_type_p): Likewise.
+	(build_ctype): Likewise.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113125
+	* types.cc (TypeVisitor::visit (TypeStruct *)): Generate TYPE_DECL and
+	apply UDAs to opaque struct declarations.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113772
+	* dmd/MERGE: Merge upstream dmd 11240a9663.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* types.cc (same_type_p): Likewise.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113758
+	* d-codegen.cc (d_build_call): Force a TARGET_EXPR when callee
+	destorys its arguments.
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Set
+	SET_DECL_VALUE_EXPR on the temporary variable to make it a placeholder
+	for the TARGET_EXPR_SLOT.
+
+2024-02-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd a6f1083699.
+	* dmd/VERSION: Bump version to v2.107.0
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/pragmasem.o.
+	* d-builtins.cc (strip_type_modifiers): Update for new front-end
+	interface.
+	* d-codegen.cc (declaration_type): Likewise.
+	(parameter_type): Likewise.
+	* d-target.cc (TargetCPP::parameterType): Likewise.
+	* expr.cc (ExprVisitor::visit (IndexExp *)): Likewise.
+	(ExprVisitor::visit (VarExp *)): Likewise.
+	(ExprVisitor::visit (AssocArrayLiteralExp *)): Likewise.
+	* runtime.cc (get_libcall_type): Likewise.
+	* typeinfo.cc (TypeInfoVisitor::visit (TypeInfoConstDeclaration *)):
+	Likewise.
+	(TypeInfoVisitor::visit (TypeInfoInvariantDeclaration *)): Likewise.
+	(TypeInfoVisitor::visit (TypeInfoSharedDeclaration *)): Likewise.
+	(TypeInfoVisitor::visit (TypeInfoWildDeclaration *)): Likewise.
+	* types.cc (build_ctype): Likewise.
+
+2024-02-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd e770945277.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/basicmangle.o, d/enumsem.o,
+	d/funcsem.o, d/templatesem.o.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* d-codegen.cc (declaration_type): Likewise.
+	(parameter_type): Likewise.
+	* d-incpath.cc (add_globalpaths): Likewise.
+	(add_filepaths): Likewise.
+	(add_import_paths): Likewise.
+	* d-lang.cc (d_init_options): Likewise.
+	(d_handle_option): Likewise.
+	(d_parse_file): Likewise.
+	* decl.cc (DeclVisitor::finish_vtable): Likewise.
+	(DeclVisitor::visit (FuncDeclaration *)): Likewise.
+	(get_symbol_decl): Likewise.
+	* expr.cc (ExprVisitor::visit (StringExp *)): Likewise.
+	Implement support for 8-byte hexadecimal strings.
+	* typeinfo.cc (create_tinfo_types): Update internal TypeInfo
+	representation.
+	(TypeInfoVisitor::visit (TypeInfoConstDeclaration *)): Update for new
+	front-end interface.
+	(TypeInfoVisitor::visit (TypeInfoInvariantDeclaration *)): Likewise.
+	(TypeInfoVisitor::visit (TypeInfoSharedDeclaration *)): Likewise.
+	(TypeInfoVisitor::visit (TypeInfoWildDeclaration *)): Likewise.
+	(TypeInfoVisitor::visit (TypeInfoClassDeclaration *)): Move data for
+	TypeInfo_Class.nameSig to the end of the object.
+	(create_typeinfo): Update for new front-end interface.
+
+2024-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd bce5c1f7b5.
+	* d-attribs.cc (build_attributes): Update for new front-end interface.
+	* d-lang.cc (d_parse_file): Likewise.
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Likewise.
+	* expr.cc (build_lambda_tree): New function.
+	(ExprVisitor::visit (FuncExp *)): Use build_lambda_tree.
+	(ExprVisitor::visit (SymOffExp *)): Likewise.
+	(ExprVisitor::visit (VarExp *)): Likewise.
+	* typeinfo.cc (create_tinfo_types): Add two ulong fields to internal
+	TypeInfo representation.
+	(TypeInfoVisitor::visit (TypeInfoClassDeclaration *)): Emit stub data
+	for TypeInfo_Class.nameSig.
+	(TypeInfoVisitor::visit (TypeInfoStructDeclaration *)): Update for new
+	front-end interface.
+
+2024-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd d8e3976a58.
+	* dmd/VERSION: Bump version to v2.107.0-beta.1.
+	* d-lang.cc (d_parse_file): Update for new front-end interface.
+	* modules.cc (struct module_info): Add standalonectors.
+	(build_module_tree): Implement @standalone.
+	(register_module_decl): Likewise.
+
+2024-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd f1a045928e.
+	* dmd/VERSION: Bump version to v2.106.1-rc.1.
+	* gdc.texi (fignore-unknown-pragmas): Update documentation.
+	* d-builtins.cc (covariant_with_builtin_type_p): Update for new
+	front-end interface.
+	* d-lang.cc (d_parse_file): Likewise.
+	* typeinfo.cc (make_frontend_typeinfo): Likewise.
+
+2024-01-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* lang.opt.urls: New file, autogenerated by
+	regenerate-opt-urls.py.
+
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gdc.texi: Bump @copyrights-d year.
+
+Copyright (C) 2024 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -15861,7 +15861,6 @@
 
 	* gcc.target/arm/vfp-1.c (test_ldst): Fixed fsts test to
 	scan for newline '\n'.
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

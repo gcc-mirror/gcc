@@ -7202,7 +7202,6 @@
 	* src/c++11/regex.cc (desc): New helper function.
 	(regex_error::regex_error(error_type)): Use desc to get a string
 	corresponding to the error code.
-
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

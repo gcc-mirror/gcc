@@ -23808,7 +23808,6 @@
 	* config/rs6000/sync.md (sync_compare_and_swap{hi,qi}): New.
 	(sync_compare_and_swapqhi_internal): New.
 	* config/rs6000/rs6000-protos.h: Declare.
-
 
 Copyright (C) 2006 Free Software Foundation, Inc.
 

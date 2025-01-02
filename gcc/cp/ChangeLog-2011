@@ -5024,7 +5024,6 @@
 	PR target/38662
 	* tree.c (cxx_type_hash_eq):
 	Allow METHOD_TYPE, too.
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

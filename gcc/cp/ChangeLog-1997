@@ -2604,8 +2604,6 @@ Tue Jan  7 09:20:28 1997  Mike Stump  <mrs@cygnus.com>
 	* class.c (base_binfo): Remove unused base_has_virtual member.
 	(finish_base_struct): Likewise.
 	(finish_struct_1): Likewise.
-
-
 
 Copyright (C) 1997 Free Software Foundation, Inc.
 

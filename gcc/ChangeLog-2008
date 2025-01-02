@@ -28961,7 +28961,6 @@
 	* config/i386/sse.md (sse5_pperm, sse5_pperm_pack_v2di_v4si,
 	sse5_pperm_pack_v4si_v8hi, sse5_pperm_pack_v8hi_v16qi,
 	sse5_perm<mode>): Fix constraints.
-
 
 Copyright (C) 2008 Free Software Foundation, Inc.
 

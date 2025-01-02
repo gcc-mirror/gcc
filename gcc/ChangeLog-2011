@@ -40032,7 +40032,6 @@
 
 	PR target/38662
 	* tree.c (type_hash_eq): Call language hook for METHOD_TYPEs, too.
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

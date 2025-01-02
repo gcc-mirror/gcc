@@ -4133,7 +4133,6 @@
 	PR fortran/34557
 	* primary.c (match_varspec): Gobble whitespace before
 	checking for '('.
-
 
 Copyright (C) 2008 Free Software Foundation, Inc.
 

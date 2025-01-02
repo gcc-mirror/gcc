@@ -15586,7 +15586,6 @@
 
 	PR middle-end/42559
 	* gcc.c-torture/compile/pr42559.c: New testcase.
-
 
 Copyright (C) 2010 Free Software Foundation, Inc.
 

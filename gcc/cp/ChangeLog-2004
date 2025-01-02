@@ -6875,7 +6875,6 @@
 	(cp_parser_namespace_name): Likewise.
 	(cp_parser_class_name): Likewise.
 	(cp_parser_lookup_name_simple): Likewise.
-
 
 Copyright (C) 2004 Free Software Foundation, Inc.
 

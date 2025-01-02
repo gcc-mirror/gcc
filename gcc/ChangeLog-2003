@@ -37860,7 +37860,6 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/sh/sh.h (REGISTER_TARGET_PRAGMAS): Update.
 	* config/v850/v850.h (REGISTER_TARGET_PRAGMAS): Update.
 	* doc/tm.texi (REGISTER_TARGET_PRAGMAS): Update
-
 
 Copyright (C) 2003 Free Software Foundation, Inc.
 

@@ -1475,7 +1475,6 @@
 
 	* phobos/std/string.d: Fix a set of bugs in std.string.split which
 	made delemiters of length > 1 segfault.
-
 
 Copyright (C) 2010 Free Software Foundation, Inc.
 

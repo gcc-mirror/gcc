@@ -35906,7 +35906,6 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* tree-cfg.c (remove_useless_stmts_warn_notreached): Only warn if
 	the source line is greater than 0.
 	(remove_bb): Likewise.
-
 
 Copyright (C) 2005 Free Software Foundation, Inc.
 

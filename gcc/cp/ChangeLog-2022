@@ -5389,7 +5389,6 @@
 2022-01-02  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (wrap_cleanups_r): Don't wrap if noexcept.
-
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

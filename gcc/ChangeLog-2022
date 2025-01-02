@@ -35077,7 +35077,6 @@
 	sync_lock_test_and_set libfunc. Call convert_memory_address to
 	convert memory address to Pmode.
 	(atomic_storehi, atomic_storesi, atomic_storedi): Likewise.
-
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

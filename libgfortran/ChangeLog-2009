@@ -2493,7 +2493,6 @@
 	PR libfortran/38735
 	* io/unit.c (get_internal_unit): Set default BLANK= status to NULL for
 	internal units.
-
 
 Copyright (C) 2009 Free Software Foundation, Inc.
 

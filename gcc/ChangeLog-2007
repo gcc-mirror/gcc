@@ -34169,7 +34169,6 @@
 
 	* cgraphunit.c (cgraph_optimize): Call cgraph_add_new_functions
 	before starting IPA passes.
-
 
 Copyright (C) 2007 Free Software Foundation, Inc.
 

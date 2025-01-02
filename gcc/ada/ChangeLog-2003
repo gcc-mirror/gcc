@@ -3011,8 +3011,6 @@
 	ada.uninstall): Prepend $(DESTDIR) to the destination
 	directory in all (un)installation commands.
 	* Makefile.in (install-gnatlib, install-rts): Ditto.
-
-
 
 Copyright (C) 2003 Free Software Foundation, Inc.
 

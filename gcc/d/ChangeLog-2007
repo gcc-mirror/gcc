@@ -1331,7 +1331,6 @@
 	* d-codegen.cc (convertTo): Use 64-bit for Tarray, Tsarray conversion.
 
 	* d-codegen.{h, cc} (darrayVal): use uinteger_t arg
-
 
 Copyright (C) 2007 Free Software Foundation, Inc.
 
