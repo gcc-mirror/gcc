@@ -1,5 +1,5 @@
 /* Supporting functions for C exception handling.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldy@quesejoda.com>.
    Shamelessly stolen from the Java front end.
 

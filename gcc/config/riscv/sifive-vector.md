@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V for GNU compiler.
-;; Copyright (C) 2024 Free Software Foundation, Inc.
+;; Copyright (C) 2024-2025 Free Software Foundation, Inc.
 ;; Contributed by SiFive and PLCT Lab.
 ;; Based on RISC-V target for GNU compiler.
 

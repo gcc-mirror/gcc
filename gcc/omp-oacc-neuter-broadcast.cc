@@ -1,6 +1,6 @@
 /* OpenACC worker partitioning via middle end neutering/broadcasting scheme
 
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

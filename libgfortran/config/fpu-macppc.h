@@ -1,5 +1,5 @@
 /* FPU-related code for PowerPC.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Sergey Fedorov <vital.had@gmail.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).

@@ -1,7 +1,7 @@
 # _ashrsi3.S for Lattice Mico32 
 # Contributed by Jon Beniston <jon@beniston.com> and Richard Henderson.
 #
-# Copyright (C) 2009-2024 Free Software Foundation, Inc.
+# Copyright (C) 2009-2025 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the

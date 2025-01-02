@@ -1,5 +1,5 @@
 /* Implementation of the is_contiguous intrinsic.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by Thomas König <tkoenig@gcc.gnu.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).

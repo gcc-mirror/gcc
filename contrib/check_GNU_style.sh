@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Checks some of the GNU style formatting rules in a set of patches.
-# Copyright (C) 2010-2024 Free Software Foundation, Inc.
+# Copyright (C) 2010-2025 Free Software Foundation, Inc.
 # Contributed by Sebastian Pop <sebastian.pop@amd.com>
 
 # This program is free software; you can redistribute it and/or modify

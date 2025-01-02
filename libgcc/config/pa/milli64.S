@@ -2,7 +2,7 @@
    adapted for gcc by Paul Bame <bame@debian.org>
    and Alan Modra <alan@linuxcare.com.au>.
 
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

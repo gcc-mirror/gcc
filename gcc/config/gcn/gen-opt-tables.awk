@@ -1,6 +1,6 @@
 # Generate gcn-tables.opt from gcn-devices.def
 #
-# Copyright (C) 2024 Free Software Foundation, Inc.
+# Copyright (C) 2024-2025 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,7 +25,7 @@ BEGIN {
   print "; Generated automatically by gen-opt-tables.awk from gcn-devices.def."
   print "; Do not edit."
   print ""
-  print "; Copyright (C) 2024 Free Software Foundation, Inc."
+  print "; Copyright (C) 2024-2025 Free Software Foundation, Inc."
   print ""
   print "; This file is part of GCC."
   print ""

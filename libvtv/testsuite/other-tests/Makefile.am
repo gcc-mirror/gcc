@@ -1,6 +1,6 @@
 ## Makefile for the testsuite subdirectory of the VTV library.
 ##
-## Copyright (C) 2013-2024 Free Software Foundation, Inc.
+## Copyright (C) 2013-2025 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##

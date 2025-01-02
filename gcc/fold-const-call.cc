@@ -1,5 +1,5 @@
 /* Constant folding for calls to built-in and internal functions.
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -2,7 +2,7 @@
 // 24.3.1 Iterator traits
 // (basic_string and vector implementations)
 //
-// Copyright (C) 1999-2024 Free Software Foundation, Inc.
+// Copyright (C) 1999-2025 Free Software Foundation, Inc.
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 3 of the License, or 

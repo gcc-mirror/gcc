@@ -1,5 +1,5 @@
 /* Implement the xasprintf function.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by Manuel Lopez-Ibanez.
 
 This file is part of the libiberty library.

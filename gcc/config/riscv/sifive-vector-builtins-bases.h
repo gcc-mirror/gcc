@@ -1,5 +1,5 @@
 /* function_base declaration for SiFive custom 'V' Extension for GNU compiler.
-   Copyright (C) 2024 Free Software Foundation, Inc.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
    Contributed by SiFive and PLCT Lab.
 
    This file is part of GCC.

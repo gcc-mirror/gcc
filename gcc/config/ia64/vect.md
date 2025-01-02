@@ -1,5 +1,5 @@
 ;; IA-64 machine description for vector operations.
-;; Copyright (C) 2004-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

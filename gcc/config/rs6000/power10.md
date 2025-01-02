@@ -1,5 +1,5 @@
 ;; Scheduling description for the IBM Power10 and Power11 processors.
-;; Copyright (C) 2020-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2025 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Pat Haugen (pthaugen@us.ibm.com).
 

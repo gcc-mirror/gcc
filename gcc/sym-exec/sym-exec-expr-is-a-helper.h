@@ -1,5 +1,5 @@
 /* Defining test functions for value conversion via dyn_cast.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Matevos Mehrabyan <matevosmehrabyan@gmail.com>
 
 This file is part of GCC.

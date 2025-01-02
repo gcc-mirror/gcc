@@ -2,7 +2,7 @@
 // Avoid use of non-overridable new/delete operators in shared
 // { dg-options "-static" { target *-*-mingw* } }
 // Test __cxa_vec routines
-// Copyright (C) 2000-2024 Free Software Foundation, Inc.
+// Copyright (C) 2000-2025 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Apr 2000 <nathan@nathan@codesourcery.com>
 
 #include <cxxabi.h>

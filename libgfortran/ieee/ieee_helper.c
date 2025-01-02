@@ -1,5 +1,5 @@
 /* Helper functions in C for IEEE modules
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).

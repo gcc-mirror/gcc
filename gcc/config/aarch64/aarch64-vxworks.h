@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Vxworks Aarch 64bit
    version.
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
    Contributed by Douglas B Rupp
 
 This file is part of GCC.

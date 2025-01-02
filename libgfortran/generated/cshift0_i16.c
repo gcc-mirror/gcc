@@ -1,5 +1,5 @@
 /* Helper function for cshift functions.
-   Copyright (C) 2008-2024 Free Software Foundation, Inc.
+   Copyright (C) 2008-2025 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).

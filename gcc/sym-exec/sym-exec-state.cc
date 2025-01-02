@@ -1,7 +1,7 @@
 /* State will store states of variables for a function's single execution path.
    It will be used for bit-level symbolic execution to determine values of bits
    of function's return value and symbolic marked arguments.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Matevos Mehrabyan <matevosmehrabyan@gmail.com>
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* Callgraph summary data structure.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by Martin Liska
 
 This file is part of GCC.

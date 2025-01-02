@@ -1,6 +1,6 @@
 /* Offload image generation tool for PTX.
 
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
 
    Contributed by Nathan Sidwell <nathan@codesourcery.com> and
    Bernd Schmidt <bernds@codesourcery.com>.

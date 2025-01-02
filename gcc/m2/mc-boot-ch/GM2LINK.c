@@ -1,6 +1,6 @@
 /* GM2LINK.c a handwritten module for mc.
 
-Copyright (C) 2022-2024 Free Software Foundation, Inc.
+Copyright (C) 2022-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
 
 This file is part of GNU Modula-2.

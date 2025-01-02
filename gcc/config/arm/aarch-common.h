@@ -1,6 +1,6 @@
 /* Types shared between arm and aarch64.
 
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Arm Ltd.
 
    This file is part of GCC.

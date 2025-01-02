@@ -1,5 +1,5 @@
 ;; GCC machine description for C6X synchronization instructions.
-;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

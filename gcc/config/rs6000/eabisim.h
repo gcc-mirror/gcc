@@ -1,6 +1,6 @@
 /* Support for GCC on simulated PowerPC systems targeted to embedded ELF
    systems.
-   Copyright (C) 1995-2024 Free Software Foundation, Inc.
+   Copyright (C) 1995-2025 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.

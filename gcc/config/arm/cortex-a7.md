@@ -1,5 +1,5 @@
 ;; ARM Cortex-A7 pipeline description
-;; Copyright (C) 2012-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2025 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;; Based on cortex-a5.md which was originally contributed by CodeSourcery.

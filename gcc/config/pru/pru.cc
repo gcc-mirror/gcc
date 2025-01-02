@@ -1,5 +1,5 @@
 /* Target machine subroutines for TI PRU.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.

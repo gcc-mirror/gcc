@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2025 Free Software Foundation, Inc.
    Contributed by Sebastian Huber <sebastian.huber@embedded-brains.de>.
 
    This file is part of the GNU Atomic Library (libatomic).

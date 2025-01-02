@@ -1,6 +1,6 @@
 /* Implementation of diagnostic_client_data_hooks for the compilers
    (e.g. with knowledge of "tree", lang_hooks, and timevars).
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.

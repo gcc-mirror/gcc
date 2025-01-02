@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2025 Free Software Foundation, Inc.
    Contributed by Ilie Garbacea <ilie@mips.com>, Chao-ying Fu <fu@mips.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library

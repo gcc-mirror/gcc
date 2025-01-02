@@ -1,5 +1,5 @@
 ;; Instruction scheduling information for C-SKY CK810 processors.
-;; Copyright (C) 2018-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2025 Free Software Foundation, Inc.
 ;; Contributed by C-SKY Microsystems and Mentor Graphics.
 ;;
 ;; This file is part of GCC.

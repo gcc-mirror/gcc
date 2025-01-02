@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for Tensilica's Xtensa architecture.
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.

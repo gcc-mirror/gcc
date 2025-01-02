@@ -1,5 +1,5 @@
 /* Definitions for C++ contract levels
-   Copyright (C) 2020-2024 Free Software Foundation, Inc.
+   Copyright (C) 2020-2025 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.

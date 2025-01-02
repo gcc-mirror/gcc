@@ -1,7 +1,7 @@
 /* Configuration for an x86_64 running GNU with ELF as the target machine.  */
 
 /*
-Copyright (C) 2023-2024 Free Software Foundation, Inc.
+Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

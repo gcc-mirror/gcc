@@ -1,5 +1,5 @@
 /* Support routines shared by all runtimes.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Iain Sandoe
 
 This file is part of GCC.

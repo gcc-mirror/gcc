@@ -1,5 +1,5 @@
 # Terminate C-SKY .init and .fini sections.
-# Copyright (C) 2018-2024 Free Software Foundation, Inc.
+# Copyright (C) 2018-2025 Free Software Foundation, Inc.
 # Contributed by C-SKY Microsystems and Mentor Graphics.
 #
 # This file is free software; you can redistribute it and/or modify it

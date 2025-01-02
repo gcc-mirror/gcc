@@ -2,7 +2,7 @@
 //
 // 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2006-2024 Free Software Foundation, Inc.
+// Copyright (C) 2006-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

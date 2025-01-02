@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running kOpenSolaris-based GNU systems with ELF format
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Robert Millan.
 
 This file is part of GCC.

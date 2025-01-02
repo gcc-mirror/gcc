@@ -1,5 +1,5 @@
 /* LTO common functions between lto.cc and lto-dump.cc header file.
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

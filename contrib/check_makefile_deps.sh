@@ -2,7 +2,7 @@
 #
 # Check for accurate dependencies in gcc/Makefile.in.
 #
-# Copyright (C) 2008-2024 Free Software Foundation, Inc.
+# Copyright (C) 2008-2025 Free Software Foundation, Inc.
 # Written by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
 #
 # This script is Free Software, and it can be copied, distributed and

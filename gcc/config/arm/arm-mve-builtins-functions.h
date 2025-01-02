@@ -1,5 +1,5 @@
 /* ACLE support for Arm MVE (function_base classes)
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

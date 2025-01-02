@@ -2,7 +2,7 @@
 // { dg-do compile { target c++17 } }
 // { dg-require-cmath "" }
 
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

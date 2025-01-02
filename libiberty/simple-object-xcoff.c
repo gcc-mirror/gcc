@@ -1,5 +1,5 @@
 /* simple-object-coff.c -- routines to manipulate XCOFF object files.
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google and David Edelsohn, IBM.
 
 This program is free software; you can redistribute it and/or modify it

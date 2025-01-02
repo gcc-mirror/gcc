@@ -1,5 +1,5 @@
 /* Minimal implementation of make_unique for C++11 compatibility.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

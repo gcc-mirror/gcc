@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for VAX using ELF
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Matt Thomas <matt@3am-software.com>
 
 This file is part of GCC.

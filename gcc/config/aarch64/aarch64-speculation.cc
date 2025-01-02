@@ -1,5 +1,5 @@
 /* Speculation tracking and mitigation (e.g. CVE 2017-5753) for AArch64.
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.

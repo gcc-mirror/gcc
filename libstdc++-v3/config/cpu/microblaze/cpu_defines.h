@@ -1,6 +1,6 @@
 // Specific definitions for Xilinx MicroBlaze platforms  -*- C++ -*-
 
-// Copyright (C) 2009-2024 Free Software Foundation, Inc.
+// Copyright (C) 2009-2025 Free Software Foundation, Inc.
 //
 // Contributed by Michael Eager <eager@eagercon.com>.
 //

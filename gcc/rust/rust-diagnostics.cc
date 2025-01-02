@@ -1,5 +1,5 @@
 // rust-diagnostics.cc -- GCC implementation of rust diagnostics interface.
-// Copyright (C) 2016-2024 Free Software Foundation, Inc.
+// Copyright (C) 2016-2025 Free Software Foundation, Inc.
 // Contributed by Than McIntosh, Google.
 
 // This file is part of GCC.

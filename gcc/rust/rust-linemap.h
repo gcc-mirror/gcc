@@ -1,7 +1,7 @@
 // rust-linemap.h -- interface to location tracking   -*- C++ -*-
 
 // Copyright 2011 The Go Authors. All rights reserved.
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 
 // Use of this source code is governed by a BSD-style
 // license that can be found in the '../go/gofrontend/LICENSE' file.

@@ -1,6 +1,6 @@
 /* Internal to rs6000 type, variable, and function declarations and
    definitons shared between the various rs6000 source files.
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.

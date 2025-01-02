@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # Generate Intel taken branches Linux perf event script for autofdo profiling.
 
-# Copyright (C) 2016-2024 Free Software Foundation, Inc.
+# Copyright (C) 2016-2025 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free

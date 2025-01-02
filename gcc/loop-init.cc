@@ -1,5 +1,5 @@
 /* Loop optimizer initialization routines and RTL loop optimization passes.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

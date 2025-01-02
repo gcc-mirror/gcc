@@ -1,5 +1,5 @@
 /* Fibonacci heap for GNU compiler.
-   Copyright (C) 1998-2024 Free Software Foundation, Inc.
+   Copyright (C) 1998-2025 Free Software Foundation, Inc.
    Contributed by Daniel Berlin (dan@cgsoftware.com).
    Re-implemented in C++ by Martin Liska <mliska@suse.cz>
 

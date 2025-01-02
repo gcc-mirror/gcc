@@ -1,5 +1,5 @@
 /* Prototypes for tm_p.h for AVR 8-bit microcontrollers.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.

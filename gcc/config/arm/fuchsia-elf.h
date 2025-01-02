@@ -1,5 +1,5 @@
 /* Configuration file for ARM Fuchsia ELF targets.
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
    Contributed by Google.
 
    This file is part of GCC.

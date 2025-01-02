@@ -1,7 +1,7 @@
 /* Automatic switching between software and hardware IEEE 128-bit
    ISA 3.1 floating-point emulation for PowerPC.
 
-   Copyright (C) 2016-2024 Free Software Foundation, Inc.
+   Copyright (C) 2016-2025 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Carl Love (cel@us.ibm.com)
    Code is based on the main soft-fp library written by:

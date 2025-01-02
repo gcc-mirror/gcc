@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.cc for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
-   Copyright (C) 1995-2024 Free Software Foundation, Inc.
+   Copyright (C) 1995-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

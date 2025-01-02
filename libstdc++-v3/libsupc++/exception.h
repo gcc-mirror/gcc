@@ -1,6 +1,6 @@
 // Exception Handling support header for -*- C++ -*-
 
-// Copyright (C) 2016-2024 Free Software Foundation, Inc.
+// Copyright (C) 2016-2025 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //

@@ -4,7 +4,7 @@
    Note that "normal" builtins (generic math functions, etc.) are handled
    in rs6000.c.
 
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

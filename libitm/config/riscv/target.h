@@ -1,4 +1,4 @@
-/* Copyright (C) 2022-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Xiongchuan Tan <xc-tan@outlook.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).

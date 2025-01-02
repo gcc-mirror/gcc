@@ -1,6 +1,6 @@
 `/* Implementation of the BESSEL_JN and BESSEL_YN transformational
    function using a recurrence algorithm.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran runtime library (libgfortran).

@@ -1,7 +1,7 @@
 /* Functions for querying whether a function name is reserved by the
    OpenMP API.  This is used for error checking.
 
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

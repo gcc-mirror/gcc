@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate m68k-tables.opt from the lists in *.def.
-# Copyright (C) 2011-2024 Free Software Foundation, Inc.
+# Copyright (C) 2011-2025 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,7 +23,7 @@ cat <<EOF
 ; Generated automatically by genopt.sh from m68k-devices.def,
 ; m68k-isas.def and m68k-microarchs.def.
 
-; Copyright (C) 2011-2024 Free Software Foundation, Inc.
+; Copyright (C) 2011-2025 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;

@@ -1,6 +1,6 @@
 /* dtoa.c provide floating point string conversion routines.
 
-Copyright (C) 2009-2024 Free Software Foundation, Inc.
+Copyright (C) 2009-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.

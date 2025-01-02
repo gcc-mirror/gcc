@@ -2,7 +2,7 @@
    Do not include this file directly. Use one of arm_neon.h, arm_sme.h,
    or arm_sve.h instead.
 
-   Copyright (C) 2024 Free Software Foundation, Inc.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

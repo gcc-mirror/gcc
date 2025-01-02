@@ -1,6 +1,6 @@
 /* RISC-V Extension Bitmask Definitions, corresponding to Extension Bitmask
    Definitions in RISC-V C API Specification.
-   Copyright (C) 2024 Free Software Foundation, Inc.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
    Contributed by Yangyu Chen (cyy@cyyself.name).
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 // Pass to fuse adjacent loads/stores into paired memory accesses.
-// Copyright (C) 2023-2024 Free Software Foundation, Inc.
+// Copyright (C) 2023-2025 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //

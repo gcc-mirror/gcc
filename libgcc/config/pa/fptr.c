@@ -1,5 +1,5 @@
 /* Subroutine for function pointer canonicalization on PA-RISC with ELF32.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by John David Anglin (dave.anglin@nrc.ca).
 
 This file is part of GCC.

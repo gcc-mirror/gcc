@@ -1,5 +1,5 @@
 /* 64bit Linux-specific atomic operations for ARM EABI.
-   Copyright (C) 2008-2024 Free Software Foundation, Inc.
+   Copyright (C) 2008-2025 Free Software Foundation, Inc.
    Based on linux-atomic.c
 
    64 bit additions david.gilbert@linaro.org

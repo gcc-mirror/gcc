@@ -1,7 +1,7 @@
 /* Every class defined here represents a single bit value of a variable.
    Every variable will be represented as a vector of these classes which later
    will be used for bit-level symbolic execution.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Matevos Mehrabyan <matevosmehrabyan@gmail.com>
 
 This file is part of GCC.

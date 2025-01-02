@@ -1,5 +1,5 @@
 /* Declarations for ISO Fortran binding.
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
    Contributed by Daniel Celis Garza  <celisdanieljr@gmail.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).

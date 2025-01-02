@@ -1,6 +1,6 @@
 /* Arm MVE intrinsics include file.
 
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by Arm.
 
    This file is part of GCC.

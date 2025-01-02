@@ -4,7 +4,7 @@
 // 2009-08-14  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
 // 2012-09-04  Ulrich Drepper  <drepper@gmail.com>
 //
-// Copyright (C) 2012-2024 Free Software Foundation, Inc.
+// Copyright (C) 2012-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

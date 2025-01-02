@@ -1,5 +1,5 @@
 /* Generic implementation of the CSHIFT intrinsic
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).

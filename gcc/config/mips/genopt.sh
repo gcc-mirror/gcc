@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate mips-tables.opt from the list of CPUs in mips-cpus.def.
-# Copyright (C) 2011-2024 Free Software Foundation, Inc.
+# Copyright (C) 2011-2025 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,7 +22,7 @@ cat <<EOF
 ; -*- buffer-read-only: t -*-
 ; Generated automatically by genopt.sh from mips-cpus.def.
 
-; Copyright (C) 2011-2024 Free Software Foundation, Inc.
+; Copyright (C) 2011-2025 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;

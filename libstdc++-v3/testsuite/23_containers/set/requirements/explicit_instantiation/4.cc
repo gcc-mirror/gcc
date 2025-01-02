@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2024 Free Software Foundation, Inc.
+// Copyright (C) 2010-2025 Free Software Foundation, Inc.
 
 // 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //

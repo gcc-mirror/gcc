@@ -1,6 +1,6 @@
 (* Termbase.mod provides GNU Modula-2 with a PIM 234 compatible Termbase.
 
-Copyright (C) 2004-2024 Free Software Foundation, Inc.
+Copyright (C) 2004-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

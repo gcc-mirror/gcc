@@ -1,4 +1,4 @@
-dnl Copyright (C) 2005-2024 Free Software Foundation, Inc.
+dnl Copyright (C) 2005-2025 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GCC.
 dnl

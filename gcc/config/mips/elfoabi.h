@@ -1,6 +1,6 @@
 /* Target macros for mips*-elf targets that selected between o32 and o64
    based on the target architecture.
-   Copyright (C) 1994-2024 Free Software Foundation, Inc.
+   Copyright (C) 1994-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

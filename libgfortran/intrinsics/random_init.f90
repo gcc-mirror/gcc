@@ -1,4 +1,4 @@
-! Copyright (C) 2018-2024 Free Software Foundation, Inc.
+! Copyright (C) 2018-2025 Free Software Foundation, Inc.
 ! Contributed by Steven G. Kargl <kargl@gcc.gnu.org>
 !
 ! This file is part of the GNU Fortran runtime library (libgfortran).

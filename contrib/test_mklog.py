@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020-2024 Free Software Foundation, Inc.
+# Copyright (C) 2020-2025 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -155,7 +155,7 @@ index aab79492357..f0df1002488 100644
 +
 +
  /* Interprocedural Identical Code Folding pass
-    Copyright (C) 2014-2024 Free Software Foundation, Inc.
+    Copyright (C) 2014-2025 Free Software Foundation, Inc.
  
 diff --git a/gcc/testsuite/gcc.dg/pr32374.c b/gcc/testsuite/gcc.dg/pr32374.c
 deleted file mode 100644
@@ -222,7 +222,7 @@ index f062e48071f..fd3c7ca8cf3 100644
 +
 +
  /* Output variables, constants and external declarations, for GNU compiler.
-    Copyright (C) 1987-2024 Free Software Foundation, Inc.
+    Copyright (C) 1987-2025 Free Software Foundation, Inc.
  
 diff --git a/libssp/gets-chk.c b/libssp/gets-chk.c
 index 4ad78c1f77b..6687b368038 100644

@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Return 1 iff a >= b, 0 otherwise.
-   Copyright (C) 1997-2024 Free Software Foundation, Inc.
+   Copyright (C) 1997-2025 Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@cygnus.com) and
 		  Jakub Jelinek (jj@ultra.linux.cz).
 
