@@ -2,16 +2,16 @@
 /* { dg-require-effective-target amx_avx512 } */
 /* { dg-options "-O2 -march=x86-64-v3 -mamx-avx512" } */
 #define AMX_AVX512
-#define DO_TEST test_amx_avx512_cvtrowps2pbf16
-void test_amx_avx512_cvtrowps2pbf16();
+#define DO_TEST test_amx_avx512_cvtrowps2bf16
+void test_amx_avx512_cvtrowps2bf16();
 #include "amx-helper.h"
 
 volatile __m512bh cal_dst, cmp_dst;
 
-#define DEFINE_TEST_CVTROWPS2PBF16(HL, EI, T)			\
+#define DEFINE_TEST_CVTROWPS2BF16(HL, EI, T)			\
 __m512bh							\
 __attribute__((noinline, noclone, __target__("no-amx-avx512")))	\
-calc_cvtrowps2pbf16##HL##EI (__tile *src, T __A)		\
+calc_cvtrowps2bf16##HL##EI (__tile *src, T __A)		\
 {								\
   float *src_buf = (float *) src->buf;				\
   int N = src->colsb / 4;					\
@@ -53,17 +53,17 @@ calc_cvtrowps2pbf16##HL##EI (__tile *src, T __A)		\
   return res;							\
 }
 
-DEFINE_TEST_CVTROWPS2PBF16(h, e, unsigned)
-DEFINE_TEST_CVTROWPS2PBF16(l, e, unsigned)
-DEFINE_TEST_CVTROWPS2PBF16(h, i, const unsigned)
-DEFINE_TEST_CVTROWPS2PBF16(l, i, const unsigned)
+DEFINE_TEST_CVTROWPS2BF16(h, e, unsigned)
+DEFINE_TEST_CVTROWPS2BF16(l, e, unsigned)
+DEFINE_TEST_CVTROWPS2BF16(h, i, const unsigned)
+DEFINE_TEST_CVTROWPS2BF16(l, i, const unsigned)
 
-#define TEST_CVTROWPS2PBF16(X, Y, HL, EI, T, INTRIN)		\
-cal_dst = calc_cvtrowps2pbf16##HL##EI (X, Y);			\
+#define TEST_CVTROWPS2BF16(X, Y, HL, EI, T, INTRIN)		\
+cal_dst = calc_cvtrowps2bf16##HL##EI (X, Y);			\
 cmp_dst = _tile_##INTRIN (1, Y);				\
 COMPARE_ZMM_BF16(cal_dst, cmp_dst);
 
-void test_amx_avx512_cvtrowps2pbf16 ()
+void test_amx_avx512_cvtrowps2bf16 ()
 {
   __tilecfg_u cfg;
   __tile src;
@@ -75,8 +75,8 @@ void test_amx_avx512_cvtrowps2pbf16 ()
   init_tile_config (&cfg);
   init_tile_reg_and_src_with_buffer (1, src, tmp_dst_buf);
 
-  TEST_CVTROWPS2PBF16 (&src, a, h, e, unsigned, cvtrowps2pbf16h);
-  TEST_CVTROWPS2PBF16 (&src, a, l, e, unsigned, cvtrowps2pbf16l);
-  TEST_CVTROWPS2PBF16 (&src, 1, h, i, const unsigned, cvtrowps2pbf16hi);
-  TEST_CVTROWPS2PBF16 (&src, 1, l, i, const unsigned, cvtrowps2pbf16li);
+  TEST_CVTROWPS2BF16 (&src, a, h, e, unsigned, cvtrowps2bf16h);
+  TEST_CVTROWPS2BF16 (&src, a, l, e, unsigned, cvtrowps2bf16l);
+  TEST_CVTROWPS2BF16 (&src, 1, h, i, const unsigned, cvtrowps2bf16hi);
+  TEST_CVTROWPS2BF16 (&src, 1, l, i, const unsigned, cvtrowps2bf16li);
 }
