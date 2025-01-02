@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2013-2024 Free Software Foundation, Inc.
+# Copyright (C) 2013-2025 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -560,6 +560,8 @@ class GCCFilter (GenericFilter):
 
                 # Weird ways to compose copyright year
                 'GmcOptions.cc',
+                'gen-evolution.awk',
+                'gen-cxxapi-file.py',
                 ])
 
         self.skip_dirs |= set ([
@@ -586,6 +588,11 @@ class GCCFilter (GenericFilter):
 class TestsuiteFilter (GenericFilter):
     def __init__ (self):
         GenericFilter.__init__ (self)
+
+        self.skip_files |= set ([
+                # Weird ways to compose copyright year
+                'spec-example-4.sarif',
+                ])
 
         self.skip_extensions |= set ([
                 # Don't change the tests, which could be woend by anyone.
@@ -619,6 +626,12 @@ class TestsuiteFilter (GenericFilter):
 class LibCppFilter (GenericFilter):
     def __init__ (self):
         GenericFilter.__init__ (self)
+
+        self.skip_files |= set ([
+                # Generated file with the generated strings sometimes
+                # matching the regexps.
+                'uname2c.h',
+                ])
 
         self.skip_extensions |= set ([
                 # Maintained by the translation project.
