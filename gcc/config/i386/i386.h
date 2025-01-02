@@ -232,6 +232,8 @@ struct processor_costs {
 					   to be unrolled.  */
   const unsigned small_unroll_factor;   /* Unroll factor for small loop to
 					   be unrolled.  */
+  const int br_mispredict_scale;	/* Branch mispredict scale for ifcvt
+					   threshold.  */
 };
 
 extern const struct processor_costs *ix86_cost;

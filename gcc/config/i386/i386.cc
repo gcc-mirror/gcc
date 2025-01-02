@@ -25088,7 +25088,13 @@ ix86_max_noce_ifcvt_seq_cost (edge e)
 	return param_max_rtl_if_conversion_unpredictable_cost;
     }
 
-  return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (2);
+  /* For modern machines with deeper pipeline, the penalty for branch
+     misprediction could be higher than before to reset the pipeline
+     slots. Add parameter br_mispredict_scale as a factor to describe
+     the impact of reseting the pipeline.  */
+
+  return BRANCH_COST (true, predictable_p)
+	 * ix86_tune_cost->br_mispredict_scale;
 }
 
 /* Return true if SEQ is a good candidate as a replacement for the
