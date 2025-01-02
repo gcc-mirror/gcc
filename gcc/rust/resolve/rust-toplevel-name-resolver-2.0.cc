@@ -87,13 +87,7 @@ TopLevel::visit (AST::Module &module)
   if (module.get_kind () == AST::Module::UNLOADED)
     module.load_items ();
 
-  auto sub_visitor = [this, &module] () {
-    for (auto &item : module.get_items ())
-      item->accept_vis (*this);
-  };
-
-  ctx.scoped (Rib::Kind::Module, module.get_node_id (), sub_visitor,
-	      module.get_name ());
+  DefaultResolver::visit (module);
 
   if (Analysis::Mappings::get ().lookup_ast_module (module.get_node_id ())
       == tl::nullopt)
@@ -231,23 +225,6 @@ TopLevel::visit (AST::Function &function)
 }
 
 void
-TopLevel::visit (AST::BlockExpr &expr)
-{
-  // extracting the lambda from the `scoped` call otherwise the code looks like
-  // a hot turd thanks to our .clang-format
-
-  auto sub_vis = [this, &expr] () {
-    for (auto &stmt : expr.get_statements ())
-      stmt->accept_vis (*this);
-
-    if (expr.has_tail_expr ())
-      expr.get_tail_expr ().accept_vis (*this);
-  };
-
-  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), sub_vis);
-}
-
-void
 TopLevel::visit (AST::StaticItem &static_item)
 {
   insert_or_error_out (static_item.get_identifier (), static_item,
@@ -261,6 +238,8 @@ TopLevel::visit (AST::ExternalStaticItem &static_item)
 {
   insert_or_error_out (static_item.get_identifier ().as_string (), static_item,
 		       Namespace::Values);
+
+  DefaultResolver::visit (static_item);
 }
 
 void
@@ -291,6 +270,8 @@ TopLevel::visit (AST::TypeParam &type_param)
 {
   insert_or_error_out (type_param.get_type_representation (), type_param,
 		       Namespace::Types);
+
+  DefaultResolver::visit (type_param);
 }
 
 void
@@ -309,6 +290,8 @@ TopLevel::visit (AST::TupleStruct &tuple_struct)
 
   insert_or_error_out (tuple_struct.get_struct_name (), tuple_struct,
 		       Namespace::Values);
+
+  DefaultResolver::visit (tuple_struct);
 }
 
 void
@@ -338,25 +321,10 @@ TopLevel::visit (AST::EnumItemDiscriminant &variant)
 void
 TopLevel::visit (AST::Enum &enum_item)
 {
-  auto generic_vis = [this, &enum_item] () {
-    for (auto &g : enum_item.get_generic_params ())
-      {
-	g->accept_vis (*this);
-      }
-  };
-
-  ctx.scoped (Rib::Kind::Item, enum_item.get_node_id (), generic_vis);
-
   insert_or_error_out (enum_item.get_identifier (), enum_item,
 		       Namespace::Types);
 
-  auto field_vis = [this, &enum_item] () {
-    for (auto &variant : enum_item.get_variants ())
-      variant->accept_vis (*this);
-  };
-
-  ctx.scoped (Rib::Kind::Item /* FIXME: Is that correct? */,
-	      enum_item.get_node_id (), field_vis, enum_item.get_identifier ());
+  DefaultResolver::visit (enum_item);
 }
 
 void
@@ -364,6 +332,8 @@ TopLevel::visit (AST::Union &union_item)
 {
   insert_or_error_out (union_item.get_identifier (), union_item,
 		       Namespace::Types);
+
+  DefaultResolver::visit (union_item);
 }
 
 void

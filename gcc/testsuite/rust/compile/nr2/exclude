@@ -25,7 +25,6 @@ derive_macro3.rs
 derive_macro4.rs
 derive_macro6.rs
 expected_type_args2.rs
-expected_type_args3.rs
 feature_rust_attri0.rs
 for_lifetimes.rs
 format_args_basic_expansion.rs
@@ -33,12 +32,10 @@ generic-default1.rs
 generics1.rs
 generics10.rs
 generics11.rs
-generics2.rs
 generics3.rs
 generics4.rs
 generics5.rs
 generics6.rs
-generics8.rs
 generics9.rs
 if_let_expr.rs
 issue-1019.rs
@@ -46,9 +43,7 @@ issue-1031.rs
 issue-1034.rs
 issue-1129-2.rs
 issue-1130.rs
-issue-1165.rs
 issue-1173.rs
-issue-1235.rs
 issue-1272.rs
 issue-1289.rs
 issue-1447.rs
@@ -66,7 +61,6 @@ issue-2036.rs
 issue-2037.rs
 issue-2043.rs
 issue-2070.rs
-issue-2105.rs
 issue-2135.rs
 issue-2136-1.rs
 issue-2136-2.rs
@@ -117,7 +111,6 @@ multiple_bindings1.rs
 multiple_bindings2.rs
 name_resolution2.rs
 name_resolution4.rs
-nested_generic.rs
 nested_macro_use1.rs
 nested_macro_use2.rs
 nested_macro_use3.rs
@@ -142,7 +135,6 @@ pub_restricted_3.rs
 redef_error2.rs
 redef_error4.rs
 redef_error5.rs
-redef_error6.rs
 self-path1.rs
 self-path2.rs
 sizeof-stray-infer-var-bug.rs
@@ -193,7 +185,6 @@ if_let_expr_simple.rs
 iflet.rs
 issue-3033.rs
 issue-3009.rs
-issue-2323.rs
 issue-2953-2.rs
 issue-1773.rs
 issue-2905-1.rs
