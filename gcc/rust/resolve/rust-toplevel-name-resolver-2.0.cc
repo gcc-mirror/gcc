@@ -109,6 +109,15 @@ TopLevel::visit (AST::Trait &trait)
   DefaultResolver::visit (trait);
 }
 
+void
+TopLevel::visit (AST::TraitItemType &trait_item)
+{
+  insert_or_error_out (trait_item.get_identifier ().as_string (), trait_item,
+		       Namespace::Types);
+
+  DefaultResolver::visit (trait_item);
+}
+
 template <typename PROC_MACRO>
 static void
 insert_macros (std::vector<PROC_MACRO> &macros, NameResolutionContext &ctx)
