@@ -1,3 +1,12 @@
+2025-01-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/html/manual/profile_mode.html: Delete.
+	* doc/html/manual/profile_mode_api.html: Ditto.
+	* doc/html/manual/profile_mode_cost_model.html: Ditto.
+	* doc/html/manual/profile_mode_design.html: Ditto.
+	* doc/html/manual/profile_mode_devel.html: Ditto.
+	* doc/html/manual/profile_mode_impl.html: Ditto.
+
 2024-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/html/manual/profile_mode_diagnostics.html: Delete.

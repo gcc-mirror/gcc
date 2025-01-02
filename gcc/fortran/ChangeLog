@@ -1,3 +1,19 @@
+2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.texi (Function ABI Documentation): Make menu ordering
+	consistent with subsection ordering.
+
+2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.texi: Clean up that/which usage throughout the file.
+	* intrinsic.texi: Likewise.
+	* invoke.texi: Likewise.
+
+2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* intrinsic.texi: Grammar and markup fixes throughout
+	the file.
+
 2024-12-30  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/117643

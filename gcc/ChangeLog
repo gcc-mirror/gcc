@@ -1,3 +1,22 @@
+2025-01-01  Sam James  <sam@gentoo.org>
+
+	* doc/cpp.texi (Common Predefined Macros): Fix syntax.
+
+2025-01-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118174
+	* tree-outof-ssa.cc (ssa_is_replaceable_p): Exclude tailcalls.
+
+2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/invoke.texi (Option Summary): Put "M32C Options" and
+	"Cygwin and MinGW Options" in alphabetical order.  Add
+	cross-references.
+	(Cygwin and MinGW Options): Likewise move the section to its
+	correct alphabetical location.
+	* config/lynx.opt.urls: Regenerated.
+	* config/mingw/cygming.opt.urls: Regenerated.
+
 2024-12-31  Jiahao Xu  <xujiahao@loongson.cn>
 	    Deng Jianbo  <dengjianbo@loongson.cn>
 
