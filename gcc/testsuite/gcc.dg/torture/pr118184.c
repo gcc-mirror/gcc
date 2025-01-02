@@ -1,8 +1,8 @@
-/* { dg-do run { target { longdouble128 && lp64 } } } */
+/* { dg-do run { target { float128 && lp64 } } } */
 
 union u1
 {
-  long double ld;
+  _Float128 ld;
   unsigned long l[2];
 };
 
@@ -13,7 +13,7 @@ unsigned long m()
 }
 
 [[gnu::noinline]]
-long double f(void)
+_Float128 f(void)
 {
   union u1 u;
   u.ld = __builtin_nanf128("");
