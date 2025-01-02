@@ -309,13 +309,6 @@ Late::visit (AST::StructStruct &s)
 }
 
 void
-Late::visit (AST::Enum &s)
-{
-  auto s_vis = [this, &s] () { AST::DefaultASTVisitor::visit (s); };
-  ctx.scoped (Rib::Kind::Item, s.get_node_id (), s_vis);
-}
-
-void
 Late::visit (AST::StructExprStruct &s)
 {
   auto resolved = ctx.types.resolve_path (s.get_struct_name ().get_segments ());

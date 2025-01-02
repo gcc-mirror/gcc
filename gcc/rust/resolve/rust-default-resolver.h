@@ -52,7 +52,10 @@ public:
 
   // type dec nodes, which visit their fields or variants by default
   void visit (AST::StructStruct &) override;
+  void visit (AST::TupleStruct &) override;
   void visit (AST::Enum &) override;
+  void visit (AST::Union &) override;
+  void visit (AST::TypeAlias &) override;
 
   // Visitors that visit their expression node(s)
   void visit (AST::ClosureExprInner &) override;

@@ -88,25 +88,46 @@ DefaultResolver::visit (AST::TraitImpl &impl)
 void
 DefaultResolver::visit (AST::StructStruct &type)
 {
-  // do we need to scope anything here? no, right?
+  auto inner_fn = [this, &type] () { AST::DefaultASTVisitor::visit (type); };
 
-  // we also can't visit `StructField`s by default, so there's nothing to do -
-  // correct? or should we do something like
+  ctx.scoped (Rib::Kind::Item /* FIXME: Correct? */, type.get_node_id (),
+	      inner_fn, type.get_struct_name ());
+}
 
-  AST::DefaultASTVisitor::visit (type);
+void
+DefaultResolver::visit (AST::TupleStruct &type)
+{
+  auto inner_fn = [this, &type] () { AST::DefaultASTVisitor::visit (type); };
 
-  // FIXME: ???
+  ctx.scoped (Rib::Kind::Item /* FIXME: Correct? */, type.get_node_id (),
+	      inner_fn, type.get_struct_name ());
 }
 
 void
 DefaultResolver::visit (AST::Enum &type)
 {
-  // FIXME: Do we need to scope anything by default?
-
   auto variant_fn = [this, &type] () { AST::DefaultASTVisitor::visit (type); };
 
   ctx.scoped (Rib::Kind::Item /* FIXME: Correct? */, type.get_node_id (),
 	      variant_fn, type.get_identifier ());
+}
+
+void
+DefaultResolver::visit (AST::Union &type)
+{
+  auto inner_fn = [this, &type] () { AST::DefaultASTVisitor::visit (type); };
+
+  ctx.scoped (Rib::Kind::Item /* FIXME: Correct? */, type.get_node_id (),
+	      inner_fn, type.get_identifier ());
+}
+
+void
+DefaultResolver::visit (AST::TypeAlias &type)
+{
+  auto inner_fn = [this, &type] () { AST::DefaultASTVisitor::visit (type); };
+
+  ctx.scoped (Rib::Kind::Item /* FIXME: Correct? */, type.get_node_id (),
+	      inner_fn, type.get_new_type_name ());
 }
 
 void
