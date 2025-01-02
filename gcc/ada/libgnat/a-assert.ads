@@ -4,7 +4,7 @@
 --                                                                          --
 --                       A D A . A S S E R T I O N S                        --
 --                                                                          --
---            Copyright (C) 2015-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2015-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

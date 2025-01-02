@@ -6,7 +6,7 @@
 --                     M U L T I P R O C E S S O R S                        --
 --                               B o d y                                    --
 --                                                                          --
---                       Copyright (C) 2010-2024, AdaCore                   --
+--                       Copyright (C) 2010-2025, AdaCore                   --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
