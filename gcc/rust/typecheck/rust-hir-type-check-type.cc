@@ -379,6 +379,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 {
   TyTy::BaseType *root_tyty = nullptr;
   *offset = 0;
+
   for (size_t i = 0; i < path.get_num_segments (); i++)
     {
       std::unique_ptr<HIR::TypePathSegment> &seg = path.get_segments ().at (i);
@@ -390,18 +391,25 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       // then lookup the reference_node_id
       NodeId ref_node_id = UNKNOWN_NODEID;
 
-      // FIXME: HACK: ARTHUR: Remove this
-      if (flag_name_resolution_2_0)
+      if (seg->is_lang_item ())
+	ref_node_id = Analysis::Mappings::get ().get_lang_item_node (
+	  seg->get_lang_item ());
+      else
 	{
-	  auto nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+	  // FIXME: HACK: ARTHUR: Remove this
+	  if (flag_name_resolution_2_0)
+	    {
+	      auto nr_ctx = Resolver2_0::ImmutableNameResolutionContext::get ()
+			      .resolver ();
 
-	  // assign the ref_node_id if we've found something
-	  nr_ctx.lookup (path.get_mappings ().get_nodeid ())
-	    .map ([&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
+	      // assign the ref_node_id if we've found something
+	      nr_ctx.lookup (path.get_mappings ().get_nodeid ())
+		.map (
+		  [&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
+	    }
+	  else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+	    resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 	}
-      else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 
       // ref_node_id is the NodeId that the segments refers to.
       if (ref_node_id == UNKNOWN_NODEID)
