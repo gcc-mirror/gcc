@@ -18,7 +18,7 @@
 @ifinfo
 This file documents the internals of the GNU C Preprocessor.
 
-Copyright (C) 2000-2024 Free Software Foundation, Inc.
+Copyright (C) 2000-2025 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -47,7 +47,7 @@ into another language, under the above conditions for modified versions.
 @page
 @vskip 0pt plus 1filll
 @c man begin COPYRIGHT
-Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
+Copyright @copyright{} 2000-2025 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
