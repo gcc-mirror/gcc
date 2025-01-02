@@ -74,11 +74,20 @@ ASTLowerTypePath::visit (AST::TypePathSegment &segment)
   Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
 				 UNKNOWN_LOCAL_DEFID);
 
-  HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
-  translated_segment
-    = new HIR::TypePathSegment (std::move (mapping), ident,
-				segment.get_separating_scope_resolution (),
-				segment.get_locus ());
+  if (segment.is_lang_item ())
+    {
+      translated_segment = new HIR::TypePathSegment (std::move (mapping),
+						     segment.get_lang_item (),
+						     segment.get_locus ());
+    }
+  else
+    {
+      HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
+      translated_segment
+	= new HIR::TypePathSegment (std::move (mapping), ident,
+				    segment.get_separating_scope_resolution (),
+				    segment.get_locus ());
+    }
 }
 
 void
@@ -138,27 +147,6 @@ ASTLowerTypePath::visit (AST::TypePath &path)
 			 path.get_locus (),
 			 path.has_opening_scope_resolution_op ());
 }
-
-// void
-// ASTLowerTypePath::visit (AST::LangItemPath &path)
-// {
-//   auto crate_num = mappings.get_current_crate ();
-//   auto hirid = mappings.get_next_hir_id (crate_num);
-
-//   Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
-// 				 mappings.get_next_localdef_id (crate_num));
-
-//   std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
-//   translated_segments.emplace_back (std::unique_ptr<HIR::TypePathSegment> (
-//     new HIR::TypePathSegment (mapping,
-// 			      LangItem::ToString (path.get_lang_item_kind ()),
-// 			      false, path.get_locus ())));
-
-//   translated
-//     = new HIR::TypePath (std::move (mapping), std::move
-//     (translated_segments),
-// 			 path.get_locus ());
-// }
 
 HIR::QualifiedPathInType *
 ASTLowerQualifiedPathInType::translate (AST::QualifiedPathInType &type)
