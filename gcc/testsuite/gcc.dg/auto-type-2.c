@@ -20,4 +20,5 @@ signed __auto_type e7 = 0; /* { dg-error "__auto_type" } */
 unsigned __auto_type e8 = 0; /* { dg-error "__auto_type" } */
 _Complex __auto_type e9 = 0; /* { dg-error "__auto_type" } */
 int __auto_type e10 = 0; /* { dg-error "two or more data types" } */
-__auto_type _Bool e11 = 0; /* { dg-error "two or more data types" } */
+__auto_type _Bool e11 = 0; /* { dg-error "'_Bool' cannot be used here" } */
+/* { dg-message "'_Bool' is a keyword with '-std=c99' onwards" "" { target *-*-* } .-1 } */

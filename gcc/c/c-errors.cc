@@ -215,3 +215,39 @@ out:
   va_end (ap);
   return warned;
 }
+
+/* Determine in which version of the standard IDENTIFIER
+   became a keyword.  */
+
+static const char *
+get_std_for_keyword (tree identifier)
+{
+  switch (C_RID_CODE (identifier))
+    {
+    default:
+      gcc_unreachable ();
+    case RID_FALSE:
+    case RID_TRUE:
+      return "-std=c23";
+    case RID_BOOL:
+      if (IDENTIFIER_POINTER (identifier)[0] == 'b')
+	/* "bool".  */
+	return "-std=c23";
+      else
+	/* "_Bool".  */
+	return "-std=c99";
+    }
+}
+
+/* Issue a note to the user at LOC that KEYWORD_ID is a keyword
+   in STD_OPTION version of the standard onwards.  */
+
+void
+add_note_about_new_keyword (location_t loc,
+			    tree keyword_id)
+{
+  gcc_assert (TREE_CODE (keyword_id) == IDENTIFIER_NODE);
+  const char *std_option = get_std_for_keyword (keyword_id);
+  inform (loc, "%qs is a keyword with %qs onwards",
+	  IDENTIFIER_POINTER (keyword_id), std_option);
+}

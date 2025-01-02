@@ -955,6 +955,8 @@ extern bool pedwarn_c11 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool pedwarn_c23 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
+extern void add_note_about_new_keyword (location_t loc,
+					tree keyword_id);
 
 extern void
 set_c_expr_source_range (c_expr *expr,

@@ -12493,8 +12493,22 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	     "__auto_type".  */
 	  if (specs->typespec_word != cts_none)
 	    {
-	      error_at (loc,
-			"two or more data types in declaration specifiers");
+	      if (i == RID_BOOL)
+		{
+		  auto_diagnostic_group d;
+		  if (specs->storage_class == csc_typedef)
+		    error_at (loc,
+			      "%qs cannot be defined via %<typedef%>",
+			      IDENTIFIER_POINTER (type));
+		  else
+		    error_at (loc,
+			      "%qs cannot be used here",
+			      IDENTIFIER_POINTER (type));
+		  add_note_about_new_keyword (loc, type);
+		}
+	      else
+		error_at (loc,
+			  "two or more data types in declaration specifiers");
 	      return specs;
 	    }
 	  switch (i)

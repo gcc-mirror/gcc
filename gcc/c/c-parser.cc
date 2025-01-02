@@ -3785,6 +3785,47 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
     specs->postfix_attrs = c_parser_std_attribute_specifier_sequence (parser);
 }
 
+/* Complain about a non-CPP_NAME within an enumerator list.  */
+
+static void
+report_bad_enum_name (c_parser *parser)
+{
+  if (!parser->error)
+    {
+      c_token *token = c_parser_peek_token (parser);
+      switch (token->type)
+	{
+	default:
+	  break;
+	case CPP_CLOSE_BRACE:
+	  /* Give a nicer error for "enum {}".  */
+	  error_at (token->location,
+		    "empty enum is invalid");
+	  parser->error = true;
+	  return;
+	case CPP_KEYWORD:
+	  /* Give a nicer error for attempts to use "true" and "false"
+	     in enums with C23 onwards.  */
+	  if (token->keyword == RID_FALSE
+	      || token->keyword == RID_TRUE)
+	    {
+	      auto_diagnostic_group d;
+	      error_at (token->location,
+			"cannot use keyword %qs as enumeration constant",
+			IDENTIFIER_POINTER (token->value));
+	      add_note_about_new_keyword (token->location,
+					  token->value);
+	      parser->error = true;
+	      return;
+	    }
+	  break;
+	}
+    }
+
+  /* Otherwise, a more generic error message.  */
+  c_parser_error (parser, "expected identifier");
+}
+
 /* Parse an enum specifier (C90 6.5.2.2, C99 6.7.2.2, C11 6.7.2.2).
 
    enum-specifier:
@@ -3952,16 +3993,7 @@ c_parser_enum_specifier (c_parser *parser)
 	  location_t decl_loc, value_loc;
 	  if (c_parser_next_token_is_not (parser, CPP_NAME))
 	    {
-	      /* Give a nicer error for "enum {}".  */
-	      if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE)
-		  && !parser->error)
-		{
-		  error_at (c_parser_peek_token (parser)->location,
-			    "empty enum is invalid");
-		  parser->error = true;
-		}
-	      else
-		c_parser_error (parser, "expected identifier");
+	      report_bad_enum_name (parser);
 	      c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, NULL);
 	      values = error_mark_node;
 	      break;
