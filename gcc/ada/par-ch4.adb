@@ -2181,8 +2181,9 @@ package body Ch4 is
       --  First check for raise expression
 
       if Token = Tok_Raise then
+         Node1 := P_Raise_Expression;
          Expr_Form := EF_Non_Simple;
-         return P_Raise_Expression;
+         return Node1;
       end if;
 
       --  All other cases
@@ -2415,6 +2416,8 @@ package body Ch4 is
             Node1 := P_Term;
          end if;
 
+         Expr_Form := EF_Simple;
+
          --  In the following, we special-case a sequence of concatenations of
          --  string literals, such as "aaa" & "bbb" & ... & "ccc", with nothing
          --  else mixed in. For such a sequence, we return a tree representing
@@ -2530,11 +2533,6 @@ package body Ch4 is
                end;
             end if;
          end;
-
-         --  All done, we clearly do not have name or numeric literal so this
-         --  is a case of a simple expression which is some other possibility.
-
-         Expr_Form := EF_Simple;
       end if;
 
       --  If all extensions are enabled and we have a deep delta aggregate
