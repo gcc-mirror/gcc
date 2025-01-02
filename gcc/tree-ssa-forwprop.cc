@@ -2269,7 +2269,7 @@ check_ctz_array (tree ctor, unsigned HOST_WIDE_INT mulc,
 		 HOST_WIDE_INT &zero_val, unsigned shift, unsigned bits)
 {
   tree elt, idx;
-  unsigned HOST_WIDE_INT i, mask;
+  unsigned HOST_WIDE_INT i, mask, raw_idx = 0;
   unsigned matched = 0;
 
   mask = ((HOST_WIDE_INT_1U << (bits - shift)) - 1) << shift;
@@ -2278,13 +2278,34 @@ check_ctz_array (tree ctor, unsigned HOST_WIDE_INT mulc,
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, idx, elt)
     {
-      if (TREE_CODE (idx) != INTEGER_CST || TREE_CODE (elt) != INTEGER_CST)
+      if (TREE_CODE (idx) != INTEGER_CST)
 	return false;
-      if (i > bits * 2)
+      if (TREE_CODE (elt) != INTEGER_CST && TREE_CODE (elt) != RAW_DATA_CST)
 	return false;
 
       unsigned HOST_WIDE_INT index = tree_to_shwi (idx);
-      HOST_WIDE_INT val = tree_to_shwi (elt);
+      HOST_WIDE_INT val;
+
+      if (TREE_CODE (elt) == INTEGER_CST)
+	val = tree_to_shwi (elt);
+      else
+	{
+	  if (raw_idx == (unsigned) RAW_DATA_LENGTH (elt))
+	    {
+	      raw_idx = 0;
+	      continue;
+	    }
+	  if (TYPE_UNSIGNED (TREE_TYPE (elt)))
+	    val = RAW_DATA_UCHAR_ELT (elt, raw_idx);
+	  else
+	    val = RAW_DATA_SCHAR_ELT (elt, raw_idx);
+	  index += raw_idx;
+	  raw_idx++;
+	  i--;
+	}
+
+      if (index > bits * 2)
+	return false;
 
       if (index == 0)
 	{
