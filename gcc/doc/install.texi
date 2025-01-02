@@ -4000,9 +4000,8 @@ Instead of GNU Binutils, you will need to install LLVM 15, or later, and copy
 by specifying a @code{--with-multilib-list=} that does not list @code{gfx1100}
 and @code{gfx1103}.
 
-Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and git commits
-7dd4eb1db and ed50a50b9 (2024-04-04, post-4.4.0) fix device console output
-for GFX10 and GFX11 devices).
+Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and 4.5.0 fixes
+the device console output for GFX10 and GFX11 devices).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
