@@ -1994,6 +1994,41 @@ class EnumItem : public VisItem
   location_t locus;
 
 public:
+  enum class Kind
+  {
+    Identifier,
+    Tuple,
+    Struct,
+
+    // FIXME: In the future, we'll need to remove this possibility as well as
+    // remove the EnumItemDiscriminant class. The feature for arbitrary
+    // discriminants on all kinds of variants has been stabilized, and a
+    // "discriminant" is no longer an enum item variant - it's simply an
+    // optional part of all variants.
+    //
+    // Per the reference:
+    //
+    // EnumItem :
+    //    OuterAttribute* Visibility?
+    //    IDENTIFIER ( EnumItemTuple | EnumItemStruct )? EnumItemDiscriminant?
+    //
+    // EnumItemTuple :
+    //    ( TupleFields? )
+    //
+    // EnumItemStruct :
+    //    { StructFields? }
+    //
+    // EnumItemDiscriminant :
+    //    = Expression
+    //
+    // So we instead need to remove the class, and add an optional expression to
+    // the base EnumItem class
+    //
+    // gccrs#3340
+
+    Discriminant,
+  };
+
   virtual ~EnumItem () {}
 
   EnumItem (Identifier variant_name, Visibility vis,
@@ -2001,6 +2036,8 @@ public:
     : VisItem (std::move (vis), std::move (outer_attrs)),
       variant_name (std::move (variant_name)), locus (locus)
   {}
+
+  virtual Kind get_enum_item_kind () const { return Kind::Identifier; }
 
   // Unique pointer custom clone function
   std::unique_ptr<EnumItem> clone_enum_item () const
@@ -2043,6 +2080,11 @@ public:
       tuple_fields (std::move (tuple_fields))
   {}
 
+  EnumItem::Kind get_enum_item_kind () const override
+  {
+    return EnumItem::Kind::Tuple;
+  }
+
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
@@ -2079,6 +2121,11 @@ public:
 		std::move (outer_attrs), locus),
       struct_fields (std::move (struct_fields))
   {}
+
+  EnumItem::Kind get_enum_item_kind () const override
+  {
+    return EnumItem::Kind::Struct;
+  }
 
   std::string as_string () const override;
 
@@ -2132,6 +2179,11 @@ public:
   // move constructors
   EnumItemDiscriminant (EnumItemDiscriminant &&other) = default;
   EnumItemDiscriminant &operator= (EnumItemDiscriminant &&other) = default;
+
+  EnumItem::Kind get_enum_item_kind () const override
+  {
+    return EnumItem::Kind::Discriminant;
+  }
 
   std::string as_string () const override;
 
