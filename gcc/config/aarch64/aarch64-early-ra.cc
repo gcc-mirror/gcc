@@ -2033,6 +2033,43 @@ early_ra::record_artificial_refs (unsigned int flags)
   m_current_point += 1;
 }
 
+// Return true if:
+//
+// - X is a SUBREG, in which case it is a SUBREG of some REG Y
+//
+// - one 64-bit word of Y can be modified while preserving all other words
+//
+// - X refers to no more than one 64-bit word of Y
+//
+// - assigning FPRs to Y would put more than one 64-bit word in each FPR
+//
+// For example, this is true of:
+//
+// - (subreg:DI (reg:TI R) 0) and
+// - (subreg:DI (reg:TI R) 8)
+//
+// but is not true of:
+//
+// - (subreg:V2SI (reg:V2x2SI R) 0) or
+// - (subreg:V2SI (reg:V2x2SI R) 8).
+static bool
+allocno_assignment_is_rmw (rtx x)
+{
+  if (partial_subreg_p (x))
+    {
+      auto outer_mode = GET_MODE (x);
+      auto inner_mode = GET_MODE (SUBREG_REG (x));
+      if (known_eq (REGMODE_NATURAL_SIZE (inner_mode), 0U + UNITS_PER_WORD)
+	  && known_lt (GET_MODE_SIZE (outer_mode), UNITS_PER_VREG))
+	{
+	  auto nregs = targetm.hard_regno_nregs (V0_REGNUM, inner_mode);
+	  if (maybe_ne (nregs * UNITS_PER_WORD, GET_MODE_SIZE (inner_mode)))
+	    return true;
+	}
+    }
+  return false;
+}
+
 // Called as part of a backwards walk over a block.  Model the definitions
 // in INSN, excluding partial call clobbers.
 void
@@ -2045,9 +2082,21 @@ early_ra::record_insn_defs (rtx_insn *insn)
       record_fpr_def (DF_REF_REGNO (ref));
     else
       {
-	auto range = get_allocno_subgroup (DF_REF_REG (ref));
+	rtx reg = DF_REF_REG (ref);
+	auto range = get_allocno_subgroup (reg);
 	for (auto &allocno : range.allocnos ())
 	  {
+	    // Make sure that assigning to the DF_REF_REG clobbers the
+	    // whole of this allocno, not just some of it.
+	    if (allocno_assignment_is_rmw (reg))
+	      {
+		record_live_range_failure ([&](){
+		  fprintf (dump_file, "read-modify-write of allocno %d",
+			   allocno.id);
+		});
+		break;
+	      }
+
 	    // If the destination is unused, record a momentary blip
 	    // in its live range.
 	    if (!bitmap_bit_p (m_live_allocnos, allocno.id))
