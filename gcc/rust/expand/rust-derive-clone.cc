@@ -20,6 +20,7 @@
 #include "rust-ast.h"
 #include "rust-ast-dump.h"
 #include "rust-item.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace AST {
@@ -235,11 +236,58 @@ DeriveClone::visit_struct (StructStruct &item)
 			 item.get_generic_params ());
 }
 
+MatchCase
+DeriveClone::clone_enum_identifier (Enum &item,
+				    const std::unique_ptr<EnumItem> &variant)
+{
+  auto variant_path = PathInExpression (
+    {builder.path_segment (item.get_identifier ().as_string ()),
+     builder.path_segment (variant->get_identifier ().as_string ())},
+    {}, loc, false);
+
+  auto pattern = std::unique_ptr<Pattern> (new ReferencePattern (
+    std::unique_ptr<Pattern> (new PathInExpression (variant_path)), false,
+    false, loc));
+  auto expr = std::unique_ptr<Expr> (new PathInExpression (variant_path));
+
+  return builder.match_case (std::move (pattern), std::move (expr));
+}
+
 void
 DeriveClone::visit_enum (Enum &item)
 {
-  rust_sorry_at (item.get_locus (), "cannot derive %qs for these items yet",
-		 "Clone");
+  // Create an arm for each variant of the enum
+  // For enum item variants, just create the same variant
+  // For struct and tuple variants, destructure the pattern and call clone for
+  // each field
+
+  auto cases = std::vector<MatchCase> ();
+
+  for (const auto &variant : item.get_variants ())
+    {
+      switch (variant->get_enum_item_kind ())
+	{
+	// Identifiers and discriminated variants are the same for a clone - we
+	// just return the same variant
+	case EnumItem::Kind::Identifier:
+	case EnumItem::Kind::Discriminant:
+	  cases.emplace_back (clone_enum_identifier (item, variant));
+	  break;
+	case EnumItem::Kind::Tuple:
+	case EnumItem::Kind::Struct:
+	  rust_unreachable ();
+	  break;
+	}
+    }
+
+  // match self { ... }
+  auto match = builder.match (builder.identifier ("self"), std::move (cases));
+
+  expanded = clone_impl (clone_fn (std::move (match)),
+			 item.get_identifier ().as_string (),
+			 item.get_generic_params ());
+
+  AST::Dump::debug (*expanded);
 }
 
 void

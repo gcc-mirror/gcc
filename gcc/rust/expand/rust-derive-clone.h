@@ -63,6 +63,9 @@ private:
   clone_impl (std::unique_ptr<AssociatedItem> &&clone_fn, std::string name,
 	      const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
+  MatchCase clone_enum_identifier (Enum &item,
+				   const std::unique_ptr<EnumItem> &variant);
+
   virtual void visit_struct (StructStruct &item);
   virtual void visit_tuple (TupleStruct &item);
   virtual void visit_enum (Enum &item);
