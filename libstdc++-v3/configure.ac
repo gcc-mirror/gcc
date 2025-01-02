@@ -539,7 +539,10 @@ AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa
 AC_CHECK_DECL(F_GETFL,,,[#include <fcntl.h>])
 AC_CHECK_DECL(F_SETFL,,,[#include <fcntl.h>])
 if test "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = yesyes ; then
-  AC_CHECK_DECL(O_NONBLOCK,,,[#include <fcntl.h>])
+  AC_CHECK_DECL(O_NONBLOCK,
+    AC_DEFINE(HAVE_O_NONBLOCK,1,[Define if O_NONBLOCK is defined in <fcntl.h>]),
+    [],
+    [#include <fcntl.h>])
 fi
 
 # For Transactional Memory TS

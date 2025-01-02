@@ -54,6 +54,7 @@
 #include <bits/basic_string.h>
 #include <bits/basic_string.tcc>
 
+#define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_constexpr_char_traits
 #define __glibcxx_want_constexpr_string
 #define __glibcxx_want_erase_if

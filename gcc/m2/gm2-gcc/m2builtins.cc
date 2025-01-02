@@ -138,7 +138,7 @@ struct builtin_function_entry
 /* Entries are added by examining gcc/builtins.def and copying those
    functions which can be applied to Modula-2.  */
 
-static struct builtin_function_entry list_of_builtins[] = {
+static struct GTY(()) builtin_function_entry list_of_builtins[] = {
   { "__builtin_alloca", BT_FN_PTR_SIZE, BUILT_IN_ALLOCA, BUILT_IN_NORMAL,
     "alloca", NULL, NULL, bf_extension_lib },
   { "__builtin_memcpy", BT_FN_TRAD_PTR_PTR_CONST_PTR_SIZE, BUILT_IN_MEMCPY,
@@ -396,6 +396,7 @@ struct builtin_type_info
 struct GTY(()) builtin_macro_definition
 {
   const char *name;
+  const char *builtinname;
   tree function_node;
   tree return_node;
 };
@@ -911,6 +912,26 @@ target_support_exists (struct builtin_function_entry *fe)
     }
 }
 
+/* Return true if name matches the builtin name.  */
+
+static
+bool builtin_function_match (struct builtin_function_entry *fe,
+			     const char *name)
+{
+  return (strcmp (name, fe->name) == 0)
+    || (strcmp (name, fe->library_name) == 0);
+}
+
+/* Return true if name matches the builtin macro name.  */
+
+static
+bool builtin_macro_match (builtin_macro_definition bmd,
+			  const char *name)
+{
+  return (strcmp (bmd.name, name) == 0)
+    || (strcmp (bmd.builtinname, name) == 0);
+}
+
 
 /* BuiltinExists - returns TRUE if the builtin function, name, exists
    for this target architecture.  */
@@ -921,12 +942,11 @@ m2builtins_BuiltinExists (char *name)
   struct builtin_function_entry *fe;
 
   for (fe = &list_of_builtins[0]; fe->name != NULL; fe++)
-    if (strcmp (name, fe->name) == 0)
+    if (builtin_function_match (fe, name))
       return true;
-      // return target_support_exists (fe);
   int length = vec_safe_length (builtin_macros);
   for (int idx = 0; idx < length; idx++)
-    if (strcmp ((*builtin_macros)[idx].name, name) == 0)
+    if (builtin_macro_match ((*builtin_macros)[idx], name))
       return true;
   return false;
 }
@@ -939,7 +959,7 @@ lookup_builtin_macro (location_t location, char *name)
 {
   int length = vec_safe_length (builtin_macros);
   for (int idx = 0; idx < length; idx++)
-    if (strcmp ((*builtin_macros)[idx].name, name) == 0)
+    if (builtin_macro_match ((*builtin_macros)[idx], name))
       {
         tree functype = TREE_TYPE ((*builtin_macros)[idx].function_node);
         tree funcptr = build1 (ADDR_EXPR, build_pointer_type (functype),
@@ -965,7 +985,7 @@ lookup_builtin_function (location_t location, char *name)
   struct builtin_function_entry *fe;
 
   for (fe = &list_of_builtins[0]; fe->name != NULL; fe++)
-    if ((strcmp (name, fe->name) == 0) && target_support_exists (fe))
+    if (builtin_function_match (fe, name) && target_support_exists (fe))
       {
         tree functype = TREE_TYPE (fe->function_node);
         tree funcptr = build1 (ADDR_EXPR, build_pointer_type (functype),
@@ -1007,10 +1027,11 @@ static tree
 DoBuiltinMemCopy (location_t location, tree dest, tree src, tree bytes)
 {
   tree functype = TREE_TYPE (gm2_memcpy_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_memcpy_node);
   tree call
-      = m2treelib_DoCall3 (location, ptr_type_node, funcptr, dest, src, bytes);
+      = m2treelib_DoCall3 (location, rettype, funcptr, dest, src, bytes);
   return call;
 }
 
@@ -1018,10 +1039,10 @@ static tree
 DoBuiltinAlloca (location_t location, tree bytes)
 {
   tree functype = TREE_TYPE (gm2_alloca_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_alloca_node);
-  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, bytes);
-
+  tree call = m2treelib_DoCall1 (location, rettype, funcptr, bytes);
   return call;
 }
 
@@ -1029,10 +1050,10 @@ static tree
 DoBuiltinIsfinite (location_t location, tree value)
 {
   tree functype = TREE_TYPE (gm2_isfinite_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isfinite_node);
-  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
-
+  tree call = m2treelib_DoCall1 (location, rettype, funcptr, value);
   return call;
 }
 
@@ -1040,10 +1061,10 @@ static tree
 DoBuiltinIsnan (location_t location, tree value)
 {
   tree functype = TREE_TYPE (gm2_isnan_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isnan_node);
-  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
-
+  tree call = m2treelib_DoCall1 (location, rettype, funcptr, value);
   return call;
 }
 
@@ -1051,9 +1072,10 @@ tree
 m2builtins_BuiltInHugeVal (location_t location)
 {
   tree functype = TREE_TYPE (gm2_huge_val_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_huge_val_node);
-  tree call = m2treelib_DoCall0 (location, ptr_type_node, funcptr);
+  tree call = m2treelib_DoCall0 (location, rettype, funcptr);
   return call;
 }
 
@@ -1061,9 +1083,10 @@ tree
 m2builtins_BuiltInHugeValShort (location_t location)
 {
   tree functype = TREE_TYPE (gm2_huge_valf_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_huge_valf_node);
-  tree call = m2treelib_DoCall0 (location, ptr_type_node, funcptr);
+  tree call = m2treelib_DoCall0 (location, rettype, funcptr);
   return call;
 }
 
@@ -1071,9 +1094,10 @@ tree
 m2builtins_BuiltInHugeValLong (location_t location)
 {
   tree functype = TREE_TYPE (gm2_huge_vall_node);
+  tree rettype = TREE_TYPE (functype);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_huge_vall_node);
-  tree call = m2treelib_DoCall0 (location, ptr_type_node, funcptr);
+  tree call = m2treelib_DoCall0 (location, rettype, funcptr);
   return call;
 }
 
@@ -1407,8 +1431,8 @@ define_builtin (enum built_in_function val, const char *name, tree prototype,
   tree decl;
   builtin_macro_definition bmd;
 
-  decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL, get_identifier (name),
-                     prototype);
+  decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+		     get_identifier (libname), prototype);
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (libname));
@@ -1418,6 +1442,7 @@ define_builtin (enum built_in_function val, const char *name, tree prototype,
   set_call_expr_flags (decl, flags);
   set_builtin_decl (val, decl, true);
   bmd.name = name;
+  bmd.builtinname = libname;
   bmd.function_node = decl;
   bmd.return_node = TREE_TYPE (prototype);
   vec_safe_push (builtin_macros, bmd);

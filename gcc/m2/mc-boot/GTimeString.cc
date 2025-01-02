@@ -38,9 +38,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _TimeString_H
 #define _TimeString_C
 
+#include "GTimeString.h"
 #   include "Gwrapc.h"
 #   include "GASCII.h"
 #   include "GSYSTEM.h"
@@ -72,21 +72,21 @@ extern "C" void TimeString_GetTimeString (char *a, unsigned int _a_high)
     {
       while ((i < _a_high) && ((*Addr) != ASCII_nul))
         {
-          a[i] = (*Addr);
+          const_cast<char *>(a)[i] = (*Addr);
           i += 1;
           Addr += 1;
         }
     }
   if (i < _a_high)
     {
-      a[i] = ASCII_nul;
+      const_cast<char *>(a)[i] = ASCII_nul;
     }
 }
 
-extern "C" void _M2_TimeString_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_TimeString_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_TimeString_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_TimeString_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

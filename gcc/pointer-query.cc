@@ -2587,6 +2587,17 @@ array_elt_at_offset (tree artype, HOST_WIDE_INT off,
 tree
 build_printable_array_type (tree eltype, unsigned HOST_WIDE_INT nelts)
 {
+  /* Cannot build an array type of functions or methods without
+     an error diagnostic.  */
+  if (FUNC_OR_METHOD_TYPE_P (eltype))
+    {
+      tree arrtype = make_node (ARRAY_TYPE);
+      TREE_TYPE (arrtype) = eltype;
+      TYPE_SIZE (arrtype) = bitsize_zero_node;
+      TYPE_SIZE_UNIT (arrtype) = size_zero_node;
+      return arrtype;
+    }
+
   if (TYPE_SIZE_UNIT (eltype)
       && TREE_CODE (TYPE_SIZE_UNIT (eltype)) == INTEGER_CST
       && !integer_zerop (TYPE_SIZE_UNIT (eltype))

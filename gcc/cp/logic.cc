@@ -350,7 +350,7 @@ atomic_p (tree t)
    distributing. In general, a conjunction for which this flag is set
    is considered a disjunction for the purpose of counting.  */
 
-static std::pair<int, bool>
+static std::pair<HOST_WIDE_INT, bool>
 dnf_size_r (tree t)
 {
   if (atomic_p (t))
@@ -361,9 +361,9 @@ dnf_size_r (tree t)
      the results.  */
   tree lhs = TREE_OPERAND (t, 0);
   tree rhs = TREE_OPERAND (t, 1);
-  std::pair<int, bool> p1 = dnf_size_r (lhs);
-  std::pair<int, bool> p2 = dnf_size_r (rhs);
-  int n1 = p1.first, n2 = p2.first;
+  auto p1 = dnf_size_r (lhs);
+  auto p2 = dnf_size_r (rhs);
+  HOST_WIDE_INT n1 = p1.first, n2 = p2.first;
   bool d1 = p1.second, d2 = p2.second;
 
   if (disjunction_p (t))
@@ -377,22 +377,24 @@ dnf_size_r (tree t)
 	{
 	  if (disjunction_p (rhs) || (conjunction_p (rhs) && d2))
 	    /* Both P and Q are disjunctions.  */
-	    return std::make_pair (n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (n1, n2), d1 | d2);
 	  else
 	    /* Only LHS is a disjunction.  */
-	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (1, add_sat_hwi (n1, n2)),
+				   d1 | d2);
 	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{
 	  if ((disjunction_p (rhs) && d1) || (conjunction_p (rhs) && d1 && d2))
 	    /* Both P and Q are disjunctions.  */
-	    return std::make_pair (n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (n1, n2), d1 | d2);
 	  if (disjunction_p (rhs)
 	      || (conjunction_p (rhs) && d1 != d2)
 	      || (atomic_p (rhs) && d1))
 	    /* Either LHS or RHS is a disjunction.  */
-	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (1, add_sat_hwi (n1, n2)),
+				   d1 | d2);
 	  else
 	    /* Neither LHS nor RHS is a disjunction.  */
 	    return std::make_pair (2, false);
@@ -401,7 +403,8 @@ dnf_size_r (tree t)
 	{
 	  if (disjunction_p (rhs) || (conjunction_p (rhs) && d2))
 	    /* Only RHS is a disjunction.  */
-	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (1, add_sat_hwi (n1, n2)),
+				   d1 | d2);
 	  else
 	    /* Neither LHS nor RHS is a disjunction.  */
 	    return std::make_pair (2, false);
@@ -419,22 +422,22 @@ dnf_size_r (tree t)
 	{
 	  if (disjunction_p (rhs) || (conjunction_p (rhs) && d2))
 	    /* Both P and Q are disjunctions.  */
-	    return std::make_pair (n1 * n2, true);
+	    return std::make_pair (mul_sat_hwi (n1, n2), true);
 	  else
 	    /* Only LHS is a disjunction.  */
-	    return std::make_pair (n1 + n2, true);
+	    return std::make_pair (add_sat_hwi (n1, n2), true);
 	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{
 	  if ((disjunction_p (rhs) && d1) || (conjunction_p (rhs) && d1 && d2))
 	    /* Both P and Q are disjunctions.  */
-	    return std::make_pair (n1 * n2, true);
+	    return std::make_pair (mul_sat_hwi (n1, n2), true);
 	  if (disjunction_p (rhs)
 	      || (conjunction_p (rhs) && d1 != d2)
 	      || (atomic_p (rhs) && d1))
 	    /* Either LHS or RHS is a disjunction.  */
-	    return std::make_pair (n1 + n2, true);
+	    return std::make_pair (add_sat_hwi (n1, n2), true);
 	  else
 	    /* Neither LHS nor RHS is a disjunction.  */
 	    return std::make_pair (0, false);
@@ -458,7 +461,7 @@ dnf_size_r (tree t)
    distributing. In general, a disjunction for which this flag is set
    is considered a conjunction for the purpose of counting.  */
 
-static std::pair<int, bool>
+static std::pair<HOST_WIDE_INT, bool>
 cnf_size_r (tree t)
 {
   if (atomic_p (t))
@@ -469,9 +472,9 @@ cnf_size_r (tree t)
      the results.  */
   tree lhs = TREE_OPERAND (t, 0);
   tree rhs = TREE_OPERAND (t, 1);
-  std::pair<int, bool> p1 = cnf_size_r (lhs);
-  std::pair<int, bool> p2 = cnf_size_r (rhs);
-  int n1 = p1.first, n2 = p2.first;
+  auto p1 = cnf_size_r (lhs);
+  auto p2 = cnf_size_r (rhs);
+  HOST_WIDE_INT n1 = p1.first, n2 = p2.first;
   bool d1 = p1.second, d2 = p2.second;
 
   if (disjunction_p (t))
@@ -486,12 +489,12 @@ cnf_size_r (tree t)
 	{
 	  if ((disjunction_p (rhs) && d1 && d2) || (conjunction_p (rhs) && d1))
 	    /* Both P and Q are conjunctions.  */
-	    return std::make_pair (n1 * n2, true);
+	    return std::make_pair (mul_sat_hwi (n1, n2), true);
 	  if ((disjunction_p (rhs) && d1 != d2)
 	      || conjunction_p (rhs)
 	      || (atomic_p (rhs) && d1))
 	    /* Either LHS or RHS is a conjunction.  */
-	    return std::make_pair (n1 + n2, true);
+	    return std::make_pair (add_sat_hwi (n1, n2), true);
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (0, false);
@@ -500,16 +503,16 @@ cnf_size_r (tree t)
 	{
 	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
 	    /* Both LHS and RHS are conjunctions.  */
-	    return std::make_pair (n1 * n2, true);
+	    return std::make_pair (mul_sat_hwi (n1, n2), true);
 	  else
 	    /* Only LHS is a conjunction.  */
-	    return std::make_pair (n1 + n2, true);
+	    return std::make_pair (add_sat_hwi (n1, n2), true);
 	}
       if (atomic_p (lhs))
 	{
 	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
 	    /* Only RHS is a disjunction.  */
-	    return std::make_pair (n1 + n2, true);
+	    return std::make_pair (add_sat_hwi (n1, n2), true);
 	  else
 	    /* Neither LHS nor RHS is a disjunction.  */
 	    return std::make_pair (0, false);
@@ -526,12 +529,13 @@ cnf_size_r (tree t)
 	{
 	  if ((disjunction_p (rhs) && d1 && d2) || (conjunction_p (rhs) && d1))
 	    /* Both P and Q are conjunctions.  */
-	    return std::make_pair (n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (n1, n2), d1 | d2);
 	  if ((disjunction_p (rhs) && d1 != d2)
 	      || conjunction_p (rhs)
 	      || (atomic_p (rhs) && d1))
 	    /* Either LHS or RHS is a conjunction.  */
-	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (1, add_sat_hwi (n1, n2)),
+				   d1 | d2);
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (2, false);
@@ -540,16 +544,18 @@ cnf_size_r (tree t)
 	{
 	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
 	    /* Both LHS and RHS are conjunctions.  */
-	    return std::make_pair (n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (n1, n2), d1 | d2);
 	  else
 	    /* Only LHS is a conjunction.  */
-	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (1, add_sat_hwi (n1, n2)),
+				   d1 | d2);
 	}
       if (atomic_p (lhs))
 	{
 	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
 	    /* Only RHS is a disjunction.  */
-	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	    return std::make_pair (add_sat_hwi (1, add_sat_hwi (n1, n2)),
+				   d1 | d2);
 	  else
 	    /* Neither LHS nor RHS is a disjunction.  */
 	    return std::make_pair (2, false);
@@ -561,10 +567,10 @@ cnf_size_r (tree t)
 /* Count the number conjunctive clauses that would be created
    when rewriting T to DNF. */
 
-static int
+static HOST_WIDE_INT
 dnf_size (tree t)
 {
-  std::pair<int, bool> result = dnf_size_r (t);
+  auto result = dnf_size_r (t);
   return result.first == 0 ? 1 : result.first;
 }
 
@@ -572,10 +578,10 @@ dnf_size (tree t)
 /* Count the number disjunctive clauses that would be created
    when rewriting T to CNF. */
 
-static int
+static HOST_WIDE_INT
 cnf_size (tree t)
 {
-  std::pair<int, bool> result = cnf_size_r (t);
+  auto result = cnf_size_r (t);
   return result.first == 0 ? 1 : result.first;
 }
 

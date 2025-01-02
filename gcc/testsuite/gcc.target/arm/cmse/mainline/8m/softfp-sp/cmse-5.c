@@ -2,38 +2,66 @@
 /* { dg-options "-mcmse -mfloat-abi=softfp -mfpu=fpv5-sp-d16" }  */
 /* { dg-skip-if "Incompatible float ABI" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=softfp" } } */
 /* { dg-skip-if "Skip these if testing double precision" {*-*-*} {"-mfpu=fpv[4-5]-d16"} {""} } */
+/* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include "../../../cmse-5.x"
 
-/* { dg-final { scan-assembler "__acle_se_foo:" } } */
+/*
+** __acle_se_foo:
+** ...
+** (
+**	mov	r1, lr
+**	mov	r2, lr
+**	mov	r3, lr
+** ...
+**	vmov.f32	s0, #1\.0e\+0
+**	vmov.f32	s1, #1\.0e\+0
+**	vmov.f32	s2, #1\.0e\+0
+**	vmov.f32	s3, #1\.0e\+0
+**	vmov.f32	s4, #1\.0e\+0
+**	vmov.f32	s5, #1\.0e\+0
+**	vmov.f32	s6, #1\.0e\+0
+**	vmov.f32	s7, #1\.0e\+0
+**	vmov.f32	s8, #1\.0e\+0
+**	vmov.f32	s9, #1\.0e\+0
+**	vmov.f32	s10, #1\.0e\+0
+**	vmov.f32	s11, #1\.0e\+0
+**	vmov.f32	s12, #1\.0e\+0
+**	vmov.f32	s13, #1\.0e\+0
+**	vmov.f32	s14, #1\.0e\+0
+**	vmov.f32	s15, #1\.0e\+0
+** |
+**	vmov.f32	s0, #1\.0e\+0
+**	vmov.f32	s1, #1\.0e\+0
+**	vmov.f32	s2, #1\.0e\+0
+**	vmov.f32	s3, #1\.0e\+0
+**	vmov.f32	s4, #1\.0e\+0
+**	vmov.f32	s5, #1\.0e\+0
+**	vmov.f32	s6, #1\.0e\+0
+**	vmov.f32	s7, #1\.0e\+0
+**	vmov.f32	s8, #1\.0e\+0
+**	vmov.f32	s9, #1\.0e\+0
+**	vmov.f32	s10, #1\.0e\+0
+**	vmov.f32	s11, #1\.0e\+0
+**	vmov.f32	s12, #1\.0e\+0
+**	vmov.f32	s13, #1\.0e\+0
+**	vmov.f32	s14, #1\.0e\+0
+**	vmov.f32	s15, #1\.0e\+0
+** ...
+**	mov	r1, lr
+**	mov	r2, lr
+**	mov	r3, lr
+** )
+**	msr	APSR_nzcvqg?, lr
+**	push	(\{r4\})
+**	vmrs	ip, fpscr
+**	movw	r4, #65376
+**	movt	r4, #4095
+**	and	ip, r4
+**	vmsr	fpscr, ip
+**	pop	\1
+**	mov	ip, lr
+**	bxns	lr
+*/
+
 /* { dg-final { scan-assembler-not "mov\tr0, lr" } } */
-/* { dg-final { scan-assembler "mov\tr1, lr" } } */
-/* { dg-final { scan-assembler "mov\tr2, lr" } } */
-/* { dg-final { scan-assembler "mov\tr3, lr" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts0, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts1, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts2, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts3, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts4, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts5, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts6, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts7, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts8, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts9, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts10, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts11, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts12, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts13, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts14, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts15, #1\.0" } } */
-/* { dg-final { scan-assembler "msr\tAPSR_nzcvq, lr" { target { ! arm_dsp } } } } */
-/* { dg-final { scan-assembler "msr\tAPSR_nzcvqg, lr" { target arm_dsp } } } */
-/* { dg-final { scan-assembler "push\t{r4}" } } */
-/* { dg-final { scan-assembler "vmrs\tip, fpscr" } } */
-/* { dg-final { scan-assembler "movw\tr4, #65376" } } */
-/* { dg-final { scan-assembler "movt\tr4, #4095" } } */
-/* { dg-final { scan-assembler "and\tip, r4" } } */
-/* { dg-final { scan-assembler "vmsr\tfpscr, ip" } } */
-/* { dg-final { scan-assembler "pop\t{r4}" } } */
-/* { dg-final { scan-assembler "mov\tip, lr" } } */
-/* { dg-final { scan-assembler "bxns" } } */

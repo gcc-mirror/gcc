@@ -302,6 +302,9 @@
 /* Define if openat is available in <fcntl.h>. */
 #undef HAVE_OPENAT
 
+/* Define if O_NONBLOCK is defined in <fcntl.h> */
+#undef HAVE_O_NONBLOCK
+
 /* Define if poll is available in <poll.h>. */
 #undef HAVE_POLL
 

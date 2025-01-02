@@ -2008,11 +2008,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
       }
 
     case LAMBDA_EXPR:
+    case STMT_EXPR:
       return t;
-
-    case STATEMENT_LIST:
-      error ("statement-expression in a constant expression");
-      return error_mark_node;
 
     default:
       break;
@@ -3023,15 +3020,7 @@ no_linkage_check (tree t, bool relaxed_p)
       /* Only treat unnamed types as having no linkage if they're at
 	 namespace scope.  This is core issue 966.  */
       if (TYPE_UNNAMED_P (t) && TYPE_NAMESPACE_SCOPE_P (t))
-	{
-	  if (relaxed_p
-	      && TREE_PUBLIC (CP_TYPE_CONTEXT (t))
-	      && module_maybe_has_cmi_p ())
-	    /* This type could possibly be accessed outside this TU.  */
-	    return NULL_TREE;
-	  else
-	    return t;
-	}
+	return t;
 
       for (r = CP_TYPE_CONTEXT (t); ; )
 	{

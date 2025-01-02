@@ -48,7 +48,6 @@ FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
 FROM M2FileName IMPORT CalculateFileName ;
 FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, InitStringChar, Mark ;
-FROM FormatStrings IMPORT Sprintf1 ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo, BuiltinTokenNo ;
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3 ;
 FROM M2Error IMPORT FlushErrors, InternalError ;
@@ -71,15 +70,19 @@ FROM Sets IMPORT Set, InitSet, KillSet,
                  NoOfElementsInSet, IsElementInSet, ForeachElementInSetDo,
                  DuplicateSet, EqualSet ;
 
+FROM M2BasicBlock IMPORT BasicBlock, InitBasicBlocks, KillBasicBlocks, ForeachBasicBlockDo ;
+
 FROM SymbolTable IMPORT NulSym,
-                        ModeOfAddr,
+                        ModeOfAddr, ProcedureKind,
+                        GetProcedureKindDesc,
+                        GetProcedureParametersDefined,
                         GetMode,
                         GetScope,
                         GetNth, SkipType, GetVarBackEndType,
 			GetSType, GetLType, GetDType,
                         MakeType, PutType, GetLowestType,
       	       	     	GetSubrange, PutSubrange, GetArraySubscript,
-      	       	     	NoOfParam, GetNthParam,
+      	       	     	NoOfParamAny, GetNthParamAny,
                         PushValue, PopValue, PopSize,
                         IsTemporary, IsUnbounded, IsPartialUnbounded,
                         IsEnumeration, IsVar,
@@ -92,7 +95,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsConst, IsConstSet, IsConstructor,
                         IsFieldEnumeration,
                         IsExported, IsImported,
-                        IsVarParam, IsRecordField, IsUnboundedParam,
+                        IsVarParamAny, IsRecordField, IsUnboundedParam,
                         IsValueSolved,
                         IsDefinitionForC, IsHiddenTypeDeclared,
                         IsInnerModule, IsUnknown,
@@ -102,15 +105,17 @@ FROM SymbolTable IMPORT NulSym,
                         IsError, IsHiddenType, IsVarHeap,
                         IsComponent, IsPublic, IsExtern, IsCtor,
                         IsImport, IsImportStatement, IsConstStringKnown,
+                        IsUnboundedParamAny,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
                         GetProcedureScope, GetProcedureQuads,
+                        NoOfParam, IsVarParam, GetNthParam, GetType,
                         IsRecordFieldAVarientTag, IsEmptyFieldVarient,
                         GetVarient, GetUnbounded, PutArrayLarge,
                         IsAModula2Type, UsesVarArgs,
                         GetSymName, GetParent,
                         GetDeclaredMod, GetVarBackEndType,
-                        GetProcedureBeginEnd, IsProcedureNoReturn,
+                        GetProcedureBeginEnd, IsProcedureAnyNoReturn,
                         GetString, GetStringLength, IsConstString,
                         IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
                         GetAlignment, IsDeclaredPacked, PutDeclaredPacked,
@@ -118,7 +123,7 @@ FROM SymbolTable IMPORT NulSym,
                         GetPackedEquivalent,
                         GetParameterShadowVar,
                         GetUnboundedRecordType,
-                        GetModuleCtors,
+                        GetModuleCtors, GetProcedureProcType,
                         MakeSubrange, MakeConstVar, MakeConstLit,
                         PutConst,
 			ForeachOAFamily, GetOAFamily,
@@ -158,8 +163,8 @@ FROM M2ALU IMPORT Addn, Sub, Equ, GreEqu, Gre, Less, PushInt, PushCard, ConvertT
                   ChangeToConstructor, EvaluateValue, TryEvaluateValue ;
 
 FROM M2Batch IMPORT IsSourceSeen, GetModuleFile, IsModuleSeen, LookupModule ;
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t, BuiltinsLocation ;
+FROM gcctypes IMPORT location_t, tree ;
+FROM m2linemap IMPORT BuiltinsLocation ;
 
 FROM m2decl IMPORT BuildIntegerConstant, BuildStringConstant, BuildCStringConstant,
                    BuildStartFunctionDeclaration,
@@ -203,7 +208,7 @@ FROM m2block IMPORT RememberType, pushGlobalScope, popGlobalScope,
 
 
 TYPE
-   StartProcedure = PROCEDURE (location_t, ADDRESS) : Tree ;
+   StartProcedure = PROCEDURE (location_t, ADDRESS) : tree ;
    ListType       = (fullydeclared, partiallydeclared, niltypedarrays,
                      heldbyalignment, finishedalignment, todolist,
                      tobesolvedbyquads, finishedsetarray) ;
@@ -252,6 +257,7 @@ VAR
    WatchList           : Set ;      (* Set of symbols being watched.  *)
    EnumerationIndex    : Index ;
    action              : IsAction ;
+   ConstantResolved,
    enumDeps            : BOOLEAN ;
 
 
@@ -645,11 +651,11 @@ END LookupSet ;
    GetEnumList -
 *)
 
-PROCEDURE GetEnumList (sym: CARDINAL) : Tree ;
+PROCEDURE GetEnumList (sym: CARDINAL) : tree ;
 BEGIN
    IF InBounds(EnumerationIndex, sym)
    THEN
-      RETURN( GetIndice(EnumerationIndex, sym) )
+      RETURN( tree (GetIndice(EnumerationIndex, sym)) )
    ELSE
       RETURN( NIL )
    END
@@ -660,7 +666,7 @@ END GetEnumList ;
    PutEnumList -
 *)
 
-PROCEDURE PutEnumList (sym: CARDINAL; enumlist: Tree) ;
+PROCEDURE PutEnumList (sym: CARDINAL; enumlist: tree) ;
 BEGIN
    PutIndice(EnumerationIndex, sym, enumlist)
 END PutEnumList ;
@@ -705,7 +711,7 @@ END Chained ;
                         recursive types.
 *)
 
-PROCEDURE DoStartDeclaration (sym: CARDINAL; p: StartProcedure) : Tree ;
+PROCEDURE DoStartDeclaration (sym: CARDINAL; p: StartProcedure) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -1243,7 +1249,7 @@ END PutToBeSolvedByQuads ;
 
 PROCEDURE DeclareTypeConstFully (sym: CARDINAL) ;
 VAR
-   t: Tree ;
+   t: tree ;
 BEGIN
    IF NOT IsElementInSet(GlobalGroup^.ToBeSolvedByQuads, sym)
    THEN
@@ -1282,7 +1288,7 @@ END DeclareTypeConstFully ;
 
 PROCEDURE DeclareTypeFromPartial (sym: CARDINAL) ;
 VAR
-   t: Tree ;
+   t: tree ;
 BEGIN
    t := CompleteDeclarationOf(sym) ;
    IF t=NIL
@@ -1294,30 +1300,6 @@ BEGIN
       WatchRemoveList(sym, partiallydeclared)
    END
 END DeclareTypeFromPartial ;
-
-
-(*
-   DeclarePointerTypeFully - if, sym, is a pointer type then
-                             declare it.
-*)
-
-(*
-PROCEDURE DeclarePointerTypeFully (sym: CARDINAL) ;
-BEGIN
-   IF IsPointer(sym)
-   THEN
-      WatchIncludeList(sym, fullydeclared) ;
-      WatchRemoveList(sym, partiallydeclared) ;
-      WatchRemoveList(sym, todolist) ;
-      PreAddModGcc(sym, DeclarePointer(sym))
-   ELSE
-      (* place sym and all dependants on the todolist
-         providing they are not already on the FullyDeclared list
-      *)
-      TraverseDependants(sym)
-   END
-END DeclarePointerTypeFully ;
-*)
 
 
 (*
@@ -1476,22 +1458,6 @@ BEGIN
                             DeclareTypePartially)
       THEN
          (* continue looping *)
-(*
-      ELSIF ForeachTryDeclare (todolist,
-                               setarraynul,
-                               CanCreateSetArray,
-                               CreateSetArray)
-      THEN
-         (* Populates the finishedsetarray list with each set seen.  *)
-         (* Continue looping.  *)
-      ELSIF ForeachTryDeclare (finishedsetarray,
-                               setfully,
-                               CanCreateSet,
-                               CreateSet)
-      THEN
-         (* Populates the fullydeclared list with each set.  *)
-         (* Continue looping.  *)
-*)
       ELSIF ForeachTryDeclare (todolist,
                                arraynil,
                                CanDeclareArrayAsNil,
@@ -1587,7 +1553,7 @@ END DeclaredOutstandingTypes ;
                            dependents.
 *)
 
-PROCEDURE CompleteDeclarationOf (sym: CARDINAL) : Tree ;
+PROCEDURE CompleteDeclarationOf (sym: CARDINAL) : tree ;
 BEGIN
    IF IsArray(sym)
    THEN
@@ -1612,9 +1578,9 @@ END CompleteDeclarationOf ;
                  we must tell GCC about it.
 *)
 
-PROCEDURE DeclareType (sym: CARDINAL) : Tree ;
+PROCEDURE DeclareType (sym: CARDINAL) : tree ;
 VAR
-   t       : Tree ;
+   t       : tree ;
    location: location_t ;
 BEGIN
    IF GetSType(sym)=NulSym
@@ -1624,7 +1590,7 @@ BEGIN
    ELSE
       IF GetSymName(sym)=NulName
       THEN
-         RETURN( Tree(Mod2Gcc(GetSType(sym))) )
+         RETURN( tree(Mod2Gcc(GetSType(sym))) )
       ELSE
          location := TokenToLocation(GetDeclaredMod(sym)) ;
          IF GccKnowsAbout(sym)
@@ -1660,7 +1626,7 @@ END DeclareIntegerConstant ;
    DeclareIntegerFromTree - declares an integer constant from a Tree, value.
 *)
 
-PROCEDURE DeclareConstantFromTree (sym: CARDINAL; value: Tree) ;
+PROCEDURE DeclareConstantFromTree (sym: CARDINAL; value: tree) ;
 BEGIN
    PreAddModGcc(sym, value) ;
    WatchRemoveList(sym, todolist) ;
@@ -1690,7 +1656,7 @@ END DeclareCharConstant ;
 
 PROCEDURE DeclareStringConstant (tokenno: CARDINAL; sym: CARDINAL) ;
 VAR
-   symtree : Tree ;
+   symtree : tree ;
 BEGIN
    Assert (IsConstStringKnown (sym)) ;
    IF IsConstStringM2nul (sym) OR IsConstStringCnul (sym)
@@ -1718,7 +1684,7 @@ END DeclareStringConstant ;
                           return a string constant.
 *)
 
-PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : tree ;
 VAR
    size: CARDINAL ;
    ch  : CHAR ;
@@ -1735,7 +1701,7 @@ BEGIN
       IF size > 1
       THEN
          (* It will be already be declared as a string, so return it.  *)
-         RETURN Tree (Mod2Gcc (sym))
+         RETURN tree (Mod2Gcc (sym))
       ELSE
          RETURN BuildStringConstant (KeyToCharStar (GetString (sym)),
                                      GetStringLength (tokenno, sym))
@@ -1752,7 +1718,7 @@ END PromoteToString ;
                           return a string constant.
 *)
 
-PROCEDURE PromoteToCString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE PromoteToCString (tokenno: CARDINAL; sym: CARDINAL) : tree ;
 VAR
    size: CARDINAL ;
    ch  : CHAR ;
@@ -1902,25 +1868,15 @@ BEGIN
       IF (type#NulSym) AND (NOT CompletelyResolved(type))
       THEN
          TraverseDependants(sym) ;
-(*
-         WatchIncludeList(sym, todolist) ;
-         WatchIncludeList(type, todolist) ;
-*)
          RETURN
       END ;
       IF IsConstructor(sym) AND (NOT IsConstructorConstant(sym))
       THEN
          TraverseDependants(sym) ;
-(*
-         WatchIncludeList(sym, todolist) ;
-*)
          RETURN
       END ;
       IF (IsConstructor(sym) OR IsConstSet(sym)) AND (type=NulSym)
       THEN
-(*
-         WatchIncludeList(sym, todolist) ;
-*)
          TraverseDependants(sym) ;
          RETURN
       END ;
@@ -1936,10 +1892,7 @@ BEGIN
          THEN
             RETURN
          END ;
-         TraverseDependants(sym) ;
-(*
-         WatchIncludeList(sym, todolist)
-*)
+         TraverseDependants(sym)
       ELSE
          TryDeclareConst(tokenno, sym)
       END
@@ -1955,7 +1908,7 @@ END TryDeclareConstant ;
 PROCEDURE DeclareConstant (tokenno: CARDINAL; sym: CARDINAL) ;
 VAR
    type: CARDINAL ;
-   t   : Tree ;
+   t   : tree ;
 BEGIN
    IF IsConst(sym)
    THEN
@@ -1981,7 +1934,7 @@ BEGIN
    IF IsConstStringKnown (sym)
    THEN
       size := GetStringLength (tokenno, sym) ;
-      IF size=1
+      IF size = 1
       THEN
          DeclareCharConstant (tokenno, sym)
       ELSE
@@ -2011,9 +1964,6 @@ BEGIN
          TryEvaluateValue(sym) ;
          IF NOT IsConstructorDependants(sym, IsFullyDeclared)
          THEN
-(*
-            WatchIncludeList(sym, todolist) ;
-*)
             TraverseDependants(sym) ;
             RETURN
          END ;
@@ -2064,7 +2014,7 @@ END TryDeclareConst ;
    DeclareConst - declares a const to gcc and returns a Tree.
 *)
 
-PROCEDURE DeclareConst (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE DeclareConst (tokenno: CARDINAL; sym: CARDINAL) : tree ;
 VAR
    type: CARDINAL ;
 BEGIN
@@ -2159,38 +2109,6 @@ BEGIN
    ForeachOAFamily (oaf, WalkFamilyOfUnbounded) ;
    unboundedp := o
 END WalkAssociatedUnbounded ;
-
-
-(*
-   WalkProcedureParameterDependants -
-*)
-
-(*
-PROCEDURE WalkProcedureParameterDependants (sym: CARDINAL; p: WalkAction) ;
-VAR
-   son,
-   type,
-   n, i: CARDINAL ;
-BEGIN
-   IF IsProcedure(sym)
-   THEN
-      n := NoOfParam(sym) ;
-      i := n ;
-      WHILE i>0 DO
-         IF IsUnboundedParam(sym, i)
-         THEN
-            son := GetNthParam(sym, i)
-         ELSE
-            son := GetNth(sym, i) ;
-         END ;
-         type := GetSType(son) ;
-         p(type) ;
-         WalkDependants(type, p) ;
-         DEC(i)
-      END
-   END
-END WalkProcedureParameterDependants ;
-*)
 
 
 (*
@@ -2327,12 +2245,12 @@ VAR
 BEGIN
    IF IsProcedure(sym)
    THEN
-      p := NoOfParam(sym) ;
+      p := NoOfParamAny (sym) ;
       i := p ;
       WHILE i>0 DO
-         IF IsUnboundedParam(sym, i)
+         IF IsUnboundedParamAny (sym, i)
          THEN
-            param := GetNthParam(sym, i) ;
+            param := GetNthParamAny (sym, i) ;
             type := GetSType(param) ;
             TraverseDependants(type) ;
             IF GccKnowsAbout(type)
@@ -2363,12 +2281,12 @@ VAR
 BEGIN
    IF IsProcedure (sym)
    THEN
-      p := NoOfParam (sym) ;
+      p := NoOfParamAny (sym) ;
       i := p ;
       WHILE i>0 DO
-         IF IsUnboundedParam (sym, i)
+         IF IsUnboundedParamAny (sym, i)
          THEN
-            param := GetNthParam (sym, i)
+            param := GetNthParamAny (sym, i)
          ELSE
             param := GetNth (sym, i)
          END ;
@@ -2542,9 +2460,9 @@ END IsExternalToWholeProgram ;
 PROCEDURE DeclareProcedureToGccWholeProgram (Sym: CARDINAL) ;
 VAR
    returnType,
-   GccParam  : Tree ;
+   GccParam  : tree ;
    scope,
-   Son,
+   Variable,
    p, i      : CARDINAL ;
    b, e      : CARDINAL ;
    begin, end,
@@ -2553,30 +2471,30 @@ BEGIN
    IF (NOT GccKnowsAbout(Sym)) AND (NOT IsPseudoProcFunc(Sym))
    THEN
       BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
-      p := NoOfParam(Sym) ;
+      p := NoOfParamAny (Sym) ;
       i := p ;
       WHILE i>0 DO
-         (* note we dont use GetNthParam as we want the parameter that is seen by the procedure block
+         (* note we dont use GetNthParamAny as we want the parameter that is seen by the procedure block
             remember that this is treated exactly the same as a variable, just its position on
             the activation record is special (ie a parameter)
          *)
-         Son := GetNth(Sym, i) ;
-         location := TokenToLocation(GetDeclaredMod(Son)) ;
-         IF IsUnboundedParam(Sym, i)
+         Variable := GetNth(Sym, i) ;
+         location := TokenToLocation(GetDeclaredMod(Variable)) ;
+         IF IsUnboundedParamAny (Sym, i)
          THEN
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
                                                   FALSE)
          ELSE
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
-                                                  IsVarParam(Sym, i))
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
+                                                  IsVarParamAny (Sym, i))
          END ;
-         PreAddModGcc(Son, GccParam) ;
-         WatchRemoveList(Son, todolist) ;
-         WatchIncludeList(Son, fullydeclared) ;
+         PreAddModGcc(Variable, GccParam) ;
+         WatchRemoveList(Variable, todolist) ;
+         WatchIncludeList(Variable, fullydeclared) ;
          DEC(i)
       END ;
       GetProcedureBeginEnd(Sym, b, e) ;
@@ -2596,7 +2514,7 @@ BEGIN
                                                     IsExternalToWholeProgram(Sym),
                                                     IsProcedureGccNested(Sym),
                                                     IsExported(GetModuleWhereDeclared(Sym), Sym),
-                                                    IsProcedureNoReturn(Sym))) ;
+                                                    IsProcedureAnyNoReturn(Sym))) ;
       PopBinding(scope) ;
       WatchRemoveList(Sym, todolist) ;
       WatchIncludeList(Sym, fullydeclared)
@@ -2611,9 +2529,9 @@ END DeclareProcedureToGccWholeProgram ;
 PROCEDURE DeclareProcedureToGccSeparateProgram (Sym: CARDINAL) ;
 VAR
    returnType,
-   GccParam  : Tree ;
+   GccParam  : tree ;
    scope,
-   Son,
+   Variable,
    p, i      : CARDINAL ;
    b, e      : CARDINAL ;
    begin, end,
@@ -2630,30 +2548,30 @@ BEGIN
        IsExtern (Sym))
    THEN
       BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
-      p := NoOfParam(Sym) ;
+      p := NoOfParamAny (Sym) ;
       i := p ;
       WHILE i>0 DO
-         (* Note we dont use GetNthParam as we want the parameter that is seen by
+         (* Note we dont use GetNthParamAny as we want the parameter that is seen by
             the procedure block remember that this is treated exactly the same as
             a variable, just its position on the activation record is special (ie
             a parameter).  *)
-         Son := GetNth(Sym, i) ;
-         location := TokenToLocation(GetDeclaredMod(Son)) ;
-         IF IsUnboundedParam(Sym, i)
+         Variable := GetNth(Sym, i) ;
+         location := TokenToLocation(GetDeclaredMod(Variable)) ;
+         IF IsUnboundedParamAny (Sym, i)
          THEN
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
                                                   FALSE)
          ELSE
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
-                                                  IsVarParam(Sym, i))
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
+                                                  IsVarParamAny (Sym, i))
          END ;
-         PreAddModGcc(Son, GccParam) ;
-         WatchRemoveList(Son, todolist) ;
-         WatchIncludeList(Son, fullydeclared) ;
+         PreAddModGcc(Variable, GccParam) ;
+         WatchRemoveList(Variable, todolist) ;
+         WatchIncludeList(Variable, fullydeclared) ;
          DEC(i)
       END ;
       GetProcedureBeginEnd(Sym, b, e) ;
@@ -2674,7 +2592,7 @@ BEGIN
                                                       IsProcedureGccNested (Sym),
                                                       (* Exported from the module where it was declared.  *)
                                                       IsExported (GetModuleWhereDeclared (Sym), Sym) OR IsExtern (Sym),
-                                                      IsProcedureNoReturn(Sym))) ;
+                                                      IsProcedureAnyNoReturn(Sym))) ;
       PopBinding(scope) ;
       WatchRemoveList(Sym, todolist) ;
       WatchIncludeList(Sym, fullydeclared)
@@ -2723,10 +2641,11 @@ END DeclareProcedure ;
    FoldConstants - a wrapper for ResolveConstantExpressions.
 *)
 
-PROCEDURE FoldConstants (start, end: CARDINAL) ;
+PROCEDURE FoldConstants (bb: BasicBlock) ;
 BEGIN
-   IF ResolveConstantExpressions(DeclareConstFully, start, end)
+   IF ResolveConstantExpressions (DeclareConstFully, bb)
    THEN
+      ConstantResolved := TRUE
    END
 END FoldConstants ;
 
@@ -2778,6 +2697,8 @@ CONST
 VAR
    copy: Group ;
    loop: CARDINAL ;
+   sb  : ScopeBlock ;
+   bb  : BasicBlock ;
 BEGIN
    IF TraceQuadruples
    THEN
@@ -2785,11 +2706,18 @@ BEGIN
    END ;
    loop := 0 ;
    copy := NIL ;
+   sb := InitScopeBlock (scope) ;
    REPEAT
+      (* Throw away any unreachable quad.  *)
+      bb := InitBasicBlocks (sb) ;
+      KillBasicBlocks (bb) ;
+      (* Now iterate over remaining quads in scope attempting to resolve constants.  *)
       copy := DupGroup (copy) ;
-      WHILE ResolveConstantExpressions (DeclareConstFully, start, end) DO
-      END ;
-      (* we need to evaluate some constant expressions to resolve these types *)
+      bb := InitBasicBlocks (sb) ;
+      ConstantResolved := FALSE ;
+      ForeachBasicBlockDo (bb, FoldConstants) ;
+      KillBasicBlocks (bb) ;
+      (* And now types.  *)
       IF DeclaredOutstandingTypes (FALSE)
       THEN
       END ;
@@ -2803,9 +2731,11 @@ BEGIN
          loop := 0
       END ;
       INC (loop)
-   UNTIL (NOT ResolveConstantExpressions (DeclareConstFully, start, end)) AND
-         EqualGroup (copy, GlobalGroup) ;
-   KillGroup (copy)
+   UNTIL (NOT ConstantResolved) AND EqualGroup (copy, GlobalGroup) ;
+   KillGroup (copy) ;
+   bb := InitBasicBlocks (sb) ;
+   KillBasicBlocks (bb) ;
+   KillScopeBlock (sb)
 END DeclareTypesConstantsProceduresInRange ;
 
 
@@ -3151,7 +3081,7 @@ END DumpFilteredDefinitive ;
    PreAddModGcc - adds a relationship between sym and tree.
 *)
 
-PROCEDURE PreAddModGcc (sym: CARDINAL; tree: Tree) ;
+PROCEDURE PreAddModGcc (sym: CARDINAL; tree: tree) ;
 BEGIN
    AddModGcc (sym, tree)
 END PreAddModGcc ;
@@ -3161,9 +3091,9 @@ END PreAddModGcc ;
    DeclareDefaultType - declares a default type, sym, with, name.
 *)
 
-PROCEDURE DeclareDefaultType (sym: CARDINAL; name: ARRAY OF CHAR; gcctype: Tree) ;
+PROCEDURE DeclareDefaultType (sym: CARDINAL; name: ARRAY OF CHAR; gcctype: tree) ;
 VAR
-   t        : Tree ;
+   t        : tree ;
    high, low: CARDINAL ;
    location : location_t ;
 BEGIN
@@ -3228,7 +3158,7 @@ END DeclareBoolean ;
                            (if the back end support such a type).
 *)
 
-PROCEDURE DeclareFixedSizedType (name: ARRAY OF CHAR; type: CARDINAL; t: Tree) ;
+PROCEDURE DeclareFixedSizedType (name: ARRAY OF CHAR; type: CARDINAL; t: tree) ;
 VAR
    location : location_t ;
    typetype,
@@ -3389,7 +3319,7 @@ END DeclareDefaultConstants ;
                  a procedure will return the procedure Tree.
 *)
 
-PROCEDURE FindContext (sym: CARDINAL) : Tree ;
+PROCEDURE FindContext (sym: CARDINAL) : tree ;
 BEGIN
    sym := GetProcedureScope(sym) ;
    IF sym=NulSym
@@ -3452,9 +3382,9 @@ END FindOuterModule ;
 PROCEDURE DoVariableDeclaration (var: CARDINAL; name: ADDRESS;
                                  isImported, isExported,
                                  isTemporary, isGlobal: BOOLEAN;
-                                 scope: Tree) ;
+                                 scope: tree) ;
 VAR
-   type    : Tree ;
+   type    : tree ;
    varType : CARDINAL ;
    location: location_t ;
 BEGIN
@@ -3528,7 +3458,7 @@ END IsGlobal ;
 
 PROCEDURE DeclareVariable (ModSym, variable: CARDINAL) ;
 VAR
-   scope: Tree ;
+   scope: tree ;
    decl : CARDINAL ;
 BEGIN
    IF NOT GccKnowsAbout (variable)
@@ -3556,7 +3486,7 @@ END DeclareVariable ;
 
 PROCEDURE DeclareVariableWholeProgram (mainModule, variable: CARDINAL) ;
 VAR
-   scope: Tree ;
+   scope: tree ;
    decl : CARDINAL ;
 BEGIN
    IF NOT GccKnowsAbout (variable)
@@ -3584,14 +3514,14 @@ END DeclareVariableWholeProgram ;
 
 PROCEDURE DeclareGlobalVariablesWholeProgram (ModSym: CARDINAL) ;
 VAR
-   n, Son: CARDINAL ;
+   n, Variable: CARDINAL ;
 BEGIN
    n := 1 ;
-   Son := GetNth(ModSym, n) ;
-   WHILE Son#NulSym DO
-      DeclareVariableWholeProgram(ModSym, Son) ;
-      INC(n) ;
-      Son := GetNth(ModSym, n)
+   Variable := GetNth (ModSym, n) ;
+   WHILE Variable # NulSym DO
+      DeclareVariableWholeProgram (ModSym, Variable) ;
+      INC (n) ;
+      Variable := GetNth (ModSym, n)
    END ;
    ForeachInnerModuleDo(ModSym, DeclareGlobalVariablesWholeProgram)
 END DeclareGlobalVariablesWholeProgram ;
@@ -3604,14 +3534,14 @@ END DeclareGlobalVariablesWholeProgram ;
 
 PROCEDURE DeclareGlobalVariables (ModSym: CARDINAL) ;
 VAR
-   n, variable: CARDINAL ;
+   n, Variable: CARDINAL ;
 BEGIN
    n := 1 ;
-   variable := GetNth (ModSym, n) ;
-   WHILE variable # NulSym DO
-      DeclareVariable (ModSym, variable) ;
+   Variable := GetNth (ModSym, n) ;
+   WHILE Variable # NulSym DO
+      DeclareVariable (ModSym, Variable) ;
       INC (n) ;
-      variable := GetNth (ModSym, n)
+      Variable := GetNth (ModSym, n)
    END ;
    ForeachInnerModuleDo (ModSym, DeclareGlobalVariables)
 END DeclareGlobalVariables ;
@@ -3679,7 +3609,7 @@ PROCEDURE DeclareLocalVariables (procedure: CARDINAL) ;
 VAR
    i, var: CARDINAL ;
 BEGIN
-   i := NoOfParam (procedure) + 1 ;
+   i := NoOfParamAny (procedure) + 1 ;
    var := GetNth (procedure, i) ;
    WHILE var # NulSym DO
       Assert (procedure = GetScope (var)) ;
@@ -3697,7 +3627,7 @@ END DeclareLocalVariables ;
 
 PROCEDURE DeclareModuleVariables (sym: CARDINAL) ;
 VAR
-   scope : Tree ;
+   scope : tree ;
    i, Var: CARDINAL ;
 BEGIN
    i := 1 ;
@@ -3722,7 +3652,7 @@ END DeclareModuleVariables ;
    DeclareFieldValue -
 *)
 
-PROCEDURE DeclareFieldValue (sym: CARDINAL; value: Tree; VAR list: Tree) : Tree ;
+PROCEDURE DeclareFieldValue (sym: CARDINAL; value: tree; VAR list: tree) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -3741,11 +3671,11 @@ END DeclareFieldValue ;
    DeclareFieldEnumeration - declares an enumerator within the current enumeration type.
 *)
 
-PROCEDURE DeclareFieldEnumeration (sym: WORD) : Tree ;
+PROCEDURE DeclareFieldEnumeration (sym: WORD) : tree ;
 VAR
    type    : CARDINAL ;
    field,
-   enumlist: Tree ;
+   enumlist: tree ;
 BEGIN
    (* add relationship between gccSym and sym *)
    type := GetSType (sym) ;
@@ -3761,10 +3691,10 @@ END DeclareFieldEnumeration ;
    DeclareEnumeration - declare an enumerated type.
 *)
 
-PROCEDURE DeclareEnumeration (sym: WORD) : Tree ;
+PROCEDURE DeclareEnumeration (sym: WORD) : tree ;
 VAR
    enumlist,
-   gccenum : Tree ;
+   gccenum : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (GetDeclaredMod (sym)) ;
@@ -3780,11 +3710,11 @@ END DeclareEnumeration ;
 *)
 
 PROCEDURE DeclareSubrangeNarrow (location: location_t;
-                                 high, low: CARDINAL; type: Tree) : Tree ;
+                                 high, low: CARDINAL; type: tree) : tree ;
 VAR
    m2low, m2high,
    lowtree,
-   hightree     : Tree ;
+   hightree     : tree ;
 BEGIN
    (* No zero alignment, therefore the front end will prioritize subranges to match
       unsigned int, int, or ZTYPE assuming the low..high range fits.  *)
@@ -3816,10 +3746,10 @@ END DeclareSubrangeNarrow ;
    DeclareSubrange - declare a subrange type.
 *)
 
-PROCEDURE DeclareSubrange (sym: CARDINAL) : Tree ;
+PROCEDURE DeclareSubrange (sym: CARDINAL) : tree ;
 VAR
    type,
-   gccsym   : Tree ;
+   gccsym   : tree ;
    align,
    high, low: CARDINAL ;
    location: location_t ;
@@ -3857,7 +3787,7 @@ PROCEDURE IncludeGetNth (l: List; sym: CARDINAL) ;
 VAR
    i: CARDINAL ;
 BEGIN
-   fprintf0 (GetDumpFile (), ' ListOfSons [') ;
+   fprintf0 (GetDumpFile (), ' ListOfFields [') ;
    i := 1 ;
    WHILE GetNth (sym, i) # NulSym DO
       IF i>1
@@ -4069,12 +3999,83 @@ END PrintScope ;
 
 
 (*
+   PrintKind -
+*)
+
+PROCEDURE PrintKind (kind: ProcedureKind) ;
+VAR
+   s: String ;
+BEGIN
+   s := GetProcedureKindDesc (kind) ;
+   fprintf1 (GetDumpFile (), "%s", s) ;
+   s := KillString (s)
+END PrintKind ;
+
+
+(*
+   PrintProcedureParameters -
+*)
+
+PROCEDURE PrintProcedureParameters (sym: CARDINAL; kind: ProcedureKind) ;
+VAR
+   typeName,
+   paramName: Name ;
+   p, i, n,
+   type     : CARDINAL ;
+BEGIN
+   fprintf0 (GetDumpFile (), ' (') ;
+   n := NoOfParam (sym, kind) ;
+   i := 1 ;
+   WHILE i <= n DO
+      IF i > 1
+      THEN
+         fprintf0 (GetDumpFile (), '; ')
+      END ;
+      IF IsVarParam (sym, kind, i)
+      THEN
+         fprintf0 (GetDumpFile (), 'VAR ')
+      END ;
+      p := GetNthParam (sym, kind, i) ;
+      paramName := GetSymName (p) ;
+      type := GetType (p) ;
+      typeName := GetSymName (type) ;
+      IF IsUnboundedParam (sym, kind, i)
+      THEN
+         fprintf2 (GetDumpFile (), '%a: ARRAY OF %a', paramName, typeName)
+      ELSE
+         fprintf2 (GetDumpFile (), '%a: %a', paramName, typeName)
+      END ;
+      INC (i)
+   END ;
+   fprintf0 (GetDumpFile (), ')')
+END PrintProcedureParameters ;
+
+
+(*
+   PrintProcedureReturnType -
+*)
+
+PROCEDURE PrintProcedureReturnType (sym: CARDINAL) ;
+VAR
+   typeName: Name ;
+BEGIN
+   IF GetType (sym) # NulSym
+   THEN
+      typeName := GetSymName (GetType (sym)) ;
+      fprintf1 (GetDumpFile (), ' : %a', typeName)
+   END ;
+   fprintf0 (GetDumpFile (), ' ;')
+END PrintProcedureReturnType ;
+
+
+(*
    PrintProcedure -
 *)
 
 PROCEDURE PrintProcedure (sym: CARDINAL) ;
 VAR
-   n: Name ;
+   n   : Name ;
+   kind: ProcedureKind ;
 BEGIN
    n := GetSymName (sym) ;
    fprintf2 (GetDumpFile (), 'sym %d IsProcedure (%a)', sym, n);
@@ -4095,8 +4096,81 @@ BEGIN
    THEN
       fprintf0 (GetDumpFile (), ' ctor')
    END ;
-   PrintDeclared(sym)
+   PrintDeclared (sym) ;
+   fprintf0 (GetDumpFile (), '\n') ;
+   FOR kind := MIN (ProcedureKind) TO MAX (ProcedureKind) DO
+      fprintf0 (GetDumpFile (), 'parameters ') ;
+      PrintKind (kind) ;
+      IF GetProcedureParametersDefined (sym, kind)
+      THEN
+         fprintf0 (GetDumpFile (), ' defined') ;
+         PrintProcedureParameters (sym, kind) ;
+         PrintProcedureReturnType (sym)
+      ELSE
+         fprintf0 (GetDumpFile (), ' undefined')
+      END ;
+      fprintf0 (GetDumpFile (), '\n')
+   END ;
+   fprintf0 (GetDumpFile (), ' Associated proctype: ') ;
+   PrintProcType (GetProcedureProcType (sym))
 END PrintProcedure ;
+
+
+(*
+   PrintProcTypeParameters -
+*)
+
+PROCEDURE PrintProcTypeParameters (sym: CARDINAL) ;
+VAR
+   typeName : Name ;
+   p, i, n,
+   type     : CARDINAL ;
+BEGIN
+   fprintf0 (GetDumpFile (), ' (') ;
+   n := NoOfParam (sym, ProperProcedure) ;
+   i := 1 ;
+   WHILE i <= n DO
+      IF i > 1
+      THEN
+         fprintf0 (GetDumpFile (), '; ')
+      END ;
+      IF IsVarParam (sym, ProperProcedure, i)
+      THEN
+         fprintf0 (GetDumpFile (), 'VAR ')
+      END ;
+      p := GetNthParam (sym, ProperProcedure, i) ;
+      type := GetType (p) ;
+      typeName := GetSymName (type) ;
+      IF IsUnboundedParam (sym, ProperProcedure, i)
+      THEN
+         fprintf1 (GetDumpFile (), 'ARRAY OF %a', typeName)
+      ELSE
+         fprintf1 (GetDumpFile (), '%a', typeName)
+      END ;
+      INC (i)
+   END ;
+   fprintf0 (GetDumpFile (), ')')
+END PrintProcTypeParameters ;
+
+
+(*
+   PrintProcType -
+*)
+
+PROCEDURE PrintProcType (sym: CARDINAL) ;
+VAR
+   n: Name ;
+BEGIN
+   n := GetSymName (sym) ;
+   fprintf2 (GetDumpFile (), 'sym %d IsProcType (%a)', sym, n);
+   PrintScope (sym) ;
+   PrintDeclared (sym) ;
+   fprintf0 (GetDumpFile (), '\n') ;
+   fprintf0 (GetDumpFile (), 'parameters ') ;
+   PrintProcTypeParameters (sym) ;
+   PrintProcedureReturnType (sym) ;
+   fprintf0 (GetDumpFile (), '\n')
+END PrintProcType ;
 
 
 (*
@@ -4258,7 +4332,7 @@ BEGIN
       PrintDecl(sym)
    ELSIF IsProcType(sym)
    THEN
-      fprintf2 (GetDumpFile (), 'sym %d IsProcType (%a)', sym, n)
+      PrintProcType (sym)
    ELSIF IsVar(sym)
    THEN
       fprintf2 (GetDumpFile (), 'sym %d IsVar (%a) declared in ', sym, n) ;
@@ -4576,7 +4650,7 @@ END PrintTerse ;
    CheckAlignment -
 *)
 
-PROCEDURE CheckAlignment (type: Tree; sym: CARDINAL) : Tree ;
+PROCEDURE CheckAlignment (type: tree; sym: CARDINAL) : tree ;
 VAR
    align: CARDINAL ;
 BEGIN
@@ -4598,7 +4672,7 @@ END CheckAlignment ;
    CheckPragma -
 *)
 
-PROCEDURE CheckPragma (type: Tree; sym: CARDINAL) : Tree ;
+PROCEDURE CheckPragma (type: tree; sym: CARDINAL) : tree ;
 BEGIN
    IF IsDeclaredPacked (sym)
    THEN
@@ -4703,7 +4777,7 @@ END DetermineIfRecordPacked ;
 PROCEDURE DeclarePackedSubrange (equiv, sym: CARDINAL) ;
 VAR
    type,
-   gccsym   : Tree ;
+   gccsym   : tree ;
    high, low: CARDINAL ;
    location : location_t ;
 BEGIN
@@ -4724,7 +4798,7 @@ PROCEDURE DeclarePackedSet (equiv, sym: CARDINAL) ;
 VAR
    highLimit,
    range,
-   gccsym   : Tree ;
+   gccsym   : tree ;
    type,
    high, low: CARDINAL ;
    location: location_t ;
@@ -4753,7 +4827,7 @@ VAR
    equiv,
    type    : CARDINAL ;
    field,
-   enumlist: Tree ;
+   enumlist: tree ;
 BEGIN
    (* add relationship between gccSym and sym *)
    type := GetSType (sym) ;
@@ -4773,7 +4847,7 @@ END DeclarePackedFieldEnumeration ;
 PROCEDURE DeclarePackedEnumeration (equiv, sym: CARDINAL) ;
 VAR
    enumlist,
-   gccenum : Tree ;
+   gccenum : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(GetDeclaredMod(sym)) ;
@@ -4813,7 +4887,7 @@ END DeclarePackedType ;
    doDeclareEquivalent -
 *)
 
-PROCEDURE doDeclareEquivalent (sym: CARDINAL; p: doDeclareProcedure) : Tree ;
+PROCEDURE doDeclareEquivalent (sym: CARDINAL; p: doDeclareProcedure) : tree ;
 VAR
    equiv: CARDINAL ;
 BEGIN
@@ -4831,7 +4905,7 @@ END doDeclareEquivalent ;
    PossiblyPacked -
 *)
 
-PROCEDURE PossiblyPacked (sym: CARDINAL; isPacked: BOOLEAN) : Tree ;
+PROCEDURE PossiblyPacked (sym: CARDINAL; isPacked: BOOLEAN) : tree ;
 BEGIN
    IF isPacked
    THEN
@@ -4857,7 +4931,7 @@ END PossiblyPacked ;
    GetPackedType - returns a possibly packed type for field.
 *)
 
-PROCEDURE GetPackedType (sym: CARDINAL) : Tree ;
+PROCEDURE GetPackedType (sym: CARDINAL) : tree ;
 BEGIN
    IF IsSubrange(sym)
    THEN
@@ -4878,10 +4952,10 @@ END GetPackedType ;
                      the offsets if appropriate.
 *)
 
-PROCEDURE MaybeAlignField (field: CARDINAL; VAR byteOffset, bitOffset: Tree) : Tree ;
+PROCEDURE MaybeAlignField (field: CARDINAL; VAR byteOffset, bitOffset: tree) : tree ;
 VAR
    f, ftype,
-   nbits   : Tree ;
+   nbits   : tree ;
    location: location_t ;
 BEGIN
    f := Mod2Gcc(field) ;
@@ -4905,7 +4979,7 @@ END MaybeAlignField ;
                    The final gcc record type is returned.
 *)
 
-PROCEDURE DeclareRecord (Sym: CARDINAL) : Tree ;
+PROCEDURE DeclareRecord (Sym: CARDINAL) : tree ;
 VAR
    Field     : CARDINAL ;
    i         : CARDINAL ;
@@ -4915,11 +4989,11 @@ VAR
    byteOffset,
    bitOffset,
    FieldList,
-   RecordType: Tree ;
+   RecordType: tree ;
    location  : location_t ;
 BEGIN
    i := 1 ;
-   FieldList := Tree(NIL) ;
+   FieldList := tree(NIL) ;
    RecordType := DoStartDeclaration(Sym, BuildStartRecord) ;
    location := TokenToLocation(GetDeclaredMod(Sym)) ;
    byteOffset := GetIntegerZero(location) ;
@@ -4971,10 +5045,10 @@ END DeclareRecord ;
    DeclareRecordField -
 *)
 
-PROCEDURE DeclareRecordField (sym: CARDINAL) : Tree ;
+PROCEDURE DeclareRecordField (sym: CARDINAL) : tree ;
 VAR
    field,
-   GccFieldType: Tree ;
+   GccFieldType: tree ;
    location    : location_t ;
 BEGIN
    location := TokenToLocation(GetDeclaredMod(sym)) ;
@@ -4989,18 +5063,18 @@ END DeclareRecordField ;
                     The final gcc record type is returned.
 *)
 
-PROCEDURE DeclareVarient (sym: CARDINAL) : Tree ;
+PROCEDURE DeclareVarient (sym: CARDINAL) : tree ;
 VAR
    Field       : CARDINAL ;
    i           : CARDINAL ;
    byteOffset,
    bitOffset,
    FieldList,
-   VarientType : Tree ;
+   VarientType : tree ;
    location    : location_t ;
 BEGIN
    i := 1 ;
-   FieldList := Tree(NIL) ;
+   FieldList := tree(NIL) ;
    VarientType := DoStartDeclaration(sym, BuildStartVarient) ;
    location := TokenToLocation(GetDeclaredMod(sym)) ;
    byteOffset := GetIntegerZero(location) ;
@@ -5031,19 +5105,19 @@ END DeclareVarient ;
    DeclareFieldVarient -
 *)
 
-PROCEDURE DeclareFieldVarient (sym: CARDINAL) : Tree ;
+PROCEDURE DeclareFieldVarient (sym: CARDINAL) : tree ;
 VAR
    i, f        : CARDINAL ;
    VarientList,
    VarientType,
    byteOffset,
    bitOffset,
-   GccFieldType: Tree ;
+   GccFieldType: tree ;
    location    : location_t ;
 BEGIN
    location := TokenToLocation(GetDeclaredMod(sym)) ;
    i := 1 ;
-   VarientList := Tree(NIL) ;
+   VarientList := tree(NIL) ;
    VarientType := DoStartDeclaration(sym, BuildStartFieldVarient) ;
    (* no need to store the [sym, RecordType] tuple as it is stored by DeclareRecord which calls us *)
    byteOffset := GetIntegerZero(location) ;
@@ -5072,7 +5146,7 @@ END DeclareFieldVarient ;
    DeclarePointer - declares a pointer type to gcc and returns the Tree.
 *)
 
-PROCEDURE DeclarePointer (sym: CARDINAL) : Tree ;
+PROCEDURE DeclarePointer (sym: CARDINAL) : tree ;
 BEGIN
    RETURN( BuildPointerType(Mod2Gcc(GetSType(sym))) )
 END DeclarePointer ;
@@ -5082,7 +5156,7 @@ END DeclarePointer ;
    DeclareUnbounded - builds an unbounded type and returns the gcc tree.
 *)
 
-PROCEDURE DeclareUnbounded (sym: CARDINAL) : Tree ;
+PROCEDURE DeclareUnbounded (sym: CARDINAL) : tree ;
 VAR
    record: CARDINAL ;
 BEGIN
@@ -5108,13 +5182,13 @@ END DeclareUnbounded ;
    BuildIndex -
 *)
 
-PROCEDURE BuildIndex (tokenno: CARDINAL; array: CARDINAL) : Tree ;
+PROCEDURE BuildIndex (tokenno: CARDINAL; array: CARDINAL) : tree ;
 VAR
    Subscript: CARDINAL ;
    Type,
    High, Low: CARDINAL ;
    n,
-   low, high: Tree ;
+   low, high: tree ;
    location : location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
@@ -5152,12 +5226,12 @@ END BuildIndex ;
    DeclareArray - declares an array to gcc and returns the gcc tree.
 *)
 
-PROCEDURE DeclareArray (Sym: CARDINAL) : Tree ;
+PROCEDURE DeclareArray (Sym: CARDINAL) : tree ;
 VAR
    typeOfArray: CARDINAL ;
    ArrayType,
    GccArray,
-   GccIndex   : Tree ;
+   GccIndex   : tree ;
    Subscript  : CARDINAL ;
    tokenno    : CARDINAL ;
    location   : location_t ;
@@ -5195,31 +5269,32 @@ END DeclareArray ;
    DeclareProcType - declares a procedure type to gcc and returns the gcc type tree.
 *)
 
-PROCEDURE DeclareProcType (Sym: CARDINAL) : Tree ;
+PROCEDURE DeclareProcType (Sym: CARDINAL) : tree ;
 VAR
-   i, p, Son,
+   i, p,
+   Parameter,
    ReturnType: CARDINAL ;
    func,
-   GccParam  : Tree ;
+   GccParam  : tree ;
    location  : location_t ;
 BEGIN
    ReturnType := GetSType(Sym) ;
    func := DoStartDeclaration(Sym, BuildStartFunctionType) ;
    InitFunctionTypeParameters ;
-   p := NoOfParam(Sym) ;
+   p := NoOfParamAny (Sym) ;
    i := p ;
-   WHILE i>0 DO
-      Son := GetNthParam(Sym, i) ;
-      location := TokenToLocation(GetDeclaredMod(Son)) ;
-      GccParam := BuildProcTypeParameterDeclaration(location, Mod2Gcc(GetSType(Son)), IsVarParam(Sym, i)) ;
-      PreAddModGcc(Son, GccParam) ;
+   WHILE i > 0 DO
+      Parameter := GetNthParamAny (Sym, i) ;
+      location := TokenToLocation (GetDeclaredMod (Parameter)) ;
+      GccParam := BuildProcTypeParameterDeclaration (location, Mod2Gcc (GetSType (Parameter)), IsVarParamAny (Sym, i)) ;
+      PreAddModGcc(Parameter, GccParam) ;
       DEC(i)
    END ;
-   IF ReturnType=NulSym
+   IF ReturnType = NulSym
    THEN
-      RETURN( BuildEndFunctionType(func, NIL, UsesVarArgs(Sym)) )
+      RETURN( BuildEndFunctionType (func, NIL, UsesVarArgs(Sym)) )
    ELSE
-      RETURN( BuildEndFunctionType(func, Mod2Gcc(ReturnType), UsesVarArgs(Sym)) )
+      RETURN( BuildEndFunctionType (func, Mod2Gcc(ReturnType), UsesVarArgs(Sym)) )
    END
 END DeclareProcType ;
 
@@ -5360,14 +5435,14 @@ END PushNoOfBits ;
                      low and high are the limits of the subrange.
 *)
 
-PROCEDURE DeclareLargeSet (n: Name; type: CARDINAL; low, high: CARDINAL) : Tree ;
+PROCEDURE DeclareLargeSet (n: Name; type: CARDINAL; low, high: CARDINAL) : tree ;
 VAR
    lowtree,
    hightree,
    BitsInSet,
    RecordType,
    GccField,
-   FieldList : Tree ;
+   FieldList : tree ;
    bpw       : CARDINAL ;
    location  : location_t ;
 BEGIN
@@ -5377,7 +5452,7 @@ BEGIN
    lowtree    := PopIntegerTree() ;
    PushValue(high) ;
    hightree   := PopIntegerTree() ;
-   FieldList  := Tree(NIL) ;
+   FieldList  := tree(NIL) ;
    RecordType := BuildStartRecord(location, KeyToCharStar(n)) ;  (* no problem with recursive types here *)
    PushNoOfBits(type, low, high) ;
    PushCard(1) ;
@@ -5430,7 +5505,7 @@ END DeclareLargeSet ;
 *)
 
 PROCEDURE DeclareLargeOrSmallSet (sym: CARDINAL;
-                                  n: Name; type: CARDINAL; low, high: CARDINAL) : Tree ;
+                                  n: Name; type: CARDINAL; low, high: CARDINAL) : tree ;
 VAR
    location: location_t ;
    packed  : BOOLEAN ;
@@ -5456,9 +5531,9 @@ END DeclareLargeOrSmallSet ;
    DeclareSet - declares a set type to gcc and returns a Tree.
 *)
 
-PROCEDURE DeclareSet (sym: CARDINAL) : Tree ;
+PROCEDURE DeclareSet (sym: CARDINAL) : tree ;
 VAR
-   gccsym   : Tree ;
+   gccsym   : tree ;
    type,
    high, low: CARDINAL ;
 BEGIN
@@ -5495,7 +5570,7 @@ BEGIN
          IF IsConstString (low) AND IsConstStringKnown (low)
          THEN
             size := GetStringLength (tokenno, low) ;
-            IF size=1
+            IF size <= 1
             THEN
                PutSubrange(sym, low, high, Char)
             ELSE
@@ -5529,9 +5604,9 @@ END CheckResolveSubrange ;
                             return the GCC Tree equivalent.
 *)
 
-PROCEDURE TypeConstFullyDeclared (sym: CARDINAL) : Tree ;
+PROCEDURE TypeConstFullyDeclared (sym: CARDINAL) : tree ;
 VAR
-   t: Tree ;
+   t: tree ;
 BEGIN
    IF IsEnumeration(sym)
    THEN
@@ -5991,33 +6066,6 @@ END WalkRecordFieldDependants ;
 
 
 (*
-   WalkVarient -
-*)
-
-(*
-PROCEDURE WalkVarient (sym: CARDINAL; p: WalkAction) ;
-VAR
-   v    : CARDINAL ;
-   var,
-   align: CARDINAL ;
-BEGIN
-   p(sym) ;
-   v := GetVarient(sym) ;
-   IF v#NulSym
-   THEN
-      p(v)
-   END ;
-   var := GetRecordOfVarient(sym) ;
-   align := GetDefaultRecordFieldAlignment(var) ;
-   IF align#NulSym
-   THEN
-      p(align)
-   END
-END WalkVarient ;
-*)
-
-
-(*
    WalkRecordDependants2 - walks the fields of record, sym, calling
                            p on every dependant.
 *)
@@ -6353,9 +6401,9 @@ BEGIN
    Assert(IsProcType(sym)) ;
    i := 1 ;
    ReturnType := GetSType(sym) ;
-   p := NoOfParam(sym) ;
+   p := NoOfParamAny (sym) ;
    WHILE i<=p DO
-      son := GetNthParam(sym, i) ;
+      son := GetNthParamAny (sym, i) ;
       ParamType := GetSType(son) ;
       IF NOT q(ParamType)
       THEN
@@ -6385,9 +6433,9 @@ BEGIN
    Assert(IsProcType(sym)) ;
    i := 1 ;
    ReturnType := GetSType(sym) ;
-   n := NoOfParam(sym) ;
+   n := NoOfParamAny (sym) ;
    WHILE i<=n DO
-      son := GetNthParam(sym, i) ;
+      son := GetNthParamAny (sym, i) ;
       ParamType := GetSType(son) ;
       p(ParamType) ;
       INC(i)
@@ -6562,7 +6610,7 @@ END PoisonSymbols ;
    ConstantKnownAndUsed -
 *)
 
-PROCEDURE ConstantKnownAndUsed (sym: CARDINAL; t: Tree) ;
+PROCEDURE ConstantKnownAndUsed (sym: CARDINAL; t: tree) ;
 BEGIN
    DeclareConstantFromTree(sym, RememberConstant(t))
 END ConstantKnownAndUsed ;

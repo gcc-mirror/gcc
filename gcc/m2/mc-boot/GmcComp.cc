@@ -12,9 +12,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -38,9 +38,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcComp_H
 #define _mcComp_C
 
+#include "GmcComp.h"
 #   include "GFIO.h"
 #   include "Glibc.h"
 #   include "Gdecl.h"
@@ -562,7 +562,7 @@ static void pass (unsigned int no, decl_node n, mcComp_parserFunction f, decl_is
             {
               mcError_writeFormat0 ((const char *) "compilation failed", 18);
               mcLexBuf_closeSource ();
-              return ;
+              return;
             }
           mcLexBuf_closeSource ();
         }
@@ -593,9 +593,9 @@ static void doPass (bool parseDefs, bool parseMain, unsigned int no, symbolKey_p
       if (parseDefs && (decl_isImp (decl_getMainModule ())))
         {
           /* we need to parse the definition module of a corresponding implementation module.  */
-          (*p.proc) (reinterpret_cast<void *> (decl_lookupDef (decl_getSymName (decl_getMainModule ()))));
+          (*p.proc) (reinterpret_cast <void *> (decl_lookupDef (decl_getSymName (decl_getMainModule ()))));
         }
-      (*p.proc) (reinterpret_cast<void *> (decl_getMainModule ()));
+      (*p.proc) (reinterpret_cast <void *> (decl_getMainModule ()));
     }
   if (parseDefs)
     {
@@ -651,11 +651,11 @@ extern "C" unsigned int mcComp_getPassNo (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcComp_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcComp_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_mcComp_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcComp_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

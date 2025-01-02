@@ -29,38 +29,12 @@ DEFINITION MODULE PCSymBuild ;
                 the import/export symbols and assigns types to constructors.
 *)
 
-EXPORT QUALIFIED PCStartBuildDefModule,
-                 PCEndBuildDefModule,
-                 PCStartBuildImpModule,
-                 PCEndBuildImpModule,
-                 PCStartBuildProgModule,
-                 PCEndBuildProgModule,
-                 PCStartBuildInnerModule,
-                 PCEndBuildInnerModule,
-                 PCBuildProcedureHeading,
-                 PCStartBuildProcedure,
-                 PCEndBuildProcedure,
-                 BuildNulName,
-                 BuildConst,
-                 PCBuildImportOuterModule,
-                 PCBuildImportInnerModule,
-                 StartDesConst,
-                 EndDesConst,
-                 BuildRelationConst,
-                 BuildUnaryConst,
-                 BuildBinaryConst,
-                 PushInConstructor,
-                 PopInConstructor,
-                 SkipConst,
-                 PushConstType,
-                 PushConstAttributeType,
-                 PushConstAttributePairType,
-                 PushConstructorCastType,
-                 PushRType,
-                 PushConstFunctionType,
-                 PushIntegerType,
-                 PushStringType,
-                 ResolveConstTypes ;
+
+(*
+   CheckNotVar - checks to see that the top of stack is not a variable.
+*)
+
+PROCEDURE CheckNotVar (tok: CARDINAL) ;
 
 
 (*
@@ -272,6 +246,25 @@ PROCEDURE PCStartBuildProcedure ;
 *)
 
 PROCEDURE PCEndBuildProcedure ;
+
+
+(*
+   EndBuildForward - Ends building a forward declaration.
+
+                     The Stack:
+
+                     Entry                 Exit
+
+              Ptr ->
+                     +------------+
+                     | ProcSym    |
+                     |------------|
+                     | NameStart  |
+                     |------------|
+                                           Empty
+*)
+
+PROCEDURE PCEndBuildForward ;
 
 
 (*

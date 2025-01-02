@@ -4,7 +4,7 @@
 struct string {} a[1];
 struct pair {
   string s[1];
-  pair() : s(a) {} // { dg-error "invalid initializer for array member" }
+  pair() : s(a) {} // { dg-error "array must be initialized" }
 };
 
 struct S {

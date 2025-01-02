@@ -88,31 +88,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __glibcxx_forward_like // C++ >= 23
   template<typename _Tp, typename _Up>
-  [[nodiscard]]
-  constexpr decltype(auto)
-  forward_like(_Up&& __x) noexcept
-  {
-    constexpr bool __as_rval = is_rvalue_reference_v<_Tp&&>;
-
-    if constexpr (is_const_v<remove_reference_t<_Tp>>)
-      {
-	using _Up2 = remove_reference_t<_Up>;
-	if constexpr (__as_rval)
-	  return static_cast<const _Up2&&>(__x);
-	else
-	  return static_cast<const _Up2&>(__x);
-      }
-    else
-      {
-	if constexpr (__as_rval)
-	  return static_cast<remove_reference_t<_Up>&&>(__x);
-	else
-	  return static_cast<_Up&>(__x);
-      }
-  }
+  struct __like_impl; // _Tp must be a reference and _Up an lvalue reference
 
   template<typename _Tp, typename _Up>
-    using __like_t = decltype(std::forward_like<_Tp>(std::declval<_Up>()));
+  struct __like_impl<_Tp&, _Up&>
+  { using type = _Up&; };
+
+  template<typename _Tp, typename _Up>
+  struct __like_impl<const _Tp&, _Up&>
+  { using type = const _Up&; };
+
+  template<typename _Tp, typename _Up>
+  struct __like_impl<_Tp&&, _Up&>
+  { using type = _Up&&; };
+
+  template<typename _Tp, typename _Up>
+  struct __like_impl<const _Tp&&, _Up&>
+  { using type = const _Up&&; };
+
+  template<typename _Tp, typename _Up>
+    using __like_t = typename __like_impl<_Tp&&, _Up&>::type;
+
+  template<typename _Tp, typename _Up>
+  [[nodiscard]]
+  constexpr __like_t<_Tp, _Up>
+  forward_like(_Up&& __x) noexcept
+  { return static_cast<__like_t<_Tp, _Up>>(__x); }
 #endif
 
   /**

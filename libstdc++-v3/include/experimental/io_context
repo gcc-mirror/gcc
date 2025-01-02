@@ -148,7 +148,7 @@ inline namespace v1
     io_context() : _M_work_count(0) { }
 
     explicit
-    io_context(int __concurrency_hint) : _M_work_count(0) { }
+    io_context(int /* __concurrency_hint */) : _M_work_count(0) { }
 
     io_context(const io_context&) = delete;
     io_context& operator=(const io_context&) = delete;

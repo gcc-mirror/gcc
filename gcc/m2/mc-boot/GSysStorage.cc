@@ -46,9 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _SysStorage_H
 #define _SysStorage_C
 
+#include "GSysStorage.h"
 #   include "Glibc.h"
 #   include "GDebug.h"
 #   include "GSYSTEM.h"
@@ -224,12 +224,12 @@ extern "C" void SysStorage_Init (void)
 {
 }
 
-extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   callno = 0;
   if (enableTrace)
     {
-      trace = (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("M2DEBUG_SYSSTORAGE_trace")))) != NULL;
+      trace = (libc_getenv (const_cast<void*> (static_cast<const void*>("M2DEBUG_SYSSTORAGE_trace")))) != NULL;
     }
   else
     {
@@ -237,7 +237,7 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribut
     }
   if (enableZero)
     {
-      zero = (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("M2DEBUG_SYSSTORAGE_zero")))) != NULL;
+      zero = (libc_getenv (const_cast<void*> (static_cast<const void*>("M2DEBUG_SYSSTORAGE_zero")))) != NULL;
     }
   else
     {
@@ -245,6 +245,6 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribut
     }
 }
 
-extern "C" void _M2_SysStorage_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SysStorage_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

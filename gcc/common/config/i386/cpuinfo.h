@@ -606,6 +606,7 @@ get_intel_cpu (struct __processor_model *cpu_model,
       CHECK___builtin_cpu_is ("grandridge");
       cpu_model->__cpu_type = INTEL_GRANDRIDGE;
       break;
+    case 0xb5:
     case 0xc5:
       /* Arrow Lake.  */
       cpu = "arrowlake";

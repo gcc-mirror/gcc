@@ -909,7 +909,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __n /= sizeof(_CharT);
 	  streamsize __w = __in.width();
 	  std::__istream_extract(__in, __s, __n);
-	  if (__in.good() && (__w <= 0 || __n < __w))
+	  if (__in.good() && (__w <= 0 || __n < (size_t)__w))
 	    {
 	      // Stopped extracting early to avoid overflowing the buffer,
 	      // but might have stopped anyway (and set eofbit) if at EOF.

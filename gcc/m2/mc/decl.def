@@ -185,6 +185,20 @@ PROCEDURE putDefForC (n: node) ;
 
 
 (*
+   putDefUnqualified - the definition module uses export unqualified.
+*)
+
+PROCEDURE putDefUnqualified (n: node) ;
+
+
+(*
+   isDefUnqualified - returns TRUE if the definition module uses unqualified.
+*)
+
+PROCEDURE isDefUnqualified (n: node) : BOOLEAN ;
+
+
+(*
    lookupInScope - looks up a symbol named, n, from, scope.
 *)
 
@@ -247,6 +261,21 @@ PROCEDURE isTypeHidden (n: node) : BOOLEAN ;
 *)
 
 PROCEDURE hasHidden (n: node) : BOOLEAN ;
+
+
+(*
+   putTypeOpaque - marks type, des, as being an opaque type.
+                   TYPE des ;
+*)
+
+PROCEDURE putTypeOpaque (des: node) ;
+
+
+(*
+   isTypeOpaque - returns TRUE if type, n, is an opaque type.
+*)
+
+PROCEDURE isTypeOpaque (n: node) : BOOLEAN ;
 
 
 (*

@@ -67,7 +67,7 @@ tracedb (const char *format, ...)
 
 static
 void
-tracedb_open (const char *p, int flags, mode_t mode)
+tracedb_open (const void *p, int flags, int mode)
 {
 #if defined(BUILD_MC_LIBC_TRACE)
   bool item_written = false;
@@ -110,23 +110,35 @@ tracedb_result (int result)
 #endif
 }
 
-EXTERN
-int
-libc_read (int fd, void *a, int nbytes)
+static
+void
+tracedb_zresult (size_t result)
 {
-  tracedb ("libc_read (%d, %p, %d)\n", fd, a, nbytes);
-  int result = read (fd, a, nbytes);
-  tracedb_result (result);
+#if defined(BUILD_MC_LIBC_TRACE)
+  tracedb (" result = %zd", result);
+  if (result == -1)
+    tracedb (", errno = %s", strerror (errno));
+  tracedb ("\n");
+#endif
+}
+
+EXTERN
+size_t
+libc_read (int fd, void *a, size_t nbytes)
+{
+  tracedb ("libc_read (%d, %p, %zd)\n", fd, a, nbytes);
+  size_t result = read (fd, a, nbytes);
+  tracedb_zresult (result);
   return result;
 }
 
 EXTERN
-int
-libc_write (int fd, void *a, int nbytes)
+size_t
+libc_write (int fd, void *a, size_t nbytes)
 {
-  tracedb ("libc_write (%d, %p, %d)\n", fd, a, nbytes);
-  int result = write (fd, a, nbytes);
-  tracedb_result (result);
+  tracedb ("libc_write (%d, %p, %zd)\n", fd, a, nbytes);
+  size_t result = write (fd, a, nbytes);
+  tracedb_zresult (result);
   return result;
 }
 
@@ -149,7 +161,7 @@ libc_exit (int code)
 
 EXTERN
 void
-libc_perror (char *s)
+libc_perror (const char *s, unsigned int length)
 {
   perror (s);
 }
@@ -162,7 +174,7 @@ libc_abort ()
 }
 
 EXTERN
-int
+size_t
 libc_strlen (char *s)
 {
   return strlen (s);
@@ -184,18 +196,18 @@ libc_localtime (time_t *epochtime)
 
 EXTERN
 int
-libc_printf (char *_format, unsigned int _format_high, ...)
+libc_printf (const char *_format, unsigned int _format_high, ...)
 {
   va_list arg;
   int done;
   char format[_format_high + 1];
   unsigned int i = 0;
   unsigned int j = 0;
-  char *c;
+  const char *c;
 
   do
     {
-      c = index (&_format[i], '\\');
+      c = index (&const_cast <char *> (_format)[i], '\\');
       if (c == NULL)
         strcpy (&format[j], &_format[i]);
       else
@@ -221,18 +233,18 @@ libc_printf (char *_format, unsigned int _format_high, ...)
 
 EXTERN
 int
-libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_high, ...)
+libc_snprintf (void *dest, size_t length, const char *_format, unsigned int _format_high, ...)
 {
   va_list arg;
   int done;
   char format[_format_high + 1];
   unsigned int i = 0;
   unsigned int j = 0;
-  char *c;
+  const char *c;
 
   do
     {
-      c = index (&_format[i], '\\');
+      c = index (&const_cast <char *> (_format)[i], '\\');
       if (c == NULL)
         strcpy (&format[j], &_format[i]);
       else
@@ -251,14 +263,14 @@ libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_hi
   while (c != NULL);
 
   va_start (arg, _format_high);
-  done = vsnprintf (dest, length, format, arg);
+  done = vsnprintf (reinterpret_cast<char *> (dest), length, format, arg);
   va_end (arg);
   return done;
 }
 
 EXTERN
 void *
-libc_malloc (unsigned int size)
+libc_malloc (size_t size)
 {
   return malloc (size);
 }
@@ -300,7 +312,7 @@ libc_system (char *command)
 
 EXTERN
 void *
-libc_memcpy (void *dest, void *src, int n)
+libc_memcpy (void *dest, void *src, size_t n)
 {
   return memcpy (dest, src, n);
 }
@@ -331,10 +343,10 @@ libc_creat (char *p, mode_t mode)
 
 EXTERN
 int
-libc_open (char *p, int flags, mode_t mode)
+libc_open (void *p, int flags, int mode)
 {
   tracedb_open (p, flags, mode);
-  int result = open (p, flags, mode);
+  int result = open (reinterpret_cast <char *> (p), flags, mode);
   tracedb_result (result);
   return result;
 }

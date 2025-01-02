@@ -459,7 +459,8 @@ BEGIN
    IF dtp=NIL
    THEN
       RAISE(iochan, ORD(hardDeviceError),
-            'IOChan.SetReadResult: device table ptr is NIL')
+            'IOChan.SetReadResult: device table ptr is NIL') ;
+      RETURN IOConsts.notKnown
    ELSE
       RETURN( dtp^.result )
    END
@@ -471,8 +472,9 @@ END ReadResult ;
 PROCEDURE CurrentFlags (cid: ChanId) : ChanConsts.FlagSet ;
   (* Returns the set of flags that currently apply to the channel cid. *)
 VAR
-   did: IOLink.DeviceId ;
-   dtp: IOLink.DeviceTablePtr ;
+   did  : IOLink.DeviceId ;
+   dtp  : IOLink.DeviceTablePtr ;
+   empty: ChanConsts.FlagSet ;
 BEGIN
    CheckValid(cid) ;
    did := RTio.GetDeviceId(cid) ;
@@ -480,7 +482,9 @@ BEGIN
    IF dtp=NIL
    THEN
       RAISE(iochan, ORD(hardDeviceError),
-            'IOChan.SetReadResult: device table ptr is NIL')
+            'IOChan.SetReadResult: device table ptr is NIL') ;
+      empty := ChanConsts.FlagSet {} ;
+      RETURN empty
    ELSE
       RETURN( dtp^.flags )
    END
@@ -537,7 +541,8 @@ BEGIN
    IF dtp=NIL
    THEN
       RAISE(iochan, ORD(hardDeviceError),
-            'IOChan.DeviceError: device table ptr is NIL')
+            'IOChan.DeviceError: device table ptr is NIL') ;
+      RETURN DeviceError (invalid)
    ELSE
       RETURN( dtp^.errNum )
    END

@@ -102,7 +102,9 @@ non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 	   && !node->externally_visible
 	   && !node->used_from_other_partition
 	   && !node->in_other_partition
-	   && node->get_availability () >= AVAIL_AVAILABLE);
+	   && node->get_availability () >= AVAIL_AVAILABLE
+	   && !DECL_STATIC_CONSTRUCTOR (node->decl)
+	   && !DECL_STATIC_DESTRUCTOR (node->decl));
 }
 
 /* Return true when function can be marked local.  */
@@ -116,7 +118,6 @@ cgraph_node::local_p (void)
      return n->callees->callee->local_p ();
    return !n->call_for_symbol_thunks_and_aliases (non_local_p,
 						  NULL, true);
-					
 }
 
 /* A helper for comdat_can_be_unshared_p.  */

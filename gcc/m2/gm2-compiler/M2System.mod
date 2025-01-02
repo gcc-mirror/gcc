@@ -50,7 +50,7 @@ FROM SymbolTable IMPORT NulSym,
                         PutProcedureNoReturn,
                         GetSym, GetSymName,
                         GetCurrentModule, SetCurrentModule,
-                        IsLegal,
+                        IsLegal, ProcedureKind,
                         PopValue,
                         PopSize ;
 
@@ -73,7 +73,7 @@ FROM M2Base IMPORT Real, Cardinal, Integer, Complex,
                    LongReal, LongCard, LongInt, LongComplex,
                    ShortReal, ShortCard, ShortInt, ShortComplex ;
 
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM m2decl IMPORT GetBitsPerBitset, GetBitsPerUnit ;
 
@@ -116,7 +116,7 @@ END Init ;
    CreateMinMaxFor - creates the min and max values for, type, given gccType.
 *)
 
-PROCEDURE CreateMinMaxFor (type: CARDINAL; min, max: ARRAY OF CHAR; gccType: Tree) ;
+PROCEDURE CreateMinMaxFor (type: CARDINAL; min, max: ARRAY OF CHAR; gccType: tree) ;
 VAR
    maxval, minval: CARDINAL ;
 BEGIN
@@ -140,7 +140,7 @@ END CreateMinMaxFor ;
 
 PROCEDURE MapType (type: CARDINAL;
                    name, min, max: ARRAY OF CHAR;
-                   needsExporting: BOOLEAN; t: Tree) ;
+                   needsExporting: BOOLEAN; t: tree) ;
 VAR
    n: Name ;
 BEGIN
@@ -170,7 +170,7 @@ END MapType ;
 *)
 
 PROCEDURE CreateType (name, min, max: ARRAY OF CHAR;
-                      needsExporting: BOOLEAN; gccType: Tree) : CARDINAL ;
+                      needsExporting: BOOLEAN; gccType: tree) : CARDINAL ;
 VAR
    type: CARDINAL ;
 BEGIN
@@ -194,7 +194,7 @@ END CreateType ;
 *)
 
 PROCEDURE AttemptToCreateType (name, min, max: ARRAY OF CHAR;
-                               needsExporting: BOOLEAN; gccType: Tree) ;
+                               needsExporting: BOOLEAN; gccType: tree) ;
 BEGIN
    Assert (IsLegal (CreateType (name, min, max, needsExporting, gccType)))
 END AttemptToCreateType ;
@@ -206,7 +206,7 @@ END AttemptToCreateType ;
 *)
 
 PROCEDURE CreateSetType (name, highBit: ARRAY OF CHAR;
-                         needsExporting: BOOLEAN; gccType: Tree) : CARDINAL ;
+                         needsExporting: BOOLEAN; gccType: tree) : CARDINAL ;
 VAR
    low,
    high,
@@ -237,7 +237,7 @@ END CreateSetType ;
 *)
 
 PROCEDURE AttemptToCreateSetType (name, highBit: ARRAY OF CHAR;
-                                  needsExporting: BOOLEAN; gccType: Tree) ;
+                                  needsExporting: BOOLEAN; gccType: tree) ;
 BEGIN
    Assert (IsLegal (CreateSetType (name, highBit, needsExporting, gccType)))
 END AttemptToCreateSetType ;
@@ -372,43 +372,45 @@ BEGIN
       END
    END ;
 
-   (* And now the predefined pseudo functions *)
+   (* The predefined pseudo functions.  *)
 
    Adr := MakeProcedure(BuiltinTokenNo,
                         MakeKey('ADR')) ;           (* Function        *)
-   PutFunction(Adr, Address) ;                      (* Return Type     *)
+   PutFunction (BuiltinTokenNo, Adr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
                                                     (* Address         *)
-
    TSize := MakeProcedure(BuiltinTokenNo,
                           MakeKey('TSIZE')) ;       (* Function        *)
-   PutFunction(TSize, ZType) ;                      (* Return Type     *)
+   PutFunction (BuiltinTokenNo, TSize, DefProcedure, ZType) ;
+                                                    (* Return Type     *)
                                                     (* ZType           *)
-
    TBitSize := MakeProcedure(BuiltinTokenNo,
                              MakeKey('TBITSIZE')) ; (* GNU extension   *)
                                                     (* Function        *)
-   PutFunction(TBitSize, ZType) ;                   (* Return Type     *)
+   PutFunction (BuiltinTokenNo, TBitSize, DefProcedure, ZType) ;
+                                                    (* Return Type     *)
                                                     (* ZType           *)
-   (* and the ISO specific predefined pseudo functions *)
+   (* The ISO specific predefined pseudo functions.  *)
 
    AddAdr := MakeProcedure(BuiltinTokenNo,
                            MakeKey('ADDADR')) ;     (* Function        *)
-   PutFunction(AddAdr, Address) ;                   (* Return Type     *)
-
+   PutFunction (BuiltinTokenNo, AddAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
    SubAdr := MakeProcedure(BuiltinTokenNo,
                            MakeKey('SUBADR')) ;     (* Function        *)
-   PutFunction(SubAdr, Address) ;                   (* Return Type     *)
+   PutFunction (BuiltinTokenNo, SubAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
+   DifAdr := MakeProcedure (BuiltinTokenNo,
+                            MakeKey ('DIFADR')) ;   (* Function        *)
+   PutFunction (BuiltinTokenNo, DifAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
+   MakeAdr := MakeProcedure (BuiltinTokenNo,
+                             MakeKey ('MAKEADR')) ; (* Function        *)
+   PutFunction (BuiltinTokenNo, MakeAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
 
-   DifAdr := MakeProcedure(BuiltinTokenNo,
-                           MakeKey('DIFADR')) ;     (* Function        *)
-   PutFunction(DifAdr, Address) ;                   (* Return Type     *)
-
-   MakeAdr := MakeProcedure(BuiltinTokenNo,
-                            MakeKey('MAKEADR')) ;   (* Function        *)
-   PutFunction(MakeAdr, Address) ;                  (* Return Type     *)
-
-   (* the return value for ROTATE, SHIFT and CAST is actually the
-      same as the first parameter, this is faked in M2Quads *)
+   (* The return value for ROTATE, SHIFT and CAST is the
+      same as the first parameter and is faked in M2Quads.  *)
 
    Rotate := MakeProcedure(BuiltinTokenNo,
                            MakeKey('ROTATE')) ;     (* Function        *)
@@ -419,7 +421,7 @@ BEGIN
 
    Throw := MakeProcedure(BuiltinTokenNo,
                           MakeKey('THROW')) ;       (* Procedure       *)
-   PutProcedureNoReturn (Throw, TRUE) ;
+   PutProcedureNoReturn (Throw, DefProcedure, TRUE) ;
 
    CreateMinMaxFor(Word, 'MinWord', 'MaxWord', GetWordType()) ;
    CreateMinMaxFor(Address, 'MinAddress', 'MaxAddress', GetPointerType()) ;

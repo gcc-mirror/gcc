@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _CmdArgs_H
 #define _CmdArgs_C
 
+#include "GCmdArgs.h"
 #   include "GASCII.h"
 #   include "GStrLib.h"
 
@@ -149,7 +149,7 @@ static bool GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high, unsign
     }
   if (ArgIndex < HighA)
     {
-      Arg[ArgIndex] = ASCII_nul;
+      const_cast<char *>(Arg)[ArgIndex] = ASCII_nul;
     }
   return (*CmdIndex) < HighC;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -216,7 +216,7 @@ static void CopyChar (const char *From_, unsigned int _From_high, unsigned int *
       if ((*FromIndex) < FromHigh)
         {
           /* Copy Normal Character  */
-          To[(*ToIndex)] = From[(*FromIndex)];
+          const_cast<char *>(To)[(*ToIndex)] = From[(*FromIndex)];
           (*ToIndex) += 1;
           (*FromIndex) += 1;
         }
@@ -314,10 +314,10 @@ extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLin
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_CmdArgs_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_CmdArgs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_CmdArgs_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_CmdArgs_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

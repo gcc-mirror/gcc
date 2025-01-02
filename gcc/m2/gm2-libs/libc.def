@@ -211,7 +211,7 @@ PROCEDURE close (d: INTEGER) : [ INTEGER ] ;
    open - open the file, filename with flag and mode.
 *)
 
-PROCEDURE open (filename: ADDRESS; oflag: INTEGER; ...) : INTEGER ;
+PROCEDURE open (filename: ADDRESS; oflag: INTEGER; mode: INTEGER) : INTEGER ;
 
 
 (*

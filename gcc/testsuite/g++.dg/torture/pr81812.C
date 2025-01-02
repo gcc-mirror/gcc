@@ -1,3 +1,5 @@
+// { dg-xfail-if "PR108277" { arm_thumb1 } }
+
 struct Error {
   virtual void error(... ) const;
 };

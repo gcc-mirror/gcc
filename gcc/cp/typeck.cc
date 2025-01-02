@@ -4076,7 +4076,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
     tree ar = cp_default_conversion (array, complain);
     tree ind = cp_default_conversion (idx, complain);
 
-    if (!first && flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
+    if (!processing_template_decl
+	&& !first && flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
       ar = first = save_expr (ar);
 
     /* Put the integer in IND to simplify error checking.  */
@@ -4178,11 +4179,27 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       if (!nonvirtual && is_dummy_object (instance_ptr))
 	nonvirtual = true;
 
-      if (TREE_SIDE_EFFECTS (instance_ptr))
-	instance_ptr = instance_save_expr = save_expr (instance_ptr);
+      /* Use force_target_expr even when instance_ptr doesn't have
+	 side-effects, unless it is a simple decl or constant, so
+	 that we don't ubsan instrument the expression multiple times.
+	 Don't use save_expr, as save_expr can avoid building a SAVE_EXPR
+	 and building a SAVE_EXPR manually can be optimized away during
+	 cp_fold.  See PR116449 and PR117259.  */
+      if (TREE_SIDE_EFFECTS (instance_ptr)
+	  || (!nonvirtual
+	      && !DECL_P (instance_ptr)
+	      && !TREE_CONSTANT (instance_ptr)))
+	instance_ptr = instance_save_expr
+	  = force_target_expr (TREE_TYPE (instance_ptr), instance_ptr,
+			       complain);
 
-      if (TREE_SIDE_EFFECTS (function))
-	function = save_expr (function);
+      /* See above comment.  */
+      if (TREE_SIDE_EFFECTS (function)
+	  || (!nonvirtual
+	      && !DECL_P (function)
+	      && !TREE_CONSTANT (function)))
+	function
+	  = force_target_expr (TREE_TYPE (function), function, complain);
 
       /* Start by extracting all the information from the PMF itself.  */
       e3 = pfn_from_ptrmemfunc (function);

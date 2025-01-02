@@ -38,9 +38,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _Environment_H
 #define _Environment_C
 
+#include "GEnvironment.h"
 #   include "GSYSTEM.h"
 #   include "Glibc.h"
 #   include "GASCII.h"
@@ -86,16 +86,16 @@ extern "C" bool Environment_GetEnvironment (const char *Env_, unsigned int _Env_
 
   i = 0;
   High = _dest_high;
-  Addr = static_cast<GetEnvironment__T1> (libc_getenv (&Env));
+  Addr = static_cast<GetEnvironment__T1> (libc_getenv (const_cast<void*> (static_cast<const void*>(Env))));
   while (((i < High) && (Addr != NULL)) && ((*Addr) != ASCII_nul))
     {
-      dest[i] = (*Addr);
+      const_cast<char *>(dest)[i] = (*Addr);
       Addr += 1;
       i += 1;
     }
   if (i < High)
     {
-      dest[i] = ASCII_nul;
+      const_cast<char *>(dest)[i] = ASCII_nul;
     }
   return Addr != NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -116,15 +116,15 @@ extern "C" bool Environment_PutEnvironment (const char *EnvDef_, unsigned int _E
   /* make a local copy of each unbounded array.  */
   memcpy (EnvDef, EnvDef_, _EnvDef_high+1);
 
-  return (libc_putenv (&EnvDef)) == 0;
+  return (libc_putenv (const_cast<void*> (static_cast<const void*>(EnvDef)))) == 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_Environment_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Environment_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Environment_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Environment_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

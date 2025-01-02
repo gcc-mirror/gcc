@@ -4167,7 +4167,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      out    (le  gt  gt  le  ge  lt  lt  ge )
  (simplify
   (cmp:c (minmax:c @0 @1) @0)
-  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && (!VECTOR_TYPE_P (TREE_TYPE (@0))
+	   || (VECTOR_TYPE_P (type)
+	       && (!expand_vec_cmp_expr_p (TREE_TYPE (@0), type, cmp)
+		   || expand_vec_cmp_expr_p (TREE_TYPE (@0), type, out)))))
    (out @0 @1))))
 /* MIN (X, 5) == 0 -> X == 0
    MIN (X, 5) == 7 -> false  */
@@ -5165,35 +5169,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e) */
  (simplify
   (op (vec_cond:s @0 @1 @2) (vec_cond:s @0 @3 @4))
-  (if (TREE_CODE_CLASS (op) != tcc_comparison
-       || types_match (type, TREE_TYPE (@1))
-       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
-       || (optimize_vectors_before_lowering_p ()
-	   /* The following is optimistic on the side of non-support, we are
-	      missing the legacy vcond{,u,eq} cases.  Do this only when
-	      lowering will be able to fixup..  */
-	   && !expand_vec_cond_expr_p (TREE_TYPE (@1),
-				       TREE_TYPE (@0), ERROR_MARK)))
+  (if (VECTOR_TYPE_P (type)
+       && (TREE_CODE_CLASS (op) != tcc_comparison
+	   || types_match (type, TREE_TYPE (@1))
+	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+	   || (optimize_vectors_before_lowering_p ()
+	       /* The following is optimistic on the side of non-support, we are
+		  missing the legacy vcond{,u,eq} cases.  Do this only when
+		  lowering will be able to fixup..  */
+	       && !expand_vec_cond_expr_p (TREE_TYPE (@1),
+					   TREE_TYPE (@0), ERROR_MARK))))
    (vec_cond @0 (op! @1 @3) (op! @2 @4))))
 
 /* (c ? a : b) op d  -->  c ? (a op d) : (b op d) */
  (simplify
   (op (vec_cond:s @0 @1 @2) @3)
-  (if (TREE_CODE_CLASS (op) != tcc_comparison
-       || types_match (type, TREE_TYPE (@1))
-       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
-       || (optimize_vectors_before_lowering_p ()
-	   && !expand_vec_cond_expr_p (TREE_TYPE (@1),
-				       TREE_TYPE (@0), ERROR_MARK)))
+  (if (VECTOR_TYPE_P (type)
+       && (TREE_CODE_CLASS (op) != tcc_comparison
+	   || types_match (type, TREE_TYPE (@1))
+	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+	   || (optimize_vectors_before_lowering_p ()
+	       && !expand_vec_cond_expr_p (TREE_TYPE (@1),
+					   TREE_TYPE (@0), ERROR_MARK))))
    (vec_cond @0 (op! @1 @3) (op! @2 @3))))
  (simplify
   (op @3 (vec_cond:s @0 @1 @2))
-  (if (TREE_CODE_CLASS (op) != tcc_comparison
-       || types_match (type, TREE_TYPE (@1))
-       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
-       || (optimize_vectors_before_lowering_p ()
-	   && !expand_vec_cond_expr_p (TREE_TYPE (@1),
-				       TREE_TYPE (@0), ERROR_MARK)))
+  (if (VECTOR_TYPE_P (type)
+       && (TREE_CODE_CLASS (op) != tcc_comparison
+	   || types_match (type, TREE_TYPE (@1))
+	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+	   || (optimize_vectors_before_lowering_p ()
+	       && !expand_vec_cond_expr_p (TREE_TYPE (@1),
+					   TREE_TYPE (@0), ERROR_MARK))))
    (vec_cond @0 (op! @3 @1) (op! @3 @2)))))
 
 #if GIMPLE
@@ -8661,7 +8668,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (IFN_FNMS @0 @1 @2))
   (simplify
    (negate (fmas@3 @0 @1 @2))
-   (if (single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
     (IFN_FNMS @0 @1 @2))))
 
  (simplify
@@ -8675,7 +8682,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FNMA @0 @1 @2))
  (simplify
   (negate (IFN_FMS@3 @0 @1 @2))
-   (if (single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
     (IFN_FNMA @0 @1 @2)))
 
  (simplify
@@ -8689,7 +8696,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FMS @0 @1 @2))
  (simplify
   (negate (IFN_FNMA@3 @0 @1 @2))
-  (if (single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
    (IFN_FMS @0 @1 @2)))
 
  (simplify
@@ -8703,7 +8710,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FMA @0 @1 @2))
  (simplify
   (negate (IFN_FNMS@3 @0 @1 @2))
-  (if (single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
    (IFN_FMA @0 @1 @2))))
 
 /* CLZ simplifications.  */

@@ -31,7 +31,8 @@ DEFINITION MODULE M2GCCDeclare ;
 *)
 
 FROM SYSTEM IMPORT WORD ;
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
+FROM M2BasicBlock IMPORT BasicBlock ;
 
 TYPE
    WalkAction = PROCEDURE (WORD) ;
@@ -42,7 +43,7 @@ TYPE
    FoldConstants - a wrapper for ResolveConstantExpressions.
 *)
 
-PROCEDURE FoldConstants (start, end: CARDINAL) ;
+PROCEDURE FoldConstants (bb: BasicBlock) ;
 
 
 (*
@@ -158,7 +159,7 @@ PROCEDURE PoisonSymbols (sym: CARDINAL) ;
                           return a string constant.
 *)
 
-PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : tree ;
 
 
 (*
@@ -169,7 +170,7 @@ PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
                           return a string constant.
 *)
 
-PROCEDURE PromoteToCString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE PromoteToCString (tokenno: CARDINAL; sym: CARDINAL) : tree ;
 
 
 (*
@@ -185,7 +186,7 @@ PROCEDURE CompletelyResolved (sym: CARDINAL) : BOOLEAN ;
    ConstantKnownAndUsed -
 *)
 
-PROCEDURE ConstantKnownAndUsed (sym: CARDINAL; t: Tree) ;
+PROCEDURE ConstantKnownAndUsed (sym: CARDINAL; t: tree) ;
 
 
 (*

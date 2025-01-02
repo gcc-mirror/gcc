@@ -10,8 +10,6 @@ long_double_to_i64 (long double x)
   return x;
 }
 
-/* { dg-final { scan-assembler-times {\n\tvpdi\t%v\d+,%v\d+,%v\d+,1\n} 1 } } */
-/* { dg-final { scan-assembler-times {\n\tvpdi\t%v\d+,%v\d+,%v\d+,5\n} 1 } } */
 /* { dg-final { scan-assembler-times {\n\tcgxbr\t} 1 } } */
 
 int

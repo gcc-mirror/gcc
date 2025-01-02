@@ -27,8 +27,7 @@ test_const_size_oob_1 (void)
   if (str) {
     str->len = 10;
     memset(str->data, 'x', 10); /* { dg-warning "heap-based buffer overflow" "Wanalyzer-out-of-bounds" } */
-    /* { dg-warning "'memset' writing 10 bytes into a region of size 0 overflows the destination" "Wstringop-overflow" { target c } .-1 } */
-    /* { dg-warning "'void\\* memset\\(void\\*, int, size_t\\)' writing 10 bytes into a region of size 0 overflows the destination" "Wstringop-overflow" { target c++ } .-2 } */
+    /* { dg-warning "'\[^\n\r\]*memset\[^\n\r\]*' writing 10 bytes into a region of size 0 overflows the destination" "Wstringop-overflow" { target *-*-* } .-1 } */
     return str;
   }
   return NULL;
@@ -42,8 +41,7 @@ test_const_size_oob_2 (void)
     str->len = 10;
     /* Using the wrong size here.  */
     memset(str->data, 'x', 11); /* { dg-warning "heap-based buffer overflow" "Wanalyzer-out-of-bounds" } */
-    /* { dg-warning "'memset' writing 11 bytes into a region of size 10 overflows the destination" "Wstringop-overflow" { target c } .-1 } */
-    /* { dg-warning "'void\\* memset\\(void\\*, int, size_t\\)' writing 11 bytes into a region of size 10 overflows the destination" "Wstringop-overflow" { target c++ } .-2 } */
+    /* { dg-warning "'\[^\n\r\]*memset\[^\n\r\]*' writing 11 bytes into a region of size 10 overflows the destination" "Wstringop-overflow" { target *-*-* } .-1 } */
 
     return str;
   }

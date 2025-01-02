@@ -2831,7 +2831,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr int
   ilogb(_Float16 __x)
-  { return _Float16(__builtin_ilogbf(__x)); }
+  { return __builtin_ilogbf(__x); }
 
   constexpr _Float16
   lgamma(_Float16 __x)
@@ -2839,11 +2839,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long long
   llrint(_Float16 __x)
-  { return _Float16(__builtin_llrintf(__x)); }
+  { return __builtin_llrintf(__x); }
 
   constexpr long long
   llround(_Float16 __x)
-  { return _Float16(__builtin_llroundf(__x)); }
+  { return __builtin_llroundf(__x); }
 
   constexpr _Float16
   log1p(_Float16 __x)
@@ -2860,11 +2860,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long
   lrint(_Float16 __x)
-  { return _Float16(__builtin_lrintf(__x)); }
+  { return __builtin_lrintf(__x); }
 
   constexpr long
   lround(_Float16 __x)
-  { return _Float16(__builtin_lroundf(__x)); }
+  { return __builtin_lroundf(__x); }
 
   constexpr _Float16
   nearbyint(_Float16 __x)
@@ -2873,8 +2873,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr _Float16
   nextafter(_Float16 __x, _Float16 __y)
   {
-    if (std::__is_constant_evaluated())
-      return __builtin_nextafterf16(__x, __y);
+#if __cpp_if_consteval >= 202106L
+    // Can't use if (std::__is_constant_evaluated()) here, as it
+    // doesn't guarantee optimizing the body away at -O0 and
+    // nothing defines nextafterf16.
+    if consteval { return __builtin_nextafterf16(__x, __y); }
+#endif
 #ifdef __INT16_TYPE__
     using __float16_int_type = __INT16_TYPE__;
 #else
@@ -3549,7 +3553,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr int
   ilogb(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_ilogbf(__x)); }
+  { return __builtin_ilogbf(__x); }
 
   constexpr __gnu_cxx::__bfloat16_t
   lgamma(__gnu_cxx::__bfloat16_t __x)
@@ -3557,11 +3561,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long long
   llrint(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_llrintf(__x)); }
+  { return __builtin_llrintf(__x); }
 
   constexpr long long
   llround(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_llroundf(__x)); }
+  { return __builtin_llroundf(__x); }
 
   constexpr __gnu_cxx::__bfloat16_t
   log1p(__gnu_cxx::__bfloat16_t __x)
@@ -3578,11 +3582,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long
   lrint(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_lrintf(__x)); }
+  { return __builtin_lrintf(__x); }
 
   constexpr long
   lround(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_lroundf(__x)); }
+  { return __builtin_lroundf(__x); }
 
   constexpr __gnu_cxx::__bfloat16_t
   nearbyint(__gnu_cxx::__bfloat16_t __x)
@@ -3591,8 +3595,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr __gnu_cxx::__bfloat16_t
   nextafter(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
   {
-    if (std::__is_constant_evaluated())
-      return __builtin_nextafterf16b(__x, __y);
+#if __cpp_if_consteval >= 202106L
+    // Can't use if (std::__is_constant_evaluated()) here, as it
+    // doesn't guarantee optimizing the body away at -O0 and
+    // nothing defines nextafterf16b.
+    if consteval { return __builtin_nextafterf16b(__x, __y); }
+#endif
 #ifdef __INT16_TYPE__
     using __bfloat16_int_type = __INT16_TYPE__;
 #else

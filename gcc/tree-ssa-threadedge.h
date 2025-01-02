@@ -101,9 +101,9 @@ private:
 					  unsigned limit);
 
   bool thread_around_empty_blocks (vec<class jump_thread_edge *> *path,
-				   edge, bitmap visited);
+				   edge, bitmap visited, unsigned &limit);
   int thread_through_normal_block (vec<jump_thread_edge *> *path,
-				   edge, bitmap visited);
+				   edge, bitmap visited, unsigned &limit);
   void thread_across_edge (edge);
   bool record_temporary_equivalences_from_phis (edge);
   gimple *record_temporary_equivalences_from_stmts_at_dest (edge);

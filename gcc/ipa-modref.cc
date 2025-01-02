@@ -334,7 +334,7 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
   if (check_flags
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
-  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+  if (ecf_flags & ECF_CONST)
     return ((!side_effects || !nondeterministic)
 	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
@@ -1263,7 +1263,7 @@ modref_access_analysis::merge_call_side_effects
   int flags = gimple_call_flags (call);
 
   /* Nothing to do for non-looping cont functions.  */
-  if ((flags & (ECF_CONST | ECF_NOVOPS))
+  if ((flags & ECF_CONST)
       && !(flags & ECF_LOOPING_CONST_OR_PURE))
     return false;
 
@@ -1276,7 +1276,7 @@ modref_access_analysis::merge_call_side_effects
   /* Merge side effects and non-determinism.
      PURE/CONST flags makes functions deterministic and if there is
      no LOOPING_CONST_OR_PURE they also have no side effects.  */
-  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+  if (!(flags & (ECF_CONST | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE))
     {
       if (!m_summary->side_effects && callee_summary->side_effects)
@@ -1465,7 +1465,7 @@ modref_access_analysis::process_fnspec (gcall *call)
 
   /* PURE/CONST flags makes functions deterministic and if there is
      no LOOPING_CONST_OR_PURE they also have no side effects.  */
-  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+  if (!(flags & (ECF_CONST | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE)
       || (cfun->can_throw_non_call_exceptions
 	  && stmt_could_throw_p (cfun, call)))
@@ -1604,12 +1604,12 @@ modref_access_analysis::analyze_call (gcall *stmt)
       print_gimple_stmt (dump_file, stmt, 0);
     }
 
-  if ((flags & (ECF_CONST | ECF_NOVOPS))
+  if ((flags & ECF_CONST)
       && !(flags & ECF_LOOPING_CONST_OR_PURE))
     {
       if (dump_file)
 	fprintf (dump_file,
-		 " - ECF_CONST | ECF_NOVOPS, ignoring all stores and all loads "
+		 " - ECF_CONST, ignoring all stores and all loads "
 		 "except for args.\n");
       return;
     }
@@ -1624,7 +1624,13 @@ modref_access_analysis::analyze_call (gcall *stmt)
       if (dump_file)
 	fprintf (dump_file, gimple_call_internal_p (stmt)
 		 ? " - Internal call" : " - Indirect call.\n");
-      process_fnspec (stmt);
+      if (flags & ECF_NOVOPS)
+        {
+	  set_side_effects ();
+	  set_nondeterministic ();
+        }
+      else
+	process_fnspec (stmt);
       return;
     }
   /* We only need to handle internal calls in IPA mode.  */
@@ -2604,8 +2610,9 @@ modref_eaf_analysis::analyze_ssa_name (tree name, bool deferred)
 		 is used arbitrarily.  */
 	      if (memory_access_to (gimple_assign_rhs1 (assign), name))
 		m_lattice[index].merge (deref_flags (0, false));
+
 	      /* Handle *name = *exp.  */
-	      else if (memory_access_to (gimple_assign_lhs (assign), name))
+	      if (memory_access_to (gimple_assign_lhs (assign), name))
 		m_lattice[index].merge_direct_store ();
 	    }
 	  /* Handle lhs = *name.  */
@@ -2969,7 +2976,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 		summary->arg_flags.safe_grow_cleared (count, true);
 	      summary->arg_flags[parm_index] = EAF_UNUSED;
 	    }
-	  else if (summary_lto)
+	  if (summary_lto)
 	    {
 	      if (parm_index >= summary_lto->arg_flags.length ())
 		summary_lto->arg_flags.safe_grow_cleared (count, true);
@@ -3028,7 +3035,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 		summary->arg_flags.safe_grow_cleared (count, true);
 	      summary->arg_flags[parm_index] = flags;
 	    }
-	  else if (summary_lto)
+	  if (summary_lto)
 	    {
 	      if (parm_index >= summary_lto->arg_flags.length ())
 		summary_lto->arg_flags.safe_grow_cleared (count, true);
@@ -4569,7 +4576,7 @@ propagate_unknown_call (cgraph_node *node,
       return changed;
     }
 
-  if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+  if (!(ecf_flags & (ECF_CONST | ECF_PURE))
       || (ecf_flags & ECF_LOOPING_CONST_OR_PURE)
       || nontrivial_scc)
     {
@@ -4783,7 +4790,7 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      struct cgraph_node *callee;
 
 	      if (!callee_edge->inline_failed
-		 || ((flags & (ECF_CONST | ECF_NOVOPS))
+		 || ((flags & ECF_CONST)
 		     && !(flags & ECF_LOOPING_CONST_OR_PURE)))
 		continue;
 
@@ -5206,8 +5213,8 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	    {
 	      escape_summary *sum = escape_summaries->get (e);
 
-	      if (!sum || (e->indirect_info->ecf_flags
-			   & (ECF_CONST | ECF_NOVOPS)))
+	      if (!sum || ((e->indirect_info->ecf_flags & ECF_CONST)
+		  && !(e->indirect_info->ecf_flags & ECF_LOOPING_CONST_OR_PURE)))
 		continue;
 
 	      changed |= modref_merge_call_site_flags
@@ -5232,8 +5239,8 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	      modref_summary_lto *callee_summary_lto = NULL;
 	      struct cgraph_node *callee;
 
-	      if (ecf_flags & (ECF_CONST | ECF_NOVOPS)
-		  || !callee_edge->inline_failed)
+	      if ((ecf_flags & ECF_CONST)
+		  && !(ecf_flags & ECF_LOOPING_CONST_OR_PURE))
 		continue;
 
 	      /* Get the callee and its summary.  */
@@ -5331,7 +5338,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 
   if (!callee_info && to_info)
     {
-      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
+      if (!(flags & (ECF_CONST | ECF_PURE | ECF_NOVOPS)))
 	to_info->loads->collapse ();
       if (!ignore_stores)
 	to_info->stores->collapse ();
@@ -5346,7 +5353,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
   /* Merge side effects and non-determinism.
      PURE/CONST flags makes functions deterministic and if there is
      no LOOPING_CONST_OR_PURE they also have no side effects.  */
-  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+  if (!(flags & (ECF_CONST | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE))
     {
       if (to_info)

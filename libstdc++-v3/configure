@@ -54085,6 +54085,8 @@ if test "$ac_cv_have_decl_F_GETFL$ac_cv_have_decl_F_SETFL" = yesyes ; then
 "
 if test "x$ac_cv_have_decl_O_NONBLOCK" = xyes; then :
 
+$as_echo "#define HAVE_O_NONBLOCK 1" >>confdefs.h
+
 fi
 
 fi

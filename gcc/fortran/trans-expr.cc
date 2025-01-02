@@ -1728,10 +1728,12 @@ gfc_trans_class_init_assign (gfc_code *code)
 {
   stmtblock_t block;
   tree tmp;
+  bool cmp_flag = true;
   gfc_se dst,src,memsz;
   gfc_expr *lhs, *rhs, *sz;
   gfc_component *cmp;
   gfc_symbol *sym;
+  gfc_ref *ref;
 
   gfc_start_block (&block);
 
@@ -1749,24 +1751,25 @@ gfc_trans_class_init_assign (gfc_code *code)
   rhs->rank = 0;
 
   /* Check def_init for initializers.  If this is an INTENT(OUT) dummy with all
-     default initializer components NULL, return NULL_TREE and use the passed
-     value as required by F2018(8.5.10).  */
+     default initializer components NULL, use the passed value even though
+     F2018(8.5.10) asserts that it should considered to be undefined. This is
+     needed for consistency with other brands.  */
   sym = code->expr1->expr_type == EXPR_VARIABLE ? code->expr1->symtree->n.sym
 						: NULL;
   if (code->op != EXEC_ALLOCATE
       && sym && sym->attr.dummy
       && sym->attr.intent == INTENT_OUT)
     {
-      if (!lhs->ref && lhs->symtree->n.sym->attr.dummy)
+      ref = rhs->ref;
+      while (ref && ref->next)
+	ref = ref->next;
+      cmp = ref->u.c.component->ts.u.derived->components;
+      for (; cmp; cmp = cmp->next)
 	{
-	  cmp = rhs->ref->next->u.c.component->ts.u.derived->components;
-	  for (; cmp; cmp = cmp->next)
-	    {
-	      if (cmp->initializer)
-		break;
-	      else if (!cmp->next)
-		return NULL_TREE;
-	    }
+	  if (cmp->initializer)
+	    break;
+	  else if (!cmp->next)
+	    cmp_flag = false;
 	}
     }
 
@@ -1780,7 +1783,7 @@ gfc_trans_class_init_assign (gfc_code *code)
       gfc_add_full_array_ref (lhs, tmparr);
       tmp = gfc_trans_class_array_init_assign (rhs, lhs, code->expr1);
     }
-  else
+  else if (cmp_flag)
     {
       /* Scalar initialization needs the _data component.  */
       gfc_add_data_component (lhs);
@@ -1810,6 +1813,8 @@ gfc_trans_class_init_assign (gfc_code *code)
 			    tmp, build_empty_stmt (input_location));
 	}
     }
+  else
+    tmp = build_empty_stmt (input_location);
 
   if (code->expr1->symtree->n.sym->attr.dummy
       && (code->expr1->symtree->n.sym->attr.optional
@@ -4429,12 +4434,15 @@ gfc_get_interface_mapping_charlen (gfc_interface_mapping * mapping,
 
 static tree
 gfc_get_interface_mapping_array (stmtblock_t * block, gfc_symbol * sym,
-				 gfc_packed packed, tree data)
+				 gfc_packed packed, tree data, tree len)
 {
   tree type;
   tree var;
 
-  type = gfc_typenode_for_spec (&sym->ts);
+  if (len != NULL_TREE && (TREE_CONSTANT (len) || VAR_P (len)))
+    type = gfc_get_character_type_len (sym->ts.kind, len);
+  else
+    type = gfc_typenode_for_spec (&sym->ts);
   type = gfc_get_nodesc_array_type (type, sym->as, packed,
 				    !sym->attr.target && !sym->attr.pointer
 				    && !sym->attr.proc_pointer);
@@ -4581,7 +4589,8 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
      convert it to a boundless character type.  */
   else if (!sym->attr.dimension && sym->ts.type == BT_CHARACTER)
     {
-      tmp = gfc_get_character_type_len (sym->ts.kind, NULL);
+      se->string_length = gfc_evaluate_now (se->string_length, &se->pre);
+      tmp = gfc_get_character_type_len (sym->ts.kind, se->string_length);
       tmp = build_pointer_type (tmp);
       if (sym->attr.pointer)
         value = build_fold_indirect_ref_loc (input_location,
@@ -4600,7 +4609,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   /* For character(*), use the actual argument's descriptor.  */
   else if (sym->ts.type == BT_CHARACTER && !new_sym->ts.u.cl->length)
     value = build_fold_indirect_ref_loc (input_location,
-				     se->expr);
+					 se->expr);
 
   /* If the argument is an array descriptor, use it to determine
      information about the actual argument's shape.  */
@@ -4614,7 +4623,8 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
       /* Create the replacement variable.  */
       tmp = gfc_conv_descriptor_data_get (desc);
       value = gfc_get_interface_mapping_array (&se->pre, sym,
-					       PACKED_NO, tmp);
+					       PACKED_NO, tmp,
+					       se->string_length);
 
       /* Use DESC to work out the upper bounds, strides and offset.  */
       gfc_set_interface_mapping_bounds (&se->pre, TREE_TYPE (value), desc);
@@ -4622,7 +4632,8 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   else
     /* Otherwise we have a packed array.  */
     value = gfc_get_interface_mapping_array (&se->pre, sym,
-					     PACKED_FULL, se->expr);
+					     PACKED_FULL, se->expr,
+					     se->string_length);
 
   new_sym->backend_decl = value;
 }
@@ -6220,6 +6231,76 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 }
 
 
+/* Helper function for the handling of NULL() actual arguments associated with
+   non-optional dummy variables.  Argument parmse should already be set up.  */
+static void
+conv_null_actual (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym)
+{
+  gcc_assert (fsym && !fsym->attr.optional);
+
+  /* Obtain the character length for a NULL() actual with a character
+     MOLD argument.  Otherwise substitute a suitable dummy length.
+     Here we handle only non-optional dummies of non-bind(c) procedures.  */
+  if (fsym->ts.type == BT_CHARACTER)
+    {
+      if (e->ts.type == BT_CHARACTER
+	  && e->symtree->n.sym->ts.type == BT_CHARACTER)
+	{
+	  /* MOLD is present.  Substitute a temporary character NULL pointer.
+	     For an assumed-rank dummy we need a descriptor that passes the
+	     correct rank.  */
+	  if (fsym->as && fsym->as->type == AS_ASSUMED_RANK)
+	    {
+	      tree rank;
+	      tree tmp = parmse->expr;
+	      tmp = gfc_conv_scalar_to_descriptor (parmse, tmp, fsym->attr);
+	      rank = gfc_conv_descriptor_rank (tmp);
+	      gfc_add_modify (&parmse->pre, rank,
+			      build_int_cst (TREE_TYPE (rank), e->rank));
+	      parmse->expr = gfc_build_addr_expr (NULL_TREE, tmp);
+	    }
+	  else
+	    {
+	      tree tmp = gfc_create_var (TREE_TYPE (parmse->expr), "null");
+	      gfc_add_modify (&parmse->pre, tmp,
+			      build_zero_cst (TREE_TYPE (tmp)));
+	      parmse->expr = gfc_build_addr_expr (NULL_TREE, tmp);
+	    }
+
+	  /* Ensure that a usable length is available.  */
+	  if (parmse->string_length == NULL_TREE)
+	    {
+	      gfc_typespec *ts = &e->symtree->n.sym->ts;
+
+	      if (ts->u.cl->length != NULL
+		  && ts->u.cl->length->expr_type == EXPR_CONSTANT)
+		gfc_conv_const_charlen (ts->u.cl);
+
+	      if (ts->u.cl->backend_decl)
+		parmse->string_length = ts->u.cl->backend_decl;
+	    }
+	}
+      else if (e->ts.type == BT_UNKNOWN && parmse->string_length == NULL_TREE)
+	{
+	  /* MOLD is not present.  Pass length of associated dummy character
+	     argument if constant, or zero.  */
+	  if (fsym->ts.u.cl->length != NULL
+	      && fsym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_conv_const_charlen (fsym->ts.u.cl);
+	      parmse->string_length = fsym->ts.u.cl->backend_decl;
+	    }
+	  else
+	    {
+	      parmse->string_length = gfc_create_var (gfc_charlen_type_node,
+						      "slen");
+	      gfc_add_modify (&parmse->pre, parmse->string_length,
+			      build_zero_cst (gfc_charlen_type_node));
+	    }
+	}
+    }
+}
+
 
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
@@ -7155,7 +7236,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  /* Change AR_FULL to a (:,:,:) ref to force bounds update. */
 		  gfc_ref *ref;
 		  for (ref = e->ref; ref->next; ref = ref->next)
-		    ;
+		    {
+		      if (ref->next->type == REF_INQUIRY)
+			break;
+		    };
 		  if (ref->u.ar.type == AR_FULL
 		      && ref->u.ar.as->type != AS_ASSUMED_SIZE)
 		    ref->u.ar.type = AR_SECTION;
@@ -7369,6 +7453,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      gfc_conv_const_charlen (e->symtree->n.sym->ts.u.cl);
 	      parmse.string_length = e->symtree->n.sym->ts.u.cl->backend_decl;
 	    }
+
+	  /* Obtain the character length for a NULL() actual with a character
+	     MOLD argument.  Otherwise substitute a suitable dummy length.
+	     Here we handle non-optional dummies of non-bind(c) procedures.  */
+	  if (e->expr_type == EXPR_NULL
+	      && fsym->ts.type == BT_CHARACTER
+	      && !fsym->attr.optional
+	      && !(sym->attr.is_bind_c && is_CFI_desc (fsym, NULL)))
+	    conv_null_actual (&parmse, e, fsym);
 	}
 
       /* If any actual argument of the procedure is allocatable and passed
@@ -10151,7 +10244,7 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 	      vptr_expr = NULL;
 	      se.expr = gfc_class_vptr_get (GFC_DECL_SAVED_DESCRIPTOR (
 					     re->symtree->n.sym->backend_decl));
-	      if (to_len)
+	      if (to_len && UNLIMITED_POLY (re))
 		from_len = gfc_class_len_get (GFC_DECL_SAVED_DESCRIPTOR (
 					     re->symtree->n.sym->backend_decl));
 	    }
@@ -12205,13 +12298,20 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       && (expr2->ts.type == BT_CLASS || gfc_may_be_finalized (expr2->ts)))
     {
       expr2->must_finalize = 1;
+      /* F2023 7.5.6.3: If an executable construct references a nonpointer
+	 function, the result is finalized after execution of the innermost
+	 executable construct containing the reference.  */
+      if (expr2->expr_type == EXPR_FUNCTION
+	  && (gfc_expr_attr (expr2).pointer
+	      || (expr2->ts.type == BT_CLASS && CLASS_DATA (expr2)->attr.class_pointer)))
+	expr2->must_finalize = 0;
       /* F2008 4.5.6.3 para 5: If an executable construct references a
 	 structure constructor or array constructor, the entity created by
 	 the constructor is finalized after execution of the innermost
 	 executable construct containing the reference.
 	 These finalizations were later deleted by the Combined Techical
 	 Corrigenda 1 TO 4 for fortran 2008 (f08/0011).  */
-      if (gfc_notification_std (GFC_STD_F2018_DEL)
+      else if (gfc_notification_std (GFC_STD_F2018_DEL)
 	  && (expr2->expr_type == EXPR_STRUCTURE
 	      || expr2->expr_type == EXPR_ARRAY))
 	expr2->must_finalize = 0;

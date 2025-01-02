@@ -124,6 +124,12 @@ EXTERN void alists_foreachItemInListDo (alists_alist l, alists_performOperation 
 */
 
 EXTERN alists_alist alists_duplicateList (alists_alist l);
+
+/*
+   equalList - returns TRUE if left contains the same information as right.
+*/
+
+EXTERN bool alists_equalList (alists_alist left, alists_alist right);
 #   ifdef __cplusplus
 }
 #   endif

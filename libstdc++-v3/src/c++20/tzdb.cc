@@ -342,51 +342,103 @@ namespace std::chrono
       friend istream& operator>>(istream&, on_day&);
     };
 
-    // Wrapper for chrono::year that reads a year, or one of the keywords
-    // "minimum" or "maximum", or an unambiguous prefix of a keyword.
-    struct minmax_year
+    // Wrapper for two chrono::year values, which reads the FROM and TO
+    // fields of a Rule line. The FROM field is a year and TO is a year or
+    // one of the keywords "maximum" or "only" (or an abbreviation of those).
+    // For backwards compatibility, the keyword "minimum" is recognized
+    // for FROM and interpreted as 1900.
+    struct years_from_to
     {
-      year& y;
+      year& from;
+      year& to;
 
-      friend istream& operator>>(istream& in, minmax_year&& y)
+      friend istream& operator>>(istream& in, years_from_to&& yy)
       {
-	if (ws(in).peek() == 'm') // keywords "minimum" or "maximum"
+	string s;
+	auto c = ws(in).peek();
+	if (c == 'm') [[unlikely]] // keyword "minimum"
 	  {
-	    string s;
-	    in >> s; // extract the rest of the word, but only look at s[1]
-	    if (s[1] == 'a')
-	      y.y = year::max();
-	    else if (s[1] == 'i')
-	      y.y = year::min();
-	    else
-	      in.setstate(ios::failbit);
+	    in >> s; // extract the rest of the word
+	    yy.from = year(1900);
+	  }
+	else if (int num = 0; in >> num) [[likely]]
+	  yy.from = year{num};
+
+	c = ws(in).peek();
+	if (c == 'm') // keyword "maximum"
+	  {
+	    in >> s; // extract the rest of the word
+	    yy.to = year::max();
+	  }
+	else if (c == 'o') // keyword "only"
+	  {
+	    in >> s; // extract the rest of the word
+	    yy.to = yy.from;
 	  }
 	else if (int num = 0; in >> num)
-	  y.y = year{num};
+	  yy.to = year{num};
+
 	return in;
       }
     };
 
-    // As above for minmax_year, but also supports the keyword "only",
-    // meaning that the TO year is the same as the FROM year.
-    struct minmax_year2
+    bool
+    select_std_or_dst_abbrev(string& abbrev, minutes save)
     {
-      minmax_year to;
-      year from;
+      if (size_t pos = abbrev.find('/'); pos != string::npos)
+	{
+	  // Select one of "STD/DST" for standard or daylight.
+	  if (save == 0min)
+	    abbrev.erase(pos);
+	  else
+	    abbrev.erase(0, pos + 1);
+	  return true;
+	}
+      return false;
+    }
 
-      friend istream& operator>>(istream& in, minmax_year2&& y)
-      {
-	if (ws(in).peek() == 'o') // keyword "only"
-	  {
-	    string s;
-	    in >> s; // extract the whole keyword
-	    y.to.y = y.from;
-	  }
-	else
-	  in >> std::move(y.to);
-	return in;
-      }
-    };
+    // Set the sys_info::abbrev string by expanding any placeholders.
+    void
+    format_abbrev_str(sys_info& info, string_view letters = {})
+    {
+      if (size_t pos = info.abbrev.find('%'); pos != string::npos)
+	{
+	  if (info.abbrev[pos + 1] == 's')
+	    {
+	      // Expand "%s" to the variable part, given by Rule::letters.
+	      if (letters == "-")
+		info.abbrev.erase(pos, 2);
+	      else
+		info.abbrev.replace(pos, 2, letters);
+	    }
+	  else if (info.abbrev[pos + 1] == 'z')
+	    {
+	      // Expand "%z" to the UT offset as +/-hh, +/-hhmm, or +/-hhmmss.
+	      hh_mm_ss<seconds> t(info.offset);
+	      string z(1, "+-"[t.is_negative()]);
+	      long val = t.hours().count();
+	      int digits = 2;
+	      if (int m = t.minutes().count())
+		{
+		  digits = 4;
+		  val *= 100;
+		  val += m;
+		  if (int s = t.seconds().count())
+		    {
+		      digits = 6;
+		      val *= 100;
+		      val += s;
+		    }
+		}
+	      auto sval = std::to_string(val);
+	      z += string(digits - sval.size(), '0');
+	      z += sval;
+	      info.abbrev.replace(pos, 2, z);
+	    }
+	}
+      else
+	select_std_or_dst_abbrev(info.abbrev, info.save);
+    }
 
     // A time zone information record.
     // Zone  NAME        STDOFF  RULES   FORMAT  [UNTIL]
@@ -462,6 +514,7 @@ namespace std::chrono
 	info.offset = offset();
 	info.save = minutes(m_save);
 	info.abbrev = format();
+	format_abbrev_str(info); // expand %z
 	return true;
       }
 
@@ -469,12 +522,9 @@ namespace std::chrono
       friend class time_zone;
 
       void
-      set_abbrev(const string& abbrev)
+      set_abbrev(string abbrev)
       {
-	// In practice, the FORMAT field never needs expanding here.
-	if (abbrev.find_first_of("/%") != abbrev.npos)
-	  __throw_runtime_error("std::chrono::time_zone: invalid data");
-	m_buf = abbrev;
+	m_buf = std::move(abbrev);
 	m_pos = 0;
 	m_expanded = true;
       }
@@ -544,9 +594,7 @@ namespace std::chrono
 
 	// Rule  NAME  FROM  TO  TYPE  IN  ON  AT  SAVE  LETTER/S
 
-	in >> quoted(rule.name)
-	   >> minmax_year{rule.from}
-	   >> minmax_year2{rule.to, rule.from};
+	in >> quoted(rule.name) >> years_from_to{rule.from, rule.to};
 
 	if (char type; in >> type && type != '-')
 	  in.setstate(ios::failbit);
@@ -557,7 +605,7 @@ namespace std::chrono
 	if (save_time.indicator != at_time::Wall)
 	  {
 	    // We don't actually store the save_time.indicator, because we
-	    // assume that it's always deducable from the actual offset value.
+	    // assume that it's always deducible from the offset value.
 	    auto expected = save_time.time == 0s
 			      ? at_time::Standard
 			      : at_time::Daylight;
@@ -567,8 +615,6 @@ namespace std::chrono
 	rule.save = save_time.time;
 
 	in >> rule.letters;
-	if (rule.letters == "-")
-	  rule.letters.clear();
 	return in;
       }
 
@@ -719,58 +765,6 @@ namespace std::chrono
 #endif // TZDB_DISABLED
   };
 
-#ifndef TZDB_DISABLED
-  namespace
-  {
-    bool
-    select_std_or_dst_abbrev(string& abbrev, minutes save)
-    {
-      if (size_t pos = abbrev.find('/'); pos != string::npos)
-	{
-	  // Select one of "STD/DST" for standard or daylight.
-	  if (save == 0min)
-	    abbrev.erase(pos);
-	  else
-	    abbrev.erase(0, pos + 1);
-	  return true;
-	}
-      return false;
-    }
-
-    // Set the sys_info::abbrev string by expanding any placeholders.
-    void
-    format_abbrev_str(sys_info& info, string_view letters = {})
-    {
-      if (size_t pos = info.abbrev.find("%s"); pos != string::npos)
-	{
-	  // Expand "%s" to the variable part, given by Rule::letters.
-	  info.abbrev.replace(pos, 2, letters);
-	}
-      else if (size_t pos = info.abbrev.find("%z"); pos != string::npos)
-	{
-	  // Expand "%z" to the UT offset as +/-hh, +/-hhmm, or +/-hhmmss.
-	  hh_mm_ss<seconds> t(info.offset);
-	  string z(1, "+-"[t.is_negative()]);
-	  long val = t.hours().count();
-	  if (minutes m = t.minutes(); m != m.zero())
-	    {
-	      val *= 100;
-	      val += m.count();
-	      if (seconds s = t.seconds(); s != s.zero())
-		{
-		  val *= 100;
-		  val += s.count();
-		}
-	    }
-	  z += std::to_string(val);
-	  info.abbrev.replace(pos, 2, z);
-	}
-      else
-	select_std_or_dst_abbrev(info.abbrev, info.save);
-    }
-  }
-#endif // TZDB_DISABLED
-
   // Implementation of std::chrono::time_zone::get_info(const sys_time<D>&)
   sys_info
   time_zone::_M_get_sys_info(sys_seconds tp) const
@@ -839,12 +833,72 @@ namespace std::chrono
     info.abbrev = ri.format();
 
     string_view letters;
-    if (i != infos.begin())
+    if (i != infos.begin() && i[-1].expanded())
+      letters = i[-1].next_letters();
+
+    if (letters.empty())
       {
-	if (i[-1].expanded())
-	  letters = i[-1].next_letters();
-	// XXX else need to find Rule active before this time and use it
-	// to know the initial offset, save, and letters.
+	sys_seconds t = info.begin - seconds(1);
+	const year_month_day date(chrono::floor<days>(t));
+
+	// Try to find a Rule active before this time, to get initial
+	// SAVE and LETTERS values. There may not be a Rule for the period
+	// before the first DST transition, so find the earliest DST->STD
+	// transition and use the LETTERS from that.
+	const Rule* active_rule = nullptr;
+	sys_seconds active_rule_start = sys_seconds::min();
+	const Rule* first_std = nullptr;
+	for (const auto& rule : rules)
+	  {
+	    if (rule.save == minutes(0))
+	      {
+		if (!first_std)
+		  first_std = &rule;
+		else if (rule.from < first_std->from)
+		  first_std = &rule;
+		else if (rule.from == first_std->from)
+		  {
+		    if (rule.start_time(rule.from, {})
+			  < first_std->start_time(first_std->from, {}))
+		      first_std = &rule;
+		  }
+	      }
+
+	    year y = date.year();
+
+	    if (y > rule.to) // rule no longer applies at time t
+	      continue;
+	    if (y < rule.from) // rule doesn't apply yet at time t
+	      continue;
+
+	    sys_seconds rule_start;
+
+	    seconds offset{}; // appropriate for at_time::Universal
+	    if (rule.when.indicator == at_time::Wall)
+	      offset = info.offset;
+	    else if (rule.when.indicator == at_time::Standard)
+	      offset = ri.offset();
+
+	    // Time the rule takes effect this year:
+	    rule_start = rule.start_time(y, offset);
+
+	    if (rule_start >= t && rule.from < y)
+	      {
+		// Try this rule in the previous year.
+		rule_start = rule.start_time(--y, offset);
+	      }
+
+	    if (active_rule_start < rule_start && rule_start < t)
+	      {
+		active_rule_start = rule_start;
+		active_rule = &rule;
+	      }
+	  }
+
+	if (active_rule)
+	  letters = active_rule->letters;
+	else if (first_std)
+	  letters = first_std->letters;
       }
 
     const Rule* curr_rule = nullptr;
@@ -2069,9 +2123,11 @@ namespace std::chrono
 	      istringstream in2(std::move(rules));
 	      in2 >> rules_time;
 	      inf.m_save = duration_cast<minutes>(rules_time.time);
+	      // If the FORMAT is "STD/DST" then we can choose the right one
+	      // now, so that we store a shorter string.
 	      select_std_or_dst_abbrev(fmt, inf.m_save);
 	    }
-	  inf.set_abbrev(fmt);
+	  inf.set_abbrev(std::move(fmt));
 	}
 
       // YEAR [MONTH [DAY [TIME]]]
@@ -2082,7 +2138,12 @@ namespace std::chrono
 	  abbrev_month m{January};
 	  int d = 1;
 	  at_time t{};
+	  // XXX DAY should support ON format, e.g. lastSun or Sun>=8
 	  in >> m >> d >> t;
+	  // XXX UNTIL field should be interpreted
+	  // "using the rules in effect just before the transition"
+	  // so might need to store as year_month_day and hh_mm_ss and only
+	  // convert to a sys_time once we know the offset in effect.
 	  inf.m_until = sys_days(year(y)/m.m/day(d)) + seconds(t.time);
 	}
       else

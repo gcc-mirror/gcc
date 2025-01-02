@@ -33,6 +33,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cxxabi.h>
+#include <ext/atomicity.h>
 #include <testsuite_common_types.h>
 
 #if defined (__linux__) || defined (__GLIBC__)
@@ -72,6 +73,9 @@ namespace __gnu_test
   class time_counter
   {
   private:
+    // All times are measured in clock ticks.
+    // There are CLOCKS_PER_SEC ticks per second.
+    // POSIX requires CLOCKS_PER_SEC == 1000000 so ticks == microseconds.
     clock_t	elapsed_begin;
     clock_t	elapsed_end;
     tms		tms_begin;
@@ -135,7 +139,7 @@ namespace __gnu_test
 
     std::size_t
     system_time() const
-    { return (tms_end.tms_stime - tms_begin.tms_stime) + splits[1]; }
+    { return (tms_end.tms_stime - tms_begin.tms_stime) + splits[2]; }
   };
 
   class resource_counter
@@ -223,10 +227,8 @@ namespace __gnu_test
 
     std::ofstream out(name, std::ios_base::app);
 
-#ifdef __GTHREADS
-    if (__gthread_active_p())
+    if (!__gnu_cxx::__is_single_threaded())
       testname.append("-thread");
-#endif
 
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;
@@ -253,10 +255,8 @@ namespace __gnu_test
 
     std::ofstream out(name, std::ios_base::app);
 
-#ifdef __GTHREADS
-    if (__gthread_active_p ())
+    if (!__gnu_cxx::__is_single_threaded ())
       testname.append("-thread");
-#endif
 
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;

@@ -236,7 +236,10 @@ case ${host} in
   esac
   tmake_file="$tmake_file t-slibgcc-darwin"
   case ${host} in
-    *-*-darwin1[89]* | *-*-darwin2* )
+    *-*-darwin2*)
+      tmake_file="t-darwin-min-11 $tmake_file"
+      ;;
+    *-*-darwin1[89]*)
       tmake_file="t-darwin-min-8 $tmake_file"
       ;;
     *-*-darwin9* | *-*-darwin1[0-7]*)

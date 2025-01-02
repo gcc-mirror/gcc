@@ -966,6 +966,7 @@ namespace __detail
 	return __h._M_insert(__hint, __v, __node_gen, __unique_keys{});
       }
 
+#ifdef __glibcxx_unordered_map_try_emplace // C++ >= 17 && HOSTED
       template<typename _KType, typename... _Args>
 	std::pair<iterator, bool>
 	try_emplace(const_iterator, _KType&& __k, _Args&&... __args)
@@ -987,6 +988,7 @@ namespace __detail
 	  __node._M_node = nullptr;
 	  return { __it, true };
 	}
+#endif
 
       void
       insert(initializer_list<value_type> __l)

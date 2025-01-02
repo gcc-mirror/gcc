@@ -875,11 +875,22 @@ static void
 add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
 {
   gfc_component *c;
-
-  if (tb->non_overridable && !tb->overridden)
-    return;
+  bool is_abstract = false;
 
   c = gfc_find_component (vtype, name, true, true, NULL);
+
+  /* If the present component typebound proc is abstract, the new version
+     should unconditionally be tested if it is a suitable replacement.  */
+  if (c && c->tb && c->tb->u.specific
+      && c->tb->u.specific->n.sym->attr.abstract)
+    is_abstract = true;
+
+  /* Pass on the new tb being not overridable if a component is found and
+     either there is not an overridden specific or the present component
+     tb is abstract. This ensures that possible, viable replacements are
+     loaded.  */
+  if (tb->non_overridable && !tb->overridden && !is_abstract && c)
+    return;
 
   if (c == NULL)
     {
@@ -1141,8 +1152,9 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
       gcc_assert (c);
 
-      /* Set scalar argument for storage_size.  */
-      gfc_get_symbol ("comp_byte_stride", sub_ns, &byte_stride);
+      /* Set scalar argument for storage_size. A leading underscore in
+	 the name prevents an unwanted finalization.  */
+      gfc_get_symbol ("_comp_byte_stride", sub_ns, &byte_stride);
       byte_stride->ts = e->ts;
       byte_stride->attr.flavor = FL_VARIABLE;
       byte_stride->attr.value = 1;

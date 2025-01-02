@@ -32,12 +32,8 @@ DEFINITION MODULE M2GenGCC ;
 *)
 
 FROM M2GCCDeclare IMPORT WalkAction ;
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
-EXPORT QUALIFIED ConvertQuadsToTree, ResolveConstantExpressions,
-                 GetHighFromUnbounded, StringToChar,
-                 LValueToGenericPtr, ZConstToTypedConst,
-                 PrepareCopyString ;
+FROM gcctypes IMPORT location_t, tree ;
+FROM M2BasicBlock IMPORT BasicBlock ;
 
 
 (*
@@ -55,7 +51,7 @@ PROCEDURE ConvertQuadsToTree (Start, End: CARDINAL) ;
                                 p(sym) is invoked.
 *)
 
-PROCEDURE ResolveConstantExpressions (p: WalkAction; start, end: CARDINAL) : BOOLEAN ;
+PROCEDURE ResolveConstantExpressions (p: WalkAction; bb: BasicBlock) : BOOLEAN ;
 
 
 (*
@@ -63,7 +59,7 @@ PROCEDURE ResolveConstantExpressions (p: WalkAction; start, end: CARDINAL) : BOO
                           param.HIGH.
 *)
 
-PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : Tree ;
+PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : tree ;
 
 
 (*
@@ -71,7 +67,7 @@ PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : Tr
                   then convert the string into a character constant.
 *)
 
-PROCEDURE StringToChar (t: Tree; type, str: CARDINAL) : Tree ;
+PROCEDURE StringToChar (t: tree; type, str: CARDINAL) : tree ;
 
 
 (*
@@ -79,7 +75,7 @@ PROCEDURE StringToChar (t: Tree; type, str: CARDINAL) : Tree ;
                         It coerces a lvalue into an internal pointer type
 *)
 
-PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : Tree ;
+PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : tree ;
 
 
 (*
@@ -87,7 +83,7 @@ PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : Tree ;
                         coerces, t, appropriately.
 *)
 
-PROCEDURE ZConstToTypedConst (t: Tree; op1, op2: CARDINAL) : Tree ;
+PROCEDURE ZConstToTypedConst (t: tree; op1, op2: CARDINAL) : tree ;
 
 
 (*
@@ -105,7 +101,7 @@ PROCEDURE ZConstToTypedConst (t: Tree; op1, op2: CARDINAL) : Tree ;
                                             which fits in dest.
 *)
 
-PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: Tree;
+PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: tree;
                              src, destStrType: CARDINAL) : BOOLEAN ;
 
 

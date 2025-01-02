@@ -41,9 +41,9 @@ see <https://www.gnu.org/licenses/>.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcp1_H
 #define _mcp1_C
 
+#include "Gmcp1.h"
 #   include "GDynamicStrings.h"
 #   include "GmcError.h"
 #   include "GnameKey.h"
@@ -1739,7 +1739,9 @@ static void Priority (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_S
 
 /*
    Export := 'EXPORT' ( 'QUALIFIED' IdentList  | 
-                        'UNQUALIFIED' IdentList  | 
+                        'UNQUALIFIED' 
+                        % putDefUnqualified (curmodule)  %
+                        IdentList  | 
                         IdentList  ) ';' 
 
    first  symbols:exporttok
@@ -1831,7 +1833,8 @@ static void DefinitionModule (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1
                            
                            % n := makeType (curident)  %
                            ( ';' 
-                             % putTypeHidden (n)  %
+                             % putTypeHidden (n) ;
+                               putTypeOpaque (n)  %
                               | '=' Type Alignment 
                              ';'  )  } 
 
@@ -6752,7 +6755,9 @@ static void Priority (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_S
 
 /*
    Export := 'EXPORT' ( 'QUALIFIED' IdentList  | 
-                        'UNQUALIFIED' IdentList  | 
+                        'UNQUALIFIED' 
+                        % putDefUnqualified (curmodule)  %
+                        IdentList  | 
                         IdentList  ) ';' 
 
    first  symbols:exporttok
@@ -6772,6 +6777,7 @@ static void Export (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_Set
     {
       /* avoid dangling else.  */
       Expect (mcReserved_unqualifiedtok, stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
+      decl_putDefUnqualified (curmodule);
       IdentList (stopset0|(mcp1_SetOfStop0) ((1 << (mcReserved_semicolontok-mcReserved_eoftok))), stopset1, stopset2);
     }
   else if (mcLexBuf_currenttoken == mcReserved_identtok)
@@ -6955,7 +6961,8 @@ static void DefinitionModule (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1
                            
                            % n := makeType (curident)  %
                            ( ';' 
-                             % putTypeHidden (n)  %
+                             % putTypeHidden (n) ;
+                               putTypeOpaque (n)  %
                               | '=' Type Alignment 
                              ';'  )  } 
 
@@ -6976,6 +6983,7 @@ static void DefTypeDeclaration (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopse
         {
           Expect (mcReserved_semicolontok, stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
           decl_putTypeHidden (n);
+          decl_putTypeOpaque (n);
         }
       else if (mcLexBuf_currenttoken == mcReserved_equaltok)
         {
@@ -7257,10 +7265,10 @@ extern "C" bool mcp1_CompilationUnit (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcp1_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp1_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcp1_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp1_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

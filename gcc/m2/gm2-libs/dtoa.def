@@ -50,7 +50,7 @@ PROCEDURE strtod (s: ADDRESS; VAR error: BOOLEAN) : REAL ;
 *)
 
 PROCEDURE dtoa (d        : REAL;
-                mode     : Mode;
+                mode     : INTEGER;
                 ndigits  : INTEGER;
 	        VAR decpt: INTEGER;
 	        VAR sign : BOOLEAN) : ADDRESS ;

@@ -39,6 +39,7 @@
 #if __cplusplus >= 202002L
 # include <compare>	// std::strong_ordering
 # include <bits/iterator_concepts.h>	// std::default_sentinel_t
+# include <bits/ranges_base.h> // enable_view, enable_borrowed_range
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -625,6 +626,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
     __shared_ptr<filesystem::_Dir>;
   extern template class
     __shared_ptr<filesystem::recursive_directory_iterator::_Dir_stack>;
+
+#if __glibcxx_ranges // >= C++20
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 3480. directory_iterator and recursive_directory_iterator are not ranges
+namespace ranges
+{
+  template<>
+    inline constexpr bool
+    enable_borrowed_range<filesystem::directory_iterator> = true;
+  template<>
+    inline constexpr bool
+    enable_borrowed_range<filesystem::recursive_directory_iterator> = true;
+
+  template<>
+    inline constexpr bool
+    enable_view<filesystem::directory_iterator> = true;
+  template<>
+    inline constexpr bool
+    enable_view<filesystem::recursive_directory_iterator> = true;
+} // namespace ranges
+#endif // ranges
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -11,10 +11,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -37,9 +36,9 @@ Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcOptions_H
 #define _mcOptions_C
 
+#include "GmcOptions.h"
 #   include "GSArgs.h"
 #   include "GmcSearch.h"
 #   include "Glibc.h"
@@ -885,7 +884,8 @@ static void handleOption (DynamicStrings_String arg)
   else if (optionIs ((const char *) "--extended-opaque", 17, arg))
     {
       /* avoid dangling else.  */
-      setExtendedOpaque (true);
+      /* setExtendedOpaque (TRUE)  */
+      mcPrintf_printf0 ((const char *) "IGNORING --extended-opaque - this option is no longer implemented - please adjust the call to mc\\n", 98);
     }
   else if (optionIs ((const char *) "--debug-top", 11, arg))
     {
@@ -1258,7 +1258,7 @@ extern "C" DynamicStrings_String mcOptions_getCShortRealType (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   langC = true;
   langCPP = false;
@@ -1293,6 +1293,6 @@ extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute
   CShortReal = DynamicStrings_InitString ((const char *) "float", 5);
 }
 
-extern "C" void _M2_mcOptions_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcOptions_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

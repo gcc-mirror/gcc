@@ -1983,6 +1983,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  }
 
 	if (is_named_call_p (callee_fndecl, "realloc", call, 2)
+	    || is_std_named_call_p (callee_fndecl, "realloc", call, 2)
 	    || is_named_call_p (callee_fndecl, "__builtin_realloc", call, 2))
 	  {
 	    on_realloc_call (sm_ctxt, node, call);

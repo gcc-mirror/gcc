@@ -1,3 +1,12 @@
+2024-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_asm.h: Cherry-pick llvm-project revision
+	1c792d24e0a228ad49cc004a1c26bbd7cd87f030.
+	* interception/interception.h: Likewise.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

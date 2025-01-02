@@ -917,36 +917,45 @@
   "vmrlg\t%0,%1,%2";
   [(set_attr "op_type" "VRR")])
 
-
-(define_insn "*tf_to_fprx2_0"
-  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "+f") 0)
-	(subreg:DF (match_operand:TF    1 "general_operand"       "v") 0))]
+(define_insn "tf_to_fprx2"
+  [(set (match_operand:FPRX2             0 "register_operand" "=f,f ,f")
+	(unspec:FPRX2 [(match_operand:TF 1 "general_operand"   "v,AR,AT")]
+		      UNSPEC_TF_TO_FPRX2))]
   "TARGET_VXE"
-  ; M4 == 1 corresponds to %v0[0] = %v1[0]; %v0[1] = %v0[1];
-  "vpdi\t%v0,%v1,%v0,1"
-  [(set_attr "op_type" "VRR")])
-
-(define_insn "*tf_to_fprx2_1"
-  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "+f") 8)
-	(subreg:DF (match_operand:TF    1 "general_operand"       "v") 8))]
-  "TARGET_VXE"
-  ; M4 == 5 corresponds to %V0[0] = %v1[1]; %V0[1] = %V0[1];
-  "vpdi\t%V0,%v1,%V0,5"
-  [(set_attr "op_type" "VRR")])
-
-(define_insn_and_split "tf_to_fprx2"
-  [(set (match_operand:FPRX2            0 "nonimmediate_operand" "=f,f")
-	(subreg:FPRX2 (match_operand:TF 1 "general_operand"       "v,AR") 0))]
-  "TARGET_VXE"
-  "#"
-  "!(MEM_P (operands[1]) && MEM_VOLATILE_P (operands[1]))"
-  [(set (match_dup 2) (match_dup 3))
-   (set (match_dup 4) (match_dup 5))]
 {
-  operands[2] = simplify_gen_subreg (DFmode, operands[0], FPRX2mode, 0);
-  operands[3] = simplify_gen_subreg (DFmode, operands[1], TFmode, 0);
-  operands[4] = simplify_gen_subreg (DFmode, operands[0], FPRX2mode, 8);
-  operands[5] = simplify_gen_subreg (DFmode, operands[1], TFmode, 8);
+  char buf[64];
+  const char *reg_pair = reg_names[REGNO (operands[0]) + 1];
+  switch (which_alternative)
+    {
+    case 0:
+      if (REGNO (operands[0]) == REGNO (operands[1]))
+	{
+	  reg_pair += 2;  // get rid of prefix %f
+	  snprintf (buf, sizeof (buf), "vpdi\t%%%%v%s,%%v1,%%%%v%s,5", reg_pair, reg_pair);
+	  output_asm_insn (buf, operands);
+	  return "";
+	}
+      else
+	{
+	  reg_pair += 2;  // get rid of prefix %f
+	  snprintf (buf, sizeof (buf), "ldr\t%%f0,%%f1;vpdi\t%%%%v%s,%%v1,%%%%v%s,5", reg_pair, reg_pair);
+	  output_asm_insn (buf, operands);
+	  return "";
+	}
+    case 1:
+      {
+	snprintf (buf, sizeof (buf), "ld\t%%f0,%%1;ld\t%%%s,8+%%1", reg_pair);
+	output_asm_insn (buf, operands);
+	return "";
+      }
+    case 2:
+      {
+	snprintf (buf, sizeof (buf), "ldy\t%%f0,%%1;ldy\t%%%s,8+%%1", reg_pair);
+	output_asm_insn (buf, operands);
+	return "";
+      }
+    default: gcc_unreachable ();
+    }
 })
 
 ;; VECTOR REVERSE ELEMENTS V16QI
@@ -2725,9 +2734,8 @@
 ; There is no instruction for rounding an extended BFP operand in a VR into
 ; a signed integer, therefore copy it into a FPR pair first.
 (define_expand "fix_trunctf<mode>2_vr"
-  [(set (subreg:DF (match_dup 2) 0)
-	(subreg:DF (match_operand:TF 1 "register_operand" "") 0))
-   (set (subreg:DF (match_dup 2) 8) (subreg:DF (match_dup 1) 8))
+  [(set (match_dup 2)
+	(unspec:FPRX2 [(match_operand:TF 1 "register_operand")] UNSPEC_TF_TO_FPRX2))
    (parallel [(set (match_operand:GPR 0 "register_operand" "")
 		   (fix:GPR (match_dup 2)))
 	      (unspec:GPR [(const_int BFP_RND_TOWARD_0)] UNSPEC_ROUND)
@@ -2758,9 +2766,8 @@
 ; There is no instruction for rounding an extended BFP operand in a VR into
 ; an unsigned integer, therefore copy it into a FPR pair first.
 (define_expand "fixuns_trunctf<mode>2_vr"
-  [(set (subreg:DF (match_dup 2) 0)
-	(subreg:DF (match_operand:TF 1 "register_operand" "") 0))
-   (set (subreg:DF (match_dup 2) 8) (subreg:DF (match_dup 1) 8))
+  [(set (match_dup 2)
+	(unspec:FPRX2 [(match_operand:TF 1 "register_operand")] UNSPEC_TF_TO_FPRX2))
    (parallel [(set (match_operand:GPR 0 "register_operand" "")
 		   (unsigned_fix:GPR (match_dup 2)))
 	      (unspec:GPR [(const_int BFP_RND_TOWARD_0)] UNSPEC_ROUND)

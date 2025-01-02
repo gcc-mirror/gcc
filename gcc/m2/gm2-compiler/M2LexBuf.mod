@@ -35,7 +35,8 @@ FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
 FROM M2Debug IMPORT Assert ;
 FROM NameKey IMPORT makekey ;
 FROM NumberIO IMPORT CardToStr ;
-FROM m2linemap IMPORT location_t, GetLocationBinary ;
+FROM gcctypes IMPORT location_t ;
+FROM m2linemap IMPORT GetLocationBinary ;
 FROM M2Emit IMPORT UnknownLocation, BuiltinsLocation ;
 FROM M2Error IMPORT WarnStringAt ;
 FROM M2MetaError IMPORT MetaErrorT0 ;
@@ -1060,6 +1061,8 @@ END isSrcToken ;
                     and exist on the same src line then
                     create and return a new tokenno which is created from
                     tokenno left and right.  Otherwise return caret.
+                    If caret is UnknownTokenNo then it is replaced with left or right
+                    in sequence to avoid an UnknownTokenNo.
 *)
 
 PROCEDURE MakeVirtualTok (caret, left, right: CARDINAL) : CARDINAL ;
@@ -1067,6 +1070,14 @@ VAR
    descLeft, descRight: TokenDesc ;
    lc, ll, lr         : location_t ;
 BEGIN
+   IF caret = UnknownTokenNo
+   THEN
+      caret := left
+   END ;
+   IF caret = UnknownTokenNo
+   THEN
+      caret := right
+   END ;
    IF isSrcToken (caret) AND isSrcToken (left) AND isSrcToken (right)
    THEN
       lc := TokenToLocation (caret) ;
@@ -1097,11 +1108,19 @@ END MakeVirtualTok ;
 
 (*
    MakeVirtual2Tok - creates and return a new tokenno which is created from
-                     two tokens left and right.
+                     two tokens left and right.  It tries to avoid UnknownTokenNo
+                     and will fall back to left or right if necessary.
 *)
 
 PROCEDURE MakeVirtual2Tok (left, right: CARDINAL) : CARDINAL ;
 BEGIN
+   IF left = UnknownTokenNo
+   THEN
+      left := right
+   ELSIF right = UnknownTokenNo
+   THEN
+      right := left
+   END ;
    RETURN MakeVirtualTok (left, left, right) ;
 END MakeVirtual2Tok ;
 

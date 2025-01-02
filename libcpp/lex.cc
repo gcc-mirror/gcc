@@ -2768,7 +2768,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	{
 	  pos--;
 	  pfile->buffer->cur = pos;
-	  if ((pfile->state.in_directive || pfile->state.parsing_args)
+	  if ((pfile->state.in_directive || pfile->state.parsing_args
+	       || pfile->state.in_deferred_pragma)
 	      && pfile->buffer->next_line >= pfile->buffer->rlimit)
 	    {
 	      cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, 0,

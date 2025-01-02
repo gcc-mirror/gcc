@@ -133,7 +133,11 @@ void
 test_by_type(Generator1 generator1, Generator2 generator2, Compare comp)
 {
     using namespace std;
+#ifdef _GLIBCXX_DEBUG
+    size_t max_size = 1000;
+#else
     size_t max_size = 10000;
+#endif
     Sequence<T> in1(max_size, [](size_t v) { return T(v); });
     Sequence<T> exp(max_size, [](size_t v) { return T(v); });
     size_t m;

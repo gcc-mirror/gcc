@@ -88,6 +88,7 @@ AC_ARG_WITH(cross-host,
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
+AC_HEADER_TIME
 AC_CHECK_HEADER([math.h],
 	       [AC_DEFINE([HAVE_MATH_H], [1], [have math.h])])
 

@@ -42,9 +42,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcError_H
 #define _mcError_C
 
+#include "GmcError.h"
 #   include "GASCII.h"
 #   include "GDynamicStrings.h"
 #   include "GFIO.h"
@@ -63,18 +63,18 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   define Xcode true
 typedef struct mcError__T2_r mcError__T2;
 
-typedef mcError__T2 *mcError_error;
+typedef mcError__T2 *mcError_error__opaque;
 
 struct mcError__T2_r {
-                       mcError_error parent;
-                       mcError_error child;
-                       mcError_error next;
+                       mcError_error__opaque parent;
+                       mcError_error__opaque child;
+                       mcError_error__opaque next;
                        bool fatal;
                        DynamicStrings_String s;
                        unsigned int token;
                      };
 
-static mcError_error head;
+static mcError_error__opaque head;
 static bool inInternal;
 
 /*
@@ -282,7 +282,7 @@ static void checkIncludes (unsigned int token, unsigned int depth);
    flushAll - flushes all errors in list, e.
 */
 
-static bool flushAll (mcError_error e, bool FatalStatus);
+static bool flushAll (mcError_error__opaque e, bool FatalStatus);
 
 
 /*
@@ -301,7 +301,7 @@ static void cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
     {
       for (i=0; i<=_a_high; i++)
         {
-          a[i] = b[i];
+          const_cast<unsigned char *>(a)[i] = b[i];
         }
     }
 }
@@ -326,7 +326,7 @@ static bool translateNameToCharStar (char *a, unsigned int _a_high, unsigned int
         {
           if ((a[i+1] == 'a') && (argno == n))
             {
-              a[i+1] = 's';
+              const_cast<char *>(a)[i+1] = 's';
               return true;
             }
           argno += 1;
@@ -600,7 +600,7 @@ static DynamicStrings_String doFormat3 (const char *a_, unsigned int _a_high, co
 
 static void init (void)
 {
-  head = NULL;
+  head = static_cast<mcError_error__opaque> (NULL);
   inInternal = false;
 }
 
@@ -656,9 +656,9 @@ static void checkIncludes (unsigned int token, unsigned int depth)
    flushAll - flushes all errors in list, e.
 */
 
-static bool flushAll (mcError_error e, bool FatalStatus)
+static bool flushAll (mcError_error__opaque e, bool FatalStatus)
 {
-  mcError_error f;
+  mcError_error__opaque f;
   bool written;
 
   written = false;
@@ -734,13 +734,13 @@ extern "C" void mcError_internalError (const char *a_, unsigned int _a_high, con
 
 extern "C" void mcError_writeFormat0 (const char *a_, unsigned int _a_high)
 {
-  mcError_error e;
+  mcError_error__opaque e;
   char a[_a_high+1];
 
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e = static_cast<mcError_error__opaque> (mcError_newError (mcLexBuf_getTokenNo ()));
   e->s = FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
 }
 
@@ -753,7 +753,7 @@ extern "C" void mcError_writeFormat0 (const char *a_, unsigned int _a_high)
 
 extern "C" void mcError_writeFormat1 (const char *a_, unsigned int _a_high, const unsigned char *w_, unsigned int _w_high)
 {
-  mcError_error e;
+  mcError_error__opaque e;
   char a[_a_high+1];
   unsigned char w[_w_high+1];
 
@@ -761,7 +761,7 @@ extern "C" void mcError_writeFormat1 (const char *a_, unsigned int _a_high, cons
   memcpy (a, a_, _a_high+1);
   memcpy (w, w_, _w_high+1);
 
-  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e = static_cast<mcError_error__opaque> (mcError_newError (mcLexBuf_getTokenNo ()));
   e->s = doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high);
 }
 
@@ -774,7 +774,7 @@ extern "C" void mcError_writeFormat1 (const char *a_, unsigned int _a_high, cons
 
 extern "C" void mcError_writeFormat2 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high)
 {
-  mcError_error e;
+  mcError_error__opaque e;
   char a[_a_high+1];
   unsigned char w1[_w1_high+1];
   unsigned char w2[_w2_high+1];
@@ -784,7 +784,7 @@ extern "C" void mcError_writeFormat2 (const char *a_, unsigned int _a_high, cons
   memcpy (w1, w1_, _w1_high+1);
   memcpy (w2, w2_, _w2_high+1);
 
-  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e = static_cast<mcError_error__opaque> (mcError_newError (mcLexBuf_getTokenNo ()));
   e->s = doFormat2 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high);
 }
 
@@ -797,7 +797,7 @@ extern "C" void mcError_writeFormat2 (const char *a_, unsigned int _a_high, cons
 
 extern "C" void mcError_writeFormat3 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high)
 {
-  mcError_error e;
+  mcError_error__opaque e;
   char a[_a_high+1];
   unsigned char w1[_w1_high+1];
   unsigned char w2[_w2_high+1];
@@ -809,7 +809,7 @@ extern "C" void mcError_writeFormat3 (const char *a_, unsigned int _a_high, cons
   memcpy (w2, w2_, _w2_high+1);
   memcpy (w3, w3_, _w3_high+1);
 
-  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e = static_cast<mcError_error__opaque> (mcError_newError (mcLexBuf_getTokenNo ()));
   e->s = doFormat3 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
 }
 
@@ -820,15 +820,15 @@ extern "C" void mcError_writeFormat3 (const char *a_, unsigned int _a_high, cons
 
 extern "C" mcError_error mcError_newError (unsigned int atTokenNo)
 {
-  mcError_error e;
-  mcError_error f;
+  mcError_error__opaque e;
+  mcError_error__opaque f;
 
   Storage_ALLOCATE ((void **) &e, sizeof (mcError__T2));
   e->s = static_cast<DynamicStrings_String> (NULL);
   e->token = atTokenNo;
-  e->next = NULL;
-  e->parent = NULL;
-  e->child = NULL;
+  e->next = static_cast<mcError_error__opaque> (NULL);
+  e->parent = static_cast<mcError_error__opaque> (NULL);
+  e->child = static_cast<mcError_error__opaque> (NULL);
   e->fatal = true;
   if ((head == NULL) || (head->token > atTokenNo))
     {
@@ -845,7 +845,7 @@ extern "C" mcError_error mcError_newError (unsigned int atTokenNo)
       e->next = f->next;
       f->next = e;
     }
-  return e;
+  return static_cast<mcError_error> (e);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -858,11 +858,11 @@ extern "C" mcError_error mcError_newError (unsigned int atTokenNo)
 
 extern "C" mcError_error mcError_newWarning (unsigned int atTokenNo)
 {
-  mcError_error e;
+  mcError_error__opaque e;
 
-  e = mcError_newError (atTokenNo);
+  e = static_cast<mcError_error__opaque> (mcError_newError (atTokenNo));
   e->fatal = false;
-  return e;
+  return static_cast<mcError_error> (e);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -876,7 +876,7 @@ extern "C" mcError_error mcError_newWarning (unsigned int atTokenNo)
 
 extern "C" mcError_error mcError_chainError (unsigned int atTokenNo, mcError_error e)
 {
-  mcError_error f;
+  mcError_error__opaque f;
 
   if (e == NULL)
     {
@@ -887,13 +887,13 @@ extern "C" mcError_error mcError_chainError (unsigned int atTokenNo, mcError_err
       Storage_ALLOCATE ((void **) &f, sizeof (mcError__T2));
       f->s = static_cast<DynamicStrings_String> (NULL);
       f->token = atTokenNo;
-      f->next = e->child;
-      f->parent = e;
-      f->child = NULL;
-      f->fatal = e->fatal;
-      e->child = f;
+      f->next = static_cast<mcError_error__opaque> (e)->child;
+      f->parent = static_cast<mcError_error__opaque> (e);
+      f->child = static_cast<mcError_error__opaque> (NULL);
+      f->fatal = static_cast<mcError_error__opaque> (e)->fatal;
+      static_cast<mcError_error__opaque> (e)->child = f;
     }
-  return f;
+  return static_cast<mcError_error> (f);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -908,13 +908,13 @@ extern "C" void mcError_errorFormat0 (mcError_error e, const char *a_, unsigned 
   /* 
    errorFormat routines provide a printf capability for the error handle.
   */
-  if (e->s == NULL)
+  if (static_cast<mcError_error__opaque> (e)->s == NULL)
     {
-      e->s = FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
+      static_cast<mcError_error__opaque> (e)->s = FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
     }
   else
     {
-      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)))));
+      static_cast<mcError_error__opaque> (e)->s = DynamicStrings_ConCat (static_cast<mcError_error__opaque> (e)->s, DynamicStrings_Mark (FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)))));
     }
 }
 
@@ -929,13 +929,13 @@ extern "C" void mcError_errorFormat1 (mcError_error e, const char *a_, unsigned 
   memcpy (w, w_, _w_high+1);
 
   s1 = doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high);
-  if (e->s == NULL)
+  if (static_cast<mcError_error__opaque> (e)->s == NULL)
     {
-      e->s = s1;
+      static_cast<mcError_error__opaque> (e)->s = s1;
     }
   else
     {
-      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1));
+      static_cast<mcError_error__opaque> (e)->s = DynamicStrings_ConCat (static_cast<mcError_error__opaque> (e)->s, DynamicStrings_Mark (s1));
     }
 }
 
@@ -952,13 +952,13 @@ extern "C" void mcError_errorFormat2 (mcError_error e, const char *a_, unsigned 
   memcpy (w2, w2_, _w2_high+1);
 
   s1 = doFormat2 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high);
-  if (e->s == NULL)
+  if (static_cast<mcError_error__opaque> (e)->s == NULL)
     {
-      e->s = s1;
+      static_cast<mcError_error__opaque> (e)->s = s1;
     }
   else
     {
-      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1));
+      static_cast<mcError_error__opaque> (e)->s = DynamicStrings_ConCat (static_cast<mcError_error__opaque> (e)->s, DynamicStrings_Mark (s1));
     }
 }
 
@@ -977,19 +977,19 @@ extern "C" void mcError_errorFormat3 (mcError_error e, const char *a_, unsigned 
   memcpy (w3, w3_, _w3_high+1);
 
   s1 = doFormat3 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
-  if (e->s == NULL)
+  if (static_cast<mcError_error__opaque> (e)->s == NULL)
     {
-      e->s = s1;
+      static_cast<mcError_error__opaque> (e)->s = s1;
     }
   else
     {
-      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1));
+      static_cast<mcError_error__opaque> (e)->s = DynamicStrings_ConCat (static_cast<mcError_error__opaque> (e)->s, DynamicStrings_Mark (s1));
     }
 }
 
 extern "C" void mcError_errorString (mcError_error e, DynamicStrings_String str)
 {
-  e->s = str;
+  static_cast<mcError_error__opaque> (e)->s = str;
 }
 
 
@@ -1001,10 +1001,10 @@ extern "C" void mcError_errorString (mcError_error e, DynamicStrings_String str)
 
 extern "C" void mcError_errorStringAt (DynamicStrings_String s, unsigned int tok)
 {
-  mcError_error e;
+  mcError_error__opaque e;
 
-  e = mcError_newError (tok);
-  mcError_errorString (e, s);
+  e = static_cast<mcError_error__opaque> (mcError_newError (tok));
+  mcError_errorString (static_cast<mcError_error> (e), s);
 }
 
 
@@ -1028,15 +1028,15 @@ extern "C" void mcError_errorStringAt2 (DynamicStrings_String s, unsigned int to
 
 extern "C" void mcError_errorStringsAt2 (DynamicStrings_String s1, DynamicStrings_String s2, unsigned int tok1, unsigned int tok2)
 {
-  mcError_error e;
+  mcError_error__opaque e;
 
   if (s1 == s2)
     {
       s2 = DynamicStrings_Dup (s1);
     }
-  e = mcError_newError (tok1);
-  mcError_errorString (e, s1);
-  mcError_errorString (mcError_chainError (tok2, e), s2);
+  e = static_cast<mcError_error__opaque> (mcError_newError (tok1));
+  mcError_errorString (static_cast<mcError_error> (e), s1);
+  mcError_errorString (mcError_chainError (tok2, static_cast<mcError_error> (e)), s2);
 }
 
 
@@ -1048,10 +1048,10 @@ extern "C" void mcError_errorStringsAt2 (DynamicStrings_String s1, DynamicString
 
 extern "C" void mcError_warnStringAt (DynamicStrings_String s, unsigned int tok)
 {
-  mcError_error e;
+  mcError_error__opaque e;
 
-  e = mcError_newWarning (tok);
-  mcError_errorString (e, s);
+  e = static_cast<mcError_error__opaque> (mcError_newWarning (tok));
+  mcError_errorString (static_cast<mcError_error> (e), s);
 }
 
 
@@ -1075,20 +1075,20 @@ extern "C" void mcError_warnStringAt2 (DynamicStrings_String s, unsigned int tok
 
 extern "C" void mcError_warnStringsAt2 (DynamicStrings_String s1, DynamicStrings_String s2, unsigned int tok1, unsigned int tok2)
 {
-  mcError_error e;
+  mcError_error__opaque e;
 
   if (s1 == s2)
     {
       s2 = DynamicStrings_Dup (s1);
     }
-  e = mcError_newWarning (tok1);
-  mcError_errorString (e, s1);
-  mcError_errorString (mcError_chainError (tok2, e), s2);
+  e = static_cast<mcError_error__opaque> (mcError_newWarning (tok1));
+  mcError_errorString (static_cast<mcError_error> (e), s1);
+  mcError_errorString (mcError_chainError (tok2, static_cast<mcError_error> (e)), s2);
 }
 
 extern "C" void mcError_warnFormat0 (const char *a_, unsigned int _a_high)
 {
-  mcError_error e;
+  mcError_error__opaque e;
   char a[_a_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -1099,7 +1099,7 @@ extern "C" void mcError_warnFormat0 (const char *a_, unsigned int _a_high)
                  with the encapsulated format string.
                  Used for simple warning messages tied to the current token.
   */
-  e = mcError_newWarning (mcLexBuf_getTokenNo ());
+  e = static_cast<mcError_error__opaque> (mcError_newWarning (mcLexBuf_getTokenNo ()));
   e->s = FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
 }
 
@@ -1112,7 +1112,7 @@ extern "C" void mcError_warnFormat0 (const char *a_, unsigned int _a_high)
 
 extern "C" void mcError_warnFormat1 (const char *a_, unsigned int _a_high, const unsigned char *w_, unsigned int _w_high)
 {
-  mcError_error e;
+  mcError_error__opaque e;
   char a[_a_high+1];
   unsigned char w[_w_high+1];
 
@@ -1120,7 +1120,7 @@ extern "C" void mcError_warnFormat1 (const char *a_, unsigned int _a_high, const
   memcpy (a, a_, _a_high+1);
   memcpy (w, w_, _w_high+1);
 
-  e = mcError_newWarning (mcLexBuf_getTokenNo ());
+  e = static_cast<mcError_error__opaque> (mcError_newWarning (mcLexBuf_getTokenNo ()));
   e->s = doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high);
 }
 
@@ -1188,11 +1188,11 @@ extern "C" void mcError_errorAbort0 (const char *a_, unsigned int _a_high)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcError_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcError_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_mcError_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcError_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

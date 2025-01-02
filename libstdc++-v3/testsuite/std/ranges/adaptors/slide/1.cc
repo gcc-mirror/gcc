@@ -50,6 +50,9 @@ test01()
       VERIFY( &v3[i][2] == &y[i] + 2 );
     }
 
+  // LWG 3848 - slide_view etc missing base accessor
+  v3.base();
+
   const auto v5 = y | views::slide(5);
   VERIFY( ranges::size(v5) == 1 );
   VERIFY( ranges::equal(v5 | views::join, y) );

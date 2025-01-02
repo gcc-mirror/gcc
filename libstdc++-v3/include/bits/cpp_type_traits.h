@@ -24,7 +24,7 @@
 
 /** @file bits/cpp_type_traits.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{ext/type_traits}
+ *  Do not attempt to use it directly. @headername{ext/type_traits.h}
  */
 
 // Written by Gabriel Dos Reis <dosreis@cmla.ens-cachan.fr>
@@ -35,6 +35,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/version.h>
 
 //
 // This file provides some compile-time information about various types.
@@ -447,7 +448,7 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __true_type __type;
     };
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_byte // C++ >= 17
   enum class byte : unsigned char;
 
   template<>

@@ -3,7 +3,7 @@
 // { dg-options "-Wdangling-reference" }
 
 namespace std {
-struct any {};
+struct any { void *p; ~any(); };
 template <typename _ValueType> _ValueType any_cast(any &&);
 template <typename _Tp> struct remove_reference { using type = _Tp; };
 template <typename _Tp> _Tp forward(typename remove_reference<_Tp>::type);

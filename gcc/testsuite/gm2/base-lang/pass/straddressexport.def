@@ -1,0 +1,8 @@
+DEFINITION MODULE straddressexport ;  (*!m2pim*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+PROCEDURE Open (a: ARRAY OF CHAR) ;
+PROCEDURE open (a: ADDRESS) ;
+
+END straddressexport.

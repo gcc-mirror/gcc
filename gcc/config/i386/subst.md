@@ -345,6 +345,8 @@
 (define_subst_attr "mask_scalarcz_operand4" "mask_scalarcz" "" "%{%5%}%N4")
 (define_subst_attr "mask_scalar4_dest_false_dep_for_glc_cond" "mask_scalar" "1" "operands[4] == CONST0_RTX(<MODE>mode)")
 (define_subst_attr "mask_scalarc_dest_false_dep_for_glc_cond" "mask_scalarc" "1" "operands[3] == CONST0_RTX(V8HFmode)")
+(define_subst_attr "mask_scalar_operand_arg34" "mask_scalar" "" ", operands[3], operands[4]")
+(define_subst_attr "mask_scalar_expand_op3" "mask_scalar" "3" "5")
 
 (define_subst "mask_scalar"
   [(set (match_operand:SUBST_V 0)
@@ -452,6 +454,7 @@
 (define_subst_attr "round_saeonly_scalar_constraint" "round_saeonly_scalar" "vm" "v")
 (define_subst_attr "round_saeonly_scalar_prefix" "round_saeonly_scalar" "vex" "evex")
 (define_subst_attr "round_saeonly_scalar_nimm_predicate" "round_saeonly_scalar" "nonimmediate_operand" "register_operand")
+(define_subst_attr "round_saeonly_scalar_mask_arg3" "round_saeonly_scalar" "" ", operands[<mask_scalar_expand_op3>]")
 
 (define_subst "round_saeonly_scalar"
   [(set (match_operand:SUBST_V 0)

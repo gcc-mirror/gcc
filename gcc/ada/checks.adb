@@ -9800,7 +9800,15 @@ package body Checks is
          if Ekind (Scope (E)) = E_Record_Type
            and then Has_Discriminants (Scope (E))
          then
-            N := Build_Discriminal_Subtype_Of_Component (E);
+            --  If the expression is a selected component, in other words,
+            --  has a prefix, then build an actual subtype from the prefix.
+            --  Otherwise, build an actual subtype from the discriminal.
+
+            if Nkind (Expr) = N_Selected_Component then
+               N := Build_Actual_Subtype_Of_Component (E, Expr);
+            else
+               N := Build_Discriminal_Subtype_Of_Component (E);
+            end if;
 
             if Present (N) then
                Insert_Action (Expr, N);

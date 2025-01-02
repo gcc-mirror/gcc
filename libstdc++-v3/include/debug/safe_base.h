@@ -205,10 +205,10 @@ namespace __gnu_debug
 
   public:
     /// The list of mutable iterators that reference this container
-    _Safe_iterator_base* _M_iterators;
+    mutable _Safe_iterator_base* _M_iterators;
 
     /// The list of constant iterators that reference this container
-    _Safe_iterator_base* _M_const_iterators;
+    mutable _Safe_iterator_base* _M_const_iterators;
 
     /// The container version number. This number may never be 0.
     mutable unsigned int _M_version;

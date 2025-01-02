@@ -34,7 +34,7 @@ typedef enum Mode { maxsignicant, decimaldigits } Mode;
 
 extern int dtoa_calcmaxsig (char *p, int ndigits);
 extern int dtoa_calcdecimal (char *p, int str_size, int ndigits);
-extern int dtoa_calcsign (char *p, int str_size);
+extern bool dtoa_calcsign (char *p, int str_size);
 
 /* maxsignicant: return a string containing max(1,ndigits)
    significant digits.  The return string contains the string
@@ -43,27 +43,27 @@ extern int dtoa_calcsign (char *p, int str_size);
    (ndigits may be negative).  */
 
 long double
-ldtoa_strtold (const char *s, int *error)
+ldtoa_strtold (void *s, bool *error)
 {
   char *endp;
   long double d;
 
   errno = 0;
 #if defined(HAVE_STRTOLD)
-  d = strtold (s, &endp);
+  d = strtold (reinterpret_cast <char *> (s), &endp);
 #else
   /* fall back to using strtod.  */
-  d = (long double)strtod (s, &endp);
+  d = (long double)strtod (reinterpret_cast <char *> (s), &endp);
 #endif
   if (endp != NULL && (*endp == '\0'))
     *error = (errno != 0);
   else
-    *error = TRUE;
+    *error = true;
   return d;
 }
 
-char *
-ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
+void *
+ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;
@@ -94,12 +94,12 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 /* GNU Modula-2 hooks */
 
 void
-_M2_ldtoa_init (void)
+_M2_ldtoa_init (int argc, char *argv[], char *envp[])
 {
 }
 
 void
-_M2_ldtoa_fini (void)
+_M2_ldtoa_fini (int argc, char *argv[], char *envp[])
 {
 }
 #   ifdef __cplusplus

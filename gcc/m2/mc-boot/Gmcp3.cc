@@ -41,9 +41,9 @@ see <https://www.gnu.org/licenses/>.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcp3_H
 #define _mcp3_C
 
+#include "Gmcp3.h"
 #   include "GDynamicStrings.h"
 #   include "GmcError.h"
 #   include "GnameKey.h"
@@ -2231,7 +2231,7 @@ static void TrashList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 static decl_node push (decl_node n)
 {
-  return static_cast<decl_node> (mcStack_push (stk, reinterpret_cast<void *> (n)));
+  return static_cast<decl_node> (mcStack_push (stk, reinterpret_cast <void *> (n)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2255,7 +2255,7 @@ static decl_node pop (void)
 
 static decl_node replace (decl_node n)
 {
-  return static_cast<decl_node> (mcStack_replace (stk, reinterpret_cast<void *> (n)));
+  return static_cast<decl_node> (mcStack_replace (stk, reinterpret_cast <void *> (n)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -7846,10 +7846,10 @@ extern "C" bool mcp3_CompilationUnit (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcp3_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp3_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcp3_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp3_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

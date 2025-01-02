@@ -32,7 +32,7 @@ DEFINITION MODULE SymbolTable ;
 FROM SYSTEM IMPORT WORD ;
 FROM SymbolKey IMPORT PerformOperation ;
 FROM NameKey IMPORT Name ;
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM DynamicStrings IMPORT String ;
 FROM M2Error IMPORT ErrorScope ;
 FROM Lists IMPORT List ;
@@ -53,6 +53,7 @@ CONST
 
 TYPE
    ModeOfAddr = (NoValue, ImmediateValue, RightValue, LeftValue) ;
+   ProcedureKind = (ProperProcedure, ForwardProcedure, DefProcedure) ;
    FamilyOperation = PROCEDURE (CARDINAL, CARDINAL, CARDINAL) ;
 
 
@@ -390,6 +391,21 @@ PROCEDURE IsVarHeap (sym: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE MakeVar (tok: CARDINAL; VarName: Name) : CARDINAL ;
+
+
+(*
+   PutVarConditional - assign IsConditional to value.
+*)
+
+PROCEDURE PutVarConditional (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsVarConditional - return TRUE if the symbol is a var symbol
+                      containing the result of a boolean conditional.
+*)
+
+PROCEDURE IsVarConditional (sym: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -981,7 +997,7 @@ PROCEDURE GetNth (Sym: CARDINAL; n: CARDINAL) : CARDINAL ;
                  a parameter.
 *)
 
-PROCEDURE GetNthParam (Sym: CARDINAL; ParamNo: CARDINAL) : CARDINAL ;
+PROCEDURE GetNthParam (Sym: CARDINAL; kind: ProcedureKind; ParamNo: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -1105,6 +1121,13 @@ PROCEDURE HasExceptionFinally (sym: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE PutVar (Sym: CARDINAL; VarType: CARDINAL) ;
+
+
+(*
+   PutVarTok - gives the VarSym symbol Sym a type Type at typetok.
+*)
+
+PROCEDURE PutVarTok (Sym: CARDINAL; VarType: CARDINAL; typetok: CARDINAL) ;
 
 
 (*
@@ -1310,14 +1333,15 @@ PROCEDURE PutType (Sym: CARDINAL; TypeSymbol: CARDINAL) ;
    PutFunction - Places a TypeSym as the return type to a procedure Sym.
 *)
 
-PROCEDURE PutFunction (Sym: CARDINAL; TypeSym: CARDINAL) ;
+PROCEDURE PutFunction (tok: CARDINAL; Sym: CARDINAL; kind: ProcedureKind;
+                       TypeSym: CARDINAL) ;
 
 
 (*
    PutOptFunction - places a TypeSym as the optional return type to a procedure Sym.
 *)
 
-PROCEDURE PutOptFunction (Sym: CARDINAL; TypeSym: CARDINAL) ;
+PROCEDURE PutOptFunction (tok: CARDINAL; Sym: CARDINAL; kind: ProcedureKind; TypeSym: CARDINAL) ;
 
 
 (*
@@ -1325,42 +1349,53 @@ PROCEDURE PutOptFunction (Sym: CARDINAL; TypeSym: CARDINAL) ;
                       optional.
 *)
 
-PROCEDURE IsReturnOptional (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsReturnOptional (sym: CARDINAL; kind: ProcedureKind) : BOOLEAN ;
+
+
+(*
+   IsReturnOptionalAny - returns TRUE if the return value for sym is
+                         optional.
+*)
+
+PROCEDURE IsReturnOptionalAny (sym: CARDINAL) : BOOLEAN ;
 
 
 (*
    PutParam - Places a Non VAR parameter ParamName with type ParamType into
-              procedure Sym. The parameter number is ParamNo.
+              procedure Sym:kind.  The parameter number is ParamNo.
               If the procedure Sym already has this parameter then
               the parameter is checked for consistancy and the
               consistancy test is returned.
 *)
 
-PROCEDURE PutParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
+PROCEDURE PutParam (tok: CARDINAL; Sym: CARDINAL;
+                    kind: ProcedureKind; ParamNo: CARDINAL;
                     ParamName: Name; ParamType: CARDINAL;
-                    isUnbounded: BOOLEAN) : BOOLEAN ;
+                    isUnbounded: BOOLEAN; typetok: CARDINAL) : BOOLEAN ;
 
 
 (*
    PutVarParam - Places a Non VAR parameter ParamName with type
-                 ParamType into procedure Sym.
+                 ParamType into procedure Sym:kind.
                  The parameter number is ParamNo.
                  If the procedure Sym already has this parameter then
                  the parameter is checked for consistancy and the
                  consistancy test is returned.
 *)
 
-PROCEDURE PutVarParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
+PROCEDURE PutVarParam (tok: CARDINAL; Sym: CARDINAL; kind: ProcedureKind;
+                       ParamNo: CARDINAL;
                        ParamName: Name; ParamType: CARDINAL;
-                       isUnbounded: BOOLEAN) : BOOLEAN ;
+                       isUnbounded: BOOLEAN; typetok: CARDINAL) : BOOLEAN ;
 
 
 (*
-   PutParamName - assigns a name, name, to paramater, no, of procedure,
-                  ProcSym.
+   PutParamName - assigns a name to paramater no of procedure ProcSym:kind.
 *)
 
-PROCEDURE PutParamName (tok: CARDINAL; ProcSym: CARDINAL; no: CARDINAL; name: Name) ;
+PROCEDURE PutParamName (tok: CARDINAL; ProcSym: CARDINAL; kind: ProcedureKind;
+                        no: CARDINAL;
+                        name: Name; ParamType: CARDINAL; typetok: CARDINAL) ;
 
 
 (*
@@ -1384,14 +1419,15 @@ PROCEDURE IsProcedureReachable (Sym: CARDINAL) : BOOLEAN ;
                           field of procedure sym.
 *)
 
-PROCEDURE PutProcedureNoReturn (Sym: CARDINAL; value: BOOLEAN) ;
+PROCEDURE PutProcedureNoReturn (Sym: CARDINAL; kind: ProcedureKind;
+                                value: BOOLEAN) ;
 
 
 (*
    IsProcedureNoReturn - returns TRUE if this procedure never returns.
 *)
 
-PROCEDURE IsProcedureNoReturn (Sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsProcedureNoReturn (Sym: CARDINAL; kind: ProcedureKind) : BOOLEAN ;
 
 
 (*
@@ -1452,14 +1488,14 @@ PROCEDURE GetModuleQuads (Sym: CARDINAL;
    PutModuleFinallyFunction - Places Tree, finally, into the Module symbol, Sym.
 *)
 
-PROCEDURE PutModuleFinallyFunction (Sym: CARDINAL; finally: Tree) ;
+PROCEDURE PutModuleFinallyFunction (Sym: CARDINAL; finally: tree) ;
 
 
 (*
    GetModuleFinallyFunction - returns the finally tree from the Module symbol, Sym.
 *)
 
-PROCEDURE GetModuleFinallyFunction (Sym: CARDINAL) : Tree ;
+PROCEDURE GetModuleFinallyFunction (Sym: CARDINAL) : tree ;
 
 
 (*
@@ -1599,6 +1635,16 @@ PROCEDURE GetDeclaredMod (Sym: CARDINAL) : CARDINAL ;
 
 
 (*
+   GetDeclaredFor - returns the token where this symbol was declared.
+                    It chooses the first from the forward declaration,
+                    implementation module, program module
+                    and definition module.
+*)
+
+PROCEDURE GetDeclaredFor (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
    GetDeclaredDefinition - returns the token where this symbol
                            was declared in the definition module.
 *)
@@ -1682,7 +1728,16 @@ PROCEDURE ForeachInnerModuleDo (Sym: CARDINAL; P: PerformOperation) ;
                 is a VAR procedure parameter.
 *)
 
-PROCEDURE IsVarParam (Sym: CARDINAL; ParamNo: CARDINAL) : BOOLEAN ;
+PROCEDURE IsVarParam (Sym: CARDINAL; kind: ProcedureKind;
+                      ParamNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsVarParamAny - Returns a conditional depending whether parameter ParamNo
+                   is a VAR parameter.
+*)
+
+PROCEDURE IsVarParamAny (Sym: CARDINAL; ParamNo: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -1690,7 +1745,16 @@ PROCEDURE IsVarParam (Sym: CARDINAL; ParamNo: CARDINAL) : BOOLEAN ;
                       ParamNo is an unbounded array procedure parameter.
 *)
 
-PROCEDURE IsUnboundedParam (Sym: CARDINAL; ParamNo: CARDINAL) : BOOLEAN ;
+PROCEDURE IsUnboundedParam (Sym: CARDINAL; kind: ProcedureKind;
+                            ParamNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsUnboundedParam - Returns a conditional depending whether parameter
+                      ParamNo is an unbounded array procedure parameter.
+*)
+
+PROCEDURE IsUnboundedParamAny (Sym: CARDINAL; ParamNo: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -1721,7 +1785,7 @@ PROCEDURE GetParameterShadowVar (sym: CARDINAL) : CARDINAL ;
    NoOfParam - Returns the number of parameters that procedure Sym contains.
 *)
 
-PROCEDURE NoOfParam (Sym: CARDINAL) : CARDINAL ;
+PROCEDURE NoOfParam (Sym: CARDINAL; kind: ProcedureKind) : CARDINAL ;
 
 
 (*
@@ -2124,8 +2188,11 @@ PROCEDURE ForeachLocalSymDo (Sym: CARDINAL; P: PerformOperation) ;
 
 
 (*
-   ForeachParamSymDo - foreach parameter symbol in procedure, Sym,
-                       perform the procedure, P.
+   ForeachParamSymDo - foreach parameter symbol in procedure Sym
+                       perform the procedure P.  Each symbol
+                       looked up will be VarParam or Param
+                       (not the shadow variable).  Every parameter
+                       from each KindProcedure is iterated over.
 *)
 
 PROCEDURE ForeachParamSymDo (Sym: CARDINAL; P: PerformOperation) ;
@@ -2163,55 +2230,79 @@ PROCEDURE IsParameter (Sym: CARDINAL) : BOOLEAN ;
 
 
 (*
-   ProcedureParametersDefined - dictates to procedure symbol, Sym,
-                                that its parameters have been defined.
+   GetProcedureKind - returns the procedure kind given the declaration tok.
+                      The declaration tok must match the ident tok in the
+                      procedure name.  It is only safe to call this
+                      procedure function during pass 2 onwards.
 *)
 
-PROCEDURE ProcedureParametersDefined (Sym: CARDINAL) ;
+PROCEDURE GetProcedureKind (sym: CARDINAL; tok: CARDINAL) : ProcedureKind ;
 
 
 (*
-   AreProcedureParametersDefined - returns true if the parameters to procedure
-                                   symbol, Sym, have been defined.
+   GetProcedureDeclaredTok - return the token where the
+                             declaration of procedure sym:kind
+                             occurred.
 *)
 
-PROCEDURE AreProcedureParametersDefined (Sym: CARDINAL) : BOOLEAN ;
+PROCEDURE GetProcedureDeclaredTok (sym: CARDINAL; kind: ProcedureKind) : CARDINAL ;
 
 
 (*
-   ParametersDefinedInDefinition - dictates to procedure symbol, Sym,
-                                   that its parameters have been defined in
-                                   a definition module.
+   PutProcedureDeclaredTok - places the tok where the
+                             declaration of procedure sym:kind
+                             occurred.
 *)
 
-PROCEDURE ParametersDefinedInDefinition (Sym: CARDINAL) ;
+PROCEDURE PutProcedureDeclaredTok (sym: CARDINAL; kind: ProcedureKind;
+                                   tok: CARDINAL) ;
 
 
 (*
-   AreParametersDefinedInDefinition - returns true if procedure symbol, Sym,
-                                      has had its parameters been defined in
-                                      a definition module.
+   GetReturnTypeTok - return the token where the
+                      return type procedure sym:kind was defined.
 *)
 
-PROCEDURE AreParametersDefinedInDefinition (Sym: CARDINAL) : BOOLEAN ;
+PROCEDURE GetReturnTypeTok (sym: CARDINAL; kind: ProcedureKind) : CARDINAL ;
 
 
 (*
-   ParametersDefinedInImplementation - dictates to procedure symbol, Sym,
-                                       that its parameters have been defined in
-                                       a implementation module.
+   PutReturnTypeTok - places the tok where the return type of procedure sym:kind
+                      was defined.
 *)
 
-PROCEDURE ParametersDefinedInImplementation (Sym: CARDINAL) ;
+PROCEDURE PutReturnTypeTok (sym: CARDINAL; kind: ProcedureKind; tok: CARDINAL) ;
 
 
 (*
-   AreParametersDefinedInImplementation - returns true if procedure symbol, Sym,
-                                          has had its parameters been defined in
-                                          an implementation module.
+   PutProcedureParametersDefined - the procedure symbol sym:kind
+                                   parameters have been defined.
 *)
 
-PROCEDURE AreParametersDefinedInImplementation (Sym: CARDINAL) : BOOLEAN ;
+PROCEDURE PutProcedureParametersDefined (sym: CARDINAL; kind: ProcedureKind) ;
+
+
+(*
+   GetProcedureParametersDefined - returns true if procedure symbol sym:kind
+                                   parameters are defined.
+*)
+
+PROCEDURE GetProcedureParametersDefined (sym: CARDINAL; kind: ProcedureKind) : BOOLEAN ;
+
+
+(*
+   PutProcedureDefined - the procedure symbol sym:kind is defined.
+*)
+
+PROCEDURE PutProcedureDefined (sym: CARDINAL; kind: ProcedureKind) ;
+
+
+(*
+   GetProcedureDefined - returns true if procedure symbol sym:kind
+                         is defined.
+*)
+
+PROCEDURE GetProcedureDefined (sym: CARDINAL; kind: ProcedureKind) : BOOLEAN ;
 
 
 (*
@@ -2238,14 +2329,14 @@ PROCEDURE UsesVarArgs (Sym: CARDINAL) : BOOLEAN ;
                   uses an optarg.
 *)
 
-PROCEDURE PutUseOptArg (Sym: CARDINAL) ;
+PROCEDURE PutUseOptArg (Sym: CARDINAL; kind: ProcedureKind) ;
 
 
 (*
    UsesOptArg - returns TRUE if procedure, Sym, uses varargs.
 *)
 
-PROCEDURE UsesOptArg (Sym: CARDINAL) : BOOLEAN ;
+PROCEDURE UsesOptArg (Sym: CARDINAL; kind: ProcedureKind) : BOOLEAN ;
 
 
 (*
@@ -2253,7 +2344,7 @@ PROCEDURE UsesOptArg (Sym: CARDINAL) : BOOLEAN ;
                    procedure, ProcSym.
 *)
 
-PROCEDURE PutOptArgInit (ProcSym, Sym: CARDINAL) ;
+PROCEDURE PutOptArgInit (ProcSym: CARDINAL; Sym: CARDINAL) ;
 
 
 (*
@@ -2460,10 +2551,10 @@ PROCEDURE NoOfElements (Sym: CARDINAL) : CARDINAL ;
 
 
 (*
-   PutArray - places a type symbol into an Array.
+   PutArray - places a type symbol into an arraysym.
 *)
 
-PROCEDURE PutArray (Sym, TypeSymbol: CARDINAL) ;
+PROCEDURE PutArray (arraysym, typesym: CARDINAL) ;
 
 
 (*
@@ -2869,10 +2960,10 @@ PROCEDURE PushSize (Sym: CARDINAL) ;
 
 
 (*
-   PushOffset - pushes the Offset of Sym.
+   PopSize - pops the ALU stack into Size of Sym.
 *)
 
-PROCEDURE PushOffset (Sym: CARDINAL) ;
+PROCEDURE PopSize (Sym: CARDINAL) ;
 
 
 (*
@@ -2880,30 +2971,6 @@ PROCEDURE PushOffset (Sym: CARDINAL) ;
 *)
 
 PROCEDURE PushValue (Sym: CARDINAL) ;
-
-
-(*
-   PushParamSize - push the size of parameter, ParamNo,
-                   of procedure Sym onto the ALU stack.
-*)
-
-PROCEDURE PushParamSize (Sym: CARDINAL; ParamNo: CARDINAL) ;
-
-
-(*
-   PushSumOfLocalVarSize - push the total size of all local variables
-                           onto the ALU stack.
-*)
-
-PROCEDURE PushSumOfLocalVarSize (Sym: CARDINAL) ;
-
-
-(*
-   PushSumOfParamSize - push the total size of all parameters onto
-                        the ALU stack.
-*)
-
-PROCEDURE PushSumOfParamSize (Sym: CARDINAL) ;
 
 
 (*
@@ -2924,28 +2991,6 @@ PROCEDURE PushVarSize (Sym: CARDINAL) ;
 *)
 
 PROCEDURE PopValue (Sym: CARDINAL) ;
-
-
-(*
-   PopSize - pops the ALU stack into Size of Sym.
-*)
-
-PROCEDURE PopSize (Sym: CARDINAL) ;
-
-
-(*
-   PopOffset - pops the ALU stack into Offset of Sym.
-*)
-
-PROCEDURE PopOffset (Sym: CARDINAL) ;
-
-
-(*
-   PopSumOfParamSize - pop the total value on the ALU stack as the
-                       sum of all parameters.
-*)
-
-PROCEDURE PopSumOfParamSize (Sym: CARDINAL) ;
 
 
 (*
@@ -3347,6 +3392,90 @@ PROCEDURE PutConstLitInternal (sym: CARDINAL; value: BOOLEAN) ;
 *)
 
 PROCEDURE IsConstLitInternal (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetVarDeclTypeTok - returns the TypeTok field associate with variable sym.
+*)
+
+PROCEDURE GetVarDeclTypeTok (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutVarDeclTypeTok - assigns the TypeTok field to typetok.
+                       sym can be a variable or parameter.
+*)
+
+PROCEDURE PutVarDeclTypeTok (sym: CARDINAL; typetok: CARDINAL) ;
+
+
+(*
+   GetVarDeclTok - returns the TypeTok field associate with variable sym.
+*)
+
+PROCEDURE GetVarDeclTok (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutVarDeclTok - assigns the VarTok field to vartok.
+                   sym can be a variable or parameter.
+*)
+
+PROCEDURE PutVarDeclTok (sym: CARDINAL; vartok: CARDINAL) ;
+
+
+(*
+   GetVarDeclFullTok - returns the full virtual token containing var: type.
+*)
+
+PROCEDURE GetVarDeclFullTok (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsProcedureAnyNoReturn - return TRUE if any of the defined kinds
+                            of procedure sym is declared no return.
+*)
+
+PROCEDURE IsProcedureAnyNoReturn (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetNthParamAny - returns the nth parameter from the order
+                    proper procedure, forward declaration
+                    or definition module procedure.
+*)
+
+PROCEDURE GetNthParamAny (sym: CARDINAL; ParamNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   NoOfParamAny - return the number of parameters for sym.
+*)
+
+PROCEDURE NoOfParamAny (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   SetReturnOptional - sets the ReturnOptional field in the Procedure:kind or
+                       ProcType symboltable entry.
+*)
+
+PROCEDURE SetReturnOptional (sym: CARDINAL; kind: ProcedureKind;
+                             isopt: BOOLEAN) ;
+
+
+(*
+   UsesOptArgAny - returns TRUE if procedure, Sym, uses varargs.
+*)
+
+PROCEDURE UsesOptArgAny (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetProcedureKindDesc - return a string describing kind.
+*)
+
+PROCEDURE GetProcedureKindDesc (kind: ProcedureKind) : String ;
 
 
 END SymbolTable.

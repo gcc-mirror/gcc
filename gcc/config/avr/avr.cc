@@ -3812,6 +3812,69 @@ avr_print_operand (FILE *file, rtx x, int code)
       rtx op = XEXP (XEXP (x, 0), 0);
       fprintf (file, "%s", reg_names[REGNO (op) + ij]);
     }
+  else if (code == 'i')
+    {
+      const int sfr0 = avr_arch->sfr_offset;
+      bool lossage_p = false;
+
+      switch (GET_CODE (x))
+	{
+	default:
+	  lossage_p = true;
+	  break;
+
+	case CONST_INT:
+	  {
+	    const auto ival = INTVAL (x);
+
+	    if (io_address_operand (x, VOIDmode))
+	      {
+		if (AVR_HAVE_RAMPZ && ival == avr_addr.rampz)
+		  fprintf (file, "__RAMPZ__");
+		else if (AVR_HAVE_RAMPY && ival == avr_addr.rampy)
+		  fprintf (file, "__RAMPY__");
+		else if (AVR_HAVE_RAMPX && ival == avr_addr.rampx)
+		  fprintf (file, "__RAMPX__");
+		else if (AVR_HAVE_RAMPD && ival == avr_addr.rampd)
+		  fprintf (file, "__RAMPD__");
+		else if ((AVR_XMEGA || AVR_TINY) && ival == avr_addr.ccp)
+		  fprintf (file, "__CCP__");
+		else if (ival == avr_addr.sreg)   fprintf (file, "__SREG__");
+		else if (ival == avr_addr.sp_l)   fprintf (file, "__SP_L__");
+		else if (ival == avr_addr.sp_h)   fprintf (file, "__SP_H__");
+		else
+		  fprintf (file, HOST_WIDE_INT_PRINT_HEX, ival - sfr0);
+	      }
+	    else
+	      output_operand_lossage
+		("bad I/O address 0x" HOST_WIDE_INT_PRINT_HEX_PURE
+		 " outside of valid range [0x%x, 0x%x] for %%i operand",
+		 ival, sfr0, sfr0 + 0x3f);
+	  }
+	  break; // CONST_INT
+
+	case MEM:
+	  if (io_address_operand (XEXP (x, 0), VOIDmode))
+	    avr_print_operand (file, XEXP (x, 0), 'i');
+	  else
+	    lossage_p = true;
+	  break;
+
+	case SYMBOL_REF:
+	  if (io_address_operand (x, VOIDmode))
+	    {
+	      rtx addr = plus_constant (HImode, x, -sfr0);
+	      avr_print_operand_address (file, VOIDmode, addr);
+	    }
+	  else
+	    lossage_p = true;
+	  break;
+	} // switch code
+
+      if (lossage_p)
+	output_operand_lossage ("%s operand cannot be used as %%i I/O "
+				"address operand", rtx_name[GET_CODE (x)]);
+    } // code = i
   else if (REG_P (x))
     {
       if (x == zero_reg_rtx)
@@ -3823,34 +3886,7 @@ avr_print_operand (FILE *file, rtx x, int code)
     }
   else if (CONST_INT_P (x))
     {
-      HOST_WIDE_INT ival = INTVAL (x);
-
-      if ('i' != code)
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival + abcd);
-      else if (low_io_address_operand (x, VOIDmode)
-	       || high_io_address_operand (x, VOIDmode))
-	{
-	  if (AVR_HAVE_RAMPZ && ival == avr_addr.rampz)
-	    fprintf (file, "__RAMPZ__");
-	  else if (AVR_HAVE_RAMPY && ival == avr_addr.rampy)
-	    fprintf (file, "__RAMPY__");
-	  else if (AVR_HAVE_RAMPX && ival == avr_addr.rampx)
-	    fprintf (file, "__RAMPX__");
-	  else if (AVR_HAVE_RAMPD && ival == avr_addr.rampd)
-	    fprintf (file, "__RAMPD__");
-	  else if ((AVR_XMEGA || AVR_TINY) && ival == avr_addr.ccp)
-	    fprintf (file, "__CCP__");
-	  else if (ival == avr_addr.sreg)   fprintf (file, "__SREG__");
-	  else if (ival == avr_addr.sp_l)   fprintf (file, "__SP_L__");
-	  else if (ival == avr_addr.sp_h)   fprintf (file, "__SP_H__");
-	  else
-	    {
-	      fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-		       ival - avr_arch->sfr_offset);
-	    }
-	}
-      else
-	fatal_insn ("bad address, not an I/O address:", x);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) + abcd);
     }
   else if (MEM_P (x))
     {
@@ -3869,10 +3905,6 @@ avr_print_operand (FILE *file, rtx x, int code)
 		fprintf(stderr,"\n");
 	      }
 	  output_addr_const (file, addr);
-	}
-      else if (code == 'i')
-	{
-	  avr_print_operand (file, addr, 'i');
 	}
       else if (code == 'o')
 	{
@@ -3910,14 +3942,6 @@ avr_print_operand (FILE *file, rtx x, int code)
 	}
       else
 	avr_print_operand_address (file, VOIDmode, addr);
-    }
-  else if (code == 'i')
-    {
-      if (SYMBOL_REF_P (x) && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_IO))
-	avr_print_operand_address
-	  (file, VOIDmode, plus_constant (HImode, x, -avr_arch->sfr_offset));
-      else
-	fatal_insn ("bad address, not an I/O address:", x);
     }
   else if (code == 'x')
     {
@@ -4863,11 +4887,11 @@ avr_out_movqi_r_mr_reg_disp_tiny (rtx_insn *insn, rtx op[], int *plen)
       rtx base2 = all_regs_rtx[1 ^ REGNO (dest)];
 
       if (!reg_unused_after (insn, base2))
-	avr_asm_len ("mov __tmp_reg__,%0" , &base2, plen, 1);
+	avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
       avr_asm_len (TINY_ADIW (%I1, %J1, %o1) CR_TAB
 		   "ld %0,%b1", op, plen, 3);
       if (!reg_unused_after (insn, base2))
-	avr_asm_len ("mov %0,__tmp_reg__" , &base2, plen, 1);
+	avr_asm_len ("mov %0,__tmp_reg__", &base2, plen, 1);
     }
 
   return "";
@@ -4894,40 +4918,66 @@ out_movqi_r_mr (rtx_insn *insn, rtx op[], int *plen)
     {
       /* memory access by reg+disp */
 
-      int disp = INTVAL (XEXP (x, 1));
-
       if (AVR_TINY)
 	return avr_out_movqi_r_mr_reg_disp_tiny (insn, op, plen);
 
+      if (plen)
+	*plen = 0;
+
+      int disp = INTVAL (XEXP (x, 1));
+      rtx base = XEXP (x, 0);
+      rtx base2 = all_regs_rtx[1 ^ REGNO (dest)];
+      bool partial_clobber = (reg_overlap_mentioned_p (dest, base)
+			      && ! reg_unused_after (insn, base2));
+
       if (disp - GET_MODE_SIZE (GET_MODE (src)) >= 63)
 	{
+	  // PR117744: The base register overlaps dest and is
+	  // only partially clobbered.
+	  if (partial_clobber)
+	    avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
+
 	  if (REGNO (XEXP (x, 0)) != REG_Y)
 	    fatal_insn ("incorrect insn:",insn);
 
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
-	    return avr_asm_len ("adiw r28,%o1-63" CR_TAB
-				"ldd %0,Y+63"     CR_TAB
-				"sbiw r28,%o1-63", op, plen, -3);
+	    avr_asm_len ("adiw r28,%o1-63" CR_TAB
+			 "ldd %0,Y+63"     CR_TAB
+			 "sbiw r28,%o1-63", op, plen, 3);
+	  else
+	    avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
+			 "sbci r29,hi8(-%o1)" CR_TAB
+			 "ld %0,Y"            CR_TAB
+			 "subi r28,lo8(%o1)"  CR_TAB
+			 "sbci r29,hi8(%o1)", op, plen, 5);
 
-	  return avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
-			      "sbci r29,hi8(-%o1)" CR_TAB
-			      "ld %0,Y"            CR_TAB
-			      "subi r28,lo8(%o1)"  CR_TAB
-			      "sbci r29,hi8(%o1)", op, plen, -5);
+	  if (partial_clobber)
+	    avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
+
+	  return "";
 	}
       else if (REGNO (XEXP (x, 0)) == REG_X)
 	{
 	  /* This is a paranoid case LEGITIMIZE_RELOAD_ADDRESS must exclude
 	     it but I have this situation with extremal optimizing options.  */
 
-	  avr_asm_len ("adiw r26,%o1" CR_TAB
-		       "ld %0,X", op, plen, -2);
+	  // PR117744: The base register overlaps dest and is
+	  // only partially clobbered.
+	  bool clobber_r26 = (partial_clobber
+			      && REGNO (base) == (REGNO (base) & ~1));
+	  if (partial_clobber
+	      && ! clobber_r26)
+	    avr_asm_len ("mov __tmp_reg__,%0", &base2, plen, 1);
 
-	  if (!reg_overlap_mentioned_p (dest, XEXP (x, 0))
-	      && !reg_unused_after (insn, XEXP (x, 0)))
-	    {
-	      avr_asm_len ("sbiw r26,%o1", op, plen, 1);
-	    }
+	  avr_asm_len ("adiw r26,%o1" CR_TAB
+		       "ld %0,X", op, plen, 2);
+
+	  if (clobber_r26)
+	    avr_asm_len ("subi r26,lo8(%o1)", op, plen, 1);
+	  else if (partial_clobber)
+	    avr_asm_len ("mov %0,__tmp_reg__", &base2, plen, 1);
+	  else if (! reg_unused_after (insn, base))
+	    avr_asm_len ("sbiw r26,%o1", op, plen, 1);
 
 	  return "";
 	}
@@ -7827,7 +7877,7 @@ avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int *plen)
 	    int reg1 = REGNO (op[1]);
 
 	    if (reg0 + 2 != reg1)
-	      avr_asm_len ("mov %C0,%A0", op, plen, 1);
+	      avr_asm_len ("mov %C0,%A1", op, plen, 1);
 
 	    return avr_asm_len ("clr %B0"  CR_TAB
 				"clr %A0", op, plen, 2);
@@ -14414,6 +14464,10 @@ avr_out_sbxx_branch (rtx_insn *insn, rtx operands[])
   enum rtx_code comp = GET_CODE (operands[0]);
   bool long_jump = get_attr_length (insn) >= 4;
   bool reverse = long_jump || jump_over_one_insn_p (insn, operands[3]);
+
+  // PR116953: jump_over_one_insn_p may call extract on the next insn,
+  // clobbering recog_data.operand.  Thus, restore recog_data.
+  extract_constrain_insn_cached (insn);
 
   if (comp == GE)
     comp = EQ;

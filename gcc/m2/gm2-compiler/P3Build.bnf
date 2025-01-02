@@ -66,6 +66,7 @@ FROM M2Reserved IMPORT tokToTok, toktype,
 
 FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     PushTtok, PushTFtok, PopTtok, PopTFtok, OperandTok,
+                    DupFrame, Top,
                     BuildModuleStart,
                     StartBuildDefFile, StartBuildModFile,
                     EndBuildFile,
@@ -132,6 +133,7 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     PushInConstExpression, PopInConstExpression,
                     PushInConstParameters, PopInConstParameters, IsInConstParameters,
                     BuildDefaultFieldAlignment, BuildPragmaField,
+                    OperandT, OperandTok,
                     IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto ;
 
 FROM P3SymBuild IMPORT P3StartBuildProgModule,
@@ -151,6 +153,7 @@ FROM P3SymBuild IMPORT P3StartBuildProgModule,
                        StartBuildProcedure,
                        BuildProcedureHeading,
                        EndBuildProcedure,
+                       EndBuildForward,
                        BuildVarAtAddress,
                        BuildConst,
                        BuildSubrange,
@@ -177,6 +180,14 @@ FROM M2Batch IMPORT IsModuleKnown ;
 
 FROM M2CaseList IMPORT BeginCaseList, EndCaseList ;
 
+FROM M2StateCheck IMPORT StateCheck,
+                         InitState, PushState, PopState,
+                         InclConst, ExclConst,
+                         InclType, ExclType,
+                         InclVar, ExclVar,
+                         InclConstructor, ExclConstructor,
+                         InclConstFunc, CheckQualident ;
+
 IMPORT M2Error ;
 
 CONST
@@ -184,19 +195,20 @@ CONST
    DebugAsm  = FALSE ;
 
 VAR
-   WasNoError: BOOLEAN ;
+   seenError : BOOLEAN ;
+   BlockState: StateCheck ;
 
 
 PROCEDURE ErrorString (s: String) ;
 BEGIN
-   ErrorStringAt(s, GetTokenNo ()) ;
-   WasNoError := FALSE
+   ErrorStringAt (s, GetTokenNo ()) ;
+   seenError := TRUE
 END ErrorString ;
 
 
 PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
 BEGIN
-   ErrorString(InitString(a))
+   ErrorString (InitString (a))
 END ErrorArray ;
 
 
@@ -391,9 +403,9 @@ END Expect ;
 
 PROCEDURE CompilationUnit () : BOOLEAN ;
 BEGIN
-   WasNoError := TRUE ;
+   seenError := FALSE ;
    FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
-   RETURN( WasNoError )
+   RETURN NOT seenError
 END CompilationUnit ;
 
 
@@ -457,6 +469,8 @@ BEGIN
 END Real ;
 
 % module P3Build end
+BEGIN
+   BlockState := InitState ()
 END P3Build.
 % rules
 error       'ErrorArray' 'ErrorString'
@@ -510,6 +524,7 @@ token   'EXIT'            exittok
 token   'EXPORT'          exporttok
 token   'FINALLY'         finallytok
 token   'FOR'             fortok
+token   'FORWARD'         forwardtok
 token   'FROM'            fromtok
 token   'IF'              iftok
 token   'IMPLEMENTATION'  implementationtok
@@ -662,12 +677,25 @@ Qualident :=                                                               % VAR
              { "." Ident }                                                 % END %
            =:
 
+
+QualidentCheck :=                                                          % PushAutoOn %
+                  Qualident
+                                                                           % PopAuto %
+                                                                           % CheckQualident (OperandTok (1), BlockState, OperandT (1)) %
+                                                                           % IF NOT IsAutoPushOn ()
+                                                                             THEN
+                                                                                PopNothing
+                                                                             END %
+                =:
+
 ConstantDeclaration :=                                                     % VAR tokno: CARDINAL ; %
+                                                                           % InclConst (BlockState) %
                                                                            % PushAutoOn %
                        ( Ident "="                                         % tokno := GetTokenNo () -1 %
                                                                            % BuildConst %
                          ConstExpression )                                 % BuildAssignConstant (tokno) %
                                                                            % PopAuto %
+                                                                           % ExclConst (BlockState) %
                      =:
 
 ConstExpression :=                                                         % VAR tokpos: CARDINAL ; %
@@ -679,9 +707,12 @@ ConstExpression :=                                                         % VAR
                                                                            % PopInConstExpression %
                 =:
 
-Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) %
-            | "#"                                                          % PushTtok(HashTok, GetTokenNo() -1) %
-            | "<>"                                                         % PushTtok(LessGreaterTok, GetTokenNo() -1) %
+Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+            | "#"                                                          % PushTtok(HashTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+            | "<>"                                                         % PushTtok(LessGreaterTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
             | "<"                                                          % PushTtok(LessTok, GetTokenNo() -1) %
             | "<="                                                         % PushTtok(LessEqualTok, GetTokenNo() -1) %
             | ">"                                                          % PushTtok(GreaterTok, GetTokenNo() -1) %
@@ -761,10 +792,14 @@ ArraySetRecordValue := ComponentValue                                      % Bui
 
 Constructor :=                                                             % VAR tokpos: CARDINAL ; %
                                                                            % DisplayStack %
+                                                                           % InclConstructor (BlockState) %
+                                                                           % CheckQualident (OperandTok (1), BlockState, OperandT (1)) %
                '{'                                                         % tokpos := GetTokenNo () -1 %
                                                                            % BuildConstructorStart (tokpos) %
                   [ ArraySetRecordValue ]                                  % BuildConstructorEnd (tokpos, GetTokenNo())  %
-               '}' =:
+               '}'
+                                                                           % ExclConstructor (BlockState) %
+             =:
 
 ConstSetOrQualidentOrFunction :=                                           % VAR tokpos: CARDINAL ; %
                                                                            % tokpos := GetTokenNo () %
@@ -776,8 +811,12 @@ ConstSetOrQualidentOrFunction :=                                           % VAR
                                      Constructor
                                  ) =:
 
-ConstActualParameters :=                                                   % PushInConstParameters %
+ConstActualParameters :=                                                   % PushState (BlockState) %
+                                                                           % InclConstFunc (BlockState) %
+                                                                           % CheckQualident (OperandTok (1), BlockState, OperandT (1)) %
+                                                                           % PushInConstParameters %
                          ActualParameters                                  % PopInConstParameters %
+                                                                           % PopState (BlockState) %
                        =:
 
 ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "("                    % PushAutoOn %
@@ -790,14 +829,18 @@ ConstAttributeExpression :=
                                                               ">"
                           =:
 
-ByteAlignment := '<*'                                                      % PushAutoOn %
-                      AttributeExpression                                  % BuildAlignment %
+ByteAlignment :=                                                           % VAR tokpos: CARDINAL ; %
+                 '<*'                                                      % PushAutoOn %
+                                                                           % tokpos := GetTokenNo () %
+                      AttributeExpression                                  % BuildAlignment (tokpos) %
                                           '*>'                             % PopAuto %
                =:
 
 Alignment := [ ByteAlignment ] =:
 
-TypeDeclaration := Ident "=" Type Alignment
+TypeDeclaration :=                                                         % InclType (BlockState) %
+                   Ident "=" Type Alignment
+                                                                           % ExclType (BlockState) %
                 =:
 
 Type :=
@@ -809,7 +852,7 @@ Type :=
           | ProcedureType )                                                % PopAuto %
       =:
 
-SimpleType := Qualident [ SubrangeType ] | Enumeration | SubrangeType =:
+SimpleType := QualidentCheck [ SubrangeType ] | Enumeration | SubrangeType =:
 
 Enumeration := "("
                    ( IdentList
@@ -895,7 +938,7 @@ FieldList := IdentList ":"
 
 TagIdent := [ Ident ] =:
 
-CaseTag :=  TagIdent [":" Qualident ] =:
+CaseTag :=  TagIdent [":" QualidentCheck ] =:
 
 Varient := [                                                               % BeginVarientList %
              VarientCaseLabelList ":" FieldListSequence                    % EndVarientList %
@@ -975,7 +1018,7 @@ FormalTypeList := "(" ( ")" FormalReturn |
 
 FormalReturn := [ ":" OptReturnType ] =:
 
-OptReturnType := "[" Qualident "]" | Qualident =:
+OptReturnType := "[" QualidentCheck "]" | QualidentCheck =:
 
 ProcedureParameters := ProcedureParameter
                        { "," ProcedureParameter } =:
@@ -1022,10 +1065,12 @@ VarIdentList := VarIdent                                                   % VAR
              =:
 
 VariableDeclaration := VarIdentList ":"
+                                                                           % InclVar (BlockState) %
                        Type Alignment
+                                                                           % ExclVar (BlockState) %
                     =:
 
-Designator := Qualident                                                    % CheckWithReference %
+Designator := QualidentCheck                                               % CheckWithReference %
               { SubDesignator } =:
 
 SubDesignator := "."                                                       % VAR Sym, Type, tok,
@@ -1294,12 +1339,21 @@ WithStatement :=                                                           % VAR
                  "END"                                                     % EndBuildWith %
                =:
 
-ProcedureDeclaration := ProcedureHeading ";" ProcedureBlock                % BuildProcedureEnd ;
-                                                                             PushAutoOn %
+ProcedureDeclaration :=                                                    % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+                        ProcedureHeading ";" PostProcedureHeading          % Assert (top = Top ()) %
+                                                                  =:
 
-                        Ident                                              % EndBuildProcedure ;
+PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
+
+ForwardDeclaration := "FORWARD"                                            % EndBuildForward %
+                    =:
+
+ProperProcedure := ProcedureBlock                                          % BuildProcedureEnd ;
+                                                                             PushAutoOn %
+                                   Ident                                   % EndBuildProcedure ;
                                                                              PopAuto %
-                      =:
+                                         =:
 
 DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__"
                             "(" "("                                        % PushAutoOff %
@@ -1414,7 +1468,7 @@ OptArg := "[" Ident ":" FormalType [ "=" ConstExpression                   % Bui
 DefOptArg := "[" Ident ":" FormalType "=" ConstExpression                  % BuildOptArgInitializer %
                                                           "]" =:
 
-FormalType := { "ARRAY" "OF" } Qualident =:
+FormalType := { "ARRAY" "OF" } QualidentCheck =:
 
 ModuleDeclaration :=                                                       % VAR modulet: CARDINAL ; %
                                                                            % modulet := GetTokenNo () %

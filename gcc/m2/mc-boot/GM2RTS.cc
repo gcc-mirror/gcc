@@ -42,9 +42,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#define _M2RTS_H
 #define _M2RTS_C
 
+#include "GM2RTS.h"
 #   include "Glibc.h"
 #   include "GNumberIO.h"
 #   include "GStrLib.h"
@@ -59,9 +59,6 @@ typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 
 #   define stderrFd 2
 typedef char *M2RTS_PtrToChar;
-
-typedef void (*M2RTS_ArgCVEnvP_t) (int, void *, void *);
-struct M2RTS_ArgCVEnvP_p { M2RTS_ArgCVEnvP_t proc; };
 
 static int ExitValue;
 static bool isHalting;
@@ -257,7 +254,7 @@ static void ErrorString (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  n = static_cast<int> (libc_write (stderrFd, &a, static_cast<size_t> (StrLib_StrLen ((const char *) a, _a_high))));
+  n = static_cast<int> (libc_write (stderrFd, const_cast<void*> (static_cast<const void*>(a)), static_cast<size_t> (StrLib_StrLen ((const char *) a, _a_high))));
 }
 
 
@@ -712,11 +709,11 @@ extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned 
   RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), filename, line, column, scope, message);
 }
 
-extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   CheckInitialized ();
 }
 
-extern "C" void _M2_M2RTS_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2RTS_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

@@ -74,17 +74,17 @@ END IsNotADuplicateName ;
 
 
 (*
-   CheckForVariableThatLooksLikeKeyword - checks for a identifier that looks the same
-                                          as a keyword except for its case.
+   CheckVariableAgainstKeyword - checks for a identifier that looks the same
+                                 as a keyword except for its case.
 *)
 
-PROCEDURE CheckForVariableThatLooksLikeKeyword (name: Name) ;
+PROCEDURE CheckVariableAgainstKeyword (name: Name) ;
 BEGIN
    IF StyleChecking
    THEN
       PerformVariableKeywordCheck (name)
    END
-END CheckForVariableThatLooksLikeKeyword ;
+END CheckVariableAgainstKeyword ;
 
 
 (*

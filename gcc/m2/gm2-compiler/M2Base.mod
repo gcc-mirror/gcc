@@ -43,10 +43,11 @@ FROM FormatStrings IMPORT Sprintf2 ;
 FROM StrLib IMPORT StrLen ;
 
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaErrors3,
-                        MetaErrorT1, MetaErrorT2,
-                        MetaErrorStringT2, MetaErrorStringT1 ;
+                        MetaErrorT1, MetaErrorT2, MetaErrorT4,
+                        MetaErrorStringT2, MetaErrorStringT1,
+                        MetaErrorDecl ;
 
-FROM SymbolTable IMPORT ModeOfAddr,
+FROM SymbolTable IMPORT ModeOfAddr, ProcedureKind,
                         MakeModule, MakeType, PutType,
                         MakeEnumeration, PutFieldEnumeration,
                         MakeProcType,
@@ -73,8 +74,10 @@ FROM SymbolTable IMPORT ModeOfAddr,
                         IsParameterUnbounded,  GetSubrange,
                         IsArray, IsProcedure, IsConstString,
                         IsVarient, IsRecordField, IsFieldVarient,
-                        GetArraySubscript, IsRecord, NoOfParam,
-                        GetNthParam, IsVarParam, GetNth, GetDimension,
+                        IsVarAParam, IsVar,
+                        GetArraySubscript, IsRecord, NoOfParamAny,
+                        GetNthParamAny, IsVarParam, GetNth, GetDimension,
+                        GetVarDeclFullTok,
                         MakeError ;
 
 FROM M2ALU IMPORT PushIntegerTree, PushRealTree, PushCard, Equ, Gre, Less ;
@@ -114,7 +117,8 @@ FROM m2type IMPORT GetIntegerType,
                    InitBaseTypes ;
 
 FROM m2expr IMPORT GetSizeOf ;
-FROM m2linemap IMPORT location_t, BuiltinsLocation ;
+FROM gcctypes IMPORT location_t ;
+FROM m2linemap IMPORT BuiltinsLocation ;
 FROM m2decl IMPORT BuildIntegerConstant ;
 
 
@@ -742,11 +746,11 @@ END IsOrd ;
 PROCEDURE BuildOrdFunctions ;
 BEGIN
    Ord := MakeProcedure(BuiltinTokenNo, MakeKey('ORD')) ;
-   PutFunction(Ord, Cardinal) ;
+   PutFunction (BuiltinTokenNo, Ord, DefProcedure, Cardinal) ;
    OrdS := MakeProcedure(BuiltinTokenNo, MakeKey('ORDS')) ;
-   PutFunction(OrdS, ShortCard) ;
+   PutFunction (BuiltinTokenNo, OrdS, DefProcedure, ShortCard) ;
    OrdL := MakeProcedure(BuiltinTokenNo, MakeKey('ORDL')) ;
-   PutFunction(OrdL, LongCard)
+   PutFunction (BuiltinTokenNo, OrdL, DefProcedure, LongCard)
 END BuildOrdFunctions ;
 
 
@@ -770,18 +774,18 @@ BEGIN
    IF Pim2 OR Pim3 OR Iso
    THEN
       Trunc := MakeProcedure(BuiltinTokenNo, MakeKey('TRUNC')) ;
-      PutFunction(Trunc, Cardinal) ;
+      PutFunction (BuiltinTokenNo, Trunc, DefProcedure, Cardinal) ;
       TruncS := MakeProcedure(BuiltinTokenNo, MakeKey('STRUNC')) ;
-      PutFunction(TruncS, ShortCard) ;
+      PutFunction (BuiltinTokenNo, TruncS, DefProcedure, ShortCard) ;
       TruncL := MakeProcedure(BuiltinTokenNo, MakeKey('LTRUNC')) ;
-      PutFunction(TruncL, LongCard)
+      PutFunction (BuiltinTokenNo, TruncL, DefProcedure, LongCard)
    ELSE
       Trunc := MakeProcedure(BuiltinTokenNo, MakeKey('TRUNC')) ;
-      PutFunction(Trunc, Integer) ;
+      PutFunction (BuiltinTokenNo, Trunc, DefProcedure, Integer) ;
       TruncS := MakeProcedure(BuiltinTokenNo, MakeKey('STRUNC')) ;
-      PutFunction(TruncS, ShortInt) ;
+      PutFunction (BuiltinTokenNo, TruncS, DefProcedure, ShortInt) ;
       TruncL := MakeProcedure(BuiltinTokenNo, MakeKey('LTRUNC')) ;
-      PutFunction(TruncL, LongInt)
+      PutFunction (BuiltinTokenNo, TruncL, DefProcedure, LongInt)
    END
 END BuildTruncFunctions ;
 
@@ -807,15 +811,15 @@ END IsFloat ;
 PROCEDURE BuildFloatFunctions ;
 BEGIN
    Float := MakeProcedure(BuiltinTokenNo, MakeKey('FLOAT')) ;
-   PutFunction(Float, Real) ;
+   PutFunction (BuiltinTokenNo, Float, DefProcedure, Real) ;
    SFloat := MakeProcedure(BuiltinTokenNo, MakeKey('SFLOAT')) ;
-   PutFunction(SFloat, ShortReal) ;
+   PutFunction (BuiltinTokenNo, SFloat, DefProcedure, ShortReal) ;
    LFloat := MakeProcedure(BuiltinTokenNo, MakeKey('LFLOAT')) ;
-   PutFunction(LFloat, LongReal) ;
+   PutFunction (BuiltinTokenNo, LFloat, DefProcedure, LongReal) ;
    FloatS := MakeProcedure(BuiltinTokenNo, MakeKey('FLOATS')) ;
-   PutFunction(FloatS, ShortReal) ;
+   PutFunction (BuiltinTokenNo, FloatS, DefProcedure, ShortReal) ;
    FloatL := MakeProcedure(BuiltinTokenNo, MakeKey('FLOATL')) ;
-   PutFunction(FloatL, LongReal)
+   PutFunction (BuiltinTokenNo, FloatL, DefProcedure, LongReal)
 END BuildFloatFunctions ;
 
 
@@ -837,11 +841,11 @@ END IsInt ;
 PROCEDURE BuildIntFunctions ;
 BEGIN
    Int := MakeProcedure(BuiltinTokenNo, MakeKey('INT')) ;
-   PutFunction(Int, Integer) ;
+   PutFunction (BuiltinTokenNo, Int, DefProcedure, Integer) ;
    IntS := MakeProcedure(BuiltinTokenNo, MakeKey('INTS')) ;
-   PutFunction(IntS, ShortInt) ;
+   PutFunction (BuiltinTokenNo, IntS, DefProcedure, ShortInt) ;
    IntL := MakeProcedure(BuiltinTokenNo, MakeKey('INTL')) ;
-   PutFunction(IntL, LongInt)
+   PutFunction (BuiltinTokenNo, IntL, DefProcedure, LongInt)
 END BuildIntFunctions ;
 
 
@@ -853,7 +857,7 @@ PROCEDURE InitBaseFunctions ;
 BEGIN
    (* Now declare the dynamic array components, HIGH *)
    High := MakeProcedure(BuiltinTokenNo, MakeKey('HIGH')) ;  (* Pseudo Base function HIGH *)
-   PutFunction(High, Cardinal) ;
+   PutFunction (BuiltinTokenNo, High, DefProcedure, Cardinal) ;
 
    (*
      _TemplateProcedure is a procedure which has a local variable _ActivationPointer
@@ -872,21 +876,21 @@ BEGIN
    IF Iso
    THEN
       LengthS := MakeProcedure(BuiltinTokenNo, MakeKey('LENGTH')) ; (* Pseudo Base function LENGTH  *)
-      PutFunction(LengthS, ZType)
+      PutFunction (BuiltinTokenNo, LengthS, DefProcedure, ZType)
    ELSE
       LengthS := NulSym
    END ;
    Abs   := MakeProcedure(BuiltinTokenNo, MakeKey('ABS')) ;      (* Pseudo Base function ABS     *)
-   PutFunction(Abs, ZType) ;
+   PutFunction (BuiltinTokenNo, Abs, DefProcedure, ZType) ;
 
    Cap   := MakeProcedure(BuiltinTokenNo, MakeKey('CAP')) ;      (* Pseudo Base function CAP     *)
-   PutFunction(Cap, Char) ;
+   PutFunction (BuiltinTokenNo, Cap, DefProcedure, Char) ;
 
    Odd   := MakeProcedure(BuiltinTokenNo, MakeKey('ODD')) ;      (* Pseudo Base function ODD     *)
-   PutFunction(Odd, Boolean) ;
+   PutFunction (BuiltinTokenNo, Odd, DefProcedure, Boolean) ;
 
    Chr   := MakeProcedure(BuiltinTokenNo, MakeKey('CHR')) ;      (* Pseudo Base function CHR     *)
-   PutFunction(Chr, Char) ;
+   PutFunction (BuiltinTokenNo, Chr, DefProcedure, Char) ;
 
    (* the following three procedure functions have a return type depending upon  *)
    (* the parameters.                                                            *)
@@ -896,13 +900,13 @@ BEGIN
    Max   := MakeProcedure(BuiltinTokenNo, MakeKey('MAX')) ;      (* Pseudo Base function MIN     *)
 
    Re    := MakeProcedure(BuiltinTokenNo, MakeKey('RE')) ;       (* Pseudo Base function RE      *)
-   PutFunction(Re, RType) ;
+   PutFunction (BuiltinTokenNo, Re, DefProcedure, RType) ;
 
    Im    := MakeProcedure(BuiltinTokenNo, MakeKey('IM')) ;       (* Pseudo Base function IM      *)
-   PutFunction(Im, RType) ;
+   PutFunction (BuiltinTokenNo, Im, DefProcedure, RType) ;
 
    Cmplx := MakeProcedure(BuiltinTokenNo, MakeKey('CMPLX')) ;    (* Pseudo Base function CMPLX   *)
-   PutFunction(Cmplx, CType) ;
+   PutFunction (BuiltinTokenNo, Cmplx, DefProcedure, CType) ;
 
    BuildFloatFunctions ;
    BuildTruncFunctions ;
@@ -1735,27 +1739,27 @@ VAR
    pa, pb: CARDINAL ;
    n, i  : CARDINAL ;
 BEGIN
-   n := NoOfParam(p1) ;
-   IF n#NoOfParam(p2)
+   n := NoOfParamAny (p1) ;
+   IF n # NoOfParamAny (p2)
    THEN
       IF error
       THEN
-         MetaError2('parameter is incompatible as {%1Dd} was declared with {%2n} parameters', p1, NoOfParam(p1)) ;
-         MetaError2('whereas {%1Dd} was declared with {%2n} parameters', p2, NoOfParam(p2))
+         MetaError2('parameter is incompatible as {%1Dd} was declared with {%2n} parameters', p1, NoOfParamAny(p1)) ;
+         MetaError2('whereas {%1Dd} was declared with {%2n} parameters', p2, NoOfParamAny(p2))
       END ;
       RETURN( FALSE )
    END ;
    i := 1 ;
    WHILE i<=n DO
-      pa := GetNthParam(p1, i) ;
-      pb := GetNthParam(p2, i) ;
-      IF IsVarParam(p1, i)#IsVarParam(p2, i)
+      pa := GetNthParamAny (p1, i) ;
+      pb := GetNthParamAny (p2, i) ;
+      IF IsParameterVar (pa) # IsParameterVar (pb)
       THEN
          IF error
          THEN
             MetaErrors3('the {%1n} parameter is incompatible between {%2Dad} and {%3ad} as only one was declared as VAR',
                         'the {%1n} parameter is incompatible between {%2ad} and {%3Dad} as only one was declared as VAR',
-                        i, p1, p2)
+                        i, pa, pb)
          END ;
          RETURN( FALSE )
       END ;
@@ -1983,20 +1987,23 @@ END IsComparisonCompatible ;
    MixMetaTypes -
 *)
 
-PROCEDURE MixMetaTypes (t1, t2: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+PROCEDURE MixMetaTypes (left, right, leftType, rightType: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
 VAR
    mt1, mt2: MetaType ;
 BEGIN
-   mt1 := FindMetaType(t1) ;
-   mt2 := FindMetaType(t2) ;
+   mt1 := FindMetaType (leftType) ;
+   mt2 := FindMetaType (rightType) ;
    CASE Expr[mt1, mt2] OF
 
-   no        :  MetaErrorT2 (NearTok, 'type incompatibility between {%1asd} and {%2asd}', t1, t2) ;
+   no        :  MetaErrorT2 (NearTok, 'type incompatibility between {%1asd} and {%2asd}',
+                             leftType, rightType) ;
+                MetaErrorDecl (left, TRUE) ;
+                MetaErrorDecl (right, TRUE) ;
                 FlushErrors  (* unrecoverable at present *) |
    warnfirst,
-   first     :  RETURN( t1 ) |
+   first     :  RETURN( leftType ) |
    warnsecond,
-   second    :  RETURN( t2 )
+   second    :  RETURN( rightType )
 
    ELSE
       InternalError ('not expecting this metatype value')
@@ -2011,95 +2018,117 @@ END MixMetaTypes ;
 
 PROCEDURE IsUserType (type: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN IsType (type) AND (NOT IsBaseType (type)) AND (NOT IsSystemType (type))
+   RETURN IsType (type) AND
+          (NOT IsBaseType (type)) AND
+          (NOT IsSystemType (type)) AND
+          (type # ZType)
 END IsUserType ;
 
 
 (*
-   MixTypes - given types, t1 and t2, returns a type symbol that
+   MixTypes - given types leftType and rightType return a type symbol that
               provides expression type compatibility.
               NearTok is used to identify the source position if a type
               incompatability occurs.
 *)
 
-PROCEDURE MixTypes (t1, t2: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+PROCEDURE MixTypes (leftType, rightType: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
 BEGIN
-   IF t1=t2
+   RETURN MixTypesDecl (NulSym, NulSym, leftType, rightType, NearTok)
+END MixTypes ;
+
+
+(*
+   MixTypesDecl - returns a type symbol which provides expression compatibility
+                  between leftType and rightType.  An error is emitted if this
+                  is not possible.  left and right are the source (variable,
+                  constant) of leftType and rightType respectively.
+*)
+
+PROCEDURE MixTypesDecl (left, right, leftType, rightType: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+BEGIN
+   IF leftType=rightType
    THEN
-      RETURN( t1 )
-   ELSIF (t1=Address) AND (t2=Cardinal)
+      RETURN( leftType )
+   ELSIF (leftType=Address) AND (rightType=Cardinal)
    THEN
       RETURN( Address )
-   ELSIF (t1=Cardinal) AND (t2=Address)
+   ELSIF (leftType=Cardinal) AND (rightType=Address)
    THEN
       RETURN( Address )
-   ELSIF (t1=Address) AND (t2=Integer)
+   ELSIF (leftType=Address) AND (rightType=Integer)
    THEN
       RETURN( Address )
-   ELSIF (t1=Integer) AND (t2=Address)
+   ELSIF (leftType=Integer) AND (rightType=Address)
    THEN
       RETURN( Address )
-   ELSIF t1=NulSym
+   ELSIF leftType=NulSym
    THEN
-      RETURN( t2 )
-   ELSIF t2=NulSym
+      RETURN( rightType )
+   ELSIF rightType=NulSym
    THEN
-      RETURN( t1 )
-   ELSIF (t1=Bitset) AND IsSet(t2)
+      RETURN( leftType )
+   ELSIF (leftType=Bitset) AND IsSet(rightType)
    THEN
-      RETURN( t1 )
-   ELSIF IsSet(t1) AND (t2=Bitset)
+      RETURN( leftType )
+   ELSIF IsSet(leftType) AND (rightType=Bitset)
    THEN
-      RETURN( t2 )
-   ELSIF IsEnumeration(t1)
+      RETURN( rightType )
+   ELSIF IsEnumeration(leftType)
    THEN
-      RETURN( MixTypes(Integer, t2, NearTok) )
-   ELSIF IsEnumeration(t2)
+      RETURN( MixTypesDecl (left, right, Integer, rightType, NearTok) )
+   ELSIF IsEnumeration(rightType)
    THEN
-      RETURN( MixTypes(t1, Integer, NearTok) )
-   ELSIF IsSubrange(t1)
+      RETURN( MixTypesDecl (left, right, leftType, Integer, NearTok) )
+   ELSIF IsSubrange(leftType)
    THEN
-      RETURN( MixTypes(GetType(t1), t2, NearTok) )
-   ELSIF IsSubrange(t2)
+      RETURN( MixTypesDecl (left, right, GetType(leftType), rightType, NearTok) )
+   ELSIF IsSubrange(rightType)
    THEN
-      RETURN( MixTypes(t1, GetType(t2), NearTok) )
-   ELSIF IsRealType(t1) AND IsRealType(t2)
+      RETURN( MixTypesDecl (left, right, leftType, GetType(rightType), NearTok) )
+   ELSIF IsRealType(leftType) AND IsRealType(rightType)
    THEN
-      IF t1=RType
+      IF leftType=RType
       THEN
-         RETURN( t2 )
-      ELSIF t2=RType
+         RETURN( rightType )
+      ELSIF rightType=RType
       THEN
-         RETURN( t1 )
+         RETURN( leftType )
       ELSE
          RETURN( RType )
       END
-   ELSIF IsComplexType(t1) AND IsComplexType(t2)
+   ELSIF IsComplexType(leftType) AND IsComplexType(rightType)
    THEN
-      IF t1=CType
+      IF leftType=CType
       THEN
-         RETURN( t2 )
-      ELSIF t2=CType
+         RETURN( rightType )
+      ELSIF rightType=CType
       THEN
-         RETURN( t1 )
+         RETURN( leftType )
       ELSE
          RETURN( CType )
       END
-   ELSIF IsUserType (t1)
+   ELSIF IsUserType (leftType)
    THEN
-      RETURN( MixTypes(GetType(t1), t2, NearTok) )
-   ELSIF IsUserType (t2)
+      RETURN( MixTypesDecl (left, right, GetType(leftType), rightType, NearTok) )
+   ELSIF IsUserType (rightType)
    THEN
-      RETURN( MixTypes(t1, GetType(t2), NearTok) )
-   ELSIF (t1=GetLowestType(t1)) AND (t2=GetLowestType(t2))
+      RETURN( MixTypes(leftType, GetType(rightType), NearTok) )
+   ELSIF leftType = ZType
    THEN
-      RETURN( MixMetaTypes(t1, t2, NearTok) )
+      RETURN rightType
+   ELSIF rightType = ZType
+   THEN
+      RETURN leftType
+   ELSIF (leftType=GetLowestType(leftType)) AND (rightType=GetLowestType(rightType))
+   THEN
+      RETURN( MixMetaTypes (left, right, leftType, rightType, NearTok) )
    ELSE
-      t1 := GetLowestType(t1) ;
-      t2 := GetLowestType(t2) ;
-      RETURN( MixTypes(t1, t2, NearTok) )
+      leftType := GetLowestType(leftType) ;
+      rightType := GetLowestType(rightType) ;
+      RETURN( MixTypesDecl (left, right, leftType, rightType, NearTok) )
    END
-END MixTypes ;
+END MixTypesDecl ;
 
 
 (*

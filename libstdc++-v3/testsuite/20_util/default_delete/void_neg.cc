@@ -29,4 +29,4 @@ void test01()
 }
 
 // { dg-prune-output "invalid application of 'sizeof' to a void type" }
-// { dg-prune-output "deleting 'void*' is undefined" }
+// { dg-prune-output {deleting 'void\*' is undefined} }

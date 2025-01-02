@@ -980,6 +980,9 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
 	  if (TREE_CODE (USE_FROM_PTR (use_p)) == SSA_NAME)
 	    {
 	      tree new_def = get_current_def (USE_FROM_PTR (use_p));
+	      if (!new_def)
+		/* Something defined outside of the loop.  */
+		continue;
 	      SET_USE (use_p, new_def);
 	    }
 	}
@@ -3548,7 +3551,7 @@ determine_reduction_stmt_1 (const loop_p loop, const basic_block *bbs)
       basic_block bb = bbs[i];
 
       for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
-	   gsi_next_nondebug (&bsi))
+	   gsi_next (&bsi))
 	{
 	  gphi *phi = bsi.phi ();
 	  if (virtual_operand_p (gimple_phi_result (phi)))
@@ -3561,8 +3564,8 @@ determine_reduction_stmt_1 (const loop_p loop, const basic_block *bbs)
 	    }
 	}
 
-      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
-	   gsi_next_nondebug (&bsi), ++ninsns)
+      for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb);
+	   !gsi_end_p (bsi); gsi_next_nondebug (&bsi), ++ninsns)
 	{
 	  /* Bail out early for loops which are unlikely to match.  */
 	  if (ninsns > 16)

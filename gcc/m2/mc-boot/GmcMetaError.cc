@@ -11,9 +11,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -36,9 +36,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcMetaError_H
 #define _mcMetaError_C
 
+#include "GmcMetaError.h"
 #   include "GnameKey.h"
 #   include "GStrLib.h"
 #   include "GmcLexBuf.h"
@@ -866,7 +866,7 @@ static DynamicStrings_String symDesc (decl_node n, DynamicStrings_String o)
   else if (decl_isConstSet (n))
     {
       /* avoid dangling else.  */
-      /* 
+      /*
    ELSIF IsConstructor(n)
    THEN
       RETURN( ConCatWord (o, Mark (InitString ('constructor'))) )
@@ -1270,7 +1270,7 @@ static void ebnf (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_Str
             break;
 
           case '}':
-            return ;
+            return;
             break;
 
 
@@ -1872,10 +1872,10 @@ extern "C" void mcMetaError_metaErrorStringT4 (unsigned int tok, DynamicStrings_
   varargs_end (&sym);
 }
 
-extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcMetaError_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcMetaError_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

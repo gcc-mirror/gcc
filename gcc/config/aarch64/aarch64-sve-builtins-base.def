@@ -364,18 +364,15 @@ DEF_SVE_FUNCTION (svusmmla, ternary_uintq_intq, s_signed, none)
 DEF_SVE_FUNCTION (svmmla, mmla, s_float, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_SVE | AARCH64_FL_F64MM
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
+			     | AARCH64_FL_F64MM \
+			     | AARCH64_FL_SM_OFF)
+DEF_SVE_FUNCTION (svld1ro, load_replicate, all_data, implicit)
+DEF_SVE_FUNCTION (svmmla, mmla, d_float, none)
 DEF_SVE_FUNCTION (svtrn1q, binary, all_data, none)
 DEF_SVE_FUNCTION (svtrn2q, binary, all_data, none)
 DEF_SVE_FUNCTION (svuzp1q, binary, all_data, none)
 DEF_SVE_FUNCTION (svuzp2q, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip1q, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip2q, binary, all_data, none)
-#undef REQUIRED_EXTENSIONS
-
-#define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
-			     | AARCH64_FL_F64MM \
-			     | AARCH64_FL_SM_OFF)
-DEF_SVE_FUNCTION (svld1ro, load_replicate, all_data, implicit)
-DEF_SVE_FUNCTION (svmmla, mmla, d_float, none)
 #undef REQUIRED_EXTENSIONS

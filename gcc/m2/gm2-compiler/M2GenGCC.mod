@@ -25,8 +25,6 @@ FROM SYSTEM IMPORT ADDRESS, WORD ;
 
 FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         PushVarSize,
-                        PushSumOfLocalVarSize,
-                        PushSumOfParamSize,
                         MakeConstLit,
                         RequestSym, FromModuleGetSym,
                         StartScope, EndScope, GetScope,
@@ -38,16 +36,16 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         GetLocalSym, GetVarWritten,
                         GetVarient, GetVarBackEndType, GetModuleCtors,
                         NoOfVariables,
-                        NoOfParam, GetParent, GetDimension, IsAModula2Type,
+                        NoOfParamAny, GetParent, GetDimension, IsAModula2Type,
                         IsModule, IsDefImp, IsType, IsModuleWithinProcedure,
                         IsConstString, GetString, GetStringLength,
                         IsConstStringCnul, IsConstStringM2nul,
                         IsConst, IsConstSet, IsProcedure, IsProcType,
-                        IsVar, IsVarParam, IsTemporary,
+                        IsVar, IsVarParamAny, IsTemporary, IsTuple,
                         IsEnumeration,
                         IsUnbounded, IsArray, IsSet, IsConstructor,
                         IsProcedureVariable,
-                        IsUnboundedParam,
+                        IsUnboundedParamAny,
                         IsRecordField, IsFieldVarient, IsVarient, IsRecord,
                         IsExportQualified,
                         IsExported,
@@ -64,7 +62,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         ForeachInnerModuleDo,
                         ForeachLocalSymDo,
 			GetLType,
-                        GetType, GetNth, GetNthParam,
+                        GetType, GetNth, GetNthParamAny,
                         SkipType, SkipTypeAndSubrange,
                         GetUnboundedHighOffset,
                         GetUnboundedAddressOffset,
@@ -79,6 +77,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         PutConst, PutConstSet, PutConstructor,
 			GetSType, GetTypeMode,
                         HasVarParameters, CopyConstString,
+                        GetVarDeclFullTok,
                         NulSym ;
 
 FROM M2Batch IMPORT MakeDefinitionSource ;
@@ -91,7 +90,8 @@ FROM M2Debug IMPORT Assert ;
 FROM M2Error IMPORT InternalError, WriteFormat0, WriteFormat1, WriteFormat2, WarnStringAt ;
 
 FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
-                        MetaError1, MetaError2, MetaErrorStringT1 ;
+                        MetaError1, MetaError2, MetaErrorStringT1,
+                        MetaErrorDecl ;
 
 FROM M2Options IMPORT UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
@@ -101,7 +101,7 @@ FROM M2Options IMPORT UnboundedByReference, PedanticCast,
 FROM M2Printf IMPORT printf0, printf1, printf2, printf4 ;
 FROM M2Quiet IMPORT qprintf0 ;
 
-FROM M2Base IMPORT MixTypes, NegateType, ActivationPointer, IsMathType,
+FROM M2Base IMPORT MixTypes, MixTypesDecl, NegateType, ActivationPointer, IsMathType,
                    IsRealType, IsComplexType, IsBaseType,
                    IsOrdinalType,
                    Cardinal, Char, Integer, IsTrunc,
@@ -169,6 +169,7 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    GetPointerZero,
                    GetCardinalZero,
                    GetSizeOfInBits,
+                   TreeOverflow,
                    FoldAndStrip,
                    CompareTrees,
                    StringLength,
@@ -210,8 +211,8 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    BuildAddAddress,
                    BuildIfInRangeGoto, BuildIfNotInRangeGoto ;
 
-FROM m2tree IMPORT Tree, debug_tree, skip_const_decl ;
-FROM m2linemap IMPORT location_t ;
+FROM m2tree IMPORT debug_tree, skip_const_decl ;
+FROM gcctypes IMPORT location_t, tree ;
 
 FROM m2decl IMPORT BuildStringConstant, BuildCStringConstant,
                    DeclareKnownConstant, GetBitsPerBitset,
@@ -239,7 +240,7 @@ FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunct
 FROM m2type IMPORT ChainOnParamValue, GetPointerType, GetIntegerType, AddStatement,
                    GetCardinalType, GetWordType, GetM2ZType, GetM2RType, GetM2CType,
                    BuildCharConstant, AddStringToTreeList, BuildArrayStringConstructor,
-                   GetArrayNoOfElements ;
+                   GetArrayNoOfElements, GetTreeType ;
 
 FROM m2block IMPORT RememberConstant, pushGlobalScope, popGlobalScope, finishFunctionDecl,
                     pushFunctionScope, popFunctionScope,
@@ -259,12 +260,15 @@ FROM M2Quads IMPORT QuadOperator, GetQuad, IsReferenced, GetNextQuad,
                     QuadToTokenNo, DisplayQuad, GetQuadtok,
                     GetM2OperatorDesc, GetQuadOp,
                     IsQuadConstExpr, IsBecomes, IsGoto, IsConditional,
-                    IsDummy,
+                    IsDummy, IsConditionalBooleanQuad,
                     GetQuadOp1, GetQuadOp3, GetQuadDest, SetQuadConstExpr ;
 
 FROM M2Check IMPORT ParameterTypeCompatible, AssignmentTypeCompatible,  ExpressionTypeCompatible ;
 FROM M2SSA IMPORT EnableSSA ;
 FROM M2Optimize IMPORT FoldBranches ;
+
+FROM M2BasicBlock IMPORT BasicBlock, IsBasicBlockFirst,
+                         GetBasicBlockStart, GetBasicBlockEnd ;
 
 
 CONST
@@ -379,6 +383,20 @@ VAR
 
 
 (*
+   ErrorMessageDecl - emit an error message together with declaration fragments of left
+                      and right if they are parameters or variables.
+*)
+
+PROCEDURE ErrorMessageDecl (tok: CARDINAL; message: ARRAY OF CHAR;
+                            left, right: CARDINAL; iserror: BOOLEAN) ;
+BEGIN
+   MetaErrorT2 (tok, message, left, right) ;
+   MetaErrorDecl (left, iserror) ;
+   MetaErrorDecl (right, iserror)
+END ErrorMessageDecl ;
+
+
+(*
    IsExportedGcc - returns TRUE if this symbol should be (as far as the middle/backend of GCC)
                    is concerned, exported.
 *)
@@ -439,6 +457,146 @@ BEGIN
    END ;
    RETURN sym # NulSym
 END IsCompilingMainModule ;
+
+
+(*
+   CodeLastForIterator - call PerformLastForIterator allowing for
+                         a non constant last iterator value.
+*)
+
+PROCEDURE CodeLastForIterator (quad: CARDINAL) ;
+BEGIN
+   PerformLastForIterator (quad, NoWalkProcedure, FALSE)
+END CodeLastForIterator ;
+
+
+(*
+   FoldLastForIterator - call PerformLastForIterator providing
+                         all operands are constant and are known by GCC.
+*)
+
+PROCEDURE FoldLastForIterator (quad: CARDINAL; p: WalkAction) ;
+VAR
+   op              : QuadOperator ;
+   e1, e2,
+   op1, tuple, incr: CARDINAL ;
+BEGIN
+   GetQuad (quad, op, op1, tuple, incr) ;
+   Assert (IsTuple (tuple)) ;
+   e1 := GetNth (tuple, 1) ;
+   e2 := GetNth (tuple, 2) ;
+   IF IsConst (op1) AND IsConst (e1) AND IsConst (e2) AND IsConst (incr) AND
+      GccKnowsAbout (e1) AND GccKnowsAbout (e2) AND GccKnowsAbout (incr)
+   THEN
+      PerformLastForIterator (quad, p, TRUE)
+   END
+END FoldLastForIterator ;
+
+
+(*
+   FoldLastForIterator - generates code to calculate the last iterator value
+                         in a for loop.  It examines the increment constant
+                         and generates different code depending whether it is
+                         negative or positive.
+*)
+
+PROCEDURE PerformLastForIterator (quad: CARDINAL; p: WalkAction; constant: BOOLEAN) ;
+VAR
+   success,
+   constExpr,
+   overflowChecking : BOOLEAN ;
+   op               : QuadOperator ;
+   lastpos, op1pos,
+   op2pos, incrpos,
+   last, tuple, incr: CARDINAL ;
+   e1, e2           : CARDINAL ;
+   lasttree,
+   e1tree, e2tree,
+   expr, incrtree   : tree ;
+   location         : location_t ;
+BEGIN
+   GetQuadOtok (quad, lastpos, op, last, tuple, incr,
+                overflowChecking, constExpr,
+                op1pos, op2pos, incrpos) ;
+   DeclareConstant (incrpos, incr) ;
+   lasttree := Mod2Gcc (last) ;
+   success := TRUE ;
+   IF IsConst (incr)
+   THEN
+      incrtree := Mod2Gcc (incr) ;
+      location := TokenToLocation (lastpos) ;
+      e1 := GetNth (tuple, 1) ;
+      e2 := GetNth (tuple, 2) ;
+      e1tree := Mod2Gcc (e1) ;
+      e2tree := Mod2Gcc (e2) ;
+      IF CompareTrees (incrtree, GetIntegerZero (location)) = 0
+      THEN
+         MetaErrorT0 (lastpos,
+                      'the {%kFOR} loop step value must not be zero') ;
+         MetaErrorDecl (incr, TRUE) ;
+         NoChange := FALSE ;
+         SubQuad (quad) ;
+         success := FALSE
+      ELSIF CompareTrees (incrtree, GetIntegerZero (location)) > 0
+      THEN
+         (* If incr > 0 then LastIterator := ((e2-e1) DIV incr) * incr + e1.  *)
+         expr := BuildSub (location, e2tree, e1tree, FALSE) ;
+         incrtree := BuildConvert (location, GetTreeType (expr), incrtree, FALSE) ;
+         IF TreeOverflow (incrtree)
+         THEN
+            MetaErrorT0 (lastpos,
+                         'the intemediate calculation for the last iterator value in the {%kFOR} loop has caused an overflow') ;
+            NoChange := FALSE ;
+            SubQuad (quad) ;
+            success := FALSE
+         ELSE
+            expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
+            expr := BuildMult (location, expr, incrtree, FALSE) ;
+            expr := BuildAdd (location, expr, e1tree, FALSE)
+         END
+      ELSE
+         (* Else use LastIterator := e1 - ((e1-e2) DIV PositiveBy) * PositiveBy
+            to avoid unsigned div signed arithmetic.  *)
+         expr := BuildSub (location, e1tree, e2tree, FALSE) ;
+         incrtree := BuildConvert (location, GetM2ZType (), incrtree, FALSE) ;
+         incrtree := BuildNegate (location, incrtree, FALSE) ;
+         incrtree := BuildConvert (location, GetTreeType (expr), incrtree, FALSE) ;
+         IF TreeOverflow (incrtree)
+         THEN
+            MetaErrorT0 (lastpos,
+                         'the intemediate calculation for the last iterator value in the {%kFOR} loop has caused an overflow') ;
+            NoChange := FALSE ;
+            SubQuad (quad) ;
+            success := FALSE
+         ELSE
+            expr := BuildSub (location, e1tree, e2tree, FALSE) ;
+            expr := BuildDivFloor (location, expr, incrtree, FALSE) ;
+            expr := BuildMult (location, expr, incrtree, FALSE) ;
+            expr := BuildSub (location, e1tree, expr, FALSE)
+         END
+      END ;
+      IF success
+      THEN
+         IF IsConst (last)
+         THEN
+            AddModGcc (last, expr) ;
+            p (last) ;
+            NoChange := FALSE ;
+            SubQuad (quad)
+         ELSE
+            Assert (NOT constant) ;
+            BuildAssignmentStatement (location, lasttree, expr)
+         END
+      END
+   ELSE
+      MetaErrorT1 (lastpos,
+                   'the value {%1Ead} in the {%kBY} clause of the {%kFOR} loop must be constant',
+                   incr) ;
+      MetaErrorDecl (incr, TRUE) ;
+      NoChange := FALSE ;
+      SubQuad (quad)
+   END
+END PerformLastForIterator ;
 
 
 (*
@@ -507,6 +665,7 @@ BEGIN
    InclOp             : CodeIncl (op1, op3) |
    ExclOp             : CodeExcl (op1, op3) |
    NegateOp           : CodeNegateChecked (q, op1, op3) |
+   LastForIteratorOp  : CodeLastForIterator (q) |
    LogicalShiftOp     : CodeSetShift (q, op1, op2, op3) |
    LogicalRotateOp    : CodeSetRotate (q, op1, op2, op3) |
    LogicalOrOp        : CodeSetOr (q) |
@@ -568,7 +727,7 @@ END CodeStatement ;
                                 p(sym) is invoked.
 *)
 
-PROCEDURE ResolveConstantExpressions (p: WalkAction; start, end: CARDINAL) : BOOLEAN ;
+PROCEDURE ResolveConstantExpressions (p: WalkAction; bb: BasicBlock) : BOOLEAN ;
 VAR
    tokenno: CARDINAL ;
    quad   : CARDINAL ;
@@ -580,8 +739,12 @@ VAR
    op2pos,
    op3pos : CARDINAL ;
    Changed: BOOLEAN ;
+   start,
+   end    : CARDINAL ;
 BEGIN
    InitBuiltinSyms (BuiltinTokenNo) ;
+   start := GetBasicBlockStart (bb) ;
+   end := GetBasicBlockEnd (bb) ;
    Changed  := FALSE ;
    REPEAT
       NoChange := TRUE ;
@@ -607,7 +770,7 @@ BEGIN
          LogicalOrOp        : FoldSetOr (tokenno, p, quad, op1, op2, op3) |
          LogicalAndOp       : FoldSetAnd (tokenno, p, quad, op1, op2, op3) |
          LogicalXorOp       : FoldSymmetricDifference (tokenno, p, quad, op1, op2, op3) |
-         BecomesOp          : FoldBecomes (p, quad) |
+         BecomesOp          : FoldBecomes (p, bb, quad) |
          ArithAddOp         : FoldArithAdd (op1pos, p, quad, op1, op2, op3) |
          AddOp              : FoldAdd (op1pos, p, quad, op1, op2, op3) |
          SubOp              : FoldSub (op1pos, p, quad, op1, op2, op3) |
@@ -630,14 +793,14 @@ BEGIN
          CastOp             : FoldCast (tokenno, p, quad, op1, op2, op3) |
          InclOp             : FoldIncl (tokenno, p, quad, op1, op3) |
          ExclOp             : FoldExcl (tokenno, p, quad, op1, op3) |
-         IfEquOp            : FoldIfEqu (tokenno, p, quad, op1, op2, op3) |
-         IfNotEquOp         : FoldIfNotEqu (tokenno, p, quad, op1, op2, op3) |
-         IfLessOp           : FoldIfLess (tokenno, p, quad, op1, op2, op3) |
-         IfLessEquOp        : FoldIfLessEqu (tokenno, p, quad, op1, op2, op3) |
-         IfGreOp            : FoldIfGre (tokenno, p, quad, op1, op2, op3) |
-         IfGreEquOp         : FoldIfGreEqu (tokenno, p, quad, op1, op2, op3) |
-         IfInOp             : FoldIfIn (tokenno, p, quad, op1, op2, op3) |
-         IfNotInOp          : FoldIfNotIn (tokenno, p, quad, op1, op2, op3) |
+         IfEquOp            : FoldIfEqu (tokenno, quad, op1, op2, op3) |
+         IfNotEquOp         : FoldIfNotEqu (tokenno, quad, op1, op2, op3) |
+         IfLessOp           : FoldIfLess (tokenno, quad, op1, op2, op3) |
+         IfLessEquOp        : FoldIfLessEqu (tokenno, quad, op1, op2, op3) |
+         IfGreOp            : FoldIfGre (tokenno, quad, op1, op2, op3) |
+         IfGreEquOp         : FoldIfGreEqu (tokenno, quad, op1, op2, op3) |
+         IfInOp             : FoldIfIn (tokenno, quad, op1, op2, op3) |
+         IfNotInOp          : FoldIfNotIn (tokenno, quad, op1, op2, op3) |
          LogicalShiftOp     : FoldSetShift(tokenno, p, quad, op1, op2, op3) |
          LogicalRotateOp    : FoldSetRotate (tokenno, p, quad, op1, op2, op3) |
          ParamOp            : FoldBuiltinFunction (tokenno, p, quad, op1, op2, op3) |
@@ -645,12 +808,13 @@ BEGIN
          StatementNoteOp    : FoldStatementNote (op3) |
          StringLengthOp      : FoldStringLength (quad, p) |
          StringConvertM2nulOp: FoldStringConvertM2nul (quad, p) |
-         StringConvertCnulOp : FoldStringConvertCnul (quad, p)
+         StringConvertCnulOp : FoldStringConvertCnul (quad, p) |
+         LastForIteratorOp  : FoldLastForIterator (quad, p)
 
          ELSE
             (* ignore quadruple as it is not associated with a constant expression *)
          END ;
-         quad := GetNextQuad(quad)
+         quad := GetNextQuad (quad)
       END ;
       IF NOT NoChange
       THEN
@@ -666,7 +830,7 @@ END ResolveConstantExpressions ;
               constant representing the storage size in bytes.
 *)
 
-PROCEDURE FindSize (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE FindSize (tokenno: CARDINAL; sym: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -721,7 +885,7 @@ END FindType ;
    BuildTreeFromInterface - generates a GCC tree from an interface definition.
 *)
 
-PROCEDURE BuildTreeFromInterface (sym: CARDINAL) : Tree ;
+PROCEDURE BuildTreeFromInterface (sym: CARDINAL) : tree ;
 CONST
    DebugTokPos = FALSE ;
 VAR
@@ -731,9 +895,9 @@ VAR
    str,
    obj     : CARDINAL ;
    gccName,
-   tree    : Tree ;
+   asmTree : tree ;
 BEGIN
-   tree := Tree (NIL) ;
+   asmTree := tree (NIL) ;
    IF sym#NulSym
    THEN
       i := 1 ;
@@ -750,8 +914,8 @@ BEGIN
                ELSE
                   gccName := BuildCStringConstant (KeyToCharStar (name), LengthKey (name))
                END ;
-               tree := ChainOnParamValue (tree, gccName, PromoteToCString (tok, str),
-                                          skip_const_decl (Mod2Gcc (obj))) ;
+               asmTree := ChainOnParamValue (asmTree, gccName, PromoteToCString (tok, str),
+                                             skip_const_decl (Mod2Gcc (obj))) ;
                IF DebugTokPos
                THEN
                   WarnStringAt (InitString ('input expression'), tok)
@@ -765,7 +929,7 @@ BEGIN
          INC(i)
       UNTIL (str = NulSym) AND (obj = NulSym) ;
    END ;
-   RETURN tree
+   RETURN asmTree
 END BuildTreeFromInterface ;
 
 
@@ -773,18 +937,18 @@ END BuildTreeFromInterface ;
    BuildTrashTreeFromInterface - generates a GCC string tree from an interface definition.
 *)
 
-PROCEDURE BuildTrashTreeFromInterface (sym: CARDINAL) : Tree ;
+PROCEDURE BuildTrashTreeFromInterface (sym: CARDINAL) : tree ;
 CONST
    DebugTokPos = FALSE ;
 VAR
-   tok : CARDINAL ;
-   i   : CARDINAL ;
+   tok    : CARDINAL ;
+   i      : CARDINAL ;
    str,
-   obj : CARDINAL ;
-   name: Name ;
-   tree: Tree ;
+   obj    : CARDINAL ;
+   name   : Name ;
+   asmTree: tree ;
 BEGIN
-   tree := Tree (NIL) ;
+   asmTree := tree (NIL) ;
    IF sym # NulSym
    THEN
       i := 1 ;
@@ -794,7 +958,7 @@ BEGIN
          THEN
             IF IsConstString (str)
             THEN
-               tree := AddStringToTreeList (tree, PromoteToCString (tok, str)) ;
+               asmTree := AddStringToTreeList (asmTree, PromoteToCString (tok, str)) ;
                IF DebugTokPos
                THEN
                   WarnStringAt (InitString ('trash expression'), tok)
@@ -814,7 +978,7 @@ BEGIN
          INC (i)
       UNTIL (str = NulSym) AND (obj = NulSym)
    END ;
-   RETURN tree
+   RETURN asmTree
 END BuildTrashTreeFromInterface ;
 
 
@@ -836,7 +1000,7 @@ VAR
    inputs,
    outputs,
    trash,
-   labels          : Tree ;
+   labels          : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, asmpos, op, op1, op2, GnuAsm,
@@ -895,7 +1059,7 @@ END FoldRange ;
 
 PROCEDURE CodeSaveException (des, exceptionProcedure: CARDINAL) ;
 VAR
-   functValue: Tree ;
+   functValue: tree ;
    location  : location_t;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -914,7 +1078,7 @@ END CodeSaveException ;
 
 PROCEDURE CodeRestoreException (des, exceptionProcedure: CARDINAL) ;
 VAR
-   functValue: Tree ;
+   functValue: tree ;
    location  : location_t;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -1221,7 +1385,7 @@ END CodeFinallyEnd ;
    GetAddressOfUnbounded - returns the address of the unbounded array contents.
 *)
 
-PROCEDURE GetAddressOfUnbounded (location: location_t; param: CARDINAL) : Tree ;
+PROCEDURE GetAddressOfUnbounded (location: location_t; param: CARDINAL) : tree ;
 VAR
    UnboundedType: CARDINAL ;
 BEGIN
@@ -1240,12 +1404,12 @@ END GetAddressOfUnbounded ;
                           param.HIGH.
 *)
 
-PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : Tree ;
+PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : tree ;
 VAR
    UnboundedType,
    ArrayType,
    HighField    : CARDINAL ;
-   HighTree     : Tree ;
+   HighTree     : tree ;
    accessibleDim: CARDINAL ;
    (* remainingDim : CARDINAL ;  *)
 BEGIN
@@ -1289,9 +1453,9 @@ END GetHighFromUnbounded ;
                                 occupies.
 *)
 
-PROCEDURE GetSizeOfHighFromUnbounded (tokenno: CARDINAL; param: CARDINAL) : Tree ;
+PROCEDURE GetSizeOfHighFromUnbounded (tokenno: CARDINAL; param: CARDINAL) : tree ;
 VAR
-   t            : Tree ;
+   t            : tree ;
    UnboundedType,
    ArrayType    : CARDINAL ;
    i, n         : CARDINAL ;
@@ -1331,11 +1495,11 @@ END GetSizeOfHighFromUnbounded ;
                              else call Builtins.alloca.
 *)
 
-PROCEDURE MaybeDebugBuiltinAlloca (location: location_t; tok: CARDINAL; high: Tree) : Tree ;
+PROCEDURE MaybeDebugBuiltinAlloca (location: location_t; tok: CARDINAL; high: tree) : tree ;
 VAR
    call,
    memptr,
-   func  : Tree ;
+   func  : tree ;
 BEGIN
    IF DebugBuiltins
    THEN
@@ -1361,10 +1525,10 @@ END MaybeDebugBuiltinAlloca ;
                              else call Builtins.memcpy.
 *)
 
-PROCEDURE MaybeDebugBuiltinMemcpy (location: location_t; src, dest, nbytes: Tree) : Tree ;
+PROCEDURE MaybeDebugBuiltinMemcpy (location: location_t; src, dest, nbytes: tree) : tree ;
 VAR
    call,
-   func: Tree ;
+   func: tree ;
 BEGIN
    IF DebugBuiltins
    THEN
@@ -1398,7 +1562,7 @@ VAR
    UnboundedType: CARDINAL ;
    Addr,
    High,
-   NewArray     : Tree ;
+   NewArray     : tree ;
 BEGIN
    location := TokenToLocation (tokenno) ;
    UnboundedType := GetType (param) ;
@@ -1424,7 +1588,7 @@ END MakeCopyUse ;
    GetParamAddress - returns the address of parameter, param.
 *)
 
-PROCEDURE GetParamAddress (location: location_t; proc, param: CARDINAL) : Tree ;
+PROCEDURE GetParamAddress (location: location_t; proc, param: CARDINAL) : tree ;
 VAR
    sym,
    type: CARDINAL ;
@@ -1489,7 +1653,7 @@ END IsUnboundedWrittenTo ;
    GetParamSize - returns the size in bytes of, param.
 *)
 
-PROCEDURE GetParamSize (tokenno: CARDINAL; param: CARDINAL) : Tree ;
+PROCEDURE GetParamSize (tokenno: CARDINAL; param: CARDINAL) : tree ;
 BEGIN
    Assert(IsVar(param) OR IsParameter(param)) ;
    IF IsUnbounded(param)
@@ -1506,7 +1670,7 @@ END GetParamSize ;
                       else jump to, fLabel.
 *)
 
-PROCEDURE DoIsIntersection (tokenno: CARDINAL; ta, tb, tc, td: Tree; tLabel, fLabel: String) ;
+PROCEDURE DoIsIntersection (tokenno: CARDINAL; ta, tb, tc, td: tree; tLabel, fLabel: String) ;
 VAR
    location: location_t ;
 BEGIN
@@ -1542,7 +1706,7 @@ PROCEDURE BuildCascadedIfThenElsif (tokenno: CARDINAL;
                                     proc, param: CARDINAL) ;
 VAR
    ta, tb,
-   tc, td  : Tree ;
+   tc, td  : tree ;
    n, j    : CARDINAL ;
    tLabel,
    fLabel,
@@ -1730,9 +1894,9 @@ VAR
 BEGIN
    InitList(trashed) ;
    i := 1 ;
-   p := NoOfParam(proc) ;
+   p := NoOfParamAny (proc) ;
    WHILE i<=p DO
-      sym := GetNthParam(proc, i) ;
+      sym := GetNthParamAny (proc, i) ;
       IF IsParameterWritten(proc, sym)
       THEN
          IF VerboseUnbounded
@@ -1750,9 +1914,9 @@ BEGIN
    END ;
    (* now see whether we need to copy any unbounded array parameters *)
    i := 1 ;
-   p := NoOfParam(proc) ;
+   p := NoOfParamAny (proc) ;
    WHILE i<=p DO
-      IF IsUnboundedParam(proc, i) AND (NOT IsVarParam(proc, i))
+      IF IsUnboundedParamAny (proc, i) AND (NOT IsVarParamAny (proc, i))
       THEN
          CheckUnboundedNonVarParameter (tokenno, trashed, proc, GetNth (proc, i))
       END ;
@@ -1805,7 +1969,7 @@ BEGIN
       IF IsProcedure (scope)
       THEN
          (* the parameters are stored as local variables.  *)
-         INC (i, NoOfParam (scope))
+         INC (i, NoOfParamAny (scope))
       END ;
       WHILE i <= n DO
          AutoInitVariable (location, GetNth (scope, i)) ;
@@ -1845,7 +2009,7 @@ END CodeNewLocalVar ;
 PROCEDURE CodeKillLocalVar (CurrentProcedure: CARDINAL) ;
 VAR
    begin, end: CARDINAL ;
-   proc      : Tree ;
+   proc      : tree ;
 BEGIN
    GetProcedureBeginEnd (CurrentProcedure, begin, end) ;
    CurrentQuadToken := end ;
@@ -1900,7 +2064,7 @@ VAR
    expr, none, procedure               : CARDINAL ;
    combinedpos,
    returnpos, exprpos, nonepos, procpos: CARDINAL ;
-   value, length                       : Tree ;
+   value, length                       : tree ;
    location                            : location_t ;
 BEGIN
    GetQuadOtok (quad, returnpos, op, expr, none, procedure,
@@ -1935,17 +2099,17 @@ END CodeReturnValue ;
 
 PROCEDURE CodeCall (tokenno: CARDINAL; procedure: CARDINAL) ;
 VAR
-   tree    : Tree ;
+   callTree: tree ;
    location: location_t ;
 BEGIN
    IF IsProcedure (procedure)
    THEN
       DeclareParameters (procedure) ;
-      tree := CodeDirectCall (tokenno, procedure)
+      callTree := CodeDirectCall (tokenno, procedure)
    ELSIF IsProcType (SkipType (GetType (procedure)))
    THEN
       DeclareParameters (SkipType (GetType (procedure))) ;
-      tree := CodeIndirectCall (tokenno, procedure) ;
+      callTree := CodeIndirectCall (tokenno, procedure) ;
       procedure := SkipType (GetType (procedure))
    ELSE
       InternalError ('expecting Procedure or ProcType')
@@ -1953,7 +2117,7 @@ BEGIN
    IF GetType (procedure) = NulSym
    THEN
       location := TokenToLocation (tokenno) ;
-      AddStatement (location, tree)
+      AddStatement (location, callTree)
    ELSE
       (* leave tree alone - as it will be picked up when processing FunctValue *)
    END
@@ -1966,7 +2130,7 @@ END CodeCall ;
                 CanUseBuiltin or IsProcedureBuiltinAvailable returns TRUE.
 *)
 
-PROCEDURE UseBuiltin (tokenno: CARDINAL; Sym: CARDINAL) : Tree ;
+PROCEDURE UseBuiltin (tokenno: CARDINAL; Sym: CARDINAL) : tree ;
 BEGIN
    IF BuiltinExists(KeyToCharStar(GetProcedureBuiltin(Sym)))
    THEN
@@ -1981,10 +2145,10 @@ END UseBuiltin ;
    CodeDirectCall - calls a function/procedure.
 *)
 
-PROCEDURE CodeDirectCall (tokenno: CARDINAL; procedure: CARDINAL) : Tree ;
+PROCEDURE CodeDirectCall (tokenno: CARDINAL; procedure: CARDINAL) : tree ;
 VAR
    location: location_t ;
-   call    : Tree ;
+   call    : tree ;
 BEGIN
    location := TokenToLocation (tokenno) ;
    IF IsProcedureBuiltinAvailable (procedure)
@@ -1992,7 +2156,7 @@ BEGIN
       call := UseBuiltin (tokenno, procedure) ;
       IF call # NIL
       THEN
-         call := BuildBuiltinCallTree (location, call)
+         call := BuildBuiltinCallTree (call)
       END
    ELSE
       call := NIL
@@ -2020,9 +2184,9 @@ END CodeDirectCall ;
    CodeIndirectCall - calls a function/procedure indirectly.
 *)
 
-PROCEDURE CodeIndirectCall (tokenno: CARDINAL; ProcVar: CARDINAL) : Tree ;
+PROCEDURE CodeIndirectCall (tokenno: CARDINAL; ProcVar: CARDINAL) : tree ;
 VAR
-   ReturnType: Tree ;
+   ReturnType: tree ;
    proc      : CARDINAL ;
    location  : location_t ;
 BEGIN
@@ -2030,9 +2194,9 @@ BEGIN
    proc := SkipType(GetType(ProcVar)) ;
    IF GetType(proc)=NulSym
    THEN
-      ReturnType := Tree(NIL)
+      ReturnType := tree(NIL)
    ELSE
-      ReturnType := Tree(Mod2Gcc(GetType(proc)))
+      ReturnType := tree(Mod2Gcc(GetType(proc)))
    END ;
 
    (* now we dereference the lvalue if necessary *)
@@ -2053,7 +2217,7 @@ END CodeIndirectCall ;
                   then convert the string into a character constant.
 *)
 
-PROCEDURE StringToChar (t: Tree; type, str: CARDINAL) : Tree ;
+PROCEDURE StringToChar (t: tree; type, str: CARDINAL) : tree ;
 VAR
    s: String ;
    n: Name ;
@@ -2092,7 +2256,7 @@ END StringToChar ;
                a symbol of, type.
 *)
 
-PROCEDURE ConvertTo (t: Tree; type, op3: CARDINAL) : Tree ;
+PROCEDURE ConvertTo (t: tree; type, op3: CARDINAL) : tree ;
 BEGIN
    IF SkipType(type)#SkipType(GetType(op3))
    THEN
@@ -2114,7 +2278,7 @@ END ConvertTo ;
                 first and then the remaining types.
 *)
 
-PROCEDURE ConvertRHS (t: Tree; type, rhs: CARDINAL) : Tree ;
+PROCEDURE ConvertRHS (t: tree; type, rhs: CARDINAL) : tree ;
 BEGIN
    t := StringToChar (Mod2Gcc (rhs), type, rhs) ;
    RETURN ConvertTo (t, type, rhs)
@@ -2161,20 +2325,20 @@ END IsConstant ;
    CheckConvertCoerceParameter -
 *)
 
-PROCEDURE CheckConvertCoerceParameter (tokenno: CARDINAL; op1, op2, op3: CARDINAL) : Tree ;
+PROCEDURE CheckConvertCoerceParameter (tokenno: CARDINAL; op1, op2, op3: CARDINAL) : tree ;
 VAR
    OperandType,
    ParamType  : CARDINAL ;
    location   : location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
-   IF GetNthParam(op2, op1)=NulSym
+   IF GetNthParamAny (op2, op1)=NulSym
    THEN
       (* We reach here if the argument is being passed to a C vararg function.  *)
       RETURN( Mod2Gcc(op3) )
    ELSE
       OperandType := SkipType(GetType(op3)) ;
-      ParamType := SkipType(GetType(GetNthParam(op2, op1)))
+      ParamType := SkipType(GetType(GetNthParamAny (op2, op1)))
    END ;
    IF IsProcType(ParamType)
    THEN
@@ -2214,7 +2378,7 @@ END CheckConvertCoerceParameter ;
    CheckConstant - checks to see whether we should declare the constant.
 *)
 
-PROCEDURE CheckConstant (tokenno: CARDINAL; des, expr: CARDINAL) : Tree ;
+PROCEDURE CheckConstant (tokenno: CARDINAL; des, expr: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -2242,7 +2406,7 @@ VAR
    max,
    tmp,
    res,
-   val     : Tree ;
+   val     : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -2327,7 +2491,7 @@ VAR
    bits,
    max,
    tmp,
-   val     : Tree ;
+   val     : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (tokenno) ;
@@ -2420,7 +2584,7 @@ VAR
    op1, op2,
    op3       : CARDINAL ;
    op        : QuadOperator ;
-   val, call : Tree ;
+   val, call : tree ;
    location  : location_t ;
 BEGIN
    GetQuad (q, op, op1, op2, op3) ;
@@ -2533,17 +2697,17 @@ BEGIN
    ELSE
       IF StrictTypeChecking
       THEN
-         IF (nth <= NoOfParam (procedure))
+         IF (nth <= NoOfParamAny (procedure))
          THEN
             compatible := ParameterTypeCompatible (parampos,
                                                    'parameter incompatibility when attempting to pass actual parameter {%2ad} to a {%kVAR} formal parameter {%3Ead} during call to procedure {%1ad}',
-                                                   procedure, GetNthParam (procedure, nth),
-                                                   parameter, nth, IsVarParam (procedure, nth))
+                                                   procedure, GetNthParamAny (procedure, nth),
+                                                   parameter, nth, IsVarParamAny (procedure, nth))
          END
       END ;
 
-      IF (nth <= NoOfParam (procedure)) AND
-         IsVarParam (procedure, nth) AND IsConst (parameter)
+      IF (nth <= NoOfParamAny (procedure)) AND
+         IsVarParamAny (procedure, nth) AND IsConst (parameter)
       THEN
          MetaErrorT1 (parampos,
                       'cannot pass a constant {%1Ead} as a VAR parameter', parameter)
@@ -2564,13 +2728,13 @@ END CodeParam ;
    Replace - replace the entry for sym in the double entry bookkeeping with sym/tree.
 *)
 
-PROCEDURE Replace (sym: CARDINAL; tree: Tree) ;
+PROCEDURE Replace (sym: CARDINAL; gcc: tree) ;
 BEGIN
    IF GccKnowsAbout (sym)
    THEN
       RemoveMod2Gcc (sym)
    END ;
-   AddModGcc (sym, tree)
+   AddModGcc (sym, gcc)
 END Replace ;
 
 
@@ -2582,7 +2746,7 @@ END Replace ;
 PROCEDURE CodeFunctValue (location: location_t; op1: CARDINAL) ;
 VAR
    call,
-   value: Tree ;
+   value: tree ;
 BEGIN
    (*
       operator : FunctValueOp
@@ -2703,7 +2867,7 @@ END FoldStringConvertCnul ;
 
 PROCEDURE CodeAddr (tokenno: CARDINAL; quad: CARDINAL; op1, op3: CARDINAL) ;
 VAR
-   value   : Tree ;
+   value   : tree ;
    type    : CARDINAL ;
    location: location_t ;
 BEGIN
@@ -2750,19 +2914,22 @@ END CheckStop ;
    Sym1<I> := Sym3<I>           := produces a constant
 *)
 
-PROCEDURE FoldBecomes (p: WalkAction; quad: CARDINAL) ;
+PROCEDURE FoldBecomes (p: WalkAction; bb: BasicBlock; quad: CARDINAL) ;
 VAR
    op            : QuadOperator ;
    des, op2, expr: CARDINAL ;
 BEGIN
-   IF DeclaredOperandsBecomes (p, quad) AND (NOT IsQuadConstExpr (quad))
+   IF DeclaredOperandsBecomes (p, quad)
    THEN
-      IF TypeCheckBecomes (p, quad)
+      IF (NOT IsConditionalBooleanQuad (quad)) OR IsBasicBlockFirst (bb)
       THEN
-         PerformFoldBecomes (p, quad)
-      ELSE
-         GetQuad (quad, op, des, op2, expr) ;
-         RemoveQuad (p, des, quad)
+         IF TypeCheckBecomes (p, quad)
+         THEN
+            PerformFoldBecomes (p, quad)
+         ELSE
+            GetQuad (quad, op, des, op2, expr) ;
+            RemoveQuad (p, des, quad)
+         END
       END
    END
 END FoldBecomes ;
@@ -2963,9 +3130,9 @@ END PerformFoldBecomes ;
 
 
 VAR
-   tryBlock: Tree ;    (* this must be placed into gccgm2 and it must follow the
+   tryBlock: tree ;    (* this must be placed into gccgm2 and it must follow the
                           current function scope - ie it needs work with nested procedures *)
-   handlerBlock: Tree ;
+   handlerBlock: tree ;
 
 
 (*
@@ -2993,7 +3160,7 @@ BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
    IF value = NulSym
    THEN
-      AddStatement (location, BuildThrow (location, Tree (NIL)))
+      AddStatement (location, BuildThrow (location, tree (NIL)))
    ELSE
       DeclareConstant (CurrentQuadToken, value) ;  (* checks to see whether it is a constant and declares it *)
       AddStatement (location, BuildThrow (location, BuildConvert (location,
@@ -3051,7 +3218,7 @@ END DescribeTypeError ;
                        typed constants.
 *)
 
-PROCEDURE DefaultConvertGM2 (sym: CARDINAL) : Tree ;
+PROCEDURE DefaultConvertGM2 (sym: CARDINAL) : tree ;
 BEGIN
    sym := SkipType (sym) ;
    IF sym=Bitset
@@ -3070,9 +3237,9 @@ END DefaultConvertGM2 ;
 *)
 
 PROCEDURE FoldConstBecomes (tokenno: CARDINAL;
-                            op1, op3: CARDINAL) : Tree ;
+                            op1, op3: CARDINAL) : tree ;
 VAR
-   t, type : Tree ;
+   t, type : tree ;
    location: location_t ;
 BEGIN
    IF IsConstSet(op3) OR ((SkipType(GetType(op3))#NulSym) AND
@@ -3134,7 +3301,7 @@ END FoldConstBecomes ;
                                             which fits in dest.
 *)
 
-PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: Tree;
+PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: tree;
                              src, destStrType: CARDINAL) : BOOLEAN ;
 VAR
    location : location_t ;
@@ -3206,7 +3373,7 @@ END PrepareCopyString ;
 
 PROCEDURE checkArrayElements (des, expr: CARDINAL; virtpos, despos, exprpos: CARDINAL) : BOOLEAN ;
 VAR
-   e1, e3: Tree ;
+   e1, e3: tree ;
    t1, t3: CARDINAL ;
 BEGIN
    t1 := GetType (des) ;
@@ -3313,9 +3480,9 @@ BEGIN
       THEN
          IF NOT IsAssignmentCompatible (t1, t2)
          THEN
-            MetaErrorT2 (virtpos,
-                         'illegal assignment error between {%1Etad} and {%2tad}',
-                         des, expr) ;
+            ErrorMessageDecl (virtpos,
+                              'illegal assignment error between {%1Etad} and {%2tad}',
+                              des, expr, TRUE) ;
 	    RETURN( FALSE )
          END
       END
@@ -3373,7 +3540,7 @@ VAR
    op2pos,
    exprpos          : CARDINAL ;
    length,
-   exprt            : Tree ;
+   exprt            : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, becomespos, op, des, op2, expr,
@@ -3388,9 +3555,9 @@ BEGIN
    IF StrictTypeChecking AND
       (NOT AssignmentTypeCompatible (virtpos, "", des, expr))
    THEN
-      MetaErrorT2 (virtpos,
-                   'assignment check caught mismatch between {%1Ead} and {%2ad}',
-                   des, expr)
+      ErrorMessageDecl (virtpos,
+                        'assignment check caught mismatch between {%1Ead} and {%2ad}',
+                        des, expr, TRUE)
    END ;
    IF IsConstString (expr) AND (NOT IsConstStringKnown (expr))
    THEN
@@ -3405,9 +3572,9 @@ BEGIN
       checkDeclare (des) ;
       IF NOT PrepareCopyString (becomespos, length, exprt, expr, SkipType (GetType (des)))
       THEN
-         MetaErrorT2 (virtpos,
-                      'string constant {%1Ea} is too large to be assigned to the array {%2ad}',
-                      expr, des)
+         ErrorMessageDecl (virtpos,
+                           'string constant {%1Ea} is too large to be assigned to the array {%2ad}',
+                           expr, des, TRUE)
       END ;
       AddStatement (location,
                     MaybeDebugBuiltinMemcpy (location,
@@ -3432,7 +3599,7 @@ BEGIN
       ELSE
          IF checkBecomes (des, expr, virtpos, despos, exprpos)
          THEN
-            IF IsVariableSSA (des)
+            IF IsVar (des) AND IsVariableSSA (des)
             THEN
                Replace (des, FoldConstBecomes (virtpos, des, expr))
             ELSE
@@ -3441,7 +3608,7 @@ BEGIN
                                          FoldConstBecomes (virtpos, des, expr))
             END
          ELSE
-            SubQuad (quad)  (* we don't want multiple errors for the quad.  *)
+            SubQuad (quad)  (* We don't want multiple errors for the quad.  *)
          END
       END
    END
@@ -3453,9 +3620,9 @@ END CodeBecomes ;
                         It coerces a lvalue into an internal pointer type
 *)
 
-PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : Tree ;
+PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : tree ;
 VAR
-   t: Tree ;
+   t: tree ;
 BEGIN
    t := Mod2Gcc (sym) ;
    IF t = NIL
@@ -3475,9 +3642,9 @@ END LValueToGenericPtr ;
                                  else convert to type, type. Return the converted tree.
 *)
 
-PROCEDURE LValueToGenericPtrOrConvert (sym: CARDINAL; type: Tree) : Tree ;
+PROCEDURE LValueToGenericPtrOrConvert (sym: CARDINAL; type: tree) : tree ;
 VAR
-   n       : Tree ;
+   n       : tree ;
    location: location_t ;
 BEGIN
    n := Mod2Gcc (sym) ;
@@ -3501,7 +3668,7 @@ END LValueToGenericPtrOrConvert ;
                         coerces, t, appropriately.
 *)
 
-PROCEDURE ZConstToTypedConst (t: Tree; op1, op2: CARDINAL) : Tree ;
+PROCEDURE ZConstToTypedConst (t: tree; op1, op2: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -3544,7 +3711,7 @@ END ZConstToTypedConst ;
 PROCEDURE FoldBinary (tokenno: CARDINAL; p: WalkAction; binop: BuildBinProcedure;
                       quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   tl, tr, tv, resType: Tree ;
+   tl, tr, tv, resType: tree ;
    location           : location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared *)
@@ -3596,7 +3763,7 @@ END FoldBinary ;
    ConvertBinaryOperands -
 *)
 
-PROCEDURE ConvertBinaryOperands (location: location_t; VAR tl, tr: Tree; type, op2, op3: CARDINAL) ;
+PROCEDURE ConvertBinaryOperands (location: location_t; VAR tl, tr: tree; type, op2, op3: CARDINAL) ;
 BEGIN
    tl := NIL ;
    tr := NIL ;
@@ -3641,7 +3808,7 @@ VAR
    min, max,
    lowest,
    tv,
-   tl, tr    : Tree ;
+   tl, tr    : tree ;
    location  : location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared.  *)
@@ -3692,7 +3859,7 @@ BEGIN
    THEN
       RETURN Address
    ELSE
-      RETURN MixTypes (FindType (left), FindType (right), tokpos)
+      RETURN MixTypesDecl (left, right, FindType (left), FindType (right), tokpos)
    END
 END MixTypesBinary ;
 
@@ -3711,7 +3878,7 @@ VAR
    op3pos,
    type    : CARDINAL ;
    tv,
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared *)
@@ -3799,9 +3966,9 @@ BEGIN
          is bug free.  *)
       IF NOT IsExpressionCompatible (lefttype, righttype)
       THEN
-         MetaErrorT2 (subexprpos,
-                      'expression mismatch between {%1Etad} and {%2tad}',
-                      left, right) ;
+         ErrorMessageDecl (subexprpos,
+                           'expression mismatch between {%1Etad} and {%2tad}',
+                           left, right, TRUE) ;
          NoChange := FALSE ;
          SubQuad (quad) ;
          p (des) ;
@@ -3867,9 +4034,9 @@ BEGIN
    (* Now fall though and compare the set element left against the type of set righttype.  *)
    IF NOT IsExpressionCompatible (lefttype, righttype)
    THEN
-      MetaErrorT2 (subexprpos,
-                   'the types used in expression {%1Etad} {%kIN} {%2tad} are incompatible',
-                   left, right) ;
+      ErrorMessageDecl (subexprpos,
+                        'the types used in expression {%1Etad} {%kIN} {%2tad} are incompatible',
+                        left, right, TRUE) ;
       NoChange := FALSE ;
       SubQuad (quad) ;
       RETURN FALSE
@@ -4628,7 +4795,7 @@ END CodeModFloor ;
 PROCEDURE FoldBuiltinConst (tokenno: CARDINAL; p: WalkAction;
                             quad: CARDINAL; result, constDesc: CARDINAL) ;
 VAR
-   value: Tree ;
+   value: tree ;
 BEGIN
    value := GetBuiltinConst (KeyToCharStar (Name (constDesc))) ;
    IF value = NIL
@@ -4650,7 +4817,7 @@ END FoldBuiltinConst ;
 PROCEDURE FoldBuiltinTypeInfo (tokenno: CARDINAL; p: WalkAction;
                                quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
+   t       : tree ;
    location: location_t ;
 BEGIN
    IF GccKnowsAbout(op2) AND CompletelyResolved(op2)
@@ -4909,7 +5076,7 @@ END CodeStandardFunction ;
 
 PROCEDURE CodeSavePriority (oldValue, scopeSym, procedureSym: CARDINAL) ;
 VAR
-   funcTree: Tree ;
+   funcTree: tree ;
    mod     : CARDINAL ;
    n       : Name ;
    location: location_t ;
@@ -4953,7 +5120,7 @@ END CodeSavePriority ;
 
 PROCEDURE CodeRestorePriority (oldValue, scopeSym, procedureSym: CARDINAL) ;
 VAR
-   funcTree: Tree ;
+   funcTree: tree ;
    mod     : CARDINAL ;
    n       : Name ;
    location: location_t ;
@@ -5094,7 +5261,7 @@ VAR
    unbounded,
    leftproc,
    rightproc,
-   varproc  : Tree ;
+   varproc  : tree ;
    location : location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared *)
@@ -5123,7 +5290,7 @@ BEGIN
       varproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, var, System)) ;
       leftproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, left, System)) ;
       rightproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, right, System)) ;
-      unbounded := Mod2Gcc(GetType(GetNthParam(FromModuleGetSym(CurrentQuadToken,
+      unbounded := Mod2Gcc(GetType(GetNthParamAny (FromModuleGetSym(CurrentQuadToken,
                                                                 var, System), 1))) ;
       PushValue(GetTypeMax(SkipType(GetType(op1)))) ;
       PushIntegerTree(BuildConvert(location, GetM2ZType(), PopIntegerTree(), FALSE)) ;
@@ -5322,7 +5489,7 @@ END FoldIncl ;
                 if op1 < op2 then goto op3.
 *)
 
-PROCEDURE FoldIfLess (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfLess (tokenno: CARDINAL;
                       quad: CARDINAL; left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
@@ -5333,18 +5500,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF Less (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF Less (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5353,114 +5515,13 @@ END FoldIfLess ;
 
 
 (*
-   IsBooleanRelOpPattern - return TRUE if the pattern:
-                           q   If    left  right  q+2
-                           q+1 Goto               q+4
-                           q+2 Becomes des[i]  TRUE[i]
-                           q+3 Goto               q+5
-                           q+4 Becomes des[i]  FALSE[i]
-*)
-
-PROCEDURE IsBooleanRelOpPattern (quad: CARDINAL) : BOOLEAN ;
-BEGIN
-   IF IsQuadConstExpr (quad)
-   THEN
-      IF IsConditional (quad) AND
-         (IsGoto (quad+1) OR IsDummy (quad+1)) AND
-         IsBecomes (quad+2) AND IsGoto (quad+3) AND
-         IsBecomes (quad+4) AND
-         (GetQuadDest (quad) = quad+2) AND
-         (GetQuadDest (quad+1) = quad+4) AND
-         (GetQuadDest (quad+3) = quad+5) AND
-         (GetQuadOp1 (quad+2) = GetQuadOp1 (quad+4))
-      THEN
-         RETURN TRUE
-      END
-   END ;
-   RETURN FALSE
-END IsBooleanRelOpPattern ;
-
-
-(*
-   FoldBooleanRelopPattern - fold the boolean relop pattern of quadruples
-                             above to:
-                             q+2 Becomes des[i]  TRUE[i]
-                             or
-                             q+4 Becomes des[i]  FALSE[i]
-                             depending upon the condition in quad.
-*)
-
-PROCEDURE FoldBooleanRelopPattern (p: WalkAction; quad: CARDINAL) ;
-VAR
-   des: CARDINAL ;
-BEGIN
-   des := GetQuadOp1 (quad+2) ;
-   IF QuadCondition (quad)
-   THEN
-      SetQuadConstExpr (quad+2, FALSE) ;
-      SubQuad (quad+4)  (* Remove des := FALSE.  *)
-   ELSE
-      SetQuadConstExpr (quad+4, FALSE) ;
-      SubQuad (quad+2)  (* Remove des := TRUE.  *)
-   END ;
-   RemoveQuad (p, des, quad) ;
-   SubQuad (quad+1) ;
-   SubQuad (quad+3)
-END FoldBooleanRelopPattern ;
-
-
-(*
-   QuadCondition - Pre-condition:  left, right operands are constants
-                   which have been resolved.
-                   Post-condition: return TRUE if the condition at
-                   quad is TRUE.
-*)
-
-PROCEDURE QuadCondition (quad: CARDINAL) : BOOLEAN ;
-VAR
-   left, right, dest, combined,
-   leftpos, rightpos, destpos : CARDINAL ;
-   constExpr, overflow        : BOOLEAN ;
-   op                         : QuadOperator ;
-BEGIN
-   GetQuadOtok (quad, combined, op,
-                left, right, dest, overflow,
-                constExpr,
-                leftpos, rightpos, destpos) ;
-   CASE op OF
-
-   IfInOp     :  PushValue (right) ;
-                 RETURN SetIn (left, combined) |
-   IfNotInOp  :  PushValue (right) ;
-                 RETURN NOT SetIn (left, combined)
-
-   ELSE
-   END ;
-   PushValue (left) ;
-   PushValue (right) ;
-   CASE op OF
-
-   IfGreOp    :  RETURN Gre (combined) |
-   IfLessOp   :  RETURN Less (combined) |
-   IfLessEquOp:  RETURN LessEqu (combined) |
-   IfGreEquOp :  RETURN GreEqu (combined) |
-   IfEquOp    :  RETURN GreEqu (combined) |
-   IfNotEquOp :  RETURN NotEqu (combined)
-
-   ELSE
-      InternalError ('unrecognized comparison operator')
-   END ;
-   RETURN FALSE
-END QuadCondition ;
-
-
-(*
    FoldIfGre - check to see if it is possible to evaluate
                if op1 > op2 then goto op3.
 *)
 
-PROCEDURE FoldIfGre (tokenno: CARDINAL; p: WalkAction;
-                     quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfGre (tokenno: CARDINAL;
+                     quad: CARDINAL;
+                     left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5470,18 +5531,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF Gre (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF Gre (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5494,8 +5550,9 @@ END FoldIfGre ;
                    if op1 <= op2 then goto op3.
 *)
 
-PROCEDURE FoldIfLessEqu (tokenno: CARDINAL; p: WalkAction;
-                         quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfLessEqu (tokenno: CARDINAL;
+                         quad: CARDINAL;
+                         left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5505,18 +5562,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF LessEqu (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF LessEqu (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5529,8 +5581,9 @@ END FoldIfLessEqu ;
                   if op1 >= op2 then goto op3.
 *)
 
-PROCEDURE FoldIfGreEqu (tokenno: CARDINAL; p: WalkAction;
-                        quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfGreEqu (tokenno: CARDINAL;
+                        quad: CARDINAL;
+                        left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5540,18 +5593,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF GreEqu (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF GreEqu (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5564,8 +5612,9 @@ END FoldIfGreEqu ;
               if op1 in op2 then goto op3
 *)
 
-PROCEDURE FoldIfIn (tokenno: CARDINAL; p: WalkAction;
-                    quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfIn (tokenno: CARDINAL;
+                    quad: CARDINAL;
+                    left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant (tokenno, left) ;
@@ -5577,17 +5626,12 @@ BEGIN
          IF CheckBinaryExpressionTypes (quad, NoWalkProcedure)
          THEN
             (* We can take advantage of the known values and evaluate the condition.  *)
-            IF IsBooleanRelOpPattern (quad)
+            PushValue (right) ;
+            IF SetIn (tokenno, left)
             THEN
-               FoldBooleanRelopPattern (p, quad)
+               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad) ;
             ELSE
-               PushValue (right) ;
-               IF SetIn (tokenno, left)
-               THEN
-                  PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-               ELSE
-                  SubQuad (quad)
-               END
+               SubQuad (quad)
             END
          ELSE
             SubQuad (quad)
@@ -5603,8 +5647,9 @@ END FoldIfIn ;
                  if not (op1 in op2) then goto op3
 *)
 
-PROCEDURE FoldIfNotIn (tokenno: CARDINAL; p: WalkAction;
-                       quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfNotIn (tokenno: CARDINAL;
+                       quad: CARDINAL;
+                       left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant (tokenno, left) ;
@@ -5615,18 +5660,14 @@ BEGIN
       THEN
          IF CheckBinaryExpressionTypes (quad, NoWalkProcedure)
          THEN
-            (* We can take advantage of the known values and evaluate the condition.  *)
-            IF IsBooleanRelOpPattern (quad)
+            (* We can take advantage of the known values and evaluate the
+               condition.  *)
+            PushValue (right) ;
+            IF NOT SetIn (tokenno, left)
             THEN
-               FoldBooleanRelopPattern (p, quad)
+               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
             ELSE
-               PushValue (right) ;
-               IF NOT SetIn (tokenno, left)
-               THEN
-                  PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-               ELSE
-                  SubQuad (quad)
-               END
+               SubQuad (quad)
             END
          ELSE
             SubQuad (quad)
@@ -5642,8 +5683,9 @@ END FoldIfNotIn ;
                if op1 = op2 then goto op3.
 *)
 
-PROCEDURE FoldIfEqu (tokenno: CARDINAL; p: WalkAction;
-                     quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfEqu (tokenno: CARDINAL;
+                     quad: CARDINAL;
+                     left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5652,19 +5694,15 @@ BEGIN
    THEN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
-         IF IsBooleanRelOpPattern (quad)
+         (* We can take advantage of the known values and evaluate the
+            condition.  *)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF Equ (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            (* We can take advantage of the known values and evaluate the condition.  *)
-            PushValue (left) ;
-            PushValue (right) ;
-            IF Equ (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5677,8 +5715,9 @@ END FoldIfEqu ;
                   if op1 # op2 then goto op3.
 *)
 
-PROCEDURE FoldIfNotEqu (tokenno: CARDINAL; p: WalkAction;
-                        quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfNotEqu (tokenno: CARDINAL;
+                        quad: CARDINAL;
+                        left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5687,19 +5726,15 @@ BEGIN
    THEN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
-         IF IsBooleanRelOpPattern (quad)
+         (* We can take advantage of the known values and evaluate the
+            condition.  *)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF NotEqu (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            (* We can take advantage of the known values and evaluate the condition.  *)
-            PushValue (left) ;
-            PushValue (right) ;
-            IF NotEqu (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5730,7 +5765,7 @@ END GetSetLimits ;
    GetFieldNo - returns the field number in the, set, which contains, element.
 *)
 
-PROCEDURE GetFieldNo (tokenno: CARDINAL; element: CARDINAL; set: CARDINAL; VAR offset: Tree) : INTEGER ;
+PROCEDURE GetFieldNo (tokenno: CARDINAL; element: CARDINAL; set: CARDINAL; VAR offset: tree) : INTEGER ;
 VAR
    low, high, bpw, c: CARDINAL ;
    location         : location_t ;
@@ -5795,7 +5830,7 @@ PROCEDURE CodeIncl (result, expr: CARDINAL) ;
 VAR
    low,
    high    : CARDINAL ;
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location: location_t ;
 BEGIN
@@ -5872,7 +5907,7 @@ PROCEDURE CodeExcl (result, expr: CARDINAL) ;
 VAR
    low,
    high    : CARDINAL ;
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location: location_t ;
 BEGIN
@@ -5914,10 +5949,10 @@ END CodeExcl ;
 *)
 
 PROCEDURE FoldUnary (tokenno: CARDINAL; p: WalkAction;
-                     unop: BuildUnaryProcedure; ZConstToTypedConst: Tree;
+                     unop: BuildUnaryProcedure; ZConstToTypedConst: tree;
                      quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
-   tv      : Tree ;
+   tv      : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -5931,7 +5966,7 @@ BEGIN
          (* fine, we can take advantage of this and fold constants *)
          IF IsConst (result)
          THEN
-            IF ZConstToTypedConst = Tree(NIL)
+            IF ZConstToTypedConst = tree(NIL)
             THEN
                IF (GetType (expr) = NulSym) OR IsOrdinalType (SkipType (GetType (expr)))
                THEN
@@ -6006,13 +6041,13 @@ END FoldUnarySet ;
    CodeUnaryCheck - encode a unary arithmetic operation.
 *)
 
-PROCEDURE CodeUnaryCheck (unop: BuildUnaryCheckProcedure; ZConstToTypedConst: Tree;
+PROCEDURE CodeUnaryCheck (unop: BuildUnaryCheckProcedure; ZConstToTypedConst: tree;
                           quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
    lowestType: CARDINAL ;
    min, max,
    lowest,
-   tv        : Tree ;
+   tv        : tree ;
    location  : location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -6036,9 +6071,9 @@ BEGIN
    CheckOrResetOverflow (CurrentQuadToken, tv, MustCheckOverflow(quad)) ;
    IF IsConst (result)
    THEN
-      IF ZConstToTypedConst = Tree (NIL)
+      IF ZConstToTypedConst = tree (NIL)
       THEN
-         ZConstToTypedConst := Tree (Mod2Gcc( GetType (expr)))
+         ZConstToTypedConst := tree (Mod2Gcc( GetType (expr)))
       END ;
       (* still have a constant which was not resolved, pass it to gcc *)
       PutConst (result, FindType (expr)) ;
@@ -6058,10 +6093,10 @@ END CodeUnaryCheck ;
    CodeUnary - encode a unary arithmetic operation.
 *)
 
-PROCEDURE CodeUnary (unop: BuildUnaryProcedure; ZConstToTypedConst: Tree;
+PROCEDURE CodeUnary (unop: BuildUnaryProcedure; ZConstToTypedConst: tree;
                      quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
-   tv      : Tree ;
+   tv      : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -6073,9 +6108,9 @@ BEGIN
    CheckOrResetOverflow (CurrentQuadToken, tv, MustCheckOverflow (quad)) ;
    IF IsConst(result)
    THEN
-      IF ZConstToTypedConst=Tree(NIL)
+      IF ZConstToTypedConst=tree(NIL)
       THEN
-         ZConstToTypedConst := Tree(Mod2Gcc(GetType(expr)))
+         ZConstToTypedConst := tree(Mod2Gcc(GetType(expr)))
       END ;
       (* still have a constant which was not resolved, pass it to gcc *)
       PutConst (result, FindType (expr)) ;
@@ -6136,7 +6171,7 @@ END CodeNegateChecked ;
 PROCEDURE FoldSize (tokenno: CARDINAL; p: WalkAction;
                     quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
+   t       : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
@@ -6205,7 +6240,7 @@ PROCEDURE FoldRecordField (tokenno: CARDINAL; p: WalkAction;
 VAR
    recordType,
    fieldType : CARDINAL ;
-   ptr       : Tree ;
+   ptr       : tree ;
    location  : location_t ;
 BEGIN
    RETURN ;  (* this procedure should no longer be called *)
@@ -6253,7 +6288,7 @@ PROCEDURE CodeRecordField (result, record, field: CARDINAL) ;
 VAR
    recordType,
    fieldType : CARDINAL ;
-   ptr       : Tree ;
+   ptr       : tree ;
    location  : location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -6288,7 +6323,7 @@ END CodeRecordField ;
    BuildHighFromChar -
 *)
 
-PROCEDURE BuildHighFromChar (operand: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromChar (operand: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -6326,7 +6361,7 @@ END SkipToArray ;
    BuildHighFromArray -
 *)
 
-PROCEDURE BuildHighFromArray (tokenno: CARDINAL; dim, operand: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromArray (tokenno: CARDINAL; dim, operand: CARDINAL) : tree ;
 VAR
    Type    : CARDINAL ;
    location: location_t ;
@@ -6341,7 +6376,7 @@ END BuildHighFromArray ;
    BuildHighFromStaticArray -
 *)
 
-PROCEDURE BuildHighFromStaticArray (location: location_t; (* dim, *) Type: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromStaticArray (location: location_t; (* dim, *) Type: CARDINAL) : tree ;
 VAR
    High, Low: CARDINAL ;
    Subscript,
@@ -6355,7 +6390,7 @@ BEGIN
       GetBaseTypeMinMax (Subrange, Low, High) ;
       IF GccKnowsAbout (High)
       THEN
-         RETURN Tree (Mod2Gcc (High))
+         RETURN tree (Mod2Gcc (High))
       END
    ELSIF IsSubrange(Subrange)
    THEN
@@ -6366,13 +6401,13 @@ BEGIN
       END
    ELSE
       MetaError1 ('array subscript {%1EDad:for} must be a subrange or enumeration type', Type) ;
-      RETURN Tree(NIL)
+      RETURN tree(NIL)
    END ;
    IF GccKnowsAbout (High)
    THEN
-      RETURN Tree (Mod2Gcc (High))
+      RETURN tree (Mod2Gcc (High))
    ELSE
-      RETURN Tree (NIL)
+      RETURN tree (NIL)
    END
 END BuildHighFromStaticArray ;
 
@@ -6381,16 +6416,16 @@ END BuildHighFromStaticArray ;
    BuildHighFromString -
 *)
 
-PROCEDURE BuildHighFromString (operand: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromString (operand: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(operand)) ;
-   IF GccKnowsAbout(operand) AND (StringLength(Mod2Gcc(operand))>0)
+   location := TokenToLocation (GetDeclaredMod (operand)) ;
+   IF GccKnowsAbout (operand) AND (StringLength (Mod2Gcc (operand)) > 0)
    THEN
-      RETURN( BuildIntegerConstant(StringLength(Mod2Gcc(operand))-1) )
+      RETURN( BuildIntegerConstant (StringLength (Mod2Gcc (operand))-1) )
    ELSE
-      RETURN( GetIntegerZero(location) )
+      RETURN( GetIntegerZero (location) )
    END
 END BuildHighFromString ;
 
@@ -6401,7 +6436,7 @@ END BuildHighFromString ;
                  HIGH(operand).
 *)
 
-PROCEDURE ResolveHigh (tokenno: CARDINAL; dim, operand: CARDINAL) : Tree ;
+PROCEDURE ResolveHigh (tokenno: CARDINAL; dim, operand: CARDINAL) : tree ;
 VAR
    Type    : CARDINAL ;
    location: location_t ;
@@ -6439,7 +6474,7 @@ END ResolveHigh ;
 PROCEDURE FoldHigh (tokenno: CARDINAL; p: WalkAction;
                     quad: CARDINAL; op1, dim, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
+   t       : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -6449,7 +6484,7 @@ BEGIN
    THEN
       t := ResolveHigh(tokenno, dim, op3) ;
       (* fine, we can take advantage of this and fold constants *)
-      IF IsConst(op1) AND (t#Tree(NIL))
+      IF IsConst(op1) AND (t#tree(NIL))
       THEN
          PutConst(op1, Cardinal) ;
          AddModGcc(op1,
@@ -6504,7 +6539,7 @@ END CodeHigh ;
 
 PROCEDURE CodeUnbounded (result, array: CARDINAL) ;
 VAR
-   Addr    : Tree ;
+   Addr    : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -6574,7 +6609,7 @@ VAR
    low,
    subscript  : CARDINAL ;
    a, ta,
-   ti, tl     : Tree ;
+   ti, tl     : tree ;
    location   : location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -6726,100 +6761,106 @@ END FoldElementSize ;
    PopKindTree - returns a Tree from M2ALU of the type implied by, op.
 *)
 
-PROCEDURE PopKindTree (op: CARDINAL; tokenno: CARDINAL) : Tree ;
+PROCEDURE PopKindTree (op: CARDINAL; tokenno: CARDINAL) : tree ;
 VAR
    type: CARDINAL ;
 BEGIN
-   type := SkipType (GetType (op)) ;
-   IF IsSet (type)
+   IF IsConst (op) AND IsConstString (op)
    THEN
-      RETURN( PopSetTree (tokenno) )
-   ELSIF IsRealType (type)
-   THEN
-      RETURN( PopRealTree () )
+      (* Converting a nul char or char for example.  *)
+      RETURN PopIntegerTree ()
    ELSE
-      RETURN( PopIntegerTree () )
+      type := SkipType (GetType (op)) ;
+      IF IsSet (type)
+      THEN
+         RETURN( PopSetTree (tokenno) )
+      ELSIF IsRealType (type)
+      THEN
+         RETURN( PopRealTree () )
+      ELSE
+         RETURN( PopIntegerTree () )
+      END
    END
 END PopKindTree ;
 
 
 (*
-   FoldConvert - attempts to fold op3 to type op2 placing the result into
-                 op1, providing that op1 and op3 are constants.
-                 Convert will, if need be, alter the machine representation
-                 of op3 to comply with TYPE op2.
+   FoldConvert - attempts to fold expr to type into result
+                 providing that result and expr are constants.
+                 If required convert will alter the machine representation
+                 of expr to comply with type.
 *)
 
 PROCEDURE FoldConvert (tokenno: CARDINAL; p: WalkAction;
-                       quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+                       quad: CARDINAL; result, type, expr: CARDINAL) ;
 
 VAR
-   tl      : Tree ;
+   tl      : tree ;
    location: location_t ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
-   (* firstly ensure that constant literals are declared *)
-   TryDeclareConstant(tokenno, op3) ;
-   IF IsConstant(op3)
+   location := TokenToLocation (tokenno) ;
+   (* First ensure that constant literals are declared.  *)
+   TryDeclareConstant (tokenno, expr) ;
+   IF IsConstant (expr)
    THEN
-      IF GccKnowsAbout(op2) AND
-         (IsProcedure(op3) OR IsValueSolved(op3)) AND
-         GccKnowsAbout(SkipType(op2))
+      IF GccKnowsAbout (type) AND
+         (IsProcedure (expr) OR IsValueSolved (expr)) AND
+         GccKnowsAbout (SkipType (type))
       THEN
-         (* fine, we can take advantage of this and fold constant *)
-         IF IsConst(op1)
+         (* The type is known and expr is resolved so fold the convert.  *)
+         IF IsConst (result)
          THEN
-            PutConst(op1, op2) ;
-            tl := Mod2Gcc(SkipType(op2)) ;
-            IF IsProcedure(op3)
+            PutConst (result, type) ;   (* Change result type just in case.  *)
+            tl := Mod2Gcc (SkipType (type)) ;
+            IF IsProcedure (expr)
             THEN
-               AddModGcc(op1, BuildConvert(location, tl, Mod2Gcc(op3), TRUE))
+               AddModGcc (result, BuildConvert (location, tl, Mod2Gcc (expr), TRUE))
             ELSE
-               PushValue(op3) ;
-               IF IsConstSet(op3)
+               PushValue (expr) ;
+               IF IsConstSet (expr)
                THEN
-                  IF IsSet(SkipType(op2))
+                  IF IsSet (SkipType (type))
                   THEN
-                     WriteFormat0('cannot convert values between sets')
+                     WriteFormat0 ('cannot convert values between sets')
                   ELSE
-                     PushIntegerTree(FoldAndStrip(BuildConvert(location, tl, PopSetTree(tokenno), TRUE))) ;
-                     PopValue(op1) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopIntegerTree())
+                     PushIntegerTree (FoldAndStrip (BuildConvert (location, tl, PopSetTree (tokenno), TRUE))) ;
+                     PopValue (result) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopIntegerTree())
                   END
                ELSE
-                  IF IsSet(SkipType(op2))
+                  IF IsSet (SkipType (type))
                   THEN
-                     PushSetTree(tokenno,
-                                 FoldAndStrip(BuildConvert(location, tl, PopKindTree(op3, tokenno),
-                                                           TRUE)), SkipType(op2)) ;
-                     PopValue(op1) ;
-                     PutConstSet(op1) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopSetTree(tokenno))
-                  ELSIF IsRealType(SkipType(op2))
+                     PushSetTree (tokenno,
+                                  FoldAndStrip (BuildConvert (location, tl, PopKindTree (expr, tokenno),
+                                                              TRUE)), SkipType (type)) ;
+                     PopValue (result) ;
+                     PutConstSet (result) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopSetTree (tokenno))
+                  ELSIF IsRealType (SkipType (type))
                   THEN
-                     PushRealTree(FoldAndStrip(BuildConvert(location, tl, PopKindTree(op3, tokenno),
-                                                            TRUE))) ;
-                     PopValue(op1) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopKindTree(op1, tokenno))
+                     PushRealTree (FoldAndStrip (BuildConvert (location, tl, PopKindTree (expr, tokenno),
+                                                               TRUE))) ;
+                     PopValue (result) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopKindTree (result, tokenno))
                   ELSE
-                     (* we let CheckOverflow catch a potential overflow rather than BuildConvert *)
-                     PushIntegerTree(FoldAndStrip(BuildConvert(location, tl,
-                                                               PopKindTree(op3, tokenno),
-                                                               FALSE))) ;
-                     PopValue(op1) ;
-                     PushValue(op1) ;
-                     CheckOrResetOverflow(tokenno, PopKindTree(op1, tokenno), MustCheckOverflow(quad)) ;
-                     PushValue(op1) ;
-                     AddModGcc(op1, PopKindTree(op1, tokenno))
+                     (* Let CheckOverflow catch a potential overflow rather than BuildConvert.  *)
+                     PushIntegerTree (FoldAndStrip (BuildConvert (location, tl,
+                                                                  PopKindTree (expr, tokenno),
+                                                                  FALSE))) ;
+                     PopValue (result) ;
+                     PushValue (result) ;
+                     CheckOrResetOverflow (tokenno, PopKindTree (result, tokenno), MustCheckOverflow (quad)) ;
+                     PushValue (result) ;
+                     AddModGcc (result, PopKindTree (result, tokenno))
                   END
                END
             END ;
-            p(op1) ;
+            p (result) ;
             NoChange := FALSE ;
-            SubQuad(quad)
+            SubQuad (quad)
          END
       END
    END
@@ -6834,7 +6875,7 @@ END FoldConvert ;
 
 PROCEDURE CodeConvert (quad: CARDINAL; lhs, type, rhs: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location: location_t ;
 BEGIN
    CheckStop(quad) ;
@@ -7175,7 +7216,7 @@ END CodeIfSetLess ;
 
 PROCEDURE PerformCodeIfLess (quad: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7211,7 +7252,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
@@ -7288,7 +7330,7 @@ END CodeIfSetGre ;
 
 PROCEDURE PerformCodeIfGre (quad: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7322,7 +7364,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (left)),
+                               ComparisonMixTypes (left, right,
+                                                   SkipType (GetType (left)),
                                                    SkipType (GetType (right)),
                                                    combined),
                                left, right) ;
@@ -7398,7 +7441,7 @@ END CodeIfSetLessEqu ;
 
 PROCEDURE PerformCodeIfLessEqu (quad: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7433,7 +7476,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
@@ -7510,7 +7554,7 @@ END CodeIfSetGreEqu ;
 
 PROCEDURE PerformCodeIfGreEqu (quad: CARDINAL) ;
 VAR
-   tl, tr: Tree ;
+   tl, tr: tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7545,7 +7589,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (left)),
+                               ComparisonMixTypes (left, right,
+                                                   SkipType (GetType (left)),
                                                    SkipType (GetType (right)),
                                                    combined),
                                left, right) ;
@@ -7677,7 +7722,7 @@ END CodeIfSetNotEqu ;
    ComparisonMixTypes -
 *)
 
-PROCEDURE ComparisonMixTypes (left, right: CARDINAL; tokpos: CARDINAL) : CARDINAL ;
+PROCEDURE ComparisonMixTypes (varleft, varright, left, right: CARDINAL; tokpos: CARDINAL) : CARDINAL ;
 BEGIN
    IF IsGenericSystemType (left)
    THEN
@@ -7686,7 +7731,7 @@ BEGIN
    THEN
       RETURN right
    ELSE
-      RETURN MixTypes (left, right, tokpos)
+      RETURN MixTypesDecl (varleft, varright, left, right, tokpos)
    END
 END ComparisonMixTypes ;
 
@@ -7697,7 +7742,7 @@ END ComparisonMixTypes ;
 
 PROCEDURE PerformCodeIfEqu (quad: CARDINAL) ;
 VAR
-   tl, tr                     : Tree ;
+   tl, tr                     : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7732,7 +7777,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                left, right) ;
@@ -7749,7 +7795,7 @@ END PerformCodeIfEqu ;
 
 PROCEDURE PerformCodeIfNotEqu (quad: CARDINAL) ;
 VAR
-   tl, tr                     : Tree ;
+   tl, tr                     : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7785,7 +7831,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
@@ -7882,7 +7929,7 @@ END MixTypes3 ;
 PROCEDURE BuildIfVarInConstValue (location: location_t; tokenno: CARDINAL;
                                   constsetvalue: PtrToValue; var, trueexit: CARDINAL) ;
 VAR
-   vt, lt, ht  : Tree ;
+   vt, lt, ht  : tree ;
    type,
    low, high, n: CARDINAL ;
    truelabel   : String ;
@@ -7905,7 +7952,7 @@ END BuildIfVarInConstValue ;
 
 PROCEDURE BuildIfNotVarInConstValue (quad: CARDINAL; constsetvalue: PtrToValue; var, trueexit: CARDINAL) ;
 VAR
-   vt, lt, ht  : Tree ;
+   vt, lt, ht  : tree ;
    type,
    low, high, n: CARDINAL ;
    falselabel,
@@ -7952,7 +7999,7 @@ VAR
    high    : CARDINAL ;
    lowtree,
    hightree,
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location                   : location_t ;
    left, right, dest, combined,
@@ -8022,7 +8069,7 @@ VAR
    high    : CARDINAL ;
    lowtree,
    hightree,
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location                   : location_t ;
    left, right, dest, combined,
@@ -8161,7 +8208,7 @@ VAR
    typepos,
    xindrpos        : CARDINAL ;
    length,
-   newstr          : Tree ;
+   newstr          : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, xindrpos, op, left, type, right,

@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if !(_GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE \
       && __has_attribute(__init_priority__))
   static ios_base::Init __ioinit;
-#elif defined(_GLIBCXX_SYMVER_GNU)
+#elif defined(_GLIBCXX_SYMVER_GNU) && defined(__ELF__)
   __extension__ __asm (".globl _ZSt21ios_base_library_initv");
 #endif
 

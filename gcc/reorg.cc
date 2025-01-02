@@ -336,13 +336,14 @@ insn_sets_resource_p (rtx insn, struct resources *res,
   return resource_conflicts_p (&insn_sets, res);
 }
 
-/* Find a label at the end of the function or before a RETURN.  If there
-   is none, try to make one.  If that fails, returns 0.
+/* Find a label before a RETURN.  If there is none, try to make one; if this
+   fails, return 0.  KIND is either ret_rtx or simple_return_rtx, indicating
+   which type of RETURN we're looking for.
 
-   The property of such a label is that it is placed just before the
-   epilogue or a bare RETURN insn, so that another bare RETURN can be
-   turned into a jump to the label unconditionally.  In particular, the
-   label cannot be placed before a RETURN insn with a filled delay slot.
+   The property of the label is that it is placed just before a bare RETURN
+   insn, so that another bare RETURN can be turned into a jump to the label
+   unconditionally.  In particular, the label cannot be placed before a
+   RETURN insn with a filled delay slot.
 
    ??? There may be a problem with the current implementation.  Suppose
    we start with a bare RETURN insn and call find_end_label.  It may set
@@ -353,9 +354,7 @@ insn_sets_resource_p (rtx insn, struct resources *res,
    Note that this is probably mitigated by the following observation:
    once function_return_label is made, it is very likely the target of
    a jump, so filling the delay slot of the RETURN will be much more
-   difficult.
-   KIND is either simple_return_rtx or ret_rtx, indicating which type of
-   return we're looking for.  */
+   difficult.  */
 
 static rtx_code_label *
 find_end_label (rtx kind)
@@ -375,10 +374,7 @@ find_end_label (rtx kind)
   if (*plabel)
     return *plabel;
 
-  /* Otherwise, see if there is a label at the end of the function.  If there
-     is, it must be that RETURN insns aren't needed, so that is our return
-     label and we don't have to do anything else.  */
-
+  /* Otherwise, scan the insns backward from the end of the function.  */
   insn = get_last_insn ();
   while (NOTE_P (insn)
 	 || (NONJUMP_INSN_P (insn)
@@ -386,9 +382,8 @@ find_end_label (rtx kind)
 		 || GET_CODE (PATTERN (insn)) == CLOBBER)))
     insn = PREV_INSN (insn);
 
-  /* When a target threads its epilogue we might already have a
-     suitable return insn.  If so put a label before it for the
-     function_return_label.  */
+  /* First, see if there is a RETURN at the end of the function.  If so,
+     put the label before it.  */
   if (BARRIER_P (insn)
       && JUMP_P (PREV_INSN (insn))
       && PATTERN (PREV_INSN (insn)) == kind)
@@ -397,8 +392,8 @@ find_end_label (rtx kind)
       rtx_code_label *label = gen_label_rtx ();
       LABEL_NUSES (label) = 0;
 
-      /* Put the label before any USE insns that may precede the RETURN
-	 insn.  */
+      /* Put the label before any USE insns that may precede the
+	 RETURN insn.  */
       while (GET_CODE (temp) == USE)
 	temp = PREV_INSN (temp);
 
@@ -406,15 +401,12 @@ find_end_label (rtx kind)
       *plabel = label;
     }
 
-  else if (LABEL_P (insn))
-    *plabel = as_a <rtx_code_label *> (insn);
+  /* If the basic block reordering pass has moved the return insn to some
+     other place, try to locate it again and put the label there.  */
   else
     {
       rtx_code_label *label = gen_label_rtx ();
       LABEL_NUSES (label) = 0;
-      /* If the basic block reorder pass moves the return insn to
-	 some other place try to locate it again and put our
-	 function_return_label there.  */
       while (insn && ! (JUMP_P (insn) && (PATTERN (insn) == kind)))
 	insn = PREV_INSN (insn);
       if (insn)

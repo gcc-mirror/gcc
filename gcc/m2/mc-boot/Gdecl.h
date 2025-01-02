@@ -191,6 +191,18 @@ EXTERN decl_node decl_lookupModule (nameKey_Name n);
 EXTERN void decl_putDefForC (decl_node n);
 
 /*
+   putDefUnqualified - the definition module uses export unqualified.
+*/
+
+EXTERN void decl_putDefUnqualified (decl_node n);
+
+/*
+   isDefUnqualified - returns TRUE if the definition module uses unqualified.
+*/
+
+EXTERN bool decl_isDefUnqualified (decl_node n);
+
+/*
    lookupInScope - looks up a symbol named, n, from, scope.
 */
 
@@ -245,6 +257,19 @@ EXTERN bool decl_isTypeHidden (decl_node n);
 */
 
 EXTERN bool decl_hasHidden (decl_node n);
+
+/*
+   putTypeOpaque - marks type, des, as being an opaque type.
+                   TYPE des ;
+*/
+
+EXTERN void decl_putTypeOpaque (decl_node des);
+
+/*
+   isTypeOpaque - returns TRUE if type, n, is an opaque type.
+*/
+
+EXTERN bool decl_isTypeOpaque (decl_node n);
 
 /*
    isVar - returns TRUE if node, n, is a type.

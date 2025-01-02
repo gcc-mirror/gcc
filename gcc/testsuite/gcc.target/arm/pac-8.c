@@ -29,6 +29,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "pac\tip, lr, sp" 2 } } */
-/* { dg-final { scan-assembler-times "aut\tip, lr, sp" 2 } } */
+/* { dg-final { scan-assembler-times "\tpac\tip, lr, sp" 2 } } */
+/* { dg-final { scan-assembler-times "\taut\tip, lr, sp" 2 } } */
 /* { dg-final { scan-assembler-not "\tbti" } } */

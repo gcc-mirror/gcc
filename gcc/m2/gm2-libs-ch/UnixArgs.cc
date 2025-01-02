@@ -29,9 +29,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define LIBNAME "m2pim"
 
-extern "C" int UnixArgs_GetArgC (void);
-extern "C" char **UnixArgs_GetArgV (void);
-extern "C" char **UnixArgs_GetEnvV (void);
+#include "gm2-libs-host.h"
+
+#include "GUnixArgs.h"
 
 static int UnixArgs_ArgC;
 static char **UnixArgs_ArgV;
@@ -49,7 +49,7 @@ UnixArgs_GetArgC (void)
 
 /* GetArgV returns argv.  */
 
-extern "C" char **
+extern "C" void *
 UnixArgs_GetArgV (void)
 {
   return UnixArgs_ArgV;
@@ -58,7 +58,7 @@ UnixArgs_GetArgV (void)
 
 /* GetEnvV returns envv.  */
 
-extern "C" char **
+extern "C" void *
 UnixArgs_GetEnvV (void)
 {
   return UnixArgs_EnvV;
@@ -86,6 +86,6 @@ _M2_UnixArgs_dep (void)
 extern "C" void __attribute__((__constructor__))
 _M2_UnixArgs_ctor (void)
 {
-  M2RTS_RegisterModule ("UnixArgs", LIBNAME, _M2_UnixArgs_init, _M2_UnixArgs_finish,
-			_M2_UnixArgs_dep);
+  M2RTS_RegisterModule_Cstr ("UnixArgs", LIBNAME, _M2_UnixArgs_init,
+			     _M2_UnixArgs_finish, _M2_UnixArgs_dep);
 }

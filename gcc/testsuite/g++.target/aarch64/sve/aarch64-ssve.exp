@@ -301,7 +301,13 @@ set nonstreaming_only {
     svstnt1w_scatter_offset (pred, u64, 1, u64)
     svstnt1_scatter_offset (pred, u32_ptr, u32, u32)
     svstnt1_scatter_offset (pred, u32, 1, u32)
+    u8 = svtrn1q (u8, u8)
+    u8 = svtrn2q (u8, u8)
     u32 = svmmla (u32, u8, u8)
+    u8 = svuzp1q (u8, u8)
+    u8 = svuzp2q (u8, u8)
+    u8 = svzip1q (u8, u8)
+    u8 = svzip2q (u8, u8)
     s32 = svusmmla (s32, u8, s8)
     svwrffr (pred)
 }

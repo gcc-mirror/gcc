@@ -1460,7 +1460,8 @@ find_givs_in_bb (struct ivopts_data *data, basic_block bb)
   gimple_stmt_iterator bsi;
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-    find_givs_in_stmt (data, gsi_stmt (bsi));
+    if (!is_gimple_debug (gsi_stmt (bsi)))
+      find_givs_in_stmt (data, gsi_stmt (bsi));
 }
 
 /* Finds general ivs.  */
@@ -7610,7 +7611,7 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     case IFN_MASK_LEN_LOAD:
     case IFN_MASK_LEN_STORE:
       /* The second argument contains the correct alias type.  */
-      gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
+      gcc_assert (use->op_p == gimple_call_arg_ptr (call, 0));
       return TREE_TYPE (gimple_call_arg (call, 1));
 
     default:

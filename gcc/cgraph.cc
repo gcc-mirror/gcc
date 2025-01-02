@@ -894,7 +894,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->m_summary_id = -1;
   edges_count++;
 
-  gcc_assert (++edges_max_uid != 0);
+  ++edges_max_uid;
+  gcc_assert (edges_max_uid != 0);
   edge->m_uid = edges_max_uid;
   edge->aux = NULL;
   edge->caller = caller;
@@ -2432,7 +2433,9 @@ cgraph_node_cannot_be_local_p_1 (cgraph_node *node, void *)
 		&& !node->forced_by_abi
 		&& !node->used_from_object_file_p ()
 		&& !node->same_comdat_group)
-	       || !node->externally_visible));
+	       || !node->externally_visible)
+	   && !DECL_STATIC_CONSTRUCTOR (node->decl)
+	   && !DECL_STATIC_DESTRUCTOR (node->decl));
 }
 
 /* Return true if cgraph_node can be made local for API change.

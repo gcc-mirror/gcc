@@ -43,9 +43,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _nameKey_H
 #define _nameKey_C
 
+#include "GnameKey.h"
 #   include "GSYSTEM.h"
 #   include "GStorage.h"
 #   include "GIndexing.h"
@@ -192,12 +192,12 @@ static nameKey_Name doMakeKey (nameKey_ptrToChar n, unsigned int higha)
       lastIndice += 1;
       child->key = lastIndice;
       child->data = n;
-      Indexing_PutIndice (keyIndex, child->key, reinterpret_cast<void *> (n));
+      Indexing_PutIndice (keyIndex, child->key, reinterpret_cast <void *> (n));
       k = lastIndice;
     }
   else
     {
-      Storage_DEALLOCATE (reinterpret_cast<void **> (&n), higha+1);
+      Storage_DEALLOCATE (reinterpret_cast <void **> (&n), higha+1);
       k = child->key;
     }
   return k;
@@ -305,7 +305,7 @@ extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  Storage_ALLOCATE (reinterpret_cast<void **> (&p), higha+1);
+  Storage_ALLOCATE (reinterpret_cast <void **> (&p), higha+1);
   if (p == NULL)
     {
       M2RTS_HALT (-1);  /* out of memory error  */
@@ -352,7 +352,7 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
   else
     {
       higha = static_cast<unsigned int> (libc_strlen (a));
-      Storage_ALLOCATE (reinterpret_cast<void **> (&p), higha+1);
+      Storage_ALLOCATE (reinterpret_cast <void **> (&p), higha+1);
       if (p == NULL)
         {
           M2RTS_HALT (-1);  /* out of memory error  */
@@ -394,13 +394,13 @@ extern "C" void nameKey_getKey (nameKey_Name key, char *a, unsigned int _a_high)
   higha = _a_high;
   while (((p != NULL) && (i <= higha)) && ((*p) != ASCII_nul))
     {
-      a[i] = (*p);
+      const_cast<char *>(a)[i] = (*p);
       p += 1;
       i += 1;
     }
   if (i <= higha)
     {
-      a[i] = ASCII_nul;
+      const_cast<char *>(a)[i] = ASCII_nul;
     }
 }
 
@@ -572,7 +572,7 @@ extern "C" void * nameKey_keyToCharStar (nameKey_Name key)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   lastIndice = 0;
   keyIndex = Indexing_InitIndex (1);
@@ -580,6 +580,6 @@ extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc,__attribute__
   binaryTree->left = NULL;
 }
 
-extern "C" void _M2_nameKey_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_nameKey_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

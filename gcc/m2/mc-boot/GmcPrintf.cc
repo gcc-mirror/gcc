@@ -11,9 +11,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -36,9 +36,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcPrintf_H
 #define _mcPrintf_C
 
+#include "GmcPrintf.h"
 #   include "GSFIO.h"
 #   include "GFIO.h"
 #   include "GDynamicStrings.h"
@@ -167,7 +167,7 @@ static void cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
     {
       for (i=0; i<=_a_high; i++)
         {
-          a[i] = b[i];
+          const_cast<unsigned char *>(a)[i] = b[i];
         }
     }
   else
@@ -199,7 +199,7 @@ static bool TranslateNameToCharStar (char *a, unsigned int _a_high, unsigned int
         {
           if ((a[i+1] == 'a') && (argno == n))
             {
-              a[i+1] = 's';
+              const_cast<char *>(a)[i+1] = 's';
               return true;
             }
           argno += 1;
@@ -647,10 +647,10 @@ extern "C" void mcPrintf_fprintf4 (FIO_File file, const char *a_, unsigned int _
     {}  /* empty.  */
 }
 
-extern "C" void _M2_mcPrintf_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPrintf_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcPrintf_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPrintf_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

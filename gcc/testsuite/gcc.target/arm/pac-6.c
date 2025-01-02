@@ -13,6 +13,6 @@ int bar()
   return 0;
 }
 
-/* { dg-final { scan-assembler "pac\tip, lr, sp" } } */
-/* { dg-final { scan-assembler "aut\tip, lr, sp" } } */
-/* { dg-final { scan-assembler-not "bti" } } */
+/* { dg-final { scan-assembler "\tpac\tip, lr, sp" } } */
+/* { dg-final { scan-assembler "\taut\tip, lr, sp" } } */
+/* { dg-final { scan-assembler-not "\tbti" } } */

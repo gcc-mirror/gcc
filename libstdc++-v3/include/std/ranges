@@ -331,6 +331,12 @@ namespace ranges
       end() const noexcept
       { return data() + 1; }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4035. single_view should provide empty
+      static constexpr bool
+      empty() noexcept
+      { return false; }
+
       static constexpr size_t
       size() noexcept
       { return 1; }
@@ -690,6 +696,12 @@ namespace ranges
       constexpr _Iterator
       end() const requires same_as<_Winc, _Bound>
       { return _Iterator{_M_bound}; }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4001. iota_view should provide empty
+      constexpr bool
+      empty() const
+      { return _M_value == _M_bound; }
 
       constexpr auto
       size() const
@@ -1870,9 +1882,15 @@ namespace views::__adaptor
 	  static auto
 	  _S_iter_cat()
 	  {
+	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	    // 3564. transform_view::iterator<true>::value_type and
+	    // iterator_category should use const F&
 	    using _Base = transform_view::_Base<_Const>;
-	    using _Res = invoke_result_t<_Fp&, range_reference_t<_Base>>;
-	    if constexpr (is_lvalue_reference_v<_Res>)
+	    using _Res = invoke_result_t<__maybe_const_t<_Const, _Fp>&,
+					 range_reference_t<_Base>>;
+	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	    // 3798. Rvalue reference and iterator_category
+	    if constexpr (is_reference_v<_Res>)
 	      {
 		using _Cat
 		  = typename iterator_traits<iterator_t<_Base>>::iterator_category;
@@ -1920,7 +1938,8 @@ namespace views::__adaptor
 	  using iterator_concept = decltype(_S_iter_concept());
 	  // iterator_category defined in __transform_view_iter_cat
 	  using value_type
-	    = remove_cvref_t<invoke_result_t<_Fp&, range_reference_t<_Base>>>;
+	    = remove_cvref_t<invoke_result_t<__maybe_const_t<_Const, _Fp>&,
+					     range_reference_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
 
 	  _Iterator() requires default_initializable<_Base_iter> = default;
@@ -3345,14 +3364,17 @@ namespace views::__adaptor
 	  private:
 	    _OuterIter _M_i = _OuterIter();
 
-	  public:
-	    value_type() = default;
-
+	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	    // 4013. lazy_split_view::outer-iterator::value_type should not
+	    // provide default constructor
 	    constexpr explicit
 	    value_type(_OuterIter __i)
 	      : _M_i(std::move(__i))
 	    { }
 
+	    friend _OuterIter;
+
+	  public:
 	    constexpr _InnerIter<_Const>
 	    begin() const
 	    { return _InnerIter<_Const>{_M_i}; }
@@ -3944,8 +3966,10 @@ namespace views::__adaptor
       base() &&
       { return std::move(_M_base); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4012. common_view::begin/end are missing the simple-view check
       constexpr auto
-      begin()
+      begin() requires (!__detail::__simple_view<_Vp>)
       {
 	if constexpr (random_access_range<_Vp> && sized_range<_Vp>)
 	  return ranges::begin(_M_base);
@@ -3965,7 +3989,7 @@ namespace views::__adaptor
       }
 
       constexpr auto
-      end()
+      end() requires (!__detail::__simple_view<_Vp>)
       {
 	if constexpr (random_access_range<_Vp> && sized_range<_Vp>)
 	  return ranges::begin(_M_base) + ranges::size(_M_base);
@@ -5021,7 +5045,9 @@ namespace views::__adaptor
 	  using __detail::__range_iter_cat;
 	  using _Res = invoke_result_t<__maybe_const_t<_Const, _Fp>&,
 				       range_reference_t<__maybe_const_t<_Const, _Vs>>...>;
-	  if constexpr (!is_lvalue_reference_v<_Res>)
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3798. Rvalue reference and iterator_category
+	  if constexpr (!is_reference_v<_Res>)
 	    return input_iterator_tag{};
 	  else if constexpr ((derived_from<__range_iter_cat<_Vs, _Const>,
 					   random_access_iterator_tag> && ...))
@@ -5311,6 +5337,16 @@ namespace views::__adaptor
     adjacent_view(_Vp __base)
       : _M_base(std::move(__base))
     { }
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3848. adjacent_view, adjacent_transform_view and slide_view missing base accessor
+    constexpr _Vp
+    base() const & requires copy_constructible<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_base); }
 
     constexpr auto
     begin() requires (!__detail::__simple_view<_Vp>)
@@ -5705,6 +5741,17 @@ namespace views::__adaptor
       : _M_fun(std::move(__fun)), _M_inner(std::move(__base))
     { }
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3848. adjacent_view, adjacent_transform_view and slide_view missing base accessor
+    // 3947. Unexpected constraints on adjacent_transform_view::base()
+    constexpr _Vp
+    base() const & requires copy_constructible<_Vp>
+    { return _M_inner.base(); }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_inner.base()); }
+
     constexpr auto
     begin()
     { return _Iterator<false>(*this, _M_inner.begin()); }
@@ -5773,7 +5820,9 @@ namespace views::__adaptor
       using _Res = invoke_result_t<__unarize<__maybe_const_t<_Const, _Fp>&, _Nm>,
 				   range_reference_t<_Base>>;
       using _Cat = typename iterator_traits<iterator_t<_Base>>::iterator_category;
-      if constexpr (!is_lvalue_reference_v<_Res>)
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3798. Rvalue reference and iterator_category
+      if constexpr (!is_reference_v<_Res>)
 	return input_iterator_tag{};
       else if constexpr (derived_from<_Cat, random_access_iterator_tag>)
 	return random_access_iterator_tag{};
@@ -6232,6 +6281,20 @@ namespace views::__adaptor
     operator-(const _InnerIter& __x, default_sentinel_t __y)
       requires sized_sentinel_for<sentinel_t<_Vp>, iterator_t<_Vp>>
     { return -(__y - __x); }
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3851. chunk_view::inner-iterator missing custom iter_move and iter_swap
+    friend constexpr range_rvalue_reference_t<_Vp>
+    iter_move(const _InnerIter& __i)
+    noexcept(noexcept(ranges::iter_move(*__i._M_parent->_M_current)))
+    { return ranges::iter_move(*__i._M_parent->_M_current); }
+
+    friend constexpr void
+    iter_swap(const _InnerIter& __x, const _InnerIter& __y)
+    noexcept(noexcept(ranges::iter_swap(*__x._M_parent->_M_current,
+					*__x._M_parent->_M_current)))
+    requires indirectly_swappable<iterator_t<_Vp>>
+    { return ranges::iter_swap(*__x._M_parent->_M_current, *__y._M_parent->_M_current); }
   };
 
   template<view _Vp>
@@ -6572,6 +6635,16 @@ namespace views::__adaptor
     slide_view(_Vp __base, range_difference_t<_Vp> __n)
     : _M_base(std::move(__base)), _M_n(__n)
     { __glibcxx_assert(__n > 0); }
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3848. adjacent_view, adjacent_transform_view and slide_view missing base accessor
+    constexpr _Vp
+    base() const & requires copy_constructible<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_base); }
 
     constexpr auto
     begin() requires (!(__detail::__simple_view<_Vp>
@@ -7157,8 +7230,10 @@ namespace views::__adaptor
 	  using _OuterCat = typename iterator_traits<_OuterIter>::iterator_category;
 	  using _InnerCat = typename iterator_traits<_InnerIter>::iterator_category;
 	  using _PatternCat = typename iterator_traits<_PatternIter>::iterator_category;
-	  if constexpr (!is_lvalue_reference_v<common_reference_t<iter_reference_t<_InnerIter>,
-								  iter_reference_t<_PatternIter>>>)
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3798. Rvalue reference and iterator_category
+	  if constexpr (!is_reference_v<common_reference_t<iter_reference_t<_InnerIter>,
+							   iter_reference_t<_PatternIter>>>)
 	    return input_iterator_tag{};
 	  else if constexpr (derived_from<_OuterCat, bidirectional_iterator_tag>
 			     && derived_from<_InnerCat, bidirectional_iterator_tag>
@@ -7688,8 +7763,10 @@ namespace views::__adaptor
     { return __detail::__to_unsigned_like(_M_bound); }
   };
 
-  template<typename _Tp, typename _Bound>
-    repeat_view(_Tp, _Bound) -> repeat_view<_Tp, _Bound>;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4053. Unary call to std::views::repeat does not decay the argument
+  template<typename _Tp, typename _Bound = unreachable_sentinel_t>
+    repeat_view(_Tp, _Bound = _Bound()) -> repeat_view<_Tp, _Bound>;
 
   template<move_constructible _Tp, semiregular _Bound>
     requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
@@ -7836,7 +7913,11 @@ namespace views::__adaptor
 	requires __detail::__can_repeat_view<_Tp>
       constexpr auto
       operator() [[nodiscard]] (_Tp&& __value) const
-      { return repeat_view(std::forward<_Tp>(__value)); }
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 4054. Repeating a repeat_view should repeat the view
+	return repeat_view<decay_t<_Tp>>(std::forward<_Tp>(__value));
+      }
 
       template<typename _Tp, typename _Bound>
 	requires __detail::__can_bounded_repeat_view<_Tp, _Bound>
@@ -9326,7 +9407,6 @@ namespace __detail
 			 std::forward<_Args>(__args)...);
 	  else
 	    {
-	      using _RefT = range_reference_t<_Rg>;
 	      static_assert(constructible_from<_Cont, _Args...>);
 	      _Cont __c(std::forward<_Args>(__args)...);
 	      if constexpr (sized_range<_Rg>

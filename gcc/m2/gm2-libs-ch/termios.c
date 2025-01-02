@@ -26,23 +26,27 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
-#include "ansidecl.h"
 
 #include "gm2-libs-host.h"
+
+#define _termios_C
+#include "Gtermios.h"
+
+#ifdef HAVE_TERMIOS_H
+# include <termios.h>
+#endif
 
 #ifdef TERMIOS_NEEDS_XOPEN_SOURCE
 #define _XOPEN_SOURCE
 #endif
 
-#if defined(HAVE_TERMIOS_H)
-#include <termios.h>
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+#else
+#define EXTERN
 #endif
 
 #define EXPORT(X) termios##_##X
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef enum {
   vintr,
@@ -168,40 +172,25 @@ typedef enum {
   liexten
 } Flag;
 
-/* prototypes.  */
-void *EXPORT (InitTermios) (void);
-void *EXPORT (KillTermios) (struct termios *p);
-int EXPORT (cfgetospeed) (struct termios *t);
-int EXPORT (cfgetispeed) (struct termios *t);
-int EXPORT (cfsetospeed) (struct termios *t, unsigned int b);
-int EXPORT (cfsetispeed) (struct termios *t, unsigned int b);
-int EXPORT (cfsetspeed) (struct termios *t, unsigned int b);
-int EXPORT (tcgetattr) (int fd, struct termios *t);
-int EXPORT (tcsetattr) (int fd, int option, struct termios *t);
-void EXPORT (cfmakeraw) (struct termios *t);
-int EXPORT (tcsendbreak) (int fd, int duration);
-int EXPORT (tcdrain) (int fd);
-int EXPORT (tcflushi) (int fd);
-int EXPORT (tcflusho) (int fd);
-int EXPORT (tcflushio) (int fd);
-int EXPORT (tcflowoni) (int fd);
-int EXPORT (tcflowoffi) (int fd);
-int EXPORT (tcflowono) (int fd);
-int EXPORT (tcflowoffo) (int fd);
-bool EXPORT (GetFlag) (struct termios *t, Flag f, bool *b);
-bool EXPORT (SetFlag) (struct termios *t, Flag f, bool b);
-bool EXPORT (GetChar) (struct termios *t, ControlChar c, char *ch);
-bool EXPORT (SetChar) (struct termios *t, ControlChar c, char ch);
-int EXPORT (tcsnow) (void);
-int EXPORT (tcsflush) (void);
-int EXPORT (tcsdrain) (void);
-bool doSetUnset (tcflag_t *bitset, unsigned int mask, bool value);
-void _M2_termios_init (void);
-void _M2_termios_finish (void);
+int
+doSetUnset (tcflag_t *bitset, unsigned int mask, int value)
+{
+  if (value)
+    (*bitset) |= mask;
+  else
+    (*bitset) &= (~mask);
+  return 1;
+}
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* InitTermios - new data structure.  */
 
-void *EXPORT (InitTermios) (void)
+void *
+EXPORT (InitTermios) (void)
 {
   struct termios *p = (struct termios *)malloc (sizeof (struct termios));
 
@@ -211,50 +200,79 @@ void *EXPORT (InitTermios) (void)
 
 /* KillTermios - delete data structure.  */
 
-void *EXPORT (KillTermios) (struct termios *p)
+void *
+EXPORT (KillTermios) (termios_TERMIOS p)
 {
   free (p);
   return NULL;
 }
 
-/* tcsnow - return the value of TCSANOW.  */
+/* tcsnow return the value of TCSANOW.  */
 
-int EXPORT (tcsnow) (void) { return TCSANOW; }
-
-/* tcsdrain - return the value of TCSADRAIN.  */
-
-int EXPORT (tcsdrain) (void) { return TCSADRAIN; }
-
-/* tcsflush - return the value of TCSAFLUSH.  */
-
-int EXPORT (tcsflush) (void) { return TCSAFLUSH; }
-
-/* cfgetospeed - return output baud rate.  */
-
-int EXPORT (cfgetospeed) (struct termios *t) { return cfgetospeed (t); }
-
-/* cfgetispeed - return input baud rate.  */
-
-int EXPORT (cfgetispeed) (struct termios *t) { return cfgetispeed (t); }
-
-/* cfsetospeed - set output baud rate.  */
-
-int EXPORT (cfsetospeed) (struct termios *t, unsigned int b)
+int
+EXPORT (tcsnow) (void)
 {
+  return TCSANOW;
+}
+
+/* tcsdrain return the value of TCSADRAIN.  */
+
+int
+EXPORT (tcsdrain) (void)
+{
+  return TCSADRAIN;
+}
+
+/* tcsflush return the value of TCSAFLUSH.  */
+
+int
+EXPORT (tcsflush) (void)
+{
+  return TCSAFLUSH;
+}
+
+/* cfgetospeed return output baud rate.  */
+
+int
+EXPORT (cfgetospeed) (termios_TERMIOS _t)
+{
+  struct termios *t = (termios *)_t;
+  return cfgetospeed (t);
+}
+
+/* cfgetispeed return input baud rate.  */
+
+int
+EXPORT (cfgetispeed) (termios_TERMIOS _t)
+{
+  struct termios *t = (termios *)_t;
+  return cfgetispeed (t);
+}
+
+/* cfsetospeed set output baud rate.  */
+
+int
+EXPORT (cfsetospeed) (termios_TERMIOS _t, unsigned int b)
+{
+  struct termios *t = (termios *)_t;
   return cfsetospeed (t, b);
 }
 
-/* cfsetispeed - set input baud rate.  */
+/* cfsetispeed set input baud rate.  */
 
-int EXPORT (cfsetispeed) (struct termios *t, unsigned int b)
+int
+EXPORT (cfsetispeed) (termios_TERMIOS _t, unsigned int b)
 {
+  struct termios *t = (termios *)_t;
   return cfsetispeed (t, b);
 }
 
-/* cfsetspeed - set input and output baud rate.  */
+/* cfsetspeed set input and output baud rate.  */
 
-int EXPORT (cfsetspeed) (struct termios *t, unsigned int b)
+int
+EXPORT (cfsetspeed) (termios_TERMIOS _t, unsigned int b)
 {
+  struct termios *t = (termios *)_t;
   int val = cfsetispeed (t, b);
   if (val == 0)
     return cfsetospeed (t, b);
@@ -262,43 +280,55 @@ int EXPORT (cfsetspeed) (struct termios *t, unsigned int b)
   return val;
 }
 
-/* tcgetattr - get state of, fd, into, t.  */
+/* tcgetattr get state of fd into t.  */
 
-int EXPORT (tcgetattr) (int fd, struct termios *t)
+int
+EXPORT (tcgetattr) (int fd, termios_TERMIOS _t)
 {
+  struct termios *t = (termios *)_t;
   return tcgetattr (fd, t);
 }
 
-/* tcsetattr - set state of, fd, to, t, using option.  */
+/* tcsetattr set state of fd to t using option.  */
 
-int EXPORT (tcsetattr) (int fd, int option, struct termios *t)
+int
+EXPORT (tcsetattr) (int fd, int option, termios_TERMIOS _t)
 {
+  struct termios *t = (termios *)_t;
   return tcsetattr (fd, option, t);
 }
 
-/* cfmakeraw - sets the terminal to raw mode.  */
+/* cfmakeraw sets the terminal to raw mode.  */
 
-void EXPORT (cfmakeraw) (struct termios *t)
+void
+EXPORT (cfmakeraw) (termios_TERMIOS _t)
 {
 #if defined(HAVE_CFMAKERAW)
-  return cfmakeraw (t);
+  struct termios *t = (termios *)_t;
+  cfmakeraw (t);
 #endif
 }
 
-/* tcsendbreak - send zero bits for duration.  */
+/* tcsendbreak send zero bits for duration.  */
 
-int EXPORT (tcsendbreak) (int fd, int duration)
+int
+EXPORT (tcsendbreak) (int fd, int duration)
 {
   return tcsendbreak (fd, duration);
 }
 
-/* tcdrain - waits for pending output to be written on, fd.  */
+/* tcdrain waits for pending output to be written on fd.  */
 
-int EXPORT (tcdrain) (int fd) { return tcdrain (fd); }
+int
+EXPORT (tcdrain) (int fd)
+{
+  return tcdrain (fd);
+}
 
-/* tcflushi - flush input.  */
+/* tcflushi flush input.  */
 
-int EXPORT (tcflushi) (int fd)
+int
+EXPORT (tcflushi) (int fd)
 {
 #if defined(TCIFLUSH)
   return tcflush (fd, TCIFLUSH);
@@ -307,9 +337,10 @@ int EXPORT (tcflushi) (int fd)
 #endif
 }
 
-/* tcflusho - flush output.  */
+/* tcflusho flush output.  */
 
-int EXPORT (tcflusho) (int fd)
+int
+EXPORT (tcflusho) (int fd)
 {
 #if defined(TCOFLUSH)
   return tcflush (fd, TCOFLUSH);
@@ -318,9 +349,10 @@ int EXPORT (tcflusho) (int fd)
 #endif
 }
 
-/* tcflushio - flush input and output.  */
+/* tcflushio flush input and output.  */
 
-int EXPORT (tcflushio) (int fd)
+int
+EXPORT (tcflushio) (int fd)
 {
 #if defined(TCIOFLUSH)
   return tcflush (fd, TCIOFLUSH);
@@ -329,9 +361,10 @@ int EXPORT (tcflushio) (int fd)
 #endif
 }
 
-/* tcflowoni - restart input on, fd.  */
+/* tcflowoni restart input on fd.  */
 
-int EXPORT (tcflowoni) (int fd)
+int
+EXPORT (tcflowoni) (int fd)
 {
 #if defined(TCION)
   return tcflow (fd, TCION);
@@ -340,9 +373,10 @@ int EXPORT (tcflowoni) (int fd)
 #endif
 }
 
-/* tcflowoffi - stop input on, fd.  */
+/* tcflowoffi stop input on fd.  */
 
-int EXPORT (tcflowoffi) (int fd)
+int
+EXPORT (tcflowoffi) (int fd)
 {
 #if defined(TCIOFF)
   return tcflow (fd, TCIOFF);
@@ -351,9 +385,10 @@ int EXPORT (tcflowoffi) (int fd)
 #endif
 }
 
-/* tcflowono - restart output on, fd.  */
+/* tcflowono restart output on fd.  */
 
-int EXPORT (tcflowono) (int fd)
+int
+EXPORT (tcflowono) (int fd)
 {
 #if defined(TCOON)
   return tcflow (fd, TCOON);
@@ -362,9 +397,10 @@ int EXPORT (tcflowono) (int fd)
 #endif
 }
 
-/* tcflowoffo - stop output on, fd.  */
+/* tcflowoffo stop output on fd.  */
 
-int EXPORT (tcflowoffo) (int fd)
+int
+EXPORT (tcflowoffo) (int fd)
 {
 #if defined(TCOOFF)
   return tcflow (fd, TCOOFF);
@@ -373,23 +409,14 @@ int EXPORT (tcflowoffo) (int fd)
 #endif
 }
 
-/* doSetUnset applies mask or undoes mask depending upon value and returns true.  */
+/* GetFlag sets a flag value from t in b and returns TRUE if
+   t supports f.  */
 
 bool
-doSetUnset (tcflag_t *bitset, unsigned int mask, bool value)
+EXPORT (GetFlag) (termios_TERMIOS _t, termios_Flag _f, bool *b)
 {
-  if (value)
-    (*bitset) |= mask;
-  else
-    (*bitset) &= (~mask);
-  return true;
-}
-
-/* GetFlag sets a flag value from t in b and returns true if t supports f.  */
-
-bool
-EXPORT (GetFlag) (struct termios *t, Flag f, bool *b)
-{
+  Flag f = (Flag) _f;
+  struct termios *t = (termios *)_t;
   switch (f)
     {
 
@@ -1069,15 +1096,17 @@ EXPORT (GetFlag) (struct termios *t, Flag f, bool *b)
   return false;
 }
 
-/* SetFlag - sets a flag value in, t, to, b, and returns TRUE if this
+/* SetFlag sets a flag value in t to b and returns TRUE if this
    flag value is supported.  */
 
 bool
-EXPORT (SetFlag) (struct termios *t, Flag f, bool b)
+EXPORT (SetFlag) (termios_TERMIOS _t, termios_Flag _f, bool b)
 {
+  struct termios *t = (struct termios *) _t;
+  Flag f = (Flag) _f;
+
   switch (f)
     {
-
     case ignbrk:
 #if defined(IGNBRK)
       return doSetUnset (&t->c_iflag, IGNBRK, b);
@@ -1658,12 +1687,14 @@ EXPORT (SetFlag) (struct termios *t, Flag f, bool b)
   return false;
 }
 
-/* GetChar sets a CHAR ch value from t and returns true if this
+/* GetChar sets a CHAR ch value from t and returns true/false if this
    value is supported.  */
 
 bool
-EXPORT (GetChar) (struct termios *t, ControlChar c, char *ch)
+EXPORT (GetChar) (termios_TERMIOS _t, termios_ControlChar _c, char *ch)
 {
+  ControlChar c = (ControlChar) _c;
+  struct termios *t = (termios *)_t;
   switch (c)
     {
 
@@ -1791,11 +1822,14 @@ EXPORT (GetChar) (struct termios *t, ControlChar c, char *ch)
     }
 }
 
-/* SetChar sets a CHAR value in t and returns true if c is supported.  */
+/* SetChar sets a CHAR value in t and returns true/false if c is
+   supported.  */
 
 bool
-EXPORT (SetChar) (struct termios *t, ControlChar c, char ch)
+EXPORT (SetChar) (termios_TERMIOS _t, termios_ControlChar _c, char ch)
 {
+  ControlChar c = (ControlChar) _c;
+  struct termios *t = (termios *)_t;
   switch (c)
     {
 
@@ -1924,12 +1958,12 @@ EXPORT (SetChar) (struct termios *t, ControlChar c, char ch)
 }
 
 void
-_M2_termios_init (void)
+_M2_termios_init (int argc, char *argv[], char *envp[])
 {
 }
 
 void
-_M2_termios_finish (void)
+_M2_termios_fini (int argc, char *argv[], char *envp[])
 {
 }
 

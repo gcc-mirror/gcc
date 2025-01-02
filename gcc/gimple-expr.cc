@@ -408,14 +408,12 @@ remove_suffix (char *name, int len)
 {
   int i;
 
-  for (i = 2;  i < 7 && len > i;  i++)
-    {
-      if (name[len - i] == '.')
-	{
-	  name[len - i] = '\0';
-	  break;
-	}
-    }
+  for (i = 2; i < 7 && len > i; i++)
+    if (name[len - i] == '.')
+      {
+	name[len - i] = '\0';
+	break;
+      }
 }
 
 /* Create a new temporary name with PREFIX.  Return an identifier.  */
@@ -432,8 +430,6 @@ create_tmp_var_name (const char *prefix)
       char *preftmp = ASTRDUP (prefix);
 
       remove_suffix (preftmp, strlen (preftmp));
-      clean_symbol_name (preftmp);
-
       prefix = preftmp;
     }
 

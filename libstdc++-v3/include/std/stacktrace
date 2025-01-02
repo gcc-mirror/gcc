@@ -79,7 +79,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr native_handle_type
     native_handle() const noexcept { return _M_pc; }
 
-    constexpr explicit operator bool() const noexcept { return _M_pc != -1; }
+    constexpr explicit operator bool() const noexcept
+    { return _M_pc != (native_handle_type)-1; }
 
     // [stacktrace.entry.query], query
     [[nodiscard]]
@@ -289,7 +290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       const allocator_type& __alloc) noexcept
       : _M_alloc(__alloc)
       {
-	if constexpr (_Allocator::is_always_equal::value)
+	if constexpr (_AllocTraits::is_always_equal::value)
 	  _M_impl = std::__exchange(__other._M_impl, {});
 	else if (_M_alloc == __other._M_alloc)
 	  _M_impl = std::__exchange(__other._M_impl, {});
@@ -569,7 +570,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
 		{
 		  // For std::allocator we use nothrow-new directly so we
-		  // don't need to handle bad_alloc exceptions.
+		  // don't need to handle exceptions from __alloc.allocate(n).
 		  size_t __nb = __n * sizeof(value_type);
 		  void* const __p = _GLIBCXX_OPERATOR_NEW (__nb, nothrow_t{});
 		  if (__p == nullptr) [[unlikely]]
@@ -582,7 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    {
 		      _M_frames = __alloc.allocate(__n);
 		    }
-		  __catch (const std::bad_alloc&)
+		  __catch (...)
 		    {
 		      return nullptr;
 		    }

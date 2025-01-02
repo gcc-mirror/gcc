@@ -1,0 +1,6 @@
+DEFINITION MODULE opaquevariant ;  (*!m2pim*)
+
+TYPE
+   Opaque ;
+
+END opaquevariant.

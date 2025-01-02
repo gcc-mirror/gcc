@@ -45,6 +45,7 @@
 # include <debug/forward_list>
 #endif
 
+#define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_incomplete_container_elements
 #define __glibcxx_want_list_remove_return_type

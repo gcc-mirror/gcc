@@ -793,17 +793,19 @@ namespace __format
 	  // %c  Locale's date and time representation.
 	  // %Ec Locale's alternate date and time representation.
 
+	  basic_string<_CharT> __fmt;
 	  auto __t = _S_floor_seconds(__tt);
 	  locale __loc = _M_locale(__ctx);
 	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
 	  const _CharT* __formats[2];
 	  __tp._M_date_time_formats(__formats);
-	  const _CharT* __rep = __formats[__mod];
-	  if (!*__rep)
-	    __rep = _GLIBCXX_WIDEN("%a %b %e %H:%M:%S %Y");
-	  basic_string<_CharT> __fmt(_S_empty_spec);
-	  __fmt.insert(1u, 1u, _S_colon);
-	  __fmt.insert(2u, __rep);
+	  if (*__formats[__mod]) [[likely]]
+	    {
+	      __fmt = _GLIBCXX_WIDEN("{:L}");
+	      __fmt.insert(3u, __formats[__mod]);
+	    }
+	  else
+	    __fmt = _GLIBCXX_WIDEN("{:L%a %b %e %T %Y}");
 	  return std::vformat_to(std::move(__out), __loc, __fmt,
 				 std::make_format_args<_FormatContext>(__t));
 	}
@@ -1608,8 +1610,20 @@ namespace __format
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{
 	  if constexpr (numeric_limits<_Rep>::is_signed)
-	    if (__d < __d.zero())
-	      return _M_f._M_format(-__d, __fc, true);
+	    if (__d < __d.zero()) [[unlikely]]
+	      {
+		if constexpr (is_integral_v<_Rep>)
+		  {
+		    // -d is undefined for the most negative integer.
+		    // Convert duration to corresponding unsigned rep.
+		    using _URep = make_unsigned_t<_Rep>;
+		    auto __ucnt = -static_cast<_URep>(__d.count());
+		    auto __ud = chrono::duration<_URep, _Period>(__ucnt);
+		    return _M_f._M_format(__ud, __fc, true);
+		  }
+		else
+		  return _M_f._M_format(-__d, __fc, true);
+	      }
 	  return _M_f._M_format(__d, __fc, false);
 	}
 

@@ -11,4 +11,4 @@ void fail(void (*f)(int, int, int, int))
   f(1, 2, 3, 4);
 }
 
-/* { dg-final { scan-assembler-not "bx\tip\t@ indirect register sibling call" } } */
+/* { dg-final { scan-assembler-not "\tbx\tip\t@ indirect register sibling call" } } */

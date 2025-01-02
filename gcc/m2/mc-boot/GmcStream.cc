@@ -42,9 +42,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcStream_H
 #define _mcStream_C
 
+#include "GmcStream.h"
 #   include "GFIO.h"
 #   include "Glibc.h"
 #   include "GIndexing.h"
@@ -123,7 +123,7 @@ static void copy (mcStream_ptrToFile p);
 
 static DynamicStrings_String removeLater (DynamicStrings_String filename)
 {
-  alists_includeItemIntoList (listOfFiles, reinterpret_cast<void *> (filename));
+  alists_includeItemIntoList (listOfFiles, reinterpret_cast <void *> (filename));
   return filename;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -213,7 +213,7 @@ extern "C" FIO_File mcStream_openFrag (unsigned int id)
   f = createTemporaryFile (id);
   Storage_ALLOCATE ((void **) &p, sizeof (FIO_File));
   (*p) = f;
-  Indexing_PutIndice (frag, id, reinterpret_cast<void *> (p));
+  Indexing_PutIndice (frag, id, reinterpret_cast <void *> (p));
   return f;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -264,13 +264,13 @@ extern "C" void mcStream_removeFiles (void)
   listOfFiles = alists_initList ();
 }
 
-extern "C" void _M2_mcStream_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcStream_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   listOfFiles = alists_initList ();
   seenDest = false;
   frag = Indexing_InitIndex (1);
 }
 
-extern "C" void _M2_mcStream_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcStream_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

@@ -953,9 +953,7 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
 						: m_gori (not_executable_flag),
 						  m_exit (use_imm_uses)
 {
-  m_workback.create (0);
-  m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
-  m_workback.truncate (0);
+  m_workback = vNULL;
   m_temporal = new temporal_cache;
   // If DOM info is available, spawn an oracle as well.
   if (dom_info_available_p (CDI_DOMINATORS))
@@ -1239,13 +1237,16 @@ ranger_cache::block_range (vrange &r, basic_block bb, tree name, bool calc)
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
       basic_block def_bb = NULL;
       if (def_stmt)
-	def_bb = gimple_bb (def_stmt);;
+	def_bb = gimple_bb (def_stmt);
       if (!def_bb)
 	{
 	  // If we get to the entry block, this better be a default def
 	  // or range_on_entry was called for a block not dominated by
-	  // the def.  
-	  gcc_checking_assert (SSA_NAME_IS_DEFAULT_DEF (name));
+	  // the def.  But it could be also SSA_NAME defined by a statement
+	  // not yet in the IL (such as queued edge insertion), in that case
+	  // just punt.
+	  if (!SSA_NAME_IS_DEFAULT_DEF (name))
+	    return false;
 	  def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 	}
 
@@ -1507,7 +1508,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // Visit each block back to the DEF.  Initialize each one to UNDEFINED.
   // m_visited at the end will contain all the blocks that we needed to set
   // the range_on_entry cache for.
-  m_workback.quick_push (bb);
+  m_workback.safe_push (bb);
   undefined.set_undefined ();
   m_on_entry.set_bb_range (name, bb, undefined);
   gcc_checking_assert (m_update->empty_p ());
@@ -1581,7 +1582,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  // the list.
 	  gcc_checking_assert (!m_on_entry.bb_range_p (name, pred));
 	  m_on_entry.set_bb_range (name, pred, undefined);
-	  m_workback.quick_push (pred);
+	  m_workback.safe_push (pred);
 	}
     }
 
@@ -1676,7 +1677,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 
       // This block has an outgoing range.
       if (m_gori.has_edge_range_p (name, bb))
-	m_workback.quick_push (prev_bb);
+	m_workback.safe_push (prev_bb);
       else
 	{
 	  // Normally join blocks don't carry any new range information on
@@ -1700,7 +1701,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 		    break;
 		  }
 	      if (all_dom)
-		m_workback.quick_push (prev_bb);
+		m_workback.safe_push (prev_bb);
 	    }
 	}
 

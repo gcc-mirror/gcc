@@ -1,0 +1,11 @@
+DEFINITION MODULE simplelist ;  (*!m2pim*)
+
+TYPE
+   List ;
+
+PROCEDURE initList () : List ;
+
+PROCEDURE concat (l: List) : List ;
+
+
+END simplelist.

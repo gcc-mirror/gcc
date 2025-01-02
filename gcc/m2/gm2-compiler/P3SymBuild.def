@@ -25,36 +25,9 @@ DEFINITION MODULE P3SymBuild ;
    Title      : P3SymBuild
    Author     : Gaius Mulley
    Date       : 24/6/87
-   LastEdit   : 1/9/89
    System     : UNIX (GNU Modula-2)
    Description: pass 3 symbol creation.
 *)
-
-(* StartBuildDefinitionModule, *)
-(* EndBuildDefinitionModule, *)
-(* StartBuildImplementationModule, *)
-(* EndBuildImplementationModule, *)
-(* StartBuildProgramModule, *)
-(* EndBuildProgramModule, *)
-
-EXPORT QUALIFIED P3StartBuildDefModule,
-                 P3EndBuildDefModule,
-                 P3StartBuildImpModule,
-                 P3EndBuildImpModule,
-                 P3StartBuildProgModule,
-                 P3EndBuildProgModule,
-                 StartBuildInnerModule,
-                 EndBuildInnerModule,
-                 CheckImportListOuterModule,
-                 CheckCanBeImported,
-                 BuildProcedureHeading,
-                 StartBuildProcedure,
-                 EndBuildProcedure,
-                 BuildSubrange,
-                 BuildNulName,
-                 BuildConst,
-                 BuildVarAtAddress,
-                 BuildOptArgInitializer ;
 
 
 (*
@@ -308,6 +281,13 @@ PROCEDURE StartBuildProcedure ;
 *)
 
 PROCEDURE EndBuildProcedure ;
+
+
+(*
+   EndBuildForward -
+*)
+
+PROCEDURE EndBuildForward ;
 
 
 (*

@@ -83,9 +83,43 @@ test02()
   return ok;
 }
 
+void
+test03()
+{
+  // Bug libstdc++/117094 - ranges::fill misses std::move for output_iterator
+
+  // Move-only output iterator
+  struct Iterator
+  {
+    using difference_type = long;
+    Iterator(int* p) : p(p) { }
+    Iterator(Iterator&&) = default;
+    Iterator& operator=(Iterator&&) = default;
+    int& operator*() const { return *p; }
+    Iterator& operator++() { ++p; return *this; }
+    Iterator operator++(int) { return Iterator(p++ ); }
+    int* p;
+
+    struct Sentinel
+    {
+      const int* p;
+      bool operator==(const Iterator& i) const { return p == i.p; }
+      long operator-(const Iterator& i) const { return p - i.p; }
+    };
+
+    long operator-(Sentinel s) const { return p - s.p; }
+  };
+  static_assert(std::sized_sentinel_for<Iterator::Sentinel, Iterator>);
+  int a[2];
+  std::ranges::fill(Iterator(a), Iterator::Sentinel{a+2}, 999);
+  VERIFY( a[0] == 999 );
+  VERIFY( a[1] == 999 );
+}
+
 int
 main()
 {
   test01();
   static_assert(test02());
+  test03();
 }

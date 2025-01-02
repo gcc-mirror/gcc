@@ -30,7 +30,7 @@ FROM M2Printf IMPORT printf0, printf1, fprintf1 ;
 FROM FIO IMPORT StdErr ;
 FROM libc IMPORT exit, printf ;
 FROM Debug IMPORT Halt ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 FROM m2configure IMPORT FullPathCPP, TargetIEEEQuadDefault ;
 FROM M2Error IMPORT InternalError ;
 FROM FormatStrings IMPORT Sprintf1 ;
@@ -76,6 +76,7 @@ VAR
    UselistFilename,
    RuntimeModuleOverride,
    CppArgs              : String ;
+   EnableForward,
    DebugFunctionLineNumbers,
    DebugTraceQuad,   (* -fm2-debug-trace=quad.  *)
    DebugTraceLine,   (* -fm2-debug-trace=line.  *)
@@ -617,7 +618,7 @@ END SetCheckAll ;
                   TRUE is returned.
 *)
 
-PROCEDURE SetAutoInit (value: BOOLEAN) ;
+PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
 BEGIN
    AutoInit := value ;
    RETURN TRUE
@@ -1097,6 +1098,7 @@ END SetQuadDebugging ;
 
 (*
    SetCompilerDebugging - turn on internal compiler debugging.
+                          Enabled via the command line option -fd.
 *)
 
 PROCEDURE SetCompilerDebugging (value: BOOLEAN) ;
@@ -2008,13 +2010,23 @@ END GetDumpDecl ;
 
 
 (*
-   GetDumpLangGimple - return TRUE if the gimple flag is set from SetM2Dump.
+   GetEnableForward - return EnableForward.
 *)
 
-PROCEDURE GetDumpGimple () : BOOLEAN ;
+PROCEDURE GetEnableForward () : BOOLEAN ;
 BEGIN
-   RETURN DumpGimple
-END GetDumpGimple ;
+   RETURN EnableForward
+END GetEnableForward ;
+
+
+(*
+   SetEnableForward - set EnableForward to value.
+*)
+
+PROCEDURE SetEnableForward (value: BOOLEAN) ;
+BEGIN
+   EnableForward := value
+END SetEnableForward ;
 
 
 BEGIN
@@ -2108,5 +2120,6 @@ BEGIN
    DumpQuad                          := FALSE ;
    DumpGimple                        := FALSE ;
    M2Dump                            := NIL ;
-   M2DumpFilter                      := NIL
+   M2DumpFilter                      := NIL ;
+   EnableForward                     := TRUE
 END M2Options.

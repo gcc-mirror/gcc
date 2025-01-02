@@ -1,0 +1,9 @@
+DEFINITION MODULE opaquevarparam ;
+
+TYPE
+   Opaque ;
+
+PROCEDURE del (VAR o: Opaque) ;
+
+
+END opaquevarparam.

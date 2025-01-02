@@ -4139,15 +4139,23 @@ convert_to_numeric (gfc_expr *a, gfc_expr *b)
 }
 
 /* Resolve an operator expression node.  This can involve replacing the
-   operation with a user defined function call.  */
+   operation with a user defined function call.  CHECK_INTERFACES is a
+   helper macro.  */
+
+#define CHECK_INTERFACES \
+  { \
+    match m = gfc_extend_expr (e); \
+    if (m == MATCH_YES) \
+      return true; \
+    if (m == MATCH_ERROR) \
+      return false; \
+  }
 
 static bool
 resolve_operator (gfc_expr *e)
 {
   gfc_expr *op1, *op2;
   /* One error uses 3 names; additional space for wording (also via gettext). */
-  char msg[3*GFC_MAX_SYMBOL_LEN + 1 + 50];
-  bool dual_locus_error;
   bool t = true;
 
   /* Reduce stacked parentheses to single pair  */
@@ -4197,8 +4205,6 @@ resolve_operator (gfc_expr *e)
   if (t == false)
     return false;
 
-  dual_locus_error = false;
-
   /* op1 and op2 cannot both be BOZ.  */
   if (op1 && op1->ts.type == BT_BOZ
       && op2 && op2->ts.type == BT_BOZ)
@@ -4212,9 +4218,9 @@ resolve_operator (gfc_expr *e)
   if ((op1 && op1->expr_type == EXPR_NULL)
       || (op2 && op2->expr_type == EXPR_NULL))
     {
-      snprintf (msg, sizeof (msg),
-		_("Invalid context for NULL() pointer at %%L"));
-      goto bad_op;
+      CHECK_INTERFACES
+      gfc_error ("Invalid context for NULL() pointer at %L", &e->where);
+      return false;
     }
 
   switch (e->value.op.op)
@@ -4229,10 +4235,10 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      snprintf (msg, sizeof (msg),
-		_("Operand of unary numeric operator %%<%s%%> at %%L is %s"),
-		gfc_op2string (e->value.op.op), gfc_typename (e));
-      goto bad_op;
+      CHECK_INTERFACES
+      gfc_error ("Operand of unary numeric operator %<%s%> at %L is %s",
+		 gfc_op2string (e->value.op.op), &e->where, gfc_typename (e));
+      return false;
 
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
@@ -4246,10 +4252,10 @@ resolve_operator (gfc_expr *e)
 	     Defer to a possibly overloading user-defined operator.  */
 	  if (!gfc_op_rank_conformable (op1, op2))
 	    {
-	      dual_locus_error = true;
-	      snprintf (msg, sizeof (msg),
-			_("Inconsistent ranks for operator at %%L and %%L"));
-	      goto bad_op;
+	      CHECK_INTERFACES
+	      gfc_error ("Inconsistent ranks for operator at %L and %L",
+			 &op1->where, &op2->where);
+	      return false;
 	    }
 
 	  gfc_type_convert_binary (e, 1);
@@ -4257,16 +4263,21 @@ resolve_operator (gfc_expr *e)
 	}
 
       if (op1->ts.type == BT_DERIVED || op2->ts.type == BT_DERIVED)
-	snprintf (msg, sizeof (msg),
-		  _("Unexpected derived-type entities in binary intrinsic "
-		  "numeric operator %%<%s%%> at %%L"),
-	       gfc_op2string (e->value.op.op));
+	{
+	  CHECK_INTERFACES
+	  gfc_error ("Unexpected derived-type entities in binary intrinsic "
+		     "numeric operator %<%s%> at %L",
+		     gfc_op2string (e->value.op.op), &e->where);
+	  return false;
+	}
       else
-	snprintf (msg, sizeof(msg),
-		  _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
-		  gfc_op2string (e->value.op.op), gfc_typename (op1),
-	       gfc_typename (op2));
-      goto bad_op;
+	{
+	  CHECK_INTERFACES
+	  gfc_error ("Operands of binary numeric operator %<%s%> at %L are %s/%s",
+		     gfc_op2string (e->value.op.op), &e->where, gfc_typename (op1),
+		     gfc_typename (op2));
+	  return false;
+	}
 
     case INTRINSIC_CONCAT:
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
@@ -4277,10 +4288,10 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      snprintf (msg, sizeof (msg),
-		_("Operands of string concatenation operator at %%L are %s/%s"),
-		gfc_typename (op1), gfc_typename (op2));
-      goto bad_op;
+      CHECK_INTERFACES
+      gfc_error ("Operands of string concatenation operator at %L are %s/%s",
+		 &e->where, gfc_typename (op1), gfc_typename (op2));
+      return false;
 
     case INTRINSIC_AND:
     case INTRINSIC_OR:
@@ -4320,12 +4331,11 @@ resolve_operator (gfc_expr *e)
 	  goto simplify_op;
 	}
 
-      snprintf (msg, sizeof (msg),
-		_("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
-		gfc_op2string (e->value.op.op), gfc_typename (op1),
-		gfc_typename (op2));
-
-      goto bad_op;
+      CHECK_INTERFACES
+      gfc_error ("Operands of logical operator %<%s%> at %L are %s/%s",
+		 gfc_op2string (e->value.op.op), &e->where, gfc_typename (op1),
+		 gfc_typename (op2));
+      return false;
 
     case INTRINSIC_NOT:
       /* Logical ops on integers become bitwise ops with -fdec.  */
@@ -4344,9 +4354,10 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      snprintf (msg, sizeof (msg), _("Operand of .not. operator at %%L is %s"),
-		gfc_typename (op1));
-      goto bad_op;
+      CHECK_INTERFACES
+      gfc_error ("Operand of .not. operator at %L is %s", &e->where,
+		 gfc_typename (op1));
+      return false;
 
     case INTRINSIC_GT:
     case INTRINSIC_GT_OS:
@@ -4358,8 +4369,9 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_LE_OS:
       if (op1->ts.type == BT_COMPLEX || op2->ts.type == BT_COMPLEX)
 	{
-	  strcpy (msg, _("COMPLEX quantities cannot be compared at %L"));
-	  goto bad_op;
+	  CHECK_INTERFACES
+	  gfc_error ("COMPLEX quantities cannot be compared at %L", &e->where);
+	  return false;
 	}
 
       /* Fall through.  */
@@ -4429,10 +4441,10 @@ resolve_operator (gfc_expr *e)
 	     Defer to a possibly overloading user-defined operator.  */
 	  if (!gfc_op_rank_conformable (op1, op2))
 	    {
-	      dual_locus_error = true;
-	      snprintf (msg, sizeof (msg),
-			_("Inconsistent ranks for operator at %%L and %%L"));
-	      goto bad_op;
+	      CHECK_INTERFACES
+	      gfc_error ("Inconsistent ranks for operator at %L and %L",
+			 &op1->where, &op2->where);
+	      return false;
 	    }
 
 	  gfc_type_convert_binary (e, 1);
@@ -4466,18 +4478,22 @@ resolve_operator (gfc_expr *e)
 	}
 
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
-	snprintf (msg, sizeof (msg),
-		  _("Logicals at %%L must be compared with %s instead of %s"),
-		  (e->value.op.op == INTRINSIC_EQ
-		   || e->value.op.op == INTRINSIC_EQ_OS)
-		  ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.op));
+	{
+	  CHECK_INTERFACES
+	  gfc_error ("Logicals at %L must be compared with %s instead of %s",
+		     &e->where,
+		     (e->value.op.op == INTRINSIC_EQ || e->value.op.op == INTRINSIC_EQ_OS)
+		      ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.op));
+	}
       else
-	snprintf (msg, sizeof (msg),
-		  _("Operands of comparison operator %%<%s%%> at %%L are %s/%s"),
-		  gfc_op2string (e->value.op.op), gfc_typename (op1),
-		  gfc_typename (op2));
+	{
+	  CHECK_INTERFACES
+	  gfc_error ("Operands of comparison operator %<%s%> at %L are %s/%s",
+		     gfc_op2string (e->value.op.op), &e->where, gfc_typename (op1),
+		     gfc_typename (op2));
+	}
 
-      goto bad_op;
+      return false;
 
     case INTRINSIC_USER:
       if (e->value.op.uop->op == NULL)
@@ -4485,28 +4501,29 @@ resolve_operator (gfc_expr *e)
 	  const char *name = e->value.op.uop->name;
 	  const char *guessed;
 	  guessed = lookup_uop_fuzzy (name, e->value.op.uop->ns->uop_root);
+	  CHECK_INTERFACES
 	  if (guessed)
-	    snprintf (msg, sizeof (msg),
-		      _("Unknown operator %%<%s%%> at %%L; did you mean "
-			"%%<%s%%>?"), name, guessed);
+	    gfc_error ("Unknown operator %<%s%> at %L; did you mean "
+			"%<%s%>?", name, &e->where, guessed);
 	  else
-	    snprintf (msg, sizeof (msg), _("Unknown operator %%<%s%%> at %%L"),
-		      name);
+	    gfc_error ("Unknown operator %<%s%> at %L", name, &e->where);
 	}
       else if (op2 == NULL)
-	snprintf (msg, sizeof (msg),
-		  _("Operand of user operator %%<%s%%> at %%L is %s"),
-		  e->value.op.uop->name, gfc_typename (op1));
+	{
+	  CHECK_INTERFACES
+	  gfc_error ("Operand of user operator %<%s%> at %L is %s",
+		  e->value.op.uop->name, &e->where, gfc_typename (op1));
+	}
       else
 	{
-	  snprintf (msg, sizeof (msg),
-		    _("Operands of user operator %%<%s%%> at %%L are %s/%s"),
-		    e->value.op.uop->name, gfc_typename (op1),
-		    gfc_typename (op2));
 	  e->value.op.uop->op->sym->attr.referenced = 1;
+	  CHECK_INTERFACES
+	  gfc_error ("Operands of user operator %<%s%> at %L are %s/%s",
+		    e->value.op.uop->name, &e->where, gfc_typename (op1),
+		    gfc_typename (op2));
 	}
 
-      goto bad_op;
+      return false;
 
     case INTRINSIC_PARENTHESES:
       e->ts = op1->ts;
@@ -4584,10 +4601,10 @@ resolve_operator (gfc_expr *e)
 	      e->rank = 0;
 
 	      /* Try user-defined operators, and otherwise throw an error.  */
-	      dual_locus_error = true;
-	      snprintf (msg, sizeof (msg),
-			_("Inconsistent ranks for operator at %%L and %%L"));
-	      goto bad_op;
+	      CHECK_INTERFACES
+	      gfc_error ("Inconsistent ranks for operator at %L and %L",
+			 &op1->where, &op2->where);
+	      return false;
 	    }
 	}
 
@@ -4622,23 +4639,6 @@ simplify_op:
 	t = true;
     }
   return t;
-
-bad_op:
-
-  {
-    match m = gfc_extend_expr (e);
-    if (m == MATCH_YES)
-      return true;
-    if (m == MATCH_ERROR)
-      return false;
-  }
-
-  if (dual_locus_error)
-    gfc_error (msg, &op1->where, &op2->where);
-  else
-    gfc_error (msg, &e->where);
-
-  return false;
 }
 
 
@@ -6012,6 +6012,15 @@ resolve_variable (gfc_expr *e)
 	  newref->next = ref;
 	  e->ref = newref;
 	}
+    }
+  else if (sym->assoc && sym->ts.type == BT_CHARACTER && sym->ts.deferred)
+    {
+      gfc_ref *ref;
+      for (ref = e->ref; ref; ref = ref->next)
+	if (ref->type == REF_SUBSTRING)
+	  break;
+      if (ref == NULL)
+	e->ts = sym->ts;
     }
 
   if (e->ref && !gfc_resolve_ref (e))
@@ -9678,6 +9687,15 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* Fix up the type-spec for CHARACTER types.  */
   if (sym->ts.type == BT_CHARACTER && !sym->attr.select_type_temporary)
     {
+      gfc_ref *ref;
+      for (ref = target->ref; ref; ref = ref->next)
+	if (ref->type == REF_SUBSTRING
+	    && (ref->u.ss.start == NULL
+		|| ref->u.ss.start->expr_type != EXPR_CONSTANT
+		|| ref->u.ss.end == NULL
+		|| ref->u.ss.end->expr_type != EXPR_CONSTANT))
+	  break;
+
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
@@ -9696,9 +9714,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 		gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 				  target->value.character.length);
 	}
-      else if ((!sym->ts.u.cl->length
-		|| sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+      else if (((!sym->ts.u.cl->length
+		 || sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 		&& target->expr_type != EXPR_VARIABLE)
+	       || ref)
 	{
 	  if (!sym->ts.deferred)
 	    {
@@ -9708,7 +9727,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
 	  /* This is reset in trans-stmt.cc after the assignment
 	     of the target expression to the associate name.  */
-	  sym->attr.allocatable = 1;
+	  if (ref && sym->as)
+	    sym->attr.pointer = 1;
+	  else
+	    sym->attr.allocatable = 1;
 	}
     }
 
@@ -11292,8 +11314,9 @@ resolve_block_construct (gfc_code* code)
 {
   gfc_namespace *ns = code->ext.block.ns;
 
-  /* For an ASSOCIATE block, the associations (and their targets) are already
-     resolved during resolve_symbol. Resolve the BLOCK's namespace.  */
+  /* For an ASSOCIATE block, the associations (and their targets) will be
+     resolved by gfc_resolve_symbol, during resolution of the BLOCK's
+     namespace.  */
   gfc_resolve (ns);
 }
 
@@ -12432,6 +12455,17 @@ resolve_ptr_fcn_assign (gfc_code **code, gfc_namespace *ns)
   tmp_ptr_expr->symtree->n.sym->attr.pointer = 1;
   tmp_ptr_expr->symtree->n.sym->attr.allocatable = 0;
   tmp_ptr_expr->where = (*code)->loc;
+
+  /* A new charlen is required to ensure that the variable string length
+     is different to that of the original lhs for deferred results.  */
+  if (s->result->ts.deferred && tmp_ptr_expr->ts.type == BT_CHARACTER)
+    {
+      tmp_ptr_expr->ts.u.cl = gfc_get_charlen();
+      tmp_ptr_expr->ts.deferred = 1;
+      tmp_ptr_expr->ts.u.cl->next = gfc_current_ns->cl_list;
+      gfc_current_ns->cl_list = tmp_ptr_expr->ts.u.cl;
+      tmp_ptr_expr->symtree->n.sym->ts.u.cl = tmp_ptr_expr->ts.u.cl;
+    }
 
   this_code = build_assignment (EXEC_ASSIGN,
 				tmp_ptr_expr, (*code)->expr2,

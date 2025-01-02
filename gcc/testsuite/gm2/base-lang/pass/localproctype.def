@@ -1,0 +1,3 @@
+DEFINITION MODULE localproctype ;  (*!m2pim*)
+
+END localproctype.

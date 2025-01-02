@@ -2051,6 +2051,12 @@ package body Exp_Ch7 is
                     and then List_Containing (Finalizer_Insert_Nod) = Stmts)
                then
                   Finalizer_Insert_Nod := Last_Top_Level_Ctrl_Construct;
+                  if Nkind (Finalizer_Insert_Nod) = N_Package_Body
+                    and then Nkind (Parent (Finalizer_Insert_Nod)) = N_Subunit
+                  then
+                     Finalizer_Insert_Nod :=
+                        Corresponding_Stub (Parent (Finalizer_Insert_Nod));
+                  end if;
                end if;
 
                Insert_After (Finalizer_Insert_Nod, Fin_Body);

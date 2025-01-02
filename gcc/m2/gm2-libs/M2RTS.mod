@@ -286,9 +286,10 @@ END ErrorMessageC ;
            to stderr and calls exit (1).
 *)
 
-PROCEDURE HaltC (description, filename, function: ADDRESS; line: CARDINAL) ;
+PROCEDURE HaltC (description, filename, function: ADDRESS; line: CARDINAL) <* noreturn *> ;
 BEGIN
-   ErrorMessageC (description, filename, line, function)
+   ErrorMessageC (description, filename, line, function) ;
+   exit (1)
 END HaltC ;
 
 
@@ -298,9 +299,10 @@ END HaltC ;
           to stderr and calls exit (1).
 *)
 
-PROCEDURE Halt (description, filename, function: ARRAY OF CHAR; line: CARDINAL) ;
+PROCEDURE Halt (description, filename, function: ARRAY OF CHAR; line: CARDINAL) <* noreturn *> ;
 BEGIN
-   ErrorMessage (description, filename, line, function)
+   ErrorMessage (description, filename, line, function) ;
+   exit (1)
 END Halt ;
 
 

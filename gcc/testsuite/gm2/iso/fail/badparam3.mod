@@ -1,0 +1,7 @@
+IMPLEMENTATION MODULE badparam3 ;
+
+PROCEDURE foo (VAR c: CARDINAL) ;
+BEGIN
+END foo ;
+
+END badparam3.

@@ -1,0 +1,10 @@
+DEFINITION MODULE simplelistiter ;  (*!m2pim*)
+
+TYPE
+   List ;
+
+PROCEDURE initList () : List ;
+
+PROCEDURE items (l: List) : CARDINAL ;
+
+END simplelistiter.

@@ -52,7 +52,7 @@ FROM M2Reserved IMPORT PlusTok, MinusTok, TimesTok, DivTok, ModTok,
                        LessTok, GreaterTok, HashTok, LessGreaterTok,
                        InTok, NotTok ;
 
-FROM SymbolTable IMPORT NulSym, ModeOfAddr,
+FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         StartScope, EndScope, GetScope, GetCurrentScope,
                         GetModuleScope,
                         SetCurrentModule, GetCurrentModule, SetFileModule,
@@ -73,12 +73,12 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr,
                         CheckAnonymous,
                         IsProcedureBuiltin,
                         MakeProcType,
-                        NoOfParam,
+                        NoOfParamAny,
                         GetParam,
                         IsParameterVar, PutProcTypeParam,
                         PutProcTypeVarParam, IsParameterUnbounded,
                         PutFunction, PutProcTypeParam,
-                        GetType,
+                        GetType, IsVar,
                         IsAModula2Type, GetDeclaredMod ;
 
 FROM M2Batch IMPORT MakeDefinitionSource,
@@ -190,6 +190,22 @@ PROCEDURE GetSkippedType (sym: CARDINAL) : CARDINAL ;
 BEGIN
    RETURN( SkipType(GetType(sym)) )
 END GetSkippedType ;
+
+
+(*
+   CheckNotVar - checks to see that the top of stack is not a variable.
+*)
+
+PROCEDURE CheckNotVar (tok: CARDINAL) ;
+VAR
+   const: CARDINAL ;
+BEGIN
+   const := OperandT (1) ;
+   IF (const # NulSym) AND IsVar (const)
+   THEN
+      MetaErrorT1 (tok, 'not expecting a variable {%Aad} as a term in a constant expression', const)
+   END
+END CheckNotVar ;
 
 
 (*
@@ -661,6 +677,28 @@ END PCEndBuildProcedure ;
 
 
 (*
+   EndBuildForward - Ends building a forward declaration.
+
+                     The Stack:
+
+                     Entry                 Exit
+
+              Ptr ->
+                     +------------+
+                     | ProcSym    |
+                     |------------|
+                     | NameStart  |
+                     |------------|
+                                           Empty
+*)
+
+PROCEDURE PCEndBuildForward ;
+BEGIN
+   PopN (2)
+END PCEndBuildForward ;
+
+
+(*
    BuildProcedureHeading - Builds a procedure heading for the definition
                            module procedures.
 
@@ -1125,7 +1163,7 @@ BEGIN
       tok := GetTokenNo () ;
       t := MakeProcType (tok, CheckAnonymous (NulName)) ;
       i := 1 ;
-      n := NoOfParam(p) ;
+      n := NoOfParamAny (p) ;
       WHILE i<=n DO
          par := GetParam (p, i) ;
          IF IsParameterVar (par)
@@ -1138,7 +1176,7 @@ BEGIN
       END ;
       IF GetType (p) # NulSym
       THEN
-         PutFunction (t, GetType (p))
+         PutFunction (tok, t, ProperProcedure, GetType (p))
       END ;
       RETURN( t )
    ELSE

@@ -26,6 +26,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "GM2LexBuf.h"
 #include "input.h"
 #include "m2options.h"
+#include "Gm2linemap.h"
 
 static int cpreprocessor = 0;  /* Replace this with correct getter.  */
 
@@ -263,6 +264,7 @@ EXIT                       { updatepos(); M2LexBuf_AddTok(M2Reserved_exittok); r
 EXPORT                     { updatepos(); M2LexBuf_AddTok(M2Reserved_exporttok); return; }
 FINALLY                    { updatepos(); M2LexBuf_AddTok(M2Reserved_finallytok); return; }
 FOR                        { updatepos(); M2LexBuf_AddTok(M2Reserved_fortok); return; }
+FORWARD                    { updatepos(); M2LexBuf_AddTok(M2Reserved_forwardtok); return; }
 FROM                       { updatepos(); M2LexBuf_AddTok(M2Reserved_fromtok); return; }
 IF                         { updatepos(); M2LexBuf_AddTok(M2Reserved_iftok); return; }
 IMPLEMENTATION             { updatepos(); M2LexBuf_AddTok(M2Reserved_implementationtok); return; }
