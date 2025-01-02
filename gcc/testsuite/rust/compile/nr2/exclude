@@ -74,8 +74,6 @@ issue-2139.rs
 issue-2142.rs
 issue-2165.rs
 issue-2166.rs
-issue-2190-1.rs
-issue-2190-2.rs
 issue-2238.rs
 issue-2304.rs
 issue-2330.rs
@@ -85,7 +83,6 @@ issue-2723-1.rs
 issue-2723-2.rs
 issue-2772-2.rs
 issue-2775.rs
-issue-2747.rs
 issue-2782.rs
 issue-2812.rs
 issue-850.rs
@@ -98,7 +95,6 @@ macros/mbe/macro-issue1233.rs
 macros/mbe/macro-issue1400.rs
 macros/mbe/macro13.rs
 macros/mbe/macro15.rs
-macros/mbe/macro20.rs
 macros/mbe/macro23.rs
 macros/mbe/macro40.rs
 macros/mbe/macro43.rs
@@ -198,7 +194,6 @@ iflet.rs
 issue-3033.rs
 issue-3009.rs
 issue-2323.rs
-issue-2953-1.rs
 issue-2953-2.rs
 issue-1773.rs
 issue-2905-1.rs
