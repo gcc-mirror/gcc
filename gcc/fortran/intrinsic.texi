@@ -1577,7 +1577,7 @@ if @var{Y} is present, @var{X} shall be REAL.
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
 If @var{Y} is present, the result is identical to @code{ATAN2(Y,X)}.
-Otherwise, it the arctangent of @var{X}, where the real part of
+Otherwise, it is the arctangent of @var{X}, where the real part of
 the result is in radians and lies in the range
 @math{-\pi/2 \leq \Re \atan(x) \leq \pi/2}.
 
