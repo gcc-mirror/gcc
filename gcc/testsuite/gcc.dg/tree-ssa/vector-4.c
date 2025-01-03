@@ -10,6 +10,5 @@ v4si vs (v4si a, v4si b)
 }
 
 /* The compound literal should be placed directly in the vec_perm.  */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR <a, b, { 0, 4, 1, 5 }>;" 1 "gimple" { target { ! mmix-knuth-mmixware } } } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR <a::., b::., { 0, 4, 1, 5 }>;" 1 "gimple" { target mmix-knuth-mmixware } } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR <a(?:\\.0)?, b(?:\\.1)?, { 0, 4, 1, 5 }>;" 1 "gimple" } } */
 
