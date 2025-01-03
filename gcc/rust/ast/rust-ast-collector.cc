@@ -2470,10 +2470,7 @@ TokenCollector::visit (StructPattern &pattern)
 void
 TokenCollector::visit (TupleStructItemsNoRange &pattern)
 {
-  for (auto &pat : pattern.get_patterns ())
-    {
-      visit (pat);
-    }
+  visit_items_joined_by_separator (pattern.get_patterns ());
 }
 
 void
