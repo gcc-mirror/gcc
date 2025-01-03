@@ -1,3 +1,7 @@
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2024-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libitm.exp: Add

@@ -1,3 +1,7 @@
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2024-11-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/104896

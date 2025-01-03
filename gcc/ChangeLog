@@ -1,3 +1,182 @@
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Fix handling of need_device_ptr for
+	type(c_ptr). Fix handling of nested function calls in a dispatch region.
+	(find_ifn_gomp_dispatch): Return the IFN without stripping it.
+	(gimplify_omp_dispatch): Keep IFN_GOMP_DISPATCH until
+	gimplify_call_expr.
+
+2025-01-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (amdgcn-x-amdhsa): Refer to Newlib 4.5.0 for
+	the I/O locking fixes.
+
+2025-01-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118171
+	* tree-ssa-pre.cc (create_component_ref_by_pieces_1): Do not
+	fold any component ref parts.
+
+2025-01-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118184
+	* config/aarch64/aarch64-early-ra.cc (allocno_assignment_is_rmw):
+	New function.
+	(early_ra::record_insn_defs): Mark the live range information as
+	untrustworthy if an assignment would change part of an allocno
+	but preserve the rest.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-forwprop.cc (check_ctz_array): Handle also RAW_DATA_CST
+	in the CONSTRUCTOR_ELTS.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/libgdiagnostics/conf.py: Use u'' instead of '' in
+	project and copyright initialization.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.cc (process_command): Update copyright notice dates.
+	* gcov-dump.cc (print_version): Ditto.
+	* gcov.cc (print_version): Ditto.
+	* gcov-tool.cc (print_version): Ditto.
+	* gengtype.cc (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_conditional_move): Add some optimization
+	implementations based on noce_try_cmove_arith.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_xvabsd_s_<lasxfmt>): Remove.
+	(<su>abd<mode>3): New insn pattern.
+	(lasx_xvabsd_u_<lasxfmt_u>): Remove.
+	* config/loongarch/loongarch-builtins.cc (CODE_FOR_lsx_vabsd_b):
+	Rename.
+	(CODE_FOR_lsx_vabsd_h): Ditto.
+	(CODE_FOR_lsx_vabsd_w): Ditto.
+	(CODE_FOR_lsx_vabsd_d): Ditto.
+	(CODE_FOR_lsx_vabsd_bu): Ditto.
+	(CODE_FOR_lsx_vabsd_hu): Ditto.
+	(CODE_FOR_lsx_vabsd_wu): Ditto.
+	(CODE_FOR_lsx_vabsd_du): Ditto.
+	(CODE_FOR_lasx_xvabsd_b): Ditto.
+	(CODE_FOR_lasx_xvabsd_h): Ditto.
+	(CODE_FOR_lasx_xvabsd_w): Ditto.
+	(CODE_FOR_lasx_xvabsd_d): Ditto.
+	(CODE_FOR_lasx_xvabsd_bu): Ditto.
+	(CODE_FOR_lasx_xvabsd_hu): Ditto.
+	(CODE_FOR_lasx_xvabsd_wu): Ditto.
+	(CODE_FOR_lasx_xvabsd_du): Ditto.
+	* config/loongarch/loongarch.md (u): Add smax/umax.
+	* config/loongarch/lsx.md (SU_MAX): New iterator.
+	(su_min): New attr.
+	(lsx_vabsd_s_<lsxfmt>): Remove.
+	(<su>abd<mode>3): New insn pattern.
+	(lsx_vabsd_u_<lsxfmt_u>): Remove.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_unpacks_lo_<mode>): Redefine.
+	(vec_unpacku_lo_<mode>): Ditto.
+	(lasx_vext2xv_h<u>_b<u>): Replaced by vec_unpack<su>_lo_v32qi.
+	(vec_unpack<su>_lo_v32qi): New insn.
+	(lasx_vext2xv_w<u>_h<u>): Replaced by vec_unpack<su>_lo_v16hi.
+	(vec_unpack<su>_lo_v16qi_internal): New insn, for 128 bits.
+	(vec_unpack<su>_lo_v16hi): New insn.
+	(lasx_vext2xv_d<u>_w<u>): Replaced by vec_unpack<su>_lo_v8si.
+	(vec_unpack<su>_lo_v8hi_internal): New insn, for 128 bits.
+	(vec_unpack<su>_lo_v8si): New insn.
+	(vec_unpack<su>_lo_v4si_internal): New insn, for 128 bits.
+	(vec_packs_float_v4di): New expander.
+	(vec_pack_sfix_trunc_v4df): Ditto.
+	(vec_unpacks_float_hi_v8si): Ditto.
+	(vec_unpacks_float_lo_v8si): Ditto.
+	(vec_unpack_sfix_trunc_hi_v8sf): Ditto.
+	(vec_unpack_sfix_trunc_lo_v8sf): Ditto.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lsx_vftintrz_w_d): Rename.
+	(CODE_FOR_lsx_vftintrzh_l_s): Ditto.
+	(CODE_FOR_lsx_vftintrzl_l_s): Ditto.
+	(CODE_FOR_lsx_vffint_s_l): Ditto.
+	(CODE_FOR_lsx_vffinth_d_w): Ditto.
+	(CODE_FOR_lsx_vffintl_d_w): Ditto.
+	(CODE_FOR_lsx_vexth_h_b): Ditto.
+	(CODE_FOR_lsx_vexth_w_h): Ditto.
+	(CODE_FOR_lsx_vexth_d_w): Ditto.
+	(CODE_FOR_lsx_vexth_hu_bu): Ditto.
+	(CODE_FOR_lsx_vexth_wu_hu): Ditto.
+	(CODE_FOR_lsx_vexth_du_wu): Ditto.
+	(CODE_FOR_lsx_vfcvth_d_s): Ditto.
+	(CODE_FOR_lsx_vfcvtl_d_s): Ditto.
+	(CODE_FOR_lasx_vext2xv_h_b): Ditto.
+	(CODE_FOR_lasx_vext2xv_w_h): Ditto.
+	(CODE_FOR_lasx_vext2xv_d_w): Ditto.
+	(CODE_FOR_lasx_vext2xv_hu_bu): Ditto.
+	(CODE_FOR_lasx_vext2xv_wu_hu): Ditto.
+	(CODE_FOR_lasx_vext2xv_du_wu): Ditto.
+	(loongarch_expand_builtin_insn): Swap source operands in
+	CODE_FOR_lsx_vftintrz_w_d and CODE_FOR_lsx_vffint_s_l.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_expand_vec_unpack): Remove useless parameter high_p.
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_unpack):
+	Rewrite.
+	* config/loongarch/lsx.md (vec_unpacks_hi_v4sf): Redefine.
+	(vec_unpacks_lo_v4sf): Ditto.
+	(vec_unpacks_hi_<mode>): Ditto.
+	(vec_unpacku_hi_<mode>): Ditto.
+	(lsx_vfcvth_d_s): Replaced by vec_unpacks_hi_v4sf.
+	(lsx_vfcvtl_d_s): Replaced by vec_unpacks_lo_v4sf.
+	(lsx_vffint_s_l): Replaced by vec_packs_float_v2di.
+	(vec_packs_float_v2di): New insn.
+	(lsx_vftintrz_w_d): Replaced by vec_pack_sfix_trunc_v2df.
+	(vec_pack_sfix_trunc_v2df): New insn.
+	(lsx_vffinth_d_w): Replaced by vec_unpacks_float_hi_v4si.
+	(vec_unpacks_float_hi_v4si): New insn.
+	(lsx_vffintl_d_w): Replaced by vec_unpacks_float_lo_v4si.
+	(vec_unpacks_float_lo_v4si): New insn.
+	(lsx_vftintrzh_l_s): Replaced by vec_unpack_sfix_trunc_hi_v4sf.
+	(vec_unpack_sfix_trunc_hi_v4sf): New insn.
+	(lsx_vftintrzl_l_s): Replaced by vec_unpack_sfix_trunc_lo_v4sf.
+	(vec_unpack_sfix_trunc_lo_v4sf): New insn.
+	(lsx_vexth_h<u>_b<u>): Replaced by vec_unpack<su>_hi_v16qi.
+	(vec_unpack<su>_hi_v16qi): New insn.
+	(lsx_vexth_w<u>_h<u>): Replaced by vec_unpack<su>_hi_v8hi.
+	(vec_unpack<su>_hi_v8hi): New insn.
+	(lsx_vexth_d<u>_w<u>): Replaced by vec_unpack<su>_hi_v4si.
+	(vec_unpack<su>_hi_v4si): New insn.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.md
+	(bytepick_d_<bytepick_imm>_rev): New combiner.
+	(bstrpick_alsl_paired): Reorder input operands.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md: Remove useless vec_select.
+	* config/loongarch/predicates.md: Correct error predicate.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md: Fix selector index.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md: Remove useless code.
+	* config/loongarch/lsx.md: Ditto.
+
 2025-01-01  Sam James  <sam@gentoo.org>
 
 	* doc/cpp.texi (Common Predefined Macros): Fix syntax.

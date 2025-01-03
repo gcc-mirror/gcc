@@ -1,3 +1,10 @@
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GCCFilter): Ignore gen-evolution.awk and
+	gen-cxxapi-file.py.
+	(TestsuiteFilter): Ignore spec-example-4.sarif.
+	(LibCppFilter): Ignore uname2c.h.
+
 2024-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-changelog/git_commit.py (bug_components): Add

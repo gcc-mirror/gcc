@@ -1,3 +1,15 @@
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* testsuite/libgomp.fortran/declare-variant-2-aux.f90: New test.
+	* testsuite/libgomp.fortran/declare-variant-2.f90: New test (xfail).
+	* testsuite/libgomp.fortran/dispatch-1.f90: New test.
+	* testsuite/libgomp.fortran/dispatch-2.f90: New test.
+	* testsuite/libgomp.fortran/dispatch-3.f90: New test.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
 2024-12-19  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Context Selectors): Document that 'kind' also

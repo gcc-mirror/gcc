@@ -1,3 +1,108 @@
+2025-01-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/adjust-args-10.f90: New test.
+
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* g++.dg/gomp/dispatch-3.C: Update scan dumps.
+	* gfortran.dg/gomp/declare-variant-2.f90: Update dg-error.
+	* gfortran.dg/gomp/adjust-args-1.f90: New test.
+	* gfortran.dg/gomp/adjust-args-2.f90: New test.
+	* gfortran.dg/gomp/adjust-args-2a.f90: New test.
+	* gfortran.dg/gomp/adjust-args-3.f90: New test.
+	* gfortran.dg/gomp/adjust-args-4.f90: New test.
+	* gfortran.dg/gomp/adjust-args-5.f90: New test.
+	* gfortran.dg/gomp/adjust-args-6.f90: New test.
+	* gfortran.dg/gomp/adjust-args-7.f90: New test.
+	* gfortran.dg/gomp/adjust-args-8.f90: New test.
+	* gfortran.dg/gomp/adjust-args-9.f90: New test.
+	* gfortran.dg/gomp/dispatch-1.f90: New test.
+	* gfortran.dg/gomp/dispatch-2.f90: New test.
+	* gfortran.dg/gomp/dispatch-3.f90: New test.
+	* gfortran.dg/gomp/dispatch-4.f90: New test.
+	* gfortran.dg/gomp/dispatch-5.f90: New test.
+	* gfortran.dg/gomp/dispatch-6.f90: New test.
+	* gfortran.dg/gomp/dispatch-7.f90: New test.
+	* gfortran.dg/gomp/dispatch-8.f90: New test.
+	* gfortran.dg/gomp/dispatch-9.f90: New test.
+	* gfortran.dg/gomp/dispatch-9a.f90: New test.
+	* gfortran.dg/gomp/dispatch-10.f90: New test.
+
+2025-01-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/117629
+	* gcc.dg/auto-type-2.c: Update expected output with _Bool.
+	* gcc.dg/c23-bool-errors-1.c: New test.
+	* gcc.dg/c23-bool-errors-2.c: New test.
+	* gcc.dg/c23-bool-errors-3.c: New test.
+
+2025-01-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118184
+	* gcc.dg/torture/pr118184.c: Use _Float128 instead of long double.
+
+2025-01-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118171
+	* gcc.dg/torture/pr118171.c: New testcase.
+
+2025-01-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr118184.c: New test.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr90838-2.c: New test.
+
+2025-01-02  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_arith.h: add unsigned imm vec sat_sub form2~4.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_data.h: add data for vec sat_sub.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-2-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-2-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-2-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-2-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-3-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-3-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-3-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-3-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-4-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-4-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-4-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-4-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-2-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-2-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-2-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-2-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-3-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-3-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-3-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-3-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-4-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-4-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-4-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_imm-run-4-u8.c: New test.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/conditional-move-opt-1.c: New test.
+	* gcc.target/loongarch/conditional-move-opt-2.c: New test.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/abd-lasx.c: New test.
+	* gcc.target/loongarch/abd-lsx.c: New test.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/vec_pack_unpack_128.c: New test.
+	* gcc.target/loongarch/vec_pack_unpack_256.c: New test.
+
+2025-01-02  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/bstrpick_alsl_paired.c: New test.
+	* gcc.target/loongarch/bytepick_combine.c: New test.
+
 2025-01-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/118174

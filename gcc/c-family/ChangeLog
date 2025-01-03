@@ -1,3 +1,9 @@
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-attribs.cc: (c_common_gnu_attributes): Rename "omp declare variant
+	variant adjust_args" into "omp declare variant variant args" to also
+	accommodate append_args.
+
 2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* c.opt.urls: Regenerate.

@@ -1,3 +1,15 @@
+2025-01-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/117629
+	* c-decl.cc (declspecs_add_type): Special-case attempts to use
+	bool as a typedef name or declaration name.
+	* c-errors.cc (get_std_for_keyword): New.
+	(add_note_about_new_keyword): New.
+	* c-parser.cc (report_bad_enum_name): New, split out from...
+	(c_parser_enum_specifier): ...here, adding handling for RID_FALSE
+	and RID_TRUE.
+	* c-tree.h (add_note_about_new_keyword): New decl.
+
 2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-parser.cc (c_parser_omp_clause_init_modifiers): New;

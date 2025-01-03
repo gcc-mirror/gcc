@@ -1,3 +1,62 @@
+2025-01-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (OMP_DISPATCH_CLAUSES): Add OMP_CLAUSE_HAS_DEVICE_ADDR.
+
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Handle novariants and nocontext
+	clauses.
+	(show_omp_node): Handle EXEC_OMP_DISPATCH.
+	(show_code_node): Likewise.
+	* frontend-passes.cc (gfc_code_walker): Handle novariants and nocontext.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_DISPATCH.
+	(symbol_attribute): Add omp_declare_variant_need_device_ptr.
+	(gfc_omp_clauses): Add novariants and nocontext.
+	(gfc_omp_declare_variant): Add need_device_ptr_arg_list.
+	(enum gfc_exec_op): Add EXEC_OMP_DISPATCH.
+	* match.h (gfc_match_omp_dispatch): Declare.
+	* openmp.cc (gfc_free_omp_clauses): Free novariants and nocontext
+	clauses.
+	(gfc_free_omp_declare_variant_list): Free need_device_ptr_arg_list
+	namelist.
+	(enum omp_mask2): Add OMP_CLAUSE_NOVARIANTS and OMP_CLAUSE_NOCONTEXT.
+	(gfc_match_omp_clauses): Handle OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+	(OMP_DISPATCH_CLAUSES): Define.
+	(gfc_match_omp_dispatch): New function.
+	(gfc_match_omp_declare_variant): Parse adjust_args.
+	(resolve_omp_clauses): Handle adjust_args, novariants and nocontext.
+	Adjust handling of OMP_LIST_IS_DEVICE_PTR.
+	(icode_code_error_callback): Handle EXEC_OMP_DISPATCH.
+	(omp_code_to_statement): Likewise.
+	(resolve_omp_dispatch): New function.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_DISPATCH.
+	* parse.cc (decode_omp_directive): Match dispatch.
+	(next_statement): Handle ST_OMP_DISPATCH.
+	(gfc_ascii_statement): Likewise.
+	(parse_omp_dispatch): New function.
+	(parse_executable): Handle ST_OMP_DISPATCH.
+	* resolve.cc (gfc_resolve_blocks): Handle EXEC_OMP_DISPATCH.
+	* st.cc (gfc_free_statement): Likewise.
+	* trans-decl.cc (create_function_arglist): Declare.
+	(gfc_get_extern_function_decl): Call it.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle novariants and
+	nocontext.
+	(replace_omp_dispatch_call): New function.
+	(gfc_trans_omp_dispatch): New function.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_DISPATCH.
+	(gfc_trans_omp_declare_variant): Handle adjust_args.
+	* trans.cc (trans_code): Handle EXEC_OMP_DISPATCH:.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.cc (lang_specific_driver): Update copyright notice
+	dates.
+	* gfc-internals.texi: Bump @copying's copyright year.
+	* gfortran.texi: Ditto.
+	* intrinsic.texi: Ditto.
+	* invoke.texi: Ditto.
+
 2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* gfortran.texi (Function ABI Documentation): Make menu ordering

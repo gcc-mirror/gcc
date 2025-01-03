@@ -1,3 +1,7 @@
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* parser.cc (cp_parser_omp_dispatch): Handle INDIRECT_REF.
+
 
 Copyright (C) 2025 Free Software Foundation, Inc.
 
