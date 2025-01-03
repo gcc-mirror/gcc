@@ -262,13 +262,23 @@ struct GTY(()) c_parser {
   struct omp_for_parse_data * GTY((skip)) omp_for_parse_state;
 
   /* If we're in the context of OpenMP directives written as C23
-     attributes turned into pragma, vector of tokens created from that,
-     otherwise NULL.  */
-  vec<c_token, va_gc> *in_omp_attribute_pragma;
+     attributes turned into pragma, the tokens field is temporarily
+     redirected.  This holds data needed to restore state afterwards.
+     It's NULL otherwise.  */
+  struct omp_attribute_pragma_state *in_omp_attribute_pragma;
 
   /* Set for omp::decl attribute parsing to the decl to which it
      appertains.  */
   tree in_omp_decl_attribute;
+};
+
+/* Holds data needed to restore the token stream to its previous state
+   after parsing an OpenMP attribute-syntax pragma.  */
+struct GTY(()) omp_attribute_pragma_state
+{
+  vec<c_token, va_gc> *token_vec;
+  c_token * GTY((skip)) save_tokens;
+  unsigned int save_tokens_avail;
 };
 
 /* Return a pointer to the Nth token in PARSERs tokens_buf.  */
@@ -1312,8 +1322,9 @@ c_parser_skip_until_found (c_parser *parser,
 	  c_token *token = c_parser_peek_token (parser);
 	  if (token->type == CPP_EOF)
 	    {
-	      parser->tokens = &parser->tokens_buf[0];
-	      parser->tokens_avail = token->flags;
+	      parser->tokens = parser->in_omp_attribute_pragma->save_tokens;
+	      parser->tokens_avail
+		= parser->in_omp_attribute_pragma->save_tokens_avail;
 	      parser->in_omp_attribute_pragma = NULL;
 	    }
 	}
@@ -1335,8 +1346,9 @@ c_parser_skip_until_found (c_parser *parser,
 	      c_token *token = c_parser_peek_token (parser);
 	      if (token->type == CPP_EOF)
 		{
-		  parser->tokens = &parser->tokens_buf[0];
-		  parser->tokens_avail = token->flags;
+		  parser->tokens = parser->in_omp_attribute_pragma->save_tokens;
+		  parser->tokens_avail
+		    = parser->in_omp_attribute_pragma->save_tokens_avail;
 		  parser->in_omp_attribute_pragma = NULL;
 		}
 	    }
@@ -1429,8 +1441,9 @@ c_parser_skip_to_pragma_eol (c_parser *parser, bool error_if_not_eol = true)
       c_token *token = c_parser_peek_token (parser);
       if (token->type == CPP_EOF)
 	{
-	  parser->tokens = &parser->tokens_buf[0];
-	  parser->tokens_avail = token->flags;
+	  parser->tokens = parser->in_omp_attribute_pragma->save_tokens;
+	  parser->tokens_avail
+	    = parser->in_omp_attribute_pragma->save_tokens_avail;
 	  parser->in_omp_attribute_pragma = NULL;
 	}
     }
@@ -7184,7 +7197,6 @@ c_parser_handle_statement_omp_attributes (c_parser *parser, tree &attrs,
     return false;
 
   unsigned int tokens_avail = parser->tokens_avail;
-  gcc_assert (parser->tokens == &parser->tokens_buf[0]);
 
   tokens++;
   vec<c_token, va_gc> *toks = NULL;
@@ -7216,12 +7228,15 @@ c_parser_handle_statement_omp_attributes (c_parser *parser, tree &attrs,
   tok.type = CPP_EOF;
   tok.keyword = RID_MAX;
   tok.location = toks->last ().location;
-  tok.flags = tokens_avail;
   toks->quick_push (tok);
 
+  gcc_assert (!parser->in_omp_attribute_pragma);
+  parser->in_omp_attribute_pragma = ggc_alloc<omp_attribute_pragma_state> ();
+  parser->in_omp_attribute_pragma->token_vec = toks;
+  parser->in_omp_attribute_pragma->save_tokens = parser->tokens;
+  parser->in_omp_attribute_pragma->save_tokens_avail = tokens_avail;
   parser->tokens = toks->address ();
   parser->tokens_avail = tokens;
-  parser->in_omp_attribute_pragma = toks;
   return true;
 }
 
@@ -27374,12 +27389,15 @@ c_maybe_parse_omp_decl (tree decl, tree d)
   tok.type = CPP_EOF;
   tok.keyword = RID_MAX;
   tok.location = last[-1].location;
-  tok.flags = tokens_avail;
   toks->quick_push (tok);
   parser->in_omp_decl_attribute = decl;
+  gcc_assert (!parser->in_omp_attribute_pragma);
+  parser->in_omp_attribute_pragma = ggc_alloc<omp_attribute_pragma_state> ();
+  parser->in_omp_attribute_pragma->token_vec = toks;
+  parser->in_omp_attribute_pragma->save_tokens = parser->tokens;
+  parser->in_omp_attribute_pragma->save_tokens_avail = tokens_avail;
   parser->tokens = toks->address ();
   parser->tokens_avail = toks->length ();
-  parser->in_omp_attribute_pragma = toks;
   c_parser_pragma (parser, pragma_external, NULL, NULL_TREE);
   parser->in_omp_decl_attribute = NULL_TREE;
   return true;
