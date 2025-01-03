@@ -2163,10 +2163,18 @@ rtx_properties::try_to_add_dest (const_rtx x, unsigned int flags)
 
   if (LIKELY (REG_P (x)))
     {
-      /* We want to keep sp alive everywhere -  by making all
-	 writes to sp also use sp. */
       if (REGNO (x) == STACK_POINTER_REGNUM)
-	flags |= rtx_obj_flags::IS_READ;
+	{
+	  /* Stack accesses are dependent on previous allocations and
+	     anti-dependent on later deallocations, so both types of
+	     stack operation are akin to a memory write.  */
+	  if (ref_iter != ref_end)
+	    *ref_iter++ = rtx_obj_reference (MEM_REGNO, flags, BLKmode);
+
+	  /* We want to keep sp alive everywhere - by making all
+	     writes to sp also use sp.  */
+	  flags |= rtx_obj_flags::IS_READ;
+	}
       try_to_add_reg (x, flags);
       return;
     }
