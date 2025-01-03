@@ -19,6 +19,7 @@
 #include "rust-derive-clone.h"
 #include "rust-ast.h"
 #include "rust-ast-dump.h"
+#include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-path.h"
 #include "rust-pattern.h"
@@ -300,13 +301,84 @@ DeriveClone::clone_enum_tuple (Enum &item, const EnumItemTuple &variant)
   return builder.match_case (std::move (pattern), std::move (expr));
 }
 
+MatchCase
+DeriveClone::clone_enum_struct (Enum &item, const EnumItemStruct &variant)
+{
+  auto variant_path = variant_match_path (item, variant.get_identifier ());
+
+  auto field_patterns = std::vector<std::unique_ptr<StructPatternField>> ();
+  auto cloned_fields = std::vector<std::unique_ptr<StructExprField>> ();
+
+#if 0
+  // NOTE: We currently do not support compiling struct patterns where an
+  // identifier is assigned a new pattern, e.g. Bloop { f0: x }
+  // This is the code we should eventually produce as it mimics what rustc does
+  // - which is probably here for a good reason. In the meantime, we can just
+  // use the field's identifier as the pattern: Bloop { f0 }
+  // We can then clone the field directly instead of calling `clone()` on the
+  // new pattern.
+  // TODO: Figure out if that is actually needed and why rustc does it?
+
+  for (size_t i = 0; i < variant.get_struct_fields ().size (); i++)
+    {
+      auto &field = variant.get_struct_fields ()[i];
+
+      // Just like for tuples, the pattern we're creating for each field is
+      // `self_<i>` where `i` is the index of the field. It doesn't actually
+      // matter what we use, as long as it's ordered, unique, and that we can
+      // reuse it in the match case's return expression to clone the field.
+      auto pattern_str = "__self_" + std::to_string (i);
+
+      field_patterns.emplace_back (
+	std::unique_ptr<StructPatternField> (new StructPatternFieldIdentPat (
+	  field.get_field_name (), builder.identifier_pattern (pattern_str), {},
+	  loc)));
+
+      cloned_fields.emplace_back (
+	std::unique_ptr<StructExprField> (new StructExprFieldIdentifierValue (
+	  field.get_field_name (),
+	  clone_call (builder.ref (builder.identifier (pattern_str))), {},
+	  loc)));
+    }
+#endif
+
+  for (const auto &field : variant.get_struct_fields ())
+    {
+      // We match on the struct's fields, and then recreate an instance of that
+      // struct, cloning each field
+
+      field_patterns.emplace_back (
+	std::unique_ptr<StructPatternField> (new StructPatternFieldIdent (
+	  field.get_field_name (), false /* is_ref? true? */, false, {}, loc)));
+
+      cloned_fields.emplace_back (
+	std::unique_ptr<StructExprField> (new StructExprFieldIdentifierValue (
+	  field.get_field_name (),
+	  clone_call (builder.ref (
+	    builder.identifier (field.get_field_name ().as_string ()))),
+	  {}, loc)));
+    }
+
+  auto pattern_elts = StructPatternElements (std::move (field_patterns));
+
+  auto pattern = std::unique_ptr<Pattern> (
+    new ReferencePattern (std::unique_ptr<Pattern> (new StructPattern (
+			    variant_path, loc, pattern_elts)),
+			  false, false, loc));
+  auto expr = std::unique_ptr<Expr> (
+    new StructExprStructFields (variant_path, std::move (cloned_fields), loc));
+
+  return builder.match_case (std::move (pattern), std::move (expr));
+}
+
 void
 DeriveClone::visit_enum (Enum &item)
 {
-  // Create an arm for each variant of the enum
-  // For enum item variants, just create the same variant
-  // For struct and tuple variants, destructure the pattern and call clone for
-  // each field
+  // Create an arm for each variant of the enum:
+  // - For enum item variants (simple identifiers), just create the same
+  // variant.
+  // - For struct and tuple variants, destructure the pattern and call clone for
+  // each field.
 
   auto cases = std::vector<MatchCase> ();
 
@@ -325,7 +397,8 @@ DeriveClone::visit_enum (Enum &item)
 	    clone_enum_tuple (item, static_cast<EnumItemTuple &> (*variant)));
 	  break;
 	case EnumItem::Kind::Struct:
-	  rust_unreachable ();
+	  cases.emplace_back (
+	    clone_enum_struct (item, static_cast<EnumItemStruct &> (*variant)));
 	  break;
 	}
     }
@@ -336,8 +409,6 @@ DeriveClone::visit_enum (Enum &item)
   expanded = clone_impl (clone_fn (std::move (match)),
 			 item.get_identifier ().as_string (),
 			 item.get_generic_params ());
-
-  AST::Dump::debug (*expanded);
 }
 
 void
