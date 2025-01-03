@@ -3070,11 +3070,15 @@ package body Ch3 is
          Check_Simple_Expression (Expr_Node);
          Set_High_Bound (Range_Node, Expr_Node);
 
-         --  If Expr_Node (ignoring parentheses) is not a simple expression
-         --  then emit a style check.
+         --  If the upper bound doesn't require parentheses, then emit a style
+         --  check. Parentheses that make "expression" syntax nodes a "simple
+         --  expression" are required; we filter those nodes both here and
+         --  inside Check_Xtra_Parens itself.
 
          if Style_Check
-           and then Nkind (Expr_Node) not in N_Op_Boolean | N_Subexpr
+           and then Nkind (Expr_Node) not in N_Membership_Test
+                                           | N_Op_Boolean
+                                           | N_Short_Circuit
          then
             Style.Check_Xtra_Parens (Expr_Node);
          end if;
