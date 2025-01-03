@@ -10196,26 +10196,27 @@ finish_omp_threadprivate (tree vars)
   for (t = vars; t; t = TREE_CHAIN (t))
     {
       tree v = TREE_PURPOSE (t);
+      location_t loc = EXPR_LOCATION (TREE_VALUE (t));
 
       if (error_operand_p (v))
 	;
       else if (!VAR_P (v))
-	error ("%<threadprivate%> %qD is not file, namespace "
-	       "or block scope variable", v);
+	error_at (loc, "%<threadprivate%> %qD is not file, namespace "
+		       "or block scope variable", v);
       /* If V had already been marked threadprivate, it doesn't matter
 	 whether it had been used prior to this point.  */
       else if (TREE_USED (v)
 	  && (DECL_LANG_SPECIFIC (v) == NULL
 	      || !CP_DECL_THREADPRIVATE_P (v)))
-	error ("%qE declared %<threadprivate%> after first use", v);
+	error_at (loc, "%qE declared %<threadprivate%> after first use", v);
       else if (! TREE_STATIC (v) && ! DECL_EXTERNAL (v))
-	error ("automatic variable %qE cannot be %<threadprivate%>", v);
+	error_at (loc, "automatic variable %qE cannot be %<threadprivate%>", v);
       else if (! COMPLETE_TYPE_P (complete_type (TREE_TYPE (v))))
-	error ("%<threadprivate%> %qE has incomplete type", v);
+	error_at (loc, "%<threadprivate%> %qE has incomplete type", v);
       else if (TREE_STATIC (v) && TYPE_P (CP_DECL_CONTEXT (v))
 	       && CP_DECL_CONTEXT (v) != current_class_type)
-	error ("%<threadprivate%> %qE directive not "
-	       "in %qT definition", v, CP_DECL_CONTEXT (v));
+	error_at (loc, "%<threadprivate%> %qE directive not "
+		       "in %qT definition", v, CP_DECL_CONTEXT (v));
       else
 	{
 	  /* Allocate a LANG_SPECIFIC structure for V, if needed.  */

@@ -38698,8 +38698,9 @@ check_no_duplicate_clause (tree clauses, enum omp_clause_code code,
    If KIND is nonzero, create the appropriate node and install the decl
    in OMP_CLAUSE_DECL and add the node to the head of the list.
 
-   If KIND is zero, create a TREE_LIST with the decl in TREE_PURPOSE;
-   return the list created.
+   If KIND is zero (= OMP_CLAUSE_ERROR), create a TREE_LIST with the decl
+   in TREE_PURPOSE and the location in TREE_VALUE (accessible using
+   EXPR_LOCATION); return the list created.
 
    COLON can be NULL if only closing parenthesis should end the list,
    or pointer to bool which will receive false if the list is terminated
@@ -38836,7 +38837,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	  goto build_clause;
 	}
       token = cp_lexer_peek_token (parser->lexer);
-      if (kind != 0
+      if (kind != 0  /* kind != OMP_CLAUSE_ERROR */
 	  && cp_parser_is_keyword (token, RID_THIS))
 	{
 	  decl = finish_this_expr ();
@@ -38894,7 +38895,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	decl = process_outer_var_ref (decl, tf_warning_or_error);
       if (decl == error_mark_node)
 	;
-      else if (kind != 0)
+      else if (kind != 0)  /* kind != OMP_CLAUSE_ERROR */
 	{
 	  switch (kind)
 	    {
@@ -39040,8 +39041,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	  OMP_CLAUSE_CHAIN (u) = list;
 	  list = u;
 	}
-      else
-	list = tree_cons (decl, NULL_TREE, list);
+      else  /* kind == 0 alias kind == OMP_CLAUSE_ERROR */
+	list = tree_cons (decl, build_empty_stmt (token->location), list);
 
     get_comma:
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
@@ -39088,17 +39089,17 @@ cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list,
 {
   if (parser->lexer->in_omp_decl_attribute)
     {
+      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
       if (kind)
 	{
-	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 	  tree u = build_omp_clause (loc, kind);
 	  OMP_CLAUSE_DECL (u) = parser->lexer->in_omp_decl_attribute;
 	  OMP_CLAUSE_CHAIN (u) = list;
 	  return u;
 	}
-      else
-	return tree_cons (parser->lexer->in_omp_decl_attribute, NULL_TREE,
-			  list);
+      else  /* kind == OMP_CLAUSE_ERROR  */
+	return tree_cons (parser->lexer->in_omp_decl_attribute,
+			  build_empty_stmt (loc), list);
     }
 
   if (cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
@@ -39213,7 +39214,6 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
 static tree
 cp_parser_oacc_data_clause_deviceptr (cp_parser *parser, tree list)
 {
-  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
   tree vars, t;
 
   /* Can't use OMP_CLAUSE_MAP here (that is, can't use the generic
@@ -39223,6 +39223,7 @@ cp_parser_oacc_data_clause_deviceptr (cp_parser *parser, tree list)
   for (t = vars; t; t = TREE_CHAIN (t))
     {
       tree v = TREE_PURPOSE (t);
+      location_t loc = EXPR_LOCATION (TREE_VALUE (t));
       tree u = build_omp_clause (loc, OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (u, GOMP_MAP_FORCE_DEVICEPTR);
       OMP_CLAUSE_DECL (u) = v;
@@ -50229,8 +50230,6 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 		{
 		  cp_lexer_consume_token (parser->lexer); // need_device_ptr
 		  cp_lexer_consume_token (parser->lexer); // :
-		  location_t arg_loc
-		    = cp_lexer_peek_token (parser->lexer)->location;
 
 		  tree arg;
 		  tree list
@@ -50240,6 +50239,7 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 		  for (tree c = list; c != NULL_TREE; c = TREE_CHAIN (c))
 		    {
 		      tree decl = TREE_PURPOSE (c);
+		      location_t arg_loc = EXPR_LOCATION (TREE_VALUE (c));
 		      int idx;
 		      for (arg = parms, idx = 0; arg != NULL;
 			   arg = TREE_CHAIN (arg), idx++)
@@ -50254,7 +50254,6 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 		      arg = TREE_VALUE (arg);
 		      if (adjust_args_list.contains (arg))
 			{
-			  // TODO fix location
 			  error_at (arg_loc, "%qD is specified more than once",
 				    decl);
 			  continue;
