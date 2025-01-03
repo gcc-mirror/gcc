@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-std=gnu99 -ffreestanding" } */
 
 #include <stdint.h>
 

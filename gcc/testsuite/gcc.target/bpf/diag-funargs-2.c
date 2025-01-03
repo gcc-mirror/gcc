@@ -1,7 +1,7 @@
 /* Verify proper errors are generated for functions taking too many
    arguments, with aggregates and 128-bit arguments.  */
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "-O0 -ffreestanding" } */
 
 #include <stdint.h>
 

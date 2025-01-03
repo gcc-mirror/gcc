@@ -1690,7 +1690,7 @@ bpf-*-*)
         tm_file="elfos.h ${tm_file}"
         tmake_file="${tmake_file} bpf/t-bpf"
         use_collect2=no
-        use_gcc_stdint=provide
+        use_gcc_stdint=wrap
         extra_objs="btfext-out.o core-builtins.o"
         target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/btfext-out.cc \$(srcdir)/config/bpf/core-builtins.cc"
         ;;
