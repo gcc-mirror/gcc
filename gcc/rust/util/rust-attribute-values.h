@@ -29,6 +29,7 @@ public:
   static constexpr auto &COLD = "cold";
   static constexpr auto &CFG = "cfg";
   static constexpr auto &CFG_ATTR = "cfg_attr";
+  static constexpr auto &DERIVE_ATTR = "derive";
   static constexpr auto &DEPRECATED = "deprecated";
   static constexpr auto &ALLOW = "allow";
   static constexpr auto &ALLOW_INTERNAL_UNSTABLE = "allow_internal_unstable";

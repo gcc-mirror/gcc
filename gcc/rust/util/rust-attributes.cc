@@ -46,6 +46,7 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::COLD, CODE_GENERATION},
      {Attrs::CFG, EXPANSION},
      {Attrs::CFG_ATTR, EXPANSION},
+     {Attrs::DERIVE_ATTR, EXPANSION},
      {Attrs::DEPRECATED, STATIC_ANALYSIS},
      {Attrs::ALLOW, STATIC_ANALYSIS},
      {Attrs::ALLOW_INTERNAL_UNSTABLE, STATIC_ANALYSIS},
