@@ -24,6 +24,7 @@
 #include "rust-path.h"
 #include "rust-item.h"
 #include "rust-path.h"
+#include "rust-system.h"
 #include "rust-token.h"
 
 namespace Rust {
@@ -262,9 +263,16 @@ Builder::struct_expr (
   std::string struct_name,
   std::vector<std::unique_ptr<StructExprField>> &&fields) const
 {
+  return struct_expr (path_in_expression ({struct_name}), std::move (fields));
+}
+
+std::unique_ptr<Expr>
+Builder::struct_expr (
+  PathInExpression struct_name,
+  std::vector<std::unique_ptr<StructExprField>> &&fields) const
+{
   return std::unique_ptr<Expr> (
-    new StructExprStructFields (path_in_expression ({struct_name}),
-				std::move (fields), loc));
+    new StructExprStructFields (struct_name, std::move (fields), loc));
 }
 
 std::unique_ptr<StructExprField>

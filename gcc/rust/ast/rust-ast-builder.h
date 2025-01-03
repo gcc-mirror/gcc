@@ -160,9 +160,14 @@ public:
 
   /**
    * Create an expression for struct instantiation with fields (`S { a, b: c }`)
+   * Tuple expressions are call expressions and can thus be constructed with
+   * `call`
    */
   std::unique_ptr<Expr>
   struct_expr (std::string struct_name,
+	       std::vector<std::unique_ptr<StructExprField>> &&fields) const;
+  std::unique_ptr<Expr>
+  struct_expr (PathInExpression struct_name,
 	       std::vector<std::unique_ptr<StructExprField>> &&fields) const;
 
   /* Create a field expression for struct instantiation (`field_name: value`) */
