@@ -21,6 +21,8 @@
 #include "rust-ast-dump.h"
 #include "rust-item.h"
 #include "rust-path.h"
+#include "rust-pattern.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace AST {
@@ -236,19 +238,64 @@ DeriveClone::visit_struct (StructStruct &item)
 			 item.get_generic_params ());
 }
 
+PathInExpression
+DeriveClone::variant_match_path (Enum &item, const Identifier &variant)
+{
+  return PathInExpression ({builder.path_segment (
+			      item.get_identifier ().as_string ()),
+			    builder.path_segment (variant.as_string ())},
+			   {}, loc, false);
+}
+
 MatchCase
 DeriveClone::clone_enum_identifier (Enum &item,
 				    const std::unique_ptr<EnumItem> &variant)
 {
-  auto variant_path = PathInExpression (
-    {builder.path_segment (item.get_identifier ().as_string ()),
-     builder.path_segment (variant->get_identifier ().as_string ())},
-    {}, loc, false);
+  auto variant_path = variant_match_path (item, variant->get_identifier ());
 
   auto pattern = std::unique_ptr<Pattern> (new ReferencePattern (
     std::unique_ptr<Pattern> (new PathInExpression (variant_path)), false,
     false, loc));
   auto expr = std::unique_ptr<Expr> (new PathInExpression (variant_path));
+
+  return builder.match_case (std::move (pattern), std::move (expr));
+}
+
+MatchCase
+DeriveClone::clone_enum_tuple (Enum &item, const EnumItemTuple &variant)
+{
+  auto variant_path = variant_match_path (item, variant.get_identifier ());
+
+  auto patterns = std::vector<std::unique_ptr<Pattern>> ();
+  auto cloned_patterns = std::vector<std::unique_ptr<Expr>> ();
+
+  for (size_t i = 0; i < variant.get_tuple_fields ().size (); i++)
+    {
+      // The pattern we're creating for each field is `self_<i>` where `i` is
+      // the index of the field. It doesn't actually matter what we use, as long
+      // as it's ordered, unique, and that we can reuse it in the match case's
+      // return expression to clone the field.
+      auto pattern_str = "__self_" + std::to_string (i);
+
+      patterns.emplace_back (builder.identifier_pattern (pattern_str));
+
+      // Now, for each tuple's element, we create a new expression calling
+      // `clone` on it for the match case's return expression
+      cloned_patterns.emplace_back (
+	clone_call (builder.ref (builder.identifier (pattern_str))));
+    }
+
+  auto pattern_items = std::unique_ptr<TupleStructItems> (
+    new TupleStructItemsNoRange (std::move (patterns)));
+
+  auto pattern = std::unique_ptr<Pattern> (
+    new ReferencePattern (std::unique_ptr<Pattern> (new TupleStructPattern (
+			    variant_path, std::move (pattern_items))),
+			  false, false, loc));
+
+  auto expr
+    = builder.call (std::unique_ptr<Expr> (new PathInExpression (variant_path)),
+		    std::move (cloned_patterns));
 
   return builder.match_case (std::move (pattern), std::move (expr));
 }
@@ -274,6 +321,9 @@ DeriveClone::visit_enum (Enum &item)
 	  cases.emplace_back (clone_enum_identifier (item, variant));
 	  break;
 	case EnumItem::Kind::Tuple:
+	  cases.emplace_back (
+	    clone_enum_tuple (item, static_cast<EnumItemTuple &> (*variant)));
+	  break;
 	case EnumItem::Kind::Struct:
 	  rust_unreachable ();
 	  break;
