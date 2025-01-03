@@ -1586,6 +1586,35 @@ mmix_asm_output_labelref (FILE *stream, const char *name)
     if (*name == '@')
       is_extern = 0;
 
+  size_t ndots = 0;
+  for (const char *s = name; *s != 0; s++)
+    if (*s == '.')
+      ndots++;
+
+  /* Replace all '.' with '::'.  We don't want a '.' as part of an identifier
+     as that'd be incompatible with mmixal.  We also don't want to do things
+     like overriding the default "%s.%lu" by '#define ASM_PN_FORMAT "%s::%lu"'
+     as that format will show up in warnings and error messages.  The default
+     won't show up in warnings and errors, as there are mechanisms in place to
+     strip that (but that only handles the default format).  FIXME: Make sure
+     no ":" is seen in the object file; we don't really want that mmixal
+     feature visible there.  */
+  if (ndots > 0)
+    {
+      char *colonized_name = XALLOCAVEC (char, strlen (name) + 1 + ndots);
+
+      char *cs = colonized_name;
+      const char *s = name;
+      for (; *s != 0; s++)
+	{
+	  if (*s == '.')
+	    *cs++ = ':';
+	  *cs++ = *s;
+	}
+      *cs = 0;
+      name = colonized_name;
+    }
+
   asm_fprintf (stream, "%s%U%s",
 	       is_extern && TARGET_TOPLEVEL_SYMBOLS ? ":" : "",
 	       name);
