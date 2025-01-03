@@ -2278,9 +2278,9 @@ check_ctz_array (tree ctor, unsigned HOST_WIDE_INT mulc,
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, idx, elt)
     {
-      if (TREE_CODE (idx) != INTEGER_CST)
+      if (!tree_fits_shwi_p (idx))
 	return false;
-      if (TREE_CODE (elt) != INTEGER_CST && TREE_CODE (elt) != RAW_DATA_CST)
+      if (!tree_fits_shwi_p (elt) && TREE_CODE (elt) != RAW_DATA_CST)
 	return false;
 
       unsigned HOST_WIDE_INT index = tree_to_shwi (idx);
