@@ -2918,6 +2918,7 @@ C or some other language instead of Fortran, see
 * Interoperable Subroutines and Functions::
 * Working with C Pointers::
 * Further Interoperability of Fortran with C::
+* Generating C prototypes from Fortran::
 @end menu
 
 Since Fortran 2003 (ISO/IEC 1539-1:2004(E)) there is a
@@ -3321,6 +3322,20 @@ an array descriptor with different fields in functions without the
 are converted to the specified form.  If you need to access GNU Fortran's
 internal array descriptor, you can use the Chasm Language Interoperability
 Tools, @url{http://chasm-interop.sourceforge.net/}.
+
+@node Generating C prototypes from Fortran
+@subsection Generating C prototypes from Fortran
+@cindex prototypes
+@cindex C prototypes
+The options @option{-fc-prototypes} can be used to write out C
+declatations and function prototypes for @code{BIND(C)} entities.
+The same can be done for writing out prototypes for external
+procedures using @option{-fc-prototypes-external},
+@pxref{Interoperability Options}.
+
+Standard Fortran does not specify an interoperable type for C's
+@code{unsigned} integer types.  For interoperability with unsigned
+types, GNU Fortran provides unsigned integers, @pxref{Unsigned integers}.
 
 @node GNU Fortran Compiler Directives
 @section GNU Fortran Compiler Directives
