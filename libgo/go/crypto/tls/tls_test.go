@@ -1058,8 +1058,6 @@ func TestConnectionState(t *testing.T) {
 	rootCAs := x509.NewCertPool()
 	rootCAs.AddCert(issuer)
 
-	now := func() time.Time { return time.Unix(1476984729, 0) }
-
 	const alpnProtocol = "golang"
 	const serverName = "example.golang"
 	var scts = [][]byte{[]byte("dummy sct 1"), []byte("dummy sct 2")}
@@ -1075,7 +1073,7 @@ func TestConnectionState(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			config := &Config{
-				Time:         now,
+				Time:         testTime,
 				Rand:         zeroSource{},
 				Certificates: make([]Certificate, 1),
 				MaxVersion:   v,
