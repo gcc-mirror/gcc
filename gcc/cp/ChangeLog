@@ -1,3 +1,13 @@
+2025-01-03  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100358
+	PR c++/115008
+	* module.cc (elf_out::create_mapping): Fallback to ftruncate if
+	posix_fallocate fails.
+
 2024-12-23  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
