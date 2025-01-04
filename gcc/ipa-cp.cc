@@ -1448,19 +1448,23 @@ initialize_node_lattices (struct cgraph_node *node)
       }
 }
 
-/* Return true if VALUE can be safely IPA-CP propagated to a parameter of type
-   PARAM_TYPE.  */
+/* Return VALUE if it is NULL_TREE or if it can be directly safely IPA-CP
+   propagated to a parameter of type PARAM_TYPE, or return a fold-converted
+   VALUE to PARAM_TYPE if that is possible.  Return NULL_TREE otherwise.  */
 
-static bool
+static tree
 ipacp_value_safe_for_type (tree param_type, tree value)
 {
+  if (!value)
+    return NULL_TREE;
   tree val_type = TREE_TYPE (value);
   if (param_type == val_type
-      || useless_type_conversion_p (param_type, val_type)
-      || fold_convertible_p (param_type, value))
-    return true;
+      || useless_type_conversion_p (param_type, val_type))
+    return value;
+  if (fold_convertible_p (param_type, value))
+    return fold_convert (param_type, value);
   else
-    return false;
+    return NULL_TREE;
 }
 
 /* Return the result of a (possibly arithmetic) operation on the constant
@@ -2210,8 +2214,8 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 	    {
 	      tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
 						     src_val, res_type);
-	      if (!cstval
-		  || !ipacp_value_safe_for_type (res_type, cstval))
+	      cstval = ipacp_value_safe_for_type (res_type, cstval);
+	      if (!cstval)
 		break;
 
 	      ret |= dest_lat->add_value (cstval, cs, src_val, src_idx,
@@ -2235,8 +2239,8 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 
 	tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
 					       src_val, res_type);
-	if (cstval
-	    && ipacp_value_safe_for_type (res_type, cstval))
+	cstval = ipacp_value_safe_for_type (res_type, cstval);
+	if (cstval)
 	  ret |= dest_lat->add_value (cstval, cs, src_val, src_idx,
 				      src_offset);
 	else
@@ -2284,8 +2288,8 @@ propagate_vals_across_ancestor (struct cgraph_edge *cs,
   for (src_val = src_lat->values; src_val; src_val = src_val->next)
     {
       tree t = ipa_get_jf_ancestor_result (jfunc, src_val->value);
-
-      if (t && ipacp_value_safe_for_type (param_type, t))
+      t = ipacp_value_safe_for_type (param_type, t);
+      if (t)
 	ret |= dest_lat->add_value (t, cs, src_val, src_idx);
       else
 	ret |= dest_lat->set_contains_variable ();
@@ -2310,7 +2314,8 @@ propagate_scalar_across_jump_function (struct cgraph_edge *cs,
   if (jfunc->type == IPA_JF_CONST)
     {
       tree val = ipa_get_jf_constant (jfunc);
-      if (ipacp_value_safe_for_type (param_type, val))
+      val = ipacp_value_safe_for_type (param_type, val);
+      if (val)
 	return dest_lat->add_value (val, cs, NULL, 0);
       else
 	return dest_lat->set_contains_variable ();
