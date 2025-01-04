@@ -375,7 +375,8 @@ template <Namespace N>
 template <typename S>
 tl::optional<typename std::vector<S>::const_iterator>
 ForeverStack<N>::find_starting_point (
-  const std::vector<S> &segments, std::reference_wrapper<Node> &starting_point)
+  const std::vector<S> &segments, std::reference_wrapper<Node> &starting_point,
+  std::function<void (const S &, NodeId)> insert_segment_resolution)
 {
   auto iterator = segments.begin ();
 
@@ -401,12 +402,19 @@ ForeverStack<N>::find_starting_point (
       if (seg.is_crate_path_seg ())
 	{
 	  starting_point = root;
+	  // TODO: is this how we should be getting the crate node id?
+	  auto &mappings = Analysis::Mappings::get ();
+	  NodeId current_crate
+	    = *mappings.crate_num_to_nodeid (mappings.get_current_crate ());
+
+	  insert_segment_resolution (seg, current_crate);
 	  iterator++;
 	  break;
 	}
       if (seg.is_lower_self_seg ())
 	{
-	  // do nothing and exit
+	  // insert segment resolution and exit
+	  insert_segment_resolution (seg, starting_point.get ().id);
 	  iterator++;
 	  break;
 	}
@@ -421,6 +429,8 @@ ForeverStack<N>::find_starting_point (
 
 	  starting_point
 	    = find_closest_module (starting_point.get ().parent.value ());
+
+	  insert_segment_resolution (seg, starting_point.get ().id);
 	  continue;
 	}
 
@@ -438,7 +448,8 @@ template <typename S>
 tl::optional<typename ForeverStack<N>::Node &>
 ForeverStack<N>::resolve_segments (
   Node &starting_point, const std::vector<S> &segments,
-  typename std::vector<S>::const_iterator iterator)
+  typename std::vector<S>::const_iterator iterator,
+  std::function<void (const S &, NodeId)> insert_segment_resolution)
 {
   auto *current_node = &starting_point;
   for (; !is_last (iterator, segments); iterator++)
@@ -479,6 +490,7 @@ ForeverStack<N>::resolve_segments (
 	}
 
       current_node = &child.value ();
+      insert_segment_resolution (seg, current_node->id);
     }
 
   return *current_node;
@@ -487,23 +499,39 @@ ForeverStack<N>::resolve_segments (
 template <Namespace N>
 template <typename S>
 tl::optional<Rib::Definition>
-ForeverStack<N>::resolve_path (const std::vector<S> &segments)
+ForeverStack<N>::resolve_path (
+  const std::vector<S> &segments,
+  std::function<void (const S &, NodeId)> insert_segment_resolution)
 {
   // TODO: What to do if segments.empty() ?
 
   // if there's only one segment, we just use `get`
   if (segments.size () == 1)
-    return get (segments.back ().as_string ());
+    {
+      auto res = get (segments.back ().as_string ());
+      if (res && !res->is_ambiguous ())
+	insert_segment_resolution (segments.back (), res->get_node_id ());
+      return res;
+    }
 
   std::reference_wrapper<Node> starting_point = cursor ();
 
-  return find_starting_point (segments, starting_point)
-    .and_then ([this, &segments, &starting_point] (
+  return find_starting_point (segments, starting_point,
+			      insert_segment_resolution)
+    .and_then ([this, &segments, &starting_point, &insert_segment_resolution] (
 		 typename std::vector<S>::const_iterator iterator) {
-      return resolve_segments (starting_point.get (), segments, iterator);
+      return resolve_segments (starting_point.get (), segments, iterator,
+			       insert_segment_resolution);
     })
-    .and_then ([&segments] (Node final_node) {
-      return final_node.rib.get (segments.back ().as_string ());
+    .and_then ([&segments, &insert_segment_resolution] (
+		 Node final_node) -> tl::optional<Rib::Definition> {
+      // leave resolution within impl blocks to type checker
+      if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
+	return tl::nullopt;
+      auto res = final_node.rib.get (segments.back ().as_string ());
+      if (res && !res->is_ambiguous ())
+	insert_segment_resolution (segments.back (), res->get_node_id ());
+      return res;
     });
 }
 

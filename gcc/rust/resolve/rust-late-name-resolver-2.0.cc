@@ -263,16 +263,15 @@ Late::visit (AST::PathInExpression &expr)
       return;
     }
 
-  auto resolved
-    = ctx.values.resolve_path (expr.get_segments ()).or_else ([&] () {
-	return ctx.types.resolve_path (expr.get_segments ());
-      });
+  auto resolved = ctx.resolve_path (expr.get_segments (), Namespace::Values,
+				    Namespace::Types);
 
   if (!resolved)
     {
-      rust_error_at (expr.get_locus (),
-		     "could not resolve path expression: %qs",
-		     expr.as_simple_path ().as_string ().c_str ());
+      if (!ctx.lookup (expr.get_segments ().front ().get_node_id ()))
+	rust_error_at (expr.get_locus (),
+		       "could not resolve path expression: %qs",
+		       expr.as_simple_path ().as_string ().c_str ());
       return;
     }
 
@@ -307,11 +306,17 @@ Late::visit (AST::TypePath &type)
   auto values = ctx.types.peek ().get_values ();
 
   if (auto resolved = ctx.types.get (str))
-    ctx.map_usage (Usage (type.get_node_id ()),
-		   Definition (resolved->get_node_id ()));
+    {
+      ctx.map_usage (Usage (type.get_node_id ()),
+		     Definition (resolved->get_node_id ()));
+      ctx.map_usage (Usage (type.get_segments ().back ()->get_node_id ()),
+		     Definition (resolved->get_node_id ()));
+    }
   else
-    rust_error_at (type.get_locus (), "could not resolve type path %qs",
-		   str.c_str ());
+    {
+      rust_error_at (type.get_locus (), "could not resolve type path %qs",
+		     str.c_str ());
+    }
 
   DefaultResolver::visit (type);
 }
@@ -339,7 +344,8 @@ Late::visit (AST::StructStruct &s)
 void
 Late::visit (AST::StructExprStruct &s)
 {
-  auto resolved = ctx.types.resolve_path (s.get_struct_name ().get_segments ());
+  auto resolved
+    = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
@@ -348,7 +354,8 @@ Late::visit (AST::StructExprStruct &s)
 void
 Late::visit (AST::StructExprStructBase &s)
 {
-  auto resolved = ctx.types.resolve_path (s.get_struct_name ().get_segments ());
+  auto resolved
+    = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
@@ -358,7 +365,8 @@ Late::visit (AST::StructExprStructBase &s)
 void
 Late::visit (AST::StructExprStructFields &s)
 {
-  auto resolved = ctx.types.resolve_path (s.get_struct_name ().get_segments ());
+  auto resolved
+    = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));

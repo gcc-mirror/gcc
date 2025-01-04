@@ -227,9 +227,12 @@ private:
       };
     };
 
-    ctx.values.resolve_path (segments).map (pair_with_ns (Namespace::Values));
-    ctx.types.resolve_path (segments).map (pair_with_ns (Namespace::Types));
-    ctx.macros.resolve_path (segments).map (pair_with_ns (Namespace::Macros));
+    ctx.resolve_path (segments, Namespace::Values)
+      .map (pair_with_ns (Namespace::Values));
+    ctx.resolve_path (segments, Namespace::Types)
+      .map (pair_with_ns (Namespace::Types));
+    ctx.resolve_path (segments, Namespace::Macros)
+      .map (pair_with_ns (Namespace::Macros));
 
     return resolved;
   }

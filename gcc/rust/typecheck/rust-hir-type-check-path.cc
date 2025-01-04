@@ -274,8 +274,9 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
 	  // assign the ref_node_id if we've found something
-	  nr_ctx.lookup (expr.get_mappings ().get_nodeid ())
-	    .map ([&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
+	  nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {
+	    ref_node_id = resolved;
+	  });
 	}
       else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
 	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
