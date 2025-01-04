@@ -74,7 +74,8 @@ Early::go (AST::Crate &crate)
 bool
 Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
 {
-  auto resolved = ctx.types.resolve_path (glob.to_resolve.get_segments ());
+  auto resolved
+    = ctx.resolve_path (glob.to_resolve.get_segments (), Namespace::Types);
   if (!resolved.has_value ())
     return false;
 
@@ -259,7 +260,7 @@ Early::visit (AST::MacroInvocation &invoc)
   // we won't have changed `definition` from `nullopt` if there are more
   // than one segments in our path
   if (!definition.has_value ())
-    definition = ctx.macros.resolve_path (path.get_segments ());
+    definition = ctx.resolve_path (path.get_segments (), Namespace::Macros);
 
   // if the definition still does not have a value, then it's an error
   if (!definition.has_value ())
@@ -300,8 +301,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	  auto traits = attr.get_traits_to_derive ();
 	  for (auto &trait : traits)
 	    {
-	      auto definition
-		= ctx.macros.resolve_path (trait.get ().get_segments ());
+	      auto definition = ctx.resolve_path (trait.get ().get_segments (),
+						  Namespace::Macros);
 	      if (!definition.has_value ())
 		{
 		  // FIXME: Change to proper error message
@@ -324,8 +325,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 		 ->lookup_builtin (name)
 		 .is_error ()) // Do not resolve builtins
 	{
-	  auto definition
-	    = ctx.macros.resolve_path (attr.get_path ().get_segments ());
+	  auto definition = ctx.resolve_path (attr.get_path ().get_segments (),
+					      Namespace::Macros);
 	  if (!definition.has_value ())
 	    {
 	      // FIXME: Change to proper error message

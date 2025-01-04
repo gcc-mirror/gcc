@@ -216,6 +216,46 @@ public:
 
   tl::optional<NodeId> lookup (NodeId usage) const;
 
+  template <typename S>
+  tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments,
+					      Namespace ns)
+  {
+    std::function<void (const S &, NodeId)> insert_segment_resolution
+      = [this] (const S &seg, NodeId id) {
+	  if (resolved_nodes.find (Usage (seg.get_node_id ()))
+	      == resolved_nodes.end ())
+	    map_usage (Usage (seg.get_node_id ()), Definition (id));
+	};
+    switch (ns)
+      {
+      case Namespace::Values:
+	return values.resolve_path (segments, insert_segment_resolution);
+      case Namespace::Types:
+	return types.resolve_path (segments, insert_segment_resolution);
+      case Namespace::Macros:
+	return macros.resolve_path (segments, insert_segment_resolution);
+      case Namespace::Labels:
+	return labels.resolve_path (segments, insert_segment_resolution);
+      default:
+	rust_unreachable ();
+      }
+  }
+
+  template <typename S, typename... Args>
+  tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments,
+					      Args... ns_args)
+  {
+    std::initializer_list<Namespace> namespaces = {ns_args...};
+
+    for (auto ns : namespaces)
+      {
+	if (auto ret = resolve_path (segments, ns))
+	  return ret;
+      }
+
+    return tl::nullopt;
+  }
+
 private:
   /* Map of "usage" nodes which have been resolved to a "definition" node */
   std::map<Usage, Definition> resolved_nodes;

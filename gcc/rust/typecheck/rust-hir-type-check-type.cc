@@ -403,7 +403,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 			       .resolver ();
 
 	      // assign the ref_node_id if we've found something
-	      nr_ctx.lookup (path.get_mappings ().get_nodeid ())
+	      nr_ctx.lookup (ast_node_id)
 		.map (
 		  [&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
 	    }
