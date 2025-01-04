@@ -1,3 +1,404 @@
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb, exp_ch4.adb, exp_disp.adb, inline.adb: Remove explicit
+	actual parameter Null_Exclusion_Present equal False.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb, exp_disp.adb: Remove explicit actual parameter
+	Constant_Present equal False; tune comments.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb, exp_ch9.adb, exp_dist.adb, exp_imgv.adb, exp_util.adb,
+	sem_dist.adb: Remove explicit actual parameter Aliased_Present equal
+	False; tune comments and whitespace.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Check_Call): Reuse Get_Called_Entity.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Check_Array_Type): Remove extra call.
+	* sem_util.adb (Static_Boolean): Likewise.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Others_Check): Reuse List_Length; tune whitespace.
+	* exp_ch3.adb (Constrain_Array): Remove counting of constraints.
+	* exp_disp.adb (Make_DT): Use Elist utility routines; tune whitespace.
+	* sem_ch12.adb (Formal_Dimensions): Reuse List_Length.
+	(Valid_Default_Attribute): Reuse Number_Formals.
+	* sem_prag.adb (Process_Convention): Likewise.
+	* sem_util.adb (Normalize_Actuals): Likewise.
+	(Check_Function_Writable_Actuals): Reuse List_Length.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Create_Generic_Contract): Remove calls to Present.
+	* sem_util.adb (Normalize_Actuals): Likewise.
+
+2025-01-03  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Append_Entity_Name): Do not skip the
+	simple name for a compilation unit (which includes
+	the case of specless subprogram bodies).
+
+2025-01-03  Tucker Taft  <taft@adacore.com>
+
+	* pprint.adb (Expression_Image): Adjust and improve comments
+	to match style recommendations, and change name of subtype
+	from Not_Associative to Non_Associative, in response to
+	code review.
+
+2025-01-03  Tucker Taft  <taft@adacore.com>
+
+	* pprint.adb (Expression_Image): In local function Expr_Name
+	add a No_Parens flag and define a subtype Not_Associative
+	to represent the short-circuit operations and And/Or/Xor.
+	Insert parentheses to separate the subexpressions when
+	different "Not_Associative" operations occur in a
+	sequence.
+
+2025-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (BIP_Initialization_Call): Adjust description.
+	* exp_ch4.adb (Expand_N_Case_Expression): Adjust commentary.
+	(Expand_N_If_Expression): Likewise.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Set BIP_Initialization_Call unconditionally in the definite case.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* uintp.adb (N_Digits): Refine return subtype, since this routine
+	always returns a positive number of digits.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Generate_Index_Checks): Reuse existing utility routine.
+	* sem_ch4.adb (Analyze_Indexed_Component_Form): Likewise.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_dist.adb (Assign_Subprogram_Identifier,
+	Reserve_NamingContext_Methods): Simplify.
+	* osint.adb (Append_Suffix_To_File_Name, Find_File, Get_Directory,
+	Object_File_Name, Strip_Directory): Likewise.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Alocator): Move unrelated code out of a declare
+	block.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Search_Access_Discriminant, Search_Current_Instance,
+	Search_Internal_Call): Use traversal function instead of traversal
+	procedure and remove associated global variables.
+	* exp_util.adb (Search_Calls): Likewise.
+	* sem_prag.adb (Contains_Loop_Entry): Likewise.
+	* sem_util.adb (Mentions_Post_State): Likewise.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Fix comment for attribute Image.
+	* tbuild.adb (Make_SC): Remove extra whitespace.
+
+2025-01-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-cpp, g-cppstd,
+	and g-cstyin.
+	* doc/gnat_rm/interfacing_to_other_languages.rst (Interfacing to C++):
+	Document class-wide matching and new interfaces.
+	* exp_prag.adb (Expand_Pragma_Import_Or_Interface): Add class-wide
+	exception matching support with 'B' as language identifier.
+	* libgnat/a-exexpr.adb (Setup_Current_Excep): Add Id formal.
+	(Set_Foreign_Occurrence): Likewise.
+	(Propagate_GCC_Exception): Adjust.
+	(Set_Exception_Parameter): Likewise.
+	(Unhandled_Except_Handler): Likewise.
+	* libgnat/g-cpp.ads: New.
+	* libgnat/g-cppexc.adb (Raise_Cpp_Exception): Match 'B' lang id.
+	(Get_Object_Address): New.
+	(Get_Object): Rewrite.
+	(Get_Access_To_Object): New.
+	(Get_Access_To_Tagged_Object): New.
+	(Get_Type_Info): New.
+	(Convert_Caught_Object): New.
+	* libgnat/g-cppexc.ads (Get_Object_Address): New.
+	(Get_Object): Note the Cpp Convention requirement.
+	(Get_Access_To_Object): New.
+	(Get_Access_To_Tagged_Object): New.
+	(Get_Type_Info): New.
+	* libgnat/g-cppstd.adb: New.
+	* libgnat/g-cppstd.ads: New.
+	* libgnat/g-csclex.ads: New, unused.
+	* libgnat/g-cstyin.adb: New.
+	* libgnat/g-cstyin.ads: New.
+	* libgnat/g-excact.adb (Exception_Language): New.
+	(Is_Foreign_Exception): Rewrite.
+	* libgnat/g-excact.ads (Exception_Languages): New.
+	(Exception_Language): New.
+	* libgnat/s-stalib.ads (Lang): Document 'B'.
+	* raise-gcc.c (__gnat_setup_current_excep): Add Exception_Id formal.
+	(CXX_DEPENDENT_EXCEPTION_CLASS): New.
+	(cxx_type_info): New.
+	(__cxa_exception): Rename exceptionType to encompass PrimaryException.
+	(_GNAT_Exception): Drop wrapper.
+	(EID_For): Adjust.
+	(exception_class_eq): Likewise.
+	(__gnat_exception_language_is_cplusplus): New.
+	(__gnat_exception_language_is_ada): New.
+	(__gnat_convert_caught_object): Declare.
+	(__gnat_get_cxx_dependent_exception): New.
+	(__gnat_maybe_get_cxx_dependent_exception): New.
+	(__gnat_get_cxx_exception_type_info): New.
+	(__gnat_obtain_caught_object): New.
+	(is_handled_by): Adjust.   [!CERT] Add eid formal, handle dependent
+	exceptions and base-type matches.
+	(get_action_description_for) [!CERT]: Add eid formal.  Adjust.
+	(personality_body): Adjust.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS, GNATBIND_OBJS) [!STAGE1]:
+	Add new g-cpp, g-cppstd, g-cstyin + preexisting g-cppexc
+	and i-cstrin.
+	* gnat-style.texi: Regenerate.
+	* gnat_rm.texi: Regenerate.
+
+2025-01-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* diagnostics-constructors.adb (Make_Default_Iterator_Not_Primitive_Error):
+	Revise message to match message change made in sem_ch13.adb.
+	* freeze.adb (Freeze_Record_Type): Output appropriate aspect name in
+	error message, using Get_Name_String.
+	(Freeze_Entity): For derived types, call Analyze_Aspects_At_Freeze_Point
+	on the parent type, and call Inherit_Nonoverridable_Aspects on the type
+	(for both parent type and any progenitor types). Add with_clause for
+	System.Case_Util.
+	* gen_il-fields.ads: Add Aspect_Subprograms to type Opt_Field_Enum.
+	* gen_il-gen-gen_nodes.adb: Add field Aspect_Subprograms to
+	N_Aspect_Specification nodes.
+	* sem_ch4.adb (Try_Container_Indexing): Remove Find_Indexing_Operations
+	and the code calling it. Add new function Indexing_Interpretations for
+	retrieving the eligible indexing functions from the appropriate aspect's
+	Aspect_Subprograms list and call that instead of Find_Value_Of_Aspect.
+	* sem_ch7.adb (Analyze_Package_Specification): In loop over entities,
+	call Analyze_Aspects_At_Freeze_Point for types that have delayed
+	aspects.
+	* sem_ch13.ads (Analyze_Aspects_At_Freeze_Point): Add Nonoverridable_Only
+	formal to restrict processing to nonoverridable aspects.
+	(Check_Function_For_Indexing_Aspect): New exported procedure renamed
+	from Check_One_Function and moved to library level.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Test new formal
+	Nonoverridable_Only formal to skip processing of aspects that are not
+	nonoverridable when the formal is True. Skip the processing for
+	Aspect_Full_Access_Only when Nonoverridable_Only is True. Call
+	Check_Indexing_Functions in the case of indexing aspects (procedure
+	moved from Analyze_Attribute_Definition_Clause to top level).
+	(Analyze_Aspect_Specifications): Locate closest ancestor type with an
+	explicit matching aspect to determine the aspect spec to reference in
+	the error about a nonoverridable aspect not confirming an inherited
+	aspect (skipping intermediate derived parents). Ensures that we retain
+	existing errors flagged on explicit ancestor aspects rather than
+	implicit inherited ones. Change names of variables Parent_Type and
+	Inherited_Aspect to Ancestor_Type and Ancestor_Aspect respectively
+	for clarity.
+	(Analyze_Attribute_Definition_Clause): Move nested subprograms
+	Check_Iterator_Functions and Check_Primitive_Function to top level
+	of package. Move Check_Indexing_Functions (and its nested subprograms)
+	from here to within Analyze_Aspects_At_Freeze_Point (adding some
+	formal parameters and adjusting the code appropriately, and no longer
+	call it from this procedure).
+	(Is_CW_Or_Access_To_CW): Add test for the parent type having the
+	indexing aspect for proper setting of Aspect_Specification_Is_Inherited.
+	Delete "???" comment.
+	(Look_Through_Anon_Access): Remove unneeded tests of Is_Access_Constant
+	and Name_Constant_Indexing, which lead to wrong messages in some cases.
+	(Check_Function_For_Indexing_Aspect): Procedure renamed from
+	Check_One_Function and moved to library level (was nested within
+	Check_Indexing_Functions), plus added formals (including Valid, to
+	check result). Move scope test to beginning, to immediately exclude
+	subprograms not declared immediately within the same scope as the type.
+	Improve several error messages. Add error checking for Constant_Indexing
+	functions. Append the function entity to the Aspect_Subprograms list of
+	the aspect specification. Move code for checking for nonconfirming
+	index aspects and for checking for illegal indexing aspects on full
+	views to Check_Indexing_Functions.
+	(Check_Indexing_Functions): Move procedure Illegal_Indexing from
+	here to within Check_Function_For_Indexing_Aspect. Add a comment
+	to the loop over interpretations about the checking being done as
+	legality rules rather than resolution rules, plus a note referencing
+	AI22-0084. Check for nonconfirming indexing aspects and illegal
+	indexing aspects on full views here rather than in Check_One_Function
+	(now named Check_Function_For_Indexing_Aspect). Remove function
+	Check_One_Function (moved to library level and renamed), and call
+	Check_Function_For_Indexing_Aspect instead.
+	(Check_Inherited_Indexing): Improve spec comment. Remove nested function
+	Same_Chars, and replace call Same_Chars with call to Sem_Util.Same_Name.
+	Replace call to Illegal_Indexing with call to Error_Msg_NE.
+	(Check_One_Function): Unnested from Check_Indexing_Functions, rename
+	to Check_Function_For_Indexing_Aspect, move body to library level,
+	and move declaration to Sem_Ch13 spec.
+	(Analyze_Attribute_Definition_Clause, case Attribute_Default_Iterator):
+	Improve error message related to tagged-type requirement. Suppress call
+	to Check_Iterator_Functions for attribute definition clauses associated
+	with inherited aspects. Remove error checking that is redundant with
+	checking done in Check_Iterator_Functions.
+	(Check_Aspect_At_Freeze_Point, case Attribute_Default_Iterator): Call
+	Check_Iterator_Functions (only if the aspect is not Comes_From_Source).
+	(Check_Iterator_Functions): Procedure unnested from
+	Analyze_Attribute_Definition_Clause. Add formals Typ and Expr.
+	Error messages corrected to say "aspect Default_Iterator" instead of
+	"aspect Iterator".
+	(Valid_Default_Iterator): Improve error message to say "must be
+	a local primitive or class-wide function" instead of "must be
+	a primitive function".
+	(Check_Primitive_Function): Unnested from Analyze_Attribute_Definition_Clause.
+	Add formal Ent.
+	(Rep_Item_Too_Late): Return False when an attribute_definition_clause
+	is not Comes_From_Source, since it was generated by the compiler (such
+	as for an inherited aspect).
+	(Resolve_Aspect_Aggregate): Capture implementation base type.
+	(Valid_Empty): Use implementation base types for result type comparison.
+	(Valid_Add_Named): Use impl base types for comparison of formal's type.
+	(Valid_Add_Unnamed): Use impl base types for comparison of formal's type.
+	(Valid_New_Indexed): Use impl base types for result type comparison.
+	(Validate_Literal_Aspect): Return immediately when aspect does not have
+	Comes_From_Source True (no point in validating inherited aspects).
+	* sem_res.adb (Has_Applicable_User_Defined_Literal): Remove Base_Type
+	comparison and always call Corresponding_Op_Of_Derived_Type for derived
+	types. Add "???" comment about issue with wrapper functions (and
+	indicate that it would be nice to eliminate the call to
+	Corresponding_Primitive_Op).
+	* sem_util.ads (Inherit_Nonoverridable_Aspects): New procedure.
+	(Corresponding_Op_Of_Derived_Type): Update spec comment to indicate
+	return of Ancestor_Op and name changed from Corresponding_Primitive_Op.
+	* sem_util.adb (Check_Inherited_Nonoverridable_Aspects): Fix name in
+	header comment.
+	(Corresponding_Op_Of_Derived_Type): Move declaration of Typ down with
+	other local variables. Remove Assert that doesn't apply in some cases.
+	Simply return Ancestor_Op when it isn't a primitive (it can be a
+	class-wide op). Function name changed from Corresponding_Primitive_Op.
+	(Find_Untagged_Type_Of): Add test of Is_Type (E) as a guard for checking
+	Direct_Primitive_Operations. Remove Assert (False), and return Empty
+	when the primitive is not found.
+	(Profile_Matches_Ancestor): Change comparisons to use implementation
+	base types of the operations' formal and result types. Add tests for
+	interface ancestors. Revise "???" comment.
+	(Is_Confirming): Simplify name-matching test to use the names associated
+	with the aspects rather than going to the N_Attribute_Definition_Clause
+	nodes (may facilitate elimination of those clauses at some point).
+	(Inherit_Nonoverridable_Aspects): New procedure to traverse the
+	aspects of a derived type's parent type and create inherited versions
+	of the parent type's nonoverridable aspects, identifying the appropriate
+	subprograms for each such inherited aspect.
+	(Inherit_Nonoverridable_Aspect): New procedure nested in
+	Inherit_Nonoverridable_Aspects to inherit individual nonoverridable
+	aspects. Identifies the corresponding subprogram(s) associated with
+	an inherited nonoverridable aspect. In the case of indexing aspects,
+	new eligible indexing functions of the type are also identified here,
+	and the entities of all of the identified subprograms are appended to
+	the aspect's Aspect_Subprograms Elist. Add a "???" comment about this.
+	* sinfo.ads: Add documentation for the new Aspect_Subprograms field.
+
+2025-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Create the
+	Master_Node even if the declaration is turned into a renaming.
+
+2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Don't copy parent for an itype
+	created by an array component declaration.
+
+2025-01-03  Douglas B Rupp  <rupp@adacore.com>
+
+	* socket.c [__vxworks]: Change vxw_h_addr type to long from
+	int, and cast the conversion of char* to vxw_h_addr to avoid
+	warning/error.
+
+2025-01-03  Tonu Naks  <naks@adacore.com>
+
+	* adaint.c: change default behaviour of __gnat_locate_exec_on_path
+	* adaint.h: change prototype of __gnat_locate_exec_on_path
+	* libgnat/s-os_lib.adb: pass optional argument in Locate_Exec_On_Path
+	* libgnat/s-os_lib.ads: change spec of Locate_Exec_On_Path
+	* libgnat/s-trasym__dwarf.adb: update import of __gnat_locate_exec_on_path
+
+2025-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Put back the call to
+	Remove_Side_Effects in the case of a function call, a class-wide
+	designated type and a regular storage pool.
+
+2025-01-03  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Mark the implicit
+	spec for an expression function as Comes_From_Source.
+	(Analyze_Null_Procedure): Minor cleanup.
+	* sem_warn.adb (Source_E1): New function to compute whether
+	to give warnings. In particular, return True for [in] out
+	parameters of expression functions.
+
+2025-01-03  Steve Baird  <baird@adacore.com>
+
+	* exp_aggr.adb (Check_Bounds): Remove calls that were setting the
+	Analyzed flag to False for two aggregate bound expressions.
+
+2025-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Is_Independent): Document usage on Master_Node objects.
+	* exp_aggr.adb (In_Place_Assign_OK): Remove Parent_Kind variable.
+	(Convert_To_Assignments): Call Unconditional_Parent and remove the
+	restriction on the known size for the in-place expansion of the
+	aggregate in the context of an object declaration.
+	(Expand_Array_Aggregate): Remove Parent_Kind variable and call
+	Unconditional_Parent and Delay_Conditional_Expressions_Between
+	* exp_ch3.adb: Remove clauses for Exp_Dbug.
+	(Expand_N_Object_Declaration): Factor out the code rewriting the
+	declaration as a renaming in Rewrite_Object_Declaration_As_Renaming
+	and call the procedure.
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Declare.
+	(Expand_N_Case_Expression): Delay expanding the expression if it is
+	in the context of an optimizable object declaration.  If the parent
+	node is this object declaration, then replace it with a renaming of
+	the dereference of an access value designating an object initialized
+	with the dependent expression chosen by the condition.
+	(Expand_N_If_Expression): Likewise.
+	(Insert_Conditional_Object_Declaration): New procedure.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Test the unconditional
+	parent in the case of an object declaration too.
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Pass Strict to
+	Processing_Actions from the Is_Independent flag on a Master_Node.
+	* exp_util.ads (Rewrite_Object_Declaration_As_Renaming): Declare.
+	* exp_util.adb: Add clauses for Exp_Dbug.
+	(Rewrite_Object_Declaration_As_Renaming): New procedure extracted
+	from Expand_N_Object_Declaration.
+	* sem_ch3.adb (Analyze_Object_Declaration): Also leave the analysis
+	if the declaration has been replaced with a renaming in the case of
+	an initialization expression that is a conditional expression.
+
+2025-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Preserve Comes_From_Source.
+	* exp_ch4.adb (Expand_Allocator_Expression): Factor out common code
+	for the various cases.  Also delay applying the 2nd predicate check.
+	In the default case, defer to Make_Build_In_Place_Call_In_Allocator
+	entirely in the build-in-place case.
+	* sem_ch4.adb (Analyze_Allocator): Do not give the warning or error
+	for a default-initialized allocator with No_Initialization.
+
+2025-01-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Remove useless space.
+
+2025-01-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Remove condition for writing P line
+	parameters.
+	* lib-writ.ads: Fix typos. Clarify comment.
+
 2025-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnat_ugn.texi: Bump @copying's copyright year.

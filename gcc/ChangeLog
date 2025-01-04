@@ -1,3 +1,24 @@
+2025-01-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/117938
+	* rtlanal.cc (rtx_properties::try_to_add_dest): Treat writes
+	to the stack pointer as also writing to memory.
+
+2025-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118275
+	* varasm.cc (array_size_for_constructor): Use build_int_cst
+	with TREE_TYPE (index) as first argument, instead of bitsize_int.
+
+2025-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-forwprop.cc (check_ctz_array): Use tree_fits_shwi_p instead
+	of just TREE_CODE tests for INTEGER_CST.
+
+2025-01-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.gcc: install a wrapping stdint.h in bpf targets.
+
 2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* gimplify.cc (gimplify_call_expr): Fix handling of need_device_ptr for

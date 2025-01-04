@@ -1,3 +1,13 @@
+2025-01-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_var_list_no_open,
+	cp_parser_omp_var_list): For kind=0 (= OMP_CLAUSE_ERROR),
+	store also the expression location in the tree list.
+	(cp_parser_oacc_data_clause_deviceptr,
+	cp_finish_omp_declare_variant): Use that location instead or
+	input_location/the before-parsing location.
+	* semantics.cc (finish_omp_threadprivate): Likewise.
+
 2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* parser.cc (cp_parser_omp_dispatch): Handle INDIRECT_REF.

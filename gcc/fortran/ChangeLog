@@ -1,3 +1,18 @@
+2025-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: New subsection "Generating C prototypes from
+	Fortran".
+
+2025-01-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106692
+	* trans-expr.cc (gfc_conv_expr_op): Inhibit excessive optimization
+	of Cray pointers by treating them as volatile in comparisons.
+
+2025-01-03  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* intrinsic.texi (ATAN): Add missing verb.
+
 2025-01-02  Tobias Burnus  <tburnus@baylibre.com>
 
 	* openmp.cc (OMP_DISPATCH_CLAUSES): Add OMP_CLAUSE_HAS_DEVICE_ADDR.
