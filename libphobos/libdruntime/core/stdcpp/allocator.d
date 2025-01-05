@@ -147,7 +147,7 @@ extern(D):
         ///
         enum size_t max_size = size_t.max / T.sizeof;
     }
-    else version (CppRuntime_Gcc)
+    else version (CppRuntime_GNU)
     {
         ///
         T* allocate(size_t count, const(void)* = null) @nogc
@@ -174,7 +174,7 @@ extern(D):
         ///
         enum size_t max_size = (ptrdiff_t.max < size_t.max ? cast(size_t)ptrdiff_t.max : size_t.max) / T.sizeof;
     }
-    else version (CppRuntime_Clang)
+    else version (CppRuntime_LLVM)
     {
         ///
         T* allocate(size_t count, const(void)* = null) @nogc
@@ -360,7 +360,7 @@ version (CppRuntime_Microsoft)
         }
     }
 }
-version (CppRuntime_Clang)
+version (CppRuntime_LLVM)
 {
     // Helper for container swap
     package(core.stdcpp) void __swap_allocator(Alloc)(ref Alloc __a1, ref Alloc __a2)

@@ -803,7 +803,7 @@ public:
 	  return;
 
 	/* How big a symbol can be should depend on back-end.  */
-	tree size = build_integer_cst (d->type->size (d->loc),
+	tree size = build_integer_cst (dmd::size (d->type, d->loc),
 				       build_ctype (Type::tsize_t));
 	if (!valid_constant_size_p (size))
 	  {

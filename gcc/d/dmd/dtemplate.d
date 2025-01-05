@@ -89,7 +89,7 @@ private enum LOG = false;
 
 enum IDX_NOTFOUND = 0x12345678;
 
-pure nothrow @nogc @safe
+pure nothrow @nogc @trusted
 {
 
 /********************************************
@@ -142,6 +142,11 @@ inout(TemplateParameter) isTemplateParameter(inout RootObject o)
         return null;
     return cast(inout(TemplateParameter))o;
 }
+
+} // end @trusted casts
+
+pure nothrow @nogc @safe
+{
 
 /**************************************
  * Is this Object an error?
@@ -282,6 +287,18 @@ private bool match(RootObject o1, RootObject o2)
             o1, o1.toChars(), o1.dyncast(), o2, o2.toChars(), o2.dyncast());
     }
 
+    bool yes()
+    {
+        static if (log)
+            printf("\t. match\n");
+        return true;
+    }
+    bool no()
+    {
+        static if (log)
+            printf("\t. nomatch\n");
+        return false;
+    }
     /* A proper implementation of the various equals() overrides
      * should make it possible to just do o1.equals(o2), but
      * we'll do that another day.
@@ -294,7 +311,7 @@ private bool match(RootObject o1, RootObject o2)
     {
         auto t2 = isType(o2);
         if (!t2)
-            goto Lnomatch;
+            return no();
 
         static if (log)
         {
@@ -302,15 +319,15 @@ private bool match(RootObject o1, RootObject o2)
             printf("\tt2 = %s\n", t2.toChars());
         }
         if (!t1.equals(t2))
-            goto Lnomatch;
+            return no();
 
-        goto Lmatch;
+        return yes();
     }
     if (auto e1 = getExpression(o1))
     {
         auto e2 = getExpression(o2);
         if (!e2)
-            goto Lnomatch;
+            return no();
 
         static if (log)
         {
@@ -323,15 +340,15 @@ private bool match(RootObject o1, RootObject o2)
         // as well as expression equality to ensure templates are properly
         // matched.
         if (!(e1.type && e2.type && e1.type.equals(e2.type)) || !e1.equals(e2))
-            goto Lnomatch;
+            return no();
 
-        goto Lmatch;
+        return yes();
     }
     if (auto s1 = isDsymbol(o1))
     {
         auto s2 = isDsymbol(o2);
         if (!s2)
-            goto Lnomatch;
+            return no();
 
         static if (log)
         {
@@ -339,17 +356,17 @@ private bool match(RootObject o1, RootObject o2)
             printf("\ts2 = %s \n", s2.kind(), s2.toChars());
         }
         if (!s1.equals(s2))
-            goto Lnomatch;
+            return no();
         if (s1.parent != s2.parent && !s1.isFuncDeclaration() && !s2.isFuncDeclaration())
-            goto Lnomatch;
+            return no();
 
-        goto Lmatch;
+        return yes();
     }
     if (auto u1 = isTuple(o1))
     {
         auto u2 = isTuple(o2);
         if (!u2)
-            goto Lnomatch;
+            return no();
 
         static if (log)
         {
@@ -357,19 +374,11 @@ private bool match(RootObject o1, RootObject o2)
             printf("\tu2 = %s\n", u2.toChars());
         }
         if (!arrayObjectMatch(u1.objects, u2.objects))
-            goto Lnomatch;
+            return no();
 
-        goto Lmatch;
+        return yes();
     }
-Lmatch:
-    static if (log)
-        printf("\t. match\n");
-    return true;
-
-Lnomatch:
-    static if (log)
-        printf("\t. nomatch\n");
-    return false;
+    return yes();
 }
 
 /************************************

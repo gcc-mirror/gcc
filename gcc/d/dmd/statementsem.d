@@ -1381,7 +1381,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                         p.type = p.type.addStorageClass(sc).typeSemantic(loc, sc2);
                         if (!exp.implicitConvTo(p.type))
                         {
-                            error(fs.loc, "cannot implicilty convert range element of type `%s` to variable `%s` of type `%s`",
+                            error(fs.loc, "cannot implicitly convert tuple element of type `%s` to variable `%s` of type `%s`",
                                 exp.type.toChars(), p.toChars(), p.type.toChars());
                             return retError();
                         }

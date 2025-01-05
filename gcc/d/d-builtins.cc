@@ -140,7 +140,7 @@ build_frontend_type (tree type)
 
 	  /* Search for type matching size and signedness.  */
 	  if (unsignedp != dtype->isunsigned ()
-	      || size != dtype->size ())
+	      || size != dmd::size (dtype))
 	    continue;
 
 	  return dmd::addMod (dtype, mod);
@@ -157,7 +157,7 @@ build_frontend_type (tree type)
 	  dtype = Type::basic[i];
 
 	  /* Search for type matching size.  */
-	  if (dtype->size () != size)
+	  if (dmd::size (dtype) != size)
 	    continue;
 
 	  return dmd::addMod (dtype, mod);
@@ -174,7 +174,7 @@ build_frontend_type (tree type)
 	  dtype = Type::basic[i];
 
 	  /* Search for type matching size.  */
-	  if (dtype->size () != size)
+	  if (dmd::size (dtype) != size)
 	    continue;
 
 	  return dmd::addMod (dtype, mod);
@@ -215,7 +215,7 @@ build_frontend_type (tree type)
 	break;
 
       dtype = dmd::addMod (dmd::sarrayOf (dtype, nunits), mod);
-      if (target.isVectorTypeSupported (dtype->size (), dtype->nextOf ()))
+      if (target.isVectorTypeSupported (dmd::size (dtype), dtype->nextOf ()))
 	break;
 
       dtype = dmd::addMod (TypeVector::create (dtype), mod);
@@ -712,11 +712,11 @@ matches_builtin_type (Type *t1, Type *t2)
 
   if (((tb1->isTypePointer () && tb2->isTypePointer ())
        || (tb1->isTypeVector () && tb2->isTypeVector ()))
-      && tb1->implicitConvTo (tb2) != MATCH::nomatch)
+      && dmd::implicitConvTo (tb1, tb2) != MATCH::nomatch)
     return true;
 
   if (tb1->isintegral () == tb2->isintegral ()
-      && tb1->size () == tb2->size ())
+      && dmd::size (tb1) == dmd::size (tb2))
     return true;
 
   return false;

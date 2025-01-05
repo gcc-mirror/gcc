@@ -256,7 +256,7 @@ if (isFloatingPoint!(F) && isIntegral!(G))
  *     If x is 0 and n is negative, the result is the same as the result of a
  *     division by zero.
  */
-typeof(Unqual!(F).init * Unqual!(G).init) pow(F, G)(F x, G n) @nogc @trusted pure nothrow
+typeof(Unqual!(F).init * Unqual!(G).init) pow(F, G)(F x, G n) @nogc @safe pure nothrow
 if (isIntegral!(F) && isIntegral!(G))
 {
     import std.traits : isSigned;

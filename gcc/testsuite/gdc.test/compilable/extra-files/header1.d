@@ -575,10 +575,15 @@ struct SafeS
         return this;
     }
 
-    ref SafeS foo3() return scope
+    ref SafeS foo3() scope
     {
         static SafeS s;
         return s;
+    }
+
+    ref SafeS foo4() scope return
+    {
+        return this;
     }
 
     int* p;

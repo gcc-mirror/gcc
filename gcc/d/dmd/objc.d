@@ -96,7 +96,7 @@ struct ObjcSelector
     extern (C++) static ObjcSelector* create(FuncDeclaration fdecl)
     {
         OutBuffer buf;
-        TypeFunction ftype = cast(TypeFunction)fdecl.type;
+        auto ftype = cast(TypeFunction)fdecl.type;
         const id = fdecl.ident.toString();
         const nparams = ftype.parameterList.length;
         // Special case: property setter
@@ -571,7 +571,7 @@ extern(C++) private final class Supported : Objc
     {
         if (!fd.objc.selector)
             return;
-        TypeFunction tf = cast(TypeFunction)fd.type;
+        auto tf = cast(TypeFunction)fd.type;
         if (fd.objc.selector.paramCount != tf.parameterList.parameters.length)
             .error(fd.loc, "%s `%s` number of colons in Objective-C selector must match number of parameters", fd.kind, fd.toPrettyChars);
         if (fd.parent && fd.parent.isTemplateInstance())

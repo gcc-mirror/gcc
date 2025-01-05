@@ -36,7 +36,7 @@ import dmd.root.utf;
 import dmd.sideeffect;
 import dmd.target;
 import dmd.tokens;
-import dmd.typesem : toDsymbol, equivalent, sarrayOf;
+import dmd.typesem : toDsymbol, equivalent, sarrayOf, size;
 
 private enum LOG = false;
 

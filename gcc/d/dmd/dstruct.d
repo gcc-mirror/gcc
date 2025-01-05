@@ -456,7 +456,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
             Type tv = v.type.baseElemOf();
             if (tv.ty == Tstruct)
             {
-                TypeStruct ts = cast(TypeStruct)tv;
+                auto ts = cast(TypeStruct)tv;
                 StructDeclaration sd = ts.sym;
                 if (!sd.isPOD())
                 {
@@ -608,7 +608,7 @@ bool _isZeroInit(Expression exp)
 
         case EXP.string_:
         {
-            StringExp se = cast(StringExp)exp;
+            auto se = cast(StringExp)exp;
 
             if (se.type.toBasetype().ty == Tarray) // if initializing a dynamic array
                 return se.len == 0;

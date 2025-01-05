@@ -21,6 +21,7 @@ import dmd.globals;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
+import dmd.typesem;
 import dmd.target;
 
 

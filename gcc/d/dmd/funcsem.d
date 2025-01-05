@@ -2539,7 +2539,7 @@ void buildEnsureRequire(FuncDeclaration thisfd)
     /* Rewrite contracts as nested functions, then call them. Doing it as nested
      * functions means that overriding functions can call them.
      */
-    TypeFunction f = cast(TypeFunction) thisfd.type;
+    auto f = cast(TypeFunction) thisfd.type;
     /* Make a copy of the parameters and make them all ref */
     static Parameters* toRefCopy(ParameterList parameterList)
     {
@@ -3061,4 +3061,363 @@ extern (D) bool checkNRVO(FuncDeclaration fd)
             return false;
     }
     return true;
+}
+
+/**************************************
+ * The function is doing something impure, so mark it as impure.
+ *
+ * Params:
+ *     fd = function declaration to mark
+ *     loc = location of impure action
+ *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
+ *     arg0 = (optional) argument to format string
+ *
+ * Returns: `true` if there's a purity error
+ */
+extern (D) bool setImpure(FuncDeclaration fd, Loc loc = Loc.init, const(char)* fmt = null, RootObject arg0 = null)
+{
+    if (fd.purityInprocess)
+    {
+        fd.purityInprocess = false;
+        if (fmt)
+            fd.pureViolation = new AttributeViolation(loc, fmt, fd, arg0); // impure action
+        else if (arg0)
+            fd.pureViolation = new AttributeViolation(loc, fmt, arg0); // call to impure function
+
+        if (fd.fes)
+            fd.fes.func.setImpure(loc, fmt, arg0);
+    }
+    else if (fd.isPure())
+        return true;
+    return false;
+}
+
+PURE isPure(FuncDeclaration fd)
+{
+    //printf("FuncDeclaration::isPure() '%s'\n", toChars());
+
+
+    TypeFunction tf = fd.type.toTypeFunction();
+    if (fd.purityInprocess)
+        fd.setImpure();
+    if (tf.purity == PURE.fwdref)
+        tf.purityLevel();
+    PURE purity = tf.purity;
+    if (purity > PURE.weak && fd.isNested())
+        purity = PURE.weak;
+    if (purity > PURE.weak && fd.needThis())
+    {
+        // The attribute of the 'this' reference affects purity strength
+        if (fd.type.mod & MODFlags.immutable_)
+        {
+        }
+        else if (fd.type.mod & (MODFlags.const_ | MODFlags.wild) && purity >= PURE.const_)
+            purity = PURE.const_;
+        else
+            purity = PURE.weak;
+    }
+    tf.purity = purity;
+    // ^ This rely on the current situation that every FuncDeclaration has a
+    //   unique TypeFunction.
+    return purity;
+}
+
+extern (D) PURE isPureBypassingInference(FuncDeclaration fd)
+{
+    if (fd.purityInprocess)
+        return PURE.fwdref;
+    else
+        return fd.isPure();
+}
+
+/**************************************
+ * Performs type-based alias analysis between a newly created value and a pre-
+ * existing memory reference:
+ *
+ * Assuming that a reference A to a value of type `ta` was available to the code
+ * that created a reference B to a value of type `tb`, it returns whether B
+ * might alias memory reachable from A based on the types involved (either
+ * directly or via any number of indirections in either A or B).
+ *
+ * This relation is not symmetric in the two arguments. For example, a
+ * a `const(int)` reference can point to a pre-existing `int`, but not the other
+ * way round.
+ *
+ * Examples:
+ *
+ *      ta,           tb,               result
+ *      `const(int)`, `int`,            `false`
+ *      `int`,        `const(int)`,     `true`
+ *      `int`,        `immutable(int)`, `false`
+ *      const(immutable(int)*), immutable(int)*, false   // BUG: returns true
+ *
+ * Params:
+ *      ta = value type being referred to
+ *      tb = referred to value type that could be constructed from ta
+ *
+ * Returns:
+ *      true if reference to `tb` is isolated from reference to `ta`
+ */
+bool traverseIndirections(Type ta, Type tb)
+{
+    //printf("traverseIndirections(%s, %s)\n", ta.toChars(), tb.toChars());
+
+    static bool traverse(Type ta, Type tb, ref scope AssocArray!(const(char)*, bool) table, bool reversePass)
+    {
+        //printf("traverse(%s, %s)\n", ta.toChars(), tb.toChars());
+        ta = ta.baseElemOf();
+        tb = tb.baseElemOf();
+
+        // First, check if the pointed-to types are convertible to each other such
+        // that they might alias directly.
+        static bool mayAliasDirect(Type source, Type target)
+        {
+            return
+                // if source is the same as target or can be const-converted to target
+                source.constConv(target) != MATCH.nomatch ||
+                // if target is void and source can be const-converted to target
+                (target.ty == Tvoid && MODimplicitConv(source.mod, target.mod));
+        }
+
+        if (mayAliasDirect(reversePass ? tb : ta, reversePass ? ta : tb))
+        {
+            //printf(" true  mayalias %s %s %d\n", ta.toChars(), tb.toChars(), reversePass);
+            return false;
+        }
+        if (ta.nextOf() && ta.nextOf() == tb.nextOf())
+        {
+             //printf(" next==next %s %s %d\n", ta.toChars(), tb.toChars(), reversePass);
+             return true;
+        }
+
+        if (tb.ty == Tclass || tb.ty == Tstruct)
+        {
+            /* Traverse the type of each field of the aggregate
+             */
+            bool* found = table.getLvalue(tb.deco);
+            if (*found == true)
+                return true; // We have already seen this symbol, break the cycle
+            else
+                *found = true;
+
+            AggregateDeclaration sym = tb.toDsymbol(null).isAggregateDeclaration();
+            foreach (v; sym.fields)
+            {
+                Type tprmi = v.type.addMod(tb.mod);
+                //printf("\ttb = %s, tprmi = %s\n", tb.toChars(), tprmi.toChars());
+                if (!traverse(ta, tprmi, table, reversePass))
+                    return false;
+            }
+        }
+        else if (tb.ty == Tarray || tb.ty == Taarray || tb.ty == Tpointer)
+        {
+            Type tind = tb.nextOf();
+            if (!traverse(ta, tind, table, reversePass))
+                return false;
+        }
+        else if (tb.hasPointers())
+        {
+            // BUG: consider the context pointer of delegate types
+            return false;
+        }
+
+        // Still no match, so try breaking up ta if we have not done so yet.
+        if (!reversePass)
+        {
+            scope newTable = AssocArray!(const(char)*, bool)();
+            return traverse(tb, ta, newTable, true);
+        }
+
+        return true;
+    }
+
+    // To handle arbitrary levels of indirections in both parameters, we
+    // recursively descend into aggregate members/levels of indirection in both
+    // `ta` and `tb` while avoiding cycles. Start with the original types.
+    scope table = AssocArray!(const(char)*, bool)();
+    const result = traverse(ta, tb, table, false);
+    //printf("  returns %d\n", result);
+    return result;
+}
+
+/********************************************
+ * Params:
+ *     fd = function declaration to check
+ *    t = type of object to test one level of indirection down
+ * Returns:
+ *    true if an object typed `t` has no indirections
+ *    which could have come from the function's parameters, mutable
+ *    globals, or uplevel functions.
+ */
+bool isTypeIsolatedIndirect(FuncDeclaration fd, Type t)
+{
+    //printf("isTypeIsolatedIndirect(t: %s)\n", t.toChars());
+    assert(t);
+
+    /* Since `t` is one level down from an indirection, it could pick
+     * up a reference to a mutable global or an outer function, so
+     * return false.
+     */
+    if (!fd.isPureBypassingInference() || fd.isNested())
+        return false;
+
+    TypeFunction tf = fd.type.toTypeFunction();
+
+    //printf("isTypeIsolatedIndirect(%s) t = %s\n", tf.toChars(), t.toChars());
+
+    foreach (i, fparam; tf.parameterList)
+    {
+        Type tp = fparam.type;
+        if (!tp)
+            continue;
+
+        if (fparam.isLazy() || fparam.isReference())
+        {
+            if (!traverseIndirections(tp, t))
+                return false;
+            continue;
+        }
+
+        /* Goes down one level of indirection, then calls traverseIndirection() on
+         * the result.
+         * Returns:
+         *  true if t is isolated from tp
+         */
+        static bool traverse(Type tp, Type t)
+        {
+            tp = tp.baseElemOf();
+            switch (tp.ty)
+            {
+                case Tarray:
+                case Tpointer:
+                    return traverseIndirections(tp.nextOf(), t);
+
+                case Taarray:
+                case Tclass:
+                    return traverseIndirections(tp, t);
+
+                case Tstruct:
+                    /* Drill down and check the struct's fields
+                     */
+                    auto sym = tp.toDsymbol(null).isStructDeclaration();
+                    foreach (v; sym.fields)
+                    {
+                        Type tprmi = v.type.addMod(tp.mod);
+                        //printf("\ttp = %s, tprmi = %s\n", tp.toChars(), tprmi.toChars());
+                        if (!traverse(tprmi, t))
+                            return false;
+                    }
+                    return true;
+
+                default:
+                    return true;
+            }
+        }
+
+        if (!traverse(tp, t))
+            return false;
+    }
+    // The 'this' reference is a parameter, too
+    if (AggregateDeclaration ad = fd.isCtorDeclaration() ? null : fd.isThis())
+    {
+        Type tthis = ad.getType().addMod(tf.mod);
+        //printf("\ttthis = %s\n", tthis.toChars());
+        if (!traverseIndirections(tthis, t))
+            return false;
+    }
+
+    return true;
+}
+
+/********************************************
+ * See if pointers from function parameters, mutable globals, or uplevel functions
+ * could leak into return value.
+ * Returns:
+ *   true if the function return value is isolated from
+ *   any inputs to the function
+ */
+extern (D) bool isReturnIsolated(FuncDeclaration fd)
+{
+    //printf("isReturnIsolated(this: %s)\n", this.toChars);
+    TypeFunction tf = fd.type.toTypeFunction();
+    assert(tf.next);
+
+    Type treti = tf.next;
+    if (tf.isref)
+        return fd.isTypeIsolatedIndirect(treti);              // check influence from parameters
+
+    return fd.isTypeIsolated(treti);
+}
+
+/********************
+ * See if pointers from function parameters, mutable globals, or uplevel functions
+ * could leak into type `t`.
+ * Params:
+ *   t = type to check if it is isolated
+ * Returns:
+ *   true if `t` is isolated from
+ *   any inputs to the function
+ */
+extern (D) bool isTypeIsolated(FuncDeclaration fd, Type t)
+{
+    StringTable!Type parentTypes;
+    const uniqueTypeID = t.getUniqueID();
+    if (uniqueTypeID)
+    {
+        const cacheResultPtr = uniqueTypeID in fd.isTypeIsolatedCache;
+        if (cacheResultPtr !is null)
+            return *cacheResultPtr;
+
+        parentTypes._init();
+        const isIsolated = fd.isTypeIsolated(t, parentTypes);
+        fd.isTypeIsolatedCache[uniqueTypeID] = isIsolated;
+        return isIsolated;
+    }
+    else
+    {
+        parentTypes._init();
+        return fd.isTypeIsolated(t, parentTypes);
+    }
+}
+
+///ditto
+extern (D) bool isTypeIsolated(FuncDeclaration fd, Type t, ref StringTable!Type parentTypes)
+{
+    //printf("this: %s, isTypeIsolated(t: %s)\n", this.toChars(), t.toChars());
+
+    t = t.baseElemOf();
+    switch (t.ty)
+    {
+        case Tarray:
+        case Tpointer:
+            return fd.isTypeIsolatedIndirect(t.nextOf()); // go down one level
+
+        case Taarray:
+        case Tclass:
+            return fd.isTypeIsolatedIndirect(t);
+
+        case Tstruct:
+            /* Drill down and check the struct's fields
+             */
+            auto sym = t.toDsymbol(null).isStructDeclaration();
+            const tName = t.toChars.toDString;
+            const entry = parentTypes.insert(tName, t);
+            if (entry == null)
+            {
+                //we've already seen this type in a parent, not isolated
+                return false;
+            }
+            foreach (v; sym.fields)
+            {
+                Type tmi = v.type.addMod(t.mod);
+                //printf("\tt = %s, v: %s, vtype: %s,  tmi = %s\n",
+                //       t.toChars(), v.toChars(), v.type.toChars(), tmi.toChars());
+                if (!fd.isTypeIsolated(tmi, parentTypes))
+                    return false;
+            }
+            return true;
+
+        default:
+            return true;
+    }
 }

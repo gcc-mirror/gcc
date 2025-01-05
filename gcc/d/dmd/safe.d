@@ -17,6 +17,7 @@ import core.stdc.stdio;
 
 import dmd.aggregate;
 import dmd.astenums;
+import dmd.dcast : implicitConvTo;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dscope;
@@ -26,7 +27,7 @@ import dmd.identifier;
 import dmd.mtype;
 import dmd.target;
 import dmd.tokens;
-import dmd.typesem : hasPointers, arrayOf;
+import dmd.typesem : hasPointers, arrayOf, size;
 import dmd.funcsem : setUnsafe, setUnsafePreview;
 
 /*************************************************************
@@ -49,7 +50,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
     //printf("checkUnsafeAccess(e: '%s', readonly: %d, printmsg: %d)\n", e.toChars(), readonly, printmsg);
     if (e.op != EXP.dotVariable)
         return false;
-    DotVarExp dve = cast(DotVarExp)e;
+    auto dve = cast(DotVarExp)e;
     if (VarDeclaration v = dve.var.isVarDeclaration())
     {
         if (!sc.func)
@@ -156,10 +157,11 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
  *      e = expression to be cast
  *      tfrom = type of e
  *      tto = type to cast e to
+ *      msg = reason why cast is unsafe or deprecated
  * Returns:
- *      true if @safe
+ *      true if @safe or deprecated
  */
-bool isSafeCast(Expression e, Type tfrom, Type tto)
+bool isSafeCast(Expression e, Type tfrom, Type tto, ref string msg)
 {
     // Implicit conversions are always safe
     if (tfrom.implicitConvTo(tto))
@@ -175,18 +177,34 @@ bool isSafeCast(Expression e, Type tfrom, Type tto)
     {
         ClassDeclaration cdfrom = tfromb.isClassHandle();
         ClassDeclaration cdto = ttob.isClassHandle();
-
         int offset;
+
+        if (cdfrom == cdto)
+            goto Lsame;
+
         if (!cdfrom.isBaseOf(cdto, &offset) &&
             !((cdfrom.isInterfaceDeclaration() || cdto.isInterfaceDeclaration())
                 && cdfrom.classKind == ClassKind.d && cdto.classKind == ClassKind.d))
+        {
+            msg = "Source object type is incompatible with target type";
             return false;
+        }
 
+        // no RTTI
         if (cdfrom.isCPPinterface() || cdto.isCPPinterface())
+        {
+            msg = "No dynamic type information for extern(C++) classes";
             return false;
+        }
+        if (cdfrom.classKind == ClassKind.cpp || cdto.classKind == ClassKind.cpp)
+            msg = "No dynamic type information for extern(C++) classes";
 
+    Lsame:
         if (!MODimplicitConv(tfromb.mod, ttob.mod))
+        {
+            msg = "Incompatible type qualifier";
             return false;
+        }
         return true;
     }
 
@@ -210,22 +228,52 @@ bool isSafeCast(Expression e, Type tfrom, Type tto)
         {
             if (ttob.ty == Tarray && e.op == EXP.arrayLiteral)
                 return true;
+            msg = "`void` data may contain pointers and target element type is mutable";
             return false;
         }
 
         // If the struct is opaque we don't know about the struct members then the cast becomes unsafe
-        if (ttobn.ty == Tstruct && !(cast(TypeStruct)ttobn).sym.members ||
-            tfromn.ty == Tstruct && !(cast(TypeStruct)tfromn).sym.members)
+        if (ttobn.ty == Tstruct && !(cast(TypeStruct)ttobn).sym.members)
+        {
+            msg = "Target element type is opaque";
             return false;
+        }
+        if (tfromn.ty == Tstruct && !(cast(TypeStruct)tfromn).sym.members)
+        {
+            msg = "Source element type is opaque";
+            return false;
+        }
+
+        if (e.op != EXP.arrayLiteral)
+        {
+            // For bool, only 0 and 1 are safe values
+            // Runtime array cast reinterprets data
+            if (ttobn.ty == Tbool && tfromn.ty != Tbool)
+                msg = "Source element may have bytes which are not 0 or 1";
+            else if (ttobn.hasUnsafeBitpatterns())
+                msg = "Target element type has unsafe bit patterns";
+
+            // Can't alias a bool pointer with a non-bool pointer
+            if (ttobn.ty != Tbool && tfromn.ty == Tbool && ttobn.isMutable())
+                msg = "Target element could be assigned a byte which is not 0 or 1";
+            else if (tfromn.hasUnsafeBitpatterns() && ttobn.isMutable())
+                msg = "Source element type has unsafe bit patterns and target element type is mutable";
+        }
 
         const frompointers = tfromn.hasPointers();
         const topointers = ttobn.hasPointers();
 
         if (frompointers && !topointers && ttobn.isMutable())
+        {
+            msg = "Target element type is mutable and source element type contains a pointer";
             return false;
+        }
 
         if (!frompointers && topointers)
+        {
+            msg = "Target element type contains a pointer";
             return false;
+        }
 
         if (!topointers &&
             ttobn.ty != Tfunction && tfromn.ty != Tfunction &&
@@ -235,6 +283,7 @@ bool isSafeCast(Expression e, Type tfrom, Type tto)
             return true;
         }
     }
+    msg = "Source type is incompatible with target type containing a pointer";
     return false;
 }
 

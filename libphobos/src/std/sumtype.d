@@ -11,6 +11,15 @@ include:
 * No dependency on runtime type information (`TypeInfo`).
 * Compatibility with BetterC.
 
+$(H3 List of examples)
+
+* [Basic usage](#basic-usage)
+* [Matching with an overload set](#matching-with-an-overload-set)
+* [Recursive SumTypes](#recursive-sumtypes)
+* [Memory corruption](#memory-corruption) (why assignment can be `@system`)
+* [Avoiding unintentional matches](#avoiding-unintentional-matches)
+* [Multiple dispatch](#multiple-dispatch)
+
 License: Boost License 1.0
 Authors: Paul Backus
 Source: $(PHOBOSSRC std/sumtype.d)
@@ -77,52 +86,38 @@ version (D_BetterC) {} else
     assert(!isFahrenheit(t3));
 }
 
-/** $(DIVID introspection-based-matching, $(H3 Introspection-based matching))
+/** $(DIVID matching-with-an-overload-set, $(H3 Matching with an overload set))
  *
- * In the `length` and `horiz` functions below, the handlers for `match` do not
- * specify the types of their arguments. Instead, matching is done based on how
- * the argument is used in the body of the handler: any type with `x` and `y`
- * properties will be matched by the `rect` handlers, and any type with `r` and
- * `theta` properties will be matched by the `polar` handlers.
+ * Instead of writing `match` handlers inline as lambdas, you can write them as
+ * overloads of a function. An `alias` can be used to create an additional
+ * overload for the `SumType` itself.
+ *
+ * For example, with this overload set:
+ *
+ * ---
+ * string handle(int n) { return "got an int"; }
+ * string handle(string s) { return "got a string"; }
+ * string handle(double d) { return "got a double"; }
+ * alias handle = match!handle;
+ * ---
+ *
+ * Usage would look like this:
  */
 version (D_BetterC) {} else
 @safe unittest
 {
-    import std.math.operations : isClose;
-    import std.math.trigonometry : cos;
-    import std.math.constants : PI;
-    import std.math.algebraic : sqrt;
+    alias ExampleSumType = SumType!(int, string, double);
 
-    struct Rectangular { double x, y; }
-    struct Polar { double r, theta; }
-    alias Vector = SumType!(Rectangular, Polar);
+    ExampleSumType a = 123;
+    ExampleSumType b = "hello";
+    ExampleSumType c = 3.14;
 
-    double length(Vector v)
-    {
-        return v.match!(
-            rect => sqrt(rect.x^^2 + rect.y^^2),
-            polar => polar.r
-        );
-    }
-
-    double horiz(Vector v)
-    {
-        return v.match!(
-            rect => rect.x,
-            polar => polar.r * cos(polar.theta)
-        );
-    }
-
-    Vector u = Rectangular(1, 1);
-    Vector v = Polar(1, PI/4);
-
-    assert(length(u).isClose(sqrt(2.0)));
-    assert(length(v).isClose(1));
-    assert(horiz(u).isClose(1));
-    assert(horiz(v).isClose(sqrt(0.5)));
+    assert(a.handle == "got an int");
+    assert(b.handle == "got a string");
+    assert(c.handle == "got a double");
 }
 
-/** $(DIVID arithmetic-expression-evaluator, $(H3 Arithmetic expression evaluator))
+/** $(DIVID recursive-sumtypes, $(H3 Recursive SumTypes))
  *
  * This example makes use of the special placeholder type `This` to define a
  * [recursive data type](https://en.wikipedia.org/wiki/Recursive_data_type): an
@@ -227,6 +222,10 @@ version (D_BetterC) {} else
     assert(pprint(*myExpr) == "(a + (2 * b))");
 }
 
+// For the "Matching with an overload set" example above
+// Needs public import to work with `make publictests`
+version (unittest) public import std.internal.test.sumtype_example_overloads;
+
 import std.format.spec : FormatSpec, singleSpec;
 import std.meta : AliasSeq, Filter, IndexOf = staticIndexOf, Map = staticMap;
 import std.meta : NoDuplicates;
@@ -266,8 +265,7 @@ private enum isInout(T) = is(T == inout);
  *
  * The special type `This` can be used as a placeholder to create
  * self-referential types, just like with `Algebraic`. See the
- * ["Arithmetic expression evaluator" example](#arithmetic-expression-evaluator) for
- * usage.
+ * ["Recursive SumTypes" example](#recursive-sumtypes) for usage.
  *
  * A `SumType` is initialized by default to hold the `.init` value of its
  * first member type, just like a regular union. The version identifier
@@ -1619,9 +1617,9 @@ enum bool isSumType(T) = is(T : SumType!Args, Args...);
  * overloads are considered as potential matches.
  *
  * Templated handlers are also accepted, and will match any type for which they
- * can be [implicitly instantiated](https://dlang.org/glossary.html#ifti). See
- * ["Introspection-based matching"](#introspection-based-matching) for an
- * example of templated handler usage.
+ * can be [implicitly instantiated](https://dlang.org/glossary.html#ifti).
+ * (Remember that a $(DDSUBLINK spec/expression,function_literals, function literal)
+ * without an explicit argument type is considered a template.)
  *
  * If multiple [SumType]s are passed to match, their values are passed to the
  * handlers as separate arguments, and matching is done for each possible

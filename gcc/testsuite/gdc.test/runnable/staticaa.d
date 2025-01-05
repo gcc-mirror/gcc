@@ -181,6 +181,32 @@ void testStaticArray()
 
 /////////////////////////////////////////////
 
+// https://issues.dlang.org/show_bug.cgi?id=24602
+
+class Set
+{
+    bool[string] aa;
+
+    this(bool[string] aa)
+    {
+        this.aa = aa;
+    }
+}
+
+class Bar
+{
+    Set x = new Set(["a": 1, "b": 0]);
+}
+
+void testClassLiteral()
+{
+    assert(new Bar().x.aa["a"] == 1);
+    assert(new Bar().x.aa["b"] == 0);
+}
+
+/////////////////////////////////////////////
+
+
 void main()
 {
     testSimple();
@@ -192,4 +218,5 @@ void main()
     testLocalStatic();
     testEnumInit();
     testStaticArray();
+    testClassLiteral();
 }

@@ -104,7 +104,7 @@ T emplace(T, Args...)(T chunk, auto ref Args args)
 
     // Initialize the object in its pre-ctor state
     const initializer = __traits(initSymbol, T);
-    (() @trusted { (cast(void*) chunk)[0 .. initializer.length] = initializer[]; })();
+    () @trusted { (cast(void*) chunk)[0 .. initializer.length] = cast(void[]) initializer[]; }();
 
     static if (isInnerClass!T)
     {
@@ -2683,7 +2683,7 @@ T _d_newThrowable(T)() @trusted
     debug(PRINTF) printf(" p = %p\n", p);
 
     // initialize it
-    p[0 .. init.length] = init[];
+    p[0 .. init.length] = cast(void[]) init[];
 
     import core.internal.traits : hasIndirections;
     if (hasIndirections!T)
@@ -2776,7 +2776,7 @@ if (is(T == class))
     }
 
     // initialize it
-    p[0 .. init.length] = init[];
+    p[0 .. init.length] = cast(void[]) init[];
 
     debug(PRINTF) printf("initialization done\n");
     return cast(T) p;

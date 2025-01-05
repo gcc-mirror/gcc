@@ -904,7 +904,7 @@ identity_compare_p (StructDeclaration *sd)
 	  if (offset != vd->offset)
 	    return false;
 
-	  offset += vd->type->size ();
+	  offset += dmd::size (vd->type);
 	}
     }
 
@@ -2128,7 +2128,7 @@ call_side_effect_free_p (FuncDeclaration *func, Type *type)
 	return false;
 
       /* Only consider it as `pure' if it can't modify its arguments.  */
-      if (func->isPure () == PURE::const_)
+      if (dmd::isPure (func) == PURE::const_)
 	return true;
     }
 

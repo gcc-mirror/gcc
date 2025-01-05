@@ -99,7 +99,7 @@ private:
         alias __data = _Mydata;
         alias __size = _Mysize;
     }
-    else version (CppRuntime_Gcc)
+    else version (CppRuntime_GNU)
     {
         size_t _M_len;
         const(T)* _M_str;
@@ -107,7 +107,7 @@ private:
         alias __data = _M_str;
         alias __size = _M_len;
     }
-    else version (CppRuntime_Clang)
+    else version (CppRuntime_LLVM)
     {
         const value_type* __data;
         size_type __size;

@@ -25,6 +25,8 @@
 
 module dmd.target;
 
+import core.stdc.stdio;
+
 import dmd.astenums : CHECKENABLE;
 import dmd.globals : Param;
 
@@ -344,8 +346,8 @@ struct TargetCPP
     enum Runtime : ubyte
     {
         Unspecified,
-        Clang,
-        Gcc,
+        LLVM,
+        GNU,
         Microsoft,
         Sun
     }

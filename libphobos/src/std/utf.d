@@ -2528,8 +2528,8 @@ size_t encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
     encode(buf, '\u0000'); assert(buf[0] == '\u0000');
     encode(buf, '\uD7FF'); assert(buf[0] == '\uD7FF');
     encode(buf, '\uE000'); assert(buf[0] == '\uE000');
-    encode(buf, 0xFFFE ); assert(buf[0] == 0xFFFE);
-    encode(buf, 0xFFFF ); assert(buf[0] == 0xFFFF);
+    encode(buf, 0xFFFE); assert(buf[0] == 0xFFFE);
+    encode(buf, 0xFFFF); assert(buf[0] == 0xFFFF);
     encode(buf, '\U0010FFFF'); assert(buf[0] == '\U0010FFFF');
 
     assertThrown!UTFException(encode(buf, cast(dchar) 0xD800));
@@ -2749,8 +2749,8 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
     encode(buf, '\u0000'); assert(buf[0] == '\u0000');
     encode(buf, '\uD7FF'); assert(buf[1] == '\uD7FF');
     encode(buf, '\uE000'); assert(buf[2] == '\uE000');
-    encode(buf, 0xFFFE ); assert(buf[3] == 0xFFFE);
-    encode(buf, 0xFFFF ); assert(buf[4] == 0xFFFF);
+    encode(buf, 0xFFFE); assert(buf[3] == 0xFFFE);
+    encode(buf, 0xFFFF); assert(buf[4] == 0xFFFF);
     encode(buf, '\U0010FFFF'); assert(buf[5] == '\U0010FFFF');
 
     assertThrown!UTFException(encode(buf, cast(dchar) 0xD800));

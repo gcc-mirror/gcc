@@ -20,6 +20,7 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.dclass;
 import dmd.declaration;
+import dmd.denum;
 import dmd.dinterpret;
 import dmd.dscope;
 import dmd.dstruct;
@@ -1465,6 +1466,463 @@ MATCH implicitConvTo(Expression e, Type t)
         case EXP.new_             : return visitNew(e.isNewExp());
         case EXP.slice            : return visitSlice(e.isSliceExp());
         case EXP.tuple            : return visitTuple(e.isTupleExp());
+    }
+}
+
+/********************************
+ * Determine if 'from' can be implicitly converted
+ * to type 'to'.
+ * Returns:
+ *      MATCH.nomatch, MATCH.convert, MATCH.constant, MATCH.exact
+ */
+MATCH implicitConvTo(Type from, Type to)
+{
+    MATCH visitType(Type from)
+    {
+        //printf("Type::implicitConvTo(this=%p, to=%p)\n", this, to);
+        //printf("from: %s\n", from.toChars());
+        //printf("to  : %s\n", to.toChars());
+        if (from.equals(to))
+            return MATCH.exact;
+        return MATCH.nomatch;
+
+    }
+
+    MATCH visitBasic(TypeBasic from)
+    {
+        //printf("TypeBasic::implicitConvTo(%s) from %s\n", to.toChars(), from.toChars());
+        if (from == to)
+            return MATCH.exact;
+
+        if (from.ty == to.ty)
+        {
+            if (from.mod == to.mod)
+                return MATCH.exact;
+            else if (MODimplicitConv(from.mod, to.mod))
+                return MATCH.constant;
+            else if (!((from.mod ^ to.mod) & MODFlags.shared_)) // for wild matching
+                return MATCH.constant;
+            else
+                return MATCH.convert;
+        }
+
+        if (from.ty == Tvoid || to.ty == Tvoid)
+            return MATCH.nomatch;
+        if (to.ty == Tbool)
+            return MATCH.nomatch;
+
+        TypeBasic tob;
+        if (to.ty == Tvector && to.deco)
+        {
+            TypeVector tv = cast(TypeVector)to;
+            tob = tv.elementType();
+        }
+        else if (auto te = to.isTypeEnum())
+        {
+            EnumDeclaration ed = te.sym;
+            if (ed.isSpecial())
+            {
+                /* Special enums that allow implicit conversions to them
+                 * with a MATCH.convert
+                 */
+                tob = to.toBasetype().isTypeBasic();
+            }
+            else
+                return MATCH.nomatch;
+        }
+        else
+            tob = to.isTypeBasic();
+        if (!tob)
+            return MATCH.nomatch;
+
+        if (from.flags & TFlags.integral)
+        {
+            // Disallow implicit conversion of integers to imaginary or complex
+            if (tob.flags & (TFlags.imaginary | TFlags.complex))
+                return MATCH.nomatch;
+
+            // If converting from integral to integral
+            if (tob.flags & TFlags.integral)
+            {
+                const sz = size(from, Loc.initial);
+                const tosz = tob.size(Loc.initial);
+
+                /* Can't convert to smaller size
+                 */
+                if (sz > tosz)
+                    return MATCH.nomatch;
+                /* Can't change sign if same size
+                 */
+                //if (sz == tosz && (flags ^ tob.flags) & TFlags.unsigned)
+                //    return MATCH.nomatch;
+            }
+        }
+        else if (from.flags & TFlags.floating)
+        {
+            // Disallow implicit conversion of floating point to integer
+            if (tob.flags & TFlags.integral)
+                return MATCH.nomatch;
+
+            assert(tob.flags & TFlags.floating || to.ty == Tvector);
+
+            // Disallow implicit conversion from complex to non-complex
+            if (from.flags & TFlags.complex && !(tob.flags & TFlags.complex))
+                return MATCH.nomatch;
+
+            // Disallow implicit conversion of real or imaginary to complex
+            if (from.flags & (TFlags.real_ | TFlags.imaginary) && tob.flags & TFlags.complex)
+                return MATCH.nomatch;
+
+            // Disallow implicit conversion to-from real and imaginary
+            if ((from.flags & (TFlags.real_ | TFlags.imaginary)) != (tob.flags & (TFlags.real_ | TFlags.imaginary)))
+                return MATCH.nomatch;
+        }
+        return MATCH.convert;
+
+    }
+
+    MATCH visitVector(TypeVector from)
+    {
+        //printf("TypeVector::implicitConvTo(%s) from %s\n", to.toChars(), from.toChars());
+        if (from == to)
+            return MATCH.exact;
+        if (to.ty != Tvector)
+            return MATCH.nomatch;
+
+        TypeVector tv = cast(TypeVector)to;
+        assert(from.basetype.ty == Tsarray && tv.basetype.ty == Tsarray);
+
+        // Can't convert to a vector which has different size.
+        if (from.basetype.size() != tv.basetype.size())
+            return MATCH.nomatch;
+
+        // Allow conversion to void[]
+        if (tv.basetype.nextOf().ty == Tvoid)
+            return MATCH.convert;
+
+        // Otherwise implicitly convertible only if basetypes are.
+        return from.basetype.implicitConvTo(tv.basetype);
+    }
+
+    MATCH visitSArray(TypeSArray from)
+    {
+        //printf("TypeSArray::implicitConvTo(to = %s) this = %s\n", to.toChars(), from.toChars());
+        if (auto ta = to.isTypeDArray())
+        {
+            if (!MODimplicitConv(from.next.mod, ta.next.mod))
+                return MATCH.nomatch;
+
+            /* Allow conversion to void[]
+             */
+            if (ta.next.ty == Tvoid)
+            {
+                return MATCH.convert;
+            }
+
+            MATCH m = from.next.constConv(ta.next);
+            if (m > MATCH.nomatch)
+            {
+                return MATCH.convert;
+            }
+            return MATCH.nomatch;
+        }
+        if (auto tsa = to.isTypeSArray())
+        {
+            if (from == to)
+                return MATCH.exact;
+
+            if (from.dim.equals(tsa.dim))
+            {
+                MATCH m = from.next.implicitConvTo(tsa.next);
+
+                /* Allow conversion to non-interface base class.
+                 */
+                if (m == MATCH.convert &&
+                    from.next.ty == Tclass)
+                {
+                    if (auto toc = tsa.next.isTypeClass)
+                    {
+                        if (!toc.sym.isInterfaceDeclaration)
+                            return MATCH.convert;
+                    }
+                }
+
+                /* Since static arrays are value types, allow
+                 * conversions from const elements to non-const
+                 * ones, just like we allow conversion from const int
+                 * to int.
+                 */
+                if (m >= MATCH.constant)
+                {
+                    if (from.mod != to.mod)
+                        m = MATCH.constant;
+                    return m;
+                }
+            }
+        }
+        return MATCH.nomatch;
+    }
+
+    MATCH visitDArray(TypeDArray from)
+    {
+        //printf("TypeDArray::implicitConvTo(to = %s) this = %s\n", to.toChars(), from.toChars());
+        if (from.equals(to))
+            return MATCH.exact;
+
+        if (auto ta = to.isTypeDArray())
+        {
+            if (!MODimplicitConv(from.next.mod, ta.next.mod))
+                return MATCH.nomatch; // not const-compatible
+
+            /* Allow conversion to void[]
+             */
+            if (from.next.ty != Tvoid && ta.next.ty == Tvoid)
+            {
+                return MATCH.convert;
+            }
+
+            MATCH m = from.next.constConv(ta.next);
+            if (m > MATCH.nomatch)
+            {
+                if (m == MATCH.exact && from.mod != to.mod)
+                    m = MATCH.constant;
+                return m;
+            }
+        }
+
+        return visitType(from);
+    }
+
+    MATCH visitAArray(TypeAArray from)
+    {
+        //printf("TypeAArray::implicitConvTo(to = %s) this = %s\n", to.toChars(), from.toChars());
+        if (from.equals(to))
+            return MATCH.exact;
+
+        if (auto ta = to.isTypeAArray())
+        {
+            if (!MODimplicitConv(from.next.mod, ta.next.mod))
+                return MATCH.nomatch; // not const-compatible
+
+            if (!MODimplicitConv(from.index.mod, ta.index.mod))
+                return MATCH.nomatch; // not const-compatible
+
+            MATCH m = from.next.constConv(ta.next);
+            MATCH mi = from.index.constConv(ta.index);
+            if (m > MATCH.nomatch && mi > MATCH.nomatch)
+            {
+                return MODimplicitConv(from.mod, to.mod) ? MATCH.constant : MATCH.nomatch;
+            }
+        }
+        return visitType(from);
+    }
+
+    /+
+     + Checks whether this function type is convertible to ` to`
+     + when used in a function pointer / delegate.
+     +
+     + Params:
+     +   to = target type
+     +
+     + Returns:
+     +   MATCH.nomatch: `to` is not a covaraint function
+     +   MATCH.convert: `to` is a covaraint function
+     +   MATCH.exact:   `to` is identical to this function
+     +/
+    MATCH implicitPointerConv(TypeFunction tf, Type to)
+    {
+        assert(to);
+
+        if (tf.equals(to))
+            return MATCH.constant;
+
+        if (tf.covariant(to) == Covariant.yes)
+        {
+            Type tret = tf.nextOf();
+            Type toret = to.nextOf();
+            if (tret.ty == Tclass && toret.ty == Tclass)
+            {
+                /* https://issues.dlang.org/show_bug.cgi?id=10219
+                 * Check covariant interface return with offset tweaking.
+                 * interface I {}
+                 * class C : Object, I {}
+                 * I function() dg = function C() {}    // should be error
+                 */
+                int offset = 0;
+                if (toret.isBaseOf(tret, &offset) && offset != 0)
+                    return MATCH.nomatch;
+            }
+            return MATCH.convert;
+        }
+
+        return MATCH.nomatch;
+    }
+
+    MATCH visitPointer(TypePointer from)
+    {
+        //printf("TypePointer::implicitConvTo(to = %s) %s\n", to.toChars(), from.toChars());
+        if (from.equals(to))
+            return MATCH.exact;
+
+        // Only convert between pointers
+        auto tp = to.isTypePointer();
+        if (!tp)
+            return MATCH.nomatch;
+
+        assert(from.next);
+        assert(tp.next);
+
+        // Conversion to void*
+        if (tp.next.ty == Tvoid)
+        {
+            // Function pointer conversion doesn't check constness?
+            if (from.next.ty == Tfunction)
+                return MATCH.convert;
+
+            if (!MODimplicitConv(from.next.mod, tp.next.mod))
+                return MATCH.nomatch; // not const-compatible
+
+            return from.next.ty == Tvoid ? MATCH.constant : MATCH.convert;
+        }
+
+        // Conversion between function pointers
+        if (auto thisTf = from.next.isTypeFunction())
+            return implicitPointerConv(thisTf, tp.next);
+
+        // Default, no implicit conversion between the pointer targets
+        MATCH m = from.next.constConv(tp.next);
+
+        if (m == MATCH.exact && from.mod != to.mod)
+            m = MATCH.constant;
+        return m;
+    }
+
+    MATCH visitDelegate(TypeDelegate from)
+    {
+        //printf("TypeDelegate.implicitConvTo(this=%p, to=%p)\n", from, to);
+        //printf("from: %s\n", from.toChars());
+        //printf("to  : %s\n", to.toChars());
+        if (from.equals(to))
+            return MATCH.exact;
+
+        if (auto toDg = to.isTypeDelegate())
+        {
+            MATCH m = implicitPointerConv(from.next.isTypeFunction(), toDg.next);
+
+            // Retain the old behaviour for this refactoring
+            // Should probably be changed to constant to match function pointers
+            if (m > MATCH.convert)
+                m = MATCH.convert;
+
+            return m;
+        }
+
+        return MATCH.nomatch;
+    }
+
+    MATCH visitStruct(TypeStruct from)
+    {
+        //printf("TypeStruct::implicitConvTo(%s => %s)\n", from.toChars(), to.toChars());
+        MATCH m = from.implicitConvToWithoutAliasThis(to);
+        return m == MATCH.nomatch ? from.implicitConvToThroughAliasThis(to) : m;
+    }
+
+    MATCH visitEnum(TypeEnum from)
+    {
+        import dmd.enumsem : getMemtype;
+
+        MATCH m;
+        //printf("TypeEnum::implicitConvTo() %s to %s\n", from.toChars(), to.toChars());
+        if (from.ty == to.ty && from.sym == (cast(TypeEnum)to).sym)
+            m = (from.mod == to.mod) ? MATCH.exact : MATCH.constant;
+        else if (from.sym.getMemtype(Loc.initial).implicitConvTo(to))
+            m = MATCH.convert; // match with conversions
+        else
+            m = MATCH.nomatch; // no match
+        return m;
+    }
+
+    MATCH visitClass(TypeClass from)
+    {
+        //printf("TypeClass::implicitConvTo(to = '%s') %s\n", to.toChars(), from.toChars());
+        MATCH m = from.implicitConvToWithoutAliasThis(to);
+        return m ? m : from.implicitConvToThroughAliasThis(to);
+    }
+
+    MATCH visitTuple(TypeTuple from)
+    {
+        if (from == to)
+            return MATCH.exact;
+        if (auto tt = to.isTypeTuple())
+        {
+            if (from.arguments.length == tt.arguments.length)
+            {
+                MATCH m = MATCH.exact;
+                for (size_t i = 0; i < tt.arguments.length; i++)
+                {
+                    Parameter arg1 = (*from.arguments)[i];
+                    Parameter arg2 = (*tt.arguments)[i];
+                    MATCH mi = arg1.type.implicitConvTo(arg2.type);
+                    if (mi < m)
+                        m = mi;
+                }
+                return m;
+            }
+        }
+        return MATCH.nomatch;
+    }
+
+    MATCH visitNull(TypeNull from)
+    {
+        //printf("TypeNull::implicitConvTo(this=%p, to=%p)\n", from, to);
+        //printf("from: %s\n", from.toChars());
+        //printf("to  : %s\n", to.toChars());
+        MATCH m = visitType(cast(Type)from);
+        if (m != MATCH.nomatch)
+            return m;
+
+        //NULL implicitly converts to any pointer type or dynamic array
+        //if (type.ty == Tpointer && type.nextOf().ty == Tvoid)
+        {
+            Type tb = to.toBasetype();
+            if (tb.ty == Tnull || tb.ty == Tpointer || tb.ty == Tarray || tb.ty == Taarray || tb.ty == Tclass || tb.ty == Tdelegate)
+                return MATCH.constant;
+        }
+
+        return MATCH.nomatch;
+    }
+
+    MATCH visitNoreturn(TypeNoreturn from)
+    {
+        //printf("TypeNoreturn::implicitConvTo(this=%p, to=%p)\n", from, to);
+        //printf("from: %s\n", from.toChars());
+        //printf("to  : %s\n", to.toChars());
+        if (from.equals(to))
+            return MATCH.exact;
+
+        // Different qualifiers?
+        if (to.ty == Tnoreturn)
+            return MATCH.constant;
+
+        // Implicitly convertible to any type
+        return MATCH.convert;
+    }
+
+    switch(from.ty)
+    {
+        default:             return from.isTypeBasic() ? visitBasic(from.isTypeBasic()) : visitType(from);
+        case Tvector:        return visitVector(from.isTypeVector());
+        case Tsarray:        return visitSArray(from.isTypeSArray());
+        case Tarray:         return visitDArray(from.isTypeDArray());
+        case Taarray:        return visitAArray(from.isTypeAArray());
+        case Tpointer:       return visitPointer(from.isTypePointer());
+        case Tdelegate:      return visitDelegate(from.isTypeDelegate());
+        case Tstruct:        return visitStruct(from.isTypeStruct());
+        case Tenum:          return visitEnum(from.isTypeEnum());
+        case Tclass:         return visitClass(from.isTypeClass());
+        case Ttuple:         return visitTuple(from.isTypeTuple());
+        case Tnull:          return visitNull(from.isTypeNull());
+        case Tnoreturn:      return visitNoreturn(from.isTypeNoreturn());
     }
 }
 

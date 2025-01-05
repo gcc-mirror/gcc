@@ -27,6 +27,7 @@ import dmd.root.array;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.tokens;
+import dmd.typesem : size;
 
 /***********************************************************
  */
@@ -1872,22 +1873,30 @@ final class CParser(AST) : Parser!AST
              * init-declarator:
              *    declarator simple-asm-expr (opt) gnu-attributes (opt)
              *    declarator simple-asm-expr (opt) gnu-attributes (opt) = initializer
+             *
+             * Clang also allows simple-asm-expr after gnu-attributes.
              */
+            while (1)
+            {
+                if (token.value == TOK.asm_)
+                {
+                    asmName = cparseGnuAsmLabel();
+                    /* This is a data definition, there cannot now be a
+                     * function definition.
+                     */
+                    first = false;
+                }
+                else if (token.value == TOK.__attribute__)
+                    cparseGnuAttributes(specifier);
+                else
+                    break;
+            }
+
             switch (token.value)
             {
                 case TOK.assign:
                 case TOK.comma:
                 case TOK.semicolon:
-                case TOK.asm_:
-                case TOK.__attribute__:
-                    if (token.value == TOK.asm_)
-                        asmName = cparseGnuAsmLabel();
-                    if (token.value == TOK.__attribute__)
-                    {
-                        cparseGnuAttributes(specifier);
-                        if (token.value == TOK.leftCurly)
-                            break;              // function definition
-                    }
                     /* This is a data definition, there cannot now be a
                      * function definition.
                      */
@@ -3626,6 +3635,12 @@ final class CParser(AST) : Parser!AST
                  * type on the target machine. It's the opposite of __attribute__((packed))
                  */
             }
+            else if (token.ident == Id.packed)
+            {
+                specifier.packalign.set(1);
+                specifier.packalign.setPack(true);
+                nextToken();
+            }
             else if (token.ident == Id.always_inline) // https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
             {
                 specifier.scw |= SCW.xinline;
@@ -3974,7 +3989,7 @@ final class CParser(AST) : Parser!AST
             members = new AST.Dsymbols();          // so `members` will be non-null even with 0 members
             while (token.value != TOK.rightCurly)
             {
-                cparseStructDeclaration(members);
+                cparseStructDeclaration(members, packalign);
 
                 if (token.value == TOK.endOfFile)
                     break;
@@ -3987,6 +4002,24 @@ final class CParser(AST) : Parser!AST
                  *  struct-declarator-list:
                  *    struct-declarator (opt)
                  */
+            }
+
+            /* GNU Extensions
+             * Parse the postfix gnu-attributes (opt)
+             */
+            Specifier specifier;
+            if (token.value == TOK.__attribute__)
+                cparseGnuAttributes(specifier);
+            if (!specifier.packalign.isUnknown)
+            {
+                packalign.set(specifier.packalign.get());
+                packalign.setPack(specifier.packalign.isPack());
+                foreach (ref d; (*members)[])
+                {
+                    auto decls = new AST.Dsymbols(1);
+                    (*decls)[0] = d;
+                    d = new AST.AlignDeclaration(d.loc, specifier.packalign, decls);
+                }
             }
         }
         else if (!tag)
@@ -4019,8 +4052,9 @@ final class CParser(AST) : Parser!AST
      *    declarator (opt) : constant-expression
      * Params:
      *    members = where to put the fields (members)
+     *    packalign = alignment to use for struct members
      */
-    void cparseStructDeclaration(AST.Dsymbols* members)
+    void cparseStructDeclaration(AST.Dsymbols* members, structalign_t packalign)
     {
         //printf("cparseStructDeclaration()\n");
         if (token.value == TOK._Static_assert)
@@ -4031,7 +4065,7 @@ final class CParser(AST) : Parser!AST
         }
 
         Specifier specifier;
-        specifier.packalign = this.packalign;
+        specifier.packalign = packalign.isUnknown ? this.packalign : packalign;
         auto tspec = cparseSpecifierQualifierList(LVL.member, specifier);
         if (!tspec)
         {

@@ -2,9 +2,10 @@
 // PERMUTE_ARGS: -g
 // EXTRA_CPP_SOURCES: cppb.cpp
 // EXTRA_FILES: extra-files/cppb.h
-// CXXFLAGS(linux freebsd osx netbsd dragonflybsd): -std=c++11
+// CXXFLAGS(linux freebsd osx openbsd netbsd dragonflybsd): -std=c++11
 // druntime isn't linked, this prevents missing symbols '_d_arraybounds_slicep':
 // REQUIRED_ARGS: -checkaction=C
+// TRANSFORM_OUTPUT: remove_lines("warning: vsprintf\(\) is often misused")
 
 // N.B MSVC doesn't have a C++11 switch, but it defaults to the latest fully-supported standard
 
@@ -454,7 +455,7 @@ extern (C++, std)
     {
     }
 
-    version (CppRuntime_Gcc)
+    version (CppRuntime_GNU)
     {
         // https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html
         static if (__traits(getTargetInfo, "cppStd") >= 201103)

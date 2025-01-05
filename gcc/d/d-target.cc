@@ -280,7 +280,7 @@ Target::isVectorTypeSupported (int sz, Type *type)
   /* In [simd/vector extensions], which vector types are supported depends on
      the target.  The implementation is expected to only support the vector
      types that are implemented in the target's hardware.  */
-  unsigned HOST_WIDE_INT nunits = sz / type->size ();
+  unsigned HOST_WIDE_INT nunits = sz / dmd::size (type);
   tree ctype = build_vector_type (build_ctype (type), nunits);
 
   if (!targetm.vector_mode_supported_p (TYPE_MODE (ctype)))
@@ -453,7 +453,7 @@ Target::isReturnOnStack (TypeFunction *tf, bool)
     return false;
 
   Type *tn = tf->next->toBasetype ();
-  if (tn->size () == SIZE_INVALID)
+  if (dmd::size (tn) == SIZE_INVALID)
     return false;
 
   return (tn->ty == TY::Tstruct || tn->ty == TY::Tsarray);
@@ -583,7 +583,7 @@ Target::preferPassByRef (Type *param_type)
 {
   /* See note in Target::isReturnOnStack.  */
   Type *tb = param_type->toBasetype ();
-  if (tb->size () == SIZE_INVALID)
+  if (dmd::size (tb) == SIZE_INVALID)
     return false;
 
   return (tb->ty == TY::Tstruct || tb->ty == TY::Tsarray);

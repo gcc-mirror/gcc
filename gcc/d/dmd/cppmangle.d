@@ -2197,7 +2197,7 @@ private extern(C++) final class ComponentVisitor : Visitor
     /// Set to the result of the comparison
     private bool result;
 
-    public this(RootObject base) @safe
+    public this(RootObject base) @trusted
     {
         switch (base.dyncast())
         {

@@ -3933,9 +3933,9 @@ private void visitFuncIdentWithPrefix(TypeFunction t, const Identifier ident, Te
         buf.writeByte(' ');
     }
 
-    void ignoreReturn(string str)
+    void dg(string str)
     {
-        if (str != "return")
+        if (str != "return" && str != "scope")
         {
             // don't write 'ref' for ctors
             if ((ident == Id.ctor) && str == "ref")
@@ -3944,7 +3944,7 @@ private void visitFuncIdentWithPrefix(TypeFunction t, const Identifier ident, Te
             buf.writeByte(' ');
         }
     }
-    t.attributesApply(&ignoreReturn);
+    t.attributesApply(&dg);
 
     if (t.linkage > LINK.d && hgs.ddoc != 1 && !hgs.hdrgen)
     {
@@ -3977,7 +3977,15 @@ private void visitFuncIdentWithPrefix(TypeFunction t, const Identifier ident, Te
         buf.writeByte(')');
     }
     parametersToBuffer(t.parameterList, buf, hgs);
-    if (t.isreturn)
+    if (t.isreturnscope && !t.isreturninferred)
+    {
+        buf.writestring(" return scope");
+    }
+    else if (t.isScopeQual && !t.isscopeinferred)
+    {
+        buf.writestring(" scope");
+    }
+    if (t.isreturn && !t.isreturnscope && !t.isreturninferred)
     {
         buf.writestring(" return");
     }

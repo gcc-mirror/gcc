@@ -681,7 +681,7 @@ if (is(Unqual!Char == Char))
     auto fmt = "Number: %6.4e\nString: %s";
     auto f = FormatSpec!char(fmt);
 
-    assert(f.writeUpToNextSpec(a) == true);
+    assert(f.writeUpToNextSpec(a));
 
     assert(a.data == "Number: ");
     assert(f.trailing == "\nString: %s");
@@ -689,13 +689,13 @@ if (is(Unqual!Char == Char))
     assert(f.width == 6);
     assert(f.precision == 4);
 
-    assert(f.writeUpToNextSpec(a) == true);
+    assert(f.writeUpToNextSpec(a));
 
     assert(a.data == "Number: \nString: ");
     assert(f.trailing == "");
     assert(f.spec == 's');
 
-    assert(f.writeUpToNextSpec(a) == false);
+    assert(!f.writeUpToNextSpec(a));
 
     assert(a.data == "Number: \nString: ");
 }

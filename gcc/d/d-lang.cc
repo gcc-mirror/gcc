@@ -1709,8 +1709,8 @@ d_types_compatible_p (tree x, tree y)
 	return true;
 
       /* Type system allows implicit conversion between.  */
-      if (tx->implicitConvTo (ty) != MATCH::nomatch
-	  || ty->implicitConvTo (tx) != MATCH::nomatch)
+      if (dmd::implicitConvTo (tx, ty) != MATCH::nomatch
+	  || dmd::implicitConvTo (ty, tx) != MATCH::nomatch)
 	return true;
     }
 

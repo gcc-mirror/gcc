@@ -48,9 +48,9 @@ public:
         if (context is null)
         {
             version (Win64)
-                static enum INTERNALFRAMES = 3;
+                enum INTERNALFRAMES = 3;
             else version (Win32)
-                static enum INTERNALFRAMES = 2;
+                enum INTERNALFRAMES = 2;
 
             skip += INTERNALFRAMES; //skip the stack frames within the StackTrace class
         }
@@ -58,9 +58,9 @@ public:
         {
             //When a exception context is given the first stack frame is repeated for some reason
             version (Win64)
-                static enum INTERNALFRAMES = 1;
+                enum INTERNALFRAMES = 1;
             else version (Win32)
-                static enum INTERNALFRAMES = 1;
+                enum INTERNALFRAMES = 1;
 
             skip += INTERNALFRAMES;
         }

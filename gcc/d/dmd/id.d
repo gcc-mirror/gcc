@@ -574,6 +574,7 @@ immutable Msgtable[] msgtable =
     { "define" },
     { "undef" },
     { "ident" },
+    { "packed" },
 ];
 
 

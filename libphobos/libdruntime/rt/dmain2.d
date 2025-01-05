@@ -102,7 +102,7 @@ alias void delegate(Throwable) ExceptionHandler;
 /**
  * Keep track of how often rt_init/rt_term were called.
  */
-shared size_t _initCount;
+private shared size_t _initCount;
 
 /**********************************************
  * Initialize druntime.
@@ -175,6 +175,13 @@ extern (C) int rt_term()
         _d_monitor_staticdtor();
     }
     return 0;
+}
+
+/**
+ * Indicates whether druntime has been or is being initialized.
+ */
+bool isRuntimeInitialized() @nogc nothrow {
+    return atomicLoad!(MemoryOrder.raw)(_initCount) != 0;
 }
 
 /**********************************************

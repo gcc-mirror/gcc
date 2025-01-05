@@ -165,11 +165,10 @@ extern (C++) final class Import : Dsymbol
          * https://issues.dlang.org/show_bug.cgi?id=5412
          */
         assert(ident && ident == s.ident);
-        Import imp;
-        if (!aliasId && (imp = s.isImport()) !is null && !imp.aliasId)
-            return true;
-        else
+        if (aliasId)
             return false;
+        const imp = s.isImport();
+        return imp && !imp.aliasId;
     }
 
     override inout(Import) isImport() inout

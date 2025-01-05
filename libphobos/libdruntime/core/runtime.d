@@ -613,7 +613,7 @@ extern (C) UnitTestResult runModuleUnitTests()
 
         static extern (C) void unittestSegvHandler( int signum, siginfo_t* info, void* ptr ) nothrow
         {
-            static enum MAXFRAMES = 128;
+            enum MAXFRAMES = 128;
             void*[MAXFRAMES]  callstack;
 
             auto numframes = backtrace( callstack.ptr, MAXFRAMES );
@@ -942,7 +942,7 @@ else static if (hasExecinfo) private class DefaultTraceInfo : Throwable.TraceInf
 
 private:
     int     numframes;
-    static enum MAXFRAMES = 128;
+    enum MAXFRAMES = 128;
     void*[MAXFRAMES]  callstack = void;
 
 private:

@@ -110,7 +110,7 @@ Expression expandVar(int result, VarDeclaration v)
                 }
                 if (ei.op == EXP.construct || ei.op == EXP.blit)
                 {
-                    AssignExp ae = cast(AssignExp)ei;
+                    auto ae = cast(AssignExp)ei;
                     ei = ae.e2;
                     if (ei.isConst() == 1)
                     {
@@ -1238,18 +1238,21 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         if (expOptimize(e.e1, WANTvalue))
             return;
         const oror = e.op == EXP.orOr;
+        void returnE_e1()
+        {
+            ret = e.e1;
+            if (!e.e1.type.equals(e.type))
+            {
+                ret = new CastExp(e.loc, ret, e.type);
+                ret.type = e.type;
+                ret = optimize(ret, result, false);
+            }
+        }
         if (e.e1.toBool().hasValue(oror))
         {
-            // Replace with (e1, oror)
-            ret = IntegerExp.createBool(oror);
-            ret = Expression.combine(e.e1, ret);
-            if (e.type.toBasetype().ty == Tvoid)
-            {
-                ret = new CastExp(e.loc, ret, Type.tvoid);
-                ret.type = e.type;
-            }
-            ret = optimize(ret, result, false);
-            return;
+            // e_true || e2 -> e_true
+            // e_false && e2 -> e_false
+            return returnE_e1();
         }
         expOptimize(e.e2, WANTvalue);
         if (e.e1.isConst())
@@ -1263,6 +1266,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
             }
             else if (e1Opt.hasValue(!oror))
             {
+
                 if (e.type.toBasetype().ty == Tvoid)
                     ret = e.e2;
                 else
@@ -1270,6 +1274,29 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
                     ret = new CastExp(e.loc, e.e2, e.type);
                     ret.type = e.type;
                 }
+            }
+        }
+        else if (e.e2.isConst())
+        {
+            const e2Opt = e.e2.toBool();
+            if (e2Opt.hasValue(oror))
+            {
+                // e1 || true -> (e1, true)
+                // e1 && false -> (e1, false)
+                ret = IntegerExp.createBool(oror);
+                ret = Expression.combine(e.e1, ret);
+                if (e.type.toBasetype().ty == Tvoid)
+                {
+                    ret = new CastExp(e.loc, ret, Type.tvoid);
+                    ret.type = e.type;
+                }
+                ret = optimize(ret, result, false);
+            }
+            else if (e2Opt.hasValue(!oror))
+            {
+                // e1 || false -> e1
+                // e1 && true -> e1
+                return returnE_e1();
             }
         }
     }

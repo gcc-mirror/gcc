@@ -778,7 +778,7 @@ package void thread_term_tpl(ThreadT, MainThreadStore)(ref MainThreadStore _main
     // destruct manually as object.destroy is not @nogc
     (cast(ThreadT) cast(void*) ThreadBase.sm_main).__dtor();
     _d_monitordelete_nogc(ThreadBase.sm_main);
-    _mainThreadStore[] = __traits(initSymbol, ThreadT)[];
+    _mainThreadStore[] = cast(void[]) __traits(initSymbol, ThreadT)[];
     ThreadBase.sm_main = null;
 
     assert(ThreadBase.sm_tbeg && ThreadBase.sm_tlen == 1);

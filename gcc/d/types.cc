@@ -1181,7 +1181,7 @@ public:
 	TYPE_UNSIGNED (t->ctype) = TYPE_UNSIGNED (basetype);
 	SET_TYPE_ALIGN (t->ctype, TYPE_ALIGN (basetype));
 	TYPE_SIZE (t->ctype) = NULL_TREE;
-	TYPE_PRECISION (t->ctype) = t->size (t->sym->loc) * 8;
+	TYPE_PRECISION (t->ctype) = dmd::size (t, t->sym->loc) * 8;
 
 	layout_type (t->ctype);
 

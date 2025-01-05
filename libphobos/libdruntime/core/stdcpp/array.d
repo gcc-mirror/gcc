@@ -74,7 +74,7 @@ pure nothrow @nogc:
     private:
         T[N ? N : 1] _Elems;
     }
-    else version (CppRuntime_Gcc)
+    else version (CppRuntime_GNU)
     {
         ///
         inout(T)* data() inout @safe                    { static if (N > 0) { return &_M_elems[0]; } else { return null; } }
@@ -94,7 +94,7 @@ pure nothrow @nogc:
             _Placeholder _M_placeholder;
         }
     }
-    else version (CppRuntime_Clang)
+    else version (CppRuntime_LLVM)
     {
         ///
         inout(T)* data() inout @trusted                 { static if (N > 0) { return &__elems_[0]; } else { return cast(inout(T)*)__elems_.ptr; } }

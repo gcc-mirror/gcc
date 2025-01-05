@@ -42,7 +42,18 @@ struct dirent
 }
 */
 
-version (linux)
+version (CRuntime_Bionic)
+{
+    struct dirent
+    {
+        ulong       d_ino;
+        long        d_off;
+        ushort      d_reclen;
+        ubyte       d_type;
+        char[256]   d_name = 0;
+    }
+}
+else version (linux)
 {
     struct dirent
     {

@@ -219,13 +219,12 @@ do
                     return overflowedError(optname, str);
 
                 i++;
-                break;
             }
             else // unexpected non-digit character
             {
                 i = 0;
-                break;
             }
+            break;
         }
     }
 

@@ -315,7 +315,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                         return arrayHasInvalidEnumInitializer((cast(StructLiteralExp)e).elements);
                     if (e.op == EXP.assocArrayLiteral)
                     {
-                        AssocArrayLiteralExp ae = cast(AssocArrayLiteralExp)e;
+                        auto ae = cast(AssocArrayLiteralExp)e;
                         return arrayHasInvalidEnumInitializer(ae.values) ||
                                arrayHasInvalidEnumInitializer(ae.keys);
                     }
@@ -887,5 +887,12 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
         loweredExp = loweredExp.ctfeInterpret();
 
         aaExp.lowering = loweredExp;
+    }
+
+    // https://issues.dlang.org/show_bug.cgi?id=24602
+    // TODO: Is this intionally not visited by SemanticTimeTransitiveVisitor?
+    override void visit(ClassReferenceExp crExp)
+    {
+        this.visit(crExp.value);
     }
 }

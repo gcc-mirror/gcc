@@ -414,7 +414,8 @@ public:
 	    if (t1elem->ty != TY::Tstruct
 		|| identity_compare_p (t1elem->isTypeStruct ()->sym))
 	      {
-		tree size = size_mult_expr (t1len, size_int (t1elem->size ()));
+		tree size =
+		  size_mult_expr (t1len, size_int (dmd::size (t1elem)));
 
 		result = build_memcmp_call (t1ptr, t2ptr, size);
 		result = build_boolop (code, result, integer_zero_node);
@@ -442,7 +443,7 @@ public:
 	       The frontend should have already guaranteed that static arrays
 	       have same size.  */
 	    if (tb1->ty == TY::Tsarray && tb2->ty == TY::Tsarray)
-	      gcc_assert (tb1->size () == tb2->size ());
+	      gcc_assert (dmd::size (tb1) == dmd::size (tb2));
 	    else
 	      {
 		tree tlencmp = build_boolop (code, t1len, t2len);
@@ -917,7 +918,7 @@ public:
 	    if (integer_zerop (t2))
 	      {
 		tree size = size_mult_expr (d_array_length (t1),
-					    size_int (etype->size ()));
+					    size_int (dmd::size (etype)));
 		result = build_memset_call (d_array_ptr (t1), size);
 	      }
 	    else
@@ -943,7 +944,8 @@ public:
 		tree t2ptr = d_array_ptr (t2);
 
 		/* Generate: memcpy(to, from, size)  */
-		tree size = size_mult_expr (t1len, size_int (etype->size ()));
+		tree size =
+		  size_mult_expr (t1len, size_int (dmd::size (etype)));
 		tree result = build_memcpy_call (t1ptr, t2ptr, size);
 
 		/* Insert check that array lengths match and do not overlap.  */
@@ -986,7 +988,7 @@ public:
 	      {
 		/* Generate: _d_arraycopy()  */
 		this->result_ = build_libcall (LIBCALL_ARRAYCOPY, e->type, 3,
-					       size_int (etype->size ()),
+					       size_int (dmd::size (etype)),
 					       d_array_convert (e->e2),
 					       d_array_convert (e->e1));
 	      }
@@ -1100,7 +1102,7 @@ public:
 	    || (e->op == EXP::construct && e->e2->op == EXP::arrayLiteral)
 	    || (e->op == EXP::construct && e->e2->op == EXP::call)
 	    || (e->op == EXP::construct && !lvalue && postblit)
-	    || (e->op == EXP::blit || e->e1->type->size () == 0))
+	    || (e->op == EXP::blit || dmd::size (e->e1->type) == 0))
 	  {
 	    tree t1 = build_expr (e->e1);
 	    tree t2 = convert_for_assignment (e->e2, e->e1->type);
@@ -1190,7 +1192,7 @@ public:
 	/* Index the associative array.  */
 	tree result = build_libcall (libcall, dmd::pointerTo (e->type), 4,
 				     ptr, tinfo,
-				     size_int (tb1->nextOf ()->size ()),
+				     size_int (dmd::size (tb1->nextOf ())),
 				     build_address (key));
 
 	if (!e->indexIsInBounds && array_bounds_check ())
@@ -2391,7 +2393,7 @@ public:
 	/* Allocating memory for a new pointer.  */
 	TypePointer *tpointer = tb->isTypePointer ();
 
-	if (tpointer->next->size () == 0)
+	if (dmd::size (tpointer->next) == 0)
 	  {
 	    /* Pointer element size is unknown.  */
 	    this->result_ = d_convert (build_ctype (e->type),
@@ -2692,7 +2694,7 @@ public:
 
 	/* Now copy the constructor into memory.  */
 	tree size = size_mult_expr (size_int (e->elements->length),
-				    size_int (tb->nextOf ()->size ()));
+				    size_int (dmd::size (tb->nextOf ())));
 
 	tree result = build_memcpy_call (mem, build_address (ctor), size);
 

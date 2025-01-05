@@ -2211,7 +2211,7 @@ extern (C) void thread_init() @nogc nothrow
         status = sem_init( &suspendCount, 0, 0 );
         assert( status == 0 );
     }
-    _mainThreadStore[] = __traits(initSymbol, Thread)[];
+    _mainThreadStore[] = cast(void[]) __traits(initSymbol, Thread)[];
     Thread.sm_main = attachThread((cast(Thread)_mainThreadStore.ptr).__ctor());
 }
 

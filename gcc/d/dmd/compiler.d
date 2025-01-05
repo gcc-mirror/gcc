@@ -16,6 +16,7 @@ import dmd.ctfeexpr;
 import dmd.dmodule;
 import dmd.expression;
 import dmd.mtype;
+import dmd.typesem;
 import dmd.root.array;
 
 extern (C++) __gshared

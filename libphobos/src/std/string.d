@@ -6331,42 +6331,42 @@ if (isSomeString!S ||
     assertCTFEable!(
     {
     // Test the isNumeric(in string) function
-    assert(isNumeric("1") == true );
-    assert(isNumeric("1.0") == true );
-    assert(isNumeric("1e-1") == true );
-    assert(isNumeric("12345xxxx890") == false );
-    assert(isNumeric("567L") == true );
-    assert(isNumeric("23UL") == true );
-    assert(isNumeric("-123..56f") == false );
-    assert(isNumeric("12.3.5.6") == false );
-    assert(isNumeric(" 12.356") == false );
-    assert(isNumeric("123 5.6") == false );
-    assert(isNumeric("1233E-1+1.0e-1i") == true );
+    assert(isNumeric("1"));
+    assert(isNumeric("1.0"));
+    assert(isNumeric("1e-1"));
+    assert(!isNumeric("12345xxxx890"));
+    assert(isNumeric("567L"));
+    assert(isNumeric("23UL"));
+    assert(!isNumeric("-123..56f"));
+    assert(!isNumeric("12.3.5.6"));
+    assert(!isNumeric(" 12.356"));
+    assert(!isNumeric("123 5.6"));
+    assert(isNumeric("1233E-1+1.0e-1i"));
 
-    assert(isNumeric("123.00E-5+1234.45E-12Li") == true);
-    assert(isNumeric("123.00e-5+1234.45E-12iL") == false);
-    assert(isNumeric("123.00e-5+1234.45e-12uL") == false);
-    assert(isNumeric("123.00E-5+1234.45e-12lu") == false);
+    assert(isNumeric("123.00E-5+1234.45E-12Li"));
+    assert(!isNumeric("123.00e-5+1234.45E-12iL"));
+    assert(!isNumeric("123.00e-5+1234.45e-12uL"));
+    assert(!isNumeric("123.00E-5+1234.45e-12lu"));
 
-    assert(isNumeric("123fi") == true);
-    assert(isNumeric("123li") == true);
-    assert(isNumeric("--123L") == false);
-    assert(isNumeric("+123.5UL") == false);
-    assert(isNumeric("123f") == true);
-    assert(isNumeric("123.u") == false);
+    assert(isNumeric("123fi"));
+    assert(isNumeric("123li"));
+    assert(!isNumeric("--123L"));
+    assert(!isNumeric("+123.5UL"));
+    assert(isNumeric("123f"));
+    assert(!isNumeric("123.u"));
 
   // @@@BUG@@ to!string(float) is not CTFEable.
   // Related: formatValue(T) if (is(FloatingPointTypeOf!T))
   if (!__ctfe)
   {
-    assert(isNumeric(to!string(real.nan)) == true);
-    assert(isNumeric(to!string(-real.infinity)) == true);
+    assert(isNumeric(to!string(real.nan)));
+    assert(isNumeric(to!string(-real.infinity)));
   }
 
     string s = "$250.99-";
-    assert(isNumeric(s[1 .. s.length - 2]) == true);
-    assert(isNumeric(s) == false);
-    assert(isNumeric(s[0 .. s.length - 1]) == false);
+    assert(isNumeric(s[1 .. $ - 2]));
+    assert(!isNumeric(s));
+    assert(!isNumeric(s[0 .. $ - 1]));
     });
 
     assert(!isNumeric("-"));

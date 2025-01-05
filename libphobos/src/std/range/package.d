@@ -13539,10 +13539,10 @@ if (isInputRange!R && isIntegral!(ElementType!R))
     {
         size_t bitsNum = IntegralType.sizeof * 8;
 
-        auto first = cast(IntegralType)(1);
+        auto first = IntegralType(1);
 
         // 2 ^ (bitsNum - 1)
-        auto second = cast(IntegralType)(cast(IntegralType)(1) << (bitsNum - 2));
+        auto second = cast(IntegralType)(IntegralType(1) << (bitsNum - 2));
 
         IntegralType[] a = [first, second];
         auto bw = Bitwise!(IntegralType[])(a);
@@ -13571,7 +13571,7 @@ if (isInputRange!R && isIntegral!(ElementType!R))
 
         auto bw2 = bw[0 .. $ - 5];
         auto bw3 = bw2[];
-        assert(bw2.length == (bw.length - 5));
+        assert(bw2.length == bw.length - 5);
         assert(bw2.length == bw3.length);
         bw2.popFront();
         assert(bw2.length != bw3.length);

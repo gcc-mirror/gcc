@@ -17,6 +17,7 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.constfold;
 import dmd.compiler;
+import dmd.dcast : implicitConvTo;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dinterpret;

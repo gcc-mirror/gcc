@@ -2587,7 +2587,7 @@ TypeFunction isTypeFunction(Dsymbol s) @safe
     {
         Type t = f.originalType ? f.originalType : f.type;
         if (t.ty == Tfunction)
-            return cast(TypeFunction)t;
+            return (() @trusted => cast(TypeFunction)t)();
     }
     return null;
 }

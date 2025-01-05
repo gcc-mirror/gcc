@@ -7270,7 +7270,7 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             // If the bit-field spans more units of alignment than its type,
             // start a new field at the next alignment boundary.
             if (fieldState.bitOffset == fieldState.fieldSize * 8 &&
-                fieldState.bitOffset + bfd.fieldWidth > memalignsize * 8)
+                fieldState.bitOffset + bfd.fieldWidth > memsize * 8)
             {
                 if (log) printf("more units of alignment than its type\n");
                 startNewField();        // the bit field is full
@@ -7278,10 +7278,10 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             else
             {
                 // if alignment boundary is crossed
-                uint start = fieldState.fieldOffset * 8 + fieldState.bitOffset;
+                uint start = (fieldState.fieldOffset * 8 + fieldState.bitOffset) % (memalignsize * 8);
                 uint end   = start + bfd.fieldWidth;
                 //printf("%s start: %d end: %d memalignsize: %d\n", ad.toChars(), start, end, memalignsize);
-                if (start / (memalignsize * 8) != (end - 1) / (memalignsize * 8))
+                if (start / (memsize * 8) != (end - 1) / (memsize * 8))
                 {
                     if (log) printf("alignment is crossed\n");
                     startNewField();

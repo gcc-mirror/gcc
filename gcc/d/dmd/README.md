@@ -251,6 +251,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [hdrgen.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/hdrgen.d) | Convert an AST into D source code for `.di` header generation, as well as `-vcg-ast` and error messages |
 | [json.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/json.d)     | Describe the module in a `.json` file for the `-X` flag                                                 |
 | [dtoh.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dtoh.d)     | C++ header generation from D source files                                                               |
+| [disasm86.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/backend/disasm86.d)       | x86-64 dissassembly generation
+| [disasmarm.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/backend/arm/disasmarm.d) | AArch64 disassembly generation
 
 ### Utility
 

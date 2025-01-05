@@ -664,7 +664,7 @@ public:
     /* Default initializer for enum.  */
     if (ed->members && !d->tinfo->isZeroInit ())
       {
-	tree length = size_int (ed->type->size ());
+	tree length = size_int (dmd::size (ed->type));
 	tree ptr = build_address (enum_initializer_decl (ed));
 	this->layout_field (d_array_value (array_type_node, length, ptr));
       }

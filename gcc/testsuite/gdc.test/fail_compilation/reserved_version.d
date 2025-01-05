@@ -110,9 +110,9 @@ fail_compilation/reserved_version.d(211): Error: version identifier `AsmJS` is r
 fail_compilation/reserved_version.d(212): Error: version identifier `Emscripten` is reserved and cannot be set
 fail_compilation/reserved_version.d(213): Error: version identifier `WebAssembly` is reserved and cannot be set
 fail_compilation/reserved_version.d(214): Error: version identifier `WASI` is reserved and cannot be set
-fail_compilation/reserved_version.d(215): Error: version identifier `CppRuntime_Clang` is reserved and cannot be set
+fail_compilation/reserved_version.d(215): Error: version identifier `CppRuntime_LLVM` is reserved and cannot be set
 fail_compilation/reserved_version.d(216): Error: version identifier `CppRuntime_DigitalMars` is reserved and cannot be set
-fail_compilation/reserved_version.d(217): Error: version identifier `CppRuntime_Gcc` is reserved and cannot be set
+fail_compilation/reserved_version.d(217): Error: version identifier `CppRuntime_GNU` is reserved and cannot be set
 fail_compilation/reserved_version.d(218): Error: version identifier `CppRuntime_Microsoft` is reserved and cannot be set
 fail_compilation/reserved_version.d(219): Error: version identifier `CppRuntime_Sun` is reserved and cannot be set
 fail_compilation/reserved_version.d(220): Error: version identifier `D_PIE` is reserved and cannot be set
@@ -239,9 +239,9 @@ version = AsmJS;
 version = Emscripten;
 version = WebAssembly;
 version = WASI;
-version = CppRuntime_Clang;
+version = CppRuntime_LLVM;
 version = CppRuntime_DigitalMars;
-version = CppRuntime_Gcc;
+version = CppRuntime_GNU;
 version = CppRuntime_Microsoft;
 version = CppRuntime_Sun;
 version = D_PIE;
@@ -339,9 +339,9 @@ debug = CRuntime_Musl;
 debug = CRuntime_Newlib;
 debug = CRuntime_UClibc;
 debug = CRuntime_WASI;
-debug = CppRuntime_Clang;
+debug = CppRuntime_LLVM;
 debug = CppRuntime_DigitalMars;
-debug = CppRuntime_Gcc;
+debug = CppRuntime_GNU;
 debug = CppRuntime_Microsoft;
 debug = CppRuntime_Sun;
 debug = D_Coverage;
