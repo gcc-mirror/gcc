@@ -2,7 +2,7 @@
 
 template<int T> struct Z {
 
-  friend struct T; // { dg-error "shadows template parameter" }
+  friend struct T; // { dg-bogus "shadows template parameter" }
 };
 
 struct Y {

@@ -3741,7 +3741,10 @@ pushdecl (tree decl, bool hiding)
       if (old && anticipated_builtin_p (old))
 	old = OVL_CHAIN (old);
 
-      check_template_shadow (decl);
+      if (hiding)
+	; /* Hidden bindings don't shadow anything.  */
+      else
+	check_template_shadow (decl);
 
       if (DECL_DECLARES_FUNCTION_P (decl))
 	{
