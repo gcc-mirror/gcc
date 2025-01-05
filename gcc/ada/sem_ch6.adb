@@ -12880,12 +12880,20 @@ package body Sem_Ch6 is
 
       <<Check_Inequality>>
          if Chars (S) = Name_Op_Eq
-           and then Etype (S) = Standard_Boolean
+           and then Base_Type (Etype (S)) = Standard_Boolean
            and then Present (Parent (S))
            and then not Is_Dispatching_Operation (S)
          then
             Make_Inequality_Operator (S);
-            Check_Untagged_Equality (S);
+
+            --  The freezing rule introduced in Ada 2012 was historically
+            --  not enforced for operators returning a subtype of Boolean.
+
+            if Etype (S) = Standard_Boolean
+              or else not Debug_Flag_Underscore_Q
+            then
+               Check_Untagged_Equality (S);
+            end if;
          end if;
    end New_Overloaded_Entity;
 

@@ -154,7 +154,7 @@ package body Debug is
    --  d_n
    --  d_o
    --  d_p  Ignore assertion pragmas for elaboration
-   --  d_q
+   --  d_q  Do not enforce freezing for equality operator of boolean subtype
    --  d_r  Disable the use of the return slot in functions
    --  d_s  Stop elaboration checks on synchronous suspension
    --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
@@ -998,6 +998,10 @@ package body Debug is
    --  d_p  The compiler ignores calls to subprograms which verify the run-time
    --       semantics of invariants and postconditions in both the static and
    --       dynamic elaboration models.
+
+   --  d_q  The compiler does not enforce the new freezing rule introduced for
+   --       primitive equality operators in Ada 2012 when the operator returns
+   --       a subtype of Boolean.
 
    --  d_r  The compiler does not make use of the return slot in the expansion
    --       of functions returning a by-reference type. If this use is required
