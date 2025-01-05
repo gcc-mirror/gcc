@@ -167,7 +167,7 @@ void* _d_paint_cast(Object o, ClassInfo c)
 {
     /* If o is really an instance of c, just do a paint
      */
-    auto p = (o && cast(void*)(areClassInfosEqual(typeid(o), c)) ? o : null);
+    auto p = o && cast(void*)(areClassInfosEqual(typeid(o), c)) ? o : null;
     debug assert(cast(void*)p is cast(void*)_d_dynamic_cast(o, c));
     return cast(void*)p;
 }

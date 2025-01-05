@@ -406,6 +406,33 @@ void test13950()
 
 /***************************************************/
 
+
+void testlocalref()
+{
+    int x = 4;
+    ref int rx = x;
+    rx = 5;
+    assert(x == 5);
+    ref int r2 = rx;
+    r2 = 6;
+    assert(x == 6);
+}
+
+/***************************************************/
+
+int global;
+
+ref int tgr() { return global; }
+
+void testglobalref()
+{
+    auto i = tgr();
+    i = 1;
+    assert(global == 0);
+}
+
+/***************************************************/
+
 int main()
 {
     test6475();
@@ -419,6 +446,8 @@ int main()
     test10142();
     test11421();
     test13950();
+    testlocalref();
+    testglobalref();
 
     printf("Success\n");
     return 0;

@@ -78,8 +78,11 @@ void foo() @safe
 fail_compilation/retscope6.d(8016): Error: address of variable `i` assigned to `p` with longer lifetime
 fail_compilation/retscope6.d(8031): Error: reference to local variable `i` assigned to non-scope parameter `p` calling `betty`
 fail_compilation/retscope6.d(8031): Error: reference to local variable `j` assigned to non-scope parameter `q` calling `betty`
-fail_compilation/retscope6.d(8021):        which is assigned to non-scope parameter `p`
+fail_compilation/retscope6.d(8023):        which is not `scope` because of `p = q`
+fail_compilation/retscope6.d(8048): Error: reference to local variable `i` assigned to non-scope parameter `p` calling `archie`
+fail_compilation/retscope6.d(8039):        which is not `scope` because of `r = p`
 fail_compilation/retscope6.d(8048): Error: reference to local variable `j` assigned to non-scope parameter `q` calling `archie`
+fail_compilation/retscope6.d(8038):        which is not `scope` because of `p = q`
 ---
 */
 
@@ -109,8 +112,8 @@ void testfrankly()
 
 void betty()(int* p, int* q)
 {
-     p = q;
-     escape(p);
+    p = q;
+    escape(p);
 }
 
 void testbetty()
@@ -124,9 +127,9 @@ void testbetty()
 
 void archie()(int* p, int* q, int* r)
 {
-     p = q;
-     r = p;
-     escape(q);
+    p = q;
+    r = p;
+    escape(q);
 }
 
 void testarchie()
@@ -293,3 +296,26 @@ ref int escape23021() @safe
 }
 
 /******************************/
+
+/* TEST_OUTPUT:
+---
+fail_compilation/retscope6.d(14050): Error: scope variable `z` assigned to non-scope parameter `y` calling `f23294`
+fail_compilation/retscope6.d(14044):        which is not `scope` because of `x = y`
+---
+*/
+
+// https://issues.dlang.org/show_bug.cgi?id=23294
+
+@safe:
+int g23294;
+
+auto f23294(int* x, int* y)
+{
+    x = y;
+    g23294++; // make sure it's not inferring scope from pure
+}
+
+void escape23294(scope int* z)
+{
+    f23294(z, z); // passes
+}

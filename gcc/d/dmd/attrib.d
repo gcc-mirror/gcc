@@ -237,8 +237,7 @@ extern (C++) class StorageClassDeclaration : AttribDeclaration
              * before the semantic analysis of 'to', so that template overloading based on the
              * 'this' pointer can be successful.
              */
-            FuncDeclaration fd = ps.isFuncDeclaration();
-            if (fd)
+            if (FuncDeclaration fd = ps.isFuncDeclaration())
             {
                 /* Use storage_class2 instead of storage_class otherwise when we do .di generation
                  * we'll wind up with 'const const' rather than 'const'.
@@ -984,7 +983,7 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
  *          pragma(msg, mixin("x" ~ to!string(i))); // ok, all 10 symbols are visible as they were forwarded to the global scope
  *      }
  *
- *      static assert (!is(typeof(i))); // loop index variable is not visible outside of the static foreach loop
+ *      static assert(!is(typeof(i))); // loop index variable is not visible outside of the static foreach loop
  *
  * A StaticForeachDeclaration generates one
  * ForwardingAttribDeclaration for each expansion of its body.  The

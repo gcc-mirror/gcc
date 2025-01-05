@@ -490,8 +490,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
                 return null;
             if (cdb.ident.equals(ident))
                 return cdb;
-            auto result = cdb.searchBase(ident);
-            if (result)
+            if (auto result = cdb.searchBase(ident))
                 return result;
         }
         return null;

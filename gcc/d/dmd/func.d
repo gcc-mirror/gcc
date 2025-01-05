@@ -119,9 +119,8 @@ private struct FUNCFLAG
     bool safetyInprocess;    /// working on determining safety
     bool nothrowInprocess;   /// working on determining nothrow
     bool nogcInprocess;      /// working on determining @nogc
-    bool returnInprocess;    /// working on inferring 'return' for parameters
+    bool scopeInprocess;     /// infer `return` and `scope` for parameters
     bool inlineScanned;      /// function has been scanned for inline possibilities
-    bool inferScope;         /// infer 'scope' for parameters
     bool hasCatches;         /// function has try-catch statements
     bool skipCodegen;        /// do not generate code for this function.
     bool printf;             /// is a printf-like function
@@ -431,8 +430,7 @@ extern (C++) class FuncDeclaration : Declaration
     {
         //printf("FuncDeclaration::overloadInsert(s = %s) this = %s\n", s.toChars(), toChars());
         assert(s != this);
-        AliasDeclaration ad = s.isAliasDeclaration();
-        if (ad)
+        if (AliasDeclaration ad = s.isAliasDeclaration())
         {
             if (overnext)
                 return overnext.overloadInsert(ad);
@@ -501,8 +499,7 @@ extern (C++) class FuncDeclaration : Declaration
         while (f && f.overnext)
         {
             //printf("f.overnext = %p %s\n", f.overnext, f.overnext.toChars());
-            TemplateDeclaration td = f.overnext.isTemplateDeclaration();
-            if (td)
+            if (TemplateDeclaration td = f.overnext.isTemplateDeclaration())
                 return td;
             f = f.overnext.isFuncDeclaration();
         }
@@ -724,19 +721,16 @@ extern (C++) class FuncDeclaration : Declaration
         if (!tf.isnogc)
             nogcInprocess = true;
 
-        if (!isVirtual() || this.isIntroducing())
-            returnInprocess = true;
-
         // Initialize for inferring STC.scope_
-        inferScope = true;
+        scopeInprocess = true;
     }
 
-    extern (D) final uint flags()
+    extern (D) final uint saveFlags()
     {
         return bitFields;
     }
 
-    extern (D) final uint flags(uint f)
+    extern (D) final uint restoreFlags(uint f)
     {
         bitFields = f;
         return bitFields;
@@ -1262,8 +1256,7 @@ extern (C++) class FuncDeclaration : Declaration
     {
         if (type)
         {
-            TypeFunction fdtype = type.isTypeFunction();
-            if (fdtype) // Could also be TypeError
+            if (TypeFunction fdtype = type.isTypeFunction()) // Could also be TypeError
                 return fdtype.parameterList;
         }
 
@@ -1677,7 +1670,7 @@ extern (C++) final class FuncLiteralDeclaration : FuncDeclaration
         this.fes = fes;
         // Always infer scope for function literals
         // See https://issues.dlang.org/show_bug.cgi?id=20362
-        this.inferScope = true;
+        this.scopeInprocess = true;
         //printf("FuncLiteralDeclaration() id = '%s', type = '%s'\n", this.ident.toChars(), type.toChars());
     }
 
@@ -1732,8 +1725,7 @@ extern (C++) final class FuncLiteralDeclaration : FuncDeclaration
     {
         if (parent)
         {
-            TemplateInstance ti = parent.isTemplateInstance();
-            if (ti)
+            if (TemplateInstance ti = parent.isTemplateInstance())
                 return ti.tempdecl.toPrettyChars(QualifyTypes);
         }
         return Dsymbol.toPrettyChars(QualifyTypes);

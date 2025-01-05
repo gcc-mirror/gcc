@@ -203,10 +203,10 @@ detect if we need to override. The overriding initializer should be nonzero.
 private class TypeInfoGeneric(T, Base = T) : Select!(is(T == Base), TypeInfo, TypeInfoGeneric!Base)
 if (T.sizeof == Base.sizeof && T.alignof == Base.alignof)
 {
-    const: nothrow: pure: @trusted:
+    const: nothrow pure @trusted:
 
     // Returns the type name.
-    override string toString() const pure nothrow @safe { return T.stringof; }
+    override string toString() const @safe { return T.stringof; }
 
     // `getHash` is the same for `Base` and `T`, introduce it just once.
     static if (is(T == Base))
@@ -390,16 +390,16 @@ unittest
 // void
 class TypeInfo_v : TypeInfoGeneric!ubyte
 {
-    const: nothrow: pure: @trusted:
+    const nothrow pure @trusted:
 
-    override string toString() const pure nothrow @safe { return "void"; }
+    override string toString() const @safe { return "void"; }
 
     override size_t getHash(scope const void* p)
     {
         assert(0);
     }
 
-    override @property uint flags() nothrow pure
+    override @property uint flags()
     {
         return 1;
     }
@@ -640,7 +640,7 @@ class TypeInfo_n : TypeInfo
 
     override @property size_t tsize() { return typeof(null).sizeof; }
 
-    override const(void)[] initializer() @trusted { return (cast(void *)null)[0 .. size_t.sizeof]; }
+    override const(void)[] initializer() @trusted { return (cast(void*)null)[0 .. size_t.sizeof]; }
 
     override void swap(void*, void*) {}
 

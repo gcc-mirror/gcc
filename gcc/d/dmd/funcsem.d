@@ -214,11 +214,11 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
 
     //printf("function storage_class = x%llx, sc.stc = x%llx, %x\n", storage_class, sc.stc, Declaration.isFinal());
 
-    if (sc.flags & SCOPE.compile)
+    if (sc.traitsCompiles)
         funcdecl.skipCodegen = true;
 
     funcdecl._linkage = sc.linkage;
-    if (sc.flags & SCOPE.Cfile && funcdecl.isFuncLiteralDeclaration())
+    if (sc.inCfile && funcdecl.isFuncLiteralDeclaration())
         funcdecl._linkage = LINK.d; // so they are uniquely mangled
 
     if (auto fld = funcdecl.isFuncLiteralDeclaration())
@@ -263,7 +263,7 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         return null;
     }
 
-    if (sc.flags & SCOPE.Cfile)
+    if (sc.inCfile)
     {
         /* C11 allows a function to be declared with a typedef, D does not.
          */
@@ -1047,8 +1047,7 @@ Ldone:
             }
 
             // If it's a member template
-            ClassDeclaration cd = ti.tempdecl.isClassMember();
-            if (cd)
+            if (ClassDeclaration cd = ti.tempdecl.isClassMember())
             {
                 .error(funcdecl.loc, "%s `%s` cannot use template to add virtual function to class `%s`", funcdecl.kind, funcdecl.toPrettyChars, cd.toChars());
             }
@@ -2182,7 +2181,7 @@ int getLevelAndCheck(FuncDeclaration fd, const ref Loc loc, Scope* sc, FuncDecla
     if (level != fd.LevelError)
         return level;
     // Don't give error if in template constraint
-    if (!(sc.flags & SCOPE.constraint))
+    if (!sc.inTemplateConstraint)
     {
         const(char)* xstatic = fd.isStatic() ? "`static` " : "";
         // better diagnostics for static functions
@@ -2291,7 +2290,7 @@ bool checkNestedReference(FuncDeclaration fd, Scope* sc, const ref Loc loc)
                 if (!found)
                 {
                     //printf("\tadding sibling %s to %s\n", fdthis.toPrettyChars(), toPrettyChars());
-                    if (!sc.intypeof && !(sc.flags & SCOPE.compile))
+                    if (!sc.intypeof && !sc.traitsCompiles)
                     {
                         fd.siblingCallers.push(fdthis);
                         fd.computedEscapingSiblings = false;
@@ -2777,7 +2776,7 @@ void modifyReturns(FuncLiteralDeclaration fld, Scope* sc, Type tret)
  */
 bool isRootTraitsCompilesScope(Scope* sc)
 {
-    return (sc.flags & SCOPE.compile) && !(sc.func.flags & SCOPE.compile);
+    return (sc.traitsCompiles) && !sc.func.skipCodegen;
 }
 
 /**************************************
@@ -2801,7 +2800,7 @@ bool setUnsafe(Scope* sc,
     if (sc.intypeof)
         return false; // typeof(cast(int*)0) is safe
 
-    if (sc.flags & SCOPE.debug_) // debug {} scopes are permissive
+    if (sc.debug_) // debug {} scopes are permissive
         return false;
 
     if (!sc.func)

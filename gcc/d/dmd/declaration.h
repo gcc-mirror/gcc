@@ -237,7 +237,6 @@ public:
     VarDeclaration *lastVar;    // Linked list of variables for goto-skips-init detection
     Expression *edtor;          // if !=NULL, does the destruction of the variable
     IntRange *range;            // if !NULL, the variable is known to be within the range
-    VarDeclarations *maybes;    // STCmaybescope variables that are assigned to this STCmaybescope variable
 
     unsigned endlinnum;         // line number of end of scope that this var lives in
     unsigned offset;
@@ -639,12 +638,10 @@ public:
     bool nothrowInprocess(bool v);
     bool nogcInprocess() const;
     bool nogcInprocess(bool v);
-    bool returnInprocess() const;
-    bool returnInprocess(bool v);
+    bool scopeInprocess() const;
+    bool scopeInprocess(bool v);
     bool inlineScanned() const;
     bool inlineScanned(bool v);
-    bool inferScope() const;
-    bool inferScope(bool v);
     bool hasCatches() const;
     bool hasCatches(bool v);
     bool skipCodegen() const;

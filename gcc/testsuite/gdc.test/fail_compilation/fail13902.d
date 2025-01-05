@@ -323,9 +323,9 @@ int[] testSlice2() { int[3] sa; int n; return sa[n..2][1..2]; }
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(324): Error: returning `vda[0]` escapes a reference to parameter `vda`
+fail_compilation/fail13902.d(324): Error: returning `vda[0]` escapes a reference to variadic parameter `vda`
+fail_compilation/fail13902.d(325): Error: returning `vda[]` escapes a reference to variadic parameter `vda`
 ---
-
 */
 ref int testDynamicArrayVariadic1(int[] vda...) { return vda[0]; }
 @safe int[]   testDynamicArrayVariadic2(int[] vda...) { return vda[]; }
@@ -335,9 +335,28 @@ int[3]  testDynamicArrayVariadic3(int[] vda...) { return vda[0..3]; }   // no er
 TEST_OUTPUT:
 ---
 fail_compilation/fail13902.d(335): Error: returning `vsa[0]` escapes a reference to parameter `vsa`
-fail_compilation/fail13902.d(336): Error: returning `vsa[]` escapes a reference to variadic parameter `vsa`
+fail_compilation/fail13902.d(336): Error: returning `vsa[]` escapes a reference to parameter `vsa`
 ---
 */
 ref int testStaticArrayVariadic1(int[3] vsa...) { return vsa[0]; }
 int[]   testStaticArrayVariadic2(int[3] vsa...) { return vsa[]; }
 int[3]  testStaticArrayVariadic3(int[3] vsa...) { return vsa[0..3]; }   // no error
+
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail13902.d(355): Error: returning `match(st)` escapes a reference to local variable `st`
+---
+*/
+
+// This was reduced from a `static assert(!__traits(compiles, {...}))` test in `std.sumtype`
+// which was asserting that matchers couldn't escape sumtype members.
+// This should give an error even without `@safe` or `-preview=dip1000`
+
+int* match(return ref int i) { return &i; }
+
+int* escape()
+{
+    int st;
+    return match(st);
+}

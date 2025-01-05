@@ -695,7 +695,7 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && 
         }
         else
         {
-            return (cast(const(ubyte)*)(&val))[0 .. T.sizeof];
+            return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
         }
     }
     else if (__ctfe)
@@ -715,7 +715,7 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && 
     }
     else
     {
-        return (cast(const(ubyte)*)(&val))[0 .. T.sizeof];
+        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
     }
 }
 

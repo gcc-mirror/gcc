@@ -52,7 +52,7 @@ struct Mallocator
         import core.memory : pureRealloc;
         if (!s)
         {
-            // fuzzy area in the C standard, see http://goo.gl/ZpWeSE
+            // fuzzy area in the C standard, see https://stackoverflow.com/questions/6502077/malloc-and-realloc-functions
             // so just deallocate and nullify the pointer
             deallocate(b);
             b = null;

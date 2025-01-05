@@ -17,12 +17,12 @@ fail_compilation/typeerrors.d(52): Error: cannot have associative array of `void
 fail_compilation/typeerrors.d(54): Error: cannot have parameter of type `void`
 fail_compilation/typeerrors.d(56): Error: slice `[1..5]` is out of range of [0..4]
 fail_compilation/typeerrors.d(57): Error: slice `[2..1]` is out of range of [0..4]
+fail_compilation/typeerrors.d(59): Error: variable `typeerrors.foo.globalC` globals, statics, fields, manifest constants, ref and out parameters cannot be `scope`
+fail_compilation/typeerrors.d(59): Error: variable `typeerrors.foo.globalC` reference to `scope class` must be `scope`
+fail_compilation/typeerrors.d(60): Error: variable `typeerrors.foo.manifestC` globals, statics, fields, manifest constants, ref and out parameters cannot be `scope`
+fail_compilation/typeerrors.d(60): Error: variable `typeerrors.foo.manifestC` reference to `scope class` must be `scope`
 ---
 */
-
-
-
-
 
 
 template tuple(T...) { alias T tuple; }
@@ -55,4 +55,7 @@ void foo()
 
     alias T2 = T[1 .. 5];
     alias T3 = T[2 .. 1];
+
+    static C globalC;
+    enum C manifestC = new C();
 }

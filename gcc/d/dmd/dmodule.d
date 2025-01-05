@@ -715,6 +715,11 @@ extern (C++) final class Module : Package
     {
         const(char)* srcname = srcfile.toChars();
         //printf("Module::parse(srcname = '%s')\n", srcname);
+
+        import dmd.timetrace;
+        timeTraceBeginEvent(TimeTraceEventType.parse);
+        scope (exit) timeTraceEndEvent(TimeTraceEventType.parse, this);
+
         isPackageFile = isPackageFileName(srcfile);
         const(char)[] buf = processSource(src, this);
         // an error happened on UTF conversion

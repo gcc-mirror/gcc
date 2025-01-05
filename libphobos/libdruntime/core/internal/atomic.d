@@ -983,7 +983,7 @@ else version (GNU)
         // Internal static mutex reference.
         private AtomicMutex* _getAtomicMutex() @trusted @nogc nothrow
         {
-            __gshared static AtomicMutex mutex;
+            __gshared AtomicMutex mutex;
             return &mutex;
         }
 

@@ -18,6 +18,7 @@ module core.stdc.stdatomic;
 import core.atomic : MemoryOrder;
 import core.internal.atomic;
 import core.stdc.config;
+import core.stdc.stddef;
 import core.stdc.stdint;
 
 @safe nothrow @nogc:
@@ -54,7 +55,7 @@ enum
     ///
     ATOMIC_CHAR32_T_LOCK_FREE = IsAtomicLockFree!dchar ? 2 : 0,
     ///
-    ATOMIC_WCHAR_T_LOCK_FREE = ATOMIC_CHAR16_T_LOCK_FREE,
+    ATOMIC_WCHAR_T_LOCK_FREE = IsAtomicLockFree!wchar_t ? 2 : 0,
     ///
     ATOMIC_SHORT_LOCK_FREE = IsAtomicLockFree!short ? 2 : 0,
     ///
@@ -365,7 +366,7 @@ alias atomic_char16_t = shared(wchar);
 ///
 alias atomic_char32_t = shared(dchar);
 ///
-alias atomic_wchar_t = shared(wchar);
+alias atomic_wchar_t = shared(wchar_t);
 
 ///
 alias atomic_int_least8_t = shared(int_least8_t);

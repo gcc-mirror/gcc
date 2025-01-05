@@ -727,7 +727,7 @@ public:
       create_typeinfo (d->type, NULL);
 
     TypeEnum *tc = d->type->isTypeEnum ();
-    if (tc->sym->members && !d->type->isZeroInit ())
+    if (tc->sym->members && !dmd::isZeroInit (d->type))
       {
 	/* Generate static initializer.  */
 	d->sinit = enum_initializer_decl (d);
@@ -821,7 +821,7 @@ public:
 		DECL_INITIAL (decl) = build_expr (e, true);
 	      }
 	  }
-	else if (!d->type->isZeroInit ())
+	else if (!dmd::isZeroInit (d->type))
 	  {
 	    /* Use default initializer for the type.  */
 	    if (TypeStruct *ts = d->type->isTypeStruct ())

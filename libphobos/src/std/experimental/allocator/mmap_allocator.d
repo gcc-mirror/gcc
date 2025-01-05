@@ -60,7 +60,7 @@ struct MmapAllocator
             // http://man7.org/linux/man-pages/man2/mmap.2.html
             package alias allocateZeroed = allocate;
         else version (NetBSD)
-            // http://netbsd.gw.com/cgi-bin/man-cgi?mmap+2+NetBSD-current
+            // https://man.netbsd.org/mmap.2
             package alias allocateZeroed = allocate;
         else version (Solaris)
             // https://docs.oracle.com/cd/E88353_01/html/E37841/mmap-2.html

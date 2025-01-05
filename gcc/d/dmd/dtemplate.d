@@ -423,8 +423,7 @@ private size_t arrayObjectHash(ref Objects oa1)
             hash = mixHash(hash, expressionHash(e1));
         else if (auto s1 = isDsymbol(o1))
         {
-            auto fa1 = s1.isFuncAliasDeclaration();
-            if (fa1)
+            if (auto fa1 = s1.isFuncAliasDeclaration())
                 s1 = fa1.toAliasFunc();
             hash = mixHash(hash, mixHash(cast(size_t)cast(void*)s1.getIdent(), cast(size_t)cast(void*)s1.parent));
         }
@@ -1012,17 +1011,17 @@ size_t templateParameterLookup(Type tparam, TemplateParameters* parameters)
     return IDX_NOTFOUND;
 }
 
+private auto X(T, U)(T m, U n)
+{
+    return (m << 4) | n;
+}
+
 ubyte deduceWildHelper(Type t, Type* at, Type tparam)
 {
     if ((tparam.mod & MODFlags.wild) == 0)
         return 0;
 
     *at = null;
-
-    auto X(T, U)(T U, U T)
-    {
-        return (U << 4) | T;
-    }
 
     switch (X(tparam.mod, t.mod))
     {
@@ -1098,12 +1097,6 @@ private Type rawTypeMerge(Type t1, Type t2)
 MATCH deduceTypeHelper(Type t, out Type at, Type tparam)
 {
     // 9*9 == 81 cases
-
-    auto X(T, U)(T U, U T)
-    {
-        return (U << 4) | T;
-    }
-
     switch (X(tparam.mod, t.mod))
     {
     case X(0, 0):
@@ -2557,8 +2550,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, ref TemplateParameters pa
  */
 private void deduceBaseClassParameters(ref BaseClass b, Scope* sc, Type tparam, ref TemplateParameters parameters, ref Objects dedtypes, ref Objects best, ref int numBaseClassMatches)
 {
-    TemplateInstance parti = b.sym ? b.sym.parent.isTemplateInstance() : null;
-    if (parti)
+    if (TemplateInstance parti = b.sym ? b.sym.parent.isTemplateInstance() : null)
     {
         // Make a temporary copy of dedtypes so we don't destroy it
         auto tmpdedtypes = new Objects(dedtypes.length);

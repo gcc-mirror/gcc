@@ -6070,10 +6070,13 @@ nothrow pure @system unittest
     Generate lockstep's opApply function as a mixin string.
     If withIndex is true prepend a size_t index to the delegate.
 */
-private string lockstepMixin(Ranges...)(bool withIndex, bool reverse)
+private struct LockstepMixin(Ranges...)
 {
+    import std.conv : text;
     import std.format : format;
 
+    string name;
+    string implName;
     string[] params;
     string[] emptyChecks;
     string[] dgArgs;
@@ -6081,76 +6084,101 @@ private string lockstepMixin(Ranges...)(bool withIndex, bool reverse)
     string indexDef;
     string indexInc;
 
-    if (withIndex)
+@safe pure:
+    this(bool withIndex, bool reverse)
     {
-        params ~= "size_t";
-        dgArgs ~= "index";
+        if (withIndex)
+        {
+            params ~= "size_t";
+            dgArgs ~= "index";
+            if (reverse)
+            {
+                indexDef = q{
+                    size_t index = ranges[0].length - 1;
+                    enforce(this.stoppingPolicy == StoppingPolicy.requireSameLength,
+                            "lockstep can only be used with foreach_reverse when stoppingPolicy == requireSameLength");
+
+                    foreach (range; ranges[1 .. $])
+                        enforce(range.length == ranges[0].length);
+                    };
+                indexInc = "--index;";
+            }
+            else
+            {
+                indexDef = "size_t index = 0;";
+                indexInc = "++index;";
+            }
+        }
+
+        foreach (idx, Range; Ranges)
+        {
+            params ~= format("%sElementType!(Ranges[%s])", hasLvalueElements!Range ? "ref " : "", idx);
+            emptyChecks ~= format("!ranges[%s].empty", idx);
+            if (reverse)
+            {
+                dgArgs ~= format("ranges[%s].back", idx);
+                popFronts ~= format("ranges[%s].popBack();", idx);
+            }
+            else
+            {
+                dgArgs ~= format("ranges[%s].front", idx);
+                popFronts ~= format("ranges[%s].popFront();", idx);
+            }
+        }
+
         if (reverse)
         {
-            indexDef = q{
-                size_t index = ranges[0].length-1;
-                enforce(_stoppingPolicy == StoppingPolicy.requireSameLength,
-                        "lockstep can only be used with foreach_reverse when stoppingPolicy == requireSameLength");
-
-                foreach (range; ranges[1..$])
-                    enforce(range.length == ranges[0].length);
-                };
-            indexInc = "--index;";
+            name = "opApplyReverse";
+            if (withIndex) implName = "opApplyReverseIdxImpl";
+            else           implName = "opApplyReverseImpl";
         }
         else
         {
-            indexDef = "size_t index = 0;";
-            indexInc = "++index;";
+            name = "opApply";
+            if (withIndex) implName = "opApplyIdxImpl";
+            else           implName = "opApplyImpl";
         }
     }
 
-    foreach (idx, Range; Ranges)
+const:
+    string getAlias()
     {
-        params ~= format("%sElementType!(Ranges[%s])", hasLvalueElements!Range ? "ref " : "", idx);
-        emptyChecks ~= format("!ranges[%s].empty", idx);
-        if (reverse)
-        {
-            dgArgs ~= format("ranges[%s].back", idx);
-            popFronts ~= format("ranges[%s].popBack();", idx);
-        }
-        else
-        {
-            dgArgs ~= format("ranges[%s].front", idx);
-            popFronts ~= format("ranges[%s].popFront();", idx);
-        }
+        return format(q{
+            alias %s = %s!(int delegate(%-(%s%|, %)));
+        },
+            name, implName, params
+        );
     }
 
-    string name = reverse ? "opApplyReverse" : "opApply";
-
-    return format(
-    q{
-        int %s(scope int delegate(%s) dg)
-        {
-            import std.exception : enforce;
-
-            auto ranges = _ranges;
-            int res;
-            %s
-
-            while (%s)
+    string getImpl()
+    {
+        return format(q{
+            int %s(DG)(scope DG dg) scope
             {
-                res = dg(%s);
-                if (res) break;
-                %s
-                %s
-            }
+                import std.exception : enforce;
 
-            if (_stoppingPolicy == StoppingPolicy.requireSameLength)
-            {
-                foreach (range; ranges)
-                    enforce(range.empty);
+                auto ranges = this.ranges;
+                %s
+
+                while (%-(%s%| && %))
+                {
+                    if (int result = dg(%-(%s%|, %))) return result;
+                    %-(%s%|
+                    %)
+                    %s
+                }
+
+                if (this.stoppingPolicy == StoppingPolicy.requireSameLength)
+                {
+                    foreach (range; ranges)
+                        enforce(range.empty);
+                }
+                return 0;
             }
-            return res;
-        }
-    }, name, params.join(", "), indexDef,
-       emptyChecks.join(" && "), dgArgs.join(", "),
-       popFronts.join("\n                "),
-       indexInc);
+        },
+            implName, indexDef, emptyChecks, dgArgs, popFronts, indexInc
+        );
+    }
 }
 
 /**
@@ -6170,10 +6198,6 @@ private string lockstepMixin(Ranges...)(bool withIndex, bool reverse)
 
    By default `StoppingPolicy` is set to `StoppingPolicy.shortest`.
 
-   Limitations: The `pure`, `@safe`, `@nogc`, or `nothrow` attributes cannot be
-   inferred for `lockstep` iteration. $(LREF zip) can infer the first two due to
-   a different implementation.
-
    See_Also: $(LREF zip)
 
        `lockstep` is similar to $(LREF zip), but `zip` bundles its
@@ -6184,41 +6208,53 @@ private string lockstepMixin(Ranges...)(bool withIndex, bool reverse)
 struct Lockstep(Ranges...)
 if (Ranges.length > 1 && allSatisfy!(isInputRange, Ranges))
 {
+    private Ranges ranges;
+    private StoppingPolicy stoppingPolicy;
+
     ///
-    this(R ranges, StoppingPolicy sp = StoppingPolicy.shortest)
+    this(Ranges ranges, StoppingPolicy sp = StoppingPolicy.shortest)
     {
         import std.exception : enforce;
 
-        _ranges = ranges;
+        this.ranges = ranges;
         enforce(sp != StoppingPolicy.longest,
-                "Can't use StoppingPolicy.Longest on Lockstep.");
-        _stoppingPolicy = sp;
+            "Can't use StoppingPolicy.Longest on Lockstep.");
+        this.stoppingPolicy = sp;
     }
 
-    mixin(lockstepMixin!Ranges(false, false));
-    mixin(lockstepMixin!Ranges(true, false));
+    private enum lockstepMixinFF = LockstepMixin!Ranges(withIndex: false, reverse: false);
+    mixin(lockstepMixinFF.getImpl);
+
+    private enum lockstepMixinTF = LockstepMixin!Ranges(withIndex: true, reverse: false);
+    mixin(lockstepMixinTF.getImpl);
+
+    mixin(lockstepMixinFF.getAlias);
+    mixin(lockstepMixinTF.getAlias);
+
     static if (allSatisfy!(isBidirectionalRange, Ranges))
     {
-        mixin(lockstepMixin!Ranges(false, true));
+        private enum lockstepMixinFT = LockstepMixin!Ranges(withIndex: false, reverse: true);
+        mixin(lockstepMixinFT.getImpl);
         static if (allSatisfy!(hasLength, Ranges))
         {
-            mixin(lockstepMixin!Ranges(true, true));
+            private enum lockstepMixinTT = LockstepMixin!Ranges(withIndex: true, reverse: true);
+            mixin(lockstepMixinTT.getImpl);
+            mixin(lockstepMixinTT.getAlias);
         }
         else
         {
-            mixin(lockstepReverseFailMixin!Ranges(true));
+            mixin(lockstepReverseFailMixin!Ranges(withIndex: true));
+            alias opApplyReverse = opApplyReverseIdxFail;
         }
+        mixin(lockstepMixinFT.getAlias);
     }
     else
     {
-        mixin(lockstepReverseFailMixin!Ranges(false));
-        mixin(lockstepReverseFailMixin!Ranges(true));
+        mixin(lockstepReverseFailMixin!Ranges(withIndex: false));
+        mixin(lockstepReverseFailMixin!Ranges(withIndex: true));
+        alias opApplyReverse = opApplyReverseFail;
+        alias opApplyReverse = opApplyReverseIdxFail;
     }
-
-private:
-    alias R = Ranges;
-    R _ranges;
-    StoppingPolicy _stoppingPolicy;
 }
 
 /// Ditto
@@ -6238,33 +6274,39 @@ if (allSatisfy!(isInputRange, Ranges))
 }
 
 ///
-@system unittest
+pure @safe unittest
 {
-   auto arr1 = [1,2,3,4,5,100];
-   auto arr2 = [6,7,8,9,10];
+    int[6] arr1 = [1,2,3,4,5,100];
+    int[5] arr2 = [6,7,8,9,10];
 
-   foreach (ref a, b; lockstep(arr1, arr2))
-   {
-       a += b;
-   }
+    foreach (ref a, b; lockstep(arr1[], arr2[]))
+    {
+        a += b;
+    }
 
-   assert(arr1 == [7,9,11,13,15,100]);
+    assert(arr1 == [7,9,11,13,15,100]);
+}
 
-   /// Lockstep also supports iterating with an index variable:
-   foreach (index, a, b; lockstep(arr1, arr2))
-   {
-       assert(arr1[index] == a);
-       assert(arr2[index] == b);
-   }
+/// Lockstep also supports iterating with an index variable:
+pure @safe unittest
+{
+    int[3] arr1 = [1,2,3];
+    int[3] arr2 = [4,5,6];
+
+    foreach (index, a, b; lockstep(arr1[], arr2[]))
+    {
+        assert(arr1[index] == a);
+        assert(arr2[index] == b);
+    }
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=15860: foreach_reverse on lockstep
-@system unittest
+pure @safe unittest
 {
     auto arr1 = [0, 1, 2, 3];
     auto arr2 = [4, 5, 6, 7];
 
-    size_t n = arr1.length -1;
+    size_t n = arr1.length - 1;
     foreach_reverse (index, a, b; lockstep(arr1, arr2, StoppingPolicy.requireSameLength))
     {
         assert(n == index);
@@ -6283,7 +6325,7 @@ if (allSatisfy!(isInputRange, Ranges))
     }
 }
 
-@system unittest
+pure @safe unittest
 {
     import std.algorithm.iteration : filter;
     import std.conv : to;
@@ -6380,7 +6422,7 @@ if (allSatisfy!(isInputRange, Ranges))
     foreach (x, y; lockstep(iota(0, 10), iota(0, 10))) { }
 }
 
-@system unittest
+pure @safe unittest
 {
     struct RvalueRange
     {
@@ -6436,11 +6478,11 @@ private string lockstepReverseFailMixin(Ranges...)(bool withIndex)
 
     return format(
     q{
-        int opApplyReverse()(scope int delegate(%s) dg)
+        int opApplyReverse%sFail()(scope int delegate(%s) dg)
         {
             static assert(false, "%s");
         }
-    }, params.join(", "), message);
+    }, withIndex ? "Idx" : "" , params.join(", "), message);
 }
 
 // For generic programming, make sure Lockstep!(Range) is well defined for a

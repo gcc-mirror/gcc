@@ -408,7 +408,7 @@ Expression extractSideEffect(Scope* sc, const char[] name,
      * https://issues.dlang.org/show_bug.cgi?id=17145
      */
     if (!alwaysCopy &&
-        ((sc.flags & SCOPE.ctfe) ? !hasSideEffect(e) : isTrivialExp(e)))
+        (sc.ctfe ? !hasSideEffect(e) : isTrivialExp(e)))
         return e;
 
     auto vd = copyToTemp(0, name, e);

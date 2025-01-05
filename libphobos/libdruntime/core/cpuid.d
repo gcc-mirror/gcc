@@ -1038,9 +1038,9 @@ bool hasCPUID()
 
     void cpuidX86()
     {
-            datacache[0].size = 8;
-            datacache[0].associativity = 2;
-            datacache[0].lineSize = 32;
+        datacache[0].size = 8;
+        datacache[0].associativity = 2;
+        datacache[0].lineSize = 32;
     }
 }
 

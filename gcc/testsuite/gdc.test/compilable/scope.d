@@ -262,3 +262,116 @@ struct S23669
         a.length += 1;
     }
 }
+
+/************************************/
+
+// Calling `hasPointers` in escape.d at some point caused
+// a "circular `typeof` definition" error in std.typecons
+// https://github.com/dlang/dmd/pull/16719
+struct Unique
+{
+    int* p;
+    alias ValueType = typeof({ return p; } ());
+    static if (is(ValueType == int*)) {}
+}
+
+// Without handling tuple expansion in escape.d, this error occurs:
+// Error: returning `(ref Tuple!(int, int) __tup2 = this.tuple.get();) , &__tup2.__expand_field_0` escapes a reference to local variable `__tup2`
+struct Tuple(Types...)
+{
+    Types expand;
+    ref Tuple!Types get() { return this; }
+}
+
+struct S2
+{
+    Tuple!(int, int) tuple;
+    int* f() return { return &tuple.get().expand[0]; }
+}
+
+/************************************/
+
+// https://issues.dlang.org/show_bug.cgi?id=23300
+
+auto array(Range)(Range r)
+{
+    int[] result;
+    foreach (e; r)
+        result ~= e;
+    return result;
+}
+
+struct Range
+{
+    int* ptr;
+    int front = 3;
+    enum empty = true;
+    void popFront() @safe scope {}
+}
+
+auto f() @safe
+{
+    scope Range r;
+    return r.array;
+}
+
+/************************************/
+
+// Test that there's no endless loop forwarding `__appendtmp1 => __appendtmp1.this(null)`
+struct SD
+{
+    int* p;
+    this(int*) return scope {}
+}
+
+auto fsd() @safe
+{
+    SD[] a;
+    a ~= SD(null);
+}
+
+/************************************/
+
+// Test that `return scope` inference from assignment doesn't force the function to be `scope`
+struct Scape
+{
+    int* p;
+
+    this()(int* input)
+    {
+        p = input; // return scope inferred here
+        notScope(); // not-scope inferred here
+    }
+
+    void notScope() @safe
+    {
+        static int* g;
+        g = p;
+    }
+}
+
+@safe testScape()
+{
+    Scape(null);
+}
+
+/************************************/
+
+// Test `scope` inference in presence of nested function returning `this`:
+// `save()` can still be called on a `scope Result`
+struct Result
+{
+    int* source;
+    auto save()
+    {
+        int* saveI() { return this.source; }
+        auto saveResult = Result(saveI());
+    }
+}
+
+@safe escapeNested()
+{
+    int s;
+    auto r = Result(&s);
+    r.save();
+}

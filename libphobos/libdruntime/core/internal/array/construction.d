@@ -530,7 +530,7 @@ Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trust
         if (dims.length == 1)
         {
             auto r = _d_newarrayT!UnqT(dim, isShared);
-            return *cast(void[]*)(&r);
+            return *cast(void[]*)&r;
         }
 
         auto allocSize = (void[]).sizeof * dim;

@@ -736,7 +736,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             return dimError(1);
 
         Scope* sc2 = sc.push();
-        sc2.flags = sc.flags | SCOPE.noaccesscheck | SCOPE.ignoresymbolvisibility;
+        sc2.copyFlagsFrom(sc);
+        sc2.noAccessCheck = true;
+        sc2.ignoresymbolvisibility = true;
         bool ok = TemplateInstance.semanticTiargs(e.loc, sc2, e.args, 1);
         sc2.pop();
         if (!ok)
@@ -772,7 +774,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             return dimError(1);
 
         Scope* sc2 = sc.push();
-        sc2.flags = sc.flags | SCOPE.noaccesscheck | SCOPE.ignoresymbolvisibility;
+        sc2.copyFlagsFrom(sc);
+        sc2.noAccessCheck = true;
+        sc2.ignoresymbolvisibility = true;
         bool ok = TemplateInstance.semanticTiargs(e.loc, sc2, e.args, 1);
         sc2.pop();
         if (!ok)
@@ -1003,7 +1007,8 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     doSemantic:
         // ignore symbol visibility and disable access checks for these traits
         Scope* scx = sc.push();
-        scx.flags |= SCOPE.ignoresymbolvisibility | SCOPE.noaccesscheck;
+        scx.ignoresymbolvisibility = true;
+        scx.noAccessCheck = true;
         scope (exit) scx.pop();
 
         if (e.ident == Id.hasMember)
@@ -1737,7 +1742,11 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             Scope* sc2 = sc.push();
             sc2.tinst = null;
             sc2.minst = null;   // this is why code for these are not emitted to object file
-            sc2.flags = (sc.flags & ~(SCOPE.ctfe | SCOPE.condition)) | SCOPE.compile | SCOPE.fullinst;
+            sc2.copyFlagsFrom(sc);
+            sc2.ctfe = false;
+            sc2.condition = false;
+            sc2.traitsCompiles = true;
+            sc2.fullinst = true;
 
             bool err = false;
 

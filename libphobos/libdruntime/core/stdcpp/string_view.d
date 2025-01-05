@@ -37,7 +37,7 @@ extern(C++, struct) struct char_traits(CharT) {}
 /**
 * D language counterpart to C++ std::basic_string_view.
 *
-* C++ reference: $(LINK2 hhttps://en.cppreference.com/w/cpp/string/basic_string_view)
+* C++ reference: $(LINK2 https://en.cppreference.com/w/cpp/string/basic_string_view, std::basic_string_view)
 */
 extern(C++, class) struct basic_string_view(T, Traits = char_traits!T)
 {

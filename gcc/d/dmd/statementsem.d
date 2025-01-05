@@ -82,13 +82,13 @@ version (DMDLIB)
  */
 private Identifier fixupLabelName(Scope* sc, Identifier ident)
 {
-    uint flags = (sc.flags & SCOPE.contract);
+    Contract c = sc.contract;
     const id = ident.toString();
-    if (flags && flags != SCOPE.invariant_ &&
+    if (c != Contract.none && c != Contract.invariant_ &&
         !(id.length >= 2 && id[0] == '_' && id[1] == '_'))  // does not start with "__"
     {
         OutBuffer buf;
-        buf.writestring(flags == SCOPE.require ? "__in_" : "__out_");
+        buf.writestring(c == Contract.require ? "__in_" : "__out_");
         buf.writestring(ident.toString());
 
         ident = Identifier.idPool(buf[]);
@@ -123,7 +123,7 @@ private LabelStatement checkLabeledLoop(Scope* sc, Statement statement) @safe
  */
 private Expression checkAssignmentAsCondition(Expression e, Scope* sc)
 {
-    if (sc.flags & SCOPE.Cfile)
+    if (sc.inCfile)
         return e;
     auto ec = lastComma(e);
     if (ec.op == EXP.assign)
@@ -205,7 +205,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         if (checkMustUse(s.exp, sc))
             s.exp = ErrorExp.get();
-        if (!(sc.flags & SCOPE.Cfile) && discardValue(s.exp))
+        if (!sc.inCfile && discardValue(s.exp))
             s.exp = ErrorExp.get();
 
         s.exp = s.exp.optimize(WANTvalue);
@@ -1697,7 +1697,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (ifs.isIfCtfeBlock())
         {
             Scope* scd2 = scd.push();
-            scd2.flags |= SCOPE.ctfeBlock;
+            scd2.ctfeBlock = true;
             ifs.ifbody = ifs.ifbody.semanticNoScope(scd2);
             scd2.pop();
         }
@@ -1733,11 +1733,10 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         // This feature allows a limited form of conditional compilation.
         if (cs.condition.include(sc))
         {
-            DebugCondition dc = cs.condition.isDebugCondition();
-            if (dc)
+            if (DebugCondition dc = cs.condition.isDebugCondition())
             {
                 sc = sc.push();
-                sc.flags |= SCOPE.debug_;
+                sc.debug_ = true;
                 cs.ifbody = cs.ifbody.statementSemantic(sc);
                 sc.pop();
             }
@@ -1964,7 +1963,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             !(!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe);
         if (!ss.hasDefault)
         {
-            if (!ss.isFinal && (!ss._body || !ss._body.isErrorStatement()) && !(sc.flags & SCOPE.Cfile))
+            if (!ss.isFinal && (!ss._body || !ss._body.isErrorStatement()) && !sc.inCfile)
                 error(ss.loc, "`switch` statement without a `default`; use `final switch` or add `default: assert(0);` or add `default: break;`");
 
             // Generate runtime error if the default is hit
@@ -1972,7 +1971,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             CompoundStatement cs;
             Statement s;
 
-            if (sc.flags & SCOPE.Cfile)
+            if (sc.inCfile)
             {
                 s = new BreakStatement(ss.loc, null);   // default for C is `default: break;`
             }
@@ -2023,7 +2022,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             ss._body = cs;
         }
 
-        if (!(sc.flags & SCOPE.Cfile) && ss.checkLabel())
+        if (!sc.inCfile && ss.checkLabel())
         {
             sc.pop();
             return setError();
@@ -2474,7 +2473,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         Expression e0 = null;
 
         bool errors = false;
-        if (sc.flags & SCOPE.contract)
+        if (sc.contract)
         {
             error(rs.loc, "`return` statements cannot be in contracts");
             errors = true;
@@ -3331,7 +3330,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 /* If catch exception type is derived from Exception
                  */
                 if (c.type.toBasetype().implicitConvTo(ClassDeclaration.exception.type) &&
-                    (!c.handler || !c.handler.comeFrom()) && !(sc.flags & SCOPE.debug_))
+                    (!c.handler || !c.handler.comeFrom()) && !sc.debug_)
                 {
                     // Remove c from the array of catches
                     tcs.catches.remove(i);
@@ -3459,7 +3458,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (ds.statement)
         {
             sc = sc.push();
-            sc.flags |= SCOPE.debug_;
+            sc.debug_ = true;
             ds.statement = ds.statement.statementSemantic(sc);
             sc.pop();
         }
@@ -3480,7 +3479,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         gs.tf = sc.tf;
         gs.os = sc.os;
         gs.lastVar = sc.lastVar;
-        gs.inCtfeBlock = (sc.flags & SCOPE.ctfeBlock) != 0;
+        gs.inCtfeBlock = sc.ctfeBlock;
 
         if (!gs.label.statement && sc.fes)
         {
@@ -3504,7 +3503,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 fd.gotos = new GotoStatements();
             fd.gotos.push(gs);
         }
-        else if (!(sc.flags & SCOPE.Cfile) && gs.checkLabel())
+        else if (!sc.inCfile && gs.checkLabel())
             return setError();
 
         result = gs;
@@ -3520,7 +3519,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         ls.tf = sc.tf;
         ls.os = sc.os;
         ls.lastVar = sc.lastVar;
-        ls.inCtfeBlock = (sc.flags & SCOPE.ctfeBlock) != 0;
+        ls.inCtfeBlock = sc.ctfeBlock;
 
         LabelDsymbol ls2 = fd.searchLabel(ls.ident, ls.loc);
         if (ls2.statement && !ls2.duplicated)

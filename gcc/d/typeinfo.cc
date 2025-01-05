@@ -662,7 +662,7 @@ public:
     this->layout_string (ed->toPrettyChars ());
 
     /* Default initializer for enum.  */
-    if (ed->members && !d->tinfo->isZeroInit ())
+    if (ed->members && !dmd::isZeroInit (d->tinfo))
       {
 	tree length = size_int (dmd::size (ed->type));
 	tree ptr = build_address (enum_initializer_decl (ed));
@@ -1415,7 +1415,7 @@ check_typeinfo_type (const Loc &loc, Scope *sc, Expression *expr)
     {
       /* Even when compiling without RTTI we should still be able to evaluate
 	 TypeInfo at compile-time, just not at run-time.  */
-      if (!sc || !(sc->flags & unsigned(SCOPE::ctfe)))
+      if (!sc || !sc->ctfe ())
 	{
 	  static int warned = 0;
 

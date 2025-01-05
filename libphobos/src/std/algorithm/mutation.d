@@ -1071,8 +1071,18 @@ Params:
         copy is performed.
 */
 void move(T)(ref T source, ref T target)
+if (__traits(compiles, target = T.init))
 {
     moveImpl(target, source);
+}
+
+/// ditto
+template move(T)
+if (!__traits(compiles, imported!"std.traits".lvalueOf!T = T.init))
+{
+    ///
+    deprecated("Can't move into `target` as `" ~ T.stringof ~ "` can't be assigned")
+    void move(ref T source, ref T target) => moveImpl(target, source);
 }
 
 /// For non-struct types, `move` just performs `target = source`:
@@ -1182,6 +1192,19 @@ pure nothrow @safe @nogc unittest
     S5 s53;
     move(s52, s53);
     assert(s53 is s51);
+}
+
+@system unittest
+{
+    static struct S
+    {
+        immutable int i;
+        ~this() @safe {}
+    }
+    alias ol = __traits(getOverloads, std.algorithm.mutation, "move", true)[1];
+    static assert(__traits(isDeprecated, ol!S));
+    // uncomment after deprecation
+    //static assert(!__traits(compiles, { S a, b; move(a, b); }));
 }
 
 /// Ditto

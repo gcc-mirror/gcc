@@ -3776,7 +3776,7 @@ public:
         enforceValid!"months"(cast(Month) month);
         enforceValid!"days"(year, cast(Month) month, day);
 
-        _year  = cast(short) year;
+        _year  = year.castToYear;
         _month = cast(Month) month;
         _day   = cast(ubyte) day;
     }
@@ -3814,6 +3814,7 @@ public:
         assertThrown!DateTimeException(Date(1999, 10, 32));
         assertThrown!DateTimeException(Date(1999, 11, 31));
         assertThrown!DateTimeException(Date(1999, 12, 32));
+        assertThrown!DateTimeException(Date(short.max+1, 1, 1));
 
         assertNotThrown!DateTimeException(Date(1999, 1, 31));
         assertNotThrown!DateTimeException(Date(1999, 2, 28));
@@ -3839,6 +3840,7 @@ public:
         assertThrown!DateTimeException(Date(-1, 2, 29));
         assertThrown!DateTimeException(Date(-2, 2, 29));
         assertThrown!DateTimeException(Date(-3, 2, 29));
+        assertThrown!DateTimeException(Date(short.min-1, 1, 1));
     }
 
 
@@ -4128,7 +4130,7 @@ public:
     @property void year(int year) @safe pure
     {
         enforceValid!"days"(year, _month, _day);
-        _year = cast(short) year;
+        _year = year.castToYear;
     }
 
     ///
@@ -4215,7 +4217,7 @@ public:
     {
         if (year <= 0)
             throw new DateTimeException("The given year is not a year B.C.");
-        _year = cast(short)((year - 1) * -1);
+        _year = castToYear((year - 1) * -1);
     }
 
     ///
@@ -9689,6 +9691,16 @@ if (units == "days")
     assert(!valid!"days"(2017, 2, 29));
 }
 
+private short castToYear(int year, string file = __FILE__, size_t line = __LINE__) @safe pure
+{
+    import std.conv : to, ConvOverflowException;
+    import std.format : format;
+
+    try
+        return year.to!short;
+    catch (ConvOverflowException)
+        throw new DateTimeException(format("year %s doesn't fit to Date.", year), file, line);
+}
 
 /++
     Params:

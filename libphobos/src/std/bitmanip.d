@@ -1306,7 +1306,7 @@ public:
 
     /**
       Sets the bits of a slice of `BitArray` starting
-      at index `start` and ends at index ($D end - 1)
+      at index `start` and ends at index $(D end - 1)
       with the values specified by `val`.
      */
     void opSliceAssign(bool val, size_t start, size_t end) @nogc pure nothrow

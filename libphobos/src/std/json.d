@@ -13,7 +13,7 @@ also $(LINK https://forum.dlang.org/post/dzfyaxypmkdrpakmycjv@forum.dlang.org).)
 Copyright: Copyright Jeremie Pelletier 2008 - 2009.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   Jeremie Pelletier, David Herberth
-References: $(LINK http://json.org/), $(LINK http://seriot.ch/parsing_json.html)
+References: $(LINK http://json.org/), $(LINK https://seriot.ch/projects/parsing_json.html)
 Source:    $(PHOBOSSRC std/json.d)
 */
 /*
@@ -804,7 +804,22 @@ struct JSONValue
         assert(j["author"].str == "Walter");
     }
 
-    ///
+    /**
+     * Compare two JSONValues for equality
+     *
+     * JSON arrays and objects are compared deeply. The order of object keys does not matter.
+     *
+     * Floating point numbers are compared for exact equality, not approximal equality.
+     *
+     * Different number types (unsigned, signed, and floating) will be compared by converting
+     * them to a common type, in the same way that comparison of built-in D `int`, `uint` and
+     * `float` works.
+     *
+     * Other than that, types must match exactly.
+     * Empty arrays are not equal to empty objects, and booleans are never equal to integers.
+     *
+     * Returns: whether this `JSONValue` is equal to `rhs`
+     */
     bool opEquals(const JSONValue rhs) const @nogc nothrow pure @safe
     {
         return opEquals(rhs);
@@ -871,9 +886,13 @@ struct JSONValue
     ///
     @safe unittest
     {
-        assert(JSONValue(0u) == JSONValue(0));
-        assert(JSONValue(0u) == JSONValue(0.0));
-        assert(JSONValue(0) == JSONValue(0.0));
+        assert(JSONValue(10).opEquals(JSONValue(10.0)));
+        assert(JSONValue(10) != (JSONValue(10.5)));
+
+        assert(JSONValue(1) != JSONValue(true));
+        assert(JSONValue.emptyArray != JSONValue.emptyObject);
+
+        assert(parseJSON(`{"a": 1, "b": 2}`).opEquals(parseJSON(`{"b": 2, "a": 1}`)));
     }
 
     /// Implements the foreach `opApply` interface for json arrays.

@@ -20,43 +20,79 @@ module dmd.common.bitfields;
 extern (D) string generateBitFields(S, T)()
 if (__traits(isUnsigned, T))
 {
-    string result = "extern (C++) pure nothrow @nogc @safe final {";
-    enum structName = __traits(identifier, S);
+    import core.bitop: bsr;
 
-    string initialValue = "";
+    string result = "extern (C++) pure nothrow @nogc @safe final {";
+
+    struct BitInfo
+    {
+        int[] offset;
+        int[] size;
+        T initialValue;
+        int totalSize;
+    }
+
+    // Iterate over members to compute bit offset and bit size for each of them
+    enum BitInfo bitInfo = () {
+        BitInfo result;
+        int bitOffset = 0;
+        foreach (size_t i, mem; __traits(allMembers, S))
+        {
+            alias memType = typeof(__traits(getMember, S, mem));
+            enum int bitSize = bsr(memType.max | 1) + 1;
+            result.offset ~= bitOffset;
+            result.size ~= bitSize;
+            result.initialValue |= cast(T) __traits(getMember, S.init, mem) << bitOffset;
+            bitOffset += bitSize;
+        }
+        result.totalSize = bitOffset;
+        return result;
+    } ();
+
+    alias TP = typeof(T.init + 0u); // type that `T` gets promoted to, uint or ulong
+    enum string toString(TP i) = i.stringof; // compile time 'integer to string'
+
+    static assert(bitInfo.totalSize <= T.sizeof * 8,
+        "sum of bit field size "~toString!(bitInfo.totalSize)~" exceeds storage type `"~T.stringof~"`");
+
     foreach (size_t i, mem; __traits(allMembers, S))
     {
-        static assert(is(typeof(__traits(getMember, S, mem)) == bool));
-        static assert(i < T.sizeof * 8, "too many fields for bit field storage of type `"~T.stringof~"`");
-        enum mask = "(1 << "~i.stringof~")";
+        enum typeName = typeof(__traits(getMember, S, mem)).stringof;
+        enum shift = toString!(bitInfo.offset[i]);
+        enum sizeMask = toString!((1 << bitInfo.size[i]) - 1); // 0x01 for bool, 0xFF for ubyte etc.
         result ~= "
-        /// set or get the corresponding "~structName~" member
-        bool "~mem~"() const scope { return !!(bitFields & "~mask~"); }
-        /// ditto
-        bool "~mem~"(bool v)
+        "~typeName~" "~mem~"() const scope { return cast("~typeName~") ((bitFields >>> "~shift~") & "~sizeMask~"); }
+        "~typeName~" "~mem~"("~typeName~" v) scope
         {
-            v ? (bitFields |= "~mask~") : (bitFields &= ~"~mask~");
+            bitFields &= ~("~sizeMask~" << "~shift~");
+            bitFields |= v << "~shift~";
             return v;
         }";
-
-        initialValue = (__traits(getMember, S.init, mem) ? "1" : "0") ~ initialValue;
     }
-    return result ~ "}\n private "~T.stringof~" bitFields = 0b" ~ initialValue ~ ";\n";
+    enum TP initVal = bitInfo.initialValue;
+    return result ~ "\n}\n private "~T.stringof~" bitFields = " ~ toString!(initVal) ~ ";\n";
 }
 
 ///
 unittest
 {
+    enum E
+    {
+        a, b, c,
+    }
+
     static struct B
     {
         bool x;
         bool y;
+        E e = E.c;
         bool z = 1;
+        private ubyte w = 77;
     }
 
     static struct S
     {
-        mixin(generateBitFields!(B, ubyte));
+        mixin(generateBitFields!(B, ushort));
     }
 
     S s;
@@ -69,5 +105,13 @@ unittest
     s.y = true;
     assert(s.y);
     assert(!s.x);
+
+    assert(s.e == E.c);
+    s.e = E.a;
+    assert(s.e == E.a);
+
     assert(s.z);
+    assert(s.w == 77);
+    s.w = 3;
+    assert(s.w == 3);
 }

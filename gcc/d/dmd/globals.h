@@ -250,6 +250,9 @@ struct Param
     DString resfile;
     DString exefile;
     DString mapfile;
+    bool timeTrace;
+    uint32_t timeTraceGranularityUs;
+    const char* timeTraceFile;
 };
 
 struct structalign_t

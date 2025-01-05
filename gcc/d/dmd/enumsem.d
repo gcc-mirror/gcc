@@ -192,7 +192,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
         return;
     }
 
-    if (!(sc.flags & SCOPE.Cfile))  // C enum remains incomplete until members are done
+    if (!sc.inCfile)  // C enum remains incomplete until members are done
         ed.semanticRun = PASS.semanticdone;
 
     version (none)
@@ -219,8 +219,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
      */
     ed.members.foreachDsymbol( (s)
     {
-        EnumMember em = s.isEnumMember();
-        if (em)
+        if (EnumMember em = s.isEnumMember())
             em._scope = sce;
     });
 
@@ -230,7 +229,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
      */
     addEnumMembersToSymtab(ed, sc, sc.getScopesym());
 
-    if (sc.flags & SCOPE.Cfile)
+    if (sc.inCfile)
     {
         /* C11 6.7.2.2
          */
@@ -386,8 +385,7 @@ Expression getDefaultValue(EnumDeclaration ed, const ref Loc loc)
 
     foreach (const i; 0 .. ed.members.length)
     {
-        EnumMember em = (*ed.members)[i].isEnumMember();
-        if (em)
+        if (EnumMember em = (*ed.members)[i].isEnumMember())
         {
             if (em.semanticRun < PASS.semanticdone)
             {

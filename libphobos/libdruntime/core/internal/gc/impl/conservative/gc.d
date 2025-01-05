@@ -404,7 +404,7 @@ class ConservativeGC : GC
                 p = sentinel_sub(p);
                 if (p != pool.findBase(p))
                     return 0;
-                auto biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
+                const biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
 
                 oldb = pool.getBits(biti);
                 pool.setBits(biti, mask);
@@ -447,7 +447,7 @@ class ConservativeGC : GC
                 p = sentinel_sub(p);
                 if (p != pool.findBase(p))
                     return 0;
-                auto biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
+                const biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
 
                 oldb = pool.getBits(biti);
                 pool.clrBits(biti, mask);
@@ -784,25 +784,25 @@ class ConservativeGC : GC
                 return 0;
 
             auto lpool = cast(LargeObjectPool*) pool;
-            size_t pagenum = lpool.pagenumOf(p);
+            const pagenum = lpool.pagenumOf(p);
             if (lpool.pagetable[pagenum] != Bins.B_PAGE)
                 return 0;
 
-            size_t psz = lpool.bPageOffsets[pagenum];
+            uint psz = lpool.bPageOffsets[pagenum];
             assert(psz > 0);
 
-            auto minsz = lpool.numPages(minsize);
-            auto maxsz = lpool.numPages(maxsize);
+            const minsz = lpool.numPages(minsize);
+            const maxsz = lpool.numPages(maxsize);
 
             if (pagenum + psz >= lpool.npages)
                 return 0;
             if (lpool.pagetable[pagenum + psz] != Bins.B_FREE)
                 return 0;
 
-            size_t freesz = lpool.bPageOffsets[pagenum + psz];
+            const freesz = lpool.bPageOffsets[pagenum + psz];
             if (freesz < minsz)
                 return 0;
-            size_t sz = freesz > maxsz ? maxsz : freesz;
+            const sz = freesz > maxsz ? maxsz : freesz;
             invalidate((pool.baseAddr + (pagenum + psz) * PAGESIZE)[0 .. sz * PAGESIZE], 0xF0, true);
             memset(lpool.pagetable + pagenum + psz, Bins.B_PAGEPLUS, sz);
             lpool.bPageOffsets[pagenum] = cast(uint) (psz + sz);
@@ -1609,7 +1609,7 @@ struct Gcx
     void Invariant() const { }
 
     debug(INVARIANT)
-    invariant()
+    invariant
     {
         if (initialized)
         {
@@ -3171,8 +3171,7 @@ Lmark:
     {
         // first, we find the Pool this block is in, then check to see if the
         // mark bit is clear.
-        auto pool = findPool(addr);
-        if (pool)
+        if (auto pool = findPool(addr))
         {
             auto offset = cast(size_t)(addr - pool.baseAddr);
             auto pn = offset / PAGESIZE;
@@ -3924,7 +3923,7 @@ struct Pool
     void Invariant() const {}
 
     debug(INVARIANT)
-    invariant()
+    invariant
     {
         if (baseAddr)
         {

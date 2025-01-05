@@ -220,31 +220,6 @@ version (CRuntime_Microsoft)
     private alias _FGETWC = _fgetwc_nolock;
     private alias _FLOCK = _lock_file;
     private alias _FUNLOCK = _unlock_file;
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTC = _fputc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTWC = _fputwc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETC = _fgetc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETWC = _fgetwc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FLOCK = _lock_file;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FUNLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FUNLOCK = _unlock_file;
 }
 else version (CRuntime_Glibc)
 {
@@ -254,31 +229,6 @@ else version (CRuntime_Glibc)
     private alias _FGETWC = fgetwc_unlocked;
     private alias _FLOCK = core.sys.posix.stdio.flockfile;
     private alias _FUNLOCK = core.sys.posix.stdio.funlockfile;
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTC = fputc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTWC = fputwc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETC = fgetc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETWC = fgetwc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FLOCK = core.sys.posix.stdio.flockfile;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FUNLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FUNLOCK = core.sys.posix.stdio.funlockfile;
 }
 else version (GENERIC_IO)
 {
@@ -303,52 +253,6 @@ else version (GENERIC_IO)
     else
     {
         static assert(0, "don't know how to lock files on GENERIC_IO");
-    }
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fputc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, fputc.mangleof) int fputc_unlocked(int c, _iobuf* fp);
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fputwc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, core.stdc.wchar_.fputwc.mangleof) int fputwc_unlocked(wchar_t c, _iobuf* fp);
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fgetc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, fgetc.mangleof) int fgetc_unlocked(_iobuf* fp);
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fgetwc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, core.stdc.wchar_.fgetwc.mangleof) int fgetwc_unlocked(_iobuf* fp);
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTC = fputc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTWC = fputwc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETC = fgetc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETWC = fgetwc_unlocked;
-
-    version (Posix)
-    {
-        // @@@DEPRECATED_2.107@@@
-        deprecated("internal alias FLOCK was unintentionally available from "
-                   ~ "std.stdio and will be removed afer 2.107")
-        alias FLOCK = core.sys.posix.stdio.flockfile;
-        // @@@DEPRECATED_2.107@@@
-        deprecated("internal alias FUNLOCK was unintentionally available from "
-                   ~ "std.stdio and will be removed afer 2.107")
-        alias FUNLOCK = core.sys.posix.stdio.funlockfile;
     }
 }
 else
@@ -795,7 +699,7 @@ Throws: `ErrnoException` in case of error.
 /**
 Detaches from the current file (throwing on failure), and then runs a command
 by calling the C standard library function $(HTTP
-opengroup.org/onlinepubs/007908799/xsh/_popen.html, _popen).
+pubs.opengroup.org/onlinepubs/7908799/xsh/popen.html, popen).
 
 Throws: `ErrnoException` in case of error.
  */
@@ -813,8 +717,9 @@ The mode must be compatible with the mode of the file descriptor.
 Throws: `ErrnoException` in case of error.
 Params:
     fd = File descriptor to associate with this `File`.
-    stdioOpenmode = Mode to associate with this File. The mode has the same semantics
-        semantics as in the C standard library $(CSTDIO fdopen) function,
+    stdioOpenmode = Mode to associate with this File. The mode has the same
+        semantics as in the POSIX library function $(HTTP
+        pubs.opengroup.org/onlinepubs/7908799/xsh/fdopen.html, fdopen)
         and must be compatible with `fd`.
  */
     void fdopen(int fd, scope const(char)[] stdioOpenmode = "rb") @safe
@@ -1134,6 +1039,9 @@ Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
         f.close();
         assert(buf == "\r\n\n\r\n");
     }
+
+    // https://issues.dlang.org/show_bug.cgi?id=24685
+    static assert(!__traits(compiles, (File f) @safe { int*[1] bar; f.rawRead(bar[]); }));
 
     // https://issues.dlang.org/show_bug.cgi?id=21729
     @system unittest
@@ -4576,11 +4484,11 @@ if ((isSomeFiniteCharInputRange!R1 || isSomeString!R1) &&
         {
             /*
              * The new opengroup large file support API is transparently
-             * included in the normal C bindings. http://opengroup.org/platform/lfs.html#1.0
+             * included in the normal C bindings. https://www.opengroup.org/platform/lfs.html#1.0
              * if _FILE_OFFSET_BITS in druntime is 64, off_t is 64 bit and
              * the normal functions work fine. If not, then large file support
              * probably isn't available. Do not use the old transitional API
-             * (the native extern(C) fopen64, http://www.unix.org/version2/whatsnew/lfs20mar.html#3.0)
+             * (the native extern(C) fopen64, https://unix.org/version2/whatsnew/lfs20mar.html#3.0)
              */
             import core.sys.posix.stdio : fopen;
             return fopen(namez, modez);
@@ -4629,6 +4537,13 @@ private auto trustedFwrite(T)(FILE* f, const T[] obj) @trusted
  * Convenience function that forwards to `core.stdc.stdio.fread`
  */
 private auto trustedFread(T)(FILE* f, T[] obj) @trusted
+if (!imported!"std.traits".hasIndirections!T)
+{
+    return fread(obj.ptr, T.sizeof, obj.length, f);
+}
+
+private auto trustedFread(T)(FILE* f, T[] obj) @system
+if (imported!"std.traits".hasIndirections!T)
 {
     return fread(obj.ptr, T.sizeof, obj.length, f);
 }

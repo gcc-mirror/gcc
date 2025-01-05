@@ -358,7 +358,7 @@ $(BOOKTABLE ,
                  Default precision is large enough to add all digits
                  of the integral value.
 
-                 In case of ($B 'a') and $(B 'A'), the integral digit can be
+                 In case of $(B 'a') and $(B 'A'), the integral digit can be
                  any hexadecimal digit.
                )
    )

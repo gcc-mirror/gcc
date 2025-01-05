@@ -2164,12 +2164,12 @@ private void quickSortImpl(alias less, Range)(Range r, size_t depth)
 {
     import std.algorithm.comparison : min, max;
     import std.algorithm.mutation : swap, swapAt;
-    import std.conv : to;
 
     alias Elem = ElementType!(Range);
-    enum size_t shortSortGetsBetter = max(32, 1024 / Elem.sizeof);
+    enum int size = Elem.sizeof;
+    enum size_t shortSortGetsBetter = max(32, 1024 / size);
     static assert(shortSortGetsBetter >= 1, Elem.stringof ~ " "
-        ~ to!string(Elem.sizeof));
+        ~ size.stringof);
 
     // partition
     while (r.length > shortSortGetsBetter)

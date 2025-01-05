@@ -607,7 +607,7 @@ extern (C) void _d_print_throwable(Throwable t)
             void sink(in char[] s) scope nothrow
             {
                 if (!s.length) return;
-                int swlen = MultiByteToWideChar(
+                const swlen = MultiByteToWideChar(
                         CP_UTF8, 0, s.ptr, cast(int)s.length, null, 0);
                 if (!swlen) return;
 
@@ -615,7 +615,7 @@ extern (C) void _d_print_throwable(Throwable t)
                         (this.len + swlen + 1) * WCHAR.sizeof);
                 if (!newPtr) return;
                 ptr = newPtr;
-                auto written = MultiByteToWideChar(
+                const written = MultiByteToWideChar(
                         CP_UTF8, 0, s.ptr, cast(int)s.length, ptr+len, swlen);
                 len += written;
             }
@@ -633,10 +633,6 @@ extern (C) void _d_print_throwable(Throwable t)
                 return _fdToHandle(fd);
         }
 
-        auto hStdErr = windowsHandle(fileno(stderr));
-        CONSOLE_SCREEN_BUFFER_INFO sbi;
-        bool isConsole = GetConsoleScreenBufferInfo(hStdErr, &sbi) != 0;
-
         // ensure the exception is shown at the beginning of the line, while also
         // checking whether stderr is a valid file
         int written = fprintf(stderr, "\n");
@@ -653,22 +649,22 @@ extern (C) void _d_print_throwable(Throwable t)
 
                 // Avoid static user32.dll dependency for console applications
                 // by loading it dynamically as needed
-                auto user32 = LoadLibraryW("user32.dll");
-                if (user32)
+                if (auto user32 = LoadLibraryW("user32.dll"))
                 {
                     alias typeof(&MessageBoxW) PMessageBoxW;
-                    auto pMessageBoxW = cast(PMessageBoxW)
-                        GetProcAddress(user32, "MessageBoxW");
-                    if (pMessageBoxW)
+                    if (auto pMessageBoxW = cast(PMessageBoxW) GetProcAddress(user32, "MessageBoxW"))
                         pMessageBoxW(null, buf.get(), caption.get(), MB_ICONERROR);
+                    FreeLibrary(user32);
                 }
-                FreeLibrary(user32);
                 caption.free();
                 buf.free();
             }
             return;
         }
-        else if (isConsole)
+        auto hStdErr = windowsHandle(fileno(stderr));
+        CONSOLE_SCREEN_BUFFER_INFO sbi = void;
+        const isConsole = GetConsoleScreenBufferInfo(hStdErr, &sbi) != 0;
+        if (isConsole)
         {
             WSink buf;
             formatThrowable(t, &buf.sink);
@@ -676,10 +672,9 @@ extern (C) void _d_print_throwable(Throwable t)
             if (buf.ptr)
             {
                 uint codepage = GetConsoleOutputCP();
-                int slen = WideCharToMultiByte(codepage, 0,
+                const slen = WideCharToMultiByte(codepage, 0,
                         buf.ptr, cast(int)buf.len, null, 0, null, null);
-                auto sptr = cast(char*)malloc(slen * char.sizeof);
-                if (sptr)
+                if (auto sptr = cast(char*)malloc(slen * char.sizeof))
                 {
                     WideCharToMultiByte(codepage, 0,
                         buf.ptr, cast(int)buf.len, sptr, slen, null, null);

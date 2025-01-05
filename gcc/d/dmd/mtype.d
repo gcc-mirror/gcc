@@ -21,7 +21,6 @@ import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
-import dmd.dcast : implicitConvTo;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.denum;
@@ -58,6 +57,11 @@ static if (__VERSION__ < 2095)
     private alias StringValueType = StringValue!Type;
 }
 
+private auto X(T, U)(T m, U n)
+{
+    return (m << 4) | n;
+}
+
 /***************************
  * Return !=0 if modfrom can be implicitly converted to modto
  */
@@ -67,10 +71,6 @@ bool MODimplicitConv(MOD modfrom, MOD modto) pure nothrow @nogc @safe
         return true;
 
     //printf("MODimplicitConv(from = %x, to = %x)\n", modfrom, modto);
-    auto X(T, U)(T m, U n)
-    {
-        return ((m << 4) | n);
-    }
 
     switch (X(modfrom & ~MODFlags.shared_, modto & ~MODFlags.shared_))
     {
@@ -97,11 +97,6 @@ MATCH MODmethodConv(MOD modfrom, MOD modto) pure nothrow @nogc @safe
         return MATCH.exact;
     if (MODimplicitConv(modfrom, modto))
         return MATCH.constant;
-
-    auto X(T, U)(T m, U n)
-    {
-        return ((m << 4) | n);
-    }
 
     switch (X(modfrom, modto))
     {
@@ -682,7 +677,7 @@ extern (C++) abstract class Type : ASTNode
         return false;
     }
 
-    bool isscope()
+    bool isScopeClass()
     {
         return false;
     }
@@ -1282,24 +1277,6 @@ extern (C++) abstract class Type : ASTNode
         return ((te = isTypeEnum()) !is null) ? te.toBasetype2() : this;
     }
 
-    /*******************************
-     * Determine if converting 'this' to 'to' is an identity operation,
-     * a conversion to const operation, or the types aren't the same.
-     * Returns:
-     *      MATCH.exact      'this' == 'to'
-     *      MATCH.constant      'to' is const
-     *      MATCH.nomatch    conversion to mutable or invariant
-     */
-    MATCH constConv(Type to)
-    {
-        //printf("Type::constConv(this = %s, to = %s)\n", toChars(), to.toChars());
-        if (equals(to))
-            return MATCH.exact;
-        if (ty == to.ty && MODimplicitConv(mod, to.mod))
-            return MATCH.constant;
-        return MATCH.nomatch;
-    }
-
     /***************************************
      * Compute MOD bits matching `this` argument type to wild parameter type.
      * Params:
@@ -1360,12 +1337,6 @@ extern (C++) abstract class Type : ASTNode
             printf("Type::defaultInitLiteral() '%s'\n", toChars());
         }
         return defaultInit(this, loc);
-    }
-
-    // if initializer is 0
-    bool isZeroInit(const ref Loc loc)
-    {
-        return false; // assume not
     }
 
     /***************************************
@@ -1866,35 +1837,6 @@ extern (C++) abstract class TypeNext : Type
         return t;
     }
 
-    override MATCH constConv(Type to)
-    {
-        //printf("TypeNext::constConv from = %s, to = %s\n", toChars(), to.toChars());
-        if (equals(to))
-            return MATCH.exact;
-
-        if (!(ty == to.ty && MODimplicitConv(mod, to.mod)))
-            return MATCH.nomatch;
-
-        Type tn = to.nextOf();
-        if (!(tn && next.ty == tn.ty))
-            return MATCH.nomatch;
-
-        MATCH m;
-        if (to.isConst()) // whole tail const conversion
-        {
-            // Recursive shared level check
-            m = next.constConv(tn);
-            if (m == MATCH.exact)
-                m = MATCH.constant;
-        }
-        else
-        {
-            //printf("\tnext => %s, to.next => %s\n", next.toChars(), tn.toChars());
-            m = next.equals(tn) ? MATCH.constant : MATCH.nomatch;
-        }
-        return m;
-    }
-
     override final MOD deduceWild(Type t, bool isRef)
     {
         if (ty == Tfunction)
@@ -2125,28 +2067,6 @@ extern (C++) final class TypeBasic : Type
         return (flags & TFlags.unsigned) != 0;
     }
 
-    override bool isZeroInit(const ref Loc loc)
-    {
-        switch (ty)
-        {
-        case Tchar:
-        case Twchar:
-        case Tdchar:
-        case Timaginary32:
-        case Timaginary64:
-        case Timaginary80:
-        case Tfloat32:
-        case Tfloat64:
-        case Tfloat80:
-        case Tcomplex32:
-        case Tcomplex64:
-        case Tcomplex80:
-            return false; // no
-        default:
-            return true; // yes
-        }
-    }
-
     override bool hasUnsafeBitpatterns()
     {
         return ty == Tbool;
@@ -2246,11 +2166,6 @@ extern (C++) final class TypeVector : Type
         return tb;
     }
 
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return basetype.isZeroInit(loc);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -2327,24 +2242,9 @@ extern (C++) final class TypeSArray : TypeArray
         return nty.isSomeChar;
     }
 
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return next.isZeroInit(loc);
-    }
-
     override structalign_t alignment()
     {
         return next.alignment();
-    }
-
-    override MATCH constConv(Type to)
-    {
-        if (auto tsa = to.isTypeSArray())
-        {
-            if (!dim.equals(tsa.dim))
-                return MATCH.nomatch;
-        }
-        return TypeNext.constConv(to);
     }
 
     override Expression defaultInitLiteral(const ref Loc loc)
@@ -2445,11 +2345,6 @@ extern (C++) final class TypeDArray : TypeArray
         return nty.isSomeChar;
     }
 
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return true;
-    }
-
     override bool isBoolean()
     {
         return true;
@@ -2496,26 +2391,9 @@ extern (C++) final class TypeAArray : TypeArray
         return result;
     }
 
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return true;
-    }
-
     override bool isBoolean()
     {
         return true;
-    }
-
-    override MATCH constConv(Type to)
-    {
-        if (auto taa = to.isTypeAArray())
-        {
-            MATCH mindex = index.constConv(taa.index);
-            MATCH mkey = next.constConv(taa.next);
-            // Pick the worst match
-            return mkey < mindex ? mkey : mindex;
-        }
-        return Type.constConv(to);
     }
 
     override void accept(Visitor v)
@@ -2554,24 +2432,7 @@ extern (C++) final class TypePointer : TypeNext
         return result;
     }
 
-    override MATCH constConv(Type to)
-    {
-        if (next.ty == Tfunction)
-        {
-            if (to.nextOf() && next.equals((cast(TypeNext)to).next))
-                return Type.constConv(to);
-            else
-                return MATCH.nomatch;
-        }
-        return TypeNext.constConv(to);
-    }
-
     override bool isscalar()
-    {
-        return true;
-    }
-
-    override bool isZeroInit(const ref Loc loc)
     {
         return true;
     }
@@ -2606,11 +2467,6 @@ extern (C++) final class TypeReference : TypeNext
         auto result = new TypeReference(t);
         result.mod = mod;
         return result;
-    }
-
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return true;
     }
 
     override void accept(Visitor v)
@@ -2868,16 +2724,6 @@ extern (C++) final class TypeFunction : TypeNext
         return newArgs;
     }
 
-    /** Extends TypeNext.constConv by also checking for matching attributes **/
-    override MATCH constConv(Type to)
-    {
-        // Attributes need to match exactly, otherwise it's an implicit conversion
-        if (this.ty != to.ty || !this.attributesEqual(cast(TypeFunction) to))
-            return MATCH.nomatch;
-
-        return super.constConv(to);
-    }
-
     extern (D) bool checkRetType(const ref Loc loc)
     {
         Type tb = next.toBasetype();
@@ -2992,11 +2838,6 @@ extern (C++) final class TypeDelegate : TypeNext
     override uint alignsize()
     {
         return target.ptrsize;
-    }
-
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return true;
     }
 
     override bool isBoolean()
@@ -3392,13 +3233,6 @@ extern (C++) final class TypeStruct : Type
         return structinit;
     }
 
-    override bool isZeroInit(const ref Loc loc)
-    {
-        // Determine zeroInit here, as this can be called before semantic2
-        sym.determineSize(sym.loc);
-        return sym.zeroInit;
-    }
-
     override bool isAssignable()
     {
         bool assignable = true;
@@ -3491,77 +3325,6 @@ extern (C++) final class TypeStruct : Type
         sym.size(Loc.initial); // give error for forward references
         sym.determineTypeProperties();
         return sym.hasInvariant() || sym.hasFieldWithInvariant;
-    }
-
-    extern (D) MATCH implicitConvToWithoutAliasThis(Type to)
-    {
-        //printf("TypeStruct::implicitConvToWithoutAliasThis(%s => %s)\n", toChars(), to.toChars());
-
-        auto tos = to.isTypeStruct();
-        if (!(tos && sym == tos.sym))
-            return MATCH.nomatch;
-
-        if (mod == to.mod)
-            return MATCH.exact;
-
-        if (MODimplicitConv(mod, to.mod))
-            return MATCH.constant;
-
-        /* Check all the fields. If they can all be converted,
-         * allow the conversion.
-         */
-        MATCH m = MATCH.constant;
-        uint offset = ~0; // must never match a field offset
-        foreach (v; sym.fields[])
-        {
-            /* Why are we only looking at the first member of a union?
-             * The check should check for overlap of v with the previous field,
-             * not just starting at the same point
-             */
-            if (!global.params.fixImmutableConv && v.offset == offset) // v is at same offset as previous field
-                continue;       // ignore
-
-            Type tvf = v.type.addMod(mod);    // from type
-            Type tvt  = v.type.addMod(to.mod); // to type
-
-            // field match
-            MATCH mf = tvf.implicitConvTo(tvt);
-            //printf("\t%s => %s, match = %d\n", v.type.toChars(), tvt.toChars(), mf);
-
-            if (mf == MATCH.nomatch)
-                return MATCH.nomatch;
-            if (mf < m) // if field match is worse
-                m = mf;
-            offset = v.offset;
-        }
-        return m;
-    }
-
-    extern (D) MATCH implicitConvToThroughAliasThis(Type to)
-    {
-        auto tos = to.isTypeStruct();
-        if (!(tos && sym == tos.sym) &&
-            sym.aliasthis &&
-            !(att & AliasThisRec.tracing))
-        {
-            if (auto ato = aliasthisOf(this))
-            {
-                att = cast(AliasThisRec)(att | AliasThisRec.tracing);
-                MATCH m = ato.implicitConvTo(to);
-                att = cast(AliasThisRec)(att & ~AliasThisRec.tracing);
-                return m;
-            }
-        }
-        return MATCH.nomatch;
-    }
-
-    override MATCH constConv(Type to)
-    {
-        if (equals(to))
-            return MATCH.exact;
-        if (ty == to.ty && sym == (cast(TypeStruct)to).sym && MODimplicitConv(mod, to.mod))
-            return MATCH.constant;
-        return MATCH.nomatch;
     }
 
     override MOD deduceWild(Type t, bool isRef)
@@ -3690,26 +3453,12 @@ extern (C++) final class TypeEnum : Type
         return memType().needsNested();
     }
 
-    override MATCH constConv(Type to)
-    {
-        if (equals(to))
-            return MATCH.exact;
-        if (ty == to.ty && sym == (cast(TypeEnum)to).sym && MODimplicitConv(mod, to.mod))
-            return MATCH.constant;
-        return MATCH.nomatch;
-    }
-
     extern (D) Type toBasetype2()
     {
         if (!sym.members && !sym.memtype)
             return this;
         auto tb = sym.getMemtype(Loc.initial).toBasetype();
         return tb.castMod(mod);         // retain modifier bits from 'this'
-    }
-
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return sym.getDefaultValue(loc).toBool().hasValue(false);
     }
 
     override bool hasVoidInitPointers()
@@ -3767,58 +3516,6 @@ extern (C++) final class TypeClass : Type
         return sym;
     }
 
-    extern (D) MATCH implicitConvToWithoutAliasThis(Type to)
-    {
-        ClassDeclaration cdto = to.isClassHandle();
-        MATCH m = constConv(to);
-        if (m > MATCH.nomatch)
-            return m;
-
-        if (cdto && cdto.isBaseOf(sym, null) && MODimplicitConv(mod, to.mod))
-        {
-            //printf("'to' is base\n");
-            return MATCH.convert;
-        }
-        return MATCH.nomatch;
-    }
-
-    extern (D) MATCH implicitConvToThroughAliasThis(Type to)
-    {
-        MATCH m;
-        if (sym.aliasthis && !(att & AliasThisRec.tracing))
-        {
-            if (auto ato = aliasthisOf(this))
-            {
-                att = cast(AliasThisRec)(att | AliasThisRec.tracing);
-                m = ato.implicitConvTo(to);
-                att = cast(AliasThisRec)(att & ~AliasThisRec.tracing);
-            }
-        }
-        return m;
-    }
-
-    override MATCH constConv(Type to)
-    {
-        if (equals(to))
-            return MATCH.exact;
-        if (ty == to.ty && sym == (cast(TypeClass)to).sym && MODimplicitConv(mod, to.mod))
-            return MATCH.constant;
-
-        /* Conversion derived to const(base)
-         */
-        int offset = 0;
-        if (to.isBaseOf(this, &offset) && offset == 0 && MODimplicitConv(mod, to.mod))
-        {
-            // Disallow:
-            //  derived to base
-            //  inout(derived) to inout(base)
-            if (!to.isMutable() && !to.isWild())
-                return MATCH.convert;
-        }
-
-        return MATCH.nomatch;
-    }
-
     override MOD deduceWild(Type t, bool isRef)
     {
         ClassDeclaration cd = t.isClassHandle();
@@ -3840,12 +3537,7 @@ extern (C++) final class TypeClass : Type
         return wm;
     }
 
-    override bool isZeroInit(const ref Loc loc)
-    {
-        return true;
-    }
-
-    override bool isscope()
+    override bool isScopeClass()
     {
         return sym.stack;
     }
@@ -4086,12 +3778,6 @@ extern (C++) final class TypeNoreturn : Type
     {
         // No semantic analysis done, no need to copy
         return this;
-    }
-
-    override MATCH constConv(Type to)
-    {
-        // Either another noreturn or conversion to any type
-        return this.implicitConvTo(to);
     }
 
     override bool isBoolean()

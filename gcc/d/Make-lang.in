@@ -113,6 +113,7 @@ D_FRONTEND_OBJS = \
 	d/declaration.o \
 	d/delegatize.o \
 	d/denum.o \
+	d/deps.o \
 	d/dimport.o \
 	d/dinterpret.o \
 	d/dmacro.o \
@@ -201,6 +202,7 @@ D_FRONTEND_OBJS = \
 	d/target.o \
 	d/templateparamsem.o \
 	d/templatesem.o \
+	d/timetrace.o \
 	d/tokens.o \
 	d/traits.o \
 	d/transitivevisitor.o \

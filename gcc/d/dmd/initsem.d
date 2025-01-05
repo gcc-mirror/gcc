@@ -161,7 +161,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                 // Convert initializer to Expression `ex`
                 auto tm = fieldType.addMod(t.mod);
                 auto iz = i.value[j].initializerSemantic(sc, tm, needInterpret);
-                auto ex = iz.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0);
+                auto ex = iz.initializerToExpression(null, sc.inCfile);
                 if (ex.op != EXP.error)
                     i.value[j] = iz;
                 return ex;
@@ -305,7 +305,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
         }
         if (auto tsa = t.isTypeSArray())
         {
-            if (sc.flags & SCOPE.Cfile && tsa.isIncomplete())
+            if (sc.inCfile && tsa.isIncomplete())
             {
                 // Change to array of known length
                 auto tn = tsa.next.toBasetype();
@@ -369,7 +369,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
             // If the result will be implicitly cast, move the cast into CTFE
             // to avoid premature truncation of polysemous types.
             // eg real [] x = [1.1, 2.2]; should use real precision.
-            if (i.exp.implicitConvTo(t) && !(sc.flags & SCOPE.Cfile))
+            if (i.exp.implicitConvTo(t) && !sc.inCfile)
             {
                 i.exp = i.exp.implicitCastTo(sc, t);
             }
@@ -377,7 +377,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
             {
                 return i;
             }
-            if (sc.flags & SCOPE.Cfile)
+            if (sc.inCfile)
             {
                 /* the interpreter turns (char*)"string" into &"string"[0] which then
                  * it cannot interpret. Resolve that case by doing optimize() first
@@ -450,7 +450,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
             /* Lop off terminating 0 of initializer for:
              *  static char s[5] = "hello";
              */
-            if (sc.flags & SCOPE.Cfile &&
+            if (sc.inCfile &&
                 typeb.ty == Tsarray &&
                 tynto.isSomeChar &&
                 tb.isTypeSArray().dim.toInteger() + 1 == typeb.isTypeSArray().dim.toInteger())
@@ -463,7 +463,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
          * Initialize an array of unknown size with a string.
          * Change to static array of known size
          */
-        if (sc.flags & SCOPE.Cfile && i.exp.isStringExp() &&
+        if (sc.inCfile && i.exp.isStringExp() &&
             tb.isTypeSArray() && tb.isTypeSArray().isIncomplete())
         {
             StringExp se = i.exp.isStringExp();
@@ -549,7 +549,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
         {
             i.exp = i.exp.implicitCastTo(sc, t);
         }
-        else if (sc.flags & SCOPE.Cfile && i.exp.isStringExp() &&
+        else if (sc.inCfile && i.exp.isStringExp() &&
             tta && (tta.next.ty == Tint8 || tta.next.ty == Tuns8) &&
             ti.ty == Tsarray && ti.nextOf().ty == Tchar)
         {

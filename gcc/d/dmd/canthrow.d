@@ -111,11 +111,9 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
             if (ce.f && ce.arguments.length > 0)
             {
                 Type tb = (*ce.arguments)[0].type.toBasetype();
-                auto tbNext = tb.nextOf();
-                if (tbNext)
+                if (auto tbNext = tb.nextOf())
                 {
-                    auto ts = tbNext.baseElemOf().isTypeStruct();
-                    if (ts)
+                    if (auto ts = tbNext.baseElemOf().isTypeStruct())
                     {
                         auto sd = ts.sym;
                         const id = ce.f.ident;

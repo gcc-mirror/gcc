@@ -201,7 +201,7 @@ public:
 
 Expression checkGC(Scope* sc, Expression e)
 {
-    if (sc.flags & SCOPE.ctfeBlock)     // ignore GC in ctfe blocks
+    if (sc.ctfeBlock)     // ignore GC in ctfe blocks
         return e;
 
     /* If betterC, allow GC to happen in non-CTFE code.
@@ -211,10 +211,10 @@ Expression checkGC(Scope* sc, Expression e)
     const betterC = !global.params.useGC;
     FuncDeclaration f = sc.func;
     if (e && e.op != EXP.error && f && sc.intypeof != 1 &&
-           (!(sc.flags & SCOPE.ctfe) || betterC) &&
+           (!sc.ctfe || betterC) &&
            (f.type.ty == Tfunction &&
             (cast(TypeFunction)f.type).isnogc || f.nogcInprocess || global.params.v.gc) &&
-           !(sc.flags & SCOPE.debug_))
+           !sc.debug_)
     {
         scope NOGCVisitor gcv = new NOGCVisitor(f);
         gcv.checkOnly = betterC;

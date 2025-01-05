@@ -215,15 +215,13 @@ bool lambdaCheckForNestedRef(Expression e, Scope* sc)
 
         override void visit(SymOffExp e)
         {
-            VarDeclaration v = e.var.isVarDeclaration();
-            if (v)
+            if (VarDeclaration v = e.var.isVarDeclaration())
                 result = v.checkNestedReference(sc, Loc.initial);
         }
 
         override void visit(VarExp e)
         {
-            VarDeclaration v = e.var.isVarDeclaration();
-            if (v)
+            if (VarDeclaration v = e.var.isVarDeclaration())
                 result = v.checkNestedReference(sc, Loc.initial);
         }
 
@@ -235,8 +233,7 @@ bool lambdaCheckForNestedRef(Expression e, Scope* sc)
 
         override void visit(DeclarationExp e)
         {
-            VarDeclaration v = e.declaration.isVarDeclaration();
-            if (v)
+            if (VarDeclaration v = e.declaration.isVarDeclaration())
             {
                 result = v.checkNestedReference(sc, Loc.initial);
                 if (result)

@@ -701,9 +701,10 @@ public:
 
     version (CoreUnittest) unittest
     {
-        foreach (D; AliasSeq!(Duration, const Duration, immutable Duration))
+        alias Types = AliasSeq!(Duration, const Duration, immutable Duration);
+        foreach (D; Types)
         {
-            foreach (E; AliasSeq!(Duration, const Duration, immutable Duration))
+            foreach (E; Types)
             {
                 assert((cast(D)Duration(5)) + (cast(E)Duration(7)) == Duration(12));
                 assert((cast(D)Duration(5)) - (cast(E)Duration(7)) == Duration(-2));

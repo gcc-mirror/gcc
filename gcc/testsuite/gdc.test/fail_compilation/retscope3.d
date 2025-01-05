@@ -53,7 +53,7 @@ void bar4()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope3.d(4003): Error: copying `u[]` into allocated memory escapes a reference to variadic parameter `u`
+fail_compilation/retscope3.d(4003): Error: copying `u[]` into allocated memory escapes a reference to parameter `u`
 fail_compilation/retscope3.d(4016): Error: storing reference to outer local variable `i` into allocated memory causes it to escape
 fail_compilation/retscope3.d(4025): Error: storing reference to stack allocated value returned by `makeSA()` into allocated memory causes it to escape
 ---

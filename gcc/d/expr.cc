@@ -2180,7 +2180,7 @@ public:
 		tree type = build_ctype (e->type);
 		tree length = size_int (sd->dsym->structsize);
 		tree ptr = (sd->dsym->isStructDeclaration ()
-			    && sd->dsym->type->isZeroInit (e->loc))
+			    && dmd::isZeroInit (sd->dsym->type, e->loc))
 		  ? null_pointer_node : build_address (result);
 
 		this->result_ = d_array_value (type, length, ptr);

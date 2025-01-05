@@ -3187,9 +3187,7 @@ private struct BufSlice
     size_t from;
     size_t to;
 
-    @safe:
-    pure:
-    nothrow:
+    @safe pure nothrow:
 
     @disable this();
 
@@ -3209,7 +3207,7 @@ private struct BufSlice
             this.to = to;
     }
 
-    invariant()
+    invariant
     {
         if (buf is null)
         {

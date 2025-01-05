@@ -1941,15 +1941,15 @@ byte[] _d_arrayappendcTX(const TypeInfo ti, return scope ref byte[] px, size_t n
         __setArrayAllocLength(info, newsize, isshared, tinext);
         if (!isshared)
             __insertBlkInfoCache(info, bic);
-        auto newdata = cast(byte *)__arrayStart(info);
+        auto newdata = cast(byte*)__arrayStart(info);
         memcpy(newdata, px.ptr, length * sizeelem);
         // do postblit processing
         __doPostblit(newdata, length * sizeelem, tinext);
-        (cast(void **)(&px))[1] = newdata;
+        (cast(void**)&px)[1] = newdata;
     }
 
   L1:
-    *cast(size_t *)&px = newlength;
+    *cast(size_t*)&px = newlength;
     return px;
 }
 
@@ -2417,14 +2417,14 @@ deprecated unittest
     // associative arrays
     import rt.aaA : entryDtor;
     // throw away all existing AA entries with dtor
-    GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
+    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
 
     S1[int] aa1;
     aa1[0] = S1(0);
     aa1[1] = S1(1);
     dtorCount = 0;
     aa1 = null;
-    GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
+    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
     assert(dtorCount == 2);
 
     int[S1] aa2;
@@ -2433,7 +2433,7 @@ deprecated unittest
     aa2[S1(2)] = 2;
     dtorCount = 0;
     aa2 = null;
-    GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
+    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
     assert(dtorCount == 3);
 
     S1[2][int] aa3;
@@ -2441,7 +2441,7 @@ deprecated unittest
     aa3[1] = [S1(1),S1(3)];
     dtorCount = 0;
     aa3 = null;
-    GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
+    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
     assert(dtorCount == 4);
 }
 

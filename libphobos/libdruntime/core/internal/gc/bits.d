@@ -134,7 +134,7 @@ struct GCBits
         }
         else
         {
-            auto pos = i >> BITS_SHIFT;
+            const pos = i >> BITS_SHIFT;
             auto pdata = cast(shared)(data + pos);
             auto mask = BITS_1 << (i & BITS_MASK);
             auto state = *pdata;

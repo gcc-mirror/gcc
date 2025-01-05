@@ -14,6 +14,7 @@
 
 module core.stdc.wctype;
 
+import core.stdc.config;
 public  import core.stdc.wchar_; // for wint_t, WEOF
 
 extern (C):
@@ -21,10 +22,41 @@ extern (C):
 nothrow:
 @nogc:
 
-///
-alias wchar_t wctrans_t;
-///
-alias wchar_t wctype_t;
+version (CRuntime_Glibc)
+{
+    ///
+    alias wctype_t = c_ulong;
+    ///
+    alias wctrans_t = const(int)*;
+}
+else version (CRuntime_Musl)
+{
+    ///
+    alias wctype_t = c_ulong;
+    ///
+    alias wctrans_t = const(int)*;
+}
+else version (FreeBSD)
+{
+    ///
+    alias wctype_t = c_ulong;
+    ///
+    alias wctrans_t = int;
+}
+else version (CRuntime_Bionic)
+{
+    ///
+    alias wctype_t = c_long;
+    ///
+    alias wctrans_t = const(void)*;
+}
+else
+{
+    ///
+    alias wchar_t wctrans_t;
+    ///
+    alias wchar_t wctype_t;
+}
 
 ///
 pure int iswalnum(wint_t wc);
@@ -63,3 +95,17 @@ pure wint_t    towupper(wint_t wc);
 wint_t    towctrans(wint_t wc, wctrans_t desc);
 ///
 @system wctrans_t wctrans(const scope char* property);
+
+unittest
+{
+    assert(iswalpha('A'));
+    assert(!iswalpha('0'));
+    wctype_t alpha = wctype("alpha");
+    assert(alpha);
+    wctrans_t tolower = wctrans("tolower");
+    assert(tolower);
+    assert(iswctype('A', alpha));
+    assert(!iswctype('0', alpha));
+    assert(towctrans('A', tolower) == 'a');
+    assert(towctrans('0', tolower) == '0');
+}

@@ -99,8 +99,7 @@ StorageClass mergeFuncAttrs(StorageClass s1, const FuncDeclaration f) pure
  */
 FuncDeclaration hasIdentityOpAssign(AggregateDeclaration ad, Scope* sc)
 {
-    Dsymbol assign = search_function(ad, Id.assign);
-    if (assign)
+    if (Dsymbol assign = search_function(ad, Id.assign))
     {
         /* check identity opAssign exists
          */
@@ -825,7 +824,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
      * Note that it would only be necessary if it has floating point fields.
      * For now, we'll just not generate a toHash() for C files.
      */
-    if (sc.flags & SCOPE.Cfile)
+    if (sc.inCfile)
         return null;
 
     //printf("StructDeclaration::buildXtoHash() %s\n", sd.toPrettyChars());

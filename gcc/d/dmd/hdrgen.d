@@ -2682,10 +2682,7 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
     void visitDotId(DotIdExp e)
     {
         expToBuffer(e.e1, PREC.primary, buf, hgs);
-        if (e.arrow)
-            buf.writestring("->");
-        else
-            buf.writeByte('.');
+        buf.writeByte('.');
         buf.writestring(e.ident.toString());
     }
 
@@ -3927,7 +3924,7 @@ private void visitFuncIdentWithPrefix(TypeFunction t, const Identifier ident, Te
 
     /* Use 'storage class' (prefix) style for attributes
      */
-    if (t.mod)
+    if (t.mod && !(hgs.ddoc || hgs.hdrgen))
     {
         MODtoBuffer(buf, t.mod);
         buf.writeByte(' ');
@@ -3977,6 +3974,12 @@ private void visitFuncIdentWithPrefix(TypeFunction t, const Identifier ident, Te
         buf.writeByte(')');
     }
     parametersToBuffer(t.parameterList, buf, hgs);
+    // postfix this attributes are more readable
+    if (t.mod && (hgs.ddoc || hgs.hdrgen))
+    {
+        buf.writeByte(' ');
+        MODtoBuffer(buf, t.mod);
+    }
     if (t.isreturnscope && !t.isreturninferred)
     {
         buf.writestring(" return scope");
@@ -4273,13 +4276,23 @@ private void typeToBufferx(Type t, ref OutBuffer buf, ref HdrGenState hgs)
 
     void visitTag(TypeTag t)
     {
-        if (t.mod & MODFlags.const_)
-            buf.writestring("const ");
         if (hgs.importcHdr && t.id)
         {
+            // https://issues.dlang.org/show_bug.cgi?id=24670
+            // `const` must be parenthesized because it can be a return type
+            if (t.mod & MODFlags.const_)
+                buf.writestring("const(");
+
+            // For C to D translation, `struct S` or `enum S` simply becomes `S`
             buf.writestring(t.id.toString());
+
+            if (t.mod & MODFlags.const_)
+                buf.writestring(")");
             return;
         }
+        // The following produces something like "const enum E : short"
+        if (t.mod & MODFlags.const_)
+            buf.writestring("const ");
         buf.writestring(Token.toString(t.tok));
         buf.writeByte(' ');
         if (t.id)

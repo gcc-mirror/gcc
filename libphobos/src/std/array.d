@@ -295,6 +295,19 @@ if (is(Range == U*, U) && isIterable!U && !isAutodecodableString!Range && !isInf
     R().array;
 }
 
+// Test that `array(scope InputRange r)` returns a non-scope array
+// https://issues.dlang.org/show_bug.cgi?id=23300
+@safe pure nothrow unittest
+{
+    @safe int[] fun()
+    {
+        import std.algorithm.iteration : map;
+        int[3] arr = [1, 2, 3];
+        scope r = arr[].map!(x => x + 3);
+        return r.array;
+    }
+}
+
 /**
 Convert a narrow autodecoding string to an array type that fully supports
 random access.  This is handled as a special case and always returns an array
@@ -650,6 +663,8 @@ if (isInputRange!Values && isInputRange!Keys)
                 alias ValueElement = ElementType!Values;
                 static if (hasElaborateDestructor!ValueElement)
                     ValueElement.init.__xdtor();
+
+                aa[key] = values.front;
             })))
             {
                 () @trusted {
@@ -788,6 +803,20 @@ if (isInputRange!Values && isInputRange!Keys)
     }
     static assert(!__traits(compiles, () @safe { assocArray(1.iota, [UnsafeElement()]);}));
     assert(assocArray(1.iota, [UnsafeElement()]) == [0: UnsafeElement()]);
+}
+
+@safe unittest
+{
+    struct ValueRange
+    {
+        string front() const @system;
+        @safe:
+        void popFront() {}
+        bool empty() const { return false; }
+    }
+    int[] keys;
+    ValueRange values;
+    static assert(!__traits(compiles, assocArray(keys, values)));
 }
 
 /**

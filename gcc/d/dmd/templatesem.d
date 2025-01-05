@@ -154,7 +154,7 @@ void templateDeclarationSemantic(Scope* sc, TemplateDeclaration tempdecl)
 
     /* Calculate TemplateParameter.dependent
      */
-    TemplateParameters tparams = TemplateParameters(1);
+    auto tparams = TemplateParameters(1);
     for (size_t i = 0; i < tempdecl.parameters.length; i++)
     {
         TemplateParameter tp = (*tempdecl.parameters)[i];
@@ -457,7 +457,7 @@ bool evaluateConstraint(TemplateDeclaration td, TemplateInstance ti, Scope* sc, 
     // (previously, this was immediately before calling evalStaticCondition), so the
     // semantic pass knows not to issue deprecation warnings for these throw-away decls.
     // https://issues.dlang.org/show_bug.cgi?id=21831
-    scx.flags |= SCOPE.constraint;
+    scx.inTemplateConstraint = true;
 
     assert(!ti.symtab);
     if (fd)
@@ -1337,10 +1337,10 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                          * We also save/restore sc.func.flags to avoid messing up
                          * attribute inference in the evaluation.
                         */
-                        const oldflags = sc.func ? sc.func.flags : 0;
+                        const oldflags = sc.func ? sc.func.saveFlags : 0;
                         auto e = resolveAliasThis(sc, farg, true);
                         if (sc.func)
-                            sc.func.flags = oldflags;
+                            sc.func.restoreFlags(oldflags);
                         if (e)
                         {
                             farg = e;

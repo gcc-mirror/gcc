@@ -353,8 +353,7 @@ extern (C++) abstract class Declaration : Dsymbol
         // is an overload in the overload set that isn't
         if (isAliasedDeclaration)
         {
-            FuncDeclaration fd = isFuncDeclaration();
-            if (fd)
+            if (FuncDeclaration fd = isFuncDeclaration())
             {
                 for (FuncDeclaration ovl = fd; ovl; ovl = cast(FuncDeclaration)ovl.overnext)
                     if (!(ovl.storage_class & STC.disable))
@@ -397,7 +396,7 @@ extern (C++) abstract class Declaration : Dsymbol
         {
             for (Scope* scx = sc; scx; scx = scx.enclosing)
             {
-                if (scx.func == parent && (scx.flags & SCOPE.contract))
+                if (scx.func == parent && scx.contract != Contract.none)
                 {
                     const(char)* s = isParameter() && parent.ident != Id.ensure ? "parameter" : "result";
                     if (!(flag & ModifyFlags.noError))
@@ -412,7 +411,7 @@ extern (C++) abstract class Declaration : Dsymbol
             VarDeclaration vthis = e1.isThisExp().var;
             for (Scope* scx = sc; scx; scx = scx.enclosing)
             {
-                if (scx.func == vthis.parent && (scx.flags & SCOPE.contract))
+                if (scx.func == vthis.parent && scx.contract != Contract.none)
                 {
                     if (!(flag & ModifyFlags.noError))
                         error(loc, "%s `%s` cannot modify parameter `this` in contract", kind, toPrettyChars);
@@ -1137,7 +1136,6 @@ extern (C++) class VarDeclaration : Declaration
     VarDeclaration lastVar;         // Linked list of variables for goto-skips-init detection
     Expression edtor;               // if !=null, does the destruction of the variable
     IntRange* range;                // if !=null, the variable is known to be within the range
-    VarDeclarations* maybes;        // maybeScope variables that are assigned to this maybeScope variable
 
     uint endlinnum;                 // line number of end of scope that this var lives in
     uint offset;
@@ -1239,8 +1237,7 @@ extern (C++) class VarDeclaration : Declaration
              */
             for (auto s = cast(Dsymbol)this; s; s = s.parent)
             {
-                auto ad = (cast(inout)s).isMember();
-                if (ad)
+                if (auto ad = (cast(inout)s).isMember())
                     return ad;
                 if (!s.parent || !s.parent.isTemplateMixin())
                     break;
@@ -1580,7 +1577,7 @@ extern (C++) class VarDeclaration : Declaration
     extern (D) final bool checkNestedReference(Scope* sc, Loc loc)
     {
         //printf("VarDeclaration::checkNestedReference() %s\n", toChars());
-        if (sc.intypeof == 1 || (sc.flags & SCOPE.ctfe))
+        if (sc.intypeof == 1 || sc.ctfe)
             return false;
         if (!parent || parent == sc.parent)
             return false;
@@ -1615,7 +1612,7 @@ extern (C++) class VarDeclaration : Declaration
         }
 
         // Add this VarDeclaration to fdv.closureVars[] if not already there
-        if (!sc.intypeof && !(sc.flags & SCOPE.compile) &&
+        if (!sc.intypeof && !sc.traitsCompiles &&
             // https://issues.dlang.org/show_bug.cgi?id=17605
             (fdv.skipCodegen || !fdthis.skipCodegen))
         {

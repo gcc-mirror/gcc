@@ -27,7 +27,7 @@ do
     auto m = ensureMonitor(cast(Object) owner);
     if (m.impl is null)
     {
-        atomicOp!("+=")(m.refs, cast(size_t) 1);
+        atomicOp!"+="(m.refs, size_t(1));
     }
     // Assume the monitor is garbage collected and simply copy the reference.
     ownee.__monitor = owner.__monitor;
@@ -44,7 +44,7 @@ extern (C) void _d_monitordelete(Object h, bool det)
         // let the GC collect the monitor
         setMonitor(h, null);
     }
-    else if (!atomicOp!("-=")(m.refs, cast(size_t) 1))
+    else if (!atomicOp!"-="(m.refs, size_t(1)))
     {
         // refcount == 0 means unshared => no synchronization required
         disposeEvent(cast(Monitor*) m, h);
@@ -65,7 +65,7 @@ extern (C) void _d_monitordelete_nogc(Object h) @nogc nothrow
         // let the GC collect the monitor
         setMonitor(h, null);
     }
-    else if (!atomicOp!("-=")(m.refs, cast(size_t) 1))
+    else if (!atomicOp!"-="(m.refs, size_t(1)))
     {
         // refcount == 0 means unshared => no synchronization required
         deleteMonitor(cast(Monitor*) m);
@@ -231,7 +231,7 @@ private:
     return *cast(shared Monitor**)&h.__monitor;
 }
 
-private shared(Monitor)* getMonitor(Object h) pure @nogc
+shared(Monitor)* getMonitor(Object h) pure @nogc
 {
     return atomicLoad!(MemoryOrder.acq)(h.monitor);
 }

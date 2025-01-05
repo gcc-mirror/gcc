@@ -149,6 +149,7 @@ enum CHUNK_SIZE = (256 * 4096 - 64);
 
 __gshared size_t heapleft = 0;
 __gshared void* heapp;
+__gshared size_t heapTotal = 0; // Total amount of memory allocated using malloc
 
 extern (D) void* allocmemoryNoFree(size_t m_size) nothrow @nogc
 {
@@ -167,11 +168,13 @@ extern (D) void* allocmemoryNoFree(size_t m_size) nothrow @nogc
 
     if (m_size > CHUNK_SIZE)
     {
+        heapTotal += m_size;
         return Mem.check(malloc(m_size));
     }
 
     heapleft = CHUNK_SIZE;
     heapp = Mem.check(malloc(CHUNK_SIZE));
+    heapTotal += CHUNK_SIZE;
     goto L1;
 }
 

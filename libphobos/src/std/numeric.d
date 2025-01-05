@@ -3405,7 +3405,7 @@ private:
 
     // This algorithm works by performing the even and odd parts of our FFT
     // using the "two for the price of one" method mentioned at
-    // http://www.engineeringproductivitytools.com/stuff/T0001/PT10.HTM#Head521
+    // https://web.archive.org/web/20180312110051/http://www.engineeringproductivitytools.com/stuff/T0001/PT10.HTM#Head521
     // by making the odd terms into the imaginary components of our new FFT,
     // and then using symmetry to recombine them.
     void fftImplPureReal(Ret, R)(R range, Ret buf) const

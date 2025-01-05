@@ -2001,7 +2001,7 @@ void escapeLive(Expression e, scope void delegate(VarDeclaration) onVar)
         true,
     );
 
-    escapeByValue(e, er, true);
+    escapeByValue(e, er);
 }
 
 /***************************************

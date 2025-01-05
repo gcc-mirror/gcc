@@ -564,8 +564,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
         {
             //printf("CastExp::op_overload() (%s)\n", e.toChars());
             Expression result;
-            AggregateDeclaration ad = isAggregate(e.e1.type);
-            if (ad)
+            if (AggregateDeclaration ad = isAggregate(e.e1.type))
             {
                 Dsymbol fd = null;
                 /* Rewrite as:
@@ -1034,7 +1033,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 e.e2 = new DotIdExp(e.loc, e.e2, Id._tupleof);
 
                 auto sc2 = sc.push();
-                sc2.flags |= SCOPE.noaccesscheck;
+                sc2.noAccessCheck = true;
                 Expression r = e.expressionSemantic(sc2);
                 sc2.pop();
                 return r;
@@ -1412,8 +1411,7 @@ Expression build_overload(const ref Loc loc, Scope* sc, Expression ethis, Expres
 {
     assert(d);
     Expression e;
-    Declaration decl = d.isDeclaration();
-    if (decl)
+    if (Declaration decl = d.isDeclaration())
         e = new DotVarExp(loc, ethis, decl, false);
     else
         e = new DotIdExp(loc, ethis, d.ident);
@@ -1427,8 +1425,7 @@ Expression build_overload(const ref Loc loc, Scope* sc, Expression ethis, Expres
  */
 Dsymbol search_function(ScopeDsymbol ad, Identifier funcid)
 {
-    Dsymbol s = ad.search(Loc.initial, funcid);
-    if (s)
+    if (Dsymbol s = ad.search(Loc.initial, funcid))
     {
         //printf("search_function: s = '%s'\n", s.kind());
         Dsymbol s2 = s.toAlias();
@@ -1436,8 +1433,7 @@ Dsymbol search_function(ScopeDsymbol ad, Identifier funcid)
         FuncDeclaration fd = s2.isFuncDeclaration();
         if (fd && fd.type.ty == Tfunction)
             return fd;
-        TemplateDeclaration td = s2.isTemplateDeclaration();
-        if (td)
+        if (TemplateDeclaration td = s2.isTemplateDeclaration())
             return td;
     }
     return null;

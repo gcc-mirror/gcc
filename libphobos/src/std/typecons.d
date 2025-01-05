@@ -3544,6 +3544,35 @@ struct Nullable(T)
     }
 
     /**
+     * Returns true if `this` has a value, otherwise false.
+     *
+     * Allows a `Nullable` to be used as the condition in an `if` statement:
+     *
+     * ---
+     * if (auto result = functionReturningNullable())
+     * {
+     *     doSomethingWith(result.get);
+     * }
+     * ---
+     */
+    bool opCast(T : bool)() const
+    {
+        return !isNull;
+    }
+
+    /// Prevents `opCast` from disabling built-in conversions.
+    auto ref T opCast(T, this This)()
+    if (is(This : T) || This.sizeof == T.sizeof)
+    {
+        static if (is(This : T))
+            // Convert implicitly
+            return this;
+        else
+            // Reinterpret
+            return *cast(T*) &this;
+    }
+
+    /**
      * Forces `this` to the null state.
      */
     void nullify()()
@@ -4398,6 +4427,26 @@ auto nullable(T)(T t)
         destroyed = false;
     }
     assert(destroyed);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22293
+@safe unittest
+{
+    Nullable!int empty;
+    Nullable!int full = 123;
+
+    assert(cast(bool) empty == false);
+    assert(cast(bool) full == true);
+
+    if (empty) assert(0);
+    if (!full) assert(0);
+}
+
+// check that opCast doesn't break unsafe casts
+@system unittest
+{
+    Nullable!(const(int*)) a;
+    auto result = cast(immutable(Nullable!(int*))) a;
 }
 
 /**
@@ -10928,19 +10977,22 @@ struct RefCounted(T, RefCountedAutoInitialize autoInit =
         swap(_refCounted._store, rhs._refCounted._store);
     }
 
-    void opAssign(T rhs)
+    static if (__traits(compiles, lvalueOf!T = T.init))
     {
-        import std.algorithm.mutation : move;
+        void opAssign(T rhs)
+        {
+            import std.algorithm.mutation : move;
 
-        static if (autoInit == RefCountedAutoInitialize.yes)
-        {
-            _refCounted.ensureInitialized();
+            static if (autoInit == RefCountedAutoInitialize.yes)
+            {
+                _refCounted.ensureInitialized();
+            }
+            else
+            {
+                assert(_refCounted.isInitialized);
+            }
+            move(rhs, _refCounted._store._payload);
         }
-        else
-        {
-            assert(_refCounted.isInitialized);
-        }
-        move(rhs, _refCounted._store._payload);
     }
 
     static if (autoInit == RefCountedAutoInitialize.yes)

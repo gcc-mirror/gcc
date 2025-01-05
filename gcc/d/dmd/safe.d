@@ -128,8 +128,8 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
 
         if (hasPointers && v.type.toBasetype().ty != Tstruct)
         {
-            if ((!ad.type.alignment.isDefault() && ad.type.alignment.get() < target.ptrsize ||
-                 (v.offset & (target.ptrsize - 1))))
+            if ((!ad.type.alignment.isDefault() && ad.type.alignment.get() < target.ptrsize) ||
+                 (v.offset & (target.ptrsize - 1)))
             {
                 if (sc.setUnsafe(!printmsg, e.loc,
                     "field `%s.%s` cannot modify misaligned pointers in `@safe` code", ad, v))
