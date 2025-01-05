@@ -50,7 +50,6 @@ struct TargetC
     {
         Unspecified,
         Bionic,
-        DigitalMars,
         Glibc,
         Microsoft,
         Musl,
@@ -62,7 +61,6 @@ struct TargetC
     enum class BitFieldStyle : unsigned char
     {
         Unspecified,
-        DM,                   // Digital Mars 32 bit C compiler
         MS,                   // Microsoft 32 and 64 bit C compilers
                               // https://docs.microsoft.com/en-us/cpp/c-language/c-bit-fields?view=msvc-160
                               // https://docs.microsoft.com/en-us/cpp/cpp/cpp-bit-fields?view=msvc-160
@@ -87,7 +85,6 @@ struct TargetCPP
     {
         Unspecified,
         Clang,
-        DigitalMars,
         Gcc,
         Microsoft,
         Sun
@@ -157,6 +154,7 @@ struct Target
     DString architectureName;    // name of the platform architecture (e.g. X86_64)
     CPU cpu;                // CPU instruction set to target
     d_bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
+    d_bool isX86;             // generate 32 bit Intel x86 code
     d_bool isLP64;            // pointers are 64 bits
 
     // Environmental
@@ -164,7 +162,6 @@ struct Target
     DString lib_ext;    /// extension for static library files
     DString dll_ext;    /// extension for dynamic library files
     d_bool run_noext;     /// allow -run sources without extensions
-    d_bool omfobj;        /// for Win32: write OMF object files instead of COFF
 
     template <typename T>
     struct FPTypeProperties

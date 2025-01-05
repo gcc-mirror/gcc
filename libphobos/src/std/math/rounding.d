@@ -776,27 +776,18 @@ version (Posix)
  *
  * If the fractional part of x is exactly 0.5, the return value is rounded
  * away from zero.
- *
- * $(BLUE This function is not implemented for Digital Mars C runtime.)
  */
 long lround(real x) @trusted nothrow @nogc
 {
-    version (CRuntime_DigitalMars)
-        assert(0, "lround not implemented");
-    else
-        return core.stdc.math.llroundl(x);
+    return core.stdc.math.llroundl(x);
 }
 
 ///
 @safe nothrow @nogc unittest
 {
-    version (CRuntime_DigitalMars) {}
-    else
-    {
-        assert(lround(0.49) == 0);
-        assert(lround(0.5) == 1);
-        assert(lround(1.5) == 2);
-    }
+    assert(lround(0.49) == 0);
+    assert(lround(0.5) == 1);
+    assert(lround(1.5) == 2);
 }
 
 /**

@@ -3,15 +3,6 @@
 import core.stdc.stdio;
 import core.thread;
 
-version (CRuntime_DigitalMars)
-{
-    extern (C)
-    {
-        extern int _tlsstart;
-        extern int _tlsend;
-    }
-}
-
 int tlsx;
 
 class Foo
@@ -25,8 +16,6 @@ class Foo
         tlsx = 5;
         Thread t = Thread.getThis();
 
-        version (CRuntime_DigitalMars)
-            printf("thread ptr=%p, %p &tlsx = %p %p\n", t, &_tlsstart, &tlsx, &_tlsend);
         x = 3;
         printf("-bar()\n");
     }

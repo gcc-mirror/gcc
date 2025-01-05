@@ -30,14 +30,7 @@ extern (C):
 nothrow:
 @nogc:
 
-version (CRuntime_DigitalMars)
-{
-    /***
-     * Assert failure function in the Digital Mars C library.
-     */
-    noreturn _assert(const(void)* exp, const(void)* file, uint line);
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     /***
      * Assert failure function in the Microsoft C library.

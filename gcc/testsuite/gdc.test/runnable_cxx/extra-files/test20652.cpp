@@ -1,6 +1,3 @@
-#if defined(__DMC__)	// DMC doesn't support immintrin.h
-#else
-
 #include <assert.h>
 
 // Inline the typedef of __m128 instead of including immintrin.h.
@@ -30,5 +27,3 @@ void test20652(const __m128& a)
     assert(b.array[2] == 1);
     assert(b.array[3] == 1);
 }
-
-#endif

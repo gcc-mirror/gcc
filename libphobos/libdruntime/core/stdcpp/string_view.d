@@ -14,17 +14,6 @@ module core.stdcpp.string_view;
 import core.stdc.stddef : wchar_t;
 import core.stdcpp.xutility : StdNamespace;
 
-// hacks to support DMD on Win32
-version (CppRuntime_Microsoft)
-{
-    version = CppRuntime_Windows; // use the MS runtime ABI for win32
-}
-else version (CppRuntime_DigitalMars)
-{
-    version = CppRuntime_Windows; // use the MS runtime ABI for win32
-    pragma(msg, "std::basic_string_view not supported by DMC");
-}
-
 extern(C++, (StdNamespace)):
 @nogc:
 
@@ -102,7 +91,7 @@ pure nothrow @nogc:
 
 private:
     // use the proper field names from C++ so debugging doesn't get weird
-    version (CppRuntime_Windows)
+    version (CppRuntime_Microsoft)
     {
         const_pointer _Mydata;
         size_type _Mysize;

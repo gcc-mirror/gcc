@@ -751,6 +751,17 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         return buf.extractChars();
     }
 
+    /****************************
+     * Similar to `toChars`, but does not print the template constraints
+     */
+    const(char)* toCharsNoConstraints() const
+    {
+        HdrGenState hgs = { skipConstraints: true };
+        OutBuffer buf;
+        toCharsMaybeConstraints(this, buf, hgs);
+        return buf.extractChars();
+    }
+
     override Visibility visible() pure nothrow @nogc @safe
     {
         return visibility;

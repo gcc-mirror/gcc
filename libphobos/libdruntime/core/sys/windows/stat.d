@@ -31,29 +31,7 @@ int S_ISDIR(int m)  { return (m & S_IFMT) == S_IFDIR; }
 int S_ISCHR(int m)  { return (m & S_IFMT) == S_IFCHR; }
 }
 
-version (CRuntime_DigitalMars)
-{
-    struct struct_stat
-    {
-        short st_dev;
-        ushort st_ino;
-        ushort st_mode;
-        short st_nlink;
-        ushort st_uid;
-        ushort st_gid;
-        short st_rdev;
-        short dummy;
-        int st_size;
-        time_t st_atime;
-        time_t st_mtime;
-        time_t st_ctime;
-    }
-
-    int stat(const(char)*, struct_stat *);
-    int fstat(int, struct_stat *) @trusted;
-    int _wstat(const(wchar)*, struct_stat *);
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     struct struct_stat
     {

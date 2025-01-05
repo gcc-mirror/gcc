@@ -3,11 +3,7 @@
 
 import core.simd;
 
-version (CRuntime_DigitalMars)  // DMC doesn't support immintrin.h
-{
-    void main() {}
-}
-else static if (!__traits(compiles, float4)) // No __vector support
+static if (!__traits(compiles, float4)) // No __vector support
 {
     void main() {}
 }

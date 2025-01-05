@@ -49,16 +49,8 @@ version (Windows)
     alias int16_t  = short;  ///
     alias uint8_t  = ubyte;  ///
     alias uint16_t = ushort; ///
-    version (CRuntime_DigitalMars)
-    {
-        alias int32_t  = cpp_long;  ///
-        alias uint32_t = cpp_ulong; ///
-    }
-    else
-    {
-        alias int32_t  = int;  ///
-        alias uint32_t = uint; ///
-    }
+    alias int32_t  = int;    ///
+    alias uint32_t = uint;   ///
     alias int64_t  = long;   ///
     alias uint64_t = ulong;  ///
 

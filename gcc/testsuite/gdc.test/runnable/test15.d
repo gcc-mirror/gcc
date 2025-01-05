@@ -1420,7 +1420,7 @@ void test19758()
 /************************************/
 // https://issues.dlang.org/show_bug.cgi?id=19968
 
-@safe void test19968()
+void test19968()
 {
     int[2] array = [16, 678];
     union U { int i; bool b; }

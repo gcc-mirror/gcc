@@ -90,14 +90,10 @@ void runCPPTests()
     int (C2::*fp1)(int) = &C2::f1;
     int (C2::*fp2)(int, int) = &C2::f2;
     int (C2::*fp3)(int, int) = &C2::f3;
-#ifndef __DMC__
     int (C2::*fp4)(int, ...) = &C2::f4;
-#endif
     assert((c2->*(fp0))() == 100);
     assert((c2->*(fp1))(1) == 101);
     assert((c2->*(fp2))(20, 3) == 123);
     assert((c2->*(fp3))(20, 3) == 123);
-#ifndef __DMC__
     assert((c2->*(fp4))(20, 3, 0) == 123);
-#endif
 }

@@ -34,6 +34,7 @@ namespace dmd
 {
     bool functionSemantic(FuncDeclaration* fd);
     bool functionSemantic3(FuncDeclaration* fd);
+    MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);
 }
 
 //enum STC : ulong from astenums.d:
@@ -706,7 +707,6 @@ public:
 
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
-    static MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);
     LabelDsymbol *searchLabel(Identifier *ident, const Loc &loc);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     const char *toFullSignature();  // for diagnostics, e.g. 'int foo(int x, int y) pure'

@@ -113,6 +113,7 @@ extern (C++) struct Target
     const(char)[] architectureName;
     CPU cpu;                // CPU instruction set to target
     bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
+    bool isX86;             // generate 32 bit Intel x86 code
     bool isLP64;            // pointers are 64 bits
 
     // Environmental
@@ -120,7 +121,6 @@ extern (C++) struct Target
     const(char)[] lib_ext;    /// extension for static library files
     const(char)[] dll_ext;    /// extension for dynamic library files
     bool run_noext;           /// allow -run sources without extensions
-    bool omfobj;              // for Win32: write OMF object files instead of MsCoff
     /**
      * Values representing all properties for floating point types
      */
@@ -302,7 +302,6 @@ struct TargetC
     {
         Unspecified,
         Bionic,
-        DigitalMars,
         Glibc,
         Microsoft,
         Musl,
@@ -314,7 +313,6 @@ struct TargetC
     enum BitFieldStyle : ubyte
     {
         Unspecified,
-        DM,                   /// Digital Mars 32 bit C compiler
         MS,                   /// Microsoft 32 and 64 bit C compilers
                               /// https://docs.microsoft.com/en-us/cpp/c-language/c-bit-fields?view=msvc-160
                               /// https://docs.microsoft.com/en-us/cpp/cpp/cpp-bit-fields?view=msvc-160
@@ -347,7 +345,6 @@ struct TargetCPP
     {
         Unspecified,
         Clang,
-        DigitalMars,
         Gcc,
         Microsoft,
         Sun

@@ -889,6 +889,7 @@ public:
     // Possible to cast to one type while painting to another type
     Type *to;                   // type to cast to
     unsigned char mod;          // MODxxxxx
+    d_bool trusted; // assume cast is safe
 
     CastExp *syntaxCopy() override;
     bool isLvalue() override;

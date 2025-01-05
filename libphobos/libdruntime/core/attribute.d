@@ -2,6 +2,21 @@
  * This module contains UDA's (User Defined Attributes) either used in
  * the runtime or special UDA's recognized by compiler.
  *
+ * $(SCRIPT inhibitQuickIndex = 1;)
+ * $(BOOKTABLE Cheat Sheet,
+ * $(THEAD Attribute Name, Linkage, Description)
+ * $(TROW $(LREF gnuAbiTag), C++,
+ *         Declares an ABI tag on a C++ symbol.)
+ * $(TROW $(LREF mustuse),,
+ *          Ensures that values of a struct or union type are not discarded.)
+ * $(TROW $(LREF optional), Objective-C,
+ *         Makes an Objective-C interface method optional.)
+ * $(TROW $(LREF selector), Objective-C,
+ *          Attaches an Objective-C selector to a method.)
+ * $(TROW $(LREF weak),,
+ *         Specifies that a global symbol should be emitted with weak linkage.)
+ * )
+ *
  * Copyright: Copyright Jacob Carlborg 2015.
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Authors:   Jacob Carlborg

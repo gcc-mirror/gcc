@@ -65,6 +65,10 @@ import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 
+version (IN_GCC) {}
+else version (IN_LLVM) {}
+else version = MARS;
+
 /* Tweak all return statements and dtor call for nrvo_var, for correct NRVO.
  */
 extern (C++) final class NrvoWalker : StatementRewriteWalker
@@ -742,7 +746,10 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
                 {
                     if (fdv.isFuture())
                     {
-                        deprecation(funcdecl.loc, "`@__future` base class method `%s` is being overridden by `%s`; rename the latter", fdv.toPrettyChars(), funcdecl.toPrettyChars());
+                        deprecation(funcdecl.loc, "method `%s` implicitly overrides `@__future` base class method; rename the former",
+                            funcdecl.toPrettyChars());
+                        deprecationSupplemental(fdv.loc, "base method `%s` defined here",
+                            fdv.toPrettyChars());
                         // Treat 'this' as an introducing function, giving it a separate hierarchy in the vtbl[]
                         goto Lintro;
                     }
@@ -1743,10 +1750,24 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
     // max num of overloads to print (-v or -verror-supplements overrides this).
     const uint DisplayLimit = global.params.v.errorSupplementCount();
     const(char)* constraintsTip;
-    // determine if the first candidate was printed
-    int printed;
 
-    bool matchSymbol(Dsymbol s, bool print, bool single_candidate = false)
+    int printed = 0; // number of candidates printed
+    int count = 0; // total candidates
+    bool child; // true if inside an eponymous template
+    const(char)* errorPrefix() @safe
+    {
+        if (child)
+            return "  - Containing: ";
+
+        // align with blank spaces after first message
+        enum plural = "Candidates are: ";
+        enum spaces = "                ";
+        if (printed)
+            return spaces;
+
+        return (count == 1) ? "Candidate is: " : plural;
+    }
+    bool matchSymbol(Dsymbol s, bool print)
     {
         if (auto fd = s.isFuncDeclaration())
         {
@@ -1762,16 +1783,14 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
                 return true;
             auto tf = cast(TypeFunction) fd.type;
             OutBuffer buf;
-            buf.writestring(fd.toPrettyChars());
+            buf.writestring(child ? fd.toChars() : fd.toPrettyChars());
             buf.writestring(parametersTypeToChars(tf.parameterList));
             if (tf.mod)
             {
                 buf.writeByte(' ');
                 buf.MODtoBuffer(tf.mod);
             }
-            .errorSupplemental(fd.loc,
-                printed ? "                `%s`" :
-                single_candidate ? "Candidate is: `%s`" : "Candidates are: `%s`", buf.peekChars());
+            .errorSupplemental(fd.loc, "%s`%s`", errorPrefix(), buf.peekChars());
         }
         else if (auto td = s.isTemplateDeclaration())
         {
@@ -1779,35 +1798,43 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
 
             if (!print)
                 return true;
+
+            // td.onemember may not have overloads set
+            // (see fail_compilation/onemember_overloads.d)
+            // assume if more than one member it is overloaded internally
+            bool recurse = td.onemember && td.members.length > 1;
             OutBuffer buf;
             HdrGenState hgs;
             hgs.skipConstraints = true;
+            hgs.showOneMember = !recurse;
             toCharsMaybeConstraints(td, buf, hgs);
             const tmsg = buf.peekChars();
-            const cmsg = td.getConstraintEvalError(constraintsTip);
-
-            // add blank space if there are multiple candidates
-            // the length of the blank space is `strlen("Candidates are: ")`
+            const cmsg = child ? null : td.getConstraintEvalError(constraintsTip);
 
             if (cmsg)
-            {
-                .errorSupplemental(td.loc,
-                        printed ? "                `%s`\n%s" :
-                        single_candidate ? "Candidate is: `%s`\n%s" : "Candidates are: `%s`\n%s",
-                        tmsg, cmsg);
-            }
+                .errorSupplemental(td.loc, "%s`%s`\n%s", errorPrefix(), tmsg, cmsg);
             else
+                .errorSupplemental(td.loc, "%s`%s`", errorPrefix(), tmsg);
+
+            if (recurse)
             {
-                .errorSupplemental(td.loc,
-                        printed ? "                `%s`" :
-                        single_candidate ? "Candidate is: `%s`" : "Candidates are: `%s`",
-                        tmsg);
+                child = true;
+                foreach (d; *td.members)
+                {
+                    if (d.ident != td.ident)
+                        continue;
+
+                    if (auto fd2 = d.isFuncDeclaration())
+                        matchSymbol(fd2, print);
+                    else if (auto td2 = d.isTemplateDeclaration())
+                        matchSymbol(td2, print);
+                }
+                child = false;
             }
         }
         return true;
     }
     // determine if there's > 1 candidate
-    int count = 0;
     overloadApply(declaration, (s) {
         if (matchSymbol(s, false))
             count++;
@@ -1817,7 +1844,7 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
     overloadApply(declaration, (s) {
         if (global.params.v.verbose || printed < DisplayLimit)
         {
-            if (matchSymbol(s, true, count == 1))
+            if (matchSymbol(s, true))
                 printed++;
         }
         else
@@ -1926,6 +1953,112 @@ FuncDeclaration overloadExactMatch(FuncDeclaration thisfd, Type t)
         return 0;
     });
     return fd;
+}
+
+/****************************************************
+ * Determine if fd1 overrides fd2.
+ * Return !=0 if it does.
+ */
+int overrides(FuncDeclaration fd1, FuncDeclaration fd2)
+{
+    int result = 0;
+    if (fd1.ident == fd2.ident)
+    {
+        const cov = fd1.type.covariant(fd2.type);
+        if (cov != Covariant.distinct)
+        {
+            ClassDeclaration cd1 = fd1.toParent().isClassDeclaration();
+            ClassDeclaration cd2 = fd2.toParent().isClassDeclaration();
+            if (cd1 && cd2 && cd2.isBaseOf(cd1, null))
+                result = 1;
+        }
+    }
+    return result;
+}
+
+/*************************************
+ * Determine partial specialization order of functions `f` vs `g`.
+ * This is very similar to TemplateDeclaration::leastAsSpecialized().
+ * Params:
+ *  f = first function
+ *  g = second function
+ *  names = names of parameters
+ * Returns:
+ *      match   'this' is at least as specialized as g
+ *      0       g is more specialized than 'this'
+ */
+MATCH leastAsSpecialized(FuncDeclaration f, FuncDeclaration g, Identifiers* names)
+{
+    enum LOG_LEASTAS = 0;
+    static if (LOG_LEASTAS)
+    {
+        import core.stdc.stdio : printf;
+        printf("leastAsSpecialized(%s, %s, %s)\n", f.toChars(), g.toChars(), names ? names.toChars() : "null");
+        printf("%s, %s\n", f.type.toChars(), g.type.toChars());
+    }
+
+    /* This works by calling g() with f()'s parameters, and
+     * if that is possible, then f() is at least as specialized
+     * as g() is.
+     */
+
+    TypeFunction tf = f.type.toTypeFunction();
+    TypeFunction tg = g.type.toTypeFunction();
+
+    /* If both functions have a 'this' pointer, and the mods are not
+     * the same and g's is not const, then this is less specialized.
+     */
+    if (f.needThis() && g.needThis() && tf.mod != tg.mod)
+    {
+        if (f.isCtorDeclaration())
+        {
+            if (!MODimplicitConv(tg.mod, tf.mod))
+                return MATCH.nomatch;
+        }
+        else
+        {
+            if (!MODimplicitConv(tf.mod, tg.mod))
+                return MATCH.nomatch;
+        }
+    }
+
+    /* Create a dummy array of arguments out of the parameters to f()
+     */
+    Expressions args;
+    foreach (u, p; tf.parameterList)
+    {
+        Expression e;
+        if (p.isReference())
+        {
+            e = new IdentifierExp(Loc.initial, p.ident);
+            e.type = p.type;
+        }
+        else
+            e = p.type.defaultInitLiteral(Loc.initial);
+        args.push(e);
+    }
+
+    MATCH m = tg.callMatch(null, ArgumentList(&args, names), 1);
+    if (m > MATCH.nomatch)
+    {
+        /* A variadic parameter list is less specialized than a
+         * non-variadic one.
+         */
+        if (tf.parameterList.varargs && !tg.parameterList.varargs)
+            goto L1; // less specialized
+
+        static if (LOG_LEASTAS)
+        {
+            printf("  matches %d, so is least as specialized\n", m);
+        }
+        return m;
+    }
+L1:
+    static if (LOG_LEASTAS)
+    {
+        printf("  doesn't match, so is not as specialized\n");
+    }
+    return MATCH.nomatch;
 }
 
 /********************************************
@@ -2494,6 +2627,27 @@ void buildEnsureRequire(FuncDeclaration thisfd)
 }
 
 /****************************************************
+ * Determine whether an 'out' contract is declared inside
+ * the given function or any of its overrides.
+ * Params:
+ *      fd = the function to search
+ * Returns:
+ *      true    found an 'out' contract
+ */
+bool needsFensure(FuncDeclaration fd) @safe
+{
+    if (fd.fensures)
+        return true;
+
+    foreach (fdv; fd.foverrides)
+    {
+        if (needsFensure(fdv))
+            return true;
+    }
+    return false;
+}
+
+/****************************************************
  * Merge into this function the 'out' contracts of all it overrides.
  * 'out's are AND'd together, i.e. all of them need to pass.
  */
@@ -2515,7 +2669,7 @@ Statement mergeFensure(FuncDeclaration fd, Statement sf, Identifier oid, Express
          * https://issues.dlang.org/show_bug.cgi?id=3602 and
          * https://issues.dlang.org/show_bug.cgi?id=5230
          */
-        if (fd.needsFensure(fdv) && fdv.semanticRun != PASS.semantic3done)
+        if (needsFensure(fdv) && fdv.semanticRun != PASS.semantic3done)
         {
             assert(fdv._scope);
             Scope* sc = fdv._scope.push();
@@ -2734,4 +2888,177 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         }
         return false;
     }
+}
+
+/+
+ + Checks the parameter and return types iff this is a `main` function.
+ +
+ + The following signatures are allowed for a `D main`:
+ + - Either no or a single parameter of type `string[]`
+ + - Return type is either `void`, `int` or `noreturn`
+ +
+ + The following signatures are standard C:
+ + - `int main()`
+ + - `int main(int, char**)`
+ +
+ + This function accepts the following non-standard extensions:
+ + - `char** envp` as a third parameter
+ + - `void` / `noreturn` as return type
+ +
+ + This function will issue errors for unexpected arguments / return types.
+ +/
+extern (D) void checkMain(FuncDeclaration fd)
+{
+    if (fd.ident != Id.main || fd.isMember() || fd.isNested())
+        return; // Not a main function
+
+    TypeFunction tf = fd.type.toTypeFunction();
+
+    Type retType = tf.nextOf();
+    if (!retType)
+    {
+        // auto main(), check after semantic
+        assert(fd.inferRetType);
+        return;
+    }
+
+    /// Checks whether `t` is equivalent to `char**`
+    /// Ignores qualifiers and treats enums according to their base type
+    static bool isCharPtrPtr(Type t)
+    {
+        auto tp = t.toBasetype().isTypePointer();
+        if (!tp)
+            return false;
+
+        tp = tp.next.toBasetype().isTypePointer();
+        if (!tp)
+            return false;
+
+        return tp.next.toBasetype().ty == Tchar;
+    }
+
+    // Neither of these qualifiers is allowed because they affect the ABI
+    enum invalidSTC = STC.out_ | STC.ref_ | STC.lazy_;
+
+    const nparams = tf.parameterList.length;
+    bool argerr;
+
+    const linkage = fd.resolvedLinkage();
+    if (linkage == LINK.d)
+    {
+        if (nparams == 1)
+        {
+            auto fparam0 = tf.parameterList[0];
+            auto t = fparam0.type.toBasetype();
+            if (t.ty != Tarray ||
+                t.nextOf().ty != Tarray ||
+                t.nextOf().nextOf().ty != Tchar ||
+                fparam0.storageClass & invalidSTC)
+            {
+                argerr = true;
+            }
+        }
+
+        if (tf.parameterList.varargs || nparams >= 2 || argerr)
+            .error(fd.loc, "%s `%s` parameter list must be empty or accept one parameter of type `string[]`", fd.kind, fd.toPrettyChars);
+    }
+
+    else if (linkage == LINK.c)
+    {
+        if (nparams == 2 || nparams == 3)
+        {
+            // Argument count must be int
+            auto argCount = tf.parameterList[0];
+            argerr |= !!(argCount.storageClass & invalidSTC);
+            argerr |= argCount.type.toBasetype().ty != Tint32;
+
+            // Argument pointer must be char**
+            auto argPtr = tf.parameterList[1];
+            argerr |= !!(argPtr.storageClass & invalidSTC);
+            argerr |= !isCharPtrPtr(argPtr.type);
+
+            // `char** environ` is a common extension, see J.5.1 of the C standard
+            if (nparams == 3)
+            {
+                auto envPtr = tf.parameterList[2];
+                argerr |= !!(envPtr.storageClass & invalidSTC);
+                argerr |= !isCharPtrPtr(envPtr.type);
+            }
+        }
+        else
+            argerr = nparams != 0;
+
+        // Disallow variadic main() - except for K&R declarations in C files.
+        // E.g. int main(), int main(argc, argv) int argc, char** argc { ... }
+        if (tf.parameterList.varargs && (!fd.isCsymbol() || (!tf.parameterList.hasIdentifierList && nparams)))
+            argerr |= true;
+
+        if (argerr)
+        {
+            .error(fd.loc, "%s `%s` parameters must match one of the following signatures", fd.kind, fd.toPrettyChars);
+            fd.loc.errorSupplemental("`main()`");
+            fd.loc.errorSupplemental("`main(int argc, char** argv)`");
+            fd.loc.errorSupplemental("`main(int argc, char** argv, char** environ)` [POSIX extension]");
+        }
+    }
+    else
+        return; // Neither C nor D main, ignore (should probably be an error)
+
+    // Allow enums with appropriate base types (same ABI)
+    retType = retType.toBasetype();
+
+    if (retType.ty != Tint32 && retType.ty != Tvoid && retType.ty != Tnoreturn)
+        .error(fd.loc, "%s `%s` must return `int`, `void` or `noreturn`, not `%s`", fd.kind, fd.toPrettyChars, tf.nextOf().toChars());
+}
+
+/***********************************************
+ * Check all return statements for a function to verify that returning
+ * using NRVO is possible.
+ *
+ * Returns:
+ *      `false` if the result cannot be returned by hidden reference.
+ */
+extern (D) bool checkNRVO(FuncDeclaration fd)
+{
+    if (!fd.isNRVO() || fd.returns is null)
+        return false;
+
+    auto tf = fd.type.toTypeFunction();
+    if (tf.isref)
+        return false;
+
+    foreach (rs; *fd.returns)
+    {
+        if (auto ve = rs.exp.isVarExp())
+        {
+            auto v = ve.var.isVarDeclaration();
+            if (!v || v.isReference())
+                return false;
+            else if (fd.nrvo_var is null)
+            {
+                // Variables in the data segment (e.g. globals, TLS or not),
+                // parameters and closure variables cannot be NRVOed.
+                if (v.isDataseg() || v.isParameter() || v.toParent2() != fd)
+                    return false;
+                if (v.nestedrefs.length && fd.needsClosure())
+                    return false;
+                // don't know if the return storage is aligned
+                version (MARS)
+                {
+                    if (fd.alignSectionVars && (*fd.alignSectionVars).contains(v))
+                        return false;
+                }
+                // The variable type needs to be equivalent to the return type.
+                if (!v.type.equivalent(tf.next))
+                    return false;
+                //printf("Setting nrvo to %s\n", v.toChars());
+                fd.nrvo_var = v;
+            }
+            else if (fd.nrvo_var != v)
+                return false;
+        }
+        else //if (!exp.isLvalue())    // keep NRVO-ability
+            return false;
+    }
+    return true;
 }

@@ -805,6 +805,7 @@ private struct FloatingPointRepresentation(T)
    Allows manipulating the fraction, exponent, and sign parts of a
    `float` separately. The definition is:
 
+$(RUNNABLE_EXAMPLE
 ----
 struct FloatRep
 {
@@ -819,6 +820,7 @@ struct FloatRep
     enum uint bias = 127, fractionBits = 23, exponentBits = 8, signBits = 1;
 }
 ----
+)
 */
 alias FloatRep = FloatingPointRepresentation!float;
 
@@ -874,6 +876,7 @@ alias FloatRep = FloatingPointRepresentation!float;
    Allows manipulating the fraction, exponent, and sign parts of a
    `double` separately. The definition is:
 
+$(RUNNABLE_EXAMPLE
 ----
 struct DoubleRep
 {
@@ -888,6 +891,7 @@ struct DoubleRep
     enum uint bias = 1023, signBits = 1, fractionBits = 52, exponentBits = 11;
 }
 ----
+)
 */
 alias DoubleRep = FloatingPointRepresentation!double;
 
@@ -1050,6 +1054,8 @@ public:
     of a type different than `size_t`, firstly because its length should
     be a multiple of `size_t.sizeof`, and secondly because how the bits
     are mapped:
+
+    $(RUNNABLE_EXAMPLE
     ---
     size_t[] source = [1, 2, 3, 3424234, 724398, 230947, 389492];
     enum sbits = size_t.sizeof * 8;
@@ -1060,6 +1066,7 @@ public:
         assert(ba[n] == nth_bit);
     }
     ---
+    )
     The least significant bit in any `size_t` unit is the starting bit of this
     unit, and the most significant bit is the last bit of this unit. Therefore,
     passing e.g. an array of `int`s may result in a different `BitArray`

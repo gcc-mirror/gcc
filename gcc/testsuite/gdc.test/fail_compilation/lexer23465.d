@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/lexer23465.d(19): Error: char 0x1f37a not allowed in identifier
+fail_compilation/lexer23465.d(19): Error: character 0x1f37a is not allowed as a continue character in an identifier
 fail_compilation/lexer23465.d(19): Error: character 0x1f37a is not a valid token
 fail_compilation/lexer23465.d(20): Error: character '\' is not a valid token
 fail_compilation/lexer23465.d(21): Error: unterminated /+ +/ comment

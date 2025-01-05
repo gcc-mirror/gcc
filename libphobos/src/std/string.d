@@ -5942,36 +5942,36 @@ C1[] tr(C1, C2, C3, C4 = immutable char)
         n = 0;          // consider it 'found' at position 0
 
       Lfound:
-
-        // Find the nth character in to[]
-        dchar nextt;
-        for (size_t i = 0; i < to.length; )
-        {
-            immutable t = decode(to, i);
-            if (t == '-' && lastt != dchar.init && i < to.length)
+        {  // create a new scope so that gotos don't skip of declaration of nextt
+            // Find the nth character in to[]
+            dchar nextt;
+            for (size_t i = 0; i < to.length; )
             {
-                nextt = decode(to, i);
-                n -= nextt - lastt;
-                if (n < 0)
+                immutable t = decode(to, i);
+                if (t == '-' && lastt != dchar.init && i < to.length)
                 {
-                    newc = nextt + n + 1;
+                    nextt = decode(to, i);
+                    n -= nextt - lastt;
+                    if (n < 0)
+                    {
+                        newc = nextt + n + 1;
+                        goto Lnewc;
+                    }
+                    lastt = dchar.init;
+                    continue;
+                }
+                if (n == 0)
+                {   newc = t;
                     goto Lnewc;
                 }
-                lastt = dchar.init;
+                lastt = t;
+                nextt = t;
+                n--;
+            }
+            if (mod_d)
                 continue;
-            }
-            if (n == 0)
-            {   newc = t;
-                goto Lnewc;
-            }
-            lastt = t;
-            nextt = t;
-            n--;
+            newc = nextt;
         }
-        if (mod_d)
-            continue;
-        newc = nextt;
-
       Lnewc:
         if (mod_s && modified && newc == lastc)
             continue;

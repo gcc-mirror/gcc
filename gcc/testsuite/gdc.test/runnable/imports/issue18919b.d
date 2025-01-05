@@ -248,3 +248,9 @@ void func12(const(char)*[] args = [baseName(__FILE__.ptr),
         printf(" %s", arg);
     printf("\n");
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=24519
+void func13(string file = __FILE__[])
+{
+    printf("%s: %s\n", __FUNCTION__.ptr, file.ptr);
+}

@@ -7259,25 +7259,6 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
                 return;
             }
         }
-        else if (style == TargetC.BitFieldStyle.DM)
-        {
-            if (anon && bfd.fieldWidth && (!fieldState.inFlight || fieldState.bitOffset == 0))
-                return;  // this probably should be a bug in DMC
-            if (ad.alignsize == 0)
-                ad.alignsize = 1;
-            if (bfd.fieldWidth == 0)
-            {
-                if (fieldState.inFlight && !isunion)
-                {
-                    const alsz = memsize;
-                    fieldState.offset = (fieldState.offset + alsz - 1) & ~(alsz - 1);
-                    ad.structsize = fieldState.offset;
-                }
-
-                fieldState.inFlight = false;
-                return;
-            }
-        }
 
         if (!fieldState.inFlight)
         {
@@ -7307,8 +7288,7 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
                 }
             }
         }
-        else if (style == TargetC.BitFieldStyle.DM ||
-                 style == TargetC.BitFieldStyle.MS)
+        else if (style == TargetC.BitFieldStyle.MS)
         {
             if (memsize != fieldState.fieldSize ||
                 fieldState.bitOffset + bfd.fieldWidth > fieldState.fieldSize * 8)

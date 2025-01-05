@@ -3542,6 +3542,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             ls2.statement = ls;
 
         sc = sc.push();
+        sc.lastVar = sc.enclosing.lastVar;
         sc.scopesym = sc.enclosing.scopesym;
 
         sc.ctorflow.orCSX(CSX.label);
@@ -3549,6 +3550,10 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         sc.slabel = ls;
         if (ls.statement)
             ls.statement = ls.statement.statementSemantic(sc);
+
+        //issue 24534: lastVar may have been updated in the nested scope
+        sc.enclosing.lastVar = sc.lastVar;
+
         sc.pop();
 
         result = ls;

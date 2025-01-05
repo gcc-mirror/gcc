@@ -265,6 +265,12 @@ bool functionSemantic3(FuncDeclaration fd)
     return dmd.funcsem.functionSemantic3(fd);
 }
 
+MATCH leastAsSpecialized(FuncDeclaration f, FuncDeclaration g, Identifiers* names)
+{
+    import dmd.funcsem;
+    return dmd.funcsem.leastAsSpecialized(f, g, names);
+}
+
 /***********************************************************
  * hdrgen.d
  */

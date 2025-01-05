@@ -1,7 +1,9 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/fail17612.d(14): Error: undefined identifier `string`
-fail_compilation/fail17612.d(17): Error: class `object.TypeInfo` missing or corrupt object.d
+fail_compilation/fail17612.d(16): Error: undefined identifier `string`
+fail_compilation/fail17612.d(19): Error: `TypeInfo` not found. object.d may be incorrectly installed or corrupt.
+fail_compilation/fail17612.d(19):        dmd might not be correctly installed. Run 'dmd -man' for installation instructions.
+fail_compilation/fail17612.d(19):        config file: not found
 ---
 */
 

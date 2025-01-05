@@ -597,6 +597,14 @@ extern (C++) abstract class Type : ASTNode
         tsize_t    = basic[isLP64 ? Tuns64 : Tuns32];
         tptrdiff_t = basic[isLP64 ? Tint64 : Tint32];
         thash_t = tsize_t;
+
+        static if (__VERSION__ == 2081)
+        {
+            // Related issue: https://issues.dlang.org/show_bug.cgi?id=19134
+            // D 2.081.x regressed initializing class objects at compile time.
+            // As a workaround initialize this global at run-time instead.
+            TypeTuple.empty = new TypeTuple();
+        }
     }
 
     /**
@@ -4405,7 +4413,10 @@ extern (C++) final class TypeClass : Type
 extern (C++) final class TypeTuple : Type
 {
     // 'logically immutable' cached global - don't modify!
-    __gshared TypeTuple empty = new TypeTuple();
+    static if (__VERSION__ == 2081)
+        __gshared TypeTuple empty;  // See comment in Type._init
+    else
+        __gshared TypeTuple empty = new TypeTuple();
 
     Parameters* arguments;  // types making up the tuple
 

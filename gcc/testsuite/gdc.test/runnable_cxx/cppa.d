@@ -8,9 +8,6 @@
 
 // N.B MSVC doesn't have a C++11 switch, but it defaults to the latest fully-supported standard
 
-// Broken for unknown reasons since the OMF => MsCOFF switch
-// DISABLED: win32omf
-
 import core.stdc.stdio;
 import core.stdc.stdarg;
 import core.stdc.config;
@@ -908,9 +905,7 @@ void fuzz2()
 }
 
 ////////
-version(CppRuntime_DigitalMars)
-    enum UNICODE = false;
-else version(CppRuntime_Microsoft)
+version(CppRuntime_Microsoft)
     enum UNICODE = false; //VS2013 doesn't support them
 else
     enum UNICODE = true;

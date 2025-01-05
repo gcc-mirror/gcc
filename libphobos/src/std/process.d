@@ -127,26 +127,19 @@ else version (WatchOS)
     version = iOSDerived;
 }
 
-// When the DMC runtime is used, we have to use some custom functions
-// to convert between Windows file handles and FILE*s.
-version (Win32) version (CRuntime_DigitalMars) version = DMC_RUNTIME;
-
 
 // Some of the following should be moved to druntime.
 private
 {
     // Microsoft Visual C Runtime (MSVCRT) declarations.
-    version (Windows)
+    version (CRuntime_Microsoft)
     {
-        version (DMC_RUNTIME) { } else
+        import core.stdc.stdint;
+        enum
         {
-            import core.stdc.stdint;
-            enum
-            {
-                STDIN_FILENO  = 0,
-                STDOUT_FILENO = 1,
-                STDERR_FILENO = 2,
-            }
+            STDIN_FILENO  = 0,
+            STDOUT_FILENO = 1,
+            STDERR_FILENO = 2,
         }
     }
 
@@ -350,6 +343,8 @@ static:
     */
     bool opBinaryRight(string op : "in")(scope const(char)[] name) @trusted
     {
+        if (name is null)
+            return false;
         version (Posix)
             return core.sys.posix.stdlib.getenv(name.tempCString()) !is null;
         else version (Windows)
@@ -451,6 +446,10 @@ private:
     // doesn't exist.
     void getImpl(scope const(char)[] name, scope void delegate(const(OSChar)[]) @safe sink) @trusted
     {
+        // fix issue https://issues.dlang.org/show_bug.cgi?id=24549
+        if (name is null)
+            return sink(null);
+
         version (Windows)
         {
             // first we ask windows how long the environment variable is,
@@ -598,6 +597,15 @@ private:
     // Setting null must have the same effect as remove
     environment["std_process"] = null;
     assert("std_process" !in environment);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24549
+@safe unittest
+{
+    import std.exception : assertThrown;
+    assert(environment.get(null) is null);
+    assertThrown(environment[null]);
+    assert(!(null in environment));
 }
 
 // =============================================================================

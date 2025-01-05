@@ -4,7 +4,6 @@
 module cppmangle3;
 
 version (CppRuntime_Clang)       version = CppMangle_Itanium;
-version (CppRuntime_DigitalMars) version = CppMangle_MSVC;
 version (CppRuntime_Gcc)         version = CppMangle_Itanium;
 version (CppRuntime_Microsoft)   version = CppMangle_MSVC;
 version (CppRuntime_Sun)         version = CppMangle_Itanium;

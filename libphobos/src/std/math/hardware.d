@@ -222,7 +222,7 @@ private:
             uint result = void;
             asm pure nothrow @nogc
             {
-                "movfcsr2gr %0,$r2" : "=r" (result);
+                "movfcsr2gr %0, $fcsr2" : "=r" (result);
             }
             return result & EXCEPTIONS_MASK;
         }
@@ -1047,7 +1047,7 @@ private:
             ControlState cont;
             asm pure nothrow @nogc
             {
-                "movfcsr2gr %0,$r0" : "=r" (cont);
+                "movfcsr2gr %0, $fcsr0" : "=r" (cont);
             }
             cont &= (roundingMask | allExceptions);
             return cont;

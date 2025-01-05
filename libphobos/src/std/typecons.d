@@ -3125,7 +3125,10 @@ private:
         }
 
         // call possible struct destructors
-        .destroy!(No.initialize)(*cast(T*) &this.data);
+        static if (is(T == struct))
+        {
+            .destroy!(No.initialize)(*cast(T*) &this.data);
+        }
     }
 }
 

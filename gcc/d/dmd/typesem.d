@@ -1282,6 +1282,23 @@ bool hasPointers(Type t)
     }
 }
 
+/**************************************
+ * Returns an indirect type one step from t.
+ */
+Type getIndirection(Type t)
+{
+    t = t.baseElemOf();
+    if (t.ty == Tarray || t.ty == Tpointer)
+        return t.nextOf().toBasetype();
+    if (t.ty == Taarray || t.ty == Tclass)
+        return t;
+    if (t.ty == Tstruct)
+        return t.hasPointers() ? t : null; // TODO
+
+    // should consider TypeDelegate?
+    return null;
+}
+
 /******************************************
  * Perform semantic analysis on a type.
  * Params:
@@ -4083,7 +4100,9 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         }
         if (v)
         {
-            if (ident == Id.offsetof)
+            if (ident == Id.offsetof ||
+                ident == Id.bitoffsetof ||
+                ident == Id.bitwidth)
             {
                 v.dsymbolSemantic(null);
                 if (v.isField())
@@ -4093,7 +4112,20 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                     ad.size(e.loc);
                     if (ad.sizeok != Sizeok.done)
                         return ErrorExp.get();
-                    return new IntegerExp(e.loc, v.offset, Type.tsize_t);
+                    uint value;
+                    if (ident == Id.offsetof)
+                        value = v.offset;
+                    else // Id.bitoffsetof || Id.bitwidth
+                    {
+                        auto bf = v.isBitFieldDeclaration();
+                        if (bf)
+                        {
+                            value = ident == Id.bitoffsetof ? bf.bitOffset : bf.fieldWidth;
+                        }
+                        else
+                            error(v.loc, "`%s` is not a bitfield, cannot apply `%s`", v.toChars(), ident.toChars());
+                    }
+                    return new IntegerExp(e.loc, value, Type.tsize_t);
                 }
             }
             else if (ident == Id._init)
@@ -4512,6 +4544,8 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
             ident != Id._mangleof &&
             ident != Id.stringof &&
             ident != Id.offsetof &&
+            ident != Id.bitoffsetof &&
+            ident != Id.bitwidth &&
             // https://issues.dlang.org/show_bug.cgi?id=15045
             // Don't forward special built-in member functions.
             ident != Id.ctor &&
@@ -6687,7 +6721,7 @@ Type substWildTo(Type type, uint mod)
                     t = new TypeSArray(t, (cast(TypeSArray)type).dim.syntaxCopy());
                 else if (type.ty == Taarray)
                 {
-                    t = new TypeAArray(t, (cast(TypeAArray)type).index.syntaxCopy());
+                    t = new TypeAArray(t, (cast(TypeAArray)type).index.substWildTo(mod));
                 }
                 else if (type.ty == Tdelegate)
                 {

@@ -173,10 +173,6 @@ alias DEvent = void delegate(Object);
 
 version (Windows)
 {
-    version (CRuntime_DigitalMars)
-    {
-        pragma(lib, "snn.lib");
-    }
     import core.sys.windows.winbase /+: CRITICAL_SECTION, DeleteCriticalSection,
         EnterCriticalSection, InitializeCriticalSection, LeaveCriticalSection+/;
 

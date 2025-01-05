@@ -320,11 +320,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
                          */
                         structsize = 4;
                     }
-                    else if (target.c.bitFieldStyle == TargetC.BitFieldStyle.DM)
-                    {
-                        structsize = 0;
-                        alignsize = 0;
-                    }
                     else
                         structsize = 0;
                     break;

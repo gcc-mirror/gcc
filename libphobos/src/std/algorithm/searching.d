@@ -3873,6 +3873,21 @@ if (isInputRange!Range && !isInfinite!Range &&
     assert([BigInt(2), BigInt(3)].maxElement == BigInt(3));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24596
+@safe unittest
+{
+    static class A {
+        int i;
+        int getI() @safe => i;
+        this(int i) @safe { this.i = i; }
+    }
+    auto arr = [new A(2), new A(3)];
+
+    arr.maxElement!(a => a.getI);
+
+    assert(arr[0].getI == 2);
+}
+
 // minPos
 /**
 Computes a subrange of `range` starting at the first occurrence of `range`'s

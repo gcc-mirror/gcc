@@ -503,6 +503,17 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 sm => sm.isTemplateDeclaration() !is null) != 0;
         });
     }
+    if (e.ident == Id.isBitfield)
+    {
+        if (dim != 1)
+            return dimError(1);
+
+        return isDsymX((s)
+        {
+            s = s.toAlias();
+            return s.isBitFieldDeclaration() !is null;
+        });
+    }
     if (e.ident == Id.isPOD)
     {
         if (dim != 1)

@@ -325,7 +325,10 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
                 if (EnumMember em = s.isEnumMember())
                 {
                     em.type = commonType;
-                    em.value = em.value.castTo(sc, commonType);
+                    // optimize out the cast so that other parts of the compiler can
+                    // assume that an integral enum's members are `IntegerExp`s.
+                    // https://issues.dlang.org/show_bug.cgi?id=24504
+                    em.value = em.value.castTo(sc, commonType).optimize(WANTvalue);
                 }
             });
         }

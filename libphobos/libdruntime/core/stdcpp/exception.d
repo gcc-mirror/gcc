@@ -80,24 +80,6 @@ version (GenericBaseException)
         extern(D) this(const(char)*, int = 1) nothrow { this(); } // compat with MS derived classes
     }
 }
-else version (CppRuntime_DigitalMars)
-{
-    ///
-    class exception
-    {
-    @nogc:
-        ///
-        extern(D) this() nothrow {}
-        //virtual ~this();
-        void dtor() { }     // reserve slot in vtbl[]
-
-        ///
-        const(char)* what() const nothrow;
-
-    protected:
-        this(const(char)*, int = 1) nothrow { this(); } // compat with MS derived classes
-    }
-}
 else version (CppRuntime_Microsoft)
 {
     ///

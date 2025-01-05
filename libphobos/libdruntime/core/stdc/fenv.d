@@ -180,17 +180,6 @@ version (GNUFP)
         static assert(0, "Unimplemented architecture");
     }
 }
-else version (CRuntime_DigitalMars)
-{
-    struct fenv_t
-    {
-        ushort    status;
-        ushort    control;
-        ushort    round;
-        ushort[2] reserved;
-    }
-    alias fexcept_t = int;
-}
 else version (CRuntime_Microsoft)
 {
     struct fenv_t
@@ -871,12 +860,6 @@ version (GNUFP)
 {
     ///
     enum FE_DFL_ENV = cast(fenv_t*)(-1);
-}
-else version (CRuntime_DigitalMars)
-{
-    private extern __gshared fenv_t _FE_DFL_ENV;
-    ///
-    enum fenv_t* FE_DFL_ENV = &_FE_DFL_ENV;
 }
 else version (CRuntime_Microsoft)
 {

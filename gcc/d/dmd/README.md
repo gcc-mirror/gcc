@@ -201,11 +201,9 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [libelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libelf.d)         | Library in ELF format (Unix)                         |
 | [libmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libmach.d)       | Library in Mach-O format (macOS)                     |
 | [libmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libmscoff.d)   | Library in COFF format (32/64-bit Windows)           |
-| [libomf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libomf.d)         | Library in OMF format (legacy 32-bit Windows)        |
 | [scanelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanelf.d)       | Extract symbol names from a library in ELF format    |
 | [scanmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanmach.d)     | Extract symbol names from a library in Mach-O format |
 | [scanmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanmscoff.d) | Extract symbol names from a library in COFF format   |
-| [scanomf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanomf.d)       | Extract symbol names from a library in OMF format    |
 
 ### Code generation / back-end interfacing
 

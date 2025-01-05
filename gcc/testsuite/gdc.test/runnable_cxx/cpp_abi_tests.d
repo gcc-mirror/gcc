@@ -272,7 +272,6 @@ void main()
     foreach(byte val; values!byte())     check(val);
     foreach(ubyte val; values!ubyte())   check(val);
     foreach(char val; values!char())     check(val);
-version(CppRuntime_DigitalMars){} else
 version(CppRuntime_Microsoft)
 {
 // TODO: figure out how to detect VS2013 which doesn't support char16_t/char32_t

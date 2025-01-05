@@ -13,17 +13,6 @@ module core.stdcpp.array;
 
 import core.stdcpp.xutility : StdNamespace;
 
-// hacks to support DMD on Win32
-version (CppRuntime_Microsoft)
-{
-    version = CppRuntime_Windows; // use the MS runtime ABI for win32
-}
-else version (CppRuntime_DigitalMars)
-{
-    version = CppRuntime_Windows; // use the MS runtime ABI for win32
-    pragma(msg, "std::array not supported by DMC");
-}
-
 extern(C++, (StdNamespace)):
 
 /**
@@ -73,7 +62,7 @@ pure nothrow @nogc:
     ///
     ref inout(T) back() inout @safe                     { static if (N > 0) { return this[N-1]; } else { return as_array()[][0]; /* HACK: force OOB */ } }
 
-    version (CppRuntime_Windows)
+    version (CppRuntime_Microsoft)
     {
         ///
         inout(T)* data() inout @safe                    { return &_Elems[0]; }
