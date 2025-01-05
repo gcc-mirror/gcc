@@ -6619,18 +6619,20 @@ package body Sem_Ch4 is
       ------------------
 
       function Has_Fixed_Op (Typ : Entity_Id; Op : Entity_Id) return Boolean is
-         Bas : constant Entity_Id := Base_Type (Typ);
+         Bas    : constant Entity_Id := Base_Type (Typ);
+         Orig_N : constant Node_Id   := Original_Node (N);
+
          Ent : Entity_Id;
          F1  : Entity_Id;
          F2  : Entity_Id;
 
       begin
-         --  If the universal_fixed operation is given explicitly the rule
+         --  If the universal_fixed operation is given explicitly, the rule
          --  concerning primitive operations of the type do not apply.
 
-         if Nkind (N) = N_Function_Call
-           and then Nkind (Name (N)) = N_Expanded_Name
-           and then Entity (Prefix (Name (N))) = Standard_Standard
+         if Nkind (Orig_N) = N_Function_Call
+           and then Nkind (Name (Orig_N)) = N_Expanded_Name
+           and then Entity (Prefix (Name (Orig_N))) = Standard_Standard
          then
             return False;
          end if;
