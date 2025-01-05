@@ -1,3 +1,9 @@
+2025-01-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/mmix/mmix.cc (mmix_asm_output_labelref): Replace '.'
+	with '::'.
+	* config/mmix/mmix.h (ASM_PN_FORMAT): Define to actual default.
+
 2025-01-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/117938

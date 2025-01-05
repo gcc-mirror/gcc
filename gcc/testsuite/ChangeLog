@@ -1,3 +1,10 @@
+2025-01-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/tree-ssa/vector-4.c: Replace MMIX adjustments with
+	TARGET_CALLEE_COPIES-agnostic adjustments.
+	* gcc.dg/tree-ssa/forwprop-36.c: Ditto.  Correct pattern to match a
+	literal ".".
+
 2025-01-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/117938
