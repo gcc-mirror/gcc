@@ -1643,10 +1643,6 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 
   unsigned l = clusters.length ();
 
-  /* Note: l + 1 is the number of cases of the switch.  */
-  if (l + 1 > (unsigned) param_switch_lower_slow_alg_max_cases)
-    return clusters.copy ();
-
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
 
