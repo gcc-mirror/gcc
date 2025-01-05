@@ -31830,8 +31830,20 @@ cp_parser_concept_definition (cp_parser *parser)
       return error_mark_node;
     }
 
+  tree decl = start_concept_definition (id);
+  if (decl == error_mark_node)
+    {
+      cp_parser_skip_to_end_of_statement (parser);
+      cp_parser_consume_semicolon_at_end_of_statement (parser);
+      return error_mark_node;
+    }
+
   processing_constraint_expression_sentinel parsing_constraint;
+
+  start_lambda_scope (decl);
   tree init = cp_parser_constraint_expression (parser);
+  finish_lambda_scope ();
+
   if (init == error_mark_node)
     cp_parser_skip_to_end_of_statement (parser);
 
@@ -31839,7 +31851,7 @@ cp_parser_concept_definition (cp_parser *parser)
      but continue as if it were.  */
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
-  return finish_concept_definition (id, init, attrs);
+  return finish_concept_definition (decl, init, attrs);
 }
 
 // -------------------------------------------------------------------------- //

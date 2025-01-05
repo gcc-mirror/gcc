@@ -8689,7 +8689,8 @@ struct diagnosing_failed_constraint
 extern cp_expr finish_constraint_or_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_and_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_primary_expr	(cp_expr);
-extern tree finish_concept_definition		(cp_expr, tree, tree);
+extern tree start_concept_definition		(cp_expr);
+extern tree finish_concept_definition		(tree, tree, tree);
 extern tree combine_constraint_expressions      (tree, tree);
 extern tree append_constraint			(tree, tree);
 extern tree get_constraints                     (const_tree);

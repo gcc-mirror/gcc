@@ -80,13 +80,14 @@ void in_function_body() { struct {} x; }  // OK
 auto in_initializer = []{};  // OK
 
 #if __cplusplus >= 202002L
-decltype([]{}) d_lambda;  // { dg-error "exposes TU-local entity" "" { xfail *-*-* } }
+decltype([]{}) d_lambda;  // { dg-error "exposes TU-local entity" "" { target c++20 } }
+using alias_lambda = decltype([]{});  // { dg-error "exposes TU-local entity" "" { target c++20 } }
 
 template <typename T>
 concept in_constraint_expression = requires {
   // Strictly by the standard this is currently ill-formed
   // (this is a constraint-expression not an initializer)
-  // but I don't think that is intended.
+  // but I don't think that is intended; see CWG2988.
   []{};  // { dg-bogus "exposes TU-local entity" }
 };
 #endif
