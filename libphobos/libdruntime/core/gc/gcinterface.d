@@ -54,11 +54,6 @@ interface GC
     void collect() nothrow;
 
     /**
-     *
-     */
-    void collectNoStack() nothrow;
-
-    /**
      * minimize free space usage
      */
     void minimize() nothrow;

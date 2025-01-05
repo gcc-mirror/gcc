@@ -313,16 +313,18 @@ if (isBidirectionalRange!(Unqual!Range))
             {
                 @property void front(ElementType!R val)
                 {
-                    import std.algorithm.mutation : move;
+                    import core.lifetime : forward;
 
-                    source.back = move(val);
+                    // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    source.back = __ctfe ? val : forward!val;
                 }
 
                 @property void back(ElementType!R val)
                 {
-                    import std.algorithm.mutation : move;
+                    import core.lifetime : forward;
 
-                    source.front = move(val);
+                    // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    source.front = __ctfe ? val : forward!val;
                 }
             }
 
@@ -334,9 +336,10 @@ if (isBidirectionalRange!(Unqual!Range))
                 {
                     void opIndexAssign(ElementType!R val, size_t n)
                     {
-                        import std.algorithm.mutation : move;
+                        import core.lifetime : forward;
 
-                        source[retroIndex(n)] = move(val);
+                        // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                        source[retroIndex(n)] = __ctfe ? val : forward!val;
                     }
                 }
 
@@ -494,6 +497,32 @@ pure @safe nothrow unittest
     assert(equal(r, [S(3), S(2), S(1)]));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24481
+@safe unittest
+{
+    bool called;
+    struct Handle
+    {
+        int entry;
+        void opAssign()(auto ref const(typeof(this)) that) const { called = true; }
+    }
+
+    const(Handle)[5] arr = [Handle(0), Handle(1), Handle(2), Handle(3), Handle(4)];
+    auto range = arr[].retro();
+
+    called = false;
+    range.front = Handle(42);
+    assert(called);
+
+    called = false;
+    range.back = Handle(42);
+    assert(called);
+
+    called = false;
+    range[2] = Handle(42);
+    assert(called);
+}
+
 /**
 Iterates range `r` with stride `n`. If the range is a
 random-access range, moves by indexing into the range; otherwise,
@@ -604,9 +633,10 @@ do
             {
                 @property void front(ElementType!R val)
                 {
-                    import std.algorithm.mutation : move;
+                    import core.lifetime : forward;
 
-                    source.front = move(val);
+                    // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    source.front = __ctfe ? val : forward!val;
                 }
             }
 
@@ -899,6 +929,24 @@ pure @safe nothrow unittest
     assert(equal(r, [S(1), S(4)]));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24481
+@safe unittest
+{
+    bool called;
+    struct Handle
+    {
+        int entry;
+        void opAssign()(auto ref const(typeof(this)) that) const { called = true; }
+    }
+
+    const(Handle)[5] arr = [Handle(0), Handle(1), Handle(2), Handle(3), Handle(4)];
+    auto range = arr[].stride(2);
+
+    called = false;
+    range.front = Handle(42);
+    assert(called);
+}
+
 /**
 Spans multiple ranges in sequence. The function `chain` takes any
 number of ranges and returns a $(D Chain!(R1, R2,...)) object. The
@@ -1120,14 +1168,15 @@ if (Ranges.length > 0 &&
 
                 @property void front(RvalueElementType v)
                 {
-                    import std.algorithm.mutation : move;
+                    import core.lifetime : forward;
 
                     sw: switch (frontIndex)
                     {
                         static foreach (i; 0 .. R.length)
                         {
                         case i:
-                            source[i].front = move(v);
+                            // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                            source[i].front = __ctfe ? v : forward!v;
                             break sw;
                         }
 
@@ -1246,14 +1295,15 @@ if (Ranges.length > 0 &&
                 {
                     @property void back(RvalueElementType v)
                     {
-                        import std.algorithm.mutation : move;
+                        import core.lifetime : forward;
 
                         sw: switch (backIndex)
                         {
                             static foreach_reverse (i; 1 .. R.length + 1)
                             {
                             case i:
-                                source[i-1].back = move(v);
+                                // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                                source[i - 1].back = __ctfe ? v : forward!v;
                                 break sw;
                             }
 
@@ -1359,7 +1409,7 @@ if (Ranges.length > 0 &&
                 static if (allSameType && allSatisfy!(hasAssignableElements, R))
                     void opIndexAssign(ElementType v, size_t index)
                     {
-                        import std.algorithm.mutation : move;
+                        import core.lifetime : forward;
 
                         sw: switch (frontIndex)
                         {
@@ -1376,7 +1426,8 @@ if (Ranges.length > 0 &&
                                     }
                                 }
 
-                                source[i][index] = move(v);
+                                // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                                source[i][index] = __ctfe ? v : forward!v;
                                 break sw;
                             }
 
@@ -1683,7 +1734,7 @@ pure @safe unittest
     assert(range.array == [S(5), S(6)]);
 }
 
-/// https://issues.dlang.org/show_bug.cgi?id=24064
+// https://issues.dlang.org/show_bug.cgi?id=24064
 pure @safe nothrow unittest
 {
     import std.algorithm.comparison : equal;
@@ -1716,7 +1767,7 @@ pure @safe nothrow @nogc unittest
     }
 }
 
-/// https://issues.dlang.org/show_bug.cgi?id=24243
+// https://issues.dlang.org/show_bug.cgi?id=24243
 pure @safe nothrow unittest
 {
     import std.algorithm.iteration : filter;
@@ -1725,6 +1776,32 @@ pure @safe nothrow unittest
 
     // This might happen in format!"%s"(range), for instance.
     assert(typeof(range).init.empty);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24481
+@safe unittest
+{
+    bool called;
+    struct Handle
+    {
+        int entry;
+        void opAssign()(auto ref const(typeof(this)) that) const { called = true; }
+    }
+
+    const(Handle)[5] arr = [Handle(0), Handle(1), Handle(2), Handle(3), Handle(4)];
+    auto range = arr[0 .. 2].chain(arr[4 .. 5]);
+
+    called = false;
+    range.front = Handle(42);
+    assert(called);
+
+    called = false;
+    range.back = Handle(42);
+    assert(called);
+
+    called = false;
+    range[2] = Handle(42);
+    assert(called);
 }
 
 /**
@@ -1882,7 +1959,7 @@ private struct ChooseResult(Ranges...)
     this(this)
     {
         actOnChosen!((ref r) {
-                static if (hasElaborateCopyConstructor!(typeof(r))) r.__postblit();
+                static if (hasElaborateCopyConstructor!(typeof(r))) r.__xpostblit();
             })(this);
     }
 
@@ -2175,6 +2252,29 @@ pure @safe nothrow unittest
 
     auto chosen2 = choose(false, a, b);
     assert(chosen2.front.v == 4);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=15708
+@safe unittest
+{
+    static struct HasPostblit
+    {
+        this(this) {}
+    }
+
+    static struct Range
+    {
+        bool empty;
+        int front;
+        void popFront() {}
+        HasPostblit member;
+    }
+
+    Range range;
+    int[] arr;
+
+    auto chosen = choose(true, range, arr);
+    auto copy = chosen;
 }
 
 /**
@@ -2694,12 +2794,14 @@ if (isInputRange!(Unqual!Range) &&
         /// ditto
         @property void front(ElementType!R v)
         {
-            import std.algorithm.mutation : move;
+            import core.lifetime : forward;
 
             assert(!empty,
                 "Attempting to assign to the front of an empty "
                 ~ Take.stringof);
-            source.front = move(v);
+
+            // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+            source.front = __ctfe ? v : forward!v;
         }
 
     static if (hasMobileElements!R)
@@ -2996,6 +3098,25 @@ pure @safe nothrow @nogc unittest
     assert(r.take(2).equal(repeat(1, 2)));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24481
+@safe unittest
+{
+    import std.algorithm.iteration : filter;
+
+    bool called;
+    struct Handle
+    {
+        int entry;
+        void opAssign()(auto ref const(typeof(this)) that) const { called = true; }
+    }
+
+    const(Handle)[5] arr = [Handle(0), Handle(1), Handle(2), Handle(3), Handle(4)];
+    auto range = arr[].filter!(a => true)().take(3);
+
+    called = false;
+    range.front = Handle(42);
+    assert(called);
+}
 
 /**
 Similar to $(LREF take), but assumes that `range` has at least $(D
@@ -3075,12 +3196,14 @@ if (isInputRange!R)
             {
                 @property auto ref front(ElementType!R v)
                 {
-                    import std.algorithm.mutation : move;
+                    import core.lifetime : forward;
 
                     assert(!empty,
                         "Attempting to assign to the front of an empty "
                         ~ typeof(this).stringof);
-                    return _input.front = move(v);
+
+                    // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    return _input.front = __ctfe ? v : forward!v;
                 }
             }
         }
@@ -3215,6 +3338,26 @@ pure @safe nothrow unittest
         assert(r.takeExactly(6).takeExactly(2).equal([1, 2]));
         assert(r.takeExactly(6).take(2).equal([1, 2]));
     }}
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24481
+@safe unittest
+{
+    import std.algorithm.iteration : filter;
+
+    bool called;
+    struct Handle
+    {
+        int entry;
+        void opAssign()(auto ref const(typeof(this)) that) const { called = true; }
+    }
+
+    const(Handle)[5] arr = [Handle(0), Handle(1), Handle(2), Handle(3), Handle(4)];
+    auto range = arr[].filter!(a => true)().takeExactly(3);
+
+    called = false;
+    range.front = Handle(42);
+    assert(called);
 }
 
 /**
@@ -4310,9 +4453,10 @@ if (isForwardRange!R && !isInfinite!R)
             /// ditto
             @property void front(ElementType!R val)
             {
-                import std.algorithm.mutation : move;
+                import core.lifetime : forward;
 
-                _original[_index] = move(val);
+                // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                _original[_index] = __ctfe ? val : forward!val;
             }
         }
 
@@ -4422,9 +4566,10 @@ if (isForwardRange!R && !isInfinite!R)
             /// ditto
             @property auto front(ElementType!R val)
             {
-                import std.algorithm.mutation : move;
+                import core.lifetime : forward;
 
-                return _current.front = move(val);
+                // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                return _current.front = __ctfe ? val : forward!val;
             }
         }
 
@@ -4765,6 +4910,35 @@ pure @safe unittest
     auto r = refRange(&s).cycle.take(4);
     assert(equal(r.save, "foof"));
     assert(equal(r.save, "foof"));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24481
+@safe unittest
+{
+    import std.algorithm.iteration : filter;
+
+    bool called;
+    struct Handle
+    {
+        int entry;
+        void opAssign()(auto ref const(typeof(this)) that) const { called = true; }
+    }
+
+    const(Handle)[3] arr = [Handle(0), Handle(1), Handle(2)];
+    {
+        auto range = arr[].cycle().take(5);
+
+        called = false;
+        range.front = Handle(42);
+        assert(called);
+    }
+    {
+        auto range = arr[].filter!(a => true)().cycle().take(5);
+
+        called = false;
+        range.front = Handle(42);
+        assert(called);
+    }
 }
 
 private alias lengthType(R) = typeof(R.init.length.init);
@@ -7438,9 +7612,10 @@ struct FrontTransversal(Ror,
     {
         @property void front(ElementType val)
         {
-            import std.algorithm.mutation : move;
+            import core.lifetime : forward;
 
-            _input.front.front = move(val);
+            // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+            _input.front.front = __ctfe ? val : forward!val;
         }
     }
 
@@ -7497,9 +7672,10 @@ struct FrontTransversal(Ror,
         {
             @property void back(ElementType val)
             {
-                import std.algorithm.mutation : move;
+                import core.lifetime : forward;
 
-                _input.back.front = move(val);
+                // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                _input.back.front = __ctfe ? val : forward!val;
             }
         }
     }
@@ -7532,9 +7708,10 @@ struct FrontTransversal(Ror,
         {
             void opIndexAssign(ElementType val, size_t n)
             {
-                import std.algorithm.mutation : move;
+                import core.lifetime : forward;
 
-                _input[n].front = move(val);
+                // __ctfe check is workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                _input[n].front = __ctfe ? val : forward!val;
             }
         }
         mixin ImplementLength!_input;
@@ -7673,6 +7850,50 @@ pure @safe unittest
 
     auto ft = frontTransversal!(TransverseOptions.enforceNotJagged)(arr);
     assert(ft.empty);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24481
+@safe unittest
+{
+    bool called;
+    struct Handle
+    {
+        int entry;
+        void opAssign()(auto ref const(typeof(this)) that) const { called = true; }
+    }
+
+    const(Handle)[][] arr = [[Handle(0), Handle(10)],
+                             [Handle(1), Handle(11)],
+                             [Handle(2), Handle(12)],
+                             [Handle(3), Handle(13)],
+                             [Handle(4), Handle(14)]];
+
+    {
+        auto range = arr.frontTransversal();
+
+        called = false;
+        range.front = Handle(42);
+        assert(called == true);
+
+        called = false;
+        range.back = Handle(42);
+        assert(called == true);
+    }
+    {
+        auto range = arr.frontTransversal!(TransverseOptions.assumeNotJagged)();
+
+        called = false;
+        range.front = Handle(42);
+        assert(called == true);
+
+        called = false;
+        range.back = Handle(42);
+        assert(called == true);
+
+        called = false;
+        range[0] = Handle(42);
+        assert(called == true);
+    }
 }
 
 /**
@@ -10374,6 +10595,14 @@ private struct OnlyResult(T)
         _empty = true;
     }
     alias opDollar = length;
+
+    // FIXME Workaround for https://issues.dlang.org/show_bug.cgi?id=24415
+    import std.traits : hasElaborateCopyConstructor;
+    static if (hasElaborateCopyConstructor!T)
+    {
+        private static struct WorkaroundBugzilla24415 {}
+        public this()(WorkaroundBugzilla24415) {}
+    }
 
     private this()(return scope auto ref T value)
     {

@@ -1116,7 +1116,7 @@ Address[] getAddress(scope const(char)[] hostname, ushort port)
             // test via gethostbyname
             auto getaddrinfoPointerBackup = getaddrinfoPointer;
             cast() getaddrinfoPointer = null;
-            scope(exit) cast() getaddrinfoPointer = getaddrinfoPointerBackup;
+            scope(exit) () @trusted { cast() getaddrinfoPointer = getaddrinfoPointerBackup; }();
 
             addresses = getAddress("63.105.9.61");
             assert(addresses.length && addresses[0].toAddrString() == "63.105.9.61");
@@ -1196,7 +1196,7 @@ Address parseAddress(scope const(char)[] hostaddr, ushort port)
             // test via inet_addr
             auto getaddrinfoPointerBackup = getaddrinfoPointer;
             cast() getaddrinfoPointer = null;
-            scope(exit) cast() getaddrinfoPointer = getaddrinfoPointerBackup;
+            scope(exit) () @trusted { cast() getaddrinfoPointer = getaddrinfoPointerBackup; }();
 
             address = parseAddress("63.105.9.61");
             assert(address.toAddrString() == "63.105.9.61");
@@ -1698,7 +1698,7 @@ public:
                 // test reverse lookup, via gethostbyaddr
                 auto getnameinfoPointerBackup = getnameinfoPointer;
                 cast() getnameinfoPointer = null;
-                scope(exit) cast() getnameinfoPointer = getnameinfoPointerBackup;
+                scope(exit) () @trusted { cast() getnameinfoPointer = getnameinfoPointerBackup; }();
 
                 assert(ia.toHostNameString() == "digitalmars.com");
             }
@@ -1716,7 +1716,7 @@ public:
             // test failing reverse lookup, via gethostbyaddr
             auto getnameinfoPointerBackup = getnameinfoPointer;
             cast() getnameinfoPointer = null;
-            scope(exit) cast() getnameinfoPointer = getnameinfoPointerBackup;
+            scope(exit) () @trusted { cast() getnameinfoPointer = getnameinfoPointerBackup; }();
 
             assert(ia.toHostNameString() is null);
         }
@@ -1925,7 +1925,7 @@ version (StdDdoc)
      * auto abstractAddr = new UnixAddress("\0/tmp/dbus-OtHLWmCLPR");
      * ---
      *
-     * See_Also: $(HTTP http://man7.org/linux/man-pages/man7/unix.7.html, UNIX(7))
+     * See_Also: $(HTTP man7.org/linux/man-pages/man7/unix.7.html, UNIX(7))
      */
     class UnixAddress: Address
     {

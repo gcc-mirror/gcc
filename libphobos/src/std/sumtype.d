@@ -1988,7 +1988,7 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
                     ? "template"
                     : typeof(handler).stringof
                 ) ~ "` " ~
-                "never matches"
+                "never matches. Perhaps the handler failed to compile"
             );
         }
 

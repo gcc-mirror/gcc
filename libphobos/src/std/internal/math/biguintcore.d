@@ -2241,31 +2241,6 @@ do
     return carry;
 }
 
-//  result = left - right
-// returns carry (0 or 1)
-BigDigit subSimple(BigDigit [] result,const(BigDigit) [] left,
-        const(BigDigit) [] right) pure nothrow
-in
-{
-    assert(result.length == left.length,
-        "result and left must be of the same length");
-    assert(left.length >= right.length,
-        "left must be longer or of equal length to right");
-    assert(right.length > 0, "right must not be empty");
-}
-do
-{
-    BigDigit carry = multibyteSub(result[0 .. right.length],
-            left[0 .. right.length], right, 0);
-    if (right.length < left.length)
-    {
-        result[right.length .. left.length] = left[right.length .. $];
-        carry = multibyteIncrementAssign!('-')(result[right.length..$], carry);
-    } //else if (result.length == left.length+1) { result[$-1] = carry; carry=0; }
-    return carry;
-}
-
-
 /* result = result - right
  * Returns carry = 1 if result was less than right.
 */

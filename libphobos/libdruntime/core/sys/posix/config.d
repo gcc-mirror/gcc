@@ -88,7 +88,7 @@ else version (CRuntime_Musl)
     enum __REDIRECT          = false;
 
     // Those three are irrelevant for Musl as it always uses 64 bits off_t
-    enum __USE_FILE_OFFSET64 = _FILE_OFFSET_BITS == 64;
+    enum __USE_FILE_OFFSET64 = false;
     enum __USE_LARGEFILE     = __USE_FILE_OFFSET64 && !__REDIRECT;
     enum __USE_LARGEFILE64   = __USE_FILE_OFFSET64 && !__REDIRECT;
 

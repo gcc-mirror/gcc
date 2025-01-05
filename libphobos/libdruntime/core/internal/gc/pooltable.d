@@ -181,9 +181,10 @@ package:
 
 unittest
 {
+    import core.internal.gc.impl.conservative.gc : PAGESIZE;
+
     enum NPOOLS = 6;
     enum NPAGES = 10;
-    enum PAGESIZE = 4096;
 
     static struct MockPool
     {

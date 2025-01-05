@@ -2732,6 +2732,9 @@ else version (Posix)
     The function allocates memory if and only if it gets to the third stage
     of this algorithm.
 
+    Note that `absolutePath` will not normalize `..` segments.
+    Use `buildNormalizedPath(absolutePath(path))` if that is desired.
+
     Params:
         path = the relative path to transform
         base = the base directory of the relative path
@@ -2814,6 +2817,9 @@ string absolutePath(return scope const string path, lazy string base = getcwd())
         $(LI Otherwise, append `path` to the current working directory,
         which allocates memory.)
     )
+
+    Note that `asAbsolutePath` will not normalize `..` segments.
+    Use `asNormalizedPath(asAbsolutePath(path))` if that is desired.
 
     Params:
         path = the relative path to transform
@@ -3391,7 +3397,7 @@ do
     else
     {
         C[] pattmp;
-        foreach (ref pi; 0 .. pattern.length)
+        for (size_t pi = 0; pi < pattern.length; pi++)
         {
             const pc = pattern[pi];
             switch (pc)

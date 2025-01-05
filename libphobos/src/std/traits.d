@@ -2181,7 +2181,7 @@ if (isCallable!func)
 
 
 /**
-Get the function type from a callable object `func`.
+Get the function type from a callable object `func`, or from a function pointer/delegate type.
 
 Using builtin `typeof` on a property function yields the types of the
 property value, not of the property function itself.  Still,
@@ -2229,10 +2229,17 @@ if (isCallable!func)
 {
     class C
     {
-        int value() @property { return 0; }
+        int value() @property => 0;
+        static string opCall() => "hi";
     }
     static assert(is( typeof(C.value) == int ));
     static assert(is( FunctionTypeOf!(C.value) == function ));
+    static assert(is( FunctionTypeOf!C == typeof(C.opCall) ));
+
+    int function() fp;
+    alias IntFn = int();
+    static assert(is( typeof(fp) == IntFn* ));
+    static assert(is( FunctionTypeOf!fp == IntFn ));
 }
 
 @system unittest

@@ -90,8 +90,7 @@ version (Darwin)
     ///
     enum PIPE_BUF       = 512;
 }
-
-version (DragonFlyBSD)
+else version (DragonFlyBSD)
 {
     ///
     enum MAX_CANON      = 255;
@@ -182,3 +181,5 @@ else version (Windows)
     ///
     enum PIPE_BUF       = 5120;
 }
+else
+    static assert(0, "unsupported OS");

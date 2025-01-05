@@ -101,15 +101,15 @@ struct UnitTestResult
 }
 
 /// Legacy module unit test handler
-alias bool function() ModuleUnitTester;
+alias ModuleUnitTester = bool function();
 /// Module unit test handler
-alias UnitTestResult function() ExtendedModuleUnitTester;
+alias ExtendedModuleUnitTester = UnitTestResult function();
 private
 {
-    alias bool function(Object) CollectHandler;
-    alias Throwable.TraceInfo function( void* ptr ) TraceHandler;
+    alias CollectHandler = bool function(Object);
+    alias TraceHandler = Throwable.TraceInfo function(void* ptr);
 
-    alias void delegate( Throwable ) ExceptionHandler;
+    alias ExceptionHandler = void delegate(Throwable);
     extern (C) void _d_print_throwable(Throwable t);
 
     extern (C) void* thread_stackBottom() nothrow @nogc;

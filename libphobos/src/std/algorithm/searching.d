@@ -22,8 +22,9 @@ $(T2 boyerMooreFinder,
 $(T2 canFind,
         `canFind("hello world", "or")` returns `true`.)
 $(T2 count,
-        Counts elements that are equal to a specified value or satisfy a
-        predicate.  `count([1, 2, 1], 1)` returns `2` and
+        Counts all elements or elements matching a predicate, specific element or sub-range.$(BR)
+        `count([1, 2, 1])` returns `3`,
+        `count([1, 2, 1], 1)` returns `2` and
         `count!"a < 0"([1, -3, 0])` returns `1`.)
 $(T2 countUntil,
         `countUntil(a, b)` returns the number of steps taken in `a` to
@@ -605,34 +606,29 @@ if (isNarrowString!R1 && isNarrowString!R2)
 
 // count
 /**
-The first version counts the number of elements `x` in `r` for
-which `pred(x, value)` is `true`. `pred` defaults to
+Counts matches of `needle` in `haystack`.
+
+The first overload counts each element `e` in `haystack` for
+which `pred(e, needle)` is `true`. `pred` defaults to
 equality. Performs $(BIGOH haystack.length) evaluations of `pred`.
 
-The second version returns the number of times `needle` occurs in
-`haystack`. Throws an exception if `needle.empty`, as the _count
+The second overload counts the number of times `needle` was matched in
+`haystack`. `pred` compares elements in each range.
+Throws an exception if `needle.empty` is `true`, as the _count
 of the empty range in any range would be infinite. Overlapped counts
-are not considered, for example `count("aaa", "aa")` is `1`, not
+are *not* considered, for example `count("aaa", "aa")` is `1`, not
 `2`.
-
-The third version counts the elements for which `pred(x)` is $(D
-true). Performs $(BIGOH haystack.length) evaluations of `pred`.
-
-The fourth version counts the number of elements in a range. It is
-an optimization for the third version: if the given range has the
-`length` property the count is returned right away, otherwise
-performs $(BIGOH haystack.length) to walk the range.
 
 Note: Regardless of the overload, `count` will not accept
 infinite ranges for `haystack`.
 
 Params:
-    pred = The predicate to evaluate.
+    pred = The predicate to compare elements.
     haystack = The range to _count.
-    needle = The element or sub-range to _count in the `haystack`.
+    needle = The element or sub-range to _count in `haystack`.
 
 Returns:
-    The number of positions in the `haystack` for which `pred` returned true.
+    The number of matches in `haystack`.
 */
 size_t count(alias pred = "a == b", Range, E)(Range haystack, E needle)
 if (isInputRange!Range && !isInfinite!Range &&
@@ -645,21 +641,22 @@ if (isInputRange!Range && !isInfinite!Range &&
 ///
 @safe unittest
 {
-    import std.uni : toLower;
-
     // count elements in range
     int[] a = [ 1, 2, 4, 3, 2, 5, 3, 2, 4 ];
-    assert(count(a) == 9);
     assert(count(a, 2) == 3);
     assert(count!("a > b")(a, 2) == 5);
+}
+
+///
+@safe unittest
+{
+    import std.uni : toLower;
     // count range in range
     assert(count("abcadfabf", "ab") == 2);
     assert(count("ababab", "abab") == 1);
     assert(count("ababab", "abx") == 0);
     // fuzzy count range in range
     assert(count!((a, b) => toLower(a) == toLower(b))("AbcAdFaBf", "ab") == 2);
-    // count predicate in range
-    assert(count!("a > 1")(a) == 8);
 }
 
 @safe unittest
@@ -711,7 +708,24 @@ if (isForwardRange!R1 && !isInfinite!R1 &&
     }
 }
 
-/// Ditto
+/**
+Counts all elements or elements satisfying a predicate in `haystack`.
+
+The first overload counts each element `e` in `haystack` for which `pred(e)` is $(D
+true). Performs $(BIGOH haystack.length) evaluations of `pred`.
+
+The second overload counts the number of elements in a range.
+If the given range has the `length` property,
+that is returned right away, otherwise
+performs $(BIGOH haystack.length) to walk the range.
+
+Params:
+    pred = Optional predicate to find elements.
+    haystack = The range to _count.
+
+Returns:
+    The number of elements in `haystack` (for which `pred` returned true).
+*/
 size_t count(alias pred, R)(R haystack)
 if (isInputRange!R && !isInfinite!R &&
     is(typeof(unaryFun!pred(haystack.front))))
@@ -721,6 +735,16 @@ if (isInputRange!R && !isInfinite!R &&
     foreach (T elem; haystack)
         if (unaryFun!pred(elem)) ++result;
     return result;
+}
+
+///
+@safe unittest
+{
+    // count elements in range
+    int[] a = [ 1, 2, 4, 3, 2, 5, 3, 2, 4 ];
+    assert(count(a) == 9);
+    // count predicate in range
+    assert(count!("a > 2")(a) == 5);
 }
 
 /// Ditto

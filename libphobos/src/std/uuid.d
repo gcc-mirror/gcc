@@ -1207,7 +1207,7 @@ public struct UUID
  *      randomGen = uniform RNG
  * See_Also: $(REF isUniformRNG, std,random)
  */
-@safe UUID randomUUID()
+@nogc nothrow @safe UUID randomUUID()
 {
     import std.random : rndGen;
     // A PRNG with fewer than `n` bytes of state cannot produce

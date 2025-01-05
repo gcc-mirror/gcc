@@ -1473,15 +1473,15 @@ if (sharedLog !is myLogger)
     atomicStore!(MemoryOrder.seq)(stdSharedLogger, atomicLoad(logger));
 }
 
-/** This methods get and set the global `LogLevel`.
+/** These methods get and set the global `LogLevel`.
 
-Every log message with a `LogLevel` lower as the global `LogLevel`
+Every log message with a `LogLevel` lower than the global `LogLevel`
 will be discarded before it reaches `writeLogMessage` method of any
 `Logger`.
 */
 /* Implementation note:
 For any public logging call, the global log level shall only be queried once on
-entry. Otherwise when another threads changes the level, we would work with
+entry. Otherwise when another thread changes the level, we would work with
 different levels at different spots in the code.
 */
 @property LogLevel globalLogLevel() @safe @nogc

@@ -1102,6 +1102,14 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
                 }
             }
 
+            if (config.preExecDelegate !is null)
+            {
+                if (config.preExecDelegate() != true)
+                {
+                    abortOnError(forkPipeOut, InternalError.preExec, .errno);
+                }
+            }
+
             // Execute program.
             core.sys.posix.unistd.execve(argz[0], argz.ptr, envz);
 
@@ -1187,7 +1195,7 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
                     errorMsg = "Failed to allocate memory";
                     break;
                 case InternalError.preExec:
-                    errorMsg = "Failed to execute preExecFunction";
+                    errorMsg = "Failed to execute preExecFunction or preExecDelegate";
                     break;
                 case InternalError.noerror:
                     assert(false);
@@ -1269,6 +1277,29 @@ version (Posix)
 
     auto received = receiveTimeout(3.seconds, (int) {});
     assert(received);
+}
+
+version (Posix)
+@system unittest
+{
+    __gshared int j;
+    foreach (i; 0 .. 3)
+    {
+        auto config = Config(
+            preExecFunction: function() @trusted {
+                j = 1;
+                return true;
+            },
+            preExecDelegate: delegate() @trusted {
+                // j should now be 1, as preExecFunction is called before
+                // preExecDelegate is.
+                _Exit(i + j);
+                return true;
+            },
+        );
+        auto pid = spawnProcess(["false"], config: config);
+        assert(wait(pid) == i + 1);
+    }
 }
 
 /*
@@ -2186,13 +2217,30 @@ struct Config
             Please note that the code in this function must only use
             async-signal-safe functions.)
 
+        If $(LREF preExecDelegate) is also set, it is called last.
+
         On Windows, this member is not available.
         */
         bool function() nothrow @nogc @safe preExecFunction;
+
+        /**
+        A delegate that is called before `exec` in $(LREF spawnProcess).
+        It returns `true` if succeeded and otherwise returns `false`.
+
+        $(RED Warning:
+            Please note that the code in this function must only use
+            async-signal-safe functions.)
+
+        If $(LREF preExecFunction) is also set, it is called first.
+
+        On Windows, this member is not available.
+        */
+        bool delegate() nothrow @nogc @safe preExecDelegate;
     }
     else version (Posix)
     {
         bool function() nothrow @nogc @safe preExecFunction;
+        bool delegate() nothrow @nogc @safe preExecDelegate;
     }
 }
 

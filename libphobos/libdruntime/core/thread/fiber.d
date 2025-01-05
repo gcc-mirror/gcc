@@ -150,6 +150,14 @@ private
             version = AsmExternal;
         }
     }
+    else version (MIPS_N64)
+    {
+        version (Posix)
+        {
+            version = AsmMIPS_N64_Posix;
+            version = AsmExternal;
+        }
+    }
     else version (AArch64)
     {
         version (Posix)
@@ -1430,6 +1438,44 @@ private:
             }
 
             enum BELOW = SZ_FP + ALIGN + SZ_RA;
+            enum ABOVE = SZ_GP;
+            enum SZ = BELOW + ABOVE;
+
+            (cast(ubyte*)pstack - SZ)[0 .. SZ] = 0;
+            pstack -= ABOVE;
+            *cast(size_t*)(pstack - SZ_RA) = cast(size_t)&fiber_entryPoint;
+        }
+        else version (AsmMIPS_N64_Posix)
+        {
+            version (StackGrowsDown) {}
+            else static assert(0);
+
+            /* We keep the FP registers and the return address below
+             * the stack pointer, so they don't get scanned by the
+             * GC. The last frame before swapping the stack pointer is
+             * organized like the following.
+             *
+             *     |-----------|<= frame pointer
+             *     |  $fp/$gp  |
+             *     |   $s0-7   |
+             *     |-----------|<= stack pointer
+             *     |    $ra    |
+             *     |  $f24-31  |
+             *     |-----------|
+             *
+             */
+            enum SZ_GP = 10 * size_t.sizeof; // $fp + $gp + $s0-7
+            enum SZ_RA = size_t.sizeof;      // $ra
+            version (MIPS_HardFloat)
+            {
+                enum SZ_FP = 8 * double.sizeof; // $f24-31
+            }
+            else
+            {
+                enum SZ_FP = 0;
+            }
+
+            enum BELOW = SZ_FP + SZ_RA;
             enum ABOVE = SZ_GP;
             enum SZ = BELOW + ABOVE;
 

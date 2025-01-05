@@ -382,7 +382,7 @@ private:
                         static if (isStaticArray!A && isDynamicArray!T)
                         {
                             auto this_ = (*src)[];
-                            emplaceRef(*cast(Unqual!T*) zat, cast(Unqual!T) this_);
+                            emplaceRef(*cast(Unqual!T*) zat, cast() cast(T) this_);
                         }
                         else
                         {

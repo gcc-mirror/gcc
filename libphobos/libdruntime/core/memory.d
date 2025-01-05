@@ -322,7 +322,7 @@ extern(D):
         This can be used to manually allocate arrays. Initial slice size is 0.
 
         Note: The slice's usable size will not match the block size. Use
-        $(LREF capacity) to retrieve actual usable capacity.
+        $(REF1 capacity, object) to retrieve actual usable capacity.
 
         Example:
         ----
@@ -611,7 +611,7 @@ extern(C):
      * Note:
      *  Extend may also be used to extend slices (or memory blocks with
      *  $(LREF APPENDABLE) info). However, use the return value only
-     *  as an indicator of success. $(LREF capacity) should be used to
+     *  as an indicator of success. $(REF1 capacity, object) should be used to
      *  retrieve actual usable slice capacity.
      */
     version (D_ProfileGC)
@@ -1197,13 +1197,13 @@ $(UL
 )
 
 Note: Users should prefer $(REF1 destroy, object) to explicitly finalize objects,
-and only resort to $(REF __delete, core,memory) when $(REF destroy, object)
+and only resort to $(LREF __delete) when $(REF1 destroy, object)
 wouldn't be a feasible option.
 
 Params:
     x = aggregate object that should be destroyed
 
-See_Also: $(REF1 destroy, object), $(REF free, core,GC)
+See_Also: $(REF1 destroy, object), $(LREF GC.free)
 
 History:
 

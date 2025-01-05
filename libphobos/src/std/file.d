@@ -1083,6 +1083,7 @@ private void removeImpl(scope const(char)[] name, scope const(FSChar)* namez) @t
 @safe unittest
 {
     import std.exception : collectExceptionMsg, assertThrown;
+    import std.algorithm.searching : startsWith;
 
     string filename = null; // e.g. as returned by File.tmpfile.name
 
@@ -1090,12 +1091,10 @@ private void removeImpl(scope const(char)[] name, scope const(FSChar)* namez) @t
     {
         // exact exception message is OS-dependent
         auto msg = filename.remove.collectExceptionMsg!FileException;
-        assert("Failed to remove file (null): Bad address" == msg, msg);
+        assert(msg.startsWith("Failed to remove file (null):"), msg);
     }
     else version (Windows)
     {
-        import std.algorithm.searching : startsWith;
-
         // don't test exact message on windows, it's language dependent
         auto msg = filename.remove.collectExceptionMsg!FileException;
         assert(msg.startsWith("(null):"), msg);

@@ -36,7 +36,7 @@ private enum hasCallableToHash(T) = __traits(compiles,
 
 @nogc nothrow pure @safe unittest
 {
-    static struct S { size_t toHash() { return 4; } }
+    static struct S { size_t toHash() const { return 4; } }
     assert(hasCallableToHash!S);
     assert(!hasCallableToHash!(shared const S));
 }

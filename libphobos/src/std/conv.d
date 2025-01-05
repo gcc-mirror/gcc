@@ -5250,7 +5250,7 @@ if (isIntegral!T && isOutputRange!(W, char))
 auto unsigned(T)(T x)
 if (isIntegral!T)
 {
-    return cast(Unqual!(Unsigned!T))x;
+    return cast() cast(Unsigned!T) x;
 }
 
 ///
@@ -5271,7 +5271,7 @@ if (isSomeChar!T)
 {
     // All characters are unsigned
     static assert(T.min == 0, T.stringof ~ ".min must be zero");
-    return cast(Unqual!T) x;
+    return cast() x;
 }
 
 @safe unittest
@@ -5328,7 +5328,7 @@ if (isSomeChar!T)
 auto signed(T)(T x)
 if (isIntegral!T)
 {
-    return cast(Unqual!(Signed!T))x;
+    return cast() cast(Signed!T) x;
 }
 
 ///

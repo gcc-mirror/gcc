@@ -106,18 +106,7 @@ extern (C)
                 case "none":
                     break;
                 case "collect":
-                    // NOTE: There may be daemons threads still running when this routine is
-                    //       called.  If so, cleaning memory out from under then is a good
-                    //       way to make them crash horribly.  This probably doesn't matter
-                    //       much since the app is supposed to be shutting down anyway, but
-                    //       I'm disabling cleanup for now until I can think about it some
-                    //       more.
-                    //
-                    // NOTE: Due to popular demand, this has been re-enabled.  It still has
-                    //       the problems mentioned above though, so I guess we'll see.
-
-                    instance.collectNoStack();  // not really a 'collect all' -- still scans
-                                                // static data area, roots, and ranges.
+                    instance.collect();
                     break;
                 case "finalize":
                     instance.runFinalizers((cast(ubyte*)null)[0 .. size_t.max]);

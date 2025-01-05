@@ -974,9 +974,9 @@ private T powIntegralImpl(PowType type, T)(T val)
     else
     {
         static if (isSigned!T)
-            return cast(Unqual!T) (val < 0 ? -(T(1) << bsr(0 - val) + type) : T(1) << bsr(val) + type);
+            return cast() cast(T) (val < 0 ? -(T(1) << bsr(0 - val) + type) : T(1) << bsr(val) + type);
         else
-            return cast(Unqual!T) (T(1) << bsr(val) + type);
+            return cast() cast(T) (T(1) << bsr(val) + type);
     }
 }
 

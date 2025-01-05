@@ -76,10 +76,6 @@ class ProtoGC : GC
     {
     }
 
-    void collectNoStack() nothrow
-    {
-    }
-
     void minimize() nothrow
     {
     }

@@ -33,7 +33,7 @@ extern (C++, "std")
     {
     @nogc:
         ///
-        this() { super("bad allocation", 1); }
+        extern(D) this() { super("bad allocation", 1); }
     }
 }
 

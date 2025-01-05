@@ -328,7 +328,7 @@ Returns:
 bool isValidCodepoint(Char)(Char c)
 if (isSomeChar!Char)
 {
-    alias UChar = Unqual!Char;
+    alias UChar = typeof(cast() c);
     static if (is(UChar == char))
     {
         return c <= 0x7F;
@@ -1418,8 +1418,8 @@ do
         }
         else
         {
-            alias Char = Unqual!(ElementType!S);
-            Char[4] codeUnits;
+            alias Char = typeof(cast() ElementType!S.init);
+            Char[4] codeUnits = void;
             S tmp = str.save;
             for (size_t i = numCodeUnits; i > 0; )
             {
@@ -2821,7 +2821,7 @@ if (isSomeChar!C)
 size_t codeLength(C, InputRange)(InputRange input)
 if (isSomeFiniteCharInputRange!InputRange)
 {
-    alias EncType = Unqual!(ElementEncodingType!InputRange);
+    alias EncType = typeof(cast() ElementEncodingType!InputRange.init);
     static if (isSomeString!InputRange && is(EncType == C) && is(typeof(input.length)))
         return input.length;
     else
@@ -3089,7 +3089,8 @@ private T toUTFImpl(T, S)(scope S s)
         static if (is(S == C[], C) || hasLength!S)
             app.reserve(s.length);
 
-        foreach (c; s.byUTF!(Unqual!(ElementEncodingType!T)))
+        ElementEncodingType!T e = void;
+        foreach (c; s.byUTF!(typeof(cast() ElementEncodingType!T.init)))
             app.put(c);
 
         return app.data;
@@ -3168,10 +3169,10 @@ if (is(immutable typeof(*P.init) == typeof(str[0])))
         return trustedPtr();
     }
 
-    alias C = Unqual!(ElementEncodingType!S);
+    alias C = typeof(cast() ElementEncodingType!S.init);
 
     //If the P is mutable, then we have to make a copy.
-    static if (is(Unqual!(typeof(*P.init)) == typeof(*P.init)))
+    static if (is(typeof(cast() *P.init) == typeof(*P.init)))
     {
         return toUTFzImpl!(P, const(C)[])(cast(const(C)[])str);
     }
@@ -3203,13 +3204,15 @@ private P toUTFzImpl(P, S)(return scope S str) @safe pure
 if (is(typeof(str[0]) C) && is(immutable typeof(*P.init) == immutable C) && !is(C == immutable))
 //C[] or const(C)[] -> C*, const(C)*, or immutable(C)*
 {
-    alias InChar  = typeof(str[0]);
-    alias OutChar = typeof(*P.init);
+    alias InChar   = typeof(str[0]);
+    alias UInChar  = typeof(cast() str[0]); // unqualified version of InChar
+    alias OutChar  = typeof(*P.init);
+    alias UOutChar = typeof(cast() *P.init); // unqualified version
 
     //const(C)[] -> const(C)* or
     //C[] -> C* or const(C)*
-    static if (( is(const(Unqual!InChar) == InChar) &&  is(const(Unqual!OutChar) == OutChar)) ||
-               (!is(const(Unqual!InChar) == InChar) && !is(immutable(Unqual!OutChar) == OutChar)))
+    static if (( is(const(UInChar) == InChar) &&  is(    const(UOutChar) == OutChar)) ||
+               (!is(const(UInChar) == InChar) && !is(immutable(UOutChar) == OutChar)))
     {
         if (!__ctfe)
         {
@@ -3228,7 +3231,7 @@ if (is(typeof(str[0]) C) && is(immutable typeof(*P.init) == immutable C) && !is(
     else
     {
         import std.array : uninitializedArray;
-        auto copy = uninitializedArray!(Unqual!OutChar[])(str.length + 1);
+        auto copy = uninitializedArray!(UOutChar[])(str.length + 1);
         copy[0 .. $ - 1] = str[];
         copy[$ - 1] = '\0';
 

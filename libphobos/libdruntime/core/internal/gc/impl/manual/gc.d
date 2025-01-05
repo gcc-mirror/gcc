@@ -79,10 +79,6 @@ class ManualGC : GC
     {
     }
 
-    void collectNoStack() nothrow
-    {
-    }
-
     void minimize() nothrow
     {
     }
