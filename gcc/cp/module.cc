@@ -11014,18 +11014,23 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	       g++.dg/modules/lambda-6_a.C.  */
 	    if (DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (decl))
 		&& LAMBDA_TYPE_P (TREE_TYPE (decl)))
-	      if (tree scope = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl)))
-		{
-		  /* Lambdas attached to fields are keyed to its class.  */
-		  if (TREE_CODE (scope) == FIELD_DECL)
-		    scope = TYPE_NAME (DECL_CONTEXT (scope));
-		  if (DECL_LANG_SPECIFIC (scope)
-		      && DECL_MODULE_KEYED_DECLS_P (scope))
-		    {
-		      mk = MK_keyed;
-		      break;
-		    }
-		}
+	      {
+		if (tree scope = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl)))
+		  {
+		    /* Lambdas attached to fields are keyed to its class.  */
+		    if (TREE_CODE (scope) == FIELD_DECL)
+		      scope = TYPE_NAME (DECL_CONTEXT (scope));
+		    if (DECL_LANG_SPECIFIC (scope)
+			&& DECL_MODULE_KEYED_DECLS_P (scope))
+		      {
+			mk = MK_keyed;
+			break;
+		      }
+		  }
+		/* Lambdas not attached to any mangling scope are TU-local.  */
+		mk = MK_unique;
+		break;
+	      }
 
 	    if (TREE_CODE (decl) == TEMPLATE_DECL
 		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
