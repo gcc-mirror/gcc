@@ -24879,18 +24879,42 @@ aarch64_sve_expand_vector_init_subvector (rtx target, rtx vals)
   machine_mode mode = GET_MODE (target);
   int nelts = XVECLEN (vals, 0);
 
-  gcc_assert (nelts == 2);
+  gcc_assert (nelts % 2 == 0);
 
-  rtx arg0 = XVECEXP (vals, 0, 0);
-  rtx arg1 = XVECEXP (vals, 0, 1);
-
-  /* If we have two elements and are concatting vector.  */
-  machine_mode elem_mode = GET_MODE (arg0);
+  /* We have to be concatting vector.  */
+  machine_mode elem_mode = GET_MODE (XVECEXP (vals, 0, 0));
   gcc_assert (VECTOR_MODE_P (elem_mode));
 
-  arg0 = force_reg (elem_mode, arg0);
-  arg1 = force_reg (elem_mode, arg1);
-  emit_insn (gen_aarch64_pack_partial (mode, target, arg0, arg1));
+  auto_vec<rtx> worklist;
+  machine_mode wider_mode = elem_mode;
+
+  for (int i = 0; i < nelts; i++)
+    worklist.safe_push (force_reg (elem_mode, XVECEXP (vals, 0, i)));
+
+  /* Keep widening pairwise to have maximum throughput.  */
+  while (nelts >= 2)
+    {
+      wider_mode
+	= related_vector_mode (wider_mode, GET_MODE_INNER (wider_mode),
+			       GET_MODE_NUNITS (wider_mode) * 2).require ();
+
+      for (int i = 0; i < nelts; i += 2)
+	{
+	  rtx arg0 = worklist[i];
+	  rtx arg1 = worklist[i+1];
+	  gcc_assert (GET_MODE (arg0) == GET_MODE (arg1));
+
+	  rtx tmp = gen_reg_rtx (wider_mode);
+	  emit_insn (gen_aarch64_pack_partial (wider_mode, tmp, arg0, arg1));
+	  worklist[i / 2] = tmp;
+	}
+
+      nelts /= 2;
+    }
+
+  gcc_assert (wider_mode == mode);
+  emit_move_insn (target, worklist[0]);
+
   return;
 }
 
