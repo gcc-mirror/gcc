@@ -307,6 +307,18 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
     fprintf (f, "\n");
 }
 
+/* If VALUE has all bits set to one, print "-1" to F, otherwise simply print it
+   hexadecimally to F. */
+
+static void
+ipcp_print_widest_int (FILE *f, const widest_int &value)
+{
+  if (wi::eq_p (wi::bit_not (value), 0))
+    fprintf (f, "-1");
+  else
+    print_hex (value, f);
+}
+
 void
 ipcp_bits_lattice::print (FILE *f)
 {
@@ -316,8 +328,10 @@ ipcp_bits_lattice::print (FILE *f)
     fprintf (f, "         Bits unusable (BOTTOM)\n");
   else
     {
-      fprintf (f, "         Bits: value = "); print_hex (get_value (), f);
-      fprintf (f, ", mask = "); print_hex (get_mask (), f);
+      fprintf (f, "         Bits: value = ");
+      ipcp_print_widest_int (f, get_value ());
+      fprintf (f, ", mask = ");
+      print_hex (get_mask (), f);
       fprintf (f, "\n");
     }
 }
@@ -6375,7 +6389,7 @@ ipcp_store_vr_results (void)
 	      dumped_sth = true;
 	    }
 	  fprintf (dump_file, " param %i: value = ", i);
-	  print_hex (bits->get_value (), dump_file);
+	  ipcp_print_widest_int (dump_file, bits->get_value ());
 	  fprintf (dump_file, ", mask = ");
 	  print_hex (bits->get_mask (), dump_file);
 	  fprintf (dump_file, "\n");
