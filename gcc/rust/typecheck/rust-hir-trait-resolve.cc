@@ -127,8 +127,10 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
     }
   else
     {
-      ok = resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
-					   &ref);
+      auto path_nodeid = path.get_mappings ().get_nodeid ();
+      ok = resolver->lookup_resolved_type (path_nodeid, &ref)
+	   || resolver->lookup_resolved_name (path_nodeid, &ref)
+	   || resolver->lookup_resolved_macro (path_nodeid, &ref);
     }
 
   if (!ok)
