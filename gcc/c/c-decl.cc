@@ -8677,7 +8677,7 @@ get_parm_info (bool ellipsis, tree expr)
 	      if (b->id)
 		{
 		  /* The %s will be one of 'struct', 'union', or 'enum'.  */
-		  if (!flag_isoc23)
+		  if (!flag_isoc23 || !COMPLETE_TYPE_P (decl))
 		    warning_at (b->locus, 0,
 				"%<%s %E%> declared inside parameter list"
 				" will not be visible outside of this definition or"
