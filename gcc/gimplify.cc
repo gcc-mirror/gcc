@@ -3857,7 +3857,8 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   enum gimplify_status ret;
   int i, nargs;
   gcall *call;
-  bool builtin_va_start_p = false, omp_dispatch_p = false;
+  bool builtin_va_start_p = false, omp_dispatch_p = false,
+       variant_substituted_p = false;
   location_t loc = EXPR_LOCATION (*expr_p);
 
   gcc_assert (TREE_CODE (*expr_p) == CALL_EXPR);
@@ -4035,7 +4036,10 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
     {
       tree variant = omp_resolve_declare_variant (fndecl);
       if (variant != fndecl)
-	CALL_EXPR_FN (*expr_p) = build1 (ADDR_EXPR, fnptrtype, variant);
+	{
+	  CALL_EXPR_FN (*expr_p) = build1 (ADDR_EXPR, fnptrtype, variant);
+	  variant_substituted_p = true;
+	}
     }
 
   /* There is a sequence point before the call, so any side effects in
@@ -4325,8 +4329,9 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 				}
 			    }
 
-			  if ((need_device_ptr && !is_device_ptr)
-			      || (need_device_addr && !has_device_addr))
+			  if (variant_substituted_p
+			      && ((need_device_ptr && !is_device_ptr)
+				  || (need_device_addr && !has_device_addr)))
 			    {
 			      if (dispatch_device_num == NULL_TREE)
 				{
