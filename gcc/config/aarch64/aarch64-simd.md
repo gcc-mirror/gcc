@@ -1874,6 +1874,22 @@
   [(set_attr "type" "neon_permute<q>")]
 )
 
+(define_insn "*aarch64_trunc_concat<mode>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(truncate:<VNARROWQ>
+	  (vec_concat:VQN
+	    (match_operand:<VHALF> 1 "register_operand" "w")
+	    (match_operand:<VHALF> 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+{
+  if (!BYTES_BIG_ENDIAN)
+    return "uzp1\\t%0.<Vntype>, %1.<Vntype>, %2.<Vntype>";
+  else
+    return "uzp1\\t%0.<Vntype>, %2.<Vntype>, %1.<Vntype>";
+}
+  [(set_attr "type" "neon_permute<q>")]
+)
+
 ;; Packing doubles.
 
 (define_expand "vec_pack_trunc_<mode>"
