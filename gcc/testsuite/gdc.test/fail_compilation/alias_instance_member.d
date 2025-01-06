@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/alias_instance_member.d(18): Error: cannot alias member of variable `that`
+fail_compilation/alias_instance_member.d(18): Error: cannot alias variable member `v` of variable `that`
 fail_compilation/alias_instance_member.d(18):        Use `typeof(that)` instead to preserve behaviour
 ---
 */
@@ -17,6 +17,7 @@ struct Foo
         alias a = this.v; // OK
         alias b = that.v;
         assert(&a is &b);
+        alias b2 = typeof(that).v; // OK
     }
 }
 

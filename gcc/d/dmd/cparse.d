@@ -1120,75 +1120,74 @@ final class CParser(AST) : Parser!AST
      */
     private AST.Expression cparseCastExp()
     {
-        if (token.value == TOK.leftParenthesis)
+        if (token.value != TOK.leftParenthesis)
+            return cparseUnaryExp();
+
+        //printf("cparseCastExp()\n");
+        auto tk = peek(&token);
+        bool iscast;
+        bool isexp;
+        if (tk.value == TOK.identifier)
         {
-            //printf("cparseCastExp()\n");
-            auto tk = peek(&token);
-            bool iscast;
-            bool isexp;
-            if (tk.value == TOK.identifier)
-            {
-                iscast = isTypedef(tk.ident);
-                isexp = !iscast;
-            }
-            if (isexp)
-            {
-                // ( identifier ) is an expression
-                return cparseUnaryExp();
-            }
-
-            // If ( type-name )
-            auto pt = &token;
-
-            if (isCastExpression(pt))
-            {
-                // Expression may be either a cast or a compound literal, which
-                // requires checking whether the next token is leftCurly
-                const loc = token.loc;
-                nextToken();
-                auto t = cparseTypeName();
-                check(TOK.rightParenthesis);
-                pt = &token;
-
-                if (token.value == TOK.leftCurly)
-                {
-                    // C11 6.5.2.5 ( type-name ) { initializer-list }
-                    auto ci = cparseInitializer();
-                    auto ce = new AST.CompoundLiteralExp(loc, t, ci);
-                    return cparsePostfixOperators(ce);
-                }
-
-                if (iscast)
-                {
-                    // ( type-name ) cast-expression
-                    auto ce = cparseCastExp();
-                    return new AST.CastExp(loc, ce, t);
-                }
-
-                if (t.isTypeIdentifier() &&
-                    isexp &&
-                    token.value == TOK.leftParenthesis &&
-                    !isCastExpression(pt))
-                {
-                    /* (t)(...)... might be a cast expression or a function call,
-                     * with different grammars: a cast would be cparseCastExp(),
-                     * a function call would be cparsePostfixExp(CallExp(cparseArguments())).
-                     * We can't know until t is known. So, parse it as a function call
-                     * and let semantic() rewrite the AST as a CastExp if it turns out
-                     * to be a type.
-                     */
-                    auto ie = new AST.IdentifierExp(loc, t.isTypeIdentifier().ident);
-                    ie.parens = true;    // let semantic know it might be a CastExp
-                    AST.Expression e = new AST.CallExp(loc, ie, cparseArguments());
-                    return cparsePostfixOperators(e);
-                }
-
-                // ( type-name ) cast-expression
-                auto ce = cparseCastExp();
-                return new AST.CastExp(loc, ce, t);
-            }
+            iscast = isTypedef(tk.ident);
+            isexp = !iscast;
         }
-        return cparseUnaryExp();
+        if (isexp)
+        {
+            // ( identifier ) is an expression
+            return cparseUnaryExp();
+        }
+
+        // If ( type-name )
+        auto pt = &token;
+
+        if (!isCastExpression(pt))
+            return cparseUnaryExp();
+
+        // Expression may be either a cast or a compound literal, which
+        // requires checking whether the next token is leftCurly
+        const loc = token.loc;
+        nextToken();
+        auto t = cparseTypeName();
+        check(TOK.rightParenthesis);
+        pt = &token;
+
+        if (token.value == TOK.leftCurly)
+        {
+            // C11 6.5.2.5 ( type-name ) { initializer-list }
+            auto ci = cparseInitializer();
+            auto ce = new AST.CompoundLiteralExp(loc, t, ci);
+            return cparsePostfixOperators(ce);
+        }
+
+        if (iscast)
+        {
+            // ( type-name ) cast-expression
+            auto ce = cparseCastExp();
+            return new AST.CastExp(loc, ce, t);
+        }
+
+        if (t.isTypeIdentifier() &&
+            isexp &&
+            token.value == TOK.leftParenthesis &&
+            !isCastExpression(pt))
+        {
+            /* (t)(...)... might be a cast expression or a function call,
+             * with different grammars: a cast would be cparseCastExp(),
+             * a function call would be cparsePostfixExp(CallExp(cparseArguments())).
+             * We can't know until t is known. So, parse it as a function call
+             * and let semantic() rewrite the AST as a CastExp if it turns out
+             * to be a type.
+             */
+            auto ie = new AST.IdentifierExp(loc, t.isTypeIdentifier().ident);
+            ie.parens = true;    // let semantic know it might be a CastExp
+            AST.Expression e = new AST.CallExp(loc, ie, cparseArguments());
+            return cparsePostfixOperators(e);
+        }
+
+        // ( type-name ) cast-expression
+        auto ce = cparseCastExp();
+        return new AST.CastExp(loc, ce, t);
     }
 
     /**************
@@ -5814,7 +5813,7 @@ final class CParser(AST) : Parser!AST
                 if (len == 1)   // stack is now empty
                     packalign.setDefault();
                 else
-                    packalign = (*this.packs)[len - 1];
+                    packalign = (*this.packs)[len - 2];
                 return closingParen();
             }
             while (n.value == TOK.comma)        // #pragma pack ( pop ,
@@ -5956,6 +5955,30 @@ final class CParser(AST) : Parser!AST
 
                     AST.Type t;
 
+                    bool hasMinus;
+                    if (token.value == TOK.min)
+                    {
+                        nextToken();
+                        // Only allow integer and float literals after minus.
+                        switch (token.value)
+                        {
+                            case TOK.int32Literal:
+                            case TOK.uns32Literal:
+                            case TOK.int64Literal:
+                            case TOK.uns64Literal:
+                            case TOK.float32Literal:
+                            case TOK.float64Literal:
+                            case TOK.float80Literal:
+                            case TOK.imaginary32Literal:
+                            case TOK.imaginary64Literal:
+                            case TOK.imaginary80Literal:
+                                hasMinus = true;
+                                break;
+                            default:
+                                continue;
+                        }
+                    }
+
                 Lswitch:
                     switch (token.value)
                     {
@@ -5980,6 +6003,8 @@ final class CParser(AST) : Parser!AST
                                  *  enum id = intvalue;
                                  */
                                 AST.Expression e = new AST.IntegerExp(scanloc, intvalue, t);
+                                if (hasMinus)
+                                    e = new AST.NegExp(scanloc, e);
                                 auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
                                 addSym(v);
                                 ++p;
@@ -6003,6 +6028,8 @@ final class CParser(AST) : Parser!AST
                                  *  enum id = floatvalue;
                                  */
                                 AST.Expression e = new AST.RealExp(scanloc, floatvalue, t);
+                                if (hasMinus)
+                                    e = new AST.NegExp(scanloc, e);
                                 auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
                                 addSym(v);
                                 ++p;

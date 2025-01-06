@@ -211,10 +211,26 @@ void testFuncCall()
     assert(WithDtor.destroyed == 1);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24701
+void testCast()
+{
+    noreturn foo;
+    try
+        auto a = cast(int)foo;
+    catch (Throwable e)
+    {
+        assert(e.msg == "Accessed expression of type `noreturn`");
+        return;
+    }
+
+    assert(0);
+}
+
 int main()
 {
     testDtors();
     testAccess();
     testFuncCall();
+    testCast();
     return 0;
 }

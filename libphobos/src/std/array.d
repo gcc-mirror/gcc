@@ -3586,11 +3586,14 @@ if (isDynamicArray!A)
         return _data ? _data.capacity : 0;
     }
 
+    /// Returns: The number of elements appended.
+    @property size_t length() const => _data ? _data.arr.length : 0;
+
     /**
      * Use opSlice() from now on.
      * Returns: The managed array.
      */
-    @property inout(T)[] data() inout @trusted
+    @property inout(T)[] data() inout
     {
         return this[];
     }
@@ -3921,6 +3924,7 @@ if (isDynamicArray!A)
     int[] a = [ 1, 2 ];
     auto app2 = appender(a);
     app2.put(3);
+    assert(app2.length == 3);
     app2.put([ 4, 5, 6 ]);
     assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);
 }
@@ -4134,6 +4138,9 @@ if (isDynamicArray!A)
         return impl.capacity;
     }
 
+    /// Returns: The number of elements appended.
+    @property size_t length() const => impl.length;
+
     /* Use opSlice() instead.
      * Returns: the managed array.
      */
@@ -4160,6 +4167,7 @@ unittest
     assert(app2[] == [1, 2]);
     assert(a == [1, 2]);
     app2 ~= 3;
+    assert(app2.length == 3);
     app2 ~= [4, 5, 6];
     assert(app2[] == [1, 2, 3, 4, 5, 6]);
     assert(a == [1, 2, 3, 4, 5, 6]);

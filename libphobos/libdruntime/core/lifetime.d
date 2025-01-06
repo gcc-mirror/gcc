@@ -1699,7 +1699,7 @@ template forward(args...)
         {
             x_ = forward!x;
         }
-        this()(auto const ref X x)
+        this()(auto ref const X x)
         {
             x_ = forward!x;
         }

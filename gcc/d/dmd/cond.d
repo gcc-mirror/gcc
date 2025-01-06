@@ -398,7 +398,7 @@ extern (C++) final class StaticForeach : RootObject
         Expression aggr = void;
         Type indexty = void;
 
-        if (rangefe && (indexty = ety).isintegral())
+        if (rangefe && (indexty = ety).isIntegral())
         {
             rangefe.lwr.type = indexty;
             rangefe.upr.type = indexty;
@@ -744,6 +744,7 @@ extern (C++) final class VersionCondition : DVCondition
             case "Win32":
             case "Win64":
             case "Windows":
+            case "Xtensa":
             case "X86":
             case "X86_64":
                 return true;

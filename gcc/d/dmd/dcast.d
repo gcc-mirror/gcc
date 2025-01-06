@@ -272,7 +272,7 @@ MATCH implicitConvTo(Expression e, Type t)
 
         /* See if we can do integral narrowing conversions
          */
-        if (e.type.isintegral() && t.isintegral() && e.type.isTypeBasic() && t.isTypeBasic())
+        if (e.type.isIntegral() && t.isIntegral() && e.type.isTypeBasic() && t.isTypeBasic())
         {
             IntRange src = getIntRange(e);
             IntRange target = IntRange.fromType(t);
@@ -321,14 +321,14 @@ MATCH implicitConvTo(Expression e, Type t)
 
         Type t1b = e.e1.type.toBasetype();
         Type t2b = e.e2.type.toBasetype();
-        if (t1b.ty == Tpointer && t2b.isintegral() && t1b.equivalent(tb))
+        if (t1b.ty == Tpointer && t2b.isIntegral() && t1b.equivalent(tb))
         {
             // ptr + offset
             // ptr - offset
             MATCH m = e.e1.implicitConvTo(t);
             return (m > MATCH.constant) ? MATCH.constant : m;
         }
-        if (t2b.ty == Tpointer && t1b.isintegral() && t2b.equivalent(tb))
+        if (t2b.ty == Tpointer && t1b.isIntegral() && t2b.equivalent(tb))
         {
             // offset + ptr
             MATCH m = e.e2.implicitConvTo(t);
@@ -453,7 +453,7 @@ MATCH implicitConvTo(Expression e, Type t)
 
         bool isLosslesslyConvertibleToFP(T)()
         {
-            if (e.type.isunsigned())
+            if (e.type.isUnsigned())
             {
                 const f = cast(T) value;
                 return cast(dinteger_t) f == value;
@@ -704,7 +704,7 @@ MATCH implicitConvTo(Expression e, Type t)
                     return MATCH.nomatch;
                 m = MATCH.constant;
             }
-            if (e.hexString && tn.isintegral && (tn.size == e.sz || (!e.committed && (e.len % tn.size) == 0)))
+            if (e.hexString && tn.isIntegral && (tn.size == e.sz || (!e.committed && (e.len % tn.size) == 0)))
             {
                 m = MATCH.convert;
                 return m;
@@ -931,7 +931,7 @@ MATCH implicitConvTo(Expression e, Type t)
          */
         Type tb = t.toBasetype();
         MOD mod = tb.mod;
-        if (tf.isref)
+        if (tf.isRef)
         {
         }
         else
@@ -1163,7 +1163,7 @@ MATCH implicitConvTo(Expression e, Type t)
         if (result != MATCH.nomatch)
             return result;
 
-        if (t.isintegral() && e.e1.type.isintegral() && e.e1.implicitConvTo(t) != MATCH.nomatch)
+        if (t.isIntegral() && e.e1.type.isIntegral() && e.e1.implicitConvTo(t) != MATCH.nomatch)
             result = MATCH.convert;
         else
             result = visit(e);
@@ -1947,12 +1947,12 @@ MATCH cimplicitConvTo(Expression e, Type t)
     if (tb.isTypeVector() || typeb.isTypeVector())
         return implicitConvTo(e, t);    // permissive checking doesn't apply to vectors
 
-    if ((typeb.isintegral() || typeb.isfloating()) &&
-        (tb.isintegral() || tb.isfloating()))
+    if ((typeb.isIntegral() || typeb.isFloating()) &&
+        (tb.isIntegral() || tb.isFloating()))
         return MATCH.convert;
-    if (tb.ty == Tpointer && typeb.isintegral()) // C11 6.3.2.3-5
+    if (tb.ty == Tpointer && typeb.isIntegral()) // C11 6.3.2.3-5
         return MATCH.convert;
-    if (tb.isintegral() && typeb.ty == Tpointer) // C11 6.3.2.3-6
+    if (tb.isIntegral() && typeb.ty == Tpointer) // C11 6.3.2.3-6
         return MATCH.convert;
     if (tb.ty == Tpointer && typeb.ty == Tpointer) // C11 6.3.2.3-7
         return MATCH.convert;
@@ -2053,8 +2053,8 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         const(bool) t1b_isR = (t1b_isFR || t1b.ty == Tpointer || t1b.ty == Taarray || t1b.ty == Tclass);
 
         // Arithmetic types (== valueable basic types)
-        const(bool) tob_isA = ((tob.isintegral() || tob.isfloating()) && tob.ty != Tvector);
-        const(bool) t1b_isA = ((t1b.isintegral() || t1b.isfloating()) && t1b.ty != Tvector);
+        const(bool) tob_isA = ((tob.isIntegral() || tob.isFloating()) && tob.ty != Tvector);
+        const(bool) t1b_isA = ((t1b.isIntegral() || t1b.isFloating()) && t1b.ty != Tvector);
 
         // Try casting the alias this member.
         // Return the expression if it succeeds, null otherwise.
@@ -2257,7 +2257,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
     {
         if (!e.type.equals(t))
         {
-            if ((e.type.isreal() && t.isreal()) || (e.type.isimaginary() && t.isimaginary()))
+            if ((e.type.isReal() && t.isReal()) || (e.type.isImaginary() && t.isImaginary()))
             {
                 auto result = e.copy();
                 result.type = t;
@@ -2273,7 +2273,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
     {
         if (!e.type.equals(t))
         {
-            if (e.type.iscomplex() && t.iscomplex())
+            if (e.type.isComplex() && t.isComplex())
             {
                 auto result = e.copy();
                 result.type = t;
@@ -3219,7 +3219,7 @@ Expression scaleFactor(BinExp be, Scope* sc)
     Type t2b = be.e2.type.toBasetype();
     Expression eoff;
 
-    if (t1b.ty == Tpointer && t2b.isintegral())
+    if (t1b.ty == Tpointer && t2b.isIntegral())
     {
         // Need to adjust operator by the stride
         // Replace (ptr + int) with (ptr + (int * stride))
@@ -3233,7 +3233,7 @@ Expression scaleFactor(BinExp be, Scope* sc)
         be.e2.type = t;
         be.type = be.e1.type;
     }
-    else if (t2b.ty == Tpointer && t1b.isintegral())
+    else if (t2b.ty == Tpointer && t1b.isIntegral())
     {
         // Need to adjust operator by the stride
         // Replace (int + ptr) with (ptr + (int * stride))
@@ -3361,11 +3361,11 @@ Type typeMerge(Scope* sc, EXP op, ref Expression pe1, ref Expression pe2)
         // Integral types can be implicitly converted to pointers
         if ((t1b.ty == Tpointer) != (t2b.ty == Tpointer))
         {
-            if (t1b.isintegral())
+            if (t1b.isIntegral())
             {
                 return convert(e1, t2b);
             }
-            else if (t2b.isintegral())
+            else if (t2b.isIntegral())
             {
                 return convert(e2, t1b);
             }
@@ -3487,8 +3487,8 @@ Lagain:
                 d.purity = PURE.impure;
             assert(d.purity != PURE.fwdref);
 
-            d.isnothrow = (tf1.isnothrow && tf2.isnothrow);
-            d.isnogc = (tf1.isnogc && tf2.isnogc);
+            d.isNothrow = (tf1.isNothrow && tf2.isNothrow);
+            d.isNogc = (tf1.isNogc && tf2.isNogc);
 
             if (tf1.trust == tf2.trust)
                 d.trust = tf1.trust;
@@ -3878,7 +3878,7 @@ LmergeClassTypes:
         goto Lagain;
     }
 
-    if (t1.isintegral() && t2.isintegral())
+    if (t1.isIntegral() && t2.isIntegral())
     {
         if (t1.ty != t2.ty)
         {

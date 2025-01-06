@@ -13,6 +13,9 @@
  *         Makes an Objective-C interface method optional.)
  * $(TROW $(LREF selector), Objective-C,
  *          Attaches an Objective-C selector to a method.)
+ * $(TROW $(LREF standalone),,
+ *          Marks a shared module constructor as not depending on any
+ *          other module constructor being run first.)
  * $(TROW $(LREF weak),,
  *         Specifies that a global symbol should be emitted with weak linkage.)
  * )

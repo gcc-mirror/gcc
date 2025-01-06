@@ -661,7 +661,7 @@ bool isSafePointerCast(Type srcPointee, Type destPointee)
         srcPointee = srcPointee.baseElemOf();
         destPointee = destPointee.baseElemOf();
     }
-    return srcPointee.isintegral() && destPointee.isintegral() && srcPointee.size() == destPointee.size();
+    return srcPointee.isIntegral() && destPointee.isIntegral() && srcPointee.size() == destPointee.size();
 }
 
 Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
@@ -951,7 +951,7 @@ int comparePointers(EXP op, Expression agg1, dinteger_t ofs1, Expression agg2, d
 // floating point -> integer or integer -> floating point
 bool isFloatIntPaint(Type to, Type from)
 {
-    return from.size() == to.size() && (from.isintegral() && to.isfloating() || from.isfloating() && to.isintegral());
+    return from.size() == to.size() && (from.isIntegral() && to.isFloating() || from.isFloating() && to.isIntegral());
 }
 
 // Reinterpret float/int value 'fromVal' as a float/integer of type 'to'.
@@ -1088,7 +1088,7 @@ private int ctfeCmpArrays(const ref Loc loc, Expression e1, Expression e2, uinte
     // Comparing two array literals. This case is potentially recursive.
     // If they aren't strings, we just need an equality check rather than
     // a full cmp.
-    const bool needCmp = ae1.type.nextOf().isintegral();
+    const bool needCmp = ae1.type.nextOf().isIntegral();
     foreach (size_t i; 0 .. cast(size_t)len)
     {
         Expression ee1 = (*ae1.elements)[cast(size_t)(lo1 + i)];
@@ -1213,16 +1213,16 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         }
         return cast(int)(len1 - len2);
     }
-    if (e1.type.isintegral())
+    if (e1.type.isIntegral())
     {
         return e1.toInteger() != e2.toInteger();
     }
-    if (identity && e1.type.isfloating())
+    if (identity && e1.type.isFloating())
         return !e1.isIdentical(e2);
-    if (e1.type.isreal() || e1.type.isimaginary())
+    if (e1.type.isReal() || e1.type.isImaginary())
     {
-        real_t r1 = e1.type.isreal() ? e1.toReal() : e1.toImaginary();
-        real_t r2 = e1.type.isreal() ? e2.toReal() : e2.toImaginary();
+        real_t r1 = e1.type.isReal() ? e1.toReal() : e1.toImaginary();
+        real_t r2 = e1.type.isReal() ? e2.toReal() : e2.toImaginary();
         if (CTFloat.isNaN(r1) || CTFloat.isNaN(r2)) // if unordered
         {
             return 1;   // they are not equal
@@ -1232,7 +1232,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
             return (r1 != r2);
         }
     }
-    else if (e1.type.iscomplex())
+    else if (e1.type.isComplex())
     {
         return e1.toComplex() != e2.toComplex();
     }
@@ -1343,7 +1343,7 @@ bool ctfeIdentity(const ref Loc loc, EXP op, Expression e1, Expression e2)
         SymOffExp es2 = e2.isSymOffExp();
         cmp = (es1.var == es2.var && es1.offset == es2.offset);
     }
-    else if (e1.type.isfloating())
+    else if (e1.type.isFloating())
         cmp = e1.isIdentical(e2);
     else
     {
@@ -1362,11 +1362,11 @@ bool ctfeCmp(const ref Loc loc, EXP op, Expression e1, Expression e2)
 
     if (t1.isString() && t2.isString())
         return specificCmp(op, ctfeRawCmp(loc, e1, e2));
-    else if (t1.isreal())
+    else if (t1.isReal())
         return realCmp(op, e1.toReal(), e2.toReal());
-    else if (t1.isimaginary())
+    else if (t1.isImaginary())
         return realCmp(op, e1.toImaginary(), e2.toImaginary());
-    else if (t1.isunsigned() || t2.isunsigned())
+    else if (t1.isUnsigned() || t2.isUnsigned())
         return intUnsignedCmp(op, e1.toInteger(), e2.toInteger());
     else
         return intSignedCmp(op, e1.toInteger(), e2.toInteger());
@@ -1377,7 +1377,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
     Type t1 = e1.type.toBasetype();
     Type t2 = e2.type.toBasetype();
     UnionExp ue;
-    if (e2.op == EXP.string_ && e1.op == EXP.arrayLiteral && t1.nextOf().isintegral())
+    if (e2.op == EXP.string_ && e1.op == EXP.arrayLiteral && t1.nextOf().isIntegral())
     {
         // [chars] ~ string => string (only valid for CTFE)
         StringExp es1 = e2.isStringExp();
@@ -1406,7 +1406,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         es.type = type;
         return ue;
     }
-    if (e1.op == EXP.string_ && e2.op == EXP.arrayLiteral && t2.nextOf().isintegral())
+    if (e1.op == EXP.string_ && e2.op == EXP.arrayLiteral && t2.nextOf().isIntegral())
     {
         // string ~ [chars] => string (only valid for CTFE)
         // Concatenate the strings
@@ -1775,7 +1775,7 @@ bool isCtfeValueValid(Expression newval)
         case EXP.int64:
         case EXP.float64:
         case EXP.complex80:
-            return tb.isscalar();
+            return tb.isScalar();
 
         case EXP.null_:
             return tb.ty == Tnull    ||

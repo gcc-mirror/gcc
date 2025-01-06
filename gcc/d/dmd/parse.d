@@ -651,6 +651,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
             case TOK.auto_:
                 stc = STC.auto_;
+                if (peekNext() == TOK.ref_)
+                    stc |= STC.autoref;
                 goto Lstc;
 
             case TOK.scope_:
@@ -1705,18 +1707,27 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
      *      mixin Foo;
      *      mixin Foo!(args);
      *      mixin a.b.c!(args).Foo!(args);
-     *      mixin Foo!(args) identifier;
      *      mixin typeof(expr).identifier!(args);
+     *      mixin Foo!(args) identifier;
+     *      mixin identifier = Foo!(args);
      */
     private AST.Dsymbol parseMixin()
     {
         AST.TemplateMixin tm;
-        Identifier id;
+        Identifier id, name;
         AST.Objects* tiargs;
 
         //printf("parseMixin()\n");
         const locMixin = token.loc;
         nextToken(); // skip 'mixin'
+
+        // mixin Identifier = MixinTemplateName TemplateArguments;
+        if (token.value == TOK.identifier && peekNext() == TOK.assign)
+        {
+            name = token.ident;
+            nextToken();
+            nextToken();
+        }
 
         auto loc = token.loc;
         AST.TypeQualified tqual = null;
@@ -1780,14 +1791,14 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             nextToken();
         }
 
-        id = null;
-        if (token.value == TOK.identifier)
+        // mixin MixinTemplateName TemplateArguments Identifier;
+        if (!name && token.value == TOK.identifier)
         {
-            id = token.ident;
+            name = token.ident;
             nextToken();
         }
 
-        tm = new AST.TemplateMixin(locMixin, id, tqual, tiargs);
+        tm = new AST.TemplateMixin(locMixin, name, tqual, tiargs);
         if (token.value != TOK.semicolon)
             error("`;` expected after `mixin`");
         nextToken();
@@ -2935,6 +2946,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
                 case TOK.auto_:
                     stc = STC.auto_;
+                    if (peekNext() == TOK.ref_)
+                        stc |= STC.autoref;
                     goto L2;
 
                 case TOK.return_:
@@ -2952,8 +2965,10 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         // if stcx is not a power of 2
                         if (stcx & (stcx - 1) && !(stcx == (STC.in_ | STC.ref_)))
                             error("incompatible parameter storage classes");
-                        //if ((storageClass & STC.scope_) && (storageClass & (STC.ref_ | STC.out_)))
-                            //error("scope cannot be ref or out");
+
+                        // Deprecated in 2.111
+                        if ((storageClass & STC.auto_) && (storageClass & STC.ref_) && !(storageClass & STC.autoref))
+                            deprecation("`auto` and `ref` storage classes should be adjacent");
 
                         const tv = peekNext();
                         Loc loc;
@@ -4259,6 +4274,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
             case TOK.auto_:
                 stc = STC.auto_;
+                if (peekNext() == TOK.ref_)
+                    stc |= STC.autoref;
                 goto L1;
 
             case TOK.scope_:
@@ -5079,7 +5096,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 {
                     // function auto ref (parameters) { statements... }
                     // delegate auto ref (parameters) { statements... }
-                    stc = STC.auto_ | STC.ref_;
+                    stc = STC.auto_ | STC.ref_ | STC.autoref;
                     nextToken();
                 }
                 else
@@ -5121,7 +5138,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 {
                     // auto ref (parameters) => expression
                     // auto ref (parameters) { statements... }
-                    stc = STC.auto_ | STC.ref_;
+                    stc = STC.auto_ | STC.ref_ | STC.autoref;
                     nextToken();
                 }
                 else
@@ -5678,6 +5695,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
             case TOK.auto_:
                 stc = STC.auto_;
+                if (peekNext() == TOK.ref_)
+                    stc |= STC.autoref;
                 break;
 
             case TOK.const_:

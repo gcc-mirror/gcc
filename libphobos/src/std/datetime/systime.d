@@ -8879,7 +8879,7 @@ public:
             return retval;
         }
         catch (DateTimeException dte)
-            throw new DateTimeException(format("Invalid ISO String: %s", isoString));
+            throw new DateTimeException(format("Invalid format for SysTime.fromISOString: %s", isoString));
     }
 
     ///
@@ -9109,7 +9109,8 @@ public:
         auto str = strip(isoExtString);
 
         auto tIndex = str.indexOf('T');
-        enforce(tIndex != -1, new DateTimeException(format("Invalid ISO Extended String: %s", isoExtString)));
+        enforce!DateTimeException(tIndex != -1,
+                                  format("Invalid format for SysTime.fromISOExtString: %s", isoExtString));
 
         auto found = str[tIndex + 1 .. $].find('.', 'Z', '+', '-');
         auto dateTimeStr = str[0 .. $ - found[0].length];
@@ -9157,7 +9158,7 @@ public:
             return retval;
         }
         catch (DateTimeException dte)
-            throw new DateTimeException(format("Invalid ISO Extended String: %s", isoExtString));
+            throw new DateTimeException(format("Invalid format for SysTime.fromISOExtString: %s", isoExtString));
     }
 
     ///
@@ -9359,7 +9360,8 @@ public:
         auto str = strip(simpleString);
 
         auto spaceIndex = str.indexOf(' ');
-        enforce(spaceIndex != -1, new DateTimeException(format("Invalid Simple String: %s", simpleString)));
+        enforce!DateTimeException(spaceIndex != -1,
+                                  format("Invalid format for SysTime.fromSimpleString: %s", simpleString));
 
         auto found = str[spaceIndex + 1 .. $].find('.', 'Z', '+', '-');
         auto dateTimeStr = str[0 .. $ - found[0].length];
@@ -9407,7 +9409,7 @@ public:
             return retval;
         }
         catch (DateTimeException dte)
-            throw new DateTimeException(format("Invalid Simple String: %s", simpleString));
+            throw new DateTimeException(format("Invalid format for SysTime.fromSimpleString: %s", simpleString));
     }
 
     ///
@@ -11170,6 +11172,7 @@ if (isSomeString!S)
     import std.algorithm.searching : all;
     import std.ascii : isDigit;
     import std.conv : to;
+    import std.format : format;
     import std.string : representation;
 
     if (isoString.empty)
@@ -11177,10 +11180,11 @@ if (isSomeString!S)
 
     auto str = isoString.representation;
 
-    enforce(str[0] == '.', new DateTimeException("Invalid ISO String"));
+    enforce!DateTimeException(str[0] == '.', format("Invalid format for fracSecsFromISOString: %s", isoString));
     str.popFront();
 
-    enforce(!str.empty && all!isDigit(str), new DateTimeException("Invalid ISO String"));
+    enforce!DateTimeException(!str.empty && all!isDigit(str),
+                              format("Invalid format for fracSecsFromISOString: %s", isoString));
 
     dchar[7] fullISOString = void;
     foreach (i, ref dchar c; fullISOString)

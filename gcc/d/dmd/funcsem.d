@@ -332,15 +332,15 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
             }
         }
 
-        if (tf.isref)
+        if (tf.isRef)
             sc.stc |= STC.ref_;
         if (tf.isScopeQual)
             sc.stc |= STC.scope_;
-        if (tf.isnothrow)
+        if (tf.isNothrow)
             sc.stc |= STC.nothrow_;
-        if (tf.isnogc)
+        if (tf.isNogc)
             sc.stc |= STC.nogc;
-        if (tf.isproperty)
+        if (tf.isProperty)
             sc.stc |= STC.property;
         if (tf.purity == PURE.fwdref)
             sc.stc |= STC.pure_;
@@ -358,7 +358,7 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
 
         if (funcdecl.isCtorDeclaration())
         {
-            tf.isctor = true;
+            tf.isCtor = true;
             Type tret = ad.handleType();
             assert(tret);
             tret = tret.addStorageClass(funcdecl.storage_class | sc.stc);
@@ -369,7 +369,7 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         }
 
         // 'return' on a non-static class member function implies 'scope' as well
-        if (ad && ad.isClassDeclaration() && (tf.isreturn || sc.stc & STC.return_) && !(sc.stc & STC.static_))
+        if (ad && ad.isClassDeclaration() && (tf.isReturn || sc.stc & STC.return_) && !(sc.stc & STC.static_))
             sc.stc |= STC.scope_;
 
         // If 'this' has no pointers, remove 'scope' as it has no meaning
@@ -380,11 +380,11 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         {
             sc.stc &= ~STC.scope_;
             tf.isScopeQual = false;
-            if (tf.isreturnscope)
+            if (tf.isReturnScope)
             {
                 sc.stc &= ~(STC.return_ | STC.returnScope);
-                tf.isreturn = false;
-                tf.isreturnscope = false;
+                tf.isReturn = false;
+                tf.isReturnScope = false;
             }
         }
 
@@ -430,12 +430,12 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         TypeFunction tfo = funcdecl.originalType.toTypeFunction();
         tfo.mod = f.mod;
         tfo.isScopeQual = f.isScopeQual;
-        tfo.isreturninferred = f.isreturninferred;
-        tfo.isscopeinferred = f.isscopeinferred;
-        tfo.isref = f.isref;
-        tfo.isnothrow = f.isnothrow;
-        tfo.isnogc = f.isnogc;
-        tfo.isproperty = f.isproperty;
+        tfo.isReturnInferred = f.isReturnInferred;
+        tfo.isScopeInferred = f.isScopeInferred;
+        tfo.isRef = f.isRef;
+        tfo.isNothrow = f.isNothrow;
+        tfo.isNogc = f.isNogc;
+        tfo.isProperty = f.isProperty;
         tfo.purity = f.purity;
         tfo.trust = f.trust;
 
@@ -472,10 +472,10 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         funcdecl.overnext = null;   // don't overload the redeclarations
     }
 
-    if ((funcdecl.storage_class & STC.auto_) && !f.isref && !funcdecl.inferRetType)
+    if ((funcdecl.storage_class & STC.auto_) && !f.isRef && !funcdecl.inferRetType)
         .error(funcdecl.loc, "%s `%s` storage class `auto` has no effect if return type is not inferred", funcdecl.kind, funcdecl.toPrettyChars);
 
-    if (f.isreturn && !funcdecl.needThis() && !funcdecl.isNested())
+    if (f.isReturn && !funcdecl.needThis() && !funcdecl.isNested())
     {
         /* Non-static nested functions have a hidden 'this' pointer to which
          * the 'return' applies
@@ -1268,11 +1268,11 @@ extern (D) void declareThis(FuncDeclaration fd, Scope* sc)
 
     if (auto tf = fd.type.isTypeFunction())
     {
-        if (tf.isreturn)
+        if (tf.isReturn)
             fd.vthis.storage_class |= STC.return_;
         if (tf.isScopeQual)
             fd.vthis.storage_class |= STC.scope_;
-        if (tf.isreturnscope)
+        if (tf.isReturnScope)
             fd.vthis.storage_class |= STC.returnScope;
     }
 
@@ -1331,54 +1331,54 @@ int findVtblIndex(FuncDeclaration fd, Dsymbol[] vtbl)
     for (int vi = 0; vi < cast(int)vtbl.length; vi++)
     {
         FuncDeclaration fdv = vtbl[vi].isFuncDeclaration();
-        if (fdv && fdv.ident == fd.ident)
+        if (!fdv || fdv.ident != fd.ident)
+            continue;
+
+        if (fd.type.equals(fdv.type)) // if exact match
         {
-            if (fd.type.equals(fdv.type)) // if exact match
+            if (fdv.parent.isClassDeclaration())
             {
-                if (fdv.parent.isClassDeclaration())
+                if (fdv.isFuture())
                 {
-                    if (fdv.isFuture())
-                    {
-                        bestvi = vi;
-                        continue;           // keep looking
-                    }
-                    return vi; // no need to look further
+                    bestvi = vi;
+                    continue;           // keep looking
                 }
-
-                if (exactvi >= 0)
-                {
-                    .error(fd.loc, "%s `%s` cannot determine overridden function", fd.kind, fd.toPrettyChars);
-                    return exactvi;
-                }
-                exactvi = vi;
-                bestvi = vi;
-                continue;
+                return vi; // no need to look further
             }
 
-            StorageClass stc = 0;
-            const cov = fd.type.covariant(fdv.type, &stc);
-            //printf("\tbaseclass cov = %d\n", cov);
-            final switch (cov)
+            if (exactvi >= 0)
             {
-            case Covariant.distinct:
-                // types are distinct
-                break;
-
-            case Covariant.yes:
-                bestvi = vi; // covariant, but not identical
-                break;
-                // keep looking for an exact match
-
-            case Covariant.no:
-                mismatchvi = vi;
-                mismatchstc = stc;
-                mismatch = fdv; // overrides, but is not covariant
-                break;
-                // keep looking for an exact match
-
-            case Covariant.fwdref:
-                return -2; // forward references
+                .error(fd.loc, "%s `%s` cannot determine overridden function", fd.kind, fd.toPrettyChars);
+                return exactvi;
             }
+            exactvi = vi;
+            bestvi = vi;
+            continue;
+        }
+
+        StorageClass stc = 0;
+        const cov = fd.type.covariant(fdv.type, &stc);
+        //printf("\tbaseclass cov = %d\n", cov);
+        final switch (cov)
+        {
+        case Covariant.distinct:
+            // types are distinct
+            break;
+
+        case Covariant.yes:
+            bestvi = vi; // covariant, but not identical
+            break;
+            // keep looking for an exact match
+
+        case Covariant.no:
+            mismatchvi = vi;
+            mismatchstc = stc;
+            mismatch = fdv; // overrides, but is not covariant
+            break;
+            // keep looking for an exact match
+
+        case Covariant.fwdref:
+            return -2; // forward references
         }
     }
     if (fd._linkage == LINK.cpp && bestvi != -1)
@@ -1700,39 +1700,40 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
            fd.kind(), fd.toPrettyChars(), parametersTypeToChars(tf.parameterList),
            tf.modToChars(), fargsBuf.peekChars());
 
+    if (global.gag && !global.params.v.showGaggedErrors)
+        return null;
+
     // re-resolve to check for supplemental message
-    if (!global.gag || global.params.v.showGaggedErrors)
+    if (tthis)
     {
-        if (tthis)
+        if (auto classType = tthis.isTypeClass())
         {
-            if (auto classType = tthis.isTypeClass())
+            if (auto baseClass = classType.sym.baseClass)
             {
-                if (auto baseClass = classType.sym.baseClass)
+                if (auto baseFunction = baseClass.search(baseClass.loc, fd.ident))
                 {
-                    if (auto baseFunction = baseClass.search(baseClass.loc, fd.ident))
+                    MatchAccumulator mErr;
+                    functionResolve(mErr, baseFunction, loc, sc, tiargs, baseClass.type, argumentList);
+                    if (mErr.last > MATCH.nomatch && mErr.lastf)
                     {
-                        MatchAccumulator mErr;
-                        functionResolve(mErr, baseFunction, loc, sc, tiargs, baseClass.type, argumentList);
-                        if (mErr.last > MATCH.nomatch && mErr.lastf)
-                        {
-                            errorSupplemental(loc, "%s `%s` hides base class function `%s`",
-                                    fd.kind, fd.toPrettyChars(), mErr.lastf.toPrettyChars());
-                            errorSupplemental(loc, "add `alias %s = %s` to `%s`'s body to merge the overload sets",
-                                    fd.toChars(), mErr.lastf.toPrettyChars(), tthis.toChars());
-                            return null;
-                        }
+                        errorSupplemental(loc, "%s `%s` hides base class function `%s`",
+                                fd.kind, fd.toPrettyChars(), mErr.lastf.toPrettyChars());
+                        errorSupplemental(loc, "add `alias %s = %s` to `%s`'s body to merge the overload sets",
+                                fd.toChars(), mErr.lastf.toPrettyChars(), tthis.toChars());
+                        return null;
                     }
                 }
             }
         }
-
-        void errorHelper2(const(char)* failMessage) scope
-        {
-            errorSupplemental(loc, failMessage);
-        }
-
-        functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &errorHelper2);
     }
+
+    void errorHelper2(const(char)* failMessage) scope
+    {
+        errorSupplemental(loc, failMessage);
+    }
+
+    functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &errorHelper2);
+
     return null;
 }
 
@@ -1888,32 +1889,32 @@ Expression addInvariant(AggregateDeclaration ad, VarDeclaration vthis)
             break;
         inv = cd.inv;
     }
-    if (inv)
+    if (!inv)
+        return e;
+
+    version (all)
     {
-        version (all)
-        {
-            // Workaround for https://issues.dlang.org/show_bug.cgi?id=13394
-            // For the correct mangling,
-            // run attribute inference on inv if needed.
-            functionSemantic(inv);
-        }
-
-        //e = new DsymbolExp(Loc.initial, inv);
-        //e = new CallExp(Loc.initial, e);
-        //e = e.semantic(sc2);
-
-        /* https://issues.dlang.org/show_bug.cgi?id=13113
-         * Currently virtual invariant calls completely
-         * bypass attribute enforcement.
-         * Change the behavior of pre-invariant call by following it.
-         */
-        e = new ThisExp(Loc.initial);
-        e.type = ad.type.addMod(vthis.type.mod);
-        e = new DotVarExp(Loc.initial, e, inv, false);
-        e.type = inv.type;
-        e = new CallExp(Loc.initial, e);
-        e.type = Type.tvoid;
+        // Workaround for https://issues.dlang.org/show_bug.cgi?id=13394
+        // For the correct mangling,
+        // run attribute inference on inv if needed.
+        functionSemantic(inv);
     }
+
+    //e = new DsymbolExp(Loc.initial, inv);
+    //e = new CallExp(Loc.initial, e);
+    //e = e.semantic(sc2);
+
+    /* https://issues.dlang.org/show_bug.cgi?id=13113
+     * Currently virtual invariant calls completely
+     * bypass attribute enforcement.
+     * Change the behavior of pre-invariant call by following it.
+     */
+    e = new ThisExp(Loc.initial);
+    e.type = ad.type.addMod(vthis.type.mod);
+    e = new DotVarExp(Loc.initial, e, inv, false);
+    e.type = inv.type;
+    e = new CallExp(Loc.initial, e);
+    e.type = Type.tvoid;
     return e;
 }
 
@@ -1960,19 +1961,19 @@ FuncDeclaration overloadExactMatch(FuncDeclaration thisfd, Type t)
  */
 int overrides(FuncDeclaration fd1, FuncDeclaration fd2)
 {
-    int result = 0;
-    if (fd1.ident == fd2.ident)
-    {
-        const cov = fd1.type.covariant(fd2.type);
-        if (cov != Covariant.distinct)
-        {
-            ClassDeclaration cd1 = fd1.toParent().isClassDeclaration();
-            ClassDeclaration cd2 = fd2.toParent().isClassDeclaration();
-            if (cd1 && cd2 && cd2.isBaseOf(cd1, null))
-                result = 1;
-        }
-    }
-    return result;
+    if (fd1.ident != fd2.ident)
+        return 0;
+
+    const cov = fd1.type.covariant(fd2.type);
+    if (cov == Covariant.distinct)
+        return 0;
+
+    ClassDeclaration cd1 = fd1.toParent().isClassDeclaration();
+    ClassDeclaration cd2 = fd2.toParent().isClassDeclaration();
+
+    if (cd1 && cd2 && cd2.isBaseOf(cd1, null))
+        return 1;
+    return 0;
 }
 
 /*************************************
@@ -2090,6 +2091,26 @@ FuncDeclaration overloadModMatch(FuncDeclaration thisfd, const ref Loc loc, Type
         auto tf = f.type.toTypeFunction();
         //printf("tf = %s\n", tf.toChars());
         MATCH match;
+        int lastIsBetter()
+        {
+            //printf("\tlastbetter\n");
+            m.count++; // count up
+            return 0;
+        }
+        int currIsBetter()
+        {
+            //printf("\tisbetter\n");
+            if (m.last <= MATCH.convert)
+            {
+                // clear last secondary matching
+                m.nextf = null;
+                m.count = 0;
+            }
+            m.last = match;
+            m.lastf = f;
+            m.count++; // count up
+            return 0;
+        }
         if (tthis) // non-static functions are preferred than static ones
         {
             if (f.needThis())
@@ -2106,30 +2127,14 @@ FuncDeclaration overloadModMatch(FuncDeclaration thisfd, const ref Loc loc, Type
         }
         if (match == MATCH.nomatch)
             return 0;
-        if (match > m.last) goto LcurrIsBetter;
-        if (match < m.last) goto LlastIsBetter;
+        if (match > m.last) return currIsBetter();
+        if (match < m.last) return lastIsBetter();
         // See if one of the matches overrides the other.
-        if (m.lastf.overrides(f)) goto LlastIsBetter;
-        if (f.overrides(m.lastf)) goto LcurrIsBetter;
+        if (m.lastf.overrides(f)) return lastIsBetter();
+        if (f.overrides(m.lastf)) return currIsBetter();
         //printf("\tambiguous\n");
         m.nextf = f;
         m.count++;
-        return 0;
-    LlastIsBetter:
-        //printf("\tlastbetter\n");
-        m.count++; // count up
-        return 0;
-    LcurrIsBetter:
-        //printf("\tisbetter\n");
-        if (m.last <= MATCH.convert)
-        {
-            // clear last secondary matching
-            m.nextf = null;
-            m.count = 0;
-        }
-        m.last = match;
-        m.lastf = f;
-        m.count++; // count up
         return 0;
     });
     if (m.count == 1)       // exact match
@@ -2266,51 +2271,51 @@ bool checkNestedReference(FuncDeclaration fd, Scope* sc, const ref Loc loc)
     ensureStaticLinkTo(fdthis, p);
     if (p != p2)
         ensureStaticLinkTo(fdthis, p2);
-    if (fd.isNested())
+    if (!fd.isNested())
+        return false;
+
+    // The function that this function is in
+    bool checkEnclosing(FuncDeclaration fdv)
     {
-        // The function that this function is in
-        bool checkEnclosing(FuncDeclaration fdv)
+        if (!fdv)
+            return false;
+        if (fdv == fdthis)
+            return false;
+        //printf("this = %s in [%s]\n", this.toChars(), this.loc.toChars());
+        //printf("fdv  = %s in [%s]\n", fdv .toChars(), fdv .loc.toChars());
+        //printf("fdthis = %s in [%s]\n", fdthis.toChars(), fdthis.loc.toChars());
+        // Add this function to the list of those which called us
+        if (fdthis != fd)
         {
-            if (!fdv)
-                return false;
-            if (fdv == fdthis)
-                return false;
-            //printf("this = %s in [%s]\n", this.toChars(), this.loc.toChars());
-            //printf("fdv  = %s in [%s]\n", fdv .toChars(), fdv .loc.toChars());
-            //printf("fdthis = %s in [%s]\n", fdthis.toChars(), fdthis.loc.toChars());
-            // Add this function to the list of those which called us
-            if (fdthis != fd)
+            bool found = false;
+            for (size_t i = 0; i < fd.siblingCallers.length; ++i)
             {
-                bool found = false;
-                for (size_t i = 0; i < fd.siblingCallers.length; ++i)
+                if (fd.siblingCallers[i] == fdthis)
+                    found = true;
+            }
+            if (!found)
+            {
+                //printf("\tadding sibling %s to %s\n", fdthis.toPrettyChars(), toPrettyChars());
+                if (!sc.intypeof && !sc.traitsCompiles)
                 {
-                    if (fd.siblingCallers[i] == fdthis)
-                        found = true;
-                }
-                if (!found)
-                {
-                    //printf("\tadding sibling %s to %s\n", fdthis.toPrettyChars(), toPrettyChars());
-                    if (!sc.intypeof && !sc.traitsCompiles)
-                    {
-                        fd.siblingCallers.push(fdthis);
-                        fd.computedEscapingSiblings = false;
-                    }
+                    fd.siblingCallers.push(fdthis);
+                    fd.computedEscapingSiblings = false;
                 }
             }
-            const lv = fdthis.getLevelAndCheck(loc, sc, fdv, fd);
-            if (lv == fd.LevelError)
-                return true; // error
-            if (lv == -1)
-                return false; // downlevel call
-            if (lv == 0)
-                return false; // same level call
-            return false; // Uplevel call
         }
-        if (checkEnclosing(p.isFuncDeclaration()))
-            return true;
-        if (checkEnclosing(p == p2 ? null : p2.isFuncDeclaration()))
-            return true;
+        const lv = fdthis.getLevelAndCheck(loc, sc, fdv, fd);
+        if (lv == fd.LevelError)
+            return true; // error
+        if (lv == -1)
+            return false; // downlevel call
+        if (lv == 0)
+            return false; // same level call
+        return false; // Uplevel call
     }
+    if (checkEnclosing(p.isFuncDeclaration()))
+        return true;
+    if (checkEnclosing(p == p2 ? null : p2.isFuncDeclaration()))
+        return true;
     return false;
 }
 
@@ -2349,7 +2354,7 @@ void buildResultVar(FuncDeclaration fd, Scope* sc, Type tret)
     if (sc && fd.vresult.semanticRun == PASS.initial)
     {
         TypeFunction tf = fd.type.toTypeFunction();
-        if (tf.isref)
+        if (tf.isRef)
             fd.vresult.storage_class |= STC.ref_;
         fd.vresult.type = tret;
         fd.vresult.dsymbolSemantic(sc);
@@ -2449,33 +2454,31 @@ Statement mergeFrequireInclusivePreview(FuncDeclaration fd, Statement sf, Expres
             sc.pop();
         }
         sf = fdv.mergeFrequireInclusivePreview(sf, params);
-        if (sf && fdv.fdrequire)
-        {
-            const loc = fd.fdrequire.loc;
-            //printf("fdv.frequire: %s\n", fdv.frequire.toChars());
-            /* Make the call:
-             *   try { frequire; }
-             *   catch (Throwable thr) { __require(params); assert(false, "Logic error: " ~ thr.msg); }
-             */
-            Identifier id = Identifier.generateId("thr");
-            params = Expression.arraySyntaxCopy(params);
-            Expression e = new CallExp(loc, new VarExp(loc, fdv.fdrequire, false), params);
-            Statement s2 = new ExpStatement(loc, e);
-            // assert(false, ...)
-            // TODO make this a runtime helper to allow:
-            // - chaining the original expression
-            // - nogc concatenation
-            Expression msg = new StringExp(loc, "Logic error: in-contract was tighter than parent in-contract");
-            Statement fail = new ExpStatement(loc, new AssertExp(loc, IntegerExp.literal!0, msg));
-            Statement s3 = new CompoundStatement(loc, s2, fail);
-            auto c = new Catch(loc, getThrowable(), id, s3);
-            c.internalCatch = true;
-            auto catches = new Catches();
-            catches.push(c);
-            sf = new TryCatchStatement(loc, sf, catches);
-        }
-        else
+        if (!sf || !fdv.fdrequire)
             return null;
+
+        const loc = fd.fdrequire.loc;
+        //printf("fdv.frequire: %s\n", fdv.frequire.toChars());
+        /* Make the call:
+         *   try { frequire; }
+         *   catch (Throwable thr) { __require(params); assert(false, "Logic error: " ~ thr.msg); }
+         */
+        Identifier id = Identifier.generateId("thr");
+        params = Expression.arraySyntaxCopy(params);
+        Expression e = new CallExp(loc, new VarExp(loc, fdv.fdrequire, false), params);
+        Statement s2 = new ExpStatement(loc, e);
+        // assert(false, ...)
+        // TODO make this a runtime helper to allow:
+        // - chaining the original expression
+        // - nogc concatenation
+        Expression msg = new StringExp(loc, "Logic error: in-contract was tighter than parent in-contract");
+        Statement fail = new ExpStatement(loc, new AssertExp(loc, IntegerExp.literal!0, msg));
+        Statement s3 = new CompoundStatement(loc, s2, fail);
+        auto c = new Catch(loc, getThrowable(), id, s3);
+        c.internalCatch = true;
+        auto catches = new Catches();
+        catches.push(c);
+        sf = new TryCatchStatement(loc, sf, catches);
     }
     return sf;
 }
@@ -2570,8 +2573,8 @@ void buildEnsureRequire(FuncDeclaration thisfd)
         auto fo = cast(TypeFunction)(thisfd.originalType ? thisfd.originalType : f);
         auto fparams = toRefCopy(fo.parameterList);
         auto tf = new TypeFunction(ParameterList(fparams), Type.tvoid, LINK.d);
-        tf.isnothrow = f.isnothrow;
-        tf.isnogc = f.isnogc;
+        tf.isNothrow = f.isNothrow;
+        tf.isNogc = f.isNogc;
         tf.purity = f.purity;
         tf.trust = f.trust;
         auto fd = new FuncDeclaration(loc, loc, Id.require, STC.undefined_, tf);
@@ -2611,8 +2614,8 @@ void buildEnsureRequire(FuncDeclaration thisfd)
         auto fo = cast(TypeFunction)(thisfd.originalType ? thisfd.originalType : f);
         fparams.pushSlice((*toRefCopy(fo.parameterList))[]);
         auto tf = new TypeFunction(ParameterList(fparams), Type.tvoid, LINK.d);
-        tf.isnothrow = f.isnothrow;
-        tf.isnogc = f.isnogc;
+        tf.isNothrow = f.isNothrow;
+        tf.isNogc = f.isNogc;
         tf.purity = f.purity;
         tf.trust = f.trust;
         auto fd = new FuncDeclaration(loc, loc, Id.ensure, STC.undefined_, tf);
@@ -2677,40 +2680,40 @@ Statement mergeFensure(FuncDeclaration fd, Statement sf, Identifier oid, Express
             sc.pop();
         }
         sf = fdv.mergeFensure(sf, oid, params);
-        if (fdv.fdensure)
+        if (!fdv.fdensure)
+            continue;
+
+        //printf("fdv.fensure: %s\n", fdv.fensure.toChars());
+        // Make the call: __ensure(result, params)
+        params = Expression.arraySyntaxCopy(params);
+        if (fd.canBuildResultVar())
         {
-            //printf("fdv.fensure: %s\n", fdv.fensure.toChars());
-            // Make the call: __ensure(result, params)
-            params = Expression.arraySyntaxCopy(params);
-            if (fd.canBuildResultVar())
+            Type t1 = fdv.type.nextOf().toBasetype();
+            Type t2 = fd.type.nextOf().toBasetype();
+            if (t1.isBaseOf(t2, null))
             {
-                Type t1 = fdv.type.nextOf().toBasetype();
-                Type t2 = fd.type.nextOf().toBasetype();
-                if (t1.isBaseOf(t2, null))
-                {
-                    /* Making temporary reference variable is necessary
-                     * in covariant return.
-                     * https://issues.dlang.org/show_bug.cgi?id=5204
-                     * https://issues.dlang.org/show_bug.cgi?id=10479
-                     */
-                    Expression* eresult = &(*params)[0];
-                    auto ei = new ExpInitializer(Loc.initial, *eresult);
-                    auto v = new VarDeclaration(Loc.initial, t1, Identifier.generateId("__covres"), ei);
-                    v.storage_class |= STC.temp;
-                    auto de = new DeclarationExp(Loc.initial, v);
-                    auto ve = new VarExp(Loc.initial, v);
-                    *eresult = new CommaExp(Loc.initial, de, ve);
-                }
+                /* Making temporary reference variable is necessary
+                 * in covariant return.
+                 * https://issues.dlang.org/show_bug.cgi?id=5204
+                 * https://issues.dlang.org/show_bug.cgi?id=10479
+                 */
+                Expression* eresult = &(*params)[0];
+                auto ei = new ExpInitializer(Loc.initial, *eresult);
+                auto v = new VarDeclaration(Loc.initial, t1, Identifier.generateId("__covres"), ei);
+                v.storage_class |= STC.temp;
+                auto de = new DeclarationExp(Loc.initial, v);
+                auto ve = new VarExp(Loc.initial, v);
+                *eresult = new CommaExp(Loc.initial, de, ve);
             }
-            Expression e = new CallExp(fd.loc, new VarExp(fd.loc, fdv.fdensure, false), params);
-            Statement s2 = new ExpStatement(fd.loc, e);
-            if (sf)
-            {
-                sf = new CompoundStatement(sf.loc, s2, sf);
-            }
-            else
-                sf = s2;
         }
+        Expression e = new CallExp(fd.loc, new VarExp(fd.loc, fdv.fdensure, false), params);
+        Statement s2 = new ExpStatement(fd.loc, e);
+        if (sf)
+        {
+            sf = new CompoundStatement(sf.loc, s2, sf);
+        }
+        else
+            sf = s2;
     }
     return sf;
 }
@@ -3023,7 +3026,7 @@ extern (D) bool checkNRVO(FuncDeclaration fd)
         return false;
 
     auto tf = fd.type.toTypeFunction();
-    if (tf.isref)
+    if (tf.isRef)
         return false;
 
     foreach (rs; *fd.returns)
@@ -3342,7 +3345,7 @@ extern (D) bool isReturnIsolated(FuncDeclaration fd)
     assert(tf.next);
 
     Type treti = tf.next;
-    if (tf.isref)
+    if (tf.isRef)
         return fd.isTypeIsolatedIndirect(treti);              // check influence from parameters
 
     return fd.isTypeIsolated(treti);

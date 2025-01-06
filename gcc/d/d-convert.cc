@@ -603,8 +603,8 @@ convert_expr (tree exp, Type *etype, Type *totype)
     default:
       /* All casts between imaginary and non-imaginary result in 0.0,
 	 except for casts between complex and imaginary types.  */
-      if (!ebtype->iscomplex () && !tbtype->iscomplex ()
-	  && (ebtype->isimaginary () != tbtype->isimaginary ()))
+      if (!ebtype->isComplex () && !tbtype->isComplex ()
+	  && (ebtype->isImaginary () != tbtype->isImaginary ()))
 	{
 	  warning (OPT_Wcast_result,
 		   "cast from %qs to %qs will produce zero result",
@@ -814,7 +814,7 @@ convert_for_assignment (Expression *expr, Type *totype, bool literalp)
 
   /* D Front end uses IntegerExp(0) to mean zero-init an array or structure.  */
   if ((tbtype->ty == TY::Tsarray || tbtype->ty == TY::Tstruct)
-      && ebtype->isintegral ())
+      && ebtype->isIntegral ())
     {
       tree ret = build_expr (expr, false, literalp);
       gcc_assert (integer_zerop (ret));

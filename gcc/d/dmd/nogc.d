@@ -213,7 +213,7 @@ Expression checkGC(Scope* sc, Expression e)
     if (e && e.op != EXP.error && f && sc.intypeof != 1 &&
            (!sc.ctfe || betterC) &&
            (f.type.ty == Tfunction &&
-            (cast(TypeFunction)f.type).isnogc || f.nogcInprocess || global.params.v.gc) &&
+            (cast(TypeFunction)f.type).isNogc || f.nogcInprocess || global.params.v.gc) &&
            !sc.debug_)
     {
         scope NOGCVisitor gcv = new NOGCVisitor(f);

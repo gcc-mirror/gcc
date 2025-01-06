@@ -84,7 +84,7 @@ Expression expandVar(int result, VarDeclaration v)
     {
         Type tb = v.type.toBasetype();
         if (v.storage_class & STC.manifest ||
-            tb.isscalar() ||
+            tb.isScalar() ||
             ((result & WANTexpand) && (tb.ty != Tsarray && tb.ty != Tstruct)))
         {
             if (v._init)
@@ -1071,7 +1071,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         if (binOptimize(e, result))
             return;
         // All negative integral powers are illegal.
-        if (e.e1.type.isintegral() && (e.e2.op == EXP.int64) && cast(sinteger_t)e.e2.toInteger() < 0)
+        if (e.e1.type.isIntegral() && (e.e2.op == EXP.int64) && cast(sinteger_t)e.e2.toInteger() < 0)
         {
             error(e.loc, "cannot raise `%s` to a negative integer power. Did you mean `(cast(real)%s)^^%s` ?", e.e1.type.toBasetype().toChars(), e.e1.toChars(), e.e2.toChars());
             return errorReturn();
@@ -1080,7 +1080,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         if (e.e2.op == EXP.float64 && e.e2.toReal() == real_t(cast(sinteger_t)e.e2.toReal()))
         {
             // This only applies to floating point, or positive integral powers.
-            if (e.e1.type.isfloating() || cast(sinteger_t)e.e2.toInteger() >= 0)
+            if (e.e1.type.isFloating() || cast(sinteger_t)e.e2.toInteger() >= 0)
                 e.e2 = new IntegerExp(e.loc, e.e2.toInteger(), Type.tint64);
         }
         if (e.e1.isConst() == 1 && e.e2.isConst() == 1)

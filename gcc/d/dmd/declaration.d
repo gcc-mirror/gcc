@@ -1716,7 +1716,7 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
     final ulong getMinMax(Identifier id)
     {
         const width = fieldWidth;
-        const uns = type.isunsigned();
+        const uns = type.isUnsigned();
         const min = id == Id.min;
         ulong v;
         assert(width != 0);  // should have been rejected in semantic pass

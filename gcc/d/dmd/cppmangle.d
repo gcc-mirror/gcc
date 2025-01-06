@@ -234,7 +234,7 @@ private final class CppMangleVisitor : Visitor
         // if so, just pick up the type from the instance
         if (!rt)
             rt = tf.nextOf();
-        if (tf.isref)
+        if (tf.isRef)
             rt = rt.referenceTo();
         auto prev = this.context.push(tf.nextOf());
         scope (exit) this.context.pop(prev);
@@ -441,7 +441,7 @@ private final class CppMangleVisitor : Visitor
         else if (t.ty == Tnull && global.params.cplusplus >= CppStdRevision.cpp11)
             return true;
         else
-            return t.isTypeBasic() && (t.isintegral() || t.isreal());
+            return t.isTypeBasic() && (t.isIntegral() || t.isReal());
     }
 
     /******************************
@@ -484,14 +484,14 @@ private final class CppMangleVisitor : Visitor
         else if (TemplateValueParameter tv = tp.isTemplateValueParameter())
         {
             // <expr-primary> ::= L <type> <value number> E  # integer literal
-            if (tv.valType.isintegral())
+            if (tv.valType.isIntegral())
             {
                 Expression e = isExpression(o);
                 assert(e);
                 buf.writeByte('L');
                 tv.valType.accept(this);
                 auto val = e.toUInteger();
-                if (!tv.valType.isunsigned() && cast(sinteger_t)val < 0)
+                if (!tv.valType.isUnsigned() && cast(sinteger_t)val < 0)
                 {
                     val = -val;
                     buf.writeByte('n');
@@ -1749,7 +1749,7 @@ extern(C++):
          * Ds       char16_t
          * u <source-name>  # vendor extended type
          */
-        if (t.isimaginary() || t.iscomplex())
+        if (t.isImaginary() || t.isComplex())
         {
             // https://issues.dlang.org/show_bug.cgi?id=22806
             // Complex and imaginary types are represented in the same way as
@@ -1760,7 +1760,7 @@ extern(C++):
             append(t);
             CV_qualifiers(t);
 
-            if (t.isimaginary())
+            if (t.isImaginary())
                 buf.writeByte('G'); // 'G' means imaginary
             else
                 buf.writeByte('C'); // 'C' means complex
@@ -1915,7 +1915,7 @@ extern(C++):
         if (t.linkage == LINK.c)
             buf.writeByte('Y');
         Type tn = t.next;
-        if (t.isref)
+        if (t.isRef)
             tn = tn.referenceTo();
         tn.accept(this);
         mangleFunctionParameters(t.parameterList);

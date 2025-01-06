@@ -139,7 +139,7 @@ build_frontend_type (tree type)
 	  dtype = Type::basic[i];
 
 	  /* Search for type matching size and signedness.  */
-	  if (unsignedp != dtype->isunsigned ()
+	  if (unsignedp != dtype->isUnsigned ()
 	      || size != dmd::size (dtype))
 	    continue;
 
@@ -572,8 +572,8 @@ d_build_builtins_module (Module *m)
       tf->trust = !DECL_ASSEMBLER_NAME_SET_P (decl) ? TRUST::safe
 	: TREE_NOTHROW (decl) ? TRUST::trusted
 	: TRUST::system;
-      tf->isnothrow (true);
-      tf->isnogc (true);
+      tf->isNothrow (true);
+      tf->isNogc (true);
 
       FuncDeclaration *func
 	= FuncDeclaration::create (Loc (), Loc (),
@@ -715,7 +715,7 @@ matches_builtin_type (Type *t1, Type *t2)
       && dmd::implicitConvTo (tb1, tb2) != MATCH::nomatch)
     return true;
 
-  if (tb1->isintegral () == tb2->isintegral ()
+  if (tb1->isIntegral () == tb2->isIntegral ()
       && dmd::size (tb1) == dmd::size (tb2))
     return true;
 
@@ -739,7 +739,7 @@ covariant_with_builtin_type_p (Type *t1, Type *t2)
 
   /* Check for obvious reasons why types may be distinct.  */
   if (tf1 == NULL || tf2 == NULL
-      || tf1->isref () != tf2->isref ()
+      || tf1->isRef () != tf2->isRef ()
       || tf1->parameterList.varargs != tf2->parameterList.varargs
       || tf1->parameterList.length () != tf2->parameterList.length ())
     return false;

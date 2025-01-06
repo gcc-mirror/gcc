@@ -641,38 +641,38 @@ extern (C++) abstract class Type : ASTNode
         return buf.extractChars();
     }
 
-    bool isintegral()
+    bool isIntegral()
     {
         return false;
     }
 
     // real, imaginary, or complex
-    bool isfloating()
+    bool isFloating()
     {
         return false;
     }
 
-    bool isreal()
+    bool isReal()
     {
         return false;
     }
 
-    bool isimaginary()
+    bool isImaginary()
     {
         return false;
     }
 
-    bool iscomplex()
+    bool isComplex()
     {
         return false;
     }
 
-    bool isscalar()
+    bool isScalar()
     {
         return false;
     }
 
-    bool isunsigned()
+    bool isUnsigned()
     {
         return false;
     }
@@ -705,7 +705,7 @@ extern (C++) abstract class Type : ASTNode
      */
     bool isBoolean()
     {
-        return isscalar();
+        return isScalar();
     }
 
     final bool isConst() const nothrow pure @nogc @safe
@@ -2031,38 +2031,38 @@ extern (C++) final class TypeBasic : Type
         return target.alignsize(this);
     }
 
-    override bool isintegral()
+    override bool isIntegral()
     {
-        //printf("TypeBasic::isintegral('%s') x%x\n", toChars(), flags);
+        //printf("TypeBasic::isIntegral('%s') x%x\n", toChars(), flags);
         return (flags & TFlags.integral) != 0;
     }
 
-    override bool isfloating()
+    override bool isFloating()
     {
         return (flags & TFlags.floating) != 0;
     }
 
-    override bool isreal()
+    override bool isReal()
     {
         return (flags & TFlags.real_) != 0;
     }
 
-    override bool isimaginary()
+    override bool isImaginary()
     {
         return (flags & TFlags.imaginary) != 0;
     }
 
-    override bool iscomplex()
+    override bool isComplex()
     {
         return (flags & TFlags.complex) != 0;
     }
 
-    override bool isscalar()
+    override bool isScalar()
     {
         return (flags & (TFlags.integral | TFlags.floating)) != 0;
     }
 
-    override bool isunsigned()
+    override bool isUnsigned()
     {
         return (flags & TFlags.unsigned) != 0;
     }
@@ -2120,25 +2120,25 @@ extern (C++) final class TypeVector : Type
         return cast(uint)basetype.size();
     }
 
-    override bool isintegral()
+    override bool isIntegral()
     {
-        //printf("TypeVector::isintegral('%s') x%x\n", toChars(), flags);
-        return basetype.nextOf().isintegral();
+        //printf("TypeVector::isIntegral('%s') x%x\n", toChars(), flags);
+        return basetype.nextOf().isIntegral();
     }
 
-    override bool isfloating()
+    override bool isFloating()
     {
-        return basetype.nextOf().isfloating();
+        return basetype.nextOf().isFloating();
     }
 
-    override bool isscalar()
+    override bool isScalar()
     {
-        return basetype.nextOf().isscalar();
+        return basetype.nextOf().isScalar();
     }
 
-    override bool isunsigned()
+    override bool isUnsigned()
     {
-        return basetype.nextOf().isunsigned();
+        return basetype.nextOf().isUnsigned();
     }
 
     override bool isBoolean()
@@ -2432,7 +2432,7 @@ extern (C++) final class TypePointer : TypeNext
         return result;
     }
 
-    override bool isscalar()
+    override bool isScalar()
     {
         return true;
     }
@@ -2502,20 +2502,20 @@ extern (C++) final class TypeFunction : TypeNext
     // getters and setters are generated for them
     private extern (D) static struct BitFields
     {
-        bool isnothrow;        /// nothrow
-        bool isnogc;           /// is @nogc
-        bool isproperty;       /// can be called without parentheses
-        bool isref;            /// returns a reference
-        bool isreturn;         /// 'this' is returned by ref
+        bool isNothrow;        /// nothrow
+        bool isNogc;           /// is @nogc
+        bool isProperty;       /// can be called without parentheses
+        bool isRef;            /// returns a reference
+        bool isReturn;         /// 'this' is returned by ref
         bool isScopeQual;      /// 'this' is scope
-        bool isreturninferred; /// 'this' is return from inference
-        bool isscopeinferred;  /// 'this' is scope from inference
-        bool islive;           /// is @live
+        bool isReturnInferred; /// 'this' is return from inference
+        bool isScopeInferred;  /// 'this' is scope from inference
+        bool isLive;           /// is @live
         bool incomplete;       /// return type or default arguments removed
         bool isInOutParam;     /// inout on the parameters
         bool isInOutQual;      /// inout on the qualifier
-        bool isctor;           /// the function is a constructor
-        bool isreturnscope;    /// `this` is returned by value
+        bool isCtor;           /// the function is a constructor
+        bool isReturnScope;    /// `this` is returned by value
     }
 
     import dmd.common.bitfields : generateBitFields;
@@ -2539,26 +2539,26 @@ extern (C++) final class TypeFunction : TypeNext
         if (stc & STC.pure_)
             this.purity = PURE.fwdref;
         if (stc & STC.nothrow_)
-            this.isnothrow = true;
+            this.isNothrow = true;
         if (stc & STC.nogc)
-            this.isnogc = true;
+            this.isNogc = true;
         if (stc & STC.property)
-            this.isproperty = true;
+            this.isProperty = true;
         if (stc & STC.live)
-            this.islive = true;
+            this.isLive = true;
 
         if (stc & STC.ref_)
-            this.isref = true;
+            this.isRef = true;
         if (stc & STC.return_)
-            this.isreturn = true;
+            this.isReturn = true;
         if (stc & STC.returnScope)
-            this.isreturnscope = true;
+            this.isReturnScope = true;
         if (stc & STC.returninferred)
-            this.isreturninferred = true;
+            this.isReturnInferred = true;
         if (stc & STC.scope_)
             this.isScopeQual = true;
         if (stc & STC.scopeinferred)
-            this.isscopeinferred = true;
+            this.isScopeInferred = true;
 
         this.trust = TRUST.default_;
         if (stc & STC.safe)
@@ -2584,22 +2584,22 @@ extern (C++) final class TypeFunction : TypeNext
         Type treturn = next ? next.syntaxCopy() : null;
         auto t = new TypeFunction(parameterList.syntaxCopy(), treturn, linkage);
         t.mod = mod;
-        t.isnothrow = isnothrow;
-        t.isnogc = isnogc;
-        t.islive = islive;
+        t.isNothrow = isNothrow;
+        t.isNogc = isNogc;
+        t.isLive = isLive;
         t.purity = purity;
-        t.isproperty = isproperty;
-        t.isref = isref;
-        t.isreturn = isreturn;
-        t.isreturnscope = isreturnscope;
+        t.isProperty = isProperty;
+        t.isRef = isRef;
+        t.isReturn = isReturn;
+        t.isReturnScope = isReturnScope;
         t.isScopeQual = isScopeQual;
-        t.isreturninferred = isreturninferred;
-        t.isscopeinferred = isscopeinferred;
+        t.isReturnInferred = isReturnInferred;
+        t.isScopeInferred = isScopeInferred;
         t.isInOutParam = isInOutParam;
         t.isInOutQual = isInOutQual;
         t.trust = trust;
         t.inferenceArguments = inferenceArguments;
-        t.isctor = isctor;
+        t.isCtor = isCtor;
         return t;
     }
 
@@ -2737,7 +2737,7 @@ extern (C++) final class TypeFunction : TypeNext
             error(loc, "functions cannot return a sequence (use `std.typecons.Tuple`)");
             next = Type.terror;
         }
-        if (!isref && (tb.ty == Tstruct || tb.ty == Tsarray))
+        if (!isRef && (tb.ty == Tstruct || tb.ty == Tsarray))
         {
             if (auto ts = tb.baseElemOf().isTypeStruct())
             {
@@ -2774,9 +2774,9 @@ extern (C++) final class TypeFunction : TypeNext
         return (this.trust == other.trust ||
                 (trustSystemEqualsDefault && this.trust <= TRUST.system && other.trust <= TRUST.system)) &&
                 this.purity == other.purity &&
-                this.isnothrow == other.isnothrow &&
-                this.isnogc == other.isnogc &&
-                this.islive == other.islive;
+                this.isNothrow == other.isNothrow &&
+                this.isNogc == other.isNogc &&
+                this.isLive == other.isLive;
     }
 
     override void accept(Visitor v)
@@ -3388,39 +3388,39 @@ extern (C++) final class TypeEnum : Type
         return t.alignsize();
     }
 
-    override bool isintegral()
+    override bool isIntegral()
     {
-        return memType().isintegral();
+        return memType().isIntegral();
     }
 
-    override bool isfloating()
+    override bool isFloating()
     {
-        return memType().isfloating();
+        return memType().isFloating();
     }
 
-    override bool isreal()
+    override bool isReal()
     {
-        return memType().isreal();
+        return memType().isReal();
     }
 
-    override bool isimaginary()
+    override bool isImaginary()
     {
-        return memType().isimaginary();
+        return memType().isImaginary();
     }
 
-    override bool iscomplex()
+    override bool isComplex()
     {
-        return memType().iscomplex();
+        return memType().isComplex();
     }
 
-    override bool isscalar()
+    override bool isScalar()
     {
-        return memType().isscalar();
+        return memType().isScalar();
     }
 
-    override bool isunsigned()
+    override bool isUnsigned()
     {
-        return memType().isunsigned();
+        return memType().isUnsigned();
     }
 
     override bool isBoolean()
@@ -4333,19 +4333,19 @@ void attributesApply(const TypeFunction tf, void delegate(string) dg, TRUSTforma
 {
     if (tf.purity)
         dg("pure");
-    if (tf.isnothrow)
+    if (tf.isNothrow)
         dg("nothrow");
-    if (tf.isnogc)
+    if (tf.isNogc)
         dg("@nogc");
-    if (tf.isproperty)
+    if (tf.isProperty)
         dg("@property");
-    if (tf.isref)
+    if (tf.isRef)
         dg("ref");
-    if (tf.isreturn && !tf.isreturninferred)
+    if (tf.isReturn && !tf.isReturnInferred)
         dg("return");
-    if (tf.isScopeQual && !tf.isscopeinferred)
+    if (tf.isScopeQual && !tf.isScopeInferred)
         dg("scope");
-    if (tf.islive)
+    if (tf.isLive)
         dg("@live");
 
     TRUST trustAttrib = tf.trust;

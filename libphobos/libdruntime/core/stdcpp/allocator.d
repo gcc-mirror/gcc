@@ -299,9 +299,10 @@ version (CppRuntime_Microsoft)
     {
         enum size_t _Big_allocation_threshold = 4096;
         enum size_t _Big_allocation_alignment = 32;
+        enum isPowerOf2(size_t v) = v && !(v & (v - 1));
 
         static assert(2 * (void*).sizeof <= _Big_allocation_alignment, "Big allocation alignment should at least match vector register alignment");
-        static assert((v => v != 0 && (v & (v - 1)) == 0)(_Big_allocation_alignment), "Big allocation alignment must be a power of two");
+        static assert(isPowerOf2!_Big_allocation_alignment, "Big allocation alignment must be a power of two");
         static assert(size_t.sizeof == (void*).sizeof, "uintptr_t is not the same size as size_t");
 
         // NOTE: this must track `_DEBUG` macro used in C++...

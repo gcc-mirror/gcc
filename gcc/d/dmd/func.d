@@ -164,15 +164,12 @@ extern (C++) struct Ensure
      */
     static Ensures* arraySyntaxCopy(Ensures* a)
     {
-        Ensures* b = null;
-        if (a)
-        {
-            b = a.copy();
-            foreach (i, e; *a)
-            {
-                (*b)[i] = e.syntaxCopy();
-            }
-        }
+        if (!a)
+            return null;
+
+        Ensures* b = a.copy();
+        foreach (i, e; *a)
+            (*b)[i] = e.syntaxCopy();
         return b;
     }
 
@@ -386,40 +383,38 @@ extern (C++) class FuncDeclaration : Declaration
         if (this == o)
             return true;
 
-        if (auto s = isDsymbol(o))
-        {
-            auto fd1 = this;
-            auto fd2 = s.isFuncDeclaration();
-            if (!fd2)
-                return false;
+        auto s = isDsymbol(o);
+        if (!s)
+            return false;
 
-            auto fa1 = fd1.isFuncAliasDeclaration();
-            auto faf1 = fa1 ? fa1.toAliasFunc() : fd1;
+        auto fd1 = this;
+        auto fd2 = s.isFuncDeclaration();
+        if (!fd2)
+            return false;
 
-            auto fa2 = fd2.isFuncAliasDeclaration();
-            auto faf2 = fa2 ? fa2.toAliasFunc() : fd2;
+        auto fa1 = fd1.isFuncAliasDeclaration();
+        auto faf1 = fa1 ? fa1.toAliasFunc() : fd1;
 
-            if (fa1 && fa2)
-            {
-                return faf1.equals(faf2) && fa1.hasOverloads == fa2.hasOverloads;
-            }
+        auto fa2 = fd2.isFuncAliasDeclaration();
+        auto faf2 = fa2 ? fa2.toAliasFunc() : fd2;
 
-            bool b1 = fa1 !is null;
-            if (b1 && faf1.isUnique() && !fa1.hasOverloads)
-                b1 = false;
+        if (fa1 && fa2)
+            return faf1.equals(faf2) && fa1.hasOverloads == fa2.hasOverloads;
 
-            bool b2 = fa2 !is null;
-            if (b2 && faf2.isUnique() && !fa2.hasOverloads)
-                b2 = false;
+        bool b1 = fa1 !is null;
+        if (b1 && faf1.isUnique() && !fa1.hasOverloads)
+            b1 = false;
 
-            if (b1 != b2)
-                return false;
+        bool b2 = fa2 !is null;
+        if (b2 && faf2.isUnique() && !fa2.hasOverloads)
+            b2 = false;
 
-            return faf1.toParent().equals(faf2.toParent()) &&
-                   faf1.ident.equals(faf2.ident) &&
-                   faf1.type.equals(faf2.type);
-        }
-        return false;
+        if (b1 != b2)
+            return false;
+
+        return faf1.toParent().equals(faf2.toParent()) &&
+               faf1.ident.equals(faf2.ident) &&
+               faf1.type.equals(faf2.type);
     }
 
     /****************************************************
@@ -715,10 +710,10 @@ extern (C++) class FuncDeclaration : Declaration
         if (tf.trust == TRUST.default_)
             safetyInprocess = true;
 
-        if (!tf.isnothrow)
+        if (!tf.isNothrow)
             nothrowInprocess = true;
 
-        if (!tf.isnogc)
+        if (!tf.isNogc)
             nogcInprocess = true;
 
         // Initialize for inferring STC.scope_
@@ -808,7 +803,7 @@ extern (C++) class FuncDeclaration : Declaration
         //printf("isNogc() %s, inprocess: %d\n", toChars(), !!(flags & FUNCFLAG.nogcInprocess));
         if (nogcInprocess)
             setGC(loc, null);
-        return type.toTypeFunction().isnogc;
+        return type.toTypeFunction().isNogc;
     }
 
     extern (D) final bool isNogcBypassingInference()
@@ -845,7 +840,7 @@ extern (C++) class FuncDeclaration : Declaration
             else if (arg0)
                 nogcViolation = new AttributeViolation(loc, fmt, arg0); // call to non-@nogc function
 
-            type.toTypeFunction().isnogc = false;
+            type.toTypeFunction().isNogc = false;
             if (fes)
                 fes.func.setGC(Loc.init, null, null);
         }
@@ -2295,33 +2290,33 @@ void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool deprec
         attr = "@nogc";
     }
 
-    if (s)
+    if (!s)
+        return;
+
+    if (s.fmtStr)
     {
-        if (s.fmtStr)
+        errorFunc(s.loc, deprecation ?
+            "which wouldn't be `%s` because of:" :
+            "which wasn't inferred `%s` because of:", attr);
+        if (stc == STC.nogc || stc == STC.pure_)
         {
-            errorFunc(s.loc, deprecation ?
-                "which wouldn't be `%s` because of:" :
-                "which wasn't inferred `%s` because of:", attr);
-            if (stc == STC.nogc || stc == STC.pure_)
-            {
-                auto f = (cast(Dsymbol) s.arg0).isFuncDeclaration();
-                errorFunc(s.loc, s.fmtStr, f.kind(), f.toPrettyChars(), s.arg1 ? s.arg1.toChars() : "");
-            }
-            else
-            {
-                errorFunc(s.loc, s.fmtStr,
-                    s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
-            }
+            auto f = (cast(Dsymbol) s.arg0).isFuncDeclaration();
+            errorFunc(s.loc, s.fmtStr, f.kind(), f.toPrettyChars(), s.arg1 ? s.arg1.toChars() : "");
         }
-        else if (auto sa = s.arg0.isDsymbol())
+        else
         {
-            if (FuncDeclaration fd2 = sa.isFuncDeclaration())
+            errorFunc(s.loc, s.fmtStr,
+                s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
+        }
+    }
+    else if (auto sa = s.arg0.isDsymbol())
+    {
+        if (FuncDeclaration fd2 = sa.isFuncDeclaration())
+        {
+            if (maxDepth > 0)
             {
-                if (maxDepth > 0)
-                {
-                    errorFunc(s.loc, "which calls `%s`", fd2.toPrettyChars());
-                    errorSupplementalInferredAttr(fd2, maxDepth - 1, deprecation, stc);
-                }
+                errorFunc(s.loc, "which calls `%s`", fd2.toPrettyChars());
+                errorSupplementalInferredAttr(fd2, maxDepth - 1, deprecation, stc);
             }
         }
     }

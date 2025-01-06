@@ -179,7 +179,7 @@ bool checkMutableArguments(ref Scope sc, FuncDeclaration fd, TypeFunction tf,
         if (!(eb.isMutable || eb2.isMutable))
             return;
 
-        if (!tf.islive && !(sc.useDIP1000 == FeatureState.enabled && sc.func && sc.func.setUnsafe()))
+        if (!tf.isLive && !(sc.useDIP1000 == FeatureState.enabled && sc.func && sc.func.setUnsafe()))
             return;
 
         if (!gag)
@@ -567,7 +567,7 @@ public
 ReturnParamDest returnParamDest(TypeFunction tf, Type tthis)
 {
     assert(tf);
-    if (tf.isctor)
+    if (tf.isCtor)
         return ReturnParamDest.this_;
 
     if (!tf.nextOf() || (tf.nextOf().ty != Tvoid))
@@ -612,17 +612,6 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
     if (!e1.type.hasPointers())
         return false;
 
-    if (e1.isSliceExp())
-    {
-        if (VarDeclaration va = expToVariable(e1))
-        {
-            if (!va.type.toBasetype().isTypeSArray() || // treat static array slice same as a variable
-                !va.type.hasPointers())
-                return false;
-        }
-        else
-            return false;
-    }
 
     /* The struct literal case can arise from the S(e2) constructor call:
      *    return S(e2);
@@ -633,7 +622,24 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
     if (e1.isStructLiteralExp())
         return false;
 
-    VarDeclaration va = expToVariable(e1);
+    int deref;
+    VarDeclaration va = expToVariable(e1, deref);
+    // transitive scope not implemented, so can't assign scope pointers to a dereferenced variable
+    if (deref > 0)
+        va = null;
+
+    if (e1.isSliceExp())
+    {
+        // slice-copy is not assigning a pointer, but copying array content
+        if (va)
+        {
+            if (!va.type.toBasetype().isTypeSArray() || // treat static array slice same as a variable
+                !va.type.hasPointers())
+                return false;
+        }
+        else
+            return false;
+    }
 
     if (va && e.op == EXP.concatenateElemAssign)
     {
@@ -643,18 +649,6 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
          * and:
          *   va ~= e;
          * since we are not assigning to va, but are assigning indirectly through va.
-         */
-        va = null;
-    }
-
-    if (va && e1.isDotVarExp() && va.type.toBasetype().isTypeClass())
-    {
-        /* https://issues.dlang.org/show_bug.cgi?id=17949
-         * Draw an equivalence between:
-         *   *q = p;
-         * and:
-         *   va.field = e2;
-         * since we are not assigning to va, but are assigning indirectly through class reference va.
          */
         va = null;
     }
@@ -734,8 +728,6 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
                         msg = "scope variable `%s` assigned to return scope `%s`";
                         break;
                     case EnclosedBy.longerScope:
-                        if (v.storage_class & STC.temp)
-                            return;
                         msg = "scope variable `%s` assigned to `%s` with longer lifetime";
                         break;
                     case EnclosedBy.refVar:
@@ -1052,7 +1044,7 @@ bool checkNewEscape(ref Scope sc, Expression e, bool gag)
             return;
         if (auto tf = func.type.isTypeFunction())
         {
-            if (!tf.isref)
+            if (!tf.isRef)
                 return;
 
             const(char)* msg = "storing reference to outer local variable `%s` into allocated memory causes it to escape";
@@ -1339,7 +1331,7 @@ private bool checkReturnEscapeImpl(ref Scope sc, Expression e, bool refs, bool g
                 if (fd && fd.type && fd.type.ty == Tfunction)
                 {
                     TypeFunction tf = fd.type.isTypeFunction();
-                    if (tf.isref)
+                    if (tf.isRef)
                     {
                         const(char)* msg = "escaping reference to outer local variable `%s`";
                         if (!gag)
@@ -1443,9 +1435,9 @@ private bool inferReturn(FuncDeclaration fd, VarDeclaration v, bool returnScope)
         if (auto tf = fd.type.isTypeFunction())
         {
             //printf("'this' too %p %s\n", tf, sc.func.toChars());
-            tf.isreturnscope = returnScope;
-            tf.isreturn = true;
-            tf.isreturninferred = true;
+            tf.isReturnScope = returnScope;
+            tf.isReturn = true;
+            tf.isReturnInferred = true;
         }
     }
     else
@@ -1729,7 +1721,7 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
         if (!tf)
             return;
 
-        if (deref < 0 && !tf.isref)
+        if (deref < 0 && !tf.isRef)
         {
             er.byExp(e, er.inRetRefTransition > 0);
             return;
@@ -1764,12 +1756,12 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
                     const stc = tf.parameterStorageClass(null, p);
                     ScopeRef psr = buildScopeRef(stc);
 
-                    // For struct constructors, `tf.isref` is true, but for escape analysis,
+                    // For struct constructors, `tf.isRef` is true, but for escape analysis,
                     // it's as if they return `void` and escape through the first (`this`) parameter:
                     // void assign(ref S this, return scope constructorArgs...)
                     // If you then return the constructed result by value, it doesn't count
                     // as dereferencing the scope arguments, they're still escaped.
-                    const isRef = tf.isref && !(tf.isctor && paramDeref(psr) == 0);
+                    const isRef = tf.isRef && !(tf.isCtor && paramDeref(psr) == 0);
                     const maybeInaccurate = deref == 0 && paramDeref(psr) == 0;
                     er.inRetRefTransition += maybeInaccurate;
                     if (paramDeref(psr) <= 0)
@@ -1799,15 +1791,15 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
             const psr = buildScopeRef(getThisStorageClass(fd));
             er.inRetRefTransition += (psr == ScopeRef.ReturnRef_Scope);
             if (paramDeref(psr) <= 0)
-                escapeExp(dve.e1, er, deref + paramDeref(psr) + (tf.isref && !tf.isctor));
+                escapeExp(dve.e1, er, deref + paramDeref(psr) + (tf.isRef && !tf.isCtor));
             er.inRetRefTransition -= (psr == ScopeRef.ReturnRef_Scope);
         }
 
         // The return value of a delegate call with return (scope) may point to a closure variable,
         // so escape the delegate in case it's `scope` / stack allocated.
-        if (t1.isTypeDelegate() && tf.isreturn)
+        if (t1.isTypeDelegate() && tf.isReturn)
         {
-            escapeExp(e.e1, er, deref + tf.isref);
+            escapeExp(e.e1, er, deref + tf.isRef);
         }
 
         // If `fd` is a nested function that's return ref / return scope, check that
@@ -1816,7 +1808,7 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
         {
             if (FuncDeclaration fd = ve.var.isFuncDeclaration())
             {
-                if (fd.isNested() && tf.isreturn)
+                if (fd.isNested() && tf.isReturn)
                 {
                     er.byFunc(fd, true);
                 }
@@ -1873,9 +1865,9 @@ StorageClass getThisStorageClass(FuncDeclaration fd)
 {
     StorageClass stc;
     auto tf = fd.type.toBasetype().isTypeFunction();
-    if (tf.isreturn)
+    if (tf.isReturn)
         stc |= STC.return_;
-    if (tf.isreturnscope)
+    if (tf.isReturnScope)
         stc |= STC.returnScope | STC.scope_;
     auto ad = fd.isThis();
     if ((ad && ad.isClassDeclaration()) || tf.isScopeQual)
@@ -2037,10 +2029,10 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
     {
         if (funcdecl.type == f)
             f = cast(TypeFunction)f.copy();
-        f.isreturn = true;
-        f.isreturnscope = cast(bool) (funcdecl.storage_class & STC.returnScope);
+        f.isReturn = true;
+        f.isReturnScope = cast(bool) (funcdecl.storage_class & STC.returnScope);
         if (funcdecl.storage_class & STC.returninferred)
-            f.isreturninferred = true;
+            f.isReturnInferred = true;
     }
 
 
@@ -2063,7 +2055,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
     {
         inferScope(funcdecl.vthis);
         f.isScopeQual = funcdecl.vthis.isScope();
-        f.isscopeinferred = !!(funcdecl.vthis.storage_class & STC.scopeinferred);
+        f.isScopeInferred = !!(funcdecl.vthis.storage_class & STC.scopeinferred);
     }
 }
 
@@ -2218,9 +2210,6 @@ bool setUnsafeDIP1000(ref Scope sc, bool gag, Loc loc, const(char)* msg,
  */
 private bool checkScopeVarAddr(VarDeclaration v, Expression e, ref Scope sc, bool gag)
 {
-    if (v.storage_class & STC.temp)
-        return false;
-
     if (!v.isScope())
     {
         doNotInferScope(v, e);

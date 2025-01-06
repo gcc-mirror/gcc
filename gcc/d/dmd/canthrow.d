@@ -72,7 +72,7 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
         void checkFuncThrows(Expression e, FuncDeclaration f)
         {
             auto tf = f.type.toBasetype().isTypeFunction();
-            if (tf && !tf.isnothrow)
+            if (tf && !tf.isNothrow)
             {
                 if (eSink)
                 {
@@ -81,7 +81,7 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
                         errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
 
                     import dmd.expressionsem : checkOverriddenDtor;
-                    f.checkOverriddenDtor(null, e.loc, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
+                    f.checkOverriddenDtor(null, e.loc, dd => dd.type.toTypeFunction().isNothrow, "not nothrow");
                 }
                 else if (func)
                 {
@@ -133,7 +133,7 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
             if (ce.f && ce.f == func)
                 return;
             const tf = ce.calledFunctionType();
-            if (tf && tf.isnothrow)
+            if (tf && tf.isNothrow)
                 return;
 
             if (ce.f)

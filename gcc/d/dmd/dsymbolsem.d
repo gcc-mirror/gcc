@@ -133,7 +133,7 @@ AlignDeclaration getAlignment(AlignDeclaration ad, Scope* sc)
             if (sc.inCfile && n == 0)       // C11 6.7.5-6 allows 0 for alignment
                 continue;
 
-            if (n < 1 || n & (n - 1) || ushort.max < n || !e.type.isintegral())
+            if (n < 1 || n & (n - 1) || ushort.max < n || !e.type.isIntegral())
             {
                 error(ad.loc, "alignment must be an integer positive power of 2, not 0x%llx", cast(ulong)n);
                 errors = true;
@@ -615,6 +615,15 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (ad)
             dsym.storage_class |= ad.storage_class & STC.TYPECTOR;
 
+        if ((dsym.storage_class & STC.auto_) && (dsym.storage_class & STC.ref_))
+        {
+            if (!(dsym.storage_class & STC.autoref))
+            {
+                .error(dsym.loc, "%s `%s` - `auto ref` variable must have `auto` and `ref` adjacent", dsym.kind, dsym.toChars());
+                dsym.storage_class |= STC.autoref;
+            }
+        }
+
         /* If auto type inference, do the inference
          */
         int inferred = 0;
@@ -732,7 +741,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 dsym.type = Type.terror;
             }
         }
-        if ((dsym.storage_class & STC.auto_) && !inferred)
+        if ((dsym.storage_class & STC.auto_) && !inferred && !(dsym.storage_class & STC.autoref))
             .error(dsym.loc, "%s `%s` - storage class `auto` has no effect if type is not inferred, did you mean `scope`?", dsym.kind, dsym.toPrettyChars);
 
         if (auto tt = tb.isTypeTuple())
@@ -1069,7 +1078,19 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (dsymIsRef)
         {
             if (!dsym._init && dsym.ident != Id.This)
-                .error(dsym.loc, "%s `%s` - initializer is required for `ref` variable", dsym.kind, dsym.toPrettyChars);
+            {
+                if (dsym.storage_class & STC.autoref)
+                {
+                    dsymIsRef = false;
+                    dsym.storage_class &= ~STC.ref_;
+                }
+                else
+                    .error(dsym.loc, "%s `%s` - initializer is required for `ref` variable", dsym.kind, dsym.toPrettyChars);
+            }
+            else if (dsym._init.isVoidInitializer())
+            {
+                .error(dsym.loc, "%s `%s` - void initializer not allowed for `ref` variable", dsym.kind, dsym.toPrettyChars);
+            }
         }
 
         FuncDeclaration fd = parent.isFuncDeclaration();
@@ -1303,31 +1324,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
                     Expression exp = ei.exp;
                     Expression e1 = new VarExp(dsym.loc, dsym);
-                    if (dsymIsRef) // follow logic similar to typesem.argumentMatchParameter() and statementsem.visitForeach()
-                    {
-                        dsym.storage_class |= STC.nodtor;
-                        exp = exp.expressionSemantic(sc);
-                        Type tp = dsym.type;
-                        Type ta = exp.type;
-                        if (!exp.isLvalue())
-                        {
-                            .error(dsym.loc, "rvalue `%s` cannot be assigned to `ref %s`", exp.toChars(), dsym.toChars());
-                            exp = ErrorExp.get();
-                        }
-                        else if (!ta.constConv(tp))
-                        {
-                            .error(dsym.loc, "type `%s` cannot be assigned to `ref %s %s`", ta.toChars(), tp.toChars(), dsym.toChars());
-                            exp = ErrorExp.get();
-                        }
-                        else
-                        {
-                            exp = new ConstructExp(dsym.loc, e1, exp);
-                            dsym.canassign++;
-                            exp = exp.expressionSemantic(sc);
-                            dsym.canassign--;
-                        }
-                    }
-                    else
+
+                    void constructInit(bool isBlit)
                     {
                         if (isBlit)
                             exp = new BlitExp(dsym.loc, e1, exp);
@@ -1336,6 +1334,48 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         dsym.canassign++;
                         exp = exp.expressionSemantic(sc);
                         dsym.canassign--;
+                    }
+
+                    if (dsymIsRef) // follow logic similar to typesem.argumentMatchParameter() and statementsem.visitForeach()
+                    {
+                        dsym.storage_class |= STC.nodtor;
+                        exp = exp.expressionSemantic(sc);
+                        Type tp = dsym.type;
+                        Type ta = exp.type;
+                        if (!exp.isLvalue())
+                        {
+                            if (dsym.storage_class & STC.autoref)
+                            {
+                                dsym.storage_class &= ~STC.ref_;
+                                constructInit(isBlit);
+                            }
+                            else
+                            {
+                                .error(dsym.loc, "rvalue `%s` cannot be assigned to `ref %s`", exp.toChars(), dsym.toChars());
+                                exp = ErrorExp.get();
+                            }
+                        }
+                        else if (!ta.constConv(tp))
+                        {
+                            if (dsym.storage_class & STC.autoref)
+                            {
+                                dsym.storage_class &= ~STC.ref_;
+                                constructInit(false);
+                            }
+                            else
+                            {
+                                .error(dsym.loc, "type `%s` cannot be assigned to `ref %s %s`", ta.toChars(), tp.toChars(), dsym.toChars());
+                                exp = ErrorExp.get();
+                            }
+                        }
+                        else
+                        {
+                            constructInit(false);
+                        }
+                    }
+                    else
+                    {
+                        constructInit(isBlit);
                     }
 
                     if (exp.op == EXP.error)
@@ -1530,7 +1570,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         auto width = dsym.width.expressionSemantic(sc);
         sc = sc.endCTFE();
         width = width.ctfeInterpret();
-        if (!dsym.type.isintegral())
+        if (!dsym.type.isIntegral())
         {
             // C11 6.7.2.1-5
             error(width.loc, "bit-field type `%s` is not an integer type", dsym.type.toChars());
@@ -5318,9 +5358,11 @@ void aliasSemantic(AliasDeclaration ds, Scope* sc)
                 mt.ident != Id.This && mt.ident != Id._super)
             {
                 s = tident.toDsymbol(sc);
-                if (s && s.isVarDeclaration()) {
-                    error(mt.loc, "cannot alias member of variable `%s`", mt.ident.toChars());
-                    errorSupplemental(mt.loc, "Use `typeof(%s)` instead to preserve behaviour",
+                // don't error for `var1.static_symbol`
+                if (s && s.needThis()) {
+                    error(ds.loc, "cannot alias %s member `%s` of variable `%s`",
+                        s.kind(), s.toChars(), mt.ident.toChars());
+                    errorSupplemental(ds.loc, "Use `typeof(%s)` instead to preserve behaviour",
                         mt.ident.toChars());
                 }
             }

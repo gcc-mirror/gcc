@@ -140,13 +140,8 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
                             else if (func.getModule().filetype != FileType.c)
                             {
                                 const(char)* gototype = s.isCaseStatement() ? "case" : "default";
-                                // @@@DEPRECATED_2.110@@@ https://issues.dlang.org/show_bug.cgi?id=22999
-                                // Deprecated in 2.100
-                                // Make an error in 2.110
-                                if (sl && sl.isCaseStatement())
-                                    global.errorSink.deprecation(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
-                                else
-                                    global.errorSink.error(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
+                                // https://issues.dlang.org/show_bug.cgi?id=22999
+                                global.errorSink.error(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
                             }
                         }
                     }

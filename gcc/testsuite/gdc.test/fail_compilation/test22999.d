@@ -1,9 +1,8 @@
 /*
-REQUIRED_ARGS: -de
 TEST_OUTPUT:
 ---
-fail_compilation/test22999.d(18): Deprecation: switch case fallthrough - use 'goto default;' if intended
-fail_compilation/test22999.d(25): Deprecation: switch case fallthrough - use 'goto case;' if intended
+fail_compilation/test22999.d(17): Error: switch case fallthrough - use 'goto default;' if intended
+fail_compilation/test22999.d(24): Error: switch case fallthrough - use 'goto case;' if intended
 ---
 */
 

@@ -100,7 +100,7 @@ struct ObjcSelector
         const id = fdecl.ident.toString();
         const nparams = ftype.parameterList.length;
         // Special case: property setter
-        if (ftype.isproperty && nparams == 1)
+        if (ftype.isProperty && nparams == 1)
         {
             // rewrite "identifier" as "setIdentifier"
             char firstChar = id[0];

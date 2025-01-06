@@ -402,12 +402,12 @@ private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
 
     // T opAssign floating yields a floating. Prevent truncating conversions (float to int).
     // See https://issues.dlang.org/show_bug.cgi?id=3841.
-    // Should we also prevent double to float (type.isfloating() && type.size() < t2.size()) ?
+    // Should we also prevent double to float (type.isFloating() && type.size() < t2.size()) ?
     if (op == EXP.addAssign || op == EXP.minAssign ||
         op == EXP.mulAssign || op == EXP.divAssign || op == EXP.modAssign ||
         op == EXP.powAssign)
     {
-        if ((type.isintegral() && t2.isfloating()))
+        if ((type.isIntegral() && t2.isFloating()))
         {
             warning(loc, "`%s %s %s` is performing truncating conversion", type.toChars(), EXPtoString(op).ptr, t2.toChars());
         }
@@ -419,17 +419,17 @@ private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
         // Any multiplication by an imaginary or complex number yields a complex result.
         // r *= c, i*=c, r*=i, i*=i are all forbidden operations.
         const(char)* opstr = EXPtoString(op).ptr;
-        if (t1.isreal() && t2.iscomplex())
+        if (t1.isReal() && t2.isComplex())
         {
             error(loc, "`%s %s %s` is undefined. Did you mean `%s %s %s.re`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
             return ErrorExp.get();
         }
-        else if (t1.isimaginary() && t2.iscomplex())
+        else if (t1.isImaginary() && t2.isComplex())
         {
             error(loc, "`%s %s %s` is undefined. Did you mean `%s %s %s.im`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
             return ErrorExp.get();
         }
-        else if ((t1.isreal() || t1.isimaginary()) && t2.isimaginary())
+        else if ((t1.isReal() || t1.isImaginary()) && t2.isImaginary())
         {
             error(loc, "`%s %s %s` is an undefined operation", t1.toChars(), opstr, t2.toChars());
             return ErrorExp.get();
@@ -441,31 +441,31 @@ private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
     {
         // Addition or subtraction of a real and an imaginary is a complex result.
         // Thus, r+=i, r+=c, i+=r, i+=c are all forbidden operations.
-        if ((t1.isreal() && (t2.isimaginary() || t2.iscomplex())) || (t1.isimaginary() && (t2.isreal() || t2.iscomplex())))
+        if ((t1.isReal() && (t2.isImaginary() || t2.isComplex())) || (t1.isImaginary() && (t2.isReal() || t2.isComplex())))
         {
             error(loc, "`%s %s %s` is undefined (result is complex)", t1.toChars(), EXPtoString(op).ptr, t2.toChars());
             return ErrorExp.get();
         }
-        if (type.isreal() || type.isimaginary())
+        if (type.isReal() || type.isImaginary())
         {
-            assert(global.errors || t2.isfloating());
+            assert(global.errors || t2.isFloating());
             e2 = e2.castTo(sc, t1);
         }
     }
     if (op == EXP.mulAssign)
     {
-        if (t2.isfloating())
+        if (t2.isFloating())
         {
-            if (t1.isreal())
+            if (t1.isReal())
             {
-                if (t2.isimaginary() || t2.iscomplex())
+                if (t2.isImaginary() || t2.isComplex())
                 {
                     e2 = e2.castTo(sc, t1);
                 }
             }
-            else if (t1.isimaginary())
+            else if (t1.isImaginary())
             {
-                if (t2.isimaginary() || t2.iscomplex())
+                if (t2.isImaginary() || t2.isComplex())
                 {
                     switch (t1.ty)
                     {
@@ -491,9 +491,9 @@ private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
     }
     else if (op == EXP.divAssign)
     {
-        if (t2.isimaginary())
+        if (t2.isImaginary())
         {
-            if (t1.isreal())
+            if (t1.isReal())
             {
                 // x/iv = i(-x/v)
                 // Therefore, the result is 0
@@ -503,7 +503,7 @@ private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
                 e.type = t1;
                 return e;
             }
-            else if (t1.isimaginary())
+            else if (t1.isImaginary())
             {
                 Type t3;
                 switch (t1.ty)
@@ -532,7 +532,7 @@ private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
     }
     else if (op == EXP.modAssign)
     {
-        if (t2.iscomplex())
+        if (t2.isComplex())
         {
             error(loc, "cannot perform modulo complex arithmetic");
             return ErrorExp.get();
@@ -1375,12 +1375,12 @@ Expression resolvePropertiesOnly(Scope* sc, Expression e1)
             auto td = s.isTemplateDeclaration();
             if (fd)
             {
-                if (fd.type.isTypeFunction().isproperty)
+                if (fd.type.isTypeFunction().isProperty)
                     return resolveProperties(sc, e1);
             }
             else if (td && td.onemember && (fd = td.onemember.isFuncDeclaration()) !is null)
             {
-                if (fd.type.isTypeFunction().isproperty ||
+                if (fd.type.isTypeFunction().isProperty ||
                     (fd.storage_class2 & STC.property) ||
                     (td._scope.stc & STC.property))
                     return resolveProperties(sc, e1);
@@ -1396,7 +1396,7 @@ Expression resolvePropertiesOnly(Scope* sc, Expression e1)
         {
             if (auto fd = td.onemember.isFuncDeclaration())
             {
-                if (fd.type.isTypeFunction().isproperty ||
+                if (fd.type.isTypeFunction().isProperty ||
                     (fd.storage_class2 & STC.property) ||
                     (td._scope.stc & STC.property))
                     return resolveProperties(sc, e1);
@@ -1408,7 +1408,7 @@ Expression resolvePropertiesOnly(Scope* sc, Expression e1)
     Expression handleFuncDecl(FuncDeclaration fd)
     {
         assert(fd);
-        if (fd.type.isTypeFunction().isproperty)
+        if (fd.type.isTypeFunction().isProperty)
             return resolveProperties(sc, e1);
         return e1;
     }
@@ -2208,7 +2208,7 @@ private bool checkNogc(FuncDeclaration f, ref Loc loc, Scope* sc)
                     f.errorSupplementalInferredAttr(/*max depth*/ 10, /*deprecation*/ false, STC.nogc);
             }
 
-            f.checkOverriddenDtor(sc, loc, dd => dd.type.toTypeFunction().isnogc, "non-@nogc");
+            f.checkOverriddenDtor(sc, loc, dd => dd.type.toTypeFunction().isNogc, "non-@nogc");
 
             return true;
         }
@@ -2314,7 +2314,7 @@ private Expression resolvePropertiesX(Scope* sc, Expression e1, Expression e2 = 
                     fd = f;
                     assert(fd.type.ty == Tfunction);
                     auto tf = fd.type.isTypeFunction();
-                    if (!tf.isref && e2)
+                    if (!tf.isRef && e2)
                     {
                         error(loc, "%s is not an lvalue", e1.toChars());
                         return ErrorExp.get();
@@ -2429,7 +2429,7 @@ private Expression resolvePropertiesX(Scope* sc, Expression e1, Expression e2 = 
                 if (fd.errors)
                     return ErrorExp.get();
                 TypeFunction tf = fd.type.isTypeFunction();
-                if (!e2 || tf.isref)
+                if (!e2 || tf.isRef)
                 {
                     Expression e = new CallExp(loc, e1);
                     if (e2)
@@ -3049,7 +3049,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
     }
     if ((wildmatch == MODFlags.mutable || wildmatch == MODFlags.immutable_) &&
         tf.next && tf.next.hasWild() &&
-        (tf.isref || !tf.next.implicitConvTo(tf.next.immutableOf())))
+        (tf.isRef || !tf.next.implicitConvTo(tf.next.immutableOf())))
     {
         bool errorInout(MOD wildmatch)
         {
@@ -3574,7 +3574,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
     /* Test compliance with DIP1021 Argument Ownership and Function Calls
      */
     if (global.params.useDIP1021 && (tf.trust == TRUST.safe || tf.trust == TRUST.default_) ||
-        tf.islive)
+        tf.isLive)
         err |= checkMutableArguments(*sc, fd, tf, ethis, arguments, false);
 
     // If D linkage and variadic, add _arguments[] as first argument
@@ -3724,7 +3724,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
     {
         if (!e.type)
             e.type = Type.tfloat64;
-        else if (e.type.isimaginary && sc.inCfile)
+        else if (e.type.isImaginary && sc.inCfile)
         {
             /* Convert to core.stdc.config.complex
              */
@@ -5362,7 +5362,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 exp.lowering = lowering.expressionSemantic(sc);
             }
         }
-        else if (tb.isscalar())
+        else if (tb.isScalar())
         {
             if (!nargs)
             {
@@ -6178,7 +6178,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 result = e;
                 return;
             }
-            else if (exp.e1.op == EXP.type && t1.isscalar())
+            else if (exp.e1.op == EXP.type && t1.isScalar())
             {
                 Expression e;
 
@@ -6630,7 +6630,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         sc.func.kind(), sc.func.toPrettyChars(), p, exp.e1.toChars());
                     err = true;
                 }
-                if (!tf.isnogc && sc.func.setGC(exp.loc, "`@nogc` %s `%s` cannot call non-@nogc `%s`", exp.e1))
+                if (!tf.isNogc && sc.func.setGC(exp.loc, "`@nogc` %s `%s` cannot call non-@nogc `%s`", exp.e1))
                 {
                     error(exp.loc, "`@nogc` %s `%s` cannot call non-@nogc %s `%s`",
                         sc.func.kind(), sc.func.toPrettyChars(), p, exp.e1.toChars());
@@ -7561,7 +7561,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         else if (exp.checkNoBool())
             return setError();
 
-        if ((exp.op == EXP.addAssign || exp.op == EXP.minAssign) && exp.e1.type.toBasetype().ty == Tpointer && exp.e2.type.toBasetype().isintegral())
+        if ((exp.op == EXP.addAssign || exp.op == EXP.minAssign) && exp.e1.type.toBasetype().ty == Tpointer && exp.e2.type.toBasetype().isIntegral())
         {
             result = scaleFactor(exp, sc);
             return;
@@ -8737,7 +8737,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
              *   &a[i]
              * check 'a' the same as for a regular variable
              */
-            if (VarDeclaration v = expToVariable(exp.e1))
+            int deref;
+            if (VarDeclaration v = expToVariable(exp.e1, deref))
             {
                 v.checkPurity(exp.e1.loc, sc);
             }
@@ -9113,6 +9114,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (auto e = unaSemantic(exp, sc))
         {
             result = e;
+            return;
+        }
+
+        // https://issues.dlang.org/show_bug.cgi?id=24701
+        auto r = checkNoreturnVarAccess(exp.e1);
+        if (r != exp.e1 && exp.to && !exp.to.isTypeNoreturn())
+        {
+            result = r;
             return;
         }
 
@@ -9823,13 +9832,16 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (sc.inCfile)
             return;
 
-        if (e.type is Type.tvoid)
+        if (!e.isGenerated)
         {
-            checkMustUse(e.e1, sc);
-            discardValue(e.e1);
+            if (e.allowCommaExp)
+            {
+                checkMustUse(e.e1, sc);
+                discardValue(e.e1);
+            }
+            else
+                error(e.loc, "using the result of a comma expression is not allowed");
         }
-        else if (!e.allowCommaExp && !e.isGenerated)
-            error(e.loc, "using the result of a comma expression is not allowed");
     }
 
     override void visit(IntervalExp e)
@@ -11756,7 +11768,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             Type tb2 = exp.e2.type.toBasetype();
             if (tb2.ty == Tarray || tb2.ty == Tsarray)
                 tb2 = tb2.nextOf().toBasetype();
-            if ((tb1.isintegral() || tb1.isfloating()) && (tb2.isintegral() || tb2.isfloating()))
+            if ((tb1.isIntegral() || tb1.isFloating()) && (tb2.isIntegral() || tb2.isFloating()))
             {
                 exp.type = exp.e1.type;
                 result = arrayOp(exp, sc);
@@ -11768,7 +11780,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             exp.e1 = exp.e1.modifiableLvalue(sc);
         }
 
-        if ((exp.e1.type.isintegral() || exp.e1.type.isfloating()) && (exp.e2.type.isintegral() || exp.e2.type.isfloating()))
+        if ((exp.e1.type.isIntegral() || exp.e1.type.isFloating()) && (exp.e2.type.isIntegral() || exp.e2.type.isFloating()))
         {
             Expression e0 = null;
             e = exp.reorderSettingAAElem(sc);
@@ -12135,7 +12147,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (err)
             return setError();
 
-        if (tb1.ty == Tpointer && exp.e2.type.isintegral() || tb2.ty == Tpointer && exp.e1.type.isintegral())
+        if (tb1.ty == Tpointer && exp.e2.type.isIntegral() || tb2.ty == Tpointer && exp.e1.type.isIntegral())
         {
             result = scaleFactor(exp, sc);
             return;
@@ -12171,7 +12183,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             result = exp.incompatibleTypes();
             return;
         }
-        if ((tb1.isreal() && exp.e2.type.isimaginary()) || (tb1.isimaginary() && exp.e2.type.isreal()))
+        if ((tb1.isReal() && exp.e2.type.isImaginary()) || (tb1.isImaginary() && exp.e2.type.isReal()))
         {
             switch (exp.type.toBasetype().ty)
             {
@@ -12287,7 +12299,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     e.type = Type.tptrdiff_t;
                 }
             }
-            else if (t2.isintegral())
+            else if (t2.isIntegral())
                 e = scaleFactor(exp, sc);
             else
             {
@@ -12329,7 +12341,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             result = exp.incompatibleTypes();
             return;
         }
-        if ((t1.isreal() && t2.isimaginary()) || (t1.isimaginary() && t2.isreal()))
+        if ((t1.isReal() && t2.isImaginary()) || (t1.isImaginary() && t2.isReal()))
         {
             switch (exp.type.ty)
             {
@@ -12676,22 +12688,22 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (exp.checkArithmeticBin() || exp.checkSharedAccessBin(sc))
             return setError();
 
-        if (exp.type.isfloating())
+        if (exp.type.isFloating())
         {
             Type t1 = exp.e1.type;
             Type t2 = exp.e2.type;
 
-            if (t1.isreal())
+            if (t1.isReal())
             {
                 exp.type = t2;
             }
-            else if (t2.isreal())
+            else if (t2.isReal())
             {
                 exp.type = t1;
             }
-            else if (t1.isimaginary())
+            else if (t1.isImaginary())
             {
-                if (t2.isimaginary())
+                if (t2.isImaginary())
                 {
                     switch (t1.toBasetype().ty)
                     {
@@ -12722,7 +12734,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 else
                     exp.type = t2; // t2 is complex
             }
-            else if (t2.isimaginary())
+            else if (t2.isImaginary())
             {
                 exp.type = t1; // t1 is complex
             }
@@ -12776,15 +12788,15 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (exp.checkArithmeticBin() || exp.checkSharedAccessBin(sc))
             return setError();
 
-        if (exp.type.isfloating())
+        if (exp.type.isFloating())
         {
             Type t1 = exp.e1.type;
             Type t2 = exp.e2.type;
 
-            if (t1.isreal())
+            if (t1.isReal())
             {
                 exp.type = t2;
-                if (t2.isimaginary())
+                if (t2.isImaginary())
                 {
                     // x/iv = i(-x/v)
                     exp.e2.type = t1;
@@ -12794,13 +12806,13 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     return;
                 }
             }
-            else if (t2.isreal())
+            else if (t2.isReal())
             {
                 exp.type = t1;
             }
-            else if (t1.isimaginary())
+            else if (t1.isImaginary())
             {
-                if (t2.isimaginary())
+                if (t2.isImaginary())
                 {
                     switch (t1.toBasetype().ty)
                     {
@@ -12823,7 +12835,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 else
                     exp.type = t2; // t2 is complex
             }
-            else if (t2.isimaginary())
+            else if (t2.isImaginary())
             {
                 exp.type = t1; // t1 is complex
             }
@@ -12882,10 +12894,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (exp.checkArithmeticBin() || exp.checkSharedAccessBin(sc))
             return setError();
 
-        if (exp.type.isfloating())
+        if (exp.type.isFloating())
         {
             exp.type = exp.e1.type;
-            if (exp.e2.type.iscomplex())
+            if (exp.e2.type.isComplex())
             {
                 error(exp.loc, "cannot perform modulo complex arithmetic");
                 return setError();
@@ -13366,7 +13378,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         EXP cmpop = exp.op;
         if (auto e = exp.op_overload(sc, &cmpop))
         {
-            if (!e.type.isscalar() && e.type.equals(exp.e1.type))
+            if (!e.type.isScalar() && e.type.equals(exp.e1.type))
             {
                 error(exp.loc, "recursive `opCmp` expansion");
                 return setError();
@@ -13470,7 +13482,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 error(exp.loc, "need member function `opCmp()` for %s `%s` to compare", t1.toDsymbol(sc).kind(), t1.toChars());
             return setError();
         }
-        else if (t1.iscomplex() || t2.iscomplex())
+        else if (t1.isComplex() || t2.isComplex())
         {
             error(exp.loc, "compare not defined for complex operands");
             return setError();
@@ -13723,7 +13735,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         if (!isArrayComparison)
         {
-            if (exp.e1.type != exp.e2.type && exp.e1.type.isfloating() && exp.e2.type.isfloating())
+            if (exp.e1.type != exp.e2.type && exp.e1.type.isFloating() && exp.e2.type.isFloating())
             {
                 // Cast both to complex
                 exp.e1 = exp.e1.castTo(sc, Type.tcomplex80);
@@ -13836,7 +13848,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         exp.type = Type.tbool;
 
-        if (exp.e1.type != exp.e2.type && exp.e1.type.isfloating() && exp.e2.type.isfloating())
+        if (exp.e1.type != exp.e2.type && exp.e1.type.isFloating() && exp.e2.type.isFloating())
         {
             // Cast both to complex
             exp.e1 = exp.e1.castTo(sc, Type.tcomplex80);
@@ -15028,11 +15040,11 @@ MATCH matchType(FuncExp funcExp, Type to, Scope* sc, FuncExp* presult, ErrorSink
                     tfx.linkage, STC.undefined_);
         tfy.mod = tfx.mod;
         tfy.trust = tfx.trust;
-        tfy.isnothrow = tfx.isnothrow;
-        tfy.isnogc = tfx.isnogc;
+        tfy.isNothrow = tfx.isNothrow;
+        tfy.isNogc = tfx.isNogc;
         tfy.purity = tfx.purity;
-        tfy.isproperty = tfx.isproperty;
-        tfy.isref = tfx.isref;
+        tfy.isProperty = tfx.isProperty;
+        tfy.isRef = tfx.isRef;
         tfy.isInOutParam = tfx.isInOutParam;
         tfy.isInOutQual = tfx.isInOutQual;
         tfy.deco = tfy.merge().deco;
@@ -15154,10 +15166,8 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
             {
                 if (e.var.isThisDeclaration())
                     return false;
-                else
-                    return sharedError(e);
             }
-            else if (!allowRef && e.var.type.isShared())
+            if (!allowRef && e.var.type.isShared())
                 return sharedError(e);
 
             return false;
@@ -15559,7 +15569,7 @@ Expression addDtorHook(Expression e, Scope* sc)
 
         if (auto tf = e1.type.isTypeFunction())
         {
-            if (tf.isref)
+            if (tf.isRef)
                 return exp;
         }
 

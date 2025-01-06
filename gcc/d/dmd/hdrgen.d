@@ -2609,9 +2609,9 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
         // the `sideeffect.copyToTemp` function.
         auto ve = e.e2.isVarExp();
 
-        // not a CommaExp introduced for temporaries, go on
-        // the old path
-        if (!ve || !(ve.var.storage_class & STC.temp))
+        // Not a CommaExp introduced for temporaries, or -vcg-ast,
+        // print the full comma
+        if (!ve || !(ve.var.storage_class & STC.temp) || hgs.vcg_ast)
         {
             visitBin(cast(BinExp)e);
             return;
@@ -3016,7 +3016,7 @@ void floatToBuffer(Type type, const real_t value, ref OutBuffer buf, const bool 
         default:
             break;
         }
-        if (t.isimaginary())
+        if (t.isImaginary())
             buf.writeByte('i');
     }
 }
@@ -3190,6 +3190,12 @@ bool stcToBuffer(ref OutBuffer buf, StorageClass stc) @safe
         stc &= ~(STC.return_ | STC.returninferred);
     }
 
+    // ensure `auto ref` keywords are (almost) adjacent
+    if (stc & STC.auto_)
+    {
+        buf.writestring("auto ");
+        stc &= ~STC.auto_;
+    }
     /* Put scope ref return into a standard order
      */
     string rrs;
@@ -3199,12 +3205,12 @@ bool stcToBuffer(ref OutBuffer buf, StorageClass stc) @safe
     {
         case ScopeRef.None:
         case ScopeRef.Scope:
-        case ScopeRef.Ref:
         case ScopeRef.Return:
             break;
 
         case ScopeRef.ReturnScope:      rrs = "return scope"; goto L1;
         case ScopeRef.ReturnRef:        rrs = isout ? "return out"       : "return ref";       goto L1;
+        case ScopeRef.Ref:              rrs = isout ? "out"              : "ref";              goto L1;
         case ScopeRef.RefScope:         rrs = isout ? "out scope"        : "ref scope";        goto L1;
         case ScopeRef.ReturnRef_Scope:  rrs = isout ? "return out scope" : "return ref scope"; goto L1;
         case ScopeRef.Ref_ReturnScope:  rrs = isout ? "out return scope" : "ref return scope"; goto L1;
@@ -3980,15 +3986,15 @@ private void visitFuncIdentWithPrefix(TypeFunction t, const Identifier ident, Te
         buf.writeByte(' ');
         MODtoBuffer(buf, t.mod);
     }
-    if (t.isreturnscope && !t.isreturninferred)
+    if (t.isReturnScope && !t.isReturnInferred)
     {
         buf.writestring(" return scope");
     }
-    else if (t.isScopeQual && !t.isscopeinferred)
+    else if (t.isScopeQual && !t.isScopeInferred)
     {
         buf.writestring(" scope");
     }
-    if (t.isreturn && !t.isreturnscope && !t.isreturninferred)
+    if (t.isReturn && !t.isReturnScope && !t.isReturnInferred)
     {
         buf.writestring(" return");
     }
@@ -4178,7 +4184,7 @@ private void typeToBufferx(Type t, ref OutBuffer buf, ref HdrGenState hgs)
 
     void visitFunction(TypeFunction t)
     {
-        //printf("TypeFunction::toCBuffer2() t = %p, ref = %d\n", t, t.isref);
+        //printf("TypeFunction::toCBuffer2() t = %p, ref = %d\n", t, t.isRef);
         visitFuncIdentWithPostfix(t, null, buf, hgs, false);
     }
 

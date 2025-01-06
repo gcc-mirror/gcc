@@ -113,7 +113,7 @@ int callSideEffectLevel(FuncDeclaration f)
         return 0;
     assert(f.type.ty == Tfunction);
     TypeFunction tf = cast(TypeFunction)f.type;
-    if (!tf.isnothrow)
+    if (!tf.isNothrow)
         return 0;
     final switch (f.isPure())
     {
@@ -123,7 +123,7 @@ int callSideEffectLevel(FuncDeclaration f)
         return 0;
 
     case PURE.const_:
-        return mutabilityOfType(tf.isref, tf.next) == 2 ? 2 : 1;
+        return mutabilityOfType(tf.isRef, tf.next) == 2 ? 2 : 1;
     }
 }
 
@@ -138,7 +138,7 @@ int callSideEffectLevel(Type t)
         assert(t.ty == Tfunction);
         tf = cast(TypeFunction)t;
     }
-    if (!tf.isnothrow)  // function can throw
+    if (!tf.isNothrow)  // function can throw
         return 0;
 
     tf.purityLevel();
@@ -152,7 +152,7 @@ int callSideEffectLevel(Type t)
     }
 
     if (purity == PURE.const_)
-        return mutabilityOfType(tf.isref, tf.next) == 2 ? 2 : 1;
+        return mutabilityOfType(tf.isRef, tf.next) == 2 ? 2 : 1;
 
     return 0;
 }

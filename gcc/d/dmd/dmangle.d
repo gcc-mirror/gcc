@@ -358,31 +358,31 @@ void mangleFuncType(TypeFunction t, TypeFunction ta, ubyte modMask, Type tret, r
 
     if (ta.purity)
         buf.writestring("Na");
-    if (ta.isnothrow)
+    if (ta.isNothrow)
         buf.writestring("Nb");
-    if (ta.isref)
+    if (ta.isRef)
         buf.writestring("Nc");
-    if (ta.isproperty)
+    if (ta.isProperty)
         buf.writestring("Nd");
-    if (ta.isnogc)
+    if (ta.isNogc)
         buf.writestring("Ni");
 
     // `return scope` must be in that order
-    if (ta.isreturnscope && !ta.isreturninferred)
+    if (ta.isReturnScope && !ta.isReturnInferred)
     {
         buf.writestring("NjNl");
     }
     else
     {
         // when return ref, the order is `scope return`
-        if (ta.isScopeQual && !ta.isscopeinferred)
+        if (ta.isScopeQual && !ta.isScopeInferred)
             buf.writestring("Nl");
 
-        if (ta.isreturn && !ta.isreturninferred)
+        if (ta.isReturn && !ta.isReturnInferred)
             buf.writestring("Nj");
     }
 
-    if (ta.islive)
+    if (ta.isLive)
         buf.writestring("Nm");
 
     switch (ta.trust)

@@ -880,6 +880,7 @@ version (Posix) private enum InternalError : ubyte
     doubleFork,
     malloc,
     preExec,
+    closefds_dup2,
 }
 
 /*
@@ -1008,7 +1009,7 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
         if (config.flags & Config.Flags.detached)
             close(pidPipe[0]);
         close(forkPipe[0]);
-        immutable forkPipeOut = forkPipe[1];
+        auto forkPipeOut = forkPipe[1];
         immutable pidPipeOut = pidPipe[1];
 
         // Set the working directory.
@@ -1042,56 +1043,106 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
 
             if (!(config.flags & Config.Flags.inheritFDs))
             {
-                // NOTE: malloc() and getrlimit() are not on the POSIX async
-                // signal safe functions list, but practically this should
-                // not be a problem. Java VM and CPython also use malloc()
-                // in its own implementation via opendir().
-                import core.stdc.stdlib : malloc;
-                import core.sys.posix.poll : pollfd, poll, POLLNVAL;
-                import core.sys.posix.sys.resource : rlimit, getrlimit, RLIMIT_NOFILE;
+                version (FreeBSD)
+                    import core.sys.freebsd.unistd : closefrom;
+                else version (OpenBSD)
+                    import core.sys.openbsd.unistd : closefrom;
 
-                // Get the maximum number of file descriptors that could be open.
-                rlimit r;
-                if (getrlimit(RLIMIT_NOFILE, &r) != 0)
+                static if (!__traits(compiles, closefrom))
                 {
-                    abortOnError(forkPipeOut, InternalError.getrlimit, .errno);
-                }
-                immutable maxDescriptors = cast(int) r.rlim_cur;
+                    // FIXME: This implementation crashes the system when RLIMIT_NOFILE
+                    // has a big value. For a possible solution see:
+                    // https://github.com/dlang/phobos/pull/8990
+                    void fallback (int lowfd) {
+                        // NOTE: malloc() and getrlimit() are not on the POSIX async
+                        // signal safe functions list, but practically this should
+                        // not be a problem. Java VM and CPython also use malloc()
+                        // in its own implementation via opendir().
+                        import core.stdc.stdlib : malloc;
+                        import core.sys.posix.poll : pollfd, poll, POLLNVAL;
+                        import core.sys.posix.sys.resource : rlimit, getrlimit, RLIMIT_NOFILE;
 
-                // The above, less stdin, stdout, and stderr
-                immutable maxToClose = maxDescriptors - 3;
+                        // Get the maximum number of file descriptors that could be open.
+                        rlimit r;
+                        if (getrlimit(RLIMIT_NOFILE, &r) != 0)
+                        {
+                            abortOnError(forkPipeOut, InternalError.getrlimit, .errno);
+                        }
+                        immutable maxDescriptors = cast(int) r.rlim_cur;
 
-                // Call poll() to see which ones are actually open:
-                auto pfds = cast(pollfd*) malloc(pollfd.sizeof * maxToClose);
-                if (pfds is null)
-                {
-                    abortOnError(forkPipeOut, InternalError.malloc, .errno);
-                }
-                foreach (i; 0 .. maxToClose)
-                {
-                    pfds[i].fd = i + 3;
-                    pfds[i].events = 0;
-                    pfds[i].revents = 0;
-                }
-                if (poll(pfds, maxToClose, 0) >= 0)
-                {
-                    foreach (i; 0 .. maxToClose)
-                    {
-                        // don't close pipe write end
-                        if (pfds[i].fd == forkPipeOut) continue;
-                        // POLLNVAL will be set if the file descriptor is invalid.
-                        if (!(pfds[i].revents & POLLNVAL)) close(pfds[i].fd);
+                        immutable maxToClose = maxDescriptors - lowfd;
+
+                        // Call poll() to see which ones are actually open:
+                        auto pfds = cast(pollfd*) malloc(pollfd.sizeof * maxToClose);
+                        if (pfds is null)
+                        {
+                            abortOnError(forkPipeOut, InternalError.malloc, .errno);
+                        }
+                        foreach (i; 0 .. maxToClose)
+                        {
+                            pfds[i].fd = i + lowfd;
+                            pfds[i].events = 0;
+                            pfds[i].revents = 0;
+                        }
+                        if (poll(pfds, maxToClose, 0) >= 0)
+                        {
+                            foreach (i; 0 .. maxToClose)
+                            {
+                                // POLLNVAL will be set if the file descriptor is invalid.
+                                if (!(pfds[i].revents & POLLNVAL)) close(pfds[i].fd);
+                            }
+                        }
+                        else
+                        {
+                            // Fall back to closing everything.
+                            foreach (i; lowfd .. maxDescriptors)
+                            {
+                                close(i);
+                            }
+                        }
                     }
+
+                    // closefrom may not be available on the version of glibc we build against.
+                    // Until we find a way to perform this check we will try to use dlsym to
+                    // check for the function. See: https://github.com/dlang/phobos/pull/9048
+                    version (CRuntime_Glibc)
+                        void closefrom (int lowfd) {
+                            static bool tryGlibcClosefrom (int lowfd) {
+                                import core.sys.posix.dlfcn : dlopen, dlclose, dlsym, dlerror, RTLD_LAZY;
+
+                                void *handle = dlopen("libc.so.6", RTLD_LAZY);
+                                if (!handle)
+                                    return false;
+                                scope(exit) dlclose(handle);
+
+                                // Clear errors
+                                dlerror();
+                                alias closefromT = extern(C) void function(int) @nogc @system nothrow;
+                                auto closefrom = cast(closefromT) dlsym(handle, "closefrom");
+                                if (dlerror())
+                                    return false;
+
+                                closefrom(lowfd);
+                                return true;
+                            }
+
+                            if (!tryGlibcClosefrom(lowfd))
+                                fallback(lowfd);
+                        }
+                    else
+                        alias closefrom = fallback;
                 }
-                else
-                {
-                    // Fall back to closing everything.
-                    foreach (i; 3 .. maxDescriptors)
-                    {
-                        if (i == forkPipeOut) continue;
-                        close(i);
-                    }
-                }
+
+                // We need to close all open file descriptors excluding std{in,out,err}
+                // and forkPipeOut because we still need it.
+                // Since the various libc's provide us with `closefrom` move forkPipeOut
+                // to position 3, right after STDERR_FILENO, and close all FDs following that.
+                if (dup2(forkPipeOut, 3) == -1)
+                    abortOnError(forkPipeOut, InternalError.closefds_dup2, .errno);
+                forkPipeOut = 3;
+                // forkPipeOut needs to be closed after we call `exec`.
+                setCLOEXEC(forkPipeOut, true);
+                closefrom(forkPipeOut + 1);
             }
             else // This is already done if we don't inherit descriptors.
             {
@@ -1204,6 +1255,10 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
                     break;
                 case InternalError.preExec:
                     errorMsg = "Failed to execute preExecFunction or preExecDelegate";
+                    break;
+                case InternalError.closefds_dup2:
+                    assert(!(config.flags & Config.Flags.inheritFDs));
+                    errorMsg = "Failed to close inherited file descriptors";
                     break;
                 case InternalError.noerror:
                     assert(false);

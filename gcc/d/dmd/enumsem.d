@@ -699,7 +699,7 @@ void enumMemberSemantic(Scope* sc, EnumMember em)
 
         if (e.op == EXP.error)
             return errorReturn();
-        if (e.type.isfloating())
+        if (e.type.isFloating())
         {
             // Check that e != eprev (not always true for floats)
             Expression etest = new EqualExp(EXP.equal, em.loc, e, eprev);

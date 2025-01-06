@@ -25,7 +25,6 @@ package(std.format):
 void skipData(Range, Char)(ref Range input, scope const ref FormatSpec!Char spec)
 {
     import std.ascii : isDigit;
-    import std.conv : text;
     import std.range.primitives : empty, front, popFront;
 
     switch (spec.spec)
@@ -38,8 +37,7 @@ void skipData(Range, Char)(ref Range input, scope const ref FormatSpec!Char spec
             while (!input.empty && isDigit(input.front)) input.popFront();
             break;
         default:
-            assert(false,
-                   text("Format specifier not understood: %", spec.spec));
+            assert(0, "Format specifier not understood: %" ~ spec.spec);
     }
 }
 

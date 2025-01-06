@@ -444,23 +444,23 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
 
     if (e.ident == Id.isArithmetic)
     {
-        return isTypeX(t => t.isintegral() || t.isfloating());
+        return isTypeX(t => t.isIntegral() || t.isFloating());
     }
     if (e.ident == Id.isFloating)
     {
-        return isTypeX(t => t.isfloating());
+        return isTypeX(t => t.isFloating());
     }
     if (e.ident == Id.isIntegral)
     {
-        return isTypeX(t => t.isintegral());
+        return isTypeX(t => t.isIntegral());
     }
     if (e.ident == Id.isScalar)
     {
-        return isTypeX(t => t.isscalar());
+        return isTypeX(t => t.isScalar());
     }
     if (e.ident == Id.isUnsigned)
     {
-        return isTypeX(t => t.isunsigned());
+        return isTypeX(t => t.isUnsigned());
     }
     if (e.ident == Id.isAssociativeArray)
     {
@@ -468,7 +468,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     }
     if (e.ident == Id.isDeprecated)
     {
-        if (isTypeX(t => t.iscomplex() || t.isimaginary()).toBool().hasValue(true))
+        if (isTypeX(t => t.isComplex() || t.isImaginary()).toBool().hasValue(true))
             return True();
         return isDsymX(t => t.isDeprecated());
     }
@@ -482,13 +482,19 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     }
     if (e.ident == Id.isAbstractClass)
     {
-        return isTypeX(t => t.toBasetype().isTypeClass() &&
-                            t.toBasetype().isTypeClass().sym.isAbstract());
+        return isTypeX((t)
+        {
+            auto c = t.toBasetype().isTypeClass();
+            return c && c.sym.isAbstract();
+        });
     }
     if (e.ident == Id.isFinalClass)
     {
-        return isTypeX(t => t.toBasetype().isTypeClass() &&
-                            (t.toBasetype().isTypeClass().sym.storage_class & STC.final_) != 0);
+        return isTypeX((t)
+        {
+            const c = t.toBasetype().isTypeClass();
+            return c && (c.sym.storage_class & STC.final_) != 0;
+        });
     }
     if (e.ident == Id.isTemplate)
     {
@@ -1773,7 +1779,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 if (sc2.func && sc2.func.type.isTypeFunction())
                 {
                     const tf = sc2.func.type.isTypeFunction();
-                    err |= tf.isnothrow && canThrow(ex, sc2.func, null);
+                    err |= tf.isNothrow && canThrow(ex, sc2.func, null);
                 }
                 ex = checkGC(sc2, ex);
                 if (ex.op == EXP.error)

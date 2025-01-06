@@ -295,14 +295,14 @@ public:
 	this->result_ = d_convert (build_ctype (e->type),
 				   build_boolop (code, t1, t2));
       }
-    else if (tb1->isfloating () && tb1->ty != TY::Tvector)
+    else if (tb1->isFloating () && tb1->ty != TY::Tvector)
       {
 	/* For floating-point values, identity is defined as the bits in the
 	   operands being identical.  */
 	tree t1 = d_save_expr (build_expr (e->e1));
 	tree t2 = d_save_expr (build_expr (e->e2));
 
-	if (!tb1->iscomplex ())
+	if (!tb1->isComplex ())
 	  this->result_ = build_float_identity (code, t1, t2);
 	else
 	  {
@@ -388,7 +388,7 @@ public:
 		e1.length == e2.length && memcmp(e1.ptr, e2.ptr, size) == 0;
 	    Or when generating a NE expression:
 		e1.length != e2.length || memcmp(e1.ptr, e2.ptr, size) != 0;  */
-	if ((t1elem->isintegral () || t1elem->ty == TY::Tvoid
+	if ((t1elem->isIntegral () || t1elem->ty == TY::Tvoid
 	     || (t1elem->ty == TY::Tstruct
 		 && !t1elem->isTypeStruct ()->sym->xeq))
 	    && t1elem->ty == t2elem->ty)
@@ -621,8 +621,8 @@ public:
       {
       case EXP::add:
       case EXP::min:
-	if ((e->e1->type->isreal () && e->e2->type->isimaginary ())
-	    || (e->e1->type->isimaginary () && e->e2->type->isreal ()))
+	if ((e->e1->type->isReal () && e->e2->type->isImaginary ())
+	    || (e->e1->type->isImaginary () && e->e2->type->isReal ()))
 	  {
 	    /* If the result is complex, then we can shortcut binary_op.
 	       Frontend should have already validated types and sizes.  */
@@ -632,7 +632,7 @@ public:
 	    if (e->op == EXP::min)
 	      t2 = build1 (NEGATE_EXPR, TREE_TYPE (t2), t2);
 
-	    if (e->e1->type->isreal ())
+	    if (e->e1->type->isReal ())
 	      this->result_ = complex_expr (build_ctype (e->type), t1, t2);
 	    else
 	      this->result_ = complex_expr (build_ctype (e->type), t2, t1);
@@ -662,12 +662,12 @@ public:
 	      }
 	  }
 
-	code = e->e1->type->isintegral ()
+	code = e->e1->type->isIntegral ()
 	  ? TRUNC_DIV_EXPR : RDIV_EXPR;
 	break;
 
       case EXP::mod:
-	code = e->e1->type->isfloating ()
+	code = e->e1->type->isFloating ()
 	  ? FLOAT_MOD_EXPR : TRUNC_MOD_EXPR;
 	break;
 
@@ -751,12 +751,12 @@ public:
 	break;
 
       case EXP::divAssign:
-	code = e->e1->type->isintegral ()
+	code = e->e1->type->isIntegral ()
 	  ? TRUNC_DIV_EXPR : RDIV_EXPR;
 	break;
 
       case EXP::modAssign:
-	code = e->e1->type->isfloating ()
+	code = e->e1->type->isFloating ()
 	  ? FLOAT_MOD_EXPR : TRUNC_MOD_EXPR;
 	break;
 
@@ -1506,7 +1506,7 @@ public:
       {
 	AddExp *ae = e->e1->isAddExp ();
 	if (ae->e1->op == EXP::address
-	    && ae->e2->isConst () && ae->e2->type->isintegral ())
+	    && ae->e2->isConst () && ae->e2->type->isIntegral ())
 	  {
 	    Expression *ex = ae->e1->isAddrExp ()->e1;
 	    tnext = ex->type->toBasetype ();
@@ -1754,7 +1754,7 @@ public:
     if (returnvalue != NULL_TREE)
       exp = compound_expr (exp, returnvalue);
 
-    if (tf->isref ())
+    if (tf->isRef ())
       exp = build_deref (exp);
 
     /* Some library calls are defined to return a generic type.
@@ -3062,7 +3062,7 @@ build_return_dtor (Expression *e, Type *type, TypeFunction *tf)
   tree result = build_expr (e);
 
   /* Convert for initializing the DECL_RESULT.  */
-  if (tf->isref ())
+  if (tf->isRef ())
     {
       /* If we are returning a reference, take the address.  */
       result = convert_expr (result, e->type, type);

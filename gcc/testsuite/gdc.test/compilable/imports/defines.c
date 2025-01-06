@@ -55,3 +55,11 @@ int pr16199c()
 {
     return 8;
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=24639
+#define NEGATIVE_I32 -1
+#define NEGATIVE_U32 -2U
+#define NEGATIVE_I64 -3LL
+#define NEGATIVE_U64 -4LLU
+#define NEGATIVE_F32 -5.0f
+#define NEGATIVE_F64 -6.0

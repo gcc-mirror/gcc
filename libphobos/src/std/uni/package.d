@@ -3349,7 +3349,7 @@ struct CowArray(SP=GcPolicy)
         data[$-val.length-1 .. $-1] = val[];
     }
 
-    bool opEquals()(auto const ref CowArray rhs)const
+    bool opEquals()(auto ref const CowArray rhs) const
     {
         if (empty ^ rhs.empty)
             return false; // one is empty and the other isn't

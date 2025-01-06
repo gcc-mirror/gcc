@@ -17,3 +17,5 @@ extern(C):
 nothrow:
 
 int getosreldate() pure @trusted;
+
+void closefrom(int);

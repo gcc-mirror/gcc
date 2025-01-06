@@ -130,7 +130,7 @@ public:
   void visit (VarDeclaration *d) final override
   {
     /* Not all kinds of manifest constants create a CONST_DECL.  */
-    if (!d->canTakeAddressOf () && !d->type->isscalar ())
+    if (!d->canTakeAddressOf () && !d->type->isScalar ())
       return;
 
     visit ((Declaration *) d);

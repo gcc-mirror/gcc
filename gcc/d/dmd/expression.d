@@ -237,45 +237,49 @@ DotIdExp typeDotIdExp(const ref Loc loc, Type type, Identifier ident) @safe
  * For example, `a[index]` is really `a`, and `s.f` is really `s`.
  * Params:
  *      e = Expression to look at
+ *      deref = number of dereferences encountered
  * Returns:
  *      variable if there is one, null if not
  */
-VarDeclaration expToVariable(Expression e)
+VarDeclaration expToVariable(Expression e, out int deref)
 {
+    deref = 0;
     while (1)
     {
         switch (e.op)
         {
             case EXP.variable:
-                return (cast(VarExp)e).var.isVarDeclaration();
+                return e.isVarExp().var.isVarDeclaration();
 
             case EXP.dotVariable:
-                e = (cast(DotVarExp)e).e1;
+                e = e.isDotVarExp().e1;
+                if (e.type.toBasetype().isTypeClass())
+                    deref++;
+
                 continue;
 
             case EXP.index:
             {
-                IndexExp ei = cast(IndexExp)e;
-                e = ei.e1;
-                Type ti = e.type.toBasetype();
-                if (ti.ty == Tsarray)
-                    continue;
-                return null;
+                e = e.isIndexExp().e1;
+                if (!e.type.toBasetype().isTypeSArray())
+                    deref++;
+
+                continue;
             }
 
             case EXP.slice:
             {
-                SliceExp ei = cast(SliceExp)e;
-                e = ei.e1;
-                Type ti = e.type.toBasetype();
-                if (ti.ty == Tsarray)
-                    continue;
-                return null;
+                e = e.isSliceExp().e1;
+                if (!e.type.toBasetype().isTypeSArray())
+                    deref++;
+
+                continue;
             }
 
-            case EXP.this_:
             case EXP.super_:
-                return (cast(ThisExp)e).var.isVarDeclaration();
+                return e.isSuperExp().var.isVarDeclaration();
+            case EXP.this_:
+                return e.isThisExp().var.isVarDeclaration();
 
             // Temporaries for rvalues that need destruction
             // are of form: (T s = rvalue, s). For these cases
@@ -554,7 +558,7 @@ extern (C++) abstract class Expression : ASTNode
             return true;
         if (type.toBasetype().ty == Terror)
             return true;
-        if (!type.isscalar())
+        if (!type.isScalar())
         {
             error(loc, "`%s` is not a scalar, it is a `%s`", toChars(), type.toChars());
             return true;
@@ -582,7 +586,7 @@ extern (C++) abstract class Expression : ASTNode
             return true;
         if (type.toBasetype().ty == Terror)
             return true;
-        if (!type.isintegral())
+        if (!type.isIntegral())
         {
             error(loc, "`%s` is not of integral type, it is a `%s`", toChars(), type.toChars());
             return true;
@@ -596,7 +600,7 @@ extern (C++) abstract class Expression : ASTNode
             return true;
         if (type.toBasetype().ty == Terror)
             return true;
-        if (!type.isintegral() && !type.isfloating())
+        if (!type.isIntegral() && !type.isFloating())
         {
             // unary aggregate ops error here
             const char* msg = type.isAggregate() ?
@@ -875,7 +879,7 @@ extern (C++) final class IntegerExp : Expression
         super(loc, EXP.int64);
         //printf("IntegerExp(value = %lld, type = '%s')\n", value, type ? type.toChars() : "");
         assert(type);
-        if (!type.isscalar())
+        if (!type.isScalar())
         {
             //printf("%s, loc = %d\n", toChars(), loc.linnum);
             if (type.ty != Terror)
@@ -1195,12 +1199,12 @@ extern (C++) final class RealExp : Expression
 
     override real_t toReal()
     {
-        return type.isreal() ? value : CTFloat.zero;
+        return type.isReal() ? value : CTFloat.zero;
     }
 
     override real_t toImaginary()
     {
-        return type.isreal() ? CTFloat.zero : value;
+        return type.isReal() ? CTFloat.zero : value;
     }
 
     override complex_t toComplex()
@@ -3606,7 +3610,7 @@ extern (C++) final class CallExp : UnaExp
         if (tb.ty == Tdelegate || tb.ty == Tpointer)
             tb = tb.nextOf();
         auto tf = tb.isTypeFunction();
-        if (tf && tf.isref)
+        if (tf && tf.isRef)
         {
             if (auto dve = e1.isDotVarExp())
                 if (dve.var.isCtorDeclaration())

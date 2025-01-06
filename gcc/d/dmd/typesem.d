@@ -473,12 +473,12 @@ bool isCopyable(Type t)
  * Otherwise, when the type has const/inout indirections, returns 1.
  *
  * Params:
- *      isref = if true, check `ref t`; otherwise, check just `t`
+ *      isRef = if true, check `ref t`; otherwise, check just `t`
  *      t = the type that is being checked
  */
-int mutabilityOfType(bool isref, Type t)
+int mutabilityOfType(bool isRef, Type t)
 {
-    if (isref)
+    if (isRef)
     {
         if (t.mod & MODFlags.immutable_)
             return 2;
@@ -631,7 +631,7 @@ extern (D) bool checkComplexTransition(Type type, const ref Loc loc, Scope* sc)
     if (t.ty == Tenum && !(cast(TypeEnum)t).sym.memtype)
         return false;
 
-    if (t.isimaginary() || t.iscomplex())
+    if (t.isImaginary() || t.isComplex())
     {
         if (sc.inCfile)
             return true;            // complex/imaginary not deprecated in C code
@@ -660,7 +660,7 @@ extern (D) bool checkComplexTransition(Type type, const ref Loc loc, Scope* sc)
         // Deprecated in 2.097 - Can be made an error from 2.117.
         // The deprecation period is longer than usual as `cfloat`,
         // `cdouble`, and `creal` were quite widely used.
-        if (t.iscomplex())
+        if (t.isComplex())
         {
             deprecation(loc, "use of complex type `%s` is deprecated, use `std.complex.Complex!(%s)` instead",
                 type.toChars(), rt.toChars());
@@ -2150,23 +2150,23 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         if (sc.stc & STC.pure_)
             tf.purity = PURE.fwdref;
         if (sc.stc & STC.nothrow_)
-            tf.isnothrow = true;
+            tf.isNothrow = true;
         if (sc.stc & STC.nogc)
-            tf.isnogc = true;
+            tf.isNogc = true;
         if (sc.stc & STC.ref_)
-            tf.isref = true;
+            tf.isRef = true;
         if (sc.stc & STC.return_)
-            tf.isreturn = true;
+            tf.isReturn = true;
         if (sc.stc & STC.returnScope)
-            tf.isreturnscope = true;
+            tf.isReturnScope = true;
         if (sc.stc & STC.returninferred)
-            tf.isreturninferred = true;
+            tf.isReturnInferred = true;
         if (sc.stc & STC.scope_)
             tf.isScopeQual = true;
         if (sc.stc & STC.scopeinferred)
-            tf.isscopeinferred = true;
+            tf.isScopeInferred = true;
 
-//        if (tf.isreturn && !tf.isref)
+//        if (tf.isReturn && !tf.isRef)
 //            tf.isScopeQual = true;                                  // return by itself means 'return scope'
 
         if (tf.trust == TRUST.default_)
@@ -2180,9 +2180,9 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         }
 
         if (sc.stc & STC.property)
-            tf.isproperty = true;
+            tf.isProperty = true;
         if (sc.stc & STC.live)
-            tf.islive = true;
+            tf.isLive = true;
 
         tf.linkage = sc.linkage;
         if (tf.linkage == LINK.system)
@@ -2216,7 +2216,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             tf.next = tf.next.typeSemantic(loc, sc);
             sc = sc.pop();
             errors |= tf.checkRetType(loc);
-            if (tf.next.isScopeClass() && !tf.isctor)
+            if (tf.next.isScopeClass() && !tf.isCtor)
             {
                 .error(loc, "functions cannot return `scope %s`", tf.next.toChars());
                 errors = true;
@@ -2224,9 +2224,9 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             if (tf.next.hasWild())
                 wildreturn = true;
 
-            if (tf.isreturn && !tf.isref && !tf.next.hasPointers())
+            if (tf.isReturn && !tf.isRef && !tf.next.hasPointers())
             {
-                tf.isreturn = false;
+                tf.isReturn = false;
             }
         }
 
@@ -2449,7 +2449,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     {
                         if (!(fparam.storageClass & STC.scope_))
                             fparam.storageClass |= STC.scope_ | STC.scopeinferred; // 'return' implies 'scope'
-                        if (tf.isref)
+                        if (tf.isRef)
                         {
                         }
                         else if (tf.next && !tf.next.hasPointers() && tf.next.toBasetype().ty != Tvoid)
@@ -2607,7 +2607,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         tf.isInOutParam = (wildparams & 1) != 0;
         tf.isInOutQual  = (wildparams & 2) != 0;
 
-        if (tf.isproperty && (tf.parameterList.varargs != VarArg.none || tf.parameterList.length > 2))
+        if (tf.isProperty && (tf.parameterList.varargs != VarArg.none || tf.parameterList.length > 2))
         {
             .error(loc, "properties can only have zero, one, or two parameter");
             errors = true;
@@ -3429,7 +3429,7 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
 
         Expression floatValue(real_t r)
         {
-            if (mt.isreal() || mt.isimaginary())
+            if (mt.isReal() || mt.isImaginary())
                 return new RealExp(loc, r, mt);
             else
             {
@@ -4769,8 +4769,8 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                 fd_aaLen = FuncDeclaration.genCfunc(fparams, Type.tsize_t, Id.aaLen);
                 TypeFunction tf = fd_aaLen.type.toTypeFunction();
                 tf.purity = PURE.const_;
-                tf.isnothrow = true;
-                tf.isnogc = false;
+                tf.isNothrow = true;
+                tf.isNogc = false;
             }
             Expression ev = new VarExp(e.loc, fd_aaLen, false);
             e = new CallExp(e.loc, ev, e);
@@ -6107,8 +6107,8 @@ Type addStorageClass(Type type, StorageClass stc)
         //printf("addStorageClass(%llx) %d\n", stc, (stc & STC.scope_) != 0);
         TypeFunction t = visitType(tf_src).toTypeFunction();
         if ((stc & STC.pure_ && !t.purity) ||
-            (stc & STC.nothrow_ && !t.isnothrow) ||
-            (stc & STC.nogc && !t.isnogc) ||
+            (stc & STC.nothrow_ && !t.isNothrow) ||
+            (stc & STC.nogc && !t.isNogc) ||
             (stc & STC.scope_ && !t.isScopeQual) ||
             (stc & STC.safe && t.trust < TRUST.trusted))
         {
@@ -6117,33 +6117,33 @@ Type addStorageClass(Type type, StorageClass stc)
             tf.mod = t.mod;
             tf.inferenceArguments = tf_src.inferenceArguments;
             tf.purity = t.purity;
-            tf.isnothrow = t.isnothrow;
-            tf.isnogc = t.isnogc;
-            tf.isproperty = t.isproperty;
-            tf.isref = t.isref;
-            tf.isreturn = t.isreturn;
-            tf.isreturnscope = t.isreturnscope;
+            tf.isNothrow = t.isNothrow;
+            tf.isNogc = t.isNogc;
+            tf.isProperty = t.isProperty;
+            tf.isRef = t.isRef;
+            tf.isReturn = t.isReturn;
+            tf.isReturnScope = t.isReturnScope;
             tf.isScopeQual = t.isScopeQual;
-            tf.isreturninferred = t.isreturninferred;
-            tf.isscopeinferred = t.isscopeinferred;
+            tf.isReturnInferred = t.isReturnInferred;
+            tf.isScopeInferred = t.isScopeInferred;
             tf.trust = t.trust;
             tf.isInOutParam = t.isInOutParam;
             tf.isInOutQual = t.isInOutQual;
-            tf.isctor = t.isctor;
+            tf.isCtor = t.isCtor;
 
             if (stc & STC.pure_)
                 tf.purity = PURE.fwdref;
             if (stc & STC.nothrow_)
-                tf.isnothrow = true;
+                tf.isNothrow = true;
             if (stc & STC.nogc)
-                tf.isnogc = true;
+                tf.isNogc = true;
             if (stc & STC.safe)
                 tf.trust = TRUST.safe;
             if (stc & STC.scope_)
             {
                 tf.isScopeQual = true;
                 if (stc & STC.scopeinferred)
-                    tf.isscopeinferred = true;
+                    tf.isScopeInferred = true;
             }
 
             tf.deco = tf.merge().deco;
@@ -6315,7 +6315,7 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovaria
                 goto Ldistinct;
             }
         Lcov:
-            notcovariant |= !fparam1.isCovariant(t1.isref, fparam2);
+            notcovariant |= !fparam1.isCovariant(t1.isRef, fparam2);
 
             /* https://issues.dlang.org/show_bug.cgi?id=23135
              * extern(C++) mutable parameters are not covariant with const.
@@ -6375,7 +6375,7 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovaria
         }
         else if (t1n.ty == t2n.ty && t1n.implicitConvTo(t2n))
         {
-            if (t1.isref && t2.isref)
+            if (t1.isRef && t2.isRef)
             {
                 // Treat like pointers to t1n and t2n
                 if (t1n.constConv(t2n) < MATCH.constant)
@@ -6400,31 +6400,31 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovaria
     goto Lnotcovariant;
 
 Lcovariant:
-    if (t1.isref != t2.isref)
+    if (t1.isRef != t2.isRef)
         goto Lnotcovariant;
 
-    if (!t1.isref && (t1.isScopeQual || t2.isScopeQual))
+    if (!t1.isRef && (t1.isScopeQual || t2.isScopeQual))
     {
         StorageClass stc1 = t1.isScopeQual ? STC.scope_ : 0;
         StorageClass stc2 = t2.isScopeQual ? STC.scope_ : 0;
-        if (t1.isreturn)
+        if (t1.isReturn)
         {
             stc1 |= STC.return_;
             if (!t1.isScopeQual)
                 stc1 |= STC.ref_;
         }
-        if (t2.isreturn)
+        if (t2.isReturn)
         {
             stc2 |= STC.return_;
             if (!t2.isScopeQual)
                 stc2 |= STC.ref_;
         }
-        if (!Parameter.isCovariantScope(t1.isref, stc1, stc2))
+        if (!Parameter.isCovariantScope(t1.isRef, stc1, stc2))
             goto Lnotcovariant;
     }
 
     // We can subtract 'return ref' from 'this', but cannot add it
-    else if (t1.isreturn && !t2.isreturn)
+    else if (t1.isReturn && !t2.isReturn)
         goto Lnotcovariant;
 
     /* https://issues.dlang.org/show_bug.cgi?id=23135
@@ -6457,10 +6457,10 @@ Lcovariant:
     if (!t1.purity && t2.purity)
         stc |= STC.pure_;
 
-    if (!t1.isnothrow && t2.isnothrow)
+    if (!t1.isNothrow && t2.isNothrow)
         stc |= STC.nothrow_;
 
-    if (!t1.isnogc && t2.isnogc)
+    if (!t1.isNogc && t2.isNogc)
         stc |= STC.nogc;
 
     /* Can convert safe/trusted to system
@@ -6519,7 +6519,7 @@ StorageClass parameterStorageClass(TypeFunction tf, Type tthis, Parameter p, Var
 
     /* If haven't inferred the return type yet, can't infer storage classes
      */
-    if (!tf.nextOf() || !tf.isnothrow())
+    if (!tf.nextOf() || !tf.isNothrow())
         return stc;
 
     tf.purityLevel();
@@ -6599,7 +6599,7 @@ StorageClass parameterStorageClass(TypeFunction tf, Type tthis, Parameter p, Var
 
     // Check escaping through return value
     Type tret = tf.nextOf().toBasetype();
-    if (tf.isref || tret.hasPointers())
+    if (tf.isRef || tret.hasPointers())
     {
         return stc | STC.scope_ | STC.return_ | STC.returnScope;
     }
@@ -7196,21 +7196,21 @@ Type substWildTo(Type type, uint mod)
     // Similar to TypeFunction.syntaxCopy;
     auto t = new TypeFunction(ParameterList(params, tf.parameterList.varargs), tret, tf.linkage);
     t.mod = ((tf.mod & MODFlags.wild) ? (tf.mod & ~MODFlags.wild) | MODFlags.const_ : tf.mod);
-    t.isnothrow = tf.isnothrow;
-    t.isnogc = tf.isnogc;
+    t.isNothrow = tf.isNothrow;
+    t.isNogc = tf.isNogc;
     t.purity = tf.purity;
-    t.isproperty = tf.isproperty;
-    t.isref = tf.isref;
-    t.isreturn = tf.isreturn;
-    t.isreturnscope = tf.isreturnscope;
+    t.isProperty = tf.isProperty;
+    t.isRef = tf.isRef;
+    t.isReturn = tf.isReturn;
+    t.isReturnScope = tf.isReturnScope;
     t.isScopeQual = tf.isScopeQual;
-    t.isreturninferred = tf.isreturninferred;
-    t.isscopeinferred = tf.isscopeinferred;
+    t.isReturnInferred = tf.isReturnInferred;
+    t.isScopeInferred = tf.isScopeInferred;
     t.isInOutParam = false;
     t.isInOutQual = false;
     t.trust = tf.trust;
     t.inferenceArguments = tf.inferenceArguments;
-    t.isctor = tf.isctor;
+    t.isCtor = tf.isCtor;
     return t.merge();
 }
 
@@ -7713,7 +7713,7 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
         .error(loc, "%s `%s` is opaque and has no `.%s`", ed.kind, ed.toPrettyChars, id.toChars(), id.toChars());
         return errorReturn();
     }
-    if (!(ed.memtype && ed.memtype.isintegral()))
+    if (!(ed.memtype && ed.memtype.isIntegral()))
     {
         .error(loc, "%s `%s` has no `.%s` property because base type `%s` is not an integral type", ed.kind, ed.toPrettyChars, id.toChars(),
               id.toChars(), ed.memtype ? ed.memtype.toChars() : "");

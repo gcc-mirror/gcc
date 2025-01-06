@@ -1729,7 +1729,7 @@ FuncDeclaration doHeaderInstantiation(TemplateDeclaration td, TemplateInstance t
     {
         // For constructors, emitting return type is necessary for
         // isReturnIsolated() in functionResolve.
-        tf.isctor = true;
+        tf.isCtor = true;
 
         Dsymbol parent = td.toParentDecl();
         Type tret;
@@ -1747,7 +1747,7 @@ FuncDeclaration doHeaderInstantiation(TemplateDeclaration td, TemplateInstance t
         }
         tf.next = tret;
         if (ad && ad.isStructDeclaration())
-            tf.isref = 1;
+            tf.isRef = 1;
         //printf("tf = %s\n", tf.toChars());
     }
     else
@@ -1940,7 +1940,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
         //printf("fd = %s %s, fargs = %s\n", fd.toChars(), fd.type.toChars(), fargs.toChars());
         auto tf = fd.type.isTypeFunction();
 
-        int prop = tf.isproperty ? 1 : 2;
+        int prop = tf.isProperty ? 1 : 2;
         if (property == 0)
             property = prop;
         else if (property != prop)

@@ -317,12 +317,12 @@ struct IntRange
 
     static IntRange fromType(Type type)
     {
-        return fromType(type, type.isunsigned());
+        return fromType(type, type.isUnsigned());
     }
 
     static IntRange fromType(Type type, bool isUnsigned)
     {
-        if (!type.isintegral() || type.toBasetype().ty == Tvector)
+        if (!type.isIntegral() || type.toBasetype().ty == Tvector)
             return widest();
 
         uinteger_t mask = type.sizemask();
@@ -444,9 +444,9 @@ struct IntRange
 
     IntRange _cast(Type type)
     {
-        if (!type.isintegral() || type.toBasetype().ty == Tvector)
+        if (!type.isIntegral() || type.toBasetype().ty == Tvector)
             return this;
-        else if (!type.isunsigned())
+        else if (!type.isUnsigned())
             return castSigned(type.sizemask());
         else if (type.toBasetype().ty == Tdchar)
             return castDchar();
@@ -456,7 +456,7 @@ struct IntRange
 
     IntRange castUnsigned(Type type)
     {
-        if (!type.isintegral() || type.toBasetype().ty == Tvector)
+        if (!type.isIntegral() || type.toBasetype().ty == Tvector)
             return castUnsigned(ulong.max);
         else if (type.toBasetype().ty == Tdchar)
             return castDchar();

@@ -274,7 +274,7 @@ Target::isVectorTypeSupported (int sz, Type *type)
     type = Type::tuns8;
 
   /* No support for non-trivial types, complex types, or booleans.  */
-  if (!type->isTypeBasic () || type->iscomplex () || type->ty == TY::Tbool)
+  if (!type->isTypeBasic () || type->isComplex () || type->ty == TY::Tbool)
     return 2;
 
   /* In [simd/vector extensions], which vector types are supported depends on
@@ -300,7 +300,7 @@ Target::isVectorOpSupported (Type *type, EXP op, Type *)
     return true;
 
   /* Don't support if type is non-scalar, such as __vector(void[]).  */
-  if (!type->isscalar ())
+  if (!type->isScalar ())
     return false;
 
   /* Don't support if expression cannot be represented.  */
@@ -314,7 +314,7 @@ Target::isVectorOpSupported (Type *type, EXP op, Type *)
     case EXP::mod:
     case EXP::modAssign:
       /* fmod() is lowered as a function call.  */
-      if (type->isfloating ())
+      if (type->isFloating ())
 	return false;
       break;
 
@@ -449,7 +449,7 @@ Target::isReturnOnStack (TypeFunction *tf, bool)
   /* Need the back-end type to determine this, but this is called from the
      frontend before semantic processing is finished.  An accurate value
      is not currently needed anyway.  */
-  if (tf->isref ())
+  if (tf->isRef ())
     return false;
 
   Type *tn = tf->next->toBasetype ();

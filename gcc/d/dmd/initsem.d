@@ -711,7 +711,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                     if (tnsa && ix.isExpInitializer())
                     {
                         ExpInitializer ei = ix.isExpInitializer();
-                        if (ei.exp.isStringExp() && tnsa.nextOf().isintegral())
+                        if (ei.exp.isStringExp() && tnsa.nextOf().isIntegral())
                         {
                             si.addInit(field.ident, ei);
                             ++index;
@@ -774,7 +774,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                 else if (tnsa && di.initializer.isExpInitializer())
                 {
                     ExpInitializer ei = di.initializer.isExpInitializer();
-                    if (ei.exp.isStringExp() && tnsa.nextOf().isintegral())
+                    if (ei.exp.isStringExp() && tnsa.nextOf().isIntegral())
                     {
                         ai.addInit(null, ei);
                         ++index;
@@ -917,7 +917,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                     if (tnsa && ix.isExpInitializer())
                     {
                         ExpInitializer ei = ix.isExpInitializer();
-                        if (ei.exp.isStringExp() && tnsa.nextOf().isintegral())
+                        if (ei.exp.isStringExp() && tnsa.nextOf().isIntegral())
                         {
                             si.addInit(field.ident, ei);
                             ++index;
@@ -954,7 +954,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
             /* If it's an array of integral being initialized by `{ string }`
              * replace with `string`
              */
-            if (tn.isintegral())
+            if (tn.isIntegral())
             {
                 if (ExpInitializer ei = isBraceExpression())
                 {
@@ -1017,7 +1017,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                 else if (tnsa && di.initializer.isExpInitializer())
                 {
                     ExpInitializer ei = di.initializer.isExpInitializer();
-                    if (ei.exp.isStringExp() && tnsa.nextOf().isintegral())
+                    if (ei.exp.isStringExp() && tnsa.nextOf().isIntegral())
                     {
                         ai.addInit(null, ei);
                         ++index;
