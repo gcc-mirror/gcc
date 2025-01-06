@@ -1,6 +1,14 @@
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
+	2025-01-07  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Create variable
+	variant_substituted_p to control whether adjust_args applies.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
 	2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* gimplify.cc (gimplify_call_expr): Fix handling of need_device_ptr for

@@ -4075,7 +4075,8 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
   enum gimplify_status ret;
   int i, nargs;
   gcall *call;
-  bool builtin_va_start_p = false, omp_dispatch_p = false;
+  bool builtin_va_start_p = false, omp_dispatch_p = false,
+       variant_substituted_p = false;
   location_t loc = EXPR_LOCATION (*expr_p);
 
   gcc_assert (TREE_CODE (*expr_p) == CALL_EXPR);
@@ -4264,6 +4265,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	 stop here.  */
       if (*expr_p != orig)
 	return ret;
+      /* FIXME: This is not adequate because of the above case.  Argument
+        mangling for variant functions needs to happen where we generate
+        the new calls in gimplify_variant_call_expr instead of below in
+        this function.  */
+      if (get_callee_fndecl (*expr_p) != fndecl)
+	variant_substituted_p = true;
     }
 
   /* There is a sequence point before the call, so any side effects in
@@ -4411,7 +4418,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 				device_num = OMP_CLAUSE_OPERAND (c, 0);
 			    }
 
-			  if (!is_device_ptr)
+			  if (variant_substituted_p && !is_device_ptr)
 			    {
 			      if (device_num == NULL_TREE)
 				{
