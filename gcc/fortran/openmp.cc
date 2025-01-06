@@ -6559,7 +6559,6 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
 match
 gfc_match_omp_declare_variant (void)
 {
-  bool first_p = true;
   char buf[GFC_MAX_SYMBOL_LEN + 1];
 
   if (gfc_match (" (") != MATCH_YES)
@@ -6617,11 +6616,15 @@ gfc_match_omp_declare_variant (void)
       return MATCH_ERROR;
     }
 
-  bool has_match = false, has_adjust_args = false;
+  bool has_match = false, has_adjust_args = false, error_p = false;
   locus adjust_args_loc;
 
   for (;;)
     {
+      gfc_gobble_whitespace ();
+      gfc_match_char (',');
+      gfc_gobble_whitespace ();
+
       enum clause
       {
 	match,
@@ -6637,13 +6640,9 @@ gfc_match_omp_declare_variant (void)
 	}
       else
 	{
-	  if (first_p)
-	    {
-	      gfc_error ("expected %<match%> or %<adjust_args%> at %C");
-	      return MATCH_ERROR;
-	    }
-	  else
-	    break;
+	  if (gfc_match_omp_eos () != MATCH_YES)
+	    error_p = true;
+	  break;
 	}
 
       if (gfc_match (" (") != MATCH_YES)
@@ -6689,8 +6688,12 @@ gfc_match_omp_declare_variant (void)
 	    for (gfc_omp_namelist *n = *head; n != NULL; n = n->next)
 	      n->u.need_device_ptr = true;
 	}
+    }
 
-      first_p = false;
+  if (error_p || (!has_match && !has_adjust_args))
+    {
+      gfc_error ("expected %<match%> or %<adjust_args%> at %C");
+      return MATCH_ERROR;
     }
 
   if (has_adjust_args && !has_match)
