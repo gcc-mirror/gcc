@@ -243,38 +243,101 @@ mark_operand_necessary (tree op)
 
 /* Return true if STMT is a call to allocation function that can be
    optimized out if the memory block is never used for anything else
-   then NULL pointer check or free.
-   If NON_NULL_CHECK is false, we can furhter assume that return value
-   is never checked to be non-NULL. */
+   than NULL pointer check or free.
+   If NON_NULL_CHECK is false, we can further assume that return value
+   is never checked to be non-NULL.
+   Don't return true if it is called with constant size (or sizes for calloc)
+   and the size is excessively large (larger than PTRDIFF_MAX, for calloc
+   either argument larger than PTRDIFF_MAX or both constant and their product
+   larger than PTRDIFF_MAX).  */
 
 static bool
 is_removable_allocation_p (gcall *stmt, bool non_null_check)
 {
-  tree callee = gimple_call_fndecl (stmt);
+  int arg = -1;
+  tree callee = gimple_call_fndecl (stmt), a1, a2;
   if (callee != NULL_TREE
       && fndecl_built_in_p (callee, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (callee))
       {
       case BUILT_IN_MALLOC:
+	arg = 1;
+	goto do_malloc;
       case BUILT_IN_ALIGNED_ALLOC:
+	arg = 2;
+	goto do_malloc;
       case BUILT_IN_CALLOC:
+	arg = 3;
+	goto do_malloc;
       CASE_BUILT_IN_ALLOCA:
+	arg = 1;
+	goto do_malloc;
       case BUILT_IN_STRDUP:
       case BUILT_IN_STRNDUP:
-	return non_null_check ? flag_malloc_dce > 1 : flag_malloc_dce;
+	arg = 0;
+	/* FALLTHRU */
+      do_malloc:
+	if (non_null_check)
+	  {
+	    if (flag_malloc_dce <= 1)
+	      return false;
+	  }
+	else if (!flag_malloc_dce)
+	  return false;
+	break;
 
       case BUILT_IN_GOMP_ALLOC:
-	return true;
+	arg = 2;
+	break;
 
       default:;
       }
 
-  if (callee != NULL_TREE
+  if (arg == -1
+      && callee != NULL_TREE
       && flag_allocation_dce
       && gimple_call_from_new_or_delete (stmt)
       && DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee))
-    return true;
-  return false;
+    arg = 1;
+
+  switch (arg)
+    {
+    case -1:
+      return false;
+    case 0:
+      return true;
+    case 1:
+    case 2:
+      if (gimple_call_num_args (stmt) < (unsigned) arg)
+	return false;
+      a1 = gimple_call_arg (stmt, arg - 1);
+      if (tree_fits_uhwi_p (a1)
+	  && (tree_to_uhwi (a1)
+	      > tree_to_uhwi (TYPE_MAX_VALUE (ptrdiff_type_node))))
+	return false;
+      return true;
+    case 3:
+      if (gimple_call_num_args (stmt) < 2)
+	return false;
+      a1 = gimple_call_arg (stmt, 0);
+      a2 = gimple_call_arg (stmt, 1);
+      if (tree_fits_uhwi_p (a1)
+	  && (tree_to_uhwi (a1)
+	      > tree_to_uhwi (TYPE_MAX_VALUE (ptrdiff_type_node))))
+	return false;
+      if (tree_fits_uhwi_p (a2)
+	  && (tree_to_uhwi (a2)
+	      > tree_to_uhwi (TYPE_MAX_VALUE (ptrdiff_type_node))))
+	return false;
+      if (TREE_CODE (a1) == INTEGER_CST
+	  && TREE_CODE (a2) == INTEGER_CST
+	  && (wi::to_widest (a1) + wi::to_widest (a2)
+	      > tree_to_uhwi (TYPE_MAX_VALUE (ptrdiff_type_node))))
+	return false;
+      return true;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Return true if STMT is a conditional
