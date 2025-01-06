@@ -5902,7 +5902,8 @@ build_conditional_expr (const op_location_t &loc,
   orig_arg3 = arg3;
 
   if (gnu_vector_type_p (TREE_TYPE (arg1))
-      && VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
+      && (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1))
+	  || VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (arg1))))
     {
       tree arg1_type = TREE_TYPE (arg1);
 

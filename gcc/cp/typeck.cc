@@ -6272,18 +6272,24 @@ cp_build_binary_op (const op_location_t &location,
 	      return error_mark_node;
 	    }
 
-	  /* Always construct signed integer vector type.  */
-	  intt = c_common_type_for_size
-	    (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type0))), 0);
-	  if (!intt)
+	  if (VECTOR_BOOLEAN_TYPE_P (type0) && VECTOR_BOOLEAN_TYPE_P (type1))
+	    result_type = type0;
+	  else
 	    {
-	      if (complain & tf_error)
-		error_at (location, "could not find an integer type "
-			  "of the same size as %qT", TREE_TYPE (type0));
-	      return error_mark_node;
+	      /* Always construct signed integer vector type.  */
+	      auto intmode = SCALAR_TYPE_MODE (TREE_TYPE (type0));
+	      auto nelts = TYPE_VECTOR_SUBPARTS (type0);
+
+	      intt = c_common_type_for_size (GET_MODE_BITSIZE (intmode), 0);
+	      if (!intt)
+		{
+		  if (complain & tf_error)
+		    error_at (location, "could not find an integer type "
+				"of the same size as %qT", TREE_TYPE (type0));
+		  return error_mark_node;
+		}
+	      result_type = build_opaque_vector_type (intt, nelts);
 	    }
-	  result_type = build_opaque_vector_type (intt,
-						  TYPE_VECTOR_SUBPARTS (type0));
 	  return build_vec_cmp (resultcode, result_type, op0, op1);
 	}
       build_type = boolean_type_node;

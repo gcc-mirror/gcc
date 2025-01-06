@@ -1312,6 +1312,7 @@ c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
 
   if (!gnu_vector_type_p (TREE_TYPE (expr))
       || (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+	  && !VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (expr))
 	  && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (expr))))
     {
       if (complain)
@@ -1321,7 +1322,8 @@ c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
     }
 
   if (!gnu_vector_type_p (type)
-      || (!VECTOR_INTEGER_TYPE_P (type) && !VECTOR_FLOAT_TYPE_P (type)))
+      || (!VECTOR_INTEGER_TYPE_P (type) && !VECTOR_FLOAT_TYPE_P (type)
+	  && !VECTOR_BOOLEAN_TYPE_P (type)))
     {
       if (complain)
 	error_at (loc2, "%<__builtin_convertvector%> second argument must "

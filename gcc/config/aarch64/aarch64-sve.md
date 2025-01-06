@@ -3520,6 +3520,47 @@
   }
 )
 
+;; Unpredicated sign and zero extension from a boolean mode.
+(define_expand "extend<vpred><mode>2"
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (match_dup 2)
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  {
+    operands[2] = CONSTM1_RTX (<MODE>mode);
+    operands[3] = CONST0_RTX (<MODE>mode);
+  }
+)
+
+(define_expand "zero_extend<vpred><mode>2"
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (match_dup 2)
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  {
+    operands[2] = CONST1_RTX (<MODE>mode);
+    operands[3] = CONST0_RTX (<MODE>mode);
+  }
+)
+
+(define_expand "trunc<mode><vpred>2"
+  [(match_operand:<VPRED> 0 "register_operand")
+   (match_operand:SVE_I 1 "register_operand")]
+  "TARGET_SVE"
+  {
+    rtx mone = CONSTM1_RTX (<MODE>mode);
+    rtx cmp = gen_rtx_EQ (<MODE>mode, operands[1], mone);
+    emit_insn (gen_vec_cmp<mode><vpred> (operands[0], cmp, operands[1], mone));
+    DONE;
+  }
+)
+
 ;; Predicated sign and zero extension from a narrower mode.
 (define_insn "*<optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2"
   [(set (match_operand:SVE_HSDI 0 "register_operand")
@@ -8524,6 +8565,33 @@
   {
     aarch64_expand_sve_vec_cmp_int (operands[0], GET_CODE (operands[1]),
 				    operands[2], operands[3]);
+    DONE;
+  }
+)
+
+(define_expand "vec_cmp<mode><mode>"
+  [(parallel
+    [(set (match_operand:PRED_ALL 0 "register_operand")
+	  (match_operator:PRED_ALL 1 "aarch64_equality_operator"
+	    [(match_operand:PRED_ALL 2 "register_operand")
+	     (match_operand:PRED_ALL 3 "register_operand")]))])]
+  "TARGET_SVE"
+  {
+    rtx ptrue = aarch64_ptrue_reg (<MODE>mode);
+    if (GET_CODE (operands[1]) == EQ)
+      {
+	rtx tmp = gen_reg_rtx (<MODE>mode);
+	emit_insn (gen_aarch64_pred_xor<mode>_z (tmp, ptrue,
+						 operands[2], operands[3]));
+	emit_insn (gen_aarch64_pred_xor<mode>_z (operands[0], ptrue,
+						 tmp, ptrue));
+      }
+    else if (GET_CODE (operands[1]) == NE)
+      emit_insn (gen_aarch64_pred_xor<mode>_z (operands[0], ptrue,
+					       operands[2], operands[3]));
+    else
+      gcc_unreachable ();
+
     DONE;
   }
 )

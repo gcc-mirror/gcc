@@ -14693,18 +14693,24 @@ build_binary_op (location_t location, enum tree_code code,
 	    }
 
           /* Always construct signed integer vector type.  */
-          intt = c_common_type_for_size (GET_MODE_BITSIZE
-					 (SCALAR_TYPE_MODE
-					  (TREE_TYPE (type0))), 0);
-	  if (!intt)
+	  if (VECTOR_BOOLEAN_TYPE_P (type0) && VECTOR_BOOLEAN_TYPE_P (type1))
+	    result_type = type0;
+	  else
 	    {
-	      error_at (location, "could not find an integer type "
-				  "of the same size as %qT",
-			TREE_TYPE (type0));
-	      return error_mark_node;
+	      auto nelts = TYPE_VECTOR_SUBPARTS (type0);
+
+	      intt = c_common_type_for_size (GET_MODE_BITSIZE
+					     (SCALAR_TYPE_MODE
+						(TREE_TYPE (type0))), 0);
+	      if (!intt)
+		{
+		  error_at (location, "could not find an integer type "
+				      "of the same size as %qT",
+			    TREE_TYPE (type0));
+		  return error_mark_node;
+		}
+	      result_type = build_opaque_vector_type (intt, nelts);
 	    }
-          result_type = build_opaque_vector_type (intt,
-						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
 	  ret = build_vec_cmp (resultcode, result_type, op0, op1);
 	  goto return_build_binary_op;

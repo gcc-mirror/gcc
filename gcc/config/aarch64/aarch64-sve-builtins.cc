@@ -4691,9 +4691,6 @@ register_builtin_types ()
 	      vectype = build_truth_vector_type_for_mode (BYTES_PER_SVE_VECTOR,
 							  VNx16BImode);
 	      num_pr = 1;
-	      /* Leave svbool_t as indivisible for now.  We don't yet support
-		 C/C++ operators on predicates.  */
-	      TYPE_INDIVISIBLE_P (vectype) = 1;
 	    }
 	  else
 	    {
@@ -4710,12 +4707,12 @@ register_builtin_types ()
 			  && TYPE_ALIGN (vectype) == 128
 			  && known_eq (size, BITS_PER_SVE_VECTOR));
 	      num_zr = 1;
-	      TYPE_INDIVISIBLE_P (vectype) = 0;
 	    }
 	  vectype = build_distinct_type_copy (vectype);
 	  gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
 	  SET_TYPE_STRUCTURAL_EQUALITY (vectype);
 	  TYPE_ARTIFICIAL (vectype) = 1;
+	  TYPE_INDIVISIBLE_P (vectype) = 0;
 	  make_type_sizeless (vectype);
 	}
       if (num_pr)

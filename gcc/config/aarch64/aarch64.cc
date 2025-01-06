@@ -23145,6 +23145,24 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
   return flags;
 }
 
+/* Implement TARGET_CONVERT_TO_TYPE.  Convert EXPR to TYPE.  */
+
+static tree
+aarch64_convert_to_type (tree type, tree expr)
+{
+  /* If TYPE is a non-standard boolean type invented by the target, check if
+     EXPR can be converted to TYPE.  */
+  if (TREE_CODE (type) == BOOLEAN_TYPE
+      && TREE_CODE (TREE_TYPE (expr)) == BOOLEAN_TYPE
+      && !VECTOR_TYPE_P (type)
+      && !VECTOR_TYPE_P (TREE_TYPE (expr))
+      && TYPE_CANONICAL (type) != TYPE_CANONICAL (TREE_TYPE (expr)))
+    return build1 (VIEW_CONVERT_EXPR, type, expr);
+
+  /* Use standard rules.  */
+  return NULL_TREE;
+}
+
 /* Implement TARGET_MANGLE_TYPE.  */
 
 static const char *
@@ -30440,11 +30458,58 @@ aarch64_stack_protect_guard (void)
   return NULL_TREE;
 }
 
-/* Implement TARGET_INVALID_UNARY_OP.  */
+
+static const char *
+aarch64_valid_vector_boolean_op (int code)
+{
+  switch ((enum tree_code)code)
+    {
+    case PREINCREMENT_EXPR:
+      return N_ ("preincrement operation not permitted on svbool_t");
+    case PREDECREMENT_EXPR:
+      return N_ ("predecrement operation not permitted on svbool_t");
+    case POSTINCREMENT_EXPR:
+      return N_ ("postincrement operation not permitted on svbool_t");
+    case POSTDECREMENT_EXPR:
+      return N_ ("postdecrement operation not permitted on svbool_t");
+    case NEGATE_EXPR:
+      return N_ ("negation operation not permitted on svbool_t");
+    case PLUS_EXPR:
+      return N_ ("plus operation not permitted on svbool_t");
+    case MINUS_EXPR:
+      return N_ ("minus operation not permitted on svbool_t");
+    case MULT_EXPR:
+      return N_ ("multiply operation not permitted on svbool_t");
+    case TRUNC_DIV_EXPR:
+      return N_ ("divide operation not permitted on svbool_t");
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+      return N_ ("shift operation not permitted on svbool_t");
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+      return N_ ("only == and != operations permitted on svbool_t");
+    case ARRAY_REF:
+      return N_ ("subscript operation not supported on svbool_t");
+    default:
+      /* Operation permitted.  */
+      return NULL;
+    }
+}
+
+/* Implement TARGET_INVALID_BINARY_OP.
+   Return the diagnostic message string if the unary operation OP is
+   not permitted on TYPE, NULL otherwise.  */
 
 static const char *
 aarch64_invalid_unary_op (int op, const_tree type)
 {
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && !TYPE_INDIVISIBLE_P (type)
+      && aarch64_sve::builtin_type_p (type))
+    return aarch64_valid_vector_boolean_op (op);
+
   /* Reject all single-operand operations on __mfp8 except for &.  */
   if (TYPE_MAIN_VARIANT (type) == aarch64_mfp8_type_node && op != ADDR_EXPR)
     return N_ ("operation not permitted on type %<mfloat8_t%>");
@@ -30453,19 +30518,29 @@ aarch64_invalid_unary_op (int op, const_tree type)
   return NULL;
 }
 
-/* Implement TARGET_INVALID_BINARY_OP.  */
+/* Implement TARGET_INVALID_BINARY_OP.
+   Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
 
 static const char *
-aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
+aarch64_invalid_binary_op (int op, const_tree type1,
 			   const_tree type2)
 {
   if (VECTOR_TYPE_P (type1)
       && VECTOR_TYPE_P (type2)
       && !TYPE_INDIVISIBLE_P (type1)
-      && !TYPE_INDIVISIBLE_P (type2)
-      && (aarch64_sve::builtin_type_p (type1)
+      && !TYPE_INDIVISIBLE_P (type2))
+    {
+      if ((aarch64_sve::builtin_type_p (type1)
 	  != aarch64_sve::builtin_type_p (type2)))
-    return N_("cannot combine GNU and SVE vectors in a binary operation");
+	return N_("cannot combine GNU and SVE vectors in a binary operation");
+
+      if (aarch64_sve::builtin_type_p (type1)
+	  && aarch64_sve::builtin_type_p (type2)
+	  && VECTOR_BOOLEAN_TYPE_P (type1)
+	  && VECTOR_BOOLEAN_TYPE_P (type2))
+	return aarch64_valid_vector_boolean_op (op);
+    }
 
   /* Reject all 2-operand operations on __mfp8.  */
   if (TYPE_MAIN_VARIANT (type1) == aarch64_mfp8_type_node
@@ -32553,6 +32628,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP aarch64_invalid_binary_op
 
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP aarch64_invalid_unary_op
+
 #undef TARGET_VERIFY_TYPE_CONTEXT
 #define TARGET_VERIFY_TYPE_CONTEXT aarch64_verify_type_context
 
@@ -32742,6 +32820,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
   aarch64_autovectorize_vector_modes
+
+#undef TARGET_CONVERT_TO_TYPE
+#define TARGET_CONVERT_TO_TYPE aarch64_convert_to_type
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV \
