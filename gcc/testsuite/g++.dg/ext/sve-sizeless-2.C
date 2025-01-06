@@ -173,6 +173,27 @@ statements (int n)
   svint32_t init_sve_vc8 = { 0, bar (), 2, 3, 4, n, 5, 6, 7, 8, 9 }; // { dg-error {too many initializers for 'svint32_t'} }
   svint32_t init_sve_vc9 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // { dg-error {too many initializers for 'svint32_t'} }
 
+  svbool_t init_sve_vb1 = { 0, -1 };
+  svbool_t init_sve_vb2 = { 0, bar () }; // { dg-warning {narrowing conversion} "" { target c++11 } }
+  svbool_t init_sve_vb3 = { bar (), n }; // { dg-warning {narrowing conversion} "" { target c++11 } }
+  svbool_t init_sve_vb4 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  svbool_t init_sve_vb5 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    0, -1, -1, -1, 0, 0, 0, bar (), 0, 0, 0, 0, 0, 0, // { dg-warning {narrowing conversion} "" { target c++11 } }
+			    0, 0 };
+  svbool_t init_sve_vb6 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    0 }; // { dg-error {too many initializers for 'svbool_t'} }
+  svbool_t init_sve_vb7 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    bar () }; // { dg-error {too many initializers for 'svbool_t'} }
+  svbool_t init_sve_vb8 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    bar (), -1 }; // { dg-error {too many initializers for 'svbool_t'} }
+  svbool_t init_sve_vb9 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			    bar (), n }; // { dg-error {too many initializers for 'svbool_t'} }
+
   // Constructor calls.
 
   (0, svint8_t ());

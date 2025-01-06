@@ -81,7 +81,19 @@ statements (int n)
   svint32_t init_sve_vc8 = { 0, 1, 2, 3, 4, 5 }; /* { dg-error {excess elements in vector initializer} } */
   svint32_t init_sve_vc9 = { 0, bar (), 2, 3, 4, n }; /* { dg-error {excess elements in vector initializer} } */
 
-
+  svbool_t init_sve_vb1 = { 0, -1 }; /* { dg-warning {overflow in conversion from} } */
+  svbool_t init_sve_vb2 = { 0, bar () };
+  svbool_t init_sve_vb3 = { bar (), n };
+  svbool_t init_sve_vb4 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; /* { dg-warning {overflow in conversion from} } */
+  svbool_t init_sve_vb5 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, bar (), 0, 0}; /* { dg-warning {overflow in conversion from} } */
+  svbool_t init_sve_vb6 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1}; /* { dg-error {excess elements in vector initializer} } */
+	/* { dg-warning "overflow in conversion from" "" { target *-*-* } .-1 } */
+  svbool_t init_sve_vb7 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, bar ()}; /* { dg-error {excess elements in vector initializer} } */
+	/* { dg-warning "overflow in conversion from" "" { target *-*-* } .-1 } */
+  svbool_t init_sve_vb8 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, bar (), -1}; /* { dg-error {excess elements in vector initializer} } */
+	/* { dg-warning "overflow in conversion from" "" { target *-*-* } .-1 } */
+  svbool_t init_sve_vb9 = { 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, bar (), n}; /* { dg-error {excess elements in vector initializer} } */
+	/* { dg-warning "overflow in conversion from" "" { target *-*-* } .-1 } */
 
   /* Compound literals.  */
 

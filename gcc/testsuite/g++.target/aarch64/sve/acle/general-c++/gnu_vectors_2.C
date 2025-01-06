@@ -5,9 +5,13 @@
 typedef uint8_t gnu_uint8_t __attribute__ ((vector_size (32)));
 typedef int8_t gnu_int8_t __attribute__ ((vector_size (32)));
 
+typedef int32_t gnu128_int32_t __attribute__ ((vector_size (128)));
+typedef int32_t gnu32_int32_t __attribute__ ((vector_size (32)));
+
 void
-f (svuint8_t sve_u1, svint8_t sve_s1,
-   gnu_uint8_t gnu_u1, gnu_int8_t gnu_s1, int n, unsigned char uc)
+f (svuint8_t sve_u1, svint8_t sve_s1, svbool_t sve_b1, svbool_t sve_b2,
+   gnu_uint8_t gnu_u1, gnu_int8_t gnu_s1, gnu128_int32_t gnu128_s1, 
+   int n, unsigned char uc)
 {
   // Initialization
 
@@ -56,6 +60,20 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   gnu_uint8_t init_gnu_u20 (sve_s1);
   gnu_uint8_t init_gnu_u21 (gnu_s1);
 
+  // Boolean inits.
+  svbool_t init_sve_b1 = 0; // { dg-error {cannot convert 'int' to 'svbool_t'} }
+  svbool_t init_sve_b2 = {};
+  svbool_t init_sve_b3 = { sve_b1 };
+  svbool_t init_sve_b4 = { gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'signed char:1'} }
+  svbool_t init_sve_b5 = { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'signed char:1'} }
+  svbool_t init_sve_b6 = { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'signed char:1'} }
+  svbool_t init_sve_b7 = { 0 };
+
+  svbool_t init_sve_b8 = { sve_u1, sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'signed char:1'} }
+  svbool_t init_sve_b9 = { gnu_u1, gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'signed char:1'} }
+  init_gnu_u8 = { sve_b1 }; // { dg-error {cannot convert '<brace-enclosed initializer list>' to 'gnu_uint8_t'[^\n]*} }
+  init_gnu_u8 = { sve_b1, sve_b1 }; // { dg-error {cannot convert '<brace-enclosed initializer list>' to 'gnu_uint8_t'[^\n]*} }
+
   // Compound literals
 
   (svuint8_t) {};
@@ -76,6 +94,17 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   (gnu_uint8_t) { sve_u1, sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
   (gnu_uint8_t) { gnu_u1, gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
 
+  // Boolean compound literals.
+
+  (svbool_t) {};
+  (svbool_t) { 0 };
+  (svbool_t) { sve_b1 };
+  (svbool_t) { gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'signed char:1'} }
+  (svbool_t) { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'signed char:1'} }
+  (svbool_t) { sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'signed char:1'} }
+  (svbool_t) { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'signed char:1'} }
+  (gnu_uint8_t) { sve_b1 }; // { dg-error {cannot convert 'svbool_t' to 'unsigned char'} }
+
   // Assignment
 
   sve_u1 = 0; // { dg-error {cannot convert 'int' to 'svuint8_t' in assignment} }
@@ -89,6 +118,14 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   gnu_u1 = gnu_u1;
   gnu_u1 = sve_s1;
   gnu_u1 = gnu_s1;
+
+  // Boolean Assignments.
+
+  sve_b1 = 0; // { dg-error {cannot convert 'int' to 'svbool_t'} }
+  sve_b1 = sve_b1;
+  sve_b1 = sve_s1; // { dg-error {cannot convert 'svint8_t' to 'svbool_t'} }
+  sve_b1 = gnu_s1; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'svbool_t'} }
+  gnu_u1 = sve_b1; // { dg-error {cannot convert 'svbool_t' to 'gnu_uint8_t'} }
 
   // Casts
 
@@ -111,6 +148,17 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   (gnu_uint8_t) gnu_u1;
   (gnu_uint8_t) sve_s1;
   (gnu_uint8_t) gnu_s1;
+
+  // Boolean casts.
+  (void) sve_b1;
+  (svbool_t) sve_b1;
+  (svbool_t) gnu_u1; // { dg-error {cannot convert a value of type 'gnu_uint8_t'[^\n]* to vector type 'svbool_t' which has different size} }
+  (svbool_t) sve_u1; // { dg-error {cannot convert a value of type 'svuint8_t' to vector type 'svbool_t' which has different size} }
+  (svbool_t) 0;
+  (svbool_t) n;
+  (svint8_t) sve_b1; // { dg-error {cannot convert a value of type 'svbool_t' to vector type 'svint8_t' which has different size} }
+  (gnu_uint8_t) sve_b1; // { dg-error {cannot convert a value of type 'svbool_t' to vector type 'gnu_uint8_t'[^\n]* which has different size} }
+  (gnu_int8_t) sve_b1; // { dg-error {cannot convert a value of type 'svbool_t' to vector type 'gnu_int8_t'[^\n]* which has different size} }
 
   // Vector indexing.
 
@@ -147,6 +195,20 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   gnu_u1++;
   gnu_u1--;
 
+  // Boolean unary ops.
+
+  +sve_b1;
+  -sve_b1; // { dg-error {negation operation not permitted} }
+  ~sve_b1;
+  !sve_b1;
+  *sve_b1; // { dg-error {invalid type argument of unary '\*'} }
+  __real sve_b1; // { dg-error {wrong type argument to __real} }
+  __imag sve_b1; // { dg-error {wrong type argument to __imag} }
+  ++sve_b1; // { dg-error {not permitted} }
+  --sve_b1; // { dg-error {not permitted} }
+  sve_b1++; // { dg-error {not permitted} }
+  sve_b1--; // { dg-error {not permitted} }
+
   // Vector-vector binary arithmetic.
 
   sve_u1 + sve_u1;
@@ -168,6 +230,27 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   sve_u1 >> sve_u1;
   sve_u1 && sve_u1;
   sve_u1 || sve_u1;
+
+  // Boolean vector-vector binary arithmetic.
+
+  sve_b1 + sve_b1; // { dg-error {not permitted} }
+  sve_b1 - sve_b1; // { dg-error {not permitted} }
+  sve_b1 * sve_b1; // { dg-error {not permitted} }
+  sve_b1 / sve_b1; // { dg-error {not permitted} }
+  sve_b1 % sve_b1; // { dg-error {invalid operands} }
+  sve_b1 & sve_b1;
+  sve_b1 | sve_b1;
+  sve_b1 ^ sve_b1;
+  sve_b1 == sve_b1;
+  sve_b1 != sve_b1;
+  sve_b1 <= sve_b1; // { dg-error {only == and != operations permitted} }
+  sve_b1 < sve_b1;  // { dg-error {only == and != operations permitted} }
+  sve_b1 > sve_b1;  // { dg-error {only == and != operations permitted} }
+  sve_b1 >= sve_b1; // { dg-error {only == and != operations permitted} }
+  sve_b1 << sve_b1; // { dg-error {not permitted} }
+  sve_b1 >> sve_b1; // { dg-error {not permitted} }
+  sve_b1 && sve_b1;
+  sve_b1 || sve_b1;
 
   sve_u1 + gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
   sve_u1 - gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
@@ -456,6 +539,25 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   gnu_u1 ? gnu_u1 : uc;
   gnu_u1 ? uc : gnu_u1;
 
+  // Boolean conditional expressions.
+
+  uc ? sve_b1 : sve_b2;
+  sve_b1 ? sve_b1 : sve_b2;
+
+  sve_b1 ? sve_u1 : sve_u1; // { dg-error {incompatible vector types in conditional expression} }
+  sve_b1 ? sve_s1 : sve_s1; // { dg-error {incompatible vector types in conditional expression} }
+  sve_b1 ? gnu_u1 : sve_u1; // { dg-error {incompatible vector types in conditional expression} }
+  sve_b1 ? sve_u1 : gnu_u1; // { dg-error {incompatible vector types in conditional expression} }
+  sve_b1 ? gnu_u1 : gnu_u1; // { dg-error {incompatible vector types in conditional expression} }
+  sve_b1 ? gnu_s1 : gnu_s1; // { dg-error {incompatible vector types in conditional expression} }
+
+  sve_u1 ? sve_b1 : sve_b2; // { dg-error {incompatible vector types in conditional expression} }
+  sve_s1 ? sve_b1 : sve_b2; // { dg-error {incompatible vector types in conditional expression} }
+  gnu_u1 ? sve_b1 : sve_b2; // { dg-error {incompatible vector types in conditional expression} }
+  gnu_s1 ? sve_b1 : sve_b2; // { dg-error {incompatible vector types in conditional expression} }
+  gnu_u1 ? gnu_u1 : sve_b1; // { dg-error {incompatible vector types in conditional expression} }
+  gnu_u1 ? sve_b1 : gnu_u1; // { dg-error {incompatible vector types in conditional expression} }
+
   // Vector built-ins.
 
   __builtin_shuffle (sve_u1, sve_u1, sve_u1);
@@ -468,6 +570,33 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   __builtin_convertvector (gnu_u1, svuint8_t);
   __builtin_convertvector (sve_u1, gnu_uint8_t);
   __builtin_convertvector (gnu_u1, gnu_uint8_t);
+
+  // Boolean vector built-ins.
+
+  __builtin_shuffle (sve_b1, sve_b1, sve_s1);
+  __builtin_shuffle (sve_b1, sve_b1, sve_u1);
+  __builtin_shuffle (sve_b1, sve_b1, gnu_s1);
+  __builtin_shuffle (sve_b1, sve_b1, gnu_u1);
+
+  __builtin_shuffle (sve_b1, gnu_u1, gnu_u1); // { dg-error {'__builtin_shuffle' argument vectors must be of the same type} }
+  __builtin_shuffle (gnu_u1, sve_b1, gnu_u1); // { dg-error {'__builtin_shuffle' argument vectors must be of the same type} }
+
+  __builtin_convertvector (sve_b1, svint8_t);
+  __builtin_convertvector (sve_b1, svuint8_t);
+  __builtin_convertvector (sve_b1, gnu_int8_t);
+  __builtin_convertvector (sve_b1, gnu_uint8_t);
+
+  __builtin_convertvector (sve_s1, svbool_t);
+  __builtin_convertvector (gnu_s1, svbool_t);
+  __builtin_convertvector (sve_u1, svbool_t);
+  __builtin_convertvector (gnu_u1, svbool_t);
+
+  __builtin_convertvector (sve_b1, svint32_t); /* { dg-error {'__builtin_convertvector' number of elements of the first argument vector and the second argument vector type should be the same} } */
+  __builtin_convertvector (sve_b1, svuint32_t); /* { dg-error {'__builtin_convertvector' number of elements of the first argument vector and the second argument vector type should be the same} } */
+  __builtin_convertvector (sve_b1, gnu32_int32_t); /* { dg-error {'__builtin_convertvector' number of elements of the first argument vector and the second argument vector type should be the same} } */
+
+  __builtin_convertvector (sve_b1, gnu128_int32_t);
+  __builtin_convertvector (gnu128_s1, svbool_t);
 
   // Type queries.
 
