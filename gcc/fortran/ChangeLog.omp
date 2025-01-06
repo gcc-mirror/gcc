@@ -1,6 +1,14 @@
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
+	2025-01-13  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_declare_variant): Match comma after directive
+	name and between clauses. Emit more useful diagnostics.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
 	2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* dump-parse-tree.cc (show_omp_clauses): Handle novariants and nocontext
