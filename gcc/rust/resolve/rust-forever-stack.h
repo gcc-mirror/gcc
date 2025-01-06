@@ -670,7 +670,7 @@ public:
   tl::optional<Rib &> to_rib (NodeId rib_id);
   tl::optional<const Rib &> to_rib (NodeId rib_id) const;
 
-  std::string as_debug_string ();
+  std::string as_debug_string () const;
 
   /**
    * Used to check if a module is a descendant of another module
@@ -752,9 +752,9 @@ private:
   std::reference_wrapper<Node> cursor_reference;
 
   void stream_rib (std::stringstream &stream, const Rib &rib,
-		   const std::string &next, const std::string &next_next);
+		   const std::string &next, const std::string &next_next) const;
   void stream_node (std::stringstream &stream, unsigned indentation,
-		    const Node &node);
+		    const Node &node) const;
 
   /* Helper types and functions for `resolve_path` */
 

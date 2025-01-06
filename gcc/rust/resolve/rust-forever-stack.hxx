@@ -699,7 +699,7 @@ template <Namespace N>
 void
 ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
 			     const std::string &next,
-			     const std::string &next_next)
+			     const std::string &next_next) const
 {
   if (rib.get_values ().empty ())
     {
@@ -718,7 +718,7 @@ ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
 template <Namespace N>
 void
 ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
-			      const ForeverStack<N>::Node &node)
+			      const ForeverStack<N>::Node &node) const
 {
   auto indent = std::string (indentation, ' ');
   auto next = std::string (indentation + 4, ' ');
@@ -750,7 +750,7 @@ ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
 
 template <Namespace N>
 std::string
-ForeverStack<N>::as_debug_string ()
+ForeverStack<N>::as_debug_string () const
 {
   std::stringstream stream;
 
