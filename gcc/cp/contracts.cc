@@ -2681,9 +2681,26 @@ maybe_apply_function_contracts (tree fndecl)
       //debug_tree (DECL_CONTRACTS (fndecl));
     }
 
-  /* This copies the approach used for function try blocks.  */
-  tree fnbody = pop_stmt_list (DECL_SAVED_TREE (fndecl));
-  DECL_SAVED_TREE (fndecl) = push_stmt_list ();
+  /* If the function is noexcept, the user's written body will be wrapped in a
+     MUST_NOT_THROW expression.  In that case we want to extract the body from
+     that and build the replacement (including the pre and post-conditions as
+     needed) in its place.  */
+  tree fnbody;
+  if (TYPE_NOEXCEPT_P (TREE_TYPE (fndecl)))
+    {
+      tree m_n_t_expr = expr_first (DECL_SAVED_TREE (fndecl));
+      gcc_checking_assert (TREE_CODE (m_n_t_expr) == MUST_NOT_THROW_EXPR);
+      fnbody = TREE_OPERAND (m_n_t_expr, 0);
+      TREE_OPERAND (m_n_t_expr, 0) = push_stmt_list ();
+    }
+  else
+    {
+      fnbody = DECL_SAVED_TREE (fndecl);
+      DECL_SAVED_TREE (fndecl) = push_stmt_list ();
+    }
+
+  /* Now add the pre and post conditions to the existing function body.
+     This copies the approach used for function try blocks.  */
   tree compound_stmt = begin_compound_stmt (0);
   current_binding_level->artificial = 1;
 
@@ -3029,12 +3046,16 @@ build_contract_wrapper_function (tree fndecl, bool check_post)
 
   tree wrapper_type = build_function_type ( wrapper_return_type,
 					    wrapper_args);
-
+  /* Make the wrapper function noexcept if the checked function is
+     noexcept. */
+  if (flag_exceptions && type_noexcept_p (TREE_TYPE (fndecl)))
+    wrapper_type = build_exception_variant (wrapper_type, noexcept_true_spec);
 
   /* this will create a member function if fndecl is a member function,
     so we will need to adjust the type later   */
   tree wrapdecl
-    = build_lang_decl_loc (loc, FUNCTION_DECL, get_identifier (name), wrapper_type);
+    = build_lang_decl_loc (loc, FUNCTION_DECL, get_identifier (name),
+			   wrapper_type);
 
 
   DECL_CONTEXT (wrapdecl) = NULL_TREE;
@@ -3193,12 +3214,11 @@ maybe_contract_wrap_call (tree fndecl, tree call)
 
 bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void*)
 {
-
-  start_preparsed_function (wrapdecl, /*DECL_ATTRIBUTES (wrapdecl)*/ NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
+  start_preparsed_function (wrapdecl, /*DECL_ATTRIBUTES (wrapdecl)*/ NULL_TREE,
+			   SF_DEFAULT | SF_PRE_PARSED);
 
   tree body = begin_function_body ();
   tree compound_stmt = begin_compound_stmt (BCS_FN_BODY);
-
 
   vec<tree, va_gc> * args = build_arg_list (wrapdecl);
 
