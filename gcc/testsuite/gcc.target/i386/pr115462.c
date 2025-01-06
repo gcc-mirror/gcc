@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx2 -fno-tree-vectorize -fno-pic" } */
-/* { dg-final { scan-assembler-times {(?n)movl[ \t]+.*, p1\.0\+[0-9]*\(,} 3 } } */
+/* { dg-final { scan-assembler-times {(?n)movl[ \t]+.*, p1\.0\+[0-9]*\(,} 1 } } */
 
 int
 foo (long indx, long indx2, long indx3, long indx4, long indx5, long indx6, long n, int* q)
