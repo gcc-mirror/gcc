@@ -3926,7 +3926,6 @@ package body Ch4 is
       if Token = Tok_Vertical_Bar then
          Error_Msg_Ada_2012_Feature ("set notation", Token_Ptr);
          Set_Alternatives (N, New_List (Alt));
-         Set_Right_Opnd   (N, Empty);
 
          --  Loop to accumulate alternatives
 
@@ -3940,8 +3939,7 @@ package body Ch4 is
       --  Not set case
 
       else
-         Set_Right_Opnd   (N, Alt);
-         Set_Alternatives (N, No_List);
+         Set_Right_Opnd (N, Alt);
       end if;
    end P_Membership_Test;
 
