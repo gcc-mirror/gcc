@@ -53057,7 +53057,9 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       break;
 
     case PRAGMA_OMP_DISPATCH:
-      cp_parser_omp_dispatch (parser, pragma_tok);
+      if (context != pragma_stmt && context != pragma_compound)
+	goto bad_stmt;
+      cp_parser_omp_construct (parser, pragma_tok, if_p);
       return true;
 
     case PRAGMA_IVDEP:
