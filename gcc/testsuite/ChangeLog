@@ -1,3 +1,11 @@
+2025-01-05  Iain Buclaw  <ibuclaw@symmetryinvestments.com>
+
+	* gdc.dg/torture/pr96435.d: Add dg-warning.
+
+2025-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/torture/pr110406.d: Add -fno-moduleinfo to dg-options.
+
 2025-01-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/tree-ssa/vector-4.c: Replace MMIX adjustments with

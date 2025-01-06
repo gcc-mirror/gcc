@@ -1,3 +1,44 @@
+2025-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 66b93fc24a.
+	* dmd/VERSION: Bump version to v2.109.1.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	(matches_builtin_type): Likewise.
+	* d-codegen.cc (identity_compare_p): Likewise.
+	(call_side_effect_free_p): Likewise.
+	* d-convert.cc (convert_expr): Likewise.
+	(check_valist_conversion): Likewise.
+	* d-lang.cc (d_types_compatible_p): Likewise.
+	* d-target.cc (Target::isVectorTypeSupported): Likewise.
+	(Target::isReturnOnStack): Likewise.
+	(Target::preferPassByRef): Likewise.
+	* decl.cc (class DeclVisitor): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+	* typeinfo.cc (class TypeInfoVisitor): Likewise.
+	* types.cc (class TypeVisitor): Likewise.
+
+2025-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::finish_vtable): Update for new front-end
+	interface.
+	* dmd/MERGE: Merge upstream dmd 07bc5b9b3c.
+	* dmd/VERSION: Bump version to v2.109.0.
+
+2025-01-05  Iain Buclaw  <ibuclaw@symmetryinvestments.com>
+
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/attribsem.o,
+	d/common-charactertables.o, d/common-identifiertables.o.
+	* d-attribs.cc (apply_user_attributes): Update for new front-end
+	interface.
+	* d-builtins.cc (d_init_versions): Predefine CppRuntime_GNU.
+	* d-incpath.cc (add_globalpaths): Update for new front-end interface.
+	(add_filepaths): Likewise.
+	(add_import_paths): Likewise.
+	* d-lang.cc (d_post_options): Likewise.
+	* dmd/MERGE: Merge upstream dmd c11e1d1708.
+	* dmd/VERSION: Bump version to v2.108.1.
+
 2025-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gdc.texi: Bump @copyrights-d year.

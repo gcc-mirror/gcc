@@ -1,3 +1,10 @@
+2025-01-05  Estevan Castilho (Tevo)  <estevan.cps@gmail.com>
+
+	* libgnarl/s-taprop__dummy.adb: Remove use clause for
+	System.Parameters.
+	(Unlock): Remove Global_Lock formal parameter.
+	(Write_Lock): Likewise.
+
 2025-01-03  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_ch3.adb, exp_ch4.adb, exp_disp.adb, inline.adb: Remove explicit
