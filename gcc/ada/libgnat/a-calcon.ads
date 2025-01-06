@@ -37,7 +37,8 @@ with Interfaces.C;
 package Ada.Calendar.Conversions is
 
    function To_Ada_Time (Unix_Time : Interfaces.C.long) return Time;
-   pragma Obsolescent (To_Ada_Time, "Retires in v26");
+   pragma Obsolescent
+     (To_Ada_Time, "This function may be removed in a future version");
    --  Old version which will overflow at the 2038 Epochalypse
 
    function To_Ada_Time_64 (Unix_Time : Interfaces.C.long_long) return Time;
@@ -74,7 +75,9 @@ package Ada.Calendar.Conversions is
    function To_Duration
      (tv_sec  : Interfaces.C.long;
       tv_nsec : Interfaces.C.long) return Duration;
-   pragma Obsolescent (To_Duration, "Retires in v26");
+   pragma
+     Obsolescent
+       (To_Duration, "This function may be removed in a future version");
    --  Old version which will overflow at the 2038 Epochalypse
 
    function To_Duration_64
@@ -90,7 +93,10 @@ package Ada.Calendar.Conversions is
      (D       : Duration;
       tv_sec  : out Interfaces.C.long;
       tv_nsec : out Interfaces.C.long);
-   pragma Obsolescent (To_Struct_Timespec, "Retires in v26");
+   pragma
+     Obsolescent
+       (To_Struct_Timespec,
+        "This function may be removed in a future version");
    --  Old version which will overflow at the 2038 Epochalypse
 
    procedure To_Struct_Timespec_64
@@ -122,7 +128,9 @@ package Ada.Calendar.Conversions is
    --  The input date is considered to be in UTC
 
    function To_Unix_Time (Ada_Time : Time) return Interfaces.C.long;
-   pragma Obsolescent (To_Unix_Time, "Retires in v26");
+   pragma
+     Obsolescent
+       (To_Unix_Time, "This function may be removed in a future version");
    --  Old version which will overflow at the 2038 Epochalypse
 
    function To_Unix_Time_64 (Ada_Time : Time) return Interfaces.C.long_long;
