@@ -833,10 +833,14 @@ gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 gnattools-cross-mv:
 	$(GNATTOOLS_CROSS_MV)
 
+# gnatbind$(exeext) is a prerequisite of the ada target and
+# thus needs to be copied instead of moved.
 GNATTOOLS_CROSS_MV=\
-  for tool in $(ADA_TOOLS) ; do \
-    if [ -f $$tool$(exeext) ] ; \
-    then \
+  if [ -f gnatbind$(exeext) ] ; then \
+    $(CP) gnatbind$(exeext) gnatbind-cross$(exeext); \
+  fi; \
+  for tool in $(filter-out gnatbind, $(ADA_TOOLS)) ; do \
+    if [ -f $$tool$(exeext) ] ; then \
       $(MV) $$tool$(exeext) $$tool-cross$(exeext); \
     fi; \
   done
