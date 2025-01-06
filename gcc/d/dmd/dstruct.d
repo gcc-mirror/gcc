@@ -431,13 +431,15 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         if (ispod != ThreeState.none)
             return (ispod == ThreeState.yes);
 
-        ispod = ThreeState.yes;
-
         import dmd.clone;
+
         bool hasCpCtorLocal;
         needCopyCtor(this, hasCpCtorLocal);
 
-        if (enclosing || search(this, loc, Id.postblit) || search(this, loc, Id.dtor) || hasCpCtorLocal)
+        if (enclosing                      || // is nested
+            search(this, loc, Id.postblit) || // has postblit
+            search(this, loc, Id.dtor)     || // has destructor
+            hasCpCtorLocal)                   // has copy constructor
         {
             ispod = ThreeState.no;
             return false;
@@ -453,12 +455,9 @@ extern (C++) class StructDeclaration : AggregateDeclaration
                 return false;
             }
 
-            Type tv = v.type.baseElemOf();
-            if (tv.ty == Tstruct)
+            if (auto ts = v.type.baseElemOf().isTypeStruct())
             {
-                auto ts = cast(TypeStruct)tv;
-                StructDeclaration sd = ts.sym;
-                if (!sd.isPOD())
+                if (!ts.sym.isPOD())
                 {
                     ispod = ThreeState.no;
                     return false;
@@ -466,7 +465,8 @@ extern (C++) class StructDeclaration : AggregateDeclaration
             }
         }
 
-        return (ispod == ThreeState.yes);
+        ispod = ThreeState.yes;
+        return true;
     }
 
     /***************************************

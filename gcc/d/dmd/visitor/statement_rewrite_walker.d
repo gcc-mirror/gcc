@@ -9,7 +9,7 @@
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/statement_rewrite_walker.d
  */
 
-module dmd.statement_rewrite_walker;
+module dmd.visitor.statement_rewrite_walker;
 
 import core.stdc.stdio;
 

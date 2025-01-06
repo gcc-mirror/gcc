@@ -25,10 +25,10 @@ import dmd.init;
 import dmd.initsem;
 import dmd.location;
 import dmd.mtype;
-import dmd.postordervisitor;
 import dmd.statement;
 import dmd.tokens;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 
 /*********************************

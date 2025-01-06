@@ -51,102 +51,103 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
     if (e.op != EXP.dotVariable)
         return false;
     auto dve = cast(DotVarExp)e;
-    if (VarDeclaration v = dve.var.isVarDeclaration())
+    VarDeclaration v = dve.var.isVarDeclaration();
+    if (!v)
+        return false;
+    if (!sc.func)
+        return false;
+    auto ad = v.isMember2();
+    if (!ad)
+        return false;
+
+    import dmd.globals : global;
+    if (v.isSystem())
     {
-        if (!sc.func)
-            return false;
-        auto ad = v.isMember2();
-        if (!ad)
-            return false;
-
-        import dmd.globals : global;
-        if (v.isSystem())
-        {
-            if (sc.setUnsafePreview(global.params.systemVariables, !printmsg, e.loc,
-                "cannot access `@system` field `%s.%s` in `@safe` code", ad, v))
-                return true;
-        }
-
-        // This branch shouldn't be here, but unfortunately calling `ad.determineSize`
-        // breaks code with circular reference errors. Specifically, test23589.d fails
-        if (ad.sizeok != Sizeok.done && !sc.func.isSafeBypassingInference())
-            return false;
-
-        // needed to set v.overlapped and v.overlapUnsafe
-        if (ad.sizeok != Sizeok.done)
-            ad.determineSize(ad.loc);
-
-        import dmd.globals : FeatureState;
-        const hasPointers = v.type.hasPointers();
-        if (hasPointers)
-        {
-            if (v.overlapped)
-            {
-                if (sc.func.isSafeBypassingInference() && sc.setUnsafe(!printmsg, e.loc,
-                    "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v))
-                {
-                    return true;
-                }
-                else
-                {
-                    // @@@DEPRECATED_2.116@@@
-                    // https://issues.dlang.org/show_bug.cgi?id=20655
-                    // Inferring `@system` because of union access breaks code,
-                    // so make it a deprecation safety violation as of 2.106
-                    // To turn into an error, remove `isSafeBypassingInference` check in the
-                    // above if statement and remove the else branch
-                    sc.setUnsafePreview(FeatureState.default_, !printmsg, e.loc,
-                        "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v);
-                }
-            }
-        }
-
-        if (v.type.hasInvariant())
-        {
-            if (v.overlapped)
-            {
-                if (sc.setUnsafe(!printmsg, e.loc,
-                    "field `%s.%s` cannot access structs with invariants in `@safe` code that overlap other fields",
-                    ad, v))
-                    return true;
-            }
-        }
-
-        // @@@DEPRECATED_2.119@@@
-        // https://issues.dlang.org/show_bug.cgi?id=24477
-        // Should probably be turned into an error in a new edition
-        if (v.type.hasUnsafeBitpatterns() && v.overlapped && sc.setUnsafePreview(
-            FeatureState.default_, !printmsg, e.loc,
-            "cannot access overlapped field `%s.%s` with unsafe bit patterns in `@safe` code", ad, v)
-        )
-        {
+        if (sc.setUnsafePreview(global.params.systemVariables, !printmsg, e.loc,
+            "cannot access `@system` field `%s.%s` in `@safe` code", ad, v))
             return true;
-        }
+    }
 
-        if (readonly || !e.type.isMutable())
-            return false;
+    // This branch shouldn't be here, but unfortunately calling `ad.determineSize`
+    // breaks code with circular reference errors. Specifically, test23589.d fails
+    if (ad.sizeok != Sizeok.done && !sc.func.isSafeBypassingInference())
+        return false;
 
-        if (hasPointers && v.type.toBasetype().ty != Tstruct)
+    // needed to set v.overlapped and v.overlapUnsafe
+    if (ad.sizeok != Sizeok.done)
+        ad.determineSize(ad.loc);
+
+    import dmd.globals : FeatureState;
+    const hasPointers = v.type.hasPointers();
+    if (hasPointers)
+    {
+        if (v.overlapped)
         {
-            if ((!ad.type.alignment.isDefault() && ad.type.alignment.get() < target.ptrsize) ||
-                 (v.offset & (target.ptrsize - 1)))
-            {
-                if (sc.setUnsafe(!printmsg, e.loc,
-                    "field `%s.%s` cannot modify misaligned pointers in `@safe` code", ad, v))
-                    return true;
-            }
-        }
-
-        if (v.overlapUnsafe)
-        {
-            if (sc.setUnsafe(!printmsg, e.loc,
-                "field `%s.%s` cannot modify fields in `@safe` code that overlap fields with other storage classes",
-                ad, v))
+            if (sc.func.isSafeBypassingInference() && sc.setUnsafe(!printmsg, e.loc,
+                "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v))
             {
                 return true;
+            }
+            else
+            {
+                // @@@DEPRECATED_2.116@@@
+                // https://issues.dlang.org/show_bug.cgi?id=20655
+                // Inferring `@system` because of union access breaks code,
+                // so make it a deprecation safety violation as of 2.106
+                // To turn into an error, remove `isSafeBypassingInference` check in the
+                // above if statement and remove the else branch
+                sc.setUnsafePreview(FeatureState.default_, !printmsg, e.loc,
+                    "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v);
             }
         }
     }
+
+    if (v.type.hasInvariant())
+    {
+        if (v.overlapped)
+        {
+            if (sc.setUnsafe(!printmsg, e.loc,
+                "field `%s.%s` cannot access structs with invariants in `@safe` code that overlap other fields",
+                ad, v))
+                return true;
+        }
+    }
+
+    // @@@DEPRECATED_2.119@@@
+    // https://issues.dlang.org/show_bug.cgi?id=24477
+    // Should probably be turned into an error in a new edition
+    if (v.type.hasUnsafeBitpatterns() && v.overlapped && sc.setUnsafePreview(
+        FeatureState.default_, !printmsg, e.loc,
+        "cannot access overlapped field `%s.%s` with unsafe bit patterns in `@safe` code", ad, v)
+    )
+    {
+        return true;
+    }
+
+    if (readonly || !e.type.isMutable())
+        return false;
+
+    if (hasPointers && v.type.toBasetype().ty != Tstruct)
+    {
+        if ((!ad.type.alignment.isDefault() && ad.type.alignment.get() < target.ptrsize) ||
+             (v.offset & (target.ptrsize - 1)))
+        {
+            if (sc.setUnsafe(!printmsg, e.loc,
+                "field `%s.%s` cannot modify misaligned pointers in `@safe` code", ad, v))
+                return true;
+        }
+    }
+
+    if (v.overlapUnsafe)
+    {
+        if (sc.setUnsafe(!printmsg, e.loc,
+            "field `%s.%s` cannot modify fields in `@safe` code that overlap fields with other storage classes",
+            ad, v))
+        {
+            return true;
+        }
+    }
+
     return false;
 }
 

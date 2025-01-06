@@ -2385,7 +2385,11 @@ private template TimSortImpl(alias pred, R)
         size_t stackLen = 0;
 
         // Allocate temporary memory if not provided by user
-        if (temp.length < minTemp) temp = () @trusted { return uninitializedArray!(T[])(minTemp); }();
+        if (temp.length < minTemp)
+        {
+            static if (hasElaborateAssign!T) temp = new T[](minTemp);
+            else temp = () @trusted { return uninitializedArray!(T[])(minTemp); }();
+        }
 
         for (size_t i = 0; i < range.length; )
         {
@@ -3075,6 +3079,20 @@ private template TimSortImpl(alias pred, R)
     S[] array;
     array.sort!("a < b", SwapStrategy.stable);
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=24773
+@safe unittest
+{
+    static struct S
+    {
+        int i = 42;
+        ~this() { assert(i == 42); }
+    }
+
+    auto array = new S[](400);
+    array.sort!((a, b) => false, SwapStrategy.stable);
+}
+
 
 // schwartzSort
 /**

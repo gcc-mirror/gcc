@@ -2363,12 +2363,12 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
         // to themselves, need to avoid infinite recursion:
         // struct S { this(int){ this.s = &this; } S* s; }
         // const foo = new S(0);
-        if (e.stageflags & stageToCBuffer)
+        if (e.stageflags & StructLiteralExp.StageFlags.toCBuffer)
             buf.writestring("<recursion>");
         else
         {
             const old = e.stageflags;
-            e.stageflags |= stageToCBuffer;
+            e.stageflags |= StructLiteralExp.StageFlags.toCBuffer;
             argsToBuffer(e.elements, buf, hgs);
             e.stageflags = old;
         }

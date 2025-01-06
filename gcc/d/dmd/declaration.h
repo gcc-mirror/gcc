@@ -34,6 +34,7 @@ namespace dmd
 {
     bool functionSemantic(FuncDeclaration* fd);
     bool functionSemantic3(FuncDeclaration* fd);
+    bool checkClosure(FuncDeclaration* fd);
     MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);
     PURE isPure(FuncDeclaration *f);
 }
@@ -719,7 +720,6 @@ public:
     bool isAbstract() override final;
     bool isSafe();
     bool isTrusted();
-    bool isNogc();
 
     virtual bool isNested() const;
     AggregateDeclaration *isThis() override;
@@ -732,7 +732,6 @@ public:
     const char *kind() const override;
     bool isUnique();
     bool needsClosure();
-    bool checkClosure();
     bool hasNestedFrameRefs();
     ParameterList getParameterList();
 

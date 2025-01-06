@@ -1643,60 +1643,64 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, ref TemplateParameters pa
         override void visit(TypeSArray t)
         {
             // Extra check that array dimensions must match
-            if (tparam)
+            if (!tparam)
             {
-                if (tparam.ty == Tarray)
-                {
-                    MATCH m = deduceType(t.next, sc, tparam.nextOf(), parameters, dedtypes, wm);
-                    result = (m >= MATCH.constant) ? MATCH.convert : MATCH.nomatch;
-                    return;
-                }
+                visit(cast(Type)t);
+                return;
+            }
 
-                TemplateParameter tp = null;
-                Expression edim = null;
-                size_t i;
-                if (auto tsa = tparam.isTypeSArray())
-                {
-                    if (tsa.dim.isVarExp() && tsa.dim.isVarExp().var.storage_class & STC.templateparameter)
-                    {
-                        Identifier id = tsa.dim.isVarExp().var.ident;
-                        i = templateIdentifierLookup(id, &parameters);
-                        assert(i != IDX_NOTFOUND);
-                        tp = parameters[i];
-                    }
-                    else
-                        edim = tsa.dim;
-                }
-                else if (auto taa = tparam.isTypeAArray())
-                {
-                    i = templateParameterLookup(taa.index, &parameters);
-                    if (i != IDX_NOTFOUND)
-                        tp = parameters[i];
-                    else
-                    {
-                        Loc loc;
-                        // The "type" (it hasn't been resolved yet) of the function parameter
-                        // does not have a location but the parameter it is related to does,
-                        // so we use that for the resolution (better error message).
-                        if (inferStart < parameters.length)
-                        {
-                            TemplateParameter loctp = parameters[inferStart];
-                            loc = loctp.loc;
-                        }
+            if (tparam.ty == Tarray)
+            {
+                MATCH m = deduceType(t.next, sc, tparam.nextOf(), parameters, dedtypes, wm);
+                result = (m >= MATCH.constant) ? MATCH.convert : MATCH.nomatch;
+                return;
+            }
 
-                        Expression e;
-                        Type tx;
-                        Dsymbol s;
-                        taa.index.resolve(loc, sc, e, tx, s);
-                        edim = s ? getValue(s) : getValue(e);
-                    }
-                }
-                if (tp && tp.matchArg(sc, t.dim, i, &parameters, dedtypes, null) || edim && edim.toInteger() == t.dim.toInteger())
+            TemplateParameter tp = null;
+            Expression edim = null;
+            size_t i;
+            if (auto tsa = tparam.isTypeSArray())
+            {
+                if (tsa.dim.isVarExp() && tsa.dim.isVarExp().var.storage_class & STC.templateparameter)
                 {
-                    result = deduceType(t.next, sc, tparam.nextOf(), parameters, dedtypes, wm);
-                    return;
+                    Identifier id = tsa.dim.isVarExp().var.ident;
+                    i = templateIdentifierLookup(id, &parameters);
+                    assert(i != IDX_NOTFOUND);
+                    tp = parameters[i];
+                }
+                else
+                    edim = tsa.dim;
+            }
+            else if (auto taa = tparam.isTypeAArray())
+            {
+                i = templateParameterLookup(taa.index, &parameters);
+                if (i != IDX_NOTFOUND)
+                    tp = parameters[i];
+                else
+                {
+                    Loc loc;
+                    // The "type" (it hasn't been resolved yet) of the function parameter
+                    // does not have a location but the parameter it is related to does,
+                    // so we use that for the resolution (better error message).
+                    if (inferStart < parameters.length)
+                    {
+                        TemplateParameter loctp = parameters[inferStart];
+                        loc = loctp.loc;
+                    }
+
+                    Expression e;
+                    Type tx;
+                    Dsymbol s;
+                    taa.index.resolve(loc, sc, e, tx, s);
+                    edim = s ? getValue(s) : getValue(e);
                 }
             }
+            if (tp && tp.matchArg(sc, t.dim, i, &parameters, dedtypes, null) || edim && edim.toInteger() == t.dim.toInteger())
+            {
+                result = deduceType(t.next, sc, tparam.nextOf(), parameters, dedtypes, wm);
+                return;
+            }
+
             visit(cast(Type)t);
         }
 
@@ -1721,132 +1725,137 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, ref TemplateParameters pa
             if (!tparam)
                 return visit(cast(Type)t);
 
-            if (auto tp = tparam.isTypeFunction())
+            auto tp = tparam.isTypeFunction();
+            if (!tp)
             {
-                if (t.parameterList.varargs != tp.parameterList.varargs || t.linkage != tp.linkage)
+                visit(cast(Type)t);
+                return;
+            }
+
+            if (t.parameterList.varargs != tp.parameterList.varargs || t.linkage != tp.linkage)
+            {
+                result = MATCH.nomatch;
+                return;
+            }
+
+            foreach (fparam; *tp.parameterList.parameters)
+            {
+                // https://issues.dlang.org/show_bug.cgi?id=2579
+                // Apply function parameter storage classes to parameter types
+                fparam.type = fparam.type.addStorageClass(fparam.storageClass);
+                fparam.storageClass &= ~STC.TYPECTOR;
+
+                // https://issues.dlang.org/show_bug.cgi?id=15243
+                // Resolve parameter type if it's not related with template parameters
+                if (!reliesOnTemplateParameters(fparam.type, parameters[inferStart .. parameters.length]))
                 {
-                    result = MATCH.nomatch;
-                    return;
-                }
-
-                foreach (fparam; *tp.parameterList.parameters)
-                {
-                    // https://issues.dlang.org/show_bug.cgi?id=2579
-                    // Apply function parameter storage classes to parameter types
-                    fparam.type = fparam.type.addStorageClass(fparam.storageClass);
-                    fparam.storageClass &= ~STC.TYPECTOR;
-
-                    // https://issues.dlang.org/show_bug.cgi?id=15243
-                    // Resolve parameter type if it's not related with template parameters
-                    if (!reliesOnTemplateParameters(fparam.type, parameters[inferStart .. parameters.length]))
-                    {
-                        auto tx = fparam.type.typeSemantic(Loc.initial, sc);
-                        if (tx.ty == Terror)
-                        {
-                            result = MATCH.nomatch;
-                            return;
-                        }
-                        fparam.type = tx;
-                    }
-                }
-
-                const size_t nfargs = t.parameterList.length;
-                size_t nfparams = tp.parameterList.length;
-
-                /* See if tuple match
-                 */
-                if (nfparams > 0 && nfargs >= nfparams - 1)
-                {
-                    /* See if 'A' of the template parameter matches 'A'
-                     * of the type of the last function parameter.
-                     */
-                    Parameter fparam = tp.parameterList[nfparams - 1];
-                    assert(fparam);
-                    assert(fparam.type);
-                    if (fparam.type.ty != Tident)
-                        goto L1;
-                    TypeIdentifier tid = fparam.type.isTypeIdentifier();
-                    if (tid.idents.length)
-                        goto L1;
-
-                    /* Look through parameters to find tuple matching tid.ident
-                     */
-                    size_t tupi = 0;
-                    for (; 1; tupi++)
-                    {
-                        if (tupi == parameters.length)
-                            goto L1;
-                        TemplateParameter tx = parameters[tupi];
-                        TemplateTupleParameter tup = tx.isTemplateTupleParameter();
-                        if (tup && tup.ident.equals(tid.ident))
-                            break;
-                    }
-
-                    /* The types of the function arguments [nfparams - 1 .. nfargs]
-                     * now form the tuple argument.
-                     */
-                    size_t tuple_dim = nfargs - (nfparams - 1);
-
-                    /* See if existing tuple, and whether it matches or not
-                     */
-                    RootObject o = dedtypes[tupi];
-                    if (o)
-                    {
-                        // Existing deduced argument must be a tuple, and must match
-                        Tuple tup = isTuple(o);
-                        if (!tup || tup.objects.length != tuple_dim)
-                        {
-                            result = MATCH.nomatch;
-                            return;
-                        }
-                        for (size_t i = 0; i < tuple_dim; i++)
-                        {
-                            Parameter arg = t.parameterList[nfparams - 1 + i];
-                            if (!arg.type.equals(tup.objects[i]))
-                            {
-                                result = MATCH.nomatch;
-                                return;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Create new tuple
-                        auto tup = new Tuple(tuple_dim);
-                        for (size_t i = 0; i < tuple_dim; i++)
-                        {
-                            Parameter arg = t.parameterList[nfparams - 1 + i];
-                            tup.objects[i] = arg.type;
-                        }
-                        dedtypes[tupi] = tup;
-                    }
-                    nfparams--; // don't consider the last parameter for type deduction
-                    goto L2;
-                }
-
-            L1:
-                if (nfargs != nfparams)
-                {
-                    result = MATCH.nomatch;
-                    return;
-                }
-            L2:
-                assert(nfparams <= tp.parameterList.length);
-                foreach (i, ap; tp.parameterList)
-                {
-                    if (i == nfparams)
-                        break;
-
-                    Parameter a = t.parameterList[i];
-
-                    if (!a.isCovariant(t.isRef, ap) ||
-                        !deduceType(a.type, sc, ap.type, parameters, dedtypes))
+                    auto tx = fparam.type.typeSemantic(Loc.initial, sc);
+                    if (tx.ty == Terror)
                     {
                         result = MATCH.nomatch;
                         return;
                     }
+                    fparam.type = tx;
                 }
             }
+
+            const size_t nfargs = t.parameterList.length;
+            size_t nfparams = tp.parameterList.length;
+
+            /* See if tuple match
+             */
+            if (nfparams > 0 && nfargs >= nfparams - 1)
+            {
+                /* See if 'A' of the template parameter matches 'A'
+                 * of the type of the last function parameter.
+                 */
+                Parameter fparam = tp.parameterList[nfparams - 1];
+                assert(fparam);
+                assert(fparam.type);
+                if (fparam.type.ty != Tident)
+                    goto L1;
+                TypeIdentifier tid = fparam.type.isTypeIdentifier();
+                if (tid.idents.length)
+                    goto L1;
+
+                /* Look through parameters to find tuple matching tid.ident
+                 */
+                size_t tupi = 0;
+                for (; 1; tupi++)
+                {
+                    if (tupi == parameters.length)
+                        goto L1;
+                    TemplateParameter tx = parameters[tupi];
+                    TemplateTupleParameter tup = tx.isTemplateTupleParameter();
+                    if (tup && tup.ident.equals(tid.ident))
+                        break;
+                }
+
+                /* The types of the function arguments [nfparams - 1 .. nfargs]
+                 * now form the tuple argument.
+                 */
+                size_t tuple_dim = nfargs - (nfparams - 1);
+
+                /* See if existing tuple, and whether it matches or not
+                 */
+                RootObject o = dedtypes[tupi];
+                if (o)
+                {
+                    // Existing deduced argument must be a tuple, and must match
+                    Tuple tup = isTuple(o);
+                    if (!tup || tup.objects.length != tuple_dim)
+                    {
+                        result = MATCH.nomatch;
+                        return;
+                    }
+                    for (size_t i = 0; i < tuple_dim; i++)
+                    {
+                        Parameter arg = t.parameterList[nfparams - 1 + i];
+                        if (!arg.type.equals(tup.objects[i]))
+                        {
+                            result = MATCH.nomatch;
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    // Create new tuple
+                    auto tup = new Tuple(tuple_dim);
+                    for (size_t i = 0; i < tuple_dim; i++)
+                    {
+                        Parameter arg = t.parameterList[nfparams - 1 + i];
+                        tup.objects[i] = arg.type;
+                    }
+                    dedtypes[tupi] = tup;
+                }
+                nfparams--; // don't consider the last parameter for type deduction
+                goto L2;
+            }
+
+        L1:
+            if (nfargs != nfparams)
+            {
+                result = MATCH.nomatch;
+                return;
+            }
+        L2:
+            assert(nfparams <= tp.parameterList.length);
+            foreach (i, ap; tp.parameterList)
+            {
+                if (i == nfparams)
+                    break;
+
+                Parameter a = t.parameterList[i];
+
+                if (!a.isCovariant(t.isRef, ap) ||
+                    !deduceType(a.type, sc, ap.type, parameters, dedtypes))
+                {
+                    result = MATCH.nomatch;
+                    return;
+                }
+            }
+
             visit(cast(Type)t);
         }
 
@@ -1873,78 +1882,82 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, ref TemplateParameters pa
         override void visit(TypeInstance t)
         {
             // Extra check
-            if (tparam && tparam.ty == Tinstance && t.tempinst.tempdecl)
+            if (!tparam || tparam.ty != Tinstance || !t.tempinst.tempdecl)
             {
-                TemplateDeclaration tempdecl = t.tempinst.tempdecl.isTemplateDeclaration();
-                assert(tempdecl);
+                visit(cast(Type)t);
+                return;
+            }
 
-                TypeInstance tp = tparam.isTypeInstance();
+            TemplateDeclaration tempdecl = t.tempinst.tempdecl.isTemplateDeclaration();
+            assert(tempdecl);
 
-                //printf("tempinst.tempdecl = %p\n", tempdecl);
-                //printf("tp.tempinst.tempdecl = %p\n", tp.tempinst.tempdecl);
-                if (!tp.tempinst.tempdecl)
+            TypeInstance tp = tparam.isTypeInstance();
+
+            //printf("tempinst.tempdecl = %p\n", tempdecl);
+            //printf("tp.tempinst.tempdecl = %p\n", tp.tempinst.tempdecl);
+            if (!tp.tempinst.tempdecl)
+            {
+                //printf("tp.tempinst.name = '%s'\n", tp.tempinst.name.toChars());
+
+                /* Handle case of:
+                 *  template Foo(T : sa!(T), alias sa)
+                 */
+                size_t i = templateIdentifierLookup(tp.tempinst.name, &parameters);
+                if (i == IDX_NOTFOUND)
                 {
-                    //printf("tp.tempinst.name = '%s'\n", tp.tempinst.name.toChars());
-
-                    /* Handle case of:
-                     *  template Foo(T : sa!(T), alias sa)
+                    /* Didn't find it as a parameter identifier. Try looking
+                     * it up and seeing if is an alias.
+                     * https://issues.dlang.org/show_bug.cgi?id=1454
                      */
-                    size_t i = templateIdentifierLookup(tp.tempinst.name, &parameters);
-                    if (i == IDX_NOTFOUND)
+                    auto tid = new TypeIdentifier(tp.loc, tp.tempinst.name);
+                    Type tx;
+                    Expression e;
+                    Dsymbol s;
+                    tid.resolve(tp.loc, sc, e, tx, s);
+                    if (tx)
                     {
-                        /* Didn't find it as a parameter identifier. Try looking
-                         * it up and seeing if is an alias.
-                         * https://issues.dlang.org/show_bug.cgi?id=1454
-                         */
-                        auto tid = new TypeIdentifier(tp.loc, tp.tempinst.name);
-                        Type tx;
-                        Expression e;
-                        Dsymbol s;
-                        tid.resolve(tp.loc, sc, e, tx, s);
-                        if (tx)
+                        s = tx.toDsymbol(sc);
+                        if (TemplateInstance ti = s ? s.parent.isTemplateInstance() : null)
                         {
-                            s = tx.toDsymbol(sc);
-                            if (TemplateInstance ti = s ? s.parent.isTemplateInstance() : null)
-                            {
-                                // https://issues.dlang.org/show_bug.cgi?id=14290
-                                // Try to match with ti.tempecl,
-                                // only when ti is an enclosing instance.
-                                Dsymbol p = sc.parent;
-                                while (p && p != ti)
-                                    p = p.parent;
-                                if (p)
-                                    s = ti.tempdecl;
-                            }
+                            // https://issues.dlang.org/show_bug.cgi?id=14290
+                            // Try to match with ti.tempecl,
+                            // only when ti is an enclosing instance.
+                            Dsymbol p = sc.parent;
+                            while (p && p != ti)
+                                p = p.parent;
+                            if (p)
+                                s = ti.tempdecl;
                         }
-                        if (s)
-                        {
-                            s = s.toAlias();
-                            TemplateDeclaration td = s.isTemplateDeclaration();
-                            if (td)
-                            {
-                                if (td.overroot)
-                                    td = td.overroot;
-                                for (; td; td = td.overnext)
-                                {
-                                    if (td == tempdecl)
-                                        goto L2;
-                                }
-                            }
-                        }
-                        goto Lnomatch;
                     }
-
-                    TemplateParameter tpx = parameters[i];
-                    if (!tpx.matchArg(sc, tempdecl, i, &parameters, dedtypes, null))
-                        goto Lnomatch;
-                }
-                else if (tempdecl != tp.tempinst.tempdecl)
+                    if (s)
+                    {
+                        s = s.toAlias();
+                        TemplateDeclaration td = s.isTemplateDeclaration();
+                        if (td)
+                        {
+                            if (td.overroot)
+                                td = td.overroot;
+                            for (; td; td = td.overnext)
+                            {
+                                if (td == tempdecl)
+                                    goto L2;
+                            }
+                        }
+                    }
                     goto Lnomatch;
+                }
 
-            L2:
-                if (!resolveTemplateInstantiation(sc, &parameters, t.tempinst.tiargs, &t.tempinst.tdtypes, tempdecl, tp, &dedtypes))
+                TemplateParameter tpx = parameters[i];
+                if (!tpx.matchArg(sc, tempdecl, i, &parameters, dedtypes, null))
                     goto Lnomatch;
             }
+            else if (tempdecl != tp.tempinst.tempdecl)
+                goto Lnomatch;
+
+        L2:
+            if (!resolveTemplateInstantiation(sc, &parameters, t.tempinst.tiargs, &t.tempinst.tdtypes, tempdecl, tp, &dedtypes))
+                goto Lnomatch;
+
             visit(cast(Type)t);
             return;
 

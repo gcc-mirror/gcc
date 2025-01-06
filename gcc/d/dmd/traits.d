@@ -338,7 +338,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         const save = sc.stc;
         if (e.ident == Id.isDeprecated)
             sc.stc |= STC.deprecated_;
-        if (!TemplateInstance.semanticTiargs(e.loc, sc, e.args, 1))
+        Scope* sc2 = sc.startCTFE();
+        scope(exit) { sc2.endCTFE(); }
+        if (!TemplateInstance.semanticTiargs(e.loc, sc2, e.args, 1))
         {
             sc.stc = save;
             return ErrorExp.get();

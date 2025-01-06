@@ -30,10 +30,10 @@ import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
 import dmd.rootobject;
-import dmd.sapply;
 import dmd.staticassert;
 import dmd.tokens;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 /***********************************************************
  * Specification: https://dlang.org/spec/statement.html

@@ -6,6 +6,7 @@ fail_compilation/fail_arrayexp.d(25): Error: cannot use `[]` operator on express
 fail_compilation/fail_arrayexp.d(26): Error: static array of `const(int)[]` with multiple lengths not allowed
 fail_compilation/fail_arrayexp.d(27): Error: only one index allowed to index `string`
 fail_compilation/fail_arrayexp.d(28): Error: no `[]` operator overload for type `U`
+fail_compilation/fail_arrayexp.d(16):        `fail_arrayexp.U` declared here
 fail_compilation/fail_arrayexp.d(29): Error: only one index allowed to index `(int, string)`
 ---
 */

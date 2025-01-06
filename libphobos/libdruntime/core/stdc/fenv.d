@@ -432,6 +432,14 @@ else version (CRuntime_Musl)
         }
         alias ushort fexcept_t;
     }
+    else version (LoongArch64)
+    {
+        struct fenv_t
+        {
+            uint __cw;
+        }
+        alias uint fexcept_t;
+    }
     else
     {
         static assert(false, "Architecture not supported.");

@@ -1305,10 +1305,9 @@ private bool checkReturnEscapeImpl(ref Scope sc, Expression e, bool refs, bool g
         /* Check for returning a ref variable by 'ref', but should be 'return ref'
          * Infer the addition of 'return', or set result to be the offending expression.
          */
-        if ((vsr == ScopeRef.Ref ||
+        if (vsr == ScopeRef.Ref ||
              vsr == ScopeRef.RefScope ||
-             vsr == ScopeRef.Ref_ReturnScope) &&
-            !(v.storage_class & STC.foreach_))
+             vsr == ScopeRef.Ref_ReturnScope)
         {
             if (p == sc.func && (vsr == ScopeRef.Ref || vsr == ScopeRef.RefScope) &&
                 inferReturn(sc.func, v, /*returnScope:*/ false))

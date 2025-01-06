@@ -45,6 +45,9 @@ final class CParser(AST) : Parser!AST
         // #pragma pack stack
         Array!Identifier* records;      // identifers (or null)
         Array!structalign_t* packs;     // parallel alignment values
+
+        STC defaultStorageClasses;
+        Array!STC* defaultStorageClassesStack;
     }
 
     /* C cannot be parsed without determining if an identifier is a type or a variable.
@@ -3019,6 +3022,7 @@ final class CParser(AST) : Parser!AST
                         StorageClass stc = specifier._nothrow ? STC.nothrow_ : 0;
                         if (specifier._pure)
                             stc |= STC.pure_;
+                        stc |= defaultStorageClasses;
                         AST.Type tf = new AST.TypeFunction(parameterList, t, lkg, stc);
                         //tf = tf.addSTC(storageClass);  // TODO
                         insertTx(ts, tf, t);  // ts -> ... -> tf -> t
@@ -5670,6 +5674,8 @@ final class CParser(AST) : Parser!AST
         scan(&n);
         if (n.value == TOK.identifier && n.ident == Id.pack)
             return pragmaPack(loc, true);
+        if (n.value == TOK.identifier && n.ident == Id.attribute)
+            return pragmaAttribute(loc);
         if (n.value != TOK.endOfLine)
             skipToNextLine();
     }
@@ -5873,6 +5879,125 @@ final class CParser(AST) : Parser!AST
         }
 
         error(loc, "unrecognized `#pragma pack(%s)`", n.toChars());
+        if (n.value != TOK.endOfLine)
+            skipToNextLine();
+    }
+
+    /*********
+     * # pragma attribute(...)
+     * Sets default storage classes
+     * Params:
+     *  startloc = location to use for error messages
+     */
+    private void pragmaAttribute(const ref Loc startloc)
+    {
+        const loc = startloc;
+
+        if (!defaultStorageClassesStack)
+        {
+            defaultStorageClassesStack = new Array!STC;
+        }
+
+        Token n;
+        Lexer.scan(&n);
+        if (n.value != TOK.leftParenthesis)
+        {
+            error(loc, "left parenthesis expected to follow `#pragma attribute`");
+            if (n.value != TOK.endOfLine)
+                skipToNextLine();
+            return;
+        }
+
+        void closingParen()
+        {
+            if (n.value != TOK.rightParenthesis)
+            {
+                error(loc, "right parenthesis expected to close `#pragma attribute(`");
+            }
+            if (n.value != TOK.endOfLine)
+                skipToNextLine();
+        }
+
+        Lexer.scan(&n);
+
+        /* # pragma attribute (push, ...)
+         */
+        if (n.value == TOK.identifier && n.ident == Id.push)
+        {
+            Lexer.scan(&n);
+            if (n.value != TOK.comma)
+            {
+                error(loc, "comma expected to follow `#pragma attribute(push`");
+                if (n.value != TOK.endOfLine)
+                    skipToNextLine();
+                return;
+            }
+
+            while (1)
+            {
+                Lexer.scan(&n);
+                if (n.value == TOK.endOfLine)
+                {
+                    error(loc, "right parenthesis expected to close `#pragma attribute(push, `");
+                    break;
+                }
+
+                if (n.value == TOK.rightParenthesis)
+                    break;
+
+                if (n.value == TOK.identifier)
+                {
+                    if (n.ident == Id._nothrow)
+                        defaultStorageClasses |= STC.nothrow_;
+                    else if (n.ident == Id.nogc)
+                        defaultStorageClasses |= STC.nogc;
+                    else if (n.ident == Id._pure)
+                        defaultStorageClasses |= STC.pure_;
+                    // Ignore unknown identifiers
+                }
+                else
+                {
+                    error(loc, "unrecognized `#pragma attribute(push, %s)`", n.toChars());
+                    break;
+                }
+
+                Lexer.scan(&n);
+
+                if (n.value == TOK.rightParenthesis)
+                    break;
+
+                if (n.value != TOK.comma)
+                {
+                    error(loc, "unrecognized `#pragma attribute(push, %s)`", n.toChars());
+                    break;
+                }
+            }
+
+            this.defaultStorageClassesStack.push(defaultStorageClasses);
+
+            return closingParen();
+        }
+
+        /* # pragma attribute(pop)
+         */
+        if (n.value == TOK.identifier && n.ident == Id.pop)
+        {
+            scan(&n);
+            size_t len = this.defaultStorageClassesStack.length;
+
+            if (len)
+            {
+                this.defaultStorageClassesStack.setDim(len - 1);
+                if (len == 1)   // stack is now empty
+                    defaultStorageClasses = STC.init;
+                else
+                    defaultStorageClasses = (*this.defaultStorageClassesStack)[len - 2];
+            }
+
+            return closingParen();
+        }
+
+        error(loc, "unrecognized `#pragma attribute(%s)`", n.toChars());
         if (n.value != TOK.endOfLine)
             skipToNextLine();
     }

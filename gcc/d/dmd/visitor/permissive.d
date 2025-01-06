@@ -5,9 +5,9 @@
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/permissivevisitor.d
  */
 
-module dmd.permissivevisitor;
+module dmd.visitor.permissive;
 
-import dmd.parsetimevisitor;
+import dmd.visitor.parsetime;
 
 /** PermissiveVisitor overrides all the visit methods in  the parent class
   * that assert(0) in order to facilitate the traversal of subsets of the AST.

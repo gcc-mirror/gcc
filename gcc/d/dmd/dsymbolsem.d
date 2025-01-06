@@ -242,38 +242,53 @@ package bool allowsContractWithoutBody(FuncDeclaration funcdecl)
 }
 
 /*
-Tests whether the `ctor` that is part of `ti` is an rvalue constructor
-(i.e. a constructor that receives a single parameter of the same type as
-`Unqual!typeof(this)`). If that is the case and `sd` contains a copy
-constructor, than an error is issued.
+If sd has a copy constructor and ctor is an rvalue constructor,
+issue an error.
 
 Params:
-    sd = struct declaration that may contin both an rvalue and copy constructor
-    ctor = constructor that will be checked if it is an evalue constructor
+    sd = struct declaration that may contain both an rvalue and copy constructor
+    ctor = constructor that will be checked if it is an rvalue constructor
     ti = template instance the ctor is part of
 
 Return:
-    `false` if ctor is not an rvalue constructor or if `sd` does not contain a
-    copy constructor. `true` otherwise
+    `true` if sd has a copy constructor and ctor is an rvalue constructor
 */
 bool checkHasBothRvalueAndCpCtor(StructDeclaration sd, CtorDeclaration ctor, TemplateInstance ti)
 {
-    auto loc = ctor.loc;
-    auto tf = cast(TypeFunction)ctor.type;
-    auto dim = tf.parameterList.length;
-    if (sd && sd.hasCopyCtor && (dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg)))
+    if (sd && sd.hasCopyCtor && isRvalueConstructor(sd, ctor))
+    {
+        .error(ctor.loc, "cannot define both an rvalue constructor and a copy constructor for `struct %s`", sd.toChars());
+        .errorSupplemental(ti.loc, "Template instance `%s` creates an rvalue constructor for `struct %s`",
+                ti.toPrettyChars(), sd.toChars());
+
+        return true;
+    }
+
+    return false;
+}
+
+/************************************************
+ * Check if ctor is an rvalue constructor.
+ * A constructor that receives a single parameter of the same type as
+ * `Unqual!typeof(this)` is an rvalue constructor.
+ * Params:
+ *      sd = struct that ctor is a member of
+ *      ctor = constructor to test
+ * Returns:
+ *      true if it is an rvalue constructor
+ */
+bool isRvalueConstructor(StructDeclaration sd, CtorDeclaration ctor)
+{
+    auto tf = ctor.type.isTypeFunction();
+    const dim = tf.parameterList.length;
+    if (dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg))
     {
         auto param = tf.parameterList[0];
         if (!(param.storageClass & STC.ref_) && param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())
         {
-            .error(loc, "cannot define both an rvalue constructor and a copy constructor for `struct %s`", sd.toChars());
-            .errorSupplemental(ti.loc, "Template instance `%s` creates an rvalue constructor for `struct %s`",
-                    ti.toPrettyChars(), sd.toChars());
-
             return true;
         }
     }
-
     return false;
 }
 
@@ -1643,85 +1658,88 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 imp.mod.checkImportDeprecation(imp.loc, sc);
             }
         }
-        if (imp.mod)
+        if (!imp.mod)
         {
-            // Modules need a list of each imported module
-
-            // if inside a template instantiation, the instantianting
-            // module gets the import.
-            // https://issues.dlang.org/show_bug.cgi?id=17181
-            Module importer = sc._module;
-            if (sc.minst && sc.tinst)
-            {
-                importer = sc.minst;
-                if (!sc.tinst.importedModules.contains(imp.mod))
-                    sc.tinst.importedModules.push(imp.mod);
-            }
-            //printf("%s imports %s\n", importer.toChars(), imp.mod.toChars());
-            if (!importer.aimports.contains(imp.mod))
-                importer.aimports.push(imp.mod);
-
-            if (sc.explicitVisibility)
-                imp.visibility = sc.visibility;
-
-            if (!imp.aliasId && !imp.names.length) // neither a selective nor a renamed import
-            {
-                ScopeDsymbol scopesym = sc.getScopesym();
-
-                if (!imp.isstatic)
-                {
-                    scopesym.importScope(imp.mod, imp.visibility);
-                }
-
-
-                imp.addPackageAccess(scopesym);
-            }
-
-            // if a module has errors it means that parsing has failed.
-            if (!imp.mod.errors)
-                imp.mod.dsymbolSemantic(null);
-
-            if (imp.mod.needmoduleinfo)
-            {
-                //printf("module4 %s because of %s\n", importer.toChars(), imp.mod.toChars());
-                importer.needmoduleinfo = 1;
-            }
-
-            sc = sc.push(imp.mod);
-            sc.visibility = imp.visibility;
-            for (size_t i = 0; i < imp.aliasdecls.length; i++)
-            {
-                AliasDeclaration ad = imp.aliasdecls[i];
-                //printf("\tImport %s alias %s = %s, scope = %p\n", toPrettyChars(), aliases[i].toChars(), names[i].toChars(), ad._scope);
-                Dsymbol sym = imp.mod.search(imp.loc, imp.names[i], SearchOpt.ignorePrivateImports);
-                if (sym)
-                {
-                    import dmd.access : symbolIsVisible;
-                    if (!symbolIsVisible(sc, sym) && !sym.errors)
-                    {
-                        .error(imp.loc, "%s `%s` member `%s` is not visible from module `%s`", imp.mod.kind, imp.mod.toPrettyChars,
-                            imp.names[i].toChars(), sc._module.toChars());
-                        sym.errors = true;
-                    }
-                    ad.dsymbolSemantic(sc);
-                    // If the import declaration is in non-root module,
-                    // analysis of the aliased symbol is deferred.
-                    // Therefore, don't see the ad.aliassym or ad.type here.
-                }
-                else
-                {
-                    Dsymbol s = imp.mod.search_correct(imp.names[i]);
-                    // https://issues.dlang.org/show_bug.cgi?id=23908
-                    // Don't suggest symbols from the importer's module
-                    if (s && s.parent != importer)
-                        .error(imp.loc, "%s `%s` import `%s` not found, did you mean %s `%s`?", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars(), s.kind(), s.toPrettyChars());
-                    else
-                        .error(imp.loc, "%s `%s` import `%s` not found", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars());
-                    ad.type = Type.terror;
-                }
-            }
-            sc = sc.pop();
+            imp.semanticRun = PASS.semanticdone;
+            addImportDep(global.params.moduleDeps, imp, sc._module);
         }
+
+        // Modules need a list of each imported module
+
+        // if inside a template instantiation, the instantianting
+        // module gets the import.
+        // https://issues.dlang.org/show_bug.cgi?id=17181
+        Module importer = sc._module;
+        if (sc.minst && sc.tinst)
+        {
+            importer = sc.minst;
+            if (!sc.tinst.importedModules.contains(imp.mod))
+                sc.tinst.importedModules.push(imp.mod);
+        }
+        //printf("%s imports %s\n", importer.toChars(), imp.mod.toChars());
+        if (!importer.aimports.contains(imp.mod))
+            importer.aimports.push(imp.mod);
+
+        if (sc.explicitVisibility)
+            imp.visibility = sc.visibility;
+
+        if (!imp.aliasId && !imp.names.length) // neither a selective nor a renamed import
+        {
+            ScopeDsymbol scopesym = sc.getScopesym();
+
+            if (!imp.isstatic)
+            {
+                scopesym.importScope(imp.mod, imp.visibility);
+            }
+
+
+            imp.addPackageAccess(scopesym);
+        }
+
+        // if a module has errors it means that parsing has failed.
+        if (!imp.mod.errors)
+            imp.mod.dsymbolSemantic(null);
+
+        if (imp.mod.needmoduleinfo)
+        {
+            //printf("module4 %s because of %s\n", importer.toChars(), imp.mod.toChars());
+            importer.needmoduleinfo = 1;
+        }
+
+        sc = sc.push(imp.mod);
+        sc.visibility = imp.visibility;
+        for (size_t i = 0; i < imp.aliasdecls.length; i++)
+        {
+            AliasDeclaration ad = imp.aliasdecls[i];
+            //printf("\tImport %s alias %s = %s, scope = %p\n", toPrettyChars(), aliases[i].toChars(), names[i].toChars(), ad._scope);
+            Dsymbol sym = imp.mod.search(imp.loc, imp.names[i], SearchOpt.ignorePrivateImports);
+            if (sym)
+            {
+                import dmd.access : symbolIsVisible;
+                if (!symbolIsVisible(sc, sym) && !sym.errors)
+                {
+                    .error(imp.loc, "%s `%s` member `%s` is not visible from module `%s`", imp.mod.kind, imp.mod.toPrettyChars,
+                        imp.names[i].toChars(), sc._module.toChars());
+                    sym.errors = true;
+                }
+                ad.dsymbolSemantic(sc);
+                // If the import declaration is in non-root module,
+                // analysis of the aliased symbol is deferred.
+                // Therefore, don't see the ad.aliassym or ad.type here.
+            }
+            else
+            {
+                Dsymbol s = imp.mod.search_correct(imp.names[i]);
+                // https://issues.dlang.org/show_bug.cgi?id=23908
+                // Don't suggest symbols from the importer's module
+                if (s && s.parent != importer)
+                    .error(imp.loc, "%s `%s` import `%s` not found, did you mean %s `%s`?", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars(), s.kind(), s.toPrettyChars());
+                else
+                    .error(imp.loc, "%s `%s` import `%s` not found", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars());
+                ad.type = Type.terror;
+            }
+        }
+        sc = sc.pop();
 
         imp.semanticRun = PASS.semanticdone;
         addImportDep(global.params.moduleDeps, imp, sc._module);
@@ -1734,20 +1752,24 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         ad.semanticRun = PASS.semantic;
         Dsymbols* d = ad.include(sc);
         //printf("\tAttribDeclaration::semantic '%s', d = %p\n",toChars(), d);
-        if (d)
+        if (!d)
         {
-            Scope* sc2 = ad.newScope(sc);
-            bool errors;
-            for (size_t i = 0; i < d.length; i++)
-            {
-                Dsymbol s = (*d)[i];
-                s.dsymbolSemantic(sc2);
-                errors |= s.errors;
-            }
-            ad.errors |= errors;
-            if (sc2 != sc)
-                sc2.pop();
+            ad.semanticRun = PASS.semanticdone;
+            return;
         }
+
+        Scope* sc2 = ad.newScope(sc);
+        bool errors;
+        for (size_t i = 0; i < d.length; i++)
+        {
+            Dsymbol s = (*d)[i];
+            s.dsymbolSemantic(sc2);
+            errors |= s.errors;
+        }
+        ad.errors |= errors;
+        if (sc2 != sc)
+            sc2.pop();
+
         ad.semanticRun = PASS.semanticdone;
     }
 
@@ -2579,48 +2601,51 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         sc.pop();
     }
 
-    override void visit(StaticCtorDeclaration scd)
+    void visitStaticCDtorDeclaration(FuncDeclaration sd, bool isDestructor)
     {
-        //printf("StaticCtorDeclaration::semantic()\n");
-        if (scd.semanticRun >= PASS.semanticdone)
+        if (sd.semanticRun >= PASS.semanticdone)
             return;
-        if (scd._scope)
+        if (sd._scope)
         {
-            sc = scd._scope;
-            scd._scope = null;
+            sc = sd._scope;
+            sd._scope = null;
         }
-
-        scd.parent = sc.parent;
-        Dsymbol p = scd.parent.pastMixin();
+        sd.parent = sc.parent;
+        Dsymbol p = sd.parent.pastMixin();
+        const bool isShared = !!(sd.isSharedStaticDtorDeclaration() || sd.isSharedStaticCtorDeclaration());
+        const(char)* what = isDestructor ? "destructor" : "constructor";
         if (!p.isScopeDsymbol())
         {
-            const(char)* s = (scd.isSharedStaticCtorDeclaration() ? "shared " : "");
-            error(scd.loc, "`%sstatic` constructor can only be member of module/aggregate/template, not %s `%s`", s, p.kind(), p.toChars());
-            scd.type = Type.terror;
-            scd.errors = true;
+            const(char)* s = isShared ? "shared " : "";
+            error(sd.loc, "`%sstatic` %s can only be member of module/aggregate/template, not %s `%s`", s, what, p.kind(), p.toChars());
+            sd.type = Type.terror;
+            sd.errors = true;
             return;
         }
-        if (!scd.type)
-            scd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, scd.storage_class);
 
-        /* If the static ctor appears within a template instantiation,
+        if (!sd.type)
+            sd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, sd.storage_class);
+
+        /* If the static [dc]tor appears within a template instantiation,
          * it could get called multiple times by the module constructors
          * for different modules. Thus, protect it with a gate.
          */
-        if (scd.isInstantiated() && scd.semanticRun < PASS.semantic)
+        if (sd.isInstantiated() && sd.semanticRun < PASS.semantic)
         {
             /* Add this prefix to the constructor:
              * ```
              * static int gate;
-             * if (++gate != 1) return;
+             * if ([--|++]gate != [0|1]) return; // dependant on ctor/dtor
              * ```
              * or, for shared constructor:
              * ```
              * shared int gate;
-             * if (core.atomic.atomicOp!"+="(gate, 1) != 1) return;
+             * enum op  = isDestructor ? "-=" : "+=";
+             * enum cmp = isDestructor ? 0 : 1;
+             * if (core.atomic.atomicOp!op(gate, 1) != cmp) return;
              * ```
              */
-            const bool isShared = !!scd.isSharedStaticCtorDeclaration();
+
             auto v = new VarDeclaration(Loc.initial, Type.tint32, Id.gate, null);
             v.storage_class = STC.temp | STC.static_ | (isShared ? STC.shared_ : 0);
 
@@ -2631,49 +2656,56 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             Expression e;
             if (isShared)
             {
-                e = doAtomicOp("+=", v.ident, IntegerExp.literal!(1));
+                e = doAtomicOp(isDestructor ? "-=" : "+=", v.ident, IntegerExp.literal!(1));
                 if (e is null)
                 {
-                    .error(scd.loc, "%s `%s` shared static constructor within a template require `core.atomic : atomicOp` to be present", scd.kind, scd.toPrettyChars);
+                    .error(sd.loc, "%s `%s` shared static %s within a template require `core.atomic : atomicOp` to be present", sd.kind, sd.toPrettyChars, what);
                     return;
                 }
             }
             else
             {
+                IntegerExp one = isDestructor ? IntegerExp.literal!(-1) : IntegerExp.literal!(1);
                 e = new AddAssignExp(
-                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), IntegerExp.literal!1);
+                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), one);
             }
-
-            e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!1);
+            IntegerExp cmp = isDestructor ? IntegerExp.literal!0 : IntegerExp.literal!1;
+            e = new EqualExp(EXP.notEqual, Loc.initial, e, cmp);
             s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
 
             sa.push(s);
-            if (scd.fbody)
-                sa.push(scd.fbody);
+            if (sd.fbody)
+                sa.push(sd.fbody);
 
-            scd.fbody = new CompoundStatement(Loc.initial, sa);
+            sd.fbody = new CompoundStatement(Loc.initial, sa);
+            if (isDestructor)
+                (cast(StaticDtorDeclaration)sd).vgate = v;
         }
-
         const LINK save = sc.linkage;
         if (save != LINK.d)
         {
-            const(char)* s = (scd.isSharedStaticCtorDeclaration() ? "shared " : "");
-            deprecation(scd.loc, "`%sstatic` constructor can only be of D linkage", s);
+            const(char)* s = isShared ? "shared " : "";
+            deprecation(sd.loc, "`%sstatic` %s can only be of D linkage", s, what);
             // Just correct it
             sc.linkage = LINK.d;
         }
-        funcDeclarationSemantic(sc, scd);
+        funcDeclarationSemantic(sc, sd);
         sc.linkage = save;
 
         // We're going to need ModuleInfo
-        Module m = scd.getModule();
+        Module m = sd.getModule();
         if (!m)
             m = sc._module;
         if (m)
         {
             m.needmoduleinfo = 1;
-            //printf("module1 %s needs moduleinfo\n", m.toChars());
+            //printf("module2 %s needs moduleinfo\n", m.toChars());
         }
+    }
+    override void visit(StaticCtorDeclaration scd)
+    {
+        //printf("StaticCtorDeclaration::semantic()\n");
+        visitStaticCDtorDeclaration(scd, false);
 
         foreachUda(scd, sc, (Expression e) {
             import dmd.attrib : isEnumAttribute;
@@ -2696,100 +2728,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(StaticDtorDeclaration sdd)
     {
-        if (sdd.semanticRun >= PASS.semanticdone)
-            return;
-        if (sdd._scope)
-        {
-            sc = sdd._scope;
-            sdd._scope = null;
-        }
-
-        sdd.parent = sc.parent;
-        Dsymbol p = sdd.parent.pastMixin();
-        if (!p.isScopeDsymbol())
-        {
-            const(char)* s = (sdd.isSharedStaticDtorDeclaration() ? "shared " : "");
-            error(sdd.loc, "`%sstatic` destructor can only be member of module/aggregate/template, not %s `%s`", s, p.kind(), p.toChars());
-            sdd.type = Type.terror;
-            sdd.errors = true;
-            return;
-        }
-        if (!sdd.type)
-            sdd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, sdd.storage_class);
-
-        /* If the static ctor appears within a template instantiation,
-         * it could get called multiple times by the module constructors
-         * for different modules. Thus, protect it with a gate.
-         */
-        if (sdd.isInstantiated() && sdd.semanticRun < PASS.semantic)
-        {
-            /* Add this prefix to the constructor:
-             * ```
-             * static int gate;
-             * if (--gate != 0) return;
-             * ```
-             * or, for shared constructor:
-             * ```
-             * shared int gate;
-             * if (core.atomic.atomicOp!"-="(gate, 1) != 0) return;
-             * ```
-             */
-            const bool isShared = !!sdd.isSharedStaticDtorDeclaration();
-            auto v = new VarDeclaration(Loc.initial, Type.tint32, Id.gate, null);
-            v.storage_class = STC.temp | STC.static_ | (isShared ? STC.shared_ : 0);
-
-            auto sa = new Statements();
-            Statement s = new ExpStatement(Loc.initial, v);
-            sa.push(s);
-
-            Expression e;
-            if (isShared)
-            {
-                e = doAtomicOp("-=", v.ident, IntegerExp.literal!(1));
-                if (e is null)
-                {
-                    .error(sdd.loc, "%s `%s` shared static destructo within a template require `core.atomic : atomicOp` to be present", sdd.kind, sdd.toPrettyChars);
-                    return;
-                }
-            }
-            else
-            {
-                e = new AddAssignExp(
-                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), IntegerExp.literal!(-1));
-            }
-
-            e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!0);
-            s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
-
-            sa.push(s);
-            if (sdd.fbody)
-                sa.push(sdd.fbody);
-
-            sdd.fbody = new CompoundStatement(Loc.initial, sa);
-
-            sdd.vgate = v;
-        }
-
-        const LINK save = sc.linkage;
-        if (save != LINK.d)
-        {
-            const(char)* s = (sdd.isSharedStaticDtorDeclaration() ? "shared " : "");
-            deprecation(sdd.loc, "`%sstatic` destructor can only be of D linkage", s);
-            // Just correct it
-            sc.linkage = LINK.d;
-        }
-        funcDeclarationSemantic(sc, sdd);
-        sc.linkage = save;
-
-        // We're going to need ModuleInfo
-        Module m = sdd.getModule();
-        if (!m)
-            m = sc._module;
-        if (m)
-        {
-            m.needmoduleinfo = 1;
-            //printf("module2 %s needs moduleinfo\n", m.toChars());
-        }
+        visitStaticCDtorDeclaration(sdd, true);
     }
 
     override void visit(InvariantDeclaration invd)

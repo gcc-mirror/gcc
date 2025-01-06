@@ -2915,7 +2915,7 @@ get_frameinfo (FuncDeclaration *fd)
          symbols, give it a decent error for now.  */
       if (requiresClosure != fd->requiresClosure
 	  && (fd->nrvo_var || !global.params.useGC))
-	fd->checkClosure ();
+	dmd::checkClosure (fd);
 
       /* Set-up a closure frame, this will be allocated on the heap.  */
       FRAMEINFO_CREATES_FRAME (ffi) = 1;

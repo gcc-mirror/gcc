@@ -24,10 +24,10 @@ import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
-import dmd.postordervisitor;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 /**************************************************
  * Front-end expression rewriting should create temporary variables for

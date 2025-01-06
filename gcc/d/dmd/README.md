@@ -98,14 +98,14 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                                                      | Purpose                                                                          |
 |-----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| [parsetimevisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/parsetimevisitor.d)                 | General [visitor](https://en.wikipedia.org/wiki/Visitor_pattern) for AST nodes   |
-| [permissivevisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/permissivevisitor.d)               | Subclass of ParseTimeVisitor that does not `assert(0)` on unimplemented nodes    |
-| [strictvisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/strictvisitor.d)                       | Visitor that forces derived classes to implement `visit` for every possible node |
-| [visitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor.d)                                   | A visitor implementing `visit` for all nodes present in the compiler             |
-| [transitivevisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/transitivevisitor.d)               | Provide a mixin template with visit methods for the parse time AST               |
-| [postordervisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/postordervisitor.d)                                       | Depth-first expression visitor                                                   |
-| [sapply.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/sapply.d)                                     | Depth-first statement visitor                                                    |
-| [statement_rewrite_walker.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/statement_rewrite_walker.d) | Statement visitor that allows replacing the currently visited node               |
+| [visitor/parsetime.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/parsetime.d)                 | General [visitor](https://en.wikipedia.org/wiki/Visitor_pattern) for AST nodes   |
+| [visitor/permissive.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/permissive.d)               | Subclass of ParseTimeVisitor that does not `assert(0)` on unimplemented nodes    |
+| [visitor/strict.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/strict.d)                       | Visitor that forces derived classes to implement `visit` for every possible node |
+| [visitor/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/package.d)                                   | A visitor implementing `visit` for all nodes present in the compiler             |
+| [visitor/transitive.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/transitive.d)               | Provide a mixin template with visit methods for the parse time AST               |
+| [visitor/postorder.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/postorder.d)                 | Depth-first expression & statement visitor                                                   |
+| [visitor/statement_rewrite_walker.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/statement_rewrite_walker.d) | Statement visitor that allows replacing the currently visited node               |
+| [visitor/foreachvar.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/foreachvar.d)   | Used in `ob.d` to iterate over all variables in an expression |
 
 **Semantic passes**
 
@@ -270,4 +270,3 @@ Note: many other utilities are in [dmd/root](https://github.com/dlang/dmd/tree/m
 |---------------------------------------------------------------------------------|---------------------------------------------------------------|
 | [asttypename.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/asttypename.d) | Print the internal name of an AST node (for debugging only)   |
 | [printast.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/printast.d)       | Print the AST data structure                                  |
-| [foreachvar.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/foreachvar.d)   | Used in `ob.d` to iterate over all variables in an expression |

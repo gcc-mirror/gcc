@@ -114,6 +114,7 @@ extern (C++) struct Target
     /// Architecture name
     const(char)[] architectureName;
     CPU cpu;                // CPU instruction set to target
+    bool isAArch64;         // generate 64 bit Arm code
     bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
     bool isX86;             // generate 32 bit Intel x86 code
     bool isLP64;            // pointers are 64 bits

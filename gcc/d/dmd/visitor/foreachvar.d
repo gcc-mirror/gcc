@@ -9,7 +9,7 @@
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/foreachvar.d
  */
 
-module dmd.foreachvar;
+module dmd.visitor.foreachvar;
 
 import core.stdc.stdio;
 import core.stdc.stdlib;
@@ -32,13 +32,13 @@ import dmd.identifier;
 import dmd.init;
 import dmd.initsem;
 import dmd.mtype;
-import dmd.postordervisitor;
 import dmd.printast;
 import dmd.root.array;
 import dmd.rootobject;
 import dmd.statement;
 import dmd.tokens;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 /*********************************************
  * Visit each Expression in e, and call dgVar() on each variable declared in it.

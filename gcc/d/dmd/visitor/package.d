@@ -12,12 +12,10 @@
 module dmd.visitor;
 
 import dmd.astcodegen;
-import dmd.astenums;
-import dmd.parsetimevisitor;
 import dmd.tokens;
-import dmd.transitivevisitor;
-import dmd.expression;
 import dmd.rootobject;
+import dmd.visitor.parsetime;
+import dmd.visitor.transitive;
 
 /**
  * Classic Visitor class which implements visit methods for all the AST
@@ -151,10 +149,11 @@ extern (C++) class SemanticTimeTransitiveVisitor : SemanticTimePermissiveVisitor
     {
         // CTFE can generate struct literals that contain an AddrExp pointing to themselves,
         // need to avoid infinite recursion.
-        if (!(e.stageflags & stageToCBuffer))
+        alias flag = ASTCodegen.StructLiteralExp.StageFlags.toCBuffer;
+        if (!(e.stageflags & flag))
         {
             const old = e.stageflags;
-            e.stageflags |= stageToCBuffer;
+            e.stageflags |= flag;
             foreach (el; *e.elements)
                 if (el)
                     el.accept(this);
@@ -250,7 +249,7 @@ extern (C++) class SemanticTimeTransitiveVisitor : SemanticTimePermissiveVisitor
     override void visit(ASTCodegen.LoweredAssignExp e)
     {
         e.lowering.accept(this);
-        visit(cast(AssignExp)e);
+        visit(cast(ASTCodegen.AssignExp)e);
     }
 }
 

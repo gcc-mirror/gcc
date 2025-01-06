@@ -1685,3 +1685,72 @@ void semanticTypeInfoMembers(StructDeclaration sd)
         sd.dtor.semantic3(sd.dtor._scope);
     }
 }
+
+/***********************************************
+ * Check that the function contains any closure.
+ * If it's @nogc, report suitable errors.
+ * This is mostly consistent with FuncDeclaration::needsClosure().
+ *
+ * Returns:
+ *      true if any errors occur.
+ */
+extern (D) bool checkClosure(FuncDeclaration fd)
+{
+    //printf("checkClosure() %s\n", toPrettyChars());
+    if (!fd.needsClosure())
+        return false;
+
+    if (fd.setGC(fd.loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", fd))
+    {
+        .error(fd.loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", fd.kind, fd.toPrettyChars(), fd.toChars());
+        if (global.gag)     // need not report supplemental errors
+            return true;
+    }
+    else if (!global.params.useGC)
+    {
+        .error(fd.loc, "%s `%s` is `-betterC` yet allocates closure for `%s()` with the GC", fd.kind, fd.toPrettyChars(), fd.toChars());
+        if (global.gag)     // need not report supplemental errors
+            return true;
+    }
+    else
+    {
+        fd.printGCUsage(fd.loc, "using closure causes GC allocation");
+        return false;
+    }
+
+    FuncDeclarations a;
+    foreach (v; fd.closureVars)
+    {
+        foreach (f; v.nestedrefs)
+        {
+            assert(f !is fd);
+
+        LcheckAncestorsOfANestedRef:
+            for (Dsymbol s = f; s && s !is fd; s = s.toParentP(fd))
+            {
+                auto fx = s.isFuncDeclaration();
+                if (!fx)
+                    continue;
+                if (fx.isThis() ||
+                    fx.tookAddressOf ||
+                    checkEscapingSiblings(fx, fd))
+                {
+                    foreach (f2; a)
+                    {
+                        if (f2 == f)
+                            break LcheckAncestorsOfANestedRef;
+                    }
+                    a.push(f);
+                    .errorSupplemental(f.loc, "%s `%s` closes over variable `%s`",
+                        f.kind, f.toPrettyChars(), v.toChars());
+                    if (v.ident != Id.This)
+                        .errorSupplemental(v.loc, "`%s` declared here", v.toChars());
+
+                    break LcheckAncestorsOfANestedRef;
+                }
+            }
+        }
+    }
+
+    return true;
+}

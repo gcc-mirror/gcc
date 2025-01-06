@@ -110,43 +110,44 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         parseModuleAttributes(msg, isdeprecated);
 
         // ModuleDeclaration leads off
-        if (token.value == TOK.module_)
+        if (token.value != TOK.module_)
+            return true;
+
+        const loc = token.loc;
+        nextToken();
+
+        /* parse ModuleFullyQualifiedName
+         * https://dlang.org/spec/module.html#ModuleFullyQualifiedName
+         */
+
+        if (token.value != TOK.identifier)
         {
-            const loc = token.loc;
+            error("identifier expected following `module`");
+            return false;
+        }
+
+        Identifier[] a;
+        Identifier id = token.ident;
+
+        while (nextToken() == TOK.dot)
+        {
+            a ~= id;
             nextToken();
-
-            /* parse ModuleFullyQualifiedName
-             * https://dlang.org/spec/module.html#ModuleFullyQualifiedName
-             */
-
             if (token.value != TOK.identifier)
             {
-                error("identifier expected following `module`");
+                error("identifier expected following `package`");
                 return false;
             }
-
-            Identifier[] a;
-            Identifier id = token.ident;
-
-            while (nextToken() == TOK.dot)
-            {
-                a ~= id;
-                nextToken();
-                if (token.value != TOK.identifier)
-                {
-                    error("identifier expected following `package`");
-                    return false;
-                }
-                id = token.ident;
-            }
-
-            md = new AST.ModuleDeclaration(loc, a, id, msg, isdeprecated);
-
-            if (token.value != TOK.semicolon)
-                error("`;` expected following module declaration instead of `%s`", token.toChars());
-            nextToken();
-            addComment(mod, comment);
+            id = token.ident;
         }
+
+        md = new AST.ModuleDeclaration(loc, a, id, msg, isdeprecated);
+
+        if (token.value != TOK.semicolon)
+            error("`;` expected following module declaration instead of `%s`", token.toChars());
+        nextToken();
+        addComment(mod, comment);
+
         return true;
     }
 

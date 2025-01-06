@@ -425,6 +425,11 @@ void semanticTypeInfoMembers(StructDeclaration sd)
     return dmd.semantic3.semanticTypeInfoMembers(sd);
 }
 
+bool checkClosure(FuncDeclaration fd)
+{
+    import dmd.semantic3;
+    return dmd.semantic3.checkClosure(fd);
+}
 /***********************************************************
  * statementsem.d
  */

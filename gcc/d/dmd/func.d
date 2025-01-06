@@ -46,17 +46,14 @@ import dmd.init;
 import dmd.location;
 import dmd.mtype;
 import dmd.objc;
-import dmd.root.aav;
 import dmd.common.outbuffer;
 import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.stringtable;
 import dmd.semantic2;
 import dmd.semantic3;
-import dmd.statement_rewrite_walker;
 import dmd.statement;
 import dmd.tokens;
-import dmd.typesem;
 import dmd.visitor;
 
 version (IN_GCC) {}
@@ -452,26 +449,6 @@ extern (C++) class FuncDeclaration : Declaration
         if (!fd)
             return false;
 
-        version (none)
-        {
-            /* Disable this check because:
-             *  const void foo();
-             * semantic() isn't run yet on foo(), so the const hasn't been
-             * applied yet.
-             */
-            if (type)
-            {
-                printf("type = %s\n", type.toChars());
-                printf("fd.type = %s\n", fd.type.toChars());
-            }
-            // fd.type can be NULL for overloaded constructors
-            if (type && fd.type && fd.type.covariant(type) && fd.type.mod == type.mod && !isFuncAliasDeclaration())
-            {
-                //printf("\tfalse: conflict %s\n", kind());
-                return false;
-            }
-        }
-
         if (overnext)
         {
             td = overnext.isTemplateDeclaration();
@@ -697,29 +674,6 @@ extern (C++) class FuncDeclaration : Declaration
         return false;
     }
 
-    /*****************************************
-     * Initialize for inferring the attributes of this function.
-     */
-    final void initInferAttributes()
-    {
-        //printf("initInferAttributes() for %s (%s)\n", toPrettyChars(), ident.toChars());
-        TypeFunction tf = type.toTypeFunction();
-        if (tf.purity == PURE.impure) // purity not specified
-            purityInprocess = true;
-
-        if (tf.trust == TRUST.default_)
-            safetyInprocess = true;
-
-        if (!tf.isNothrow)
-            nothrowInprocess = true;
-
-        if (!tf.isNogc)
-            nogcInprocess = true;
-
-        // Initialize for inferring STC.scope_
-        scopeInprocess = true;
-    }
-
     extern (D) final uint saveFlags()
     {
         return bitFields;
@@ -798,69 +752,6 @@ extern (C++) class FuncDeclaration : Declaration
         return setUnsafe(false, f.loc, null, f, null);
     }
 
-    final bool isNogc()
-    {
-        //printf("isNogc() %s, inprocess: %d\n", toChars(), !!(flags & FUNCFLAG.nogcInprocess));
-        if (nogcInprocess)
-            setGC(loc, null);
-        return type.toTypeFunction().isNogc;
-    }
-
-    extern (D) final bool isNogcBypassingInference()
-    {
-        return !nogcInprocess && isNogc();
-    }
-
-    /**************************************
-     * The function is doing something that may allocate with the GC,
-     * so mark it as not nogc (not no-how).
-     *
-     * Params:
-     *     loc = location of impure action
-     *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
-     *     arg0 = (optional) argument to format string
-     *
-     * Returns:
-     *      true if function is marked as @nogc, meaning a user error occurred
-     */
-    extern (D) final bool setGC(Loc loc, const(char)* fmt, RootObject arg0 = null)
-    {
-        //printf("setGC() %s\n", toChars());
-        if (nogcInprocess && semanticRun < PASS.semantic3 && _scope)
-        {
-            this.semantic2(_scope);
-            this.semantic3(_scope);
-        }
-
-        if (nogcInprocess)
-        {
-            nogcInprocess = false;
-            if (fmt)
-                nogcViolation = new AttributeViolation(loc, fmt, this, arg0); // action that requires GC
-            else if (arg0)
-                nogcViolation = new AttributeViolation(loc, fmt, arg0); // call to non-@nogc function
-
-            type.toTypeFunction().isNogc = false;
-            if (fes)
-                fes.func.setGC(Loc.init, null, null);
-        }
-        else if (isNogc())
-            return true;
-        return false;
-    }
-
-    /**************************************
-     * The function calls non-`@nogc` function f, mark it as not nogc.
-     * Params:
-     *     f = function being called
-     * Returns:
-     *      true if function is marked as @nogc, meaning a user error occurred
-     */
-    extern (D) final bool setGCCall(FuncDeclaration f)
-    {
-        return setGC(loc, null, f);
-    }
-
     /**************************************
      * The function is doing something that may throw an exception, register that in case nothrow is being inferred
      *
@@ -886,18 +777,6 @@ extern (C++) class FuncDeclaration : Declaration
     extern (D) final void setThrowCall(Loc loc, FuncDeclaration f)
     {
         return setThrow(loc, null, f);
-    }
-
-    extern (D) final void printGCUsage(const ref Loc loc, const(char)* warn)
-    {
-        if (!global.params.v.gc)
-            return;
-
-        Module m = getModule();
-        if (m && m.isRoot() && !inUnittest())
-        {
-            message(loc, "vgc: %s", warn);
-        }
     }
 
     /****************************************
@@ -1139,75 +1018,6 @@ extern (C++) class FuncDeclaration : Declaration
         return false;
 
     Lyes:
-        return true;
-    }
-
-    /***********************************************
-     * Check that the function contains any closure.
-     * If it's @nogc, report suitable errors.
-     * This is mostly consistent with FuncDeclaration::needsClosure().
-     *
-     * Returns:
-     *      true if any errors occur.
-     */
-    extern (C++) final bool checkClosure()
-    {
-        //printf("checkClosure() %s\n", toPrettyChars());
-        if (!needsClosure())
-            return false;
-
-        if (setGC(loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", this))
-        {
-            .error(loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", kind, toPrettyChars, toChars());
-            if (global.gag)     // need not report supplemental errors
-                return true;
-        }
-        else if (!global.params.useGC)
-        {
-            .error(loc, "%s `%s` is `-betterC` yet allocates closure for `%s()` with the GC", kind, toPrettyChars, toChars());
-            if (global.gag)     // need not report supplemental errors
-                return true;
-        }
-        else
-        {
-            printGCUsage(loc, "using closure causes GC allocation");
-            return false;
-        }
-
-        FuncDeclarations a;
-        foreach (v; closureVars)
-        {
-            foreach (f; v.nestedrefs)
-            {
-                assert(f !is this);
-
-            LcheckAncestorsOfANestedRef:
-                for (Dsymbol s = f; s && s !is this; s = s.toParentP(this))
-                {
-                    auto fx = s.isFuncDeclaration();
-                    if (!fx)
-                        continue;
-                    if (fx.isThis() ||
-                        fx.tookAddressOf ||
-                        checkEscapingSiblings(fx, this))
-                    {
-                        foreach (f2; a)
-                        {
-                            if (f2 == f)
-                                break LcheckAncestorsOfANestedRef;
-                        }
-                        a.push(f);
-                        .errorSupplemental(f.loc, "%s `%s` closes over variable `%s`",
-                            f.kind, f.toPrettyChars(), v.toChars());
-                        if (v.ident != Id.This)
-                            .errorSupplemental(v.loc, "`%s` declared here", v.toChars());
-
-                        break LcheckAncestorsOfANestedRef;
-                    }
-                }
-            }
-        }
-
         return true;
     }
 
@@ -1539,7 +1349,7 @@ private void markAsNeedingClosure(Dsymbol f, FuncDeclaration outerFunc)
  * Returns:
  *      true if any closures were needed
  */
-private bool checkEscapingSiblings(FuncDeclaration f, FuncDeclaration outerFunc, void* p = null)
+bool checkEscapingSiblings(FuncDeclaration f, FuncDeclaration outerFunc, void* p = null)
 {
     static struct PrevSibling
     {

@@ -28,7 +28,7 @@ $(TR $(TD $(I delegates)) $(TD yes) $(TD $(MDASH)) $(TD $(MDASH)) $(TD $(MDASH))
 
 Enums can be used with all format characters of the base type.
 
-$(SECTION3 Structs$(COMMA) Unions$(COMMA) Classes$(COMMA) and Interfaces)
+$(H3 $(LNAME2 aggregates, Structs, Unions, Classes, and Interfaces))
 
 Aggregate types can define various `toString` functions. If this
 function takes a $(REF_ALTTEXT FormatSpec, FormatSpec, std, format,

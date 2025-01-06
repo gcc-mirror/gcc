@@ -248,6 +248,8 @@ extern (C++) struct Param
     const(char)[] exefile;
     const(char)[] mapfile;
 
+    bool fullyQualifiedObjectFiles; // prepend module names to object files to prevent name conflicts with -od
+
     // Time tracing
     bool timeTrace = false; /// Whether profiling of compile time is enabled
     uint timeTraceGranularityUs = 500; /// In microseconds, minimum event size to report

@@ -6880,10 +6880,10 @@ private Expression scrubReturnValue(const ref Loc loc, Expression e)
     Expression scrubSE(StructLiteralExp sle)
     {
         sle.ownedByCtfe = OwnedBy.code;
-        if (!(sle.stageflags & stageScrub))
+        if (!(sle.stageflags & StructLiteralExp.StageFlags.scrub))
         {
             const old = sle.stageflags;
-            sle.stageflags |= stageScrub;       // prevent infinite recursion
+            sle.stageflags |= StructLiteralExp.StageFlags.scrub; // prevent infinite recursion
             if (auto ex = scrubArray(sle.elements, true))
                 return ex;
             sle.stageflags = old;
@@ -6960,10 +6960,10 @@ private Expression scrubCacheValue(Expression e)
     Expression scrubSE(StructLiteralExp sle)
     {
         sle.ownedByCtfe = OwnedBy.cache;
-        if (!(sle.stageflags & stageScrub))
+        if (!(sle.stageflags & StructLiteralExp.StageFlags.scrub))
         {
             const old = sle.stageflags;
-            sle.stageflags |= stageScrub;       // prevent infinite recursion
+            sle.stageflags |= StructLiteralExp.StageFlags.scrub;  // prevent infinite recursion
             if (auto ex = scrubArrayCache(sle.elements))
                 return ex;
             sle.stageflags = old;
@@ -7037,10 +7037,10 @@ private Expression copyRegionExp(Expression e)
 
     static void copySE(StructLiteralExp sle)
     {
-        if (1 || !(sle.stageflags & stageScrub))
+        if (1 || !(sle.stageflags & StructLiteralExp.StageFlags.scrub))
         {
             const old = sle.stageflags;
-            sle.stageflags |= stageScrub;       // prevent infinite recursion
+            sle.stageflags |= StructLiteralExp.StageFlags.scrub; // prevent infinite recursion
             copyArray(sle.elements);
             sle.stageflags = old;
         }

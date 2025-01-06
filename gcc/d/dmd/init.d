@@ -38,6 +38,7 @@ extern (C++) class Initializer : ASTNode
 {
     Loc loc;
     InitKind kind;
+    bool semanticDone = false; /// initializerSemantic has been run on this
 
     override DYNCAST dyncast() const
     {
@@ -176,7 +177,6 @@ extern (C++) final class ArrayInitializer : Initializer
     Initializers value;     // of Initializer *'s
     uint dim;               // length of array being initialized
     Type type;              // type that array will be used to initialize
-    bool sem;               // true if semantic() is run
     bool isCarray;          // C array semantics
 
     extern (D) this(const ref Loc loc)
@@ -256,7 +256,6 @@ extern (C++) final class CInitializer : Initializer
 {
     DesigInits initializerList; /// initializer-list
     Type type;              /// type that array will be used to initialize
-    bool sem;               /// true if semantic() is run
 
     extern (D) this(const ref Loc loc)
     {

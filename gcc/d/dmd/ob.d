@@ -32,7 +32,7 @@ import dmd.dtemplate;
 import dmd.errors;
 import dmd.escape;
 import dmd.expression;
-import dmd.foreachvar;
+
 import dmd.func;
 import dmd.globals;
 import dmd.hdrgen;
@@ -46,6 +46,7 @@ import dmd.stmtstate;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
+import dmd.visitor.foreachvar;
 
 import dmd.root.bitarray;
 import dmd.common.outbuffer;

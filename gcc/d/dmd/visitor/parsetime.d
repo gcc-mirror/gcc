@@ -7,7 +7,7 @@
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/parsetimevisitor.d
  */
 
-module dmd.parsetimevisitor;
+module dmd.visitor.parsetime;
 
 /** Basic and dumm visitor which implements a visit method for each AST node
   * implemented in AST. This visitor is the parent of strict, transitive

@@ -3,10 +3,10 @@
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/transitivevisitor.d
  */
 
-module dmd.transitivevisitor;
+module dmd.visitor.transitive;
 
 import dmd.astenums;
-import dmd.permissivevisitor;
+import dmd.visitor.permissive;
 import dmd.tokens;
 import dmd.rootobject;
 
@@ -26,7 +26,7 @@ extern(C++) class ParseTimeTransitiveVisitor(AST) : PermissiveVisitor!AST
  * is used for semantic time AST node traversal, so in order to not duplicate the code,
  * the template mixin is used.
  */
-package mixin template ParseVisitMethods(AST)
+package(dmd.visitor) mixin template ParseVisitMethods(AST)
 {
     import dmd.root.array;
 
@@ -854,7 +854,7 @@ package mixin template ParseVisitMethods(AST)
     override void visit(AST.FuncLiteralDeclaration f)
     {
         //printf("Visiting FuncLiteralDeclaration\n");
-        if (f.type.ty == Terror)
+        if (f.type.isTypeError())
             return;
         auto tf = f.type.isTypeFunction();
         if (!f.inferRetType && tf.next)

@@ -372,10 +372,10 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
 
     void visitStructLiteral(StructLiteralExp e)
     {
-        if (e.stageflags & stageOptimize)
+        if (e.stageflags & StructLiteralExp.StageFlags.optimize)
             return;
         const old = e.stageflags;
-        e.stageflags |= stageOptimize;
+        e.stageflags |= StructLiteralExp.StageFlags.optimize;
         if (e.elements)
         {
             foreach (ref ex; (*e.elements)[])

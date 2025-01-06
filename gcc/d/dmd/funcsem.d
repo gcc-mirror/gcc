@@ -56,7 +56,6 @@ import dmd.root.string;
 import dmd.root.stringtable;
 import dmd.semantic2;
 import dmd.semantic3;
-import dmd.statement_rewrite_walker;
 import dmd.statement;
 import dmd.statementsem;
 import dmd.target;
@@ -64,6 +63,7 @@ import dmd.templatesem;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
+import dmd.visitor.statement_rewrite_walker;
 
 version (IN_GCC) {}
 else version (IN_LLVM) {}
@@ -1123,6 +1123,28 @@ Ldone:
     }
 }
 
+/*****************************************
+ * Initialize for inferring the attributes of this function.
+ */
+private void initInferAttributes(FuncDeclaration fd)
+{
+    //printf("initInferAttributes() for %s (%s)\n", toPrettyChars(), ident.toChars());
+    TypeFunction tf = fd.type.toTypeFunction();
+    if (tf.purity == PURE.impure) // purity not specified
+        fd.purityInprocess = true;
+
+    if (tf.trust == TRUST.default_)
+        fd.safetyInprocess = true;
+
+    if (!tf.isNothrow)
+        fd.nothrowInprocess = true;
+
+    if (!tf.isNogc)
+        fd.nogcInprocess = true;
+
+    // Initialize for inferring STC.scope_
+    fd.scopeInprocess = true;
+}
 
 /****************************************************
  * Resolve forward reference of function signature -
@@ -1621,6 +1643,8 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     {
         .error(loc, "none of the overloads of `%s` are callable using argument types `!(%s)%s`",
                od.ident.toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
+        if (!global.gag || global.params.v.showGaggedErrors)
+            printCandidates(loc, od, sc.isDeprecated());
         return null;
     }
 
@@ -1745,7 +1769,6 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
  *      showDeprecated = If `false`, `deprecated` function won't be shown
  */
 private void printCandidates(Decl)(const ref Loc loc, Decl declaration, bool showDeprecated)
-if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
 {
     // max num of overloads to print (-v or -verror-supplements overrides this).
     const uint DisplayLimit = global.params.v.errorSupplementCount();
@@ -1799,13 +1822,16 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
             if (!print)
                 return true;
 
+            // if td.onemember is a function, toCharsMaybeConstraints can print it
+            // without us recursing, otherwise we have to handle it.
             // td.onemember may not have overloads set
             // (see fail_compilation/onemember_overloads.d)
             // assume if more than one member it is overloaded internally
-            bool recurse = td.onemember && td.members.length > 1;
+            bool recurse = td.onemember && (!td.onemember.isFuncDeclaration ||
+                td.members.length > 1);
             OutBuffer buf;
             HdrGenState hgs;
-            hgs.skipConstraints = true;
+            hgs.skipConstraints = true; // failing constraint should get printed below
             hgs.showOneMember = !recurse;
             toCharsMaybeConstraints(td, buf, hgs);
             const tmsg = buf.peekChars();
@@ -2731,7 +2757,6 @@ Statement mergeFensure(FuncDeclaration fd, Statement sf, Identifier oid, Express
  */
 void modifyReturns(FuncLiteralDeclaration fld, Scope* sc, Type tret)
 {
-    import dmd.statement_rewrite_walker;
     extern (C++) final class RetWalker : StatementRewriteWalker
     {
         alias visit = typeof(super).visit;

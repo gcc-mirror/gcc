@@ -26,9 +26,9 @@ import dmd.func;
 import dmd.globals;
 import dmd.init;
 import dmd.mtype;
-import dmd.postordervisitor;
 import dmd.tokens;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 /**
  * Status indicating what kind of throwable might be caused by an expression.

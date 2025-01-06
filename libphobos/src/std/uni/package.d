@@ -7005,7 +7005,7 @@ private enum TransformRes
 // Note, getting GB1 (break at start of text, unless text is empty) right
 // relies on the user starting grapheme walking from beginning of the text, and
 // not attempting to walk an empty text.
-private enum TransformRes
+private immutable TransformRes
     function(ref GraphemeState, dchar) @safe pure nothrow @nogc [] graphemeTransforms =
 [
     GraphemeState.Start: (ref state, ch)
@@ -7243,9 +7243,7 @@ if (is(C : dchar))
     static assert(c2 == 3); // \u0301 has 2 UTF-8 code units
 }
 
-// TODO: make this @nogc. Probably no big deal since the state machine is
-// already GC-free.
-@safe pure nothrow unittest
+@safe pure nothrow @nogc unittest
 {
     // grinning face ~ emoji modifier fitzpatrick type-5 ~ grinning face
     assert(graphemeStride("\U0001F600\U0001f3FE\U0001F600"d, 0) == 2);

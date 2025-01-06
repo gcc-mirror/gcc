@@ -80,6 +80,8 @@ shared static this()
         "writeln": "std.stdio",
         "__va_argsave_t": "core.stdc.stdarg",
         "__va_list_tag": "core.stdc.stdarg",
+        "InterpolationHeader": "core.interpolation",
+        "InterpolationFooter": "core.interpolation",
     ];
 }
 
