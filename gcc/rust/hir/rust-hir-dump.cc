@@ -404,7 +404,8 @@ Dump::do_qualifiedpathtype (QualifiedPathType &e)
   do_mappings (e.get_mappings ());
   visit_field ("type", e.get_type ());
 
-  visit_field ("trait", e.get_trait ());
+  if (e.has_as_clause ())
+    visit_field ("trait", e.get_trait ());
 }
 
 void
@@ -521,7 +522,8 @@ Dump::do_traitfunctiondecl (TraitFunctionDecl &e)
   else
     put_field ("function_params", "empty");
 
-  visit_field ("return_type", e.get_return_type ());
+  if (e.has_return_type ())
+    visit_field ("return_type", e.get_return_type ());
 
   if (e.has_where_clause ())
     put_field ("where_clause", e.get_where_clause ().as_string ());
@@ -1295,7 +1297,8 @@ Dump::visit (BreakExpr &e)
   else
     put_field ("label", "none");
 
-  visit_field ("break_expr ", e.get_expr ());
+  if (e.has_break_expr ())
+    visit_field ("break_expr ", e.get_expr ());
 
   end ("BreakExpr");
 }
