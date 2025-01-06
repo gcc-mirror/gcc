@@ -1,3 +1,34 @@
+2025-01-05  Estevan Castilho (Tevo)  <estevan.cps@gmail.com>
+
+	* libgnarl/s-taprop__dummy.adb: Remove use clause for
+	System.Parameters.
+	(Unlock): Remove Global_Lock formal parameter.
+	(Write_Lock): Likewise.
+
+2025-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118234
+	* exp_aggr.adb (Convert_To_Assignments): In the case of a
+	component association, call Is_Container_Aggregate on the parent's
+	parent.
+	(Expand_Array_Aggregate): Likewise.
+
+2025-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118234
+	* exp_aggr.adb (Convert_To_Assignments): Tweak comment.
+	(Expand_Array_Aggregate): Do not delay the expansion if the parent
+	node is a container aggregate.
+
+2025-01-05  Marc Poulhiès  <poulhies@adacore.com>
+
+	PR ada/118234
+	* exp_aggr.adb (Convert_To_Assignments): Do not mark node for
+	delayed expansion if parent type has the Aggregate aspect.
+	* sem_util.adb (Is_Container_Aggregate): Move...
+	* sem_util.ads (Is_Container_Aggregate): ... here and make it
+	public.
+
 2024-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/117996
