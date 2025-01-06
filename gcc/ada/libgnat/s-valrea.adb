@@ -396,6 +396,9 @@ package body System.Val_Real is
    begin
       pragma Assert (Exp > Maxexp);
 
+      --  This routine supports any type but it is not necessary to invoke it
+      --  for large types because the above one is sufficient for them.
+
       pragma Warnings (Off, "-gnatw.a");
       pragma Assert (not Is_Large_Type);
       pragma Warnings (On, "-gnatw.a");
@@ -407,6 +410,8 @@ package body System.Val_Real is
       --  its final value does not overflow but, if it's too large, then do not
       --  bother doing it since overflow is just fine. The scaling factor is -3
       --  for every power of 5 above the maximum, in other words division by 8.
+      --  Note that Maxpow is an upper bound of the span of exponents for which
+      --  scaling is needed, but it's OK to apply it even if it is not needed.
 
       if Exp - Maxexp <= Maxpow then
          S := 3 * (Exp - Maxexp);
