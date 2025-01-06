@@ -1,6 +1,13 @@
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
+	2025-01-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* g++.dg/gomp/dispatch-8.C: New test.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
 	2025-01-07  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* c-c++-common/gomp/adjust-args-4.c: New test.

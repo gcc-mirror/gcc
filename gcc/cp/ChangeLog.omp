@@ -1,6 +1,14 @@
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
+	2025-01-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* parser.cc (cp_parser_pragma): Replace call to cp_parser_omp_dispatch
+	with cp_parser_omp_construct and check context.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
 	2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* parser.cc (cp_parser_omp_dispatch): Handle INDIRECT_REF.
