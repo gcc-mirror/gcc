@@ -7046,9 +7046,9 @@ Syntax:
 
 
 If this pragma occurs in a unit that is processed by the compiler, GNAT
-aborts with the message :samp:`xxx not implemented`, where
-``xxx`` is the name of the current compilation unit.  This pragma is
-intended to allow the compiler to handle unimplemented library units in
+aborts with the message :samp:`xxx is not supported in this configuration`,
+where ``xxx`` is the name of the current compilation unit.  This pragma
+is intended to allow the compiler to handle unimplemented library units in
 a clean manner.
 
 The abort only happens if code is being generated.  Thus you can use
