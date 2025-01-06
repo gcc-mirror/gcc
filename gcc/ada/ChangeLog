@@ -1,3 +1,10 @@
+2025-01-05  Estevan Castilho (Tevo)  <estevan.cps@gmail.com>
+
+	* libgnarl/s-taprop__dummy.adb: Remove use clause for
+	System.Parameters.
+	(Unlock): Remove Global_Lock formal parameter.
+	(Write_Lock): Likewise.
+
 2024-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (get_atomic_access): Deal specifically with
