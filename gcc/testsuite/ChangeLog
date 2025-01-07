@@ -1,3 +1,21 @@
+2025-01-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2023-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/105152
+	PR fortran/100193
+	PR fortran/87946
+	PR fortran/103389
+	PR fortran/104429
+	PR fortran/82774
+	* gfortran.dg/pr105152.f90 : New test
+	* gfortran.dg/pr100193.f90 : New test
+	* gfortran.dg/pr87946.f90 : New test
+	* gfortran.dg/pr103389.f90 : New test
+	* gfortran.dg/pr104429.f90 : New test
+	* gfortran.dg/pr82774.f90 : New test
+
 2024-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
