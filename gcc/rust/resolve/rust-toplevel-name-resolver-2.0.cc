@@ -104,6 +104,32 @@ TopLevel::visit (AST::Trait &trait)
 }
 
 void
+TopLevel::visit (AST::InherentImpl &impl)
+{
+  auto inner_fn = [this, &impl] () {
+    insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
+			 impl.get_type (), Namespace::Types);
+
+    AST::DefaultASTVisitor::visit (impl);
+  };
+
+  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
+}
+
+void
+TopLevel::visit (AST::TraitImpl &impl)
+{
+  auto inner_fn = [this, &impl] () {
+    insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
+			 impl.get_type (), Namespace::Types);
+
+    AST::DefaultASTVisitor::visit (impl);
+  };
+
+  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
+}
+
+void
 TopLevel::visit (AST::TraitItemType &trait_item)
 {
   insert_or_error_out (trait_item.get_identifier ().as_string (), trait_item,
