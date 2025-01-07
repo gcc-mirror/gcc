@@ -4127,10 +4127,10 @@ loongarch_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_construct:
 	elements = TYPE_VECTOR_SUBPARTS (vectype);
-	if (ISA_HAS_LASX)
-	  return elements + 1;
+	if (LASX_SUPPORTED_MODE_P (mode) && !LSX_SUPPORTED_MODE_P (mode))
+	  return elements / 2 + 3;
 	else
-	  return elements;
+	  return elements / 2 + 1;
 
       default:
 	gcc_unreachable ();
