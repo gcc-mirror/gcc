@@ -1062,12 +1062,13 @@ widest_fixed_size_mode_for_size (unsigned int size, by_pieces_operation op)
   gcc_checking_assert (size > 1);
 
   /* Use QI vector only if size is wider than a WORD.  */
-  if (can_use_qi_vectors (op) && size > UNITS_PER_WORD)
+  if (can_use_qi_vectors (op))
     {
       machine_mode mode;
       fixed_size_mode candidate;
       FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
 	if (is_a<fixed_size_mode> (mode, &candidate)
+	    && GET_MODE_SIZE (candidate) > UNITS_PER_WORD
 	    && GET_MODE_INNER (candidate) == QImode)
 	  {
 	    if (GET_MODE_SIZE (candidate) >= size)

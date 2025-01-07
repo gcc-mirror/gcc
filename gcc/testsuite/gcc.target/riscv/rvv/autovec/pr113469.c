@@ -51,5 +51,4 @@ void p(int buf, __builtin_va_list ab, int q) {
  } while (k);
 }
 
-/* { dg-final { scan-assembler-times {vsetivli\tzero,\s*4,\s*e8,\s*mf4,\s*t[au],\s*m[au]} 1 } } */
 /* { dg-final { scan-assembler-times {vsetivli\tzero,\s*8,\s*e8,\s*mf2,\s*t[au],\s*m[au]} 1 } } */
