@@ -1244,13 +1244,17 @@ Dump::visit (ClosureExpr &e)
 	  auto oa = param.get_outer_attrs ();
 	  do_outer_attrs (oa);
 	  visit_field ("pattern", param.get_pattern ());
-	  visit_field ("type", param.get_type ());
+
+	  if (param.has_type_given ())
+	    visit_field ("type", param.get_type ());
+
 	  end ("ClosureParam");
 	}
       end_field ("params");
     }
 
-  visit_field ("return_type", e.get_return_type ());
+  if (e.has_return_type ())
+    visit_field ("return_type", e.get_return_type ());
 
   visit_field ("expr", e.get_expr ());
   end ("ClosureExpr");
