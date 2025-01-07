@@ -550,7 +550,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{interchange} loop-transformation construct @tab N @tab
 @item @code{reverse} loop-transformation construct @tab N @tab
 @item @code{split} loop-transformation construct @tab N @tab
-@item @code{stipe} loop-transformation construct @tab N @tab
+@item @code{stripe} loop-transformation construct @tab N @tab
 @item @code{tile} permitting association of grid and inter-tile loops @tab N @tab
 @item @code{strict} modifier keyword to @code{num_threads} @tab N @tab
 @item @code{safesync} clause to the @code{parallel} construct @tab N @tab
@@ -1760,10 +1760,9 @@ The effect of running this routine in a @code{target} region is unspecified.
 Get the value of the @emph{default-device-var} ICV, which is used
 for target regions without a device clause. The value is either a
 nonnegative device number, @code{omp_initial_device} or
-@code{omp_invalid_device}. Note that for the host, the ICV can have two values
-and, hence, this routine might return either the value of the named constant
-@code{omp_initial_device} or the value returned by the
-@code{omp_get_initial_device} routine.
+@code{omp_invalid_device}. Note that for the host, the ICV can have two values:
+either the value of the named constant @code{omp_initial_device} or the value
+returned by the @code{omp_get_num_devices} routine.
 
 The effect of running this routine in a @code{target} region is unspecified.
 
@@ -1791,7 +1790,7 @@ The effect of running this routine in a @code{target} region is unspecified.
 @subsection @code{omp_get_num_devices} -- Number of target devices
 @table @asis
 @item @emph{Description}:
-Returns the number of target devices.
+Returns the number of available non-host devices.
 
 The effect of running this routine in a @code{target} region is unspecified.
 
@@ -1938,7 +1937,8 @@ run-time function is desired.
 @item @emph{Description}:
 This function returns a device number that represents the host device.
 Since OpenMP 5.1, this is equal to the value returned by the
-@code{omp_get_num_devices} function.
+@code{omp_get_num_devices} function; since OpenMP 6.0 it may also return
+the value of @code{omp_initial_device}.
 
 The effect of running this routine in a @code{target} region is unspecified.
 
