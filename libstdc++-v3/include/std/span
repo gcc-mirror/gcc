@@ -235,13 +235,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_span_initializer_list >= 202311L // >= C++26
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winit-list-lifetime"
-	constexpr
-	explicit(extent != dynamic_extent)
-	span(initializer_list<value_type> __il)
-	requires (is_const_v<_Type>)
-	: _M_ptr(__il.begin()), _M_extent(__il.size())
-	{
-	}
+      constexpr
+      explicit(extent != dynamic_extent)
+      span(initializer_list<value_type> __il)
+      requires (is_const_v<_Type>)
+      : _M_ptr(__il.begin()), _M_extent(__il.size())
+      { }
 #pragma GCC diagnostic pop
 #endif
 
