@@ -1,3 +1,44 @@
+2025-01-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/118006
+	* gcc.target/i386/strub-pr118006.c: New.
+
+2025-01-06  Akram Ahmad  <Akram.Ahmad@arm.com>
+
+	* gcc.target/aarch64/sve/truncated_concatenation_1.c: new test
+	for the above example and other modes covered by insn
+	definitions.
+
+2025-01-06  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/acle/asm/mul_u8.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/acle/asm/mul_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u64.c: New test and adjust
+	expected outcome.
+
+2025-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	PR target/118272
+	* gcc.target/aarch64/vect-simd-clone-3.c: New test.
+
+2025-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118224
+	* gcc.dg/pr118224.c: New test.
+	* c-c++-common/ubsan/vla-1.c (bar): Use noipa attribute instead
+	of noinline, noclone.
+
+2025-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/fortran/pr111395.f90: Move this file to...
+	* gfortran.target/riscv/rvv/pr111395.f90: ...here.
+	* gcc.target/riscv/rvv/fortran/pr111566.f90: Move this file to...
+	* gfortran.target/riscv/rvv/pr111566.f90: ...here.
+	* gcc.target/riscv/rvv/rvv-fortran.exp: Move this file to...
+	* gfortran.target/riscv/rvv/rvv.exp: ...here.
+
 2025-01-05  Iain Buclaw  <ibuclaw@symmetryinvestments.com>
 
 	* gdc.dg/torture/pr96435.d: Add dg-warning.

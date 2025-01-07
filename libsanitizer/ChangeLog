@@ -1,3 +1,37 @@
+2025-01-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR sanitizer/117725
+	* sanitizer_common/sanitizer_common_interceptors.inc: Cherry
+	picked from LLVM commit 65a2eb0b1589590ae78cc1e5f05cd004b3b3bec5.
+
+2025-01-06  Vitaly Buka  <vitalybuka@google.com>
+	    Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR sanitizer/117725
+	* asan/asan_interceptors.cpp: Cherry picked from LLVM commit
+	6dec33834d1fd89f16e271dde9607c1de9554144.
+	* sanitizer_common/sanitizer_common_interceptors.inc: Ditto.
+
+2025-01-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR sanitizer/117725
+	* interception/interception.h: Cherry picked from LLVM commit
+	ce44640fe29550461120d22b0358e6cac4aed822.
+	* sanitizer_common/sanitizer_internal_defs.h: Ditto.
+
+2025-01-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR sanitizer/117725
+	* asan/asan_interceptors.cpp: Cherry picked LLVM commit
+	9a156f6b2b0c892d8713ba907f07f027b24953d8.
+	* asan/asan_interceptors.h: Ditto.
+	* asan/asan_interceptors_memintrinsics.h: Ditto.
+	* sanitizer_common/sanitizer_common_interceptors.inc: Ditto.
+	* sanitizer_common/sanitizer_common_interceptors_memintrinsics.inc:
+	Ditto.
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Ditto.
+	* tsan/tsan_interceptors_posix.cpp: Ditto.
+
 2024-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/117732

@@ -1,3 +1,69 @@
+2025-01-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/118006
+	* cfgexpand.cc (expand_gimple_basic_block): Do not emit
+	pending stack adjustments after a barrier.
+
+2025-01-06  Akram Ahmad  <Akram.Ahmad@arm.com>
+
+	* config/aarch64/aarch64-simd.md: (*aarch64_trunc_concat)
+	new insn definition.
+
+2025-01-06  Fangrui Song  <maskray@gcc.gnu.org>
+
+	PR gcov-profile/96092
+	* coverage.cc (coverage_init): Remap getpwd().
+
+2025-01-06  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svmul_impl::fold): Wrap code for folding to svneg in lambda
+	function and pass to gimple_folder::convert_and_fold to enable
+	the transform for unsigned types.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::convert_and_fold): New function that converts
+	operands to target type before calling callback function, adding the
+	necessary conversion statements.
+	(gimple_folder::redirect_call): Set fntype of redirected call.
+	(get_vector_type): Move from here to aarch64-sve-builtins.h.
+	* config/aarch64/aarch64-sve-builtins.h
+	(gimple_folder::convert_and_fold): Declare function.
+	(get_vector_type): Move here as inline function.
+
+2025-01-06  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.cc (ipcp_print_widest_int): New function.
+	(ipcp_store_vr_results): Use it.
+	(ipcp_bits_lattice::print): Likewise.  Fix formatting.
+
+2025-01-06  Mark Wielaard  <mark@klomp.org>
+
+	PR tree-optimization/118032
+	* tree-switch-conversion.cc (jump_table_cluster::find_jump_tables):
+	Remove param_switch_lower_slow_alg_max_cases check.
+
+2025-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/96342
+	PR target/118272
+	* config/aarch64/aarch64-sve.md (vec_init<mode><Vquad>,
+	vec_initvnx16qivnx2qi): New.
+	* config/aarch64/aarch64.cc (aarch64_sve_expand_vector_init_subvector):
+	Rewrite to support any arbitrary combinations.
+	* config/aarch64/iterators.md (SVE_NO2E): Update to use SVE_NO4E
+	(SVE_NO2E, Vquad): New.
+
+2025-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118224
+	* tree-ssa-dce.cc (is_removable_allocation_p): Don't return true
+	for allocations with constant size argument larger than PTRDIFF_MAX
+	or for calloc with one of the arguments constant larger than
+	PTRDIFF_MAX or their product known constant above PTRDIFF_MAX.
+	Fix comment typos, furhter -> further and then -> than.
+	* lto-section-in.cc (lto_free_function_in_decl_state_for_node):
+	Fix comment typo, furhter -> further.
+
 2025-01-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/mmix/mmix.cc (mmix_asm_output_labelref): Replace '.'
