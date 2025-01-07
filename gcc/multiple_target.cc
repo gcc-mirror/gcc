@@ -437,7 +437,15 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 
 /* When NODE is a target clone, consider all callees and redirect
    to a clone with equal target attributes.  That prevents multiple
-   multi-versioning dispatches and a call-chain can be optimized.  */
+   multi-versioning dispatches and a call-chain can be optimized.
+
+   This optimisation might pick the wrong version in some cases, since knowing
+   that we meet the target requirements for a matching callee version does not
+   tell us that we won't also meet the target requirements for a higher
+   priority callee version at runtime.  Since this is longstanding behavior
+   for x86 and powerpc, we preserve it for those targets, but skip the
+   optimisation for targets that use the "target_version" attribute for
+   multi-versioning.  */
 
 static void
 redirect_to_specific_clone (cgraph_node *node)
@@ -446,6 +454,7 @@ redirect_to_specific_clone (cgraph_node *node)
   if (fv == NULL)
     return;
 
+  gcc_assert (TARGET_HAS_FMV_TARGET_ATTRIBUTE);
   tree attr_target = lookup_attribute ("target", DECL_ATTRIBUTES (node->decl));
   if (attr_target == NULL_TREE)
     return;
@@ -498,8 +507,9 @@ ipa_target_clone (void)
   for (unsigned i = 0; i < to_dispatch.length (); i++)
     create_dispatcher_calls (to_dispatch[i]);
 
-  FOR_EACH_FUNCTION (node)
-    redirect_to_specific_clone (node);
+  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    FOR_EACH_FUNCTION (node)
+      redirect_to_specific_clone (node);
 
   return 0;
 }
