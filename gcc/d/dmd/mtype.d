@@ -30,6 +30,7 @@ import dmd.dtemplate;
 import dmd.enumsem;
 import dmd.errors;
 import dmd.expression;
+import dmd.dsymbolsem : determineSize;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -515,7 +516,7 @@ extern (C++) abstract class Type : ASTNode
 
         static Type merge(Type t)
         {
-            import dmd.basicmangle : tyToDecoBuffer;
+            import dmd.mangle.basic : tyToDecoBuffer;
 
             OutBuffer buf;
             buf.reserve(3);
@@ -1115,65 +1116,66 @@ extern (C++) abstract class Type : ASTNode
         Type t = this;
         if (t.isImmutable())
         {
+            return t;
         }
         else if (stc & STC.immutable_)
         {
             t = t.makeImmutable();
+            return t;
         }
-        else
+
+        if ((stc & STC.shared_) && !t.isShared())
         {
-            if ((stc & STC.shared_) && !t.isShared())
+            if (t.isWild())
+            {
+                if (t.isConst())
+                    t = t.makeSharedWildConst();
+                else
+                    t = t.makeSharedWild();
+            }
+            else
+            {
+                if (t.isConst())
+                    t = t.makeSharedConst();
+                else
+                    t = t.makeShared();
+            }
+        }
+        if ((stc & STC.const_) && !t.isConst())
+        {
+            if (t.isShared())
             {
                 if (t.isWild())
-                {
-                    if (t.isConst())
-                        t = t.makeSharedWildConst();
-                    else
-                        t = t.makeSharedWild();
-                }
+                    t = t.makeSharedWildConst();
                 else
-                {
-                    if (t.isConst())
-                        t = t.makeSharedConst();
-                    else
-                        t = t.makeShared();
-                }
+                    t = t.makeSharedConst();
             }
-            if ((stc & STC.const_) && !t.isConst())
+            else
             {
-                if (t.isShared())
-                {
-                    if (t.isWild())
-                        t = t.makeSharedWildConst();
-                    else
-                        t = t.makeSharedConst();
-                }
+                if (t.isWild())
+                    t = t.makeWildConst();
                 else
-                {
-                    if (t.isWild())
-                        t = t.makeWildConst();
-                    else
-                        t = t.makeConst();
-                }
-            }
-            if ((stc & STC.wild) && !t.isWild())
-            {
-                if (t.isShared())
-                {
-                    if (t.isConst())
-                        t = t.makeSharedWildConst();
-                    else
-                        t = t.makeSharedWild();
-                }
-                else
-                {
-                    if (t.isConst())
-                        t = t.makeWildConst();
-                    else
-                        t = t.makeWild();
-                }
+                    t = t.makeConst();
             }
         }
+        if ((stc & STC.wild) && !t.isWild())
+        {
+            if (t.isShared())
+            {
+                if (t.isConst())
+                    t = t.makeSharedWildConst();
+                else
+                    t = t.makeSharedWild();
+            }
+            else
+            {
+                if (t.isConst())
+                    t = t.makeWildConst();
+                else
+                    t = t.makeWild();
+            }
+        }
+
         return t;
     }
 
@@ -1396,33 +1398,6 @@ extern (C++) abstract class Type : ASTNode
         while ((tsa = t.isTypeSArray()) !is null)
             t = tsa.next.toBasetype();
         return t;
-    }
-
-    /*******************************************
-     * Compute number of elements for a (possibly multidimensional) static array,
-     * or 1 for other types.
-     * Params:
-     *  loc = for error message
-     * Returns:
-     *  number of elements, uint.max on overflow
-     */
-    final uint numberOfElems(const ref Loc loc)
-    {
-        //printf("Type::numberOfElems()\n");
-        uinteger_t n = 1;
-        Type tb = this;
-        while ((tb = tb.toBasetype()).ty == Tsarray)
-        {
-            bool overflow = false;
-            n = mulu(n, (cast(TypeSArray)tb).dim.toUInteger(), overflow);
-            if (overflow || n >= uint.max)
-            {
-                error(loc, "static array `%s` size overflowed to %llu", toChars(), cast(ulong)n);
-                return uint.max;
-            }
-            tb = (cast(TypeSArray)tb).next;
-        }
-        return cast(uint)n;
     }
 
     /****************************************
@@ -2723,36 +2698,6 @@ extern (C++) final class TypeFunction : TypeNext
         newArgs.setDim(e);
         return newArgs;
     }
-
-    extern (D) bool checkRetType(const ref Loc loc)
-    {
-        Type tb = next.toBasetype();
-        if (tb.ty == Tfunction)
-        {
-            error(loc, "functions cannot return a function");
-            next = Type.terror;
-        }
-        if (tb.ty == Ttuple)
-        {
-            error(loc, "functions cannot return a sequence (use `std.typecons.Tuple`)");
-            next = Type.terror;
-        }
-        if (!isRef && (tb.ty == Tstruct || tb.ty == Tsarray))
-        {
-            if (auto ts = tb.baseElemOf().isTypeStruct())
-            {
-                if (!ts.sym.members)
-                {
-                    error(loc, "functions cannot return opaque type `%s` by value", tb.toChars());
-                    next = Type.terror;
-                }
-            }
-        }
-        if (tb.ty == Terror)
-            return true;
-        return false;
-    }
-
 
     /// Returns: `true` the function is `isInOutQual` or `isInOutParam` ,`false` otherwise.
     bool iswild() const pure nothrow @safe @nogc

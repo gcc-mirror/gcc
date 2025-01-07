@@ -18,5 +18,5 @@ void main()
     f();
     f();
     f();
-    f();
+    static assert("1"); // also surpress deprecationSupplemental
 }

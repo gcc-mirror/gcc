@@ -54,29 +54,6 @@ import dmd.visitor;
 
 enum LOGSEMANTIC = false;
 
-/// Return value for `checkModifiable`
-enum Modifiable
-{
-    /// Not modifiable
-    no,
-    /// Modifiable (the type is mutable)
-    yes,
-    /// Modifiable because it is initialization
-    initialization,
-}
-/**
- * Specifies how the checkModify deals with certain situations
- */
-enum ModifyFlags
-{
-    /// Issue error messages on invalid modifications of the variable
-    none,
-    /// No errors are emitted for invalid modifications
-    noError = 0x1,
-    /// The modification occurs for a subfield of the current variable
-    fieldAssign = 0x2,
-}
-
 /****************************************
  * Find the last non-comma expression.
  * Params:
@@ -478,7 +455,7 @@ extern (C++) abstract class Expression : ASTNode
     dinteger_t toInteger()
     {
         //printf("Expression %s\n", EXPtoString(op).ptr);
-        if (!type.isTypeError())
+        if (!type || !type.isTypeError())
             error(loc, "integer constant expression expected instead of `%s`", toChars());
         return 0;
     }
@@ -1880,7 +1857,7 @@ extern (C++) final class InterpExp : Expression
 
     enum char NoPostfix = 0;
 
-    extern (D) this(const ref Loc loc, InterpolatedSet* set, char postfix = NoPostfix) scope
+    extern (D) this(const ref Loc loc, InterpolatedSet* set, char postfix = NoPostfix) scope @safe
     {
         super(loc, EXP.interpolated);
         this.interpolatedSet = set;
@@ -4575,7 +4552,7 @@ extern (C++) class CatAssignExp : BinAssignExp
 {
     Expression lowering;    // lowered druntime hook `_d_arrayappend{cTX,T}`
 
-    extern (D) this(const ref Loc loc, Expression e1, Expression e2)
+    extern (D) this(const ref Loc loc, Expression e1, Expression e2) @safe
     {
         super(loc, EXP.concatenateAssign, e1, e2);
     }
@@ -5286,7 +5263,7 @@ extern (C++) final class ObjcClassReferenceExp : Expression
 {
     ClassDeclaration classDeclaration;
 
-    extern (D) this(const ref Loc loc, ClassDeclaration classDeclaration)
+    extern (D) this(const ref Loc loc, ClassDeclaration classDeclaration) @safe
     {
         super(loc, EXP.objcClassReference);
         this.classDeclaration = classDeclaration;

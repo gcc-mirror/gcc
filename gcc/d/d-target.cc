@@ -588,3 +588,23 @@ Target::preferPassByRef (Type *param_type)
 
   return (tb->ty == TY::Tstruct || tb->ty == TY::Tsarray);
 }
+
+/* Returns true if the specified bit-field FIELD contributes to the alignment
+   of the containing aggregate.  */
+
+bool
+TargetC::contributesToAggregateAlignment(BitFieldDeclaration *field)
+{
+  if (this->bitFieldStyle == TargetC::BitFieldStyle::MS)
+    return true;
+
+  if (PCC_BITFIELD_TYPE_MATTERS)
+    {
+      /* Named bit-fields contribute to alignment. Some targets also apply the
+	 same rules to unnamed bit-fields too.  */
+      if (!field->isAnonymous () || targetm.align_anon_bitfield ())
+	return true;
+    }
+
+  return false;
+}

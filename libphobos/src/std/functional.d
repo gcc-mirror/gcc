@@ -445,7 +445,7 @@ if (S=="<"||S==">"||S=="<="||S==">="||S=="=="||S=="!=")
 {
     import std.traits : isIntegral;
     private bool unsafeOp(ElementType1, ElementType2)(ElementType1 a, ElementType2 b) pure
-        if (isIntegral!ElementType1 && isIntegral!ElementType2)
+    if (isIntegral!ElementType1 && isIntegral!ElementType2)
     {
         import std.traits : CommonType;
         alias T = CommonType!(ElementType1, ElementType2);

@@ -50,36 +50,36 @@ import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dinterpret;
-import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
+import dmd.dsymbolsem : dsymbolSemantic, checkDeprecated, aliasSemantic, search, search_correct, setScope, importAll, include;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
-import dmd.expressionsem;
+import dmd.expressionsem : resolveLoc, expressionSemantic, resolveProperties;
 import dmd.func;
-import dmd.funcsem;
+import dmd.funcsem : functionSemantic, leastAsSpecialized, overloadApply;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.impcnvtab;
 import dmd.init;
-import dmd.initsem;
 import dmd.location;
+import dmd.mangle;
 import dmd.mtype;
 import dmd.opover;
 import dmd.optimize;
 import dmd.root.array;
 import dmd.common.outbuffer;
 import dmd.rootobject;
-import dmd.semantic2;
-import dmd.semantic3;
-import dmd.templatesem;
+import dmd.semantic3 : semantic3;
+import dmd.templatesem : matchWithInstance, formatParamsWithTiargs, leastAsSpecialized, declareParameter;
 import dmd.tokens;
-import dmd.typesem;
+import dmd.typesem : hasPointers, typeSemantic, merge, merge2, resolve, toDsymbol,
+                     addStorageClass, isBaseOf, equivalent, sarrayOf, constOf, mutableOf, unSharedOf,
+                     unqualify, aliasthisOf, castMod, substWildTo, addMod;
 import dmd.visitor;
 
 import dmd.templateparamsem;
@@ -1695,7 +1695,9 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, ref TemplateParameters pa
                     edim = s ? getValue(s) : getValue(e);
                 }
             }
-            if (tp && tp.matchArg(sc, t.dim, i, &parameters, dedtypes, null) || edim && edim.toInteger() == t.dim.toInteger())
+            if ((tp && tp.matchArg(sc, t.dim, i, &parameters, dedtypes, null)) ||
+                (edim && edim.isIntegerExp() && edim.toInteger() == t.dim.toInteger())
+            )
             {
                 result = deduceType(t.next, sc, tparam.nextOf(), parameters, dedtypes, wm);
                 return;
@@ -3235,10 +3237,6 @@ extern (C++) class TemplateParameter : ASTNode
         return DYNCAST.templateparameter;
     }
 
-    /* Create dummy argument based on parameter.
-     */
-    abstract RootObject dummyArg();
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -3317,19 +3315,6 @@ extern (C++) class TemplateTypeParameter : TemplateParameter
     override final bool hasDefaultArg()
     {
         return defaultType !is null;
-    }
-
-    override final RootObject dummyArg()
-    {
-        Type t = specType;
-        if (!t)
-        {
-            // Use this for alias-parameter's too (?)
-            if (!tdummy)
-                tdummy = new TypeIdentifier(loc, ident);
-            t = tdummy;
-        }
-        return t;
     }
 
     override void accept(Visitor v)
@@ -3439,58 +3424,41 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
     override RootObject defaultArg(const ref Loc instLoc, Scope* sc)
     {
         Expression e = defaultValue;
-        if (e)
+        if (!e)
+            return null;
+
+        e = e.syntaxCopy();
+        Scope* sc2 = sc.push();
+        sc2.inDefaultArg = true;
+        e = e.expressionSemantic(sc2);
+        sc2.pop();
+        if (e is null)
+            return null;
+        if (auto te = e.isTemplateExp())
         {
-            e = e.syntaxCopy();
-            Scope* sc2 = sc.push();
-            sc2.inDefaultArg = true;
-            e = e.expressionSemantic(sc2);
-            sc2.pop();
-            if (e is null)
-                return null;
-            if (auto te = e.isTemplateExp())
+            assert(sc && sc.tinst);
+            if (te.td == sc.tinst.tempdecl)
             {
-                assert(sc && sc.tinst);
-                if (te.td == sc.tinst.tempdecl)
-                {
-                    // defaultValue is a reference to its template declaration
-                    // i.e: `template T(int arg = T)`
-                    // Raise error now before calling resolveProperties otherwise we'll
-                    // start looping on the expansion of the template instance.
-                    auto td = sc.tinst.tempdecl;
-                    .error(td.loc, "%s `%s` recursive template expansion", td.kind, td.toPrettyChars);
-                    return ErrorExp.get();
-                }
+                // defaultValue is a reference to its template declaration
+                // i.e: `template T(int arg = T)`
+                // Raise error now before calling resolveProperties otherwise we'll
+                // start looping on the expansion of the template instance.
+                auto td = sc.tinst.tempdecl;
+                .error(td.loc, "%s `%s` recursive template expansion", td.kind, td.toPrettyChars);
+                return ErrorExp.get();
             }
-            if ((e = resolveProperties(sc, e)) is null)
-                return null;
-            e = e.resolveLoc(instLoc, sc); // use the instantiated loc
-            e = e.optimize(WANTvalue);
         }
+        if ((e = resolveProperties(sc, e)) is null)
+            return null;
+        e = e.resolveLoc(instLoc, sc); // use the instantiated loc
+        e = e.optimize(WANTvalue);
+
         return e;
     }
 
     override bool hasDefaultArg()
     {
         return defaultValue !is null;
-    }
-
-    override RootObject dummyArg()
-    {
-        Expression e = specValue;
-        if (!e)
-        {
-            // Create a dummy value
-            auto pe = cast(void*)valType in edummies;
-            if (!pe)
-            {
-                e = valType.defaultInit(Loc.initial);
-                edummies[cast(void*)valType] = e;
-            }
-            else
-                e = *pe;
-        }
-        return e;
     }
 
     override void accept(Visitor v)
@@ -3578,18 +3546,6 @@ extern (C++) final class TemplateAliasParameter : TemplateParameter
         return defaultAlias !is null;
     }
 
-    override RootObject dummyArg()
-    {
-        RootObject s = specAlias;
-        if (!s)
-        {
-            if (!sdummy)
-                sdummy = new Dsymbol();
-            s = sdummy;
-        }
-        return s;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -3667,11 +3623,6 @@ extern (C++) final class TemplateTupleParameter : TemplateParameter
         return false;
     }
 
-    override RootObject dummyArg()
-    {
-        return null;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -3704,7 +3655,22 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     Dsymbol tempdecl;           // referenced by foo.bar.abc
     Dsymbol enclosing;          // if referencing local symbols, this is the context
     Dsymbol aliasdecl;          // !=null if instance is an alias for its sole member
-    TemplateInstance inst;      // refer to existing instance
+
+    /**
+    If this is not null and it has a value that is not the current object,
+     then this field points to an existing template instance
+     and that object has been duplicated into us.
+
+    If this object is a duplicate,
+     the ``memberOf`` field will be set to a root module (passed on CLI).
+
+    This information is useful to deduplicate analysis that may occur
+     after semantic 3 has completed.
+
+    See_Also: memberOf
+    */
+    TemplateInstance inst;
+
     ScopeDsymbol argsym;        // argument symbol table
     size_t hash;                // cached result of toHash()
 
@@ -3716,7 +3682,15 @@ extern (C++) class TemplateInstance : ScopeDsymbol
 
     TemplateInstances* deferred;
 
-    Module memberOf;            // if !null, then this TemplateInstance appears in memberOf.members[]
+    /**
+    If this is not null then this template instance appears in a root module's members.
+
+    Note:   This is not useful for determining duplication status of this template instance.
+            Use the field ``inst`` for determining if a template instance has been duplicated into this object.
+
+    See_Also: inst
+    */
+    Module memberOf;
 
     // Used to determine the instance needs code generation.
     // Note that these are inaccurate until semantic analysis phase completed.
@@ -3914,7 +3888,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             // Set error here as we don't want it to depend on the number of
             // entries that are being printed.
             if (cl == Classification.error ||
-                (cl == Classification.warning && global.params.warnings == DiagnosticReporting.error) ||
+                (cl == Classification.warning && global.params.useWarnings == DiagnosticReporting.error) ||
                 (cl == Classification.deprecation && global.params.useDeprecated == DiagnosticReporting.error))
                 cur.errors = true;
 
@@ -3998,66 +3972,63 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         if (enclosing != ti.enclosing)
         {
             //printf("test2 enclosing %s ti.enclosing %s\n", enclosing ? enclosing.toChars() : "", ti.enclosing ? ti.enclosing.toChars() : "");
-            goto Lnotequals;
+            return false;
         }
         //printf("parent = %s, ti.parent = %s\n", parent.toPrettyChars(), ti.parent.toPrettyChars());
 
         if (!arrayObjectMatch(tdtypes, ti.tdtypes))
-            goto Lnotequals;
+            return false;
 
         /* Template functions may have different instantiations based on
          * "auto ref" parameters.
          */
-        if (auto fd = ti.toAlias().isFuncDeclaration())
+        auto fd = ti.toAlias().isFuncDeclaration();
+        if (!fd)
+            return true;
+        if (fd.errors)
+            return true;
+
+        auto resolvedArgs = fd.type.isTypeFunction().resolveNamedArgs(
+            ArgumentList(this.fargs, this.fnames), null);
+
+        // resolvedArgs can be null when there's an error: fail_compilation/fail14669.d
+        // In that case, equalsx returns true to prevent endless template instantiations
+        // However, it can also mean the function was explicitly instantiated
+        // without function arguments: fail_compilation/fail14669
+        // Hence the following check:
+        if (this.fargs && !resolvedArgs)
+            return true;
+
+        Expression[] args = resolvedArgs ? (*resolvedArgs)[] : [];
+
+        auto fparameters = fd.getParameterList();
+        size_t nfparams = fparameters.length;   // Num function parameters
+        for (size_t j = 0; j < nfparams; j++)
         {
-            if (!fd.errors)
+            Parameter fparam = fparameters[j];
+            if (!(fparam.storageClass & STC.autoref) )      // if "auto ref"
+                continue;
+
+            Expression farg = (j < args.length) ? args[j] : fparam.defaultArg;
+            // resolveNamedArgs strips trailing nulls / default params
+            // when it doesn't anymore, the ternary can be replaced with:
+            // assert(j < resolvedArgs.length);
+            if (!farg)
+                farg = fparam.defaultArg;
+            if (!farg)
+                return false;
+            if (farg.isLvalue())
             {
-                auto resolvedArgs = fd.type.isTypeFunction().resolveNamedArgs(
-                    ArgumentList(this.fargs, this.fnames), null);
-
-                // resolvedArgs can be null when there's an error: fail_compilation/fail14669.d
-                // In that case, equalsx returns true to prevent endless template instantiations
-                // However, it can also mean the function was explicitly instantiated
-                // without function arguments: fail_compilation/fail14669
-                // Hence the following check:
-                if (this.fargs && !resolvedArgs)
-                    return true;
-
-                Expression[] args = resolvedArgs ? (*resolvedArgs)[] : [];
-
-                auto fparameters = fd.getParameterList();
-                size_t nfparams = fparameters.length;   // Num function parameters
-                for (size_t j = 0; j < nfparams; j++)
-                {
-                    Parameter fparam = fparameters[j];
-                    if (fparam.storageClass & STC.autoref)       // if "auto ref"
-                    {
-                        Expression farg = (j < args.length) ? args[j] : fparam.defaultArg;
-                        // resolveNamedArgs strips trailing nulls / default params
-                        // when it doesn't anymore, the ternary can be replaced with:
-                        // assert(j < resolvedArgs.length);
-                        if (!farg)
-                            farg = fparam.defaultArg;
-                        if (!farg)
-                            goto Lnotequals;
-                        if (farg.isLvalue())
-                        {
-                            if (!(fparam.storageClass & STC.ref_))
-                                goto Lnotequals; // auto ref's don't match
-                        }
-                        else
-                        {
-                            if (fparam.storageClass & STC.ref_)
-                                goto Lnotequals; // auto ref's don't match
-                        }
-                    }
-                }
+                if (!(fparam.storageClass & STC.ref_))
+                    return false; // auto ref's don't match
+            }
+            else
+            {
+                if (fparam.storageClass & STC.ref_)
+                    return false; // auto ref's don't match
             }
         }
         return true;
-
-    Lnotequals:
-        return false;
     }
 
     extern (D) final size_t toHash()
@@ -4209,77 +4180,75 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             // Elide codegen because there's no instantiation from any root modules.
             return false;
         }
-        else
+
+        // Prefer instantiations from non-root modules, to minimize object code size.
+
+        /* If a TemplateInstance is ever instantiated from a non-root module,
+         * we do not have to generate code for it,
+         * because it will be generated when the non-root module is compiled.
+         *
+         * But, if the non-root 'minst' imports any root modules, it might still need codegen.
+         *
+         * The problem is if A imports B, and B imports A, and both A
+         * and B instantiate the same template, does the compilation of A
+         * or the compilation of B do the actual instantiation?
+         *
+         * See https://issues.dlang.org/show_bug.cgi?id=2500.
+         *
+         * => Elide codegen if there is at least one instantiation from a non-root module
+         *    which doesn't import any root modules.
+         */
+        static ThreeState needsCodegenRootOnly(TemplateInstance tithis, TemplateInstance tinst)
         {
-            // Prefer instantiations from non-root modules, to minimize object code size.
-
-            /* If a TemplateInstance is ever instantiated from a non-root module,
-             * we do not have to generate code for it,
-             * because it will be generated when the non-root module is compiled.
-             *
-             * But, if the non-root 'minst' imports any root modules, it might still need codegen.
-             *
-             * The problem is if A imports B, and B imports A, and both A
-             * and B instantiate the same template, does the compilation of A
-             * or the compilation of B do the actual instantiation?
-             *
-             * See https://issues.dlang.org/show_bug.cgi?id=2500.
-             *
-             * => Elide codegen if there is at least one instantiation from a non-root module
-             *    which doesn't import any root modules.
-             */
-            static ThreeState needsCodegenRootOnly(TemplateInstance tithis, TemplateInstance tinst)
+            // If the ancestor isn't speculative,
+            // 1. do codegen if the ancestor needs it
+            // 2. elide codegen if the ancestor doesn't need it (non-root instantiation of ancestor incl. subtree)
+            if (tinst && tinst.inst)
             {
-                // If the ancestor isn't speculative,
-                // 1. do codegen if the ancestor needs it
-                // 2. elide codegen if the ancestor doesn't need it (non-root instantiation of ancestor incl. subtree)
-                if (tinst && tinst.inst)
+                tinst = tinst.inst;
+                const needsCodegen = tinst.needsCodegen(); // sets tinst.minst
+                if (tinst.minst) // not speculative
                 {
-                    tinst = tinst.inst;
-                    const needsCodegen = tinst.needsCodegen(); // sets tinst.minst
-                    if (tinst.minst) // not speculative
-                    {
-                        tithis.minst = tinst.minst; // cache result
-                        return needsCodegen ? ThreeState.yes : ThreeState.no;
-                    }
-                }
-
-                // Elide codegen if `this` doesn't need it.
-                if (tithis.minst && !tithis.minst.isRoot() && !tithis.minst.rootImports())
-                    return ThreeState.no;
-
-                return ThreeState.none;
-            }
-
-            if (const needsCodegen = needsCodegenRootOnly(this, tinst))
-                return needsCodegen == ThreeState.yes ? true : false;
-
-            // Elide codegen if a (non-speculative) sibling doesn't need it.
-            for (; tnext; tnext = tnext.tnext)
-            {
-                const needsCodegen = needsCodegenRootOnly(tnext, tnext.tinst); // sets tnext.minst
-                if (tnext.minst) // not speculative
-                {
-                    if (needsCodegen == ThreeState.no)
-                    {
-                        minst = tnext.minst; // cache result
-                        assert(!minst.isRoot() && !minst.rootImports());
-                        return false;
-                    }
-                    else if (!minst)
-                    {
-                        minst = tnext.minst; // cache result from non-speculative sibling
-                        // continue searching
-                    }
-                    else if (needsCodegen != ThreeState.none)
-                        break;
+                    tithis.minst = tinst.minst; // cache result
+                    return needsCodegen ? ThreeState.yes : ThreeState.no;
                 }
             }
 
-            // Unless `this` is still speculative (=> all further siblings speculative too),
-            // do codegen because we found no guaranteed-codegen'd non-root instantiation.
-            return minst !is null;
+            // Elide codegen if `this` doesn't need it.
+            if (tithis.minst && !tithis.minst.isRoot() && !tithis.minst.rootImports())
+                return ThreeState.no;
+
+            return ThreeState.none;
         }
+
+        if (const needsCodegen = needsCodegenRootOnly(this, tinst))
+            return needsCodegen == ThreeState.yes ? true : false;
+
+        // Elide codegen if a (non-speculative) sibling doesn't need it.
+        for (; tnext; tnext = tnext.tnext)
+        {
+            const needsCodegen = needsCodegenRootOnly(tnext, tnext.tinst); // sets tnext.minst
+            if (tnext.minst) // not speculative
+            {
+                if (needsCodegen == ThreeState.no)
+                {
+                    minst = tnext.minst; // cache result
+                    assert(!minst.isRoot() && !minst.rootImports());
+                    return false;
+                }
+                else if (!minst)
+                {
+                    minst = tnext.minst; // cache result from non-speculative sibling
+                    // continue searching
+                }
+                else if (needsCodegen != ThreeState.none)
+                    break;
+            }
+        }
+
+        // Unless `this` is still speculative (=> all further siblings speculative too),
+        // do codegen because we found no guaranteed-codegen'd non-root instantiation.
+        return minst !is null;
     }
 
     /**********************************************
@@ -4538,8 +4507,12 @@ extern (C++) class TemplateInstance : ScopeDsymbol
 
         // The arguments are not treated as part of a default argument,
         // because they are evaluated at compile time.
+        const inCondition = sc.condition;
         sc = sc.push();
         sc.inDefaultArg = false;
+
+        // https://issues.dlang.org/show_bug.cgi?id=24699
+        sc.condition = inCondition;
 
         for (size_t j = 0; j < tiargs.length; j++)
         {
@@ -4634,7 +4607,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     {
                         if (ea.checkValue()) // check void expression
                             ea = ErrorExp.get();
-                        uint olderrs = global.errors;
+                        const olderrs = global.errors;
                         ea = ea.ctfeInterpret();
                         if (global.errors != olderrs)
                             ea = ErrorExp.get();
@@ -4846,7 +4819,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             printf("TemplateInstance.findBestMatch()\n");
         }
 
-        uint errs = global.errors;
+        const errs = global.errors;
         TemplateDeclaration td_last = null;
         Objects dedtypes;
 
@@ -5059,135 +5032,6 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             printf("\tIt's a match with template declaration '%s'\n", tempdecl.toChars());
         }
         return (errs == global.errors);
-    }
-
-    /*****************************************************
-     * Determine if template instance is really a template function,
-     * and that template function needs to infer types from the function
-     * arguments.
-     *
-     * Like findBestMatch, iterate possible template candidates,
-     * but just looks only the necessity of type inference.
-     */
-    extern (D) final bool needsTypeInference(Scope* sc, int flag = 0)
-    {
-        //printf("TemplateInstance.needsTypeInference() %s\n", toChars());
-        if (semanticRun != PASS.initial)
-            return false;
-
-        uint olderrs = global.errors;
-        Objects dedtypes;
-        size_t count = 0;
-
-        auto tovers = tempdecl.isOverloadSet();
-        foreach (size_t oi; 0 .. tovers ? tovers.a.length : 1)
-        {
-            Dsymbol dstart = tovers ? tovers.a[oi] : tempdecl;
-            int r = overloadApply(dstart, (Dsymbol s)
-            {
-                auto td = s.isTemplateDeclaration();
-                if (!td)
-                    return 0;
-
-                /* If any of the overloaded template declarations need inference,
-                 * then return true
-                 */
-                if (!td.onemember)
-                    return 0;
-                if (auto td2 = td.onemember.isTemplateDeclaration())
-                {
-                    if (!td2.onemember || !td2.onemember.isFuncDeclaration())
-                        return 0;
-                    if (tiargs.length >= td.parameters.length - (td.isVariadic() ? 1 : 0))
-                        return 0;
-                    return 1;
-                }
-                auto fd = td.onemember.isFuncDeclaration();
-                if (!fd || fd.type.ty != Tfunction)
-                    return 0;
-
-                foreach (tp; *td.parameters)
-                {
-                    if (tp.isTemplateThisParameter())
-                        return 1;
-                }
-
-                /* Determine if the instance arguments, tiargs, are all that is necessary
-                 * to instantiate the template.
-                 */
-                //printf("tp = %p, td.parameters.length = %d, tiargs.length = %d\n", tp, td.parameters.length, tiargs.length);
-                auto tf = fd.type.isTypeFunction();
-                if (tf.parameterList.length)
-                {
-                    auto tp = td.isVariadic();
-                    if (tp && td.parameters.length > 1)
-                        return 1;
-
-                    if (!tp && tiargs.length < td.parameters.length)
-                    {
-                        // Can remain tiargs be filled by default arguments?
-                        foreach (size_t i; tiargs.length .. td.parameters.length)
-                        {
-                            if (!(*td.parameters)[i].hasDefaultArg())
-                                return 1;
-                        }
-                    }
-
-                    foreach (i, fparam; tf.parameterList)
-                    {
-                        // 'auto ref' needs inference.
-                        if (fparam.storageClass & STC.auto_)
-                            return 1;
-                    }
-                }
-
-                if (!flag)
-                {
-                    /* Calculate the need for overload resolution.
-                     * When only one template can match with tiargs, inference is not necessary.
-                     */
-                    dedtypes.setDim(td.parameters.length);
-                    dedtypes.zero();
-                    if (td.semanticRun == PASS.initial)
-                    {
-                        if (td._scope)
-                        {
-                            // Try to fix forward reference. Ungag errors while doing so.
-                            Ungag ungag = td.ungagSpeculative();
-                            td.dsymbolSemantic(td._scope);
-                        }
-                        if (td.semanticRun == PASS.initial)
-                        {
-                            .error(loc, "%s `%s` `%s` forward references template declaration `%s`", kind, toPrettyChars, toChars(), td.toChars());
-                            return 1;
-                        }
-                    }
-                    MATCH m = matchWithInstance(sc, td, this, dedtypes, ArgumentList(), 0);
-                    if (m == MATCH.nomatch)
-                        return 0;
-                }
-
-                /* If there is more than one function template which matches, we may
-                 * need type inference (see https://issues.dlang.org/show_bug.cgi?id=4430)
-                 */
-                return ++count > 1 ? 1 : 0;
-            });
-            if (r)
-                return true;
-        }
-
-        if (olderrs != global.errors)
-        {
-            if (!global.gag)
-            {
-                errorSupplemental(loc, "while looking for match for `%s`", toChars());
-                semanticRun = PASS.semanticdone;
-                inst = this;
-            }
-            errors = true;
-        }
-        //printf("false\n");
-        return false;
     }
 
     /*****************************************
@@ -6012,7 +5856,7 @@ MATCH matchArg(TemplateParameter tp, Scope* sc, RootObject oarg, size_t i, Templ
             /* If a function is really property-like, and then
              * it's CTFEable, ei will be a literal expression.
              */
-            uint olderrors = global.startGagging();
+            const olderrors = global.startGagging();
             ei = resolveProperties(sc, ei);
             ei = ei.ctfeInterpret();
             if (global.endGagging(olderrors) || ei.op == EXP.error)

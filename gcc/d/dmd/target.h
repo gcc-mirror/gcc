@@ -16,6 +16,7 @@
 #include "globals.h"
 #include "tokens.h"
 
+class BitFieldDeclaration;
 class ClassDeclaration;
 class Dsymbol;
 class Expression;
@@ -77,6 +78,8 @@ struct TargetC
     uint8_t wchar_tsize;         // size of a C 'wchar_t' type
     Runtime runtime;
     BitFieldStyle bitFieldStyle; // different C compilers do it differently
+
+    bool contributesToAggregateAlignment(BitFieldDeclaration *bfd);
 };
 
 struct TargetCPP

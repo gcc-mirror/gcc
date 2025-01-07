@@ -7367,10 +7367,12 @@ template isInstanceOf(alias S, alias T)
     static struct A(T = void)
     {
         // doesn't work as expected, only accepts A when T = void
-        void func(B)(B b) if (isInstanceOf!(A, B)) {}
+        void func(B)(B b)
+        if (isInstanceOf!(A, B)) {}
 
         // correct behavior
-        void method(B)(B b) if (isInstanceOf!(TemplateOf!(A), B)) {}
+        void method(B)(B b)
+        if (isInstanceOf!(TemplateOf!(A), B)) {}
     }
 
     A!(void) a1;

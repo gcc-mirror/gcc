@@ -30,7 +30,6 @@ import dmd.declaration;
 import dmd.denum;
 import dmd.dimport;
 import dmd.dinterpret;
-import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
@@ -119,7 +118,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
     ed.cppnamespace = sc.namespace;
 
     ed.semanticRun = PASS.semantic;
-    UserAttributeDeclaration.checkGNUABITag(ed, sc.linkage);
+    checkGNUABITag(ed, sc.linkage);
     checkMustUseReserved(ed);
 
     if (!ed.members && !ed.memtype) // enum ident;

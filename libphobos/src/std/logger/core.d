@@ -293,7 +293,7 @@ template defaultLogFunction(LogLevel ll)
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy A args)
-        if ((args.length > 0 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
+    if ((args.length > 0 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
     {
             stdThreadLocalLog.memLogFunctions!(ll).logImpl!(line, file, funcName,
                 prettyFuncName, moduleName)(args);
@@ -446,7 +446,7 @@ private struct MsgRange
     }
 
     void put(T)(T msg) @safe
-        if (isSomeString!T)
+    if (isSomeString!T)
     {
         log.logMsgPart(msg);
     }
@@ -735,7 +735,7 @@ abstract class Logger
             string funcName = __FUNCTION__,
             string prettyFuncName = __PRETTY_FUNCTION__,
             string moduleName = __MODULE__, A...)(lazy A args)
-            if (args.length == 0 || (args.length > 0 && !is(A[0] : bool)))
+        if (args.length == 0 || (args.length > 0 && !is(A[0] : bool)))
         {
             synchronized (mutex)
             {
@@ -948,7 +948,7 @@ abstract class Logger
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(const LogLevel ll,
         lazy bool condition, lazy A args)
-        if (args.length != 1)
+    if (args.length != 1)
     {
         synchronized (mutex)
         {
@@ -1016,7 +1016,7 @@ abstract class Logger
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(const LogLevel ll, lazy A args)
-        if ((args.length > 1 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
+    if ((args.length > 1 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
     {
         synchronized (mutex)
         {
@@ -1085,7 +1085,7 @@ abstract class Logger
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy bool condition, lazy A args)
-        if (args.length != 1)
+    if (args.length != 1)
     {
         synchronized (mutex)
         {
@@ -1154,10 +1154,10 @@ abstract class Logger
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy A args)
-        if ((args.length > 1
-                && !is(Unqual!(A[0]) : bool)
-                && !is(immutable A[0] == immutable LogLevel))
-            || args.length == 0)
+    if ((args.length > 1
+        && !is(Unqual!(A[0]) : bool)
+        && !is(immutable A[0] == immutable LogLevel))
+        || args.length == 0)
     {
         synchronized (mutex)
         {

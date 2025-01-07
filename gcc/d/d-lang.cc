@@ -302,7 +302,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
 
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICinform;
-  global.params.warnings = DIAGNOSTICoff;
+  global.params.useWarnings = DIAGNOSTICoff;
   global.params.v.errorLimit = flag_max_errors;
   global.params.v.messageStyle = MessageStyle::gnu;
 
@@ -772,7 +772,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_Wall:
       if (value)
-	global.params.warnings = DIAGNOSTICinform;
+	global.params.useWarnings = DIAGNOSTICinform;
       break;
 
     case OPT_Wdeprecated:
@@ -781,7 +781,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_Werror:
       if (value)
-	global.params.warnings = DIAGNOSTICerror;
+	global.params.useWarnings = DIAGNOSTICerror;
       break;
 
     case OPT_Wspeculative:
@@ -907,7 +907,7 @@ d_post_options (const char ** fn)
 
   /* Error about use of deprecated features.  */
   if (global.params.useDeprecated == DIAGNOSTICinform
-      && global.params.warnings == DIAGNOSTICerror)
+      && global.params.useWarnings == DIAGNOSTICerror)
     global.params.useDeprecated = DIAGNOSTICerror;
 
   if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
@@ -933,6 +933,7 @@ d_post_options (const char ** fn)
   /* The front-end parser only has access to `compileEnv', synchronize its
      fields with params.  */
   global.compileEnv.previewIn = global.params.previewIn;
+  global.compileEnv.transitionIn = global.params.v.vin;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
   global.compileEnv.cCharLookupTable =
     IdentifierCharLookup::forTable (IdentifierTable::C11);

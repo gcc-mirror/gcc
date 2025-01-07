@@ -301,6 +301,8 @@ extern (C++) struct Target
  */
 struct TargetC
 {
+    import dmd.declaration : BitFieldDeclaration;
+
     enum Runtime : ubyte
     {
         Unspecified,
@@ -331,6 +333,14 @@ struct TargetC
     ubyte wchar_tsize;        /// size of a C `wchar_t` type
     Runtime runtime;          /// vendor of the C runtime to link against
     BitFieldStyle bitFieldStyle; /// different C compilers do it differently
+
+    /**
+     * Indicates whether the specified bit-field contributes to the alignment
+     * of the containing aggregate.
+     * E.g., (not all) ARM ABIs do NOT ignore anonymous (incl. 0-length)
+     * bit-fields.
+     */
+    extern (C++) bool contributesToAggregateAlignment(BitFieldDeclaration bfd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

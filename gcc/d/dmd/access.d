@@ -22,6 +22,7 @@ import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
+import dmd.funcsem : overloadApply;
 import dmd.location;
 import dmd.tokens;
 

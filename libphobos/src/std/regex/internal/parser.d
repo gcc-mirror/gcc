@@ -542,7 +542,7 @@ if (isForwardRange!R && is(ElementType!R : dchar))
     Generator g;
 
     @trusted this(S)(R pattern, S flags)
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         pat = origin = pattern;
         //reserve slightly more then avg as sampled from unittests

@@ -104,7 +104,7 @@ bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
  * Returns:
  *      The type of the `TypeInfo` object associated with `t`
  */
-extern (C++) Type getTypeInfoType(const ref Loc loc, Type t, Scope* sc, bool genObjCode = true);
+extern (C++) Type getTypeInfoType(const ref Loc loc, Type t, Scope* sc);
 
 private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
 {

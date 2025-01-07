@@ -237,7 +237,7 @@ bool parseDigits(T)(ref T val, const(char)[] p, const T max = T.max)
  *   size = 1 for ubyte[], 2 for ushort[], 4 for uint[], 8 for ulong[]
  * Returns: copy of `data`, with bytes shuffled if compiled for `version(LittleEndian)`
  */
-ubyte[] arrayCastBigEndian(const ubyte[] data, size_t size)
+ubyte[] arrayCastBigEndian(const ubyte[] data, size_t size) @safe
 {
     ubyte[] impl(T)()
     {

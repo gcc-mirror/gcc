@@ -30,7 +30,7 @@ import dmd.dmacro;
 import dmd.doc;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
+import dmd.dsymbolsem : dsymbolSemantic, importAll, load, include;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
@@ -632,7 +632,7 @@ extern (C++) final class Module : Package
         const name = srcfile.toString();
         if (FileName.equals(name, "object.d"))
         {
-            ObjectNotFound(loc, ident);
+            ObjectNotFound(Loc.initial, ident);
         }
         else if (FileName.ext(this.arg) || !loc.isValid())
         {
@@ -800,7 +800,6 @@ extern (C++) final class Module : Package
         {
             const bool doUnittests = global.params.parsingUnittestsRequired();
             scope p = new Parser!AST(this, buf, cast(bool) docfile, global.errorSink, &global.compileEnv, doUnittests);
-            p.transitionIn = global.params.v.vin;
             p.nextToken();
             p.parseModuleDeclaration();
             md = p.md;
@@ -1408,7 +1407,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 {
     enum SourceEncoding { utf16, utf32}
     enum Endian { little, big}
-    immutable loc = mod.getLoc();
+    immutable loc = mod.loc;
 
     /*
      * Convert a buffer from UTF32 to UTF8

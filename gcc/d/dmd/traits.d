@@ -26,7 +26,6 @@ import dmd.dclass;
 import dmd.declaration;
 import dmd.dimport;
 import dmd.dinterpret;
-import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
@@ -43,6 +42,7 @@ import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
+import dmd.mangle : decoToType;
 import dmd.mtype;
 import dmd.nogc;
 import dmd.optimize;
@@ -1038,7 +1038,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                  e.ident == Id.getVirtualMethods ||
                  e.ident == Id.getOverloads)
         {
-            uint errors = global.errors;
+            const errors = global.errors;
             Expression eorig = ex;
             ex = ex.expressionSemantic(scx);
             if (errors < global.errors)
@@ -1746,7 +1746,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
 
         foreach (o; *e.args)
         {
-            uint errors = global.startGagging();
+            const errors = global.startGagging();
             Scope* sc2 = sc.push();
             sc2.tinst = null;
             sc2.minst = null;   // this is why code for these are not emitted to object file
@@ -1991,9 +1991,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             return dimError(1);
         auto arg0 = (*e.args)[0];
         Dsymbol s = getDsymbolWithoutExpCtx(arg0);
-        if (!s || !s.loc.isValid())
+        if (!s || !s.loc.isValid() || s.isModule())
         {
-            error(e.loc, "can only get the location of a symbol, not `%s`", arg0.toChars());
+            error(e.loc, "can only get the location of a symbol, not `%s`", s ? s.toPrettyChars() : arg0.toChars());
             return ErrorExp.get();
         }
 

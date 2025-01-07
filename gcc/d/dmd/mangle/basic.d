@@ -7,7 +7,7 @@
  * Documentation:  https://dlang.org/phobos/dmd_basicmangle.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/basicmangle.d
  */
-module dmd.basicmangle;
+module dmd.mangle.basic;
 
 import dmd.astenums;
 import dmd.common.outbuffer : OutBuffer;

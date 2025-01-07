@@ -72,6 +72,20 @@ class Tst(TST, int v = 2) {
 
 class Y : Tst!(float) {}
 
+// https://issues.dlang.org/show_bug.cgi?id=24731
+void test24731()
+{
+    static int solve(size_t N)(ref double[N+1][N])
+    {
+        return N;
+    }
+
+    double[3][2] m;
+    assert(solve(m) == 2);
+    assert(solve!2(m) == 2);
+}
+
+
 void main() {
     Tst!(int) t = new Tst!(int);
     Y u = new Y;
@@ -113,4 +127,5 @@ void main() {
         printf("%g\n", i);
     }
 
+    test24731();
 }

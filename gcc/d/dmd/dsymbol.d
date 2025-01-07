@@ -275,13 +275,13 @@ extern (C++) class Dsymbol : ASTNode
     final extern (D) this() nothrow @safe
     {
         //printf("Dsymbol::Dsymbol(%p)\n", this);
-        loc = Loc(null, 0, 0);
+        loc = Loc.initial;
     }
 
     final extern (D) this(Identifier ident) nothrow @safe
     {
         //printf("Dsymbol::Dsymbol(%p, ident)\n", this);
-        this.loc = Loc(null, 0, 0);
+        this.loc = Loc.initial;
         this.ident = ident;
     }
 
@@ -342,19 +342,6 @@ extern (C++) class Dsymbol : ASTNode
     const(char)* toPrettyCharsHelper()
     {
         return toChars();
-    }
-
-    final const(Loc) getLoc()
-    {
-        if (!loc.isValid()) // avoid bug 5861.
-            if (const m = getModule())
-                return Loc(m.srcfile.toChars(), 0, 0);
-        return loc;
-    }
-
-    final const(char)* locToChars()
-    {
-        return getLoc().toChars();
     }
 
     override bool equals(const RootObject o) const
@@ -618,7 +605,7 @@ extern (C++) class Dsymbol : ASTNode
 
     final Ungag ungagSpeculative() const
     {
-        uint oldgag = global.gag;
+        const oldgag = global.gag;
         if (global.gag && !isSpeculative() && !toParent2().isFuncDeclaration())
             global.gag = 0;
         return Ungag(oldgag);
@@ -1303,7 +1290,7 @@ public:
         }
         else
         {
-            .error(s1.loc, "%s `%s` conflicts with %s `%s` at %s", s1.kind, s1.toPrettyChars, s2.kind(), s2.toPrettyChars(), s2.locToChars());
+            .error(s1.loc, "%s `%s` conflicts with %s `%s` at %s", s1.kind, s1.toPrettyChars, s2.kind(), s2.toPrettyChars(), s2.loc.toChars());
         }
     }
 

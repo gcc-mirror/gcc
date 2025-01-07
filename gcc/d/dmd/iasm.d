@@ -50,7 +50,7 @@ Statement asmSemantic(AsmStatement s, Scope *sc)
         return null;
 
     // Assume assembler code takes care of setting the return value
-    sc.func.hasReturnExp |= 8;
+    sc.func.hasInlineAsm = true;
 
     version (NoBackend)
     {

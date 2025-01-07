@@ -1935,7 +1935,8 @@ template hasToString(T, Char)
     static struct G
     {
         string toString() {return "";}
-        void toString(Writer)(ref Writer w) if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w)
+        if (isOutputRange!(Writer, string)) {}
     }
     static struct H
     {
@@ -1946,7 +1947,8 @@ template hasToString(T, Char)
     }
     static struct I
     {
-        void toString(Writer)(ref Writer w) if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w)
+        if (isOutputRange!(Writer, string)) {}
         void toString(Writer)(ref Writer w, scope const ref FormatSpec!char fmt)
         if (isOutputRange!(Writer, string))
         {}
@@ -2042,7 +2044,8 @@ template hasToString(T, Char)
     static struct G
     {
         string toString() const {return "";}
-        void toString(Writer)(ref Writer w) const if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w) const
+        if (isOutputRange!(Writer, string)) {}
     }
     static struct H
     {
@@ -2053,7 +2056,8 @@ template hasToString(T, Char)
     }
     static struct I
     {
-        void toString(Writer)(ref Writer w) const if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w) const
+        if (isOutputRange!(Writer, string)) {}
         void toString(Writer)(ref Writer w, scope const ref FormatSpec!char fmt) const
         if (isOutputRange!(Writer, string))
         {}
@@ -2603,7 +2607,8 @@ if ((is(T == struct) || is(T == union)) && (hasToString!(T, Char) || !is(Builtin
     {
         int n = 0;
         alias n this;
-        T opCast(T) () if (is(T == Frop))
+        T opCast(T) ()
+        if (is(T == Frop))
         {
             return Frop();
         }

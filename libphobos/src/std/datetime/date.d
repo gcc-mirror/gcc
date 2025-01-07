@@ -1075,7 +1075,7 @@ public:
       +/
     ref DateTime add(string units)
                     (long value, AllowDayOverflow allowOverflow = AllowDayOverflow.yes) @safe pure nothrow @nogc
-        if (units == "years" || units == "months")
+    if (units == "years" || units == "months")
     {
         _date.add!units(value, allowOverflow);
         return this;
@@ -1140,7 +1140,7 @@ public:
       +/
     ref DateTime roll(string units)
                      (long value, AllowDayOverflow allowOverflow = AllowDayOverflow.yes) @safe pure nothrow @nogc
-        if (units == "years" || units == "months")
+    if (units == "years" || units == "months")
     {
         _date.roll!units(value, allowOverflow);
         return this;
@@ -1209,7 +1209,7 @@ public:
             A reference to the `DateTime` (`this`).
       +/
     ref DateTime roll(string units)(long value) @safe pure nothrow @nogc
-        if (units == "days")
+    if (units == "days")
     {
         _date.roll!"days"(value);
         return this;
@@ -1250,9 +1250,9 @@ public:
 
     /// ditto
     ref DateTime roll(string units)(long value) @safe pure nothrow @nogc
-        if (units == "hours" ||
-            units == "minutes" ||
-            units == "seconds")
+    if (units == "hours" ||
+        units == "minutes" ||
+        units == "seconds")
     {
         _tod.roll!units(value);
         return this;
@@ -2138,7 +2138,7 @@ public:
                        this $(LREF DateTime).
       +/
     DateTime opBinary(string op)(Duration duration) const @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         DateTime retval = this;
         immutable seconds = duration.total!"seconds";
@@ -2233,7 +2233,7 @@ public:
                        $(LREF DateTime).
       +/
     ref DateTime opOpAssign(string op)(Duration duration) @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         import core.time : convert;
         import std.format : format;
@@ -2339,7 +2339,7 @@ public:
         )
       +/
     Duration opBinary(string op)(DateTime rhs) const @safe pure nothrow @nogc
-        if (op == "-")
+    if (op == "-")
     {
         immutable dateResult = _date - rhs.date;
         immutable todResult = _tod - rhs._tod;
@@ -3151,7 +3151,7 @@ public:
             be valid.
       +/
     static DateTime fromISOString(S)(scope const S isoString) @safe pure
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         import std.algorithm.searching : countUntil;
         import std.exception : enforce;
@@ -3252,7 +3252,7 @@ public:
             would not be valid.
       +/
     static DateTime fromISOExtString(S)(scope const S isoExtString) @safe pure
-        if (isSomeString!(S))
+    if (isSomeString!(S))
     {
         import std.algorithm.searching : countUntil;
         import std.exception : enforce;
@@ -3353,7 +3353,7 @@ public:
             would not be valid.
       +/
     static DateTime fromSimpleString(S)(scope const S simpleString) @safe pure
-        if (isSomeString!(S))
+    if (isSomeString!(S))
     {
         import std.algorithm.searching : countUntil;
         import std.exception : enforce;
@@ -4483,7 +4483,7 @@ public:
       +/
     @safe pure nothrow @nogc
     ref Date add(string units)(long value, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-        if (units == "years")
+    if (units == "years")
     {
         _year += value;
 
@@ -4724,7 +4724,7 @@ public:
     // Shares documentation with "years" version.
     @safe pure nothrow @nogc
     ref Date add(string units)(long months, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-        if (units == "months")
+    if (units == "months")
     {
         auto years = months / 12;
         months %= 12;
@@ -5268,7 +5268,7 @@ public:
       +/
     @safe pure nothrow @nogc
     ref Date roll(string units)(long value, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-        if (units == "years")
+    if (units == "years")
     {
         return add!"years"(value, allowOverflow);
     }
@@ -5313,7 +5313,7 @@ public:
     // Shares documentation with "years" version.
     @safe pure nothrow @nogc
     ref Date roll(string units)(long months, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-        if (units == "months")
+    if (units == "months")
     {
         months %= 12;
         auto newMonth = _month + months;
@@ -5910,7 +5910,7 @@ public:
             A reference to the `Date` (`this`).
       +/
     ref Date roll(string units)(long days) @safe pure nothrow @nogc
-        if (units == "days")
+    if (units == "days")
     {
         immutable limit = maxDay(_year, _month);
         days %= limit;
@@ -6148,7 +6148,7 @@ public:
                        this $(LREF Date).
       +/
     Date opBinary(string op)(Duration duration) const @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         Date retval = this;
         immutable days = duration.total!"days";
@@ -6238,7 +6238,7 @@ public:
                        this $(LREF Date).
       +/
     ref Date opOpAssign(string op)(Duration duration) @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         immutable days = duration.total!"days";
         mixin("return _addDays(" ~ op ~ "days);");
@@ -6313,7 +6313,7 @@ public:
         )
       +/
     Duration opBinary(string op)(Date rhs) const @safe pure nothrow @nogc
-        if (op == "-")
+    if (op == "-")
     {
         import core.time : dur;
         return dur!"days"(this.dayOfGregorianCal - rhs.dayOfGregorianCal);
@@ -7621,7 +7621,7 @@ public:
             valid.
       +/
     static Date fromISOString(S)(scope const S isoString) @safe pure
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         import std.algorithm.searching : startsWith;
         import std.conv : to, text, ConvException;
@@ -7764,7 +7764,7 @@ public:
             would not be valid.
       +/
     static Date fromISOExtString(S)(scope const S isoExtString) @safe pure
-        if (isSomeString!(S))
+    if (isSomeString!(S))
     {
         import std.algorithm.searching : startsWith;
         import std.conv : to, ConvException;
@@ -7902,7 +7902,7 @@ public:
             be valid.
       +/
     static Date fromSimpleString(S)(scope const S simpleString) @safe pure
-        if (isSomeString!(S))
+    if (isSomeString!(S))
     {
         import std.algorithm.searching : startsWith;
         import std.conv : to, ConvException;
@@ -8606,7 +8606,7 @@ public:
             A reference to the `TimeOfDay` (`this`).
       +/
     ref TimeOfDay roll(string units)(long value) @safe pure nothrow @nogc
-        if (units == "hours")
+    if (units == "hours")
     {
         import core.time : dur;
         return this += dur!"hours"(value);
@@ -8655,7 +8655,7 @@ public:
 
     /// ditto
     ref TimeOfDay roll(string units)(long value) @safe pure nothrow @nogc
-        if (units == "minutes" || units == "seconds")
+    if (units == "minutes" || units == "seconds")
     {
         import std.format : format;
 
@@ -8851,7 +8851,7 @@ public:
                        this $(LREF TimeOfDay).
       +/
     TimeOfDay opBinary(string op)(Duration duration) const @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         TimeOfDay retval = this;
         immutable seconds = duration.total!"seconds";
@@ -8938,7 +8938,7 @@ public:
                        this $(LREF TimeOfDay).
       +/
     ref TimeOfDay opOpAssign(string op)(Duration duration) @safe pure nothrow @nogc
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         immutable seconds = duration.total!"seconds";
         mixin("return _addSeconds(" ~ op ~ "seconds);");
@@ -9004,7 +9004,7 @@ public:
             rhs = The $(LREF TimeOfDay) to subtract from this one.
       +/
     Duration opBinary(string op)(TimeOfDay rhs) const @safe pure nothrow @nogc
-        if (op == "-")
+    if (op == "-")
     {
         immutable lhsSec = _hour * 3600 + _minute * 60 + _second;
         immutable rhsSec = rhs._hour * 3600 + rhs._minute * 60 + rhs._second;
@@ -9201,7 +9201,7 @@ public:
             not be valid.
       +/
     static TimeOfDay fromISOString(S)(scope const S isoString) @safe pure
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         import std.conv : to, text, ConvException;
         import std.exception : enforce;
@@ -9326,7 +9326,7 @@ public:
             would not be valid.
       +/
     static TimeOfDay fromISOExtString(S)(scope const S isoExtString) @safe pure
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         import std.conv : ConvException, text, to;
         import std.string : strip;

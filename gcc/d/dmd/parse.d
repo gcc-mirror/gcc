@@ -49,8 +49,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         bool doUnittests; // parse unittest blocks
     }
 
-    bool transitionIn = false; /// `-transition=in` is active, `in` parameters are listed
-
     /*********************
      * Use this constructor for string mixins.
      * Input:
@@ -543,7 +541,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 break;
 
             case TOK.new_:
-                s = parseNew(pAttrs);
+                s = parseNewDeclaration(pAttrs);
                 break;
 
             case TOK.colon:
@@ -2493,7 +2491,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
         AST.Expression constraint = tpl ? parseConstraint() : null;
 
-        AST.Type tf = new AST.TypeFunction(parameterList, null, linkage, stc); // RetrunType -> auto
+        AST.Type tf = new AST.TypeFunction(parameterList, null, linkage, stc); // ReturnType -> auto
         tf = tf.addSTC(stc);
 
         auto f = new AST.CtorDeclaration(loc, Loc.initial, stc, tf);
@@ -2791,7 +2789,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
      *      @disable new();
      * Current token is 'new'.
      */
-    private AST.Dsymbol parseNew(PrefixAttributes!AST* pAttrs)
+    private AST.Dsymbol parseNewDeclaration(PrefixAttributes!AST* pAttrs)
     {
         const loc = token.loc;
         StorageClass stc = getStorageClass!AST(pAttrs);
@@ -2918,7 +2916,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         // Don't call nextToken again.
                     }
                 case TOK.in_:
-                    if (transitionIn)
+                    if (compileEnv.transitionIn)
                         eSink.message(scanloc, "Usage of 'in' on parameter");
                     stc = STC.in_;
                     if (compileEnv.previewIn)
@@ -3501,7 +3499,12 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         name = _alias;
                         _alias = null;
                     }
-                    s.addAlias(name, _alias);
+                    if (s.isstatic)
+                        error(loc, "static import `%s` cannot have an import bind list", s.toPrettyChars());
+                    if (!s.aliasId)
+                        s.ident = null; // make it an anonymous import
+                    s.names.push(name);
+                    s.aliases.push(_alias);
                 }
                 while (token.value == TOK.comma);
                 break; // no comma-separated imports of this form
@@ -9499,6 +9502,15 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
     }
 
     /*******************************************
+     * Params:
+     *    thisexp = If not null, it is the `this` reference for the creation
+     *              of an inner class.
+     *              https://dlang.org/spec/class.html#nested-explicit
+     *              https://dlang.org/spec/expression.html#postfix_expressions
+     *              If null, then it is a NewExpression.
+     *              https://dlang.org/spec/expression.html#NewExpression
+     * Returns:
+     *   NewExpression
      */
     private AST.Expression parseNewExp(AST.Expression thisexp)
     {
@@ -9769,6 +9781,7 @@ immutable PREC[EXP.max + 1] precedence =
     EXP.assign : PREC.assign,
     EXP.construct : PREC.assign,
     EXP.blit : PREC.assign,
+    EXP.loweredAssignExp : PREC.assign,
     EXP.addAssign : PREC.assign,
     EXP.minAssign : PREC.assign,
     EXP.concatenateAssign : PREC.assign,

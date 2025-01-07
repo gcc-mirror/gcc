@@ -57,6 +57,7 @@ import dmd.opover;
 import dmd.parse;
 import dmd.common.outbuffer;
 import dmd.root.string;
+import dmd.safe : isSafe, setUnsafe;
 import dmd.semantic2;
 import dmd.sideeffect;
 import dmd.statement;
@@ -2514,7 +2515,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         else if (rs.exp)
         {
-            fd.hasReturnExp |= (fd.hasReturnExp & 1 ? 16 : 1);
+            fd.hasMultipleReturnExp = fd.hasReturnExp;
+            fd.hasReturnExp = true;
 
             FuncLiteralDeclaration fld = fd.isFuncLiteralDeclaration();
             if (tret)
@@ -3685,9 +3687,6 @@ public bool throwSemantic(const ref Loc loc, ref Expression exp, Scope* sc)
         return false;
     }
 
-    if (FuncDeclaration fd = sc.parent.isFuncDeclaration())
-        fd.hasReturnExp |= 2;
-
     if (auto ne = exp.isNewExp())
     {
         ne.thrownew = true;
@@ -4802,7 +4801,7 @@ private Statements* flatten(Statement statement, Scope* sc)
 
 
             OutBuffer buf;
-            if (expressionsToString(buf, sc, cs.exps))
+            if (expressionsToString(buf, sc, cs.exps, cs.loc, null, true))
                 return errorStatements();
 
             const errors = global.errors;
@@ -4812,7 +4811,6 @@ private Statements* flatten(Statement statement, Scope* sc)
             const bool doUnittests = global.params.parsingUnittestsRequired();
             auto loc = adjustLocForMixin(str, cs.loc, global.params.mixinOut);
             scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
-            p.transitionIn = global.params.v.vin;
             p.nextToken();
 
             auto a = new Statements();

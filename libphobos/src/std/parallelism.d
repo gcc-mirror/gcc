@@ -2269,7 +2269,8 @@ public:
     call to `popFront` or, if thrown during construction, simply
     allowed to propagate to the caller.
     */
-    auto asyncBuf(S)(S source, size_t bufSize = 100) if (isInputRange!S)
+    auto asyncBuf(S)(S source, size_t bufSize = 100)
+    if (isInputRange!S)
     {
         static final class AsyncBuf
         {

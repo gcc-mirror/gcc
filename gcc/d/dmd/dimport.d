@@ -14,7 +14,6 @@ module dmd.dimport;
 import dmd.arraytypes;
 import dmd.dmodule;
 import dmd.dsymbol;
-import dmd.errors;
 import dmd.identifier;
 import dmd.location;
 import dmd.visitor;
@@ -84,16 +83,6 @@ extern (C++) final class Import : Dsymbol
         this.visibility = Visibility.Kind.private_; // default to private
     }
 
-    extern (D) void addAlias(Identifier name, Identifier _alias)
-    {
-        if (isstatic)
-            .error(loc, "%s `%s` cannot have an import bind list", kind, toPrettyChars);
-        if (!aliasId)
-            this.ident = null; // make it an anonymous import
-        names.push(name);
-        aliases.push(_alias);
-    }
-
     override const(char)* kind() const
     {
         return isstatic ? "static import" : "import";
@@ -110,9 +99,13 @@ extern (C++) final class Import : Dsymbol
         assert(!s);
         auto si = new Import(loc, packages, id, aliasId, isstatic);
         si.comment = comment;
+        assert(!(isstatic && names.length));
+        if (names.length && !si.aliasId)
+            si.ident = null;
         for (size_t i = 0; i < names.length; i++)
         {
-            si.addAlias(names[i], aliases[i]);
+            si.names.push(names[i]);
+            si.aliases.push(aliases[i]);
         }
         return si;
     }

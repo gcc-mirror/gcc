@@ -156,7 +156,7 @@ if (isFloatingPoint!T)
 
     /// ditto
     void toString(Writer, Char)(scope Writer w, scope const ref FormatSpec!Char formatSpec) const
-        if (isOutputRange!(Writer, const(Char)[]))
+    if (isOutputRange!(Writer, const(Char)[]))
     {
         import std.format.write : formatValue;
         import std.math.traits : signbit;
@@ -231,14 +231,14 @@ if (isFloatingPoint!T)
 
     // +complex
     Complex opUnary(string op)() const
-        if (op == "+")
+    if (op == "+")
     {
         return this;
     }
 
     // -complex
     Complex opUnary(string op)() const
-        if (op == "-")
+    if (op == "-")
     {
         return Complex(-re, -im);
     }
@@ -255,7 +255,7 @@ if (isFloatingPoint!T)
 
     // complex op numeric
     Complex!(CommonType!(T,R)) opBinary(string op, R)(const R r) const
-        if (isNumeric!R)
+    if (isNumeric!R)
     {
         alias C = typeof(return);
         auto w = C(this.re, this.im);
@@ -264,21 +264,21 @@ if (isFloatingPoint!T)
 
     // numeric + complex,  numeric * complex
     Complex!(CommonType!(T, R)) opBinaryRight(string op, R)(const R r) const
-        if ((op == "+" || op == "*") && (isNumeric!R))
+    if ((op == "+" || op == "*") && (isNumeric!R))
     {
         return opBinary!(op)(r);
     }
 
     // numeric - complex
     Complex!(CommonType!(T, R)) opBinaryRight(string op, R)(const R r) const
-        if (op == "-" && isNumeric!R)
+    if (op == "-" && isNumeric!R)
     {
         return Complex(r - re, -im);
     }
 
     // numeric / complex
     Complex!(CommonType!(T, R)) opBinaryRight(string op, R)(const R r) const
-        if (op == "/" && isNumeric!R)
+    if (op == "/" && isNumeric!R)
     {
         version (FastMath)
         {
@@ -320,7 +320,7 @@ if (isFloatingPoint!T)
 
     // numeric ^^ complex
     Complex!(CommonType!(T, R)) opBinaryRight(string op, R)(const R lhs) const
-        if (op == "^^" && isNumeric!R)
+    if (op == "^^" && isNumeric!R)
     {
         import core.math : cos, sin;
         import std.math.exponential : exp, log;
@@ -349,7 +349,7 @@ if (isFloatingPoint!T)
 
     // complex += complex,  complex -= complex
     ref Complex opOpAssign(string op, C)(const C z)
-        if ((op == "+" || op == "-") && is(C R == Complex!R))
+    if ((op == "+" || op == "-") && is(C R == Complex!R))
     {
         mixin ("re "~op~"= z.re;");
         mixin ("im "~op~"= z.im;");
@@ -358,7 +358,7 @@ if (isFloatingPoint!T)
 
     // complex *= complex
     ref Complex opOpAssign(string op, C)(const C z)
-        if (op == "*" && is(C R == Complex!R))
+    if (op == "*" && is(C R == Complex!R))
     {
         auto temp = re*z.re - im*z.im;
         im = im*z.re + re*z.im;
@@ -368,7 +368,7 @@ if (isFloatingPoint!T)
 
     // complex /= complex
     ref Complex opOpAssign(string op, C)(const C z)
-        if (op == "/" && is(C R == Complex!R))
+    if (op == "/" && is(C R == Complex!R))
     {
         version (FastMath)
         {
@@ -409,7 +409,7 @@ if (isFloatingPoint!T)
 
     // complex ^^= complex
     ref Complex opOpAssign(string op, C)(const C z)
-        if (op == "^^" && is(C R == Complex!R))
+    if (op == "^^" && is(C R == Complex!R))
     {
         import core.math : cos, sin;
         import std.math.exponential : exp, log;
@@ -425,7 +425,7 @@ if (isFloatingPoint!T)
 
     // complex += numeric,  complex -= numeric
     ref Complex opOpAssign(string op, U : T)(const U a)
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         mixin ("re "~op~"= a;");
         return this;
@@ -433,7 +433,7 @@ if (isFloatingPoint!T)
 
     // complex *= numeric,  complex /= numeric
     ref Complex opOpAssign(string op, U : T)(const U a)
-        if (op == "*" || op == "/")
+    if (op == "*" || op == "/")
     {
         mixin ("re "~op~"= a;");
         mixin ("im "~op~"= a;");
@@ -442,7 +442,7 @@ if (isFloatingPoint!T)
 
     // complex ^^= real
     ref Complex opOpAssign(string op, R)(const R r)
-        if (op == "^^" && isFloatingPoint!R)
+    if (op == "^^" && isFloatingPoint!R)
     {
         import core.math : cos, sin;
         immutable ab = abs(this)^^r;
@@ -454,7 +454,7 @@ if (isFloatingPoint!T)
 
     // complex ^^= int
     ref Complex opOpAssign(string op, U)(const U i)
-        if (op == "^^" && isIntegral!U)
+    if (op == "^^" && isIntegral!U)
     {
         switch (i)
         {

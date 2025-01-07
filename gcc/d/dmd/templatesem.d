@@ -23,7 +23,6 @@ import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dinterpret;
-import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
@@ -109,7 +108,7 @@ void templateDeclarationSemantic(Scope* sc, TemplateDeclaration tempdecl)
     tempdecl.isstatic = tempdecl.toParent().isModule() || (tempdecl._scope.stc & STC.static_);
     tempdecl.deprecated_ = !!(sc.stc & STC.deprecated_);
 
-    UserAttributeDeclaration.checkGNUABITag(tempdecl, sc.linkage);
+    checkGNUABITag(tempdecl, sc.linkage);
 
     if (!tempdecl.isstatic)
     {
@@ -354,7 +353,7 @@ MATCH matchWithInstance(Scope* sc, TemplateDeclaration td, TemplateInstance ti, 
 
             // Resolve parameter types and 'auto ref's.
             tf.inferenceArguments = argumentList;
-            uint olderrors = global.startGagging();
+            const olderrors = global.startGagging();
             fd.type = tf.typeSemantic(td.loc, paramscope);
             global.endGagging(olderrors);
             if (fd.type.ty != Tfunction)
@@ -1422,7 +1421,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                             Dsymbol s;
                             Scope *sco;
 
-                            uint errors = global.startGagging();
+                            const errors = global.startGagging();
                             /* ref: https://issues.dlang.org/show_bug.cgi?id=11118
                              * The parameter isn't part of the template
                              * ones, let's try to find it in the
@@ -2427,5 +2426,72 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
         m.count = 0;
         m.lastf = null;
         m.last = MATCH.nomatch;
+    }
+}
+/* Create dummy argument based on parameter.
+ */
+private RootObject dummyArg(TemplateParameter tp)
+{
+    scope v = new DummyArgVisitor();
+    tp.accept(v);
+    return v.result;
+}
+private extern(C++) class DummyArgVisitor : Visitor
+{
+    RootObject result;
+
+    alias visit = typeof(super).visit;
+    override void visit(TemplateTypeParameter ttp)
+    {
+        Type t = ttp.specType;
+        if (t)
+        {
+            result = t;
+            return;
+        }
+        // Use this for alias-parameter's too (?)
+        if (!ttp.tdummy)
+            ttp.tdummy = new TypeIdentifier(ttp.loc, ttp.ident);
+        result = ttp.tdummy;
+    }
+
+    override void visit(TemplateValueParameter tvp)
+    {
+        Expression e = tvp.specValue;
+        if (e)
+        {
+            result = e;
+            return;
+        }
+
+        // Create a dummy value
+        auto pe = cast(void*)tvp.valType in tvp.edummies;
+        if (pe)
+        {
+            result = *pe;
+            return;
+        }
+
+        e = tvp.valType.defaultInit(Loc.initial);
+        tvp.edummies[cast(void*)tvp.valType] = e;
+        result = e;
+    }
+
+    override void visit(TemplateAliasParameter tap)
+    {
+        RootObject s = tap.specAlias;
+        if (s)
+        {
+            result = s;
+            return;
+        }
+        if (!tap.sdummy)
+            tap.sdummy = new Dsymbol();
+        result = tap.sdummy;
+    }
+
+    override void visit(TemplateTupleParameter tap)
+    {
+        result = null;
     }
 }

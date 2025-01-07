@@ -350,7 +350,7 @@ public:
 
   void visit (AttribDeclaration *d) final override
   {
-    Dsymbols *ds = d->include (NULL);
+    Dsymbols *ds = dmd::include (d, NULL);
 
     if (!ds)
       return;
@@ -2416,7 +2416,7 @@ layout_struct_initializer (StructDeclaration *sd)
 {
   StructLiteralExp *sle = StructLiteralExp::create (sd->loc, sd, NULL);
 
-  if (!sd->fill (sd->loc, *sle->elements, true))
+  if (!dmd::fill (sd, sd->loc, *sle->elements, true))
     gcc_unreachable ();
 
   sle->type = sd->type;

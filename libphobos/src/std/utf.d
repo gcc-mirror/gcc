@@ -4303,13 +4303,13 @@ if (isSomeChar!C)
     else:
 
     auto ref byUTF(R)(R r)
-        if (isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
+    if (isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
     {
         return byUTF(r.byCodeUnit());
     }
 
     auto ref byUTF(R)(R r)
-        if (!isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
+    if (!isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
     {
         static if (is(immutable ElementEncodingType!R == immutable RC, RC) && is(RC == C))
         {

@@ -623,6 +623,11 @@ static assert       (__traits(compiles, false && error) == false);
 int f11042a3()() if (__traits(compiles, true  || error) == false) { return 0; }   enum x11042a3 = f11042a3();
 int f11042b3()() if (__traits(compiles, false && error) == false) { return 0; }   enum x11042b3 = f11042b3();
 
+// https://issues.dlang.org/show_bug.cgi?id=24699
+enum T24699(bool cond) = cond;
+enum b24699a = T24699!(true || error);
+enum b24699b = T24699!(false && error);
+
 /***************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=11554
 

@@ -42,7 +42,7 @@ enum __W32API_MINOR_VERSION = 17;
     // but third-party compilers could use this
     enum uint _WIN32_WINNT = 0x500;
 } else {
-    enum uint _WIN32_WINNT = 0x501;
+    enum uint _WIN32_WINNT = 0x601;
 }
 
 version (IE11) {

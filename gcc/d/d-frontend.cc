@@ -79,11 +79,11 @@ eval_builtin (const Loc &loc, FuncDeclaration *fd, Expressions *arguments)
 /* Build and return typeinfo type for TYPE.  */
 
 Type *
-getTypeInfoType (const Loc &loc, Type *type, Scope *sc, bool genObjCode)
+getTypeInfoType (const Loc &loc, Type *type, Scope *sc)
 {
   gcc_assert (type->ty != TY::Terror);
   check_typeinfo_type (loc, sc);
-  create_typeinfo (type, sc ? sc->_module->importedFrom : NULL, genObjCode);
+  create_typeinfo (type, sc ? sc->_module->importedFrom : NULL);
   return type->vtinfo->type;
 }
 

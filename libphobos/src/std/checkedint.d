@@ -3362,12 +3362,14 @@ version (StdUnittest) private struct CountOverflows
     static struct Hook1
     {
         uint calls;
-        auto hookOpUnary(string op, T)(T value) if (op == "-")
+        auto hookOpUnary(string op, T)(T value)
+        if (op == "-")
         {
             ++calls;
             return T(42);
         }
-        auto hookOpUnary(string op, T)(T value) if (op == "~")
+        auto hookOpUnary(string op, T)(T value)
+        if (op == "~")
         {
             ++calls;
             return T(43);
@@ -3383,12 +3385,14 @@ version (StdUnittest) private struct CountOverflows
     static struct Hook2
     {
         uint calls;
-        void hookOpUnary(string op, T)(ref T value) if (op == "++")
+        void hookOpUnary(string op, T)(ref T value)
+        if (op == "++")
         {
             ++calls;
             --value;
         }
-        void hookOpUnary(string op, T)(ref T value) if (op == "--")
+        void hookOpUnary(string op, T)(ref T value)
+        if (op == "--")
         {
             ++calls;
             ++value;

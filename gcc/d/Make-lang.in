@@ -88,7 +88,6 @@ D_FRONTEND_OBJS = \
 	d/ast_node.o \
 	d/astcodegen.o \
 	d/astenums.o \
-	d/basicmangle.o \
 	d/blockexit.o \
 	d/builtin.o \
 	d/canthrow.o \
@@ -104,7 +103,6 @@ D_FRONTEND_OBJS = \
 	d/cond.o \
 	d/constfold.o \
 	d/cparse.o \
-	d/cppmangle.o \
 	d/ctfeexpr.o \
 	d/ctorflow.o \
 	d/cxxfrontend.o \
@@ -117,7 +115,6 @@ D_FRONTEND_OBJS = \
 	d/dimport.o \
 	d/dinterpret.o \
 	d/dmacro.o \
-	d/dmangle.o \
 	d/dmodule.o \
 	d/doc.o \
 	d/dscope.o \
@@ -155,6 +152,9 @@ D_FRONTEND_OBJS = \
 	d/lambdacomp.o \
 	d/lexer.o \
 	d/location.o \
+        d/mangle-basic.o \
+	d/mangle-cpp.o \
+	d/mangle-package.o \
 	d/mtype.o \
 	d/mustuse.o \
 	d/nogc.o \
@@ -417,6 +417,10 @@ d/%.o: d/dmd/%.d
 	$(DPOSTCOMPILE)
 
 d/common-%.o: d/dmd/common/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)
+
+d/mangle-%.o: d/dmd/mangle/%.d
 	$(DCOMPILE) $(D_INCLUDES) $<
 	$(DPOSTCOMPILE)
 

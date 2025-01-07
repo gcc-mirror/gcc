@@ -54,6 +54,7 @@ import dmd.rootobject;
 import dmd.root.filename;
 import dmd.root.string;
 import dmd.root.stringtable;
+import dmd.safe;
 import dmd.semantic2;
 import dmd.semantic3;
 import dmd.statement;
@@ -243,7 +244,7 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
 
     funcdecl.visibility = sc.visibility;
     funcdecl.userAttribDecl = sc.userAttribDecl;
-    UserAttributeDeclaration.checkGNUABITag(funcdecl, funcdecl._linkage);
+    checkGNUABITag(funcdecl, funcdecl._linkage);
     checkMustUseReserved(funcdecl);
 
     if (!funcdecl.originalType)
@@ -1166,8 +1167,8 @@ bool functionSemantic(FuncDeclaration fd)
     if (!fd.originalType) // semantic not yet run
     {
         TemplateInstance spec = fd.isSpeculative();
-        uint olderrs = global.errors;
-        uint oldgag = global.gag;
+        const olderrs = global.errors;
+        const oldgag = global.gag;
         if (global.gag && !spec)
             global.gag = 0;
         dsymbolSemantic(fd, fd._scope);
@@ -1222,8 +1223,8 @@ bool functionSemantic3(FuncDeclaration fd)
          * we need to temporarily ungag errors.
          */
         TemplateInstance spec = fd.isSpeculative();
-        uint olderrs = global.errors;
-        uint oldgag = global.gag;
+        const olderrs = global.errors;
+        const oldgag = global.gag;
         if (global.gag && !spec)
             global.gag = 0;
         semantic3(fd, fd._scope);
@@ -1648,6 +1649,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         return null;
     }
 
+    import dmd.expressionsem : checkDisabled;
     // remove when deprecation period of class allocators and deallocators is over
     if (fd.isNewDeclaration() && fd.checkDisabled(loc, sc))
         return null;
@@ -2262,17 +2264,17 @@ bool canInferAttributes(FuncDeclaration fd, Scope* sc)
 }
 
 /*********************************************
- * In the current function, we are calling 'this' function.
- * 1. Check to see if the current function can call 'this' function, issue error if not.
- * 2. If the current function is not the parent of 'this' function, then add
- *    the current function to the list of siblings of 'this' function.
+ * In the current function 'sc.func', we are calling 'fd'.
+ * 1. Check to see if the current function can call 'fd' , issue error if not.
+ * 2. If the current function is not the parent of 'fd' , then add
+ *    the current function to the list of siblings of 'fd' .
  * 3. If the current function is a literal, and it's accessing an uplevel scope,
  *    then mark it as a delegate.
  * Returns true if error occurs.
  */
-bool checkNestedReference(FuncDeclaration fd, Scope* sc, const ref Loc loc)
+bool checkNestedFuncReference(FuncDeclaration fd, Scope* sc, const ref Loc loc)
 {
-    //printf("FuncDeclaration::checkNestedReference() %s\n", toPrettyChars());
+    //printf("FuncDeclaration::checkNestedFuncReference() %s\n", toPrettyChars());
     if (auto fld = fd.isFuncLiteralDeclaration())
     {
         if (fld.tok == TOK.reserved)
@@ -2802,119 +2804,9 @@ void modifyReturns(FuncLiteralDeclaration fld, Scope* sc, Type tret)
  * Returns: `true` if the provided scope is the root
  * of the traits compiles list of scopes.
  */
-bool isRootTraitsCompilesScope(Scope* sc)
+bool isRootTraitsCompilesScope(Scope* sc) @safe
 {
     return (sc.traitsCompiles) && !sc.func.skipCodegen;
-}
-
-/**************************************
- * A statement / expression in this scope is not `@safe`,
- * so mark the enclosing function as `@system`
- *
- * Params:
- *   sc = scope that the unsafe statement / expression is in
- *   gag = surpress error message (used in escape.d)
- *   loc = location of error
- *   fmt = printf-style format string
- *   arg0  = (optional) argument for first %s format specifier
- *   arg1  = (optional) argument for second %s format specifier
- *   arg2  = (optional) argument for third %s format specifier
- * Returns: whether there's a safe error
- */
-bool setUnsafe(Scope* sc,
-    bool gag = false, Loc loc = Loc.init, const(char)* fmt = null,
-    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
-{
-    if (sc.intypeof)
-        return false; // typeof(cast(int*)0) is safe
-
-    if (sc.debug_) // debug {} scopes are permissive
-        return false;
-
-    if (!sc.func)
-    {
-        if (sc.varDecl)
-        {
-            if (sc.varDecl.storage_class & STC.safe)
-            {
-                .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
-                return true;
-            }
-            else if (!(sc.varDecl.storage_class & STC.trusted))
-            {
-                sc.varDecl.storage_class |= STC.system;
-                sc.varDecl.systemInferred = true;
-            }
-        }
-        return false;
-    }
-
-
-    if (isRootTraitsCompilesScope(sc)) // __traits(compiles, x)
-    {
-        if (sc.func.isSafeBypassingInference())
-        {
-            // Message wil be gagged, but still call error() to update global.errors and for
-            // -verrors=spec
-            .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
-            return true;
-        }
-        return false;
-    }
-
-    return sc.func.setUnsafe(gag, loc, fmt, arg0, arg1, arg2);
-}
-
-/***************************************
- * Like `setUnsafe`, but for safety errors still behind preview switches
- *
- * Given a `FeatureState fs`, for example dip1000 / dip25 / systemVariables,
- * the behavior changes based on the setting:
- *
- * - In case of `-revert=fs`, it does nothing.
- * - In case of `-preview=fs`, it's the same as `setUnsafe`
- * - By default, print a deprecation in `@safe` functions, or store an attribute violation in inferred functions.
- *
- * Params:
- *   sc = used to find affected function/variable, and for checking whether we are in a deprecated / speculative scope
- *   fs = feature state from the preview flag
- *   gag = surpress error message
- *   loc = location of error
- *   msg = printf-style format string
- *   arg0  = (optional) argument for first %s format specifier
- *   arg1  = (optional) argument for second %s format specifier
- *   arg2  = (optional) argument for third %s format specifier
- * Returns: whether an actual safe error (not deprecation) occured
- */
-bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
-    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
-{
-    //printf("setUnsafePreview() fs:%d %s\n", fs, msg);
-    with (FeatureState) final switch (fs)
-    {
-      case disabled:
-        return false;
-
-      case enabled:
-        return sc.setUnsafe(gag, loc, msg, arg0, arg1, arg2);
-
-      case default_:
-        if (!sc.func)
-            return false;
-        if (sc.func.isSafeBypassingInference())
-        {
-            if (!gag && !sc.isDeprecated())
-            {
-                deprecation(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
-            }
-        }
-        else if (!sc.func.safetyViolation)
-        {
-            import dmd.func : AttributeViolation;
-            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);
-        }
-        return false;
-    }
 }
 
 /+
@@ -3447,4 +3339,177 @@ extern (D) bool isTypeIsolated(FuncDeclaration fd, Type t, ref StringTable!Type 
         default:
             return true;
     }
+}
+
+/**
+ * Check signature of `pragma(printf)` function, print error if invalid.
+ *
+ * printf/scanf-like functions must be of the form:
+ *    extern (C/C++) T printf([parameters...], const(char)* format, ...);
+ * or:
+ *    extern (C/C++) T vprintf([parameters...], const(char)* format, va_list);
+ *
+ * Params:
+ *      funcdecl = function to check
+ *      f = function type
+ *      sc = scope
+ */
+private void checkPrintfScanfSignature(FuncDeclaration funcdecl, TypeFunction f, Scope* sc)
+{
+    static bool isPointerToChar(Parameter p)
+    {
+        if (auto tptr = p.type.isTypePointer())
+        {
+            return tptr.next.ty == Tchar;
+        }
+        return false;
+    }
+
+    bool isVa_list(Parameter p)
+    {
+        return p.type.equals(target.va_listType(funcdecl.loc, sc));
+    }
+
+    const nparams = f.parameterList.length;
+    const p = (funcdecl.printf ? Id.printf : Id.scanf).toChars();
+    if (!(f.linkage == LINK.c || f.linkage == LINK.cpp))
+    {
+        .error(funcdecl.loc, "`pragma(%s)` function `%s` must have `extern(C)` or `extern(C++)` linkage,"
+            ~" not `extern(%s)`",
+            p, funcdecl.toChars(), f.linkage.linkageToChars());
+    }
+    if (f.parameterList.varargs == VarArg.variadic)
+    {
+        if (!(nparams >= 1 && isPointerToChar(f.parameterList[nparams - 1])))
+        {
+            .error(funcdecl.loc, "`pragma(%s)` function `%s` must have"
+                ~ " signature `%s %s([parameters...], const(char)*, ...)` not `%s`",
+                p, funcdecl.toChars(), f.next.toChars(), funcdecl.toChars(), funcdecl.type.toChars());
+        }
+    }
+    else if (f.parameterList.varargs == VarArg.none)
+    {
+        if(!(nparams >= 2 && isPointerToChar(f.parameterList[nparams - 2]) &&
+            isVa_list(f.parameterList[nparams - 1])))
+            .error(funcdecl.loc, "`pragma(%s)` function `%s` must have"~
+                " signature `%s %s([parameters...], const(char)*, va_list)`",
+                p, funcdecl.toChars(), f.next.toChars(), funcdecl.toChars());
+    }
+    else
+    {
+        .error(funcdecl.loc, "`pragma(%s)` function `%s` must have C-style variadic `...` or `va_list` parameter",
+            p, funcdecl.toChars());
+    }
+}
+
+/***************************************************
+ * Visit each overloaded function/template in turn, and call dg(s) on it.
+ * Exit when no more, or dg(s) returns nonzero.
+ *
+ * Params:
+ *  fstart = symbol to start from
+ *  dg = the delegate to be called on the overload
+ *  sc = context used to check if symbol is accessible (and therefore visible),
+ *       can be null
+ *
+ * Returns:
+ *      ==0     continue
+ *      !=0     done (and the return value from the last dg() call)
+ */
+extern (D) int overloadApply(Dsymbol fstart, scope int delegate(Dsymbol) dg, Scope* sc = null)
+{
+    Dsymbols visited;
+
+    int overloadApplyRecurse(Dsymbol fstart, scope int delegate(Dsymbol) dg, Scope* sc)
+    {
+        // Detect cyclic calls.
+        if (visited.contains(fstart))
+            return 0;
+        visited.push(fstart);
+
+        Dsymbol next;
+        for (auto d = fstart; d; d = next)
+        {
+            import dmd.access : checkSymbolAccess;
+            if (auto od = d.isOverDeclaration())
+            {
+                /* The scope is needed here to check whether a function in
+                 an overload set was added by means of a private alias (or a
+                 selective import). If the scope where the alias is created
+                 is imported somewhere, the overload set is visible, but the private
+                 alias is not.
+                 */
+                if (sc)
+                {
+                    if (checkSymbolAccess(sc, od))
+                    {
+                        if (int r = overloadApplyRecurse(od.aliassym, dg, sc))
+                            return r;
+                    }
+                }
+                else if (int r = overloadApplyRecurse(od.aliassym, dg, sc))
+                    return r;
+                next = od.overnext;
+            }
+            else if (auto fa = d.isFuncAliasDeclaration())
+            {
+                if (fa.hasOverloads)
+                {
+                    if (int r = overloadApplyRecurse(fa.funcalias, dg, sc))
+                        return r;
+                }
+                else if (auto fd = fa.toAliasFunc())
+                {
+                    if (int r = dg(fd))
+                        return r;
+                }
+                else
+                {
+                    .error(d.loc, "%s `%s` is aliased to a function", d.kind, d.toPrettyChars);
+                    break;
+                }
+                next = fa.overnext;
+            }
+            else if (auto ad = d.isAliasDeclaration())
+            {
+                if (sc)
+                {
+                    if (checkSymbolAccess(sc, ad))
+                    next = ad.toAlias();
+                }
+                else
+                    next = ad.toAlias();
+                if (next == ad)
+                    break;
+                if (next == fstart)
+                    break;
+            }
+            else if (auto td = d.isTemplateDeclaration())
+            {
+                if (int r = dg(td))
+                    return r;
+                next = td.overnext;
+            }
+            else if (auto fd = d.isFuncDeclaration())
+            {
+                if (int r = dg(fd))
+                    return r;
+                next = fd.overnext;
+            }
+            else if (auto os = d.isOverloadSet())
+            {
+                foreach (ds; os.a)
+                if (int r = dg(ds))
+                    return r;
+            }
+            else
+            {
+                .error(d.loc, "%s `%s` is aliased to a function", d.kind, d.toPrettyChars);
+                break;
+                // BUG: should print error message?
+            }
+        }
+        return 0;
+    }
+    return overloadApplyRecurse(fstart, dg, sc);
 }

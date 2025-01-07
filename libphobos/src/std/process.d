@@ -1050,54 +1050,103 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
 
                 static if (!__traits(compiles, closefrom))
                 {
-                    // FIXME: This implementation crashes the system when RLIMIT_NOFILE
-                    // has a big value. For a possible solution see:
-                    // https://github.com/dlang/phobos/pull/8990
-                    void fallback (int lowfd) {
-                        // NOTE: malloc() and getrlimit() are not on the POSIX async
-                        // signal safe functions list, but practically this should
-                        // not be a problem. Java VM and CPython also use malloc()
-                        // in its own implementation via opendir().
-                        import core.stdc.stdlib : malloc;
-                        import core.sys.posix.poll : pollfd, poll, POLLNVAL;
+                    void fallback (int lowfd)
+                    {
+                        import core.sys.posix.dirent : dirent, opendir, readdir, closedir, DIR;
+                        import core.sys.posix.unistd : close;
+                        import core.sys.posix.stdlib : atoi, malloc, free;
                         import core.sys.posix.sys.resource : rlimit, getrlimit, RLIMIT_NOFILE;
 
                         // Get the maximum number of file descriptors that could be open.
                         rlimit r;
                         if (getrlimit(RLIMIT_NOFILE, &r) != 0)
-                        {
                             abortOnError(forkPipeOut, InternalError.getrlimit, .errno);
-                        }
+
                         immutable maxDescriptors = cast(int) r.rlim_cur;
 
-                        immutable maxToClose = maxDescriptors - lowfd;
+                        // Missing druntime declaration
+                        pragma(mangle, "dirfd")
+                        extern(C) nothrow @nogc int dirfd(DIR* dir);
 
-                        // Call poll() to see which ones are actually open:
-                        auto pfds = cast(pollfd*) malloc(pollfd.sizeof * maxToClose);
-                        if (pfds is null)
+                        DIR* dir = null;
+
+                        // We read from /dev/fd or /proc/self/fd only if the limit is high enough
+                        if (maxDescriptors > 128*1024)
                         {
-                            abortOnError(forkPipeOut, InternalError.malloc, .errno);
+                            // Try to open the directory /dev/fd or /proc/self/fd
+                            dir = opendir("/dev/fd");
+                            if (dir is null) dir = opendir("/proc/self/fd");
                         }
-                        foreach (i; 0 .. maxToClose)
+
+                        // If we have a directory, close all file descriptors except stdin, stdout, and stderr
+                        if (dir)
                         {
-                            pfds[i].fd = i + lowfd;
-                            pfds[i].events = 0;
-                            pfds[i].revents = 0;
-                        }
-                        if (poll(pfds, maxToClose, 0) >= 0)
-                        {
-                            foreach (i; 0 .. maxToClose)
+                            scope(exit) closedir(dir);
+
+                            int opendirfd = dirfd(dir);
+
+                            // Iterate over all file descriptors
+                            while (true)
                             {
-                                // POLLNVAL will be set if the file descriptor is invalid.
-                                if (!(pfds[i].revents & POLLNVAL)) close(pfds[i].fd);
+                                dirent* entry = readdir(dir);
+
+                                if (entry is null) break;
+                                if (entry.d_name[0] == '.') continue;
+
+                                int fd = atoi(cast(char*) entry.d_name);
+
+                                // Don't close stdin, stdout, stderr, or the directory file descriptor
+                                if (fd < lowfd || fd == opendirfd) continue;
+
+                                close(fd);
                             }
                         }
                         else
                         {
-                            // Fall back to closing everything.
-                            foreach (i; lowfd .. maxDescriptors)
+                            // This is going to allocate 8 bytes for each possible file descriptor from lowfd to r.rlim_cur
+                            if (maxDescriptors <= 128*1024)
                             {
-                                close(i);
+                                // NOTE: malloc() and getrlimit() are not on the POSIX async
+                                // signal safe functions list, but practically this should
+                                // not be a problem. Java VM and CPython also use malloc()
+                                // in its own implementation via opendir().
+                                import core.stdc.stdlib : malloc;
+                                import core.sys.posix.poll : pollfd, poll, POLLNVAL;
+
+                                immutable maxToClose = maxDescriptors - lowfd;
+
+                                // Call poll() to see which ones are actually open:
+                                auto pfds = cast(pollfd*) malloc(pollfd.sizeof * maxToClose);
+                                if (pfds is null)
+                                {
+                                    abortOnError(forkPipeOut, InternalError.malloc, .errno);
+                                }
+
+                                foreach (i; 0 .. maxToClose)
+                                {
+                                    pfds[i].fd = i + lowfd;
+                                    pfds[i].events = 0;
+                                    pfds[i].revents = 0;
+                                }
+
+                                if (poll(pfds, maxToClose, 0) < 0)
+                                    // couldn't use poll, use the slow path.
+                                    goto LslowClose;
+
+                                foreach (i; 0 .. maxToClose)
+                                {
+                                    // POLLNVAL will be set if the file descriptor is invalid.
+                                    if (!(pfds[i].revents & POLLNVAL)) close(pfds[i].fd);
+                                }
+                            }
+                            else
+                            {
+                            LslowClose:
+                                // Fall back to closing everything.
+                                foreach (i; lowfd .. maxDescriptors)
+                                {
+                                    close(i);
+                                }
                             }
                         }
                     }
@@ -1106,6 +1155,7 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
                     // Until we find a way to perform this check we will try to use dlsym to
                     // check for the function. See: https://github.com/dlang/phobos/pull/9048
                     version (CRuntime_Glibc)
+                    {
                         void closefrom (int lowfd) {
                             static bool tryGlibcClosefrom (int lowfd) {
                                 import core.sys.posix.dlfcn : dlopen, dlclose, dlsym, dlerror, RTLD_LAZY;
@@ -1129,6 +1179,7 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
                             if (!tryGlibcClosefrom(lowfd))
                                 fallback(lowfd);
                         }
+                    }
                     else
                         alias closefrom = fallback;
                 }

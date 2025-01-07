@@ -118,9 +118,9 @@ struct Mallocator
 
 version (CRuntime_Microsoft)
 {
-    @nogc nothrow private extern(C) void* _aligned_malloc(size_t, size_t);
-    @nogc nothrow private extern(C) void _aligned_free(void *memblock);
-    @nogc nothrow private extern(C) void* _aligned_realloc(void *, size_t, size_t);
+    @nogc nothrow pure private extern(C) void* _aligned_malloc(size_t, size_t);
+    @nogc nothrow pure private extern(C) void _aligned_free(void *memblock);
+    @nogc nothrow pure private extern(C) void* _aligned_realloc(void *, size_t, size_t);
 }
 
 /**
@@ -138,7 +138,7 @@ struct AlignedMallocator
     /**
     Forwards to $(D alignedAllocate(bytes, platformAlignment)).
     */
-    @trusted @nogc nothrow
+    @trusted @nogc nothrow pure
     void[] allocate(size_t bytes) shared
     {
         if (!bytes) return null;
@@ -152,7 +152,7 @@ struct AlignedMallocator
     `__aligned_malloc`) on Windows.
     */
     version (Posix)
-    @trusted @nogc nothrow
+    @trusted @nogc nothrow pure
     void[] alignedAllocate(size_t bytes, uint a) shared
     {
         import core.stdc.errno : ENOMEM, EINVAL;
@@ -184,7 +184,7 @@ version (LDC_AddressSanitizer)
             return result[0 .. bytes];
     }
     else version (Windows)
-    @trusted @nogc nothrow
+    @trusted @nogc nothrow pure
     void[] alignedAllocate(size_t bytes, uint a) shared
     {
         auto result = _aligned_malloc(bytes, a);
@@ -198,15 +198,15 @@ version (LDC_AddressSanitizer)
     `__aligned_free(b.ptr)`) on Windows.
     */
     version (Posix)
-    @system @nogc nothrow
+    @system @nogc nothrow pure
     bool deallocate(void[] b) shared
     {
-        import core.stdc.stdlib : free;
-        free(b.ptr);
+        import core.memory : pureFree;
+        pureFree(b.ptr);
         return true;
     }
     else version (Windows)
-    @system @nogc nothrow
+    @system @nogc nothrow pure
     bool deallocate(void[] b) shared
     {
         _aligned_free(b.ptr);
@@ -219,7 +219,7 @@ version (LDC_AddressSanitizer)
     Should be used with blocks obtained with `allocate` otherwise the custom
     alignment passed with `alignedAllocate` can be lost.
     */
-    @system @nogc nothrow
+    @system @nogc nothrow pure
     bool reallocate(ref void[] b, size_t newSize) shared
     {
         return alignedReallocate(b, newSize, alignment);
@@ -233,7 +233,7 @@ version (LDC_AddressSanitizer)
     $(D __aligned_realloc(b.ptr, newSize, a))).
     */
     version (Windows)
-    @system @nogc nothrow
+    @system @nogc nothrow pure
     bool alignedReallocate(ref void[] b, size_t s, uint a) shared
     {
         if (!s)
@@ -250,7 +250,7 @@ version (LDC_AddressSanitizer)
 
     /// ditto
     version (Posix)
-    @system @nogc nothrow
+    @system @nogc nothrow pure
     bool alignedReallocate(ref void[] b, size_t s, uint a) shared
     {
         if (!s)
@@ -281,7 +281,7 @@ version (LDC_AddressSanitizer)
 }
 
 ///
-@nogc @system nothrow unittest
+pure @nogc @system nothrow unittest
 {
     auto buffer = AlignedMallocator.instance.alignedAllocate(1024 * 1024 * 4,
         128);
@@ -290,7 +290,7 @@ version (LDC_AddressSanitizer)
 }
 
 version (Posix)
-@nogc @system nothrow unittest
+pure @nogc @system nothrow unittest
 {
     // https://issues.dlang.org/show_bug.cgi?id=16398
     // test the "pseudo" alignedReallocate for Posix

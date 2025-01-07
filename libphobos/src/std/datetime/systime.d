@@ -2444,7 +2444,7 @@ public:
             this SysTime.
       +/
     T toUnixTime(T = time_t)() @safe const pure nothrow scope
-        if (is(T == int) || is(T == long))
+    if (is(T == int) || is(T == long))
     {
         return stdTimeToUnixTime!T(_stdTime);
     }
@@ -2792,7 +2792,7 @@ public:
                             causing the month to increment.
       +/
     ref SysTime add(string units)(long value, AllowDayOverflow allowOverflow = AllowDayOverflow.yes) @safe nothrow scope
-        if (units == "years" || units == "months")
+    if (units == "years" || units == "months")
     {
         auto hnsecs = adjTime;
         auto days = splitUnitsFromHNSecs!"days"(hnsecs) + 1;
@@ -4830,7 +4830,7 @@ public:
                     $(LREF SysTime).
       +/
     ref SysTime roll(string units)(long value) @safe nothrow scope
-        if (units == "days")
+    if (units == "days")
     {
         auto hnsecs = adjTime;
         auto gdays = splitUnitsFromHNSecs!"days"(hnsecs) + 1;
@@ -5195,7 +5195,7 @@ public:
 
     // Shares documentation with "days" version.
     ref SysTime roll(string units)(long value) @safe nothrow scope
-        if (units == "hours" || units == "minutes" || units == "seconds")
+    if (units == "hours" || units == "minutes" || units == "seconds")
     {
         try
         {
@@ -5871,7 +5871,7 @@ public:
 
     // Shares documentation with "days" version.
     ref SysTime roll(string units)(long value) @safe nothrow scope
-        if (units == "msecs" || units == "usecs" || units == "hnsecs")
+    if (units == "msecs" || units == "usecs" || units == "hnsecs")
     {
         auto hnsecs = adjTime;
         immutable days = splitUnitsFromHNSecs!"days"(hnsecs);
@@ -6308,7 +6308,7 @@ public:
                        this $(LREF SysTime).
       +/
     SysTime opBinary(string op)(Duration duration) @safe const pure nothrow return scope
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         SysTime retval = SysTime(this._stdTime, this._timezone);
         immutable hnsecs = duration.total!"hnsecs";
@@ -6528,7 +6528,7 @@ public:
                        this $(LREF SysTime).
       +/
     ref SysTime opOpAssign(string op)(Duration duration) @safe pure nothrow scope
-        if (op == "+" || op == "-")
+    if (op == "+" || op == "-")
     {
         immutable hnsecs = duration.total!"hnsecs";
         mixin("_stdTime " ~ op ~ "= hnsecs;");
@@ -6732,7 +6732,7 @@ public:
         )
       +/
     Duration opBinary(string op)(SysTime rhs) @safe const pure nothrow scope
-        if (op == "-")
+    if (op == "-")
     {
         return dur!"hnsecs"(_stdTime - rhs._stdTime);
     }
@@ -7992,7 +7992,7 @@ public:
         Returns a $(REF Date,std,datetime,date) equivalent to this $(LREF SysTime).
       +/
     Date opCast(T)() @safe const nothrow scope
-        if (is(immutable T == immutable Date))
+    if (is(immutable T == immutable Date))
     {
         return Date(dayOfGregorianCal);
     }
@@ -8033,7 +8033,7 @@ public:
         $(LREF SysTime).
       +/
     DateTime opCast(T)() @safe const nothrow scope
-        if (is(immutable T == immutable DateTime))
+    if (is(immutable T == immutable DateTime))
     {
         try
         {
@@ -8099,7 +8099,7 @@ public:
         $(LREF SysTime).
       +/
     TimeOfDay opCast(T)() @safe const nothrow scope
-        if (is(immutable T == immutable TimeOfDay))
+    if (is(immutable T == immutable TimeOfDay))
     {
         try
         {
@@ -8156,7 +8156,7 @@ public:
     // should be allowed, and it doesn't work without this opCast() since opCast()
     // has already been defined for other types.
     SysTime opCast(T)() @safe const pure nothrow scope
-        if (is(immutable T == immutable SysTime))
+    if (is(immutable T == immutable SysTime))
     {
         return SysTime(_stdTime, _timezone);
     }
@@ -8799,7 +8799,7 @@ public:
             be valid.
       +/
     static SysTime fromISOString(S)(scope const S isoString, immutable TimeZone tz = null) @safe
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         import std.algorithm.searching : startsWith, find;
         import std.conv : to;
@@ -9100,7 +9100,7 @@ public:
             be valid.
       +/
     static SysTime fromISOExtString(S)(scope const S isoExtString, immutable TimeZone tz = null) @safe
-        if (isSomeString!(S))
+    if (isSomeString!(S))
     {
         import std.algorithm.searching : countUntil, find;
         import std.conv : to;
@@ -9351,7 +9351,7 @@ public:
             be valid.
       +/
     static SysTime fromSimpleString(S)(scope const S simpleString, immutable TimeZone tz = null) @safe
-        if (isSomeString!(S))
+    if (isSomeString!(S))
     {
         import std.algorithm.searching : find;
         import std.conv : to;

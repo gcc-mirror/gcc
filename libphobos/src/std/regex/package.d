@@ -688,7 +688,7 @@ public:
         ----
     +/
     R opIndex(String)(String i) /*const*/ //@@@BUG@@@
-        if (isSomeString!String)
+    if (isSomeString!String)
     {
         size_t index = lookupNamedGroup(_names, i);
         return getMatch(index);

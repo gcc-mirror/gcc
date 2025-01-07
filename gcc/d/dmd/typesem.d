@@ -28,7 +28,6 @@ import dmd.declaration;
 import dmd.denum;
 import dmd.dimport;
 import dmd.dinterpret;
-import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
@@ -53,6 +52,7 @@ import dmd.initsem;
 import dmd.location;
 import dmd.visitor;
 import dmd.mtype;
+import dmd.mangle;
 import dmd.nogc;
 import dmd.objc;
 import dmd.opover;
@@ -230,7 +230,7 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
         }
 
         Type t = s.getType(); // type symbol, type alias, or type tuple?
-        uint errorsave = global.errors;
+        const errorsave = global.errors;
         SearchOptFlags flags = t is null ? SearchOpt.localsOnly : SearchOpt.ignorePrivateImports;
 
         Dsymbol sm = s.searchX(loc, sc, id, flags);
@@ -836,7 +836,9 @@ extern (D) MATCH callMatch(TypeFunction tf, Type tthis, ArgumentList argumentLis
         L1:
             if (parameterList.varargs == VarArg.typesafe && u + 1 == nparams) // if last varargs param
             {
-                auto trailingArgs = args[u .. $];
+                Expression[] trailingArgs;
+                if (args.length >= u)
+                    trailingArgs = args[u .. $];
                 if (auto vmatch = matchTypeSafeVarArgs(tf, p, trailingArgs, pMessage))
                     return vmatch < match ? vmatch : match;
                 // Error message was already generated in `matchTypeSafeVarArgs`
@@ -905,25 +907,19 @@ private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
      */
     OutBuffer buf;
     auto callExp = e.isCallExp();
-    void nocpctor()
+
+    bool nocpctor()
     {
         buf.printf("`struct %s` does not define a copy constructor for `%s` to `%s` copies",
                    argStruct.toChars(), arg.type.toChars(), tprm.toChars());
-    }
-    auto f = callExp.f;
-    if (!f)
-    {
-        nocpctor();
         *pMessage = buf.extractChars();
         return false;
     }
-    char[] s;
-    if (!f.isPure && sc.func.setImpure())
-        s ~= "pure ";
-    if (!f.isSafe() && !f.isTrusted() && sc.setUnsafe())
-        s ~= "@safe ";
-    if (!f.isNogc && sc.func.setGC(arg.loc, null))
-        s ~= "nogc ";
+
+    auto f = callExp.f;
+    if (!f)
+        return nocpctor();
+
     if (f.isDisabled() && !f.isGenerated())
     {
         /* https://issues.dlang.org/show_bug.cgi?id=24301
@@ -931,11 +927,21 @@ private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
          */
         buf.printf("`%s` copy constructor cannot be used because it is annotated with `@disable`",
             f.type.toChars());
+        *pMessage = buf.extractChars();
+        return false;
     }
-    else if (s)
+
+    bool bpure = !f.isPure && sc.func.setImpure();
+    bool bsafe = !f.isSafe() && !f.isTrusted() && sc.setUnsafe();
+    bool bnogc = !f.isNogc && sc.func.setGC(arg.loc, null);
+    if (bpure | bsafe | bnogc)
     {
-        s[$-1] = '\0';
-        buf.printf("`%s` copy constructor cannot be called from a `%s` context", f.type.toChars(), s.ptr);
+        const nullptr = "".ptr;
+        buf.printf("`%s` copy constructor cannot be called from a `%s%s%s` context",
+            f.type.toChars(),
+            bpure ? "pure " .ptr : nullptr,
+            bsafe ? "@safe ".ptr : nullptr,
+            bnogc ? "nogc"  .ptr : nullptr);
     }
     else if (f.isGenerated() && f.isDisabled())
     {
@@ -951,7 +957,7 @@ private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
          * i.e: `inout` constructor creates `const` object, not mutable.
          * Fallback to using the original generic error before https://issues.dlang.org/show_bug.cgi?id=22202.
          */
-        nocpctor();
+        return nocpctor();
     }
 
     *pMessage = buf.extractChars();
@@ -2706,23 +2712,21 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 which isn't a particularly good error message (x is a variable?).
             */
             Dsymbol varDecl = mtype.toDsymbol(sc);
-            const(Loc) varDeclLoc = varDecl.getLoc();
             Module varDeclModule = varDecl.getModule(); //This can be null
 
             .error(loc, "variable `%s` is used as a type", mtype.toChars());
             //Check for null to avoid https://issues.dlang.org/show_bug.cgi?id=22574
             if ((varDeclModule !is null) && varDeclModule != sc._module) // variable is imported
             {
-                const(Loc) varDeclModuleImportLoc = varDeclModule.getLoc();
                 .errorSupplemental(
-                    varDeclModuleImportLoc,
+                    varDeclModule.loc,
                     "variable `%s` is imported here from: `%s`",
                     varDecl.toChars,
                     varDeclModule.toPrettyChars,
                 );
             }
 
-            .errorSupplemental(varDeclLoc, "variable `%s` is declared here", varDecl.toChars);
+            .errorSupplemental(varDecl.loc, "variable `%s` is declared here", varDecl.toChars);
         }
         else
             .error(loc, "`%s` is used as a type", mtype.toChars());
@@ -4921,7 +4925,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                  * e.g.
                  *  template opDispatch(name) if (isValid!name) { ... }
                  */
-                uint errors = gagError ? global.startGagging() : 0;
+                const errors = gagError ? global.startGagging() : 0;
                 e = dti.dotTemplateSemanticProp(sc, DotExpFlag.none);
                 if (gagError && global.endGagging(errors))
                     e = null;
@@ -4939,7 +4943,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                  */
                 auto die = new DotIdExp(e.loc, alias_e, ident);
 
-                auto errors = gagError ? 0 : global.startGagging();
+                const errors = gagError ? 0 : global.startGagging();
                 auto exp = die.dotIdSemanticProp(sc, gagError);
                 if (!gagError)
                 {
@@ -7479,6 +7483,62 @@ MATCH implicitConvToThroughAliasThis(TypeStruct from, Type to)
     return MATCH.nomatch;
 }
 
+/*******************************************
+ * Compute number of elements for a (possibly multidimensional) static array,
+ * or 1 for other types.
+ * Params:
+ *  t = static array type
+ *  loc = for error message
+ * Returns:
+ *  number of elements, uint.max on overflow
+ */
+uint numberOfElems(Type t, const ref Loc loc)
+{
+    //printf("Type::numberOfElems()\n");
+    uinteger_t n = 1;
+    Type tb = t;
+    while ((tb = tb.toBasetype()).ty == Tsarray)
+    {
+        bool overflow = false;
+        n = mulu(n, (cast(TypeSArray)tb).dim.toUInteger(), overflow);
+        if (overflow || n >= uint.max)
+        {
+            error(loc, "static array `%s` size overflowed to %llu", t.toChars(), cast(ulong)n);
+            return uint.max;
+        }
+        tb = (cast(TypeSArray)tb).next;
+    }
+    return cast(uint)n;
+}
+
+bool checkRetType(TypeFunction tf, const ref Loc loc)
+{
+    Type tb = tf.next.toBasetype();
+    if (tb.ty == Tfunction)
+    {
+        error(loc, "functions cannot return a function");
+        tf.next = Type.terror;
+    }
+    if (tb.ty == Ttuple)
+    {
+        error(loc, "functions cannot return a sequence (use `std.typecons.Tuple`)");
+        tf.next = Type.terror;
+    }
+    if (!tf.isRef && (tb.ty == Tstruct || tb.ty == Tsarray))
+    {
+        if (auto ts = tb.baseElemOf().isTypeStruct())
+        {
+            if (!ts.sym.members)
+            {
+                error(loc, "functions cannot return opaque type `%s` by value", tb.toChars());
+                tf.next = Type.terror;
+            }
+        }
+    }
+    if (tb.ty == Terror)
+        return true;
+    return false;
+}
 
 
 /******************************* Private *****************************************/
@@ -7793,7 +7853,7 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
 RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
 {
     OutBuffer buf;
-    if (expressionsToString(buf, sc, tm.exps))
+    if (expressionsToString(buf, sc, tm.exps, tm.loc, null, true))
         return null;
 
     const errors = global.errors;
@@ -7803,7 +7863,6 @@ RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
     const bool doUnittests = global.params.parsingUnittestsRequired();
     auto locm = adjustLocForMixin(str, loc, global.params.mixinOut);
     scope p = new Parser!ASTCodegen(locm, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
-    p.transitionIn = global.params.v.vin;
     p.nextToken();
     //printf("p.loc.linnum = %d\n", p.loc.linnum);
 

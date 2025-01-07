@@ -255,10 +255,11 @@ class ReferenceInputRange(T)
 {
     import std.array : array;
 
-    this(Range)(Range r) if (isInputRange!Range) {_payload = array(r);}
-    final @property ref T front(){return _payload.front;}
-    final void popFront(){_payload.popFront();}
-    final @property bool empty(){return _payload.empty;}
+    this(Range)(Range r)
+    if (isInputRange!Range) {_payload = array(r);}
+    final @property ref T front() {return _payload.front;}
+    final void popFront() {_payload.popFront();}
+    final @property bool empty() {return _payload.empty;}
     protected T[] _payload;
 }
 
@@ -268,8 +269,8 @@ Infinite input range
 class ReferenceInfiniteInputRange(T)
 {
     this(T first = T.init) {_val = first;}
-    final @property T front(){return _val;}
-    final void popFront(){++_val;}
+    final @property T front() {return _val;}
+    final void popFront() {++_val;}
     enum bool empty = false;
     protected T _val;
 }
@@ -279,7 +280,8 @@ Reference forward range
 */
 class ReferenceForwardRange(T) : ReferenceInputRange!T
 {
-    this(Range)(Range r) if (isInputRange!Range) {super(r);}
+    this(Range)(Range r)
+    if (isInputRange!Range) {super(r);}
     final @property auto save(this This)() {return new This( _payload);}
 }
 
@@ -298,9 +300,10 @@ Reference bidirectional range
 */
 class ReferenceBidirectionalRange(T) : ReferenceForwardRange!T
 {
-    this(Range)(Range r) if (isInputRange!Range) {super(r);}
-    final @property ref T back(){return _payload.back;}
-    final void popBack(){_payload.popBack();}
+    this(Range)(Range r)
+    if (isInputRange!Range) {super(r);}
+    final @property ref T back() {return _payload.back;}
+    final void popBack() {_payload.popBack();}
 }
 
 @safe unittest

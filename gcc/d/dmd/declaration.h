@@ -590,13 +590,6 @@ public:
 
     // Things that should really go into Scope
 
-    // 1 if there's a return exp; statement
-    // 2 if there's a throw statement
-    // 4 if there's an assert(0)
-    // 8 if there's inline asm
-    // 16 if there are multiple return statements
-    int hasReturnExp;
-
     VarDeclaration *nrvo_var;           // variable to replace with shidden
     Symbol *shidden;                    // hidden pointer passed to function
 
@@ -679,6 +672,12 @@ public:
     bool dllImport(bool v);
     bool dllExport() const;
     bool dllExport(bool v);
+    bool hasReturnExp() const;
+    bool hasReturnExp(bool v);
+    bool hasInlineAsm() const;
+    bool hasInlineAsm(bool v);
+    bool hasMultipleReturnExp() const;
+    bool hasMultipleReturnExp(bool v);
 
     // Data for a function declaration that is needed for the Objective-C
     // integration.

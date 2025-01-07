@@ -35,7 +35,8 @@ enum
 enum class MessageStyle : unsigned char
 {
     digitalmars, // file(line,column): message
-    gnu          // file:line:column: message
+    gnu,         // file:line:column: message
+    sarif        // JSON SARIF output, see https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html
 };
 
 // The state of array bounds checking
@@ -160,7 +161,7 @@ struct Param
     d_bool useInline;     // inline expand functions
     d_bool release;       // build release version
     d_bool preservePaths; // true means don't strip path from source file
-    Diagnostic warnings;
+    Diagnostic useWarnings;
     d_bool cov;           // generate code coverage data
     unsigned char covPercent;   // 0..100 code coverage percentage required
     d_bool ctfe_cov;      // generate coverage data for ctfe
@@ -291,6 +292,7 @@ struct CompileEnv
     DString vendor;
     DString timestamp;
     d_bool previewIn;
+    d_bool transitionIn;
     d_bool ddocOutput;
     d_bool masm;
     IdentifierCharLookup cCharLookupTable;

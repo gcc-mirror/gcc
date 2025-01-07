@@ -447,7 +447,7 @@ Throws: `ErrnoException` if the file could not be opened.
 
     /// ditto
     this(R1, R2)(R1 name)
-        if (isSomeFiniteCharInputRange!R1)
+    if (isSomeFiniteCharInputRange!R1)
     {
         import std.conv : to;
         this(name.to!string, "rb");
@@ -455,8 +455,8 @@ Throws: `ErrnoException` if the file could not be opened.
 
     /// ditto
     this(R1, R2)(R1 name, R2 mode)
-        if (isSomeFiniteCharInputRange!R1 &&
-            isSomeFiniteCharInputRange!R2)
+    if (isSomeFiniteCharInputRange!R1 &&
+        isSomeFiniteCharInputRange!R2)
     {
         import std.conv : to;
         this(name.to!string, mode.to!string);
@@ -2340,6 +2340,24 @@ void main()
 Notice that neither example accesses the line data returned by
 `front` after the corresponding `popFront` call is made (because
 the contents may well have changed).
+----
+
+Windows specific Example:
+----
+import std.stdio;
+
+version (Windows)
+void main()
+{
+
+	foreach (line; File("file.txt").byLine(No.keepTerminator, "\r\n"))
+	{
+		writeln("|"~line~"|");
+		if (line == "HelloWorld")
+		    writeln("^This Line is here.");
+	}
+
+}
 */
     auto byLine(Terminator = char, Char = char)
             (KeepTerminator keepTerminator = No.keepTerminator,
@@ -2997,10 +3015,10 @@ is empty, throws an `Exception`. In case of an I/O error throws
 
         /// Range primitive implementations.
         void put(A)(scope A writeme)
-            if ((isSomeChar!(ElementType!A) ||
-                  is(ElementType!A : const(ubyte))) &&
-                isInputRange!A &&
-                !isInfinite!A)
+        if ((isSomeChar!(ElementType!A) ||
+            is(ElementType!A : const(ubyte))) &&
+            isInputRange!A &&
+            !isInfinite!A)
         {
             import std.exception : errnoEnforce;
 
@@ -3026,7 +3044,8 @@ is empty, throws an `Exception`. In case of an I/O error throws
         }
 
         /// ditto
-        void put(C)(scope C c) @safe if (isSomeChar!C || is(C : const(ubyte)))
+        void put(C)(scope C c) @safe
+        if (isSomeChar!C || is(C : const(ubyte)))
         {
             import std.utf : decodeFront, encode, stride;
 

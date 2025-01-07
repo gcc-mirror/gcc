@@ -474,7 +474,8 @@ void put(R, E)(ref R r, E e)
     {
         string data;
 
-        void put(C)(C c) if (isSomeChar!C)
+        void put(C)(C c)
+        if (isSomeChar!C)
         {
             data ~= c;
         }

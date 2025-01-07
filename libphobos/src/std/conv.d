@@ -205,21 +205,21 @@ $(PRE $(I UnsignedInteger):
 template to(T)
 {
     T to(A...)(A args)
-        if (A.length > 0)
+    if (A.length > 0)
     {
         return toImpl!T(args);
     }
 
     // Fix https://issues.dlang.org/show_bug.cgi?id=6175
     T to(S)(ref S arg)
-        if (isStaticArray!S)
+    if (isStaticArray!S)
     {
         return toImpl!T(arg);
     }
 
     // Fix https://issues.dlang.org/show_bug.cgi?id=16108
     T to(S)(ref S arg)
-        if (isAggregateType!S && !isCopyable!S)
+    if (isAggregateType!S && !isCopyable!S)
     {
         return toImpl!T(arg);
     }
@@ -917,9 +917,22 @@ if (!is(S : T) &&
     auto result = ()@trusted{ return cast(T) value; }();
     if (!result && value)
     {
-        throw new ConvException("Cannot convert object of static type "
-                ~S.classinfo.name~" and dynamic type "~value.classinfo.name
-                ~" to type "~T.classinfo.name);
+        string name(TypeInfo ti) @trusted
+        {
+            while (auto tc = (cast(TypeInfo_Const) ti))
+            {
+                ti = tc.base;
+            }
+            if (auto tinf = cast(TypeInfo_Interface) ti)
+            {
+                ti = tinf.info;
+            }
+            TypeInfo_Class tc = cast(TypeInfo_Class) ti;
+            assert(tc);
+            return tc.name;
+        }
+        throw new ConvException("Cannot convert object of static type " ~
+                name(typeid(S)) ~ " and dynamic type " ~ name(typeid(value)) ~ " to type " ~ name(typeid(T)));
     }
     return result;
 }

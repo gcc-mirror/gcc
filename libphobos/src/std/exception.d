@@ -1801,7 +1801,7 @@ expression.
 @system unittest
 {
     import std.format : format;
-    assert("%s".format.ifThrown!Exception(e => e.classinfo.name) == "std.format.FormatException");
+    assert("%s".format.ifThrown!Exception(e => typeid(e).name) == "std.format.FormatException");
 }
 
 //Verify Examples
@@ -1834,7 +1834,7 @@ expression.
     static assert(!__traits(compiles, (new Object()).ifThrown(1)));
 
     //Use a lambda to get the thrown object.
-    assert("%s".format().ifThrown(e => e.classinfo.name) == "std.format.FormatException");
+    assert("%s".format().ifThrown(e => typeid(e).name) == "std.format.FormatException");
 }
 
 @system unittest

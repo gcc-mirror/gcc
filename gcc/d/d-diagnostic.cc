@@ -241,7 +241,7 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
     }
   else if (kind == ErrorKind::warning)
     {
-      if (global.gag || global.params.warnings == DIAGNOSTICoff)
+      if (global.gag || global.params.useWarnings == DIAGNOSTICoff)
 	{
 	  if (global.gag)
 	    global.gaggedWarnings++;
@@ -250,7 +250,7 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
 	}
 
       /* Warnings don't count if not treated as errors.  */
-      if (global.params.warnings == DIAGNOSTICerror)
+      if (global.params.useWarnings == DIAGNOSTICerror)
 	global.warnings++;
 
       diag_kind = DK_WARNING;
@@ -314,7 +314,7 @@ verrorReportSupplemental (const Loc& loc, const char* format, va_list ap,
     }
   else if (kind == ErrorKind::warning)
     {
-      if (global.params.warnings == DIAGNOSTICoff || global.gag)
+      if (global.params.useWarnings == DIAGNOSTICoff || global.gag)
 	return;
     }
   else if (kind == ErrorKind::deprecation)

@@ -21,7 +21,7 @@
  *  enter `C++, mangling` as the keywords.
  */
 
-module dmd.cppmangle;
+module dmd.mangle.cpp;
 
 import core.stdc.stdio;
 
@@ -30,6 +30,7 @@ import dmd.astenums;
 import dmd.attrib;
 import dmd.declaration;
 import dmd.dsymbol;
+import dmd.dsymbolsem : isGNUABITag;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
@@ -2433,7 +2434,7 @@ private struct ABITagContainer
 
         foreach (exp; *s.userAttribDecl.atts)
         {
-            if (UserAttributeDeclaration.isGNUABITag(exp))
+            if (isGNUABITag(exp))
                 return (*exp.isStructLiteralExp().elements)[0]
                     .isArrayLiteralExp();
         }

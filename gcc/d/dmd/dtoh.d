@@ -512,7 +512,7 @@ public:
             }
         }
 
-        if (global.params.warnings != DiagnosticReporting.off || canFix)
+        if (global.params.useWarnings != DiagnosticReporting.off || canFix)
         {
             // Warn about identifiers that are keywords in C++.
             if (auto kc = keywordClass(ident))

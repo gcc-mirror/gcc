@@ -21,14 +21,20 @@ import dmd.dcast : implicitConvTo;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dscope;
+import dmd.dsymbolsem : determineSize;
+import dmd.errors;
 import dmd.expression;
+import dmd.func;
+import dmd.funcsem : isRootTraitsCompilesScope;
+import dmd.globals : FeatureState;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
+import dmd.rootobject;
 import dmd.target;
 import dmd.tokens;
 import dmd.typesem : hasPointers, arrayOf, size;
-import dmd.funcsem : setUnsafe, setUnsafePreview;
 
 /*************************************************************
  * Check for unsafe access in @safe code:
@@ -308,4 +314,184 @@ bool checkUnsafeDotExp(Scope* sc, Expression e, Identifier id, int flag)
             return sc.setUnsafe(false, e.loc, "`%s.%s` cannot be used in `@safe` code", e, id);
     }
     return false;
+}
+
+bool isSafe(FuncDeclaration fd)
+{
+    if (fd.safetyInprocess)
+        fd.setUnsafe();
+    return fd.type.toTypeFunction().trust == TRUST.safe;
+}
+
+extern (D) bool isSafeBypassingInference(FuncDeclaration fd)
+{
+    return !(fd.safetyInprocess) && fd.isSafe();
+}
+
+bool isTrusted(FuncDeclaration fd)
+{
+    if (fd.safetyInprocess)
+        fd.setUnsafe();
+    return fd.type.toTypeFunction().trust == TRUST.trusted;
+}
+
+/**************************************
+ * The function is doing something unsafe, so mark it as unsafe.
+ *
+ * Params:
+ *   fd  = func declaration to set unsafe
+ *   gag = surpress error message (used in escape.d)
+ *   loc = location of error
+ *   fmt = printf-style format string
+ *   arg0  = (optional) argument for first %s format specifier
+ *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
+ * Returns: whether there's a safe error
+ */
+extern (D) bool setUnsafe(
+    FuncDeclaration fd,
+    bool gag = false, Loc loc = Loc.init, const(char)* fmt = null,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+{
+    if (fd.safetyInprocess)
+    {
+        fd.safetyInprocess = false;
+        fd.type.toTypeFunction().trust = TRUST.system;
+        if (fmt || arg0)
+            fd.safetyViolation = new AttributeViolation(loc, fmt, arg0, arg1, arg2);
+
+        if (fd.fes)
+            fd.fes.func.setUnsafe();
+    }
+    else if (fd.isSafe())
+    {
+        if (!gag && fmt)
+            .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+
+        return true;
+    }
+    return false;
+}
+
+/**************************************
+ * The function is calling `@system` function `f`, so mark it as unsafe.
+ *
+ * Params:
+ *   fd = caller
+ *   f = function being called (needed for diagnostic of inferred functions)
+ * Returns: whether there's a safe error
+ */
+extern (D) bool setUnsafeCall(FuncDeclaration fd, FuncDeclaration f)
+{
+    return fd.setUnsafe(false, f.loc, null, f, null);
+}
+
+/**************************************
+ * A statement / expression in this scope is not `@safe`,
+ * so mark the enclosing function as `@system`
+ *
+ * Params:
+ *   sc = scope that the unsafe statement / expression is in
+ *   gag = surpress error message (used in escape.d)
+ *   loc = location of error
+ *   fmt = printf-style format string
+ *   arg0  = (optional) argument for first %s format specifier
+ *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
+ * Returns: whether there's a safe error
+ */
+bool setUnsafe(Scope* sc,
+    bool gag = false, Loc loc = Loc.init, const(char)* fmt = null,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+{
+    if (sc.intypeof)
+        return false; // typeof(cast(int*)0) is safe
+
+    if (sc.debug_) // debug {} scopes are permissive
+        return false;
+
+    if (!sc.func)
+    {
+        if (sc.varDecl)
+        {
+            if (sc.varDecl.storage_class & STC.safe)
+            {
+                .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+                return true;
+            }
+            else if (!(sc.varDecl.storage_class & STC.trusted))
+            {
+                sc.varDecl.storage_class |= STC.system;
+                sc.varDecl.systemInferred = true;
+            }
+        }
+        return false;
+    }
+
+
+    if (isRootTraitsCompilesScope(sc)) // __traits(compiles, x)
+    {
+        if (sc.func.isSafeBypassingInference())
+        {
+            // Message wil be gagged, but still call error() to update global.errors and for
+            // -verrors=spec
+            .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            return true;
+        }
+        return false;
+    }
+
+    return sc.func.setUnsafe(gag, loc, fmt, arg0, arg1, arg2);
+}
+
+/***************************************
+ * Like `setUnsafe`, but for safety errors still behind preview switches
+ *
+ * Given a `FeatureState fs`, for example dip1000 / dip25 / systemVariables,
+ * the behavior changes based on the setting:
+ *
+ * - In case of `-revert=fs`, it does nothing.
+ * - In case of `-preview=fs`, it's the same as `setUnsafe`
+ * - By default, print a deprecation in `@safe` functions, or store an attribute violation in inferred functions.
+ *
+ * Params:
+ *   sc = used to find affected function/variable, and for checking whether we are in a deprecated / speculative scope
+ *   fs = feature state from the preview flag
+ *   gag = surpress error message
+ *   loc = location of error
+ *   msg = printf-style format string
+ *   arg0  = (optional) argument for first %s format specifier
+ *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
+ * Returns: whether an actual safe error (not deprecation) occured
+ */
+bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+{
+    //printf("setUnsafePreview() fs:%d %s\n", fs, msg);
+    with (FeatureState) final switch (fs)
+    {
+      case disabled:
+        return false;
+
+      case enabled:
+        return sc.setUnsafe(gag, loc, msg, arg0, arg1, arg2);
+
+      case default_:
+        if (!sc.func)
+            return false;
+        if (sc.func.isSafeBypassingInference())
+        {
+            if (!gag && !sc.isDeprecated())
+            {
+                deprecation(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            }
+        }
+        else if (!sc.func.safetyViolation)
+        {
+            import dmd.func : AttributeViolation;
+            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);
+        }
+        return false;
+    }
 }

@@ -6095,8 +6095,10 @@ private struct LockstepMixin(Ranges...)
             {
                 indexDef = q{
                     size_t index = ranges[0].length - 1;
-                    enforce(this.stoppingPolicy == StoppingPolicy.requireSameLength,
-                            "lockstep can only be used with foreach_reverse when stoppingPolicy == requireSameLength");
+                    enforce(
+                        this.stoppingPolicy == StoppingPolicy.requireSameLength,
+                        "Indexed lockstep can only be used with foreach_reverse when " ~
+                        "stoppingPolicy == requireSameLength");
 
                     foreach (range; ranges[1 .. $])
                         enforce(range.length == ranges[0].length);
@@ -7490,7 +7492,8 @@ if (!isIntegral!(CommonType!(B, E)) &&
 
         bool opEquals(Cyclic c) const { return current == c.current; }
         bool opEquals(int i) const { return current == i; }
-        void opUnary(string op)() if (op == "++")
+        void opUnary(string op)()
+        if (op == "++")
         {
             current = (current + 1) % wrapAround;
         }
@@ -12444,7 +12447,7 @@ public:
             return (*_range).front;
         }
 
-        static if (is(typeof((*(cast(const R*)_range)).front))) @property auto front() const
+        static if (is(typeof(((const R* r) => (*r).front)(null)))) @property auto front() const
         {
             return (*_range).front;
         }
@@ -12470,7 +12473,7 @@ public:
             return (*_range).empty;
         }
 
-        static if (is(typeof((*cast(const R*)_range).empty))) @property bool empty() const
+        static if (is(typeof(((const R* r) => (*r).empty)(null)))) @property bool empty() const
         {
             return (*_range).empty;
         }
@@ -12500,10 +12503,11 @@ public:
     else static if (isForwardRange!R)
     {
         import std.traits : isSafe;
-        private alias S = typeof((*_range).save);
+        private alias S = typeof((() => (*_range).save)());
 
-        static if (is(typeof((*cast(const R*)_range).save)))
-            private alias CS = typeof((*cast(const R*)_range).save);
+        static if (is(typeof(((const R* r) => (*r).save)(null))))
+            private alias CS = typeof(((const R* r) => (*r).save)(null));
+
 
         static if (isSafe!((R* r) => (*r).save))
         {
@@ -12512,7 +12516,7 @@ public:
                 mixin(_genSave());
             }
 
-            static if (is(typeof((*cast(const R*)_range).save))) @property RefRange!CS save() @trusted const
+            static if (is(typeof(((const R* r) => (*r).save)(null)))) @property RefRange!CS save() @trusted const
             {
                 mixin(_genSave());
             }
@@ -12524,7 +12528,7 @@ public:
                 mixin(_genSave());
             }
 
-            static if (is(typeof((*cast(const R*)_range).save))) @property RefRange!CS save() const
+            static if (is(typeof(((const R* r) => (*r).save)(null)))) @property RefRange!CS save() const
             {
                 mixin(_genSave());
             }
@@ -12543,7 +12547,7 @@ public:
         private static string _genSave() @safe pure nothrow
         {
             return `import core.lifetime : emplace;` ~
-                   `alias S = typeof((*_range).save);` ~
+                   `alias S = typeof((() => (*_range).save)());` ~
                    `static assert(isForwardRange!S, S.stringof ~ " is not a forward range.");` ~
                    `auto mem = new void[S.sizeof];` ~
                    `emplace!S(mem, cast(S)(*_range).save);` ~
@@ -12572,7 +12576,7 @@ public:
             return (*_range).back;
         }
 
-        static if (is(typeof((*(cast(const R*)_range)).back))) @property auto back() const
+        static if (is(typeof(((const R* r) => (*r).back)(null)))) @property auto back() const
         {
             return (*_range).back;
         }
@@ -12604,13 +12608,13 @@ public:
     else static if (isRandomAccessRange!R)
     {
         auto ref opIndex(IndexType)(IndexType index)
-            if (is(typeof((*_range)[index])))
+        if (is(typeof((*_range)[index])))
         {
             return (*_range)[index];
         }
 
         auto ref opIndex(IndexType)(IndexType index) const
-            if (is(typeof((*cast(const R*)_range)[index])))
+        if (is(typeof((*cast(const R*)_range)[index])))
         {
             return (*_range)[index];
         }
@@ -12662,7 +12666,7 @@ public:
         {
             return (*_range).length;
         }
-        static if (is(typeof((*cast(const R*)_range).length))) @property auto length() const
+        static if (is(typeof(((const R* r) => (*r).length)(null)))) @property auto length() const
         {
             return (*_range).length;
         }
@@ -12692,14 +12696,14 @@ public:
 
         RefRange!T opSlice(IndexType1, IndexType2)
                     (IndexType1 begin, IndexType2 end)
-            if (is(typeof((*_range)[begin .. end])))
+        if (is(typeof((*_range)[begin .. end])))
         {
             mixin(_genOpSlice());
         }
 
         RefRange!CT opSlice(IndexType1, IndexType2)
                     (IndexType1 begin, IndexType2 end) const
-            if (is(typeof((*cast(const R*)_range)[begin .. end])))
+        if (is(typeof((*cast(const R*)_range)[begin .. end])))
         {
             mixin(_genOpSlice());
         }
@@ -13103,6 +13107,44 @@ private:
     static assert(isBidirectionalRange!R2);
     R2 r2;
     auto rr2 = refRange(&r2);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24801
+@safe unittest
+{
+
+    {
+        static struct R
+        {
+            int front() => 0;
+            void popFront() {}
+            bool empty() => false;
+        }
+        R range;
+        auto r = RefRange!R(&range);
+    }
+
+    {
+        static struct R
+        {
+            size_t start, end;
+            size_t length() => end - start;
+            int opIndex(size_t i) => 0;
+
+
+            int front() => this[0];
+            int back() => this[length-1];
+            void popFront() { start++; }
+            void popBack() { end--; }
+            bool empty() => length == 0;
+            R save() const => R();
+        }
+
+        R range;
+        auto r = RefRange!R(&range);
+    }
+
+
 }
 
 /// ditto

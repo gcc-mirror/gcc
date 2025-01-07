@@ -41,6 +41,7 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [frontend.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/frontend.d)   | An interface for using DMD as a library                               |
 | [errors.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errors.d)       | Error reporting implementation                                        |
 | [errorsink.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errorsink.d) | Error reporting interface                                             |
+| [sarif.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/sarif.d)         | Generates SARIF reports for errors and warnings.                      |
 | [target.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/target.d)       | Manage target-specific parameters for cross-compiling (for LDC/GDC)   |
 | [compiler.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/compiler.d)   | Describe a back-end compiler and implements compiler-specific actions |
 | [deps.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/deps.d)           | Implement the `-deps` and `-makedeps` switches                        |
@@ -199,13 +200,13 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                          | Purpose                                              |
 |-------------------------------------------------------------------------------|------------------------------------------------------|
-| [lib.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib.d)               | Abstract library class                               |
-| [libelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libelf.d)         | Library in ELF format (Unix)                         |
-| [libmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libmach.d)       | Library in Mach-O format (macOS)                     |
-| [libmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libmscoff.d)   | Library in COFF format (32/64-bit Windows)           |
-| [scanelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanelf.d)       | Extract symbol names from a library in ELF format    |
-| [scanmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanmach.d)     | Extract symbol names from a library in Mach-O format |
-| [scanmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanmscoff.d) | Extract symbol names from a library in COFF format   |
+| [lib/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/package.d)               | Abstract library class                               |
+| [lib/elf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/elf.d)         | Library in ELF format (Unix)                         |
+| [lib/mach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/mach.d)       | Library in Mach-O format (macOS)                     |
+| [lib/mscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/mscoff.d)   | Library in COFF format (32/64-bit Windows)           |
+| [lib/scanelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanelf.d)       | Extract symbol names from a library in ELF format    |
+| [lib/scanmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanmach.d)     | Extract symbol names from a library in Mach-O format |
+| [lib/scanmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanmscoff.d) | Extract symbol names from a library in COFF format   |
 
 ### Code generation / back-end interfacing
 
@@ -233,10 +234,10 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                              | Purpose                                                          |
 |-----------------------------------------------------------------------------------|------------------------------------------------------------------|
-| [cppmangle.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cppmangle.d)       | C++ name mangling                                                |
-| [cppmanglewin.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cppmanglewin.d) | C++ name mangling for Windows                                    |
-| [basicmangle.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/basicmangle.d)   | D name mangling for basic types                                  |
-| [dmangle.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dmangle.d)           | D [name mangling](https://dlang.org/spec/abi.html#name_mangling) |
+| [mangle/cpp.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/cpp.d)       | C++ name mangling                                                |
+| [mangle/cppwin.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/cppwin.d) | C++ name mangling for Windows                                    |
+| [mangle/basic.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/basic.d)   | D name mangling for basic types                                  |
+| [mangle/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/package.d)           | D [name mangling](https://dlang.org/spec/abi.html#name_mangling) |
 
 ### Linking
 

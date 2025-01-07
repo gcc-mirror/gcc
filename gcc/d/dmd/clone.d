@@ -51,7 +51,7 @@ import dmd.tokens;
  * Returns:
  *      merged storage class
  */
-StorageClass mergeFuncAttrs(StorageClass s1, const FuncDeclaration f) pure
+StorageClass mergeFuncAttrs(StorageClass s1, const FuncDeclaration f) pure @safe
 {
     if (!f)
         return s1;
@@ -101,46 +101,45 @@ StorageClass mergeFuncAttrs(StorageClass s1, const FuncDeclaration f) pure
  */
 FuncDeclaration hasIdentityOpAssign(AggregateDeclaration ad, Scope* sc)
 {
-    if (Dsymbol assign = search_function(ad, Id.assign))
+    Dsymbol assign = search_function(ad, Id.assign);
+    if (!assign)
+        return null;
+
+    /* check identity opAssign exists
+     */
+    scope er = new NullExp(ad.loc, ad.type);    // dummy rvalue
+    scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
+    el.type = ad.type;
+    const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it.
+    sc = sc.push();
+    sc.tinst = null;
+    sc.minst = null;
+
+    auto a = new Expressions(1);
+    (*a)[0] = er;
+    auto f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
+    if (!f)
     {
-        /* check identity opAssign exists
-         */
-        scope er = new NullExp(ad.loc, ad.type);    // dummy rvalue
-        scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
-        el.type = ad.type;
-        const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it.
-        sc = sc.push();
-        sc.tinst = null;
-        sc.minst = null;
-
-        auto a = new Expressions(1);
-        (*a)[0] = er;
-        auto f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
-        if (!f)
-        {
-            (*a)[0] = el;
-            f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
-        }
-
-        sc = sc.pop();
-        global.endGagging(errors);
-        if (f)
-        {
-            if (f.errors)
-                return null;
-            auto fparams = f.getParameterList();
-            if (fparams.length)
-            {
-                auto fparam0 = fparams[0];
-                if (fparam0.type.toDsymbol(null) != ad)
-                    f = null;
-            }
-        }
-        // BUGS: This detection mechanism cannot find some opAssign-s like follows:
-        // struct S { void opAssign(ref immutable S) const; }
-        return f;
+        (*a)[0] = el;
+        f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
     }
-    return null;
+
+    sc = sc.pop();
+    global.endGagging(errors);
+    if (!f)
+        return null;
+    if (f.errors)
+        return null;
+    auto fparams = f.getParameterList();
+    if (fparams.length)
+    {
+        auto fparam0 = fparams[0];
+        if (fparam0.type.toDsymbol(null) != ad)
+            f = null;
+    }
+    // BUGS: This detection mechanism cannot find some opAssign-s like follows:
+    // struct S { void opAssign(ref immutable S) const; }
+    return f;
 }
 
 /*******************************************
@@ -418,16 +417,26 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
  */
 bool needOpEquals(StructDeclaration sd)
 {
+    bool dontneed()
+    {
+        //printf("\tdontneed\n");
+        return false;
+    }
+    bool need()
+    {
+        //printf("\tneed\n");
+        return true;
+    }
     //printf("StructDeclaration::needOpEquals() %s\n", sd.toChars());
     if (sd.isUnionDeclaration())
     {
         /* If a union has only one field, treat it like a struct
          */
         if (sd.fields.length != 1)
-            goto Ldontneed;
+            return dontneed();
     }
     if (sd.hasIdentityEquals)
-        goto Lneed;
+        return need();
     /* If any of the fields has an opEquals, then we
      * need it too.
      */
@@ -444,28 +453,23 @@ bool needOpEquals(StructDeclaration sd)
             if (ts.sym.isUnionDeclaration() && ts.sym.fields.length != 1)
                 continue;
             if (needOpEquals(ts.sym))
-                goto Lneed;
+                return need();
         }
         if (tvbase.isFloating())
         {
             // This is necessray for:
             //  1. comparison of +0.0 and -0.0 should be true.
             //  2. comparison of NANs should be false always.
-            goto Lneed;
+            return need();
         }
         if (tvbase.ty == Tarray)
-            goto Lneed;
+            return need();
         if (tvbase.ty == Taarray)
-            goto Lneed;
+            return need();
         if (tvbase.ty == Tclass)
-            goto Lneed;
+            return need();
     }
-Ldontneed:
-    //printf("\tdontneed\n");
-    return false;
-Lneed:
-    //printf("\tneed\n");
-    return true;
+    return dontneed();
 }
 
 /*******************************************
@@ -478,48 +482,50 @@ Lneed:
 private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
 {
     FuncDeclaration f;
-    if (Dsymbol eq = search_function(ad, Id.eq))
+    Dsymbol eq = search_function(ad, Id.eq);
+    if (!eq)
+        return null;
+
+    /* check identity opEquals exists
+     */
+    scope er = new NullExp(ad.loc, null); // dummy rvalue
+    scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
+    auto a = new Expressions(1);
+
+    bool hasIt(Type tthis)
     {
-        /* check identity opEquals exists
-         */
-        scope er = new NullExp(ad.loc, null); // dummy rvalue
-        scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
-        auto a = new Expressions(1);
+        const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it
+        sc = sc.push();
+        sc.tinst = null;
+        sc.minst = null;
 
-        bool hasIt(Type tthis)
+        FuncDeclaration rfc(Expression e)
         {
-            const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it
-            sc = sc.push();
-            sc.tinst = null;
-            sc.minst = null;
-
-            FuncDeclaration rfc(Expression e)
-            {
-                (*a)[0] = e;
-                (*a)[0].type = tthis;
-                return resolveFuncCall(ad.loc, sc, eq, null, tthis, ArgumentList(a), FuncResolveFlag.quiet);
-            }
-
-            f = rfc(er);
-            if (!f)
-                f = rfc(el);
-
-            sc = sc.pop();
-            global.endGagging(errors);
-
-            return f !is null;
+            (*a)[0] = e;
+            (*a)[0].type = tthis;
+            return resolveFuncCall(ad.loc, sc, eq, null, tthis, ArgumentList(a), FuncResolveFlag.quiet);
         }
 
-        if (hasIt(ad.type)               ||
-            hasIt(ad.type.constOf())     ||
-            hasIt(ad.type.immutableOf()) ||
-            hasIt(ad.type.sharedOf())    ||
-            hasIt(ad.type.sharedConstOf()))
-        {
-            if (f.errors)
-                return null;
-        }
+        f = rfc(er);
+        if (!f)
+            f = rfc(el);
+
+        sc = sc.pop();
+        global.endGagging(errors);
+
+        return f !is null;
     }
+
+    if (hasIt(ad.type)               ||
+        hasIt(ad.type.constOf())     ||
+        hasIt(ad.type.immutableOf()) ||
+        hasIt(ad.type.sharedOf())    ||
+        hasIt(ad.type.sharedConstOf()))
+    {
+        if (f.errors)
+            return null;
+    }
+
     return f;
 }
 
@@ -732,7 +738,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     Expression e2 = new IdentifierExp(loc, Id.p);
     Expression e = new CallExp(loc, new DotIdExp(loc, e1, Id.cmp), e2);
     fop.fbody = new ReturnStatement(loc, e);
-    uint errors = global.startGagging(); // Do not report errors
+    const errors = global.startGagging(); // Do not report errors
     Scope* sc2 = sc.push();
     sc2.stc = 0;
     sc2.linkage = LINK.d;
@@ -757,11 +763,21 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
  */
 private bool needToHash(StructDeclaration sd)
 {
+    bool dontneed()
+    {
+        //printf("\tdontneed\n");
+        return false;
+    }
+    bool need()
+    {
+        //printf("\tneed\n");
+        return true;
+    }
     //printf("StructDeclaration::needToHash() %s\n", sd.toChars());
     if (sd.isUnionDeclaration())
-        goto Ldontneed;
+        return dontneed();
     if (sd.xhash)
-        goto Lneed;
+        return need();
 
     /* If any of the fields has an toHash, then we
      * need it too.
@@ -779,28 +795,23 @@ private bool needToHash(StructDeclaration sd)
             if (ts.sym.isUnionDeclaration())
                 continue;
             if (needToHash(ts.sym))
-                goto Lneed;
+                return need();
         }
         if (tvbase.isFloating())
         {
             /* This is necessary because comparison of +0.0 and -0.0 should be true,
              * i.e. not a bit compare.
              */
-            goto Lneed;
+            return need();
         }
         if (tvbase.ty == Tarray)
-            goto Lneed;
+            return need();
         if (tvbase.ty == Taarray)
-            goto Lneed;
+            return need();
         if (tvbase.ty == Tclass)
-            goto Lneed;
+            return need();
     }
-Ldontneed:
-    //printf("\tdontneed\n");
-    return false;
-Lneed:
-    //printf("\tneed\n");
-    return true;
+    return dontneed();
 }
 
 /******************************************

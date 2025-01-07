@@ -276,7 +276,7 @@ template ThompsonOps(E, S, bool withInput:true)
     }
 
     static bool op(IR code)(E e, S* state)
-        if (code == IR.RepeatEnd || code == IR.RepeatQEnd)
+    if (code == IR.RepeatEnd || code == IR.RepeatQEnd)
     {
         with(e) with(state)
         {
@@ -331,7 +331,7 @@ template ThompsonOps(E, S, bool withInput:true)
     }
 
     static bool op(IR code)(E e, S* state)
-        if (code == IR.InfiniteEnd || code == IR.InfiniteQEnd)
+    if (code == IR.InfiniteEnd || code == IR.InfiniteQEnd)
     {
         with(e) with(state)
         {
@@ -366,7 +366,7 @@ template ThompsonOps(E, S, bool withInput:true)
     }
 
     static bool op(IR code)(E e, S* state)
-        if (code == IR.InfiniteBloomEnd)
+    if (code == IR.InfiniteBloomEnd)
     {
         with(e) with(state)
         {
@@ -507,7 +507,7 @@ template ThompsonOps(E, S, bool withInput:true)
 
 
     static bool op(IR code)(E e, S* state)
-        if (code == IR.LookbehindStart || code == IR.NeglookbehindStart)
+    if (code == IR.LookbehindStart || code == IR.NeglookbehindStart)
     {
         with(e) with(state)
         {
@@ -534,7 +534,7 @@ template ThompsonOps(E, S, bool withInput:true)
     }
 
     static bool op(IR code)(E e, S* state)
-        if (code == IR.LookaheadStart || code == IR.NeglookaheadStart)
+    if (code == IR.LookaheadStart || code == IR.NeglookaheadStart)
     {
         with(e) with(state)
         {
@@ -563,8 +563,8 @@ template ThompsonOps(E, S, bool withInput:true)
     }
 
     static bool op(IR code)(E e, S* state)
-        if (code == IR.LookaheadEnd || code == IR.NeglookaheadEnd ||
-            code == IR.LookbehindEnd || code == IR.NeglookbehindEnd)
+    if (code == IR.LookaheadEnd || code == IR.NeglookaheadEnd ||
+        code == IR.LookbehindEnd || code == IR.NeglookbehindEnd)
     {
         with(e) with(state)
         {
@@ -675,7 +675,7 @@ template ThompsonOps(E,S, bool withInput:false)
 @trusted:
     // can't match these without input
     static bool op(IR code)(E e, S* state)
-        if (code == IR.Char || code == IR.OrChar || code == IR.CodepointSet
+    if (code == IR.Char || code == IR.OrChar || code == IR.CodepointSet
         || code == IR.Trie || code == IR.Char || code == IR.Any)
     {
         return state.popState(e);
@@ -701,7 +701,7 @@ template ThompsonOps(E,S, bool withInput:false)
 
     // forward all control flow to normal versions
     static bool op(IR code)(E e, S* state)
-        if (code != IR.Char && code != IR.OrChar && code != IR.CodepointSet
+    if (code != IR.Char && code != IR.OrChar && code != IR.CodepointSet
         && code != IR.Trie && code != IR.Char && code != IR.Any && code != IR.Backref)
     {
         return ThompsonOps!(E,S,true).op!code(e,state);

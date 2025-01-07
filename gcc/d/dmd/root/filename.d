@@ -277,7 +277,7 @@ nothrow:
      * Returns:
      *  the slice
      */
-    extern (D) static const(char)[] sansExt(const char[] filename)
+    extern (D) static const(char)[] sansExt(const char[] filename) @safe
     {
         auto e = ext(filename);
         size_t length = e.length;
@@ -1101,7 +1101,7 @@ nothrow:
         return str.ptr;
     }
 
-    const(char)[] toString() const pure nothrow @nogc @trusted
+    const(char)[] toString() const pure nothrow @nogc @safe
     {
         return str;
     }

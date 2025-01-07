@@ -245,7 +245,8 @@ struct DList(T)
 /**
 Constructor taking a number of nodes
      */
-    this(U)(U[] values...) if (isImplicitlyConvertible!(U, T))
+    this(U)(U[] values...)
+    if (isImplicitlyConvertible!(U, T))
     {
         insertBack(values);
     }

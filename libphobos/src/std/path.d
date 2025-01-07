@@ -1446,9 +1446,8 @@ private auto _withDefaultExtension(R, C)(R path, C[] ext)
         of segments to assemble the path from.
     Returns: The assembled path.
 */
-immutable(ElementEncodingType!(ElementType!Range))[]
-    buildPath(Range)(scope Range segments)
-    if (isInputRange!Range && !isInfinite!Range && isSomeString!(ElementType!Range))
+immutable(ElementEncodingType!(ElementType!Range))[] buildPath(Range)(scope Range segments)
+if (isInputRange!Range && !isInfinite!Range && isSomeString!(ElementType!Range))
 {
     if (segments.empty) return null;
 
@@ -3396,7 +3395,10 @@ do
     }
     else
     {
+        import core.memory : pureMalloc, pureFree;
         C[] pattmp;
+        scope(exit) if (pattmp !is null) (() @trusted => pureFree(pattmp.ptr))();
+
         for (size_t pi = 0; pi < pattern.length; pi++)
         {
             const pc = pattern[pi];
@@ -3482,9 +3484,12 @@ do
                              *   pattern[pi0 .. pi-1] ~ pattern[piRemain..$]
                              */
                             if (pattmp is null)
+                            {
                                 // Allocate this only once per function invocation.
-                                // Should do it with malloc/free, but that would make it impure.
-                                pattmp = new C[pattern.length];
+                                pattmp = (() @trusted =>
+                                    (cast(C*) pureMalloc(C.sizeof * pattern.length))[0 .. pattern.length])
+                                ();
+                            }
 
                             const len1 = pi - 1 - pi0;
                             pattmp[0 .. len1] = pattern[pi0 .. pi - 1];
@@ -3518,7 +3523,7 @@ do
 }
 
 ///
-@safe unittest
+@safe @nogc unittest
 {
     assert(globMatch("foo.bar", "*"));
     assert(globMatch("foo.bar", "*.*"));

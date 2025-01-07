@@ -34,3 +34,11 @@ enum expectedStart = "module imports.imp16088;";
 immutable ubyte[] s0 = import("imp16088.d");
 
 static assert(s0[0 .. expectedStart.length] == "module imports.imp16088;");
+
+// https://issues.dlang.org/show_bug.cgi?id=24687
+
+void foo(string path);
+void foo(const(ubyte[]) data);
+
+void bar1() { foo(import("imp16088.d")); } // matches both
+void bar2() { foo(cast(const(ubyte[])) import("imp16088.d")); } // matches both!

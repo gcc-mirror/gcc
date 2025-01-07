@@ -139,20 +139,6 @@ enum class PASS : uint8_t
     obj             // toObjFile() run
 };
 
-enum
-{
-    PASSinit,           // initial state
-    PASSsemantic,       // semantic() started
-    PASSsemanticdone,   // semantic() done
-    PASSsemantic2,      // semantic2() started
-    PASSsemantic2done,  // semantic2() done
-    PASSsemantic3,      // semantic3() started
-    PASSsemantic3done,  // semantic3() done
-    PASSinline,         // inline started
-    PASSinlinedone,     // inline done
-    PASSobj             // toObjFile() run
-};
-
 /* Flags for symbol search
  */
 typedef unsigned SearchOptFlags;
@@ -209,8 +195,6 @@ public:
     CPPNamespaceDeclaration* cppnamespace(CPPNamespaceDeclaration* ns);
     UserAttributeDeclaration* userAttribDecl(UserAttributeDeclaration* uad);
     virtual const char *toPrettyCharsHelper(); // helper to print fully qualified (template) arguments
-    Loc getLoc();
-    const char *locToChars();
     bool equals(const RootObject * const o) const override;
     bool isAnonymous() const;
     Module *getModule();
@@ -446,6 +430,7 @@ namespace dmd
 {
     void addMember(Dsymbol *dsym, Scope *sc, ScopeDsymbol *sds);
     Dsymbol *search(Dsymbol *d, const Loc &loc, Identifier *ident, SearchOptFlags flags = (SearchOptFlags)SearchOpt::localsOnly);
+    Dsymbols *include(Dsymbol *d, Scope *sc);
     void setScope(Dsymbol *d, Scope *sc);
     void importAll(Dsymbol *d, Scope *sc);
 }

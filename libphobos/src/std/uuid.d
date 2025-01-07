@@ -275,7 +275,7 @@ public struct UUID
          * You need to pass exactly 16 ubytes.
          */
         @safe pure this(T...)(T uuidData)
-            if (uuidData.length == 16 && allSatisfy!(isIntegral, T))
+        if (uuidData.length == 16 && allSatisfy!(isIntegral, T))
         {
             import std.conv : to;
 
@@ -331,7 +331,8 @@ public struct UUID
          *
          * For a less strict parser, see $(LREF parseUUID)
          */
-        this(T)(in T[] uuid) if (isSomeChar!T)
+        this(T)(in T[] uuid)
+        if (isSomeChar!T)
         {
             import std.conv : to, parse;
             if (uuid.length < 36)

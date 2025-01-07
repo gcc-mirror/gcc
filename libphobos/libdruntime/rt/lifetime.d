@@ -1758,85 +1758,65 @@ do
 Given an array of length `size` that needs to be expanded to `newlength`,
 compute a new capacity.
 
-Better version by Dave Fladebo:
+Better version by Dave Fladebo, enhanced by Steven Schveighoffer:
 This uses an inverse logorithmic algorithm to pre-allocate a bit more
 space for larger arrays.
-- Arrays smaller than PAGESIZE bytes are left as-is, so for the most
-common cases, memory allocation is 1 to 1. The small overhead added
-doesn't affect small array perf. (it's virtually the same as
-current).
-- Larger arrays have some space pre-allocated.
+- The maximum "extra" space is about 80% of the requested space. This is for
+PAGE size and smaller.
 - As the arrays grow, the relative pre-allocated space shrinks.
-- The logorithmic algorithm allocates relatively more space for
-mid-size arrays, making it very fast for medium arrays (for
-mid-to-large arrays, this turns out to be quite a bit faster than the
-equivalent realloc() code in C, on Linux at least. Small arrays are
-just as fast as GCC).
 - Perhaps most importantly, overall memory usage and stress on the GC
 is decreased significantly for demanding environments.
+- The algorithm is tuned to avoid any division at runtime.
 
 Params:
     newlength = new `.length`
-    size = old `.length`
+    elemsize = size of the element in the new array
 Returns: new capacity for array
 */
-size_t newCapacity(size_t newlength, size_t size)
+size_t newCapacity(size_t newlength, size_t elemsize)
 {
-    version (none)
-    {
-        size_t newcap = newlength * size;
-    }
-    else
-    {
-        size_t newcap = newlength * size;
-        size_t newext = 0;
+    size_t newcap = newlength * elemsize;
 
-        if (newcap > PAGESIZE)
+    /*
+     * Max growth factor numerator is 234, so allow for multiplying by 256.
+     * But also, the resulting size cannot be more than 2x, so prevent
+     * growing if 2x would fill up the address space (for 32-bit)
+     */
+    enum largestAllowed = (ulong.max >> 8) & (size_t.max >> 1);
+    if (!newcap || (newcap & ~largestAllowed))
+        return newcap;
+
+    /*
+     * The calculation for "extra" space depends on the requested capacity.
+     * We use an inverse logarithm of the new capacity to add an extra 15%
+     * to 83% capacity. Note that normally we humans think in terms of
+     * percent, but using 128 instead of 100 for the denominator means we
+     * can avoid all division by simply bit-shifthing. Since there are only
+     * 64 bits in a long, the bsr of a size_t is going to be 0 - 63. Using
+     * a lookup table allows us to precalculate the multiplier based on the
+     * inverse logarithm. The formula rougly is:
+     *
+     * newcap = request * (1.0 + min(0.83, 10.0 / (log(request) + 1)))
+     */
+    import core.bitop;
+    static immutable multTable = (){
+        assert(__ctfe);
+        ulong[size_t.sizeof * 8] result;
+        foreach (i; 0 .. result.length)
         {
-            //double mult2 = 1.0 + (size / log10(pow(newcap * 2.0,2.0)));
-
-            // redo above line using only integer math
-
-            /*static int log2plus1(size_t c)
-            {   int i;
-
-                if (c == 0)
-                    i = -1;
-                else
-                    for (i = 1; c >>= 1; i++)
-                    {
-                    }
-                return i;
-            }*/
-
-            /* The following setting for mult sets how much bigger
-             * the new size will be over what is actually needed.
-             * 100 means the same size, more means proportionally more.
-             * More means faster but more memory consumption.
-             */
-            //long mult = 100 + (1000L * size) / (6 * log2plus1(newcap));
-            //long mult = 100 + (1000L * size) / log2plus1(newcap);
-            import core.bitop;
-            long mult = 100 + (1000L) / (bsr(newcap) + 1);
-
-            // testing shows 1.02 for large arrays is about the point of diminishing return
-            //
-            // Commented out because the multipler will never be < 102.  In order for it to be < 2,
-            // then 1000L / (bsr(x) + 1) must be > 2.  The highest bsr(x) + 1
-            // could be is 65 (64th bit set), and 1000L / 64 is much larger
-            // than 2.  We need 500 bit integers for 101 to be achieved :)
-            /*if (mult < 102)
-                mult = 102;*/
-            /*newext = cast(size_t)((newcap * mult) / 100);
-            newext -= newext % size;*/
-            // This version rounds up to the next element, and avoids using
-            // mod.
-            newext = cast(size_t)((newlength * mult + 99) / 100) * size;
-            debug(PRINTF) printf("mult: %2.2f, alloc: %2.2f\n",mult/100.0,newext / cast(double)size);
+            auto factor = 128 + 1280 / (i + 1);
+            result[i] = factor > 234 ? 234 : factor;
         }
-        newcap = newext > newcap ? newext : newcap;
-        debug(PRINTF) printf("newcap = %d, newlength = %d, size = %d\n", newcap, newlength, size);
-    }
+        return result;
+    }();
+
+    auto mult = multTable[bsr(newcap)];
+
+    // if this were per cent, then the code would look like:
+    // ((newlength * mult + 99) / 100) * elemsize
+    newcap = cast(size_t)((newlength * mult + 127) >> 7) * elemsize;
+    debug(PRINTF) printf("mult: %2.2f, alloc: %2.2f\n",mult/128.0,newcap / cast(double)elemsize);
+    debug(PRINTF) printf("newcap = %d, newlength = %d, elemsize = %d\n", newcap, newlength, elemsize);
     return newcap;
 }
 

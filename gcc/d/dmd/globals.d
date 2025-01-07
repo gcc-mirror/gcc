@@ -134,7 +134,7 @@ extern(C++) struct Verbose
     uint errorLimit = 20;
     uint errorSupplementLimit = 6;      // Limit the number of supplemental messages for each error (0 means unlimited)
 
-    uint errorSupplementCount()
+    uint errorSupplementCount() @safe
     {
         if (verbose)
             return uint.max;
@@ -157,7 +157,7 @@ extern (C++) struct Param
     bool useInline = false;     // inline expand functions
     bool release;           // build release version
     bool preservePaths;     // true means don't strip path from source file
-    DiagnosticReporting warnings = DiagnosticReporting.off;  // how compiler warnings are handled
+    DiagnosticReporting useWarnings = DiagnosticReporting.off;  // how compiler warnings are handled
     bool cov;               // generate code coverage data
     ubyte covPercent;       // 0..100 code coverage percentage required
     bool ctfe_cov = false;  // generate coverage data for ctfe
@@ -256,7 +256,7 @@ extern (C++) struct Param
     const(char)* timeTraceFile; /// File path of output file
 
     ///
-    bool parsingUnittestsRequired()
+    bool parsingUnittestsRequired() @safe
     {
         return useUnitTests || ddoc.doOutput || dihdr.doOutput;
     }
@@ -383,7 +383,15 @@ extern (C++) struct Global
         {
             compileEnv.vendor = "GNU D";
         }
-        compileEnv.versionNumber = parseVersionNumber(_version);
+        else version (IN_LLVM)
+        {
+            compileEnv.vendor = "LDC";
+
+            import dmd.console : detectTerminal;
+            params.v.color = detectTerminal();
+        }
+
+        compileEnv.versionNumber = parseVersionNumber(versionString());
 
         /* Initialize date, time, and timestamp
          */

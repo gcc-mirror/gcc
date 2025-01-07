@@ -19,7 +19,6 @@ import core.stdc.stdio;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
-import dmd.errors;
 import dmd.cond;
 import dmd.declaration;
 import dmd.dsymbol;

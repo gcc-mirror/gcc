@@ -183,31 +183,29 @@ private Expression fromConstInitializer(int result, Expression e1)
 {
     //printf("fromConstInitializer(result = %x, %s)\n", result, e1.toChars());
     //static int xx; if (xx++ == 10) assert(0);
+    auto ve = e1.isVarExp();
+    if (!ve)
+        return e1;
+
     Expression e = e1;
-    if (auto ve = e1.isVarExp())
+    VarDeclaration v = ve.var.isVarDeclaration();
+    e = expandVar(result, v);
+    if (!e)
+        return e1;
+
+    // If it is a comma expression involving a declaration, we mustn't
+    // perform a copy -- we'd get two declarations of the same variable.
+    // See https://issues.dlang.org/show_bug.cgi?id=4465.
+    if (e.op == EXP.comma && e.isCommaExp().e1.isDeclarationExp())
+        e = e1;
+    else if (e.type != e1.type && e1.type && e1.type.ty != Tident)
     {
-        VarDeclaration v = ve.var.isVarDeclaration();
-        e = expandVar(result, v);
-        if (e)
-        {
-            // If it is a comma expression involving a declaration, we mustn't
-            // perform a copy -- we'd get two declarations of the same variable.
-            // See https://issues.dlang.org/show_bug.cgi?id=4465.
-            if (e.op == EXP.comma && e.isCommaExp().e1.isDeclarationExp())
-                e = e1;
-            else if (e.type != e1.type && e1.type && e1.type.ty != Tident)
-            {
-                // Type 'paint' operation
-                e = e.copy();
-                e.type = e1.type;
-            }
-            e.loc = e1.loc;
-        }
-        else
-        {
-            e = e1;
-        }
+        // Type 'paint' operation
+        e = e.copy();
+        e.type = e1.type;
     }
+    e.loc = e1.loc;
+
     return e;
 }
 

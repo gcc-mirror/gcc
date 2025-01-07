@@ -45,6 +45,7 @@ namespace dmd
 {
     FuncDeclaration *search_toString(StructDeclaration *sd);
     void semanticTypeInfoMembers(StructDeclaration *sd);
+    bool fill(StructDeclaration* sd, const Loc &loc, Expressions &elements, bool ctorinit);
 }
 
 enum class ClassKind : uint8_t
@@ -119,7 +120,6 @@ public:
     virtual Scope *newScope(Scope *sc);
     virtual void finalizeSize() = 0;
     uinteger_t size(const Loc &loc) override final;
-    bool fill(const Loc &loc, Expressions &elements, bool ctorinit);
     Type *getType() override final;
     bool isDeprecated() const override final; // is aggregate deprecated?
     bool isNested() const;

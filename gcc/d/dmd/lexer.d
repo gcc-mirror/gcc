@@ -53,6 +53,7 @@ struct CompileEnv
     const(char)[] timestamp; /// __TIMESTAMP__
 
     bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
+    bool transitionIn;       /// `-transition=in` is active, `in` parameters are listed
     bool ddocOutput;         /// collect embedded documentation comments
     bool masm;               /// use MASM inline asm syntax
 

@@ -2235,12 +2235,14 @@ template tuple(Names...)
             // e.g. Tuple!(int, "x", string, "y")
             template Interleave(A...)
             {
-                template and(B...) if (B.length == 1)
+                template and(B...)
+                if (B.length == 1)
                 {
                     alias and = AliasSeq!(A[0], B[0]);
                 }
 
-                template and(B...) if (B.length != 1)
+                template and(B...)
+                if (B.length != 1)
                 {
                     alias and = AliasSeq!(A[0], B[0],
                         Interleave!(A[1..$]).and!(B[1..$]));
@@ -5134,7 +5136,7 @@ Params:
             non-release mode.
  */
     void opAssign()(T value)
-        if (isAssignable!T) //@@@9416@@@
+    if (isAssignable!T) //@@@9416@@@
     {
         enum message = "Called `opAssign' on null NullableRef!" ~ T.stringof ~ ".";
         assert(!isNull, message);
@@ -5469,15 +5471,17 @@ nothrow pure @safe unittest
     }
 }
 
-// / ditto
+/// ditto
 class NotImplementedError : Error
 {
+    ///
     this(string method) nothrow pure @safe
     {
         super(method ~ " is not implemented");
     }
 }
 
+///
 @system unittest
 {
     import std.exception : assertThrown;
@@ -7498,7 +7502,8 @@ Constructor that initializes the payload.
 
 Postcondition: `refCountedStore.isInitialized`
  */
-    this(A...)(auto ref A args) if (A.length > 0)
+    this(A...)(auto ref A args)
+    if (A.length > 0)
     out
     {
         assert(refCountedStore.isInitialized);
@@ -7931,7 +7936,8 @@ template borrow(alias fun)
 {
     import std.functional : unaryFun;
 
-    auto ref borrow(RC)(RC refCount) if
+    auto ref borrow(RC)(RC refCount)
+    if
     (
         isInstanceOf!(SafeRefCounted, RC)
         && is(typeof(unaryFun!fun(refCount.refCountedPayload)))
@@ -8140,7 +8146,7 @@ mixin template Proxy(alias a)
         }
 
         bool opEquals(T)(T b)
-            if (is(ValueType : T) || is(typeof(a.opEquals(b))) || is(typeof(b.opEquals(a))))
+        if (is(ValueType : T) || is(typeof(a.opEquals(b))) || is(typeof(b.opEquals(a))))
         {
             static if (is(typeof(a.opEquals(b))))
                 return a.opEquals(b);
@@ -8164,7 +8170,7 @@ mixin template Proxy(alias a)
         }
 
         int opCmp(T)(auto ref const T b)
-            if (is(ValueType : T) || is(typeof(a.opCmp(b))) || is(typeof(b.opCmp(a))))
+        if (is(ValueType : T) || is(typeof(a.opCmp(b))) || is(typeof(b.opCmp(a))))
         {
             static if (is(typeof(a.opCmp(b))))
                 return a.opCmp(b);
@@ -8274,7 +8280,8 @@ mixin template Proxy(alias a)
         }
     }
 
-    auto ref opAssign     (this X, V      )(auto ref V v) if (!is(V == typeof(this))) { return a       = v; }
+    auto ref opAssign     (this X, V      )(auto ref V v)
+    if (!is(V == typeof(this))) { return a       = v; }
     auto ref opIndexAssign(this X, V, D...)(auto ref V v, auto ref D i)               { return a[i]    = v; }
     auto ref opSliceAssign(this X, V      )(auto ref V v)                             { return a[]     = v; }
     auto ref opSliceAssign(this X, V, B, E)(auto ref V v, auto ref B b, auto ref E e) { return a[b .. e] = v; }
@@ -9793,6 +9800,7 @@ Flag!"encryption".no).
 */
 struct Yes
 {
+    ///
     template opDispatch(string name)
     {
         enum opDispatch = Flag!name.yes;
@@ -9803,6 +9811,7 @@ struct Yes
 /// Ditto
 struct No
 {
+    ///
     template opDispatch(string name)
     {
         enum opDispatch = Flag!name.no;
@@ -9941,7 +9950,7 @@ public:
     }
 
     this(T...)(T flags)
-        if (allSatisfy!(isBaseEnumType, T))
+    if (allSatisfy!(isBaseEnumType, T))
     {
         this = flags;
     }
@@ -9952,19 +9961,19 @@ public:
     }
 
     Base opCast(B)() const
-        if (is(Base : B))
+    if (is(Base : B))
     {
         return mValue;
     }
 
     auto opUnary(string op)() const
-        if (op == "~")
+    if (op == "~")
     {
         return BitFlags(cast(E) cast(Base) ~mValue);
     }
 
     auto ref opAssign(T...)(T flags)
-        if (allSatisfy!(isBaseEnumType, T))
+    if (allSatisfy!(isBaseEnumType, T))
     {
         mValue = 0;
         foreach (E flag; flags)
@@ -10005,7 +10014,7 @@ public:
     }
 
     auto opBinary(string op)(BitFlags flags) const
-        if (op == "|" || op == "&")
+    if (op == "|" || op == "&")
     {
         BitFlags result = this;
         result.opOpAssign!op(flags);
@@ -10013,7 +10022,7 @@ public:
     }
 
     auto opBinary(string op)(E flag) const
-        if (op == "|" || op == "&")
+    if (op == "|" || op == "&")
     {
         BitFlags result = this;
         result.opOpAssign!op(flag);
@@ -10021,7 +10030,7 @@ public:
     }
 
     auto opBinaryRight(string op)(E flag) const
-        if (op == "|" || op == "&")
+    if (op == "|" || op == "&")
     {
         return opBinary!op(flag);
     }
@@ -10653,25 +10662,29 @@ struct Ternary
       $(TR $(TD `unknown`) $(TD `unknown`) $(TD) $(TD `unknown`) $(TD `unknown`) $(TD `unknown`))
     )
     */
-    Ternary opUnary(string s)() if (s == "~")
+    Ternary opUnary(string s)()
+    if (s == "~")
     {
         return make((386 >> value) & 6);
     }
 
     /// ditto
-    Ternary opBinary(string s)(Ternary rhs) if (s == "|")
+    Ternary opBinary(string s)(Ternary rhs)
+    if (s == "|")
     {
         return make((25_512 >> (value + rhs.value)) & 6);
     }
 
     /// ditto
-    Ternary opBinary(string s)(Ternary rhs) if (s == "&")
+    Ternary opBinary(string s)(Ternary rhs)
+    if (s == "&")
     {
         return make((26_144 >> (value + rhs.value)) & 6);
     }
 
     /// ditto
-    Ternary opBinary(string s)(Ternary rhs) if (s == "^")
+    Ternary opBinary(string s)(Ternary rhs)
+    if (s == "^")
     {
         return make((26_504 >> (value + rhs.value)) & 6);
     }
@@ -10937,7 +10950,8 @@ struct RefCounted(T, RefCountedAutoInitialize autoInit =
         return _refCounted;
     }
 
-    this(A...)(auto ref A args) if (A.length > 0)
+    this(A...)(auto ref A args)
+    if (A.length > 0)
     out
     {
         assert(refCountedStore.isInitialized);

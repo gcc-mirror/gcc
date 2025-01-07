@@ -71,19 +71,6 @@ enum
 #define WANTvalue  0 // default
 #define WANTexpand 1 // expand const/immutable variables if possible
 
-/**
- * Specifies how the checkModify deals with certain situations
- */
-enum class ModifyFlags
-{
-    /// Issue error messages on invalid modifications of the variable
-    none,
-    /// No errors are emitted for invalid modifications
-    noError = 0x1,
-    /// The modification occurs for a subfield of the current variable
-    fieldAssign = 0x2,
-};
-
 class Expression : public ASTNode
 {
 public:

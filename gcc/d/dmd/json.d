@@ -24,6 +24,7 @@ import dmd.denum;
 import dmd.dimport;
 import dmd.dmodule;
 import dmd.dsymbol;
+import dmd.dsymbolsem : include;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
