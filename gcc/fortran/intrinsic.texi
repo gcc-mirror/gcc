@@ -15305,7 +15305,7 @@ Identifies the preconnected unit identified by the asterisk
 
 @item @code{INT8}, @code{INT16}, @code{INT32}, @code{INT64}:
 Kind type parameters to specify an INTEGER type with a storage
-size of 16, 32, and 64 bits. It is negative if a target platform
+size of 8, 16, 32, and 64 bits. It is negative if a target platform
 does not support the particular kind. (Fortran 2008 or later.)
 
 @item @code{INTEGER_KINDS}:
@@ -15368,6 +15368,12 @@ in the failed state. (TS 18508 or later.)
 @item @code{STAT_UNLOCKED}:
 Scalar default-integer constant used as @code{STAT=} return value by @code{UNLOCK} to
 denote that the lock variable is unlocked. (Fortran 2008 or later.)
+
+@item @code{UINT8}, @code{UINT16}, @code{UINT32}, @code{UINT64}:
+Kind type parameters to specify an UNSIGNED type with a storage
+size of 8, 16, 32, and 64 bits. It is negative if a target platform
+does not support the particular kind. (Extension, @pxref{Unsigned integers}.)
+
 @end table
 
 The module provides the following derived type:
@@ -15453,6 +15459,33 @@ Furthermore, if @code{_Float128} is supported in C, the named constants
 @item @code{COMPLEX}@tab @code{C_FLOAT128_COMPLEX}   @tab @code{_Float128 _Complex}      @tab Ext.
 @item @code{LOGICAL}@tab @code{C_BOOL}          @tab @code{_Bool}
 @item @code{CHARACTER}@tab @code{C_CHAR}        @tab @code{char}
+@end multitable
+
+GNU Fortran also provides as an extension, named constants for
+@code{UNSIGNED} integers @pxref{Unsigned integers}.
+@multitable @columnfractions .20 0.40 0.40
+@headitem Fortran Type  @tab Named constant         @tab C type
+@item @code{UNSIGNED}@tab @code{C_UNSIGNED}		@tab @code{unsigned int}
+@item @code{UNSIGNED}@tab @code{C_UNSIGNED_SHORT} 	@tab @code{unsigned short}
+@item @code{UNSIGNED}@tab @code{C_UNSIGNED_CHAR}	@tab @code{unsigned char}
+@item @code{UNSINGED}@tab @code{C_UNSIGNED_LONG}	@tab @code{unsigned long}
+@item @code{UNSINGED}@tab @code{C_UNSIGNED_LONG_LONG}	@tab @code{unsigned long long}
+@item @code{UNSIGNED}@tab @code{C_UINTMAX_T}		@tab @code{uintmax_t}
+@item @code{UNSIGNED}@tab @code{C_UINT8_T}		@tab @code{uint8_t}
+@item @code{UNSIGNED}@tab @code{C_UINT16_T}		@tab @code{uint16_t}
+@item @code{UNSIGNED}@tab @code{C_UINT32_T}		@tab @code{uint32_t}
+@item @code{UNSIGNED}@tab @code{C_UINT64_T}		@tab @code{uint64_t}
+@item @code{UNSIGNED}@tab @code{C_UINT128_T}		@tab @code{uint128_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST8_T}		@tab @code{uint_fast8_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST16_T}	@tab @code{uint_fast16_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST32_T}	@tab @code{uint_fast32_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST64_T}	@tab @code{uint_fast64_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST128_T}	@tab @code{uint_fast128_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST8_T}	@tab @code{uint_least8_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST16_T}	@tab @code{uint_least16_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST32_T}	@tab @code{uint_least32_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST64_T}	@tab @code{uint_least64_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST128_T}	@tab @code{uint_least128_t}
 @end multitable
 
 Additionally, the following parameters of type @code{CHARACTER(KIND=C_CHAR)}
