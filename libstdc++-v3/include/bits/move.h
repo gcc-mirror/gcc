@@ -63,6 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return The parameter cast to the specified type.
    *
    *  This function is used to implement "perfect forwarding".
+   *  @since C++11
    */
   template<typename _Tp>
     _GLIBCXX_NODISCARD
@@ -75,6 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return The parameter cast to the specified type.
    *
    *  This function is used to implement "perfect forwarding".
+   *  @since C++11
    */
   template<typename _Tp>
     _GLIBCXX_NODISCARD
@@ -109,6 +111,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     using __like_t = typename __like_impl<_Tp&&, _Up&>::type;
 
+  /** @brief Forward with the cv-qualifiers and value category of another type.
+   *  @tparam _Tp An lvalue reference or rvalue reference.
+   *  @tparam _Up An lvalue reference type deduced from the function argument.
+   *  @param __x An lvalue.
+   *  @return `__x` converted to match the qualifiers of `_Tp`.
+   *  @since C++23
+   */
   template<typename _Tp, typename _Up>
   [[nodiscard]]
   constexpr __like_t<_Tp, _Up>
@@ -120,6 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Convert a value to an rvalue.
    *  @param  __t  A thing of arbitrary type.
    *  @return The parameter cast to an rvalue-reference to allow moving it.
+   *  @since C++11
   */
   template<typename _Tp>
     _GLIBCXX_NODISCARD
@@ -140,6 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Same as std::move unless the type's move constructor could throw and the
    *  type is copyable, in which case an lvalue-reference is returned instead.
+   *  @since C++11
    */
   template<typename _Tp>
     _GLIBCXX_NODISCARD
@@ -156,6 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *         operator&.
    *  @param  __r  Reference to an object or function.
    *  @return   The actual address.
+   *  @since C++11
   */
   template<typename _Tp>
     _GLIBCXX_NODISCARD
