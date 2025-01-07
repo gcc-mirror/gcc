@@ -449,34 +449,37 @@ __extenddfxf2 (double d)
     }
 
   exp = EXPD (dl) - EXCESSD + EXCESSX;
-  /* Check for underflow and denormals. */
-  if (exp < 0)
+
+  dl.l.upper &= MANTDMASK;
+
+  /* Recover from a denorm. */
+  if (exp == -EXCESSD + EXCESSX)
     {
-      if (exp < -53)
+      exp++;
+      while ((dl.l.upper & HIDDEND) == 0)
 	{
-	  ldl.l.middle = 0;
-	  ldl.l.lower = 0;
+	  exp--;
+	  dl.l.upper = (dl.l.upper << 1) | (dl.l.lower >> 31);
+	  dl.l.lower = dl.l.lower << 1;
 	}
-      else if (exp < -30)
-	{
-	  ldl.l.lower = (ldl.l.middle & MANTXMASK) >> ((1 - exp) - 32);
-	  ldl.l.middle &= ~MANTXMASK;
-	}
-      else
-	{
-	  ldl.l.lower >>= 1 - exp;
-	  ldl.l.lower |= (ldl.l.middle & MANTXMASK) << (32 - (1 - exp));
-	  ldl.l.middle = (ldl.l.middle & ~MANTXMASK) | (ldl.l.middle & MANTXMASK >> (1 - exp));
-	}
-      exp = 0;
     }
+
   /* Handle inf and NaN */
-  if (exp == EXPDMASK - EXCESSD + EXCESSX)
-    exp = EXPXMASK;
+  else if (exp == EXPDMASK - EXCESSD + EXCESSX)
+    {
+      exp = EXPXMASK;
+      /* Add hidden one bit for NaN */
+      if (dl.l.upper != 0 || dl.l.lower != 0)
+        dl.l.upper |= HIDDEND;
+    }
+  else
+    {
+      dl.l.upper |= HIDDEND;
+    }
+
   ldl.l.upper |= exp << 16;
-  ldl.l.middle = HIDDENX;
   /* 31-20: # mantissa bits in ldl.l.middle - # mantissa bits in dl.l.upper */
-  ldl.l.middle |= (dl.l.upper & MANTDMASK) << (31 - 20);
+  ldl.l.middle = dl.l.upper << (31 - 20);
   /* 1+20: explicit-integer-bit + # mantissa bits in dl.l.upper */
   ldl.l.middle |= dl.l.lower >> (1 + 20);
   /* 32 - 21: # bits of dl.l.lower in ldl.l.middle */
@@ -508,21 +511,21 @@ __truncxfdf2 (long double ld)
   /* Check for underflow and denormals. */
   if (exp <= 0)
     {
-      if (exp < -53)
+      long shift = 1 - exp;
+      if (shift > 52)
 	{
 	  ldl.l.middle = 0;
 	  ldl.l.lower = 0;
 	}
-      else if (exp < -30)
+      else if (shift >= 32)
 	{
-	  ldl.l.lower = (ldl.l.middle & MANTXMASK) >> ((1 - exp) - 32);
-	  ldl.l.middle &= ~MANTXMASK;
+	  ldl.l.lower = (ldl.l.middle) >> (shift - 32);
+          ldl.l.middle = 0;
 	}
       else
 	{
-	  ldl.l.lower >>= 1 - exp;
-	  ldl.l.lower |= (ldl.l.middle & MANTXMASK) << (32 - (1 - exp));
-	  ldl.l.middle = (ldl.l.middle & ~MANTXMASK) | (ldl.l.middle & MANTXMASK >> (1 - exp));
+	  ldl.l.lower = (ldl.l.middle << (32 - shift)) | (ldl.l.lower >> shift);
+          ldl.l.middle = ldl.l.middle >> shift;
 	}
       exp = 0;
     }
@@ -585,7 +588,6 @@ __fixxfsi (long double a)
 {
   union long_double_long ldl;
   long exp;
-  long l;
 
   ldl.ld = a;
 
@@ -593,28 +595,20 @@ __fixxfsi (long double a)
   if (exp == 0 && ldl.l.middle == 0 && ldl.l.lower == 0)
     return 0;
 
-  exp = exp - EXCESSX - 63;
+  exp = exp - EXCESSX - 32;
 
-  if (exp > 0)
+  if (exp >= 0)
     {
       /* Return largest integer.  */
       return SIGNX (ldl) ? 0x80000000L : 0x7fffffffL;
     }
 
-  if (exp <= -64)
+  if (exp <= -32)
     return 0;
 
-  if (exp <= -32)
-    {
-      ldl.l.lower = ldl.l.middle >> (-exp - 32);
-    }
-  else if (exp < 0)
-    {
-      ldl.l.lower = ldl.l.lower >> -exp;
-      ldl.l.lower |= ldl.l.middle << (32 + exp);
-    }
+  ldl.l.middle >>= -exp;
 
-  return SIGNX (ldl) ? -ldl.l.lower : ldl.l.lower;
+  return SIGNX (ldl) ? -ldl.l.middle : ldl.l.middle;
 }
 
 /* The remaining provide crude math support by working in double precision.  */
