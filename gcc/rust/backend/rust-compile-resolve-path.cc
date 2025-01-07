@@ -86,8 +86,9 @@ ResolvePathRef::attempt_constructor_expression_lookup (
   tree folded_discrim_expr = fold_expr (discrim_expr_node);
   tree qualifier = folded_discrim_expr;
 
-  return Backend::constructor_expression (compiled_adt_type, true, {qualifier},
-					  union_disriminator, expr_locus);
+  // false for is enum but this is an enum but we have a new layout
+  return Backend::constructor_expression (compiled_adt_type, false, {qualifier},
+					  -1, expr_locus);
 }
 
 tree

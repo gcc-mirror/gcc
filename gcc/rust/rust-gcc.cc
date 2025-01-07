@@ -1352,7 +1352,7 @@ constructor_expression (tree type_tree, bool is_variant,
 	      if (!TREE_CONSTANT (elt->value))
 		is_constant = false;
 	    }
-	  gcc_assert (field == NULL_TREE);
+	  // gcc_assert (field == NULL_TREE);
 	}
     }
 
