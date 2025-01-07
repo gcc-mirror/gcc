@@ -372,7 +372,8 @@ decide_unroll_constant_iterations (class loop *loop, int flags)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
 
   /* Skip big loops.  */
-  if (nunroll <= 1)
+  if (nunroll <= 1
+      && !(loop->unroll > 1 && loop->unroll < USHRT_MAX))
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not considering loop, is too big\n");
