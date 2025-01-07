@@ -39,13 +39,11 @@ generics6.rs
 generics9.rs
 if_let_expr.rs
 issue-1019.rs
-issue-1031.rs
 issue-1034.rs
 issue-1129-2.rs
 issue-1130.rs
 issue-1173.rs
 issue-1272.rs
-issue-1289.rs
 issue-1447.rs
 issue-1483.rs
 issue-1725-1.rs
@@ -85,7 +83,6 @@ issue-855.rs
 issue-925.rs
 iterators1.rs
 lookup_err1.rs
-macros/mbe/macro-issue1233.rs
 macros/mbe/macro-issue1400.rs
 macros/mbe/macro13.rs
 macros/mbe/macro15.rs
