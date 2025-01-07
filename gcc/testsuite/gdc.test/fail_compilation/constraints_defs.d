@@ -5,7 +5,7 @@ TEST_OUTPUT:
 fail_compilation/constraints_defs.d(49): Error: template instance `constraints_defs.main.def!(int, 0, (a) => a)` does not match template declaration `def(T, int i = 5, alias R)()`
   with `T = int,
        i = 0,
-       R = __lambda1`
+       R = __lambda_L49_C18`
   must satisfy the following constraint:
 `       N!T`
 fail_compilation/constraints_defs.d(50): Error: template instance `imports.constraints.defa!int` does not match template declaration `defa(T, U = int)()`

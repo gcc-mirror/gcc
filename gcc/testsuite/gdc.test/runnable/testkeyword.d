@@ -97,8 +97,8 @@ void main(string[] args) nothrow
 
     auto funcLiteral = (int x, int y)
     {
-        enum thisFunc  = "testkeyword.main.__lambda5";
-        enum thisFunc2 = "testkeyword.main.__lambda5(int x, int y)";
+        enum thisFunc  = "testkeyword.main.__lambda_L98_C24";
+        enum thisFunc2 = "testkeyword.main.__lambda_L98_C24(int x, int y)";
 
         static assert(getFuncArgFile()  == thisFile);
         static assert(getFuncArgLine()  == 104);

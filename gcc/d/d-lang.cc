@@ -563,6 +563,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.previewIn = value;
       global.params.fix16997 = value;
       global.params.noSharedAccess = FeatureState::enabled;
+      global.params.safer = FeatureState::enabled;
       global.params.rvalueRefParam = FeatureState::enabled;
       global.params.inclusiveInContracts = value;
       global.params.systemVariables = FeatureState::enabled;
@@ -611,6 +612,10 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fpreview_nosharedaccess:
       global.params.noSharedAccess = FeatureState::enabled;
+      break;
+
+    case OPT_fpreview_safer:
+      global.params.safer = FeatureState::enabled;
       break;
 
     case OPT_fpreview_rvaluerefparam:

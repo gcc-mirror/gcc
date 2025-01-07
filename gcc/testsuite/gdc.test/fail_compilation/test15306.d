@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test15306.d(15): Error: `immutable` delegate `test15306.main.__dgliteral2` cannot access mutable data `i`
-fail_compilation/test15306.d(19): Error: `shared` delegate `test15306.main.__dgliteral5` cannot access non-shared data `p`
+fail_compilation/test15306.d(15): Error: `immutable` delegate `test15306.main.__dgliteral_L15_C16` cannot access mutable data `i`
+fail_compilation/test15306.d(19): Error: `shared` delegate `test15306.main.__dgliteral_L19_C16` cannot access non-shared data `p`
 ---
 */
 

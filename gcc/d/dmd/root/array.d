@@ -52,7 +52,7 @@ public:
     ~this() pure nothrow
     {
         debug (stomp) memset(data.ptr, 0xFF, data.length);
-        if (data.ptr != &smallarray[0])
+        if (data.ptr && data.ptr != &smallarray[0])
             mem.xfree(data.ptr);
     }
     ///returns elements comma separated in []

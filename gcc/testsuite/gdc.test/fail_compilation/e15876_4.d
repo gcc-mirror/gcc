@@ -15,7 +15,7 @@ fail_compilation/e15876_4.d(27): Error: found `End of File` when expecting `)`
 fail_compilation/e15876_4.d(27): Error: no identifier for declarator `typeof(()
 {
 for (__error__
- 0; 0)
+ __error; __error)
 {
 __error__
 }

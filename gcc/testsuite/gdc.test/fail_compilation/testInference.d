@@ -138,7 +138,7 @@ immutable(void)* g10063(inout int* p) pure
 TEST_OUTPUT:
 ---
 fail_compilation/testInference.d(154): Error: `pure` function `testInference.bar14049` cannot call impure function `testInference.foo14049!int.foo14049`
-fail_compilation/testInference.d(149):        which calls `testInference.foo14049!int.foo14049.__lambda2`
+fail_compilation/testInference.d(149):        which calls `testInference.foo14049!int.foo14049.__lambda_L147_C14`
 fail_compilation/testInference.d(148):        which calls `testInference.impure14049`
 fail_compilation/testInference.d(143):        which wasn't inferred `pure` because of:
 fail_compilation/testInference.d(143):        `pure` function `testInference.impure14049` cannot access mutable static data `i`

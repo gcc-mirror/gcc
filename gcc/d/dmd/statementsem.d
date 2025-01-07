@@ -57,7 +57,7 @@ import dmd.opover;
 import dmd.parse;
 import dmd.common.outbuffer;
 import dmd.root.string;
-import dmd.safe : isSafe, setUnsafe;
+import dmd.safe : isSafe, isSaferD, setUnsafe;
 import dmd.semantic2;
 import dmd.sideeffect;
 import dmd.statement;
@@ -779,14 +779,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         Dsymbol sapplyOld = sapply; // 'sapply' will be NULL if and after 'inferApplyArgTypes' errors
 
-        /* Check for inference errors
-         */
+        /* Check for inference errors and apply mutability checks inline */
         if (!inferApplyArgTypes(fs, sc, sapply))
         {
-            /**
-             Try and extract the parameter count of the opApply callback function, e.g.:
-             int opApply(int delegate(int, float)) => 2 args
-             */
             bool foundMismatch = false;
             size_t foreachParamCount = 0;
             if (sapplyOld)
@@ -806,6 +801,19 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                             auto tf = fparam.type.nextOf().isTypeFunction();
                             foreachParamCount = tf.parameterList.length;
                             foundMismatch = true;
+
+                            // Mutability check
+                            if (fs.aggr && fs.aggr.type && fd.type && fs.aggr.type.isConst() && !fd.type.isConst())
+                            {
+                                // First error: The call site
+                                error(fs.loc, "mutable method `%s.%s` is not callable using a `const` object",
+                                    fd.parent ? fd.parent.toPrettyChars() : "unknown", fd.toChars());
+
+                                // Second error: Suggest how to fix
+                                errorSupplemental(fd.loc, "Consider adding `const` or `inout` here");
+
+                                return setError();
+                            }
                         }
                     }
                 }
@@ -822,6 +830,24 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 error(fs.loc, "cannot uniquely infer `foreach` argument types");
 
             return setError();
+        }
+
+        // If inference succeeds, proceed with post-checks
+        if (sapply && sapply.isFuncDeclaration())
+        {
+            FuncDeclaration fd = sapply.isFuncDeclaration();
+
+            if (fs.aggr && fs.aggr.type && fd.type && fs.aggr.type.isConst() && !fd.type.isConst())
+            {
+                // First error: The call site
+                error(fs.loc, "mutable method `%s.%s` is not callable using a `const` object",
+                    fd.parent ? fd.parent.toPrettyChars() : "unknown", fd.toChars());
+
+                // Second error: Suggest how to fix
+                errorSupplemental(fd.loc, "Consider adding `const` or `inout` here");
+
+                return setError();
+            }
         }
 
         Type tab = fs.aggr.type.toBasetype();
@@ -1961,7 +1987,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
 
         ss.hasDefault = sc.sw.sdefault ||
-            !(!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe);
+            !(!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe || sc.func.isSaferD);
         if (!ss.hasDefault)
         {
             if (!ss.isFinal && (!ss._body || !ss._body.isErrorStatement()) && !sc.inCfile)

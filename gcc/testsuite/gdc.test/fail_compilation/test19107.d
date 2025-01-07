@@ -4,7 +4,7 @@ TEST_OUTPUT:
 ---
 fail_compilation/test19107.d(24): Error: template `all` is not callable using argument types `!((c) => c)(string[])`
 fail_compilation/test19107.d(18):        Candidate is: `all(alias pred, T)(T t)`
-  with `pred = __lambda2,
+  with `pred = __lambda_L24_C15,
        T = string[]`
   must satisfy the following constraint:
 `       is(typeof(I!pred(t)))`

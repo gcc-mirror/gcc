@@ -64,21 +64,11 @@ private extern (D) struct BitFields
     Contract contract;
     bool ctfe;              /// inside a ctfe-only expression
     bool traitsCompiles;    /// inside __traits(compile)
-
     /// ignore symbol visibility
     /// https://issues.dlang.org/show_bug.cgi?id=15907
     bool ignoresymbolvisibility;
-
-    bool _padding0; // To keep the layout the same as when the old `SCOPE` enum bitflags were used
-
     bool inCfile;            /// C semantics apply
-
-    bool _padding1;
-    bool _padding2;
-    bool _padding3;
-
     bool canFree;            /// is on free list
-
     bool fullinst;          /// fully instantiate templates
     bool ctfeBlock;         /// inside a `if (__ctfe)` block
     bool dip1000;           /// dip1000 errors enabled for this scope

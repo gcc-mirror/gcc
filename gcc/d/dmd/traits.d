@@ -701,6 +701,26 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
 
         return isDeclX(d => (d.storage_class & STC.lazy_) != 0);
     }
+    if (e.ident == Id.isCOMClass)
+    {
+        if (dim != 1)
+            return dimError(1);
+
+        auto o = (*e.args)[0];
+        auto s = getDsymbol(o);
+        AggregateDeclaration agg;
+
+        if (!s || ((agg = s.isAggregateDeclaration()) is null))
+        {
+            error(e.loc, "argument to `__traits(isCOMClass, %s)` is not a declaration", o.toChars());
+            return ErrorExp.get();
+        }
+
+        if (ClassDeclaration cd = agg.isClassDeclaration())
+            return cd.com ? True() : False();
+        else
+            return False();
+    }
     if (e.ident == Id.identifier)
     {
         // Get identifier for symbol as a string literal
@@ -775,6 +795,43 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         auto se = new StringExp(e.loc, fqn);
         return se.expressionSemantic(sc);
 
+    }
+    if (e.ident == Id.getBitfieldOffset || e.ident == Id.getBitfieldWidth)
+    {
+        if (dim != 1)
+            return dimError(1);
+
+        auto o = (*e.args)[0];
+        auto s = getDsymbolWithoutExpCtx(o);
+        if (!s)
+        {
+            error(e.loc, "bitfield symbol expected not `%s`", o.toChars());
+            return ErrorExp.get();
+        }
+
+        auto vd = s.toAlias.isVarDeclaration();
+        if (!vd || !(vd.storage_class & STC.field))
+        {
+            error(e.loc, "bitfield symbol expected not %s `%s`", s.kind, s.toPrettyChars);
+            return ErrorExp.get();
+        }
+
+        uint fieldWidth;
+        uint bitOffset;
+        if (auto bf = vd.isBitFieldDeclaration())
+        {
+            fieldWidth = bf.fieldWidth;
+            bitOffset  = bf.bitOffset;
+        }
+        else // just a regular field
+        {
+            const sz = size(vd.type);
+            assert(sz < uint.max / 8);    // overflow check
+            fieldWidth = cast(uint)sz * 8;
+            bitOffset  = 0;
+        }
+        uint value = e.ident == Id.getBitfieldOffset ? bitOffset : fieldWidth;
+        return new IntegerExp(e.loc, value, Type.tuns32);
     }
     if (e.ident == Id.getProtection || e.ident == Id.getVisibility)
     {

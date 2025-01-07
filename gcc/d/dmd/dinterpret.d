@@ -4855,33 +4855,6 @@ public:
 
                 return;
             }
-            else if (fd.ident == Id._d_arrayappendT || fd.ident == Id._d_arrayappendTTrace)
-            {
-                // In expressionsem.d `ea ~= eb` was lowered to `_d_arrayappendT{,Trace}({file, line, funcname}, ea, eb);`.
-                // The following code will rewrite it back to `ea ~= eb` and then interpret that expression.
-                Expression lhs, rhs;
-
-                if (fd.ident == Id._d_arrayappendT)
-                {
-                    assert(e.arguments.length == 2);
-                    lhs = (*e.arguments)[0];
-                    rhs = (*e.arguments)[1];
-                }
-                else
-                {
-                    assert(e.arguments.length == 5);
-                    lhs = (*e.arguments)[3];
-                    rhs = (*e.arguments)[4];
-                }
-
-                auto cae = new CatAssignExp(e.loc, lhs, rhs);
-                cae.type = e.type;
-
-                result = interpretRegion(cae, istate, CTFEGoal.LValue);
-                return;
-            }
-            else if (fd.ident == Id._d_arrayappendcTX)
-                assert(0, "CTFE cannot interpret _d_arrayappendcTX!");
         }
         else if (auto soe = ecall.isSymOffExp())
         {
@@ -6132,7 +6105,7 @@ public:
         {
             auto se = e1.isStringExp();
             // Allow casting a hex string literal to short[], int[] or long[]
-            if (se && se.hexString && se.postfix == StringExp.NoPostfix)
+            if (se && se.hexString && se.postfix == StringExp.NoPostfix && e.to.nextOf().isIntegral)
             {
                 const sz = cast(size_t) e.to.nextOf().size;
                 if ((se.len % sz) != 0)
@@ -6151,8 +6124,7 @@ public:
             }
             error(e.loc, "array cast from `%s` to `%s` is not supported at compile time", e1.type.toChars(), e.to.toChars());
             if (se && se.hexString && se.postfix != StringExp.NoPostfix)
-                errorSupplemental(e.loc, "perhaps remove postfix `%s` from hex string",
-                    (cast(char) se.postfix ~ "\0").ptr);
+                errorSupplemental(e.loc, "perhaps remove postfix `%.*s` from hex string", 1, &se.postfix);
 
             result = CTFEExp.cantexp;
             return;

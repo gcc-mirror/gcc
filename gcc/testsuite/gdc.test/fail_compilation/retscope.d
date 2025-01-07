@@ -55,7 +55,7 @@ void test2(scope int* p, int[] a ...) @safe
 TEST_OUTPUT:
 ---
 fail_compilation/retscope.d(75): Error: function `retscope.HTTP.Impl.onReceive` is `@nogc` yet allocates closure for `onReceive()` with the GC
-fail_compilation/retscope.d(77):        delegate `retscope.HTTP.Impl.onReceive.__lambda1` closes over variable `this`
+fail_compilation/retscope.d(77):        delegate `retscope.HTTP.Impl.onReceive.__lambda_L77_C23` closes over variable `this`
 ---
 */
 
@@ -234,10 +234,10 @@ void* funretscope(scope dg_t ptr) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda2` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
-fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda2` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
-fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda4` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
-fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda4` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda_L248_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda_L248_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda_L249_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda_L249_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
 ---
 */
 

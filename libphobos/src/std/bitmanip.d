@@ -106,7 +106,7 @@ private template createAccessors(
             enum RightShiftOp = ">>>=";
         }
 
-        static if (is(T == bool))
+        static if (is(T : bool))
         {
             enum createAccessors =
             // getter
@@ -4675,4 +4675,25 @@ if (isIntegral!T)
     assert(bitsSet(1_000_000).equal([6, 9, 14, 16, 17, 18, 19]));
     foreach (i; 0 .. 63)
         assert(bitsSet(1UL << i).equal([i]));
+}
+
+// Fix https://issues.dlang.org/show_bug.cgi?id=24095
+@safe @nogc pure unittest
+{
+    enum Bar : bool
+    {
+        a,
+        b,
+    }
+
+    struct Foo
+    {
+        mixin(bitfields!(Bar, "bar", 1, ubyte, "", 7,));
+    }
+
+    Foo foo;
+    foo.bar = Bar.a;
+    assert(foo.bar == Bar.a);
+    foo.bar = Bar.b;
+    assert(foo.bar == Bar.b);
 }

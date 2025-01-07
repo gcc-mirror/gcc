@@ -1212,3 +1212,345 @@ if (isInputRange!R1 && isInputRange!R2 && !isInfinite!R1 && !isInfinite!R2 &&
         assert(!secureEqual(hex1, hex2));
     }
 }
+
+/**
+ * Validates a hex string.
+ *
+ * Checks whether all characters following an optional "0x" suffix
+ * are valid hexadecimal digits.
+ *
+ * Params:
+ *     hex = hexdecimal encoded byte array
+ * Returns:
+ *     true = if valid
+ */
+bool isHexString(String)(String hex) @safe pure nothrow @nogc
+if (isSomeString!String)
+{
+    import std.ascii : isHexDigit;
+
+    if ((hex.length >= 2) && (hex[0 .. 2] == "0x"))
+    {
+        hex = hex[2 .. $];
+    }
+
+    foreach (digit; hex)
+    {
+        if (!digit.isHexDigit)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+///
+@safe unittest
+{
+    assert(isHexString("0x0123456789ABCDEFabcdef"));
+    assert(isHexString("0123456789ABCDEFabcdef"));
+    assert(!isHexString("g"));
+    assert(!isHexString("#"));
+}
+
+/**
+ * Converts a hex text string to a range of bytes.
+ *
+ * The input to this function MUST be valid.
+ * $(REF isHexString, std, digest) can be used to check for this if needed.
+ *
+ * Params:
+ *     hex = String representation of a hexdecimal-encoded byte array.
+ * Returns:
+ *     A forward range of bytes.
+ */
+auto fromHexStringAsRange(String)(String hex) @safe pure nothrow @nogc
+if (isSomeString!String)
+{
+    return HexStringDecoder!String(hex);
+}
+
+///
+@safe unittest
+{
+    import std.range.primitives : ElementType, isForwardRange;
+    import std.traits : ReturnType;
+
+    // The decoder implements a forward range.
+    static assert(isForwardRange!(ReturnType!(fromHexStringAsRange!string)));
+    static assert(isForwardRange!(ReturnType!(fromHexStringAsRange!wstring)));
+    static assert(isForwardRange!(ReturnType!(fromHexStringAsRange!dstring)));
+
+    // The element type of the range is always `ubyte`.
+    static assert(
+        is(ElementType!(ReturnType!(fromHexStringAsRange!string)) == ubyte)
+    );
+    static assert(
+        is(ElementType!(ReturnType!(fromHexStringAsRange!wstring)) == ubyte)
+    );
+    static assert(
+        is(ElementType!(ReturnType!(fromHexStringAsRange!dstring)) == ubyte)
+    );
+}
+
+@safe unittest
+{
+    import std.array : staticArray;
+
+    // `staticArray` consumes the range returned by `fromHexStringAsRange`.
+    assert("0x0000ff".fromHexStringAsRange.staticArray!3  == [0, 0, 0xFF]);
+    assert("0x0000ff"w.fromHexStringAsRange.staticArray!3 == [0, 0, 0xFF]);
+    assert("0x0000ff"d.fromHexStringAsRange.staticArray!3 == [0, 0, 0xFF]);
+    assert("0xff12ff".fromHexStringAsRange.staticArray!1  == [0xFF]);
+    assert("0x12ff".fromHexStringAsRange.staticArray!2    == [0x12, 255]);
+    assert(
+        "0x3AaAA".fromHexStringAsRange.staticArray!4 == [0x3, 0xAA, 0xAA, 0x00]
+    );
+}
+
+/**
+ * Converts a hex text string to a range of bytes.
+ *
+ * Params:
+ *     hex = String representation of a hexdecimal-encoded byte array.
+ * Returns:
+ *     An newly allocated array of bytes.
+ * Throws:
+ *     Exception on invalid input.
+ * Example:
+ * ---
+ * ubyte[] dby  = "0xBA".fromHexString;
+ * ---
+ * See_Also:
+ *     $(REF fromHexString, std, digest) for a range version of the function.
+ */
+ubyte[] fromHexString(String)(String hex) @safe pure
+if (isSomeString!String)
+{
+    // This function is trivial, yet necessary for consistency.
+    // It provides a similar API to its `toHexString` counterpart.
+
+    if (!hex.isHexString)
+    {
+        import std.conv : text;
+
+        throw new Exception(
+            "The provided character sequence `"
+                ~ hex.text
+                ~ "` is not a valid hex string."
+        );
+    }
+
+    if ((hex.length >= 2) && (hex[0 .. 2] == "0x"))
+    {
+        hex = hex[2 .. $];
+    }
+
+    auto decoder = HexStringDecoder!String(hex);
+    auto result = new ubyte[](decoder.length);
+
+    size_t idx = 0;
+    foreach (b; decoder)
+    {
+        result[idx++] = b;
+    }
+    return result;
+}
+
+///
+@safe unittest
+{
+    // Single byte
+    assert("0xff".fromHexString  == [255]);
+    assert("0xff"w.fromHexString == [255]);
+    assert("0xff"d.fromHexString == [255]);
+    assert("0xC0".fromHexString  == [192]);
+    assert("0x00".fromHexString  == [0]);
+
+    // Nothing
+    assert("".fromHexString  == []);
+    assert(""w.fromHexString == []);
+    assert(""d.fromHexString == []);
+
+    // Nothing but a prefix
+    assert("0x".fromHexString  == []);
+    assert("0x"w.fromHexString == []);
+    assert("0x"d.fromHexString == []);
+
+    // Half a byte
+    assert("0x1".fromHexString  == [0x01]);
+    assert("0x1"w.fromHexString == [0x01]);
+    assert("0x1"d.fromHexString == [0x01]);
+
+    // Mixed case is fine.
+    assert("0xAf".fromHexString == [0xAF]);
+    assert("0xaF".fromHexString == [0xAF]);
+
+    // Multiple bytes
+    assert("0xfff".fromHexString     == [0x0F, 0xFF]);
+    assert("0x123AaAa".fromHexString == [0x01, 0x23, 0xAA, 0xAA]);
+    assert("EBBBBF".fromHexString    == [0xEB, 0xBB, 0xBF]);
+
+    // md5 sum
+    assert("d41d8cd98f00b204e9800998ecf8427e".fromHexString == [
+        0xD4, 0x1D, 0x8C, 0xD9, 0x8F, 0x00, 0xB2, 0x04,
+        0xE9, 0x80, 0x09, 0x98, 0xEC, 0xF8, 0x42, 0x7E,
+    ]);
+}
+
+///
+@safe unittest
+{
+    // Cycle self-test
+    const ubyte[] initial = [0x00, 0x12, 0x34, 0xEB];
+    assert(initial == initial.toHexString().fromHexString());
+}
+
+private ubyte hexDigitToByte(dchar hexDigit) @safe pure nothrow @nogc
+{
+    static int hexDigitToByteImpl(dchar hexDigit)
+    {
+        if (hexDigit >= '0' && hexDigit <= '9')
+        {
+            return hexDigit - '0';
+        }
+        else if (hexDigit >= 'A' && hexDigit <= 'F')
+        {
+            return hexDigit - 'A' + 10;
+        }
+        else if (hexDigit >= 'a' && hexDigit <= 'f')
+        {
+            return hexDigit - 'a' + 10;
+        }
+
+        assert(false, "Cannot convert invalid hex digit.");
+    }
+
+    return hexDigitToByteImpl(hexDigit) & 0xFF;
+}
+
+@safe unittest
+{
+    assert(hexDigitToByte('0') == 0x0);
+    assert(hexDigitToByte('9') == 0x9);
+    assert(hexDigitToByte('a') == 0xA);
+    assert(hexDigitToByte('b') == 0xB);
+    assert(hexDigitToByte('A') == 0xA);
+    assert(hexDigitToByte('C') == 0xC);
+}
+
+private struct HexStringDecoder(String)
+if (isSomeString!String)
+{
+    String hex;
+    ubyte front;
+    bool empty;
+
+    this(String hex)
+    {
+        if ((hex.length >= 2) && (hex[0 .. 2] == "0x"))
+        {
+            hex = hex[2 .. $];
+        }
+
+        if (hex.length == 0)
+        {
+            empty = true;
+            return;
+        }
+
+        const oddInputLength = (hex.length % 2 == 1);
+
+        if (oddInputLength)
+        {
+            front = hexDigitToByte(hex[0]);
+            hex = hex[1 .. $];
+        }
+        else
+        {
+            front = cast(ubyte)(hexDigitToByte(hex[0]) << 4 | hexDigitToByte(hex[1]));
+            hex = hex[2 .. $];
+        }
+
+        this.hex = hex;
+    }
+
+    void popFront()
+    {
+        if (hex.length == 0)
+        {
+            empty = true;
+            return;
+        }
+
+        front = cast(ubyte)(hexDigitToByte(hex[0]) << 4 | hexDigitToByte(hex[1]));
+        hex = hex[2 .. $];
+    }
+
+    typeof(this) save()
+    {
+        return this;
+    }
+
+    size_t length() const
+    {
+        if (this.empty)
+        {
+            return 0;
+        }
+
+        // current front + remainder
+        return 1 + (hex.length >> 1);
+    }
+}
+
+@safe unittest
+{
+    auto decoder = HexStringDecoder!string("");
+    assert(decoder.empty);
+    assert(decoder.length == 0);
+
+    decoder = HexStringDecoder!string("0x");
+    assert(decoder.empty);
+    assert(decoder.length == 0);
+}
+
+@safe unittest
+{
+    auto decoder = HexStringDecoder!string("0x0077FF");
+    assert(!decoder.empty);
+    assert(decoder.length == 3);
+    assert(decoder.front == 0x00);
+
+    decoder.popFront();
+    assert(!decoder.empty);
+    assert(decoder.length == 2);
+    assert(decoder.front == 0x77);
+
+    decoder.popFront();
+    assert(!decoder.empty);
+    assert(decoder.length == 1);
+    assert(decoder.front == 0xFF);
+
+    decoder.popFront();
+    assert(decoder.length == 0);
+    assert(decoder.empty);
+}
+
+@safe unittest
+{
+    auto decoder = HexStringDecoder!string("0x7FF");
+    assert(!decoder.empty);
+    assert(decoder.length == 2);
+    assert(decoder.front == 0x07);
+
+    decoder.popFront();
+    assert(!decoder.empty);
+    assert(decoder.length == 1);
+    assert(decoder.front == 0xFF);
+
+    decoder.popFront();
+    assert(decoder.length == 0);
+    assert(decoder.empty);
+}

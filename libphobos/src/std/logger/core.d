@@ -1433,7 +1433,7 @@ logger by the user, the default logger's log level is LogLevel.info.
 
 Example:
 -------------
-sharedLog = new FileLogger(yourFile);
+sharedLog = new shared FileLogger(yourFile);
 -------------
 The example sets a new `FileLogger` as new `sharedLog`.
 
@@ -1450,7 +1450,7 @@ writing `sharedLog`.
 The default `Logger` is thread-safe.
 -------------
 if (sharedLog !is myLogger)
-    sharedLog = new myLogger;
+    sharedLog = new shared myLogger;
 -------------
 */
 @property shared(Logger) sharedLog() @safe

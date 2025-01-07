@@ -4143,10 +4143,9 @@ extern (C++) final class IndexExp : BinExp
 
     override bool isLvalue()
     {
-        if (e1.op == EXP.assocArrayLiteral)
-            return false;
-        if (e1.type.ty == Tsarray ||
-            (e1.op == EXP.index && e1.type.ty != Tarray))
+        auto t1b = e1.type.toBasetype();
+        if (t1b.isTypeAArray() || t1b.isTypeSArray() ||
+            (e1.isIndexExp() && t1b != t1b.isTypeDArray()))
         {
             return e1.isLvalue();
         }

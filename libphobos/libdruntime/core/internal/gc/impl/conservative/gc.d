@@ -41,6 +41,7 @@ import core.gc.gcinterface;
 import core.internal.container.treap;
 import core.internal.spinlock;
 import core.internal.gc.pooltable;
+import core.internal.gc.blkcache;
 
 import cstdlib = core.stdc.stdlib : calloc, free, malloc, realloc;
 import core.stdc.string : memcpy, memset, memmove;
@@ -1426,7 +1427,7 @@ short[PAGESIZE / 16][Bins.B_NUMSMALL + 1] calcBinBase()
 
     foreach (i, size; binsize)
     {
-        short end = (PAGESIZE / size) * size;
+        short end = cast(short) ((PAGESIZE / size) * size);
         short bsz = size / 16;
         foreach (off; 0..PAGESIZE/16)
         {
@@ -2873,7 +2874,7 @@ struct Gcx
                 markProcPid = 0;
                 // process GC marks then sweep
                 thread_suspendAll();
-                thread_processGCMarks(&isMarked);
+                thread_processTLSGCData(&clearBlkCacheData);
                 thread_resumeAll();
                 break;
             case ChildStatus.running:
@@ -3108,7 +3109,7 @@ Lmark:
                     markAll!(markConservative!false)();
             }
 
-            thread_processGCMarks(&isMarked);
+            thread_processTLSGCData(&clearBlkCacheData);
             thread_resumeAll();
             isFinal = false;
         }
@@ -3162,12 +3163,26 @@ Lmark:
     }
 
     /**
+     * Clear the block cache data if it exists, given the data which is the
+     * block info cache.
+     *
+     * Warning! This should only be called while the world is stopped inside
+     * the fullcollect function after all live objects have been marked, but
+     * before sweeping.
+     */
+    void *clearBlkCacheData(void* data) scope nothrow
+    {
+        processGCMarks(data, &isMarked);
+        return data;
+    }
+
+    /**
      * Returns true if the addr lies within a marked block.
      *
      * Warning! This should only be called while the world is stopped inside
      * the fullcollect function after all live objects have been marked, but before sweeping.
      */
-    int isMarked(void *addr) scope nothrow
+    IsMarked isMarked(void *addr) scope nothrow
     {
         // first, we find the Pool this block is in, then check to see if the
         // mark bit is clear.

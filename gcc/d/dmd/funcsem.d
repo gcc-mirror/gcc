@@ -3001,7 +3001,15 @@ extern (D) bool setImpure(FuncDeclaration fd, Loc loc = Loc.init, const(char)* f
         if (fmt)
             fd.pureViolation = new AttributeViolation(loc, fmt, fd, arg0); // impure action
         else if (arg0)
-            fd.pureViolation = new AttributeViolation(loc, fmt, arg0); // call to impure function
+        {
+            if (auto sa = arg0.isDsymbol())
+            {
+                if (FuncDeclaration fd2 = sa.isFuncDeclaration())
+                {
+                    fd.pureViolation = new AttributeViolation(loc, fd2); // call to impure function
+                }
+            }
+        }
 
         if (fd.fes)
             fd.fes.func.setImpure(loc, fmt, arg0);

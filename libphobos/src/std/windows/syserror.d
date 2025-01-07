@@ -69,7 +69,6 @@ import core.sys.windows.winbase, core.sys.windows.winnt;
 import std.array : appender, Appender;
 import std.conv : to, toTextRange, text;
 import std.exception;
-import std.windows.charset;
 
 string sysErrorString(
     DWORD errCode,

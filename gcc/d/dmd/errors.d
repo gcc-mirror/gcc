@@ -37,60 +37,39 @@ class ErrorSinkCompiler : ErrorSink
   extern (C++):
   override:
 
-    void error(const ref Loc loc, const(char)* format, ...)
+    void verror(const ref Loc loc, const(char)* format, va_list ap)
     {
-        va_list ap;
-        va_start(ap, format);
         verrorReport(loc, format, ap, ErrorKind.error);
-        va_end(ap);
     }
 
-    void errorSupplemental(const ref Loc loc, const(char)* format, ...)
+    void verrorSupplemental(const ref Loc loc, const(char)* format, va_list ap)
     {
-        va_list ap;
-        va_start(ap, format);
         verrorReportSupplemental(loc, format, ap, ErrorKind.error);
-        va_end(ap);
     }
 
-    void warning(const ref Loc loc, const(char)* format, ...)
+    void vwarning(const ref Loc loc, const(char)* format, va_list ap)
     {
-        va_list ap;
-        va_start(ap, format);
         verrorReport(loc, format, ap, ErrorKind.warning);
-        va_end(ap);
     }
 
-    void warningSupplemental(const ref Loc loc, const(char)* format, ...)
+    void vwarningSupplemental(const ref Loc loc, const(char)* format, va_list ap)
     {
-        va_list ap;
-        va_start(ap, format);
         verrorReportSupplemental(loc, format, ap, ErrorKind.warning);
-        va_end(ap);
     }
 
-    void deprecation(const ref Loc loc, const(char)* format, ...)
+    void vdeprecation(const ref Loc loc, const(char)* format, va_list ap)
     {
-        va_list ap;
-        va_start(ap, format);
         verrorReport(loc, format, ap, ErrorKind.deprecation);
-        va_end(ap);
     }
 
-    void deprecationSupplemental(const ref Loc loc, const(char)* format, ...)
+    void vdeprecationSupplemental(const ref Loc loc, const(char)* format, va_list ap)
     {
-        va_list ap;
-        va_start(ap, format);
         verrorReportSupplemental(loc, format, ap, ErrorKind.deprecation);
-        va_end(ap);
     }
 
-    void message(const ref Loc loc, const(char)* format, ...)
+    void vmessage(const ref Loc loc, const(char)* format, va_list ap)
     {
-        va_list ap;
-        va_start(ap, format);
         verrorReport(loc, format, ap, ErrorKind.message);
-        va_end(ap);
     }
 }
 

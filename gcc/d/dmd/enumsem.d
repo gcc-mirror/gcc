@@ -185,7 +185,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
 
     if (ed.members.length == 0)
     {
-        .error(ed.loc, "%s `%s enum `%s` must have at least one member", ed.kind, ed.toPrettyChars, ed.toChars());
+        .error(ed.loc, "%s `%s` enum `%s` must have at least one member", ed.kind, ed.toPrettyChars, ed.toChars());
         ed.errors = true;
         ed.semanticRun = PASS.semanticdone;
         return;

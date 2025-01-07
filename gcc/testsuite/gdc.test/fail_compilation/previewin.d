@@ -3,13 +3,13 @@ REQUIRED_ARGS: -preview=in -preview=dip1000
 TEST_OUTPUT:
 ----
 fail_compilation/previewin.d(4): Error: function `takeFunction` is not callable using argument types `(void function(real x) pure nothrow @nogc @safe)`
-fail_compilation/previewin.d(4):        cannot pass argument `__lambda1` of type `void function(real x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
+fail_compilation/previewin.d(4):        cannot pass argument `__lambda_L4_C18` of type `void function(real x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
 fail_compilation/previewin.d(11):        `previewin.takeFunction(void function(in real) f)` declared here
 fail_compilation/previewin.d(5): Error: function `takeFunction` is not callable using argument types `(void function(scope const(real) x) pure nothrow @nogc @safe)`
-fail_compilation/previewin.d(5):        cannot pass argument `__lambda2` of type `void function(scope const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
+fail_compilation/previewin.d(5):        cannot pass argument `__lambda_L5_C18` of type `void function(scope const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
 fail_compilation/previewin.d(11):        `previewin.takeFunction(void function(in real) f)` declared here
 fail_compilation/previewin.d(6): Error: function `takeFunction` is not callable using argument types `(void function(ref scope const(real) x) pure nothrow @nogc @safe)`
-fail_compilation/previewin.d(6):        cannot pass argument `__lambda3` of type `void function(ref scope const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
+fail_compilation/previewin.d(6):        cannot pass argument `__lambda_L6_C18` of type `void function(ref scope const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
 fail_compilation/previewin.d(11):        `previewin.takeFunction(void function(in real) f)` declared here
 fail_compilation/previewin.d(15): Error: scope variable `arg` assigned to global variable `myGlobal`
 fail_compilation/previewin.d(16): Error: scope variable `arg` assigned to global variable `myGlobal`

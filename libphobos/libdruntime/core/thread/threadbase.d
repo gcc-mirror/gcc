@@ -32,9 +32,6 @@ private
     alias ScanDg = void delegate(void* pstart, void* pend) nothrow;
     alias rt_tlsgc_scan =
         externDFunc!("rt.tlsgc.scan", void function(void*, scope ScanDg) nothrow);
-
-    alias rt_tlsgc_processGCMarks =
-        externDFunc!("rt.tlsgc.processGCMarks", void function(void*, scope IsMarkedDg) nothrow);
 }
 
 
@@ -131,9 +128,14 @@ class ThreadBase
         return (no_context || not_registered);
     }
 
-    package void tlsGCdataInit() nothrow @nogc
+    ref void* tlsGCData() nothrow @nogc
     {
-        m_tlsgcdata = rt_tlsgc_init();
+        return m_tlsgcdata;
+    }
+
+    package void tlsRTdataInit() nothrow @nogc
+    {
+        m_tlsrtdata = rt_tlsgc_init();
     }
 
     package void initDataStorage() nothrow
@@ -142,18 +144,18 @@ class ThreadBase
 
         m_main.bstack = getStackBottom();
         m_main.tstack = m_main.bstack;
-        tlsGCdataInit();
+        tlsRTdataInit();
     }
 
     package void destroyDataStorage() nothrow @nogc
     {
-        rt_tlsgc_destroy(m_tlsgcdata);
-        m_tlsgcdata = null;
+        rt_tlsgc_destroy(m_tlsrtdata);
+        m_tlsrtdata = null;
     }
 
     package void destroyDataStorageIfAvail() nothrow @nogc
     {
-        if (m_tlsgcdata)
+        if (m_tlsrtdata)
             destroyDataStorage();
     }
 
@@ -477,6 +479,7 @@ package(core.thread):
     StackContext*       m_curr;
     bool                m_lock;
     private void*       m_tlsgcdata;
+    private void*       m_tlsrtdata;
 
     ///////////////////////////////////////////////////////////////////////////
     // Thread Context and GC Scanning Support
@@ -1112,8 +1115,8 @@ private void scanAllTypeImpl(scope ScanAllThreadsTypeFn scan, void* curStackTop)
             scanWindowsOnly(scan, t);
         }
 
-        if (t.m_tlsgcdata !is null)
-            rt_tlsgc_scan(t.m_tlsgcdata, (p1, p2) => scan(ScanType.tls, p1, p2));
+        if (t.m_tlsrtdata !is null)
+            rt_tlsgc_scan(t.m_tlsrtdata, (p1, p2) => scan(ScanType.tls, p1, p2));
     }
 }
 
@@ -1163,42 +1166,14 @@ package void onThreadError(string msg) nothrow @nogc
 }
 
 
-/**
- * Indicates whether an address has been marked by the GC.
- */
-enum IsMarked : int
-{
-         no, /// Address is not marked.
-        yes, /// Address is marked.
-    unknown, /// Address is not managed by the GC.
-}
+// GC-specific processing of TLSGC data.
+alias ProcessTLSGCDataDg = void* delegate(void* data) nothrow;
 
-alias IsMarkedDg = int delegate(void* addr) nothrow; /// The isMarked callback function.
-
-/**
- * This routine allows the runtime to process any special per-thread handling
- * for the GC.  This is needed for taking into account any memory that is
- * referenced by non-scanned pointers but is about to be freed.  That currently
- * means the array append cache.
- *
- * Params:
- *  isMarked = The function used to check if $(D addr) is marked.
- *
- * In:
- *  This routine must be called just prior to resuming all threads.
- */
-extern(C) void thread_processGCMarks(scope IsMarkedDg isMarked) nothrow
+void thread_processTLSGCData(ProcessTLSGCDataDg dg) nothrow
 {
     for (ThreadBase t = ThreadBase.sm_tbeg; t; t = t.next)
-    {
-        /* Can be null if collection was triggered between adding a
-         * thread and calling rt_tlsgc_init.
-         */
-        if (t.m_tlsgcdata !is null)
-            rt_tlsgc_processGCMarks(t.m_tlsgcdata, isMarked);
-    }
+        t.m_tlsgcdata = dg(t.m_tlsgcdata);
 }
-
 
 /**
  * Returns the stack top of the currently active stack within the calling

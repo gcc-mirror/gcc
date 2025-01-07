@@ -1935,7 +1935,7 @@ private bool checkPurity(FuncDeclaration f, const ref Loc loc, Scope* sc)
             f.toPrettyChars());
 
         if (!f.isDtorDeclaration())
-            errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.pure_);
+            errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.pure_, global.errorSink);
 
         f.checkOverriddenDtor(sc, loc, dd => dd.type.toTypeFunction().purity != PURE.impure, "impure");
         return true;
@@ -2018,15 +2018,18 @@ void checkOverriddenDtor(FuncDeclaration f, Scope* sc, const ref Loc loc,
     }
 }
 
-/// Print the reason why `fd` was inferred `@system` as a supplemental error
-/// Params:
-///   fd = function to check
-///   maxDepth = up to how many functions deep to report errors
-///   deprecation = print deprecations instead of errors
-///   stc = storage class of attribute to check
-public void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool deprecation, STC stc)
+/********************************************
+ * Print the reason why `fd` was inferred `@system` as a supplemental error
+ * Params:
+ *   fd = function to check
+ *   maxDepth = up to how many functions deep to report errors
+ *   deprecation = print deprecations instead of errors
+ *   stc = storage class of attribute to check
+ *   eSink = where the error messages go
+ */
+public void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool deprecation, STC stc, ErrorSink eSink)
 {
-    auto errorFunc = deprecation ? &deprecationSupplemental : &errorSupplemental;
+    auto errorFunc = deprecation ? &eSink.deprecationSupplemental : &eSink.errorSupplemental;
 
     AttributeViolation* s;
     const(char)* attr;
@@ -2054,7 +2057,7 @@ public void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool
     if (!s)
         return;
 
-    if (s.fmtStr)
+    if (s.format)
     {
         errorFunc(s.loc, deprecation ?
             "which wouldn't be `%s` because of:" :
@@ -2062,25 +2065,24 @@ public void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool
         if (stc == STC.nogc || stc == STC.pure_)
         {
             auto f = (cast(Dsymbol) s.arg0).isFuncDeclaration();
-            errorFunc(s.loc, s.fmtStr, f.kind(), f.toPrettyChars(), s.arg1 ? s.arg1.toChars() : "");
+            errorFunc(s.loc, s.format, f.kind(), f.toPrettyChars(), s.arg1 ? s.arg1.toChars() : "");
         }
         else
         {
-            errorFunc(s.loc, s.fmtStr,
+            errorFunc(s.loc, s.format,
                 s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
         }
     }
-    else if (auto sa = s.arg0.isDsymbol())
+    else if (s.fd)
     {
-        if (FuncDeclaration fd2 = sa.isFuncDeclaration())
+        if (maxDepth > 0)
         {
-            if (maxDepth > 0)
-            {
-                errorFunc(s.loc, "which calls `%s`", fd2.toPrettyChars());
-                errorSupplementalInferredAttr(fd2, maxDepth - 1, deprecation, stc);
-            }
+            errorFunc(s.loc, "which calls `%s`", s.fd.toPrettyChars());
+            errorSupplementalInferredAttr(s.fd, maxDepth - 1, deprecation, stc, eSink);
         }
     }
+    else
+        assert(0);
 }
 
 /*******************************************
@@ -2262,7 +2264,7 @@ private bool checkSafety(FuncDeclaration f, ref Loc loc, Scope* sc)
                 sc.func.kind(), sc.func.toPrettyChars(), f.kind(),
                 prettyChars);
             if (!f.isDtorDeclaration)
-                errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.safe);
+                errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.safe, global.errorSink);
             .errorSupplemental(f.loc, "`%s` is declared here", prettyChars);
 
             f.checkOverriddenDtor(sc, loc, dd => dd.type.toTypeFunction().trust > TRUST.system, "@system");
@@ -2276,12 +2278,12 @@ private bool checkSafety(FuncDeclaration f, ref Loc loc, Scope* sc)
         if (sc.func.isSafeBypassingInference())
         {
             .deprecation(loc, "`@safe` function `%s` calling `%s`", sc.func.toChars(), f.toChars());
-            errorSupplementalInferredAttr(f, 10, true, STC.safe);
+            errorSupplementalInferredAttr(f, 10, true, STC.safe, global.errorSink);
         }
         else if (!sc.func.safetyViolation)
         {
             import dmd.func : AttributeViolation;
-            sc.func.safetyViolation = new AttributeViolation(loc, null, f, null, null);
+            sc.func.safetyViolation = new AttributeViolation(loc, f);
         }
     }
     return false;
@@ -2329,7 +2331,7 @@ private bool checkNogc(FuncDeclaration f, ref Loc loc, Scope* sc)
             sc.func.kind(), sc.func.toPrettyChars(), f.kind(), f.toPrettyChars());
 
         if (!f.isDtorDeclaration)
-            f.errorSupplementalInferredAttr(/*max depth*/ 10, /*deprecation*/ false, STC.nogc);
+            f.errorSupplementalInferredAttr(/*max depth*/ 10, /*deprecation*/ false, STC.nogc, global.errorSink);
     }
 
     f.checkOverriddenDtor(sc, loc, dd => dd.type.toTypeFunction().isNogc, "non-@nogc");
@@ -2850,12 +2852,12 @@ private Expression rewriteOpAssign(BinExp exp)
  * Params:
  *     sc           =  scope
  *     argumentList =  arguments to function
- *     reportErrors =  whether or not to report errors here. Some callers are not
+ *     eSink        =  if not null, used to report errors. Some callers are not
  *                      checking actual function params, so they'll do their own error reporting
  * Returns:
  *     `true` when a semantic error occurred
  */
-private bool preFunctionParameters(Scope* sc, ArgumentList argumentList, const bool reportErrors = true)
+private bool preFunctionParameters(Scope* sc, ArgumentList argumentList, ErrorSink eSink)
 {
     Expressions* exps = argumentList.arguments;
     if (!exps)
@@ -2876,9 +2878,9 @@ private bool preFunctionParameters(Scope* sc, ArgumentList argumentList, const b
 
             if (arg.op == EXP.type)
             {
-                if (reportErrors)
+                if (eSink)
                 {
-                    error(arg.loc, "cannot pass type `%s` as a function argument", arg.toChars());
+                    eSink.error(arg.loc, "cannot pass type `%s` as a function argument", arg.toChars());
                     arg = ErrorExp.get();
                 }
                 err = true;
@@ -2886,9 +2888,9 @@ private bool preFunctionParameters(Scope* sc, ArgumentList argumentList, const b
         }
         else if (arg.type.toBasetype().ty == Tfunction)
         {
-            if (reportErrors)
+            if (eSink)
             {
-                error(arg.loc, "cannot pass function `%s` as a function argument", arg.toChars());
+                eSink.error(arg.loc, "cannot pass function `%s` as a function argument", arg.toChars());
                 arg = ErrorExp.get();
             }
             err = true;
@@ -2961,14 +2963,14 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
 
     if (argumentList.names)
     {
-        const(char)* msg = null;
-        auto resolvedArgs = tf.resolveNamedArgs(argumentList, &msg);
+        OutBuffer buf;
+        auto resolvedArgs = tf.resolveNamedArgs(argumentList, &buf);
         if (!resolvedArgs)
         {
             // while errors are usually already caught by `tf.callMatch`,
             // this can happen when calling `typeof(freefunc)`
-            if (msg)
-                error(loc, "%s", msg);
+            if (buf.length)
+                error(loc, "%s", buf.peekChars());
             return true;
         }
         // note: the argument list should be mutated with named arguments / default arguments,
@@ -4974,7 +4976,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         {
             return setError();
         }
-        if (preFunctionParameters(sc, exp.argumentList))
+        if (preFunctionParameters(sc, exp.argumentList, global.errorSink))
         {
             return setError();
         }
@@ -5194,21 +5196,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
                 auto tiargs = new Objects();
                 tiargs.push(exp.newtype);
+
                 id = new DotTemplateInstanceExp(exp.loc, id, Id._d_newThrowable, tiargs);
+
                 id = new CallExp(exp.loc, id).expressionSemantic(sc);
 
-                Expression idVal;
-                Expression tmp = extractSideEffect(sc, "__tmpThrowable", idVal, id, true);
-                // auto castTmp = new CastExp(exp.loc, tmp, exp.type);
+                exp.lowering = id.expressionSemantic(sc);
 
-                auto ctor = new DotIdExp(exp.loc, tmp, Id.ctor).expressionSemantic(sc);
-                auto ctorCall = new CallExp(exp.loc, ctor, exp.arguments);
-
-                id = Expression.combine(idVal, exp.argprefix).expressionSemantic(sc);
-                id = Expression.combine(id, ctorCall).expressionSemantic(sc);
-                // id = Expression.combine(id, castTmp).expressionSemantic(sc);
-
-                result = id.expressionSemantic(sc);
+                result = exp;
                 return;
             }
             else if (sc.needsCodegen() && // interpreter doesn't need this lowered
@@ -5648,7 +5643,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (exp.fd.ident != Id.empty)
             return;
 
-        const(char)[] s;
+        string s;
         if (exp.fd.fes)
             s = "__foreachbody";
         else if (exp.fd.tok == TOK.reserved)
@@ -5682,7 +5677,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             symtab = sds.symtab;
         }
         assert(symtab);
-        Identifier id = Identifier.generateId(s, symtab.length() + 1);
+        Identifier id = Identifier.generateIdWithLoc(s, exp.loc);
         exp.fd.ident = id;
         if (exp.td)
             exp.td.ident = id;
@@ -5925,7 +5920,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (FuncExp fe = exp.e1.isFuncExp())
         {
             if (arrayExpressionSemantic(exp.arguments.peekSlice(), sc) ||
-                preFunctionParameters(sc, exp.argumentList))
+                preFunctionParameters(sc, exp.argumentList, global.errorSink))
                 return setError();
 
             // Run e1 semantic even if arguments have any errors
@@ -6165,7 +6160,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
         if (arrayExpressionSemantic(exp.arguments.peekSlice(), sc) ||
-            preFunctionParameters(sc, exp.argumentList))
+            preFunctionParameters(sc, exp.argumentList, global.errorSink))
             return setError();
 
         // Check for call operator overload
@@ -9334,7 +9329,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 "cast from `%s` to `%s` not allowed in safe code", exp.e1.type, exp.to))
             {
                 if (msg.length)
-                    errorSupplemental(exp.loc, "%s", (msg ~ '\0').ptr);
+                    errorSupplemental(exp.loc, "%.*s", msg.fTuple.expand);
                 return setError();
             }
         }
@@ -9344,7 +9339,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 "cast from `%s` to `%s` not allowed in safe code", exp.e1.type, exp.to);
             // if message was printed
             if (sc.func && sc.func.isSafeBypassingInference() && !sc.isDeprecated())
-                deprecationSupplemental(exp.loc, "%s", (msg ~ '\0').ptr);
+                deprecationSupplemental(exp.loc, "%.*s", msg.fTuple.expand);
             if (err)
                 return setError();
         }
@@ -13083,80 +13078,60 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         return;
     }
 
+    private void visitShift(BinExp exp)
+    {
+        if (exp.type)
+        {
+            result = exp;
+            return;
+        }
+
+        if (Expression ex = binSemanticProp(exp, sc))
+        {
+            result = ex;
+            return;
+        }
+        Expression e = exp.op_overload(sc);
+        if (e)
+        {
+            result = e;
+            return;
+        }
+
+        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
+            return setError();
+
+        if (!target.isVectorOpSupported(exp.e1.type.toBasetype(), exp.op, exp.e2.type.toBasetype()))
+        {
+            result = exp.incompatibleTypes();
+            return;
+        }
+
+        exp.e1 = integralPromotions(exp.e1, sc);
+        if (exp.e2.type.toBasetype().ty != Tvector)
+        {
+            Type tb1 = exp.e1.type.toBasetype();
+            exp.e2 = exp.e2.castTo(sc, tb1.ty == Tvector ? tb1 : Type.tshiftcnt);
+        }
+
+        exp.type = exp.e1.type;
+        result = exp;
+    }
+
     override void visit(ShlExp exp)
     {
-        //printf("ShlExp::semantic(), type = %p\n", type);
-        if (exp.type)
-        {
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = binSemanticProp(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-        Expression e = exp.op_overload(sc);
-        if (e)
-        {
-            result = e;
-            return;
-        }
-
-        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
-            return setError();
-
-        if (!target.isVectorOpSupported(exp.e1.type.toBasetype(), exp.op, exp.e2.type.toBasetype()))
-        {
-            result = exp.incompatibleTypes();
-            return;
-        }
-        exp.e1 = integralPromotions(exp.e1, sc);
-        if (exp.e2.type.toBasetype().ty != Tvector)
-            exp.e2 = exp.e2.castTo(sc, Type.tshiftcnt);
-
-        exp.type = exp.e1.type;
-        result = exp;
+        visitShift(exp);
     }
-
     override void visit(ShrExp exp)
     {
-        if (exp.type)
-        {
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = binSemanticProp(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-        Expression e = exp.op_overload(sc);
-        if (e)
-        {
-            result = e;
-            return;
-        }
-
-        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
-            return setError();
-
-        if (!target.isVectorOpSupported(exp.e1.type.toBasetype(), exp.op, exp.e2.type.toBasetype()))
-        {
-            result = exp.incompatibleTypes();
-            return;
-        }
-        exp.e1 = integralPromotions(exp.e1, sc);
-        if (exp.e2.type.toBasetype().ty != Tvector)
-            exp.e2 = exp.e2.castTo(sc, Type.tshiftcnt);
-
-        exp.type = exp.e1.type;
-        result = exp;
+        visitShift(exp);
+    }
+    override void visit(UshrExp exp)
+    {
+        visitShift(exp);
     }
 
-    override void visit(UshrExp exp)
+    private void visitBinaryBitOp(BinExp exp)
     {
         if (exp.type)
         {
@@ -13176,185 +13151,52 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
-        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
-            return setError();
+        if (exp.e1.type.toBasetype().ty == Tbool && exp.e2.type.toBasetype().ty == Tbool)
+        {
+            exp.type = exp.e1.type;
+            result = exp;
+            return;
+        }
 
-        if (!target.isVectorOpSupported(exp.e1.type.toBasetype(), exp.op, exp.e2.type.toBasetype()))
+        if (Expression ex = typeCombine(exp, sc))
+        {
+            result = ex;
+            return;
+        }
+
+        Type tb = exp.type.toBasetype();
+        if (tb.ty == Tarray || tb.ty == Tsarray)
+        {
+            if (!isArrayOpValid(exp))
+            {
+                result = arrayOpInvalidError(exp);
+                return;
+            }
+            result = exp;
+            return;
+        }
+        if (!target.isVectorOpSupported(tb, exp.op, exp.e2.type.toBasetype()))
         {
             result = exp.incompatibleTypes();
             return;
         }
-        exp.e1 = integralPromotions(exp.e1, sc);
-        if (exp.e2.type.toBasetype().ty != Tvector)
-            exp.e2 = exp.e2.castTo(sc, Type.tshiftcnt);
+        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
+            return setError();
 
-        exp.type = exp.e1.type;
         result = exp;
     }
 
     override void visit(AndExp exp)
     {
-        if (exp.type)
-        {
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = binSemanticProp(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-        Expression e = exp.op_overload(sc);
-        if (e)
-        {
-            result = e;
-            return;
-        }
-
-        if (exp.e1.type.toBasetype().ty == Tbool && exp.e2.type.toBasetype().ty == Tbool)
-        {
-            exp.type = exp.e1.type;
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = typeCombine(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-
-        Type tb = exp.type.toBasetype();
-        if (tb.ty == Tarray || tb.ty == Tsarray)
-        {
-            if (!isArrayOpValid(exp))
-            {
-                result = arrayOpInvalidError(exp);
-                return;
-            }
-            result = exp;
-            return;
-        }
-        if (!target.isVectorOpSupported(tb, exp.op, exp.e2.type.toBasetype()))
-        {
-            result = exp.incompatibleTypes();
-            return;
-        }
-        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
-            return setError();
-
-        result = exp;
+        visitBinaryBitOp(exp);
     }
-
     override void visit(OrExp exp)
     {
-        if (exp.type)
-        {
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = binSemanticProp(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-        Expression e = exp.op_overload(sc);
-        if (e)
-        {
-            result = e;
-            return;
-        }
-
-        if (exp.e1.type.toBasetype().ty == Tbool && exp.e2.type.toBasetype().ty == Tbool)
-        {
-            exp.type = exp.e1.type;
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = typeCombine(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-
-        Type tb = exp.type.toBasetype();
-        if (tb.ty == Tarray || tb.ty == Tsarray)
-        {
-            if (!isArrayOpValid(exp))
-            {
-                result = arrayOpInvalidError(exp);
-                return;
-            }
-            result = exp;
-            return;
-        }
-        if (!target.isVectorOpSupported(tb, exp.op, exp.e2.type.toBasetype()))
-        {
-            result = exp.incompatibleTypes();
-            return;
-        }
-        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
-            return setError();
-
-        result = exp;
+        visitBinaryBitOp(exp);
     }
-
     override void visit(XorExp exp)
     {
-        if (exp.type)
-        {
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = binSemanticProp(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-        Expression e = exp.op_overload(sc);
-        if (e)
-        {
-            result = e;
-            return;
-        }
-
-        if (exp.e1.type.toBasetype().ty == Tbool && exp.e2.type.toBasetype().ty == Tbool)
-        {
-            exp.type = exp.e1.type;
-            result = exp;
-            return;
-        }
-
-        if (Expression ex = typeCombine(exp, sc))
-        {
-            result = ex;
-            return;
-        }
-
-        Type tb = exp.type.toBasetype();
-        if (tb.ty == Tarray || tb.ty == Tsarray)
-        {
-            if (!isArrayOpValid(exp))
-            {
-                result = arrayOpInvalidError(exp);
-                return;
-            }
-            result = exp;
-            return;
-        }
-        if (!target.isVectorOpSupported(tb, exp.op, exp.e2.type.toBasetype()))
-        {
-            result = exp.incompatibleTypes();
-            return;
-        }
-        if (exp.checkIntegralBin() || exp.checkSharedAccessBin(sc))
-            return setError();
-
-        result = exp;
+        visitBinaryBitOp(exp);
     }
 
     override void visit(LogicalExp exp)
@@ -15216,6 +15058,27 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
         sc.ctfe)
     {
         return false;
+    }
+    else if (sc._module.ident == Id.atomic && sc._module.parent !is null)
+    {
+        // Allow core.internal.atomic, it is an compiler implementation for a given platform module.
+        // It is then exposed by other modules such as core.atomic and core.stdc.atomic.
+        // This is available as long as druntime is on the import path and the platform supports that operation.
+
+        // https://issues.dlang.org/show_bug.cgi?id=24846
+
+        Package parent = sc._module.parent.isPackage();
+        if (parent !is null)
+        {
+            // This can be easily converted over to apply to core.atomic and core.internal.atomic
+            if (parent.ident == Id.internal)
+            {
+                parent = parent.parent.isPackage();
+
+                if (parent !is null && parent.ident == Id.core && parent.parent is null)
+                   return false;
+            }
+        }
     }
 
     //printf("checkSharedAccess() `%s` returnRef: %d\n", e.toChars(), returnRef);
@@ -17184,8 +17047,11 @@ void semanticTypeInfo(Scope* sc, Type t)
             Scope scx;
             scx.eSink = global.errorSink;
             scx._module = sd.getModule();
-            getTypeInfoType(sd.loc, t, &scx);
-            sd.requestTypeInfo = true;
+            if (global.params.useTypeInfo)
+            {
+                getTypeInfoType(sd.loc, t, &scx);
+                sd.requestTypeInfo = true;
+            }
         }
         else if (!sc.minst)
         {

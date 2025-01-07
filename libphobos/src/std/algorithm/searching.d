@@ -3735,6 +3735,47 @@ if (isInputRange!Range && !isInfinite!Range &&
     assert(arr.minElement!"a.val".val == 0);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24827
+@safe unittest
+{
+    static struct S
+    {
+        int i;
+        bool destroyed;
+
+        this(int i) @safe
+        {
+            this.i = i;
+        }
+
+        ~this() @safe
+        {
+            destroyed = true;
+        }
+
+        bool opEquals()(auto ref S rhs)
+        {
+            return this.i == rhs.i;
+        }
+
+        int opCmp()(auto ref S rhs)
+        {
+            if (this.i < rhs.i)
+                return -1;
+
+            return this.i == rhs.i ? 0 : 1;
+        }
+
+        @safe invariant
+        {
+            assert(!destroyed);
+        }
+    }
+
+    auto arr = [S(19), S(2), S(145), S(7)];
+    assert(minElement(arr) == S(2));
+}
+
 /**
 Iterates the passed range and returns the maximal element.
 A custom mapping function can be passed to `map`.
@@ -3886,6 +3927,47 @@ if (isInputRange!Range && !isInfinite!Range &&
     arr.maxElement!(a => a.getI);
 
     assert(arr[0].getI == 2);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24827
+@safe unittest
+{
+    static struct S
+    {
+        int i;
+        bool destroyed;
+
+        this(int i) @safe
+        {
+            this.i = i;
+        }
+
+        ~this() @safe
+        {
+            destroyed = true;
+        }
+
+        bool opEquals()(auto ref S rhs)
+        {
+            return this.i == rhs.i;
+        }
+
+        int opCmp()(auto ref S rhs)
+        {
+            if (this.i < rhs.i)
+                return -1;
+
+            return this.i == rhs.i ? 0 : 1;
+        }
+
+        @safe invariant
+        {
+            assert(!destroyed);
+        }
+    }
+
+    auto arr = [S(19), S(2), S(145), S(7)];
+    assert(maxElement(arr) == S(145));
 }
 
 // minPos

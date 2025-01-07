@@ -2246,15 +2246,10 @@ public:
 	    new_call = build_nop (type, build_address (var));
 	    setup_exp = modify_expr (var, aggregate_initializer_decl (cd));
 	  }
-	else if (global.params.ehnogc && e->thrownew)
-	  {
-	    /* Allocating a `@nogc' Exception with `_d_newThrowable' has already
-	       been handled by the front-end.  */
-	    gcc_unreachable ();
-	  }
 	else
 	  {
-	    /* Generate: _d_newclass()  */
+	    /* Generate: _d_newclass()
+		     or: _d_newThrowable()  */
 	    new_call = build_expr (e->lowering);
 	  }
 

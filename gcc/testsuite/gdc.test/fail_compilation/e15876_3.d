@@ -16,7 +16,7 @@ fail_compilation/e15876_3.d(29): Error: found `End of File` when expecting `)`
 fail_compilation/e15876_3.d(29): Error: no identifier for declarator `d(_error_ = ()
 {
 for (__error__
- 0; 0)
+ __error; __error)
 {
 __error__
 }

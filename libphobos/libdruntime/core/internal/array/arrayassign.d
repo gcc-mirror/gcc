@@ -347,7 +347,7 @@ Tarr _d_arraysetassign(Tarr : T[], T)(return scope Tarr to, scope ref T value) @
         static if (__traits(isCopyable, T))
             copyEmplace(value, dst);
         else
-            memcpy(cast(void*) &value, cast(void*) &dst, elemSize);
+            memcpy(cast(void*) &dst, cast(void*) &value, elemSize);
         auto elem = cast(Unqual!T*) &tmp;
         destroy(*elem);
     }
@@ -393,6 +393,20 @@ Tarr _d_arraysetassign(Tarr : T[], T)(return scope Tarr to, scope ref T value) @
     _d_arraysetassign(arr[], s);
     assert(ops == "=~=~=~=~");
     assert(arr == [S(1234), S(1234), S(1234), S(1234)]);
+}
+
+// disabled copy constructor
+@safe unittest
+{
+    static struct S
+    {
+        int val;
+        @disable this(ref S);
+    }
+    S[1] arr;
+    S s = S(1234);
+    _d_arraysetassign(arr[], s);
+    assert(arr[0].val == 1234);
 }
 
 // throwing and `nothrow`

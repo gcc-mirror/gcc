@@ -3,8 +3,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag20268.d(12): Error: template `__lambda4` is not callable using argument types `!()(int)`
-fail_compilation/diag20268.d(11):        Candidate is: `__lambda4(__T1, __T2)(x, y)`
+fail_compilation/diag20268.d(12): Error: template `__lambda_L11_C1` is not callable using argument types `!()(int)`
+fail_compilation/diag20268.d(11):        Candidate is: `__lambda_L11_C1(__T1, __T2)(x, y)`
 ---
 */
 

@@ -400,6 +400,10 @@ fpreview=nosharedaccess
 D RejectNegative
 Disable access to shared memory objects.
 
+fpreview=safer
+D RejectNegative
+Enable safety checks on all functions by default.
+
 fpreview=rvaluerefparam
 D RejectNegative
 Enable rvalue arguments to ref parameters.

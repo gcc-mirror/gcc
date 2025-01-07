@@ -11,6 +11,8 @@
 
 module dmd.errorsink;
 
+import core.stdc.stdarg;
+
 import dmd.location;
 
 /***************************************
@@ -21,19 +23,78 @@ abstract class ErrorSink
   nothrow:
   extern (C++):
 
-    void error(const ref Loc loc, const(char)* format, ...);
+    void verror(const ref Loc loc, const(char)* format, va_list ap);
+    void verrorSupplemental(const ref Loc loc, const(char)* format, va_list ap);
+    void vwarning(const ref Loc loc, const(char)* format, va_list ap);
+    void vwarningSupplemental(const ref Loc loc, const(char)* format, va_list ap);
+    void vmessage(const ref Loc loc, const(char)* format, va_list ap);
+    void vdeprecation(const ref Loc loc, const(char)* format, va_list ap);
+    void vdeprecationSupplemental(const ref Loc loc, const(char)* format, va_list ap);
 
-    void errorSupplemental(const ref Loc loc, const(char)* format, ...);
+    void error(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        verror(loc, format, ap);
+        va_end(ap);
+    }
 
-    void warning(const ref Loc loc, const(char)* format, ...);
+    void errorSupplemental(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        verrorSupplemental(loc, format, ap);
+        va_end(ap);
+    }
 
-    void warningSupplemental(const ref Loc loc, const(char)* format, ...);
+    void warning(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vwarning(loc, format, ap);
+        va_end(ap);
+    }
 
-    void message(const ref Loc loc, const(char)* format, ...);
+    void warningSupplemental(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vwarningSupplemental(loc, format, ap);
+        va_end(ap);
+    }
 
-    void deprecation(const ref Loc loc, const(char)* format, ...);
+    void message(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vmessage(loc, format, ap);
+        va_end(ap);
+    }
 
-    void deprecationSupplemental(const ref Loc loc, const(char)* format, ...);
+    void deprecation(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vdeprecation(loc, format, ap);
+        va_end(ap);
+    }
+
+    void deprecationSupplemental(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vdeprecationSupplemental(loc, format, ap);
+        va_end(ap);
+    }
+
+    /**
+     * This will be called to indicate compilation has either
+     * finished or terminated, no more errors are possible - it's
+     * now the time to print any stored errors.
+     *
+     * The default implementation does nothing since most error sinks have no state
+     */
+    void plugSink() {}
 }
 
 /*****************************************
@@ -45,19 +106,19 @@ class ErrorSinkNull : ErrorSink
   extern (C++):
   override:
 
-    void error(const ref Loc loc, const(char)* format, ...) { }
+    void verror(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void errorSupplemental(const ref Loc loc, const(char)* format, ...) { }
+    void verrorSupplemental(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void warning(const ref Loc loc, const(char)* format, ...) { }
+    void vwarning(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void warningSupplemental(const ref Loc loc, const(char)* format, ...) { }
+    void vwarningSupplemental(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void message(const ref Loc loc, const(char)* format, ...) { }
+    void vmessage(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void deprecation(const ref Loc loc, const(char)* format, ...) { }
+    void vdeprecation(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void deprecationSupplemental(const ref Loc loc, const(char)* format, ...) { }
+    void vdeprecationSupplemental(const ref Loc loc, const(char)* format, va_list ap) { }
 }
 
 /*****************************************
@@ -71,7 +132,7 @@ class ErrorSinkLatch : ErrorSinkNull
 
     bool sawErrors;
 
-    void error(const ref Loc loc, const(char)* format, ...) { sawErrors = true; }
+    void verror(const ref Loc loc, const(char)* format, va_list ap) { sawErrors = true; }
 }
 
 /*****************************************
@@ -87,7 +148,7 @@ class ErrorSinkStderr : ErrorSink
   extern (C++):
   override:
 
-    void error(const ref Loc loc, const(char)* format, ...)
+    void verror(const ref Loc loc, const(char)* format, va_list ap)
     {
         fputs("Error: ", stderr);
         const p = loc.toChars();
@@ -97,16 +158,13 @@ class ErrorSinkStderr : ErrorSink
             //mem.xfree(cast(void*)p); // loc should provide the free()
         }
 
-        va_list ap;
-        va_start(ap, format);
         vfprintf(stderr, format, ap);
         fputc('\n', stderr);
-        va_end(ap);
     }
 
-    void errorSupplemental(const ref Loc loc, const(char)* format, ...) { }
+    void verrorSupplemental(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void warning(const ref Loc loc, const(char)* format, ...)
+    void vwarning(const ref Loc loc, const(char)* format, va_list ap)
     {
         fputs("Warning: ", stderr);
         const p = loc.toChars();
@@ -116,16 +174,13 @@ class ErrorSinkStderr : ErrorSink
             //mem.xfree(cast(void*)p); // loc should provide the free()
         }
 
-        va_list ap;
-        va_start(ap, format);
         vfprintf(stderr, format, ap);
         fputc('\n', stderr);
-        va_end(ap);
     }
 
-    void warningSupplemental(const ref Loc loc, const(char)* format, ...) { }
+    void vwarningSupplemental(const ref Loc loc, const(char)* format, va_list ap) { }
 
-    void deprecation(const ref Loc loc, const(char)* format, ...)
+    void vdeprecation(const ref Loc loc, const(char)* format, va_list ap)
     {
         fputs("Deprecation: ", stderr);
         const p = loc.toChars();
@@ -135,14 +190,11 @@ class ErrorSinkStderr : ErrorSink
             //mem.xfree(cast(void*)p); // loc should provide the free()
         }
 
-        va_list ap;
-        va_start(ap, format);
         vfprintf(stderr, format, ap);
         fputc('\n', stderr);
-        va_end(ap);
     }
 
-    void message(const ref Loc loc, const(char)* format, ...)
+    void vmessage(const ref Loc loc, const(char)* format, va_list ap)
     {
         const p = loc.toChars();
         if (*p)
@@ -151,12 +203,9 @@ class ErrorSinkStderr : ErrorSink
             //mem.xfree(cast(void*)p); // loc should provide the free()
         }
 
-        va_list ap;
-        va_start(ap, format);
         vfprintf(stderr, format, ap);
         fputc('\n', stderr);
-        va_end(ap);
     }
 
-    void deprecationSupplemental(const ref Loc loc, const(char)* format, ...) { }
+    void vdeprecationSupplemental(const ref Loc loc, const(char)* format, va_list ap) { }
 }

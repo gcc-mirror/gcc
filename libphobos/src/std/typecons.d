@@ -3104,17 +3104,18 @@ private:
     {
         static if (useQualifierCast)
         {
-            this.data = cast() value;
+            static if (hasElaborateAssign!T)
+            {
+                import core.lifetime : copyEmplace;
+                copyEmplace(cast() value, this.data);
+            }
+            else
+                this.data = cast() value;
         }
         else
         {
-            // As we're escaping a copy of `value`, deliberately leak a copy:
-            static union DontCallDestructor
-            {
-                T value;
-            }
-            DontCallDestructor copy = DontCallDestructor(value);
-            this.data = *cast(Payload*) &copy;
+            import core.lifetime : copyEmplace;
+            copyEmplace(cast() value, cast() *cast(T*) &this.data);
         }
     }
 
@@ -3137,6 +3138,334 @@ private:
 package(std) Rebindable2!T rebindable2(T)(T value)
 {
     return Rebindable2!T(value);
+}
+
+// Verify that the destructor is called properly if there is one.
+@system unittest
+{
+    {
+        bool destroyed;
+
+        struct S
+        {
+            int i;
+
+            this(int i) @safe
+            {
+                this.i = i;
+            }
+
+            ~this() @safe
+            {
+                destroyed = true;
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+
+            // Whether destruction has occurred here depends on whether the
+            // temporary gets moved or not, so we won't assume that it has or
+            // hasn't happened. What we care about here is that foo gets destroyed
+            // properly when it leaves the scope.
+            destroyed = false;
+        }
+        assert(destroyed);
+
+        {
+            auto foo = rebindable2(const S(42));
+            destroyed = false;
+        }
+        assert(destroyed);
+    }
+
+    // Test for double destruction with qualifer cast being used
+    {
+        static struct S
+        {
+            int i;
+            bool destroyed;
+
+            this(int i) @safe
+            {
+                this.i = i;
+            }
+
+            ~this() @safe
+            {
+                destroyed = true;
+            }
+
+            @safe invariant
+            {
+                assert(!destroyed);
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(typeof(foo).useQualifierCast);
+            assert(foo.data.i == 42);
+            assert(!foo.data.destroyed);
+        }
+        {
+            auto foo = rebindable2(S(42));
+            destroy(foo);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            assert(typeof(foo).useQualifierCast);
+            assert(foo.data.i == 42);
+            assert(!foo.data.destroyed);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            destroy(foo);
+        }
+    }
+
+    // Test for double destruction without qualifer cast being used
+    {
+        static struct S
+        {
+            int i;
+            bool destroyed;
+
+            this(int i) @safe
+            {
+                this.i = i;
+            }
+
+            ~this() @safe
+            {
+                destroyed = true;
+            }
+
+            @disable ref S opAssign()(auto ref S rhs);
+
+            @safe invariant
+            {
+                assert(!destroyed);
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(!typeof(foo).useQualifierCast);
+            assert((cast(S*)&(foo.data)).i == 42);
+            assert(!(cast(S*)&(foo.data)).destroyed);
+        }
+        {
+            auto foo = rebindable2(S(42));
+            destroy(foo);
+        }
+    }
+}
+
+// Verify that if there is an overloaded assignment operator, it's not assigned
+// to garbage.
+@safe unittest
+{
+    static struct S
+    {
+        int i;
+        bool destroyed;
+
+        this(int i) @safe
+        {
+            this.i = i;
+        }
+
+        ~this() @safe
+        {
+            destroyed = true;
+        }
+
+        ref opAssign()(auto ref S rhs)
+        {
+            assert(!this.destroyed);
+            this.i = rhs.i;
+            return this;
+        }
+    }
+
+    {
+        auto foo = rebindable2(S(42));
+        foo = S(99);
+        assert(foo.data.i == 99);
+    }
+    {
+        auto foo = rebindable2(S(42));
+        foo = const S(99);
+        assert(foo.data.i == 99);
+    }
+}
+
+// Verify that postblit or copy constructor is called properly if there is one.
+@system unittest
+{
+    // postblit with type qualifier cast
+    {
+        static struct S
+        {
+            int i;
+            static bool copied;
+
+            this(this) @safe
+            {
+                copied = true;
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+
+            // Whether a copy has occurred here depends on whether the
+            // temporary gets moved or not, so we won't assume that it has or
+            // hasn't happened. What we care about here is that foo gets copied
+            // properly when we copy it below.
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            assert(typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+    }
+
+    // copy constructor with type qualifier cast
+    {
+        static struct S
+        {
+            int i;
+            static bool copied;
+
+            this(ref inout S rhs) @safe inout
+            {
+                this.i = i;
+                copied = true;
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+    }
+
+    // FIXME https://issues.dlang.org/show_bug.cgi?id=24829
+
+    // Making this work requires either reworking how the !useQualiferCast
+    // version works so that the compiler can correctly generate postblit
+    // constructors and copy constructors as appropriate, or an explicit
+    // postblit or copy constructor needs to be added for such cases, which
+    // gets pretty complicated if we want to correctly add the same attributes
+    // that T's postblit or copy constructor has.
+
+    /+
+    // postblit without type qualifier cast
+    {
+        static struct S
+        {
+            int* ptr;
+            static bool copied;
+
+            this(int i)
+            {
+                ptr = new int(i);
+            }
+
+            this(this) @safe
+            {
+                if (ptr !is null)
+                    ptr = new int(*ptr);
+                copied = true;
+            }
+
+            @disable ref S opAssign()(auto ref S rhs);
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(!typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+    }
+
+    // copy constructor without type qualifier cast
+    {
+        static struct S
+        {
+            int* ptr;
+            static bool copied;
+
+            this(int i)
+            {
+                ptr = new int(i);
+            }
+
+            this(ref inout S rhs) @safe inout
+            {
+                if (rhs.ptr !is null)
+                    ptr = new inout int(*rhs.ptr);
+                copied = true;
+            }
+
+            @disable ref S opAssign()(auto ref S rhs);
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(!typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+    }
+    +/
 }
 
 /**

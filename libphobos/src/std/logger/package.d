@@ -64,7 +64,7 @@ using the property called `sharedLog`. This property is a reference to the
 current default `Logger`. This reference can be used to assign a new
 default `Logger`.
 -------------
-sharedLog = new FileLogger("New_Default_Log_File.log");
+sharedLog = new shared FileLogger("New_Default_Log_File.log");
 -------------
 
 Additional `Logger` can be created by creating a new instance of the

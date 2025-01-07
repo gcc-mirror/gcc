@@ -2560,9 +2560,6 @@ Lerr:
     string s1 = "123";
     auto a1 = parse!(int, string, Yes.doCount)(s1);
     assert(a1.data == 123 && a1.count == 3);
-
-    // parse only accepts lvalues
-    static assert(!__traits(compiles, parse!int("123")));
 }
 
 ///
@@ -5611,6 +5608,14 @@ Params:
 
 Returns:
     a `string`, a `wstring` or a `dstring`, according to the type of hexData.
+
+See_Also:
+    Use $(REF fromHexString, std, digest) for run time conversions.
+    Note, these functions are not drop-in replacements and have different
+    input requirements.
+    This template inherits its data syntax from builtin
+    $(LINK2 $(ROOT_DIR)spec/lex.html#hex_string, hex strings).
+    See $(REF fromHexString, std, digest) for its own respective requirements.
  */
 template hexString(string hexData)
 if (hexData.isHexLiteral)

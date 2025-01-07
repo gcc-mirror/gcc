@@ -4631,11 +4631,12 @@ else version (Posix)
         if (childpid == 0)
         {
             // Trusted because args and all entries are always zero-terminated
-            (() @trusted =>
-                core.sys.posix.unistd.execvp(args[0], &args[0]) ||
-                perror(args[0]) // failed to execute
-            )();
-            return;
+            (() @trusted {
+                core.sys.posix.unistd.execvp(args[0], &args[0]);
+                perror(args[0]);
+                core.sys.posix.unistd._exit(1);
+            })();
+            assert(0, "Child failed to exec");
         }
         if (browser)
             // Trusted because it's allocated via strdup above

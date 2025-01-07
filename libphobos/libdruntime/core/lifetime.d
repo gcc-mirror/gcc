@@ -2739,8 +2739,11 @@ if (is(T == class))
     auto init = __traits(initSymbol, T);
     void* p;
 
-    static if (__traits(getLinkage, T) == "Windows")
+    static if (__traits(isCOMClass, T))
     {
+        // If this is a COM class we allocate it using malloc.
+        // This allows the reference counting to outlive the reference known about by the GC.
+
         p = pureMalloc(init.length);
         if (!p)
             onOutOfMemoryError();

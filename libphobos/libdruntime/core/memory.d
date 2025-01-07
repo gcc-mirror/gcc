@@ -100,6 +100,10 @@
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Authors:   Sean Kelly, Alex Rønne Petersen
  * Source:    $(DRUNTIMESRC core/_memory.d)
+ * Macros:
+ * WARN_UNINITIALIZED=$(RED Warning):
+ * $1 will be uninitialized, and may happen to hold pointers to GC memory.
+ * Consider zeroing out any uninitialized bytes which won't be immediately written to.
  */
 
 module core.memory;
@@ -400,7 +404,7 @@ extern(D):
      *  a = A bit field containing any bits to set for this memory block.
      *
      * Returns:
-     *  The result of a call to getAttr after the specified bits have been
+     *  The result of a call to $(LREF getAttr) after the specified bits have been
      *  set.
      */
     static uint setAttr( const scope void* p, uint a ) nothrow
@@ -427,7 +431,7 @@ extern(D):
      *  a = A bit field containing any bits to clear for this memory block.
      *
      * Returns:
-     *  The result of a call to getAttr after the specified bits have been
+     *  The result of a call to $(LREF getAttr) after the specified bits have been
      *  cleared.
      */
     static uint clrAttr( const scope void* p, uint a ) nothrow
@@ -461,6 +465,8 @@ extern(C):
      *  A reference to the allocated memory or null if insufficient memory
      *  is available.
      *
+     * $(WARN_UNINITIALIZED Allocated memory)
+     *
      * Throws:
      *  OutOfMemoryError on allocation failure.
      */
@@ -472,7 +478,7 @@ extern(C):
 
     /**
      * Requests an aligned block of managed memory from the garbage collector.
-     * This memory may be deleted at will with a call to free, or it may be
+     * This memory may be deleted at will with a call to $(LREF free), or it may be
      * discarded and cleaned up automatically during a collection run.  If
      * allocation fails, this function will call onOutOfMemory which is
      * expected to throw an OutOfMemoryError.
@@ -486,6 +492,8 @@ extern(C):
      * Returns:
      *  Information regarding the allocated memory block or BlkInfo.init on
      *  error.
+     *
+     * $(WARN_UNINITIALIZED Allocated memory)
      *
      * Throws:
      *  OutOfMemoryError on allocation failure.
@@ -564,6 +572,8 @@ extern(C):
      *  zero or the pointer does not point to the base of an GC allocated
      *  memory block.
      *
+     * $(WARN_UNINITIALIZED Any extra bytes past the initial size)
+     *
      * Throws:
      *  `OutOfMemoryError` on allocation failure.
      */
@@ -607,6 +617,8 @@ extern(C):
      * Returns:
      *  The size in bytes of the extended memory block referenced by p or zero
      *  if no extension occurred.
+     *
+     * $(WARN_UNINITIALIZED Any extension bytes)
      *
      * Note:
      *  Extend may also be used to extend slices (or memory blocks with
@@ -669,7 +681,7 @@ extern(C):
      * If p references memory not originally allocated by this garbage
      * collector, if p points to the interior of a memory block, or if this
      * method is called from a finalizer, no action will be taken.  The block
-     * will not be finalized regardless of whether the FINALIZE attribute is
+     * will not be finalized regardless of whether the $(LREF FINALIZE) attribute is
      * set.  If finalization is desired, call $(REF1 destroy, object) prior to `GC.free`.
      *
      * Params:
@@ -707,7 +719,7 @@ extern(D):
 
     /**
      * Returns the true size of the memory block referenced by p.  This value
-     * represents the maximum number of bytes for which a call to realloc may
+     * represents the maximum number of bytes for which a call to $(LREF realloc) may
      * resize the existing block in place.  If p references memory not
      * originally allocated by this garbage collector, points to the interior
      * of a memory block, or if p is null, zero will be returned.

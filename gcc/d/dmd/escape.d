@@ -180,7 +180,7 @@ bool checkMutableArguments(ref Scope sc, FuncDeclaration fd, TypeFunction tf,
         if (!(eb.isMutable || eb2.isMutable))
             return;
 
-        if (!tf.isLive && !(sc.useDIP1000 == FeatureState.enabled && sc.func && sc.func.setUnsafe()))
+        if (!tf.isLive && !(sc.useDIP1000 == FeatureState.enabled && sc.func && setFunctionToUnsafe(sc.func)))
             return;
 
         if (!gag)

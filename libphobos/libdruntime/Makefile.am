@@ -188,6 +188,7 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/container/treap.d core/internal/convert.d \
 	core/internal/dassert.d core/internal/destruction.d \
 	core/internal/entrypoint.d core/internal/gc/bits.d \
+	core/internal/gc/blkcache.d core/internal/gc/blockmeta.d \
 	core/internal/gc/impl/conservative/gc.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \

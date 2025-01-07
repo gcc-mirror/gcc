@@ -302,7 +302,15 @@ extern (D) bool setGC(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject 
         if (fmt)
             fd.nogcViolation = new AttributeViolation(loc, fmt, fd, arg0); // action that requires GC
         else if (arg0)
-            fd.nogcViolation = new AttributeViolation(loc, fmt, arg0); // call to non-@nogc function
+        {
+            if (auto sa = arg0.isDsymbol())
+            {
+                if (FuncDeclaration fd2 = sa.isFuncDeclaration())
+                {
+                    fd.nogcViolation = new AttributeViolation(loc, fd2); // call to non-@nogc function
+                }
+            }
+        }
 
         fd.type.toTypeFunction().isNogc = false;
         if (fd.fes)

@@ -209,6 +209,7 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/internal/container/treap.lo core/internal/convert.lo \
 	core/internal/dassert.lo core/internal/destruction.lo \
 	core/internal/entrypoint.lo core/internal/gc/bits.lo \
+	core/internal/gc/blkcache.lo core/internal/gc/blockmeta.lo \
 	core/internal/gc/impl/conservative/gc.lo \
 	core/internal/gc/impl/manual/gc.lo \
 	core/internal/gc/impl/proto/gc.lo core/internal/gc/os.lo \
@@ -868,6 +869,7 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/container/treap.d core/internal/convert.d \
 	core/internal/dassert.d core/internal/destruction.d \
 	core/internal/entrypoint.d core/internal/gc/bits.d \
+	core/internal/gc/blkcache.d core/internal/gc/blockmeta.d \
 	core/internal/gc/impl/conservative/gc.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \
@@ -1265,6 +1267,8 @@ core/internal/gc/$(am__dirstamp):
 	@$(MKDIR_P) core/internal/gc
 	@: > core/internal/gc/$(am__dirstamp)
 core/internal/gc/bits.lo: core/internal/gc/$(am__dirstamp)
+core/internal/gc/blkcache.lo: core/internal/gc/$(am__dirstamp)
+core/internal/gc/blockmeta.lo: core/internal/gc/$(am__dirstamp)
 core/internal/gc/impl/conservative/$(am__dirstamp):
 	@$(MKDIR_P) core/internal/gc/impl/conservative
 	@: > core/internal/gc/impl/conservative/$(am__dirstamp)

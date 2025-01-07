@@ -24,7 +24,7 @@ fail_compilation/misc_parser_err_cov1.d(40): Error: identifier or `new` expected
 fail_compilation/misc_parser_err_cov1.d(41): Error: identifier or new keyword expected following `(...)`.
 fail_compilation/misc_parser_err_cov1.d(41): Error: expression expected, not `;`
 fail_compilation/misc_parser_err_cov1.d(42): Error: found `}` when expecting `;` following expression
-fail_compilation/misc_parser_err_cov1.d(41):        expression: `(__error) + 0`
+fail_compilation/misc_parser_err_cov1.d(41):        expression: `(__error) + (__error)`
 fail_compilation/misc_parser_err_cov1.d(43): Error: matching `}` expected following compound statement, not `End of File`
 fail_compilation/misc_parser_err_cov1.d(33):        unmatched `{`
 ---

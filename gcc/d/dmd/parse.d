@@ -6812,7 +6812,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             {
                 case TOK.identifier:
                 {
-
                     if (commaExpected)
                         error("comma expected separating field initializers");
                     const t = peek(&token);
@@ -6846,6 +6845,20 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 default:
                     if (commaExpected)
                         error("comma expected separating field initializers");
+                    const t = peek(&token);
+                    if (t.value == TOK.colon)
+                    {
+                        error("incorrect syntax for associative array, expected `[]`, found `{}`");
+                        while (token.value != TOK.rightCurly && token.value != TOK.endOfFile)
+                        {
+                            nextToken();
+                        }
+                        if (token.value == TOK.rightCurly)
+                        {
+                            nextToken();
+                        }
+                        break;
+                    }
                     auto value = parseInitializer();
                     _is.addInit(null, value);
                     commaExpected = true;
@@ -8647,7 +8660,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             error("expression expected, not `%s`", token.toChars());
         Lerr:
             // Anything for e, as long as it's not NULL
-            e = new AST.IntegerExp(loc, 0, AST.Type.tint32);
+            e = AST.ErrorExp.get();
             nextToken();
             break;
         }

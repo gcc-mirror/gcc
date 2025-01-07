@@ -1252,7 +1252,13 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                 //printf("farg = %s %s\n", farg.type.toChars(), farg.toChars());
 
                 RootObject oarg = farg;
-                if ((fparam.storageClass & STC.ref_) && (!(fparam.storageClass & STC.auto_) || farg.isLvalue()))
+
+                if (farg.isFuncExp())
+                {
+                    // When assigning an untyped (void) lambda `x => y` to a `(F)(ref F)` parameter,
+                    // we don't want to deduce type void creating a void parameter
+                }
+                else if ((fparam.storageClass & STC.ref_) && (!(fparam.storageClass & STC.auto_) || farg.isLvalue()))
                 {
                     /* Allow expressions that have CT-known boundaries and type [] to match with [dim]
                      */

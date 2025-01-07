@@ -223,7 +223,7 @@ private:
     }
 
     // Convert the current value to signed exponent, normalized form
-    void toNormalized(T,U)(ref T sig, ref U exp)
+    void toNormalized(T,U)(ref T sig, ref U exp) const
     {
         sig = significand;
         auto shift = (T.sizeof*8) - precision;
@@ -490,7 +490,7 @@ public:
     }
 
     /// Returns: real part
-    @property CustomFloat re() { return this; }
+    @property CustomFloat re() const { return this; }
 
     /// Returns: imaginary part
     static @property CustomFloat im() { return CustomFloat(0.0f); }
@@ -546,7 +546,7 @@ public:
     }
 
     /// Fetches the stored value either as a `float`, `double` or `real`.
-    @property F get(F)()
+    @property F get(F)() const
     if (staticIndexOf!(immutable F, immutable float, immutable double, immutable real) >= 0)
     {
         import std.conv : text;
@@ -591,14 +591,14 @@ public:
     // Define an opBinary `CustomFloat op CustomFloat` so that those below
     // do not match equally, which is disallowed by the spec:
     // https://dlang.org/spec/operatoroverloading.html#binary
-    real opBinary(string op,T)(T b)
+    real opBinary(string op,T)(T b) const
     if (__traits(compiles, mixin(`get!real`~op~`b.get!real`)))
     {
         return mixin(`get!real`~op~`b.get!real`);
     }
 
     /// ditto
-    real opBinary(string op,T)(T b)
+    real opBinary(string op,T)(T b) const
     if ( __traits(compiles, mixin(`get!real`~op~`b`)) &&
         !__traits(compiles, mixin(`get!real`~op~`b.get!real`)))
     {
@@ -606,7 +606,7 @@ public:
     }
 
     /// ditto
-    real opBinaryRight(string op,T)(T a)
+    real opBinaryRight(string op,T)(T a) const
     if ( __traits(compiles, mixin(`a`~op~`get!real`)) &&
         !__traits(compiles, mixin(`get!real`~op~`b`)) &&
         !__traits(compiles, mixin(`get!real`~op~`b.get!real`)))
@@ -615,7 +615,7 @@ public:
     }
 
     /// ditto
-    int opCmp(T)(auto ref T b)
+    int opCmp(T)(auto ref T b) const
     if (__traits(compiles, cast(real) b))
     {
         auto x = get!real;
@@ -947,6 +947,17 @@ public:
 
     cf a;
     assertThrown!AssertError(a = float.infinity);
+}
+
+@safe unittest
+{
+    const CustomFloat!16 x = CustomFloat!16(3);
+    assert(x.get!float == 3);
+    assert(x.re.get!float == 3);
+    assert(x + x == 6);
+    assert(x + 1 == 4);
+    assert(2 + x == 5);
+    assert(x < 4);
 }
 
 private bool isCorrectCustomFloat(uint precision, uint exponentWidth, CustomFloatFlags flags) @safe pure nothrow @nogc

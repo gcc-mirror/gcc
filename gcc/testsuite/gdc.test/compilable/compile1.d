@@ -861,7 +861,7 @@ S14166 s14166;
 
 struct X14166 { this(int) { } X14166 opAssign(int) { return this; } }
 X14166[int] aa14166;
-X14166[int] makeAA14166() { return aa14166; }
+ref X14166[int] makeAA14166() { return aa14166; }
 
 struct Tup14166(T...) { T field; alias field this; }
 Tup14166!(int, int) tup14166;

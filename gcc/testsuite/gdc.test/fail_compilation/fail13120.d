@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13120.d(13): Error: `pure` delegate `fail13120.g1.__foreachbody2` cannot call impure function `fail13120.f1`
-fail_compilation/fail13120.d(13): Error: `@nogc` delegate `fail13120.g1.__foreachbody2` cannot call non-@nogc function `fail13120.f1`
+fail_compilation/fail13120.d(13): Error: `pure` delegate `fail13120.g1.__foreachbody_L12_C5` cannot call impure function `fail13120.f1`
+fail_compilation/fail13120.d(13): Error: `@nogc` delegate `fail13120.g1.__foreachbody_L12_C5` cannot call non-@nogc function `fail13120.f1`
 ---
 */
 void f1() {}

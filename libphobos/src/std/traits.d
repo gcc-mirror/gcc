@@ -7251,16 +7251,21 @@ alias PointerTarget(T : T*) = T;
 /**
  * Detect whether type `T` is an aggregate type.
  */
-enum bool isAggregateType(T) = is(T == struct) || is(T == union) ||
-                               is(T == class) || is(T == interface);
+template isAggregateType(T)
+{
+    static if (is(T == enum))
+        enum isAggregateType = isAggregateType!(OriginalType!T);
+    else
+        enum isAggregateType = is(T == struct) || is(T == class) || is(T == interface) || is(T == union);
+}
 
 ///
 @safe unittest
 {
-    class C;
-    union U;
-    struct S;
-    interface I;
+    class C {}
+    union U {}
+    struct S {}
+    interface I {}
 
     static assert( isAggregateType!C);
     static assert( isAggregateType!U);
@@ -7271,6 +7276,16 @@ enum bool isAggregateType(T) = is(T == struct) || is(T == union) ||
     static assert(!isAggregateType!(int[]));
     static assert(!isAggregateType!(C[string]));
     static assert(!isAggregateType!(void delegate(int)));
+
+    enum ES : S { a = S.init }
+    enum EC : C { a = C.init }
+    enum EI : I { a = I.init }
+    enum EU : U { a = U.init }
+
+    static assert( isAggregateType!ES);
+    static assert( isAggregateType!EC);
+    static assert( isAggregateType!EI);
+    static assert( isAggregateType!EU);
 }
 
 /**
@@ -9238,12 +9253,16 @@ enum isCopyable(S) = __traits(isCopyable, S);
  * is the same as `T`. For pointer and slice types, it is `T` with the
  * outer-most layer of qualifiers dropped.
  */
-package(std) template DeducedParameterType(T)
+package(std) alias DeducedParameterType(T) = DeducedParameterTypeImpl!T;
+/// ditto
+package(std) alias DeducedParameterType(alias T) = DeducedParameterTypeImpl!T;
+
+private template DeducedParameterTypeImpl(T)
 {
     static if (is(T == U*, U) || is(T == U[], U))
-        alias DeducedParameterType = Unqual!T;
+        alias DeducedParameterTypeImpl = Unqual!T;
     else
-        alias DeducedParameterType = T;
+        alias DeducedParameterTypeImpl = T;
 }
 
 @safe unittest
@@ -9263,6 +9282,7 @@ package(std) template DeducedParameterType(T)
     }
 
     static assert(is(DeducedParameterType!NoCopy == NoCopy));
+    static assert(is(DeducedParameterType!(inout(NoCopy)) == inout(NoCopy)));
 }
 
 @safe unittest

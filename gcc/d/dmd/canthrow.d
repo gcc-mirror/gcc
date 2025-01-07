@@ -80,7 +80,7 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
                 {
                     eSink.error(e.loc, "%s `%s` is not `nothrow`", f.kind(), f.toPrettyChars());
                     if (!f.isDtorDeclaration())
-                        errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
+                        errorSupplementalInferredAttr(f, 10, false, STC.nothrow_, eSink);
 
                     import dmd.expressionsem : checkOverriddenDtor;
                     f.checkOverriddenDtor(null, e.loc, dd => dd.type.toTypeFunction().isNothrow, "not nothrow");

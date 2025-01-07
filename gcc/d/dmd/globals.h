@@ -191,6 +191,9 @@ struct Param
                                  // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
                                  // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
                                  // Implementation: https://github.com/dlang/dmd/pull/9817
+    FeatureState safer;          // safer by default (more @safe checks in unattributed code)
+				 // https://github.com/WalterBright/documents/blob/38f0a846726b571f8108f6e63e5e217b91421c86/safer.md
+
     FeatureState noSharedAccess; // read/write access to shared memory objects
     d_bool previewIn;              // `in` means `[ref] scope const`, accepts rvalues
     d_bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
@@ -349,6 +352,13 @@ struct Global
     void increaseErrorCount();
 
     void _init();
+
+    /**
+     * Indicate to stateful error sinks that no more errors can be produced.
+     * This is to support error sinks that collect information to produce a
+     * single (say) report.
+     */
+    void plugErrorSinks();
 
     /**
     Returns: the version as the number that would be returned for __VERSION__
