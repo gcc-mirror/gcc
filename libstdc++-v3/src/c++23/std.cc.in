@@ -3173,6 +3173,9 @@ export namespace std
   using std::make_pair;
   using std::piecewise_construct;
   using std::piecewise_construct_t;
+#if __cpp_lib_to_underlying
+  using std::to_underlying;
+#endif
   using std::tuple_element;
   using std::tuple_size;
 #pragma GCC diagnostic push
