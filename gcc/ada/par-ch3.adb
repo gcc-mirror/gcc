@@ -3061,7 +3061,16 @@ package body Ch3 is
          Range_Node := New_Node (N_Range, Token_Ptr);
          Set_Low_Bound (Range_Node, Expr_Node);
 
-         if Style_Check then
+         --  If the bound doesn't require parentheses, then emit a style
+         --  check. Parentheses that change an "expression" syntax node into a
+         --  "simple expression" are required; we filter those nodes both here
+         --  and inside Check_Xtra_Parens itself.
+
+         if Style_Check
+           and then Nkind (Expr_Node) not in N_Membership_Test
+                                           | N_Op_Boolean
+                                           | N_Short_Circuit
+         then
             Style.Check_Xtra_Parens (Expr_Node);
          end if;
 
@@ -3070,10 +3079,7 @@ package body Ch3 is
          Check_Simple_Expression (Expr_Node);
          Set_High_Bound (Range_Node, Expr_Node);
 
-         --  If the upper bound doesn't require parentheses, then emit a style
-         --  check. Parentheses that make "expression" syntax nodes a "simple
-         --  expression" are required; we filter those nodes both here and
-         --  inside Check_Xtra_Parens itself.
+         --  Check for extra parentheses like for the lower bound
 
          if Style_Check
            and then Nkind (Expr_Node) not in N_Membership_Test
