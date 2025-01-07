@@ -464,13 +464,12 @@ register_vector_type (vector_type_index type)
 }
 
 /* Return a structure type that contains a single field of type FIELD_TYPE.
-   The field is called __val, but that's an internal detail rather than
-   an exposed part of the API.  */
+   The field is called 'val', as mandated by ACLE.  */
 static tree
 wrap_type_in_struct (tree field_type)
 {
   tree field = build_decl (input_location, FIELD_DECL,
-			   get_identifier ("__val"), field_type);
+			   get_identifier ("val"), field_type);
   tree struct_type = lang_hooks.types.make_type (RECORD_TYPE);
   DECL_FIELD_CONTEXT (field) = struct_type;
   TYPE_FIELDS (struct_type) = field;
