@@ -47,6 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup utilities
    */
   template<typename _Tp>
+    __attribute__((__always_inline__))
     inline _GLIBCXX_CONSTEXPR _Tp*
     __addressof(_Tp& __r) _GLIBCXX_NOEXCEPT
     { return __builtin_addressof(__r); }
@@ -66,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++11
    */
   template<typename _Tp>
-    _GLIBCXX_NODISCARD
+    [[__nodiscard__,__gnu__::__always_inline__]]
     constexpr _Tp&&
     forward(typename std::remove_reference<_Tp>::type& __t) noexcept
     { return static_cast<_Tp&&>(__t); }
@@ -79,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++11
    */
   template<typename _Tp>
-    _GLIBCXX_NODISCARD
+    [[__nodiscard__,__gnu__::__always_inline__]]
     constexpr _Tp&&
     forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
     {
@@ -119,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++23
    */
   template<typename _Tp, typename _Up>
-  [[nodiscard]]
+  [[nodiscard,__gnu__::__always_inline__]]
   constexpr __like_t<_Tp, _Up>
   forward_like(_Up&& __x) noexcept
   { return static_cast<__like_t<_Tp, _Up>>(__x); }
@@ -132,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++11
   */
   template<typename _Tp>
-    _GLIBCXX_NODISCARD
+    [[__nodiscard__,__gnu__::__always_inline__]]
     constexpr typename std::remove_reference<_Tp>::type&&
     move(_Tp&& __t) noexcept
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
@@ -153,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++11
    */
   template<typename _Tp>
-    _GLIBCXX_NODISCARD
+    [[__nodiscard__,__gnu__::__always_inline__]]
     constexpr
     __conditional_t<__move_if_noexcept_cond<_Tp>::value, const _Tp&, _Tp&&>
     move_if_noexcept(_Tp& __x) noexcept
@@ -170,10 +171,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++11
   */
   template<typename _Tp>
-    _GLIBCXX_NODISCARD
+    [[__nodiscard__,__gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR _Tp*
     addressof(_Tp& __r) noexcept
-    { return __builtin_addressof(__r); }
+    { return std::__addressof(__r); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2598. addressof works on temporaries
