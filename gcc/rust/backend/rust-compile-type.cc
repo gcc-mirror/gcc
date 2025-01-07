@@ -298,21 +298,39 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
       // Ada, qual_union_types might still work for this but I am not 100% sure.
       // I ran into some issues lets reuse our normal union and ask Ada people
       // about it.
+      //
+      // I think the above is actually wrong and it should actually be this
+      //
+      // struct {
+      //     int RUST$ENUM$DISR; // take into account the repr for this TODO
+      //     union {
+      //         // Variant A
+      //         struct {
+      //             // No additional fields
+      //         } A;
+
+      //         // Variant B
+      //         struct {
+      //             // No additional fields
+      //         } B;
+
+      //         // Variant C
+      //         struct {
+      //             char c;
+      //         } C;
+
+      //         // Variant D
+      //         struct {
+      //             int64_t x;
+      //             int64_t y;
+      //         } D;
+      //     } payload; // The union of all variant data
+      // };
 
       std::vector<tree> variant_records;
       for (auto &variant : type.get_variants ())
 	{
 	  std::vector<Backend::typed_identifier> fields;
-
-	  // add in the qualifier field for the variant
-	  tree enumeral_type
-	    = TyTyResolveCompile::get_implicit_enumeral_node_type ();
-	  Backend::typed_identifier f (RUST_ENUM_DISR_FIELD_NAME, enumeral_type,
-				       ctx->get_mappings ().lookup_location (
-					 variant->get_id ()));
-	  fields.push_back (std::move (f));
-
-	  // compile the rest of the fields
 	  for (size_t i = 0; i < variant->num_fields (); i++)
 	    {
 	      const TyTy::StructFieldType *field
@@ -336,9 +354,6 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	    = Backend::named_type (variant->get_ident ().path.get (),
 				   variant_record, variant->get_ident ().locus);
 
-	  // set the qualifier to be a builtin
-	  DECL_ARTIFICIAL (TYPE_FIELDS (variant_record)) = 1;
-
 	  // add them to the list
 	  variant_records.push_back (named_variant_record);
 	}
@@ -359,8 +374,27 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	  enum_fields.push_back (std::move (f));
 	}
 
+      //
+      location_t locus = ctx->get_mappings ().lookup_location (type.get_ref ());
+
       // finally make the union or the enum
-      type_record = Backend::union_type (enum_fields, false);
+      tree variants_union = Backend::union_type (enum_fields, false);
+      layout_type (variants_union);
+      tree named_union_record
+	= Backend::named_type ("payload", variants_union, locus);
+
+      // create the overall struct
+      tree enumeral_type
+	= TyTyResolveCompile::get_implicit_enumeral_node_type ();
+      Backend::typed_identifier discrim (RUST_ENUM_DISR_FIELD_NAME,
+					 enumeral_type, locus);
+      Backend::typed_identifier variants_union_field ("payload",
+						      named_union_record,
+						      locus);
+
+      std::vector<Backend::typed_identifier> fields
+	= {discrim, variants_union_field};
+      type_record = Backend::struct_type (fields, false);
     }
 
   // Handle repr options

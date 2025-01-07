@@ -21,6 +21,7 @@
 #include "rust-compile-resolve-path.h"
 #include "rust-constexpr.h"
 #include "rust-compile-type.h"
+#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -57,11 +58,8 @@ CompilePatternCheckExpr::visit (HIR::PathInExpression &pattern)
   rust_assert (ok);
 
   // find discriminant field of scrutinee
-  tree scrutinee_record_expr
-    = Backend::struct_field_expression (match_scrutinee_expr, 0,
-					pattern.get_locus ());
   tree scrutinee_expr_qualifier_expr
-    = Backend::struct_field_expression (scrutinee_record_expr, 0,
+    = Backend::struct_field_expression (match_scrutinee_expr, 0,
 					pattern.get_locus ());
 
   // must be enum
@@ -227,11 +225,8 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 
       // find discriminant field of scrutinee
-      tree scrutinee_record_expr
-	= Backend::struct_field_expression (match_scrutinee_expr, variant_index,
-					    pattern.get_path ().get_locus ());
       tree scrutinee_expr_qualifier_expr
-	= Backend::struct_field_expression (scrutinee_record_expr, 0,
+	= Backend::struct_field_expression (match_scrutinee_expr, 0,
 					    pattern.get_path ().get_locus ());
 
       check_expr
@@ -240,7 +235,7 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 					  discrim_expr_node,
 					  pattern.get_path ().get_locus ());
 
-      match_scrutinee_expr = scrutinee_record_expr;
+      match_scrutinee_expr = scrutinee_expr_qualifier_expr;
     }
   else
     {
@@ -295,8 +290,6 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 void
 CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 {
-  size_t tuple_field_index;
-
   // lookup the type
   TyTy::BaseType *lookup = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (
@@ -307,6 +300,7 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
   rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
 
+  int variant_index = 0;
   rust_assert (adt->number_of_variants () > 0);
   TyTy::VariantDef *variant = nullptr;
   if (adt->is_enum ())
@@ -317,7 +311,6 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
       rust_assert (ok);
 
-      int variant_index = 0;
       ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
       rust_assert (ok);
 
@@ -326,11 +319,8 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 
       // find discriminant field of scrutinee
-      tree scrutinee_record_expr
-	= Backend::struct_field_expression (match_scrutinee_expr, variant_index,
-					    pattern.get_path ().get_locus ());
       tree scrutinee_expr_qualifier_expr
-	= Backend::struct_field_expression (scrutinee_record_expr, 0,
+	= Backend::struct_field_expression (match_scrutinee_expr, 0,
 					    pattern.get_path ().get_locus ());
 
       check_expr
@@ -338,17 +328,11 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 					  scrutinee_expr_qualifier_expr,
 					  discrim_expr_node,
 					  pattern.get_path ().get_locus ());
-
-      match_scrutinee_expr = scrutinee_record_expr;
-      // we are offsetting by + 1 here since the first field in the record
-      // is always the discriminator
-      tuple_field_index = 1;
     }
   else
     {
       variant = adt->get_variants ().at (0);
       check_expr = boolean_true_node;
-      tuple_field_index = 0;
     }
 
   HIR::TupleStructItems &items = pattern.get_items ();
@@ -367,10 +351,20 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
 
+	size_t tuple_field_index = 0;
 	for (auto &pattern : items_no_range.get_patterns ())
 	  {
+	    // find payload union field of scrutinee
+	    tree payload_ref
+	      = Backend::struct_field_expression (match_scrutinee_expr, 1,
+						  pattern->get_locus ());
+
+	    tree variant_ref
+	      = Backend::struct_field_expression (payload_ref, variant_index,
+						  pattern->get_locus ());
+
 	    tree field_expr
-	      = Backend::struct_field_expression (match_scrutinee_expr,
+	      = Backend::struct_field_expression (variant_ref,
 						  tuple_field_index++,
 						  pattern->get_locus ());
 
@@ -470,13 +464,15 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 
 	if (adt->is_enum ())
 	  {
-	    // we are offsetting by + 1 here since the first field in the record
-	    // is always the discriminator
-	    size_t tuple_field_index = 1;
+	    size_t tuple_field_index = 0;
 	    for (auto &pattern : items_no_range.get_patterns ())
 	      {
+		tree payload_accessor_union
+		  = Backend::struct_field_expression (match_scrutinee_expr, 1,
+						      pattern->get_locus ());
+
 		tree variant_accessor
-		  = Backend::struct_field_expression (match_scrutinee_expr,
+		  = Backend::struct_field_expression (payload_accessor_union,
 						      variant_index,
 						      pattern->get_locus ());
 
@@ -569,16 +565,18 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	    tree binding = error_mark_node;
 	    if (adt->is_enum ())
 	      {
+		tree payload_accessor_union
+		  = Backend::struct_field_expression (match_scrutinee_expr, 1,
+						      ident.get_locus ());
+
 		tree variant_accessor
-		  = Backend::struct_field_expression (match_scrutinee_expr,
+		  = Backend::struct_field_expression (payload_accessor_union,
 						      variant_index,
 						      ident.get_locus ());
 
-		// we are offsetting by + 1 here since the first field in the
-		// record is always the discriminator
-		binding = Backend::struct_field_expression (variant_accessor,
-							    offs + 1,
-							    ident.get_locus ());
+		binding
+		  = Backend::struct_field_expression (variant_accessor, offs,
+						      ident.get_locus ());
 	      }
 	    else
 	      {

@@ -558,24 +558,32 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
 	}
     }
 
-  // the constructor depends on whether this is actually an enum or not if
-  // its an enum we need to setup the discriminator
-  std::vector<tree> ctor_arguments;
-  if (adt->is_enum ())
+  if (!adt->is_enum ())
     {
-      HIR::Expr &discrim_expr = variant->get_discriminant ();
-      tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
-      tree folded_discrim_expr = fold_expr (discrim_expr_node);
-      tree qualifier = folded_discrim_expr;
-
-      ctor_arguments.push_back (qualifier);
+      translated
+	= Backend::constructor_expression (compiled_adt_type, adt->is_enum (),
+					   arguments, union_disriminator,
+					   struct_expr.get_locus ());
+      return;
     }
-  for (auto &arg : arguments)
-    ctor_arguments.push_back (arg);
+
+  HIR::Expr &discrim_expr = variant->get_discriminant ();
+  tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+  tree folded_discrim_expr = fold_expr (discrim_expr_node);
+  tree qualifier = folded_discrim_expr;
+
+  tree enum_root_files = TYPE_FIELDS (compiled_adt_type);
+  tree payload_root = DECL_CHAIN (enum_root_files);
+
+  tree payload = Backend::constructor_expression (TREE_TYPE (payload_root),
+						  adt->is_enum (), arguments,
+						  union_disriminator,
+						  struct_expr.get_locus ());
+
+  std::vector<tree> ctor_arguments = {qualifier, payload};
 
   translated
-    = Backend::constructor_expression (compiled_adt_type, adt->is_enum (),
-				       ctor_arguments, union_disriminator,
+    = Backend::constructor_expression (compiled_adt_type, 0, ctor_arguments, -1,
 				       struct_expr.get_locus ());
 }
 
@@ -1247,25 +1255,33 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	  arguments.push_back (rvalue);
 	}
 
-      // the constructor depends on whether this is actually an enum or not if
-      // its an enum we need to setup the discriminator
-      std::vector<tree> ctor_arguments;
-      if (adt->is_enum ())
+      if (!adt->is_enum ())
 	{
-	  HIR::Expr &discrim_expr = variant->get_discriminant ();
-	  tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
-	  tree folded_discrim_expr = fold_expr (discrim_expr_node);
-	  tree qualifier = folded_discrim_expr;
-
-	  ctor_arguments.push_back (qualifier);
+	  translated
+	    = Backend::constructor_expression (compiled_adt_type,
+					       adt->is_enum (), arguments,
+					       union_disriminator,
+					       expr.get_locus ());
+	  return;
 	}
-      for (auto &arg : arguments)
-	ctor_arguments.push_back (arg);
 
-      translated
-	= Backend::constructor_expression (compiled_adt_type, adt->is_enum (),
-					   ctor_arguments, union_disriminator,
+      HIR::Expr &discrim_expr = variant->get_discriminant ();
+      tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+      tree folded_discrim_expr = fold_expr (discrim_expr_node);
+      tree qualifier = folded_discrim_expr;
+
+      tree enum_root_files = TYPE_FIELDS (compiled_adt_type);
+      tree payload_root = DECL_CHAIN (enum_root_files);
+
+      tree payload
+	= Backend::constructor_expression (TREE_TYPE (payload_root), true,
+					   {arguments}, union_disriminator,
 					   expr.get_locus ());
+
+      std::vector<tree> ctor_arguments = {qualifier, payload};
+      translated = Backend::constructor_expression (compiled_adt_type, false,
+						    ctor_arguments, -1,
+						    expr.get_locus ());
 
       return;
     }
