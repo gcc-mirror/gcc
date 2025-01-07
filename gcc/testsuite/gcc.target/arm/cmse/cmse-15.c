@@ -65,6 +65,10 @@ int nonsecure1 (ns_foo_t ** ns_foo_p)
 **	bl	__gnu_cmse_nonsecure_call
 ** |
 **	b	nonsecure0
+** |
+**	push	{r4, lr}
+**	bl	nonsecure0
+**	pop	{r4, pc}
 ** )
 **	...
 */
@@ -129,6 +133,10 @@ int secure1 (s_bar_t ** s_bar_p)
 **	blx	r[0-3]
 ** |
 **	b	secure0
+** |
+**	push	{r4, lr}
+**	bl	secure0
+**	pop	{r4, pc}
 ** )
 **	...
 */
@@ -146,6 +154,10 @@ int secure2 (s_bar_ptr s_bar_p)
 **	blx	r[0-3]
 ** |
 **	b	secure1
+** |
+**	push	{r4, lr}
+**	bl	secure1
+**	pop	{r4, pc}
 ** )
 **	...
 */
