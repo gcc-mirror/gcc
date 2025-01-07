@@ -1366,6 +1366,8 @@ void
 TypeCheckExpr::visit (HIR::BorrowExpr &expr)
 {
   TyTy::BaseType *resolved_base = TypeCheckExpr::Resolve (expr.get_expr ());
+  if (resolved_base->is<TyTy::ErrorType> ())
+    return;
 
   // In Rust this is valid because of DST's
   //
