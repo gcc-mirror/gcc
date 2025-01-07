@@ -2928,3 +2928,29 @@
     riscv_vector::expand_strided_store (<MODE>mode, operands);
     DONE;
   })
+
+; ========
+; == Absolute difference (not including sum)
+; ========
+(define_expand "uabd<mode>3"
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")
+   (match_operand:V_VLSI 2 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    rtx max = gen_reg_rtx (<MODE>mode);
+    insn_code icode = code_for_pred (UMAX, <MODE>mode);
+    rtx ops1[] = {max, operands[1], operands[2]};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
+
+    rtx min = gen_reg_rtx (<MODE>mode);
+    icode = code_for_pred (UMIN, <MODE>mode);
+    rtx ops2[] = {min, operands[1], operands[2]};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops2);
+
+    icode = code_for_pred (MINUS, <MODE>mode);
+    rtx ops3[] = {operands[0], max, min};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops3);
+
+    DONE;
+  });
