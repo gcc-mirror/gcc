@@ -214,4 +214,6 @@ extern void loongarch_emit_swrsqrtsf (rtx, rtx, machine_mode, bool);
 extern void loongarch_emit_swdivsf (rtx, rtx, rtx, machine_mode);
 extern bool loongarch_explicit_relocs_p (enum loongarch_symbol_type);
 extern bool loongarch_symbol_extreme_p (enum loongarch_symbol_type);
+extern bool loongarch_option_valid_attribute_p (tree, tree, tree, int);
+extern void loongarch_option_override_internal (struct loongarch_target *, struct gcc_options *, struct gcc_options *);
 #endif /* ! GCC_LOONGARCH_PROTOS_H */

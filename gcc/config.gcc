@@ -494,7 +494,7 @@ loongarch*-*-*)
 	cpu_type=loongarch
 	d_target_objs="loongarch-d.o"
 	extra_headers="larchintrin.h lsxintrin.h lasxintrin.h"
-	extra_objs="loongarch-c.o loongarch-builtins.o loongarch-cpu.o loongarch-opts.o loongarch-def.o loongarch-evolution.o"
+	extra_objs="loongarch-c.o loongarch-builtins.o loongarch-cpu.o loongarch-opts.o loongarch-def.o loongarch-evolution.o loongarch-target-attr.o"
 	extra_gcc_objs="loongarch-driver.o loongarch-cpu.o loongarch-opts.o loongarch-def.o"
 	extra_options="${extra_options} g.opt fused-madd.opt"
 	;;

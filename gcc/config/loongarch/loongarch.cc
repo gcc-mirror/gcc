@@ -7718,7 +7718,7 @@ loongarch_reg_init (void)
 	= loongarch_hard_regno_mode_ok_uncached (regno, (machine_mode) mode);
 }
 
-static void
+void
 loongarch_option_override_internal (struct loongarch_target *target,
 				    struct gcc_options *opts,
 				    struct gcc_options *opts_set)
@@ -7743,9 +7743,6 @@ loongarch_option_override_internal (struct loongarch_target *target,
 
   /* Override some options according to the resolved target.  */
   loongarch_target_option_override (target, opts, opts_set);
-
-  target_option_default_node = target_option_current_node
-    = build_target_option_node (opts, opts_set);
 
   loongarch_reg_init ();
 }
@@ -7785,10 +7782,15 @@ loongarch_set_current_function (tree fndecl)
   else
     old_tree = target_option_default_node;
 
+  /* When the function is optimized, the pop_cfun will be called, and
+     the fndecl will be NULL.  */
   if (fndecl == NULL_TREE)
     {
       if (old_tree != target_option_current_node)
 	{
+	  /* When this function is set with special options, we need to
+	     restore the original global optimization options at the end
+	     of function optimization.  */
 	  loongarch_previous_fndecl = NULL_TREE;
 	  cl_target_option_restore (&global_options, &global_options_set,
 				    TREE_TARGET_OPTION
@@ -7798,6 +7800,9 @@ loongarch_set_current_function (tree fndecl)
     }
 
   tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+
+  /* When no separate compilation parameters are set for the function,
+    new_tree is NULL.  */
   if (new_tree == NULL_TREE)
     new_tree = target_option_default_node;
 
@@ -7806,9 +7811,14 @@ loongarch_set_current_function (tree fndecl)
   if (new_tree == old_tree)
     return;
 
+  /* According to the settings of the functions attribute and pragma,
+     the options is corrected.  */
   cl_target_option_restore (&global_options, &global_options_set,
 			    TREE_TARGET_OPTION (new_tree));
 
+  /* After correcting the value of options, we need to update the
+     rules for using the hardware registers to ensure that the
+     rules correspond to the options.  */
   loongarch_reg_init ();
 
   loongarch_save_restore_target_globals (new_tree);
@@ -7828,6 +7838,11 @@ loongarch_option_override (void)
   loongarch_option_override_internal (&la_target,
 				      &global_options,
 				      &global_options_set);
+
+  /* Save the initial options so that we can restore the initial option
+     settings later when processing attributes and pragmas.  */
+  target_option_default_node = target_option_current_node
+    = build_target_option_node (&global_options, &global_options_set);
 
 }
 
@@ -11397,6 +11412,9 @@ loongarch_asm_code_end (void)
 
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE loongarch_c_mode_for_floating_type
+
+#undef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P loongarch_option_valid_attribute_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
