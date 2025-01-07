@@ -349,6 +349,16 @@ loongarch_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   tree new_target, new_optimize;
   tree existing_target = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
 
+  /* If what we're processing is the current pragma string then the
+     target option node is already stored in target_option_current_node
+     by loongarch_pragma_target_parse in loongarch-target-attr.cc.
+     Use that to avoid having to re-parse the string.  */
+  if (!existing_target && args == current_target_pragma)
+    {
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = target_option_current_node;
+      return true;
+    }
+
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
 
   old_optimize
@@ -410,4 +420,53 @@ loongarch_option_valid_attribute_p (tree fndecl, tree, tree args, int)
     cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (old_optimize));
   return ret;
+}
+
+/* Hook to validate the current #pragma GCC target and set the state, and
+   update the macros based on what was changed.  If ARGS is NULL, then
+   POP_TARGET is used to reset the options.  */
+
+static bool
+loongarch_pragma_target_parse (tree args, tree pop_target)
+{
+  /* If args is not NULL then process it and setup the target-specific
+     information that it specifies.  */
+  if (args)
+    {
+      if (!loongarch_process_target_attr (args, NULL))
+	return false;
+
+      loongarch_option_override_internal (&la_target,
+					  &global_options,
+					  &global_options_set);
+    }
+
+  /* args is NULL, restore to the state described in pop_target.  */
+  else
+    {
+      pop_target = pop_target ? pop_target : target_option_default_node;
+      cl_target_option_restore (&global_options, &global_options_set,
+				TREE_TARGET_OPTION (pop_target));
+    }
+
+  target_option_current_node
+    = build_target_option_node (&global_options, &global_options_set);
+
+  loongarch_reset_previous_fndecl ();
+
+  /* If we're popping or reseting make sure to update the globals so that
+     the optab availability predicates get recomputed.  */
+  if (pop_target)
+    loongarch_save_restore_target_globals (pop_target);
+
+  return true;
+}
+
+/* Implement REGISTER_TARGET_PRAGMAS.  */
+
+void
+loongarch_register_pragmas (void)
+{
+  /* Update pragma hook to allow parsing #pragma GCC target.  */
+  targetm.target_option.pragma_parse = loongarch_pragma_target_parse;
 }

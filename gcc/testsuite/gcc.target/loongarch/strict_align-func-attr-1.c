@@ -3,7 +3,11 @@
 extern char a[8];
 extern char b[8];
 
+#ifndef TEST_TARGET_PRAGMA
 __attribute__ ((target ("no-strict-align")))
+#else
+#pragma GCC target ("no-strict-align")
+#endif
 void
 test (void)
 {

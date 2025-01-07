@@ -216,4 +216,7 @@ extern bool loongarch_explicit_relocs_p (enum loongarch_symbol_type);
 extern bool loongarch_symbol_extreme_p (enum loongarch_symbol_type);
 extern bool loongarch_option_valid_attribute_p (tree, tree, tree, int);
 extern void loongarch_option_override_internal (struct loongarch_target *, struct gcc_options *, struct gcc_options *);
+extern void loongarch_reset_previous_fndecl (void);
+extern void loongarch_save_restore_target_globals (tree new_tree);
+extern void loongarch_register_pragmas (void);
 #endif /* ! GCC_LOONGARCH_PROTOS_H */

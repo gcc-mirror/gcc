@@ -28457,6 +28457,7 @@ option is specified.  @xref{OpenMP}, and @ref{OpenACC}.
 @menu
 * AArch64 Pragmas::
 * ARM Pragmas::
+* LoongArch Pragmas::
 * M32C Pragmas::
 * PRU Pragmas::
 * RS/6000 and PowerPC Pragmas::
@@ -28508,6 +28509,18 @@ Set all subsequent functions to have the @code{short_call} attribute.
 Do not affect the @code{long_call} or @code{short_call} attributes of
 subsequent functions.
 @end table
+
+@node LoongArch Pragmas
+@subsection LoongArch Pragmas
+
+The list of attributes supported by Pragma is the same as that of target
+function attributres.  @xref{LoongArch Function Attributes}.
+
+Example:
+
+@smallexample
+#pragma GCC target("strict-align")
+@end smallexample
 
 @node M32C Pragmas
 @subsection M32C Pragmas

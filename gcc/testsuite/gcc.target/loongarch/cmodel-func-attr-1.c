@@ -4,7 +4,11 @@
 extern char a[8];
 extern char b[8];
 
+#ifndef TEST_TARGET_PRAGMA
 __attribute__ ((target ("cmodel=extreme")))
+#else
+#pragma GCC target ("cmodel=extreme")
+#endif
 void
 test (void)
 {

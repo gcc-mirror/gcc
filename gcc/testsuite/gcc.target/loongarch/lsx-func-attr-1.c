@@ -4,7 +4,11 @@
 typedef int v4i32 __attribute__ ((vector_size(16), aligned(16)));
 extern v4i32 a, b, c;
 
+#ifndef TEST_TARGET_PRAGMA
 __attribute__ ((target ("lsx")))
+#else
+#pragma GCC target ("lsx")
+#endif
 void
 test (void)
 {

@@ -7751,11 +7751,17 @@ loongarch_option_override_internal (struct loongarch_target *target,
 
 static GTY(()) tree loongarch_previous_fndecl;
 
+void
+loongarch_reset_previous_fndecl (void)
+{
+  loongarch_previous_fndecl = NULL;
+}
+
 /* Restore or save the TREE_TARGET_GLOBALS from or to new_tree.
    Used by loongarch_set_current_function to
    make sure optab availability predicates are recomputed when necessary.  */
 
-static void
+void
 loongarch_save_restore_target_globals (tree new_tree)
 {
   if (TREE_TARGET_GLOBALS (new_tree))
@@ -7808,13 +7814,12 @@ loongarch_set_current_function (tree fndecl)
 
   loongarch_previous_fndecl = fndecl;
 
-  if (new_tree == old_tree)
-    return;
+  if (new_tree != old_tree)
+    /* According to the settings of the functions attribute and pragma,
+       the options is corrected.  */
+    cl_target_option_restore (&global_options, &global_options_set,
+			      TREE_TARGET_OPTION (new_tree));
 
-  /* According to the settings of the functions attribute and pragma,
-     the options is corrected.  */
-  cl_target_option_restore (&global_options, &global_options_set,
-			    TREE_TARGET_OPTION (new_tree));
 
   /* After correcting the value of options, we need to update the
      rules for using the hardware registers to ensure that the
