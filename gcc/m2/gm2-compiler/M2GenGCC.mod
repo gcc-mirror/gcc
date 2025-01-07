@@ -1660,7 +1660,7 @@ BEGIN
    THEN
       RETURN GetSizeOfHighFromUnbounded(tokenno, param)
    ELSE
-      RETURN BuildSize(tokenno, Mod2Gcc(GetType(param)), FALSE)
+      RETURN BuildSize (TokenToLocation (tokenno), Mod2Gcc (GetType (param)), FALSE)
    END
 END GetParamSize ;
 

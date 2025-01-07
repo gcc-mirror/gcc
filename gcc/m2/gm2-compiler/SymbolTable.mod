@@ -3940,7 +3940,8 @@ BEGIN
       HasVarArgs := FALSE ;        (* Does the procedure use ... ?  *)
       HasOptArg := FALSE ;         (* Does this procedure use [ ] ? *)
       IsNoReturn := FALSE ;        (* Declared attribute noreturn ? *)
-      ReturnOptional := FALSE      (* Is the return value optional? *)
+      ReturnOptional := FALSE ;    (* Is the return value optional? *)
+      ProcedureTok := UnknownTokenNo
    END
 END InitProcedureDeclaration ;
 

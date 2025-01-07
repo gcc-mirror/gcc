@@ -1042,7 +1042,8 @@ BEGIN
                    'first proper declaration of procedure {%1Ea}', ProcSym) ;
       MetaErrorT1 (tok, 'procedure {%1Ea} has already been declared', ProcSym)
    ELSE
-      PutProcedureDeclaredTok (ProcSym, ProperProcedure, tok)
+      PutProcedureDeclaredTok (ProcSym, ProperProcedure, tok) ;
+      PutProcedureDefined (ProcSym, ProperProcedure)
    END ;
    Assert (NOT CompilingDefinitionModule()) ;
    LeaveBlock

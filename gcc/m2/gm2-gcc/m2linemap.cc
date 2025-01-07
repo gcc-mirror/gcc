@@ -126,6 +126,7 @@ m2linemap_GetLocationBinary (location_t caret, location_t start, location_t fini
       linemap_add (line_table, LC_ENTER, false, xstrdup (m2linemap_GetFilenameFromLocation (start)), 1);
       gcc_assert (inFile);
       location_t location = make_location (caret, start, finish);
+      linemap_add (line_table, LC_LEAVE, false, NULL, 0);
       return location;
     }
   return caret;

@@ -24,6 +24,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #if !defined (_mcPreprocess_H)
 #   define _mcPreprocess_H
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #   ifdef __cplusplus

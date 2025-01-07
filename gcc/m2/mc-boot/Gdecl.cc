@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -210,7 +211,7 @@ typedef struct decl__T1_r decl__T1;
 
 typedef decl__T1 *decl_group;
 
-typedef enum {decl_explist, decl_funccall, decl_exit, decl_return, decl_stmtseq, decl_comment, decl_halt, decl_new, decl_dispose, decl_inc, decl_dec, decl_incl, decl_excl, decl_length, decl_nil, decl_true, decl_false, decl_address, decl_loc, decl_byte, decl_word, decl_csizet, decl_cssizet, decl_char, decl_cardinal, decl_longcard, decl_shortcard, decl_integer, decl_longint, decl_shortint, decl_real, decl_longreal, decl_shortreal, decl_bitset, decl_boolean, decl_proc, decl_ztype, decl_rtype, decl_complex, decl_longcomplex, decl_shortcomplex, decl_type, decl_record, decl_varient, decl_var, decl_enumeration, decl_subrange, decl_array, decl_subscript, decl_string, decl_const, decl_literal, decl_varparam, decl_param, decl_varargs, decl_optarg, decl_pointer, decl_recordfield, decl_varientfield, decl_enumerationfield, decl_set, decl_proctype, decl_procedure, decl_def, decl_imp, decl_module, decl_loop, decl_while, decl_for, decl_repeat, decl_case, decl_caselabellist, decl_caselist, decl_range, decl_assignment, decl_if, decl_elsif, decl_constexp, decl_neg, decl_cast, decl_val, decl_plus, decl_sub, decl_div, decl_mod, decl_mult, decl_divide, decl_in, decl_adr, decl_size, decl_tsize, decl_ord, decl_float, decl_trunc, decl_chr, decl_abs, decl_cap, decl_high, decl_throw, decl_unreachable, decl_cmplx, decl_re, decl_im, decl_min, decl_max, decl_componentref, decl_pointerref, decl_arrayref, decl_deref, decl_equal, decl_notequal, decl_less, decl_greater, decl_greequal, decl_lessequal, decl_lsl, decl_lsr, decl_lor, decl_land, decl_lnot, decl_lxor, decl_and, decl_or, decl_not, decl_identlist, decl_vardecl, decl_setvalue, decl_opaquecast} decl_nodeT;
+typedef enum {decl_explist, decl_funccall, decl_exit, decl_return, decl_stmtseq, decl_comment, decl_halt, decl_new, decl_dispose, decl_inc, decl_dec, decl_incl, decl_excl, decl_length, decl_nil, decl_true, decl_false, decl_address, decl_loc, decl_byte, decl_word, decl_csizet, decl_cssizet, decl_cofft, decl_cardinal64, decl_char, decl_cardinal, decl_longcard, decl_shortcard, decl_integer, decl_longint, decl_shortint, decl_real, decl_longreal, decl_shortreal, decl_bitset, decl_boolean, decl_proc, decl_ztype, decl_rtype, decl_complex, decl_longcomplex, decl_shortcomplex, decl_type, decl_record, decl_varient, decl_var, decl_enumeration, decl_subrange, decl_array, decl_subscript, decl_string, decl_const, decl_literal, decl_varparam, decl_param, decl_varargs, decl_optarg, decl_pointer, decl_recordfield, decl_varientfield, decl_enumerationfield, decl_set, decl_proctype, decl_procedure, decl_def, decl_imp, decl_module, decl_loop, decl_while, decl_for, decl_repeat, decl_case, decl_caselabellist, decl_caselist, decl_range, decl_assignment, decl_if, decl_elsif, decl_constexp, decl_neg, decl_cast, decl_val, decl_plus, decl_sub, decl_div, decl_mod, decl_mult, decl_divide, decl_in, decl_adr, decl_size, decl_tsize, decl_ord, decl_float, decl_trunc, decl_chr, decl_abs, decl_cap, decl_high, decl_throw, decl_unreachable, decl_cmplx, decl_re, decl_im, decl_min, decl_max, decl_componentref, decl_pointerref, decl_arrayref, decl_deref, decl_equal, decl_notequal, decl_less, decl_greater, decl_greequal, decl_lessequal, decl_lsl, decl_lsr, decl_lor, decl_land, decl_lnot, decl_lxor, decl_and, decl_or, decl_not, decl_identlist, decl_vardecl, decl_setvalue, decl_opaquecast} decl_nodeT;
 
 typedef enum {decl_ansiC, decl_ansiCP, decl_pim4} decl_language;
 
@@ -744,6 +745,8 @@ static decl_node__opaque byteN;
 static decl_node__opaque wordN;
 static decl_node__opaque csizetN;
 static decl_node__opaque cssizetN;
+static decl_node__opaque cofftN;
+static decl_node__opaque cardinal64N;
 static decl_node__opaque adrN;
 static decl_node__opaque sizeN;
 static decl_node__opaque tsizeN;
@@ -1155,7 +1158,7 @@ extern "C" bool decl_isProcType (decl_node n);
 extern "C" bool decl_isPointer (decl_node n);
 
 /*
-   isProcedure - returns TRUE if, n, is a procedure.
+   isProcedure - returns TRUE if node, n, is a procedure.
 */
 
 extern "C" bool decl_isProcedure (decl_node n);
@@ -7847,6 +7850,8 @@ static decl_node__opaque makeBase (decl_nodeT k)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
       case decl_char:
       case decl_cardinal:
       case decl_longcard:
@@ -7910,6 +7915,8 @@ static bool isOrdinal (decl_node__opaque n)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
       case decl_char:
       case decl_integer:
       case decl_longint:
@@ -8074,6 +8081,14 @@ static decl_node__opaque doGetExprType (decl_node__opaque n)
         break;
 
       case decl_cssizet:
+        return n;
+        break;
+
+      case decl_cofft:
+        return n;
+        break;
+
+      case decl_cardinal64:
         return n;
         break;
 
@@ -9890,6 +9905,8 @@ static void doExprC (mcPretty_pretty p, decl_node__opaque n)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
         doSystemC (p, n);
         break;
 
@@ -12971,26 +12988,13 @@ static bool isSystem (decl_node__opaque n)
   switch (n->kind)
     {
       case decl_address:
-        return true;
-        break;
-
       case decl_loc:
-        return true;
-        break;
-
       case decl_byte:
-        return true;
-        break;
-
       case decl_word:
-        return true;
-        break;
-
       case decl_csizet:
-        return true;
-        break;
-
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
         return true;
         break;
 
@@ -13041,6 +13045,16 @@ static void doSystemC (mcPretty_pretty p, decl_node__opaque n)
         outText (p, (const char *) "ssize_t", 7);
         mcPretty_setNeedSpace (p);
         keyc_useSSize_t ();
+        break;
+
+      case decl_cofft:
+        outText (p, (const char *) "off_t", 5);
+        mcPretty_setNeedSpace (p);
+        break;
+
+      case decl_cardinal64:
+        outText (p, (const char *) "uint64_t", 8);
+        mcPretty_setNeedSpace (p);
         break;
 
 
@@ -18846,6 +18860,8 @@ static decl_dependentState doDependants (alists_alist l, decl_node__opaque n)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
       case decl_boolean:
       case decl_char:
       case decl_cardinal:
@@ -19850,6 +19866,8 @@ static void visitDependants (alists_alist v, decl_node__opaque n, decl_nodeProce
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
       case decl_char:
       case decl_cardinal:
       case decl_longcard:
@@ -20168,6 +20186,8 @@ static DynamicStrings_String genKind (decl_node__opaque n)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
       case decl_char:
       case decl_cardinal:
       case decl_longcard:
@@ -21676,6 +21696,8 @@ static void doSystemM2 (mcPretty_pretty p, decl_node__opaque n)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
         doNameM2 (p, n);
         break;
 
@@ -22781,6 +22803,8 @@ static decl_node__opaque doDupExpr (decl_node__opaque n)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
       case decl_boolean:
       case decl_proc:
       case decl_char:
@@ -22945,6 +22969,8 @@ static void makeSystem (void)
   wordN = makeBase (decl_word);
   csizetN = makeBase (decl_csizet);
   cssizetN = makeBase (decl_cssizet);
+  cofftN = makeBase (decl_cofft);
+  cardinal64N = makeBase (decl_cardinal64);
   adrN = makeBase (decl_adr);
   tsizeN = makeBase (decl_tsize);
   throwN = makeBase (decl_throw);
@@ -22955,6 +22981,8 @@ static void makeSystem (void)
   wordN = addToScope (wordN);
   csizetN = addToScope (csizetN);
   cssizetN = addToScope (cssizetN);
+  cofftN = addToScope (cofftN);
+  cardinal64N = addToScope (cardinal64N);
   adrN = addToScope (adrN);
   tsizeN = addToScope (tsizeN);
   throwN = addToScope (throwN);
@@ -22967,6 +22995,8 @@ static void makeSystem (void)
   addDone (wordN);
   addDone (csizetN);
   addDone (cssizetN);
+  addDone (cofftN);
+  addDone (cardinal64N);
 }
 
 
@@ -23741,6 +23771,14 @@ extern "C" decl_node decl_getType (decl_node n)
         return n;
         break;
 
+      case decl_cofft:
+        return n;
+        break;
+
+      case decl_cardinal64:
+        return n;
+        break;
+
       case decl_boolean:
         /* base types.  */
         return n;
@@ -24222,6 +24260,8 @@ extern "C" decl_node decl_getScope (decl_node n)
       case decl_word:
       case decl_csizet:
       case decl_cssizet:
+      case decl_cofft:
+      case decl_cardinal64:
         return static_cast<decl_node> (systemN);
         break;
 
@@ -24685,7 +24725,7 @@ extern "C" bool decl_isPointer (decl_node n)
 
 
 /*
-   isProcedure - returns TRUE if, n, is a procedure.
+   isProcedure - returns TRUE if node, n, is a procedure.
 */
 
 extern "C" bool decl_isProcedure (decl_node n)
@@ -25279,6 +25319,14 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
 
       case decl_cssizet:
         return nameKey_makeKey ((const char *) "CSSIZE_T", 8);
+        break;
+
+      case decl_cofft:
+        return nameKey_makeKey ((const char *) "COFF_T", 6);
+        break;
+
+      case decl_cardinal64:
+        return nameKey_makeKey ((const char *) "CARDINAL64", 10);
         break;
 
       case decl_boolean:

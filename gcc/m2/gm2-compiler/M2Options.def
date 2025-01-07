@@ -1136,6 +1136,20 @@ PROCEDURE SetEnableForward (value: BOOLEAN) ;
 
 
 (*
+   SetFileOffsetBits - set the number of bits used by SYSTEM.COFF_T to bits.
+*)
+
+PROCEDURE SetFileOffsetBits (value: BOOLEAN; bits: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetFileOffsetBits - return the number of bits used by SYSTEM.COFF_T.
+*)
+
+PROCEDURE GetFileOffsetBits () : CARDINAL ;
+
+
+(*
    FinaliseOptions - once all options have been parsed we set any inferred
                      values.
 *)

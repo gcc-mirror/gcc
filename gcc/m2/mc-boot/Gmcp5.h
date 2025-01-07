@@ -24,6 +24,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #if !defined (_mcp5_H)
 #   define _mcp5_H
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #   ifdef __cplusplus

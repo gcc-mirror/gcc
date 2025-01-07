@@ -42,6 +42,7 @@ EXPORT QUALIFIED
                  Address,          (* System Type *)
                  CSizeT,           (* System Type *)
                  CSSizeT,          (* System Type *)
+                 COffT,          (* System Type *)
 
                  Adr,              (* System Function *)
                  TSize,            (* System Function *)
@@ -75,6 +76,7 @@ VAR
    Word, Byte,
    Address,
    CSizeT, CSSizeT,
+   COffT,
 
    Adr,
    TSize, TBitSize,

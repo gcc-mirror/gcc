@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 DEFINITION MODULE FOR "C" libc ;
 
-FROM SYSTEM IMPORT ADDRESS, CSIZE_T, CSSIZE_T ;
+FROM SYSTEM IMPORT ADDRESS, CSIZE_T, CSSIZE_T, COFF_T ;
 
 EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
                    atof, atoi, atol, atoll,
@@ -311,7 +311,7 @@ PROCEDURE creat (filename: ADDRESS; mode: CARDINAL) : INTEGER;
            off_t lseek(int fildes, off_t offset, int whence);
 *)
 
-PROCEDURE lseek (fd: INTEGER; offset: CSSIZE_T; whence: INTEGER) : [ CSSIZE_T ] ;
+PROCEDURE lseek (fd: INTEGER; offset: CSSIZE_T; whence: INTEGER) : [ COFF_T ] ;
 
 
 (*

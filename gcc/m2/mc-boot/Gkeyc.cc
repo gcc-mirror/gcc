@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -575,6 +576,7 @@ static void checkGccConfigSystem (mcPretty_pretty p)
       if (! initializedGCC)
         {
           initializedGCC = true;
+          mcPretty_print (p, (const char *) "#define INCLUDE_MEMORY\\n", 24);
           mcPretty_print (p, (const char *) "#include \"config.h\"\\n", 21);
           mcPretty_print (p, (const char *) "#include \"system.h\"\\n", 21);
           checkGccTypes (p);

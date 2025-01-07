@@ -154,6 +154,10 @@ fm2-dump-filter=
 Modula-2 Joined
 filter the language dump using a comma separated list of procedures and modules
 
+fm2-file-offset-bits=
+Modula-2 Joined
+override the default 64 bit definition of SYSTEM.COFF_T with the argument specified
+
 fm2-g
 Modula-2
 generate extra nops to improve debugging, producing an instruction for every code related keyword

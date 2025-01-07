@@ -500,6 +500,10 @@ the previous forms could be:
 @code{-fm2-dump-filter=m2pim.StrIO.WriteString} and
 @code{-fm2-dump-filter=StrLib.mod:StrIO.WriteString}.
 
+@item -fm2-file-offset-bits=
+force the type @code{SYSTEM.COFF_T} to be built using the specified
+number of bits.  If this option is not used then default is 64 bits.
+
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
 of generating @code{nop} instructions if necessary to ensure single

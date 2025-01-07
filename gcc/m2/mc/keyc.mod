@@ -265,16 +265,6 @@ END useUCharMin ;
 
 
 (*
-   useUIntMin - indicate we have used UINT_MIN.
-*)
-
-PROCEDURE useUIntMin ;
-BEGIN
-   seenUIntMin := TRUE
-END useUIntMin ;
-
-
-(*
    useIntMax - indicate we have used INT_MAX.
 *)
 
@@ -332,16 +322,6 @@ PROCEDURE useUCharMax ;
 BEGIN
    seenUCharMax := TRUE
 END useUCharMax ;
-
-
-(*
-   useUIntMax - indicate we have used UINT_MAX.
-*)
-
-PROCEDURE useUIntMax ;
-BEGIN
-   seenUIntMax := TRUE
-END useUIntMax ;
 
 
 (*

@@ -182,12 +182,13 @@ PROCEDURE stop ; BEGIN END stop ;
    Debug - call stop if symbol name is name.
 *)
 
-PROCEDURE Debug (sym: CARDINAL; name: ARRAY OF CHAR) ;
+PROCEDURE Debug (tok: CARDINAL; sym: CARDINAL; name: ARRAY OF CHAR) ;
 BEGIN
    IF MakeKey (name) = GetSymName (sym)
    THEN
       stop
-   END
+   END ;
+   MetaErrorT1 (tok, 'procedure {%1Wa}', sym)
 END Debug ;
 
 
@@ -1503,7 +1504,7 @@ BEGIN
    PopT (ParamTotal) ;
    ProcSym := CARDINAL (OperandT (3 + CARDINAL (OperandT (3)) + 2)) ;
    tok := CARDINAL (OperandTok (3 + CARDINAL (OperandT (3)) + 2)) ;
-   Debug (ProcSym, 'foo') ;
+   (* Debug (tok, ProcSym, 'foo') ;   *)
    curkind := GetProcedureKind (ProcSym, tok) ;
    PushT (ParamTotal) ;
    Annotate ("%1d||running total of no. of parameters") ;

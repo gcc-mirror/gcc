@@ -130,7 +130,7 @@ EXTERN tree m2type_GetShortCardType (void);
 EXTERN tree m2type_GetProcType (void);
 EXTERN tree m2type_GetCSizeTType (void);
 EXTERN tree m2type_GetCSSizeTType (void);
-
+EXTERN tree m2type_GetCOffTType (void);
 EXTERN tree m2type_GetM2CType (void);
 
 EXTERN tree m2type_GetBitsetType (void);

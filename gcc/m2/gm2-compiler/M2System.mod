@@ -86,7 +86,8 @@ FROM m2type IMPORT GetMaxFrom, GetMinFrom,
                    GetM2Real32, GetM2Real64, GetM2Real96, GetM2Real128,
                    GetM2Complex32, GetM2Complex64, GetM2Complex96, GetM2Complex128,
                    GetBitsetType, GetISOByteType, GetISOWordType,
-		   GetCSizeTType, GetCSSizeTType, InitSystemTypes ;
+		   GetCSizeTType, GetCSSizeTType, GetCOffTType,
+                   InitSystemTypes ;
 
 FROM m2expr IMPORT BuildSize, GetSizeOf, AreConstantsEqual ;
 
@@ -327,7 +328,8 @@ END InitISOTypes ;
 PROCEDURE MakeExtraSystemTypes ;
 BEGIN
    CSizeT  := CreateType ('CSIZE_T' , '', '', TRUE, GetCSizeTType ()) ;
-   CSSizeT := CreateType ('CSSIZE_T', '', '', TRUE, GetCSSizeTType ())
+   CSSizeT := CreateType ('CSSIZE_T', '', '', TRUE, GetCSSizeTType ()) ;
+   COffT := CreateType ('COFF_T', '', '', TRUE, GetCOffTType ()) ;
 END MakeExtraSystemTypes ;
 
 

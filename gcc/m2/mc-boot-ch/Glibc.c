@@ -356,7 +356,7 @@ off_t
 libc_lseek (int fd, off_t offset, int whence)
 {
   tracedb ("libc_lseek (%s, %p, %d)\n", fd, offset, whence);
-  int result = lseek (fd, offset, whence);
+  off_t result = lseek (fd, offset, whence);
   tracedb_result (result);
   return result;
 }

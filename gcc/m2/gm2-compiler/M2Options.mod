@@ -95,6 +95,7 @@ VAR
    UselistFlag,
    CC1Quiet,
    SeenSources          : BOOLEAN ;
+   OffTBits             : CARDINAL ;
    ForcedLocationValue  : location_t ;
 
 
@@ -2029,6 +2030,30 @@ BEGIN
 END SetEnableForward ;
 
 
+(*
+   SetFileOffsetBits - create SYSTEM.COFF_T as a signed integer of size bits.
+*)
+
+PROCEDURE SetFileOffsetBits (value: BOOLEAN; bits: CARDINAL) : BOOLEAN ;
+BEGIN
+   IF value
+   THEN
+      OffTBits := bits
+   END ;
+   RETURN TRUE
+END SetFileOffsetBits ;
+
+
+(*
+   GetFileOffsetBits - return the number of bits used to create SYSTEM.COFF_T.
+*)
+
+PROCEDURE GetFileOffsetBits () : CARDINAL ;
+BEGIN
+   RETURN OffTBits
+END GetFileOffsetBits ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -2121,5 +2146,6 @@ BEGIN
    DumpGimple                        := FALSE ;
    M2Dump                            := NIL ;
    M2DumpFilter                      := NIL ;
-   EnableForward                     := TRUE
+   EnableForward                     := TRUE ;
+   OffTBits                          := 64 ;  (* Default to 64bit OFF_T.  *)
 END M2Options.
