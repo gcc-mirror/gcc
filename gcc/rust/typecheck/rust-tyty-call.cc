@@ -140,13 +140,8 @@ TypeCheckCallExpr::visit (FnType &type)
     {
       location_t arg_locus = argument->get_locus ();
       auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (*argument);
-      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-	{
-	  rust_error_at (
-	    argument->get_locus (),
-	    "failed to resolve type for argument expr in CallExpr");
-	  return;
-	}
+      if (argument_expr_tyty->is<TyTy::ErrorType> ())
+	return;
 
       // it might be a variadic function
       if (i < type.num_params ())
