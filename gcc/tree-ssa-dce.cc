@@ -1857,12 +1857,22 @@ make_forwarders_with_degenerate_phis (function *fn)
 		    }
 		  free_dominance_info (fn, CDI_DOMINATORS);
 		  basic_block forwarder = split_edge (args[start].first);
+		  bool irr = false;
 		  for (unsigned j = start + 1; j < i; ++j)
 		    {
 		      edge e = args[j].first;
+		      if (e->flags & EDGE_IRREDUCIBLE_LOOP)
+			irr = true;
 		      redirect_edge_and_branch_force (e, forwarder);
 		      redirect_edge_var_map_clear (e);
 		    }
+		  if (irr)
+		    {
+		      forwarder->flags |= BB_IRREDUCIBLE_LOOP;
+		      single_succ_edge (forwarder)->flags
+			|= EDGE_IRREDUCIBLE_LOOP;
+		    }
+
 		  if (vphi)
 		    {
 		      tree def = copy_ssa_name (vphi_args[0]);
