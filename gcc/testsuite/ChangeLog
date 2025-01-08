@@ -1,3 +1,657 @@
+2025-01-07  Vineet Gupta  <vineetg@rivosinc.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	PR target/117722
+	* gcc.target/riscv/rvv/autovec/pr117722.c: New test.
+
+2025-01-07  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* gcc.target/riscv/rvv/autovec/pr113469.c: Update expected output.
+	* gcc.target/riscv/rvv/base/movqi-1.c: New test.
+
+2025-01-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-3.c: Update expected
+	output.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-12.c: Likewise.
+
+2025-01-07  Andreas Schwab  <schwab@suse.de>
+
+	* lib/target-supports.exp
+	(check_effective_target_sync_char_short): Enable for riscv*-*-*.
+
+2025-01-07  Andreas Schwab  <schwab@suse.de>
+
+	PR target/118137
+	* gcc.dg/atomic/pr118137.c: New.
+
+2025-01-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/pr90838-2.c: Skip if default ABI is E.
+	* gcc.dg/pr90838.c: Ditto.
+	* gcc.target/riscv/adddibeq.c: Ditto.
+	* gcc.target/riscv/adddibfeq.c: Ditto.
+	* gcc.target/riscv/adddibfge.c: Ditto.
+	* gcc.target/riscv/adddibfgt.c: Ditto.
+	* gcc.target/riscv/adddibfle.c: Ditto.
+	* gcc.target/riscv/adddibflt.c: Ditto.
+	* gcc.target/riscv/adddibfne.c: Ditto.
+	* gcc.target/riscv/adddibge.c: Ditto.
+	* gcc.target/riscv/adddibgeu.c: Ditto.
+	* gcc.target/riscv/adddibgt.c: Ditto.
+	* gcc.target/riscv/adddibgtu.c: Ditto.
+	* gcc.target/riscv/adddible.c: Ditto.
+	* gcc.target/riscv/adddibleu.c: Ditto.
+	* gcc.target/riscv/adddiblt.c: Ditto.
+	* gcc.target/riscv/adddibltu.c: Ditto.
+	* gcc.target/riscv/adddibne.c: Ditto.
+	* gcc.target/riscv/adddieq.c: Ditto.
+	* gcc.target/riscv/adddifeq.c: Ditto.
+	* gcc.target/riscv/adddifge.c: Ditto.
+	* gcc.target/riscv/adddifgt.c: Ditto.
+	* gcc.target/riscv/adddifle.c: Ditto.
+	* gcc.target/riscv/adddiflt.c: Ditto.
+	* gcc.target/riscv/adddifne.c: Ditto.
+	* gcc.target/riscv/adddige.c: Ditto.
+	* gcc.target/riscv/adddigeu.c: Ditto.
+	* gcc.target/riscv/adddigt.c: Ditto.
+	* gcc.target/riscv/adddigtu.c: Ditto.
+	* gcc.target/riscv/adddile.c: Ditto.
+	* gcc.target/riscv/adddileu.c: Ditto.
+	* gcc.target/riscv/adddilt.c: Ditto.
+	* gcc.target/riscv/adddiltu.c: Ditto.
+	* gcc.target/riscv/adddine.c: Ditto.
+	* gcc.target/riscv/addsibeq.c: Ditto.
+	* gcc.target/riscv/addsibfeq.c: Ditto.
+	* gcc.target/riscv/addsibfge.c: Ditto.
+	* gcc.target/riscv/addsibfgt.c: Ditto.
+	* gcc.target/riscv/addsibfle.c: Ditto.
+	* gcc.target/riscv/addsibflt.c: Ditto.
+	* gcc.target/riscv/addsibfne.c: Ditto.
+	* gcc.target/riscv/addsibge.c: Ditto.
+	* gcc.target/riscv/addsibgeu.c: Ditto.
+	* gcc.target/riscv/addsibgt.c: Ditto.
+	* gcc.target/riscv/addsibgtu.c: Ditto.
+	* gcc.target/riscv/addsible.c: Ditto.
+	* gcc.target/riscv/addsibleu.c: Ditto.
+	* gcc.target/riscv/addsiblt.c: Ditto.
+	* gcc.target/riscv/addsibltu.c: Ditto.
+	* gcc.target/riscv/addsibne.c: Ditto.
+	* gcc.target/riscv/addsieq.c: Ditto.
+	* gcc.target/riscv/addsifeq.c: Ditto.
+	* gcc.target/riscv/addsifge.c: Ditto.
+	* gcc.target/riscv/addsifgt.c: Ditto.
+	* gcc.target/riscv/addsifle.c: Ditto.
+	* gcc.target/riscv/addsiflt.c: Ditto.
+	* gcc.target/riscv/addsifne.c: Ditto.
+	* gcc.target/riscv/addsige.c: Ditto.
+	* gcc.target/riscv/addsigeu.c: Ditto.
+	* gcc.target/riscv/addsigt.c: Ditto.
+	* gcc.target/riscv/addsigtu.c: Ditto.
+	* gcc.target/riscv/addsile.c: Ditto.
+	* gcc.target/riscv/addsileu.c: Ditto.
+	* gcc.target/riscv/addsilt.c: Ditto.
+	* gcc.target/riscv/addsiltu.c: Ditto.
+	* gcc.target/riscv/addsine.c: Ditto.
+	* gcc.target/riscv/cmo-zicboz-zic64-1.c: Ditto.
+	* gcc.target/riscv/cmpmemsi-2.c: Ditto.
+	* gcc.target/riscv/cmpmemsi-3.c: Ditto.
+	* gcc.target/riscv/cmpmemsi.c: Ditto.
+	* gcc.target/riscv/cpymemsi-2.c: Ditto.
+	* gcc.target/riscv/cpymemsi-3.c: Ditto.
+	* gcc.target/riscv/cpymemsi.c: Ditto.
+	* gcc.target/riscv/crc-builtin-zbc32.c: Ditto.
+	* gcc.target/riscv/crc-builtin-zbc64.c: Ditto.
+	* gcc.target/riscv/cset-sext-rtl.c: Ditto.
+	* gcc.target/riscv/cset-sext-rtl32.c: Ditto.
+	* gcc.target/riscv/cset-sext-sfb-rtl.c: Ditto.
+	* gcc.target/riscv/cset-sext-sfb-rtl32.c: Ditto.
+	* gcc.target/riscv/cset-sext-sfb.c: Ditto.
+	* gcc.target/riscv/cset-sext-thead-rtl.c: Ditto.
+	* gcc.target/riscv/cset-sext-thead.c: Ditto.
+	* gcc.target/riscv/cset-sext-ventana-rtl.c: Ditto.
+	* gcc.target/riscv/cset-sext-ventana.c: Ditto.
+	* gcc.target/riscv/cset-sext-zicond-rtl.c: Ditto.
+	* gcc.target/riscv/cset-sext-zicond-rtl32.c: Ditto.
+	* gcc.target/riscv/cset-sext-zicond.c: Ditto.
+	* gcc.target/riscv/cset-sext.c: Ditto.
+	* gcc.target/riscv/matrix_add_const.c: Ditto.
+	* gcc.target/riscv/movdibeq-thead.c: Ditto.
+	* gcc.target/riscv/movdibeq-ventana.c: Ditto.
+	* gcc.target/riscv/movdibeq-zicond.c: Ditto.
+	* gcc.target/riscv/movdibeq.c: Ditto.
+	* gcc.target/riscv/movdibfeq-ventana.c: Ditto.
+	* gcc.target/riscv/movdibfeq-zicond.c: Ditto.
+	* gcc.target/riscv/movdibfeq.c: Ditto.
+	* gcc.target/riscv/movdibfge-ventana.c: Ditto.
+	* gcc.target/riscv/movdibfge-zicond.c: Ditto.
+	* gcc.target/riscv/movdibfge.c: Ditto.
+	* gcc.target/riscv/movdibfgt-ventana.c: Ditto.
+	* gcc.target/riscv/movdibfgt-zicond.c: Ditto.
+	* gcc.target/riscv/movdibfgt.c: Ditto.
+	* gcc.target/riscv/movdibfle-ventana.c: Ditto.
+	* gcc.target/riscv/movdibfle-zicond.c: Ditto.
+	* gcc.target/riscv/movdibfle.c: Ditto.
+	* gcc.target/riscv/movdibflt-ventana.c: Ditto.
+	* gcc.target/riscv/movdibflt-zicond.c: Ditto.
+	* gcc.target/riscv/movdibflt.c: Ditto.
+	* gcc.target/riscv/movdibfne-ventana.c: Ditto.
+	* gcc.target/riscv/movdibfne-zicond.c: Ditto.
+	* gcc.target/riscv/movdibfne.c: Ditto.
+	* gcc.target/riscv/movdibge-thead.c: Ditto.
+	* gcc.target/riscv/movdibge-ventana.c: Ditto.
+	* gcc.target/riscv/movdibge-zicond.c: Ditto.
+	* gcc.target/riscv/movdibge.c: Ditto.
+	* gcc.target/riscv/movdibgeu-thead.c: Ditto.
+	* gcc.target/riscv/movdibgeu-ventana.c: Ditto.
+	* gcc.target/riscv/movdibgeu-zicond.c: Ditto.
+	* gcc.target/riscv/movdibgeu.c: Ditto.
+	* gcc.target/riscv/movdibgt-thead.c: Ditto.
+	* gcc.target/riscv/movdibgt-ventana.c: Ditto.
+	* gcc.target/riscv/movdibgt-zicond.c: Ditto.
+	* gcc.target/riscv/movdibgt.c: Ditto.
+	* gcc.target/riscv/movdibgtu-thead.c: Ditto.
+	* gcc.target/riscv/movdibgtu-ventana.c: Ditto.
+	* gcc.target/riscv/movdibgtu-zicond.c: Ditto.
+	* gcc.target/riscv/movdibgtu.c: Ditto.
+	* gcc.target/riscv/movdible-thead.c: Ditto.
+	* gcc.target/riscv/movdible-ventana.c: Ditto.
+	* gcc.target/riscv/movdible-zicond.c: Ditto.
+	* gcc.target/riscv/movdible.c: Ditto.
+	* gcc.target/riscv/movdibleu-thead.c: Ditto.
+	* gcc.target/riscv/movdibleu-ventana.c: Ditto.
+	* gcc.target/riscv/movdibleu-zicond.c: Ditto.
+	* gcc.target/riscv/movdibleu.c: Ditto.
+	* gcc.target/riscv/movdiblt-thead.c: Ditto.
+	* gcc.target/riscv/movdiblt-ventana.c: Ditto.
+	* gcc.target/riscv/movdiblt-zicond.c: Ditto.
+	* gcc.target/riscv/movdiblt.c: Ditto.
+	* gcc.target/riscv/movdibltu-thead.c: Ditto.
+	* gcc.target/riscv/movdibltu-ventana.c: Ditto.
+	* gcc.target/riscv/movdibltu-zicond.c: Ditto.
+	* gcc.target/riscv/movdibltu.c: Ditto.
+	* gcc.target/riscv/movdibne-thead.c: Ditto.
+	* gcc.target/riscv/movdibne-ventana.c: Ditto.
+	* gcc.target/riscv/movdibne-zicond.c: Ditto.
+	* gcc.target/riscv/movdibne.c: Ditto.
+	* gcc.target/riscv/movdieq-sfb.c: Ditto.
+	* gcc.target/riscv/movdieq-thead.c: Ditto.
+	* gcc.target/riscv/movdieq-ventana.c: Ditto.
+	* gcc.target/riscv/movdieq-zicond.c: Ditto.
+	* gcc.target/riscv/movdieq.c: Ditto.
+	* gcc.target/riscv/movdifeq-sfb.c: Ditto.
+	* gcc.target/riscv/movdifeq-thead.c: Ditto.
+	* gcc.target/riscv/movdifeq-ventana.c: Ditto.
+	* gcc.target/riscv/movdifeq-zicond.c: Ditto.
+	* gcc.target/riscv/movdifeq.c: Ditto.
+	* gcc.target/riscv/movdifge-sfb.c: Ditto.
+	* gcc.target/riscv/movdifge-thead.c: Ditto.
+	* gcc.target/riscv/movdifge-ventana.c: Ditto.
+	* gcc.target/riscv/movdifge-zicond.c: Ditto.
+	* gcc.target/riscv/movdifge.c: Ditto.
+	* gcc.target/riscv/movdifgt-sfb.c: Ditto.
+	* gcc.target/riscv/movdifgt-thead.c: Ditto.
+	* gcc.target/riscv/movdifgt-ventana.c: Ditto.
+	* gcc.target/riscv/movdifgt-zicond.c: Ditto.
+	* gcc.target/riscv/movdifgt.c: Ditto.
+	* gcc.target/riscv/movdifle-sfb.c: Ditto.
+	* gcc.target/riscv/movdifle-thead.c: Ditto.
+	* gcc.target/riscv/movdifle-ventana.c: Ditto.
+	* gcc.target/riscv/movdifle-zicond.c: Ditto.
+	* gcc.target/riscv/movdifle.c: Ditto.
+	* gcc.target/riscv/movdiflt-sfb.c: Ditto.
+	* gcc.target/riscv/movdiflt-thead.c: Ditto.
+	* gcc.target/riscv/movdiflt-ventana.c: Ditto.
+	* gcc.target/riscv/movdiflt-zicond.c: Ditto.
+	* gcc.target/riscv/movdiflt.c: Ditto.
+	* gcc.target/riscv/movdifne-sfb.c: Ditto.
+	* gcc.target/riscv/movdifne-thead.c: Ditto.
+	* gcc.target/riscv/movdifne-ventana.c: Ditto.
+	* gcc.target/riscv/movdifne-zicond.c: Ditto.
+	* gcc.target/riscv/movdifne.c: Ditto.
+	* gcc.target/riscv/movdige-sfb.c: Ditto.
+	* gcc.target/riscv/movdige-thead.c: Ditto.
+	* gcc.target/riscv/movdige-ventana.c: Ditto.
+	* gcc.target/riscv/movdige-zicond.c: Ditto.
+	* gcc.target/riscv/movdige.c: Ditto.
+	* gcc.target/riscv/movdigeu-sfb.c: Ditto.
+	* gcc.target/riscv/movdigeu-thead.c: Ditto.
+	* gcc.target/riscv/movdigeu-ventana.c: Ditto.
+	* gcc.target/riscv/movdigeu-zicond.c: Ditto.
+	* gcc.target/riscv/movdigeu.c: Ditto.
+	* gcc.target/riscv/movdigt-sfb.c: Ditto.
+	* gcc.target/riscv/movdigt-thead.c: Ditto.
+	* gcc.target/riscv/movdigt-ventana.c: Ditto.
+	* gcc.target/riscv/movdigt-zicond.c: Ditto.
+	* gcc.target/riscv/movdigt.c: Ditto.
+	* gcc.target/riscv/movdigtu-sfb.c: Ditto.
+	* gcc.target/riscv/movdigtu-thead.c: Ditto.
+	* gcc.target/riscv/movdigtu-ventana.c: Ditto.
+	* gcc.target/riscv/movdigtu-zicond.c: Ditto.
+	* gcc.target/riscv/movdigtu.c: Ditto.
+	* gcc.target/riscv/movdile-sfb.c: Ditto.
+	* gcc.target/riscv/movdile-thead.c: Ditto.
+	* gcc.target/riscv/movdile-ventana.c: Ditto.
+	* gcc.target/riscv/movdile-zicond.c: Ditto.
+	* gcc.target/riscv/movdile.c: Ditto.
+	* gcc.target/riscv/movdileu-sfb.c: Ditto.
+	* gcc.target/riscv/movdileu-thead.c: Ditto.
+	* gcc.target/riscv/movdileu-ventana.c: Ditto.
+	* gcc.target/riscv/movdileu-zicond.c: Ditto.
+	* gcc.target/riscv/movdileu.c: Ditto.
+	* gcc.target/riscv/movdilt-sfb.c: Ditto.
+	* gcc.target/riscv/movdilt-thead.c: Ditto.
+	* gcc.target/riscv/movdilt-ventana.c: Ditto.
+	* gcc.target/riscv/movdilt-zicond.c: Ditto.
+	* gcc.target/riscv/movdilt.c: Ditto.
+	* gcc.target/riscv/movdiltu-sfb.c: Ditto.
+	* gcc.target/riscv/movdiltu-thead.c: Ditto.
+	* gcc.target/riscv/movdiltu-ventana.c: Ditto.
+	* gcc.target/riscv/movdiltu-zicond.c: Ditto.
+	* gcc.target/riscv/movdiltu.c: Ditto.
+	* gcc.target/riscv/movdine-sfb.c: Ditto.
+	* gcc.target/riscv/movdine-thead.c: Ditto.
+	* gcc.target/riscv/movdine-ventana.c: Ditto.
+	* gcc.target/riscv/movdine-zicond.c: Ditto.
+	* gcc.target/riscv/movdine.c: Ditto.
+	* gcc.target/riscv/movsibeq-thead.c: Ditto.
+	* gcc.target/riscv/movsibeq-ventana.c: Ditto.
+	* gcc.target/riscv/movsibeq-zicond.c: Ditto.
+	* gcc.target/riscv/movsibeq.c: Ditto.
+	* gcc.target/riscv/movsibfeq-ventana.c: Ditto.
+	* gcc.target/riscv/movsibfeq-zicond.c: Ditto.
+	* gcc.target/riscv/movsibfeq.c: Ditto.
+	* gcc.target/riscv/movsibfge-ventana.c: Ditto.
+	* gcc.target/riscv/movsibfge-zicond.c: Ditto.
+	* gcc.target/riscv/movsibfge.c: Ditto.
+	* gcc.target/riscv/movsibfgt-ventana.c: Ditto.
+	* gcc.target/riscv/movsibfgt-zicond.c: Ditto.
+	* gcc.target/riscv/movsibfgt.c: Ditto.
+	* gcc.target/riscv/movsibfle-ventana.c: Ditto.
+	* gcc.target/riscv/movsibfle-zicond.c: Ditto.
+	* gcc.target/riscv/movsibfle.c: Ditto.
+	* gcc.target/riscv/movsibflt-ventana.c: Ditto.
+	* gcc.target/riscv/movsibflt-zicond.c: Ditto.
+	* gcc.target/riscv/movsibflt.c: Ditto.
+	* gcc.target/riscv/movsibfne-ventana.c: Ditto.
+	* gcc.target/riscv/movsibfne-zicond.c: Ditto.
+	* gcc.target/riscv/movsibfne.c: Ditto.
+	* gcc.target/riscv/movsibge-thead.c: Ditto.
+	* gcc.target/riscv/movsibge-ventana.c: Ditto.
+	* gcc.target/riscv/movsibge-zicond.c: Ditto.
+	* gcc.target/riscv/movsibge.c: Ditto.
+	* gcc.target/riscv/movsibgeu-thead.c: Ditto.
+	* gcc.target/riscv/movsibgeu-ventana.c: Ditto.
+	* gcc.target/riscv/movsibgeu-zicond.c: Ditto.
+	* gcc.target/riscv/movsibgeu.c: Ditto.
+	* gcc.target/riscv/movsibgt-thead.c: Ditto.
+	* gcc.target/riscv/movsibgt-ventana.c: Ditto.
+	* gcc.target/riscv/movsibgt-zicond.c: Ditto.
+	* gcc.target/riscv/movsibgt.c: Ditto.
+	* gcc.target/riscv/movsibgtu-thead.c: Ditto.
+	* gcc.target/riscv/movsibgtu-ventana.c: Ditto.
+	* gcc.target/riscv/movsibgtu-zicond.c: Ditto.
+	* gcc.target/riscv/movsibgtu.c: Ditto.
+	* gcc.target/riscv/movsible-thead.c: Ditto.
+	* gcc.target/riscv/movsible-ventana.c: Ditto.
+	* gcc.target/riscv/movsible-zicond.c: Ditto.
+	* gcc.target/riscv/movsible.c: Ditto.
+	* gcc.target/riscv/movsibleu-thead.c: Ditto.
+	* gcc.target/riscv/movsibleu-ventana.c: Ditto.
+	* gcc.target/riscv/movsibleu-zicond.c: Ditto.
+	* gcc.target/riscv/movsibleu.c: Ditto.
+	* gcc.target/riscv/movsiblt-thead.c: Ditto.
+	* gcc.target/riscv/movsiblt-ventana.c: Ditto.
+	* gcc.target/riscv/movsiblt-zicond.c: Ditto.
+	* gcc.target/riscv/movsiblt.c: Ditto.
+	* gcc.target/riscv/movsibltu-thead.c: Ditto.
+	* gcc.target/riscv/movsibltu-ventana.c: Ditto.
+	* gcc.target/riscv/movsibltu-zicond.c: Ditto.
+	* gcc.target/riscv/movsibltu.c: Ditto.
+	* gcc.target/riscv/movsibne-thead.c: Ditto.
+	* gcc.target/riscv/movsibne-ventana.c: Ditto.
+	* gcc.target/riscv/movsibne-zicond.c: Ditto.
+	* gcc.target/riscv/movsibne.c: Ditto.
+	* gcc.target/riscv/movsieq-sfb.c: Ditto.
+	* gcc.target/riscv/movsieq-thead.c: Ditto.
+	* gcc.target/riscv/movsieq-ventana.c: Ditto.
+	* gcc.target/riscv/movsieq-zicond.c: Ditto.
+	* gcc.target/riscv/movsieq.c: Ditto.
+	* gcc.target/riscv/movsifeq-sfb.c: Ditto.
+	* gcc.target/riscv/movsifeq-thead.c: Ditto.
+	* gcc.target/riscv/movsifeq-ventana.c: Ditto.
+	* gcc.target/riscv/movsifeq-zicond.c: Ditto.
+	* gcc.target/riscv/movsifeq.c: Ditto.
+	* gcc.target/riscv/movsifge-sfb.c: Ditto.
+	* gcc.target/riscv/movsifge-thead.c: Ditto.
+	* gcc.target/riscv/movsifge-ventana.c: Ditto.
+	* gcc.target/riscv/movsifge-zicond.c: Ditto.
+	* gcc.target/riscv/movsifge.c: Ditto.
+	* gcc.target/riscv/movsifgt-sfb.c: Ditto.
+	* gcc.target/riscv/movsifgt-thead.c: Ditto.
+	* gcc.target/riscv/movsifgt-ventana.c: Ditto.
+	* gcc.target/riscv/movsifgt-zicond.c: Ditto.
+	* gcc.target/riscv/movsifgt.c: Ditto.
+	* gcc.target/riscv/movsifle-sfb.c: Ditto.
+	* gcc.target/riscv/movsifle-thead.c: Ditto.
+	* gcc.target/riscv/movsifle-ventana.c: Ditto.
+	* gcc.target/riscv/movsifle-zicond.c: Ditto.
+	* gcc.target/riscv/movsifle.c: Ditto.
+	* gcc.target/riscv/movsiflt-sfb.c: Ditto.
+	* gcc.target/riscv/movsiflt-thead.c: Ditto.
+	* gcc.target/riscv/movsiflt-ventana.c: Ditto.
+	* gcc.target/riscv/movsiflt-zicond.c: Ditto.
+	* gcc.target/riscv/movsiflt.c: Ditto.
+	* gcc.target/riscv/movsifne-sfb.c: Ditto.
+	* gcc.target/riscv/movsifne-thead.c: Ditto.
+	* gcc.target/riscv/movsifne-ventana.c: Ditto.
+	* gcc.target/riscv/movsifne-zicond.c: Ditto.
+	* gcc.target/riscv/movsifne.c: Ditto.
+	* gcc.target/riscv/movsige-sfb.c: Ditto.
+	* gcc.target/riscv/movsige-thead.c: Ditto.
+	* gcc.target/riscv/movsige-ventana.c: Ditto.
+	* gcc.target/riscv/movsige-zicond.c: Ditto.
+	* gcc.target/riscv/movsige.c: Ditto.
+	* gcc.target/riscv/movsigeu-sfb.c: Ditto.
+	* gcc.target/riscv/movsigeu-thead.c: Ditto.
+	* gcc.target/riscv/movsigeu-ventana.c: Ditto.
+	* gcc.target/riscv/movsigeu-zicond.c: Ditto.
+	* gcc.target/riscv/movsigeu.c: Ditto.
+	* gcc.target/riscv/movsigt-sfb.c: Ditto.
+	* gcc.target/riscv/movsigt-thead.c: Ditto.
+	* gcc.target/riscv/movsigt-ventana.c: Ditto.
+	* gcc.target/riscv/movsigt-zicond.c: Ditto.
+	* gcc.target/riscv/movsigt.c: Ditto.
+	* gcc.target/riscv/movsigtu-sfb.c: Ditto.
+	* gcc.target/riscv/movsigtu-thead.c: Ditto.
+	* gcc.target/riscv/movsigtu-ventana.c: Ditto.
+	* gcc.target/riscv/movsigtu-zicond.c: Ditto.
+	* gcc.target/riscv/movsigtu.c: Ditto.
+	* gcc.target/riscv/movsile-sfb.c: Ditto.
+	* gcc.target/riscv/movsile-thead.c: Ditto.
+	* gcc.target/riscv/movsile-ventana.c: Ditto.
+	* gcc.target/riscv/movsile-zicond.c: Ditto.
+	* gcc.target/riscv/movsile.c: Ditto.
+	* gcc.target/riscv/movsileu-sfb.c: Ditto.
+	* gcc.target/riscv/movsileu-thead.c: Ditto.
+	* gcc.target/riscv/movsileu-ventana.c: Ditto.
+	* gcc.target/riscv/movsileu-zicond.c: Ditto.
+	* gcc.target/riscv/movsileu.c: Ditto.
+	* gcc.target/riscv/movsilt-sfb.c: Ditto.
+	* gcc.target/riscv/movsilt-thead.c: Ditto.
+	* gcc.target/riscv/movsilt-ventana.c: Ditto.
+	* gcc.target/riscv/movsilt-zicond.c: Ditto.
+	* gcc.target/riscv/movsilt.c: Ditto.
+	* gcc.target/riscv/movsiltu-sfb.c: Ditto.
+	* gcc.target/riscv/movsiltu-thead.c: Ditto.
+	* gcc.target/riscv/movsiltu-ventana.c: Ditto.
+	* gcc.target/riscv/movsiltu-zicond.c: Ditto.
+	* gcc.target/riscv/movsiltu.c: Ditto.
+	* gcc.target/riscv/movsine-sfb.c: Ditto.
+	* gcc.target/riscv/movsine-thead.c: Ditto.
+	* gcc.target/riscv/movsine-ventana.c: Ditto.
+	* gcc.target/riscv/movsine-zicond.c: Ditto.
+	* gcc.target/riscv/movsine.c: Ditto.
+	* gcc.target/riscv/pr111501.c: Ditto.
+	* gcc.target/riscv/pr115921.c: Ditto.
+	* gcc.target/riscv/pr116033.c: Ditto.
+	* gcc.target/riscv/pr116035-1.c: Ditto.
+	* gcc.target/riscv/pr116035-2.c: Ditto.
+	* gcc.target/riscv/pr116131.c: Ditto.
+	* gcc.target/riscv/reg_subreg_costs.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slide.c: Ditto.
+	* gcc.target/riscv/rvv/xtheadvector.c: Ditto.
+	* gcc.target/riscv/rvv/xtheadvector/pr114194.c: Ditto.
+	* gcc.target/riscv/sign-extend-rshift-32.c: Ditto.
+	* gcc.target/riscv/sign-extend-rshift-64.c: Ditto.
+	* gcc.target/riscv/sign-extend-rshift.c: Ditto.
+	* gcc.target/riscv/synthesis-1.c: Ditto.
+	* gcc.target/riscv/synthesis-10.c: Ditto.
+	* gcc.target/riscv/synthesis-11.c: Ditto.
+	* gcc.target/riscv/synthesis-12.c: Ditto.
+	* gcc.target/riscv/synthesis-13.c: Ditto.
+	* gcc.target/riscv/synthesis-14.c: Ditto.
+	* gcc.target/riscv/synthesis-15.c: Ditto.
+	* gcc.target/riscv/synthesis-16.c: Ditto.
+	* gcc.target/riscv/synthesis-2.c: Ditto.
+	* gcc.target/riscv/synthesis-3.c: Ditto.
+	* gcc.target/riscv/synthesis-4.c: Ditto.
+	* gcc.target/riscv/synthesis-5.c: Ditto.
+	* gcc.target/riscv/synthesis-6.c: Ditto.
+	* gcc.target/riscv/synthesis-7.c: Ditto.
+	* gcc.target/riscv/synthesis-8.c: Ditto.
+	* gcc.target/riscv/synthesis-9.c: Ditto.
+	* gcc.target/riscv/target-attr-16.c: Ditto.
+	* gcc.target/riscv/target-attr-norelax.c: Ditto.
+	* gcc.target/riscv/xtheadba-addsl.c: Ditto.
+	* gcc.target/riscv/xtheadba.c: Ditto.
+	* gcc.target/riscv/xtheadbb-ext-1.c: Ditto.
+	* gcc.target/riscv/xtheadbb-ext-2.c: Ditto.
+	* gcc.target/riscv/xtheadbb-ext-3.c: Ditto.
+	* gcc.target/riscv/xtheadbb-ext.c: Ditto.
+	* gcc.target/riscv/xtheadbb-extu-1.c: Ditto.
+	* gcc.target/riscv/xtheadbb-extu-2.c: Ditto.
+	* gcc.target/riscv/xtheadbb-extu-4.c: Ditto.
+	* gcc.target/riscv/xtheadbb-extu.c: Ditto.
+	* gcc.target/riscv/xtheadbb-ff1.c: Ditto.
+	* gcc.target/riscv/xtheadbb-rev.c: Ditto.
+	* gcc.target/riscv/xtheadbb-srri.c: Ditto.
+	* gcc.target/riscv/xtheadbb-strcmp.c: Ditto.
+	* gcc.target/riscv/xtheadbb-strlen-unaligned.c: Ditto.
+	* gcc.target/riscv/xtheadbb-strlen.c: Ditto.
+	* gcc.target/riscv/xtheadbb.c: Ditto.
+	* gcc.target/riscv/xtheadbs-tst.c: Ditto.
+	* gcc.target/riscv/xtheadbs.c: Ditto.
+	* gcc.target/riscv/xtheadcmo.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-indirect.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mveqz-imm-eqz.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mveqz-imm-not.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mveqz-reg-eqz.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mveqz-reg-not.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mvnez-imm-cond.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mvnez-imm-nez.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mvnez-reg-cond.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov-mvnez-reg-nez.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov.c: Ditto.
+	* gcc.target/riscv/xtheadfmemidx-without-xtheadmemidx.c: Ditto.
+	* gcc.target/riscv/xtheadfmemidx.c: Ditto.
+	* gcc.target/riscv/xtheadfmv.c: Ditto.
+	* gcc.target/riscv/xtheadint.c: Ditto.
+	* gcc.target/riscv/xtheadmac-mula-muls.c: Ditto.
+	* gcc.target/riscv/xtheadmac.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-index-update.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-index-xtheadbb-update.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-index-xtheadbb.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-index.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-modify-xtheadbb.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-modify.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-uindex-update.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-uindex-xtheadbb-update.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-uindex-xtheadbb.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx-uindex.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx.c: Ditto.
+	* gcc.target/riscv/xtheadmempair-1.c: Ditto.
+	* gcc.target/riscv/xtheadmempair-2.c: Ditto.
+	* gcc.target/riscv/xtheadmempair-3.c: Ditto.
+	* gcc.target/riscv/xtheadmempair-4.c: Ditto.
+	* gcc.target/riscv/xtheadmempair-interrupt-fcsr.c: Ditto.
+	* gcc.target/riscv/xtheadmempair.c: Ditto.
+	* gcc.target/riscv/xtheadsync.c: Ditto.
+	* gcc.target/riscv/za-ext.c: Ditto.
+	* gcc.target/riscv/zawrs.c: Ditto.
+	* gcc.target/riscv/zbb-strcmp-disabled-2.c: Ditto.
+	* gcc.target/riscv/zbb-strcmp-disabled.c: Ditto.
+	* gcc.target/riscv/zbb-strcmp-limit.c: Ditto.
+	* gcc.target/riscv/zbb-strcmp-unaligned.c: Ditto.
+	* gcc.target/riscv/zbb-strcmp.c: Ditto.
+	* gcc.target/riscv/zbb-strlen-disabled-2.c: Ditto.
+	* gcc.target/riscv/zbb-strlen-disabled.c: Ditto.
+	* gcc.target/riscv/zbb-strlen-unaligned.c: Ditto.
+	* gcc.target/riscv/zbb-strlen.c: Ditto.
+	* gcc.target/riscv/zero-extend-rshift-32.c: Ditto.
+	* gcc.target/riscv/zero-extend-rshift-64.c: Ditto.
+	* gcc.target/riscv/zero-extend-rshift.c: Ditto.
+	* gcc.target/riscv/zi-ext.c: Ditto.
+	* gcc.target/riscv/zvbb.c: Ditto.
+	* gcc.target/riscv/zvbc.c: Ditto.
+	* gcc.target/riscv/zvkb.c: Ditto.
+	* gcc.target/riscv/zvkg.c: Ditto.
+	* gcc.target/riscv/zvkn-1.c: Ditto.
+	* gcc.target/riscv/zvkn.c: Ditto.
+	* gcc.target/riscv/zvknc-1.c: Ditto.
+	* gcc.target/riscv/zvknc-2.c: Ditto.
+	* gcc.target/riscv/zvknc.c: Ditto.
+	* gcc.target/riscv/zvkned.c: Ditto.
+	* gcc.target/riscv/zvkng-1.c: Ditto.
+	* gcc.target/riscv/zvkng-2.c: Ditto.
+	* gcc.target/riscv/zvkng.c: Ditto.
+	* gcc.target/riscv/zvknha.c: Ditto.
+	* gcc.target/riscv/zvknhb.c: Ditto.
+	* gcc.target/riscv/zvks-1.c: Ditto.
+	* gcc.target/riscv/zvks.c: Ditto.
+	* gcc.target/riscv/zvksc-1.c: Ditto.
+	* gcc.target/riscv/zvksc-2.c: Ditto.
+	* gcc.target/riscv/zvksc.c: Ditto.
+	* gcc.target/riscv/zvksed.c: Ditto.
+	* gcc.target/riscv/zvksg-1.c: Ditto.
+	* gcc.target/riscv/zvksg-2.c: Ditto.
+	* gcc.target/riscv/zvksg.c: Ditto.
+	* gcc.target/riscv/zvksh.c: Ditto.
+	* gcc.target/riscv/zvkt.c: Ditto.
+
+2025-01-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/riscv/pr109508.c: Skip for E ABI.
+	* gcc.target/riscv/pr114139.c: Ditto.
+
+2025-01-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/riscv/rvv/autovec/binop/vandn-1.c: Skip if default
+	is E ABI.
+	* gcc.target/riscv/rvv/autovec/binop/vrolr-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vwsll-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vwsll-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-12-zvbb.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/clz-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/ctz-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/popcount-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/popcount-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/popcount-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/cmpmem-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/cmpmem-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/cmpmem-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/movmem-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr115068.c: Ditto.
+	* gcc.target/riscv/rvv/base/setmem-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/setmem-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/setmem-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/vwaddsub-1.c: Ditto.
+
+2025-01-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* lib/target-supports.exp (check_effective_target_riscv_abi_e):
+	New procedure.
+
+2025-01-07  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.dg/guality/pr36728-3.c: Remove XFAIL.
+	* gcc.dg/guality/pr68860-1.c: Likewise.
+	* gcc.dg/guality/pr68860-2.c: Likewise.
+	* gcc.target/aarch64/ldp_aligned.c: Fix test.
+	* gcc.target/aarch64/ldp_always.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_10.c: Add -fschedule-insns.
+	* gcc.target/aarch64/ldp_stp_12.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_13.c: Remove test.
+	* gcc.target/aarch64/ldp_stp_21.c: Add -fschedule-insns.
+	* gcc.target/aarch64/ldp_stp_8.c: Likewise.
+	* gcc.target/aarch64/ldp_vec_v2sf.c: Likewise.
+	* gcc.target/aarch64/ldp_vec_v2si.c: Likewise.
+	* gcc.target/aarch64/test_frame_16.c: Fix test.
+	* gcc.target/aarch64/sve/vcond_12.c: Add -fschedule-insns.
+	* gcc.target/aarch64/sve/acle/general/ldff1_3.c: Likewise.
+
+2025-01-07  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/dbl_mov_immediate_1.c: Add xfail for -0.0.
+	* gcc.target/aarch64/fmul_scvtf_1.c: Fixup test cases, add xfail,
+	reduce duplication.
+
+2025-01-07  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-c++-common/gomp/adjust-args-4.c: New test.
+
+2025-01-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114932
+	* gcc.dg/tree-ssa/pr64705.c: Update dump file scan.
+	* gcc.target/i386/pr115462.c: The testcase shares 3 IVs which calculates
+	the same thing but with a slightly different increment offset.  The test
+	checks for 3 complex addressing loads, one for each IV.  But with this
+	change they now all share one IV.  That is the loop now only has one
+	complex addressing.  This is ultimately driven by the backend costing
+	and the current costing says this is preferred so updating the testcase.
+	* gfortran.dg/addressing-modes_1.f90: New test.
+
+2025-01-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/105769
+	* g++.dg/torture/pr105769-1.C: New test.
+
+2025-01-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/117426
+	PR middle-end/111422
+	* gcc.dg/torture/pr117426-1.c: New test.
+
+2025-01-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR testsuite/118055
+	* gcc.dg/tree-ssa/pr83403-1.c: Add m68k*-*-* to targets needing
+	additional arguments for peeling.
+	* gcc.dg/tree-ssa/pr83403-2.c: Similarly.
+
+2025-01-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/convert-dfp-2.c: Skip with -flto.
+	* gcc.dg/torture/convert-dfp.c: Likewise.
+
+2025-01-07  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add dg-runtest to run the
+	testcase under gcc.target/riscv/rvv/.
+
+2025-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/alloc_comp_deep_copy_4.f03: New test.
+
+2025-01-07  Deng Jianbo  <dengjianbo@loongson.cn>
+
+	* gcc.target/loongarch/mov-zero-1.c: New test.
+	* gcc.target/loongarch/mov-zero-2.c: New test.
+
+2025-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/class_array_15.f03: Freeing more memory.
+	* gfortran.dg/recursive_alloc_comp_6.f90: New test.
+
+2025-01-07  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/strided_load_2.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/strided_store_2.c: Likewise.
+
+2025-01-07  Sam James  <sam@gentoo.org>
+
+	PR ipa/98000
+	* g++.dg/ipa/pr98000.C: New test.
+
+2025-01-07  Sam James  <sam@gentoo.org>
+
+	PR ipa/117546
+	* gcc.dg/torture/pr117546.c: New test.
+
 2025-01-06  Alexandre Oliva  <oliva@adacore.com>
 
 	PR middle-end/118006

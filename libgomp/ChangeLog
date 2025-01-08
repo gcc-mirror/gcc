@@ -1,3 +1,12 @@
+2025-01-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 6.0): Fix typo.
+	(omp_get_default_device): Update the wording as the value
+	returned by omp_get_initial_device is now ambiguous.
+	(omp_get_num_devices): Minor wording tweak.
+	(omp_get_initial_device): Note that the function may also
+	return omp_initial_device since OpenMP 6.
+
 2025-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure: Regenerate.

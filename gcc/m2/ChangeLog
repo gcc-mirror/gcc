@@ -1,3 +1,212 @@
+2025-01-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	PR modula2/118183
+	* gm2-compiler/M2GCCDeclare.mod (Import): COffT, GetCOffTType.
+	(DeclareDefaultSimpleTypes): Declare COFF_T.
+	* gm2-compiler/M2GenGCC.mod (GetParamSize): Correct first
+	parameter to BuildSize to use location rather than a token position.
+	* gm2-compiler/M2Options.def (SetFileOffsetBits): New procedure.
+	(GetFileOffsetBits): New procedure function.
+	* gm2-compiler/M2Options.mod (SetFileOffsetBits): New procedure.
+	(GetFileOffsetBits): New procedure function.
+	(OffTBits): New variable.
+	* gm2-compiler/M2System.def (COffT): New variable.
+	* gm2-compiler/M2System.mod (MakeExtraSystemTypes): Declare
+	COffT.
+	* gm2-compiler/P1SymBuild.mod (EndBuildProcedure): Call
+	PutProcedureDefined.
+	* gm2-compiler/P2SymBuild.mod (Debug): Reimplement.
+	* gm2-compiler/SymbolTable.mod (InitProcedureDeclaration):
+	Initialize ProcedureTok.
+	* gm2-gcc/gcctypes.def (location_t): Declare as CARDINAL64.
+	* gm2-gcc/m2linemap.cc (m2linemap_GetLocationBinary): Add
+	call to linemap_add indication a LC_LEAVE.
+	* gm2-gcc/m2options.h (M2Options_SetFileOffsetBits): New procedure.
+	(M2Options_GetFileOffsetBits): New procedure function.
+	* gm2-gcc/m2type.cc (m2_offt_type_node): New variable.
+	(m2type_GetCSizeTType): Reword comment.
+	(m2type_GetCSSizeTType): Reword comment.
+	(m2type_GetCOffTType): New function.
+	(build_m2_offt_type_node): New function.
+	(m2type_InitSystemTypes): Initialize m2_offt_type_node.
+	* gm2-gcc/m2type.def (GetCSizeTType): Reword comment.
+	(GetCOffTType): New procedure function.
+	* gm2-gcc/m2type.h (m2type_GetCOffTType): New prototype.
+	* gm2-lang.cc (gm2_langhook_handle_option): New clause
+	OPT_fm2_file_offset_bits_.
+	* gm2-libs-coroutines/SYSTEM.def: Add COFF_T to export list.
+	* gm2-libs-iso/SYSTEM.def: Ditto.
+	* gm2-libs-min/SYSTEM.def: Ditto.
+	* gm2-libs/SYSTEM.def: Add COFF_T and CARDINAL64 to export list.
+	* gm2-libs/libc.def (lseek): Change return type to COFF_T.
+	* lang.opt (-fm2-file-offset-bits=): New option.
+	* mc-boot-ch/Glibc.c (libc_lseek): Change result to use off_t.
+	* mc-boot/GASCII.cc: Rebuilt.
+	* mc-boot/GASCII.h: Ditto.
+	* mc-boot/GArgs.cc: Ditto.
+	* mc-boot/GArgs.h: Ditto.
+	* mc-boot/GAssertion.cc: Ditto.
+	* mc-boot/GAssertion.h: Ditto.
+	* mc-boot/GBreak.cc: Ditto.
+	* mc-boot/GBreak.h: Ditto.
+	* mc-boot/GCOROUTINES.h: Ditto.
+	* mc-boot/GCmdArgs.cc: Ditto.
+	* mc-boot/GCmdArgs.h: Ditto.
+	* mc-boot/GDebug.cc: Ditto.
+	* mc-boot/GDebug.h: Ditto.
+	* mc-boot/GDynamicStrings.cc: Ditto.
+	* mc-boot/GDynamicStrings.h: Ditto.
+	* mc-boot/GEnvironment.cc: Ditto.
+	* mc-boot/GEnvironment.h: Ditto.
+	* mc-boot/GFIO.cc: Ditto.
+	* mc-boot/GFIO.h: Ditto.
+	* mc-boot/GFormatStrings.cc: Ditto.
+	* mc-boot/GFormatStrings.h: Ditto.
+	* mc-boot/GFpuIO.cc: Ditto.
+	* mc-boot/GFpuIO.h: Ditto.
+	* mc-boot/GIO.cc: Ditto.
+	* mc-boot/GIO.h: Ditto.
+	* mc-boot/GIndexing.cc: Ditto.
+	* mc-boot/GIndexing.h: Ditto.
+	* mc-boot/GM2Dependent.cc: Ditto.
+	* mc-boot/GM2Dependent.h: Ditto.
+	* mc-boot/GM2EXCEPTION.cc: Ditto.
+	* mc-boot/GM2EXCEPTION.h: Ditto.
+	* mc-boot/GM2RTS.cc: Ditto.
+	(M2RTS_Halt): Call libc_exit.
+	(M2RTS_HaltC): Ditto.
+	* mc-boot/GM2RTS.h: Rebuilt.
+	* mc-boot/GMemUtils.cc: Ditto.
+	* mc-boot/GMemUtils.h: Ditto.
+	* mc-boot/GNumberIO.cc: Ditto.
+	* mc-boot/GNumberIO.h: Ditto.
+	* mc-boot/GPushBackInput.cc: Ditto.
+	* mc-boot/GPushBackInput.h: Ditto.
+	* mc-boot/GRTExceptions.cc: Ditto.
+	* mc-boot/GRTExceptions.h: Ditto.
+	* mc-boot/GRTco.h: Ditto.
+	* mc-boot/GRTentity.h: Ditto.
+	* mc-boot/GRTint.cc: Ditto.
+	* mc-boot/GRTint.h: Ditto.
+	* mc-boot/GSArgs.cc: Ditto.
+	* mc-boot/GSArgs.h: Ditto.
+	* mc-boot/GSFIO.cc: Ditto.
+	* mc-boot/GSFIO.h: Ditto.
+	* mc-boot/GSYSTEM.h: Ditto.
+	* mc-boot/GSelective.h: Ditto.
+	* mc-boot/GStdIO.cc: Ditto.
+	* mc-boot/GStdIO.h: Ditto.
+	* mc-boot/GStorage.cc: Ditto.
+	* mc-boot/GStorage.h: Ditto.
+	* mc-boot/GStrCase.cc: Ditto.
+	* mc-boot/GStrCase.h: Ditto.
+	* mc-boot/GStrIO.cc: Ditto.
+	* mc-boot/GStrIO.h: Ditto.
+	* mc-boot/GStrLib.cc: Ditto.
+	* mc-boot/GStrLib.h: Ditto.
+	* mc-boot/GStringConvert.cc: Ditto.
+	* mc-boot/GStringConvert.h: Ditto.
+	* mc-boot/GSysExceptions.h: Ditto.
+	* mc-boot/GSysStorage.cc: Ditto.
+	* mc-boot/GSysStorage.h: Ditto.
+	* mc-boot/GTimeString.cc: Ditto.
+	* mc-boot/GTimeString.h: Ditto.
+	* mc-boot/GUnixArgs.h: Ditto.
+	* mc-boot/Galists.cc: Ditto.
+	* mc-boot/Galists.h: Ditto.
+	* mc-boot/Gdecl.cc: Ditto.
+	* mc-boot/Gdecl.h: Rebuilt.
+	* mc-boot/Gdtoa.h: Ditto.
+	* mc-boot/Gerrno.h: Ditto.
+	* mc-boot/Gkeyc.cc: Ditto.
+	* mc-boot/Gkeyc.h: Rebuilt.
+	* mc-boot/Gldtoa.h: Ditto.
+	* mc-boot/Glibc.h: Ditto.
+	* mc-boot/Glibm.h: Ditto.
+	* mc-boot/Glists.cc: Ditto.
+	* mc-boot/Glists.h: Ditto.
+	* mc-boot/GmcComment.cc: Ditto.
+	* mc-boot/GmcComment.h: Ditto.
+	* mc-boot/GmcComp.cc: Ditto.
+	* mc-boot/GmcComp.h: Ditto.
+	* mc-boot/GmcDebug.cc: Ditto.
+	* mc-boot/GmcDebug.h: Ditto.
+	* mc-boot/GmcError.cc: Ditto.
+	* mc-boot/GmcError.h: Ditto.
+	* mc-boot/GmcFileName.cc: Ditto.
+	* mc-boot/GmcFileName.h: Ditto.
+	* mc-boot/GmcLexBuf.cc: Ditto.
+	* mc-boot/GmcLexBuf.h: Ditto.
+	* mc-boot/GmcMetaError.cc: Ditto.
+	* mc-boot/GmcMetaError.h: Ditto.
+	* mc-boot/GmcOptions.cc: Ditto.
+	* mc-boot/GmcOptions.h: Ditto.
+	* mc-boot/GmcPreprocess.cc: Ditto.
+	* mc-boot/GmcPreprocess.h: Ditto.
+	* mc-boot/GmcPretty.cc: Ditto.
+	* mc-boot/GmcPretty.h: Ditto.
+	* mc-boot/GmcPrintf.cc: Ditto.
+	* mc-boot/GmcPrintf.h: Ditto.
+	* mc-boot/GmcQuiet.cc: Ditto.
+	* mc-boot/GmcQuiet.h: Ditto.
+	* mc-boot/GmcReserved.cc: Ditto.
+	* mc-boot/GmcReserved.h: Ditto.
+	* mc-boot/GmcSearch.cc: Ditto.
+	* mc-boot/GmcSearch.h: Ditto.
+	* mc-boot/GmcStack.cc: Ditto.
+	* mc-boot/GmcStack.h: Ditto.
+	* mc-boot/GmcStream.cc: Ditto.
+	* mc-boot/GmcStream.h: Ditto.
+	* mc-boot/Gmcflex.h: Ditto.
+	* mc-boot/Gmcp1.cc: Ditto.
+	* mc-boot/Gmcp1.h: Ditto.
+	* mc-boot/Gmcp2.cc: Ditto.
+	* mc-boot/Gmcp2.h: Ditto.
+	* mc-boot/Gmcp3.cc: Ditto.
+	* mc-boot/Gmcp3.h: Ditto.
+	* mc-boot/Gmcp4.cc: Ditto.
+	* mc-boot/Gmcp4.h: Ditto.
+	* mc-boot/Gmcp5.cc: Ditto.
+	* mc-boot/Gmcp5.h: Ditto.
+	* mc-boot/GnameKey.cc: Ditto.
+	* mc-boot/GnameKey.h: Ditto.
+	* mc-boot/GsymbolKey.cc: Ditto.
+	* mc-boot/GsymbolKey.h: Ditto.
+	* mc-boot/Gtermios.h: Ditto.
+	* mc-boot/Gtop.cc: Ditto.
+	* mc-boot/Gvarargs.cc: Ditto.
+	* mc-boot/Gvarargs.h: Ditto.
+	* mc-boot/Gwlists.cc: Ditto.
+	* mc-boot/Gwlists.h: Ditto.
+	* mc-boot/Gwrapc.h: Ditto.
+	* mc/decl.mod (cofft): New enum.
+	(cardinal64): Ditto.
+	(cofftN): New variable.
+	(cardinal64N): Ditto.
+	(isProcedure): Remove.
+	(getSymName): Add clause for cofft and cardinal64.
+	(makeBase): Ditto.
+	(isOrdinal): Ditto.
+	(getType): Ditto.
+	(doGetExprType): Ditto.
+	(getScope): Ditto.
+	(doExprC): Ditto.
+	(isSystem): Ditto.
+	(doSystemC): Ditto.
+	(doDependants): Ditto.
+	(visitDependants): Ditto.
+	(genKind): Ditto.
+	(doSystemM2): Ditto.
+	(doDupExpr): Ditto.
+	(makeSystem): Initialize cofftN and cardinal64N.
+	* mc/keyc.mod (useUIntMin): Remove.
+	(useUIntMax): Ditto.
+	* pge-boot/GIndexing.h: Rebuilt.
+	* pge-boot/GSEnvironment.h: Ditto.
+	* pge-boot/GScan.h: Ditto.
+	* pge-boot/Glibc.h: Ditto.
+
 2024-12-23  Wilken Gottwalt  <wilken.gottwalt@posteo.net>
 
 	* gm2-libs-log/InOut.mod: Fix bad identifier warning.

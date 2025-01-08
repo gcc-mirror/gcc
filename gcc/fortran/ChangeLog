@@ -1,3 +1,32 @@
+2025-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi (ISO_FORTRAN_ENV):  Also mention INT8 in the
+	text. Document UINT8, UINT16, UINT32 and UINT64.
+	(ISO_C_BINDING): New table for unsigned KIND numbers.
+
+2025-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/114612
+	* trans-array.cc (structure_alloc_comps): Ensure deep copy is
+	also done for types having cycles.
+
+2025-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/116669
+	* class.cc (gfc_find_derived_vtab): Use attr to determine cyclic
+	type dependendies.
+	* expr.cc (gfc_has_default_initializer): Prevent endless
+	recursion by storing already visited derived types.
+	* resolve.cc (resolve_cyclic_derived_type): Determine if a type
+	is used in its hierarchy in a cyclic way.
+	(resolve_fl_derived0): Call resolve_cyclic_derived_type.
+	(resolve_fl_derived): Ensure vtab is generated when cyclic
+	derived types have allocatable components.
+	* trans-array.cc (structure_alloc_comps): Prevent endless loop
+	for derived type cycles.
+	* trans-expr.cc (gfc_get_ultimate_alloc_ptr_comps_caf_token):
+	Off topic, just prevent memory leaks.
+
 2025-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.texi: New subsection "Generating C prototypes from

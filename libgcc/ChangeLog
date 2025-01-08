@@ -1,3 +1,13 @@
+2025-01-07  Keith Packard  <keithp@keithp.com>
+
+	* config/m68k/fpgnulib.c (extenddfxf2): Simplify code by removing code
+	that should never execute.  Fix denorm shift test and insert hidden bit
+	as needed.
+	(__truncxfdf2): Properly compue and shift the significant right.
+	* config/m68k/lb1sf68.S (__fixxfsi): Correct shift counts and simplify.
+	(QUIET_NAN): Make it a positive quiet NaN and fix return values to inject
+	sign properly.
+
 2025-01-06  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/lib1funcs.S: Add .note.GNU-stack section on linux.
