@@ -2839,6 +2839,30 @@ package body Ch4 is
       Node1 : Node_Id;
       Node2 : Node_Id;
 
+      subtype N_Primary is Node_Kind with Static_Predicate =>
+        N_Primary in N_Aggregate
+                   | N_Allocator
+                   | N_Attribute_Reference
+                   | N_Case_Expression            --  requires single parens
+                   | N_Delta_Aggregate
+                   | N_Direct_Name
+                   | N_Explicit_Dereference
+                   | N_Expression_With_Actions    --  requires single parens
+                   | N_Extension_Aggregate
+                   | N_If_Expression              --  requires single parens
+                   | N_Indexed_Component
+                   | N_Null
+                   | N_Numeric_Or_String_Literal
+                   | N_Qualified_Expression
+                   | N_Quantified_Expression      --  requires single parens
+                   | N_Selected_Component
+                   | N_Slice
+                   | N_Subprogram_Call
+                   | N_Target_Name
+                   | N_Type_Conversion;
+      --  Node kinds that represents a "primary" subexpression, which does not
+      --  require parentheses when used as an operand of a unary operator.
+
    begin
       if Token = Tok_Abs then
          Node1 := New_Op_Node (N_Op_Abs, Token_Ptr);
@@ -2849,6 +2873,13 @@ package body Ch4 is
 
          Scan; -- past ABS
          Set_Right_Opnd (Node1, P_Primary);
+
+         if Style_Check then
+            if Nkind (Right_Opnd (Node1)) in N_Primary then
+               Style.Check_Xtra_Parens_Precedence (Right_Opnd (Node1));
+            end if;
+         end if;
+
          return Node1;
 
       elsif Token = Tok_Not then
@@ -2860,6 +2891,13 @@ package body Ch4 is
 
          Scan; -- past NOT
          Set_Right_Opnd (Node1, P_Primary);
+
+         if Style_Check then
+            if Nkind (Right_Opnd (Node1)) in N_Primary then
+               Style.Check_Xtra_Parens_Precedence (Right_Opnd (Node1));
+            end if;
+         end if;
+
          return Node1;
 
       else
