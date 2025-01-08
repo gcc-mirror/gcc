@@ -126,6 +126,8 @@ _gfortran_caf_init (int *argc __attribute__ ((unused)),
 void
 _gfortran_caf_finalize (void)
 {
+  free (accessor_hash_table);
+
   while (caf_static_list != NULL)
     {
       caf_static_t *tmp = caf_static_list->prev;
@@ -1562,15 +1564,14 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
     }
 }
 
-
-void
+/* For internal use only.  */
+static void
 _gfortran_caf_get_by_ref (caf_token_t token,
 			  int image_index __attribute__ ((unused)),
 			  gfc_descriptor_t *dst, caf_reference_t *refs,
 			  int dst_kind, int src_kind,
 			  bool may_require_tmp __attribute__ ((unused)),
-			  bool dst_reallocatable, int *stat,
-			  int src_type)
+			  bool dst_reallocatable, int *stat, int src_type)
 {
   const char vecrefunknownkind[] = "libcaf_single::caf_get_by_ref(): "
 				   "unknown kind in vector-ref.\n";
@@ -2916,7 +2917,7 @@ _gfortran_caf_get_remote_function_index (const int hash)
 }
 
 void
-_gfortran_caf_get_by_ct (
+_gfortran_caf_get_from_remote (
   caf_token_t token, const gfc_descriptor_t *opt_src_desc,
   const size_t *opt_src_charlen, const int image_index __attribute__ ((unused)),
   const size_t dst_size __attribute__ ((unused)), void **dst_data,

@@ -888,7 +888,6 @@ extern GTY(()) tree gfor_fndecl_caf_deregister;
 extern GTY(()) tree gfor_fndecl_caf_get;
 extern GTY(()) tree gfor_fndecl_caf_send;
 extern GTY(()) tree gfor_fndecl_caf_sendget;
-extern GTY(()) tree gfor_fndecl_caf_get_by_ref;
 extern GTY(()) tree gfor_fndecl_caf_send_by_ref;
 extern GTY(()) tree gfor_fndecl_caf_sendget_by_ref;
 // Deprecate end
@@ -896,7 +895,7 @@ extern GTY(()) tree gfor_fndecl_caf_sendget_by_ref;
 extern GTY (()) tree gfor_fndecl_caf_register_accessor;
 extern GTY (()) tree gfor_fndecl_caf_register_accessors_finish;
 extern GTY (()) tree gfor_fndecl_caf_get_remote_function_index;
-extern GTY (()) tree gfor_fndecl_caf_get_by_ct;
+extern GTY (()) tree gfor_fndecl_caf_get_from_remote;
 
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_memory;

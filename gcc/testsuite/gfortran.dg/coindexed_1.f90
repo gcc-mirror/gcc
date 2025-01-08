@@ -8,7 +8,7 @@
 program pmup
   implicit none
   type t
-    integer :: b, a
+    integer :: b = 0, a
   end type t
 
   CLASS(*), allocatable :: a(:)[:]
@@ -59,7 +59,7 @@ program pmup
       ii = a(1)[1]
       STOP 4
     TYPE IS (t)
-      IF (ALL(A(:)[1]%a == 4.0)) THEN
+      IF (ALL(A(:)[1]%a == 4.0) .AND. ALL(A(:)[1]%b == 0)) THEN
         !WRITE(*,*) 'OK'
       ELSE
         WRITE(*,*) 'FAIL'

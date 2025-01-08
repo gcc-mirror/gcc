@@ -223,10 +223,6 @@ void _gfortran_caf_sendget (caf_token_t, size_t, int, gfc_descriptor_t *,
 			    caf_vector_t *, caf_token_t, size_t, int,
 			    gfc_descriptor_t *, caf_vector_t *, int, int, bool);
 
-void _gfortran_caf_get_by_ref (caf_token_t token, int image_idx,
-	gfc_descriptor_t *dst, caf_reference_t *refs, int dst_kind,
-	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat,
-	int src_type);
 void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
 	gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind,
 	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat,
@@ -245,13 +241,13 @@ void _gfortran_caf_register_accessors_finish (void);
 
 int _gfortran_caf_get_remote_function_index (const int hash);
 
-void _gfortran_caf_get_by_ct (
-	caf_token_t token, const gfc_descriptor_t *opt_src_desc,
-	const size_t *opt_src_charlen, const int image_index,
-	const size_t dst_size, void **dst_data, size_t *opt_dst_charlen,
-	gfc_descriptor_t *opt_dst_desc, const bool may_realloc_dst,
-	const int getter_index, void *get_data, const size_t get_data_size,
-	int *stat, caf_team_t *team, int *team_number);
+void _gfortran_caf_get_from_remote (
+  caf_token_t token, const gfc_descriptor_t *opt_src_desc,
+  const size_t *opt_src_charlen, const int image_index, const size_t dst_size,
+  void **dst_data, size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
+  const bool may_realloc_dst, const int getter_index, void *get_data,
+  const size_t get_data_size, int *stat, caf_team_t *team, int *team_number);
+
 
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);

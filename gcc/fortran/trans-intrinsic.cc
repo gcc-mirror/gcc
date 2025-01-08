@@ -1668,6 +1668,120 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 			      : NULL_TREE;
 }
 
+static int caf_call_cnt = 0;
+
+static tree
+conv_caf_func_index (stmtblock_t *block, gfc_namespace *ns, const char *pat,
+		     gfc_expr *hash)
+{
+  char *name;
+  gfc_se argse;
+  gfc_expr func_index;
+  gfc_symtree *index_st;
+  tree func_index_tree;
+  stmtblock_t blk;
+
+  name = xasprintf (pat, caf_call_cnt);
+  gcc_assert (!gfc_get_sym_tree (name, ns, &index_st, false));
+  free (name);
+
+  index_st->n.sym->attr.flavor = FL_VARIABLE;
+  index_st->n.sym->attr.save = SAVE_EXPLICIT;
+  index_st->n.sym->value
+    = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
+			     &gfc_current_locus);
+  mpz_init_set_si (index_st->n.sym->value->value.integer, -1);
+  index_st->n.sym->ts.type = BT_INTEGER;
+  index_st->n.sym->ts.kind = gfc_default_integer_kind;
+  gfc_set_sym_referenced (index_st->n.sym);
+  memset (&func_index, 0, sizeof (gfc_expr));
+  gfc_clear_ts (&func_index.ts);
+  func_index.expr_type = EXPR_VARIABLE;
+  func_index.symtree = index_st;
+  func_index.ts = index_st->n.sym->ts;
+  gfc_commit_symbol (index_st->n.sym);
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr (&argse, &func_index);
+  gfc_add_block_to_block (block, &argse.pre);
+  func_index_tree = argse.expr;
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr (&argse, hash);
+
+  gfc_init_block (&blk);
+  gfc_add_modify (&blk, func_index_tree,
+		  build_call_expr (gfor_fndecl_caf_get_remote_function_index, 1,
+				   argse.expr));
+  gfc_add_expr_to_block (
+    block,
+    build3 (COND_EXPR, void_type_node,
+	    gfc_likely (build2 (EQ_EXPR, logical_type_node, func_index_tree,
+				build_int_cst (integer_type_node, -1)),
+			PRED_FIRST_MATCH),
+	    gfc_finish_block (&blk), NULL_TREE));
+
+  return func_index_tree;
+}
+
+static tree
+conv_caf_add_call_data (stmtblock_t *blk, gfc_namespace *ns, const char *pat,
+			gfc_symbol *data_sym, tree *data_size)
+{
+  char *name;
+  gfc_symtree *data_st;
+  gfc_constructor *con;
+  gfc_expr data, data_init;
+  gfc_se argse;
+  tree data_tree;
+
+  memset (&data, 0, sizeof (gfc_expr));
+  gfc_clear_ts (&data.ts);
+  data.expr_type = EXPR_VARIABLE;
+  name = xasprintf (pat, caf_call_cnt);
+  gcc_assert (!gfc_get_sym_tree (name, ns, &data_st, false));
+  free (name);
+  data_st->n.sym->attr.flavor = FL_VARIABLE;
+  data_st->n.sym->ts = data_sym->ts;
+  data.symtree = data_st;
+  gfc_set_sym_referenced (data.symtree->n.sym);
+  data.ts = data_st->n.sym->ts;
+  gfc_commit_symbol (data_st->n.sym);
+
+  memset (&data_init, 0, sizeof (gfc_expr));
+  gfc_clear_ts (&data_init.ts);
+  data_init.expr_type = EXPR_STRUCTURE;
+  data_init.ts = data.ts;
+  for (gfc_component *comp = data.ts.u.derived->components; comp;
+       comp = comp->next)
+    {
+      con = gfc_constructor_get ();
+      con->expr = comp->initializer;
+      comp->initializer = NULL;
+      gfc_constructor_append (&data_init.value.constructor, con);
+    }
+
+  if (data.ts.u.derived->components)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, &data);
+      data_tree = argse.expr;
+      gfc_add_expr_to_block (blk,
+			     gfc_trans_structure_assign (data_tree, &data_init,
+							 true, true));
+      gfc_constructor_free (data_init.value.constructor);
+      *data_size = TREE_TYPE (data_tree)->type_common.size_unit;
+      data_tree = gfc_build_addr_expr (pvoid_type_node, data_tree);
+    }
+  else
+    {
+      data_tree = build_zero_cst (pvoid_type_node);
+      *data_size = build_zero_cst (size_type_node);
+    }
+
+  return data_tree;
+}
+
 static tree
 conv_shape_to_cst (gfc_expr *e)
 {
@@ -1689,23 +1803,16 @@ static void
 gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
 			    bool may_realloc, symbol_attribute *caf_attr)
 {
-  static int call_cnt = 0;
   gfc_expr *array_expr, *tmp_stat;
-  gfc_se argse;
   tree caf_decl, token, image_index, tmp, res_var, type, stat, dest_size,
-    dest_data, opt_dest_desc, rget_index_tree, rget_data_tree, rget_data_size,
+    dest_data, opt_dest_desc, get_fn_index_tree, add_data_tree, add_data_size,
     opt_src_desc, opt_src_charlen, opt_dest_charlen;
   symbol_attribute caf_attr_store;
   gfc_namespace *ns;
-  gfc_expr *rget_hash = expr->value.function.actual->next->expr,
-	   *rget_fn_expr = expr->value.function.actual->next->next->expr;
-  gfc_symbol *gdata_sym
-    = rget_fn_expr->symtree->n.sym->formal->next->next->next->sym;
-  gfc_expr rget_data, rget_data_init, rget_index;
-  char *name;
-  gfc_symtree *data_st, *index_st;
-  gfc_constructor *con;
-  stmtblock_t blk;
+  gfc_expr *get_fn_hash = expr->value.function.actual->next->expr,
+	   *get_fn_expr = expr->value.function.actual->next->next->expr;
+  gfc_symbol *add_data_sym
+    = get_fn_expr->symtree->n.sym->formal->next->next->next->sym;
 
   gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
 
@@ -1745,90 +1852,13 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
   else
     stat = null_pointer_node;
 
-  memset (&rget_data, 0, sizeof (gfc_expr));
-  gfc_clear_ts (&rget_data.ts);
-  rget_data.expr_type = EXPR_VARIABLE;
-  name = xasprintf ("__caf_rget_data_%d", call_cnt);
-  gcc_assert (!gfc_get_sym_tree (name, ns, &data_st, false));
-  name = xasprintf ("__caf_rget_index_%d", call_cnt);
-  ++call_cnt;
-  gcc_assert (!gfc_get_sym_tree (name, ns, &index_st, false));
-  free (name);
-  data_st->n.sym->attr.flavor = FL_VARIABLE;
-  data_st->n.sym->ts = gdata_sym->ts;
-  rget_data.symtree = data_st;
-  gfc_set_sym_referenced (rget_data.symtree->n.sym);
-  rget_data.ts = data_st->n.sym->ts;
-  gfc_commit_symbol (data_st->n.sym);
-
-  memset (&rget_data_init, 0, sizeof (gfc_expr));
-  gfc_clear_ts (&rget_data_init.ts);
-  rget_data_init.expr_type = EXPR_STRUCTURE;
-  rget_data_init.ts = rget_data.ts;
-  for (gfc_component *comp = rget_data.ts.u.derived->components; comp;
-       comp = comp->next)
-    {
-      con = gfc_constructor_get ();
-      con->expr = comp->initializer;
-      comp->initializer = NULL;
-      gfc_constructor_append (&rget_data_init.value.constructor, con);
-    }
-
-  index_st->n.sym->attr.flavor = FL_VARIABLE;
-  index_st->n.sym->attr.save = SAVE_EXPLICIT;
-  index_st->n.sym->value
-    = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
-			     &gfc_current_locus);
-  mpz_init_set_si (index_st->n.sym->value->value.integer, -1);
-  index_st->n.sym->ts.type = BT_INTEGER;
-  index_st->n.sym->ts.kind = gfc_default_integer_kind;
-  gfc_set_sym_referenced (index_st->n.sym);
-  memset (&rget_index, 0, sizeof (gfc_expr));
-  gfc_clear_ts (&rget_index.ts);
-  rget_index.expr_type = EXPR_VARIABLE;
-  rget_index.symtree = index_st;
-  rget_index.ts = index_st->n.sym->ts;
-  gfc_commit_symbol (index_st->n.sym);
-
-  gfc_init_se (&argse, NULL);
-  gfc_conv_expr (&argse, &rget_index);
-  gfc_add_block_to_block (&se->pre, &argse.pre);
-  rget_index_tree = argse.expr;
-
-  gfc_init_se (&argse, NULL);
-  gfc_conv_expr (&argse, rget_hash);
-
-  gfc_init_block (&blk);
-  tmp = build_call_expr (gfor_fndecl_caf_get_remote_function_index, 1,
-			 argse.expr);
-
-  gfc_add_modify (&blk, rget_index_tree, tmp);
-  gfc_add_expr_to_block (
-    &se->pre,
-    build3 (COND_EXPR, void_type_node,
-	    gfc_likely (build2 (EQ_EXPR, logical_type_node, rget_index_tree,
-				build_int_cst (integer_type_node, -1)),
-			PRED_FIRST_MATCH),
-	    gfc_finish_block (&blk), NULL_TREE));
-
-  if (rget_data.ts.u.derived->components)
-    {
-      gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, &rget_data);
-      rget_data_tree = argse.expr;
-      gfc_add_expr_to_block (&se->pre,
-			     gfc_trans_structure_assign (rget_data_tree,
-							 &rget_data_init, true,
-							 false));
-      gfc_constructor_free (rget_data_init.value.constructor);
-      rget_data_size = TREE_TYPE (rget_data_tree)->type_common.size_unit;
-      rget_data_tree = gfc_build_addr_expr (pvoid_type_node, rget_data_tree);
-    }
-  else
-    {
-      rget_data_tree = build_zero_cst (pvoid_type_node);
-      rget_data_size = build_zero_cst (size_type_node);
-    }
+  get_fn_index_tree
+    = conv_caf_func_index (&se->pre, ns, "__caf_get_from_remote_fn_index_%d",
+			   get_fn_hash);
+  add_data_tree
+    = conv_caf_add_call_data (&se->pre, ns, "__caf_get_from_remote_add_data_%d",
+			      add_data_sym, &add_data_size);
+  ++caf_call_cnt;
 
   if (array_expr->rank == 0)
     {
@@ -1836,9 +1866,9 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
       if (array_expr->ts.type == BT_CHARACTER)
 	{
 	  gfc_conv_string_length (array_expr->ts.u.cl, array_expr, &se->pre);
-	  argse.string_length = array_expr->ts.u.cl->backend_decl;
+	  se->string_length = array_expr->ts.u.cl->backend_decl;
 	  opt_src_charlen = gfc_build_addr_expr (
-	    NULL_TREE, gfc_trans_force_lval (&se->pre, argse.string_length));
+	    NULL_TREE, gfc_trans_force_lval (&se->pre, se->string_length));
 	  dest_size = build_int_cstu (size_type_node, array_expr->ts.kind);
 	}
       else
@@ -1863,9 +1893,9 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
       res_var = se->ss->info->data.array.descriptor;
       if (array_expr->ts.type == BT_CHARACTER)
 	{
-	  argse.string_length = array_expr->ts.u.cl->backend_decl;
+	  se->string_length = array_expr->ts.u.cl->backend_decl;
 	  opt_src_charlen = gfc_build_addr_expr (
-	    NULL_TREE, gfc_trans_force_lval (&se->pre, argse.string_length));
+	    NULL_TREE, gfc_trans_force_lval (&se->pre, se->string_length));
 	  dest_size = build_int_cstu (size_type_node, array_expr->ts.kind);
 	}
       else
@@ -1921,10 +1951,10 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
   gfc_add_expr_to_block (&se->pre, tmp);
 
   tmp = build_call_expr_loc (
-    input_location, gfor_fndecl_caf_get_by_ct, 15, token, opt_src_desc,
+    input_location, gfor_fndecl_caf_get_from_remote, 15, token, opt_src_desc,
     opt_src_charlen, image_index, dest_size, dest_data, opt_dest_charlen,
     opt_dest_desc, constant_boolean_node (may_realloc, boolean_type_node),
-    rget_index_tree, rget_data_tree, rget_data_size, stat, null_pointer_node,
+    get_fn_index_tree, add_data_tree, add_data_size, stat, null_pointer_node,
     null_pointer_node);
 
   gfc_add_expr_to_block (&se->pre, tmp);
@@ -1933,8 +1963,6 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
     gfc_advance_se_ss_chain (se);
 
   se->expr = res_var;
-  if (array_expr->ts.type == BT_CHARACTER)
-    se->string_length = argse.string_length;
 
   return;
 }

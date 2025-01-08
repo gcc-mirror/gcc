@@ -4211,7 +4211,7 @@ future implementation of teams.  It is about to change without further notice.
 * _gfortran_caf_sendget:: Sending data between remote images
 * _gfortran_caf_send_by_ref:: Sending data from a local image to a remote image using enhanced references
 * _gfortran_caf_get_by_ref:: Getting data from a remote image using enhanced references
-* _gfortran_caf_get_by_ct:: Getting data from a remote image using a remote side accessor
+* _gfortran_caf_get_from_remote:: Getting data from a remote image using a remote side accessor
 * _gfortran_caf_sendget_by_ref:: Sending data between remote images using enhanced references
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
@@ -4617,8 +4617,8 @@ Return the index of the accessor in the lookup table build by
 fast, because it may be called often.  A log(N) lookup time for a given hash is
 preferred.  The reference implementation uses @code{bsearch ()}, for example.
 The index returned shall be an array index to be used by
-@ref{_gfortran_caf_get_by_ct}, i.e. a constant time operation is mandatory for
-quick access.
+@ref{_gfortran_caf_get_from_remote}, i.e. a constant time operation is mandatory
+for quick access.
 
 The GFortran compiler ensures that
 @code{_gfortran_caf_get_remote_function_index} is called once only for each
@@ -4975,9 +4975,9 @@ error message why the operation is not permitted.
 @end table
 
 
-@node _gfortran_caf_get_by_ct
-@subsection @code{_gfortran_caf_get_by_ct} --- Getting data from a remote image using a remote side accessor
-@cindex Coarray, _gfortran_caf_get_by_ct
+@node _gfortran_caf_get_from_remote
+@subsection @code{_gfortran_caf_get_from_remote} --- Getting data from a remote image using a remote side accessor
+@cindex Coarray, _gfortran_caf_get_from_remote
 
 @table @asis
 @item @emph{Description}:
@@ -4985,7 +4985,7 @@ Called to get a scalar, an array section or a whole array from a remote image
 identified by the @var{image_index}.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_get_by_ct (caf_token_t token,
+@code{void _gfortran_caf_get_from_remote (caf_token_t token,
 const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
 const int image_index, const size_t dst_size, void **dst_data,
 size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
