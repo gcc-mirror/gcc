@@ -4122,9 +4122,10 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       && DECL_P (TREE_OPERAND (CALL_EXPR_FN (*expr_p), 0)))
     {
       tree fndecl = TREE_OPERAND (CALL_EXPR_FN (*expr_p), 0);
-      dispatch_adjust_args_list
-	= lookup_attribute ("omp declare variant variant args",
-	    DECL_ATTRIBUTES (fndecl));
+      if (variant_substituted_p)
+	dispatch_adjust_args_list
+	  = lookup_attribute ("omp declare variant variant args",
+			      DECL_ATTRIBUTES (fndecl));
       if (dispatch_adjust_args_list)
 	{
 	  dispatch_adjust_args_list = TREE_VALUE (dispatch_adjust_args_list);
@@ -4148,7 +4149,15 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       int nappend = 0, ninterop = 0;
       for (tree t = dispatch_append_args; t; t = TREE_CHAIN (t))
 	nappend++;
-      if (dispatch_interop)
+      if (dispatch_interop && !variant_substituted_p)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
+		    "unexpected %<interop%> clause as invoked procedure %qD is "
+		    "not variant substituted", fndecl);
+	      inform (DECL_SOURCE_LOCATION (fndecl),
+		      "%qD declared here", fndecl);
+	}
+      else if (dispatch_interop)
 	{
 	  for (tree t = dispatch_interop; t; t = TREE_CHAIN (t))
 	    if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
