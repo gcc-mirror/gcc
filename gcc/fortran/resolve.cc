@@ -16840,7 +16840,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
   /* Resolving components below, may create vtabs for which the cyclic type
      information needs to be present.  */
-  resolve_cyclic_derived_type (sym);
+  if (!sym->attr.vtype)
+    resolve_cyclic_derived_type (sym);
 
   c = (sym->attr.is_class) ? CLASS_DATA (sym->components)
 			   : sym->components;
