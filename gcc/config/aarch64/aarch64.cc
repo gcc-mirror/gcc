@@ -6591,7 +6591,17 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
 static bool
 aarch64_function_ok_for_sibcall (tree, tree exp)
 {
-  if (crtl->abi->id () != expr_callee_abi (exp).id ())
+  auto from_abi = crtl->abi->id ();
+  auto to_abi = expr_callee_abi (exp).id ();
+
+  /* ARM_PCS_SVE preserves strictly more than ARM_PCS_SIMD, which in
+     turn preserves strictly more than the base PCS.  The callee must
+     preserve everything that the caller is required to preserve.  */
+  if (from_abi != to_abi && to_abi == ARM_PCS_SVE)
+    to_abi = ARM_PCS_SIMD;
+  if (from_abi != to_abi && to_abi == ARM_PCS_SIMD)
+    to_abi = ARM_PCS_AAPCS64;
+  if (from_abi != to_abi)
     return false;
 
   tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
