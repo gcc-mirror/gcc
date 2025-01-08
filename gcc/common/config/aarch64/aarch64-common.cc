@@ -189,7 +189,6 @@ static constexpr processor_name_to_arch all_cores[] =
 #define AARCH64_CORE(NAME, CORE_IDENT, C, ARCH_IDENT, E, F, G, H, I) \
   {NAME, AARCH64_ARCH_##ARCH_IDENT, feature_deps::cpu_##CORE_IDENT},
 #include "config/aarch64/aarch64-cores.def"
-  {"generic", AARCH64_ARCH_V8A, feature_deps::V8A ().enable},
   {"", aarch64_no_arch, 0}
 };
 
