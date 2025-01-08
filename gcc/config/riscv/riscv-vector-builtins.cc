@@ -3997,16 +3997,23 @@ function_builder::add_unique_function (const function_instance &instance,
     {
       /* Attribute lists shouldn't be shared.  */
       tree attrs = get_attributes (instance);
-      bool placeholder_p = !m_direct_overloads;
-      add_function (instance, overload_name, fntype, attrs, placeholder_p, NULL,
-		    vNULL, required);
-
-      /* Enter the function into the non-overloaded hash table.  */
-      hash = rfn.overloaded_hash ();
-      rfn_slot = non_overloaded_function_table->find_slot_with_hash (&rfn, hash,
-								     INSERT);
-      gcc_assert (!*rfn_slot);
-      *rfn_slot = &rfn;
+      if (m_direct_overloads)
+	add_function (instance, overload_name, fntype, attrs, false, NULL,
+		      vNULL, required);
+      else
+	{
+	  if (!non_overloaded_function_table)
+	    non_overloaded_function_table
+	      = new hash_table<non_overloaded_registered_function_hasher> (
+		1023);
+	  /* Enter the function into the non-overloaded hash table.  */
+	  hash = rfn.overloaded_hash ();
+	  rfn_slot
+	    = non_overloaded_function_table->find_slot_with_hash (&rfn, hash,
+								  INSERT);
+	  gcc_assert (!*rfn_slot);
+	  *rfn_slot = &rfn;
+	}
     }
   obstack_free (&m_string_obstack, name);
 }
@@ -4017,6 +4024,9 @@ function_builder::add_overloaded_function (const function_instance &instance,
 					   const function_shape *shape,
 					   enum required_ext required)
 {
+  if (m_direct_overloads)
+    return;
+
   if (!check_required_extensions (instance))
     return;
 
@@ -4027,7 +4037,7 @@ function_builder::add_overloaded_function (const function_instance &instance,
       /* To avoid API conflicting, take void return type and void argument
 	 for the overloaded function.  */
       tree fntype = build_function_type (void_type_node, void_list_node);
-      add_function (instance, name, fntype, NULL_TREE, m_direct_overloads, name,
+      add_function (instance, name, fntype, NULL_TREE, false, name,
 		    vNULL, required, true);
       obstack_free (&m_string_obstack, name);
     }
@@ -4817,8 +4827,6 @@ handle_pragma_vector ()
 
   /* Define the functions.  */
   function_table = new hash_table<registered_function_hasher> (1023);
-  non_overloaded_function_table
-    = new hash_table<non_overloaded_registered_function_hasher> (1023);
   function_builder builder;
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
   {
