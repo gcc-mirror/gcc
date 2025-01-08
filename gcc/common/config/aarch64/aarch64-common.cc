@@ -145,8 +145,9 @@ aarch64_handle_option (struct gcc_options *opts,
     }
 }
 
+
 /* An ISA extension in the co-processor and main instruction set space.  */
-struct aarch64_option_extension
+struct aarch64_extension_info
 {
   /* The extension name to pass on to the assembler.  */
   const char *name;
@@ -159,7 +160,7 @@ struct aarch64_option_extension
 };
 
 /* ISA extensions in AArch64.  */
-static constexpr aarch64_option_extension all_extensions[] =
+static constexpr aarch64_extension_info all_extensions[] =
 {
 #define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, FEATURE_STRING) \
   {NAME, AARCH64_FL_##IDENT, feature_deps::IDENT ().explicit_on, \
@@ -168,38 +169,41 @@ static constexpr aarch64_option_extension all_extensions[] =
   {NULL, 0, 0, 0}
 };
 
-struct processor_name_to_arch
+struct aarch64_arch_info
 {
-  const char *processor_name;
+  const char *name;
   aarch64_arch arch;
   aarch64_feature_flags flags;
 };
 
-struct arch_to_arch_name
+/* Map architecture revisions to their string representation.  */
+static constexpr aarch64_arch_info all_architectures[] =
 {
+#define AARCH64_ARCH(NAME, B, ARCH_IDENT, D, E)	\
+  {NAME, AARCH64_ARCH_##ARCH_IDENT, feature_deps::ARCH_IDENT ().enable},
+#include "config/aarch64/aarch64-arches.def"
+  {NULL, aarch64_no_arch, 0}
+};
+
+struct aarch64_processor_info
+{
+  const char *name;
+  aarch64_cpu processor;
   aarch64_arch arch;
-  const char *arch_name;
   aarch64_feature_flags flags;
 };
 
 /* Map processor names to the architecture revision they implement and
    the default set of architectural feature flags they support.  */
-static constexpr processor_name_to_arch all_cores[] =
+static constexpr aarch64_processor_info all_cores[] =
 {
 #define AARCH64_CORE(NAME, CORE_IDENT, C, ARCH_IDENT, E, F, G, H, I) \
-  {NAME, AARCH64_ARCH_##ARCH_IDENT, feature_deps::cpu_##CORE_IDENT},
+  {NAME, AARCH64_CPU_##CORE_IDENT, AARCH64_ARCH_##ARCH_IDENT, \
+   feature_deps::cpu_##CORE_IDENT},
 #include "config/aarch64/aarch64-cores.def"
-  {"", aarch64_no_arch, 0}
+  {NULL, aarch64_no_cpu, aarch64_no_arch, 0}
 };
 
-/* Map architecture revisions to their string representation.  */
-static constexpr arch_to_arch_name all_architectures[] =
-{
-#define AARCH64_ARCH(NAME, B, ARCH_IDENT, D, E)	\
-  {AARCH64_ARCH_##ARCH_IDENT, NAME, feature_deps::ARCH_IDENT ().enable},
-#include "config/aarch64/aarch64-arches.def"
-  {aarch64_no_arch, "", 0}
-};
 
 /* Parse the architecture extension string STR and update ISA_FLAGS
    with the architecture features turned on or off.  Return a
@@ -212,7 +216,7 @@ aarch64_parse_extension (const char *str, aarch64_feature_flags *isa_flags,
                          std::string *invalid_extension)
 {
   /* The extension string is parsed left to right.  */
-  const struct aarch64_option_extension *opt = NULL;
+  const struct aarch64_extension_info *opt = NULL;
 
   /* Flag to say whether we are adding or removing an extension.  */
   int adding_ext = -1;
@@ -276,7 +280,7 @@ aarch64_parse_extension (const char *str, aarch64_feature_flags *isa_flags,
 void
 aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates)
 {
-  const struct aarch64_option_extension *opt;
+  const struct aarch64_extension_info *opt;
   for (opt = all_extensions; opt->name != NULL; opt++)
     candidates->safe_push (opt->name);
 }
@@ -396,16 +400,16 @@ aarch64_rewrite_selected_cpu (const char *name)
       processor = original_string;
     }
 
-  const struct processor_name_to_arch* p_to_a;
+  const struct aarch64_processor_info* p_to_a;
   for (p_to_a = all_cores;
        p_to_a->arch != aarch64_no_arch;
        p_to_a++)
     {
-      if (p_to_a->processor_name == processor)
+      if (p_to_a->name == processor)
 	break;
     }
 
-  const struct arch_to_arch_name* a_to_an;
+  const struct aarch64_arch_info* a_to_an;
   for (a_to_an = all_architectures;
        a_to_an->arch != aarch64_no_arch;
        a_to_an++)
@@ -423,7 +427,7 @@ aarch64_rewrite_selected_cpu (const char *name)
   aarch64_feature_flags extensions = p_to_a->flags;
   aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
 
-  std::string outstr = a_to_an->arch_name
+  std::string outstr = a_to_an->name
 	+ aarch64_get_extension_string_for_isa_flags (extensions,
 						      a_to_an->flags);
 
