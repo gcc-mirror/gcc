@@ -57,8 +57,8 @@ typedef struct caf_single_token *caf_single_token_t;
 /* Global variables.  */
 caf_static_t *caf_static_list = NULL;
 
-typedef void (*accessor_t) (void **, int32_t *, void *, void *, const size_t *,
-			    size_t *);
+typedef void (*accessor_t) (void **, int32_t *, void *, void *, size_t *,
+			    const size_t *);
 struct accessor_hash_t
 {
   int hash;
@@ -129,6 +129,7 @@ _gfortran_caf_finalize (void)
   while (caf_static_list != NULL)
     {
       caf_static_t *tmp = caf_static_list->prev;
+      free (((caf_single_token_t) caf_static_list->token)->memptr);
       free (caf_static_list->token);
       free (caf_static_list);
       caf_static_list = tmp;
@@ -2941,8 +2942,8 @@ _gfortran_caf_get_by_ct (
     }
 
   accessor_hash_table[getter_index].accessor (dst_ptr, &free_buffer, src_ptr,
-					      get_data, opt_src_charlen,
-					      opt_dst_charlen);
+					      get_data, opt_dst_charlen,
+					      opt_src_charlen);
   if (opt_dst_desc && old_dst_data_ptr && !may_realloc_dst
       && opt_dst_desc->base_addr != old_dst_data_ptr)
     {

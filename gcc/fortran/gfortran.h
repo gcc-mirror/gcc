@@ -3974,6 +3974,8 @@ const char* gfc_lookup_function_fuzzy (const char *, gfc_symtree *);
 bool gfc_pure_function (gfc_expr *e, const char **name);
 bool gfc_implicit_pure_function (gfc_expr *e);
 
+/* coarray.cc */
+void gfc_coarray_rewrite (gfc_namespace *);
 
 /* array.cc */
 gfc_iterator *gfc_copy_iterator (gfc_iterator *);

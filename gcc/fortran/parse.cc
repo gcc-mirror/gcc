@@ -7339,6 +7339,16 @@ add_global_program (void)
     }
 }
 
+/* Rewrite expression where needed.
+ - Currently this is done for co-indexed expressions only.
+*/
+static void
+rewrite_expr_tree (gfc_namespace *gfc_global_ns_list)
+{
+  for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+       gfc_current_ns = gfc_current_ns->sibling)
+    gfc_coarray_rewrite (gfc_current_ns);
+}
 
 /* Resolve all the program units.  */
 static void
@@ -7615,6 +7625,9 @@ prog_units:
 done:
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
+
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    rewrite_expr_tree (gfc_global_ns_list);
 
   /* Go through all top-level namespaces and unset the implicit_pure
      attribute for any procedures that call something not pure or

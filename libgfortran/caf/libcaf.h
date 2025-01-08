@@ -237,11 +237,9 @@ void _gfortran_caf_sendget_by_ref (
 	int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
 	int *src_stat, int dst_type, int src_type);
 
-void _gfortran_caf_register_accessor (const int hash,
-				      void (*accessor) (void **, int32_t *,
-							void *, void *,
-							const size_t *,
-							size_t *));
+void _gfortran_caf_register_accessor (
+  const int hash, void (*accessor) (void **, int32_t *, void *, void *,
+				    size_t *, const size_t *));
 
 void _gfortran_caf_register_accessors_finish (void);
 
