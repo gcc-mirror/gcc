@@ -463,47 +463,6 @@ register_vector_type (vector_type_index type)
   acle_vector_types[0][type] = vectype;
 }
 
-/* Return a structure type that contains a single field of type FIELD_TYPE.
-   The field is called 'val', as mandated by ACLE.  */
-static tree
-wrap_type_in_struct (tree field_type)
-{
-  tree field = build_decl (input_location, FIELD_DECL,
-			   get_identifier ("val"), field_type);
-  tree struct_type = lang_hooks.types.make_type (RECORD_TYPE);
-  DECL_FIELD_CONTEXT (field) = struct_type;
-  TYPE_FIELDS (struct_type) = field;
-  layout_type (struct_type);
-  return struct_type;
-}
-
-/* Register a built-in TYPE_DECL called NAME for TYPE.  This is used/needed
-   when TYPE is a structure type.  */
-static void
-register_type_decl (tree type, const char *name)
-{
-  tree decl = build_decl (input_location, TYPE_DECL,
-			  get_identifier (name), type);
-  TYPE_NAME (type) = decl;
-  TYPE_STUB_DECL (type) = decl;
-  lang_hooks.decls.pushdecl (decl);
-  /* ??? Undo the effect of set_underlying_type for C.  The C frontend
-     doesn't recognize DECL as a built-in because (as intended) the decl has
-     a real location instead of BUILTINS_LOCATION.  The frontend therefore
-     treats the decl like a normal C "typedef struct foo foo;", expecting
-     the type for tag "struct foo" to have a dummy unnamed TYPE_DECL instead
-     of the named one we attached above.  It then sets DECL_ORIGINAL_TYPE
-     on the supposedly unnamed decl, creating a circularity that upsets
-     dwarf2out.
-
-     We don't want to follow the normal C model and create "struct foo"
-     tags for tuple types since (a) the types are supposed to be opaque
-     and (b) they couldn't be defined as a real struct anyway.  Treating
-     the TYPE_DECLs as "typedef struct foo foo;" without creating
-     "struct foo" would lead to confusing error messages.  */
-  DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
-}
-
 /* Register tuple types of element type TYPE under their arm_mve_types.h
    names.  */
 static void
@@ -538,12 +497,17 @@ register_builtin_tuple_types (vector_type_index type)
 		  && TYPE_MODE_RAW (arrtype) == TYPE_MODE (arrtype)
 		  && TYPE_ALIGN (arrtype) == 64);
 
-      tree tuple_type = wrap_type_in_struct (arrtype);
+      /* Build a structure type that contains a single field of type ARRTYPE.
+	 The field is called 'val', as mandated by ACLE.  */
+      tree field = build_decl (input_location, FIELD_DECL,
+			       get_identifier ("val"), arrtype);
+      tree tuple_type
+	= lang_hooks.types.simulate_record_decl (input_location,
+						 buffer,
+						 make_array_slice (&field, 1));
       gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
 		  && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
 		  && TYPE_ALIGN (tuple_type) == 64);
-
-      register_type_decl (tuple_type, buffer);
 
       acle_vector_types[num_vectors >> 1][type] = tuple_type;
     }
