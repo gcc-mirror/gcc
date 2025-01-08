@@ -1113,6 +1113,18 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
       struct df_link *defs, *def;
       ext_cand *cand;
 
+      if (fixed_regs[REGNO (reg)])
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Cannot eliminate extension:\n");
+	      print_rtl_single (dump_file, insn);
+	      fprintf (dump_file, " because extension on fixed register"
+				  " isn't supported.\n");
+	    }
+	  return;
+	}
+
       /* Zero-extension of an undefined value is partly defined (it's
 	 completely undefined for sign-extension, though).  So if there exists
 	 a path from the entry to this zero-extension that leaves this register
