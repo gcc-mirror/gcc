@@ -8626,7 +8626,7 @@ package body Exp_Dist is
             --  The RACW case is taken care of by Exp_Dist.Add_RACW_From_Any
 
             pragma Assert
-              (not (Is_Remote_Access_To_Class_Wide_Type (Typ)));
+              (not Is_Remote_Access_To_Class_Wide_Type (Typ));
 
             Use_Opaque_Representation := False;
 

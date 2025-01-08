@@ -1254,7 +1254,7 @@ package body System.Stream_Attributes.XDR is
       --  Compute Sign
 
       Is_Positive := (0.0 <= Item);
-      F := abs (Item);
+      F := abs Item;
 
       --  Signed zero
 
@@ -1400,7 +1400,7 @@ package body System.Stream_Attributes.XDR is
       --  Compute Sign
 
       Is_Positive := (0.0 <= Item);
-      F := abs (Item);
+      F := abs Item;
 
       --  Signed zero
 
@@ -1747,7 +1747,7 @@ package body System.Stream_Attributes.XDR is
       --  Compute Sign
 
       Is_Positive := (0.0 <= Item);
-      F := abs (Item);
+      F := abs Item;
 
       --  Signed zero
 

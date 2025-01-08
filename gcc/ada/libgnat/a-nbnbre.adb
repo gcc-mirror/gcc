@@ -132,7 +132,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
       function To_Big_Real (Arg : Num) return Valid_Big_Real is
 
-         A : constant Num'Base := abs (Arg);
+         A : constant Num'Base := abs Arg;
          E : constant Integer  := Num'Exponent (A);
          F : constant Num'Base := Num'Fraction (A);
          M : constant Natural  := Num'Machine_Mantissa;
@@ -229,7 +229,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
          --  Local variables
 
-         V : Big_Real := abs (Arg);
+         V : Big_Real := abs Arg;
          E : Integer  := 0;
          L : Integer;
 

@@ -2665,7 +2665,7 @@ package body Sem_Ch7 is
       then
          return True;
 
-      elsif not (Is_Derived_Type (Dep))
+      elsif not Is_Derived_Type (Dep)
         and then Is_Derived_Type (Full_View (Dep))
       then
          --  When instantiating a package body, the scope stack is empty, so

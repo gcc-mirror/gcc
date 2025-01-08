@@ -4176,7 +4176,7 @@ package body Sem_Ch10 is
                   P      := Unit (Parent_Spec (Lib_Spec));
                   P_Name := Defining_Entity (P);
 
-                  if not (Private_Present (Parent (Lib_Spec)))
+                  if not Private_Present (Parent (Lib_Spec))
                     and then not In_Private_Part (P_Name)
                   then
                      Install_Private_Declarations (P_Name);

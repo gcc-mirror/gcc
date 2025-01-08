@@ -132,7 +132,7 @@ is
    procedure Lemma_Abs_Commutation (X : Int32)
    with
      Ghost,
-     Post => abs (Big (X)) = Big (Uns32'(abs X));
+     Post => abs Big (X) = Big (Uns32'(abs X));
 
    procedure Lemma_Abs_Div_Commutation (X, Y : Big_Integer)
    with

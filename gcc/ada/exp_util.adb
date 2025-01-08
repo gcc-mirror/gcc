@@ -6100,7 +6100,7 @@ package body Exp_Util is
 
          if not Found
            and then Present (Interfaces (Typ))
-           and then not (Is_Empty_Elmt_List (Interfaces (Typ)))
+           and then not Is_Empty_Elmt_List (Interfaces (Typ))
          then
             --  Skip the tag associated with the primary table
 

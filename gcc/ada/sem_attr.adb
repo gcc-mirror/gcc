@@ -2266,7 +2266,7 @@ package body Sem_Attr is
          --  Now test for dynamic predicate
 
          if Has_Predicates (P_Type)
-           and then not (Has_Static_Predicate (P_Type))
+           and then not Has_Static_Predicate (P_Type)
          then
             Error_Attr_P
               ("prefix of % attribute may not have dynamic predicate");
@@ -4019,7 +4019,7 @@ package body Sem_Attr is
                   if (Is_Type (Tsk) and then Tsk = S)
                     or else (not Is_Type (Tsk)
                               and then Etype (Tsk) = S
-                              and then not (Comes_From_Source (S)))
+                              and then not Comes_From_Source (S))
                   then
                      null;
                   else

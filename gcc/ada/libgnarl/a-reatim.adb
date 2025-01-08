@@ -216,7 +216,7 @@ is
       --  Special-case for Time_First, whose absolute value is anomalous,
       --  courtesy of two's complement.
 
-      T_Val := (if T = Time_First then abs (Time_Last) else abs (T));
+      T_Val := (if T = Time_First then abs Time_Last else abs T);
 
       --  Extract the integer part of T, truncating towards zero
 

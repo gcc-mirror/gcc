@@ -53,7 +53,7 @@ package System.Double_Real is
    --  Convert a double to a single real
 
    function Quick_Two_Sum (A, B : Num) return Double_T
-     with Pre => A = 0.0 or else abs (A) >= abs (B);
+     with Pre => A = 0.0 or else abs A >= abs B;
    --  Compute A + B and its rounding error exactly, but assume |A| >= |B|
 
    function Two_Sum (A, B : Num) return Double_T;

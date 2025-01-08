@@ -1615,9 +1615,9 @@ package body Exp_Imgv is
          end if;
 
       elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
-         if Esize (Rtyp) <= 32 and then abs (Scale_Value (Rtyp)) <= 9 then
+         if Esize (Rtyp) <= 32 and then abs Scale_Value (Rtyp) <= 9 then
             Vid := RE_Value_Decimal32;
-         elsif Esize (Rtyp) <= 64 and then abs (Scale_Value (Rtyp)) <= 18 then
+         elsif Esize (Rtyp) <= 64 and then abs Scale_Value (Rtyp) <= 18 then
             Vid := RE_Value_Decimal64;
          else
             Vid := RE_Value_Decimal128;

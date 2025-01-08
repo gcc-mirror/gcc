@@ -128,7 +128,7 @@ is
      (if X = Double_Int'First
       then Double_Uns'(2 ** (Double_Size - 1))
       else Double_Uns (Double_Int'(abs X)))
-   with Post => abs (Big (X)) = Big ("abs"'Result),
+   with Post => abs Big (X) = Big ("abs"'Result),
         Annotate => (GNATprove, Hide_Info, "Expression_Function_Body");
    --  Convert absolute value of X to unsigned. Note that we can't just use
    --  the expression of the Else since it overflows for X = Double_Int'First.
@@ -209,7 +209,7 @@ is
    procedure Lemma_Abs_Commutation (X : Double_Int)
    with
      Ghost,
-     Post => abs (Big (X)) = Big (Double_Uns'(abs X));
+     Post => abs Big (X) = Big (Double_Uns'(abs X));
 
    procedure Lemma_Abs_Div_Commutation (X, Y : Big_Integer)
    with
@@ -226,8 +226,8 @@ is
    with
      Ghost,
      Pre  => In_Double_Int_Range (X),
-     Post => abs (X) <= Big_2xxDouble_Minus_1
-       and then In_Double_Int_Range (-abs (X));
+     Post => abs X <= Big_2xxDouble_Minus_1
+       and then In_Double_Int_Range (-abs X);
 
    procedure Lemma_Abs_Rem_Commutation (X, Y : Big_Integer)
    with
@@ -1760,7 +1760,7 @@ is
                                              + Big (Double_Uns (Lo (T1))));
          pragma Assert (Mult <= Big_2xxDouble_Minus_1);
          Lemma_Mult_Commutation (X, Y);
-         pragma Assert (Mult = abs (Big (X * Y)));
+         pragma Assert (Mult = abs Big (X * Y));
          Lemma_Word_Commutation (Lo (T2));
          pragma Assert (Mult = Big (Double_Uns'(2 ** Single_Size)
                           * Double_Uns (Lo (T2)))

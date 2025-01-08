@@ -18561,7 +18561,7 @@ package body Sem_Ch3 is
                Error_Msg_N
                  ("full view of private extension must be an extension", N);
 
-            elsif not (Abstract_Present (Parent (Prev)))
+            elsif not Abstract_Present (Parent (Prev))
               and then Abstract_Present (Type_Definition (N))
             then
                Error_Msg_N

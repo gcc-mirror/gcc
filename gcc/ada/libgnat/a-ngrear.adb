@@ -88,7 +88,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
    --  Return True iff A is symmetric, see RM G.3.1 (90).
 
    function Is_Tiny (Value, Compared_To : Real) return Boolean is
-     (abs Compared_To + 100.0 * abs (Value) = abs Compared_To);
+     (abs Compared_To + 100.0 * abs Value = abs Compared_To);
    --  Return True iff the Value is much smaller in magnitude than the least
    --  significant digit of Compared_To.
 

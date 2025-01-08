@@ -1580,13 +1580,13 @@ package body Sem_Dim is
                  and then Dims_Of_L /= Dims_Of_R
                then
                   if Nkind (L) = N_Real_Literal
-                    and then not (Comes_From_Source (L))
+                    and then not Comes_From_Source (L)
                     and then Expander_Active
                   then
                      null;
 
                   elsif Nkind (R) = N_Real_Literal
-                    and then not (Comes_From_Source (R))
+                    and then not Comes_From_Source (R)
                     and then Expander_Active
                   then
                      null;

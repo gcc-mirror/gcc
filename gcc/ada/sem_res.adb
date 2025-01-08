@@ -12389,7 +12389,7 @@ package body Sem_Res is
 
             if Nkind (Rop) = N_Real_Literal
               and then Realval (Rop) /= Ureal_0
-              and then abs (Realval (Rop)) < Delta_Value (Standard_Duration)
+              and then abs Realval (Rop) < Delta_Value (Standard_Duration)
             then
                Error_Msg_N
                  ("??universal real operand can only "

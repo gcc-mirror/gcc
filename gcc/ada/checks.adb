@@ -2076,7 +2076,7 @@ package body Checks is
          Lo := Succ (Expr_Type, UR_From_Uint (Ifirst - 1));
          Lo_OK := True;
 
-      elsif abs (Ifirst) < Max_Bound then
+      elsif abs Ifirst < Max_Bound then
          Lo := UR_From_Uint (Ifirst) - Ureal_Half;
          Lo_OK := (Ifirst > 0);
 
@@ -2120,7 +2120,7 @@ package body Checks is
          Hi := Pred (Expr_Type, UR_From_Uint (Ilast + 1));
          Hi_OK := True;
 
-      elsif abs (Ilast) < Max_Bound then
+      elsif abs Ilast < Max_Bound then
          Hi := UR_From_Uint (Ilast) + Ureal_Half;
          Hi_OK := (Ilast < 0);
       else
@@ -6243,7 +6243,7 @@ package body Checks is
       --  do the corresponding optimizations later on when applying the checks.
 
       if Mode in Minimized_Or_Eliminated then
-         if not (Overflow_Checks_Suppressed (Etype (N)))
+         if not Overflow_Checks_Suppressed (Etype (N))
            and then not (Is_Entity_Name (N)
                           and then Overflow_Checks_Suppressed (Entity (N)))
          then

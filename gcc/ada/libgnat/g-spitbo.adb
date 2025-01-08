@@ -255,7 +255,7 @@ package body GNAT.Spitbol is
    function S (Num : Integer) return String is
       Buf : String (1 .. 30);
       Ptr : Natural := Buf'Last + 1;
-      Val : Natural := abs (Num);
+      Val : Natural := abs Num;
 
    begin
       loop
@@ -748,7 +748,7 @@ package body GNAT.Spitbol is
    function V (Num : Integer) return VString is
       Buf : String (1 .. 30);
       Ptr : Natural := Buf'Last + 1;
-      Val : Natural := abs (Num);
+      Val : Natural := abs Num;
 
    begin
       loop

@@ -754,8 +754,8 @@ package body System.Generic_Bignums is
             (Y.Len <= 1 or else (Y.Len = 2 and then Y.D (1) < 2**31))
       then
          declare
-            A : constant LLI := abs (From_Bignum (X));
-            B : constant LLI := abs (From_Bignum (Y));
+            A : constant LLI := abs From_Bignum (X);
+            B : constant LLI := abs From_Bignum (Y);
          begin
             if not Discard_Quotient then
                Quotient := To_Bignum (A / B);

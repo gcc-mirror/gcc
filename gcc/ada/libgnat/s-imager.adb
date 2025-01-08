@@ -394,7 +394,7 @@ package body System.Image_R is
       Digs (1) := (if Is_Negative (V) then '-' else ' ');
       Ndigs := 1;
 
-      X := Double_Real.To_Double (abs (V));
+      X := Double_Real.To_Double (abs V);
 
       --  If X is zero, we are done
 

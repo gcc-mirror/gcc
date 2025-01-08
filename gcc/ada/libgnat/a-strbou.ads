@@ -784,8 +784,8 @@ is
                          then J <= Index'Result - 1
                          else J - 1 in Index'Result
                                        .. Length (Source) - Pattern'Length)
-                     then not (Search.Match
-                       (To_String (Source), Pattern, Mapping, J)))),
+                     then not Search.Match
+                       (To_String (Source), Pattern, Mapping, J))),
 
            --  Otherwise, 0 is returned
 
@@ -837,8 +837,8 @@ is
                          then J <= Index'Result - 1
                          else J - 1 in Index'Result
                                        .. Length (Source) - Pattern'Length)
-                     then not (Search.Match
-                       (To_String (Source), Pattern, Mapping, J)))),
+                     then not Search.Match
+                       (To_String (Source), Pattern, Mapping, J))),
 
            --  Otherwise, 0 is returned
 
@@ -943,8 +943,8 @@ is
                          then J in From .. Index'Result - 1
                          else J - 1 in Index'Result
                                        .. From - Pattern'Length)
-                     then not (Search.Match
-                       (To_String (Source), Pattern, Mapping, J)))),
+                     then not Search.Match
+                       (To_String (Source), Pattern, Mapping, J))),
 
            --  Otherwise, 0 is returned
 
@@ -1007,8 +1007,8 @@ is
                          then J in From .. Index'Result - 1
                          else J - 1 in Index'Result
                                        .. From - Pattern'Length)
-                     then not (Search.Match
-                       (To_String (Source), Pattern, Mapping, J)))),
+                     then not Search.Match
+                       (To_String (Source), Pattern, Mapping, J))),
 
            --  Otherwise, 0 is returned
 

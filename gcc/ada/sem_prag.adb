@@ -18006,7 +18006,7 @@ package body Sem_Prag is
                declare
                   Designated : constant Entity_Id := Designated_Type (Typ);
                begin
-                  if not (Is_Array_Type (Designated))
+                  if not Is_Array_Type (Designated)
                     or else Is_Constrained (Designated)
                   then
                      Error_Pragma

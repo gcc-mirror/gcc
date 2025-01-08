@@ -10014,7 +10014,7 @@ package body Sem_Ch6 is
                --  from interfaces several null primitives which differ only
                --  in the mode of the formals.
 
-               if not (Comes_From_Source (E))
+               if not Comes_From_Source (E)
                  and then Is_Null_Procedure (E)
                  and then not Mode_Conformant (Designator, E)
                then
@@ -12680,7 +12680,7 @@ package body Sem_Ch6 is
                   --  overridden operation is the inherited primitive
                   --  (which is available through the attribute alias).
 
-                  elsif not (Comes_From_Source (E))
+                  elsif not Comes_From_Source (E)
                     and then Is_Dispatching_Operation (E)
                     and then Find_Dispatching_Type (E) =
                              Find_Dispatching_Type (S)

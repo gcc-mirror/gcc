@@ -116,7 +116,7 @@ is
                return Sqrt (Left);
 
             else
-               A_Right := abs (Right);
+               A_Right := abs Right;
 
                --  If exponent is larger than one, compute integer exponen-
                --  tiation if possible, and evaluate fractional part with more
