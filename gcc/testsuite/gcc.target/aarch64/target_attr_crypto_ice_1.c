@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mcpu=thunderx+nofp -march=armv8-a" } */
+/* { dg-prune-output "warning: switch .* conflicts" } */
 
 #include "arm_neon.h"
 

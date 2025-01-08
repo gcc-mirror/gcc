@@ -19289,13 +19289,10 @@ aarch64_override_options (void)
 	 cpu features would end up disabling an achitecture feature.  In
 	 otherwords the cpu features need to be a strict superset of the arch
 	 features and if so prefer the -march ISA flags.  */
-      auto full_arch_flags = arch->flags | arch_isa;
-      auto full_cpu_flags = cpu->flags | cpu_isa;
-      if (~full_cpu_flags & full_arch_flags)
+      if (~cpu_isa & arch_isa)
 	{
 	  std::string ext_diff
-	    = aarch64_get_extension_string_for_isa_flags (full_arch_flags,
-							  full_cpu_flags);
+	    = aarch64_get_extension_string_for_isa_flags (arch_isa, cpu_isa);
 	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch "
 		      "and resulted in options %qs being added",
 		       aarch64_cpu_string,
