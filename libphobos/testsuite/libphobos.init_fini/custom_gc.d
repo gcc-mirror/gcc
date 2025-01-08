@@ -179,6 +179,26 @@ nothrow @nogc:
         return stats().allocatedInCurrentThread;
     }
 
+    void[] getArrayUsed(void *ptr, bool atomic = false) nothrow
+    {
+        return null;
+    }
+
+    bool expandArrayUsed(void[] slice, size_t newUsed, bool atomic = false) nothrow @safe
+    {
+        return false;
+    }
+
+    size_t reserveArrayCapacity(void[] slice, size_t request, bool atomic = false) nothrow @safe
+    {
+        return 0;
+    }
+
+    bool shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic = false) nothrow
+    {
+        return false;
+    }
+
 private:
     // doesn't care for alignment
     static void* sentinelAdd(void* p, size_t value)

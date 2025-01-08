@@ -82,6 +82,13 @@ enum CLIIdentifierTable : ubyte
     All      = 4, /// The least restrictive set of all other tables
 }
 
+/// Specifies the mode for error printing
+enum ErrorPrintMode : ubyte
+{
+    simpleError,      // Print errors without squiggles and carets
+    printErrorContext, // Print errors with context (source line and caret)
+}
+
 extern(C++) struct Output
 {
     bool doOutput;      // Output is enabled
@@ -126,10 +133,10 @@ extern(C++) struct Verbose
     bool complex = true;    // identify complex/imaginary type usage
     bool vin;               // identify 'in' parameters
     bool showGaggedErrors;  // print gagged errors anyway
-    bool printErrorContext; // print errors with the error context (the error line in the source file)
     bool logo;              // print compiler logo
     bool color;             // use ANSI colors in console output
     bool cov;               // generate code coverage data
+    ErrorPrintMode errorPrintMode; // enum for error printing mode
     MessageStyle messageStyle = MessageStyle.digitalmars; // style of file/line annotations on messages
     uint errorLimit = 20;
     uint errorSupplementLimit = 6;      // Limit the number of supplemental messages for each error (0 means unlimited)

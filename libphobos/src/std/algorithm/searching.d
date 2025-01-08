@@ -792,19 +792,18 @@ if (isInputRange!R && !isInfinite!R)
     `haystack` before reaching an element for which
     `startsWith!pred(haystack, needles)` is `true`. If
     `startsWith!pred(haystack, needles)` is not `true` for any element in
-    `haystack`, then `-1` is returned. If only `pred` is provided,
-    `pred(haystack)` is tested for each element.
+    `haystack`, then `-1` is returned. If more than one needle is provided,
+    `countUntil` will wrap the result     in a tuple similar to
+    `Tuple!(ptrdiff_t, "steps", ptrdiff_t needle)`
 
     See_Also: $(REF indexOf, std,string)
   +/
-ptrdiff_t countUntil(alias pred = "a == b", R, Rs...)(R haystack, Rs needles)
+auto countUntil(alias pred = "a == b", R, Rs...)(R haystack, Rs needles)
 if (isForwardRange!R
     && Rs.length > 0
     && isForwardRange!(Rs[0]) == isInputRange!(Rs[0])
     && allSatisfy!(canTestStartsWith!(pred, R), Rs))
 {
-    typeof(return) result;
-
     static if (needles.length == 1)
     {
         static if (hasLength!R) //Note: Narrow strings don't have length.
@@ -814,14 +813,16 @@ if (isForwardRange!R
             auto len = haystack.length;
             auto r2 = find!pred(haystack, needles[0]);
             if (!r2.empty)
-              return cast(typeof(return)) (len - r2.length);
+                return ptrdiff_t(len - r2.length);
         }
         else
         {
             import std.range : dropOne;
 
             if (needles[0].empty)
-              return 0;
+                return ptrdiff_t(0);
+
+            ptrdiff_t result;
 
             //Default case, slower route doing startsWith iteration
             for ( ; !haystack.empty ; ++result )
@@ -836,21 +837,39 @@ if (isForwardRange!R
                     //haystack we pop in all paths, so we do that, and then save.
                     haystack.popFront();
                     if (startsWith!pred(haystack.save, needles[0].save.dropOne()))
-                      return result;
+                        return result;
                 }
                 else
-                  haystack.popFront();
+                {
+                    haystack.popFront();
+                }
             }
         }
+        return ptrdiff_t(-1);
     }
     else
     {
+        static struct Result
+        {
+            ptrdiff_t steps, needle; // both -1 when nothing was found
+            alias steps this; // compatible with previous ptrdiff_t return type
+            ptrdiff_t opIndex(size_t idx) // faking a tuple
+            {
+                assert(idx < 2, "Type has only two members: pos and needle");
+                return idx == 0 ? steps : needle;
+            }
+        }
+        Result result;
+
         foreach (i, Ri; Rs)
         {
             static if (isForwardRange!Ri)
             {
                 if (needles[i].empty)
-                  return 0;
+                {
+                    result.needle = i;
+                    return result;
+                }
             }
         }
         Tuple!Rs t;
@@ -861,7 +880,7 @@ if (isForwardRange!R
                 t[i] = needles[i];
             }
         }
-        for (; !haystack.empty ; ++result, haystack.popFront())
+        for (; !haystack.empty ; ++result.steps, haystack.popFront())
         {
             foreach (i, Ri; Rs)
             {
@@ -870,18 +889,18 @@ if (isForwardRange!R
                     t[i] = needles[i].save;
                 }
             }
-            if (startsWith!pred(haystack.save, t.expand))
+            if (auto needle = startsWith!pred(haystack.save, t.expand))
             {
+                result.needle = needle - 1;
                 return result;
             }
         }
-    }
 
-    // Because of https://issues.dlang.org/show_bug.cgi?id=8804
-    // Avoids both "unreachable code" or "no return statement"
-    static if (isInfinite!R) assert(false, R.stringof ~ " must not be an"
-            ~ " infinite range");
-    else return -1;
+        // no match was found
+        result.needle = -1;
+        result.steps = -1;
+        return result;
+    }
 }
 
 /// ditto
@@ -906,6 +925,16 @@ if (isInputRange!R &&
     assert(countUntil([0, 7, 12, 22, 9], [12, 22]) == 2);
     assert(countUntil([0, 7, 12, 22, 9], 9) == 4);
     assert(countUntil!"a > b"([0, 7, 12, 22, 9], 20) == 3);
+
+    // supports multiple needles
+    auto res = "...hello".countUntil("ha", "he");
+    assert(res.steps == 3);
+    assert(res.needle == 1);
+
+    // returns -1 if no needle was found
+    res = "hello".countUntil("ha", "hu");
+    assert(res.steps == -1);
+    assert(res.needle == -1);
 }
 
 @safe unittest
@@ -941,6 +970,42 @@ if (isInputRange!R &&
     assert(countUntil("hello world", "world", "ello") == 1);
     assert(countUntil("hello world", "world", "") == 0);
     assert(countUntil("hello world", "world", 'l') == 2);
+}
+
+@safe unittest
+{
+    auto res = "...hello".countUntil("hella", "hello");
+    assert(res == 3);
+    assert(res.steps == 3);
+    assert(res.needle == 1);
+    // test tuple emulation
+    assert(res[0] == 3);
+    assert(res[1] == 1);
+
+    // the first matching needle is chosen
+    res = "...hello".countUntil("hell", "hello");
+    assert(res == 3);
+    assert(res.needle == 0);
+
+    // no match
+    auto noMatch = "hello world".countUntil("ha", "hu");
+    assert(noMatch == -1);
+    assert(noMatch.steps == -1);
+    assert(noMatch.needle  == -1);
+    // test tuple emulation
+    assert(noMatch[0] == -1);
+    assert(noMatch[1] == -1);
+}
+
+// test infinite ranges
+@safe unittest
+{
+    import std.algorithm.iteration : joiner;
+    import std.range : iota, repeat;
+    import std.stdio;
+    assert(10.iota.repeat.joiner.countUntil(9) == 9);
+    assert(10.iota.repeat.joiner.countUntil(1, 2) == 1);
+    assert(10.iota.repeat.joiner.countUntil!(a => a >= 9) == 9);
 }
 
 /// ditto

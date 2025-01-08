@@ -42,7 +42,8 @@ import dmd.target;
 import dmd.visitor;
 
 version(Windows) {
-    extern (C) char* getcwd(char* buffer, size_t maxlen);
+    extern (C) char* _getcwd(char* buffer, size_t maxlen);
+    alias getcwd = _getcwd;
 } else {
     import core.sys.posix.unistd : getcwd;
 }

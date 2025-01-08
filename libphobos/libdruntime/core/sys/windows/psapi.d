@@ -90,7 +90,7 @@ alias BOOL function(LPVOID, PENUM_PAGE_FILE_INFORMATION, LPCSTR)
 
 
 // Grouped by application, not in alphabetical order.
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     /* Process Information
      * http://windowssdk.msdn.microsoft.com/library/ms684870.aspx */
     BOOL EnumProcesses(DWORD*, DWORD, DWORD*); /* NT/2000/XP/Server2003/Vista/Longhorn */

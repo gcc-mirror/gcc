@@ -78,6 +78,7 @@ public:
     Loc loc;                    // file location
     EXP op;                     // to minimize use of dynamic_cast
     d_bool parens;              // if this is a parenthesized expression
+    d_bool rvalue;              // consider this an rvalue, even if it is an lvalue
 
     size_t size() const;
     static void _init();
@@ -138,7 +139,7 @@ public:
     TypeidExp* isTypeidExp();
     TraitsExp* isTraitsExp();
     HaltExp* isHaltExp();
-    IsExp* isExp();
+    IsExp* isIsExp();
     MixinExp* isMixinExp();
     ImportExp* isImportExp();
     AssertExp* isAssertExp();

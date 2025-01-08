@@ -1630,7 +1630,7 @@ Expressions* resolveStructLiteralNamedArgs(StructDeclaration sd, Type t, Scope* 
             continue;
         }
 
-        elems[fieldi] = doCopyOrMove(sc, ex);
+        elems[fieldi] = doCopyOrMove(sc, ex, null, false);
         ++fieldi;
     }
     if (errors)

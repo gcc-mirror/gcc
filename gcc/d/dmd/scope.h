@@ -143,6 +143,7 @@ struct Scope final
 
     AliasDeclaration *aliasAsg; // if set, then aliasAsg is being assigned a new value,
                                 // do not set wasRead for it
+    StructDeclaration *argStruct; // elimiate recursion when looking for rvalue construction
 
     Dsymbol *search(const Loc &loc, Identifier *ident, Dsymbol *&pscopesym, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all);
 };

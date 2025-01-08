@@ -1297,6 +1297,64 @@ if (is(typeof(a.ptr < b.ptr) == bool))
     static assert(test == "three"d);
 }
 
+///
+@safe pure nothrow unittest
+{
+    import std.meta : AliasSeq;
+
+    // can be used as an alternative implementation of overlap that returns
+    // `true` or `false` instead of a slice of the overlap
+    bool isSliceOf(T)(const scope T[] part, const scope T[] whole)
+    {
+        return part.overlap(whole) is part;
+    }
+
+    auto x = [1, 2, 3, 4, 5];
+
+    assert(isSliceOf(x[3..$], x));
+    assert(isSliceOf(x[], x));
+    assert(!isSliceOf(x, x[3..$]));
+    assert(!isSliceOf([7, 8], x));
+    assert(isSliceOf(null, x));
+
+    // null is a slice of itself
+    assert(isSliceOf(null, null));
+
+    foreach (T; AliasSeq!(int[], const(int)[], immutable(int)[], const int[], immutable int[]))
+    {
+        T a = [1, 2, 3, 4, 5];
+        T b = a;
+        T c = a[1 .. $];
+        T d = a[0 .. 1];
+        T e = null;
+
+        assert(isSliceOf(a, a));
+        assert(isSliceOf(b, a));
+        assert(isSliceOf(a, b));
+
+        assert(isSliceOf(c, a));
+        assert(isSliceOf(c, b));
+        assert(!isSliceOf(a, c));
+        assert(!isSliceOf(b, c));
+
+        assert(isSliceOf(d, a));
+        assert(isSliceOf(d, b));
+        assert(!isSliceOf(a, d));
+        assert(!isSliceOf(b, d));
+
+        assert(isSliceOf(e, a));
+        assert(isSliceOf(e, b));
+        assert(isSliceOf(e, c));
+        assert(isSliceOf(e, d));
+
+        //verifies R-value compatibilty
+        assert(!isSliceOf(a[$ .. $], a));
+        assert(isSliceOf(a[0 .. 0], a));
+        assert(isSliceOf(a, a[0.. $]));
+        assert(isSliceOf(a[0 .. $], a));
+    }
+}
+
 @safe pure nothrow unittest
 {
     static void test(L, R)(L l, R r)

@@ -51,6 +51,12 @@ extern (C++) final class PrintASTVisitor : Visitor
         printf("%.*s %s\n", cast(int)s.length, s.ptr, e.type ? e.type.toChars() : "");
     }
 
+    override void visit(IdentifierExp e)
+    {
+        printIndent(indent);
+        printf("Identifier `%s` %s\n", e.ident.toChars(), e.type ? e.type.toChars() : "");
+    }
+
     override void visit(IntegerExp e)
     {
         printIndent(indent);

@@ -331,7 +331,7 @@ struct PSHNOTIFY {
 }
 alias PSHNOTIFY* LPPSHNOTIFY;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     HPROPSHEETPAGE CreatePropertySheetPageA(LPCPROPSHEETPAGEA);
     HPROPSHEETPAGE CreatePropertySheetPageW(LPCPROPSHEETPAGEW);
     BOOL DestroyPropertySheetPage(HPROPSHEETPAGE);

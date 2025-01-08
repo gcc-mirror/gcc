@@ -258,6 +258,7 @@ enum class TOK : unsigned char
     wchar_tLiteral,
     endOfLine,  // \n, \r, \u2028, \u2029
     whitespace,
+    rvalue,
 
     // C only keywords
     inline_,

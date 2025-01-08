@@ -246,6 +246,26 @@ extern (C)
         return instance.allocatedInCurrentThread();
     }
 
+    void[] gc_getArrayUsed(void *ptr, bool atomic) nothrow
+    {
+        return instance.getArrayUsed( ptr, atomic );
+    }
+
+    bool gc_expandArrayUsed(void[] slice, size_t newUsed, bool atomic) nothrow
+    {
+        return instance.expandArrayUsed( slice, newUsed, atomic );
+    }
+
+    size_t gc_reserveArrayCapacity(void[] slice, size_t request, bool atomic) nothrow
+    {
+        return instance.reserveArrayCapacity( slice, request, atomic );
+    }
+
+    bool gc_shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic) nothrow
+    {
+        return instance.shrinkArrayUsed( slice, existingUsed, atomic );
+    }
+
     GC gc_getProxy() nothrow
     {
         return instance;

@@ -1,8 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice14642.d(47): Error: undefined identifier `errorValue`
-fail_compilation/ice14642.d(23): Error: template instance `ice14642.X.NA!()` error instantiating
+fail_compilation/ice14642.d(48): Error: undefined identifier `errorValue`
+fail_compilation/ice14642.d(52):        error on member `ice14642.Z.v`
+fail_compilation/ice14642.d(24): Error: template instance `ice14642.X.NA!()` error instantiating
 ---
 */
 

@@ -78,6 +78,8 @@ else version (DigitalMars)
         return val;
     }
 
+    /// Execute target dependent trap instruction, if supported.
+    /// Otherwise, abort execution.
     pragma(inline, true)
     void trap()
     {
@@ -90,7 +92,8 @@ else version (DigitalMars)
     }
 }
 
-/// Provide static branch hints
+/// Provide static branch and value hints for the LDC/GDC compilers.
+/// DMD ignores these hints.
 pragma(inline, true) bool likely(bool b)   { return !!expect(b, true);  }
-///
+/// ditto
 pragma(inline, true) bool unlikely(bool b) { return !!expect(b, false); }

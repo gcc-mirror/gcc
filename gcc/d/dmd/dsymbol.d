@@ -925,22 +925,8 @@ extern (C++) class Dsymbol : ASTNode
      */
     void addComment(const(char)* comment)
     {
-        if (!comment || !*comment)
-            return;
-
-        //printf("addComment '%s' to Dsymbol %p '%s'\n", comment, this, toChars());
-        void* h = cast(void*)this;      // just the pointer is the key
-        auto p = h in commentHashTable;
-        if (!p)
-        {
-            commentHashTable[h] = comment;
-            return;
-        }
-        if (strcmp(*p, comment) != 0)
-        {
-            // Concatenate the two
-            *p = Lexer.combineComments((*p).toDString(), comment.toDString(), true);
-        }
+        import dmd.dsymbolsem;
+        dmd.dsymbolsem.addComment(this, comment);
     }
 
     /// get documentation comment for this Dsymbol
@@ -958,7 +944,7 @@ extern (C++) class Dsymbol : ASTNode
     /* Shell around addComment() to avoid disruption for the moment */
     final void comment(const(char)* comment) { addComment(comment); }
 
-    private extern (D) __gshared const(char)*[void*] commentHashTable;
+    extern (D) __gshared const(char)*[void*] commentHashTable;
 
 
     /**********************************

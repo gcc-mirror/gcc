@@ -311,7 +311,6 @@ if (isBidirectionalRange!R && isSomeChar!(ElementType!R) ||
 @safe unittest
 {
     import std.array;
-    import std.utf : byDchar;
 
     assert(rtrimDirSeparators("//abc//").array == "//abc");
     assert(rtrimDirSeparators("//abc//"d).array == "//abc"d);
@@ -329,7 +328,6 @@ if (isBidirectionalRange!R && isSomeChar!(ElementType!R) ||
 @safe unittest
 {
     import std.array;
-    import std.utf : byDchar;
 
     assert(trimDirSeparators("//abc//").array == "abc");
     assert(trimDirSeparators("//abc//"d).array == "abc"d);

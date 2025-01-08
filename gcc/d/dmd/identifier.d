@@ -211,11 +211,14 @@ nothrow:
      * Params:
      *      prefix      = first part of the identifier name.
      *      loc         = source location to use in the identifier name.
+     *      parent      = (optional) extra part to be used in uniqueness check,
+     *                    if (prefix1, loc1) == (prefix2, loc2), but
+     *                    parent1 != parent2, no new name will be generated.
      * Returns:
      *      Identifier (inside Identifier.idPool) with deterministic name based
      *      on the source location.
      */
-    extern (D) static Identifier generateIdWithLoc(string prefix, const ref Loc loc)
+    extern (D) static Identifier generateIdWithLoc(string prefix, const ref Loc loc, string parent = "")
     {
         // generate `<prefix>_L<line>_C<col>`
         OutBuffer idBuf;
@@ -234,14 +237,20 @@ nothrow:
          * https://issues.dlang.org/show_bug.cgi?id=18880
          * https://issues.dlang.org/show_bug.cgi?id=18868
          * https://issues.dlang.org/show_bug.cgi?id=19058
+         *
+         * It is a bit trickier for lambdas/dgliterals: we want them to be unique per
+         * module/mixin + function/template instantiation context. So we use extra parent
+         * argument for that when dealing with lambdas. We could have added it to prefix
+         * directly, but that would unnecessary lengthen symbols names. See issue:
+         * https://issues.dlang.org/show_bug.cgi?id=23722
          */
-        static struct Key { Loc loc; string prefix; }
+        static struct Key { Loc loc; string prefix; string parent; }
         __gshared uint[Key] counters;
 
         static if (__traits(compiles, counters.update(Key.init, () => 0u, (ref uint a) => 0u)))
         {
             // 2.082+
-            counters.update(Key(loc, prefix),
+            counters.update(Key(loc, prefix, parent),
                 () => 1u,          // insertion
                 (ref uint counter) // update
                 {
@@ -253,7 +262,7 @@ nothrow:
         }
         else
         {
-            const key = Key(loc, prefix);
+            const key = Key(loc, prefix, parent);
             if (auto pCounter = key in counters)
             {
                 idBuf.writestring("_");

@@ -147,7 +147,7 @@ limited to a $(B '-') flag.
 $(H4 $(LNAME2 format-indicator, Format Indicator))
 
 The $(I format indicator) can either be a single character or an
-expression surrounded by $(B %\() and $(B %\)). It specifies the
+expression surrounded by $(B '%$(LPAREN)') and $(B '%$(RPAREN)'). It specifies the
 basic manner in which a value will be formatted and is the minimum
 requirement to format a value.
 
@@ -187,7 +187,7 @@ $(BOOKTABLE ,
 
 The $(I compound indicator) can be used to describe compound types
 like arrays or structs in more detail. A compound type is enclosed
-within $(B '%\(') and $(B '%\)'). The enclosed sub-format string is
+within $(B '%$(LPAREN)') and $(B '%$(RPAREN)'). The enclosed sub-format string is
 applied to individual elements. The trailing portion of the
 sub-format string following the specifier for the element is
 interpreted as the delimiter, and is therefore omitted following the

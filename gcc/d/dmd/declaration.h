@@ -782,6 +782,7 @@ class CtorDeclaration final : public FuncDeclaration
 {
 public:
     d_bool isCpCtor;
+    d_bool isMoveCtor;
     CtorDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
     const char *toChars() const override;

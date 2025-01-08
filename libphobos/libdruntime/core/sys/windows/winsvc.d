@@ -272,7 +272,7 @@ static if (_WIN32_WINNT >= 0x500) {
     alias SERVICE_FAILURE_ACTIONSW* LPSERVICE_FAILURE_ACTIONSW;
 }
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     BOOL ChangeServiceConfigA(SC_HANDLE, DWORD, DWORD, DWORD, LPCSTR,
       LPCSTR, LPDWORD, LPCSTR, LPCSTR, LPCSTR, LPCSTR);
     BOOL ChangeServiceConfigW(SC_HANDLE, DWORD, DWORD, DWORD, LPCWSTR,

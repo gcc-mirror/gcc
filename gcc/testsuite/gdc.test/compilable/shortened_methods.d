@@ -13,6 +13,10 @@ class A {
 
     // or normal method defintions
     bool isNull() => this is null;
+
+    this() {}
+    this(int x) { _x = x; }
+    this(float y) => this(cast(int) y);
 }
 
 class B : A{
@@ -35,4 +39,13 @@ void func() {
 
     // Issue 24088 - https://issues.dlang.org/show_bug.cgi?id=24088
     S!int f() => S!int();
+}
+
+struct T
+{
+    void inc() {}
+    this(this) => inc();
+
+    void free() {}
+    ~this() => free();
 }

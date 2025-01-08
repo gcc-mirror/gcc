@@ -24,6 +24,7 @@ import dmd.dclass;
 import dmd.declaration;
 import dmd.dmodule;
 import dmd.doc;
+import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
@@ -146,6 +147,7 @@ extern (C++) struct Scope
 
     AliasDeclaration aliasAsg; /// if set, then aliasAsg is being assigned a new value,
                                /// do not set wasRead for it
+    StructDeclaration argStruct;    /// elimiate recursion when looking for rvalue construction
 
     extern (D) __gshared Scope* freelist;
 

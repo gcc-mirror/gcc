@@ -276,7 +276,7 @@ class FileLogger : Logger
 {
     // we don't need to actually run the code, only make sure
     // it compiles
-    static _() {
+    static void _() {
         auto l = new shared FileLogger("");
     }
 }

@@ -925,7 +925,8 @@ d_post_options (const char ** fn)
     global.params.v.errorLimit = flag_max_errors;
 
   global.params.v.showColumns = flag_show_column;
-  global.params.v.printErrorContext = flag_diagnostics_show_caret;
+  global.params.v.errorPrintMode = flag_diagnostics_show_caret
+    ? ErrorPrintMode::printErrorContext : ErrorPrintMode::simpleError;
 
   /* Keep the front-end location type in sync with params.  */
   Loc::set (global.params.v.showColumns, global.params.v.messageStyle);

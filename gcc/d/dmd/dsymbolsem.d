@@ -53,6 +53,7 @@ import dmd.init;
 import dmd.initsem;
 import dmd.intrange;
 import dmd.hdrgen;
+import dmd.lexer;
 import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
@@ -64,6 +65,7 @@ import dmd.parse;
 debug import dmd.printast;
 import dmd.root.array;
 import dmd.root.filename;
+import dmd.root.string;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.rootobject;
@@ -256,6 +258,10 @@ Return:
 */
 bool checkHasBothRvalueAndCpCtor(StructDeclaration sd, CtorDeclaration ctor, TemplateInstance ti)
 {
+    //printf("checkHasBothRvalueAndCpCtor() sd: %s ctor: %s ti: %s\n", sd.toChars(), ctor.toChars(), ti.toChars());
+    /* cannot use ctor.isMoveCtor because semantic pass may not have been run yet,
+     * so use isRvalueConstructor()
+     */
     if (sd && sd.hasCopyCtor && isRvalueConstructor(sd, ctor))
     {
         .error(ctor.loc, "cannot define both an rvalue constructor and a copy constructor for `struct %s`", sd.toChars());
@@ -280,6 +286,7 @@ bool checkHasBothRvalueAndCpCtor(StructDeclaration sd, CtorDeclaration ctor, Tem
  */
 bool isRvalueConstructor(StructDeclaration sd, CtorDeclaration ctor)
 {
+    // note commonality with setting isMoveCtor in the semantic code for CtorDeclaration
     auto tf = ctor.type.isTypeFunction();
     const dim = tf.parameterList.length;
     if (dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg))
@@ -306,6 +313,7 @@ bool isRvalueConstructor(StructDeclaration sd, CtorDeclaration ctor)
  */
 Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false, bool findOnly = false)
 {
+    //printf("resolveAliasThis() %s\n", toChars(e));
     import dmd.typesem : dotExp;
     for (AggregateDeclaration ad = isAggregate(e.type); ad;)
     {
@@ -2399,7 +2407,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(CtorDeclaration ctd)
     {
-        //printf("CtorDeclaration::semantic() %s\n", toChars());
+        //printf("CtorDeclaration::semantic() %p %s\n", ctd, ctd.toChars());
         if (ctd.semanticRun >= PASS.semanticdone)
             return;
         if (ctd._scope)
@@ -2432,6 +2440,24 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         sc.stc &= ~STC.static_; // not a static constructor
 
         funcDeclarationSemantic(sc, ctd);
+        // Check short constructor: this() => expr;
+        if (ctd.fbody)
+        {
+            if (auto s = ctd.fbody.isExpStatement())
+            {
+                if (s.exp)
+                {
+                    auto ce = s.exp.isCallExp();
+                    // check this/super before semantic
+                    if (!ce || (!ce.e1.isThisExp() && !ce.e1.isSuperExp()))
+                    {
+                        s.exp = s.exp.expressionSemantic(sc);
+                        if (s.exp.type.ty != Tvoid)
+                            error(s.loc, "can only return void expression, `this` call or `super` call from constructor");
+                    }
+                }
+            }
+        }
 
         sc.pop();
 
@@ -2482,12 +2508,15 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
             else if ((dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg)))
             {
-                //printf("tf: %s\n", tf.toChars());
+                //printf("tf: %s\n", toChars(tf));
                 auto param = tf.parameterList[0];
-                if (param.storageClass & STC.ref_ && param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())
+                if (param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())
                 {
-                    //printf("copy constructor\n");
-                    ctd.isCpCtor = true;
+                    //printf("copy constructor %p\n", ctd);
+                    if (param.storageClass & STC.ref_)
+                        ctd.isCpCtor = true;            // copy constructor
+                    else
+                        ctd.isMoveCtor = true;          // move constructor
                 }
             }
         }
@@ -2978,7 +3007,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         buildDtors(sd, sc2);
 
-        sd.hasCopyCtor = buildCopyCtor(sd, sc2);
+        bool hasMoveCtor;
+        sd.hasCopyCtor = buildCopyCtor(sd, sc2, hasMoveCtor);
+        sd.hasMoveCtor = hasMoveCtor;
+
         sd.postblit = buildPostBlit(sd, sc2);
 
         buildOpAssign(sd, sc2);
@@ -5211,7 +5243,7 @@ void aliasInstanceSemantic(TemplateInstance tempinst, Scope* sc, TemplateDeclara
 // function used to perform semantic on AliasDeclaration
 void aliasSemantic(AliasDeclaration ds, Scope* sc)
 {
-    //printf("AliasDeclaration::semantic() %s\n", ds.toChars());
+    //printf("AliasDeclaration::semantic() %s %p\n", ds.toChars(), ds.aliassym);
 
     // as DsymbolSemanticVisitor::visit(AliasDeclaration), in case we're called first.
     // see https://issues.dlang.org/show_bug.cgi?id=21001
@@ -7782,7 +7814,6 @@ private Expression callScopeDtor(VarDeclaration vd, Scope* sc)
         Expression ec;
         ec = new VarExp(vd.loc, vd);
         e = new DeleteExp(vd.loc, ec, true);
-        e.type = Type.tvoid;
         break;
     }
     return e;
@@ -7844,4 +7875,58 @@ Lfail:
         ad.errors = true;
     }
     return false;
+}
+
+extern (C++) void addComment(Dsymbol d, const(char)* comment)
+{
+    scope v = new AddCommentVisitor(comment);
+    d.accept(v);
+}
+
+extern (C++) class AddCommentVisitor: Visitor
+{
+    alias visit = Visitor.visit;
+
+    const(char)* comment;
+
+    this(const(char)* comment)
+    {
+        this.comment = comment;
+    }
+
+    override void visit(Dsymbol d)
+    {
+        if (!comment || !*comment)
+            return;
+
+        //printf("addComment '%s' to Dsymbol %p '%s'\n", comment, this, toChars());
+        void* h = cast(void*)d;      // just the pointer is the key
+        auto p = h in d.commentHashTable;
+        if (!p)
+        {
+            d.commentHashTable[h] = comment;
+            return;
+        }
+        if (strcmp(*p, comment) != 0)
+        {
+            // Concatenate the two
+            *p = Lexer.combineComments((*p).toDString(), comment.toDString(), true);
+        }
+    }
+    override void visit(AttribDeclaration atd)
+    {
+        if (comment)
+        {
+            atd.include(null).foreachDsymbol( s => s.addComment(comment) );
+        }
+    }
+    override void visit(ConditionalDeclaration cd)
+    {
+        if (comment)
+        {
+            cd.decl    .foreachDsymbol( s => s.addComment(comment) );
+            cd.elsedecl.foreachDsymbol( s => s.addComment(comment) );
+        }
+    }
+    override void visit(StaticForeachDeclaration sfd) {}
 }

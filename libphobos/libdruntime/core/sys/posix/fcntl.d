@@ -475,6 +475,7 @@ else version (Darwin)
     enum F_UNLCK        = 2;
     enum F_WRLCK        = 3;
 
+    enum O_NOFOLLOW     = 0x0100;
     enum O_CREAT        = 0x0200;
     enum O_EXCL         = 0x0800;
     enum O_NOCTTY       = 0;

@@ -1377,6 +1377,193 @@ class ConservativeGC : GC
         stats.freeSize += freeListSize;
         stats.allocatedInCurrentThread = bytesAllocated;
     }
+
+    // ARRAY FUNCTIONS
+    void[] getArrayUsed(void *ptr, bool atomic = false) nothrow
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        // lookup the block info, using the cache if possible.
+        auto bic = atomic ? null : __getBlkInfo(ptr);
+        auto info = bic ? *bic : query(ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return null;
+
+        assert(info.base); // sanity check.
+        if (!bic && !atomic)
+            // cache the lookup for next time
+            __insertBlkInfoCache(info, null);
+
+        auto usedSize = atomic ? __arrayAllocLengthAtomic(info) : __arrayAllocLength(info);
+        return __arrayStart(info)[0 .. usedSize];
+    }
+
+    /* NOTE about @trusted in these functions:
+     * These functions do a lot of pointer manipulation, and has writeable
+     * access to BlkInfo which is used to interface with other parts of the GC,
+     * including the block metadata and block cache. Marking these functions as
+     * @safe would mean that any modification of BlkInfo fields should be
+     * considered @safe, which is not the case. For example, it would be
+     * perfectly legal to change the BlkInfo size to some huge number, and then
+     * store it in the block cache to blow up later. The utility functions
+     * count on the BlkInfo representing the correct information inside the GC.
+     *
+     * In order to mark these @safe, we would need a BlkInfo that has
+     * restrictive access (i.e. @system only) to the information inside the
+     * BlkInfo. Until then any use of these structures needs to be @trusted,
+     * and therefore the entire functions are @trusted. The API is still @safe
+     * because the information is stored and looked up by the GC, not the
+     * caller.
+     */
+    bool expandArrayUsed(void[] slice, size_t newUsed, bool atomic = false) nothrow @trusted
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        if (newUsed < slice.length)
+            // cannot "expand" by shrinking.
+            return false;
+
+        // lookup the block info, using the cache if possible
+        auto bic = atomic ? null : __getBlkInfo(slice.ptr);
+        auto info = bic ? *bic : query(slice.ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return false;
+
+        assert(info.base); // sanity check.
+
+        immutable offset = slice.ptr - __arrayStart(info);
+        newUsed += offset;
+        auto existingUsed = slice.length + offset;
+
+        size_t typeInfoSize = (info.attr & BlkAttr.STRUCTFINAL) ? size_t.sizeof : 0;
+        if (__setArrayAllocLengthImpl(info, offset + newUsed, atomic, existingUsed, typeInfoSize))
+        {
+            // could expand without extending
+            if (!bic && !atomic)
+                // cache the lookup for next time
+                __insertBlkInfoCache(info, null);
+            return true;
+        }
+
+        // if we got here, just setting the used size did not work.
+        if (info.size < PAGESIZE)
+            // nothing else we can do
+            return false;
+
+        // try extending the block into subsequent pages.
+        immutable requiredExtension = newUsed - info.size - LARGEPAD;
+        auto extendedSize = extend(info.base, requiredExtension, requiredExtension, null);
+        if (extendedSize == 0)
+            // could not extend, can't satisfy the request
+            return false;
+
+        info.size = extendedSize;
+        if (bic)
+            *bic = info;
+        else if (!atomic)
+            __insertBlkInfoCache(info, null);
+
+        // this should always work.
+        return __setArrayAllocLengthImpl(info, newUsed, atomic, existingUsed, typeInfoSize);
+    }
+
+    bool shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic = false) nothrow
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        if (existingUsed < slice.length)
+            // cannot "shrink" by growing.
+            return false;
+
+        // lookup the block info, using the cache if possible.
+        auto bic = atomic ? null : __getBlkInfo(slice.ptr);
+        auto info = bic ? *bic : query(slice.ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return false;
+
+        assert(info.base); // sanity check
+
+        immutable offset = slice.ptr - __arrayStart(info);
+        existingUsed += offset;
+        auto newUsed = slice.length + offset;
+
+        size_t typeInfoSize = (info.attr & BlkAttr.STRUCTFINAL) ? size_t.sizeof : 0;
+
+        if (__setArrayAllocLengthImpl(info, newUsed, atomic, existingUsed, typeInfoSize))
+        {
+            if (!bic && !atomic)
+                __insertBlkInfoCache(info, null);
+            return true;
+        }
+
+        return false;
+    }
+
+    size_t reserveArrayCapacity(void[] slice, size_t request, bool atomic = false) nothrow @trusted
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        // lookup the block info, using the cache if possible.
+        auto bic = atomic ? null : __getBlkInfo(slice.ptr);
+        auto info = bic ? *bic : query(slice.ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return 0;
+
+        assert(info.base); // sanity check
+
+        immutable offset = slice.ptr - __arrayStart(info);
+        request += offset;
+        auto existingUsed = slice.length + offset;
+
+        // make sure this slice ends at the used space
+        auto blockUsed = atomic ? __arrayAllocLengthAtomic(info) : __arrayAllocLength(info);
+        if (existingUsed != blockUsed)
+            // not an expandable slice.
+            return 0;
+
+        // see if the capacity can contain the existing data
+        auto existingCapacity = __arrayAllocCapacity(info);
+        if (existingCapacity < request)
+        {
+            if (info.size < PAGESIZE)
+                // no possibility to extend
+                return 0;
+
+            immutable requiredExtension = request - existingCapacity;
+            auto extendedSize = extend(info.base, requiredExtension, requiredExtension, null);
+            if (extendedSize == 0)
+                // could not extend, can't satisfy the request
+                return 0;
+
+            info.size = extendedSize;
+
+            // update the block info cache if it was used
+            if (bic)
+                *bic = info;
+            else if (!atomic)
+                __insertBlkInfoCache(info, null);
+
+            existingCapacity = __arrayAllocCapacity(info);
+        }
+
+        return existingCapacity - offset;
+    }
 }
 
 

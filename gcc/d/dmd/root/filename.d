@@ -42,7 +42,8 @@ version (Windows)
 
     extern (Windows) DWORD GetFullPathNameW(LPCWSTR, DWORD, LPWSTR, LPWSTR*) nothrow @nogc;
     extern (Windows) void SetLastError(DWORD) nothrow @nogc;
-    extern (C) char* getcwd(char* buffer, size_t maxlen) nothrow;
+    extern (C) char* _getcwd(char* buffer, size_t maxlen) nothrow;
+    alias getcwd = _getcwd;
 }
 
 version (CRuntime_Glibc)

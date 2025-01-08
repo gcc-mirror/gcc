@@ -293,10 +293,16 @@ enum WANTexpand = 1;    // expand const/immutable variables if possible
  */
 extern (C++) abstract class Expression : ASTNode
 {
-    Type type;      // !=null means that semantic() has been run
+    /// Usually, this starts out as `null` and gets set to the final expression type by
+    /// `expressionSemantic`. However, for some expressions (such as `TypeExp`,`RealExp`,
+    /// `VarExp`), the field can get set to an assigned type before running semantic.
+    /// See `expressionSemanticDone`
+    Type type;
+
     Loc loc;        // file location
     const EXP op;   // to minimize use of dynamic_cast
     bool parens;    // if this is a parenthesized expression
+    bool rvalue;    // true if this is considered to be an rvalue, even if it is an lvalue
 
     extern (D) this(const ref Loc loc, EXP op) scope @safe
     {
@@ -724,7 +730,7 @@ extern (C++) abstract class Expression : ASTNode
         inout(TypeidExp)    isTypeidExp() { return op == EXP.typeid_ ? cast(typeof(return))this : null; }
         inout(TraitsExp)    isTraitsExp() { return op == EXP.traits ? cast(typeof(return))this : null; }
         inout(HaltExp)      isHaltExp() { return op == EXP.halt ? cast(typeof(return))this : null; }
-        inout(IsExp)        isExp() { return op == EXP.is_ ? cast(typeof(return))this : null; }
+        inout(IsExp)        isIsExp() { return op == EXP.is_ ? cast(typeof(return))this : null; }
         inout(MixinExp)     isMixinExp() { return op == EXP.mixin_ ? cast(typeof(return))this : null; }
         inout(ImportExp)    isImportExp() { return op == EXP.import_ ? cast(typeof(return))this : null; }
         inout(AssertExp)    isAssertExp() { return op == EXP.assert_ ? cast(typeof(return))this : null; }
@@ -1307,7 +1313,7 @@ extern (C++) class IdentifierExp : Expression
 
     override final bool isLvalue()
     {
-        return true;
+        return !this.rvalue;
     }
 
     override void accept(Visitor v)
@@ -1351,7 +1357,7 @@ extern (C++) final class DsymbolExp : Expression
 
     override bool isLvalue()
     {
-        return true;
+        return !rvalue;
     }
 
     override void accept(Visitor v)
@@ -1397,7 +1403,7 @@ extern (C++) class ThisExp : Expression
     override final bool isLvalue()
     {
         // Class `this` should be an rvalue; struct `this` should be an lvalue.
-        return type.toBasetype().ty != Tclass;
+        return !rvalue && type.toBasetype().ty != Tclass;
     }
 
     override void accept(Visitor v)
@@ -1782,7 +1788,7 @@ extern (C++) final class StringExp : Expression
         /* string literal is rvalue in default, but
          * conversion to reference of static array is only allowed.
          */
-        return (type && type.toBasetype().ty == Tsarray);
+        return !rvalue && (type && type.toBasetype().ty == Tsarray);
     }
 
     /********************************
@@ -2719,7 +2725,7 @@ extern (C++) final class VarExp : SymbolExp
 
     override bool isLvalue()
     {
-        if (var.storage_class & (STC.lazy_ | STC.rvalue | STC.manifest))
+        if (rvalue || var.storage_class & (STC.lazy_ | STC.rvalue | STC.manifest))
             return false;
         return true;
     }
@@ -3098,7 +3104,7 @@ extern (C++) class BinAssignExp : BinExp
 
     override final bool isLvalue()
     {
-        return true;
+        return !rvalue;
     }
 
     override void accept(Visitor v)
@@ -3212,7 +3218,6 @@ extern (C++) final class ThrowExp : UnaExp
     extern (D) this(const ref Loc loc, Expression e)
     {
         super(loc, EXP.throw_, e);
-        this.type = Type.tnoreturn;
     }
 
     override ThrowExp syntaxCopy()
@@ -3303,6 +3308,8 @@ extern (C++) final class DotVarExp : UnaExp
 
     override bool isLvalue()
     {
+        if (rvalue)
+            return false;
         if (e1.op != EXP.structLiteral)
             return true;
         auto vd = var.isVarDeclaration();
@@ -3530,6 +3537,8 @@ extern (C++) final class CallExp : UnaExp
 
     override bool isLvalue()
     {
+        if (rvalue)
+            return false;
         Type tb = e1.type.toBasetype();
         if (tb.ty == Tdelegate || tb.ty == Tpointer)
             tb = tb.nextOf();
@@ -3648,7 +3657,7 @@ extern (C++) final class PtrExp : UnaExp
 
     override bool isLvalue()
     {
-        return true;
+        return !rvalue;
     }
 
     override void accept(Visitor v)
@@ -3777,7 +3786,7 @@ extern (C++) final class CastExp : UnaExp
     override bool isLvalue()
     {
         //printf("e1.type = %s, to.type = %s\n", e1.type.toChars(), to.toChars());
-        if (!e1.isLvalue())
+        if (rvalue || !e1.isLvalue())
             return false;
         return (to.ty == Tsarray && (e1.type.ty == Tvector || e1.type.ty == Tsarray)) ||
             e1.type.mutableOf.unSharedOf().equals(to.mutableOf().unSharedOf());
@@ -3834,7 +3843,7 @@ extern (C++) final class VectorArrayExp : UnaExp
 
     override bool isLvalue()
     {
-        return e1.isLvalue();
+        return !rvalue && e1.isLvalue();
     }
 
     override void accept(Visitor v)
@@ -3891,7 +3900,7 @@ extern (C++) final class SliceExp : UnaExp
         /* slice expression is rvalue in default, but
          * conversion to reference of static array is only allowed.
          */
-        return (type && type.toBasetype().ty == Tsarray);
+        return !rvalue && (type && type.toBasetype().ty == Tsarray);
     }
 
     override Optional!bool toBool()
@@ -3956,6 +3965,8 @@ extern (C++) final class ArrayExp : UnaExp
 
     override bool isLvalue()
     {
+        if (rvalue)
+            return false;
         if (type && type.toBasetype().ty == Tvoid)
             return false;
         return true;
@@ -4005,7 +4016,7 @@ extern (C++) final class CommaExp : BinExp
 
     override bool isLvalue()
     {
-        return e2.isLvalue();
+        return !rvalue && e2.isLvalue();
     }
 
     override Optional!bool toBool()
@@ -4080,7 +4091,7 @@ extern (C++) final class DelegatePtrExp : UnaExp
 
     override bool isLvalue()
     {
-        return e1.isLvalue();
+        return !rvalue && e1.isLvalue();
     }
 
     override void accept(Visitor v)
@@ -4103,7 +4114,7 @@ extern (C++) final class DelegateFuncptrExp : UnaExp
 
     override bool isLvalue()
     {
-        return e1.isLvalue();
+        return !rvalue && e1.isLvalue();
     }
 
     override void accept(Visitor v)
@@ -4143,6 +4154,8 @@ extern (C++) final class IndexExp : BinExp
 
     override bool isLvalue()
     {
+        if (rvalue)
+            return false;
         auto t1b = e1.type.toBasetype();
         if (t1b.isTypeAArray() || t1b.isTypeSArray() ||
             (e1.isIndexExp() && t1b != t1b.isTypeDArray()))
@@ -4251,7 +4264,7 @@ extern (C++) class AssignExp : BinExp
         {
             return false;
         }
-        return true;
+        return !rvalue;
     }
 
     override void accept(Visitor v)
@@ -4982,7 +4995,7 @@ extern (C++) final class CondExp : BinExp
 
     override bool isLvalue()
     {
-        return e1.isLvalue() && e2.isLvalue();
+        return !rvalue && e1.isLvalue() && e2.isLvalue();
     }
 
     override void accept(Visitor v)

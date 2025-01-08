@@ -101,6 +101,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         bool hasIdentityEquals;     // true if has identity opEquals
         bool hasNoFields;           // has no fields
         bool hasCopyCtor;           // copy constructor
+        bool hasMoveCtor;           // move constructor
         bool hasPointerField;       // members with indirections
         bool hasVoidInitPointers;   // void-initialized unsafe fields
         bool hasUnsafeBitpatterns;  // @system members, pointers, bool
@@ -171,11 +172,12 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         {
             Dsymbol s = (*members)[i];
             s.setFieldOffset(this, &fieldState, isunion);
-        }
-        if (type.ty == Terror)
-        {
-            errors = true;
-            return;
+            if (type.ty == Terror)
+            {
+                errorSupplemental(s.loc, "error on member `%s`", s.toPrettyChars);
+                errors = true;
+                return;
+            }
         }
 
         if (structsize == 0)
@@ -320,11 +322,16 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         import dmd.clone;
 
         bool hasCpCtorLocal;
-        needCopyCtor(this, hasCpCtorLocal);
+        bool hasMoveCtorLocal;
+        needCopyCtor(this, hasCpCtorLocal, hasMoveCtorLocal);
 
         if (enclosing                      || // is nested
             search(this, loc, Id.postblit) || // has postblit
             search(this, loc, Id.dtor)     || // has destructor
+            /* This is commented out because otherwise buildkite vibe.d:
+               `canCAS!Task` fails to compile
+             */
+            //hasMoveCtorLocal               || // has move constructor
             hasCpCtorLocal)                   // has copy constructor
         {
             ispod = ThreeState.no;

@@ -469,7 +469,7 @@ enum RET
 enum class TRUST : unsigned char
 {
     default_ = 0,
-    system = 1,    // @system (same as TRUSTdefault)
+    system = 1,    // @system (same as TRUST.default_ unless feature "safer" is enabled)
     trusted = 2,   // @trusted
     safe = 3       // @safe
 };

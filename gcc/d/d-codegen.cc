@@ -631,6 +631,37 @@ force_target_expr (tree exp)
   return build_target_expr (decl, exp);
 }
 
+/* Determine whether expression EXP can have a copy of its value elided.  */
+
+static bool
+can_elide_copy_p (Expression *exp)
+{
+  /* Explicit `__rvalue(exp)'.  */
+  if (exp->rvalue)
+    return true;
+
+  /* Look for variable expression.  */
+  Expression *last = exp;
+  while (CommaExp *ce = last->isCommaExp ())
+    last = ce->e2;
+
+  if (VarExp *ve = last->isVarExp ())
+    {
+      if (VarDeclaration *vd = ve->var->isVarDeclaration ())
+	{
+	  /* Variable is an implicit copy of an lvalue.  */
+	  if (vd->storage_class & STCrvalue)
+	    return true;
+
+	  /* The destructor is going to run on the variable.  */
+	  if (vd->isArgDtorVar ())
+	    return true;
+	}
+    }
+
+  return false;
+}
+
 /* Returns the address of the expression EXP.  */
 
 tree
@@ -2280,8 +2311,10 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 		 - The ABI of the function expects the callee to destroy its
 		 arguments; when the caller is handles destruction, then `targ'
 		 has already been made into a temporary. */
-	      if (arg->op == EXP::structLiteral || (!sd->postblit && !sd->dtor)
-		  || target.isCalleeDestroyingArgs (tf))
+	      if (!can_elide_copy_p (arg)
+		  && (arg->op == EXP::structLiteral
+		      || (!sd->postblit && !sd->dtor)
+		      || target.isCalleeDestroyingArgs (tf)))
 		targ = force_target_expr (targ);
 
 	      targ = convert (build_reference_type (TREE_TYPE (targ)),

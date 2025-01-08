@@ -940,7 +940,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                              * If NRVO is not possible, all returned lvalues should call their postblits.
                              */
                             if (!funcdecl.isNRVO())
-                                exp = doCopyOrMove(sc2, exp, f.next);
+                                exp = doCopyOrMove(sc2, exp, f.next, true, true);
 
                             if (tret.hasPointers())
                                 checkReturnEscape(*sc2, exp, false);

@@ -519,6 +519,7 @@ immutable Msgtable[] msgtable =
     { "getLocation" },
     { "hasPostblit" },
     { "hasCopyConstructor" },
+    { "hasMoveConstructor" },
     { "isCopyable" },
     { "toType" },
     { "parameters" },

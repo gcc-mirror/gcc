@@ -267,4 +267,24 @@ class ManualGC : GC
     {
         return typeof(return).init;
     }
+
+    void[] getArrayUsed(void *ptr, bool atomic = false) nothrow
+    {
+        return null;
+    }
+
+    bool expandArrayUsed(void[] slice, size_t newUsed, bool atomic = false) nothrow @safe
+    {
+        return false;
+    }
+
+    size_t reserveArrayCapacity(void[] slice, size_t request, bool atomic = false) nothrow @safe
+    {
+        return 0;
+    }
+
+    bool shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic = false) nothrow
+    {
+        return false;
+    }
 }

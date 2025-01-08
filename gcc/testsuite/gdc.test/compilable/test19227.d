@@ -1,9 +1,7 @@
 // https://issues.dlang.org/show_bug.cgi?id=19227
 /* TEST_OUTPUT:
 ---
-compilable/test19227.d(18): Deprecation: use of complex type `cfloat` is deprecated, use `std.complex.Complex!(float)` instead
-Deprecation: use of complex type `const(cfloat)` is deprecated, use `std.complex.Complex!(float)` instead
-Deprecation: use of complex type `const(cfloat)` is deprecated, use `std.complex.Complex!(float)` instead
+compilable/test19227.d(16): Deprecation: use of complex type `cfloat` is deprecated, use `std.complex.Complex!(float)` instead
 Deprecation: use of complex type `const(cfloat)` is deprecated, use `std.complex.Complex!(float)` instead
 ---
 */

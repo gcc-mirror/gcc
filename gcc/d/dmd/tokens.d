@@ -27,6 +27,9 @@ enum TOK : ubyte
 {
     reserved,
 
+    // if this list changes, update
+    // tokens.h, ../tests/cxxfrontend.cc and ../../test/unit/lexer/location_offset.d to match
+
     // Other
     leftParenthesis,
     rightParenthesis,
@@ -249,6 +252,7 @@ enum TOK : ubyte
     wchar_tLiteral,
     endOfLine,  // \n, \r, \u2028, \u2029
     whitespace,
+    rvalue,
 
     // C only keywords
     inline,
@@ -425,6 +429,7 @@ enum EXP : ubyte
     interval,
 
     loweredAssignExp,
+    rvalue,
 }
 
 enum FirstCKeyword = TOK.inline;
@@ -556,6 +561,7 @@ private immutable TOK[] keywords =
     TOK.prettyFunction,
     TOK.shared_,
     TOK.immutable_,
+    TOK.rvalue,
 
     // C only keywords
     TOK.inline,
@@ -680,6 +686,7 @@ extern (C++) struct Token
         TOK.pragma_: "pragma",
         TOK.typeof_: "typeof",
         TOK.typeid_: "typeid",
+        TOK.rvalue: "__rvalue",
         TOK.template_: "template",
         TOK.void_: "void",
         TOK.int8: "byte",

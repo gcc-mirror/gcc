@@ -52,7 +52,7 @@ struct TIME_OF_DAY_INFO {
 }
 alias TIME_OF_DAY_INFO* PTIME_OF_DAY_INFO, LPTIME_OF_DAY_INFO;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     NET_API_STATUS NetRemoteTOD(LPCWSTR, PBYTE*);
     NET_API_STATUS NetRemoteComputerSupports(LPCWSTR, DWORD, PDWORD);
     NET_API_STATUS RxRemoteApi(DWORD, LPCWSTR, LPDESC, LPDESC, LPDESC,

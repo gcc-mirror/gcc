@@ -1610,13 +1610,15 @@ private Statement generateCopyCtorBody(StructDeclaration sd)
  * Params:
  *  sd = the `struct` for which the copy constructor is generated
  *  hasCpCtor = set to true if a copy constructor is already present
+ *  hasMoveCtor = set to true if a move constructor is already present
  *
  * Returns:
  *  `true` if one needs to be generated
  *  `false` otherwise
  */
-bool needCopyCtor(StructDeclaration sd, out bool hasCpCtor)
+bool needCopyCtor(StructDeclaration sd, out bool hasCpCtor, out bool hasMoveCtor)
 {
+    //printf("needCopyCtor() %s\n", sd.toChars());
     if (global.errors)
         return false;
 
@@ -1648,14 +1650,17 @@ bool needCopyCtor(StructDeclaration sd, out bool hasCpCtor)
             return 0;
         }
 
-        if (isRvalueConstructor(sd, ctorDecl))
+        if (ctorDecl.isMoveCtor)
             rvalueCtor = ctorDecl;
         return 0;
     });
 
+    if (rvalueCtor)
+        hasMoveCtor = true;
+
     if (cpCtor)
     {
-        if (rvalueCtor)
+        if (0 && rvalueCtor)
         {
             .error(sd.loc, "`struct %s` may not define both a rvalue constructor and a copy constructor", sd.toChars());
             errorSupplemental(rvalueCtor.loc,"rvalue constructor defined here");
@@ -1710,6 +1715,7 @@ LcheckFields:
  * Params:
  *  sd = the `struct` for which the copy constructor is generated
  *  sc = the scope where the copy constructor is generated
+ *  hasMoveCtor = set to true when a move constructor is also detected
  *
  * Returns:
  *  `true` if `struct` sd defines a copy constructor (explicitly or generated),
@@ -1717,10 +1723,10 @@ LcheckFields:
  * References:
  *   https://dlang.org/spec/struct.html#struct-copy-constructor
  */
-bool buildCopyCtor(StructDeclaration sd, Scope* sc)
+bool buildCopyCtor(StructDeclaration sd, Scope* sc, out bool hasMoveCtor)
 {
     bool hasCpCtor;
-    if (!needCopyCtor(sd, hasCpCtor))
+    if (!needCopyCtor(sd, hasCpCtor, hasMoveCtor))
         return hasCpCtor;
 
     //printf("generating copy constructor for %s\n", sd.toChars());

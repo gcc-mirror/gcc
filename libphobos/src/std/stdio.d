@@ -2409,13 +2409,13 @@ void main()
     private struct ByLineCopy(Char, Terminator)
     {
     private:
-        import std.typecons : RefCounted, RefCountedAutoInitialize;
+        import std.typecons : SafeRefCounted, RefCountedAutoInitialize;
 
         /* Ref-counting stops the source range's ByLineCopyImpl
          * from getting out of sync after the range is copied, e.g.
          * when accessing range.front, then using std.range.take,
          * then accessing range.front again. */
-        alias Impl = RefCounted!(ByLineCopyImpl!(Char, Terminator),
+        alias Impl = SafeRefCounted!(ByLineCopyImpl!(Char, Terminator),
             RefCountedAutoInitialize.no);
         Impl impl;
 
@@ -4626,7 +4626,7 @@ struct lines
     f = File to read lines from.
     terminator = Line separator (`'\n'` by default).
     */
-    this(File f, dchar terminator = '\n')
+    this(File f, dchar terminator = '\n') @safe
     {
         this.f = f;
         this.terminator = terminator;
@@ -4718,6 +4718,47 @@ struct lines
         // can only reach when _FGETC returned -1
         if (!f.eof) throw new StdioException("Error in reading file"); // error occured
         return result;
+    }
+}
+
+@safe unittest
+{
+    /*
+        As pointed out in <https://github.com/dlang/phobos/issues/10605>,
+        it's a pity that `byLine()` & co. aren't @safe to use yet.
+
+        This is a first attempt at working towards that goal.
+        For now, this test doesn't do much; as there isn't much to do safely yet.
+     */
+    auto deleteMe = testFilename();
+    scope(exit) { imported!"std.file".remove(deleteMe); }
+
+    // Setup
+    {
+        auto f = File(deleteMe, "w");
+        scope(exit) { f.close(); }
+        foreach (i; 1 .. 11)
+            f.writeln(i);
+    }
+
+    // Actual tests
+    {
+        auto f = File(deleteMe, "r");
+        scope(exit) { f.close(); }
+
+        auto myLines = lines(f);
+        foreach (string line; myLines)
+            continue;
+
+        auto myByLineCopy = f.byLineCopy; // but cannot safely iterate yet
+        /*
+            still `@system`:
+            - cannot call `@system` function `std.stdio.File.ByLineCopy!(immutable(char), char).ByLineCopy.empty`
+            - cannot call `@system` function `std.stdio.File.ByLineCopy!(immutable(char), char).ByLineCopy.popFront`
+            - cannot call `@system` function `std.stdio.File.ByLineCopy!(immutable(char), char).ByLineCopy.front`
+        */
+        //foreach (line; myByLineCopy)
+        //    continue;
     }
 }
 

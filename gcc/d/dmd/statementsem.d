@@ -2460,7 +2460,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         /* https://dlang.org/spec/statement.html#return-statement
          */
 
-        //printf("ReturnStatement.dsymbolSemantic() %p, %s\n", rs, rs.toChars());
+        //printf("ReturnStatement.dsymbolSemantic() %s\n", toChars(rs));
 
         FuncDeclaration fd = sc.parent.isFuncDeclaration();
         if (fd.fes)

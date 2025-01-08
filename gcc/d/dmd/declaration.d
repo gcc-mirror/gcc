@@ -30,6 +30,7 @@ import dmd.func;
 import dmd.funcsem : overloadApply, getLevelAndCheck;
 import dmd.globals;
 import dmd.gluelayer;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
@@ -95,6 +96,7 @@ extern (C++) abstract class Declaration : Dsymbol
       enum ignoreRead = 2; // ignore any reads of AliasDeclaration
       enum nounderscore = 4; // don't prepend _ to mangled name
       enum hidden       = 8; // don't print this in .di files
+      enum nrvo = 0x10;      /// forward to fd.nrvo_var when generating code
 
     // overridden symbol with pragma(mangle, "...")
     const(char)[] mangleOverride;
@@ -441,8 +443,7 @@ extern (C++) final class AliasDeclaration : Declaration
     extern (D) this(const ref Loc loc, Identifier ident, Type type) @safe
     {
         super(loc, ident);
-        //printf("AliasDeclaration(id = '%s', type = %p)\n", ident.toChars(), type);
-        //printf("type = '%s'\n", type.toChars());
+        //debug printf("AliasDeclaration(id = '%s', type = `%s`, %p)\n", ident.toChars(), dmd.hdrgen.toChars(type), type.isTypeIdentifier());
         this.type = type;
         assert(type);
     }
@@ -450,7 +451,7 @@ extern (C++) final class AliasDeclaration : Declaration
     extern (D) this(const ref Loc loc, Identifier ident, Dsymbol s) @safe
     {
         super(loc, ident);
-        //printf("AliasDeclaration(id = '%s', s = %p)\n", ident.toChars(), s);
+        //debug printf("AliasDeclaration(id = '%s', s = `%s`)\n", ident.toChars(), s.toChars());
         assert(s != this);
         this.aliassym = s;
         assert(s);
@@ -611,8 +612,9 @@ extern (C++) final class AliasDeclaration : Declaration
 
     override Dsymbol toAlias()
     {
-        //printf("[%s] AliasDeclaration::toAlias('%s', this = %p, aliassym = %p, kind = '%s', inuse = %d)\n",
-        //    loc.toChars(), toChars(), this, aliassym, aliassym ? aliassym.kind() : "", inuse);
+        static if (0)
+        printf("[%s] AliasDeclaration::toAlias('%s', this = %p, aliassym: %s, kind: '%s', inuse = %d)\n",
+            loc.toChars(), toChars(), this, aliassym ? aliassym.toChars() : "", aliassym ? aliassym.kind() : "", inuse);
         assert(this != aliassym);
         //static int count; if (++count == 10) *(char*)0=0;
 

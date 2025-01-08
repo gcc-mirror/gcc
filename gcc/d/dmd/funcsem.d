@@ -154,6 +154,28 @@ public:
     }
 }
 
+/****************************************
+ * Only one entry point function is allowed. Print error if more than one.
+ * Params:
+ *      fd = a "main" function
+ * Returns:
+ *      true if haven't seen "main" before
+ */
+extern (C++) bool onlyOneMain(FuncDeclaration fd)
+{
+    if (auto lastMain = FuncDeclaration.lastMain)
+    {
+        const format = (target.os == Target.OS.Windows)
+            ? "only one entry point `main`, `WinMain` or `DllMain` is allowed"
+            : "only one entry point `main` is allowed";
+        error(fd.loc, format.ptr);
+        errorSupplemental(lastMain.loc, "previously found `%s` here", lastMain.toFullSignature());
+        return false;
+    }
+    FuncDeclaration.lastMain = fd;
+    return true;
+}
+
 /**********************************
  * Main semantic routine for functions.
  */
@@ -1507,6 +1529,7 @@ enum FuncResolveFlag : ubyte
 FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     Objects* tiargs, Type tthis, ArgumentList argumentList, FuncResolveFlag flags)
 {
+    //printf("resolveFuncCall() %s\n", s.toChars());
     auto fargs = argumentList.arguments;
     if (!s)
         return null; // no match
@@ -2066,7 +2089,7 @@ MATCH leastAsSpecialized(FuncDeclaration f, FuncDeclaration g, Identifiers* name
         args.push(e);
     }
 
-    MATCH m = tg.callMatch(null, ArgumentList(&args, names), 1);
+    MATCH m = callMatch(g, tg, null, ArgumentList(&args, names), 1);
     if (m > MATCH.nomatch)
     {
         /* A variadic parameter list is less specialized than a
@@ -2939,6 +2962,7 @@ extern (D) void checkMain(FuncDeclaration fd)
  */
 extern (D) bool checkNRVO(FuncDeclaration fd)
 {
+    //printf("checkNRVO*() %s\n", fd.ident.toChars());
     if (!fd.isNRVO() || fd.returns is null)
         return false;
 

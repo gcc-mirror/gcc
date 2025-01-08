@@ -305,10 +305,9 @@ private void statementToBuffer(Statement s, ref OutBuffer buf, ref HdrGenState h
         buf.writenl();
     }
 
-    void visitWhile(WhileStatement s)
+    void printConditionAssignment(Parameter p, Expression condition)
     {
-        buf.writestring("while (");
-        if (auto p = s.param)
+        if (p)
         {
             // Print condition assignment
             StorageClass stc = p.storageClass;
@@ -322,7 +321,13 @@ private void statementToBuffer(Statement s, ref OutBuffer buf, ref HdrGenState h
                 buf.writestring(p.ident.toString());
             buf.writestring(" = ");
         }
-        s.condition.expressionToBuffer(buf, hgs);
+        condition.expressionToBuffer(buf, hgs);
+    }
+
+    void visitWhile(WhileStatement s)
+    {
+        buf.writestring("while (");
+        printConditionAssignment(s.param, s.condition);
         buf.writeByte(')');
         buf.writenl();
         if (s._body)
@@ -460,20 +465,7 @@ private void statementToBuffer(Statement s, ref OutBuffer buf, ref HdrGenState h
     void visitIf(IfStatement s)
     {
         buf.writestring("if (");
-        if (Parameter p = s.prm)
-        {
-            StorageClass stc = p.storageClass;
-            if (!p.type && !stc)
-                stc = STC.auto_;
-            if (stcToBuffer(buf, stc))
-                buf.writeByte(' ');
-            if (p.type)
-                typeToBuffer(p.type, p.ident, buf, hgs);
-            else
-                buf.writestring(p.ident.toString());
-            buf.writestring(" = ");
-        }
-        s.condition.expressionToBuffer(buf, hgs);
+        printConditionAssignment(s.prm, s.condition);
         buf.writeByte(')');
         buf.writenl();
         if (s.ifbody.isScopeStatement())
@@ -572,21 +564,7 @@ private void statementToBuffer(Statement s, ref OutBuffer buf, ref HdrGenState h
     void visitSwitch(SwitchStatement s)
     {
         buf.writestring(s.isFinal ? "final switch (" : "switch (");
-        if (auto p = s.param)
-        {
-            // Print condition assignment
-            StorageClass stc = p.storageClass;
-            if (!p.type && !stc)
-                stc = STC.auto_;
-            if (stcToBuffer(buf, stc))
-                buf.writeByte(' ');
-            if (p.type)
-                typeToBuffer(p.type, p.ident, buf, hgs);
-            else
-                buf.writestring(p.ident.toString());
-            buf.writestring(" = ");
-        }
-        s.condition.expressionToBuffer(buf, hgs);
+        printConditionAssignment(s.param, s.condition);
         buf.writeByte(')');
         buf.writenl();
         if (s._body)
@@ -1718,7 +1696,10 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
     void visitFuncDeclaration(FuncDeclaration f)
     {
         //printf("FuncDeclaration::toCBuffer() '%s'\n", f.toChars());
-        if (stcToBuffer(buf, f.storage_class))
+
+        // https://issues.dlang.org/show_bug.cgi?id=24891
+        // return/scope storage classes are printed as part of function type
+        if (stcToBuffer(buf, f.storage_class & ~(STC.scope_ | STC.return_ | STC.returnScope)))
             buf.writeByte(' ');
         typeToBuffer(f.type, f.ident, buf, hgs);
         auto tf = f.type.isTypeFunction();
@@ -2888,6 +2869,13 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
         buf.writestring(e.value.toChars());
     }
 
+    if (e.rvalue)
+        buf.writestring("__rvalue(");
+
+    scope (exit)
+        if (e.rvalue)
+            buf.writeByte(')');
+
     switch (e.op)
     {
         default:
@@ -2929,7 +2917,7 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
         case EXP.typeid_:       return visitTypeid(e.isTypeidExp());
         case EXP.traits:        return visitTraits(e.isTraitsExp());
         case EXP.halt:          return visitHalt(e.isHaltExp());
-        case EXP.is_:           return visitIs(e.isExp());
+        case EXP.is_:           return visitIs(e.isIsExp());
         case EXP.comma:         return visitComma(e.isCommaExp());
         case EXP.mixin_:        return visitMixin(e.isMixinExp());
         case EXP.import_:       return visitImport(e.isImportExp());

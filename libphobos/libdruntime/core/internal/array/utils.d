@@ -264,6 +264,8 @@ void *__arrayStart()(return scope BlkInfo info) nothrow pure
 bool __setArrayAllocLength(T)(ref BlkInfo info, size_t newLength, bool isShared, size_t oldLength = ~0)
 {
     import core.lifetime : TypeInfoSize;
-    import core.internal.gc.blockmeta : __setArrayAllocLengthImpl;
-    return __setArrayAllocLengthImpl(info, newLength, isShared, typeid(T), oldLength, TypeInfoSize!T);
+    import core.internal.gc.blockmeta : __setArrayAllocLengthImpl, __setBlockFinalizerInfo;
+    static if (TypeInfoSize!T)
+        __setBlockFinalizerInfo(info, typeid(T));
+    return __setArrayAllocLengthImpl(info, newLength, isShared, oldLength, TypeInfoSize!T);
 }

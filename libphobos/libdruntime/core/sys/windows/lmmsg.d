@@ -32,7 +32,7 @@ struct MSG_INFO_1 {
 }
 alias MSG_INFO_1* PMSG_INFO_1, LPMSG_INFO_1;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     NET_API_STATUS NetMessageBufferSend(LPCWSTR, LPCWSTR, LPCWSTR, PBYTE,
       DWORD);
     NET_API_STATUS NetMessageNameAdd(LPCWSTR, LPCWSTR);

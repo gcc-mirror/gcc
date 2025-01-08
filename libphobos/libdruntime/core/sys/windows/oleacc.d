@@ -186,7 +186,7 @@ interface IAccessible : IDispatch {
 
 alias IAccessible LPACCESSIBLE;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     HRESULT AccessibleChildren(IAccessible, LONG, LONG, VARIANT*, LONG*);
     HRESULT AccessibleObjectFromEvent(HWND, DWORD, DWORD, IAccessible, VARIANT*);
     HRESULT AccessibleObjectFromPoint(POINT, IAccessible*, VARIANT*);

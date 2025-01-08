@@ -2815,6 +2815,10 @@ void kill(Pid pid, int codeOrSignal)
     else version (Posix)
     {
         import core.sys.posix.signal : kill;
+        if (pid.osHandle == Pid.invalid)
+            throw new ProcessException("Pid is invalid");
+        if (pid.osHandle == Pid.terminated)
+            throw new ProcessException("Pid is already terminated");
         if (kill(pid.osHandle, codeOrSignal) == -1)
             throw ProcessException.newFromErrno();
     }
@@ -2856,7 +2860,7 @@ void kill(Pid pid, int codeOrSignal)
     do { s = tryWait(pid); } while (!s.terminated);
     version (Windows)    assert(s.status == 123);
     else version (Posix) assert(s.status == -SIGKILL);
-    assertThrown!ProcessException(kill(pid));
+    assertThrown!ProcessException(kill(pid)); // Already terminated
 }
 
 @system unittest // wait() and kill() detached process

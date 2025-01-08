@@ -623,7 +623,7 @@ MATCH leastAsSpecialized(Scope* sc, TemplateDeclaration td, TemplateDeclaration 
     enum LOG_LEASTAS = 0;
     static if (LOG_LEASTAS)
     {
-        printf("%s.leastAsSpecialized(%s)\n", toChars(), td2.toChars());
+        printf("%s.leastAsSpecialized(%s)\n", td.toChars(), td2.toChars());
     }
 
     /* This works by taking the template parameters to this template
@@ -1890,23 +1890,22 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
 {
     version (none)
     {
-        printf("functionResolve() dstart = %s\n", dstart.toChars());
-        printf("    tiargs:\n");
-        if (tiargs)
+        printf("functionResolve() dstart: %s (", dstart.toChars());
+        for (size_t i = 0; i < (tiargs ? (*tiargs).length : 0); i++)
         {
-            for (size_t i = 0; i < tiargs.length; i++)
-            {
-                RootObject arg = (*tiargs)[i];
-                printf("\t%s\n", arg.toChars());
-            }
+            if (i) printf(", ");
+            RootObject arg = (*tiargs)[i];
+            printf("%s", arg.toChars());
         }
-        printf("    fargs:\n");
-        for (size_t i = 0; i < (fargs ? fargs.length : 0); i++)
+        printf(")(");
+        for (size_t i = 0; i < (argumentList.arguments ? (*argumentList.arguments).length : 0); i++)
         {
-            Expression arg = (*fargs)[i];
-            printf("\t%s %s\n", arg.type.toChars(), arg.toChars());
+            if (i) printf(", ");
+            Expression arg = (*argumentList.arguments)[i];
+            printf("%s %s", arg.type.toChars(), arg.toChars());
             //printf("\tty = %d\n", arg.type.ty);
         }
+        printf(")\n");
         //printf("stc = %llx\n", dstart._scope.stc);
         //printf("match:t/f = %d/%d\n", ta_last, m.last);
     }
@@ -1993,7 +1992,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
                 tf.mod = tthis_fd.mod;
         }
         const(char)* failMessage;
-        MATCH mfa = tf.callMatch(tthis_fd, argumentList, 0, errorHelper, sc);
+        MATCH mfa = callMatch(fd, tf, tthis_fd, argumentList, 0, errorHelper, sc);
         //printf("test1: mfa = %d\n", mfa);
         if (failMessage)
             errorHelper(failMessage);
@@ -2198,7 +2197,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
             Type tthis_fd = fd.needThis() && !fd.isCtorDeclaration() ? tthis : null;
 
             auto tf = fd.type.isTypeFunction();
-            MATCH mfa = tf.callMatch(tthis_fd, argumentList, 0, null, sc);
+            MATCH mfa = callMatch(fd, tf, tthis_fd, argumentList, 0, null, sc);
             if (mfa < m.last)
                 return 0;
 
@@ -2300,8 +2299,8 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
                 // Disambiguate by tf.callMatch
                 auto tf1 = fd.type.isTypeFunction();
                 auto tf2 = m.lastf.type.isTypeFunction();
-                MATCH c1 = tf1.callMatch(tthis_fd, argumentList, 0, null, sc);
-                MATCH c2 = tf2.callMatch(tthis_best, argumentList, 0, null, sc);
+                MATCH c1 = callMatch(fd,      tf1, tthis_fd,   argumentList, 0, null, sc);
+                MATCH c2 = callMatch(m.lastf, tf2, tthis_best, argumentList, 0, null, sc);
                 //printf("2: c1 = %d, c2 = %d\n", c1, c2);
                 if (c1 > c2) goto Ltd;
                 if (c1 < c2) goto Ltd_best;
@@ -2404,7 +2403,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
         if (m.lastf.type.ty == Terror)
             goto Lerror;
         auto tf = m.lastf.type.isTypeFunction();
-        if (!tf.callMatch(tthis_best, argumentList, 0, null, sc))
+        if (callMatch(m.lastf, tf, tthis_best, argumentList, 0, null, sc) == MATCH.nomatch)
             goto Lnomatch;
 
         /* As https://issues.dlang.org/show_bug.cgi?id=3682 shows,

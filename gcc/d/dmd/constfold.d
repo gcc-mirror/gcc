@@ -806,6 +806,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
 
 UnionExp Identity(EXP op, const ref Loc loc, Type type, Expression e1, Expression e2)
 {
+    //printf("Identity %s %s\n", e1.toChars(), e2.toChars());
     UnionExp ue = void;
     int cmp;
     if (e1.op == EXP.null_)
@@ -820,7 +821,17 @@ UnionExp Identity(EXP op, const ref Loc loc, Type type, Expression e1, Expressio
     {
         SymOffExp es1 = e1.isSymOffExp();
         SymOffExp es2 = e2.isSymOffExp();
-        cmp = (es1.var == es2.var && es1.offset == es2.offset);
+        cmp = es1.offset == es2.offset;
+        if (cmp)
+        {
+            cmp = es1.var == es2.var;
+            if (!cmp && (es1.var.isParameter() || es2.var.isParameter()))
+            {
+                // because of ref's, they may still be the same, we cannot tell
+                cantExp(ue);
+                return ue;
+            }
+        }
     }
     else
     {

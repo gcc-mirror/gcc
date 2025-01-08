@@ -104,16 +104,6 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
         return sc2;
     }
 
-
-    override void addComment(const(char)* comment)
-    {
-        //printf("AttribDeclaration::addComment %s\n", comment);
-        if (comment)
-        {
-            this.include(null).foreachDsymbol( s => s.addComment(comment) );
-        }
-    }
-
     override const(char)* kind() const
     {
         return "attribute";
@@ -653,20 +643,6 @@ extern (C++) class ConditionalDeclaration : AttribDeclaration
         }
     }
 
-    override final void addComment(const(char)* comment)
-    {
-        /* Because addComment is called by the parser, if we called
-         * include() it would define a version before it was used.
-         * But it's no problem to drill down to both decl and elsedecl,
-         * so that's the workaround.
-         */
-        if (comment)
-        {
-            decl    .foreachDsymbol( s => s.addComment(comment) );
-            elsedecl.foreachDsymbol( s => s.addComment(comment) );
-        }
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -760,12 +736,6 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
         }
         ps = null; // a `static foreach` declaration may in general expand to multiple symbols
         return false;
-    }
-
-    override void addComment(const(char)* comment)
-    {
-        // do nothing
-        // change this to give semantics to documentation comments on static foreach declarations
     }
 
     override const(char)* kind() const

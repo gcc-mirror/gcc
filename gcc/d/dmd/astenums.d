@@ -302,7 +302,7 @@ enum ThreeState : ubyte
 enum TRUST : ubyte
 {
     default_   = 0,
-    system     = 1,    // @system (same as TRUST.default)
+    system     = 1,    // @system (same as TRUST.default_ unless feature "safer" is enabled)
     trusted    = 2,    // @trusted
     safe       = 3,    // @safe
 }
