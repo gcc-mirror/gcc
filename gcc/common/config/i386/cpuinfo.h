@@ -640,7 +640,6 @@ get_intel_cpu (struct __processor_model *cpu_model,
   else if (cpu_model2->__cpu_family == 0x13)
     switch (cpu_model2->__cpu_model)
       {
-      case 0x00:
       case 0x01:
 	/* Diamond Rapids.  */
 	cpu = "diamondrapids";
