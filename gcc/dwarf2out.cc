@@ -8755,6 +8755,14 @@ break_out_comdat_types (dw_die_ref die)
         unit = new_die (DW_TAG_type_unit, NULL, NULL);
         add_AT_unsigned (unit, DW_AT_language,
                          get_AT_unsigned (comp_unit_die (), DW_AT_language));
+	if (unsigned lname = get_AT_unsigned (comp_unit_die (),
+					      DW_AT_language_name))
+	  {
+	    add_AT_unsigned (unit, DW_AT_language_name, lname);
+	    add_AT_unsigned (unit, DW_AT_language_version,
+			     get_AT_unsigned (comp_unit_die (),
+					      DW_AT_language_version));
+	  }
 
 	/* Add the new unit's type DIE into the comdat type list.  */
         type_node = ggc_cleared_alloc<comdat_type_node> ();
@@ -11404,6 +11412,8 @@ output_skeleton_debug_sections (dw_die_ref comp_unit,
   /* These attributes will be found in the full debug_info section.  */
   remove_AT (comp_unit, DW_AT_producer);
   remove_AT (comp_unit, DW_AT_language);
+  remove_AT (comp_unit, DW_AT_language_name);
+  remove_AT (comp_unit, DW_AT_language_version);
 
   switch_to_section (debug_skeleton_info_section);
   ASM_OUTPUT_LABEL (asm_out_file, debug_skeleton_info_section_label);
@@ -25318,7 +25328,7 @@ gen_compile_unit_die (const char *filename)
 {
   dw_die_ref die;
   const char *language_string = lang_hooks.name;
-  int language;
+  int language, lname, lversion;
 
   die = new_die (DW_TAG_compile_unit, NULL, NULL);
 
@@ -25366,6 +25376,8 @@ gen_compile_unit_die (const char *filename)
     }
 
   language = DW_LANG_C;
+  lname = 0;
+  lversion = 0;
   if (startswith (language_string, "GNU C")
       && ISDIGIT (language_string[5]))
     {
@@ -25376,11 +25388,28 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C99;
 
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
-	    if (strcmp (language_string, "GNU C11") == 0
-		|| strcmp (language_string, "GNU C17") == 0
-		|| strcmp (language_string, "GNU C23") == 0
-		|| strcmp (language_string, "GNU C2Y") == 0)
-	      language = DW_LANG_C11;
+	    {
+	      if (strcmp (language_string, "GNU C11") == 0)
+		language = DW_LANG_C11;
+	      else if (strcmp (language_string, "GNU C17") == 0)
+		{
+		  language = DW_LANG_C11;
+		  lname = DW_LNAME_C;
+		  lversion = 201710;
+		}
+	      else if (strcmp (language_string, "GNU C23") == 0)
+		{
+		  language = DW_LANG_C11;
+		  lname = DW_LNAME_C;
+		  lversion = 202311;
+		}
+	      else if (strcmp (language_string, "GNU C2Y") == 0)
+		{
+		  language = DW_LANG_C11;
+		  lname = DW_LNAME_C;
+		  lversion = 202500;
+		}
+	    }
 	}
     }
   else if (startswith (language_string, "GNU C++"))
@@ -25392,12 +25421,30 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C_plus_plus_11;
 	  else if (strcmp (language_string, "GNU C++14") == 0)
 	    language = DW_LANG_C_plus_plus_14;
-	  else if (strcmp (language_string, "GNU C++17") == 0
-		   || strcmp (language_string, "GNU C++20") == 0
-		   || strcmp (language_string, "GNU C++23") == 0
-		   || strcmp (language_string, "GNU C++26") == 0)
-	    /* For now.  */
-	    language = DW_LANG_C_plus_plus_14;
+	  else if (strcmp (language_string, "GNU C++17") == 0)
+	    {
+	      language = DW_LANG_C_plus_plus_14;
+	      lname = DW_LNAME_C_plus_plus;
+	      lversion = 201703;
+	    }
+	  else if (strcmp (language_string, "GNU C++20") == 0)
+	    {
+	      language = DW_LANG_C_plus_plus_14;
+	      lname = DW_LNAME_C_plus_plus;
+	      lversion = 202002;
+	    }
+	  else if (strcmp (language_string, "GNU C++23") == 0)
+	    {
+	      language = DW_LANG_C_plus_plus_14;
+	      lname = DW_LNAME_C_plus_plus;
+	      lversion = 202302;
+	    }
+	  else if (strcmp (language_string, "GNU C++26") == 0)
+	    {
+	      language = DW_LANG_C_plus_plus_14;
+	      lname = DW_LNAME_C_plus_plus;
+	      lversion = 202400;
+	    }
 	}
     }
   else if (strcmp (language_string, "GNU F77") == 0)
@@ -25441,6 +25488,11 @@ gen_compile_unit_die (const char *filename)
     language = DW_LANG_Ada83;
 
   add_AT_unsigned (die, DW_AT_language, language);
+  if (lname && dwarf_version >= 5 && !dwarf_strict)
+    {
+      add_AT_unsigned (die, DW_AT_language_name, lname);
+      add_AT_unsigned (die, DW_AT_language_version, lversion);
+    }
 
   switch (language)
     {
