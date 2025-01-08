@@ -357,7 +357,7 @@ static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
 
 /* The processor for which instructions should be scheduled.  */
-enum aarch64_processor aarch64_tune = cortexa53;
+enum aarch64_cpu aarch64_tune = AARCH64_CPU_cortexa53;
 
 /* Global flag for PC relative loads.  */
 bool aarch64_pcrelative_literal_loads;
@@ -451,8 +451,8 @@ aarch64_tuning_override_functions[] =
 struct processor
 {
   const char *name;
-  aarch64_processor ident;
-  aarch64_processor sched_core;
+  aarch64_cpu ident;
+  aarch64_cpu sched_core;
   aarch64_arch arch;
   aarch64_feature_flags flags;
   const tune_params *tune;
@@ -462,20 +462,20 @@ struct processor
 static CONSTEXPR const processor all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, D, E) \
-  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, \
+  {NAME, AARCH64_CPU_##CORE, AARCH64_CPU_##CORE, AARCH64_ARCH_##ARCH_IDENT, \
    feature_deps::ARCH_IDENT ().enable, NULL},
 #include "aarch64-arches.def"
-  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
+  {NULL, aarch64_no_cpu, aarch64_no_cpu, aarch64_no_arch, 0, NULL}
 };
 
 /* Processor cores implementing AArch64.  */
 static const struct processor all_cores[] =
 {
 #define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, E, COSTS, G, H, I) \
-  {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH, \
+  {NAME, AARCH64_CPU_##IDENT, AARCH64_CPU_##SCHED, AARCH64_ARCH_##ARCH, \
    feature_deps::cpu_##IDENT, &COSTS##_tunings},
 #include "aarch64-cores.def"
-  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
+  {NULL, aarch64_no_cpu, aarch64_no_cpu, aarch64_no_arch, 0, NULL}
 };
 /* Internal representation of system registers.  */
 typedef struct {
@@ -18566,9 +18566,9 @@ initialize_aarch64_tls_size (struct gcc_options *opts)
 /* Return the CPU corresponding to the enum CPU.  */
 
 static const struct processor *
-aarch64_get_tune_cpu (enum aarch64_processor cpu)
+aarch64_get_tune_cpu (enum aarch64_cpu cpu)
 {
-  gcc_assert (cpu != aarch64_none);
+  gcc_assert (cpu != aarch64_no_cpu);
 
   return &all_cores[cpu];
 }

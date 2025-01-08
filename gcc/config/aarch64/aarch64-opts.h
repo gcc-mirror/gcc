@@ -38,13 +38,13 @@ typedef bbitmap<2> aarch64_feature_flags;
 #endif
 
 /* The various cores that implement AArch64.  */
-enum aarch64_processor
+enum aarch64_cpu
 {
 #define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
-  INTERNAL_IDENT,
+  AARCH64_CPU_##INTERNAL_IDENT,
 #include "aarch64-cores.def"
   /* Used to mark the end of the processor table.  */
-  aarch64_none
+  aarch64_no_cpu
 };
 
 enum aarch64_arch

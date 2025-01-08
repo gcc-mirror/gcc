@@ -928,16 +928,9 @@ enum reg_class
 /* CPU/ARCH option handling.  */
 #include "config/aarch64/aarch64-opts.h"
 
-enum target_cpus
-{
-#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
-  TARGET_CPU_##INTERNAL_IDENT,
-#include "aarch64-cores.def"
-};
-
 /* If there is no CPU defined at configure, use generic as default.  */
 #ifndef TARGET_CPU_DEFAULT
-# define TARGET_CPU_DEFAULT TARGET_CPU_generic_armv8_a
+# define TARGET_CPU_DEFAULT AARCH64_CPU_generic_armv8_a
 #endif
 
 /* If inserting NOP before a mult-accumulate insn remember to adjust the
@@ -953,7 +946,7 @@ enum target_cpus
     aarch64_final_prescan_insn (INSN);			\
 
 /* The processor for which instructions should be scheduled.  */
-extern enum aarch64_processor aarch64_tune;
+extern enum aarch64_cpu aarch64_tune;
 
 /* RTL generation support.  */
 #define INIT_EXPANDERS aarch64_init_expanders ()

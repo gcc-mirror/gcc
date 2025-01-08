@@ -25,7 +25,7 @@ HeaderInclude
 config/arm/aarch-common.h
 
 TargetVariable
-enum aarch64_processor selected_tune = aarch64_none
+enum aarch64_cpu selected_tune = aarch64_no_cpu
 
 TargetVariable
 enum aarch64_arch selected_arch = aarch64_no_arch
