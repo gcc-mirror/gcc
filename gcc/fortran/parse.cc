@@ -7529,11 +7529,7 @@ done:
 
   /* First dump BIND(C) prototypes.  */
   if (flag_c_prototypes)
-    {
-      for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
-	   gfc_current_ns = gfc_current_ns->sibling)
-	gfc_dump_c_prototypes (gfc_current_ns, stdout);
-    }
+    gfc_dump_c_prototypes (stdout);
 
   /* Dump external prototypes.  */
   if (flag_c_prototypes_external)
