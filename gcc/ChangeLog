@@ -1,3 +1,126 @@
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* config/nvptx/nvptx.cc (default_ptx_version_option): For
+	'-march=sm_52' and higher, default at least to '-mptx=7.3'.
+	* doc/invoke.texi (Nvidia PTX Options): Update '-mptx=[...]'.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	'PTX_VERSION_7_3'.
+	* config/nvptx/nvptx.cc (ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h (TARGET_PTX_7_3): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'7.3' for 'PTX_VERSION_7_3'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=7.3'.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	'nvptx_softstack'.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* config/nvptx/nvptx.h (STACK_SAVEAREA_MODE): '#define'.
+	* config/nvptx/nvptx.md [!TARGET_SOFT_STACK]
+	(save_stack_function): 'define_expand'.
+	(restore_stack_function): Handle '!TARGET_SOFT_STACK'.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* config/nvptx/nvptx.md [!TARGET_SOFT_STACK] (save_stack_block):
+	'define_expand'.
+
+2025-01-08  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	* configure.ac: Fix check for HAVE_GAS_SHF_MERGE on Arm targets.
+	* configure: Regenerate.
+
+2025-01-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/107102
+	* config/aarch64/aarch64.cc (aarch64_function_ok_for_sibcall): Only
+	reject calls with different PCSes if the callee clobbers register
+	state that the caller must preserve.
+
+2025-01-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Disable variant function's
+	append_args in 'omp dispatch' when invoking the variant directly
+	and not through the base function.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/invoke.texi (Nvidia PTX Options): Update '-march-map=sm_50'.
+
+2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117979
+	* tree-ssa-dce.cc (make_forwarders_with_degenerate_phis):
+	Properly update the irreducible region state.
+
+2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.cc (break_out_comdat_types): Copy over
+	DW_AT_language_{name,version} if present.
+	(output_skeleton_debug_sections): Remove also
+	DW_AT_language_{name,version}.
+	(gen_compile_unit_die): For C17, C23, C2Y, C++17, C++20, C++23
+	and C++26 emit for -gdwarf-5 -gno-strict-dwarf also
+	DW_AT_language_{name,version} attributes.
+
+2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118325
+	* tree-nested.cc (convert_nl_goto_reference): Assign proper
+	context to generated artificial label.
+
+2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118269
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Use the correct stmt for the REDUC_GROUP_FIRST_ELEMENT lookup.
+
+2025-01-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/118332
+	* config/arm/arm-mve-builtins.cc (wrap_type_in_struct): Use 'val'
+	instead of '__val'.
+
+2025-01-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/amxavx512intrin.h
+	(_tile_cvtrowps2pbf16h_internal): Rename to...
+	(_tile_cvtrowps2bf16h_internal): ...this.
+	(_tile_cvtrowps2pbf16hi_internal): Rename to...
+	(_tile_cvtrowps2bf16hi_internal): ...this.
+	(_tile_cvtrowps2pbf16l_internal): Rename to...
+	(_tile_cvtrowps2bf16l_internal): ...this.
+	(_tile_cvtrowps2pbf16li_internal): Rename to...
+	(_tile_cvtrowps2bf16li_internal): ...this.
+	(_tile_cvtrowps2pbf16h): Rename to...
+	(_tile_cvtrowps2bf16h): ...this.
+	(_tile_cvtrowps2pbf16hi): Rename to...
+	(_tile_cvtrowps2bf16hi): ...this.
+	(_tile_cvtrowps2pbf16l): Rename to...
+	(_tile_cvtrowps2bf16l): ...this.
+	(_tile_cvtrowps2pbf16li): Rename to...
+	(_tile_cvtrowps2bf16li): ...this.
+
+2025-01-08  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.cc (ix86_noce_max_ifcvt_seq_cost): Adjust
+	cost with ix86_tune_cost->br_mispredict_scale.
+	* config/i386/i386.h (processor_costs): Add br_mispredict_scale.
+	* config/i386/x86-tune-costs.h: Add new br_mispredict_scale to
+	all processor_costs, in which icelake_cost/alderlake_cost
+	with value COSTS_N_INSNS (2) + 3 and other processor with value
+	COSTS_N_INSNS (2).
+
 2025-01-07  Pan Li  <pan2.li@intel.com>
 
 	* match.pd: Update comments for sat_* pattern.

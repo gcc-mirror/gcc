@@ -1,3 +1,8 @@
+2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/118337
+	* module.cc (MOD_VERSION): Bump to "16".
+
 2025-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* intrinsic.texi (ISO_FORTRAN_ENV):  Also mention INT8 in the

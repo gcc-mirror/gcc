@@ -1,3 +1,10 @@
+2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (enum dwarf_source_language): Fix comment pasto.
+	(enum dwarf_source_language_name): New type.
+	* dwarf2.def (DW_AT_language_name, DW_AT_language_version): New
+	DWARF 6 codes.
+
 2024-12-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* libiberty.h (mkstemps): Declare

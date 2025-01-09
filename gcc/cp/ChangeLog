@@ -1,3 +1,40 @@
+2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117825
+	* typeck.cc (cp_build_function_call_vec): Don't call
+	check_function_arguments if complain doesn't have tf_warning bit set.
+
+2025-01-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (build_nop): Add CXX_MEM_STAT_INFO.
+	* typeck.cc (build_nop): Add MEM_STAT_DECL.
+
+2025-01-08  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (implicit_conversion): Check that FROM isn't a reference
+	if we also got an EXPR argument.
+	(convert_like_internal): Check that EXPR isn't a reference.
+	(can_convert_arg): convert_from_reference if needed.
+
+2025-01-08  Jason Merrill  <jason@redhat.com>
+
+	* method.cc (is_stub_object): New.
+	* cp-tree.h (is_stub_object): Declare.
+	* error.cc (dump_expr): Use it.
+
+2025-01-08  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (convert_like_internal): Add missing break.
+	* coroutines.cc (cp_coroutine_transform::build_ramp_function): Build
+	INIT_EXPR directly.
+	* decl.cc (omp_declare_variant_finalize_one): Use build_stub_object.
+
+2025-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118169
+	* typeck2.cc (split_nonconstant_init): Call finish_expr_stmt instead
+	of add_stmt.
+
 2025-01-03  Tobias Burnus  <tburnus@baylibre.com>
 
 	* parser.cc (cp_parser_omp_var_list_no_open,

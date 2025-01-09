@@ -1,3 +1,152 @@
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* gcc.target/nvptx/march-map=sm_52.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_53.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_60.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_61.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_62.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_70.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_72.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_75.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_80.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_86.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_87.c: Likewise.
+	* gcc.target/nvptx/march=sm_52.c: Likewise.
+	* gcc.target/nvptx/march=sm_53.c: Likewise.
+	* gcc.target/nvptx/march=sm_70.c: Likewise.
+	* gcc.target/nvptx/march=sm_75.c: Likewise.
+	* gcc.target/nvptx/march=sm_80.c: Likewise.
+	* gcc.target/nvptx/mptx=_.c: Use '-march=sm_89'.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/mptx=7.3.c: New.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_nvptx_softstack): New.
+	(check_effective_target_alloca) [nvptx]: Use it.
+
+2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117825
+	* g++.dg/warn/pr117825.C: New test.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1.c:
+	Adjust.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1.c:
+	Add.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* gcc.target/nvptx/__builtin_alloca_0-1-O0.c: New.
+	* gcc.target/nvptx/__builtin_alloca_0-1-O1.c: Likewise.
+
+2025-01-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/gomp/declare-variant-3.C: Update diagnostic.
+	* g++.dg/gomp/declare-variant-5.C: Likewise.
+
+2025-01-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/gomp/declare-variant-3.C: Don't depend on expr dump.
+	* g++.dg/gomp/declare-variant-5.C: Likewise.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* gcc.target/nvptx/alloca-2-O1.c: New.
+
+2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* gcc.target/nvptx/alloca-1.c: New.
+	* gcc.target/nvptx/vla-1.c: Likewise.
+
+2025-01-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/107102
+	* gcc.target/aarch64/sve/sibcall_1.c: New test.
+
+2025-01-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/append-args-4.c: New test.
+	* c-c++-common/gomp/append-args-5.c: New test.
+
+2025-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118169
+	* g++.dg/cpp1y/constexpr-prvalue2.C: New test.
+
+2025-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/torture/stackalign/global-1.c: Re-enable for nvptx.
+	* gcc.dg/torture/stackalign/inline-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-4.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-1.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-2.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-3.c: Likewise.
+	* gcc.dg/torture/stackalign/ret-struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/struct-1.c: Likewise.
+
+2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117979
+	* gcc.dg/torture/pr117979.c: New testcase.
+
+2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/dwarf2/lang-cpp17.C: Add -gno-strict-dwarf to
+	dg-options.  Check also for DW_AT_language_{name,version} values.
+	* g++.dg/debug/dwarf2/lang-cpp20.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp23.C: New test.
+
+2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118325
+	* gcc.dg/pr118325.c: New testcase.
+
+2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118269
+	* gcc.dg/vect/vect-early-break_131-pr118269.c: New testcase.
+
+2025-01-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/118332
+	* gcc.target/arm/mve/intrinsics/pr118332.c: New test.
+
+2025-01-08  Jeevitha  <jeevitha@linux.ibm.com>
+
+	* gcc.target/powerpc/amo1.c: Removed powerpc*-*-* from the target and
+	simplified dg-options.
+	* gcc.target/powerpc/amo2.c: Simplified dg-options and added powerpc_vsx
+	target check.
+
+2025-01-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/amxavx512-asmatt-1.c: Adjust intrin call.
+	* gcc.target/i386/amxavx512-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxavx512-cvtrowps2pbf16-2.c: Rename to...
+	* gcc.target/i386/amxavx512-cvtrowps2bf16-2.c: ...this. Rename
+	test functions.
+
+2025-01-08  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/cmov12.c: New test.
+
 2025-01-07  Vineet Gupta  <vineetg@rivosinc.com>
 	    Pan Li  <pan2.li@intel.com>
 
