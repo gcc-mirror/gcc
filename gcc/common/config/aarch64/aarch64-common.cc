@@ -613,6 +613,10 @@ aarch64_get_extension_string_for_isa_flags
 {
   std::string outstr = "";
 
+  /* The CRYPTO bit should only be used to support the +crypto alias
+     during option processing, and should be cleared at all other times.
+     Verify this property for the supplied flags bitmask.  */
+  gcc_assert (!(AARCH64_FL_CRYPTO & aarch64_isa_flags));
   aarch64_feature_flags current_flags = default_arch_flags;
 
   /* As a special case, do not assume that the assembler will enable CRC

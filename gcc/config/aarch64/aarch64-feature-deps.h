@@ -56,7 +56,8 @@ get_enable (T1 i, Ts... args)
 
    - explicit_on: the transitive closure of the features that an
      explicit +FEATURE enables, including FLAG itself.  This is
-     always a superset of ENABLE
+     always a superset of ENABLE, except that the CRYPTO alias bit is
+     explicitly unset for consistency.
 
    Also define a function FEATURE () that returns an info<FEATURE>
    (which is an empty structure, since all members are static).
@@ -69,7 +70,8 @@ template<aarch64_feature> struct info;
   template<> struct info<aarch64_feature::IDENT> {			\
     static constexpr auto flag = AARCH64_FL_##IDENT;			\
     static constexpr auto enable = flag | get_enable REQUIRES;		\
-    static constexpr auto explicit_on = enable | get_enable EXPLICIT_ON; \
+    static constexpr auto explicit_on                                   \
+      = (enable | get_enable EXPLICIT_ON) & ~AARCH64_FL_CRYPTO;         \
   };									\
   constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::flag;	\
   constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::enable;	\
@@ -114,9 +116,11 @@ get_flags_off (aarch64_feature_flags mask)
 #include "config/aarch64/aarch64-option-extensions.def"
 
 /* Define cpu_<NAME> variables for each CPU, giving the transitive
-   closure of all the features that the CPU supports.  */
+   closure of all the features that the CPU supports.  The CRYPTO bit is just
+   an alias, so explicitly unset it for consistency.  */
 #define AARCH64_CORE(A, CORE_IDENT, C, ARCH_IDENT, FEATURES, F, G, H, I) \
-  constexpr auto cpu_##CORE_IDENT = ARCH_IDENT ().enable | get_enable FEATURES;
+  constexpr auto cpu_##CORE_IDENT \
+    = (ARCH_IDENT ().enable | get_enable FEATURES) & ~AARCH64_FL_CRYPTO;
 #include "config/aarch64/aarch64-cores.def"
 
 /* Define fmv_deps_<NAME> variables for each FMV feature, giving the transitive
