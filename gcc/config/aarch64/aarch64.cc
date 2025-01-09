@@ -19356,6 +19356,8 @@ aarch64_override_options (void)
   if (TARGET_ILP32)
     error ("assembler does not support %<-mabi=ilp32%>");
 #endif
+  if (TARGET_ILP32)
+    warning (OPT_Wdeprecated, "%<-mabi=ilp32%> is deprecated");
 
   /* Convert -msve-vector-bits to a VG count.  */
   aarch64_sve_vg = aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits);

@@ -21472,6 +21472,8 @@ The default depends on the specific target configuration.  Note that
 the LP64 and ILP32 ABIs are not link-compatible; you must compile your
 entire program with the same ABI, and link with a compatible set of libraries.
 
+The @samp{ilp32} model is deprecated.
+
 @opindex mbig-endian
 @item -mbig-endian
 Generate big-endian code.  This is the default when GCC is configured for an
