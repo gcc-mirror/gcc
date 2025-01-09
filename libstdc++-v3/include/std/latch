@@ -89,8 +89,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     wait() const noexcept
     {
-      auto const __vfn = [this] { return this->try_wait(); };
-      auto const __pred = [this](bool __b) { return __b; };
+      auto const __vfn = [this] {
+	return __atomic_impl::load(&_M_counter, memory_order::acquire);
+      };
+      auto const __pred = [](__detail::__platform_wait_t __v) {
+	return __v == 0;
+      };
       std::__atomic_wait_address(&_M_counter, __pred, __vfn);
     }
 
