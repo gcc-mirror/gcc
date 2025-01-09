@@ -10080,7 +10080,9 @@ proc check_effective_target_sync_char_short { } {
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
 	     || [istarget loongarch*-*-*]
-	     || [istarget riscv*-*-*]
+	     || ([istarget riscv*-*-*]
+		 && ([check_effective_target_riscv_zalrsc]
+		     || [check_effective_target_riscv_zabha]))
 	     || [check_effective_target_mips_llsc] }}]
 }
 
