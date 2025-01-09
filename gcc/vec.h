@@ -2395,11 +2395,11 @@ public:
   array_slice (vec<OtherT, A, vl_embed> *v)
     : m_base (v ? v->address () : nullptr), m_size (v ? v->length () : 0) {}
 
-  iterator begin () { return m_base; }
-  iterator end () { return m_base + m_size; }
+  iterator begin () {  gcc_checking_assert (is_valid ()); return m_base; }
+  iterator end () {  gcc_checking_assert (is_valid ()); return m_base + m_size; }
 
-  const_iterator begin () const { return m_base; }
-  const_iterator end () const { return m_base + m_size; }
+  const_iterator begin () const { gcc_checking_assert (is_valid ()); return m_base; }
+  const_iterator end () const { gcc_checking_assert (is_valid ()); return m_base + m_size; }
 
   value_type &front ();
   value_type &back ();
