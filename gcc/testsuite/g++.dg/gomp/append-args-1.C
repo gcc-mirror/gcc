@@ -19,7 +19,7 @@ float repl1(T, T2, T2);
 template<typename T>
 float base1(T);
 
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(T, T2, T2\\) \\\[with T = short int; T2 = omp_interop_t\\\]'" "" { target *-*-* } .-4 }  */
+
 /* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(T, T2, T2\\) \\\[with T = omp_interop_t; T2 = omp_interop_t\\\]'" "" { target *-*-* } .-5 }  */
 /* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(T, T2, T2\\) \\\[with T = float; T2 = omp_interop_t\\\]'" "" { target *-*-* } .-6 }  */
 
@@ -93,9 +93,11 @@ test (int *a, int *b)
   omp_interop_t obj1, obj2;
   float x, y;
 
-  #pragma omp dispatch interop ( obj1, obj2 )
+  #pragma omp dispatch interop ( obj1, obj2 ) device(2) // OK
     x = base1<short> (5);
-  /* { dg-note "required by 'dispatch' construct" "" { target *-*-* } .-2 }  */
+
+  #pragma omp dispatch interop ( obj1, obj2 ) // { dg-error "the 'device' clause must be present if the 'interop' clause has more than one list item" }
+    x = base1<short> (5);
 
   #pragma omp dispatch
     base2inval<int *, omp_interop_t> (a, omp_interop_none);

@@ -71,9 +71,8 @@ test (int *a, int *b)
 
   #pragma omp dispatch interop (obj2)
     base3 (5, 1, 2, 3);
-  /* { dg-note "required by 'dispatch' construct" "" { target *-*-* } .-2 }  */
 
-  #pragma omp dispatch interop (obj2, obj1)
+  #pragma omp dispatch interop (obj2, obj1) /* { dg-error "the 'device' clause must be present if the 'interop' clause has more than one list item" } */
     base3 (5, 1, 2, 3);
   /* { dg-error "number of list items in 'interop' clause \\(2\\) exceeds the number of 'append_args' items \\(1\\) for 'declare variant' candidate 'repl3'" "" { target c } .-2 } */
   /* { dg-error "number of list items in 'interop' clause \\(2\\) exceeds the number of 'append_args' items \\(1\\) for 'declare variant' candidate 'void repl3\\(int, omp_interop_t, \\.\\.\\.\\)'" "" { target c++ } .-3 } */
