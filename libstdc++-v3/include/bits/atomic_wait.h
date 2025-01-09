@@ -154,7 +154,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // return true if equal
     template<typename _Tp>
-      bool __atomic_compare(const _Tp& __a, const _Tp& __b)
+      inline bool
+      __atomic_eq(const _Tp& __a, const _Tp& __b)
       {
 	// TODO make this do the correct padding bit ignoring comparison
 	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) == 0;
@@ -483,7 +484,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    _ValFn __vfn) noexcept
     {
       auto __pfn = [&](const _Tp& __val)
-	  { return !__detail::__atomic_compare(__old, __val); };
+	  { return !__detail::__atomic_eq(__old, __val); };
       __atomic_wait_address(__addr, __pfn, forward<_ValFn>(__vfn));
     }
 

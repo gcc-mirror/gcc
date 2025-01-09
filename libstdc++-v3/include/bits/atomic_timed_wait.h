@@ -302,8 +302,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  const chrono::time_point<_Clock, _Dur>& __atime,
 				  bool __bare_wait = false) noexcept
     {
-      auto __pfn = [&](const _Tp& __val)
-	  { return !__detail::__atomic_compare(__old, __val); };
+      auto __pfn = [&](const _Tp& __val) {
+	return !__detail::__atomic_eq(__old, __val);
+      };
       return __atomic_wait_address_until(__addr, __pfn, forward<_ValFn>(__vfn),
 					 __atime, __bare_wait);
     }
@@ -350,8 +351,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				const chrono::duration<_Rep, _Period>& __rtime,
 				bool __bare_wait = false) noexcept
     {
-      auto __pfn = [&](const _Tp& __val)
-	  { return !__detail::__atomic_compare(__old, __val); };
+      auto __pfn = [&](const _Tp& __val) {
+	return !__detail::__atomic_eq(__old, __val);
+      };
       return __atomic_wait_address_for(__addr, __pfn, forward<_ValFn>(__vfn),
 				       __rtime, __bare_wait);
     }
