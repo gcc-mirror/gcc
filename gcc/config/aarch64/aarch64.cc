@@ -18891,25 +18891,13 @@ aarch64_override_options_internal (struct gcc_options *opts)
   aarch64_override_options_after_change_1 (opts);
 }
 
-/* Print a hint with a suggestion for a core or architecture name that
-   most closely resembles what the user passed in STR.  ARCH is true if
-   the user is asking for an architecture name.  ARCH is false if the user
-   is asking for a core name.  */
+/* Print a list of CANDIDATES for an argument, and try to suggest a specific
+   close match.  */
 
-static void
-aarch64_print_hint_for_core_or_arch (const char *str, bool arch)
+inline static void
+aarch64_print_hint_candidates (const char *str,
+			       const auto_vec<const char*> & candidates)
 {
-  auto_vec<const char *> candidates;
-  const struct processor *entry = arch ? all_architectures : all_cores;
-  for (; entry->name != NULL; entry++)
-    candidates.safe_push (entry->name);
-
-#ifdef HAVE_LOCAL_CPU_DETECT
-  /* Add also "native" as possible value.  */
-  if (arch)
-    candidates.safe_push ("native");
-#endif
-
   char *s;
   const char *hint = candidates_list_and_hint (str, s, candidates);
   if (hint)
@@ -18927,7 +18915,11 @@ aarch64_print_hint_for_core_or_arch (const char *str, bool arch)
 inline static void
 aarch64_print_hint_for_core (const char *str)
 {
-  aarch64_print_hint_for_core_or_arch (str, false);
+  auto_vec<const char *> candidates;
+  const struct processor *entry = all_cores;
+  for (; entry->name != NULL; entry++)
+    candidates.safe_push (entry->name);
+  aarch64_print_hint_candidates (str, candidates);
 }
 
 /* Print a hint with a suggestion for an architecture name that most closely
@@ -18936,7 +18928,17 @@ aarch64_print_hint_for_core (const char *str)
 inline static void
 aarch64_print_hint_for_arch (const char *str)
 {
-  aarch64_print_hint_for_core_or_arch (str, true);
+  auto_vec<const char *> candidates;
+  const struct processor *entry = all_architectures;
+  for (; entry->name != NULL; entry++)
+    candidates.safe_push (entry->name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+  /* Add also "native" as possible value.  */
+  candidates.safe_push ("native");
+#endif
+
+  aarch64_print_hint_candidates (str, candidates);
 }
 
 
@@ -18948,15 +18950,7 @@ aarch64_print_hint_for_extensions (const char *str)
 {
   auto_vec<const char *> candidates;
   aarch64_get_all_extension_candidates (&candidates);
-  char *s;
-  const char *hint = candidates_list_and_hint (str, s, candidates);
-  if (hint)
-    inform (input_location, "valid arguments are: %s;"
-			     " did you mean %qs?", s, hint);
-  else
-    inform (input_location, "valid arguments are: %s", s);
-
-  XDELETEVEC (s);
+  aarch64_print_hint_candidates (str, candidates);
 }
 
 /* Validate a command-line -mcpu option.  Parse the cpu and extensions (if any)
