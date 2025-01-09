@@ -9504,6 +9504,11 @@ package body Sem_Ch8 is
            and then Present (Scope (Entity (E)))
          then
             Mark_Use_Package (Scope (Entity (E)));
+
+            --  Additionally mark the types of the formals and the return
+            --  types as used when dealing with an overloaded operator.
+
+            Mark_Parameters (Entity (E));
          end if;
 
          Curr := Current_Use_Clause (Base);
