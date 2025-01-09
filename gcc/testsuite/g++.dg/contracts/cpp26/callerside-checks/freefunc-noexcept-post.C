@@ -1,3 +1,7 @@
+// Throwing violation handler in a pre/post check on a noexcept function
+// behaves as if the function exited via an exception.
+// This tests the behaviour of a post condition on a member function
+// with caller side checks.
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe -fcontracts-nonattr-client-contracts=all " }
 
@@ -21,7 +25,14 @@ void handle_contract_violation(const std::experimental::contract_violation& viol
   throw MyException{};
 }
 
-void f(int x) noexcept pre(x >= 0)  {}
+void f(const int x) noexcept post(x >= 0)
+{
+  try{
+   int i = 1;
+  }
+  catch(...) {
+  }
+}
 
 int main()
 {
@@ -32,4 +43,6 @@ int main()
       f(-42);
   } catch (...) {
   }
+  // We should not get here
+  return 1;
 }
