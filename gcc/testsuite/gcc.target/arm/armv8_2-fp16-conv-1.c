@@ -156,9 +156,9 @@ f64_to_s16 (double a)
 }
 
 /*
-** f64_to_s16:
+** f64_to_u16:
 ** ...
-**	vcvt\.s32\.f64	s[0-9]+, d[0-9]+
+**	vcvt\.u32\.f64	s[0-9]+, d[0-9]+
 ** ...
 */
 unsigned short
