@@ -6946,11 +6946,23 @@ trees_in::core_vals (tree t)
 	       body) anyway.  */
 	    decl = maybe_duplicate (decl);
 
-	    if (!DECL_P (decl) || DECL_CHAIN (decl))
+	    if (!DECL_P (decl))
 	      {
 		set_overrun ();
 		break;
 	      }
+
+	    /* If DECL_CHAIN is already set then this was a backreference to a
+	       local type or enumerator from a previous read (PR c++/114630).
+	       Let's copy the node so we can keep building the chain for ODR
+	       checking later.  */
+	    if (DECL_CHAIN (decl))
+	      {
+		gcc_checking_assert (TREE_CODE (decl) == TYPE_DECL
+				     && find_duplicate (DECL_CONTEXT (decl)));
+		decl = copy_decl (decl);
+	      }
+
 	    *chain = decl;
 	    chain = &DECL_CHAIN (decl);
 	  }
