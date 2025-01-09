@@ -406,18 +406,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __waiter_pool_impl* __pool = nullptr;
 
-      if (__args & __wait_flags::__track_contention)
-	{
-	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
-	  if (!__pool->_M_waiting())
-	    return;
-	}
-
       const __platform_wait_t* __wait_addr;
       if (__args & __wait_flags::__proxy_wait)
 	{
-	  if (!__pool)
-	    __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
 	  // Waiting for *__addr is actually done on the proxy's _M_ver.
 	  __wait_addr = &__pool->_M_ver;
 	  __atomic_fetch_add(&__pool->_M_ver, 1, __ATOMIC_RELAXED);
@@ -429,6 +421,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else // Use the atomic variable's own address.
 	__wait_addr = __addr;
+
+      if (__args & __wait_flags::__track_contention)
+	{
+	  if (!__pool)
+	    __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+	  if (!__pool->_M_waiting())
+	    return;
+	}
 
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
       __platform_notify(__wait_addr, __all);
