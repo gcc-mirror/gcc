@@ -223,6 +223,8 @@ enum emit_type
   EMIT_AFTER,
 };
 
+static const int MAX_LMUL = 8;
+
 /* dump helper functions */
 static const char *
 vlmul_to_str (vlmul_type vlmul)
@@ -1445,14 +1447,13 @@ private:
   inline bool prev_ratio_valid_for_next_sew_p (const vsetvl_info &prev,
 					       const vsetvl_info &next)
   {
-    return prev.get_ratio () >= (next.get_sew () / 8);
+    return prev.get_ratio () >= (next.get_sew () / MAX_LMUL);
   }
   inline bool next_ratio_valid_for_prev_sew_p (const vsetvl_info &prev,
 					       const vsetvl_info &next)
   {
-    return next.get_ratio () >= (prev.get_sew () / 8);
+    return next.get_ratio () >= (prev.get_sew () / MAX_LMUL);
   }
-
   inline bool sew_ge_and_ratio_eq_p (const vsetvl_info &prev,
 				     const vsetvl_info &next)
   {
@@ -1469,6 +1470,13 @@ private:
   {
     return sew_ge_p (prev, next) && prev_sew_le_next_max_sew_p (prev, next)
 	   && next_ratio_valid_for_prev_sew_p (prev, next);
+  }
+  inline bool
+  sew_ge_and_prev_sew_le_next_max_sew_and_ratio_eq_p (
+    const vsetvl_info &prev, const vsetvl_info &next)
+  {
+    return sew_ge_p (prev, next) && prev_sew_le_next_max_sew_p (prev, next)
+	   && ratio_eq_p (prev, next);
   }
   inline bool sew_le_and_next_sew_le_prev_max_sew_p (const vsetvl_info &prev,
 						     const vsetvl_info &next)
