@@ -2843,7 +2843,7 @@ original_binfo (tree binfo, tree here)
    TYPE).  */
 
 bool
-any_dependent_bases_p (tree type)
+any_dependent_bases_p (tree type /* = current_nonlambda_class_type () */)
 {
   if (!type || !CLASS_TYPE_P (type) || !uses_template_parms (type))
     return false;
@@ -2858,7 +2858,10 @@ any_dependent_bases_p (tree type)
   unsigned i;
   tree base_binfo;
   FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (type)), i, base_binfo)
-    if (BINFO_DEPENDENT_BASE_P (base_binfo))
+    if (BINFO_DEPENDENT_BASE_P (base_binfo)
+	/* Recurse to also consider possibly dependent bases of a base that
+	   is part of the current instantiation.  */
+	|| any_dependent_bases_p (BINFO_TYPE (base_binfo)))
       return true;
 
   return false;
