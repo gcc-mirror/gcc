@@ -1,3 +1,7 @@
+// Throwing violation handler in a pre/post check on a noexcept function
+// behaves as if the function exited via an exception.
+// This tests the behaviour of a pre condition on an implictly noexcept
+// destructor
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe " }
 
@@ -20,11 +24,15 @@ void handle_contract_violation(const std::experimental::contract_violation& viol
   throw MyException{};
 }
 
+const int x = -42;
+
 struct X
 {
-    void f(int x) noexcept pre(x>1) {
-       int i = 1;
+
+    ~X() pre(x>1) try
+    {
     }
+    catch(...) {}
 };
 
 int main()
@@ -33,8 +41,9 @@ int main()
   try
   {
       X x;
-      x.f(-42);
   } catch (...) {
   }
+  // We should not get here
+  return 1;
 
 }
