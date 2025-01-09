@@ -377,10 +377,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_load(__wait_addr, &__val, __args._M_order);
       if (__val == __args._M_old)
 	{
-	    lock_guard<mutex> __l{ __pool->_M_mtx };
-	    __atomic_load(__wait_addr, &__val, __args._M_order);
-	    if (__val == __args._M_old)
-		__pool->_M_cv.wait(__pool->_M_mtx);
+	  lock_guard<mutex> __l{ __pool->_M_mtx };
+	  __atomic_load(__wait_addr, &__val, __args._M_order);
+	  if (__val == __args._M_old)
+	    __pool->_M_cv.wait(__pool->_M_mtx);
 	}
       __res = make_pair(false, __val);
 #endif

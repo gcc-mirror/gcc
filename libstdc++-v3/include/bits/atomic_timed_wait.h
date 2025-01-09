@@ -101,8 +101,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (errno != EINTR && errno != EAGAIN)
 	    __throw_system_error(errno);
 	}
-	return true;
-      }
+      return true;
+    }
 #else
 // define _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT and implement __platform_wait_until()
 // if there is a more efficient primitive supported by the platform
@@ -115,23 +115,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __cond_wait_until(__condvar& __cv, mutex& __mx,
 		      const __wait_clock_t::time_point& __atime)
     {
-	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
 
-	__gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
+      __gthread_time_t __ts =
+	{
+	  static_cast<std::time_t>(__s.time_since_epoch().count()),
+	  static_cast<long>(__ns.count())
+	};
 
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
-	if constexpr (is_same_v<chrono::steady_clock, __wait_clock_t>)
-	  __cv.wait_until(__mx, CLOCK_MONOTONIC, __ts);
-	else
+      if constexpr (is_same_v<chrono::steady_clock, __wait_clock_t>)
+	__cv.wait_until(__mx, CLOCK_MONOTONIC, __ts);
+      else
 #endif
-	  __cv.wait_until(__mx, __ts);
-	return __wait_clock_t::now() < __atime;
-      }
+	__cv.wait_until(__mx, __ts);
+      return __wait_clock_t::now() < __atime;
+    }
 #endif // _GLIBCXX_HAS_GTHREADS
 
     inline __wait_result_type
@@ -146,34 +146,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __platform_wait_t __val;
       auto __now = __wait_clock_t::now();
       for (; __now < __deadline; __now = __wait_clock_t::now())
-      {
-	auto __elapsed = __now - __t0;
+	{
+	  auto __elapsed = __now - __t0;
 #ifndef _GLIBCXX_NO_SLEEP
-	if (__elapsed > 128ms)
-	{
-	  this_thread::sleep_for(64ms);
-	}
-	else if (__elapsed > 64us)
-	{
-	  this_thread::sleep_for(__elapsed / 2);
-	}
-	else
+	  if (__elapsed > 128ms)
+	    this_thread::sleep_for(64ms);
+	  else if (__elapsed > 64us)
+	    this_thread::sleep_for(__elapsed / 2);
+	  else
 #endif
-	if (__elapsed > 4us)
-	{
-	  __thread_yield();
-	}
-	else
-	{
-	  auto __res = __detail::__spin_impl(__addr, __a);
-	  if (__res.first)
-	    return __res;
-	}
+	  if (__elapsed > 4us)
+	    __thread_yield();
+	  else
+	    {
+	      auto __res = __detail::__spin_impl(__addr, __a);
+	      if (__res.first)
+		return __res;
+	    }
 
-	__atomic_load(__addr, &__val, __args._M_order);
-	if (__val != __args._M_old)
-	    return make_pair(true, __val);
-      }
+	  __atomic_load(__addr, &__val, __args._M_order);
+	  if (__val != __args._M_old)
+	      return make_pair(true, __val);
+	}
       return make_pair(false, __val);
     }
 
@@ -212,14 +206,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       if (!(__args & __wait_flags::__track_contention))
-      {
-	// caller does not externally track contention
+	{
+	  // caller does not externally track contention
 #ifdef _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
-	__pool = (__pool == nullptr) ? &__waiter_pool_impl::_S_impl_for(__addr)
-				     : __pool;
+	  __pool = (__pool == nullptr) ? &__waiter_pool_impl::_S_impl_for(__addr)
+				       : __pool;
 #endif
-	__pool->_M_enter_wait();
-      }
+	  __pool->_M_enter_wait();
+	}
 
       __wait_result_type __res;
 #ifdef _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
@@ -232,19 +226,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_load(__wait_addr, &__val, __args._M_order);
       if (__val == __args._M_old)
 	{
-	   lock_guard<mutex> __l{ __pool->_M_mtx };
-	   __atomic_load(__wait_addr, &__val, __args._M_order);
-	   if (__val == __args._M_old &&
-	       __cond_wait_until(__pool->_M_cv, __pool->_M_mtx, __atime))
-	     __res = make_pair(true, __val);
+	  lock_guard<mutex> __l{ __pool->_M_mtx };
+	  __atomic_load(__wait_addr, &__val, __args._M_order);
+	  if (__val == __args._M_old &&
+	      __cond_wait_until(__pool->_M_cv, __pool->_M_mtx, __atime))
+	    __res = make_pair(true, __val);
 	}
       else
 	__res = make_pair(false, __val);
 #endif
 
       if (!(__args & __wait_flags::__track_contention))
-	  // caller does not externally track contention
-	  __pool->_M_leave_wait();
+	// caller does not externally track contention
+	__pool->_M_leave_wait();
       return __res;
     }
 
@@ -257,37 +251,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __detail::__wait_until_impl(__addr, __args, __atime);
 	else
 	  {
-	     auto __res = __detail::__wait_until_impl(__addr, __args,
-					    __to_wait_clock(__atime));
-	     if (!__res.first)
-	       {
-		  // We got a timeout when measured against __clock_t but
-		  // we need to check against the caller-supplied clock
-		  // to tell whether we should return a timeout.
-		  if (_Clock::now() < __atime)
-		    return make_pair(true, __res.second);
-		}
-	      return __res;
-	    }
+	    auto __res = __detail::__wait_until_impl(__addr, __args,
+						     __to_wait_clock(__atime));
+	    if (!__res.first)
+	      {
+		// We got a timeout when measured against __clock_t but
+		// we need to check against the caller-supplied clock
+		// to tell whether we should return a timeout.
+		if (_Clock::now() < __atime)
+		  return make_pair(true, __res.second);
+	      }
+	    return __res;
+	  }
       }
 
     template<typename _Rep, typename _Period>
       __wait_result_type
       __wait_for(const __platform_wait_t* __addr, const __wait_args_base* __a,
 		 const chrono::duration<_Rep, _Period>& __rtime) noexcept
-    {
-      __wait_args __args{ *__a };
-      if (!__rtime.count())
-	{
-	  // no rtime supplied, just spin a bit
-	  __args |= __wait_flags::__spin_only;
-	  return __detail::__wait_impl(__addr, &__args);
-	}
+      {
+	__wait_args __args{ *__a };
+	if (!__rtime.count())
+	  {
+	    // no rtime supplied, just spin a bit
+	    __args |= __wait_flags::__spin_only;
+	    return __detail::__wait_impl(__addr, &__args);
+	  }
 
-      auto const __reltime = chrono::ceil<__wait_clock_t::duration>(__rtime);
-      auto const __atime = chrono::steady_clock::now() + __reltime;
-      return __detail::__wait_until(__addr, &__args, __atime);
-    }
+	auto const __reltime = chrono::ceil<__wait_clock_t::duration>(__rtime);
+	auto const __atime = chrono::steady_clock::now() + __reltime;
+	return __detail::__wait_until(__addr, &__args, __atime);
+      }
   } // namespace __detail
 
   // returns true if wait ended before timeout
@@ -300,19 +294,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				const chrono::time_point<_Clock, _Dur>& __atime,
 				bool __bare_wait = false) noexcept
     {
-       const auto __wait_addr =
-	   reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
-       __detail::__wait_args __args{ __addr, __bare_wait };
-       _Tp __val = __vfn();
-       while (!__pred(__val))
-	 {
-	   auto __res = __detail::__wait_until(__wait_addr, &__args, __atime);
-	   if (!__res.first)
-	     // timed out
-	     return __res.first; // C++26 will also return last observed __val
-	   __val = __vfn();
-	 }
-       return true; // C++26 will also return last observed __val
+      const auto __wait_addr =
+	reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
+      __detail::__wait_args __args{ __addr, __bare_wait };
+      _Tp __val = __vfn();
+      while (!__pred(__val))
+	{
+	  auto __res = __detail::__wait_until(__wait_addr, &__args, __atime);
+	  if (!__res.first)
+	    // timed out
+	    return __res.first; // C++26 will also return last observed __val
+	  __val = __vfn();
+	}
+      return true; // C++26 will also return last observed __val
     }
 
   template<typename _Clock, typename _Dur>
@@ -335,21 +329,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  const chrono::time_point<_Clock, _Dur>& __atime,
 				  bool __bare_wait = false) noexcept
     {
-       auto __pfn = [&](const _Tp& __val)
-	   { return !__detail::__atomic_compare(__old, __val); };
-       return __atomic_wait_address_until(__addr, __pfn, forward<_ValFn>(__vfn),
-					  __atime, __bare_wait);
+      auto __pfn = [&](const _Tp& __val)
+	  { return !__detail::__atomic_compare(__old, __val); };
+      return __atomic_wait_address_until(__addr, __pfn, forward<_ValFn>(__vfn),
+					 __atime, __bare_wait);
     }
 
   template<typename _Tp,
 	   typename _Pred, typename _ValFn,
 	   typename _Rep, typename _Period>
-   bool
-   __atomic_wait_address_for(const _Tp* __addr, _Pred&& __pred,
-			     _ValFn&& __vfn,
-			     const chrono::duration<_Rep, _Period>& __rtime,
-			     bool __bare_wait = false) noexcept
-  {
+    bool
+    __atomic_wait_address_for(const _Tp* __addr, _Pred&& __pred,
+			      _ValFn&& __vfn,
+			      const chrono::duration<_Rep, _Period>& __rtime,
+			      bool __bare_wait = false) noexcept
+    {
       const auto __wait_addr =
 	  reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
       __detail::__wait_args __args{ __addr, __bare_wait };
@@ -363,7 +357,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __val = __vfn();
 	}
       return true; // C++26 will also return last observed __val
-  }
+    }
 
   template<typename _Rep, typename _Period>
     bool
@@ -372,11 +366,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				int __order,
 				const chrono::time_point<_Rep, _Period>& __rtime,
 				bool __bare_wait = false) noexcept
-  {
-    __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
-    auto __res = __detail::__wait_for(__addr, &__args, __rtime);
-    return __res.first; // C++26 will also return last observed __Val
-  }
+    {
+      __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
+      auto __res = __detail::__wait_for(__addr, &__args, __rtime);
+      return __res.first; // C++26 will also return last observed __Val
+    }
 
   template<typename _Tp, typename _ValFn,
 	   typename _Rep, typename _Period>
