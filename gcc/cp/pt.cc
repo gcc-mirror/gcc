@@ -22437,7 +22437,10 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
      substitution of a template variable, but the type of the variable
      template may be auto, in which case we will call do_auto_deduction
      in mark_used (which clears tf_partial) and the auto must be properly
-     reduced at that time for the deduction to work.  */
+     reduced at that time for the deduction to work.
+
+     Note that later below we set tf_partial iff there are dependent arguments;
+     the above is concerned specifically about the non-dependent case.  */
   complain &= tf_warning_or_error;
 
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
@@ -22516,9 +22519,14 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
      template, not the context of the overload resolution we're doing.  */
   push_to_top_level ();
   /* If there are dependent arguments, e.g. because we're doing partial
-     ordering, make sure processing_template_decl stays set.  */
+     ordering, make sure processing_template_decl stays set.  And set
+     tf_partial mainly for benefit of instantiation of alias templates
+     that contain extra-args trees.  */
   if (uses_template_parms (targ_ptr))
-    ++processing_template_decl;
+    {
+      ++processing_template_decl;
+      complain |= tf_partial;
+    }
   if (DECL_CLASS_SCOPE_P (gen_tmpl))
     {
       tree ctx;
