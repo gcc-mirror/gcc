@@ -4107,14 +4107,22 @@ class pass_forwprop : public gimple_opt_pass
 {
 public:
   pass_forwprop (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_forwprop, ctxt)
+    : gimple_opt_pass (pass_data_forwprop, ctxt), last_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () final override { return new pass_forwprop (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
+    {
+      gcc_assert (n == 0);
+      last_p = param;
+    }
   bool gate (function *) final override { return flag_tree_forwprop; }
   unsigned int execute (function *) final override;
 
+ private:
+  /* Determines whether the pass instance should set PROP_last_full_fold.  */
+  bool last_p;
 }; // class pass_forwprop
 
 unsigned int
@@ -4123,6 +4131,8 @@ pass_forwprop::execute (function *fun)
   unsigned int todoflags = 0;
 
   cfg_changed = false;
+  if (last_p)
+    fun->curr_properties |= PROP_last_full_fold;
 
   calculate_dominance_info (CDI_DOMINATORS);
 

@@ -230,6 +230,7 @@ protected:
 #define PROP_assumptions_done	(1 << 19)	/* Assume function kept
 						   around.  */
 #define PROP_gimple_lbitint	(1 << 20)       /* lowered large _BitInt */
+#define PROP_last_full_fold	(1 << 21)	/* Start of last forwprop.  */
 
 #define PROP_gimple \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
