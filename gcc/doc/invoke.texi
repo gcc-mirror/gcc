@@ -827,7 +827,8 @@ Objective-C and Objective-C++ Dialects}.
 -moverride=@var{string}  -mverbose-cost-dump
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg}
 -mstack-protector-guard-offset=@var{offset} -mtrack-speculation
--moutline-atomics -mearly-ldp-fusion -mlate-ldp-fusion}
+-moutline-atomics -mearly-ldp-fusion -mlate-ldp-fusion
+-Wexperimental-fmv-target}
 
 @emph{Adapteva Epiphany Options} (@ref{Adapteva Epiphany Options})
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs
@@ -21881,6 +21882,14 @@ hardware SVE vector lengths.
 
 The default is @samp{-msve-vector-bits=scalable}, which produces
 vector-length agnostic code.
+
+@opindex Wexperimental-fmv-target
+@opindex Wno-experimental-fmv-target
+@item -Wexperimental-fmv-target
+Warn about use of experimental Function Multi Versioning.
+The Arm C Language Extension specification for Function Multi Versioning
+is beta and subject to change. Any usage of FMV is caveated that future
+behavior change and incompatibility is likely.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers

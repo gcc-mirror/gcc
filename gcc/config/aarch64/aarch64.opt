@@ -431,3 +431,7 @@ handling.  One means we try to form pairs involving one or more existing
 individual writeback accesses where possible.  A value of two means we
 also try to opportunistically form writeback opportunities by folding in
 trailing destructive updates of the base register used by a pair.
+
+Wexperimental-fmv-target
+Target Var(warn_experimental_fmv) Warning Init(1)
+Warn about usage of experimental Function Multi Versioning.
