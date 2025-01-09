@@ -1398,7 +1398,14 @@ check_redeclaration_exception_specification (tree new_decl,
       location_t new_loc = DECL_SOURCE_LOCATION (new_decl);
       auto_diagnostic_group d;
 
-      if (DECL_IN_SYSTEM_HEADER (old_decl) && DECL_EXTERN_C_P (old_decl))
+      /* Be permissive about C++98 vs C++11 operator new declarations.  */
+      bool global_new = (IDENTIFIER_NEW_OP_P (DECL_NAME (new_decl))
+			 && CP_DECL_CONTEXT (new_decl) == global_namespace
+			 && (nothrow_spec_p (new_exceptions)
+			     == nothrow_spec_p (old_exceptions)));
+
+      if (DECL_IN_SYSTEM_HEADER (old_decl)
+	  && (global_new || DECL_EXTERN_C_P (old_decl)))
 	/* Don't fuss about the C library; the C library functions are not
 	   specified to have exception specifications (just behave as if they
 	   have them), but some implementations include them.  */
@@ -1407,7 +1414,7 @@ check_redeclaration_exception_specification (tree new_decl,
 	/* We used to silently permit mismatched eh specs with
 	   -fno-exceptions, so only complain if -pedantic.  */
 	complained = pedwarn (new_loc, OPT_Wpedantic, msg, new_decl);
-      else if (!new_exceptions)
+      else if (!new_exceptions || global_new)
 	/* Reduce to pedwarn for omitted exception specification.  No warning
 	   flag for this; silence the warning by correcting the code.  */
 	complained = pedwarn (new_loc, 0, msg, new_decl);
