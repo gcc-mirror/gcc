@@ -85,6 +85,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
    recognized.  */
 #define MOD_VERSION "16"
+/* Older mod versions we can still parse.  */
+#define COMPAT_MOD_VERSIONS { "15" }
 
 
 /* Structure that describes a position within a module file.  */
@@ -7122,9 +7124,11 @@ use_iso_fortran_env_module (void)
 
   i = 0;
 #define NAMED_INTCST(a,b,c,d) symbol[i++].value = c;
-#include "iso-fortran-env.def"
-
 #define NAMED_UINTCST(a,b,c,d) symbol[i++].value = c;
+#define NAMED_KINDARRAY(a,b,c,d) i++;
+#define NAMED_DERIVED_TYPE(a,b,c,d) i++;
+#define NAMED_FUNCTION(a,b,c,d) i++;
+#define NAMED_SUBROUTINE(a,b,c,d) i++;
 #include "iso-fortran-env.def"
 
   /* Generate the symbol for the module itself.  */
@@ -7451,10 +7455,23 @@ gfc_use_module (gfc_use_list *module)
 			 " module file", module_fullpath);
       if (start == 3)
 	{
+	  bool fatal = false;
 	  if (strcmp (atom_name, " version") != 0
 	      || module_char () != ' '
-	      || parse_atom () != ATOM_STRING
-	      || strcmp (atom_string, MOD_VERSION))
+	      || parse_atom () != ATOM_STRING)
+	    fatal = true;
+	  else if (strcmp (atom_string, MOD_VERSION))
+	    {
+	      static const char *compat_mod_versions[] = COMPAT_MOD_VERSIONS;
+	      fatal = true;
+	      for (unsigned i = 0; i < ARRAY_SIZE (compat_mod_versions); ++i)
+		if (!strcmp (atom_string, compat_mod_versions[i]))
+		  {
+		    fatal = false;
+		    break;
+		  }
+	    }
+	  if (fatal)
 	    gfc_fatal_error ("Cannot read module file %qs opened at %C,"
 			     " because it was created by a different"
 			     " version of GNU Fortran", module_fullpath);
