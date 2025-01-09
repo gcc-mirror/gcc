@@ -17388,6 +17388,47 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 	return;
     }
 
+  /* Detect the case where we are using an emulated gather/scatter.  When a
+     target does not support gathers and scatters directly the vectorizer
+     emulates these by constructing an index vector and then issuing an
+     extraction for every lane in the vector.  If the index vector is loaded
+     from memory, the vector load and extractions are subsequently lowered by
+     veclower into a series of scalar index loads.  After the final loads are
+     done it issues a vec_construct to recreate the vector from the scalar.  For
+     costing when we see a vec_to_scalar on a stmt with VMAT_GATHER_SCATTER we
+     are dealing with an emulated instruction and should adjust costing
+     properly.  */
+  if (kind == vec_to_scalar
+      && (m_vec_flags & VEC_ADVSIMD)
+      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
+    {
+      auto dr = STMT_VINFO_DATA_REF (stmt_info);
+      tree dr_ref = DR_REF (dr);
+      while (handled_component_p (dr_ref))
+	{
+	  if (TREE_CODE (dr_ref) == ARRAY_REF)
+	    {
+	      tree offset = TREE_OPERAND (dr_ref, 1);
+	      if (SSA_VAR_P (offset))
+		{
+		  if (gimple_vuse (SSA_NAME_DEF_STMT (offset)))
+		    {
+		      if (STMT_VINFO_TYPE (stmt_info) == load_vec_info_type)
+			ops->loads += count - 1;
+		      else
+			  /* Stores want to count both the index to array and data to
+			     array using vec_to_scalar.  However we have index stores
+			     in Adv.SIMD and so we only want to adjust the index
+			     loads.  */
+			ops->loads += count / 2;
+		      return;
+		    }
+		  break;
+		}
+	    }
+	  dr_ref = TREE_OPERAND (dr_ref, 0);
+	}
+    }
 
   /* Count the basic operation cost associated with KIND.  */
   switch (kind)
