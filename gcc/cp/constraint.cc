@@ -2001,7 +2001,9 @@ tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
 {
   tsubst_flags_t quiet = info.complain & ~tf_warning_or_error;
   tree r = tsubst_expr (t, args, quiet, info.in_decl);
-  if (convert_to_void (r, ICV_STATEMENT, quiet) != error_mark_node)
+  if (r != error_mark_node
+      && (processing_template_decl
+	  || convert_to_void (r, ICV_STATEMENT, quiet) != error_mark_node))
     return r;
 
   if (info.diagnose_unsatisfaction_p ())
