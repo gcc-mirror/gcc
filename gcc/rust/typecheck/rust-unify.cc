@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-unify.h"
-#include "rust-tyty.h"
 
 namespace Rust {
 namespace Resolver {
@@ -237,15 +236,6 @@ UnifyRules::go ()
 	  ltype = i;
 	}
     }
-
-  // The never type should always get coerced to the type it's being matched
-  // against, so in that case, ltype. This avoids doing the same check in all
-  // the `expect_*` functions.
-  // However, this does not work if we have an annoying ltype - like INFER.
-  // TODO: Is ltype == Infer the only special case here? What about projections?
-  // references?
-  if (rtype->get_kind () == TyTy::NEVER && ltype->get_kind () != TyTy::INFER)
-    return ltype->clone ();
 
   switch (ltype->get_kind ())
     {

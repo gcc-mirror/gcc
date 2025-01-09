@@ -1156,8 +1156,19 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	  location_t arm_locus = kase_arm.get_locus ();
 	  tree kase_expr_tree = CompileExpr::Compile (kase.get_expr (), ctx);
 	  tree result_reference = Backend::var_expression (tmp, arm_locus);
+
+	  TyTy::BaseType *actual = nullptr;
+	  bool ok = ctx->get_tyctx ()->lookup_type (
+	    kase.get_expr ().get_mappings ().get_hirid (), &actual);
+	  rust_assert (ok);
+
+	  tree coerced_result
+	    = coercion_site (kase.get_expr ().get_mappings ().get_hirid (),
+			     kase_expr_tree, actual, expr_tyty,
+			     expr.get_locus (), arm_locus);
+
 	  tree assignment
-	    = Backend::assignment_statement (result_reference, kase_expr_tree,
+	    = Backend::assignment_statement (result_reference, coerced_result,
 					     arm_locus);
 	  ctx->add_statement (assignment);
 
