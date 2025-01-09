@@ -108,27 +108,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __bitset_match_any = -1
     };
 
-    template<typename _Tp>
-      void
-      __platform_wait(const _Tp* __addr, __platform_wait_t __val) noexcept
-      {
-	auto __e = syscall (SYS_futex, static_cast<const void*>(__addr),
-			    static_cast<int>(__futex_wait_flags::__wait_private),
-			    __val, nullptr);
-	if (!__e || errno == EAGAIN)
-	  return;
-	if (errno != EINTR)
-	  __throw_system_error(errno);
-      }
+    // If the futex *__addr is equal to __val, wait on the futex until woken.
+    inline void
+    __platform_wait(const int* __addr, int __val) noexcept
+    {
+      auto __e = syscall (SYS_futex, __addr,
+			  static_cast<int>(__futex_wait_flags::__wait_private),
+			  __val, nullptr);
+      if (!__e || errno == EAGAIN)
+	return;
+      if (errno != EINTR)
+	__throw_system_error(errno);
+    }
 
-    template<typename _Tp>
-      void
-      __platform_notify(const _Tp* __addr, bool __all) noexcept
-      {
-	syscall (SYS_futex, static_cast<const void*>(__addr),
-		 static_cast<int>(__futex_wait_flags::__wake_private),
-		 __all ? INT_MAX : 1);
-      }
+    // Wake threads waiting on the futex *__addr.
+    inline void
+    __platform_notify(const int* __addr, bool __all) noexcept
+    {
+      syscall (SYS_futex, __addr,
+	       static_cast<int>(__futex_wait_flags::__wake_private),
+	       __all ? INT_MAX : 1);
+    }
 #endif
 
     inline void
