@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target trampolines } */
 /* { dg-options "-std=gnu17 -fchecking" } */
 
 void f(void*);
