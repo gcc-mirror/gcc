@@ -1532,9 +1532,10 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
   for (size_t i = 1; i < kase_block_tys.size (); i++)
     {
       TyTy::BaseType *kase_ty = kase_block_tys.at (i);
-      infered = unify_site (expr.get_mappings ().get_hirid (),
-			    TyTy::TyWithLocation (infered),
-			    TyTy::TyWithLocation (kase_ty), expr.get_locus ());
+      infered
+	= coercion_site (expr.get_mappings ().get_hirid (),
+			 TyTy::TyWithLocation (infered),
+			 TyTy::TyWithLocation (kase_ty), expr.get_locus ());
     }
 }
 
