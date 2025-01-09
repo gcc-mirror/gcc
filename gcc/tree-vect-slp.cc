@@ -8676,6 +8676,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 			 slp_tree node, vec<bool, va_heap> *life,
 			 stmt_vector_for_cost *cost_vec,
 			 hash_set<stmt_vec_info> &vectorized_scalar_stmts,
+			 hash_set<stmt_vec_info> &scalar_stmts_in_externs,
 			 hash_set<slp_tree> &visited)
 {
   unsigned i;
@@ -8690,7 +8691,12 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
       ssa_op_iter op_iter;
       def_operand_p def_p;
 
-      if (!stmt_info || (*life)[i])
+      if (!stmt_info
+	  || (*life)[i]
+	  /* Defs also used in external nodes are not in the
+	     vectorized_scalar_stmts set as they need to be preserved.
+	     Honor that.  */
+	  || scalar_stmts_in_externs.contains (stmt_info))
 	continue;
 
       stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
@@ -8809,7 +8815,8 @@ next_lane:
 	      subtree_life.safe_splice (*life);
 	    }
 	  vect_bb_slp_scalar_cost (vinfo, child, &subtree_life, cost_vec,
-				   vectorized_scalar_stmts, visited);
+				   vectorized_scalar_stmts,
+				   scalar_stmts_in_externs, visited);
 	  subtree_life.truncate (0);
 	}
     }
@@ -8891,7 +8898,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       vect_bb_slp_scalar_cost (bb_vinfo,
 			       SLP_INSTANCE_TREE (instance),
 			       &life, &scalar_costs, vectorized_scalar_stmts,
-			       visited);
+			       scalar_stmts_in_externs, visited);
       vector_costs.safe_splice (instance->cost_vec);
       instance->cost_vec.release ();
     }
