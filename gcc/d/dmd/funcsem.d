@@ -1616,9 +1616,26 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         const(char)* lastprms = parametersTypeToChars(tf1.parameterList);
         const(char)* nextprms = parametersTypeToChars(tf2.parameterList);
 
-        .error(loc, "`%s.%s` called with argument types `%s` matches both:\n%s:     `%s%s%s`\nand:\n%s:     `%s%s%s`",
+        string match = "";
+        final switch (m.last)
+        {
+            case MATCH.convert:
+                match = "after implicit conversions";
+                break;
+            case MATCH.constant:
+                match = "after qualifier conversion";
+                break;
+            case MATCH.exact:
+                match = "exactly";
+                break;
+            case MATCH.nomatch:
+                assert(0);
+        }
+
+        .error(loc, "`%s.%s` called with argument types `%s` matches multiple overloads %.*s:\n%s:     `%s%s%s`\nand:\n%s:     `%s%s%s`",
             s.parent.toPrettyChars(), s.ident.toChars(),
             fargsBuf.peekChars(),
+            match.fTuple.expand,
             m.lastf.loc.toChars(), m.lastf.toPrettyChars(), lastprms, tf1.modToChars(),
             m.nextf.loc.toChars(), m.nextf.toPrettyChars(), nextprms, tf2.modToChars());
         return null;

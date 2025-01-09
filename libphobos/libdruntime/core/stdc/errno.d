@@ -8,7 +8,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly, Alex Rønne Petersen
- * Source:    https://github.com/dlang/dmd/blob/master/druntime/src/core/stdc/errno.d
+ * Source:    $(DRUNTIMESRC core/stdc/_errno.d)
  * Standards: ISO/IEC 9899:1999 (E)
  */
 

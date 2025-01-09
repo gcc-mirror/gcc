@@ -298,6 +298,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             return;
         funcdecl.semanticRun = PASS.semantic3;
         funcdecl.hasSemantic3Errors = false;
+        funcdecl.saferD = sc.previews.safer;
 
         if (!funcdecl.type || funcdecl.type.ty != Tfunction)
             return;
@@ -975,7 +976,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 sc2 = sc2.pop();
             }
 
-            if (global.params.inclusiveInContracts)
+            if (sc.previews.inclusiveInContracts)
             {
                 funcdecl.frequire = funcdecl.mergeFrequireInclusivePreview(
                     funcdecl.frequire, funcdecl.fdrequireParams);
@@ -1393,7 +1394,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
         }
 
         // Do live analysis
-        if (global.params.useDIP1021 && funcdecl.fbody && funcdecl.type.ty != Terror &&
+        if (sc.previews.dip1021 && funcdecl.fbody && funcdecl.type.ty != Terror &&
             funcdecl.type.isTypeFunction().isLive)
         {
             oblive(funcdecl);

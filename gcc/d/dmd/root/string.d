@@ -365,13 +365,23 @@ auto splitLines(const char[] text)
         public this(const char[] text)
         {
             this.text = text;
+            this.index = 0;
+            this.eolIndex = 0;
+            this.nextIndex = 0;
         }
 
-        public bool empty() { return index == text.length; }
+        public bool empty() { advance(); return index >= text.length; }
 
         public void popFront() { advance(); index = nextIndex; }
 
-        public const(char)[] front() { advance(); return text[index .. eolIndex]; }
+        public const(char)[] front()
+        {
+            advance();
+            if (index > eolIndex || index >= text.length) {
+                return "";
+            }
+            return text[index .. eolIndex];
+        }
 
         private void advance()
         {
@@ -418,7 +428,7 @@ auto splitLines(const char[] text)
                         if (i + 2 < text.length &&
                             text[i + 1] == 0x80 &&
                             (text[i + 2] == 0xA8 || text[i + 2] == 0xA9)
-                           )
+                        )
                         {
                             eolIndex = i;
                             nextIndex = i + 3;
@@ -430,6 +440,10 @@ auto splitLines(const char[] text)
                         break;
                 }
             }
+
+            // No newline found; set indices to the end of the text
+            eolIndex = text.length;
+            nextIndex = text.length;
         }
     }
 

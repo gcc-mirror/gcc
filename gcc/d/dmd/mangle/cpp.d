@@ -15,10 +15,6 @@
  *  Follows Itanium C++ ABI 1.86 section 5.1
  *  http://refspecs.linux-foundation.org/cxxabi-1.86.html#mangling
  *  which is where the grammar comments come from.
- *
- * Bugs:
- *  https://issues.dlang.org/query.cgi
- *  enter `C++, mangling` as the keywords.
  */
 
 module dmd.mangle.cpp;

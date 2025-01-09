@@ -465,8 +465,7 @@ Expression resolveSlice(Expression e, UnionExp* pue = null)
         *pue = Slice(e.type, se.e1, se.lwr, se.upr);
         return pue.exp();
     }
-    else
-        return Slice(e.type, se.e1, se.lwr, se.upr).copy();
+    return Slice(e.type, se.e1, se.lwr, se.upr).copy();
 }
 
 /* Determine the array length, without interpreting it.

@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test24694.d(25): Error: reference to local variable `x` assigned to non-scope `b.c.p`
+fail_compilation/test24694.d(25): Error: assigning reference to local variable `x` to non-scope `b.c.p` is not allowed in a `@safe` function
 ---
 */
 

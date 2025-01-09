@@ -1,9 +1,9 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test18644.d(15): Error: nested function `foo` returns `scope` values and escapes them into allocated memory
-fail_compilation/test18644.d(16): Error: escaping local variable through nested function `foo`
-fail_compilation/test18644.d(22): Error: escaping local variable through nested function `foo`
+fail_compilation/test18644.d(15): Error: escaping a `scope` value returned from nested function `foo` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18644.d(16): Error: escaping local variable through nested function `foo` is not allowed in a `@safe` function
+fail_compilation/test18644.d(22): Error: escaping local variable through nested function `foo` is not allowed in a `@safe` function
 ---
 */
 

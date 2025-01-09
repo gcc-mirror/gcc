@@ -234,16 +234,17 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/sync/condition.lo core/sync/config.lo core/sync/event.lo \
 	core/sync/exception.lo core/sync/mutex.lo core/sync/package.lo \
 	core/sync/rwmutex.lo core/sync/semaphore.lo \
-	core/thread/context.lo core/thread/fiber.lo \
-	core/thread/osthread.lo core/thread/package.lo \
-	core/thread/threadbase.lo core/thread/threadgroup.lo \
-	core/thread/types.lo core/time.lo core/vararg.lo \
-	core/volatile.lo etc/valgrind/valgrind.lo gcc/attribute.lo \
-	gcc/attributes.lo gcc/backtrace.lo gcc/builtins.lo gcc/deh.lo \
-	gcc/emutls.lo gcc/gthread.lo gcc/sections/common.lo \
-	gcc/sections/elf.lo gcc/sections/macho.lo \
-	gcc/sections/package.lo gcc/sections/pecoff.lo gcc/simd.lo \
-	gcc/unwind/arm.lo gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
+	core/thread/context.lo core/thread/fiber/base.lo \
+	core/thread/fiber/package.lo core/thread/osthread.lo \
+	core/thread/package.lo core/thread/threadbase.lo \
+	core/thread/threadgroup.lo core/thread/types.lo core/time.lo \
+	core/vararg.lo core/volatile.lo etc/valgrind/valgrind.lo \
+	gcc/attribute.lo gcc/attributes.lo gcc/backtrace.lo \
+	gcc/builtins.lo gcc/deh.lo gcc/emutls.lo gcc/gthread.lo \
+	gcc/sections/common.lo gcc/sections/elf.lo \
+	gcc/sections/macho.lo gcc/sections/package.lo \
+	gcc/sections/pecoff.lo gcc/simd.lo gcc/unwind/arm.lo \
+	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
 	rt/arraycat.lo rt/cast_.lo rt/config.lo rt/critical_.lo \
@@ -891,7 +892,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/barrier.d core/sync/condition.d core/sync/config.d \
 	core/sync/event.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/package.d core/sync/rwmutex.d core/sync/semaphore.d \
-	core/thread/context.d core/thread/fiber.d core/thread/osthread.d \
+	core/thread/context.d core/thread/fiber/base.d \
+	core/thread/fiber/package.d core/thread/osthread.d \
 	core/thread/package.d core/thread/threadbase.d \
 	core/thread/threadgroup.d core/thread/types.d core/time.d \
 	core/vararg.d core/volatile.d etc/valgrind/valgrind.d gcc/attribute.d \
@@ -1352,7 +1354,11 @@ core/thread/$(am__dirstamp):
 	@$(MKDIR_P) core/thread
 	@: > core/thread/$(am__dirstamp)
 core/thread/context.lo: core/thread/$(am__dirstamp)
-core/thread/fiber.lo: core/thread/$(am__dirstamp)
+core/thread/fiber/$(am__dirstamp):
+	@$(MKDIR_P) core/thread/fiber
+	@: > core/thread/fiber/$(am__dirstamp)
+core/thread/fiber/base.lo: core/thread/fiber/$(am__dirstamp)
+core/thread/fiber/package.lo: core/thread/fiber/$(am__dirstamp)
 core/thread/osthread.lo: core/thread/$(am__dirstamp)
 core/thread/package.lo: core/thread/$(am__dirstamp)
 core/thread/threadbase.lo: core/thread/$(am__dirstamp)
@@ -2147,6 +2153,8 @@ mostlyclean-compile:
 	-rm -f core/sys/windows/stdc/*.lo
 	-rm -f core/thread/*.$(OBJEXT)
 	-rm -f core/thread/*.lo
+	-rm -f core/thread/fiber/*.$(OBJEXT)
+	-rm -f core/thread/fiber/*.lo
 	-rm -f etc/valgrind/*.$(OBJEXT)
 	-rm -f etc/valgrind/*.lo
 	-rm -f gcc/*.$(OBJEXT)
@@ -2312,6 +2320,7 @@ clean-libtool:
 	-rm -rf core/sys/windows/.libs core/sys/windows/_libs
 	-rm -rf core/sys/windows/stdc/.libs core/sys/windows/stdc/_libs
 	-rm -rf core/thread/.libs core/thread/_libs
+	-rm -rf core/thread/fiber/.libs core/thread/fiber/_libs
 	-rm -rf etc/valgrind/.libs etc/valgrind/_libs
 	-rm -rf gcc/.libs gcc/_libs
 	-rm -rf gcc/sections/.libs gcc/sections/_libs
@@ -2478,6 +2487,7 @@ distclean-generic:
 	-rm -f core/sys/windows/$(am__dirstamp)
 	-rm -f core/sys/windows/stdc/$(am__dirstamp)
 	-rm -f core/thread/$(am__dirstamp)
+	-rm -f core/thread/fiber/$(am__dirstamp)
 	-rm -f etc/valgrind/$(am__dirstamp)
 	-rm -f gcc/$(am__dirstamp)
 	-rm -f gcc/sections/$(am__dirstamp)

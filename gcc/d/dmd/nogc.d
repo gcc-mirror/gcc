@@ -46,6 +46,7 @@ public:
     FuncDeclaration f;
     bool checkOnly;     // don't print errors
     bool err;
+    bool nogcExceptions; // -preview=dip1008 enabled
 
     extern (D) this(FuncDeclaration f) scope @safe
     {
@@ -143,7 +144,7 @@ public:
         }
         if (e.onstack)
             return;
-        if (global.params.ehnogc && e.thrownew)
+        if (nogcExceptions && e.thrownew)
             return;                     // separate allocator is called for this, not the GC
 
         if (setGC(e, "cannot use `new` in `@nogc` %s `%s`"))
@@ -224,6 +225,7 @@ Expression checkGC(Scope* sc, Expression e)
     {
         scope NOGCVisitor gcv = new NOGCVisitor(f);
         gcv.checkOnly = betterC;
+        gcv.nogcExceptions = sc.previews.dip1008;
         walkPostorder(e, gcv);
         if (gcv.err)
         {

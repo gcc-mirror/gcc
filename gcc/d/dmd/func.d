@@ -113,6 +113,7 @@ private struct FUNCFLAG
     bool safetyInprocess;    /// working on determining safety
     bool nothrowInprocess;   /// working on determining nothrow
     bool nogcInprocess;      /// working on determining @nogc
+    bool saferD;             /// do -preview=safer checks if this function has default safety
     bool scopeInprocess;     /// infer `return` and `scope` for parameters
     bool inlineScanned;      /// function has been scanned for inline possibilities
     bool hasCatches;         /// function has try-catch statements

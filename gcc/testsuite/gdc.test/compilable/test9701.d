@@ -1,9 +1,10 @@
 // https://issues.dlang.org/show_bug.cgi?id=9701
+// REQUIRED_ARGS: -verrors=simple
 /*
 TEST_OUTPUT:
 ---
-compilable/test9701.d(68): Deprecation: enum member `test9701.Enum.value7` is deprecated
-compilable/test9701.d(68): Deprecation: enum member `test9701.Enum.value8` is deprecated - message
+compilable/test9701.d(69): Deprecation: enum member `test9701.Enum.value7` is deprecated
+compilable/test9701.d(69): Deprecation: enum member `test9701.Enum.value8` is deprecated - message
 ---
 */
 

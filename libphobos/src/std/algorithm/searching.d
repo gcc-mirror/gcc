@@ -34,6 +34,7 @@ $(T2 commonPrefix,
         `commonPrefix("parakeet", "parachute")` returns `"para"`.)
 $(T2 endsWith,
         `endsWith("rocks", "ks")` returns `true`.)
+$(T2 extrema, `extrema([2, 1, 3, 5, 4])` returns `[1, 5]`.)
 $(T2 find,
         `find("hello world", "or")` returns `"orld"` using linear search.
         (For binary search refer to $(REF SortedRange, std,range).))
@@ -3684,7 +3685,7 @@ Note:
 
 See_Also:
 
-    $(LREF maxElement), $(REF min, std,algorithm,comparison), $(LREF minCount),
+    $(LREF extrema), $(LREF maxElement), $(REF min, std,algorithm,comparison), $(LREF minCount),
     $(LREF minIndex), $(LREF minPos)
 */
 auto minElement(alias map = (a => a), Range)(Range r)
@@ -3865,7 +3866,7 @@ Note:
 
 See_Also:
 
-    $(LREF minElement), $(REF max, std,algorithm,comparison), $(LREF maxCount),
+    $(LREF extrema), $(LREF minElement), $(REF max, std,algorithm,comparison), $(LREF maxCount),
     $(LREF maxIndex), $(LREF maxPos)
 */
 auto maxElement(alias map = (a => a), Range)(Range r)
@@ -4033,6 +4034,132 @@ if (isInputRange!Range && !isInfinite!Range &&
 
     auto arr = [S(19), S(2), S(145), S(7)];
     assert(maxElement(arr) == S(145));
+}
+
+/** Returns an array of the minimum and maximum element in `r`.
+ * Performs `< 3n/2` comparisons, unlike the naive `< 2n`.
+ * Params:
+ *  r = The range to traverse.
+ */
+// TODO alias map = a => a
+ElementType!Range[2] extrema(Range)(Range r)
+if (isInputRange!Range && !isInfinite!Range)
+in (!r.empty)
+{
+    static if (isRandomAccessRange!Range && hasLength!Range)
+    {
+        if (r.length == 1)
+            return [r[0], r[0]];
+
+        typeof(return) result;
+        size_t i;
+        if (r.length & 1) // odd
+        {
+            result = [r[0], r[0]];
+            i = 1;
+        }
+        else
+        {
+            result = (r[0] < r[1]) ? [r[0], r[1]] : [r[1], r[0]];
+            i = 2;
+        }
+        // iterate pairs
+        const imax = r.length;
+        for (; i != imax; i += 2)
+        {
+            // save work
+            if (r[i] < r[i+1])
+            {
+                if (r[i] < result[0])
+                    result[0] = r[i];
+                if (r[i+1] > result[1])
+                    result[1] = r[i+1];
+            }
+            else
+            {
+                if (r[i+1] < result[0])
+                    result[0] = r[i+1];
+                if (r[i] > result[1])
+                    result[1] = r[i];
+            }
+        }
+        return result;
+    }
+    else
+    {
+        auto first = r.front;
+        r.popFront;
+        if (r.empty)
+            return [first, first];
+
+        typeof(return) result = (first < r.front) ? [first, r.front] : [r.front, first];
+        // iterate pairs
+        while (true)
+        {
+            r.popFront;
+            if (r.empty)
+                return result;
+            first = r.front;
+            r.popFront;
+            if (r.empty)
+            {
+                if (first < result[0])
+                    result[0] = first;
+                else if (first > result[1])
+                    result[1] = first;
+                return result;
+            }
+            // save work
+            if (first < r.front)
+            {
+                if (first < result[0])
+                    result[0] = first;
+                if (r.front > result[1])
+                    result[1] = r.front;
+            }
+            else
+            {
+                if (r.front < result[0])
+                    result[0] = r.front;
+                if (first > result[1])
+                    result[1] = first;
+            }
+        }
+    }
+}
+
+///
+@safe unittest
+{
+    assert(extrema([5,2,9,4,1]) == [1, 9]);
+}
+
+@safe unittest
+{
+    assert(extrema([8,3,7,4,9]) == [3, 9]);
+    assert(extrema([1,5,3,2]) == [1, 5]);
+    assert(extrema([2,3,3,2]) == [2, 3]);
+
+    import std.range;
+    assert(iota(2, 5).extrema == [2, 4]);
+    assert(iota(3, 7).retro.extrema == [3, 6]);
+
+    import std.internal.test.dummyrange;
+    foreach (DummyType; AllDummyRanges)
+    {
+        DummyType d;
+        assert(d.extrema == [1, 10]);
+    }
+
+    version (StdRandomTests)
+    foreach (i; 0 .. 1000)
+    {
+        import std.random;
+        auto arr = generate!(() => uniform(0, 100)).takeExactly(uniform(1, 10)).array;
+        auto result = arr.extrema;
+        assert(result[0] == arr.minElement);
+        assert(result[1] == arr.maxElement);
+    }
 }
 
 // minPos

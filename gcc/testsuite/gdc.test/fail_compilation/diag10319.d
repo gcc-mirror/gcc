@@ -9,7 +9,7 @@ fail_compilation/diag10319.d(26):        which wasn't inferred `pure` because of
 fail_compilation/diag10319.d(26):        `pure` function `diag10319.bar!int.bar` cannot access mutable static data `g`
 fail_compilation/diag10319.d(34): Error: `@safe` function `D main` cannot call `@system` function `diag10319.bar!int.bar`
 fail_compilation/diag10319.d(27):        which wasn't inferred `@safe` because of:
-fail_compilation/diag10319.d(27):        cannot take address of local `x` in `@safe` function `bar`
+fail_compilation/diag10319.d(27):        taking the address of stack-allocated local variable `x`
 fail_compilation/diag10319.d(24):        `diag10319.bar!int.bar` is declared here
 fail_compilation/diag10319.d(33): Error: function `diag10319.foo` is not `nothrow`
 fail_compilation/diag10319.d(34): Error: function `diag10319.bar!int.bar` is not `nothrow`

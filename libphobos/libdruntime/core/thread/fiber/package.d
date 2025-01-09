@@ -1,12 +1,12 @@
 /**
- * The fiber module provides OS-indepedent lightweight threads aka fibers.
+ * The fiber module provides lightweight threads aka fibers.
  *
  * Copyright: Copyright Sean Kelly 2005 - 2012.
  * License: Distributed under the
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly, Walter Bright, Alex Rønne Petersen, Martin Nowak
- * Source:    $(DRUNTIMESRC core/thread/fiber.d)
+ * Source:    $(DRUNTIMESRC core/thread/fiber/package.d)
  */
 
 /* NOTE: This file has been patched from the original DMD distribution to
@@ -14,10 +14,11 @@
  */
 module core.thread.fiber;
 
+import core.thread.context;
+import core.thread.fiber.base : fiber_entryPoint, FiberBase;
 import core.thread.threadbase;
 import core.thread.threadgroup;
 import core.thread.types;
-import core.thread.context;
 
 import core.memory : pageSize;
 
@@ -28,7 +29,6 @@ import core.memory : pageSize;
 version (GNU)
 {
     import gcc.builtins;
-    import gcc.config;
     version (GNU_StackGrowsDown)
         version = StackGrowsDown;
 }
@@ -40,12 +40,12 @@ else
 
 version (Windows)
 {
-    import core.stdc.stdlib : malloc, free;
+    import core.stdc.stdlib : free, malloc;
     import core.sys.windows.winbase;
     import core.sys.windows.winnt;
 }
 
-private
+package
 {
     version (D_InlineAsm_X86)
     {
@@ -208,7 +208,7 @@ private
             //       a version identifier.  Please note that this is considered
             //       an obsolescent feature according to the POSIX spec, so a
             //       custom solution is still preferred.
-            import core.sys.posix.ucontext;
+            import core.sys.posix.ucontext : getcontext, makecontext, MINSIGSTKSZ, swapcontext, ucontext_t;
         }
     }
 }
@@ -217,46 +217,20 @@ private
 // Fiber Entry Point and Context Switch
 ///////////////////////////////////////////////////////////////////////////////
 
-private
+package
 {
     import core.atomic : atomicStore, cas, MemoryOrder;
     import core.exception : onOutOfMemoryError;
     import core.stdc.stdlib : abort;
 
-    extern (C) void fiber_entryPoint() nothrow
+    // Look above the definition of 'class Fiber' for some information about the implementation of this routine
+    version (AsmExternal)
     {
-        Fiber   obj = Fiber.getThis();
-        assert( obj );
-
-        assert( ThreadBase.getThis().m_curr is obj.m_ctxt );
-        atomicStore!(MemoryOrder.raw)(*cast(shared)&ThreadBase.getThis().m_lock, false);
-        obj.m_ctxt.tstack = obj.m_ctxt.bstack;
-        obj.m_state = Fiber.State.EXEC;
-
-        try
-        {
-            obj.run();
-        }
-        catch ( Throwable t )
-        {
-            obj.m_unhandled = t;
-        }
-
-        static if ( __traits( compiles, ucontext_t ) )
-          obj.m_ucur = &obj.m_utxt;
-
-        obj.m_state = Fiber.State.TERM;
-        obj.switchOut();
+        extern (C) void fiber_switchContext( void** oldp, void* newp ) nothrow @nogc;
+        version (AArch64)
+            extern (C) void fiber_trampoline() nothrow;
     }
-
-  // Look above the definition of 'class Fiber' for some information about the implementation of this routine
-  version (AsmExternal)
-  {
-      extern (C) void fiber_switchContext( void** oldp, void* newp ) nothrow @nogc;
-      version (AArch64)
-          extern (C) void fiber_trampoline() nothrow;
-  }
-  else
+    else
     extern (C) void fiber_switchContext( void** oldp, void* newp ) nothrow @nogc
     {
         // NOTE: The data pushed and popped in this routine must match the
@@ -602,7 +576,7 @@ private
  *
  * Authors: Based on a design by Mikola Lysenko.
  */
-class Fiber
+class Fiber : FiberBase
 {
     ///////////////////////////////////////////////////////////////////////////
     // Initialization
@@ -644,14 +618,8 @@ class Fiber
      */
     this( void function() fn, size_t sz = pageSize * defaultStackPages,
           size_t guardPageSize = pageSize ) nothrow
-    in
     {
-        assert( fn );
-    }
-    do
-    {
-        allocStack( sz, guardPageSize );
-        reset( fn );
+        super( fn, sz, guardPageSize );
     }
 
 
@@ -673,238 +641,7 @@ class Fiber
     this( void delegate() dg, size_t sz = pageSize * defaultStackPages,
           size_t guardPageSize = pageSize ) nothrow
     {
-        allocStack( sz, guardPageSize );
-        reset( cast(void delegate() const) dg );
-    }
-
-
-    /**
-     * Cleans up any remaining resources used by this object.
-     */
-    ~this() nothrow @nogc
-    {
-        // NOTE: A live reference to this object will exist on its associated
-        //       stack from the first time its call() method has been called
-        //       until its execution completes with State.TERM.  Thus, the only
-        //       times this dtor should be called are either if the fiber has
-        //       terminated (and therefore has no active stack) or if the user
-        //       explicitly deletes this object.  The latter case is an error
-        //       but is not easily tested for, since State.HOLD may imply that
-        //       the fiber was just created but has never been run.  There is
-        //       not a compelling case to create a State.INIT just to offer a
-        //       means of ensuring the user isn't violating this object's
-        //       contract, so for now this requirement will be enforced by
-        //       documentation only.
-        freeStack();
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////////
-    // General Actions
-    ///////////////////////////////////////////////////////////////////////////
-
-
-    /**
-     * Transfers execution to this fiber object.  The calling context will be
-     * suspended until the fiber calls Fiber.yield() or until it terminates
-     * via an unhandled exception.
-     *
-     * Params:
-     *  rethrow = Rethrow any unhandled exception which may have caused this
-     *            fiber to terminate.
-     *
-     * In:
-     *  This fiber must be in state HOLD.
-     *
-     * Throws:
-     *  Any exception not handled by the joined thread.
-     *
-     * Returns:
-     *  Any exception not handled by this fiber if rethrow = false, null
-     *  otherwise.
-     */
-    // Not marked with any attributes, even though `nothrow @nogc` works
-    // because it calls arbitrary user code. Most of the implementation
-    // is already `@nogc nothrow`, but in order for `Fiber.call` to
-    // propagate the attributes of the user's function, the Fiber
-    // class needs to be templated.
-    final Throwable call( Rethrow rethrow = Rethrow.yes )
-    {
-        return rethrow ? call!(Rethrow.yes)() : call!(Rethrow.no);
-    }
-
-    /// ditto
-    final Throwable call( Rethrow rethrow )()
-    {
-        callImpl();
-        if ( m_unhandled )
-        {
-            Throwable t = m_unhandled;
-            m_unhandled = null;
-            static if ( rethrow )
-                throw t;
-            else
-                return t;
-        }
-        return null;
-    }
-
-    private void callImpl() nothrow @nogc
-    in
-    {
-        assert( m_state == State.HOLD );
-    }
-    do
-    {
-        Fiber   cur = getThis();
-
-        static if ( __traits( compiles, ucontext_t ) )
-            m_ucur = cur ? &cur.m_utxt : &Fiber.sm_utxt;
-
-        setThis( this );
-        this.switchIn();
-        setThis( cur );
-
-        static if ( __traits( compiles, ucontext_t ) )
-            m_ucur = null;
-
-        // NOTE: If the fiber has terminated then the stack pointers must be
-        //       reset.  This ensures that the stack for this fiber is not
-        //       scanned if the fiber has terminated.  This is necessary to
-        //       prevent any references lingering on the stack from delaying
-        //       the collection of otherwise dead objects.  The most notable
-        //       being the current object, which is referenced at the top of
-        //       fiber_entryPoint.
-        if ( m_state == State.TERM )
-        {
-            m_ctxt.tstack = m_ctxt.bstack;
-        }
-    }
-
-    /// Flag to control rethrow behavior of $(D $(LREF call))
-    enum Rethrow : bool { no, yes }
-
-    /**
-     * Resets this fiber so that it may be re-used, optionally with a
-     * new function/delegate.  This routine should only be called for
-     * fibers that have terminated, as doing otherwise could result in
-     * scope-dependent functionality that is not executed.
-     * Stack-based classes, for example, may not be cleaned up
-     * properly if a fiber is reset before it has terminated.
-     *
-     * In:
-     *  This fiber must be in state TERM or HOLD.
-     */
-    final void reset() nothrow @nogc
-    in
-    {
-        assert( m_state == State.TERM || m_state == State.HOLD );
-    }
-    do
-    {
-        m_ctxt.tstack = m_ctxt.bstack;
-        m_state = State.HOLD;
-        initStack();
-        m_unhandled = null;
-    }
-
-    /// ditto
-    final void reset( void function() fn ) nothrow @nogc
-    {
-        reset();
-        m_call  = fn;
-    }
-
-    /// ditto
-    final void reset( void delegate() dg ) nothrow @nogc
-    {
-        reset();
-        m_call  = dg;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // General Properties
-    ///////////////////////////////////////////////////////////////////////////
-
-
-    /// A fiber may occupy one of three states: HOLD, EXEC, and TERM.
-    enum State
-    {
-        /** The HOLD state applies to any fiber that is suspended and ready to
-        be called. */
-        HOLD,
-        /** The EXEC state will be set for any fiber that is currently
-        executing. */
-        EXEC,
-        /** The TERM state is set when a fiber terminates. Once a fiber
-        terminates, it must be reset before it may be called again. */
-        TERM
-    }
-
-
-    /**
-     * Gets the current state of this fiber.
-     *
-     * Returns:
-     *  The state of this fiber as an enumerated value.
-     */
-    final @property State state() const @safe pure nothrow @nogc
-    {
-        return m_state;
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Actions on Calling Fiber
-    ///////////////////////////////////////////////////////////////////////////
-
-
-    /**
-     * Forces a context switch to occur away from the calling fiber.
-     */
-    static void yield() nothrow @nogc
-    {
-        Fiber   cur = getThis();
-        assert( cur, "Fiber.yield() called with no active fiber" );
-        assert( cur.m_state == State.EXEC );
-
-        static if ( __traits( compiles, ucontext_t ) )
-          cur.m_ucur = &cur.m_utxt;
-
-        cur.m_state = State.HOLD;
-        cur.switchOut();
-        cur.m_state = State.EXEC;
-    }
-
-
-    /**
-     * Forces a context switch to occur away from the calling fiber and then
-     * throws obj in the calling fiber.
-     *
-     * Params:
-     *  t = The object to throw.
-     *
-     * In:
-     *  t must not be null.
-     */
-    static void yieldAndThrow( Throwable t ) nothrow @nogc
-    in
-    {
-        assert( t );
-    }
-    do
-    {
-        Fiber   cur = getThis();
-        assert( cur, "Fiber.yield() called with no active fiber" );
-        assert( cur.m_state == State.EXEC );
-
-        static if ( __traits( compiles, ucontext_t ) )
-          cur.m_ucur = &cur.m_utxt;
-
-        cur.m_unhandled = t;
-        cur.m_state = State.HOLD;
-        cur.switchOut();
-        cur.m_state = State.EXEC;
+        super( dg, sz, guardPageSize );
     }
 
 
@@ -923,8 +660,7 @@ class Fiber
      */
     static Fiber getThis() @safe nothrow @nogc
     {
-        version (GNU) pragma(inline, false);
-        return sm_this;
+        return cast(Fiber) FiberBase.getThis();
     }
 
 
@@ -945,27 +681,7 @@ class Fiber
         }
     }
 
-private:
-
-    //
-    // Fiber entry point.  Invokes the function or delegate passed on
-    // construction (if any).
-    //
-    final void run()
-    {
-        m_call();
-    }
-
-    //
-    // Standard fiber data
-    //
-    Callable            m_call;
-    bool                m_isRunning;
-    Throwable           m_unhandled;
-    State               m_state;
-
-
-private:
+protected:
     ///////////////////////////////////////////////////////////////////////////
     // Stack Management
     ///////////////////////////////////////////////////////////////////////////
@@ -974,7 +690,7 @@ private:
     //
     // Allocate a new stack for this fiber.
     //
-    final void allocStack( size_t sz, size_t guardPageSize ) nothrow
+    final override void allocStack( size_t sz, size_t guardPageSize ) nothrow
     in
     {
         assert( !m_pmem && !m_ctxt );
@@ -1043,7 +759,9 @@ private:
         }
         else
         {
-            version (Posix) import core.sys.posix.sys.mman; // mmap, MAP_ANON
+            version (Posix) import core.sys.posix.sys.mman : MAP_ANON, MAP_FAILED, MAP_PRIVATE, mmap,
+                mprotect, PROT_NONE, PROT_READ, PROT_WRITE;
+            version (OpenBSD) import core.sys.posix.sys.mman : MAP_STACK;
 
             static if ( __traits( compiles, ucontext_t ) )
             {
@@ -1121,7 +839,7 @@ private:
     //
     // Free this fiber's stack.
     //
-    final void freeStack() nothrow @nogc
+    final override void freeStack() nothrow @nogc
     in(m_pmem)
     in(m_ctxt)
     {
@@ -1137,7 +855,7 @@ private:
         }
         else
         {
-            import core.sys.posix.sys.mman; // munmap
+            import core.sys.posix.sys.mman : mmap, munmap;
 
             static if ( __traits( compiles, mmap ) )
             {
@@ -1157,7 +875,7 @@ private:
     // Initialize the allocated stack.
     // Look above the definition of 'class Fiber' for some information about the implementation of this routine
     //
-    final void initStack() nothrow @nogc
+    final override void initStack() nothrow @nogc
     in
     {
         assert( m_ctxt.tstack && m_ctxt.tstack == m_ctxt.bstack );
@@ -1232,7 +950,7 @@ private:
             }
             enum sehChainEnd = cast(EXCEPTION_REGISTRATION*) 0xFFFFFFFF;
 
-            __gshared static fp_t finalHandler = null;
+            __gshared fp_t finalHandler = null;
             if ( finalHandler is null )
             {
                 static EXCEPTION_REGISTRATION* fs0() nothrow
@@ -1505,7 +1223,7 @@ private:
             // Only need to set return address ($r1).  Everything else is fine
             // zero initialized.
             pstack -= size_t.sizeof * 11;    // skip past space reserved for $r21-$r31
-            push (cast(size_t) &fiber_entryPoint);
+            push(cast(size_t) &fiber_entryPoint);
             pstack += size_t.sizeof;         // adjust sp (newp) above lr
         }
         else version (AsmAArch64_Posix)
@@ -1616,537 +1334,6 @@ private:
         else
             static assert(0, "Not implemented");
     }
-
-
-    StackContext*   m_ctxt;
-    size_t          m_size;
-    void*           m_pmem;
-
-    static if ( __traits( compiles, ucontext_t ) )
-    {
-        // NOTE: The static ucontext instance is used to represent the context
-        //       of the executing thread.
-        static ucontext_t       sm_utxt = void;
-        ucontext_t              m_utxt  = void;
-        ucontext_t*             m_ucur  = null;
-    }
-    else static if (GNU_Enable_CET)
-    {
-        // When libphobos was built with --enable-cet, these fields need to
-        // always be present in the Fiber class layout.
-        import core.sys.posix.ucontext;
-        static ucontext_t       sm_utxt = void;
-        ucontext_t              m_utxt  = void;
-        ucontext_t*             m_ucur  = null;
-    }
-
-
-private:
-    ///////////////////////////////////////////////////////////////////////////
-    // Storage of Active Fiber
-    ///////////////////////////////////////////////////////////////////////////
-
-
-    //
-    // Sets a thread-local reference to the current fiber object.
-    //
-    static void setThis( Fiber f ) nothrow @nogc
-    {
-        sm_this = f;
-    }
-
-    static Fiber sm_this;
-
-
-private:
-    ///////////////////////////////////////////////////////////////////////////
-    // Context Switching
-    ///////////////////////////////////////////////////////////////////////////
-
-
-    //
-    // Switches into the stack held by this fiber.
-    //
-    final void switchIn() nothrow @nogc
-    {
-        ThreadBase  tobj = ThreadBase.getThis();
-        void**  oldp = &tobj.m_curr.tstack;
-        void*   newp = m_ctxt.tstack;
-
-        // NOTE: The order of operations here is very important.  The current
-        //       stack top must be stored before m_lock is set, and pushContext
-        //       must not be called until after m_lock is set.  This process
-        //       is intended to prevent a race condition with the suspend
-        //       mechanism used for garbage collection.  If it is not followed,
-        //       a badly timed collection could cause the GC to scan from the
-        //       bottom of one stack to the top of another, or to miss scanning
-        //       a stack that still contains valid data.  The old stack pointer
-        //       oldp will be set again before the context switch to guarantee
-        //       that it points to exactly the correct stack location so the
-        //       successive pop operations will succeed.
-        *oldp = getStackTop();
-        atomicStore!(MemoryOrder.raw)(*cast(shared)&tobj.m_lock, true);
-        tobj.pushContext( m_ctxt );
-
-        fiber_switchContext( oldp, newp );
-
-        // NOTE: As above, these operations must be performed in a strict order
-        //       to prevent Bad Things from happening.
-        tobj.popContext();
-        atomicStore!(MemoryOrder.raw)(*cast(shared)&tobj.m_lock, false);
-        tobj.m_curr.tstack = tobj.m_curr.bstack;
-    }
-
-
-    //
-    // Switches out of the current stack and into the enclosing stack.
-    //
-    final void switchOut() nothrow @nogc
-    {
-        ThreadBase  tobj = ThreadBase.getThis();
-        void**  oldp = &m_ctxt.tstack;
-        void*   newp = tobj.m_curr.within.tstack;
-
-        // NOTE: The order of operations here is very important.  The current
-        //       stack top must be stored before m_lock is set, and pushContext
-        //       must not be called until after m_lock is set.  This process
-        //       is intended to prevent a race condition with the suspend
-        //       mechanism used for garbage collection.  If it is not followed,
-        //       a badly timed collection could cause the GC to scan from the
-        //       bottom of one stack to the top of another, or to miss scanning
-        //       a stack that still contains valid data.  The old stack pointer
-        //       oldp will be set again before the context switch to guarantee
-        //       that it points to exactly the correct stack location so the
-        //       successive pop operations will succeed.
-        *oldp = getStackTop();
-        atomicStore!(MemoryOrder.raw)(*cast(shared)&tobj.m_lock, true);
-
-        fiber_switchContext( oldp, newp );
-
-        // NOTE: As above, these operations must be performed in a strict order
-        //       to prevent Bad Things from happening.
-        // NOTE: If use of this fiber is multiplexed across threads, the thread
-        //       executing here may be different from the one above, so get the
-        //       current thread handle before unlocking, etc.
-        tobj = ThreadBase.getThis();
-        atomicStore!(MemoryOrder.raw)(*cast(shared)&tobj.m_lock, false);
-        tobj.m_curr.tstack = tobj.m_curr.bstack;
-    }
-}
-
-///
-unittest {
-    int counter;
-
-    class DerivedFiber : Fiber
-    {
-        this()
-        {
-            super( &run );
-        }
-
-    private :
-        void run()
-        {
-            counter += 2;
-        }
-    }
-
-    void fiberFunc()
-    {
-        counter += 4;
-        Fiber.yield();
-        counter += 8;
-    }
-
-    // create instances of each type
-    Fiber derived = new DerivedFiber();
-    Fiber composed = new Fiber( &fiberFunc );
-
-    assert( counter == 0 );
-
-    derived.call();
-    assert( counter == 2, "Derived fiber increment." );
-
-    composed.call();
-    assert( counter == 6, "First composed fiber increment." );
-
-    counter += 16;
-    assert( counter == 22, "Calling context increment." );
-
-    composed.call();
-    assert( counter == 30, "Second composed fiber increment." );
-
-    // since each fiber has run to completion, each should have state TERM
-    assert( derived.state == Fiber.State.TERM );
-    assert( composed.state == Fiber.State.TERM );
-}
-
-version (CoreUnittest)
-{
-    class TestFiber : Fiber
-    {
-        this()
-        {
-            super(&run);
-        }
-
-        void run()
-        {
-            foreach (i; 0 .. 1000)
-            {
-                sum += i;
-                Fiber.yield();
-            }
-        }
-
-        enum expSum = 1000 * 999 / 2;
-        size_t sum;
-    }
-
-    void runTen()
-    {
-        TestFiber[10] fibs;
-        foreach (ref fib; fibs)
-            fib = new TestFiber();
-
-        bool cont;
-        do {
-            cont = false;
-            foreach (fib; fibs) {
-                if (fib.state == Fiber.State.HOLD)
-                {
-                    fib.call();
-                    cont |= fib.state != Fiber.State.TERM;
-                }
-            }
-        } while (cont);
-
-        foreach (fib; fibs)
-        {
-            assert(fib.sum == TestFiber.expSum);
-        }
-    }
-}
-
-
-// Single thread running separate fibers
-unittest
-{
-    runTen();
-}
-
-
-// Multiple threads running separate fibers
-unittest
-{
-    auto group = new ThreadGroup();
-    foreach (_; 0 .. 4)
-    {
-        group.create(&runTen);
-    }
-    group.joinAll();
-}
-
-
-// Multiple threads running shared fibers
-version (PPC)   version = UnsafeFiberMigration;
-version (PPC64) version = UnsafeFiberMigration;
-version (OSX)
-{
-    version (X86)    version = UnsafeFiberMigration;
-    version (X86_64) version = UnsafeFiberMigration;
-    version (AArch64) version = UnsafeFiberMigration;
-}
-
-version (UnsafeFiberMigration)
-{
-    // XBUG: core.thread fibers are supposed to be safe to migrate across
-    // threads, however, there is a problem: GCC always assumes that the
-    // address of thread-local variables don't change while on a given stack.
-    // In consequence, migrating fibers between threads currently is an unsafe
-    // thing to do, and will break on some targets (possibly PR26461).
-}
-else
-{
-    version = FiberMigrationUnittest;
-}
-
-version (FiberMigrationUnittest)
-unittest
-{
-    shared bool[10] locks;
-    TestFiber[10] fibs;
-
-    void runShared()
-    {
-        bool cont;
-        do {
-            cont = false;
-            foreach (idx; 0 .. 10)
-            {
-                if (cas(&locks[idx], false, true))
-                {
-                    if (fibs[idx].state == Fiber.State.HOLD)
-                    {
-                        fibs[idx].call();
-                        cont |= fibs[idx].state != Fiber.State.TERM;
-                    }
-                    locks[idx] = false;
-                }
-                else
-                {
-                    cont = true;
-                }
-            }
-        } while (cont);
-    }
-
-    foreach (ref fib; fibs)
-    {
-        fib = new TestFiber();
-    }
-
-    auto group = new ThreadGroup();
-    foreach (_; 0 .. 4)
-    {
-        group.create(&runShared);
-    }
-    group.joinAll();
-
-    foreach (fib; fibs)
-    {
-        assert(fib.sum == TestFiber.expSum);
-    }
-}
-
-
-// Test exception handling inside fibers.
-unittest
-{
-    enum MSG = "Test message.";
-    string caughtMsg;
-    (new Fiber({
-        try
-        {
-            throw new Exception(MSG);
-        }
-        catch (Exception e)
-        {
-            caughtMsg = e.msg;
-        }
-    })).call();
-    assert(caughtMsg == MSG);
-}
-
-
-unittest
-{
-    int x = 0;
-
-    (new Fiber({
-        x++;
-    })).call();
-    assert( x == 1 );
-}
-
-nothrow unittest
-{
-    new Fiber({}).call!(Fiber.Rethrow.no)();
-}
-
-unittest
-{
-    new Fiber({}).call(Fiber.Rethrow.yes);
-    new Fiber({}).call(Fiber.Rethrow.no);
-}
-
-unittest
-{
-    enum MSG = "Test message.";
-
-    try
-    {
-        (new Fiber(function() {
-            throw new Exception( MSG );
-        })).call();
-        assert( false, "Expected rethrown exception." );
-    }
-    catch ( Throwable t )
-    {
-        assert( t.msg == MSG );
-    }
-}
-
-// Test exception chaining when switching contexts in finally blocks.
-unittest
-{
-    static void throwAndYield(string msg) {
-      try {
-        throw new Exception(msg);
-      } finally {
-        Fiber.yield();
-      }
-    }
-
-    static void fiber(string name) {
-      try {
-        try {
-          throwAndYield(name ~ ".1");
-        } finally {
-          throwAndYield(name ~ ".2");
-        }
-      } catch (Exception e) {
-        assert(e.msg == name ~ ".1");
-        assert(e.next);
-        assert(e.next.msg == name ~ ".2");
-        assert(!e.next.next);
-      }
-    }
-
-    auto first = new Fiber(() => fiber("first"));
-    auto second = new Fiber(() => fiber("second"));
-    first.call();
-    second.call();
-    first.call();
-    second.call();
-    first.call();
-    second.call();
-    assert(first.state == Fiber.State.TERM);
-    assert(second.state == Fiber.State.TERM);
-}
-
-// Test Fiber resetting
-unittest
-{
-    static string method;
-
-    static void foo()
-    {
-        method = "foo";
-    }
-
-    void bar()
-    {
-        method = "bar";
-    }
-
-    static void expect(Fiber fib, string s)
-    {
-        assert(fib.state == Fiber.State.HOLD);
-        fib.call();
-        assert(fib.state == Fiber.State.TERM);
-        assert(method == s); method = null;
-    }
-    auto fib = new Fiber(&foo);
-    expect(fib, "foo");
-
-    fib.reset();
-    expect(fib, "foo");
-
-    fib.reset(&foo);
-    expect(fib, "foo");
-
-    fib.reset(&bar);
-    expect(fib, "bar");
-
-    fib.reset(function void(){method = "function";});
-    expect(fib, "function");
-
-    fib.reset(delegate void(){method = "delegate";});
-    expect(fib, "delegate");
-}
-
-// Test unsafe reset in hold state
-unittest
-{
-    auto fib = new Fiber(function {ubyte[2048] buf = void; Fiber.yield();}, 4096);
-    foreach (_; 0 .. 10)
-    {
-        fib.call();
-        assert(fib.state == Fiber.State.HOLD);
-        fib.reset();
-    }
-}
-
-// stress testing GC stack scanning
-unittest
-{
-    import core.memory;
-    import core.thread.osthread : Thread;
-    import core.time : dur;
-
-    static void unreferencedThreadObject()
-    {
-        static void sleep() { Thread.sleep(dur!"msecs"(100)); }
-        auto thread = new Thread(&sleep).start();
-    }
-    unreferencedThreadObject();
-    GC.collect();
-
-    static class Foo
-    {
-        this(int value)
-        {
-            _value = value;
-        }
-
-        int bar()
-        {
-            return _value;
-        }
-
-        int _value;
-    }
-
-    static void collect()
-    {
-        auto foo = new Foo(2);
-        assert(foo.bar() == 2);
-        GC.collect();
-        Fiber.yield();
-        GC.collect();
-        assert(foo.bar() == 2);
-    }
-
-    auto fiber = new Fiber(&collect);
-
-    fiber.call();
-    GC.collect();
-    fiber.call();
-
-    // thread reference
-    auto foo = new Foo(2);
-
-    void collect2()
-    {
-        assert(foo.bar() == 2);
-        GC.collect();
-        Fiber.yield();
-        GC.collect();
-        assert(foo.bar() == 2);
-    }
-
-    fiber = new Fiber(&collect2);
-
-    fiber.call();
-    GC.collect();
-    fiber.call();
-
-    static void recurse(size_t cnt)
-    {
-        --cnt;
-        Fiber.yield();
-        if (cnt)
-        {
-            auto fib = new Fiber(() { recurse(cnt); });
-            fib.call();
-            GC.collect();
-            fib.call();
-        }
-    }
-    fiber = new Fiber(() { recurse(20); });
-    fiber.call();
 }
 
 

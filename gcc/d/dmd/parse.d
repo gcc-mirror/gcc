@@ -5683,7 +5683,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
     }
 
     /***
-     * Parse an assignment condition for if or while statements.
+     * Parse an assignment condition for `if`, `switch` or `while` statements.
      *
      * Returns:
      *      The variable that is declared inside the condition

@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test16365.d(20): Error: `this` reference necessary to take address of member `f1` in `@safe` function `main`
+fail_compilation/test16365.d(20): Error: taking address of member `f1` without `this` reference is not allowed in a `@safe` function
 fail_compilation/test16365.d(22): Error: cannot implicitly convert expression `&f2` of type `void delegate() pure nothrow @nogc @safe` to `void function() @safe`
-fail_compilation/test16365.d(27): Error: `dg.funcptr` cannot be used in `@safe` code
+fail_compilation/test16365.d(27): Error: using `dg.funcptr` is not allowed in a `@safe` function
 ---
 */
 

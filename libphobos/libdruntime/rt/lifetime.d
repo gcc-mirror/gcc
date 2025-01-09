@@ -261,7 +261,7 @@ Params:
 */
 extern(C) void _d_arrayshrinkfit(const TypeInfo ti, void[] arr) nothrow
 {
-    debug(PRINTF) printf("_d_arrayshrinkfit, elemsize = %d, arr.ptr = x%x arr.length = %d\n", ti.next.tsize, arr.ptr, arr.length);
+    debug(PRINTF) printf("_d_arrayshrinkfit, elemsize = %zd, arr.ptr = %p arr.length = %zd\n", ti.next.tsize, arr.ptr, arr.length);
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;                  // array element size
     auto reqsize = arr.length * size;
@@ -471,7 +471,7 @@ extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure noth
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;
 
-    debug(PRINTF) printf("_d_newarrayU(length = x%x, size = %d)\n", length, size);
+    debug(PRINTF) printf("_d_newarrayU(length = x%zx, size = %zd)\n", length, size);
     if (length == 0 || size == 0)
         return null;
 
@@ -876,7 +876,7 @@ do
     {
         //printf("_d_arraysetlengthT(p = %p, sizeelem = %d, newlength = %d)\n", p, sizeelem, newlength);
         if (p)
-            printf("\tp.ptr = %p, p.length = %d\n", (*p).ptr, (*p).length);
+            printf("\tp.ptr = %p, p.length = %zd\n", (*p).ptr, (*p).length);
     }
 
     if (newlength <= (*p).length)
@@ -925,7 +925,7 @@ do
         assert(0);
     }
 
-    debug(PRINTF) printf("newsize = %x, newlength = %x\n", newsize, newlength);
+    debug(PRINTF) printf("newsize = %zx, newlength = %zx\n", newsize, newlength);
 
     const isshared = typeid(ti) is typeid(TypeInfo_Shared);
 
@@ -998,7 +998,7 @@ do
     {
         //printf("_d_arraysetlengthT(p = %p, sizeelem = %d, newlength = %d)\n", p, sizeelem, newlength);
         if (p)
-            printf("\tp.ptr = %p, p.length = %d\n", (*p).ptr, (*p).length);
+            printf("\tp.ptr = %p, p.length = %zd\n", (*p).ptr, (*p).length);
     }
 
     if (newlength <= (*p).length)
@@ -1047,7 +1047,7 @@ do
         assert(0);
     }
 
-    debug(PRINTF) printf("newsize = %x, newlength = %x\n", newsize, newlength);
+    debug(PRINTF) printf("newsize = %zx, newlength = %zx\n", newsize, newlength);
 
     const isshared = typeid(ti) is typeid(TypeInfo_Shared);
 
@@ -1184,7 +1184,7 @@ size_t newCapacity(size_t newlength, size_t elemsize)
     // ((newlength * mult + 99) / 100) * elemsize
     newcap = cast(size_t)((newlength * mult + 127) >> 7) * elemsize;
     debug(PRINTF) printf("mult: %2.2f, alloc: %2.2f\n",mult/128.0,newcap / cast(double)elemsize);
-    debug(PRINTF) printf("newcap = %d, newlength = %d, elemsize = %d\n", newcap, newlength, elemsize);
+    debug(PRINTF) printf("newcap = %zd, newlength = %zd, elemsize = %zd\n", newcap, newlength, elemsize);
     return newcap;
 }
 
@@ -1426,7 +1426,7 @@ void* _d_arrayliteralTX(const TypeInfo ti, size_t length) @weak
     auto sizeelem = tinext.tsize;              // array element size
     void* result;
 
-    debug(PRINTF) printf("_d_arrayliteralTX(sizeelem = %d, length = %d)\n", sizeelem, length);
+    debug(PRINTF) printf("_d_arrayliteralTX(sizeelem = %zd, length = %zd)\n", sizeelem, length);
     if (length == 0 || sizeelem == 0)
         result = null;
     else

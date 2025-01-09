@@ -1,4 +1,4 @@
-// REQUIRED_ARGS:
+// REQUIRED_ARGS: -verrors=simple
 // PERMUTE_ARGS:
 // EXTRA_FILES: imports/udamodule1.d
 /*

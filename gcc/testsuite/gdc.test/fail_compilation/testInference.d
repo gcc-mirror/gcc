@@ -222,7 +222,7 @@ void test13729b() pure
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/testInference.d(225): Error: `testInference.test17086` called with argument types `(bool)` matches both:
+fail_compilation/testInference.d(225): Error: `testInference.test17086` called with argument types `(bool)` matches multiple overloads exactly:
 fail_compilation/testInference.d(219):     `testInference.test17086!(bool, false).test17086(bool x)`
 and:
 fail_compilation/testInference.d(220):     `testInference.test17086!(bool, false).test17086(bool y)`

@@ -1,5 +1,5 @@
 /*
-REQUIRED_ARGS: -verrors=3
+REQUIRED_ARGS: -verrors=simple -verrors=3
 TEST_OUTPUT:
 ---
 compilable/deprecationlimit.d(18): Deprecation: function `deprecationlimit.f` is deprecated

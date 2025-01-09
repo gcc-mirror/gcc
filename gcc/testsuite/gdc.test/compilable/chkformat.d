@@ -1,9 +1,10 @@
 // https://issues.dlang.org/show_bug.cgi?id=20643
 // https://issues.dlang.org/show_bug.cgi?id=20644
+// REQUIRED_ARGS: -verrors=simple
 /*
 TEST_OUTPUT:
 ----
-compilable/chkformat.d(14): Deprecation: more format specifiers than 0 arguments
+compilable/chkformat.d(15): Deprecation: more format specifiers than 0 arguments
 ----
 */
 import core.stdc.stdio;

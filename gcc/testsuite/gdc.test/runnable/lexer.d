@@ -1,4 +1,4 @@
-// REQUIRED_ARGS:
+// REQUIRED_ARGS: -verrors=simple
 /*
 TEST_OUTPUT:
 ---

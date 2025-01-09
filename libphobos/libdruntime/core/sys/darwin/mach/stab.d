@@ -24,7 +24,7 @@
  *
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Mathias 'Geod24' Lang
- * Source: $(DRUNTIMESRC core/sys/darwin/mach/_nlist.d)
+ * Source: $(DRUNTIMESRC core/sys/darwin/mach/_stab.d)
  */
 module core.sys.darwin.mach.stab;
 

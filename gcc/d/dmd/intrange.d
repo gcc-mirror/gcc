@@ -69,7 +69,7 @@ struct SignExtendedNumber
         }
         if (value < a.value)
             return -1;
-        else if (value > a.value)
+        if (value > a.value)
             return 1;
         else
             return 0;
@@ -121,10 +121,10 @@ struct SignExtendedNumber
     SignExtendedNumber opBinary(string op : "+")(SignExtendedNumber rhs)
     {
         uinteger_t sum = value + rhs.value;
-        bool carry = sum < value && sum < rhs.value;
+        const carry = sum < value && sum < rhs.value;
         if (negative != rhs.negative)
             return SignExtendedNumber(sum, !carry);
-        else if (negative)
+        if (negative)
             return SignExtendedNumber(carry ? sum : 0, true);
         else
             return SignExtendedNumber(carry ? ulong.max : sum, false);
@@ -154,7 +154,7 @@ struct SignExtendedNumber
         {
             if (!negative)
                 return this;
-            else if (rhs.negative)
+            if (rhs.negative)
                 return max();
             else
                 return rhs.value == 0 ? rhs : this;
@@ -248,7 +248,7 @@ struct SignExtendedNumber
         //  shifts will give huge result.
         if (value == 0)
             return this;
-        else if (rhs.negative)
+        if (rhs.negative)
             return extreme(negative);
 
         uinteger_t v = copySign(value, negative);
@@ -277,7 +277,7 @@ struct SignExtendedNumber
     {
         if (rhs.negative || rhs.value > 63)
             return negative ? SignExtendedNumber(-1, true) : SignExtendedNumber(0);
-        else if (isMinimum())
+        if (isMinimum())
             return rhs.value == 0 ? this : SignExtendedNumber(-1UL << (64 - rhs.value), true);
 
         uinteger_t x = value ^ -cast(int)negative;
@@ -445,11 +445,10 @@ struct IntRange
     {
         if (!type.isIntegral() || type.toBasetype().isTypeVector())
             return this;
-        else if (!type.isUnsigned())
+        if (!type.isUnsigned())
             return castSigned(type.sizemask());
-        else if (type.toBasetype().ty == Tdchar)
+        if (type.toBasetype().ty == Tdchar)
             return castDchar();
-        else
             return castUnsigned(type.sizemask());
     }
 
@@ -457,10 +456,9 @@ struct IntRange
     {
         if (!type.isIntegral() || type.toBasetype().isTypeVector())
             return castUnsigned(ulong.max);
-        else if (type.toBasetype().ty == Tdchar)
+        if (type.toBasetype().ty == Tdchar)
             return castDchar();
-        else
-            return castUnsigned(type.sizemask());
+        return castUnsigned(type.sizemask());
     }
 
     bool contains(IntRange a) @safe
@@ -478,14 +476,11 @@ struct IntRange
     {
         if (imax.negative)
             return this;
-        else if (!imin.negative)
+        if (!imin.negative)
             return IntRange(-imax, -imin);
-        else
-        {
-            SignExtendedNumber imaxAbsNeg = -imax;
-            return IntRange(imaxAbsNeg < imin ? imaxAbsNeg : imin,
-                            SignExtendedNumber(0));
-        }
+        SignExtendedNumber imaxAbsNeg = -imax;
+        return IntRange(imaxAbsNeg < imin ? imaxAbsNeg : imin,
+                        SignExtendedNumber(0));
     }
 
     IntRange unionWith(const ref IntRange other) const @safe
@@ -573,13 +568,13 @@ struct IntRange
                 swap(l, r); // r spans [-1,0]
             }
 
-            auto minAndNeg = minAnd(l, IntRange(r.imin, SignExtendedNumber(-1)));
-            auto minAndPos = minAnd(l, IntRange(SignExtendedNumber(0), r.imax));
-            auto maxAndNeg = maxAnd(l, IntRange(r.imin, SignExtendedNumber(-1)));
-            auto maxAndPos = maxAnd(l, IntRange(SignExtendedNumber(0), r.imax));
+            const minAndNeg = minAnd(l, IntRange(r.imin, SignExtendedNumber(-1)));
+            const minAndPos = minAnd(l, IntRange(SignExtendedNumber(0), r.imax));
+            const maxAndNeg = maxAnd(l, IntRange(r.imin, SignExtendedNumber(-1)));
+            const maxAndPos = maxAnd(l, IntRange(SignExtendedNumber(0), r.imax));
 
-            auto min = minAndNeg < minAndPos ? minAndNeg : minAndPos;
-            auto max = maxAndNeg > maxAndPos ? maxAndNeg : maxAndPos;
+            const min = minAndNeg < minAndPos ? minAndNeg : minAndPos;
+            const max = maxAndNeg > maxAndPos ? maxAndNeg : maxAndPos;
 
             auto range = IntRange(min, max);
             return range;
@@ -681,22 +676,19 @@ struct IntRange
         {
             return IntRange(imin / rhs.imax, imax / rhs.imin);
         }
-        else if (rhs.imin.negative && !rhs.imax.negative) // divisor spans [-1, 0, 1]
+        if (rhs.imin.negative && !rhs.imax.negative) // divisor spans [-1, 0, 1]
         {
             SignExtendedNumber[4] bdy = [-imin, imin, -imax, imax];
             return IntRange.fromNumbers4(bdy.ptr);
         }
-        else
-        {
-            // [a,b] / [c,d] = [min (a/c, a/d, b/c, b/d), max (a/c, a/d, b/c, b/d)]
-            SignExtendedNumber[4] bdy;
-            bdy[0] = imin / rhs.imin;
-            bdy[1] = imin / rhs.imax;
-            bdy[2] = imax / rhs.imin;
-            bdy[3] = imax / rhs.imax;
+        // [a,b] / [c,d] = [min (a/c, a/d, b/c, b/d), max (a/c, a/d, b/c, b/d)]
+        SignExtendedNumber[4] bdy;
+        bdy[0] = imin / rhs.imin;
+        bdy[1] = imin / rhs.imax;
+        bdy[2] = imax / rhs.imin;
+        bdy[3] = imax / rhs.imax;
 
-            return IntRange.fromNumbers4(bdy.ptr);
-        }
+        return IntRange.fromNumbers4(bdy.ptr);
     }
 
     IntRange opBinary(string op : "%")(IntRange rhs)

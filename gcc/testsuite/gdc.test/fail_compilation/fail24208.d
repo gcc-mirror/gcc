@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/fail24208.d(19): Error: reference to local variable `n` assigned to non-scope parameter `p` calling `escape`
+fail_compilation/fail24208.d(19): Error: assigning reference to local variable `n` to non-scope parameter `p` calling `escape` is not allowed in a `@safe` function
 fail_compilation/fail24208.d(15):        which is not `scope` because of `escaped = p`
 ---
 +/

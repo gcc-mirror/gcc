@@ -24,9 +24,9 @@ void pointercast2()
     int b;
     Object c;
 
-    static assert(!__traits(compiles, cast(void*)a));
-    static assert(!__traits(compiles, cast(void*)b));
-    static assert(!__traits(compiles, cast(void*)c));
+    static assert(__traits(compiles, cast(void*)a));
+    static assert(__traits(compiles, cast(void*)b));
+    static assert(__traits(compiles, cast(void*)c));
 }
 
 @safe
@@ -231,11 +231,11 @@ void multablecast()
     static assert( __traits(compiles, cast(const(void)*)mp));
     static assert( __traits(compiles, cast(const(void)*)ip));
 
-    static assert(!__traits(compiles, cast(immutable(void)*)mp));
-    static assert(!__traits(compiles, cast(immutable(void)*)cp));
+    static assert(__traits(compiles, cast(immutable(void)*)mp));
+    static assert(__traits(compiles, cast(immutable(void)*)cp));
 
-    static assert(!__traits(compiles, cast(void*)cp));
-    static assert(!__traits(compiles, cast(void*)ip));
+    static assert(__traits(compiles, cast(void*)cp));
+    static assert(__traits(compiles, cast(void*)ip));
 }
 
 @safe

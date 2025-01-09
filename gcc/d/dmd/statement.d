@@ -890,7 +890,7 @@ extern (C++) final class ForeachStatement : Statement
 extern (C++) final class ForeachRangeStatement : Statement
 {
     TOK op;                 // TOK.foreach_ or TOK.foreach_reverse_
-    Parameter prm;          // loop index variable
+    Parameter param;          // loop index variable
     Expression lwr;
     Expression upr;
     Statement _body;
@@ -898,11 +898,11 @@ extern (C++) final class ForeachRangeStatement : Statement
 
     VarDeclaration key;
 
-    extern (D) this(const ref Loc loc, TOK op, Parameter prm, Expression lwr, Expression upr, Statement _body, Loc endloc) @safe
+    extern (D) this(const ref Loc loc, TOK op, Parameter param, Expression lwr, Expression upr, Statement _body, Loc endloc) @safe
     {
         super(loc, STMT.ForeachRange);
         this.op = op;
-        this.prm = prm;
+        this.param = param;
         this.lwr = lwr;
         this.upr = upr;
         this._body = _body;
@@ -911,7 +911,7 @@ extern (C++) final class ForeachRangeStatement : Statement
 
     override ForeachRangeStatement syntaxCopy()
     {
-        return new ForeachRangeStatement(loc, op, prm.syntaxCopy(), lwr.syntaxCopy(), upr.syntaxCopy(), _body ? _body.syntaxCopy() : null, endloc);
+        return new ForeachRangeStatement(loc, op, param.syntaxCopy(), lwr.syntaxCopy(), upr.syntaxCopy(), _body ? _body.syntaxCopy() : null, endloc);
     }
 
     override bool hasBreak() const pure nothrow
@@ -935,17 +935,17 @@ extern (C++) final class ForeachRangeStatement : Statement
  */
 extern (C++) final class IfStatement : Statement
 {
-    Parameter prm;
+    Parameter param;
     Expression condition;
     Statement ifbody;
     Statement elsebody;
     VarDeclaration match;   // for MatchExpression results
     Loc endloc;                 // location of closing curly bracket
 
-    extern (D) this(const ref Loc loc, Parameter prm, Expression condition, Statement ifbody, Statement elsebody, Loc endloc) @safe
+    extern (D) this(const ref Loc loc, Parameter param, Expression condition, Statement ifbody, Statement elsebody, Loc endloc) @safe
     {
         super(loc, STMT.If);
-        this.prm = prm;
+        this.param = param;
         this.condition = condition;
         this.ifbody = ifbody;
         this.elsebody = elsebody;
@@ -955,7 +955,7 @@ extern (C++) final class IfStatement : Statement
     override IfStatement syntaxCopy()
     {
         return new IfStatement(loc,
-            prm ? prm.syntaxCopy() : null,
+            param ? param.syntaxCopy() : null,
             condition.syntaxCopy(),
             ifbody ? ifbody.syntaxCopy() : null,
             elsebody ? elsebody.syntaxCopy() : null,

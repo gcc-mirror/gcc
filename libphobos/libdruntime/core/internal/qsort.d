@@ -12,6 +12,8 @@ module core.internal.qsort;
 
 import core.stdc.stdlib;
 
+debug (qsort) import core.stdc.stdio : printf;
+
 version (OSX)
     version = Darwin;
 else version (iOS)

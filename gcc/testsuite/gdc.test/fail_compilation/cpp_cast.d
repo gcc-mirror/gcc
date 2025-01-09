@@ -3,9 +3,9 @@
 REQUIRED_ARGS: -de
 TEST_OUTPUT:
 ---
-fail_compilation/cpp_cast.d(19): Error: cast from `cpp_cast.I` to `cpp_cast.C` not allowed in safe code
+fail_compilation/cpp_cast.d(19): Error: cast from `cpp_cast.I` to `cpp_cast.C` is not allowed in a `@safe` function
 fail_compilation/cpp_cast.d(19):        No dynamic type information for extern(C++) classes
-fail_compilation/cpp_cast.d(21): Deprecation: cast from `cpp_cast.C` to `cpp_cast.D` not allowed in safe code
+fail_compilation/cpp_cast.d(21): Deprecation: cast from `cpp_cast.C` to `cpp_cast.D` will become `@system` in a future release
 fail_compilation/cpp_cast.d(21):        No dynamic type information for extern(C++) classes
 ---
 */

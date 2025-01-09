@@ -1607,8 +1607,8 @@ Lagain:
         {
             if (sd.isSystem())
             {
-                if (sc.setUnsafePreview(global.params.systemVariables, false, loc,
-                    "cannot access `@system` variable `%s` in @safe code", sd))
+                if (sc.setUnsafePreview(sc.previews.systemVariables, false, loc,
+                    "access `@system` variable `%s`", sd))
                 {
                     if (auto v = sd.isVarDeclaration())
                     {
@@ -2237,8 +2237,7 @@ private bool checkPurity(VarDeclaration v, const ref Loc loc, Scope* sc)
      */
     if (v.storage_class & STC.gshared)
     {
-        if (sc.setUnsafe(false, loc,
-            "`@safe` function `%s` cannot access `__gshared` data `%s`", sc.func, v))
+        if (sc.setUnsafe(false, loc, "accessing `__gshared` data `%s`", v))
         {
             err = true;
         }
@@ -3328,7 +3327,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             }
             else if (p.storageClass & STC.ref_)
             {
-                if (global.params.rvalueRefParam == FeatureState.enabled &&
+                if (sc.previews.rvalueRefParam &&
                     !arg.isLvalue() &&
                     targ.isCopyable())
                 {   /* allow rvalues to be passed to ref parameters by copying
@@ -3729,7 +3728,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
 
     /* Test compliance with DIP1021 Argument Ownership and Function Calls
      */
-    if (global.params.useDIP1021 && (tf.trust == TRUST.safe || tf.trust == TRUST.default_) ||
+    if (sc.previews.dip1021 && (tf.trust == TRUST.safe || tf.trust == TRUST.default_) ||
         tf.isLive)
         err |= checkMutableArguments(*sc, fd, tf, ethis, arguments, false);
 
@@ -4012,7 +4011,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     }
                 }
 
-                if (global.params.fixAliasThis)
+                if (sc.previews.fixAliasThis)
                 {
                     if (ExpressionDsymbol expDsym = scopesym.isExpressionDsymbol())
                     {
@@ -4028,7 +4027,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
-        if (!global.params.fixAliasThis && hasThis(sc))
+        if (!sc.previews.fixAliasThis && hasThis(sc))
         {
             for (AggregateDeclaration ad = sc.getStructClassScope(); ad;)
             {
@@ -5175,7 +5174,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
             // When using `@nogc` exception handling, lower `throw new E(args)` to
             // `throw (__tmp = _d_newThrowable!E(), __tmp.__ctor(args), __tmp)`.
-            if (global.params.ehnogc && exp.thrownew &&
+            if (sc.previews.dip1008 && exp.thrownew &&
                 !cd.isCOMclass() && !cd.isCPPclass())
             {
                 assert(cd.ctor);
@@ -8596,8 +8595,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                          */
                         if (1)
                         {
-                            if (sc.setUnsafe(false, exp.loc,
-                                "cannot take address of lazy parameter `%s` in `@safe` function `%s`", ve, sc.func))
+                            if (sc.setUnsafe(false, exp.loc, "taking address of lazy parameter `%s`", ve))
                             {
                                 setError();
                                 return;
@@ -8746,9 +8744,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     }
                     if (sc.func && !sc.intypeof && !sc.debug_)
                     {
-                        sc.setUnsafe(false, exp.loc,
-                            "`this` reference necessary to take address of member `%s` in `@safe` function `%s`",
-                            f, sc.func);
+                        sc.setUnsafe(false, exp.loc, "taking address of member `%s` without `this` reference", f);
                     }
                 }
             }
@@ -9240,7 +9236,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (!isSafeCast(ex, t1b, tob, msg))
         {
             if (sc.setUnsafe(false, exp.loc,
-                "cast from `%s` to `%s` not allowed in safe code", exp.e1.type, exp.to))
+                "cast from `%s` to `%s`", exp.e1.type, exp.to))
             {
                 if (msg.length)
                     errorSupplemental(exp.loc, "%.*s", msg.fTuple.expand);
@@ -9250,7 +9246,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         else if (msg.length) // deprecated unsafe
         {
             const err = sc.setUnsafePreview(FeatureState.default_, false, exp.loc,
-                "cast from `%s` to `%s` not allowed in safe code", exp.e1.type, exp.to);
+                "cast from `%s` to `%s`", exp.e1.type, exp.to);
             // if message was printed
             if (sc.func && sc.func.isSafeBypassingInference() && !sc.isDeprecated())
                 deprecationSupplemental(exp.loc, "%.*s", msg.fTuple.expand);
@@ -9503,7 +9499,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
                 return setError();
             }
-            if (sc.setUnsafe(false, exp.loc, "pointer slicing not allowed in safe functions"))
+            if (sc.setUnsafe(false, exp.loc, "pointer slicing"))
                 return setError();
         }
         else if (t1b.ty == Tarray)
@@ -9991,7 +9987,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             if (exp.e2.op == EXP.int64 && exp.e2.toInteger() == 0)
             {
             }
-            else if (sc.setUnsafe(false, exp.loc, "`@safe` function `%s` cannot index pointer `%s`", sc.func, exp.e1))
+            else if (sc.setUnsafe(false, exp.loc, "indexing pointer `%s`", exp.e1))
             {
                 return setError();
             }
@@ -11449,17 +11445,17 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         {
             if (t2.nextOf().implicitConvTo(t1.nextOf()))
             {
-                if (sc.setUnsafe(false, exp.loc, "cannot copy `%s` to `%s` in `@safe` code", t2, t1))
+                if (sc.setUnsafe(false, exp.loc, "copying `%s` to `%s`", t2, t1))
                     return setError();
             }
             else
             {
                 // copying from non-void to void was overlooked, deprecate
                 if (sc.setUnsafePreview(FeatureState.default_, false, exp.loc,
-                    "cannot copy `%s` to `%s` in `@safe` code", t2, t1))
+                    "copying `%s` to `%s`", t2, t1))
                     return setError();
             }
-            if (global.params.fixImmutableConv && !t2.implicitConvTo(t1))
+            if (sc.previews.fixImmutableConv && !t2.implicitConvTo(t1))
             {
                 error(exp.loc, "cannot copy `%s` to `%s`",
                     t2.toChars(), t1.toChars());
@@ -11848,7 +11844,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             (exp.e2.implicitConvTo(exp.e1.type) ||
              (tb2.nextOf().implicitConvTo(tb1next) &&
              // Do not strip const(void)[]
-             (!global.params.fixImmutableConv || tb1next.ty != Tvoid) &&
+             (!sc.previews.fixImmutableConv || tb1next.ty != Tvoid) &&
               (tb2.nextOf().size(Loc.initial) == tb1next.size(Loc.initial)))))
         {
             // EXP.concatenateAssign
@@ -12245,12 +12241,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
                 if (!p1.equivalent(p2))
                 {
-                    // Deprecation to remain for at least a year, after which this should be
-                    // changed to an error
                     // See https://github.com/dlang/dmd/pull/7332
-                    deprecation(exp.loc,
-                        "cannot subtract pointers to different types: `%s` and `%s`.",
+                    error(exp.loc, "cannot subtract pointers to different types: `%s` and `%s`.",
                         t1.toChars(), t2.toChars());
+                    return setError();
                 }
 
                 // Need to divide the result by the stride
@@ -12590,7 +12584,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (exp.type.ty == Tarray && tb1next && tb2next && tb1next.mod != tb2next.mod)
         {
             // Do not strip const(void)[]
-            if (!global.params.fixImmutableConv || tb.nextOf().ty != Tvoid)
+            if (!sc.previews.fixImmutableConv || tb.nextOf().ty != Tvoid)
                 exp.type = exp.type.nextOf().toHeadMutable().arrayOf();
         }
         if (Type tbn = tb.nextOf())
@@ -14890,8 +14884,8 @@ private bool checkSharedAccessBin(BinExp binExp, Scope* sc)
  */
 bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
 {
-    if (global.params.noSharedAccess != FeatureState.enabled ||
-        !sc ||
+    if (!sc ||
+        !sc.previews.noSharedAccess ||
         sc.intypeof ||
         sc.ctfe)
     {
@@ -15588,7 +15582,7 @@ private Expression toLvalueImpl(Expression _this, Scope* sc, const(char)* action
             with (_this)
             if (!trusted && !e1.type.pointerTo().implicitConvTo(to.pointerTo()))
                 sc.setUnsafePreview(FeatureState.default_, false, loc,
-                    "cast from `%s` to `%s` cannot be used as an lvalue in @safe code",
+                    "using the result of a cast from `%s` to `%s` as an lvalue",
                     e1.type, to);
 
             return _this;
@@ -15956,7 +15950,7 @@ private Expression modifiableLvalueImpl(Expression _this, Scope* sc, Expression 
 
     Expression visitDelegatePtr(DelegatePtrExp exp)
     {
-        if (sc.setUnsafe(false, exp.loc, "cannot modify delegate pointer in `@safe` code `%s`", exp))
+        if (sc.setUnsafe(false, exp.loc, "modifying delegate pointer `%s`", exp))
         {
             return ErrorExp.get();
         }
@@ -15965,7 +15959,7 @@ private Expression modifiableLvalueImpl(Expression _this, Scope* sc, Expression 
 
     Expression visitDelegateFuncptr(DelegateFuncptrExp exp)
     {
-        if (sc.setUnsafe(false, exp.loc, "cannot modify delegate function pointer in `@safe` code `%s`", exp))
+        if (sc.setUnsafe(false, exp.loc, "modifying delegate function pointer `%s`", exp))
         {
             return ErrorExp.get();
         }
@@ -16034,7 +16028,7 @@ private bool checkAddressVar(Scope* sc, Expression exp, VarDeclaration v)
     {
         if (sc.useDIP1000 != FeatureState.enabled &&
             !(v.storage_class & STC.temp) &&
-            sc.setUnsafe(false, exp.loc, "cannot take address of local `%s` in `@safe` function `%s`", v, sc.func))
+            sc.setUnsafe(false, exp.loc, "taking the address of stack-allocated local variable `%s`", v))
         {
             return false;
         }
@@ -16307,7 +16301,7 @@ private bool fit(StructDeclaration sd, const ref Loc loc, Scope* sc, Expressions
             if ((!stype.alignment.isDefault() && stype.alignment.get() < target.ptrsize ||
                  (v.offset & (target.ptrsize - 1))) &&
                 (sc.setUnsafe(false, loc,
-                    "field `%s.%s` cannot assign to misaligned pointers in `@safe` code", sd, v)))
+                    "field `%s.%s` assigning to misaligned pointers", sd, v)))
             {
                 return false;
             }

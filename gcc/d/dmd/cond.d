@@ -322,7 +322,7 @@ extern (C++) final class StaticForeach : RootObject
         {
             foreach (params; pparams)
             {
-                auto p = aggrfe ? (*aggrfe.parameters)[i] : rangefe.prm;
+                auto p = aggrfe ? (*aggrfe.parameters)[i] : rangefe.param;
                 params.push(new Parameter(aloc, p.storageClass, p.type, p.ident, null, null));
             }
         }

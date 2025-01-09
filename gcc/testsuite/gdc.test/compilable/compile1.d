@@ -1,9 +1,10 @@
 // COMPILABLE_MATH_TEST
 // PERMUTE_ARGS:
+// REQUIRED_ARGS: -verrors=simple
 // EXTRA_FILES: imports/a12506.d
 /* TEST_OUTPUT:
 ---
-compilable/compile1.d(230): Deprecation: use of complex type `cdouble` is deprecated, use `std.complex.Complex!(double)` instead
+compilable/compile1.d(231): Deprecation: use of complex type `cdouble` is deprecated, use `std.complex.Complex!(double)` instead
 ---
 */
 

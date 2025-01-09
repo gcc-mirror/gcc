@@ -1,8 +1,8 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test17959.d(18): Error: scope variable `this` assigned to non-scope `this.escape`
-fail_compilation/test17959.d(19): Error: scope variable `this` assigned to non-scope `this.f`
+fail_compilation/test17959.d(18): Error: assigning scope variable `this` to non-scope `this.escape` is not allowed in a `@safe` function
+fail_compilation/test17959.d(19): Error: assigning scope variable `this` to non-scope `this.f` is not allowed in a `@safe` function
 ---
 */
 

@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test24680.d(19): Error: returning `c.peek(buf[])` escapes a reference to local variable `buf`
+fail_compilation/test24680.d(19): Error: escaping a reference to local variable `buf` by returning `c.peek(buf[])`  is not allowed in a `@safe` function
 ---
 */
 

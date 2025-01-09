@@ -1,14 +1,14 @@
 /* https://issues.dlang.org/show_bug.cgi?id=15399
 TEST_OUTPUT:
 ---
-fail_compilation/test15399.d(32): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test15399.d(33): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test15399.d(34): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test15399.d(35): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test15399.d(36): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test15399.d(37): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test15399.d(38): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test15399.d(39): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(32): Error: modifying misaligned pointers through field `S1.ptr` is not allowed in a `@safe` function
+fail_compilation/test15399.d(33): Error: modifying misaligned pointers through field `S2.ptr` is not allowed in a `@safe` function
+fail_compilation/test15399.d(34): Error: modifying misaligned pointers through field `S1.ptr` is not allowed in a `@safe` function
+fail_compilation/test15399.d(35): Error: modifying misaligned pointers through field `S2.ptr` is not allowed in a `@safe` function
+fail_compilation/test15399.d(36): Error: modifying misaligned pointers through field `S1.ptr` is not allowed in a `@safe` function
+fail_compilation/test15399.d(37): Error: modifying misaligned pointers through field `S2.ptr` is not allowed in a `@safe` function
+fail_compilation/test15399.d(38): Error: modifying misaligned pointers through field `S1.ptr` is not allowed in a `@safe` function
+fail_compilation/test15399.d(39): Error: modifying misaligned pointers through field `S2.ptr` is not allowed in a `@safe` function
 ---
 */
 

@@ -185,7 +185,10 @@ version (Windows)
 }
 else version (Posix)
 {
-    import core.sys.posix.pthread;
+    import core.sys.posix.pthread : pthread_mutex_destroy, pthread_mutex_init, pthread_mutex_lock,
+        PTHREAD_MUTEX_RECURSIVE, pthread_mutex_unlock, pthread_mutexattr_destroy, pthread_mutexattr_init,
+        pthread_mutexattr_settype;
+    import core.sys.posix.sys.types : pthread_mutex_t, pthread_mutexattr_t;
 
 @nogc:
     alias Mutex = pthread_mutex_t;

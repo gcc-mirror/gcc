@@ -346,7 +346,7 @@ class ForeachRangeStatement final : public Statement
 {
 public:
     TOK op;                     // TOKforeach or TOKforeach_reverse
-    Parameter *prm;             // loop index variable
+    Parameter *param;             // loop index variable
     Expression *lwr;
     Expression *upr;
     Statement *_body;
@@ -364,7 +364,7 @@ public:
 class IfStatement final : public Statement
 {
 public:
-    Parameter *prm;
+    Parameter *param;
     Expression *condition;
     Statement *ifbody;
     Statement *elsebody;

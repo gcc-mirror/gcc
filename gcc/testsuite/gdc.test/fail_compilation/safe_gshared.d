@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/safe_gshared.d(13): Error: `@safe` function `f` cannot access `__gshared` data `x`
-fail_compilation/safe_gshared.d(14): Error: `@safe` function `f` cannot access `__gshared` data `x`
+fail_compilation/safe_gshared.d(13): Error: accessing `__gshared` data `x` is not allowed in a `@safe` function
+fail_compilation/safe_gshared.d(14): Error: accessing `__gshared` data `x` is not allowed in a `@safe` function
 ---
 */
 

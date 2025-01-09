@@ -1,6 +1,6 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/pull12941.d(110): Error: `pull12941.foo` called with argument types `(int*)` matches both:
+fail_compilation/pull12941.d(110): Error: `pull12941.foo` called with argument types `(int*)` matches multiple overloads exactly:
 fail_compilation/pull12941.d(101):     `pull12941.foo(return ref scope int* p)`
 and:
 fail_compilation/pull12941.d(102):     `pull12941.foo(return out scope int* p)`

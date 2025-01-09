@@ -48,7 +48,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* ma
     import core.stdc.stdint : uintptr_t;
     debug(PRINTF) import core.stdc.stdio : printf;
 
-    debug(PRINTF) printf("_d_arrayctor(from = %p,%d) size = %d\n", from.ptr, from.length, T.sizeof);
+    debug(PRINTF) printf("_d_arrayctor(from = %p,%zd) size = %zd\n", from.ptr, from.length, T.sizeof);
 
     void[] vFrom = (cast(void*) from.ptr)[0..from.length];
     void[] vTo = (cast(void*) to.ptr)[0..to.length];
@@ -513,7 +513,7 @@ version (D_ProfileGC)
  */
 Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trusted
 {
-    debug(PRINTF) printf("_d_newarraymTX(dims.length = %d)\n", dims.length);
+    debug(PRINTF) printf("_d_newarraymTX(dims.length = %zd)\n", dims.length);
 
     if (dims.length == 0)
         return null;
@@ -547,7 +547,7 @@ Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trust
     }
 
     auto result = __allocateInnerArray(dims);
-    debug(PRINTF) printf("result = %llx\n", result.ptr);
+    debug(PRINTF) printf("result = %p\n", result.ptr);
 
     return (cast(U*) result.ptr)[0 .. dims[0]];
 }

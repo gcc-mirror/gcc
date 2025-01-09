@@ -21,8 +21,12 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
-debug(trace) import core.stdc.stdio : printf;
-debug(info) import core.stdc.stdio : printf;
+debug (trace) debug = needPrintf;
+debug (info) debug = needPrintf;
+
+debug (needPrintf)
+private int printf(Args...)(scope const char* fmt, scope const Args args)
+    => __ctfe ? 0 : imported!"core.stdc.stdio".printf(fmt, args);
 
 extern (C) alias CXX_DEMANGLER = char* function (const char* mangled_name,
                                                 char* output_buffer,
@@ -2128,7 +2132,7 @@ pure @safe:
             }
             name = dst[beg .. nameEnd];
 
-            debug(info) printf( "name (%.*s)\n", cast(int) name.length, name.ptr );
+            debug(info) printf( "name (%.*s)\n", cast(int) name.length, name.getSlice.ptr );
             if ( 'M' == front )
                 popFront(); // has 'this' pointer
 

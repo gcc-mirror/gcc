@@ -400,6 +400,7 @@ extern (C++) struct Global
             params.v.color = detectTerminal();
         }
 
+        params.v.errorPrintMode = ErrorPrintMode.printErrorContext; // Enable error context globally by default
         compileEnv.versionNumber = parseVersionNumber(versionString());
 
         /* Initialize date, time, and timestamp

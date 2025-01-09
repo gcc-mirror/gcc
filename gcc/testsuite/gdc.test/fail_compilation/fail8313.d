@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail8313.d(13): Error: `fail8313.bar` called with argument types `(int)` matches both:
+fail_compilation/fail8313.d(13): Error: `fail8313.bar` called with argument types `(int)` matches multiple overloads exactly:
 fail_compilation/fail8313.d(11):     `fail8313.bar!().bar(int x)`
 and:
 fail_compilation/fail8313.d(12):     `fail8313.bar!().bar(int x)`

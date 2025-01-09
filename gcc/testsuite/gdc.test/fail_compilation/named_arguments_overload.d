@@ -7,7 +7,7 @@ fail_compilation/named_arguments_overload.d(18):                        `named_a
 fail_compilation/named_arguments_overload.d(34): Error: none of the overloads of `snoopy` are callable using argument types `(immutable(T), immutable(S))`
 fail_compilation/named_arguments_overload.d(17):        Candidates are: `named_arguments_overload.snoopy(S s, int i = 0, T t = T())`
 fail_compilation/named_arguments_overload.d(18):                        `named_arguments_overload.snoopy(T t, int i, S s)`
-fail_compilation/named_arguments_overload.d(35): Error: `named_arguments_overload.snoopy` called with argument types `(immutable(S), immutable(T), immutable(int))` matches both:
+fail_compilation/named_arguments_overload.d(35): Error: `named_arguments_overload.snoopy` called with argument types `(immutable(S), immutable(T), immutable(int))` matches multiple overloads after qualifier conversion:
 fail_compilation/named_arguments_overload.d(17):     `named_arguments_overload.snoopy(S s, int i = 0, T t = T())`
 and:
 fail_compilation/named_arguments_overload.d(18):     `named_arguments_overload.snoopy(T t, int i, S s)`

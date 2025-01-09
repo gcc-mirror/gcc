@@ -4,7 +4,7 @@
  * Copyright: Copyright (C) 2018 by The D Language Foundation, All Rights Reserved
  * Authors:   Petar Kirov
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/druntime/src/core/sys/posix/spawn.d, _spawn.d)
+ * Source:    $(DRUNTIMESRC core/sys/posix/_spawn.d)
  * Standards: The Open Group Base Specifications Issue 6, IEEE Std 1003.1, 2004 Edition
  */
 module core.sys.posix.spawn;

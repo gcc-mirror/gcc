@@ -2,13 +2,13 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/fail22366.d(22): Error: scope variable `s` may not be copied into allocated memory
-fail_compilation/fail22366.d(25): Error: scope variable `s` may not be copied into allocated memory
-fail_compilation/fail22366.d(26): Error: scope variable `s` may not be copied into allocated memory
-fail_compilation/fail22366.d(27): Error: scope variable `s` may not be copied into allocated memory
-fail_compilation/fail22366.d(28): Error: scope variable `s` may not be copied into allocated memory
-fail_compilation/fail22366.d(31): Error: scope variable `s` may not be copied into allocated memory
-fail_compilation/fail22366.d(32): Error: scope variable `s` may not be copied into allocated memory
+fail_compilation/fail22366.d(22): Error: copying scope variable `s` into allocated memory is not allowed in a `@safe` function
+fail_compilation/fail22366.d(25): Error: copying scope variable `s` into allocated memory is not allowed in a `@safe` function
+fail_compilation/fail22366.d(26): Error: copying scope variable `s` into allocated memory is not allowed in a `@safe` function
+fail_compilation/fail22366.d(27): Error: copying scope variable `s` into allocated memory is not allowed in a `@safe` function
+fail_compilation/fail22366.d(28): Error: copying scope variable `s` into allocated memory is not allowed in a `@safe` function
+fail_compilation/fail22366.d(31): Error: copying scope variable `s` into allocated memory is not allowed in a `@safe` function
+fail_compilation/fail22366.d(32): Error: copying scope variable `s` into allocated memory is not allowed in a `@safe` function
 ---
 */
 

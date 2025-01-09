@@ -2,7 +2,7 @@
 REQUIRED_ARGS:
 TEST_OUTPUT:
 ---
-fail_compilation/test20809.d(114): Error: returning `this.a` escapes a reference to parameter `this`
+fail_compilation/test20809.d(114): Error: escaping a reference to parameter `this` by returning `this.a` is not allowed in a `@safe` function
 fail_compilation/test20809.d(112):        perhaps annotate the function with `return`
 ---
  */

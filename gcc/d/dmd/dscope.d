@@ -72,8 +72,51 @@ private extern (D) struct BitFields
     bool canFree;            /// is on free list
     bool fullinst;          /// fully instantiate templates
     bool ctfeBlock;         /// inside a `if (__ctfe)` block
-    bool dip1000;           /// dip1000 errors enabled for this scope
-    bool dip25;             /// dip25 errors enabled for this scope
+}
+
+/// State of -preview switches
+///
+/// By making them part of a Scope, we reduce reliance on dmd.globals,
+/// and can enable/disable them per module / edition.
+private struct Previews
+{
+    // Run `dmd -preview=h` for the meaning of these switches
+    private extern (D) static struct BitFields
+    {
+        bool bitfields;
+        bool dip1000;
+        bool dip1008;
+        bool dip1021;
+        bool dip25;
+        bool fixAliasThis;
+        bool fixImmutableConv;
+        bool in_;
+        bool inclusiveInContracts;
+        bool noSharedAccess;
+        bool rvalueRefParam;
+        bool safer;
+        FeatureState systemVariables;
+    }
+
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ushort));
+
+    void setFromParams(ref Param params) @nogc nothrow pure @safe
+    {
+        this.bitfields = params.bitfields;
+        this.dip1000 = params.useDIP1000 == FeatureState.enabled;
+        this.dip1008 = params.ehnogc;
+        this.dip1021 = params.useDIP1021; //  == FeatureState.enabled;
+        this.dip25 = params.useDIP25 == FeatureState.enabled;
+        this.fixAliasThis = params.fixAliasThis;
+        this.fixImmutableConv = params.fixImmutableConv;
+        this.in_ = params.previewIn;
+        this.inclusiveInContracts = params.inclusiveInContracts;
+        this.noSharedAccess = params.noSharedAccess == FeatureState.enabled;
+        this.rvalueRefParam = params.rvalueRefParam == FeatureState.enabled;
+        this.safer = params.safer == FeatureState.enabled;
+        this.systemVariables = params.systemVariables;
+    }
 }
 
 extern (C++) struct Scope
@@ -136,7 +179,9 @@ extern (C++) struct Scope
     DeprecatedDeclaration depdecl;  /// customized deprecation message
 
     import dmd.common.bitfields : generateBitFields;
-    mixin(generateBitFields!(BitFields, uint));
+    mixin(generateBitFields!(BitFields, ushort));
+
+    Previews previews;
 
     // user defined attributes
     UserAttributeDeclaration userAttribDecl;
@@ -181,10 +226,8 @@ extern (C++) struct Scope
             m = m.parent;
         m.addMember(null, sc.scopesym);
         m.parent = null; // got changed by addMember()
-        if (global.params.useDIP1000 == FeatureState.enabled)
-            sc.dip1000 = true;
-        if (global.params.useDIP25 == FeatureState.enabled)
-            sc.dip25 = true;
+        sc.previews.setFromParams(global.params);
+
         if (_module.filetype == FileType.c)
             sc.inCfile = true;
         // Create the module scope underneath the global scope
@@ -236,9 +279,7 @@ extern (C++) struct Scope
         s.ignoresymbolvisibility = this.ignoresymbolvisibility;
         s.inCfile = this.inCfile;
         s.ctfeBlock = this.ctfeBlock;
-        s.dip1000 = this.dip1000;
-        s.dip25 = this.dip25;
-
+        s.previews = this.previews;
         s.lastdc = null;
         assert(&this != s);
         return s;
@@ -519,7 +560,7 @@ extern (C++) struct Scope
                 }
 
             NotFound:
-                if (global.params.fixAliasThis)
+                if (sc.previews.fixAliasThis)
                 {
                     Expression exp = new ThisExp(loc);
                     if (Dsymbol aliasSym = checkAliasThis(sc.scopesym.isAggregateDeclaration(), ident, flags, &exp))
@@ -856,13 +897,13 @@ extern (C++) struct Scope
     /// Returns: whether to raise DIP1000 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
     extern (D) FeatureState useDIP1000()
     {
-        return (this.dip1000 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
+        return (this.previews.dip1000 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
     }
 
     /// Returns: whether to raise DIP25 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
     extern (D) FeatureState useDIP25()
     {
-        return (this.dip25 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
+        return (this.previews.dip25 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
     }
 
     /// Returns: whether this scope compiles with `edition` or later

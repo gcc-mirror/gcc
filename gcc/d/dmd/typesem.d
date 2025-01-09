@@ -1122,7 +1122,7 @@ private extern(D) MATCH argumentMatchParameter (FuncDeclaration fd, TypeFunction
             // Need to make this a rvalue through a temporary
             m = MATCH.convert;
         }
-        else if (global.params.rvalueRefParam != FeatureState.enabled ||
+        else if (!(sc && sc.previews.rvalueRefParam) ||
                  p.storageClass & STC.out_ ||
                  !arg.type.isCopyable())  // can't copy to temp for ref parameter
         {
@@ -2335,8 +2335,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
             // default arg must be an lvalue
             if (isRefOrOut && !isAuto &&
-                !(fparam.storageClass & STC.constscoperef) &&
-                global.params.rvalueRefParam != FeatureState.enabled)
+                !(fparam.storageClass & STC.constscoperef) && !sc.previews.rvalueRefParam)
                 e = e.toLvalue(sc, "create default argument for `ref` / `out` parameter from");
 
             fparam.defaultArg = e;

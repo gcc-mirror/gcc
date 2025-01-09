@@ -577,7 +577,7 @@ extern (C++) class Dsymbol : ASTNode
                         continue;
                     if (sa == p1)
                         return true;
-                    else if (p2 && sa == p2)
+                    if (p2 && sa == p2)
                         return true;
                 }
                 outer = ti.tempdecl.toParent();

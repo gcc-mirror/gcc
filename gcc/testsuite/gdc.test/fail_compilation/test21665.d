@@ -1,7 +1,7 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/test21665.d(18): Error: `void` initializers for structs with invariants are not allowed in safe functions
-fail_compilation/test21665.d(30): Error: field `U.s` cannot access structs with invariants in `@safe` code that overlap other fields
+fail_compilation/test21665.d(18): Error: `void` initializing a struct with an invariant is not allowed in a `@safe` function
+fail_compilation/test21665.d(30): Error: accessing overlapped field `U.s` with a structs invariant is not allowed in a `@safe` function
 ---
 */
 

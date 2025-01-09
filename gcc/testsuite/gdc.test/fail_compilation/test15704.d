@@ -1,9 +1,9 @@
 /*
  * TEST_OUTPUT:
 ---
-fail_compilation/test15704.d(17): Error: cannot copy `void[]` to `void[]` in `@safe` code
-fail_compilation/test15704.d(18): Error: cannot copy `const(void)[]` to `void[]` in `@safe` code
-fail_compilation/test15704.d(19): Deprecation: cannot copy `int[]` to `void[]` in `@safe` code
+fail_compilation/test15704.d(17): Error: copying `void[]` to `void[]` is not allowed in a `@safe` function
+fail_compilation/test15704.d(18): Error: copying `const(void)[]` to `void[]` is not allowed in a `@safe` function
+fail_compilation/test15704.d(19): Deprecation: copying `int[]` to `void[]` will become `@system` in a future release
 ---
  */
 

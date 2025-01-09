@@ -153,8 +153,8 @@ package(dmd.visitor) mixin template ParseVisitMethods(AST)
     override void visit(AST.ForeachRangeStatement s)
     {
         //printf("Visiting ForeachRangeStatement\n");
-        if (s.prm.type)
-            visitType(s.prm.type);
+        if (s.param.type)
+            visitType(s.param.type);
         s.lwr.accept(this);
         s.upr.accept(this);
         if (s._body)
@@ -174,8 +174,8 @@ package(dmd.visitor) mixin template ParseVisitMethods(AST)
     override void visit(AST.IfStatement s)
     {
         //printf("Visiting IfStatement\n");
-        if (s.prm && s.prm.type)
-            visitType(s.prm.type);
+        if (s.param && s.param.type)
+            visitType(s.param.type);
         s.condition.accept(this);
         s.ifbody.accept(this);
         if (s.elsebody)

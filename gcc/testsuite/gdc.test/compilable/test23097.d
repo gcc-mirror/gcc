@@ -1,5 +1,5 @@
 /* https://issues.dlang.org/show_bug.cgi?id=23097
-REQUIRED_ARGS: -verrors=spec
+REQUIRED_ARGS: -verrors=simple -verrors=spec
 TEST_OUTPUT:
 ---
 (spec:2) compilable/test23097.d(14): Error: `inout` constructor `test23097.S23097.this` creates const object, not mutable

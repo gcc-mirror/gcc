@@ -1,14 +1,14 @@
 /* REQUIRED_ARGS: -preview=dip1000
  * TEST_OUTPUT:
 ---
-fail_compilation/test19097.d(44): Error: scope variable `s` may not be returned
-fail_compilation/test19097.d(48): Error: scope variable `s1` may not be returned
-fail_compilation/test19097.d(77): Error: scope variable `z` assigned to `ref` variable `refPtr` with longer lifetime
-fail_compilation/test19097.d(108): Error: scope variable `s4` may not be returned
-fail_compilation/test19097.d(126): Error: scope variable `s5c` may not be returned
-fail_compilation/test19097.d(130): Error: scope variable `s5m` may not be returned
-fail_compilation/test19097.d(147): Error: scope variable `s6c` may not be returned
-fail_compilation/test19097.d(151): Error: scope variable `s6m` may not be returned
+fail_compilation/test19097.d(44): Error: returning scope variable `s` is not allowed in a `@safe` function
+fail_compilation/test19097.d(48): Error: returning scope variable `s1` is not allowed in a `@safe` function
+fail_compilation/test19097.d(77): Error: assigning scope variable `z` to `ref` variable `refPtr` with longer lifetime is not allowed in a `@safe` function
+fail_compilation/test19097.d(108): Error: returning scope variable `s4` is not allowed in a `@safe` function
+fail_compilation/test19097.d(126): Error: returning scope variable `s5c` is not allowed in a `@safe` function
+fail_compilation/test19097.d(130): Error: returning scope variable `s5m` is not allowed in a `@safe` function
+fail_compilation/test19097.d(147): Error: returning scope variable `s6c` is not allowed in a `@safe` function
+fail_compilation/test19097.d(151): Error: returning scope variable `s6m` is not allowed in a `@safe` function
 ---
  */
 

@@ -102,7 +102,8 @@ struct Scope final
 
     DeprecatedDeclaration *depdecl; // customized deprecation message
 
-    unsigned flags;
+    uint16_t flags;
+    uint16_t previews; // state of preview switches
 
     bool ctor() const;
     bool ctor(bool v);
@@ -130,10 +131,6 @@ struct Scope final
     bool fullinst(bool v);
     bool ctfeBlock() const;
     bool ctfeBlock(bool v);
-    bool dip1000() const;
-    bool dip1000(bool v);
-    bool dip25() const;
-    bool dip25(bool v);
 
     UserAttributeDeclaration *userAttribDecl;   // user defined attributes
 

@@ -3,8 +3,8 @@ https://issues.dlang.org/show_bug.cgi?id=20068
 
 TEST_OUTPUT:
 ---
-fail_compilation/union_initialization.d(19): Error: field `B.p` cannot access pointers in `@safe` code that overlap other fields
-fail_compilation/union_initialization.d(25): Error: field `B.p` cannot access pointers in `@safe` code that overlap other fields
+fail_compilation/union_initialization.d(19): Error: accessing overlapped field `B.p` with pointers is not allowed in a `@safe` function
+fail_compilation/union_initialization.d(25): Error: accessing overlapped field `B.p` with pointers is not allowed in a `@safe` function
 ---
 */
 

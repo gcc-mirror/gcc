@@ -7,7 +7,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly, Walter Bright, Alex Rønne Petersen, Martin Nowak
- * Source:    $(DRUNTIMESRC core/thread/osthread.d)
+ * Source:    $(DRUNTIMESRC core/thread/threadbase.d)
  */
 
 /* NOTE: This file has been patched from the original DMD distribution to

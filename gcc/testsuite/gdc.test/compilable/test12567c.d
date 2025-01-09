@@ -1,4 +1,4 @@
-// REQUIRED_ARGS:
+// REQUIRED_ARGS: -verrors=simple
 // EXTRA_FILES: imports/a12567.d
 // PERMUTE_ARGS:
 /*

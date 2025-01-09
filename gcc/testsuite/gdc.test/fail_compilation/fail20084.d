@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/fail20084.d(109): Error: returning `v.front()` escapes a reference to parameter `v`
+fail_compilation/fail20084.d(109): Error: escaping a reference to parameter `v` by returning `v.front()` is not allowed in a `@safe` function
 ---
 */
 

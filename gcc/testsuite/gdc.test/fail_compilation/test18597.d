@@ -1,8 +1,8 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/test18597.d(24): Error: field `Unaligned.p` cannot modify misaligned pointers in `@safe` code
-fail_compilation/test18597.d(25): Error: field `Unaligned.p` cannot assign to misaligned pointers in `@safe` code
-fail_compilation/test18597.d(26): Error: field `Unaligned.p` cannot assign to misaligned pointers in `@safe` code
+fail_compilation/test18597.d(24): Error: modifying misaligned pointers through field `Unaligned.p` is not allowed in a `@safe` function
+fail_compilation/test18597.d(25): Error: field `Unaligned.p` assigning to misaligned pointers is not allowed in a `@safe` function
+fail_compilation/test18597.d(26): Error: field `Unaligned.p` assigning to misaligned pointers is not allowed in a `@safe` function
 ---
 */
 

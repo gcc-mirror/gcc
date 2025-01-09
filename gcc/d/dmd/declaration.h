@@ -632,6 +632,8 @@ public:
     bool nothrowInprocess(bool v);
     bool nogcInprocess() const;
     bool nogcInprocess(bool v);
+    bool saferD() const;
+    bool saferD(bool v);
     bool scopeInprocess() const;
     bool scopeInprocess(bool v);
     bool inlineScanned() const;

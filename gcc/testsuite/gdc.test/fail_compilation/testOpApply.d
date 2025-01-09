@@ -1,7 +1,7 @@
 /+
 TEST_OUTPUT:
 ---
-fail_compilation/testOpApply.d(27): Error: `testOpApply.SameAttr.opApply` called with argument types `(int delegate(int i) pure nothrow @nogc @safe)` matches both:
+fail_compilation/testOpApply.d(27): Error: `testOpApply.SameAttr.opApply` called with argument types `(int delegate(int i) pure nothrow @nogc @safe)` matches multiple overloads after qualifier conversion:
 fail_compilation/testOpApply.d(13):     `testOpApply.SameAttr.opApply(int delegate(int) @system dg)`
 and:
 fail_compilation/testOpApply.d(18):     `testOpApply.SameAttr.opApply(int delegate(int) @system dg)`
@@ -30,7 +30,7 @@ void testSameAttr() @safe
 /+
 TEST_OUTPUT:
 ---
-fail_compilation/testOpApply.d(104): Error: `testOpApply.SameAttr.opApply` called with argument types `(int delegate(int i) pure nothrow @nogc @system)` matches both:
+fail_compilation/testOpApply.d(104): Error: `testOpApply.SameAttr.opApply` called with argument types `(int delegate(int i) pure nothrow @nogc @system)` matches multiple overloads after qualifier conversion:
 fail_compilation/testOpApply.d(13):     `testOpApply.SameAttr.opApply(int delegate(int) @system dg)`
 and:
 fail_compilation/testOpApply.d(18):     `testOpApply.SameAttr.opApply(int delegate(int) @system dg)`

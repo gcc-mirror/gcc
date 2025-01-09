@@ -418,10 +418,10 @@ private void statementToBuffer(Statement s, ref OutBuffer buf, ref HdrGenState h
     {
         buf.writestring(Token.toString(s.op));
         buf.writestring(" (");
-        if (s.prm.type)
-            typeToBuffer(s.prm.type, s.prm.ident, buf, hgs);
+        if (s.param.type)
+            typeToBuffer(s.param.type, s.param.ident, buf, hgs);
         else
-            buf.writestring(s.prm.ident.toString());
+            buf.writestring(s.param.ident.toString());
         buf.writestring("; ");
         s.lwr.expressionToBuffer(buf, hgs);
         buf.writestring(" .. ");
@@ -465,7 +465,7 @@ private void statementToBuffer(Statement s, ref OutBuffer buf, ref HdrGenState h
     void visitIf(IfStatement s)
     {
         buf.writestring("if (");
-        printConditionAssignment(s.prm, s.condition);
+        printConditionAssignment(s.param, s.condition);
         buf.writeByte(')');
         buf.writenl();
         if (s.ifbody.isScopeStatement())
@@ -1168,14 +1168,14 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
 
         void foreachRangeWithoutBody(ForeachRangeStatement s)
         {
-            /* s.op ( prm ; lwr .. upr )
+            /* s.op ( param ; lwr .. upr )
              */
             buf.writestring(Token.toString(s.op));
             buf.writestring(" (");
-            if (s.prm.type)
-                typeToBuffer(s.prm.type, s.prm.ident, buf, hgs);
+            if (s.param.type)
+                typeToBuffer(s.param.type, s.param.ident, buf, hgs);
             else
-                buf.writestring(s.prm.ident.toString());
+                buf.writestring(s.param.ident.toString());
             buf.writestring("; ");
             s.lwr.expressionToBuffer(buf, hgs);
             buf.writestring(" .. ");

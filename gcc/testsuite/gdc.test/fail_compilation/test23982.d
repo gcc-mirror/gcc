@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test23982.d(35): Error: scope variable `a` assigned to non-scope parameter `a` calling `foo2`
+fail_compilation/test23982.d(35): Error: assigning scope variable `a` to non-scope parameter `a` calling `foo2` is not allowed in a `@safe` function
 fail_compilation/test23982.d(26):        which is not `scope` because of `b = a`
 ---
 */

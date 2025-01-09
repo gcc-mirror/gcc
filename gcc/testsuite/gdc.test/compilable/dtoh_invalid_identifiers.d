@@ -1,5 +1,5 @@
 /+
-REQUIRED_ARGS: -HC -c -o- -wi -extern-std=c++20
+REQUIRED_ARGS: -verrors=simple -HC -c -o- -wi -extern-std=c++20
 PERMUTE_ARGS:
 TEST_OUTPUT:
 ---

@@ -3,7 +3,7 @@ TEST_OUTPUT:
 ---
 fail_compilation/fail_scope.d(43): Error: returning `cast(char[])string` escapes a reference to local variable `string`
 fail_compilation/fail_scope.d(61): Error: returning `s.bar()` escapes a reference to local variable `s`
-fail_compilation/fail_scope.d(72): Error: `fail_scope.foo8` called with argument types `(int)` matches both:
+fail_compilation/fail_scope.d(72): Error: `fail_scope.foo8` called with argument types `(int)` matches multiple overloads exactly:
 fail_compilation/fail_scope.d(66):     `fail_scope.foo8(ref int x)`
 and:
 fail_compilation/fail_scope.d(67):     `fail_scope.foo8(return ref int x)`

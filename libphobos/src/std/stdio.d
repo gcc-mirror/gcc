@@ -2409,7 +2409,7 @@ void main()
     private struct ByLineCopy(Char, Terminator)
     {
     private:
-        import std.typecons : SafeRefCounted, RefCountedAutoInitialize;
+        import std.typecons : borrow, RefCountedAutoInitialize, SafeRefCounted;
 
         /* Ref-counting stops the source range's ByLineCopyImpl
          * from getting out of sync after the range is copied, e.g.
@@ -2425,19 +2425,24 @@ void main()
             impl = Impl(f, kt, terminator);
         }
 
-        @property bool empty()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property bool empty() @trusted
         {
-            return impl.refCountedPayload.empty;
+            // Using `ref` is actually necessary here.
+            return impl.borrow!((ref i) => i.empty);
         }
 
-        @property Char[] front()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property Char[] front() @trusted
         {
-            return impl.refCountedPayload.front;
+            // Using `ref` is likely optional here.
+            return impl.borrow!((ref i) => i.front);
         }
 
-        void popFront()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        void popFront() @trusted
         {
-            impl.refCountedPayload.popFront();
+            impl.borrow!((ref i) => i.popFront());
         }
     }
 
@@ -2666,7 +2671,7 @@ $(REF readText, std,file)
         assert(!file.isOpen);
     }
 
-    @system unittest
+    @safe unittest
     {
         static import std.file;
         auto deleteme = testFilename();
@@ -4749,16 +4754,16 @@ struct lines
         auto myLines = lines(f);
         foreach (string line; myLines)
             continue;
+    }
 
-        auto myByLineCopy = f.byLineCopy; // but cannot safely iterate yet
-        /*
-            still `@system`:
-            - cannot call `@system` function `std.stdio.File.ByLineCopy!(immutable(char), char).ByLineCopy.empty`
-            - cannot call `@system` function `std.stdio.File.ByLineCopy!(immutable(char), char).ByLineCopy.popFront`
-            - cannot call `@system` function `std.stdio.File.ByLineCopy!(immutable(char), char).ByLineCopy.front`
-        */
-        //foreach (line; myByLineCopy)
-        //    continue;
+
+    {
+        auto f = File(deleteMe, "r");
+        scope(exit) { f.close(); }
+
+        auto myByLineCopy = f.byLineCopy;
+        foreach (line; myByLineCopy)
+            continue;
     }
 }
 

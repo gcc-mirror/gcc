@@ -211,11 +211,11 @@ Dsymbol getDsymbol(RootObject oarg)
         // Try to convert Expression to symbol
         if (auto ve = ea.isVarExp())
             return ve.var;
-        else if (auto fe = ea.isFuncExp())
+        if (auto fe = ea.isFuncExp())
             return fe.td ? fe.td : fe.fd;
-        else if (auto te = ea.isTemplateExp())
+        if (auto te = ea.isTemplateExp())
             return te.td;
-        else if (auto te = ea.isScopeExp())
+        if (auto te = ea.isScopeExp())
             return te.sds;
         else
             return null;

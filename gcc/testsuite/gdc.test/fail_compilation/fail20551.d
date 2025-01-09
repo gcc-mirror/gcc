@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail20551.d(15): Error: cannot take address of lazy parameter `e` in `@safe` function `opAssign`
+fail_compilation/fail20551.d(15): Error: taking address of lazy parameter `e` is not allowed in a `@safe` function
 fail_compilation/fail20551.d(26): Error: template instance `fail20551.LazyStore!int.LazyStore.opAssign!int` error instantiating
 ---
 */

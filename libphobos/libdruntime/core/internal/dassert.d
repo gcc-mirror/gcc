@@ -14,7 +14,7 @@
  *
  * Copyright: D Language Foundation 2018 - 2020
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/druntime/src/core/internal/dassert.d, _dassert.d)
+ * Source:    $(DRUNTIMESRC core/internal/_dassert.d)
  * Documentation: https://dlang.org/phobos/core_internal_dassert.html
  */
 module core.internal.dassert;

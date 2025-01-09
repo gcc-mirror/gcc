@@ -19,6 +19,6 @@ void test3() @nogc
 
 void test4() @safe
 {
-    asm { }             // { dg-error "'asm' statement is assumed to be '@system' - mark it with '@trusted' if it is not" }
+    asm { }             // { dg-error "'asm' statement without '@trusted' annotation is not allowed in a '@safe' function" }
 }
 

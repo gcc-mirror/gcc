@@ -30,7 +30,7 @@ X3 x3 = { ptr: null, "a", ptr: 2, 444 };
 fail_compilation/test20998.d(90): Error: too many initializers for `X3` with 3 fields
 X3 x3 = { ptr: null, "a", ptr: 2, 444 };
                                   ^
-fail_compilation/test20998.d(98): Error: field `X4.ptr` cannot assign to misaligned pointers in `@safe` code
+fail_compilation/test20998.d(98): Error: field `X4.ptr` assigning to misaligned pointers is not allowed in a `@safe` function
     X4 x4 = { ptr: null, "a", 444, ptr: 2, true };
                    ^
 fail_compilation/test20998.d(98): Error: cannot implicitly convert expression `"a"` of type `string` to `int`

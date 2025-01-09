@@ -17,6 +17,7 @@ import core.stdc.stdio;
 
 import dmd.aggregate;
 import dmd.astenums;
+import dmd.common.outbuffer;
 import dmd.dcast : implicitConvTo;
 import dmd.dclass;
 import dmd.declaration;
@@ -67,11 +68,10 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
     if (!ad)
         return false;
 
-    import dmd.globals : global;
     if (v.isSystem())
     {
-        if (sc.setUnsafePreview(global.params.systemVariables, !printmsg, e.loc,
-            "cannot access `@system` field `%s.%s` in `@safe` code", ad, v))
+        if (sc.setUnsafePreview(sc.previews.systemVariables, !printmsg, e.loc,
+            "accessing `@system` field `%s.%s`", ad, v))
             return true;
     }
 
@@ -91,7 +91,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
         if (v.overlapped)
         {
             if (sc.func.isSafeBypassingInference() && sc.setUnsafe(!printmsg, e.loc,
-                "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v))
+                "accessing overlapped field `%s.%s` with pointers", ad, v))
             {
                 return true;
             }
@@ -104,7 +104,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
                 // To turn into an error, remove `isSafeBypassingInference` check in the
                 // above if statement and remove the else branch
                 sc.setUnsafePreview(FeatureState.default_, !printmsg, e.loc,
-                    "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v);
+                    "accessing overlapped field `%s.%s` with pointers", ad, v);
             }
         }
     }
@@ -114,7 +114,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
         if (v.overlapped)
         {
             if (sc.setUnsafe(!printmsg, e.loc,
-                "field `%s.%s` cannot access structs with invariants in `@safe` code that overlap other fields",
+                "accessing overlapped field `%s.%s` with a structs invariant",
                 ad, v))
                 return true;
         }
@@ -125,7 +125,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
     // Should probably be turned into an error in a new edition
     if (v.type.hasUnsafeBitpatterns() && v.overlapped && sc.setUnsafePreview(
         FeatureState.default_, !printmsg, e.loc,
-        "cannot access overlapped field `%s.%s` with unsafe bit patterns in `@safe` code", ad, v)
+        "accessing overlapped field `%s.%s` with unsafe bit patterns", ad, v)
     )
     {
         return true;
@@ -140,7 +140,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
              (v.offset & (target.ptrsize - 1)))
         {
             if (sc.setUnsafe(!printmsg, e.loc,
-                "field `%s.%s` cannot modify misaligned pointers in `@safe` code", ad, v))
+                "modifying misaligned pointers through field `%s.%s`", ad, v))
                 return true;
         }
     }
@@ -148,7 +148,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
     if (v.overlapUnsafe)
     {
         if (sc.setUnsafe(!printmsg, e.loc,
-            "field `%s.%s` cannot modify fields in `@safe` code that overlap fields with other storage classes",
+            "modifying field `%s.%s` which overlaps with fields with other storage classes",
             ad, v))
         {
             return true;
@@ -180,6 +180,10 @@ bool isSafeCast(Expression e, Type tfrom, Type tto, ref string msg)
 
     auto tfromb = tfrom.toBasetype();
     auto ttob = tto.toBasetype();
+
+    // Casting to void* is always safe, https://github.com/dlang/dmd/issues/20514
+    if (ttob.isTypePointer() && ttob.nextOf().toBasetype().ty == Tvoid)
+        return true;
 
     if (ttob.ty == Tclass && tfromb.ty == Tclass)
     {
@@ -310,9 +314,9 @@ bool checkUnsafeDotExp(Scope* sc, Expression e, Identifier id, int flag)
     if (!(flag & DotExpFlag.noDeref)) // this use is attempting a dereference
     {
         if (id == Id.ptr)
-            return sc.setUnsafe(false, e.loc, "`%s.ptr` cannot be used in `@safe` code, use `&%s[0]` instead", e, e);
+            return sc.setUnsafe(false, e.loc, "using `%s.ptr` (instead of `&%s[0])`", e, e);
         else
-            return sc.setUnsafe(false, e.loc, "`%s.%s` cannot be used in `@safe` code", e, id);
+            return sc.setUnsafe(false, e.loc, "using `%s.%s`", e, id);
     }
     return false;
 }
@@ -323,8 +327,7 @@ bool checkUnsafeDotExp(Scope* sc, Expression e, Identifier id, int flag)
  */
 bool isSaferD(FuncDeclaration fd)
 {
-    return fd.type.toTypeFunction().trust == TRUST.default_ &&
-           global.params.safer == FeatureState.enabled;
+    return fd.type.toTypeFunction().trust == TRUST.default_ && fd.saferD;
 }
 
 bool isSafe(FuncDeclaration fd)
@@ -378,7 +381,15 @@ extern (D) void reportSafeError(FuncDeclaration fd, bool gag, Loc loc,
     else if (fd.isSafe() || fd.isSaferD())
     {
         if (!gag && format)
-            .error(loc, format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+        {
+            OutBuffer buf;
+            buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            if (fd.isSafe())
+                buf.writestring(" is not allowed in a `@safe` function");
+            else
+                buf.writestring(" is not allowed in a function with default safety with `-preview=safer`");
+            .error(loc, buf.extractChars());
+        }
     }
 }
 
@@ -457,7 +468,11 @@ bool setUnsafe(Scope* sc,
         {
             if (sc.varDecl.storage_class & STC.safe)
             {
-                .error(loc, format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+                OutBuffer buf;
+                buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+                buf.printf(" can't initialize `@safe` variable `%s`", sc.varDecl.toChars());
+                .error(loc, buf.extractChars());
+
                 return true;
             }
             else if (!(sc.varDecl.storage_class & STC.trusted))
@@ -476,7 +491,10 @@ bool setUnsafe(Scope* sc,
         {
             // Message wil be gagged, but still call error() to update global.errors and for
             // -verrors=spec
-            .error(loc, format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            OutBuffer buf;
+            buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            buf.writestring(" is not allowed in a `@safe` function");
+            .error(loc, buf.extractChars());
             return true;
         }
         return false;
@@ -534,7 +552,10 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         {
             if (!gag && !sc.isDeprecated())
             {
-                deprecation(loc, format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+                OutBuffer buf;
+                buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+                buf.writestring(" will become `@system` in a future release");
+                deprecation(loc, buf.extractChars());
             }
         }
         else if (!sc.func.safetyViolation)

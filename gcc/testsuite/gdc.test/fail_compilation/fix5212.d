@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/fix5212.d(14): Error: scope variable `args_` assigned to non-scope `this.args`
+fail_compilation/fix5212.d(14): Error: assigning scope variable `args_` to non-scope `this.args` is not allowed in a `@safe` function
 ---
 */
 

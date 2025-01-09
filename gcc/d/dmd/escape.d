@@ -354,7 +354,7 @@ bool checkParamArgumentEscape(ref Scope sc, FuncDeclaration fdc, Identifier parI
         if (assertmsg)
         {
             result |= sc.setUnsafeDIP1000(gag, arg.loc,
-                desc ~ " `%s` assigned to non-scope parameter calling `assert()`", v);
+                "assigning" ~ desc ~ " `%s` to non-scope parameter calling `assert()`", v);
             return;
         }
 
@@ -362,9 +362,9 @@ bool checkParamArgumentEscape(ref Scope sc, FuncDeclaration fdc, Identifier parI
 
         const(char)* msg =
             (isThis)        ? (desc ~ " `%s` calling non-scope member function `%s.%s()`") :
-            (fdc &&  parId) ? (desc ~ " `%s` assigned to non-scope parameter `%s` calling `%s`") :
-            (fdc && !parId) ? (desc ~ " `%s` assigned to non-scope anonymous parameter calling `%s`") :
-            (!fdc && parId) ? (desc ~ " `%s` assigned to non-scope parameter `%s`") :
+            (fdc &&  parId) ? ("assigning " ~ desc ~ " `%s` to non-scope parameter `%s` calling `%s`") :
+            (fdc && !parId) ? ("assigning " ~ desc ~ " `%s` to non-scope anonymous parameter calling `%s`") :
+            (!fdc && parId) ? ("assigning " ~ desc ~ " `%s` to non-scope parameter `%s`") :
             (desc ~ " `%s` assigned to non-scope anonymous parameter");
 
         if (isThis ?
@@ -440,8 +440,8 @@ bool checkParamArgumentEscape(ref Scope sc, FuncDeclaration fdc, Identifier parI
         if (parStc & STC.scope_)
             return;
         const(char)* msg = parId ?
-            "reference to stack allocated value returned by `%s` assigned to non-scope parameter `%s`" :
-            "reference to stack allocated value returned by `%s` assigned to non-scope anonymous parameter";
+            "assigning reference to stack allocated value returned by `%s` to non-scope parameter `%s`" :
+            "assigning reference to stack allocated value returned by `%s` to non-scope anonymous parameter";
 
         result |= sc.setUnsafeDIP1000(gag, ee.loc, msg, ee, parId);
     }
@@ -726,16 +726,16 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
                 {
                     case EnclosedBy.none: assert(0);
                     case EnclosedBy.returnScope:
-                        msg = "scope variable `%s` assigned to return scope `%s`";
+                        msg = "assigning scope variable `%s` to return scope `%s`";
                         break;
                     case EnclosedBy.longerScope:
-                        msg = "scope variable `%s` assigned to `%s` with longer lifetime";
+                        msg = "assigning scope variable `%s` to `%s` with longer lifetime";
                         break;
                     case EnclosedBy.refVar:
-                        msg = "scope variable `%s` assigned to `ref` variable `%s` with longer lifetime";
+                        msg = "assigning scope variable `%s` to `ref` variable `%s` with longer lifetime";
                         break;
                     case EnclosedBy.global:
-                        msg = "scope variable `%s` assigned to global variable `%s`";
+                        msg = "assigning scope variable `%s` to global variable `%s`";
                         break;
                 }
 
@@ -762,7 +762,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
                 }
                 return;
             }
-            result |= sc.setUnsafeDIP1000(gag, ae.loc, "scope variable `%s` assigned to non-scope `%s`", v, e1);
+            result |= sc.setUnsafeDIP1000(gag, ae.loc, "assigning scope variable `%s` to non-scope `%s`", v, e1);
         }
         else
         {
@@ -794,7 +794,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
             else
             {
                 result |= sc.setUnsafeDIP1000(gag, ae.loc,
-                    "address of local variable `%s` assigned to return scope `%s`", v, va);
+                    "assigning address of local variable `%s` to return scope `%s`", v, va);
             }
         }
 
@@ -809,7 +809,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
         // If va's lifetime encloses v's, then error
         if (va && !(vaIsFirstRef && v.isReturn()) && va.enclosesLifetimeOf(v))
         {
-            if (sc.setUnsafeDIP1000(gag, ae.loc, "address of variable `%s` assigned to `%s` with longer lifetime", v, va))
+            if (sc.setUnsafeDIP1000(gag, ae.loc, "assigning address of variable `%s` to `%s` with longer lifetime", v, va))
             {
                 result = true;
                 return;
@@ -829,7 +829,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
             return;
         }
 
-        result |= sc.setUnsafeDIP1000(gag, ae.loc, "reference to local variable `%s` assigned to non-scope `%s`", v, e1);
+        result |= sc.setUnsafeDIP1000(gag, ae.loc, "assigning reference to local variable `%s` to non-scope `%s`", v, e1);
     }
 
     void onFunc(FuncDeclaration func, bool called)
@@ -869,7 +869,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
                 return;
             }
             result |= sc.setUnsafeDIP1000(gag, ae.loc,
-                "reference to local `%s` assigned to non-scope `%s` in @safe code", v, e1);
+                "assigning reference to local `%s` to non-scope `%s`", v, e1);
         }
     }
 
@@ -889,8 +889,8 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
         }
 
         const(char)* msg = (ee.op == EXP.structLiteral) ?
-            "address of struct literal `%s` assigned to `%s` with longer lifetime" :
-            "address of expression temporary returned by `%s` assigned to `%s` with longer lifetime";
+            "assigning address of struct literal `%s`  to `%s` with longer lifetime" :
+            "assigning address of expression temporary returned by `%s` to `%s` with longer lifetime";
 
         result |= sc.setUnsafeDIP1000(gag, ee.loc, msg, ee, e1);
     }
@@ -930,7 +930,7 @@ bool checkThrowEscape(ref Scope sc, Expression e, bool gag)
                                                 // despite being `scope`
         {
             // https://issues.dlang.org/show_bug.cgi?id=17029
-            result |= sc.setUnsafeDIP1000(gag, e.loc, "scope variable `%s` may not be thrown", v);
+            result |= sc.setUnsafeDIP1000(gag, e.loc, "throwing scope variable `%s`", v);
             return;
         }
         else
@@ -989,7 +989,7 @@ bool checkNewEscape(ref Scope sc, Expression e, bool gag)
                 !(p.parent == sc.func))
             {
                 // https://issues.dlang.org/show_bug.cgi?id=20868
-                result |= sc.setUnsafeDIP1000(gag, e.loc, "scope variable `%s` may not be copied into allocated memory", v);
+                result |= sc.setUnsafeDIP1000(gag, e.loc, "copying scope variable `%s` into allocated memory", v);
                 return;
             }
         }
@@ -1009,9 +1009,9 @@ bool checkNewEscape(ref Scope sc, Expression e, bool gag)
         bool escapingRef(VarDeclaration v, FeatureState fs)
         {
             const(char)* msg = v.isParameter() ?
-                "copying `%s` into allocated memory escapes a reference to parameter `%s`" :
-                "copying `%s` into allocated memory escapes a reference to local variable `%s`";
-            return setUnsafePreview(&sc, fs, gag, e.loc, msg, e, v);
+                "escaping a reference to parameter `%s` by copying `%s` into allocated memory" :
+                "escaping a reference to local variable `%s` by copying `%s` into allocated memory";
+            return setUnsafePreview(&sc, fs, gag, e.loc, msg, v, e);
         }
 
         Dsymbol p = v.toParent2();
@@ -1064,14 +1064,14 @@ bool checkNewEscape(ref Scope sc, Expression e, bool gag)
     {
         if (called)
             result |= sc.setUnsafeDIP1000(gag, e.loc,
-                "nested function `%s` returns `scope` values and escapes them into allocated memory", fd);
+                "escaping a `scope` value returned from nested function `%s` into allocated memory", fd);
     }
 
     void onExp(Expression ee, bool retRefTransition)
     {
         if (log) printf("byexp %s\n", ee.toChars());
         if (!gag)
-            sc.eSink.error(ee.loc, "storing reference to stack allocated value returned by `%s` into allocated memory causes it to escape",
+            sc.eSink.error(ee.loc, "escaping reference to stack allocated value returned by `%s` into allocated memory",
                   ee.toChars());
         result = true;
     }
@@ -1210,7 +1210,7 @@ private bool checkReturnEscapeImpl(ref Scope sc, Expression e, bool refs, bool g
                 else
                 {
                     // https://issues.dlang.org/show_bug.cgi?id=17029
-                    result |= sc.setUnsafeDIP1000(gag, e.loc, "scope variable `%s` may not be returned", v);
+                    result |= sc.setUnsafeDIP1000(gag, e.loc, "returning scope variable `%s`", v);
                     return;
                 }
             }
@@ -1233,13 +1233,12 @@ private bool checkReturnEscapeImpl(ref Scope sc, Expression e, bool refs, bool g
         // depending on the flag passed to the CLI for DIP25
         void escapingRef(VarDeclaration v, FeatureState featureState)
         {
-            const(char)* msg = v.isParameter() ?
-                "returning `%s` escapes a reference to parameter `%s`" :
-                "returning `%s` escapes a reference to local variable `%s`";
-
+            const(char)* safeMsg = v.isParameter() ?
+                "escaping a reference to parameter `%s` by returning `%s`" :
+                "escaping a reference to local variable `%s` by returning `%s` ";
             if (v.isParameter() && v.isReference())
             {
-                if (setUnsafePreview(&sc, featureState, gag, e.loc, msg, e, v) ||
+                if (setUnsafePreview(&sc, featureState, gag, e.loc, safeMsg, v, e) ||
                     sc.func.isSafeBypassingInference())
                 {
                     result = true;
@@ -1260,10 +1259,13 @@ private bool checkReturnEscapeImpl(ref Scope sc, Expression e, bool refs, bool g
             {
                 if (retRefTransition)
                 {
-                    result |= sc.setUnsafeDIP1000(gag, e.loc, msg, e, v);
+                    result |= sc.setUnsafeDIP1000(gag, e.loc, safeMsg, v, e);
                 }
                 else
                 {
+                    const(char)* msg = v.isParameter() ?
+                        "returning `%s` escapes a reference to parameter `%s`" :
+                        "returning `%s` escapes a reference to local variable `%s`";
                     if (!gag)
                         previewErrorFunc(sc.isDeprecated(), featureState)(e.loc, msg, e.toChars(), v.toChars());
                     result = true;
@@ -2228,7 +2230,7 @@ private bool checkScopeVarAddr(VarDeclaration v, Expression e, ref Scope sc, boo
 
     // take address of `scope` variable not allowed, requires transitive scope
     return sc.setUnsafeDIP1000(gag, e.loc,
-        "cannot take address of `scope` variable `%s` since `scope` applies to first indirection only", v);
+        "taking address of `scope` variable `%s` with pointers", v);
 }
 
 /****************************

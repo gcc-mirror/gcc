@@ -1471,25 +1471,25 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             return setError();
         }
 
-        if (fs.prm.type)
+        if (fs.param.type)
         {
-            fs.prm.type = fs.prm.type.typeSemantic(loc, sc);
-            fs.prm.type = fs.prm.type.addStorageClass(fs.prm.storageClass);
-            fs.lwr = fs.lwr.implicitCastTo(sc, fs.prm.type);
+            fs.param.type = fs.param.type.typeSemantic(loc, sc);
+            fs.param.type = fs.param.type.addStorageClass(fs.param.storageClass);
+            fs.lwr = fs.lwr.implicitCastTo(sc, fs.param.type);
 
-            if (fs.upr.implicitConvTo(fs.prm.type) || (fs.prm.storageClass & STC.ref_))
+            if (fs.upr.implicitConvTo(fs.param.type) || (fs.param.storageClass & STC.ref_))
             {
-                fs.upr = fs.upr.implicitCastTo(sc, fs.prm.type);
+                fs.upr = fs.upr.implicitCastTo(sc, fs.param.type);
             }
             else
             {
-                // See if upr-1 fits in prm.type
+                // See if upr-1 fits in param.type
                 Expression limit = new MinExp(loc, fs.upr, IntegerExp.literal!1);
                 limit = limit.expressionSemantic(sc);
                 limit = limit.optimize(WANTvalue);
-                if (!limit.implicitConvTo(fs.prm.type))
+                if (!limit.implicitConvTo(fs.param.type))
                 {
-                    fs.upr = fs.upr.implicitCastTo(sc, fs.prm.type);
+                    fs.upr = fs.upr.implicitCastTo(sc, fs.param.type);
                 }
             }
         }
@@ -1502,26 +1502,26 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             {
                 /* Just picking the first really isn't good enough.
                  */
-                fs.prm.type = fs.lwr.type;
+                fs.param.type = fs.lwr.type;
             }
             else if (fs.lwr.type == fs.upr.type)
             {
                 /* Same logic as CondExp ?lwr:upr
                  */
-                fs.prm.type = fs.lwr.type;
+                fs.param.type = fs.lwr.type;
             }
             else
             {
                 scope AddExp ea = new AddExp(loc, fs.lwr, fs.upr);
                 if (typeCombine(ea, sc))
                     return setError();
-                fs.prm.type = ea.type;
+                fs.param.type = ea.type;
                 fs.lwr = ea.e1;
                 fs.upr = ea.e2;
             }
-            fs.prm.type = fs.prm.type.addStorageClass(fs.prm.storageClass);
+            fs.param.type = fs.param.type.addStorageClass(fs.param.storageClass);
         }
-        if (fs.prm.type.ty == Terror || fs.lwr.op == EXP.error || fs.upr.op == EXP.error)
+        if (fs.param.type.ty == Terror || fs.lwr.op == EXP.error || fs.upr.op == EXP.error)
         {
             return setError();
         }
@@ -1566,7 +1566,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (fs.op == TOK.foreach_reverse_)
         {
             cond = new PostExp(EXP.minusMinus, loc, new VarExp(loc, fs.key));
-            if (fs.prm.type.isScalar())
+            if (fs.param.type.isScalar())
             {
                 // key-- > tmp
                 cond = new CmpExp(EXP.greaterThan, loc, cond, new VarExp(loc, tmp));
@@ -1579,7 +1579,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         else
         {
-            if (fs.prm.type.isScalar())
+            if (fs.param.type.isScalar())
             {
                 // key < tmp
                 cond = new CmpExp(EXP.lessThan, loc, new VarExp(loc, fs.key), new VarExp(loc, tmp));
@@ -1598,30 +1598,30 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             //increment = new AddAssignExp(loc, new VarExp(loc, fs.key), IntegerExp.literal!1);
             increment = new PreExp(EXP.prePlusPlus, loc, new VarExp(loc, fs.key));
         }
-        if ((fs.prm.storageClass & STC.ref_) && fs.prm.type.equals(fs.key.type))
+        if ((fs.param.storageClass & STC.ref_) && fs.param.type.equals(fs.key.type))
         {
             fs.key.range = null;
-            auto v = new AliasDeclaration(loc, fs.prm.ident, fs.key);
+            auto v = new AliasDeclaration(loc, fs.param.ident, fs.key);
             fs._body = new CompoundStatement(loc, new ExpStatement(loc, v), fs._body);
         }
         else
         {
-            ie = new ExpInitializer(loc, new CastExp(loc, new VarExp(loc, fs.key), fs.prm.type));
-            auto v = new VarDeclaration(loc, fs.prm.type, fs.prm.ident, ie);
-            v.storage_class |= STC.temp | STC.foreach_ | (fs.prm.storageClass & STC.ref_);
+            ie = new ExpInitializer(loc, new CastExp(loc, new VarExp(loc, fs.key), fs.param.type));
+            auto v = new VarDeclaration(loc, fs.param.type, fs.param.ident, ie);
+            v.storage_class |= STC.temp | STC.foreach_ | (fs.param.storageClass & STC.ref_);
             fs._body = new CompoundStatement(loc, new ExpStatement(loc, v), fs._body);
-            if (fs.key.range && !fs.prm.type.isMutable())
+            if (fs.key.range && !fs.param.type.isMutable())
             {
                 /* Limit the range of the key to the specified range
                  */
                 v.range = new IntRange(fs.key.range.imin, fs.key.range.imax - SignExtendedNumber(1));
             }
         }
-        if (fs.prm.storageClass & STC.ref_)
+        if (fs.param.storageClass & STC.ref_)
         {
-            if (fs.key.type.constConv(fs.prm.type) == MATCH.nomatch)
+            if (fs.key.type.constConv(fs.param.type) == MATCH.nomatch)
             {
-                error(fs.loc, "argument type mismatch, `%s` to `ref %s`", fs.key.type.toChars(), fs.prm.type.toChars());
+                error(fs.loc, "argument type mismatch, `%s` to `ref %s`", fs.key.type.toChars(), fs.param.type.toChars());
                 return setError();
             }
         }
@@ -1644,15 +1644,15 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         sym.parent = sc.scopesym;
         sym.endlinnum = ifs.endloc.linnum;
         Scope* scd = sc.push(sym);
-        if (ifs.prm)
+        if (ifs.param)
         {
-            /* Declare prm, which we will set to be the
+            /* Declare param, which we will set to be the
              * result of condition.
              */
             auto ei = new ExpInitializer(ifs.loc, ifs.condition);
-            ifs.match = new VarDeclaration(ifs.loc, ifs.prm.type, ifs.prm.ident, ei);
+            ifs.match = new VarDeclaration(ifs.loc, ifs.param.type, ifs.param.ident, ei);
             ifs.match.parent = scd.func;
-            ifs.match.storage_class |= ifs.prm.storageClass;
+            ifs.match.storage_class |= ifs.param.storageClass;
             ifs.match.dsymbolSemantic(scd);
 
             auto de = new DeclarationExp(ifs.loc, ifs.match);
@@ -1688,8 +1688,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (checkNonAssignmentArrayOp(ifs.condition))
             ifs.condition = ErrorExp.get();
 
-        // Convert to boolean after declaring prm so this works:
-        //  if (S prm = S()) {}
+        // Convert to boolean after declaring param so this works:
+        //  if (S param = S()) {}
         // where S is a struct that defines opCast!bool.
         ifs.condition = ifs.condition.toBoolean(scd);
 
@@ -2677,7 +2677,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
                     // If we previously assumed the function could be ref when
                     // checking for `shared`, make sure we were right
-                    if (global.params.noSharedAccess == FeatureState.enabled && rs.exp.type.isShared())
+                    if (sc.previews.noSharedAccess && rs.exp.type.isShared())
                     {
                         .error(fd.loc, "%s `%s` function returns `shared` but cannot be inferred `ref`", fd.kind, fd.toPrettyChars);
                         supplemental();
@@ -3634,7 +3634,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             deprecation(cas.loc, "`asm` statement cannot be marked `@safe`, use `@system` or `@trusted` instead");
         if (!(cas.stc & (STC.trusted | STC.safe)))
         {
-            sc.setUnsafe(false, cas.loc, "`asm` statement is assumed to be `@system` - mark it with `@trusted` if it is not");
+            sc.setUnsafe(false, cas.loc, "`asm` statement without `@trusted` annotation");
         }
 
         sc.pop();
@@ -3997,12 +3997,12 @@ private FuncExp foreachBodyToFunction(Scope* sc, ForeachStatement fs, TypeFuncti
         p.type = p.type.addStorageClass(p.storageClass);
         if (tfld)
         {
-            Parameter prm = tfld.parameterList[i];
-            //printf("\tprm = %s%s\n", (prm.storageClass&STC.ref_?"ref ":"").ptr, prm.ident.toChars());
-            stc = (prm.storageClass & STC.ref_) | (p.storageClass & STC.scope_);
-            if ((p.storageClass & STC.ref_) != (prm.storageClass & STC.ref_))
+            Parameter param = tfld.parameterList[i];
+            //printf("\tparam = %s%s\n", (param.storageClass&STC.ref_?"ref ":"").ptr, param.ident.toChars());
+            stc = (param.storageClass & STC.ref_) | (p.storageClass & STC.scope_);
+            if ((p.storageClass & STC.ref_) != (param.storageClass & STC.ref_))
             {
-                if (!(prm.storageClass & STC.ref_))
+                if (!(param.storageClass & STC.ref_))
                 {
                     error(fs.loc, "`foreach`: cannot make `%s` `ref`", p.ident.toChars());
                     return null;
@@ -4115,7 +4115,7 @@ void catchSemantic(Catch c, Scope* sc)
         }
         if (!c.internalCatch)
         {
-            if (sc.setUnsafe(false, c.loc, "cannot catch C++ class objects in `@safe` code"))
+            if (sc.setUnsafe(false, c.loc, "catching C++ class objects"))
                 c.errors = true;
         }
     }
@@ -4127,18 +4127,18 @@ void catchSemantic(Catch c, Scope* sc)
     else if (!c.internalCatch && ClassDeclaration.exception &&
             cd != ClassDeclaration.exception && !ClassDeclaration.exception.isBaseOf(cd, null) &&
             sc.setUnsafe(false, c.loc,
-                "can only catch class objects derived from `Exception` in `@safe` code, not `%s`", c.type))
+                "catching class objects derived from `%s` instead of `Exception`", c.type))
     {
         c.errors = true;
     }
-    else if (global.params.ehnogc)
+    else if (sc.previews.dip1008)
     {
         stc |= STC.scope_;
     }
 
     // DIP1008 requires destruction of the Throwable, even if the user didn't specify an identifier
     auto ident = c.ident;
-    if (!ident && global.params.ehnogc)
+    if (!ident && sc.previews.dip1008)
         ident = Identifier.generateAnonymousId("var");
 
     if (ident)
@@ -4148,7 +4148,7 @@ void catchSemantic(Catch c, Scope* sc)
         c.var.dsymbolSemantic(sc);
         sc.insert(c.var);
 
-        if (global.params.ehnogc && stc & STC.scope_)
+        if (sc.previews.dip1008 && stc & STC.scope_)
         {
             /* Add a destructor for c.var
              * try { handler } finally { if (!__ctfe) _d_delThrowable(var); }
