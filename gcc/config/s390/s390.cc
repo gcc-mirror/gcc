@@ -2818,7 +2818,7 @@ s390_constant_via_vgbm_p (rtx op, unsigned *mask)
   unsigned tmp_mask = 0;
   int nunit, unit_size;
 
-  if (GET_CODE (op) == CONST_VECTOR)
+  if (GET_CODE (op) == CONST_VECTOR && GET_MODE_SIZE (GET_MODE (op)) <= 16)
     {
       if (GET_MODE_INNER (GET_MODE (op)) == TImode
 	  || GET_MODE_INNER (GET_MODE (op)) == TFmode)
