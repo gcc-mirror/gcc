@@ -91,7 +91,7 @@ package body System.Generic_Bignums is
       Remainder         : out Big_Integer;
       Discard_Quotient  : Boolean := False;
       Discard_Remainder : Boolean := False);
-   --  Returns the Quotient and Remainder from dividing abs (X) by abs (Y). The
+   --  Returns the Quotient and Remainder from dividing abs X by abs Y. The
    --  values of X and Y are not modified. If Discard_Quotient is True, then
    --  Quotient is undefined on return, and if Discard_Remainder is True, then
    --  Remainder is undefined on return. Service routine for Big_Div/Rem/Mod.
