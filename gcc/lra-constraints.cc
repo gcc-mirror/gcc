@@ -5878,6 +5878,20 @@ inherit_reload_reg (bool def_p, int original_regno,
 	}
       return false;
     }
+  if (ira_reg_class_min_nregs[rclass][GET_MODE (original_reg)]
+      != ira_reg_class_max_nregs[rclass][GET_MODE (original_reg)])
+    {
+      if (lra_dump_file != NULL)
+	{
+	  fprintf (lra_dump_file,
+		   "    Rejecting inheritance for %d "
+		   "because of requiring non-uniform class %s\n",
+		   original_regno, reg_class_names[rclass]);
+	  fprintf (lra_dump_file,
+		   "    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	}
+      return false;
+    }
   new_reg = lra_create_new_reg (GET_MODE (original_reg), original_reg,
 				rclass, NULL, "inheritance");
   start_sequence ();
