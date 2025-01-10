@@ -1097,8 +1097,8 @@ genericize_spaceship (location_t loc, tree type, tree op0, tree op1)
       if (type == error_mark_node)
 	return error_mark_node;
     }
-
-  gcc_checking_assert (tag < cc_last);
+  else if (tag == cc_last)
+    return error_mark_node;
 
   tree r;
   bool scalar = SCALAR_TYPE_P (TREE_TYPE (op0));
