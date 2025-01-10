@@ -4351,7 +4351,7 @@ public:
 }; // class pass_rtl_pre
 
 bool
-pass_hardreg_pre::gate (function *fun)
+pass_hardreg_pre::gate (function * ARG_UNUSED (fun))
 {
 #ifdef HARDREG_PRE_REGNOS
   return optimize > 0
