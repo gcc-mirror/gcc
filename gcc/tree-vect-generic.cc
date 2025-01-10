@@ -1757,7 +1757,7 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
   auto_vec<std::pair<tree, tree_code> > converts;
   if (supportable_indirect_convert_operation (code,
 					      ret_type, arg_type,
-					      &converts,
+					      converts,
 					      arg))
     {
       new_rhs = arg;

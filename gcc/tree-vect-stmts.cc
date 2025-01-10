@@ -5583,7 +5583,7 @@ vectorizable_conversion (vec_info *vinfo,
   scalar_mode lhs_mode = SCALAR_TYPE_MODE (lhs_type);
   scalar_mode rhs_mode = SCALAR_TYPE_MODE (rhs_type);
   opt_scalar_mode rhs_mode_iter;
-  vec<std::pair<tree, tree_code> > converts = vNULL;
+  auto_vec<std::pair<tree, tree_code> > converts;
 
   /* Supportable by target?  */
   switch (modifier)
@@ -5597,7 +5597,7 @@ vectorizable_conversion (vec_info *vinfo,
       if (supportable_indirect_convert_operation (code,
 						  vectype_out,
 						  vectype_in,
-						  &converts,
+						  converts,
 						  op0))
 	{
 	  gcc_assert (converts.length () <= 2);
@@ -15170,7 +15170,7 @@ bool
 supportable_indirect_convert_operation (code_helper code,
 					tree vectype_out,
 					tree vectype_in,
-					vec<std::pair<tree, tree_code> > *converts,
+					vec<std::pair<tree, tree_code> > &converts,
 					tree op0)
 {
   bool found_mode = false;
@@ -15187,7 +15187,7 @@ supportable_indirect_convert_operation (code_helper code,
 				     vectype_in,
 				     &tc1))
     {
-      converts->safe_push (std::make_pair (vectype_out, tc1));
+      converts.safe_push (std::make_pair (vectype_out, tc1));
       return true;
     }
 
@@ -15278,9 +15278,9 @@ supportable_indirect_convert_operation (code_helper code,
 
       if (found_mode)
 	{
-	  converts->safe_push (std::make_pair (cvt_type, tc2));
+	  converts.safe_push (std::make_pair (cvt_type, tc2));
 	  if (TYPE_MODE (cvt_type) != TYPE_MODE (vectype_out))
-	    converts->safe_push (std::make_pair (vectype_out, tc1));
+	    converts.safe_push (std::make_pair (vectype_out, tc1));
 	  return true;
 	}
     }

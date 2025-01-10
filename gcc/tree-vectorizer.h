@@ -2338,7 +2338,7 @@ extern bool supportable_narrowing_operation (code_helper, tree, tree,
 					     vec<tree> *);
 extern bool supportable_indirect_convert_operation (code_helper,
 						    tree, tree,
-						    vec<std::pair<tree, tree_code> > *,
+						    vec<std::pair<tree, tree_code> > &,
 						    tree = NULL_TREE);
 extern int compare_step_with_zero (vec_info *, stmt_vec_info);
 

@@ -947,6 +947,7 @@ crc_optimization::loop_may_calculate_crc (class loop *loop)
 	fprintf (dump_file,
 		 "The number of conditional "
 		 "branches in the loop isn't 2.\n");
+      free (loop_bbs);
       return false;
     }
 
@@ -977,8 +978,11 @@ crc_optimization::loop_may_calculate_crc (class loop *loop)
 		  return true;
 		}
 
-		if (++checked_xor_count == 2)
+	      if (++checked_xor_count == 2)
+		{
+		  free (loop_bbs);
 		  return false;
+		}
 	    }
 	}
     }
