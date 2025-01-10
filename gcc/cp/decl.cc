@@ -8171,6 +8171,17 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 	      && !var_in_maybe_constexpr_fn (decl))
 	     || DECL_VIRTUAL_P (decl));
 
+  /* See testsuite/g++.dg/gomp/allocate-15.C
+     This is a band-aid to fix an ICE with implicit constexpr functions, it
+     does not fix the non-template case in allocate-15.C though.  We currently
+     sorry on all cases where this is relevant so it shouldn't be necessary.
+     The above needs to be changed but it makes more sense to defer it to
+     another patch as it relates to some other bugs too and has slightly wider
+     implications than just within the scope of OpenMP.  */
+  if (!defer_p && flag_openmp
+      && lookup_attribute ("omp allocate", DECL_ATTRIBUTES (decl)))
+    defer_p = 1;
+
   /* Defer template instantiations.  */
   if (DECL_LANG_SPECIFIC (decl)
       && DECL_IMPLICIT_INSTANTIATION (decl))

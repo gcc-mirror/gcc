@@ -990,6 +990,10 @@ varpool_node::finalize_decl (tree decl)
       tree attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (decl));
       if (attr)
 	{
+	  /* The var loc, wrapped in a nop_expr, is stored here by
+	     cp_parser_omp_allocate, finish_omp_allocate finalizes it,
+	     we should never reach here before that happens.  */
+	  gcc_assert (TREE_CODE (TREE_VALUE (attr)) != NOP_EXPR);
 	  tree align = TREE_VALUE (TREE_VALUE (attr));
 	  if (align)
 	    SET_DECL_ALIGN (decl, MAX (tree_to_uhwi (align) * BITS_PER_UNIT,

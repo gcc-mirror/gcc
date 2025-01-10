@@ -44695,11 +44695,149 @@ cp_parser_omp_structured_block (cp_parser *parser, bool *if_p)
 static void
 cp_parser_omp_allocate (cp_parser *parser, cp_token *pragma_tok)
 {
-  tree allocator = NULL_TREE;
-  tree alignment = NULL_TREE;
-  location_t loc = pragma_tok->location;
-  tree nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
+  /* If there were errors nl might be NULL_TREE, we need to handle this case
+     where necessary to diagnose as much as possible.  */
+  tree nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_ERROR, NULL_TREE);
+  /* Reverse the chain so diagnostics are in forward order.  */
+  nl = nreverse (nl);
 
+  /* The var declared first in this function of the variables passed into the
+     allocate directive, this gets assigned in the following loop.  We can't
+     assign nl's decl to it, because it might have an error, and nl itself
+     might be NULL_TREE.
+
+     We use this to simplify checking the allocator clause's expr later.  */
+  tree f_var = NULL_TREE;
+  {
+    /* The head might have an error and need to be replaced.  */
+    tree *chain = &nl;
+    for (tree node = nl; node != NULL_TREE; node = TREE_CHAIN (node))
+      {
+	tree var = TREE_PURPOSE (node);
+	/* Do this before duplicates are diagnosed, parms are never valid so we
+	   don't want to diagnose duplicate uses of them.  */
+	if (TREE_CODE (var) == PARM_DECL)
+	  {
+	    auto_diagnostic_group d;
+	    error_at (EXPR_LOCATION (TREE_VALUE (node)),
+		      "function parameter %qD may not appear as list item in "
+		      "an %<allocate%> directive", var);
+	    inform (DECL_SOURCE_LOCATION (var),
+		    "parameter %qD declared here", var);
+	    /* Remove the node.  */
+	    *chain = TREE_CHAIN (node);
+	    /* There is nothing else to diagnose for a parm.  */
+	    continue;
+	  }
+	/* Diagnose duplicate vars passed to the allocate directive.
+	   We could generate fixits for a number of these, but adding the
+	   comma token to be removed to the fixit seems difficult.
+	   This is O(n^2), we'll have to use a hash table if it ever becomes
+	   a problem.  */
+	{
+	  auto_diagnostic_group d;
+	  bool duplicate_entry = false;
+	  /* Frontmost non duplicate node.  */
+	  tree node_prev = node;
+	  /* The node we are checking as a potential duplicate.  */
+	  tree node_current = TREE_CHAIN (node);
+	  while (node_current != NULL_TREE)
+	    {
+	      if (TREE_PURPOSE (node) == TREE_PURPOSE (node_current))
+		{
+		  /* If we could just get the location of the comma token a
+		     fixit hint would be viable here.  */
+		  error_at (EXPR_LOCATION (TREE_VALUE (node_current)),
+			    "%qD already appeared as list item in this "
+			    "directive",
+			    TREE_PURPOSE (node));
+		  duplicate_entry = true;
+		  /* The current node is a duplicate of node, remove it.  */
+		  TREE_CHAIN (node_prev) = TREE_CHAIN (node_current);
+		}
+	      else
+		node_prev = node_current;
+	      node_current = TREE_CHAIN (node_current);
+	    }
+	  if (duplicate_entry)
+	    inform (EXPR_LOCATION (TREE_VALUE (node)), "appeared first here");
+	  /* Dupes of node doesn't mean we remove it, keep going.  */
+	}
+	auto var_is_in_current_scope = [] (tree var)
+	  {
+	    tree v = current_binding_level->names;
+	    for (; v != NULL_TREE; v = DECL_CHAIN (v))
+	      if (v == var)
+		return true;
+	    return false;
+	  };
+	/* If we do this before checking if the var was used in another
+	   allocate directive the diagnostic should be more clear if the user
+	   intended to shadow another variable.  */
+	if (!var_is_in_current_scope (var))
+	  {
+	    auto_diagnostic_group d;
+	    error_at (EXPR_LOCATION (TREE_VALUE (node)),
+		      "%<allocate%> directive must be in the same scope as "
+		      "%qD", var);
+	    inform (DECL_SOURCE_LOCATION (var), "declared here");
+	    /* Remove the node.  */
+	    *chain = TREE_CHAIN (node);
+	    continue;
+	  }
+
+	tree attr = lookup_attribute ("omp allocate",
+					DECL_ATTRIBUTES (var));
+	if (attr)
+	  {
+	    auto_diagnostic_group d;
+	    error_at (EXPR_LOCATION (TREE_VALUE (node)),
+		      "%qD already appeared as list item in an "
+		      "%<allocate%> directive", var);
+	    /* The loc is stored in the chain member of the tree_list when the
+	       directive is complete.  Currently, it is only possible for a
+	       directive to already be finished if we are parsing a
+	       non-template.  */
+	    tree var_loc = TREE_CODE (TREE_VALUE (attr)) == NOP_EXPR
+			   ? TREE_VALUE (attr)
+			   : TREE_CHAIN (TREE_VALUE (attr));
+	    inform (EXPR_LOCATION (var_loc),
+		    "%qD previously appeared here", var);
+	    /* Remove the node.  */
+	    *chain = TREE_CHAIN (node);
+	  }
+	else
+	  {
+	    /* Mark the variable so we can diagnose this during parsing,
+	       including before a template is instantiated.
+	       This is necessary even if we diagnose errors for this directive
+	       so we don't miss diagnosing secondary uses of a variable in
+	       later allocate directives.  Additionally, we take advantage of
+	       this to store the loc the variable was used for diagnostics.  */
+	    DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("omp allocate"),
+					       TREE_VALUE (node),
+					       DECL_ATTRIBUTES (var));
+	    /* Everything is good, we are keeping this node now,
+	       update the current chain pointer.  */
+	    chain = &TREE_CHAIN (node);
+
+	    /* Nodes that contain a parm or a var that is not in this scope
+	       were don't make it this far, we can to assign f_var now.  */
+	    if (f_var == NULL_TREE)
+	      f_var = var;
+	    /* I am not sure of a better way to do this.  Maybe it would be
+	       better to walk the declarations in the current scope?  The
+	       chain is backwards so it would probably be worse.  */
+	    else if (linemap_location_before_p (line_table,
+						DECL_SOURCE_LOCATION (var),
+						DECL_SOURCE_LOCATION (f_var)))
+	      f_var = var;
+	  }
+      }
+  }
+  /* cp_parser_assignment_expression wraps in a location by default.  */
+  cp_expr allocator = NULL_TREE;
+  cp_expr alignment = NULL_TREE;
   do
     {
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
@@ -44720,70 +44858,202 @@ cp_parser_omp_allocate (cp_parser *parser, cp_token *pragma_tok)
 	}
       if (!parens.require_open (parser))
 	break;
-      tree expr = cp_parser_assignment_expression (parser);
+      cp_expr expr = cp_parser_assignment_expression (parser);
       if (p[2] == 'i' && alignment)
 	{
 	  error_at (cloc, "too many %qs clauses", "align");
 	  break;
 	}
       else if (p[2] == 'i')
-	{
-	  if (expr != error_mark_node)
-	    alignment = expr;
-	  /* FIXME: Remove when adding check to semantics.cc; cf FIXME below. */
-	  if (alignment
-	      && !type_dependent_expression_p (alignment)
-	      && !INTEGRAL_TYPE_P (TREE_TYPE (alignment)))
-	    {
-	      error_at (cloc, "%<align%> clause argument needs to be "
-			      "positive constant power of two integer "
-			      "expression");
-	      alignment = NULL_TREE;
-	    }
-	  else if (alignment)
-	    {
-	      alignment = mark_rvalue_use (alignment);
-	      if (!processing_template_decl)
-		{
-		  alignment = maybe_constant_value (alignment);
-		  if (TREE_CODE (alignment) != INTEGER_CST
-		      || !tree_fits_uhwi_p (alignment)
-		      || !integer_pow2p (alignment))
-		    {
-		      error_at (cloc, "%<align%> clause argument needs to be "
-				      "positive constant power of two integer "
-				      "expression");
-		      alignment = NULL_TREE;
-		    }
-		}
-	    }
-	}
+	alignment = expr;
       else if (allocator)
 	{
 	  error_at (cloc, "too many %qs clauses", "allocator");
 	  break;
 	}
       else
-	{
-	  if (expr != error_mark_node)
-	    allocator = expr;
-	}
+	allocator = expr;
       parens.require_close (parser);
     } while (true);
   cp_parser_require_pragma_eol (parser, pragma_tok);
 
-  if (allocator || alignment)
-    for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
-      {
-	OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
-	OMP_CLAUSE_ALLOCATE_ALIGN (c) = alignment;
-      }
+  /* Used to carry information into the below lambda through cp_walk_tree.  */
+  struct cp_omp_loc_tree
+  {
+    location_t loc;
+    tree first_arg;
+    tree arg_list;
+  };
+  /* Check whether the expression used in the allocator clause is declared or
+     modified between the variable declaration and its allocate directive.
 
-  /* FIXME: When implementing properly, delete the align/allocate expr error
-     check above and add one in semantics.cc (to properly handle templates).
-     Base this on the allocator/align modifiers check for the 'allocate' clause
-     in semantics.cc's finish_omp_clauses.  */
-  sorry_at (loc, "%<#pragma omp allocate%> not yet supported");
+     We could consider moving everything here to finish_omp_allocate but it's
+     convenient to keep it here until we opt to tackle the issues noted in the
+     comments below.  */
+  auto check_omp_allocate_allocator_r = [] (tree *tp, int *, void *data)
+    {
+      /* We bail on the first error we find.  Alternatively we could diagnose
+	 as much as we can, keeping track of vars we have already diagnosed to
+	 prevent duplicates errors, but it doesn't seem worth doing.  */
+      tree var_in_expr = *tp;
+      if (!VAR_P (var_in_expr))
+	return NULL_TREE;
+
+      location_t alloc_expr_loc = ((cp_omp_loc_tree *) data)->loc;
+      tree first_declared_arg = ((cp_omp_loc_tree *) data)->first_arg;
+      tree all_args = ((cp_omp_loc_tree *) data)->arg_list;
+
+      /* For obvious reasons, you can't use a var used in an allocate directive
+	 as part of the allocator clause's expression.  We don't have to check
+	 this specifically for each var because usage of a var declared after
+	 the first declared var will also be rejected, but this would result in
+	 a misleading diagnostic.  It doesn't cost use much to do this check
+	 explicitly for each arg so do it this way.  */
+      for (tree arg = all_args; arg; arg = TREE_CHAIN (arg))
+	if (var_in_expr == TREE_PURPOSE (arg))
+	  {
+	    tree arg_decl = TREE_PURPOSE (arg);
+	    /* It would be nice if there were an easy way to put the caret on
+	       the use of the variable, but there doesn't appear to be.  */
+	    auto_diagnostic_group d;
+	    error_at (alloc_expr_loc,
+		      "variable %qD used in this %<allocate%> directive must "
+		      "not be used in its %<allocator%> clause", arg_decl);
+	    inform (DECL_SOURCE_LOCATION (arg_decl), "declared here");
+	    inform (EXPR_LOCATION (TREE_VALUE (arg)),
+		    "used in allocate directive here");
+	    return error_mark_node;
+	  }
+      /* We can't rely on locations to determine declaration order because var
+	 decls that are implicit lambda captures have their location set to
+	 their first use.  This is probably a bug but relying on source
+	 location for this seems incorrect anyway.  */
+      for (tree v = current_binding_level->names; v; v = DECL_CHAIN (v))
+	{
+	  /* If we find first_declared_arg before var_in_expr it must have
+	     been declared before it.  */
+	  if (v == first_declared_arg)
+	    break;
+	  if (v == var_in_expr)
+	    {
+	      /* Captures don't make it here so we should be able to rely on
+		 the DECL_SOURCE_LOCATION for var_in_expr.  */
+	      auto_diagnostic_group d;
+	      error_at (alloc_expr_loc,
+			"variable %qD used in the %<allocator%> clause "
+			"must be declared before %qD",
+			var_in_expr, first_declared_arg);
+	      inform (DECL_SOURCE_LOCATION (var_in_expr), "declared here");
+	      inform (DECL_SOURCE_LOCATION (first_declared_arg),
+		      "to be allocated variable declared here");
+	      return error_mark_node;
+	    }
+	}
+
+      /* It's super easy to hide mutations to variables used in the alloc
+	 clause with our current error checking, the following is not currently
+	 diagnosed.
+
+	 void f() {
+	   omp_allocator_handle_t alloc = omp_default_mem_alloc;
+	   int a;
+	   int hide_mutation = alloc = omp_large_cap_mem_alloc;
+	   #pragma omp allocate(a) allocator(alloc)
+	 }
+
+	 But this is fairly representative of what we currently have in the C
+	 front end, which has the same problem, so a problem for the future.
+
+	 Alongside incomplete error diagnostics, there are also cases that
+	 can't be diagnosed or warned until template instantiation.
+
+	 template<typename T>
+	 void f(T arg) {
+	   omp_allocator_handle_t alloc = omp_default_mem_alloc;
+	   int a;
+	   foobar(arg, alloc);
+	   #pragma omp allocate(a) allocator(alloc)
+	 }
+	 It's impossible to know what the signature of foobar is until overload
+	 resolution completes.  To diagnose (or at least warn) for these edge
+	 cases, this section should be moved to finish_omp_allocate instead of
+	 here.  We can add full diagnostics to mutations of variables in the
+	 allocator clause once we do that.  */
+      gcc_assert (cur_stmt_list
+		  && TREE_CODE (cur_stmt_list) == STATEMENT_LIST);
+      for (tree_stmt_iterator stmt_it = tsi_last (cur_stmt_list);
+	   !tsi_end_p (stmt_it);
+	   --stmt_it)
+	{
+	  tree stmt = *stmt_it;
+	  /* Don't check anything preceding first_declared_arg's decl.  */
+	  if (TREE_CODE (stmt) == DECL_EXPR
+	      && DECL_EXPR_DECL (stmt) == first_declared_arg)
+	    break;
+	  /* Due to differences in the C++ AST, I don't believe this catches
+	     any cases right now.*/
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && TREE_OPERAND (stmt, 0) == var_in_expr)
+	    {
+	      auto_diagnostic_group d;
+	      error_at (alloc_expr_loc,
+			"variable %qD used in the %<allocator%> clause must "
+			"not be modified between declaration of %qD and its "
+			"%<allocate%> directive",
+			var_in_expr, first_declared_arg);
+	      inform (EXPR_LOCATION (stmt), "modified here");
+	      inform (DECL_SOURCE_LOCATION (first_declared_arg),
+		      "to be allocated variable declared here");
+	      return error_mark_node;
+	    }
+	}
+      return NULL_TREE;
+    };
+  /* This diagnostic is meaningless if we have no valid args.  */
+  if (allocator != NULL_TREE && nl != NULL_TREE)
+    {
+      gcc_assert (f_var != NULL_TREE);
+      /* Declarations and mutations must happen before any of the vars are
+	 declared.  If this is satisfied for the first declaration, it will be
+	 satisfied for all of them, so just check the first.  */
+      cp_omp_loc_tree data = {allocator.get_location (), f_var, nl};
+      /* We can't take the address of an rvalue, so we need to do this.  */
+      tree a = allocator.get_value ();
+      if (cp_walk_tree (&a, check_omp_allocate_allocator_r, &data, NULL))
+	allocator = cp_expr (error_mark_node, UNKNOWN_LOCATION);
+    }
+  /* I couldn't find a function that already does this, might be best to
+     add it instead of having it here.
+     Some codes, such as template parameters, don't get wrapped despite not
+     being able to carry a location.  We need a location to issue correct
+     diagnostics in finish_omp_allocate.  */
+  auto maybe_force_wrap_with_location = [](cp_expr expr_with_loc) -> tree
+    {
+      tree expr = expr_with_loc.get_value ();
+      if (!expr || error_operand_p (expr))
+	return expr;
+      /* In most situations, expr will already have been wrapped,
+	 we don't need to do anything if that's the case.  */
+      if (CAN_HAVE_LOCATION_P (expr))
+	return expr;
+
+      location_t expr_loc = expr_with_loc.get_location ();
+      /* Copied from tree.cc:maybe_wrap_with_location.  */
+      tree_code code
+	= (((CONSTANT_CLASS_P (expr) && TREE_CODE (expr) != STRING_CST)
+	   || (TREE_CODE (expr) == CONST_DECL && !TREE_STATIC (expr)))
+	  ? NON_LVALUE_EXPR : VIEW_CONVERT_EXPR);
+      tree wrapper = build1_loc (expr_loc, code, TREE_TYPE (expr), expr);
+      /* Mark this node as being a wrapper.  */
+      EXPR_LOCATION_WRAPPER_P (wrapper) = 1;
+      return wrapper;
+    };
+  /* We can still diagnose some things about allocator/alignment even if nl
+     is empty.  */
+  finish_omp_allocate (pragma_tok->location,
+		       nl,
+		       maybe_force_wrap_with_location (allocator),
+		       maybe_force_wrap_with_location (alignment));
 }
 
 /* OpenMP 2.5:
@@ -53870,8 +54140,8 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       stmt = cp_parser_oacc_wait (parser, pragma_tok);
       break;
     case PRAGMA_OMP_ALLOCATE:
-      cp_parser_omp_allocate (parser, pragma_tok);
-      return;
+      /* This is a declarative directive, not a construct.  */
+      gcc_unreachable ();
     case PRAGMA_OMP_ATOMIC:
       cp_parser_omp_atomic (parser, pragma_tok, false);
       return;
@@ -54573,7 +54843,10 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       cp_parser_omp_construct (parser, pragma_tok, if_p);
       return true;
     case PRAGMA_OMP_ALLOCATE:
+      /* Don't go through cp_parser_omp_construct as this pragma is a
+	 declarative directive, not a construct.  */
       cp_parser_omp_allocate (parser, pragma_tok);
+      /* EOL is handled in cp_parser_omp_allocate.  */
       return false;
     case PRAGMA_OACC_ATOMIC:
     case PRAGMA_OACC_CACHE:

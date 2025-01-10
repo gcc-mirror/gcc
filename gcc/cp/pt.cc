@@ -19687,6 +19687,31 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			   OMP_DEPOBJ_CLAUSES (t));
       break;
 
+    case OMP_ALLOCATE:
+      {
+	gcc_assert (flag_openmp);
+
+	tree alloc
+	  = tsubst_expr (OMP_ALLOCATE_ALLOCATOR (t), args, complain, in_decl);
+	tree align
+	  = tsubst_expr (OMP_ALLOCATE_ALIGN (t), args, complain, in_decl);
+	tree vars = copy_list (OMP_ALLOCATE_VARS (t));
+	for (tree node = vars; node != NULL_TREE; node = TREE_CHAIN (node))
+	  {
+	    if (TREE_PURPOSE (node) == error_mark_node)
+	      continue;
+	    /* The var was already substituted, just look up the new node.  */
+	    tree var = lookup_name (DECL_NAME (TREE_PURPOSE (node)),
+				    LOOK_where::BLOCK, LOOK_want::NORMAL);
+	    /* There's a weird edge case where lookup_name returns NULL_TREE,
+	       but only for incorrect code.  Even so, handle NULL_TREE to avoid
+	       segfaulting in those cases.  */
+	    TREE_PURPOSE (node) = var ? var : error_mark_node;
+	    /* Don't copy the attr here, let finish_omp_allocate handle it.  */
+	  }
+	finish_omp_allocate (OMP_ALLOCATE_LOCATION (t), vars, alloc, align);
+	break;
+      }
     case OACC_DATA:
     case OMP_TARGET_DATA:
     case OMP_TARGET:

@@ -491,6 +491,17 @@ DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
    Operand 1: OMP_DEPOBJ_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
 
+/* OpenMP - #pragma omp allocate
+   Underlying node type is tree_exp, used to represent the directive as a
+   statement in a function.  Only used for template instantiation.
+   Operand 0: OMP_ALLOCATE_VARS: tree_list containing each var_decl passed to
+				 the directive as an args, purpose contains the
+				 var_decl, value contains a expr that holds the
+				 location where the var was passed in.
+   Operand 1: OMP_ALLOCATE_ALLOCATOR: Expr of the allocator clause.
+   Operand 2: OMP_ALLOCATE_ALIGN: Expr of the align clause.  */
+DEFTREECODE (OMP_ALLOCATE, "omp_allocate", tcc_statement, 3)
+
 /* Extensions for Concepts. */
 
 /* Used to represent information associated with constrained declarations. */

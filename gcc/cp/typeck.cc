@@ -10884,7 +10884,10 @@ can_do_nrvo_p (tree retval, tree functype)
 	  && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (retval)),
 			  TYPE_MAIN_VARIANT (functype))
 	  /* And the returned value must be non-volatile.  */
-	  && !TYPE_VOLATILE (TREE_TYPE (retval)));
+	  && !TYPE_VOLATILE (TREE_TYPE (retval))
+	  /* And the variable must not be used in an allocate directive.  */
+	  && (!flag_openmp || !lookup_attribute ("omp allocate",
+						 DECL_ATTRIBUTES (retval))));
 }
 
 /* True if we would like to perform NRVO, i.e. can_do_nrvo_p is true and we

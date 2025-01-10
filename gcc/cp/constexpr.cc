@@ -11042,6 +11042,22 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return true;
       }
 
+    /* We technically should never encounter this, but handling a generic
+       lambda checks the function body before instantiation to see if it can be
+       declared constexpr.  This is currently fairly buggy and not respected
+       by other parts of the code though.  */
+    case OMP_ALLOCATE:
+      /* This is the only case I observed this, we want to know if other cases
+	 suddenly manifest.  */
+      gcc_assert (cxx_dialect >= cxx17
+		  && processing_template_decl
+		  && LAMBDA_FUNCTION_P (current_function_decl));
+      /* OpenMP does not currently allow directives in constexpr functions.
+	 However as hinted at above, returning false here doesn't actually stop
+	 lambdas from being called in constant expressions.
+	 We still return false in case that changes in the future.  */
+      return false;
+
     default:
       if (objc_non_constant_expr_p (t))
 	return false;

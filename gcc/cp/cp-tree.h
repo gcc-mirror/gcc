@@ -5681,6 +5681,23 @@ target_expr_needs_replace (tree t)
 #define OMP_DEPOBJ_DEPOBJ(NODE)	 TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 0)
 #define OMP_DEPOBJ_CLAUSES(NODE) TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 1)
 
+/* OMP_ALLOCATE accessors.
+   #pragma omp allocate(var1, var2) allocator(Expr) align(Expr) */
+/* Location of the OMP_ALLOCATE directive.  */
+#define OMP_ALLOCATE_LOCATION(NODE) (OMP_ALLOCATE_CHECK (NODE)->exp.locus)
+/* Contains a tree_list containing each variable passed as an argument to the
+   allocate directive.  The purpose holds the var_decl, the value holds an expr
+   containing the location the var was passed as an argument.  */
+#define OMP_ALLOCATE_VARS(NODE) (TREE_OPERAND (OMP_ALLOCATE_CHECK (NODE), 0))
+/* Contains the expression passed in the allocator clause, may be
+   error_mark_node if errors occurred.  */
+#define OMP_ALLOCATE_ALLOCATOR(NODE) \
+  (TREE_OPERAND (OMP_ALLOCATE_CHECK (NODE), 1))
+/* Contains the expression passed in the align clause, may be error_mark_node
+   if errors occurred.  */
+#define OMP_ALLOCATE_ALIGN(NODE) \
+  (TREE_OPERAND (OMP_ALLOCATE_CHECK (NODE), 2))
+
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
   none_type = 0, /* Not a tag type.  */
@@ -8102,6 +8119,7 @@ extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, tree, vec<tree> *, tree);
 extern tree finish_omp_for_block		(tree, tree);
+extern void finish_omp_allocate			(location_t, tree, tree, tree);
 extern void finish_omp_atomic			(location_t, enum tree_code,
 						 enum tree_code, tree, tree,
 						 tree, tree, tree, tree, tree,

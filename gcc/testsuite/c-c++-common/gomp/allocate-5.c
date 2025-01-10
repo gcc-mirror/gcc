@@ -21,11 +21,10 @@ foo ()
   omp_allocator_handle_t my_allocator = omp_default_mem_alloc;
   int a, b;
   static int c;
-#pragma omp allocate (a)  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } } */
-#pragma omp allocate (b) allocator(my_allocator)  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } } */
+#pragma omp allocate (a)
+#pragma omp allocate (b) allocator(my_allocator)
 #pragma omp allocate(c) align(32)
-  /* { dg-message "'allocator' clause required for static variable 'c'" "" { target c } .-1 } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-2 } */
+  /* { dg-message "'allocator' clause required for static variable 'c'" "" { target *-*-* } .-1 } */
 }
 
 void
@@ -34,14 +33,14 @@ bar ()
   int a, a2, b;
   omp_allocator_handle_t my_allocator;
 #pragma omp allocate  /* { dg-error "expected '\\(' before end of line" } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 #pragma omp allocate allocator(my_allocator)  /* { dg-error "expected '\\(' before 'allocator'" } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 #pragma omp allocate(a) foo(my_allocator) /* { dg-error "expected 'allocator'" } */
   /* { dg-error "expected end of line before '\\(' token" "" { target *-*-* } .-1 } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-2 } */
-#pragma omp allocate(a2) allocator(b)  /* { dg-error "'allocator' clause allocator expression has type 'int' rather than 'omp_allocator_handle_t'" "todo: cp/semantics.c" { xfail c++ } } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
+#pragma omp allocate(a2) allocator(b)
+  /* { dg-error "'allocator' clause expression has type 'int' rather than 'omp_allocator_handle_t'" "" { target c } .-1 } */
+  /* { dg-error "variable 'b' used in the 'allocator' clause must be declared before 'a2'" "" { target c++ } .-2 } */
+  /* We have diverging behavior here between c and c++ due to a difference in
+     order of diagnostics, this should probably be unified.  */
 }
 
 
@@ -50,22 +49,16 @@ align_test ()
 {
   int i1,i2,i3,i4,i5,i6;
   #pragma omp allocate(i1) allocator(omp_default_mem_alloc), align(32)
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
   #pragma omp allocate(i2) align ( 32 ),allocator(omp_default_mem_alloc)
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
   #pragma omp allocate(i3),allocator(omp_default_mem_alloc) align(32)
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
   #pragma omp allocate(i4) align ( 32 ) allocator(omp_default_mem_alloc)
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 
   #pragma omp allocate(i5) allocator ( omp_high_bw_mem_alloc ), align ( 32 ) allocator(omp_default_mem_alloc)
   /* { dg-error "too many 'allocator' clauses" "" { target *-*-* } .-1 } */
   /* { dg-error "expected end of line before '\\)' token" "" { target *-*-* } .-2 } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-3 } */
   #pragma omp allocate(i6) align ( 32 ), align(32) allocator(omp_default_mem_alloc)
   /* { dg-error "too many 'align' clauses" "" { target *-*-* } .-1 } */
   /* { dg-error "expected end of line before '\\)' token" "" { target *-*-* } .-2 } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-3 } */
 }
 
 void
@@ -73,9 +66,6 @@ align_test2 ()
 {
   int i, i2,i3;
   #pragma omp allocate(i) align (32.0)  /* { dg-error "'align' clause argument needs to be positive constant power of two integer expression" } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
   #pragma omp allocate(i2) align ( 31 )  /* { dg-error "'align' clause argument needs to be positive constant power of two integer expression" } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
   #pragma omp allocate(i3) align ( -32 )  /* { dg-error "'align' clause argument needs to be positive constant power of two integer expression" } */
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 }

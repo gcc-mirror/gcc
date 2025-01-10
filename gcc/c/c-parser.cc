@@ -23136,7 +23136,7 @@ c_parser_omp_allocate (c_parser *parser)
 		 != get_identifier ("omp_allocator_handle_t"))
 	    {
 	      error_at (expr_loc,
-			"%<allocator%> clause allocator expression has type "
+			"%<allocator%> clause expression has type "
 			"%qT rather than %<omp_allocator_handle_t%>",
 			TREE_TYPE (allocator));
 	      allocator = NULL_TREE;

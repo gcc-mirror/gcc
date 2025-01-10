@@ -12326,6 +12326,299 @@ finish_omp_for_block (tree bind, tree omp_for)
   return bind;
 }
 
+/* Validate an OpenMP allocate directive, then add the ALLOC and ALIGN exprs to
+   the "omp allocate" attr of each decl found in VARS.  The value of attr is
+   a TREE_LIST with ALLOC stored in its purpose member and ALIGN stored in its
+   value member.  ALLOC and ALIGN are exprs passed as arguments to the
+   allocator and align clauses of the directive.  VARS may be NULL_TREE if
+   there were errors during parsing.
+   #pragma omp allocate(VARS) allocator(ALLOC) align(ALIGN)
+
+   If processing_template_decl, a stmt of tree_code OMP_ALLOCATE is added to
+   the function instead.  LOC is used to initialize the nodes location member,
+   this information is currently unused.  */
+
+void
+finish_omp_allocate (location_t loc, tree var_list, tree alloc, tree align)
+{
+  /* Common routine for modifying the "omp allocate" attribute.  This should
+     only be called once for each var, either after a diagnostic, or when we
+     are finished with the directive.  */
+  auto finalize_allocate_attr = [] (tree var, tree alloc, tree align)
+    {
+      gcc_assert (var != NULL_TREE && var != error_mark_node);
+
+      /* The attr was added in cp_parser_omp_allocate.  */
+      tree attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (var));
+      gcc_assert (attr != NULL_TREE);
+
+      /* cp_parser_omp_allocate adds the location where the var was used as an
+	 arg for diagnostics, it should still be untouched at this point.  */
+      tree arg_loc = TREE_VALUE (attr);
+      gcc_assert (arg_loc != NULL_TREE && TREE_CODE (arg_loc) == NOP_EXPR);
+
+      /* We still need the location in case parsing hasn't finished yet, we
+	 simply smuggle it through the chain member.  */
+      tree attr_value = tree_cons (alloc, align, arg_loc);
+      /* We can't modify the old "omp allocate" attr, substitution doesn't know
+	 the attr is dependent so it isn't copied when substituting the var.
+	 We avoid making unnecessary copies creating the final node here.  */
+      DECL_ATTRIBUTES (var)
+	= tree_cons (get_identifier ("omp allocate"),
+		     attr_value,
+		     remove_attribute ("omp allocate",
+				       DECL_ATTRIBUTES (var)));
+    };
+  /* The alloc/align clauses get marked with error_mark_node after an error is
+     reported to prevent duplicate diagnosis.  The same is done for the var
+     (TREE_PURPOSE) of any node that has an error, additionally the
+     "omp allocate" attr is marked so the middle end knows to skip it during
+     gimplification.  */
+
+
+
+  for (tree vn = var_list; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+    {
+      tree var = TREE_PURPOSE (vn);
+      bool var_has_error = false;
+      if (var == error_mark_node)
+	/* Early escape.  */;
+      else if (TYPE_REF_P (TREE_TYPE (var)))
+	{
+	  auto_diagnostic_group d;
+	  error_at (EXPR_LOCATION (TREE_VALUE (vn)),
+		    "variable %qD with reference type may not appear as a "
+		    "list item in an %<allocate%> directive", var);
+	  inform (DECL_SOURCE_LOCATION (var), "%qD declared here", var);
+	  var_has_error = true;
+	}
+      else if (TREE_STATIC (var) && var_in_maybe_constexpr_fn (var))
+	{
+	  /* Unfortunately, until the first round of band-aids is applied to
+	     make_rtl_for_nonlocal_decl we can't support static vars in
+	     implicit constexpr functions in non-template contexts at all.
+	     Technically, we could support cases inside templates, but it's
+	     difficult to differentiate them here, and it would be confusing to
+	     only allow the cases in templates.  */
+	  auto_diagnostic_group d;
+	  sorry_at (EXPR_LOCATION (TREE_VALUE (vn)),
+		    "static variable %qD is not supported in an %<allocate%> "
+		    "directive in an implicit constexpr function", var);
+	  inform (DECL_SOURCE_LOCATION (var), "%qD declared here", var);
+	  var_has_error = true;
+	}
+
+      if (var_has_error)
+	{
+	  /* Mark the node so we don't need to lookup the attribute every
+	     time we check if we need to skip a diagnostic.  */
+	  TREE_PURPOSE (vn) = error_mark_node;
+	  /* We won't have access to the var after it's cleared from the node,
+	     finalize it early.
+	     We avoid needing to handle error_mark_node in
+	     varpool_node::finalize_decl if we make align a NULL_TREE.  */
+	  finalize_allocate_attr (var, error_mark_node, NULL_TREE);
+	}
+    }
+  /* Unfortunately, we can't easily diagnose use of a parameter in the alloc or
+     align expr before instantiation.  For a type dependent expr
+     potential_constant_expression must return true even if the expr contains
+     a parameter.  The align and alloc clause's exprs must be of type
+     integer/omp_allocator_handle_t respectively, in theory these extra
+     constraints would let us diagnose some cases during parsing of a template
+     declaration.  The following case is invalid.
+       void f0(auto p) {
+	 int a;
+	 #pragma omp allocate(a) align(p)
+       }
+     We know that this can't be valid because expr p must be an integer type,
+     not an empty class type.  On the other hand...
+       constexpr int g(auto) { return 32; }
+       void f1(auto p) {
+	 int a;
+	 #pragma omp allocate(a) align(g (p))
+       }
+     This is valid code if p is an empty class type, so we can't just
+     disqualify an expression because it contains a local var or parameter.
+
+     In short, we don't jump through hoops to try to diagnose cases that are
+     possible to be proven ill-formed, such as with f1 above, we just diagnose
+     it upon instantiation.  Perhaps this can be revisited, but it doesn't
+     seem to be worth it.  It will complicate the error handling code here,
+     and has a risk of breaking valid code like the f1 case above.
+
+     See PR91953 and r10-6416-g8fda2c274ac66d60c1dfc1349e9efb4e8c2a3580 for
+     more information.
+
+     There are also funny cases like const int that are considered constant
+     expressions which we have to accept for correctness, but that only applies
+     to variables, not parameters.  */
+  if (align && align != error_mark_node)
+    {
+      /* (OpenMP 5.1, 181:17-18) alignment is a constant positive integer
+	 expression with a value that is a power of two.  */
+      location_t align_loc = EXPR_LOCATION (align);
+      if (!type_dependent_expression_p (align))
+	{
+	  /* Might we want to support implicitly convertible to int?  Is that
+	     forbidden by the spec?  */
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (align)))
+	    {
+	      /* Just use the same error as the value checked error, there is
+		 little value in fragmenting the wording.  */
+	      error_at (align_loc,
+			"%<align%> clause argument needs to be positive "
+			"constant power of two integer expression");
+	      /* Don't repeat the error again.  */
+	      align = error_mark_node;
+	    }
+	}
+      if (align != error_mark_node && !value_dependent_expression_p (align))
+	{
+	  align = fold_non_dependent_expr (align);
+	  if (!TREE_CONSTANT (align)
+	      || tree_int_cst_sgn (align) != 1
+	      || !integer_pow2p (align))
+	    {
+	      error_at (align_loc,
+			"%<align%> clause argument needs to be positive "
+			"constant power of two integer expression");
+	      align = error_mark_node;
+	    }
+	}
+    }
+
+  if (alloc == NULL_TREE)
+    {
+      for (tree node = var_list; node != NULL_TREE; node = TREE_CHAIN (node))
+	{
+	  tree var = TREE_PURPOSE (node);
+	  if (var != error_mark_node && TREE_STATIC (var))
+	    {
+	      auto_diagnostic_group d;
+	      error_at (EXPR_LOCATION (TREE_VALUE (node)),
+			"%<allocator%> clause required for "
+			"static variable %qD", var);
+	      inform (DECL_SOURCE_LOCATION (var), "%qD declared here", var);
+	      alloc = error_mark_node;
+	    }
+	}
+    }
+  else if (alloc != error_mark_node)
+    {
+      location_t alloc_loc = EXPR_LOCATION (alloc);
+      if (!type_dependent_expression_p (alloc))
+	{
+	  tree orig_type = TYPE_MAIN_VARIANT (TREE_TYPE (alloc));
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (alloc))
+	      || TREE_CODE (orig_type) != ENUMERAL_TYPE
+	      || TYPE_NAME (orig_type) == NULL_TREE
+	      || (DECL_NAME (TYPE_NAME (orig_type))
+		  != get_identifier ("omp_allocator_handle_t")))
+	    {
+	      error_at (alloc_loc,
+			"%<allocator%> clause expression has type "
+			"%qT rather than %<omp_allocator_handle_t%>",
+			TREE_TYPE (alloc));
+	      alloc = error_mark_node;
+	    }
+	}
+      if (alloc != error_mark_node && !value_dependent_expression_p (alloc))
+	{
+	  /* It is unclear if this is required as fold_non_dependent_expr
+	     appears to correctly return the original expr if it can't be
+	     folded.  Additionally, should we be passing tf_none?  */
+	  alloc = maybe_fold_non_dependent_expr (alloc);
+	  const bool constant_predefined_allocator = [&] ()
+	    {
+	      if (!TREE_CONSTANT (alloc))
+		return false;
+	      wi::tree_to_widest_ref alloc_value = wi::to_widest (alloc);
+	      /* MAX is inclusive.  */
+	      return (alloc_value >= 1
+		      && alloc_value <= GOMP_OMP_PREDEF_ALLOC_MAX)
+		     || (alloc_value >= GOMP_OMPX_PREDEF_ALLOC_MIN
+			 && alloc_value <= GOMP_OMPX_PREDEF_ALLOC_MAX);
+	    } (); /* IILE.  */
+	  if (!constant_predefined_allocator)
+	    {
+	      for (tree vn = var_list; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+		{
+		  tree var = TREE_PURPOSE (vn);
+		  if (var != error_mark_node && TREE_STATIC (var))
+		    {
+		      auto_diagnostic_group d;
+		      /* Perhaps we should only report a single error and
+			 inform for each static var?  */
+		      error_at (alloc_loc,
+				"%<allocator%> clause requires a predefined "
+				"allocator as %qD is static", var);
+		      inform (DECL_SOURCE_LOCATION (var),
+			      "%qD declared here", var);
+		      alloc = error_mark_node;
+		    }
+		}
+	    }
+	}
+    }
+  /* Helper algorithm.  */
+  auto any_of_vars = [&var_list] (bool (*predicate)(tree))
+    {
+      for (tree vn = var_list; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+	if (predicate (TREE_PURPOSE (vn)))
+	  return true;
+      return false;
+    };
+
+  /* Even if there have been errors we still want to save our progress so we
+     don't miss any potential diagnostics.
+     Technically we don't have to do this if there were errors and alloc,
+     align, and all the vars are substituted, but it's more work to check for
+     that than to just add the stmt.  If it were viable to finalize everything
+     before instantiation is complete it might be worth it, but we can't do
+     that because substitution has to eagerly copy nodes.  */
+  if (processing_template_decl)
+    {
+      tree allocate_stmt = make_node (OMP_ALLOCATE);
+      /* Pretty sure we don't want side effects on this, it also probably
+	 doesn't matter but lets avoid unnecessary noise.  */
+      TREE_SIDE_EFFECTS (allocate_stmt) = 0;
+      OMP_ALLOCATE_LOCATION (allocate_stmt) = loc;
+      OMP_ALLOCATE_VARS (allocate_stmt) = var_list;
+      OMP_ALLOCATE_ALLOCATOR (allocate_stmt) = alloc;
+      OMP_ALLOCATE_ALIGN (allocate_stmt) = align;
+      add_stmt (allocate_stmt);
+      return;
+    }
+  else if (alloc == error_mark_node || align == error_mark_node || !var_list
+	   || any_of_vars ([] (tree var) { return var == error_mark_node; }))
+    {
+      /* The directive is fully instantiated, however, errors were diagnosed.
+	 We can't remove the "omp allocate" attr just in case we are still
+	 parsing a function, instead, we mark it.  */
+      for (tree vn = var_list; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+	{
+	  tree var = TREE_PURPOSE (vn);
+	  /* If the var decl is marked, it has already been finalized.  */
+	  if (var != error_mark_node)
+	    /* We avoid needing to handle error_mark_node in
+	       varpool_node::finalize_decl if we make align a NULL_TREE.  */
+	    finalize_allocate_attr (var, error_mark_node, NULL_TREE);
+	}
+      return;
+    }
+
+  /* We have no errors and everything is fully instantiated, we can finally
+     finish the attribute on each var_decl.  */
+  gcc_assert (!processing_template_decl
+	      && alloc != error_mark_node
+	      && align != error_mark_node
+	      && var_list != NULL_TREE);
+
+  for (tree vn = var_list; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+    finalize_allocate_attr (TREE_PURPOSE (vn), alloc, align);
+}
+
 void
 finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 		   tree lhs, tree rhs, tree v, tree lhs1, tree rhs1, tree r,

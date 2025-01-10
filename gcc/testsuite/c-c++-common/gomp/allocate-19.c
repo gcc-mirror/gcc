@@ -1,3 +1,4 @@
+/* Does not include allocate-allocator-handle.h due to extra values being added.  */
 typedef enum omp_allocator_handle_t
 #if __cplusplus >= 201103L
 : __UINTPTR_TYPE__
@@ -21,7 +22,6 @@ typedef enum omp_allocator_handle_t
 
 static int A1[5] = {1,2,3,4,5}, B1[5];
 #pragma omp allocate(A1) align(128) allocator(omp_default_mem_alloc)
-/* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 
 #ifndef __cplusplus
 _Static_assert (_Alignof(A1) == _Alignof(B1), "wrong alignment");
@@ -32,7 +32,6 @@ static_assert (alignof(A1) == alignof(B1), "wrong alignment");
 
 static int *ptr;
 #pragma omp allocate(ptr) align(2) allocator(omp_default_mem_alloc)
-/* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 
 #ifndef __cplusplus
 _Static_assert (_Alignof(ptr) == _Alignof(int*), "wrong alignment");
@@ -46,7 +45,6 @@ get ()
 {
   static int q = 0;
   #pragma omp allocate(q) align(1024) allocator(omp_default_mem_alloc)
-  /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 
 #ifndef __cplusplus
   _Static_assert (_Alignof(q) == _Alignof(int), "wrong alignment");
@@ -59,11 +57,8 @@ get ()
 }
 
 static int invalid1, okay1, invalid2, invalid3;
-#pragma omp allocate(invalid1) align(128) allocator(ompx_gnu_pinned_bogus_1) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid1' is static" "" { xfail c++ } }  */
+#pragma omp allocate(invalid1) align(128) allocator(ompx_gnu_pinned_bogus_1) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid1' is static" }  */
 #pragma omp allocate(okay1) align(128) allocator(ompx_gnu_pinned_mem_alloc)  /* Okay */
-#pragma omp allocate(invalid2) align(128) allocator(ompx_gnu_pinned_bogus_2) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid2' is static" "" { xfail c++ } }  */
-#pragma omp allocate(invalid3) align(128) allocator(ompx_gnu_pinned_bogus_3) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid3' is static" "" { xfail c++ } }  */
-/* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-4 } */
-/* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-4 } */
-/* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-4 } */
-/* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-4 } */
+#pragma omp allocate(invalid2) align(128) allocator(ompx_gnu_pinned_bogus_2) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid2' is static" }  */
+#pragma omp allocate(invalid3) align(128) allocator(ompx_gnu_pinned_bogus_3) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid3' is static" }  */
+

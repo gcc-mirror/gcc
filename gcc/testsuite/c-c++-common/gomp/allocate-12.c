@@ -1,6 +1,3 @@
-/* TODO: enable for C++ once implemented. */
-/* { dg-do compile { target c } } */
-
 typedef enum omp_allocator_handle_t
 #if __cplusplus >= 201103L
 : __UINTPTR_TYPE__
@@ -15,9 +12,33 @@ int
 f ()
 {
   omp_allocator_handle_t my_allocator;
-  int n = 5;  /* { dg-note "to be allocated variable declared here" } */
-  my_allocator = omp_default_mem_alloc; /* { dg-note "modified here" } */
-  #pragma omp allocate(n) allocator(my_allocator)  /* { dg-error "variable 'my_allocator' used in the 'allocator' clause must not be modified between declaration of 'n' and its 'allocate' directive" } */
+  int n = 5;  /* { dg-note "to be allocated variable declared here" "" { xfail c++ } } */
+  my_allocator = omp_default_mem_alloc; /* { dg-note "modified here" "" { xfail c++ } } */
+  #pragma omp allocate(n) allocator(my_allocator)  /* { dg-error "variable 'my_allocator' used in the 'allocator' clause must not be modified between declaration of 'n' and its 'allocate' directive" "" { xfail c++ } } */
+  n = 7;
+  return n;
+}
+
+int
+f1 ()
+{
+  omp_allocator_handle_t alloc;
+  {
+    int n = 42; /* { dg-note "to be allocated variable declared here" "" { xfail *-*-* } } */
+    alloc = omp_default_mem_alloc; /* { dg-note "modified here" "" { xfail *-*-* } } */
+    #pragma omp allocate(n) allocator(alloc) /* { dg-error "variable 'alloc' used in the 'allocator' clause must not be modified between declaration of 'n' and its 'allocate' directive" "" { xfail *-*-* } } */
+    n = 7;
+    return n;
+  }
+}
+
+int
+f2 ()
+{
+  omp_allocator_handle_t my_allocator;
+  int n = 5;  /* { dg-note "to be allocated variable declared here" "" { xfail *-*-* } } */
+  int hide_mutation = my_allocator = omp_default_mem_alloc; /* { dg-note "modified here" "" { xfail *-*-* } } */
+  #pragma omp allocate(n) allocator(my_allocator)  /* { dg-error "variable 'my_allocator' used in the 'allocator' clause must not be modified between declaration of 'n' and its 'allocate' directive" "" { xfail *-*-* } } */
   n = 7;
   return n;
 }

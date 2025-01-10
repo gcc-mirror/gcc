@@ -1489,11 +1489,17 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	      && DECL_CONTEXT (t) == current_function_decl
 	      && TREE_USED (t)
 	      && (attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (t)))
-		 != NULL_TREE)
+		 != NULL_TREE
+	      && TREE_PURPOSE (TREE_VALUE (attr)) != error_mark_node)
 	    {
 	      gcc_assert (!DECL_HAS_VALUE_EXPR_P (t));
 	      tree alloc = TREE_PURPOSE (TREE_VALUE (attr));
 	      tree align = TREE_VALUE (TREE_VALUE (attr));
+	      /* The C++ front end smuggles a location through the chain field,
+		 clear it to avoid conflicts with Fortran specific code.  */
+	      if (TREE_CHAIN (TREE_VALUE (attr)) != NULL_TREE
+		  && TREE_CODE (TREE_CHAIN (TREE_VALUE (attr))) == NOP_EXPR)
+		TREE_CHAIN (TREE_VALUE (attr)) = NULL_TREE;
 	      /* Allocate directives that appear in a target region must specify
 		 an allocator clause unless a requires directive with the
 		 dynamic_allocators clause is present in the same compilation
