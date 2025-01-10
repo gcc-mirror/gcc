@@ -12906,6 +12906,7 @@ c_parser_postfix_expression (c_parser *parser)
 		  expr.value = build2_loc (loc, COMPOUND_EXPR,
 					   TREE_TYPE (expr.value),
 					   instrument_expr, expr.value);
+		set_c_expr_source_range (&expr, loc, close_paren_loc);
 		break;
 	      }
 	    tree barg1 = arg;
