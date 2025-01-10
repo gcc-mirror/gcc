@@ -10427,7 +10427,7 @@ lookup_and_finish_template_variable (tree templ, tree targs,
      deduction to work.  */
   complain &= ~tf_partial;
   var = finish_template_variable (var, complain);
-  mark_used (var);
+  mark_used (var, complain);
   return convert_from_reference (var);
 }
 
