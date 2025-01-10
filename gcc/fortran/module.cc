@@ -7122,6 +7122,13 @@ use_iso_fortran_env_module (void)
 #include "iso-fortran-env.def"
     { ISOFORTRANENV_INVALID, NULL, -1234, 0 } };
 
+  /* We could have used c in the NAMED_{,U}INTCST macros
+     instead of 0, but then current g++ expands the initialization
+     as clearing the whole object followed by explicit stores of
+     all the non-zero elements (over 150), while by using 0s for
+     the non-constant initializers and initializing them afterwards
+     g++ will often copy everything from .rodata and then only override
+     over 30 non-constant ones.  */
   i = 0;
 #define NAMED_INTCST(a,b,c,d) symbol[i++].value = c;
 #define NAMED_UINTCST(a,b,c,d) symbol[i++].value = c;
@@ -7130,6 +7137,7 @@ use_iso_fortran_env_module (void)
 #define NAMED_FUNCTION(a,b,c,d) i++;
 #define NAMED_SUBROUTINE(a,b,c,d) i++;
 #include "iso-fortran-env.def"
+  gcc_checking_assert (i == (int) ARRAY_SIZE (symbol) - 1);
 
   /* Generate the symbol for the module itself.  */
   mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, mod);
@@ -7288,12 +7296,11 @@ use_iso_fortran_env_module (void)
 	    break;
 
 #define NAMED_FUNCTION(a,b,c,d) \
-		case a:
+	  case a:
 #include "iso-fortran-env.def"
-		  create_intrinsic_function (symbol[i].name, symbol[i].id, mod,
-					     INTMOD_ISO_FORTRAN_ENV, false,
-					     NULL);
-		  break;
+	    create_intrinsic_function (symbol[i].name, symbol[i].id, mod,
+				       INTMOD_ISO_FORTRAN_ENV, false, NULL);
+	    break;
 
 	  default:
 	    gcc_unreachable ();
