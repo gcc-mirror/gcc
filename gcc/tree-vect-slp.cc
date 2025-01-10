@@ -2678,6 +2678,8 @@ out:
 	  nops = 1;
 	  has_two_operators_perm = true;
 	}
+      else
+	vect_free_oprnd_info (new_oprnds_info);
     }
 
   auto_vec<slp_tree, 4> children;
@@ -4951,8 +4953,8 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 					   max_tree_size, &limit,
 					   bst_map, NULL, force_single_lane);
 		}
-	      saved_stmts.release ();
 	    }
+	  saved_stmts.release ();
 	}
 
       /* Make sure to vectorize only-live stmts, usually inductions.  */
@@ -5013,10 +5015,11 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	  stmts.create (1);
 	  stmts.quick_push (vect_stmt_to_vectorize (varg));
 
-	  vect_build_slp_instance (vinfo, slp_inst_kind_gcond,
-				   stmts, roots, remain,
-				   max_tree_size, &limit,
-				   bst_map, NULL, force_single_lane);
+	  if (! vect_build_slp_instance (vinfo, slp_inst_kind_gcond,
+					 stmts, roots, remain,
+					 max_tree_size, &limit,
+					 bst_map, NULL, force_single_lane))
+	    roots.release ();
 	}
 
 	/* Find and create slp instances for inductions that have been forced
