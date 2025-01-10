@@ -121,6 +121,9 @@ package body Sem_Ch5 is
       Lhs : constant Node_Id := Name (N);
       Rhs : constant Node_Id := Expression (N);
 
+      Save_Full_Analysis : Boolean := False;
+      --  Force initialization to facilitate static analysis
+
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it is not
       --  a variable. This routine issues an appropriate diagnostic.
@@ -318,7 +321,24 @@ package body Sem_Ch5 is
                            and then No (Actual_Designated_Subtype (Opnd))))
            and then not Is_Unchecked_Union (Opnd_Type)
          then
-            Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
+            --  If the right-hand side contains target names, expansion has
+            --  been disabled to prevent expansion that might move target
+            --  names out of the context of the assignment statement. Restore
+            --  temporarily the current compilation mode so that the actual
+            --  subtype can be built.
+
+            if Nkind (N) = N_Assignment_Statement
+              and then Has_Target_Names (N)
+              and then Present (Current_Assignment)
+            then
+               Expander_Mode_Restore;
+               Full_Analysis := Save_Full_Analysis;
+               Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
+               Expander_Mode_Save_And_Set (False);
+               Full_Analysis := False;
+            else
+               Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
+            end if;
 
             if Present (Decl) then
                Insert_Action (N, Decl);
@@ -365,9 +385,6 @@ package body Sem_Ch5 is
 
       T1 : Entity_Id;
       T2 : Entity_Id;
-
-      Save_Full_Analysis : Boolean := False;
-      --  Force initialization to facilitate static analysis
 
    --  Start of processing for Analyze_Assignment
 

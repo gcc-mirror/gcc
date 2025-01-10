@@ -1467,10 +1467,9 @@ package body Sem_Util is
    --  Start of processing for Build_Actual_Subtype_Of_Component
 
    begin
-      --  The subtype does not need to be created for a selected component
-      --  in a Spec_Expression.
+      --  The subtype does not need to be created during preanalysis
 
-      if In_Spec_Expression then
+      if Preanalysis_Active then
          return Empty;
 
       --  More comments for the rest of this body would be good ???
