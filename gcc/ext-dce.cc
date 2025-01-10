@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "print-rtl.h"
 #include "dbgcnt.h"
+#include "diagnostic-core.h"
 
 /* These should probably move into a C++ class.  */
 static vec<bitmap_head> livein;
@@ -1110,6 +1111,21 @@ static bool ext_dce_rd_confluence_n (edge) { return true; }
 void
 ext_dce_execute (void)
 {
+  /* Limit the amount of memory we use for livein, with 4 bits per
+     reg per basic-block including overhead that maps to one byte
+     per reg per basic-block.  */
+  uint64_t memory_request
+    = (uint64_t)n_basic_blocks_for_fn (cfun) * max_reg_num ();
+  if (memory_request / 1024 > (uint64_t)param_max_gcse_memory)
+    {
+      warning (OPT_Wdisabled_optimization,
+	       "ext-dce disabled: %d basic blocks and %d registers; "
+	       "increase %<--param max-gcse-memory%> above %wu",
+	       n_basic_blocks_for_fn (cfun), max_reg_num (),
+	       memory_request / 1024);
+      return;
+    }
+
   /* Some settings of SUBREG_PROMOTED_VAR_P are actively harmful
      to this pass.  Clear it for those cases.  */
   maybe_clear_subreg_promoted_p ();
