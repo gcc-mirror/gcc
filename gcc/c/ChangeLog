@@ -1,3 +1,13 @@
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117745
+	* c-parser.cc (c_parser_sizeof_expression): If type_name is NULL,
+	just expr.set_error () and goto sizeof_expr instead of doing error
+	recovery manually.
+
 2024-10-09  Martin Uecker  <uecker@tugraz.at>
 
 	Backported from master:

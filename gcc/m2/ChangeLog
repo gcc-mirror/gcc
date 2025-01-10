@@ -1,3 +1,11 @@
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (m2_OBJS): Add $(BUILD-LIBS-BOOT),
+	$(BUILD-COMPILER-BOOT) and $(MC_LIBS).
+
 2024-12-14  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

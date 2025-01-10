@@ -1,3 +1,13 @@
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/117851
+	* configure.ac (extra_parts): Add crtoffloadtableS.o.
+	* Makefile.in (crtoffloadtableS$(objext)): New goal.
+	* configure: Regenerated.
+
 2025-01-06  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/lib1funcs.S: Add .note.GNU-stack section on linux.
