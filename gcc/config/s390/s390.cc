@@ -2029,9 +2029,9 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
    the IF_THEN_ELSE of the conditional branch testing the result.  */
 
 rtx
-s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
+s390_emit_compare (machine_mode mode, enum rtx_code code, rtx op0, rtx op1)
 {
-  machine_mode mode = s390_select_ccmode (code, op0, op1);
+  machine_mode cc_mode = s390_select_ccmode (code, op0, op1);
   rtx cc;
 
   /* Force OP1 into register in order to satisfy VXE TFmode patterns.  */
@@ -2043,17 +2043,17 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
       /* Do not output a redundant compare instruction if a
 	 compare_and_swap pattern already computed the result and the
 	 machine modes are compatible.  */
-      gcc_assert (s390_cc_modes_compatible (GET_MODE (op0), mode)
+      gcc_assert (s390_cc_modes_compatible (GET_MODE (op0), cc_mode)
 		  == GET_MODE (op0));
       cc = op0;
     }
   else
     {
-      cc = gen_rtx_REG (mode, CC_REGNUM);
-      emit_insn (gen_rtx_SET (cc, gen_rtx_COMPARE (mode, op0, op1)));
+      cc = gen_rtx_REG (cc_mode, CC_REGNUM);
+      emit_insn (gen_rtx_SET (cc, gen_rtx_COMPARE (cc_mode, op0, op1)));
     }
 
-  return gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx);
+  return gen_rtx_fmt_ee (code, mode, cc, const0_rtx);
 }
 
 /* If MEM is not a legitimate compare-and-swap memory operand, return a new
@@ -2103,7 +2103,7 @@ s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem,
     default:
       gcc_unreachable ();
     }
-  return s390_emit_compare (code, cc, const0_rtx);
+  return s390_emit_compare (VOIDmode, code, cc, const0_rtx);
 }
 
 /* Emit a jump instruction to TARGET and return it.  If COND is
@@ -6647,7 +6647,7 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
      Now we have to check whether the resulting index lies within the
      bytes actually part of the string.  */
 
-  cond = s390_emit_compare (GT, convert_to_mode (Pmode, len, 1),
+  cond = s390_emit_compare (VOIDmode, GT, convert_to_mode (Pmode, len, 1),
 			    highest_index_to_load_reg);
   s390_load_address (highest_index_to_load_reg,
 		     gen_rtx_PLUS (Pmode, highest_index_to_load_reg,
@@ -7845,7 +7845,7 @@ s390_expand_cs_hqi (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
       tmp = copy_to_reg (val);
       force_expand_binop (SImode, and_optab, res, ac.modemaski, val,
 			  1, OPTAB_DIRECT);
-      cc = s390_emit_compare (NE, val, tmp);
+      cc = s390_emit_compare (VOIDmode, NE, val, tmp);
       s390_emit_jump (csloop, cc);
 
       /* Failed.  */
@@ -12687,7 +12687,7 @@ s390_expand_split_stack_prologue (void)
 	}
 
       /* Compare the (maybe adjusted) guard with the stack pointer.  */
-      cc = s390_emit_compare (LT, stack_pointer_rtx, guard);
+      cc = s390_emit_compare (VOIDmode, LT, stack_pointer_rtx, guard);
     }
 
   call_done = gen_label_rtx ();
