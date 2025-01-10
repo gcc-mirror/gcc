@@ -7547,6 +7547,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   int shiftrt = 0;
   tree res_ops[2];
   machine_mode mode;
+  bool convert_before_shift = false;
 
   *load = NULL;
   *psignbit = false;
@@ -7651,6 +7652,12 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
       if (*load)
 	loc[3] = gimple_location (*load);
       exp = res_ops[0];
+      /* This looks backwards, but we're going back the def chain, so if we
+	 find the conversion here, after finding a shift, that's because the
+	 convert appears before the shift, and we should thus adjust the bit
+	 pos and size because of the shift after adjusting it due to type
+	 conversion.  */
+      convert_before_shift = true;
     }
 
   /* Identify the load, if there is one.  */
@@ -7693,6 +7700,15 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   *pvolatilep = volatilep;
 
   /* Adjust shifts...  */
+  if (convert_before_shift
+      && outer_type && *pbitsize > TYPE_PRECISION (outer_type))
+    {
+      HOST_WIDE_INT excess = *pbitsize - TYPE_PRECISION (outer_type);
+      if (*preversep ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
+	*pbitpos += excess;
+      *pbitsize -= excess;
+    }
+
   if (shiftrt)
     {
       if (!*preversep ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
@@ -7701,7 +7717,8 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
     }
 
   /* ... and bit position.  */
-  if (outer_type && *pbitsize > TYPE_PRECISION (outer_type))
+  if (!convert_before_shift
+      && outer_type && *pbitsize > TYPE_PRECISION (outer_type))
     {
       HOST_WIDE_INT excess = *pbitsize - TYPE_PRECISION (outer_type);
       if (*preversep ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
@@ -8377,6 +8394,8 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   if (get_best_mode (end_bit - first_bit, first_bit, 0, ll_end_region,
 		     ll_align, BITS_PER_WORD, volatilep, &lnmode))
     l_split_load = false;
+  /* ??? If ll and rl share the same load, reuse that?
+     See PR 118206 -> gcc.dg/field-merge-18.c  */
   else
     {
       /* Consider the possibility of recombining loads if any of the
@@ -8757,11 +8776,11 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       /* Apply masks.  */
       for (int j = 0; j < 2; j++)
 	if (mask[j] != wi::mask (0, true, mask[j].get_precision ()))
-	  op[j] = build2_loc (locs[j][2], BIT_AND_EXPR, type,
-			      op[j], wide_int_to_tree (type, mask[j]));
+	  op[j] = fold_build2_loc (locs[j][2], BIT_AND_EXPR, type,
+				   op[j], wide_int_to_tree (type, mask[j]));
 
-      cmp[i] = build2_loc (i ? rloc : lloc, wanted_code, truth_type,
-			   op[0], op[1]);
+      cmp[i] = fold_build2_loc (i ? rloc : lloc, wanted_code, truth_type,
+				op[0], op[1]);
     }
 
   /* Reorder the compares if needed.  */
@@ -8773,7 +8792,15 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   if (parts == 1)
     result = cmp[0];
   else if (!separatep || !maybe_separate)
-    result = build2_loc (rloc, orig_code, truth_type, cmp[0], cmp[1]);
+    {
+      /* Only fold if any of the cmp is known, otherwise we may lose the
+	 sequence point, and that may prevent further optimizations.  */
+      if (TREE_CODE (cmp[0]) == INTEGER_CST
+	  || TREE_CODE (cmp[1]) == INTEGER_CST)
+	result = fold_build2_loc (rloc, orig_code, truth_type, cmp[0], cmp[1]);
+      else
+	result = build2_loc (rloc, orig_code, truth_type, cmp[0], cmp[1]);
+    }
   else
     {
       result = cmp[0];
