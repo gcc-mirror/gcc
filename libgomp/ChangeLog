@@ -1,3 +1,9 @@
+2025-01-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* fortran.c (omp_get_device_from_uid_): Adjust.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+
 2025-01-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP 6.0): Fix typo.

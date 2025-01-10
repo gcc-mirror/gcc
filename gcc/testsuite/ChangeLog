@@ -1,3 +1,144 @@
+2025-01-09  Edwin Lu  <ewlu@rivosinc.com>
+
+	* lib/target-supports.exp: Fix effective target sync_char_short
+	for riscv*-*-*
+
+2025-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118188
+	* gcc.target/aarch64/sve/gather_load_12.c: New test.
+	* gcc.target/aarch64/sve/gather_load_13.c: New test.
+	* gcc.target/aarch64/sve/gather_load_14.c: New test.
+
+2025-01-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118017
+	* gcc.target/i386/pr118017.c: New.
+
+2025-01-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/noexcept88.C: New test.
+
+2025-01-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/armv8_2-fp16-conv-1.c: Fix typo.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118362
+	* gcc.c-torture/compile/pr118362.c: New test.
+	* gcc.target/s390/pr118362.c: New test.
+
+2025-01-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117866
+	* gcc.dg/pr117866.c: New test.
+	* gcc.dg/strub-pr118007.c: Adapt.
+
+2025-01-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/memset-inline-8.c: Use -Os and prefix assembler
+	instructions with a tab to improve test stability.
+	* gcc.target/arm/memset-inline-8-exe.c: Use -Os.
+
+2025-01-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/armv8_2-fp16-conv-1.c: Convert
+	scan-assembler-times to check-function-bodies.
+
+2025-01-09  Jason Merrill  <jason@redhat.com>
+	    Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR c/116060
+	* c-c++-common/analyzer/out-of-bounds-diagram-8.c: Update to
+	correct type.
+	* c-c++-common/analyzer/out-of-bounds-diagram-11.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-diagram-10.c: Likewise.
+
+2025-01-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/pr118325.c: Require effective target trampolines.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118060
+	* g++.dg/cpp2a/concepts-requires40.C: New test.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117887
+	* g++.dg/cpp2a/concepts-requires39.C: New test.
+	* g++.dg/cpp2a/lambda-targ10.C: New test.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117925
+	* g++.dg/template/non-dependent35.C: New test.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117993
+	* g++.dg/template/dependent-base4.C: New test.
+	* g++.dg/template/dependent-base5.C: New test.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117792
+	* g++.dg/cpp1z/nontype7.C: New test.
+
+2025-01-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/crc-linux-3.c: Move...
+	* gcc.dg/torture/crc-linux-3.c: ... here.
+
+2025-01-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* gcc.target/nvptx/alloca-1.c: Evolve into...
+	* gcc.target/nvptx/alloca-1-O0.c: ... this, ...
+	* gcc.target/nvptx/alloca-1-O1.c: ... this, and...
+	* gcc.target/nvptx/alloca-1-sm_30.c: ... this.
+	* gcc.target/nvptx/vla-1.c: Evolve into...
+	* gcc.target/nvptx/vla-1-O0.c: ... this, ...
+	* gcc.target/nvptx/vla-1-O1.c: ... this, and...
+	* gcc.target/nvptx/vla-1-sm_30.c: ... this.
+	* gcc.c-torture/execute/pr36321.c: Adjust.
+	* gcc.target/nvptx/__builtin_alloca_0-1-O0.c: Likewise.
+	* gcc.target/nvptx/__builtin_alloca_0-1-O1.c: Likewise.
+	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1.c:
+	Likewise.
+	* gcc.target/nvptx/softstack.c: Likewise.
+	* gcc.target/nvptx/__builtin_stack_save___builtin_stack_restore-1-sm_30.c:
+	New.
+	* gcc.target/nvptx/alloca-2-O0.c: Likewise.
+	* gcc.target/nvptx/alloca-3-O1.c: Likewise.
+	* gcc.target/nvptx/alloca-4-O3.c: Likewise.
+	* gcc.target/nvptx/alloca-5.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_alloca): Adjust.
+	(check_nvptx_default_ptx_isa_target_architecture_at_least)
+	(check_nvptx_runtime_ptx_isa_target_architecture_at_least)
+	(check_effective_target_nvptx_runtime_alloca_ptx)
+	(add_options_for_nvptx_alloca_ptx): New.
+
+2025-01-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/118266
+	* gcc.target/i386/pr118266.c: New test.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117927
+	* gcc.dg/tree-ssa/pr117927.c: New test.
+
+2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/append-args-1.c: Update dg-*.
+	* c-c++-common/gomp/append-args-3.c: Extend testcase.
+	* c-c++-common/gomp/dispatch-11.c: Update dg-*.
+	* c-c++-common/gomp/dispatch-12.c: Update dg-*.
+	* g++.dg/gomp/append-args-1.C: Update dg-*.
+
 2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/65181

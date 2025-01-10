@@ -1,3 +1,58 @@
+2025-01-09  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (check_redeclaration_exception_specification): Be more
+	lenient about ::operator new.
+
+2025-01-09  Jason Merrill  <jason@redhat.com>
+	    Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR c/116060
+	* call.cc (standard_conversion): Preserve type name in ck_identity.
+	(maybe_adjust_type_name): New.
+	(convert_like_internal): Use it.
+	Handle -Wsuggest-attribute=format here.
+	(convert_for_arg_passing): Not here.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118060
+	* constraint.cc (tsubst_valid_expression_requirement): Don't
+	check convert_to_void during partial substitution.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117887
+	* pt.cc (instantiate_template): Set tf_partial if arguments are
+	dependent.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117925
+	* constexpr.cc (potential_constant_expression_1) <case CAST_EXPR>:
+	Fix check for class conversion to literal type to properly look
+	through the TREE_LIST operand of a CAST_EXPR.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117925
+	* constexpr.cc (cxx_eval_constant_expression) <default>:
+	Relax ICE when encountering an unexpected tree code into a
+	checking ICE guarded by flag_checking.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117993
+	* search.cc (any_dependent_bases_p): Recurse into bases (of
+	dependent type) that are not BINFO_DEPENDENT_BASE_P.  Document
+	default argument.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117792
+	* pt.cc (type_dependent_expression_p): Consider the dependence
+	of the address of each template argument of a function
+	template-id.
+
 2025-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/117825

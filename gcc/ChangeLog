@@ -1,3 +1,96 @@
+2025-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118188
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::count_ops): Adjust
+	throughput of emulated gather and scatters.
+
+2025-01-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118017
+	* lra-constraints.cc (inherit_reload_reg): Check reg class on uniformity.
+
+2025-01-09  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118362
+	* config/s390/s390.cc (s390_constant_via_vgbm_p): Allow at most
+	16-byte vectors.
+
+2025-01-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/118131
+	* config/arm/arm.h (VALID_MVE_STRUCT_MODE): Accept TI, OI and XI
+	modes again.
+
+2025-01-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* config/nvptx/nvptx.cc (nvptx_get_drap_rtx): Handle
+	'!TARGET_SOFT_STACK'.
+	* config/nvptx/nvptx.md (define_c_enum "unspec"): Add
+	'UNSPEC_STACKSAVE', 'UNSPEC_STACKRESTORE'.
+	(define_expand "allocate_stack", define_expand "save_stack_block")
+	(define_expand "save_stack_block"): Handle '!TARGET_SOFT_STACK',
+	PTX 'alloca'.
+	(define_insn "@nvptx_alloca_<mode>")
+	(define_insn "@nvptx_stacksave_<mode>")
+	(define_insn "@nvptx_stackrestore_<mode>"): New.
+	* doc/invoke.texi (Nvidia PTX Options): Update '-msoft-stack',
+	'-mno-soft-stack'.
+	* doc/sourcebuild.texi (nvptx-specific attributes): Document
+	'nvptx_runtime_alloca_ptx'.
+	(Add Options): Document 'nvptx_alloca_ptx'.
+
+2025-01-09  Richard Biener  <rguenther@suse.de>
+
+	* cfgloopmanip.cc (duplicate_loop_body_to_header_edge): When
+	copying to the header edge first redirect the entry to the
+	new loop and then the exit to the old to avoid PHI node
+	re-allocation.
+
+2025-01-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/118266
+	* ree.cc (add_removable_extension): Skip extension on fixed
+	register.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117927
+	* tree-pass.h (PROP_last_full_fold): Define.
+	* passes.def: Add last= parameters to pass_forwprop.
+	* tree-ssa-forwprop.cc (pass_forwprop): Add last_p non-static
+	data member and initialize it in the ctor.
+	(pass_forwprop::set_pass_param): New method.
+	(pass_forwprop::execute): Set PROP_last_full_fold in curr_properties
+	at the start if last_p.
+	* match.pd (a rrotate (32-b) -> a lrotate b): Only optimize either
+	if @2 is known not to be equal to prec or if during/after last
+	forwprop the subtraction has single use and prec is power of two; in
+	that case transform it into orotate by masked count.
+
+2025-01-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Remove 0x00.
+
+2025-01-09  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins.cc (function_builder::add_unique_function):
+	Only register overloaded intrinsic for g++.
+	Only insert non_overloaded_function_table for gcc.
+	(function_builder::add_overloaded_function): Only register overloaded intrinsic for gcc.
+	(handle_pragma_vector): Only initialize non_overloaded_function_table for gcc.
+
+2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* builtin-types.def (BT_FN_PTRMODE_PTR_INT_PTR): Add.
+	* gimplify.cc (gimplify_call_expr): Add error for multiple
+	list items to the OpenMP interop clause if no device clause;
+	continue instead of restarting after append_args handling.
+	(gimplify_omp_dispatch): Extract device number from the
+	single interop-clause list item.
+	* omp-builtins.def (BUILT_IN_OMP_GET_INTEROP_INT): Add.
+
 2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/65181

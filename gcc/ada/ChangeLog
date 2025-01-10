@@ -1,3 +1,35 @@
+2025-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/18765
+	* debug.adb (d_q): Document new usage.
+	* sem_ch6.adb (New_Overloaded_Entity): Apply the special processing
+	to all equality operators whose base result type is Boolean, but do
+	not enforce the new Ada 2012 freezing rule if the result type is a
+	proper subtype of it and the -gnatd_q switch is specified.
+
+2025-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118274
+	* sem_ch4.adb (Check_Arithmetic_Pair.Has_Fixed_Op): Use the original
+	node of the operator to identify the case of an expanded name whose
+	prefix is the package Standard.
+
+2025-01-09  squirek  <squirek@adacore.com>
+
+	* libgnat/a-comutr.adb, libgnat/a-comutr.ads:
+	Move the declarations of iterator types into the specification and
+	add additional comments.
+
+2025-01-09  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Freeze_Expr_Types): Reverse patch; that is, restore
+	calls to Preanalyze_Spec_Expression instead of Preanalyze_And_Resolve
+	for the sake of consistency with Analyze_Expression_Function. Patch
+	suggested by Eric Botcazou.
+	* exp_put_image.adb (Image_Should_Call_Put_Image): Ensure that
+	function Defining_Identifier is called with a proper node to
+	avoid internal assertion failure.
+
 2025-01-07  Marc Poulhiès  <poulhies@adacore.com>
 
 	* libgnat/a-calcon.ads: Adjust.

@@ -1,3 +1,15 @@
+2025-01-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117866
+	* c-decl.cc (get_parm_info): Change condition for warning.
+
+2025-01-09  Jason Merrill  <jason@redhat.com>
+	    Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR c/116060
+	* c-typeck.cc (convert_for_assignment): Make sure left hand side and
+	right hand side has identical named types to aid diagnostic output.
+
 2025-01-03  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c-parser.cc (struct c_parser): Change in_omp_attribute_pragma

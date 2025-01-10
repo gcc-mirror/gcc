@@ -1,3 +1,24 @@
+2025-01-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118337
+	* resolve.cc (resolve_fl_derived0): Exempt vtypes from cycle
+	detection.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/118337
+	* module.cc (COMPAT_MOD_VERSIONS): Define.
+	(use_iso_fortran_env_module): Don't assume all NAMED_INTCSTs come
+	first followed by NAMED_UINTCSTs.
+	(gfc_use_module): Accept also COMPAT_MOD_VERSIONS for compatibility.
+	* iso-c-binding.def: Reorder entries so that the GCC 14 ones come
+	before the ones new in GCC 15.
+	* iso-fortran-env.def: Likewise.
+
+2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* types.def (BT_FN_PTRMODE_PTR_INT_PTR): Add.
+
 2025-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/118337
