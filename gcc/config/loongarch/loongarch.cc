@@ -4721,8 +4721,10 @@ loongarch_split_vector_move (rtx dest, rtx src)
    that SRC is operand 1 and DEST is operand 0.  */
 
 const char *
-loongarch_output_move (rtx dest, rtx src)
+loongarch_output_move (rtx *operands)
 {
+  rtx src = operands[1];
+  rtx dest = operands[0];
   enum rtx_code dest_code = GET_CODE (dest);
   enum rtx_code src_code = GET_CODE (src);
   machine_mode mode = GET_MODE (dest);
@@ -4877,13 +4879,19 @@ loongarch_output_move (rtx dest, rtx src)
       if (src_code == CONST_INT)
 	{
 	  if (LU12I_INT (src))
-	    return "lu12i.w\t%0,%1>>12\t\t\t# %X1";
+	    {
+	      operands[1] = GEN_INT (INTVAL (operands[1]) >> 12);
+	      return "lu12i.w\t%0,%1\t\t\t# %X1";
+	    }
 	  else if (IMM12_INT (src))
 	    return "addi.w\t%0,$r0,%1\t\t\t# %X1";
 	  else if (IMM12_INT_UNSIGNED (src))
 	    return "ori\t%0,$r0,%1\t\t\t# %X1";
 	  else if (LU52I_INT (src))
-	    return "lu52i.d\t%0,$r0,%X1>>52\t\t\t# %1";
+	    {
+	      operands[1] = GEN_INT (INTVAL (operands[1]) >> 52);
+	      return "lu52i.d\t%0,$r0,%X1\t\t\t# %1";
+	    }
 	  else
 	    gcc_unreachable ();
 	}

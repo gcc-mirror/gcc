@@ -2209,7 +2209,7 @@
   "!TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
   (operands[0]))"
   [(const_int 0)]
@@ -2228,7 +2228,9 @@
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  {
+    return loongarch_output_move (operands);
+  }
   "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
   (operands[0]))"
   [(const_int 0)]
@@ -2315,7 +2317,7 @@
 	(match_operand:SI 1 "move_operand" "r,Yd,w,rJ,*r*J,m,*f,*f"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
   (operands[0]))"
   [(const_int 0)]
@@ -2349,7 +2351,7 @@
 	(match_operand:HI 1 "move_operand" "r,Yd,I,m,rJ,k,rJ"))]
   "(register_operand (operands[0], HImode)
        || reg_or_0_operand (operands[1], HImode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
   (operands[0]))"
   [(const_int 0)]
@@ -2383,7 +2385,7 @@
 	(match_operand:QI 1 "move_operand" "r,I,m,rJ,k,rJ"))]
   "(register_operand (operands[0], QImode)
        || reg_or_0_operand (operands[1], QImode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   [(set_attr "move_type" "move,const,load,store,load,store")
    (set_attr "mode" "QI")])
 
@@ -2404,7 +2406,7 @@
   "TARGET_HARD_FLOAT
    && (register_operand (operands[0], SFmode)
        || reg_or_0_operand (operands[1], SFmode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   [(set_attr "move_type" "fmove,mgtf,fpload,fpstore,fpload,fpstore,store,store,mgtf,mftg,move,load,store")
    (set_attr "mode" "SF")])
 
@@ -2414,7 +2416,7 @@
   "TARGET_SOFT_FLOAT
    && (register_operand (operands[0], SFmode)
        || reg_or_0_operand (operands[1], SFmode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   [(set_attr "move_type" "move,load,store")
    (set_attr "mode" "SF")])
 
@@ -2435,7 +2437,7 @@
   "TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   [(set_attr "move_type" "fmove,mgtf,fpload,fpstore,fpload,fpstore,store,store,mgtf,mftg,move,load,store")
    (set_attr "mode" "DF")])
 
@@ -2446,7 +2448,7 @@
    && TARGET_64BIT
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
+  { return loongarch_output_move (operands); }
   [(set_attr "move_type" "move,load,store")
    (set_attr "mode" "DF")])
 
@@ -2589,7 +2591,10 @@
 	    (subreg:SI (match_operand:DI 1 "register_operand" "0") 0))
 	  (match_operand:DI 2 "const_lu32i_operand" "u")))]
   "TARGET_64BIT"
-  "lu32i.d\t%0,%X2>>32"
+  {
+    operands[2] = GEN_INT (INTVAL (operands[2]) >> 32);
+    return "lu32i.d\t%0,%X2";
+  }
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
 
@@ -2600,7 +2605,10 @@
 		  (match_operand 2 "lu52i_mask_operand"))
 	  (match_operand 3 "const_lu52i_operand" "v")))]
   "TARGET_64BIT"
-  "lu52i.d\t%0,%1,%X3>>52"
+  {
+    operands[3] = GEN_INT (INTVAL (operands[3]) >> 52);
+    return "lu52i.d\t%0,%1,%X3";
+  }
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
 
@@ -4339,9 +4347,9 @@
   {
     /* The load destination does not overlap the source.  */
     gcc_assert (!reg_overlap_mentioned_p (operands[0], operands[1]));
-    output_asm_insn (loongarch_output_move (operands[0], operands[1]),
+    output_asm_insn (loongarch_output_move (operands),
 		     operands);
-    output_asm_insn (loongarch_output_move (operands[2], operands[3]),
+    output_asm_insn (loongarch_output_move (&operands[2]),
 		     &operands[2]);
     return "";
   }
