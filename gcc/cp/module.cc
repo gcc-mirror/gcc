@@ -6318,7 +6318,11 @@ trees_out::core_vals (tree t)
     case VAR_DECL:
       if (DECL_CONTEXT (t)
 	  && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
-	break;
+	{
+	  if (DECL_HAS_VALUE_EXPR_P (t))
+	    WT (DECL_VALUE_EXPR (t));
+	  break;
+	}
       /* FALLTHROUGH  */
 
     case RESULT_DECL:
@@ -6848,7 +6852,14 @@ trees_in::core_vals (tree t)
     case VAR_DECL:
       if (DECL_CONTEXT (t)
 	  && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
-	break;
+	{
+	  if (DECL_HAS_VALUE_EXPR_P (t))
+	    {
+	      tree val = tree_node ();
+	      SET_DECL_VALUE_EXPR (t, val);
+	    }
+	  break;
+	}
       /* FALLTHROUGH  */
 
     case RESULT_DECL:
@@ -10987,6 +10998,12 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	      {
 		mk = MK_local_friend;
+		break;
+	      }
+
+	    if (DECL_DECOMPOSITION_P (decl))
+	      {
+		mk = MK_unique;
 		break;
 	      }
 
