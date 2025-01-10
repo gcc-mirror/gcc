@@ -77,10 +77,7 @@ package body MDLL is
       Bas_Opt  : aliased String := "-Wl,--base-file," & Bas_File;
       Lib_Opt  : aliased String := "-mdll";
       Out_Opt  : aliased String := "-o";
-      Adr_Opt  : aliased String :=
-                   (if Relocatable
-                    then ""
-                    else "-Wl,--image-base=" & Lib_Address);
+      Adr_Opt  : aliased String := "-Wl,--image-base=" & Lib_Address;
       Map_Opt  : aliased String := "-Wl,-Map," & Lib_Filename & ".map";
 
       L_Afiles : Argument_List := Afiles;
@@ -133,7 +130,7 @@ package body MDLL is
          --  2) Build exp from base file
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
-                      Base_File    => Bas_File,
+                      Base_File    => (if Relocatable then "" else Bas_File),
                       Exp_Table    => Exp_File,
                       Build_Import => False);
 
@@ -148,7 +145,7 @@ package body MDLL is
          --  4) Build new exp from base file and the lib file (.a)
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
-                      Base_File    => Bas_File,
+                      Base_File    => (if Relocatable then "" else Bas_File),
                       Exp_Table    => Exp_File,
                       Build_Import => Build_Import);
 
@@ -223,7 +220,7 @@ package body MDLL is
          --  2) Build exp from base file
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
-                      Base_File    => Bas_File,
+                      Base_File    => (if Relocatable then "" else Bas_File),
                       Exp_Table    => Exp_File,
                       Build_Import => False);
 
@@ -247,7 +244,7 @@ package body MDLL is
          --  4) Build new exp from base file and the lib file (.a)
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
-                      Base_File    => Bas_File,
+                      Base_File    => (if Relocatable then "" else Bas_File),
                       Exp_Table    => Exp_File,
                       Build_Import => Build_Import);
 

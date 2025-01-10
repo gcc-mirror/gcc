@@ -134,10 +134,8 @@ procedure Gnatdll is
       P ("   -l file       File contains a list-of-files to be added to "
          & "the library");
       P ("   -e file       Definition file containing exports");
-      P ("   -d file       Put objects in the relocatable dynamic "
+      P ("   -d file       Put objects in the dynamic "
          & "library <file>");
-      P ("   -b addr       Set base address for the relocatable DLL");
-      P ("                 default address is " & Default_DLL_Address);
       P ("   -a[addr]      Build non-relocatable DLL at address <addr>");
       P ("                 if <addr> is not specified use "
          & Default_DLL_Address);
@@ -314,10 +312,6 @@ procedure Gnatdll is
                end if;
 
                Must_Build_Relocatable := False;
-
-            when 'b' =>
-               DLL_Address := To_Unbounded_String (Parameter);
-               Must_Build_Relocatable := True;
 
             when 'e' =>
                Def_Filename := To_Unbounded_String (Parameter);
