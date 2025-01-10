@@ -23107,15 +23107,11 @@ cp_parser_asm_string_expression (cp_parser *parser)
       matching_parens parens;
       parens.consume_open (parser);
       tree string = cp_parser_constant_expression (parser);
-      if (string != error_mark_node)
-	string = cxx_constant_value (string, tf_error);
-      cexpr_str cstr (string);
-      if (!cstr.type_check (tok->location))
-	return error_mark_node;
-      if (!cstr.extract (tok->location, string))
-	string = error_mark_node;
       parens.require_close (parser);
-      return string;
+      if (TREE_CODE (string) == STRING_CST)
+	string = build1_loc (tok->location, PAREN_EXPR, TREE_TYPE (string),
+			     string);
+      return finish_asm_string_expression (tok->location, string);
     }
   else if (!cp_parser_is_string_literal (tok))
     {
@@ -23396,7 +23392,7 @@ cp_parser_asm_definition (cp_parser* parser)
 				      inputs, clobbers, labels, inline_p,
 				      false);
 	  /* If the extended syntax was not used, mark the ASM_EXPR.  */
-	  if (!extended_p)
+	  if (!extended_p && asm_stmt != error_mark_node)
 	    {
 	      tree temp = asm_stmt;
 	      if (TREE_CODE (temp) == CLEANUP_POINT_EXPR)
@@ -30044,7 +30040,7 @@ cp_parser_yield_expression (cp_parser* parser)
 /* Parse an (optional) asm-specification.
 
    asm-specification:
-     asm ( asm-string-expr )
+     asm ( string-literal )
 
    If the asm-specification is present, returns a STRING_CST
    corresponding to the string-literal.  Otherwise, returns
@@ -30067,8 +30063,9 @@ cp_parser_asm_specification_opt (cp_parser* parser)
   parens.require_open (parser);
 
   /* Look for the string-literal.  */
-  tree asm_specification = cp_parser_asm_string_expression (parser);
-
+  tree asm_specification = cp_parser_string_literal (parser,
+						     /*translate=*/false,
+						     /*wide_ok=*/false);
   /* Look for the `)'.  */
   parens.require_close (parser);
 
