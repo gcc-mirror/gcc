@@ -21669,7 +21669,7 @@ and the features that they enable by default:
 @item @samp{armv8.9-a} @tab Armv8.9-a @tab @samp{armv8.8-a}
 @item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
 @item @samp{armv9.1-a} @tab Armv9.1-A @tab @samp{armv9-a}, @samp{+bf16}, @samp{+i8mm}
-@item @samp{armv9.2-a} @tab Armv9.2-A @tab @samp{armv9.1-a}
+@item @samp{armv9.2-a} @tab Armv9.2-A @tab @samp{armv9.1-a}, @samp{+wfxt}, @samp{+xs}
 @item @samp{armv9.3-a} @tab Armv9.3-A @tab @samp{armv9.2-a}, @samp{+mops}
 @item @samp{armv9.4-a} @tab Armv9.4-A @tab @samp{armv9.3-a}
 @item @samp{armv9.5-a} @tab Armv9.4-A @tab @samp{armv9.4-a}, @samp{+faminmax}, @samp{+lut}
