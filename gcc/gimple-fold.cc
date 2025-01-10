@@ -7519,8 +7519,9 @@ gimple_binop_def_p (enum tree_code code, tree t, tree op[2])
 
    *XOR_P is to be FALSE if EXP might be a XOR used in a compare, in which
    case, if XOR_CMP_OP is a zero constant, it will be overridden with *PEXP,
-   *XOR_P will be set to TRUE, and the left-hand operand of the XOR will be
-   decoded.  If *XOR_P is TRUE, XOR_CMP_OP is supposed to be NULL, and then the
+   *XOR_P will be set to TRUE, *XOR_PAND_MASK will be copied from *PAND_MASK,
+   and the left-hand operand of the XOR will be decoded.  If *XOR_P is TRUE,
+   XOR_CMP_OP and XOR_PAND_MASK are supposed to be NULL, and then the
    right-hand operand of the XOR will be decoded.
 
    *LOAD is set to the load stmt of the innermost reference, if any,
@@ -7537,7 +7538,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 			HOST_WIDE_INT *pbitpos,
 			bool *punsignedp, bool *preversep, bool *pvolatilep,
 			wide_int *pand_mask, bool *psignbit,
-			bool *xor_p, tree *xor_cmp_op,
+			bool *xor_p, tree *xor_cmp_op, wide_int *xor_pand_mask,
 			gimple **load, location_t loc[4])
 {
   tree exp = *pexp;
@@ -7599,15 +7600,14 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
     and_mask = *pand_mask;
 
   /* Turn (a ^ b) [!]= 0 into a [!]= b.  */
-  if (xor_p && gimple_binop_def_p (BIT_XOR_EXPR, exp, res_ops)
-      && uniform_integer_cst_p (res_ops[1]))
+  if (xor_p && gimple_binop_def_p (BIT_XOR_EXPR, exp, res_ops))
     {
       /* No location recorded for this one, it's entirely subsumed by the
 	 compare.  */
       if (*xor_p)
 	{
 	  exp = res_ops[1];
-	  gcc_checking_assert (!xor_cmp_op);
+	  gcc_checking_assert (!xor_cmp_op && !xor_pand_mask);
 	}
       else if (!xor_cmp_op)
 	/* Not much we can do when xor appears in the right-hand compare
@@ -7618,6 +7618,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 	  *xor_p = true;
 	  exp = res_ops[0];
 	  *xor_cmp_op = *pexp;
+	  *xor_pand_mask = *pand_mask;
 	}
     }
 
@@ -8152,19 +8153,21 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   bool l_xor = false, r_xor = false;
   ll_inner = decode_field_reference (&ll_arg, &ll_bitsize, &ll_bitpos,
 				     &ll_unsignedp, &ll_reversep, &volatilep,
-				     &ll_and_mask, &ll_signbit, &l_xor, &lr_arg,
+				     &ll_and_mask, &ll_signbit,
+				     &l_xor, &lr_arg, &lr_and_mask,
 				     &ll_load, ll_loc);
   lr_inner = decode_field_reference (&lr_arg, &lr_bitsize, &lr_bitpos,
 				     &lr_unsignedp, &lr_reversep, &volatilep,
-				     &lr_and_mask, &lr_signbit, &l_xor, 0,
+				     &lr_and_mask, &lr_signbit, &l_xor, 0, 0,
 				     &lr_load, lr_loc);
   rl_inner = decode_field_reference (&rl_arg, &rl_bitsize, &rl_bitpos,
 				     &rl_unsignedp, &rl_reversep, &volatilep,
-				     &rl_and_mask, &rl_signbit, &r_xor, &rr_arg,
+				     &rl_and_mask, &rl_signbit,
+				     &r_xor, &rr_arg, &rr_and_mask,
 				     &rl_load, rl_loc);
   rr_inner = decode_field_reference (&rr_arg, &rr_bitsize, &rr_bitpos,
 				     &rr_unsignedp, &rr_reversep, &volatilep,
-				     &rr_and_mask, &rr_signbit, &r_xor, 0,
+				     &rr_and_mask, &rr_signbit, &r_xor, 0, 0,
 				     &rr_load, rr_loc);
 
   /* It must be true that the inner operation on the lhs of each
