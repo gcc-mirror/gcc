@@ -3478,7 +3478,8 @@ private:
   rtx simplify_byte_swapping_operation (rtx_code, machine_mode, rtx, rtx);
   rtx simplify_associative_operation (rtx_code, machine_mode, rtx, rtx);
   rtx simplify_distributive_operation (rtx_code, machine_mode, rtx, rtx);
-  rtx simplify_logical_relational_operation (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_logical_relational_operation (rtx_code, machine_mode, rtx, rtx,
+					     bool = false);
   rtx simplify_binary_operation_series (rtx_code, machine_mode, rtx, rtx);
   rtx simplify_distribute_over_subregs (rtx_code, machine_mode, rtx, rtx);
   rtx simplify_shift_const_int (rtx_code, machine_mode, rtx, unsigned int);
