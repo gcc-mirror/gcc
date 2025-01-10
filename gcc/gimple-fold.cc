@@ -8381,16 +8381,40 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
     {
       /* Consider the possibility of recombining loads if any of the
 	 fields straddles across an alignment boundary, so that either
-	 part can be loaded along with the other field.  */
+	 part can be loaded along with the other field.  Since we
+	 limit access modes to BITS_PER_WORD, don't exceed that,
+	 otherwise on a 32-bit host and a 64-bit-aligned data
+	 structure, we'll fail the above for a field that straddles
+	 across two words, and would fail here for not even trying to
+	 split it at between 32-bit words.  */
       HOST_WIDE_INT boundary = compute_split_boundary_from_align
-	(ll_align, ll_bitpos, ll_bitsize, rl_bitpos, rl_bitsize);
+	(MIN (ll_align, BITS_PER_WORD),
+	 ll_bitpos, ll_bitsize, rl_bitpos, rl_bitsize);
 
       if (boundary < 0
 	  || !get_best_mode (boundary - first_bit, first_bit, 0, ll_end_region,
 			     ll_align, BITS_PER_WORD, volatilep, &lnmode)
 	  || !get_best_mode (end_bit - boundary, boundary, 0, ll_end_region,
 			     ll_align, BITS_PER_WORD, volatilep, &lnmode2))
-	return 0;
+	{
+	  if (ll_align <= BITS_PER_WORD)
+	    return 0;
+
+	  /* As a last resort, try double-word access modes.  This
+	     enables us to deal with misaligned double-word fields
+	     that straddle across 3 separate words.  */
+	  boundary = compute_split_boundary_from_align
+	    (MIN (ll_align, 2 * BITS_PER_WORD),
+	     ll_bitpos, ll_bitsize, rl_bitpos, rl_bitsize);
+	  if (boundary < 0
+	      || !get_best_mode (boundary - first_bit, first_bit,
+				 0, ll_end_region, ll_align, 2 * BITS_PER_WORD,
+				 volatilep, &lnmode)
+	      || !get_best_mode (end_bit - boundary, boundary,
+				 0, ll_end_region, ll_align, 2 * BITS_PER_WORD,
+				 volatilep, &lnmode2))
+	    return 0;
+	}
 
       /* If we can't have a single load, but can with two, figure out whether
 	 the two compares can be separated, i.e., whether the entirety of the
