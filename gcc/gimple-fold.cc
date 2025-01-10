@@ -8644,7 +8644,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 			  xlr_bitpos);
       else
 	lr_mask = wi::shifted_mask (xlr_bitpos, lr_bitsize, false, rnprec);
-      if (rl_and_mask.get_precision ())
+      if (rr_and_mask.get_precision ())
 	rr_mask = wi::lshift (wide_int::from (rr_and_mask, rnprec, UNSIGNED),
 			      xrr_bitpos);
       else
