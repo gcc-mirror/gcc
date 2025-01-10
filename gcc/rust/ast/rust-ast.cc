@@ -2998,22 +2998,6 @@ ExternalStaticItem::as_string () const
 }
 
 std::string
-NamedFunctionParam::as_string () const
-{
-  std::string str = append_attributes (outer_attrs, OUTER);
-
-  if (has_name ())
-    str += "\n" + name;
-
-  if (is_variadic ())
-    str += "...";
-  else
-    str += "\n Type: " + param_type->as_string ();
-
-  return str;
-}
-
-std::string
 TraitItemConst::as_string () const
 {
   // TODO: rewrite to work with non-linearisable exprs

@@ -251,29 +251,6 @@ TokenCollector::visit (Visibility &vis)
 }
 
 void
-TokenCollector::visit (NamedFunctionParam &param)
-{
-  auto name = param.get_name ();
-  if (!param.is_variadic ())
-    {
-      push (
-	Rust::Token::make_identifier (param.get_locus (), std::move (name)));
-      push (Rust::Token::make (COLON, UNDEF_LOCATION));
-      visit (param.get_type ());
-    }
-  else
-    {
-      if (name != "")
-	{
-	  push (Rust::Token::make_identifier (param.get_locus (),
-					      std::move (name)));
-	  push (Rust::Token::make (COLON, UNDEF_LOCATION));
-	}
-      push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
-    }
-}
-
-void
 TokenCollector::visit (std::vector<std::unique_ptr<GenericParam>> &params)
 {
   push (Rust::Token::make (LEFT_ANGLE, UNDEF_LOCATION));

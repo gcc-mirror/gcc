@@ -310,10 +310,6 @@ private:
   AST::Lifetime lifetime_from_token (const_TokenPtr tok);
   std::unique_ptr<AST::ExternalTypeItem>
   parse_external_type_item (AST::Visibility vis, AST::AttrVec outer_attrs);
-  AST::NamedFunctionParam parse_named_function_param ();
-  template <typename EndTokenPred>
-  std::vector<AST::NamedFunctionParam>
-  parse_named_function_params (EndTokenPred is_end_token);
 
   std::unique_ptr<AST::TypeAlias> parse_type_alias (AST::Visibility vis,
 						    AST::AttrVec outer_attrs);
