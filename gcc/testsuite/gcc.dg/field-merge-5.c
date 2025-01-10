@@ -18,9 +18,9 @@ struct T2 {
   unsigned int z;
 } __attribute__((__packed__, __aligned__(8)));
 
-#define vc 0xaa
-#define vs 0xccdd
-#define vi 0x12345678
+#define vc (unsigned char)0xaa
+#define vs (unsigned short)0xccdd
+#define vi (unsigned int)0x12345678
 
 struct T1 v1 = { -1, vc, 1, vs, vi };
 struct T2 v2 = { -1, 0, vc, 1, vs, vi };

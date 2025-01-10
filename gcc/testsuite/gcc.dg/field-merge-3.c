@@ -15,8 +15,8 @@ struct T2 {
   unsigned int z;
 } __attribute__((__aligned__(8)));
 
-#define vc 0xaa
-#define vi 0x12345678
+#define vc (unsigned char)0xaa
+#define vi (unsigned int)0x12345678
 
 struct T1 v1 = { { vc + !BIG_ENDIAN_P, vc + BIG_ENDIAN_P }, vc, vi };
 struct T2 v2 = { (vc << 8) | (vc - 1), vc, vi };

@@ -3,6 +3,8 @@
 
 /* Check that we can optimize misaligned double-words.  */
 
+#include <stddef.h>
+
 struct s {
   short a;
   long long b;
@@ -33,7 +35,7 @@ int main () {
   if (fp () > 0)
     __builtin_abort ();
   unsigned char *pc = (unsigned char *)&p;
-  for (int i = 0; i < sizeof (p); i++)
+  for (int i = 0; i < offsetof (struct s, e) + sizeof (p.e); i++)
     {
       pc[i] = 1;
       if (fp () < 0)

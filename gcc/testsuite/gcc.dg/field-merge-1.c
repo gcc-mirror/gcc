@@ -25,8 +25,8 @@ struct TB {
   unsigned char s;
 } __attribute__ ((packed, aligned (4), scalar_storage_order ("big-endian")));
 
-#define vc 0xaa
-#define vi 0x12345678
+#define vc (unsigned char)0xaa
+#define vi (unsigned int)0x12345678
 
 struct TL vL = { vc, vi, vc, vi, vc, vi, vc };
 struct TB vB = { vc, vi, vc, vi, vc, vi, vc };
