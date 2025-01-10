@@ -1,5 +1,5 @@
 /* PR target/118017 */
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-Og -frounding-math -mno-80387 -mno-mmx -Wno-psabi" } */
 
 typedef __attribute__((__vector_size__ (64))) _Float128 F;
