@@ -428,7 +428,6 @@ public:
   virtual void visit (AST::WhereClause &where);
   virtual void visit (AST::StructField &field);
   virtual void visit (AST::TupleField &field);
-  virtual void visit (AST::NamedFunctionParam &param);
   virtual void visit (AST::MacroRule &rule);
   virtual void visit (AST::MacroInvocData &data);
   virtual void visit (AST::MacroTranscriber &transcriber);

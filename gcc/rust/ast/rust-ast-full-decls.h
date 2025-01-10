@@ -202,7 +202,6 @@ class TraitImpl;
 class ExternalItem;
 class ExternalTypeItem;
 class ExternalStaticItem;
-class NamedFunctionParam;
 class ExternBlock;
 
 // rust-macro.h

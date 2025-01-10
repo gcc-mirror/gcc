@@ -1061,14 +1061,6 @@ DefaultASTVisitor::visit (AST::ExternalStaticItem &item)
 }
 
 void
-DefaultASTVisitor::visit (AST::NamedFunctionParam &param)
-{
-  visit_outer_attrs (param);
-  if (!param.is_variadic ())
-    visit (param.get_type ());
-}
-
-void
 DefaultASTVisitor::visit (AST::ExternBlock &block)
 {
   visit_outer_attrs (block);
