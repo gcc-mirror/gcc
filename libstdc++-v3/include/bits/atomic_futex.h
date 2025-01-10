@@ -305,14 +305,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { }
 
     _GLIBCXX_ALWAYS_INLINE unsigned
-    _M_load(memory_order __mo)
+    _M_load(memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       return _M_data;
     }
 
     _GLIBCXX_ALWAYS_INLINE unsigned
-    _M_load_when_not_equal(unsigned __val, memory_order __mo)
+    _M_load_when_not_equal(unsigned __val, memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       while (_M_data == __val)
@@ -321,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     _GLIBCXX_ALWAYS_INLINE void
-    _M_load_when_equal(unsigned __val, memory_order __mo)
+    _M_load_when_equal(unsigned __val, memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       while (_M_data != __val)
@@ -330,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Rep, typename _Period>
       _GLIBCXX_ALWAYS_INLINE bool
-      _M_load_when_equal_for(unsigned __val, memory_order __mo,
+      _M_load_when_equal_for(unsigned __val, memory_order,
 	  const chrono::duration<_Rep, _Period>& __rtime)
       {
 	unique_lock<mutex> __lock(_M_mutex);
@@ -340,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Clock, typename _Duration>
       _GLIBCXX_ALWAYS_INLINE bool
-      _M_load_when_equal_until(unsigned __val, memory_order __mo,
+      _M_load_when_equal_until(unsigned __val, memory_order,
 	  const chrono::time_point<_Clock, _Duration>& __atime)
       {
 	unique_lock<mutex> __lock(_M_mutex);
@@ -349,7 +349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     _GLIBCXX_ALWAYS_INLINE void
-    _M_store_notify_all(unsigned __val, memory_order __mo)
+    _M_store_notify_all(unsigned __val, memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       _M_data = __val;
