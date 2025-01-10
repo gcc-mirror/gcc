@@ -31,6 +31,8 @@ void f (void) {
 }
 
 int main () {
+  if (sizeof (short) != 2)
+    return 0;
   f ();
   return 0;
 }

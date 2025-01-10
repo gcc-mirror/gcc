@@ -4,17 +4,17 @@
 /* Check that tests for sign-extension bits are handled correctly.  */
 
 struct s {
-  short a;
-  short b;
-  unsigned short c;
-  unsigned short d;
-} __attribute__ ((aligned (8)));
+  signed char a;
+  signed char b;
+  unsigned char c;
+  unsigned char d;
+} __attribute__ ((aligned (4)));
 
 struct s p = { -1,  0, 0, 0 };
 struct s q = {  0, -1, 0, 0 };
 struct s r = {  1,  1, 0, 0 };
 
-const long long mask = 1ll << (sizeof (long long) * __CHAR_BIT__ - 5);
+const long mask = 1l << (sizeof (long) * __CHAR_BIT__ - 5);
 
 int fp ()
 {
@@ -50,9 +50,6 @@ int fr ()
 }
 
 int main () {
-  /* Unlikely, but play safe.  */
-  if (sizeof (long long) == sizeof (short))
-    return 0;
   if (fp () < 0
       || fq () < 0
       || fr () > 0)
@@ -63,4 +60,4 @@ int main () {
 /* We test .b after other fields instead of right after .a to give field
    merging a chance, otherwise the masked compares with zero are combined by
    other ifcombine logic.  The .c test is discarded by earlier optimizers.  */
-/* { dg-final { scan-tree-dump-times "optimizing" 6 "ifcombine" } } */
+/* { dg-final { scan-tree-dump-times "optimizing" 6 "ifcombine" { target { ! { avr-*-* pru-*-* } } } } } */

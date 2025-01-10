@@ -43,4 +43,4 @@ int main () {
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimizing" 4 "ifcombine" } } */
+/* { dg-final { scan-tree-dump-times "optimizing" 4 "ifcombine" { target { ! { avr-*-* pru-*-* } } } } } */

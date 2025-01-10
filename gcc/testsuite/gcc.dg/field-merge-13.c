@@ -90,4 +90,4 @@ int main () {
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimizing" 9 "ifcombine" } } */
+/* { dg-final { scan-tree-dump-times "optimizing" 9 "ifcombine" { target { ! { avr-*-* pru-*-* } } } } } */

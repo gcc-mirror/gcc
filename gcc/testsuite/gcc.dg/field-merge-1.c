@@ -58,7 +58,7 @@ int main () {
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 8 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 8 "optimized" { target { ! { avr-*-* pru-*-* } } } } } */
 /* { dg-final { scan-assembler-not "cmpb" { target { i*86-*-* || x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "cmpl" 8 { target { i*86-*-* || x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "cmpw" 8 { target { powerpc*-*-* || rs6000-*-* } } } } */

@@ -1,7 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O -fdump-tree-ifcombine-details" } */
 
-/* Check that we don't get confused by multiple conversions.  */
+/* Check that we don't get confused by multiple conversions.  Conceivably, we
+   could combine both tests using b, but the current logic won't do that.  */
 
 __attribute__((noipa))
 int f(int *a,int *d)
