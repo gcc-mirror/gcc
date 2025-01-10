@@ -6101,6 +6101,8 @@ package body Sem_Res is
                elsif Is_Fixed_Point_Type (It.Typ) then
                   if Analyzed (N) then
                      Error_Msg_N ("ambiguous operand in fixed operation", N);
+                  elsif It.Typ = Any_Fixed then
+                     Resolve (N, B_Typ);
                   else
                      Resolve (N, It.Typ);
                   end if;
