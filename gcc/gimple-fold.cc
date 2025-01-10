@@ -7577,7 +7577,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   /* Recognize and save a masking operation.  Combine it with an
      incoming mask.  */
   if (pand_mask && gimple_binop_def_p (BIT_AND_EXPR, exp, res_ops)
-      && uniform_integer_cst_p (res_ops[1]))
+      && TREE_CODE (res_ops[1]) == INTEGER_CST)
     {
       loc[1] = gimple_location (SSA_NAME_DEF_STMT (exp));
       exp = res_ops[0];
@@ -7632,7 +7632,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 
   /* Take note of shifts.  */
   if (gimple_binop_def_p (RSHIFT_EXPR, exp, res_ops)
-      && uniform_integer_cst_p (res_ops[1]))
+      && TREE_CODE (res_ops[1]) == INTEGER_CST)
     {
       loc[2] = gimple_location (SSA_NAME_DEF_STMT (exp));
       exp = res_ops[0];
@@ -8092,7 +8092,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   else if ((lcode == LT_EXPR || lcode == GE_EXPR)
 	   && INTEGRAL_TYPE_P (TREE_TYPE (ll_arg))
 	   && TYPE_UNSIGNED (TREE_TYPE (ll_arg))
-	   && uniform_integer_cst_p (lr_arg)
+	   && TREE_CODE (lr_arg) == INTEGER_CST
 	   && wi::popcount (wi::to_wide (lr_arg)) == 1)
     {
       ll_and_mask = ~(wi::to_wide (lr_arg) - 1);
@@ -8104,7 +8104,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   else if ((lcode == LE_EXPR || lcode == GT_EXPR)
 	   && INTEGRAL_TYPE_P (TREE_TYPE (ll_arg))
 	   && TYPE_UNSIGNED (TREE_TYPE (ll_arg))
-	   && uniform_integer_cst_p (lr_arg)
+	   && TREE_CODE (lr_arg) == INTEGER_CST
 	   && wi::popcount (wi::to_wide (lr_arg) + 1) == 1)
     {
       ll_and_mask = ~wi::to_wide (lr_arg);
@@ -8123,7 +8123,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   else if ((rcode == LT_EXPR || rcode == GE_EXPR)
 	   && INTEGRAL_TYPE_P (TREE_TYPE (rl_arg))
 	   && TYPE_UNSIGNED (TREE_TYPE (rl_arg))
-	   && uniform_integer_cst_p (rr_arg)
+	   && TREE_CODE (rr_arg) == INTEGER_CST
 	   && wi::popcount (wi::to_wide (rr_arg)) == 1)
     {
       rl_and_mask = ~(wi::to_wide (rr_arg) - 1);
@@ -8133,7 +8133,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   else if ((rcode == LE_EXPR || rcode == GT_EXPR)
 	   && INTEGRAL_TYPE_P (TREE_TYPE (rl_arg))
 	   && TYPE_UNSIGNED (TREE_TYPE (rl_arg))
-	   && uniform_integer_cst_p (rr_arg)
+	   && TREE_CODE (rr_arg) == INTEGER_CST
 	   && wi::popcount (wi::to_wide (rr_arg) + 1) == 1)
     {
       rl_and_mask = ~wi::to_wide (rr_arg);
@@ -8392,7 +8392,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   HOST_WIDE_INT ll_align = TYPE_ALIGN (TREE_TYPE (ll_inner));
   poly_uint64 ll_end_region = 0;
   if (TYPE_SIZE (TREE_TYPE (ll_inner))
-      && uniform_integer_cst_p (TYPE_SIZE (TREE_TYPE (ll_inner))))
+      && tree_fits_poly_uint64_p (TYPE_SIZE (TREE_TYPE (ll_inner))))
     ll_end_region = tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (ll_inner)));
   if (get_best_mode (end_bit - first_bit, first_bit, 0, ll_end_region,
 		     ll_align, BITS_PER_WORD, volatilep, &lnmode))
@@ -8585,7 +8585,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       HOST_WIDE_INT lr_align = TYPE_ALIGN (TREE_TYPE (lr_inner));
       poly_uint64 lr_end_region = 0;
       if (TYPE_SIZE (TREE_TYPE (lr_inner))
-	  && uniform_integer_cst_p (TYPE_SIZE (TREE_TYPE (lr_inner))))
+	  && tree_fits_poly_uint64_p (TYPE_SIZE (TREE_TYPE (lr_inner))))
 	lr_end_region = tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (lr_inner)));
       if (!get_best_mode (end_bit - first_bit, first_bit, 0, lr_end_region,
 			  lr_align, BITS_PER_WORD, volatilep, &rnmode))
