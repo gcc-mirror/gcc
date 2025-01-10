@@ -37,14 +37,6 @@ Attributes::is_known (const std::string &attribute_path)
 
   return !lookup.is_error ();
 }
-bool
-Attributes::is_lang_item (const std::string &attribute_path,
-			  const AST::Attribute &attr)
-{
-  return ((attribute_path == Values::Attributes::LANG) && attr.has_attr_input ()
-	  && (attr.get_attr_input ().get_attr_input_type ()
-	      == AST::AttrInput::AttrInputType::LITERAL));
-}
 
 using Attrs = Values::Attributes;
 
