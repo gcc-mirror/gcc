@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom2 -fno-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-evrp" } */
 
 
 int min1(int a, int b)
@@ -114,5 +114,5 @@ int min16(int a, int b)
     return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "MIN_EXPR" "dom2" } } */
+/* { dg-final { scan-tree-dump-not "MIN_EXPR" "evrp" } } */
 

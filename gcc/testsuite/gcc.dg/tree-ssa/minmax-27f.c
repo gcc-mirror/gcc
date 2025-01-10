@@ -1,118 +1,118 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom2 -fno-tree-vrp" } */
+/* { dg-options "-O2 -ffast-math -fdump-tree-evrp" } */
 
 
-int min1(int a, int b)
+float min1(float a, float b)
 {
     if (a <= b)
         return a < b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min2(int a, int b)
+float min2(float a, float b)
 {
     if (a <= b)
         return a > b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-int min3(int a, int b)
+float min3(float a, float b)
 {
     if (a < b)
         return a < b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min4(int a, int b)
+float min4(float a, float b)
 {
     if (a < b)
         return a > b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-int min5(int a, int b)
+float min5(float a, float b)
 {
     if (a <= b)
         return a <= b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min6(int a, int b)
+float min6(float a, float b)
 {
     if (a <= b)
         return a >= b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-int min7(int a, int b)
+float min7(float a, float b)
 {
     if (a < b)
         return a <= b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min8(int a, int b)
+float min8(float a, float b)
 {
     if (b > a)
         return a >= b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-int min9(int a, int b)
+float min9(float a, float b)
 {
     if (b >= a)
         return a < b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min10(int a, int b)
+float min10(float a, float b)
 {
     if (b >= a)
         return a > b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-int min11(int a, int b)
+float min11(float a, float b)
 {
     if (b > a)
         return a < b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min12(int a, int b)
+float min12(float a, float b)
 {
     if (b > a)
         return a > b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-int min13(int a, int b)
+float min13(float a, float b)
 {
     if (b >= a)
         return a <= b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min14(int a, int b)
+float min14(float a, float b)
 {
     if (b >= a)
         return a >= b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-int min15(int a, int b)
+float min15(float a, float b)
 {
     if (b > a)
         return a <= b ? a : b;
-    return 0;
+    return 0.0;
 }
 
-int min16(int a, int b)
+float min16(float a, float b)
 {
     if (b > a)
         return a >= b ? b : a;
-    return 0;
+    return 0.0;
 }
 
-/* { dg-final { scan-tree-dump-not "MIN_EXPR" "dom2" } } */
+/* { dg-final { scan-tree-dump-not "MIN_EXPR" "evrp" } } */
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom2 -fno-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-evrp" } */
 
 int max1(int a, int b)
 {
@@ -113,5 +113,5 @@ int max16(int a, int b)
     return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "MAX_EXPR" "dom2" } } */
+/* { dg-final { scan-tree-dump-not "MAX_EXPR" "evrp" } } */
 

@@ -318,7 +318,14 @@ simplify_using_ranges::fold_cond_with_ops (enum tree_code code,
 
   int_range<1> res;
   range_op_handler handler (code);
-  if (handler && handler.fold_range (res, boolean_type_node, r0, r1))
+
+  // Find any relation between op0 and op1 and pass it to fold_range.
+  relation_kind rel = VREL_VARYING;
+  if (gimple_range_ssa_p (op0) && gimple_range_ssa_p (op1))
+    rel = query->relation ().query (s, op0, op1);
+
+  if (handler && handler.fold_range (res, boolean_type_node, r0, r1,
+				     relation_trio::op1_op2 (rel)))
     {
       if (res == range_true ())
 	return boolean_true_node;
@@ -1977,9 +1984,7 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 
 	case MIN_EXPR:
 	case MAX_EXPR:
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_min_or_max_using_ranges (gsi, stmt);
-	  break;
+	  return simplify_min_or_max_using_ranges (gsi, stmt);
 
 	case RSHIFT_EXPR:
 	  {
