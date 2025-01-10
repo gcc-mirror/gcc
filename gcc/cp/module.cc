@@ -9189,7 +9189,10 @@ trees_out::type_node (tree type)
 	  tree_node (raises);
 	}
 
-      tree_node (TYPE_ATTRIBUTES (type));
+      /* build_type_attribute_variant creates a new TYPE_MAIN_VARIANT, so
+	 variants should all have the same set of attributes.  */
+      gcc_checking_assert (TYPE_ATTRIBUTES (type)
+			   == TYPE_ATTRIBUTES (TYPE_MAIN_VARIANT (type)));
 
       if (streaming_p ())
 	{
@@ -9405,6 +9408,8 @@ trees_out::type_node (tree type)
 	}
       break;
     }
+
+  tree_node (TYPE_ATTRIBUTES (type));
 
   /* We may have met the type during emitting the above.  */
   if (ref_node (type) != WK_none)
@@ -10090,6 +10095,13 @@ trees_in::tree_node (bool is_use)
 	    break;
 	  }
 
+	/* In the exporting TU, a derived type with attributes was built by
+	   build_type_attribute_variant as a distinct copy, with itself as
+	   TYPE_MAIN_VARIANT.  We repeat that on import to get the version
+	   without attributes as TYPE_CANONICAL.  */
+	if (tree attribs = tree_node ())
+	  res = cp_build_type_attribute_variant (res, attribs);
+
 	int tag = i ();
 	if (!tag)
 	  {
@@ -10132,9 +10144,6 @@ trees_in::tree_node (bool is_use)
 	    res = build_aligned_type (res, (1u << flags) >> 1);
 	    TYPE_USER_ALIGN (res) = true;
 	  }
-
-	if (tree attribs = tree_node ())
-	  res = cp_build_type_attribute_variant (res, attribs);
 
 	int quals = i ();
 	if (quals >= 0 && !get_overrun ())
