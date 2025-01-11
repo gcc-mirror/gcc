@@ -14341,22 +14341,32 @@ depset::hash::add_deduction_guides (tree decl)
   if (find_binding (ns, name))
     return;
 
-  tree guides = lookup_qualified_name (ns, name, LOOK_want::ANY_REACHABLE,
+  tree guides = lookup_qualified_name (ns, name, LOOK_want::NORMAL,
 				       /*complain=*/false);
   if (guides == error_mark_node)
     return;
 
-  /* We have bindings to add.  */
-  depset *binding = make_binding (ns, name);
-  add_namespace_context (binding, ns);
-
-  depset **slot = binding_slot (ns, name, /*insert=*/true);
-  *slot = binding;
-
-  for (lkp_iterator it (guides); it; ++it)
+  depset *binding = nullptr;
+  for (tree t : lkp_range (guides))
     {
-      gcc_checking_assert (!TREE_VISITED (*it));
-      depset *dep = make_dependency (*it, EK_FOR_BINDING);
+      gcc_checking_assert (!TREE_VISITED (t));
+      depset *dep = make_dependency (t, EK_FOR_BINDING);
+
+      /* We don't want to create bindings for imported deduction guides, as
+	 this would potentially cause name lookup to return duplicates.  */
+      if (dep->is_import ())
+	continue;
+
+      if (!binding)
+	{
+	  /* We have bindings to add.  */
+	  binding = make_binding (ns, name);
+	  add_namespace_context (binding, ns);
+
+	  depset **slot = binding_slot (ns, name, /*insert=*/true);
+	  *slot = binding;
+	}
+
       binding->deps.safe_push (dep);
       dep->deps.safe_push (binding);
     }
@@ -14592,6 +14602,11 @@ depset::hash::finalize_dependencies ()
 	  if (dep->deps.length () > 2)
 	    gcc_qsort (&dep->deps[1], dep->deps.length () - 1,
 		       sizeof (dep->deps[1]), binding_cmp);
+
+	  /* Bindings shouldn't refer to imported entities.  */
+	  if (CHECKING_P)
+	    for (depset *entity : dep->deps)
+	      gcc_checking_assert (!entity->is_import ());
 	}
       else if (dep->is_exposure () && !dep->is_tu_local ())
 	{
