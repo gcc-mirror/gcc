@@ -1538,8 +1538,6 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
 
   if (s == NULL)
     return;
-  cgraph_node::get (current_function_decl)->count
-     = profile_count::from_gcov_type (s->head_count ()).afdo ();
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
      = profile_count::from_gcov_type (s->head_count ()).afdo ();
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count = profile_count::zero ().afdo ();
@@ -1578,6 +1576,8 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
       /* Calculate, propagate count and probability information on CFG.  */
       afdo_calculate_branch_prob (&annotated_bb);
     }
+  cgraph_node::get(current_function_decl)->count
+      = ENTRY_BLOCK_PTR_FOR_FN(cfun)->count;
   update_max_bb_count ();
   profile_status_for_fn (cfun) = PROFILE_READ;
   if (flag_value_profile_transformations)
