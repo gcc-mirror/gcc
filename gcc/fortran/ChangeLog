@@ -1,3 +1,12 @@
+2025-01-10  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106692
+	* trans-expr.cc (gfc_conv_expr_op): Inhibit excessive optimization
+	of Cray pointers by treating them as volatile in comparisons.
+
 2024-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

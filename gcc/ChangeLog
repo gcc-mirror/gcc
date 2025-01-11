@@ -1,3 +1,33 @@
+2025-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Fix cortex-x4 parts
+	num.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* multiple_target.cc
+	(redirect_to_specific_clone): Assert that "target" attribute is
+	used for FMV before checking it.
+	(ipa_target_clone): Skip redirect_to_specific_clone on some
+	targets.
+
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117912
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): For addresses
+	of zero-sized components do not set ->off if the object size pass
+	didn't run.
+	For OOB ARRAY_REF accesses in address expressions avoid setting
+	->off if the object size pass didn't run.
+	(valueize_refs_1): Likewise.
+
+2025-01-10  Sam James  <sam@gentoo.org>
+
+	* doc/cpp.texi (Common Predefined Macros): Fix syntax.
+
 2025-01-09  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
