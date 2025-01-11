@@ -582,8 +582,8 @@ DefaultASTVisitor::visit (AST::WhileLetLoopExpr &expr)
   visit_outer_attrs (expr);
   for (auto &pattern : expr.get_patterns ())
     visit (pattern);
-  visit (expr.get_scrutinee_expr ());
   visit (expr.get_loop_label ());
+  visit (expr.get_scrutinee_expr ());
   visit (expr.get_loop_block ());
 }
 

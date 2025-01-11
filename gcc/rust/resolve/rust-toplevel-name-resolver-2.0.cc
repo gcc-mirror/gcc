@@ -135,8 +135,7 @@ TopLevel::visit (AST::Module &module)
 void
 TopLevel::visit (AST::Trait &trait)
 {
-  insert_or_error_out (trait.get_identifier ().as_string (), trait,
-		       Namespace::Types);
+  insert_or_error_out (trait.get_identifier (), trait, Namespace::Types);
 
   DefaultResolver::visit (trait);
 }
@@ -548,6 +547,8 @@ flatten_glob (const AST::UseTreeGlob &glob, std::vector<AST::SimplePath> &paths,
 {
   if (glob.has_path ())
     paths.emplace_back (glob.get_path ());
+  else
+    paths.emplace_back (AST::SimplePath ({}, false, glob.get_locus ()));
 }
 
 void

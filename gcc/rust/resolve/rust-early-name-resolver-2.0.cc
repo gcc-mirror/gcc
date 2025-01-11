@@ -70,8 +70,7 @@ Early::go (AST::Crate &crate)
 bool
 Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
 {
-  auto resolved
-    = ctx.resolve_path (glob.to_resolve.get_segments (), Namespace::Types);
+  auto resolved = ctx.resolve_path (glob.to_resolve, Namespace::Types);
   if (!resolved.has_value ())
     return false;
 
