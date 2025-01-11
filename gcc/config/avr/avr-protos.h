@@ -69,6 +69,7 @@ extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, int*);
 extern const char *avr_out_insv (rtx_insn *, rtx*, int*);
 extern const char *avr_out_extr (rtx_insn *, rtx*, int*);
 extern const char *avr_out_extr_not (rtx_insn *, rtx*, int*);
+extern const char *avr_out_sextr (rtx_insn *, rtx*, int*);
 extern const char *avr_out_plus_set_ZN (rtx*, int*);
 extern const char *avr_out_plus_set_N (rtx*, int*);
 extern const char *avr_out_op8_set_ZN (rtx_code, rtx*, int*);
@@ -102,6 +103,8 @@ extern void avr_expand_prologue (void);
 extern void avr_expand_epilogue (bool);
 extern bool avr_emit_cpymemhi (rtx*);
 extern void avr_emit_xior_with_shift (rtx_insn*, rtx*, int);
+extern void avr_emit_skip_pixop (rtx_code, rtx, rtx, rtx, rtx_code, rtx, int);
+extern void avr_emit_skip_clear (rtx, rtx, rtx_code, rtx, int);
 extern bool avr_epilogue_uses (int regno);
 
 extern void avr_output_addr_vec (rtx_insn*, rtx);

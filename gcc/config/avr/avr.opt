@@ -52,6 +52,11 @@ Target Undocumented Mask(ALL_DEBUG)
 mlog=
 Target RejectNegative Joined Undocumented Var(avropt_log_details)
 
+;; Tries to work around PR118012.
+mpr118012
+Target Var(avropt_pr118012) UInteger Init(1) Undocumented
+This option is on per default in order to work around PR118012.
+
 mshort-calls
 Target RejectNegative Mask(SHORT_CALLS)
 This option is used internally for multilib generation and selection.  Assume RJMP / RCALL can target all program memory.

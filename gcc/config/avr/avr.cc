@@ -11076,6 +11076,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
     case ADJUST_LEN_FLOAD: avr_out_fload (insn, op, &len); break;
     case ADJUST_LEN_SEXT: avr_out_sign_extend (insn, op, &len); break;
+    case ADJUST_LEN_SEXTR: avr_out_sextr (insn, op, &len); break;
 
     case ADJUST_LEN_SFRACT: avr_out_fract (insn, op, true, &len); break;
     case ADJUST_LEN_UFRACT: avr_out_fract (insn, op, false, &len); break;
@@ -12560,6 +12561,19 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     ? INTVAL (XEXP (x, 1))
     : -1;
 
+  if (avropt_pr118012)
+    {
+      if ((code == IOR || code == XOR || code == PLUS)
+	  && GET_CODE (XEXP (x, 0)) == ASHIFT
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == AND
+	  && XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 1) == const1_rtx)
+	{
+	  *total = COSTS_N_INSNS (2 + n_bytes);
+	  return true;
+	}
+    }
+
   switch (code)
     {
     case CONST_INT:
@@ -12577,6 +12591,20 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case NEG:
+      if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTRACT)
+	{
+	  // Just a sign_extract of bit 0?
+	  rtx y = XEXP (XEXP (x, 0), 0);
+	  if (XEXP (y, 1) == const1_rtx
+	      && XEXP (y, 2) == const0_rtx)
+	    {
+	      *total = COSTS_N_INSNS (1 + n_bytes
+				      - (AVR_HAVE_MOVW && n_bytes == 4));
+	      return true;
+	    }
+	}
+
       switch (mode)
 	{
 	case E_QImode:
@@ -12856,6 +12884,25 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case MULT:
+      if (avropt_pr118012)
+	{
+	  if (GET_CODE (XEXP (x, 0)) == AND
+	      && XEXP (XEXP (x, 0), 1) == const1_rtx)
+	    {
+	      // Try to defeat PR118012.  The MUL variant is actually very
+	      // expensive, but combine is given a pattern to transform this
+	      // into something less toxic.  Though this might not work
+	      // for SImode, and we still have a completely ridiculous
+	      // 32-bit multiplication instead of a simple bit test on
+	      // devices that don't even have MUL.  This is because on
+	      // AVR_TINY, we'll get a libcall which we cannot undo.
+	      // (On other devices that don't have MUL, the libcall is
+	      // bypassed by providing mulsi3, cf. insn mulsi3_[call_]pr118012.
+	      *total = 0;
+	      return true;
+	    }
+	} // PR118012
+
       switch (mode)
 	{
 	case E_QImode:
@@ -14380,6 +14427,132 @@ avr_out_sbxx_branch (rtx_insn *insn, rtx operands[])
     return "rjmp %x3";
 
   return "";
+}
+
+
+/* Output code for  XOP[0] = sign_extract (XOP[1].0)  and return "".
+   PLEN == 0: Output instructions.
+   PLEN != 0: Set *PLEN to the length of the sequence in words.  */
+
+const char *
+avr_out_sextr (rtx_insn *insn, rtx *xop, int *plen)
+{
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int bit = INTVAL (xop[2]);
+  int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
+
+  gcc_assert (bit == 0);
+
+  if (reg_unused_after (insn, src))
+    avr_asm_len ("lsr %1", xop, plen, -1);
+  else
+    avr_asm_len ("mov %0,%1"  CR_TAB
+		 "lsr %0", xop, plen, -2);
+
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      rtx b = avr_byte (dest, i);
+      avr_asm_len ("sbc %0,%0", &b, plen, 1);
+      if (i == 1 && n_bytes == 4 && AVR_HAVE_MOVW)
+	return avr_asm_len ("movw %C0,%A0", xop, plen, 1);
+    }
+
+  return "";
+}
+
+
+/*
+   if (bits.bitno <eqne> 0)
+     dest = op0;
+   else
+     dest = op0 <pix> op1;
+
+   Performed as:
+
+   dest = op0;
+   if (bits.bitno <eqne> 0)
+     goto LL;
+   dest o= op1;
+LL:;  */
+
+void
+avr_emit_skip_pixop (rtx_code pix, rtx dest, rtx op0, rtx op1,
+		     rtx_code eqne, rtx bits, int bitno)
+{
+  gcc_assert (eqne == EQ);
+
+  const machine_mode mode = GET_MODE (dest);
+
+  // Get rid of early-clobbers.
+
+  if (reg_overlap_mentioned_p (dest, bits))
+    bits = copy_to_mode_reg (GET_MODE (bits), bits);
+
+  if (reg_overlap_mentioned_p (dest, op1))
+    op1 = copy_to_mode_reg (mode, op1);
+
+  // xorqi3 has "register_operand" for op1.
+  if (mode == QImode && pix == XOR)
+    op1 = force_reg (QImode, op1);
+
+  emit_move_insn (dest, op0);
+
+  // Skip if bits.bitno <eqne> bitno.
+  rtx xlabel = gen_label_rtx ();
+  rtx zerox = gen_rtx_ZERO_EXTRACT (QImode, bits, const1_rtx, GEN_INT (bitno));
+  rtx cond = gen_rtx_fmt_ee (eqne, VOIDmode, zerox, const0_rtx);
+  emit (gen_sbrx_branchqi_split (cond, bits, const0_rtx, xlabel));
+
+  // Payload: plus, ior, xor for HI, PSI, SI have a scratch:QI;
+  // QI and plus:HI don't.
+  rtx src = gen_rtx_fmt_ee (pix, mode, dest, op1);
+  rtx set = gen_rtx_SET (dest, src);
+  rtx clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (QImode));
+  bool no_scratch = mode == QImode || (mode == HImode && pix == PLUS);
+  emit (no_scratch
+	? set
+	: gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
+
+  emit_label (xlabel);
+}
+
+
+/*
+   if (bits.bitno <eqne> 0)
+     dest = src;
+   else
+     dest = 0;
+
+   Performed as:
+
+   dest = src;
+   if (bits.bitno <eqne> 0)
+     goto LL;
+   dest = 0;
+LL:;  */
+
+void
+avr_emit_skip_clear (rtx dest, rtx src, rtx_code eqne, rtx bits, int bitno)
+{
+  const machine_mode mode = GET_MODE (dest);
+
+  // Get rid of early-clobber.
+  if (reg_overlap_mentioned_p (dest, bits))
+    bits = copy_to_mode_reg (GET_MODE (bits), bits);
+
+  emit_move_insn (dest, src);
+
+  // Skip if bits.bitno <eqne> bitno.
+  rtx xlabel = gen_label_rtx ();
+  rtx zerox = gen_rtx_ZERO_EXTRACT (QImode, bits, const1_rtx, GEN_INT (bitno));
+  rtx cond = gen_rtx_fmt_ee (eqne, VOIDmode, zerox, const0_rtx);
+  emit (gen_sbrx_branchqi_split (cond, bits, const0_rtx, xlabel));
+
+  // Payload: dest = 0;
+  emit_move_insn (dest, CONST0_RTX (mode));
+
+  emit_label (xlabel);
 }
 
 

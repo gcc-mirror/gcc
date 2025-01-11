@@ -160,7 +160,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "out_bitop, plus, addto_sp, sext, extr, extr_not, plus_ext,
+  "out_bitop, plus, addto_sp, sext, extr, extr_not, plus_ext, sextr,
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    ufract, sfract, round,
@@ -336,6 +336,7 @@
 (define_code_iterator any_lshift  [lshiftrt ashift]) ; logic shift
 
 (define_code_iterator piaop [plus ior and])
+(define_code_iterator pixop [plus ior xor])
 (define_code_iterator bitop [xor ior and])
 (define_code_iterator xior [xor ior])
 (define_code_iterator eqne [eq ne])
@@ -3337,8 +3338,18 @@
                             (match_operand:SI 2 "nonmemory_operand" "")))
               (clobber (reg:HI 26))
               (clobber (reg:DI 18))])]
-  "AVR_HAVE_MUL"
+  "AVR_HAVE_MUL
+   || (avropt_pr118012
+       /* AVR_TINY passes args on the stack, so we cannot work
+          around PR118012 like this. */
+       && ! AVR_TINY)"
   {
+    if (! AVR_HAVE_MUL)
+      {
+        emit (gen_gen_mulsi3_pr118012 (operands[0], operands[1], operands[2]));
+        DONE;
+      }
+
     if (u16_operand (operands[2], SImode))
       {
         operands[2] = force_reg (HImode, gen_int_mode (INTVAL (operands[2]), HImode));
@@ -3355,6 +3366,26 @@
 
     if (avr_emit3_fix_outputs (gen_mulsi3, operands, 1 << 0,
                                regmask (DImode, 18) | regmask (HImode, 26)))
+      DONE;
+  })
+
+;; With PR118012, we do __mulsi3 as a transparent call, so insn combine
+;; can transform  (mult:SI (and:SI * (const_int 1)))  into something
+;; less toxic.
+(define_expand "gen_mulsi3_pr118012"
+  [(parallel [(set (match_operand:SI 0 "register_operand")
+                   (mult:SI (match_operand:SI 1 "register_operand")
+                            (match_operand:SI 2 "nonmemory_operand")))
+              (clobber (reg:HI 26))
+              (clobber (reg:HI 30))
+              (clobber (reg:DI 18))])]
+  "avropt_pr118012
+   && ! AVR_HAVE_MUL
+   && ! AVR_TINY"
+  {
+    operands[2] = force_reg (SImode, operands[2]);
+    if (avr_emit3_fix_outputs (gen_gen_mulsi3_pr118012, operands, 1 << 0,
+                               regmask (DImode, 18) | regmask (HImode, 26) | regmask (HImode, 30)))
       DONE;
   })
 
@@ -3392,6 +3423,33 @@
         DONE;
       }
   })
+
+(define_insn_and_split "*mulsi3_pr118012"
+  [(set (match_operand:SI 0 "pseudo_register_operand"         "=r")
+        (mult:SI (match_operand:SI 1 "pseudo_register_operand" "r")
+                 (match_operand:SI 2 "pseudo_register_operand" "r")))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))
+   (clobber (reg:DI 18))]
+  "avropt_pr118012
+   && ! AVR_HAVE_MUL
+   && ! AVR_TINY
+   && ! reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (reg:SI 18)
+        (match_dup 1))
+   (set (reg:SI 22)
+        (match_dup 2))
+   (parallel [(set (reg:SI 22)
+                   (mult:SI (reg:SI 22)
+                            (reg:SI 18)))
+              (clobber (reg:SI 18))
+              (clobber (reg:HI 26))
+              (clobber (reg:HI 30))])
+   (set (match_dup 0)
+        (reg:SI 22))])
+
 
 ;; "muluqisi3"
 ;; "muluhisi3"
@@ -3658,6 +3716,26 @@
               (clobber (reg:HI 26))
               (clobber (reg:CC REG_CC))])])
 
+(define_insn_and_split "*mulsi3_call_pr118012_split"
+  [(set (reg:SI 22)
+        (mult:SI (reg:SI 22)
+                 (reg:SI 18)))
+   (clobber (reg:SI 18))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))]
+  "avropt_pr118012
+   && ! AVR_HAVE_MUL
+   && ! AVR_TINY"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 22)
+                   (mult:SI (reg:SI 22)
+                            (reg:SI 18)))
+              (clobber (reg:SI 18))
+              (clobber (reg:HI 26))
+              (clobber (reg:HI 30))
+              (clobber (reg:CC REG_CC))])])
+
 (define_insn "*mulsi3_call"
   [(set (reg:SI 22)
         (mult:SI (reg:SI 22)
@@ -3665,6 +3743,21 @@
    (clobber (reg:HI 26))
    (clobber (reg:CC REG_CC))]
   "AVR_HAVE_MUL && reload_completed"
+  "%~call __mulsi3"
+  [(set_attr "type" "xcall")])
+
+(define_insn "*mulsi3_call_pr118012"
+  [(set (reg:SI 22)
+        (mult:SI (reg:SI 22)
+                 (reg:SI 18)))
+   (clobber (reg:SI 18))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))
+   (clobber (reg:CC REG_CC))]
+  "avropt_pr118012
+   && ! AVR_HAVE_MUL
+   && ! AVR_TINY
+   && reload_completed"
   "%~call __mulsi3"
   [(set_attr "type" "xcall")])
 
@@ -7508,7 +7601,7 @@
 ;; Combine will create zero-extract patterns for single-bit tests.
 ;; Permit any mode in source pattern by using VOIDmode.
 
-(define_insn_and_split "*sbrx_branch<mode>_split"
+(define_insn_and_split "sbrx_branch<mode>_split"
   [(set (pc)
         (if_then_else
          (match_operator 0 "eqne_operator"
@@ -8975,8 +9068,8 @@
   [(set (pc)
         (if_then_else (ge (match_operand:QI 0 "register_operand" "")
                           (const_int 0))
-         (label_ref (match_operand 1 "" ""))
-         (pc)))]
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))]
    ""
    "#"
    "reload_completed"
@@ -10307,9 +10400,9 @@
 
 (define_insn_and_split "*extzv.qihi1"
   [(set (match_operand:HI 0 "register_operand"                     "=r")
-        (zero_extract:HI (match_operand:QI 1 "register_operand"     "r")
+        (zero_extract:HI (match_operand:QIHI 1 "register_operand"   "r")
                          (const_int 1)
-                         (match_operand:QI 2 "const_0_to_7_operand" "n")))]
+                         (match_operand:QI 2 "const_0_to_<MSB>_operand" "n")))]
   ""
   "#"
   ""
@@ -10530,6 +10623,289 @@
         (zero_extract:QI (match_dup 1)
                          (const_int 1)
                          (match_dup 2)))])
+
+
+(define_insn_and_split "*sextr.<QISI:mode>.<QISI2:mode>_split"
+  [(set (match_operand:QISI 0 "register_operand"                    "=r")
+        (sign_extract:QISI (match_operand:QISI2 1 "register_operand" "r")
+                           (const_int 1)
+                           (match_operand:QI 2 "const0_operand"      "L")))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (sign_extract:QISI (match_dup 1)
+                                      (const_int 1)
+                                      (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sextr.<QISI:mode>.<QISI2:mode>"
+  [(set (match_operand:QISI 0 "register_operand"                    "=r")
+        (sign_extract:QISI (match_operand:QISI2 1 "register_operand" "r")
+                           (const_int 1)
+                           (match_operand:QI 2 "const0_operand"      "L")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  {
+    return avr_out_sextr (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "sextr")])
+
+
+(define_insn_and_split "*neg.zextr-to-sextr.<HISI:mode>.<QISI:mode>"
+  [(set (match_operand:HISI 0 "register_operand")
+        (neg:HISI (zero_extend:HISI
+                   (zero_extract:QIPSI (match_operand:QISI 1 "register_operand")
+                                       (const_int 1)
+                                       (match_operand:QI 2 "const0_operand")))))]
+  "avropt_pr118012
+   && <HISI:SIZE> > <QIPSI:SIZE>
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(set (match_dup 0)
+        (sign_extract:HISI (match_dup 1)
+                           (const_int 1)
+                           (match_dup 2)))])
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PR118012: match.pd's
+;;
+;; /* (zero_one == 0) ? y : z <op> y -> ((typeof(y))zero_one * z) <op> y */
+;; /* (zero_one != 0) ? z <op> y : y -> ((typeof(y))zero_one * z) <op> y */
+;;
+;; introduces a crazy "optimization" that transforms code like
+;;
+;;    if (b & 1)
+;;       c ^= a;
+;; to
+;;
+;;    u = extract_bit0 (b);
+;;    v = zero_extend (u);
+;;    w = NEG v;
+;;    x = a AND w
+;;    c ^= x
+;;
+;; or even to
+;;
+;;    u = extract_bit0 (b);
+;;    v = a MULT u
+;;    c ^= v
+;;
+;; even on machines that don't have MUL instructions or that
+;; have to perform the multiplication by means of a libgcc call.
+;; Try to fix that below.  Notice that on AVR_TINY no MUL insn is
+;; available since is is performed as a libgcc call from which we
+;; cannot roll back.  With !AVR_HAVR_MULMUL it's a transparent call
+;; from avr.md so we can get rid of that at least.
+
+;; Map
+;;      $0 = ((sign_extract ($1.0)) AND $3) <op> $4
+;; to
+;;      $0 = $4
+;;      if ($1.0 == 0)
+;;        goto L
+;;      $0 <op>= $3
+;;      L:;
+(define_insn_and_split "*pixop-to-skip.<QISI:mode>"
+  [(set (match_operand:QISI 0 "register_operand")
+        (pixop:QISI (and:QISI (sign_extract:QISI (match_operand:QISI2 1 "register_operand")
+                                                 (const_int 1)
+                                                 (match_operand:QI 2 "const0_operand"))
+                              (match_operand:QISI 3 "nonmemory_operand"))
+                    (match_operand:QISI 4 "register_operand")))]
+  "avropt_pr118012
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_pixop (<pixop:CODE>, operands[0], operands[4], operands[3],
+                         EQ, operands[1], 0);
+    DONE;
+  })
+
+;; Map
+;;      $0 = (($1 AND 1) MULT $2) o $3
+;; to
+;;      $0 = $3
+;;      if ($1.0 == 0)
+;;        goto L
+;;      $0 o= $2
+;;      L:;
+(define_insn_and_split "*mul.and1-to-skip.<mode>"
+  [(set (match_operand:QISI 0 "register_operand")
+        (pixop:QISI (mult:QISI (and:QISI (match_operand:QISI 1 "register_operand")
+                                         (const_int 1))
+                               (match_operand:QISI 2 "nonmemory_operand"))
+                    (match_operand:QISI 3 "register_operand")))]
+  "avropt_pr118012
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_pixop (<CODE>, operands[0], operands[3], operands[2],
+                         EQ, operands[1], 0);
+    DONE;
+  })
+
+(define_insn_and_split "*mul.ext.and1-to-skip.<HISI:mode>"
+  [(set (match_operand:HISI 0 "register_operand")
+        (pixop:HISI (mult:HISI (any_extend:HISI (and:QIPSI (match_operand:QIPSI 1 "register_operand")
+                                                           (const_int 1)))
+                               (match_operand:HISI 2 "nonmemory_operand"))
+                    (match_operand:HISI 3 "register_operand")))]
+  "avropt_pr118012
+   && <HISI:SIZE> > <QIPSI:SIZE>
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_pixop (<pixop:CODE>, operands[0], operands[3], operands[2],
+                         EQ, operands[1], 0);
+    DONE;
+  })
+
+;; Like the one above, but where $2 was a power of 2 and MULT has been
+;; transformed to ASHIFT (PR118360).
+(define_insn_and_split "*shl.ext.and1-to-skip.<HISI:mode>"
+  [(set (match_operand:HISI 0 "register_operand")
+        (pixop:HISI (ashift:HISI (any_extend:HISI (and:QIPSI (match_operand:QIPSI 1 "register_operand")
+                                                             (const_int 1)))
+                                 (match_operand:QI 2 "const_int_operand"))
+                    (match_operand:HISI 3 "register_operand")))]
+  "avropt_pr118012
+   && <HISI:SIZE> > <QIPSI:SIZE>
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    rtx op2 = gen_int_mode (1u << INTVAL (operands[2]), <HISI:MODE>mode);
+    avr_emit_skip_pixop (<pixop:CODE>, operands[0], operands[3], op2,
+                         EQ, operands[1], 0);
+    DONE;
+  })
+
+(define_insn_and_split "*shl.and-to-skip.<mode>"
+  [(set (match_operand:HISI 0 "register_operand")
+        (pixop:HISI (and:HISI (ashift:HISI (match_operand:HISI 1 "register_operand")
+                                           (match_operand:QI 4 "const_0_to_<MSB>_operand"))
+                              (match_operand:HISI 2 "single_one_operand"))
+                    (match_operand:HISI 3 "register_operand")))]
+  "avropt_pr118012
+   && exact_log2 (UINTVAL (operands[2]) & GET_MODE_MASK (<MODE>mode))
+      == INTVAL (operands[4])
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_pixop (<CODE>, operands[0], operands[3], operands[2],
+                         EQ, operands[1], 0);
+    DONE;
+  })
+
+
+;; Map
+;;      $0 = ($1 AND 1) MULT $2
+;; to
+;;      $0 = $2
+;;      if ($1.0 != 0)
+;;        goto L
+;;      $0 = 0
+;;      L:;
+(define_insn_and_split "*map.mul.and1-to-skip.<QISI:mode>"
+  [(set (match_operand:QISI 0 "register_operand")
+        (mult:QISI (and:QISI (match_operand:QISI2 1 "register_operand")
+                             (const_int 1))
+                   (match_operand:QISI 2 "nonmemory_operand")))]
+  "avropt_pr118012
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_clear (operands[0], operands[2], NE, operands[1], 0);
+    DONE;
+  })
+
+(define_insn_and_split "*map.mul.and1-to-skip.<mode>"
+  [(set (match_operand:QISI 0 "register_operand")
+        (mult:QISI (and:QISI (match_operand:QISI 1 "register_operand")
+                             (const_int 1))
+                   (match_operand:QISI 2 "nonmemory_operand")))]
+  "avropt_pr118012
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_clear (operands[0], operands[2], NE, operands[1], 0);
+    DONE;
+  })
+
+(define_insn_and_split "*map.mul.ext.and1-to-skip.<HISI:mode>"
+  [(set (match_operand:HISI 0 "register_operand")
+        (mult:HISI (any_extend:HISI (and:QIPSI (match_operand:QIPSI 1 "register_operand")
+                                               (const_int 1)))
+                   (match_operand:HISI 2 "nonmemory_operand")))]
+  "avropt_pr118012
+   && <HISI:SIZE> > <QIPSI:SIZE>
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_clear (operands[0], operands[2], NE, operands[1], 0);
+    DONE;
+  })
+
+;; Similar, but the MULT has been turned to ASHIFT.
+(define_insn_and_split "*map.shl.ext.and1-to-skip.<HISI:mode>"
+  [(set (match_operand:HISI 0 "register_operand")
+        (ashift:HISI (any_extend:HISI (and:QIPSI (match_operand:QIPSI 1 "register_operand")
+                                                 (const_int 1)))
+                     (match_operand:QI 2 "const_0_to_<HISI:MSB>_operand")))]
+  "avropt_pr118012
+   && <HISI:SIZE> > <QIPSI:SIZE>
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    rtx op2 = gen_int_mode (1u << INTVAL (operands[2]), <HISI:MODE>mode);
+    avr_emit_skip_clear (operands[0], op2, NE, operands[1], 0);
+    DONE;
+  })
+
+
+;; Map
+;;      $0 = sign_extract($1.0) AND $3
+;; to
+;;      $0 = $3
+;;      if ($1.0 != 0)
+;;        goto L
+;;      $0 = 0
+;;      L:;
+(define_insn_and_split "*map.and1-to-skip.<QISI:mode>"
+  [(set (match_operand:QISI 0 "register_operand")
+        (and:QISI (sign_extract:QISI (match_operand:QISI2 1 "register_operand")
+                                     (const_int 1)
+                                     (match_operand:QI 2 "const0_operand"))
+                  (match_operand:QISI 3 "nonmemory_operand")))]
+  "avropt_pr118012
+   && ! reload_completed"
+  { gcc_unreachable (); }
+  "&& 1"
+  [(scratch)]
+  {
+    avr_emit_skip_clear (operands[0], operands[3], NE, operands[1], 0);
+    DONE;
+  })
 
 
 ;; Work around PR115307: Early passes expand isinf/f/l to a bloat.
