@@ -659,6 +659,37 @@ proc check_effective_target_trampolines { } {
     return 1
 }
 
+# Return 1 if target supports calling virtual variadic methods
+# of multi-inheritance classes.
+
+proc check_effective_target_variadic_mi_thunk { } {
+    # These targets do not implement TARGET_ASM_OUTPUT_MI_THUNK.
+    if { [istarget avr-*-*]
+	 || [istarget bpf-*-*]
+	 || [istarget fr30-*-*]
+	 || [istarget ft32-*-*]
+	 || [istarget amdgcn-*-*]
+	 || [istarget h8300-*-*]
+	 || [istarget iq2000-*-*]
+	 || [istarget lm32-*-*]
+	 || [istarget m32c-*-*]
+	 || [istarget m32r-*-*]
+	 || [istarget mcore-*-*]
+	 || [istarget moxie-*-*]
+	 || [istarget msp430-*-*]
+	 || [istarget nvptx-*-*]
+	 || [istarget pdp11-*-*]
+	 || [istarget pru-*-*]
+	 || [istarget rl78-*-*]
+	 || [istarget rx-*-*]
+	 || [istarget v850-*-*]
+	 || [istarget visium-*-*] } {
+
+	return 0;
+    }
+    return 1
+}
+
 # Return 1 if target has limited stack size.
 
 proc check_effective_target_stack_size { } {

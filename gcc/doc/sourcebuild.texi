@@ -2957,6 +2957,9 @@ Target supports @code{sysconf}.
 @item trampolines
 Target supports trampolines.
 
+@item variadic_mi_thunk
+Target supports C++ virtual variadic function calls with multiple inheritance.
+
 @item two_plus_gigs
 Target supports linking programs with 2+GiB of data.
 

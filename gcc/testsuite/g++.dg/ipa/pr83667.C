@@ -1,6 +1,7 @@
 // { dg-require-alias "" }
 // { dg-options "-fdump-ipa-inline" }
 // c++/83667 ICE dumping a static thunk when TARGET_USE_LOCAL_THUNK_ALIAS_P
+// { dg-require-effective-target variadic_mi_thunk }
 
 
 struct a
