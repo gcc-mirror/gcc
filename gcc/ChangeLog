@@ -1,3 +1,34 @@
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116057
+	* tree-ssa-ccp.cc (likely_value): Also walk CTORs in stmt
+	operands to look for constants.
+
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115669
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Do not reassociate
+	chains that participate in a reduction.
+
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115646
+	* tree-call-cdce.cc (check_pow): Check for bit_sz values
+	as allowed by transform.
+
+2025-01-10  Sam James  <sam@gentoo.org>
+
+	* doc/cpp.texi (Common Predefined Macros): Fix syntax.
+
 2025-01-07  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:
