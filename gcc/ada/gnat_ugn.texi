@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jan 03, 2025
+GNAT User's Guide for Native Platforms , Jan 13, 2025
 
 AdaCore
 
@@ -24749,13 +24749,6 @@ Build a non-relocatable DLL at @code{address}. If you don’t specify
 default, when this switch is missing, @code{gnatdll} builds a
 relocatable DLL. We advise you to build relocatable DLL.
 
-@geindex -b (gnatdll)
-
-@item @code{-b `address'}
-
-Set the relocatable DLL base address. By default the address is
-@code{0x11000000}.
-
 @geindex -bargs (gnatdll)
 
 @item @code{-bargs `opts'}
@@ -29839,8 +29832,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{d2}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye
