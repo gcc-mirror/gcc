@@ -9591,8 +9591,7 @@ riscv_register_move_cost (machine_mode mode,
   bool from_is_gpr = from == GR_REGS || from == RVC_GR_REGS;
   bool to_is_fpr = to == FP_REGS || to == RVC_FP_REGS;
   bool to_is_gpr = to == GR_REGS || to == RVC_GR_REGS;
-  if ((from_is_fpr && to == to_is_gpr) ||
-      (from_is_gpr && to_is_fpr))
+  if ((from_is_fpr && to_is_gpr) || (from_is_gpr && to_is_fpr))
     return tune_param->fmv_cost;
 
   if (from == V_REGS)
