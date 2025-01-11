@@ -2421,11 +2421,24 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
     }
   else if (c->attr.allocatable)
     {
+      const char *err = G_("Allocatable component of structure at %C must have "
+			   "a deferred shape");
       if (c->as->type != AS_DEFERRED)
 	{
-	  gfc_error ("Allocatable component of structure at %C must have a "
-		     "deferred shape");
-	  return false;
+	  if (c->ts.type == BT_CLASS || c->ts.type == BT_DERIVED)
+	    {
+	      /* Issue an immediate error and allow this component to pass for
+		 the sake of clean error recovery.  Set the error flag for the
+		 containing derived type so that finalizers are not built.  */
+	      gfc_error_now (err);
+	      s->sym->error = 1;
+	      c->as->type = AS_DEFERRED;
+	    }
+	  else
+	    {
+	      gfc_error (err);
+	      return false;
+	    }
 	}
     }
   else

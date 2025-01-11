@@ -1739,7 +1739,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   gfc_expr *ancestor_wrapper = NULL, *rank;
   gfc_iterator *iter;
 
-  if (derived->attr.unlimited_polymorphic)
+  if (derived->attr.unlimited_polymorphic || derived->error)
     {
       vtab_final->initializer = gfc_get_null_expr (NULL);
       return;
