@@ -1467,6 +1467,7 @@ enum
   OMP_LIST_INIT,
   OMP_LIST_USE,
   OMP_LIST_DESTROY,
+  OMP_LIST_INTEROP,
   OMP_LIST_ADJUST_ARGS,
   OMP_LIST_NUM /* Must be the last.  */
 };

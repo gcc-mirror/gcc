@@ -2780,6 +2780,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_DESTROY:
 	  clause_code = OMP_CLAUSE_DESTROY;
 	  goto add_clause;
+	case OMP_LIST_INTEROP:
+	  clause_code = OMP_CLAUSE_INTEROP;
+	  goto add_clause;
 
 	add_clause:
 	  omp_clauses
