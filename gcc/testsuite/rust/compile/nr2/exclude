@@ -36,7 +36,6 @@ issue-1981.rs
 issue-2036.rs
 issue-2043.rs
 issue-2142.rs
-issue-2238.rs
 issue-2330.rs
 issue-2479.rs
 issue-2723-1.rs
@@ -50,6 +49,7 @@ issue-852.rs
 issue-855.rs
 iterators1.rs
 lookup_err1.rs
+macros/mbe/macro20.rs
 macros/mbe/macro23.rs
 macros/mbe/macro40.rs
 macros/mbe/macro43.rs
@@ -68,8 +68,6 @@ match9.rs
 method2.rs
 multiple_bindings1.rs
 multiple_bindings2.rs
-name_resolution2.rs
-name_resolution4.rs
 nested_macro_use1.rs
 nested_macro_use2.rs
 nested_macro_use3.rs
@@ -93,6 +91,7 @@ pub_restricted_3.rs
 redef_error2.rs
 redef_error4.rs
 redef_error5.rs
+self-path1.rs
 self-path2.rs
 sizeof-stray-infer-var-bug.rs
 struct-expr-parse.rs
@@ -103,7 +102,6 @@ type-bindings1.rs
 unconstrained_type_param.rs
 undeclared_label.rs
 use_1.rs
-use_2.rs
 v0-mangle1.rs
 v0-mangle2.rs
 while_break_expr.rs
@@ -128,7 +126,6 @@ issue-2907.rs
 issue-2423.rs
 issue-266.rs
 additional-trait-bounds2.rs
-auto_traits2.rs
 issue-3140.rs
 cmp1.rs
 derive_clone_enum1.rs
