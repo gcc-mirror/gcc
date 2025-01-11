@@ -238,6 +238,10 @@ Early::visit (AST::MacroInvocation &invoc)
 {
   auto path = invoc.get_invoc_data ().get_path ();
 
+  if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
+    for (auto &pending_invoc : invoc.get_pending_eager_invocations ())
+      pending_invoc->accept_vis (*this);
+
   // When a macro is invoked by an unqualified identifier (not part of a
   // multi-part path), it is first looked up in textual scoping. If this does
   // not yield any results, then it is looked up in path-based scoping. If the
