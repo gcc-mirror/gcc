@@ -13,7 +13,7 @@ test_println_blank()
   std::print("1");
   std::println();
   std::println("2");
-  // { dg-output "1\n2" }
+  // { dg-output "1\r?\n2" }
 }
 
 void
