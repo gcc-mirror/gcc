@@ -10039,7 +10039,7 @@ package body Sem_Ch13 is
 
                   --  If the predicate pragma comes from an aspect, replace the
                   --  saved expression because we need the subtype references
-                  --  replaced for the calls to Preanalyze_And_Resolve in
+                  --  replaced for the calls to Preanalyze_Spec_Expression in
                   --  Check_Aspect_At_xxx routines.
 
                   if Present (Asp) then
@@ -10853,12 +10853,12 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
             then
                Push_Type (Ent);
-               Preanalyze_And_Resolve (Freeze_Expr, Standard_Boolean);
+               Preanalyze_Spec_Expression (Freeze_Expr, Standard_Boolean);
                Pop_Type (Ent);
 
             elsif A_Id = Aspect_Priority then
                Push_Type (Ent);
-               Preanalyze_And_Resolve (Freeze_Expr, Any_Integer);
+               Preanalyze_Spec_Expression (Freeze_Expr, Any_Integer);
                Pop_Type (Ent);
 
             else
@@ -10894,6 +10894,12 @@ package body Sem_Ch13 is
             end if;
             return;
 
+         --  The expression must be analyzed in the special manner described in
+         --  "Handling of Default and Per-Object Expressions" in sem.ads, since
+         --  any static expressions within an aspect_specification also cause
+         --  freezing at the end of the immediately enclosing declaration list
+         --  (RM 13.14(7.2/5)).
+
          --  The default values attributes may be defined in the private part,
          --  and the analysis of the expression may take place when only the
          --  partial view is visible. The expression must be scalar, so use
@@ -10902,7 +10908,7 @@ package body Sem_Ch13 is
          elsif A_Id in Aspect_Default_Component_Value | Aspect_Default_Value
             and then Is_Private_Type (T)
          then
-            Preanalyze_And_Resolve (End_Decl_Expr, Full_View (T));
+            Preanalyze_Spec_Expression (End_Decl_Expr, Full_View (T));
 
          --  The following aspect expressions may contain references to
          --  components and discriminants of the type.
@@ -10916,14 +10922,14 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
          then
             Push_Type (Ent);
-            Preanalyze_And_Resolve (End_Decl_Expr, T);
+            Preanalyze_Spec_Expression (End_Decl_Expr, T);
             Pop_Type (Ent);
 
          elsif A_Id = Aspect_Predicate_Failure then
-            Preanalyze_And_Resolve (End_Decl_Expr, Standard_String);
+            Preanalyze_Spec_Expression (End_Decl_Expr, Standard_String);
 
          elsif Present (End_Decl_Expr) then
-            Preanalyze_And_Resolve (End_Decl_Expr, T);
+            Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;
 
          Err :=
@@ -11346,8 +11352,14 @@ package body Sem_Ch13 is
 
       --  Do the preanalyze call
 
+      --  The expression must be analyzed in the special manner described in
+      --  "Handling of Default and Per-Object Expressions" in sem.ads, since
+      --  at the freezing point of the entity associated with an aspect
+      --  specification, any static expressions expressions or names within
+      --  the aspect_specification cause freezing (RM 13.14(7.2/5)).
+
       if Present (Expression (ASN)) then
-         Preanalyze_And_Resolve (Expression (ASN), T);
+         Preanalyze_Spec_Expression (Expression (ASN), T);
       end if;
    end Check_Aspect_At_Freeze_Point;
 
