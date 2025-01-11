@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules" }
+// { dg-additional-options "-fmodules-ts" }
 // { dg-module-cmi Y }
 
 module;
