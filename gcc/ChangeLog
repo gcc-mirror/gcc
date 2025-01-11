@@ -1,3 +1,7 @@
+2025-01-10  Sam James  <sam@gentoo.org>
+
+	* doc/cpp.texi (Common Predefined Macros): Fix syntax.
+
 2025-01-07  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:

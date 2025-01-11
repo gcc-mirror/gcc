@@ -1,3 +1,134 @@
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110031
+	* pt.cc (lookup_and_finish_template_variable): Pass complain to
+	mark_used.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114349
+	* name-lookup.cc (maybe_push_to_top_level): For a non-lambda,
+	don't push to top level if decl_function_context is non-null.
+	* pt.cc (maybe_instantiate_noexcept): Use maybe_push_to_top_level.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114854
+	* call.cc (convert_like_internal) <case ck_user>: Don't set
+	TARGET_EXPR_DIRECT_INIT_P.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-04-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109966
+	* typeck2.cc (potential_prvalue_result_of): Remove.
+	(replace_placeholders_for_class_temp_r): Check TARGET_EXPR_ELIDING_P.
+	Use a pset.  Don't replace_placeholders in TARGET_EXPRs that initialize
+	a function argument.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109859
+	* parser.cc (cp_parser_lambda_declarator_opt): Temporarily clear
+	local_variables_forbidden_p.
+	(cp_parser_placeholder_type_specifier): Turn an assert into an
+	error.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109680
+	* method.cc (build_trait_object): New.
+	(assignable_expr): Use it.
+	(ref_xes_from_temporary): Likewise.
+	(is_convertible_helper): Likewise.  Check FUNC_OR_METHOD_TYPE_P.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117985
+	* init.cc (build_vec_init): Pop CLEANUP_FLAGS if we're not
+	generating the loop.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113158
+	* search.cc (maybe_check_overriding_exception_spec): Defer checking
+	when a noexcept couldn't be instantiated & evaluated to false/true.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111132
+	* constexpr.cc (get_function_named_in_call): Use
+	cp_get_fndecl_from_callee.
+	* cvt.cc (cp_get_fndecl_from_callee): If there's a
+	DECL_LOCAL_DECL_ALIAS, use it.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116369
+	* call.cc (set_up_extended_ref_temp): Don't mark a temporary
+	TREE_READONLY if its type is TYPE_HAS_MUTABLE_P.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110382
+	* constexpr.cc (cxx_eval_array_reference): Create a new constructor
+	only when we don't already have a matching one.  Clear the object
+	when the type is non-scalar.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115657
+	* decl.cc (build_enumerator): Call maybe_fold_non_dependent_expr
+	instead of fold_non_dependent_expr.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110114
+	* call.cc (implicit_conversion_1): Return early if the type isn't
+	complete.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115476
+	* semantics.cc (finish_trait_expr)
+	<case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS>: Move below to call
+	check_trait_type with kind==2.
+
 2024-12-13  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

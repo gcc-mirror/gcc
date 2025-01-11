@@ -1,3 +1,118 @@
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110031
+	* g++.dg/cpp1z/inline-var11.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114349
+	* g++.dg/cpp0x/noexcept84.C: New test.
+	* g++.dg/cpp0x/noexcept85.C: New test.
+	* g++.dg/cpp0x/noexcept86.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114854
+	* g++.dg/cpp1y/nsdmi-aggr22.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-04-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109966
+	* g++.dg/cpp1y/nsdmi-aggr20.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr21.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109859
+	* g++.dg/cpp2a/concepts-defarg3.C: New test.
+	* g++.dg/cpp2a/lambda-targ8.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109680
+	* g++.dg/ext/is_convertible6.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117985
+	* g++.dg/cpp0x/initlist-array23.C: New test.
+	* g++.dg/cpp0x/initlist-array24.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113158
+	* g++.dg/cpp0x/noexcept83.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111132
+	* g++.dg/cpp0x/constexpr-redeclaration3.C: New test.
+	* g++.dg/cpp0x/constexpr-redeclaration4.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116369
+	* g++.dg/tree-ssa/initlist-opt7.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110382
+	* g++.dg/cpp1y/constexpr-110382.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115657
+	* g++.dg/cpp1y/constexpr-recursion2.C: New test.
+	* g++.dg/template/conv21.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110114
+	* g++.dg/cpp0x/initlist100.C: Adjust expected diagnostic.
+	* g++.dg/cpp2a/desig28.C: New test.
+	* g++.dg/cpp2a/desig29.C: New test.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115476
+	* g++.dg/cpp1z/has-unique-obj-representations4.C: New test.
+
 2025-01-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

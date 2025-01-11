@@ -1,3 +1,10 @@
+2025-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* include/bits/hashtable.h (find): Add inline keyword.
+
 2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
