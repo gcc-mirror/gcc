@@ -1,3 +1,61 @@
+2025-01-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* parser.cc (cp_parser_pragma): Replace call to cp_parser_omp_dispatch
+	with cp_parser_omp_construct and check context.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118387
+	* method.cc (genericize_spaceship): For tag == cc_last if
+	type is not auto just return error_mark_node instead of failing
+	checking assertion.
+
+2025-01-10  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_out::core_bools): Write replaceable_operator.
+	(trees_in::core_bools): Read it.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117937
+	* pt.cc (tsubst_pack_index): tsubst the pack even when it's not
+	PACK_EXPANSION_P.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118277
+	* cp-tree.h (finish_asm_string_expression): Declare.
+	* semantics.cc (finish_asm_string_expression): New function.
+	(finish_asm_stmt): Use it.
+	* parser.cc (cp_parser_asm_string_expression): Likewise.
+	Wrap string into PAREN_EXPR in the ("") case.
+	(cp_parser_asm_definition): Don't ICE if finish_asm_stmt
+	returns error_mark_node.
+	(cp_parser_asm_specification_opt): Revert 2024-06-24 changes.
+	* pt.cc (tsubst_stmt): Don't ICE if finish_asm_stmt returns
+	error_mark_node.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* module.cc (trees_out::core_vals): Note DECL_VALUE_EXPR even for
+	vars outside of functions.
+	(trees_in::core_vals): Read in DECL_VALUE_EXPR even for vars outside
+	of functions.
+	(trees_out::get_merge_kind): Make DECL_DECOMPOSITION_P MK_unique.
+
+2025-01-10  Jason Merrill  <jason@redhat.com>
+
+	* error.cc (cxx_initialize_diagnostics): Improve comment.
+	* module.cc (modules): Improve comment.
+	(get_originating_module): Add function comment.
+
+2025-01-10  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_out::write_function_def): Write returns* flags.
+	(struct post_process_data): Add returns_* flags.
+	(trees_in::read_function_def): Set them.
+	(module_state::read_cluster): Use them.
+
 2025-01-09  Jason Merrill  <jason@redhat.com>
 
 	* decl.cc (check_redeclaration_exception_specification): Be more

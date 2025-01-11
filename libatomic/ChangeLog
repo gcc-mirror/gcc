@@ -1,3 +1,9 @@
+2025-01-10  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/linux/aarch64/host-config.h (has_lse2): Cleanup.
+	(has_lse128): Likewise.
+	(has_rcpc3): Add early check for LSE2.
+
 2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
 
 	Revert:

@@ -1,3 +1,212 @@
+2025-01-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* gcc.dg/vect/vect-early-break_130.c: New test.
+
+2025-01-10  Tamar Christina  <Tamar.Christina@arm.com>
+	    Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* g++.dg/vect/vect-early-break_6.cc: New test.
+
+2025-01-10  Alex Coplan  <alex.coplan@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* gcc.dg/tree-ssa/cunroll-13.c: Don't vectorize.
+	* gcc.dg/tree-ssa/cunroll-14.c: Likewise.
+	* gcc.dg/unroll-6.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+	* gcc.dg/vect/vect-104.c: Expect to vectorize.
+	* gcc.dg/vect/vect-early-break_108-pr113588.c: Likewise.
+	* gcc.dg/vect/vect-early-break_109-pr113588.c: Likewise.
+	* gcc.dg/vect/vect-early-break_110-pr113467.c: Likewise.
+	* gcc.dg/vect/vect-early-break_3.c: Likewise.
+	* gcc.dg/vect/vect-early-break_65.c: Likewise.
+	* gcc.dg/vect/vect-early-break_8.c: Likewise.
+	* gfortran.dg/vect/vect-5.f90: Likewise.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+	* gcc.dg/vect/vect-switch-search-line-fast.c:
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118391
+	* g++.dg/cpp2a/lambda-uneval20.C: New test.
+
+2025-01-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/cmse-15.c: Added pattern for armv8-m.base.
+
+2025-01-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* g++.dg/gomp/dispatch-8.C: New test.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118387
+	* g++.dg/cpp2a/spaceship-synth17.C: New test.
+
+2025-01-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/operator-2_a.C: New test.
+	* g++.dg/modules/operator-2_b.C: New test.
+
+2025-01-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118017
+	* gcc.target/i386/pr118017.c: Check target int128.
+
+2025-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117937
+	* g++.dg/cpp26/pack-indexing13.C: New test.
+	* g++.dg/cpp26/pack-indexing14.C: New test.
+
+2025-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/uaddc-1.c: New test.
+	* gcc.target/s390/uaddc-2.c: New test.
+	* gcc.target/s390/uaddc-3.c: New test.
+	* gcc.target/s390/usubc-1.c: New test.
+	* gcc.target/s390/usubc-2.c: New test.
+	* gcc.target/s390/usubc-3.c: New test.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/acle/fpmr-1.c: New test.
+	* gcc.target/aarch64/acle/fpmr-2.c: New test.
+	* gcc.target/aarch64/acle/fpmr-3.c: New test.
+	* gcc.target/aarch64/acle/fpmr-4.c: New test.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* g++.target/aarch64/mv-pragma.C: New test.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_21.c: Add rcpc2 to
+	expected feature string instead of rcpc.
+	* gcc.target/aarch64/cpunative/native_cpu_22.c: Ditto.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_21.c: Add flagm2 to
+	expected feature string instead of flagm.
+	* gcc.target/aarch64/cpunative/native_cpu_22.c: Ditto.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_21.c: Add frintts to
+	expected feature string.
+	* gcc.target/aarch64/cpunative/native_cpu_22.c: Ditto.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_21.c: Add jscvt to
+	expected feature string.
+	* gcc.target/aarch64/cpunative/native_cpu_22.c: Ditto.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/info_15: Add fcma to Features.
+	* gcc.target/aarch64/cpunative/info_16: Ditto.
+	* gcc.target/aarch64/cpunative/info_17: Ditto.
+	* gcc.target/aarch64/cpunative/info_8: Ditto.
+	* gcc.target/aarch64/cpunative/info_9: Ditto.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/118376
+	* gcc.dg/pr118376.c: New test.
+
+2025-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/117186
+	* gcc.dg/torture/pr117186.c: New test.
+	* gcc.target/aarch64/pr117186.c: Likewise.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118344
+	* gcc.dg/field-merge-19.c: New.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118206
+	* gcc.dg/field-merge-18.c: New.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/118025
+	* gcc.dg/field-merge-1.c: Convert constants to desired types.
+	* gcc.dg/field-merge-3.c: Likewise.
+	* gcc.dg/field-merge-4.c: Likewise.
+	* gcc.dg/field-merge-5.c: Likewise.
+	* gcc.dg/field-merge-11.c: Likewise.
+	* gcc.dg/field-merge-17.c: Don't mess with padding bits.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/118025
+	* gcc.dg/field-merge-1.c: Skip BIT_FIELD_REF counting on AVR and PRU.
+	* gcc.dg/field-merge-3.c: Bypass the test if short doesn't have the
+	expected size.
+	* gcc.dg/field-merge-8.c: Likewise.
+	* gcc.dg/field-merge-9.c: Likewise.  Skip optimization counting on
+	AVR and PRU.
+	* gcc.dg/field-merge-13.c: Skip optimization counting on AVR and PRU.
+	* gcc.dg/field-merge-15.c: Likewise.
+	* gcc.dg/field-merge-17.c: Likewise.
+	* gcc.dg/field-merge-16.c: Likewise.  Drop runtime bypass.  Use
+	smaller types.
+	* gcc.dg/field-merge-14.c: Add comments.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/field-merge-17.c: New.
+
+2025-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118138
+	* gcc.dg/ipa/pr118138.c: New test.
+
+2025-01-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/__builtin_frame_address_0-1.c: New.
+
+2025-01-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/__builtin_stack_address-1.c: New.
+
+2025-01-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr59858.c: Use -std=c17 and effective-target
+	arm_arch_v5te_thumb.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118277
+	* g++.dg/cpp1z/constexpr-asm-4.C: New test.
+	* g++.dg/cpp1z/constexpr-asm-5.C: New test.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/modules/decomp-2_b.C: New test.
+	* g++.dg/modules/decomp-2_a.H: New file.
+
+2025-01-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/constexpr-if-1_a.C: New test.
+	* g++.dg/modules/constexpr-if-1_b.C: New test.
+
+2025-01-10  chenxiaolong  <chenxiaolong@loongson.cn>
+	    Deng Jianbo  <dengjianbo@loongson.cn>.
+
+	* gcc.target/loongarch/vect-slp-two-operator.c: New test.
+
 2025-01-09  Edwin Lu  <ewlu@rivosinc.com>
 
 	* lib/target-supports.exp: Fix effective target sync_char_short

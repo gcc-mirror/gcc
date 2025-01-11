@@ -1,3 +1,48 @@
+2025-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 4ccb01fde5.
+	* Make-lang.in (D_FRONTEND_OBJS): Rename d/foreachvar.o to
+	d/visitor-foreachvar.o, d/visitor.o to d/visitor-package.o, and
+	d/statement_rewrite_walker.o to d/visitor-statement_rewrite_walker.o.
+	(D_FRONTEND_OBJS): Rename
+	d/{parsetime,permissive,postorder,transitive}visitor.o to
+	d/visitor-{parsetime,permissive,postorder,transitive}.o.
+	(D_FRONTEND_OBJS): Remove d/sapply.o.
+	(d.tags): Add dmd/common/*.h.
+	(d/visitor-%.o:): New rule.
+	* d-codegen.cc (get_frameinfo): Update for new front-end interface.
+
+2025-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 6884b433d2.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	(d_build_builtins_module): Likewise.
+	(matches_builtin_type): Likewise.
+	(covariant_with_builtin_type_p): Likewise.
+	* d-codegen.cc (lower_struct_comparison): Likewise.
+	(call_side_effect_free_p): Likewise.
+	* d-compiler.cc (Compiler::paintAsType): Likewise.
+	* d-convert.cc (convert_expr): Likewise.
+	(convert_for_assignment): Likewise.
+	* d-target.cc (Target::isVectorTypeSupported): Likewise.
+	(Target::isVectorOpSupported): Likewise.
+	(Target::isReturnOnStack): Likewise.
+	* decl.cc (get_symbol_decl): Likewise.
+	* expr.cc (build_return_dtor): Likewise.
+	* imports.cc (class ImportVisitor): Likewise.
+	* toir.cc (class IRVisitor): Likewise.
+	* types.cc (class TypeVisitor): Likewise.
+
+2025-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 34875cd6e1.
+	* dmd/VERSION: Bump version to v2.110.0-beta.1.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/deps.o, d/timetrace.o.
+	* decl.cc (class DeclVisitor): Update for new front-end interface.
+	* expr.cc (class ExprVisitor): Likewise
+	* typeinfo.cc (check_typeinfo_type): Likewise.
+
 2025-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 66b93fc24a.

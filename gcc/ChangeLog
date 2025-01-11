@@ -1,3 +1,288 @@
+2025-01-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* tree-vect-loop.cc (vect_compute_single_scalar_iteration_cost):
+	Don't skip over gconds.
+
+2025-01-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* tree-vect-loop-manip.cc (vect_do_peeling): Adjust skip_vector
+	condition to only omit the edge if we're versioning for
+	alignment.
+
+2025-01-10  Tamar Christina  <Tamar.Christina@arm.com>
+	    Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* tree-vect-loop-manip.cc (vect_do_peeling): Update immediate
+	dominators of nodes that were dominated by the prolog skip block
+	after inserting vector skip edge.  Initialize prolog variable to
+	NULL to avoid bogus -Wmaybe-uninitialized during bootstrap.
+
+2025-01-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* tree-vect-loop-manip.cc (vect_do_peeling): Avoid emitting an
+	epilogue guard for inverted early-exit loops.
+
+2025-01-10  Alex Coplan  <alex.coplan@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Set need_peeling_for_alignment flag on read DRs instead of
+	failing vectorization.  Punt on gathers.
+	(dr_misalignment): Handle non-constant target alignments.
+	(vect_compute_data_ref_alignment): If need_peeling_for_alignment
+	flag is set on the DR, then override the target alignment chosen
+	by the preferred_vector_alignment hook to choose a safe
+	alignment.
+	(vect_supportable_dr_alignment): Override
+	support_vector_misalignment hook if need_peeling_for_alignment
+	is set on the DR: in this case we must return
+	dr_unaligned_unsupported in order to force peeling.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Allow prolog
+	peeling by a compile-time non-constant amount.
+	* tree-vectorizer.h (dr_vec_info): Add new flag
+	need_peeling_for_alignment.
+
+2025-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Fix cortex-x4 parts
+	num.
+
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	* df-core.cc (rest_of_handle_df_finish): Release dflow for
+	problems without free function (like LR).
+	* gimple-crc-optimization.cc (crc_optimization::loop_may_calculate_crc):
+	Release loop_bbs on all exits.
+	* tree-vectorizer.h (supportable_indirect_convert_operation): Change.
+	* tree-vect-generic.cc (expand_vector_conversion): Adjust.
+	* tree-vect-stmts.cc (vectorizable_conversion): Use auto_vec for
+	converts.
+	(supportable_indirect_convert_operation): Get a reference to
+	the output vector of converts.
+
+2025-01-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/118332
+	* config/arm/arm-mve-builtins.cc (wrap_type_in_struct): Delete.
+	(register_type_decl): Delete.
+	(register_builtin_tuple_types): Use
+	lang_hooks.types.simulate_record_decl.
+
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	* gcse.cc (pass_hardreg_pre::gate): Wrap possibly unused
+	fun argument.
+
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117467
+	PR rtl-optimization/117934
+	* ext-dce.cc (ext_dce_execute): Do nothing if a memory
+	allocation estimate exceeds what is allowed by
+	--param max-gcse-memory.
+
+2025-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-protos.h (s390_emit_compare): Add mode
+	parameter for the resulting RTX.
+	* config/s390/s390.cc (s390_emit_compare): Dito.
+	(s390_emit_compare_and_swap): Change.
+	(s390_expand_vec_strlen): Change.
+	(s390_expand_cs_hqi): Change.
+	(s390_expand_split_stack_prologue): Change.
+	* config/s390/s390.md (*add<mode>3_carry1_cc): Renamed to ...
+	(add<mode>3_carry1_cc): this and in order to use the
+	corresponding gen function, encode CC mode into pattern.
+	(*sub<mode>3_borrow_cc): Renamed to ...
+	(sub<mode>3_borrow_cc): this and in order to use the
+	corresponding gen function, encode CC mode into pattern.
+	(*add<mode>3_alc_carry1_cc): Renamed to ...
+	(add<mode>3_alc_carry1_cc): this and in order to use the
+	corresponding gen function, encode CC mode into pattern.
+	(sub<mode>3_slb_borrow1_cc): New.
+	(uaddc<mode>5): New.
+	(usubc<mode>5): New.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/passes.texi: Document hardreg PRE pass.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.h (HARDREG_PRE_REGNOS): New macro.
+	* gcse.cc (doing_hardreg_pre_p): New global variable.
+	(do_load_motion): New boolean check.
+	(current_hardreg_regno): New global variable.
+	(compute_local_properties): Unset transp for hardreg clobbers.
+	(prune_hardreg_uses): New function.
+	(want_to_gcse_p): Use different checks for hardreg PRE.
+	(oprs_unchanged_p): Disable load motion for hardreg PRE pass.
+	(hash_scan_set): For hardreg PRE, skip non-hardreg sets and
+	check for hardreg clobbers.
+	(record_last_mem_set_info): Skip for hardreg PRE.
+	(compute_pre_data): Prune hardreg uses from transp bitmap.
+	(pre_expr_reaches_here_p_work): Add sentence to comment.
+	(insert_insn_start_basic_block): New functions.
+	(pre_edge_insert): Don't add hardreg sets to predecessor block.
+	(pre_delete): Use hardreg for the reaching reg.
+	(reset_hardreg_debug_uses): New function.
+	(pre_gcse): For hardreg PRE, reset debug uses and don't insert
+	copies.
+	(one_pre_gcse_pass): Disable load motion for hardreg PRE.
+	(execute_hardreg_pre): New.
+	(class pass_hardreg_pre): New.
+	(pass_hardreg_pre::gate): New.
+	(make_pass_hardreg_pre): New.
+	* passes.def (pass_hardreg_pre): New pass.
+	* tree-pass.h (make_pass_hardreg_pre): New.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* multiple_target.cc
+	(redirect_to_specific_clone): Assert that "target" attribute is
+	used for FMV before checking it.
+	(ipa_target_clone): Skip redirect_to_specific_clone on some
+	targets.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/invoke.texi: Add new AArch64 flags.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V8_7A): Add XS.
+	* config/aarch64/aarch64-option-extensions.def (XS): New flag.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V8_7A): Add WFXT.
+	* config/aarch64/aarch64-option-extensions.def (WFXT): New flag.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V8_4A): Add RCPC2.
+	* config/aarch64/aarch64-option-extensions.def
+	(RCPC2): New flag.
+	(RCPC3): Add RCPC2 dependency.
+	* config/aarch64/aarch64.h (TARGET_RCPC2): Use new flag.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V8_5A): Add FLAGM2.
+	* config/aarch64/aarch64-option-extensions.def (FLAGM2): New flag.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V8_5A): Add FRINTTS
+	* config/aarch64/aarch64-option-extensions.def (FRINTTS): New flag.
+	* config/aarch64/aarch64.h (TARGET_FRINT): Use new flag.
+	* config/aarch64/arm_acle.h: Use new flag for frintts intrinsics.
+	* config/aarch64/arm_neon.h: Ditto.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V8_3A): Add JSCVT.
+	* config/aarch64/aarch64-option-extensions.def (JSCVT): New flag.
+	* config/aarch64/aarch64.h (TARGET_JSCVT): Use new flag.
+	* config/aarch64/arm_acle.h: Use new flag for jscvt intrinsics.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V8_3A): Add FCMA.
+	* config/aarch64/aarch64-option-extensions.def (FCMA): New flag.
+	(SVE): Add FCMA dependency.
+	* config/aarch64/aarch64.h (TARGET_COMPLEX): Use new flag.
+	* config/aarch64/arm_neon.h: Use new flag for fcma intrinsics.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_expand_epilogue): Use TARGET_PAUTH.
+	* config/aarch64/aarch64.md: Update comment.
+
+2025-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/117186
+	* rtl.h (simplify_context::simplify_logical_relational_operation): Add
+	an invert0_p parameter.
+	* simplify-rtx.cc (unsigned_comparison_to_mask): New function.
+	(mask_to_unsigned_comparison): Likewise.
+	(comparison_code_valid_for_mode): Delete.
+	(simplify_context::simplify_logical_relational_operation): Add
+	an invert0_p parameter.  Handle AND and XOR.  Handle unsigned
+	comparisons.  Handle always-false results.  Ignore the low bit
+	of the mask if the operands are always ordered and remove the
+	then-redundant check of comparison_code_valid_for_mode.  Check
+	for side-effects in the operands before simplifying them away.
+	(simplify_context::simplify_binary_operation_1): Remove
+	simplification of (compare (gt ...) (lt ...)) and instead...
+	(simplify_context::simplify_relational_operation_1): ...handle
+	comparisons of comparisons here.
+	(test_comparisons): New function.
+	(test_scalar_ops): Call it.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (decode_field_reference): Drop misuses of
+	uniform_integer_cst_p.
+	(fold_truth_andor_for_ifcombine): Likewise.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118344
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Fix typo in
+	rr_and_mask's type adjustment test.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (decode_field_reference): Add xor_pand_mask.
+	Propagate pand_mask to the right-hand xor operand.  Don't
+	require the right-hand xor operand to be a constant.
+	(fold_truth_andor_for_ifcombine): Pass right-hand mask when
+	appropriate.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118206
+	* gimple-fold.cc (decode_field_reference): Account for upper
+	bits dropped by narrowing conversions whether before or after
+	a right shift.
+	(fold_truth_andor_for_ifcombine): Fold masks, compares, and
+	combined results.
+
+2025-01-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Limit
+	boundary choice by word size as well.  Try aligned double-word
+	loads as a last resort.
+
+2025-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118138
+	* ipa-cp.cc (ipacp_value_safe_for_type): Return the appropriate
+	type instead of a bool, accept NULL_TREE VALUEs.
+	(propagate_vals_across_arith_jfunc): Use the new returned value of
+	ipacp_value_safe_for_type.
+	(propagate_vals_across_ancestor): Likewise.
+	(propagate_scalar_across_jump_function): Likewise.
+
+2025-01-10  chenxiaolong  <chenxiaolong@loongson.cn>
+	    Deng Jianbo  <dengjianbo@loongson.cn>.
+
+	* config/loongarch/loongarch.cc
+	(loongarch_builtin_vectorization_cost): Modify the
+	construction cost of the vec_construct vector.
+
 2025-01-09  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/118188

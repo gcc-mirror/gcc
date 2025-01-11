@@ -1,3 +1,10 @@
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/118337
+	* module.cc (use_iso_fortran_env_module): Add a comment explaining
+	the optimization performed.  Add gcc_checking_assert that i was
+	incremented for all the elements.  Formatting fix.
+
 2025-01-09  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/118337

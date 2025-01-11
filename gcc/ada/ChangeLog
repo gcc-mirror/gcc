@@ -1,3 +1,40 @@
+2025-01-10  squirek  <squirek@adacore.com>
+
+	* accessibility.adb:
+	(Innermost_master_Scope_Depth): Add special case for expressions
+	within library level subprograms.
+
+2025-01-10  Marc Poulhiès  <poulhies@adacore.com>
+
+	* env.h: Remove last empty line.
+
+2025-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Build_Call_Helper_Decl): Tune whitespace.
+	* exp_attr.adb (Analyze_Attribute): Set Of_Present while
+	creating the node; reorder setting Subtype_Indication to match the
+	syntax order.
+	* exp_ch3.adb (Build_Equivalent_Aggregate): Likewise for Box_Present
+	and Expression properties.
+	* sem_ch12.adb (Analyze_Formal_Derived_Type): Set type properties
+	when creating the nodes.
+	* sem_ch3.adb (Check_Anonymous_Access_Component): Likewise.
+
+2025-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (Gen_Nodes): Change Is_Effective_Use_Clause
+	from syntactic to semantic property.
+
+2025-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Predef_Spec_Or_Body): Add explicit parameter
+	associations, because now the Empty_List actual parameter would be
+	confused as being for the Aspect_Specifications formal parameter.
+	* gen_il-gen-gen_nodes.adb (Gen_Nodes): Reorder syntactic fields.
+	* sem_util.adb (Declare_Indirect_Temp): Add explicit parameter
+	association, because now the parameter will be interpreted as a
+	subpool handle name.
+
 2025-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/18765
