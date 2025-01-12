@@ -1,3 +1,9 @@
+2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114630
+	* module.cc (trees_in::core_vals) <BLOCK>: Chain a new node if
+	DECL_CHAIN already is set.
+
 2025-01-09  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
