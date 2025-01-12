@@ -460,8 +460,9 @@ alpha_option_override (void)
 	    line_size = cpu_table[i].line_size;
 	    l1_size = cpu_table[i].l1_size;
 	    l2_size = cpu_table[i].l2_size;
-	    target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX);
-	    target_flags |= cpu_table[i].flags;
+	    target_flags &= ~((MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX)
+			      & ~target_flags_explicit);
+	    target_flags |= cpu_table[i].flags & ~target_flags_explicit;
 	    break;
 	  }
       if (i == ct_size)
