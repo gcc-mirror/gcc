@@ -3999,14 +3999,19 @@ alpha_expand_block_move (rtx operands[])
   if (bytes >= 2)
     {
       if (src_align >= 16)
-	{
-	  do {
-	    data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
-	    emit_move_insn (tmp, adjust_address (orig_src, HImode, ofs));
+	do
+	  {
+	    tmp = gen_reg_rtx (DImode);
+	    emit_move_insn (tmp,
+			    expand_simple_unop (DImode, SET,
+						adjust_address (orig_src,
+								HImode, ofs),
+						NULL_RTX, 1));
+	    data_regs[nregs++] = gen_rtx_SUBREG (HImode, tmp, 0);
 	    bytes -= 2;
 	    ofs += 2;
-	  } while (bytes >= 2);
-	}
+	  }
+	while (bytes >= 2);
       else if (! TARGET_BWX)
 	{
 	  data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
