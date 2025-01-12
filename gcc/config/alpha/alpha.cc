@@ -3931,14 +3931,44 @@ alpha_expand_block_move (rtx operands[])
     {
       words = bytes / 4;
 
-      for (i = 0; i < words; ++i)
-	data_regs[nregs + i] = gen_reg_rtx (SImode);
+      /* Load an even quantity of SImode data pieces only.  */
+      unsigned int hwords = words / 2;
+      for (i = 0; i / 2 < hwords; ++i)
+	{
+	  data_regs[nregs + i] = gen_reg_rtx (SImode);
+	  emit_move_insn (data_regs[nregs + i],
+			  adjust_address (orig_src, SImode, ofs + i * 4));
+	}
 
-      for (i = 0; i < words; ++i)
-	emit_move_insn (data_regs[nregs + i],
-			adjust_address (orig_src, SImode, ofs + i * 4));
+      /* If we'll be using unaligned stores, merge data from pairs
+	 of SImode registers into DImode registers so that we can
+	 store it more efficiently via quadword unaligned stores.  */
+      unsigned int j;
+      if (dst_align < 32)
+	for (i = 0, j = 0; i < words / 2; ++i, j = i * 2)
+	  {
+	    rtx hi = expand_simple_binop (DImode, ASHIFT,
+					  data_regs[nregs + j + 1],
+					  GEN_INT (32), NULL_RTX,
+					  1, OPTAB_WIDEN);
+	    data_regs[nregs + i] = expand_simple_binop (DImode, IOR, hi,
+							data_regs[nregs + j],
+							NULL_RTX,
+							1, OPTAB_WIDEN);
+	  }
+      else
+	j = i;
 
-      nregs += words;
+      /* Take care of any remaining odd trailing SImode data piece.  */
+      if (j < words)
+	{
+	  data_regs[nregs + i] = gen_reg_rtx (SImode);
+	  emit_move_insn (data_regs[nregs + i],
+			  adjust_address (orig_src, SImode, ofs + j * 4));
+	  ++i;
+	}
+
+      nregs += i;
       bytes -= words * 4;
       ofs += words * 4;
     }
@@ -4057,13 +4087,12 @@ alpha_expand_block_move (rtx operands[])
     }
 
   /* Due to the above, this won't be aligned.  */
-  /* ??? If we have more than one of these, consider constructing full
-     words in registers and using alpha_expand_unaligned_store_words.  */
   while (i < nregs && GET_MODE (data_regs[i]) == SImode)
     {
       alpha_expand_unaligned_store (orig_dst, data_regs[i], 4, ofs);
       ofs += 4;
       i++;
+      gcc_assert (i == nregs || GET_MODE (data_regs[i]) != SImode);
     }
 
   if (dst_align >= 16)
