@@ -6991,6 +6991,198 @@ gfc_conv_intrinsic_not (gfc_se * se, gfc_expr * expr)
 			      TREE_TYPE (arg), arg);
 }
 
+
+/* Generate code for OUT_OF_RANGE.  */
+static void
+gfc_conv_intrinsic_out_of_range (gfc_se * se, gfc_expr * expr)
+{
+  tree *args;
+  tree type;
+  tree tmp = NULL_TREE, tmp1, tmp2;
+  unsigned int num_args;
+  int k;
+  gfc_se rnd_se;
+  gfc_actual_arglist *arg = expr->value.function.actual;
+  gfc_expr *x = arg->expr;
+  gfc_expr *mold = arg->next->expr;
+
+  num_args = gfc_intrinsic_argument_list_length (expr);
+  args = XALLOCAVEC (tree, num_args);
+
+  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
+
+  gfc_init_se (&rnd_se, NULL);
+
+  if (num_args == 3)
+    {
+      /* The ROUND argument is optional and shall appear only if X is
+	 of type real and MOLD is of type integer (see edit F23/004).  */
+      gfc_expr *round = arg->next->next->expr;
+      gfc_conv_expr (&rnd_se, round);
+
+      if (round->expr_type == EXPR_VARIABLE
+	  && round->symtree->n.sym->attr.dummy
+	  && round->symtree->n.sym->attr.optional)
+	{
+	  tree present = gfc_conv_expr_present (round->symtree->n.sym);
+	  rnd_se.expr = build3_loc (input_location, COND_EXPR,
+				    logical_type_node, present,
+				    rnd_se.expr, logical_false_node);
+	  gfc_add_block_to_block (&se->pre, &rnd_se.pre);
+	}
+    }
+  else
+    {
+      /* If ROUND is absent, it is equivalent to having the value false.  */
+      rnd_se.expr = logical_false_node;
+    }
+
+  type = TREE_TYPE (args[0]);
+  k = gfc_validate_kind (mold->ts.type, mold->ts.kind, false);
+
+  switch (x->ts.type)
+    {
+    case BT_REAL:
+      /* X may be IEEE infinity or NaN, but the representation of MOLD may not
+	 support infinity or NaN.  */
+      tree finite;
+      finite = build_call_expr_loc (input_location,
+				    builtin_decl_explicit (BUILT_IN_ISFINITE),
+				    1,  args[0]);
+      finite = convert (logical_type_node, finite);
+
+      if (mold->ts.type == BT_REAL)
+	{
+	  tmp1 = build1 (ABS_EXPR, type, args[0]);
+	  tmp2 = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].huge,
+					mold->ts.kind, 0);
+	  tmp = build2 (GT_EXPR, logical_type_node, tmp1,
+			convert (type, tmp2));
+
+	  /* Check if MOLD representation supports infinity or NaN.  */
+	  bool infnan = (HONOR_INFINITIES (TREE_TYPE (args[1]))
+			 || HONOR_NANS (TREE_TYPE (args[1])));
+	  tmp = build3 (COND_EXPR, logical_type_node, finite, tmp,
+			infnan ? logical_false_node : logical_true_node);
+	}
+      else
+	{
+	  tree rounded;
+	  tree decl;
+
+	  decl = gfc_builtin_decl_for_float_kind (BUILT_IN_TRUNC, x->ts.kind);
+	  gcc_assert (decl != NULL_TREE);
+
+	  /* Round or truncate argument X, depending on the optional argument
+	     ROUND (default: .false.).  */
+	  tmp1 = build_round_expr (args[0], type);
+	  tmp2 = build_call_expr_loc (input_location, decl, 1, args[0]);
+	  rounded = build3 (COND_EXPR, type, rnd_se.expr, tmp1, tmp2);
+
+	  if (mold->ts.type == BT_INTEGER)
+	    {
+	      tmp1 = gfc_conv_mpz_to_tree (gfc_integer_kinds[k].min_int,
+					   x->ts.kind);
+	      tmp2 = gfc_conv_mpz_to_tree (gfc_integer_kinds[k].huge,
+					   x->ts.kind);
+	    }
+	  else if (mold->ts.type == BT_UNSIGNED)
+	    {
+	      tmp1 = build_real_from_int_cst (type, integer_zero_node);
+	      tmp2 = gfc_conv_mpz_to_tree (gfc_unsigned_kinds[k].huge,
+					   x->ts.kind);
+	    }
+	  else
+	    gcc_unreachable ();
+
+	  tmp1 = build2 (LT_EXPR, logical_type_node, rounded,
+			 convert (type, tmp1));
+	  tmp2 = build2 (GT_EXPR, logical_type_node, rounded,
+			 convert (type, tmp2));
+	  tmp = build2 (TRUTH_ORIF_EXPR, logical_type_node, tmp1, tmp2);
+	  tmp = build2 (TRUTH_ORIF_EXPR, logical_type_node,
+			build1 (TRUTH_NOT_EXPR, logical_type_node, finite),
+			tmp);
+	}
+      break;
+
+    case BT_INTEGER:
+      if (mold->ts.type == BT_INTEGER)
+	{
+	  tmp1 = gfc_conv_mpz_to_tree (gfc_integer_kinds[k].min_int,
+				       x->ts.kind);
+	  tmp2 = gfc_conv_mpz_to_tree (gfc_integer_kinds[k].huge,
+				       x->ts.kind);
+	  tmp1 = build2 (LT_EXPR, logical_type_node, args[0],
+			 convert (type, tmp1));
+	  tmp2 = build2 (GT_EXPR, logical_type_node, args[0],
+			 convert (type, tmp2));
+	  tmp = build2 (TRUTH_ORIF_EXPR, logical_type_node, tmp1, tmp2);
+	}
+      else if (mold->ts.type == BT_UNSIGNED)
+	{
+	  int i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
+	  tmp = build_int_cst (type, 0);
+	  tmp = build2 (LT_EXPR, logical_type_node, args[0], tmp);
+	  if (mpz_cmp (gfc_integer_kinds[i].huge,
+		       gfc_unsigned_kinds[k].huge) > 0)
+	    {
+	      tmp2 = gfc_conv_mpz_to_tree (gfc_unsigned_kinds[k].huge,
+					   x->ts.kind);
+	      tmp2 = build2 (GT_EXPR, logical_type_node, args[0],
+			     convert (type, tmp2));
+	      tmp = build2 (TRUTH_ORIF_EXPR, logical_type_node, tmp, tmp2);
+	    }
+	}
+      else if (mold->ts.type == BT_REAL)
+	{
+	  tmp2 = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].huge,
+					mold->ts.kind, 0);
+	  tmp1 = build1 (NEGATE_EXPR, TREE_TYPE (tmp2), tmp2);
+	  tmp1 = build2 (LT_EXPR, logical_type_node, args[0],
+			 convert (type, tmp1));
+	  tmp2 = build2 (GT_EXPR, logical_type_node, args[0],
+			 convert (type, tmp2));
+	  tmp = build2 (TRUTH_ORIF_EXPR, logical_type_node, tmp1, tmp2);
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    case BT_UNSIGNED:
+      if (mold->ts.type == BT_UNSIGNED)
+	{
+	  tmp = gfc_conv_mpz_to_tree (gfc_unsigned_kinds[k].huge,
+				      x->ts.kind);
+	  tmp = build2 (GT_EXPR, logical_type_node, args[0],
+			convert (type, tmp));
+	}
+      else if (mold->ts.type == BT_INTEGER)
+	{
+	  tmp = gfc_conv_mpz_to_tree (gfc_integer_kinds[k].huge,
+				      x->ts.kind);
+	  tmp = build2 (GT_EXPR, logical_type_node, args[0],
+			convert (type, tmp));
+	}
+      else if (mold->ts.type == BT_REAL)
+	{
+	  tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].huge,
+				       mold->ts.kind, 0);
+	  tmp = build2 (GT_EXPR, logical_type_node, args[0],
+			convert (type, tmp));
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
+}
+
+
 /* Set or clear a single bit.  */
 static void
 gfc_conv_intrinsic_singlebitop (gfc_se * se, gfc_expr * expr, int set)
@@ -11748,6 +11940,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_OR:
       gfc_conv_intrinsic_bitop (se, expr, BIT_IOR_EXPR);
+      break;
+
+    case GFC_ISYM_OUT_OF_RANGE:
+      gfc_conv_intrinsic_out_of_range (se, expr);
       break;
 
     case GFC_ISYM_PARITY:

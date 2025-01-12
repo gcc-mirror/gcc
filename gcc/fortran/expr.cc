@@ -466,6 +466,7 @@ free_expr0 (gfc_expr *e)
       switch (e->ts.type)
 	{
 	case BT_INTEGER:
+	case BT_UNSIGNED:
 	  mpz_clear (e->value.integer);
 	  break;
 

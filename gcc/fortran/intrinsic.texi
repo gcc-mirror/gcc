@@ -252,6 +252,7 @@ Some basic guidelines for editing this document:
 * @code{NULL}:          NULL,      Function that returns an disassociated pointer
 * @code{NUM_IMAGES}:    NUM_IMAGES, Number of images
 * @code{OR}:            OR,        Bitwise logical OR
+* @code{OUT_OF_RANGE}:  OUT_OF_RANGE, Range check for numerical conversion
 * @code{PACK}:          PACK,      Pack an array into an array of rank one
 * @code{PARITY}:        PARITY,    Reduction with exclusive OR
 * @code{PERROR}:        PERROR,    Print system error message
@@ -11488,6 +11489,72 @@ END PROGRAM
 @item @emph{See also}:
 Fortran 95 elemental function: @*
 @ref{IOR}
+@end table
+
+
+
+@node OUT_OF_RANGE
+@section @code{OUT_OF_RANGE} --- Range check for numerical conversion
+@fnindex OUT_OF_RANGE
+@cindex range check, numerical conversion
+
+@table @asis
+@item @emph{Description}:
+@code{OUT_OF_RANGE(X, MOLD[, ROUND])} determines if the value of @code{X}
+can be safely converted to an object with the type of argument @code{MOLD}.
+
+@item @emph{Standard}:
+Fortran 2018
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = OUT_OF_RANGE(X, MOLD[, ROUND])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be either @code{INTEGER}, @code{UNSIGNED}
+or @code{REAL}.
+@item @var{MOLD} @tab The type shall be a scalar @code{INTEGER},
+@code{UNSIGNED} or @code{REAL}.  If it is a variable, it need not be defined.
+@item @var{ROUND} @tab (Optional) A scalar @code{LOGICAL} that shall only
+be present if @var{X} is of type @code{REAL} and @var{MOLD} is of type
+@code{INTEGER} or @code{UNSIGNED}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL}.
+
+If @var{MOLD} is of type @code{INTEGER} or @code{UNSIGNED}, and
+@var{ROUND} is absent or present with the value false, the result is
+true if and only if the value of @var{X} is an IEEE infinity or NaN, or
+if the integer with largest magnitude that lies between zero and @var{X}
+inclusive is not representable by objects with the type and kind of
+@var{MOLD}.
+
+If @var{MOLD} is of type @code{INTEGER} or @code{UNSIGNED}, and
+@var{ROUND} is present with the value true, the result is true if and
+only if the value of @var{X} is an IEEE infinity or NaN, or if the
+integer nearest @var{X}, or the integer of greater magnitude if two
+integers are equally near to @var{X}, is not representable by objects
+with the type and kind of @var{MOLD}.
+
+Otherwise, the result is true if and only if the value of @var{X} is an IEEE
+infinity or NaN that is not supported by objects of the type and kind of
+@var{MOLD}, or if @var{X} is a finite number and the result of rounding the
+value of @var{X} to the model for the kind of @var{MOLD} has magnitude larger
+than that of the largest finite number with the same sign as @var{X} that is
+representable by objects with the type and kind of @var{MOLD}.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_out_of_range
+  PRINT *, OUT_OF_RANGE (-128.5, 0_1)           ! Will print: F
+  PRINT *, OUT_OF_RANGE (-128.5, 0_1, .TRUE.)   ! Will print: T
+END PROGRAM
+@end smallexample
+
 @end table
 
 

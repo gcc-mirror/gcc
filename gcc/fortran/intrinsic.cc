@@ -1364,7 +1364,8 @@ add_functions (void)
     *n = "n", *ncopies= "ncopies", *nm = "name", *num = "number",
     *ord = "order", *p = "p", *p1 = "path1", *p2 = "path2",
     *pad = "pad", *pid = "pid", *pos = "pos", *pt = "pointer",
-    *r = "r", *s = "s", *set = "set", *sh = "shift", *shp = "shape",
+    *r = "r", *rd = "round",
+    *s = "s", *set = "set", *sh = "shift", *shp = "shape",
     *sig = "sig", *src = "source", *ssg = "substring",
     *sta = "string_a", *stb = "string_b", *stg = "string",
     *sub = "sub", *sz = "size", *tg = "target", *team = "team", *tm = "time",
@@ -2789,14 +2790,16 @@ add_functions (void)
 
   make_generic ("not", GFC_ISYM_NOT, GFC_STD_F95);
 
-  add_sym_2 ("norm2", GFC_ISYM_NORM2, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr,
-	     GFC_STD_F2008, gfc_check_norm2, gfc_simplify_norm2, gfc_resolve_norm2,
+  add_sym_2 ("norm2", GFC_ISYM_NORM2, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_REAL, dr, GFC_STD_F2008,
+	     gfc_check_norm2, gfc_simplify_norm2, gfc_resolve_norm2,
 	     x, BT_REAL, dr, REQUIRED,
 	     dm, BT_INTEGER, ii, OPTIONAL);
 
   make_generic ("norm2", GFC_ISYM_NORM2, GFC_STD_F2008);
 
-  add_sym_1 ("null", GFC_ISYM_NULL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
+  add_sym_1 ("null", GFC_ISYM_NULL, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_null, gfc_simplify_null, NULL,
 	     mo, BT_INTEGER, di, OPTIONAL);
 
@@ -2808,7 +2811,17 @@ add_functions (void)
 	     dist, BT_INTEGER, di, OPTIONAL,
 	     failed, BT_LOGICAL, dl, OPTIONAL);
 
-  add_sym_3 ("pack", GFC_ISYM_PACK, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
+  add_sym_3 ("out_of_range", GFC_ISYM_OUT_OF_RANGE, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2018,
+	     gfc_check_out_of_range, gfc_simplify_out_of_range, NULL,
+	     x, BT_REAL, dr, REQUIRED,
+	     mo, BT_INTEGER, di, REQUIRED,
+	     rd, BT_LOGICAL, dl, OPTIONAL);
+
+  make_generic ("out_of_range", GFC_ISYM_OUT_OF_RANGE, GFC_STD_F2018);
+
+  add_sym_3 ("pack", GFC_ISYM_PACK, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_pack, gfc_simplify_pack, gfc_resolve_pack,
 	     ar, BT_REAL, dr, REQUIRED, msk, BT_LOGICAL, dl, REQUIRED,
 	     v, BT_REAL, dr, OPTIONAL);
@@ -2816,8 +2829,9 @@ add_functions (void)
   make_generic ("pack", GFC_ISYM_PACK, GFC_STD_F95);
 
 
-  add_sym_2 ("parity", GFC_ISYM_PARITY, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_LOGICAL, dl,
-	     GFC_STD_F2008, gfc_check_parity, gfc_simplify_parity, gfc_resolve_parity,
+  add_sym_2 ("parity", GFC_ISYM_PARITY, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2008,
+	     gfc_check_parity, gfc_simplify_parity, gfc_resolve_parity,
 	     msk, BT_LOGICAL, dl, REQUIRED,
 	     dm, BT_INTEGER, ii, OPTIONAL);
 

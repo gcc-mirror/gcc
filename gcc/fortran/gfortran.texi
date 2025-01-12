@@ -2830,6 +2830,7 @@ The following intrinsics take unsigned arguments:
 @item @code{MODULO}, @pxref{MODULO}
 @item @code{MVBITS}, @pxref{MVBITS}
 @item @code{NOT}, @pxref{NOT}
+@item @code{OUT_OF_RANGE}, @pxref{OUT_OF_RANGE}
 @item @code{PRODUCT}, @pxref{PRODUCT}
 @item @code{RANDOM_NUMBER}, @pxref{RANDOM_NUMBER}
 @item @code{RANGE}, @pxref{RANGE}
@@ -2848,12 +2849,6 @@ The following intrinsics are enabled with @option{-funsigned}:
 @item @code{UMASKL}, @pxref{UMASKL}
 @item @code{UMASKR}, @pxref{UMASKR}
 @item @code{SELECTED_UNSIGNED_KIND}, @pxref{SELECTED_UNSIGNED_KIND}
-@end itemize
-
-The following intrinsics are not yet implemented in GNU Fortran,
-but will take unsigned arguments once they have been:
-@itemize @bullet
-@item @code{OUT_OF_RANGE}
 @end itemize
 
 The following constants have been added to the intrinsic

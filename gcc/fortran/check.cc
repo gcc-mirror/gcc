@@ -4865,6 +4865,48 @@ gfc_check_null (gfc_expr *mold)
 
 
 bool
+gfc_check_out_of_range (gfc_expr *x, gfc_expr *mold, gfc_expr *round)
+{
+  if (!int_or_real_or_unsigned_check (x, 0))
+    return false;
+
+  if (mold == NULL)
+    return false;
+
+  if (!int_or_real_or_unsigned_check (mold, 1))
+    return false;
+
+  if (!scalar_check (mold, 1))
+    return false;
+
+  if (round)
+    {
+      if (!type_check (round, 2, BT_LOGICAL))
+	return false;
+
+      if (!scalar_check (round, 2))
+	return false;
+
+      if (x->ts.type != BT_REAL
+	  || (mold->ts.type != BT_INTEGER && mold->ts.type != BT_UNSIGNED))
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L shall appear "
+		     "only if %qs is of type REAL and %qs is of type "
+		     "INTEGER or UNSIGNED",
+		     gfc_current_intrinsic_arg[2]->name,
+		     gfc_current_intrinsic, &round->where,
+		     gfc_current_intrinsic_arg[0]->name,
+		     gfc_current_intrinsic_arg[1]->name);
+
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+
+bool
 gfc_check_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
 {
   if (!array_check (array, 0))
