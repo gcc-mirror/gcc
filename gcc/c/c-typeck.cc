@@ -3737,14 +3737,30 @@ build_function_call (location_t loc, tree function, tree params)
   return ret;
 }
 
-/* Give a note about the location of the declaration of DECL.  */
+/* Give a note about the location of the declaration of DECL,
+   or, failing that, a pertinent declaration for FUNCTION_EXPR.  */
 
 static void
-inform_declaration (tree decl)
+inform_declaration (tree decl, tree function_expr)
 {
   if (decl && (TREE_CODE (decl) != FUNCTION_DECL
 	       || !DECL_IS_UNDECLARED_BUILTIN (decl)))
     inform (DECL_SOURCE_LOCATION (decl), "declared here");
+  else if (function_expr)
+    switch (TREE_CODE (function_expr))
+      {
+      default:
+	break;
+      case COMPONENT_REF:
+	/* Show the decl of the pertinent field (e.g. for callback
+	   fields in a struct.  */
+	{
+	  tree field_decl = TREE_OPERAND (function_expr, 1);
+	  if (location_t loc = DECL_SOURCE_LOCATION (field_decl))
+	    inform (loc, "declared here");
+	}
+	break;
+      }
 }
 
 /* C implementation of callback for use when checking param types.  */
@@ -3819,10 +3835,11 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 		  function);
       else if (DECL_P (function))
 	{
+	  auto_diagnostic_group d;
 	  error_at (loc,
 		    "called object %qD is not a function or function pointer",
 		    function);
-	  inform_declaration (function);
+	  inform_declaration (function, NULL_TREE);
 	}
       else
 	error_at (loc,
@@ -4276,25 +4293,37 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 
       if (type == void_type_node)
 	{
+	  auto_diagnostic_group d;
+	  int num_expected = parmnum;
+	  int num_actual = values->length ();
+	  gcc_rich_location rich_loc (loc);
+	  if (ploc != input_location)
+	    rich_loc.add_range (ploc);
 	  if (selector)
-	    error_at (loc, "too many arguments to method %qE", selector);
+	    error_at (&rich_loc,
+		      "too many arguments to method %qE; expected %i, have %i",
+		      selector, num_expected, num_actual);
 	  else
-	    error_at (loc, "too many arguments to function %qE", function);
-	  inform_declaration (fundecl);
+	    error_at (&rich_loc,
+		      "too many arguments to function %qE; expected %i, have %i",
+		      function, num_expected, num_actual);
+	  inform_declaration (fundecl, function);
 	  return error_args ? -1 : (int) parmnum;
 	}
 
       if (builtin_type == void_type_node)
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
 			  "too many arguments to built-in function %qE "
 			  "expecting %d", function, parmnum))
-	    inform_declaration (fundecl);
+	    inform_declaration (fundecl, function);
 	  builtin_typetail = NULL_TREE;
 	}
 
       if (!typetail && parmnum == 0 && !TYPE_NO_NAMED_ARGS_STDARG_P (fntype))
 	{
+	  auto_diagnostic_group d;
 	  bool warned;
 	  if (selector)
 	    warned = warning_at (loc, OPT_Wdeprecated_non_prototype,
@@ -4307,7 +4336,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 				 " for function %qE declared without parameters",
 				 function);
 	  if (warned)
-	    inform_declaration (fundecl);
+	    inform_declaration (fundecl, function);
 	}
 
       if (selector && argnum > 2)
@@ -4437,8 +4466,33 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 
   if (typetail != NULL_TREE && TREE_VALUE (typetail) != void_type_node)
     {
-      error_at (loc, "too few arguments to function %qE", function);
-      inform_declaration (fundecl);
+      /* Not enough args.
+	 Determine minimum number of arguments required.  */
+      int min_expected_num = 0;
+      bool at_least_p = false;
+      tree iter = typelist;
+      while (true)
+	{
+	  if (!iter)
+	    {
+	      /* Variadic arguments; stop iterating.  */
+	      at_least_p = true;
+	      break;
+	    }
+	  if (iter == void_list_node)
+	    /* End of arguments; stop iterating.  */
+	    break;
+	  ++min_expected_num;
+	  iter = TREE_CHAIN (iter);
+	}
+      auto_diagnostic_group d;
+      int actual_num = vec_safe_length (values);
+      error_at (loc,
+		at_least_p
+		? G_("too few arguments to function %qE; expected at least %i, have %i")
+		: G_("too few arguments to function %qE; expected %i, have %i"),
+		function, min_expected_num, actual_num);
+      inform_declaration (fundecl, function);
       return -1;
     }
 
@@ -4448,10 +4502,11 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
       for (tree t = builtin_typetail; t; t = TREE_CHAIN (t))
 	++nargs;
 
+      auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
 		      "too few arguments to built-in function %qE "
 		      "expecting %u", function, nargs - 1))
-	inform_declaration (fundecl);
+	inform_declaration (fundecl, function);
     }
 
   return error_args ? -1 : (int) parmnum;
