@@ -1,3 +1,20 @@
+2025-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 82a5d2a7c4.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/internal/gc/blkcache.d, core/internal/gc/blockmeta.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos dbc09d823.
+
+2025-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 2a730adc0.
+
+2025-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 2b89c2909d.
+	* src/MERGE: Merge upstream phobos bdedad3bf.
+
 2025-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 4ccb01fde5.

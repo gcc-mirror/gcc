@@ -1,3 +1,47 @@
+2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114630
+	* g++.dg/modules/pr114630.h: New test.
+	* g++.dg/modules/pr114630_a.C: New test.
+	* g++.dg/modules/pr114630_b.C: New test.
+	* g++.dg/modules/pr114630_c.C: New test.
+
+2025-01-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f: Update
+	xfail'ed 'dg-bogus' for the better 'declared here' location.
+	* gfortran.dg/gomp/dispatch-11.f90: New test.
+	* gfortran.dg/gomp/dispatch-12.f90: New test.
+
+2025-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108434
+	* gfortran.dg/pr108434.f90 : Add tests from comment 1.
+
+2025-01-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/attrib-2_a.C: New test.
+	* g++.dg/modules/attrib-2_b.C: New test.
+
+2025-01-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/attrib-1_a.C: New test.
+	* g++.dg/modules/attrib-1_b.C: New test.
+
+2025-01-11  mengqinggang  <mengqinggang@loongson.cn>
+
+	* gcc.target/loongarch/imm-load.c: Not generate ">>".
+
+2025-01-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/88575
+	* gcc.dg/tree-ssa/minmax-27.c: Disable VRP.
+	* gcc.dg/tree-ssa/minmax-27e.c: New.
+	* gcc.dg/tree-ssa/minmax-27f.c: New.
+	* gcc.dg/tree-ssa/minmax-28.c: Disable VRP.
+	* gcc.dg/tree-ssa/minmax-28e.c: New.
+	* gcc.dg/tree-ssa/minmax-28f.c: New.
+
 2025-01-10  Alex Coplan  <alex.coplan@arm.com>
 
 	PR tree-optimization/118211

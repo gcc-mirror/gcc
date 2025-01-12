@@ -1,3 +1,26 @@
+2025-01-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h: Add OMP_LIST_INTEROP to the unnamed OMP_LIST_ enum.
+	* openmp.cc (gfc_match_omp_variable_list): Add reverse_order
+	boolean argument, defaulting to false.
+	(enum omp_mask2, OMP_DISPATCH_CLAUSES): Add OMP_CLAUSE_INTEROP.
+	(gfc_match_omp_clauses, resolve_omp_clauses): Handle dispatch's
+	'interop' clause.
+	* trans-decl.cc (gfc_get_extern_function_decl): Use sym->declared_at
+	instead input_location as DECL_SOURCE_LOCATION.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle OMP_LIST_INTEROP.
+
+2025-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108434
+	* class.cc (generate_finalization_wrapper): To avoid memory
+	leaks from callocs, return immediately if the derived type
+	error flag is set.
+	* decl.cc (build_struct): If the declaration of a derived type
+	or class component does not have a deferred arrayspec, correct,
+	set the error flag of the derived type and emit an immediate
+	error.
+
 2025-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/118337

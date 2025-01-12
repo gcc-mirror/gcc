@@ -1,3 +1,21 @@
+2025-01-11  mengqinggang  <mengqinggang@loongson.cn>
+
+	* config/loongarch/lasx.md: Use new loongarch_output_move.
+	* config/loongarch/loongarch-protos.h (loongarch_output_move):
+	Change parameters from (rtx, rtx) to (rtx *).
+	* config/loongarch/loongarch.cc (loongarch_output_move):
+	Generate final immediate for lu12i.w and lu52i.d.
+	* config/loongarch/loongarch.md:
+	Generate final immediate for lu32i.d and lu52i.d.
+	* config/loongarch/lsx.md: Use new loongarch_output_move.
+
+2025-01-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/88575
+	* vr-values.cc (simplify_using_ranges::fold_cond_with_ops): Query
+	relation between op0 and op1 and utilize it.
+	(simplify_using_ranges::simplify): Do not eliminate float checks.
+
 2025-01-10  Alex Coplan  <alex.coplan@arm.com>
 
 	PR tree-optimization/118211

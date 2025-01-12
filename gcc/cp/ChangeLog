@@ -1,3 +1,19 @@
+2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114630
+	* module.cc (trees_in::core_vals) <BLOCK>: Chain a new node if
+	DECL_CHAIN already is set.
+
+2025-01-11  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_out::type_node): Write attributes for
+	tt_derived_type, not tt_variant_type.
+	(trees_in::tree_node): Likewise for reading.
+
+2025-01-11  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_in::decl_value): Merge attributes.
+
 2025-01-10  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* parser.cc (cp_parser_pragma): Replace call to cp_parser_omp_dispatch
