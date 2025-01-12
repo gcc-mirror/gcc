@@ -5005,13 +5005,27 @@
   rtx pv = gen_rtx_REG (Pmode, 27);
 
   /* This bit is the same as expand_builtin_longjmp.  */
+
   emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
-  emit_move_insn (hard_frame_pointer_rtx, fp);
+
   emit_move_insn (pv, lab);
+
+  /* Restore the frame pointer and stack pointer.  We must use a
+     temporary since the setjmp buffer may be a local.  */
+  fp = copy_to_reg (fp);
   emit_stack_restore (SAVE_NONLOCAL, stack);
+
+  /* Ensure the frame pointer move is not optimized.  */
+  emit_insn (gen_blockage ());
+  emit_clobber (hard_frame_pointer_rtx);
+  emit_clobber (frame_pointer_rtx);
+  emit_move_insn (hard_frame_pointer_rtx, fp);
+
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
+
+  /* End of the bit corresponding to expand_builtin_longjmp.  */
 
   /* Load the label we are jumping through into $27 so that we know
      where to look for it when we get back to setjmp's function for
