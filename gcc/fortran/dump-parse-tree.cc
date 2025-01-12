@@ -835,6 +835,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" VOLATILE", dumpfile);
   if (attr->threadprivate)
     fputs (" THREADPRIVATE", dumpfile);
+  if (attr->temporary)
+    fputs (" TEMPORARY", dumpfile);
   if (attr->target)
     fputs (" TARGET", dumpfile);
   if (attr->dummy)
@@ -868,6 +870,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" IN-NAMELIST", dumpfile);
   if (attr->in_common)
     fputs (" IN-COMMON", dumpfile);
+  if (attr->in_equivalence)
+    fputs (" IN_EQUIVALENDE", dumpfile);
 
   if (attr->abstract)
     fputs (" ABSTRACT", dumpfile);
@@ -926,6 +930,47 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" OMP-DECLARE-TARGET-LINK", dumpfile);
   if (attr->omp_declare_target_indirect)
     fputs (" OMP-DECLARE-TARGET-INDIRECT", dumpfile);
+  if (attr->omp_device_type == OMP_DEVICE_TYPE_HOST)
+    fputs (" OMP-DEVICE-TYPE-HOST", dumpfile);
+  if (attr->omp_device_type == OMP_DEVICE_TYPE_NOHOST)
+    fputs (" OMP-DEVICE-TYPE-NOHOST", dumpfile);
+  if (attr->omp_device_type == OMP_DEVICE_TYPE_ANY)
+    fputs (" OMP-DEVICE-TYPE-ANY", dumpfile);
+  if (attr->omp_allocate)
+    fputs (" OMP-ALLOCATE", dumpfile);
+
+  if (attr->oacc_declare_create)
+    fputs (" OACC-DECLARE-CREATE", dumpfile);
+  if (attr->oacc_declare_copyin)
+    fputs (" OACC-DECLARE-COPYIN", dumpfile);
+  if (attr->oacc_declare_deviceptr)
+    fputs (" OACC-DECLARE-DEVICEPTR", dumpfile);
+  if (attr->oacc_declare_device_resident)
+    fputs (" OACC-DECLARE-DEVICE-RESIDENT", dumpfile);
+
+  switch (attr->oacc_routine_lop)
+    {
+    case OACC_ROUTINE_LOP_NONE:
+    case OACC_ROUTINE_LOP_ERROR:
+      break;
+
+    case OACC_ROUTINE_LOP_GANG:
+      fputs (" OACC-ROUTINE-LOP-GANG", dumpfile);
+      break;
+
+    case OACC_ROUTINE_LOP_WORKER:
+      fputs (" OACC-ROUTINE-LOP-WORKER", dumpfile);
+      break;
+
+    case  OACC_ROUTINE_LOP_VECTOR:
+      fputs (" OACC-ROUTINE-LOP-VECTOR", dumpfile);
+      break;
+
+    case OACC_ROUTINE_LOP_SEQ:
+      fputs (" OACC-ROUTINE-LOP-SEQ", dumpfile);
+      break;
+      }
+
   if (attr->elemental)
     fputs (" ELEMENTAL", dumpfile);
   if (attr->pure)
@@ -956,8 +1001,69 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" IS-MAIN-PROGRAM", dumpfile);
   if (attr->oacc_routine_nohost)
     fputs (" OACC-ROUTINE-NOHOST", dumpfile);
+  if (attr->temporary)
+    fputs (" TEMPORARY", dumpfile);
+  if (attr->assign)
+    fputs (" ASSIGN", dumpfile);
+  if (attr->not_always_present)
+    fputs (" NOT-ALWAYS-PRESENT", dumpfile);
+  if (attr->implied_index)
+    fputs (" IMPLIED-INDEX", dumpfile);
+  if (attr->proc_pointer)
+    fputs (" PROC-POINTER", dumpfile);
+  if (attr->fe_temp)
+    fputs (" FE-TEMP", dumpfile);
+  if (attr->automatic)
+    fputs (" AUTOMATIC", dumpfile);
+  if (attr->class_pointer)
+    fputs (" CLASS-POINTER", dumpfile);
+  if (attr->save == SAVE_EXPLICIT)
+    fputs (" SAVE-EXPLICIT", dumpfile);
+  if (attr->save == SAVE_IMPLICIT)
+    fputs (" SAVE-IMPLICIT", dumpfile);
+  if (attr->used_in_submodule)
+    fputs (" USED-IN-SUBMODULE", dumpfile);
+  if (attr->use_only)
+    fputs (" USE-ONLY", dumpfile);
+  if (attr->use_rename)
+    fputs (" USE-RENAME", dumpfile);
+  if (attr->imported)
+    fputs (" IMPORTED", dumpfile);
+  if (attr->host_assoc)
+    fputs (" HOST-ASSOC", dumpfile);
+  if (attr->generic)
+    fputs (" GENERIC", dumpfile);
+  if (attr->generic_copy)
+    fputs (" GENERIC-COPY", dumpfile);
+  if (attr->untyped)
+    fputs (" UNTYPED", dumpfile);
+  if (attr->extension)
+    fprintf (dumpfile, " EXTENSION(%u)", attr->extension);
+  if (attr->is_class)
+    fputs (" IS-CLASS", dumpfile);
+  if (attr->class_ok)
+    fputs (" CLASS-OK", dumpfile);
+  if (attr->vtab)
+    fputs (" VTAB", dumpfile);
+  if (attr->vtype)
+    fputs (" VTYPE", dumpfile);
+  if (attr->module_procedure)
+    fputs (" MODULE-PROCEDURE", dumpfile);
+  if (attr->if_source == IFSRC_DECL)
+    fputs (" IFSRC-DECL", dumpfile);
+  if (attr->if_source == IFSRC_IFBODY)
+    fputs (" IFSRC-IFBODY", dumpfile);
 
-  /* FIXME: Still missing are oacc_routine_lop and ext_attr.  */
+  for (int i = 0; i < EXT_ATTR_LAST; i++)
+    {
+      if (attr->ext_attr & (1 << i))
+	{
+	  fputs (" ATTRIBUTE-", dumpfile);
+	  for (const char *p = ext_attr_list[i].name; p && *p; p++)
+	    putc (TOUPPER (*p), dumpfile);
+	}
+    }
+
   fputc (')', dumpfile);
 }
 
