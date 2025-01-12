@@ -83,7 +83,7 @@ void my_term()
   catch(...) { std::exit(0); }
 }
 
-void f(int x) noexcept pre(x >= 0)
+void f(int x) pre(x >= 0)
 {
   try{
    int i = 1;
