@@ -2552,7 +2552,7 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       break;
 
     case EXEC_INQUIRE:
-      if (co->ext.filepos->err)
+      if (co->ext.inquire->err)
 	seen_goto = true;
       break;
 
