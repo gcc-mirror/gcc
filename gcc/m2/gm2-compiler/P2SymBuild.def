@@ -432,7 +432,7 @@ PROCEDURE StartBuildEnumeration ;
                       |------------|        |------------|
 *)
 
-PROCEDURE BuildSubrange (Base: CARDINAL) ;
+PROCEDURE BuildSubrange (tok: CARDINAL; Base: CARDINAL) ;
 
 
 (*

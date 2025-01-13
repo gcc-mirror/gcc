@@ -907,14 +907,13 @@ END StartBuildEnumeration ;
                       |------------|        |------------|
 *)
 
-PROCEDURE BuildSubrange (Base: CARDINAL) ;
+PROCEDURE BuildSubrange (tok: CARDINAL; Base: CARDINAL) ;
 VAR
    name: Name ;
    Type: CARDINAL ;
-   tok : CARDINAL ;
 BEGIN
-   PopTtok(name, tok) ;
-   Type := MakeSubrange(tok, name) ;
+   PopT (name) ;
+   Type := MakeSubrange (tok, name) ;
    PutSubrangeIntoFifoQueue(Type) ;   (* Store Subrange away so that we can fill in *)
                                       (* its bounds during pass 3.                  *)
    PutSubrangeIntoFifoQueue(Base) ;   (* store Base type of subrange away as well.  *)

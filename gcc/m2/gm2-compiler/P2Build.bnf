@@ -45,7 +45,9 @@ see <https://www.gnu.org/licenses/>.  *)
 
 IMPLEMENTATION MODULE P2Build ;
 
-FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken, InsertTokenAndRewind, GetTokenNo ;
+FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
+                     InsertTokenAndRewind, GetTokenNo, MakeVirtual2Tok ;
+
 FROM M2MetaError IMPORT MetaErrorStringT0, MetaErrorT1 ;
 FROM NameKey IMPORT NulName, Name, makekey, MakeKey ;
 FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok ;
@@ -765,12 +767,17 @@ IdentList := Ident                                                         % VAR
                                                                              END %
              =:
 
-SubrangeType := "[" ConstExpression  ".." ConstExpression "]"              % BuildSubrange(NulSym) %
+SubrangeType :=                                                            % VAR start, combined: CARDINAL ; %
+                                                                           % start := GetTokenNo () %
+                "[" ConstExpression  ".." ConstExpression "]"              % combined := MakeVirtual2Tok (start, GetTokenNo ()-1) %
+		                                                           % BuildSubrange (combined, NulSym) %
               =:
 
-PrefixedSubrangeType := "[" ConstExpression  ".." ConstExpression "]"      % VAR t: CARDINAL ; %
-                                                                           % PopT(t) ;
-                                                                             BuildSubrange(t) %
+PrefixedSubrangeType :=                                                    % VAR qual, start, combined: CARDINAL ; %
+                                                                           % PopTtok (qual, start) %
+                "[" ConstExpression  ".." ConstExpression "]"									   
+                                                                           % combined := MakeVirtual2Tok (start, GetTokenNo ()-1) %
+                                                                           % BuildSubrange (combined, qual) %
               =:
 
 ArrayType := "ARRAY"                                                       % VAR arrayType, tok: CARDINAL ; %

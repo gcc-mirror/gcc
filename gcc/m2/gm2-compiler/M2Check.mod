@@ -36,7 +36,7 @@ FROM M2System IMPORT IsSystemType, IsGenericSystemType, IsSameSize, IsComplexN ;
 FROM M2Base IMPORT IsParameterCompatible, IsAssignmentCompatible, IsExpressionCompatible, IsComparisonCompatible, IsBaseType, IsMathType, ZType, CType, RType, IsComplexType, Char ;
 FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, KillIndex, HighIndice, LowIndice, IncludeIndiceIntoIndex, ForeachIndiceInIndexDo ;
 FROM M2Error IMPORT Error, InternalError, NewError, ErrorString, ChainError ;
-FROM M2MetaError IMPORT MetaErrorStringT2, MetaErrorStringT3, MetaErrorStringT4, MetaString2, MetaString3, MetaString4 ;
+FROM M2MetaError IMPORT MetaErrorStringT2, MetaErrorStringT3, MetaErrorStringT4, MetaString2, MetaString3, MetaString4, MetaError1 ;
 FROM StrLib IMPORT StrEqual ;
 FROM M2Debug IMPORT Assert ;
 
@@ -504,10 +504,8 @@ BEGIN
       (* and also generate a sub error containing detail.  *)
       IF (left # tinfo^.left) OR (right # tinfo^.right)
       THEN
-         tinfo^.error := ChainError (tinfo^.token, tinfo^.error) ;
-         s := MetaString2 (InitString ("{%1Ead} and {%2ad} are incompatible as formal and actual procedure parameters"),
-                           left, right) ;
-         ErrorString (tinfo^.error, s)
+         MetaError1 ('formal parameter {%1EDad}', right) ;
+         MetaError1 ('actual parameter {%1EDad}', left)
       END
    END
 END buildError4 ;
