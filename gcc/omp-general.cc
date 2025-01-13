@@ -1121,29 +1121,37 @@ omp_offload_device_kind_arch_isa (const char *props, const char *prop)
    region or when unsure, return false otherwise.  */
 
 static bool
-omp_maybe_offloaded (void)
+omp_maybe_offloaded (tree construct_context)
 {
+  /* No offload targets available?  */
   if (!ENABLE_OFFLOADING)
     return false;
   const char *names = getenv ("OFFLOAD_TARGET_NAMES");
   if (names == NULL || *names == '\0')
     return false;
 
+  /* Parsing is too early to tell.  */
   if (symtab->state == PARSING)
     /* Maybe.  */
     return true;
+
+  /* Late resolution of offloaded code happens in the offload compiler,
+     where it's treated as native code instead.  So return false here.  */
   if (cfun && cfun->after_inlining)
     return false;
+
+  /* Check if the function is marked for offloading (either explicitly
+     or via omp_discover_implicit_declare_target).  */
   if (current_function_decl
       && lookup_attribute ("omp declare target",
 			   DECL_ATTRIBUTES (current_function_decl)))
     return true;
-  if (cfun && (cfun->curr_properties & PROP_gimple_any) == 0)
-    {
-      enum tree_code construct = OMP_TARGET;
-      if (omp_construct_selector_matches (&construct, 1, NULL))
-	return true;
-    }
+
+  /* Check for nesting inside a target directive.  */
+  for (tree ts = construct_context; ts; ts = TREE_CHAIN (ts))
+    if (OMP_TS_CODE (ts) == OMP_TRAIT_CONSTRUCT_TARGET)
+      return true;
+
   return false;
 }
 
@@ -1287,6 +1295,9 @@ omp_context_name_list_prop (tree prop)
     case IDENTIFIER_NODE:
       return IDENTIFIER_POINTER (val);
     case STRING_CST:
+#ifdef ACCEL_COMPILER
+      return TREE_STRING_POINTER (val);
+#else
       {
 	const char *ret = TREE_STRING_POINTER (val);
 	if ((size_t) TREE_STRING_LENGTH (val)
@@ -1294,16 +1305,29 @@ omp_context_name_list_prop (tree prop)
 	  return ret;
 	return NULL;
       }
+#endif
     default:
       return NULL;
     }
+}
+
+
+/* Helper function called via walk_tree, to determine if *TP is a
+   PARM_DECL.  */
+static tree
+expr_uses_parm_decl (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+		     void *data ATTRIBUTE_UNUSED)
+{
+  if (TREE_CODE (*tp) == PARM_DECL)
+    return *tp;
+  return NULL_TREE;
 }
 
 /* Diagnose errors in an OpenMP context selector, return CTX if
    it is correct or error_mark_node otherwise.  */
 
 tree
-omp_check_context_selector (location_t loc, tree ctx)
+omp_check_context_selector (location_t loc, tree ctx, bool metadirective_p)
 {
   bool tss_seen[OMP_TRAIT_SET_LAST], ts_seen[OMP_TRAIT_LAST];
 
@@ -1313,10 +1337,6 @@ omp_check_context_selector (location_t loc, tree ctx)
       enum omp_tss_code tss_code = OMP_TSS_CODE (tss);
       bool saw_any_prop = false;
       bool saw_other_prop = false;
-
-      /* We can parse this, but not handle it yet.  */
-      if (tss_code == OMP_TRAIT_SET_TARGET_DEVICE)
-	sorry_at (loc, "%<target_device%> selector set is not supported yet");
 
       /* Each trait-set-selector-name can only be specified once.  */
       if (tss_seen[tss_code])
@@ -1401,6 +1421,35 @@ omp_check_context_selector (location_t loc, tree ctx)
 		  }
 	      }
 
+	  /* This restriction is documented in the spec in the section
+	     for the metadirective "when" clause (7.4.1 in the 5.2 spec).  */
+	  if (metadirective_p
+	      && ts_code == OMP_TRAIT_CONSTRUCT_SIMD
+	      && OMP_TS_PROPERTIES (ts))
+	    {
+	      error_at (loc,
+			"properties must not be specified for the %<simd%> "
+			"selector in a %<metadirective%> context-selector");
+	      return error_mark_node;
+	    }
+
+	  /* Reject expressions that reference parameter variables in
+	     "declare variant", as this is not yet implemented.  FIXME;
+	     see PR middle-end/113904.  */
+	  if (!metadirective_p
+	      && (ts_code == OMP_TRAIT_DEVICE_NUM
+		  || ts_code == OMP_TRAIT_USER_CONDITION))
+	    {
+	      tree exp = OMP_TS_PROPERTIES (ts);
+	      if (walk_tree (&exp, expr_uses_parm_decl, NULL, NULL))
+		{
+		  sorry_at (loc,
+			    "reference to function parameter in "
+			    "%<declare variant%> dynamic selector expression");
+		  return error_mark_node;
+		}
+	    }
+
 	  /* Check for unknown properties.  */
 	  if (omp_ts_map[ts_code].valid_properties == NULL)
 	    continue;
@@ -1465,6 +1514,9 @@ omp_check_context_selector (location_t loc, tree ctx)
   return ctx;
 }
 
+/* Forward declarations.  */
+static int omp_context_selector_set_compare (enum omp_tss_code, tree, tree);
+static int omp_construct_simd_compare (tree, tree, bool);
 
 /* Register VARIANT as variant of some base function marked with
    #pragma omp declare variant.  CONSTRUCT is corresponding list of
@@ -1528,6 +1580,102 @@ make_trait_property (tree name, tree value, tree chain)
   return tree_cons (name, value, chain);
 }
 
+/* Constructor for metadirective variants.  */
+tree
+make_omp_metadirective_variant (tree selector, tree directive, tree body)
+{
+  return build_tree_list (selector, build_tree_list (directive, body));
+}
+
+/* If the construct selector traits SELECTOR_TRAITS match the corresponding
+   OpenMP context traits CONTEXT_TRAITS, return true and set *SCORE to the
+   corresponding score if it is non-null.  */
+static bool
+omp_construct_traits_match (tree selector_traits, tree context_traits,
+			    score_wide_int *score)
+{
+  int slength = list_length (selector_traits);
+  int clength = list_length (context_traits);
+
+  /* Trivial failure: the selector has more traits than the OpenMP context.  */
+  if (slength > clength)
+    return false;
+
+  /* There's only one trait in the selector and it doesn't have any properties
+     to match.  */
+  if (slength == 1 && !OMP_TS_PROPERTIES (selector_traits))
+    {
+      int p = 0, i = 1;
+      enum omp_ts_code code = OMP_TS_CODE (selector_traits);
+      for (tree t = context_traits; t; t = TREE_CHAIN (t), i++)
+	if (OMP_TS_CODE (t) == code)
+	  p = i;
+      if (p != 0)
+	{
+	  if (score)
+	    *score = wi::shifted_mask <score_wide_int> (p - 1, 1, false);
+	  return true;
+	}
+      else
+	return false;
+    }
+
+  /* Now handle the more general cases.
+     Both lists of traits are ordered from outside in, corresponding to
+     the c1, ..., cN numbering for the OpenMP context specified in
+     in section 7.1 of the OpenMP 5.2 spec.  Section 7.3 of the spec says
+     "if the traits that correspond to the construct selector set appear
+     multiple times in the OpenMP context, the highest valued subset of
+     context traits that contains all trait selectors in the same order
+     are used".  This means that we want to start the search for a match
+     from the end of the list, rather than the beginning.  To facilitate
+     that, transfer the lists to temporary arrays to allow random access
+     to the elements (their order remains outside in).  */
+  int i, j;
+  tree s, c;
+
+  tree *sarray = (tree *) alloca (slength * sizeof (tree));
+  for (s = selector_traits, i = 0; s; s = TREE_CHAIN (s), i++)
+    sarray[i] = s;
+
+  tree *carray = (tree *) alloca (clength * sizeof (tree));
+  for (c = context_traits, j = 0; c; c = TREE_CHAIN (c), j++)
+    carray[j] = c;
+
+  /* The variable "i" indexes the selector, "j" indexes the OpenMP context.
+     Find the "j" corresponding to each sarray[i].  Note that the spec uses
+     "p" as the 1-based position, but "j" is zero-based, e.g. equal to
+     p - 1.  */
+  score_wide_int result = 0;
+  j = clength - 1;
+  for (i = slength - 1; i >= 0; i--)
+    {
+      enum omp_ts_code code = OMP_TS_CODE (sarray[i]);
+      tree props = OMP_TS_PROPERTIES (sarray[i]);
+      for (; j >= 0; j--)
+	{
+	  if (OMP_TS_CODE (carray[j]) != code)
+	    continue;
+	  if (code == OMP_TRAIT_CONSTRUCT_SIMD
+	      && props
+	      && omp_construct_simd_compare (props,
+					     OMP_TS_PROPERTIES (carray[j]),
+					     true) > 0)
+	    continue;
+	  break;
+	}
+      /* If j >= 0, we have a match for this trait at position j.  */
+      if (j < 0)
+	return false;
+      result += wi::shifted_mask <score_wide_int> (j, 1, false);
+      j--;
+    }
+  if (score)
+    *score = result;
+  return true;
+}
+
+#if 0
 /* Return 1 if context selector matches the current OpenMP context, 0
    if it does not and -1 if it is unknown and need to be determined later.
    Some properties can be checked right away during parsing (this routine),
@@ -1919,12 +2067,546 @@ omp_context_selector_matches (tree ctx)
     }
   return ret;
 }
+#endif
+
+/* Return 1 if context selector CTX matches the current OpenMP context, 0
+   if it does not and -1 if it is unknown and need to be determined later.
+   Some properties can be checked right away during parsing, others need
+   to wait until the whole TU is parsed, others need to wait until
+   IPA, others until vectorization.
+
+   CONSTRUCT_CONTEXT is a list of construct traits from the OpenMP context,
+   which must be collected by omp_get_construct_context during
+   gimplification.  It is ignored (and may be null) if this function is
+   called during parsing.  Otherwise COMPLETE_P should indicate whether
+   CONSTRUCT_CONTEXT is known to be complete and not missing constructs
+   filled in later during compilation.
+
+   Dynamic properties (which are evaluated at run-time) should always
+   return 1.  */
+
+int
+omp_context_selector_matches (tree ctx,
+			      tree construct_context,
+			      bool complete_p)
+{
+  int ret = 1;
+  bool maybe_offloaded = omp_maybe_offloaded (construct_context);
+
+  for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
+    {
+      enum omp_tss_code set = OMP_TSS_CODE (tss);
+      tree selectors = OMP_TSS_TRAIT_SELECTORS (tss);
+
+      /* Immediately reject the match if there are any ignored
+	 selectors present.  */
+      for (tree ts = selectors; ts; ts = TREE_CHAIN (ts))
+	if (OMP_TS_CODE (ts) == OMP_TRAIT_INVALID)
+	  return 0;
+
+      if (set == OMP_TRAIT_SET_CONSTRUCT)
+	{
+	  /* We cannot resolve the construct selector during parsing because
+	     the OpenMP context (and CONSTRUCT_CONTEXT) isn't available
+	     until gimplification.  */
+	  if (symtab->state == PARSING)
+	    {
+	      ret = -1;
+	      continue;
+	    }
+
+	  gcc_assert (selectors);
+
+	  /* During gimplification, CONSTRUCT_CONTEXT is partial, and doesn't
+	     include a construct for "declare simd" that may be added
+	     when there is not an enclosing "target" construct.  We might
+	     be able to find a positive match against the partial context
+	     (although we cannot yet score it accurately), but if we can't,
+	     treat it as unknown instead of no match.  */
+	  if (!omp_construct_traits_match (selectors, construct_context, NULL))
+	    {
+	      /* If we've got a complete context, it's definitely a failed
+		 match.  */
+	      if (complete_p)
+		return 0;
+
+	      /* If the selector doesn't include simd, then we don't have
+		 to worry about whether "declare simd" would cause it to
+		 match; so this is also a definite failure.  */
+	      bool have_simd = false;
+	      for (tree ts = selectors; ts; ts = TREE_CHAIN (ts))
+		if (OMP_TS_CODE (ts) == OMP_TRAIT_CONSTRUCT_SIMD)
+		  {
+		    have_simd = true;
+		    break;
+		  }
+	      if (!have_simd)
+		return 0;
+	      else
+		ret = -1;
+	    }
+	  continue;
+	}
+      else if (set == OMP_TRAIT_SET_TARGET_DEVICE)
+	/* The target_device set is dynamic, so treat it as always
+	   resolvable.  However, the current implementation doesn't
+	   support it in a target region, so diagnose that as an error.
+	   FIXME: maybe make this a warning and return 0 instead?  */
+	{
+	  for (tree ts = construct_context; ts; ts = TREE_CHAIN (ts))
+	    if (OMP_TS_CODE (ts) == OMP_TRAIT_CONSTRUCT_TARGET)
+	      sorry ("%<target_device%> selector set inside of %<target%> "
+		     "directive");
+	  continue;
+	}
+
+      for (tree ts = selectors; ts; ts = TREE_CHAIN (ts))
+	{
+	  enum omp_ts_code sel = OMP_TS_CODE (ts);
+	  switch (sel)
+	    {
+	    case OMP_TRAIT_IMPLEMENTATION_VENDOR:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+		{
+		  const char *prop = omp_context_name_list_prop (p);
+		  if (prop == NULL)
+		    return 0;
+		  if (!strcmp (prop, "gnu"))
+		    continue;
+		  return 0;
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_EXTENSION:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      /* We don't support any extensions right now.  */
+	      return 0;
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_ADMO:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		break;
+
+	      {
+		enum omp_memory_order omo
+		  = ((enum omp_memory_order)
+		     (omp_requires_mask
+		      & OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER));
+		if (omo == OMP_MEMORY_ORDER_UNSPECIFIED)
+		  {
+		    /* We don't know yet, until end of TU.  */
+		    if (symtab->state == PARSING)
+		      {
+			ret = -1;
+			break;
+		      }
+		    else
+		      omo = OMP_MEMORY_ORDER_RELAXED;
+		  }
+		tree p = OMP_TS_PROPERTIES (ts);
+		const char *prop = IDENTIFIER_POINTER (OMP_TP_NAME (p));
+		if (!strcmp (prop, "relaxed")
+		    && omo != OMP_MEMORY_ORDER_RELAXED)
+		  return 0;
+		else if (!strcmp (prop, "seq_cst")
+			 && omo != OMP_MEMORY_ORDER_SEQ_CST)
+		  return 0;
+		else if (!strcmp (prop, "acq_rel")
+			 && omo != OMP_MEMORY_ORDER_ACQ_REL)
+		  return 0;
+		else if (!strcmp (prop, "acquire")
+			 && omo != OMP_MEMORY_ORDER_ACQUIRE)
+		  return 0;
+		else if (!strcmp (prop, "release")
+			 && omo != OMP_MEMORY_ORDER_RELEASE)
+		  return 0;
+	      }
+	      break;
+	    case OMP_TRAIT_DEVICE_ARCH:
+	      gcc_assert (set == OMP_TRAIT_SET_DEVICE);
+	      for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+		{
+		  const char *arch = omp_context_name_list_prop (p);
+		  if (arch == NULL)
+		    return 0;
+		  int r = 0;
+		  if (targetm.omp.device_kind_arch_isa != NULL)
+		    r = targetm.omp.device_kind_arch_isa (omp_device_arch,
+							  arch);
+		  if (r == 0 || (r == -1 && symtab->state != PARSING))
+		    {
+		      /* If we are or might be in a target region or
+			 declare target function, need to take into account
+			 also offloading values.
+			 Note that maybe_offloaded is always false in late
+			 resolution; that's handled as native code (the
+			 above case) in the offload compiler instead.  */
+		      if (!maybe_offloaded)
+			return 0;
+		      if (ENABLE_OFFLOADING)
+			{
+			  const char *arches = omp_offload_device_arch;
+			  if (omp_offload_device_kind_arch_isa (arches, arch))
+			    {
+			      ret = -1;
+			      continue;
+			    }
+			}
+		      return 0;
+		    }
+		  else if (r == -1)
+		    ret = -1;
+		  /* If arch matches on the host, it still might not match
+		     in the offloading region.  */
+		  else if (maybe_offloaded)
+		    ret = -1;
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_UNIFIED_ADDRESS:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		break;
+
+	      if ((omp_requires_mask & OMP_REQUIRES_UNIFIED_ADDRESS) == 0)
+		{
+		  if (symtab->state == PARSING)
+		    ret = -1;
+		  else
+		    return 0;
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_UNIFIED_SHARED_MEMORY:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		break;
+
+	      if ((omp_requires_mask
+		   & OMP_REQUIRES_UNIFIED_SHARED_MEMORY) == 0)
+		{
+		  if (symtab->state == PARSING)
+		    ret = -1;
+		  else
+		    return 0;
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_SELF_MAPS:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		break;
+
+	      if ((omp_requires_mask & OMP_REQUIRES_SELF_MAPS) == 0)
+		{
+		  if (symtab->state == PARSING)
+		    ret = -1;
+		  else
+		    return 0;
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_DYNAMIC_ALLOCATORS:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		break;
+
+	      if ((omp_requires_mask
+		   & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
+		{
+		  if (symtab->state == PARSING)
+		    ret = -1;
+		  else
+		    return 0;
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_REVERSE_OFFLOAD:
+	      gcc_assert (set == OMP_TRAIT_SET_IMPLEMENTATION);
+	      if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		break;
+
+	      if ((omp_requires_mask & OMP_REQUIRES_REVERSE_OFFLOAD) == 0)
+		{
+		  if (symtab->state == PARSING)
+		    ret = -1;
+		  else
+		    return 0;
+		}
+	      break;
+	    case OMP_TRAIT_DEVICE_KIND:
+	      gcc_assert (set == OMP_TRAIT_SET_DEVICE);
+	      for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+		{
+		  const char *prop = omp_context_name_list_prop (p);
+		  if (prop == NULL)
+		    return 0;
+		  if (!strcmp (prop, "any"))
+		    continue;
+		  if (!strcmp (prop, "host"))
+		    {
+#ifdef ACCEL_COMPILER
+		      return 0;
+#else
+		      if (maybe_offloaded)
+			ret = -1;
+		      continue;
+#endif
+		    }
+		  if (!strcmp (prop, "nohost"))
+		    {
+#ifndef ACCEL_COMPILER
+		      if (maybe_offloaded)
+			ret = -1;
+		      else
+			return 0;
+#endif
+		      continue;
+		    }
+
+		  int r = 0;
+		  if (targetm.omp.device_kind_arch_isa != NULL)
+		    r = targetm.omp.device_kind_arch_isa (omp_device_kind,
+							  prop);
+		  else
+#ifndef ACCEL_COMPILER
+		    r = strcmp (prop, "cpu") == 0;
+#else
+		    gcc_unreachable ();
+#endif
+		    if (r == 0 || (r == -1 && symtab->state != PARSING))
+		    {
+		      /* If we are or might be in a target region or
+			 declare target function, need to take into account
+			 also offloading values.
+			 Note that maybe_offloaded is always false in late
+			 resolution; that's handled as native code (the
+			 above case) in the offload compiler instead.  */
+		      if (!maybe_offloaded)
+			return 0;
+		      if (ENABLE_OFFLOADING)
+			{
+			  const char *kinds = omp_offload_device_kind;
+			  if (omp_offload_device_kind_arch_isa (kinds, prop))
+			    {
+			      ret = -1;
+			      continue;
+			    }
+			}
+		      return 0;
+		    }
+		  else if (r == -1)
+		    ret = -1;
+		  /* If kind matches on the host, it still might not match
+		     in the offloading region.  */
+		  else if (maybe_offloaded)
+		    ret = -1;
+		}
+	      break;
+	    case OMP_TRAIT_DEVICE_ISA:
+	      gcc_assert (set == OMP_TRAIT_SET_DEVICE);
+	      for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+		{
+		  const char *isa = omp_context_name_list_prop (p);
+		  if (isa == NULL)
+		    return 0;
+		  int r = 0;
+		  if (targetm.omp.device_kind_arch_isa != NULL)
+		    r = targetm.omp.device_kind_arch_isa (omp_device_isa,
+							  isa);
+		  if (r == 0 || (r == -1 && symtab->state != PARSING))
+		    {
+		      /* If isa is valid on the target, but not in the
+			 current function and current function has
+			 #pragma omp declare simd on it, some simd clones
+			 might have the isa added later on.  */
+		      if (r == -1
+			  && targetm.simd_clone.compute_vecsize_and_simdlen
+			  && (cfun == NULL || !cfun->after_inlining))
+			{
+			  tree attrs
+			    = DECL_ATTRIBUTES (current_function_decl);
+			  if (lookup_attribute ("omp declare simd", attrs))
+			    {
+			      ret = -1;
+			      continue;
+			    }
+			}
+		      /* If we are or might be in a target region or
+			 declare target function, need to take into account
+			 also offloading values.
+			 Note that maybe_offloaded is always false in late
+			 resolution; that's handled as native code (the
+			 above case) in the offload compiler instead.  */
+		      if (!maybe_offloaded)
+			return 0;
+		      if (ENABLE_OFFLOADING)
+			{
+			  const char *isas = omp_offload_device_isa;
+			  if (omp_offload_device_kind_arch_isa (isas, isa))
+			    {
+			      ret = -1;
+			      continue;
+			    }
+			}
+		      return 0;
+		    }
+		  else if (r == -1)
+		    ret = -1;
+		  /* If isa matches on the host, it still might not match
+		     in the offloading region.  */
+		  else if (maybe_offloaded)
+		    ret = -1;
+		}
+	      break;
+	    case OMP_TRAIT_USER_CONDITION:
+	      gcc_assert (set == OMP_TRAIT_SET_USER);
+	      for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+		if (OMP_TP_NAME (p) == NULL_TREE)
+		  {
+		    /* If the expression is not a constant, the selector
+		       is dynamic.  */
+		    if (!tree_fits_shwi_p (OMP_TP_VALUE (p)))
+		      break;
+
+		    if (integer_zerop (OMP_TP_VALUE (p)))
+		      return 0;
+		    if (integer_nonzerop (OMP_TP_VALUE (p)))
+		      break;
+		    ret = -1;
+		  }
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
+  return ret;
+}
+
+/* Helper function for resolve_omp_target_device_matches, also used
+   directly when we know in advance that the device is the host to avoid
+   the overhead of late resolution.  SEL is the selector code and
+   PROPERTIES are the properties to match.  The return value is a
+   boolean.  */
+static bool
+omp_target_device_matches_on_host (enum omp_ts_code selector,
+				   tree properties)
+{
+  bool result = 1;
+
+  if (dump_file)
+    fprintf (dump_file, "omp_target_device_matches_on_host:\n");
+
+  switch (selector)
+    {
+    case OMP_TRAIT_DEVICE_KIND:
+      for (tree p = properties; p && result; p = TREE_CHAIN (p))
+	{
+	  const char *prop = omp_context_name_list_prop (p);
+
+	  if (prop == NULL)
+	    result = 0;
+	  else if (!strcmp (prop, "any"))
+	    ;
+	  else if (!strcmp (prop, "host"))
+	    {
+#ifdef ACCEL_COMPILER
+	      result = 0;
+#else
+	      ;
+#endif
+	    }
+	  else if (!strcmp (prop, "nohost"))
+	    {
+#ifdef ACCEL_COMPILER
+	      ;
+#else
+	      result = 0;
+#endif
+	    }
+	  else if (targetm.omp.device_kind_arch_isa != NULL)
+	    result = targetm.omp.device_kind_arch_isa (omp_device_kind, prop);
+	  else
+#ifndef ACCEL_COMPILER
+	    result = strcmp (prop, "cpu") == 0;
+#else
+	    gcc_unreachable ();
+#endif
+	  if (dump_file)
+	    fprintf (dump_file, "Matching device kind %s = %s\n",
+		     prop, (result ? "true" : "false"));
+	}
+      break;
+    case OMP_TRAIT_DEVICE_ARCH:
+      if (targetm.omp.device_kind_arch_isa != NULL)
+	for (tree p = properties; p && result; p = TREE_CHAIN (p))
+	  {
+	    const char *prop = omp_context_name_list_prop (p);
+	    if (prop == NULL)
+	      result = 0;
+	    else
+	      result = targetm.omp.device_kind_arch_isa (omp_device_arch,
+							 prop);
+	    if (dump_file)
+	      fprintf (dump_file, "Matching device arch %s = %s\n",
+		       prop, (result ? "true" : "false"));
+	  }
+      else
+	{
+	  result = 0;
+	  if (dump_file)
+	    fprintf (dump_file, "Cannot match device arch on target\n");
+	}
+      break;
+    case OMP_TRAIT_DEVICE_ISA:
+      if (targetm.omp.device_kind_arch_isa != NULL)
+	for (tree p = properties; p && result; p = TREE_CHAIN (p))
+	  {
+	    const char *prop = omp_context_name_list_prop (p);
+	    if (prop == NULL)
+	      result = 0;
+	    else
+	      result = targetm.omp.device_kind_arch_isa (omp_device_isa,
+							 prop);
+	    if (dump_file)
+	      fprintf (dump_file, "Matching device isa %s = %s\n",
+		       prop, (result ? "true" : "false"));
+	  }
+      else
+	{
+	  result = 0;
+	  if (dump_file)
+	    fprintf (dump_file, "Cannot match device isa on target\n");
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return result;
+}
+
+/* Called for late resolution of the OMP_TARGET_DEVICE_MATCHES tree node to
+   a constant in omp-offload.cc.  This is used in code that is wrapped in a
+   #pragma omp target construct to execute on the specified device, and
+   can be reduced to a compile-time constant in the offload compiler.
+   NODE is an OMP_TARGET_DEVICE_MATCHES tree node and the result is an
+   INTEGER_CST.  */
+tree
+resolve_omp_target_device_matches (tree node)
+{
+  tree sel = OMP_TARGET_DEVICE_MATCHES_SELECTOR (node);
+  enum omp_ts_code selector = (enum omp_ts_code) tree_to_shwi (sel);
+  tree properties = OMP_TARGET_DEVICE_MATCHES_PROPERTIES (node);
+  if (omp_target_device_matches_on_host (selector, properties))
+    return integer_one_node;
+  else
+    return integer_zero_node;
+}
 
 /* Compare construct={simd} CLAUSES1 with CLAUSES2, return 0/-1/1/2 as
-   in omp_context_selector_set_compare.  */
+   in omp_context_selector_set_compare.  If MATCH_P is true, additionally
+   apply the special matching rules for the "simdlen" and "aligned" clauses
+   used to determine whether the selector CLAUSES1 is part of matches
+   the OpenMP context containing CLAUSES2.  */
 
 static int
-omp_construct_simd_compare (tree clauses1, tree clauses2)
+omp_construct_simd_compare (tree clauses1, tree clauses2, bool match_p)
 {
   if (clauses1 == NULL_TREE)
     return clauses2 == NULL_TREE ? 0 : -1;
@@ -1941,6 +2623,7 @@ omp_construct_simd_compare (tree clauses1, tree clauses2)
       : inbranch(false), notinbranch(false), simdlen(NULL_TREE) {}
   } data[2];
   unsigned int i;
+  tree e0, e1;
   for (i = 0; i < 2; i++)
     for (tree c = i ? clauses2 : clauses1; c; c = OMP_CLAUSE_CHAIN (c))
       {
@@ -1979,10 +2662,23 @@ omp_construct_simd_compare (tree clauses1, tree clauses2)
     r |= data[0].inbranch ? 2 : 1;
   if (data[0].notinbranch != data[1].notinbranch)
     r |= data[0].notinbranch ? 2 : 1;
-  if (!simple_cst_equal (data[0].simdlen, data[1].simdlen))
+  e0 = data[0].simdlen;
+  e1 = data[1].simdlen;
+  if (!simple_cst_equal (e0, e1))
     {
-      if (data[0].simdlen && data[1].simdlen)
-	return 2;
+      if (e0 && e1)
+	{
+	  if (match_p && tree_fits_uhwi_p (e0) && tree_fits_uhwi_p (e1))
+	    {
+	      /* The two simdlen clauses match if m is a multiple of n.  */
+	      unsigned HOST_WIDE_INT n = tree_to_uhwi (e0);
+	      unsigned HOST_WIDE_INT m = tree_to_uhwi (e1);
+	      if (m % n != 0)
+		return 2;
+	    }
+	  else
+	    return 2;
+	}
       r |= data[0].simdlen ? 2 : 1;
     }
   if (data[0].data_sharing.length () < data[1].data_sharing.length ()
@@ -2023,9 +2719,22 @@ omp_construct_simd_compare (tree clauses1, tree clauses2)
 	}
       if (c1 == NULL_TREE)
 	continue;
-      if (!simple_cst_equal (OMP_CLAUSE_ALIGNED_ALIGNMENT (c1),
-			     OMP_CLAUSE_ALIGNED_ALIGNMENT (c2)))
-	return 2;
+      e0 = OMP_CLAUSE_ALIGNED_ALIGNMENT (c1);
+      e1 = OMP_CLAUSE_ALIGNED_ALIGNMENT (c2);
+      if (!simple_cst_equal (e0, e1))
+	{
+	  if (e0 && e1
+	      && match_p && tree_fits_uhwi_p (e0) && tree_fits_uhwi_p (e1))
+	    {
+	      /* The two aligned clauses match if n is a multiple of m.  */
+	      unsigned HOST_WIDE_INT n = tree_to_uhwi (e0);
+	      unsigned HOST_WIDE_INT m = tree_to_uhwi (e1);
+	      if (n % m != 0)
+		return 2;
+	    }
+	  else
+	    return 2;
+	}
     }
   switch (r)
     {
@@ -2104,7 +2813,7 @@ omp_context_selector_props_compare (enum omp_tss_code set,
    1 if CTX2 is a strict subset of CTX1, or
    2 if neither context is a subset of another one.  */
 
-int
+static int
 omp_context_selector_set_compare (enum omp_tss_code set, tree ctx1, tree ctx2)
 {
 
@@ -2141,7 +2850,8 @@ omp_context_selector_set_compare (enum omp_tss_code set, tree ctx1, tree ctx2)
 	    int r = 0;
 	    if (OMP_TS_CODE (ts1) == OMP_TRAIT_CONSTRUCT_SIMD)
 	      r = omp_construct_simd_compare (OMP_TS_PROPERTIES (ts1),
-					      OMP_TS_PROPERTIES (ts2));
+					      OMP_TS_PROPERTIES (ts2),
+					      false);
 	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
 	      return 2;
 	    if (ret == 0)
@@ -2303,10 +3013,301 @@ omp_lookup_ts_code (enum omp_tss_code set, const char *s)
   return OMP_TRAIT_INVALID;
 }
 
-/* Needs to be a GC-friendly widest_int variant, but precision is
-   desirable to be the same on all targets.  */
-typedef generic_wide_int <fixed_wide_int_storage <1024> > score_wide_int;
 
+/* Return true if the selector CTX is dynamic.  */
+static bool
+omp_selector_is_dynamic (tree ctx)
+{
+  tree user_sel = omp_get_context_selector (ctx, OMP_TRAIT_SET_USER,
+					    OMP_TRAIT_USER_CONDITION);
+  if (user_sel)
+    {
+      tree expr = OMP_TP_VALUE (OMP_TS_PROPERTIES (user_sel));
+
+      /* The user condition is not dynamic if it is constant.  */
+      if (!tree_fits_shwi_p (expr))
+	return true;
+    }
+
+  tree target_device_ss
+    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_TARGET_DEVICE);
+  if (target_device_ss)
+    return true;
+
+  return false;
+}
+
+/* Helper function for omp_dynamic_cond: return a boolean tree expression
+   that tests whether *DEVICE_NUM is a "conforming device number other
+   than omp_invalid_device".  This may modify *DEVICE_NUM (i.e, to be
+   a save_expr).  *IS_HOST is set to true if the device can be statically
+   determined to be the host.  */
+
+static tree
+omp_device_num_check (tree *device_num, bool *is_host)
+{
+  /* First check for some constant values we can treat specially.  */
+  if (tree_fits_shwi_p (*device_num))
+    {
+      HOST_WIDE_INT num = tree_to_shwi (*device_num);
+      if (num < -1)
+	return integer_zero_node;
+      /* Initial device?  */
+      if (num == -1)
+	{
+	  *is_host = true;
+	  return integer_one_node;
+	}
+      /* There is always at least one device (the host + offload devices).  */
+      if (num == 0)
+	return integer_one_node;
+      /* If there is no offloading, there is exactly one device.  */
+      if (!ENABLE_OFFLOADING && num > 0)
+	return integer_zero_node;
+    }
+
+  /* Also test for direct calls to OpenMP routines that return valid
+     device numbers.  */
+  if (TREE_CODE (*device_num) == CALL_EXPR)
+    {
+      tree fndecl = get_callee_fndecl (*device_num);
+      if (fndecl && omp_runtime_api_call (fndecl))
+	{
+	  const char *fnname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+	  if (strcmp (fnname, "omp_get_default_device") == 0
+	      || strcmp (fnname, "omp_get_device_num") == 0)
+	    return integer_one_node;
+	  if (strcmp (fnname, "omp_get_num_devices") == 0
+	      || strcmp (fnname, "omp_get_initial_device") == 0)
+	    {
+	      *is_host = true;
+	      return integer_one_node;
+	    }
+	}
+    }
+
+  /* Otherwise, test that -1 <= *device_num <= omp_get_num_devices ().  */
+  *device_num = save_expr (*device_num);
+  tree lotest = build2 (GE_EXPR, integer_type_node, *device_num,
+			integer_minus_one_node);
+  tree fndecl = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_DEVICES);
+  tree hitest = build2 (LE_EXPR, integer_type_node, *device_num,
+			build_call_expr (fndecl, 0));
+  return build2 (TRUTH_ANDIF_EXPR, integer_type_node, lotest, hitest);
+}
+
+/* Return a tree expression representing the dynamic part of the context
+   selector CTX.  SUPERCONTEXT is the surrounding BLOCK, in case we need
+   to introduce a new BLOCK in the result.  */
+tree
+omp_dynamic_cond (tree ctx, tree supercontext)
+{
+  tree user_cond = NULL_TREE, target_device_cond = NULL_TREE;
+
+  /* Build the "user" part of the dynamic selector.  This is a test
+     predicate taken directly for the "condition" trait in this set.  */
+  tree user_sel = omp_get_context_selector (ctx, OMP_TRAIT_SET_USER,
+					    OMP_TRAIT_USER_CONDITION);
+  if (user_sel)
+    {
+      tree expr = OMP_TP_VALUE (OMP_TS_PROPERTIES (user_sel));
+
+      /* The user condition is not dynamic if it is constant.  */
+      if (!tree_fits_shwi_p (expr))
+	user_cond = expr;
+    }
+
+  /* Build the "target_device" part of the dynamic selector.  In the
+     most general case this requires building a bit of code that runs
+     on the specified device_num using the same mechanism as
+     "#pragma omp target" that uses the OMP_TARGET_DEVICE_MATCHES magic
+     cookie to represent the kind/arch/isa tests which are and'ed together.
+     These cookies can be resolved into a constant truth value by the
+     offload compiler; see resolve_omp_target_device_matches, above.
+
+     In some cases, we can (in)validate the device number in advance.
+     If it is not valid, the whole selector fails to match.  If it is
+     valid and refers to the host (e.g., constant -1), then we can
+     resolve the match to a constant truth value now instead of having
+     to create a OMP_TARGET_DEVICE_MATCHES.  */
+
+  tree target_device_ss
+    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_TARGET_DEVICE);
+  if (target_device_ss)
+    {
+      tree device_num = NULL_TREE;
+      tree kind = NULL_TREE;
+      tree arch = NULL_TREE;
+      tree isa = NULL_TREE;
+      tree device_ok = NULL_TREE;
+      bool is_host = !ENABLE_OFFLOADING;
+
+      tree device_num_sel
+	= omp_get_context_selector (ctx, OMP_TRAIT_SET_TARGET_DEVICE,
+				    OMP_TRAIT_DEVICE_NUM);
+      if (device_num_sel)
+	{
+	  device_num = OMP_TP_VALUE (OMP_TS_PROPERTIES (device_num_sel));
+	  device_ok = omp_device_num_check (&device_num, &is_host);
+	  /* If an invalid constant device number was specified, the
+	     whole selector fails to match, and there's no point in
+	     continuing to generate code that would never be executed.  */
+	  if (device_ok == integer_zero_node)
+	    {
+	      target_device_cond = integer_zero_node;
+	      goto wrapup;
+	    }
+	}
+
+      tree kind_sel
+	= omp_get_context_selector (ctx, OMP_TRAIT_SET_TARGET_DEVICE,
+				    OMP_TRAIT_DEVICE_KIND);
+      /* "any" is equivalent to omitting this trait selector.  */
+      if (kind_sel
+	  && strcmp (omp_context_name_list_prop (OMP_TS_PROPERTIES (kind_sel)),
+		     "any"))
+	{
+	  tree props = OMP_TS_PROPERTIES (kind_sel);
+	  if (!is_host)
+	    kind = build2 (OMP_TARGET_DEVICE_MATCHES, integer_type_node,
+			   build_int_cst (integer_type_node,
+					  (int) OMP_TRAIT_DEVICE_KIND),
+			   props);
+	  else if (!omp_target_device_matches_on_host (OMP_TRAIT_DEVICE_KIND,
+						       props))
+	    {
+	      /* The whole selector fails to match.  */
+	      target_device_cond = integer_zero_node;
+	      goto wrapup;
+	    }
+	  /* else it is statically resolved to true and is a no-op.  */
+	}
+      tree arch_sel
+	= omp_get_context_selector (ctx, OMP_TRAIT_SET_TARGET_DEVICE,
+				    OMP_TRAIT_DEVICE_ARCH);
+      if (arch_sel)
+	{
+	  tree props = OMP_TS_PROPERTIES (arch_sel);
+	  if (!is_host)
+	    arch = build2 (OMP_TARGET_DEVICE_MATCHES, integer_type_node,
+			   build_int_cst (integer_type_node,
+					  (int) OMP_TRAIT_DEVICE_ARCH),
+			   props);
+	  else if (!omp_target_device_matches_on_host (OMP_TRAIT_DEVICE_ARCH,
+						       props))
+	    {
+	      /* The whole selector fails to match.  */
+	      target_device_cond = integer_zero_node;
+	      goto wrapup;
+	    }
+	  /* else it is statically resolved to true and is a no-op.  */
+	}
+
+      tree isa_sel
+	= omp_get_context_selector (ctx, OMP_TRAIT_SET_TARGET_DEVICE,
+				    OMP_TRAIT_DEVICE_ISA);
+      if (isa_sel)
+	{
+	  tree props = OMP_TS_PROPERTIES (isa_sel);
+	  if (!is_host)
+	    isa = build2 (OMP_TARGET_DEVICE_MATCHES, integer_type_node,
+			  build_int_cst (integer_type_node,
+					 (int) OMP_TRAIT_DEVICE_ISA),
+			  props);
+	  else if (!omp_target_device_matches_on_host (OMP_TRAIT_DEVICE_ISA,
+						       props))
+	    {
+	      /* The whole selector fails to match.  */
+	      target_device_cond = integer_zero_node;
+	      goto wrapup;
+	    }
+	  /* else it is statically resolved to true and is a no-op.  */
+	}
+
+      /* AND the three possible tests together.  */
+      tree test_expr = kind ? kind : NULL_TREE;
+      if (arch && test_expr)
+	test_expr = build2 (TRUTH_ANDIF_EXPR, integer_type_node,
+			    arch, test_expr);
+      else if (arch)
+	test_expr = arch;
+      if (isa && test_expr)
+	test_expr = build2 (TRUTH_ANDIF_EXPR, integer_type_node,
+			    isa, test_expr);
+      else if (isa)
+	test_expr = isa;
+
+      if (!test_expr)
+	/* This could happen if the selector includes only kind="any",
+	   or is_host is true and it could be statically determined to
+	   be true.  The selector always matches, but we still have to
+	   evaluate the device_num expression.  */
+	{
+	  if (device_num)
+	    target_device_cond = build2 (COMPOUND_EXPR, integer_type_node,
+					 device_num, integer_one_node);
+	  else
+	    target_device_cond = integer_one_node;
+	}
+      else
+	{
+	  /* Arrange to evaluate test_expr in the offload compiler for
+	     device device_num.  */
+	  tree stmt = make_node (OMP_TARGET);
+	  TREE_TYPE (stmt) = void_type_node;
+	  tree result_var = create_tmp_var (integer_type_node, "td_match");
+	  tree map = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_MAP);
+	  OMP_CLAUSE_DECL (map) = result_var;
+	  OMP_CLAUSE_SET_MAP_KIND (map, GOMP_MAP_FROM);
+	  OMP_TARGET_CLAUSES (stmt) = map;
+	  if (device_num)
+	    {
+	      tree clause = build_omp_clause (UNKNOWN_LOCATION,
+					      OMP_CLAUSE_DEVICE);
+	      OMP_CLAUSE_CHAIN (clause) = NULL_TREE;
+	      OMP_CLAUSE_DEVICE_ID (clause) = device_num;
+	      OMP_CLAUSE_DEVICE_ANCESTOR (clause) = false;
+	      OMP_CLAUSE_CHAIN (map) = clause;
+	    }
+
+	  tree block = make_node (BLOCK);
+	  BLOCK_SUPERCONTEXT (block) = supercontext;
+
+	  tree bind = build3 (BIND_EXPR, void_type_node, NULL_TREE,
+			      build2 (MODIFY_EXPR, integer_type_node,
+				      result_var, test_expr),
+			      block);
+	  TREE_SIDE_EFFECTS (bind) = 1;
+	  OMP_TARGET_BODY (stmt) = bind;
+	  target_device_cond = build2 (COMPOUND_EXPR, integer_type_node,
+				       stmt, result_var);
+
+	  /* If necessary, "and" target_device_cond with the test to
+	     make sure the device number is valid.  */
+	  if (device_ok && device_ok != integer_one_node)
+	    target_device_cond = build2 (TRUTH_ANDIF_EXPR, integer_type_node,
+					 device_ok, target_device_cond);
+
+	  /* Set the bit to trigger resolution of OMP_TARGET_DEVICE_MATCHES
+	     in the ompdevlow pass.  */
+	  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+	    cgraph_node::get (cfun->decl)->has_omp_variant_constructs = 1;
+	}
+    }
+
+ wrapup:
+  if (user_cond && target_device_cond)
+    return build2 (TRUTH_ANDIF_EXPR, integer_type_node,
+		   user_cond, target_device_cond);
+  else if (user_cond)
+    return user_cond;
+  else if (target_device_cond)
+    return target_device_cond;
+  else
+    return NULL_TREE;
+}
+
+#if 0
 /* Compute *SCORE for context selector CTX.  Return true if the score
    would be different depending on whether it is a declare simd clone or
    not.  DECLARE_SIMD should be true for the case when it would be
@@ -2377,6 +3378,152 @@ omp_context_compute_score (tree ctx, score_wide_int *score, bool declare_simd)
 	gcc_unreachable ();
     }
   return ret;
+}
+#endif
+
+/* Given an omp_variant VARIANT, compute VARIANT->score and
+   VARIANT->scorable.
+   CONSTRUCT_CONTEXT is the OpenMP construct context; if this is null or
+   COMPLETE_P is false (e.g., during parsing or gimplification) then it
+   may not be possible to compute the score accurately and the scorable
+   flag is set to false.
+
+   Cited text in the comments is from section 7.2 of the OpenMP 5.2
+   specification.  */
+
+static void
+omp_context_compute_score (struct omp_variant *variant,
+			   tree construct_context, bool complete_p)
+{
+  int l = list_length (construct_context);
+  tree ctx = variant->selector;
+  variant->scorable = true;
+
+  /* "the final score is the sum of the values of all specified selectors
+     plus 1".  */
+  variant->score = 1;
+  for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
+    {
+      if (OMP_TSS_CODE (tss) == OMP_TRAIT_SET_CONSTRUCT)
+	{
+	  /* "Each trait selector for which the corresponding trait appears
+	     in the context trait set in the OpenMP context..."  */
+	  score_wide_int tss_score = 0;
+	  omp_construct_traits_match (OMP_TSS_TRAIT_SELECTORS (tss),
+				      construct_context, &tss_score);
+	  variant->score += tss_score;
+	  if (!complete_p)
+	    variant->scorable = false;
+	}
+      else if (OMP_TSS_CODE (tss) == OMP_TRAIT_SET_DEVICE
+	       || OMP_TSS_CODE (tss) == OMP_TRAIT_SET_TARGET_DEVICE)
+	{
+	  /* "The kind, arch, and isa selectors, if specified, are given
+	     the values 2**l, 2**(l+1), and 2**(l+2), respectively..."
+	     FIXME: the spec isn't clear what should happen if there are
+	     both "device" and "target_device" selector sets specified.
+	     This implementation adds up the bits rather than ORs them.  */
+	  for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts;
+	       ts = TREE_CHAIN (ts))
+	    {
+	      enum omp_ts_code code = OMP_TS_CODE (ts);
+	      if (code == OMP_TRAIT_DEVICE_KIND)
+		variant->score
+		  += wi::shifted_mask <score_wide_int> (l, 1, false);
+	      else if (code == OMP_TRAIT_DEVICE_ARCH)
+		variant->score
+		  += wi::shifted_mask <score_wide_int> (l + 1, 1, false);
+	      else if (code == OMP_TRAIT_DEVICE_ISA)
+		variant->score
+		  += wi::shifted_mask <score_wide_int> (l + 2, 1, false);
+	    }
+	  if (!complete_p)
+	    variant->scorable = false;
+	}
+      else
+	{
+	  /* "Trait selectors for which a trait-score is specified..."
+	     Note that there are no implementation-defined selectors, and
+	     "other selectors are given a value of zero".  */
+	  for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts;
+	       ts = TREE_CHAIN (ts))
+	    {
+	      tree s = OMP_TS_SCORE (ts);
+	      if (s && TREE_CODE (s) == INTEGER_CST)
+		variant->score
+		  += score_wide_int::from (wi::to_wide (s),
+					   TYPE_SIGN (TREE_TYPE (s)));
+	    }
+	}
+    }
+}
+
+/* CONSTRUCT_CONTEXT contains "the directive names, each being a trait,
+   of all enclosing constructs at that point in the program up to a target
+   construct", per section 7.1 of the 5.2 specification.  The traits are
+   collected during gimplification and are listed outermost first.
+
+   This function attempts to apply the "if the point in the program is not
+   enclosed by a target construct, the following rules are applied in order"
+   requirements that follow in the same paragraph.  This may not be possible,
+   depending on the compilation phase; in particular, "declare simd" clones
+   are not known until late resolution.
+
+   The augmented context is returned, and *COMPLETEP is set to true if
+   the context is known to be complete, false otherwise.  */
+static tree
+omp_complete_construct_context (tree construct_context, bool *completep)
+{
+  /* The point in the program is enclosed by a target construct.  */
+  if (construct_context
+      && OMP_TS_CODE (construct_context) == OMP_TRAIT_CONSTRUCT_TARGET)
+    *completep = true;
+
+  /* At parse time we have none of the information we need to collect
+     the missing pieces.  */
+  else if (symtab->state == PARSING)
+    *completep = false;
+
+  else
+    {
+      tree attributes = DECL_ATTRIBUTES (current_function_decl);
+
+      /* Add simd trait when in a simd clone.  This information is only
+	 available during late resolution in the omp_device_lower pass,
+	 however we can also rule out cases where we know earlier that
+	 cfun is not a candidate for cloning.  */
+      if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+	{
+	  cgraph_node *node = cgraph_node::get (cfun->decl);
+	  if (node->simdclone)
+	    construct_context = make_trait_selector (OMP_TRAIT_CONSTRUCT_SIMD,
+						     NULL_TREE, NULL_TREE,
+						     construct_context);
+	  *completep = true;
+	}
+      else if (lookup_attribute ("omp declare simd", attributes))
+	*completep = false;
+      else
+	*completep = true;
+
+      /* Add construct selector set within a "declare variant" function.  */
+      tree variant_attr
+	= lookup_attribute ("omp declare variant variant", attributes);
+      if (variant_attr)
+	{
+	  tree temp = NULL_TREE;
+	  for (tree t = TREE_VALUE (variant_attr); t; t = TREE_CHAIN (t))
+	    temp = chainon (temp, copy_node (t));
+	  construct_context = chainon (temp, construct_context);
+	}
+
+      /* Add target trait when in a target variant.  */
+      if (lookup_attribute ("omp declare target block", attributes))
+	construct_context = make_trait_selector (OMP_TRAIT_CONSTRUCT_TARGET,
+						 NULL_TREE, NULL_TREE,
+						 construct_context);
+    }
+  return construct_context;
 }
 
 /* Class describing a single variant.  */
@@ -2475,6 +3622,7 @@ omp_declare_variant_alt_hasher::equal (omp_declare_variant_base_entry *x,
 static GTY(()) hash_table<omp_declare_variant_alt_hasher>
   *omp_declare_variant_alt;
 
+#if 0
 /* Try to resolve declare variant after gimplification.  */
 
 static tree
@@ -2860,6 +4008,7 @@ omp_resolve_declare_variant (tree base)
   return ((variant1 && variant1 == variant2)
 	  ? TREE_PURPOSE (TREE_VALUE (variant1)) : base);
 }
+#endif
 
 void
 omp_lto_output_declare_variant_alt (lto_simple_output_block *ob,
@@ -2979,6 +4128,425 @@ omp_lto_input_declare_variant_alt (lto_input_block *ib, cgraph_node *node,
       = hash_table<omp_declare_variant_alt_hasher>::create_ggc (64);
   *omp_declare_variant_alt->find_slot_with_hash (entryp, DECL_UID (node->decl),
 						 INSERT) = entryp;
+}
+
+/* Comparison function for sorting routines, to sort OpenMP metadirective
+   variants by decreasing score.  */
+
+static int
+sort_variant (const void * a, const void *b, void *)
+{
+  score_wide_int score1
+    = ((const struct omp_variant *) a)->score;
+  score_wide_int score2
+    = ((const struct omp_variant *) b)->score;
+
+  if (score1 > score2)
+    return -1;
+  else if (score1 < score2)
+    return 1;
+  else
+    return 0;
+}
+
+/* Return a vector of dynamic replacement candidates for the directive
+   candidates in ALL_VARIANTS.  Return an empty vector if the candidates
+   cannot be resolved.  */
+
+vec<struct omp_variant>
+omp_get_dynamic_candidates (vec <struct omp_variant> &all_variants,
+			    tree construct_context)
+{
+  auto_vec <struct omp_variant> variants;
+  struct omp_variant default_variant;
+  bool default_found = false;
+  bool complete_p;
+
+  construct_context
+    = omp_complete_construct_context (construct_context, &complete_p);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "\nIn omp_get_dynamic_candidates:\n");
+      if (symtab->state == PARSING)
+	fprintf (dump_file, "invoked during parsing\n");
+      else if (cfun && (cfun->curr_properties & PROP_gimple_any) == 0)
+	fprintf (dump_file, "invoked during gimplification\n");
+      else if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+	fprintf (dump_file, "invoked during late resolution\n");
+      else
+	fprintf (dump_file, "confused about invocation context?!?\n");
+      fprintf (dump_file, "construct_context has %d traits (%s)\n",
+	       (construct_context ? list_length (construct_context) : 0),
+	       (complete_p ? "complete" : "incomplete"));
+    }
+
+  for (unsigned int i = 0; i < all_variants.length (); i++)
+    {
+      struct omp_variant variant = all_variants[i];
+
+      if (variant.selector == NULL_TREE)
+	{
+	  gcc_assert (!default_found);
+	  default_found = true;
+	  default_variant = variant;
+	  default_variant.score = 0;
+	  default_variant.scorable = true;
+	  default_variant.matchable = true;
+	  default_variant.dynamic_selector = false;
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Considering default selector as candidate\n");
+	  continue;
+	}
+
+      variant.matchable = true;
+      variant.scorable = true;
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Considering selector ");
+	  print_omp_context_selector (dump_file, variant.selector, TDF_NONE);
+	  fprintf (dump_file, " as candidate - ");
+	}
+
+     switch (omp_context_selector_matches (variant.selector,
+					   construct_context, complete_p))
+	{
+	case -1:
+	  if (dump_file)
+	    fprintf (dump_file, "unmatchable\n");
+	  /* At parse time, just give up if we can't determine whether
+	     things match.  */
+	  if (symtab->state == PARSING)
+	    {
+	      variants.truncate (0);
+	      return variants.copy ();
+	    }
+	  /* Otherwise we must be invoked from the gimplifier.  */
+	  gcc_assert (cfun && (cfun->curr_properties & PROP_gimple_any) == 0);
+	  variant.matchable = false;
+	  /* FALLTHRU */
+	case 1:
+	  omp_context_compute_score (&variant, construct_context, complete_p);
+	  variant.dynamic_selector
+	    = omp_selector_is_dynamic (variant.selector);
+	  variants.safe_push (variant);
+	  if (dump_file && variant.matchable)
+	    {
+	      if (variant.dynamic_selector)
+		fprintf (dump_file, "matched, dynamic");
+	      else
+		fprintf (dump_file, "matched, non-dynamic");
+	    }
+	  break;
+	case 0:
+	  if (dump_file)
+	    fprintf (dump_file, "no match");
+	  break;
+	}
+
+      if (dump_file)
+	fprintf (dump_file, "\n");
+    }
+
+  /* There must be one default variant.  */
+  gcc_assert (default_found);
+
+  /* If there are no matching selectors, return the default.  */
+  if (variants.length () == 0)
+    {
+      variants.safe_push (default_variant);
+      return variants.copy ();
+    }
+
+  /* If there is only one matching selector, use it.  */
+  if (variants.length () == 1)
+    {
+      if (variants[0].matchable)
+	{
+	  if (variants[0].dynamic_selector)
+	    variants.safe_push (default_variant);
+	  return variants.copy ();
+	}
+      else
+	{
+	  /* We don't know whether the one non-default selector will
+	     actually match.  */
+	  variants.truncate (0);
+	  return variants.copy ();
+	}
+    }
+
+  /* A context selector that is a strict subset of another context selector
+     has a score of zero.  This only applies if the selector that is a
+     superset definitely matches, though.  */
+  for (unsigned int i = 0; i < variants.length (); i++)
+    for (unsigned int j = i + 1; j < variants.length (); j++)
+      {
+	int r = omp_context_selector_compare (variants[i].selector,
+					      variants[j].selector);
+	if (r == -1 && variants[j].matchable)
+	  {
+	    /* variant i is a strict subset of variant j.  */
+	    variants[i].score = 0;
+	    variants[i].scorable = true;
+	    break;
+	  }
+	else if (r == 1 && variants[i].matchable)
+	  /* variant j is a strict subset of variant i.  */
+	  {
+	    variants[j].score = 0;
+	    variants[j].scorable = true;
+	  }
+      }
+
+  /* Sort the variants by decreasing score, preserving the original order
+     in case of a tie.  */
+  variants.stablesort (sort_variant, NULL);
+
+  /* Add the default as a final choice.  */
+  variants.safe_push (default_variant);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Sorted variants are:\n");
+      for (unsigned i = 0; i < variants.length (); i++)
+	{
+	  HOST_WIDE_INT score = variants[i].score.to_shwi ();
+	  fprintf (dump_file, "score %d matchable %d scorable %d ",
+		   (int)score, (int)(variants[i].matchable),
+		   (int)(variants[i].scorable));
+	  if (variants[i].selector)
+	    {
+	      fprintf (dump_file, "selector ");
+	      print_omp_context_selector (dump_file, variants[i].selector,
+					  TDF_NONE);
+	      fprintf (dump_file, "\n");
+	    }
+	  else
+	    fprintf (dump_file, "default selector\n");
+	}
+    }
+
+  /* Build the dynamic candidate list.  */
+  for (unsigned i = 0; i < variants.length (); i++)
+    {
+      /* If we encounter a candidate that wasn't definitely matched,
+	 give up now.  */
+      if (!variants[i].matchable)
+	{
+	  variants.truncate (0);
+	  break;
+	}
+
+      /* In general, we can't proceed if we can't accurately score any
+	 of the selectors, since the sorting may be incorrect.  But, since
+	 the actual score will never be lower than the guessed value, we
+	 can use the first variant if it is not scorable but either the next
+	 one is a subset of the first, is scorable, or we can make a
+	 direct comparison of the high-order isa/arch/kind bits.  */
+      if (!variants[i].scorable)
+	{
+	  bool ok = true;
+	  if (i != 0)
+	    ok = false;
+	  else if (variants[i+1].scorable)
+	    /* ok */
+	    ;
+	  else if (variants[i+1].score > 0)
+	    {
+	      /* To keep comparisons simple, reject selectors that contain
+		 sets other than device, target_device, or construct.  */
+	      for (tree tss = variants[i].selector;
+		   tss && ok; tss = TREE_CHAIN (tss))
+		{
+		  enum omp_tss_code code = OMP_TSS_CODE (tss);
+		  if (code != OMP_TRAIT_SET_DEVICE
+		      && code != OMP_TRAIT_SET_TARGET_DEVICE
+		      && code != OMP_TRAIT_SET_CONSTRUCT)
+		    ok = false;
+		}
+	      for (tree tss = variants[i+1].selector;
+		   tss && ok; tss = TREE_CHAIN (tss))
+		{
+		  enum omp_tss_code code = OMP_TSS_CODE (tss);
+		  if (code != OMP_TRAIT_SET_DEVICE
+		      && code != OMP_TRAIT_SET_TARGET_DEVICE
+		      && code != OMP_TRAIT_SET_CONSTRUCT)
+		    ok = false;
+		}
+	      /* Ignore the construct bits of the score.  If the isa/arch/kind
+		 bits are strictly ordered, we're good to go.  Since
+		 "the final score is the sum of the values of all specified
+		 selectors plus 1", subtract that 1 from both scores before
+		 getting rid of the low bits.  */
+	      if (ok)
+		{
+		  size_t l = list_length (construct_context);
+		  gcc_assert (variants[i].score > 0
+			      && variants[i+1].score > 0);
+		  if ((variants[i].score - 1) >> l
+		      <= (variants[i+1].score - 1) >> l)
+		    ok = false;
+		}
+	    }
+
+	  if (!ok)
+	    {
+	      variants.truncate (0);
+	      break;
+	    }
+	}
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Adding directive variant with ");
+
+	  if (variants[i].selector)
+	    {
+	      fprintf (dump_file, "selector ");
+	      print_omp_context_selector (dump_file, variants[i].selector,
+					  TDF_NONE);
+	    }
+	  else
+	    fprintf (dump_file, "default selector");
+
+	  fprintf (dump_file, " as candidate.\n");
+	}
+
+      /* The last of the candidates is ended by a static selector.  */
+      if (!variants[i].dynamic_selector)
+	{
+	  variants.truncate (i + 1);
+	  break;
+	}
+    }
+
+  return variants.copy ();
+}
+
+/* Two attempts are made to resolve calls to "declare variant" functions:
+   early resolution in the gimplifier, and late resolution in the
+   omp_device_lower pass.  If early resolution is not possible, the
+   original function call is gimplified into the same form as metadirective
+   and goes through the same late resolution code as metadirective.  */
+
+/* Collect "declare variant" candidates for BASE.  CONSTRUCT_CONTEXT
+   is the un-augmented context, or NULL_TREE if that information is not
+   available yet.  */
+vec<struct omp_variant>
+omp_declare_variant_candidates (tree base, tree construct_context)
+{
+  auto_vec <struct omp_variant> candidates;
+  bool complete_p;
+  tree augmented_context
+    = omp_complete_construct_context (construct_context, &complete_p);
+
+  /* The variants are stored on (possible multiple) "omp declare variant base"
+     attributes on the base function.  */
+  for (tree attr = DECL_ATTRIBUTES (base); attr; attr = TREE_CHAIN (attr))
+    {
+      attr = lookup_attribute ("omp declare variant base", attr);
+      if (attr == NULL_TREE)
+	break;
+
+      tree fndecl = TREE_PURPOSE (TREE_VALUE (attr));
+      tree selector = TREE_VALUE (TREE_VALUE (attr));
+
+      if (TREE_CODE (fndecl) != FUNCTION_DECL)
+	continue;
+
+      /* Ignore this variant if its selector is known not to match.  */
+      if (!omp_context_selector_matches (selector, augmented_context,
+					 complete_p))
+	  continue;
+
+      struct omp_variant candidate;
+      candidate.selector = selector;
+      candidate.dynamic_selector = false;
+      candidate.alternative = fndecl;
+      candidate.body = NULL_TREE;
+      candidates.safe_push (candidate);
+    }
+
+  /* Add a default that is the base function.  */
+  struct omp_variant v;
+  v.selector = NULL_TREE;
+  v.dynamic_selector = false;
+  v.alternative = base;
+  v.body = NULL_TREE;
+  candidates.safe_push (v);
+  return candidates.copy ();
+}
+
+/* Collect metadirective candidates for METADIRECTIVE.  CONSTRUCT_CONTEXT
+   is the un-augmented context, or NULL_TREE if that information is not
+   available yet.  */
+vec<struct omp_variant>
+omp_metadirective_candidates (tree metadirective, tree construct_context)
+{
+  auto_vec <struct omp_variant> candidates;
+  tree variant = OMP_METADIRECTIVE_VARIANTS (metadirective);
+  bool complete_p;
+  tree augmented_context
+    = omp_complete_construct_context (construct_context, &complete_p);
+
+  gcc_assert (variant);
+  for (; variant; variant = TREE_CHAIN (variant))
+    {
+      tree selector = OMP_METADIRECTIVE_VARIANT_SELECTOR (variant);
+
+      /* Ignore this variant if its selector is known not to match.  */
+      if (!omp_context_selector_matches (selector, augmented_context,
+					 complete_p))
+	continue;
+
+      struct omp_variant candidate;
+      candidate.selector = selector;
+      candidate.dynamic_selector = false;
+      candidate.alternative = OMP_METADIRECTIVE_VARIANT_DIRECTIVE (variant);
+      candidate.body = OMP_METADIRECTIVE_VARIANT_BODY (variant);
+      candidates.safe_push (candidate);
+    }
+  return candidates.copy ();
+}
+
+/* Return a vector of dynamic replacement candidates for the metadirective
+   statement in METADIRECTIVE.  Return an empty vector if the metadirective
+   cannot be resolved.  This function is intended to be called from the
+   front ends, prior to gimplification.  */
+
+vec<struct omp_variant>
+omp_early_resolve_metadirective (tree metadirective)
+{
+  vec <struct omp_variant> candidates
+    = omp_metadirective_candidates (metadirective, NULL_TREE);
+  return omp_get_dynamic_candidates (candidates, NULL_TREE);
+}
+
+/* Return a vector of dynamic replacement candidates for the variant construct
+   with SELECTORS and CONSTRUCT_CONTEXT.  This version is called during late
+   resolution in the ompdevlow pass.  */
+
+vec<struct omp_variant>
+omp_resolve_variant_construct (tree construct_context, tree selectors)
+{
+  auto_vec <struct omp_variant> variants;
+
+  for (int i = 0; i < TREE_VEC_LENGTH (selectors); i++)
+    {
+      struct omp_variant variant;
+
+      variant.selector = TREE_VEC_ELT (selectors, i);
+      variant.dynamic_selector = false;
+      variant.alternative = build_int_cst (integer_type_node, i + 1);
+      variant.body = NULL_TREE;
+
+      variants.safe_push (variant);
+    }
+
+  return omp_get_dynamic_candidates (variants, construct_context);
 }
 
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK

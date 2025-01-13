@@ -1,22 +1,21 @@
 ! { dg-do compile { target { { i?86-*-* x86_64-*-* } && vect_simd_clones } } } */
-! { dg-additional-options "-mno-sse3 -O0 -fdump-tree-gimple -fdump-tree-optimized" }
+! { dg-additional-options "-mno-sse3 -O1 -fdump-tree-gimple -fdump-tree-optimized" }
 
 module main
-  implicit none
-contains
+
+implicit none
+
+interface
   integer function f01 (x)
     integer, intent (in) :: x
-    f01 = x
   end function
 
   integer function f02 (x)
     integer, intent (in) :: x
-    f02 = x
   end function
 
   integer function f03 (x)
     integer, intent (in) :: x
-    f03 = x
   end function
 
   integer function f04 (x)
@@ -25,8 +24,11 @@ contains
     !$omp declare variant (f01) match (device={isa("avx512f")}) ! 4 or 8
     !$omp declare variant (f02) match (implementation={vendor(score(3):gnu)},device={kind(cpu)}) ! (1 or 2) + 3
     !$omp declare variant (f03) match (implementation={vendor(score(5):gnu)},device={kind(host)}) ! (1 or 2) + 5
-    f04 = x
   end function
+
+end interface
+
+contains
 
   integer function test1 (x)
     !$omp declare simd

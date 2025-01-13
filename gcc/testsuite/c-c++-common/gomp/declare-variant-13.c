@@ -20,5 +20,7 @@ test1 (int x)
      isa has score 2^2 or 2^3.  We can't decide on whether avx512f will match or
      not, that also depends on whether it is a declare simd clone or not and which
      one, but the f03 variant has a higher score anyway.  */
-  return f05 (x);	/* { dg-final { scan-tree-dump-times "f03 \\\(x" 1 "gimple" } } */
+  return f05 (x);
+  /* { dg-final { scan-tree-dump "f03 \\\(x" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "f05 \\\(x" "gimple" } } */
 }

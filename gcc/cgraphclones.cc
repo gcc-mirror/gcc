@@ -389,6 +389,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     prof_count = count.combine_with_ipa_count (prof_count);
   new_node->count = prof_count;
   new_node->calls_declare_variant_alt = this->calls_declare_variant_alt;
+  new_node->has_omp_variant_constructs = this->has_omp_variant_constructs;
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
   if (update_original)

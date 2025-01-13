@@ -2617,6 +2617,76 @@ find_simtpriv_var_op (tree *tp, int *walk_subtrees, void *)
   return NULL_TREE;
 }
 
+/* Helper function for execute_omp_device_lower, invoked via walk_gimple_op.
+   Resolve any OMP_TARGET_DEVICE_MATCHES and OMP_NEXT_VARIANT exprs to
+   constants.  */
+static tree
+resolve_omp_variant_cookies (tree *tp, int *walk_subtrees,
+			     void *data ATTRIBUTE_UNUSED)
+{
+  if (TREE_CODE (*tp) == OMP_TARGET_DEVICE_MATCHES)
+    {
+      *tp = resolve_omp_target_device_matches (*tp);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (*tp) != OMP_NEXT_VARIANT)
+    return NULL_TREE;
+  tree index = OMP_NEXT_VARIANT_INDEX (*tp);
+  tree state = OMP_NEXT_VARIANT_STATE (*tp);
+
+  /* State is a triplet of (result-vector, construct_context, selector_vec).
+     If result-vector has already been computed, just use it.  Otherwise we
+     must resolve the variant and fill in that part of the state object.
+     All OMP_NEXT_VARIANT exprs for the same variant construct are supposed
+     to share the same state object, but if something bad happens and we end
+     up with copies, that is OK, it will just cause the result-vector to be
+     computed multiple times.  */
+  tree result_vector = TREE_PURPOSE (state);
+  if (!result_vector)
+    {
+      tree construct_context = TREE_VALUE (state);
+      tree selectors = TREE_CHAIN (state);
+
+      vec<struct omp_variant> candidates
+	= omp_resolve_variant_construct (construct_context, selectors);
+      int n = TREE_VEC_LENGTH (selectors);
+      TREE_PURPOSE (state) = result_vector = make_tree_vec (n + 1);
+      /* The result vector maps the index of each element of the original
+	 selectors vector onto the index of the next element of the filtered/
+	 sorted candidates vector.  Since some of the original variants may
+	 have been discarded as non-matching in candidates, initialize the
+	 whole array to zero so that we have a placeholder "next" value for
+	 those elements.  Hopefully dead code elimination will take care of
+	 subsequently discarding the unreachable cases in the already-generated
+	 switch statement.  */
+      for (int i = 1; i <= n; i++)
+	TREE_VEC_ELT (result_vector, i) = integer_zero_node;
+      /* Element 0 is the case label of the first variant in the sorted
+	 list.  */
+      if (dump_file)
+	fprintf (dump_file, "Computing case map for variant directive\n");
+      int j = 0;
+      for (unsigned int i = 0; i < candidates.length(); i++)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "  %d -> case %d\n",
+		     j, (int) tree_to_shwi (candidates[i].alternative));
+	  TREE_VEC_ELT (result_vector, j) = candidates[i].alternative;
+	  j = (int) tree_to_shwi (candidates[i].alternative);
+	}
+    }
+
+  /* Now just grab the value out of the precomputed array.  */
+  gcc_assert (TREE_CODE (index) == INTEGER_CST);
+  int indexval = (int) tree_to_shwi (index);
+  *tp = TREE_VEC_ELT (result_vector, indexval);
+  *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+
 /* Cleanup uses of SIMT placeholder internal functions: on non-SIMT targets,
    VF is 1 and LANE is 0; on SIMT targets, VF is folded to a constant, and
    LANE is kept to be expanded to RTL later on.  Also cleanup all other SIMT
@@ -2637,6 +2707,17 @@ execute_omp_device_lower ()
   tree map_ptr_fn
     = builtin_decl_explicit (BUILT_IN_GOMP_TARGET_MAP_INDIRECT_PTR);
 #endif
+
+  /* Handle expansion of magic cookies for variant constructs first.  */
+  if (cgraph_node::get (cfun->decl)->has_omp_variant_constructs)
+    FOR_EACH_BB_FN (bb, cfun)
+      {
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  walk_gimple_op (gsi_stmt (gsi), resolve_omp_variant_cookies, NULL);
+	for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  walk_gimple_op (gsi_stmt (gsi), resolve_omp_variant_cookies, NULL);
+      }
+
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
@@ -2645,16 +2726,8 @@ execute_omp_device_lower ()
 	  continue;
 	if (!gimple_call_internal_p (stmt))
 	  {
-	    if (calls_declare_variant_alt)
-	      if (tree fndecl = gimple_call_fndecl (stmt))
-		{
-		  tree new_fndecl = omp_resolve_declare_variant (fndecl);
-		  if (new_fndecl != fndecl)
-		    {
-		      gimple_call_set_fndecl (stmt, new_fndecl);
-		      update_stmt (stmt);
-		    }
-		}
+	    /* FIXME: this is a leftover of obsolete code.  */
+	    gcc_assert (!calls_declare_variant_alt);
 #ifdef ACCEL_COMPILER
 	    if (omp_redirect_indirect_calls
 		&& gimple_call_fndecl (stmt) == NULL_TREE)
@@ -2821,6 +2894,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *fun) final override
     {
+      cgraph_node *node = cgraph_node::get (fun->decl);
 #ifdef ACCEL_COMPILER
       bool offload_ind_funcs_p = vec_safe_length (offload_ind_funcs) > 0;
 #else
@@ -2828,7 +2902,8 @@ public:
 #endif
       return (!(fun->curr_properties & PROP_gimple_lomp_dev)
 	      || (flag_openmp
-		  && (cgraph_node::get (fun->decl)->calls_declare_variant_alt
+		  && (node->calls_declare_variant_alt
+		      || node->has_omp_variant_constructs
 		      || offload_ind_funcs_p)));
     }
   unsigned int execute (function *) final override

@@ -3052,6 +3052,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.cc $(srcdir)/tree-nested.cc \
   $(srcdir)/omp-offload.h \
+  $(srcdir)/omp-general.h \
   $(srcdir)/omp-general.cc \
   $(srcdir)/omp-low.cc \
   $(srcdir)/targhooks.cc $(out_file) $(srcdir)/passes.cc \
@@ -3078,7 +3079,6 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-strub.cc \
   $(srcdir)/internal-fn.h \
   $(srcdir)/calls.cc \
-  $(srcdir)/omp-general.h \
   $(srcdir)/analyzer/analyzer-language.cc \
   @all_gtfiles@
 

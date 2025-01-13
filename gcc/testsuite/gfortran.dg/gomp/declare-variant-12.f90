@@ -64,9 +64,9 @@ contains
   end subroutine
 
   subroutine f17 ()
-    !$omp declare variant (f14) match (construct={teams,parallel,do}) ! 16+8+4
-    !$omp declare variant (f15) match (construct={parallel},user={condition(score(19):.true.)}) ! 8+19
-    !$omp declare variant (f16) match (implementation={atomic_default_mem_order(score(27):seq_cst)})
+    !$omp declare variant (f14) match (construct={teams,parallel,do}) ! 1+8+16
+    !$omp declare variant (f15) match (construct={parallel},user={condition(score(16):.true.)}) ! 8+16
+    !$omp declare variant (f16) match (implementation={atomic_default_mem_order(score(24):seq_cst)})
   end subroutine
 
   subroutine f18 ()
@@ -79,7 +79,7 @@ contains
   end subroutine
 
   subroutine f21 ()
-    !$omp declare variant (f18) match (construct={teams,parallel,do}) ! 16+8+4
+    !$omp declare variant (f18) match (construct={teams,parallel,do}) ! 1+8+16
     !$omp declare variant (f19) match (construct={do},user={condition(score(25):.true.)}) ! 4+25
     !$omp declare variant (f20) match (implementation={atomic_default_mem_order(score(28):seq_cst)})
   end subroutine
@@ -94,7 +94,7 @@ contains
   end subroutine
 
   subroutine f25 ()
-    !$omp declare variant (f22) match (construct={parallel,do}) ! 2+1
+    !$omp declare variant (f22) match (construct={parallel,do}) ! 8+16
     !$omp declare variant (f23) match (construct={do}) ! 0
     !$omp declare variant (f24) match (implementation={atomic_default_mem_order(score(2):seq_cst)})
   end subroutine
@@ -109,8 +109,8 @@ contains
   end subroutine
 
   subroutine f29 ()
-    !$omp declare variant (f26) match (construct={parallel,do}) ! 2+1
-    !$omp declare variant (f27) match (construct={do},user={condition(.true.)}) ! 4
+    !$omp declare variant (f26) match (construct={parallel,do}) ! 8+16
+    !$omp declare variant (f27) match (construct={do},user={condition(score(25):.true.)}) ! 16+25
     !$omp declare variant (f28) match (implementation={atomic_default_mem_order(score(3):seq_cst)})
   end subroutine
 

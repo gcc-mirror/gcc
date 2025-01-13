@@ -26933,7 +26933,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  ctx  = c_parser_omp_context_selector_specification (parser, parms);
 	  if (ctx == error_mark_node)
 	    goto fail;
-	  ctx = omp_check_context_selector (match_loc, ctx);
+	  ctx = omp_check_context_selector (match_loc, ctx, false);
 	  if (ctx != error_mark_node && variant != error_mark_node)
 	    {
 	      if (TREE_CODE (variant) != FUNCTION_DECL)
@@ -27195,7 +27195,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
       tree construct = omp_get_context_selector_list (ctx,
 						      OMP_TRAIT_SET_CONSTRUCT);
       omp_mark_declare_variant (match_loc, variant, construct);
-      if (omp_context_selector_matches (ctx))
+      if (omp_context_selector_matches (ctx, NULL_TREE, false))
 	{
 	  tree attr = tree_cons (get_identifier ("omp declare variant base"),
 				 build_tree_list (variant, ctx),

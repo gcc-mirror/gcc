@@ -1,5 +1,5 @@
 /* { dg-do compile { target { { i?86-*-* x86_64-*-* } && vect_simd_clones } } } */
-/* { dg-additional-options "-mno-sse3 -fdump-tree-gimple -fdump-tree-optimized" } */
+/* { dg-additional-options "-O -mno-sse3 -fdump-tree-gimple -fdump-tree-optimized" } */
 
 int f01 (int);
 int f02 (int);

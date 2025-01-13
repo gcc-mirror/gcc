@@ -1510,6 +1510,8 @@ expand_omp_taskreg (struct omp_region *region)
       child_cfun->has_force_vectorize_loops |= cfun->has_force_vectorize_loops;
       cgraph_node *node = cgraph_node::get_create (child_fn);
       node->parallelized_function = 1;
+      node->has_omp_variant_constructs
+	|= cgraph_node::get (cfun->decl)->has_omp_variant_constructs;
       cgraph_node::add_new_function (child_fn, true);
 
       bool need_asm = DECL_ASSEMBLER_NAME_SET_P (current_function_decl)
@@ -10051,6 +10053,8 @@ expand_omp_target (struct omp_region *region)
       child_cfun->has_force_vectorize_loops |= cfun->has_force_vectorize_loops;
       cgraph_node *node = cgraph_node::get_create (child_fn);
       node->parallelized_function = 1;
+      node->has_omp_variant_constructs
+	|= cgraph_node::get (cfun->decl)->has_omp_variant_constructs;
       cgraph_node::add_new_function (child_fn, true);
 
       /* Add the new function to the offload table.  */
