@@ -22,6 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "lockfile.h"
 
+/* fcntl.h may exist without expected contents.  */
+#if HAVE_FCNTL_H && HOST_HAS_F_SETLKW
+#define LOCKFILE_USE_FCNTL 1
+#endif
 
 /* Unique write lock.  No other lock can be held on this lockfile.
    Blocking call.  */
@@ -32,7 +36,7 @@ lockfile::lock_write ()
   if (fd < 0)
     return -1;
 
-#if HAVE_FCNTL_H
+#ifdef LOCKFILE_USE_FCNTL
   struct flock s_flock;
 
   s_flock.l_whence = SEEK_SET;
@@ -57,7 +61,7 @@ lockfile::try_lock_write ()
   if (fd < 0)
     return -1;
 
-#if HAVE_FCNTL_H
+#ifdef LOCKFILE_USE_FCNTL
   struct flock s_flock;
 
   s_flock.l_whence = SEEK_SET;
@@ -87,7 +91,7 @@ lockfile::lock_read ()
   if (fd < 0)
     return -1;
 
-#if HAVE_FCNTL_H
+#ifdef LOCKFILE_USE_FCNTL
   struct flock s_flock;
 
   s_flock.l_whence = SEEK_SET;
@@ -108,7 +112,7 @@ lockfile::unlock ()
 {
   if (fd < 0)
     {
-#if HAVE_FCNTL_H
+#ifdef LOCKFILE_USE_FCNTL
       struct flock s_flock;
 
       s_flock.l_whence = SEEK_SET;
@@ -128,7 +132,7 @@ lockfile::unlock ()
 bool
 lockfile::lockfile_supported ()
 {
-#if HAVE_FCNTL_H
+#ifdef LOCKFILE_USE_FCNTL
   return true;
 #else
   return false;
