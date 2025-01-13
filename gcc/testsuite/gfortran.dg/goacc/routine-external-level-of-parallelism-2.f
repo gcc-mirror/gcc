@@ -7,12 +7,13 @@
       integer, parameter :: n = 100
       integer :: a(n), i, j
       external :: gangr, workerr, vectorr, seqr
-! { dg-bogus "note: routine 'gangr' declared here" "TODO1" { xfail { ! offloading_enabled } } .-1 }
-! { dg-bogus "note: routine 'gangr_' declared here" "TODO2" { xfail offloading_enabled } .-2 }
-! { dg-bogus "note: routine 'workerr' declared here" "TODO1" { xfail { ! offloading_enabled } } .-3 }
-! { dg-bogus "note: routine 'workerr_' declared here" "TODO2" { xfail offloading_enabled } .-4 }
-! { dg-bogus "note: routine 'vectorr' declared here" "TODO1" { xfail { ! offloading_enabled } } .-5 }
-! { dg-bogus "note: routine 'vectorr_' declared here" "TODO2" { xfail offloading_enabled } .-6 }
+! { dg-note "routine 'gangr' declared here" "" { target { ! offloading_enabled } } .-1 }
+! { dg-note "routine 'gangr_' declared here" "" { target offloading_enabled } .-2 }
+! { dg-note "routine 'workerr' declared here" "" { target { ! offloading_enabled } } .-3 }
+! { dg-note "routine 'workerr_' declared here" "" { target offloading_enabled } .-4 }
+! { dg-note "routine 'vectorr' declared here" "" { target { ! offloading_enabled } } .-5 }
+! { dg-note "routine 'vectorr_' declared here" "" { target offloading_enabled } .-6 }
+!TODO See PR101551 for 'offloading_enabled' differences.
 
 !$acc routine (gangr) gang
 !$acc routine (workerr) worker
@@ -200,12 +201,13 @@
       integer, parameter :: n = 100
       integer :: a(n), i, j
       integer, external :: gangf, workerf, vectorf, seqf
-! { dg-bogus "note: routine 'gangf' declared here" "TODO1" { xfail { ! offloading_enabled } } .-1 }
-! { dg-bogus "note: routine 'gangf_' declared here" "TODO2" { xfail offloading_enabled } .-2 }
-! { dg-bogus "note: routine 'workerf' declared here" "TODO1" { xfail { ! offloading_enabled } } .-3 }
-! { dg-bogus "note: routine 'workerf_' declared here" "TODO2" { xfail offloading_enabled } .-4 }
-! { dg-bogus "note: routine 'vectorf' declared here" "TODO1" { xfail { ! offloading_enabled } } .-5 }
-! { dg-bogus "note: routine 'vectorf_' declared here" "TODO2" { xfail offloading_enabled } .-6 }
+! { dg-note "routine 'gangf' declared here" "" { target { ! offloading_enabled } } .-1 }
+! { dg-note "routine 'gangf_' declared here" "" { target offloading_enabled } .-2 }
+! { dg-note "routine 'workerf' declared here" "" { target { ! offloading_enabled } } .-3 }
+! { dg-note "routine 'workerf_' declared here" "" { target offloading_enabled } .-4 }
+! { dg-note "routine 'vectorf' declared here" "" { target { ! offloading_enabled } } .-5 }
+! { dg-note "routine 'vectorf_' declared here" "" { target offloading_enabled } .-6 }
+!TODO See PR101551 for 'offloading_enabled' differences.
 
 !$acc routine (gangf) gang
 !$acc routine (workerf) worker
