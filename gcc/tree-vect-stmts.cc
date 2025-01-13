@@ -10731,9 +10731,6 @@ vectorizable_load (vec_info *vinfo,
 	  /* Else fall back to the default element-wise access.  */
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
 	}
-      /* Load vector(1) scalar_type if it's 1 element-wise vectype.  */
-      else if (nloads == 1)
-	ltype = vectype;
 
       if (slp)
 	{
@@ -10782,11 +10779,11 @@ vectorizable_load (vec_info *vinfo,
 					     group_el * elsz + cst_offset);
 	      tree data_ref = build2 (MEM_REF, ltype, running_off, this_off);
 	      vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
-	      new_stmt = gimple_build_assign (make_ssa_name (ltype), data_ref);
+	      new_temp = make_ssa_name (ltype);
+	      new_stmt = gimple_build_assign (new_temp, data_ref);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	      if (nloads > 1)
-		CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-					gimple_assign_lhs (new_stmt));
+		CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_temp);
 
 	      group_el += lnel;
 	      if (! slp
@@ -10832,6 +10829,15 @@ vectorizable_load (vec_info *vinfo,
 						   gsi);
 		    }
 		}
+	    }
+	  else if (!costing_p && ltype != vectype)
+	    {
+	      new_stmt = gimple_build_assign (make_ssa_name (vectype),
+					      VIEW_CONVERT_EXPR,
+					      build1 (VIEW_CONVERT_EXPR,
+						      vectype, new_temp));
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
+					   gsi);
 	    }
 
 	  if (!costing_p)
