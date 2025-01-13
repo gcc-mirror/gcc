@@ -1,3 +1,11 @@
+2025-01-12  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune-costs.h (znver5_cost): Update instruction
+	costs.
+
 2025-01-10  Sam James  <sam@gentoo.org>
 
 	* doc/cpp.texi (Common Predefined Macros): Fix syntax.
