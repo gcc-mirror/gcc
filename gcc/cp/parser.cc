@@ -43344,6 +43344,8 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
       name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_POP_MAPPER_NAME);
       OMP_CLAUSE_DECL (name) = null_pointer_node;
+      if (iterators)
+	OMP_CLAUSE_ITERATORS (name) = iterators;
       OMP_CLAUSE_CHAIN (name) = OMP_CLAUSE_CHAIN (last_new);
       OMP_CLAUSE_CHAIN (last_new) = name;
     }
@@ -43659,6 +43661,8 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, enum gomp_map_kind kind)
       tree name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_PUSH_MAPPER_NAME);
       OMP_CLAUSE_DECL (name) = mapper_name;
+      if (iterators)
+	OMP_CLAUSE_ITERATORS (name) = iterators;
       OMP_CLAUSE_CHAIN (name) = nlist;
       nlist = name;
 
