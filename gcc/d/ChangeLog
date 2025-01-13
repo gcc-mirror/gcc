@@ -1,3 +1,15 @@
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd c7902293d7.
+	* dmd/VERSION: Bump version to v2.110.0-rc.1.
+
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd c57da0cf59.
+	* d-codegen.cc (can_elide_copy_p): New.
+	(d_build_call): Use it.
+	* d-lang.cc (d_post_options): Update for new front-end interface.
+
 2025-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 82a5d2a7c4.

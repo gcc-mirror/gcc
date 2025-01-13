@@ -1,3 +1,18 @@
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime c7902293d7.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Rename
+	core/thread/fiber.d to core/thread/fiber/package.d.  Add
+	core/thread/fiber/base.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 63fdb282f.
+
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime c57da0cf59.
+	* src/MERGE: Merge upstream phobos ad8ee5587.
+	* testsuite/libphobos.init_fini/custom_gc.d: Adjust test.
+
 2025-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 82a5d2a7c4.

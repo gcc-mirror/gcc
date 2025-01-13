@@ -1,3 +1,11 @@
+2025-01-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/118303
+	* c-pretty-print.cc (c_pretty_printer::primary_expression) <SSA_NAME>:
+	Call primary_expression for all SSA_NAME_VAR nodes and instead move the
+	DECL_ARTIFICIAL private name stripping to...
+	(pp_c_tree_decl_identifier): ...here.
+
 2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* c-attribs.cc: (c_common_gnu_attributes): Rename "omp declare variant

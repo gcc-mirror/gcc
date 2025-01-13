@@ -1,3 +1,19 @@
+2025-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/118112
+	* c-typeck.cc (inform_declaration): Add "function_expr" param and
+	use it for cases where we couldn't show the function decl to show
+	field decls for callbacks.
+	(build_function_call_vec): Add missing auto_diagnostic_group.
+	Update for new param of inform_declaration.
+	(convert_arguments): Likewise.  For the "too many arguments" case
+	add the expected vs actual counts to the message, and if we have
+	it, add the location_t of the first surplus param as a secondary
+	location within the diagnostic.  For the "too few arguments" case,
+	determine the minimum number of arguments required and add the
+	expected vs actual counts to the message, tweaking it to "at least"
+	for variadic functions.
+
 2025-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/118376

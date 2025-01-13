@@ -1,3 +1,31 @@
+2025-01-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.cc (show_attr): Dump all symbol attributes.
+
+2025-01-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115788
+	* check.cc (gfc_check_out_of_range): Check arguments to intrinsic.
+	* expr.cc (free_expr0): Fix a memleak with unsigned literals.
+	* gfortran.h (enum gfc_isym_id): Define GFC_ISYM_OUT_OF_RANGE.
+	* gfortran.texi: Add OUT_OF_RANGE to list of intrinsics supporting
+	UNSIGNED.
+	* intrinsic.cc (add_functions): Add Fortran prototype.  Break some
+	nearby lines with excessive length.
+	* intrinsic.h (gfc_check_out_of_range): Add prototypes.
+	* intrinsic.texi: Fortran documentation of OUT_OF_RANGE.
+	* simplify.cc (gfc_simplify_out_of_range): Compile-time simplification
+	of OUT_OF_RANGE.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_out_of_range): Generate
+	inline expansion of runtime code for OUT_OF_RANGE.
+	(gfc_conv_intrinsic_function): Use it.
+
+2025-01-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118432
+	* frontend-passes.cc (doloop_code): Select correct member
+	of co->ext.union for inquire.
+
 2025-01-11  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gfortran.h: Add OMP_LIST_INTEROP to the unnamed OMP_LIST_ enum.

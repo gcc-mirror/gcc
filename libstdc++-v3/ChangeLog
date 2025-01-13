@@ -1,3 +1,13 @@
+2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/27_io/print/1.cc: Allow both LF and CRLF in test.
+	* testsuite/27_io/print/3.cc: Likewise.
+
+2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/29_atomics/atomic_float/compare_exchange_padding.cc:
+	Use effective-target libatomic_available.
+
 2025-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_futex.h (__atomic_futex_unsigned): Remove

@@ -1,3 +1,57 @@
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm3.d: Adjust test.
+	* gdc.dg/torture/pr96435.d: Adjust test.
+
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/copy1.d: New test.
+
+2025-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/118112
+	* gcc.dg/too-few-arguments.c: New test.
+	* gcc.dg/too-many-arguments.c: New test.
+
+2025-01-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115788
+	* gfortran.dg/ieee/out_of_range.f90: New test.
+	* gfortran.dg/out_of_range_1.f90: New test.
+	* gfortran.dg/out_of_range_2.f90: New test.
+	* gfortran.dg/out_of_range_3.f90: New test.
+
+2025-01-12  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/memcpy-hi-unaligned-dst.c: New file.
+
+2025-01-12  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/memcpy-si-aligned.c: New file.
+	* gcc.target/alpha/memcpy-si-unaligned.c: New file.
+	* gcc.target/alpha/memcpy-si-unaligned-dst.c: New file.
+	* gcc.target/alpha/memcpy-si-unaligned-src.c: New file.
+	* gcc.target/alpha/memcpy-si-unaligned-src-bwx.c: New file.
+
+2025-01-12  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/target-bwx-1.c: New file.
+	* gcc.target/alpha/target-bwx-2.c: New file.
+	* gcc.target/alpha/target-bwx-3.c: New file.
+	* gcc.target/alpha/target-bwx-4.c: New file.
+	* gcc.target/alpha/target-cix-1.c: New file.
+	* gcc.target/alpha/target-cix-2.c: New file.
+	* gcc.target/alpha/target-cix-3.c: New file.
+	* gcc.target/alpha/target-cix-4.c: New file.
+	* gcc.target/alpha/target-fix-1.c: New file.
+	* gcc.target/alpha/target-fix-2.c: New file.
+	* gcc.target/alpha/target-fix-3.c: New file.
+	* gcc.target/alpha/target-fix-4.c: New file.
+	* gcc.target/alpha/target-max-1.c: New file.
+	* gcc.target/alpha/target-max-2.c: New file.
+	* gcc.target/alpha/target-max-3.c: New file.
+	* gcc.target/alpha/target-max-4.c: New file.
+
 2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114630
