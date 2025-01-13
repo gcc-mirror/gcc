@@ -30,7 +30,7 @@
 #endif
 
 __attribute__ ((weak)) void
-handle_contract_violation (const std::contracts::contract_violation &violation)
+handle_contract_violation (const std::contracts::contract_violation &violation) noexcept
 {
 #if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 
