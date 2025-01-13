@@ -108,7 +108,7 @@ private:
      New input/output files are chosen to not collide with other items.
 
      Must be called with creation_lock held to prevent data race.  */
-  item* create_item (checksum_t checksum);
+  item* create_item (const checksum_t& checksum);
 
   /* Prunes oldest unused cache items over limit.
      Must be called with deletion_lock held to prevent data race.  */

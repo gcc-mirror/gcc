@@ -309,7 +309,7 @@ ltrans_file_cache::save_cache ()
 
    Must be called with creation_lock held to prevent data race.  */
 ltrans_file_cache::item*
-ltrans_file_cache::create_item (checksum_t checksum)
+ltrans_file_cache::create_item (const checksum_t& checksum)
 {
   size_t prefix_len = cache_prefix.size ();
 
