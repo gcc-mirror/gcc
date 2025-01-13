@@ -1571,6 +1571,8 @@ run_gcc (unsigned argc, char *argv[])
 	  /* Exists.  */
 	  if (access (option->arg, W_OK) == 0)
 	    ltrans_cache_dir = option->arg;
+	  else
+	    fatal_error (input_location, "missing directory: %s", option->arg);
 	  break;
 
 	case OPT_flto_incremental_cache_size_:
@@ -2218,39 +2220,13 @@ cont:
 	{
 	  for (i = 0; i < nr; ++i)
 	    {
-	      char *input_name = input_names[i];
-	      char const *output_name = output_names[i];
-
 	      ltrans_file_cache::item* item;
-	      item = ltrans_cache.get_item (input_name);
+	      item = ltrans_cache.get_item (input_names[i]);
 
-	      if (item && !save_temps)
+	      if (item)
 		{
+		  /* Ensure LTRANS for this item finished.  */
 		  item->lock.lock_read ();
-		  /* Ensure that cached compiled file is not deleted.
-		     Create copy.  */
-
-		  obstack_grow (&env_obstack, output_name,
-				strlen (output_name) - 2);
-		  obstack_grow (&env_obstack, ".cache_copy.XXX.o",
-				sizeof (".cache_copy.XXX.o"));
-
-		  char* output_name_link = XOBFINISH (&env_obstack, char *);
-		  char* name_idx = output_name_link + strlen (output_name_link)
-				   - strlen ("XXX.o");
-
-		  /* lto-wrapper can run in parallel and access
-		     the same partition.  */
-		  for (int j = 0; ; j++)
-		    {
-		      gcc_assert (j < 1000);
-		      sprintf (name_idx, "%03d.o", j);
-
-		      if (link (output_name, output_name_link) != EEXIST)
-			break;
-		    }
-
-		  output_names[i] = output_name_link;
 		  item->lock.unlock ();
 		}
 	    }
