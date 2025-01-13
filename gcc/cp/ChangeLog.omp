@@ -1,5 +1,12 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* parser.cc (cp_parser_omp_clause_map): Apply iterator to push and
+	pop mapper clauses.
+	* semantics.cc (cxx_omp_map_array_section): Allow array types for
+	base type of array sections.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* parser.cc (cp_parser_omp_iterators): Use macros for accessing
 	iterator elements.
 	(cp_parser_omp_clause_affinity): Likewise.

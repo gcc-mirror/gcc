@@ -1,5 +1,10 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* c-parser.cc (c_parser_omp_clause_map): Apply iterator to push and
+	pop mapper clauses.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* c-parser.cc (c_parser_omp_iterators): Use macros for accessing
 	iterator elements.
 	(c_parser_omp_clause_affinity): Likewise.

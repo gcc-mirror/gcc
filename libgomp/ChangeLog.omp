@@ -1,5 +1,11 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* testsuite/libgomp.c-c++-common/mapper-iterators-1.c: New test.
+	* testsuite/libgomp.c-c++-common/mapper-iterators-2.c: New test.
+	* testsuite/libgomp.c-c++-common/mapper-iterators-3.c: New test.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* testsuite/libgomp.c-c++-common/target-map-iterators-4.c: New.
 	* testsuite/libgomp.c-c++-common/target-map-iterators-5.c: New.
 	* testsuite/libgomp.c-c++-common/target-update-iterators-4.c: New.

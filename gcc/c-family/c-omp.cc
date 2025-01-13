@@ -4759,6 +4759,7 @@ omp_instantiate_mapper (location_t loc, tree *outlist, tree mapper, tree expr,
   tree clauses = OMP_DECLARE_MAPPER_CLAUSES (mapper);
   tree dummy_var = OMP_DECLARE_MAPPER_DECL (mapper);
   tree mapper_name = NULL_TREE;
+  tree iterator = *outlist ? OMP_CLAUSE_ITERATORS (*outlist) : NULL_TREE;
 
   remap_mapper_decl_info map_info;
   map_info.dummy_var = dummy_var;
@@ -4887,6 +4888,7 @@ omp_instantiate_mapper (location_t loc, tree *outlist, tree mapper, tree expr,
 	}
       else
 	{
+	  OMP_CLAUSE_ITERATORS (unshared) = iterator;
 	  *outlist = unshared;
 	  outlist = &OMP_CLAUSE_CHAIN (unshared);
 	}

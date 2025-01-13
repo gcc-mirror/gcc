@@ -1,5 +1,10 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* c-omp.cc (omp_instantiate_mapper): Apply iterator to new clauses
+	generated from mapper.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* c-omp.cc (c_finish_omp_depobj): Use OMP_ITERATOR_DECL_P.
 
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
