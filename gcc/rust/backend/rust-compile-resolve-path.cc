@@ -180,6 +180,11 @@ ResolvePathRef::resolve_with_node_id (
 	}
     }
 
+  // Handle unit struct
+  if (lookup->get_kind () == TyTy::TypeKind::ADT)
+    return attempt_constructor_expression_lookup (lookup, ctx, mappings,
+						  expr_locus);
+
   // let the query system figure it out
   tree resolved_item = query_compile (ref, lookup, final_segment, mappings,
 				      expr_locus, is_qualified_path);
