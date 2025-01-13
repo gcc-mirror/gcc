@@ -1112,10 +1112,10 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	{
 	  HOST_WIDE_INT bit = ctz_hwi (value);
 	  alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
-	  alt_codes[i].value = 1UL << bit;
+	  alt_codes[i].value = HOST_WIDE_INT_1U << bit;
 	  alt_codes[i].use_uw = false;
 	  alt_codes[i].save_temporary = false;
-	  value &= ~(1ULL << bit);
+	  value &= ~(HOST_WIDE_INT_1U << bit);
 	  i++;
 	}
 
