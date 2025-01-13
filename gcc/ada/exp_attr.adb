@@ -88,8 +88,10 @@ package body Exp_Attr is
       function Attribute_Op_Hash (Id : Entity_Id) return Header_Num is
         (Header_Num (Id mod Map_Size));
 
-      --  Cache used to avoid building duplicate subprograms for a single
-      --  type/streaming-attribute pair.
+      --  Caches used to avoid building duplicate subprograms for a single
+      --  type/attribute pair (where the attribute is either Put_Image or
+      --  one of the four streaming attributes). The type used as a key in
+      --  in accessing these maps should not be the entity of a subtype.
 
       package Read_Map is new GNAT.HTable.Simple_HTable
         (Header_Num => Header_Num,
@@ -4669,7 +4671,7 @@ package body Exp_Attr is
          end if;
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Input_Map.Set (P_Type, Fname);
+            Cached_Attribute_Ops.Input_Map.Set (U_Type, Fname);
          end if;
       end Input;
 
@@ -5750,7 +5752,7 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Output_Map.Set (P_Type, Pname);
+            Cached_Attribute_Ops.Output_Map.Set (U_Type, Pname);
          end if;
       end Output;
 
@@ -6669,7 +6671,7 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Read_Map.Set (P_Type, Pname);
+            Cached_Attribute_Ops.Read_Map.Set (U_Type, Pname);
          end if;
       end Read;
 
@@ -8349,7 +8351,7 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Write_Map.Set (P_Type, Pname);
+            Cached_Attribute_Ops.Write_Map.Set (U_Type, Pname);
          end if;
       end Write;
 
@@ -8951,15 +8953,22 @@ package body Exp_Attr is
          return Empty;
       end if;
 
-      if Nam = TSS_Stream_Read then
-         Ent := Cached_Attribute_Ops.Read_Map.Get (Typ);
-      elsif Nam = TSS_Stream_Write then
-         Ent := Cached_Attribute_Ops.Write_Map.Get (Typ);
-      elsif Nam = TSS_Stream_Input then
-         Ent := Cached_Attribute_Ops.Input_Map.Get (Typ);
-      elsif Nam = TSS_Stream_Output then
-         Ent := Cached_Attribute_Ops.Output_Map.Get (Typ);
-      end if;
+      declare
+         function U_Base return Entity_Id is
+           (Underlying_Type (Base_Type (Typ)));
+         --  Return the right type node for use in a C_A_O map lookup.
+         --  In particular, we do not want the entity for a subtype.
+      begin
+         if Nam = TSS_Stream_Read then
+            Ent := Cached_Attribute_Ops.Read_Map.Get (U_Base);
+         elsif Nam = TSS_Stream_Write then
+            Ent := Cached_Attribute_Ops.Write_Map.Get (U_Base);
+         elsif Nam = TSS_Stream_Input then
+            Ent := Cached_Attribute_Ops.Input_Map.Get (U_Base);
+         elsif Nam = TSS_Stream_Output then
+            Ent := Cached_Attribute_Ops.Output_Map.Get (U_Base);
+         end if;
+      end;
 
       Cached_Attribute_Ops.Validate_Cached_Candidate
         (Subp => Ent, Attr_Ref => Attr_Ref);
