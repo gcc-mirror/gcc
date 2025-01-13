@@ -4088,7 +4088,7 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
       }
 
     case INTEGER_CST:
-      return chrec;
+      return cst_and_fits_in_hwi (chrec) ? chrec : chrec_dont_know;
 
     default:
       gcc_unreachable ();
