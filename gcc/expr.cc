@@ -14247,25 +14247,16 @@ calculate_crc (unsigned HOST_WIDE_INT crc,
   return crc;
 }
 
-/* Assemble CRC table with 256 elements for the given POLYNOM and CRC_BITS with
-   given ID.
-   ID is the identifier of the table, the name of the table is unique,
-   contains CRC size and the polynomial.
+/* Assemble CRC table with 256 elements for the given POLYNOM and CRC_BITS.
    POLYNOM is the polynomial used to calculate the CRC table's elements.
    CRC_BITS is the size of CRC, may be 8, 16, ... . */
 
-rtx
-assemble_crc_table (tree id, unsigned HOST_WIDE_INT polynom,
-		    unsigned short crc_bits)
+static rtx
+assemble_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
 {
   unsigned table_el_n = 0x100;
   tree ar = build_array_type (make_unsigned_type (crc_bits),
 			      build_index_type (size_int (table_el_n - 1)));
-  tree decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, id, ar);
-  SET_DECL_ASSEMBLER_NAME (decl, id);
-  DECL_ARTIFICIAL (decl) = 1;
-  rtx tab = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
-  TREE_ASM_WRITTEN (decl) = 0;
 
   /* Initialize the table.  */
   vec<tree, va_gc> *initial_values;
@@ -14276,21 +14267,20 @@ assemble_crc_table (tree id, unsigned HOST_WIDE_INT polynom,
       tree element = build_int_cstu (make_unsigned_type (crc_bits), crc);
       vec_safe_push (initial_values, element);
     }
-  DECL_INITIAL (decl) = build_constructor_from_vec (ar, initial_values);
-
-  TREE_READONLY (decl) = 1;
-  TREE_STATIC (decl) = 1;
-
-  if (TREE_PUBLIC (id))
+  tree ctor = build_constructor_from_vec (ar, initial_values);
+  rtx mem = output_constant_def (ctor, 1);
+  gcc_assert (MEM_P (mem));
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      TREE_PUBLIC (decl) = 1;
-      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+      fprintf (dump_file,
+	       ";; emitting crc table crc_%u_polynomial_"
+	       HOST_WIDE_INT_PRINT_HEX " ",
+	       crc_bits, polynom);
+      print_rtl_single (dump_file, XEXP (mem, 0));
+      fprintf (dump_file, "\n");
     }
 
-  mark_decl_referenced (decl);
-  varpool_node::finalize_decl (decl);
-
-  return tab;
+  return XEXP (mem, 0);
 }
 
 /* Generate CRC lookup table by calculating CRC for all possible
@@ -14299,24 +14289,12 @@ assemble_crc_table (tree id, unsigned HOST_WIDE_INT polynom,
    POLYNOM is the polynomial used to calculate the CRC table's elements.
    CRC_BITS is the size of CRC, may be 8, 16, ... .  */
 
-rtx
+static rtx
 generate_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
 {
   gcc_assert (crc_bits <= 64);
 
-  /* Buf size - 24 letters + 6 '_'
-     + 20 numbers (2 for crc bit size + 2 for 0x + 16 for 64-bit polynomial)
-     + 1 for \0.  */
-  char buf[51];
-  sprintf (buf, "crc_table_for_crc_%u_polynomial_" HOST_WIDE_INT_PRINT_HEX,
-	   crc_bits, polynom);
-
-  tree id = maybe_get_identifier (buf);
-  if (id)
-    return gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
-
-  id = get_identifier (buf);
-  return assemble_crc_table (id, polynom, crc_bits);
+  return assemble_crc_table (polynom, crc_bits);
 }
 
 /* Generate table-based CRC code for the given CRC, INPUT_DATA and the
@@ -14335,7 +14313,7 @@ generate_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
    If input data size is not 8, then first we extract upper 8 bits,
    then the other 8 bits, and so on.  */
 
-void
+static void
 calculate_table_based_CRC (rtx *crc, const rtx &input_data,
 			   const rtx &polynomial,
 			   machine_mode data_mode)

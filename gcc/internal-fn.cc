@@ -4026,7 +4026,7 @@ expand_crc_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab)
   rtx data = expand_normal (rhs2);
   gcc_assert (TREE_CODE (rhs3) == INTEGER_CST);
   rtx polynomial = gen_rtx_CONST_INT (TYPE_MODE (result_type),
-  TREE_INT_CST_LOW (rhs3));
+				      TREE_INT_CST_LOW (rhs3));
 
   /* Use target specific expansion if it exists.
      Otherwise, generate table-based CRC.  */
@@ -4034,6 +4034,16 @@ expand_crc_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab)
 				      OPTIMIZE_FOR_SPEED))
     {
       class expand_operand ops[4];
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file,
+		   ";; using optab for crc_%u_polynomial_"
+		   HOST_WIDE_INT_PRINT_HEX "\n",
+		   GET_MODE_BITSIZE (GET_MODE (dest)).to_constant (),
+		   TREE_INT_CST_LOW (rhs3));
+	}
+
       create_call_lhs_operand (&ops[0], dest, TYPE_MODE (result_type));
       create_input_operand (&ops[1], crc, TYPE_MODE (result_type));
       create_input_operand (&ops[2], data, TYPE_MODE (data_type));
