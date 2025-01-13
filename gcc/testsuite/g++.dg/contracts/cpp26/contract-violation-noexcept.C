@@ -1,8 +1,7 @@
 // test that the default contract violation handler can't throw
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr " }
+// { dg-options "-std=c++2a -fcontracts -fcontract-evaluation-semantic=observe -fcontracts-nonattr " }
 
-#include <experimental/contract>
 #include <iostream>
 #include <exception>
 #include <cstdlib>
@@ -75,13 +74,16 @@ public:
 
 typedef  fail_buf<std::streambuf>   fail_streambuf;
 
-
 // Test that there is an active exception when we reach the terminate handler.
 void my_term()
 {
   try { throw; }
-  catch(...) { std::exit(0); }
+  catch(const underflow_error&) { std::exit(0); }
+  catch(const overflow_error&) { std::exit(0); }
+  catch(const positioning_error&) { std::exit(0); }
 }
+
+
 
 void f(int x) pre(x >= 0)
 {
@@ -97,6 +99,7 @@ int main()
   std::set_terminate (my_term);
   fail_streambuf buf;
   std::cerr.rdbuf(&buf);
+  std::cerr.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
   try
   {
       f(-42);
