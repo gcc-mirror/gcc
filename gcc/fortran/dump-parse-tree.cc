@@ -871,7 +871,7 @@ show_attr (symbol_attribute *attr, const char * module)
   if (attr->in_common)
     fputs (" IN-COMMON", dumpfile);
   if (attr->in_equivalence)
-    fputs (" IN_EQUIVALENDE", dumpfile);
+    fputs (" IN-EQUIVALENCE", dumpfile);
 
   if (attr->abstract)
     fputs (" ABSTRACT", dumpfile);
