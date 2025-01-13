@@ -6434,7 +6434,7 @@ simplify_context::simplify_relational_operation_1 (rtx_code code,
 	return simplify_gen_binary (AND, mode, XEXP (tmp, 0), const1_rtx);
     }
 
-  /* For two booleans A and B:
+  /* For two unsigned booleans A and B:
 
      A >  B == ~B & A
      A >= B == ~B | A
@@ -6443,20 +6443,29 @@ simplify_context::simplify_relational_operation_1 (rtx_code code,
      A == B == ~A ^ B (== ~B ^ A)
      A != B ==  A ^ B
 
-     simplify_logical_relational_operation checks whether A and B
-     are booleans.  */
-  if (code == GTU || code == GT)
-    return simplify_logical_relational_operation (AND, mode, op1, op0, true);
-  if (code == GEU || code == GE)
-    return simplify_logical_relational_operation (IOR, mode, op1, op0, true);
-  if (code == LTU || code == LT)
-    return simplify_logical_relational_operation (AND, mode, op0, op1, true);
-  if (code == LEU || code == LE)
-    return simplify_logical_relational_operation (IOR, mode, op0, op1, true);
-  if (code == EQ)
-    return simplify_logical_relational_operation (XOR, mode, op0, op1, true);
-  if (code == NE)
-    return simplify_logical_relational_operation (XOR, mode, op0, op1);
+     For signed comparisons, we have to take STORE_FLAG_VALUE into account,
+     with the rules above applying for positive STORE_FLAG_VALUE and with
+     the relations reversed for negative STORE_FLAG_VALUE.  */
+  if (is_a<scalar_int_mode> (cmp_mode)
+      && COMPARISON_P (op0)
+      && COMPARISON_P (op1))
+    {
+      rtx t = NULL_RTX;
+      if (code == GTU || code == (STORE_FLAG_VALUE > 0 ? GT : LT))
+	t = simplify_logical_relational_operation (AND, mode, op1, op0, true);
+      else if (code == GEU || code == (STORE_FLAG_VALUE > 0 ? GE : LE))
+	t = simplify_logical_relational_operation (IOR, mode, op1, op0, true);
+      else if (code == LTU || code == (STORE_FLAG_VALUE > 0 ? LT : GT))
+	t = simplify_logical_relational_operation (AND, mode, op0, op1, true);
+      else if (code == LEU || code == (STORE_FLAG_VALUE > 0 ? LE : GE))
+	t = simplify_logical_relational_operation (IOR, mode, op0, op1, true);
+      else if (code == EQ)
+	t = simplify_logical_relational_operation (XOR, mode, op0, op1, true);
+      else if (code == NE)
+	t = simplify_logical_relational_operation (XOR, mode, op0, op1);
+      if (t)
+	return t;
+    }
 
   return NULL_RTX;
 }
