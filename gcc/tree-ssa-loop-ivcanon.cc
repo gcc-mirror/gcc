@@ -1257,6 +1257,7 @@ canonicalize_loop_induction_variables (class loop *loop,
   bool modified = false;
   class tree_niter_desc niter_desc;
   bool may_be_zero = false;
+  bool by_eval = false;
 
   /* For unrolling allow conditional constant or zero iterations, thus
      perform loop-header copying on-the-fly.  */
@@ -1291,7 +1292,11 @@ canonicalize_loop_induction_variables (class loop *loop,
       if (try_eval
 	  && (chrec_contains_undetermined (niter)
 	      || TREE_CODE (niter) != INTEGER_CST))
-	niter = find_loop_niter_by_eval (loop, &exit);
+	{
+	  niter = find_loop_niter_by_eval (loop, &exit);
+	  if (TREE_CODE (niter) == INTEGER_CST)
+	    by_eval = true;
+	}
 
       if (TREE_CODE (niter) != INTEGER_CST)
 	exit = NULL;
@@ -1346,7 +1351,7 @@ canonicalize_loop_induction_variables (class loop *loop,
 				  innermost_cunrolli_p))
     return true;
 
-  if (create_iv
+  if ((create_iv || by_eval)
       && niter && !chrec_contains_undetermined (niter)
       && exit && just_once_each_iteration_p (loop, exit->src))
     {
@@ -1492,7 +1497,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
     ul = UL_NO_GROWTH;
 
   if (canonicalize_loop_induction_variables
-      (loop, false, ul, !flag_tree_loop_ivcanon, unroll_outer,
+      (loop, false, ul, !flag_tree_loop_ivcanon || cunrolli, unroll_outer,
        innermost, cunrolli))
     {
       /* If we'll continue unrolling, we need to propagate constants

@@ -21,7 +21,7 @@ T pow(T x, unsigned int n)
 void testVec(int* x)
 {
   for (int i = 0; i < 8; ++i)
-    x[i] = pow(x[i], 10);
+    x[i] = pow(x[i], 100);
 }
 
 /* { dg-final { scan-tree-dump "OUTER LOOP VECTORIZED" "vect" { target { vect_double && vect_hw_misalign } } } } */
