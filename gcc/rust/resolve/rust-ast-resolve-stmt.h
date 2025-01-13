@@ -388,6 +388,7 @@ public:
   void visit (AST::Trait &trait) override;
   void visit (AST::InherentImpl &impl_block) override;
   void visit (AST::TraitImpl &impl_block) override;
+  void visit (AST::StaticItem &var) override;
 
 private:
   ResolveStmt (const CanonicalPath &prefix,

@@ -163,5 +163,11 @@ ASTLoweringStmt::visit (AST::TraitImpl &impl_block)
   translated = ASTLoweringItem::translate (impl_block);
 }
 
+void
+ASTLoweringStmt::visit (AST::StaticItem &var)
+{
+  translated = ASTLoweringItem::translate (var);
+}
+
 } // namespace HIR
 } // namespace Rust
