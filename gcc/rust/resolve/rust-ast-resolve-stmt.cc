@@ -56,5 +56,26 @@ ResolveStmt::visit (AST::TraitImpl &impl_block)
   ResolveItem::go (impl_block, prefix, canonical_prefix);
 }
 
+void
+ResolveStmt::visit (AST::StaticItem &var)
+{
+  auto decl = CanonicalPath::new_seg (var.get_node_id (),
+				      var.get_identifier ().as_string ());
+  auto path = decl;
+  auto cpath = canonical_prefix.append (decl);
+  mappings.insert_canonical_path (var.get_node_id (), cpath);
+
+  resolver->get_name_scope ().insert (
+    path, var.get_node_id (), var.get_locus (), false, Rib::ItemType::Static,
+    [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
+      rich_location r (line_table, var.get_locus ());
+      r.add_range (locus);
+      rust_error_at (r, "redefined multiple times");
+    });
+
+  ResolveType::go (var.get_type ());
+  ResolveExpr::go (var.get_expr (), path, cpath);
+}
+
 } // namespace Resolver
 } // namespace Rust
