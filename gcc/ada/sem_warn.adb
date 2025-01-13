@@ -4670,9 +4670,11 @@ package body Sem_Warn is
                      if Nkind (Parent (LA)) in N_Procedure_Call_Statement
                                              | N_Parameter_Association
                      then
-                        Error_Msg_NE
-                          ("?m?& modified by call, but value overwritten #!",
-                           LA, Ent);
+                        if Warn_On_All_Unread_Out_Parameters then
+                           Error_Msg_NE
+                            ("?m?& modified by call, but value overwritten #!",
+                             LA, Ent);
+                        end if;
                      else
                         Error_Msg_NE -- CODEFIX
                           ("?m?useless assignment to&, value overwritten #!",
