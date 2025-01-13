@@ -1,3 +1,19 @@
+2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/27_io/print/1.cc: Allow both LF and CRLF in test.
+	* testsuite/27_io/print/3.cc: Likewise.
+
+2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/29_atomics/atomic_float/compare_exchange_padding.cc:
+	Use effective-target libatomic_available.
+
 2025-01-10  Tamar Christina  <tamar.christina@arm.com>
 
 	* include/bits/hashtable.h (find): Add inline keyword.
