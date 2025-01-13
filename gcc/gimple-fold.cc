@@ -8270,6 +8270,16 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	ll_and_mask = sign;
       else
 	ll_and_mask &= sign;
+      if (l_xor)
+	{
+	  if (!lr_and_mask.get_precision ())
+	    lr_and_mask = sign;
+	  else
+	    lr_and_mask &= sign;
+	  if (l_const.get_precision ())
+	    l_const &= wide_int::from (lr_and_mask,
+				       l_const.get_precision (), UNSIGNED);
+	}
     }
 
   if (rsignbit)
@@ -8279,6 +8289,16 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	rl_and_mask = sign;
       else
 	rl_and_mask &= sign;
+      if (r_xor)
+	{
+	  if (!rr_and_mask.get_precision ())
+	    rr_and_mask = sign;
+	  else
+	    rr_and_mask &= sign;
+	  if (r_const.get_precision ())
+	    r_const &= wide_int::from (rr_and_mask,
+				       r_const.get_precision (), UNSIGNED);
+	}
     }
 
   /* If either comparison code is not correct for our logical operation,
