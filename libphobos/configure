@@ -15741,7 +15741,7 @@ SPEC_PHOBOS_DEPS="$LIBS"
 
 
 # Libdruntime / phobos soname version
-libtool_VERSION=5:0:0
+libtool_VERSION=6:0:0
 
 
 # Set default flags (after DRUNTIME_WERROR!)
