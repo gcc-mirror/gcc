@@ -7712,6 +7712,18 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 
   if (shiftrt)
     {
+      /* Punt if we're shifting by more than the loaded bitfield (after
+	 adjustment), or if there's a shift after a change of signedness, punt.
+	 When comparing this field with a constant, we'll check that the
+	 constant is a proper sign- or zero-extension (depending on signedness)
+	 of a value that would fit in the selected portion of the bitfield.  A
+	 shift after a change of signedness would make the extension
+	 non-uniform, and we can't deal with that (yet ???).  See
+	 gcc.dg/field-merge-22.c for a test that would go wrong.  */
+      if (*pbitsize <= shiftrt
+	  || (convert_before_shift
+	      && outer_type && unsignedp != TYPE_UNSIGNED (outer_type)))
+	return NULL_TREE;
       if (!*preversep ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
 	*pbitpos += shiftrt;
       *pbitsize -= shiftrt;
@@ -8512,13 +8524,25 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
      and bit position.  */
   if (l_const.get_precision ())
     {
+      /* Before clipping upper bits of the right-hand operand of the compare,
+	 check that they're sign or zero extensions, depending on how the
+	 left-hand operand would be extended.  */
+      bool l_non_ext_bits = false;
+      if (ll_bitsize < lr_bitsize)
+	{
+	  wide_int zext = wi::zext (l_const, ll_bitsize);
+	  if ((ll_unsignedp ? zext : wi::sext (l_const, ll_bitsize)) == l_const)
+	    l_const = zext;
+	  else
+	    l_non_ext_bits = true;
+	}
       /* We're doing bitwise equality tests, so don't bother with sign
 	 extensions.  */
       l_const = wide_int::from (l_const, lnprec, UNSIGNED);
       if (ll_and_mask.get_precision ())
 	l_const &= wide_int::from (ll_and_mask, lnprec, UNSIGNED);
       l_const <<= xll_bitpos;
-      if ((l_const & ~ll_mask) != 0)
+      if (l_non_ext_bits || (l_const & ~ll_mask) != 0)
 	{
 	  warning_at (lloc, OPT_Wtautological_compare,
 		      "comparison is always %d", wanted_code == NE_EXPR);
@@ -8530,11 +8554,23 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	 again.  */
       gcc_checking_assert (r_const.get_precision ());
 
+      /* Before clipping upper bits of the right-hand operand of the compare,
+	 check that they're sign or zero extensions, depending on how the
+	 left-hand operand would be extended.  */
+      bool r_non_ext_bits = false;
+      if (rl_bitsize < rr_bitsize)
+	{
+	  wide_int zext = wi::zext (r_const, rl_bitsize);
+	  if ((rl_unsignedp ? zext : wi::sext (r_const, rl_bitsize)) == r_const)
+	    r_const = zext;
+	  else
+	    r_non_ext_bits = true;
+	}
       r_const = wide_int::from (r_const, lnprec, UNSIGNED);
       if (rl_and_mask.get_precision ())
 	r_const &= wide_int::from (rl_and_mask, lnprec, UNSIGNED);
       r_const <<= xrl_bitpos;
-      if ((r_const & ~rl_mask) != 0)
+      if (r_non_ext_bits || (r_const & ~rl_mask) != 0)
 	{
 	  warning_at (rloc, OPT_Wtautological_compare,
 		      "comparison is always %d", wanted_code == NE_EXPR);
