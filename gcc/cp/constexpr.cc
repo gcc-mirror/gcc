@@ -8005,6 +8005,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
+    case VEC_DUPLICATE_EXPR:
       r = cxx_eval_unary_expression (ctx, t, lval,
 				     non_constant_p, overflow_p);
       break;
@@ -10344,6 +10345,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case UNARY_PLUS_EXPR:
     case UNARY_LEFT_FOLD_EXPR:
     case UNARY_RIGHT_FOLD_EXPR:
+    case VEC_DUPLICATE_EXPR:
     unary:
       return RECUR (TREE_OPERAND (t, 0), rval);
 
