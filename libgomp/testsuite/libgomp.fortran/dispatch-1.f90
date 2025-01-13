@@ -48,16 +48,21 @@ module procedures
     integer :: res, n, i
     type(c_ptr) :: d_bv
     type(c_ptr) :: d_av
-    real(8), pointer :: fp_bv(:), fp_av(:)  ! Fortran pointers for array access
 
-    ! Associate C pointers with Fortran pointers
-    call c_f_pointer(d_bv, fp_bv, [n])
-    call c_f_pointer(d_av, fp_av, [n])
+    !$omp target is_device_ptr(d_bv, d_av)
+    block
+      real(8), pointer :: fp_bv(:), fp_av(:)  ! Fortran pointers for array access
 
-    ! Perform operations on target
-    do i = 1, n
-      fp_bv(i) = fp_av(i) * i
-    end do
+      ! Associate C pointers with Fortran pointers
+      call c_f_pointer(d_bv, fp_bv, [n])
+      call c_f_pointer(d_av, fp_av, [n])
+
+      ! Perform operations on target
+      do i = 1, n
+        fp_bv(i) = fp_av(i) * i
+      end do
+    end block
+
     res = -2
   end function bar
 
