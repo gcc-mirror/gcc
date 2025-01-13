@@ -29,7 +29,7 @@
 #endif
 
 __attribute__ ((weak)) void
-handle_contract_violation (const std::experimental::contract_violation &violation) noexcept
+handle_contract_violation (const std::experimental::contract_violation &violation)
 {
 #if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
   bool level_default_p = violation.assertion_level() == "default";
