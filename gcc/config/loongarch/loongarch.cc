@@ -4530,6 +4530,41 @@ loongarch_split_plus_constant (rtx *op, machine_mode mode)
   op[2] = gen_int_mode (v, mode);
 }
 
+/* Test if reassociate (a << shamt) [&|^] mask to
+   (a [&|^] (mask >> shamt)) << shamt is possible and beneficial.
+   If true, return (mask >> shamt).  Return NULL_RTX otherwise.  */
+
+rtx
+loongarch_reassoc_shift_bitwise (bool is_and, rtx shamt, rtx mask,
+				 machine_mode mode)
+{
+  gcc_checking_assert (CONST_INT_P (shamt));
+  gcc_checking_assert (CONST_INT_P (mask));
+  gcc_checking_assert (mode == SImode || mode == DImode);
+
+  if (ctz_hwi (INTVAL (mask)) < INTVAL (shamt))
+    return NULL_RTX;
+
+  rtx new_mask = simplify_const_binary_operation (LSHIFTRT, mode, mask,
+						  shamt);
+  if (const_uns_arith_operand (new_mask, mode))
+    return new_mask;
+
+  if (!is_and)
+    return NULL_RTX;
+
+  if (low_bitmask_operand (new_mask, mode))
+    return new_mask;
+
+  /* Do an arithmetic shift for checking ins_zero_bitmask_operand:
+     ashiftrt (0xffffffff00000000, 2) is 0xffffffff60000000 which is an
+     ins_zero_bitmask_operand, but lshiftrt will produce
+     0x3fffffff60000000.  */
+  new_mask = simplify_const_binary_operation (ASHIFTRT, mode, mask,
+					      shamt);
+  return ins_zero_bitmask_operand (new_mask, mode) ? new_mask : NULL_RTX;
+}
+
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
 
 static HOST_WIDE_INT

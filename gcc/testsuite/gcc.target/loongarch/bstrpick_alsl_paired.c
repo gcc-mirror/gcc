@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mabi=lp64d -O2 -fdump-rtl-combine" } */
-/* { dg-final { scan-rtl-dump "{bstrpick_alsl_paired}" "combine" } } */
+/* { dg-final { scan-rtl-dump "{and_shift_reversedi}" "combine" } } */
 /* { dg-final { scan-assembler-not "alsl.d\t\\\$r\[0-9\]+,\\\$r\[0-9\]+,\\\$r0" } } */
 
 struct SA
