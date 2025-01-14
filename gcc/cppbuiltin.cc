@@ -200,6 +200,9 @@ define_builtin_macros_for_type_sizes (cpp_reader *pfile)
 void
 define_language_independent_builtin_macros (cpp_reader *pfile)
 {
+  // Add new macro
+  cpp_define (pfile, "MY_NEW_MACRO");
+
   define__GNUC__ (pfile);
   define_builtin_macros_for_compilation_flags (pfile);
   define_builtin_macros_for_lp64 (pfile);
