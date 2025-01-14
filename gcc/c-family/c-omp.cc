@@ -4301,7 +4301,7 @@ const struct c_omp_directive c_omp_directives[] = {
   /* { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
     C_OMP_DIR_DECLARATIVE, false }, */
   /* { "begin", "metadirective", nullptr, PRAGMA_OMP_BEGIN,
-    C_OMP_DIR_???, ??? },  */
+    C_OMP_DIR_META, false },  */
   { "cancel", nullptr, nullptr, PRAGMA_OMP_CANCEL,
     C_OMP_DIR_STANDALONE, false },
   { "cancellation", "point", nullptr, PRAGMA_OMP_CANCELLATION_POINT,
@@ -4331,7 +4331,7 @@ const struct c_omp_directive c_omp_directives[] = {
   /* { "end", "declare", "variant", PRAGMA_OMP_END,
     C_OMP_DIR_DECLARATIVE, false }, */
   /* { "end", "metadirective", nullptr, PRAGMA_OMP_END,
-    C_OMP_DIR_???, ??? },  */
+    C_OMP_DIR_META, false },  */
   /* error with at(execution) is C_OMP_DIR_STANDALONE.  */
   { "error", nullptr, nullptr, PRAGMA_OMP_ERROR,
     C_OMP_DIR_UTILITY, false },
@@ -4349,8 +4349,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, true },
   { "master", nullptr, nullptr, PRAGMA_OMP_MASTER,
     C_OMP_DIR_CONSTRUCT, true },
-  /* { "metadirective", nullptr, nullptr, PRAGMA_OMP_METADIRECTIVE,
-    C_OMP_DIR_???, ??? },  */
+  { "metadirective", nullptr, nullptr, PRAGMA_OMP_METADIRECTIVE,
+    C_OMP_DIR_META, false },
   { "nothing", nullptr, nullptr, PRAGMA_OMP_NOTHING,
     C_OMP_DIR_UTILITY, false },
   /* ordered with depend clause is C_OMP_DIR_STANDALONE.  */
@@ -4432,4 +4432,56 @@ c_omp_categorize_directive (const char *first, const char *second,
       return &c_omp_directives[i];
     }
   return NULL;
+}
+
+/* Auxilliary helper function for c_omp_expand_variant_construct.  */
+
+static tree
+c_omp_expand_variant_construct_r (vec<struct omp_variant> &candidates,
+			      hash_map<tree, tree> &body_labels,
+			      unsigned index)
+{
+  struct omp_variant &candidate = candidates[index];
+  tree if_block = push_stmt_list ();
+  if (candidate.alternative != NULL_TREE)
+    add_stmt (candidate.alternative);
+  if (candidate.body != NULL_TREE)
+    {
+      tree *label = body_labels.get (candidate.body);
+      if (label != NULL)
+	add_stmt (build1 (GOTO_EXPR, void_type_node, *label));
+      else
+	{
+	  tree body_label = create_artificial_label (UNKNOWN_LOCATION);
+	  add_stmt (build1 (LABEL_EXPR, void_type_node, body_label));
+	  add_stmt (candidate.body);
+	  body_labels.put (candidate.body, body_label);
+	}
+    }
+  if_block = pop_stmt_list (if_block);
+
+  if (index == candidates.length () - 1)
+    return if_block;
+
+  tree cond = omp_dynamic_cond (candidate.selector, NULL_TREE);
+  gcc_assert (cond != NULL_TREE);
+
+  tree else_block = c_omp_expand_variant_construct_r (candidates, body_labels,
+						      index + 1);
+  tree ret = push_stmt_list ();
+  tree stmt = build3 (COND_EXPR, void_type_node, cond, if_block, else_block);
+  add_stmt (stmt);
+  ret = pop_stmt_list (ret);
+
+  return ret;
+}
+
+/* Resolve the vector of metadirective variant CANDIDATES to a parse tree
+   structure.  */
+
+tree
+c_omp_expand_variant_construct (vec<struct omp_variant> &candidates)
+{
+  hash_map<tree, tree> body_labels;
+  return c_omp_expand_variant_construct_r (candidates, body_labels, 0);
 }

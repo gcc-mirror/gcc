@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "tree-pass.h"
 #include "internal-fn.h"
+#include "omp-general.h"
 
 /*  The gimplification pass converts the language-dependent trees
     (ld-trees) emitted by the parser into language-independent trees
@@ -543,6 +544,27 @@ genericize_omp_for_stmt (tree *stmt_p, int *walk_subtrees, void *data,
   finish_bc_block (&OMP_FOR_BODY (stmt), bc_continue, clab);
 }
 
+/* Genericize a OMP_METADIRECTIVE node *STMT_P.  */
+
+static void
+genericize_omp_metadirective_stmt (tree *stmt_p, int *walk_subtrees,
+				   void *data, walk_tree_fn func,
+				   walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+
+  for (tree variant = OMP_METADIRECTIVE_VARIANTS (stmt);
+       variant != NULL_TREE;
+       variant = TREE_CHAIN (variant))
+    {
+      walk_tree_1 (&OMP_METADIRECTIVE_VARIANT_DIRECTIVE (variant),
+		   func, data, NULL, lh);
+      walk_tree_1 (&OMP_METADIRECTIVE_VARIANT_BODY (variant),
+		   func, data, NULL, lh);
+    }
+
+  *walk_subtrees = 0;
+}
 
 /* Lower structured control flow tree nodes, such as loops.  The
    STMT_P, WALK_SUBTREES, and DATA arguments are as for the walk_tree_fn
@@ -591,6 +613,11 @@ c_genericize_control_stmt (tree *stmt_p, int *walk_subtrees, void *data,
     case OMP_UNROLL:
     case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    case OMP_METADIRECTIVE:
+      genericize_omp_metadirective_stmt (stmt_p, walk_subtrees, data, func,
+					 lh);
       break;
 
     case STATEMENT_LIST:

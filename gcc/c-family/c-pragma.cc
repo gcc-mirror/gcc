@@ -1529,6 +1529,7 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "end", PRAGMA_OMP_END },
   { "flush", PRAGMA_OMP_FLUSH },
   { "interop", PRAGMA_OMP_INTEROP },
+  { "metadirective", PRAGMA_OMP_METADIRECTIVE },
   { "nothing", PRAGMA_OMP_NOTHING },
   { "requires", PRAGMA_OMP_REQUIRES },
   { "scope", PRAGMA_OMP_SCOPE },
