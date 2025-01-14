@@ -2216,13 +2216,14 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 
 	     If there is a combination of the access not covering the full
 	     vector and a gap recorded then we may need to peel twice.  */
+	  bool large_vector_overrun_p = false;
 	  if (loop_vinfo
 	      && (*memory_access_type == VMAT_CONTIGUOUS
 		  || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
 	      && !multiple_p (group_size * LOOP_VINFO_VECT_FACTOR (loop_vinfo),
 			      nunits))
-	    overrun_p = true;
+	    large_vector_overrun_p = overrun_p = true;
 
 	  /* If the gap splits the vector in half and the target
 	     can do half-vector operations avoid the epilogue peeling
@@ -2273,7 +2274,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 		 access and that is sufficiently small to be covered
 		 by the single scalar iteration.  */
 	      unsigned HOST_WIDE_INT cnunits, cvf, cremain, cpart_size;
-	      if (!nunits.is_constant (&cnunits)
+	      if (masked_p
+		  || !nunits.is_constant (&cnunits)
 		  || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&cvf)
 		  || (((cremain = (group_size * cvf - gap) % cnunits), true)
 		      && ((cpart_size = (1 << ceil_log2 (cremain))), true)
@@ -2282,9 +2284,11 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			       (vectype, cnunits / cpart_size,
 				&half_vtype) == NULL_TREE)))
 		{
-		  /* If all fails we can still resort to niter masking, so
-		     enforce the use of partial vectors.  */
-		  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+		  /* If all fails we can still resort to niter masking unless
+		     the vectors used are too big, so enforce the use of
+		     partial vectors.  */
+		  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+		      && !large_vector_overrun_p)
 		    {
 		      if (dump_enabled_p ())
 			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2301,6 +2305,16 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 					 "access\n");
 		      return false;
 		    }
+		}
+	      else if (large_vector_overrun_p)
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "can't operate on partial vectors because "
+				     "only unmasked loads handle access "
+				     "shortening required because of gaps at "
+				     "the end of the access\n");
+		  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 		}
 	    }
 	}
