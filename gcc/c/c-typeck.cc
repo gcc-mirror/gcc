@@ -7477,7 +7477,7 @@ error_init (location_t loc, const char *gmsgid, ...)
 
 /* Used to implement pedwarn_init and permerror_init.  */
 
-static void ATTRIBUTE_GCC_DIAG (3,0)
+static bool ATTRIBUTE_GCC_DIAG (3,0)
 pedwarn_permerror_init (location_t loc, int opt, const char *gmsgid,
 			va_list *ap, diagnostic_t kind)
 {
@@ -7487,9 +7487,13 @@ pedwarn_permerror_init (location_t loc, int opt, const char *gmsgid,
   location_t exploc = expansion_point_location_if_in_system_header (loc);
   auto_diagnostic_group d;
   bool warned = emit_diagnostic_valist (kind, exploc, opt, gmsgid, ap);
-  char *ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat && warned)
-    inform (exploc, "(near initialization for %qs)", ofwhat);
+  if (warned)
+    {
+      char *ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+      if (*ofwhat)
+	inform (exploc, "(near initialization for %qs)", ofwhat);
+    }
+  return warned;
 }
 
 /* Issue a pedantic warning for a bad initializer component.  OPT is
@@ -7497,24 +7501,26 @@ pedwarn_permerror_init (location_t loc, int opt, const char *gmsgid,
    it is unconditionally given.  GMSGID identifies the message.  The
    component name is taken from the spelling stack.  */
 
-static void ATTRIBUTE_GCC_DIAG (3,0)
+static bool ATTRIBUTE_GCC_DIAG (3,0)
 pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
 {
   va_list ap;
   va_start (ap, gmsgid);
-  pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PEDWARN);
+  bool warned = pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PEDWARN);
   va_end (ap);
+  return warned;
 }
 
 /* Like pedwarn_init, but issue a permerror.  */
 
-static void ATTRIBUTE_GCC_DIAG (3,0)
+static bool ATTRIBUTE_GCC_DIAG (3,0)
 permerror_init (location_t loc, int opt, const char *gmsgid, ...)
 {
   va_list ap;
   va_start (ap, gmsgid);
-  pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PERMERROR);
+  bool warned = pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PERMERROR);
   va_end (ap);
+  return warned;
 }
 
 /* Issue a warning for a bad initializer component.
@@ -7538,9 +7544,12 @@ warning_init (location_t loc, int opt, const char *gmsgid)
 
   /* The gmsgid may be a format string with %< and %>. */
   warned = warning_at (exploc, opt, gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat && warned)
-    inform (exploc, "(near initialization for %qs)", ofwhat);
+  if (warned)
+    {
+      ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+      if (*ofwhat)
+	inform (exploc, "(near initialization for %qs)", ofwhat);
+    }
 }
 
 /* If TYPE is an array type and EXPR is a parenthesized string
@@ -7649,6 +7658,62 @@ maybe_warn_builtin_no_proto_arg (location_t loc, tree fundecl, int parmnum,
     inform (DECL_SOURCE_LOCATION (fundecl),
 	    "built-in %qD declared here",
 	    fundecl);
+}
+
+/* Print a declaration in quotes, with the given highlight_color.
+   Analogous to handler for %qD, but with a specific highlight color.  */
+
+class pp_element_quoted_decl : public pp_element
+{
+public:
+  pp_element_quoted_decl (tree decl, const char *highlight_color)
+  : m_decl (decl),
+    m_highlight_color (highlight_color)
+  {
+  }
+
+  void add_to_phase_2 (pp_markup::context &ctxt) override
+  {
+    ctxt.begin_quote ();
+    ctxt.begin_highlight_color (m_highlight_color);
+
+    print_decl (ctxt);
+
+    ctxt.end_highlight_color ();
+    ctxt.end_quote ();
+  }
+
+  void print_decl (pp_markup::context &ctxt)
+  {
+    pretty_printer *const pp = &ctxt.m_pp;
+    pp->set_padding (pp_none);
+    if (DECL_NAME (m_decl))
+      pp_identifier (pp, lang_hooks.decl_printable_name (m_decl, 2));
+    else
+      pp_string (pp, _("({anonymous})"));
+  }
+
+private:
+  tree m_decl;
+  const char *m_highlight_color;
+};
+
+/* If TYPE is from a typedef, issue a note showing the location
+   to the user.
+   Use HIGHLIGHT_COLOR as the highlight color.  */
+
+static void
+maybe_inform_typedef_location (tree type, const char *highlight_color)
+{
+  if (!typedef_variant_p (type))
+    return;
+
+  tree typedef_decl = TYPE_NAME (type);
+  gcc_assert (TREE_CODE (typedef_decl) == TYPE_DECL);
+  gcc_rich_location richloc (DECL_SOURCE_LOCATION (typedef_decl),
+			     nullptr, highlight_color);
+  pp_element_quoted_decl e_typedef_decl (typedef_decl, highlight_color);
+  inform (&richloc, "%e declared here", &e_typedef_decl);
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment to
@@ -8474,58 +8539,96 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       /* Avoid warning about the volatile ObjC EH puts on decls.  */
       else if (!objc_ok)
 	{
+	  auto_diagnostic_group d;
+	  bool warned = false;
+	  pp_markup::element_expected_type e_type (type);
+	  pp_markup::element_actual_type e_rhstype (rhstype);
 	  switch (errtype)
 	    {
 	    case ic_argpass:
 	      {
-		auto_diagnostic_group d;
 		range_label_for_type_mismatch rhs_label (rhstype, type);
 		gcc_rich_location richloc (expr_loc, &rhs_label,
 					   highlight_colors::actual);
-		if (permerror_opt (&richloc, OPT_Wincompatible_pointer_types,
+		warned
+		  = permerror_opt (&richloc, OPT_Wincompatible_pointer_types,
 				   "passing argument %d of %qE from "
 				   "incompatible pointer type",
-				   parmnum, rname))
+				   parmnum, rname);
+		if (warned)
 		  inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	      }
 	      break;
 	    case ic_assign:
 	      if (bltin)
-		permerror_opt (location, OPT_Wincompatible_pointer_types,
-			       "assignment to %qT from pointer to "
-			       "%qD with incompatible type %qT",
-			       type, bltin, rhstype);
+		warned
+		  = permerror_opt (location, OPT_Wincompatible_pointer_types,
+				   "assignment to %e from pointer to "
+				   "%qD with incompatible type %e",
+				   &e_type, bltin, &e_rhstype);
 	      else
-		permerror_opt (location, OPT_Wincompatible_pointer_types,
-			       "assignment to %qT from incompatible pointer "
-			       "type %qT", type, rhstype);
+		warned
+		  = permerror_opt (location, OPT_Wincompatible_pointer_types,
+				   "assignment to %e from incompatible "
+				   "pointer type %e",
+				   &e_type, &e_rhstype);
 	      break;
 	    case ic_init:
 	    case ic_init_const:
 	      if (bltin)
-		permerror_init (location, OPT_Wincompatible_pointer_types,
-				"initialization of %qT from pointer to "
-				"%qD with incompatible type %qT",
-				type, bltin, rhstype);
+		warned
+		  = permerror_init (location, OPT_Wincompatible_pointer_types,
+				    "initialization of %e from pointer to "
+				    "%qD with incompatible type %e",
+				    &e_type, bltin, &e_rhstype);
 	      else
-		permerror_init (location, OPT_Wincompatible_pointer_types,
-				"initialization of %qT from incompatible "
-				"pointer type %qT",
-				type, rhstype);
+		warned
+		  = permerror_init (location, OPT_Wincompatible_pointer_types,
+				    "initialization of %e from incompatible "
+				    "pointer type %e",
+				    &e_type, &e_rhstype);
 	      break;
 	    case ic_return:
 	      if (bltin)
-		permerror_opt (location, OPT_Wincompatible_pointer_types,
-			       "returning pointer to %qD of type %qT from "
-			       "a function with incompatible type %qT",
-			       bltin, rhstype, type);
+		warned
+		  = permerror_opt (location, OPT_Wincompatible_pointer_types,
+				   "returning pointer to %qD of type %e from "
+				   "a function with incompatible type %e",
+				   bltin, &e_rhstype, &e_type);
 	      else
-		permerror_opt (location, OPT_Wincompatible_pointer_types,
-			       "returning %qT from a function with "
-			       "incompatible return type %qT", rhstype, type);
+		warned
+		  = permerror_opt (location, OPT_Wincompatible_pointer_types,
+				   "returning %e from a function with "
+				   "incompatible return type %e",
+				   &e_rhstype, &e_type);
 	      break;
 	    default:
 	      gcc_unreachable ();
+	    }
+	  if (warned)
+	    {
+	      /* If the mismatching function type is a pointer to a function,
+		 try to show the decl of the function.  */
+	      if (TREE_CODE (rhs) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (rhs, 0)) == FUNCTION_DECL)
+		{
+		  tree rhs_fndecl = TREE_OPERAND (rhs, 0);
+		  if (!DECL_IS_UNDECLARED_BUILTIN (rhs_fndecl))
+		    {
+		      gcc_rich_location richloc
+			(DECL_SOURCE_LOCATION (rhs_fndecl), nullptr,
+			 highlight_colors::actual);
+		      pp_element_quoted_decl e_rhs_fndecl
+			(rhs_fndecl, highlight_colors::actual);
+		      inform (&richloc,
+			      "%e declared here", &e_rhs_fndecl);
+		    }
+		}
+	      /* If either/both of the types are typedefs, show the decl.  */
+	      maybe_inform_typedef_location (type,
+					     highlight_colors::expected);
+	      maybe_inform_typedef_location (rhstype,
+					     highlight_colors::actual);
 	    }
 	}
 
