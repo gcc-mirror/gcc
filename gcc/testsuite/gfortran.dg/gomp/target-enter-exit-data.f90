@@ -23,17 +23,17 @@ allocate (var%arr(1:100))
 
 
 !$omp target enter data map(to: var%arr)
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target enter data map\(to:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\]\[implicit\]\) map\(to:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target enter data map\(to:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\] \[runtime_implicit\]\) map\(to:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
 
 !$omp target exit data map(release: var%arr)
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target exit data map\(release:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\]\[implicit\]\) map\(release:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target exit data map\(release:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\] \[runtime_implicit\]\) map\(release:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
 
 
 !$omp target enter data map(alloc: var%arr)
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target enter data map\(alloc:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\]\[implicit\]\) map\(to:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target enter data map\(alloc:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\] \[runtime_implicit\]\) map\(to:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
 
 !$omp target exit data map(delete: var%arr)
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target exit data map\(delete:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\]\[implicit\]\) map\(delete:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target exit data map\(delete:\*\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[len: D\.[0-9]+ \* [0-9]+\] \[runtime_implicit\]\) map\(delete:var\.arr \[pointer set, len: [0-9]+\]\) map\(attach_detach:\(integer\(kind=[0-9]+\)\[0:\] \*\) var\.arr\.data \[bias: 0\]\)$} 1 "original" } }
 
 
 end

@@ -1,5 +1,17 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	Backported from trunk:
+	2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/gomp/defaultmap-4.c: Adjust.
+	* c-c++-common/gomp/defaultmap-5.c: Likewise.
+	* c-c++-common/gomp/target-implicit-map-1.c: Likewise.
+	* c-c++-common/gomp/target-implicit-map-2.c: Likewise.
+	* gfortran.dg/gomp/defaultmap-8.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-9.f90: Likewise.
+	* gfortran.dg/gomp/map-subarray.f90: Likewise.
+	* gfortran.dg/gomp/target-enter-exit-data.f90: Likewise.
+
 	* gfortran.dg/goacc/loop-2-serial-tile.f95: Adjust.
 
 	Backported from trunk:

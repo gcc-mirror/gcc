@@ -1,6 +1,12 @@
 2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* tree-pretty-print.cc (dump_omp_clause): Clarify
+	'OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P'.
+
+	Backported from trunk:
 	2025-01-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* doc/invoke.texi (Nvidia PTX Options): Update '-march-map=sm_50'.
