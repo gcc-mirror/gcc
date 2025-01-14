@@ -1642,6 +1642,13 @@ package body Accessibility is
              (No (Extra_Accessibility_Of_Result (Scope_Id))
                and then Is_Formal_Of_Current_Function (Assoc_Expr)
                and then Is_Tagged_Type (Etype (Scope_Id)))
+
+           --  Disable the check generation when we are only checking semantics
+           --  since required locals do not get generated (e.g. extra
+           --  accessibility of result), and constant folding can occur and
+           --  lead to spurious errors.
+
+           and then Operating_Mode /= Check_Semantics
          then
             --  Generate a dynamic check based on the extra accessibility of
             --  the result or the scope of the current function.
