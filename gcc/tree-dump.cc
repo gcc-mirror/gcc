@@ -697,6 +697,13 @@ dequeue_and_dump (dump_info_p di)
 	  dump_child ("op: ", OMP_CLAUSE_OPERAND (t, i));
       }
       break;
+
+    case OBJ_TYPE_REF:
+      dump_child ("expr", OBJ_TYPE_REF_EXPR (t));
+      dump_child ("obj", OBJ_TYPE_REF_OBJECT (t));
+      dump_child ("tok", OBJ_TYPE_REF_TOKEN (t));
+      break;
+
     default:
       /* There are no additional fields to print.  */
       break;
