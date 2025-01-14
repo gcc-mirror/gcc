@@ -7806,6 +7806,7 @@ package body Sem_Res is
          then
             Set_Entity (N, Local);
             Set_Etype (N, Etype (Local));
+            Generate_Reference (Local, N);
          end if;
 
          return OK;
