@@ -2,12 +2,12 @@
    TEST_OUTPUT:
 ---
 fail_compilation/test18282.d(25): Error: returning scope variable `aa` is not allowed in a `@safe` function
-fail_compilation/test18282.d(34): Error: escaping a reference to local variable `i by copying `& i` into allocated memory is not allowed in a `@safe` function
-fail_compilation/test18282.d(35): Error: escaping a reference to local variable `i by copying `& i` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(34): Error: escaping a reference to local variable `i` by copying `& i` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(35): Error: escaping a reference to local variable `i` by copying `& i` into allocated memory is not allowed in a `@safe` function
 fail_compilation/test18282.d(36): Error: returning scope variable `staa` is not allowed in a `@safe` function
-fail_compilation/test18282.d(44): Error: escaping a reference to local variable `i by copying `S2000(& i)` into allocated memory is not allowed in a `@safe` function
-fail_compilation/test18282.d(53): Error: escaping a reference to local variable `i by copying `& i` into allocated memory is not allowed in a `@safe` function
-fail_compilation/test18282.d(53): Error: escaping a reference to local variable `c by copying `& c` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(44): Error: escaping a reference to local variable `i` by copying `S2000(& i)` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(53): Error: escaping a reference to local variable `i` by copying `& i` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(53): Error: escaping a reference to local variable `c` by copying `& c` into allocated memory is not allowed in a `@safe` function
 ---
  */
 
@@ -57,9 +57,9 @@ void bar3()
 /******************************
 TEST_OUTPUT:
 ---
-fail_compilation/test18282.d(1007): Error: escaping a reference to local variable `foo by copying `& foo` into allocated memory is not allowed in a `@safe` function
-fail_compilation/test18282.d(1008): Error: escaping a reference to local variable `foo by copying `& foo` into allocated memory is not allowed in a `@safe` function
-fail_compilation/test18282.d(1009): Error: escaping a reference to local variable `foo by copying `& foo` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(1007): Error: escaping a reference to local variable `foo` by copying `& foo` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(1008): Error: escaping a reference to local variable `foo` by copying `& foo` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18282.d(1009): Error: escaping a reference to local variable `foo` by copying `& foo` into allocated memory is not allowed in a `@safe` function
 fail_compilation/test18282.d(1016): Error: escaping a reference to parameter `this` by copying `&this` into allocated memory is not allowed in a `@safe` function
 ---
 */

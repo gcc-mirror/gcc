@@ -269,7 +269,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
         return null;
 
     //printf("StructDeclaration::buildOpAssign() %s\n", sd.toChars());
-    StorageClass stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
+    StorageClass stc = STC.safe;
     Loc declLoc = sd.loc;
     Loc loc; // internal code should have no loc to prevent coverage
 
@@ -1278,7 +1278,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
     const hasUserDefinedPosblit = sd.postblits.length && !sd.postblits[0].isDisabled ? true : false;
 
     // by default, the storage class of the created postblit
-    StorageClass stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
+    StorageClass stc = STC.safe;
     Loc declLoc = sd.postblits.length ? sd.postblits[0].loc : sd.loc;
     Loc loc; // internal code should have no loc to prevent coverage
 
@@ -1380,6 +1380,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
         // perform semantic on the member postblit in order to
         // be able to aggregate it later on with the rest of the
         // postblits
+        sdv.postblit.isGenerated = true;
         functionSemantic(sdv.postblit);
 
         stc = mergeFuncAttrs(stc, sdv.postblit);
@@ -1445,6 +1446,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
          */
         if (sdv.dtor)
         {
+            sdv.dtor.isGenerated = true;
             functionSemantic(sdv.dtor);
 
             // keep a list of fields that need to be destroyed in case
@@ -1545,25 +1547,27 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
 }
 
 /**
- * Generates a copy constructor declaration with the specified storage
+ * Generates a copy or move constructor declaration with the specified storage
  * class for the parameter and the function.
  *
  * Params:
- *  sd = the `struct` that contains the copy constructor
- *  paramStc = the storage class of the copy constructor parameter
- *  funcStc = the storage class for the copy constructor declaration
+ *  sd = the `struct` that contains the constructor
+ *  paramStc = the storage class of the constructor parameter
+ *  funcStc = the storage class for the constructor declaration
+ *  move = true for move constructor, false for copy constructor
  *
  * Returns:
  *  The copy constructor declaration for struct `sd`.
  */
-private CtorDeclaration generateCopyCtorDeclaration(StructDeclaration sd, const StorageClass paramStc, const StorageClass funcStc)
+private CtorDeclaration generateCtorDeclaration(StructDeclaration sd, const StorageClass paramStc, const StorageClass funcStc, bool move)
 {
     auto fparams = new Parameters();
     auto structType = sd.type;
-    fparams.push(new Parameter(Loc.initial, paramStc | STC.ref_ | STC.return_ | STC.scope_, structType, Id.p, null, null));
+    StorageClass stc = move ? 0 : STC.ref_;     // the only difference between copy or move
+    fparams.push(new Parameter(Loc.initial, paramStc | stc, structType, Id.p, null, null));
     ParameterList pList = ParameterList(fparams);
     auto tf = new TypeFunction(pList, structType, LINK.d, STC.ref_);
-    auto ccd = new CtorDeclaration(sd.loc, Loc.initial, STC.ref_, tf, true);
+    auto ccd = new CtorDeclaration(sd.loc, Loc.initial, STC.ref_, tf);
     ccd.storage_class |= funcStc;
     ccd.storage_class |= STC.inference;
     ccd.isGenerated = true;
@@ -1571,33 +1575,93 @@ private CtorDeclaration generateCopyCtorDeclaration(StructDeclaration sd, const 
 }
 
 /**
- * Generates a trivial copy constructor body that simply does memberwise
- * initialization:
+ * Generates a trivial copy or move constructor body that simply does memberwise
+ * initialization.
  *
+ * for copy construction:
  *    this.field1 = rhs.field1;
  *    this.field2 = rhs.field2;
  *    ...
+ * for move construction:
+ *    this.field1 = __rvalue(rhs.field1);
+ *    this.field2 = __rvalue(rhs.field2);
+ *    ...
  *
  * Params:
- *  sd = the `struct` declaration that contains the copy constructor
+ *  sd = the `struct` declaration that contains the constructor
+ *  move = true for move constructor, false for copy constructor
  *
  * Returns:
- *  A `CompoundStatement` containing the body of the copy constructor.
+ *  A `CompoundStatement` containing the body of the constructor.
  */
-private Statement generateCopyCtorBody(StructDeclaration sd)
+private Statement generateCtorBody(StructDeclaration sd, bool move)
 {
     Loc loc;
     Expression e;
     foreach (v; sd.fields)
     {
+        Expression rhs = new DotVarExp(loc, new IdentifierExp(loc, Id.p), v);
+        if (move)
+            rhs.rvalue = true;
         auto ec = new AssignExp(loc,
             new DotVarExp(loc, new ThisExp(loc), v),
-            new DotVarExp(loc, new IdentifierExp(loc, Id.p), v));
+            rhs);
         e = Expression.combine(e, ec);
         //printf("e.toChars = %s\n", e.toChars());
     }
     Statement s1 = new ExpStatement(loc, e);
     return new CompoundStatement(loc, s1);
+}
+
+/******************************************
+ * Find root `this` constructor for struct sd.
+ * (root is starting position for overloaded constructors)
+ * Params:
+ *  sd = the `struct` to be searched
+ *  ctor = `this` if found, otherwise null
+ * Result:
+ *  false means `this` found in overload set
+ */
+private bool findStructConstructorRoot(StructDeclaration sd, out Dsymbol ctor)
+{
+    ctor = sd.search(sd.loc, Id.ctor); // Aggregate.searchCtor() ?
+    if (ctor)
+    {
+        if (ctor.isOverloadSet())
+            return false;
+        if (auto td = ctor.isTemplateDeclaration())
+            ctor = td.funcroot;
+    }
+    return true;
+}
+
+/***********************************************
+ * Find move and copy constructors (if any) starting at `ctor`
+ * Params:
+ *      ctor = `this` constructor root
+ *      copyCtor = set to first copy constructor found, or null
+ *      moveCtor = set to first move constructor found, or null
+ */
+private void findMoveAndCopyConstructors(Dsymbol ctor, out CtorDeclaration copyCtor, out CtorDeclaration moveCtor)
+{
+    overloadApply(ctor, (Dsymbol s)
+    {
+        if (s.isTemplateDeclaration())
+            return 0;
+        auto ctorDecl = s.isCtorDeclaration();
+        assert(ctorDecl);
+        if (ctorDecl.isCpCtor)
+        {
+            if (!copyCtor)
+                copyCtor = ctorDecl;
+        }
+        else if (ctorDecl.isMoveCtor)
+        {
+            if (!moveCtor)
+                moveCtor = ctorDecl;
+        }
+        return 0;
+    });
 }
 
 /**
@@ -1609,69 +1673,42 @@ private Statement generateCopyCtorBody(StructDeclaration sd)
  *
  * Params:
  *  sd = the `struct` for which the copy constructor is generated
- *  hasCpCtor = set to true if a copy constructor is already present
+ *  hasCopyCtor = set to true if a copy constructor is already present
  *  hasMoveCtor = set to true if a move constructor is already present
+ *  needCopyCtor = set to true if a copy constructor is not present, but needed
+ *  needMoveCtor = set to true if a move constructor is not present, but needed
  *
  * Returns:
  *  `true` if one needs to be generated
  *  `false` otherwise
  */
-bool needCopyCtor(StructDeclaration sd, out bool hasCpCtor, out bool hasMoveCtor)
+void needCopyOrMoveCtor(StructDeclaration sd, out bool hasCopyCtor, out bool hasMoveCtor, out bool needCopyCtor, out bool needMoveCtor)
 {
-    //printf("needCopyCtor() %s\n", sd.toChars());
+    //printf("needCopyOrMoveCtor() %s\n", sd.toChars());
     if (global.errors)
-        return false;
+        return;
 
-    auto ctor = sd.search(sd.loc, Id.ctor);
+    Dsymbol ctor;
+    if (!findStructConstructorRoot(sd, ctor))
+        return;
+
+    CtorDeclaration copyCtor;
+    CtorDeclaration moveCtor;
+
     if (ctor)
-    {
-        if (ctor.isOverloadSet())
-            return false;
-        if (auto td = ctor.isTemplateDeclaration())
-            ctor = td.funcroot;
-    }
+        findMoveAndCopyConstructors(ctor, copyCtor, moveCtor);
 
-    CtorDeclaration cpCtor;
-    CtorDeclaration rvalueCtor;
-
-    if (!ctor)
-        goto LcheckFields;
-
-    overloadApply(ctor, (Dsymbol s)
-    {
-        if (s.isTemplateDeclaration())
-            return 0;
-        auto ctorDecl = s.isCtorDeclaration();
-        assert(ctorDecl);
-        if (ctorDecl.isCpCtor)
-        {
-            if (!cpCtor)
-                cpCtor = ctorDecl;
-            return 0;
-        }
-
-        if (ctorDecl.isMoveCtor)
-            rvalueCtor = ctorDecl;
-        return 0;
-    });
-
-    if (rvalueCtor)
+    if (moveCtor)
         hasMoveCtor = true;
 
-    if (cpCtor)
-    {
-        if (0 && rvalueCtor)
-        {
-            .error(sd.loc, "`struct %s` may not define both a rvalue constructor and a copy constructor", sd.toChars());
-            errorSupplemental(rvalueCtor.loc,"rvalue constructor defined here");
-            errorSupplemental(cpCtor.loc, "copy constructor defined here");
-        }
-        hasCpCtor = true;
-        return false;
-    }
+    if (copyCtor)
+        hasCopyCtor = true;
 
-LcheckFields:
+    if (hasMoveCtor && hasCopyCtor)
+        return;
+
     VarDeclaration fieldWithCpCtor;
+    VarDeclaration fieldWithMoveCtor;
     // see if any struct members define a copy constructor
     foreach (v; sd.fields)
     {
@@ -1686,20 +1723,25 @@ LcheckFields:
         if (ts.sym.hasCopyCtor)
         {
             fieldWithCpCtor = v;
-            break;
+        }
+        if (ts.sym.hasMoveCtor)
+        {
+            fieldWithMoveCtor = v;
         }
     }
 
-    if (fieldWithCpCtor && rvalueCtor)
+    if (0 && fieldWithCpCtor && moveCtor)
     {
         .error(sd.loc, "`struct %s` may not define a rvalue constructor and have fields with copy constructors", sd.toChars());
-        errorSupplemental(rvalueCtor.loc,"rvalue constructor defined here");
+        errorSupplemental(moveCtor.loc,"rvalue constructor defined here");
         errorSupplemental(fieldWithCpCtor.loc, "field with copy constructor defined here");
-        return false;
+        return;
     }
-    else if (!fieldWithCpCtor)
-        return false;
-    return true;
+
+    if (fieldWithCpCtor && !hasCopyCtor)
+        needCopyCtor = true;
+    if (fieldWithMoveCtor && !hasMoveCtor)
+        needMoveCtor = true;
 }
 
 /**
@@ -1713,28 +1755,20 @@ LcheckFields:
  *   }
  *
  * Params:
- *  sd = the `struct` for which the copy constructor is generated
- *  sc = the scope where the copy constructor is generated
- *  hasMoveCtor = set to true when a move constructor is also detected
- *
- * Returns:
- *  `true` if `struct` sd defines a copy constructor (explicitly or generated),
- *  `false` otherwise.
+ *  sd = the `struct` for which the constructor is generated
+ *  sc = the scope where the constructor is generated
+ *  move = true means generate the move constructor, otherwise copy constructor
  * References:
  *   https://dlang.org/spec/struct.html#struct-copy-constructor
  */
-bool buildCopyCtor(StructDeclaration sd, Scope* sc, out bool hasMoveCtor)
+void buildCopyOrMoveCtor(StructDeclaration sd, Scope* sc, bool move)
 {
-    bool hasCpCtor;
-    if (!needCopyCtor(sd, hasCpCtor, hasMoveCtor))
-        return hasCpCtor;
-
-    //printf("generating copy constructor for %s\n", sd.toChars());
+    //printf("buildCopyOrMoveCtor() generating %s constructor for %s\n", move ? "move".ptr : "copy".ptr, sd.toChars());
     const MOD paramMod = MODFlags.wild;
     const MOD funcMod = MODFlags.wild;
-    auto ccd = generateCopyCtorDeclaration(sd, ModToStc(paramMod), ModToStc(funcMod));
-    auto copyCtorBody = generateCopyCtorBody(sd);
-    ccd.fbody = copyCtorBody;
+    auto ccd = generateCtorDeclaration(sd, ModToStc(paramMod), ModToStc(funcMod), move);
+    auto ctorBody = generateCtorBody(sd, move);
+    ccd.fbody = ctorBody;
     sd.members.push(ccd);
     ccd.addMember(sc, sd);
     const errors = global.startGagging();
@@ -1751,5 +1785,4 @@ bool buildCopyCtor(StructDeclaration sd, Scope* sc, out bool hasMoveCtor)
         ccd.storage_class |= STC.disable;
         ccd.fbody = null;
     }
-    return true;
 }

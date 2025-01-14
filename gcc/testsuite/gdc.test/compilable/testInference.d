@@ -817,4 +817,22 @@ void test13840() nothrow
     {}
 }
 
-// Add more tests regarding inferences later.
+/***************************************************/
+// https://github.com/dlang/dmd/pull/20685
+
+struct T1
+{
+    int a;
+    inout this(ref inout T1 t) @nogc nothrow pure { a = t.a; }
+}
+
+struct S1
+{
+    T1 t; // generate copy constructor, infer @nogc nothrow pure
+}
+
+void test1() @nogc nothrow pure
+{
+    S1 s;
+    S1 t = s;
+}

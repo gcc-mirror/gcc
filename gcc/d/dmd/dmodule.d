@@ -310,8 +310,9 @@ extern (C++) class Package : ScopeDsymbol
             packages ~= s.ident;
         reverse(packages);
 
-        if (Module.find(getFilename(packages, ident)))
-            Module.load(Loc.initial, packages, this.ident);
+        ImportPathInfo pathThatFoundThis;
+        if (Module.find(getFilename(packages, ident), pathThatFoundThis))
+            Module.load(Loc.initial, packages, this.ident, pathThatFoundThis);
         else
             isPkgMod = PKG.package_;
     }
@@ -499,12 +500,18 @@ extern (C++) final class Module : Package
 
     static const(char)* find(const(char)* filename)
     {
-        return find(filename.toDString).ptr;
+        ImportPathInfo pathThatFoundThis; // is this needed? In fact is this function needed still???
+        return find(filename.toDString, pathThatFoundThis).ptr;
     }
 
-    extern (D) static const(char)[] find(const(char)[] filename)
+    extern (D) static const(char)[] find(const(char)[] filename, out ImportPathInfo pathThatFoundThis)
     {
-        return global.fileManager.lookForSourceFile(filename, global.path[]);
+        ptrdiff_t whichPathFoundThis;
+        const(char)[] ret = global.fileManager.lookForSourceFile(filename, global.path[], whichPathFoundThis);
+
+        if (whichPathFoundThis >= 0)
+            pathThatFoundThis = global.path[whichPathFoundThis];
+        return ret;
     }
 
     extern (C++) static Module load(const ref Loc loc, Identifiers* packages, Identifier ident)
@@ -512,7 +519,7 @@ extern (C++) final class Module : Package
         return load(loc, packages ? (*packages)[] : null, ident);
     }
 
-    extern (D) static Module load(const ref Loc loc, Identifier[] packages, Identifier ident)
+    extern (D) static Module load(const ref Loc loc, Identifier[] packages, Identifier ident, ImportPathInfo pathInfo = ImportPathInfo.init)
     {
         //printf("Module::load(ident = '%s')\n", ident.toChars());
         // Build module filename by turning:
@@ -521,10 +528,16 @@ extern (C++) final class Module : Package
         //  foo\bar\baz
         const(char)[] filename = getFilename(packages, ident);
         // Look for the source file
-        if (const result = find(filename))
+        ImportPathInfo importPathThatFindUs;
+        if (const result = find(filename, importPathThatFindUs))
+        {
             filename = result; // leaks
+            pathInfo = importPathThatFindUs;
+        }
 
         auto m = new Module(loc, filename, ident, 0, 0);
+
+        // TODO: apply import path information (pathInfo) on to module
 
         if (!m.read(loc))
             return null;
@@ -662,7 +675,7 @@ extern (C++) final class Module : Package
             if (global.path.length)
             {
                 foreach (i, p; global.path[])
-                    fprintf(stderr, "import path[%llu] = %s\n", cast(ulong)i, p);
+                    fprintf(stderr, "import path[%llu] = %s\n", cast(ulong)i, p.path);
             }
             else
             {

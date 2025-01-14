@@ -100,7 +100,6 @@ bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
  *      loc = the location for reporting line nunbers in errors
  *      t   = the type to get the type of the `TypeInfo` object for
  *      sc  = the scope
- *      genObjCode = if true, object code will be generated for the obtained TypeInfo
  * Returns:
  *      The type of the `TypeInfo` object associated with `t`
  */

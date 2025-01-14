@@ -2796,7 +2796,7 @@ public:
     {
         if (vd._init && !vd._init.isVoidInitializer())
             return AST.initializerToExpression(vd._init);
-        else if (auto ts = vd.type.isTypeStruct())
+        if (auto ts = vd.type.isTypeStruct())
         {
             if (!ts.sym.noDefaultCtor && !ts.sym.isUnionDeclaration())
             {

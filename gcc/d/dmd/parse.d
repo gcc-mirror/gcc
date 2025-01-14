@@ -2146,11 +2146,11 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         nextToken();
         if (id == Id.Windows)
             return returnLinkage(LINK.windows);
-        else if (id == Id.D)
+        if (id == Id.D)
             return returnLinkage(LINK.d);
-        else if (id == Id.System)
+        if (id == Id.System)
             return returnLinkage(LINK.system);
-        else if (id == Id.Objective) // Looking for tokens "Objective-C"
+        if (id == Id.Objective) // Looking for tokens "Objective-C"
         {
             if (token.value != TOK.min)
                 return invalidLinkage();

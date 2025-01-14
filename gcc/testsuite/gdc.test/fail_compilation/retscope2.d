@@ -296,7 +296,7 @@ fail_compilation/retscope2.d(1024): Error: assigning scope variable `p` to non-s
 fail_compilation/retscope2.d(1107): Error: returning scope variable `dg` is not allowed in a `@safe` function
 fail_compilation/retscope2.d(1216): Error: returning `s.foo()` escapes a reference to local variable `s`
 fail_compilation/retscope2.d(1233): Error: returning `t.foo()` escapes a reference to local variable `t`
-fail_compilation/retscope2.d(1306): Error: escaping a reference to local variable `i by copying `& i` into allocated memory is not allowed in a `@safe` function
+fail_compilation/retscope2.d(1306): Error: escaping a reference to local variable `i` by copying `& i` into allocated memory is not allowed in a `@safe` function
 ---
 */
 

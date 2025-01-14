@@ -906,7 +906,7 @@ public:
         arrayStart();
         foreach (importPath; global.params.imppath[])
         {
-            item(importPath.toDString);
+            item(importPath.path.toDString);
         }
         arrayEnd();
 

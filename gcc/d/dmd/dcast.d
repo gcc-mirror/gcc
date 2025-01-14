@@ -474,7 +474,7 @@ MATCH implicitConvTo(Expression e, Type t)
         case Tint8:
             if (ty == Tuns64 && value & ~0x7FU)
                 return MATCH.nomatch;
-            else if (cast(byte)value != value)
+            if (cast(byte)value != value)
                 return MATCH.nomatch;
             break;
 
@@ -1499,12 +1499,11 @@ MATCH implicitConvTo(Type from, Type to)
         {
             if (from.mod == to.mod)
                 return MATCH.exact;
-            else if (MODimplicitConv(from.mod, to.mod))
+            if (MODimplicitConv(from.mod, to.mod))
                 return MATCH.constant;
-            else if (!((from.mod ^ to.mod) & MODFlags.shared_)) // for wild matching
+            if (!((from.mod ^ to.mod) & MODFlags.shared_)) // for wild matching
                 return MATCH.constant;
-            else
-                return MATCH.convert;
+            return MATCH.convert;
         }
 
         if (from.ty == Tvoid || to.ty == Tvoid)
@@ -4150,9 +4149,9 @@ Expression typeCombine(BinExp be, Scope* sc)
         // struct+struct, and class+class are errors
         if (t1.ty == Tstruct && t2.ty == Tstruct)
             return errorReturn();
-        else if (t1.ty == Tclass && t2.ty == Tclass)
+        if (t1.ty == Tclass && t2.ty == Tclass)
             return errorReturn();
-        else if (t1.ty == Taarray && t2.ty == Taarray)
+        if (t1.ty == Taarray && t2.ty == Taarray)
             return errorReturn();
     }
 
@@ -4399,10 +4398,9 @@ IntRange getIntRange(Expression e)
         VarDeclaration vd = e.var.isVarDeclaration();
         if (vd && vd.range)
             return vd.range._cast(e.type);
-        else if (vd && vd._init && !vd.type.isMutable() && (ie = vd.getConstInitializer()) !is null)
+        if (vd && vd._init && !vd.type.isMutable() && (ie = vd.getConstInitializer()) !is null)
             return getIntRange(ie);
-        else
-            return visit(e);
+        return visit(e);
     }
 
     IntRange visitComma(CommaExp e)

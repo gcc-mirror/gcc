@@ -666,6 +666,8 @@ extern (C++) class C18890_2
     Agg s;
 }
 
+void test18890()
+{
 version (CppMangle_Itanium)
 {
     static assert(C18890.__dtor.mangleof == "_ZN6C18890D1Ev");
@@ -690,6 +692,7 @@ version (CppMangle_MSVC)
         static assert(C18890_2.__xdtor.mangleof == "??_GC18890_2@@UEAAPEAXI@Z");
     }
 }
+}
 
 /**************************************/
 // https://issues.dlang.org/show_bug.cgi?id=18891
@@ -704,6 +707,8 @@ extern (C++) class C18891
     Agg s;
 }
 
+void test18891()
+{
 version (CppMangle_Itanium)
 {
     static assert(C18891.__dtor.mangleof == "_ZN6C18891D1Ev");
@@ -721,6 +726,7 @@ version (CppMangle_MSVC)
         static assert(C18891.__dtor.mangleof == "??1C18891@@UEAA@XZ");
         static assert(C18891.__xdtor.mangleof == "??_GC18891@@UEAAPEAXI@Z");
     }
+}
 }
 
 /**************************************/

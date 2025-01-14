@@ -67,9 +67,9 @@ else version (Posix)
         while (waited_pid == -1 && errno == EINTR);
         if (waited_pid == 0)
             return ChildStatus.running;
-        else if (errno ==  ECHILD)
+        if (errno ==  ECHILD)
             return ChildStatus.done; // someone called posix.syswait
-        else if (waited_pid != pid || status != 0)
+        if (waited_pid != pid || status != 0)
             onForkError();
         return ChildStatus.done;
     }

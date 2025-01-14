@@ -5,7 +5,7 @@ REQUIRED_ARGS: -preview=dip1000
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope6.d(6007): Error: escaping a reference to local variable `i by copying `& i` into allocated memory is not allowed in a `@safe` function
+fail_compilation/retscope6.d(6007): Error: escaping a reference to local variable `i` by copying `& i` into allocated memory is not allowed in a `@safe` function
 ---
 */
 

@@ -3348,7 +3348,7 @@ package(std) Rebindable2!T rebindable2(T)(T value)
 
             this(ref inout S rhs) @safe inout
             {
-                this.i = i;
+                this.i = rhs.i;
                 copied = true;
             }
         }

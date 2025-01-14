@@ -477,7 +477,7 @@ void gendocfile(Module m, const char[] ddoctext, const char* datetime, ErrorSink
     auto p = slice.ptr;
     for (size_t j = 0; j < slice.length; j++)
     {
-        char c = p[j];
+        const c = p[j];
         if (c == 0xFF && j + 1 < slice.length)
         {
             j++;
@@ -510,7 +510,7 @@ void escapeDdocString(ref OutBuffer buf, size_t start)
 {
     for (size_t u = start; u < buf.length; u++)
     {
-        char c = buf[u];
+        const c = buf[u];
         switch (c)
         {
         case '$':
@@ -637,7 +637,7 @@ private void escapeStrayParenthesis(Loc loc, ref OutBuffer buf, size_t start, bo
         for (size_t u = buf.length; u > start;)
         {
             u--;
-            char c = buf[u];
+            const c = buf[u];
             switch (c)
             {
             case ')':

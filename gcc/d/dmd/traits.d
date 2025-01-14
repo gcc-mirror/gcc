@@ -726,8 +726,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
 
         if (ClassDeclaration cd = agg.isClassDeclaration())
             return cd.com ? True() : False();
-        else
-            return False();
+        return False();
     }
     if (e.ident == Id.identifier)
     {

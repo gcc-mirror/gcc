@@ -2881,9 +2881,9 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
         default:
             if (auto be = e.isBinExp())
                 return visitBin(be);
-            else if (auto ue = e.isUnaExp())
+            if (auto ue = e.isUnaExp())
                 return visitUna(ue);
-            else if (auto de = e.isDefaultInitExp())
+            if (auto de = e.isDefaultInitExp())
                 return visitDefaultInit(e.isDefaultInitExp());
             return visit(e);
 

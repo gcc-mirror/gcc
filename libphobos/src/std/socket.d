@@ -15,7 +15,7 @@
 
 /**
  * Socket primitives.
- * Example: See $(SAMPLESRC listener.d) and $(SAMPLESRC htmlget.d)
+ * Example: See [listener.d](https://github.com/dlang/undeaD/blob/master/dmdsamples/listener.d) and [htmlget.d](https://github.com/dlang/undeaD/blob/master/dmdsamples/htmlget.d)
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Christopher E. Miller, $(HTTP klickverbot.at, David Nadlinger),
  *      $(HTTP thecybershadow.net, Vladimir Panteleev)

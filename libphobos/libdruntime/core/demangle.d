@@ -1758,13 +1758,10 @@ pure @safe:
 
                     if (parseMangledNameArg())
                         continue;
-                    else
-                    {
-                        dst.len = l;
-                        pos = p;
-                        brp = b;
-                        debug(trace) printf( "not a mangled name arg\n" );
-                    }
+                    dst.len = l;
+                    pos = p;
+                    brp = b;
+                    debug(trace) printf( "not a mangled name arg\n" );
                 }
                 if ( isDigit( front ) && isDigit( peek( 1 ) ) )
                 {

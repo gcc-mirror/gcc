@@ -197,6 +197,16 @@ else
         va_end(ap);
     }
 
+/// Callback for when the backend wants to report an error
+extern(C++) void errorBackend(const(char)* filename, uint linnum, uint charnum, const(char)* format, ...)
+{
+    const loc = Loc(filename, linnum, charnum);
+    va_list ap;
+    va_start(ap, format);
+    verrorReport(loc, format, ap, ErrorKind.error);
+    va_end(ap);
+}
+
 /**
  * Print additional details about an error message.
  * Doesn't increase the error count or print an additional error prefix.
@@ -420,7 +430,10 @@ else
  *      p1          = additional message prefix
  *      p2          = additional message prefix
  */
-extern (C++) void verrorReport(const ref Loc loc, const(char)* format, va_list ap, ErrorKind kind, const(char)* p1 = null, const(char)* p2 = null);
+private extern(C++) void verrorReport(const ref Loc loc, const(char)* format, va_list ap, ErrorKind kind, const(char)* p1 = null, const(char)* p2 = null);
+
+/// ditto
+private extern(C++) void verrorReport(const SourceLoc loc, const(char)* format, va_list ap, ErrorKind kind, const(char)* p1 = null, const(char)* p2 = null);
 
 /**
  * Implements $(D errorSupplemental), $(D warningSupplemental), and
@@ -433,7 +446,10 @@ extern (C++) void verrorReport(const ref Loc loc, const(char)* format, va_list a
  *      ap          = printf-style variadic arguments
  *      kind        = kind of error being printed
  */
-extern (C++) void verrorReportSupplemental(const ref Loc loc, const(char)* format, va_list ap, ErrorKind kind);
+private extern(C++) void verrorReportSupplemental(const ref Loc loc, const(char)* format, va_list ap, ErrorKind kind);
+
+/// ditto
+private extern(C++) void verrorReportSupplemental(const SourceLoc loc, const(char)* format, va_list ap, ErrorKind kind);
 
 /**
  * The type of the fatal error handler

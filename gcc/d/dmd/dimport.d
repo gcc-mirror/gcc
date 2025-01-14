@@ -50,16 +50,13 @@ extern (C++) final class Import : Dsymbol
                 // import [aliasId] = std.stdio;
                 return aliasId;
             }
-            else if (packages.length > 0)
+            if (packages.length > 0)
             {
                 // import [std].stdio;
                 return packages[0];
             }
-            else
-            {
-                // import [id];
-                return id;
-            }
+            // import [id];
+            return id;
         }
 
         super(loc, selectIdent());

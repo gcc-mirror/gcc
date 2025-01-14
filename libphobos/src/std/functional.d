@@ -1349,7 +1349,8 @@ template memoize(alias fun)
         alias memoize = impl;
     }
 
-    auto impl(Args...)(Args args) if (is(typeof(fun(args))))
+    auto impl(Args...)(Args args)
+    if (is(typeof(fun(args))))
     {
         import std.typecons : Tuple, tuple;
         import std.traits : Unqual;
@@ -1393,7 +1394,8 @@ template memoize(alias fun, uint maxSize)
         alias memoize = impl;
     }
 
-    auto impl(Args...)(Args args) if (is(typeof(fun(args))))
+    auto impl(Args...)(Args args)
+    if (is(typeof(fun(args))))
     {
         static if (args.length > 0)
         {

@@ -1294,7 +1294,7 @@ extern (C++) abstract class Type : ASTNode
         {
             if (isImmutable())
                 return MODFlags.immutable_;
-            else if (isWildConst())
+            if (isWildConst())
             {
                 if (t.isWildConst())
                     return MODFlags.wild;

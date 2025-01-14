@@ -1050,7 +1050,7 @@ private extern(D) MATCH argumentMatchParameter (FuncDeclaration fd, TypeFunction
                     {
                         if (cfd.isCpCtor && !arg.isLvalue())
                             return MATCH.nomatch;       // copy constructor is only for lvalues
-                        else if (cfd.isMoveCtor && arg.isLvalue())
+                        if (cfd.isMoveCtor && arg.isLvalue())
                             return MATCH.nomatch;       // move constructor is only for rvalues
                     }
                     }
@@ -7470,7 +7470,7 @@ bool isRecursiveAliasThis(ref Type att, Type t)
     auto tb = t.toBasetype();
     if (att && tb.equivalent(att))
         return true;
-    else if (!att && tb.checkAliasThisRec())
+    if (!att && tb.checkAliasThisRec())
         att = tb;
     return false;
 }

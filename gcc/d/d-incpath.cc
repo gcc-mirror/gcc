@@ -133,7 +133,7 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
 	  bool found = false;
 	  for (size_t i = 0; i < global.params.imppath.length; i++)
 	    {
-	      if (strcmp (path, global.params.imppath[i]) == 0)
+	      if (strcmp (path, global.params.imppath[i].path) == 0)
 		{
 		  found = true;
 		  break;
@@ -160,7 +160,7 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
   /* Add import search paths.  */
   for (size_t i = 0; i < global.params.imppath.length; i++)
     {
-      const char *path = global.params.imppath[i];
+      const char *path = global.params.imppath[i].path;
       if (path)
 	{
 	  Strings array;

@@ -194,6 +194,56 @@ void test8()
 
 /********************************/
 
+struct T9
+{
+    int i;
+    inout this(ref inout T9 t) { this.i = t.i - 1; printf("this(ref T9)\n"); }
+    inout this(inout T9 t)     { this.i = t.i + 1; printf("this(T9)\n"); }
+}
+
+struct S9
+{
+    T9 t;
+    //inout this(return ref scope inout S9 t);// { this.i = t.i - 1; printf("this(ref T9)\n"); }
+    //@system inout this(return scope inout S9 t);//     { this.i = t.i + 1; printf("this(T9)\n"); }
+}
+
+void test9()
+{
+    S9 s;
+    s.t.i = 3;
+    S9 u = s;
+    printf("u.t.i = %d\n", u.t.i);
+    assert(u.t.i == 2);
+
+    S9 v = __rvalue(u);
+    printf("v.t.i = %d\n", v.t.i);
+    assert(v.t.i == 3);
+}
+
+/********************************/
+// https://github.com/s-ludwig/taggedalgebraic/issues/75
+
+struct T10
+{
+    string s;
+    this(T10) {}
+    this(string v) { s = v; }
+}
+
+struct S10
+{
+    T10 p;
+}
+
+void test10()
+{
+    S10 s = S10(T10("hello"));
+    assert(s.p.s == "hello");
+}
+
+/********************************/
+
 int main()
 {
     test1();
@@ -204,6 +254,7 @@ int main()
     test6();
     test7();
     test8();
+    test9();
 
     return 0;
 }

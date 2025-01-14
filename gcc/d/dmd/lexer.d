@@ -643,7 +643,7 @@ class Lexer
 
                         if (isidchar(c))
                             continue;
-                        else if (c & 0x80)
+                        if (c & 0x80)
                         {
                             const s = p;
                             const u = decodeUTF();

@@ -2805,11 +2805,11 @@ extern (C++) final class FuncExp : Expression
     {
         if (td)
             return new FuncExp(loc, td.syntaxCopy(null));
-        else if (fd.semanticRun == PASS.initial)
+        if (fd.semanticRun == PASS.initial)
             return new FuncExp(loc, fd.syntaxCopy(null));
-        else // https://issues.dlang.org/show_bug.cgi?id=13481
-             // Prevent multiple semantic analysis of lambda body.
-            return new FuncExp(loc, fd);
+        // https://issues.dlang.org/show_bug.cgi?id=13481
+        // Prevent multiple semantic analysis of lambda body.
+        return new FuncExp(loc, fd);
     }
 
     override const(char)* toChars() const
@@ -3573,10 +3573,9 @@ TypeFunction calledFunctionType(CallExp ce)
     t = t.toBasetype();
     if (auto tf = t.isTypeFunction())
         return tf;
-    else if (auto td = t.isTypeDelegate())
+    if (auto td = t.isTypeDelegate())
         return td.nextOf().isTypeFunction();
-    else
-        return null;
+    return null;
 }
 
 FuncDeclaration isFuncAddress(Expression e, bool* hasOverloads = null) @safe

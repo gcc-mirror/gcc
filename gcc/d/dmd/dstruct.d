@@ -323,7 +323,9 @@ extern (C++) class StructDeclaration : AggregateDeclaration
 
         bool hasCpCtorLocal;
         bool hasMoveCtorLocal;
-        needCopyCtor(this, hasCpCtorLocal, hasMoveCtorLocal);
+        bool needCopyCtor;
+        bool needMoveCtor;
+        needCopyOrMoveCtor(this, hasCpCtorLocal, hasMoveCtorLocal, needCopyCtor, needMoveCtor);
 
         if (enclosing                      || // is nested
             search(this, loc, Id.postblit) || // has postblit

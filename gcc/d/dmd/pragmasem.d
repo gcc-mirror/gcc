@@ -511,10 +511,9 @@ package PINLINE evalPragmaInline(Loc loc, Scope* sc, Expressions* args)
     const opt = e.toBool();
     if (opt.isEmpty())
         return PINLINE.default_;
-    else if (opt.get())
+    if (opt.get())
         return PINLINE.always;
-    else
-        return PINLINE.never;
+    return PINLINE.never;
 }
 
 /**
@@ -566,11 +565,9 @@ private bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
     OutBuffer buf;
     if (expressionsToString(buf, sc, args, loc, "while evaluating `pragma(msg, %s)`", false))
         return false;
-    else
-    {
-        buf.writestring("\n");
-        fprintf(stderr, buf.extractChars);
-    }
+
+    buf.writestring("\n");
+    fprintf(stderr, buf.extractChars);
     return true;
 }
 

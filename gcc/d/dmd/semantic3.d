@@ -1333,7 +1333,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 // Don't allow D `immutable` and `shared` types to be interfaced with C++
                 if (type.isImmutable() || type.isShared())
                     return true;
-                else if (Type cpptype = target.cpp.parameterType(type))
+                if (Type cpptype = target.cpp.parameterType(type))
                     type = cpptype;
 
                 if (origType is null)

@@ -1226,10 +1226,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         {
             return 1;   // they are not equal
         }
-        else
-        {
-            return (r1 != r2);
-        }
+        return (r1 != r2);
     }
     else if (e1.type.isComplex())
     {
@@ -1242,33 +1239,30 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         // For structs, we only need to return 0 or 1 (< and > aren't legal).
         if (es1.sd != es2.sd)
             return 1;
-        else if ((!es1.elements || !es1.elements.length) && (!es2.elements || !es2.elements.length))
+        if ((!es1.elements || !es1.elements.length) && (!es2.elements || !es2.elements.length))
             return 0; // both arrays are empty
-        else if (!es1.elements || !es2.elements)
+        if (!es1.elements || !es2.elements)
             return 1;
-        else if (es1.elements.length != es2.elements.length)
+        if (es1.elements.length != es2.elements.length)
             return 1;
-        else
+        foreach (size_t i; 0 .. es1.elements.length)
         {
-            foreach (size_t i; 0 .. es1.elements.length)
-            {
-                Expression ee1 = (*es1.elements)[i];
-                Expression ee2 = (*es2.elements)[i];
+            Expression ee1 = (*es1.elements)[i];
+            Expression ee2 = (*es2.elements)[i];
 
-                // https://issues.dlang.org/show_bug.cgi?id=16284
-                if (ee1.op == EXP.void_ && ee2.op == EXP.void_) // if both are VoidInitExp
-                    continue;
+            // https://issues.dlang.org/show_bug.cgi?id=16284
+            if (ee1.op == EXP.void_ && ee2.op == EXP.void_) // if both are VoidInitExp
+                continue;
 
-                if (ee1 == ee2)
-                    continue;
-                if (!ee1 || !ee2)
-                    return 1;
-                const int cmp = ctfeRawCmp(loc, ee1, ee2, identity);
-                if (cmp)
-                    return 1;
-            }
-            return 0; // All elements are equal
+            if (ee1 == ee2)
+                continue;
+            if (!ee1 || !ee2)
+                return 1;
+            const int cmp = ctfeRawCmp(loc, ee1, ee2, identity);
+            if (cmp)
+                return 1;
         }
+        return 0; // All elements are equal
     }
     if (e1.op == EXP.assocArrayLiteral && e2.op == EXP.assocArrayLiteral)
     {
@@ -1361,11 +1355,11 @@ bool ctfeCmp(const ref Loc loc, EXP op, Expression e1, Expression e2)
 
     if (t1.isString() && t2.isString())
         return specificCmp(op, ctfeRawCmp(loc, e1, e2));
-    else if (t1.isReal())
+    if (t1.isReal())
         return realCmp(op, e1.toReal(), e2.toReal());
-    else if (t1.isImaginary())
+    if (t1.isImaginary())
         return realCmp(op, e1.toImaginary(), e2.toImaginary());
-    else if (t1.isUnsigned() || t2.isUnsigned())
+    if (t1.isUnsigned() || t2.isUnsigned())
         return intUnsignedCmp(op, e1.toInteger(), e2.toInteger());
     else
         return intSignedCmp(op, e1.toInteger(), e2.toInteger());
