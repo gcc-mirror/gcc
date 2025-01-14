@@ -1,3 +1,100 @@
+2025-01-13  Pascal Obry  <obry@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Update.
+	* gnat_ugn.texi: Regenerate.
+
+2025-01-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Restore calls
+	to Preanalyze_Spec_Expression that were replaced by calls to
+	Preanalyze_And_Resolve. Add documentation.
+	(Check_Aspect_At_Freeze_Point): Ditto.
+
+2025-01-13  Pascal Obry  <obry@adacore.com>
+
+	* mdll.adb: For the created DLL to be relocatable we do not want to use
+	the base file name when calling gnatdll.
+	* gnatdll.adb: Removes option -d which is not working anymore. And
+	when using a truly relocatable DLL the base-address has no real
+	meaning. Also reword the usage string for -d as we do not want to
+	specify relocatable as gnatdll can be used to create both
+	relocatable and non relocatable DLL.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-strunb.ads: Remove redundant parentheses inside NOT
+	operators.
+
+2025-01-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Build_Actual_Subtype_Of_Component): No action
+	under preanalysis.
+	* sem_ch5.adb (Set_Assignment_Type): If the right-hand side contains
+	target names, expansion has been disabled to prevent expansion that
+	might move target names out of the context of the assignment statement.
+	Restore temporarily the current compilation mode so that the actual
+	subtype can be built.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch4.adb (P_Factor): Warn when the operand of a unary operator
+	doesn't require parentheses.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-genbig.adb: Remove redundant parentheses in comments.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb, exp_dist.adb, exp_imgv.adb, exp_util.adb,
+	libgnarl/a-reatim.adb, libgnat/a-coinve.adb, libgnat/a-nbnbre.adb,
+	libgnat/a-ngcoty.adb, libgnat/a-ngelfu.adb, libgnat/a-ngrear.adb,
+	libgnat/a-strbou.ads, libgnat/a-strfix.ads, libgnat/a-strsea.adb,
+	libgnat/a-strsea.ads, libgnat/a-strsup.ads,
+	libgnat/a-strunb__shared.ads, libgnat/g-alleve.adb,
+	libgnat/g-spitbo.adb, libgnat/s-aridou.adb, libgnat/s-arit32.adb,
+	libgnat/s-dourea.ads, libgnat/s-genbig.adb, libgnat/s-imager.adb,
+	libgnat/s-statxd.adb, libgnat/s-widthi.adb, sem_attr.adb, sem_ch10.adb,
+	sem_ch3.adb, sem_ch6.adb, sem_ch7.adb, sem_dim.adb, sem_prag.adb,
+	sem_res.adb, uintp.adb: Remove redundant parentheses inside NOT and ABS
+	operators.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch3.adb (P_Discrete_Range): Detect redundant parentheses in the
+	lower bound like in the upper bound.
+
+2025-01-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Add another condition to prevent rewriting
+	an aggregate whose type is an array of characters, testing for the presence of
+	predicates on the component type.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb: (Expand_N_Not_In): Preserve Alternatives in expanded
+	membership operator just like preserving Right_Opnd (though only
+	one of these fields is present at a time).
+	* par-ch4.adb (P_Membership_Test): Remove redundant setting of fields
+	to their default values.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch3.adb (P_Discrete_Range): Replace N_Subexpr, which was catching
+	all subexpressions, with kinds that catch nodes that require
+	parentheses to become "simple expressions".
+
+2025-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valrea.adb (Large_Powfive) [2 parameters]: Add a couple
+	of additional comments.
+
+2025-01-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch4.adb (P_Relation): Prevent Expr_Form to be overwritten when
+	parsing the raise expression itself.
+	(P_Simple_Expression): Fix manipulation of Expr_Form.
+
 2025-01-10  squirek  <squirek@adacore.com>
 
 	* accessibility.adb:

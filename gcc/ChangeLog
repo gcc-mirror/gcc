@@ -1,3 +1,102 @@
+2025-01-14  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/117682
+	* config/riscv/riscv-v.cc (expand_const_vector): Fall back to
+	merging if either step is negative.
+
+2025-01-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115921
+	* config/riscv/riscv.md (<optab>_shift_reverse): Remove
+	check for TARGET_ZBA.
+
+2025-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118418
+	* simplify-rtx.cc (simplify_context::simplify_relational_operation_1):
+	Take STORE_FLAG_VALUE into account when handling signed comparisons
+	of comparison results.
+
+2025-01-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115921
+	* config/riscv/riscv.md (<optab>_shift_reverse): Only check
+	popcount_hwi if !TARGET_ZBS.
+
+2025-01-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-vsetvl.cc (demand_system::use_max_sew): Also
+	set the ratio for PREV.
+
+2025-01-13  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_register_move_cost): Remove buggy
+	check.
+
+2025-01-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Change
+	1UL/1ULL to HOST_WIDE_INT_1U.
+
+2025-01-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/107455
+	* postreload.cc (reload_cse_regs_1): Take advantage of conditional
+	equivalences.
+
+2025-01-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118409
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Apply the
+	signbit mask to the right-hand XOR operand too.
+
+2025-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115910
+	* expr.cc (expand_expr_divmod): Prefix the TDF_DETAILS note with
+	";; " and add a space before (needed tie breaker).  Formatting fixes.
+
+2025-01-13  Richard Biener  <rguenther@suse.de>
+	    Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/117119
+	* tree-data-ref.cc (initialize_matrix_A): Check whether
+	an INTEGER_CST fits in HWI, otherwise return chrec_dont_know.
+
+2025-01-13  Michal Jires  <mjires@suse.cz>
+
+	PR lto/118181
+	* lto-ltrans-cache.cc (ltrans_file_cache::create_item):
+	Pass checksum by reference.
+	* lto-ltrans-cache.h: Likewise.
+
+2025-01-13  Michal Jires  <mjires@suse.cz>
+
+	* lockfile.cc (LOCKFILE_USE_FCNTL): New.
+	(lockfile::lock_write): Use LOCKFILE_USE_FCNTL.
+	(lockfile::try_lock_write): Use LOCKFILE_USE_FCNTL.
+	(lockfile::lock_read): Use LOCKFILE_USE_FCNTL.
+	(lockfile::unlock): Use LOCKFILE_USE_FCNTL.
+	(lockfile::lockfile_supported): Use LOCKFILE_USE_FCNTL.
+
+2025-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi2):
+	Refactor to avoid redundant TARGET_AVX512BW in many places.
+
+2025-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117997
+	PR middle-end/118415
+	* expr.cc (assemble_crc_table): Make static, remove id argument,
+	use output_constant_def.  Emit note if -fdump-rtl-expand-details
+	about which table has been emitted.
+	(generate_crc_table): Make static, adjust assemble_crc_table
+	caller, call it always.
+	(calculate_table_based_CRC): Make static.
+	* internal-fn.cc (expand_crc_optab_fn): Emit note if
+	-fdump-rtl-expand-details about using optab for crc.  Formatting fix.
+
 2025-01-12  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* config/alpha/alpha.cc (alpha_expand_block_move): Use a HImode

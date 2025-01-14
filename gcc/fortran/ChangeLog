@@ -1,3 +1,12 @@
+2025-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.cc (show_attr): Fix typos for in_equivalence.
+
+2025-01-13  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_declare_variant): Match comma after directive
+	name and between clauses. Emit more useful diagnostics.
+
 2025-01-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.cc (show_attr): Dump all symbol attributes.

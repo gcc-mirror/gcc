@@ -1,3 +1,20 @@
+2025-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116557
+	* COPYING.FDL: Remove physical address and replace with a URL.
+
+2025-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118453
+	* gm2-compiler/M2Check.mod (buildError4): Call MetaError1
+	for the actual and formal parameter type.
+	* gm2-compiler/P2Build.bnf (SubrangeType): Construct a virtual
+	token containing the subrange type declaration.
+	(PrefixedSubrangeType): Ditto.
+	* gm2-compiler/P2SymBuild.def (BuildSubrange): Add tok parameter.
+	* gm2-compiler/P2SymBuild.mod (BuildSubrange): Use tok parameter,
+	rather than the token at the start of the subrange.
+
 2025-01-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118010

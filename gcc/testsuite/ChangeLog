@@ -1,3 +1,81 @@
+2025-01-14  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/117682
+	* gcc.target/riscv/rvv/autovec/pr117682.c: New test.
+
+2025-01-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/stack_save_restore_1.c: Skip for -flto.
+	* gcc.target/riscv/stack_save_restore_2.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-04.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-05.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-06.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-07.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-08.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-09.c: Ditto.
+
+2025-01-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115921
+	* gcc.target/riscv/zba-shNadd-08.c: New test.
+
+2025-01-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/bug-10.c: New test.
+
+2025-01-13  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gfortran.dg/gomp/declare-variant-2.f90: Remove error test for a comma
+	after the directive name. Add tests for other invalid syntaxes (extra
+	comma and invalid clause).
+	* c-c++-common/gomp/adjust-args-5.c: New test.
+	* gfortran.dg/gomp/adjust-args-11.f90: New test.
+
+2025-01-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/zbs-bug.c: New test.
+
+2025-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118453
+	* gm2/pim/fail/badbecomes2.mod: New test.
+	* gm2/pim/fail/badparamset1.mod: New test.
+	* gm2/pim/fail/badparamset2.mod: New test.
+	* gm2/pim/fail/badsyntaxset1.mod: New test.
+
+2025-01-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/107455
+	* gcc.target/riscv/pr107455-1.c: New test.
+	* gcc.target/riscv/pr107455-2.c: New test.
+
+2025-01-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118409
+	* gcc.dg/field-merge-20.c: New.
+
+2025-01-13  Richard Biener  <rguenther@suse.de>
+	    Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/117119
+	* gcc.dg/torture/pr117119.c: New testcase.
+
+2025-01-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f:
+	Un-XFAIL 'dg-note's.
+
+2025-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/crc-builtin-target32.c: Add -fdump-rtl-expand-details
+	as dg-additional-options.  Scan expand dump rather than assembly,
+	adjust the regexps.
+	* gcc.dg/crc-builtin-target64.c: Likewise.
+	* gcc.dg/crc-builtin-rev-target32.c: Likewise.
+	* gcc.dg/crc-builtin-rev-target64.c: Likewise.
+	* gcc.dg/pr117997.c: New test.
+	* gcc.dg/pr118415.c: New test.
+
 2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/asm3.d: Adjust test.

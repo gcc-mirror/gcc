@@ -1,3 +1,8 @@
+2025-01-13  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* testsuite/libgomp.fortran/dispatch-1.f90: Add missing target
+	directive.
+
 2025-01-09  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/65181

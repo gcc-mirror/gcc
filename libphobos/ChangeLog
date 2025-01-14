@@ -1,3 +1,9 @@
+2025-01-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117701
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 6:0:0.
+
 2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime c7902293d7.
