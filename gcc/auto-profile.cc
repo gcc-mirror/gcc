@@ -848,8 +848,8 @@ autofdo_source_profile::get_callsite_total_count (
 
   function_instance *s = get_function_instance_by_inline_stack (stack);
   if (s == NULL
-      || afdo_string_table->get_index (IDENTIFIER_POINTER (
-             DECL_ASSEMBLER_NAME (edge->callee->decl))) != s->name ())
+      ||(afdo_string_table->get_index_by_decl (edge->callee->decl)
+	 != s->name()))
     return 0;
 
   return s->total_count ();
