@@ -3111,6 +3111,16 @@ enum gfc_exec_op
   EXEC_OMP_ERROR, EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS, EXEC_OMP_DISPATCH
 };
 
+/* Enum Definition for locality types.  */
+enum locality_type
+{
+  LOCALITY_LOCAL = 0,
+  LOCALITY_LOCAL_INIT,
+  LOCALITY_SHARED,
+  LOCALITY_REDUCE,
+  LOCALITY_NUM
+};
+
 typedef struct gfc_code
 {
   gfc_exec_op op;
@@ -3131,6 +3141,20 @@ typedef struct gfc_code
   {
     gfc_actual_arglist *actual;
     gfc_iterator *iterator;
+    gfc_open *open;
+    gfc_close *close;
+    gfc_filepos *filepos;
+    gfc_inquire *inquire;
+    gfc_wait *wait;
+    gfc_dt *dt;
+    struct gfc_code *which_construct;
+    gfc_entry_list *entry;
+    gfc_oacc_declare *oacc_declare;
+    gfc_omp_clauses *omp_clauses;
+    const char *omp_name;
+    gfc_omp_namelist *omp_namelist;
+    bool omp_bool;
+    int stop_code;
 
     struct
     {
@@ -3152,21 +3176,13 @@ typedef struct gfc_code
     }
     block;
 
-    gfc_open *open;
-    gfc_close *close;
-    gfc_filepos *filepos;
-    gfc_inquire *inquire;
-    gfc_wait *wait;
-    gfc_dt *dt;
-    gfc_forall_iterator *forall_iterator;
-    struct gfc_code *which_construct;
-    int stop_code;
-    gfc_entry_list *entry;
-    gfc_oacc_declare *oacc_declare;
-    gfc_omp_clauses *omp_clauses;
-    const char *omp_name;
-    gfc_omp_namelist *omp_namelist;
-    bool omp_bool;
+    struct
+    {
+      gfc_forall_iterator *forall_iterator;
+      gfc_expr_list *locality[LOCALITY_NUM];
+      bool default_none;
+    }
+    concur;
   }
   ext;		/* Points to additional structures required by statement */
 

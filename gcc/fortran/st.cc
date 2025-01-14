@@ -189,8 +189,11 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_DO_CONCURRENT:
+      for (int i = 0; i < LOCALITY_NUM; i++)
+	gfc_free_expr_list (p->ext.concur.locality[i]);
+      gcc_fallthrough ();
     case EXEC_FORALL:
-      gfc_free_forall_iterator (p->ext.forall_iterator);
+      gfc_free_forall_iterator (p->ext.concur.forall_iterator);
       break;
 
     case EXEC_OACC_DECLARE:

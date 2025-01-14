@@ -2568,7 +2568,7 @@ match_simple_forall (void)
   gfc_clear_new_st ();
   new_st.op = EXEC_FORALL;
   new_st.expr1 = mask;
-  new_st.ext.forall_iterator = head;
+  new_st.ext.concur.forall_iterator = head;
   new_st.block = gfc_get_code (EXEC_FORALL);
   new_st.block->next = c;
 
@@ -2618,7 +2618,7 @@ gfc_match_forall (gfc_statement *st)
       *st = ST_FORALL_BLOCK;
       new_st.op = EXEC_FORALL;
       new_st.expr1 = mask;
-      new_st.ext.forall_iterator = head;
+      new_st.ext.concur.forall_iterator = head;
       return MATCH_YES;
     }
 
@@ -2641,7 +2641,7 @@ gfc_match_forall (gfc_statement *st)
   gfc_clear_new_st ();
   new_st.op = EXEC_FORALL;
   new_st.expr1 = mask;
-  new_st.ext.forall_iterator = head;
+  new_st.ext.concur.forall_iterator = head;
   new_st.block = gfc_get_code (EXEC_FORALL);
   new_st.block->next = c;
 
@@ -2703,9 +2703,20 @@ gfc_match_do (void)
   if (gfc_match_parens () == MATCH_ERROR)
     return MATCH_ERROR;
 
+  /* Handle DO CONCURRENT construct.  */
+
   if (gfc_match (" concurrent") == MATCH_YES)
     {
-      gfc_forall_iterator *head;
+      gfc_forall_iterator *head = NULL;
+      gfc_expr_list *local = NULL;
+      gfc_expr_list *local_tail = NULL;
+      gfc_expr_list *local_init = NULL;
+      gfc_expr_list *local_init_tail = NULL;
+      gfc_expr_list *shared = NULL;
+      gfc_expr_list *shared_tail = NULL;
+      gfc_expr_list *reduce = NULL;
+      gfc_expr_list *reduce_tail = NULL;
+      bool default_none = false;
       gfc_expr *mask;
 
       if (!gfc_notify_std (GFC_STD_F2008, "DO CONCURRENT construct at %C"))
@@ -2715,6 +2726,258 @@ gfc_match_do (void)
       mask = NULL;
       head = NULL;
       m = match_forall_header (&head, &mask);
+
+      if (m == MATCH_NO)
+	goto match_do_loop;
+      if (m == MATCH_ERROR)
+	goto concurr_cleanup;
+
+      while (true)
+	{
+	  gfc_gobble_whitespace ();
+	  locus where = gfc_current_locus;
+
+	  if (gfc_match_eos () == MATCH_YES)
+	    break;
+
+	  else if (gfc_match ("local ( ") == MATCH_YES)
+	    {
+	      gfc_expr *e;
+	      while (true)
+		{
+		  if (gfc_match_variable (&e, 0) != MATCH_YES)
+		    goto concurr_cleanup;
+
+		  if (local == NULL)
+		    local = local_tail = gfc_get_expr_list ();
+
+		  else
+		    {
+		      local_tail->next = gfc_get_expr_list ();
+		      local_tail = local_tail->next;
+		    }
+		  local_tail->expr = e;
+
+		  if (gfc_match_char (',') == MATCH_YES)
+		    continue;
+		  if (gfc_match_char (')') == MATCH_YES)
+		    break;
+		  goto concurr_cleanup;
+		}
+	    }
+
+	    else if (gfc_match ("local_init ( ") == MATCH_YES)
+	      {
+		gfc_expr *e;
+
+		while (true)
+		  {
+		    if (gfc_match_variable (&e, 0) != MATCH_YES)
+		      goto concurr_cleanup;
+
+		    if (local_init == NULL)
+		      local_init = local_init_tail = gfc_get_expr_list ();
+
+		    else
+		      {
+			local_init_tail->next = gfc_get_expr_list ();
+			local_init_tail = local_init_tail->next;
+		      }
+		    local_init_tail->expr = e;
+
+		    if (gfc_match_char (',') == MATCH_YES)
+		      continue;
+		    if (gfc_match_char (')') == MATCH_YES)
+		      break;
+		    goto concurr_cleanup;
+		  }
+	      }
+
+	    else if (gfc_match ("shared ( ") == MATCH_YES)
+	      {
+		gfc_expr *e;
+		while (true)
+		  {
+		    if (gfc_match_variable (&e, 0) != MATCH_YES)
+		      goto concurr_cleanup;
+
+		    if (shared == NULL)
+		      shared = shared_tail = gfc_get_expr_list ();
+
+		    else
+		      {
+			shared_tail->next = gfc_get_expr_list ();
+			shared_tail = shared_tail->next;
+		      }
+		    shared_tail->expr = e;
+
+		    if (gfc_match_char (',') == MATCH_YES)
+		      continue;
+		    if (gfc_match_char (')') == MATCH_YES)
+		      break;
+		    goto concurr_cleanup;
+		  }
+	      }
+
+	    else if (gfc_match ("default (none)") == MATCH_YES)
+	      {
+		if (default_none)
+		  {
+		    gfc_error ("DEFAULT (NONE) specified more than once in DO "
+			       "CONCURRENT at %C");
+		    goto concurr_cleanup;
+		  }
+		default_none = true;
+	      }
+
+	    else if (gfc_match ("reduce ( ") == MATCH_YES)
+	      {
+		gfc_expr *reduction_expr;
+		where = gfc_current_locus;
+
+		if (gfc_match_char ('+') == MATCH_YES)
+		  reduction_expr = gfc_get_operator_expr (&where,
+							  INTRINSIC_PLUS,
+							  NULL, NULL);
+
+		else if (gfc_match_char ('*') == MATCH_YES)
+		  reduction_expr = gfc_get_operator_expr (&where,
+							  INTRINSIC_TIMES,
+							  NULL, NULL);
+
+		else if (gfc_match (".and.") == MATCH_YES)
+		  reduction_expr = gfc_get_operator_expr (&where,
+							  INTRINSIC_AND,
+							  NULL, NULL);
+
+		else if (gfc_match (".or.") == MATCH_YES)
+		  reduction_expr = gfc_get_operator_expr (&where,
+							  INTRINSIC_OR,
+							  NULL, NULL);
+
+		else if (gfc_match (".eqv.") == MATCH_YES)
+		  reduction_expr = gfc_get_operator_expr (&where,
+							  INTRINSIC_EQV,
+							  NULL, NULL);
+
+		else if (gfc_match (".neqv.") == MATCH_YES)
+		  reduction_expr = gfc_get_operator_expr (&where,
+							  INTRINSIC_NEQV,
+							  NULL, NULL);
+
+		else if (gfc_match ("min") == MATCH_YES)
+		  {
+		    reduction_expr = gfc_get_expr ();
+		    reduction_expr->expr_type = EXPR_FUNCTION;
+		    reduction_expr->value.function.isym
+				= gfc_intrinsic_function_by_id (GFC_ISYM_MIN);
+		    reduction_expr->where = where;
+		  }
+
+		else if (gfc_match ("max") == MATCH_YES)
+		  {
+		    reduction_expr = gfc_get_expr ();
+		    reduction_expr->expr_type = EXPR_FUNCTION;
+		    reduction_expr->value.function.isym
+				= gfc_intrinsic_function_by_id (GFC_ISYM_MAX);
+		    reduction_expr->where = where;
+		  }
+
+		else if (gfc_match ("iand") == MATCH_YES)
+		  {
+		    reduction_expr = gfc_get_expr ();
+		    reduction_expr->expr_type = EXPR_FUNCTION;
+		    reduction_expr->value.function.isym
+				= gfc_intrinsic_function_by_id (GFC_ISYM_IAND);
+		    reduction_expr->where = where;
+		  }
+
+		else if (gfc_match ("ior") == MATCH_YES)
+		  {
+		    reduction_expr = gfc_get_expr ();
+		    reduction_expr->expr_type = EXPR_FUNCTION;
+		    reduction_expr->value.function.isym
+				= gfc_intrinsic_function_by_id (GFC_ISYM_IOR);
+		    reduction_expr->where = where;
+		  }
+
+		else if (gfc_match ("ieor") == MATCH_YES)
+		  {
+		    reduction_expr = gfc_get_expr ();
+		    reduction_expr->expr_type = EXPR_FUNCTION;
+		    reduction_expr->value.function.isym
+				= gfc_intrinsic_function_by_id (GFC_ISYM_IEOR);
+		    reduction_expr->where = where;
+		  }
+
+		else
+		  {
+		    gfc_error ("Expected reduction operator or function name "
+			       "at %C");
+		    goto concurr_cleanup;
+		  }
+
+		if (!reduce)
+		  {
+		    reduce = reduce_tail = gfc_get_expr_list ();
+		  }
+		else
+		  {
+		    reduce_tail->next = gfc_get_expr_list ();
+		    reduce_tail = reduce_tail->next;
+		  }
+		reduce_tail->expr = reduction_expr;
+
+		gfc_gobble_whitespace ();
+
+		if (gfc_match_char (':') != MATCH_YES)
+		  {
+		    gfc_error ("Expected %<:%> at %C");
+		    goto concurr_cleanup;
+		  }
+
+		while (true)
+		  {
+		    gfc_expr *reduction_expr;
+
+		    if (gfc_match_variable (&reduction_expr, 0) != MATCH_YES)
+		      {
+			gfc_error ("Expected variable name in reduction list "
+				   "at %C");
+			goto concurr_cleanup;
+		      }
+
+		    if (reduce == NULL)
+		      reduce = reduce_tail = gfc_get_expr_list ();
+		    else
+		      {
+			reduce_tail = reduce_tail->next = gfc_get_expr_list ();
+			reduce_tail->expr = reduction_expr;
+		      }
+
+		    if (gfc_match_char (',') == MATCH_YES)
+		      continue;
+		    else if (gfc_match_char (')') == MATCH_YES)
+		      break;
+		    else
+		      {
+			gfc_error ("Expected ',' or ')' in reduction list "
+				   "at %C");
+			goto concurr_cleanup;
+		      }
+		  }
+
+		if (!gfc_notify_std (GFC_STD_F2023, "REDUCE locality spec at "
+				     "%L", &where))
+		  goto concurr_cleanup;
+	      }
+	    else
+	      goto concurr_cleanup;
+
+	    if (!gfc_notify_std (GFC_STD_F2018, "Locality spec at %L",
+				 &gfc_current_locus))
+	      goto concurr_cleanup;
+	}
 
       if (m == MATCH_NO)
 	return m;
@@ -2731,14 +2994,26 @@ gfc_match_do (void)
       new_st.label1 = label;
       new_st.op = EXEC_DO_CONCURRENT;
       new_st.expr1 = mask;
-      new_st.ext.forall_iterator = head;
+      new_st.ext.concur.forall_iterator = head;
+      new_st.ext.concur.locality[LOCALITY_LOCAL] = local;
+      new_st.ext.concur.locality[LOCALITY_LOCAL_INIT] = local_init;
+      new_st.ext.concur.locality[LOCALITY_SHARED] = shared;
+      new_st.ext.concur.locality[LOCALITY_REDUCE] = reduce;
+      new_st.ext.concur.default_none = default_none;
 
       return MATCH_YES;
 
 concurr_cleanup:
-      gfc_syntax_error (ST_DO);
       gfc_free_expr (mask);
       gfc_free_forall_iterator (head);
+      gfc_free_expr_list (local);
+      gfc_free_expr_list (local_init);
+      gfc_free_expr_list (shared);
+      gfc_free_expr_list (reduce);
+
+      if (!gfc_error_check ())
+	gfc_syntax_error (ST_DO);
+
       return MATCH_ERROR;
     }
 
@@ -2749,6 +3024,7 @@ concurr_cleanup:
       goto done;
     }
 
+match_do_loop:
   /* The abortive DO WHILE may have done something to the symbol
      table, so we start over.  */
   gfc_undo_symbols ();

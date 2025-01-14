@@ -3005,7 +3005,7 @@ show_code_node (int level, gfc_code *c)
 
     case EXEC_FORALL:
       fputs ("FORALL ", dumpfile);
-      for (fa = c->ext.forall_iterator; fa; fa = fa->next)
+      for (fa = c->ext.concur.forall_iterator; fa; fa = fa->next)
 	{
 	  show_expr (fa->var);
 	  fputc (' ', dumpfile);
@@ -3065,7 +3065,7 @@ show_code_node (int level, gfc_code *c)
 
     case EXEC_DO_CONCURRENT:
       fputs ("DO CONCURRENT ", dumpfile);
-      for (fa = c->ext.forall_iterator; fa; fa = fa->next)
+      for (fa = c->ext.concur.forall_iterator; fa; fa = fa->next)
         {
           show_expr (fa->var);
           fputc (' ', dumpfile);
@@ -3078,7 +3078,114 @@ show_code_node (int level, gfc_code *c)
           if (fa->next != NULL)
             fputc (',', dumpfile);
         }
-      show_expr (c->expr1);
+
+      if (c->expr1 != NULL)
+	{
+	  fputc (',', dumpfile);
+	  show_expr (c->expr1);
+	}
+
+      if (c->ext.concur.locality[LOCALITY_LOCAL])
+	{
+	  fputs (" LOCAL (", dumpfile);
+
+	  for (gfc_expr_list *el = c->ext.concur.locality[LOCALITY_LOCAL];
+	       el; el = el->next)
+	    {
+	      show_expr (el->expr);
+	      if (el->next)
+		fputc (',', dumpfile);
+	    }
+	  fputc (')', dumpfile);
+	}
+
+      if (c->ext.concur.locality[LOCALITY_LOCAL_INIT])
+	{
+	  fputs (" LOCAL_INIT (", dumpfile);
+	  for (gfc_expr_list *el = c->ext.concur.locality[LOCALITY_LOCAL_INIT];
+	       el; el = el->next)
+	  {
+	    show_expr (el->expr);
+	    if (el->next)
+	      fputc (',', dumpfile);
+	  }
+	  fputc (')', dumpfile);
+	}
+
+      if (c->ext.concur.locality[LOCALITY_SHARED])
+	{
+	  fputs (" SHARED (", dumpfile);
+	  for (gfc_expr_list *el = c->ext.concur.locality[LOCALITY_SHARED];
+	       el; el = el->next)
+	    {
+	      show_expr (el->expr);
+	      if (el->next)
+		fputc (',', dumpfile);
+	    }
+	  fputc (')', dumpfile);
+	}
+
+      if (c->ext.concur.default_none)
+	{
+	  fputs (" DEFAULT (NONE)", dumpfile);
+	}
+
+      if (c->ext.concur.locality[LOCALITY_REDUCE])
+	{
+	  gfc_expr_list *el = c->ext.concur.locality[LOCALITY_REDUCE];
+	  while (el)
+	    {
+	      fputs (" REDUCE (", dumpfile);
+	      if (el->expr)
+		{
+		  if (el->expr->expr_type == EXPR_FUNCTION)
+		    {
+		      const char *name;
+		      switch (el->expr->value.function.isym->id)
+			{
+			  case GFC_ISYM_MIN:
+			    name = "MIN";
+			    break;
+			  case GFC_ISYM_MAX:
+			    name = "MAX";
+			    break;
+			  case GFC_ISYM_IAND:
+			    name = "IAND";
+			    break;
+			  case GFC_ISYM_IOR:
+			    name = "IOR";
+			    break;
+			  case GFC_ISYM_IEOR:
+			    name = "IEOR";
+			    break;
+			  default:
+			    gcc_unreachable ();
+			}
+		      fputs (name, dumpfile);
+		    }
+		  else
+		    show_expr (el->expr);
+		}
+	      else
+		{
+		  fputs ("(NULL)", dumpfile);
+		}
+
+	      fputc (':', dumpfile);
+	      el = el->next;
+
+	      while (el && el->expr && el->expr->expr_type == EXPR_VARIABLE)
+		{
+		  show_expr (el->expr);
+		  el = el->next;
+		  if (el && el->expr && el->expr->expr_type == EXPR_VARIABLE)
+		    fputc (',', dumpfile);
+		}
+
+	      fputc (')', dumpfile);
+	    }
+	}
+
       ++show_level;
 
       show_code (level + 1, c->block->next);

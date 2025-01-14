@@ -54,6 +54,13 @@ code_stack;
 
 static code_stack *cs_base = NULL;
 
+struct check_default_none_data
+{
+  gfc_code *code;
+  hash_set<gfc_symbol *> *sym_hash;
+  gfc_namespace *ns;
+  bool default_none;
+};
 
 /* Nonzero if we're inside a FORALL or DO CONCURRENT block.  */
 
@@ -8622,6 +8629,344 @@ find_forall_index (gfc_expr *expr, gfc_symbol *sym, int f)
     return false;
 }
 
+/* Check compliance with Fortran 2023's C1133 constraint for DO CONCURRENT
+   This constraint specifies rules for variables in locality-specs.  */
+
+static int
+do_concur_locality_specs_f2023 (gfc_expr **expr, int *walk_subtrees, void *data)
+{
+  struct check_default_none_data *dt = (struct check_default_none_data *) data;
+
+  if ((*expr)->expr_type == EXPR_VARIABLE)
+    {
+      gfc_symbol *sym = (*expr)->symtree->n.sym;
+      for (gfc_expr_list *list = dt->code->ext.concur.locality[LOCALITY_LOCAL];
+	   list; list = list->next)
+	{
+	  if (list->expr->symtree->n.sym == sym)
+	    {
+	      gfc_error ("Variable %qs referenced in concurrent-header at %L "
+			 "must not appear in LOCAL locality-spec at %L",
+			 sym->name, &(*expr)->where, &list->expr->where);
+	      *walk_subtrees = 0;
+	      return 1;
+	    }
+	}
+    }
+
+    *walk_subtrees = 1;
+    return 0;
+}
+
+static int
+check_default_none_expr (gfc_expr **e, int *, void *data)
+{
+  struct check_default_none_data *d = (struct check_default_none_data*) data;
+
+  if ((*e)->expr_type == EXPR_VARIABLE)
+    {
+      gfc_symbol *sym = (*e)->symtree->n.sym;
+
+      if (d->sym_hash->contains (sym))
+	sym->mark = 1;
+
+      else if (d->default_none)
+	{
+	  gfc_namespace *ns2 = d->ns;
+	  while (ns2)
+	    {
+	      if (ns2 == sym->ns)
+		break;
+	      ns2 = ns2->parent;
+	    }
+	  if (ns2 != NULL)
+	    {
+	      gfc_error ("Variable %qs at %L not specified in a locality spec "
+			"of DO CONCURRENT at %L but required due to "
+			"DEFAULT (NONE)",
+			sym->name, &(*e)->where, &d->code->loc);
+	      d->sym_hash->add (sym);
+	    }
+	}
+    }
+  return 0;
+}
+
+static void
+resolve_locality_spec (gfc_code *code, gfc_namespace *ns)
+{
+  struct check_default_none_data data;
+  data.code = code;
+  data.sym_hash = new hash_set<gfc_symbol *>;
+  data.ns = ns;
+  data.default_none = code->ext.concur.default_none;
+
+  for (int locality = 0; locality < LOCALITY_NUM; locality++)
+    {
+      const char *name;
+      switch (locality)
+	{
+	  case LOCALITY_LOCAL: name = "LOCAL"; break;
+	  case LOCALITY_LOCAL_INIT: name = "LOCAL_INIT"; break;
+	  case LOCALITY_SHARED: name = "SHARED"; break;
+	  case LOCALITY_REDUCE: name = "REDUCE"; break;
+	  default: gcc_unreachable ();
+	}
+
+      for (gfc_expr_list *list = code->ext.concur.locality[locality]; list;
+	   list = list->next)
+	{
+	  gfc_expr *expr = list->expr;
+
+	  if (locality == LOCALITY_REDUCE
+	      && (expr->expr_type == EXPR_FUNCTION
+		  || expr->expr_type == EXPR_OP))
+	    continue;
+
+	  if (!gfc_resolve_expr (expr))
+	    continue;
+
+	  if (expr->expr_type != EXPR_VARIABLE
+	      || expr->symtree->n.sym->attr.flavor != FL_VARIABLE
+	      || (expr->ref
+		  && (expr->ref->type != REF_ARRAY
+		      || expr->ref->u.ar.type != AR_FULL
+		      || expr->ref->next)))
+	    {
+	      gfc_error ("Expected variable name in %s locality spec at %L",
+			 name, &expr->where);
+		continue;
+	    }
+
+	  gfc_symbol *sym = expr->symtree->n.sym;
+
+	  if (data.sym_hash->contains (sym))
+	    {
+	      gfc_error ("Variable %qs at %L has already been specified in a "
+			 "locality-spec", sym->name, &expr->where);
+	      continue;
+	    }
+
+	  for (gfc_forall_iterator *iter = code->ext.concur.forall_iterator;
+	       iter; iter = iter->next)
+	    {
+	      if (iter->var->symtree->n.sym == sym)
+		{
+		  gfc_error ("Index variable %qs at %L cannot be specified in a"
+			     "locality-spec", sym->name, &expr->where);
+		  continue;
+		}
+
+	      data.sym_hash->add (iter->var->symtree->n.sym);
+	    }
+
+	  if (locality == LOCALITY_LOCAL
+	      || locality == LOCALITY_LOCAL_INIT
+	      || locality == LOCALITY_REDUCE)
+	    {
+	      if (sym->attr.optional)
+		gfc_error ("OPTIONAL attribute not permitted for %qs in %s "
+			   "locality-spec at %L",
+			   sym->name, name, &expr->where);
+
+	      if (sym->attr.dimension
+		  && sym->as
+		  && sym->as->type == AS_ASSUMED_SIZE)
+		gfc_error ("Assumed-size array not permitted for %qs in %s "
+			   "locality-spec at %L",
+			   sym->name, name, &expr->where);
+
+	      gfc_check_vardef_context (expr, false, false, false, name);
+	    }
+
+	  if (locality == LOCALITY_LOCAL
+	      || locality == LOCALITY_LOCAL_INIT)
+	    {
+	      symbol_attribute attr = gfc_expr_attr (expr);
+
+	      if (attr.allocatable)
+		gfc_error ("ALLOCATABLE attribute not permitted for %qs in %s "
+			   "locality-spec at %L",
+			   sym->name, name, &expr->where);
+
+	      else if (expr->ts.type == BT_CLASS && attr.dummy && !attr.pointer)
+		gfc_error ("Nonpointer polymorphic dummy argument not permitted"
+			   " for %qs in %s locality-spec at %L",
+			   sym->name, name, &expr->where);
+
+	      else if (attr.codimension)
+		gfc_error ("Coarray not permitted for %qs in %s locality-spec "
+			   "at %L",
+			   sym->name, name, &expr->where);
+
+	      else if (expr->ts.type == BT_DERIVED
+		       && gfc_is_finalizable (expr->ts.u.derived, NULL))
+		gfc_error ("Finalizable type not permitted for %qs in %s "
+			   "locality-spec at %L",
+			   sym->name, name, &expr->where);
+
+	      else if (gfc_has_ultimate_allocatable (expr))
+		gfc_error ("Type with ultimate allocatable component not "
+			   "permitted for %qs in %s locality-spec at %L",
+			   sym->name, name, &expr->where);
+	    }
+
+	  else if (locality == LOCALITY_REDUCE)
+	    {
+	      if (sym->attr.asynchronous)
+		gfc_error ("ASYNCHRONOUS attribute not permitted for %qs in "
+			   "REDUCE locality-spec at %L",
+			   sym->name, &expr->where);
+	      if (sym->attr.volatile_)
+		gfc_error ("VOLATILE attribute not permitted for %qs in REDUCE "
+			   "locality-spec at %L", sym->name, &expr->where);
+	    }
+
+	  data.sym_hash->add (sym);
+	}
+
+      if (locality == LOCALITY_LOCAL)
+	{
+	  gcc_assert (locality == 0);
+
+	  for (gfc_forall_iterator *iter = code->ext.concur.forall_iterator;
+	       iter; iter = iter->next)
+	    {
+	      gfc_expr_walker (&iter->start,
+			       do_concur_locality_specs_f2023,
+			       &data);
+
+	      gfc_expr_walker (&iter->end,
+			       do_concur_locality_specs_f2023,
+			       &data);
+
+	      gfc_expr_walker (&iter->stride,
+			       do_concur_locality_specs_f2023,
+			       &data);
+	    }
+
+	  if (code->expr1)
+	    gfc_expr_walker (&code->expr1,
+			     do_concur_locality_specs_f2023,
+			     &data);
+	}
+    }
+
+  gfc_expr *reduce_op = NULL;
+
+  for (gfc_expr_list *list = code->ext.concur.locality[LOCALITY_REDUCE];
+       list; list = list->next)
+    {
+      gfc_expr *expr = list->expr;
+
+      if (expr->expr_type != EXPR_VARIABLE)
+	{
+	  reduce_op = expr;
+	  continue;
+	}
+
+      if (reduce_op->expr_type == EXPR_OP)
+	{
+	  switch (reduce_op->value.op.op)
+	    {
+	      case INTRINSIC_PLUS:
+	      case INTRINSIC_TIMES:
+		if (!gfc_numeric_ts (&expr->ts))
+		  gfc_error ("Expected numeric type for %qs in REDUCE at %L, "
+			     "got %s", expr->symtree->n.sym->name,
+			     &expr->where, gfc_basic_typename (expr->ts.type));
+		break;
+	      case INTRINSIC_AND:
+	      case INTRINSIC_OR:
+	      case INTRINSIC_EQV:
+	      case INTRINSIC_NEQV:
+		if (expr->ts.type != BT_LOGICAL)
+		  gfc_error ("Expected logical type for %qs in REDUCE at %L, "
+			     "got %qs", expr->symtree->n.sym->name,
+			     &expr->where, gfc_basic_typename (expr->ts.type));
+		break;
+	      default:
+		gcc_unreachable ();
+	    }
+	}
+
+      else if (reduce_op->expr_type == EXPR_FUNCTION)
+	{
+	  switch (reduce_op->value.function.isym->id)
+	    {
+	      case GFC_ISYM_MIN:
+	      case GFC_ISYM_MAX:
+		if (expr->ts.type != BT_INTEGER
+		    && expr->ts.type != BT_REAL
+		    && expr->ts.type != BT_CHARACTER)
+		  gfc_error ("Expected INTEGER, REAL or CHARACTER type for %qs "
+			     "in REDUCE with MIN/MAX at %L, got %s",
+			     expr->symtree->n.sym->name, &expr->where,
+			     gfc_basic_typename (expr->ts.type));
+		break;
+	      case GFC_ISYM_IAND:
+	      case GFC_ISYM_IOR:
+	      case GFC_ISYM_IEOR:
+		if (expr->ts.type != BT_INTEGER)
+		  gfc_error ("Expected integer type for %qs in REDUCE with "
+			     "IAND/IOR/IEOR at %L, got %s",
+			     expr->symtree->n.sym->name, &expr->where,
+			     gfc_basic_typename (expr->ts.type));
+		break;
+	      default:
+		gcc_unreachable ();
+	    }
+	}
+
+      else
+	gcc_unreachable ();
+    }
+
+  for (int locality = 0; locality < LOCALITY_NUM; locality++)
+    {
+      for (gfc_expr_list *list = code->ext.concur.locality[locality]; list;
+	   list = list->next)
+	{
+	  if (list->expr->expr_type == EXPR_VARIABLE)
+	    list->expr->symtree->n.sym->mark = 0;
+	}
+    }
+
+  gfc_code_walker (&code->block->next, gfc_dummy_code_callback,
+		   check_default_none_expr, &data);
+
+  for (int locality = 0; locality < LOCALITY_NUM; locality++)
+    {
+      gfc_expr_list **plist = &code->ext.concur.locality[locality];
+      while (*plist)
+	{
+	  gfc_expr *expr = (*plist)->expr;
+	  if (expr->expr_type == EXPR_VARIABLE)
+	    {
+	      gfc_symbol *sym = expr->symtree->n.sym;
+	      if (sym->mark == 0)
+		{
+		  gfc_warning (OPT_Wunused_variable, "Variable %qs in "
+			       "locality-spec at %L is not used",
+			       sym->name, &expr->where);
+		  gfc_expr_list *tmp = *plist;
+		  *plist = (*plist)->next;
+		  gfc_free_expr (tmp->expr);
+		  free (tmp);
+		  continue;
+		}
+	    }
+	  plist = &((*plist)->next);
+	}
+    }
+
+  if (code->ext.concur.locality[LOCALITY_LOCAL]
+      || code->ext.concur.locality[LOCALITY_LOCAL_INIT])
+    {
+      gfc_error ("Sorry, LOCAL and LOCAL_INIT are not yet supported for "
+		 "%<do concurrent%> constructs at %L", &code->loc);
+    }
+}
 
 /* Resolve a list of FORALL iterators.  The FORALL index-name is constrained
    to be a scalar INTEGER variable.  The subscripts and stride are scalar
@@ -12079,7 +12424,7 @@ gfc_count_forall_iterators (gfc_code *code)
   max_iters = 0;
   current_iters = 0;
 
-  for (fa = code->ext.forall_iterator; fa; fa = fa->next)
+  for (fa = code->ext.concur.forall_iterator; fa; fa = fa->next)
     current_iters ++;
 
   code = code->block->next;
@@ -12129,7 +12474,7 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 
   /* The information about FORALL iterator, including FORALL indices start, end
      and stride.  An outer FORALL indice cannot appear in start, end or stride.  */
-  for (fa = code->ext.forall_iterator; fa; fa = fa->next)
+  for (fa = code->ext.concur.forall_iterator; fa; fa = fa->next)
     {
       /* Fortran 20008: C738 (R753).  */
       if (fa->var->ref && fa->var->ref->type == REF_ARRAY)
@@ -13961,12 +14306,15 @@ start:
 
 	case EXEC_DO_CONCURRENT:
 	case EXEC_FORALL:
-	  resolve_forall_iterators (code->ext.forall_iterator);
+	  resolve_forall_iterators (code->ext.concur.forall_iterator);
 
 	  if (code->expr1 != NULL
 	      && (code->expr1->ts.type != BT_LOGICAL || code->expr1->rank))
 	    gfc_error ("FORALL mask clause at %L requires a scalar LOGICAL "
 		       "expression", &code->expr1->where);
+
+    if (code->op == EXEC_DO_CONCURRENT)
+      resolve_locality_spec (code, ns);
 	  break;
 
 	case EXEC_OACC_PARALLEL_LOOP:

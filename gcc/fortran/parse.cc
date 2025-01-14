@@ -5411,7 +5411,7 @@ parse_do_block (void)
   if (do_op == EXEC_DO_CONCURRENT)
     {
       gfc_forall_iterator *fa;
-      for (fa = new_st.ext.forall_iterator; fa; fa = fa->next)
+      for (fa = new_st.ext.concur.forall_iterator; fa; fa = fa->next)
 	{
 	  /* Apply unroll only to innermost loop (first control
 	     variable).  */

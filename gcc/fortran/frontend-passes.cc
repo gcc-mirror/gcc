@@ -5132,7 +5132,7 @@ index_interchange (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   n_iter = 0;
-  for (fa = co->ext.forall_iterator; fa; fa = fa->next)
+  for (fa = co->ext.concur.forall_iterator; fa; fa = fa->next)
     n_iter ++;
 
   /* Nothing to reorder. */
@@ -5142,7 +5142,7 @@ index_interchange (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   ind = XALLOCAVEC (ind_type, n_iter + 1);
 
   i = 0;
-  for (fa = co->ext.forall_iterator; fa; fa = fa->next)
+  for (fa = co->ext.concur.forall_iterator; fa; fa = fa->next)
     {
       ind[i].sym = fa->var->symtree->n.sym;
       ind[i].fa = fa;
@@ -5158,7 +5158,7 @@ index_interchange (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   qsort ((void *) ind, n_iter, sizeof (ind_type), loop_comp);
 
   /* Do the actual index interchange.  */
-  co->ext.forall_iterator = fa = ind[0].fa;
+  co->ext.concur.forall_iterator = fa = ind[0].fa;
   for (i=1; i<n_iter; i++)
     {
       fa->next = ind[i].fa;
@@ -5410,7 +5410,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_DO_CONCURRENT:
 	      {
 		gfc_forall_iterator *fa;
-		for (fa = co->ext.forall_iterator; fa; fa = fa->next)
+		for (fa = co->ext.concur.forall_iterator; fa; fa = fa->next)
 		  {
 		    WALK_SUBEXPR (fa->var);
 		    WALK_SUBEXPR (fa->start);
