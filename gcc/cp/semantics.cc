@@ -4673,7 +4673,8 @@ finish_id_expression_1 (tree id_expression,
       if (TREE_CODE (decl) == PARM_DECL
 	  && DECL_CONTEXT (decl) == NULL_TREE
 	  && !cp_unevaluated_operand
-	  && !processing_contract_condition)
+	  && !processing_contract_condition
+	  && !processing_omp_trait_property_expr)
 	{
 	  *error_msg = G_("use of parameter outside function body");
 	  return error_mark_node;
