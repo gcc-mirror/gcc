@@ -1172,7 +1172,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	}
       if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
 	  && OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause))
-	pp_string (pp, "[implicit]");
+	pp_string (pp, " [runtime_implicit]");
       pp_right_paren (pp);
       break;
 

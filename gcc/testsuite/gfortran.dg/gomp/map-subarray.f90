@@ -18,7 +18,7 @@ tv%arr2 => arr
 tv%arr1(1) = tv%arr1(1) + 1
 !$omp end target
 
-! { dg-final { scan-tree-dump {(?n)#pragma omp target.* map\(struct:tv \[len: 1\]\) map\(to:tv\.arr1 \[pointer set, len: [0-9]+\]\) map\(tofrom:MEM <integer\(kind=4\)\[0:\]> \[\(integer\(kind=4\)\[0:\] \*\)_[0-9]+\] \[len: _[0-9]+\]\[implicit\]\) map\(attach:tv\.arr1\.data \[bias: 0\]\)} "gimple" } }
+! { dg-final { scan-tree-dump {(?n)#pragma omp target.* map\(struct:tv \[len: 1\]\) map\(to:tv\.arr1 \[pointer set, len: [0-9]+\]\) map\(tofrom:MEM <integer\(kind=4\)\[0:\]> \[\(integer\(kind=4\)\[0:\] \*\)_[0-9]+\] \[len: _[0-9]+\] \[runtime_implicit\]\) map\(attach:tv\.arr1\.data \[bias: 0\]\)} "gimple" } }
 
 !$omp target map(tv%arr2) map(tv%arr2(1:10))
 tv%arr2(1) = tv%arr2(1) + 1

@@ -44,4 +44,4 @@ void f()
 
 /* { dg-final { scan-tree-dump-times "#pragma omp target.* defaultmap\\(firstprivate\\) firstprivate\\(mystruct1\\) firstprivate\\(ptr1\\) firstprivate\\(array1\\) firstprivate\\(scalar1\\)" 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "#pragma omp target.* defaultmap\\(firstprivate:all\\) firstprivate\\(mystruct1\\) firstprivate\\(ptr1\\) firstprivate\\(array1\\) firstprivate\\(scalar1\\)" 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "#pragma omp target.* defaultmap\\(tofrom:all\\) map\\(tofrom:mystruct1 \\\[len: .\\\]\\\[implicit\\\]\\) map\\(tofrom:ptr1 \\\[len: .\\\]\\\[implicit\\\]\\) map\\(tofrom:array1 \\\[len: ..\\\]\\\[implicit\\\]\\) map\\(tofrom:scalar1 \\\[len: .\\\]\\\[implicit\\\]\\)" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "#pragma omp target.* defaultmap\\(tofrom:all\\) map\\(tofrom:mystruct1 \\\[len: .\\\] \\\[runtime_implicit\\\]\\) map\\(tofrom:ptr1 \\\[len: .\\\] \\\[runtime_implicit\\\]\\) map\\(tofrom:array1 \\\[len: ..\\\] \\\[runtime_implicit\\\]\\) map\\(tofrom:scalar1 \\\[len: .\\\] \\\[runtime_implicit\\\]\\)" 1 "gimple" } } */
