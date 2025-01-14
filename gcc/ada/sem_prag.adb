@@ -30940,34 +30940,67 @@ package body Sem_Prag is
                   --    end Pack;
 
                   if Constit_Id = Any_Id then
-                     SPARK_Msg_NE ("& is undefined", Constit, Constit_Id);
+                     --  A "Foo is undefined" message has already been
+                     --  generated for this constituent. Emit an additional
+                     --  message in the special case where the named
+                     --  would-be constituent was declared too late in the
+                     --  declaration list (as opposed to, for example, not
+                     --  being declared at all).
 
-                     --  Emit a specialized info message when the contract of
-                     --  the related package body was "frozen" by another body.
-                     --  Note that it is not possible to precisely identify why
-                     --  the constituent is undefined because it is not visible
-                     --  when pragma Refined_State is analyzed. This message is
-                     --  a reasonable approximation.
+                     --  Look for named constituent after freezing point
+                     if Present (Freeze_Id) then
+                        declare
+                           Decl : Node_Id;
+                        begin
+                           Decl := Enclosing_Declaration (Freeze_Id);
 
-                     if Present (Freeze_Id) and then not Freeze_Posted then
-                        Freeze_Posted := True;
+                           while Present (Decl) loop
+                              if Nkind (Decl) = N_Object_Declaration
+                                and then Same_Name (Defining_Identifier (Decl),
+                                                    Constit)
+                                and then not Constant_Present (Decl)
+                              then
+                                 Error_Msg_Node_1 := Constit;
+                                 Error_Msg_Sloc :=
+                                   Sloc (Defining_Identifier (Decl));
 
-                        Error_Msg_Name_1 := Chars (Body_Id);
-                        Error_Msg_Sloc   := Sloc (Freeze_Id);
-                        SPARK_Msg_NE
-                          ("body & declared # freezes the contract of %",
-                           N, Freeze_Id);
-                        SPARK_Msg_N
-                          ("\all constituents must be declared before body #",
-                           N);
+                                 SPARK_Msg_NE
+                                  ("abstract state constituent & declared"
+                                   & " too late #!", Constit, Constit);
 
-                        --  A misplaced constituent is a critical error because
-                        --  pragma Refined_Depends or Refined_Global depends on
-                        --  the proper link between a state and a constituent.
-                        --  Stop the compilation, as this leads to a multitude
-                        --  of misleading cascaded errors.
+                                 exit;
+                              end if;
+                              Next (Decl);
+                           end loop;
+                        end;
 
-                        raise Unrecoverable_Error;
+                        --  Emit a specialized info message when the contract
+                        --  of the related package body was "frozen" by
+                        --  another body. If a "declared too late" message
+                        --  is generated, this will clarify what is meant by
+                        --  "too late".
+
+                        if not Freeze_Posted then
+                           Freeze_Posted := True;
+
+                           Error_Msg_Name_1 := Chars (Body_Id);
+                           Error_Msg_Sloc   := Sloc (Freeze_Id);
+                           SPARK_Msg_NE
+                             ("body & declared # freezes the contract of %",
+                              N, Freeze_Id);
+                           SPARK_Msg_N
+                             ("\all constituents must be declared" &
+                              " before body #", N);
+
+                           --  A misplaced constituent is a critical error
+                           --  because pragma Refined_Depends or
+                           --  Refined_Global depends on the proper link
+                           --  between a state and a constituent. Stop the
+                           --  compilation, as this leads to a multitude of
+                           --  misleading cascaded errors.
+
+                           raise Unrecoverable_Error;
+                        end if;
                      end if;
 
                   --  The constituent is a valid state or object
