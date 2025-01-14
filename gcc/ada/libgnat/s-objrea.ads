@@ -120,11 +120,17 @@ package System.Object_Reader is
       PPC64,
       --  64-bit PowerPC
 
+      S390,
+      --  IBM S/390
+
       ARM,
       --  32-bit ARM
 
-      AARCH64);
+      AARCH64,
       --  64-bit ARM
+
+      RISCV);
+      --  RISC-V
 
    ------------------
    -- Target types --
