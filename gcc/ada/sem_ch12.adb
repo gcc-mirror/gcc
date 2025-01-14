@@ -3371,7 +3371,7 @@ package body Sem_Ch12 is
          end if;
 
          if Present (E) then
-            Preanalyze_Spec_Expression (E, T);
+            Preanalyze_And_Resolve_Spec_Expression (E, T);
 
             --  The default for a ghost generic formal IN parameter of
             --  access-to-variable type should be a ghost object (SPARK
@@ -4195,7 +4195,7 @@ package body Sem_Ch12 is
       elsif Present (Expr) then
          Push_Scope (Nam);
          Install_Formals (Nam);
-         Preanalyze_Spec_Expression (Expr, Etype (Nam));
+         Preanalyze_And_Resolve_Spec_Expression (Expr, Etype (Nam));
          End_Scope;
       end if;
 

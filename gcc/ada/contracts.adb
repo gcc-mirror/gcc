@@ -4909,7 +4909,7 @@ package body Contracts is
       Install_Formals (Subp);
       Inside_Class_Condition_Preanalysis := True;
 
-      Preanalyze_Spec_Expression (Expr, Standard_Boolean);
+      Preanalyze_And_Resolve_Spec_Expression (Expr, Standard_Boolean);
 
       Inside_Class_Condition_Preanalysis := False;
       End_Scope;

@@ -904,7 +904,8 @@ package body Exp_Pakd is
          --  discriminants, so we treat it as a default/per-object expression.
 
          Set_Parent (Len_Expr, Typ);
-         Preanalyze_Spec_Expression (Len_Expr, Standard_Long_Long_Integer);
+         Preanalyze_And_Resolve_Spec_Expression
+           (Len_Expr, Standard_Long_Long_Integer);
 
          --  Use a modular type if possible. We can do this if we have
          --  static bounds, and the length is small enough, and the length

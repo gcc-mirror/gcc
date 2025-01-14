@@ -6502,7 +6502,8 @@ package body Sem_Ch13 is
                --  and restored before and after analysis.
 
                Push_Type (U_Ent);
-               Preanalyze_Spec_Expression (Expr, RTE (RE_CPU_Range));
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Expr, RTE (RE_CPU_Range));
                Pop_Type (U_Ent);
 
                --  AI12-0117-1, "Restriction No_Tasks_Unassigned_To_CPU":
@@ -6592,10 +6593,8 @@ package body Sem_Ch13 is
                --  The visibility to the components must be restored
 
                Push_Type (U_Ent);
-
-               Preanalyze_Spec_Expression
+               Preanalyze_And_Resolve_Spec_Expression
                  (Expr, RTE (RE_Dispatching_Domain));
-
                Pop_Type (U_Ent);
             end if;
 
@@ -6674,10 +6673,8 @@ package body Sem_Ch13 is
                --  The visibility to the components must be restored
 
                Push_Type (U_Ent);
-
-               Preanalyze_Spec_Expression
+               Preanalyze_And_Resolve_Spec_Expression
                  (Expr, RTE (RE_Interrupt_Priority));
-
                Pop_Type (U_Ent);
 
                --  Check the No_Task_At_Interrupt_Priority restriction
@@ -6843,7 +6840,8 @@ package body Sem_Ch13 is
                   --  The visibility to the components must be restored
 
                   Push_Type (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, Standard_Integer);
+                  Preanalyze_And_Resolve_Spec_Expression
+                    (Expr, Standard_Integer);
                   Pop_Type (U_Ent);
 
                   if not Is_OK_Static_Expression (Expr) then
@@ -10039,8 +10037,8 @@ package body Sem_Ch13 is
 
                   --  If the predicate pragma comes from an aspect, replace the
                   --  saved expression because we need the subtype references
-                  --  replaced for the calls to Preanalyze_Spec_Expression in
-                  --  Check_Aspect_At_xxx routines.
+                  --  replaced for the calls to Preanalyze_And_Resolve_Spec_
+                  --  Expression in Check_Aspect_At_xxx routines.
 
                   if Present (Asp) then
                      Set_Expression_Copy (Asp, New_Copy_Tree (Arg2_Copy));
@@ -10853,12 +10851,14 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
             then
                Push_Type (Ent);
-               Preanalyze_Spec_Expression (Freeze_Expr, Standard_Boolean);
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Freeze_Expr, Standard_Boolean);
                Pop_Type (Ent);
 
             elsif A_Id = Aspect_Priority then
                Push_Type (Ent);
-               Preanalyze_Spec_Expression (Freeze_Expr, Any_Integer);
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Freeze_Expr, Any_Integer);
                Pop_Type (Ent);
 
             else
@@ -10908,7 +10908,8 @@ package body Sem_Ch13 is
          elsif A_Id in Aspect_Default_Component_Value | Aspect_Default_Value
             and then Is_Private_Type (T)
          then
-            Preanalyze_Spec_Expression (End_Decl_Expr, Full_View (T));
+            Preanalyze_And_Resolve_Spec_Expression
+              (End_Decl_Expr, Full_View (T));
 
          --  The following aspect expressions may contain references to
          --  components and discriminants of the type.
@@ -10922,14 +10923,15 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
          then
             Push_Type (Ent);
-            Preanalyze_Spec_Expression (End_Decl_Expr, T);
+            Preanalyze_And_Resolve_Spec_Expression (End_Decl_Expr, T);
             Pop_Type (Ent);
 
          elsif A_Id = Aspect_Predicate_Failure then
-            Preanalyze_Spec_Expression (End_Decl_Expr, Standard_String);
+            Preanalyze_And_Resolve_Spec_Expression
+              (End_Decl_Expr, Standard_String);
 
          elsif Present (End_Decl_Expr) then
-            Preanalyze_Spec_Expression (End_Decl_Expr, T);
+            Preanalyze_And_Resolve_Spec_Expression (End_Decl_Expr, T);
          end if;
 
          Err :=
@@ -11359,7 +11361,7 @@ package body Sem_Ch13 is
       --  the aspect_specification cause freezing (RM 13.14(7.2/5)).
 
       if Present (Expression (ASN)) then
-         Preanalyze_Spec_Expression (Expression (ASN), T);
+         Preanalyze_And_Resolve_Spec_Expression (Expression (ASN), T);
       end if;
    end Check_Aspect_At_Freeze_Point;
 
@@ -13928,7 +13930,7 @@ package body Sem_Ch13 is
                         Next (First (Pragma_Argument_Associations (Ritem)));
                   begin
                      Push_Type (E);
-                     Preanalyze_Spec_Expression
+                     Preanalyze_And_Resolve_Spec_Expression
                        (Expression (Arg), Standard_Boolean);
                      Pop_Type (E);
                   end;

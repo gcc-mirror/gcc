@@ -474,7 +474,8 @@ package body Sem_Prag is
          end if;
 
          Errors := Serious_Errors_Detected;
-         Preanalyze_Assert_Expression (Expression (Arg1), Standard_Boolean);
+         Preanalyze_And_Resolve_Assert_Expression
+           (Expression (Arg1), Standard_Boolean);
 
          --  Emit a clarification message when the expression contains at least
          --  one undefined reference, possibly due to contract freezing.
@@ -564,7 +565,8 @@ package body Sem_Prag is
 
             if Nkind (Case_Guard) /= N_Others_Choice then
                Errors := Serious_Errors_Detected;
-               Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
+               Preanalyze_And_Resolve_Assert_Expression
+                 (Case_Guard, Standard_Boolean);
 
                --  Emit a clarification message when the case guard contains
                --  at least one undefined reference, possibly due to contract
@@ -579,7 +581,8 @@ package body Sem_Prag is
             end if;
 
             Errors := Serious_Errors_Detected;
-            Preanalyze_Assert_Expression (Conseq, Standard_Boolean);
+            Preanalyze_And_Resolve_Assert_Expression
+              (Conseq, Standard_Boolean);
 
             --  Emit a clarification message when the consequence contains
             --  at least one undefined reference, possibly due to contract
@@ -2391,9 +2394,10 @@ package body Sem_Prag is
 
          Errors := Serious_Errors_Detected;
 
-         --  Preanalyze_Assert_Expression enforcing the expression type
+         --  Preanalyze_And_Resolve_Assert_Expression enforcing the expression
+         --  type.
 
-         Preanalyze_Assert_Expression (Consequence, Any_Boolean);
+         Preanalyze_And_Resolve_Assert_Expression (Consequence, Any_Boolean);
 
          Check_Params (Consequence);
 
@@ -2621,7 +2625,8 @@ package body Sem_Prag is
 
             if Nkind (Case_Guard) /= N_Others_Choice then
                Errors := Serious_Errors_Detected;
-               Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
+               Preanalyze_And_Resolve_Assert_Expression
+                 (Case_Guard, Standard_Boolean);
 
                --  Emit a clarification message when the case guard contains
                --  at least one undefined reference, possibly due to contract
@@ -5585,7 +5590,7 @@ package body Sem_Prag is
 
             if Present (Arg2) then
                Check_Optional_Identifier (Arg2, Name_Message);
-               Preanalyze_Assert_Expression
+               Preanalyze_And_Resolve_Assert_Expression
                  (Get_Pragma_Arg (Arg2), Standard_String);
             end if;
          end if;
@@ -14065,7 +14070,7 @@ package body Sem_Prag is
                --  Perform preanalysis to deal with embedded Loop_Entry
                --  attributes.
 
-               Preanalyze_Assert_Expression (Expr, Any_Boolean);
+               Preanalyze_And_Resolve_Assert_Expression (Expr, Any_Boolean);
             end if;
 
             --  Implement Assert[_And_Cut]/Assume/Loop_Invariant by generating
@@ -16166,7 +16171,8 @@ package body Sem_Prag is
                --  described in "Handling of Default and Per-Object
                --  Expressions" in sem.ads.
 
-               Preanalyze_Spec_Expression (Arg, RTE (RE_CPU_Range));
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Arg, RTE (RE_CPU_Range));
 
                --  See comment in Sem_Ch13 about the following restrictions
 
@@ -16212,7 +16218,7 @@ package body Sem_Prag is
             --  The expression must be analyzed in the special manner described
             --  in "Handling of Default and Per-Object Expressions" in sem.ads.
 
-            Preanalyze_Spec_Expression (Arg, RTE (RE_Time_Span));
+            Preanalyze_And_Resolve_Spec_Expression (Arg, RTE (RE_Time_Span));
 
             --  Only protected types allowed
 
@@ -16841,7 +16847,8 @@ package body Sem_Prag is
                --  described in "Handling of Default and Per-Object
                --  Expressions" in sem.ads.
 
-               Preanalyze_Spec_Expression (Arg, RTE (RE_Dispatching_Domain));
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Arg, RTE (RE_Dispatching_Domain));
 
                --  Check duplicate pragma before we chain the pragma in the Rep
                --  Item chain of Ent.
@@ -20074,7 +20081,8 @@ package body Sem_Prag is
                --  described in "Handling of Default and Per-Object
                --  Expressions" in sem.ads.
 
-               Preanalyze_Spec_Expression (Arg, RTE (RE_Interrupt_Priority));
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Arg, RTE (RE_Interrupt_Priority));
             end if;
 
             if Nkind (P) not in N_Task_Definition | N_Protected_Definition then
@@ -20979,10 +20987,10 @@ package body Sem_Prag is
                     ("Structural variant shall be the only variant", Variant);
                end if;
 
-               --  Preanalyze_Assert_Expression, but without enforcing any of
-               --  the two acceptable types.
+               --  Preanalyze_And_Resolve_Assert_Expression, but without
+               --  enforcing any of the two acceptable types.
 
-               Preanalyze_Assert_Expression (Expression (Variant));
+               Preanalyze_And_Resolve_Assert_Expression (Expression (Variant));
 
                --  Expression of a discrete type is allowed. Nothing to
                --  check for structural variants.
@@ -23410,7 +23418,8 @@ package body Sem_Prag is
                --  described in "Handling of Default and Per-Object
                --  Expressions" in sem.ads.
 
-               Preanalyze_Spec_Expression (Arg, RTE (RE_Any_Priority));
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Arg, RTE (RE_Any_Priority));
 
                if not Is_OK_Static_Expression (Arg) then
                   Check_Restriction (Static_Priorities, Arg);
@@ -24397,7 +24406,7 @@ package body Sem_Prag is
             --  The expression must be analyzed in the special manner described
             --  in "Handling of Default and Per-Object Expressions" in sem.ads.
 
-            Preanalyze_Spec_Expression (Arg, RTE (RE_Time_Span));
+            Preanalyze_And_Resolve_Spec_Expression (Arg, RTE (RE_Time_Span));
 
             --  Subprogram case
 
@@ -24657,7 +24666,7 @@ package body Sem_Prag is
                --  The expression must be analyzed in the special manner
                --  described in "Handling of Default Expressions" in sem.ads.
 
-               Preanalyze_Spec_Expression (Arg, Any_Integer);
+               Preanalyze_And_Resolve_Spec_Expression (Arg, Any_Integer);
 
                --  The pragma cannot appear if the No_Secondary_Stack
                --  restriction is in effect.
@@ -25815,7 +25824,7 @@ package body Sem_Prag is
             --  in "Handling of Default Expressions" in sem.ads.
 
             Arg := Get_Pragma_Arg (Arg1);
-            Preanalyze_Spec_Expression (Arg, Any_Integer);
+            Preanalyze_And_Resolve_Spec_Expression (Arg, Any_Integer);
 
             if not Is_OK_Static_Expression (Arg) then
                Check_Restriction (Static_Storage_Size, Arg);
@@ -28241,7 +28250,7 @@ package body Sem_Prag is
       end if;
 
       Errors := Serious_Errors_Detected;
-      Preanalyze_Assert_Expression (Expr, Standard_Boolean);
+      Preanalyze_And_Resolve_Assert_Expression (Expr, Standard_Boolean);
 
       --  Emit a clarification message when the expression contains at least
       --  one undefined reference, possibly due to contract freezing.
@@ -31452,10 +31461,10 @@ package body Sem_Prag is
 
          Errors := Serious_Errors_Detected;
 
-         --  Preanalyze_Assert_Expression, but without enforcing any of the
-         --  acceptable types.
+         --  Preanalyze_And_Resolve_Assert_Expression, but without enforcing
+         --  any of the acceptable types.
 
-         Preanalyze_Assert_Expression (Expr);
+         Preanalyze_And_Resolve_Assert_Expression (Expr);
 
          --  Expression of a discrete type is allowed. Nothing more to check
          --  for structural variants.
@@ -31633,7 +31642,7 @@ package body Sem_Prag is
                  From_Aspect => True);
 
             if Present (Arg) then
-               Preanalyze_Assert_Expression
+               Preanalyze_And_Resolve_Assert_Expression
                  (Expression (Arg), Standard_Boolean);
             end if;
          end if;
@@ -31641,7 +31650,8 @@ package body Sem_Prag is
          Arg := Test_Case_Arg (N, Arg_Nam);
 
          if Present (Arg) then
-            Preanalyze_Assert_Expression (Expression (Arg), Standard_Boolean);
+            Preanalyze_And_Resolve_Assert_Expression
+              (Expression (Arg), Standard_Boolean);
          end if;
       end Preanalyze_Test_Case_Arg;
 

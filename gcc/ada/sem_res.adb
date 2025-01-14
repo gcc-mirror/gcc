@@ -2106,8 +2106,6 @@ package body Sem_Res is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
-      --  See also Preanalyze_And_Resolve in sem.adb for similar handling
-
       --  Normally, we suppress all checks for this preanalysis. There is no
       --  point in processing them now, since they will be applied properly
       --  and in the proper location when the default expressions reanalyzed
@@ -2150,8 +2148,13 @@ package body Sem_Res is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
-      Analyze (N);
-      Resolve (N, Etype (N), Suppress => All_Checks);
+      --  See previous version of Preanalyze_And_Resolve for similar handling
+
+      if GNATprove_Mode then
+         Analyze_And_Resolve (N);
+      else
+         Analyze_And_Resolve (N, Suppress => All_Checks);
+      end if;
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;

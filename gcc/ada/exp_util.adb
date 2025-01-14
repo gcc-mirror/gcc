@@ -1956,7 +1956,7 @@ package body Exp_Util is
          --  time capture the visibility of the proper package part.
 
          Set_Parent (Expr, Typ_Decl);
-         Preanalyze_Assert_Expression (Expr, Any_Boolean);
+         Preanalyze_And_Resolve_Assert_Expression (Expr, Any_Boolean);
 
          --  Save a copy of the expression with all replacements and analysis
          --  already taken place in case a derived type inherits the pragma.
@@ -1969,8 +1969,8 @@ package body Exp_Util is
 
          --  If the pragma comes from an aspect specification, replace the
          --  saved expression because all type references must be substituted
-         --  for the call to Preanalyze_Spec_Expression in Check_Aspect_At_xxx
-         --  routines.
+         --  for the call to Preanalyze_And_Resolve_Spec_Expression in
+         --  Check_Aspect_At_xxx routines.
 
          if Present (DIC_Asp) then
             Set_Expression_Copy (DIC_Asp, New_Copy_Tree (Expr));
@@ -3217,7 +3217,7 @@ package body Exp_Util is
                --  part.
 
                Set_Parent (Expr, Parent (Prag_Expr));
-               Preanalyze_Assert_Expression (Expr, Any_Boolean);
+               Preanalyze_And_Resolve_Assert_Expression (Expr, Any_Boolean);
 
                --  Save a copy of the expression when T is tagged to detect
                --  errors and capture the visibility of the proper package part
@@ -3229,8 +3229,8 @@ package body Exp_Util is
 
                --  If the pragma comes from an aspect specification, replace
                --  the saved expression because all type references must be
-               --  substituted for the call to Preanalyze_Spec_Expression in
-               --  Check_Aspect_At_xxx routines.
+               --  substituted for the call to Preanalyze_And_Resolve_Spec_
+               --  Expression in Check_Aspect_At_xxx routines.
 
                if Present (Prag_Asp) then
                   Set_Expression_Copy (Prag_Asp, New_Copy_Tree (Expr));

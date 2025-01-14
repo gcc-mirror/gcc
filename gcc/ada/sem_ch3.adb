@@ -41,7 +41,6 @@ with Exp_Disp;       use Exp_Disp;
 with Exp_Dist;       use Exp_Dist;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
-with Expander;       use Expander;
 with Fmap;
 with Freeze;         use Freeze;
 with Ghost;          use Ghost;
@@ -623,9 +622,11 @@ package body Sem_Ch3 is
    --  Create a new ordinary fixed point type, and apply the constraint to
    --  obtain subtype of it.
 
-   procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id);
-   --  Wrapper on Preanalyze_Spec_Expression for default expressions, so that
-   --  In_Default_Expr can be properly adjusted.
+   procedure Preanalyze_And_Resolve_Default_Expression
+     (N : Node_Id;
+      T : Entity_Id);
+   --  Wrapper on Preanalyze_And_Resolve_Spec_Expression for default
+   --  expressions, so that In_Default_Expr can be properly adjusted.
 
    procedure Prepare_Private_Subtype_Completion
      (Id          : Entity_Id;
@@ -2110,7 +2111,7 @@ package body Sem_Ch3 is
       --  package Sem).
 
       if Present (E) then
-         Preanalyze_Default_Expression (E, T);
+         Preanalyze_And_Resolve_Default_Expression (E, T);
          Check_Initialization (T, E);
 
          if Ada_Version >= Ada_2005
@@ -2507,7 +2508,8 @@ package body Sem_Ch3 is
                            (First (Pragma_Argument_Associations (ASN))));
                      Set_Parent (Exp, ASN);
 
-                     Preanalyze_Assert_Expression (Exp, Standard_Boolean);
+                     Preanalyze_And_Resolve_Assert_Expression
+                       (Exp, Standard_Boolean);
                   end if;
 
                   ASN := Next_Pragma (ASN);
@@ -20857,67 +20859,71 @@ package body Sem_Ch3 is
       Set_Is_Constrained     (T);
    end Ordinary_Fixed_Point_Type_Declaration;
 
-   ----------------------------------
-   -- Preanalyze_Assert_Expression --
-   ----------------------------------
+   ----------------------------------------------
+   -- Preanalyze_And_Resolve_Assert_Expression --
+   ----------------------------------------------
 
-   procedure Preanalyze_Assert_Expression (N : Node_Id; T : Entity_Id) is
+   procedure Preanalyze_And_Resolve_Assert_Expression
+     (N : Node_Id;
+      T : Entity_Id) is
    begin
       In_Assertion_Expr := In_Assertion_Expr + 1;
-      Preanalyze_Spec_Expression (N, T);
+      Preanalyze_And_Resolve_Spec_Expression (N, T);
       In_Assertion_Expr := In_Assertion_Expr - 1;
-   end Preanalyze_Assert_Expression;
+   end Preanalyze_And_Resolve_Assert_Expression;
 
-   --  ??? The variant below explicitly saves and restores all the flags,
-   --  because it is impossible to compose the existing variety of
-   --  Analyze/Resolve (and their wrappers, e.g. Preanalyze_Spec_Expression)
-   --  to achieve the desired semantics.
+   ----------------------------------------------
+   -- Preanalyze_And_Resolve_Assert_Expression --
+   ----------------------------------------------
 
-   procedure Preanalyze_Assert_Expression (N : Node_Id) is
-      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
-      Save_Full_Analysis      : constant Boolean := Full_Analysis;
-
+   procedure Preanalyze_And_Resolve_Assert_Expression (N : Node_Id) is
    begin
       In_Assertion_Expr  := In_Assertion_Expr + 1;
-      In_Spec_Expression := True;
-      Full_Analysis      := False;
-      Expander_Mode_Save_And_Set (False);
-
-      if GNATprove_Mode then
-         Analyze_And_Resolve (N);
-      else
-         Analyze_And_Resolve (N, Suppress => All_Checks);
-      end if;
-
-      Expander_Mode_Restore;
-      Full_Analysis      := Save_Full_Analysis;
-      In_Spec_Expression := Save_In_Spec_Expression;
+      Preanalyze_And_Resolve_Spec_Expression (N);
       In_Assertion_Expr  := In_Assertion_Expr - 1;
-   end Preanalyze_Assert_Expression;
+   end Preanalyze_And_Resolve_Assert_Expression;
 
-   -----------------------------------
-   -- Preanalyze_Default_Expression --
-   -----------------------------------
+   -----------------------------------------------
+   -- Preanalyze_And_Resolve_Default_Expression --
+   -----------------------------------------------
 
-   procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id) is
+   procedure Preanalyze_And_Resolve_Default_Expression
+      (N : Node_Id;
+       T : Entity_Id)
+   is
       Save_In_Default_Expr : constant Boolean := In_Default_Expr;
    begin
       In_Default_Expr := True;
-      Preanalyze_Spec_Expression (N, T);
+      Preanalyze_And_Resolve_Spec_Expression (N, T);
       In_Default_Expr := Save_In_Default_Expr;
-   end Preanalyze_Default_Expression;
+   end Preanalyze_And_Resolve_Default_Expression;
 
-   --------------------------------
-   -- Preanalyze_Spec_Expression --
-   --------------------------------
+   --------------------------------------------
+   -- Preanalyze_And_Resolve_Spec_Expression --
+   --------------------------------------------
 
-   procedure Preanalyze_Spec_Expression (N : Node_Id; T : Entity_Id) is
+   procedure Preanalyze_And_Resolve_Spec_Expression
+     (N : Node_Id;
+      T : Entity_Id)
+   is
       Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
    begin
       In_Spec_Expression := True;
       Preanalyze_And_Resolve (N, T);
       In_Spec_Expression := Save_In_Spec_Expression;
-   end Preanalyze_Spec_Expression;
+   end Preanalyze_And_Resolve_Spec_Expression;
+
+   --------------------------------------------
+   -- Preanalyze_And_Resolve_Spec_Expression --
+   --------------------------------------------
+
+   procedure Preanalyze_And_Resolve_Spec_Expression (N : Node_Id) is
+      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
+   begin
+      In_Spec_Expression := True;
+      Preanalyze_And_Resolve (N);
+      In_Spec_Expression := Save_In_Spec_Expression;
+   end Preanalyze_And_Resolve_Spec_Expression;
 
    ----------------------------------------
    -- Prepare_Private_Subtype_Completion --
@@ -21076,7 +21082,8 @@ package body Sem_Ch3 is
          --  Per-Object Expressions" in spec of package Sem).
 
          if Present (Expression (Discr)) then
-            Preanalyze_Default_Expression (Expression (Discr), Discr_Type);
+            Preanalyze_And_Resolve_Default_Expression
+              (Expression (Discr), Discr_Type);
 
             --  Legaity checks
 

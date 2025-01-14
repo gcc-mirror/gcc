@@ -581,12 +581,12 @@ package body Sem_Ch6 is
             Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Typ);
+            Preanalyze_And_Resolve_Spec_Expression (Expr, Typ);
             End_Scope;
          else
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Typ);
+            Preanalyze_And_Resolve_Spec_Expression (Expr, Typ);
             Check_Limited_Return (Orig_N, Expr, Typ);
             End_Scope;
          end if;
@@ -617,7 +617,7 @@ package body Sem_Ch6 is
                   begin
                      Set_Checking_Potentially_Static_Expression (True);
 
-                     Preanalyze_Spec_Expression (Exp_Copy, Typ);
+                     Preanalyze_And_Resolve_Spec_Expression (Exp_Copy, Typ);
 
                      if not Is_Static_Expression (Exp_Copy) then
                         Error_Msg_N
@@ -6094,7 +6094,7 @@ package body Sem_Ch6 is
 
                      if NewD then
                         Push_Scope (New_Id);
-                        Preanalyze_Spec_Expression
+                        Preanalyze_And_Resolve_Spec_Expression
                           (Default_Value (New_Formal), Etype (New_Formal));
                         End_Scope;
                      end if;
@@ -6517,7 +6517,7 @@ package body Sem_Ch6 is
                --  expanded, so expand now to check conformance.
 
                if NewD then
-                  Preanalyze_Spec_Expression
+                  Preanalyze_And_Resolve_Spec_Expression
                     (Expression (New_Discr), New_Discr_Type);
                end if;
 
@@ -13207,7 +13207,7 @@ package body Sem_Ch6 is
             --  Do the special preanalysis of the expression (see section on
             --  "Handling of Default Expressions" in the spec of package Sem).
 
-            Preanalyze_Spec_Expression (Default, Formal_Type);
+            Preanalyze_And_Resolve_Spec_Expression (Default, Formal_Type);
 
             --  An access to constant cannot be the default for
             --  an access parameter that is an access to variable.
