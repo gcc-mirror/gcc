@@ -298,6 +298,13 @@ bpf_core_reloc_add (const tree type, const char * section_name,
   ctf_container_ref ctfc = ctf_get_tu_ctfc ();
   ctf_dtdef_ref dtd = ctf_lookup_tree_type (ctfc, type);
 
+  /* Make sure CO-RE type is never the const or volatile version.  */
+  if ((btf_dtd_kind (dtd) == BTF_KIND_CONST
+       || btf_dtd_kind (dtd) == BTF_KIND_VOLATILE)
+      && kind >= BPF_RELO_FIELD_BYTE_OFFSET
+      && kind <= BPF_RELO_FIELD_RSHIFT_U64)
+    dtd = dtd->ref_type;
+
   /* Buffer the access string in the auxiliary strtab.  */
   bpfcr->bpfcr_astr_off = 0;
   gcc_assert (accessor != NULL);

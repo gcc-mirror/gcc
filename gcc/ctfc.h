@@ -465,4 +465,6 @@ extern void btf_mark_type_used (tree);
 extern int ctfc_get_dtd_srcloc (ctf_dtdef_ref, ctf_srcloc_ref);
 extern int ctfc_get_dvd_srcloc (ctf_dvdef_ref, ctf_srcloc_ref);
 
+extern uint32_t btf_dtd_kind (ctf_dtdef_ref dtd);
+
 #endif /* GCC_CTFC_H */

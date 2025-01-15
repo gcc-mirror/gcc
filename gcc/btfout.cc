@@ -148,7 +148,7 @@ get_btf_kind (uint32_t ctf_kind)
 
 /* Convenience wrapper around get_btf_kind for the common case.  */
 
-static uint32_t
+uint32_t
 btf_dtd_kind (ctf_dtdef_ref dtd)
 {
   if (!dtd)
