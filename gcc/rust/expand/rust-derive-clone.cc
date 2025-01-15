@@ -97,15 +97,15 @@ DeriveClone::clone_impl (
   auto trait_items = std::vector<std::unique_ptr<AssociatedItem>> ();
   trait_items.emplace_back (std::move (clone_fn));
 
-  // we need to build up the generics for this impl block which will be just a
-  // clone of the types specified ones
+  // We need to build up the generics for this impl block which will be just a
+  // clone of the generics specified, with added `Clone` bounds
   //
-  // for example:
+  // For example with:
   //
   // #[derive(Clone)]
-  // struct Be<T: Clone> { ... }
+  // struct Be<T> { ... }
   //
-  // we need to generate the impl block:
+  // We need to generate the following impl block:
   //
   // impl<T: Clone> Clone for Be<T>
 
@@ -138,7 +138,12 @@ DeriveClone::clone_impl (
 	      = GenericArg::create_type (std::move (associated_type));
 	    generic_args.push_back (std::move (type_arg));
 
-	    auto impl_type_param = builder.new_type_param (type_param);
+	    std::vector<std::unique_ptr<TypeParamBound>> extra_bounds;
+	    extra_bounds.emplace_back (std::unique_ptr<TypeParamBound> (
+	      new TraitBound (builder.type_path (LangItem::Kind::CLONE), loc)));
+
+	    auto impl_type_param
+	      = builder.new_type_param (type_param, std::move (extra_bounds));
 	    impl_generics.push_back (std::move (impl_type_param));
 	  }
 	  break;
