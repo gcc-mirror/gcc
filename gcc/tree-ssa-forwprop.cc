@@ -3541,7 +3541,8 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
   tree v_y = gimple_assign_rhs2 (stmt);
   tree sel = gimple_assign_rhs3 (stmt);
 
-  if (!VECTOR_CST_NELTS (sel).is_constant (&nelts)
+  if (TREE_CODE (sel) != VECTOR_CST
+      || !VECTOR_CST_NELTS (sel).is_constant (&nelts)
       || TREE_CODE (v_x) != SSA_NAME
       || TREE_CODE (v_y) != SSA_NAME
       || !has_single_use (v_x)
@@ -3615,7 +3616,9 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
     return false;
 
   unsigned HOST_WIDE_INT v_1_nelts, v_2_nelts;
-  if (!VECTOR_CST_NELTS (v_1_sel).is_constant (&v_1_nelts)
+  if (TREE_CODE (v_1_sel) != VECTOR_CST
+      || !VECTOR_CST_NELTS (v_1_sel).is_constant (&v_1_nelts)
+      || TREE_CODE (v_2_sel) != VECTOR_CST
       || !VECTOR_CST_NELTS (v_2_sel).is_constant (&v_2_nelts))
     return false;
 
