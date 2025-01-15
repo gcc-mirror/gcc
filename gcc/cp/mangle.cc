@@ -3748,8 +3748,41 @@ write_expression (tree expr)
 		    unsigned reps = 1;
 		    if (ce->index && TREE_CODE (ce->index) == RANGE_EXPR)
 		      reps = range_expr_nelts (ce->index);
-		    for (unsigned j = 0; j < reps; ++j)
-		      write_expression (ce->value);
+		    if (TREE_CODE (ce->value) == RAW_DATA_CST)
+		      {
+			gcc_assert (reps == 1);
+			unsigned int len = RAW_DATA_LENGTH (ce->value);
+			/* If this is the last non-zero element, skip
+			   zeros at the end.  */
+			if (i == last_nonzero)
+			  while (len)
+			    {
+			      if (RAW_DATA_POINTER (ce->value)[len - 1])
+				break;
+			      --len;
+			    }
+			tree valtype = TREE_TYPE (ce->value);
+			for (unsigned int i = 0; i < len; ++i)
+			  {
+			    write_char ('L');
+			    write_type (valtype);
+			    unsigned HOST_WIDE_INT v;
+			    if (!TYPE_UNSIGNED (valtype)
+				&& TYPE_PRECISION (valtype) == BITS_PER_UNIT
+				&& RAW_DATA_SCHAR_ELT (ce->value, i) < 0)
+			      {
+				write_char ('n');
+				v = -RAW_DATA_SCHAR_ELT (ce->value, i);
+			      }
+			    else
+			      v = RAW_DATA_UCHAR_ELT (ce->value, i);
+			    write_unsigned_number (v);
+			    write_char ('E');
+			  }
+		      }
+		    else
+		      for (unsigned j = 0; j < reps; ++j)
+			write_expression (ce->value);
 		  }
 	    }
 	  else
