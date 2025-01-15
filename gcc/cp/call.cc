@@ -4333,7 +4333,7 @@ has_non_trivial_temporaries (tree expr)
 
 /* Return number of initialized elements in CTOR.  */
 
-static unsigned HOST_WIDE_INT
+unsigned HOST_WIDE_INT
 count_ctor_elements (tree ctor)
 {
   unsigned HOST_WIDE_INT len = 0;
