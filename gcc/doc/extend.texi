@@ -15355,7 +15355,7 @@ a function if it does not.  For example:
 
 You may use this built-in function in either a macro or an inline
 function.  However, if you use it in an inlined function and pass an
-argument of the function as the argument to the built-in, GCC 
+argument of the function as the argument to the built-in, GCC
 never returns 1 when you call the inline function with a string constant
 or compound literal (@pxref{Compound Literals}) and does not return 1
 when you pass a constant numeric value to the inline function unless you
@@ -15520,9 +15520,9 @@ when testing pointer or floating-point values.
 
 For the purposes of branch prediction optimizations, the probability that
 a @code{__builtin_expect} expression is @code{true} is controlled by GCC's
-@code{builtin-expect-probability} parameter, which defaults to 90%.  
+@code{builtin-expect-probability} parameter, which defaults to 90%.
 
-You can also use @code{__builtin_expect_with_probability} to explicitly 
+You can also use @code{__builtin_expect_with_probability} to explicitly
 assign a probability value to individual expressions.  If the built-in
 is used in a loop construct, the provided probability will influence
 the expected number of iterations made by loop optimizations.
