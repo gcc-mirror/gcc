@@ -388,7 +388,10 @@ void
 Dump::do_typepathsegment (TypePathSegment &e)
 {
   do_mappings (e.get_mappings ());
-  put_field ("ident_segment", e.get_ident_segment ().as_string ());
+  if (e.is_lang_item ())
+    put_field ("ident_segment", LangItem::PrettyString (e.get_lang_item ()));
+  else
+    put_field ("ident_segment", e.get_ident_segment ().as_string ());
 }
 
 void
