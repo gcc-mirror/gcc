@@ -200,7 +200,9 @@ public:
   static std::unique_ptr<GenericParam>
   new_lifetime_param (LifetimeParam &param);
 
-  static std::unique_ptr<GenericParam> new_type_param (TypeParam &param);
+  static std::unique_ptr<GenericParam> new_type_param (
+    TypeParam &param,
+    std::vector<std::unique_ptr<TypeParamBound>> extra_trait_bounds = {});
 
   static Lifetime new_lifetime (const Lifetime &lifetime);
 
