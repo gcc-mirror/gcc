@@ -87,7 +87,7 @@ test_template_members(__gnu_test::input_container<short>& c)
   l.merge(std::move(l), [](int, int) { return false; });
   l.sort([](int, int) { return false; });
 
-#ifdef __glibcxx_ranges_to_container
+#ifdef __cpp_lib_ranges_to_container
   short arr[2];
   __gnu_test::test_input_range<short> r(arr);
   std::forward_list<int, Allocator<int>> l2(std::from_range, r);

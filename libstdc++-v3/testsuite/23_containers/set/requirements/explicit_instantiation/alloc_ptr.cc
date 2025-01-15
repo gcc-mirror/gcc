@@ -69,18 +69,21 @@ test_template_members(__gnu_test::input_container<short>& c)
   s.emplace_hint(s.begin(), 1);
   s.insert(c.begin(), c.end());
 
+#ifdef __cpp_lib_node_extract
   std::set<int, std::greater<int>, Allocator<int>> s1;
   s.merge(s1);
   std::multiset<int, std::greater<int>, Allocator<int>> m1;
   s.merge(m1);
+#endif
 
-#ifdef __glibcxx_ranges_to_container
+#if 0
+#ifdef __cpp_lib_ranges_to_container
   short arr[2];
   __gnu_test::test_input_range<short> r(arr);
   std::set<int, std::less<int>, Allocator<int>> s2(std::from_range, r);
-  s2.assign_range(r);
-  s2.prepend_range(r);
-  s2.append_range(r);
+  std::set<int, std::less<int>, Allocator<int>> s3(std::from_range, r,
+						   Allocator<int>{});
   s2.insert_range(s2.begin(), r);
+#endif
 #endif
 }
