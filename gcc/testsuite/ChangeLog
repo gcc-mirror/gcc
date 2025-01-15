@@ -1,3 +1,12 @@
+2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118140
+	* gcc.dg/vect/pr118140.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr118140.c: New test.
+
 2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* g++.dg/modules/pr114630_a.C: Use -fmodules-ts instead of

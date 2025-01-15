@@ -1,3 +1,13 @@
+2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118140
+	* gimple-match-exports.cc (maybe_resimplify_conditional_op): Add
+	COND_EXPR when we simplified to a scalar gimple value but still
+	have an else value.
+
 2025-01-10  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Fix cortex-x4 parts
