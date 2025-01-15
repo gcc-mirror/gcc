@@ -3530,6 +3530,8 @@ fwprop_ssa_val (tree name)
 static bool
 recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
 {
+  unsigned HOST_WIDE_INT nelts;
+
   gcc_checking_assert (stmt);
   gcc_checking_assert (gimple_assign_rhs_code (stmt) == VEC_PERM_EXPR);
   basic_block bb = gimple_bb (stmt);
@@ -3539,14 +3541,12 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
   tree v_y = gimple_assign_rhs2 (stmt);
   tree sel = gimple_assign_rhs3 (stmt);
 
-  if (!VECTOR_CST_NELTS (sel).is_constant ()
+  if (!VECTOR_CST_NELTS (sel).is_constant (&nelts)
       || TREE_CODE (v_x) != SSA_NAME
       || TREE_CODE (v_y) != SSA_NAME
       || !has_single_use (v_x)
       || !has_single_use (v_y))
     return false;
-
-  unsigned int nelts = VECTOR_CST_NELTS (sel).to_constant ();
 
   /* Don't analyse sequences with many lanes.  */
   if (nelts > 4)
@@ -3614,12 +3614,12 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
       || v_in != gimple_assign_rhs2 (v_2_stmt))
     return false;
 
-  if (!VECTOR_CST_NELTS (v_1_sel).is_constant ()
-      || !VECTOR_CST_NELTS (v_2_sel).is_constant ())
+  unsigned HOST_WIDE_INT v_1_nelts, v_2_nelts;
+  if (!VECTOR_CST_NELTS (v_1_sel).is_constant (&v_1_nelts)
+      || !VECTOR_CST_NELTS (v_2_sel).is_constant (&v_2_nelts))
     return false;
 
-  if (nelts != VECTOR_CST_NELTS (v_1_sel).to_constant ()
-      || nelts != VECTOR_CST_NELTS (v_2_sel).to_constant ())
+  if (nelts != v_1_nelts || nelts != v_2_nelts)
     return false;
 
   /* Create the new selector.  */
