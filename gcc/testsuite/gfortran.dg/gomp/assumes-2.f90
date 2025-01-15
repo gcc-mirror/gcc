@@ -11,7 +11,7 @@ module m2
 interface
   subroutine foo
     !$omp assumes contains(target) contains(teams,target) ! { dg-error "'TARGET' directive mentioned multiple times in CONTAINS clause in !.OMP ASSUMES directive" }
-    !$omp assumes absent(declare target) ! { dg-error "Invalid 'DECLARE TARGET' directive at .1. in ABSENT clause: declarative, informational and meta directives not permitted" }
+    !$omp assumes absent(declare target) ! { dg-error "Invalid 'DECLARE TARGET' directive at .1. in ABSENT clause: declarative, informational, and meta directives not permitted" }
     !$omp assumes absent(parallel) absent(do,simd,parallel,distribute) ! { dg-error "'PARALLEL' directive mentioned multiple times in ABSENT clause in !.OMP ASSUMES directive" }
     !$omp assumes contains(barrier,atomic) absent(cancel,simd,atomic,distribute) ! { dg-error "'SIMD' directive mentioned both times in ABSENT and CONTAINS clauses in !.OMP ASSUMES directive" }
   end subroutine foo

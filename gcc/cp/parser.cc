@@ -49887,10 +49887,15 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 			= c_omp_categorize_directive (directive[0],
 						      directive[1],
 						      directive[2]);
-		      if (dir == NULL
-			  || dir->kind == C_OMP_DIR_DECLARATIVE
-			  || dir->kind == C_OMP_DIR_INFORMATIONAL
-			  || dir->kind == C_OMP_DIR_META
+		      if (dir
+			  && (dir->kind == C_OMP_DIR_DECLARATIVE
+			      || dir->kind == C_OMP_DIR_INFORMATIONAL
+			      || dir->kind == C_OMP_DIR_META))
+			error_at (dloc, "invalid OpenMP directive name in "
+					"%qs clause argument: declarative, "
+					"informational, and meta directives "
+					"not permitted", p);
+		      else if (dir == NULL
 			  || dir->id == PRAGMA_OMP_END
 			  || (!dir->second && directive[1])
 			  || (!dir->third && directive[2]))

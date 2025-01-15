@@ -7,13 +7,13 @@
 #pragma omp assumes contains (target enter data, target exit data) contains (target exit data, parallel)	/* { dg-error "target exit data' directive mentioned multiple times in 'contains' clauses" } */
 #pragma omp assumes absent (target enter data, target exit data) contains (target exit data, parallel)		/* { dg-error "'target exit data' directive mentioned in both 'absent' and 'contains' clauses" } */
 #pragma omp assumes contains (target enter data, target exit data) absent (target enter data, parallel)	/* { dg-error "'target enter data' directive mentioned in both 'absent' and 'contains' clauses" } */
-#pragma omp assumes contains (declare target)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
+#pragma omp assumes contains (declare target)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
 #pragma omp assumes absent (parallel for simd)			/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
 #pragma omp assumes contains (target parallel)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
-#pragma omp assumes absent (assume)				/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
-#pragma omp assumes absent (assumes)				/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
-#pragma omp assumes contains (begin assumes)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
-#pragma omp assumes contains (end assumes)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
+#pragma omp assumes absent (assume)				/* { dg-error "invalid OpenMP directive name in 'absent' clause argument" } */
+#pragma omp assumes absent (assumes)				/* { dg-error "invalid OpenMP directive name in 'absent' clause argument" } */
+#pragma omp assumes contains (begin assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
+#pragma omp assumes contains (end assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
 #pragma omp assumes contains (foo)				/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
 #pragma omp assumes absent (target enter something)		/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
 #pragma omp assumes foobar					/* { dg-error "expected assumption clause" } */

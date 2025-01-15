@@ -1620,7 +1620,7 @@ gfc_omp_absent_contains_clause (gfc_omp_assumptions **assume, bool is_absent)
 	  || kind == GFC_OMP_DIR_META)
 	{
 	  gfc_error ("Invalid %qs directive at %L in %s clause: declarative, "
-		     "informational and meta directives not permitted",
+		     "informational, and meta directives not permitted",
 		     gfc_ascii_statement (st, true), &old_loc,
 		     is_absent ? "ABSENT" : "CONTAINS");
 	  return MATCH_ERROR;
