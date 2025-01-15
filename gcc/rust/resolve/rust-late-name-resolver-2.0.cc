@@ -218,19 +218,12 @@ Late::visit (AST::PathInExpression &expr)
   // in a function item` error here?
   // do we emit it in `get<Namespace::Labels>`?
 
-  rust_debug ("[ARTHUR]: %s", expr.as_simple_path ().as_string ().c_str ());
+  auto resolved
+    = ctx.values.resolve_path (expr.get_segments ()).or_else ([&] () {
+	return ctx.types.resolve_path (expr.get_segments ());
+      });
 
-  tl::optional<Rib::Definition> resolved = tl::nullopt;
-
-  if (auto value = ctx.values.resolve_path (expr.get_segments ()))
-    {
-      resolved = value;
-    }
-  else if (auto type = ctx.types.resolve_path (expr.get_segments ()))
-    {
-      resolved = type;
-    }
-  else
+  if (!resolved)
     {
       rust_error_at (expr.get_locus (),
 		     "could not resolve path expression: %qs",
@@ -244,6 +237,7 @@ Late::visit (AST::PathInExpression &expr)
 		     expr.as_string ().c_str ());
       return;
     }
+
   ctx.map_usage (Usage (expr.get_node_id ()),
 		 Definition (resolved->get_node_id ()));
 }
