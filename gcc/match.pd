@@ -4998,6 +4998,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         (op @0 { build_int_cst (TREE_TYPE (@1), prec - 1); })))
       (op @0 { build_int_cst (TREE_TYPE (@1), low); })))))))
 
+/* Fold `1 >> a` into `a == 0` for scalar integral types. */
+(simplify
+ (rshift integer_onep @2)
+ (if (INTEGRAL_TYPE_P (type))
+  (convert (eq:boolean_type_node @2 { build_zero_cst (TREE_TYPE (@2)); }))))
 
 /* Simplify (CST << x) & 1 to 0 if CST is even or to x == 0 if it is odd.  */
 (simplify
@@ -5009,7 +5014,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Simplify ((C << x) & D) != 0 where C and D are power of two constants,
    either to false if D is smaller (unsigned comparison) than C, or to
    x == log2 (D) - log2 (C).  Similarly for right shifts.
-   Note for `(1 >> x)`, the & 1 has been removed so matching that seperately. */
+   Note `(1 >> x)`, the & 1 has been removed so but will have been
+   already folded above.  */
 (for cmp (ne eq)
      icmp (eq ne)
  (simplify
@@ -5026,13 +5032,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    int c2 = wi::clz (wi::to_wide (@2)); }
      (if (c1 > c2)
       { constant_boolean_node (cmp == NE_EXPR ? false : true, type); }
-      (icmp @0 { build_int_cst (TREE_TYPE (@0), c2 - c1); })))))
- /* `(1 >> X) != 0` -> `X == 0` */
- /* `(1 >> X) == 0` -> `X != 0` */
- (simplify
-  (cmp (rshift integer_onep@1 @0) integer_zerop)
-   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1)))
-    (icmp @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+      (icmp @0 { build_int_cst (TREE_TYPE (@0), c2 - c1); }))))))
 
 /* (CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)
    (CST1 << A) != CST2 -> A != ctz (CST2) - ctz (CST1)

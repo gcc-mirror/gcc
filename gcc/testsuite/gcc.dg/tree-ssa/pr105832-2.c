@@ -1,10 +1,10 @@
 /* PR tree-optimization/105832 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-original" } */
-/* { dg-final { scan-tree-dump "return a == 0;" "original" } } */
-/* { dg-final { scan-tree-dump "return b == 0;" "original" } } */
-/* { dg-final { scan-tree-dump "return c != 0;" "original" } } */
-/* { dg-final { scan-tree-dump "return d != 0;" "original" } } */
+/* { dg-final { scan-tree-dump "a == 0" "original" } } */
+/* { dg-final { scan-tree-dump "b == 0" "original" } } */
+/* { dg-final { scan-tree-dump "c != 0" "original" } } */
+/* { dg-final { scan-tree-dump "d != 0" "original" } } */
 
 int
 f1 (int a)

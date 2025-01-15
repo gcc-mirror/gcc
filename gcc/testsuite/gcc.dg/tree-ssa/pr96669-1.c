@@ -5,7 +5,7 @@
 /* { dg-final { scan-tree-dump "return 1;" "original" } } */
 /* { dg-final { scan-tree-dump "return c == 3;" "original" } } */
 /* { dg-final { scan-tree-dump "return d != 1;" "original" } } */
-/* { dg-final { scan-tree-dump "return e != 0;" "original" } } */
+/* { dg-final { scan-tree-dump "e != 0" "original" } } */
 /* { dg-final { scan-tree-dump "return f == 1;" "original" } } */
 /* { dg-final { scan-tree-dump "return 0;" "original" } } */
 /* { dg-final { scan-tree-dump "return h != 1;" "original" } } */
