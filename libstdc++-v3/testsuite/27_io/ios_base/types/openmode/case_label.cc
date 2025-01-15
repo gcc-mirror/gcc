@@ -44,7 +44,7 @@ case_labels(bitmask_type b)
       break;
     case std::ios_base::trunc:
       break;
-#ifdef __glibcxx_ios_noreplace
+#ifdef __cpp_lib_ios_noreplace
     case std::ios_base::noreplace:
       break;
 #endif
