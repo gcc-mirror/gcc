@@ -4587,7 +4587,7 @@
 ;; Expanders for vec_cmp and vcond
 
 (define_expand "vec_cmp<mode><MVE_vpred>"
-  [(set (match_operand:<MVE_VPRED> 0 "s_register_operand")
+  [(set (match_operand:<MVE_VPRED> 0 "vpr_register_operand")
 	(match_operator:<MVE_VPRED> 1 "comparison_operator"
 	  [(match_operand:MVE_VLD_ST 2 "s_register_operand")
 	   (match_operand:MVE_VLD_ST 3 "reg_or_zero_operand")]))]
@@ -4600,7 +4600,7 @@
 })
 
 (define_expand "vec_cmpu<mode><MVE_vpred>"
-  [(set (match_operand:<MVE_VPRED> 0 "s_register_operand")
+  [(set (match_operand:<MVE_VPRED> 0 "vpr_register_operand")
 	(match_operator:<MVE_VPRED> 1 "comparison_operator"
 	  [(match_operand:MVE_2 2 "s_register_operand")
 	   (match_operand:MVE_2 3 "reg_or_zero_operand")]))]
@@ -4614,7 +4614,7 @@
 (define_expand "vcond_mask_<mode><MVE_vpred>"
   [(set (match_operand:MVE_VLD_ST 0 "s_register_operand")
 	(if_then_else:MVE_VLD_ST
-	  (match_operand:<MVE_VPRED> 3 "s_register_operand")
+	  (match_operand:<MVE_VPRED> 3 "vpr_register_operand")
 	  (match_operand:MVE_VLD_ST 1 "s_register_operand")
 	  (match_operand:MVE_VLD_ST 2 "s_register_operand")))]
   "TARGET_HAVE_MVE"
