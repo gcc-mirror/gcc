@@ -9433,6 +9433,18 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
   /* Some checks for the SOURCE tag.  */
   if (code->expr3)
     {
+      /* Check F03:C632: "The source-expr shall be a scalar or have the same
+	 rank as allocate-object".  This would require the MOLD argument to
+	 NULL() as source-expr for subsequent checking.  However, even the
+	 resulting disassociated pointer or unallocated array has no shape that
+	 could be used for SOURCE= or MOLD=.  */
+      if (code->expr3->expr_type == EXPR_NULL)
+	{
+	  gfc_error ("The intrinsic NULL cannot be used as source-expr at %L",
+		     &code->expr3->where);
+	  goto failure;
+	}
+
       /* Check F03:C631.  */
       if (!gfc_type_compatible (&e->ts, &code->expr3->ts))
 	{
