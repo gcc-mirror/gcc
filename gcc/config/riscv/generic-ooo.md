@@ -145,6 +145,12 @@
   "generic_ooo_issue,generic_ooo_fxu")
 
 ;; Assume float division and sqrt are not pipelined.
+(define_insn_reservation "generic_ooo_float_div_half" 10
+  (and (eq_attr "tune" "generic_ooo")
+       (and (eq_attr "type" "fdiv,fsqrt")
+	    (eq_attr "mode" "HF")))
+  "generic_ooo_issue,generic_ooo_fxu,generic_ooo_div,generic_ooo_div*3")
+
 (define_insn_reservation "generic_ooo_float_div_single" 12
   (and (eq_attr "tune" "generic_ooo")
        (and (eq_attr "type" "fdiv,fsqrt")
