@@ -2470,11 +2470,6 @@ package body Exp_Ch6 is
             --  (and ensure that we have an activation chain defined for tasks
             --  and a Master variable).
 
-            --  Currently we limit such functions to those with inherently
-            --  limited result subtypes, but eventually we plan to expand the
-            --  functions that are treated as build-in-place to include other
-            --  composite result types.
-
             --  But do not do it here for intrinsic subprograms since this will
             --  be done properly after the subprogram is expanded.
 
@@ -8562,12 +8557,10 @@ package body Exp_Ch6 is
    procedure Make_Build_In_Place_Call_In_Anonymous_Context
      (Function_Call : Node_Id)
    is
-      Loc             : constant Source_Ptr := Sloc (Function_Call);
-      Func_Call       : constant Node_Id := Unqual_Conv (Function_Call);
-      Function_Id     : Entity_Id;
-      Result_Subt     : Entity_Id;
-      Return_Obj_Id   : Entity_Id;
-      Return_Obj_Decl : Entity_Id;
+      Loc         : constant Source_Ptr := Sloc (Function_Call);
+      Func_Call   : constant Node_Id    := Unqual_Conv (Function_Call);
+      Function_Id : Entity_Id;
+      Result_Subt : Entity_Id;
 
    begin
       --  If the call has already been processed to add build-in-place actuals
@@ -8579,10 +8572,6 @@ package body Exp_Ch6 is
       if Is_Expanded_Build_In_Place_Call (Func_Call) then
          return;
       end if;
-
-      --  Mark the call as processed as a build-in-place call
-
-      Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
          Function_Id := Entity (Name (Func_Call));
@@ -8601,8 +8590,13 @@ package body Exp_Ch6 is
       --  If the build-in-place function returns a controlled object, then the
       --  object needs to be finalized immediately after the context. Since
       --  this case produces a transient scope, the servicing finalizer needs
-      --  to name the returned object. Create a temporary which is initialized
-      --  with the function call:
+      --  to name the returned object.
+
+      --  If the build-in-place function returns a definite subtype, then an
+      --  object also needs to be created and an access value designating it
+      --  passed as an actual.
+
+      --  Create a temporary which is initialized with the function call:
       --
       --    Temp_Id : Func_Type := BIP_Func_Call;
       --
@@ -8610,74 +8604,24 @@ package body Exp_Ch6 is
       --  the expander using the appropriate mechanism in Make_Build_In_Place_
       --  Call_In_Object_Declaration.
 
-      if Needs_Finalization (Result_Subt) then
+      if Needs_Finalization (Result_Subt)
+        or else Caller_Known_Size (Func_Call, Result_Subt)
+      then
          declare
             Temp_Id   : constant Entity_Id := Make_Temporary (Loc, 'R');
-            Temp_Decl : Node_Id;
-
-         begin
-            --  Reset the guard on the function call since the following does
-            --  not perform actual call expansion.
-
-            Set_Is_Expanded_Build_In_Place_Call (Func_Call, False);
-
-            Temp_Decl :=
+            Temp_Decl : constant Node_Id   :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
-                Object_Definition =>
-                  New_Occurrence_Of (Result_Subt, Loc),
-                Expression =>
-                  New_Copy_Tree (Function_Call));
+                Aliased_Present     => True,
+                Object_Definition   => New_Occurrence_Of (Result_Subt, Loc),
+                Expression          => Relocate_Node (Function_Call));
 
+         begin
+            Set_Assignment_OK (Temp_Decl);
             Insert_Action (Function_Call, Temp_Decl);
-
             Rewrite (Function_Call, New_Occurrence_Of (Temp_Id, Loc));
             Analyze (Function_Call);
          end;
-
-      --  When the result subtype is definite, an object of the subtype is
-      --  declared and an access value designating it is passed as an actual.
-
-      elsif Caller_Known_Size (Func_Call, Result_Subt) then
-
-         --  Create a temporary object to hold the function result
-
-         Return_Obj_Id := Make_Temporary (Loc, 'R');
-         Set_Etype (Return_Obj_Id, Result_Subt);
-
-         Return_Obj_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Return_Obj_Id,
-             Aliased_Present     => True,
-             Object_Definition   => New_Occurrence_Of (Result_Subt, Loc));
-
-         Set_No_Initialization (Return_Obj_Decl);
-
-         Insert_Action (Func_Call, Return_Obj_Decl);
-
-         --  When the function has a controlling result, an allocation-form
-         --  parameter must be passed indicating that the caller is allocating
-         --  the result object. This is needed because such a function can be
-         --  called as a dispatching operation and must be treated similarly
-         --  to functions with unconstrained result subtypes.
-
-         Add_Unconstrained_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
-
-         Add_Collection_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id);
-
-         Add_Task_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Make_Identifier (Loc, Name_uMaster));
-
-         --  Add an implicit actual to the function call that provides access
-         --  to the caller's return object.
-
-         Add_Access_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, New_Occurrence_Of (Return_Obj_Id, Loc));
-
-         pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
-         pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));
 
       --  When the result subtype is unconstrained, the function must allocate
       --  the return object in the secondary stack, so appropriate implicit
@@ -8702,6 +8646,10 @@ package body Exp_Ch6 is
 
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Empty);
+
+         --  Mark the call as processed as a build-in-place call
+
+         Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
          pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
          pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));

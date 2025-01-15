@@ -8120,12 +8120,20 @@ package body Sem_Util is
          loop
             Ren := Renamed_Object (Id);
 
+            --  The reference renames a function result. Check the original
+            --  node in case expansion relocates the function call.
+
+            --    Ren : ... renames Func_Call;
+
+            if Nkind (Original_Node (Ren)) = N_Function_Call then
+               exit;
+
             --  The reference renames an abstract state or a whole object
 
             --    Obj : ...;
             --    Ren : ... renames Obj;
 
-            if Is_Entity_Name (Ren) then
+            elsif Is_Entity_Name (Ren) then
 
                --  Do not follow a renaming that goes through a generic formal,
                --  because these entities are hidden and must not be referenced
@@ -8137,14 +8145,6 @@ package body Sem_Util is
                else
                   Id := Entity (Ren);
                end if;
-
-            --  The reference renames a function result. Check the original
-            --  node in case expansion relocates the function call.
-
-            --    Ren : ... renames Func_Call;
-
-            elsif Nkind (Original_Node (Ren)) = N_Function_Call then
-               exit;
 
             --  Otherwise the reference renames something which does not yield
             --  an abstract state or a whole object. Treat the reference as not
