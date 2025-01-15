@@ -314,10 +314,6 @@
 /* Define to 1 if you have the `posix_memalign' function. */
 #undef HAVE_POSIX_MEMALIGN
 
-/* Define to 1 if POSIX Semaphores with sem_timedwait are available in
-   <semaphore.h>. */
-#undef HAVE_POSIX_SEMAPHORE
-
 /* Define to 1 if you have the `powf' function. */
 #undef HAVE_POWF
 
