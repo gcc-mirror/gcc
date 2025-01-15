@@ -4331,6 +4331,20 @@ has_non_trivial_temporaries (tree expr)
   return false;
 }
 
+/* Return number of initialized elements in CTOR.  */
+
+static unsigned HOST_WIDE_INT
+count_ctor_elements (tree ctor)
+{
+  unsigned HOST_WIDE_INT len = 0;
+  for (constructor_elt &e: CONSTRUCTOR_ELTS (ctor))
+    if (TREE_CODE (e.value) == RAW_DATA_CST)
+      len += RAW_DATA_LENGTH (e.value);
+    else
+      ++len;
+  return len;
+}
+
 /* We're initializing an array of ELTTYPE from INIT.  If it seems useful,
    return INIT as an array (of its own type) so the caller can initialize the
    target array in a loop.  */
@@ -4392,7 +4406,8 @@ maybe_init_list_as_array (tree elttype, tree init)
   if (!is_xible (INIT_EXPR, elttype, copy_argtypes))
     return NULL_TREE;
 
-  tree arr = build_array_of_n_type (init_elttype, CONSTRUCTOR_NELTS (init));
+  unsigned HOST_WIDE_INT len = count_ctor_elements (init);
+  tree arr = build_array_of_n_type (init_elttype, len);
   arr = finish_compound_literal (arr, init, tf_none);
   DECL_MERGEABLE (TARGET_EXPR_SLOT (arr)) = true;
   return arr;
@@ -8801,7 +8816,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
       {
 	/* Conversion to std::initializer_list<T>.  */
 	tree elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (totype), 0);
-	unsigned len = CONSTRUCTOR_NELTS (expr);
+	unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (expr);
 	tree array;
 
 	if (tree init = maybe_init_list_as_array (elttype, expr))
@@ -8809,7 +8824,9 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	    elttype
 	      = cp_build_qualified_type (elttype, (cp_type_quals (elttype)
 						   | TYPE_QUAL_CONST));
-	    array = build_array_of_n_type (elttype, len);
+	    tree index_type = TYPE_DOMAIN (TREE_TYPE (init));
+	    array = build_cplus_array_type (elttype, index_type);
+	    len = TREE_INT_CST_LOW (TYPE_MAX_VALUE (index_type)) + 1;
 	    array = build_vec_init_expr (array, init, complain);
 	    array = get_target_expr (array);
 	    array = cp_build_addr_expr (array, complain);

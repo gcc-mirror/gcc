@@ -1207,7 +1207,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
 /* Return an ARRAY_TYPE with element type ELT and length N.  */
 
 tree
-build_array_of_n_type (tree elt, int n)
+build_array_of_n_type (tree elt, unsigned HOST_WIDE_INT n)
 {
   return build_cplus_array_type (elt, build_index_type (size_int (n - 1)));
 }
