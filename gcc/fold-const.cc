@@ -3746,7 +3746,8 @@ operand_compare::operand_equal_p (tree type0, const_tree arg0,
 	     of op1.  Need to check to make sure they are the same.  */
 	  if (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
-	      && TYPE_PRECISION (type0) != TYPE_PRECISION (type1))
+	      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 1)))
+		    != TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 1))))
 	    return false;
 	  /* FALLTHRU */
 
