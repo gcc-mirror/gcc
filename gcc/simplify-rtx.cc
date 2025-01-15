@@ -4494,6 +4494,60 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	    return simplify_gen_binary (code, mode, op0,
 					gen_int_shift_amount (mode, val));
 	}
+
+      /* Simplify:
+
+	   (code:M1
+	     (subreg:M1
+	       ([al]shiftrt:M2
+		 (subreg:M2
+		   (ashift:M1 X C1))
+		 C2))
+	     C3)
+
+	 to:
+
+	   (code:M1
+	     ([al]shiftrt:M1
+	       (ashift:M1 X C1+N)
+	       C2+N)
+	     C3)
+
+	 where M1 is N bits wider than M2.  Optimizing the (subreg:M1 ...)
+	 directly would be arithmetically correct, but restricting the
+	 simplification to shifts by constants is more conservative,
+	 since it is more likely to lead to further simplifications.  */
+      if (is_a<scalar_int_mode> (mode, &int_mode)
+	  && paradoxical_subreg_p (op0)
+	  && is_a<scalar_int_mode> (GET_MODE (SUBREG_REG (op0)), &inner_mode)
+	  && (GET_CODE (SUBREG_REG (op0)) == ASHIFTRT
+	      || GET_CODE (SUBREG_REG (op0)) == LSHIFTRT)
+	  && CONST_INT_P (op1))
+	{
+	  auto xcode = GET_CODE (SUBREG_REG (op0));
+	  rtx xop0 = XEXP (SUBREG_REG (op0), 0);
+	  rtx xop1 = XEXP (SUBREG_REG (op0), 1);
+	  if (SUBREG_P (xop0)
+	      && GET_MODE (SUBREG_REG (xop0)) == mode
+	      && GET_CODE (SUBREG_REG (xop0)) == ASHIFT
+	      && CONST_INT_P (xop1)
+	      && UINTVAL (xop1) < GET_MODE_PRECISION (inner_mode))
+	    {
+	      rtx yop0 = XEXP (SUBREG_REG (xop0), 0);
+	      rtx yop1 = XEXP (SUBREG_REG (xop0), 1);
+	      if (CONST_INT_P (yop1)
+		  && UINTVAL (yop1) < GET_MODE_PRECISION (inner_mode))
+		{
+		  auto bias = (GET_MODE_BITSIZE (int_mode)
+			       - GET_MODE_BITSIZE (inner_mode));
+		  tem = simplify_gen_binary (ASHIFT, mode, yop0,
+					     GEN_INT (INTVAL (yop1) + bias));
+		  tem = simplify_gen_binary (xcode, mode, tem,
+					     GEN_INT (INTVAL (xop1) + bias));
+		  return simplify_gen_binary (code, mode, tem, op1);
+		}
+	    }
+	}
       break;
 
     case SS_ASHIFT:
