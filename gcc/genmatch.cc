@@ -890,8 +890,8 @@ define_dump_logs (bool gimple, FILE *f)
 
   for (unsigned i = 0; i < dbg_line_numbers.length () - 1; i++)
     {
-      if (i % 20 == 0)
-	fprintf (f, "\n\t");
+      if (i % 10 == 0)
+	fprintf (f, "\n\t/* %d */ ", i);
 
       fprintf (f, "%d, ", dbg_line_numbers[i]);
     }
