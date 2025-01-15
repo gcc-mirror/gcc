@@ -361,7 +361,8 @@ Builder::new_lifetime_param (LifetimeParam &param)
 }
 
 std::unique_ptr<GenericParam>
-Builder::new_type_param (TypeParam &param)
+Builder::new_type_param (
+  TypeParam &param, std::vector<std::unique_ptr<TypeParamBound>> extra_bounds)
 {
   location_t locus = param.get_locus ();
   AST::AttrVec outer_attrs = param.get_outer_attrs ();
@@ -371,6 +372,9 @@ Builder::new_type_param (TypeParam &param)
 
   if (param.has_type ())
     type = new_type (param.get_type ());
+
+  for (auto &&extra_bound : extra_bounds)
+    type_param_bounds.emplace_back (std::move (extra_bound));
 
   for (const auto &b : param.get_type_param_bounds ())
     {
