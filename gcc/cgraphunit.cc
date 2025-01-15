@@ -311,6 +311,7 @@ symbol_table::process_new_functions (void)
     {
       cgraph_node *node = cgraph_new_nodes[i];
       fndecl = node->decl;
+      bitmap_obstack_initialize (NULL);
       switch (state)
 	{
 	case CONSTRUCTION:
@@ -367,6 +368,7 @@ symbol_table::process_new_functions (void)
 	  gcc_unreachable ();
 	  break;
 	}
+      bitmap_obstack_release (NULL);
     }
 
   cgraph_new_nodes.release ();
