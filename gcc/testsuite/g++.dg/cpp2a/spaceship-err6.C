@@ -10,7 +10,7 @@ class MyClass
 public:
   MyClass(int value): mValue(value) {}
 
-  bool operator<=>(const MyClass&) const = default;
+  bool operator<=>(const MyClass&) const = default;	// { dg-error "invalid 'static_cast' from type 'const std::strong_ordering' to type 'bool'" }
 };
 
 int main()

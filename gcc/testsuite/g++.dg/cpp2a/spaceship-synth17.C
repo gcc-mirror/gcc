@@ -8,7 +8,7 @@ struct B {};
 struct A
 {
   B b;			// { dg-error "no match for 'operator<=>' in '\[^\n\r]*' \\\(operand types are 'B' and 'B'\\\)" }
-  int operator<=> (const A &) const = default;
+  int operator<=> (const A &) const = default;	// { dg-error "invalid 'static_cast' from type 'const std::strong_ordering' to type 'int'" }
 };
 
 int
