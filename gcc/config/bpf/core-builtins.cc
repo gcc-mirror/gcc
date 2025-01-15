@@ -1822,6 +1822,7 @@ make_gimple_core_safe_access_index (tree *tp,
 
       tree lhs;
       if (!wi->is_lhs
+	  && gimple_code (wi->stmt) != GIMPLE_CALL
 	  && (lhs = gimple_get_lhs (wi->stmt)) != NULL_TREE)
 	core_mark_as_access_index (lhs);
     }
