@@ -1,3 +1,45 @@
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Marcel Vollweiler  <marcel@codesourcery.com>
+
+	PR middle-end/114596
+	PR middle-end/112779
+	PR middle-end/113904
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Update for changes
+	to omp-general.h interfaces.
+
+2025-01-14  Anuj Mohite  <anujmohite001@gmail.com>
+
+	* dump-parse-tree.cc (show_code_node):  Updated to use
+	c->ext.concur.forall_iterator instead of c->ext.forall_iterator.
+	* frontend-passes.cc (index_interchange): Updated to
+	use c->ext.concur.forall_iterator instead of c->ext.forall_iterator.
+	(gfc_code_walker): Likewise.
+	* gfortran.h (enum locality_type): Added new enum for locality types
+	in DO CONCURRENT constructs.
+	* match.cc (match_simple_forall): Updated to use
+	new_st.ext.concur.forall_iterator instead of new_st.ext.forall_iterator.
+	(gfc_match_forall): Likewise.
+	(gfc_match_do):  Implemented support for matching DO CONCURRENT locality
+	specifiers (LOCAL, LOCAL_INIT, SHARED, DEFAULT(NONE), and REDUCE).
+	* parse.cc (parse_do_block): Updated to use
+	new_st.ext.concur.forall_iterator instead of new_st.ext.forall_iterator.
+	* resolve.cc (struct check_default_none_data): Added struct
+	check_default_none_data.
+	(do_concur_locality_specs_f2023): New function to check compliance
+	with F2023's C1133 constraint for DO CONCURRENT.
+	(check_default_none_expr): New function to check DEFAULT(NONE)
+	compliance.
+	(resolve_locality_spec): New function to resolve locality specs.
+	(gfc_count_forall_iterators): Updated to use
+	code->ext.concur.forall_iterator.
+	(gfc_resolve_forall): Updated to use code->ext.concur.forall_iterator.
+	* st.cc (gfc_free_statement): Updated to free locality specifications
+	and use p->ext.concur.forall_iterator.
+	* trans-stmt.cc (gfc_trans_forall_1): Updated to use
+	code->ext.concur.forall_iterator.
+
 2025-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.cc (show_attr): Fix typos for in_equivalence.

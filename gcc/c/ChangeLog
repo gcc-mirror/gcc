@@ -1,3 +1,32 @@
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Marcel Vollweiler  <marcel@codesourcery.com>
+
+	PR middle-end/114596
+	PR middle-end/112779
+	PR middle-end/113904
+	* c-parser.cc (c_finish_omp_declare_variant): Update for changes
+	to omp-general.h interfaces.
+
+2025-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/116871
+	* c-typeck.cc (pedwarn_permerror_init): Return bool for whether a
+	warning was emitted.  Only call print_spelling if we warned.
+	(pedwarn_init): Return bool for whether a warning was emitted.
+	(permerror_init): Likewise.
+	(warning_init): Return bool for whether a
+	warning was emitted.  Only call print_spelling if we warned.
+	(class pp_element_quoted_decl): New.
+	(maybe_inform_typedef_location): New.
+	(convert_for_assignment): For OPT_Wincompatible_pointer_types,
+	move auto_diagnostic_group to cover all cases.  Use %e and
+	pp_element rather than %qT and tree to colorize the types.
+	Capture whether a warning was emitted, and, if it was,
+	show various notes: for a pointer to a function, show the
+	function decl, for typedef types, and show the decls.
+
 2025-01-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/118112

@@ -1,3 +1,11 @@
+2025-01-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118438
+	PR d/118448
+	PR d/118449
+	* dmd/MERGE: Merge upstream dmd d6f693b46a.
+	* d-incpath.cc (add_import_paths): Update for new front-end interface.
+
 2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd c7902293d7.

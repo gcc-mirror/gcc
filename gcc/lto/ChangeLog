@@ -1,3 +1,8 @@
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* lto-partition.cc (lto_balanced_map): Adjust code referencing
+	deleted declare_variant_alt bit.
+
 2024-12-12  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/113688

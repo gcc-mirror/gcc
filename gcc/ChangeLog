@@ -1,3 +1,233 @@
+2025-01-14  anetczuk  <anetczuk@o2.pl>
+
+	* tree-dump.cc (dequeue_and_dump): Handle OBJ_TYPE_REF.
+
+2025-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (decode_field_reference): Rebustify to set
+	out parms only when returning non-NULL.
+	(fold_truth_andor_for_ifcombine): Bail if
+	decode_field_reference returns NULL.  Add complementary assert
+	on r_const's not being set when l_const isn't.
+
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* cgraph.cc (symbol_table::create_edge): Don't set
+	calls_declare_variant_alt in the caller.
+	* cgraph.h (struct cgraph_node): Remove declare_variant_alt
+	and calls_declare_variant_alt flags.
+	* cgraphclones.cc (cgraph_node::create_clone): Don't copy
+	calls_declare_variant_alt bit.
+	* gimplify.cc: Remove previously #ifdef-ed out code.
+	* ipa-free-lang-data.cc (free_lang_data_in_decl): Adjust code
+	referencing declare_variant_alt bit.
+	* ipa.cc (symbol_table::remove_unreachable_nodes): Likewise.
+	* lto-cgraph.cc (lto_output_node): Remove references to deleted
+	bits.
+	(output_refs): Adjust code referencing declare_variant_alt bit.
+	(input_overwrite_node): Remove references to deleted bits.
+	(input_refs): Adjust code referencing declare_variant_alt bit.
+	* lto-streamer-out.cc (lto_output): Likewise.
+	* lto-streamer.h (omp_lto_output_declare_variant_alt): Delete.
+	(omp_lto_input_declare_variant_alt): Delete.
+	* omp-expand.cc (expand_omp_target): Use has_omp_variant_constructs
+	bit to trigger pass_omp_device_lower instead of
+	calls_declare_variant_alt.
+	* omp-general.cc (struct omp_declare_variant_entry): Delete.
+	(struct omp_declare_variant_base_entry): Delete.
+	(struct omp_declare_variant_hasher): Delete.
+	(omp_declare_variant_hasher::hash): Delete.
+	(omp_declare_variant_hasher::equal): Delete.
+	(omp_declare_variants): Delete.
+	(omp_declare_variant_alt_hasher): Delete.
+	(omp_declare_variant_alt_hasher::hash): Delete.
+	(omp_declare_variant_alt_hasher::equal): Delete.
+	(omp_declare_variant_alt): Delete.
+	(omp_lto_output_declare_variant_alt): Delete.
+	(omp_lto_input_declare_variant_alt): Delete.
+	(includes): Delete unnecessary include of gt-omp-general.h.
+	* omp-offload.cc (execute_omp_device_lower): Remove references
+	to deleted bit.
+	(pass_omp_device_lower::gate): Likewise.
+	* omp-simd-clone.cc (simd_clone_create): Likewise.
+	* passes.cc (ipa_write_summaries): Likeise.
+	* symtab.cc (symtab_node::get_partitioning_class): Likewise.
+	* tree-inline.cc (expand_call_inline): Likewise.
+	(tree_function_versioning): Likewise.
+
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Marcel Vollweiler  <marcel@codesourcery.com>
+
+	PR middle-end/114596
+	PR middle-end/112779
+	PR middle-end/113904
+	* Makefile.in (GTFILES): Move omp-general.h earlier; required
+	because of moving score_wide_int declaration to that file.
+	* cgraph.h (struct cgraph_node): Add has_omp_variant_constructs flag.
+	* cgraphclones.cc (cgraph_node::create_clone): Propagate
+	has_omp_variant_constructs flag.
+	* gimplify.cc (omp_resolved_variant_calls): New.
+	(expand_late_variant_directive): New.
+	(find_supercontext): New.
+	(gimplify_variant_call_expr): New.
+	(gimplify_call_expr): Adjust parameters to make fallback available.
+	Update processing for "declare variant" substitution.
+	(is_gimple_stmt): Add OMP_METADIRECTIVE.
+	(omp_construct_selector_matches): Ifdef out unused function.
+	(omp_get_construct_context): New.
+	(gimplify_omp_dispatch): Replace call to deleted function
+	omp_resolve_declare_variant with equivalent logic.
+	(expand_omp_metadirective): New.
+	(expand_late_variant_directive): New.
+	(gimplify_omp_metadirective): New.
+	(gimplify_expr): Adjust arguments to gimplify_call_expr.  Add
+	cases for OMP_METADIRECTIVE, OMP_NEXT_VARIANT, and
+	OMP_TARGET_DEVICE_MATCHES.
+	(gimplify_function_tree): Initialize/clean up
+	omp_resolved_variant_calls.
+	* gimplify.h (omp_construct_selector_matches): Delete declaration.
+	(omp_get_construct_context): Declare.
+	* lto-cgraph.cc (lto_output_node): Write has_omp_variant_constructs.
+	(input_overwrite_node): Read has_omp_variant_constructs.
+	* omp-builtins.def (BUILT_IN_OMP_GET_NUM_DEVICES): New.
+	* omp-expand.cc (expand_omp_taskreg): Propagate
+	has_omp_variant_constructs.
+	(expand_omp_target): Likewise.
+	* omp-general.cc (omp_maybe_offloaded): Add construct_context
+	parameter; use it instead of querying gimplifier state.  Add
+	comments.
+	(omp_context_name_list_prop): Do not test lang_GNU_Fortran in
+	offload compiler, just use the string as-is.
+	(expr_uses_parm_decl): New.
+	(omp_check_context_selector): Add metadirective_p parameter.
+	Remove sorry for target_device selector.  Add additional checks
+	specific to metadirective or declare variant.
+	(make_omp_metadirective_variant): New.
+	(omp_construct_traits_match): New.
+	(omp_context_selector_matches): Temporarily ifdef out the previous
+	code, and add a new implementation based on the old one with
+	different parameters, some unnecessary loops removed, and code
+	re-indented.
+	(omp_target_device_matches_on_host): New.
+	(resolve_omp_target_device_matches): New.
+	(omp_construct_simd_compare): Support matching of "simdlen" and
+	"aligned" clauses.
+	(omp_context_selector_set_compare): Make static.  Adjust call to
+	omp_construct_simd_compare.
+	(score_wide_int): Move declaration to omp-general.h.
+	(omp_selector_is_dynamic): New.
+	(omp_device_num_check): New.
+	(omp_dynamic_cond): New.
+	(omp_context_compute_score): Ifdef out the old version and
+	re-implement with different parameters.
+	(omp_complete_construct_context): New.
+	(omp_resolve_late_declare_variant): Ifdef out.
+	(omp_declare_variant_remove_hook): Likewise.
+	(omp_resolve_declare_variant): Likewise.
+	(sort_variant): New.
+	(omp_get_dynamic_candidates): New.
+	(omp_declare_variant_candidates): New.
+	(omp_metadirective_candidates): New.
+	(omp_early_resolve_metadirective): New.
+	(omp_resolve_variant_construct): New.
+	* omp-general.h (score_wide_int): Moved here from omp-general.cc.
+	(struct omp_variant): New.
+	(make_omp_metadirective_variant): Declare.
+	(omp_construct_traits_to_codes): Delete declaration.
+	(omp_check_context_selector): Adjust parameters.
+	(omp_context_selector_matches): Likewise.
+	(omp_context_selector_set_compare): Delete declaration.
+	(omp_resolve_declare_variant): Likewise.
+	(omp_declare_variant_candidates): Declare.
+	(omp_metadirective_candidates): Declare.
+	(omp_get_dynamic_candidates): Declare.
+	(omp_early_resolve_metadirective): Declare.
+	(omp_resolve_variant_construct): Declare.
+	(omp_dynamic_cond): Declare.
+	* omp-offload.cc (resolve_omp_variant_cookies): New.
+	(execute_omp_device_lower): Call the above function to resolve
+	variant directives.  Remove call to omp_resolve_declare_variant.
+	(pass_omp_device_lower::gate): Check has_omp_variant_construct bit.
+	* omp-simd-clone.cc (simd_clone_create): Propagate
+	has_omp_variant_constructs bit.
+	* tree-inline.cc (expand_call_inline): Likewise.
+	(tree_function_versioning): Likewise.
+
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/generic.texi (OpenMP): Document OMP_METADIRECTIVE,
+	OMP_NEXT_VARIANT, and OMP_TARGET_DEVICE_MATCHES.
+	* fold-const.cc (operand_compare::hash_operand): Ignore
+	the new nodes.
+	* gimple-expr.cc (is_gimple_val): Allow OMP_NEXT_VARIANT
+	and OMP_TARGET_DEVICE_MATCHES.
+	* gimple.cc (get_gimple_rhs_num_ops): OMP_NEXT_VARIANT and
+	OMP_TARGET_DEVICE_MATCHES are both GIMPLE_SINGLE_RHS.
+	* tree-cfg.cc (tree_node_can_be_shared): Allow sharing of
+	OMP_NEXT_VARIANT.
+	* tree-inline.cc (remap_gimple_op_r): Ignore subtrees of
+	OMP_NEXT_VARIANT.
+	* tree-pretty-print.cc (dump_generic_node): Handle OMP_METADIRECTIVE,
+	OMP_NEXT_VARIANT, and OMP_TARGET_DEVICE_MATCHES.
+	* tree-ssa-operands.cc (operands_scanner::get_expr_operands):
+	Ignore operands of OMP_NEXT_VARIANT and OMP_TARGET_DEVICE_MATCHES.
+	* tree.def (OMP_METADIRECTIVE): New.
+	(OMP_NEXT_VARIANT): New.
+	(OMP_TARGET_DEVICE_MATCHES): New.
+	* tree.h (OMP_METADIRECTIVE_VARIANTS): New.
+	(OMP_METADIRECTIVE_VARIANT_SELECTOR): New.
+	(OMP_METADIRECTIVE_VARIANT_DIRECTIVE): New.
+	(OMP_METADIRECTIVE_VARIANT_BODY): New.
+	(OMP_NEXT_VARIANT_INDEX): New.
+	(OMP_NEXT_VARIANT_STATE): New.
+	(OMP_TARGET_DEVICE_MATCHES_SELECTOR): New.
+	(OMP_TARGET_DEVICE_MATCHES_PROPERTIES): New.
+
+2025-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118456
+	* gimple-fold.cc (decode_field_reference): Punt if shifting
+	after changing signedness.
+	(fold_truth_andor_for_ifcombine): Check extension bits in
+	constants before clipping.
+
+2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118154
+	* config/riscv/riscv-vsetvl.cc (MAX_LMUL): New define.
+	(pre_vsetvl::earliest_fuse_vsetvl_info): Use.
+	(pre_vsetvl::pre_global_vsetvl_info): New predicate with equal
+	ratio.
+	* config/riscv/riscv-vsetvl.def: Use.
+
+2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118140
+	* gimple-match-exports.cc (maybe_resimplify_conditional_op): Add
+	COND_EXPR when we simplified to a scalar gimple value but still
+	have an else value.
+
+2025-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118405
+	* tree-vect-stmts.cc (vectorizable_load): When we fall back
+	to scalar loads make sure we properly convert to vector(1) T
+	when there was only a single vector element.
+
+2025-01-14  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Shift in Xmode.
+
+2025-01-14  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/116030
+	* config/rs6000/vsx.md (vsx_stxvd2x4_le_const_<mode>): Add clobber
+	and guard with !altivec_indexed_or_indirect_operand.
+
 2025-01-14  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	PR target/117682

@@ -1,3 +1,37 @@
+2025-01-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118047
+	PR c++/118355
+	* typeck2.cc (massage_init_elt): Call fold_non_dependent_init
+	unless for a CONSTRUCTOR in a template.
+
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Marcel Vollweiler  <marcel@codesourcery.com>
+
+	PR middle-end/114596
+	PR middle-end/112779
+	PR middle-end/113904
+	* decl.cc (omp_declare_variant_finalize_one): Update for changes
+	to omp-general.h interfaces.
+	* parser.cc (cp_finish_omp_declare_variant): Likewise.
+
+2025-01-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117397
+	* module.cc (depset::hash::add_deduction_guides): Don't emit
+	imported deduction guides.
+	(depset::hash::finalize_dependencies): Add check for any
+	bindings referring to imported entities.
+
+2025-01-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/118445
+	* constexpr.cc (cxx_eval_constant_expression): Handle VEC_DUPLICATE like
+	a "normal" unary operator.
+	(potential_constant_expression_1): Likewise.
+
 2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114630

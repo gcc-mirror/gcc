@@ -1,3 +1,12 @@
+2025-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118459
+	* libgnat/s-objrea.ads (Object_Arch): Add S390 and RISCV.
+	* libgnat/s-objrea.adb (EM_S390): New named number.
+	(EM_RISCV): Likewise.
+	(ELF_Ops.Initialize): Deal with EM_S390 and EM_RISCV.
+	(Read_Address): Deal with S390 and RISCV.
+
 2025-01-13  Pascal Obry  <obry@adacore.com>
 
 	* doc/gnat_ugn/platform_specific_information.rst: Update.

@@ -1,3 +1,99 @@
+2025-01-14  anetczuk  <anetczuk@o2.pl>
+
+	* g++.dg/diagnostic/lang-dump-1.C: New test.
+
+2025-01-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118047
+	PR c++/118355
+	* g++.dg/cpp0x/nsdmi-list10.C: New test.
+	* g++.dg/cpp0x/nsdmi-list9.C: New test.
+
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Marcel Vollweiler  <marcel@codesourcery.com>
+
+	PR middle-end/114596
+	PR middle-end/112779
+	PR middle-end/113904
+	* c-c++-common/gomp/declare-variant-12.c: Adjust expected behavior
+	per PR114596.
+	* c-c++-common/gomp/declare-variant-13.c: Test that this is resolvable
+	after gimplification, not just final resolution.
+	* c-c++-common/gomp/declare-variant-14.c: Tweak testcase to ensure
+	that -O causes dead code to be optimized away.
+	* gfortran.dg/gomp/declare-variant-12.f90: Adjust expected behavior
+	per PR114596.
+	* gfortran.dg/gomp/declare-variant-13.f90: Test that this is resolvable
+	after gimplification, not just final resolution.
+	* gfortran.dg/gomp/declare-variant-14.f90: Tweak testcase to ensure
+	that -O	causes dead code to be optimized away.
+
+2025-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118456
+	* gcc.dg/field-merge-21.c: New.
+	* gcc.dg/field-merge-22.c: New.
+
+2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118154
+	* gcc.target/riscv/rvv/autovec/pr118154-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr118154-2.c: New test.
+
+2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118140
+	* gcc.dg/vect/pr118140.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr118140.c: New test.
+
+2025-01-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117397
+	* g++.dg/modules/dguide-5_a.H: New test.
+	* g++.dg/modules/dguide-5_b.H: New test.
+	* g++.dg/modules/dguide-5_c.H: New test.
+	* g++.dg/modules/dguide-6.h: New test.
+	* g++.dg/modules/dguide-6_a.C: New test.
+	* g++.dg/modules/dguide-6_b.C: New test.
+	* g++.dg/modules/dguide-6_c.C: New test.
+
+2025-01-14  Anuj Mohite  <anujmohite001@gmail.com>
+
+	* gfortran.dg/do_concurrent_10.f90: New test.
+	* gfortran.dg/do_concurrent_8_f2018.f90: New test.
+	* gfortran.dg/do_concurrent_8_f2023.f90: New test.
+	* gfortran.dg/do_concurrent_9.f90: New test.
+	* gfortran.dg/do_concurrent_all_clauses.f90: New test.
+	* gfortran.dg/do_concurrent_basic.f90: New test.
+	* gfortran.dg/do_concurrent_constraints.f90: New test.
+	* gfortran.dg/do_concurrent_local_init.f90: New test.
+	* gfortran.dg/do_concurrent_locality_specs.f90: New test.
+	* gfortran.dg/do_concurrent_multiple_reduce.f90: New test.
+	* gfortran.dg/do_concurrent_nested.f90: New test.
+	* gfortran.dg/do_concurrent_parser.f90: New test.
+	* gfortran.dg/do_concurrent_reduce_max.f90: New test.
+	* gfortran.dg/do_concurrent_reduce_sum.f90: New test.
+	* gfortran.dg/do_concurrent_shared.f90: New test.
+
+2025-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/116871
+	* gcc.dg/c23-mismatching-fn-ptr-a52dec.c: New test.
+	* gcc.dg/c23-mismatching-fn-ptr-alsatools.c: New test.
+	* gcc.dg/c23-mismatching-fn-ptr.c: New test.
+
+2025-01-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/118445
+	* g++.target/aarch64/sve/constexpr-add-1.C: New test.
+
+2025-01-14  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/116030
+	* gcc.target/powerpc/pr116030.c: New test.
+
 2025-01-14  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	PR target/117682
