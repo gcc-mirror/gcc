@@ -253,7 +253,8 @@ begin
          Write_Eol;
          Write_Line ("   Args : constant GNAT.OS_Lib.Argument_List :=");
 
-         Write_Str ("     (new String'(""-gnatd_M"")");
+         Write_Str
+           ("     (new String'(""-quiet""), new String'(""-gnatd_M"")");
 
          --  The following way of iterating through the command line arguments
          --  was copied from Set_Targ. TODO factorize???
