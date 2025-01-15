@@ -15534,7 +15534,7 @@ the expected number of iterations made by loop optimizations.
 This function has the same semantics as @code{__builtin_expect},
 but the caller provides the expected probability that @var{exp} == @var{c}.
 The last argument, @var{probability}, is a floating-point value in the
-range 0.0 to 1.0, inclusive.  The @var{probability} argument must be
+range 0.0 to 1.0, inclusive.  The @var{probability} argument must be a
 constant floating-point expression.
 @enddefbuiltin
 
