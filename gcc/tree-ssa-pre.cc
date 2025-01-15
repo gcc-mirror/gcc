@@ -1430,7 +1430,7 @@ phi_translate_1 (bitmap_set_t dest,
 		unsigned int op_val_id = VN_INFO (newnary->op[i])->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
 		result = phi_translate (dest, leader, set1, set2, e);
-		if (result && result != leader)
+		if (result)
 		  /* If op has a leader in the sets we translate make
 		     sure to use the value of the translated expression.
 		     We might need a new representative for that.  */
@@ -1553,7 +1553,7 @@ phi_translate_1 (bitmap_set_t dest,
 		op_val_id = VN_INFO (op[n])->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
 		opresult = phi_translate (dest, leader, set1, set2, e);
-		if (opresult && opresult != leader)
+		if (opresult)
 		  {
 		    tree name = get_representative_for (opresult);
 		    changed |= name != op[n];
