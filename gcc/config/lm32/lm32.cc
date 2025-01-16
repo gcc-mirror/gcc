@@ -679,14 +679,18 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v,
 			     const function_arg_info &arg,
 			     int *pretend_size, int no_rtl)
 {
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum_v);
   int first_anon_arg;
   tree fntype;
 
   fntype = TREE_TYPE (current_function_decl);
 
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
+    lm32_function_arg_advance (pack_cumulative_args (&next_cum), arg);
+
   if (stdarg_p (fntype))
-    first_anon_arg = *cum + LM32_FIRST_ARG_REG;
+    first_anon_arg = next_cum + LM32_FIRST_ARG_REG;
   else
     {
       /* this is the common case, we have been passed details setup
@@ -697,7 +701,7 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v,
       int size = arg.promoted_size_in_bytes ();
 
       first_anon_arg =
-	*cum + LM32_FIRST_ARG_REG +
+	next_cum + LM32_FIRST_ARG_REG +
 	((size + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
     }
 
