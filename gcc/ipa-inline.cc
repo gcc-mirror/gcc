@@ -1598,7 +1598,7 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
   if ((!node->alias && !ipa_fn_summaries->get (node)->inlinable)
       || node->inlined_to)
     return;
-  if (!bitmap_set_bit (updated_nodes, node->get_uid ()))
+  if (!bitmap_set_bit (updated_nodes, node->get_summary_id ()))
     return;
 
   FOR_EACH_ALIAS (node, ref)
@@ -1664,7 +1664,7 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	    if (e->aux
 		&& !bitmap_bit_p (updated_nodes,
 		 		  e->callee->ultimate_alias_target
-				    (&avail, e->caller)->get_uid ()))
+				    (&avail, e->caller)->get_summary_id ()))
 	      update_edge_key (heap, e);
 	  }
 	/* We do not reset callee growth cache here.  Since we added a new call,
@@ -1676,7 +1676,7 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 		 && avail >= AVAIL_AVAILABLE
 		 && ipa_fn_summaries->get (callee) != NULL
 		 && ipa_fn_summaries->get (callee)->inlinable
-		 && !bitmap_bit_p (updated_nodes, callee->get_uid ()))
+		 && !bitmap_bit_p (updated_nodes, callee->get_summary_id ()))
 	  {
 	    if (can_inline_edge_p (e, false)
 		&& want_inline_small_function_p (e, false)

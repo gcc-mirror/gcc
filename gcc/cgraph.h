@@ -124,7 +124,7 @@ public:
       order (-1), next_sharing_asm_name (NULL),
       previous_sharing_asm_name (NULL), same_comdat_group (NULL), ref_list (),
       alias_target (NULL), lto_file_data (NULL), aux (NULL),
-      x_comdat_group (NULL_TREE), x_section (NULL)
+      x_comdat_group (NULL_TREE), x_section (NULL), m_uid (-1)
   {}
 
   /* Return name.  */
@@ -492,6 +492,12 @@ public:
   /* Perform internal consistency checks, if they are enabled.  */
   static inline void checking_verify_symtab_nodes (void);
 
+  /* Get unique identifier of the node.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
+
   /* Type of the symbol.  */
   ENUM_BITFIELD (symtab_type) type : 8;
 
@@ -668,6 +674,9 @@ protected:
 				      void *data,
 				      bool include_overwrite);
 private:
+  /* Unique id of the node.  */
+  int m_uid;
+
   /* Workers for set_section.  */
   static bool set_section_from_string (symtab_node *n, void *s);
   static bool set_section_from_node (symtab_node *n, void *o);
@@ -882,7 +891,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   friend class symbol_table;
 
   /* Constructor.  */
-  explicit cgraph_node (int uid)
+  explicit cgraph_node ()
     : symtab_node (SYMTAB_FUNCTION), callees (NULL), callers (NULL),
       indirect_calls (NULL),
       next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
@@ -903,7 +912,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       redefined_extern_inline (false), tm_may_enter_irr (false),
       ipcp_clone (false), gc_candidate (false),
       called_by_ifunc_resolver (false), has_omp_variant_constructs (false),
-      m_uid (uid), m_summary_id (-1)
+      m_summary_id (-1)
   {}
 
   /* Remove the node from cgraph and all inline clones inlined into it.
@@ -1304,12 +1313,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
     dump_cgraph (stderr);
   }
 
-  /* Get unique identifier of the node.  */
-  inline int get_uid ()
-  {
-    return m_uid;
-  }
-
   /* Get summary id of the node.  */
   inline int get_summary_id ()
   {
@@ -1503,8 +1506,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned has_omp_variant_constructs : 1;
 
 private:
-  /* Unique id of the node.  */
-  int m_uid;
 
   /* Summary id that is recycled.  */
   int m_summary_id;
@@ -2814,6 +2815,8 @@ symbol_table::register_symbol (symtab_node *node)
   if (nodes)
     nodes->previous = node;
   nodes = node;
+
+  nodes->m_uid = cgraph_max_uid++;
 
   if (node->order == -1)
     node->order = order++;

@@ -19,4 +19,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "foo/0 function has external linkage when the user requests only inlining static for live patching"  "inline" } } */
+/* { dg-final { scan-ipa-dump "foo/1 function has external linkage when the user requests only inlining static for live patching"  "inline" } } */

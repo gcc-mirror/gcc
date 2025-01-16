@@ -2407,7 +2407,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	dump_printf (MSG_NOTE, "node: %C", node);
 	const int expected_impl_line = __LINE__ - 1;
 
-	ASSERT_DUMPED_TEXT_EQ (tmp, "node: test_decl/0");
+	ASSERT_DUMPED_TEXT_EQ (tmp, "node: test_decl/1");
 	if (with_optinfo)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
@@ -2415,7 +2415,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "node: ");
-	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/0");
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/1");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
 				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
@@ -2594,14 +2594,14 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	dump_symtab_node (MSG_NOTE, node);
 	const int expected_impl_line = __LINE__ - 1;
 
-	ASSERT_DUMPED_TEXT_EQ (tmp, "test_decl/0");
+	ASSERT_DUMPED_TEXT_EQ (tmp, "test_decl/1");
 	if (with_optinfo)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 1);
-	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/0");
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/1");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
 				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");

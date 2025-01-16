@@ -290,7 +290,7 @@ cgraph_node *
 symbol_table::create_empty (void)
 {
   cgraph_count++;
-  return new (ggc_alloc<cgraph_node> ()) cgraph_node (cgraph_max_uid++);
+  return new (ggc_alloc<cgraph_node> ()) cgraph_node ();
 }
 
 /* Register HOOK to be called with DATA on each removed edge.  */
@@ -4338,7 +4338,7 @@ test_symbol_table_test ()
       /* Verify that the node has order 0 on both iterations,
 	 and thus that nodes have predictable dump names in selftests.  */
       ASSERT_EQ (node->order, 0);
-      ASSERT_STREQ (node->dump_name (), "test_decl/0");
+      ASSERT_STREQ (node->dump_name (), "test_decl/1");
     }
 }
 
