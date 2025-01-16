@@ -38,6 +38,7 @@ public:
 private:
   void scan ();
   void assemble_sized_builtin ();
+  void add_trait_bound (HIR::Trait *trait);
   void assemble_builtin_candidate (LangItem::Kind item);
 
 private:
