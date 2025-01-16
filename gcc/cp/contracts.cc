@@ -3207,7 +3207,6 @@ maybe_contract_wrap_call (tree fndecl, tree call)
 
   tree wrapcall = build_call_expr_loc_vec(DECL_SOURCE_LOCATION (wrapdecl), wrapdecl, argwrap);
 
-  CALL_FROM_THUNK_P (wrapcall) = true;
   return wrapcall;
 }
 
@@ -3248,6 +3247,9 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
   tree call = build_call_a (fn,
 			    args->length (),
 			    args->address ());
+
+
+  CALL_FROM_THUNK_P (call) = true;
 
   finish_return_stmt (call);
 
