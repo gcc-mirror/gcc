@@ -701,11 +701,19 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
      accepting the latter causes the template parameter level of U
      to be reduced in a way that makes it overly difficult substitute
      concrete arguments (i.e., eventually {int, int} during satisfaction.  */
-  if (tmpl)
-  {
-    if (DECL_LANG_SPECIFIC (tmpl) && !DECL_TEMPLATE_SPECIALIZATION (tmpl))
-      tmpl = most_general_template (tmpl);
-  }
+  if (tmpl && DECL_LANG_SPECIFIC (tmpl)
+      && (!DECL_TEMPLATE_SPECIALIZATION (tmpl)
+	  /* DECL_TEMPLATE_SPECIALIZATION means TMPL is either a partial
+	     specialization, or an explicit specialization of a member
+	     template.  In the former case all is well: TMPL's constraints
+	     are in terms of its parameters.  But in the latter case TMPL's
+	     parameters are partially instantiated whereas its constraints
+	     aren't, so we need to instead use (the parameters of) the most
+	     general template.  The following test distinguishes between a
+	     partial specialization and such an explicit specialization.  */
+	  || (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl))
+	      < TMPL_ARGS_DEPTH (DECL_TI_ARGS (tmpl)))))
+    tmpl = most_general_template (tmpl);
 
   d = tmpl ? tmpl : decl;
 
