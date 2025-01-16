@@ -4242,6 +4242,8 @@ gfc_get_symbol_for_expr (gfc_expr * expr, bool ignore_optional)
   sym = gfc_new_symbol (expr->value.function.name, NULL);
 
   sym->ts = expr->ts;
+  if (sym->ts.type == BT_CHARACTER)
+    sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
   sym->attr.external = 1;
   sym->attr.function = 1;
   sym->attr.always_explicit = 1;
