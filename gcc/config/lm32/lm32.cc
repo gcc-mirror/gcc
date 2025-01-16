@@ -632,8 +632,7 @@ lm32_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   if (targetm.calls.must_pass_in_stack (arg))
     return NULL_RTX;
 
-  if (!arg.named
-      || *cum + LM32_NUM_REGS2 (arg.mode, arg.type) > LM32_NUM_ARG_REGS)
+  if (*cum + LM32_NUM_REGS2 (arg.mode, arg.type) > LM32_NUM_ARG_REGS)
     return NULL_RTX;
 
   return gen_rtx_REG (arg.mode, *cum + LM32_FIRST_ARG_REG);
