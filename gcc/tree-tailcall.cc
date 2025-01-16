@@ -45,6 +45,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "tree-ssa-live.h"
 #include "diagnostic-core.h"
+#include "gimple-range.h"
+#include "alloc-pool.h"
+#include "sreal.h"
+#include "symbol-summary.h"
+#include "ipa-cp.h"
+#include "ipa-prop.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
    analyze the tail calls in general, passing the results to the rtl level
@@ -483,7 +489,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Basic block %d has extra exit edges\n",
-			    bb->index);
+		     bb->index);
 	  return;
 	}
       if (!cfun->has_musttail)
@@ -517,7 +523,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	  if (bad_stmt)
 	    {
 	      maybe_error_musttail (call,
-			      _("memory reference or volatile after call"));
+				    _("memory reference or volatile after "
+				      "call"));
 	      return;
 	    }
 	  ass_var = gimple_call_lhs (call);
@@ -597,10 +604,10 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   {
     if (stmt == last_stmt)
       maybe_error_musttail (call,
-			  _("call may throw exception that does not propagate"));
+			    _("call may throw exception that does not "
+			      "propagate"));
     else
-      maybe_error_musttail (call,
-			  _("code between call and return"));
+      maybe_error_musttail (call, _("code between call and return"));
     return;
   }
 
@@ -715,7 +722,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	    {
 	      if (local_live_vars)
 		BITMAP_FREE (local_live_vars);
-	      maybe_error_musttail (call, _("call invocation refers to locals"));
+	      maybe_error_musttail (call,
+				    _("call invocation refers to locals"));
 	      return;
 	    }
 	  else
@@ -724,7 +732,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	      if (bitmap_bit_p (local_live_vars, *v))
 		{
 		  BITMAP_FREE (local_live_vars);
-		  maybe_error_musttail (call, _("call invocation refers to locals"));
+		  maybe_error_musttail (call,
+					_("call invocation refers to locals"));
 		  return;
 		}
 	    }
@@ -833,15 +842,39 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       && (ret_var != ass_var
 	  && !(is_empty_type (TREE_TYPE (ret_var)) && !ass_var)))
     {
-      maybe_error_musttail (call, _("call uses return slot"));
-      return;
+      bool ok = false;
+      value_range val;
+      tree valr;
+      /* If IPA-VRP proves called function always returns a singleton range,
+	 the return value is replaced by the only value in that range.
+	 For tail call purposes, pretend such replacement didn't happen.  */
+      if (ass_var == NULL_TREE
+	  && !tail_recursion
+	  && TREE_CONSTANT (ret_var))
+	if (tree type = gimple_range_type (call))
+	  if (tree callee = gimple_call_fndecl (call))
+	    if ((INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type))
+		&& useless_type_conversion_p (TREE_TYPE (TREE_TYPE (callee)),
+					      type)
+		&& useless_type_conversion_p (TREE_TYPE (ret_var), type)
+		&& ipa_return_value_range (val, callee)
+		&& val.singleton_p (&valr)
+		&& operand_equal_p (ret_var, valr, 0))
+	      ok = true;
+      if (!ok)
+	{
+	  maybe_error_musttail (call,
+				_("call and return value are different"));
+	  return;
+	}
     }
 
   /* If this is not a tail recursive call, we cannot handle addends or
      multiplicands.  */
   if (!tail_recursion && (m || a))
     {
-      maybe_error_musttail (call, _("operations after non tail recursive call"));
+      maybe_error_musttail (call,
+			    _("operations after non tail recursive call"));
       return;
     }
 
@@ -849,7 +882,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   if (m && POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
     {
       maybe_error_musttail (call,
-		      _("tail recursion with pointers can only use additions"));
+			    _("tail recursion with pointers can only use "
+			      "additions"));
       return;
     }
 
