@@ -2,12 +2,12 @@
 
 typedef __UINT8_TYPE__ u8;
 typedef __UINT16_TYPE__ u16;
-typedef __uint24 u24;
+__extension__ typedef __uint24 u24;
 typedef __UINT32_TYPE__ u32;
 
 typedef __INT8_TYPE__ s8;
 typedef __INT16_TYPE__ s16;
-typedef __int24 s24;
+__extension__ typedef __int24 s24;
 typedef __INT32_TYPE__ s32;
 
 #define NI __attribute__((noipa))

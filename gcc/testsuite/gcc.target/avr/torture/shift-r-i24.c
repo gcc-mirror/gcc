@@ -3,7 +3,7 @@
 
 #define OP >>
 #define BITS 24
-typedef __int24 T;
+__extension__ typedef __int24 T;
 
 #include "test-shift.h"
 

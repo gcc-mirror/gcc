@@ -15336,11 +15336,13 @@ avr_builtin_decl (unsigned id, bool /*initialize_p*/)
 static void
 avr_init_builtin_int24 (void)
 {
-  tree int24_type  = make_signed_type (GET_MODE_BITSIZE (PSImode));
-  tree uint24_type = make_unsigned_type (GET_MODE_BITSIZE (PSImode));
-
-  lang_hooks.types.register_builtin_type (int24_type, "__int24");
-  lang_hooks.types.register_builtin_type (uint24_type, "__uint24");
+  for (int i = 0; i < NUM_INT_N_ENTS; ++i)
+    if (int_n_data[i].bitsize == 24)
+      {
+	tree uint24_type = int_n_trees[i].unsigned_type;
+	lang_hooks.types.register_builtin_type (uint24_type, "__uint24");
+	break;
+      }
 }
 
 

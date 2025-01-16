@@ -18,6 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 FRACTIONAL_INT_MODE (PSI, 24, 3);
+INT_N (PSI, 24);
 
 /* Used when the N (and Z) flag(s) of SREG are set.
    The N flag indicates  whether the value is negative.
