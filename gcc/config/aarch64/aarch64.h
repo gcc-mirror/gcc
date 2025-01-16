@@ -1448,7 +1448,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   CONFIG_TUNE_SPEC
 
 #define MCPU_TO_MARCH_SPEC \
-   " %{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
+   "%{!march=*:%{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}}"
 
 extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
 #define MCPU_TO_MARCH_SPEC_FUNCTIONS \
