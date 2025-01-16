@@ -97,6 +97,10 @@ TypeBoundsProbe::scan ()
 
   // marker traits...
   assemble_sized_builtin ();
+
+  // add auto trait bounds
+  for (auto *auto_trait : mappings.get_auto_traits ())
+    add_trait_bound (auto_trait);
 }
 
 void

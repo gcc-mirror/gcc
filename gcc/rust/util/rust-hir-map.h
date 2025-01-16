@@ -342,6 +342,9 @@ public:
   tl::optional<HIR::TraitItem *>
   lookup_trait_item_lang_item (LangItem::Kind item, location_t locus);
 
+  void insert_auto_trait (HIR::Trait *trait);
+  std::vector<HIR::Trait *> &get_auto_traits ();
+
 private:
   Mappings ();
 
@@ -379,6 +382,9 @@ private:
   std::map<HirId, HIR::GenericParam *> hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
   std::map<HirId, HIR::Pattern *> hirPatternMappings;
+
+  // FIXME: Add documentation
+  std::vector<HIR::Trait *> auto_traits;
 
   // We need to have two maps here, as lang-items need to be used for both AST
   // passes and HIR passes. Thus those two maps are created at different times.

@@ -1309,5 +1309,17 @@ Mappings::get_lang_item_node (LangItem::Kind item_type)
 		    LangItem::ToString (item_type).c_str ());
 }
 
+void
+Mappings::insert_auto_trait (HIR::Trait *trait)
+{
+  auto_traits.emplace_back (trait);
+}
+
+std::vector<HIR::Trait *> &
+Mappings::get_auto_traits ()
+{
+  return auto_traits;
+}
+
 } // namespace Analysis
 } // namespace Rust

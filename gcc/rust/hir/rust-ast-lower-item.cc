@@ -606,17 +606,18 @@ ASTLoweringItem::visit (AST::Trait &trait)
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
 
-  auto trait_unsafety = Unsafety::Normal;
-  if (trait.is_unsafe ())
-    {
-      trait_unsafety = Unsafety::Unsafe;
-    }
+  auto trait_unsafety
+    = trait.is_unsafe () ? Unsafety::Unsafe : Unsafety::Normal;
 
   HIR::Trait *hir_trait
     = new HIR::Trait (mapping, trait.get_identifier (), trait_unsafety,
 		      std::move (generic_params), std::move (type_param_bounds),
 		      where_clause, std::move (trait_items), vis,
 		      trait.get_outer_attrs (), trait.get_locus ());
+
+  if (trait.is_auto ())
+    mappings.insert_auto_trait (hir_trait);
+
   translated = hir_trait;
 
   for (auto trait_item_id : trait_item_ids)

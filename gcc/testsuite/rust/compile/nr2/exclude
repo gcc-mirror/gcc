@@ -140,7 +140,8 @@ issue-2907.rs
 issue-2423.rs
 issue-266.rs
 additional-trait-bounds2.rs
-auto_traits3.rs
+auto_traits2.rs
+auto_traits4.rs
 issue-3140.rs
 cmp1.rs
 derive_clone_enum1.rs
