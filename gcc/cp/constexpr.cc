@@ -8983,6 +8983,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   r = cxx_eval_constant_expression (&ctx, r, vc_prvalue,
 				    &non_constant_p, &overflow_p);
 
+  /* If we got a non-simple TARGET_EXPR, the initializer was a sequence
+     of statements, and the result ought to be stored in ctx.ctor.  */
+  if (r == void_node && !constexpr_dtor && ctx.ctor)
+    r = ctx.ctor;
+
   if (!constexpr_dtor)
     verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
   else
@@ -9087,7 +9092,9 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     return r;
   else if (non_constant_p && TREE_CONSTANT (r))
     r = mark_non_constant (r);
-  else if (non_constant_p)
+  else if (non_constant_p
+	   /* Check we are not trying to return the wrong type.  */
+	   || !same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (r)))
     return t;
 
   if (should_unshare)
