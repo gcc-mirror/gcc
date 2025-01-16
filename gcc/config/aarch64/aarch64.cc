@@ -21584,6 +21584,7 @@ aarch64_build_builtin_va_list (void)
 			     get_identifier ("__va_list"),
 			     va_list_type);
   DECL_ARTIFICIAL (va_list_name) = 1;
+  TREE_PUBLIC (va_list_name) = 1;
   TYPE_NAME (va_list_type) = va_list_name;
   TYPE_STUB_DECL (va_list_type) = va_list_name;
 
