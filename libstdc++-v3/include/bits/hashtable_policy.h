@@ -310,6 +310,8 @@ namespace __detail
 
       __gnu_cxx::__aligned_buffer<_Value> _M_storage;
 
+      // These member functions must be always_inline, see PR 111050
+
       [[__gnu__::__always_inline__]]
       _Value*
       _M_valptr() noexcept
