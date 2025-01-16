@@ -1,5 +1,4 @@
 /* PR middle-end/43374 */
-/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 __attribute__((noipa)) int

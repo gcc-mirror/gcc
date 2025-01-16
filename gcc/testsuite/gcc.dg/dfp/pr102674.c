@@ -1,5 +1,4 @@
 /* PR middle-end/102674 */
-/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 #define FP_NAN 0
