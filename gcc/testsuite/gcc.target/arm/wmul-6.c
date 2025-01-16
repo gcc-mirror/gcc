@@ -8,4 +8,6 @@ foo (long long a, unsigned char *b, signed char *c)
   return a + (long long)*b * (long long)*c;
 }
 
-/* { dg-final { scan-assembler "smlalbb" } } */
+/* After zero-extending B and sign-extending C to [HS]imode, either
+   signed-widening multiply will do.  */
+/* { dg-final { scan-assembler {smlal(?:bb)?} } } */

@@ -8,4 +8,6 @@ foo (long long a, char *b, char *c)
   return a + *b * *c;
 }
 
-/* { dg-final { scan-assembler "umlal" } } */
+/* smlalbb after zero-extending the chars to HImode, or either signed- or
+   unsigned-widening multiply after extending them to SImode.  */
+/* { dg-final { scan-assembler {(?:smlalbb|[us]mlal)} } } */
