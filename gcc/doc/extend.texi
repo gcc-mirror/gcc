@@ -10865,6 +10865,8 @@ for a C symbol, or to place a C variable in a specific register.
 * Basic Asm::          Inline assembler without operands.
 * Extended Asm::       Inline assembler with operands.
 * Constraints::        Constraints for @code{asm} operands
+* Asm constexprs::     C++11 constant expressions instead of string
+                       literals.
 * Asm Labels::         Specifying the assembler name to use for a C symbol.
 * Explicit Register Variables::  Defining variables residing in specified 
                        registers.
@@ -10920,23 +10922,6 @@ Some assemblers allow semicolons as a line separator. However,
 note that some assembler dialects use semicolons to start a comment.
 @end table
 
-@node asm constexprs
-With gnu++11 or later the string can also be a compile time constant expression
-inside parens.  The constant expression can return a string or a container
-with data and size members, following similar rules as C++26 @code{static_assert}
-message. Any string is converted to the character set of the source code.
-When this feature is available the @code{__GXX_CONSTEXPR_ASM__} cpp symbol is defined.
-
-@example
-#include <string>
-constexpr std::string_view genfoo() @{ return "foo"; @}
-
-void function()
-@{
-  asm((genfoo()));
-@}
-@end example
-
 @subsubheading Remarks
 Using extended @code{asm} (@pxref{Extended Asm}) typically produces
 smaller, safer, and more efficient code, and in most cases it is a
@@ -10944,15 +10929,10 @@ better solution than basic @code{asm}.  However, functions declared
 with the @code{naked} attribute require only basic @code{asm}
 (@pxref{Function Attributes}).
 
-Extended @code{asm} statements may be used both inside a C
-function or at file scope (``top-level''), where
-you can use this technique to emit assembler directives,
-define assembly language macros that can be invoked elsewhere in the file,
-or write entire functions in assembly language.
-Extended @code{asm} statements outside of functions may not use any
-qualifiers, may not specify clobbers, may not use @code{%}, @code{+} or
-@code{&} modifiers in constraints and can only use constraints which don't
-allow using any register.
+Basic @code{asm} statements may be used both inside a C function or at
+file scope (``top-level''), where you can use this technique to emit
+assembler directives, define assembly language macros that can be invoked
+elsewhere in the file, or write entire functions in assembly language.
 
 Safely accessing C data and calling functions from basic @code{asm} is more 
 complex than it may appear. To access C data, it is better to use extended 
@@ -11074,26 +11054,26 @@ perform a jump to one of the labels listed in the @var{GotoLabels}.
 This is a literal string that is the template for the assembler code. It is a 
 combination of fixed text and tokens that refer to the input, output, 
 and goto parameters. @xref{AssemblerTemplate}. With gnu++11 or later it can
-also be a constant expression inside parens (see @ref{asm constexprs}).
+also be a constant expression inside parens (see @ref{Asm constexprs}).
 
 @item OutputOperands
 A comma-separated list of the C variables modified by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{OutputOperands}.
 With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{asm constexprs})
+(see @ref{Asm constexprs})
 
 @item InputOperands
 A comma-separated list of C expressions read by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{InputOperands}.
 With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{asm constexprs})
+(see @ref{Asm constexprs})
 
 @item Clobbers
 A comma-separated list of registers or other values changed by the 
 @var{AssemblerTemplate}, beyond those listed as outputs.
 An empty list is permitted.  @xref{Clobbers and Scratch Registers}.
 With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{asm constexprs})
+(see @ref{Asm constexprs})
 
 @item GotoLabels
 When you are using the @code{goto} form of @code{asm}, this section contains 
@@ -11115,9 +11095,17 @@ within C code. This may help you to maximize performance in time-sensitive
 code or to access assembly instructions that are not readily available to C 
 programs.
 
-Note that extended @code{asm} statements must be inside a function. Only 
-basic @code{asm} may be outside functions (@pxref{Basic Asm}).
-Functions declared with the @code{naked} attribute also require basic 
+Similarly to basic @code{asm}, extended @code{asm} statements may be used
+both inside a C function or at file scope (``top-level''), where you can
+use this technique to emit assembler directives, define assembly language
+macros that can be invoked elsewhere in the file, or write entire functions
+in assembly language.
+Extended @code{asm} statements outside of functions may not use any
+qualifiers, may not specify clobbers, may not use @code{%}, @code{+} or
+@code{&} modifiers in constraints and can only use constraints which don't
+allow using any register.
+
+Functions declared with the @code{naked} attribute require basic 
 @code{asm} (@pxref{Function Attributes}).
 
 While the uses of @code{asm} are many and varied, it may help to think of an 
@@ -12640,6 +12628,26 @@ The list below describes the supported modifiers and their effects for the SH fa
 @lowersections
 @include md.texi
 @raisesections
+
+@node Asm constexprs
+@subsection C++11 constant expressions instead of string literals
+
+With gnu++11 or later the string can also be a compile time constant expression
+inside parens.  The constant expression can return a container with data and size
+member functions, following similar rules as C++26 @code{static_assert}
+message.  Any string is converted to the character set of the source code.
+When this feature is available the @code{__GXX_CONSTEXPR_ASM__} preprocessor
+macro is predefined.
+
+@example
+#include <string>
+constexpr std::string_view genfoo() @{ return "foo"; @}
+
+void function()
+@{
+  asm((genfoo()));
+@}
+@end example
 
 @node Asm Labels
 @subsection Controlling Names Used in Assembler Code
