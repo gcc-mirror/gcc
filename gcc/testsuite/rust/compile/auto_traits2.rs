@@ -15,12 +15,11 @@ fn foo(a: &(dyn A + Send + Sync)) {
 struct S;
 
 impl A for S {
-    fn a_method(&self) {}
+    fn a_method(&self) {} // { dg-warning "unused name" }
 }
 
 fn main() {
     let s = S;
 
-    foo(&s); // { dg-error "bounds not satisfied" }
-             // { dg-error "mismatched type" "" { target *-*-* } .-1 }
+    foo(&s);
 }
