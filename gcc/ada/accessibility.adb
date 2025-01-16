@@ -1648,7 +1648,7 @@ package body Accessibility is
            --  accessibility of result), and constant folding can occur and
            --  lead to spurious errors.
 
-           and then Operating_Mode /= Check_Semantics
+           and then not Check_Semantics_Only_Mode
          then
             --  Generate a dynamic check based on the extra accessibility of
             --  the result or the scope of the current function.
@@ -1691,8 +1691,8 @@ package body Accessibility is
               and then Entity (Check_Cond) = Standard_True
             then
                Error_Msg_N
-                 ("access discriminant in return object would be a dangling"
-                  & " reference", Return_Stmt);
+                 ("access discriminant in return object could be a dangling"
+                  & " reference??", Return_Stmt);
             end if;
          end if;
 

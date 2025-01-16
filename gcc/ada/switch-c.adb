@@ -335,6 +335,7 @@ package body Switch.C is
                end if;
 
                Ptr := Ptr + 1;
+               Check_Semantics_Only_Mode := True;
                Operating_Mode := Check_Semantics;
 
             --  -gnatC (Generate CodePeer information)
