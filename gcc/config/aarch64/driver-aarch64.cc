@@ -60,6 +60,7 @@ struct aarch64_core_data
 #define ALL_VARIANTS ((unsigned)-1)
 /* Default architecture to use if -mcpu=native did not detect a known CPU.  */
 #define DEFAULT_ARCH "8A"
+#define DEFAULT_CPU "generic-armv8-a"
 
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   { CORE_NAME, #ARCH, IMP, PART, VARIANT, feature_deps::cpu_##CORE_IDENT },
@@ -102,6 +103,19 @@ get_arch_from_id (const char* id)
       if (strcmp (id, aarch64_arches[i].id) == 0)
 	return &aarch64_arches[i];
     }
+
+  return NULL;
+}
+
+/* Return an aarch64_core_data for the cpu described
+   by ID, or NULL if ID describes something we don't know about.  */
+
+static const aarch64_core_data *
+get_cpu_from_id (const char* name)
+{
+  for (unsigned i = 0; aarch64_cpu_data[i].name != NULL; i++)
+    if (strcmp (name, aarch64_cpu_data[i].name) == 0)
+      return &aarch64_cpu_data[i];
 
   return NULL;
 }
@@ -403,18 +417,11 @@ host_detect_local_cpu (int argc, const char **argv)
                 || variants[0] == aarch64_cpu_data[i].variant))
 	  break;
 
-      if (aarch64_cpu_data[i].name == NULL)
+      if (arch)
 	{
-	  auto arch_info = get_arch_from_id (DEFAULT_ARCH);
-
-	  gcc_assert (arch_info);
-
-	  res = concat ("-march=", arch_info->name, NULL);
-	  default_flags = arch_info->flags;
-	}
-      else if (arch)
-	{
-	  const char *arch_id = aarch64_cpu_data[i].arch;
+	  const char *arch_id = (aarch64_cpu_data[i].name
+				 ? aarch64_cpu_data[i].arch
+				 : DEFAULT_ARCH);
 	  auto arch_info = get_arch_from_id (arch_id);
 
 	  /* We got some arch indentifier that's not in aarch64-arches.def?  */
@@ -424,12 +431,15 @@ host_detect_local_cpu (int argc, const char **argv)
 	  res = concat ("-march=", arch_info->name, NULL);
 	  default_flags = arch_info->flags;
 	}
-      else
+      else if (cpu || aarch64_cpu_data[i].name)
 	{
-	  default_flags = aarch64_cpu_data[i].flags;
+	  auto cpu_info = (aarch64_cpu_data[i].name
+			   ? &aarch64_cpu_data[i]
+			   : get_cpu_from_id (DEFAULT_CPU));
+	  default_flags = cpu_info->flags;
 	  res = concat ("-m",
 			cpu ? "cpu" : "tune", "=",
-			aarch64_cpu_data[i].name,
+			cpu_info->name,
 			NULL);
 	}
     }
@@ -449,6 +459,20 @@ host_detect_local_cpu (int argc, const char **argv)
 	      break;
 	    }
 	}
+
+      /* On big.LITTLE if we find any unknown CPUs we can still pick arch
+	 features as the cores should have the same features.  So just pick
+	 the feature flags from any of the cpus.  */
+      if (cpu && aarch64_cpu_data[i].name == NULL)
+	{
+	  auto cpu_info = get_cpu_from_id (DEFAULT_CPU);
+
+	  gcc_assert (cpu_info);
+
+	  res = concat ("-mcpu=", cpu_info->name, NULL);
+	  default_flags = cpu_info->flags;
+	}
+
       if (!res)
 	goto not_found;
     }
