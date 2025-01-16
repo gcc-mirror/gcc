@@ -1,3 +1,136 @@
+2025-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/102705
+	* match.pd (`(1 >> X) != 0`): Remove pattern.
+	(`1 >> x`): New pattern.
+
+2025-01-15  Sam James  <sam@gentoo.org>
+
+	* doc/extend.texi: Cleanup trailing whitespace.
+
+2025-01-15  Sam James  <sam@gentoo.org>
+
+	* doc/extend.texi: Add 'a' for grammar fix.
+
+2025-01-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/tuning_models/neoverse512tvb.h (tune_flags): Update.
+
+2025-01-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNE_BASE):
+	Add AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA.
+	* config/aarch64/tuning_models/ampere1b.h: Remove redundant
+	AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+
+2025-01-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_override_options): Add warning.
+	* doc/invoke.texi: Document -mabi=ilp32 as deprecated.
+
+2025-01-15  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc (compute_field_expr): Change
+	VAR_DECL outcome in switch case.
+
+2025-01-15  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc
+	(make_gimple_core_safe_access_index): Fix in condition.
+
+2025-01-15  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* btfout.cc (get_btf_kind): Remove static from function definition.
+	* config/bpf/btfext-out.cc (bpf_code_reloc_add): Check if CO-RE type
+	is not a const or volatile.
+	* ctfc.h (btf_dtd_kind): Add prototype for function.
+
+2025-01-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/118472
+	* fold-const.cc (operand_compare::operand_equal_p): Fix incorrect
+	replacement.
+
+2025-01-15  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (define_dump_logs): Make reverse lookup in
+	dbg_line_numbers easier by adding comments with start index
+	and cutting number of elements per line to 10.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/116068
+	* cgraphunit.cc (symbol_table::process_new_functions): Call
+	bitmap_obstack_initialize (NULL); and bitmap_obstack_release (NULL)
+	around processing the functions.
+
+2025-01-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/118182
+	* config/riscv/autovec-opt.md (*widen_reduc_plus_scal_<mode>): Adjust
+	argument for expand_reduction.
+	(*widen_reduc_plus_scal_<mode>): Ditto.
+	(*fold_left_widen_plus_<mode>): Ditto.
+	(*mask_len_fold_left_widen_plus_<mode>): Ditto.
+	(*cond_widen_reduc_plus_scal_<mode>): Ditto.
+	(*cond_len_widen_reduc_plus_scal_<mode>): Ditto.
+	(*cond_widen_reduc_plus_scal_<mode>): Ditto.
+	* config/riscv/autovec.md (reduc_plus_scal_<mode>): Adjust argument for
+	expand_reduction.
+	(reduc_smax_scal_<mode>): Ditto.
+	(reduc_umax_scal_<mode>): Ditto.
+	(reduc_smin_scal_<mode>): Ditto.
+	(reduc_umin_scal_<mode>): Ditto.
+	(reduc_and_scal_<mode>): Ditto.
+	(reduc_ior_scal_<mode>): Ditto.
+	(reduc_xor_scal_<mode>): Ditto.
+	(reduc_plus_scal_<mode>): Ditto.
+	(reduc_smax_scal_<mode>): Ditto.
+	(reduc_smin_scal_<mode>): Ditto.
+	(reduc_fmax_scal_<mode>): Ditto.
+	(reduc_fmin_scal_<mode>): Ditto.
+	(fold_left_plus_<mode>): Ditto.
+	(mask_len_fold_left_plus_<mode>): Ditto.
+	* config/riscv/riscv-v.cc (expand_reduction): Add one more
+	argument for reduction code for vl0-safe.
+	* config/riscv/riscv-protos.h (expand_reduction): Ditto.
+	* config/riscv/vector-iterators.md (unspec): Add _VL0_SAFE variant of
+	reduction.
+	(ANY_REDUC_VL0_SAFE): New.
+	(ANY_WREDUC_VL0_SAFE): Ditto.
+	(ANY_FREDUC_VL0_SAFE): Ditto.
+	(ANY_FREDUC_SUM_VL0_SAFE): Ditto.
+	(ANY_FWREDUC_SUM_VL0_SAFE): Ditto.
+	(reduc_op): Add _VL0_SAFE variant of reduction.
+	(order) Ditto.
+	* config/riscv/vector.md (@pred_<reduc_op><mode>): New.
+
+2025-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115777
+	* tree-vect-slp.cc (vect_bb_slp_scalar_cost): Do not
+	cost a scalar stmt that needs to be preserved.
+
+2025-01-15  Michal Jires  <mjires@suse.cz>
+
+	PR lto/118238
+	* lto-wrapper.cc (run_gcc): Remove link() copying.
+
+2025-01-15  Anton Blanchard  <antonb@tenstorrent.com>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118170
+	* config/riscv/generic-ooo.md (generic_ooo_float_div_half): New
+	reservation.
+
+2025-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/109592
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Simplify nested shifts with subregs.
+
 2025-01-14  anetczuk  <anetczuk@o2.pl>
 
 	* tree-dump.cc (dequeue_and_dump): Handle OBJ_TYPE_REF.

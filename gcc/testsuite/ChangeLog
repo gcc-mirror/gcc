@@ -1,3 +1,118 @@
+2025-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/102705
+	* gcc.dg/tree-ssa/pr105832-2.c: Update testcase.
+	* gcc.dg/tree-ssa/pr96669-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr102705-1.c: New test.
+	* gcc.dg/tree-ssa/pr102705-2.c: New test.
+
+2025-01-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71884
+	* gfortran.dg/pr71884.f90: New test.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118390
+	* g++.dg/cpp/embed-20.C: New test.
+	* g++.dg/cpp0x/pr118390.C: New test.
+
+2025-01-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/inline-mem-set-pr112804.c: Add -Wno-deprecated.
+	* gcc.target/aarch64/pr100518.c: Likewise.
+	* gcc.target/aarch64/pr113114.c: Likewise.
+	* gcc.target/aarch64/pr80295.c: Likewise.
+	* gcc.target/aarch64/pr94201.c: Likewise.
+	* gcc.target/aarch64/pr94577.c: Likewise.
+	* gcc.target/aarch64/sve/pr108603.c: Likewise.
+
+2025-01-15  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/core-builtin-1.c: Correct test.
+	* gcc.target/bpf/core-builtin-2.c: Correct test.
+	* gcc.target/bpf/core-builtin-exprlist-1.c: Correct test.
+
+2025-01-15  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/core-attr-calls.c: New test.
+
+2025-01-15  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/core-attr-const.c: New test.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118278
+	* g++.dg/abi/mangle80.C: New test.
+	* g++.dg/cpp/embed-19.C: New test.
+
+2025-01-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118139
+	* g++.dg/diagnostic/decltype1.C: New test.
+
+2025-01-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/118472
+	* gcc.dg/pr118472.c: New test.
+
+2025-01-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/117079
+	* gcc.target/i386/pr105493.c: Fix expected vectorization
+
+2025-01-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/118486
+	* g++.dg/gomp/declare-variant-11.C: New test.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/116068
+	* gcc.dg/graphite/pr116068.c: New test.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118387
+	* g++.dg/cpp2a/spaceship-err6.C: Expect another error.
+	* g++.dg/cpp2a/spaceship-synth17.C: Likewise.
+	* g++.dg/cpp2a/spaceship-synth-neg6.C: Likewise.
+	* g++.dg/cpp2a/spaceship-synth-neg7.C: New test.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118124
+	* g++.dg/cpp0x/initlist-opt5.C: New test.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118124
+	* g++.dg/cpp/embed-15.C: New test.
+	* g++.dg/cpp/embed-16.C: New test.
+	* g++.dg/cpp0x/initlist-opt3.C: New test.
+	* g++.dg/cpp0x/initlist-opt4.C: New test.
+
+2025-01-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/118182
+	* gfortran.target/riscv/rvv/pr118182.f: New.
+	* gcc.target/riscv/rvv/autovec/pr118182-1.c: New.
+	* gcc.target/riscv/rvv/autovec/pr118182-2.c: New.
+
+2025-01-15  Anton Blanchard  <antonb@tenstorrent.com>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118170
+	* gcc.target/riscv/pr118170.c: New test.
+
+2025-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/109592
+	* gcc.target/riscv/pr109592.c: New test.
+	* gcc.target/riscv/sign-extend-rshift.c: Adjust expected output
+
 2025-01-14  anetczuk  <anetczuk@o2.pl>
 
 	* g++.dg/diagnostic/lang-dump-1.C: New test.

@@ -1,3 +1,51 @@
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118390
+	* cp-tree.h (count_ctor_elements): Declare.
+	* call.cc (count_ctor_elements): No longer static.
+	* pt.cc (unify): Use count_ctor_elements instead of
+	CONSTRUCTOR_NELTS.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118278
+	* mangle.cc (write_expression): Handle RAW_DATA_CST.
+
+2025-01-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118139
+	* cxx-pretty-print.cc (pp_cxx_nested_name_specifier): Handle
+	a computed-type-specifier.
+
+2025-01-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/118486
+	* decl.cc (omp_declare_variant_finalize_one): When resolving
+	the variant to use, handle variant calls with TARGET_EXPR.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118387
+	* method.cc (build_comparison_op): Set bad if
+	std::strong_ordering::equal doesn't convert to rettype.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118124
+	* cp-tree.h (build_array_of_n_type): Change second argument type
+	from int to unsigned HOST_WIDE_INT.
+	* tree.cc (build_array_of_n_type): Likewise.
+	* call.cc (count_ctor_elements): New function.
+	(maybe_init_list_as_array): Use it instead of CONSTRUCTOR_NELTS.
+	(convert_like_internal): Use length from init's type instead of
+	len when handling the maybe_init_list_as_array case.
+
+2025-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118124
+	* call.cc (convert_like_internal): Handle RAW_DATA_CST in
+	ck_list handling.  Formatting fixes.
+
 2025-01-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/118047

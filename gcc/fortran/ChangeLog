@@ -1,3 +1,9 @@
+2025-01-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71884
+	* resolve.cc (resolve_allocate_expr): Reject intrinsic NULL as
+	source-expr.
+
 2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
