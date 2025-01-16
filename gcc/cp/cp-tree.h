@@ -6318,9 +6318,14 @@ enum auto_deduction_context
 
    STF_STRIP_DEPENDENT: allow the stripping of aliases with dependent
        template parameters, relying on code elsewhere to report any
-       appropriate diagnostics.  */
+       appropriate diagnostics.
+
+   STF_KEEP_INJ_CLASS_NAME: don't strip injected-class-name typedefs
+       because we're dealing with a non-coerced template argument.
+*/
 const unsigned int STF_USER_VISIBLE = 1U;
 const unsigned int STF_STRIP_DEPENDENT = 1U << 1;
+const unsigned int STF_KEEP_INJ_CLASS_NAME = 1U << 2;
 
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */
