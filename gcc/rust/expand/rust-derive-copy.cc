@@ -52,7 +52,7 @@ DeriveCopy::copy_impl (
   // for example:
   //
   // #[derive(Copy)]
-  // struct Be<T: Copy> { ... }
+  // struct Be<T> { ... }
   //
   // we need to generate the impl block:
   //
@@ -87,7 +87,12 @@ DeriveCopy::copy_impl (
 	      = GenericArg::create_type (std::move (associated_type));
 	    generic_args.push_back (std::move (type_arg));
 
-	    auto impl_type_param = builder.new_type_param (type_param);
+	    std::vector<std::unique_ptr<TypeParamBound>> extra_bounds;
+	    extra_bounds.emplace_back (std::unique_ptr<TypeParamBound> (
+	      new TraitBound (builder.type_path (LangItem::Kind::COPY), loc)));
+
+	    auto impl_type_param
+	      = builder.new_type_param (type_param, std::move (extra_bounds));
 	    impl_generics.push_back (std::move (impl_type_param));
 	  }
 	  break;
