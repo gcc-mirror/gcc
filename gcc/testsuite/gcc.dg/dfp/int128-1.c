@@ -1,5 +1,6 @@
 /* PR libgcc/65833 */
-/* { dg-do run { target { int128 && bitint } } } */
+/* { dg-require-effective-target int128 } */
+/* { dg-require-effective-target bitint } */
 /* { dg-options "-O2 -std=gnu2x" } */
 
 #define INT128_MAX ((__int128) ((((unsigned __int128) 1) << 127) - 1))

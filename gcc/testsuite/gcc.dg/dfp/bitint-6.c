@@ -1,5 +1,5 @@
 /* PR c/102989 */
-/* { dg-do run { target bitint } } */
+/* { dg-require-effective-target bitint } */
 /* { dg-options "-O2 -std=c23 -pedantic-errors" } */
 
 #if __BITINT_MAXWIDTH__ >= 192

@@ -1,6 +1,7 @@
 /* PR libgcc/65833 */
 /* Test non-canonical BID significands.  */
-/* { dg-do run { target { int128 && bitint } } } */
+/* { dg-require-effective-target int128 } */
+/* { dg-require-effective-target bitint } */
 /* { dg-options "-O2 -std=gnu2x" } */
 /* { dg-require-effective-target dfp_bid } */
 

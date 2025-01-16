@@ -1,5 +1,5 @@
 /* PR c/102989 */
-/* { dg-do run { target bitint } } */
+/* { dg-require-effective-target bitint } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-options "-std=c23" } */
 

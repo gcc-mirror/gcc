@@ -1,5 +1,6 @@
 /* PR libgcc/65833 */
-/* { dg-do run { target { int128 && bitint } } } */
+/* { dg-require-effective-target int128 } */
+/* { dg-require-effective-target bitint } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-options "-std=c2x" } */
 
