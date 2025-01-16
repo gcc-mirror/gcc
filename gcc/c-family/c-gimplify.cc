@@ -728,7 +728,7 @@ c_genericize (tree fndecl)
 	dump_node (DECL_SAVED_TREE (fndecl),
 		   TDF_SLIM | local_dump_flags, dump_orig);
       else
-	print_c_tree (dump_orig, DECL_SAVED_TREE (fndecl));
+	print_c_tree (dump_orig, DECL_SAVED_TREE (fndecl), local_dump_flags);
       fprintf (dump_orig, "\n");
     }
 
