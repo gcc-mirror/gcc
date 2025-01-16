@@ -3392,7 +3392,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		&& CLASS_TYPE_P (TREE_TYPE (res))
 		&& !is_empty_class (TREE_TYPE (res)))
 	      if (replace_decl (&result, res, ctx->object))
-		cacheable = false;
+		{
+		  cacheable = false;
+		  result = cxx_eval_constant_expression (ctx, result, lval,
+							 non_constant_p,
+							 overflow_p);
+		}
 
 	  /* Only cache a permitted result of a constant expression.  */
 	  if (cacheable && !reduced_constant_expression_p (result))
