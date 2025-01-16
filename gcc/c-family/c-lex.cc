@@ -1307,7 +1307,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	    if (cxx_dialect < cxx23 && pedantic)
 	      pedwarn (input_location, OPT_Wc__23_extensions,
 		       "%<f%d%> or %<F%d%> suffix on floating constant only "
-		       "available with %<-std=c++2b%> or %<-std=gnu++2b%>",
+		       "available with %<-std=c++23%> or %<-std=gnu++23%>",
 		       n, n);
 	  }
 	else
@@ -1328,7 +1328,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	else if (cxx_dialect < cxx23 && pedantic)
 	  pedwarn (input_location, OPT_Wc__23_extensions,
 		   "%<bf16%> or %<BF16%> suffix on floating constant only "
-		   "available with %<-std=c++2b%> or %<-std=gnu++2b%>");
+		   "available with %<-std=c++23%> or %<-std=gnu++23%>");
       }
     else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = long_double_type_node;

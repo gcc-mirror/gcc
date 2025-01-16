@@ -6202,13 +6202,13 @@ start_decl (const cp_declarator *declarator,
       if (CP_DECL_THREAD_LOCAL_P (decl) && !DECL_REALLY_EXTERN (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
 		  "%qD defined %<thread_local%> in %qs function only "
-		  "available with %<-std=c++2b%> or %<-std=gnu++2b%>", decl,
+		  "available with %<-std=c++23%> or %<-std=gnu++23%>", decl,
 		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
 		  ? "consteval" : "constexpr");
       else if (TREE_STATIC (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
 		  "%qD defined %<static%> in %qs function only available "
-		  "with %<-std=c++2b%> or %<-std=gnu++2b%>", decl,
+		  "with %<-std=c++23%> or %<-std=gnu++23%>", decl,
 		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
 		  ? "consteval" : "constexpr");
       else

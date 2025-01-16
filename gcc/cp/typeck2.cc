@@ -2507,7 +2507,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
 	  else if (cxx_dialect < cxx23)
 	    pedwarn (loc, OPT_Wc__23_extensions,
 		     "%<auto(x)%> only available with "
-		     "%<-std=c++2b%> or %<-std=gnu++2b%>");
+		     "%<-std=c++23%> or %<-std=gnu++23%>");
 	}
       else
 	{

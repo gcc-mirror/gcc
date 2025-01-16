@@ -12165,8 +12165,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     {
       pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 	       "parameter declaration before lambda declaration "
-	       "specifiers only optional with %<-std=c++2b%> or "
-	       "%<-std=gnu++2b%>");
+	       "specifiers only optional with %<-std=c++23%> or "
+	       "%<-std=gnu++23%>");
       omitted_parms_loc = UNKNOWN_LOCATION;
     }
   /* Peek at the params, see if we have an xobj parameter.  */
@@ -12262,8 +12262,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     {
       pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 	       "parameter declaration before lambda transaction "
-	       "qualifier only optional with %<-std=c++2b%> or "
-	       "%<-std=gnu++2b%>");
+	       "qualifier only optional with %<-std=c++23%> or "
+	       "%<-std=gnu++23%>");
       omitted_parms_loc = UNKNOWN_LOCATION;
     }
 
@@ -12275,8 +12275,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     {
       pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 	       "parameter declaration before lambda exception "
-	       "specification only optional with %<-std=c++2b%> or "
-	       "%<-std=gnu++2b%>");
+	       "specification only optional with %<-std=c++23%> or "
+	       "%<-std=gnu++23%>");
       omitted_parms_loc = UNKNOWN_LOCATION;
     }
 
@@ -12293,8 +12293,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (omitted_parms_loc)
 	pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 		 "parameter declaration before lambda trailing "
-		 "return type only optional with %<-std=c++2b%> or "
-		 "%<-std=gnu++2b%>");
+		 "return type only optional with %<-std=c++23%> or "
+		 "%<-std=gnu++23%>");
       cp_lexer_consume_token (parser->lexer);
       return_type = cp_parser_trailing_type_id (parser);
     }
@@ -13069,7 +13069,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      if (cxx_dialect < cxx23)
 		pedwarn (loc, OPT_Wc__23_extensions,
 			 "label at end of compound statement only available "
-			 "with %<-std=c++2b%> or %<-std=gnu++2b%>");
+			 "with %<-std=c++23%> or %<-std=gnu++23%>");
 	      return;
 	    }
 	  in_compound_for_pragma = false;
@@ -13826,7 +13826,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	    if (cxx_dialect < cxx23)
 	      pedwarn (tok->location, OPT_Wc__23_extensions,
 		       "%<if consteval%> only available with "
-		       "%<-std=c++2b%> or %<-std=gnu++2b%>");
+		       "%<-std=c++23%> or %<-std=gnu++23%>");
 
 	    bool save_in_consteval_if_p = in_consteval_if_p;
 	    statement = begin_if_stmt ();
@@ -15225,7 +15225,7 @@ cp_parser_jump_statement (cp_parser* parser, tree &std_attrs)
 	  && cxx_dialect < cxx23)
 	{
 	  error ("%<goto%> in %<constexpr%> function only available with "
-		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
+		 "%<-std=c++23%> or %<-std=gnu++23%>");
 	  cp_function_chain->invalid_constexpr = true;
 	}
 
