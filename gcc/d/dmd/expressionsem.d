@@ -15331,8 +15331,10 @@ Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
     Expression visitSlice(SliceExp exp)
     {
         exp.e1 = exp.e1.resolveLoc(loc, sc);
-        exp.lwr = exp.lwr.resolveLoc(loc, sc);
-        exp.upr = exp.upr.resolveLoc(loc, sc);
+        if (exp.lwr)
+            exp.lwr = exp.lwr.resolveLoc(loc, sc);
+        if (exp.upr)
+            exp.upr = exp.upr.resolveLoc(loc, sc);
 
         return exp;
     }
