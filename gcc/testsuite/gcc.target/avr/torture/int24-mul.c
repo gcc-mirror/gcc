@@ -7,7 +7,10 @@
 #define __flash /* empty */
 #endif
 
-const __flash __int24 vals[] =
+__extension__ typedef __uint24 uint24_t;
+__extension__ typedef __int24 int24_t;
+
+const __flash int24_t vals[] =
   {
     0, 1, 2, 3, -1, -2, -3, 0xff, 0x100, 0x101,
     0xffL * 0xff, 0xfffL * 0xfff, 0x101010L, 0xaaaaaaL
@@ -17,7 +20,7 @@ void test_u (void)
 {
   unsigned int i;
   unsigned long la, lb, lc;
-  __uint24 a, b, c;
+  uint24_t a, b, c;
 
   int S = sizeof (vals) / sizeof (*vals);
 
@@ -58,7 +61,7 @@ void test_nu (void)
   unsigned long la;
   unsigned int i;
   int S = sizeof (vals) / sizeof (*vals);
-  __uint24 a;
+  uint24_t a;
   
   for (i = 0; i < 500; i++)
     {
