@@ -8622,7 +8622,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	  if (!search_ns->proc_name->attr.function
 	      && !search_ns->proc_name->attr.subroutine)
 	    gfc_error ("The base name for %<declare variant%> must be "
-		       "specified at %L ", &odv->where);
+		       "specified at %L", &odv->where);
 	  else
 	    error_found = false;
 	}
@@ -8821,6 +8821,13 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		  // Handle adjust_args
 		  tree need_device_ptr_list = make_node (TREE_LIST);
 		  vec<gfc_symbol *> adjust_args_list = vNULL;
+		  int arg_idx_offset = 0;
+		  if (gfc_return_by_reference (ns->proc_name))
+		    {
+		      arg_idx_offset++;
+		      if (ns->proc_name->ts.type == BT_CHARACTER)
+			arg_idx_offset++;
+		    }
 		  for (gfc_omp_namelist *arg_list = odv->adjust_args_list;
 		       arg_list != NULL; arg_list = arg_list->next)
 		    {
@@ -8847,14 +8854,15 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 			    if (arg->sym == arg_list->sym)
 			      break;
 			  gcc_assert (arg != NULL);
+			  // Store 0-based argument index,
+			  // as in gimplify_call_expr
 			  need_device_ptr_list = chainon (
 			    need_device_ptr_list,
 			    build_tree_list (
 			      NULL_TREE,
 			      build_int_cst (
 				integer_type_node,
-				idx))); // Store 0-based argument index,
-					// as in gimplify_call_expr
+				idx + arg_idx_offset)));
 			}
 		    }
 
