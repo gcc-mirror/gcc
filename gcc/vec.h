@@ -2020,7 +2020,7 @@ vec<T, va_heap, vl_ptr>::release (void)
 
   if (using_auto_storage ())
     {
-      m_vec->m_vecpfx.m_num = 0;
+      m_vec->truncate (0);
       return;
     }
 
