@@ -3459,7 +3459,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 		error ("argument %d must be a literal between 0 and %d,"
 		       " inclusive",
 		       bifaddr->restr_opnd[i], p);
-		return CONST0_RTX (mode[0]);
+		return const0_rtx;
 	      }
 	    break;
 	  }
@@ -3476,7 +3476,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 		       " inclusive",
 		       bifaddr->restr_opnd[i], bifaddr->restr_val1[i],
 		       bifaddr->restr_val2[i]);
-		return CONST0_RTX (mode[0]);
+		return const0_rtx;
 	      }
 	    break;
 	  }
@@ -3493,7 +3493,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 		       "between %d and %d, inclusive",
 		       bifaddr->restr_opnd[i], bifaddr->restr_val1[i],
 		       bifaddr->restr_val2[i]);
-		return CONST0_RTX (mode[0]);
+		return const0_rtx;
 	      }
 	    break;
 	  }
@@ -3509,7 +3509,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 		       "literal %d",
 		       bifaddr->restr_opnd[i], bifaddr->restr_val1[i],
 		       bifaddr->restr_val2[i]);
-		return CONST0_RTX (mode[0]);
+		return const0_rtx;
 	      }
 	    break;
 	  }
