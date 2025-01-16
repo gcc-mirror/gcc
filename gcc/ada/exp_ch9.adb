@@ -9877,7 +9877,7 @@ package body Exp_Ch9 is
          --      (T        => To_Tag_Ptr (Obj'Address).all,
          --       Position =>
          --         Ada.Tags.Get_Offset_Index
-         --           (Ada.Tags.Tag (Concval),
+         --           (Concval._Tag,
          --            <interface dispatch table position of Ename>));
 
          --  Note that Obj'Address is recursively expanded into a call to
@@ -9898,7 +9898,9 @@ package body Exp_Ch9 is
                   Make_Function_Call (Loc,
                     Name => New_Occurrence_Of (RTE (RE_Get_Offset_Index), Loc),
                     Parameter_Associations => New_List (
-                      Unchecked_Convert_To (RTE (RE_Tag), Concval),
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Concval,
+                        Attribute_Name => Name_Tag),
                       Make_Integer_Literal (Loc,
                         DT_Position (Entity (Ename))))))));
 
