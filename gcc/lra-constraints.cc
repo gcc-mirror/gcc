@@ -2465,6 +2465,11 @@ process_alt_operands (int only_alternative)
 			    && (operand_reg[m] == NULL_RTX
 				|| hard_regno[m] < 0))
 			  {
+			    if (lra_dump_file != NULL)
+			      fprintf
+				(lra_dump_file,
+				 "            %d Matched operand reload: "
+				 "losers++\n", m);
 			    losers++;
 			    reload_nregs
 			      += (ira_reg_class_max_nregs[curr_alt[m]]
@@ -2909,6 +2914,10 @@ process_alt_operands (int only_alternative)
 			   "            Strict low subreg reload -- refuse\n");
 		      goto fail;
 		    }
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Operand reload: losers++\n", nop);
 		  losers++;
 		}
 	      if (operand_reg[nop] != NULL_RTX
@@ -2945,7 +2954,14 @@ process_alt_operands (int only_alternative)
 		{
 		  const_to_mem = 1;
 		  if (! no_regs_p)
-		    losers++;
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Constant reload through memory: "
+			   "losers++\n", nop);
+		      losers++;
+		    }
 		}
 
 	      /* Alternative loses if it requires a type of reload not
@@ -3127,12 +3143,19 @@ process_alt_operands (int only_alternative)
 	      if (this_alternative != NO_REGS
 		  && REG_P (op) && (cl = get_reg_class (REGNO (op))) != NO_REGS
 		  && ((curr_static_id->operand[nop].type != OP_OUT
-		       && targetm.secondary_memory_needed (GET_MODE (op), cl,
+		       && targetm.secondary_memory_needed (mode, cl,
 							   this_alternative))
 		      || (curr_static_id->operand[nop].type != OP_IN
 			  && (targetm.secondary_memory_needed
-			      (GET_MODE (op), this_alternative, cl)))))
-		losers++;
+			      (mode, this_alternative, cl)))))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Secondary memory reload needed: "
+		       "losers++\n", nop);
+		  losers++;
+		}
 
 	      if (MEM_P (op) && offmemok)
 		addr_losers++;
@@ -3346,7 +3369,7 @@ process_alt_operands (int only_alternative)
 	      if (lra_dump_file != NULL)
 		fprintf
 		  (lra_dump_file,
-		   "            %d Conflict early clobber reload: reject--\n",
+		   "            %d Conflict early clobber reload: losers++\n",
 		   i);
 	    }
 	  else
@@ -3358,6 +3381,12 @@ process_alt_operands (int only_alternative)
 		  {
 		    curr_alt_match_win[j] = false;
 		    losers++;
+		    if (lra_dump_file != NULL)
+		      fprintf
+			(lra_dump_file,
+			 "            %d Matching conflict early clobber "
+			 "reloads: losers++\n",
+			 j);
 		    overall += LRA_LOSER_COST_FACTOR;
 		  }
 	      if (! curr_alt_match_win[i])
@@ -3375,7 +3404,7 @@ process_alt_operands (int only_alternative)
 		fprintf
 		  (lra_dump_file,
 		   "            %d Matched conflict early clobber reloads: "
-		   "reject--\n",
+		   "losers++\n",
 		   i);
 	    }
 	  /* Early clobber was already reflected in REJECT. */
