@@ -3570,7 +3570,7 @@ finish_this_expr (void)
 
 tree
 finish_pseudo_destructor_expr (tree object, tree scope, tree destructor,
-			       location_t loc)
+			       location_t loc, tsubst_flags_t complain)
 {
   if (object == error_mark_node || destructor == error_mark_node)
     return error_mark_node;
@@ -3581,16 +3581,18 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor,
     {
       if (scope == error_mark_node)
 	{
-	  error_at (loc, "invalid qualifying scope in pseudo-destructor name");
+	  if (complain & tf_error)
+	    error_at (loc, "invalid qualifying scope in pseudo-destructor name");
 	  return error_mark_node;
 	}
       if (is_auto (destructor))
 	destructor = TREE_TYPE (object);
       if (scope && TYPE_P (scope) && !check_dtor_name (scope, destructor))
 	{
-	  error_at (loc,
-		    "qualified type %qT does not match destructor name ~%qT",
-		    scope, destructor);
+	  if (complain & tf_error)
+	    error_at (loc,
+		      "qualified type %qT does not match destructor name ~%qT",
+		      scope, destructor);
 	  return error_mark_node;
 	}
 
@@ -3611,7 +3613,8 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor,
       if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (object),
 						      destructor))
 	{
-	  error_at (loc, "%qE is not of type %qT", object, destructor);
+	  if (complain & tf_error)
+	    error_at (loc, "%qE is not of type %qT", object, destructor);
 	  return error_mark_node;
 	}
     }

@@ -8862,7 +8862,8 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	  pseudo_destructor_p = true;
 	  postfix_expression
 	    = finish_pseudo_destructor_expr (postfix_expression,
-					     s, type, location);
+					     s, type, location,
+					     tf_warning_or_error);
 	}
     }
 
