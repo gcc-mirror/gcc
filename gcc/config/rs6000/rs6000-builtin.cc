@@ -3584,7 +3584,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
     }
 
   /* Check for restricted constant arguments.  */
-  for (int i = 0; i < 2; i++)
+  for (size_t i = 0; i < ARRAY_SIZE (bifaddr->restr); i++)
     {
       switch (bifaddr->restr[i])
 	{

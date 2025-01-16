@@ -3861,11 +3861,11 @@
     PMXVI4GER8_INTERNAL mma_pmxvi4ger8 {mma}
 
   void __builtin_mma_pmxvi4ger8pp (v512 *, vuc, vuc, const int<4>, \
-                                   const int<4>, const int<4>);
+                                   const int<4>, const int<8>);
     PMXVI4GER8PP nothing {mma,quad,mmaint}
 
   v512 __builtin_mma_pmxvi4ger8pp_internal (v512, vuc, vuc, const int<4>, \
-                                            const int<4>, const int<4>);
+                                            const int<4>, const int<8>);
     PMXVI4GER8PP_INTERNAL mma_pmxvi4ger8pp {mma,quad}
 
   void __builtin_mma_pmxvi8ger4 (v512 *, vuc, vuc, const int<4>, \
