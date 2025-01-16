@@ -870,7 +870,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	}
       /* Also fold if we want to fold all statements.  */
       else if (substitute_and_fold_engine->fold_all_stmts
-	  && fold_stmt (&i, follow_single_use_edges))
+	       && fold_stmt (&i, follow_single_use_edges))
 	{
 	  did_replace = true;
 	  stmt = gsi_stmt (i);
@@ -1079,6 +1079,13 @@ may_propagate_copy (tree dest, tree orig, bool dest_not_abnormal_phi_edge_p)
   /* Generally propagating virtual operands is not ok as that may
      create overlapping life-ranges.  */
   if (TREE_CODE (dest) == SSA_NAME && virtual_operand_p (dest))
+    return false;
+
+  /* Keep lhs of [[gnu::musttail]] calls as is, those need to be still
+     tail callable.  */
+  if (TREE_CODE (dest) == SSA_NAME
+      && is_gimple_call (SSA_NAME_DEF_STMT (dest))
+      && gimple_call_must_tail_p (as_a <gcall *> (SSA_NAME_DEF_STMT (dest))))
     return false;
 
   /* Anything else is OK.  */

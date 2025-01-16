@@ -1,9 +1,9 @@
 /* PR tree-optimization/118430 */
 /* { dg-do compile { target musttail } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times "  bar \\\(\[^\n\r]\*\\\); \\\[tail call\\\] \\\[must tail call\\\]" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "  freddy \\\(\[^\n\r]\*\\\); \\\[tail call\\\] \\\[must tail call\\\]" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "  (?:bar|freddy) \\\(\[^\n\r]\*\\\); \\\[tail call\\\]" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "  \[^\n\r]* = bar \\\(\[^\n\r]\*\\\); \\\[tail call\\\] \\\[must tail call\\\]" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "  \[^\n\r]* = freddy \\\(\[^\n\r]\*\\\); \\\[tail call\\\] \\\[must tail call\\\]" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-not "  (?:bar|freddy) \\\(\[^\n\r]\*\\\); \\\[tail call\\\]" "optimized" } } */
 
 __attribute__ ((noipa)) void
 foo (int x)
