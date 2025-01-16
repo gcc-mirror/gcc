@@ -705,16 +705,18 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v,
 	((size + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
     }
 
-  if ((first_anon_arg < (LM32_FIRST_ARG_REG + LM32_NUM_ARG_REGS)) && !no_rtl)
+  if (FUNCTION_ARG_REGNO_P (first_anon_arg))
     {
-      int first_reg_offset = first_anon_arg;
       int size = LM32_FIRST_ARG_REG + LM32_NUM_ARG_REGS - first_anon_arg;
-      rtx regblock;
 
-      regblock = gen_rtx_MEM (BLKmode,
-			      plus_constant (Pmode, arg_pointer_rtx,
-					     FIRST_PARM_OFFSET (0)));
-      move_block_from_reg (first_reg_offset, regblock, size);
+      if (!no_rtl)
+	{
+	  rtx regblock
+	    = gen_rtx_MEM (BLKmode,
+			   plus_constant (Pmode, arg_pointer_rtx,
+					  FIRST_PARM_OFFSET (0)));
+	  move_block_from_reg (first_anon_arg, regblock, size);
+	}
 
       *pretend_size = size * UNITS_PER_WORD;
     }
