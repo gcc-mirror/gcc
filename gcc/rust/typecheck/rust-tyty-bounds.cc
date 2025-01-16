@@ -151,6 +151,14 @@ TypeBoundsProbe::assemble_sized_builtin ()
 }
 
 void
+TypeBoundsProbe::add_trait_bound (HIR::Trait *trait)
+{
+  auto trait_ref = TraitResolver::Resolve (*trait);
+
+  trait_references.push_back ({trait_ref, mappings.lookup_builtin_marker ()});
+}
+
+void
 TypeBoundsProbe::assemble_builtin_candidate (LangItem::Kind lang_item)
 {
   auto lang_item_defined = mappings.lookup_lang_item (lang_item);
@@ -167,9 +175,7 @@ TypeBoundsProbe::assemble_builtin_candidate (LangItem::Kind lang_item)
   HIR::Trait *trait = static_cast<HIR::Trait *> (item);
   const TyTy::BaseType *raw = receiver->destructure ();
 
-  // assemble the reference
-  TraitReference *trait_ref = TraitResolver::Resolve (*trait);
-  trait_references.push_back ({trait_ref, mappings.lookup_builtin_marker ()});
+  add_trait_bound (trait);
 
   rust_debug ("Added builtin lang_item: %s for %s",
 	      LangItem::ToString (lang_item).c_str (),
