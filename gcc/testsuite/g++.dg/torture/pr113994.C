@@ -1,5 +1,6 @@
 // PR rtl-optimization/113994
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 
