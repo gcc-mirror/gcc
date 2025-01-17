@@ -8688,8 +8688,12 @@ print_operand (FILE *file, rtx x, int code)
       {
 	machine_mode mode;
 	short imm;
-	bool b = s390_constant_via_vrepi_p (x, &mode, &imm);
-	gcc_checking_assert (b);
+	if (!s390_constant_via_vrepi_p (x, &mode, &imm))
+	  {
+	    output_operand_lossage ("invalid constant for output "
+				    "modifier '%c'", code);
+	    return;
+	  }
 	switch (mode)
 	  {
 	  case QImode:
@@ -8714,8 +8718,12 @@ print_operand (FILE *file, rtx x, int code)
       {
 	machine_mode mode;
 	int start, end;
-	bool b = s390_constant_via_vgm_p (x, &mode, &start, &end);
-	gcc_checking_assert (b);
+	if (!s390_constant_via_vgm_p (x, &mode, &start, &end))
+	  {
+	    output_operand_lossage ("invalid constant for output "
+				    "modifier '%c'", code);
+	    return;
+	  }
 	switch (mode)
 	  {
 	  case QImode:
@@ -8739,8 +8747,12 @@ print_operand (FILE *file, rtx x, int code)
     case 'r':
       {
 	unsigned mask;
-	bool b = s390_constant_via_vgbm_p (x, &mask);
-	gcc_checking_assert (b);
+	if (!s390_constant_via_vgbm_p (x, &mask))
+	  {
+	    output_operand_lossage ("invalid constant for output "
+				    "modifier '%c'", code);
+	    return;
+	  }
 	fprintf (file, "%u", mask);
       }
       return;
