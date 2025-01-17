@@ -1,3 +1,100 @@
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117574
+	* gcc.dg/torture/pr117574-1.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117417
+	* gcc.dg/torture/pr117417.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117333
+	* gcc.dg/torture/pr117333.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117307
+	* gcc.dg/vect/pr117307.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117254
+	* gcc.dg/pr117254.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117104
+	* gcc.dg/pr117104.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117086
+	* gcc.dg/torture/pr117086.c: New testcase.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116891
+	* gcc.dg/pr116891.c: New test.
+	* gcc.target/i386/fma-pr116891.c: New test.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116768
+	* gcc.dg/torture/pr116768.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116481
+	* gcc.dg/pr116481.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116380
+	* gcc.dg/torture/pr116380.c: New testcase.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116290
+	* gcc.dg/pr116290.c: New testcase.
+
 2025-01-11  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
