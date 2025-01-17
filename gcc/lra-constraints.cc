@@ -4129,6 +4129,19 @@ swap_operands (int nop)
   lra_update_dup (curr_id, nop + 1);
 }
 
+/* Return TRUE if X is a (subreg of) reg and there are no hard regs of X class
+   which can contain value of MODE.  */
+static bool invalid_mode_reg_p (enum machine_mode mode, rtx x)
+{
+  if (SUBREG_P (x))
+    x = SUBREG_REG (x);
+  if (! REG_P (x))
+    return false;
+  enum reg_class rclass = get_reg_class (REGNO (x));
+  return hard_reg_set_subset_p (ira_prohibited_class_mode_regs[rclass][mode],
+				reg_class_contents[rclass]);
+}
+
 /* Main entry point of the constraint code: search the body of the
    current insn to choose the best alternative.  It is mimicking insn
    alternative cost calculation model of former reload pass.  That is
@@ -4389,6 +4402,10 @@ curr_insn_transform (bool check_only_p)
       rld = partial_subreg_p (GET_MODE (src), GET_MODE (dest)) ? src : dest;
       rld_mode = GET_MODE (rld);
       sec_mode = targetm.secondary_memory_needed_mode (rld_mode);
+      if (rld_mode != sec_mode
+	  && (invalid_mode_reg_p (sec_mode, dest)
+	      || invalid_mode_reg_p (sec_mode, src)))
+	sec_mode = rld_mode;
       new_reg = lra_create_new_reg (sec_mode, NULL_RTX, NO_REGS, NULL,
 				    "secondary");
       /* If the mode is changed, it should be wider.  */
