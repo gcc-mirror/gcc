@@ -66,11 +66,14 @@ MULTILIB_MATCHES += $(multilib_matches)
 # ..., and don't actually build what's the default '-misa':
 MULTILIB_EXCEPTIONS += *misa=$(multilib_options_isa_default)*
 
+# Build '-mptx=3.1' sub-variants, if applicable.  Per 'nvptx-sm.def',
+# 'nvptx.opt:ptx_version', 'nvptx.cc:first_ptx_version_supporting_sm':
+# only for sm_30, sm_35.
+ifneq ($(filter sm_30 sm_35,$(multilib_options_isa_list)),)
 MULTILIB_OPTIONS += mptx=3.1
-# Filter out invalid '-misa'/'-mptx=3.1' combinations; per 'nvptx-sm.def',
-# 'nvptx.opt:ptx_version', 'nvptx.cc:first_ptx_version_supporting_sm'
-# (that is, '-mptx=3.1' only for sm_30, sm_35 variants):
+# Filter out invalid '-misa'/'-mptx=3.1' combinations:
 MULTILIB_EXCEPTIONS += $(foreach misa,$(filter-out %=sm_30 %=sm_35,$(multilib_options_misa_list)),*$(misa)/mptx=3.1)
 # ..., and special care has to be taken if '-mptx=3.1' is invalid for the
 # default variant:
 MULTILIB_EXCEPTIONS += $(if $(filter-out sm_30 sm_35,$(multilib_options_isa_default)),mgomp/mptx=3.1 mptx=3.1)
+endif
