@@ -1864,35 +1864,35 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_s8 (int8x8_t __a, int8x8_t __b)
 {
-  return (int8x8_t) __builtin_aarch64_sqaddv8qi (__a, __b);
+  return (int8x8_t) __builtin_aarch64_ssaddv8qi (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_s16 (int16x4_t __a, int16x4_t __b)
 {
-  return (int16x4_t) __builtin_aarch64_sqaddv4hi (__a, __b);
+  return (int16x4_t) __builtin_aarch64_ssaddv4hi (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_s32 (int32x2_t __a, int32x2_t __b)
 {
-  return (int32x2_t) __builtin_aarch64_sqaddv2si (__a, __b);
+  return (int32x2_t) __builtin_aarch64_ssaddv2si (__a, __b);
 }
 
 __extension__ extern __inline int64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (int64x1_t) {__builtin_aarch64_sqadddi (__a[0], __b[0])};
+  return (int64x1_t) {__builtin_aarch64_ssadddi (__a[0], __b[0])};
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return __builtin_aarch64_uqaddv8qi_uuu (__a, __b);
+  return __builtin_aarch64_usaddv8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline int8x8_t
@@ -2151,189 +2151,189 @@ __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return __builtin_aarch64_uqaddv4hi_uuu (__a, __b);
+  return __builtin_aarch64_usaddv4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return __builtin_aarch64_uqaddv2si_uuu (__a, __b);
+  return __builtin_aarch64_usaddv2si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadd_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) {__builtin_aarch64_uqadddi_uuu (__a[0], __b[0])};
+  return (uint64x1_t) {__builtin_aarch64_usadddi_uuu (__a[0], __b[0])};
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_s8 (int8x16_t __a, int8x16_t __b)
 {
-  return (int8x16_t) __builtin_aarch64_sqaddv16qi (__a, __b);
+  return (int8x16_t) __builtin_aarch64_ssaddv16qi (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return (int16x8_t) __builtin_aarch64_sqaddv8hi (__a, __b);
+  return (int16x8_t) __builtin_aarch64_ssaddv8hi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return (int32x4_t) __builtin_aarch64_sqaddv4si (__a, __b);
+  return (int32x4_t) __builtin_aarch64_ssaddv4si (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_s64 (int64x2_t __a, int64x2_t __b)
 {
-  return (int64x2_t) __builtin_aarch64_sqaddv2di (__a, __b);
+  return (int64x2_t) __builtin_aarch64_ssaddv2di (__a, __b);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return __builtin_aarch64_uqaddv16qi_uuu (__a, __b);
+  return __builtin_aarch64_usaddv16qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return __builtin_aarch64_uqaddv8hi_uuu (__a, __b);
+  return __builtin_aarch64_usaddv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return __builtin_aarch64_uqaddv4si_uuu (__a, __b);
+  return __builtin_aarch64_usaddv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddq_u64 (uint64x2_t __a, uint64x2_t __b)
 {
-  return __builtin_aarch64_uqaddv2di_uuu (__a, __b);
+  return __builtin_aarch64_usaddv2di_uuu (__a, __b);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_s8 (int8x8_t __a, int8x8_t __b)
 {
-  return (int8x8_t) __builtin_aarch64_sqsubv8qi (__a, __b);
+  return (int8x8_t) __builtin_aarch64_sssubv8qi (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_s16 (int16x4_t __a, int16x4_t __b)
 {
-  return (int16x4_t) __builtin_aarch64_sqsubv4hi (__a, __b);
+  return (int16x4_t) __builtin_aarch64_sssubv4hi (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_s32 (int32x2_t __a, int32x2_t __b)
 {
-  return (int32x2_t) __builtin_aarch64_sqsubv2si (__a, __b);
+  return (int32x2_t) __builtin_aarch64_sssubv2si (__a, __b);
 }
 
 __extension__ extern __inline int64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (int64x1_t) {__builtin_aarch64_sqsubdi (__a[0], __b[0])};
+  return (int64x1_t) {__builtin_aarch64_sssubdi (__a[0], __b[0])};
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return __builtin_aarch64_uqsubv8qi_uuu (__a, __b);
+  return __builtin_aarch64_ussubv8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return __builtin_aarch64_uqsubv4hi_uuu (__a, __b);
+  return __builtin_aarch64_ussubv4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return __builtin_aarch64_uqsubv2si_uuu (__a, __b);
+  return __builtin_aarch64_ussubv2si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsub_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) {__builtin_aarch64_uqsubdi_uuu (__a[0], __b[0])};
+  return (uint64x1_t) {__builtin_aarch64_ussubdi_uuu (__a[0], __b[0])};
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_s8 (int8x16_t __a, int8x16_t __b)
 {
-  return (int8x16_t) __builtin_aarch64_sqsubv16qi (__a, __b);
+  return (int8x16_t) __builtin_aarch64_sssubv16qi (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return (int16x8_t) __builtin_aarch64_sqsubv8hi (__a, __b);
+  return (int16x8_t) __builtin_aarch64_sssubv8hi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return (int32x4_t) __builtin_aarch64_sqsubv4si (__a, __b);
+  return (int32x4_t) __builtin_aarch64_sssubv4si (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_s64 (int64x2_t __a, int64x2_t __b)
 {
-  return (int64x2_t) __builtin_aarch64_sqsubv2di (__a, __b);
+  return (int64x2_t) __builtin_aarch64_sssubv2di (__a, __b);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return __builtin_aarch64_uqsubv16qi_uuu (__a, __b);
+  return __builtin_aarch64_ussubv16qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return __builtin_aarch64_uqsubv8hi_uuu (__a, __b);
+  return __builtin_aarch64_ussubv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return __builtin_aarch64_uqsubv4si_uuu (__a, __b);
+  return __builtin_aarch64_ussubv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubq_u64 (uint64x2_t __a, uint64x2_t __b)
 {
-  return __builtin_aarch64_uqsubv2di_uuu (__a, __b);
+  return __builtin_aarch64_ussubv2di_uuu (__a, __b);
 }
 
 __extension__ extern __inline int8x8_t
@@ -17543,56 +17543,56 @@ __extension__ extern __inline int8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddb_s8 (int8_t __a, int8_t __b)
 {
-  return (int8_t) __builtin_aarch64_sqaddqi (__a, __b);
+  return (int8_t) __builtin_aarch64_ssaddqi (__a, __b);
 }
 
 __extension__ extern __inline int16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddh_s16 (int16_t __a, int16_t __b)
 {
-  return (int16_t) __builtin_aarch64_sqaddhi (__a, __b);
+  return (int16_t) __builtin_aarch64_ssaddhi (__a, __b);
 }
 
 __extension__ extern __inline int32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadds_s32 (int32_t __a, int32_t __b)
 {
-  return (int32_t) __builtin_aarch64_sqaddsi (__a, __b);
+  return (int32_t) __builtin_aarch64_ssaddsi (__a, __b);
 }
 
 __extension__ extern __inline int64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddd_s64 (int64_t __a, int64_t __b)
 {
-  return __builtin_aarch64_sqadddi (__a, __b);
+  return __builtin_aarch64_ssadddi (__a, __b);
 }
 
 __extension__ extern __inline uint8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddb_u8 (uint8_t __a, uint8_t __b)
 {
-  return (uint8_t) __builtin_aarch64_uqaddqi_uuu (__a, __b);
+  return (uint8_t) __builtin_aarch64_usaddqi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddh_u16 (uint16_t __a, uint16_t __b)
 {
-  return (uint16_t) __builtin_aarch64_uqaddhi_uuu (__a, __b);
+  return (uint16_t) __builtin_aarch64_usaddhi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqadds_u32 (uint32_t __a, uint32_t __b)
 {
-  return (uint32_t) __builtin_aarch64_uqaddsi_uuu (__a, __b);
+  return (uint32_t) __builtin_aarch64_usaddsi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqaddd_u64 (uint64_t __a, uint64_t __b)
 {
-  return __builtin_aarch64_uqadddi_uuu (__a, __b);
+  return __builtin_aarch64_usadddi_uuu (__a, __b);
 }
 
 /* vqdmlal */
@@ -19242,56 +19242,56 @@ __extension__ extern __inline int8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubb_s8 (int8_t __a, int8_t __b)
 {
-  return (int8_t) __builtin_aarch64_sqsubqi (__a, __b);
+  return (int8_t) __builtin_aarch64_sssubqi (__a, __b);
 }
 
 __extension__ extern __inline int16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubh_s16 (int16_t __a, int16_t __b)
 {
-  return (int16_t) __builtin_aarch64_sqsubhi (__a, __b);
+  return (int16_t) __builtin_aarch64_sssubhi (__a, __b);
 }
 
 __extension__ extern __inline int32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubs_s32 (int32_t __a, int32_t __b)
 {
-  return (int32_t) __builtin_aarch64_sqsubsi (__a, __b);
+  return (int32_t) __builtin_aarch64_sssubsi (__a, __b);
 }
 
 __extension__ extern __inline int64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubd_s64 (int64_t __a, int64_t __b)
 {
-  return __builtin_aarch64_sqsubdi (__a, __b);
+  return __builtin_aarch64_sssubdi (__a, __b);
 }
 
 __extension__ extern __inline uint8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubb_u8 (uint8_t __a, uint8_t __b)
 {
-  return (uint8_t) __builtin_aarch64_uqsubqi_uuu (__a, __b);
+  return (uint8_t) __builtin_aarch64_ussubqi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubh_u16 (uint16_t __a, uint16_t __b)
 {
-  return (uint16_t) __builtin_aarch64_uqsubhi_uuu (__a, __b);
+  return (uint16_t) __builtin_aarch64_ussubhi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubs_u32 (uint32_t __a, uint32_t __b)
 {
-  return (uint32_t) __builtin_aarch64_uqsubsi_uuu (__a, __b);
+  return (uint32_t) __builtin_aarch64_ussubsi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqsubd_u64 (uint64_t __a, uint64_t __b)
 {
-  return __builtin_aarch64_uqsubdi_uuu (__a, __b);
+  return __builtin_aarch64_ussubdi_uuu (__a, __b);
 }
 
 /* vqtbl2 */
