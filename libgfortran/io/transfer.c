@@ -2365,6 +2365,9 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	      case BT_INTEGER:
 		write_i (dtp, f, p, kind);
 		break;
+	      case BT_UNSIGNED:
+		write_iu (dtp, f, p, kind);
+		break;
 	      case BT_LOGICAL:
 		write_l (dtp, f, p, kind);
 		break;
