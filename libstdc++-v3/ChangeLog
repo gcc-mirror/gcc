@@ -1,3 +1,51 @@
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109849
+	* include/bits/vector.tcc (vector::_M_range_insert): Fix
+	reversed args in length calculation.
+
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/istream.tcc: Add diagnostic pragmas around uses
+	of long long and extern template.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/locale_facets.tcc: Likewise.
+	* include/bits/locale_facets_nonio.tcc: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/hash_prime_size_policy_imp.hpp:
+	Likewise.
+	* include/ext/pointer.h: Likewise.
+	* include/ext/stdio_sync_filebuf.h: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/ostream: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/type_traits: Likewise.
+	* include/tr1/functional_hash.h: Likewise. Remove semi-colons
+	at namespace scope that aren't needed after macro expansion.
+	* include/tr1/tuple: Remove semi-colon at namespace scope.
+	* include/bits/vector.tcc: Change LL suffix to just L.
+
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90389
+	* include/bits/deque.tcc (_M_insert_aux): Rename variadic
+	overload to _M_emplace_aux.
+	* include/bits/stl_deque.h (_M_insert_aux): Define inline.
+	(_M_emplace_aux): Declare.
+	* testsuite/23_containers/deque/modifiers/emplace/90389.cc: New
+	test.
+
 2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:

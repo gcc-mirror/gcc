@@ -1,3 +1,11 @@
+2025-01-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-01-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116373
+	* gdc.dg/pr116373.d: New test.
+
 2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:
