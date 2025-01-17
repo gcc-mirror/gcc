@@ -1,3 +1,29 @@
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99995
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/unique_ptr.h: Include bits/ostream.h instead of
+	ostream.
+	* include/std/ostream: Include new header.
+	* include/bits/ostream.h: New file.
+
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118158
+	* src/c++17/fs_ops.cc (fs::equivalent): Remove error reporting
+	for is_other(s1) && is_other(s2) case, as per LWG 2937.
+	* testsuite/27_io/filesystem/operations/pr118158.cc: New test.
+
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h: Check __glibcxx_node_extract instead
+	of __cplusplus.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+
 2025-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/ios_base/types/openmode/case_label.cc: Use

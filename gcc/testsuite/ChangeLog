@@ -1,3 +1,359 @@
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105440
+	* g++.dg/cpp2a/constexpr-dtor17.C: New test.
+
+2025-01-16  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/113560
+	* gcc.target/arm/wmul-5.c: Accept other mla instructions.
+	* gcc.target/arm/wmul-6.c: Likewise.
+	* gcc.target/arm/wmul-7.c: Likewise.
+
+2025-01-16  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/multilib.exp: Skip if -mfloat-abi=* or any of
+	its aliases are used.
+
+2025-01-16  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/113994
+	* g++.dg/torture/pr113994.C: Require hosted libstdc++.
+
+2025-01-16  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/dfp/pr102674.c: Use the default dg-do.
+	* gcc.dg/dfp/pr43374.c: Likewise.
+
+2025-01-16  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/dfp/bitint-1.c: Rewrite requirements to retain dfprt.
+	* gcc.dg/dfp/bitint-2.c: Likewise.
+	* gcc.dg/dfp/bitint-3.c: Likewise.
+	* gcc.dg/dfp/bitint-4.c: Likewise.
+	* gcc.dg/dfp/bitint-5.c: Likewise.
+	* gcc.dg/dfp/bitint-6.c: Likewise.
+	* gcc.dg/dfp/bitint-7.c: Likewise.
+	* gcc.dg/dfp/bitint-8.c: Likewise.
+	* gcc.dg/dfp/int128-1.c: Likewise.
+	* gcc.dg/dfp/int128-2.c: Likewise.
+	* gcc.dg/dfp/int128-3.c: Likewise.
+	* gcc.dg/dfp/int128-4.c: Likewise.
+
+2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118321
+	* gfortran.dg/gomp/adjust-args-12.f90: New test.
+
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107522
+	* g++.dg/cpp2a/concepts-explicit-spec7.C: New test.
+
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118454
+	* g++.dg/cpp0x/variadic187.C: New test.
+
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116417
+	* g++.dg/template/pseudodtor7.C: New test.
+
+2025-01-16  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117775
+	* g++.dg/cpp2a/constexpr-117775.C: New test.
+
+2025-01-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/118406
+	* gfortran.dg/unsigned_write.f90: New test.
+
+2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113257
+	* gcc.target/aarch64/cpunative/info_34: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_34.c: New test.
+	* gcc.target/aarch64/cpunative/info_35: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_35.c: New test.
+
+2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/110901
+	* gcc.target/aarch64/options_set_29.c: New test.
+
+2025-01-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/118067
+	* gcc.target/i386/pr118067.c: New.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/assume-2.c: Adjust expected diagnostics.
+	* c-c++-common/gomp/assumes-2.c: Likewise.
+	* c-c++-common/gomp/begin-assumes-2.c: Likewise.
+	* gfortran.dg/gomp/allocate-6.f90: Likewise.
+	* gfortran.dg/gomp/assumes-2.f90: Likewise.
+
+2025-01-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116373
+	* gdc.dg/pr116373.d: New test.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/declare-target-indirect-2.c : Adjust
+	expected output for removal of "omp declare target block".
+	* c-c++-common/gomp/declare-variant-8.c: Likewise, the variant
+	call to f20 is now resolved differently.
+	* c-c++-common/gomp/reverse-offload-1.c: Adjust expected output.
+	* gfortran.dg/gomp/declare-variant-8.f90: Likewise, both f18
+	and f20 now resolve to the variant.  Delete obsolete comments.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/adjust-args-6.c: New.
+	* c-c++-common/gomp/attrs-metadirective-1.c: New.
+	* c-c++-common/gomp/attrs-metadirective-2.c: New.
+	* c-c++-common/gomp/attrs-metadirective-3.c: New.
+	* c-c++-common/gomp/attrs-metadirective-4.c: New.
+	* c-c++-common/gomp/attrs-metadirective-5.c: New.
+	* c-c++-common/gomp/attrs-metadirective-6.c: New.
+	* c-c++-common/gomp/attrs-metadirective-7.c: New.
+	* c-c++-common/gomp/attrs-metadirective-8.c: New.
+	* c-c++-common/gomp/declare-variant-arg-exprs.c: New.
+	* c-c++-common/gomp/declare-variant-dynamic-1.c: New.
+	* c-c++-common/gomp/declare-variant-dynamic-2.c: New.
+	* c-c++-common/gomp/metadirective-1.c: New.
+	* c-c++-common/gomp/metadirective-2.c: New.
+	* c-c++-common/gomp/metadirective-3.c: New.
+	* c-c++-common/gomp/metadirective-4.c: New.
+	* c-c++-common/gomp/metadirective-5.c: New.
+	* c-c++-common/gomp/metadirective-6.c: New.
+	* c-c++-common/gomp/metadirective-7.c: New.
+	* c-c++-common/gomp/metadirective-8.c: New.
+	* c-c++-common/gomp/metadirective-construct.c: New.
+	* c-c++-common/gomp/metadirective-device.c: New.
+	* c-c++-common/gomp/metadirective-no-score.c: New.
+	* c-c++-common/gomp/metadirective-target-device-1.c: New.
+	* c-c++-common/gomp/metadirective-target-device-2.c: New.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* c-c++-common/gomp/declare-variant-2.c: Adjust output for C++.
+	* g++.dg/gomp/declare-variant-class-1.C: New.
+	* g++.dg/gomp/declare-variant-class-2.C: New.
+	* g++.dg/gomp/metadirective-template-1.C: New.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	* c-c++-common/gomp/declare-variant-2.c: Adjust expected output for C.
+	* gcc.dg/gomp/metadirective-1.c: New.
+
+2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-error.c: New test.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118214
+	* g++.dg/cpp/embed-17.C: New test.
+	* g++.dg/cpp0x/pr118214.C: New test.
+
+2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/118451
+	* gcc.dg/vect/vect-switch-search-line-fast.c: Add early_break guards.
+
+2025-01-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc-gomp/nesting-1.c: Extend OpenACC 'serial'
+	testing.
+	* c-c++-common/goacc-gomp/nesting-fail-1.c: Likewise.
+	* c-c++-common/goacc/Wparentheses-1.c: Likewise.
+	* c-c++-common/goacc/builtin-goacc-parlevel-id-size.c: Likewise.
+	* c-c++-common/goacc/combined-directives-2.c: Likewise.
+	* c-c++-common/goacc/combined-directives-3.c: Likewise.
+	* c-c++-common/goacc/combined-directives.c: Likewise.
+	* c-c++-common/goacc/combined-reduction.c: Likewise.
+	* c-c++-common/goacc/data-clause-duplicate-1.c: Likewise.
+	* c-c++-common/goacc/default-1.c: Likewise.
+	* c-c++-common/goacc/default-2.c: Likewise.
+	* c-c++-common/goacc/default-3.c: Likewise.
+	* c-c++-common/goacc/default-4.c: Likewise.
+	* c-c++-common/goacc/default-5.c: Likewise.
+	* c-c++-common/goacc/if-clause-2.c: Likewise.
+	* c-c++-common/goacc/kernels-1.c: Likewise.
+	* c-c++-common/goacc/loop-1.c: Likewise.
+	* c-c++-common/goacc/loop-clauses.c: Likewise.
+	* c-c++-common/goacc/nesting-1.c: Likewise.
+	* c-c++-common/goacc/nesting-data-1.c: Likewise.
+	* c-c++-common/goacc/nesting-fail-1.c: Likewise.
+	* c-c++-common/goacc/parallel-1.c: Likewise.
+	* c-c++-common/goacc/private-reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-promotions.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/sb-1.c: Likewise.
+	* c-c++-common/goacc/sb-2.c: Likewise.
+	* c-c++-common/goacc/uninit-firstprivate-clause.c: Likewise.
+	* c-c++-common/goacc/uninit-if-clause.c: Likewise.
+	* c-c++-common/goacc/update-if_present-2.c: Likewise.
+	* g++.dg/goacc/template.C: Likewise.
+	* gfortran.dg/goacc/array-reduction.f90: Likewise.
+	* gfortran.dg/goacc/assumed.f95: Likewise.
+	* gfortran.dg/goacc/branch.f95: Likewise.
+	* gfortran.dg/goacc/coarray.f95: Likewise.
+	* gfortran.dg/goacc/coarray_2.f90: Likewise.
+	* gfortran.dg/goacc/combined-directives-3.f90: Likewise.
+	* gfortran.dg/goacc/combined-directives.f90: Likewise.
+	* gfortran.dg/goacc/common-block-1.f90: Likewise.
+	* gfortran.dg/goacc/common-block-2.f90: Likewise.
+	* gfortran.dg/goacc/common-block-3.f90: Likewise.
+	* gfortran.dg/goacc/cray-2.f95: Likewise.
+	* gfortran.dg/goacc/cray.f95: Likewise.
+	* gfortran.dg/goacc/critical.f95: Likewise.
+	* gfortran.dg/goacc/data-clauses.f95: Likewise.
+	* gfortran.dg/goacc/default-1.f95: Likewise.
+	* gfortran.dg/goacc/default-2.f: Likewise.
+	* gfortran.dg/goacc/default-3.f95: Likewise.
+	* gfortran.dg/goacc/default-4.f: Likewise.
+	* gfortran.dg/goacc/default-5.f: Likewise.
+	* gfortran.dg/goacc/default_none.f95: Likewise.
+	* gfortran.dg/goacc/derived-types.f90: Likewise.
+	* gfortran.dg/goacc/firstprivate-1.f95: Likewise.
+	* gfortran.dg/goacc/gang-static.f95: Likewise.
+	* gfortran.dg/goacc/if.f95: Likewise.
+	* gfortran.dg/goacc/list.f95: Likewise.
+	* gfortran.dg/goacc/literal.f95: Likewise.
+	* gfortran.dg/goacc/loop-1-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-parallel-3.f95: Likewise.
+	* gfortran.dg/goacc/loop-3-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-3.f95: Likewise.
+	* gfortran.dg/goacc/multi-clause.f90: Likewise.
+	* gfortran.dg/goacc/nested-parallelism.f90: Likewise.
+	* gfortran.dg/goacc/parameter.f95: Likewise.
+	* gfortran.dg/goacc/pr71704.f90: Likewise.
+	* gfortran.dg/goacc/private-3.f95: Likewise.
+	* gfortran.dg/goacc/pure-elemental-procedures.f95: Likewise.
+	* gfortran.dg/goacc/reduction-2.f95: Likewise.
+	* gfortran.dg/goacc/reduction-3.f95: Likewise.
+	* gfortran.dg/goacc/reduction-promotions.f90: Likewise.
+	* gfortran.dg/goacc/reduction.f95: Likewise.
+	* gfortran.dg/goacc/routine-3.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-2.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+	* gfortran.dg/goacc/sie.f95: Likewise.
+	* gfortran.dg/goacc/subarrays.f95: Likewise.
+	* gfortran.dg/goacc/uninit-firstprivate-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-if-clause.f95: Likewise.
+	* gfortran.dg/goacc/update-if_present-2.f90: Likewise.
+	* c-c++-common/goacc/loop-3.c: Rename to...
+	* c-c++-common/goacc/loop-3-parallel.c: ... this.
+	* gfortran.dg/goacc/parallel-kernels-clauses.f95: Rename to...
+	* gfortran.dg/goacc/compute_construct-clauses.f95: ... this.
+	Extend OpenACC 'serial' testing.
+	* gfortran.dg/goacc/parallel-kernels-regions.f95: Rename to...
+	* gfortran.dg/goacc/nesting-fail-1.f95: ... this.  Extend OpenACC
+	'serial' testing.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-1.f:
+	Rename to...
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-1-parallel.f:
+	... this.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f:
+	Rename to...
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2-parallel.f:
+	... this.
+	* c-c++-common/goacc/loop-2-serial.c: New.
+	* c-c++-common/goacc/loop-3-serial.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-serial.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-serial.c: Likewise.
+	* c-c++-common/goacc/serial-1.c: Likewise.
+	* gfortran.dg/goacc/loop-2-serial-3.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-serial-nested.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-serial-tile.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-serial.f95: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-serial.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-serial.f90: Likewise.
+	* gfortran.dg/goacc/private-explicit-serial-1.f95: Likewise.
+	* gfortran.dg/goacc/private-predetermined-serial-1.f95: Likewise.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-1-serial.f:
+	Likewise.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2-serial.f:
+	Likewise.
+	* gfortran.dg/goacc/serial-tree.f95: Likewise.
+
+2025-01-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/assumed.f95: Use relative line numbers for a
+	few DejaGnu directives.
+	* gfortran.dg/goacc/list.f95: Likewise.
+	* gfortran.dg/goacc/loop-1-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+	* gfortran.dg/goacc/reduction.f95: Likewise.
+
+2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118441
+	* gfortran.dg/gomp/intrinsic_pack_7.f90: New test.
+
+2025-01-16  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/xsfvector/sf_vfnrclip_x_f_qf.c: Add vsetivli checking.
+	* gcc.target/riscv/rvv/xsfvector/sf_vfnrclip_xu_f_qf.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmacc_2x8x2.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmacc_4x8x4.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccsu_2x8x2.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccsu_4x8x4.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccu_2x8x2.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccu_4x8x4.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccus_2x8x2.c: Ditto.
+	* gcc.target/riscv/rvv/xsfvector/sf_vqmaccus_4x8x4.c: Ditto.
+
+2025-01-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR tree-optimization/118487
+	* gcc.dg/tree-ssa/pr118487.c: New test.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR tree-optimization/115494
+	* gcc.dg/torture/pr115494.c: New testcase.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118430
+	* c-c++-common/musttail14.c: Expect lhs on the must tail call calls.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118430
+	* c-c++-common/musttail14.c: New test.
+	* c-c++-common/pr118430.c: New test.
+
+2025-01-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr118489.c: New test.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115895
+	* gcc.target/i386/vect-pr115895.c: New testcase.
+
 2025-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/102705

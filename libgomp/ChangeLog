@@ -1,3 +1,26 @@
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/metadirective-1.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-2.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-3.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-4.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-5.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-late-1.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-late-2.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-target-device.c: New.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* testsuite/libgomp.c++/metadirective-template-1.C: New.
+	* testsuite/libgomp.c++/metadirective-template-2.C: New.
+	* testsuite/libgomp.c++/metadirective-template-3.C: New.
+
 2025-01-13  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* testsuite/libgomp.fortran/dispatch-1.f90: Add missing target

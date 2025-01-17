@@ -1,3 +1,120 @@
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105440
+	* constexpr.cc (cxx_eval_call_expression): If any RESULT_DECLs get
+	replaced in the call result, try further evaluating the result.
+
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107522
+	* constraint.cc (get_normalized_constraints_from_decl): Use the
+	most general template for an explicit specialization of a
+	member template.
+
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118454
+	* cp-tree.h (STF_KEEP_INJ_CLASS_NAME): Define.
+	* pt.cc (iterative_hash_template_argument) <case tcc_type>:
+	Clarify comment for when we'd see an alias template
+	specialization here.
+	(coerce_template_parms): Strip typedefs (except for
+	injected-class-names) in the pack expansion early break cases
+	that defer coercion.
+	* tree.cc (strip_typedefs): Don't strip an injected-class-name
+	if STF_KEEP_INJ_CLASS_NAME is set.
+
+2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116417
+	* cp-tree.h (finish_pseudo_destructor_expr): Add complain
+	parameter.
+	* parser.cc (cp_parser_postfix_dot_deref_expression): Pass
+	complain=tf_warning_or_error to finish_pseudo_destructor_expr.
+	* pt.cc (tsubst_expr): Pass complain to
+	finish_pseudo_destructor_expr.
+	* semantics.cc (finish_pseudo_destructor_expr): Check complain
+	before emitting a diagnostic.
+
+2025-01-16  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117775
+	* decl.cc (fold_sizeof_expr): Make sure the folded result has
+	type size_type_node.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* parser.cc (cp_parser_omp_assumption_clauses): Give a more specific
+	error message for invalid directives vs unknown names.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* decl2.cc (cplus_decl_attributes): Don't add "omp declare target
+	block".
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* cp-tree.h (struct saved_scope): Add new field
+	x_processing_omp_trait_property_expr.
+	(processing_omp_trait_property_expr): New.
+	* parser.cc (cp_parser_skip_to_end_of_block_or_statement): Add
+	metadirective_p	parameter and handle skipping over the parentheses
+	in a "for" statement.
+	(struct omp_metadirective_parse_data): New.
+	(mangle_metadirective_region_label): New.
+	(cp_parser_label_for_labeled_statement): Mangle label names in a
+	metadirective body.
+	(cp_parser_jump_statement): Likewise.
+	(cp_parser_omp_context_selector): Allow arbitrary expressions in
+	device_num and condition properties.
+	(cp_parser_omp_assumption_clauses): Handle C_OMP_DIR_META.
+	(analyze_metadirective_body): New.
+	(cp_parser_omp_metadirective): New.
+	(cp_parser_pragma): Handle PRAGMA_OMP_METADIRECTIVE.
+	* parser.h (struct cp_parser): Add omp_metadirective_state field.
+	* pt.cc (tsubst_omp_context_selector): New.
+	(tsubst_stmt): Handle OMP_METADIRECTIVE.
+	* semantics.cc (finish_id_expression_1): Don't diagnose use of
+	parameter outside function body in dynamic selector expressions here.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118214
+	* decl.cc (struct reshape_iter): Add raw_idx member.
+	(cp_maybe_split_raw_data): Add inc_cur parameter, set *inc_cur,
+	don't modify original CONSTRUCTOR, use d->raw_idx to track index
+	into a RAW_DATA_CST d->cur->value.
+	(consume_init): Adjust cp_maybe_split_raw_data caller, increment
+	d->cur when cur_inc is true.
+	(reshape_init_array_1): Don't modify original CONSTRUCTOR when
+	handling RAW_DATA_CST d->cur->value and !reuse, instead use
+	d->raw_idx to track index into RAW_DATA_CST.
+	(reshape_single_init): Initialize iter.raw_idx.
+	(reshape_init_class): Adjust for introduction of d->raw_idx,
+	adjust cp_maybe_split_raw_data caller, do d->cur++ if inc_cur
+	rather than when it returns non-NULL.
+	(reshape_init_r): Check for has_designator_problem for second
+	half of _Complex earlier, also check for
+	error_operand_p (d->cur->value).  Use consume_init instead of
+	cp_maybe_split_raw_data with later conditional d->cur++.
+	(reshape_init): Initialize d.raw_idx.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_lambda_declarator_opt,
+	cp_parser_statement, cp_parser_selection_statement,
+	cp_parser_jump_statement): Use -std=c++23 and -std=gnu++23
+	in diagnostics rather than -std=c++2b and -std=gnu++2b.
+	* semantics.cc (finish_compound_literal): Likewise.
+	* typeck2.cc (build_functional_cast_1): Likewise.
+	* decl.cc (start_decl): Likewise.
+	* constexpr.cc (ensure_literal_type_for_constexpr_object,
+	potential_constant_expression_1): Likewise.
+
 2025-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118390

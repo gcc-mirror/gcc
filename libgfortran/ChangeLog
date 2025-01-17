@@ -1,3 +1,9 @@
+2025-01-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/118406
+	* runtime/string.c (gfc_itoa): Handle unsigned integers larger than
+	(10^19 * 2^64).
+
 
 Copyright (C) 2025 Free Software Foundation, Inc.
 

@@ -1,3 +1,30 @@
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-attribs.cc (c_common_gnu_attributes): Delete "omp declare
+	target block".
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* c-common.h (enum c_omp_directive_kind): Add C_OMP_DIR_META.
+	(c_omp_expand_variant_construct): Declare.
+	* c-gimplify.cc: Include omp-general.h.
+	(genericize_omp_metadirective_stmt): New.
+	(c_genericize_control_stmt): Add case for OMP_METADIRECTIVE.
+	* c-omp.cc (c_omp_directives): Fix entries for metadirective.
+	(c_omp_expand_variant_construct_r): New.
+	(c_omp_expand_variant_construct): New.
+	* c-pragma.cc (omp_pragmas): Add metadirective.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_METADIRECTIVE.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (interpret_float): Use -std=c++23 and -std=gnu++23
+	in diagnostics rather than -std=c++2b and -std=gnu++2b.
+
 2025-01-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR middle-end/118303

@@ -1,3 +1,34 @@
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_assumption_clauses): Give a more specific
+	error message for invalid directives vs unknown names.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-decl.cc (c_decl_attributes): Don't add "omp declare target
+	block".
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* c-parser.cc (struct c_parser): Add omp_metadirective_state field.
+	(c_parser_skip_to_end_of_block_or_statement): Add metadirective_p
+	parameter and handle skipping over the parentheses in a "for"
+	statement.
+	(struct omp_metadirective_parse_data): New.
+	(mangle_metadirective_region_label): New.
+	(c_parser_label): Mangle label names in a metadirective body.
+	(c_parser_statement_after_labels): Likewise.
+	(c_parser_pragma): Handle PRAGMA_OMP_METADIRECTIVE.
+	(c_parser_omp_context_selector): Allow arbitrary expressions in
+	device_num and condition properties.
+	(c_parser_omp_assumption_clauses): Handle C_OMP_DIR_META.
+	(analyze_metadirective_body): New.
+	(c_parser_omp_metadirective): New.
+
 2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

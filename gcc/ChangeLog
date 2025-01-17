@@ -1,3 +1,166 @@
+2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113257
+	* config/aarch64/driver-aarch64.cc (get_cpu_from_id, DEFAULT_CPU): New.
+	(host_detect_local_cpu): Use it.
+
+2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/110901
+	* config/aarch64/aarch64.h (MCPU_TO_MARCH_SPEC): Don't override if
+	march is set.
+
+2025-01-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/1180167
+	* lra-constraints.cc (process_alt_operands): Use operand mode not
+	subreg reg mode.  Add and improve debugging prints for updating
+	losers.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_complete_construct_context): Check
+	"omp declare target" attribute, not "omp declare target block".
+
+2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Return
+	const0_rtx when there is an error.
+
+2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Use correct
+	array size for the loop limit.
+	* config/rs6000/rs6000-builtins.def: Fix field size for PMASK operand.
+
+2025-01-16  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* config/riscv/vector.md: New attr set.
+
+2025-01-16  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/genrvv-type-indexer.cc (expand_floattype): New func.
+	(main): New type.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_XFQF_OPS): New def.
+	(vint8mf8_t): Ditto.
+	(vint8mf4_t): Ditto.
+	(vint8mf2_t): Ditto.
+	(vint8m1_t): Ditto.
+	(vint8m2_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_XFQF_OPS): Ditto.
+	(rvv_arg_type_info::get_xfqf_float_type): Ditto.
+	* config/riscv/riscv-vector-builtins.def (xfqf_vector): Ditto.
+	(xfqf_float): Ditto.
+	* config/riscv/riscv-vector-builtins.h
+	(struct rvv_arg_type_info): New function prototype.
+	* config/riscv/sifive-vector.md: Update iterator.
+	* config/riscv/vector-iterators.md: Ditto.
+
+2025-01-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR tree-optimization/118487
+	* tree-ssa-forwprop.cc (recognise_vec_perm_simplify_seq):
+	Ensure that shuffle masks are VECTOR_CSTs.
+
+2025-01-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* tree-ssa-forwprop.cc (recognise_vec_perm_simplify_seq):
+	Eliminate redundant calls to to_constant().
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR tree-optimization/115494
+	* tree-ssa-pre.cc (phi_translate_1): Always generate a
+	representative for translated dependent expressions.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118430
+	* tree-ssa-propagate.cc (may_propagate_copy): Return false if dest
+	is lhs of an [[gnu::musttail]] call.
+	(substitute_and_fold_dom_walker::before_dom_children): Formatting fix.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118430
+	* tree-tailcall.cc: Include gimple-range.h, alloc-pool.h, sreal.h,
+	symbol-summary.h, ipa-cp.h and ipa-prop.h.
+	(find_tail_calls): If ass_var is NULL and ret_var is not, check if
+	IPA-VRP has not found singleton return range for it.  In that case,
+	don't punt if ret_var is the only value in that range.  Adjust the
+	maybe_error_musttail message otherwise to diagnose different value
+	being returned from the caller and callee rather than using return
+	slot.  Formatting fixes.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (Using Assembly Language with C): Add Asm constexprs
+	to @menu.
+	(Basic Asm): Move @node asm constexprs before Asm Labels, rename to
+	Asm constexprs, change wording so that it is clearer that the constant
+	expression actually must not return a string literal, just some specific
+	container and other wording tweaks.  Only talk about top-level for basic
+	asms in this @node, move restrictions on top-level extended asms to ...
+	(Extended Asm): ... here.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/118400
+	* vec.h (vec<T, va_heap, vl_ptr>::release): Call m_vec->truncate (0)
+	instead of clearing m_vec->m_vecpfx.m_num.
+
+2025-01-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/118489
+	* config/i386/sse.md (VF1_AVX512BW): Fix typo.
+
+2025-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115895
+	* tree-vect-stmts.cc (get_group_load_store_type): When we
+	might overrun because the group size is not a multiple of the
+	vector size we cannot use loop masking since that does not
+	implement the required load shortening.
+
+2025-01-16  Keith Packard  <keithp@keithp.com>
+
+	* config/lm32/lm32.cc: Add several #includes.
+	(va_list_type): New.
+	(lm32_build_va_list): New function.
+	(lm32_builtin_va_start): Likewise.
+	(lm32_sd_gimplify_va_arg_expr): Likewise.
+	(lm32_gimplify_va_arg_expr): Likewise.
+
+2025-01-16  Keith Packard  <keithp@keithp.com>
+
+	* config/lm32/lm32.cc (setup_incoming_varargs): Adjust the
+	conditionals so that pretend_size is always computed, even
+	if no_rtl is set.
+
+2025-01-16  Keith Packard  <keithp@keithp.com>
+
+	* config/lm32/lm32.cc (lm32_setup_incoming_varargs): Skip last
+	named parameter when preparing to flush registers with unnamed
+	arguments to th stack.
+
+2025-01-16  Keith Packard  <keithp@keithp.com>
+
+	* config/lm32/lm32.cc (lm32_function_arg): Pass unnamed
+	arguments in registers too, just like named arguments.
+
+2025-01-16  Andi Kleen  <ak@gcc.gnu.org>
+
+	* config/i386/x86-tune-sched-core.cc: Fix incorrect comment.
+
+2025-01-16  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR gcov-profile/116743
+	* auto-profile.cc (afdo_annotate_cfg): Fix mismatch between the call graph node count
+	and the entry block count.
+
 2025-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/102705

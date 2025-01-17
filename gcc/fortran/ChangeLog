@@ -1,3 +1,37 @@
+2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118321
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Honor hidden
+	arguments for append_arg's need_device_ptr.
+
+2025-01-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118359
+	* dump-parse-tree.cc (show_external_symbol): New function.
+	(write_type): Add prototype, put in restrictions on what not to dump.
+	(has_cfi_cdesc): New function.
+	(need_iso_fortran_binding): New function.
+	(gfc_dump_c_prototypes): Adjust to take only a file output.  Add
+	"#include <ISO_Fortran_binding.h" if CFI_cdesc_t is found.
+	Traverse global namespaces to dump types and the globalsymol list
+	to dump external symbols.
+	(gfc_dump_external_c_prototypes): Traverse global namespaces.
+	(get_c_type_name): Handle CFI_cdesc_t.
+	(write_proc): Also pass array spec to get_c_type_name.
+	* gfortran.h (gfc_dump_c_prototypes): Adjust prototype.
+	* parse.cc (gfc_parse_file): Adjust call to gfc_dump_c_prototypes.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* openmp.cc (gfc_omp_absent_contains_clause): Use an Oxford comma
+	in the message.
+
+2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118441
+	* trans-intrinsic.cc (gfc_get_symbol_for_expr): Use
+	gfc_new_charlen for character-returning functions.
+
 2025-01-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/71884
