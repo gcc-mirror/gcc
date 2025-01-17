@@ -92,12 +92,13 @@ PostCond::postcond2(T x) post (x >= 0)  // { dg-error "a value parameter used in
 
 template <class T>
 void
-postcond3(T x) post(x >= 0)  // { dg-error "a value parameter used in a postcondition must be const" }
+postcond3(T x) post(x >= 0)
 { } 
 
 void postcond7()
 {
   PostCond p;
   p.postcond2 (2);
-  postcond3 (4);
+  postcond3 (4); // { dg-error "a value parameter used in a postcondition must be const" "" {target *-*-* } 63 }
+
 }
