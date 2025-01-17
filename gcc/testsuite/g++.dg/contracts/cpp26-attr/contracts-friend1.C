@@ -33,4 +33,4 @@ int main(int, char**) {
 // { dg-output "contract violation in function fn0 at .*.C:7: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function X::fns0 at .*.C:9: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function X::fns1 at .*.C:10: .*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function X::fns2 at .*.C:19: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function X::fns2 at .*.C:11: .*(\n|\r\n|\r)" }
