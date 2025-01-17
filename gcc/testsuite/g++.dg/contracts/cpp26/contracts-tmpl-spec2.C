@@ -359,9 +359,9 @@ int main(int, char**)
 // { dg-output {contract violation in function G3<double, double>::f at .*:125: s > 0(\n|\r\n|\r)} }
 // { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
 // { dg-output {G3 general T S(\n|\r\n|\r)} }
-// { dg-output {contract violation in function G3<int, int>::f at .*:139: t > 1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, int>::f at .*:134: t > 1(\n|\r\n|\r)} }
 // { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
-// { dg-output {contract violation in function G3<int, int>::f at .*:140: s > 1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, int>::f at .*:134: s > 1(\n|\r\n|\r)} }
 // { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
 // { dg-output {G3 partial int S(\n|\r\n|\r)} }
 // { dg-output {contract violation in function G3<int, double>::f at .*:147: t > 2(\n|\r\n|\r)} }
@@ -374,9 +374,9 @@ int main(int, char**)
 // { dg-output {contract violation in function G3<char, char>::f at .*:125: s > 0(\n|\r\n|\r)} }
 // { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
 // { dg-output {G3 general T S(\n|\r\n|\r)} }
-// { dg-output {contract violation in function G3<int, char>::f at .*:139: t > 1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, char>::f at .*:134: t > 1(\n|\r\n|\r)} }
 // { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
-// { dg-output {contract violation in function G3<int, char>::f at .*:140: s > 1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, char>::f at .*:134: s > 1(\n|\r\n|\r)} }
 // { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
 // { dg-output {G3 partial int S(\n|\r\n|\r)} }
 // { dg-output {G3 full int C(\n|\r\n|\r)} }
