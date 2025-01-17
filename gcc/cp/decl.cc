@@ -8629,9 +8629,22 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  // Prepend adjust_args list to variant attributes
 	  tree adjust_args_list = TREE_CHAIN (TREE_CHAIN (chain));
 	  if (adjust_args_list != NULL_TREE)
-	    DECL_ATTRIBUTES (variant) = tree_cons (
-	      get_identifier ("omp declare variant variant args"),
-	      TREE_VALUE (adjust_args_list), DECL_ATTRIBUTES (variant));
+	    {
+	      if (DECL_NONSTATIC_MEMBER_P (variant)
+		  && TREE_VALUE (adjust_args_list))
+		{
+		  /* Shift arg position for the added 'this' pointer.  */
+		  /* Handle need_device_ptr  */
+		  for (tree t = TREE_PURPOSE (TREE_VALUE (adjust_args_list));
+		       t; t = TREE_CHAIN (t))
+		    TREE_VALUE (t)
+		      = build_int_cst (TREE_TYPE (t),
+				       tree_to_uhwi (TREE_VALUE (t)) + 1);
+		}
+	      DECL_ATTRIBUTES (variant) = tree_cons (
+		get_identifier ("omp declare variant variant args"),
+		TREE_VALUE (adjust_args_list), DECL_ATTRIBUTES (variant));
+	    }
 	}
     }
   else if (!processing_template_decl)
