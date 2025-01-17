@@ -12676,8 +12676,9 @@ vectorizable_condition (vec_info *vinfo,
 
   masked = !COMPARISON_CLASS_P (cond_expr);
   vec_cmp_type = truth_type_for (comp_vectype);
-
-  if (vec_cmp_type == NULL_TREE)
+  if (vec_cmp_type == NULL_TREE
+      || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype),
+		   TYPE_VECTOR_SUBPARTS (vec_cmp_type)))
     return false;
 
   cond_code = TREE_CODE (cond_expr);
