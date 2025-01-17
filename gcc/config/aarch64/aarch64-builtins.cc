@@ -5039,6 +5039,18 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
 					  LSHIFT_EXPR, args[0], args[1]);
 	break;
+      /* lower saturating add/sub neon builtins to gimple.  */
+      BUILTIN_VSDQ_I (BINOP, ssadd, 3, DEFAULT)
+      BUILTIN_VSDQ_I (BINOPU, usadd, 3, DEFAULT)
+	new_stmt = gimple_build_call_internal (IFN_SAT_ADD, 2, args[0], args[1]);
+	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+	break;
+      BUILTIN_VSDQ_I (BINOP, sssub, 3, DEFAULT)
+      BUILTIN_VSDQ_I (BINOPU, ussub, 3, DEFAULT)
+	new_stmt = gimple_build_call_internal (IFN_SAT_SUB, 2, args[0], args[1]);
+	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+	break;
+
       BUILTIN_VSDQ_I_DI (BINOP, sshl, 0, DEFAULT)
       BUILTIN_VSDQ_I_DI (BINOP_UUS, ushl, 0, DEFAULT)
 	{

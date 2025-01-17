@@ -71,10 +71,10 @@
   BUILTIN_VSDQ_I (BINOP, sqrshl, 0, DEFAULT)
   BUILTIN_VSDQ_I (BINOP_UUS, uqrshl, 0, DEFAULT)
   /* Implemented by aarch64_<su_optab><optab><mode>.  */
-  BUILTIN_VSDQ_I (BINOP, sqadd, 0, DEFAULT)
-  BUILTIN_VSDQ_I (BINOPU, uqadd, 0, DEFAULT)
-  BUILTIN_VSDQ_I (BINOP, sqsub, 0, DEFAULT)
-  BUILTIN_VSDQ_I (BINOPU, uqsub, 0, DEFAULT)
+  BUILTIN_VSDQ_I (BINOP, ssadd, 3, DEFAULT)
+  BUILTIN_VSDQ_I (BINOPU, usadd, 3, DEFAULT)
+  BUILTIN_VSDQ_I (BINOP, sssub, 3, DEFAULT)
+  BUILTIN_VSDQ_I (BINOPU, ussub, 3, DEFAULT)
   /* Implemented by aarch64_<sur>qadd<mode>.  */
   BUILTIN_VSDQ_I (BINOP_SSU, suqadd, 0, DEFAULT)
   BUILTIN_VSDQ_I (BINOP_UUS, usqadd, 0, DEFAULT)

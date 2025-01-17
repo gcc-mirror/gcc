@@ -95,6 +95,10 @@
 ;; integer modes; 64-bit scalar integer mode.
 (define_mode_iterator VSDQ_I_DI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI DI])
 
+;; Advanced SIMD and scalar, 64 & 128-bit container; 8 and 16-bit scalar
+;; integer modes.
+(define_mode_iterator VSDQ_I_QI_HI [VDQ_I HI QI])
+
 ;; Double vector modes.
 (define_mode_iterator VD [V8QI V4HI V4HF V2SI V2SF V4BF])
 

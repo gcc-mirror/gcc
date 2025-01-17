@@ -5162,13 +5162,212 @@
 )
 ;; <su>q<addsub>
 
-(define_insn "aarch64_<su_optab>q<addsub><mode><vczle><vczbe>"
-  [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
-	(BINQOPS:VSDQ_I (match_operand:VSDQ_I 1 "register_operand" "w")
-			(match_operand:VSDQ_I 2 "register_operand" "w")))]
+(define_insn "<su_optab>s<addsub><mode>3<vczle><vczbe>"
+  [(set (match_operand:VSDQ_I_QI_HI 0 "register_operand" "=w")
+	(BINQOPS:VSDQ_I_QI_HI
+	  (match_operand:VSDQ_I_QI_HI 1 "register_operand" "w")
+	  (match_operand:VSDQ_I_QI_HI 2 "register_operand" "w")))]
   "TARGET_SIMD"
   "<su_optab>q<addsub>\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "type" "neon_q<addsub><q>")]
+)
+
+(define_expand "<su_optab>s<addsub><mode>3"
+  [(parallel
+    [(set (match_operand:GPI 0 "register_operand")
+	  (SBINQOPS:GPI (match_operand:GPI 1 "register_operand")
+			(match_operand:GPI 2 "aarch64_plus_operand")))
+    (clobber (scratch:GPI))
+    (clobber (reg:CC CC_REGNUM))])]
+)
+
+;; Introducing a temporary GP reg allows signed saturating arithmetic with GPR
+;; operands to be calculated without the use of costly transfers to and from FP
+;; registers.  For example, saturating addition usually uses three FMOVs:
+;;
+;;   fmov	d0, x0
+;;   fmov	d1, x1
+;;   sqadd	d0, d0, d1
+;;   fmov	x0, d0
+;;
+;; Using a temporary register results in three cheaper instructions being used
+;; in place of the three FMOVs, which calculate the saturating limit accounting
+;; for the signedness of operand2:
+;;
+;;   asr	x2, x1, 63
+;;   adds	x0, x0, x1
+;;   eor	x2, x2, 0x8000000000000000
+;;   csinv	x0, x0, x2, vc
+;;
+;; If operand2 is a constant value, the temporary register can be used to store
+;; the saturating limit without the need for asr, xor to calculate said limit.
+
+(define_insn_and_split "aarch64_<su_optab>s<addsub><mode>3<vczle><vczbe>"
+  [(set (match_operand:GPI 0 "register_operand")
+	(SBINQOPS:GPI (match_operand:GPI 1 "register_operand")
+		      (match_operand:GPI 2 "aarch64_plus_operand")))
+    (clobber (match_scratch:GPI 3))
+    (clobber (reg:CC CC_REGNUM))]
+  ""
+  {@ [ cons: =0, 1 , 2   , =3 ; attrs: type       , arch , length ]
+     [ w       , w , w   , X  ; neon_q<addsub><q> , simd , 4      ] <su_optab>q<addsub>\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>
+     [ r       , r , JIr , &r ; *		  , *    , 8      ] #
+  }
+  "&& reload_completed && GP_REGNUM_P (REGNO (operands[0]))"
+  [(set (match_dup 0)
+	(if_then_else:GPI
+	  (match_dup 4)
+	  (match_dup 5)
+	  (match_dup 6)))]
+  {
+    if (REG_P (operands[2]))
+      {
+      rtx shift_constant = gen_int_mode (GET_MODE_BITSIZE (<MODE>mode) - 1,
+					 <MODE>mode);
+      auto limit = HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (<MODE>mode) - 1);
+      rtx limit_constant = gen_int_mode (limit, <MODE>mode);
+      emit_insn (gen_ashr<mode>3 (operands[3], operands[2], shift_constant));
+      emit_insn (gen_xor<mode>3 (operands[3], operands[3], limit_constant));
+
+      switch (<CODE>)
+	{
+	case SS_MINUS:
+	  emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1],
+					      operands[2]));
+	break;
+	case SS_PLUS:
+	  emit_insn (gen_add<mode>3_compare0 (operands[0], operands[1],
+					      operands[2]));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      rtx ccin = gen_rtx_REG (E_CC_Vmode, CC_REGNUM);
+      switch (<CODE>)
+	{
+	case SS_PLUS:
+	  operands[4] = gen_rtx_NE (<MODE>mode, ccin, const0_rtx);
+	  operands[5] = gen_rtx_NOT (<MODE>mode, operands[3]);
+	  operands[6] = operands[0];
+	  break;
+	case SS_MINUS:
+	  operands[4] = gen_rtx_EQ (<MODE>mode, ccin, const0_rtx);
+	  operands[5] = operands[0];
+	  operands[6] = operands[3];
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      }
+    else
+      {
+	auto imm = INTVAL (operands[2]);
+	rtx neg_imm = gen_int_mode (-imm, <MODE>mode);
+	wide_int limit;
+
+	switch (<CODE>)
+	  {
+	  case SS_MINUS:
+	    emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
+						    operands[2], neg_imm));
+	    limit = imm >= 0 ? wi::min_value (<MODE>mode, SIGNED)
+			     : wi::max_value (<MODE>mode, SIGNED);
+	    break;
+	  case SS_PLUS:
+	    emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
+						    neg_imm, operands[2]));
+	    limit = imm >= 0 ? wi::max_value (<MODE>mode, SIGNED)
+			     : wi::min_value (<MODE>mode, SIGNED);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+
+      rtx sat_limit = immed_wide_int_const (limit, <MODE>mode);
+      emit_insn (gen_rtx_SET (operands[3], sat_limit));
+
+      rtx ccin = gen_rtx_REG (E_CC_Vmode, CC_REGNUM);
+      operands[4] = gen_rtx_EQ (<MODE>mode, ccin, const0_rtx);
+      operands[5] = operands[0];
+      operands[6] = operands[3];
+      }
+  }
+)
+
+;; Unsigned saturating arithmetic with GPR operands can be optimised similarly
+;; to the signed case, albeit without the need for a temporary register as the
+;; saturating limit can be inferred from the <addsub> code.  This applies only
+;; to SImode and DImode.
+
+(define_insn_and_split "<su_optab>s<addsub><mode>3<vczle><vczbe>"
+  [(set (match_operand:GPI 0 "register_operand")
+	(UBINQOPS:GPI (match_operand:GPI 1 "register_operand")
+		      (match_operand:GPI 2 "aarch64_plus_operand")))
+    (clobber (reg:CC CC_REGNUM))]
+  ""
+  {@ [ cons: =0, 1 , 2   ; attrs: type       , arch , length ]
+     [ w       , w , w   ; neon_q<addsub><q> , simd , 4      ] <su_optab>q<addsub>\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>
+     [ r       , r , JIr ; *		     , *    , 8      ] #
+  }
+  "&& reload_completed && GP_REGNUM_P (REGNO (operands[0]))"
+  [(set (match_dup 0)
+	(if_then_else:GPI
+	  (match_dup 3)
+	  (match_dup 0)
+	  (match_dup 4)))]
+  {
+
+    if (REG_P (operands[2]))
+      {
+	switch (<CODE>)
+	  {
+	  case US_MINUS:
+	    emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1],
+						operands[2]));
+	    break;
+	  case US_PLUS:
+	    emit_insn (gen_add<mode>3_compare0 (operands[0], operands[1],
+						operands[2]));
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
+    else
+      {
+	auto imm = UINTVAL (operands[2]);
+	rtx neg_imm = gen_int_mode (-imm, <MODE>mode);
+	switch (<CODE>)
+	  {
+	  case US_MINUS:
+	    emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
+						    operands[2], neg_imm));
+	    break;
+	  case US_PLUS:
+	    emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
+						    neg_imm, operands[2]));
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
+
+    rtx ccin = gen_rtx_REG (CCmode, CC_REGNUM);
+    switch (<CODE>)
+      {
+      case US_PLUS:
+	operands[3] = gen_rtx_LTU (<MODE>mode, ccin, const0_rtx);
+	operands[4] = gen_int_mode (-1, <MODE>mode);
+	break;
+      case US_MINUS:
+	operands[3] = gen_rtx_GEU (<MODE>mode, ccin, const0_rtx);
+	operands[4] = const0_rtx;
+	break;
+      default:
+	gcc_unreachable ();
+      }
+  }
 )
 
 ;; suqadd and usqadd
