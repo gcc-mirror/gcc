@@ -7,4 +7,4 @@ const char *p =
 /* { dg-error "makes pointer from integer without a cast" "" { target c } .-2 } */
 /* { dg-error "expected identifier" "" { target c } .-3 } */
 /* { dg-error "invalid conversion" "" { target c++ } .-4 } */
-/* { dg-error "expected unqualified-id before numeric constant" "" { target c++ } .-5 } */
+/* { dg-error "expected unqualified-id before (?:numeric constant|'#embed')" "" { target c++ } .-5 } */
