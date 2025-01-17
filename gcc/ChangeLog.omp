@@ -1,6 +1,12 @@
 2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-01-20  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS): Don't add 'mptx=3.1' if
+	neither sm_30 nor sm_35 multilib variant is built.
+
+	Backported from trunk:
 	2024-09-24  Prathamesh Kulkarni  <prathameshk@nvidia.com>
 		    Thomas Schwinge  <tschwinge@baylibre.com>
 
