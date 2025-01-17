@@ -11902,8 +11902,13 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	{
 	  dump (dumper::MERGE)
 	    && dump ("Propagating deduced return type to %N", existing);
+	  FNDECL_USED_AUTO (e_inner) = true;
+	  DECL_SAVED_AUTO_RETURN_TYPE (existing) = TREE_TYPE (e_type);
 	  TREE_TYPE (existing) = change_return_type (TREE_TYPE (d_type), e_type);
 	}
+      else if (type_uses_auto (d_ret)
+	       && !same_type_p (TREE_TYPE (d_type), TREE_TYPE (e_type)))
+	goto mismatch;
     }
   else if (is_typedef)
     {
