@@ -36,7 +36,7 @@
 
 enum avr_builtin_id
   {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)  \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS) \
     AVR_BUILTIN_ ## NAME,
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -499,7 +499,7 @@ avr_cpu_cpp_builtins (cpp_reader *pfile)
   /* Define builtin macros so that the user can easily query whether or
      not a specific builtin is available. */
 
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)  \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS) \
   cpp_define (pfile, "__BUILTIN_AVR_" #NAME);
 #include "builtins.def"
 #undef DEF_BUILTIN

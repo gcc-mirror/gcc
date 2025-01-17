@@ -15291,7 +15291,7 @@ avr_out_insert_bits (rtx *op, int *plen)
 
 enum avr_builtin_id
   {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)  \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS) \
     AVR_BUILTIN_ ## NAME,
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -15314,7 +15314,7 @@ struct GTY(()) avr_builtin_description
 static GTY(()) avr_builtin_description
 avr_bdesc[AVR_BUILTIN_COUNT] =
   {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, LIBNAME)         \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, LIBNAME, ATTRS) \
     { (enum insn_code) CODE_FOR_ ## ICODE, N_ARGS, NULL_TREE },
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -15514,17 +15514,18 @@ avr_init_builtins (void)
   FX_FTYPE_INTX (ul);
   FX_FTYPE_INTX (ull);
 
+  tree attr_const = tree_cons (get_identifier ("const"), NULL, NULL);
 
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)                  \
-  {                                                                     \
-    int id = AVR_BUILTIN_ ## NAME;                                      \
-    const char *Name = "__builtin_avr_" #NAME;                          \
-    char *name = (char *) alloca (1 + strlen (Name));                   \
-                                                                        \
-    gcc_assert (id < AVR_BUILTIN_COUNT);                                \
-    avr_bdesc[id].fndecl                                                \
-      = add_builtin_function (avr_tolower (name, Name), TYPE, id,       \
-			      BUILT_IN_MD, LIBNAME, NULL_TREE);         \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS)		\
+  {									\
+    int id = AVR_BUILTIN_ ## NAME;					\
+    const char *Name = "__builtin_avr_" #NAME;				\
+    char *name = (char *) alloca (1 + strlen (Name));			\
+									\
+    gcc_assert (id < AVR_BUILTIN_COUNT);				\
+    avr_bdesc[id].fndecl						\
+      = add_builtin_function (avr_tolower (name, Name), TYPE, id,	\
+			      BUILT_IN_MD, LIBNAME, ATTRS);		\
   }
 #include "builtins.def"
 #undef DEF_BUILTIN
