@@ -17872,6 +17872,27 @@ package body Sem_Util is
       return Nkind (Spec_Decl) in N_Generic_Declaration;
    end Is_Generic_Declaration_Or_Body;
 
+   --------------------------
+   -- Is_In_Context_Clause --
+   --------------------------
+
+   function Is_In_Context_Clause (N : Node_Id) return Boolean is
+      Plist       : List_Id;
+      Parent_Node : Node_Id;
+
+   begin
+      if Is_List_Member (N) then
+         Plist := List_Containing (N);
+         Parent_Node := Parent (Plist);
+
+         return Present (Parent_Node)
+           and then Nkind (Parent_Node) = N_Compilation_Unit
+           and then Context_Items (Parent_Node) = Plist;
+      end if;
+
+      return False;
+   end Is_In_Context_Clause;
+
    ---------------------------
    -- Is_Independent_Object --
    ---------------------------

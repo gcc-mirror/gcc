@@ -123,15 +123,6 @@ package body Sem_Ch10 is
    --  Verify that a stub is declared immediately within a compilation unit,
    --  and not in an inner frame.
 
-   procedure Expand_With_Clause (Item : Node_Id; Nam : Node_Id; N : Node_Id);
-   --  When a child unit appears in a context clause, the implicit withs on
-   --  parents are made explicit, and with clauses are inserted in the context
-   --  clause before the one for the child. If a parent in the with_clause
-   --  is a renaming, the implicit with_clause is on the renaming whose name
-   --  is mentioned in the with_clause, and not on the package it renames.
-   --  N is the compilation unit whose list of context items receives the
-   --  implicit with_clauses.
-
    procedure Generate_Parent_References (N : Node_Id; P_Id : Entity_Id);
    --  Generate cross-reference information for the parents of child units
    --  and of subunits. N is a defining_program_unit_name, and P_Id is the
@@ -2955,6 +2946,7 @@ package body Sem_Ch10 is
 
       if Ada_Version >= Ada_95
         and then In_Predefined_Renaming (U)
+        and then Comes_From_Source (N)
       then
          if Restriction_Check_Required (No_Obsolescent_Features) then
             Check_Restriction (No_Obsolescent_Features, N);

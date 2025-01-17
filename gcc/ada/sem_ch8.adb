@@ -77,6 +77,7 @@ with Style;
 with Table;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
+with Uname;          use Uname;
 with Warnsw;         use Warnsw;
 
 package body Sem_Ch8 is
@@ -4300,6 +4301,44 @@ package body Sem_Ch8 is
 
       begin
          pragma Assert (Nkind (Clause) = N_Use_Package_Clause);
+
+         --  Perform "use implies with" expansion (when extensions are enabled)
+         --  by inserting an extra with clause since redundant clauses don't
+         --  really matter.
+
+         if All_Extensions_Allowed and then Is_In_Context_Clause (Clause) then
+            declare
+               Unum        : Unit_Number_Type;
+               With_Clause : constant Node_Id :=
+                 Make_With_Clause (Sloc (Clause),
+                   Name => New_Copy_Tree (Pack));
+            begin
+               --  Attempt to load the unit mentioned in the use clause
+
+               Unum := Load_Unit
+                         (Load_Name  => Get_Unit_Name (With_Clause),
+                          Required   => False,
+                          Subunit    => False,
+                          Error_Node => Clause,
+                          With_Node  => With_Clause);
+
+               --  Either we can't file the unit or the use clause is a
+               --  reference to a nested package - in that case just handle
+               --  the use clause normally.
+
+               if Unum /= No_Unit then
+
+                  Set_Library_Unit (With_Clause, Cunit (Unum));
+                  Set_Is_Implicit_With (With_Clause);
+
+                  Analyze (With_Clause);
+                  Expand_With_Clause
+                   (With_Clause, Name (With_Clause),
+                     Enclosing_Comp_Unit_Node (Clause));
+               end if;
+            end;
+         end if;
+
          Analyze (Pack);
 
          --  Verify that the package standard is not directly named in a

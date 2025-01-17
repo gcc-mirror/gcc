@@ -5117,10 +5117,6 @@ package body Sem_Prag is
       --  Determines if the placement of the current pragma is appropriate
       --  for a configuration pragma.
 
-      function Is_In_Context_Clause return Boolean;
-      --  Returns True if pragma appears within the context clause of a unit,
-      --  and False for any other placement (does not generate any messages).
-
       function Is_Static_String_Expression (Arg : Node_Id) return Boolean;
       --  Analyzes the argument, and determines if it is a static string
       --  expression, returns True if so, False if non-static or not String.
@@ -6014,7 +6010,7 @@ package body Sem_Prag is
 
          --  Check case of appearing within context clause
 
-         if not Is_Unused and then Is_In_Context_Clause then
+         if not Is_Unused and then Is_In_Context_Clause (N) then
 
             --  The arguments must all be units mentioned in a with clause in
             --  the same context clause. Note that Par.Prag already checked
@@ -8131,27 +8127,6 @@ package body Sem_Prag is
             return False;
          end if;
       end Is_Configuration_Pragma;
-
-      --------------------------
-      -- Is_In_Context_Clause --
-      --------------------------
-
-      function Is_In_Context_Clause return Boolean is
-         Plist       : List_Id;
-         Parent_Node : Node_Id;
-
-      begin
-         if Is_List_Member (N) then
-            Plist := List_Containing (N);
-            Parent_Node := Parent (Plist);
-
-            return Present (Parent_Node)
-              and then Nkind (Parent_Node) = N_Compilation_Unit
-              and then Context_Items (Parent_Node) = Plist;
-         end if;
-
-         return False;
-      end Is_In_Context_Clause;
 
       ---------------------------------
       -- Is_Static_String_Expression --
@@ -16876,7 +16851,7 @@ package body Sem_Prag is
          begin
             --  Pragma must be in context items list of a compilation unit
 
-            if not Is_In_Context_Clause then
+            if not Is_In_Context_Clause (N) then
                Pragma_Misplaced;
             end if;
 
@@ -16972,7 +16947,7 @@ package body Sem_Prag is
 
             --  Pragma must be in context items list of a compilation unit
 
-            if not Is_In_Context_Clause then
+            if not Is_In_Context_Clause (N) then
                Pragma_Misplaced;
             end if;
 
