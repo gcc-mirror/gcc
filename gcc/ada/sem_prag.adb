@@ -2642,14 +2642,16 @@ package body Sem_Prag is
             end if;
 
             --  Check the exit kind. It shall be either an exception or the
-            --  identifiers Normal_Return or Any_Exception.
+            --  identifiers Normal_Return, Exception_Raised, or Program_Exit.
 
             if Nkind (Exit_Kind) = N_Identifier then
                if Chars (Exit_Kind) not in Name_Normal_Return
                                          | Name_Exception_Raised
+                                         | Name_Program_Exit
                then
                   Error_Msg_N
-                    ("exit kind should be Normal_Return or Exception_Raised",
+                    ("exit kind should be Normal_Return, Exception_Raised, " &
+                       "or Program_Exit",
                      Exit_Kind);
                end if;
 
@@ -17438,6 +17440,7 @@ package body Sem_Prag is
          --
          --    EXIT_KIND ::=
          --      Normal_Return
+         --    | Program_Exit
          --    | Exception_Raised
          --    | (Exception_Raised => exception_name)
          --

@@ -1940,7 +1940,8 @@ Syntax:
   EXIT_CASE      ::= GUARD => EXIT_KIND
   EXIT_KIND      ::= Normal_Return
                    | Exception_Raised
-		   | (Exception_Raised => exception_name)
+                   | (Exception_Raised => exception_name)
+                   | Program_Exit
   GUARD          ::= Boolean_expression
 
 For the semantics of this aspect, see the SPARK 2014 Reference Manual, section
