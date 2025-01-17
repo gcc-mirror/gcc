@@ -70,7 +70,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					       _Dur>& __atime) noexcept
       {
 	using __w_dur = typename __wait_clock_t::duration;
-	return chrono::ceil<__w_dur>(__atime);
+	if constexpr (is_same_v<__w_dur, _Dur>)
+	  return __atime;
+	else
+	  return chrono::ceil<__w_dur>(__atime);
       }
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
@@ -222,22 +225,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __wait_until(const __platform_wait_t* __addr, const __wait_args_base& __args,
 		   const chrono::time_point<_Clock, _Dur>& __atime) noexcept
       {
-	if constexpr (is_same_v<__wait_clock_t, _Clock>)
-	  return __detail::__wait_until_impl(__addr, __args, __atime);
-	else
-	  {
-	    auto __res = __detail::__wait_until_impl(__addr, __args,
-						     __to_wait_clock(__atime));
-	    if (!__res.first)
-	      {
-		// We got a timeout when measured against __clock_t but
-		// we need to check against the caller-supplied clock
-		// to tell whether we should return a timeout.
-		if (_Clock::now() < __atime)
-		  __res.first = true;
-	      }
-	    return __res;
-	  }
+	auto __at = __detail::__to_wait_clock(__atime);
+	auto __res = __detail::__wait_until_impl(__addr, __args, __at);
+
+	if constexpr (!is_same_v<__wait_clock_t, _Clock>)
+	  if (!__res.first)
+	    {
+	      // We got a timeout when measured against __clock_t but
+	      // we need to check against the caller-supplied clock
+	      // to tell whether we should return a timeout.
+	      if (_Clock::now() < __atime)
+		__res.first = true;
+	    }
+	return __res;
       }
 
     // Returns {true, val} if wait ended before a timeout.
