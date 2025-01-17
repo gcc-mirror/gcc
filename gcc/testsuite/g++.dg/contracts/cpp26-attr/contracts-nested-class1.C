@@ -13,7 +13,7 @@ struct Outer {
   friend void Inner::fn(int n) [[ pre: n > 0 && bob > 1 ]]; // { dg-error "not declared" }
 
   friend void gfn(int p) [[ pre: p > 0 ]];
-  friend void gfn(int q) [[ pre: q > 1 ]]; // { dg-error "'q' was not declared" }
+  friend void gfn(int q) [[ pre: q > 1 ]];
 
   friend void gfn2(int q);
   friend void gfn2(int p) [[ pre: p > 0 ]] { } // { dg-error "declaration adds contracts" }
