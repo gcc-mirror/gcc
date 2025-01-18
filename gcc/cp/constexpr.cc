@@ -4155,12 +4155,17 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
       else if (TREE_CODE (cindex) == INTEGER_CST
 	       && compare_tree_int (cindex, end - 1) == 0)
 	{
-	  if (i < end)
-	    return i;
 	  tree value = (*elts)[end - 1].value;
-	  if (TREE_CODE (value) == RAW_DATA_CST
-	      && wi::to_offset (dindex) < (wi::to_offset (cindex)
-					   + RAW_DATA_LENGTH (value)))
+	  if (i < end)
+	    {
+	      if (i == end - 1 && TREE_CODE (value) == RAW_DATA_CST)
+		begin = end - 1;
+	      else
+		return i;
+	    }
+	  else if (TREE_CODE (value) == RAW_DATA_CST
+		   && wi::to_offset (dindex) < (wi::to_offset (cindex)
+						+ RAW_DATA_LENGTH (value)))
 	    begin = end - 1;
 	  else
 	    begin = end;
