@@ -37,7 +37,6 @@
 #include <bits/atomic_wait.h>
 
 #if __glibcxx_atomic_wait
-#include <bits/functional_hash.h>
 #include <bits/this_thread_sleep.h>
 #include <bits/chrono.h>
 
@@ -78,154 +77,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
 #define _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
-    // returns true if wait ended before timeout
-    bool
-    __platform_wait_until(const __platform_wait_t* __addr,
-			  __platform_wait_t __old,
-			  const __wait_clock_t::time_point& __atime) noexcept
-    {
-      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-      struct timespec __rt =
-	{
-	  static_cast<std::time_t>(__s.time_since_epoch().count()),
-	  static_cast<long>(__ns.count())
-	};
-
-      auto __e = syscall (SYS_futex, __addr,
-			  static_cast<int>(__futex_wait_flags::__wait_bitset_private),
-			  __old, &__rt, nullptr,
-			  static_cast<int>(__futex_wait_flags::__bitset_match_any));
-      if (__e)
-	{
-	  if (errno == ETIMEDOUT)
-	    return false;
-	  if (errno != EINTR && errno != EAGAIN)
-	    __throw_system_error(errno);
-	}
-      return true;
-    }
 #else
 // define _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT and implement __platform_wait_until
 // if there is a more efficient primitive supported by the platform
 // (e.g. __ulock_wait) which is better than pthread_cond_clockwait.
 #endif // ! HAVE_LINUX_FUTEX
 
-#ifdef _GLIBCXX_HAS_GTHREADS
-    // Returns true if wait ended before timeout.
-    inline bool
-    __cond_wait_until(__condvar& __cv, mutex& __mx,
-		      const __wait_clock_t::time_point& __atime)
-    {
-      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-      __gthread_time_t __ts =
-	{
-	  static_cast<std::time_t>(__s.time_since_epoch().count()),
-	  static_cast<long>(__ns.count())
-	};
-
-#ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
-      if constexpr (is_same_v<chrono::steady_clock, __wait_clock_t>)
-	__cv.wait_until(__mx, CLOCK_MONOTONIC, __ts);
-      else
-#endif
-	__cv.wait_until(__mx, __ts);
-      return __wait_clock_t::now() < __atime;
-    }
-#endif // _GLIBCXX_HAS_GTHREADS
-
-    inline __wait_result_type
-    __spin_until_impl(const __platform_wait_t* __addr,
-		      const __wait_args_base& __args,
-		      const __wait_clock_t::time_point& __deadline)
-    {
-      auto __t0 = __wait_clock_t::now();
-      using namespace literals::chrono_literals;
-
-      __platform_wait_t __val{};
-      auto __now = __wait_clock_t::now();
-      for (; __now < __deadline; __now = __wait_clock_t::now())
-	{
-	  auto __elapsed = __now - __t0;
-#ifndef _GLIBCXX_NO_SLEEP
-	  if (__elapsed > 128ms)
-	    this_thread::sleep_for(64ms);
-	  else if (__elapsed > 64us)
-	    this_thread::sleep_for(__elapsed / 2);
-	  else
-#endif
-	  if (__elapsed > 4us)
-	    __thread_yield();
-	  else if (auto __res = __detail::__spin_impl(__addr, __args); __res.first)
-	    return __res;
-
-	  __atomic_load(__addr, &__val, __args._M_order);
-	  if (__val != __args._M_old)
-	    return { true, __val };
-	}
-      return { false, __val };
-    }
-
-    inline __wait_result_type
-    __wait_until_impl(const void* __addr, const __wait_args_base& __a,
-		      const __wait_clock_t::time_point& __atime)
-    {
-      __wait_args_base __args = __a;
-      __waitable_state* __state = nullptr;
-      const __platform_wait_t* __wait_addr;
-      if (__args & __wait_flags::__proxy_wait)
-	{
-	  __state = &__waitable_state::_S_state_for(__addr);
-	  __wait_addr = &__state->_M_ver;
-	  __atomic_load(__wait_addr, &__args._M_old, __args._M_order);
-	}
-      else
-	__wait_addr = static_cast<const __platform_wait_t*>(__addr);
-
-      if (__args & __wait_flags::__do_spin)
-	{
-	  auto __res = __detail::__spin_until_impl(__wait_addr, __args, __atime);
-	  if (__res.first)
-	    return __res;
-	  if (__args & __wait_flags::__spin_only)
-	    return __res;
-	}
-
-      auto __tracker = __waitable_state::_S_track(__state, __args, __addr);
-
-#ifdef _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
-      if (__platform_wait_until(__wait_addr, __args._M_old, __atime))
-	return { true, __args._M_old };
-      else
-	return { false, __args._M_old };
-#else
-      __platform_wait_t __val{};
-      __atomic_load(__wait_addr, &__val, __args._M_order);
-      if (__val == __args._M_old)
-	{
-	  if (!__state)
-	    __state = &__waitable_state::_S_state_for(__addr);
-	  lock_guard<mutex> __l{ __state->_M_mtx };
-	  __atomic_load(__wait_addr, &__val, __args._M_order);
-	  if (__val == __args._M_old
-		&& __cond_wait_until(__state->_M_cv, __state->_M_mtx, __atime))
-	    return { true, __val };
-	}
-      return { false, __val };
-#endif
-    }
+    __wait_result_type
+    __wait_until_impl(const void* __addr, __wait_args_base& __args,
+		      const __wait_clock_t::duration& __atime);
 
     // Returns {true, val} if wait ended before a timeout.
     template<typename _Clock, typename _Dur>
       __wait_result_type
-      __wait_until(const void* __addr, const __wait_args_base& __args,
+      __wait_until(const void* __addr, __wait_args_base& __args,
 		   const chrono::time_point<_Clock, _Dur>& __atime) noexcept
       {
 	auto __at = __detail::__to_wait_clock(__atime);
-	auto __res = __detail::__wait_until_impl(__addr, __args, __at);
+	auto __res = __detail::__wait_until_impl(__addr, __args,
+						 __at.time_since_epoch());
 
 	if constexpr (!is_same_v<__wait_clock_t, _Clock>)
 	  if (!__res.first)
@@ -242,15 +112,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Returns {true, val} if wait ended before a timeout.
     template<typename _Rep, typename _Period>
       __wait_result_type
-      __wait_for(const void* __addr, const __wait_args_base& __args,
+      __wait_for(const void* __addr, __wait_args_base& __args,
 		 const chrono::duration<_Rep, _Period>& __rtime) noexcept
       {
 	if (!__rtime.count())
 	  {
-	    __wait_args_base __a = __args;
 	    // no rtime supplied, just spin a bit
-	    __a._M_flags |= __wait_flags::__do_spin | __wait_flags::__spin_only;
-	    return __detail::__wait_impl(__addr, __a);
+	    __args._M_flags |= __wait_flags::__do_spin | __wait_flags::__spin_only;
+	    return __detail::__wait_impl(__addr, __args);
 	  }
 
 	auto const __reltime = chrono::ceil<__wait_clock_t::duration>(__rtime);
@@ -270,14 +139,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __bare_wait };
-      _Tp __val = __vfn();
+      _Tp __val = __args._M_prep_for_wait_on(__addr, __vfn);
       while (!__pred(__val))
 	{
 	  auto __res = __detail::__wait_until(__addr, __args, __atime);
 	  if (!__res.first)
 	    // timed out
 	    return __res.first; // C++26 will also return last observed __val
-	  __val = __vfn();
+	  __val = __args._M_prep_for_wait_on(__addr, __vfn);
 	}
       return true; // C++26 will also return last observed __val
     }
@@ -298,15 +167,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _ValFn,
 	   typename _Clock, typename _Dur>
     bool
-    __atomic_wait_address_until_v(const _Tp* __addr, _Tp&& __old, _ValFn&& __vfn,
+    __atomic_wait_address_until_v(const _Tp* __addr, _Tp&& __old,
+				  _ValFn&& __vfn,
 				  const chrono::time_point<_Clock, _Dur>& __atime,
 				  bool __bare_wait = false) noexcept
     {
       auto __pfn = [&](const _Tp& __val) {
 	return !__detail::__atomic_eq(__old, __val);
       };
-      return __atomic_wait_address_until(__addr, __pfn, forward<_ValFn>(__vfn),
-					 __atime, __bare_wait);
+      return std::__atomic_wait_address_until(__addr, __pfn, __vfn, __atime,
+					      __bare_wait);
     }
 
   template<typename _Tp,
@@ -319,14 +189,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __bare_wait };
-      _Tp __val = __vfn();
+      _Tp __val = __args._M_prep_for_wait_on(__addr, __vfn);
       while (!__pred(__val))
 	{
 	  auto __res = __detail::__wait_for(__addr, __args, __rtime);
 	  if (!__res.first)
 	    // timed out
 	    return __res.first; // C++26 will also return last observed __val
-	  __val = __vfn();
+	  __val = __args._M_prep_for_wait_on(__addr, __vfn);
 	}
       return true; // C++26 will also return last observed __val
     }
