@@ -1,3 +1,23 @@
+2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118329
+	* config/avr/avr-modes.def: Add INT_N (PSI, 24).
+	* config/avr/avr.cc (avr_init_builtin_int24)
+	<__int24>: Remove definition.
+	<__uint24>: Adjust definition to INT_N interface.
+
+2025-01-17  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	Backported from master:
+	2025-01-16  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR gcov-profile/116743
+	* auto-profile.cc (afdo_annotate_cfg): Fix mismatch between the call graph node count
+	and the entry block count.
+
 2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:

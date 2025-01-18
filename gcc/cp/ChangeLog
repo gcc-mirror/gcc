@@ -1,3 +1,21 @@
+2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118147
+	* parser.cc (cp_parser_cache_defarg): Don't error when
+	CPP_PRAGMA_EOL.
+
+2025-01-17  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-01-16  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117775
+	* decl.cc (fold_sizeof_expr): Make sure the folded result has
+	type size_type_node.
+
 2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114630
