@@ -1,21 +1,18 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag10319.d(33): Error: `pure` function `D main` cannot call impure function `diag10319.foo`
-fail_compilation/diag10319.d(33): Error: `@safe` function `D main` cannot call `@system` function `diag10319.foo`
-fail_compilation/diag10319.d(22):        `diag10319.foo` is declared here
-fail_compilation/diag10319.d(34): Error: `pure` function `D main` cannot call impure function `diag10319.bar!int.bar`
-fail_compilation/diag10319.d(26):        which wasn't inferred `pure` because of:
-fail_compilation/diag10319.d(26):        `pure` function `diag10319.bar!int.bar` cannot access mutable static data `g`
-fail_compilation/diag10319.d(34): Error: `@safe` function `D main` cannot call `@system` function `diag10319.bar!int.bar`
-fail_compilation/diag10319.d(27):        which wasn't inferred `@safe` because of:
-fail_compilation/diag10319.d(27):        taking the address of stack-allocated local variable `x`
-fail_compilation/diag10319.d(24):        `diag10319.bar!int.bar` is declared here
-fail_compilation/diag10319.d(33): Error: function `diag10319.foo` is not `nothrow`
-fail_compilation/diag10319.d(34): Error: function `diag10319.bar!int.bar` is not `nothrow`
-fail_compilation/diag10319.d(28):        which wasn't inferred `nothrow` because of:
-fail_compilation/diag10319.d(28):        `object.Exception` is thrown but not caught
-fail_compilation/diag10319.d(31): Error: function `D main` may throw but is marked as `nothrow`
+fail_compilation/diag10319.d(30): Error: `pure` function `D main` cannot call impure function `diag10319.foo`
+fail_compilation/diag10319.d(30): Error: `@safe` function `D main` cannot call `@system` function `diag10319.foo`
+fail_compilation/diag10319.d(19):        `diag10319.foo` is declared here
+fail_compilation/diag10319.d(31): Error: `pure` function `D main` cannot call impure function `diag10319.bar!int.bar`
+fail_compilation/diag10319.d(23):        and accessing mutable static data `g` makes it fail to infer `pure`
+fail_compilation/diag10319.d(31): Error: `@safe` function `D main` cannot call `@system` function `diag10319.bar!int.bar`
+fail_compilation/diag10319.d(24):        and taking the address of stack-allocated local variable `x` makes it fail to infer `@safe`
+fail_compilation/diag10319.d(21):        `diag10319.bar!int.bar` is declared here
+fail_compilation/diag10319.d(30): Error: function `diag10319.foo` is not `nothrow`
+fail_compilation/diag10319.d(31): Error: function `diag10319.bar!int.bar` is not `nothrow`
+fail_compilation/diag10319.d(25):        and `object.Exception` being thrown but not caught makes it fail to infer `nothrow`
+fail_compilation/diag10319.d(28): Error: function `D main` may throw but is marked as `nothrow`
 ---
 */
 

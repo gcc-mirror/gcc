@@ -2169,13 +2169,13 @@ Allows to directly use range operations on lines of a file.
     private struct ByLineImpl(Char, Terminator)
     {
     private:
-        import std.typecons : RefCounted, RefCountedAutoInitialize;
+        import std.typecons : borrow, RefCountedAutoInitialize, SafeRefCounted;
 
         /* Ref-counting stops the source range's Impl
          * from getting out of sync after the range is copied, e.g.
          * when accessing range.front, then using std.range.take,
          * then accessing range.front again. */
-        alias PImpl = RefCounted!(Impl, RefCountedAutoInitialize.no);
+        alias PImpl = SafeRefCounted!(Impl, RefCountedAutoInitialize.no);
         PImpl impl;
 
         static if (isScalarType!Terminator)
@@ -2190,19 +2190,24 @@ Allows to directly use range operations on lines of a file.
             impl = PImpl(f, kt, terminator);
         }
 
-        @property bool empty()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property bool empty() @trusted
         {
-            return impl.refCountedPayload.empty;
+            // Using `ref` is actually necessary here.
+            return impl.borrow!((ref i) => i.empty);
         }
 
-        @property Char[] front()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property Char[] front() @trusted
         {
-            return impl.refCountedPayload.front;
+            // Using `ref` is likely optional here.
+            return impl.borrow!((ref i) => i.front);
         }
 
-        void popFront()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        void popFront() @trusted
         {
-            impl.refCountedPayload.popFront();
+            return impl.borrow!((ref i) => i.popFront());
         }
 
     private:
@@ -2216,6 +2221,7 @@ Allows to directly use range operations on lines of a file.
             KeepTerminator keepTerminator;
             bool haveLine;
 
+        @safe:
         public:
             this(File f, KeepTerminator kt, Terminator terminator)
             {
@@ -2375,7 +2381,7 @@ void main()
         return ByLineImpl!(Char, Terminator)(this, keepTerminator, terminator);
     }
 
-    @system unittest
+    @safe unittest
     {
         static import std.file;
         auto deleteme = testFilename();
@@ -2393,7 +2399,7 @@ void main()
     }
 
     // https://issues.dlang.org/show_bug.cgi?id=19980
-    @system unittest
+    @safe unittest
     {
         static import std.file;
         auto deleteme = testFilename();
@@ -2541,12 +2547,11 @@ $(REF readText, std,file)
             is(typeof(File("").byLineCopy!(char, char).front) == char[]));
     }
 
-    @system unittest
+    @safe unittest
     {
         import std.algorithm.comparison : equal;
         static import std.file;
 
-        scope(failure) printf("Failed test at line %d\n", __LINE__);
         auto deleteme = testFilename();
         std.file.write(deleteme, "");
         scope(success) std.file.remove(deleteme);
@@ -2620,7 +2625,7 @@ $(REF readText, std,file)
         test("sue\r", ["sue\r"], kt, '\r');
     }
 
-    @system unittest
+    @safe unittest
     {
         import std.algorithm.comparison : equal;
         import std.range : drop, take;
@@ -4763,6 +4768,15 @@ struct lines
 
         auto myByLineCopy = f.byLineCopy;
         foreach (line; myByLineCopy)
+            continue;
+    }
+
+    {
+        auto f = File(deleteMe, "r");
+        scope(exit) { f.close(); }
+
+        auto myByLine = f.byLine;
+        foreach (line; myByLine)
             continue;
     }
 }

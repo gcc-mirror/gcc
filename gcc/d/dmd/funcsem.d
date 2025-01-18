@@ -3032,21 +3032,21 @@ extern (D) bool checkNRVO(FuncDeclaration fd)
  * Params:
  *     fd = function declaration to mark
  *     loc = location of impure action
- *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
- *     arg0 = (optional) argument to format string
+ *     fmt = format string for error message
+ *     args = argument to format string
  *
  * Returns: `true` if there's a purity error
  */
-extern (D) bool setImpure(FuncDeclaration fd, Loc loc = Loc.init, const(char)* fmt = null, RootObject arg0 = null)
+extern (D) bool setImpure(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject[] args...)
 {
     if (fd.purityInprocess)
     {
         fd.purityInprocess = false;
         if (fmt)
-            fd.pureViolation = new AttributeViolation(loc, fmt, fd, arg0); // impure action
-        else if (arg0)
+            fd.pureViolation = new AttributeViolation(loc, fmt, args); // impure action
+        else if (args.length > 0)
         {
-            if (auto sa = arg0.isDsymbol())
+            if (auto sa = args[0].isDsymbol())
             {
                 if (FuncDeclaration fd2 = sa.isFuncDeclaration())
                 {
@@ -3056,7 +3056,7 @@ extern (D) bool setImpure(FuncDeclaration fd, Loc loc = Loc.init, const(char)* f
         }
 
         if (fd.fes)
-            fd.fes.func.setImpure(loc, fmt, arg0);
+            fd.fes.func.setImpure(loc, fmt, args);
     }
     else if (fd.isPure())
         return true;
@@ -3070,7 +3070,7 @@ PURE isPure(FuncDeclaration fd)
 
     TypeFunction tf = fd.type.toTypeFunction();
     if (fd.purityInprocess)
-        fd.setImpure();
+        fd.setImpure(Loc.initial, null);
     if (tf.purity == PURE.fwdref)
         tf.purityLevel();
     PURE purity = tf.purity;

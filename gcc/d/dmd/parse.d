@@ -2257,17 +2257,9 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         nextToken();
         if (token.value == TOK.identifier)
             s = new AST.DebugSymbol(token.loc, token.ident);
-        else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-        {
-            // @@@DEPRECATED_2.111@@@
-            // Deprecated in 2.101, remove in 2.111
-            deprecation("`debug = <integer>` is deprecated, use debug identifiers instead");
-
-            s = new AST.DebugSymbol(token.loc, cast(uint)token.unsvalue);
-        }
         else
         {
-            error("identifier or integer expected, not `%s`", token.toChars());
+            error("identifier expected, not `%s`", token.toChars());
             s = null;
         }
         nextToken();
@@ -2292,16 +2284,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
             if (token.value == TOK.identifier)
                 id = token.ident;
-            else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-            {
-                // @@@DEPRECATED_2.111@@@
-                // Deprecated in 2.101, remove in 2.111
-                deprecation("`debug( <integer> )` is deprecated, use debug identifiers instead");
-
-                level = cast(uint)token.unsvalue;
-            }
             else
-                error("identifier or integer expected inside `debug(...)`, not `%s`", token.toChars());
+                error("identifier expected inside `debug(...)`, not `%s`", token.toChars());
             loc = token.loc;
             nextToken();
             check(TOK.rightParenthesis);
@@ -2318,16 +2302,9 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         nextToken();
         if (token.value == TOK.identifier)
             s = new AST.VersionSymbol(token.loc, token.ident);
-        else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-        {
-            // @@@DEPRECATED_2.111@@@
-            // Deprecated in 2.101, remove in 2.111
-            deprecation("`version = <integer>` is deprecated, use version identifiers instead");
-            s = new AST.VersionSymbol(token.loc, cast(uint)token.unsvalue);
-        }
         else
         {
-            error("identifier or integer expected, not `%s`", token.toChars());
+            error("identifier expected, not `%s`", token.toChars());
             s = null;
         }
         nextToken();
@@ -2357,20 +2334,12 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             loc = token.loc;
             if (token.value == TOK.identifier)
                 id = token.ident;
-            else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-            {
-                // @@@DEPRECATED_2.111@@@
-                // Deprecated in 2.101, remove in 2.111
-                deprecation("`version( <integer> )` is deprecated, use version identifiers instead");
-
-                level = cast(uint)token.unsvalue;
-            }
             else if (token.value == TOK.unittest_)
                 id = Identifier.idPool(Token.toString(TOK.unittest_));
             else if (token.value == TOK.assert_)
                 id = Identifier.idPool(Token.toString(TOK.assert_));
             else
-                error("identifier or integer expected inside `version(...)`, not `%s`", token.toChars());
+                error("identifier expected inside `version(...)`, not `%s`", token.toChars());
             nextToken();
             check(TOK.rightParenthesis);
         }

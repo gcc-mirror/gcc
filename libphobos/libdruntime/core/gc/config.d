@@ -7,8 +7,8 @@
 
 module core.gc.config;
 
-import core.stdc.stdio;
 import core.internal.parseoptions;
+import core.stdc.stdio : printf;
 
 __gshared Config config;
 

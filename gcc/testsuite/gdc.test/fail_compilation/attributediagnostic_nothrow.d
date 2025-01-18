@@ -1,17 +1,15 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/attributediagnostic_nothrow.d(21): Error: function `attributediagnostic_nothrow.layer1` is not `nothrow`
-fail_compilation/attributediagnostic_nothrow.d(22):        which calls `attributediagnostic_nothrow.layer0`
-fail_compilation/attributediagnostic_nothrow.d(23):        which calls `attributediagnostic_nothrow.gc`
-fail_compilation/attributediagnostic_nothrow.d(27):        which wasn't inferred `nothrow` because of:
-fail_compilation/attributediagnostic_nothrow.d(27):        `asm` statement is assumed to throw - mark it with `nothrow` if it does not
-fail_compilation/attributediagnostic_nothrow.d(21): Error: function `attributediagnostic_nothrow.layer2` may throw but is marked as `nothrow`
-fail_compilation/attributediagnostic_nothrow.d(43): Error: function `attributediagnostic_nothrow.gc1` is not `nothrow`
-fail_compilation/attributediagnostic_nothrow.d(32):        which wasn't inferred `nothrow` because of:
-fail_compilation/attributediagnostic_nothrow.d(32):        `object.Exception` is thrown but not caught
-fail_compilation/attributediagnostic_nothrow.d(44): Error: function `attributediagnostic_nothrow.gc2` is not `nothrow`
-fail_compilation/attributediagnostic_nothrow.d(41): Error: function `D main` may throw but is marked as `nothrow`
+fail_compilation/attributediagnostic_nothrow.d(19): Error: function `attributediagnostic_nothrow.layer1` is not `nothrow`
+fail_compilation/attributediagnostic_nothrow.d(20):        which calls `attributediagnostic_nothrow.layer0`
+fail_compilation/attributediagnostic_nothrow.d(21):        which calls `attributediagnostic_nothrow.gc`
+fail_compilation/attributediagnostic_nothrow.d(25):        and executing an `asm` statement without a `nothrow` annotation makes it fail to infer `nothrow`
+fail_compilation/attributediagnostic_nothrow.d(19): Error: function `attributediagnostic_nothrow.layer2` may throw but is marked as `nothrow`
+fail_compilation/attributediagnostic_nothrow.d(41): Error: function `attributediagnostic_nothrow.gc1` is not `nothrow`
+fail_compilation/attributediagnostic_nothrow.d(30):        and `object.Exception` being thrown but not caught makes it fail to infer `nothrow`
+fail_compilation/attributediagnostic_nothrow.d(42): Error: function `attributediagnostic_nothrow.gc2` is not `nothrow`
+fail_compilation/attributediagnostic_nothrow.d(39): Error: function `D main` may throw but is marked as `nothrow`
 ---
 */
 

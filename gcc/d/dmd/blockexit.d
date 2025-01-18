@@ -478,7 +478,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
             if (!(s.stc & STC.nothrow_))
             {
                 if(func)
-                    func.setThrow(s.loc, "`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                    func.setThrow(s.loc, "executing an `asm` statement without a `nothrow` annotation");
                 if (eSink)
                     eSink.error(s.loc, "`asm` statement is assumed to throw - mark it with `nothrow` if it does not"); // TODO
                 else
@@ -523,7 +523,7 @@ BE checkThrow(ref const Loc loc, Expression exp, FuncDeclaration func, ErrorSink
     if (eSink)
         eSink.error(loc, "`%s` is thrown but not caught", exp.type.toChars());
     else if (func)
-        func.setThrow(loc, "`%s` is thrown but not caught", exp.type);
+        func.setThrow(loc, "`%s` being thrown but not caught", exp.type);
 
     return BE.throw_;
 }

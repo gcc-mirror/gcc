@@ -1699,7 +1699,7 @@ extern (D) bool checkClosure(FuncDeclaration fd)
     if (!fd.needsClosure())
         return false;
 
-    if (fd.setGC(fd.loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", fd))
+    if (fd.setGC(fd.loc, "allocating a closure for `%s()`", fd))
     {
         .error(fd.loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", fd.kind, fd.toPrettyChars(), fd.toChars());
         if (global.gag)     // need not report supplemental errors

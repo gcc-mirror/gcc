@@ -475,23 +475,39 @@ class ConservativeGC : GC
      */
     void *malloc(size_t size, uint bits = 0, const TypeInfo ti = null) nothrow
     {
-        if (!size)
+        import core.internal.gc.blockmeta;
+
+        if (size == 0)
+        {
+            return null;
+        }
+
+        adjustAttrs(bits, ti);
+
+        immutable padding = __allocPad(size, bits);
+
+        bool overflow;
+        import core.checkedint : addu;
+        immutable needed = addu(size, padding, overflow);
+        if (overflow)
         {
             return null;
         }
 
         size_t localAllocSize = void;
 
-        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(size, bits, localAllocSize, ti);
+        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(needed, bits, localAllocSize, ti);
 
         invalidate(p[0 .. localAllocSize], 0xF0, true);
 
+        auto ret = setupMetadata(p[0 .. localAllocSize], bits, padding, size, ti);
+
         if (!(bits & BlkAttr.NO_SCAN))
         {
-            memset(p + size, 0, localAllocSize - size);
+            memset(ret.ptr + size, 0, ret.length - size);
         }
 
-        return p;
+        return ret.ptr;
     }
 
 
@@ -527,6 +543,8 @@ class ConservativeGC : GC
 
     BlkInfo qalloc( size_t size, uint bits, const scope TypeInfo ti) nothrow
     {
+        // qalloc should not be used for building metadata-containing blocks,
+        // so avoid all the checking for bits and array padding.
 
         if (!size)
         {
@@ -564,25 +582,45 @@ class ConservativeGC : GC
      */
     void *calloc(size_t size, uint bits = 0, const TypeInfo ti = null) nothrow
     {
+        import core.internal.gc.blockmeta;
+
         if (!size)
         {
             return null;
         }
 
-        size_t localAllocSize = void;
+        adjustAttrs(bits, ti);
 
-        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(size, bits, localAllocSize, ti);
-
-        debug (VALGRIND) makeMemUndefined(p[0..size]);
-        invalidate((p + size)[0 .. localAllocSize - size], 0xF0, true);
-
-        memset(p, 0, size);
-        if (!(bits & BlkAttr.NO_SCAN))
+        immutable padding = __allocPad(size, bits);
+        bool overflow;
+        import core.checkedint : addu;
+        immutable needed = addu(size, padding, overflow);
+        if (overflow)
         {
-            memset(p + size, 0, localAllocSize - size);
+            return null;
         }
 
-        return p;
+
+        size_t localAllocSize = void;
+
+        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(needed, bits, localAllocSize, ti);
+
+        debug (VALGRIND) makeMemUndefined(p[0..size]);
+
+        auto ret = setupMetadata(p[0 .. localAllocSize], bits, padding, size, ti);
+
+        invalidate((ret.ptr + size)[0 .. ret.length - size], 0xF0, true);
+
+        if (bits & BlkAttr.NO_SCAN)
+        {
+            memset(ret.ptr, 0, size);
+        }
+        else
+        {
+            memset(ret.ptr, 0, ret.length);
+        }
+
+        return ret.ptr;
     }
 
     /**
@@ -595,7 +633,8 @@ class ConservativeGC : GC
      * Params:
      *  p = A pointer to the root of a valid memory block or to null.
      *  size = The desired allocation size in bytes.
-     *  bits = A bitmask of the attributes to set on this block.
+     *  bits = A bitmask of the attributes to set on this block. APPENDABLE and
+     *         FINALIZE are not allowed for realloc.
      *  ti = TypeInfo to describe the memory.
      *
      * Returns:
@@ -607,14 +646,28 @@ class ConservativeGC : GC
      */
     void *realloc(void *p, size_t size, uint bits = 0, const TypeInfo ti = null) nothrow
     {
+        if (bits & (BlkAttr.APPENDABLE | BlkAttr.FINALIZE))
+            // these bits are not allowed. We can't properly manage
+            // reallocation of such blocks.
+            onInvalidMemoryOperationError();
+
         size_t localAllocSize = void;
         auto oldp = p;
 
         p = runLocked!(reallocNoSync, mallocTime, numMallocs)(p, size, bits, localAllocSize, ti);
 
-        if (p && !(bits & BlkAttr.NO_SCAN))
+        if (p)
         {
-            memset(p + size, 0, localAllocSize - size);
+            // invalidate any block info cache we have for the old allocation.
+            import core.internal.gc.blkcache;
+            if (auto bic = __getBlkInfo(oldp)) {
+                *bic = BlkInfo.init;
+            }
+
+            if (!(bits & BlkAttr.NO_SCAN))
+            {
+                memset(p + size, 0, localAllocSize - size);
+            }
         }
 
         return p;
@@ -662,7 +715,8 @@ class ConservativeGC : GC
         void* doMalloc()
         {
             if (!bits)
-                bits = pool.getBits(biti);
+                bits = pool.getBits(biti) &
+                    ~(BlkAttr.APPENDABLE | BlkAttr.FINALIZE | BlkAttr.STRUCTFINAL);
 
             void* p2 = mallocNoSync(size, bits, alloc_size, ti);
             debug (SENTINEL)
@@ -759,7 +813,16 @@ class ConservativeGC : GC
 
     size_t extend(void* p, size_t minsize, size_t maxsize, const TypeInfo ti) nothrow
     {
-        return runLocked!(extendNoSync, extendTime, numExtends)(p, minsize, maxsize, ti);
+        auto result = runLocked!(extendNoSync, extendTime, numExtends)(p, minsize, maxsize, ti);
+        if (result != 0) {
+            // invalidate any block info cache we have for the old allocation.
+            import core.internal.gc.blkcache;
+            if (auto bic = __getBlkInfo(p)) {
+                *bic = BlkInfo.init;
+            }
+        }
+
+        return result;
     }
 
 
@@ -867,14 +930,22 @@ class ConservativeGC : GC
             return;
         }
 
-        return runLocked!(freeNoSync, freeTime, numFrees)(p);
+        auto didFree = runLocked!(freeNoSync, freeTime, numFrees)(p);
+
+        if (didFree) {
+            // invalidate any block info cache we have for the old allocation.
+            import core.internal.gc.blkcache;
+            if (auto bic = __getBlkInfo(p)) {
+                *bic = BlkInfo.init;
+            }
+        }
     }
 
 
     //
     // Implementation of free.
     //
-    private void freeNoSync(void *p) nothrow @nogc
+    private bool freeNoSync(void *p) nothrow @nogc
     {
         debug(PRINTF) printf("Freeing %#zx\n", cast(size_t) p);
         assert (p);
@@ -887,7 +958,7 @@ class ConservativeGC : GC
         // Find which page it is in
         pool = gcx.findPool(p);
         if (!pool)                              // if not one of ours
-            return;                             // ignore
+            return false;                       // ignore
 
         pagenum = pool.pagenumOf(p);
 
@@ -899,11 +970,11 @@ class ConservativeGC : GC
         // Verify that the pointer is at the beginning of a block,
         //  no action should be taken if p is an interior pointer
         if (bin > Bins.B_PAGE) // B_PAGEPLUS or B_FREE
-            return;
+            return false;
         size_t off = (sentinel_sub(p) - pool.baseAddr);
         size_t base = baseOffset(off, bin);
         if (off != base)
-            return;
+            return false;
 
         sentinel_Invariant(p);
         auto q = p;
@@ -928,7 +999,7 @@ class ConservativeGC : GC
         {
             biti = cast(size_t)(p - pool.baseAddr) >> pool.ShiftBy.Small;
             if (pool.freebits.test (biti))
-                return;
+                return false;
             // Add to free list
             List *list = cast(List*)p;
 
@@ -948,6 +1019,8 @@ class ConservativeGC : GC
         pool.clrBits(biti, ~BlkAttr.NONE);
 
         gcx.leakDetector.log_free(sentinel_add(p), ssize);
+
+        return true;
     }
 
 
@@ -5324,4 +5397,43 @@ void undefinedWrite(T)(ref T var, T value) nothrow
     }
     else
         var = value;
+}
+
+private void adjustAttrs(ref uint attrs, const TypeInfo ti) nothrow
+{
+    bool hasContext = ti !is null;
+    if((attrs & BlkAttr.FINALIZE) && hasContext && typeid(ti) is typeid(TypeInfo_Struct))
+        attrs |= BlkAttr.STRUCTFINAL;
+    else
+        // STRUCTFINAL now just means "has a context pointer added to the block"
+        attrs &= ~BlkAttr.STRUCTFINAL;
+}
+
+// sets up the array/context pointer metadata based on the block allocated.
+// This is called on any block *creation*, and not on updating the array
+// metadata.
+//
+// The return value is the true data that the user can use.
+private void[] setupMetadata(void[] block, uint bits, size_t padding, size_t used, const TypeInfo ti) nothrow
+{
+    import core.internal.gc.blockmeta;
+    import core.internal.array.utils;
+
+    BlkInfo info = BlkInfo(
+            base: block.ptr,
+            attr: bits,
+            size: block.length
+    );
+
+
+    __setBlockFinalizerInfo(info, ti);
+
+    if (bits & BlkAttr.APPENDABLE) {
+        auto typeInfoSize = (bits & BlkAttr.STRUCTFINAL) ? (void*).sizeof : 0;
+        auto success = __setArrayAllocLengthImpl(info, used, false, size_t.max, typeInfoSize);
+        assert(success);
+        return __arrayStart(info)[0 .. block.length - padding];
+    }
+
+    return block.ptr[0 .. block.length - padding];
 }

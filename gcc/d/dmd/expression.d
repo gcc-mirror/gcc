@@ -1074,7 +1074,7 @@ extern (C++) final class ErrorExp : Expression
               * and we need to set the error count to prevent bogus code
               * generation. At least give a message.
               */
-            .error(Loc.initial, "unknown, please file report on issues.dlang.org");
+            .error(Loc.initial, "unknown, please file report at https://github.com/dlang/dmd/issues/new");
         }
 
         return errorexp;

@@ -9,13 +9,13 @@ struct S3 { this(int) @nogc; }
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc1.d(23): Error: cannot use `new` in `@nogc` function `nogc1.testNew`
-fail_compilation/nogc1.d(25): Error: cannot use `new` in `@nogc` function `nogc1.testNew`
-fail_compilation/nogc1.d(26): Error: cannot use `new` in `@nogc` function `nogc1.testNew`
-fail_compilation/nogc1.d(28): Error: cannot use `new` in `@nogc` function `nogc1.testNew`
+fail_compilation/nogc1.d(23): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNew`
+fail_compilation/nogc1.d(25): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNew`
+fail_compilation/nogc1.d(26): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNew`
+fail_compilation/nogc1.d(28): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNew`
 fail_compilation/nogc1.d(29): Error: `@nogc` function `nogc1.testNew` cannot call non-@nogc constructor `nogc1.S2.this`
-fail_compilation/nogc1.d(30): Error: cannot use `new` in `@nogc` function `nogc1.testNew`
-fail_compilation/nogc1.d(32): Error: cannot use `new` in `@nogc` function `nogc1.testNew`
+fail_compilation/nogc1.d(30): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNew`
+fail_compilation/nogc1.d(32): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNew`
 ---
 */
 @nogc void testNew()
@@ -35,12 +35,12 @@ fail_compilation/nogc1.d(32): Error: cannot use `new` in `@nogc` function `nogc1
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc1.d(48): Error: cannot use `new` in `@nogc` function `nogc1.testNewScope`
-fail_compilation/nogc1.d(50): Error: cannot use `new` in `@nogc` function `nogc1.testNewScope`
-fail_compilation/nogc1.d(51): Error: cannot use `new` in `@nogc` function `nogc1.testNewScope`
-fail_compilation/nogc1.d(53): Error: cannot use `new` in `@nogc` function `nogc1.testNewScope`
+fail_compilation/nogc1.d(48): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNewScope`
+fail_compilation/nogc1.d(50): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNewScope`
+fail_compilation/nogc1.d(51): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNewScope`
+fail_compilation/nogc1.d(53): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNewScope`
 fail_compilation/nogc1.d(54): Error: `@nogc` function `nogc1.testNewScope` cannot call non-@nogc constructor `nogc1.S2.this`
-fail_compilation/nogc1.d(55): Error: cannot use `new` in `@nogc` function `nogc1.testNewScope`
+fail_compilation/nogc1.d(55): Error: allocating with `new` causes a GC allocation in `@nogc` function `testNewScope`
 ---
 */
 @nogc void testNewScope()

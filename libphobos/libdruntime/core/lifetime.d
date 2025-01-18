@@ -2348,7 +2348,7 @@ pure nothrow @nogc @system unittest
 
 debug(PRINTF)
 {
-    import core.stdc.stdio;
+    import core.stdc.stdio : printf;
 }
 
 /// Implementation of `_d_delstruct` and `_d_delstructTrace`

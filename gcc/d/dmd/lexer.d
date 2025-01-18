@@ -2571,19 +2571,19 @@ class Lexer
     Ldone:
         if (errorDigit)
         {
-            error(token.loc, "%s digit expected, not `%c`", base == 2 ? "binary".ptr :
+            error(scanloc, "%s digit expected, not `%c`", base == 2 ? "binary".ptr :
                                                  base == 8 ? "octal".ptr :
                                                  "decimal".ptr, errorDigit);
             err = true;
         }
         if (overflow && !err)
         {
-            error("integer overflow");
+            error(scanloc, "integer overflow");
             err = true;
         }
         if ((base == 2 && !anyBinaryDigitsNoSingleUS) ||
             (base == 16 && !anyHexDigitsNoSingleUS))
-            error(token.loc, "`%.*s` isn't a valid integer literal, use `%.*s0` instead", cast(int)(p - start), start, 2, start);
+            error(scanloc, "`%.*s` isn't a valid integer literal, use `%.*s0` instead", cast(int)(p - start), start, 2, start);
 
         t.unsvalue = n;
 
@@ -2612,7 +2612,7 @@ class Lexer
                 goto L1;
             case 'l':
                 f = FLAGS.long_;
-                error("lower case integer suffix 'l' is not allowed. Please use 'L' instead");
+                error(scanloc, "lower case integer suffix 'l' is not allowed. Please use 'L' instead");
                 goto L1;
             case 'L':
                 f = FLAGS.long_;
@@ -2620,7 +2620,7 @@ class Lexer
                 p++;
                 if ((flags & f) && !err)
                 {
-                    error("repeated integer suffix `%c`", p[-1]);
+                    error(scanloc, "repeated integer suffix `%c`", p[-1]);
                     err = true;
                 }
                 flags = cast(FLAGS)(flags | f);
@@ -2634,9 +2634,9 @@ class Lexer
         {
             if (err)
                 // can't translate invalid octal value, just show a generic message
-                error("octal literals larger than 7 are no longer supported");
+                error(scanloc, "octal literals larger than 7 are no longer supported");
             else
-                error(token.loc, "octal literals `0%llo%.*s` are no longer supported, use `std.conv.octal!\"%llo%.*s\"` instead",
+                error(scanloc, "octal literals `0%llo%.*s` are no longer supported, use `std.conv.octal!\"%llo%.*s\"` instead",
                     n, cast(int)(p - psuffix), psuffix, n, cast(int)(p - psuffix), psuffix);
         }
         TOK result;

@@ -1009,7 +1009,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 return null;
 
             import dmd.clone : needOpEquals;
-            if (global.params.fieldwise != FeatureState.enabled && !needOpEquals(sd))
+            if (!sc.previews.fieldwise && !needOpEquals(sd))
             {
                 // Use bitwise equality.
                 auto op2 = e.op == EXP.equal ? EXP.identity : EXP.notIdentity;

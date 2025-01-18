@@ -1,9 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/attributediagnostic_pure.d(20): Error: `pure` function `D main` cannot call impure function `attributediagnostic_pure.gc`
-fail_compilation/attributediagnostic_pure.d(15):        which wasn't inferred `pure` because of:
-fail_compilation/attributediagnostic_pure.d(15):        `asm` statement is assumed to be impure - mark it with `pure` if it is not
+fail_compilation/attributediagnostic_pure.d(19): Error: `pure` function `D main` cannot call impure function `attributediagnostic_pure.gc`
+fail_compilation/attributediagnostic_pure.d(14):        and executing an `asm` statement without `pure` annotation makes it fail to infer `pure`
 ---
 */
 

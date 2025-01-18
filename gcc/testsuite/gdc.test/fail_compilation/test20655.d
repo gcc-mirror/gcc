@@ -2,15 +2,12 @@
 REQUIRED_ARGS: -de
 TEST_OUTPUT:
 ---
-fail_compilation/test20655.d(29): Deprecation: `@safe` function `g` calling `f1`
-fail_compilation/test20655.d(24):        which wouldn't be `@safe` because of:
-fail_compilation/test20655.d(24):        accessing overlapped field `U.s` with pointers
-fail_compilation/test20655.d(30): Deprecation: `@safe` function `g` calling `f2`
-fail_compilation/test20655.d(25):        which wouldn't be `@safe` because of:
-fail_compilation/test20655.d(25):        accessing overlapped field `U.s` with pointers
-fail_compilation/test20655.d(31): Deprecation: `@safe` function `g` calling `f3`
-fail_compilation/test20655.d(28):        which wouldn't be `@safe` because of:
-fail_compilation/test20655.d(28):        accessing overlapped field `U.s` with pointers
+fail_compilation/test20655.d(26): Deprecation: `@safe` function `g` calling `f1`
+fail_compilation/test20655.d(21):        and accessing overlapped field `U.s` with pointers makes it fail to infer `@safe`
+fail_compilation/test20655.d(27): Deprecation: `@safe` function `g` calling `f2`
+fail_compilation/test20655.d(22):        and accessing overlapped field `U.s` with pointers makes it fail to infer `@safe`
+fail_compilation/test20655.d(28): Deprecation: `@safe` function `g` calling `f3`
+fail_compilation/test20655.d(25):        and accessing overlapped field `U.s` with pointers makes it fail to infer `@safe`
 ---
 */
 

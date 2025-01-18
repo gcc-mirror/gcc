@@ -379,7 +379,7 @@ void toObNodes(ref ObNodes obnodes, Statement s)
             return ob;
         }
 
-        // block_goto(blx, BCgoto, null)
+        // block_goto(blx, BC.goto_, null)
         ObNode* gotoNextNode()
         {
             return gotoNextNodeIs(newNode());

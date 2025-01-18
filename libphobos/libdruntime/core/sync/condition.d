@@ -35,7 +35,7 @@ version (Windows)
 }
 else version (Posix)
 {
-    import core.stdc.errno;
+    import core.stdc.errno : EAGAIN, ETIMEDOUT;
     import core.sync.config;
     import core.sys.posix.pthread : pthread_cond_broadcast, pthread_cond_destroy, pthread_cond_init,
         pthread_cond_signal, pthread_cond_t, pthread_cond_timedwait, pthread_cond_wait;

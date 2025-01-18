@@ -59,12 +59,9 @@ extern (C++) final class DebugSymbol : Dsymbol
     {
         if (ident)
             return ident.toChars();
-        else
-        {
-            OutBuffer buf;
-            buf.print(level);
-            return buf.extractChars();
-        }
+        OutBuffer buf;
+        buf.print(level);
+        return buf.extractChars();
     }
 
     override const(char)* kind() const nothrow
@@ -116,12 +113,9 @@ extern (C++) final class VersionSymbol : Dsymbol
     {
         if (ident)
             return ident.toChars();
-        else
-        {
-            OutBuffer buf;
-            buf.print(level);
-            return buf.extractChars();
-        }
+        OutBuffer buf;
+        buf.print(level);
+        return buf.extractChars();
     }
 
     override const(char)* kind() const nothrow

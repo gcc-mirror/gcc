@@ -980,24 +980,35 @@ if (distinctFieldNames!(Specs))
         {
             import std.algorithm.mutation : swap;
 
-            static if (is(R == Tuple!Types) && !__traits(isRef, rhs) && isTuple!R)
+            /*
+                This optimization caused compilation failures with no error message available:
+
+                > Error: unknown, please file report on issues.dlang.org
+                > std/sumtype.d(1262): Error: template instance `std.sumtype.SumType!(Flag, Tuple!(This*))` error instantiating
+            */
+            version (none)
             {
-                if (__ctfe)
+                static if (is(R == Tuple!Types) && !__traits(isRef, rhs) && isTuple!R)
                 {
-                    // Cannot use swap at compile time
-                    field[] = rhs.field[];
+                    if (__ctfe)
+                    {
+                        // Cannot use swap at compile time
+                        field[] = rhs.field[];
+                    }
+                    else
+                    {
+                        // Use swap-and-destroy to optimize rvalue assignment
+                        swap!(Tuple!Types)(this, rhs);
+                    }
                 }
                 else
                 {
-                    // Use swap-and-destroy to optimize rvalue assignment
-                    swap!(Tuple!Types)(this, rhs);
+                    // Do not swap; opAssign should be called on the fields.
+                    field[] = rhs.field[];
                 }
             }
-            else
-            {
-                // Do not swap; opAssign should be called on the fields.
-                field[] = rhs.field[];
-            }
+
+            field[] = rhs.field[];
             return this;
         }
 

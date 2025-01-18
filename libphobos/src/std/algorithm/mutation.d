@@ -2885,6 +2885,17 @@ if (isBlitAssignable!T && !is(typeof(lhs.proxySwap(rhs))))
     {
         if (&lhs != &rhs)
         {
+            static if (__traits(compiles, lhs.tupleof = rhs.tupleof))
+            {
+                if (__ctfe)
+                {
+                    // can't reinterpret cast
+                    foreach (i, ref e; lhs.tupleof)
+                        swap(e, rhs.tupleof[i]);
+                    return;
+                }
+            }
+
             // For structs with non-trivial assignment, move memory directly
             ubyte[T.sizeof] t = void;
             auto a = (cast(ubyte*) &lhs)[0 .. T.sizeof];
@@ -3126,6 +3137,18 @@ if (isBlitAssignable!T && !is(typeof(lhs.proxySwap(rhs))))
 
     A[1] a3, a4;
     swap(a3, a4);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21429
+@safe unittest
+{
+    enum e = (){
+        Tuple!int a = 5, b = 6;
+        swap(a, b);
+        assert(a[0] == 6);
+        assert(b[0] == 5);
+        return 0;
+    }();
 }
 
 /**

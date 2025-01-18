@@ -37,7 +37,7 @@ version (Windows)
 }
 else version (Darwin)
 {
-    import core.stdc.errno;
+    import core.stdc.errno : EINTR, errno;
     import core.sync.config;
     import core.sys.darwin.mach.kern_return : KERN_ABORTED, KERN_OPERATION_TIMED_OUT;
     import core.sys.darwin.mach.semaphore : mach_task_self, mach_timespec_t, semaphore_create, semaphore_destroy,
@@ -45,7 +45,7 @@ else version (Darwin)
 }
 else version (Posix)
 {
-    import core.stdc.errno;
+    import core.stdc.errno : EAGAIN, EINTR, errno, ETIMEDOUT;
     import core.sync.config;
     import core.sys.posix.semaphore : sem_destroy, sem_init, sem_post, sem_t, sem_timedwait, sem_trywait, sem_wait;
     import core.sys.posix.time : clock_gettime, CLOCK_REALTIME, timespec;

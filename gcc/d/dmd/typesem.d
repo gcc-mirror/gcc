@@ -944,8 +944,8 @@ private extern(D) bool isCopyConstructorCallable (StructDeclaration argStruct,
         return false;
     }
 
-    bool bpure = !f.isPure && sc.func.setImpure();
-    bool bsafe = !f.isSafe() && !f.isTrusted() && sc.setUnsafe();
+    bool bpure = !f.isPure && sc.func.setImpure(arg.loc, null);
+    bool bsafe = !f.isSafe() && !f.isTrusted() && sc.setUnsafe(false, arg.loc, null);
     bool bnogc = !f.isNogc && sc.func.setGC(arg.loc, null);
     if (bpure | bsafe | bnogc)
     {

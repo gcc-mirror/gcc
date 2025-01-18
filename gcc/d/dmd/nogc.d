@@ -18,6 +18,7 @@ import core.stdc.stdio;
 import dmd.aggregate;
 import dmd.astenums;
 import dmd.declaration;
+import dmd.common.outbuffer;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dtemplate : isDsymbol;
@@ -80,20 +81,19 @@ public:
      * Register that expression `e` requires the GC
      * Params:
      *   e = expression that uses GC
-     *   format = error message when `e` is used in a `@nogc` function.
-     *            Must contain format strings "`@nogc` %s `%s`" referring to the function.
+     *   msg = error message when `e` is used in a `@nogc` function.
      * Returns: `true` if `err` was set, `false` if it's not in a `@nogc` and not checkonly (-betterC)
      */
-    private bool setGC(Expression e, const(char)* format)
+    private bool setGC(Expression e, const(char)* msg)
     {
         if (checkOnly)
         {
             err = true;
             return true;
         }
-        if (f.setGC(e.loc, format))
+        if (f.setGC(e.loc, msg))
         {
-            error(e.loc, format, f.kind(), f.toPrettyChars());
+            error(e.loc, "%s causes a GC allocation in `@nogc` %s `%s`", msg, f.kind(), f.toChars());
             err = true;
             return true;
         }
@@ -111,7 +111,7 @@ public:
         auto fd = stripHookTraceImpl(e.f);
         if (fd.ident == Id._d_arraysetlengthT)
         {
-            if (setGC(e, "setting `length` in `@nogc` %s `%s` may cause a GC allocation"))
+            if (setGC(e, "setting this array's `length`"))
                 return;
             f.printGCUsage(e.loc, "setting `length` may cause a GC allocation");
         }
@@ -121,7 +121,7 @@ public:
     {
         if (e.type.ty != Tarray || !e.elements || !e.elements.length || e.onstack)
             return;
-        if (setGC(e, "array literal in `@nogc` %s `%s` may cause a GC allocation"))
+        if (setGC(e, "this array literal"))
             return;
         f.printGCUsage(e.loc, "array literal may cause a GC allocation");
     }
@@ -130,7 +130,7 @@ public:
     {
         if (!e.keys.length)
             return;
-        if (setGC(e, "associative array literal in `@nogc` %s `%s` may cause a GC allocation"))
+        if (setGC(e, "this associative array literal"))
             return;
         f.printGCUsage(e.loc, "associative array literal may cause a GC allocation");
     }
@@ -147,7 +147,7 @@ public:
         if (nogcExceptions && e.thrownew)
             return;                     // separate allocator is called for this, not the GC
 
-        if (setGC(e, "cannot use `new` in `@nogc` %s `%s`"))
+        if (setGC(e, "allocating with `new`"))
             return;
         f.printGCUsage(e.loc, "`new` causes a GC allocation");
     }
@@ -170,7 +170,7 @@ public:
         Type t1b = e.e1.type.toBasetype();
         if (e.modifiable && t1b.ty == Taarray)
         {
-            if (setGC(e, "assigning an associative array element in `@nogc` %s `%s` may cause a GC allocation"))
+            if (setGC(e, "assigning this associative array element"))
                 return;
             f.printGCUsage(e.loc, "assigning an associative array element may cause a GC allocation");
         }
@@ -180,7 +180,7 @@ public:
     {
         if (e.e1.op == EXP.arrayLength)
         {
-            if (setGC(e, "setting `length` in `@nogc` %s `%s` may cause a GC allocation"))
+            if (setGC(e, "setting this array's `length`"))
                 return;
             f.printGCUsage(e.loc, "setting `length` may cause a GC allocation");
         }
@@ -193,14 +193,14 @@ public:
             err = true;
             return;
         }
-        if (setGC(e, "cannot use operator `~=` in `@nogc` %s `%s`"))
+        if (setGC(e, "appending to this array with operator `~=`"))
             return;
         f.printGCUsage(e.loc, "operator `~=` may cause a GC allocation");
     }
 
     override void visit(CatExp e)
     {
-        if (setGC(e, "cannot use operator `~` in `@nogc` %s `%s`"))
+        if (setGC(e, "concatenating with operator `~`"))
             return;
         f.printGCUsage(e.loc, "operator `~` may cause a GC allocation");
     }
@@ -284,12 +284,12 @@ private FuncDeclaration stripHookTraceImpl(FuncDeclaration fd)
  *     fd = function
  *     loc = location of GC action
  *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
- *     arg0 = (optional) argument to format string
+ *     args = arguments to format string
  *
  * Returns:
  *      true if function is marked as @nogc, meaning a user error occurred
  */
-extern (D) bool setGC(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject arg0 = null)
+extern (D) bool setGC(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject[] args...)
 {
     //printf("setGC() %s\n", toChars());
     if (fd.nogcInprocess && fd.semanticRun < PASS.semantic3 && fd._scope)
@@ -302,10 +302,10 @@ extern (D) bool setGC(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject 
     {
         fd.nogcInprocess = false;
         if (fmt)
-            fd.nogcViolation = new AttributeViolation(loc, fmt, fd, arg0); // action that requires GC
-        else if (arg0)
+            fd.nogcViolation = new AttributeViolation(loc, fmt, args); // action that requires GC
+        else if (args.length > 0)
         {
-            if (auto sa = arg0.isDsymbol())
+            if (auto sa = args[0].isDsymbol())
             {
                 if (FuncDeclaration fd2 = sa.isFuncDeclaration())
                 {

@@ -877,10 +877,9 @@ nothrow:
                 const dw = GetFileAttributesW(&wname[0]);
                 if (dw == -1)
                     return 0;
-                else if (dw & FILE_ATTRIBUTE_DIRECTORY)
+                if (dw & FILE_ATTRIBUTE_DIRECTORY)
                     return 2;
-                else
-                    return 1;
+                return 1;
             });
         }
         else

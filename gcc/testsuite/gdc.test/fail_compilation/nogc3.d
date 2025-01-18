@@ -5,9 +5,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc3.d(15): Error: setting `length` in `@nogc` function `nogc3.testArrayLength` may cause a GC allocation
-fail_compilation/nogc3.d(16): Error: setting `length` in `@nogc` function `nogc3.testArrayLength` may cause a GC allocation
-fail_compilation/nogc3.d(17): Error: setting `length` in `@nogc` function `nogc3.testArrayLength` may cause a GC allocation
+fail_compilation/nogc3.d(15): Error: setting this array's `length` causes a GC allocation in `@nogc` function `testArrayLength`
+fail_compilation/nogc3.d(16): Error: setting this array's `length` causes a GC allocation in `@nogc` function `testArrayLength`
+fail_compilation/nogc3.d(17): Error: setting this array's `length` causes a GC allocation in `@nogc` function `testArrayLength`
 ---
 */
 @nogc void testArrayLength(int[] a)
@@ -75,10 +75,10 @@ fail_compilation/nogc3.d(68):        `x` declared here
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc3.d(87): Error: array literal in `@nogc` function `nogc3.foo13702` may cause a GC allocation
-fail_compilation/nogc3.d(88): Error: array literal in `@nogc` function `nogc3.foo13702` may cause a GC allocation
-fail_compilation/nogc3.d(94): Error: array literal in `@nogc` function `nogc3.bar13702` may cause a GC allocation
-fail_compilation/nogc3.d(93): Error: array literal in `@nogc` function `nogc3.bar13702` may cause a GC allocation
+fail_compilation/nogc3.d(87): Error: this array literal causes a GC allocation in `@nogc` function `foo13702`
+fail_compilation/nogc3.d(88): Error: this array literal causes a GC allocation in `@nogc` function `foo13702`
+fail_compilation/nogc3.d(94): Error: this array literal causes a GC allocation in `@nogc` function `bar13702`
+fail_compilation/nogc3.d(93): Error: this array literal causes a GC allocation in `@nogc` function `bar13702`
 ---
 */
 int[] foo13702(bool b) @nogc

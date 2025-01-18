@@ -1,20 +1,17 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/attributediagnostic.d(24): Error: `@safe` function `attributediagnostic.layer2` cannot call `@system` function `attributediagnostic.layer1`
-fail_compilation/attributediagnostic.d(26):        which calls `attributediagnostic.layer0`
-fail_compilation/attributediagnostic.d(28):        which calls `attributediagnostic.system`
-fail_compilation/attributediagnostic.d(30):        which wasn't inferred `@safe` because of:
-fail_compilation/attributediagnostic.d(30):        `asm` statement without `@trusted` annotation
-fail_compilation/attributediagnostic.d(25):        `attributediagnostic.layer1` is declared here
-fail_compilation/attributediagnostic.d(46): Error: `@safe` function `D main` cannot call `@system` function `attributediagnostic.system1`
-fail_compilation/attributediagnostic.d(35):        which wasn't inferred `@safe` because of:
-fail_compilation/attributediagnostic.d(35):        cast from `uint` to `int*`
-fail_compilation/attributediagnostic.d(33):        `attributediagnostic.system1` is declared here
-fail_compilation/attributediagnostic.d(47): Error: `@safe` function `D main` cannot call `@system` function `attributediagnostic.system2`
-fail_compilation/attributediagnostic.d(41):        which wasn't inferred `@safe` because of:
-fail_compilation/attributediagnostic.d(41):        `@safe` function `system2` cannot call `@system` `fsys`
-fail_compilation/attributediagnostic.d(39):        `attributediagnostic.system2` is declared here
+fail_compilation/attributediagnostic.d(21): Error: `@safe` function `attributediagnostic.layer2` cannot call `@system` function `attributediagnostic.layer1`
+fail_compilation/attributediagnostic.d(23):        which calls `attributediagnostic.layer0`
+fail_compilation/attributediagnostic.d(25):        which calls `attributediagnostic.system`
+fail_compilation/attributediagnostic.d(27):        and executing an `asm` statement without `@trusted` annotation makes it fail to infer `@safe`
+fail_compilation/attributediagnostic.d(22):        `attributediagnostic.layer1` is declared here
+fail_compilation/attributediagnostic.d(43): Error: `@safe` function `D main` cannot call `@system` function `attributediagnostic.system1`
+fail_compilation/attributediagnostic.d(32):        and cast from `uint` to `int*` makes it fail to infer `@safe`
+fail_compilation/attributediagnostic.d(30):        `attributediagnostic.system1` is declared here
+fail_compilation/attributediagnostic.d(44): Error: `@safe` function `D main` cannot call `@system` function `attributediagnostic.system2`
+fail_compilation/attributediagnostic.d(38):        and calling `@system` `fsys` makes it fail to infer `@safe`
+fail_compilation/attributediagnostic.d(36):        `attributediagnostic.system2` is declared here
 ---
 */
 

@@ -88,6 +88,7 @@ private struct Previews
         bool dip1008;
         bool dip1021;
         bool dip25;
+        bool fieldwise;
         bool fixAliasThis;
         bool fixImmutableConv;
         bool in_;
@@ -116,6 +117,7 @@ private struct Previews
         this.rvalueRefParam = params.rvalueRefParam == FeatureState.enabled;
         this.safer = params.safer == FeatureState.enabled;
         this.systemVariables = params.systemVariables;
+        this.fieldwise = params.fieldwise == FeatureState.enabled;
     }
 }
 

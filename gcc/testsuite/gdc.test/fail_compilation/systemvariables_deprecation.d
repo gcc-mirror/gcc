@@ -2,10 +2,9 @@
 REQUIRED_ARGS: -de
 TEST_OUTPUT:
 ---
-fail_compilation/systemvariables_deprecation.d(16): Deprecation: `@safe` function `main` calling `middle`
-fail_compilation/systemvariables_deprecation.d(21):        which calls `systemvariables_deprecation.inferred`
-fail_compilation/systemvariables_deprecation.d(27):        which wouldn't be `@safe` because of:
-fail_compilation/systemvariables_deprecation.d(27):        access `@system` variable `x0`
+fail_compilation/systemvariables_deprecation.d(15): Deprecation: `@safe` function `main` calling `middle`
+fail_compilation/systemvariables_deprecation.d(20):        which calls `systemvariables_deprecation.inferred`
+fail_compilation/systemvariables_deprecation.d(26):        and access `@system` variable `x0` makes it fail to infer `@safe`
 ---
 */
 

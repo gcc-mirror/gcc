@@ -529,12 +529,9 @@ extern (C++) abstract class Type : ASTNode
             auto sv = t.stringtable.update(buf[]);
             if (sv.value)
                 return sv.value;
-            else
-            {
-                t.deco = cast(char*)sv.toDchars();
-                sv.value = t;
-                return t;
-            }
+            t.deco = cast(char*)sv.toDchars();
+            sv.value = t;
+            return t;
         }
 
         for (size_t i = 0; basetab[i] != Terror; i++)

@@ -3623,9 +3623,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
 
         assert(sc.func);
-        if (!(cas.stc & STC.pure_) && sc.func.setImpure(cas.loc, "`asm` statement is assumed to be impure - mark it with `pure` if it is not"))
+        if (!(cas.stc & STC.pure_) && sc.func.setImpure(cas.loc, "executing an `asm` statement without `pure` annotation"))
             error(cas.loc, "`asm` statement is assumed to be impure - mark it with `pure` if it is not");
-        if (!(cas.stc & STC.nogc) && sc.func.setGC(cas.loc, "`asm` statement in %s `%s` is assumed to use the GC - mark it with `@nogc` if it does not"))
+        if (!(cas.stc & STC.nogc) && sc.func.setGC(cas.loc, "executing an `asm` statement without `@nogc` annotation"))
             error(cas.loc, "`asm` statement is assumed to use the GC - mark it with `@nogc` if it does not");
         // @@@DEPRECATED_2.114@@@
         // change deprecation() to error(), add `else` and remove `| STC.safe`
@@ -3634,7 +3634,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             deprecation(cas.loc, "`asm` statement cannot be marked `@safe`, use `@system` or `@trusted` instead");
         if (!(cas.stc & (STC.trusted | STC.safe)))
         {
-            sc.setUnsafe(false, cas.loc, "`asm` statement without `@trusted` annotation");
+            sc.setUnsafe(false, cas.loc, "executing an `asm` statement without `@trusted` annotation");
         }
 
         sc.pop();

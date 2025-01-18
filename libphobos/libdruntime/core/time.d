@@ -67,8 +67,7 @@ module core.time;
 
 import core.exception;
 import core.internal.string;
-import core.stdc.stdio;
-import core.stdc.time;
+import core.stdc.time : time;
 
 version (OSX)
     version = Darwin;
@@ -93,6 +92,8 @@ else version (Posix)
     import core.sys.posix.sys.time : gettimeofday, timeval;
     import core.sys.posix.time : clock_getres, clock_gettime, CLOCK_MONOTONIC, timespec;
 }
+
+version (unittest) import core.stdc.stdio : printf;
 
 
 //This probably should be moved somewhere else in druntime which
@@ -2700,7 +2701,7 @@ unittest
 
     // It would be too expensive to cover a large range of possible values for
     // ticks, so we use random values in an attempt to get reasonable coverage.
-    import core.stdc.stdlib;
+    import core.stdc.stdlib : rand, srand;
     immutable seed = cast(int)time(null);
     srand(seed);
     scope(failure) printf("seed %d\n", seed);
@@ -2714,7 +2715,7 @@ unittest
     // than or equal to freq5, which at one point was considered for MonoTime's
     // ticksPerSecond rather than using the system's actual clock frequency, so
     // it seemed like a good test case to have.
-    import core.stdc.math;
+    import core.stdc.math : floor, log10, pow;
     immutable numDigitsMinus1 = cast(int)floor(log10(freq5));
     auto freq6 = cast(long)pow(10, numDigitsMinus1);
     if (freq5 > freq6)

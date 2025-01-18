@@ -2191,9 +2191,9 @@ private EnclosedBy enclosesLifetimeOf(VarDeclaration va, VarDeclaration v)
 // `setUnsafePreview` partially evaluated for dip1000
 public
 bool setUnsafeDIP1000(ref Scope sc, bool gag, Loc loc, const(char)* msg,
-    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+    RootObject[] args...)
 {
-    return setUnsafePreview(&sc, sc.useDIP1000, gag, loc, msg, arg0, arg1, arg2);
+    return setUnsafePreview(&sc, sc.useDIP1000, gag, loc, msg, args);
 }
 
 /***************************************

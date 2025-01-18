@@ -34,6 +34,7 @@ import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
 import dmd.rootobject;
+import dmd.root.string : fTuple;
 import dmd.target;
 import dmd.tokens;
 import dmd.typesem : hasPointers, arrayOf, size;
@@ -315,8 +316,7 @@ bool checkUnsafeDotExp(Scope* sc, Expression e, Identifier id, int flag)
     {
         if (id == Id.ptr)
             return sc.setUnsafe(false, e.loc, "using `%s.ptr` (instead of `&%s[0])`", e, e);
-        else
-            return sc.setUnsafe(false, e.loc, "using `%s.%s`", e, id);
+        return sc.setUnsafe(false, e.loc, "using `%s.%s`", e, id);
     }
     return false;
 }
@@ -359,20 +359,20 @@ bool isTrusted(FuncDeclaration fd)
  *   gag   = suppress error message (used in escape.d)
  *   loc   = location of error
  *   format = printf-style format string
- *   arg0  = (optional) argument for first %s format specifier
- *   arg1  = (optional) argument for second %s format specifier
- *   arg2  = (optional) argument for third %s format specifier
+ *   args  = arguments for %s format specifier
  */
 extern (D) void reportSafeError(FuncDeclaration fd, bool gag, Loc loc,
-    const(char)* format = null, RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+    const(char)* format, RootObject[] args...)
 {
     if (fd.type.toTypeFunction().trust == TRUST.system) // function was just inferred to be @system
     {
         if (format)
-            fd.safetyViolation = new AttributeViolation(loc, format, arg0, arg1, arg2);
-        else if (arg0)
         {
-            if (FuncDeclaration fd2 = (cast(Dsymbol) arg0).isFuncDeclaration())
+            fd.safetyViolation = new AttributeViolation(loc, format, args);
+        }
+        else if (args.length > 0)
+        {
+            if (FuncDeclaration fd2 = (cast(Dsymbol) args[0]).isFuncDeclaration())
             {
                 fd.safetyViolation = new AttributeViolation(loc, fd2); // call to non-@nogc function
             }
@@ -383,12 +383,17 @@ extern (D) void reportSafeError(FuncDeclaration fd, bool gag, Loc loc,
         if (!gag && format)
         {
             OutBuffer buf;
-            buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            buf.writestring(AttributeViolation(loc, format, args).action);
             if (fd.isSafe())
                 buf.writestring(" is not allowed in a `@safe` function");
             else
-                buf.writestring(" is not allowed in a function with default safety with `-preview=safer`");
-            .error(loc, buf.extractChars());
+            {
+                version (IN_GCC)
+                    buf.writestring(" is not allowed in a function with default safety with `-fpreview=safer`");
+                else
+                    buf.writestring(" is not allowed in a function with default safety with `-preview=safer`");
+            }
+            .error(loc, "%s", buf.extractChars());
         }
     }
 }
@@ -447,14 +452,10 @@ extern (D) bool setUnsafeCall(FuncDeclaration fd, FuncDeclaration f)
  *   gag = surpress error message (used in escape.d)
  *   loc = location of error
  *   format = printf-style format string
- *   arg0  = (optional) argument for first %s format specifier
- *   arg1  = (optional) argument for second %s format specifier
- *   arg2  = (optional) argument for third %s format specifier
+ *   args  = arguments for format string
  * Returns: whether there is a safe error
  */
-bool setUnsafe(Scope* sc,
-    bool gag = false, Loc loc = Loc.init, const(char)* format = null,
-    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+bool setUnsafe(Scope* sc, bool gag, Loc loc, const(char)* format, RootObject[] args...)
 {
     if (sc.intypeof)
         return false; // typeof(cast(int*)0) is safe
@@ -468,11 +469,8 @@ bool setUnsafe(Scope* sc,
         {
             if (sc.varDecl.storage_class & STC.safe)
             {
-                OutBuffer buf;
-                buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
-                buf.printf(" can't initialize `@safe` variable `%s`", sc.varDecl.toChars());
-                .error(loc, buf.extractChars());
-
+                string action = AttributeViolation(loc, format, args).action;
+                .error(loc, "%.*s can't initialize `@safe` variable `%s`", action.fTuple.expand, sc.varDecl.toChars());
                 return true;
             }
             else if (!(sc.varDecl.storage_class & STC.trusted))
@@ -491,10 +489,8 @@ bool setUnsafe(Scope* sc,
         {
             // Message wil be gagged, but still call error() to update global.errors and for
             // -verrors=spec
-            OutBuffer buf;
-            buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
-            buf.writestring(" is not allowed in a `@safe` function");
-            .error(loc, buf.extractChars());
+            string action = AttributeViolation(loc, format, args).action;
+            .error(loc, "%.*s is not allowed in a `@safe` function", action.fTuple.expand);
             return true;
         }
         return false;
@@ -502,9 +498,9 @@ bool setUnsafe(Scope* sc,
 
     if (setFunctionToUnsafe(sc.func))
     {
-        if (format || arg0)
+        if (format || args.length > 0)
         {
-            reportSafeError(sc.func, gag, loc, format, arg0, arg1, arg2);
+            reportSafeError(sc.func, gag, loc, format, args);
         }
         return sc.func.isSafe(); // it is only an error if in an @safe function
     }
@@ -527,13 +523,10 @@ bool setUnsafe(Scope* sc,
  *   gag = surpress error message
  *   loc = location of error
  *   format = printf-style format string
- *   arg0  = (optional) argument for first %s format specifier
- *   arg1  = (optional) argument for second %s format specifier
- *   arg2  = (optional) argument for third %s format specifier
+ *   args  = arguments for format string
  * Returns: whether an actual safe error (not deprecation) occured
  */
-bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* format,
-    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* format, RootObject[] args...)
 {
     //printf("setUnsafePreview() fs:%d %s\n", fs, fmt);
     assert(format);
@@ -543,7 +536,7 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         return false;
 
       case enabled:
-        return sc.setUnsafe(gag, loc, format, arg0, arg1, arg2);
+        return sc.setUnsafe(gag, loc, format, args);
 
       case default_:
         if (!sc.func)
@@ -552,16 +545,14 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         {
             if (!gag && !sc.isDeprecated())
             {
-                OutBuffer buf;
-                buf.printf(format, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
-                buf.writestring(" will become `@system` in a future release");
-                deprecation(loc, buf.extractChars());
+                string action = AttributeViolation(loc, format, args).action;
+                deprecation(loc, "%.*s will become `@system` in a future release", action.fTuple.expand);
             }
         }
         else if (!sc.func.safetyViolation)
         {
             import dmd.func : AttributeViolation;
-            sc.func.safetyViolation = new AttributeViolation(loc, format, arg0, arg1, arg2);
+            sc.func.safetyViolation = new AttributeViolation(loc, format, args);
         }
         return false;
     }
