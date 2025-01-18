@@ -3651,6 +3651,13 @@ copy_linkage (tree guard, tree decl)
 	comdat_linkage (guard);
       DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
       DECL_VISIBILITY_SPECIFIED (guard) = DECL_VISIBILITY_SPECIFIED (decl);
+      if (!TREE_PUBLIC (decl))
+	{
+	  gcc_checking_assert (DECL_INTERFACE_KNOWN (decl));
+	  DECL_INTERFACE_KNOWN (guard) = 1;
+	  if (DECL_LANG_SPECIFIC (decl) && DECL_LANG_SPECIFIC (guard))
+	    DECL_NOT_REALLY_EXTERN (guard) = DECL_NOT_REALLY_EXTERN (decl);
+	}
     }
 }
 
