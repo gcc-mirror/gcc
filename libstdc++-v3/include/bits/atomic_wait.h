@@ -163,47 +163,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     struct __wait_args_base;
 
-    struct __waiter_pool_impl
+    // The state used by atomic waiting and notifying functions.
+    struct __waitable_state
     {
       // Don't use std::hardware_destructive_interference_size here because we
       // don't want the layout of library types to depend on compiler options.
       static constexpr auto _S_align = 64;
 
-      alignas(_S_align) __platform_wait_t _M_wait = 0;
+      // Count of threads blocked waiting on this state.
+      alignas(_S_align) __platform_wait_t _M_waiters = 0;
 
 #ifndef _GLIBCXX_HAVE_PLATFORM_WAIT
       mutex _M_mtx;
 #endif
 
+      // If we can't do a platform wait on the atomic variable itself,
+      // we use this member as a proxy for the atomic variable and we
+      // use this for waiting and notifying functions instead.
       alignas(_S_align) __platform_wait_t _M_ver = 0;
 
 #ifndef _GLIBCXX_HAVE_PLATFORM_WAIT
       __condvar _M_cv;
 #endif
 
-      __waiter_pool_impl() = default;
+      __waitable_state() = default;
 
       void
       _M_enter_wait() noexcept
-      { __atomic_fetch_add(&_M_wait, 1, __ATOMIC_SEQ_CST); }
+      { __atomic_fetch_add(&_M_waiters, 1, __ATOMIC_SEQ_CST); }
 
       void
       _M_leave_wait() noexcept
-      { __atomic_fetch_sub(&_M_wait, 1, __ATOMIC_RELEASE); }
+      { __atomic_fetch_sub(&_M_waiters, 1, __ATOMIC_RELEASE); }
 
       bool
       _M_waiting() const noexcept
       {
 	__platform_wait_t __res;
-	__atomic_load(&_M_wait, &__res, __ATOMIC_SEQ_CST);
+	__atomic_load(&_M_waiters, &__res, __ATOMIC_SEQ_CST);
 	return __res != 0;
       }
 
-      static __waiter_pool_impl&
-      _S_impl_for(const void* __addr) noexcept
+      static __waitable_state&
+      _S_state_for(const void* __addr) noexcept
       {
 	constexpr __UINTPTR_TYPE__ __ct = 16;
-	static __waiter_pool_impl __w[__ct];
+	static __waitable_state __w[__ct];
 	auto __key = ((__UINTPTR_TYPE__)__addr >> 2) % __ct;
 	return __w[__key];
       }
@@ -211,7 +216,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Return an RAII type that calls _M_enter_wait() on construction
       // and _M_leave_wait() on destruction.
       static auto
-      _S_track(__waiter_pool_impl*& __pool, const __wait_args_base& __args,
+      _S_track(__waitable_state*& __state, const __wait_args_base& __args,
 	       const void* __addr) noexcept;
     };
 
@@ -298,9 +303,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
     inline auto
-    __waiter_pool_impl::_S_track(__waiter_pool_impl*& __pool,
-				 const __wait_args_base& __args,
-				 const void* __addr) noexcept
+    __waitable_state::_S_track(__waitable_state*& __state,
+			       const __wait_args_base& __args,
+			       const void* __addr) noexcept
     {
       struct _Tracker
       {
@@ -308,7 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	[[__gnu__::__nonnull__]]
 	explicit
-	_Tracker(__waiter_pool_impl* __st) noexcept
+	_Tracker(__waitable_state* __st) noexcept
 	: _M_st(__st)
 	{ __st->_M_enter_wait(); }
 
@@ -317,21 +322,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	~_Tracker() { if (_M_st) _M_st->_M_leave_wait(); }
 
-	__waiter_pool_impl* _M_st;
+	__waitable_state* _M_st;
       };
 
       if (__args & __wait_flags::__track_contention)
 	{
 	  // Caller does not externally track contention,
-	  // so we want to increment+decrement __pool->_M_waiters
+	  // so we want to increment+decrement __state->_M_waiters
 
 	  // First make sure we have a waitable state for the address.
-	  if (!__pool)
-	    __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+	  if (!__state)
+	    __state = &__waitable_state::_S_state_for(__addr);
 
 	  // This object will increment the number of waiters and
 	  // decrement it again on destruction.
-	  return _Tracker{__pool};
+	  return _Tracker{__state};
 	}
       return _Tracker{}; // For bare waits caller tracks waiters.
     }
@@ -359,13 +364,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __wait_impl(const void* __addr, const __wait_args_base& __a)
     {
       __wait_args_base __args = __a;
-      __waiter_pool_impl* __pool = nullptr;
+      __waitable_state* __state = nullptr;
 
       const __platform_wait_t* __wait_addr;
       if (__args & __wait_flags::__proxy_wait)
 	{
-	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
-	  __wait_addr = &__pool->_M_ver;
+	  __state = &__waitable_state::_S_state_for(__addr);
+	  __wait_addr = &__state->_M_ver;
 	  __atomic_load(__wait_addr, &__args._M_old, __args._M_order);
 	}
       else
@@ -380,7 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __res;
 	}
 
-      auto __tracker = __waiter_pool_impl::_S_track(__pool, __args, __addr);
+      auto __tracker = __waitable_state::_S_track(__state, __args, __addr);
 
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
       __platform_wait(__wait_addr, __args._M_old);
@@ -390,12 +395,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_load(__wait_addr, &__val, __args._M_order);
       if (__val == __args._M_old)
 	{
-	  if (!__pool)
-	    __pool = &__waiter_pool_impl::_S_impl_for(__addr);
-	  lock_guard<mutex> __l{ __pool->_M_mtx };
+	  if (!__state)
+	    __state = &__waitable_state::_S_state_for(__addr);
+	  lock_guard<mutex> __l{ __state->_M_mtx };
 	  __atomic_load(__wait_addr, &__val, __args._M_order);
 	  if (__val == __args._M_old)
-	    __pool->_M_cv.wait(__pool->_M_mtx);
+	    __state->_M_cv.wait(__state->_M_mtx);
 	}
       return { false, __val };
 #endif
@@ -405,15 +410,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __notify_impl(const void* __addr, [[maybe_unused]] bool __all,
 		  const __wait_args_base& __args)
     {
-      __waiter_pool_impl* __pool = nullptr;
+      __waitable_state* __state = nullptr;
 
       const __platform_wait_t* __wait_addr;
       if (__args & __wait_flags::__proxy_wait)
 	{
-	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+	  __state = &__waitable_state::_S_state_for(__addr);
 	  // Waiting for *__addr is actually done on the proxy's _M_ver.
-	  __wait_addr = &__pool->_M_ver;
-	  __atomic_fetch_add(&__pool->_M_ver, 1, __ATOMIC_RELAXED);
+	  __wait_addr = &__state->_M_ver;
+	  __atomic_fetch_add(&__state->_M_ver, 1, __ATOMIC_RELAXED);
 	  // Because the proxy might be shared by several waiters waiting
 	  // on different atomic variables, we need to wake them all so
 	  // they can re-evaluate their conditions to see if they should
@@ -425,19 +430,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__args & __wait_flags::__track_contention)
 	{
-	  if (!__pool)
-	    __pool = &__waiter_pool_impl::_S_impl_for(__addr);
-	  if (!__pool->_M_waiting())
+	  if (!__state)
+	    __state = &__waitable_state::_S_state_for(__addr);
+	  if (!__state->_M_waiting())
 	    return;
 	}
 
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
       __platform_notify(__wait_addr, __all);
 #else
-      if (!__pool)
-	__pool = &__waiter_pool_impl::_S_impl_for(__addr);
-      lock_guard<mutex> __l{ __pool->_M_mtx };
-      __pool->_M_cv.notify_all();
+      if (!__state)
+	__state = &__waitable_state::_S_state_for(__addr);
+      lock_guard<mutex> __l{ __state->_M_mtx };
+      __state->_M_cv.notify_all();
 #endif
     }
   } // namespace __detail

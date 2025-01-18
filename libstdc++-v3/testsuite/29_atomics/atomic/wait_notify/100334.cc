@@ -47,15 +47,14 @@ int
 main()
 {
   // all atomic share the same waiter
-//  atomics_sharing_same_waiter<char> atomics;
   atomics_sharing_same_waiter<char> atomics;
   for (auto& atom : atomics.a)
   {
     atom->store(0);
   }
 
-  auto a = &std::__detail::__waiter_pool_impl::_S_impl_for(reinterpret_cast<char *>(atomics.a[0]));
-  auto b = &std::__detail::__waiter_pool_impl::_S_impl_for(reinterpret_cast<char *>(atomics.a[1]));
+  auto a = &std::__detail::__waitable_state::_S_state_for((void*)(atomics.a[0]));
+  auto b = &std::__detail::__waitable_state::_S_state_for((void*)(atomics.a[1]));
   VERIFY( a == b );
 
   auto fut0 = std::async(std::launch::async, [&] { atomics.a[0]->wait(0); });

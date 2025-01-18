@@ -174,12 +174,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      const __wait_clock_t::time_point& __atime)
     {
       __wait_args_base __args = __a;
-      __waiter_pool_impl* __pool = nullptr;
+      __waitable_state* __state = nullptr;
       const __platform_wait_t* __wait_addr;
       if (__args & __wait_flags::__proxy_wait)
 	{
-	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
-	  __wait_addr = &__pool->_M_ver;
+	  __state = &__waitable_state::_S_state_for(__addr);
+	  __wait_addr = &__state->_M_ver;
 	  __atomic_load(__wait_addr, &__args._M_old, __args._M_order);
 	}
       else
@@ -194,7 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __res;
 	}
 
-      auto __tracker = __waiter_pool_impl::_S_track(__pool, __args, __addr);
+      auto __tracker = __waitable_state::_S_track(__state, __args, __addr);
 
 #ifdef _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
       if (__platform_wait_until(__wait_addr, __args._M_old, __atime))
@@ -206,12 +206,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_load(__wait_addr, &__val, __args._M_order);
       if (__val == __args._M_old)
 	{
-	  if (!__pool)
-	    __pool = &__waiter_pool_impl::_S_impl_for(__addr);
-	  lock_guard<mutex> __l{ __pool->_M_mtx };
+	  if (!__state)
+	    __state = &__waitable_state::_S_state_for(__addr);
+	  lock_guard<mutex> __l{ __state->_M_mtx };
 	  __atomic_load(__wait_addr, &__val, __args._M_order);
 	  if (__val == __args._M_old
-		&& __cond_wait_until(__pool->_M_cv, __pool->_M_mtx, __atime))
+		&& __cond_wait_until(__state->_M_cv, __state->_M_mtx, __atime))
 	    return { true, __val };
 	}
       return { false, __val };
