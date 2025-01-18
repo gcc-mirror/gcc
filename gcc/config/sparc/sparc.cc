@@ -1671,6 +1671,8 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "VIS2 ");
   if (flags & MASK_VIS3)
     fprintf (stderr, "VIS3 ");
+  if (flags & MASK_VIS3B)
+    fprintf (stderr, "VIS3B ");
   if (flags & MASK_VIS4)
     fprintf (stderr, "VIS4 ");
   if (flags & MASK_VIS4B)
@@ -1919,19 +1921,23 @@ sparc_option_override (void)
   if (TARGET_VIS3)
     target_flags |= MASK_VIS2 | MASK_VIS;
 
-  /* -mvis4 implies -mvis3, -mvis2 and -mvis.  */
-  if (TARGET_VIS4)
+  /* -mvis3b implies -mvis3, -mvis2 and -mvis.  */
+  if (TARGET_VIS3B)
     target_flags |= MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
-  /* -mvis4b implies -mvis4, -mvis3, -mvis2 and -mvis */
-  if (TARGET_VIS4B)
-    target_flags |= MASK_VIS4 | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
+  /* -mvis4 implies -mvis3b, -mvis3, -mvis2 and -mvis.  */
+  if (TARGET_VIS4)
+    target_flags |= MASK_VIS3B | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4, -mvis4b, -mfmaf and -mfsmuld if
-     FPU is disabled.  */
+  /* -mvis4b implies -mvis4, -mvis3b, -mvis3, -mvis2 and -mvis */
+  if (TARGET_VIS4B)
+    target_flags |= MASK_VIS4 | MASK_VIS3B | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
+
+  /* Don't allow -mvis, -mvis2, -mvis3, -mvis3b, -mvis4, -mvis4b, -mfmaf and
+     -mfsmuld if FPU is disabled.  */
   if (!TARGET_FPU)
-    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS4
-		      | MASK_VIS4B | MASK_FMAF | MASK_FSMULD);
+    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS3B
+		      | MASK_VIS4 | MASK_VIS4B | MASK_FMAF | MASK_FSMULD);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available; -m64 also implies v9.  */
@@ -11451,10 +11457,6 @@ sparc_vis_init_builtins (void)
 
       def_builtin_const ("__builtin_vis_fmean16", CODE_FOR_fmean16_vis,
 			 SPARC_BUILTIN_FMEAN16, v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fpadd64", CODE_FOR_fpadd64_vis,
-			 SPARC_BUILTIN_FPADD64, di_ftype_di_di);
-      def_builtin_const ("__builtin_vis_fpsub64", CODE_FOR_fpsub64_vis,
-			 SPARC_BUILTIN_FPSUB64, di_ftype_di_di);
 
       def_builtin_const ("__builtin_vis_fpadds16", CODE_FOR_ssaddv4hi3,
 			 SPARC_BUILTIN_FPADDS16, v4hi_ftype_v4hi_v4hi);
@@ -11472,6 +11474,34 @@ sparc_vis_init_builtins (void)
 			 SPARC_BUILTIN_FPSUBS32, v2si_ftype_v2si_v2si);
       def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_sssubv1si3,
 			 SPARC_BUILTIN_FPSUBS32S, v1si_ftype_v1si_v1si);
+
+      def_builtin_const ("__builtin_vis_fhadds", CODE_FOR_fhaddsf_vis,
+			 SPARC_BUILTIN_FHADDS, sf_ftype_sf_sf);
+      def_builtin_const ("__builtin_vis_fhaddd", CODE_FOR_fhadddf_vis,
+			 SPARC_BUILTIN_FHADDD, df_ftype_df_df);
+      def_builtin_const ("__builtin_vis_fhsubs", CODE_FOR_fhsubsf_vis,
+			 SPARC_BUILTIN_FHSUBS, sf_ftype_sf_sf);
+      def_builtin_const ("__builtin_vis_fhsubd", CODE_FOR_fhsubdf_vis,
+			 SPARC_BUILTIN_FHSUBD, df_ftype_df_df);
+      def_builtin_const ("__builtin_vis_fnhadds", CODE_FOR_fnhaddsf_vis,
+			 SPARC_BUILTIN_FNHADDS, sf_ftype_sf_sf);
+      def_builtin_const ("__builtin_vis_fnhaddd", CODE_FOR_fnhadddf_vis,
+			 SPARC_BUILTIN_FNHADDD, df_ftype_df_df);
+
+      def_builtin_const ("__builtin_vis_umulxhi", CODE_FOR_umulxhi_vis,
+			 SPARC_BUILTIN_UMULXHI, di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_xmulx", CODE_FOR_xmulx_vis,
+			 SPARC_BUILTIN_XMULX, di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_xmulxhi", CODE_FOR_xmulxhi_vis,
+			 SPARC_BUILTIN_XMULXHI, di_ftype_di_di);
+    }
+
+  if (TARGET_VIS3B)
+    {
+      def_builtin_const ("__builtin_vis_fpadd64", CODE_FOR_fpadd64_vis,
+			 SPARC_BUILTIN_FPADD64, di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_fpsub64", CODE_FOR_fpsub64_vis,
+			 SPARC_BUILTIN_FPSUB64, di_ftype_di_di);
 
       if (TARGET_ARCH64)
 	{
@@ -11495,26 +11525,6 @@ sparc_vis_init_builtins (void)
 	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fpcmpeq8si_vis,
 			     SPARC_BUILTIN_FUCMPEQ8, si_ftype_v8qi_v8qi);
 	}
-
-      def_builtin_const ("__builtin_vis_fhadds", CODE_FOR_fhaddsf_vis,
-			 SPARC_BUILTIN_FHADDS, sf_ftype_sf_sf);
-      def_builtin_const ("__builtin_vis_fhaddd", CODE_FOR_fhadddf_vis,
-			 SPARC_BUILTIN_FHADDD, df_ftype_df_df);
-      def_builtin_const ("__builtin_vis_fhsubs", CODE_FOR_fhsubsf_vis,
-			 SPARC_BUILTIN_FHSUBS, sf_ftype_sf_sf);
-      def_builtin_const ("__builtin_vis_fhsubd", CODE_FOR_fhsubdf_vis,
-			 SPARC_BUILTIN_FHSUBD, df_ftype_df_df);
-      def_builtin_const ("__builtin_vis_fnhadds", CODE_FOR_fnhaddsf_vis,
-			 SPARC_BUILTIN_FNHADDS, sf_ftype_sf_sf);
-      def_builtin_const ("__builtin_vis_fnhaddd", CODE_FOR_fnhadddf_vis,
-			 SPARC_BUILTIN_FNHADDD, df_ftype_df_df);
-
-      def_builtin_const ("__builtin_vis_umulxhi", CODE_FOR_umulxhi_vis,
-			 SPARC_BUILTIN_UMULXHI, di_ftype_di_di);
-      def_builtin_const ("__builtin_vis_xmulx", CODE_FOR_xmulx_vis,
-			 SPARC_BUILTIN_XMULX, di_ftype_di_di);
-      def_builtin_const ("__builtin_vis_xmulxhi", CODE_FOR_xmulxhi_vis,
-			 SPARC_BUILTIN_XMULXHI, di_ftype_di_di);
     }
 
   if (TARGET_VIS4)

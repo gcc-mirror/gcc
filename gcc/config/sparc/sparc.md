@@ -8993,7 +8993,7 @@
 		     (match_operand:FPCMP 2 "register_operand" "e")))]
   "TARGET_VIS
    && (<FPCMP:MODE>mode != V8QImode
-       || (TARGET_VIS3 && (<fpcmpcond:CODE> == EQ || <fpcmpcond:CODE> == NE))
+       || (TARGET_VIS3B && (<fpcmpcond:CODE> == EQ || <fpcmpcond:CODE> == NE))
        || TARGET_VIS4)"
   "fpcmp<fpcmpcond:code><FPCMP:vbits>\t%1, %2, %0"
   [(set_attr "type" "viscmp")])
@@ -9003,7 +9003,7 @@
         (match_operator:P 1 "vec_cmp_operator"
           [(match_operand:FPCMP 2 "register_operand" "")
            (match_operand:FPCMP 3 "register_operand" "")]))]
-  "TARGET_VIS3"
+  "TARGET_VIS3B"
 {
   enum rtx_code code = GET_CODE (operands[1]);
 
@@ -9018,7 +9018,7 @@
   [(set (match_operand:P 0 "register_operand" "=r")
 	(fpcmpucond:P (match_operand:FPCMP 1 "register_operand" "e")
 		      (match_operand:FPCMP 2 "register_operand" "e")))]
-  "TARGET_VIS3 && (<FPCMP:MODE>mode == V8QImode || TARGET_VIS4)"
+  "TARGET_VIS3B && (<FPCMP:MODE>mode == V8QImode || TARGET_VIS4)"
   "fpcmpu<fpcmpucond:signed_code><FPCMP:vbits>\t%1, %2, %0"
   [(set_attr "type" "viscmp")])
 
@@ -9027,7 +9027,7 @@
         (match_operator:P 1 "vec_cmpu_operator"
           [(match_operand:FPCMP 2 "register_operand" "")
            (match_operand:FPCMP 3 "register_operand" "")]))]
-  "TARGET_VIS3"
+  "TARGET_VIS3B"
 {
   enum rtx_code code = GET_CODE (operands[1]);
 
@@ -9043,7 +9043,7 @@
    (match_operand:FPCMP 1 "register_operand" "")
    (match_operand:FPCMP 2 "register_operand" "")
    (match_operand:P     3 "register_operand" "")]
-  "TARGET_VIS3"
+  "TARGET_VIS3B"
 {
   sparc_expand_vcond_mask (<FPCMP:MODE>mode, operands, UNSPEC_CMASK<vbits>);
   DONE;
@@ -9268,7 +9268,7 @@
   [(set (match_operand:V1DI 0 "register_operand" "=e")
 	(plusminus:V1DI (match_operand:V1DI 1 "register_operand" "e")
 			(match_operand:V1DI 2 "register_operand" "e")))]
-  "TARGET_VIS3"
+  "TARGET_VIS3B"
   "fp<plusminus_insn>64\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "subtype" "addsub64")])

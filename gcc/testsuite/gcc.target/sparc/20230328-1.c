@@ -1,6 +1,6 @@
 /* PR target/109140 */
 /* { dg-do compile } */
-/* { dg-options "-O3 -mvis3 -std=c99" } */
+/* { dg-options "-O3 -mvis3b -std=c99" } */
 
 #define TYPE unsigned char
 

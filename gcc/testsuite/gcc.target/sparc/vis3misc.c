@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-mvis3" } */
+/* { dg-options "-mvis3b" } */
+
 typedef int __v2si __attribute__((vector_size(8)));
 typedef short __v4hi __attribute__((vector_size(8)));
 typedef unsigned char __v8qi __attribute__((vector_size(8)));

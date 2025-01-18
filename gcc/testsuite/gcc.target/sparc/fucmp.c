@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mvis3" } */
+/* { dg-options "-mvis3b" } */
 
 typedef unsigned char vec8 __attribute__((vector_size(8)));
 

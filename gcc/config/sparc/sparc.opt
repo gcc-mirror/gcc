@@ -73,13 +73,17 @@ mvis3
 Target Mask(VIS3)
 Use UltraSPARC Visual Instruction Set version 3.0 extensions.
 
+mvis3b
+Target Mask(VIS3B)
+Use additional VIS 3 instructions introduced in OSA2011.
+
 mvis4
 Target Mask(VIS4)
 Use UltraSPARC Visual Instruction Set version 4.0 extensions.
 
 mvis4b
 Target Mask(VIS4B)
-Use additional VIS instructions introduced in OSA2017.
+Use additional VIS 4 instructions introduced in OSA2017.
 
 mcbcond
 Target Mask(CBCOND)

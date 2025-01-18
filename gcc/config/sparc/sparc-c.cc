@@ -52,6 +52,11 @@ sparc_target_macros (void)
       cpp_define (parse_in, "__VIS__=0x400");
       cpp_define (parse_in, "__VIS=0x400");
     }
+  else if (TARGET_VIS3B)
+    {
+      cpp_define (parse_in, "__VIS__=0x310");
+      cpp_define (parse_in, "__VIS=0x310");
+    }
   else if (TARGET_VIS3)
     {
       cpp_define (parse_in, "__VIS__=0x300");
