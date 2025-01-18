@@ -10337,7 +10337,6 @@ void
 riscv_file_end ()
 {
   file_end_indicate_exec_stack ();
-  long GNU_PROPERTY_RISCV_FEATURE_1_AND  = 0;
   unsigned long feature_1_and = 0;
 
   if (is_zicfilp_p ())
