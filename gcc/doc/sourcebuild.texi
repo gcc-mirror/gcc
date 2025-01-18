@@ -3012,6 +3012,9 @@ Note that this is orthogonal to effective-target @code{exceptions_enabled}.
 Testing configuration has exception handling enabled.
 Note that this is orthogonal to effective-target @code{exceptions}.
 
+@item using_sjlj_exceptions
+Target uses @code{setjmp} and @code{longjmp} for implementing exceptions.
+
 @item fgraphite
 Target supports Graphite optimizations.
 

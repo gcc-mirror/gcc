@@ -1,5 +1,5 @@
 // PR tree-optimization/119491
-// { dg-do compile { target { external_musttail && c++11 } } }
+// { dg-do compile { target { external_musttail && { c++11 && { ! using_sjlj_exceptions } } } } }
 // { dg-options "-O2" }
 
 struct A {

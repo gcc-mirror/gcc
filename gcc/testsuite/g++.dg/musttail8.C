@@ -1,4 +1,4 @@
-/* { dg-do compile { target { musttail } } } */
+/* { dg-do compile { target { musttail && { ! using_sjlj_exceptions } } } } */
 /* { dg-options "-std=gnu++11" } */
 /* { dg-additional-options "-fdelayed-branch" { target sparc*-*-* } } */
 

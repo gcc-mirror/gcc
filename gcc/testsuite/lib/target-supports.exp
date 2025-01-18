@@ -12632,6 +12632,18 @@ proc check_effective_target_exceptions_enabled {} {
     }]
 }
 
+# Returns 1 if target uses setjump/longjump for implementing exceptions,
+# 0 otherwise.
+proc check_effective_target_using_sjlj_exceptions {} {
+    return [check_no_compiler_messages using_sjlj_exceptions assembly {
+	// C++
+	#if !defined __USING_SJLJ_EXCEPTIONS__
+	#error not using SJLJ exception implementation
+	#endif
+	int dummy;
+    }]
+}
+
 proc check_effective_target_tiny {} {
     return [check_cached_effective_target tiny {
       if { [istarget aarch64*-*-*]
