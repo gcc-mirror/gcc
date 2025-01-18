@@ -2407,7 +2407,7 @@ build_contract_check (tree contract)
 	  finish_expr_stmt (finish_call_expr (fn, &vec, false, false,
 					      tf_warning_or_error));
 	}
-      else if (semantic == CCS_ENFORCE)
+      else if (semantic == CCS_ENFORCE || semantic == CCS_NOEXCEPT_ENFORCE)
 	/* FIXME: we should not call this when exceptions are disabled.  */
 	finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
       finish_then_clause (if_stmt);
