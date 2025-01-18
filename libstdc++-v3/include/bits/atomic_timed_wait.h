@@ -170,8 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     inline __wait_result_type
-    __wait_until_impl(const __platform_wait_t* __addr,
-		      const __wait_args_base& __a,
+    __wait_until_impl(const void* __addr, const __wait_args_base& __a,
 		      const __wait_clock_t::time_point& __atime)
     {
       __wait_args_base __args = __a;
@@ -184,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __atomic_load(__wait_addr, &__args._M_old, __args._M_order);
 	}
       else
-	__wait_addr = __addr;
+	__wait_addr = static_cast<const __platform_wait_t*>(__addr);
 
       if (__args & __wait_flags::__do_spin)
 	{
@@ -222,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Returns {true, val} if wait ended before a timeout.
     template<typename _Clock, typename _Dur>
       __wait_result_type
-      __wait_until(const __platform_wait_t* __addr, const __wait_args_base& __args,
+      __wait_until(const void* __addr, const __wait_args_base& __args,
 		   const chrono::time_point<_Clock, _Dur>& __atime) noexcept
       {
 	auto __at = __detail::__to_wait_clock(__atime);
@@ -243,7 +242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Returns {true, val} if wait ended before a timeout.
     template<typename _Rep, typename _Period>
       __wait_result_type
-      __wait_for(const __platform_wait_t* __addr, const __wait_args_base& __args,
+      __wait_for(const void* __addr, const __wait_args_base& __args,
 		 const chrono::duration<_Rep, _Period>& __rtime) noexcept
       {
 	if (!__rtime.count())
@@ -270,13 +269,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				const chrono::time_point<_Clock, _Dur>& __atime,
 				bool __bare_wait = false) noexcept
     {
-      const auto __wait_addr =
-	reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
       __detail::__wait_args __args{ __addr, __bare_wait };
       _Tp __val = __vfn();
       while (!__pred(__val))
 	{
-	  auto __res = __detail::__wait_until(__wait_addr, __args, __atime);
+	  auto __res = __detail::__wait_until(__addr, __args, __atime);
 	  if (!__res.first)
 	    // timed out
 	    return __res.first; // C++26 will also return last observed __val
@@ -320,13 +317,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      const chrono::duration<_Rep, _Period>& __rtime,
 			      bool __bare_wait = false) noexcept
     {
-      const auto __wait_addr =
-	  reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
       __detail::__wait_args __args{ __addr, __bare_wait };
       _Tp __val = __vfn();
       while (!__pred(__val))
 	{
-	  auto __res = __detail::__wait_for(__wait_addr, __args, __rtime);
+	  auto __res = __detail::__wait_for(__addr, __args, __rtime);
 	  if (!__res.first)
 	    // timed out
 	    return __res.first; // C++26 will also return last observed __val

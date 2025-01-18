@@ -355,7 +355,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     inline __wait_result_type
-    __wait_impl(const __platform_wait_t* __addr, const __wait_args_base& __a)
+    __wait_impl(const void* __addr, const __wait_args_base& __a)
     {
       __wait_args_base __args = __a;
       __waiter_pool_impl* __pool = nullptr;
@@ -368,7 +368,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __atomic_load(__wait_addr, &__args._M_old, __args._M_order);
 	}
       else
-	__wait_addr = __addr;
+	__wait_addr = static_cast<const __platform_wait_t*>(__addr);
 
       if (__args & __wait_flags::__do_spin)
 	{
@@ -401,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     inline void
-    __notify_impl(const __platform_wait_t* __addr, [[maybe_unused]] bool __all,
+    __notify_impl(const void* __addr, [[maybe_unused]] bool __all,
 		  const __wait_args_base& __args)
     {
       __waiter_pool_impl* __pool = nullptr;
@@ -420,7 +420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __all = true;
 	}
       else // Use the atomic variable's own address.
-	__wait_addr = __addr;
+	__wait_addr = static_cast<const __platform_wait_t*>(__addr);
 
       if (__args & __wait_flags::__track_contention)
 	{
@@ -449,8 +449,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __atomic_wait_address(const _Tp* __addr, _Pred&& __pred, _ValFn&& __vfn,
 			  bool __bare_wait = false) noexcept
     {
-      const auto __wait_addr =
-	  reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
       __detail::__wait_args __args{ __addr, __bare_wait };
       _Tp __val = __vfn();
       while (!__pred(__val))
@@ -462,7 +460,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					       __val);
 	  // Otherwise, it's a proxy wait and the proxy's _M_ver is used.
 
-	  __detail::__wait_impl(__wait_addr, __args);
+	  __detail::__wait_impl(__addr, __args);
 	  __val = __vfn();
 	}
       // C++26 will return __val
@@ -494,10 +492,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __atomic_notify_address(const _Tp* __addr, bool __all,
 			    bool __bare_wait = false) noexcept
     {
-      const auto __wait_addr =
-	  reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
       __detail::__wait_args __args{ __addr, __bare_wait };
-      __detail::__notify_impl(__wait_addr, __all, __args);
+      __detail::__notify_impl(__addr, __all, __args);
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
