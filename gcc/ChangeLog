@@ -1,3 +1,100 @@
+2025-01-17  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	Backported from master:
+	2025-01-16  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR gcov-profile/116743
+	* auto-profile.cc (afdo_annotate_cfg): Fix mismatch between the call graph node count
+	and the entry block count.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117417
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Avoid
+	decomposing BIT_FIELD_REF complex load.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117307
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_accesses):
+	Properly compute STMT_VINFO_SLP_VECT_ONLY.  Set it on all
+	parts of a split group.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117254
+	* gimple-ssa-warn-access.cc (maybe_warn_nonstring_arg):
+	Check the array domain max is constant before using it.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117104
+	* match.pd ((cmp:c (minmax:c @0 @1) @0) -> (out @0 @1)): Properly
+	guard the vector case.
+
+2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116891
+	* match.pd ((negate (fmas@3 @0 @1 @2)) -> (IFN_FNMS @0 @1 @2)):
+	Only enable for !HONOR_SIGN_DEPENDENT_ROUNDING.
+	((negate (IFN_FMS@3 @0 @1 @2)) -> (IFN_FNMA @0 @1 @2)): Likewise.
+	((negate (IFN_FNMA@3 @0 @1 @2)) -> (IFN_FMS @0 @1 @2)): Likewise.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/116891
+	* match.pd ((negate (IFN_FNMS@3 @0 @1 @2)) -> (IFN_FMA @0 @1 @2)):
+	Only enable for !HONOR_SIGN_DEPENDENT_ROUNDING.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116768
+	* tree-data-ref.cc (build_classic_dist_vector_1): Revert
+	PR101009 change.
+	* tree-chrec.cc (eq_evolutions_p): Make sure (sizetype)1
+	and (int)1 compare equal.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116290
+	* tree-loop-distribution.cc (determine_reduction_stmt_1): PHIs
+	have no debug variants.  Start with first non-debug real stmt.
+	* tree-ssa-loop-ivopts.cc (find_givs_in_bb): Do not analyze
+	debug stmts.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69482
+	* cfgexpand.cc (discover_nonconstant_array_refs_r): Volatile
+	qualified accesses also force objects to memory.
+
 2025-01-14  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:
