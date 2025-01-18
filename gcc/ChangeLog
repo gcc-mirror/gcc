@@ -1,3 +1,12 @@
+2025-01-17  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	Backported from master:
+	2025-01-16  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR gcov-profile/116743
+	* auto-profile.cc (afdo_annotate_cfg): Fix mismatch between the call graph node count
+	and the entry block count.
+
 2025-01-16  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
