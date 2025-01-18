@@ -5749,7 +5749,7 @@ package body Exp_Aggr is
          while Present (Assoc) loop
             Iter := Iterator_Specification (Assoc);
             Iter_Id := Defining_Identifier (Iter);
-            New_Comp := Make_Assignment_Statement (Loc,
+            New_Comp := Make_OK_Assignment_Statement (Loc,
                Name =>
                  Make_Indexed_Component (Loc,
                     Prefix => New_Occurrence_Of (TmpE, Loc),
