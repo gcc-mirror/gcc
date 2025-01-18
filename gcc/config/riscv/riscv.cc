@@ -11963,9 +11963,7 @@ riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
 		      rtx *shifted_value)
 {
   rtx value_reg = gen_reg_rtx (SImode);
-  emit_move_insn (value_reg, simplify_gen_subreg (SImode, value,
-						  mode, 0));
-
+  emit_move_insn (value_reg, gen_lowpart (SImode, value));
   emit_move_insn (*shifted_value, gen_rtx_ASHIFT (SImode, value_reg,
 						  gen_lowpart (QImode, shift)));
 }
