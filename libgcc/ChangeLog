@@ -1,3 +1,19 @@
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/crti.S: Add lpad instructions.
+	* config/riscv/crtn.S: Likewise.
+	* config/riscv/save-restore.S: Likewise.
+	* config/riscv/riscv-asm.h: Add GNU_PROPERTY for ZICFILP,
+	ZICFISS.
+	Co-Developed-by: Jesse Huang <jesse.huang@sifive.com>
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/linux-unwind.h: Include shadow-stack-unwind.h.
+	* config/riscv/shadow-stack-unwind.h
+	(_Unwind_Frames_Extra): Define.
+	(_Unwind_Frames_Increment): Define.
+
 2025-01-07  Keith Packard  <keithp@keithp.com>
 
 	* config/m68k/fpgnulib.c (extenddfxf2): Simplify code by removing code

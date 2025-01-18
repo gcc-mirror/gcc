@@ -1,3 +1,138 @@
+2025-01-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/118067
+	* lra-constraints.cc (invalid_mode_reg_p): New function.
+	(curr_insn_transform): Use it to check mode returned by target
+	secondary_memory_needed_mode.
+
+2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118511
+	* config/s390/s390.cc (print_operand) <case 'p'>: Use
+	output_operand_lossage instead of gcc_checking_assert.
+	(print_operand) <case 'q'>: Likewise.
+	(print_operand) <case 'r'>: Likewise.
+
+2025-01-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md: Rename insns
+
+2025-01-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc: Expand iterators.
+	* config/aarch64/aarch64-simd-builtins.def: Use standard names
+	* config/aarch64/aarch64-simd.md: Use standard names, split insn
+	definitions on signedness of operator and type of operands.
+	* config/aarch64/arm_neon.h: Use standard builtin names.
+	* config/aarch64/iterators.md: Add VSDQ_I_QI_HI iterator to
+	simplify splitting of insn for unsigned scalar arithmetic.
+
+2025-01-17  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xvcvuxwdp):
+	Remove built-in definition.
+
+2025-01-17  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_vperm_8hi,
+	__builtin_vsx_vperm_8hi_uns): Remove built-in definitions.
+
+2025-01-17  Carl Love  <cel@linux.ibm.com>
+
+	* doc/extend.texi: Fix spelling mistake in description of the
+	vec_sel built-in.  Add documentation of the 128-bit vec_perm
+	instance.
+
+2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-c.cc (DEF_BUILTIN): Add ATTRS argument to macro
+	definition.
+	* config/avr/avr.cc: Same.
+	(avr_init_builtins) <attr_const>: New variable that can be used
+	as ATTRS argument in DEF_BUILTIN.
+	* config/avr/builtins.def (DEF_BUILTIN): Add ATTRS parameter
+	to all definitions.
+
+2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118329
+	* config/avr/avr-modes.def: Add INT_N (PSI, 24).
+	* config/avr/avr.cc (avr_init_builtin_int24)
+	<__int24>: Remove definition.
+	<__uint24>: Adjust definition to INT_N interface.
+
+2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118522
+	* match.pd ((FTYPE) N CMP (FTYPE) M): Add convert, as in GENERIC
+	integral types with the same precision and sign might actually not
+	be compatible types.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92539
+	* tree-ssa-loop-ivcanon.cc (tree_unroll_loops_completely_1):
+	Also try force-evaluation if ivcanon did not yet run.
+	(canonicalize_loop_induction_variables):
+	When niter was computed constant by force evaluation add a
+	canonical IV if we didn't unroll.
+	* tree-ssa-loop-niter.cc (loop_niter_by_eval): When we
+	don't find a proper PHI try if the exit condition scans
+	over a STRING_CST and simulate that.
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.cc
+	(is_zicfilp_p): New function.
+	(is_zicfiss_p): New function.
+	* config/riscv/riscv-zicfilp.cc: Update.
+	* config/riscv/riscv.h: Update.
+	* config/riscv/riscv.md: Update.
+	* config/riscv/riscv-c.cc: Add CFI predefine marco.
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.cc
+	(riscv_file_end): Add .note.gnu.property.
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* common/config/riscv/riscv-common.cc: Add ZICFILP ISA
+	string.
+	* config.gcc: Add riscv-zicfilp.o
+	* config/riscv/riscv-passes.def (INSERT_PASS_BEFORE):
+	Insert landing pad instructions.
+	* config/riscv/riscv-protos.h (make_pass_insert_landing_pad):
+	Declare.
+	* config/riscv/riscv-zicfilp.cc: New file.
+	* config/riscv/riscv.cc
+	(riscv_trampoline_init): Add landing pad instructions.
+	(riscv_legitimize_call_address): Likewise.
+	(riscv_output_mi_thunk): Likewise.
+	* config/riscv/riscv.h: Update.
+	* config/riscv/riscv.md: Add landing pad patterns.
+	* config/riscv/riscv.opt (TARGET_ZICFILP): Define.
+	* config/riscv/t-riscv: Add build rule for
+	riscv-zicfilp.o
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* common/config/riscv/riscv-common.cc: Add ZICFISS ISA string.
+	* config/riscv/predicates.md: New predicate x1x5_operand.
+	* config/riscv/riscv.cc
+	(riscv_expand_prologue): Insert shadow stack instructions.
+	(riscv_expand_epilogue): Likewise.
+	(riscv_for_each_saved_reg): Assign t0 or ra register for
+	sspopchk instruction.
+	(need_shadow_stack_push_pop_p): New function. Omit shadow
+	stack operation on leaf function.
+	* config/riscv/riscv.h
+	(need_shadow_stack_push_pop_p): Define.
+	* config/riscv/riscv.md: Add shadow stack patterns.
+	(save_stack_nonlocal): Add shadow stack instructions for setjump.
+	(restore_stack_nonlocal): Add shadow stack instructions for longjump.
+	* config/riscv/riscv.opt (TARGET_ZICFISS): Define.
+
 2025-01-16  Tamar Christina  <tamar.christina@arm.com>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 

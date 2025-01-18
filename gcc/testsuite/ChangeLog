@@ -1,3 +1,181 @@
+2025-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/118536
+	* gfortran.dg/unsigned_write_2.f90: New test.
+
+2025-01-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr118067-2.c: New.
+
+2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/embed-10.c: Allow a different error wording for
+	C++.
+
+2025-01-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117115
+	* gdc.dg/pr117115.d: New test.
+
+2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118511
+	* gcc.target/s390/pr118511.c: New test.
+
+2025-01-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/saturating_arithmetic.inc:
+	Template file for auto-vectorizer tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_1.c:
+	Instantiate 8-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_2.c:
+	Instantiate 16-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_3.c:
+	Instantiate 32-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_4.c:
+	Instantiate 64-bit vector tests.
+
+2025-01-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c: Update testcases.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect.inc:
+	Template file for unsigned vector saturating arithmetic tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_1.c:
+	8-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_2.c:
+	16-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_3.c:
+	32-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_4.c:
+	64-bit vector type tests.
+	* gcc.target/aarch64/saturating_arithmetic.inc: Template file
+	for scalar saturating arithmetic tests.
+	* gcc.target/aarch64/saturating_arithmetic_1.c: 8-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_2.c: 16-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_3.c: 32-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_4.c: 64-bit tests.
+	* gcc.target/aarch64/saturating-arithmetic-signed.c: New file.
+
+2025-01-17  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/vsx-builtin-3.c: Add vec_perm test cases for
+	arguments of type vector signed long long int, long long bool,
+	bool, bool short, bool char and pixel, vector unsigned long long
+	int, unsigned int, unsigned short int, unsigned char.  Cast
+	arguments for debug prints to unsigned long long.
+	* gcc.target/powerpc/builtins-4-int128-runnable.c: Add vec_perm
+	test cases for signed and unsigned int128 arguments.
+
+2025-01-17  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-1-p10-runnable.c: Remove #define
+	DEBUG.	Replace vec_i_expected value with correct value.
+
+2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118049
+	* g++.dg/modules/auto-5_a.C: New test.
+	* g++.dg/modules/auto-5_b.C: New test.
+	* g++.dg/modules/auto-5_c.C: New test.
+	* g++.dg/modules/auto-6_a.H: New test.
+	* g++.dg/modules/auto-6_b.C: New test.
+
+2025-01-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118321
+	* g++.dg/gomp/adjust-args-4.C: New test.
+
+2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118147
+	* g++.dg/cpp0x/nsdmi-defer7.C: New test.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/117958
+	* g++.dg/tree-ssa/pr117123.C: XFAIL parts on aarch64-*-*.
+
+2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118329
+	* gcc.target/avr/pr115830-add.c (__int24, __uint24): Add __extension__
+	to respective typedefs.
+	* gcc.target/avr/pr115830-sub-ext.c: Same.
+	* gcc.target/avr/pr115830-sub.c: Same.
+	* gcc.target/avr/torture/get-mem.c: Same.
+	* gcc.target/avr/torture/set-mem.c: Same.
+	* gcc.target/avr/torture/ifelse-c.h: Same.
+	* gcc.target/avr/torture/ifelse-d.h: Same.
+	* gcc.target/avr/torture/ifelse-q.h: Same.
+	* gcc.target/avr/torture/ifelse-r.h: Same.
+	* gcc.target/avr/torture/int24-mul.c: Same.
+	* gcc.target/avr/torture/pr109907-2.c: Same.
+	* gcc.target/avr/torture/pr61443.c: Same.
+	* gcc.target/avr/torture/pr63633-ice-mult.c: Same.
+	* gcc.target/avr/torture/shift-l-u24.c: Same.
+	* gcc.target/avr/torture/shift-r-i24.c: Same.
+	* gcc.target/avr/torture/shift-r-u24.c: Same.
+	* gcc.target/avr/torture/add-extend.c: Same.
+	* gcc.target/avr/torture/sub-extend.c: Same.
+	* gcc.target/avr/torture/sub-zerox.c: Same.
+	* gcc.target/avr/torture/test-gprs.h: Same.
+
+2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118522
+	* gcc.dg/bitint-120.c: New test.
+
+2025-01-17  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118255
+	* g++.dg/lookup/pr99116-1.C: Adjust test expectation.
+	* g++.dg/template/friend84.C: New test.
+
+2025-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92539
+	* g++.dg/warn/Warray-bounds-pr92539.C: New testcase.
+	* gcc.dg/tree-ssa/sccp-16.c: New testcase.
+	* g++.dg/vect/pr87621.cc: Use larger power to avoid
+	inner loop unrolling.
+	* gcc.dg/vect/pr89440.c: Use larger loop bound to avoid
+	inner loop unrolling.
+	* gcc.dg/pr77975.c: Scan cunrolli dump and adjust.
+
+2025-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/metadirective-device.c: Don't add extra options
+	for target ia32.
+	* c-c++-common/gomp/metadirective-target-device-1.c: Likewise.
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* c-c++-common/fcf-protection-1.c: Update.
+	* c-c++-common/fcf-protection-2.c: Update.
+	* c-c++-common/fcf-protection-3.c: Update.
+	* c-c++-common/fcf-protection-4.c: Update.
+	* c-c++-common/fcf-protection-5.c: Update.
+	* c-c++-common/fcf-protection-6.c: Update.
+	* c-c++-common/fcf-protection-7.c: Update.
+	* gcc.target/riscv/ssp-1.c: Update.
+	* gcc.target/riscv/ssp-2.c: Update.
+	* gcc.target/riscv/zicfilp-call.c: Update.
+	* gcc.target/riscv/interrupt-no-lpad.c: Update.
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/interrupt-no-lpad.c: New test.
+	* gcc.target/riscv/zicfilp-call.c: New test.
+	Co-Developed-by: Greg McGary <gkm@rivosinc.com>,
+			Kito Cheng <kito.cheng@gmail.com>
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/ssp-1.c: New test.
+	* gcc.target/riscv/ssp-2.c: New test.
+	Co-Developed-by: Greg McGary <gkm@rivosinc.com>,
+			Kito Cheng <kito.cheng@gmail.com>
+
 2025-01-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105440

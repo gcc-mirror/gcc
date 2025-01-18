@@ -1,3 +1,9 @@
+2025-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/118536
+	* io/transfer.c (formatted_transfer_scalar_write): Handle UNSIGNED
+	in G formatting.
+
 2025-01-16  Harald Anlauf  <anlauf@gmx.de>
 
 	PR libfortran/118406
