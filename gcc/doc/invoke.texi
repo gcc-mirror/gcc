@@ -24423,8 +24423,8 @@ This optimization is turned on per default for @option{-O2} and higher,
 including @option{-Os} but excluding @option{-Oz}.
 Splitting of shifts with a constant offset that is
 a multiple of 8 is controlled by @option{-mfuse-move}.
-@opindex msplit-ldst
 
+@opindex msplit-ldst
 @item -msplit-ldst
 Split multi-byte loads and stores into several byte loads and stores.
 This optimization is turned on per default for @option{-O2} and higher.
