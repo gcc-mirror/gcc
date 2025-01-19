@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,8 +95,8 @@ package body Exp_Pakd is
    --  This expression includes any required range checks.
 
    function Compute_Number_Components
-      (N   : Node_Id;
-       Typ : Entity_Id) return Node_Id;
+     (N   : Node_Id;
+      Typ : Entity_Id) return Node_Id;
    --  Build an expression that multiplies the length of the dimensions of the
    --  array, used to control array equality checks.
 
@@ -414,8 +414,8 @@ package body Exp_Pakd is
    -------------------------------
 
    function Compute_Number_Components
-      (N   : Node_Id;
-       Typ : Entity_Id) return Node_Id
+     (N   : Node_Id;
+      Typ : Entity_Id) return Node_Id
    is
       Loc      : constant Source_Ptr := Sloc (N);
       Len_Expr : Node_Id;

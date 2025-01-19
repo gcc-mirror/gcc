@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target ptr32plus } */
+/* { dg-additional-options "-DRUN_FRACTION=7" { target simulator } } */
 /* { dg-timeout-factor 2 } */
 
 #include <stdio.h>

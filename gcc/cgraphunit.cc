@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -157,7 +157,6 @@ along with GCC; see the file COPYING3.  If not see
       and apply simple transformations
 */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -312,6 +311,7 @@ symbol_table::process_new_functions (void)
     {
       cgraph_node *node = cgraph_new_nodes[i];
       fndecl = node->decl;
+      bitmap_obstack_initialize (NULL);
       switch (state)
 	{
 	case CONSTRUCTION:
@@ -368,6 +368,7 @@ symbol_table::process_new_functions (void)
 	  gcc_unreachable ();
 	  break;
 	}
+      bitmap_obstack_release (NULL);
     }
 
   cgraph_new_nodes.release ();
@@ -983,6 +984,18 @@ varpool_node::finalize_decl (tree decl)
       || (node->no_reorder && !DECL_COMDAT (node->decl)
 	  && !DECL_ARTIFICIAL (node->decl)))
     node->force_output = true;
+
+  if (flag_openmp)
+    {
+      tree attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (decl));
+      if (attr)
+	{
+	  tree align = TREE_VALUE (TREE_VALUE (attr));
+	  if (align)
+	    SET_DECL_ALIGN (decl, MAX (tree_to_uhwi (align) * BITS_PER_UNIT,
+				       DECL_ALIGN (decl)));
+	}
+    }
 
   if (symtab->state == CONSTRUCTION
       && (node->needed_p () || node->referred_to_p ()))

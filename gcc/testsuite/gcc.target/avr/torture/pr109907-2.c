@@ -5,7 +5,7 @@
 
 typedef __UINT8_TYPE__ uint8_t;
 typedef __UINT16_TYPE__ uint16_t;
-typedef __uint24 uint24_t;
+__extension__ typedef __uint24 uint24_t;
 typedef __UINT32_TYPE__ uint32_t;
 
 typedef __INT32_TYPE__ int32_t;

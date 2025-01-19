@@ -1,5 +1,5 @@
 // Implementation of instruction-related RTL SSA functions          -*- C++ -*-
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -19,7 +19,6 @@
 
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
-#define INCLUDE_MEMORY
 #define INCLUDE_ARRAY
 #include "config.h"
 #include "system.h"
@@ -49,14 +48,13 @@ void
 insn_info::calculate_cost () const
 {
   basic_block cfg_bb = BLOCK_FOR_INSN (m_rtl);
-  temporarily_undo_changes (0);
+  undo_recog_changes (0);
   if (INSN_CODE (m_rtl) == NOOP_MOVE_INSN_CODE)
     // insn_cost also uses 0 to mean "don't know".  Callers that
     // want to distinguish the cases will need to check INSN_CODE.
     m_cost_or_uid = 0;
   else
     m_cost_or_uid = insn_cost (m_rtl, optimize_bb_for_speed_p (cfg_bb));
-  redo_changes (0);
 }
 
 // Add NOTE to the instruction's notes.

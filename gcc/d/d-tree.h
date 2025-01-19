@@ -1,5 +1,5 @@
 /* d-tree.h -- Definitions and declarations for code generation.
-   Copyright (C) 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -703,7 +703,7 @@ extern tree get_classinfo_decl (ClassDeclaration *);
 extern void check_typeinfo_type (const Loc &, Scope *, Expression * = NULL);
 extern tree build_typeinfo (const Loc &, Type *, Expression * = NULL);
 extern tree build_typeinfo (Expression *, Type *);
-extern void create_typeinfo (Type *, Module *, bool = true);
+extern void create_typeinfo (Type *, Module *);
 extern void create_tinfo_types (Module *);
 extern void layout_cpp_typeinfo (ClassDeclaration *);
 extern tree get_cpp_typeinfo_decl (ClassDeclaration *);

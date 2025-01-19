@@ -80,26 +80,25 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
         void visitExp(ExpStatement s)
         {
             result = BE.fallthru;
-            if (s.exp)
+            if (!s.exp)
+                return;
+
+            if (s.exp.op == EXP.halt)
             {
-                if (s.exp.op == EXP.halt)
+                result = BE.halt;
+                return;
+            }
+            if (AssertExp a = s.exp.isAssertExp())
+            {
+                if (a.e1.toBool().hasValue(false)) // if it's an assert(0)
                 {
                     result = BE.halt;
                     return;
                 }
-                if (AssertExp a = s.exp.isAssertExp())
-                {
-                    if (a.e1.toBool().hasValue(false)) // if it's an assert(0)
-                    {
-                        result = BE.halt;
-                        return;
-                    }
-                }
-                if (s.exp.type && s.exp.type.toBasetype().isTypeNoreturn())
-                    result = BE.halt;
-
-                result |= canThrow(s.exp, func, eSink);
             }
+            if (s.exp.type && s.exp.type.toBasetype().isTypeNoreturn())
+                result = BE.halt;
+            result |= canThrow(s.exp, func, eSink);
         }
 
         void visitDtorExp(DtorExpStatement s)
@@ -120,44 +119,39 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
             Statement slast = null;
             foreach (s; *cs.statements)
             {
-                if (s)
-                {
-                    //printf("result = x%x\n", result);
-                    //printf("s: %s\n", s.toChars());
-                    if (result & BE.fallthru && slast)
-                    {
-                        slast = slast.last();
-                        if (slast && (slast.isCaseStatement() || slast.isDefaultStatement()) && (s.isCaseStatement() || s.isDefaultStatement()))
-                        {
-                            // Allow if last case/default was empty
-                            CaseStatement sc = slast.isCaseStatement();
-                            DefaultStatement sd = slast.isDefaultStatement();
-                            auto sl = (sc ? sc.statement : (sd ? sd.statement : null));
+                if (!s)
+                    continue;
 
-                            if (sl && (!sl.hasCode() || sl.isErrorStatement()))
-                            {
-                            }
-                            else if (func.getModule().filetype != FileType.c)
-                            {
-                                const(char)* gototype = s.isCaseStatement() ? "case" : "default";
-                                // @@@DEPRECATED_2.110@@@ https://issues.dlang.org/show_bug.cgi?id=22999
-                                // Deprecated in 2.100
-                                // Make an error in 2.110
-                                if (sl && sl.isCaseStatement())
-                                    global.errorSink.deprecation(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
-                                else
-                                    global.errorSink.error(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
-                            }
+                //printf("result = x%x\n", result);
+                //printf("s: %s\n", s.toChars());
+                if (result & BE.fallthru && slast)
+                {
+                    slast = slast.last();
+                    if (slast && (slast.isCaseStatement() || slast.isDefaultStatement()) && (s.isCaseStatement() || s.isDefaultStatement()))
+                    {
+                        // Allow if last case/default was empty
+                        CaseStatement sc = slast.isCaseStatement();
+                        DefaultStatement sd = slast.isDefaultStatement();
+                        auto sl = (sc ? sc.statement : (sd ? sd.statement : null));
+
+                        if (sl && (!sl.hasCode() || sl.isErrorStatement()))
+                        {
+                        }
+                        else if (func.getModule().filetype != FileType.c)
+                        {
+                            const(char)* gototype = s.isCaseStatement() ? "case" : "default";
+                            // https://issues.dlang.org/show_bug.cgi?id=22999
+                            global.errorSink.error(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
                         }
                     }
-
-                    if ((result & BE.fallthru) || s.comeFrom())
-                    {
-                        result &= ~BE.fallthru;
-                        result |= blockExit(s, func, eSink);
-                    }
-                    slast = s;
                 }
+
+                if ((result & BE.fallthru) || s.comeFrom())
+                {
+                    result &= ~BE.fallthru;
+                    result |= blockExit(s, func, eSink);
+                }
+                slast = s;
             }
         }
 
@@ -166,13 +160,12 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
             result = BE.fallthru;
             foreach (s; *uls.statements)
             {
-                if (s)
-                {
-                    int r = blockExit(s, func, eSink);
-                    result |= r & ~(BE.break_ | BE.continue_ | BE.fallthru);
-                    if ((r & (BE.fallthru | BE.continue_ | BE.break_)) == 0)
-                        result &= ~BE.fallthru;
-                }
+                if (!s)
+                    continue;
+                int r = blockExit(s, func, eSink);
+                result |= r & ~(BE.break_ | BE.continue_ | BE.fallthru);
+                if ((r & (BE.fallthru | BE.continue_ | BE.break_)) == 0)
+                    result &= ~BE.fallthru;
             }
         }
 
@@ -485,7 +478,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
             if (!(s.stc & STC.nothrow_))
             {
                 if(func)
-                    func.setThrow(s.loc, "`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                    func.setThrow(s.loc, "executing an `asm` statement without a `nothrow` annotation");
                 if (eSink)
                     eSink.error(s.loc, "`asm` statement is assumed to throw - mark it with `nothrow` if it does not"); // TODO
                 else
@@ -530,7 +523,7 @@ BE checkThrow(ref const Loc loc, Expression exp, FuncDeclaration func, ErrorSink
     if (eSink)
         eSink.error(loc, "`%s` is thrown but not caught", exp.type.toChars());
     else if (func)
-        func.setThrow(loc, "`%s` is thrown but not caught", exp.type);
+        func.setThrow(loc, "`%s` being thrown but not caught", exp.type);
 
     return BE.throw_;
 }

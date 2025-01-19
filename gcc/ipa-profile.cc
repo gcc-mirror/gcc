@@ -1,5 +1,5 @@
 /* Basic IPA optimizations based on profile.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
      once, executed at startup and executed at exit.  These flags are used to
      control code size/performance threshold and code placement (by producing
      .text.unlikely/.text.hot/.text.startup/.text.exit subsections).  */
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

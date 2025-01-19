@@ -14,6 +14,10 @@ export GITROOT
 
 PATH=/usr/local/bin:$PATH
 
+# We use a copy of Sphinx installed in a virtual environment so that
+# we don't depend on a system package.
+SPHINX_VENV=${SPHINX_VENV:-"/home/gccadmin/venv"}
+
 makeinfo_git=/home/gccadmin/texinfo/install-git/bin/
 if [ -x "${makeinfo_git}"/makeinfo ]; then
     : "${MAKEINFO:=${makeinfo_git}/makeinfo}"
@@ -138,7 +142,7 @@ rm -rf gcc/.git
 # Note that we have to preserve gcc/jit/docs since the jit docs are
 # not .texi files (Makefile, .rst and .png), and the jit docs use
 # include directives to pull in content from jit/jit-common.h and
-# jit/notes.txt, so we have to preserve those also.
+# Similar considerations apply for libgdiagnostics.
 find gcc -type f \( -name '*.texi' \
   -o -path gcc/gcc/doc/install.texi2html \
   -o -path gcc/gcc/doc/include/texinfo.tex \
@@ -148,6 +152,9 @@ find gcc -type f \( -name '*.texi' \
   -o -path "gcc/gcc/jit/docs/*" \
   -o -path "gcc/gcc/jit/jit-common.h" \
   -o -path "gcc/gcc/jit/notes.txt" \
+  -o -path "gcc/gcc/testsuite/jit.dg/*" \
+  -o -path "gcc/gcc/doc/libgdiagnostics/*" \
+  -o -path "gcc/gcc/testsuite/libgdiagnostics.dg/*" \
   -o -print0 \) | xargs -0 rm -f
 
 # Build a tarball of the sources.
@@ -193,17 +200,23 @@ for file in $MANUALS; do
   fi
 done
 
-# The jit is a special-case, using Sphinx rather than texinfo.
-# Specifically, the jit docs need Sphinx 3.0 or later.
+# jit and libgdiagnostics are a special-case, using Sphinx rather than texinfo.
+# Specifically, they need Sphinx 3.0 or later.
 #
 # Use the Sphinx installed in a virtual environment so that
 # we don't depend on a system package.
 
 pushd gcc/gcc/jit/docs
-make html SPHINXBUILD=/home/gccadmin/venv/bin/sphinx-build || true
+make html SPHINXBUILD=$SPHINX_VENV/bin/sphinx-build || true
 popd
 cp -a gcc/gcc/jit/docs/_build/html jit
 mkdir -p $DOCSDIR/jit
+
+pushd gcc/gcc/doc/libgdiagnostics
+make html SPHINXBUILD=$SPHINX_VENV/bin/sphinx-build || true
+popd
+cp -a gcc/gcc/doc/libgdiagnostics/_build/html libgdiagnostics
+mkdir -p $DOCSDIR/libgdiagnostics
 
 # Work around makeinfo generated file names and references with
 # "_002d" instead of "-".
@@ -251,11 +264,11 @@ for file in */*.html *.ps *.pdf *.tar; do
   fi
 done
 
-# Again, the jit is a special case, with nested subdirectories
-# below "jit", and with some non-HTML files (.png images from us,
+# Again, jit and libgdignostics are special cases, with nested subdirectories
+# below them, and with some non-HTML files (.png images from us,
 # plus .css and .js supplied by sphinx, and source files, renamed
 # from .rst to .txt).
-find jit \
+find jit libgdiagnostics \
     -name "*.html" -o -name "*.png" \
     -o -name "*.css" -o -name "*.js" \
     -o -name "*.txt" |

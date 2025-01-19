@@ -1,6 +1,8 @@
 /* PR debug/86985 */
 /* { dg-do run } */
-/* { dg-options "-g" } */
+/* { dg-options "-std=c17 -g" } */
+
+/* FIXME: Use -std=c17 until PR113688 if fixed.  */
 
 struct {
   int foo;

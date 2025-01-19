@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1300,6 +1300,29 @@ package body Exp_Ch11 is
       then
          pragma Assert (not Is_Thunk (Current_Scope));
          Expand_Cleanup_Actions (Parent (N));
+      end if;
+
+      if Present (Finally_Statements (N)) and then Abort_Allowed then
+         if Exceptions_OK then
+            Set_Finally_Statements
+              (N,
+               New_List
+                 (Build_Runtime_Call (Sloc (N), RE_Abort_Defer),
+                  Build_Abort_Undefer_Block
+                    (Sloc (N),
+                     Stmts   => Finally_Statements (N),
+                     Context => N)));
+         else
+            Prepend_To
+              (Finally_Statements (N),
+               Build_Runtime_Call (Sloc (N), RE_Abort_Defer));
+
+            Append_To
+              (Finally_Statements (N),
+               Build_Runtime_Call (Sloc (N), RE_Abort_Undefer));
+         end if;
+
+         Analyze_List (Finally_Statements (N));
       end if;
    end Expand_N_Handled_Sequence_Of_Statements;
 

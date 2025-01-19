@@ -1,5 +1,5 @@
 /* Local Register Allocator (LRA) intercommunication header file.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -419,6 +419,7 @@ extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode,
 				 bool, bool, poly_int64, bool);
 extern void eliminate_regs_in_insn (rtx_insn *insn, bool, bool, poly_int64);
 extern int lra_update_fp2sp_elimination (int *spilled_pseudos);
+extern bool lra_fp_pseudo_p (void);
 extern void lra_eliminate (bool, bool);
 
 extern poly_int64 lra_update_sp_offset (rtx, poly_int64);

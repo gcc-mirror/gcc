@@ -1,7 +1,7 @@
 /* Stub functions for Objective-C and Objective-C++ routines
    that are called from within the C and C++ front-ends,
    respectively.
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

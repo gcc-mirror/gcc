@@ -7,7 +7,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly, Walter Bright, Alex Rønne Petersen, Martin Nowak
- * Source:    $(DRUNTIMESRC core/thread/osthread.d)
+ * Source:    $(DRUNTIMESRC core/thread/threadbase.d)
  */
 
 /* NOTE: This file has been patched from the original DMD distribution to
@@ -32,9 +32,6 @@ private
     alias ScanDg = void delegate(void* pstart, void* pend) nothrow;
     alias rt_tlsgc_scan =
         externDFunc!("rt.tlsgc.scan", void function(void*, scope ScanDg) nothrow);
-
-    alias rt_tlsgc_processGCMarks =
-        externDFunc!("rt.tlsgc.processGCMarks", void function(void*, scope IsMarkedDg) nothrow);
 }
 
 
@@ -131,9 +128,14 @@ class ThreadBase
         return (no_context || not_registered);
     }
 
-    package void tlsGCdataInit() nothrow @nogc
+    ref void* tlsGCData() nothrow @nogc
     {
-        m_tlsgcdata = rt_tlsgc_init();
+        return m_tlsgcdata;
+    }
+
+    package void tlsRTdataInit() nothrow @nogc
+    {
+        m_tlsrtdata = rt_tlsgc_init();
     }
 
     package void initDataStorage() nothrow
@@ -142,18 +144,18 @@ class ThreadBase
 
         m_main.bstack = getStackBottom();
         m_main.tstack = m_main.bstack;
-        tlsGCdataInit();
+        tlsRTdataInit();
     }
 
     package void destroyDataStorage() nothrow @nogc
     {
-        rt_tlsgc_destroy(m_tlsgcdata);
-        m_tlsgcdata = null;
+        rt_tlsgc_destroy(m_tlsrtdata);
+        m_tlsrtdata = null;
     }
 
     package void destroyDataStorageIfAvail() nothrow @nogc
     {
-        if (m_tlsgcdata)
+        if (m_tlsrtdata)
             destroyDataStorage();
     }
 
@@ -456,7 +458,6 @@ package:
     string              m_name;
     size_t              m_sz;
     bool                m_isDaemon;
-    bool                m_isInCriticalRegion;
     Throwable           m_unhandled;
 
     ///////////////////////////////////////////////////////////////////////////
@@ -478,6 +479,7 @@ package(core.thread):
     StackContext*       m_curr;
     bool                m_lock;
     private void*       m_tlsgcdata;
+    private void*       m_tlsrtdata;
 
     ///////////////////////////////////////////////////////////////////////////
     // Thread Context and GC Scanning Support
@@ -564,25 +566,17 @@ package(core.thread):
         return cast(Mutex)_slock.ptr;
     }
 
-    @property static Mutex criticalRegionLock() nothrow @nogc
-    {
-        return cast(Mutex)_criticalRegionLock.ptr;
-    }
-
     __gshared align(mutexAlign) void[mutexClassInstanceSize] _slock;
-    __gshared align(mutexAlign) void[mutexClassInstanceSize] _criticalRegionLock;
 
     static void initLocks() @nogc nothrow
     {
         import core.lifetime : emplace;
         emplace!Mutex(_slock[]);
-        emplace!Mutex(_criticalRegionLock[]);
     }
 
     static void termLocks() @nogc nothrow
     {
         (cast(Mutex)_slock.ptr).__dtor();
-        (cast(Mutex)_criticalRegionLock.ptr).__dtor();
     }
 
     __gshared StackContext*  sm_cbeg;
@@ -778,7 +772,7 @@ package void thread_term_tpl(ThreadT, MainThreadStore)(ref MainThreadStore _main
     // destruct manually as object.destroy is not @nogc
     (cast(ThreadT) cast(void*) ThreadBase.sm_main).__dtor();
     _d_monitordelete_nogc(ThreadBase.sm_main);
-    _mainThreadStore[] = __traits(initSymbol, ThreadT)[];
+    _mainThreadStore[] = cast(void[]) __traits(initSymbol, ThreadT)[];
     ThreadBase.sm_main = null;
 
     assert(ThreadBase.sm_tbeg && ThreadBase.sm_tlen == 1);
@@ -979,6 +973,13 @@ package __gshared uint suspendDepth = 0;
 private alias resume = externDFunc!("core.thread.osthread.resume", void function(ThreadBase) nothrow @nogc);
 
 /**
+ * Run the necessary operation required after the world was resumed.
+ */
+extern (C) void thread_postRestartTheWorld() nothrow {
+    ThreadBase.slock.unlock_nothrow();
+}
+
+/**
  * Resume all threads but the calling thread for "stop the world" garbage
  * collection runs.  This function must be called once for each preceding
  * call to thread_suspendAll before the threads are actually resumed.
@@ -1004,7 +1005,7 @@ do
         return;
     }
 
-    scope(exit) ThreadBase.slock.unlock_nothrow();
+    scope(exit) thread_postRestartTheWorld();
     {
         if (--suspendDepth > 0)
             return;
@@ -1114,8 +1115,8 @@ private void scanAllTypeImpl(scope ScanAllThreadsTypeFn scan, void* curStackTop)
             scanWindowsOnly(scan, t);
         }
 
-        if (t.m_tlsgcdata !is null)
-            rt_tlsgc_scan(t.m_tlsgcdata, (p1, p2) => scan(ScanType.tls, p1, p2));
+        if (t.m_tlsrtdata !is null)
+            rt_tlsgc_scan(t.m_tlsrtdata, (p1, p2) => scan(ScanType.tls, p1, p2));
     }
 }
 
@@ -1144,75 +1145,6 @@ extern (C) void thread_scanAll(scope ScanAllThreadsFn scan) nothrow
 
 private alias thread_yield = externDFunc!("core.thread.osthread.thread_yield", void function() @nogc nothrow);
 
-/**
- * Signals that the code following this call is a critical region. Any code in
- * this region must finish running before the calling thread can be suspended
- * by a call to thread_suspendAll.
- *
- * This function is, in particular, meant to help maintain garbage collector
- * invariants when a lock is not used.
- *
- * A critical region is exited with thread_exitCriticalRegion.
- *
- * $(RED Warning):
- * Using critical regions is extremely error-prone. For instance, using locks
- * inside a critical region can easily result in a deadlock when another thread
- * holding the lock already got suspended.
- *
- * The term and concept of a 'critical region' comes from
- * $(LINK2 https://github.com/mono/mono/blob/521f4a198e442573c400835ef19bbb36b60b0ebb/mono/metadata/sgen-gc.h#L925, Mono's SGen garbage collector).
- *
- * In:
- *  The calling thread must be attached to the runtime.
- */
-extern (C) void thread_enterCriticalRegion() @nogc
-in
-{
-    assert(ThreadBase.getThis());
-}
-do
-{
-    synchronized (ThreadBase.criticalRegionLock)
-        ThreadBase.getThis().m_isInCriticalRegion = true;
-}
-
-
-/**
- * Signals that the calling thread is no longer in a critical region. Following
- * a call to this function, the thread can once again be suspended.
- *
- * In:
- *  The calling thread must be attached to the runtime.
- */
-extern (C) void thread_exitCriticalRegion() @nogc
-in
-{
-    assert(ThreadBase.getThis());
-}
-do
-{
-    synchronized (ThreadBase.criticalRegionLock)
-        ThreadBase.getThis().m_isInCriticalRegion = false;
-}
-
-
-/**
- * Returns true if the current thread is in a critical region; otherwise, false.
- *
- * In:
- *  The calling thread must be attached to the runtime.
- */
-extern (C) bool thread_inCriticalRegion() @nogc
-in
-{
-    assert(ThreadBase.getThis());
-}
-do
-{
-    synchronized (ThreadBase.criticalRegionLock)
-        return ThreadBase.getThis().m_isInCriticalRegion;
-}
-
 
 /**
 * A callback for thread errors in D during collections. Since an allocation is not possible
@@ -1233,59 +1165,15 @@ package void onThreadError(string msg) nothrow @nogc
     throw error;
 }
 
-unittest
-{
-    assert(!thread_inCriticalRegion());
 
-    {
-        thread_enterCriticalRegion();
+// GC-specific processing of TLSGC data.
+alias ProcessTLSGCDataDg = void* delegate(void* data) nothrow;
 
-        scope (exit)
-            thread_exitCriticalRegion();
-
-        assert(thread_inCriticalRegion());
-    }
-
-    assert(!thread_inCriticalRegion());
-}
-
-
-/**
- * Indicates whether an address has been marked by the GC.
- */
-enum IsMarked : int
-{
-         no, /// Address is not marked.
-        yes, /// Address is marked.
-    unknown, /// Address is not managed by the GC.
-}
-
-alias IsMarkedDg = int delegate(void* addr) nothrow; /// The isMarked callback function.
-
-/**
- * This routine allows the runtime to process any special per-thread handling
- * for the GC.  This is needed for taking into account any memory that is
- * referenced by non-scanned pointers but is about to be freed.  That currently
- * means the array append cache.
- *
- * Params:
- *  isMarked = The function used to check if $(D addr) is marked.
- *
- * In:
- *  This routine must be called just prior to resuming all threads.
- */
-extern(C) void thread_processGCMarks(scope IsMarkedDg isMarked) nothrow
+void thread_processTLSGCData(ProcessTLSGCDataDg dg) nothrow
 {
     for (ThreadBase t = ThreadBase.sm_tbeg; t; t = t.next)
-    {
-        /* Can be null if collection was triggered between adding a
-         * thread and calling rt_tlsgc_init.
-         */
-        if (t.m_tlsgcdata !is null)
-            rt_tlsgc_processGCMarks(t.m_tlsgcdata, isMarked);
-    }
+        t.m_tlsgcdata = dg(t.m_tlsgcdata);
 }
-
 
 /**
  * Returns the stack top of the currently active stack within the calling

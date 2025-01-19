@@ -1,5 +1,5 @@
 /* Definitions for operation tables, or "optabs".
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -85,15 +85,14 @@ OPTAB_CD(smsub_widen_optab, "msub$b$a4")
 OPTAB_CD(umsub_widen_optab, "umsub$b$a4")
 OPTAB_CD(ssmsub_widen_optab, "ssmsub$b$a4")
 OPTAB_CD(usmsub_widen_optab, "usmsub$a$b4")
+OPTAB_CD(crc_optab, "crc$a$b4")
+OPTAB_CD(crc_rev_optab, "crc_rev$a$b4")
 OPTAB_CD(vec_load_lanes_optab, "vec_load_lanes$a$b")
 OPTAB_CD(vec_store_lanes_optab, "vec_store_lanes$a$b")
 OPTAB_CD(vec_mask_load_lanes_optab, "vec_mask_load_lanes$a$b")
 OPTAB_CD(vec_mask_store_lanes_optab, "vec_mask_store_lanes$a$b")
 OPTAB_CD(vec_mask_len_load_lanes_optab, "vec_mask_len_load_lanes$a$b")
 OPTAB_CD(vec_mask_len_store_lanes_optab, "vec_mask_len_store_lanes$a$b")
-OPTAB_CD(vcond_optab, "vcond$a$b")
-OPTAB_CD(vcondu_optab, "vcondu$a$b")
-OPTAB_CD(vcondeq_optab, "vcondeq$a$b")
 OPTAB_CD(vcond_mask_optab, "vcond_mask_$a$b")
 OPTAB_CD(vec_cmp_optab, "vec_cmp$a$b")
 OPTAB_CD(vec_cmpu_optab, "vec_cmpu$a$b")

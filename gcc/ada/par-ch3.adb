@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3061,7 +3061,16 @@ package body Ch3 is
          Range_Node := New_Node (N_Range, Token_Ptr);
          Set_Low_Bound (Range_Node, Expr_Node);
 
-         if Style_Check then
+         --  If the bound doesn't require parentheses, then emit a style
+         --  check. Parentheses that change an "expression" syntax node into a
+         --  "simple expression" are required; we filter those nodes both here
+         --  and inside Check_Xtra_Parens itself.
+
+         if Style_Check
+           and then Nkind (Expr_Node) not in N_Membership_Test
+                                           | N_Op_Boolean
+                                           | N_Short_Circuit
+         then
             Style.Check_Xtra_Parens (Expr_Node);
          end if;
 
@@ -3070,11 +3079,12 @@ package body Ch3 is
          Check_Simple_Expression (Expr_Node);
          Set_High_Bound (Range_Node, Expr_Node);
 
-         --  If Expr_Node (ignoring parentheses) is not a simple expression
-         --  then emit a style check.
+         --  Check for extra parentheses like for the lower bound
 
          if Style_Check
-           and then Nkind (Expr_Node) not in N_Op_Boolean | N_Subexpr
+           and then Nkind (Expr_Node) not in N_Membership_Test
+                                           | N_Op_Boolean
+                                           | N_Short_Circuit
          then
             Style.Check_Xtra_Parens (Expr_Node);
          end if;

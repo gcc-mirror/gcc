@@ -1,5 +1,5 @@
 /* Common hooks for AArch64.
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -19,7 +19,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
@@ -54,6 +53,8 @@ static const struct default_options aarch_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_fomit_frame_pointer, NULL, 0 },
     /* Enable -fsched-pressure by default when optimizing.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
+    /* Disable early scheduling due to high compile-time overheads.  */
+    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
     /* Enable redundant extension instructions removal at -O2 and higher.  */
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_mearly_ra_, NULL, AARCH64_EARLY_RA_ALL },
@@ -445,6 +446,33 @@ aarch64_rewrite_mcpu (int argc, const char **argv)
 {
   gcc_assert (argc);
   return aarch64_rewrite_selected_cpu (argv[argc - 1]);
+}
+
+/* Checks to see if the host CPU may not be Cortex-A53 or an unknown Armv8-a
+   baseline CPU.  */
+
+const char *
+is_host_cpu_not_armv8_base (int argc, const char **argv)
+{
+  gcc_assert (argc);
+
+  /* Default to not knowing what we are if unspecified.  The SPEC file should
+     have already mapped configure time options to here through
+     OPTION_DEFAULT_SPECS so we don't need to check the configure variants
+     manually.  */
+  if (!argv[0])
+    return NULL;
+
+  const char *res = argv[0];
+
+  /* No SVE system is baseline Armv8-A.  */
+  if (strstr (res, "+sve"))
+    return "";
+
+  if (strstr (res, "cortex-a53") || strstr (res, "armv8-a"))
+    return NULL;
+
+  return "";
 }
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

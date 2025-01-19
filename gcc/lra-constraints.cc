@@ -1,5 +1,5 @@
 /* Code for RTL transformations to satisfy insn constraints.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
    This file is part of GCC.
@@ -663,7 +663,6 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 {
   int i, regno;
   enum reg_class new_class;
-  bool unique_p = false;
 
   if (type == OP_OUT)
     {
@@ -702,6 +701,8 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 						exclude_start_hard_regs, title);
       return true;
     }
+
+  bool unique_p = early_clobber_p;
   /* Prevent reuse value of expression with side effects,
      e.g. volatile memory.  */
   if (! side_effects_p (original))
@@ -895,6 +896,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
+	    return false;
+	  break;
+
+	case 'L':
+	  if (XLOC (x, i) != XLOC (y, i))
 	    return false;
 	  break;
 
@@ -2459,6 +2465,11 @@ process_alt_operands (int only_alternative)
 			    && (operand_reg[m] == NULL_RTX
 				|| hard_regno[m] < 0))
 			  {
+			    if (lra_dump_file != NULL)
+			      fprintf
+				(lra_dump_file,
+				 "            %d Matched operand reload: "
+				 "losers++\n", m);
 			    losers++;
 			    reload_nregs
 			      += (ira_reg_class_max_nregs[curr_alt[m]]
@@ -2903,6 +2914,10 @@ process_alt_operands (int only_alternative)
 			   "            Strict low subreg reload -- refuse\n");
 		      goto fail;
 		    }
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Operand reload: losers++\n", nop);
 		  losers++;
 		}
 	      if (operand_reg[nop] != NULL_RTX
@@ -2939,7 +2954,14 @@ process_alt_operands (int only_alternative)
 		{
 		  const_to_mem = 1;
 		  if (! no_regs_p)
-		    losers++;
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Constant reload through memory: "
+			   "losers++\n", nop);
+		      losers++;
+		    }
 		}
 
 	      /* Alternative loses if it requires a type of reload not
@@ -3121,12 +3143,19 @@ process_alt_operands (int only_alternative)
 	      if (this_alternative != NO_REGS
 		  && REG_P (op) && (cl = get_reg_class (REGNO (op))) != NO_REGS
 		  && ((curr_static_id->operand[nop].type != OP_OUT
-		       && targetm.secondary_memory_needed (GET_MODE (op), cl,
+		       && targetm.secondary_memory_needed (mode, cl,
 							   this_alternative))
 		      || (curr_static_id->operand[nop].type != OP_IN
 			  && (targetm.secondary_memory_needed
-			      (GET_MODE (op), this_alternative, cl)))))
-		losers++;
+			      (mode, this_alternative, cl)))))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Secondary memory reload needed: "
+		       "losers++\n", nop);
+		  losers++;
+		}
 
 	      if (MEM_P (op) && offmemok)
 		addr_losers++;
@@ -3340,7 +3369,7 @@ process_alt_operands (int only_alternative)
 	      if (lra_dump_file != NULL)
 		fprintf
 		  (lra_dump_file,
-		   "            %d Conflict early clobber reload: reject--\n",
+		   "            %d Conflict early clobber reload: losers++\n",
 		   i);
 	    }
 	  else
@@ -3352,6 +3381,12 @@ process_alt_operands (int only_alternative)
 		  {
 		    curr_alt_match_win[j] = false;
 		    losers++;
+		    if (lra_dump_file != NULL)
+		      fprintf
+			(lra_dump_file,
+			 "            %d Matching conflict early clobber "
+			 "reloads: losers++\n",
+			 j);
 		    overall += LRA_LOSER_COST_FACTOR;
 		  }
 	      if (! curr_alt_match_win[i])
@@ -3369,7 +3404,7 @@ process_alt_operands (int only_alternative)
 		fprintf
 		  (lra_dump_file,
 		   "            %d Matched conflict early clobber reloads: "
-		   "reject--\n",
+		   "losers++\n",
 		   i);
 	    }
 	  /* Early clobber was already reflected in REJECT. */
@@ -4094,6 +4129,19 @@ swap_operands (int nop)
   lra_update_dup (curr_id, nop + 1);
 }
 
+/* Return TRUE if X is a (subreg of) reg and there are no hard regs of X class
+   which can contain value of MODE.  */
+static bool invalid_mode_reg_p (enum machine_mode mode, rtx x)
+{
+  if (SUBREG_P (x))
+    x = SUBREG_REG (x);
+  if (! REG_P (x))
+    return false;
+  enum reg_class rclass = get_reg_class (REGNO (x));
+  return hard_reg_set_subset_p (ira_prohibited_class_mode_regs[rclass][mode],
+				reg_class_contents[rclass]);
+}
+
 /* Main entry point of the constraint code: search the body of the
    current insn to choose the best alternative.  It is mimicking insn
    alternative cost calculation model of former reload pass.  That is
@@ -4354,6 +4402,10 @@ curr_insn_transform (bool check_only_p)
       rld = partial_subreg_p (GET_MODE (src), GET_MODE (dest)) ? src : dest;
       rld_mode = GET_MODE (rld);
       sec_mode = targetm.secondary_memory_needed_mode (rld_mode);
+      if (rld_mode != sec_mode
+	  && (invalid_mode_reg_p (sec_mode, dest)
+	      || invalid_mode_reg_p (sec_mode, src)))
+	sec_mode = rld_mode;
       new_reg = lra_create_new_reg (sec_mode, NULL_RTX, NO_REGS, NULL,
 				    "secondary");
       /* If the mode is changed, it should be wider.  */
@@ -5866,6 +5918,20 @@ inherit_reload_reg (bool def_p, int original_regno,
 		   "    Rejecting inheritance for insn %d(%s)<-%d(%s) "
 		   "as secondary mem is needed\n",
 		   REGNO (dest), reg_class_names[get_reg_class (REGNO (dest))],
+		   original_regno, reg_class_names[rclass]);
+	  fprintf (lra_dump_file,
+		   "    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	}
+      return false;
+    }
+  if (ira_reg_class_min_nregs[rclass][GET_MODE (original_reg)]
+      != ira_reg_class_max_nregs[rclass][GET_MODE (original_reg)])
+    {
+      if (lra_dump_file != NULL)
+	{
+	  fprintf (lra_dump_file,
+		   "    Rejecting inheritance for %d "
+		   "because of requiring non-uniform class %s\n",
 		   original_regno, reg_class_names[rclass]);
 	  fprintf (lra_dump_file,
 		   "    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");

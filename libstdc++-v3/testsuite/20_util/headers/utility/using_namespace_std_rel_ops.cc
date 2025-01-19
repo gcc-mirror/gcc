@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2007-2024 Free Software Foundation, Inc.
+// Copyright (C) 2007-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,5 +21,5 @@
 
 namespace gnu
 {
-  using namespace std::rel_ops;
+  using namespace std::rel_ops; // { dg-warning "deprecated" "" { target c++20 } }
 }

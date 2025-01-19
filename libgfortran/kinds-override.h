@@ -1,5 +1,5 @@
 /* Header used to override things detected by the mk-kinds-h.sh script.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 

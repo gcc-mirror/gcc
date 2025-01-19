@@ -1,5 +1,5 @@
 /* BPF Compile Once - Run Everywhere (CO-RE) support.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -19,7 +19,6 @@
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -298,6 +297,13 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 
   ctf_container_ref ctfc = ctf_get_tu_ctfc ();
   ctf_dtdef_ref dtd = ctf_lookup_tree_type (ctfc, type);
+
+  /* Make sure CO-RE type is never the const or volatile version.  */
+  if ((btf_dtd_kind (dtd) == BTF_KIND_CONST
+       || btf_dtd_kind (dtd) == BTF_KIND_VOLATILE)
+      && kind >= BPF_RELO_FIELD_BYTE_OFFSET
+      && kind <= BPF_RELO_FIELD_RSHIFT_U64)
+    dtd = dtd->ref_type;
 
   /* Buffer the access string in the auxiliary strtab.  */
   bpfcr->bpfcr_astr_off = 0;
@@ -611,6 +617,9 @@ btf_ext_init (void)
 void
 btf_ext_output (void)
 {
+  if (!ctf_get_tu_ctfc ())
+    return;
+
   output_btfext_header ();
   output_btfext_func_info (btf_ext);
   if (TARGET_BPF_CORE)

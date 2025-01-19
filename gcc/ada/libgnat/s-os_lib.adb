@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2024, AdaCore                     --
+--                     Copyright (C) 1995-2025, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ with Ada.Unchecked_Deallocation;
 with System.Case_Util;
 with System.CRTL;
 with System.Soft_Links;
+with Interfaces.C;
 
 package body System.OS_Lib is
 
@@ -1641,9 +1642,12 @@ package body System.OS_Lib is
    -------------------------
 
    function Locate_Exec_On_Path
-     (Exec_Name : String) return String_Access
+     (Exec_Name : String;
+      Current_Dir_On_Win : Boolean := False) return String_Access
    is
-      function Locate_Exec_On_Path (C_Exec_Name : Address) return Address;
+      function Locate_Exec_On_Path
+        (C_Exec_Name        : Address;
+         Current_Dir_On_Win : Interfaces.C.int) return Address;
       pragma Import (C, Locate_Exec_On_Path, "__gnat_locate_exec_on_path");
 
       C_Exec_Name  : String (1 .. Exec_Name'Length + 1);
@@ -1655,7 +1659,8 @@ package body System.OS_Lib is
       C_Exec_Name (1 .. Exec_Name'Length)   := Exec_Name;
       C_Exec_Name (C_Exec_Name'Last)        := ASCII.NUL;
 
-      Path_Addr := Locate_Exec_On_Path (C_Exec_Name'Address);
+      Path_Addr := Locate_Exec_On_Path
+        (C_Exec_Name'Address, (if Current_Dir_On_Win then 1 else 0));
       Path_Len  := C_String_Length (Path_Addr);
 
       if Path_Len = 0 then

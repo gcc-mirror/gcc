@@ -1,5 +1,5 @@
 /* GCC core type declarations.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -421,7 +421,8 @@ enum function_class {
   function_c99_math_complex,
   function_sincos,
   function_c11_misc,
-  function_c23_misc
+  function_c23_misc,
+  function_c2y_misc
 };
 
 /* Enumerate visibility settings.  This is deliberately ordered from most

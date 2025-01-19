@@ -1,5 +1,5 @@
 /* GNU compiler hardware transactional execution intrinsics
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 This file is part of GCC.

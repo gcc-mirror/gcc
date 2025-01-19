@@ -102,7 +102,7 @@ AAShell makeAA(K, V)(V[K] src) @trusted
         dim = dim * GROW_FAC;
 
     // used during runtime.
-    size_t delegate(scope const void *) nothrow hashFn = (scope const void* val) {
+    typeof(Impl.hashFn) hashFn = (scope const void* val) {
         auto x = cast(K*)val;
         return hashOf(*x);
     };

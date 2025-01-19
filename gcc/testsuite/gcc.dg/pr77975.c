@@ -1,8 +1,8 @@
 /* PR tree-optimization/77975 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ivcanon-details" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli-details" } */
 
-/* { dg-final { scan-tree-dump-times "Proved that loop 1 iterates 1 times using brute force" 1 "ivcanon" } } */
+/* { dg-final { scan-tree-dump-times "Proved that loop 1 iterates 2 times using brute force" 1 "cunrolli" } } */
 
 unsigned int
 foo (unsigned int *b)
@@ -17,7 +17,7 @@ foo (unsigned int *b)
   return a; 
 }
 
-/* { dg-final { scan-tree-dump-times "Proved that loop 1 iterates 2 times using brute force" 1 "ivcanon" } } */
+/* { dg-final { scan-tree-dump-times "Proved that loop 1 iterates 3 times using brute force" 1 "cunrolli" } } */
 
 unsigned int
 bar (unsigned int *b)

@@ -1,6 +1,6 @@
 (* decl.mod declaration nodes used to create the AST.
 
-Copyright (C) 2015-2024 Free Software Foundation, Inc.
+Copyright (C) 2015-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -94,7 +94,8 @@ TYPE
 	    nil, true, false,
             (* system types.  *)
    	    address, loc, byte, word,
-            csizet, cssizet,
+            csizet, cssizet, cofft,
+            cardinal64,
             (* base types.  *)
 	    char,
 	    cardinal, longcard, shortcard,
@@ -159,7 +160,9 @@ TYPE
                          byte,
 			 word,
                          csizet,
-                         cssizet         : |
+                         cssizet,
+                         cofft,
+                         cardinal64      : |
                          (* base types.  *)
 			 boolean,
  			 proc,
@@ -738,6 +741,8 @@ VAR
    wordN,
    csizetN,
    cssizetN,
+   cofftN,
+   cardinal64N,
    adrN,
    sizeN,
    tsizeN,
@@ -1458,17 +1463,6 @@ BEGIN
    assert (n # NIL) ;
    RETURN isProcType (n) OR (n = procN)
 END isAProcType ;
-
-
-(*
-   isProcedure - returns TRUE if, n, is a procedure.
-*)
-
-PROCEDURE isProcedure (n: node) : BOOLEAN ;
-BEGIN
-   assert (n # NIL) ;
-   RETURN n^.kind = procedure
-END isProcedure ;
 
 
 (*
@@ -4378,6 +4372,9 @@ BEGIN
       word            :  RETURN makeKey ('WORD') |
       csizet          :  RETURN makeKey ('CSIZE_T') |
       cssizet         :  RETURN makeKey ('CSSIZE_T') |
+      cofft           :  RETURN makeKey ('COFF_T') |
+      cardinal64      :  RETURN makeKey ('CARDINAL64') |
+
       (* base types.  *)
       boolean         :  RETURN makeKey ('BOOLEAN') |
       proc            :  RETURN makeKey ('PROC') |
@@ -4988,6 +4985,8 @@ BEGIN
       word,
       csizet,
       cssizet,
+      cofft,
+      cardinal64,
       char,
       cardinal,
       longcard,
@@ -5126,6 +5125,8 @@ BEGIN
    word,
    csizet,
    cssizet,
+   cofft,
+   cardinal64,
    char,
    integer,
    longint,
@@ -5166,6 +5167,8 @@ BEGIN
       word            :  RETURN n |
       csizet          :  RETURN n |
       cssizet         :  RETURN n |
+      cofft           :  RETURN n |
+      cardinal64      :  RETURN n |
       (* base types.  *)
       boolean         :  RETURN n |
       proc            :  RETURN n |
@@ -5367,6 +5370,8 @@ BEGIN
       word            :  RETURN n |
       csizet          :  RETURN n |
       cssizet         :  RETURN n |
+      cofft           :  RETURN n |
+      cardinal64      :  RETURN n |
       (* base types.  *)
       boolean         :  RETURN n |
       proc            :  RETURN n |
@@ -5538,7 +5543,9 @@ BEGIN
       byte,
       word,
       csizet,
-      cssizet         : RETURN systemN |
+      cssizet,
+      cofft,
+      cardinal64      : RETURN systemN |
       (* base types.  *)
       boolean,
       proc,
@@ -6672,7 +6679,9 @@ BEGIN
       byte,
       word,
       csizet,
-      cssizet         :  doSystemC (p, n) |
+      cssizet,
+      cofft,
+      cardinal64      :  doSystemC (p, n) |
       type            :  doTypeNameC (p, n) |
       pointer         :  doTypeNameC (p, n)
 
@@ -8974,12 +8983,14 @@ PROCEDURE isSystem (n: node) : BOOLEAN ;
 BEGIN
    CASE n^.kind OF
 
-   address:  RETURN TRUE |
-   loc    :  RETURN TRUE |
-   byte   :  RETURN TRUE |
-   word   :  RETURN TRUE |
-   csizet :  RETURN TRUE |
-   cssizet:  RETURN TRUE
+   address,
+   loc,
+   byte,
+   word,
+   csizet,
+   cssizet,
+   cofft,
+   cardinal64: RETURN TRUE
 
    ELSE
       RETURN FALSE
@@ -9000,7 +9011,9 @@ BEGIN
    byte   :  outText (p, 'unsigned char') ; setNeedSpace (p) |
    word   :  outText (p, 'unsigned int') ; setNeedSpace (p) |
    csizet :  outText (p, 'size_t') ; setNeedSpace (p) ; keyc.useSize_t |
-   cssizet:  outText (p, 'ssize_t') ; setNeedSpace (p) ; keyc.useSSize_t
+   cssizet   :  outText (p, 'ssize_t') ; setNeedSpace (p) ; keyc.useSSize_t |
+   cofft     :  outText (p, 'off_t') ; setNeedSpace (p) |
+   cardinal64:  outText (p, 'uint64_t') ; setNeedSpace (p)
 
    END
 END doSystemC ;
@@ -14084,6 +14097,8 @@ BEGIN
       word,
       csizet,
       cssizet,
+      cofft,
+      cardinal64,
       (* base types.  *)
       boolean,
       char,
@@ -14951,6 +14966,8 @@ BEGIN
    word,
    csizet,
    cssizet,
+   cofft,
+   cardinal64,
    (* base types.  *)
    char,
    cardinal,
@@ -15089,6 +15106,8 @@ BEGIN
    word,
    csizet,
    cssizet,
+   cofft,
+   cardinal64,
    char,
    cardinal,
    longcard,
@@ -16318,10 +16337,12 @@ BEGIN
 
    address,
    loc,
-   byte   ,
-   word   ,
-   csizet ,
-   cssizet:  doNameM2 (p, n)
+   byte,
+   word,
+   csizet,
+   cssizet,
+   cofft,
+   cardinal64:  doNameM2 (p, n)
 
    END
 END doSystemM2 ;
@@ -18084,6 +18105,8 @@ BEGIN
    word,
    csizet,
    cssizet,
+   cofft,
+   cardinal64,
    (* base types.  *)
    boolean,
    proc,
@@ -18222,6 +18245,8 @@ BEGIN
    wordN := makeBase (word) ;
    csizetN := makeBase (csizet) ;
    cssizetN := makeBase (cssizet) ;
+   cofftN := makeBase (cofft) ;
+   cardinal64N := makeBase (cardinal64) ;
 
    adrN := makeBase (adr) ;
    tsizeN := makeBase (tsize) ;
@@ -18234,6 +18259,8 @@ BEGIN
    wordN := addToScope (wordN) ;
    csizetN := addToScope (csizetN) ;
    cssizetN := addToScope (cssizetN) ;
+   cofftN := addToScope (cofftN) ;
+   cardinal64N := addToScope (cardinal64N) ;
    adrN := addToScope (adrN) ;
    tsizeN := addToScope (tsizeN) ;
    throwN := addToScope (throwN) ;
@@ -18247,7 +18274,9 @@ BEGIN
    addDone (byteN) ;
    addDone (wordN) ;
    addDone (csizetN) ;
-   addDone (cssizetN)
+   addDone (cssizetN) ;
+   addDone (cofftN) ;
+   addDone (cardinal64N)
 END makeSystem ;
 
 

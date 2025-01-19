@@ -43,7 +43,7 @@ alignedReallocate) APIs.))
 $(TR $(TDC size_t goodAllocSize(size_t n);, $(POST $(RES) >= n)) $(TD Allocators
 customarily allocate memory in discretely-sized chunks. Therefore, a request for
 `n` bytes may result in a larger allocation. The extra memory allocated goes
-unused and adds to the so-called $(HTTP goo.gl/YoKffF,internal fragmentation).
+unused and adds to the so-called $(HTTPS en.wikipedia.org/wiki/Fragmentation_(computing)#Internal_fragmentation,internal fragmentation).
 The function `goodAllocSize(n)` returns the actual number of bytes that would
 be allocated upon a request for `n` bytes. This module defines a default
 implementation that returns `n` rounded up to a multiple of the allocator's
@@ -137,7 +137,7 @@ thread-safe or not, this instance may be `shared`.))
 
 $(H2 Sample Assembly)
 
-The example below features an _allocator modeled after $(HTTP goo.gl/m7329l,
+The example below features an _allocator modeled after $(HTTP jemalloc.net/,
 jemalloc), which uses a battery of free-list allocators spaced so as to keep
 internal fragmentation to a minimum. The `FList` definitions specify no
 bounds for the freelist because the `Segregator` does all size selection in

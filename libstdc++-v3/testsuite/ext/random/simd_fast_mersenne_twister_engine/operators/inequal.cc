@@ -5,7 +5,7 @@
 // 2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
 // 2012-08-28  Ulrich Drepper  <drepper@gmail.com>, adapted for SFMT
 //
-// Copyright (C) 2010-2024 Free Software Foundation, Inc.
+// Copyright (C) 2010-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

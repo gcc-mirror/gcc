@@ -36,7 +36,8 @@ static int fact_nohost(int n)
 
   return fact(n);
 }
-/* { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'fact_nohost' has 'nohost' clause\.$} 1 oaccloops { target { c && offloading_enabled } } } }
+/* { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'fact_nohost' has 'nohost' clause\.$} 1 oaccloops { target c } } }
+   { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'int fact_nohost\(int\)' has 'nohost' clause\.$} 1 oaccloops { target { c++ && { ! offloading_enabled } } } } }
    { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'fact_nohost\(int\)' has 'nohost' clause\.$} 1 oaccloops { target { c++ && offloading_enabled } } } }
    TODO See PR101551 for 'offloading_enabled' differences.  */
 

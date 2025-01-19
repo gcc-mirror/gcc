@@ -801,7 +801,8 @@ Indexing operators yield or modify the value at a specified index.
 /**
 $(D k in container) returns true if the given key is in the container.
  */
-    bool opBinaryRight(string op)(KeyType k) if (op == "in")
+    bool opBinaryRight(string op)(KeyType k)
+    if (op == "in")
     {
         assert(0, "Not implemented");
     }
@@ -843,13 +844,15 @@ define `opBinary`.
 Complexity: $(BIGOH n + m), where m is the number of elements in $(D
 stuff)
  */
-    TotalContainer opBinary(string op)(Stuff rhs) if (op == "~")
+    TotalContainer opBinary(string op)(Stuff rhs)
+    if (op == "~")
     {
         assert(0, "Not implemented");
     }
 
     /// ditto
-    TotalContainer opBinaryRight(string op)(Stuff lhs) if (op == "~")
+    TotalContainer opBinaryRight(string op)(Stuff lhs)
+    if (op == "~")
     {
         assert(0, "Not implemented");
     }
@@ -857,7 +860,8 @@ stuff)
 /**
 Forwards to $(D insertAfter(this[], stuff)).
  */
-    void opOpAssign(string op)(Stuff stuff) if (op == "~")
+    void opOpAssign(string op)(Stuff stuff)
+    if (op == "~")
     {
         assert(0, "Not implemented");
     }

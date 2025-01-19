@@ -163,7 +163,8 @@ private
         MsgType type;
         Variant data;
 
-        this(T...)(MsgType t, T vals) if (T.length > 0)
+        this(T...)(MsgType t, T vals)
+        if (T.length > 0)
         {
             static if (T.length == 1)
             {

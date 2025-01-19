@@ -13,6 +13,7 @@ module dmd.cxxfrontend;
 import dmd.aggregate : AggregateDeclaration;
 import dmd.arraytypes;
 import dmd.astenums;
+import dmd.attrib;
 import dmd.common.outbuffer : OutBuffer;
 import dmd.denum : EnumDeclaration;
 import dmd.dmodule /*: Module*/;
@@ -35,24 +36,33 @@ import dmd.statement : Statement, AsmStatement, GccAsmStatement;
 extern (C++, "dmd"):
 
 /***********************************************************
- * cppmangle.d
+ * atrtibsem.d
+ */
+Expressions* getAttributes(UserAttributeDeclaration a)
+{
+    import dmd.attribsem;
+    return dmd.attribsem.getAttributes(a);
+}
+
+/***********************************************************
+ * mangle/cpp.d
  */
 const(char)* toCppMangleItanium(Dsymbol s)
 {
-    import dmd.cppmangle;
-    return dmd.cppmangle.toCppMangleItanium(s);
+    import dmd.mangle.cpp;
+    return dmd.mangle.cpp.toCppMangleItanium(s);
 }
 
 const(char)* cppTypeInfoMangleItanium(Dsymbol s)
 {
-    import dmd.cppmangle;
-    return dmd.cppmangle.cppTypeInfoMangleItanium(s);
+    import dmd.mangle.cpp;
+    return dmd.mangle.cpp.cppTypeInfoMangleItanium(s);
 }
 
 const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
 {
-    import dmd.cppmangle;
-    return dmd.cppmangle.cppThunkMangleItanium(fd, offset);
+    import dmd.mangle.cpp;
+    return dmd.mangle.cpp.cppThunkMangleItanium(fd, offset);
 }
 
 /***********************************************************
@@ -65,36 +75,36 @@ Expression ctfeInterpret(Expression e)
 }
 
 /***********************************************************
- * dmangle.d
+ * mangle/package.d
  */
 const(char)* mangleExact(FuncDeclaration fd)
 {
-    import dmd.dmangle;
-    return dmd.dmangle.mangleExact(fd);
+    import dmd.mangle;
+    return dmd.mangle.mangleExact(fd);
 }
 
 void mangleToBuffer(Type t, ref OutBuffer buf)
 {
-    import dmd.dmangle;
-    return dmd.dmangle.mangleToBuffer(t, buf);
+    import dmd.mangle;
+    return dmd.mangle.mangleToBuffer(t, buf);
 }
 
 void mangleToBuffer(Expression e, ref OutBuffer buf)
 {
-    import dmd.dmangle;
-    return dmd.dmangle.mangleToBuffer(e, buf);
+    import dmd.mangle;
+    return dmd.mangle.mangleToBuffer(e, buf);
 }
 
 void mangleToBuffer(Dsymbol s, ref OutBuffer buf)
 {
-    import dmd.dmangle;
-    return dmd.dmangle.mangleToBuffer(s, buf);
+    import dmd.mangle;
+    return dmd.mangle.mangleToBuffer(s, buf);
 }
 
 void mangleToBuffer(TemplateInstance ti, ref OutBuffer buf)
 {
-    import dmd.dmangle;
-    return dmd.dmangle.mangleToBuffer(ti, buf);
+    import dmd.mangle;
+    return dmd.mangle.mangleToBuffer(ti, buf);
 }
 
 /***********************************************************
@@ -160,6 +170,12 @@ void importAll(Dsymbol d, Scope* sc)
 {
     import dmd.dsymbolsem;
     return dmd.dsymbolsem.importAll(d, sc);
+}
+
+Dsymbols* include(Dsymbol d, Scope* sc)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.include(d, sc);
 }
 
 /***********************************************************
@@ -240,6 +256,13 @@ Expression expressionSemantic(Expression e, Scope* sc)
     return dmd.expressionsem.expressionSemantic(e, sc);
 }
 
+bool fill(StructDeclaration sd, const ref Loc loc,
+          ref Expressions elements, bool ctorinit)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.fill(sd, loc, elements, ctorinit);
+}
+
 /***********************************************************
  * funcsem.d
  */
@@ -253,6 +276,18 @@ bool functionSemantic3(FuncDeclaration fd)
 {
     import dmd.funcsem;
     return dmd.funcsem.functionSemantic3(fd);
+}
+
+MATCH leastAsSpecialized(FuncDeclaration fd, FuncDeclaration g, Identifiers* names)
+{
+    import dmd.funcsem;
+    return dmd.funcsem.leastAsSpecialized(fd, g, names);
+}
+
+PURE isPure(FuncDeclaration fd)
+{
+    import dmd.funcsem;
+    return dmd.funcsem.isPure(fd);
 }
 
 /***********************************************************
@@ -403,6 +438,11 @@ void semanticTypeInfoMembers(StructDeclaration sd)
     return dmd.semantic3.semanticTypeInfoMembers(sd);
 }
 
+bool checkClosure(FuncDeclaration fd)
+{
+    import dmd.semantic3;
+    return dmd.semantic3.checkClosure(fd);
+}
 /***********************************************************
  * statementsem.d
  */
@@ -471,6 +511,12 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool
 {
     import dmd.typesem;
     return dmd.typesem.covariant(src, t, pstc, cppCovariant);
+}
+
+bool isZeroInit(Type t, const ref Loc loc)
+{
+    import dmd.typesem;
+    return dmd.typesem.isZeroInit(t, loc);
 }
 
 bool isBaseOf(Type tthis, Type t, int* poffset)
@@ -609,6 +655,30 @@ Type referenceTo(Type type)
 {
     import dmd.typesem;
     return dmd.typesem.referenceTo(type);
+}
+
+uinteger_t size(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.size(type);
+}
+
+uinteger_t size(Type type, const ref Loc loc)
+{
+    import dmd.typesem;
+    return dmd.typesem.size(type, loc);
+}
+
+MATCH implicitConvTo(Type from, Type to)
+{
+    import dmd.dcast;
+    return dmd.dcast.implicitConvTo(from, to);
+}
+
+MATCH constConv(Type from, Type to)
+{
+    import dmd.typesem;
+    return dmd.typesem.constConv(from, to);
 }
 
 /***********************************************************

@@ -12,9 +12,6 @@
 #include <string.h>
 #include <openacc.h>
 
-#ifndef __cplusplus
-typedef int bool;
-#endif
 #include <hsa.h>
 
 

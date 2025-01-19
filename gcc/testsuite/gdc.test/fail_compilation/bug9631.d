@@ -4,7 +4,7 @@ TEST_OUTPUT:
 fail_compilation/bug9631.d(20): Error: cannot implicitly convert expression `F()` of type `bug9631.T1!().F` to `bug9631.T2!().F`
 ---
 */
-// DISABLED: win32
+
 template T1()
 {
     struct F { }
@@ -65,7 +65,7 @@ TEST_OUTPUT:
 fail_compilation/bug9631.d(80): Error: function `f` is not callable using argument types `(int, S)`
 fail_compilation/bug9631.d(80):        cannot pass argument `y` of type `bug9631.tem!().S` to parameter `bug9631.S s`
 fail_compilation/bug9631.d(79):        `bug9631.arg.f(int i, S s)` declared here
-fail_compilation/bug9631.d(81): Error: function literal `__lambda4(S s)` is not callable using argument types `(S)`
+fail_compilation/bug9631.d(81): Error: function literal `__lambda_L81_C5(S s)` is not callable using argument types `(S)`
 fail_compilation/bug9631.d(81):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S s`
 fail_compilation/bug9631.d(87): Error: constructor `bug9631.arg.A.this(S __param_0)` is not callable using argument types `(S)`
 fail_compilation/bug9631.d(87):        cannot pass argument `S(0)` of type `bug9631.tem!().S` to parameter `bug9631.S __param_0`

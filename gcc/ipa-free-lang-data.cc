@@ -1,7 +1,7 @@
 /* Pass to free or clear language-specific data structures from
    the IL before they reach the middle end.
 
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -29,7 +29,6 @@
    It is intended to be language-independent but can occasionally
    calls language-dependent routines.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -576,7 +575,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
       if (!(node = cgraph_node::get (decl))
 	  || (!node->definition && !node->clones))
 	{
-	  if (node && !node->declare_variant_alt)
+	  if (node)
 	    node->release_body ();
 	  else
 	    {

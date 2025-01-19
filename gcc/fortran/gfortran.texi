@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2024
+@set copyrights-gfortran 1999-2025
 
 @include gcc-common.texi
 
@@ -163,7 +163,7 @@ the GNU Fortran compiler.  You can find in this manual how to invoke
 
 @ifset DEVELOPMENT
 @emph{Warning:} This document, and the compiler it describes, are still
-under development.  While efforts are made to keep it up-to-date, it might
+under development.  While efforts are made to keep it up to date, it might
 not accurately reflect the status of the most recent GNU Fortran compiler.
 @end ifset
 
@@ -237,7 +237,7 @@ The GNU Fortran compiler is the successor to @command{g77}, the
 Fortran 77 front end included in GCC prior to version 4 (released in
 2005).  While it is backward-compatible with most @command{g77}
 extensions and command-line options, @command{gfortran} is a completely new
-implemention designed to support more modern dialects of Fortran.
+implementation designed to support more modern dialects of Fortran.
 GNU Fortran implements the Fortran 77, 90 and 95 standards
 completely, most of the Fortran 2003 and 2008 standards, and some
 features from the 2018 standard.  It also implements several extensions
@@ -439,13 +439,6 @@ language standard, including full support for the Technical Specification
 More details on support for these standards can be
 found in the following sections of the documentation.
 
-Additionally, the GNU Fortran compilers supports the OpenMP specification
-(version 4.5 and partial support of the features of the 5.0 version,
-@url{https://openmp.org/@/specifications/}).
-There also is support for the OpenACC specification (targeting
-version 2.6, @uref{https://www.openacc.org/}).  See
-@uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
-
 @node Fortran 95 status
 @subsection Fortran 95 status
 @cindex Varying length strings
@@ -641,7 +634,7 @@ The default value is 0.
 
 This environment variable controls whether all I/O is unbuffered.  If
 the first letter is @samp{y}, @samp{Y} or @samp{1}, all I/O is
-unbuffered.  This will slow down small sequential reads and writes.  If
+unbuffered.  This slows down small sequential reads and writes.  If
 the first letter is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.
 This is the default.
 
@@ -651,7 +644,7 @@ This is the default.
 The environment variable named @env{GFORTRAN_UNBUFFERED_PRECONNECTED} controls
 whether I/O on a preconnected unit (i.e.@: STDOUT or STDERR) is unbuffered.  If
 the first letter is @samp{y}, @samp{Y} or @samp{1}, I/O is unbuffered.  This
-will slow down small sequential reads and writes.  If the first letter
+slows down small sequential reads and writes.  If the first letter
 is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.  This is the default.
 
 @node GFORTRAN_SHOW_LOCUS
@@ -681,6 +674,7 @@ be sure to quote spaces, as in
 @smallexample
 $ GFORTRAN_LIST_SEPARATOR='  ,  ' ./a.out
 @end smallexample
+@noindent
 when @command{a.out} is the compiled Fortran program that you want to run.
 Default is a single space.
 
@@ -711,7 +705,7 @@ the modes are the same as for the @code{CONVERT} specifier:
 for unformatted files.
 @item @code{BIG_ENDIAN} Use the big-endian format for unformatted files.
 @end itemize
-For POWER systems which support @option{-mabi=ieeelongdouble},
+For POWER systems that support @option{-mabi=ieeelongdouble},
 there are additional options, which can be combined with the
 others with commas. Those are
 @itemize @w{}
@@ -759,9 +753,9 @@ data representation for unformatted files.  @xref{Runtime Options}, for
 setting a default data representation for the whole program.  The
 @code{CONVERT} specifier overrides the @option{-fconvert} compile options.
 
-@emph{Note that the values specified via the GFORTRAN_CONVERT_UNIT
-environment variable will override the CONVERT specifier in the
-open statement}.  This is to give control over data formats to
+Note that the values specified via the @env{GFORTRAN_CONVERT_UNIT}
+environment variable override the @code{CONVERT} specifier in the
+@code{OPEN} statement.  This is to give control over data formats to
 users who do not have the source code of their program available.
 
 @node GFORTRAN_ERROR_BACKTRACE
@@ -806,7 +800,7 @@ The default value is 131072.
 @chapter Compiler Characteristics
 
 This chapter describes certain characteristics of the GNU Fortran
-compiler, that are not specified by the Fortran standard, but which
+compiler that are not specified by the Fortran standard, but which
 might in some way or another become visible to the programmer.
 
 @menu
@@ -825,7 +819,7 @@ might in some way or another become visible to the programmer.
 
 
 @node KIND Type Parameters
-@section KIND Type Parameters
+@section @code{KIND} Type Parameters
 @cindex kind
 
 The @code{KIND} type parameters supported by GNU Fortran for the primitive
@@ -873,7 +867,7 @@ the kind parameters of the @ref{ISO_C_BINDING} module should be used.
 
 
 @node Internal representation of LOGICAL variables
-@section Internal representation of LOGICAL variables
+@section Internal representation of @code{LOGICAL} variables
 @cindex logical, variable representation
 
 The Fortran standard does not specify how variables of @code{LOGICAL}
@@ -896,7 +890,7 @@ See also @ref{Argument passing conventions} and @ref{Interoperability with C}.
 The Fortran standard does not require the compiler to evaluate all parts of an
 expression, if they do not contribute to the final result.  For logical
 expressions with @code{.AND.} or @code{.OR.} operators, in particular, GNU
-Fortran will optimize out function calls (even to impure functions) if the
+Fortran optimizes out function calls (even to impure functions) if the
 result of the expression can be established without them.  However, since not
 all compilers do that, and such an optimization can potentially modify the
 program flow and subsequent results, GNU Fortran throws warnings for such
@@ -904,7 +898,7 @@ situations with the @option{-Wfunction-elimination} flag.
 
 
 @node MAX and MIN intrinsics with REAL NaN arguments
-@section MAX and MIN intrinsics with REAL NaN arguments
+@section @code{MAX} and @code{MIN} intrinsics with @code{REAL} NaN arguments
 @cindex MAX, MIN, NaN
 
 The Fortran standard does not specify what the result of the
@@ -977,7 +971,7 @@ Fortran programmer can use the intrinsic @code{FNUM} to retrieve the
 low level file descriptor corresponding to an open Fortran unit. Then,
 using e.g. the @code{ISO_C_BINDING} feature, one can call the
 underlying system call to flush dirty data to stable storage, such as
-@code{fsync} on POSIX, @code{_commit} on MingW, or @code{fcntl(fd,
+@code{fsync} on POSIX, @code{_commit} on MinGW, or @code{fcntl(fd,
 F_FULLSYNC, 0)} on macOS. The following example shows how to call
 fsync:
 
@@ -1025,21 +1019,21 @@ where file metadata is written to the directory lazily. This means
 that, for instance, the @code{dir} command can show a stale size for a
 file. One can force a directory metadata update by closing the unit,
 or by calling @code{_commit} on the file descriptor. Note, though,
-that @code{_commit} will force all dirty data to stable storage, which
+that @code{_commit} forces all dirty data to stable storage, which
 is often a very slow operation.
 
 The Network File System (NFS) implements a relaxed consistency model
 called open-to-close consistency. Closing a file forces dirty data and
 metadata to be flushed to the server, and opening a file forces the
 client to contact the server in order to revalidate cached
-data. @code{fsync} will also force a flush of dirty data and metadata
+data. @code{fsync} also forces a flush of dirty data and metadata
 to the server. Similar to @code{open} and @code{close}, acquiring and
-releasing @code{fcntl} file locks, if the server supports them, will
-also force cache validation and flushing dirty data and metadata.
+releasing @code{fcntl} file locks, if the server supports them,
+also forces cache validation and flushing dirty data and metadata.
 
 
 @node Files opened without an explicit ACTION= specifier
-@section Files opened without an explicit ACTION= specifier
+@section Files opened without an explicit @code{ACTION=} specifier
 @cindex open, action
 
 The Fortran standard says that if an @code{OPEN} statement is executed
@@ -1063,18 +1057,18 @@ symbolic links, on systems that support them.
 
 @itemize
 
-@item Results of INQUIRE statements of the ``inquire by file'' form will
+@item Results of @code{INQUIRE} statements of the ``inquire by file'' form
 relate to the target of the symbolic link. For example,
-@code{INQUIRE(FILE="foo",EXIST=ex)} will set @var{ex} to @var{.true.} if
+@code{INQUIRE(FILE="foo",EXIST=ex)} sets @var{ex} to @var{.true.} if
 @var{foo} is a symbolic link pointing to an existing file, and @var{.false.}
 if @var{foo} points to an non-existing file (``dangling'' symbolic link).
 
 @item Using the @code{OPEN} statement with a @code{STATUS="NEW"} specifier
-on a symbolic link will result in an error condition, whether the symbolic
+on a symbolic link results in an error condition, whether the symbolic
 link points to an existing target or is dangling.
 
 @item If a symbolic link was connected, using the @code{CLOSE} statement
-with a @code{STATUS="DELETE"} specifier will cause the symbolic link itself
+with a @code{STATUS="DELETE"} specifier causes the symbolic link itself
 to be deleted, not its target.
 
 @end itemize
@@ -1095,11 +1089,11 @@ Each subrecord consists of a leading record marker, the data written
 by the user program, and a trailing record marker.  The record markers
 are four-byte integers by default, and eight-byte integers if the
 @option{-fmax-subrecord-length=8} option (which exists for backwards
-compability only) is in effect.
+compatibility only) is in effect.
 
 The representation of the record markers is that of unformatted files
 given with the @option{-fconvert} option, the @ref{CONVERT specifier}
-in an open statement or the @ref{GFORTRAN_CONVERT_UNIT} environment
+in an @code{OPEN} statement or the @ref{GFORTRAN_CONVERT_UNIT} environment
 variable.
 
 The maximum number of bytes of user data in a subrecord is 2147483639
@@ -1146,7 +1140,7 @@ end program main
 
 Asynchronous I/O is supported if the program is linked against the
 POSIX thread library. If that is not the case, all I/O is performed
-as synchronous. On systems which do not support pthread condition
+as synchronous. On systems that do not support pthread condition
 variables, such as AIX, I/O is also performed as synchronous.
 
 On some systems, such as Darwin or Solaris, the POSIX thread library
@@ -1169,7 +1163,7 @@ sytems, such as Linux, it is necessary to specify @option{-pthread},
 Integer overflow is prohibited by the Fortran standard.  The behavior
 of gfortran on integer overflow is undefined by default.  Traditional
 code, like linear congruential pseudo-random number generators in old
-programs that rely on specific, non-standard behavior may generate
+programs that rely on specific, nonstandard behavior may generate
 unexpected results.  The @option{-fsanitize=undefined} option can be
 used to detect such code at runtime.
 
@@ -1221,9 +1215,9 @@ additional compatibility extensions along with those enabled by
 * X format descriptor without count field::
 * Commas in FORMAT specifications::
 * Missing period in FORMAT specifications::
-* Default widths for F@comma{} G and I format descriptors::
+* Default widths for F/G/I format descriptors::
 * I/O item lists::
-* @code{Q} exponent-letter::
+* Q exponent-letter::
 * BOZ literal constants::
 * Real array indices::
 * Unary operators::
@@ -1257,13 +1251,13 @@ additional compatibility extensions along with those enabled by
 GNU Fortran allows old-style kind specifications in declarations.  These
 look like:
 @smallexample
-      TYPESPEC*size x,y,z
+      TYPESPEC*@var{size} x,y,z
 @end smallexample
 @noindent
 where @code{TYPESPEC} is a basic type (@code{INTEGER}, @code{REAL},
-etc.), and where @code{size} is a byte count corresponding to the
+etc.), and where @var{size} is a byte count corresponding to the
 storage size of a valid kind for that type.  (For @code{COMPLEX}
-variables, @code{size} is the total size of the real and imaginary
+variables, @var{size} is the total size of the real and imaginary
 parts.)  The statement then declares @code{x}, @code{y} and @code{z} to
 be of type @code{TYPESPEC} with the appropriate kind.  This is
 equivalent to the standard-conforming declaration
@@ -1295,7 +1289,7 @@ unlike in a @code{DATA} statement, an initializer only applies to the
 variable immediately preceding the initialization.  In other words,
 something like @code{INTEGER I,J/2,3/} is not valid.  This style of
 initialization is only allowed in declarations without double colons
-(@code{::}); the double colons were introduced in Fortran 90, which also
+(@samp{::}); the double colons were introduced in Fortran 90, which also
 introduced a standard syntax for initializing variables in type
 declarations.
 
@@ -1311,7 +1305,7 @@ are:
       DATA i/1/, j/2/, x/3*0.,1./
 @end smallexample
 
-Note that variables which are explicitly initialized in declarations
+Note that variables that are explicitly initialized in declarations
 or in @code{DATA} statements automatically acquire the @code{SAVE}
 attribute.
 
@@ -1323,8 +1317,11 @@ GNU Fortran fully supports the Fortran 95 standard for namelist I/O
 including array qualifiers, substrings and fully qualified derived types.
 The output from a namelist write is compatible with namelist read.  The
 output has all names in upper case and indentation to column 1 after the
-namelist name.  Two extensions are permitted:
+namelist name.  The following extensions are permitted:
 
+@itemize @bullet
+
+@item
 Old-style use of @samp{$} instead of @samp{&}
 @smallexample
 $MYNML
@@ -1336,6 +1333,7 @@ $END
 It should be noted that the default terminator is @samp{/} rather than
 @samp{&END}.
 
+@item
 Querying of the namelist when inputting from stdin.  After at least
 one space, entering @samp{?} sends to stdout the namelist name and the names of
 the variables in the namelist:
@@ -1364,6 +1362,7 @@ Entering @samp{=?} outputs the namelist to stdout, as if
 To aid this dialog, when input is from stdin, errors send their
 messages to stderr and execution continues, even if @code{IOSTAT} is set.
 
+@item
 @code{PRINT} namelist is permitted.  This causes an error if
 @option{-std=f95} is used.
 @smallexample
@@ -1374,19 +1373,21 @@ PROGRAM test_print
 END PROGRAM test_print
 @end smallexample
 
+@item
 Expanded namelist reads are permitted.  This causes an error if
 @option{-std=f95} is used.  In the following example, the first element
-of the array will be given the value 0.00 and the two succeeding
-elements will be given the values 1.00 and 2.00.
+of the array is given the value 0.00 and the two succeeding
+elements are given the values 1.00 and 2.00.
 @smallexample
 &MYNML
   X(1,1) = 0.00 , 1.00 , 2.00
 /
 @end smallexample
+@end itemize
 
 When writing a namelist, if no @code{DELIM=} is specified, by default a
-double quote is used to delimit character strings. If -std=F95, F2003,
-or F2008, etc, the delim status is set to 'none'.  Defaulting to
+double quote is used to delimit character strings. With @option{-std=f95}
+or later, the delim status is set to @code{'none'}.  Defaulting to
 quotes ensures that namelists with character strings can be subsequently
 read back in accurately.
 
@@ -1434,12 +1435,12 @@ discouraged.
 10     FORMAT ('F4')
 @end smallexample
 
-@node Default widths for F@comma{} G and I format descriptors
-@subsection Default widths for @code{F}, @code{G} and @code{I} format descriptors
+@node Default widths for F/G/I format descriptors
+@subsection Default widths for @samp{F}, @samp{G} and @samp{I} format descriptors
 
 To support legacy codes, GNU Fortran allows width to be omitted from format
 specifications if and only if @option{-fdec-format-defaults} is given on the
-command line.  Default widths will be used. This is considered non-conforming
+command line.  Default widths are used. This is considered non-conforming
 code and is discouraged.
 
 @smallexample
@@ -1458,27 +1459,27 @@ To support legacy codes, GNU Fortran allows the input item list
 of the @code{READ} statement, and the output item lists of the
 @code{WRITE} and @code{PRINT} statements, to start with a comma.
 
-@node @code{Q} exponent-letter
-@subsection @code{Q} exponent-letter
-@cindex @code{Q} exponent-letter
+@node Q exponent-letter
+@subsection @samp{Q} exponent-letter
+@cindex @samp{Q} exponent-letter
 
 GNU Fortran accepts real literal constants with an exponent-letter
-of @code{Q}, for example, @code{1.23Q45}.  The constant is interpreted
+of @samp{Q}, for example, @code{1.23Q45}.  The constant is interpreted
 as a @code{REAL(16)} entity on targets that support this type.  If
 the target does not support @code{REAL(16)} but has a @code{REAL(10)}
-type, then the real-literal-constant will be interpreted as a
+type, then the real-literal-constant is interpreted as a
 @code{REAL(10)} entity.  In the absence of @code{REAL(16)} and
-@code{REAL(10)}, an error will occur.
+@code{REAL(10)}, an error occurs.
 
 @node BOZ literal constants
 @subsection BOZ literal constants
 @cindex BOZ literal constants
 
-Besides decimal constants, Fortran also supports binary (@code{b}),
-octal (@code{o}) and hexadecimal (@code{z}) integer constants.  The
+Besides decimal constants, Fortran also supports binary (@samp{b}),
+octal (@samp{o}) and hexadecimal (@samp{z}) integer constants.  The
 syntax is: @samp{prefix quote digits quote}, where the prefix is
-either @code{b}, @code{o} or @code{z}, quote is either @code{'} or
-@code{"} and the digits are @code{0} or @code{1} for binary,
+either @samp{b}, @samp{o} or @samp{z}, quote is either @samp{'} or
+@samp{"} and the digits are @code{0} or @code{1} for binary,
 between @code{0} and @code{7} for octal, and between @code{0} and
 @code{F} for hexadecimal.  (Example: @code{b'01011101'}.)
 
@@ -1492,7 +1493,7 @@ Fortran standard states that the treatment of the sign bit is processor
 dependent.  Gfortran interprets the sign bit as a user would expect.
 
 As a deprecated extension, GNU Fortran allows hexadecimal BOZ literal
-constants to be specified using the @code{X} prefix.  That the BOZ literal
+constants to be specified using the @samp{X} prefix.  That the BOZ literal
 constant can also be specified by adding a suffix to the string, for
 example, @code{Z'ABC'} and @code{'ABC'X} are equivalent.  Additionally,
 as extension, BOZ literals are permitted in some contexts outside of
@@ -1554,7 +1555,7 @@ written as a string of characters preceded by an integer constant
 indicating the character count, and the letter @code{H} or
 @code{h}, and stored in bytewise fashion in a numeric (@code{INTEGER},
 @code{REAL}, or @code{COMPLEX}), @code{LOGICAL} or @code{CHARACTER} variable.
-The constant will be padded with spaces or truncated to fit the size of
+The constant is padded with spaces or truncated to fit the size of
 the variable in which it is stored.
 
 Examples of valid uses of Hollerith constants:
@@ -1570,8 +1571,8 @@ Examples of Hollerith constants:
       integer*4 a
       a = 0H         ! Invalid, at least one character is needed.
       a = 4HAB12     ! Valid
-      a = 8H12345678 ! Valid, but the Hollerith constant will be truncated.
-      a = 3Hxyz      ! Valid, but the Hollerith constant will be padded.
+      a = 8H12345678 ! Valid, but the Hollerith constant is truncated.
+      a = 3Hxyz      ! Valid, but the Hollerith constant is padded.
 @end smallexample
 
 In general, Hollerith constants were used to provide a rudimentary
@@ -1605,13 +1606,13 @@ and @code{CHARACTER}.
 @cindex conversion, to character
 
 Allowing character literals to be used in a similar way to Hollerith constants
-is a non-standard extension.  This feature is enabled using
+is a nonstandard extension.  This feature is enabled using
 -fdec-char-conversions and only applies to character literals of @code{kind=1}.
 
 Character literals can be used in @code{DATA} statements and assignments with
 numeric (@code{INTEGER}, @code{REAL}, or @code{COMPLEX}) or @code{LOGICAL}
-variables. Like Hollerith constants they are copied byte-wise fashion. The
-constant will be padded with spaces or truncated to fit the size of the
+variables. Like Hollerith constants they are copied bytewise fashion. The
+constant is padded with spaces or truncated to fit the size of the
 variable in which it is stored.
 
 Examples:
@@ -1619,8 +1620,8 @@ Examples:
       integer*4 x
       data x / 'abcd' /
 
-      x = 'A'       ! Will be padded.
-      x = 'ab1234'  ! Will be truncated.
+      x = 'A'       ! Is padded.
+      x = 'ab1234'  ! Is truncated.
 @end smallexample
 
 
@@ -1628,15 +1629,16 @@ Examples:
 @subsection Cray pointers
 @cindex pointer, Cray
 
-Cray pointers are part of a non-standard extension that provides a
+Cray pointers are part of a nonstandard extension that provides a
 C-like pointer in Fortran.  This is accomplished through a pair of
-variables: an integer "pointer" that holds a memory address, and a
-"pointee" that is used to dereference the pointer.
+variables: an integer ``pointer'' that holds a memory address, and a
+``pointee'' that is used to dereference the pointer.
 
 Pointer/pointee pairs are declared in statements of the form:
 @smallexample
         pointer ( <pointer> , <pointee> )
 @end smallexample
+@noindent
 or,
 @smallexample
         pointer ( <pointer1> , <pointee1> ), ( <pointer2> , <pointee2> ), ...
@@ -1660,11 +1662,11 @@ of a pointer, and so the following code is not portable:
         pointer (ipt, iarr)
 @end smallexample
 If a pointer is declared with a kind that is too small, the compiler
-will issue a warning; the resulting binary will probably not work
+issues a warning; the resulting binary will probably not work
 correctly, because the memory addresses stored in the pointers may be
 truncated.  It is safer to omit the first line of the above example;
-if explicit declaration of ipt's type is omitted, then the compiler
-will ensure that ipt is an integer variable large enough to hold a
+if explicit declaration of @code{ipt}'s type is omitted, then the compiler
+ensures that @code{ipt} is an integer variable large enough to hold a
 pointer.
 
 Pointer arithmetic is valid with Cray pointers, but it is not the same
@@ -1682,7 +1684,7 @@ The last statement does not set @code{ipt} to the address of
 @code{target(1)}, as it would in C pointer arithmetic.  Adding @code{1}
 to @code{ipt} just adds one byte to the address stored in @code{ipt}.
 
-Any expression involving the pointee will be translated to use the
+Any expression involving the pointee is translated to use the
 value stored in the pointer as the base address.
 
 To get the address of elements, this extension provides an intrinsic
@@ -1707,21 +1709,21 @@ example:
         ipt = loc(target)
 @end smallexample
 As long as @code{ipt} remains unchanged, @code{iarr} is now an alias for
-@code{target}.  The optimizer, however, will not detect this aliasing, so
+@code{target}.  The optimizer, however, does not detect this aliasing, so
 it is unsafe to use @code{iarr} and @code{target} simultaneously.  Using
 a pointee in any way that violates the Fortran aliasing rules or
-assumptions is illegal.  It is the user's responsibility to avoid doing
+assumptions is invalid.  It is the user's responsibility to avoid doing
 this; the compiler works under the assumption that no such aliasing
 occurs.
 
-Cray pointers will work correctly when there is no aliasing (i.e., when
+Cray pointers work correctly when there is no aliasing (i.e., when
 they are used to access a dynamically allocated block of memory), and
 also in any routine where a pointee is used, but any variable with which
 it shares storage is not used.  Code that violates these rules may not
 run as the user intends.  This is not a bug in the optimizer; any code
-that violates the aliasing rules is illegal.  (Note that this is not
+that violates the aliasing rules is invalid.  (Note that this is not
 unique to GNU Fortran; any Fortran compiler that supports Cray pointers
-will ``incorrectly'' optimize code with illegal aliasing.)
+``incorrectly'' optimizes code with invalid aliasing.)
 
 There are a number of restrictions on the attributes that can be applied
 to Cray pointers and pointees.  Pointees may not have the
@@ -1749,10 +1751,10 @@ example, the following excerpt is valid:
 @end smallexample
 
 A pointer may be modified during the course of a program, and this
-will change the location to which the pointee refers.  However, when
+changes the location to which the pointee refers.  However, when
 pointees are passed as arguments, they are treated as ordinary
 variables in the invoked function.  Subsequent changes to the pointer
-will not change the base address of the array that was passed.
+do not change the base address of the array that was passed.
 
 @node CONVERT specifier
 @subsection @code{CONVERT} specifier
@@ -1774,14 +1776,14 @@ for unformatted files.
 @item @code{CONVERT='BIG_ENDIAN'} Use the big-endian representation for
 unformatted files.
 @end itemize
-On POWER systems which support @option{-mabi=ieeelongdouble},
+On POWER systems that support @option{-mabi=ieeelongdouble},
 there are additional options, which can be combined with the others
 with commas. Those are
 @itemize @w{}
 @item @code{CONVERT='R16_IEEE'} Use IEEE 128-bit format for
 @code{REAL(KIND=16)}.
 @item @code{CONVERT='R16_IBM'} Use IBM @code{long double} format for
-real@code{REAL(KIND=16)}.
+@code{REAL(KIND=16)}.
 @end itemize
 
 Using the option could look like this:
@@ -1799,12 +1801,12 @@ The value of the conversion can be queried by using
 on IEEE systems of kinds 4 and 8.  Conversion between different
 ``extended double'' types on different architectures such as
 m68k and x86_64, which GNU Fortran
-supports as @code{REAL(KIND=10)} and @code{REAL(KIND=16)}, will
-probably not work.
+supports as @code{REAL(KIND=10)} and @code{REAL(KIND=16)},
+probably does not work.
 
-@emph{Note that the values specified via the GFORTRAN_CONVERT_UNIT
-environment variable will override the CONVERT specifier in the
-open statement}.  This is to give control over data formats to
+Note that the values specified via the @env{GFORTRAN_CONVERT_UNIT}
+environment variable overrides the @code{CONVERT} specifier in the
+@code{OPEN} statement.  This is to give control over data formats to
 users who do not have the source code of their program available.
 
 Using anything but the native representation for unformatted data
@@ -1823,19 +1825,21 @@ architectures, including Unix and Microsoft Windows platforms.
 It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
-GNU Fortran strives to be compatible to the
-@uref{https://openmp.org/specifications/,
-OpenMP Application Program Interface v4.5}.
+GNU Fortran implements all of the @uref{https://openmp.org/specifications/,
+OpenMP Application Program Interface v4.5}, and many features from later
+versions of the OpenMP specification.
+@xref{OpenMP Implementation Status,,,libgomp,
+GNU Offloading and Multi Processing Runtime Library},
+for more details about currently supported OpenMP features.
 
 To enable the processing of the OpenMP directive @code{!$omp} in
 free-form source code; the @code{c$omp}, @code{*$omp} and @code{!$omp}
 directives in fixed form; the @code{!$} conditional compilation sentinels
 in free form; and the @code{c$}, @code{*$} and @code{!$} sentinels
 in fixed form, @command{gfortran} needs to be invoked with the
-@option{-fopenmp}.  This also arranges for automatic linking of the
-GNU Offloading and Multi Processing Runtime Library
-@ref{Top,,libgomp,libgomp,GNU Offloading and Multi Processing Runtime
-Library}.
+@option{-fopenmp} option.  This option also arranges for automatic linking
+of the OpenMP runtime library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
 
 The OpenMP Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{omp_lib} and in a form of
@@ -1855,20 +1859,24 @@ SUBROUTINE A1(N, A, B)
 END SUBROUTINE A1
 @end smallexample
 
+@xref{OpenMP and OpenACC Options,,,gcc,
+Using the GNU Compiler Collection (GCC)}, for additional options useful with
+@option{-fopenmp}.
+
 Please note:
 @itemize
 @item
 @option{-fopenmp} implies @option{-frecursive}, i.e., all local arrays
-will be allocated on the stack.  When porting existing code to OpenMP,
-this may lead to surprising results, especially to segmentation faults
-if the stacksize is limited.
+are allocated on the stack.  When porting existing code to OpenMP,
+this may lead to surprising results, especially segmentation faults
+if the stack size is limited.
 
 @item
-On glibc-based systems, OpenMP enabled applications cannot be statically
-linked due to limitations of the underlying pthreads-implementation.  It
+On glibc-based systems, OpenMP-enabled applications cannot be statically
+linked due to limitations of the underlying pthreads implementation.  It
 might be possible to get a working solution if
 @command{-Wl,--whole-archive -lpthread -Wl,--no-whole-archive} is added
-to the command line.  However, this is not supported by @command{gcc} and
+to the command line.  However, this is not supported by GCC and
 thus not recommended.
 @end itemize
 
@@ -1881,7 +1889,7 @@ offloading of code to accelerator devices.  It consists of a set of
 compiler directives, library routines, and environment variables that
 influence run-time behavior.
 
-GNU Fortran strives to be compatible to the
+GNU Fortran strives to be compatible with the
 @uref{https://www.openacc.org/, OpenACC Application Programming
 Interface v2.6}.
 
@@ -1890,14 +1898,17 @@ free-form source code; the @code{c$acc}, @code{*$acc} and @code{!$acc}
 directives in fixed form; the @code{!$} conditional compilation
 sentinels in free form; and the @code{c$}, @code{*$} and @code{!$}
 sentinels in fixed form, @command{gfortran} needs to be invoked with
-the @option{-fopenacc}.  This also arranges for automatic linking of
-the GNU Offloading and Multi Processing Runtime Library
-@ref{Top,,libgomp,libgomp,GNU Offloading and Multi Processing Runtime
-Library}.
+the @option{-fopenacc} option.  This option also arranges for automatic
+linking of the OpenACC runtime library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
 
 The OpenACC Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{openacc} and in a form of a
 Fortran @code{include} file named @file{openacc_lib.h}.
+
+@xref{OpenMP and OpenACC Options,,,gcc,
+Using the GNU Compiler Collection (GCC)}, for additional options useful with
+@option{-fopenacc}.
 
 @node Argument list functions
 @subsection Argument list functions @code{%VAL}, @code{%REF} and @code{%LOC}
@@ -2030,7 +2041,7 @@ print *, store_catalog(12)
 @end example
 
 @noindent
-GNU Fortran implements STRUCTURES like derived types with the following
+GNU Fortran implements structures like derived types with the following
 rules and exceptions:
 
 @itemize @bullet
@@ -2038,9 +2049,9 @@ rules and exceptions:
 Otherwise they may contain no specifiers.
 
 @item Structures may contain a special field with the name @code{%FILL}.
-This will create an anonymous component which cannot be accessed but occupies
+This creates an anonymous component that cannot be accessed but occupies
 space just as if a component of the same type was declared in its place, useful
-for alignment purposes.  As an example, the following structure will consist
+for alignment purposes.  As an example, the following structure consists
 of at least sixteen bytes:
 
 @smallexample
@@ -2070,7 +2081,7 @@ structure /type-name/
 ...
 @end smallexample
 
-The type name may be ommitted, in which case the structure type itself is
+The type name may be omitted, in which case the structure type itself is
 anonymous, and other structures of the same type cannot be instantiated. The
 following shows some examples:
 
@@ -2115,7 +2126,7 @@ the initializer list.
 @cindex @code{MAP}
 
 Unions are an old vendor extension which were commonly used with the
-non-standard @ref{STRUCTURE and RECORD} extensions. Use of @code{UNION} and
+nonstandard @ref{STRUCTURE and RECORD} extensions. Use of @code{UNION} and
 @code{MAP} is automatically enabled with @option{-fdec-structure}.
 
 A @code{UNION} declaration occurs within a structure; within the definition of
@@ -2280,9 +2291,9 @@ storage.  These follow the syntax of the Fortran standard @code{SAVE} attribute.
 
 @code{STATIC} is exactly equivalent to @code{SAVE}, and specifies that
 an entity should be allocated in static memory.  As an example, @code{STATIC}
-local variables will retain their values across multiple calls to a function.
+local variables retain their values across multiple calls to a function.
 
-Entities marked @code{AUTOMATIC} will be stack automatic whenever possible.
+Entities marked @code{AUTOMATIC} are stack automatic whenever possible.
 @code{AUTOMATIC} is the default for local variables smaller than
 @option{-fmax-stack-var-size}, unless @option{-fno-automatic} is given.  This
 attribute overrides @option{-fno-automatic}, @option{-fmax-stack-var-size}, and
@@ -2329,9 +2340,9 @@ interpretation of form feed characters in source as whitespace for
 compatibility.
 
 @node TYPE as an alias for PRINT
-@subsection TYPE as an alias for PRINT
+@subsection @code{TYPE} as an alias for @code{PRINT}
 @cindex type alias print
-For compatibility, GNU Fortran will interpret @code{TYPE} statements as
+For compatibility, GNU Fortran interprets @code{TYPE} statements as
 @code{PRINT} statements with the flag @option{-fdec}.  With this flag asserted,
 the following two examples are equivalent:
 
@@ -2364,7 +2375,7 @@ call sub(%loc(i))
 @end smallexample
 
 @node .XOR. operator
-@subsection .XOR. operator
+@subsection @code{.XOR.} operator
 @cindex operators, xor
 
 GNU Fortran supports @code{.XOR.} as a logical operator with @code{-std=legacy}
@@ -2387,25 +2398,25 @@ avoided in new code.  Consider:
   print *, i .AND. j
 @end smallexample
 
-In this example, compiled with @option{-fdec}, GNU Fortran will
-replace the @code{.AND.} operation with a call to the intrinsic
+In this example, compiled with @option{-fdec}, GNU Fortran
+replaces the @code{.AND.} operation with a call to the intrinsic
 @code{@ref{IAND}} function, yielding the bitwise-and of @code{i} and @code{j}.
 
-Note that this conversion will occur if at least one operand is of integral
-type.  As a result, a logical operand will be converted to an integer when the
+Note that this conversion occurs if at least one operand is of integral
+type.  As a result, a logical operand is converted to an integer when the
 other operand is an integer in a logical operation.  In this case,
 @code{.TRUE.} is converted to @code{1} and @code{.FALSE.} to @code{0}.
 
 Here is the mapping of logical operator to bitwise intrinsic used with
 @option{-fdec}:
 
-@multitable @columnfractions .25 .25 .5
+@multitable @columnfractions .2 .2 .6
 @headitem Operator @tab Intrinsic @tab Bitwise operation
-@item @code{.NOT.} @tab @code{@ref{NOT}} @tab complement
-@item @code{.AND.} @tab @code{@ref{IAND}} @tab intersection
-@item @code{.OR.} @tab @code{@ref{IOR}} @tab union
-@item @code{.NEQV.} @tab @code{@ref{IEOR}} @tab exclusive or
-@item @code{.EQV.} @tab @code{@ref{NOT}(@ref{IEOR})} @tab complement of exclusive or
+@item @code{.NOT.} @tab @code{NOT} @tab complement (@pxref{NOT})
+@item @code{.AND.} @tab @code{IAND} @tab intersection (@pxref{IAND})
+@item @code{.OR.} @tab @code{IOR} @tab union (@pxref{IOR})
+@item @code{.NEQV.} @tab @code{IEOR} @tab exclusive or (@pxref{IEOR})
+@item @code{.EQV.} @tab @code{NOT IEOR} @tab complement of exclusive or (@pxref{IEOR})
 @end multitable
 
 @node Extended I/O specifiers
@@ -2425,7 +2436,7 @@ compile flag @option{-fdec}, for compatibility.
 @item CARRIAGECONTROL
 The @code{CARRIAGECONTROL} specifier allows a user to control line
 termination settings between output records for an I/O unit. The specifier has
-no meaning for readonly files. When @code{CARRAIGECONTROL} is specified upon
+no meaning for readonly files. When @code{CARRIAGECONTROL} is specified upon
 opening a unit for formatted writing, the exact @code{CARRIAGECONTROL} setting
 determines what characters to write between output records. The syntax is:
 
@@ -2433,7 +2444,8 @@ determines what characters to write between output records. The syntax is:
 OPEN(..., CARRIAGECONTROL=cc)
 @end smallexample
 
-Where @emph{cc} is a character expression that evaluates to one of the
+@noindent
+where @emph{cc} is a character expression that evaluates to one of the
 following values:
 
 @multitable @columnfractions .2 .8
@@ -2499,10 +2511,11 @@ supported on other systems.
 @end table
 
 @node Legacy PARAMETER statements
-@subsection Legacy PARAMETER statements
+@subsection Legacy @code{PARAMETER} statements
 @cindex PARAMETER
 
-For compatibility, GNU Fortran supports legacy PARAMETER statements without
+For compatibility, GNU Fortran supports legacy @code{PARAMETER}
+statements without
 parentheses with @option{-std=legacy}.  A warning is emitted if used with
 @option{-std=gnu}, and an error is acknowledged with a real Fortran standard
 flag (@option{-std=f95}, etc...).  These statements take the following form:
@@ -2609,7 +2622,7 @@ c     ... Code that sets A, B and C
 @subsection Variable @code{FORMAT} expressions
 @cindex @code{FORMAT}
 
-A variable @code{FORMAT} expression is format statement which includes
+A variable @code{FORMAT} expression is format statement that includes
 angle brackets enclosing a Fortran expression: @code{FORMAT(I<N>)}.  GNU
 Fortran does not support this legacy extension.  The effect of variable
 format expressions can be reproduced by using the more powerful (and
@@ -2654,7 +2667,7 @@ c
 
 Some Fortran compilers, including @command{g77}, let the user declare
 complex functions with the syntax @code{COMPLEX FUNCTION name*16()}, as
-well as @code{COMPLEX*16 FUNCTION name()}.  Both are non-standard, legacy
+well as @code{COMPLEX*16 FUNCTION name()}.  Both are nonstandard legacy
 extensions.  @command{gfortran} accepts the latter form, which is more
 common, but not the former.
 
@@ -2706,7 +2719,7 @@ reading from the position marked previously.
 @section Experimental features future Fortran versions
 @cindex Future Fortran versions
 
-GNU Fortran supports some experimental features which have been
+GNU Fortran supports some experimental features that have been
 proposed and accepted by the J3 standards committee.  These
 exist to give users a chance to try them out, and to provide
 a reference implementation.
@@ -2744,18 +2757,20 @@ used as index variables in @code{DO} loops or as array indices.
 Unsigned numbers have a trailing @code{u} as suffix, optionally followed
 by a @code{KIND} number separated by an underscore.
 
-Input and output can be done using the @code{I}, @code{B}, @code{O}
-and @code{Z} descriptors, plus unformatted I/O.
+Input and output can be done using the @samp{I}, @samp{B}, @samp{O}
+and @samp{Z} descriptors, plus unformatted I/O.
 
 Here is a small, somewhat contrived example of their use:
 @smallexample
 program main
-  unsigned(kind=8) :: v
-  v = huge(v) - 32u_8
+  use iso_fortran_env, only : uint64
+  unsigned(kind=uint64) :: v
+  v = huge(v) - 32u_uint64
   print *,v
 end program main
 @end smallexample
-which will output the number 18446744073709551583.
+@noindent
+which outputs the number 18446744073709551583.
 
 Arithmetic operations work on unsigned integers, except for exponentiation,
 which is prohibited.  Unary minus is not permitted when @code{-pedantic}
@@ -2767,10 +2782,12 @@ use of @code{REAL} arguments. Unsigned values are prohibited
 as index variables in @code{DO} loops and as array indices.
 
 Unsigned numbers can be read and written using list-directed,
-formatted and unformatted I/O.  For formatted I/O, the @code{B},
-@code{I}, @code{O} and @code{Z} descriptors are valid.  Negative
-values and values which would overflow are rejected with
+formatted and unformatted I/O.  For formatted I/O, the @samp{B},
+@samp{I}, @samp{O} and @samp{Z} descriptors are valid.  Negative
+values and values that would overflow are rejected with
 @code{-pedantic}.
+
+@code{SELECT CASE} is supported for unsigned integers.
 
 The following intrinsics take unsigned arguments:
 @itemize @bullet
@@ -2779,6 +2796,7 @@ The following intrinsics take unsigned arguments:
 @item @code{BIT_SIZE}, @pxref{BIT_SIZE}
 @item @code{BLE}, @pxref{BLE}
 @item @code{BLT}, @pxref{BLT}
+@item @code{CMPLX}, @pxref{CMPLX}
 @item @code{CSHIFT}, @pxref{CSHIFT}
 @item @code{DIGITS}, @pxref{DIGITS}
 @item @code{DOT_PRODUCT}, @pxref{DOT_PRODUCT}
@@ -2794,6 +2812,7 @@ The following intrinsics take unsigned arguments:
 @item @code{IBITS}, @pxref{IBITS}
 @item @code{IBSET}, @pxref{IBSET}
 @item @code{IEOR}, @pxref{IEOR}
+@item @code{INT}, @pxref{INT}
 @item @code{IOR}, @pxref{IOR}
 @item @code{IPARITY}, @pxref{IPARITY}
 @item @code{ISHFT}, @pxref{ISHFT}
@@ -2811,9 +2830,11 @@ The following intrinsics take unsigned arguments:
 @item @code{MODULO}, @pxref{MODULO}
 @item @code{MVBITS}, @pxref{MVBITS}
 @item @code{NOT}, @pxref{NOT}
+@item @code{OUT_OF_RANGE}, @pxref{OUT_OF_RANGE}
 @item @code{PRODUCT}, @pxref{PRODUCT}
 @item @code{RANDOM_NUMBER}, @pxref{RANDOM_NUMBER}
 @item @code{RANGE}, @pxref{RANGE}
+@item @code{REAL}, @pxref{REAL}
 @item @code{SHIFTA}, @pxref{SHIFTA}
 @item @code{SHIFTL}, @pxref{SHIFTL}
 @item @code{SHIFTR}, @pxref{SHIFTR}
@@ -2822,18 +2843,12 @@ The following intrinsics take unsigned arguments:
 @item @code{TRANSFER}, @pxref{TRANSFER}
 @end itemize
 
-The following intinsics are enabled with @option{-funsigned}:
+The following intrinsics are enabled with @option{-funsigned}:
 @itemize @bullet
 @item @code{UINT}, @pxref{UINT}
 @item @code{UMASKL}, @pxref{UMASKL}
 @item @code{UMASKR}, @pxref{UMASKR}
 @item @code{SELECTED_UNSIGNED_KIND}, @pxref{SELECTED_UNSIGNED_KIND}
-@end itemize
-
-The following intrinsics are not yet implemented in GNU Fortran,
-but will take unsigned arguments once they have been:
-@itemize @bullet
-@item @code{OUT_OF_RANGE}
 @end itemize
 
 The following constants have been added to the intrinsic
@@ -2898,6 +2913,7 @@ C or some other language instead of Fortran, see
 * Interoperable Subroutines and Functions::
 * Working with C Pointers::
 * Further Interoperability of Fortran with C::
+* Generating C prototypes from Fortran::
 @end menu
 
 Since Fortran 2003 (ISO/IEC 1539-1:2004(E)) there is a
@@ -3183,7 +3199,7 @@ foobar ()
 @}
 @end smallexample
 
-A matching implementation for @code{get_values} in Fortran, that correctly
+A matching implementation for @code{get_values} in Fortran that correctly
 receives the procedure pointer from C and is able to call it, is given
 in the following @code{MODULE}:
 
@@ -3221,7 +3237,7 @@ END MODULE m
 @end smallexample
 
 Next, we want to call a C routine that expects a procedure pointer argument
-and pass it a Fortran procedure (which clearly must be interoperable!).
+and pass it a Fortran procedure (that clearly must be interoperable!).
 Again, the C function may be:
 
 @smallexample
@@ -3302,8 +3318,25 @@ are converted to the specified form.  If you need to access GNU Fortran's
 internal array descriptor, you can use the Chasm Language Interoperability
 Tools, @url{http://chasm-interop.sourceforge.net/}.
 
+@node Generating C prototypes from Fortran
+@subsection Generating C prototypes from Fortran
+@cindex prototypes
+@cindex C prototypes
+The options @option{-fc-prototypes} can be used to write out C
+declatations and function prototypes for @code{BIND(C)} entities.
+The same can be done for writing out prototypes for external
+procedures using @option{-fc-prototypes-external},
+@pxref{Interoperability Options}.
+
+Standard Fortran does not specify an interoperable type for C's
+@code{unsigned} integer types.  For interoperability with unsigned
+types, GNU Fortran provides unsigned integers, @pxref{Unsigned integers}.
+
 @node GNU Fortran Compiler Directives
 @section GNU Fortran Compiler Directives
+@cindex GNU Fortran Compiler Directives
+@cindex Compiler Directives
+@cindex Directives
 
 @menu
 * ATTRIBUTES directive::
@@ -3315,13 +3348,14 @@ Tools, @url{http://chasm-interop.sourceforge.net/}.
 @end menu
 
 @node ATTRIBUTES directive
-@subsection ATTRIBUTES directive
+@subsection @code{ATTRIBUTES} directive
+@cindex @code{ATTRIBUTES} directive
 
 The Fortran standard describes how a conforming program shall
 behave; however, the exact implementation is not standardized.  In order
 to allow the user to choose specific implementation details, compiler
 directives can be used to set attributes of variables and procedures
-which are not part of the standard.  Whether a given attribute is
+that are not part of the standard.  Whether a given attribute is
 supported and its exact effects depend on both the operating system and
 on the processor; see
 @ref{Top,,C Extensions,gcc,Using the GNU Compiler Collection (GCC)}
@@ -3401,7 +3435,8 @@ the same declaration part as the variable or procedure pointer.
 
 
 @node UNROLL directive
-@subsection UNROLL directive
+@subsection @code{UNROLL} directive
+@cindex @code{UNROLL} directive
 
 The syntax of the directive is
 
@@ -3417,15 +3452,16 @@ only to the first loop control variable.
 
 
 @node BUILTIN directive
-@subsection BUILTIN directive
+@subsection @code{BUILTIN} directive
+@cindex @code{BUILTIN} directive
 
 The syntax of the directive is
 
-@code{!GCC$ BUILTIN (B) attributes simd FLAGS IF('target')}
+@code{!GCC$ BUILTIN (@var{B}) attributes simd @var{FLAGS} IF('target')}
 
 You can use this directive to define which middle-end built-ins provide vector
-implementations.  @code{B} is name of the middle-end built-in.  @code{FLAGS}
-are optional and must be either "(inbranch)" or "(notinbranch)".
+implementations.  @var{B} is name of the middle-end built-in.  @var{FLAGS}
+are optional and must be either @code{(inbranch)} or @code{(notinbranch)}.
 @code{IF} statement is optional and is used to filter multilib ABIs
 for the built-in that should be vectorized.  Example usage:
 
@@ -3438,7 +3474,8 @@ the GNU C Library which would define vector implementations of math routines.
 
 
 @node IVDEP directive
-@subsection IVDEP directive
+@subsection @code{IVDEP} directive
+@cindex @code{IVDEP} directive
 
 The syntax of the directive is
 
@@ -3462,7 +3499,8 @@ alternative.
 
 
 @node VECTOR directive
-@subsection VECTOR directive
+@subsection @code{VECTOR} directive
+@cindex @code{VECTOR} directive
 
 The syntax of the directive is
 
@@ -3477,7 +3515,8 @@ specified in the concurrent header.
 
 
 @node NOVECTOR directive
-@subsection NOVECTOR directive
+@subsection @code{NOVECTOR} directive
+@cindex @code{NOVECTOR} directive
 
 The syntax of the directive is
 
@@ -3493,6 +3532,8 @@ specified in the concurrent header.
 
 @node Non-Fortran Main Program
 @section Non-Fortran Main Program
+@cindex Non-Fortran Main Program
+@cindex Main Program
 
 @menu
 * _gfortran_set_args:: Save command-line arguments
@@ -3511,7 +3552,7 @@ it may also change in GCC minor releases.
 When you compile a @code{PROGRAM} with GNU Fortran, a function
 with the name @code{main} (in the symbol table of the object file)
 is generated, which initializes the libgfortran library and then
-calls the actual program which uses the name @code{MAIN__}, for
+calls the actual program that uses the name @code{MAIN__}, for
 historic reasons.  If you link GNU Fortran compiled procedures
 to, e.g., a C or C++ program or to a Fortran program compiled by
 a different compiler, the libgfortran library is not initialized
@@ -3716,8 +3757,8 @@ int main (int argc, char *argv[])
 @table @asis
 @item @emph{Description}:
 @code{_gfortran_set_fpe} enables floating point exception traps for
-the specified exceptions.  On most systems, this will result in a
-SIGFPE signal being sent and the program being aborted.
+the specified exceptions.  On most systems, this results in a
+@code{SIGFPE} signal being sent and the program being aborted.
 
 @item @emph{Syntax}:
 @code{void _gfortran_set_fpe (int val)}
@@ -3797,6 +3838,7 @@ C binding for interoperability.  See @pxref{Interoperability with C}.
 
 @node Naming conventions
 @subsection Naming conventions
+@cindex Naming conventions
 
 According the Fortran standard, valid Fortran names consist of a letter
 between @code{A} to @code{Z}, @code{a} to @code{z}, digits @code{0},
@@ -3806,7 +3848,7 @@ dollar sign (@code{$}) is additionally permitted with the option
 @option{-fdollar-ok}, but not as first character and only if the
 target system supports it.
 
-By default, the procedure name is the lower-cased Fortran name with an
+By default, the procedure name is the lowercased Fortran name with an
 appended underscore (@code{_}); using @option{-fno-underscoring} no
 underscore is appended while @code{-fsecond-underscore} appends two
 underscores.  Depending on the target system and the calling convention,
@@ -3816,17 +3858,18 @@ number is appended.  For the changing the calling convention, see
 @pxref{GNU Fortran Compiler Directives}.
 
 For common blocks, the same convention is used, i.e. by default an
-underscore is appended to the lower-cased Fortran name.  Blank commons
+underscore is appended to the lowercased Fortran name.  Blank commons
 have the name @code{__BLNK__}.
 
 For procedures and variables declared in the specification space of a
-module, the name is formed by @code{__}, followed by the lower-cased
-module name, @code{_MOD_}, and the lower-cased Fortran name.  Note that
+module, the name is formed by @code{__}, followed by the lowercased
+module name, @code{_MOD_}, and the lowercased Fortran name.  Note that
 no underscore is appended.
 
 
 @node Argument passing conventions
 @subsection Argument passing conventions
+@cindex Argument passing conventions
 
 Subroutines do not return a value (matching C99's @code{void}) while
 functions either return a value as specified in the platform ABI or
@@ -3843,7 +3886,7 @@ by-reference argument.  Note that with the @option{-ff2c} option,
 the argument passing is modified and no longer completely matches
 the platform ABI.  Some other Fortran compilers use @code{f2c}
 semantic by default; this might cause problems with
-interoperablility.
+interoperability.
 
 GNU Fortran passes most arguments by reference, i.e. by passing a
 pointer to the data.  Note that the compiler might use a temporary
@@ -3916,11 +3959,11 @@ passed by value.
 
 For @code{OPTIONAL} dummy arguments, an absent argument is denoted
 by a NULL pointer, except for scalar dummy arguments of intrinsic type
-which have the @code{VALUE} attribute.  For those, a hidden Boolean
+that have the @code{VALUE} attribute.  For those, a hidden Boolean
 argument (@code{logical(kind=C_bool),value}) is used to indicate
 whether the argument is present.
 
-Arguments which are assumed-shape, assumed-rank or deferred-rank
+Arguments that are assumed-shape, assumed-rank or deferred-rank
 arrays or, with @option{-fcoarray=lib}, allocatable scalar coarrays use
 an array descriptor.  All other arrays pass the address of the
 first element of the array.  With @option{-fcoarray=lib}, the token
@@ -3963,6 +4006,7 @@ of such a type
 
 @node Type and enum ABI Documentation
 @section Type and enum ABI Documentation
+@cindex Coarray type and enum ABI
 
 @menu
 * caf_token_t::
@@ -3974,17 +4018,19 @@ of such a type
 
 @node caf_token_t
 @subsection @code{caf_token_t}
+@cindex @code{caf_token_t}
 
 Typedef of type @code{void *} on the compiler side. Can be any data
 type on the library side.
 
 @node caf_register_t
 @subsection @code{caf_register_t}
+@cindex @code{caf_register_t}
 
 Indicates which kind of coarray variable should be registered.
 
-@verbatim
-typedef enum caf_register_t {
+@smallexample
+typedef enum caf_register_t @{
   CAF_REGTYPE_COARRAY_STATIC,
   CAF_REGTYPE_COARRAY_ALLOC,
   CAF_REGTYPE_LOCK_STATIC,
@@ -3994,31 +4040,32 @@ typedef enum caf_register_t {
   CAF_REGTYPE_EVENT_ALLOC,
   CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY,
   CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY
-}
+@}
 caf_register_t;
-@end verbatim
+@end smallexample
 
 The values @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and
 @code{CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY} are for allocatable components
 in derived type coarrays only.  The first one sets up the token without
 allocating memory for allocatable component.  The latter one only allocates the
 memory for an allocatable component in a derived type coarray.  The token
-needs to be setup previously by the REGISTER_ONLY.  This allows to have
-allocatable components un-allocated on some images.  The status whether an
+needs to be set up previously by the REGISTER_ONLY.  This allows having
+allocatable components unallocated on some images.  The status of whether an
 allocatable component is allocated on a remote image can be queried by
 @code{_caf_is_present} which used internally by the @code{ALLOCATED}
 intrinsic.
 
 @node caf_deregister_t
 @subsection @code{caf_deregister_t}
+@cindex @code{caf_deregister_t}
 
-@verbatim
-typedef enum caf_deregister_t {
+@smallexample
+typedef enum caf_deregister_t @{
   CAF_DEREGTYPE_COARRAY_DEREGISTER,
   CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY
-}
+@}
 caf_deregister_t;
-@end verbatim
+@end smallexample
 
 Allows to specify the type of deregistration of a coarray object.  The
 @code{CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY} flag is only allowed for
@@ -4026,6 +4073,7 @@ allocatable components in derived type coarrays.
 
 @node caf_reference_t
 @subsection @code{caf_reference_t}
+@cindex @code{caf_reference_t}
 
 The structure used for implementing arbitrary reference chains.
 A @code{CAF_REFERENCE_T} allows to specify a component reference or any kind
@@ -4033,8 +4081,8 @@ of array reference of any rank supported by gfortran.  For array references all
 kinds as known by the compiler/Fortran standard are supported indicated by
 a @code{MODE}.
 
-@verbatim
-typedef enum caf_ref_type_t {
+@smallexample
+typedef enum caf_ref_type_t @{
   /* Reference a component of a derived type, either regular one or an
      allocatable or pointer type.  For regular ones idx in caf_reference_t is
      set to -1.  */
@@ -4045,11 +4093,11 @@ typedef enum caf_ref_type_t {
      has no array descriptor associated and the addressing is done
      completely using the ref.  */
   CAF_REF_STATIC_ARRAY
-} caf_ref_type_t;
-@end verbatim
+@} caf_ref_type_t;
+@end smallexample
 
-@verbatim
-typedef enum caf_array_ref_t {
+@smallexample
+typedef enum caf_array_ref_t @{
   /* No array ref.  This terminates the array ref.  */
   CAF_ARR_REF_NONE = 0,
   /* Reference array elements given by a vector.  Only for this mode
@@ -4067,12 +4115,12 @@ typedef enum caf_array_ref_t {
   /* An array ref of the kind (:i), where the lower bound of the array ref
      is given by the remote side.  The index i is given in the end member.  */
   CAF_ARR_REF_OPEN_START
-} caf_array_ref_t;
-@end verbatim
+@} caf_array_ref_t;
+@end smallexample
 
-@verbatim
+@smallexample
 /* References to remote components of a derived type.  */
-typedef struct caf_reference_t {
+typedef struct caf_reference_t @{
   /* A pointer to the next ref or NULL.  */
   struct caf_reference_t *next;
   /* The type of the reference.  */
@@ -4082,16 +4130,16 @@ typedef struct caf_reference_t {
      the factor to advance the array pointer with to get to the next item.
      For component refs this gives just the size of the element referenced.  */
   size_t item_size;
-  union {
-    struct {
+  union @{
+    struct @{
       /* The offset (in bytes) of the component in the derived type.
          Unused for allocatable or pointer components.  */
       ptrdiff_t offset;
       /* The offset (in bytes) to the caf_token associated with this
          component.  NULL, when not allocatable/pointer ref.  */
       ptrdiff_t caf_token_offset;
-    } c;
-    struct {
+    @} c;
+    struct @{
       /* The mode of the array ref.  See CAF_ARR_REF_*.  */
       /* caf_array_ref_t, replaced by unsigend char to allow specification in
          fortran FE.  */
@@ -4099,24 +4147,24 @@ typedef struct caf_reference_t {
       /* The type of a static array.  Unset for array's with descriptors.  */
       int static_array_type;
       /* Subscript refs (s) or vector refs (v).  */
-      union {
-        struct {
+      union @{
+        struct @{
           /* The start and end boundary of the ref and the stride.  */
           index_type start, end, stride;
-        } s;
-        struct {
+        @} s;
+        struct @{
           /* nvec entries of kind giving the elements to reference.  */
           void *vector;
           /* The number of entries in vector.  */
           size_t nvec;
           /* The integer kind used for the elements in vector.  */
           int kind;
-        } v;
-      } dim[GFC_MAX_DIMENSIONS];
-    } a;
-  } u;
-} caf_reference_t;
-@end verbatim
+        @} v;
+      @} dim[GFC_MAX_DIMENSIONS];
+    @} a;
+  @} u;
+@} caf_reference_t;
+@end smallexample
 
 The references make up a single linked list of reference operations.  The
 @code{NEXT} member links to the next reference or NULL to indicate the end of
@@ -4126,11 +4174,11 @@ comply to the Fortran standard.
 @emph{NOTES}
 The member @code{STATIC_ARRAY_TYPE} is used only when the @code{TYPE} is
 @code{CAF_REF_STATIC_ARRAY}.  The member gives the type of the data referenced.
-Because no array descriptor is available for a descriptor-less array and
+Because no array descriptor is available for a descriptorless array and
 type conversion still needs to take place the type is transported here.
 
 At the moment @code{CAF_ARR_REF_VECTOR} is not implemented in the front end for
-descriptor-less arrays.  The library caf_single has untested support for it.
+descriptorless arrays.  The library caf_single has untested support for it.
 
 @node caf_team_t
 @subsection @code{caf_team_t}
@@ -4140,9 +4188,10 @@ future implementation of teams.  It is about to change without further notice.
 
 @node Function ABI Documentation
 @section Function ABI Documentation
+@cindex Coarray Function ABI
 
 @menu
-* _gfortran_caf_init:: Initialiation function
+* _gfortran_caf_init:: Initialization function
 * _gfortran_caf_finish:: Finalization function
 * _gfortran_caf_this_image:: Querying the image number
 * _gfortran_caf_num_images:: Querying the maximal number of images
@@ -4151,12 +4200,16 @@ future implementation of teams.  It is about to change without further notice.
 * _gfortran_caf_stopped_images :: Get an array of the indexes of the stopped images
 * _gfortran_caf_register:: Registering coarrays
 * _gfortran_caf_deregister:: Deregistering coarrays
+* _gfortran_caf_register_accessor:: Register an accessor for remote access
+* _gfortran_caf_register_accessors_finish:: Finish registering accessor functions
+* _gfortran_caf_get_remote_function_index:: Get the index of an accessor
 * _gfortran_caf_is_present:: Query whether an allocatable or pointer component in a derived type coarray is allocated
 * _gfortran_caf_send:: Sending data from a local image to a remote image
 * _gfortran_caf_get:: Getting data from a remote image
 * _gfortran_caf_sendget:: Sending data between remote images
 * _gfortran_caf_send_by_ref:: Sending data from a local image to a remote image using enhanced references
 * _gfortran_caf_get_by_ref:: Getting data from a remote image using enhanced references
+* _gfortran_caf_get_by_ct:: Getting data from a remote image using a remote side accessor
 * _gfortran_caf_sendget_by_ref:: Sending data between remote images using enhanced references
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
@@ -4182,7 +4235,7 @@ future implementation of teams.  It is about to change without further notice.
 
 
 @node _gfortran_caf_init
-@subsection @code{_gfortran_caf_init} --- Initialiation function
+@subsection @code{_gfortran_caf_init} --- Initialization function
 @cindex Coarray, _gfortran_caf_init
 
 @table @asis
@@ -4250,7 +4303,7 @@ This function returns the current image number, which is a positive number.
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{distance} @tab As specified for the @code{this_image} intrinsic
-in TS18508.  Shall be a non-negative number.
+in TS18508.  Shall be a nonnegative number.
 @end multitable
 
 @item @emph{NOTES}
@@ -4268,7 +4321,7 @@ first argument.
 @item @emph{Description}:
 This function returns the number of images in the current team, if
 @var{distance} is 0 or the number of images in the parent team at the specified
-distance. If failed is -1, the function returns the number of all images at
+distance. If @var{failed} is -1, the function returns the number of all images at
 the specified distance; if it is 0, the function returns the number of
 nonfailed images, and if it is 1, it returns the number of failed images.
 
@@ -4312,7 +4365,7 @@ performed.
 
 @item @emph{NOTES}
 This function follows TS18508.  Because team-functionality is not yet
-implemented a null-pointer is passed for the @var{team} argument at the moment.
+implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
 
 
@@ -4340,7 +4393,7 @@ performed.
 
 @item @emph{NOTES}
 This function follows TS18508.  Because team-functionality is not yet
-implemented a null-pointer is passed for the @var{team} argument at the moment.
+implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
 
 
@@ -4368,7 +4421,7 @@ performed.
 
 @item @emph{NOTES}
 This function follows TS18508.  Because team-functionality is not yet
-implemented a null-pointer is passed for the @var{team} argument at the moment.
+implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
 
 
@@ -4408,8 +4461,9 @@ in the @var{DESC}'s data-ptr is registered or allocate when the data-ptr is
 @code{NULL}.
 
 @item @emph{Syntax}:
-@code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
-gfc_descriptor_t *desc, int *stat, char *errmsg, size_t errmsg_len)}
+@code{void _gfortran_caf_register (size_t size, caf_register_t type,
+caf_token_t *token, gfc_descriptor_t *desc, int *stat, char *errmsg,
+size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4420,7 +4474,7 @@ allocated; for lock types and event types, the number of elements.
 @item @var{desc} @tab intent(inout) The (pseudo) array descriptor.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
 may be @code{NULL}
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out) When an error occurs, this is set to
 an error message; may be @code{NULL}
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
@@ -4434,7 +4488,7 @@ no static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
 complicated struct.  The library may also store the array descriptor
-@var{DESC} when its rank is non-zero.
+@var{DESC} when its rank is nonzero.
 
 For lock types, the value shall only be used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
@@ -4460,7 +4514,7 @@ not null.  The library is only expected to free memory it allocated itself
 during a call to @code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
-@code{void caf_deregister (caf_token_t *token, caf_deregister_t type,
+@code{void _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type,
 int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
@@ -4471,16 +4525,124 @@ int *stat, char *errmsg, size_t errmsg_len)}
 pointer components of derived type coarrays.  The action only deallocates the
 local memory without deleting the token.
 @item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set
+@item @var{errmsg} @tab intent(out) When an error occurs, this is set
 to an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
 @item @emph{NOTES}
-For nonalloatable coarrays this function is never called.  If a cleanup is
+For nonallocatable coarrays this function is never called.  If a cleanup is
 required, it has to be handled via the finish, stop and error stop functions,
 and via destructors.
 @end table
+
+
+@node _gfortran_caf_register_accessor
+@subsection @code{_gfortran_caf_register_accessor} --- Register an accessor for remote access
+@cindex Coarray, _gfortran_caf_register_accessor
+
+@table @asis
+@item @emph{Description}:
+Identification of access funtions across images is done using a unique hash.
+For each given hash an accessor has to be registered.  This routine is expected
+to register an accessor function pointer for the given hash in nearly constant
+time.  I.e. it is expected to add the hash and accessor to a buffer and return.
+Sorting shall be done in @code{_gfortran_caf_register_accessors_finish}.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_register_accessor (const int hash,
+void (*accessor)(void **, int32_t *, void *, void *, size_t *,
+size_t *))}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{hash} @tab intent(in)  The unique hash value this accessor is to be
+identified by.
+@item @var{accessor} @tab intent(in)  A pointer to the function on this image.
+The function has the signature @code{void accessor (void **dst_ptr,
+int32_t *free_dst, void *src_ptr, void *get_data, size_t *opt_src_charlen,
+size_t *opt_dst_charlen)}.  GFortran ensures that functions provided to
+@code{_gfortran_caf_register_accessor} adhere to this interface.
+@end multitable
+
+@item @emph{NOTES}
+This function is required to have a nearly constant runtime complexity, because
+it will be called to register multiple accessor in a sequence.  GFortran ensures
+that before the first remote accesses commences
+@code{_gfortran_caf_register_accessors_finish} is called at least once.  It is
+valid to register further accessors after a call to
+@code{_gfortran_caf_register_accessors_finish}.  It is invalid to call
+@code{_gfortran_caf_register_accessor} after the first remote access has been
+done.  See also @ref{_gfortran_caf_register_accessors_finish} and
+@ref{_gfortran_caf_get_remote_function_index}
+@end table
+
+
+@node _gfortran_caf_register_accessors_finish
+@subsection @code{_gfortran_caf_register_accessors_finish} --- Finish registering accessor functions
+@cindex Coarray, _gfortran_caf_register_accessors_finish
+
+@table @asis
+@item @emph{Description}:
+Called to finalize registering of accessor functions.  This function is expected
+to prepare a lookup table that has fast lookup time for the hash supplied to
+@code{_gfortran_caf_get_remote_function_index} and constant access time for
+indexing operations.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_register_accessors_finish ()}
+
+@item @emph{Arguments}:
+No arguments.
+
+@item @emph{NOTES}
+This function may be called multiple times with and without new hash-accessors-
+pairs being added.  The post-condition after each call has to be that hashes
+can be looked up quickly and indexing on the lookup table of hash-accessor-pairs
+is a constant time operation.
+@end table
+
+
+@node _gfortran_caf_get_remote_function_index
+@subsection @code{_gfortran_caf_get_remote_function_index} --- Get the index of an accessor
+@cindex Coarray, _gfortran_caf_get_remote_function_index
+
+@table @asis
+@item @emph{Description}:
+Return the index of the accessor in the lookup table build by
+@ref{_gfortran_caf_register_accessor} and
+@ref{_gfortran_caf_register_accessors_finish}.  This function is expected to be
+fast, because it may be called often.  A log(N) lookup time for a given hash is
+preferred.  The reference implementation uses @code{bsearch ()}, for example.
+The index returned shall be an array index to be used by
+@ref{_gfortran_caf_get_by_ct}, i.e. a constant time operation is mandatory for
+quick access.
+
+The GFortran compiler ensures that
+@code{_gfortran_caf_get_remote_function_index} is called once only for each
+hash and the result be stored in a static variable to prevent future redundant
+lookups.
+
+@item @emph{Syntax}:
+@code{int _gfortran_caf_get_remote_function_index (const int hash)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{hash} @tab intent(in)  The hash of the accessor desired.
+@end multitable
+
+@item @emph{Result}:
+The zero based index to access the accessor funtion in a lookup table.
+On error, @code{-1} can be returned.
+
+@item @emph{NOTES}
+The function's complexity is expected to be significantly smaller than N,
+where N is the number of all accessors registered.  Although returning @code{-1}
+is valid, will this most likely crash the Fortran program when accessing the
+-1-th accessor function.  It is therefore advised to terminate with an error
+message, when the hash could not be found.
+@end table
+
 
 
 @node _gfortran_caf_is_present
@@ -4526,7 +4688,7 @@ int *stat)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number.
@@ -4542,10 +4704,10 @@ transferred to the remote image
 @item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
 it is known at compile time that the @var{dest} and @var{src} either cannot
 overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in element wise element order (honoring the stride value) will not
+@var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{stat} @tab intent(out) when non-NULL give the result of the
-operation, i.e., zero on success and non-zero on error.  When NULL and an error
+operation, i.e., zero on success and nonzero on error.  When NULL and an error
 occurs, then an error message is printed and the program is terminated.
 @end multitable
 
@@ -4560,8 +4722,8 @@ temporary variable, unless additional checks show that this is not required
 contiguous and @code{memmove} takes care of overlap issues).
 
 Note that the assignment of a scalar to an array is permitted. In addition,
-the library has to handle numeric-type conversion and for strings, padding
-and different character kinds.
+the library has to handle numeric type conversion, and padding
+and different character kinds for strings.
 @end table
 
 
@@ -4583,7 +4745,7 @@ int *stat)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number.
@@ -4599,10 +4761,10 @@ triplet of the @var{src} argument.
 @item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
 it is known at compile time that the @var{dest} and @var{src} either cannot
 overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in element wise element order (honoring the stride value) will not
+@var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{stat} @tab intent(out) When non-NULL give the result of the
-operation, i.e., zero on success and non-zero on error.  When NULL and an error
+operation, i.e., zero on success and nonzero on error.  When NULL and an error
 occurs, then an error message is printed and the program is terminated.
 @end multitable
 
@@ -4642,7 +4804,7 @@ bool may_require_tmp, int *stat)}
 @multitable @columnfractions .15 .70
 @item @var{dst_token} @tab intent(in)  An opaque pointer identifying the
 destination coarray.
-@item @var{dst_offset} @tab intent(in)  By which amount of bytes the actual data
+@item @var{dst_offset} @tab intent(in)  The number of bytes the actual data
 is shifted compared to the base address of the destination coarray.
 @item @var{dst_image_index} @tab intent(in)  The ID of the destination remote
 image; must be a positive number.
@@ -4654,7 +4816,7 @@ subscript of the destination array; the values are relative to the dimension
 triplet of the @var{dest} argument.
 @item @var{src_token} @tab intent(in)  An opaque pointer identifying the source
 coarray.
-@item @var{src_offset} @tab intent(in)  By which amount of bytes the actual data
+@item @var{src_offset} @tab intent(in)  The number of bytes the actual data
 is shifted compared to the base address of the source coarray.
 @item @var{src_image_index} @tab intent(in)  The ID of the source remote image;
 must be a positive number.
@@ -4667,10 +4829,10 @@ be transferred to the remote image
 @item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
 it is known at compile time that the @var{dest} and @var{src} either cannot
 overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in element wise element order (honoring the stride value) will not
+@var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{stat} @tab intent(out) when non-NULL give the result of the
-operation, i.e., zero on success and non-zero on error.  When NULL and an error
+operation, i.e., zero on success and nonzero on error.  When NULL and an error
 occurs, then an error message is printed and the program is terminated.
 @end multitable
 
@@ -4717,13 +4879,13 @@ the data given by src.  Guaranteed to have at least one entry.
 @item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
 it is known at compile time that the @var{dest} and @var{src} either cannot
 overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in element wise element order (honoring the stride value) will not
+@var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{dst_reallocatable} @tab intent(in)  Set when the destination is of
-allocatable or pointer type and the refs will allow reallocation, i.e., the ref
+allocatable or pointer type and the refs allow reallocation, i.e., the ref
 is a full array or component ref.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
-operation, i.e., zero on success and non-zero on error.  When @code{NULL} and
+operation, i.e., zero on success and nonzero on error.  When @code{NULL} and
 an error occurs, then an error message is printed and the program is terminated.
 @item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
 the destination is not an array, than the precise type, e.g. of a component in
@@ -4779,13 +4941,13 @@ and when @var{DST_REALLOCATABLE} allows it.
 @item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
 it is known at compile time that the @var{dest} and @var{src} either cannot
 overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in element wise element order (honoring the stride value) will not
+@var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{dst_reallocatable} @tab intent(in)  Set when @var{DST} is of
 allocatable or pointer type and its refs allow reallocation, i.e., the full
 array or a component is referenced.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
-operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
+operation, i.e., zero on success and nonzero on error.  When @code{NULL} and an
 error occurs, then an error message is printed and the program is terminated.
 @item @var{src_type} @tab intent(in)  Give the type of the source.  When the
 source is not an array, than the precise type, e.g. of a component in a
@@ -4808,6 +4970,81 @@ padding and different character kinds.
 Because of the more complicated references possible some operations may be
 unsupported by certain libraries.  The library is expected to issue a precise
 error message why the operation is not permitted.
+@end table
+
+
+@node _gfortran_caf_get_by_ct
+@subsection @code{_gfortran_caf_get_by_ct} --- Getting data from a remote image using a remote side accessor
+@cindex Coarray, _gfortran_caf_get_by_ct
+
+@table @asis
+@item @emph{Description}:
+Called to get a scalar, an array section or a whole array from a remote image
+identified by the @var{image_index}.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_get_by_ct (caf_token_t token,
+const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
+const int image_index, const size_t dst_size, void **dst_data,
+size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
+const bool may_realloc_dst, const int getter_index, void *get_data,
+const size_t get_data_size, int *stat, caf_team_t *team, int *team_number)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{opt_src_desc} @tab intent(in)  A pointer to the descriptor when the
+object identified by @var{token} is an array with a descriptor.  The parameter
+needs to be set to @code{NULL}, when @var{token} identifies a scalar.
+@item @var{opt_src_charlen} @tab intent(in) When the object to get is a char
+array with deferred length, then this parameter needs to be set to point to its
+length.  Else the parameter needs to be set to @code{NULL}.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.  @code{this_image ()} is valid.
+@item @var{dst_size} @tab intent(in) The size of data expected to be transferred
+from the remote image.  If the data type to get is a string or string array,
+then this needs to be set to the byte size of each character, i.e. @code{4} for
+a @code{CHARACTER (KIND=4)} string.  The length of the string is then returned
+in @code{opt_dst_charlen} (also for string arrays).
+@item @var{dst_data} @tab intent(inout) A pointer to the adress the data is
+stored.  To prevent copying of data into an output buffer the adress to the live
+data is returned here.  When a descriptor is provided also its data-member is
+set to that adress.  When @var{may_realloc_dst} is set, then the memory may be
+reallocated by the remote function, which needs to be replicated by this
+function.
+@item @var{opt_dst_charlen} @tab intent(inout)  When a char array is returned,
+this parameter is set to the length where applicable.  The value can also be
+read to prevent reallocation in the accessor.
+@item @var{opt_dst_desc} @tab intent(inout)  When a descriptor array is
+returned, it is stored in the memory pointed to by this optional parameter.
+When @var{may_realloc_dst} is set, then the descriptor may be changed, i.e.
+its bounds, but upto now not its rank.
+@item @var{may_realloc_dst} @tab intent(in)  Set when the returned data may
+require reallocation of the output buffer in @var{dst_data} or
+@var{opt_dst_desc}.
+@item @var{getter_index} @tab intent(in)  The index of the accessor to execute
+as returned by @code{_gfortran_caf_get_remote_function_index ()}.
+@item @var{get_data} @tab intent(inout)  Additional data needed in the accessor.
+I.e., when an array reference uses a local variable @var{v}, it is transported
+in this structure and all references in the accessor are rewritten to access the
+member.  The data in the structure of @var{get_data} may be changed by the
+accessor, but these changes are lost to the calling Fortran program.
+@item @var{get_data_size} @tab intent(in)  The size of the @var{get_data}
+structure.
+@item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
+operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
+error occurs, then an error message is printed and the program is terminated.
+@item @var{team} @tab intent(in)  The opaque team handle as returned by
+@code{FORM TEAM}.  Unused at the moment.
+@item @var{team_number} @tab intent(in)  The number of the team this access is
+to be part of.  Unused at the moment.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have @code{image_index} equal the current image; the memory
+to get and the memory to store the data may (partially) overlap.  The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory.
 @end table
 
 
@@ -4847,14 +5084,14 @@ structure to get the data.
 @item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
 it is known at compile time that the @var{dest} and @var{src} either cannot
 overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in element wise element order (honoring the stride value) will not
+@var{dest} in elementwise order (honoring the stride value) does not
 lead to wrong results.  Otherwise, the value is @code{true}.
 @item @var{dst_stat} @tab intent(out) when non-@code{NULL} give the result of
-the send-operation, i.e., zero on success and non-zero on error.  When
+the send-operation, i.e., zero on success and nonzero on error.  When
 @code{NULL} and an error occurs, then an error message is printed and the
 program is terminated.
 @item @var{src_stat} @tab intent(out) When non-@code{NULL} give the result of
-the get-operation, i.e., zero on success and non-zero on error.  When
+the get-operation, i.e., zero on success and nonzero on error.  When
 @code{NULL} and an error occurs, then an error message is printed and the
 program is terminated.
 @item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
@@ -4896,7 +5133,7 @@ given array element for an array-valued variable.  If the @var{acquired_lock}
 is @code{NULL}, the function returns after having obtained the lock.  If it is
 non-@code{NULL}, then @var{acquired_lock} is assigned the value true (one) when
 the lock could be obtained and false (zero) otherwise.  Locking a lock variable
-which has already been locked by the same image is an error.
+that has already been locked by the same image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
@@ -4912,7 +5149,7 @@ positive number.
 @item @var{acquired_lock} @tab intent(out) If not NULL, it returns whether lock
 could be obtained.
 @item @var{stat} @tab intent(out) Stores the STAT=; may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out) When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -4931,7 +5168,7 @@ images for critical-block locking variables.
 @item @emph{Description}:
 Release a lock on the given image on a scalar locking variable or for the
 given array element for an array-valued variable. Unlocking a lock variable
-which is unlocked or has been locked by a different image is an error.
+that is unlocked or has been locked by a different image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
@@ -4946,7 +5183,7 @@ scalars, it is always 0.
 positive number.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
 may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out) When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -4977,7 +5214,7 @@ scalars, it is always 0.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image, when accessed noncoindexed.
 @item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -5011,10 +5248,10 @@ int until_count, int *stat, char *errmsg, size_t errmsg_len)}
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
 @item @var{index} @tab intent(in)  Array index; first array index is 0.  For
 scalars, it is always 0.
-@item @var{until_count} @tab intent(in)  The number of events which have to be
+@item @var{until_count} @tab intent(in)  The number of events that have to be
 available before the function returns.
 @item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -5087,7 +5324,7 @@ previous segment have completed.
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -5114,13 +5351,13 @@ char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{count} @tab intent(in)  The number of images which are provided in
+@item @var{count} @tab intent(in)  The number of images that are provided in
 the next argument.  For a zero-sized array, the value is zero.  For
 @code{sync images (*)}, the value is @math{-1}.
 @item @var{images} @tab intent(in)  An array with the images provided by the
 user.  If @var{count} is zero, a NULL pointer is passed.
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -5143,7 +5380,7 @@ all pending memory operations of this image have been completed.
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -5160,7 +5397,7 @@ an error message; may be NULL.
 
 @table @asis
 @item @emph{Description}:
-Invoked for an @code{ERROR STOP} statement which has an integer argument.  The
+Invoked for an @code{ERROR STOP} statement that has an integer argument.  The
 function should terminate the program with the specified exit code.
 
 
@@ -5181,7 +5418,7 @@ function should terminate the program with the specified exit code.
 
 @table @asis
 @item @emph{Description}:
-Invoked for an @code{ERROR STOP} statement which has a string as argument.  The
+Invoked for an @code{ERROR STOP} statement that has a string as argument.  The
 function should terminate the program with a nonzero-exit code.
 
 @item @emph{Syntax}:
@@ -5229,7 +5466,7 @@ int image_index, void *value, int *stat, int type, int kind)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
@@ -5258,7 +5495,7 @@ int image_index, void *value, int *stat, int type, int kind)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
@@ -5291,13 +5528,13 @@ int type, int kind)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
-@item @var{old} @tab intent(out)  The value which the atomic variable had
+@item @var{old} @tab intent(out)  The value the atomic variable had
 just before the cas operation.
-@item @var{compare} @tab intent(in)  The value used for comparision.
+@item @var{compare} @tab intent(in)  The value used for comparison.
 @item @var{new_val} @tab intent(in)  The new value for the atomic variable,
 assigned to the atomic variable, if @code{compare} equals the value of the
 atomic variable.
@@ -5333,11 +5570,11 @@ int image_index, void *value, void *old, int *stat, int type, int kind)}
 @code{GFC_CAF_ATOMIC_ADD} (1), @code{GFC_CAF_ATOMIC_AND} (2),
 @code{GFC_CAF_ATOMIC_OR} (3), @code{GFC_CAF_ATOMIC_XOR} (4).
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+@item @var{offset} @tab intent(in)  The number of bytes the actual data is
 shifted compared to the base address of the coarray.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number; zero indicates the current image when used noncoindexed.
-@item @var{old} @tab intent(out)  The value which the atomic variable had
+@item @var{old} @tab intent(out)  The value the atomic variable had
 just before the atomic operation.
 @item @var{val} @tab intent(in)  The new value for the atomic variable,
 assigned to the atomic variable, if @code{compare} equals the value of the
@@ -5372,7 +5609,7 @@ broadcasted (on @var{source_image}) or to be received (other images).
 @item @var{source_image} @tab intent(in)  The ID of the image from which the
 data should be broadcasted.
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg.
 @end multitable
@@ -5403,7 +5640,7 @@ processed.  On the destination image(s) the result overwrites the old content.
 @item @var{result_image} @tab intent(in)  The ID of the image to which the
 reduced value should be copied to; if zero, it has to be copied to all images.
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{a_len} @tab intent(in)  the string length of argument @var{a}
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
@@ -5440,7 +5677,7 @@ processed.  On the destination image(s) the result overwrites the old content.
 @item @var{result_image} @tab intent(in)  The ID of the image to which the
 reduced value should be copied to; if zero, it has to be copied to all images.
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{a_len} @tab intent(in)  the string length of argument @var{a}
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
@@ -5476,7 +5713,7 @@ processed.  On the destination image(s) the result overwrites the old content.
 @item @var{result_image} @tab intent(in)  The ID of the image to which the
 reduced value should be copied to; if zero, it has to be copied to all images.
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
@@ -5523,7 +5760,7 @@ processed.  On the destination image(s) the result overwrites the old content.
 @item @var{result_image} @tab intent(in)  The ID of the image to which the
 reduced value should be copied to; if zero, it has to be copied to all images.
 @item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{a_len} @tab intent(in)  the string length of argument @var{a}
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg

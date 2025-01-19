@@ -162,8 +162,8 @@ is
                       then J in From .. Index'Result - 1
                       else J - 1 in Index'Result
                                     .. From - Pattern'Length)
-                  then not (Ada.Strings.Search.Match
-                              (Source, Pattern, Mapping, J)))),
+                  then not Ada.Strings.Search.Match
+                             (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 
@@ -225,8 +225,8 @@ is
                       then J in From .. Index'Result - 1
                       else J - 1 in Index'Result
                                     .. From - Pattern'Length)
-                  then not (Ada.Strings.Search.Match
-                              (Source, Pattern, Mapping, J)))),
+                  then not Ada.Strings.Search.Match
+                             (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 
@@ -294,8 +294,8 @@ is
                       then J <= Index'Result - 1
                       else J - 1 in Index'Result
                                     .. Source'Last - Pattern'Length)
-                  then not (Ada.Strings.Search.Match
-                              (Source, Pattern, Mapping, J)))),
+                  then not Ada.Strings.Search.Match
+                             (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 
@@ -349,8 +349,8 @@ is
                       then J <= Index'Result - 1
                       else J - 1 in Index'Result
                                     .. Source'Last - Pattern'Length)
-                  then not (Ada.Strings.Search.Match
-                              (Source, Pattern, Mapping, J)))),
+                  then not Ada.Strings.Search.Match
+                             (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 

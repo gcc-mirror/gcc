@@ -22,6 +22,7 @@ import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
+import dmd.funcsem : overloadApply;
 import dmd.location;
 import dmd.tokens;
 
@@ -163,7 +164,7 @@ private bool hasProtectedAccess(Scope *sc, Dsymbol s)
  */
 bool checkAccess(Loc loc, Scope* sc, Expression e, Dsymbol d)
 {
-    if (sc.flags & SCOPE.noaccesscheck)
+    if (sc.noAccessCheck)
         return false;
     static if (LOG)
     {

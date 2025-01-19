@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -232,6 +232,8 @@ struct processor_costs {
 					   to be unrolled.  */
   const unsigned small_unroll_factor;   /* Unroll factor for small loop to
 					   be unrolled.  */
+  const int br_mispredict_scale;	/* Branch mispredict scale for ifcvt
+					   threshold.  */
 };
 
 extern const struct processor_costs *ix86_cost;
@@ -466,6 +468,9 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_USE_RCR ix86_tune_features[X86_TUNE_USE_RCR]
 #define TARGET_SSE_MOVCC_USE_BLENDV \
 	ix86_tune_features[X86_TUNE_SSE_MOVCC_USE_BLENDV]
+#define TARGET_ALIGN_TIGHT_LOOPS \
+	 ix86_tune_features[X86_TUNE_ALIGN_TIGHT_LOOPS]
+
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -1096,7 +1101,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
    || (MODE) == V8BFmode || (MODE) == V4BFmode || (MODE) == V2BFmode	\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
-   || (MODE) == V2DImode || (MODE) == V2QImode				\
+   || (MODE) == V2DImode || (MODE) == V2QImode || (MODE) == HImode	\
    || (MODE) == DFmode	|| (MODE) == DImode				\
    || (MODE) == HFmode || (MODE) == BFmode)
 
@@ -2311,6 +2316,7 @@ enum processor_type
   PROCESSOR_ARROWLAKE,
   PROCESSOR_ARROWLAKE_S,
   PROCESSOR_PANTHERLAKE,
+  PROCESSOR_DIAMONDRAPIDS,
   PROCESSOR_INTEL,
   PROCESSOR_LUJIAZUI,
   PROCESSOR_YONGFENG,
@@ -2434,6 +2440,16 @@ constexpr wide_int_bitmask PTA_CLEARWATERFOREST = PTA_SIERRAFOREST
   | PTA_AVXVNNIINT16 | PTA_SHA512 | PTA_SM3 | PTA_SM4 | PTA_USER_MSR
   | PTA_PREFETCHI;
 constexpr wide_int_bitmask PTA_PANTHERLAKE = PTA_ARROWLAKE_S | PTA_PREFETCHI;
+constexpr wide_int_bitmask PTA_DIAMONDRAPIDS = PTA_SKYLAKE | PTA_PKU | PTA_SHA
+  | PTA_GFNI | PTA_VAES | PTA_VPCLMULQDQ | PTA_RDPID | PTA_PCONFIG
+  | PTA_WBNOINVD | PTA_CLWB | PTA_MOVDIRI | PTA_MOVDIR64B | PTA_ENQCMD
+  | PTA_CLDEMOTE | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK
+  | PTA_AMX_TILE | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI
+  | PTA_AMX_FP16 | PTA_PREFETCHI | PTA_AMX_COMPLEX | PTA_AVX10_1_512
+  | PTA_AVXIFMA | PTA_AVXNECONVERT | PTA_AVXVNNIINT16 | PTA_AVXVNNIINT8
+  | PTA_CMPCCXADD | PTA_SHA512 | PTA_SM3 | PTA_SM4 | PTA_AVX10_2_512
+  | PTA_APX_F | PTA_AMX_AVX512 | PTA_AMX_FP8 | PTA_AMX_TF32 | PTA_AMX_TRANSPOSE
+  | PTA_MOVRS | PTA_AMX_MOVRS | PTA_USER_MSR;
 
 constexpr wide_int_bitmask PTA_BDVER1 = PTA_64BIT | PTA_MMX | PTA_SSE
   | PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3
@@ -2880,6 +2896,9 @@ struct GTY(()) machine_function {
 
   /* True if red zone is used.  */
   BOOL_BITFIELD red_zone_used : 1;
+
+  /* True if inline asm with redzone clobber has been seen.  */
+  BOOL_BITFIELD asm_redzone_clobber_seen : 1;
 
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;

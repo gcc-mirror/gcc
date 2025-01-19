@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,14 +49,13 @@ package body System.Image_R is
 
    Maxdigs : constant Natural := 2 * Natural'Min (Uns'Width - 2, Num'Digits);
 
-   Maxscaling : constant := 5000;
-   --  Max decimal scaling required during conversion of floating-point
-   --  numbers to decimal. This is used to defend against infinite
-   --  looping in the conversion, as can be caused by erroneous executions.
-   --  The largest exponent used on any current system is 2**16383, which
-   --  is approximately 10**4932, and the highest number of decimal digits
-   --  is about 35 for 128-bit floating-point formats, so 5000 leaves
-   --  enough room for scaling such values
+   Maxscaling : constant Natural := 5000 + Maxdigs;
+   --  Maximum decimal scaling required during conversion of floating-point
+   --  numbers to decimal. This is used to defend against infinite looping
+   --  during the conversion, that could be caused by erroneous execution.
+   --  The largest decimal exponent in absolute value used on any current
+   --  system is 4966 (denormals of IEEE binary128) and we scale up to the
+   --  Maxdigs exponent during the conversion.
 
    package Double_Real is new System.Double_Real (Num);
    use type Double_Real.Double_T;
@@ -109,6 +108,7 @@ package body System.Image_R is
    is
       pragma Assert (S'First = 1);
 
+      Fore : Natural;
    begin
       --  Decide whether a blank should be prepended before the call to
       --  Set_Image_Real. We generate a blank for positive values, and
@@ -125,11 +125,13 @@ package body System.Image_R is
          --  Image_Floating_Point operation.
          S (1) := ' ';
          P := 1;
+         Fore := 1;
       else
          P := 0;
+         Fore := 2;
       end if;
 
-      Set_Image_Real (V, S, P, 1, Digs - 1, 3);
+      Set_Image_Real (V, S, P, Fore, Digs - 1, 3);
    end Image_Floating_Point;
 
    -----------------
@@ -392,7 +394,7 @@ package body System.Image_R is
       Digs (1) := (if Is_Negative (V) then '-' else ' ');
       Ndigs := 1;
 
-      X := Double_Real.To_Double (abs (V));
+      X := Double_Real.To_Double (abs V);
 
       --  If X is zero, we are done
 
@@ -430,30 +432,39 @@ package body System.Image_R is
 
          --  Otherwise, do the conversion in two steps
 
-         else pragma Assert (X <= 10.0 ** Num'Digits * Num (Uns'Last));
+         else
             declare
-               Y : constant Uns := To_Unsigned (X / Powten (Num'Digits));
+               Halfdigs : constant Natural := Maxdigs / 2;
 
-               Buf : String (1 .. Num'Digits);
+               Buf : String (1 .. Halfdigs);
                Len : Natural;
+               Y   : Uns;
 
             begin
+               --  Compute upper Halfdigs stripped from leading zeros
+
+               Y := To_Unsigned (X / Powten (Halfdigs));
                Set_Image_Unsigned (Y, Digs, Ndigs);
 
-               X := X - From_Unsigned (Y) * Powten (Num'Digits);
+               --  Compute lower Halfdigs stripped from leading zeros
 
                Len := 0;
+               X := X - From_Unsigned (Y) * Powten (Halfdigs);
                Set_Image_Unsigned (To_Unsigned (X), Buf, Len);
+               pragma Assert (Len <= Halfdigs);
 
-               for J in 1 .. Num'Digits - Len loop
+               --  Concatenate unmodified upper part with zero-padded
+               --  lower part up to Halfdigs.
+
+               for J in 1 .. Halfdigs - Len loop
                   Digs (Ndigs + J) := '0';
                end loop;
 
                for J in 1 .. Len loop
-                  Digs (Ndigs + Num'Digits - Len + J) := Buf (J);
+                  Digs (Ndigs + Halfdigs - Len + J) := Buf (J);
                end loop;
 
-               Ndigs := Ndigs + Num'Digits;
+               Ndigs := Ndigs + Halfdigs;
             end;
          end if;
       end if;

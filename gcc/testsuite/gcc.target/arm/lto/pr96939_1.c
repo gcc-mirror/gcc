@@ -1,5 +1,5 @@
 /* PR target/96939 */
-/* { dg-options "-march=armv8-a+simd+crc" } */
+/* { dg-options "-mcpu=unset -march=armv8-a+simd+crc -mfpu=auto" } */
 
 #include <arm_acle.h>
 

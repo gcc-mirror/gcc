@@ -1,5 +1,5 @@
 /* Linux-specific atomic operations for ARM EABI.
-   Copyright (C) 2008-2024 Free Software Foundation, Inc.
+   Copyright (C) 2008-2025 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
 This file is part of GCC.
@@ -248,8 +248,6 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
 
 SUBWORD_VAL_CAS (short,       2)
 SUBWORD_VAL_CAS (signed char, 1)
-
-typedef unsigned char bool;
 
 bool HIDDEN
 __sync_bool_compare_and_swap_4 (int *ptr, int oldval, int newval)

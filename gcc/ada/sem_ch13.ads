@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,6 +110,19 @@ package Sem_Ch13 is
    --  met, then an appropriate error message is posted. This check is applied
    --  at the point an object with an address clause is frozen, as well as for
    --  address clauses for tasks and entries.
+
+   procedure Check_Function_For_Indexing_Aspect
+     (ASN   : Node_Id;
+      Typ   : Entity_Id;
+      Subp  : Entity_Id;
+      Valid : out Boolean);
+   --  Check Subp to see whether it's a valid function for Typ's indexing
+   --  aspect ASN (as specified by the rules given in RM 4.1.6(1-3)), flagging
+   --  an error if Subp is not an eligible indexing function (unless Subp is
+   --  declared outside the scope of E, in which case it's simply ignored
+   --  rather than considered an error; see AI22-0084). If valid for indexing,
+   --  then Subp is added to ASN's Aspect_Subprograms list, and Valid is set
+   --  to True (otherwise False).
 
    procedure Check_Size
      (N      : Node_Id;
@@ -311,8 +324,12 @@ package Sem_Ch13 is
 
    --  Quite an awkward approach, but this is an awkard requirement
 
-   procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id);
-   --  Analyzes all the delayed aspects for entity E at the freeze point. Note
+   procedure Analyze_Aspects_At_Freeze_Point
+     (E                   : Entity_Id;
+      Nonoverridable_Only : Boolean := False);
+   --  Analyzes all the delayed aspects for entity E at the freeze point,
+   --  unless Nonoverridable_Only is True, in which case only nonoverridable
+   --  aspects are analyzed (those aspects have special requirements). Note
    --  that this does not include dealing with inheriting delayed aspects from
    --  the parent or base type in the case where a derived type or a subtype is
    --  frozen. Callers should check that Has_Delayed_Aspects (E) is True before

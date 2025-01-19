@@ -771,7 +771,7 @@ static if (_WIN32_WINNT >= 0x602)
 }
 
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     BOOL WinHttpAddRequestHeaders(HINTERNET hRequest, LPCWSTR pwszHeaders, DWORD dwHeadersLength, DWORD dwModifiers);
 
     BOOL WinHttpCheckPlatform();

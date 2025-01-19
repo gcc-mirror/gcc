@@ -1,6 +1,6 @@
 /* Gimple walk support.
 
-   Copyright (C) 2007-2024 Free Software Foundation, Inc.
+   Copyright (C) 2007-2025 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -707,6 +707,7 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SCOPE:
+    case GIMPLE_OMP_DISPATCH:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TARGET:

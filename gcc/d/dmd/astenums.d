@@ -18,6 +18,15 @@ enum Sizeok : ubyte
     done,               /// size of aggregate is set correctly
 }
 
+/// D Language version
+enum Edition : ubyte
+{
+    none,
+    legacy,          /// Before the introduction of editions
+    v2024,           /// Experimental first new edition
+    latest = v2024   /// Newest edition that this compiler knows of
+}
+
 enum Baseok : ubyte
 {
     none,               /// base classes not computed yet
@@ -293,7 +302,7 @@ enum ThreeState : ubyte
 enum TRUST : ubyte
 {
     default_   = 0,
-    system     = 1,    // @system (same as TRUST.default)
+    system     = 1,    // @system (same as TRUST.default_ unless feature "safer" is enabled)
     trusted    = 2,    // @trusted
     safe       = 3,    // @safe
 }
@@ -439,6 +448,24 @@ enum FileType : ubyte
     dhdr, /// D header file (.di)
     ddoc, /// Ddoc documentation file (.dd)
     c,    /// C source file
+}
+
+/// In which context checks for assertions, contracts, bounds checks etc. are enabled
+enum CHECKENABLE : ubyte
+{
+    _default,     /// initial value
+    off,          /// never do checking
+    on,           /// always do checking
+    safeonly,     /// do checking only in @safe functions
+}
+
+/// What should happend when an assertion fails
+enum CHECKACTION : ubyte
+{
+    D,            /// call D assert on failure
+    C,            /// call C assert on failure
+    halt,         /// cause program halt on failure
+    context,      /// call D assert with the error context on failure
 }
 
 extern (C++) struct structalign_t

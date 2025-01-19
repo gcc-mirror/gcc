@@ -2,7 +2,6 @@
    variables into writable sections.  */
 /* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
-/* { dg-additional-options "-G0" { target nios2-*-* } }  */
 /* { dg-final { scan-assembler-not ".data.rel.ro.local" } } */
 /* { dg-final { scan-assembler-symbol-section {^_?ar} {^\.(const|rodata)|\[RO\]} } } */
 /* { dg-require-effective-target label_values } */

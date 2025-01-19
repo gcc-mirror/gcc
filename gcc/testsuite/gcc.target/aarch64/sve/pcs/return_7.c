@@ -61,6 +61,34 @@ caller_u8 (void)
 }
 
 /*
+** callee_mf8:
+**	mov	z0\.b, b2
+**	mov	z1\.b, b3
+**	ret
+*/
+svmfloat8x2_t __attribute__((noipa))
+callee_mf8 (mfloat8_t h0, mfloat8_t h1, mfloat8_t h2, mfloat8_t h3)
+{
+  return svcreate2 (svdup_mf8 (h2), svdup_mf8 (h3));
+}
+
+/*
+** caller_mf8:
+**	...
+**	bl	callee_mf8
+**	trn2	z0\.b, z1\.b, z0\.b
+**	ldp	x29, x30, \[sp\], 16
+**	ret
+*/
+svmfloat8_t __attribute__((noipa))
+caller_mf8 (mfloat8_t h0, mfloat8_t h1, mfloat8_t h2, mfloat8_t h3)
+{
+  svmfloat8x2_t res;
+  res = callee_mf8 (h0, h1, h2, h3);
+  return svtrn2 (svget2 (res, 1), svget2 (res, 0));
+}
+
+/*
 ** callee_s16:
 **	mov	z0\.h, #1
 **	mov	z1\.h, #2

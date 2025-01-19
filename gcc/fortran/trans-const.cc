@@ -1,5 +1,5 @@
 /* Translation of constants
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* trans-const.cc -- convert constant values */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

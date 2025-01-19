@@ -1,7 +1,7 @@
 
 // unique_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2008-2024 Free Software Foundation, Inc.
+// Copyright (C) 2008-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@
 #if __cplusplus >= 202002L
 # include <compare>
 # if _GLIBCXX_HOSTED
-#  include <ostream>
+#  include <bits/ostream.h>
 # endif
 #endif
 
@@ -1012,11 +1012,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @} relates unique_ptr
 
   /// @cond undocumented
-  template<typename _Up, typename _Ptr = typename _Up::pointer,
-	   bool = __poison_hash<_Ptr>::__enable_hash_call>
+  template<typename _Up, typename _Ptr = typename _Up::pointer>
     struct __uniq_ptr_hash
+    : public __hash_base<size_t, _Up>
 #if ! _GLIBCXX_INLINE_VERSION
-    : private __poison_hash<_Ptr>
+    , private __hash_empty_base<_Ptr>
 #endif
     {
       size_t
@@ -1025,17 +1025,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return hash<_Ptr>()(__u.get()); }
     };
 
-  template<typename _Up, typename _Ptr>
-    struct __uniq_ptr_hash<_Up, _Ptr, false>
-    : private __poison_hash<_Ptr>
-    { };
+  template<typename _Up>
+    using __uniq_ptr_hash_base
+      = __conditional_t<__is_hash_enabled_for<typename _Up::pointer>,
+			     __uniq_ptr_hash<_Up>,
+			     __hash_not_enabled<typename _Up::pointer>>;
   /// @endcond
 
   /// std::hash specialization for unique_ptr.
   template<typename _Tp, typename _Dp>
     struct hash<unique_ptr<_Tp, _Dp>>
-    : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>,
-      public __uniq_ptr_hash<unique_ptr<_Tp, _Dp>>
+    : public __uniq_ptr_hash_base<unique_ptr<_Tp, _Dp>>
     { };
 
 #ifdef __glibcxx_make_unique // C++ >= 14 && HOSTED

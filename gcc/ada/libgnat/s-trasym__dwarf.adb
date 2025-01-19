@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2024, AdaCore                     --
+--                     Copyright (C) 1999-2025, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@ with System.Standard_Library;
 with System.Traceback_Entries;
 with System.Strings;
 with System.Bounded_Strings;
+with Interfaces.C;
 
 package body System.Traceback.Symbolic is
 
@@ -341,7 +342,9 @@ package body System.Traceback.Symbolic is
       type Argv_Array is array (0 .. 0) of System.Address;
       package Conv is new System.Address_To_Access_Conversions (Argv_Array);
 
-      function locate_exec_on_path (A : System.Address) return System.Address;
+      function locate_exec_on_path
+        (A : System.Address;
+         Current_Dir_On_Win : Interfaces.C.int) return System.Address;
       pragma Import (C, locate_exec_on_path, "__gnat_locate_exec_on_path");
 
    begin
@@ -361,7 +364,7 @@ package body System.Traceback.Symbolic is
            Conv.To_Pointer (Gnat_Argv) (0);
 
          Resolved_Argv0 : constant System.Address :=
-           locate_exec_on_path (Argv0);
+           locate_exec_on_path (Argv0, 0);
 
          Exe_Argv : constant System.Address :=
            (if Resolved_Argv0 /= System.Null_Address

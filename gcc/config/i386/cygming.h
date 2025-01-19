@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995-2024 Free Software Foundation, Inc.
+   Copyright (C) 1995-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -309,7 +309,7 @@ do {						\
 #define ASM_DECLARE_COLD_FUNCTION_NAME(FILE, NAME, DECL)	\
   do								\
     {								\
-      mingw_pe_declare_function_type (FILE, NAME, 0);		\
+      mingw_pe_declare_type (FILE, NAME, 0, 1);		\
       i386_pe_seh_cold_init (FILE, NAME);			\
       ASM_OUTPUT_LABEL (FILE, NAME);				\
     }								\
@@ -335,7 +335,7 @@ do {						\
 
 /* Declare the type properly for any external libcall.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
-  mingw_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
+  mingw_pe_declare_type (FILE, XSTR (FUN, 0), 1, 1)
 
 /* This says out to put a global symbol in the BSS section.  */
 #undef ASM_OUTPUT_ALIGNED_BSS
@@ -348,9 +348,9 @@ do {						\
 
 /* Kludge because of missing PE-COFF support for early LTO debug.  */
 #undef  TARGET_ASM_LTO_START
-#define TARGET_ASM_LTO_START i386_pe_asm_lto_start
+#define TARGET_ASM_LTO_START mingw_pe_asm_lto_start
 #undef  TARGET_ASM_LTO_END
-#define TARGET_ASM_LTO_END i386_pe_asm_lto_end
+#define TARGET_ASM_LTO_END mingw_pe_asm_lto_end
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
@@ -420,8 +420,8 @@ do {						\
 	= IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
       mingw_pe_maybe_record_exported_symbol (DECL, alias, 0);		\
       if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-	mingw_pe_declare_function_type (STREAM, alias,			\
-				       TREE_PUBLIC (DECL));		\
+	mingw_pe_declare_type (STREAM, alias,			\
+				       TREE_PUBLIC (DECL), 1);		\
       ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
     } while (0)
 
@@ -461,7 +461,7 @@ do {						\
 #define TARGET_ASM_ASSEMBLE_VISIBILITY i386_pe_assemble_visibility
 
 #undef SUB_TARGET_RECORD_STUB
-#define SUB_TARGET_RECORD_STUB mingw_pe_record_stub
+#define SUB_TARGET_RECORD_STUB(NAME, DECL) mingw_pe_record_stub((NAME), 0)
 
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
@@ -470,7 +470,7 @@ do {						\
 # define HAVE_GAS_ALIGNED_COMM 0
 #endif
 
-#define PE_COFF_LEGITIMIZE_EXTERN_DECL \
+#define PE_COFF_LEGITIMIZE_EXTERN_DECL(RTX) \
   (ix86_cmodel == CM_LARGE_PIC || ix86_cmodel == CM_MEDIUM_PIC)
 
 #define HAVE_64BIT_POINTERS TARGET_64BIT_DEFAULT

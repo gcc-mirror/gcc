@@ -4,9 +4,9 @@ AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir) -isystem $(top_srcdir)/i
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS @RPC_DEFS@ @AS_SYM_ASSIGN_DEFS@
-AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
+AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
-AM_CXXFLAGS += -std=gnu++14
+AM_CXXFLAGS += -std=gnu++17
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
 if LIBBACKTRACE_SUPPORTED
 AM_CXXFLAGS += -DSANITIZER_LIBBACKTRACE -DSANITIZER_CP_DEMANGLE \
@@ -47,7 +47,6 @@ sanitizer_common_files = \
 	sanitizer_netbsd.cpp \
 	sanitizer_platform_limits_freebsd.cpp \
 	sanitizer_platform_limits_linux.cpp \
-	sanitizer_platform_limits_openbsd.cpp \
 	sanitizer_platform_limits_posix.cpp \
 	sanitizer_platform_limits_solaris.cpp \
 	sanitizer_posix.cpp \
@@ -74,20 +73,23 @@ sanitizer_common_files = \
 	sanitizer_symbolizer.cpp \
 	sanitizer_symbolizer_libbacktrace.cpp \
 	sanitizer_symbolizer_libcdep.cpp \
+	sanitizer_symbolizer_markup.cpp \
 	sanitizer_symbolizer_posix_libcdep.cpp \
 	sanitizer_symbolizer_win.cpp \
 	sanitizer_termination.cpp \
 	sanitizer_thread_arg_retval.cpp \
+	sanitizer_thread_history.cpp \
 	sanitizer_thread_registry.cpp \
 	sanitizer_tls_get_addr.cpp \
 	sanitizer_unwind_linux_libcdep.cpp \
 	sanitizer_unwind_win.cpp \
-	sanitizer_win.cpp
+	sanitizer_win.cpp \
+	sanitizer_win_interception.cpp
 
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 
 libsanitizer_common_la_LIBADD = $(SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS)
-libsanitizer_common_la_DEPENDENCIES =  $(SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS)
+libsanitizer_common_la_DEPENDENCIES = $(SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

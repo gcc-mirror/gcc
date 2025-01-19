@@ -139,7 +139,7 @@ struct VS_FIXEDFILEINFO {
     DWORD dwFileDateLS;
 }
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     DWORD VerFindFileA(DWORD, LPCSTR, LPCSTR, LPCSTR, LPSTR, PUINT, LPSTR,
       PUINT);
     DWORD VerFindFileW(DWORD, LPCWSTR, LPCWSTR, LPCWSTR, LPWSTR, PUINT, LPWSTR,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,7 +105,8 @@ package System.Standard_Library is
       Lang : aliased Character;
       --  A character indicating the language raising the exception.
       --  Set to "A" for exceptions defined by an Ada program.
-      --  Set to "C" for imported C++ exceptions.
+      --  Set to "B" for imported C++ exceptions with base type matching.
+      --  Set to "C" for imported C++ exceptions with exact type matching.
 
       Name_Length : aliased Natural;
       --  Length of fully expanded name of exception

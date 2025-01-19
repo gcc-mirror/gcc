@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -455,6 +455,11 @@ package Atree is
    --  the parent of the list containing the node if the node is a list member.
    --  Parent has the same name as the one in Nlists; Node_Parent can be used
    --  more easily in the debugger.
+
+   function Parent_Or_List_Containing (X : Union_Id) return Union_Id;
+   --  X must be in Node_Range or in List_Range. If X is in Node_Range and is
+   --  contained in a list, returns that list, otherwise return the parent of
+   --  the list or node represented by X.
 
    function Paren_Count (N : Node_Id) return Nat;
    pragma Inline (Paren_Count);

@@ -5,53 +5,60 @@
 /* { dg-options "-Os" } */
 /* { dg-skip-if "" { ! { arm_thumb1 } } } */
 
-volatile register int r4 asm ("r4");
+volatile int r4;
+
+#define GO() \
+  r4 = 1;
+
+#define GO8() \
+  GO() \
+  GO() \
+  GO() \
+  GO() \
+  GO() \
+  GO() \
+  GO() \
+  GO()
+
+#define GO32() \
+  GO8() \
+  GO8() \
+  GO8() \
+  GO8()
+
+#define GO128() \
+  GO32() \
+  GO32() \
+  GO32() \
+  GO32()
+
+#define GO512() \
+  GO128() \
+  GO128() \
+  GO128() \
+  GO128()
+
+#define GO1018() \
+  GO512() \
+  GO128() \
+  GO128() \
+  GO128() \
+  GO32() \
+  GO32() \
+  GO32() \
+  GO8() \
+  GO8() \
+  GO8() \
+  GO() \
+  GO()
+
 void f3(int i)
 {
-#define GO(n) \
-  extern volatile int g_##n; \
-  r4=(int)&g_##n;
-
-#define GO8(n) \
-  GO(n##_0) \
-  GO(n##_1) \
-  GO(n##_2) \
-  GO(n##_3) \
-  GO(n##_4) \
-  GO(n##_5) \
-  GO(n##_6) \
-  GO(n##_7)
-
-#define GO64(n) \
-  GO8(n##_0) \
-  GO8(n##_1) \
-  GO8(n##_2) \
-  GO8(n##_3) \
-  GO8(n##_4) \
-  GO8(n##_5) \
-  GO8(n##_6) \
-  GO8(n##_7) \
-
-#define GO498(n) \
-  GO64(n##_0) \
-  GO64(n##_1) \
-  GO64(n##_2) \
-  GO64(n##_3) \
-  GO64(n##_4) \
-  GO64(n##_5) \
-  GO64(n##_6) \
-  GO8(n##_0) \
-  GO8(n##_1) \
-  GO8(n##_2) \
-  GO8(n##_3) \
-  GO8(n##_4) \
-  GO8(n##_5) \
-  GO(n##_0) \
-  GO(n##_1) \
-
+  GO();
   if (i) {
-    GO498(0);
+    GO1018();
   }
 }
 
-/* { dg-final { scan-assembler "push.*lr" } } */
+/* { dg-final { scan-assembler "\tpush.*lr" } } */
+/* { dg-final { scan-assembler "\tbl\t\\.L\[0-9\]+\t@far jump" } } */

@@ -1,5 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -451,9 +451,6 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 			reachable.add (body);
 		      reachable.add (e->callee);
 		    }
-		  else if (e->callee->declare_variant_alt
-			   && !e->callee->in_other_partition)
-		    reachable.add (e->callee);
 		  enqueue_node (e->callee, &first, &reachable);
 		}
 

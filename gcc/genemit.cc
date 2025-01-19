@@ -1,5 +1,5 @@
 /* Generate code from machine description to emit insns as rtl.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -236,6 +236,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info,
 
 	case 'i':
 	  fprintf (file, "%u", XINT (x, i));
+	  break;
+
+	case 'L':
+	  fprintf (file, "%llu", (unsigned long long) XLOC (x, i));
 	  break;
 
 	case 'r':
@@ -905,14 +909,15 @@ from the machine description file `md'.  */\n\n");
   fprintf (file, "#include \"target.h\"\n\n");
 }
 
-auto_vec<const char *, 10> output_files;
+auto_vec<FILE *, 10> output_files;
 
 static bool
 handle_arg (const char *arg)
 {
   if (arg[1] == 'O')
     {
-      output_files.safe_push (&arg[2]);
+      FILE *file = fopen (&arg[2], "w");
+      output_files.safe_push (file);
       return true;
     }
   return false;
@@ -933,47 +938,21 @@ main (int argc, const char **argv)
   /* Assign sequential codes to all entries in the machine description
      in parallel with the tables in insn-output.cc.  */
 
-  int npatterns = count_patterns ();
   md_rtx_info info;
 
-  bool to_stdout = false;
-  int npatterns_per_file = npatterns;
-  if (!output_files.is_empty ())
-    npatterns_per_file = npatterns / output_files.length () + 1;
-  else
-    to_stdout = true;
+  if (output_files.is_empty ())
+    output_files.safe_push (stdout);
 
-  gcc_assert (npatterns_per_file > 1);
+  for (auto f : output_files)
+    print_header (f);
 
-  /* Reverse so we can pop the first-added element.  */
-  output_files.reverse ();
-
-  int count = 0;
   FILE *file = NULL;
+  unsigned file_idx;
 
   /* Read the machine description.  */
   while (read_md_rtx (&info))
     {
-      if (count == 0 || count == npatterns_per_file)
-	{
-	  bool is_last = !to_stdout && output_files.is_empty ();
-	  if (file && !is_last)
-	    if (fclose (file) != 0)
-	      return FATAL_EXIT_CODE;
-
-	  if (!output_files.is_empty ())
-	    {
-	      const char *const filename = output_files.pop ();
-	      file = fopen (filename, "w");
-	    }
-	  else if (to_stdout)
-	    file = stdout;
-	  else
-	    break;
-
-	  print_header (file);
-	  count = 0;
-	}
+      file = choose_output (output_files, file_idx);
 
       switch (GET_CODE (info.def))
 	{
@@ -999,9 +978,9 @@ main (int argc, const char **argv)
 	default:
 	  break;
 	}
-
-      count++;
     }
+
+  file = choose_output (output_files, file_idx);
 
   /* Write out the routines to add CLOBBERs to a pattern and say whether they
      clobber a hard reg.  */
@@ -1015,5 +994,10 @@ main (int argc, const char **argv)
       handle_overloaded_gen (oname, file);
     }
 
-  return (fclose (file) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  int ret = SUCCESS_EXIT_CODE;
+  for (FILE *f : output_files)
+    if (fclose (f) != 0)
+      ret = FATAL_EXIT_CODE;
+
+  return ret;
 }

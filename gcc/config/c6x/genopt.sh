@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate c6x-tables.opt from the lists in *.def.
-# Copyright (C) 2011-2024 Free Software Foundation, Inc.
+# Copyright (C) 2011-2025 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,7 +22,7 @@ cat <<EOF
 ; -*- buffer-read-only: t -*-
 ; Generated automatically by genopt.sh from c6x-isas.def.
 ;
-; Copyright (C) 2011-2024 Free Software Foundation, Inc.
+; Copyright (C) 2011-2025 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;

@@ -1,7 +1,6 @@
 /* PR tree-optimization/82059 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-isolate-paths" } */
-/* { dg-skip-if "accessing data memory with program memory address" { avr-*-* } } */
 
 struct a
 {
@@ -19,5 +18,5 @@ h ()
   if (!i)
     d ();
   i->c = &f;
-  i->b = *(char *) h;
+  i->b = *(char *) h; /* { dg-warning "accessing data memory with program memory address.*" "" { target avr-*-* } } */
 }

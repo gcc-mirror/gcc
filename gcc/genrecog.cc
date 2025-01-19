@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -388,7 +388,7 @@ find_operand (rtx pattern, int n, rtx stop)
 	      return r;
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:
@@ -439,7 +439,7 @@ find_matching_operand (rtx pattern, int n)
 	      return r;
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:
@@ -801,7 +801,7 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	    validate_pattern (XVECEXP (pattern, i, j), info, NULL_RTX, 0);
 	  break;
 
-	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's': case 'L':
 	  break;
 
 	default:
@@ -4255,9 +4255,9 @@ match_pattern (state *s, md_rtx_info *info, rtx pattern,
 /* Begin the output file.  */
 
 static void
-write_header (void)
+write_header (FILE *f, const char *header_filename)
 {
-  puts ("\
+  fprintf (f, "%s", "\
 /* Generated automatically by the program `genrecog' from the target\n\
    machine description file.  */\n\
 \n\
@@ -4281,10 +4281,12 @@ write_header (void)
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
-#include \"tm-constrs.h\"\n\
-\n");
+#include \"tm-constrs.h\"\n");
 
-  puts ("\n\
+  fprintf (f, "#include \"%s\"\n", header_filename);
+  fprintf (f, "%s", "\n");
+
+  fprintf (f, "%s", "\n\
 /* `recog' contains a decision tree that recognizes whether the rtx\n\
    X0 is a valid instruction.\n\
 \n\
@@ -4293,19 +4295,19 @@ write_header (void)
    pattern that matched.  This is the same as the order in the machine\n\
    description of the entry that matched.  This number can be used as an\n\
    index into `insn_data' and other tables.\n");
-  puts ("\
+  fprintf (f, "%s", "\
    The third parameter to recog is an optional pointer to an int.  If\n\
    present, recog will accept a pattern if it matches except for missing\n\
    CLOBBER expressions at the end.  In that case, the value pointed to by\n\
    the optional pointer will be set to the number of CLOBBERs that need\n\
    to be added (it should be initialized to zero by the caller).  If it");
-  puts ("\
+  fprintf (f, "%s", "\
    is set nonzero, the caller should allocate a PARALLEL of the\n\
    appropriate size, copy the initial entries, and call add_clobbers\n\
    (found in insn-emit.cc) to fill in the CLOBBERs.\n\
 ");
 
-  puts ("\n\
+  fprintf (f, "%s", "\n\
    The function split_insns returns 0 if the rtl could not\n\
    be split or the split rtl as an INSN list if it can be.\n\
 \n\
@@ -4463,13 +4465,13 @@ test_position_available_p (output_state *os, const rtx_test &test)
 
 /* Like printf, but print INDENT spaces at the beginning.  */
 
-static void ATTRIBUTE_PRINTF_2
-printf_indent (unsigned int indent, const char *format, ...)
+static void ATTRIBUTE_PRINTF_3
+printf_indent (FILE *f, unsigned int indent, const char *format, ...)
 {
   va_list ap;
   va_start (ap, format);
-  printf ("%*s", indent, "");
-  vprintf (format, ap);
+  fprintf (f, "%*s", indent, "");
+  vfprintf (f, format, ap);
   va_end (ap);
 }
 
@@ -4478,7 +4480,7 @@ printf_indent (unsigned int indent, const char *format, ...)
    OS with the new state.  */
 
 static void
-change_state (output_state *os, position *pos, unsigned int indent)
+change_state (FILE *f, output_state *os, position *pos, unsigned int indent)
 {
   unsigned int var = os->id_to_var[pos->id];
   gcc_assert (var < os->var_to_id.length () && os->var_to_id[var] == pos->id);
@@ -4487,19 +4489,19 @@ change_state (output_state *os, position *pos, unsigned int indent)
   switch (pos->type)
     {
     case POS_PEEP2_INSN:
-      printf_indent (indent, "x%d = PATTERN (peep2_next_insn (%d));\n",
+      printf_indent (f, indent, "x%d = PATTERN (peep2_next_insn (%d));\n",
 		     var, pos->arg);
       break;
 
     case POS_XEXP:
-      change_state (os, pos->base, indent);
-      printf_indent (indent, "x%d = XEXP (x%d, %d);\n",
+      change_state (f, os, pos->base, indent);
+      printf_indent (f, indent, "x%d = XEXP (x%d, %d);\n",
 		     var, os->id_to_var[pos->base->id], pos->arg);
       break;
 
     case POS_XVECEXP0:
-      change_state (os, pos->base, indent);
-      printf_indent (indent, "x%d = XVECEXP (x%d, 0, %d);\n",
+      change_state (f, os, pos->base, indent);
+      printf_indent (f, indent, "x%d = XVECEXP (x%d, 0, %d);\n",
 		     var, os->id_to_var[pos->base->id], pos->arg);
       break;
     }
@@ -4510,11 +4512,11 @@ change_state (output_state *os, position *pos, unsigned int indent)
    the name.  */
 
 static void
-print_code (enum rtx_code code)
+print_code (FILE *f, enum rtx_code code)
 {
   const char *p;
   for (p = GET_RTX_NAME (code); *p; p++)
-    putchar (TOUPPER (*p));
+    fprintf (f, "%c", TOUPPER (*p));
 }
 
 /* Emit a uint64_t as an integer constant expression.  We need to take
@@ -4522,22 +4524,22 @@ print_code (enum rtx_code code)
    warnings in the resulting code.  */
 
 static void
-print_host_wide_int (uint64_t val)
+print_host_wide_int (FILE *f, uint64_t val)
 {
   uint64_t min = uint64_t (1) << (HOST_BITS_PER_WIDE_INT - 1);
   if (val == min)
-    printf ("(" HOST_WIDE_INT_PRINT_DEC_C " - 1)", val + 1);
+    fprintf (f, "(" HOST_WIDE_INT_PRINT_DEC_C " - 1)", val + 1);
   else
-    printf (HOST_WIDE_INT_PRINT_DEC_C, val);
+    fprintf (f, HOST_WIDE_INT_PRINT_DEC_C, val);
 }
 
 /* Print the C expression for actual parameter PARAM.  */
 
 static void
-print_parameter_value (const parameter &param)
+print_parameter_value (FILE *f, const parameter &param)
 {
   if (param.is_param)
-    printf ("i%d", (int) param.value + 1);
+    fprintf (f, "i%d", (int) param.value + 1);
   else
     switch (param.type)
       {
@@ -4546,23 +4548,23 @@ print_parameter_value (const parameter &param)
 	break;
 
       case parameter::CODE:
-	print_code ((enum rtx_code) param.value);
+	print_code (f, (enum rtx_code) param.value);
 	break;
 
       case parameter::MODE:
-	printf ("E_%smode", GET_MODE_NAME ((machine_mode) param.value));
+	fprintf (f, "E_%smode", GET_MODE_NAME ((machine_mode) param.value));
 	break;
 
       case parameter::INT:
-	printf ("%d", (int) param.value);
+	fprintf (f, "%d", (int) param.value);
 	break;
 
       case parameter::UINT:
-	printf ("%u", (unsigned int) param.value);
+	fprintf (f, "%u", (unsigned int) param.value);
 	break;
 
       case parameter::WIDE_INT:
-	print_host_wide_int (param.value);
+	print_host_wide_int (f, param.value);
 	break;
       }
 }
@@ -4570,90 +4572,90 @@ print_parameter_value (const parameter &param)
 /* Print the C expression for the rtx tested by TEST.  */
 
 static void
-print_test_rtx (output_state *os, const rtx_test &test)
+print_test_rtx (FILE *f, output_state *os, const rtx_test &test)
 {
   if (test.pos_operand >= 0)
-    printf ("operands[%d]", test.pos_operand);
+    fprintf (f, "operands[%d]", test.pos_operand);
   else
-    printf ("x%d", os->id_to_var[test.pos->id]);
+    fprintf (f, "x%d", os->id_to_var[test.pos->id]);
 }
 
 /* Print the C expression for non-boolean test TEST.  */
 
 static void
-print_nonbool_test (output_state *os, const rtx_test &test)
+print_nonbool_test (FILE *f, output_state *os, const rtx_test &test)
 {
   switch (test.kind)
     {
     case rtx_test::CODE:
-      printf ("GET_CODE (");
-      print_test_rtx (os, test);
-      printf (")");
+      fprintf (f, "GET_CODE (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ")");
       break;
 
     case rtx_test::MODE:
-      printf ("GET_MODE (");
-      print_test_rtx (os, test);
-      printf (")");
+      fprintf (f, "GET_MODE (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ")");
       break;
 
     case rtx_test::VECLEN:
-      printf ("XVECLEN (");
-      print_test_rtx (os, test);
-      printf (", 0)");
+      fprintf (f, "XVECLEN (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ", 0)");
       break;
 
     case rtx_test::INT_FIELD:
-      printf ("XINT (");
-      print_test_rtx (os, test);
-      printf (", %d)", test.u.opno);
+      fprintf (f, "XINT (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ", %d)", test.u.opno);
       break;
 
     case rtx_test::REGNO_FIELD:
-      printf ("REGNO (");
-      print_test_rtx (os, test);
-      printf (")");
+      fprintf (f, "REGNO (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ")");
       break;
 
     case rtx_test::SUBREG_FIELD:
-      printf ("SUBREG_BYTE (");
-      print_test_rtx (os, test);
-      printf (")");
+      fprintf (f, "SUBREG_BYTE (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ")");
       break;
 
     case rtx_test::WIDE_INT_FIELD:
-      printf ("XWINT (");
-      print_test_rtx (os, test);
-      printf (", %d)", test.u.opno);
+      fprintf (f, "XWINT (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ", %d)", test.u.opno);
       break;
 
     case rtx_test::PATTERN:
       {
 	pattern_routine *routine = test.u.pattern->routine;
-	printf ("pattern%d (", routine->pattern_id);
+	fprintf (f, "pattern%d (", routine->pattern_id);
 	const char *sep = "";
 	if (test.pos)
 	  {
-	    print_test_rtx (os, test);
+	    print_test_rtx (f, os, test);
 	    sep = ", ";
 	  }
 	if (routine->insn_p)
 	  {
-	    printf ("%sinsn", sep);
+	    fprintf (f, "%sinsn", sep);
 	    sep = ", ";
 	  }
 	if (routine->pnum_clobbers_p)
 	  {
-	    printf ("%spnum_clobbers", sep);
+	    fprintf (f, "%spnum_clobbers", sep);
 	    sep = ", ";
 	  }
 	for (unsigned int i = 0; i < test.u.pattern->params.length (); ++i)
 	  {
-	    fputs (sep, stdout);
-	    print_parameter_value (test.u.pattern->params[i]);
+	    fprintf (f, "%s\n", sep);
+	    print_parameter_value (f, test.u.pattern->params[i]);
 	    sep = ", ";
 	  }
-	printf (")");
+	fprintf (f, ")");
 	break;
       }
 
@@ -4674,10 +4676,11 @@ print_nonbool_test (output_state *os, const rtx_test &test)
    decision performs TEST.  Print the C code for the label.  */
 
 static void
-print_label_value (const rtx_test &test, bool is_param, uint64_t value)
+print_label_value (FILE *f, const rtx_test &test, bool is_param,
+		   uint64_t value)
 {
-  print_parameter_value (parameter (transition_parameter_type (test.kind),
-				    is_param, value));
+  print_parameter_value (f, parameter (transition_parameter_type (test.kind),
+				       is_param, value));
 }
 
 /* If IS_PARAM, print code to compare TEST with the C variable i<VALUE+1>.
@@ -4685,7 +4688,7 @@ print_label_value (const rtx_test &test, bool is_param, uint64_t value)
    Test for inequality if INVERT_P, otherwise test for equality.  */
 
 static void
-print_test (output_state *os, const rtx_test &test, bool is_param,
+print_test (FILE *f, output_state *os, const rtx_test &test, bool is_param,
 	    uint64_t value, bool invert_p)
 {
   switch (test.kind)
@@ -4698,71 +4701,71 @@ print_test (output_state *os, const rtx_test &test, bool is_param,
     case rtx_test::INT_FIELD:
     case rtx_test::WIDE_INT_FIELD:
     case rtx_test::PATTERN:
-      print_nonbool_test (os, test);
-      printf (" %s ", invert_p ? "!=" : "==");
-      print_label_value (test, is_param, value);
+      print_nonbool_test (f, os, test);
+      fprintf (f, " %s ", invert_p ? "!=" : "==");
+      print_label_value (f, test, is_param, value);
       break;
 
     case rtx_test::SUBREG_FIELD:
-      printf ("%s (", invert_p ? "maybe_ne" : "known_eq");
-      print_nonbool_test (os, test);
-      printf (", ");
-      print_label_value (test, is_param, value);
-      printf (")");
+      fprintf (f, "%s (", invert_p ? "maybe_ne" : "known_eq");
+      print_nonbool_test (f, os, test);
+      fprintf (f, ", ");
+      print_label_value (f, test, is_param, value);
+      fprintf (f, ")");
       break;
 
     case rtx_test::SAVED_CONST_INT:
       gcc_assert (!is_param && value == 1);
-      print_test_rtx (os, test);
-      printf (" %s const_int_rtx[MAX_SAVED_CONST_INT + ",
-	      invert_p ? "!=" : "==");
-      print_parameter_value (parameter (parameter::INT,
-					test.u.integer.is_param,
-					test.u.integer.value));
-      printf ("]");
+      print_test_rtx (f, os, test);
+      fprintf (f, " %s const_int_rtx[MAX_SAVED_CONST_INT + ",
+	       invert_p ? "!=" : "==");
+      print_parameter_value (f, parameter (parameter::INT,
+					   test.u.integer.is_param,
+					   test.u.integer.value));
+      fprintf (f, "]");
       break;
 
     case rtx_test::PEEP2_COUNT:
       gcc_assert (!is_param && value == 1);
-      printf ("peep2_current_count %s %d", invert_p ? "<" : ">=",
-	      test.u.min_len);
+      fprintf (f, "peep2_current_count %s %d", invert_p ? "<" : ">=",
+	       test.u.min_len);
       break;
 
     case rtx_test::VECLEN_GE:
       gcc_assert (!is_param && value == 1);
-      printf ("XVECLEN (");
-      print_test_rtx (os, test);
-      printf (", 0) %s %d", invert_p ? "<" : ">=", test.u.min_len);
+      fprintf (f, "XVECLEN (");
+      print_test_rtx (f, os, test);
+      fprintf (f, ", 0) %s %d", invert_p ? "<" : ">=", test.u.min_len);
       break;
 
     case rtx_test::PREDICATE:
       gcc_assert (!is_param && value == 1);
-      printf ("%s%s (", invert_p ? "!" : "", test.u.predicate.data->name);
-      print_test_rtx (os, test);
-      printf (", ");
-      print_parameter_value (parameter (parameter::MODE,
-					test.u.predicate.mode_is_param,
-					test.u.predicate.mode));
-      printf (")");
+      fprintf (f, "%s%s (", invert_p ? "!" : "", test.u.predicate.data->name);
+      print_test_rtx (f, os, test);
+      fprintf (f, ", ");
+      print_parameter_value (f, parameter (parameter::MODE,
+					   test.u.predicate.mode_is_param,
+					   test.u.predicate.mode));
+      fprintf (f, ")");
       break;
 
     case rtx_test::DUPLICATE:
       gcc_assert (!is_param && value == 1);
-      printf ("%srtx_equal_p (", invert_p ? "!" : "");
-      print_test_rtx (os, test);
-      printf (", operands[%d])", test.u.opno);
+      fprintf (f, "%srtx_equal_p (", invert_p ? "!" : "");
+      print_test_rtx (f, os, test);
+      fprintf (f, ", operands[%d])", test.u.opno);
       break;
 
     case rtx_test::HAVE_NUM_CLOBBERS:
       gcc_assert (!is_param && value == 1);
-      printf ("pnum_clobbers %s NULL", invert_p ? "==" : "!=");
+      fprintf (f, "pnum_clobbers %s NULL", invert_p ? "==" : "!=");
       break;
 
     case rtx_test::C_TEST:
       gcc_assert (!is_param && value == 1);
       if (invert_p)
-	printf ("!");
-      rtx_reader_ptr->print_c_condition (test.u.string);
+	fprintf (f, "!");
+      rtx_reader_ptr->print_c_condition (f, test.u.string);
       break;
 
     case rtx_test::ACCEPT:
@@ -4771,7 +4774,7 @@ print_test (output_state *os, const rtx_test &test, bool is_param,
     }
 }
 
-static exit_state print_decision (output_state *, decision *,
+static exit_state print_decision (FILE *f, output_state *, decision *,
 				  unsigned int, bool);
 
 /* Print code to perform S, indent each line by INDENT spaces.
@@ -4779,14 +4782,15 @@ static exit_state print_decision (output_state *, decision *,
    if the state fails then the entire routine fails.  */
 
 static exit_state
-print_state (output_state *os, state *s, unsigned int indent, bool is_final)
+print_state (FILE *f, output_state *os, state *s, unsigned int indent,
+	     bool is_final)
 {
   exit_state es = ES_FALLTHROUGH;
   for (decision *d = s->first; d; d = d->next)
-    es = print_decision (os, d, indent, is_final && !d->next);
+    es = print_decision (f, os, d, indent, is_final && !d->next);
   if (es != ES_RETURNED && is_final)
     {
-      printf_indent (indent, "return %s;\n", get_failure_return (os->type));
+      printf_indent (f, indent, "return %s;\n", get_failure_return (os->type));
       es = ES_RETURNED;
     }
   return es;
@@ -4797,7 +4801,7 @@ print_state (output_state *os, state *s, unsigned int indent, bool is_final)
    match.  */
 
 static const char *
-print_subroutine_call (const acceptance_type &acceptance)
+print_subroutine_call (FILE *f, const acceptance_type &acceptance)
 {
   switch (acceptance.type)
     {
@@ -4805,17 +4809,17 @@ print_subroutine_call (const acceptance_type &acceptance)
       gcc_unreachable ();
 
     case RECOG:
-      printf ("recog_%d (x1, insn, pnum_clobbers)",
-	      acceptance.u.subroutine_id);
+      fprintf (f, "recog_%d (x1, insn, pnum_clobbers)",
+	       acceptance.u.subroutine_id);
       return ">= 0";
 
     case SPLIT:
-      printf ("split_%d (x1, insn)", acceptance.u.subroutine_id);
+      fprintf (f, "split_%d (x1, insn)", acceptance.u.subroutine_id);
       return "!= NULL_RTX";
 
     case PEEPHOLE2:
-      printf ("peephole2_%d (x1, insn, pmatch_len_)",
-	      acceptance.u.subroutine_id);
+      fprintf (f, "peephole2_%d (x1, insn, pmatch_len_)",
+	       acceptance.u.subroutine_id);
       return "!= NULL_RTX";
     }
   gcc_unreachable ();
@@ -4825,63 +4829,65 @@ print_subroutine_call (const acceptance_type &acceptance)
    INDENT and IS_FINAL are as for print_state.  */
 
 static exit_state
-print_acceptance (const acceptance_type &acceptance, unsigned int indent,
-		  bool is_final)
+print_acceptance (FILE *f, const acceptance_type &acceptance,
+		  unsigned int indent, bool is_final)
 {
   if (acceptance.partial_p)
     {
       /* Defer the rest of the match to a subroutine.  */
       if (is_final)
 	{
-	  printf_indent (indent, "return ");
-	  print_subroutine_call (acceptance);
-	  printf (";\n");
+	  printf_indent (f, indent, "return ");
+	  print_subroutine_call (f, acceptance);
+	  fprintf (f, ";\n");
 	  return ES_RETURNED;
 	}
       else
 	{
-	  printf_indent (indent, "res = ");
-	  const char *res_test = print_subroutine_call (acceptance);
-	  printf (";\n");
-	  printf_indent (indent, "if (res %s)\n", res_test);
-	  printf_indent (indent + 2, "return res;\n");
+	  printf_indent (f, indent, "res = ");
+	  const char *res_test = print_subroutine_call (f, acceptance);
+	  fprintf (f, ";\n");
+	  printf_indent (f, indent, "if (res %s)\n", res_test);
+	  printf_indent (f, indent + 2, "return res;\n");
 	  return ES_FALLTHROUGH;
 	}
     }
   switch (acceptance.type)
     {
     case SUBPATTERN:
-      printf_indent (indent, "return %d;\n", acceptance.u.full.code);
+      printf_indent (f, indent, "return %d;\n", acceptance.u.full.code);
       return ES_RETURNED;
 
     case RECOG:
       if (acceptance.u.full.u.num_clobbers != 0)
-	printf_indent (indent, "*pnum_clobbers = %d;\n",
+	printf_indent (f, indent, "*pnum_clobbers = %d;\n",
 		       acceptance.u.full.u.num_clobbers);
-      printf_indent (indent, "return %d; /* %s */\n", acceptance.u.full.code,
+      printf_indent (f, indent, "return %d; /* %s */\n", acceptance.u.full.code,
 		     get_insn_name (acceptance.u.full.code));
       return ES_RETURNED;
 
     case SPLIT:
-      printf_indent (indent, "return gen_split_%d (insn, operands);\n",
+      printf_indent (f, indent, "return gen_split_%d (insn, operands);\n",
 		     acceptance.u.full.code);
       return ES_RETURNED;
 
     case PEEPHOLE2:
-      printf_indent (indent, "*pmatch_len_ = %d;\n",
+      printf_indent (f, indent, "*pmatch_len_ = %d;\n",
 		     acceptance.u.full.u.match_len);
       if (is_final)
 	{
-	  printf_indent (indent, "return gen_peephole2_%d (insn, operands);\n",
+	  printf_indent (f, indent,
+			 "return gen_peephole2_%d (insn, operands);\n",
 			 acceptance.u.full.code);
 	  return ES_RETURNED;
 	}
       else
 	{
-	  printf_indent (indent, "res = gen_peephole2_%d (insn, operands);\n",
+	  printf_indent (f,
+			 indent, "res = gen_peephole2_%d (insn, operands);\n",
 			 acceptance.u.full.code);
-	  printf_indent (indent, "if (res != NULL_RTX)\n");
-	  printf_indent (indent + 2, "return res;\n");
+	  printf_indent (f, indent, "if (res != NULL_RTX)\n");
+	  printf_indent (f, indent + 2, "return res;\n");
 	  return ES_FALLTHROUGH;
 	}
     }
@@ -4891,7 +4897,7 @@ print_acceptance (const acceptance_type &acceptance, unsigned int indent,
 /* Print code to perform D.  INDENT and IS_FINAL are as for print_state.  */
 
 static exit_state
-print_decision (output_state *os, decision *d, unsigned int indent,
+print_decision (FILE *f, output_state *os, decision *d, unsigned int indent,
 		bool is_final)
 {
   uint64_t label;
@@ -4900,7 +4906,7 @@ print_decision (output_state *os, decision *d, unsigned int indent,
   /* Make sure the rtx under test is available either in operands[] or
      in an xN variable.  */
   if (d->test.pos && d->test.pos_operand < 0)
-    change_state (os, d->test.pos, indent);
+    change_state (f, os, d->test.pos, indent);
 
   /* Look for cases where a pattern routine P1 calls another pattern routine
      P2 and where P1 returns X + BASE whenever P2 returns X.  If IS_FINAL
@@ -4924,32 +4930,32 @@ print_decision (output_state *os, decision *d, unsigned int indent,
     {
       if (is_final && base == 0)
 	{
-	  printf_indent (indent, "return ");
-	  print_nonbool_test (os, d->test);
-	  printf ("; /* [-1, %d] */\n", count - 1);
+	  printf_indent (f, indent, "return ");
+	  print_nonbool_test (f, os, d->test);
+	  fprintf (f, "; /* [-1, %d] */\n", count - 1);
 	  return ES_RETURNED;
 	}
       else
 	{
-	  printf_indent (indent, "res = ");
-	  print_nonbool_test (os, d->test);
-	  printf (";\n");
-	  printf_indent (indent, "if (res >= 0)\n");
-	  printf_indent (indent + 2, "return res");
+	  printf_indent (f, indent, "res = ");
+	  print_nonbool_test (f, os, d->test);
+	  fprintf (f, ";\n");
+	  printf_indent (f, indent, "if (res >= 0)\n");
+	  printf_indent (f, indent + 2, "return res");
 	  if (base != 0)
-	    printf (" + %d", base);
-	  printf ("; /* [%d, %d] */\n", base, base + count - 1);
+	    fprintf (f, " + %d", base);
+	  fprintf (f, "; /* [%d, %d] */\n", base, base + count - 1);
 	  return ES_FALLTHROUGH;
 	}
     }
   else if (d->test.kind == rtx_test::ACCEPT)
-    return print_acceptance (d->test.u.acceptance, indent, is_final);
+    return print_acceptance (f, d->test.u.acceptance, indent, is_final);
   else if (d->test.kind == rtx_test::SET_OP)
     {
-      printf_indent (indent, "operands[%d] = ", d->test.u.opno);
-      print_test_rtx (os, d->test);
-      printf (";\n");
-      return print_state (os, d->singleton ()->to, indent, is_final);
+      printf_indent (f, indent, "operands[%d] = ", d->test.u.opno);
+      print_test_rtx (f, os, d->test);
+      fprintf (f, ";\n");
+      return print_state (f, os, d->singleton ()->to, indent, is_final);
     }
   /* Handle decisions with a single transition and a single transition
      label.  */
@@ -4957,13 +4963,13 @@ print_decision (output_state *os, decision *d, unsigned int indent,
     {
       transition *trans = d->singleton ();
       if (mark_optional_transitions_p && trans->optional)
-	printf_indent (indent, "/* OPTIONAL IF */\n");
+	printf_indent (f, indent, "/* OPTIONAL IF */\n");
 
       /* Print the condition associated with TRANS.  Invert it if IS_FINAL,
 	 so that we return immediately on failure and fall through on
 	 success.  */
-      printf_indent (indent, "if (");
-      print_test (os, d->test, trans->is_param, label, is_final);
+      printf_indent (f, indent, "if (");
+      print_test (f, os, d->test, trans->is_param, label, is_final);
 
       /* Look for following states that would be handled by this code
 	 on recursion.  If they don't need any preparatory statements,
@@ -4979,13 +4985,13 @@ print_decision (output_state *os, decision *d, unsigned int indent,
 	      || !test_position_available_p (os, d->test))
 	    break;
 	  trans = d->first;
-	  printf ("\n");
+	  fprintf (f, "\n");
 	  if (mark_optional_transitions_p && trans->optional)
-	    printf_indent (indent + 4, "/* OPTIONAL IF */\n");
-	  printf_indent (indent + 4, "%s ", is_final ? "||" : "&&");
-	  print_test (os, d->test, trans->is_param, label, is_final);
+	    printf_indent (f, indent + 4, "/* OPTIONAL IF */\n");
+	  printf_indent (f, indent + 4, "%s ", is_final ? "||" : "&&");
+	  print_test (f, os, d->test, trans->is_param, label, is_final);
 	}
-      printf (")\n");
+      fprintf (f, ")\n");
 
       /* Print the conditional code with INDENT + 2 and the fallthrough
 	 code with indent INDENT.  */
@@ -4994,9 +5000,9 @@ print_decision (output_state *os, decision *d, unsigned int indent,
 	{
 	  /* We inverted the condition above, so return failure in the
 	     "if" body and fall through to the target of the transition.  */
-	  printf_indent (indent + 2, "return %s;\n",
+	  printf_indent (f, indent + 2, "return %s;\n",
 			 get_failure_return (os->type));
-	  return print_state (os, to, indent, is_final);
+	  return print_state (f, os, to, indent, is_final);
 	}
       else if (to->singleton ()
 	       && to->first->test.kind == rtx_test::ACCEPT
@@ -5004,7 +5010,7 @@ print_decision (output_state *os, decision *d, unsigned int indent,
 	{
 	  /* The target of the transition is a simple "return" statement.
 	     It doesn't need any braces and doesn't fall through.  */
-	  if (print_acceptance (to->first->test.u.acceptance,
+	  if (print_acceptance (f, to->first->test.u.acceptance,
 				indent + 2, true) != ES_RETURNED)
 	    gcc_unreachable ();
 	  return ES_FALLTHROUGH;
@@ -5018,9 +5024,9 @@ print_decision (output_state *os, decision *d, unsigned int indent,
 	  auto_vec <bool, 32> old_seen;
 	  old_seen.safe_splice (os->seen_vars);
 
-	  printf_indent (indent + 2, "{\n");
-	  print_state (os, trans->to, indent + 4, is_final);
-	  printf_indent (indent + 2, "}\n");
+	  printf_indent (f, indent + 2, "{\n");
+	  print_state (f, os, trans->to, indent + 4, is_final);
+	  printf_indent (f, indent + 2, "}\n");
 
 	  os->seen_vars.truncate (0);
 	  os->seen_vars.splice (old_seen);
@@ -5030,48 +5036,48 @@ print_decision (output_state *os, decision *d, unsigned int indent,
   else
     {
       /* Output the decision as a switch statement.  */
-      printf_indent (indent, "switch (");
-      print_nonbool_test (os, d->test);
-      printf (")\n");
+      printf_indent (f, indent, "switch (");
+      print_nonbool_test (f, os, d->test);
+      fprintf (f, ")\n");
 
       /* Each case statement starts with the same set of valid variables.
 	 These are also the only variables will be valid on fallthrough.  */
       auto_vec <bool, 32> old_seen;
       old_seen.safe_splice (os->seen_vars);
 
-      printf_indent (indent + 2, "{\n");
+      printf_indent (f, indent + 2, "{\n");
       for (transition *trans = d->first; trans; trans = trans->next)
 	{
 	  gcc_assert (!trans->is_param);
 	  if (mark_optional_transitions_p && trans->optional)
-	    printf_indent (indent + 2, "/* OPTIONAL CASE */\n");
+	    printf_indent (f, indent + 2, "/* OPTIONAL CASE */\n");
 	  for (int_set::iterator j = trans->labels.begin ();
 	       j != trans->labels.end (); ++j)
 	    {
-	      printf_indent (indent + 2, "case ");
-	      print_label_value (d->test, trans->is_param, *j);
-	      printf (":\n");
+	      printf_indent (f, indent + 2, "case ");
+	      print_label_value (f, d->test, trans->is_param, *j);
+	      fprintf (f, ":\n");
 	    }
-	  if (print_state (os, trans->to, indent + 4, is_final))
+	  if (print_state (f, os, trans->to, indent + 4, is_final))
 	    {
 	      /* The state can fall through.  Add an explicit break.  */
 	      gcc_assert (!is_final);
-	      printf_indent (indent + 4, "break;\n");
+	      printf_indent (f, indent + 4, "break;\n");
 	    }
-	  printf ("\n");
+	  fprintf (f, "\n");
 
 	  /* Restore the original set of valid variables.  */
 	  os->seen_vars.truncate (0);
 	  os->seen_vars.splice (old_seen);
 	}
       /* Add a default case.  */
-      printf_indent (indent + 2, "default:\n");
+      printf_indent (f, indent + 2, "default:\n");
       if (is_final)
-	printf_indent (indent + 4, "return %s;\n",
+	printf_indent (f, indent + 4, "return %s;\n",
 		       get_failure_return (os->type));
       else
-	printf_indent (indent + 4, "break;\n");
-      printf_indent (indent + 2, "}\n");
+	printf_indent (f, indent + 4, "break;\n");
+      printf_indent (f, indent + 2, "}\n");
       return is_final ? ES_RETURNED : ES_FALLTHROUGH;
     }
 }
@@ -5114,10 +5120,10 @@ assign_position_vars (output_state *os, state *s)
    only ROOT's variable has a valid value.  */
 
 static void
-print_subroutine_start (output_state *os, state *s, position *root)
+print_subroutine_start (FILE *f, output_state *os, state *s, position *root)
 {
-  printf ("{\n  rtx * const operands ATTRIBUTE_UNUSED"
-	  " = &recog_data.operand[0];\n");
+  fprintf (f, "{\n  rtx * const operands ATTRIBUTE_UNUSED"
+	   " = &recog_data.operand[0];\n");
   os->var_to_id.truncate (0);
   os->seen_vars.truncate (0);
   if (root)
@@ -5140,9 +5146,9 @@ print_subroutine_start (output_state *os, state *s, position *root)
 	{
 	  for (unsigned int i = 2; i < num_vars; ++i)
 	    /* Print 8 rtx variables to a line.  */
-	    printf ("%s x%d",
+	    fprintf (f, "%s x%d",
 		    i == 2 ? "  rtx" : (i - 2) % 8 == 0 ? ";\n  rtx" : ",", i);
-	  printf (";\n");
+	  fprintf (f, ";\n");
 	}
 
       /* Say that x1 is valid and the rest aren't.  */
@@ -5150,22 +5156,26 @@ print_subroutine_start (output_state *os, state *s, position *root)
       os->seen_vars[1] = true;
     }
   if (os->type == SUBPATTERN || os->type == RECOG)
-    printf ("  int res ATTRIBUTE_UNUSED;\n");
+    fprintf (f, "  int res ATTRIBUTE_UNUSED;\n");
   else
-    printf ("  rtx_insn *res ATTRIBUTE_UNUSED;\n");
+    fprintf (f, "  rtx_insn *res ATTRIBUTE_UNUSED;\n");
 }
 
 /* Output the definition of pattern routine ROUTINE.  */
 
 static void
-print_pattern (output_state *os, pattern_routine *routine)
+print_pattern (FILE *f, output_state *os, pattern_routine *routine,
+	       bool in_header = false)
 {
-  printf ("\nstatic int\npattern%d (", routine->pattern_id);
+  if (!in_header)
+    fprintf (f, "\nint\npattern%d (", routine->pattern_id);
+  else
+    fprintf (f, "\nextern int\npattern%d (", routine->pattern_id);
   const char *sep = "";
   /* Add the top-level rtx parameter, if any.  */
   if (routine->pos)
     {
-      printf ("%srtx x1", sep);
+      fprintf (f, "%srtx x1", sep);
       sep = ", ";
     }
   /* Add the optional parameters.  */
@@ -5173,26 +5183,34 @@ print_pattern (output_state *os, pattern_routine *routine)
     {
       /* We can't easily tell whether a C condition actually reads INSN,
 	 so add an ATTRIBUTE_UNUSED just in case.  */
-      printf ("%srtx_insn *insn ATTRIBUTE_UNUSED", sep);
+      fprintf (f, "%srtx_insn *insn ATTRIBUTE_UNUSED", sep);
       sep = ", ";
     }
   if (routine->pnum_clobbers_p)
     {
-      printf ("%sint *pnum_clobbers", sep);
+      fprintf (f, "%sint *pnum_clobbers", sep);
       sep = ", ";
     }
   /* Add the "i" parameters.  */
   for (unsigned int i = 0; i < routine->param_types.length (); ++i)
     {
-      printf ("%s%s i%d", sep,
-	      parameter_type_string (routine->param_types[i]), i + 1);
+      fprintf (f, "%s%s i%d", sep,
+	       parameter_type_string (routine->param_types[i]), i + 1);
       sep = ", ";
     }
-  printf (")\n");
+
+  if (!in_header)
+    fprintf (f, ")\n");
+  else
+    {
+      fprintf (f, ");\n");
+      return;
+    }
+
   os->type = SUBPATTERN;
-  print_subroutine_start (os, routine->s, routine->pos);
-  print_state (os, routine->s, 2, true);
-  printf ("}\n");
+  print_subroutine_start (f, os, routine->s, routine->pos);
+  print_state (f, os, routine->s, 2, true);
+  fprintf (f, "}\n");
 }
 
 /* Output a routine of type TYPE that implements S.  PROC_ID is the
@@ -5200,9 +5218,26 @@ print_pattern (output_state *os, pattern_routine *routine)
    routine.  */
 
 static void
-print_subroutine (output_state *os, state *s, int proc_id)
+print_subroutine (FILE *f, output_state *os, state *s, int proc_id,
+		  bool in_header = false)
 {
-  printf ("\n");
+  fprintf (f, "\n");
+  const char *specifier_ext = "extern";
+  const char *specifier_default = "";
+  const char *specifier;
+  if (!in_header)
+    specifier = specifier_default;
+  else
+    specifier = specifier_ext;
+
+  const char *end;
+  const char *end_default = "";
+  const char *end_header = ";";
+  if (!in_header)
+    end = end_default;
+  else
+    end = end_header;
+
   switch (os->type)
     {
     case SUBPATTERN:
@@ -5210,46 +5245,54 @@ print_subroutine (output_state *os, state *s, int proc_id)
 
     case RECOG:
       if (proc_id)
-	printf ("static int\nrecog_%d", proc_id);
+	fprintf (f, "%s int\nrecog_%d", specifier, proc_id);
       else
-	printf ("int\nrecog");
-      printf (" (rtx x1 ATTRIBUTE_UNUSED,\n"
-	      "\trtx_insn *insn ATTRIBUTE_UNUSED,\n"
-	      "\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n");
+	fprintf (f, "%s int\nrecog", specifier);
+      fprintf (f, " (rtx x1 ATTRIBUTE_UNUSED,\n"
+	       "\trtx_insn *insn ATTRIBUTE_UNUSED,\n"
+	       "\tint *pnum_clobbers ATTRIBUTE_UNUSED)%s\n", end);
       break;
 
     case SPLIT:
       if (proc_id)
-	printf ("static rtx_insn *\nsplit_%d", proc_id);
+	fprintf (f, "%s rtx_insn *\nsplit_%d", specifier, proc_id);
       else
-	printf ("rtx_insn *\nsplit_insns");
-      printf (" (rtx x1 ATTRIBUTE_UNUSED, rtx_insn *insn ATTRIBUTE_UNUSED)\n");
+	fprintf (f, "%s rtx_insn *\nsplit_insns", specifier);
+      fprintf (f, " (rtx x1 ATTRIBUTE_UNUSED, "
+		  "rtx_insn *insn ATTRIBUTE_UNUSED)%s\n", end);
       break;
 
     case PEEPHOLE2:
       if (proc_id)
-	printf ("static rtx_insn *\npeephole2_%d", proc_id);
+	fprintf (f, "%s rtx_insn *\npeephole2_%d", specifier, proc_id);
       else
-	printf ("rtx_insn *\npeephole2_insns");
-      printf (" (rtx x1 ATTRIBUTE_UNUSED,\n"
-	      "\trtx_insn *insn ATTRIBUTE_UNUSED,\n"
-	      "\tint *pmatch_len_ ATTRIBUTE_UNUSED)\n");
+	fprintf (f, "%s rtx_insn *\npeephole2_insns", specifier);
+      fprintf (f, " (rtx x1 ATTRIBUTE_UNUSED,\n"
+	       "\trtx_insn *insn ATTRIBUTE_UNUSED,\n"
+	       "\tint *pmatch_len_ ATTRIBUTE_UNUSED)%s\n", end);
       break;
     }
-  print_subroutine_start (os, s, &root_pos);
+
+  if (in_header)
+    return;
+
+  print_subroutine_start (f, os, s, &root_pos);
   if (proc_id == 0)
     {
-      printf ("  recog_data.insn = NULL;\n");
+      fprintf (f, "  recog_data.insn = NULL;\n");
     }
-  print_state (os, s, 2, true);
-  printf ("}\n");
+  print_state (f, os, s, 2, true);
+  fprintf (f, "}\n");
 }
 
 /* Print out a routine of type TYPE that performs ROOT.  */
 
 static void
-print_subroutine_group (output_state *os, routine_type type, state *root)
+print_subroutine_group (vec<FILE *> &vec, FILE *header, output_state *os,
+			routine_type type, state *root)
 {
+  FILE *f;
+  unsigned idx;
   os->type = type;
   if (use_subroutines_p)
     {
@@ -5261,11 +5304,20 @@ print_subroutine_group (output_state *os, routine_type type, state *root)
       /* Output the subroutines (but not ROOT itself).  */
       unsigned int i;
       state *s;
+
+      FILE *f = header;
       FOR_EACH_VEC_ELT (subroutines, i, s)
-	print_subroutine (os, s, i + 1);
+	print_subroutine (header, os, s, i + 1, true);
+
+      FOR_EACH_VEC_ELT (subroutines, i, s)
+	{
+	  f = choose_output (vec, idx);
+	  print_subroutine (f, os, s, i + 1);
+	}
     }
   /* Output the main routine.  */
-  print_subroutine (os, root, 0);
+  f = choose_output (vec, idx);
+  print_subroutine (f, os, root, 0);
 }
 
 /* Return the rtx pattern for the list of rtxes in a define_peephole2.  */
@@ -5336,6 +5388,29 @@ remove_clobbers (acceptance_type *acceptance_ptr, rtx *pattern_ptr)
   return true;
 }
 
+auto_vec<FILE *, 10> output_files;
+char header_name[255];
+FILE *header = NULL;
+
+static bool
+handle_arg (const char *arg)
+{
+  printf ("%s\n", arg);
+  if (arg[1] == 'O')
+    {
+      FILE *file = fopen (&arg[2], "w");
+      output_files.safe_push (file);
+      return true;
+    }
+  if (arg[1] == 'H')
+    {
+      snprintf (header_name, 255, "%s", &arg[2]);
+      header = fopen (header_name, "w");
+      return true;
+    }
+  return false;
+}
+
 int
 main (int argc, const char **argv)
 {
@@ -5343,10 +5418,17 @@ main (int argc, const char **argv)
 
   progname = "genrecog";
 
-  if (!init_rtx_reader_args (argc, argv))
+  if (!init_rtx_reader_args_cb (argc, argv, handle_arg))
     return (FATAL_EXIT_CODE);
 
-  write_header ();
+  if (output_files.is_empty ())
+    output_files.safe_push (stdout);
+
+  for (auto f : output_files)
+    write_header (f, header_name);
+
+  FILE *file = NULL;
+  unsigned file_idx;
 
   /* Read the machine description.  */
 
@@ -5354,6 +5436,7 @@ main (int argc, const char **argv)
   while (read_md_rtx (&info))
     {
       rtx def = info.def;
+      file = choose_output (output_files, file_idx);
 
       acceptance_type acceptance;
       acceptance.partial_p = false;
@@ -5387,8 +5470,8 @@ main (int argc, const char **argv)
 
 	  /* Declare the gen_split routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.cc.  */
-	  printf ("extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
-		  info.index);
+	  fprintf (header, "extern rtx_insn *gen_split_%d "
+		   "(rtx_insn *, rtx *);\n", info.index);
 	  break;
 
 	case DEFINE_PEEPHOLE2:
@@ -5399,8 +5482,8 @@ main (int argc, const char **argv)
 
 	  /* Declare the gen_peephole2 routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.cc.  */
-	  printf ("extern rtx_insn *gen_peephole2_%d (rtx_insn *, rtx *);\n",
-		  info.index);
+	  fprintf (header, "extern rtx_insn *gen_peephole2_%d "
+		   "(rtx_insn *, rtx *);\n", info.index);
 	  break;
 
 	default:
@@ -5411,7 +5494,8 @@ main (int argc, const char **argv)
   if (have_error)
     return FATAL_EXIT_CODE;
 
-  puts ("\n\n");
+  for (auto f : output_files)
+    fprintf (f, "%s", "\n\n");
 
   /* Optimize each routine in turn.  */
   optimize_subroutine_group ("recog", &insn_root);
@@ -5433,15 +5517,27 @@ main (int argc, const char **argv)
       /* Print out the routines that we just created.  */
       unsigned int i;
       pattern_routine *routine;
+
       FOR_EACH_VEC_ELT (patterns, i, routine)
-	print_pattern (&os, routine);
+	print_pattern (header, &os, routine, true);
+
+      FOR_EACH_VEC_ELT (patterns, i, routine)
+	{
+	  file = choose_output (output_files, file_idx);
+	  print_pattern (file, &os, routine);
+	}
     }
 
   /* Print out the matching routines.  */
-  print_subroutine_group (&os, RECOG, &insn_root);
-  print_subroutine_group (&os, SPLIT, &split_root);
-  print_subroutine_group (&os, PEEPHOLE2, &peephole2_root);
+  print_subroutine_group (output_files, header, &os, RECOG, &insn_root);
+  print_subroutine_group (output_files, header, &os, SPLIT, &split_root);
+  print_subroutine_group (output_files, header, &os, PEEPHOLE2, &peephole2_root);
 
-  fflush (stdout);
-  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  fclose (header);
+
+  int ret = SUCCESS_EXIT_CODE;
+  for (FILE *f : output_files)
+    if (fclose (f) != 0)
+      ret = FATAL_EXIT_CODE;
+  return ret;
 }

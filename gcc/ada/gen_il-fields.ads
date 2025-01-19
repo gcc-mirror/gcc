@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2020-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,7 +65,6 @@ package Gen_IL.Fields is
       Activation_Chain_Entity,
       Acts_As_Spec,
       Actual_Designated_Subtype,
-      Address_Warning_Posted,
       Aggregate_Bounds_Or_Ancestor_Type,
       Aliased_Present,
       All_Others,
@@ -77,6 +76,7 @@ package Gen_IL.Fields is
       Aspect_On_Partial_View,
       Aspect_Rep_Item,
       Aspect_Specifications,
+      Aspect_Subprograms,
       Assignment_OK,
       Attribute_Name,
       At_End_Proc,
@@ -183,6 +183,7 @@ package Gen_IL.Fields is
       Expression_Copy,
       Expressions,
       File_Index,
+      Finally_Statements,
       First_Bit,
       First_Inlined_Subprogram,
       First_Name,
@@ -191,6 +192,7 @@ package Gen_IL.Fields is
       Float_Truncate,
       Formal_Type_Definition,
       Forwards_OK,
+      For_Allocator,
       For_Special_Return_Object,
       From_Aspect_Specification,
       From_At_Mod,
@@ -263,7 +265,6 @@ package Gen_IL.Fields is
       Is_Ignored_Ghost_Pragma,
       Is_Implicit_With,
       Is_In_Discriminant_Check,
-      Is_Inherited_Pragma,
       Is_Initialization_Block,
       Is_Interpolated_String_Literal,
       Is_Known_Guaranteed_ABE,
@@ -801,7 +802,6 @@ package Gen_IL.Fields is
       Is_Wrapper,
       Itype_Printed,
       Kill_Elaboration_Checks,
-      Kill_Range_Checks,
       Known_To_Have_Preelab_Init,
       Last_Aggregate_Assignment,
       Last_Assignment,
@@ -878,6 +878,7 @@ package Gen_IL.Fields is
       Relative_Deadline_Variable,
       Renamed_In_Spec,
       Renamed_Or_Alias, -- Shared among Alias, Renamed_Entity, Renamed_Object
+      Renames_Limited_View,
       Requires_Overriding,
       Return_Applies_To,
       Return_Present,

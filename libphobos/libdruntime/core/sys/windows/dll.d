@@ -32,13 +32,7 @@ extern (C)
 {
     version (Win32)
     {
-        version (CRuntime_DigitalMars)
-        {
-            extern __gshared byte  _tlsstart;
-            extern __gshared byte  _tlsend;
-            extern __gshared void* _tls_callbacks_a;
-        }
-        else version (CRuntime_Microsoft)
+        version (CRuntime_Microsoft)
         {
             extern __gshared byte  _tls_start;
             extern __gshared byte  _tls_end;
@@ -123,19 +117,19 @@ version (Win32)
     //     _NtdllBaseTag           - tag used for RtlAllocateHeap
     //     _LdrpTlsList            - root of the double linked list with TlsList entries
 
-    static __gshared int* pNtdllBaseTag; // remembered for reusage in addTlsData
+    __gshared int* pNtdllBaseTag; // remembered for reusage in addTlsData
 
-    static __gshared ubyte[] jmp_LdrpInitialize = [ 0x33, 0xED, 0xE9 ]; // xor ebp,ebp; jmp _LdrpInitialize
-    static __gshared ubyte[] jmp__LdrpInitialize = [ 0x5D, 0xE9 ]; // pop ebp; jmp __LdrpInitialize
-    static __gshared ubyte[] jmp__LdrpInitialize_xp64 = [ 0x5D, 0x90, 0x90, 0x90, 0x90, 0x90 ]; // pop ebp; nop; nop; nop; nop; nop;
-    static __gshared ubyte[] call_LdrpInitializeThread = [ 0xFF, 0x75, 0x08, 0xE8 ]; // push [ebp+8]; call _LdrpInitializeThread
-    static __gshared ubyte[] call_LdrpAllocateTls = [ 0x00, 0x00, 0xE8 ]; // jne 0xc3; call _LdrpAllocateTls
-    static __gshared ubyte[] call_LdrpAllocateTls_svr03 = [ 0x65, 0xfc, 0x00, 0xE8 ]; // and [ebp+fc], 0; call _LdrpAllocateTls
-    static __gshared ubyte[] jne_LdrpAllocateTls = [ 0x0f, 0x85 ]; // jne body_LdrpAllocateTls
-    static __gshared ubyte[] mov_LdrpNumberOfTlsEntries = [ 0x8B, 0x0D ]; // mov ecx, _LdrpNumberOfTlsEntries
-    static __gshared ubyte[] mov_NtdllBaseTag = [ 0x51, 0x8B, 0x0D ]; // push ecx; mov ecx, _NtdllBaseTag
-    static __gshared ubyte[] mov_NtdllBaseTag_srv03 = [ 0x50, 0xA1 ]; // push eax; mov eax, _NtdllBaseTag
-    static __gshared ubyte[] mov_LdrpTlsList = [ 0x8B, 0x3D ]; // mov edi, _LdrpTlsList
+    __gshared ubyte[] jmp_LdrpInitialize = [ 0x33, 0xED, 0xE9 ]; // xor ebp,ebp; jmp _LdrpInitialize
+    __gshared ubyte[] jmp__LdrpInitialize = [ 0x5D, 0xE9 ]; // pop ebp; jmp __LdrpInitialize
+    __gshared ubyte[] jmp__LdrpInitialize_xp64 = [ 0x5D, 0x90, 0x90, 0x90, 0x90, 0x90 ]; // pop ebp; nop; nop; nop; nop; nop;
+    __gshared ubyte[] call_LdrpInitializeThread = [ 0xFF, 0x75, 0x08, 0xE8 ]; // push [ebp+8]; call _LdrpInitializeThread
+    __gshared ubyte[] call_LdrpAllocateTls = [ 0x00, 0x00, 0xE8 ]; // jne 0xc3; call _LdrpAllocateTls
+    __gshared ubyte[] call_LdrpAllocateTls_svr03 = [ 0x65, 0xfc, 0x00, 0xE8 ]; // and [ebp+fc], 0; call _LdrpAllocateTls
+    __gshared ubyte[] jne_LdrpAllocateTls = [ 0x0f, 0x85 ]; // jne body_LdrpAllocateTls
+    __gshared ubyte[] mov_LdrpNumberOfTlsEntries = [ 0x8B, 0x0D ]; // mov ecx, _LdrpNumberOfTlsEntries
+    __gshared ubyte[] mov_NtdllBaseTag = [ 0x51, 0x8B, 0x0D ]; // push ecx; mov ecx, _NtdllBaseTag
+    __gshared ubyte[] mov_NtdllBaseTag_srv03 = [ 0x50, 0xA1 ]; // push eax; mov eax, _NtdllBaseTag
+    __gshared ubyte[] mov_LdrpTlsList = [ 0x8B, 0x3D ]; // mov edi, _LdrpTlsList
 
     static LdrpTlsListEntry* addTlsListEntry( void** peb, void* tlsstart, void* tlsend, void* tls_callbacks_a, int* tlsindex ) nothrow
     {

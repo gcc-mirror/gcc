@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2181,8 +2181,9 @@ package body Ch4 is
       --  First check for raise expression
 
       if Token = Tok_Raise then
+         Node1 := P_Raise_Expression;
          Expr_Form := EF_Non_Simple;
-         return P_Raise_Expression;
+         return Node1;
       end if;
 
       --  All other cases
@@ -2415,6 +2416,8 @@ package body Ch4 is
             Node1 := P_Term;
          end if;
 
+         Expr_Form := EF_Simple;
+
          --  In the following, we special-case a sequence of concatenations of
          --  string literals, such as "aaa" & "bbb" & ... & "ccc", with nothing
          --  else mixed in. For such a sequence, we return a tree representing
@@ -2530,11 +2533,6 @@ package body Ch4 is
                end;
             end if;
          end;
-
-         --  All done, we clearly do not have name or numeric literal so this
-         --  is a case of a simple expression which is some other possibility.
-
-         Expr_Form := EF_Simple;
       end if;
 
       --  If all extensions are enabled and we have a deep delta aggregate
@@ -2841,6 +2839,30 @@ package body Ch4 is
       Node1 : Node_Id;
       Node2 : Node_Id;
 
+      subtype N_Primary is Node_Kind with Static_Predicate =>
+        N_Primary in N_Aggregate
+                   | N_Allocator
+                   | N_Attribute_Reference
+                   | N_Case_Expression            --  requires single parens
+                   | N_Delta_Aggregate
+                   | N_Direct_Name
+                   | N_Explicit_Dereference
+                   | N_Expression_With_Actions    --  requires single parens
+                   | N_Extension_Aggregate
+                   | N_If_Expression              --  requires single parens
+                   | N_Indexed_Component
+                   | N_Null
+                   | N_Numeric_Or_String_Literal
+                   | N_Qualified_Expression
+                   | N_Quantified_Expression      --  requires single parens
+                   | N_Selected_Component
+                   | N_Slice
+                   | N_Subprogram_Call
+                   | N_Target_Name
+                   | N_Type_Conversion;
+      --  Node kinds that represents a "primary" subexpression, which does not
+      --  require parentheses when used as an operand of a unary operator.
+
    begin
       if Token = Tok_Abs then
          Node1 := New_Op_Node (N_Op_Abs, Token_Ptr);
@@ -2851,6 +2873,13 @@ package body Ch4 is
 
          Scan; -- past ABS
          Set_Right_Opnd (Node1, P_Primary);
+
+         if Style_Check then
+            if Nkind (Right_Opnd (Node1)) in N_Primary then
+               Style.Check_Xtra_Parens_Precedence (Right_Opnd (Node1));
+            end if;
+         end if;
+
          return Node1;
 
       elsif Token = Tok_Not then
@@ -2862,6 +2891,13 @@ package body Ch4 is
 
          Scan; -- past NOT
          Set_Right_Opnd (Node1, P_Primary);
+
+         if Style_Check then
+            if Nkind (Right_Opnd (Node1)) in N_Primary then
+               Style.Check_Xtra_Parens_Precedence (Right_Opnd (Node1));
+            end if;
+         end if;
+
          return Node1;
 
       else
@@ -3083,7 +3119,7 @@ package body Ch4 is
                   return P_Identifier;
                end if;
 
-            --  For [all | some]  indicates a quantified expression
+            --  Quantified expression or iterated component association
 
             when Tok_For =>
                if Token_Is_At_Start_Of_Line then
@@ -3103,9 +3139,18 @@ package body Ch4 is
                           ("quantified expression must be parenthesized",
                            Sloc (Node1));
                      end if;
+
+                  --  If no quantifier keyword, this is an iterated component
+                  --  in an aggregate or an ill-formed quantified expression.
+
                   else
                      Restore_Scan_State (Scan_State);  -- To FOR
                      Node1 := P_Iterated_Component_Association;
+
+                     if not (Lparen and then Token = Tok_Right_Paren) then
+                        Error_Msg
+                          ("construct must be parenthesized", Sloc (Node1));
+                     end if;
                   end if;
 
                   return Node1;
@@ -3919,7 +3964,6 @@ package body Ch4 is
       if Token = Tok_Vertical_Bar then
          Error_Msg_Ada_2012_Feature ("set notation", Token_Ptr);
          Set_Alternatives (N, New_List (Alt));
-         Set_Right_Opnd   (N, Empty);
 
          --  Loop to accumulate alternatives
 
@@ -3933,8 +3977,7 @@ package body Ch4 is
       --  Not set case
 
       else
-         Set_Right_Opnd   (N, Alt);
-         Set_Alternatives (N, No_List);
+         Set_Right_Opnd (N, Alt);
       end if;
    end P_Membership_Test;
 
@@ -3983,12 +4026,17 @@ package body Ch4 is
                  ("quantified expression must be parenthesized!", Result);
             end if;
 
-         else
-            --  If no quantifier keyword, this is an iterated component in
-            --  an aggregate.
+         --  If no quantifier keyword, this is an iterated component in
+         --  an aggregate or an ill-formed quantified expression.
 
+         else
             Restore_Scan_State (Scan_State);
             Result := P_Iterated_Component_Association;
+
+            if not (Lparen and then Token = Tok_Right_Paren) then
+               Error_Msg_N
+                 ("construct must be parenthesized!", Result);
+            end if;
          end if;
 
       --  Declare expression

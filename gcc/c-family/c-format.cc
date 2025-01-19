@@ -1,5 +1,5 @@
 /* Check calls to formatted I/O functions (-Wformat).
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -5579,7 +5578,9 @@ test_type_mismatch_range_labels ()
   richloc.add_range (param, SHOW_RANGE_WITHOUT_CARET, &param_label);
 
   test_diagnostic_context dc;
-  diagnostic_show_locus (&dc, &richloc, DK_ERROR, dc.get_reference_printer ());
+  diagnostic_show_locus (&dc,
+			 dc.m_source_printing,
+			 &richloc, DK_ERROR, dc.get_reference_printer ());
   if (c_dialect_cxx ())
     /* "char*", without a space.  */
     ASSERT_STREQ ("   printf (\"msg: %i\\n\", msg);\n"

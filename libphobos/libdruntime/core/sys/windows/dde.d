@@ -148,7 +148,7 @@ deprecated struct DDEUP {
     @property bool   fAckReq(bool f)   { _bf = cast(ushort) ((_bf & ~0x8000) | (f << 15)); return f; }
 }
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     BOOL DdeSetQualityOfService(HWND, const(SECURITY_QUALITY_OF_SERVICE)*,
       PSECURITY_QUALITY_OF_SERVICE);
     BOOL ImpersonateDdeClientWindow(HWND, HWND);

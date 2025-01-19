@@ -1,5 +1,5 @@
 /* Build executable statement trees.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
    GENERIC tree structures and from there to executable code for a
    target.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -190,8 +189,11 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_DO_CONCURRENT:
+      for (int i = 0; i < LOCALITY_NUM; i++)
+	gfc_free_expr_list (p->ext.concur.locality[i]);
+      gcc_fallthrough ();
     case EXEC_FORALL:
-      gfc_free_forall_iterator (p->ext.forall_iterator);
+      gfc_free_forall_iterator (p->ext.concur.forall_iterator);
       break;
 
     case EXEC_OACC_DECLARE:
@@ -223,6 +225,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OMP_CANCELLATION_POINT:
     case EXEC_OMP_CRITICAL:
     case EXEC_OMP_DEPOBJ:
+    case EXEC_OMP_DISPATCH:
     case EXEC_OMP_DISTRIBUTE:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:

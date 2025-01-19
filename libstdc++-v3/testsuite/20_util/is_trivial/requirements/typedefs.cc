@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // 2010-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2024 Free Software Foundation, Inc.
+// Copyright (C) 2010-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,10 @@
 void test01()
 {
   // Check for required typedefs
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   typedef std::is_trivial<int>                test_type;
+#pragma GCC diagnostic pop
   typedef test_type::value_type               value_type;
   typedef test_type::type                     type;
   typedef test_type::type::value_type         type_value_type;

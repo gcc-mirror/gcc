@@ -1,5 +1,5 @@
 @c README.texi describes the pim libraries.
-@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2025 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.

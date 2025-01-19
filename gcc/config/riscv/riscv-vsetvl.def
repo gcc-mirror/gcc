@@ -1,5 +1,5 @@
 /* VSETVL pass def for RISC-V 'V' Extension for GNU compiler.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 This file is part of GCC.
@@ -53,8 +53,8 @@ DEF_SEW_LMUL_RULE (sew_lmul, ge_sew, sew_lmul,
 		   sew_ge_and_prev_sew_le_next_max_sew_p, nop)
 DEF_SEW_LMUL_RULE (
   sew_lmul, ratio_and_ge_sew, sew_lmul,
-  sew_ge_and_prev_sew_le_next_max_sew_and_next_ratio_valid_for_prev_sew_p,
-  sew_ge_and_prev_sew_le_next_max_sew_and_next_ratio_valid_for_prev_sew_p, nop)
+  sew_ge_and_prev_sew_le_next_max_sew_and_ratio_eq_p,
+  sew_ge_and_prev_sew_le_next_max_sew_and_ratio_eq_p, nop)
 
 DEF_SEW_LMUL_RULE (ratio_only, sew_lmul, sew_lmul, ratio_eq_p, always_false,
 		   use_next_sew_lmul)

@@ -1,7 +1,8 @@
 /*
+REQUIRED_ARGS: -verrors=simple
 TEST_OUTPUT:
 ---
-runnable/test8.d(261): Deprecation: identity comparison of static arrays implicitly coerces them to slices, which are compared by reference
+runnable/test8.d(262): Deprecation: identity comparison of static arrays implicitly coerces them to slices, which are compared by reference
 ---
 */
 

@@ -10,7 +10,7 @@
 
 module core.internal.atomic;
 
-import core.atomic : MemoryOrder, has128BitCAS;
+import core.atomic : has128BitCAS, MemoryOrder;
 
 version (DigitalMars)
 {
@@ -912,7 +912,7 @@ else version (GNU)
         {
             static if (GNU_Thread_Model == ThreadModel.Posix)
             {
-                import core.sys.posix.pthread;
+                import core.sys.posix.sys.types : pthread_mutex_t, pthread_mutexattr_t;
                 alias atomicMutexHandle = pthread_mutex_t;
 
                 pragma(mangle, "pthread_mutex_init") int fakePureMutexInit(pthread_mutex_t*, pthread_mutexattr_t*);
@@ -921,7 +921,7 @@ else version (GNU)
             }
             else static if (GNU_Thread_Model == ThreadModel.Win32)
             {
-                import core.sys.windows.winbase;
+                import core.sys.windows.winbase : CRITICAL_SECTION;
                 alias atomicMutexHandle = CRITICAL_SECTION;
 
                 pragma(mangle, "InitializeCriticalSection") int fakePureMutexInit(CRITICAL_SECTION*);
@@ -983,7 +983,7 @@ else version (GNU)
         // Internal static mutex reference.
         private AtomicMutex* _getAtomicMutex() @trusted @nogc nothrow
         {
-            __gshared static AtomicMutex mutex;
+            __gshared AtomicMutex mutex;
             return &mutex;
         }
 

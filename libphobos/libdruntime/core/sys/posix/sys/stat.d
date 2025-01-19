@@ -33,6 +33,11 @@ version (RISCV64) version = RISCV_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
 
+// Android uses 64-bit offsets for stat, but 32-bit offsets for most
+// other types on 32-bit architectures.
+version (CRuntime_Bionic)
+    private enum __USE_FILE_OFFSET64 = true;
+
 version (Posix):
 extern (C) nothrow @nogc:
 

@@ -39,6 +39,12 @@ program main
      x(i) = y(i) + c
   end do
   !$acc end kernels
+  !$acc serial loop copy(/BLOCK/) ! { dg-line l3 }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l3 }
+  ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l3 }
+  do i = 1, n
+     a(i) = b(i) + c
+  end do
 end program main
 
 ! { dg-final { scan-tree-dump-times "omp target oacc_parallel .*map\\(tofrom:a \\\[len: 400\\\]\\)" 1 "omplower" } }
@@ -53,6 +59,10 @@ end program main
 !   { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "omp target oacc_data_kernels .*map\\(force_tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
 !   { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:c \\\[len: 4\\\]\\)" 1 "omplower" } }
+
+! { dg-final { scan-tree-dump-times "omp target oacc_serial .*map\\(tofrom:a \\\[len: 400\\\]\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_serial .*map\\(tofrom:b \\\[len: 400\\\]\\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_serial .*map\\(tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
 
 ! Expecting no mapping of un-referenced common-blocks variables
 

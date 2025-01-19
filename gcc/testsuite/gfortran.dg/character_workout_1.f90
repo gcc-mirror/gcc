@@ -1,7 +1,7 @@
 ! { dg-do run }
 !
 ! Tests fix for PR100120/100816/100818/100819/100821
-! 
+!
 
 program main_p
 
@@ -27,10 +27,10 @@ program main_p
   character(len=m, kind=k), pointer :: pm(:)
   character(len=e, kind=k), pointer :: pe(:)
   character(len=:, kind=k), pointer :: pd(:)
-  
+
   class(*),                 pointer :: su
   class(*),                 pointer :: pu(:)
-  
+
   integer :: i, j
 
   nullify(s1, sm, se, sd, su)
@@ -41,7 +41,7 @@ program main_p
       cm(i)(j:j) = char(i*m+j+c-m, kind=k)
     end do
   end do
-  
+
   s1 => c1(n)
   if(.not.associated(s1))              stop 1
   if(.not.associated(s1, c1(n)))       stop 2

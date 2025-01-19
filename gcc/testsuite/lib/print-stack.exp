@@ -1,0 +1,62 @@
+# Copyright (C) 2024-2025 Free Software Foundation, Inc.
+#  Contributed by David Malcolm <dmalcolm@redhat.com>.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Get the 1-based line for LINENUM from FILENAME as a string
+
+proc get_line { filename linenum } {
+    set f [open $filename]
+    set lines [split [read $f] \n]
+    close $f
+    return [lindex $lines [expr $linenum - 1] ]
+}
+
+# Print a backtrace of the Tcl interpreter's stack, showing
+# frames, levels, source file and line where available.
+#
+# This isn't used anywhere, but is occasionally very helpful
+# to use when debugging.
+
+proc print_stack_backtrace {} {
+    set current_frame_level [info frame]
+    puts "VVV START OF BACKTRACE VVV"
+    for {set i [expr $current_frame_level - 1]} {$i > 0} {incr i -1} {
+	set frame [info frame $i]
+	if { [dict exists $frame "level"] } {
+	    set level_num [dict get $frame "level"]
+	    set relative_level_offset [expr 1 - $level_num]
+	    set level [info level $relative_level_offset]
+	    set procname [lindex $level 0]
+	    # TODO: args = rest of $level, but this can be very long
+	} else {
+	    set procname ""
+	}
+	set suffix ""
+	if { $procname != "" } {
+	    set suffix " in proc $procname"
+	}
+	if { [dict get $frame "type"] == "source" } {
+	    set fname [dict get $frame "file"]
+	    set line [dict get $frame "line"]
+	    puts "  $fname:$line: frame $i$suffix"
+	    puts "    $line | [get_line $fname $line]"
+	} else {
+	    set type [dict get $frame "type"]
+	    puts "  <$type>: frame $i$suffix"
+	}
+    }
+    puts "^^^  END OF BACKTRACE  ^^^"
+}

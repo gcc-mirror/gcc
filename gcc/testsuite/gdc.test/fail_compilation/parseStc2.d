@@ -53,10 +53,10 @@ public private void f10() {}
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/parseStc2.d(63): Error: redundant alignment attribute `align`
+fail_compilation/parseStc2.d(63): Error: redundant alignment attribute `align(default)`
 fail_compilation/parseStc2.d(64): Error: redundant alignment attribute `align(1)`
 fail_compilation/parseStc2.d(65): Error: redundant alignment attribute `align(1)`
-fail_compilation/parseStc2.d(66): Error: redundant alignment attribute `align`
+fail_compilation/parseStc2.d(66): Error: redundant alignment attribute `align(default)`
 fail_compilation/parseStc2.d(67): Error: redundant alignment attribute `align(2)`
 ---
 */

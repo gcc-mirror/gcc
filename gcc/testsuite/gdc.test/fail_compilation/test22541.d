@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test22541.d(104): Error: returning `i` escapes a reference to parameter `i`
+fail_compilation/test22541.d(104): Error: escaping a reference to parameter `i` by returning `i` is not allowed in a `@safe` function
 fail_compilation/test22541.d(102):        perhaps annotate the parameter with `return`
 ---
  */

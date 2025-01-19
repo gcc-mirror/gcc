@@ -3737,7 +3737,6 @@
 	PR c++/38684
 	* typeck2.c (digest_init_r): Don't use process_init_constructor
 	for non-aggregate classes.
-
 
 Copyright (C) 2009 Free Software Foundation, Inc.
 

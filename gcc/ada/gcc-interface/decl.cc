@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2025, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -4558,8 +4558,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				     false, definition, false);
 
 	  if (gnu_type != orig_type && !gnu_decl)
-	    create_type_decl (gnu_entity_name, orig_type, true, debug_info_p,
-			      gnat_entity);
+	    create_type_decl (gnu_entity_name, orig_type, artificial_p,
+			      debug_info_p, gnat_entity);
 	}
 
       /* Now set the RM size of the type.  We cannot do it before padding
@@ -7355,15 +7355,30 @@ static tree
 elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 			bool definition, bool need_for_debug, unsigned int align)
 {
-  tree unit_align = size_int (align / BITS_PER_UNIT);
-  return
-    size_binop (MULT_EXPR,
-		elaborate_expression_1 (size_binop (EXACT_DIV_EXPR,
-						    gnu_expr,
-						    unit_align),
-					gnat_entity, s, definition,
-					need_for_debug),
-		unit_align);
+  /* Nothing more to do if the factor is already explicit in the tree.  */
+  if (TREE_CODE (gnu_expr) == MULT_EXPR
+      && TREE_CONSTANT (TREE_OPERAND (gnu_expr, 1))
+      && value_factor_p (TREE_OPERAND (gnu_expr, 1), align / BITS_PER_UNIT))
+    return
+      size_binop (MULT_EXPR,
+		  elaborate_expression_1 (TREE_OPERAND (gnu_expr, 0),
+					  gnat_entity, s, definition,
+					  need_for_debug),
+		  TREE_OPERAND (gnu_expr, 1));
+
+  /* Otherwise divide by the factor, elaborate the result and multiply back.  */
+  else
+    {
+      tree unit_align = size_int (align / BITS_PER_UNIT);
+      return
+	size_binop (MULT_EXPR,
+		    elaborate_expression_1 (size_binop (EXACT_DIV_EXPR,
+							gnu_expr,
+							unit_align),
+					    gnat_entity, s, definition,
+					    need_for_debug),
+		    unit_align);
+    }
 }
 
 /* Structure to hold internal data for elaborate_reference.  */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2025 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -846,8 +846,8 @@ omp_get_device_from_uid_ (const char *uid, size_t uid_len)
   /* Inside the target region, invoking this routine is undefined
      behavior; thus, resolve it already here - instead of inside
      libgomp/config/.../target.c.
-     Note that on nvptx __builtin_alloca is defined, but fails with a sorry
-     during compilation, as it is unsupported until isa 7.3 / sm_52.  */
+     This also circumvents issues due to not all nvptx configurations
+     supporting 'alloca'.  */
   return omp_invalid_device;
 #endif
 }

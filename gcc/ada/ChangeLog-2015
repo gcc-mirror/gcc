@@ -10502,7 +10502,6 @@
 
 	* gcc-interface/misc.c (internal_error_function): Use xasprintf instead
 	of unchecked asprintf.
-
 
 Copyright (C) 2015 Free Software Foundation, Inc.
 

@@ -1,9 +1,5 @@
 /* { dg-additional-options "-O" } */
 
-#ifndef __cplusplus
-typedef _Bool bool;
-#endif
-
 struct ss_s {
     union out_or_counting_u {
     	char *newstr;

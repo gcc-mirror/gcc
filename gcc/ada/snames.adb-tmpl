@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,15 +125,30 @@ package body Snames is
 
    function Get_Attribute_Id (N : Name_Id) return Attribute_Id is
    begin
-      if N = Name_CPU then
-         return Attribute_CPU;
-      elsif N = Name_Dispatching_Domain then
-         return Attribute_Dispatching_Domain;
-      elsif N = Name_Interrupt_Priority then
-         return Attribute_Interrupt_Priority;
-      else
-         return Attribute_Id'Val (N - First_Attribute_Name);
-      end if;
+      case N is
+         when Name_Constant_Indexing =>
+            return Attribute_Constant_Indexing;
+         when Name_CPU =>
+            return Attribute_CPU;
+         when Name_Default_Iterator =>
+            return Attribute_Default_Iterator;
+         when Name_Dispatching_Domain =>
+            return Attribute_Dispatching_Domain;
+         when Name_Implicit_Dereference =>
+            return Attribute_Implicit_Dereference;
+         when Name_Interrupt_Priority =>
+            return Attribute_Interrupt_Priority;
+         when Name_Iterable =>
+            return Attribute_Iterable;
+         when Name_Iterator_Element =>
+            return Attribute_Iterator_Element;
+         when Name_Variable_Indexing =>
+            return Attribute_Variable_Indexing;
+         when First_Attribute_Name .. Last_Attribute_Name =>
+            return Attribute_Id'Val (N - First_Attribute_Name);
+         when others =>
+            raise Program_Error;
+      end case;
    end Get_Attribute_Id;
 
    -----------------------
@@ -431,7 +446,9 @@ package body Snames is
                    --  for compatibility with Ada 95 compilers implementing
                    --  only this Ada 2005 extension.
         and then (Ada_Version >= Ada_2012
-                   or else N not in Ada_2012_Reserved_Words);
+                   or else N not in Ada_2012_Reserved_Words)
+        and then (Ada_Version >= Ada_With_All_Extensions
+                   or else N not in GNAT_Extensions_Reserved_Words);
    end Is_Keyword_Name;
 
    --------------------------------

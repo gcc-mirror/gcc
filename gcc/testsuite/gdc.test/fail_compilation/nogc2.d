@@ -5,14 +5,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc2.d(20): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
-fail_compilation/nogc2.d(21): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
-fail_compilation/nogc2.d(22): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
-fail_compilation/nogc2.d(24): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
-fail_compilation/nogc2.d(25): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
-fail_compilation/nogc2.d(26): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
-fail_compilation/nogc2.d(27): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
-fail_compilation/nogc2.d(28): Error: cannot use operator `~` in `@nogc` function `nogc2.testCat`
+fail_compilation/nogc2.d(20): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
+fail_compilation/nogc2.d(21): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
+fail_compilation/nogc2.d(22): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
+fail_compilation/nogc2.d(24): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
+fail_compilation/nogc2.d(25): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
+fail_compilation/nogc2.d(26): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
+fail_compilation/nogc2.d(27): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
+fail_compilation/nogc2.d(28): Error: concatenating with operator `~` causes a GC allocation in `@nogc` function `testCat`
 ---
 */
 @nogc void testCat(int[] a, string s)
@@ -37,9 +37,9 @@ fail_compilation/nogc2.d(28): Error: cannot use operator `~` in `@nogc` function
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc2.d(47): Error: cannot use operator `~=` in `@nogc` function `nogc2.testCatAssign`
-fail_compilation/nogc2.d(49): Error: cannot use operator `~=` in `@nogc` function `nogc2.testCatAssign`
-fail_compilation/nogc2.d(50): Error: cannot use operator `~=` in `@nogc` function `nogc2.testCatAssign`
+fail_compilation/nogc2.d(47): Error: appending to this array with operator `~=` causes a GC allocation in `@nogc` function `testCatAssign`
+fail_compilation/nogc2.d(49): Error: appending to this array with operator `~=` causes a GC allocation in `@nogc` function `testCatAssign`
+fail_compilation/nogc2.d(50): Error: appending to this array with operator `~=` causes a GC allocation in `@nogc` function `testCatAssign`
 ---
 */
 @nogc void testCatAssign(int[] a, string s)
@@ -57,8 +57,8 @@ fail_compilation/nogc2.d(50): Error: cannot use operator `~=` in `@nogc` functio
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc2.d(69): Error: array literal in `@nogc` function `nogc2.testArray` may cause a GC allocation
-fail_compilation/nogc2.d(70): Error: array literal in `@nogc` function `nogc2.testArray` may cause a GC allocation
+fail_compilation/nogc2.d(69): Error: this array literal causes a GC allocation in `@nogc` function `testArray`
+fail_compilation/nogc2.d(70): Error: this array literal causes a GC allocation in `@nogc` function `testArray`
 ---
 */
 @nogc void testArray()
@@ -75,8 +75,8 @@ fail_compilation/nogc2.d(70): Error: array literal in `@nogc` function `nogc2.te
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc2.d(86): Error: associative array literal in `@nogc` function `nogc2.testAssocArray` may cause a GC allocation
-fail_compilation/nogc2.d(87): Error: associative array literal in `@nogc` function `nogc2.testAssocArray` may cause a GC allocation
+fail_compilation/nogc2.d(86): Error: this associative array literal causes a GC allocation in `@nogc` function `testAssocArray`
+fail_compilation/nogc2.d(87): Error: this associative array literal causes a GC allocation in `@nogc` function `testAssocArray`
 ---
 */
 @nogc void testAssocArray()
@@ -92,7 +92,7 @@ fail_compilation/nogc2.d(87): Error: associative array literal in `@nogc` functi
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc2.d(100): Error: assigning an associative array element in `@nogc` function `nogc2.testIndex` may cause a GC allocation
+fail_compilation/nogc2.d(100): Error: assigning this associative array element causes a GC allocation in `@nogc` function `testIndex`
 ---
 */
 @nogc void testIndex(int[int] aa)

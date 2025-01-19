@@ -3,8 +3,6 @@
    { dg-do compile }
    { dg-options "-O2 -Wall -Wno-strict-aliasing" } */
 
-typedef _Bool bool;
-
 #define NOIPA __attribute__ ((noipa))
 
 struct S { };

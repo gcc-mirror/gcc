@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ with System;
 with System.Soft_Links;       use System.Soft_Links;
 with System.Standard_Library; use System.Standard_Library;
 with System.Exception_Table;  use System.Exception_Table;
+with Interfaces.C;            use Interfaces.C;
 
 package body GNAT.Exception_Actions is
 
@@ -108,17 +109,78 @@ package body GNAT.Exception_Actions is
 
    procedure Core_Dump (Occurrence : Exception_Occurrence) is separate;
 
+   ------------------------
+   -- Exception_Language --
+   ------------------------
+
+   function Exception_Language
+     (E : Exception_Occurrence)
+     return Exception_Languages is
+
+      Foreign_Exception : aliased Exception_Data;
+      pragma Import
+        (Ada, Foreign_Exception, "system__exceptions__foreign_exception");
+
+      function To_Exception_Data_Ptr is new
+        Ada.Unchecked_Conversion (Exception_Id, Exception_Data_Ptr);
+
+      IdD : constant Exception_Data_Ptr
+        := To_Exception_Data_Ptr (Exception_Identity (E));
+      Lang : constant Character := IdD.Lang;
+
+   begin
+      if Lang in 'B' .. 'C' then
+         return EL_Cpp;
+      end if;
+
+      if Lang /= 'A' then
+         return EL_Unknown;
+      end if;
+
+      if IdD /= Foreign_Exception'Unchecked_Access then
+         return EL_Ada;
+      end if;
+
+      declare
+         function Get_Exception_Machine_Occurrence
+           (E : Exception_Occurrence) return System.Address;
+         pragma Import (Ada, Get_Exception_Machine_Occurrence,
+                        "__gnat_get_exception_machine_occurrence");
+
+         function Exception_Language_Is_CPlusPlus
+           (E : System.Address)
+           return C_bool;
+         pragma Import (C, Exception_Language_Is_CPlusPlus,
+                        "__gnat_exception_language_is_cplusplus");
+
+         function Exception_Language_Is_Ada
+           (E : System.Address)
+           return C_bool;
+         pragma Import (C, Exception_Language_Is_Ada,
+                     "__gnat_exception_language_is_ada");
+
+         Occurrence : constant System.Address
+           := Get_Exception_Machine_Occurrence (E);
+      begin
+         if Exception_Language_Is_CPlusPlus (Occurrence) then
+            return EL_Cpp;
+         elsif Exception_Language_Is_Ada (Occurrence) then
+            --  This might some day indicate third-party Ada exceptions.
+            --  With GNAT exceptions, we should not reach this point.
+            return EL_Ada;
+         end if;
+      end;
+
+      return EL_Unknown;
+   end Exception_Language;
+
    --------------------------
    -- Is_Foreign_Exception --
    --------------------------
 
    function Is_Foreign_Exception (E : Exception_Occurrence) return Boolean is
-      Foreign_Exception : aliased Exception_Data;
-      pragma Import
-        (Ada, Foreign_Exception, "system__exceptions__foreign_exception");
    begin
-      return (To_Data (Exception_Identity (E))
-                = Foreign_Exception'Unchecked_Access);
+      return Exception_Language (E) /= EL_Ada;
    end Is_Foreign_Exception;
 
    ----------------

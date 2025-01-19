@@ -1,6 +1,6 @@
 (* RndFile.mod implement the ISO RndFile specification.
 
-Copyright (C) 2008-2024 Free Software Foundation, Inc.
+Copyright (C) 2008-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -359,13 +359,13 @@ VAR
 BEGIN
    IF IsRndFile(cid)
    THEN
-      d := DeviceTablePtrValue(cid, did) ;
-      RETURN( 0 )
+      d := DeviceTablePtrValue(cid, did)
    ELSE
       RAISEdevException(cid, did, IOChan.wrongDevice,
                         'RndFile.' + __FUNCTION__ +
                         ': channel is not a random file')
-   END
+   END ;
+   RETURN( 0 )
 END StartPos ;
 
 
@@ -386,7 +386,8 @@ BEGIN
    ELSE
       RAISEdevException(cid, did, IOChan.wrongDevice,
                         'RndFile.' + __FUNCTION__ +
-                        ': channel is not a random file')
+                        ': channel is not a random file') ;
+      RETURN 0
    END
 END CurrentPos ;
 
@@ -416,7 +417,8 @@ BEGIN
    ELSE
       RAISEdevException(cid, did, IOChan.wrongDevice,
                         'RndFile.' + __FUNCTION__ +
-                        ': channel is not a random file')
+                        ': channel is not a random file') ;
+      RETURN 0
    END
 END EndPos ;
 
@@ -442,7 +444,8 @@ BEGIN
    ELSE
       RAISEdevException(cid, did, IOChan.wrongDevice,
                         'RndFile.' + __FUNCTION__ +
-                        ': channel is not a random file')
+                        ': channel is not a random file') ;
+      RETURN 0
    END
 END NewPos ;
 

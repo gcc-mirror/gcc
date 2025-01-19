@@ -1,3 +1,155 @@
+2024-12-24  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* macro.cc (tokens_buff_new): Fix length argument to XNEWVEC.
+
+2024-12-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/cpplib.h (struct cpp_token): Adjust comment about the
+	struct size.
+	* include/line-map.h (location_t): Change typedef from 32-bit to 64-bit
+	integer.
+	(LINE_MAP_MAX_COLUMN_NUMBER): Increase size to be appropriate for
+	64-bit location_t.
+	(LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES): Likewise.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Likewise.
+	(LINE_MAP_MAX_LOCATION): Likewise.
+	(MAX_LOCATION_T): Likewise.
+	(line_map_suggested_range_bits): Likewise.
+	(struct line_map): Adjust comment about the struct size.
+	(struct line_map_macro): Likewise.
+	(struct line_map_ordinary): Likewise. Rearrange fields to optimize
+	padding.
+
+2024-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* files.cc (finish_embed): Use CPP_EMBED even for C++.
+
+2024-12-03  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117162
+	* include/cpplib.h (struct cpp_options): Add low_ucns.
+	* init.cc (struct lang_flags, lang_defaults): Add low_ucns.
+	(cpp_set_lang): Set low_ucns
+	* charset.cc (_cpp_valid_ucn): For C, allow UCNs below 0xa0
+	outside identifiers, with a pedwarn if pedantic before C23 or a
+	warning with -Wc11-c23-compat.  Do not allow \u0024 in identifiers
+	for C23.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* pch.cc (cpp_valid_state): Replace "%<%s%>" with "%qs" in message
+	wording.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* files.cc (_cpp_stack_file): Handle -include of header unit more
+	specially.
+
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/117118
+	* lex.cc (lex_raw_string): Treat an unterminated raw string the same
+	way for a deferred pragma as is done for other directives.
+
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* lex.cc (_cpp_commit_buff): Make sure that the buffer is properly
+	aligned for the next allocation.
+	* internal.h (struct dummy): Make sure alignment is large enough for
+	a location_t, just in case.
+
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/line-map.h (line_map_uint_t): New typedef, the same type
+	as location_t.
+	(location_diff_t): New typedef.
+	(line_map_suggested_range_bits): New constant.
+	(struct maps_info_ordinary): Change member types from "unsigned int"
+	to "line_map_uint_t".
+	(struct maps_info_macro): Likewise.
+	(struct location_adhoc_data_map): Likewise.
+	(LINEMAPS_ALLOCATED): Change return type from "unsigned int" to
+	"line_map_uint_t".
+	(LINEMAPS_ORDINARY_ALLOCATED): Likewise.
+	(LINEMAPS_MACRO_ALLOCATED): Likewise.
+	(LINEMAPS_USED): Likewise.
+	(LINEMAPS_ORDINARY_USED): Likewise.
+	(LINEMAPS_MACRO_USED): Likewise.
+	(linemap_lookup_macro_index): Likewise.
+	(LINEMAPS_MAP_AT): Change argument type from "unsigned int" to
+	"line_map_uint_t".
+	(LINEMAPS_ORDINARY_MAP_AT): Likewise.
+	(LINEMAPS_MACRO_MAP_AT): Likewise.
+	(line_map_new_raw): Likewise.
+	(linemap_module_restore): Likewise.
+	(linemap_dump): Likewise.
+	(line_table_dump): Likewise.
+	(LINEMAPS_LAST_MAP): Add a linemap_assert() for safety.
+	(SOURCE_COLUMN): Use a cast to ensure correctness if location_t
+	becomes a 64-bit type.
+	* line-map.cc (location_adhoc_data_hash): Don't truncate to 32-bit
+	prematurely when hashing.
+	(line_maps::get_or_create_combined_loc): Adapt types to support
+	potentially 64-bit location_t. Use MAX_LOCATION_T rather than a
+	hard-coded constant.
+	(line_maps::get_range_from_loc): Adapt types and constants to
+	support potentially 64-bit location_t.
+	(line_maps::pure_location_p): Likewise.
+	(line_maps::get_pure_location): Likewise.
+	(line_map_new_raw): Likewise.
+	(LAST_SOURCE_LINE_LOCATION): Likewise.
+	(linemap_add): Likewise.
+	(linemap_module_restore): Likewise.
+	(linemap_line_start): Likewise.
+	(linemap_position_for_column): Likewise.
+	(linemap_position_for_line_and_column): Likewise.
+	(linemap_position_for_loc_and_offset): Likewise.
+	(linemap_ordinary_map_lookup): Likewise.
+	(linemap_lookup_macro_index): Likewise.
+	(linemap_dump): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(line_table_dump): Likewise.
+	(linemap_compare_locations): Avoid signed int overflow in the result.
+	* macro.cc (num_expanded_macros_counter): Change type of global
+	variable from "unsigned int" to "line_map_uint_t".
+	(num_macro_tokens_counter): Likewise.
+
+2024-11-18  Jason Merrill  <jason@redhat.com>
+
+	* internal.h (_cpp_get_file_dir): Declare.
+	* files.cc (_cpp_get_file_dir): New fn.
+	* mkdeps.cc (make_write): Use it.
+
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* internal.h (search_path_head): Declare.
+	* files.cc (search_path_head): No longer static.
+	* init.cc (cpp_read_main_file): Use it.
+
+2024-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (interpret_float_suffix): Handle d64x and D64x
+	suffixes, adjust comment.
+
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (interpret_float_suffix): Handle d32 and D32 suffixes
+	for C like df, d64 and D64 like dd and d128 and D128 like
+	dl.
+
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117029
+	* include/cpplib.h (struct cpp_options): Add imaginary_constants
+	member.
+	* init.cc (struct lang_flags): Add imaginary_constants bitfield.
+	(lang_defaults): Add column for imaginary_constants.
+	(cpp_set_lang): Copy over imaginary_constants.
+	* expr.cc (cpp_classify_number): Diagnose CPP_N_IMAGINARY
+	non-CPP_N_FLOATING constants differently for C.
+
 2024-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114461
@@ -8525,7 +8677,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2024 Free Software Foundation, Inc.
+Copyright (C) 2004-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

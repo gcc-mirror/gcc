@@ -1,5 +1,5 @@
 
-int ary[4];
+inline int ary[4];
 extern int unb[];
 typedef int z[0];
 

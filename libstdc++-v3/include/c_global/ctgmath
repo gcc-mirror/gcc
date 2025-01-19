@@ -1,6 +1,6 @@
 // <ctgmath> -*- C++ -*-
 
-// Copyright (C) 2007-2024 Free Software Foundation, Inc.
+// Copyright (C) 2007-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,12 +26,12 @@
  *  This is a Standard C++ Library header.
  */
 
+#ifndef _GLIBCXX_CTGMATH
+#define _GLIBCXX_CTGMATH 1
+
 #ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
 #endif
-
-#ifndef _GLIBCXX_CTGMATH
-#define _GLIBCXX_CTGMATH 1
 
 #if __cplusplus < 201103L
 #  include <bits/c++0x_warning.h>
@@ -40,6 +40,14 @@
 extern "C++" {
 #  include <complex>
 }
+#  if __cplusplus >= 202002L && ! _GLIBCXX_USE_DEPRECATED
+#    error "<ctgmath> is not a standard header in C++20, use <complex> or <cmath> instead"
+#  elif __cplusplus >= 201703L && defined __DEPRECATED
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wc++23-extensions"
+#    warning "<ctgmath> is deprecated in C++17, use <complex> or <cmath> instead"
+#    pragma GCC diagnostic pop
+#  endif
 #endif
 
 #endif

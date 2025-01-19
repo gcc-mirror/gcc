@@ -1,6 +1,6 @@
 // -*- C++ -*- compatibility header.
 
-// Copyright (C) 2007-2024 Free Software Foundation, Inc.
+// Copyright (C) 2007-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,10 +26,15 @@
  *  This is a Standard C++ Library header.
  */
 
+#ifndef _GLIBCXX_COMPLEX_H
+#define _GLIBCXX_COMPLEX_H 1
+
 #include <bits/c++config.h>
 
 #if __cplusplus >= 201103L
-# include <ccomplex>
+extern "C++" {
+#include <complex>
+}
 #endif
 
 #if __cplusplus >= 201103L && defined(__STRICT_ANSI__)
@@ -41,8 +46,5 @@
 #  undef complex
 # endif
 #endif
-
-#ifndef _GLIBCXX_COMPLEX_H
-#define _GLIBCXX_COMPLEX_H 1
 
 #endif

@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
 This file is part of GCC.
@@ -74,7 +74,6 @@ along with GCC; see the file COPYING3.  If not see
    7) There is nothing preventing us from producing multiple parts of single function
       when needed or splitting also the parts.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

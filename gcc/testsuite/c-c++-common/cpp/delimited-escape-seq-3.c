@@ -9,7 +9,6 @@ typedef __CHAR32_TYPE__ char32_t;
 #endif
 
 const char32_t *a = U"\u{}";				/* { dg-error "empty delimited escape sequence" } */
-							/* { dg-error "is not a valid universal character" "" { target c } .-1 } */
 const char32_t *b = U"\u{12" "34}";			/* { dg-error "'\\\\u\\{' not terminated with '\\}' after" } */
 const char32_t *c = U"\u{0000ffffffff}";		/* { dg-error "is not a valid universal character" } */
 const char32_t *d = U"\u{010000edcb}";			/* { dg-error "is not a valid universal character" } */

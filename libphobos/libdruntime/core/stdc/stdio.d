@@ -9,7 +9,7 @@
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly,
  *            Alex Rønne Petersen
- * Source:    https://github.com/dlang/dmd/blob/master/druntime/src/core/stdc/stdio.d
+ * Source:    $(DRUNTIMESRC core/stdc/_stdio.d)
  * Standards: ISO/IEC 9899:1999 (E)
  */
 
@@ -52,34 +52,7 @@ extern (C):
 nothrow:
 @nogc:
 
-version (CRuntime_DigitalMars)
-{
-    enum
-    {
-        ///
-        BUFSIZ       = 0x4000,
-        ///
-        EOF          = -1,
-        ///
-        FOPEN_MAX    = 20,
-        ///
-        FILENAME_MAX = 256, // 255 plus NULL
-        ///
-        TMP_MAX      = 32767,
-        ///
-        SYS_OPEN     = 20,      // non-standard
-    }
-
-    ///
-    enum int     _NFILE     = 60;       // non-standard
-    ///
-    enum string  _P_tmpdir  = "\\"; // non-standard
-    ///
-    enum wstring _wP_tmpdir = "\\"; // non-standard
-    ///
-    enum int     L_tmpnam   = _P_tmpdir.length + 12;
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     enum
     {
@@ -403,28 +376,7 @@ enum
     SEEK_END
 }
 
-version (CRuntime_DigitalMars)
-{
-    ///
-    alias c_long fpos_t;
-
-    ///
-    struct _iobuf
-    {
-        char* _ptr;
-        int   _cnt;
-        char* _base;
-        int   _flag;
-        int   _file;
-        int   _charbuf;
-        int   _bufsiz;
-        char* __tmpnum;
-    }
-
-    ///
-    alias shared(_iobuf) FILE;
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     ///
     alias long fpos_t;
@@ -926,52 +878,7 @@ enum
     _F_TERM = 0x0200, // non-standard
 }
 
-version (CRuntime_DigitalMars)
-{
-    enum
-    {
-        ///
-        _IOFBF   = 0,
-        ///
-        _IOLBF   = 0x40,
-        ///
-        _IONBF   = 4,
-        ///
-        _IOREAD  = 1,     // non-standard
-        ///
-        _IOWRT   = 2,     // non-standard
-        ///
-        _IOMYBUF = 8,     // non-standard
-        ///
-        _IOEOF   = 0x10,  // non-standard
-        ///
-        _IOERR   = 0x20,  // non-standard
-        ///
-        _IOSTRG  = 0x40,  // non-standard
-        ///
-        _IORW    = 0x80,  // non-standard
-        ///
-        _IOTRAN  = 0x100, // non-standard
-        ///
-        _IOAPP   = 0x200, // non-standard
-    }
-
-    extern shared void function() _fcloseallp;
-
-    private extern shared FILE[_NFILE] _iob;
-
-    ///
-    enum stdin  = &_iob[0];
-    ///
-    enum stdout = &_iob[1];
-    ///
-    enum stderr = &_iob[2];
-    ///
-    enum stdaux = &_iob[3];
-    ///
-    enum stdprn = &_iob[4];
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     enum
     {
@@ -1539,55 +1446,7 @@ size_t fwrite(scope const void* ptr, size_t size, size_t nmemb, FILE* stream);
     c_long ftell(FILE* stream);
 }
 
-version (CRuntime_DigitalMars)
-{
-  // No unsafe pointer manipulation.
-  extern (D) @trusted
-  {
-    ///
-    void rewind()(FILE* stream)   { fseek(stream,0L,SEEK_SET); stream._flag= stream._flag & ~_IOERR; }
-    ///
-    pure void clearerr()(FILE* stream) { stream._flag = stream._flag & ~(_IOERR|_IOEOF); }
-    ///
-    pure int  feof()(FILE* stream)     { return stream._flag&_IOEOF; }
-    ///
-    pure int  ferror()(FILE* stream)   { return stream._flag&_IOERR; }
-    ///
-    pure int  fileno()(FILE* stream)   { return stream._file; }
-  }
-    ///
-    pragma(printf)
-    int   _snprintf(scope char* s, size_t n, scope const char* fmt, scope const ...);
-    ///
-    alias _snprintf snprintf;
-
-    ///
-    pragma(printf)
-    int   _vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
-    ///
-    alias _vsnprintf vsnprintf;
-
-    //
-    // Digital Mars under-the-hood C I/O functions. Uses _iobuf* for the
-    // unshared version of FILE*, usable when the FILE is locked.
-    //
-
-    ///
-    int _fputc_nlock(int c, _iobuf* fp);
-    ///
-    int _fputwc_nlock(int c, _iobuf* fp);
-    ///
-    int _fgetc_nlock(_iobuf* fp);
-    ///
-    int _fgetwc_nlock(_iobuf* fp);
-    ///
-    int __fp_lock(FILE* fp);
-    ///
-    void __fp_unlock(FILE* fp);
-    ///
-    int setmode(int fd, int mode);
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
   // No unsafe pointer manipulation.
   @trusted
@@ -2073,130 +1932,7 @@ else
 ///
 void perror(scope const char* s);
 
-version (CRuntime_DigitalMars)
-{
-    version (none)
-        import core.sys.windows.windows : HANDLE, _WaitSemaphore, _ReleaseSemaphore;
-    else
-    {
-        // too slow to import windows
-        private alias void* HANDLE;
-        private void _WaitSemaphore(int iSemaphore);
-        private void _ReleaseSemaphore(int iSemaphore);
-    }
-
-    enum
-    {
-        ///
-        FHND_APPEND     = 0x04,
-        ///
-        FHND_DEVICE     = 0x08,
-        ///
-        FHND_TEXT       = 0x10,
-        ///
-        FHND_BYTE       = 0x20,
-        ///
-        FHND_WCHAR      = 0x40,
-    }
-
-    private enum _MAX_SEMAPHORES = 10 + _NFILE;
-    private enum _semIO = 3;
-
-    private extern __gshared short[_MAX_SEMAPHORES] _iSemLockCtrs;
-    private extern __gshared int[_MAX_SEMAPHORES] _iSemThreadIds;
-    private extern __gshared int[_MAX_SEMAPHORES] _iSemNestCount;
-    private extern __gshared HANDLE[_NFILE] _osfhnd;
-    extern shared ubyte[_NFILE] __fhnd_info;
-
-    // this is copied from semlock.h in DMC's runtime.
-    private void LockSemaphore()(uint num)
-    {
-        asm nothrow @nogc
-        {
-            mov EDX, num;
-            lock;
-            inc _iSemLockCtrs[EDX * 2];
-            jz lsDone;
-            push EDX;
-            call _WaitSemaphore;
-            add ESP, 4;
-        }
-
-    lsDone: {}
-    }
-
-    // this is copied from semlock.h in DMC's runtime.
-    private void UnlockSemaphore()(uint num)
-    {
-        asm nothrow @nogc
-        {
-            mov EDX, num;
-            lock;
-            dec _iSemLockCtrs[EDX * 2];
-            js usDone;
-            push EDX;
-            call _ReleaseSemaphore;
-            add ESP, 4;
-        }
-
-    usDone: {}
-    }
-
-    // This converts a HANDLE to a file descriptor in DMC's runtime
-    ///
-    int _handleToFD()(HANDLE h, int flags)
-    {
-        LockSemaphore(_semIO);
-        scope(exit) UnlockSemaphore(_semIO);
-
-        foreach (fd; 0 .. _NFILE)
-        {
-            if (!_osfhnd[fd])
-            {
-                _osfhnd[fd] = h;
-                __fhnd_info[fd] = cast(ubyte)flags;
-                return fd;
-            }
-        }
-
-        return -1;
-    }
-
-    ///
-    HANDLE _fdToHandle()(int fd)
-    {
-        // no semaphore is required, once inserted, a file descriptor
-        // doesn't change.
-        if (fd < 0 || fd >= _NFILE)
-            return null;
-
-        return _osfhnd[fd];
-    }
-
-    enum
-    {
-        ///
-        STDIN_FILENO  = 0,
-        ///
-        STDOUT_FILENO = 1,
-        ///
-        STDERR_FILENO = 2,
-    }
-
-    int open(scope const(char)* filename, int flags, ...); ///
-    alias _open = open; ///
-    int _wopen(scope const wchar* filename, int oflag, ...); ///
-    int sopen(scope const char* filename, int oflag, int shflag, ...); ///
-    alias _sopen = sopen; ///
-    int _wsopen(scope const wchar* filename, int oflag, int shflag, ...); ///
-    int close(int fd); ///
-    alias _close = close; ///
-    FILE *fdopen(int fd, scope const(char)* flags); ///
-    alias _fdopen = fdopen; ///
-    FILE *_wfdopen(int fd, scope const(wchar)* flags); ///
-
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     int _open(scope const char* filename, int oflag, ...); ///
     int _wopen(scope const wchar* filename, int oflag, ...); ///

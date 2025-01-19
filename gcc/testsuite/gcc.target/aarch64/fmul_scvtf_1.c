@@ -45,53 +45,29 @@ dulfoo##__a (unsigned long long x)		\
   return ((double) x)/(1lu << __a);		\
 }
 
-FUNC_DEFS (4)
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], w\[0-9\]*.*#4" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], w\[0-9\]*.*#4" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], x\[0-9\]*.*#4" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], x\[0-9\]*.*#4" 1 } } */
+FUNC_DEFS (2)
+	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], w\[0-9\]*.*#2" 1 } } */
+	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], w\[0-9\]*.*#2" 1 } } */
+	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], x\[0-9\]*.*#2" 1 } } */
+	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], x\[0-9\]*.*#2" 1 } } */
 
-FUNC_DEFD (4)
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], w\[0-9\]*.*#4" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], w\[0-9\]*.*#4" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], x\[0-9\]*.*#4" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], x\[0-9\]*.*#4" 1 } } */
-
-FUNC_DEFS (8)
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], w\[0-9\]*.*#8" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], w\[0-9\]*.*#8" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], x\[0-9\]*.*#8" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], x\[0-9\]*.*#8" 1 } } */
-
-FUNC_DEFD (8)
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], w\[0-9\]*.*#8" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], w\[0-9\]*.*#8" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], x\[0-9\]*.*#8" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], x\[0-9\]*.*#8" 1 } } */
-
-FUNC_DEFS (16)
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], w\[0-9\]*.*#16" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], w\[0-9\]*.*#16" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], x\[0-9\]*.*#16" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], x\[0-9\]*.*#16" 1 } } */
-
-FUNC_DEFD (16)
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], w\[0-9\]*.*#16" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], w\[0-9\]*.*#16" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], x\[0-9\]*.*#16" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], x\[0-9\]*.*#16" 1 } } */
+FUNC_DEFD (2)
+	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], w\[0-9\]*.*#2" 1 } } */
+	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], w\[0-9\]*.*#2" 1 } } */
+	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], x\[0-9\]*.*#2" 1 } } */
+	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], x\[0-9\]*.*#2" 1 } } */
 
 FUNC_DEFS (32)
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], w\[0-9\]*.*#32" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], w\[0-9\]*.*#32" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], x\[0-9\]*.*#32" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], x\[0-9\]*.*#32" 1 } } */
+	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], w\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
+	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], w\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
+	/* { dg-final { scan-assembler-times "scvtf\ts\[0-9\], x\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
+	/* { dg-final { scan-assembler-times "ucvtf\ts\[0-9\], x\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
 
 FUNC_DEFD (32)
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], w\[0-9\]*.*#32" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], w\[0-9\]*.*#32" 1 } } */
-	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], x\[0-9\]*.*#32" 1 } } */
-	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], x\[0-9\]*.*#32" 1 } } */
+	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], w\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
+	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], w\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
+	/* { dg-final { scan-assembler-times "scvtf\td\[0-9\], x\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
+	/* { dg-final { scan-assembler-times "ucvtf\td\[0-9\], x\[0-9\]*.*#32" 1 { xfail *-*-* } } } */
 
 #define FUNC_TESTS(__a, __b)					\
 do								\
@@ -126,14 +102,10 @@ main (void)
 
 	for (i = 0; i < 32; i ++)
 	{
-		FUNC_TESTS (4, i);
-		FUNC_TESTS (8, i);
-		FUNC_TESTS (16, i);
+		FUNC_TESTS (2, i);
 		FUNC_TESTS (32, i);
 
-		FUNC_TESTD (4, i);
-		FUNC_TESTD (8, i);
-		FUNC_TESTD (16, i);
+		FUNC_TESTD (2, i);
 		FUNC_TESTD (32, i);
 	}
 	return 0;

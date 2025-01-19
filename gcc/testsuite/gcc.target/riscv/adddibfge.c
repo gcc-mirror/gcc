@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" } } */
 /* { dg-options "-march=rv64gc -mtune=sifive-5-series -mbranch-cost=2 -mmovcc -ffinite-math-only -fdump-rtl-ce1" } */

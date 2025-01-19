@@ -1,6 +1,7 @@
 // { dg-do run { target c++20 } }
+// { dg-additional-options "-DSTART_DAY=-50000 -DSTART_YMD=1833y/February/8d -DEND_YMD=2106y/November/24d" { target simulator } }
 
-// Copyright (C) 2021-2024 Free Software Foundation, Inc.
+// Copyright (C) 2021-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,11 +51,18 @@ void test01()
 {
   using namespace std::chrono;
 
+#ifdef START_DAY
+  auto n   = days{START_DAY};
+  auto ymd = START_YMD;
+#else
   // [-32767y/January/1d, 32767y/December/31d] maps to [-12687428, 11248737]
 
   auto n   = days{-12687428};
   auto ymd = -32767y/January/1d;
-  while (ymd < 32767y/December/31d) {
+#define END_YMD 32767y/December/31d
+#endif
+
+  while (ymd < END_YMD) {
     VERIFY( static_cast<sys_days>(ymd) == sys_days{n} );
     ++n;
     advance(ymd);

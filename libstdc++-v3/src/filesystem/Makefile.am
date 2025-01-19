@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Filesystem library.
 ##
-## Copyright (C) 2014-2024 Free Software Foundation, Inc.
+## Copyright (C) 2014-2025 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##

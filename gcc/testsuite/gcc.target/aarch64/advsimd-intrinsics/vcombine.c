@@ -25,6 +25,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					 0x55, 0x55, 0x55, 0x55 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3,
 					 0x66, 0x66, 0x66, 0x66 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+					    0xf4, 0xf5, 0xf6, 0xf7,
+					    0xcc, 0xcc, 0xcc, 0xcc,
+					    0xcc, 0xcc, 0xcc, 0xcc };
+#endif
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc1800000, 0xc1700000,
 					   0x40533333, 0x40533333 };
 VECT_VAR_DECL(expected,hfloat,16,8) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80,
@@ -46,6 +52,7 @@ void exec_vcombine (void)
 
   /* Initialize input "vector64_a" from "buffer".  */
   TEST_MACRO_64BITS_VARIANTS_2_5(VLOAD, vector64_a, buffer);
+  MFLOAT8_ONLY(VLOAD(vector64_a, buffer, , mfloat, mf, 8, 8);)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VLOAD(vector64_a, buffer, , float, f, 16, 4);
 #endif
@@ -62,6 +69,7 @@ void exec_vcombine (void)
   VDUP(vector64_b, , uint, u, 64, 1, 0x88);
   VDUP(vector64_b, , poly, p, 8, 8, 0x55);
   VDUP(vector64_b, , poly, p, 16, 4, 0x66);
+  MFLOAT8_ONLY(VDUP(vector64_b, , mfloat, mf, 8, 8, MFLOAT8(0xcc));)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VDUP(vector64_b, , float, f, 16, 4, 2.25);
 #endif
@@ -80,6 +88,7 @@ void exec_vcombine (void)
   TEST_VCOMBINE(uint, u, 64, 1, 2);
   TEST_VCOMBINE(poly, p, 8, 8, 16);
   TEST_VCOMBINE(poly, p, 16, 4, 8);
+  MFLOAT8_ONLY(TEST_VCOMBINE(mfloat, mf, 8, 8, 16);)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VCOMBINE(float, f, 16, 4, 8);
 #endif
@@ -95,6 +104,7 @@ void exec_vcombine (void)
   CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
   CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
   CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
+  MFLOAT8_ONLY(CHECK_FP(TEST_MSG, mfloat, 8, 16, PRIx16, expected, "");)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected, "");
 #endif

@@ -1,5 +1,5 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -112,7 +112,7 @@ class timer
   void pop_client_item ();
 
   void print (FILE *fp);
-  json::value *make_json () const;
+  std::unique_ptr<json::value> make_json () const;
 
   const char *get_topmost_item_name () const;
 
@@ -134,7 +134,7 @@ class timer
   /* Private type: a timing variable.  */
   struct timevar_def
   {
-    json::value *make_json () const;
+    std::unique_ptr<json::value> make_json () const;
 
     /* Elapsed time for this variable.  */
     struct timevar_time_def elapsed;

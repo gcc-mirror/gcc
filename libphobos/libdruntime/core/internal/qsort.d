@@ -12,6 +12,8 @@ module core.internal.qsort;
 
 import core.stdc.stdlib;
 
+debug (qsort) import core.stdc.stdio : printf;
+
 version (OSX)
     version = Darwin;
 else version (iOS)
@@ -56,17 +58,49 @@ static if (Glibc_Qsort_R)
 }
 else version (FreeBSD)
 {
-    alias extern (C) int function(scope void *, scope const void *, scope const void *) Cmp;
-    extern (C) void qsort_r(scope void *base, size_t nmemb, size_t size, scope void *thunk, Cmp cmp);
+    import core.sys.freebsd.config : __FreeBSD_version;
 
-    extern (C) void[] _adSort(return scope void[] a, TypeInfo ti)
+    static if (__FreeBSD_version >= 1400000)
     {
-        extern (C) int cmp(scope void* ti, scope const void* p1, scope const void* p2)
+        alias extern (C) int function(scope const void*, scope const void*, scope void*) Cmp;
+        extern (C) void qsort_r(scope void* base, size_t nmemb, size_t size, Cmp cmp, scope void* thunk);
+
+        // https://cgit.freebsd.org/src/tree/include/stdlib.h?h=stable/14#n350
+        pragma(mangle, "qsort_r@FBSD_1.0")
+        private extern (C) void __qsort_r_compat(scope void* base, size_t nmemb, size_t size, scope void* thunk, OldCmp cmp);
+        alias extern (C) int function(scope void*, scope const void*, scope const void*) OldCmp;
+
+        deprecated("In FreeBSD 14, qsort_r's signature was fixed to match POSIX. This extern(D) overload has been " ~
+                   "provided to avoid breaking code, but code should be updated to use the POSIX version.")
+        extern (D) void qsort_r(scope void* base, size_t nmemb, size_t size, scope void* thunk, OldCmp cmp)
         {
-            return (cast(TypeInfo)ti).compare(p1, p2);
+            __qsort_r_compat(base, nmemb, size, thunk, cmp);
         }
-        qsort_r(a.ptr, a.length, ti.tsize, cast(void*)ti, &cmp);
-        return a;
+
+        extern (C) void[] _adSort(return scope void[] a, TypeInfo ti)
+        {
+            extern (C) int cmp(scope const void* p1, scope const void* p2, scope void* ti)
+            {
+                return (cast(TypeInfo)ti).compare(p1, p2);
+            }
+            qsort_r(a.ptr, a.length, ti.tsize, &cmp, cast(void*)ti);
+            return a;
+        }
+    }
+    else
+    {
+        alias extern (C) int function(scope void *, scope const void *, scope const void *) Cmp;
+        extern (C) void qsort_r(scope void* base, size_t nmemb, size_t size, scope void* thunk, Cmp cmp);
+
+        extern (C) void[] _adSort(return scope void[] a, TypeInfo ti)
+        {
+            extern (C) int cmp(scope void* ti, scope const void* p1, scope const void* p2)
+            {
+                return (cast(TypeInfo)ti).compare(p1, p2);
+            }
+            qsort_r(a.ptr, a.length, ti.tsize, cast(void*)ti, &cmp);
+            return a;
+        }
     }
 }
 else version (DragonFlyBSD)

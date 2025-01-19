@@ -83,10 +83,12 @@ int main()
 		__builtin_abort();
 
 	struct bar4 z4;
-
+#if 0
+	// we used to test this, but this would be incorrect
+	// if there is a declaration in another TU cf. PR117490
 	if (1 != test_bar4(&z4, &z4))
 		__builtin_abort();
-
+#endif
 	return 0;
 }
 

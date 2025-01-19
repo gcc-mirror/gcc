@@ -8,7 +8,7 @@ $(LREF setIntersection), $(LREF setSymmetricDifference) expect a range of sorted
 ranges as input.
 
 All algorithms are generalized to accept as input not only sets but also
-$(HTTP https://en.wikipedia.org/wiki/Multiset, multisets). Each algorithm
+$(LINK2 https://en.wikipedia.org/wiki/Multiset, multisets). Each algorithm
 documents behaviour in the presence of duplicated inputs.
 
 $(SCRIPT inhibitQuickIndex = 1;)

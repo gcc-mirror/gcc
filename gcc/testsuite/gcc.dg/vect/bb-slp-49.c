@@ -23,6 +23,5 @@ main ()
   return 0;
 }
 
-/* See that we vectorize an SLP instance.  */
+/* See that we try to vectorize an SLP instance.  */
 /* { dg-final { scan-tree-dump "Analyzing vectorizable constructor" "slp1" } } */
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "slp1" } } */

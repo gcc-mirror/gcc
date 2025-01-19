@@ -1,5 +1,5 @@
 /* Common hooks for IA64.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -62,7 +62,7 @@ ia64_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
     {
     case OPT_mtls_size_:
       if (value != 14 && value != 22 && value != 64)
-	error_at (loc, "bad value %<%s%> for %<-mtls-size=%> switch", arg);
+	error_at (loc, "bad value %qs for %<-mtls-size=%> switch", arg);
       return true;
 
     default:

@@ -1,4 +1,4 @@
-#   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+#   Copyright (C) 2004-2025 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ proc ${tool}_maybe_build_wrapper { filename args } {
 	# passed to turn off all warnings.
 	unset_currtarget_info wrap_compile_flags
 	set_currtarget_info wrap_compile_flags \
-	    "$saved_wrap_compile_flags -w $flags"
+	    "$saved_wrap_compile_flags -std=gnu17 -w $flags"
 	set result [build_wrapper $filename]
 	unset_currtarget_info wrap_compile_flags
 	set_currtarget_info wrap_compile_flags "$saved_wrap_compile_flags"

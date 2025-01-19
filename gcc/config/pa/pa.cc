@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for HPPA.
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.cc
 
 This file is part of GCC.
@@ -198,7 +198,6 @@ static machine_mode pa_c_mode_for_floating_type (enum tree_index);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
 static bool pa_cannot_force_const_mem (machine_mode, rtx);
 static bool pa_legitimate_constant_p (machine_mode, rtx);
-static unsigned int pa_section_type_flags (tree, const char *, int);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool,
 				     code_helper = ERROR_MARK);
 static bool pa_callee_copies (cumulative_args_t, const function_arg_info &);
@@ -210,6 +209,7 @@ static HOST_WIDE_INT pa_starting_frame_offset (void);
 static section* pa_elf_select_rtx_section(machine_mode, rtx, unsigned HOST_WIDE_INT) ATTRIBUTE_UNUSED;
 static void pa_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool pa_use_lra_p (void);
+static bool pa_frame_pointer_required (void);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -394,6 +394,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_DELEGITIMIZE_ADDRESS pa_delegitimize_address
 #undef TARGET_INTERNAL_ARG_POINTER
 #define TARGET_INTERNAL_ARG_POINTER pa_internal_arg_pointer
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED pa_frame_pointer_required
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE pa_can_eliminate
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
@@ -407,8 +409,6 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P pa_legitimate_constant_p
-#undef TARGET_SECTION_TYPE_FLAGS
-#define TARGET_SECTION_TYPE_FLAGS pa_section_type_flags
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P pa_legitimate_address_p
 
@@ -6162,13 +6162,12 @@ pa_emit_hpdiv_const (rtx *operands, int unsignedp)
       emit
 	(gen_rtx_PARALLEL
 	 (VOIDmode,
-	  gen_rtvec (6, gen_rtx_SET (gen_rtx_REG (SImode, 29),
+	  gen_rtvec (5, gen_rtx_SET (gen_rtx_REG (SImode, 29),
 				     gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
 						     SImode,
 						     gen_rtx_REG (SImode, 26),
 						     operands[2])),
-		     gen_rtx_CLOBBER (VOIDmode, operands[4]),
-		     gen_rtx_CLOBBER (VOIDmode, operands[3]),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 1)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 26)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 25)),
 		     gen_rtx_CLOBBER (VOIDmode, ret))));
@@ -10900,25 +10899,6 @@ pa_legitimate_constant_p (machine_mode mode, rtx x)
   return true;
 }
 
-/* Implement TARGET_SECTION_TYPE_FLAGS.  */
-
-static unsigned int
-pa_section_type_flags (tree decl, const char *name, int reloc)
-{
-  unsigned int flags;
-
-  flags = default_section_type_flags (decl, name, reloc);
-
-  /* Function labels are placed in the constant pool.  This can
-     cause a section conflict if decls are put in ".data.rel.ro"
-     or ".data.rel.ro.local" using the __attribute__ construct.  */
-  if (strcmp (name, ".data.rel.ro") == 0
-      || strcmp (name, ".data.rel.ro.local") == 0)
-    flags |= SECTION_WRITE | SECTION_RELRO;
-
-  return flags;
-}
-
 /* pa_legitimate_address_p recognizes an RTL expression that is a
    valid memory address for an instruction.  The MODE argument is the
    machine mode for the MEM expression that wants to use this address.
@@ -11009,6 +10989,7 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	  /* Long 14-bit displacements always okay for these cases.  */
 	  if (INT14_OK_STRICT
 	      || reload_completed
+	      || (reload_in_progress && !strict)
 	      || mode == QImode
 	      || mode == HImode)
 	    return true;
@@ -11354,6 +11335,19 @@ static bool
 pa_use_lra_p ()
 {
   return pa_lra_p;
+}
+
+/* Implement TARGET_FRAME_POINTER_REQUIRED.  */
+
+bool
+pa_frame_pointer_required (void)
+{
+  /* If the function receives nonlocal gotos, it needs to save the frame
+     pointer in the argument save area.  */
+  if (cfun->has_nonlocal_label)
+    return true;
+
+  return false;
 }
 
 #include "gt-pa.h"

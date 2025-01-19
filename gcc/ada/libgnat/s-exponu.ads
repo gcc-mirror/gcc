@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Modular integer exponentiation
+--  This function implements unsigned integer exponentiation
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced
@@ -50,3 +50,10 @@ function System.Exponu (Left : Int; Right : Natural) return Int
 with
   SPARK_Mode,
   Post => System.Exponu'Result = Left ** Right;
+--  Calculate ``Left`` ** ``Right``. If ``Left`` is 0 then 0 is returned
+--  and if ``Right`` is 0 then 1 is returned. In all other cases the result
+--  is set to 1 and then computed in a loop as follows:
+--  If ``Right`` is a multiple of 2 then multiply the result with ``Left``.
+--  Divide ``Right`` by 2.
+--  If ``Right is 0, return.
+--  Multiply ``Left`` with itself.

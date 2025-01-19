@@ -21429,7 +21429,6 @@
 
 	PR objc/103639
 	* objc.dg/pr103639.m: New test.
-
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

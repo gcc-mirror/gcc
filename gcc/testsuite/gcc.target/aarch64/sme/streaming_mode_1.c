@@ -7,7 +7,7 @@ void sc_b ();
 void sc_b () [[arm::streaming_compatible]]; // { dg-error "conflicting types" }
 
 void sc_c () [[arm::streaming_compatible]];
-void sc_c () {} // Inherits attribute from declaration (confusingly).
+void sc_c () {} // { dg-error "conflicting types" }
 
 void sc_d ();
 void sc_d () [[arm::streaming_compatible]] {} // { dg-error "conflicting types" }
@@ -33,7 +33,7 @@ void s_b ();
 void s_b () [[arm::streaming]]; // { dg-error "conflicting types" }
 
 void s_c () [[arm::streaming]];
-void s_c () {} // Inherits attribute from declaration (confusingly).
+void s_c () {} // { dg-error "conflicting types" }
 
 void s_d ();
 void s_d () [[arm::streaming]] {} // { dg-error "conflicting types" }

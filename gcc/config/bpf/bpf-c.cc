@@ -1,5 +1,5 @@
 /* BPF-specific code for C family languages.
-   Copyright (C) 2024 Free Software Foundation, Inc.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
    Contributed by Oracle Inc.
 
 This file is part of GCC.

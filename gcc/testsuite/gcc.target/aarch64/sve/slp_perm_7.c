@@ -19,4 +19,4 @@ f (uint8_t *restrict a, uint8_t *restrict b)
     }
 }
 
-/* { dg-final { scan-assembler {\ttbl\tz[0-9]+\.b, z[0-9]+\.b, z[0-9]+\.b\n} } } */
+/* { dg-final { scan-assembler {\ttbl\tz[0-9]+\.b, {z[0-9]+\.b}, z[0-9]+\.b\n} } } */

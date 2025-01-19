@@ -15251,8 +15251,6 @@
 	PR ada/47131
 	* gcc-interface/trans.c (Identifier_to_gnu): In SJLJ mode, do not make
 	variables that are referenced in exception handlers volatile.
-
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

@@ -5,7 +5,7 @@
   License: Distributed under the
        $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
      (See accompanying file LICENSE)
-  Source: $(DRUNTIMESRC core/_internal/_destruction.d)
+  Source: $(DRUNTIMESRC core/_internal/_postblit.d)
 */
 module core.internal.postblit;
 

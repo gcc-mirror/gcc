@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2024, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2025, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -45,6 +45,22 @@
 # else
 #  include "runtime.h"
 #  define HAVE_GETIPINFO 1
+# endif
+#endif
+
+/* Arrange to include the Ada/G++ exceptions interoperability support only in
+   contexts where it is actually needed and supported, in particular not in
+   gnat-llvm, that doesn't support C++ imports.  This interoperability hasn't
+   been certified, so leave it out of CERT runtimes as well.  */
+
+#if !defined GXX_EH_INTEROP
+# if defined(__clang_major__) && defined(__clang_minor__)
+/* GNAT-LLVM does not support C++ imports.  */
+#  define GXX_EH_INTEROP 0
+# elif defined(CERT)
+#  define GXX_EH_INTEROP 0
+# else
+#  define GXX_EH_INTEROP 1
 # endif
 #endif
 
@@ -114,7 +130,7 @@ _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, _Unwind_Stop_Fn, void *);
 
 extern struct Exception_Occurrence *
-__gnat_setup_current_excep (_Unwind_Exception *, _Unwind_Action);
+__gnat_setup_current_excep (_Unwind_Exception *, _Unwind_Action, Exception_Id);
 
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
@@ -138,18 +154,27 @@ extern void __gnat_raise_abort (void) __attribute__ ((noreturn));
 
 #ifdef __ARM_EABI_UNWINDER__
 #define CXX_EXCEPTION_CLASS "GNUCC++"
+#define CXX_DEPENDENT_EXCEPTION_CLASS "GNUCC++\x01"
 #define GNAT_EXCEPTION_CLASS "GNU-Ada"
 #else
 #define CXX_EXCEPTION_CLASS 0x474e5543432b2b00ULL
+#define CXX_DEPENDENT_EXCEPTION_CLASS 0x474e5543432b2b01ULL
 #define GNAT_EXCEPTION_CLASS 0x474e552d41646100ULL
 #endif
+
+/* Opaque C struct that stands for C++ std::type_info.  */
+
+struct cxx_type_info;
 
 /* Structure of a C++ exception, represented as a C structure...  See
    unwind-cxx.h for the full definition.  */
 
 struct __cxa_exception
 {
-  void *exceptionType;
+  /* In primary exceptions, this is a struct cxx_type_info *;
+     in dependent exceptions, this is a struct __cxa_exception *.
+     ??? Could we use a union without the risk of any ABI problems?  */
+  void *exceptionTypeOrPrimaryException;
   void (*exceptionDestructor)(void *);
 
   void (*unexpectedHandler)();
@@ -529,18 +554,6 @@ db_phases (int phases)
 
 */
 
-
-/* This is an incomplete "proxy" of the structure of exception objects as
-   built by the GNAT runtime library. Accesses to other fields than the common
-   header are performed through subprogram calls to alleviate the need of an
-   exact counterpart here and potential alignment/size issues for the common
-   header. See a-exexpr.adb.  */
-
-typedef struct
-{
-  _Unwind_Exception common;
-  /* ABI header, maximally aligned. */
-} _GNAT_Exception;
 
 /* The three constants below are specific ttype identifiers for special
    exception ids.  Their type should match what a-exexpr exports.  */
@@ -944,7 +957,8 @@ get_call_site_action_for (_Unwind_Ptr ip,
 extern bool Is_Handled_By_Others (Exception_Id eid);
 extern char Language_For         (Exception_Id eid);
 extern void *Foreign_Data_For    (Exception_Id eid);
-extern Exception_Id EID_For      (_GNAT_Exception *e);
+
+extern Exception_Id EID_For (_Unwind_Exception * e);
 
 #define Foreign_Exception system__exceptions__foreign_exception
 extern struct Exception_Data Foreign_Exception;
@@ -952,20 +966,167 @@ extern struct Exception_Data Foreign_Exception;
 /* Return true iff the exception class of EXCEPT is EC.  */
 
 static int
-exception_class_eq (const _GNAT_Exception *except,
+exception_class_eq (const _Unwind_Exception *except,
 		    const _Unwind_Exception_Class ec)
 {
 #ifdef __ARM_EABI_UNWINDER__
-  return memcmp (except->common.exception_class, ec, 8) == 0;
+  return memcmp (except->exception_class, ec, 8) == 0;
 #else
-  return except->common.exception_class == ec;
+  return except->exception_class == ec;
 #endif
 }
+
+/* Return true iff the exception class in EXCEPT is a C++ exception.  */
+bool
+__gnat_exception_language_is_cplusplus (_Unwind_Exception *except)
+{
+  return (exception_class_eq (except, CXX_EXCEPTION_CLASS)
+	  || exception_class_eq (except, CXX_DEPENDENT_EXCEPTION_CLASS));
+}
+
+/* Return true iff the exception class in EXCEPT is an Ada exception.  */
+bool
+__gnat_exception_language_is_ada (_Unwind_Exception *except)
+{
+  return (exception_class_eq (except, GNAT_EXCEPTION_CLASS));
+}
+
+#if GXX_EH_INTEROP
+
+/* Check whether *THROWN_PTR of EXCEPT_TYPEINFO is to be caught by a
+   CHOICE_TYPEINFO handler under LANG convention.
+   Implemented by GNAT.CPP_Exception.Convert_Caught_Object.  */
+
+extern bool __gnat_convert_caught_object (struct cxx_type_info *choice_typeinfo,
+					  struct cxx_type_info *except_typeinfo,
+					  void **thrown_ptr_p, char lang);
+
+/* Advance unconditionally to the primary exception from a dependent one
+   (std::rethrow_exception); see in
+   libstdc++-v3/libsupc++/unwind-cxx.h.  */
+
+static inline void
+__gnat_get_cxx_dependent_exception (void **thrown_ptr_p)
+{
+  struct __cxa_exception *cxa_xcpt
+    = ((struct __cxa_exception *)*thrown_ptr_p - 1);
+
+  *thrown_ptr_p = cxa_xcpt->exceptionTypeOrPrimaryException;
+}
+
+/* Advance to the primary exception from a dependent one,
+   iff *THROWN_PTR_P corresponds to a dependent one.  */
+
+static inline void
+__gnat_maybe_get_cxx_dependent_exception (void **thrown_ptr_p)
+{
+  _Unwind_Exception *propagated_exception
+    = ((_Unwind_Exception *)*thrown_ptr_p - 1);
+
+  if (exception_class_eq (propagated_exception,
+			  CXX_DEPENDENT_EXCEPTION_CLASS))
+    __gnat_get_cxx_dependent_exception (thrown_ptr_p);
+}
+
+/* Return the std::type_info* that denotes the type of the thrown
+   object.  Return NULL if it's not a C++ exception.  */
+struct cxx_type_info *
+__gnat_get_cxx_exception_type_info (_Unwind_Exception *unwind_exception)
+{
+  void *thrown_ptr = unwind_exception + 1;
+
+  __gnat_maybe_get_cxx_dependent_exception (&thrown_ptr);
+
+  struct __cxa_exception *cxa_xcpt
+    = ((struct __cxa_exception *)thrown_ptr - 1);
+
+  if (!exception_class_eq (&cxa_xcpt->unwindHeader,
+			   CXX_EXCEPTION_CLASS))
+    return NULL;
+
+  struct cxx_type_info *except_typeinfo
+    = (struct cxx_type_info *)cxa_xcpt->exceptionTypeOrPrimaryException;
+
+  return except_typeinfo;
+}
+
+/* Convert the exception denoted by UNWIND_EXCEPTION to CHOICE_TYPE.
+
+   If LANG is 'B', the type of the exception may be a derived type
+   that would be caught by CHOICE_TYPE in C++, otherwise the types
+   must be an exact match.
+
+   If the type requirements are not met, set *SUCCESS_P to FALSE and
+   *THROWN_PTR_P to NULL.
+
+   Otherwise, set *SUCCESS_P to TRUE and *THROWN_PTR_P to the
+   (sub)object of CHOICE_TYPE in the exception object.  */
+
+void
+__gnat_obtain_caught_object (int *success_p, void **thrown_ptr_p,
+			     struct cxx_type_info *choice_typeinfo,
+			     char lang,
+			     _Unwind_Exception *unwind_exception)
+{
+  void *thrown_ptr = unwind_exception + 1;
+
+  /* Unwrap a dependent exception.  */
+  __gnat_maybe_get_cxx_dependent_exception (&thrown_ptr);
+
+  bool success;
+
+  switch (lang)
+    {
+    default:
+      success = false;
+      break;
+
+    case 'A':
+      success = true;
+      break;
+
+    case 'B':
+    case 'C':
+      {
+	struct __cxa_exception *cxa_xcpt
+	  = ((struct __cxa_exception *)thrown_ptr - 1);
+	struct cxx_type_info *except_typeinfo
+	  = (struct cxx_type_info *)cxa_xcpt->exceptionTypeOrPrimaryException;
+
+	/* Adjust thrown_ptr, typed except_typeinfo, to point to the
+	   choice_typeinfo subobject.  */
+	success = __gnat_convert_caught_object (choice_typeinfo,
+						except_typeinfo,
+						&thrown_ptr,
+						lang);
+
+	break;
+      }
+    }
+
+  /* Store the requested results.  */
+  if (success_p)
+    *success_p = success;
+
+  if (thrown_ptr_p)
+    {
+      if (success)
+	*thrown_ptr_p = thrown_ptr;
+      else
+	*thrown_ptr_p = NULL;
+    }
+}
+
+#endif /* GXX_EH_INTEROP */
 
 /* Return how CHOICE matches PROPAGATED_EXCEPTION.  */
 
 static enum action_kind
-is_handled_by (Exception_Id choice, _GNAT_Exception *propagated_exception)
+is_handled_by (Exception_Id choice,
+#if GXX_EH_INTEROP
+	       Exception_Id *eid,
+#endif /* GXX_EH_INTEROP */
+	       _Unwind_Exception *propagated_exception)
 {
   /* All others choice match everything.  */
   if (choice == GNAT_ALL_OTHERS)
@@ -998,24 +1159,37 @@ is_handled_by (Exception_Id choice, _GNAT_Exception *propagated_exception)
       )
     return handler;
 
-#ifndef CERT
-  /* C++ exception occurrences.  */
-  if (exception_class_eq (propagated_exception, CXX_EXCEPTION_CLASS)
-      && Language_For (choice) == 'C')
-    {
-      void *choice_typeinfo = Foreign_Data_For (choice);
-      void *except_typeinfo =
-	(((struct __cxa_exception *)
-	  ((_Unwind_Exception *)propagated_exception + 1)) - 1)
-	->exceptionType;
+#if GXX_EH_INTEROP
+  char lang;
+  bool primary;
 
-      /* Typeinfo are directly compared, which might not be correct if they
-	 aren't merged.  ??? We should call the == operator if this module is
-	 compiled in C++.  */
-      if (choice_typeinfo == except_typeinfo)
-	return handler;
+  /* C++ exception occurrences with exact (C) or base (B) type matching.  */
+  if (((primary = exception_class_eq (propagated_exception,
+				      CXX_EXCEPTION_CLASS))
+       || exception_class_eq (propagated_exception,
+			      CXX_DEPENDENT_EXCEPTION_CLASS))
+      && ((lang = Language_For (choice)) == 'C' || lang == 'B'))
+    {
+      struct cxx_type_info *choice_typeinfo
+	= ((struct cxx_type_info *)Foreign_Data_For (choice));
+      void *thrown_ptr = (propagated_exception + 1);
+
+      if (!primary)
+	__gnat_get_cxx_dependent_exception (&thrown_ptr);
+
+      struct __cxa_exception *cxa_xcpt
+	= ((struct __cxa_exception *)thrown_ptr - 1);
+      struct cxx_type_info *except_typeinfo
+	= (struct cxx_type_info *)cxa_xcpt->exceptionTypeOrPrimaryException;
+
+      if (__gnat_convert_caught_object (choice_typeinfo, except_typeinfo,
+					&thrown_ptr, lang))
+	{
+	  *eid = (Exception_Id) choice;
+	  return handler;
+	}
     }
-#endif
+#endif /* GXX_EH_INTEROP */
 
   return nothing;
 }
@@ -1027,11 +1201,12 @@ static void
 get_action_description_for (_Unwind_Ptr ip,
                             _Unwind_Exception *uw_exception,
                             _Unwind_Action uw_phase,
+#ifndef CERT
+			    Exception_Id *eid,
+#endif
                             region_descriptor *region,
                             action_descriptor *action)
 {
-  _GNAT_Exception *gnat_exception = (_GNAT_Exception *) uw_exception;
-
   /* Search the call site table first, which may get us a landing pad as well
      as the head of an action record list.  */
   get_call_site_action_for (ip, region, action);
@@ -1101,9 +1276,13 @@ get_action_description_for (_Unwind_Ptr ip,
 		  Exception_Id choice
 		    = (Exception_Id) get_ttype_entry_for (region, ar_filter);
 
-		  act = is_handled_by (choice, gnat_exception);
-		  if (act != nothing)
-		    {
+		  act = is_handled_by (choice,
+#if GXX_EH_INTEROP
+				       eid,
+#endif /* GXX_EH_INTEROP */
+				       uw_exception);
+                  if (act != nothing)
+                    {
 		      action->kind = act;
 		      action->ttype_filter = ar_filter;
 		      return;
@@ -1209,6 +1388,9 @@ personality_body (_Unwind_Action uw_phases,
   region_descriptor region;
   action_descriptor action;
   _Unwind_Ptr ip;
+#ifndef CERT
+  Exception_Id eid = NULL;
+#endif
 
   /* Debug traces.  */
   db_indent (DB_INDENT_RESET);
@@ -1230,7 +1412,11 @@ personality_body (_Unwind_Action uw_phases,
 
   /* Search the call-site and action-record tables for the action associated
      with this IP.  */
-  get_action_description_for (ip, uw_exception, uw_phases, &region, &action);
+  get_action_description_for (ip, uw_exception, uw_phases,
+#ifndef CERT
+			      &eid,
+#endif
+			      &region, &action);
   db_action_for (&action, ip);
 
   /* Whatever the phase, if there is nothing relevant in this frame,
@@ -1267,7 +1453,7 @@ personality_body (_Unwind_Action uw_phases,
 	     the Ada occurrence pointer to use.  */
 
 	  struct Exception_Occurrence *excep
-	    = __gnat_setup_current_excep (uw_exception, uw_phases);
+	    = __gnat_setup_current_excep (uw_exception, uw_phases, eid);
 
 	  if (action.kind == unhandler)
 	    __gnat_notify_unhandled_exception (excep);
@@ -1291,7 +1477,7 @@ personality_body (_Unwind_Action uw_phases,
   /* Write current exception so that it can be retrieved from Ada.  It was
      already done during phase 1, but one or several exceptions may have been
      raised in cleanup handlers in between.  */
-  __gnat_setup_current_excep (uw_exception, uw_phases);
+  __gnat_setup_current_excep (uw_exception, uw_phases, eid);
 #endif
 
   return _URC_INSTALL_CONTEXT;

@@ -1,3 +1,109 @@
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/crti.S: Add lpad instructions.
+	* config/riscv/crtn.S: Likewise.
+	* config/riscv/save-restore.S: Likewise.
+	* config/riscv/riscv-asm.h: Add GNU_PROPERTY for ZICFILP,
+	ZICFISS.
+	Co-Developed-by: Jesse Huang <jesse.huang@sifive.com>
+
+2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/linux-unwind.h: Include shadow-stack-unwind.h.
+	* config/riscv/shadow-stack-unwind.h
+	(_Unwind_Frames_Extra): Define.
+	(_Unwind_Frames_Increment): Define.
+
+2025-01-07  Keith Packard  <keithp@keithp.com>
+
+	* config/m68k/fpgnulib.c (extenddfxf2): Simplify code by removing code
+	that should never execute.  Fix denorm shift test and insert hidden bit
+	as needed.
+	(__truncxfdf2): Properly compue and shift the significant right.
+	* config/m68k/lb1sf68.S (__fixxfsi): Correct shift counts and simplify.
+	(QUIET_NAN): Make it a positive quiet NaN and fix return values to inject
+	sign properly.
+
+2025-01-06  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/lib1funcs.S: Add .note.GNU-stack section on linux.
+
+2024-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118001
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _fload_1, _fload_2,
+	_fload_3, _fload_4, _movmemf.
+	* config/avr/lib1funcs.S (.branch_plus): New .macro.
+	(__xload_1, __xload_2, __xload_3, __xload_4): When the address is
+	located in flash, then forward to...
+	(__fload_1, __fload_2, __fload_3, __fload_4): ...these new
+	functions, respectively.
+	(__movmemx_hi): When the address is located in flash, forward to...
+	(__movmemf_hi): ...this new function.
+
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/117851
+	* configure.ac (extra_parts): Add crtoffloadtableS.o.
+	* Makefile.in (crtoffloadtableS$(objext)): New goal.
+	* configure: Regenerated.
+
+2024-11-29  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (_CHKFEAT_GCS): Add.
+
+2024-11-29  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (_Unwind_Frames_Extra): Update.
+	(_Unwind_Frames_Increment): Update
+
+2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config/nios2/*: Delete entire directory.
+	* config.host: Remove refences to nios2.
+	* unwind-dw2-fde-dip.c: Likewise.
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* config.host: Update.
+	* config/aarch64/t-mingw: New.
+
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117628
+	* config/arm/freebsd-atomic.c (bool): Remove unnecessary typedef.
+	* config/arm/linux-atomic-64bit.c: Likewise.
+	* config/arm/linux-atomic.c: Likewise.
+	* config/nds32/linux-atomic.c: Likewise.
+	* config/nios2/linux-atomic.c: Likewise.
+
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117628
+	* config/csky/linux-atomic.c (bool): Remove unnecessary typedef.
+	* unwind-arm-common.inc (bool): Similarly.
+
+2024-11-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117627
+	* config/pa/linux-atomic.c: Remove typedef for bool type.
+
+2024-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/117624
+	* libgcc2.c (INFINITY): Add #undef before #define.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-asm.h (FEATURE_1_GCS): Define.
+	(GCS_FLAG): Define if GCS is enabled.
+	(GNU_PROPERTY): Add GCS_FLAG.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (_Unwind_Frames_Extra): Update.
+	(_Unwind_Frames_Increment): Define.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* crtstuff.c: Remove trailing whitespace.
@@ -14067,7 +14173,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2024 Free Software Foundation, Inc.
+Copyright (C) 2007-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024 Free Software Foundation, Inc.
+# Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +38,20 @@ dg-init
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/sched1-spills/*.{\[cS\],cpp}]] \
+	"" $DEFAULT_CFLAGS
+
+# Saturation alu
+foreach opt {
+  {-O2}
+  {-O3}
+  {-Ofast}
+  {-Os}
+  {-Oz}
+} {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/sat/*.\[cS\]]] \
+    "$opt" ""
+}
 
 # All done.
 dg-finish

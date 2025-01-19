@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
    This file is part of GCC.
@@ -20,7 +20,6 @@
 #ifndef IN_GEN_AVR_MMCU_TEXI
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

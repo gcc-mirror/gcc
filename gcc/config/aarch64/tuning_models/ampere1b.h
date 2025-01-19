@@ -1,5 +1,5 @@
 /* Tuning model description for the Ampere1B core.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -88,12 +88,9 @@ static const struct tune_params ampere1b_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   4, /* issue_rate  */
-  (AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_AES_AESMC |
-   AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_MOVK_MOVK |
-   AARCH64_FUSE_ALU_BRANCH /* adds, ands, bics, ccmp, ccmn */ |
-   AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_ALU_CBZ |
-   AARCH64_FUSE_ADDSUB_2REG_CONST1),
-  /* fusible_ops  */
+  (AARCH64_FUSE_BASE | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK
+   | AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_ALU_CBZ
+   | AARCH64_FUSE_ADDSUB_2REG_CONST1), /* fusible_ops  */
   "32",		/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */
@@ -105,9 +102,8 @@ static const struct tune_params ampere1b_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_STRONG,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND
-   | AARCH64_EXTRA_TUNE_AVOID_CROSS_LOOP_FMA
-   | AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA), /* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_BASE
+   | AARCH64_EXTRA_TUNE_AVOID_CROSS_LOOP_FMA), /* tune_flags.  */
   &ampere1b_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALIGNED,   /* ldp_policy_model.  */
   AARCH64_LDP_STP_POLICY_ALIGNED    /* stp_policy_model.  */

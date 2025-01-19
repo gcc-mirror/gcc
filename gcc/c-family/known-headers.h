@@ -1,5 +1,5 @@
 /* Support for suggestions about missing #include directives.
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,6 +39,21 @@ class suggest_missing_header : public deferred_diagnostic
  private:
   const char *m_name_str;
   const char *m_header_hint;
+};
+
+/* Subclass of deferred_diagnostic for suggesting to the user
+   that they have missed a command-line option.  */
+
+class suggest_missing_option : public deferred_diagnostic
+{
+ public:
+  suggest_missing_option (location_t loc, const char *name,
+			  diagnostic_option_id option_id);
+  ~suggest_missing_option ();
+
+ private:
+  const char *m_name_str;
+  diagnostic_option_id m_option_id;
 };
 
 #endif /* GCC_KNOWN_HEADERS_H */

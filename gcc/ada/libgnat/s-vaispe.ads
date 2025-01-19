@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2022-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2022-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the specification entities using for the formal
---  verification of the routines for scanning signed integer values.
+--  This package is part of a set of Ghost code packages used to proof the
+--  implementations of the Image and Value attributes. It provides the
+--  specification entities using for the formal verification of the routines
+--  for scanning signed integer values.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by

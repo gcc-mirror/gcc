@@ -1,6 +1,6 @@
 # configure.ac provides gm2spec.cc with access to config values.
 
-# Copyright (C) 2001-2024 Free Software Foundation, Inc.
+# Copyright (C) 2001-2025 Free Software Foundation, Inc.
 # Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 # GCC is free software; you can redistribute it and/or modify

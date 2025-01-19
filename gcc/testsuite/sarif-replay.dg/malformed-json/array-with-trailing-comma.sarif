@@ -1,0 +1,6 @@
+[ 0, 1, 2, ] /* { dg-error "expected a JSON value but got '\\\]'" } */
+
+{ dg-begin-multiline-output "" }
+    1 | [ 0, 1, 2, ]
+      |            ^
+{ dg-end-multiline-output "" }

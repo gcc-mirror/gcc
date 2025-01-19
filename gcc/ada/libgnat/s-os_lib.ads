@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -494,12 +494,19 @@ package System.OS_Lib is
    --  used. Use Is_Owner_Readable_File/Is_Owner_Writable_File or
    --  Is_Read_Accessible_File/Is_Write_Accessible_File instead.
 
-   function Locate_Exec_On_Path (Exec_Name : String) return String_Access;
+   function Locate_Exec_On_Path
+     (Exec_Name : String;
+      Current_Dir_On_Win : Boolean := False) return String_Access;
    --  Try to locate an executable whose name is given by Exec_Name in the
    --  directories listed in the environment Path. If the Exec_Name does not
    --  have the executable suffix, it will be appended before the search.
    --  Otherwise works like Locate_Regular_File below. If the executable is
    --  not found, null is returned.
+   --
+   --  When Current_Dir_On_Win is passed, attempt to look for the
+   --  executable on the current working directory before looking in
+   --  those listed on the PATH. This mimics the Windows behavior,
+   --  and only has an effect on Windows.
    --
    --  Note that this function allocates memory for the returned value. This
    --  memory needs to be deallocated after use.

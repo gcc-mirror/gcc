@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -66,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtx-vector-builder.h"
 #include "tree-pretty-print.h"
 #include "flags.h"
+#include "internal-fn.h"
 
 
 /* If this is nonzero, we do not bother generating VOLATILE
@@ -1062,12 +1062,13 @@ widest_fixed_size_mode_for_size (unsigned int size, by_pieces_operation op)
   gcc_checking_assert (size > 1);
 
   /* Use QI vector only if size is wider than a WORD.  */
-  if (can_use_qi_vectors (op) && size > UNITS_PER_WORD)
+  if (can_use_qi_vectors (op))
     {
       machine_mode mode;
       fixed_size_mode candidate;
       FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
 	if (is_a<fixed_size_mode> (mode, &candidate)
+	    && GET_MODE_SIZE (candidate) > UNITS_PER_WORD
 	    && GET_MODE_INNER (candidate) == QImode)
 	  {
 	    if (GET_MODE_SIZE (candidate) >= size)
@@ -3828,6 +3829,7 @@ get_def_for_expr (tree name, enum tree_code code)
 
   def_stmt = get_gimple_for_ssa_name (name);
   if (!def_stmt
+      || !is_gimple_assign (def_stmt)
       || gimple_assign_rhs_code (def_stmt) != code)
     return NULL;
 
@@ -3848,6 +3850,7 @@ get_def_for_expr_class (tree name, enum tree_code_class tclass)
 
   def_stmt = get_gimple_for_ssa_name (name);
   if (!def_stmt
+      || !is_gimple_assign (def_stmt)
       || TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt)) != tclass)
     return NULL;
 
@@ -5696,6 +5699,7 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
 
   srcstmt = get_gimple_for_ssa_name (src);
   if (!srcstmt
+      || !is_gimple_assign (srcstmt)
       || TREE_CODE_CLASS (gimple_assign_rhs_code (srcstmt)) != tcc_binary)
     return false;
 
@@ -7227,6 +7231,28 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
   if (*p_complete && !complete_ctor_at_level_p (TREE_TYPE (ctor),
 						num_fields, elt_type))
     *p_complete = 0;
+  else if (TREE_CODE (TREE_TYPE (ctor)) == UNION_TYPE
+	   || TREE_CODE (TREE_TYPE (ctor)) == QUAL_UNION_TYPE)
+    {
+      if (*p_complete
+	  && CONSTRUCTOR_ZERO_PADDING_BITS (ctor)
+	  && (num_fields
+	      ? simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)),
+				  TYPE_SIZE (elt_type)) != 1
+	      : type_has_padding_at_level_p (TREE_TYPE (ctor))))
+	*p_complete = 0;
+      else if (*p_complete > 0
+	       && (num_fields
+		   ? simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)),
+				       TYPE_SIZE (elt_type)) != 1
+		   : type_has_padding_at_level_p (TREE_TYPE (ctor))))
+	*p_complete = -1;
+    }
+  else if (*p_complete
+	   && (CONSTRUCTOR_ZERO_PADDING_BITS (ctor)
+	       || flag_zero_init_padding_bits == ZERO_INIT_PADDING_BITS_ALL)
+	   && type_has_padding_at_level_p (TREE_TYPE (ctor)))
+    *p_complete = 0;
   else if (*p_complete > 0
 	   && type_has_padding_at_level_p (TREE_TYPE (ctor)))
     *p_complete = -1;
@@ -7301,19 +7327,32 @@ bool
 complete_ctor_at_level_p (const_tree type, HOST_WIDE_INT num_elts,
 			  const_tree last_type)
 {
-  if (TREE_CODE (type) == UNION_TYPE
-      || TREE_CODE (type) == QUAL_UNION_TYPE)
+  if (TREE_CODE (type) == UNION_TYPE || TREE_CODE (type) == QUAL_UNION_TYPE)
     {
       if (num_elts == 0)
-	return false;
+	{
+	  if (flag_zero_init_padding_bits >= ZERO_INIT_PADDING_BITS_UNIONS)
+	    return false;
+
+	  /* If the CONSTRUCTOR doesn't have any elts, it is
+	     incomplete if the union has at least one field.  */
+	  for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
+	    if (TREE_CODE (f) == FIELD_DECL)
+	      return false;
+
+	  return true;
+	}
 
       gcc_assert (num_elts == 1 && last_type);
 
-      /* ??? We could look at each element of the union, and find the
-	 largest element.  Which would avoid comparing the size of the
-	 initialized element against any tail padding in the union.
-	 Doesn't seem worth the effort...  */
-      return simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (last_type)) == 1;
+      if (flag_zero_init_padding_bits >= ZERO_INIT_PADDING_BITS_UNIONS)
+	/* ??? We could look at each element of the union, and find the
+	   largest element.  Which would avoid comparing the size of the
+	   initialized element against any tail padding in the union.
+	   Doesn't seem worth the effort...  */
+	return simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (last_type)) == 1;
+
+      return true;
     }
 
   return count_type_elements (type, true) == num_elts;
@@ -7863,15 +7902,14 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
       {
 	unsigned HOST_WIDE_INT idx;
 	constructor_elt *ce;
-	int i;
 	bool need_to_clear;
 	insn_code icode = CODE_FOR_nothing;
 	tree elt;
 	tree elttype = TREE_TYPE (type);
 	int elt_size = vector_element_bits (type);
 	machine_mode eltmode = TYPE_MODE (elttype);
-	HOST_WIDE_INT bitsize;
-	HOST_WIDE_INT bitpos;
+	poly_int64 bitsize;
+	poly_int64 bitpos;
 	rtvec vector = NULL;
 	poly_uint64 n_elts;
 	unsigned HOST_WIDE_INT const_n_elts;
@@ -7928,12 +7966,9 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 
 	n_elts = TYPE_VECTOR_SUBPARTS (type);
 	if (REG_P (target)
-	    && VECTOR_MODE_P (mode)
-	    && n_elts.is_constant (&const_n_elts))
+	    && VECTOR_MODE_P (mode))
 	  {
-	    machine_mode emode = eltmode;
-	    bool vector_typed_elts_p = false;
-
+	    const_n_elts = 0;
 	    if (CONSTRUCTOR_NELTS (exp)
 		&& (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value))
 		    == VECTOR_TYPE))
@@ -7942,23 +7977,26 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		gcc_assert (known_eq (CONSTRUCTOR_NELTS (exp)
 				      * TYPE_VECTOR_SUBPARTS (etype),
 				      n_elts));
-		emode = TYPE_MODE (etype);
-		vector_typed_elts_p = true;
-	      }
-	    icode = convert_optab_handler (vec_init_optab, mode, emode);
-	    if (icode != CODE_FOR_nothing)
-	      {
-		unsigned int n = const_n_elts;
 
-		if (vector_typed_elts_p)
-		  {
-		    n = CONSTRUCTOR_NELTS (exp);
-		    vec_vec_init_p = true;
-		  }
-		vector = rtvec_alloc (n);
-		for (unsigned int k = 0; k < n; k++)
-		  RTVEC_ELT (vector, k) = CONST0_RTX (emode);
+		icode = convert_optab_handler (vec_init_optab, mode,
+					       TYPE_MODE (etype));
+		const_n_elts = CONSTRUCTOR_NELTS (exp);
+		vec_vec_init_p = icode != CODE_FOR_nothing;
 	      }
+	    else if (exact_div (n_elts, GET_MODE_NUNITS (eltmode))
+			.is_constant (&const_n_elts))
+	      {
+		/* For a non-const type vector, we check it is made up of
+		   similarly non-const type vectors. */
+		icode = convert_optab_handler (vec_init_optab, mode, eltmode);
+	      }
+
+	  if (const_n_elts && icode != CODE_FOR_nothing)
+	    {
+	      vector = rtvec_alloc (const_n_elts);
+	      for (unsigned int k = 0; k < const_n_elts; k++)
+		RTVEC_ELT (vector, k) = CONST0_RTX (eltmode);
+	    }
 	  }
 
 	/* Compute the size of the elements in the CTOR.  It differs
@@ -7968,7 +8006,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 			 ? TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value)
 			 : elttype);
 	if (VECTOR_TYPE_P (val_type))
-	  bitsize = tree_to_uhwi (TYPE_SIZE (val_type));
+	  bitsize = tree_to_poly_uint64 (TYPE_SIZE (val_type));
 	else
 	  bitsize = elt_size;
 
@@ -7981,12 +8019,12 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	  need_to_clear = true;
 	else
 	  {
-	    unsigned HOST_WIDE_INT count = 0, zero_count = 0;
+	    poly_uint64 count = 0, zero_count = 0;
 	    tree value;
 
 	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
 	      {
-		int n_elts_here = bitsize / elt_size;
+		poly_int64 n_elts_here = exact_div (bitsize, elt_size);
 		count += n_elts_here;
 		if (mostly_zeros_p (value))
 		  zero_count += n_elts_here;
@@ -7995,7 +8033,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    /* Clear the entire vector first if there are any missing elements,
 	       or if the incidence of zero elements is >= 75%.  */
 	    need_to_clear = (maybe_lt (count, n_elts)
-			     || 4 * zero_count >= 3 * count);
+			     || maybe_gt (4 * zero_count, 3 * count));
 	  }
 
 	if (need_to_clear && maybe_gt (size, 0) && !vector)
@@ -8022,9 +8060,13 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 
         /* Store each element of the constructor into the corresponding
 	   element of TARGET, determined by counting the elements.  */
-	for (idx = 0, i = 0;
-	     vec_safe_iterate (CONSTRUCTOR_ELTS (exp), idx, &ce);
-	     idx++, i += bitsize / elt_size)
+	HOST_WIDE_INT chunk_size = 0;
+	bool chunk_multiple_p = constant_multiple_p (bitsize, elt_size,
+						     &chunk_size);
+	gcc_assert (chunk_multiple_p || vec_vec_init_p);
+
+	for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (exp), idx, &ce);
+	     idx++)
 	  {
 	    HOST_WIDE_INT eltpos;
 	    tree value = ce->value;
@@ -8035,7 +8077,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    if (ce->index)
 	      eltpos = tree_to_uhwi (ce->index);
 	    else
-	      eltpos = i;
+	      eltpos = idx * chunk_size;
 
 	    if (vector)
 	      {
@@ -8423,10 +8465,8 @@ get_inner_reference (tree exp, poly_int64 *pbitsize,
 
   if (size_tree != 0)
     {
-      if (! tree_fits_uhwi_p (size_tree))
+      if (!poly_int_tree_p (size_tree, pbitsize))
 	mode = BLKmode, *pbitsize = -1;
-      else
-	*pbitsize = tree_to_uhwi (size_tree);
     }
 
   *preversep = reverse_storage_order_for_component_p (exp);
@@ -9670,9 +9710,9 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	  fprintf(dump_file, "positive division:%s unsigned cost: %u; "
-		  "signed cost: %u\n", was_tie ? "(needed tie breaker)" : "",
-		  uns_cost, sgn_cost);
+	fprintf (dump_file, ";; positive division:%s unsigned cost: %u; "
+			    "signed cost: %u\n",
+		 was_tie ? " (needed tie breaker)" : "", uns_cost, sgn_cost);
 
       if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
 	{
@@ -11321,11 +11361,24 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && !SSA_NAME_IS_DEFAULT_DEF (exp)
 	  && (optimize || !SSA_NAME_VAR (exp)
 	      || DECL_IGNORED_P (SSA_NAME_VAR (exp)))
+	  && is_gimple_assign (SSA_NAME_DEF_STMT (exp))
 	  && stmt_is_replaceable_p (SSA_NAME_DEF_STMT (exp)))
 	g = SSA_NAME_DEF_STMT (exp);
-      if (g)
+      if (safe_is_a <gassign *> (g))
 	return expand_expr_real_gassign (as_a<gassign *> (g), target, tmode,
 					 modifier, alt_rtl, inner_reference_p);
+      else if (safe_is_a <gcall *> (g))
+	{
+	  /* ???  internal call expansion doesn't follow the usual API
+	     of returning the destination RTX and being passed a desired
+	     target.  */
+	  rtx dest = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+	  tree tmplhs = make_tree (TREE_TYPE (exp), dest);
+	  gimple_call_set_lhs (g, tmplhs);
+	  expand_internal_call (as_a <gcall *> (g));
+	  gimple_call_set_lhs (g, exp);
+	  return dest;
+	}
 
       ssa_name = exp;
       decl_rtl = get_rtx_for_ssa_name (ssa_name);
@@ -12505,7 +12558,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* If the output type is a bit-field type, do an extraction.  */
-      else if (reduce_bit_field && mode != BLKmode)
+      else if (reduce_bit_field
+	       && mode != BLKmode
+	       && (MEM_P (op0) || !COMPLEX_MODE_P (GET_MODE (op0))))
 	return extract_bit_field (op0, TYPE_PRECISION (type), 0,
 				  TYPE_UNSIGNED (type), NULL_RTX,
 				  mode, mode, false, NULL);
@@ -12529,6 +12584,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 
 	  emit_move_insn (target, op0);
 	  op0 = target;
+
+	  if (reduce_bit_field && mode != BLKmode)
+	    return extract_bit_field (op0, TYPE_PRECISION (type), 0,
+				      TYPE_UNSIGNED (type), NULL_RTX,
+				      mode, mode, false, NULL);
 	}
 
       /* If OP0 is (now) a MEM, we need to deal with alignment issues.  If the
@@ -14135,4 +14195,359 @@ int_expr_size (const_tree exp)
     return -1;
 
   return tree_to_shwi (size);
+}
+
+/* Return the quotient of polynomial long division of x^2N by POLYNOMIAL
+   in GF (2^N).
+   Author: Richard Sandiford <richard.sandiford@arm.com>  */
+
+unsigned HOST_WIDE_INT
+gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial,
+			     unsigned short n)
+{
+  /* The result has degree N, so needs N + 1 bits.  */
+  gcc_assert (n < 64);
+
+  /* Perform a division step for the x^2N coefficient.  At this point the
+     quotient and remainder have N implicit trailing zeros.  */
+  unsigned HOST_WIDE_INT quotient = 1;
+  unsigned HOST_WIDE_INT remainder = polynomial;
+
+  /* Process the coefficients for x^(2N-1) down to x^N, with each step
+     reducing the number of implicit trailing zeros by one.  */
+  for (unsigned int i = 0; i < n; ++i)
+    {
+      bool coeff = remainder & (HOST_WIDE_INT_1U << (n - 1));
+      quotient = (quotient << 1) | coeff;
+      remainder = (remainder << 1) ^ (coeff ? polynomial : 0);
+    }
+  return quotient;
+}
+
+/* Calculate CRC for the initial CRC and given POLYNOMIAL.
+   CRC_BITS is CRC size.  */
+
+static unsigned HOST_WIDE_INT
+calculate_crc (unsigned HOST_WIDE_INT crc,
+	       unsigned HOST_WIDE_INT polynomial,
+	       unsigned short crc_bits)
+{
+  unsigned HOST_WIDE_INT msb = HOST_WIDE_INT_1U << (crc_bits - 1);
+  crc = crc << (crc_bits - 8);
+  for (short i = 8; i > 0; --i)
+    {
+      if (crc & msb)
+	crc = (crc << 1) ^ polynomial;
+      else
+	crc <<= 1;
+    }
+  /* Zero out bits in crc beyond the specified number of crc_bits.  */
+  if (crc_bits < sizeof (crc) * CHAR_BIT)
+    crc &= (HOST_WIDE_INT_1U << crc_bits) - 1;
+  return crc;
+}
+
+/* Assemble CRC table with 256 elements for the given POLYNOM and CRC_BITS.
+   POLYNOM is the polynomial used to calculate the CRC table's elements.
+   CRC_BITS is the size of CRC, may be 8, 16, ... . */
+
+static rtx
+assemble_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
+{
+  unsigned table_el_n = 0x100;
+  tree ar = build_array_type (make_unsigned_type (crc_bits),
+			      build_index_type (size_int (table_el_n - 1)));
+
+  /* Initialize the table.  */
+  vec<tree, va_gc> *initial_values;
+  vec_alloc (initial_values, table_el_n);
+  for (size_t i = 0; i < table_el_n; ++i)
+    {
+      unsigned HOST_WIDE_INT crc = calculate_crc (i, polynom, crc_bits);
+      tree element = build_int_cstu (make_unsigned_type (crc_bits), crc);
+      vec_safe_push (initial_values, element);
+    }
+  tree ctor = build_constructor_from_vec (ar, initial_values);
+  rtx mem = output_constant_def (ctor, 1);
+  gcc_assert (MEM_P (mem));
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file,
+	       ";; emitting crc table crc_%u_polynomial_"
+	       HOST_WIDE_INT_PRINT_HEX " ",
+	       crc_bits, polynom);
+      print_rtl_single (dump_file, XEXP (mem, 0));
+      fprintf (dump_file, "\n");
+    }
+
+  return XEXP (mem, 0);
+}
+
+/* Generate CRC lookup table by calculating CRC for all possible
+   8-bit data values.  The table is stored with a specific name in the read-only
+   static data section.
+   POLYNOM is the polynomial used to calculate the CRC table's elements.
+   CRC_BITS is the size of CRC, may be 8, 16, ... .  */
+
+static rtx
+generate_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
+{
+  gcc_assert (crc_bits <= 64);
+
+  return assemble_crc_table (polynom, crc_bits);
+}
+
+/* Generate table-based CRC code for the given CRC, INPUT_DATA and the
+   POLYNOMIAL (without leading 1).
+
+   First, using POLYNOMIAL's value generates CRC table of 256 elements,
+   then generates the assembly for the following code,
+   where crc_bit_size and data_bit_size may be 8, 16, 32, 64, depending on CRC:
+
+     for (int i = 0; i < data_bit_size / 8; i++)
+       crc = (crc << 8) ^ crc_table[(crc >> (crc_bit_size - 8))
+				    ^ (data >> (data_bit_size - (i + 1) * 8)
+				    & 0xFF))];
+
+   So to take values from the table, we need 8-bit data.
+   If input data size is not 8, then first we extract upper 8 bits,
+   then the other 8 bits, and so on.  */
+
+static void
+calculate_table_based_CRC (rtx *crc, const rtx &input_data,
+			   const rtx &polynomial,
+			   machine_mode data_mode)
+{
+  machine_mode mode = GET_MODE (*crc);
+  unsigned short crc_bit_size = GET_MODE_BITSIZE (mode).to_constant ();
+  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
+  rtx tab = generate_crc_table (UINTVAL (polynomial), crc_bit_size);
+
+  for (unsigned short i = 0; i < data_size; i++)
+    {
+      /* crc >> (crc_bit_size - 8).  */
+      *crc = force_reg (mode, *crc);
+      rtx op1 = expand_shift (RSHIFT_EXPR, mode, *crc, crc_bit_size - 8,
+			      NULL_RTX, 1);
+
+      /* data >> (8 * (GET_MODE_SIZE (data_mode).to_constant () - i - 1)).  */
+      unsigned range_8 = 8 * (data_size - i - 1);
+      /* CRC's mode is always at least as wide as INPUT_DATA.  Convert
+	 INPUT_DATA into CRC's mode.  */
+      rtx data = gen_reg_rtx (mode);
+      convert_move (data, input_data, 1);
+      data = expand_shift (RSHIFT_EXPR, mode, data, range_8, NULL_RTX, 1);
+
+      /* data >> (8 * (GET_MODE_SIZE (mode)
+					.to_constant () - i - 1)) & 0xFF.  */
+      rtx data_final = expand_and (mode, data,
+				   gen_int_mode (255, mode), NULL_RTX);
+
+      /* (crc >> (crc_bit_size - 8)) ^ data_8bit.  */
+      rtx in = expand_binop (mode, xor_optab, op1, data_final,
+			     NULL_RTX, 1, OPTAB_WIDEN);
+
+      /* ((crc >> (crc_bit_size - 8)) ^ data_8bit) & 0xFF.  */
+      rtx index = expand_and (mode, in, gen_int_mode (255, mode),
+			      NULL_RTX);
+      int log_crc_size = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
+      index = expand_shift (LSHIFT_EXPR, mode, index,
+			    log_crc_size, NULL_RTX, 0);
+
+      rtx addr = gen_reg_rtx (Pmode);
+      convert_move (addr, index, 1);
+      addr = expand_binop (Pmode, add_optab, addr, tab, NULL_RTX,
+			    0, OPTAB_DIRECT);
+
+      /* crc_table[(crc >> (crc_bit_size - 8)) ^ data_8bit]  */
+      rtx tab_el = validize_mem (gen_rtx_MEM (mode, addr));
+
+      /* (crc << 8) if CRC is larger than 8, otherwise crc = 0.  */
+      rtx high = NULL_RTX;
+      if (crc_bit_size != 8)
+	high = expand_shift (LSHIFT_EXPR, mode, *crc, 8, NULL_RTX, 0);
+      else
+	high = gen_int_mode (0, mode);
+
+      /* crc = (crc << 8)
+	       ^ crc_table[(crc >> (crc_bit_size - 8)) ^ data_8bit];  */
+      *crc = expand_binop (mode, xor_optab, tab_el, high, NULL_RTX, 1,
+			   OPTAB_WIDEN);
+    }
+}
+
+/* Generate table-based CRC code for the given CRC, INPUT_DATA and the
+   POLYNOMIAL (without leading 1).
+
+   CRC is OP1, data is OP2 and the polynomial is OP3.
+   This must generate a CRC table and an assembly for the following code,
+   where crc_bit_size and data_bit_size may be 8, 16, 32, 64:
+   uint_crc_bit_size_t
+   crc_crc_bit_size (uint_crc_bit_size_t crc_init,
+		     uint_data_bit_size_t data, size_t size)
+   {
+     uint_crc_bit_size_t crc = crc_init;
+     for (int i = 0; i < data_bit_size / 8; i++)
+       crc = (crc << 8) ^ crc_table[(crc >> (crc_bit_size - 8))
+				    ^ (data >> (data_bit_size - (i + 1) * 8)
+				    & 0xFF))];
+     return crc;
+   }  */
+
+void
+expand_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
+			machine_mode data_mode)
+{
+  gcc_assert (!CONST_INT_P (op0));
+  gcc_assert (CONST_INT_P (op3));
+  machine_mode crc_mode = GET_MODE (op0);
+  rtx crc = gen_reg_rtx (crc_mode);
+  convert_move (crc, op1, 0);
+  calculate_table_based_CRC (&crc, op2, op3, data_mode);
+  convert_move (op0, crc, 0);
+}
+
+/* Generate the common operation for reflecting values:
+   *OP = (*OP & AND1_VALUE) << SHIFT_VAL | (*OP & AND2_VALUE) >> SHIFT_VAL;  */
+
+void
+gen_common_operation_to_reflect (rtx *op,
+				 unsigned HOST_WIDE_INT and1_value,
+				 unsigned HOST_WIDE_INT and2_value,
+				 unsigned shift_val)
+{
+  rtx op1 = expand_and (GET_MODE (*op), *op,
+			gen_int_mode (and1_value, GET_MODE (*op)), NULL_RTX);
+  op1 = expand_shift (LSHIFT_EXPR, GET_MODE (*op), op1, shift_val, op1, 0);
+  rtx op2 = expand_and (GET_MODE (*op), *op,
+			gen_int_mode (and2_value, GET_MODE (*op)), NULL_RTX);
+  op2 = expand_shift (RSHIFT_EXPR, GET_MODE (*op), op2, shift_val, op2, 1);
+  *op = expand_binop (GET_MODE (*op), ior_optab, op1,
+		      op2, *op, 0, OPTAB_LIB_WIDEN);
+}
+
+/* Reflect 64-bit value for the 64-bit target.  */
+
+void
+reflect_64_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00000000FFFFFFFF),
+				   HOST_WIDE_INT_C (0xFFFFFFFF00000000), 32);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0000FFFF0000FFFF),
+				   HOST_WIDE_INT_C (0xFFFF0000FFFF0000), 16);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00FF00FF00FF00FF),
+				   HOST_WIDE_INT_C (0xFF00FF00FF00FF00), 8);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F0F0F0F0F0F0F0F),
+				   HOST_WIDE_INT_C (0xF0F0F0F0F0F0F0F0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x3333333333333333),
+				   HOST_WIDE_INT_C (0xCCCCCCCCCCCCCCCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x5555555555555555),
+				   HOST_WIDE_INT_C (0xAAAAAAAAAAAAAAAA), 1);
+}
+
+/* Reflect 32-bit value for the 32-bit target.  */
+
+void
+reflect_32_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0000FFFF),
+				  HOST_WIDE_INT_C (0xFFFF0000), 16);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00FF00FF),
+				  HOST_WIDE_INT_C (0xFF00FF00), 8);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F0F0F0F),
+				   HOST_WIDE_INT_C (0xF0F0F0F0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x33333333),
+				   HOST_WIDE_INT_C (0xCCCCCCCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x55555555),
+				   HOST_WIDE_INT_C (0xAAAAAAAA), 1);
+}
+
+/* Reflect 16-bit value for the 16-bit target.  */
+
+void
+reflect_16_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00FF),
+				   HOST_WIDE_INT_C (0xFF00), 8);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F0F),
+				   HOST_WIDE_INT_C (0xF0F0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x3333),
+				   HOST_WIDE_INT_C (0xCCCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x5555),
+				   HOST_WIDE_INT_C (0xAAAA), 1);
+}
+
+/* Reflect 8-bit value for the 8-bit target.  */
+
+void
+reflect_8_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F),
+				   HOST_WIDE_INT_C (0xF0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x33),
+				   HOST_WIDE_INT_C (0xCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x55),
+				   HOST_WIDE_INT_C (0xAA), 1);
+}
+
+/* Generate instruction sequence which reflects the value of the OP
+   using shift, and, or operations.  OP's mode may be less than word_mode.  */
+
+void
+generate_reflecting_code_standard (rtx *op)
+{
+  gcc_assert (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant ()  >= 8
+	      && GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () <= 64);
+
+  if (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () == 64)
+    reflect_64_bit_value (op);
+  else if (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () == 32)
+    reflect_32_bit_value (op);
+  else if (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () == 16)
+    reflect_16_bit_value (op);
+  else
+    reflect_8_bit_value (op);
+}
+
+/* Generate table-based reversed CRC code for the given CRC, INPUT_DATA and
+   the POLYNOMIAL (without leading 1).
+
+   CRC is OP1, data is OP2 and the polynomial is OP3.
+   This must generate CRC table and assembly for the following code,
+   where crc_bit_size and data_bit_size may be 8, 16, 32, 64:
+   uint_crc_bit_size_t
+   crc_crc_bit_size (uint_crc_bit_size_t crc_init,
+			   uint_data_bit_size_t data, size_t size)
+   {
+     reflect (crc_init)
+     uint_crc_bit_size_t crc = crc_init;
+     reflect (data);
+     for (int i = 0; i < data_bit_size / 8; i++)
+       crc = (crc << 8) ^ crc_table[(crc >> (crc_bit_size - 8))
+			  ^ (data >> (data_bit_size - (i + 1) * 8) & 0xFF))];
+     reflect (crc);
+     return crc;
+   }  */
+
+void
+expand_reversed_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
+				 machine_mode data_mode,
+				 void (*gen_reflecting_code) (rtx *op))
+{
+  gcc_assert (!CONST_INT_P (op0));
+  gcc_assert (CONST_INT_P (op3));
+  machine_mode crc_mode = GET_MODE (op0);
+
+  rtx crc = gen_reg_rtx (crc_mode);
+  convert_move (crc, op1, 0);
+  gen_reflecting_code (&crc);
+
+  rtx data = gen_reg_rtx (data_mode);
+  convert_move (data, op2, 0);
+  gen_reflecting_code (&data);
+
+  calculate_table_based_CRC (&crc, data, op3, data_mode);
+
+  gen_reflecting_code (&crc);
+  convert_move (op0, crc, 0);
 }

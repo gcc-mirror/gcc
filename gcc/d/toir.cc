@@ -1,5 +1,5 @@
 /* toir.cc -- Lower D frontend statements to GCC trees.
-   Copyright (C) 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -832,7 +831,7 @@ public:
 
     /* A switch statement on a string gets turned into a library call.
        It is not lowered during codegen.  */
-    if (!condtype->isscalar ())
+    if (!condtype->isScalar ())
       {
 	error ("cannot handle switch condition of type %s",
 	       condtype->toChars ());
@@ -921,7 +920,7 @@ public:
     else
       {
 	tree casevalue;
-	if (s->exp->type->isscalar ())
+	if (s->exp->type->isScalar ())
 	  casevalue = build_expr (s->exp);
 	else
 	  casevalue = build_integer_cst (s->index, build_ctype (Type::tint32));
@@ -1009,7 +1008,7 @@ public:
 	/* Returning by hidden reference, store the result into the retval decl.
 	   The result returned then becomes the retval reference itself.  */
 	tree decl = DECL_RESULT (get_symbol_decl (this->func_));
-	gcc_assert (!tf->isref ());
+	gcc_assert (!tf->isRef ());
 
 	/* If returning via NRVO, just refer to the DECL_RESULT; this differs
 	   from using NULL_TREE in that it indicates that we care about the

@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2024 Free Software Foundation, Inc.
+# Copyright (C) 2015-2025 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,11 +27,12 @@
 ---
 Language: Cpp
 AccessModifierOffset: -2
-AlwaysBreakAfterReturnType: TopLevel
+AlwaysBreakAfterReturnType: TopLevelDefinitions
 BinPackArguments: true
 BinPackParameters: true
 BraceWrapping:
   AfterClass: true
+  AfterCaseLabel: true
   AfterControlStatement: true
   AfterEnum: true
   AfterFunction: true
@@ -41,6 +42,7 @@ BraceWrapping:
   AfterUnion: true
   BeforeCatch: true
   BeforeElse: true
+  BeforeWhile: true
   IndentBraces: true
   SplitEmptyFunction: false
 BreakBeforeBinaryOperators: All

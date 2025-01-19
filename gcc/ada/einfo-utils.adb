@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2024, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2025, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -954,7 +954,7 @@ package body Einfo.Utils is
    function Get_Class_Wide_Pragma
      (E  : Entity_Id;
       Id : Pragma_Id) return Node_Id
-    is
+   is
       Item  : Node_Id;
       Items : Node_Id;
 
@@ -1036,6 +1036,7 @@ package body Einfo.Utils is
                   Id = Pragma_Always_Terminates         or else
                   Id = Pragma_Contract_Cases            or else
                   Id = Pragma_Exceptional_Cases         or else
+                  Id = Pragma_Exit_Cases                or else
                   Id = Pragma_Subprogram_Variant        or else
                   Id = Pragma_Test_Case;
 
@@ -3173,10 +3174,10 @@ package body Einfo.Utils is
             end;
 
          when Access_Kind =>
-               Write_Attribute
-                 ("   Directly Designated Type ",
-                  Directly_Designated_Type (Id));
-               Write_Eol;
+            Write_Attribute
+              ("   Directly Designated Type ",
+               Directly_Designated_Type (Id));
+            Write_Eol;
 
          when Overloadable_Kind =>
             if Present (Homonym (Id)) then

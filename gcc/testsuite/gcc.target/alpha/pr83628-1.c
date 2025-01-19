@@ -1,6 +1,7 @@
 /* PR target/83628 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -10,7 +10,7 @@
 **   ...
 **   vsrl\.vi\s+v[0-9]+,\s*v[0-9],\s*8+
 **   vsll\.vi\s+v[0-9]+,\s*v[0-9],\s*8+
-**   vor\.vv\s+v[0-9]+,\s*v[0-9],\s*v[0-9]+
+**   vor\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 **   ...
 */
 TEST_UNARY_CALL (uint16_t, __builtin_bswap16)

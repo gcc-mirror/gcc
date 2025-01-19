@@ -136,7 +136,7 @@ version (Solaris)
     import core.sys.posix.unistd;
 
     @property int SIGRTMIN() nothrow @nogc {
-        __gshared static int sig = -1;
+        __gshared int sig = -1;
         if (sig == -1) {
             sig = cast(int)sysconf(_SC_SIGRT_MIN);
         }
@@ -144,7 +144,7 @@ version (Solaris)
     }
 
     @property int SIGRTMAX() nothrow @nogc {
-        __gshared static int sig = -1;
+        __gshared int sig = -1;
         if (sig == -1) {
             sig = cast(int)sysconf(_SC_SIGRT_MAX);
         }
@@ -180,7 +180,7 @@ else version (linux)
     }
 
     @property int SIGRTMIN() nothrow @nogc {
-        __gshared static int sig = -1;
+        __gshared int sig = -1;
         if (sig == -1) {
             sig = __libc_current_sigrtmin();
         }
@@ -188,7 +188,7 @@ else version (linux)
     }
 
     @property int SIGRTMAX() nothrow @nogc {
-        __gshared static int sig = -1;
+        __gshared int sig = -1;
         if (sig == -1) {
             sig = __libc_current_sigrtmax();
         }
@@ -2757,6 +2757,11 @@ else version (CRuntime_Musl)
     {
         enum MINSIGSTKSZ = 2048;
         enum SIGSTKSZ    = 8192;
+    }
+    else version (LoongArch64)
+    {
+        enum MINSIGSTKSZ = 4096;
+        enum SIGSTKSZ    = 16384;
     }
     else
         static assert(0, "unimplemented");

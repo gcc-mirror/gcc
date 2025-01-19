@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2012-2024, Free Software Foundation, Inc.     --
+--              Copyright (C) 2012-2025, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains both atomic primitives defined from GCC built-in
+--  This package contains atomic primitives defined from GCC built-in
 --  functions and operations used by the compiler to generate the lock-free
 --  implementation of protected objects.
 

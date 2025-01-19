@@ -1,5 +1,5 @@
 /* Partial redundancy elimination / Hoisting for RTL.
-   Copyright (C) 1997-2024 Free Software Foundation, Inc.
+   Copyright (C) 1997-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -415,6 +415,17 @@ static int gcse_create_count;
 
 /* Doing code hoisting.  */
 static bool doing_code_hoisting_p = false;
+
+/* Doing hardreg_pre.  */
+static bool doing_hardreg_pre_p = false;
+
+inline bool
+do_load_motion ()
+{
+  return flag_gcse_lm && !doing_hardreg_pre_p;
+}
+
+static unsigned int current_hardreg_regno;
 
 /* For available exprs */
 static sbitmap *ae_kill;
@@ -689,14 +700,32 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	  int indx = expr->bitmap_index;
 	  struct gcse_occr *occr;
 
-	  /* The expression is transparent in this block if it is not killed.
-	     We start by assuming all are transparent [none are killed], and
-	     then reset the bits for those that are.  */
+	  /* In most cases, the expression is transparent in the block if it is
+	     not killed.  The exception to this is during hardreg PRE, in which
+	     uses of the hardreg prevent transparency but do not kill the
+	     expression.
+
+	     We start by assuming all expressions are transparent [none are
+	     killed], and then reset the bits for those that are.  */
 	  if (transp)
-	    compute_transp (expr->expr, indx, transp,
-			    blocks_with_calls,
-			    modify_mem_list_set,
-			    canon_modify_mem_list);
+	    {
+	      compute_transp (expr->expr, indx, transp,
+			      blocks_with_calls,
+			      modify_mem_list_set,
+			      canon_modify_mem_list);
+
+	      if (doing_hardreg_pre_p)
+		{
+		  /* We also need to check whether the destination hardreg is
+		     set or call-clobbered in each BB.  We'll check for hardreg
+		     uses later.  */
+		  df_ref def;
+		  for (def = DF_REG_DEF_CHAIN (current_hardreg_regno);
+		       def;
+		       def = DF_REF_NEXT_REG (def))
+		    bitmap_clear_bit (transp[DF_REF_BB (def)->index], indx);
+		}
+	    }
 
 	  /* The occurrences recorded in antic_occr are exactly those that
 	     we want to set to nonzero in ANTLOC.  */
@@ -725,6 +754,37 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	  /* While we're scanning the table, this is a good place to
 	     initialize this.  */
 	  expr->reaching_reg = 0;
+	}
+    }
+}
+
+/* A hardreg set is not transparent in a block if there are any uses of that
+   hardreg.  This filters the results of compute_local_properties, after the
+   result of that function has been used to define the kills bitmap.
+
+   TRANSP is the destination sbitmap to be updated.
+
+   TABLE controls which hash table to look at.  */
+
+static void
+prune_hardreg_uses (sbitmap *transp, struct gcse_hash_table_d *table)
+{
+  unsigned int i;
+  gcc_assert (doing_hardreg_pre_p);
+
+  for (i = 0; i < table->size; i++)
+    {
+      struct gcse_expr *expr;
+
+      for (expr = table->table[i]; expr != NULL; expr = expr->next_same_hash)
+	{
+	  int indx = expr->bitmap_index;
+	  df_ref def;
+
+	  for (def = DF_REG_USE_CHAIN (current_hardreg_regno);
+	       def;
+	       def = DF_REF_NEXT_REG (def))
+	    bitmap_clear_bit (transp[DF_REF_BB (def)->index], indx);
 	}
     }
 }
@@ -771,17 +831,24 @@ want_to_gcse_p (rtx x, machine_mode mode, HOST_WIDE_INT *max_distance_ptr)
      pressure, i.e., a pseudo register with REG_EQUAL to constant
      is set only once.  Failing to do so will result in IRA/reload
      spilling such constants under high register pressure instead of
-     rematerializing them.  */
+     rematerializing them.
+
+     For hardreg PRE, register pressure is not a concern, and we also want to
+     apply GCSE to simple moves.  */
 
   switch (GET_CODE (x))
     {
     case REG:
     case SUBREG:
+      return doing_hardreg_pre_p;
+
     case CALL:
       return false;
 
     CASE_CONST_ANY:
-      if (!doing_code_hoisting_p)
+      if (doing_hardreg_pre_p)
+	return true;
+      else if (!doing_code_hoisting_p)
 	/* Do not PRE constants.  */
 	return false;
 
@@ -911,7 +978,7 @@ oprs_unchanged_p (const_rtx x, const rtx_insn *insn, bool avail_p)
       }
 
     case MEM:
-      if (! flag_gcse_lm
+      if (! do_load_motion ()
 	  || load_killed_in_block_p (current_bb, DF_INSN_LUID (insn),
 				     x, avail_p))
 	return false;
@@ -1258,8 +1325,10 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
 	  && want_to_gcse_p (XEXP (note, 0), GET_MODE (dest), NULL))
 	src = XEXP (note, 0), set = gen_rtx_SET (dest, src);
 
-      /* Only record sets of pseudo-regs in the hash table.  */
-      if (regno >= FIRST_PSEUDO_REGISTER
+      /* Only record sets of pseudo-regs in the hash table, unless we're
+	 currently doing hardreg switching.  */
+      if ((doing_hardreg_pre_p ? regno == current_hardreg_regno
+				     : regno >= FIRST_PSEUDO_REGISTER)
 	  /* Don't GCSE something if we can't do a reg/reg copy.  */
 	  && can_copy_p (GET_MODE (dest))
 	  /* GCSE commonly inserts instruction after the insn.  We can't
@@ -1286,12 +1355,33 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
 	     able to handle code motion of insns with multiple sets.  */
 	  bool antic_p = (oprs_anticipatable_p (src, insn)
 			  && !multiple_sets (insn));
+	  if (doing_hardreg_pre_p)
+	    {
+	      /* An hardreg assignment is anticipatable only if the hardreg is
+		 neither set nor used prior to this assignment.  */
+	      auto info = reg_avail_info[current_hardreg_regno];
+	      if ((info.last_bb == current_bb
+		   && info.first_set < DF_INSN_LUID (insn))
+		  || bitmap_bit_p (DF_LR_IN (current_bb),
+				   current_hardreg_regno))
+		antic_p = false;
+	    }
+
 	  /* An expression is not available if its operands are
 	     subsequently modified, including this insn.  It's also not
 	     available if this is a branch, because we can't insert
 	     a set after the branch.  */
 	  bool avail_p = (oprs_available_p (src, insn)
 			  && ! JUMP_P (insn));
+	  if (doing_hardreg_pre_p)
+	    {
+	      /* An hardreg assignment is only available if the hardreg is
+		 not set later in the BB.  Uses of the hardreg are allowed. */
+	      auto info = reg_avail_info[current_hardreg_regno];
+	      if (info.last_bb == current_bb
+		  && info.last_set > DF_INSN_LUID (insn))
+		avail_p = false;
+	    }
 
 	  insert_expr_in_table (src, GET_MODE (dest), insn, antic_p, avail_p,
 				max_distance, table);
@@ -1300,7 +1390,10 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
   /* In case of store we want to consider the memory value as available in
      the REG stored in that memory. This makes it possible to remove
      redundant loads from due to stores to the same location.  */
-  else if (flag_gcse_las && REG_P (src) && MEM_P (dest))
+  else if (flag_gcse_las
+	   && !doing_hardreg_pre_p
+	   && REG_P (src)
+	   && MEM_P (dest))
     {
       unsigned int regno = REGNO (src);
       HOST_WIDE_INT max_distance = 0;
@@ -1460,7 +1553,7 @@ record_last_reg_set_info (rtx_insn *insn, int regno)
 static void
 record_last_mem_set_info (rtx_insn *insn)
 {
-  if (! flag_gcse_lm)
+  if (! do_load_motion ())
     return;
 
   record_last_mem_set_info_common (insn, modify_mem_list,
@@ -1884,6 +1977,9 @@ compute_pre_data (void)
       bitmap_not (ae_kill[bb->index], ae_kill[bb->index]);
     }
 
+  if (doing_hardreg_pre_p)
+    prune_hardreg_uses (transp, &expr_hash_table);
+
   edge_list = pre_edge_lcm (expr_hash_table.n_elems, transp, comp, antloc,
 			    ae_kill, &pre_insert_map, &pre_delete_map);
   sbitmap_vector_free (antloc);
@@ -1938,7 +2034,10 @@ pre_expr_reaches_here_p_work (basic_block occr_bb, struct gcse_expr *expr,
 
 	  visited[pred_bb->index] = 1;
 	}
-      /* Ignore this predecessor if it kills the expression.  */
+      /* Ignore this predecessor if it kills the expression.
+
+	 If this were used for hardreg pre, then it would need to use the kills
+	 bitmap.  */
       else if (! bitmap_bit_p (transp[pred_bb->index], expr->bitmap_index))
 	visited[pred_bb->index] = 1;
 
@@ -2109,6 +2208,59 @@ insert_insn_end_basic_block (struct gcse_expr *expr, basic_block bb)
     }
 }
 
+/* Return the INSN which is added at the start of the block BB with
+   same instruction pattern with PAT.  */
+
+rtx_insn *
+insert_insn_start_basic_block (rtx_insn *pat, basic_block bb)
+{
+  rtx_insn *insn = BB_HEAD (bb);
+  rtx_insn *next_insn;
+
+  gcc_assert (pat && INSN_P (pat));
+
+  /* Insert after the last initial CODE_LABEL or NOTE_INSN_BASIC_BLOCK, before
+     any other instructions.  */
+  while ((next_insn = NEXT_INSN (insn))
+	 && (LABEL_P (next_insn) || NOTE_INSN_BASIC_BLOCK_P (insn)))
+    insn = next_insn;
+
+  rtx_insn *new_insn = emit_insn_after_noloc (pat, insn, bb);
+
+  while (pat != NULL_RTX)
+    {
+      if (INSN_P (pat))
+	add_label_notes (PATTERN (pat), new_insn);
+      pat = NEXT_INSN (pat);
+    }
+
+  return new_insn;
+}
+
+/* Add EXPR to the start of basic block BB.
+
+   This is used by hardreg PRE.  */
+
+static void
+insert_insn_start_basic_block (struct gcse_expr *expr, basic_block bb)
+{
+  rtx reg = expr->reaching_reg;
+  int regno = REGNO (reg);
+
+  rtx_insn *insn = process_insert_insn (expr);
+  rtx_insn *new_insn = insert_insn_start_basic_block (insn, bb);
+
+  gcse_create_count++;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "hardreg PRE: start of bb %d, insn %d, ",
+	       bb->index, INSN_UID (new_insn));
+      fprintf (dump_file, "copying expression %d to reg %d\n",
+	       expr->bitmap_index, regno);
+    }
+}
+
 /* Insert partially redundant expressions on edges in the CFG to make
    the expressions fully redundant.  */
 
@@ -2130,7 +2282,8 @@ pre_edge_insert (struct edge_list *edge_list, struct gcse_expr **index_map)
   for (e = 0; e < num_edges; e++)
     {
       int indx;
-      basic_block bb = INDEX_EDGE_PRED_BB (edge_list, e);
+      basic_block pred_bb = INDEX_EDGE_PRED_BB (edge_list, e);
+      basic_block succ_bb = INDEX_EDGE_SUCC_BB (edge_list, e);
 
       for (i = indx = 0; i < set_size; i++, indx += SBITMAP_ELT_BITS)
 	{
@@ -2159,13 +2312,24 @@ pre_edge_insert (struct edge_list *edge_list, struct gcse_expr **index_map)
 
 			/* We can't insert anything on an abnormal and
 			   critical edge, so we insert the insn at the end of
-			   the previous block. There are several alternatives
+			   the previous block.  There are several alternatives
 			   detailed in Morgans book P277 (sec 10.5) for
 			   handling this situation.  This one is easiest for
-			   now.  */
+			   now.
 
+			   For hardreg PRE  this would add an unwanted clobber
+			   of the hardreg, so we instead insert in the
+			   successor block. This may be partially redundant,
+			   but it is at least correct.  */
 			if (eg->flags & EDGE_ABNORMAL)
-			  insert_insn_end_basic_block (index_map[j], bb);
+			  {
+			    if (doing_hardreg_pre_p)
+			      insert_insn_start_basic_block (index_map[j],
+							     succ_bb);
+			    else
+			      insert_insn_end_basic_block (index_map[j],
+							   pred_bb);
+			  }
 			else
 			  {
 			    insn = process_insert_insn (index_map[j]);
@@ -2175,8 +2339,8 @@ pre_edge_insert (struct edge_list *edge_list, struct gcse_expr **index_map)
 			if (dump_file)
 			  {
 			    fprintf (dump_file, "PRE: edge (%d,%d), ",
-				     bb->index,
-				     INDEX_EDGE_SUCC_BB (edge_list, e)->index);
+				     pred_bb->index,
+				     succ_bb->index);
 			    fprintf (dump_file, "copy expression %d\n",
 				     expr->bitmap_index);
 			  }
@@ -2491,13 +2655,25 @@ pre_delete (void)
 		&& (set = single_set (insn)) != 0
                 && dbg_cnt (pre_insn))
 	      {
-		/* Create a pseudo-reg to store the result of reaching
-		   expressions into.  Get the mode for the new pseudo from
-		   the mode of the original destination pseudo.  */
+		rtx dest = SET_DEST (set);
 		if (expr->reaching_reg == NULL)
-		  expr->reaching_reg = gen_reg_rtx_and_attrs (SET_DEST (set));
+		  {
+		    if (doing_hardreg_pre_p)
+		      /* Use the hardreg as the reaching register.  The
+			 deleted sets will be replaced with noop moves.
 
-		gcse_emit_move_after (SET_DEST (set), expr->reaching_reg, insn);
+			 This may change the value of the hardreg in some debug
+			 instructions, so we will need to reset any debug uses
+			 of the hardreg.  */
+		      expr->reaching_reg = dest;
+		    else
+		      /* Create a pseudo-reg to store the result of reaching
+			 expressions into.  Get the mode for the new pseudo from
+			 the mode of the original destination pseudo.  */
+		      expr->reaching_reg = gen_reg_rtx_and_attrs (SET_DEST (set));
+		  }
+
+		gcse_emit_move_after (dest, expr->reaching_reg, insn);
 		delete_insn (insn);
 		occr->deleted_p = 1;
 		changed = true;
@@ -2516,6 +2692,25 @@ pre_delete (void)
       }
 
   return changed;
+}
+
+/* Since hardreg PRE reuses the hardreg as the reaching register, we need to
+   eliminate any existing uses in debug insns.  This is overly conservative,
+   but there's currently no benefit to preserving the debug insns, so there's
+   no point doing the work to retain them.  */
+
+static void
+reset_hardreg_debug_uses ()
+{
+  df_ref def;
+  for (def = DF_REG_USE_CHAIN (current_hardreg_regno);
+       def;
+       def = DF_REF_NEXT_REG (def))
+    {
+      rtx_insn *insn = DF_REF_INSN (def);
+      if (DEBUG_INSN_P (insn))
+	delete_insn (insn);
+    }
 }
 
 /* Perform GCSE optimizations using PRE.
@@ -2561,12 +2756,16 @@ pre_gcse (struct edge_list *edge_list)
 
   changed = pre_delete ();
   did_insert = pre_edge_insert (edge_list, index_map);
-
   /* In other places with reaching expressions, copy the expression to the
-     specially allocated pseudo-reg that reaches the redundant expr.  */
-  pre_insert_copies ();
+     specially allocated pseudo-reg that reaches the redundant expr.  This
+     isn't needed for hardreg PRE.  */
+  if (!doing_hardreg_pre_p)
+    pre_insert_copies ();
+
   if (did_insert)
     {
+      if (doing_hardreg_pre_p)
+	reset_hardreg_debug_uses ();
       commit_edge_insertions ();
       changed = true;
     }
@@ -2601,11 +2800,11 @@ one_pre_gcse_pass (void)
 
   alloc_hash_table (&expr_hash_table);
   add_noreturn_fake_exit_edges ();
-  if (flag_gcse_lm)
+  if (do_load_motion ())
     compute_ld_motion_mems ();
 
   compute_hash_table (&expr_hash_table);
-  if (flag_gcse_lm)
+  if (do_load_motion ())
     trim_ld_motion_mems ();
   if (dump_file)
     dump_hash_table (dump_file, "Expression", &expr_hash_table);
@@ -2621,7 +2820,7 @@ one_pre_gcse_pass (void)
       free_pre_mem ();
     }
 
-  if (flag_gcse_lm)
+  if (do_load_motion ())
     free_ld_motion_mems ();
   remove_fake_exit_edges ();
   free_hash_table (&expr_hash_table);
@@ -4029,6 +4228,32 @@ execute_rtl_pre (void)
 }
 
 static unsigned int
+execute_hardreg_pre (void)
+{
+#ifdef HARDREG_PRE_REGNOS
+  doing_hardreg_pre_p = true;
+  unsigned int regnos[] = HARDREG_PRE_REGNOS;
+  /* It's possible to avoid this loop, but it isn't worth doing so until
+     hardreg PRE is used for multiple hardregs.  */
+  for (int i = 0; regnos[i] != 0; i++)
+    {
+      int changed;
+      current_hardreg_regno = regnos[i];
+      if (dump_file)
+	fprintf(dump_file, "Entering hardreg PRE for regno %d\n",
+		current_hardreg_regno);
+      delete_unreachable_blocks ();
+      df_analyze ();
+      changed = one_pre_gcse_pass ();
+      if (changed)
+	cleanup_cfg (0);
+    }
+  doing_hardreg_pre_p = false;
+#endif
+  return 0;
+}
+
+static unsigned int
 execute_rtl_hoist (void)
 {
   int changed;
@@ -4092,6 +4317,56 @@ rtl_opt_pass *
 make_pass_rtl_pre (gcc::context *ctxt)
 {
   return new pass_rtl_pre (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_hardreg_pre =
+{
+  RTL_PASS, /* type */
+  "hardreg_pre", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_PRE, /* tv_id */
+  PROP_cfglayout, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_hardreg_pre : public rtl_opt_pass
+{
+public:
+  pass_hardreg_pre (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_hardreg_pre, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *) final override;
+  unsigned int execute (function *)  final override
+  {
+    return execute_hardreg_pre ();
+  }
+
+}; // class pass_rtl_pre
+
+bool
+pass_hardreg_pre::gate (function * ARG_UNUSED (fun))
+{
+#ifdef HARDREG_PRE_REGNOS
+  return optimize > 0
+    && !fun->calls_setjmp;
+#else
+  return false;
+#endif
+}
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_hardreg_pre (gcc::context *ctxt)
+{
+  return new pass_hardreg_pre (ctxt);
 }
 
 namespace {

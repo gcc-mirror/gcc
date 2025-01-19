@@ -22,7 +22,7 @@ fail_compilation/constraints_tmpl.d(41): Error: template instance `imports.const
 `       N!T
        N!U`
 fail_compilation/constraints_tmpl.d(43): Error: template instance `constraints_tmpl.main.lambda!((a) => a)` does not match template declaration `lambda(alias pred)()`
-  with `pred = __lambda1`
+  with `pred = __lambda_L43_C13`
   must satisfy the following constraint:
 `       N!int`
 ---

@@ -1,5 +1,5 @@
 ;;  Machine Description for Renesas RL78 processors
-;;  Copyright (C) 2011-2024 Free Software Foundation, Inc.
+;;  Copyright (C) 2011-2025 Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.

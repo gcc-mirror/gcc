@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ struct X
   }
 };
 
-static_assert(!std::is_trivial_v<X>);
+static_assert(!std::is_trivially_default_constructible_v<X>);
 
 template<template<typename, template<typename> typename> typename container,
 	 template<typename> typename wrapper,

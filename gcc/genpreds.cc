@@ -2,7 +2,7 @@
    - prototype declarations for operand predicates (tm-preds.h)
    - function definitions of operand predicates, if defined new-style
      (insn-preds.cc)
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -538,7 +538,7 @@ write_predicate_expr (rtx exp)
       break;
 
     case MATCH_TEST:
-      rtx_reader_ptr->print_c_condition (XSTR (exp, 0));
+      rtx_reader_ptr->print_c_condition (stdout, XSTR (exp, 0));
       break;
 
     default:
@@ -753,6 +753,7 @@ mangle (const char *name)
       case '_': obstack_grow (rtl_obstack, "__", 2); break;
       case '<':	obstack_grow (rtl_obstack, "_l", 2); break;
       case '>':	obstack_grow (rtl_obstack, "_g", 2); break;
+      case ':': obstack_grow (rtl_obstack, "_c", 2); break;
       default: obstack_1grow (rtl_obstack, *name); break;
       }
 
@@ -797,12 +798,13 @@ add_constraint (const char *name, const char *regclass,
   for (p = name; *p; p++)
     if (!ISALNUM (*p))
       {
-	if (*p == '<' || *p == '>' || *p == '_')
+	if (*p == '<' || *p == '>' || *p == '_' || *p == ':')
 	  need_mangled_name = true;
 	else
 	  {
 	    error_at (loc, "constraint name '%s' must be composed of letters,"
-		      " digits, underscores, and angle brackets", name);
+		      " digits, underscores, colon and angle brackets",
+		      name);
 	    return;
 	  }
       }
@@ -1344,7 +1346,7 @@ write_init_reg_class_start_regs ()
       for (unsigned int i = 0; i < register_filters.length (); ++i)
 	{
 	  printf ("      if (");
-	  rtx_reader_ptr->print_c_condition (register_filters[i]);
+	  rtx_reader_ptr->print_c_condition (stdout, register_filters[i]);
 	  printf (")\n"
 		  "        SET_HARD_REG_BIT (%s[%d], regno);\n",
 		  "this_target_constraints->register_filters", i);

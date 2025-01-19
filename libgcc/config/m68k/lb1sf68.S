@@ -1,5 +1,5 @@
 /* libgcc routines for 68000 w/o floating-point hardware.
-   Copyright (C) 1994-2024 Free Software Foundation, Inc.
+   Copyright (C) 1994-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -635,7 +635,7 @@ SYM (__modsi3):
 	.globl	SYM (_fpCCR)
 	.globl  $_exception_handler
 
-QUIET_NaN      = 0xffffffff
+QUIET_NaN      = 0x7fffffff
 
 D_MAX_EXP      = 0x07ff
 D_BIAS         = 1022
@@ -691,7 +691,7 @@ Ld$den:
 
 Ld$infty:
 Ld$overflow:
-| Return a properly signed INFINITY and set the exception flags 
+| Return a properly signed INFINITY and set the exception flags
 	movel	IMM (0x7ff00000),d0
 	movel	IMM (0),d1
 	orl	d7,d0
@@ -700,9 +700,10 @@ Ld$overflow:
 	PICJUMP	$_exception_handler
 
 Ld$underflow:
-| Return 0 and set the exception flags 
+| Return a properly signed 0 and set the exception flags
 	movel	IMM (0),d0
 	movel	d0,d1
+	orl	d7,d0
 	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	moveq	IMM (DOUBLE_FLOAT),d6
 	PICJUMP	$_exception_handler
@@ -711,6 +712,7 @@ Ld$inop:
 | Return a quiet NaN and set the exception flags
 	movel	IMM (QUIET_NaN),d0
 	movel	d0,d1
+	bset	IMM (31),d1
 	movew	IMM (INEXACT_RESULT+INVALID_OPERATION),d7
 	moveq	IMM (DOUBLE_FLOAT),d6
 	PICJUMP	$_exception_handler
@@ -2082,6 +2084,7 @@ Ldivdf$b$nf:
 | If d2 == 0x7ff00000 we have to check d3.
 	tstl	d3		|
 	bne	Ld$inop		| if d3 <> 0, b is NaN
+	movel	a0,d7		| put a's sign
 	bra	Ld$underflow	| else b is +/-INFINITY, so signal underflow
 
 Ldivdf$a$nf:
@@ -2187,6 +2190,7 @@ Lround$exit:
 #endif
 	beq	2f		| if not loop back
 	bra	1b              |
+	movel	a0,d7		| get back sign bit into d7
 	bra	Ld$underflow	| safety check, shouldn't execute '
 2:	orl	d6,d2		| this is a trick so we don't lose  '
 	orl	d7,d3		| the bits which were flushed right
@@ -2549,7 +2553,7 @@ Lround$to$minus:
 	.globl	SYM (_fpCCR)
 	.globl  $_exception_handler
 
-QUIET_NaN    = 0xffffffff
+QUIET_NaN    = 0x7fffffff
 SIGNL_NaN    = 0x7f800001
 INFINITY     = 0x7f800000
 
@@ -2607,7 +2611,7 @@ Lf$den:
 
 Lf$infty:
 Lf$overflow:
-| Return a properly signed INFINITY and set the exception flags 
+| Return a properly signed INFINITY and set the exception flags
 	movel	IMM (INFINITY),d0
 	orl	d7,d0
 	moveq	IMM (INEXACT_RESULT+OVERFLOW),d7
@@ -2615,8 +2619,9 @@ Lf$overflow:
 	PICJUMP	$_exception_handler
 
 Lf$underflow:
-| Return 0 and set the exception flags 
+| Return a properly signed 0 and set the exception flags
 	moveq	IMM (0),d0
+	orl	d7,d0
 	moveq	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	moveq	IMM (SINGLE_FLOAT),d6
 	PICJUMP	$_exception_handler

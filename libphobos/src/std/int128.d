@@ -111,7 +111,7 @@ public struct Int128
      * Returns: lvalue of result
      */
     Int128 opUnary(string op)() const
-        if (op == "+")
+    if (op == "+")
     {
         return this;
     }
@@ -121,7 +121,7 @@ public struct Int128
      * Returns: lvalue of result
      */
     Int128 opUnary(string op)() const
-        if (op == "-" || op == "~")
+    if (op == "-" || op == "~")
     {
         static if (op == "-")
             return Int128(neg(this.data));
@@ -134,7 +134,7 @@ public struct Int128
      * Returns: lvalue of result
      */
     Int128 opUnary(string op)()
-        if (op == "++" || op == "--")
+    if (op == "++" || op == "--")
     {
         static if (op == "++")
             this.data = inc(this.data);
@@ -206,9 +206,9 @@ public struct Int128
      * Returns: value after the operation is applied
      */
     Int128 opBinary(string op)(Int128 op2) const
-        if (op == "+" || op == "-" ||
-            op == "*" || op == "/" || op == "%" ||
-            op == "&" || op == "|" || op == "^")
+    if (op == "+" || op == "-" ||
+        op == "*" || op == "/" || op == "%" ||
+        op == "&" || op == "|" || op == "^")
     {
         static if (op == "+")
             return Int128(add(this.data, op2.data));
@@ -236,10 +236,10 @@ public struct Int128
 
     /// ditto
     Int128 opBinary(string op, Int)(const Int op2) const
-        if ((op == "+" || op == "-" ||
-            op == "*" || op == "/" || op == "%" ||
-            op == "&" || op == "|" || op == "^") &&
-            is(Int : long) && __traits(isIntegral, Int))
+    if ((op == "+" || op == "-" ||
+        op == "*" || op == "/" || op == "%" ||
+        op == "&" || op == "|" || op == "^") &&
+        is(Int : long) && __traits(isIntegral, Int))
     {
         static if (__traits(isUnsigned, Int))
             return mixin("this " ~ op ~ " Int128(0, op2)");
@@ -249,20 +249,20 @@ public struct Int128
 
     /// ditto
     Int128 opBinary(string op, IntLike)(auto ref IntLike op2) const
-        if ((op == "+" || op == "-" ||
-            op == "*" || op == "/" || op == "%" ||
-            op == "&" || op == "|" || op == "^") &&
-            is(IntLike : long) && !__traits(isIntegral, IntLike))
+    if ((op == "+" || op == "-" ||
+        op == "*" || op == "/" || op == "%" ||
+        op == "&" || op == "|" || op == "^") &&
+        is(IntLike : long) && !__traits(isIntegral, IntLike))
     {
         return opBinary!(op)(__traits(getMember, op2, __traits(getAliasThis, IntLike)[0]));
     }
 
     /// ditto
     Int128 opBinaryRight(string op, Int)(const Int op2) const
-        if ((op == "+" || op == "-" ||
-            op == "*" || op == "/" || op == "%" ||
-            op == "&" || op == "|" || op == "^") &&
-            is(Int : long) && __traits(isIntegral, Int))
+    if ((op == "+" || op == "-" ||
+        op == "*" || op == "/" || op == "%" ||
+        op == "&" || op == "|" || op == "^") &&
+        is(Int : long) && __traits(isIntegral, Int))
     {
         static if (__traits(isUnsigned, Int))
             mixin("return Int128(0, op2) " ~ op ~ " this;");
@@ -272,31 +272,31 @@ public struct Int128
 
     /// ditto
     Int128 opBinaryRight(string op, IntLike)(auto ref IntLike op2) const
-        if ((op == "+" || op == "-" ||
-            op == "*" || op == "/" || op == "%" ||
-            op == "&" || op == "|" || op == "^") &&
-            is(IntLike : long) && !__traits(isIntegral, IntLike))
+    if ((op == "+" || op == "-" ||
+        op == "*" || op == "/" || op == "%" ||
+        op == "&" || op == "|" || op == "^") &&
+        is(IntLike : long) && !__traits(isIntegral, IntLike))
     {
         return opBinaryRight!(op)(__traits(getMember, op2, __traits(getAliasThis, IntLike)[0]));
     }
 
     /// ditto
     Int128 opBinary(string op)(long op2) const
-        if (op == "<<")
+    if (op == "<<")
     {
         return Int128(shl(this.data, cast(uint) op2));
     }
 
     /// ditto
     Int128 opBinary(string op)(long op2) const
-        if (op == ">>")
+    if (op == ">>")
     {
         return Int128(sar(this.data, cast(uint) op2));
     }
 
     /// ditto
     Int128 opBinary(string op)(long op2) const
-        if (op == ">>>")
+    if (op == ">>>")
     {
         return Int128(shr(this.data, cast(uint) op2));
     }
@@ -307,10 +307,10 @@ public struct Int128
      * Returns: lvalue of updated left operand
      */
     ref Int128 opOpAssign(string op)(Int128 op2)
-        if (op == "+" || op == "-" ||
-            op == "*" || op == "/" || op == "%" ||
-            op == "&" || op == "|" || op == "^" ||
-            op == "<<" || op == ">>" || op == ">>>")
+    if (op == "+" || op == "-" ||
+        op == "*" || op == "/" || op == "%" ||
+        op == "&" || op == "|" || op == "^" ||
+        op == "<<" || op == ">>" || op == ">>>")
     {
         mixin("this = this " ~ op ~ " op2;");
         return this;
@@ -318,11 +318,11 @@ public struct Int128
 
     /// ditto
     ref Int128 opOpAssign(string op, Int)(auto ref Int op2)
-        if ((op == "+" || op == "-" ||
-            op == "*" || op == "/" || op == "%" ||
-            op == "&" || op == "|" || op == "^" ||
-            op == "<<" || op == ">>" || op == ">>>")
-            && is(Int : long))
+    if ((op == "+" || op == "-" ||
+        op == "*" || op == "/" || op == "%" ||
+        op == "&" || op == "|" || op == "^" ||
+        op == "<<" || op == ">>" || op == ">>>")
+        && is(Int : long))
     {
         mixin("this = this " ~ op ~ " op2;");
         return this;

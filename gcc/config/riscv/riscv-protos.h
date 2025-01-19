@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -139,6 +139,7 @@ extern void riscv_expand_ussub (rtx, rtx, rtx);
 extern void riscv_expand_sssub (rtx, rtx, rtx);
 extern void riscv_expand_ustrunc (rtx, rtx);
 extern void riscv_expand_sstrunc (rtx, rtx);
+extern int riscv_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
@@ -175,6 +176,9 @@ extern bool riscv_reg_frame_related (rtx);
 extern void riscv_split_sum_of_two_s12 (HOST_WIDE_INT, HOST_WIDE_INT *,
 					HOST_WIDE_INT *);
 extern bool riscv_vector_float_type_p (const_tree type);
+extern void generate_reflecting_code_using_brev (rtx *);
+extern void expand_crc_using_clmul (scalar_mode, scalar_mode, rtx *);
+extern void expand_reversed_crc_using_clmul (scalar_mode, scalar_mode, rtx *);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
@@ -196,6 +200,7 @@ extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 rtl_opt_pass * make_pass_avlprop (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
+rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
 
 /* Routines implemented in riscv-string.c.  */
 extern bool riscv_expand_block_compare (rtx, rtx, rtx, rtx);
@@ -505,9 +510,9 @@ enum insn_type : unsigned int
 
   /* For vcompress.vm */
   COMPRESS_OP = __NORMAL_OP_TA2 | BINARY_OP_P,
-  /* has merge operand but use ta.  */
+  /* has merge operand but use tu.  */
   COMPRESS_OP_MERGE
-  = HAS_DEST_P | HAS_MERGE_P | TDEFAULT_POLICY_P | BINARY_OP_P,
+  = HAS_DEST_P | HAS_MERGE_P | TU_POLICY_P | BINARY_OP_P,
 
   /* For vslideup.up has merge operand but use ta.  */
   SLIDEUP_OP_MERGE = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P
@@ -635,7 +640,7 @@ void expand_vec_cmp (rtx, rtx_code, rtx, rtx, rtx = nullptr, rtx = nullptr);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_unop (unsigned, rtx *);
 void expand_cond_len_binop (unsigned, rtx *);
-void expand_reduction (unsigned, unsigned, rtx *, rtx);
+void expand_reduction (unsigned, unsigned, unsigned, rtx *, rtx);
 void expand_vec_ceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_floor (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_nearbyint (rtx, rtx, machine_mode, machine_mode);
@@ -806,7 +811,9 @@ void riscv_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 extern bool
 riscv_option_valid_attribute_p (tree, tree, tree, int);
 extern bool
-riscv_process_target_attr (const char *, location_t);
+riscv_option_valid_version_attribute_p (tree, tree, tree, int);
+extern bool
+riscv_process_target_version_attr (tree, location_t);
 extern void
 riscv_override_options_internal (struct gcc_options *);
 extern void riscv_option_override (void);

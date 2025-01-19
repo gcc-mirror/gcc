@@ -7,7 +7,7 @@ int main () {
 #endif
 
 #if !defined(__riscv_xsfcease)
-#error "__riscv_xsfvcp"
+#error "__riscv_xsfcease"
 #endif
 
   return 0;

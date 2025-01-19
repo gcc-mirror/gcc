@@ -343,11 +343,11 @@ immutable(void)* rtinfoEntry(ref Impl aa, immutable(size_t)* keyinfo,
             pos++;
         }
         if (keybits > 0)
-            rtinfoData[pos] = mixin(src) & ((cast(size_t) 1 << keybits) - 1);
+            rtinfoData[pos] = mixin(src) & ((size_t(1) << keybits) - 1);
     }
 
     if (keyinfo is rtinfoHasPointers)
-        copyKeyInfo!"~cast(size_t) 0"();
+        copyKeyInfo!"~size_t(0)"();
     else if (keyinfo !is rtinfoNoPointers)
         copyKeyInfo!"keyinfo[pos]"();
 
@@ -373,11 +373,11 @@ immutable(void)* rtinfoEntry(ref Impl aa, immutable(size_t)* keyinfo,
             pos++;
         }
         if (endoff > 0)
-            rtinfoData[dstpos] &= ((cast(size_t) 1 << endoff) - 1);
+            rtinfoData[dstpos] &= (size_t(1) << endoff) - 1;
     }
 
     if (valinfo is rtinfoHasPointers)
-        copyValInfo!"~cast(size_t) 0"();
+        copyValInfo!"~size_t(0)"();
     else if (valinfo !is rtinfoNoPointers)
         copyValInfo!"valinfo[pos]"();
 
@@ -688,7 +688,7 @@ extern (C) inout(void[]) _aaValues(inout AA aa, const size_t keysz, const size_t
     {
         if (!b.filled)
             continue;
-        pval[0 .. valsz] = b.entry[off .. valsz + off];
+        pval[0 .. valsz] = cast(void[]) b.entry[off .. valsz + off];
         pval += valsz;
     }
     // postblit is done in object.values
@@ -710,7 +710,7 @@ extern (C) inout(void[]) _aaKeys(inout AA aa, const size_t keysz, const TypeInfo
     {
         if (!b.filled)
             continue;
-        pkey[0 .. keysz] = b.entry[0 .. keysz];
+        pkey[0 .. keysz] = cast(void[]) b.entry[0 .. keysz];
         pkey += keysz;
     }
     // postblit is done in object.keys
@@ -977,7 +977,7 @@ unittest
     aa1 = null;
     aa2 = null;
     aa3 = null;
-    GC.runFinalizers((cast(char*)(&entryDtor))[0 .. 1]);
+    GC.runFinalizers((cast(char*)&entryDtor)[0 .. 1]);
     assert(T.dtor == 6 && T.postblit == 2);
 }
 

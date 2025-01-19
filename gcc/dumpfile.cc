@@ -1,5 +1,5 @@
 /* Dump infrastructure for optimizations and intermediate representation.
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
@@ -108,7 +107,7 @@ static struct dump_file_info dump_files[TDI_end] =
   DUMP_FILE_INFO (".lto-stream-out", "ipa-lto-stream-out", DK_ipa, 0),
   DUMP_FILE_INFO (".profile-report", "profile-report", DK_ipa, 0),
 #define FIRST_AUTO_NUMBERED_DUMP 1
-#define FIRST_ME_AUTO_NUMBERED_DUMP 5
+#define FIRST_ME_AUTO_NUMBERED_DUMP 6
 
   DUMP_FILE_INFO (NULL, "lang-all", DK_lang, 0),
   DUMP_FILE_INFO (NULL, "tree-all", DK_tree, 0),
@@ -2408,7 +2407,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	dump_printf (MSG_NOTE, "node: %C", node);
 	const int expected_impl_line = __LINE__ - 1;
 
-	ASSERT_DUMPED_TEXT_EQ (tmp, "node: test_decl/0");
+	ASSERT_DUMPED_TEXT_EQ (tmp, "node: test_decl/1");
 	if (with_optinfo)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
@@ -2416,7 +2415,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "node: ");
-	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/0");
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/1");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
 				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
@@ -2595,14 +2594,14 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	dump_symtab_node (MSG_NOTE, node);
 	const int expected_impl_line = __LINE__ - 1;
 
-	ASSERT_DUMPED_TEXT_EQ (tmp, "test_decl/0");
+	ASSERT_DUMPED_TEXT_EQ (tmp, "test_decl/1");
 	if (with_optinfo)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 1);
-	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/0");
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/1");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
 				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");

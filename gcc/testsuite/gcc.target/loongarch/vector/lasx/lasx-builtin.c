@@ -3178,8 +3178,8 @@ __lasx_xvssrln_w_d (v4i64 _1, v4i64 _2)
 {
   return __builtin_lasx_xvssrln_w_d (_1, _2);
 }
-v32i8
-__lasx_xvorn_v (v32i8 _1, v32i8 _2)
+v32u8
+__lasx_xvorn_v (v32u8 _1, v32u8 _2)
 {
   return __builtin_lasx_xvorn_v (_1, _2);
 }

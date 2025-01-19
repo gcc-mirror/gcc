@@ -71,19 +71,6 @@ enum
 #define WANTvalue  0 // default
 #define WANTexpand 1 // expand const/immutable variables if possible
 
-/**
- * Specifies how the checkModify deals with certain situations
- */
-enum class ModifyFlags
-{
-    /// Issue error messages on invalid modifications of the variable
-    none,
-    /// No errors are emitted for invalid modifications
-    noError = 0x1,
-    /// The modification occurs for a subfield of the current variable
-    fieldAssign = 0x2,
-};
-
 class Expression : public ASTNode
 {
 public:
@@ -91,6 +78,7 @@ public:
     Loc loc;                    // file location
     EXP op;                     // to minimize use of dynamic_cast
     d_bool parens;              // if this is a parenthesized expression
+    d_bool rvalue;              // consider this an rvalue, even if it is an lvalue
 
     size_t size() const;
     static void _init();
@@ -151,7 +139,7 @@ public:
     TypeidExp* isTypeidExp();
     TraitsExp* isTraitsExp();
     HaltExp* isHaltExp();
-    IsExp* isExp();
+    IsExp* isIsExp();
     MixinExp* isMixinExp();
     ImportExp* isImportExp();
     AssertExp* isAssertExp();
@@ -474,7 +462,7 @@ public:
     d_bool isOriginal;            // used when moving instances to indicate `this is this.origin`
     OwnedBy ownedByCtfe;
 
-    static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = NULL);
+    static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = nullptr);
     bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
 
@@ -889,6 +877,7 @@ public:
     // Possible to cast to one type while painting to another type
     Type *to;                   // type to cast to
     unsigned char mod;          // MODxxxxx
+    d_bool trusted; // assume cast is safe
 
     CastExp *syntaxCopy() override;
     bool isLvalue() override;

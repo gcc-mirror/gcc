@@ -1,5 +1,5 @@
 /* PRU target specific pragmas
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.

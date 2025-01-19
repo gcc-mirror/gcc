@@ -1,6 +1,6 @@
 @c markers: BUG TODO
 
-@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2025 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -925,6 +925,14 @@ and addressing mode selection.  The pass is run twice, with values
 being propagated into loops only on the second run.  The code is
 located in @file{fwprop.cc}.
 
+@item Store forwarding avoidance
+
+This pass attempts to reduce the overhead of store to load forwarding.
+It detects when a load reads from one or more previous smaller stores and
+then rearranges them so that the stores are done after the load.  The loaded
+value is adjusted with a series of bit insert instructions so that it stays
+the same.  The code is located in @file{avoid-store-forwarding.cc}.
+
 @item Common subexpression elimination
 
 This pass removes redundant computation within basic blocks, and
@@ -950,6 +958,12 @@ Regardless of which type of GCSE is used, the GCSE pass also performs
 global constant and  copy propagation.
 The source file for this pass is @file{gcse.cc}, and the LCM routines
 are in @file{lcm.cc}.
+
+A third version of this pass is run on some targets to optimise assignments to
+specific hard registers.  This can be used in cases where a register has a
+single purpose, such as specifying a mode as an extra input for specific
+instructions (@pxref{mode switching optimization} for another way of handling
+instruction modes).
 
 @item Loop optimization
 
@@ -1010,6 +1024,7 @@ combination approaches as well.
 The pass runs twice, once before register allocation and once after
 register allocation.  The code is located in @file{late-combine.cc}.
 
+@anchor{mode switching optimization}
 @item Mode switching optimization
 
 This pass looks for instructions that require the processor to be in a

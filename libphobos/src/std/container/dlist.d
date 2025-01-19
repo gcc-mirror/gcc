@@ -185,6 +185,7 @@ Implements a doubly-linked list.
 struct DList(T)
 {
     import std.range : Take;
+    import std.traits : isMutable;
 
     /*
     A Node with a Payload. A PayNode.
@@ -220,7 +221,10 @@ struct DList(T)
     {
         import std.algorithm.mutation : move;
 
-        return (new PayNode(BaseNode(prev, next), move(arg))).asBaseNode();
+        static if (isMutable!Stuff)
+            return (new PayNode(BaseNode(prev, next), move(arg))).asBaseNode();
+        else
+            return (new PayNode(BaseNode(prev, next), arg)).asBaseNode();
     }
 
     void initialize() nothrow @safe pure
@@ -245,7 +249,8 @@ struct DList(T)
 /**
 Constructor taking a number of nodes
      */
-    this(U)(U[] values...) if (isImplicitlyConvertible!(U, T))
+    this(U)(U[] values...)
+    if (isImplicitlyConvertible!(U, T))
     {
         insertBack(values);
     }
@@ -1147,4 +1152,23 @@ private:
     assert(list.front.x == 2);
     list.removeFront();
     assert(list[].walkLength == 0);
+}
+
+//  https://issues.dlang.org/show_bug.cgi?id=24637
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+
+    struct A
+    {
+        int c;
+    }
+
+    DList!A B;
+    B.insert(A(1));
+    assert(B[].equal([A(1)]));
+
+    const a = A(3);
+    B.insert(a);
+    assert(B[].equal([A(1), A(3)]));
 }

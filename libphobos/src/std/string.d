@@ -457,26 +457,26 @@ pure nothrow @system unittest // https://issues.dlang.org/show_bug.cgi?id=15136
 alias CaseSensitive = Flag!"caseSensitive";
 
 /++
-    Searches for character in range.
+    Searches for a character in a string or range.
 
     Params:
-        s = string or InputRange of characters to search in correct UTF format
-        c = character to search for
-        startIdx = starting index to a well-formed code point
-        cs = `Yes.caseSensitive` or `No.caseSensitive`
+        s = string or InputRange of characters to search for `c` in
+        c = character to search for in `s`
+        startIdx = index to a well-formed code point in `s` to start
+            searching from; defaults to 0
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`).
 
     Returns:
-        the index of the first occurrence of `c` in `s` with
-        respect to the start index `startIdx`. If `c`
-        is not found, then `-1` is returned.
-        If `c` is found the value of the returned index is at least
-        `startIdx`.
-        If the parameters are not valid UTF, the result will still
-        be in the range [-1 .. s.length], but will not be reliable otherwise.
+        If `c` is found in `s`, then the index of its first occurrence is
+        returned. If `c` is not found or `startIdx` is greater than or equal to
+        `s.length`, then -1 is returned. If the parameters are not valid UTF,
+        the result will still be either -1 or in the range [`startIdx` ..
+        `s.length`], but will not be reliable otherwise.
 
     Throws:
-        If the sequence starting at `startIdx` does not represent a well
-        formed codepoint, then a $(REF UTFException, std,utf) may be thrown.
+        If the sequence starting at `startIdx` does not represent a well-formed
+        code point, then a $(REF UTFException, std,utf) may be thrown.
 
     See_Also: $(REF countUntil, std,algorithm,searching)
   +/
@@ -901,30 +901,30 @@ private template _indexOfStr(CaseSensitive cs)
 }
 
 /++
-    Searches for substring in `s`.
+    Searches for a substring in a string or range.
 
     Params:
-        s = string or ForwardRange of characters to search in correct UTF format
-        sub = substring to search for
-        startIdx = the index into s to start searching from
-        cs = `Yes.caseSensitive` (default) or `No.caseSensitive`
+        s = string or ForwardRange of characters to search for `sub` in
+        sub = substring to search for in `s`
+        startIdx = index to a well-formed code point in `s` to start
+            searching from; defaults to 0
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`)
 
     Returns:
-        the index of the first occurrence of `sub` in `s` with
-        respect to the start index `startIdx`. If `sub` is not found,
-        then `-1` is returned.
-        If the arguments are not valid UTF, the result will still
-        be in the range [-1 .. s.length], but will not be reliable otherwise.
-        If `sub` is found the value of the returned index is at least
-        `startIdx`.
+        The index of the first occurrence of `sub` in `s`. If `sub` is not found
+        or `startIdx` is greater than or equal to `s.length`, then -1 is
+        returned. If the arguments are not valid UTF, the result will still be
+        either -1 or in the range [`startIdx` .. `s.length`], but will not be
+        reliable otherwise.
 
     Throws:
-        If the sequence starting at `startIdx` does not represent a well
-        formed codepoint, then a $(REF UTFException, std,utf) may be thrown.
+        If the sequence starting at `startIdx` does not represent a well-formed
+        code point, then a $(REF UTFException, std,utf) may be thrown.
 
     Bugs:
-        Does not work with case insensitive strings where the mapping of
-        tolower and toupper is not 1:1.
+        Does not work with case-insensitive strings where the mapping of
+        $(REF toLower, std,uni) and $(REF toUpper, std,uni) is not 1:1.
   +/
 ptrdiff_t indexOf(Range, Char)(Range s, const(Char)[] sub)
 if (isForwardRange!Range && isSomeChar!(ElementEncodingType!Range) &&
@@ -1156,23 +1156,26 @@ unittest
 }
 
 /++
+    Searches for the last occurrence of a character in a string.
+
     Params:
-        s = string to search
-        c = character to search for
-        startIdx = the index into s to start searching from
-        cs = `Yes.caseSensitive` or `No.caseSensitive`
+        s = string to search for `c` in
+        c = character to search for in `s`
+        startIdx = index of a well-formed code point in `s` to start searching
+            from; defaults to 0
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`)
 
     Returns:
-        The index of the last occurrence of `c` in `s`. If `c` is not
-        found, then `-1` is returned. The `startIdx` slices `s` in
-        the following way $(D s[0 .. startIdx]). `startIdx` represents a
-        codeunit index in `s`.
+        If `c` is found in `s`, then the index of its last occurrence is
+        returned. If `c` is not found or `startIdx` is greater than or equal to
+        `s.length`, then -1 is returned. If the parameters are not valid UTF,
+        the result will still be either -1 or in the range [`startIdx` ..
+        `s.length`], but will not be reliable otherwise.
 
     Throws:
-        If the sequence ending at `startIdx` does not represent a well
-        formed codepoint, then a $(REF UTFException, std,utf) may be thrown.
-
-    `cs` indicates whether the comparisons are case sensitive.
+        If the sequence ending at `startIdx` does not represent a well-formed
+        code point, then a $(REF UTFException, std,utf) may be thrown.
   +/
 ptrdiff_t lastIndexOf(Char)(const(Char)[] s, in dchar c,
         in CaseSensitive cs = Yes.caseSensitive) @safe pure
@@ -1345,23 +1348,30 @@ if (isSomeChar!Char)
 }
 
 /++
+    Searches for the last occurrence of a substring in a string.
+
     Params:
-        s = string to search
-        sub = substring to search for
-        startIdx = the index into s to start searching from
-        cs = `Yes.caseSensitive` or `No.caseSensitive`
+        s = string to search for `sub` in
+        sub = substring to search for in `s`
+        startIdx = index to a well-formed code point in `s` to start
+            searching from; defaults to 0
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`)
 
     Returns:
-        the index of the last occurrence of `sub` in `s`. If `sub` is
-        not found, then `-1` is returned. The `startIdx` slices `s`
-        in the following way $(D s[0 .. startIdx]). `startIdx` represents a
-        codeunit index in `s`.
+        The index of the last occurrence of `sub` in `s`. If `sub` is not found
+        or `startIdx` is greater than or equal to `s.length`, then -1 is
+        returned. If the parameters are not valid UTF, the result will still be
+        either -1 or in the range [`startIdx` .. `s.length`], but will not be
+        reliable otherwise.
 
     Throws:
-        If the sequence ending at `startIdx` does not represent a well
-        formed codepoint, then a $(REF UTFException, std,utf) may be thrown.
+        If the sequence starting at `startIdx` does not represent a well-formed
+        code point, then a $(REF UTFException, std,utf) may be thrown.
 
-    `cs` indicates whether the comparisons are case sensitive.
+    Bugs:
+        Does not work with case-insensitive strings where the mapping of
+        $(REF toLower, std,uni) and $(REF toUpper, std,uni) is not 1:1.
   +/
 ptrdiff_t lastIndexOf(Char1, Char2)(const(Char1)[] s, const(Char2)[] sub,
         in CaseSensitive cs = Yes.caseSensitive) @safe pure
@@ -1747,21 +1757,28 @@ if (isSomeChar!Char && isSomeChar!Char2)
 }
 
 /**
-    Returns the index of the first occurrence of any of the elements in $(D
-    needles) in `haystack`. If no element of `needles` is found,
-    then `-1` is returned. The `startIdx` slices `haystack` in the
-    following way $(D haystack[startIdx .. $]). `startIdx` represents a
-    codeunit index in `haystack`. If the sequence ending at `startIdx`
-    does not represent a well formed codepoint, then a $(REF UTFException, std,utf)
-    may be thrown.
+    Searches the string `haystack` for one of the characters in `needles`
+    starting at index `startIdx`. If `startIdx` is not given, it defaults to 0.
 
     Params:
-        haystack = String to search for needles in.
-        needles = Strings to search for in haystack.
-        startIdx = slices haystack like this $(D haystack[startIdx .. $]). If
-            the startIdx is greater than or equal to the length of haystack the
-            functions returns `-1`.
-        cs = Indicates whether the comparisons are case sensitive.
+        haystack = string to search for needles in
+        needles = characters to search for in `haystack`
+        startIdx = index of a well-formed code point in `haystack` to start
+            searching from; defaults to 0
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`)
+
+    Returns:
+        The index of the first occurrence of any of the elements of `needles` in
+        `haystack`. If no element of `needles` is found or `startIdx` is greater
+        than or equal to `haystack.length`, then -1 is returned. If the
+        parameters are not valid UTF, the result will still be either -1 or in
+        the range [`startIdx` .. `haystack.length`], but will not be reliable
+        otherwise.
+
+    Throws:
+        If the sequence starting at `startIdx` does not represent a well-formed
+        code point, then a $(REF UTFException, std,utf) may be thrown.
 */
 ptrdiff_t indexOfAny(Char,Char2)(const(Char)[] haystack, const(Char2)[] needles,
         in CaseSensitive cs = Yes.caseSensitive) @safe pure
@@ -1914,21 +1931,23 @@ if (isSomeChar!Char && isSomeChar!Char2)
 }
 
 /**
-    Returns the index of the last occurrence of any of the elements in $(D
-    needles) in `haystack`. If no element of `needles` is found,
-    then `-1` is returned. The `stopIdx` slices `haystack` in the
-    following way $(D s[0 .. stopIdx]). `stopIdx` represents a codeunit
-    index in `haystack`. If the sequence ending at `startIdx` does not
-    represent a well formed codepoint, then a $(REF UTFException, std,utf) may be
-    thrown.
+    Searches `haystack` for the last occurrence of any of the
+    characters in `needles`.
 
     Params:
-        haystack = String to search for needles in.
-        needles = Strings to search for in haystack.
-        stopIdx = slices haystack like this $(D haystack[0 .. stopIdx]). If
-            the stopIdx is greater than or equal to the length of haystack the
-            functions returns `-1`.
-        cs = Indicates whether the comparisons are case sensitive.
+        haystack = string to search needles in
+        needles = characters to search for in `haystack`
+        stopIdx = index in `haystack` to stop searching at (exclusive); defaults
+            to `haystack.length`
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`)
+
+    Returns:
+        The index of the last occurrence of any of the characters of `needles`
+        in `haystack`. If no character of `needles` is found or `stopIdx` is 0,
+        then -1 is returned. If the parameters are not valid UTF, the result
+        will still be in the range [-1 .. `stopIdx`], but will not be reliable
+        otherwise.
 */
 ptrdiff_t lastIndexOfAny(Char,Char2)(const(Char)[] haystack,
         const(Char2)[] needles, in CaseSensitive cs = Yes.caseSensitive)
@@ -2097,17 +2116,27 @@ if (isSomeChar!Char && isSomeChar!Char2)
 }
 
 /**
-    Returns the index of the first occurrence of any character not an elements
-    in `needles` in `haystack`. If all element of `haystack` are
-    element of `needles` `-1` is returned.
+    Searches `haystack` for a character not in `needles`.
 
     Params:
-        haystack = String to search for needles in.
-        needles = Strings to search for in haystack.
-        startIdx = slices haystack like this $(D haystack[startIdx .. $]). If
-            the startIdx is greater than or equal to the length of haystack the
-            functions returns `-1`.
-        cs = Indicates whether the comparisons are case sensitive.
+        haystack = string to search for needles in
+        needles = characters to search for in `haystack`
+        startIdx = index of a well-formed code point in `haystack` to start
+            searching from; defaults to 0
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`)
+
+    Returns:
+        The index of the first character in `haystack` that is not an element of
+        `needles`. If all characters of `haystack` are elements of `needles` or
+        `startIdx` is greater than or equal to `haystack.length`, then -1 is
+        returned. If the parameters are not valid UTF, the result will still be
+        either -1 or in the range [`startIdx` .. `haystack.length`], but will
+        not be reliable otherwise.
+
+    Throws:
+        If the sequence starting at `startIdx` does not represent a well-formed
+        code point, then a $(REF UTFException, std,utf) may be thrown.
 */
 ptrdiff_t indexOfNeither(Char,Char2)(const(Char)[] haystack,
         const(Char2)[] needles, in CaseSensitive cs = Yes.caseSensitive)
@@ -2257,17 +2286,22 @@ if (isSomeChar!Char && isSomeChar!Char2)
 }
 
 /**
-    Returns the last index of the first occurence of any character that is not
-    an elements in `needles` in `haystack`. If all element of
-    `haystack` are element of `needles` `-1` is returned.
+    Searches for the last character in `haystack` that is not in `needles`.
 
     Params:
-        haystack = String to search for needles in.
-        needles = Strings to search for in haystack.
-        stopIdx = slices haystack like this $(D haystack[0 .. stopIdx]) If
-            the stopIdx is greater than or equal to the length of haystack the
-            functions returns `-1`.
-        cs = Indicates whether the comparisons are case sensitive.
+        haystack = string to search for needles in
+        needles = characters to search for in `haystack`
+        stopIdx = index in `haystack` to stop searching at (exclusive);
+            defaults to `haystack.length`
+        cs = specifies whether comparisons are case-sensitive
+            (`Yes.caseSensitive`) or not (`No.caseSensitive`)
+
+    Returns:
+        The index of the last character in `haystack` that is not an element of
+        `needles`. If all characters of `haystack` are in `needles` or `stopIdx`
+        is 0, then -1 is returned. If the parameters are not valid UTF, the
+        result will still be in the range [-1 .. `stopIdx`], but will not be
+        reliable otherwise.
 */
 ptrdiff_t lastIndexOfNeither(Char,Char2)(const(Char)[] haystack,
         const(Char2)[] needles, in CaseSensitive cs = Yes.caseSensitive)
@@ -5942,36 +5976,36 @@ C1[] tr(C1, C2, C3, C4 = immutable char)
         n = 0;          // consider it 'found' at position 0
 
       Lfound:
-
-        // Find the nth character in to[]
-        dchar nextt;
-        for (size_t i = 0; i < to.length; )
-        {
-            immutable t = decode(to, i);
-            if (t == '-' && lastt != dchar.init && i < to.length)
+        {  // create a new scope so that gotos don't skip of declaration of nextt
+            // Find the nth character in to[]
+            dchar nextt;
+            for (size_t i = 0; i < to.length; )
             {
-                nextt = decode(to, i);
-                n -= nextt - lastt;
-                if (n < 0)
+                immutable t = decode(to, i);
+                if (t == '-' && lastt != dchar.init && i < to.length)
                 {
-                    newc = nextt + n + 1;
+                    nextt = decode(to, i);
+                    n -= nextt - lastt;
+                    if (n < 0)
+                    {
+                        newc = nextt + n + 1;
+                        goto Lnewc;
+                    }
+                    lastt = dchar.init;
+                    continue;
+                }
+                if (n == 0)
+                {   newc = t;
                     goto Lnewc;
                 }
-                lastt = dchar.init;
+                lastt = t;
+                nextt = t;
+                n--;
+            }
+            if (mod_d)
                 continue;
-            }
-            if (n == 0)
-            {   newc = t;
-                goto Lnewc;
-            }
-            lastt = t;
-            nextt = t;
-            n--;
+            newc = nextt;
         }
-        if (mod_d)
-            continue;
-        newc = nextt;
-
       Lnewc:
         if (mod_s && modified && newc == lastc)
             continue;
@@ -6331,42 +6365,42 @@ if (isSomeString!S ||
     assertCTFEable!(
     {
     // Test the isNumeric(in string) function
-    assert(isNumeric("1") == true );
-    assert(isNumeric("1.0") == true );
-    assert(isNumeric("1e-1") == true );
-    assert(isNumeric("12345xxxx890") == false );
-    assert(isNumeric("567L") == true );
-    assert(isNumeric("23UL") == true );
-    assert(isNumeric("-123..56f") == false );
-    assert(isNumeric("12.3.5.6") == false );
-    assert(isNumeric(" 12.356") == false );
-    assert(isNumeric("123 5.6") == false );
-    assert(isNumeric("1233E-1+1.0e-1i") == true );
+    assert(isNumeric("1"));
+    assert(isNumeric("1.0"));
+    assert(isNumeric("1e-1"));
+    assert(!isNumeric("12345xxxx890"));
+    assert(isNumeric("567L"));
+    assert(isNumeric("23UL"));
+    assert(!isNumeric("-123..56f"));
+    assert(!isNumeric("12.3.5.6"));
+    assert(!isNumeric(" 12.356"));
+    assert(!isNumeric("123 5.6"));
+    assert(isNumeric("1233E-1+1.0e-1i"));
 
-    assert(isNumeric("123.00E-5+1234.45E-12Li") == true);
-    assert(isNumeric("123.00e-5+1234.45E-12iL") == false);
-    assert(isNumeric("123.00e-5+1234.45e-12uL") == false);
-    assert(isNumeric("123.00E-5+1234.45e-12lu") == false);
+    assert(isNumeric("123.00E-5+1234.45E-12Li"));
+    assert(!isNumeric("123.00e-5+1234.45E-12iL"));
+    assert(!isNumeric("123.00e-5+1234.45e-12uL"));
+    assert(!isNumeric("123.00E-5+1234.45e-12lu"));
 
-    assert(isNumeric("123fi") == true);
-    assert(isNumeric("123li") == true);
-    assert(isNumeric("--123L") == false);
-    assert(isNumeric("+123.5UL") == false);
-    assert(isNumeric("123f") == true);
-    assert(isNumeric("123.u") == false);
+    assert(isNumeric("123fi"));
+    assert(isNumeric("123li"));
+    assert(!isNumeric("--123L"));
+    assert(!isNumeric("+123.5UL"));
+    assert(isNumeric("123f"));
+    assert(!isNumeric("123.u"));
 
   // @@@BUG@@ to!string(float) is not CTFEable.
   // Related: formatValue(T) if (is(FloatingPointTypeOf!T))
   if (!__ctfe)
   {
-    assert(isNumeric(to!string(real.nan)) == true);
-    assert(isNumeric(to!string(-real.infinity)) == true);
+    assert(isNumeric(to!string(real.nan)));
+    assert(isNumeric(to!string(-real.infinity)));
   }
 
     string s = "$250.99-";
-    assert(isNumeric(s[1 .. s.length - 2]) == true);
-    assert(isNumeric(s) == false);
-    assert(isNumeric(s[0 .. s.length - 1]) == false);
+    assert(isNumeric(s[1 .. $ - 2]));
+    assert(!isNumeric(s));
+    assert(!isNumeric(s[0 .. $ - 1]));
     });
 
     assert(!isNumeric("-"));

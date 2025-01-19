@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  decimal fixed point types up to 128-bit mantissa, and also for conversion
---  operations required in Text_IO.Decimal_IO for them.
+--  This package provides the subprograms supporting the ``Image`` attribute
+--  and ``Ada.Text_IO.Decimal_IO`` conversions routines for decimal fixed point
+--  types up to 128-bit mantissa.
 
 with Interfaces;
 with System.Image_D;

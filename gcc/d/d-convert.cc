@@ -1,5 +1,5 @@
 /* d-convert.cc -- Data type conversion routines.
-   Copyright (C) 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -385,7 +384,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
     case TY::Tstruct:
       if (tbtype->ty == TY::Tstruct)
 	{
-	  if (totype->size () == etype->size ())
+	  if (dmd::size (totype) == dmd::size (etype))
 	    {
 	      /* Allowed to cast to structs with same type size.  */
 	      result = build_vconvert (build_ctype (totype), exp);
@@ -468,8 +467,8 @@ convert_expr (tree exp, Type *etype, Type *totype)
       else if (tbtype->ty == TY::Tarray)
 	{
 	  dinteger_t dim = ebtype->isTypeSArray ()->dim->toInteger ();
-	  dinteger_t esize = ebtype->nextOf ()->size ();
-	  dinteger_t tsize = tbtype->nextOf ()->size ();
+	  dinteger_t esize = dmd::size (ebtype->nextOf ());
+	  dinteger_t tsize = dmd::size (tbtype->nextOf ());
 
 	  tree ptrtype = build_ctype (dmd::pointerTo (tbtype->nextOf ()));
 
@@ -499,10 +498,11 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	{
 	  /* And allows casting a static array to any struct type too.
 	     Type sizes should have already been checked by the frontend.  */
-	  gcc_assert (totype->size () == etype->size ());
+	  gcc_assert (dmd::size (totype) == dmd::size (etype));
 	  result = build_vconvert (build_ctype (totype), exp);
 	}
-      else if (tbtype->ty == TY::Tvector && tbtype->size () == ebtype->size ())
+      else if (tbtype->ty == TY::Tvector
+	       && dmd::size (tbtype) == dmd::size (ebtype))
 	{
 	  /* Allow casting from array to vector as if its an unaligned load.  */
 	  tree type = build_ctype (totype);
@@ -527,8 +527,8 @@ convert_expr (tree exp, Type *etype, Type *totype)
       else if (tbtype->ty == TY::Tarray)
 	{
 	  /* Assume tvoid->size() == 1.  */
-	  dinteger_t fsize = ebtype->nextOf ()->toBasetype ()->size ();
-	  dinteger_t tsize = tbtype->nextOf ()->toBasetype ()->size ();
+	  dinteger_t fsize = dmd::size (ebtype->nextOf ()->toBasetype ());
+	  dinteger_t tsize = dmd::size (tbtype->nextOf ()->toBasetype ());
 
 	  if (fsize != tsize)
 	    {
@@ -595,7 +595,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
     case TY::Tvector:
       if (tbtype->ty == TY::Tsarray)
 	{
-	  if (tbtype->size () == ebtype->size ())
+	  if (dmd::size (tbtype) == dmd::size (ebtype))
 	    return build_vconvert (build_ctype (totype), exp);
 	}
       break;
@@ -603,8 +603,8 @@ convert_expr (tree exp, Type *etype, Type *totype)
     default:
       /* All casts between imaginary and non-imaginary result in 0.0,
 	 except for casts between complex and imaginary types.  */
-      if (!ebtype->iscomplex () && !tbtype->iscomplex ()
-	  && (ebtype->isimaginary () != tbtype->isimaginary ()))
+      if (!ebtype->isComplex () && !tbtype->isComplex ()
+	  && (ebtype->isImaginary () != tbtype->isImaginary ()))
 	{
 	  warning (OPT_Wcast_result,
 		   "cast from %qs to %qs will produce zero result",
@@ -741,7 +741,7 @@ check_valist_conversion (Expression *expr, Type *totype, bool in_assignment)
 	      && valist_array_p (decl->type));
 
   /* OK if conversion between types is allowed.  */
-  if (type->implicitConvTo (totype) != MATCH::nomatch)
+  if (dmd::implicitConvTo (type, totype) != MATCH::nomatch)
     return;
 
   if (in_assignment)
@@ -814,7 +814,7 @@ convert_for_assignment (Expression *expr, Type *totype, bool literalp)
 
   /* D Front end uses IntegerExp(0) to mean zero-init an array or structure.  */
   if ((tbtype->ty == TY::Tsarray || tbtype->ty == TY::Tstruct)
-      && ebtype->isintegral ())
+      && ebtype->isIntegral ())
     {
       tree ret = build_expr (expr, false, literalp);
       gcc_assert (integer_zerop (ret));

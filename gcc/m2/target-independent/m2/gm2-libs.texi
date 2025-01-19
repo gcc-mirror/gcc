@@ -1,4 +1,4 @@
-@c Copyright (C) 2000-2024 Free Software Foundation, Inc.
+@c Copyright (C) 2000-2025 Free Software Foundation, Inc.
 @c This file is part of GNU Modula-2.
 
 @c Permission is granted to copy, distribute and/or modify this document
@@ -17,7 +17,7 @@
 @section Base libraries
 
 @c README.texi describes the pim libraries.
-@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2025 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
@@ -6220,7 +6220,7 @@ END wrapc.
 @section PIM and Logitech 3.0 Compatible
 
 @c README.texi describes the additional PIM libraries.
-@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2025 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
@@ -8397,7 +8397,7 @@ END TimeDate.
 @section PIM coroutine support
 
 @c README.texi describes the PIM coroutine libraries.
-@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2025 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
@@ -8985,7 +8985,7 @@ END TimerHandler.
 @section M2 ISO Libraries
 
 @c README.texi describes the ISO libraries.
-@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2025 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.

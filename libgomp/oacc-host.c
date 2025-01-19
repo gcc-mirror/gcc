@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library: acc_device_host.
 
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 

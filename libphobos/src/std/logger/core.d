@@ -293,7 +293,7 @@ template defaultLogFunction(LogLevel ll)
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy A args)
-        if ((args.length > 0 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
+    if ((args.length > 0 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
     {
             stdThreadLocalLog.memLogFunctions!(ll).logImpl!(line, file, funcName,
                 prettyFuncName, moduleName)(args);
@@ -446,7 +446,7 @@ private struct MsgRange
     }
 
     void put(T)(T msg) @safe
-        if (isSomeString!T)
+    if (isSomeString!T)
     {
         log.logMsgPart(msg);
     }
@@ -735,7 +735,7 @@ abstract class Logger
             string funcName = __FUNCTION__,
             string prettyFuncName = __PRETTY_FUNCTION__,
             string moduleName = __MODULE__, A...)(lazy A args)
-            if (args.length == 0 || (args.length > 0 && !is(A[0] : bool)))
+        if (args.length == 0 || (args.length > 0 && !is(A[0] : bool)))
         {
             synchronized (mutex)
             {
@@ -948,7 +948,7 @@ abstract class Logger
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(const LogLevel ll,
         lazy bool condition, lazy A args)
-        if (args.length != 1)
+    if (args.length != 1)
     {
         synchronized (mutex)
         {
@@ -1016,7 +1016,7 @@ abstract class Logger
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(const LogLevel ll, lazy A args)
-        if ((args.length > 1 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
+    if ((args.length > 1 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
     {
         synchronized (mutex)
         {
@@ -1085,7 +1085,7 @@ abstract class Logger
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy bool condition, lazy A args)
-        if (args.length != 1)
+    if (args.length != 1)
     {
         synchronized (mutex)
         {
@@ -1154,10 +1154,10 @@ abstract class Logger
         string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy A args)
-        if ((args.length > 1
-                && !is(Unqual!(A[0]) : bool)
-                && !is(immutable A[0] == immutable LogLevel))
-            || args.length == 0)
+    if ((args.length > 1
+        && !is(Unqual!(A[0]) : bool)
+        && !is(immutable A[0] == immutable LogLevel))
+        || args.length == 0)
     {
         synchronized (mutex)
         {
@@ -1433,7 +1433,7 @@ logger by the user, the default logger's log level is LogLevel.info.
 
 Example:
 -------------
-sharedLog = new FileLogger(yourFile);
+sharedLog = new shared FileLogger(yourFile);
 -------------
 The example sets a new `FileLogger` as new `sharedLog`.
 
@@ -1450,7 +1450,7 @@ writing `sharedLog`.
 The default `Logger` is thread-safe.
 -------------
 if (sharedLog !is myLogger)
-    sharedLog = new myLogger;
+    sharedLog = new shared myLogger;
 -------------
 */
 @property shared(Logger) sharedLog() @safe
@@ -1473,15 +1473,15 @@ if (sharedLog !is myLogger)
     atomicStore!(MemoryOrder.seq)(stdSharedLogger, atomicLoad(logger));
 }
 
-/** This methods get and set the global `LogLevel`.
+/** These methods get and set the global `LogLevel`.
 
-Every log message with a `LogLevel` lower as the global `LogLevel`
+Every log message with a `LogLevel` lower than the global `LogLevel`
 will be discarded before it reaches `writeLogMessage` method of any
 `Logger`.
 */
 /* Implementation note:
 For any public logging call, the global log level shall only be queried once on
-entry. Otherwise when another threads changes the level, we would work with
+entry. Otherwise when another thread changes the level, we would work with
 different levels at different spots in the code.
 */
 @property LogLevel globalLogLevel() @safe @nogc

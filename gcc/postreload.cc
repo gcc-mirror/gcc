@@ -1,5 +1,5 @@
 /* Perform simple optimizations to clean up the result of reload.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "recog.h"
 
+#include "cfghooks.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
@@ -221,13 +222,107 @@ reload_cse_regs_1 (void)
   init_alias_analysis ();
 
   FOR_EACH_BB_FN (bb, cfun)
-    FOR_BB_INSNS (bb, insn)
-      {
-	if (INSN_P (insn))
-	  cfg_changed |= reload_cse_simplify (insn, testreg);
+    {
+      /* If BB has a small number of predecessors, see if each of the
+	 has the same implicit set.  If so, record that implicit set so
+	 that we can add it to the cselib tables.  */
+      rtx_insn *implicit_set;
 
-	cselib_process_insn (insn);
-      }
+      implicit_set = NULL;
+      if (EDGE_COUNT (bb->preds) <= 3)
+	{
+	  edge e;
+	  edge_iterator ei;
+	  rtx src = NULL_RTX;
+	  rtx dest = NULL_RTX;
+
+	  /* Iterate over each incoming edge and see if they
+	     all have the same implicit set.  */
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      /* Skip the entry/exit block.  */
+	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+		break;
+
+	      /* Verify this block ends with a suitable condjump  */
+	      rtx_insn *condjump = BB_END (e->src);
+	      if (!condjump || ! any_condjump_p (condjump))
+		break;
+
+	      /* This predecessor ends with a possible equivalence
+		 producing conditional branch.  Extract the condition
+		 and try to use it to create an equivalence.  */
+	      rtx pat = pc_set (condjump);
+	      rtx i_t_e = SET_SRC (pat);
+	      gcc_assert (GET_CODE (i_t_e) == IF_THEN_ELSE);
+	      rtx cond = XEXP (i_t_e, 0);
+
+	      if ((((e->flags & EDGE_FALLTHRU) != 0)
+		   == (XEXP (i_t_e, 1) == pc_rtx))
+		  ? GET_CODE (cond) == EQ
+		  : GET_CODE (cond) == NE)
+		{
+		  /* If this is the first time through record
+		     the source and destination.  */
+		  if (!dest)
+		    {
+		      dest = XEXP (cond, 0);
+		      src = XEXP (cond, 1);
+		    }
+		  /* If this is not the first time through, then
+		     verify the source and destination match.  */
+		  else if (rtx_equal_p (dest, XEXP (cond, 0))
+			   && rtx_equal_p (src, XEXP (cond, 1)))
+		    ;
+		  else
+		    break;
+
+		  /* A few more checks.  First make sure we're dealing with
+		     integer modes, second make sure the values aren't clobbered
+		     by the conditional branch itself.  Do this for every
+		     conditional jump participating in creation of the
+		     equivalence.  */
+		  if (!REG_P (dest)
+		      || !(REG_P (src) || CONST_INT_P (src))
+		      || GET_MODE_CLASS (GET_MODE (dest)) != MODE_INT
+		      || reg_set_p (dest, condjump)
+		      || reg_set_p (src, condjump))
+		    break;
+
+		}
+	      else
+		break;
+	    }
+
+	  /* If all the incoming edges had the same implicit
+	     set, then create a dummy insn for that set.
+
+	     It will be entered into the cselib tables before
+	     we process the first real insn in this block.  */
+	  if (dest && ei_end_p (ei))
+	    implicit_set = make_insn_raw (gen_rtx_SET (dest, src));
+	}
+
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (INSN_P (insn))
+	    {
+	      /* If we recorded an implicit set, enter it
+		 into the tables before the first real insn.
+
+		 We have to do it this way because a CODE_LABEL
+		 will flush the cselib tables.  */
+	      if (implicit_set)
+		{
+		  cselib_process_insn (implicit_set);
+		  implicit_set = NULL;
+		}
+	      cfg_changed |= reload_cse_simplify (insn, testreg);
+	    }
+
+	  cselib_process_insn (insn);
+	}
+    }
 
   /* Clean up.  */
   end_alias_analysis ();

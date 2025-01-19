@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -267,6 +267,7 @@ package body Sem_Ch12 is
    --       Initial_Condition        Contract_Cases
    --       Initializes              Depends
    --                                Exceptional_Cases
+   --                                Exit_Cases
    --                                Extensions_Visible
    --                                Global
    --     package body               Post
@@ -1404,7 +1405,7 @@ package body Sem_Ch12 is
                   | N_Formal_Package_Declaration
                   | N_Use_Package_Clause
                   | N_Use_Type_Clause
-                =>
+               =>
                   Action (F, Index);
                   Index := Index + 1;
                when N_Pragma =>
@@ -1461,7 +1462,7 @@ package body Sem_Ch12 is
                   | N_Full_Type_Declaration
                   | N_Private_Type_Declaration
                   | N_Private_Extension_Declaration
-                =>
+               =>
                   if Is_Internal_Name (Chars (Defining_Entity (F))) then
                      null;
                   else
@@ -2265,9 +2266,10 @@ package body Sem_Ch12 is
                            Infer_From_Access (Gen_Assocs, Index, F, A_Full);
 
                         when E_Access_Subtype
-                          | E_Access_Attribute_Type
-                          | E_Allocator_Type
-                          | E_Anonymous_Access_Type =>
+                           | E_Access_Attribute_Type
+                           | E_Allocator_Type
+                           | E_Anonymous_Access_Type
+                        =>
                            raise Program_Error;
 
                         when E_Array_Type | E_Array_Subtype =>
@@ -2510,6 +2512,52 @@ package body Sem_Ch12 is
 
                if Present (Default_Subtype_Mark (Assoc.Un_Formal)) then
                   Match := New_Copy (Default_Subtype_Mark (Assoc.Un_Formal));
+
+                  --  If the Entity of the default subtype denoted by the
+                  --  unanalyzed formal has not been set, then it must refer
+                  --  to another formal type of the enclosing generic. So we
+                  --  locate the subtype "renaming" in Result_Renamings that
+                  --  corresponds to the formal type (by comparing the simple
+                  --  names), and set Match's Entity to the entity denoted by
+                  --  that subtype's subtype_indication (which will denote the
+                  --  actual subtype corresponding to the other formal type).
+                  --  This must be done before calling Instantiate_Type, since
+                  --  that function relies heavily on the entity being set.
+                  --  (Note also that there's similar code inside procedure
+                  --  Validate_Derived_Type_Instance that deals with retrieving
+                  --  the ancestor type of formal derived types.)
+
+                  if No (Entity (Match)) then
+                     declare
+                        pragma Assert (Is_Non_Empty_List (Result_Renamings));
+
+                        Decl : Node_Id := First (Result_Renamings);
+
+                     begin
+                        --  Locate subtype referenced by the default subtype
+                        --  in the list of renamings.
+
+                        while Present (Decl) loop
+                           if Nkind (Decl) = N_Subtype_Declaration
+                             and then
+                               Chars (Match) =
+                                 Chars (Defining_Identifier (Decl))
+                           then
+                              Set_Entity
+                                (Match,
+                                 Entity (Subtype_Indication (Decl)));
+
+                              exit;
+
+                           else
+                              Next (Decl);
+                           end if;
+                        end loop;
+
+                        pragma Assert (Present (Entity (Match)));
+                     end;
+                  end if;
+
                   Append_List
                    (Instantiate_Type
                       (Assoc.Un_Formal, Match, Assoc.An_Formal,
@@ -3049,13 +3097,11 @@ package body Sem_Ch12 is
              Defining_Identifier           => T,
              Discriminant_Specifications   => Discriminant_Specifications (N),
              Unknown_Discriminants_Present => Unk_Disc,
+             Abstract_Present              => Abstract_Present (Def),
+             Limited_Present               => Limited_Present (Def),
              Subtype_Indication            => Subtype_Mark (Def),
+             Synchronized_Present          => Synchronized_Present (Def),
              Interface_List                => Interface_List (Def));
-
-         Set_Abstract_Present     (New_N, Abstract_Present     (Def));
-         Set_Limited_Present      (New_N, Limited_Present      (Def));
-         Set_Synchronized_Present (New_N, Synchronized_Present (Def));
-
       else
          New_N :=
            Make_Full_Type_Declaration (Loc,
@@ -3064,12 +3110,9 @@ package body Sem_Ch12 is
                Discriminant_Specifications (Parent (T)),
              Type_Definition             =>
                Make_Derived_Type_Definition (Loc,
+                 Abstract_Present   => Abstract_Present (Def),
+                 Limited_Present    => Limited_Present (Def),
                  Subtype_Indication => Subtype_Mark (Def)));
-
-         Set_Abstract_Present
-           (Type_Definition (New_N), Abstract_Present (Def));
-         Set_Limited_Present
-           (Type_Definition (New_N), Limited_Present  (Def));
       end if;
 
       Rewrite (N, New_N);
@@ -3202,9 +3245,9 @@ package body Sem_Ch12 is
    -----------------------------------
 
    procedure Analyze_Formal_Interface_Type
-      (N   : Node_Id;
-       T   : Entity_Id;
-       Def : Node_Id)
+     (N   : Node_Id;
+      T   : Entity_Id;
+      Def : Node_Id)
    is
       Loc   : constant Source_Ptr := Sloc (N);
       New_N : Node_Id;
@@ -10106,7 +10149,7 @@ package body Sem_Ch12 is
      (N         : Node_Id;
       Gen_Body  : Node_Id;
       Pack_Id   : Entity_Id)
-  is
+   is
       function Enclosing_Package_Body (N : Node_Id) return Node_Id;
       --  Find innermost package body that encloses the given node, and which
       --  is not a compilation unit. Freeze nodes for the instance, or for its
@@ -11344,8 +11387,8 @@ package body Sem_Ch12 is
       Parent_Spec : Node_Id;
 
       procedure Find_Matching_Actual
-       (F    : Node_Id;
-        Act  : in out Entity_Id);
+        (F    : Node_Id;
+         Act  : in out Entity_Id);
       --  We need to associate each formal entity in the formal package with
       --  the corresponding entity in the actual package. The actual package
       --  has been analyzed and possibly expanded, and as a result there is
@@ -11394,7 +11437,7 @@ package body Sem_Ch12 is
       procedure Find_Matching_Actual
         (F   : Node_Id;
          Act : in out Entity_Id)
-     is
+      is
          Formal_Ent : Entity_Id;
 
       begin
@@ -14009,22 +14052,16 @@ package body Sem_Ch12 is
          -----------------------
 
          function Formal_Dimensions return Nat is
-            Num   : Nat := 0;
-            Index : Node_Id;
+            Dims : List_Id;
 
          begin
             if Nkind (Def) = N_Constrained_Array_Definition then
-               Index := First (Discrete_Subtype_Definitions (Def));
+               Dims := Discrete_Subtype_Definitions (Def);
             else
-               Index := First (Subtype_Marks (Def));
+               Dims := Subtype_Marks (Def);
             end if;
 
-            while Present (Index) loop
-               Num := Num + 1;
-               Next (Index);
-            end loop;
-
-            return Num;
+            return List_Length (Dims);
          end Formal_Dimensions;
 
       --  Start of processing for Validate_Array_Type_Instance
@@ -18078,7 +18115,6 @@ package body Sem_Ch12 is
                   Get_Attribute_Id (Attribute_Name (Def));
       T       : constant Entity_Id := Entity (Prefix (Def));
       Is_Fun  : constant Boolean := (Ekind (Nam) = E_Function);
-      F       : Entity_Id;
       Num_F   : Nat;
       OK      : Boolean;
 
@@ -18087,12 +18123,7 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      Num_F := 0;
-      F := First_Formal (Nam);
-      while Present (F) loop
-         Num_F := Num_F + 1;
-         Next_Formal (F);
-      end loop;
+      Num_F := Number_Formals (Nam);
 
       case Attr_Id is
          when Attribute_Adjacent
@@ -18171,6 +18202,7 @@ package body Sem_Ch12 is
       function Reference_Formal (N : Node_Id) return Traverse_Result is
       begin
          if Is_Entity_Name (N)
+           and then Present (Entity (N))
            and then Scope (Entity (N)) = Current_Scope
          then
             return Abandon;
@@ -18366,7 +18398,7 @@ package body Sem_Ch12 is
 
       procedure Validate_Derived_Type_Default is
       begin
-         if not Is_Ancestor (Etype (Formal), Def_Sub) then
+         if not Is_Ancestor (Etype (Base_Type (Formal)), Def_Sub) then
             Error_Msg_NE ("default must be a descendent of&",
               Default, Etype (Formal));
          end if;
@@ -18539,20 +18571,23 @@ package body Sem_Ch12 is
             end if;
 
          when N_Record_Definition =>   -- Formal interface type
-            if not Is_Interface (Def_Sub) then
-               Error_Msg_NE
-                 ("default for formal interface type must be an interface",
-                  Default, Formal);
+            if Is_Tagged_Type (Def_Sub) then
+               if not Is_Interface (Def_Sub) then
+                  Error_Msg_NE
+                    ("default for formal interface type must be an interface",
+                     Default, Formal);
 
-            elsif Is_Limited_Type (Def_Sub) /= Is_Limited_Type (Formal)
-              or else Is_Task_Interface (Formal) /= Is_Task_Interface (Def_Sub)
-              or else Is_Protected_Interface (Formal) /=
-                      Is_Protected_Interface (Def_Sub)
-              or else Is_Synchronized_Interface (Formal) /=
-                      Is_Synchronized_Interface (Def_Sub)
-            then
-               Error_Msg_NE
-                 ("default for interface& does not match", Def_Sub, Formal);
+               elsif Is_Limited_Type (Def_Sub) /= Is_Limited_Type (Formal)
+                 or else Is_Task_Interface (Formal) /=
+                         Is_Task_Interface (Def_Sub)
+                 or else Is_Protected_Interface (Formal) /=
+                         Is_Protected_Interface (Def_Sub)
+                 or else Is_Synchronized_Interface (Formal) /=
+                         Is_Synchronized_Interface (Def_Sub)
+               then
+                  Error_Msg_NE
+                    ("default for interface& does not match", Def_Sub, Formal);
+               end if;
             end if;
 
          when N_Derived_Type_Definition =>

@@ -1,6 +1,6 @@
 (* M2Range.mod exports procedures which maintain the range checking.
 
-Copyright (C) 2008-2024 Free Software Foundation, Inc.
+Copyright (C) 2008-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -28,7 +28,7 @@ FROM SymbolTable IMPORT NulSym, GetLowestType, PutReadQuad, RemoveReadQuad,
                         IsRecord, IsPointer, IsArray, IsProcType, IsConstLit,
                         IsAModula2Type, IsUnbounded, IsEnumeration, GetMode,
                         IsConstString, MakeConstLit, SkipType, IsProcedure,
-                        IsParameter, GetDeclaredMod, IsVarParam, GetNthParam,
+                        IsParameter, GetDeclaredMod, IsVarParamAny, GetNthParam,
                         ModeOfAddr ;
 
 FROM SYSTEM IMPORT ADDRESS ;
@@ -1704,7 +1704,7 @@ VAR
    compatible: BOOLEAN ;
 BEGIN
    compatible := FALSE ;
-   IF IsVarParam (procedure, paramNo)
+   IF IsVarParamAny (procedure, paramNo)
    THEN
       (* Expression type compatibility rules for pass by reference parameters.  *)
       compatible := ParameterTypeCompatible (tokenNo,
@@ -1792,7 +1792,7 @@ PROCEDURE CodeTypeParam (tokenNo: CARDINAL; formal, actual, procedure: CARDINAL;
 BEGIN
    IF NOT ParameterTypeCompatible (tokenNo,
                                    '{%4EN} type failure between actual {%3ad} and the formal {%2ad}',
-                                   procedure, formal, actual, paramNo, IsVarParam (procedure, paramNo))
+                                   procedure, formal, actual, paramNo, IsVarParamAny (procedure, paramNo))
    THEN
    END
 END CodeTypeParam ;

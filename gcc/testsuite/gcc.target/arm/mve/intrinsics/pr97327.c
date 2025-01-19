@@ -1,6 +1,7 @@
-/* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
-/* { dg-skip-if "Incompatible float ABI" { *-*-* } { "-mfloat-abi=hard" } { "" } } */
-/* { dg-additional-options "-mcpu=cortex-m55 -mthumb -mfloat-abi=soft -mfpu=auto -Werror" } */
+/* { dg-do compile } */
+/* { dg-require-effective-target arm_cpu_cortex_m55_ok } */
+/* { dg-add-options arm_cpu_cortex_m55 } */
+/* { dg-additional-options "-mfloat-abi=soft -Werror" } */
 
 int main ()
 {

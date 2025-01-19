@@ -1,5 +1,5 @@
 // rust-system.h -- Rust frontend inclusion of gcc header files   -*- C++ -*-
-// Copyright (C) 2009-2024 Free Software Foundation, Inc.
+// Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -21,7 +21,6 @@
 #define RUST_SYSTEM_H
 
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #include "config.h"
 
 /* Define this so that inttypes.h defines the PRI?64 macros even

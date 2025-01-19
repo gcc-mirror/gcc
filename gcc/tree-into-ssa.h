@@ -1,5 +1,5 @@
 /* Header file for normal form into SSA.
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

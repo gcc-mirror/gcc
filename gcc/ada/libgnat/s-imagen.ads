@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2021-2024, Free Software Foundation, Inc.      --
+--             Copyright (C) 2021-2025, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Enumeration_Type'Image for all enumeration types except those in package
---  Standard (where we have no opportunity to build image tables), and in
---  package System (where it is too early to start building image tables).
+--  ``Image`` attribute support for all enumeration types except those in
+--  package Standard (where we have no opportunity to build image tables), and
+--  in package System (where it is too early to start building image tables).
 --  Special routines exist for the enumeration types in these packages.
 
 generic

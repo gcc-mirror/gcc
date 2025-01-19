@@ -9,7 +9,7 @@ fail_compilation/cppvar.d(21): Error: variable `cppvar.staticVar` cannot have `e
 fail_compilation/cppvar.d(21):        perhaps declare it as `__gshared` instead
 fail_compilation/cppvar.d(22): Error: variable `cppvar.sharedVar` cannot have `extern(C++)` linkage because it is `shared`
 fail_compilation/cppvar.d(22):        perhaps declare it as `__gshared` instead
-fail_compilation/cppvar.d(30): Error: delegate `cppvar.__lambda7` cannot return type `bool[3]` because its linkage is `extern(C++)`
+fail_compilation/cppvar.d(30): Error: delegate `cppvar.__lambda_L30_C46` cannot return type `bool[3]` because its linkage is `extern(C++)`
 ---
 */
 #line 10

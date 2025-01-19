@@ -1,6 +1,7 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/test19473.d(14): Error: union `test19473.P` no size because of forward reference
+fail_compilation/test19473.d(15): Error: union `test19473.P` no size because of forward reference
+fail_compilation/test19473.d(31):        error on member `test19473.P.p`
 ---
  */
 

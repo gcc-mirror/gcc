@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -4911,6 +4910,8 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src,
   if (dest->formal != NULL)
     /* The current ns should be that for the dest proc.  */
     dest->formal_ns = gfc_current_ns;
+  else
+    gfc_free_namespace (gfc_current_ns);
   /* Restore the current namespace to what it was on entry.  */
   gfc_current_ns = parent_ns;
 }

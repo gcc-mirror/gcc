@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides some common utilities used by the s-imgxxx files
+--  This package provides some common utilities used by the `System.Img_*`
+--  packages. It contains subprograms to set the decimal digits for a string
+--  and set the string for a floating-point invalid value.
 
 package System.Img_Util is
 

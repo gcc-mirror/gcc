@@ -190,7 +190,7 @@
    <para>Creating your own stream buffers for I/O can be remarkably easy.
       If you are interested in doing so, we highly recommend two very
       excellent books:
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.angelikalanger.com/iostreams.html">Standard C++
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://angelikalanger.com/iostreams.html">Standard C++
       IOStreams and Locales</link> by Langer and Kreft, ISBN 0-201-18395-1, and
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.josuttis.com/libbook/">The C++ Standard Library</link>
       by Nicolai Josuttis, ISBN 0-201-37926-0.  Both are published by

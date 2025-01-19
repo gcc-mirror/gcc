@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -990,10 +990,18 @@ mmix_setup_incoming_varargs (cumulative_args_t args_so_farp_v,
 {
   CUMULATIVE_ARGS *args_so_farp = get_cumulative_args (args_so_farp_v);
 
-  /* The last named variable has been handled, but
-     args_so_farp has not been advanced for it.  */
-  if (args_so_farp->regs + 1 < MMIX_MAX_ARGS_IN_REGS)
-    *pretend_sizep = (MMIX_MAX_ARGS_IN_REGS - (args_so_farp->regs + 1)) * 8;
+  /* Better pay special attention to (...) functions and not fold that
+     case into the general case in the else-arm.  */
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    {
+      *pretend_sizep = MMIX_MAX_ARGS_IN_REGS * 8;
+      gcc_assert (args_so_farp->regs == 0);
+    }
+  else
+    /* The last named variable has been handled, but
+       args_so_farp has not been advanced for it.  */
+    if (args_so_farp->regs + 1 < MMIX_MAX_ARGS_IN_REGS)
+      *pretend_sizep = (MMIX_MAX_ARGS_IN_REGS - (args_so_farp->regs + 1)) * 8;
 
   /* We assume that one argument takes up one register here.  That should
      be true until we start messing with multi-reg parameters.  */
@@ -1577,6 +1585,35 @@ mmix_asm_output_labelref (FILE *stream, const char *name)
   for (; (*name == '@' || *name == '*'); name++)
     if (*name == '@')
       is_extern = 0;
+
+  size_t ndots = 0;
+  for (const char *s = name; *s != 0; s++)
+    if (*s == '.')
+      ndots++;
+
+  /* Replace all '.' with '::'.  We don't want a '.' as part of an identifier
+     as that'd be incompatible with mmixal.  We also don't want to do things
+     like overriding the default "%s.%lu" by '#define ASM_PN_FORMAT "%s::%lu"'
+     as that format will show up in warnings and error messages.  The default
+     won't show up in warnings and errors, as there are mechanisms in place to
+     strip that (but that only handles the default format).  FIXME: Make sure
+     no ":" is seen in the object file; we don't really want that mmixal
+     feature visible there.  */
+  if (ndots > 0)
+    {
+      char *colonized_name = XALLOCAVEC (char, strlen (name) + 1 + ndots);
+
+      char *cs = colonized_name;
+      const char *s = name;
+      for (; *s != 0; s++)
+	{
+	  if (*s == '.')
+	    *cs++ = ':';
+	  *cs++ = *s;
+	}
+      *cs = 0;
+      name = colonized_name;
+    }
 
   asm_fprintf (stream, "%s%U%s",
 	       is_extern && TARGET_TOPLEVEL_SYMBOLS ? ":" : "",

@@ -82,14 +82,14 @@ version (linux)
     }
 
     static if (__USE_FILE_OFFSET64)
-         alias ulong rlim_t;
+        alias ulong rlim_t;
     else
-         alias c_ulong rlim_t;
+        alias c_ulong rlim_t;
 
     static if (__USE_FILE_OFFSET64)
         enum RLIM_INFINITY = 0xffffffffffffffffUL;
     else
-        enum RLIM_INFINITY = cast(c_ulong)(~0UL);
+        enum RLIM_INFINITY = cast(c_ulong)~0UL;
 
     enum RLIM_SAVED_MAX = RLIM_INFINITY;
     enum RLIM_SAVED_CUR = RLIM_INFINITY;
@@ -163,7 +163,7 @@ else version (Darwin)
 
     enum
     {
-        RLIM_INFINITY  = ((cast(ulong) 1 << 63) - 1),
+        RLIM_INFINITY  = ((1UL << 63) - 1),
         RLIM_SAVED_MAX = RLIM_INFINITY,
         RLIM_SAVED_CUR = RLIM_INFINITY,
     }
@@ -205,7 +205,7 @@ else version (FreeBSD)
 
     enum
     {
-        RLIM_INFINITY   = (cast(rlim_t)((cast(ulong) 1 << 63) - 1)),
+        RLIM_INFINITY   = (cast(rlim_t)((1UL << 63) - 1)),
         RLIM_SAVED_MAX  = RLIM_INFINITY,
         RLIM_SAVED_CUR  = RLIM_INFINITY,
     }
@@ -262,7 +262,7 @@ else version (NetBSD)
 
     enum
     {
-        RLIM_INFINITY   = (cast(rlim_t)((cast(ulong) 1 << 63) - 1)),
+        RLIM_INFINITY   = (cast(rlim_t)((1UL << 63) - 1)),
         RLIM_SAVED_MAX = RLIM_INFINITY,
         RLIM_SAVED_CUR = RLIM_INFINITY,
     }
@@ -319,7 +319,7 @@ else version (OpenBSD)
 
     enum
     {
-        RLIM_INFINITY  = (cast(rlim_t)((cast(ulong) 1 << 63) - 1)),
+        RLIM_INFINITY  = (cast(rlim_t)((1UL << 63) - 1)),
         RLIM_SAVED_MAX = RLIM_INFINITY,
         RLIM_SAVED_CUR = RLIM_INFINITY,
     }
@@ -378,7 +378,7 @@ else version (DragonFlyBSD)
 
     enum
     {
-        RLIM_INFINITY   = (cast(rlim_t)((cast(ulong) 1 << 63) - 1)),
+        RLIM_INFINITY   = (cast(rlim_t)((1UL << 63) - 1)),
         RLIM_SAVED_MAX  = RLIM_INFINITY,
         RLIM_SAVED_CUR  = RLIM_INFINITY,
     }

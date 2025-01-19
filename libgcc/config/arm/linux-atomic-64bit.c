@@ -1,5 +1,5 @@
 /* 64bit Linux-specific atomic operations for ARM EABI.
-   Copyright (C) 2008-2024 Free Software Foundation, Inc.
+   Copyright (C) 2008-2025 Free Software Foundation, Inc.
    Based on linux-atomic.c
 
    64 bit additions david.gilbert@linaro.org
@@ -140,8 +140,6 @@ __sync_val_compare_and_swap_8 (long long *ptr, long long oldval,
 	return oldval;
     }
 }
-
-typedef unsigned char bool;
 
 bool HIDDEN
 __sync_bool_compare_and_swap_8 (long long *ptr, long long oldval,

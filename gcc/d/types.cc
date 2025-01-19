@@ -1,5 +1,5 @@
 /* types.cc -- Lower D frontend types to GCC trees.
-   Copyright (C) 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -482,7 +481,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
       AttribDeclaration *attrib = sym->isAttribDeclaration ();
       if (attrib != NULL)
 	{
-	  Dsymbols *decls = attrib->include (NULL);
+	  Dsymbols *decls = dmd::include (attrib, NULL);
 	  if (decls != NULL)
 	    {
 	      fields += layout_aggregate_members (decls, context, inherited_p);
@@ -893,7 +892,7 @@ public:
 
   void visit (TypeSArray *t) final override
   {
-    if (t->dim->isConst () && t->dim->type->isintegral ())
+    if (t->dim->isConst () && t->dim->type->isIntegral ())
       {
 	uinteger_t size = t->dim->toUInteger ();
 	t->ctype = make_array_type (t->next, size);
@@ -976,7 +975,7 @@ public:
     if (t->next != NULL)
       {
 	fntype = build_ctype (t->next);
-	if (t->isref ())
+	if (t->isRef ())
 	  fntype = build_reference_type (fntype);
       }
     else
@@ -1182,7 +1181,7 @@ public:
 	TYPE_UNSIGNED (t->ctype) = TYPE_UNSIGNED (basetype);
 	SET_TYPE_ALIGN (t->ctype, TYPE_ALIGN (basetype));
 	TYPE_SIZE (t->ctype) = NULL_TREE;
-	TYPE_PRECISION (t->ctype) = t->size (t->sym->loc) * 8;
+	TYPE_PRECISION (t->ctype) = dmd::size (t, t->sym->loc) * 8;
 
 	layout_type (t->ctype);
 

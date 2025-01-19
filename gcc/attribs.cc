@@ -1,5 +1,5 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -39,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-markup.h"
 #include "tree-pretty-print.h"
 #include "intl.h"
+#include "gcc-urlifier.h"
 
 /* Table of the tables of attributes (common, language, format, machine)
    searched.  */
@@ -632,6 +632,8 @@ decl_attributes (tree *node, tree attributes, int flags,
   if (!attributes_initialized)
     init_attributes ();
 
+  auto_urlify_attributes sentinel;
+
   /* If this is a function and the user used #pragma GCC optimize, add the
      options to the attribute((optimize(...))) list.  */
   if (TREE_CODE (*node) == FUNCTION_DECL && current_optimize_pragma)
@@ -1103,9 +1105,10 @@ attr_strcmp (const void *v1, const void *v2)
 }
 
 /* ARGLIST is the argument to target attribute.  This function tokenizes
-   the comma separated arguments, sorts them and returns a string which
-   is a unique identifier for the comma separated arguments.   It also
-   replaces non-identifier characters "=,-" with "_".  */
+   the TARGET_CLONES_ATTR_SEPARATOR separated arguments, sorts them and
+   returns a string which is a unique identifier for the
+   TARGET_CLONES_ATTR_SEPARATOR separated arguments.  It also replaces
+   non-identifier characters "=,-" with "_".  */
 
 char *
 sorted_attr_string (tree arglist)
@@ -1117,6 +1120,7 @@ sorted_attr_string (tree arglist)
   char *attr = NULL;
   unsigned int argnum = 1;
   unsigned int i;
+  static const char separator_str[] = { TARGET_CLONES_ATTR_SEPARATOR, 0 };
 
   for (arg = arglist; arg; arg = TREE_CHAIN (arg))
     {
@@ -1126,7 +1130,7 @@ sorted_attr_string (tree arglist)
       if (arg != arglist)
 	argnum++;
       for (i = 0; i < strlen (str); i++)
-	if (str[i] == ',')
+	if (str[i] == TARGET_CLONES_ATTR_SEPARATOR)
 	  argnum++;
     }
 
@@ -1137,7 +1141,8 @@ sorted_attr_string (tree arglist)
       const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
       size_t len = strlen (str);
       memcpy (attr_str + str_len_sum, str, len);
-      attr_str[str_len_sum + len] = TREE_CHAIN (arg) ? ',' : '\0';
+      attr_str[str_len_sum + len]
+	= TREE_CHAIN (arg) ? TARGET_CLONES_ATTR_SEPARATOR : '\0';
       str_len_sum += len + 1;
     }
 
@@ -1152,12 +1157,12 @@ sorted_attr_string (tree arglist)
   args = XNEWVEC (char *, argnum);
 
   i = 0;
-  attr = strtok (attr_str, ",");
+  attr = strtok (attr_str, separator_str);
   while (attr != NULL)
     {
       args[i] = attr;
       i++;
-      attr = strtok (NULL, ",");
+      attr = strtok (NULL, separator_str);
     }
 
   qsort (args, argnum, sizeof (char *), attr_strcmp);

@@ -30,6 +30,7 @@ entry (void)
   foo (&s);
 }
 
+/* { dg-final { scan-ipa-dump "ref offset\[^\n\r\]*: 64\[^\n\r\]*scc:" "cp" } } */
 /* { dg-final { scan-ipa-dump "Creating a specialized node of foo.*for all known contexts" "cp" } } */
 /* { dg-final { scan-ipa-dump-times "Aggregate replacements:" 2 "cp" } } */
 /* { dg-final { scan-tree-dump-not "->c;" "optimized" } } */

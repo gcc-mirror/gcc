@@ -6785,7 +6785,6 @@ Tue Jan  5 22:11:25 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* typeck.c (build_c_cast): Use it.
 
 	* decl.c (grok_op_properties): Use same_type_p.
-
 
 Copyright (C) 1999 Free Software Foundation, Inc.
 

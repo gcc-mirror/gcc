@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  decimal fixed point types, and also for conversion operations required in
---  Text_IO.Decimal_IO for such types.
+--  This package provides the subprograms supporting the ``Image`` attribute
+--  and ``Ada.Text_IO.Decimal_IO`` conversions routines for decimal fixed point
+--  types.
 
 generic
 
@@ -48,7 +48,7 @@ package System.Image_D is
    --  Computes fixed_type'Image (V), where V is the integer value (in units of
    --  delta) of a decimal type whose Scale is as given and stores the result
    --  S (1 .. P), updating P on return. The result is computed according to
-   --  the rules for image for fixed-point types (RM 3.5(34)). The caller
+   --  the rules for image for fixed-point types (RM 4.10(14)). The caller
    --  guarantees that S is long enough to hold the result and has a lower
    --  bound of 1.
 

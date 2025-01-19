@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,12 +33,11 @@
 --  intended to be used in a restricted run time.
 
 --  This package represents the high level tasking interface used by the
---  compiler to expand Ada 95 tasking constructs into simpler run time calls
---  (aka GNARLI, GNU Ada Run-time Library Interface)
+--  compiler to expand Ada 95 tasking constructs into simpler run-time calls.
 
---  Note: the compiler generates direct calls to this interface, via Rtsfind.
---  Any changes to this interface may require corresponding compiler changes
---  in exp_ch9.adb and possibly exp_ch7.adb
+--  The compiler generates direct calls to this interface, via Rtsfind. Any
+--  changes to this interface may require corresponding compiler changes in
+--  exp_ch9.adb and possibly exp_ch7.adb.
 
 --  The restricted GNARLI is also composed of System.Protected_Objects and
 --  System.Protected_Objects.Single_Entry

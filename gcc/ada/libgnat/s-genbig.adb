@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package body System.Generic_Bignums is
       Remainder         : out Big_Integer;
       Discard_Quotient  : Boolean := False;
       Discard_Remainder : Boolean := False);
-   --  Returns the Quotient and Remainder from dividing abs (X) by abs (Y). The
+   --  Returns the Quotient and Remainder from dividing abs X by abs Y. The
    --  values of X and Y are not modified. If Discard_Quotient is True, then
    --  Quotient is undefined on return, and if Discard_Remainder is True, then
    --  Remainder is undefined on return. Service routine for Big_Div/Rem/Mod.
@@ -754,8 +754,8 @@ package body System.Generic_Bignums is
             (Y.Len <= 1 or else (Y.Len = 2 and then Y.D (1) < 2**31))
       then
          declare
-            A : constant LLI := abs (From_Bignum (X));
-            B : constant LLI := abs (From_Bignum (Y));
+            A : constant LLI := abs From_Bignum (X);
+            B : constant LLI := abs From_Bignum (Y);
          begin
             if not Discard_Quotient then
                Quotient := To_Bignum (A / B);

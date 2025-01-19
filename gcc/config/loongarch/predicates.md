@@ -1,5 +1,5 @@
 ;; Predicate definitions for LoongArch target.
-;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2025 Free Software Foundation, Inc.
 ;; Contributed by Loongson Ltd.
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -267,11 +267,11 @@
 
 (define_predicate "const_8_to_15_operand"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
+       (match_test "IN_RANGE (INTVAL (op), 8, 15)")))
 
 (define_predicate "const_16_to_31_operand"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
+       (match_test "IN_RANGE (INTVAL (op), 16, 31)")))
 
 (define_predicate "qi_mask_operand"
   (and (match_code "const_int")
@@ -635,10 +635,10 @@
   return loongarch_const_vector_same_int_p (op, mode, -31, 31);
 })
 
-(define_predicate "const_vector_same_uimm6_operand"
+(define_predicate "const_vector_same_uimm_operand"
   (match_code "const_vector")
 {
-  return loongarch_const_vector_same_int_p (op, mode, 0, 63);
+  return loongarch_const_vector_same_int_p (op, mode);
 })
 
 (define_predicate "par_const_vector_shf_set_operand"
@@ -663,6 +663,6 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_vector_same_ximm5_operand")))
 
-(define_predicate "reg_or_vector_same_uimm6_operand"
+(define_predicate "reg_or_vector_same_uimm_operand"
   (ior (match_operand 0 "register_operand")
-       (match_operand 0 "const_vector_same_uimm6_operand")))
+       (match_operand 0 "const_vector_same_uimm_operand")))

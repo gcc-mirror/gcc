@@ -1,5 +1,5 @@
 /* Text art visualizations within -fanalyzer.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #define INCLUDE_MAP
 #define INCLUDE_SET
 #define INCLUDE_VECTOR

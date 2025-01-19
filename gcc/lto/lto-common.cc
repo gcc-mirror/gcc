@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -255,7 +254,8 @@ hash_canonical_type (tree type)
      checked.  */
   code = tree_code_for_canonical_type_merging (TREE_CODE (type));
   hstate.add_int (code);
-  hstate.add_int (TYPE_MODE (type));
+  if (!RECORD_OR_UNION_TYPE_P (type))
+    hstate.add_int (TYPE_MODE (type));
 
   /* Incorporate common features of numerical types.  */
   if (INTEGRAL_TYPE_P (type)
@@ -333,7 +333,11 @@ hash_canonical_type (tree type)
 	    && (! DECL_SIZE (f)
 		|| ! integer_zerop (DECL_SIZE (f))))
 	  {
-	    iterative_hash_canonical_type (TREE_TYPE (f), hstate);
+	    tree t = TREE_TYPE (f);
+	    if (!TREE_CHAIN (f)
+		&& TREE_CODE (t) == ARRAY_TYPE)
+	      t = TREE_TYPE  (t);
+	    iterative_hash_canonical_type (t, hstate);
 	    nf++;
 	  }
 

@@ -1,6 +1,6 @@
 (* M2RTS.mod Implements the run time system facilities of Modula-2.
 
-Copyright (C) 2001-2024 Free Software Foundation, Inc.
+Copyright (C) 2001-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -288,7 +288,8 @@ END ErrorMessageC ;
 
 PROCEDURE HaltC (description, filename, function: ADDRESS; line: CARDINAL) <* noreturn *> ;
 BEGIN
-   ErrorMessageC (description, filename, line, function)
+   ErrorMessageC (description, filename, line, function) ;
+   exit (1)
 END HaltC ;
 
 
@@ -298,9 +299,10 @@ END HaltC ;
           to stderr and calls exit (1).
 *)
 
-PROCEDURE Halt (description, filename, function: ARRAY OF CHAR; line: CARDINAL) ;
+PROCEDURE Halt (description, filename, function: ARRAY OF CHAR; line: CARDINAL) <* noreturn *> ;
 BEGIN
-   ErrorMessage (description, filename, line, function)
+   ErrorMessage (description, filename, line, function) ;
+   exit (1)
 END Halt ;
 
 

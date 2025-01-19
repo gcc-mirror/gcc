@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/safe_pointer_index.d(11): Error: `@safe` function `f` cannot index pointer `x`
+fail_compilation/safe_pointer_index.d(11): Error: indexing pointer `x` is not allowed in a `@safe` function
 ---
 */
 

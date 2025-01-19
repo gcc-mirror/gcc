@@ -1,6 +1,6 @@
 /* Pass to detect and issue warnings for violations of the restrict
    qualifier.
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -19,7 +19,6 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

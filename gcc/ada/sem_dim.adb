@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -315,8 +315,8 @@ package body Sem_Dim is
    --  Return the dimension vector of node N
 
    function Dimensions_Msg_Of
-      (N                  : Node_Id;
-       Description_Needed : Boolean := False) return String;
+     (N                  : Node_Id;
+      Description_Needed : Boolean := False) return String;
    --  Given a node N, return the dimension symbols of N, preceded by "has
    --  dimension" if Description_Needed. If N is dimensionless, return "'[']",
    --  or "is dimensionless" if Description_Needed.
@@ -1580,13 +1580,13 @@ package body Sem_Dim is
                  and then Dims_Of_L /= Dims_Of_R
                then
                   if Nkind (L) = N_Real_Literal
-                    and then not (Comes_From_Source (L))
+                    and then not Comes_From_Source (L)
                     and then Expander_Active
                   then
                      null;
 
                   elsif Nkind (R) = N_Real_Literal
-                    and then not (Comes_From_Source (R))
+                    and then not Comes_From_Source (R)
                     and then Expander_Active
                   then
                      null;
@@ -2672,8 +2672,8 @@ package body Sem_Dim is
    -----------------------
 
    function Dimensions_Msg_Of
-      (N                  : Node_Id;
-       Description_Needed : Boolean := False) return String
+     (N                  : Node_Id;
+      Description_Needed : Boolean := False) return String
    is
       Dims_Of_N      : constant Dimension_Type := Dimensions_Of (N);
       Dimensions_Msg : Name_Id;

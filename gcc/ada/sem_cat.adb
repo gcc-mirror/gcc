@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2177,6 +2177,7 @@ package body Sem_Cat is
         or else not Comes_From_Source (N)
         or else In_Subprogram_Or_Concurrent_Unit
         or else Ekind (Current_Scope) = E_Block
+        or else In_Strict_Preanalysis
       then
          return;
 

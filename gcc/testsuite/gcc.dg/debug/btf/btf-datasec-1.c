@@ -13,7 +13,6 @@
 /* { dg-options "-O0 -gbtf -dA" } */
 /* { dg-additional-options "-msdata=none" { target { { powerpc*-*-* } && ilp32 } } } */
 /* { dg-additional-options "-msmall-data-limit=0" { target { riscv*-*-* } } } */
-/* { dg-additional-options "-G0" { target { nios2-*-* } } } */
 
 /* Check for two DATASEC entries with vlen 3, and one with vlen 1.  */
 /* { dg-final { scan-assembler-times "0xf000003\[\t \]+\[^\n\]*btt_info" 2 } } */

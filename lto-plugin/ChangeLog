@@ -1,3 +1,10 @@
+2025-01-15  Michal Jires  <mjires@suse.cz>
+
+	PR lto/118238
+	* lto-plugin.c (cleanup_handler):
+	Keep output_files when using Incremental LTO.
+	(onload): Detect Incremental LTO.
+
 2024-08-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR lto/116361

@@ -1,8 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-std=gnu11" } */
+/* { dg-require-effective-target double64 } */
 
 typedef double v2df __attribute__((vector_size(2 * sizeof (double))));
-typedef long long v2di __attribute__((vector_size(2 * sizeof (long long))));
+typedef __INT64_TYPE__ v2di __attribute__((vector_size(2 * sizeof (__INT64_TYPE__))));
 
 void foo (v2df *res, v2df *src)
 {

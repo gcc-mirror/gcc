@@ -15,7 +15,7 @@ fail_compilation/ice15855.d(28): Error: found `End of File` when expecting `]`
 fail_compilation/ice15855.d(28): Error: no identifier for declarator `a[()
 {
 for (__error__
- 0; 0)
+ __error; __error)
 {
 __error__
 }

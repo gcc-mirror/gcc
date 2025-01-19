@@ -1,5 +1,5 @@
 /* ACLE support for Arm MVE (function shapes)
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -150,6 +150,7 @@ parse_element_type (const function_instance &instance, const char *&format)
    _       - void
    al      - array pointer for loads
    as      - array pointer for stores
+   b       - pointer to vector of unsigned, width given by the first type suffix
    p       - predicates with type mve_pred16_t
    s<elt>  - a scalar type with the given element suffix
    t<elt>  - a vector or tuple type with given element suffix [*1]
@@ -181,6 +182,15 @@ parse_type (const function_instance &instance, const char *&format)
       gcc_unreachable ();
     }
 
+  if (ch == 'b')
+    {
+      type_class_index tclass = TYPE_unsigned;
+      unsigned int bits = instance.type_suffix (0).element_bits;
+      type_suffix_index suffix = find_type_suffix (tclass, bits);
+      tree acle_type = acle_vector_types[0][type_suffixes[suffix].vector_type];
+      return build_pointer_type (acle_type);
+    }
+
   if (ch == 'p')
     return get_mve_pred16_t ();
 
@@ -195,7 +205,7 @@ parse_type (const function_instance &instance, const char *&format)
       type_suffix_index suffix = parse_element_type (instance, format);
       vector_type_index vector_type = type_suffixes[suffix].vector_type;
       unsigned int num_vectors = instance.vectors_per_tuple ();
-      return acle_vector_types[num_vectors - 1][vector_type];
+      return acle_vector_types[num_vectors >> 1][vector_type];
     }
 
   if (ch == 'v')
@@ -387,6 +397,12 @@ struct nonoverloaded_base : public function_shape
     return false;
   }
 
+  bool
+  mode_after_pred () const override
+  {
+    return true;
+  }
+
   tree
   resolve (function_resolver &) const override
   {
@@ -416,6 +432,12 @@ struct overloaded_base : public function_shape
   skip_overload_p (enum predication_index, enum mode_suffix_index) const override
   {
     return false;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return true;
   }
 };
 
@@ -1513,6 +1535,104 @@ struct load_ext_def : public nonoverloaded_base
 };
 SHAPE (load_ext)
 
+/* Base class for load_ext_gather_offset and load_ext_gather_shifted_offset,
+   which differ only in the units of the displacement.  */
+struct load_ext_gather : public overloaded_base<0>
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return false;
+  }
+};
+
+/* <T0>_t vfoo[_t0](<X>_t, const int)
+
+   where <X> has the same width as <T0> but is of unsigned type.
+
+   Example: vldrwq_gather_base
+   int32x4_t [__arm_]vldrwq_gather_base_s32(uint32x4_t addr, const int offset)
+   float32x4_t [__arm_]vldrwq_gather_base_z_f32(uint32x4_t addr, const int offset, mve_pred16_t p)
+   int64x2_t [__arm_]vldrdq_gather_base_wb_s64(uint64x2_t *addr, const int offset)  */
+struct load_gather_base_def : public nonoverloaded_base
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return false;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "v0,vu0,ss64", group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,b,ss64", group, MODE_wb, preserve_user_namespace);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int multiple = c.type_suffix (0).element_bits / 8;
+    int bound = 127 * multiple;
+    return c.require_immediate_range_multiple (1, -bound, bound, multiple);
+  }
+};
+SHAPE (load_gather_base)
+
+/* <T0>_t vfoo[_t0](<X>_t const *, <Y>_t)
+
+   where <X> might be tied to <t0> (for non-extending loads) or might
+   depend on the function base name (for extending loads),
+   <Y> has the same width as <T0> but is of unsigned type.
+
+   Example: vldrhq_gather_offset
+   int16x8_t [__arm_]vldrhq_gather_offset[_s16](int16_t const *base, uint16x8_t offset)
+   int32x4_t [__arm_]vldrhq_gather_offset_z[_s32](int16_t const *base, uint32x4_t offset, mve_pred16_t p)  */
+struct load_ext_gather_offset_def : public load_ext_gather
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_offset, preserve_user_namespace);
+    build_all (b, "v0,al,vu0", group, MODE_offset, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    mode_suffix_index mode = MODE_offset;
+    type_suffix_index ptr_type;
+    type_suffix_index offset_type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (ptr_type = r.infer_pointer_type (0)) == NUM_TYPE_SUFFIXES
+	|| (offset_type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* tclass comes from base argument, element bits come from the offset
+       argument.  */
+    type_suffix_index type = find_type_suffix (type_suffixes[ptr_type].tclass,
+			       type_suffixes[offset_type].element_bits);
+
+    return r.resolve_to (mode, type);
+  }
+};
+SHAPE (load_ext_gather_offset)
+
 /* <T0>_t vfoo[_t0](<T0>_t)
    <T0>_t vfoo_n_t0(<sT0>_t)
 
@@ -1581,7 +1701,7 @@ struct store_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
-    build_all (b, "_,as,v0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "_,as,t0", group, MODE_none, preserve_user_namespace);
   }
 
   tree
@@ -1593,13 +1713,142 @@ struct store_def : public overloaded_base<0>
     type_suffix_index type;
     if (!r.check_gp_argument (2, i, nargs)
 	|| !r.require_pointer_type (0)
-	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_tuple_type (1)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
 };
 SHAPE (store)
+
+/* Base class for store_scatter_offset and store_scatter_shifted_offset, which
+   differ only in the units of the displacement.  Also used by
+   store_scatter_base.  */
+struct store_scatter : public overloaded_base<0>
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return false;
+  }
+};
+
+/* void vfoo[_t0](<X>_t *, <Y>_t, <T0>_t)
+
+   where <X> might be tied to <t0> (for non-truncating stores) or might
+   depend on the function base name (for truncating stores),
+   <Y> has the same width as <T0> but is of unsigned type.
+
+   Example: vstrbq_scatter_offset
+   void [__arm_]vstrbq_scatter_offset[_s16](int8_t *base, uint16x8_t offset, int16x8_t value)
+   void [__arm_]vstrbq_scatter_offset_p[_s16](int8_t *base, uint16x8_t offset, int16x8_t value, mve_pred16_t p)  */
+struct store_scatter_offset_def : public store_scatter
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_offset, preserve_user_namespace);
+    build_all (b, "_,as,vu0,v0", group, MODE_offset, preserve_user_namespace);
+  }
+
+  /* Resolve a scatter store that takes a scalar pointer base and a vector
+     displacement.
+
+     The stored data is the final argument, and it determines the
+     type suffix.  */
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| !r.require_pointer_type (0)
+	|| (type = r.infer_vector_type (2)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* Offset (arg 1) should be a vector of unsigned with same width as value
+       (arg 2).  */
+    type_suffix_index offset_type
+      = find_type_suffix (TYPE_unsigned, type_suffixes[type].element_bits);
+    if (!r.require_matching_vector_type (1, offset_type))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (store_scatter_offset)
+
+/* void vfoo[_t0](<Y>_t, const int, <T0>_t)
+
+   where <X> is tied to <t0>.
+   <Y> has the same width as <T0> but is of unsigned type.
+
+   Example: vstrbq_scatter_base
+   void [__arm_]vstrwq_scatter_base[_s32](uint32x4_t addr, const int offset, int32x4_t value)
+   void [__arm_]vstrwq_scatter_base_p[_s32](uint32x4_t addr, const int offset, int32x4_t value, mve_pred16_t p)
+   void [__arm_]vstrdq_scatter_base_wb[_s64](uint64x2_t *addr, const int offset, int64x2_t value)  */
+struct store_scatter_base_def : public store_scatter
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    b.add_overloaded_functions (group, MODE_wb, preserve_user_namespace);
+    build_all (b, "_,vu0,ss64,v0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "_,b,ss64,v0", group, MODE_wb, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    gcc_assert ((r.mode_suffix_id == MODE_none)
+		|| (r.mode_suffix_id == MODE_wb));
+
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| !r.require_integer_immediate (1)
+	|| (type = r.infer_vector_type (2)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index base_type
+      = find_type_suffix (TYPE_unsigned, type_suffixes[type].element_bits);
+
+    if (r.mode_suffix_id == MODE_none)
+      {
+	/* Base (arg 0) should be a vector of unsigned with same width as value
+	   (arg 2).  */
+	if (!r.require_matching_vector_type (0, base_type))
+	  return error_mark_node;
+      }
+    else
+      {
+	/* Base (arg 0) should be a pointer to a vector of unsigned with the
+	   same width as value (arg 2).  */
+	if (!r.require_pointer_to_type (0, r.get_vector_type (base_type)))
+	  return error_mark_node;
+      }
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    int multiple = c.type_suffix (0).element_bits / 8;
+    int bound = 127 * multiple;
+    return c.require_immediate_range_multiple (1, -bound, bound, multiple);
+  }
+};
+SHAPE (store_scatter_base)
 
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, <T0>_t)
 

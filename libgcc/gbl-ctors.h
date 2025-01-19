@@ -2,7 +2,7 @@
    for getting g++ file-scope static objects constructed.  This file
    will get included either by libgcc2.c (for systems that don't support
    a .init section) or by crtstuff.c (for those that do).
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com)
 
 This file is part of GCC.

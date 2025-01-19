@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
    This file is part of the GNU Atomic Library (libatomic).
 
@@ -91,69 +91,63 @@ has_lse2 (unsigned long hwcap, const __ifunc_arg_t *features)
   /* Check for LSE2.  */
   if (hwcap & HWCAP_USCAT)
     return true;
-  /* No point checking further for atomic 128-bit load/store if LSE
-     prerequisite not met.  */
-  if (!(hwcap & HWCAP_ATOMICS))
-    return false;
-  if (!(hwcap & HWCAP_CPUID))
-    return false;
 
-  unsigned long midr;
-  asm volatile ("mrs %0, midr_el1" : "=r" (midr));
+  /* If LSE and CPUID are supported, check MIDR.  */
+  if (hwcap & HWCAP_CPUID && hwcap & HWCAP_ATOMICS)
+    {
+      unsigned long midr;
+      asm volatile ("mrs %0, midr_el1" : "=r" (midr));
 
-  /* Neoverse N1 supports atomic 128-bit load/store.  */
-  if (MIDR_IMPLEMENTOR (midr) == 'A' && MIDR_PARTNUM (midr) == 0xd0c)
-    return true;
+      /* Neoverse N1 supports atomic 128-bit load/store.  */
+      return MIDR_IMPLEMENTOR (midr) == 'A' && MIDR_PARTNUM (midr) == 0xd0c;
+    }
 
   return false;
 }
 
-/* LSE128 atomic support encoded in ID_AA64ISAR0_EL1.Atomic,
-   bits[23:20].  The expected value is 0b0011.  Check that.  */
+/* LSE128 atomic support encoded in ID_AA64ISAR0_EL1.Atomic, bits[23:20].
+   The minimum value for LSE128 is 0b0011.  */
 
 #define AT_FEAT_FIELD(isar0)	(((isar0) >> 20) & 15)
 
 static inline bool
 has_lse128 (unsigned long hwcap, const __ifunc_arg_t *features)
 {
-  if (hwcap & _IFUNC_ARG_HWCAP
-      && features->_hwcap2 & HWCAP2_LSE128)
+  if (hwcap & _IFUNC_ARG_HWCAP && features->_hwcap2 & HWCAP2_LSE128)
     return true;
-  /* A 0 HWCAP2_LSE128 bit may be just as much a sign of missing HWCAP2 bit
-     support in older kernels as it is of CPU feature absence.  Try fallback
-     method to guarantee LSE128 is not implemented.
 
-     In the absence of HWCAP_CPUID, we are unable to check for LSE128.
-     If feature check available, check LSE2 prerequisite before proceeding.  */
-  if (!(hwcap & HWCAP_CPUID) || !(hwcap & HWCAP_USCAT))
-     return false;
+  /* If LSE2 and CPUID are supported, check for LSE128.  */
+  if (hwcap & HWCAP_CPUID && hwcap & HWCAP_USCAT)
+    {
+      unsigned long isar0;
+      asm volatile ("mrs %0, ID_AA64ISAR0_EL1" : "=r" (isar0));
+      return AT_FEAT_FIELD (isar0) >= 3;
+    }
 
-  unsigned long isar0;
-  asm volatile ("mrs %0, ID_AA64ISAR0_EL1" : "=r" (isar0));
-  if (AT_FEAT_FIELD (isar0) >= 3)
-    return true;
   return false;
 }
 
-/* LRCPC atomic support encoded in ID_AA64ISAR1_EL1.Atomic, bits[23:20].  The
-   expected value is 0b0011.  Check that.  */
+/* LRCPC atomic support encoded in ID_AA64ISAR1_EL1.Atomic, bits[23:20].
+   The minimum value for LRCPC3 is 0b0011.  */
 
 static inline bool
 has_rcpc3 (unsigned long hwcap, const __ifunc_arg_t *features)
 {
-  if (hwcap & _IFUNC_ARG_HWCAP
-      && features->_hwcap2 & HWCAP2_LRCPC3)
-    return true;
-  /* Try fallback feature check method to guarantee LRCPC3 is not implemented.
-
-     In the absence of HWCAP_CPUID, we are unable to check for RCPC3, return.
-     If feature check available, check LSE2 prerequisite before proceeding.  */
-  if (!(hwcap & HWCAP_CPUID) || !(hwcap & HWCAP_USCAT))
+  /* LSE2 is a prerequisite for atomic LDIAPP/STILP - check HWCAP_USCAT since
+     has_lse2 is more expensive and Neoverse N1 does not have LRCPC3. */
+  if (!(hwcap & HWCAP_USCAT))
     return false;
-  unsigned long isar1;
-  asm volatile ("mrs %0, ID_AA64ISAR1_EL1" : "=r" (isar1));
-  if (AT_FEAT_FIELD (isar1) >= 3)
+
+  if (hwcap & _IFUNC_ARG_HWCAP && features->_hwcap2 & HWCAP2_LRCPC3)
     return true;
+
+  if (hwcap & HWCAP_CPUID)
+    {
+      unsigned long isar1;
+      asm volatile ("mrs %0, ID_AA64ISAR1_EL1" : "=r" (isar1));
+      return AT_FEAT_FIELD (isar1) >= 3;
+    }
+
   return false;
 }
 

@@ -3,7 +3,7 @@
 # Generated from  : ./gcc/config/arc/arc-cpu.def
 # Used by         : tmake_file from Makefile and genmultilib
 
-# Copyright (C) 2016-2024 Free Software Foundation, Inc.
+# Copyright (C) 2016-2025 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #

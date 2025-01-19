@@ -480,4 +480,5 @@ int main(int argc, char* argv[])
         f();
 }
 
-/* { dg-final { scan-tree-dump "Removing load:.*ptr;" "sra" } } */
+// XFAILed due to PR116416
+/* { dg-final { scan-tree-dump "Removing load:.*ptr;" "sra" { xfail { *-*-* } } } } */

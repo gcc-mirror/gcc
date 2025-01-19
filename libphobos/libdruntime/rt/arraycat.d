@@ -21,7 +21,7 @@ extern (C) @trusted nothrow:
 
 void[] _d_arraycopy(size_t size, void[] from, void[] to)
 {
-    debug(PRINTF) printf("f = %p,%d, t = %p,%d, size = %d\n",
+    debug(PRINTF) printf("f = %p,%zd, t = %p,%zd, size = %zd\n",
                  from.ptr, from.length, to.ptr, to.length, size);
 
     enforceRawArraysConformable("copy", size, from, to);

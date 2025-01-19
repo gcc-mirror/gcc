@@ -1,0 +1,6 @@
+  not a valid JSON file // { dg-error "invalid JSON token: unexpected character: 'n'" }
+
+{ dg-begin-multiline-output "" }
+    1 |   not a valid JSON file
+      |   ^
+{ dg-end-multiline-output "" }

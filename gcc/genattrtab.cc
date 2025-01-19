@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -549,6 +549,10 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 
 	    case 'i':		/* An integer?  */
 	      XINT (rt_val, i) = va_arg (p, int);
+	      break;
+
+	    case 'L':		/* A location_t?  */
+	      XLOC (rt_val, i) = va_arg (p, location_t);
 	      break;
 
 	    case 'w':		/* A wide integer? */

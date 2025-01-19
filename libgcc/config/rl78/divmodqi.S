@@ -1,5 +1,5 @@
 /* QImode div/mod functions for the GCC support library for the Renesas RL78 processors.
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.

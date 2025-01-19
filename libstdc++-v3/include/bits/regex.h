@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2024 Free Software Foundation, Inc.
+// Copyright (C) 2010-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,9 @@
 
 #if __cplusplus >= 202002L
 # include <bits/iterator_concepts.h>	// std::default_sentinel_t
+#endif
+#if __cpp_rtti
+# include <typeinfo>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -253,9 +256,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @param __first beginning of the character sequence.
        * @param __last  one-past-the-end of the character sequence.
        *
-       * Effects: if typeid(use_facet<collate<_Ch_type> >) ==
-       * typeid(collate_byname<_Ch_type>) and the form of the sort key
-       * returned by collate_byname<_Ch_type>::transform(__first, __last)
+       * Effects: if `typeid(use_facet<collate<_Ch_type>>(getloc())) ==
+       * typeid(collate_byname<_Ch_type>)` and the form of the sort key
+       * returned by `collate_byname<_Ch_type>::transform(__first, __last)`
        * is known and can be converted into a primary sort key
        * then returns that key, otherwise returns an empty string.
        *
@@ -265,17 +268,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	string_type
 	transform_primary(_Fwd_iter __first, _Fwd_iter __last) const
 	{
+	  string_type __ret;
+#if __cpp_rtti
+	  const auto& __fclt = use_facet<collate<char_type>>(_M_locale);
+	  if (typeid(__fclt) != typeid(collate<char_type>)) // FIXME: PR 118110
+	    return __ret;
+
 	  // TODO : this is not entirely correct.
 	  // This function requires extra support from the platform.
-	  //
-	  // Read http://gcc.gnu.org/ml/libstdc++/2013-09/msg00117.html and
-	  // http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/2003/n1429.htm
-	  // for details.
-	  typedef std::ctype<char_type> __ctype_type;
-	  const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
-	  _GLIBCXX_STD_C::vector<char_type> __s(__first, __last);
-	  __fctyp.tolower(__s.data(), __s.data() + __s.size());
-	  return this->transform(__s.data(), __s.data() + __s.size());
+	  // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=118105
+
+	  const auto& __fctyp(use_facet<ctype<char_type>>(_M_locale));
+	  basic_string<char_type> __s(__first, __last);
+	  const auto __p = const_cast<char_type*>(__s.c_str());
+	  const auto __pend = __p + __s.size();
+	  // XXX: should we use tolower here? The regex traits requirements
+	  // say that transform_primary ignores case, but the specification
+	  // for the std::regex_traits<char> and std::regex_traits<wchar_t>
+	  // specializations don't, they seem to suggest just using the
+	  // collate::transform function to get a primary sort key.
+	  __fctyp.tolower(__p, __pend);
+
+	  __try
+	    {
+	      __ret = __fclt.transform(__p, __pend);
+	    }
+	  __catch (const exception&)
+	    {
+	    }
+#endif
+	  return __ret;
 	}
 
       /**

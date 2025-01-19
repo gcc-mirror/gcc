@@ -1,5 +1,5 @@
 /* d-incpath.cc -- Set up combined import paths for the D frontend.
-   Copyright (C) 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -67,47 +67,41 @@ prefixed_path (const char *path, const char *iprefix)
 /* Add PATHS to the global import lookup path.  */
 
 static void
-add_globalpaths (Strings *paths)
+add_globalpaths (Strings &paths)
 {
-  if (paths)
+  for (size_t i = 0; i < paths.length; i++)
     {
-      for (size_t i = 0; i < paths->length; i++)
+      const char *path = paths[i];
+      const char *target = lrealpath (path);
+
+      if (target == NULL || !FileName::exists (target))
 	{
-	  const char *path = (*paths)[i];
-	  const char *target = lrealpath (path);
-
-	  if (target == NULL || !FileName::exists (target))
-	    {
-	      if (target)
-		free (CONST_CAST (char *, target));
-	      continue;
-	    }
-
-	  global.path.push (target);
+	  if (target)
+	    free (CONST_CAST (char *, target));
+	  continue;
 	}
+
+      global.path.push (target);
     }
 }
 
 /* Add PATHS to the global file import lookup path.  */
 
 static void
-add_filepaths (Strings *paths)
+add_filepaths (Strings &paths)
 {
-  if (paths)
+  for (size_t i = 0; i < paths.length; i++)
     {
-      for (size_t i = 0; i < paths->length; i++)
+      const char *path = paths[i];
+      const char *target = lrealpath (path);
+
+      if (!FileName::exists (target))
 	{
-	  const char *path = (*paths)[i];
-	  const char *target = lrealpath (path);
-
-	  if (!FileName::exists (target))
-	    {
-	      free (CONST_CAST (char *, target));
-	      continue;
-	    }
-
-	  global.filePath.push (target);
+	  free (CONST_CAST (char *, target));
+	  continue;
 	}
+
+      global.filePath.push (target);
     }
 }
 
@@ -139,7 +133,7 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
 	  bool found = false;
 	  for (size_t i = 0; i < global.params.imppath.length; i++)
 	    {
-	      if (strcmp (path, global.params.imppath[i]) == 0)
+	      if (strcmp (path, global.params.imppath[i].path) == 0)
 		{
 		  found = true;
 		  break;
@@ -166,9 +160,13 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
   /* Add import search paths.  */
   for (size_t i = 0; i < global.params.imppath.length; i++)
     {
-      const char *path = global.params.imppath[i];
+      const char *path = global.params.imppath[i].path;
       if (path)
-	add_globalpaths (FileName::splitPath (path));
+	{
+	  Strings array;
+	  FileName::appendSplitPath (path, array);
+	  add_globalpaths (array);
+	}
     }
 
   /* Add string import search paths.  */
@@ -176,6 +174,10 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
     {
       const char *path = global.params.fileImppath[i];
       if (path)
-	add_filepaths (FileName::splitPath (path));
+	{
+	  Strings array;
+	  FileName::appendSplitPath (path, array);
+	  add_filepaths (array);
+	}
     }
 }

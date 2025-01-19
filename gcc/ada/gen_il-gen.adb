@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2020-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,7 +158,7 @@ package body Gen_IL.Gen is
         new Type_Info'
           (Is_Union => False, Parent => Parent,
            Children | Concrete_Descendants => Type_Vectors.Empty_Vector,
-           First | Last | Fields => <>, -- filled in later
+           First | Last | Imm_Fields | Fields => <>, -- filled in later
            Nmake_Assert => new String'(Nmake_Assert));
 
       if Parent /= No_Type then
@@ -223,7 +223,7 @@ package body Gen_IL.Gen is
 
          begin
             Append (Field_Table (Field).Have_This_Field, T);
-            Append (Type_Table (T).Fields, Field);
+            Append (Type_Table (T).Imm_Fields, Field);
 
             pragma Assert (not Syntactic (T) (Field));
             Syntactic (T) (Field) := Is_Syntactic;
@@ -491,6 +491,9 @@ package body Gen_IL.Gen is
 
    procedure Compile is
       Fields_Per_Node : Fields_Per_Node_Type := (others => (others => False));
+      --  Mapping from node types to sets of fields that exist in that node
+      --  type. For abstract types, it's the set of fields that exist in
+      --  all descendants. For union types, currently not used.
 
       Type_Bit_Size : array (Concrete_Type) of Bit_Offset := (others => 0);
       Min_Node_Bit_Size : Bit_Offset := Bit_Offset'Last;
@@ -514,21 +517,25 @@ package body Gen_IL.Gen is
       --  is needed. Default_Expression is also both, but the Parent is not
       --  needed. Then_Actions and Else_Actions are not syntactic, but the
       --  Parent is needed.
+      --
+      --  Computed in Check_For_Syntactic_Field_Mismatch.
 
       procedure Check_Completeness;
       --  Check that every type and field has been declared
 
-      procedure Compute_Ranges (Root : Root_Type);
-      --  Compute the range of Node_Kind/Entity_Kind values for all the types
-      --  rooted at Root. The result is stored in the First and Last components
-      --  in the Type_Table.
+      procedure Compute_Ranges;
+      --  Compute the range of Node_Kind/Entity_Kind values. The result is
+      --  stored in the First and Last components in the Type_Table.
 
-      procedure Compute_Fields_Per_Node;
+      procedure Inherit_Fields;
       --  Compute which fields are in which nodes. Implements inheritance of
       --  fields. Set the Fields component of each Type_Info to include
-      --  inherited ones. Set the Is_Syntactic component in the Type_Table to
-      --  the set of fields that are syntactic in that node kind. Set the
-      --  Fields_Per_Node table.
+      --  inherited ones. Check for misc errors.
+
+      procedure Compute_Fields_Per_Node;
+      --  Set the Is_Syntactic component in the Type_Table to the set of fields
+      --  that are syntactic in that node kind. Set the Fields_Per_Node
+      --  table. Check for misc errors.
 
       procedure Compute_Field_Offsets;
       --  Compute the offsets of each field. The results are stored in the
@@ -679,7 +686,7 @@ package body Gen_IL.Gen is
       -- Compute_Ranges --
       --------------------
 
-      procedure Compute_Ranges (Root : Root_Type) is
+      procedure Compute_Ranges is
 
          procedure Do_One_Type (T : Node_Or_Entity_Type);
          --  Compute the range for one type. Passed to Iterate_Types to process
@@ -750,37 +757,23 @@ package body Gen_IL.Gen is
             end case;
          end Do_One_Type;
       begin
-         Iterate_Types (Root, Post => Do_One_Type'Access);
+         Iterate_Types (Node_Kind, Post => Do_One_Type'Access);
+         Iterate_Types (Entity_Kind, Post => Do_One_Type'Access);
       end Compute_Ranges;
 
-      -----------------------------
-      -- Compute_Fields_Per_Node --
-      -----------------------------
+      --------------------
+      -- Inherit_Fields --
+      --------------------
 
-      procedure Compute_Fields_Per_Node is
-
-         Duplicate_Fields_Found : Boolean := False;
-
-         function Get_Fields (T : Node_Or_Entity_Type) return Field_Vector;
-         --  Compute the fields of a given type. This is the fields inherited
-         --  from ancestors, plus the fields declared for the type itself.
+      procedure Inherit_Fields is
+         procedure Inherit_Fields_For_One_Type (T : Node_Or_Entity_Type);
+         --  Compute Fields for one node type
 
          function Get_Syntactic_Fields
            (T : Node_Or_Entity_Type) return Field_Set;
          --  Compute the set of fields that are syntactic for a given type.
          --  Note that a field can be syntactic in some node types, but
          --  semantic in others.
-
-         procedure Do_Concrete_Type (CT : Concrete_Type);
-         --  Do the Compute_Fields_Per_Node work for a concrete type
-
-         function Get_Fields (T : Node_Or_Entity_Type) return Field_Vector is
-            Parent_Fields : constant Field_Vector :=
-              (if T in Root_Type then Field_Vectors.Empty_Vector
-               else Get_Fields (Type_Table (T).Parent));
-         begin
-            return Parent_Fields & Type_Table (T).Fields;
-         end Get_Fields;
 
          function Get_Syntactic_Fields
            (T : Node_Or_Entity_Type) return Field_Set
@@ -792,26 +785,23 @@ package body Gen_IL.Gen is
             return Parent_Is_Syntactic or Syntactic (T);
          end Get_Syntactic_Fields;
 
-         procedure Do_Concrete_Type (CT : Concrete_Type) is
+         procedure Inherit_Fields_For_One_Type (T : Node_Or_Entity_Type) is
          begin
-            Type_Table (CT).Fields := Get_Fields (CT);
-            Syntactic (CT) := Get_Syntactic_Fields (CT);
+            pragma Assert (Is_Empty (Type_Table (T).Fields));
 
-            for F of Type_Table (CT).Fields loop
-               if Fields_Per_Node (CT) (F) then
-                  Ada.Text_IO.Put_Line
-                    ("duplicate field" & Image (CT) & Image (F));
-                  Duplicate_Fields_Found := True;
-               end if;
+            if T not in Root_Type then
+               Append
+                 (Type_Table (T).Fields,
+                  Type_Table (Type_Table (T).Parent).Fields);
+            end if;
 
-               Fields_Per_Node (CT) (F) := True;
-            end loop;
-         end Do_Concrete_Type;
+            Append (Type_Table (T).Fields, Type_Table (T).Imm_Fields);
+            Syntactic (T) := Get_Syntactic_Fields (T);
+         end Inherit_Fields_For_One_Type;
 
-      begin -- Compute_Fields_Per_Node
-         for CT in Concrete_Node loop
-            Do_Concrete_Type (CT);
-         end loop;
+      begin -- Inherit_Fields
+
+         Iterate_Types (Node_Kind, Pre => Inherit_Fields_For_One_Type'Access);
 
          --  The node fields defined for all three N_Entity kinds should be the
          --  same:
@@ -832,6 +822,126 @@ package body Gen_IL.Gen is
               "N_Defining_Operator_Symbol must match";
          end if;
 
+         --  Copy node fields from N_Entity nodes to entities, so they have
+         --  slots allocated (but the getters and setters are only in
+         --  Sinfo.Nodes).
+
+         Type_Table (Entity_Kind).Imm_Fields :=
+           Type_Table (N_Defining_Identifier).Fields &
+           Type_Table (Entity_Kind).Imm_Fields;
+
+         Iterate_Types
+           (Entity_Kind, Pre => Inherit_Fields_For_One_Type'Access);
+      end Inherit_Fields;
+
+      -----------------------------
+      -- Compute_Fields_Per_Node --
+      -----------------------------
+
+      procedure Compute_Fields_Per_Node is
+         Duplicate_Fields_Error, Could_Be_Inherited_Error : Boolean := False;
+
+         procedure Compute_Fields_For_One_Type (T : Node_Or_Entity_Type);
+         --  Do the computations for one type
+
+         procedure Check_Potential_Inheritance (T : Node_Or_Entity_Type);
+         --  Check whether fields could be inherited from T, instead of
+         --  defining them separately for descendants.
+
+         procedure Compute_Fields_For_One_Type (T : Node_Or_Entity_Type) is
+         begin
+            case T is
+               when Concrete_Type =>
+                  for F of Type_Table (T).Fields loop
+                     if Fields_Per_Node (T) (F) then
+                        Ada.Text_IO.Put_Line
+                          ("duplicate field " & Image (T) & " " & Image (F));
+                        Duplicate_Fields_Error := True;
+                     end if;
+
+                     Fields_Per_Node (T) (F) := True;
+                  end loop;
+
+               when Abstract_Type =>
+                  --  Fields_Per_Node for an abstract type is the set of fields
+                  --  that exist in ALL children; that is, the intersection of
+                  --  the Fields_Per_Node for the children; hence "and" below.
+
+                  pragma Assert (not Is_Empty (Type_Table (T).Children));
+                  --  Otherwise, the following loop won't work
+
+                  pragma Assert (Fields_Per_Node (T) = (Field_Enum => False));
+                  Fields_Per_Node (T) := (Field_Enum => True);
+
+                  for Child of Type_Table (T).Children loop
+                     pragma Assert
+                       (Fields_Per_Node (Child) /= (Field_Enum => False));
+                     Fields_Per_Node (T) :=
+                       Fields_Per_Node (T) and Fields_Per_Node (Child);
+                  end loop;
+
+               when Between_Abstract_Entity_And_Concrete_Node_Types =>
+                  raise Program_Error;
+            end case;
+         end Compute_Fields_For_One_Type;
+
+         procedure Check_Potential_Inheritance (T : Node_Or_Entity_Type) is
+
+            function Exception_To_Inheritance_Rule
+              (T : Node_Or_Entity_Type; F : Field_Enum) return Boolean is
+            --  True if we should allow this case as an exception to
+            --  the Could_Be_Inherited_Error rule; if this is False,
+            --  we complain. This is somewhat ad hoc. The most common
+            --  reason is to keep syntactic fields in order.
+            --  For example, Left_Opnd comes before Right_Opnd,
+            --  which wouldn't be the case if Right_Opnd were
+            --  inherited from N_Op.
+              ((T = N_Op and then F = Right_Opnd)
+               or else (T = N_Renaming_Declaration and then F = Name)
+               or else (T = N_Generic_Renaming_Declaration and then F = Name)
+               or else F in Defining_Unit_Name
+                          | Aspect_Specifications
+                          | At_End_Proc
+                          | Handled_Statement_Sequence
+                          | Declarations
+                          | Generic_Formal_Declarations
+                          | Specification
+                          | Component_Definition
+                          | Renamed_Or_Alias
+               or else T in N_Subprogram_Specification
+                          | N_Access_Function_Definition
+                          | N_Access_To_Subprogram_Definition
+                          | Void_Or_Type_Kind);
+
+         begin
+            if T in Abstract_Type then
+               for F in Field_Enum loop
+                  if Fields_Per_Node (T) (F)
+                    and then not
+                      (for some FF of Type_Table (T).Fields => F = FF)
+                    and then not Exception_To_Inheritance_Rule (T, F)
+                  then
+                     Ada.Text_IO.Put_Line
+                       (Image (F) & " could be inherited from " & Image (T) &
+                        "; this field is present in all descendants");
+                     Could_Be_Inherited_Error := True;
+                  end if;
+               end loop;
+            end if;
+         end Check_Potential_Inheritance;
+
+      begin -- Compute_Fields_Per_Node
+
+         --  First walk the types bottom-up, and for each type, call
+         --  Compute_Fields_For_One_Type. Then walk top-down, calling
+         --  Check_Potential_Inheritance to check for cases where
+         --  inheritance could be used.
+
+         Iterate_Types (Node_Kind, Post => Compute_Fields_For_One_Type'Access);
+
+         --  The node fields defined for all three N_Entity kinds should be the
+         --  same:
+
          if Fields_Per_Node (N_Defining_Character_Literal) /=
            Fields_Per_Node (N_Defining_Identifier)
          then
@@ -848,20 +958,41 @@ package body Gen_IL.Gen is
               "N_Defining_Identifier";
          end if;
 
-         --  Copy node fields from N_Entity nodes to entities, so they have
-         --  slots allocated (but the getters and setters are only in
-         --  Sinfo.Nodes).
+         Iterate_Types
+           (Entity_Kind, Post => Compute_Fields_For_One_Type'Access);
 
-         Type_Table (Entity_Kind).Fields :=
-           Type_Table (N_Defining_Identifier).Fields &
-           Type_Table (Entity_Kind).Fields;
+         if Duplicate_Fields_Error then
+            raise Illegal with "duplicate fields found";
+         end if;
 
+         for CT in Concrete_Node loop
+            pragma Assert (Fields_Per_Node (CT) /= (Field_Enum => False));
+         end loop;
          for CT in Concrete_Entity loop
-            Do_Concrete_Type (CT);
+            pragma Assert (Fields_Per_Node (CT) /= (Field_Enum => False));
+         end loop;
+         for AbT in Abstract_Node loop
+            pragma Assert
+              (Type_Table (AbT).Is_Union = -- if and only if
+               (Fields_Per_Node (AbT) = (Field_Enum => False)));
+         end loop;
+         for AbT in Abstract_Entity loop
+            pragma Assert
+              (Type_Table (AbT).Is_Union = -- if and only if
+               (Fields_Per_Node (AbT) = (Field_Enum => False)));
          end loop;
 
-         if Duplicate_Fields_Found then
-            raise Illegal with "duplicate fields found";
+         Iterate_Types (Node_Kind, Pre => Check_Potential_Inheritance'Access);
+         Iterate_Types
+           (Entity_Kind, Pre => Check_Potential_Inheritance'Access);
+
+         if Could_Be_Inherited_Error then
+            raise Illegal with "some fields could be inherited";
+            --  If you get this error, then either move the relevant fields
+            --  upward in the type hierarchy, or add a case to the
+            --  Exception_To_Inheritance_Rule function above.
+            --  We don't always want to use inheritance when it's possible;
+            --  for example, we might want to control the order of fields.
          end if;
       end Compute_Fields_Per_Node;
 
@@ -1027,13 +1158,13 @@ package body Gen_IL.Gen is
          package Sorting is new Field_Vectors.Generic_Sorting
            ("<" => Sort_Less);
 
-         All_Fields : Field_Vector;
+         Fields : Field_Vector;
 
       --  Start of processing for Compute_Field_Offsets
 
       begin
-         --  Compute the number of types that have each field, weighted by the
-         --  frequency of such nodes.
+         --  Compute the number of concrete types that have each field,
+         --  weighted by the frequency of such nodes.
 
          for T in Concrete_Type loop
             for F in Field_Enum loop
@@ -1044,21 +1175,21 @@ package body Gen_IL.Gen is
             end loop;
          end loop;
 
-         --  Collect all the fields in All_Fields
+         --  Collect all the fields in Fields
 
          for F in Node_Field loop
-            Append (All_Fields, F);
+            Append (Fields, F);
          end loop;
 
          for F in Entity_Field loop
-            Append (All_Fields, F);
+            Append (Fields, F);
          end loop;
 
-         --  Sort All_Fields based on how many concrete types have the field.
+         --  Sort Fields based on how many concrete types have the field.
          --  This is for efficiency; we want to choose the offsets of the most
          --  common fields first, so they get low numbers.
 
-         Sorting.Sort (All_Fields);
+         Sorting.Sort (Fields);
 
          --  Go through all the fields, and choose the lowest offset that is
          --  free in all types that have the field. This is basically a
@@ -1093,7 +1224,7 @@ package body Gen_IL.Gen is
 
          --  Then loop through them all, skipping the ones we did above
 
-         for F of All_Fields loop
+         for F of Fields loop
             if Field_Table (F).Offset = Unknown_Offset then
                Choose_Offset (F);
             end if;
@@ -2083,7 +2214,7 @@ package body Gen_IL.Gen is
               Field_Enum_Type_Name & "_Index range <>) of " &
               Field_Enum_Type_Name & ";" & LF);
          Put (S, "type " & Field_Enum_Type_Name &
-              "_Array_Ref is access constant " & Field_Enum_Type_Name &
+              "_Array_Ref is not null access constant " & Field_Enum_Type_Name &
               "_Array;" & LF);
          Put (S, "subtype A is " & Field_Enum_Type_Name & "_Array;" & LF);
          --  Short name to make allocators below more readable
@@ -3259,8 +3390,8 @@ package body Gen_IL.Gen is
 
       Check_Completeness;
 
-      Compute_Ranges (Node_Kind);
-      Compute_Ranges (Entity_Kind);
+      Compute_Ranges;
+      Inherit_Fields;
       Compute_Fields_Per_Node;
       Compute_Field_Offsets;
       Compute_Type_Sizes;

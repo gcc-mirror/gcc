@@ -109,14 +109,14 @@ if (!is(Container))
     import std.traits : isDynamicArray;
 
     auto make(Range)(Range range)
-        if (!isDynamicArray!Range && isInputRange!Range && !isInfinite!Range)
+    if (!isDynamicArray!Range && isInputRange!Range && !isInfinite!Range)
     {
         import std.range : ElementType;
         return .make!(Container!(ElementType!Range, Args))(range);
     }
 
     auto make(T)(T[] items...)
-        if (!isInfinite!T)
+    if (!isInfinite!T)
     {
         return .make!(Container!(T, Args))(items);
     }

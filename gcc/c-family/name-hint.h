@@ -1,5 +1,5 @@
 /* Support for offering suggestions for handling unrecognized names.
-   Copyright (C) 2016-2024 Free Software Foundation, Inc.
+   Copyright (C) 2016-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,14 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_NAME_HINT_H
 #define GCC_NAME_HINT_H
-
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence it must be included from
-   system.h by defining INCLUDE_MEMORY in any source file using it.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use name-hint.h"
-#endif
 
 enum lookup_name_fuzzy_kind {
   /* Names of types.  */

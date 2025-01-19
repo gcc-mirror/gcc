@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -Wwrite-strings -Werror -fmerge-all-constants -fno-stack-protector -mieee -fdump-rtl-expand" } */
+/* { dg-options "-Wall -Wwrite-strings -Werror -fmerge-all-constants -fno-stack-protector -mieee -fdump-rtl-expand" } */
 
 struct expression {
   unsigned long int num;

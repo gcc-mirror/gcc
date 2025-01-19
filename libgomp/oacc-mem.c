@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 

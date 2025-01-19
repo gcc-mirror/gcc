@@ -1,0 +1,14 @@
+{
+  "version": "2.1.0",
+  "runs": [{
+    "tool": { "driver": { "name": "example" } },
+    "results": [
+      { "message": { "text" : "the {0} {1} fox jumps over the {2} dog", "arguments": ["quick", "brown"] } } /* { dg-error "not enough strings in 'arguments' array for placeholder '\\{2\\}' \\\[SARIF v2.1.0 §3.11.11\\\]" } */
+    ]
+  }]
+}
+
+/* { dg-begin-multiline-output "" }
+    6 |       { "message": { "text" : "the {0} {1} fox jumps over the {2} dog", "arguments": ["quick", "brown"] } }
+      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" }  */

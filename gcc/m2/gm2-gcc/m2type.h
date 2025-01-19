@@ -1,6 +1,6 @@
 /* m2type.h header file for m2type.cc.
 
-Copyright (C) 2012-2024 Free Software Foundation, Inc.
+Copyright (C) 2012-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -130,7 +130,7 @@ EXTERN tree m2type_GetShortCardType (void);
 EXTERN tree m2type_GetProcType (void);
 EXTERN tree m2type_GetCSizeTType (void);
 EXTERN tree m2type_GetCSSizeTType (void);
-
+EXTERN tree m2type_GetCOffTType (void);
 EXTERN tree m2type_GetM2CType (void);
 
 EXTERN tree m2type_GetBitsetType (void);

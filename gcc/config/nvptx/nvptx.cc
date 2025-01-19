@@ -1,5 +1,5 @@
 /* Target code for NVPTX.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -20,7 +20,6 @@
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include <sstream>
 #include "system.h"
@@ -213,9 +212,12 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
   switch (sm)
     {
     case PTX_ISA_SM30:
-      return PTX_VERSION_3_0;
+      return /* PTX_VERSION_3_0 not defined */ PTX_VERSION_3_1;
     case PTX_ISA_SM35:
       return PTX_VERSION_3_1;
+    case PTX_ISA_SM37:
+    case PTX_ISA_SM52:
+      return PTX_VERSION_4_1;
     case PTX_ISA_SM53:
       return PTX_VERSION_4_2;
     case PTX_ISA_SM70:
@@ -224,6 +226,8 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
       return PTX_VERSION_6_3;
     case PTX_ISA_SM80:
       return PTX_VERSION_7_0;
+    case PTX_ISA_SM89:
+      return PTX_VERSION_7_8;
     default:
       gcc_unreachable ();
     }
@@ -237,12 +241,13 @@ default_ptx_version_option (void)
   /* Pick a version that supports the sm.  */
   enum ptx_version res = first;
 
-  /* Pick at least 3.1.  This has been the smallest version historically.  */
-  res = MAX (res, PTX_VERSION_3_1);
-
   /* Pick at least 6.0, to enable using bar.warp.sync to have a way to force
      warp convergence.  */
   res = MAX (res, PTX_VERSION_6_0);
+
+  /* For sm_52+, pick at least 7.3, to enable PTX 'alloca'.  */
+  if (ptx_isa_option >= PTX_ISA_SM52)
+    res = MAX (res, PTX_VERSION_7_3);
 
   /* Verify that we pick a version that supports the sm.  */
   gcc_assert (first <= res);
@@ -254,10 +259,10 @@ ptx_version_to_string (enum ptx_version v)
 {
   switch (v)
     {
-    case PTX_VERSION_3_0:
-      return "3.0";
     case PTX_VERSION_3_1:
       return "3.1";
+    case PTX_VERSION_4_1:
+      return "4.1";
     case PTX_VERSION_4_2:
       return "4.2";
     case PTX_VERSION_6_0:
@@ -266,6 +271,10 @@ ptx_version_to_string (enum ptx_version v)
       return "6.3";
     case PTX_VERSION_7_0:
       return "7.0";
+    case PTX_VERSION_7_3:
+      return "7.3";
+    case PTX_VERSION_7_8:
+      return "7.8";
     default:
       gcc_unreachable ();
     }
@@ -276,10 +285,10 @@ ptx_version_to_number (enum ptx_version v, bool major_p)
 {
   switch (v)
     {
-    case PTX_VERSION_3_0:
-      return major_p ? 3 : 0;
     case PTX_VERSION_3_1:
       return major_p ? 3 : 1;
+    case PTX_VERSION_4_1:
+      return major_p ? 4 : 1;
     case PTX_VERSION_4_2:
       return major_p ? 4 : 2;
     case PTX_VERSION_6_0:
@@ -288,6 +297,10 @@ ptx_version_to_number (enum ptx_version v, bool major_p)
       return major_p ? 6 : 3;
     case PTX_VERSION_7_0:
       return major_p ? 7 : 0;
+    case PTX_VERSION_7_3:
+      return major_p ? 7 : 3;
+    case PTX_VERSION_7_8:
+      return major_p ? 7 : 8;
     default:
       gcc_unreachable ();
     }
@@ -1784,7 +1797,7 @@ nvptx_function_ok_for_sibcall (tree, tree)
 static rtx
 nvptx_get_drap_rtx (void)
 {
-  if (TARGET_SOFT_STACK && stack_realign_drap)
+  if (stack_realign_drap)
     return arg_pointer_rtx;
   return NULL_RTX;
 }
@@ -7815,6 +7828,9 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 
 #undef TARGET_HAVE_STRUB_SUPPORT_FOR
 #define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "Nvidia PTX"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

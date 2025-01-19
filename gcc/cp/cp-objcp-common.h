@@ -1,5 +1,5 @@
 /* Language hooks common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+   Copyright (C) 2004-2025 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -129,7 +129,8 @@ static const scoped_attribute_specs *const cp_objcp_attribute_table[] =
   &cxx_gnu_attribute_table,
   &c_common_gnu_attribute_table,
   &c_common_clang_attribute_table,
-  &c_common_format_attribute_table
+  &c_common_format_attribute_table,
+  &internal_attribute_table
 };
 
 #undef LANG_HOOKS_ATTRIBUTE_TABLE

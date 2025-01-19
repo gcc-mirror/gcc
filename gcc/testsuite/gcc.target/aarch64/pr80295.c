@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mabi=ilp32" } */
+/* { dg-options "-mabi=ilp32 -Wno-deprecated" } */
 
 void f (void *b) 
 { 

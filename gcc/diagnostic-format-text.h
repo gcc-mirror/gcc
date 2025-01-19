@@ -1,5 +1,5 @@
 /* Classic text-based output of diagnostics.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -33,13 +33,19 @@ class diagnostic_text_output_format : public diagnostic_output_format
 {
 public:
   diagnostic_text_output_format (diagnostic_context &context,
+				 diagnostic_source_printing_options *source_printing = nullptr,
 				 bool follows_reference_printer = false)
   : diagnostic_output_format (context),
     m_saved_output_buffer (nullptr),
     m_column_policy (context),
     m_last_module (nullptr),
     m_includes_seen (nullptr),
-    m_follows_reference_printer (follows_reference_printer)
+    m_source_printing (source_printing
+		       ? *source_printing
+		       : context.m_source_printing),
+    m_follows_reference_printer (follows_reference_printer),
+    m_show_nesting (false),
+    m_show_nesting_levels (false)
   {}
   ~diagnostic_text_output_format ();
 
@@ -73,6 +79,8 @@ public:
 
   char *file_name_as_prefix (const char *) const;
 
+  char *build_indent_prefix (bool with_bullet) const;
+
   void print_path (const diagnostic_path &path);
 
   bool show_column_p () const { return get_context ().m_show_column; }
@@ -83,13 +91,39 @@ public:
   }
   diagnostic_location_print_policy get_location_print_policy () const;
 
+  bool show_nesting_p () const { return m_show_nesting; }
+  bool show_locations_in_nesting_p () const
+  {
+    return m_show_locations_in_nesting;
+  }
+
+  void set_show_nesting (bool show_nesting) { m_show_nesting = show_nesting; }
+  void set_show_locations_in_nesting (bool val)
+  {
+    m_show_locations_in_nesting = val;
+  }
+  void set_show_nesting_levels (bool show_nesting_levels)
+  {
+    m_show_nesting_levels = show_nesting_levels;
+  }
+
+  label_text get_location_text (const expanded_location &s) const;
+
+  diagnostic_source_printing_options &get_source_printing_options ()
+  {
+    return m_source_printing;
+  }
+  const diagnostic_source_printing_options &get_source_printing_options () const
+  {
+    return m_source_printing;
+  }
+
 protected:
   void print_any_cwe (const diagnostic_info &diagnostic);
   void print_any_rules (const diagnostic_info &diagnostic);
   void print_option_information (const diagnostic_info &diagnostic,
 				 diagnostic_t orig_diag_kind);
 
-  label_text get_location_text (const expanded_location &s) const;
   bool includes_seen_p (const line_map_ordinary *map);
 
   /* For handling diagnostic_buffer.  */
@@ -105,6 +139,8 @@ protected:
      include path for.  */
   hash_set<location_t, false, location_hash> *m_includes_seen;
 
+  diagnostic_source_printing_options &m_source_printing;
+
   /* If true, this is the initial default text output format created
      when the diagnostic_context was created, and, in particular, before
      initializations of color and m_url_format.  Hence this should follow
@@ -112,6 +148,18 @@ protected:
      If false, this text output was created after the dc was created, and
      thus tracks its own values for color and m_url_format.  */
   bool m_follows_reference_printer;
+
+  /* If true, then use indentation to show the nesting structure of
+     nested diagnostics, and print locations on separate lines after the
+     diagnostic message, rather than as a prefix to the message.  */
+  bool m_show_nesting;
+
+  /* Set to false to suppress location-printing when showing nested
+     diagnostics, for use in DejaGnu tests.  */
+  bool m_show_locations_in_nesting;
+
+  /* If true, then add "(level N):" when printing nested diagnostics.  */
+  bool m_show_nesting_levels;
 };
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_TEXT_H */

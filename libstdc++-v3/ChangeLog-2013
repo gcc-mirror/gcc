@@ -4590,7 +4590,6 @@
 	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Fix typo
 	in copyright years.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/3.cc: Likewise.
-
 
 Copyright (C) 2013 Free Software Foundation, Inc.
 

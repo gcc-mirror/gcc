@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
    From the scanner's viewpoint, the higher level subroutines ask for
    new characters and do a lot of jumping backwards.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

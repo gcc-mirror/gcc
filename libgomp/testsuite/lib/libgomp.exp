@@ -41,6 +41,7 @@ load_gcc_lib scanwpaipa.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
+load_gcc_lib dg-test-cleanup.exp
 
 # Try to load a test support file, built during libgomp configuration.
 # Search in '..' vs. '.' to support parallel vs. sequential testing.

@@ -111,8 +111,9 @@ if (isSomeChar!(Char))
     auto endOrDie = false;
     auto crlfCount = int.min; // int.min == not defined
 
-    foreach (ref i, e ; email)
+    for (size_t i; i < email.length; i++)
     {
+        auto e = email[i];
         token = email.get(i, e);
 
         switch (context)

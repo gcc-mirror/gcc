@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv -mabi=lp64d -O3 -w" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv -mabi=lp64d -O3 -w -std=gnu17" } */
 /* { dg-skip-if "" { *-*-* } { "-flto" } } */
 
 #include <riscv_vector.h>

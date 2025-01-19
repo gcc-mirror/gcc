@@ -6,9 +6,13 @@ void f1 ()
   ;
 #pragma acc parallel default (none)
   ;
+#pragma acc serial default (none)
+  ;
 
 #pragma acc kernels default (present)
   ;
 #pragma acc parallel default (present)
+  ;
+#pragma acc serial default (present)
   ;
 }

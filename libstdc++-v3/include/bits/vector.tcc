@@ -1,6 +1,6 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2024 Free Software Foundation, Inc.
+// Copyright (C) 2001-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -934,7 +934,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		const size_type __len =
 		  _M_check_len(__n, "vector::_M_range_insert");
 #if __cplusplus < 201103L
-		if (__len < (__n + (__old_start - __old_finish)))
+		if (__len < (__n + (__old_finish - __old_start)))
 		  __builtin_unreachable();
 #endif
 

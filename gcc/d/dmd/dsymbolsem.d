@@ -21,12 +21,15 @@ import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.astenums;
 import dmd.attrib;
+import dmd.attribsem;
 import dmd.clone;
 import dmd.cond;
+import dmd.timetrace;
 import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.denum;
+import dmd.deps;
 import dmd.dimport;
 import dmd.dinterpret;
 import dmd.dmodule;
@@ -50,6 +53,7 @@ import dmd.init;
 import dmd.initsem;
 import dmd.intrange;
 import dmd.hdrgen;
+import dmd.lexer;
 import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
@@ -58,11 +62,14 @@ import dmd.objc;
 import dmd.opover;
 import dmd.optimize;
 import dmd.parse;
+debug import dmd.printast;
 import dmd.root.array;
 import dmd.root.filename;
+import dmd.root.string;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.rootobject;
+import dmd.safe;
 import dmd.semantic2;
 import dmd.semantic3;
 import dmd.sideeffect;
@@ -126,10 +133,10 @@ AlignDeclaration getAlignment(AlignDeclaration ad, Scope* sc)
         else
         {
             auto n = e.toInteger();
-            if (sc.flags & SCOPE.Cfile && n == 0)       // C11 6.7.5-6 allows 0 for alignment
+            if (sc.inCfile && n == 0)       // C11 6.7.5-6 allows 0 for alignment
                 continue;
 
-            if (n < 1 || n & (n - 1) || ushort.max < n || !e.type.isintegral())
+            if (n < 1 || n & (n - 1) || ushort.max < n || !e.type.isIntegral())
             {
                 error(ad.loc, "alignment must be an integer positive power of 2, not 0x%llx", cast(ulong)n);
                 errors = true;
@@ -178,7 +185,7 @@ bool checkDeprecated(Dsymbol d, const ref Loc loc, Scope* sc)
         return false;
     // Don't complain if we're inside a template constraint
     // https://issues.dlang.org/show_bug.cgi?id=21831
-    if (sc.flags & SCOPE.constraint)
+    if (sc.inTemplateConstraint)
         return false;
 
     const(char)* message = null;
@@ -238,38 +245,58 @@ package bool allowsContractWithoutBody(FuncDeclaration funcdecl)
 }
 
 /*
-Tests whether the `ctor` that is part of `ti` is an rvalue constructor
-(i.e. a constructor that receives a single parameter of the same type as
-`Unqual!typeof(this)`). If that is the case and `sd` contains a copy
-constructor, than an error is issued.
+If sd has a copy constructor and ctor is an rvalue constructor,
+issue an error.
 
 Params:
-    sd = struct declaration that may contin both an rvalue and copy constructor
-    ctor = constructor that will be checked if it is an evalue constructor
+    sd = struct declaration that may contain both an rvalue and copy constructor
+    ctor = constructor that will be checked if it is an rvalue constructor
     ti = template instance the ctor is part of
 
 Return:
-    `false` if ctor is not an rvalue constructor or if `sd` does not contain a
-    copy constructor. `true` otherwise
+    `true` if sd has a copy constructor and ctor is an rvalue constructor
 */
 bool checkHasBothRvalueAndCpCtor(StructDeclaration sd, CtorDeclaration ctor, TemplateInstance ti)
 {
-    auto loc = ctor.loc;
-    auto tf = cast(TypeFunction)ctor.type;
-    auto dim = tf.parameterList.length;
-    if (sd && sd.hasCopyCtor && (dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg)))
+    //printf("checkHasBothRvalueAndCpCtor() sd: %s ctor: %s ti: %s\n", sd.toChars(), ctor.toChars(), ti.toChars());
+    /* cannot use ctor.isMoveCtor because semantic pass may not have been run yet,
+     * so use isRvalueConstructor()
+     */
+    if (sd && sd.hasCopyCtor && isRvalueConstructor(sd, ctor))
+    {
+        .error(ctor.loc, "cannot define both an rvalue constructor and a copy constructor for `struct %s`", sd.toChars());
+        .errorSupplemental(ti.loc, "Template instance `%s` creates an rvalue constructor for `struct %s`",
+                ti.toPrettyChars(), sd.toChars());
+
+        return true;
+    }
+
+    return false;
+}
+
+/************************************************
+ * Check if ctor is an rvalue constructor.
+ * A constructor that receives a single parameter of the same type as
+ * `Unqual!typeof(this)` is an rvalue constructor.
+ * Params:
+ *      sd = struct that ctor is a member of
+ *      ctor = constructor to test
+ * Returns:
+ *      true if it is an rvalue constructor
+ */
+bool isRvalueConstructor(StructDeclaration sd, CtorDeclaration ctor)
+{
+    // note commonality with setting isMoveCtor in the semantic code for CtorDeclaration
+    auto tf = ctor.type.isTypeFunction();
+    const dim = tf.parameterList.length;
+    if (dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg))
     {
         auto param = tf.parameterList[0];
         if (!(param.storageClass & STC.ref_) && param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())
         {
-            .error(loc, "cannot define both an rvalue constructor and a copy constructor for `struct %s`", sd.toChars());
-            .errorSupplemental(ti.loc, "Template instance `%s` creates an rvalue constructor for `struct %s`",
-                    ti.toPrettyChars(), sd.toChars());
-
             return true;
         }
     }
-
     return false;
 }
 
@@ -286,6 +313,7 @@ bool checkHasBothRvalueAndCpCtor(StructDeclaration sd, CtorDeclaration ctor, Tem
  */
 Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false, bool findOnly = false)
 {
+    //printf("resolveAliasThis() %s\n", toChars(e));
     import dmd.typesem : dotExp;
     for (AggregateDeclaration ad = isAggregate(e.type); ad;)
     {
@@ -294,7 +322,7 @@ Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false, bool find
             Loc loc = e.loc;
             Type tthis = (e.op == EXP.type ? e.type : null);
             const flags = cast(DotExpFlag) (DotExpFlag.noAliasThis | (gag * DotExpFlag.gag));
-            uint olderrors = gag ? global.startGagging() : 0;
+            const olderrors = gag ? global.startGagging() : 0;
             e = dotExp(ad.type, sc, e, ad.aliasthis.ident, flags);
             if (!e || findOnly)
                 return gag && global.endGagging(olderrors) ? null : e;
@@ -595,11 +623,30 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
 
         if (dsym.storage_class & STC.extern_ && dsym._init)
-            .error(dsym.loc, "%s `%s` extern symbols cannot have initializers", dsym.kind, dsym.toPrettyChars);
+        {
+            if (sc.inCfile)
+            {
+                // https://issues.dlang.org/show_bug.cgi?id=24447
+                // extern int x = 3; is allowed in C
+                dsym.storage_class &= ~STC.extern_;
+            }
+            else
+                .error(dsym.loc, "%s `%s` extern symbols cannot have initializers", dsym.kind, dsym.toPrettyChars);
+
+        }
 
         AggregateDeclaration ad = dsym.isThis();
         if (ad)
             dsym.storage_class |= ad.storage_class & STC.TYPECTOR;
+
+        if ((dsym.storage_class & STC.auto_) && (dsym.storage_class & STC.ref_))
+        {
+            if (!(dsym.storage_class & STC.autoref))
+            {
+                .error(dsym.loc, "%s `%s` - `auto ref` variable must have `auto` and `ref` adjacent", dsym.kind, dsym.toChars());
+                dsym.storage_class |= STC.autoref;
+            }
+        }
 
         /* If auto type inference, do the inference
          */
@@ -613,12 +660,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             bool needctfe = (dsym.storage_class & (STC.manifest | STC.static_)) != 0 || !sc.func;
             if (needctfe)
             {
-                sc.flags |= SCOPE.condition;
+                sc.condition = true;
                 sc = sc.startCTFE();
             }
             //printf("inferring type for %s with init %s\n", dsym.toChars(), dsym._init.toChars());
             dsym._init = dsym._init.inferType(sc);
-            dsym.type = dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0).type;
+            dsym.type = dsym._init.initializerToExpression(null, sc.inCfile).type;
             if (needctfe)
                 sc = sc.endCTFE();
 
@@ -670,7 +717,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // Calculate type size + safety checks
         if (dsym.storage_class & STC.gshared && !dsym.isMember())
         {
-            sc.setUnsafe(false, dsym.loc, "__gshared not allowed in safe functions; use shared");
+            sc.setUnsafe(false, dsym.loc, "using `__gshared` instead of `shared`");
         }
 
         Dsymbol parent = dsym.toParent();
@@ -718,7 +765,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 dsym.type = Type.terror;
             }
         }
-        if ((dsym.storage_class & STC.auto_) && !inferred)
+        if ((dsym.storage_class & STC.auto_) && !inferred && !(dsym.storage_class & STC.autoref))
             .error(dsym.loc, "%s `%s` - storage class `auto` has no effect if type is not inferred, did you mean `scope`?", dsym.kind, dsym.toPrettyChars);
 
         if (auto tt = tb.isTypeTuple())
@@ -727,7 +774,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
              * and add those.
              */
             size_t nelems = Parameter.dim(tt.arguments);
-            Expression ie = (dsym._init && !dsym._init.isVoidInitializer()) ? dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0) : null;
+            Expression ie = (dsym._init && !dsym._init.isVoidInitializer()) ? dsym._init.initializerToExpression(null, sc.inCfile) : null;
             if (ie)
                 ie = ie.expressionSemantic(sc);
             if (nelems > 0 && ie)
@@ -1000,9 +1047,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
         }
 
-        if ((dsym.storage_class & (STC.ref_ | STC.parameter | STC.foreach_ | STC.temp | STC.result)) == STC.ref_ && dsym.ident != Id.This)
+        if ((dsym.storage_class & (STC.ref_ | STC.field)) == (STC.ref_ | STC.field) && dsym.ident != Id.This)
         {
-            .error(dsym.loc, "%s `%s` - only parameters, functions and `foreach` declarations can be `ref`", dsym.kind, dsym.toPrettyChars);
+            .error(dsym.loc, "%s `%s` - field declarations cannot be `ref`", dsym.kind, dsym.toPrettyChars);
         }
 
         if (dsym.type.hasWild())
@@ -1051,8 +1098,27 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
         }
 
+        bool dsymIsRef = (dsym.storage_class & (STC.ref_ | STC.field | STC.parameter | STC.temp | STC.foreach_)) == STC.ref_;
+        if (dsymIsRef)
+        {
+            if (!dsym._init && dsym.ident != Id.This)
+            {
+                if (dsym.storage_class & STC.autoref)
+                {
+                    dsymIsRef = false;
+                    dsym.storage_class &= ~STC.ref_;
+                }
+                else
+                    .error(dsym.loc, "%s `%s` - initializer is required for `ref` variable", dsym.kind, dsym.toPrettyChars);
+            }
+            else if (dsym._init.isVoidInitializer())
+            {
+                .error(dsym.loc, "%s `%s` - void initializer not allowed for `ref` variable", dsym.kind, dsym.toPrettyChars);
+            }
+        }
+
         FuncDeclaration fd = parent.isFuncDeclaration();
-        if (dsym.type.isscope() && !(dsym.storage_class & STC.nodtor))
+        if (dsym.type.isScopeClass() && !(dsym.storage_class & STC.nodtor))
         {
             if (dsym.storage_class & (STC.field | STC.out_ | STC.ref_ | STC.static_ | STC.manifest | STC.gshared) || !fd)
             {
@@ -1072,24 +1138,30 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // Calculate type size + safety checks
         if (sc && sc.func)
         {
-            if (dsym._init && dsym._init.isVoidInitializer())
+            if (dsym._init && dsym._init.isVoidInitializer() && !(dsym.storage_class & STC.temp))
             {
+                // Don't do these checks for STC.temp vars because the generated `opAssign`
+                // for a struct with postblit and destructor void initializes a temporary
+                // __swap variable, which can be trusted
 
                 if (dsym.type.hasPointers()) // also computes type size
                     sc.setUnsafe(false, dsym.loc,
-                        "`void` initializers for pointers not allowed in safe functions");
+                        "`void` initializing a pointer");
                 else if (dsym.type.hasInvariant())
                     sc.setUnsafe(false, dsym.loc,
-                        "`void` initializers for structs with invariants are not allowed in safe functions");
-                else if (dsym.type.hasSystemFields())
+                        "`void` initializing a struct with an invariant");
+                else if (dsym.type.toBasetype().ty == Tbool)
                     sc.setUnsafePreview(global.params.systemVariables, false, dsym.loc,
-                        "`void` initializers for `@system` variables not allowed in safe functions");
+                        "void intializing a bool (which must always be 0 or 1)");
+                else if (dsym.type.hasUnsafeBitpatterns())
+                    sc.setUnsafePreview(global.params.systemVariables, false, dsym.loc,
+                        "`void` initializing a type with unsafe bit patterns");
             }
             else if (!dsym._init &&
                      !(dsym.storage_class & (STC.static_ | STC.extern_ | STC.gshared | STC.manifest | STC.field | STC.parameter)) &&
                      dsym.type.hasVoidInitPointers())
             {
-                sc.setUnsafe(false, dsym.loc, "`void` initializers for pointers not allowed in safe functions");
+                sc.setUnsafe(false, dsym.loc, "`void` initializers for pointers");
             }
         }
 
@@ -1115,7 +1187,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         bool isBlit = false;
         uinteger_t sz;
-        if (sc.flags & SCOPE.Cfile && !dsym._init)
+        if (sc.inCfile && !dsym._init)
         {
             addDefaultCInitializer(dsym);
         }
@@ -1180,7 +1252,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             sc = sc.push();
             sc.stc &= ~(STC.TYPECTOR | STC.pure_ | STC.nothrow_ | STC.nogc | STC.ref_ | STC.disable);
 
-            if (sc.flags & SCOPE.Cfile &&
+            if (sc.inCfile &&
                 dsym.type.isTypeSArray() &&
                 dsym.type.isTypeSArray().isIncomplete() &&
                 dsym._init.isVoidInitializer() &&
@@ -1210,12 +1282,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         if (ai && tb.ty == Taarray)
                             e = ai.toAssocArrayLiteral();
                         else
-                            e = dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0);
+                            e = dsym._init.initializerToExpression(null, sc.inCfile);
                         if (!e)
                         {
                             // Run semantic, but don't need to interpret
                             dsym._init = dsym._init.initializerSemantic(sc, dsym.type, INITnointerpret);
-                            e = dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0);
+                            e = dsym._init.initializerToExpression(null, sc.inCfile);
                             if (!e)
                             {
                                 .error(dsym.loc, "%s `%s` is not a static and cannot have static initializer", dsym.kind, dsym.toPrettyChars);
@@ -1225,7 +1297,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         ei = new ExpInitializer(dsym._init.loc, e);
                         dsym._init = ei;
                     }
-                    else if (sc.flags & SCOPE.Cfile && dsym.type.isTypeSArray() &&
+                    else if (sc.inCfile && dsym.type.isTypeSArray() &&
                              dsym.type.isTypeSArray().isIncomplete())
                     {
                         // C11 6.7.9-22 determine the size of the incomplete array,
@@ -1251,7 +1323,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                                 {
                                     import dmd.escape : setUnsafeDIP1000;
                                     const inSafeFunc = sc.func && sc.func.isSafeBypassingInference();   // isSafeBypassingInference may call setUnsafe().
-                                    if (sc.setUnsafeDIP1000(false, dsym.loc, "`scope` allocation of `%s` requires that constructor be annotated with `scope`", dsym))
+                                    if (setUnsafeDIP1000(*sc, false, dsym.loc, "`scope` allocation of `%s` with a non-`scope` constructor", dsym))
                                         errorSupplemental(ne.member.loc, "is the location of the constructor");
                                 }
                                 ne.onstack = 1;
@@ -1276,21 +1348,67 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
                     Expression exp = ei.exp;
                     Expression e1 = new VarExp(dsym.loc, dsym);
-                    if (isBlit)
-                        exp = new BlitExp(dsym.loc, e1, exp);
+
+                    void constructInit(bool isBlit)
+                    {
+                        if (isBlit)
+                            exp = new BlitExp(dsym.loc, e1, exp);
+                        else
+                            exp = new ConstructExp(dsym.loc, e1, exp);
+                        dsym.canassign++;
+                        exp = exp.expressionSemantic(sc);
+                        dsym.canassign--;
+                    }
+
+                    if (dsymIsRef) // follow logic similar to typesem.argumentMatchParameter() and statementsem.visitForeach()
+                    {
+                        dsym.storage_class |= STC.nodtor;
+                        exp = exp.expressionSemantic(sc);
+                        Type tp = dsym.type;
+                        Type ta = exp.type;
+                        if (!exp.isLvalue())
+                        {
+                            if (dsym.storage_class & STC.autoref)
+                            {
+                                dsym.storage_class &= ~STC.ref_;
+                                constructInit(isBlit);
+                            }
+                            else
+                            {
+                                .error(dsym.loc, "rvalue `%s` cannot be assigned to `ref %s`", exp.toChars(), dsym.toChars());
+                                exp = ErrorExp.get();
+                            }
+                        }
+                        else if (!ta.constConv(tp))
+                        {
+                            if (dsym.storage_class & STC.autoref)
+                            {
+                                dsym.storage_class &= ~STC.ref_;
+                                constructInit(false);
+                            }
+                            else
+                            {
+                                .error(dsym.loc, "type `%s` cannot be assigned to `ref %s %s`", ta.toChars(), tp.toChars(), dsym.toChars());
+                                exp = ErrorExp.get();
+                            }
+                        }
+                        else
+                        {
+                            constructInit(false);
+                        }
+                    }
                     else
-                        exp = new ConstructExp(dsym.loc, e1, exp);
-                    dsym.canassign++;
-                    exp = exp.expressionSemantic(sc);
-                    dsym.canassign--;
-                    exp = exp.optimize(WANTvalue);
+                    {
+                        constructInit(isBlit);
+                    }
+
                     if (exp.op == EXP.error)
                     {
                         dsym._init = new ErrorInitializer();
                         ei = null;
                     }
                     else
-                        ei.exp = exp;
+                        ei.exp = exp.optimize(WANTvalue);
                 }
                 else
                 {
@@ -1314,7 +1432,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
             else if (dsym.storage_class & (STC.const_ | STC.immutable_ | STC.manifest) ||
                      dsym.type.isConst() || dsym.type.isImmutable() ||
-                     sc.flags & SCOPE.Cfile)
+                     sc.inCfile)
             {
                 /* Because we may need the results of a const declaration in a
                  * subsequent type, such as an array dimension, before semantic2()
@@ -1325,7 +1443,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                  */
                 if (!inferred)
                 {
-                    uint errors = global.errors;
+                    const errors = global.errors;
                     dsym.inuse++;
                     // Bug 20549. Don't try this on modules or packages, syntaxCopy
                     // could crash (inf. recursion) on a mod/pkg referencing itself
@@ -1459,7 +1577,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (dsym.errors)
             return;
 
-        if (!(global.params.bitfields || sc.flags & SCOPE.Cfile))
+        if (!(sc.previews.bitfields || sc.inCfile))
         {
             version (IN_GCC)
                 .error(dsym.loc, "%s `%s` use `-fpreview=bitfields` for bitfield support", dsym.kind, dsym.toPrettyChars);
@@ -1476,7 +1594,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         auto width = dsym.width.expressionSemantic(sc);
         sc = sc.endCTFE();
         width = width.ctfeInterpret();
-        if (!dsym.type.isintegral())
+        if (!dsym.type.isIntegral())
         {
             // C11 6.7.2.1-5
             error(width.loc, "bit-field type `%s` is not an integer type", dsym.type.toChars());
@@ -1507,6 +1625,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(Import imp)
     {
+        timeTraceBeginEvent(TimeTraceEventType.sema1Import);
+        scope (exit) timeTraceEndEvent(TimeTraceEventType.sema1Import, imp);
         static if (LOG)
         {
             printf("Import::semantic('%s') %s\n", imp.toPrettyChars(), imp.id.toChars());
@@ -1547,156 +1667,91 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 imp.mod.checkImportDeprecation(imp.loc, sc);
             }
         }
-        if (imp.mod)
+        if (!imp.mod)
         {
-            // Modules need a list of each imported module
-
-            // if inside a template instantiation, the instantianting
-            // module gets the import.
-            // https://issues.dlang.org/show_bug.cgi?id=17181
-            Module importer = sc._module;
-            if (sc.minst && sc.tinst)
-            {
-                importer = sc.minst;
-                if (!sc.tinst.importedModules.contains(imp.mod))
-                    sc.tinst.importedModules.push(imp.mod);
-            }
-            //printf("%s imports %s\n", importer.toChars(), imp.mod.toChars());
-            if (!importer.aimports.contains(imp.mod))
-                importer.aimports.push(imp.mod);
-
-            if (sc.explicitVisibility)
-                imp.visibility = sc.visibility;
-
-            if (!imp.aliasId && !imp.names.length) // neither a selective nor a renamed import
-            {
-                ScopeDsymbol scopesym = sc.getScopesym();
-
-                if (!imp.isstatic)
-                {
-                    scopesym.importScope(imp.mod, imp.visibility);
-                }
-
-
-                imp.addPackageAccess(scopesym);
-            }
-
-            // if a module has errors it means that parsing has failed.
-            if (!imp.mod.errors)
-                imp.mod.dsymbolSemantic(null);
-
-            if (imp.mod.needmoduleinfo)
-            {
-                //printf("module4 %s because of %s\n", importer.toChars(), imp.mod.toChars());
-                importer.needmoduleinfo = 1;
-            }
-
-            sc = sc.push(imp.mod);
-            sc.visibility = imp.visibility;
-            for (size_t i = 0; i < imp.aliasdecls.length; i++)
-            {
-                AliasDeclaration ad = imp.aliasdecls[i];
-                //printf("\tImport %s alias %s = %s, scope = %p\n", toPrettyChars(), aliases[i].toChars(), names[i].toChars(), ad._scope);
-                Dsymbol sym = imp.mod.search(imp.loc, imp.names[i], SearchOpt.ignorePrivateImports);
-                if (sym)
-                {
-                    import dmd.access : symbolIsVisible;
-                    if (!symbolIsVisible(sc, sym) && !sym.errors)
-                    {
-                        .error(imp.loc, "%s `%s` member `%s` is not visible from module `%s`", imp.mod.kind, imp.mod.toPrettyChars,
-                            imp.names[i].toChars(), sc._module.toChars());
-                        sym.errors = true;
-                    }
-                    ad.dsymbolSemantic(sc);
-                    // If the import declaration is in non-root module,
-                    // analysis of the aliased symbol is deferred.
-                    // Therefore, don't see the ad.aliassym or ad.type here.
-                }
-                else
-                {
-                    Dsymbol s = imp.mod.search_correct(imp.names[i]);
-                    // https://issues.dlang.org/show_bug.cgi?id=23908
-                    // Don't suggest symbols from the importer's module
-                    if (s && s.parent != importer)
-                        .error(imp.loc, "%s `%s` import `%s` not found, did you mean %s `%s`?", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars(), s.kind(), s.toPrettyChars());
-                    else
-                        .error(imp.loc, "%s `%s` import `%s` not found", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars());
-                    ad.type = Type.terror;
-                }
-            }
-            sc = sc.pop();
+            imp.semanticRun = PASS.semanticdone;
+            addImportDep(global.params.moduleDeps, imp, sc._module);
         }
+
+        // Modules need a list of each imported module
+
+        // if inside a template instantiation, the instantianting
+        // module gets the import.
+        // https://issues.dlang.org/show_bug.cgi?id=17181
+        Module importer = sc._module;
+        if (sc.minst && sc.tinst)
+        {
+            importer = sc.minst;
+            if (!sc.tinst.importedModules.contains(imp.mod))
+                sc.tinst.importedModules.push(imp.mod);
+        }
+        //printf("%s imports %s\n", importer.toChars(), imp.mod.toChars());
+        if (!importer.aimports.contains(imp.mod))
+            importer.aimports.push(imp.mod);
+
+        if (sc.explicitVisibility)
+            imp.visibility = sc.visibility;
+
+        if (!imp.aliasId && !imp.names.length) // neither a selective nor a renamed import
+        {
+            ScopeDsymbol scopesym = sc.getScopesym();
+
+            if (!imp.isstatic)
+            {
+                scopesym.importScope(imp.mod, imp.visibility);
+            }
+
+
+            imp.addPackageAccess(scopesym);
+        }
+
+        // if a module has errors it means that parsing has failed.
+        if (!imp.mod.errors)
+            imp.mod.dsymbolSemantic(null);
+
+        if (imp.mod.needmoduleinfo)
+        {
+            //printf("module4 %s because of %s\n", importer.toChars(), imp.mod.toChars());
+            importer.needmoduleinfo = 1;
+        }
+
+        sc = sc.push(imp.mod);
+        sc.visibility = imp.visibility;
+        for (size_t i = 0; i < imp.aliasdecls.length; i++)
+        {
+            AliasDeclaration ad = imp.aliasdecls[i];
+            //printf("\tImport %s alias %s = %s, scope = %p\n", toPrettyChars(), aliases[i].toChars(), names[i].toChars(), ad._scope);
+            Dsymbol sym = imp.mod.search(imp.loc, imp.names[i], SearchOpt.ignorePrivateImports);
+            if (sym)
+            {
+                import dmd.access : symbolIsVisible;
+                if (!symbolIsVisible(sc, sym) && !sym.errors)
+                {
+                    .error(imp.loc, "%s `%s` member `%s` is not visible from module `%s`", imp.mod.kind, imp.mod.toPrettyChars,
+                        imp.names[i].toChars(), sc._module.toChars());
+                    sym.errors = true;
+                }
+                ad.dsymbolSemantic(sc);
+                // If the import declaration is in non-root module,
+                // analysis of the aliased symbol is deferred.
+                // Therefore, don't see the ad.aliassym or ad.type here.
+            }
+            else
+            {
+                Dsymbol s = imp.mod.search_correct(imp.names[i]);
+                // https://issues.dlang.org/show_bug.cgi?id=23908
+                // Don't suggest symbols from the importer's module
+                if (s && s.parent != importer)
+                    .error(imp.loc, "%s `%s` import `%s` not found, did you mean %s `%s`?", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars(), s.kind(), s.toPrettyChars());
+                else
+                    .error(imp.loc, "%s `%s` import `%s` not found", imp.mod.kind, imp.mod.toPrettyChars, imp.names[i].toChars());
+                ad.type = Type.terror;
+            }
+        }
+        sc = sc.pop();
 
         imp.semanticRun = PASS.semanticdone;
-
-        // object self-imports itself, so skip that
-        // https://issues.dlang.org/show_bug.cgi?id=7547
-        // don't list pseudo modules __entrypoint.d, __main.d
-        // https://issues.dlang.org/show_bug.cgi?id=11117
-        // https://issues.dlang.org/show_bug.cgi?id=11164
-        if (global.params.moduleDeps.buffer is null || (imp.id == Id.object && sc._module.ident == Id.object) ||
-            strcmp(sc._module.ident.toChars(), "__main") == 0)
-            return;
-
-        /* The grammar of the file is:
-         *      ImportDeclaration
-         *          ::= BasicImportDeclaration [ " : " ImportBindList ] [ " -> "
-         *      ModuleAliasIdentifier ] "\n"
-         *
-         *      BasicImportDeclaration
-         *          ::= ModuleFullyQualifiedName " (" FilePath ") : " Protection|"string"
-         *              " [ " static" ] : " ModuleFullyQualifiedName " (" FilePath ")"
-         *
-         *      FilePath
-         *          - any string with '(', ')' and '\' escaped with the '\' character
-         */
-        OutBuffer* ob = global.params.moduleDeps.buffer;
-        Module imod = sc._module;
-        if (!global.params.moduleDeps.name)
-            ob.writestring("depsImport ");
-        ob.writestring(imod.toPrettyChars());
-        ob.writestring(" (");
-        escapePath(ob, imod.srcfile.toChars());
-        ob.writestring(") : ");
-        // use visibility instead of sc.visibility because it couldn't be
-        // resolved yet, see the comment above
-        visibilityToBuffer(*ob, imp.visibility);
-        ob.writeByte(' ');
-        if (imp.isstatic)
-        {
-            stcToBuffer(*ob, STC.static_);
-            ob.writeByte(' ');
-        }
-        ob.writestring(": ");
-        foreach (pid; imp.packages)
-        {
-            ob.printf("%s.", pid.toChars());
-        }
-        ob.writestring(imp.id.toString());
-        ob.writestring(" (");
-        if (imp.mod)
-            escapePath(ob, imp.mod.srcfile.toChars());
-        else
-            ob.writestring("???");
-        ob.writeByte(')');
-        foreach (i, name; imp.names)
-        {
-            if (i == 0)
-                ob.writeByte(':');
-            else
-                ob.writeByte(',');
-            Identifier _alias = imp.aliases[i];
-            if (!_alias)
-            {
-                ob.printf("%s", name.toChars());
-                _alias = name;
-            }
-            else
-                ob.printf("%s=%s", _alias.toChars(), name.toChars());
-        }
-        if (imp.aliasId)
-            ob.printf(" -> %s", imp.aliasId.toChars());
-        ob.writenl();
+        addImportDep(global.params.moduleDeps, imp, sc._module);
     }
 
     void attribSemantic(AttribDeclaration ad)
@@ -1706,20 +1761,24 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         ad.semanticRun = PASS.semantic;
         Dsymbols* d = ad.include(sc);
         //printf("\tAttribDeclaration::semantic '%s', d = %p\n",toChars(), d);
-        if (d)
+        if (!d)
         {
-            Scope* sc2 = ad.newScope(sc);
-            bool errors;
-            for (size_t i = 0; i < d.length; i++)
-            {
-                Dsymbol s = (*d)[i];
-                s.dsymbolSemantic(sc2);
-                errors |= s.errors;
-            }
-            ad.errors |= errors;
-            if (sc2 != sc)
-                sc2.pop();
+            ad.semanticRun = PASS.semanticdone;
+            return;
         }
+
+        Scope* sc2 = ad.newScope(sc);
+        bool errors;
+        for (size_t i = 0; i < d.length; i++)
+        {
+            Dsymbol s = (*d)[i];
+            s.dsymbolSemantic(sc2);
+            errors |= s.errors;
+        }
+        ad.errors |= errors;
+        if (sc2 != sc)
+            sc2.pop();
+
         ad.semanticRun = PASS.semanticdone;
     }
 
@@ -1747,7 +1806,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         sc = sc.push();
         sc.stc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.gshared);
         sc.inunion = scd.isunion ? scd : null;
-        sc.flags = 0;
+        sc.resetAllFlags();
         for (size_t i = 0; i < scd.decl.length; i++)
         {
             Dsymbol s = (*scd.decl)[i];
@@ -1781,7 +1840,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     {
         //printf("MixinDeclaration::compileIt(loc = %d) %s\n", cd.loc.linnum, cd.exp.toChars());
         OutBuffer buf;
-        if (expressionsToString(buf, sc, cd.exps))
+        if (expressionsToString(buf, sc, cd.exps, cd.loc, null, true))
             return null;
 
         const errors = global.errors;
@@ -1791,7 +1850,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         const bool doUnittests = global.params.parsingUnittestsRequired();
         auto loc = adjustLocForMixin(str, cd.loc, global.params.mixinOut);
         scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
-        p.transitionIn = global.params.v.vin;
         p.nextToken();
 
         auto d = p.parseDeclDefs(0);
@@ -1904,6 +1962,25 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     {
         if (sa.semanticRun < PASS.semanticdone)
             sa.semanticRun = PASS.semanticdone;
+        else
+            return;
+
+        // https://issues.dlang.org/show_bug.cgi?id=24645
+        // This is a short-circuit. Usually, static assert conditions are evaluated
+        // in semantic2, but it's not uncommon to use this pattern:
+        // ---
+        // version(X)
+        // {}
+        // else
+        //   static assert(false, "unsupported platform");
+        // ---
+        // However, without this short-circuit, the static assert error may get drowned
+        // out by subsequent semantic1 (import) errors. Only short-circuit at module scope though,
+        // inside mixin templates you want an instantiation trace (which you don't get here).
+        if (sc.parent && sc.parent.isModule())
+            if (auto i = sa.exp.isIntegerExp())
+                if (i.toInteger() == 0)
+                    staticAssertFail(sa, sc);
     }
 
     override void visit(DebugSymbol ds)
@@ -1929,6 +2006,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     {
         if (m.semanticRun != PASS.initial)
             return;
+
+        timeTraceBeginEvent(TimeTraceEventType.sema1Module);
+        scope (exit) timeTraceEndEvent(TimeTraceEventType.sema1Module, m);
+
         //printf("+Module::semantic(this = %p, '%s'): parent = %p\n", this, toChars(), parent);
         m.semanticRun = PASS.semantic;
         // Note that modules get their own scope, from scratch.
@@ -2141,7 +2222,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         tm.argsym.parent = scy.parent;
         Scope* argscope = scy.push(tm.argsym);
 
-        uint errorsave = global.errors;
+        const errorsave = global.errors;
 
         // Declare each template parameter as an alias for the argument type
         tm.declareParameters(argscope);
@@ -2286,7 +2367,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         ns.semanticRun = PASS.semantic;
         ns.parent = sc.parent;
         // Link does not matter here, if the UDA is present it will error
-        UserAttributeDeclaration.checkGNUABITag(ns, LINK.cpp);
+        checkGNUABITag(ns, LINK.cpp);
 
         if (!ns.members)
         {
@@ -2326,7 +2407,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(CtorDeclaration ctd)
     {
-        //printf("CtorDeclaration::semantic() %s\n", toChars());
+        //printf("CtorDeclaration::semantic() %p %s\n", ctd, ctd.toChars());
         if (ctd.semanticRun >= PASS.semanticdone)
             return;
         if (ctd._scope)
@@ -2359,6 +2440,24 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         sc.stc &= ~STC.static_; // not a static constructor
 
         funcDeclarationSemantic(sc, ctd);
+        // Check short constructor: this() => expr;
+        if (ctd.fbody)
+        {
+            if (auto s = ctd.fbody.isExpStatement())
+            {
+                if (s.exp)
+                {
+                    auto ce = s.exp.isCallExp();
+                    // check this/super before semantic
+                    if (!ce || (!ce.e1.isThisExp() && !ce.e1.isSuperExp()))
+                    {
+                        s.exp = s.exp.expressionSemantic(sc);
+                        if (s.exp.type.ty != Tvoid)
+                            error(s.loc, "can only return void expression, `this` call or `super` call from constructor");
+                    }
+                }
+            }
+        }
 
         sc.pop();
 
@@ -2409,12 +2508,17 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
             else if ((dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg)))
             {
-                //printf("tf: %s\n", tf.toChars());
+                //printf("tf: %s\n", toChars(tf));
                 auto param = tf.parameterList[0];
-                if (param.storageClass & STC.ref_ && param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())
+                if (param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())
                 {
-                    //printf("copy constructor\n");
-                    ctd.isCpCtor = true;
+                    //printf("copy constructor %p\n", ctd);
+                    assert(!ctd.isCpCtor && !ctd.isMoveCtor);
+                    if (param.storageClass & STC.ref_)
+                        ctd.isCpCtor = true;            // copy constructor
+                    else
+                        ctd.isMoveCtor = true;          // move constructor
+                    assert(!(ctd.isCpCtor && ctd.isMoveCtor));
                 }
             }
         }
@@ -2528,48 +2632,51 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         sc.pop();
     }
 
-    override void visit(StaticCtorDeclaration scd)
+    void visitStaticCDtorDeclaration(FuncDeclaration sd, bool isDestructor)
     {
-        //printf("StaticCtorDeclaration::semantic()\n");
-        if (scd.semanticRun >= PASS.semanticdone)
+        if (sd.semanticRun >= PASS.semanticdone)
             return;
-        if (scd._scope)
+        if (sd._scope)
         {
-            sc = scd._scope;
-            scd._scope = null;
+            sc = sd._scope;
+            sd._scope = null;
         }
-
-        scd.parent = sc.parent;
-        Dsymbol p = scd.parent.pastMixin();
+        sd.parent = sc.parent;
+        Dsymbol p = sd.parent.pastMixin();
+        const bool isShared = !!(sd.isSharedStaticDtorDeclaration() || sd.isSharedStaticCtorDeclaration());
+        const(char)* what = isDestructor ? "destructor" : "constructor";
         if (!p.isScopeDsymbol())
         {
-            const(char)* s = (scd.isSharedStaticCtorDeclaration() ? "shared " : "");
-            error(scd.loc, "`%sstatic` constructor can only be member of module/aggregate/template, not %s `%s`", s, p.kind(), p.toChars());
-            scd.type = Type.terror;
-            scd.errors = true;
+            const(char)* s = isShared ? "shared " : "";
+            error(sd.loc, "`%sstatic` %s can only be member of module/aggregate/template, not %s `%s`", s, what, p.kind(), p.toChars());
+            sd.type = Type.terror;
+            sd.errors = true;
             return;
         }
-        if (!scd.type)
-            scd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, scd.storage_class);
 
-        /* If the static ctor appears within a template instantiation,
+        if (!sd.type)
+            sd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, sd.storage_class);
+
+        /* If the static [dc]tor appears within a template instantiation,
          * it could get called multiple times by the module constructors
          * for different modules. Thus, protect it with a gate.
          */
-        if (scd.isInstantiated() && scd.semanticRun < PASS.semantic)
+        if (sd.isInstantiated() && sd.semanticRun < PASS.semantic)
         {
             /* Add this prefix to the constructor:
              * ```
              * static int gate;
-             * if (++gate != 1) return;
+             * if ([--|++]gate != [0|1]) return; // dependant on ctor/dtor
              * ```
              * or, for shared constructor:
              * ```
              * shared int gate;
-             * if (core.atomic.atomicOp!"+="(gate, 1) != 1) return;
+             * enum op  = isDestructor ? "-=" : "+=";
+             * enum cmp = isDestructor ? 0 : 1;
+             * if (core.atomic.atomicOp!op(gate, 1) != cmp) return;
              * ```
              */
-            const bool isShared = !!scd.isSharedStaticCtorDeclaration();
+
             auto v = new VarDeclaration(Loc.initial, Type.tint32, Id.gate, null);
             v.storage_class = STC.temp | STC.static_ | (isShared ? STC.shared_ : 0);
 
@@ -2580,49 +2687,56 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             Expression e;
             if (isShared)
             {
-                e = doAtomicOp("+=", v.ident, IntegerExp.literal!(1));
+                e = doAtomicOp(isDestructor ? "-=" : "+=", v.ident, IntegerExp.literal!(1));
                 if (e is null)
                 {
-                    .error(scd.loc, "%s `%s` shared static constructor within a template require `core.atomic : atomicOp` to be present", scd.kind, scd.toPrettyChars);
+                    .error(sd.loc, "%s `%s` shared static %s within a template require `core.atomic : atomicOp` to be present", sd.kind, sd.toPrettyChars, what);
                     return;
                 }
             }
             else
             {
+                IntegerExp one = isDestructor ? IntegerExp.literal!(-1) : IntegerExp.literal!(1);
                 e = new AddAssignExp(
-                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), IntegerExp.literal!1);
+                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), one);
             }
-
-            e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!1);
+            IntegerExp cmp = isDestructor ? IntegerExp.literal!0 : IntegerExp.literal!1;
+            e = new EqualExp(EXP.notEqual, Loc.initial, e, cmp);
             s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
 
             sa.push(s);
-            if (scd.fbody)
-                sa.push(scd.fbody);
+            if (sd.fbody)
+                sa.push(sd.fbody);
 
-            scd.fbody = new CompoundStatement(Loc.initial, sa);
+            sd.fbody = new CompoundStatement(Loc.initial, sa);
+            if (isDestructor)
+                (cast(StaticDtorDeclaration)sd).vgate = v;
         }
-
         const LINK save = sc.linkage;
         if (save != LINK.d)
         {
-            const(char)* s = (scd.isSharedStaticCtorDeclaration() ? "shared " : "");
-            deprecation(scd.loc, "`%sstatic` constructor can only be of D linkage", s);
+            const(char)* s = isShared ? "shared " : "";
+            deprecation(sd.loc, "`%sstatic` %s can only be of D linkage", s, what);
             // Just correct it
             sc.linkage = LINK.d;
         }
-        funcDeclarationSemantic(sc, scd);
+        funcDeclarationSemantic(sc, sd);
         sc.linkage = save;
 
         // We're going to need ModuleInfo
-        Module m = scd.getModule();
+        Module m = sd.getModule();
         if (!m)
             m = sc._module;
         if (m)
         {
             m.needmoduleinfo = 1;
-            //printf("module1 %s needs moduleinfo\n", m.toChars());
+            //printf("module2 %s needs moduleinfo\n", m.toChars());
         }
+    }
+    override void visit(StaticCtorDeclaration scd)
+    {
+        //printf("StaticCtorDeclaration::semantic()\n");
+        visitStaticCDtorDeclaration(scd, false);
 
         foreachUda(scd, sc, (Expression e) {
             import dmd.attrib : isEnumAttribute;
@@ -2645,100 +2759,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(StaticDtorDeclaration sdd)
     {
-        if (sdd.semanticRun >= PASS.semanticdone)
-            return;
-        if (sdd._scope)
-        {
-            sc = sdd._scope;
-            sdd._scope = null;
-        }
-
-        sdd.parent = sc.parent;
-        Dsymbol p = sdd.parent.pastMixin();
-        if (!p.isScopeDsymbol())
-        {
-            const(char)* s = (sdd.isSharedStaticDtorDeclaration() ? "shared " : "");
-            error(sdd.loc, "`%sstatic` destructor can only be member of module/aggregate/template, not %s `%s`", s, p.kind(), p.toChars());
-            sdd.type = Type.terror;
-            sdd.errors = true;
-            return;
-        }
-        if (!sdd.type)
-            sdd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, sdd.storage_class);
-
-        /* If the static ctor appears within a template instantiation,
-         * it could get called multiple times by the module constructors
-         * for different modules. Thus, protect it with a gate.
-         */
-        if (sdd.isInstantiated() && sdd.semanticRun < PASS.semantic)
-        {
-            /* Add this prefix to the constructor:
-             * ```
-             * static int gate;
-             * if (--gate != 0) return;
-             * ```
-             * or, for shared constructor:
-             * ```
-             * shared int gate;
-             * if (core.atomic.atomicOp!"-="(gate, 1) != 0) return;
-             * ```
-             */
-            const bool isShared = !!sdd.isSharedStaticDtorDeclaration();
-            auto v = new VarDeclaration(Loc.initial, Type.tint32, Id.gate, null);
-            v.storage_class = STC.temp | STC.static_ | (isShared ? STC.shared_ : 0);
-
-            auto sa = new Statements();
-            Statement s = new ExpStatement(Loc.initial, v);
-            sa.push(s);
-
-            Expression e;
-            if (isShared)
-            {
-                e = doAtomicOp("-=", v.ident, IntegerExp.literal!(1));
-                if (e is null)
-                {
-                    .error(sdd.loc, "%s `%s` shared static destructo within a template require `core.atomic : atomicOp` to be present", sdd.kind, sdd.toPrettyChars);
-                    return;
-                }
-            }
-            else
-            {
-                e = new AddAssignExp(
-                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), IntegerExp.literal!(-1));
-            }
-
-            e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!0);
-            s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
-
-            sa.push(s);
-            if (sdd.fbody)
-                sa.push(sdd.fbody);
-
-            sdd.fbody = new CompoundStatement(Loc.initial, sa);
-
-            sdd.vgate = v;
-        }
-
-        const LINK save = sc.linkage;
-        if (save != LINK.d)
-        {
-            const(char)* s = (sdd.isSharedStaticDtorDeclaration() ? "shared " : "");
-            deprecation(sdd.loc, "`%sstatic` destructor can only be of D linkage", s);
-            // Just correct it
-            sc.linkage = LINK.d;
-        }
-        funcDeclarationSemantic(sc, sdd);
-        sc.linkage = save;
-
-        // We're going to need ModuleInfo
-        Module m = sdd.getModule();
-        if (!m)
-            m = sc._module;
-        if (m)
-        {
-            m.needmoduleinfo = 1;
-            //printf("module2 %s needs moduleinfo\n", m.toChars());
-        }
+        visitStaticCDtorDeclaration(sdd, true);
     }
 
     override void visit(InvariantDeclaration invd)
@@ -2775,7 +2796,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         sc = sc.push();
         sc.stc &= ~STC.static_; // not a static invariant
         sc.stc |= STC.const_; // invariant() is always const
-        sc.flags = (sc.flags & ~SCOPE.contract) | SCOPE.invariant_;
+        sc.contract = Contract.invariant_;
         sc.linkage = LINK.d;
 
         funcDeclarationSemantic(sc, invd);
@@ -2852,7 +2873,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (sd.semanticRun >= PASS.semanticdone)
             return;
-        int errors = global.errors;
+        const errors = global.errors;
 
         //printf("+StructDeclaration::semantic(this=%p, '%s', sizeok = %d)\n", sd, sd.toPrettyChars(), sd.sizeok);
         Scope* scx = null;
@@ -2919,7 +2940,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             return;
 
         sd.semanticRun = PASS.semantic;
-        UserAttributeDeclaration.checkGNUABITag(sd, sc.linkage);
+        checkGNUABITag(sd, sc.linkage);
 
         if (!sd.members) // if opaque declaration
         {
@@ -2988,13 +3009,42 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         buildDtors(sd, sc2);
 
-        sd.hasCopyCtor = buildCopyCtor(sd, sc2);
+        bool hasCopyCtor;
+        bool hasMoveCtor;
+        bool needCopyCtor;
+        bool needMoveCtor;
+        needCopyOrMoveCtor(sd, hasCopyCtor, hasMoveCtor, needCopyCtor, needMoveCtor);
+        //printf("%s hasCopy %d hasMove %d needCopy %d needMove %d\n", sd.toChars(), hasCopyCtor, hasMoveCtor, needCopyCtor, needMoveCtor);
+
+        /* When generating a move ctor, generate a copy ctor too, otherwise
+         *  https://github.com/s-ludwig/taggedalgebraic/issues/75
+         */
+        if (0 && needMoveCtor && !hasCopyCtor)
+        {
+            needCopyCtor = true;
+        }
+
+        if (needCopyCtor)
+        {
+            assert(hasCopyCtor == false);
+            buildCopyOrMoveCtor(sd, sc2, false); // build copy constructor
+            hasCopyCtor = true;
+        }
+        if (needMoveCtor)
+        {
+            assert(hasMoveCtor == false);
+            buildCopyOrMoveCtor(sd, sc2, true); // build move constructor
+            hasMoveCtor = true;
+        }
+        sd.hasCopyCtor = hasCopyCtor;
+        sd.hasMoveCtor = hasMoveCtor;
+
         sd.postblit = buildPostBlit(sd, sc2);
 
         buildOpAssign(sd, sc2);
         buildOpEquals(sd, sc2);
 
-        if (!(sc2.flags & SCOPE.Cfile) &&
+        if (!sc2.inCfile &&
             global.params.useTypeInfo && Type.dtypeinfo)  // these functions are used for TypeInfo
         {
             sd.xeq = buildXopEquals(sd, sc2);
@@ -3014,7 +3064,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             Dsymbol scall = sd.search(Loc.initial, Id.call);
             if (scall)
             {
-                uint xerrors = global.startGagging();
+                const xerrors = global.startGagging();
                 sc = sc.push();
                 sc.tinst = null;
                 sc.minst = null;
@@ -3099,7 +3149,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (cldec.semanticRun >= PASS.semanticdone)
             return;
-        int errors = global.errors;
+        const errors = global.errors;
 
         //printf("+ClassDeclaration.dsymbolSemantic(%s), type = %p, sizeok = %d, this = %p\n", toChars(), type, sizeok, this);
 
@@ -3159,7 +3209,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             return;
         }
         cldec.semanticRun = PASS.semantic;
-        UserAttributeDeclaration.checkGNUABITag(cldec, sc.linkage);
+        checkGNUABITag(cldec, sc.linkage);
         checkMustUseReserved(cldec);
 
         if (cldec.baseok < Baseok.done)
@@ -3379,8 +3429,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             {
                 void badObjectDotD()
                 {
-                    .error(cldec.loc, "%s `%s` missing or corrupt object.d", cldec.kind, cldec.toPrettyChars);
-                    fatal();
+                    ObjectNotFound(cldec.loc, cldec.ident);
                 }
 
                 if (!cldec.object || cldec.object.errors)
@@ -3763,7 +3812,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         //printf("InterfaceDeclaration.dsymbolSemantic(%s), type = %p\n", toChars(), type);
         if (idec.semanticRun >= PASS.semanticdone)
             return;
-        int errors = global.errors;
+        const errors = global.errors;
 
         //printf("+InterfaceDeclaration.dsymbolSemantic(%s), type = %p\n", toChars(), type);
 
@@ -3872,7 +3921,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (!idec.baseclasses.length && sc.linkage == LINK.cpp)
                 idec.classKind = ClassKind.cpp;
             idec.cppnamespace = sc.namespace;
-            UserAttributeDeclaration.checkGNUABITag(idec, sc.linkage);
+            checkGNUABITag(idec, sc.linkage);
             checkMustUseReserved(idec);
 
             if (sc.linkage == LINK.objc)
@@ -4093,7 +4142,7 @@ private extern(C++) class AddMemberVisitor : Visitor
     Scope* sc;
     ScopeDsymbol sds;
 
-    this(Scope* sc, ScopeDsymbol sds)
+    this(Scope* sc, ScopeDsymbol sds) @safe
     {
         this.sc = sc;
         this.sds = sds;
@@ -4131,7 +4180,7 @@ private extern(C++) class AddMemberVisitor : Visitor
             }
 
             // If using C tag/prototype/forward declaration rules
-            if (sc.flags & SCOPE.Cfile && !dsym.isImport())
+            if (sc.inCfile && !dsym.isImport())
             {
                 if (handleTagSymbols(*sc, dsym, s2, sds))
                     return;
@@ -4152,7 +4201,7 @@ private extern(C++) class AddMemberVisitor : Visitor
         if (sds.isAggregateDeclaration() || sds.isEnumDeclaration())
         {
             if (dsym.ident == Id.__sizeof ||
-                !(sc && sc.flags & SCOPE.Cfile) && (dsym.ident == Id.__xalignof || dsym.ident == Id._mangleof))
+                !(sc && sc.inCfile) && (dsym.ident == Id.__xalignof || dsym.ident == Id._mangleof))
             {
                 .error(dsym.loc, "%s `%s` `.%s` property cannot be redefined", dsym.kind, dsym.toPrettyChars, dsym.ident.toChars());
                 dsym.errors = true;
@@ -4428,7 +4477,7 @@ private extern(C++) class AddMemberVisitor : Visitor
  */
 void addEnumMembersToSymtab(EnumDeclaration ed, Scope* sc, ScopeDsymbol sds)
 {
-    const bool isCEnum = (sc.flags & SCOPE.Cfile) != 0; // it's an ImportC enum
+    const bool isCEnum = sc.inCfile; // it's an ImportC enum
     //printf("addEnumMembersToSymtab(ed: %s added: %d Cfile: %d)\n", ed.toChars(), ed.added, isCEnum);
     if (ed.added)
         return;
@@ -4459,6 +4508,8 @@ void addEnumMembersToSymtab(EnumDeclaration ed, Scope* sc, ScopeDsymbol sds)
                  * the enum members to both symbol tables.
                  */
                 em.addMember(sc, ed);   // add em to ed's symbol table
+                if (em.errors)
+                    return;
                 em.addMember(sc, sds);  // add em to symbol table that ed is in
                 em.parent = ed; // restore it after previous addMember() changed it
             }
@@ -4724,6 +4775,15 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
                     visit(cast(Dsymbol)sds);
                 }
 
+                override void visit(StructDeclaration sd)
+                {
+                    // need to visit auto-generated methods as well
+                    if (sd.xeq) visit(sd.xeq);
+                    if (sd.xcmp) visit(sd.xcmp);
+                    if (sd.xhash) visit(sd.xhash);
+                    visit(cast(ScopeDsymbol)sd);
+                }
+
                 override void visit(AttribDeclaration ad)
                 {
                     ad.include(null).foreachDsymbol( s => s.accept(this) );
@@ -4771,7 +4831,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
         printf("\timplement template instance %s '%s'\n", tempdecl.parent.toChars(), tempinst.toChars());
         printf("\ttempdecl %s\n", tempdecl.toChars());
     }
-    uint errorsave = global.errors;
+    const errorsave = global.errors;
 
     tempinst.inst = tempinst;
     tempinst.parent = tempinst.enclosing ? tempinst.enclosing : tempdecl.parent;
@@ -4964,7 +5024,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
     if (global.errors != errorsave)
         goto Laftersemantic;
 
-    if ((sc.func || (sc.flags & SCOPE.fullinst)) && !tempinst.tinst)
+    if ((sc.func || sc.fullinst) && !tempinst.tinst)
     {
         /* If a template is instantiated inside function, the whole instantiation
          * should be done at that position. But, immediate running semantic3 of
@@ -5211,7 +5271,7 @@ void aliasInstanceSemantic(TemplateInstance tempinst, Scope* sc, TemplateDeclara
 // function used to perform semantic on AliasDeclaration
 void aliasSemantic(AliasDeclaration ds, Scope* sc)
 {
-    //printf("AliasDeclaration::semantic() %s\n", ds.toChars());
+    //printf("AliasDeclaration::semantic() %s %p\n", ds.toChars(), ds.aliassym);
 
     // as DsymbolSemanticVisitor::visit(AliasDeclaration), in case we're called first.
     // see https://issues.dlang.org/show_bug.cgi?id=21001
@@ -5295,6 +5355,26 @@ void aliasSemantic(AliasDeclaration ds, Scope* sc)
     // Detect `alias sym = sym;` to prevent creating loops in overload overnext lists.
     if (auto tident = ds.type.isTypeIdentifier())
     {
+        if (sc.hasEdition(Edition.v2024) && tident.idents.length)
+        {
+            alias mt = tident;
+            Dsymbol pscopesym;
+            Dsymbol s = sc.search(ds.loc, mt.ident, pscopesym);
+            // detect `alias a = var1.member_var;` which confusingly resolves to
+            // `typeof(var1).member_var`, which can be valid inside the aggregate type
+            if (s && s.isVarDeclaration() &&
+                mt.ident != Id.This && mt.ident != Id._super)
+            {
+                s = tident.toDsymbol(sc);
+                // don't error for `var1.static_symbol`
+                if (s && s.needThis()) {
+                    error(ds.loc, "cannot alias %s member `%s` of variable `%s`",
+                        s.kind(), s.toChars(), mt.ident.toChars());
+                    errorSupplemental(ds.loc, "Use `typeof(%s)` instead to preserve behaviour",
+                        mt.ident.toChars());
+                }
+            }
+        }
         // Selective imports are allowed to alias to the same name `import mod : sym=sym`.
         if (!ds._import)
         {
@@ -5916,67 +5996,6 @@ private void writeMixin(const(char)[] s, ref const Loc loc, ref int lines, ref O
     ++lines;
 }
 
-/**
- * Check signature of `pragma(printf)` function, print error if invalid.
- *
- * printf/scanf-like functions must be of the form:
- *    extern (C/C++) T printf([parameters...], const(char)* format, ...);
- * or:
- *    extern (C/C++) T vprintf([parameters...], const(char)* format, va_list);
- *
- * Params:
- *      funcdecl = function to check
- *      f = function type
- *      sc = scope
- */
-void checkPrintfScanfSignature(FuncDeclaration funcdecl, TypeFunction f, Scope* sc)
-{
-    static bool isPointerToChar(Parameter p)
-    {
-        if (auto tptr = p.type.isTypePointer())
-        {
-            return tptr.next.ty == Tchar;
-        }
-        return false;
-    }
-
-    bool isVa_list(Parameter p)
-    {
-        return p.type.equals(target.va_listType(funcdecl.loc, sc));
-    }
-
-    const nparams = f.parameterList.length;
-    const p = (funcdecl.printf ? Id.printf : Id.scanf).toChars();
-    if (!(f.linkage == LINK.c || f.linkage == LINK.cpp))
-    {
-        .error(funcdecl.loc, "`pragma(%s)` function `%s` must have `extern(C)` or `extern(C++)` linkage,"
-            ~" not `extern(%s)`",
-            p, funcdecl.toChars(), f.linkage.linkageToChars());
-    }
-    if (f.parameterList.varargs == VarArg.variadic)
-    {
-        if (!(nparams >= 1 && isPointerToChar(f.parameterList[nparams - 1])))
-        {
-            .error(funcdecl.loc, "`pragma(%s)` function `%s` must have"
-                ~ " signature `%s %s([parameters...], const(char)*, ...)` not `%s`",
-                p, funcdecl.toChars(), f.next.toChars(), funcdecl.toChars(), funcdecl.type.toChars());
-        }
-    }
-    else if (f.parameterList.varargs == VarArg.none)
-    {
-        if(!(nparams >= 2 && isPointerToChar(f.parameterList[nparams - 2]) &&
-            isVa_list(f.parameterList[nparams - 1])))
-            .error(funcdecl.loc, "`pragma(%s)` function `%s` must have"~
-                " signature `%s %s([parameters...], const(char)*, va_list)`",
-                p, funcdecl.toChars(), f.next.toChars(), funcdecl.toChars());
-    }
-    else
-    {
-        .error(funcdecl.loc, "`pragma(%s)` function `%s` must have C-style variadic `...` or `va_list` parameter",
-            p, funcdecl.toChars());
-    }
-}
-
 /*********************************************
  * Search for ident as member of d.
  * Params:
@@ -6034,7 +6053,7 @@ private extern(C++) class SearchVisitor : Visitor
     SearchOptFlags flags;
     Dsymbol result;
 
-    this(const ref Loc loc, Identifier ident, SearchOptFlags flags)
+    this(const ref Loc loc, Identifier ident, SearchOptFlags flags) @safe
     {
         this.loc = loc;
         this.ident = ident;
@@ -6511,7 +6530,7 @@ private extern(C++) class SearchVisitor : Visitor
             return setResult(m.searchCacheSymbol);
         }
 
-        uint errors = global.errors;
+        const errors = global.errors;
 
         m.insearch = true;
         visit(cast(ScopeDsymbol)m);
@@ -6610,7 +6629,7 @@ private extern(C++) class SearchVisitor : Visitor
             s = b.sym.search(loc, ident, flags);
             if (!s)
                 continue;
-            else if (s == cd) // happens if s is nested in this and derives from this
+            if (s == cd) // happens if s is nested in this and derives from this
                 s = null;
             else if (!(flags & SearchOpt.ignoreVisibility) && !(s.visible().kind == Visibility.Kind.protected_) && !symbolIsVisible(cd, s))
                 s = null;
@@ -6640,7 +6659,7 @@ private extern(C++) class SetScopeVisitor : Visitor
     alias visit = typeof(super).visit;
     Scope* sc;
 
-    this(Scope* sc)
+    this(Scope* sc) @safe
     {
         this.sc = sc;
     }
@@ -6783,7 +6802,7 @@ extern(C++) class ImportAllVisitor : Visitor
     alias visit = typeof(super).visit;
     Scope* sc;
 
-    this(Scope* sc)
+    this(Scope* sc) @safe
     {
         this.sc = sc;
     }
@@ -6862,7 +6881,7 @@ extern(C++) class ImportAllVisitor : Visitor
              (*m.members)[0].ident != Id.object ||
              (*m.members)[0].isImport() is null))
         {
-            auto im = new Import(Loc.initial, null, Id.object, null, 0);
+            auto im = new Import(m.loc, null, Id.object, null, 0);
             m.members.shift(im);
         }
         if (!m.symtab)
@@ -6949,7 +6968,7 @@ extern (D) bool load(Import imp, Scope* sc)
             {
                 if (p.isPkgMod == PKG.unknown)
                 {
-                    uint preverrors = global.errors;
+                    const preverrors = global.errors;
                     imp.mod = Module.load(imp.loc, imp.packages, imp.id);
                     if (!imp.mod)
                         p.isPkgMod = PKG.package_;
@@ -7026,7 +7045,7 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
     FieldState* fieldState;
     bool isunion;
 
-    this(AggregateDeclaration ad, FieldState* fieldState, bool isunion)
+    this(AggregateDeclaration ad, FieldState* fieldState, bool isunion) @safe
     {
         this.ad = ad;
         this.fieldState = fieldState;
@@ -7115,7 +7134,7 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
         assert(sz != SIZE_INVALID && sz < uint.max);
         uint memsize = cast(uint)sz;                // size of member
         uint memalignsize = target.fieldalign(t);   // size of member for alignment purposes
-        vd.offset = placeField(
+        vd.offset = placeField(vd.loc,
             fieldState.offset,
             memsize, memalignsize, vd.alignment,
             ad.structsize, ad.alignsize,
@@ -7162,12 +7181,19 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             error(bfd.loc, "bit field width %d is larger than type", bfd.fieldWidth);
 
         const style = target.c.bitFieldStyle;
+        if (style != TargetC.BitFieldStyle.MS && style != TargetC.BitFieldStyle.Gcc_Clang)
+            assert(0, "unsupported bit-field style");
+
+        const isMicrosoftStyle = style == TargetC.BitFieldStyle.MS;
+        const contributesToAggregateAlignment = target.c.contributesToAggregateAlignment(bfd);
 
         void startNewField()
         {
             if (log) printf("startNewField()\n");
             uint alignsize;
-            if (style == TargetC.BitFieldStyle.Gcc_Clang)
+            if (isMicrosoftStyle)
+               alignsize = memsize; // not memalignsize
+            else
             {
                 if (bfd.fieldWidth > 32)
                     alignsize = memalignsize;
@@ -7178,15 +7204,13 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
                 else
                     alignsize = 1;
             }
-            else
-                alignsize = memsize; // not memalignsize
 
             uint dummy;
-            bfd.offset = placeField(
+            bfd.offset = placeField(bfd.loc,
                 fieldState.offset,
                 memsize, alignsize, bfd.alignment,
                 ad.structsize,
-                (anon && style == TargetC.BitFieldStyle.Gcc_Clang) ? dummy : ad.alignsize,
+                contributesToAggregateAlignment ? ad.alignsize : dummy,
                 isunion);
 
             fieldState.inFlight = true;
@@ -7195,64 +7219,30 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             fieldState.fieldSize = memsize;
         }
 
-        if (style == TargetC.BitFieldStyle.Gcc_Clang)
-        {
-            if (bfd.fieldWidth == 0)
-            {
-                if (!isunion)
-                {
-                    // Use type of zero width field to align to next field
-                    fieldState.offset = (fieldState.offset + memalignsize - 1) & ~(memalignsize - 1);
-                    ad.structsize = fieldState.offset;
-                }
+        if (ad.alignsize == 0)
+            ad.alignsize = 1;
+        if (!isMicrosoftStyle && contributesToAggregateAlignment && ad.alignsize < memalignsize)
+            ad.alignsize = memalignsize;
 
-                fieldState.inFlight = false;
-                return;
+        if (bfd.fieldWidth == 0)
+        {
+            if (!isMicrosoftStyle && !isunion)
+            {
+                // Use type of zero width field to align to next field
+                fieldState.offset = (fieldState.offset + memalignsize - 1) & ~(memalignsize - 1);
+                ad.structsize = fieldState.offset;
+            }
+            else if (isMicrosoftStyle && fieldState.inFlight && !isunion)
+            {
+                // documentation says align to next int
+                //const alsz = cast(uint)Type.tint32.size();
+                const alsz = memsize; // but it really does this
+                fieldState.offset = (fieldState.offset + alsz - 1) & ~(alsz - 1);
+                ad.structsize = fieldState.offset;
             }
 
-            if (ad.alignsize == 0)
-                ad.alignsize = 1;
-            if (!anon &&
-                  ad.alignsize < memalignsize)
-                ad.alignsize = memalignsize;
-        }
-        else if (style == TargetC.BitFieldStyle.MS)
-        {
-            if (ad.alignsize == 0)
-                ad.alignsize = 1;
-            if (bfd.fieldWidth == 0)
-            {
-                if (fieldState.inFlight && !isunion)
-                {
-                    // documentation says align to next int
-                    //const alsz = cast(uint)Type.tint32.size();
-                    const alsz = memsize; // but it really does this
-                    fieldState.offset = (fieldState.offset + alsz - 1) & ~(alsz - 1);
-                    ad.structsize = fieldState.offset;
-                }
-
-                fieldState.inFlight = false;
-                return;
-            }
-        }
-        else if (style == TargetC.BitFieldStyle.DM)
-        {
-            if (anon && bfd.fieldWidth && (!fieldState.inFlight || fieldState.bitOffset == 0))
-                return;  // this probably should be a bug in DMC
-            if (ad.alignsize == 0)
-                ad.alignsize = 1;
-            if (bfd.fieldWidth == 0)
-            {
-                if (fieldState.inFlight && !isunion)
-                {
-                    const alsz = memsize;
-                    fieldState.offset = (fieldState.offset + alsz - 1) & ~(alsz - 1);
-                    ad.structsize = fieldState.offset;
-                }
-
-                fieldState.inFlight = false;
-                return;
-            }
+            fieldState.inFlight = false;
+            return;
         }
 
         if (!fieldState.inFlight)
@@ -7260,12 +7250,14 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             //printf("not in flight\n");
             startNewField();
         }
-        else if (style == TargetC.BitFieldStyle.Gcc_Clang)
+        else if (!isMicrosoftStyle)
         {
-            // If the bit-field spans more units of alignment than its type,
-            // start a new field at the next alignment boundary.
-            if (fieldState.bitOffset == fieldState.fieldSize * 8 &&
-                fieldState.bitOffset + bfd.fieldWidth > memalignsize * 8)
+            // If the bit-field spans more units of alignment than its type
+            // and is at the alignment boundary, start a new field at the
+            // next alignment boundary. This affects when offsetof reports
+            // a higher number and bitoffsetof starts at zero again.
+            if (fieldState.bitOffset % (memalignsize * 8) == 0 &&
+                fieldState.bitOffset + bfd.fieldWidth > memsize * 8)
             {
                 if (log) printf("more units of alignment than its type\n");
                 startNewField();        // the bit field is full
@@ -7273,18 +7265,17 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             else
             {
                 // if alignment boundary is crossed
-                uint start = fieldState.fieldOffset * 8 + fieldState.bitOffset;
+                uint start = (fieldState.fieldOffset * 8 + fieldState.bitOffset) % (memalignsize * 8);
                 uint end   = start + bfd.fieldWidth;
                 //printf("%s start: %d end: %d memalignsize: %d\n", ad.toChars(), start, end, memalignsize);
-                if (start / (memalignsize * 8) != (end - 1) / (memalignsize * 8))
+                if (start / (memsize * 8) != (end - 1) / (memsize * 8))
                 {
                     if (log) printf("alignment is crossed\n");
                     startNewField();
                 }
             }
         }
-        else if (style == TargetC.BitFieldStyle.DM ||
-                 style == TargetC.BitFieldStyle.MS)
+        else
         {
             if (memsize != fieldState.fieldSize ||
                 fieldState.bitOffset + bfd.fieldWidth > fieldState.fieldSize * 8)
@@ -7293,16 +7284,16 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
                 startNewField();
             }
         }
-        else
-            assert(0);
 
         bfd.offset = fieldState.fieldOffset;
         bfd.bitOffset = fieldState.bitOffset;
 
         const pastField = bfd.bitOffset + bfd.fieldWidth;
-        if (style == TargetC.BitFieldStyle.Gcc_Clang)
+        if (isMicrosoftStyle)
+            fieldState.fieldSize = memsize;
+        else
         {
-            auto size = (pastField + 7) / 8;
+            const size = (pastField + 7) / 8;
             fieldState.fieldSize = size;
             //printf(" offset: %d, size: %d\n", offset, size);
             if (isunion)
@@ -7314,8 +7305,6 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             else
                 ad.structsize = bfd.offset + size;
         }
-        else
-            fieldState.fieldSize = memsize;
         //printf("at end: ad.structsize = %d\n", cast(int)ad.structsize);
         //print(fieldState);
 
@@ -7402,7 +7391,7 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             /* Given the anon 'member's size and alignment,
              * go ahead and place it.
              */
-            anond.anonoffset = placeField(
+            anond.anonoffset = placeField(anond.loc,
                 fieldState.offset,
                 anond.anonstructsize, anond.anonalignsize, alignment,
                 ad.structsize, ad.alignsize,
@@ -7418,4 +7407,554 @@ private extern(C++) class SetFieldOffsetVisitor : Visitor
             }
         }
     }
+}
+
+extern(D) Scope* newScope(Dsymbol d, Scope* sc)
+{
+    scope nsv = new NewScopeVisitor(sc);
+    d.accept(nsv);
+    return nsv.sc;
+}
+
+private extern(C++) class NewScopeVisitor : Visitor
+{
+    alias visit = typeof(super).visit;
+    Scope* sc;
+    this(Scope* sc)
+    {
+        this.sc = sc;
+    }
+
+    /****************************************
+     * A hook point to supply scope for members.
+     * addMember, setScope, importAll, semantic, semantic2 and semantic3 will use this.
+     */
+    override void visit(AttribDeclaration dc){}
+
+    override void visit(StorageClassDeclaration swt)
+    {
+        StorageClass scstc = sc.stc;
+        /* These sets of storage classes are mutually exclusive,
+         * so choose the innermost or most recent one.
+         */
+        if (swt.stc & (STC.auto_ | STC.scope_ | STC.static_ | STC.extern_ | STC.manifest))
+            scstc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.extern_ | STC.manifest);
+        if (swt.stc & (STC.auto_ | STC.scope_ | STC.static_ | STC.manifest | STC.gshared))
+            scstc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.manifest | STC.gshared);
+        if (swt.stc & (STC.const_ | STC.immutable_ | STC.manifest))
+            scstc &= ~(STC.const_ | STC.immutable_ | STC.manifest);
+        if (swt.stc & (STC.gshared | STC.shared_))
+            scstc &= ~(STC.gshared | STC.shared_);
+        if (swt.stc & (STC.safe | STC.trusted | STC.system))
+            scstc &= ~(STC.safe | STC.trusted | STC.system);
+        scstc |= swt.stc;
+        //printf("scstc = x%llx\n", scstc);
+        sc = swt.createNewScope(sc, scstc, sc.linkage, sc.cppmangle,
+        sc.visibility, sc.explicitVisibility, sc.aligndecl, sc.inlining);
+    }
+
+    /**
+     * Provides a new scope with `STC.deprecated_` and `Scope.depdecl` set
+     *
+     * Calls `StorageClassDeclaration.newScope` (as it must be called or copied
+     * in any function overriding `newScope`), then set the `Scope`'s depdecl.
+     *
+     * Returns:
+     *   Always a new scope, to use for this `DeprecatedDeclaration`'s members.
+     */
+    override void visit(DeprecatedDeclaration dpd)
+    {
+        auto oldsc = sc;
+        visit((cast(StorageClassDeclaration)dpd));
+        auto scx = sc;
+        sc = oldsc;
+        // The enclosing scope is deprecated as well
+        if (scx == sc)
+            scx = sc.push();
+        scx.depdecl = dpd;
+        sc = scx;
+    }
+
+    override void visit(LinkDeclaration  lid)
+    {
+        sc= lid.createNewScope(sc, sc.stc, lid.linkage, sc.cppmangle, sc.visibility, sc.explicitVisibility,
+        sc.aligndecl, sc.inlining);
+    }
+
+    override void visit(CPPMangleDeclaration cpmd)
+    {
+        sc = cpmd.createNewScope(sc, sc.stc, LINK.cpp, cpmd.cppmangle, sc.visibility, sc.explicitVisibility,
+        sc.aligndecl, sc.inlining);
+    }
+
+    /**
+     * Returns:
+     *   A copy of the parent scope, with `this` as `namespace` and C++ linkage
+     *///override Scope* visit(Scope* sc)
+    override void visit(CPPNamespaceDeclaration scd)
+    {
+        auto scx = sc.copy();
+        scx.linkage = LINK.cpp;
+        scx.namespace = scd;
+        sc = scx;
+    }
+
+    override void visit(VisibilityDeclaration atbd)
+    {
+        if (atbd.pkg_identifiers)
+            dsymbolSemantic(atbd, sc);
+
+       sc = atbd.createNewScope(sc, sc.stc, sc.linkage, sc.cppmangle, atbd.visibility, 1, sc.aligndecl, sc.inlining);
+    }
+
+    override void visit(AlignDeclaration visd)
+    {
+        sc = visd.createNewScope(sc, sc.stc, sc.linkage, sc.cppmangle, sc.visibility,
+        sc.explicitVisibility, visd, sc.inlining);
+    }
+
+    override void visit(PragmaDeclaration prd)
+    {
+        if (prd.ident == Id.Pinline)
+        {
+            // We keep track of this pragma inside scopes,
+            // then it's evaluated on demand in function semantic
+            sc = prd.createNewScope(sc, sc.stc, sc.linkage, sc.cppmangle, sc.visibility, sc.explicitVisibility, sc.aligndecl, prd); // @suppress(dscanner.style.long_line)
+        }
+    }
+
+    /**************************************
+     * Use the ForwardingScopeDsymbol as the parent symbol for members.
+     */
+    override void visit(ForwardingAttribDeclaration  fad)
+    {
+        sc = sc.push(fad.sym);
+    }
+
+    override void visit(UserAttributeDeclaration uac)
+    {
+        Scope* sc2 = sc;
+        if (uac.atts && uac.atts.length)
+        {
+            // create new one for changes
+            sc2 = sc.copy();
+            sc2.userAttribDecl = uac;
+        }
+        sc = sc2;
+    }
+}
+
+
+extern(C++) Dsymbols* include(Dsymbol d, Scope* sc)
+{
+    scope icv = new IncludeVisitor(sc);
+    d.accept(icv);
+    return icv.symbols;
+}
+
+extern(C++) class IncludeVisitor : Visitor
+{
+    alias visit = typeof(super).visit;
+    Scope* sc;
+    Dsymbols* symbols;
+    this(Scope* sc)
+    {
+        this.sc = sc;
+    }
+
+    override void visit(AttribDeclaration ad)
+    {
+        if (ad.errors)
+        {
+            symbols = null;
+            return;
+        }
+        symbols = ad.decl;
+        return;
+    }
+
+// Decide if 'then' or 'else' code should be included
+    override void visit(ConditionalDeclaration cdc)
+    {
+        //printf("ConditionalDeclaration::include(sc = %p) scope = %p\n", sc, _scope);
+
+        if (cdc.errors)
+        {
+            symbols = null;
+            return;
+        }
+        assert(cdc.condition);
+        symbols = cdc.condition.include(cdc._scope ? cdc._scope : sc) ? cdc.decl : cdc.elsedecl;
+    }
+
+    override void visit(StaticIfDeclaration sif)
+    {
+    /****************************************
+     * Different from other AttribDeclaration subclasses, include() call requires
+     * the completion of addMember and setScope phases.
+     */
+        //printf("StaticIfDeclaration::include(sc = %p) scope = %p\n", sc, _scope);
+        if (sif.errors || sif.onStack)
+        {
+            symbols = null;
+            return;
+        }
+        sif.onStack = true;
+        scope(exit) sif.onStack = false;
+
+        if (sc && sif.condition.inc == Include.notComputed)
+        {
+            assert(sif.scopesym); // addMember is already done
+            assert(sif._scope); // setScope is already done
+
+            Scope* saved_scope = sc;
+            sc = sif._scope;
+            visit(cast(ConditionalDeclaration) sif);
+            Dsymbols* d = symbols;
+            sc = saved_scope;
+
+            if (d && !sif.addisdone)
+            {
+                // Add members lazily.
+                d.foreachDsymbol( s => s.addMember(sif._scope, sif.scopesym) );
+
+                // Set the member scopes lazily.
+                d.foreachDsymbol( s => s.setScope(sif._scope) );
+
+                sif.addisdone = true;
+            }
+            symbols = d;
+            return;
+        }
+        else
+        {
+            visit(cast(ConditionalDeclaration)sif);
+        }
+    }
+
+    override void visit(StaticForeachDeclaration sfd)
+    {
+        if (sfd.errors || sfd.onStack)
+        {
+            symbols = null;
+            return;
+        }
+        if (sfd.cached)
+        {
+            assert(!sfd.onStack);
+            symbols = sfd.cache;
+            return;
+        }
+        sfd.onStack = true;
+        scope(exit) sfd.onStack = false;
+
+        if (sfd._scope)
+        {
+            sfd.sfe.prepare(sfd._scope); // lower static foreach aggregate
+        }
+        if (!sfd.sfe.ready())
+        {
+            symbols = null;// TODO: ok?
+            return;
+        }
+
+        // expand static foreach
+        import dmd.statementsem: makeTupleForeach;
+        Dsymbols* d = makeTupleForeach(sfd._scope, true, true, sfd.sfe.aggrfe, sfd.decl, sfd.sfe.needExpansion).decl;
+        if (d) // process generated declarations
+        {
+            // Add members lazily.
+            d.foreachDsymbol( s => s.addMember(sfd._scope, sfd.scopesym) );
+
+            // Set the member scopes lazily.
+            d.foreachDsymbol( s => s.setScope(sfd._scope) );
+        }
+        sfd.cached = true;
+        sfd.cache = d;
+        symbols = d;
+    }
+}
+
+/**
+ * Called from a symbol's semantic to check if `gnuAbiTag` UDA
+ * can be applied to them
+ *
+ * Directly emits an error if the UDA doesn't work with this symbol
+ *
+ * Params:
+ *   sym = symbol to check for `gnuAbiTag`
+ *   linkage = Linkage of the symbol (Declaration.link or sc.link)
+ */
+void checkGNUABITag(Dsymbol sym, LINK linkage)
+{
+    if (global.params.cplusplus < CppStdRevision.cpp11)
+        return;
+
+    foreachUdaNoSemantic(sym, (exp) {
+        if (!isGNUABITag(exp))
+            return 0; // continue
+        if (sym.isCPPNamespaceDeclaration() || sym.isNspace())
+        {
+            .error(exp.loc, "`@%s` cannot be applied to namespaces", Id.udaGNUAbiTag.toChars());
+            sym.errors = true;
+        }
+        else if (linkage != LINK.cpp)
+        {
+            .error(exp.loc, "`@%s` can only apply to C++ symbols", Id.udaGNUAbiTag.toChars());
+            sym.errors = true;
+        }
+        // Only one `@gnuAbiTag` is allowed by semantic2
+        return 1; // break
+    });
+}
+
+/**
+ * Check if the provided expression references `core.attribute.gnuAbiTag`
+ *
+ * This should be called after semantic has been run on the expression.
+ * Semantic on UDA happens in semantic2 (see `dmd.semantic2`).
+ *
+ * Params:
+ *   e = Expression to check (usually from `UserAttributeDeclaration.atts`)
+ *
+ * Returns:
+ *   `true` if the expression references the compiler-recognized `gnuAbiTag`
+ */
+bool isGNUABITag(Expression e)
+{
+    if (global.params.cplusplus < CppStdRevision.cpp11)
+        return false;
+
+    auto ts = e.type ? e.type.isTypeStruct() : null;
+    if (!ts)
+        return false;
+    if (ts.sym.ident != Id.udaGNUAbiTag || !ts.sym.parent)
+        return false;
+    // Can only be defined in druntime
+    Module m = ts.sym.parent.isModule();
+    if (!m || !m.isCoreModule(Id.attribute))
+        return false;
+    return true;
+}
+
+/******************************************
+ * If a variable has a scope destructor call, return call for it.
+ * Otherwise, return NULL.
+ */
+private Expression callScopeDtor(VarDeclaration vd, Scope* sc)
+{
+    //printf("VarDeclaration::callScopeDtor() %s\n", toChars());
+
+    // Destruction of STC.field's is handled by buildDtor()
+    if (vd.storage_class & (STC.nodtor | STC.ref_ | STC.out_ | STC.field))
+    {
+        return null;
+    }
+
+    if (vd.iscatchvar)
+        return null;    // destructor is built by `void semantic(Catch c, Scope* sc)`, not here
+
+    Expression e = null;
+    // Destructors for structs and arrays of structs
+    Type tv = vd.type.baseElemOf();
+    if (tv.ty == Tstruct)
+    {
+        StructDeclaration sd = (cast(TypeStruct)tv).sym;
+        if (!sd.dtor || sd.errors)
+            return null;
+
+        const sz = vd.type.size();
+        assert(sz != SIZE_INVALID);
+        if (!sz)
+            return null;
+
+        if (vd.type.toBasetype().ty == Tstruct)
+        {
+            // v.__xdtor()
+            e = new VarExp(vd.loc, vd);
+
+            /* This is a hack so we can call destructors on const/immutable objects.
+             * Need to add things like "const ~this()" and "immutable ~this()" to
+             * fix properly.
+             */
+            e.type = e.type.mutableOf();
+
+            // Enable calling destructors on shared objects.
+            // The destructor is always a single, non-overloaded function,
+            // and must serve both shared and non-shared objects.
+            e.type = e.type.unSharedOf;
+
+            e = new DotVarExp(vd.loc, e, sd.dtor, false);
+            e = new CallExp(vd.loc, e);
+        }
+        else
+        {
+            // __ArrayDtor(v[0 .. n])
+            e = new VarExp(vd.loc, vd);
+
+            const sdsz = sd.type.size();
+            assert(sdsz != SIZE_INVALID && sdsz != 0);
+            const n = sz / sdsz;
+            SliceExp se = new SliceExp(vd.loc, e, new IntegerExp(vd.loc, 0, Type.tsize_t),
+                new IntegerExp(vd.loc, n, Type.tsize_t));
+
+            // Prevent redundant bounds check
+            se.upperIsInBounds = true;
+            se.lowerIsLessThanUpper = true;
+
+            // This is a hack so we can call destructors on const/immutable objects.
+            se.type = sd.type.arrayOf();
+
+            e = new CallExp(vd.loc, new IdentifierExp(vd.loc, Id.__ArrayDtor), se);
+        }
+        return e;
+    }
+    // Destructors for classes
+    if (!(vd.storage_class & (STC.auto_ | STC.scope_) && !(vd.storage_class & STC.parameter)))
+        return null;
+
+    for (ClassDeclaration cd = vd.type.isClassHandle(); cd; cd = cd.baseClass)
+    {
+        /* We can do better if there's a way with onstack
+         * classes to determine if there's no way the monitor
+         * could be set.
+         */
+        //if (cd.isInterfaceDeclaration())
+        //    error("interface `%s` cannot be scope", cd.toChars());
+
+        if (!vd.onstack) // if any destructors
+            continue;
+        // delete'ing C++ classes crashes (and delete is deprecated anyway)
+        if (cd.classKind == ClassKind.cpp)
+        {
+            // Don't call non-existant dtor
+            if (!cd.dtor)
+                break;
+
+            e = new VarExp(vd.loc, vd);
+            e.type = e.type.mutableOf().unSharedOf(); // Hack for mutable ctor on immutable instances
+            e = new DotVarExp(vd.loc, e, cd.dtor, false);
+            e = new CallExp(vd.loc, e);
+            break;
+        }
+
+        // delete this;
+        Expression ec;
+        ec = new VarExp(vd.loc, vd);
+        e = new DeleteExp(vd.loc, ec, true);
+        break;
+    }
+    return e;
+}
+
+/***************************************
+ * Collect all instance fields, then determine instance size.
+ * Returns:
+ *      false if failed to determine the size.
+ */
+bool determineSize(AggregateDeclaration ad, const ref Loc loc)
+{
+    //printf("AggregateDeclaration::determineSize() %s, sizeok = %d\n", toChars(), sizeok);
+
+    // The previous instance size finalizing had:
+    if (ad.type.ty == Terror || ad.errors)
+        return false;   // failed already
+    if (ad.sizeok == Sizeok.done)
+        return true;    // succeeded
+
+    if (!ad.members)
+    {
+        .error(loc, "%s `%s` unknown size", ad.kind, ad.toPrettyChars);
+        return false;
+    }
+
+    if (ad._scope)
+        dsymbolSemantic(ad, null);
+
+    // Determine the instance size of base class first.
+    if (auto cd = ad.isClassDeclaration())
+    {
+        cd = cd.baseClass;
+        if (cd && !cd.determineSize(loc))
+            goto Lfail;
+    }
+
+    // Determine instance fields when sizeok == Sizeok.none
+    if (!ad.determineFields())
+        goto Lfail;
+    if (ad.sizeok != Sizeok.done)
+        ad.finalizeSize();
+
+    // this aggregate type has:
+    if (ad.type.ty == Terror)
+        return false;   // marked as invalid during the finalizing.
+    if (ad.sizeok == Sizeok.done)
+        return true;    // succeeded to calculate instance size.
+
+Lfail:
+    // There's unresolvable forward reference.
+    if (ad.type != Type.terror)
+        error(loc, "%s `%s` no size because of forward reference", ad.kind, ad.toPrettyChars);
+    // Don't cache errors from speculative semantic, might be resolvable later.
+    // https://issues.dlang.org/show_bug.cgi?id=16574
+    if (!global.gag)
+    {
+        ad.type = Type.terror;
+        ad.errors = true;
+    }
+    return false;
+}
+
+extern (C++) void addComment(Dsymbol d, const(char)* comment)
+{
+    scope v = new AddCommentVisitor(comment);
+    d.accept(v);
+}
+
+extern (C++) class AddCommentVisitor: Visitor
+{
+    alias visit = Visitor.visit;
+
+    const(char)* comment;
+
+    this(const(char)* comment)
+    {
+        this.comment = comment;
+    }
+
+    override void visit(Dsymbol d)
+    {
+        if (!comment || !*comment)
+            return;
+
+        //printf("addComment '%s' to Dsymbol %p '%s'\n", comment, this, toChars());
+        void* h = cast(void*)d;      // just the pointer is the key
+        auto p = h in d.commentHashTable;
+        if (!p)
+        {
+            d.commentHashTable[h] = comment;
+            return;
+        }
+        if (strcmp(*p, comment) != 0)
+        {
+            // Concatenate the two
+            *p = Lexer.combineComments((*p).toDString(), comment.toDString(), true);
+        }
+    }
+    override void visit(AttribDeclaration atd)
+    {
+        if (comment)
+        {
+            atd.include(null).foreachDsymbol( s => s.addComment(comment) );
+        }
+    }
+    override void visit(ConditionalDeclaration cd)
+    {
+        if (comment)
+        {
+            cd.decl    .foreachDsymbol( s => s.addComment(comment) );
+            cd.elsedecl.foreachDsymbol( s => s.addComment(comment) );
+        }
+    }
+    override void visit(StaticForeachDeclaration sfd) {}
 }

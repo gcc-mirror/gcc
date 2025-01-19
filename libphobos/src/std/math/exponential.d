@@ -256,7 +256,7 @@ if (isFloatingPoint!(F) && isIntegral!(G))
  *     If x is 0 and n is negative, the result is the same as the result of a
  *     division by zero.
  */
-typeof(Unqual!(F).init * Unqual!(G).init) pow(F, G)(F x, G n) @nogc @trusted pure nothrow
+typeof(Unqual!(F).init * Unqual!(G).init) pow(F, G)(F x, G n) @nogc @safe pure nothrow
 if (isIntegral!(F) && isIntegral!(G))
 {
     import std.traits : isSigned;
@@ -422,217 +422,7 @@ if (isIntegral!I && isFloatingPoint!F)
 Unqual!(Largest!(F, G)) pow(F, G)(F x, G y) @nogc @trusted pure nothrow
 if (isFloatingPoint!(F) && isFloatingPoint!(G))
 {
-    import core.math : fabs, sqrt;
-    import std.math.traits : isInfinity, isNaN, signbit;
-
-    alias Float = typeof(return);
-
-    static real impl(real x, real y) @nogc pure nothrow
-    {
-        // Special cases.
-        if (isNaN(y))
-            return y;
-        if (isNaN(x) && y != 0.0)
-            return x;
-
-        // Even if x is NaN.
-        if (y == 0.0)
-            return 1.0;
-        if (y == 1.0)
-            return x;
-
-        if (isInfinity(y))
-        {
-            if (isInfinity(x))
-            {
-                if (!signbit(y) && !signbit(x))
-                    return F.infinity;
-                else
-                    return F.nan;
-            }
-            else if (fabs(x) > 1)
-            {
-                if (signbit(y))
-                    return +0.0;
-                else
-                    return F.infinity;
-            }
-            else if (fabs(x) == 1)
-            {
-                return F.nan;
-            }
-            else // < 1
-            {
-                if (signbit(y))
-                    return F.infinity;
-                else
-                    return +0.0;
-            }
-        }
-        if (isInfinity(x))
-        {
-            if (signbit(x))
-            {
-                long i = cast(long) y;
-                if (y > 0.0)
-                {
-                    if (i == y && i & 1)
-                        return -F.infinity;
-                    else if (i == y)
-                        return F.infinity;
-                    else
-                        return -F.nan;
-                }
-                else if (y < 0.0)
-                {
-                    if (i == y && i & 1)
-                        return -0.0;
-                    else if (i == y)
-                        return +0.0;
-                    else
-                        return F.nan;
-                }
-            }
-            else
-            {
-                if (y > 0.0)
-                    return F.infinity;
-                else if (y < 0.0)
-                    return +0.0;
-            }
-        }
-
-        if (x == 0.0)
-        {
-            if (signbit(x))
-            {
-                long i = cast(long) y;
-                if (y > 0.0)
-                {
-                    if (i == y && i & 1)
-                        return -0.0;
-                    else
-                        return +0.0;
-                }
-                else if (y < 0.0)
-                {
-                    if (i == y && i & 1)
-                        return -F.infinity;
-                    else
-                        return F.infinity;
-                }
-            }
-            else
-            {
-                if (y > 0.0)
-                    return +0.0;
-                else if (y < 0.0)
-                    return F.infinity;
-            }
-        }
-        if (x == 1.0)
-            return 1.0;
-
-        if (y >= F.max)
-        {
-            if ((x > 0.0 && x < 1.0) || (x > -1.0 && x < 0.0))
-                return 0.0;
-            if (x > 1.0 || x < -1.0)
-                return F.infinity;
-        }
-        if (y <= -F.max)
-        {
-            if ((x > 0.0 && x < 1.0) || (x > -1.0 && x < 0.0))
-                return F.infinity;
-            if (x > 1.0 || x < -1.0)
-                return 0.0;
-        }
-
-        if (x >= F.max)
-        {
-            if (y > 0.0)
-                return F.infinity;
-            else
-                return 0.0;
-        }
-        if (x <= -F.max)
-        {
-            long i = cast(long) y;
-            if (y > 0.0)
-            {
-                if (i == y && i & 1)
-                    return -F.infinity;
-                else
-                    return F.infinity;
-            }
-            else if (y < 0.0)
-            {
-                if (i == y && i & 1)
-                    return -0.0;
-                else
-                    return +0.0;
-            }
-        }
-
-        // Integer power of x.
-        long iy = cast(long) y;
-        if (iy == y && fabs(y) < 32_768.0)
-            return pow(x, iy);
-
-        real sign = 1.0;
-        if (x < 0)
-        {
-            // Result is real only if y is an integer
-            // Check for a non-zero fractional part
-            enum maxOdd = pow(2.0L, real.mant_dig) - 1.0L;
-            static if (maxOdd > ulong.max)
-            {
-                // Generic method, for any FP type
-                import std.math.rounding : floor;
-                if (floor(y) != y)
-                    return sqrt(x); // Complex result -- create a NaN
-
-                const hy = 0.5 * y;
-                if (floor(hy) != hy)
-                    sign = -1.0;
-            }
-            else
-            {
-                // Much faster, if ulong has enough precision
-                const absY = fabs(y);
-                if (absY <= maxOdd)
-                {
-                    const uy = cast(ulong) absY;
-                    if (uy != absY)
-                        return sqrt(x); // Complex result -- create a NaN
-
-                    if (uy & 1)
-                        sign = -1.0;
-                }
-            }
-            x = -x;
-        }
-        version (INLINE_YL2X)
-        {
-            // If x > 0, x ^^ y == 2 ^^ ( y * log2(x) )
-            // TODO: This is not accurate in practice. A fast and accurate
-            // (though complicated) method is described in:
-            // "An efficient rounding boundary test for pow(x, y)
-            // in double precision", C.Q. Lauter and V. Lefèvre, INRIA (2007).
-            return sign * exp2( core.math.yl2x(x, y) );
-        }
-        else
-        {
-            // If x > 0, x ^^ y == 2 ^^ ( y * log2(x) )
-            // TODO: This is not accurate in practice. A fast and accurate
-            // (though complicated) method is described in:
-            // "An efficient rounding boundary test for pow(x, y)
-            // in double precision", C.Q. Lauter and V. Lefèvre, INRIA (2007).
-            Float w = exp2(y * log2(x));
-            return sign * w;
-        }
-    }
-    return impl(x, y);
+    return _powImpl(x, y);
 }
 
 ///
@@ -800,6 +590,216 @@ if (isFloatingPoint!(F) && isFloatingPoint!(G))
     assert(isNaN(pow(-real.infinity, 1.234)));
     assert(isNaN(pow(-real.infinity, -0.751)));
     assert(pow(-real.infinity, 0.0) == 1.0);
+}
+
+private real _powImpl(real x, real y) @safe @nogc pure nothrow
+{
+    alias F = real;
+    import core.math : fabs, sqrt;
+    import std.math.traits : isInfinity, isNaN, signbit;
+
+    // Special cases.
+    if (isNaN(y))
+        return y;
+    if (isNaN(x) && y != 0.0)
+        return x;
+
+    // Even if x is NaN.
+    if (y == 0.0)
+        return 1.0;
+    if (y == 1.0)
+        return x;
+
+    if (isInfinity(y))
+    {
+        if (isInfinity(x))
+        {
+            if (!signbit(y) && !signbit(x))
+                return F.infinity;
+            else
+                return F.nan;
+        }
+        else if (fabs(x) > 1)
+        {
+            if (signbit(y))
+                return +0.0;
+            else
+                return F.infinity;
+        }
+        else if (fabs(x) == 1)
+        {
+            return F.nan;
+        }
+        else // < 1
+        {
+            if (signbit(y))
+                return F.infinity;
+            else
+                return +0.0;
+        }
+    }
+    if (isInfinity(x))
+    {
+        if (signbit(x))
+        {
+            long i = cast(long) y;
+            if (y > 0.0)
+            {
+                if (i == y && i & 1)
+                    return -F.infinity;
+                else if (i == y)
+                    return F.infinity;
+                else
+                    return -F.nan;
+            }
+            else if (y < 0.0)
+            {
+                if (i == y && i & 1)
+                    return -0.0;
+                else if (i == y)
+                    return +0.0;
+                else
+                    return F.nan;
+            }
+        }
+        else
+        {
+            if (y > 0.0)
+                return F.infinity;
+            else if (y < 0.0)
+                return +0.0;
+        }
+    }
+
+    if (x == 0.0)
+    {
+        if (signbit(x))
+        {
+            long i = cast(long) y;
+            if (y > 0.0)
+            {
+                if (i == y && i & 1)
+                    return -0.0;
+                else
+                    return +0.0;
+            }
+            else if (y < 0.0)
+            {
+                if (i == y && i & 1)
+                    return -F.infinity;
+                else
+                    return F.infinity;
+            }
+        }
+        else
+        {
+            if (y > 0.0)
+                return +0.0;
+            else if (y < 0.0)
+                return F.infinity;
+        }
+    }
+    if (x == 1.0)
+        return 1.0;
+
+    if (y >= F.max)
+    {
+        if ((x > 0.0 && x < 1.0) || (x > -1.0 && x < 0.0))
+            return 0.0;
+        if (x > 1.0 || x < -1.0)
+            return F.infinity;
+    }
+    if (y <= -F.max)
+    {
+        if ((x > 0.0 && x < 1.0) || (x > -1.0 && x < 0.0))
+            return F.infinity;
+        if (x > 1.0 || x < -1.0)
+            return 0.0;
+    }
+
+    if (x >= F.max)
+    {
+        if (y > 0.0)
+            return F.infinity;
+        else
+            return 0.0;
+    }
+    if (x <= -F.max)
+    {
+        long i = cast(long) y;
+        if (y > 0.0)
+        {
+            if (i == y && i & 1)
+                return -F.infinity;
+            else
+                return F.infinity;
+        }
+        else if (y < 0.0)
+        {
+            if (i == y && i & 1)
+                return -0.0;
+            else
+                return +0.0;
+        }
+    }
+
+    // Integer power of x.
+    long iy = cast(long) y;
+    if (iy == y && fabs(y) < 32_768.0)
+        return pow(x, iy);
+
+    real sign = 1.0;
+    if (x < 0)
+    {
+        // Result is real only if y is an integer
+        // Check for a non-zero fractional part
+        enum maxOdd = pow(2.0L, real.mant_dig) - 1.0L;
+        static if (maxOdd > ulong.max)
+        {
+            // Generic method, for any FP type
+            import std.math.rounding : floor;
+            if (floor(y) != y)
+                return sqrt(x); // Complex result -- create a NaN
+
+            const hy = 0.5 * y;
+            if (floor(hy) != hy)
+                sign = -1.0;
+        }
+        else
+        {
+            // Much faster, if ulong has enough precision
+            const absY = fabs(y);
+            if (absY <= maxOdd)
+            {
+                const uy = cast(ulong) absY;
+                if (uy != absY)
+                    return sqrt(x); // Complex result -- create a NaN
+
+                if (uy & 1)
+                    sign = -1.0;
+            }
+        }
+        x = -x;
+    }
+    version (INLINE_YL2X)
+    {
+        // If x > 0, x ^^ y == 2 ^^ ( y * log2(x) )
+        // TODO: This is not accurate in practice. A fast and accurate
+        // (though complicated) method is described in:
+        // "An efficient rounding boundary test for pow(x, y)
+        // in double precision", C.Q. Lauter and V. Lefèvre, INRIA (2007).
+        return sign * exp2( core.math.yl2x(x, y) );
+    }
+    else
+    {
+        // If x > 0, x ^^ y == 2 ^^ ( y * log2(x) )
+        // TODO: This is not accurate in practice. A fast and accurate
+        // (though complicated) method is described in:
+        // "An efficient rounding boundary test for pow(x, y)
+        // in double precision", C.Q. Lauter and V. Lefèvre, INRIA (2007).
+        auto w = exp2(y * log2(x));
+        return sign * w;
+    }
 }
 
 /** Computes the value of a positive integer `x`, raised to the power `n`, modulo `m`.

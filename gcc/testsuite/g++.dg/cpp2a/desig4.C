@@ -5,8 +5,8 @@ struct A { int x, y; };
 struct B { int y, x; };
 void f(A a, int);          // #1
 void f(B b, ...);          // #2
-void g(A a);               // #3	{ dg-message "candidate:" }
-void g(B b);               // #4	{ dg-message "candidate:" }
+void g(A a);               // #3	{ dg-message "candidate 1:" }
+void g(B b);               // #4	{ dg-message "candidate 2:" }
 void h() {
   f({.x = 1, .y = 2}, 0);  // OK; calls #1
 			   // { dg-warning "extended initializer lists only available with" "" { target c++98_only } .-1 }

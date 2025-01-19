@@ -1,6 +1,6 @@
 /* Glibc.c provides access to some libc functions.
 
-Copyright (C) 2016-2024 Free Software Foundation, Inc.
+Copyright (C) 2016-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -356,7 +356,7 @@ off_t
 libc_lseek (int fd, off_t offset, int whence)
 {
   tracedb ("libc_lseek (%s, %p, %d)\n", fd, offset, whence);
-  int result = lseek (fd, offset, whence);
+  off_t result = lseek (fd, offset, whence);
   tracedb_result (result);
   return result;
 }

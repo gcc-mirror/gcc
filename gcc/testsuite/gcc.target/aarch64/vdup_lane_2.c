@@ -11,6 +11,45 @@
 
 extern void abort (void);
 
+mfloat8_t __attribute__ ((noinline))
+wrap_vdupb_lane_mf8_0 (mfloat8x8_t dummy, mfloat8x8_t a)
+{
+  mfloat8_t result = vdupb_lane_mf8 (a, 0);
+  force_simd (result);
+  return result;
+}
+
+mfloat8_t __attribute__ ((noinline))
+wrap_vdupb_lane_mf8_1 (mfloat8x8_t a)
+{
+  mfloat8_t result = vdupb_lane_mf8 (a, 1);
+  force_simd (result);
+  return result;
+}
+
+int __attribute__ ((noinline))
+test_vdupb_lane_mf8 ()
+{
+  mfloat8_t m;
+  uint8_t n = 11;
+  mfloat8x8_t a;
+  mfloat8_t b;
+  mfloat8_t c[8];
+
+  __builtin_memcpy(&m, &n, 1);
+  a = vdup_n_mf8 (m);
+  vst1_mf8 (c, a);
+
+  b = wrap_vdupb_lane_mf8_0 (a, a);
+  if (__builtin_memcmp (&c[0], &b, 1) != 0)
+    return 1;
+  b = wrap_vdupb_lane_mf8_1 (a);
+  if (__builtin_memcmp (&c[1], &b, 1) != 0)
+    return 1;
+
+  return 0;
+}
+
 float32_t __attribute__ ((noinline))
 wrap_vdups_lane_f32_0 (float32x2_t dummy, float32x2_t a)
 {
@@ -300,6 +339,8 @@ test_vdupd_lane_s64 ()
 int
 main ()
 {
+  if (test_vdupb_lane_mf8 ())
+    abort ();
   if (test_vdups_lane_f32 ())
     abort ();
   if (test_vdupd_lane_f64 ())
@@ -323,9 +364,9 @@ main ()
   return 0;
 }
 
-/* Asm check for vdupb_lane_s8, vdupb_lane_u8.  */
+/* Asm check for vdupb_lane_s8, vdupb_lane_u8, and vdupb_lane_mf8.  */
 /* { dg-final { scan-assembler-not "dup\\tb\[0-9\]+, v\[0-9\]+\.b\\\[0\\\]" } } */
-/* { dg-final { scan-assembler-times "dup\\tb\[0-9\]+, v\[0-9\]+\.b\\\[1\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "dup\\tb\[0-9\]+, v\[0-9\]+\.b\\\[1\\\]" 3 } } */
 
 /* Asm check for vduph_lane_h16, vduph_lane_h16.  */
 /* { dg-final { scan-assembler-not "dup\\th\[0-9\]+, v\[0-9\]+\.h\\\[0\\\]" } } */

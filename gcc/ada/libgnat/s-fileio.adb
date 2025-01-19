@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1042,6 +1042,11 @@ package body System.File_IO is
                      elsif Shared = Yes
                        and then P.Shared_Status = Yes
                      then
+                        if Mode /= P.Mode then
+                           raise Use_Error
+                             with "sharing file in different modes";
+                        end if;
+
                         Stream := P.Stream;
 
                         Record_AFCB;

@@ -1,5 +1,5 @@
 /* AVL propagation pass for RISC-V 'V' Extension for GNU compiler.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 This file is part of GCC.
@@ -65,7 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #define IN_TARGET_CODE 1
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
-#define INCLUDE_MEMORY
 #define INCLUDE_ARRAY
 
 #include "config.h"
@@ -352,7 +351,8 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	  if (!use_insn->can_be_optimized () || use_insn->is_asm ()
 	      || use_insn->is_call () || use_insn->has_volatile_refs ()
 	      || use_insn->has_pre_post_modify ()
-	      || !has_vl_op (use_insn->rtl ()))
+	      || !has_vl_op (use_insn->rtl ())
+	      || !avl_can_be_propagated_p (use_insn->rtl ()))
 	    return NULL_RTX;
 
 	  /* We should only propagate non-VLMAX AVL into VLMAX insn when

@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -3315,22 +3314,6 @@ assert_pp_format_colored (const location &loc, const char *expected,
                       (ARG1), (ARG2), (ARG3));		      \
   SELFTEST_END_STMT
 
-class test_element : public pp_element
-{
-public:
-  test_element (const char *text) : m_text (text) {}
-
-  void add_to_phase_2 (pp_markup::context &ctxt) final override
-  {
-    ctxt.begin_quote ();
-    pp_string (&ctxt.m_pp, m_text);
-    ctxt.end_quote ();
-  }
-
-private:
-  const char *m_text;
-};
-
 /* Verify that pp_format works, for various format codes.  */
 
 static void
@@ -3445,8 +3428,8 @@ test_pp_format ()
 
   /* Verify %e.  */
   {
-    test_element foo ("foo");
-    test_element bar ("bar");
+    pp_element_quoted_string foo ("foo");
+    pp_element_quoted_string bar ("bar");
     ASSERT_PP_FORMAT_2 ("before `foo' `bar' after",
 			"before %e %e after",
 			&foo, &bar);
@@ -4205,7 +4188,7 @@ test_urlification ()
   {
     pretty_printer pp;
     pp.set_url_format (URL_FORMAT_ST);
-    test_element elem ("-foption");
+    pp_element_quoted_string elem ("-foption");
     pp_printf_with_urlifier (&pp, &urlifier,
 			     "foo %e bar",
 			     &elem);

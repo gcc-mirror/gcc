@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* Test non-canonical BID significands.  */
-/* { dg-do run { target bitint } } */
+/* { dg-require-effective-target bitint } */
 /* { dg-require-effective-target dfp_bid } */
 /* { dg-options "-std=gnu23 -O2" } */
 

@@ -41,6 +41,7 @@ import core.gc.gcinterface;
 import core.internal.container.treap;
 import core.internal.spinlock;
 import core.internal.gc.pooltable;
+import core.internal.gc.blkcache;
 
 import cstdlib = core.stdc.stdlib : calloc, free, malloc, realloc;
 import core.stdc.string : memcpy, memset, memmove;
@@ -404,7 +405,7 @@ class ConservativeGC : GC
                 p = sentinel_sub(p);
                 if (p != pool.findBase(p))
                     return 0;
-                auto biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
+                const biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
 
                 oldb = pool.getBits(biti);
                 pool.setBits(biti, mask);
@@ -447,7 +448,7 @@ class ConservativeGC : GC
                 p = sentinel_sub(p);
                 if (p != pool.findBase(p))
                     return 0;
-                auto biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
+                const biti = cast(size_t)(p - pool.baseAddr) >> pool.shiftBy;
 
                 oldb = pool.getBits(biti);
                 pool.clrBits(biti, mask);
@@ -474,23 +475,39 @@ class ConservativeGC : GC
      */
     void *malloc(size_t size, uint bits = 0, const TypeInfo ti = null) nothrow
     {
-        if (!size)
+        import core.internal.gc.blockmeta;
+
+        if (size == 0)
+        {
+            return null;
+        }
+
+        adjustAttrs(bits, ti);
+
+        immutable padding = __allocPad(size, bits);
+
+        bool overflow;
+        import core.checkedint : addu;
+        immutable needed = addu(size, padding, overflow);
+        if (overflow)
         {
             return null;
         }
 
         size_t localAllocSize = void;
 
-        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(size, bits, localAllocSize, ti);
+        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(needed, bits, localAllocSize, ti);
 
         invalidate(p[0 .. localAllocSize], 0xF0, true);
 
+        auto ret = setupMetadata(p[0 .. localAllocSize], bits, padding, size, ti);
+
         if (!(bits & BlkAttr.NO_SCAN))
         {
-            memset(p + size, 0, localAllocSize - size);
+            memset(ret.ptr + size, 0, ret.length - size);
         }
 
-        return p;
+        return ret.ptr;
     }
 
 
@@ -502,7 +519,7 @@ class ConservativeGC : GC
         assert(size != 0);
 
         debug(PRINTF)
-            printf("GC::malloc(gcx = %p, size = %d bits = %x, ti = %s)\n", gcx, size, bits, debugTypeName(ti).ptr);
+            printf("GC::malloc(gcx = %p, size = %zd bits = %x, ti = %s)\n", gcx, size, bits, debugTypeName(ti).ptr);
 
         assert(gcx);
         //debug(PRINTF) printf("gcx.self = %x, pthread_self() = %x\n", gcx.self, pthread_self());
@@ -526,6 +543,8 @@ class ConservativeGC : GC
 
     BlkInfo qalloc( size_t size, uint bits, const scope TypeInfo ti) nothrow
     {
+        // qalloc should not be used for building metadata-containing blocks,
+        // so avoid all the checking for bits and array padding.
 
         if (!size)
         {
@@ -563,25 +582,45 @@ class ConservativeGC : GC
      */
     void *calloc(size_t size, uint bits = 0, const TypeInfo ti = null) nothrow
     {
+        import core.internal.gc.blockmeta;
+
         if (!size)
         {
             return null;
         }
 
-        size_t localAllocSize = void;
+        adjustAttrs(bits, ti);
 
-        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(size, bits, localAllocSize, ti);
-
-        debug (VALGRIND) makeMemUndefined(p[0..size]);
-        invalidate((p + size)[0 .. localAllocSize - size], 0xF0, true);
-
-        memset(p, 0, size);
-        if (!(bits & BlkAttr.NO_SCAN))
+        immutable padding = __allocPad(size, bits);
+        bool overflow;
+        import core.checkedint : addu;
+        immutable needed = addu(size, padding, overflow);
+        if (overflow)
         {
-            memset(p + size, 0, localAllocSize - size);
+            return null;
         }
 
-        return p;
+
+        size_t localAllocSize = void;
+
+        auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(needed, bits, localAllocSize, ti);
+
+        debug (VALGRIND) makeMemUndefined(p[0..size]);
+
+        auto ret = setupMetadata(p[0 .. localAllocSize], bits, padding, size, ti);
+
+        invalidate((ret.ptr + size)[0 .. ret.length - size], 0xF0, true);
+
+        if (bits & BlkAttr.NO_SCAN)
+        {
+            memset(ret.ptr, 0, size);
+        }
+        else
+        {
+            memset(ret.ptr, 0, ret.length);
+        }
+
+        return ret.ptr;
     }
 
     /**
@@ -594,7 +633,8 @@ class ConservativeGC : GC
      * Params:
      *  p = A pointer to the root of a valid memory block or to null.
      *  size = The desired allocation size in bytes.
-     *  bits = A bitmask of the attributes to set on this block.
+     *  bits = A bitmask of the attributes to set on this block. APPENDABLE and
+     *         FINALIZE are not allowed for realloc.
      *  ti = TypeInfo to describe the memory.
      *
      * Returns:
@@ -606,14 +646,28 @@ class ConservativeGC : GC
      */
     void *realloc(void *p, size_t size, uint bits = 0, const TypeInfo ti = null) nothrow
     {
+        if (bits & (BlkAttr.APPENDABLE | BlkAttr.FINALIZE))
+            // these bits are not allowed. We can't properly manage
+            // reallocation of such blocks.
+            onInvalidMemoryOperationError();
+
         size_t localAllocSize = void;
         auto oldp = p;
 
         p = runLocked!(reallocNoSync, mallocTime, numMallocs)(p, size, bits, localAllocSize, ti);
 
-        if (p && !(bits & BlkAttr.NO_SCAN))
+        if (p)
         {
-            memset(p + size, 0, localAllocSize - size);
+            // invalidate any block info cache we have for the old allocation.
+            import core.internal.gc.blkcache;
+            if (auto bic = __getBlkInfo(oldp)) {
+                *bic = BlkInfo.init;
+            }
+
+            if (!(bits & BlkAttr.NO_SCAN))
+            {
+                memset(p + size, 0, localAllocSize - size);
+            }
         }
 
         return p;
@@ -661,7 +715,8 @@ class ConservativeGC : GC
         void* doMalloc()
         {
             if (!bits)
-                bits = pool.getBits(biti);
+                bits = pool.getBits(biti) &
+                    ~(BlkAttr.APPENDABLE | BlkAttr.FINALIZE | BlkAttr.STRUCTFINAL);
 
             void* p2 = mallocNoSync(size, bits, alloc_size, ti);
             debug (SENTINEL)
@@ -758,7 +813,16 @@ class ConservativeGC : GC
 
     size_t extend(void* p, size_t minsize, size_t maxsize, const TypeInfo ti) nothrow
     {
-        return runLocked!(extendNoSync, extendTime, numExtends)(p, minsize, maxsize, ti);
+        auto result = runLocked!(extendNoSync, extendTime, numExtends)(p, minsize, maxsize, ti);
+        if (result != 0) {
+            // invalidate any block info cache we have for the old allocation.
+            import core.internal.gc.blkcache;
+            if (auto bic = __getBlkInfo(p)) {
+                *bic = BlkInfo.init;
+            }
+        }
+
+        return result;
     }
 
 
@@ -784,25 +848,25 @@ class ConservativeGC : GC
                 return 0;
 
             auto lpool = cast(LargeObjectPool*) pool;
-            size_t pagenum = lpool.pagenumOf(p);
+            const pagenum = lpool.pagenumOf(p);
             if (lpool.pagetable[pagenum] != Bins.B_PAGE)
                 return 0;
 
-            size_t psz = lpool.bPageOffsets[pagenum];
+            uint psz = lpool.bPageOffsets[pagenum];
             assert(psz > 0);
 
-            auto minsz = lpool.numPages(minsize);
-            auto maxsz = lpool.numPages(maxsize);
+            const minsz = lpool.numPages(minsize);
+            const maxsz = lpool.numPages(maxsize);
 
             if (pagenum + psz >= lpool.npages)
                 return 0;
             if (lpool.pagetable[pagenum + psz] != Bins.B_FREE)
                 return 0;
 
-            size_t freesz = lpool.bPageOffsets[pagenum + psz];
+            const freesz = lpool.bPageOffsets[pagenum + psz];
             if (freesz < minsz)
                 return 0;
-            size_t sz = freesz > maxsz ? maxsz : freesz;
+            const sz = freesz > maxsz ? maxsz : freesz;
             invalidate((pool.baseAddr + (pagenum + psz) * PAGESIZE)[0 .. sz * PAGESIZE], 0xF0, true);
             memset(lpool.pagetable + pagenum + psz, Bins.B_PAGEPLUS, sz);
             lpool.bPageOffsets[pagenum] = cast(uint) (psz + sz);
@@ -866,16 +930,24 @@ class ConservativeGC : GC
             return;
         }
 
-        return runLocked!(freeNoSync, freeTime, numFrees)(p);
+        auto didFree = runLocked!(freeNoSync, freeTime, numFrees)(p);
+
+        if (didFree) {
+            // invalidate any block info cache we have for the old allocation.
+            import core.internal.gc.blkcache;
+            if (auto bic = __getBlkInfo(p)) {
+                *bic = BlkInfo.init;
+            }
+        }
     }
 
 
     //
     // Implementation of free.
     //
-    private void freeNoSync(void *p) nothrow @nogc
+    private bool freeNoSync(void *p) nothrow @nogc
     {
-        debug(PRINTF) printf("Freeing %p\n", cast(size_t) p);
+        debug(PRINTF) printf("Freeing %#zx\n", cast(size_t) p);
         assert (p);
 
         Pool*  pool;
@@ -886,11 +958,11 @@ class ConservativeGC : GC
         // Find which page it is in
         pool = gcx.findPool(p);
         if (!pool)                              // if not one of ours
-            return;                             // ignore
+            return false;                       // ignore
 
         pagenum = pool.pagenumOf(p);
 
-        debug(PRINTF) printf("pool base = %p, PAGENUM = %d of %d, bin = %d\n", pool.baseAddr, pagenum, pool.npages, pool.pagetable[pagenum]);
+        debug(PRINTF) printf("pool base = %p, PAGENUM = %zd of %zd, bin = %d\n", pool.baseAddr, pagenum, pool.npages, pool.pagetable[pagenum]);
         debug(PRINTF) if (pool.isLargeObject) printf("Block size = %d\n", pool.bPageOffsets[pagenum]);
 
         bin = pool.pagetable[pagenum];
@@ -898,11 +970,11 @@ class ConservativeGC : GC
         // Verify that the pointer is at the beginning of a block,
         //  no action should be taken if p is an interior pointer
         if (bin > Bins.B_PAGE) // B_PAGEPLUS or B_FREE
-            return;
+            return false;
         size_t off = (sentinel_sub(p) - pool.baseAddr);
         size_t base = baseOffset(off, bin);
         if (off != base)
-            return;
+            return false;
 
         sentinel_Invariant(p);
         auto q = p;
@@ -927,7 +999,7 @@ class ConservativeGC : GC
         {
             biti = cast(size_t)(p - pool.baseAddr) >> pool.ShiftBy.Small;
             if (pool.freebits.test (biti))
-                return;
+                return false;
             // Add to free list
             List *list = cast(List*)p;
 
@@ -947,6 +1019,8 @@ class ConservativeGC : GC
         pool.clrBits(biti, ~BlkAttr.NONE);
 
         gcx.leakDetector.log_free(sentinel_add(p), ssize);
+
+        return true;
     }
 
 
@@ -1252,12 +1326,6 @@ class ConservativeGC : GC
     }
 
 
-    void collectNoStack() nothrow
-    {
-        fullCollectNoStack();
-    }
-
-
     /**
      * Begins a full collection, scanning all stack segments for roots.
      *
@@ -1287,21 +1355,6 @@ class ConservativeGC : GC
 
         gcx.leakDetector.log_collect();
         return result;
-    }
-
-
-    /**
-     * Begins a full collection while ignoring all stack segments for roots.
-     */
-    void fullCollectNoStack() nothrow
-    {
-        // Since a finalizer could launch a new thread, we always need to lock
-        // when collecting.
-        static size_t go(Gcx* gcx) nothrow
-        {
-            return gcx.fullcollect(true, true, true); // standard stop the world
-        }
-        runLocked!go(gcx);
     }
 
 
@@ -1397,6 +1450,193 @@ class ConservativeGC : GC
         stats.freeSize += freeListSize;
         stats.allocatedInCurrentThread = bytesAllocated;
     }
+
+    // ARRAY FUNCTIONS
+    void[] getArrayUsed(void *ptr, bool atomic = false) nothrow
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        // lookup the block info, using the cache if possible.
+        auto bic = atomic ? null : __getBlkInfo(ptr);
+        auto info = bic ? *bic : query(ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return null;
+
+        assert(info.base); // sanity check.
+        if (!bic && !atomic)
+            // cache the lookup for next time
+            __insertBlkInfoCache(info, null);
+
+        auto usedSize = atomic ? __arrayAllocLengthAtomic(info) : __arrayAllocLength(info);
+        return __arrayStart(info)[0 .. usedSize];
+    }
+
+    /* NOTE about @trusted in these functions:
+     * These functions do a lot of pointer manipulation, and has writeable
+     * access to BlkInfo which is used to interface with other parts of the GC,
+     * including the block metadata and block cache. Marking these functions as
+     * @safe would mean that any modification of BlkInfo fields should be
+     * considered @safe, which is not the case. For example, it would be
+     * perfectly legal to change the BlkInfo size to some huge number, and then
+     * store it in the block cache to blow up later. The utility functions
+     * count on the BlkInfo representing the correct information inside the GC.
+     *
+     * In order to mark these @safe, we would need a BlkInfo that has
+     * restrictive access (i.e. @system only) to the information inside the
+     * BlkInfo. Until then any use of these structures needs to be @trusted,
+     * and therefore the entire functions are @trusted. The API is still @safe
+     * because the information is stored and looked up by the GC, not the
+     * caller.
+     */
+    bool expandArrayUsed(void[] slice, size_t newUsed, bool atomic = false) nothrow @trusted
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        if (newUsed < slice.length)
+            // cannot "expand" by shrinking.
+            return false;
+
+        // lookup the block info, using the cache if possible
+        auto bic = atomic ? null : __getBlkInfo(slice.ptr);
+        auto info = bic ? *bic : query(slice.ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return false;
+
+        assert(info.base); // sanity check.
+
+        immutable offset = slice.ptr - __arrayStart(info);
+        newUsed += offset;
+        auto existingUsed = slice.length + offset;
+
+        size_t typeInfoSize = (info.attr & BlkAttr.STRUCTFINAL) ? size_t.sizeof : 0;
+        if (__setArrayAllocLengthImpl(info, offset + newUsed, atomic, existingUsed, typeInfoSize))
+        {
+            // could expand without extending
+            if (!bic && !atomic)
+                // cache the lookup for next time
+                __insertBlkInfoCache(info, null);
+            return true;
+        }
+
+        // if we got here, just setting the used size did not work.
+        if (info.size < PAGESIZE)
+            // nothing else we can do
+            return false;
+
+        // try extending the block into subsequent pages.
+        immutable requiredExtension = newUsed - info.size - LARGEPAD;
+        auto extendedSize = extend(info.base, requiredExtension, requiredExtension, null);
+        if (extendedSize == 0)
+            // could not extend, can't satisfy the request
+            return false;
+
+        info.size = extendedSize;
+        if (bic)
+            *bic = info;
+        else if (!atomic)
+            __insertBlkInfoCache(info, null);
+
+        // this should always work.
+        return __setArrayAllocLengthImpl(info, newUsed, atomic, existingUsed, typeInfoSize);
+    }
+
+    bool shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic = false) nothrow
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        if (existingUsed < slice.length)
+            // cannot "shrink" by growing.
+            return false;
+
+        // lookup the block info, using the cache if possible.
+        auto bic = atomic ? null : __getBlkInfo(slice.ptr);
+        auto info = bic ? *bic : query(slice.ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return false;
+
+        assert(info.base); // sanity check
+
+        immutable offset = slice.ptr - __arrayStart(info);
+        existingUsed += offset;
+        auto newUsed = slice.length + offset;
+
+        size_t typeInfoSize = (info.attr & BlkAttr.STRUCTFINAL) ? size_t.sizeof : 0;
+
+        if (__setArrayAllocLengthImpl(info, newUsed, atomic, existingUsed, typeInfoSize))
+        {
+            if (!bic && !atomic)
+                __insertBlkInfoCache(info, null);
+            return true;
+        }
+
+        return false;
+    }
+
+    size_t reserveArrayCapacity(void[] slice, size_t request, bool atomic = false) nothrow @trusted
+    {
+        import core.internal.gc.blockmeta;
+        import core.internal.gc.blkcache;
+        import core.internal.array.utils;
+
+        // lookup the block info, using the cache if possible.
+        auto bic = atomic ? null : __getBlkInfo(slice.ptr);
+        auto info = bic ? *bic : query(slice.ptr);
+
+        if (!(info.attr & BlkAttr.APPENDABLE))
+            // not appendable
+            return 0;
+
+        assert(info.base); // sanity check
+
+        immutable offset = slice.ptr - __arrayStart(info);
+        request += offset;
+        auto existingUsed = slice.length + offset;
+
+        // make sure this slice ends at the used space
+        auto blockUsed = atomic ? __arrayAllocLengthAtomic(info) : __arrayAllocLength(info);
+        if (existingUsed != blockUsed)
+            // not an expandable slice.
+            return 0;
+
+        // see if the capacity can contain the existing data
+        auto existingCapacity = __arrayAllocCapacity(info);
+        if (existingCapacity < request)
+        {
+            if (info.size < PAGESIZE)
+                // no possibility to extend
+                return 0;
+
+            immutable requiredExtension = request - existingCapacity;
+            auto extendedSize = extend(info.base, requiredExtension, requiredExtension, null);
+            if (extendedSize == 0)
+                // could not extend, can't satisfy the request
+                return 0;
+
+            info.size = extendedSize;
+
+            // update the block info cache if it was used
+            if (bic)
+                *bic = info;
+            else if (!atomic)
+                __insertBlkInfoCache(info, null);
+
+            existingCapacity = __arrayAllocCapacity(info);
+        }
+
+        return existingCapacity - offset;
+    }
 }
 
 
@@ -1447,7 +1687,7 @@ short[PAGESIZE / 16][Bins.B_NUMSMALL + 1] calcBinBase()
 
     foreach (i, size; binsize)
     {
-        short end = (PAGESIZE / size) * size;
+        short end = cast(short) ((PAGESIZE / size) * size);
         short bsz = size / 16;
         foreach (off; 0..PAGESIZE/16)
         {
@@ -1596,7 +1836,7 @@ struct Gcx
 
                 long apiTime = mallocTime + reallocTime + freeTime + extendTime + otherTime + lockTime;
                 printf("\tGC API: %lld ms\n", toDuration(apiTime).total!"msecs");
-                sprintf(apitxt.ptr, " API%5ld ms", toDuration(apiTime).total!"msecs");
+                sprintf(apitxt.ptr, " API%5lld ms", toDuration(apiTime).total!"msecs");
             }
 
             printf("GC summary:%5lld MB,%5lld GC%5lld ms, Pauses%5lld ms <%5lld ms%s\n",
@@ -1630,7 +1870,7 @@ struct Gcx
     void Invariant() const { }
 
     debug(INVARIANT)
-    invariant()
+    invariant
     {
         if (initialized)
         {
@@ -2002,7 +2242,7 @@ struct Gcx
      */
     void* bigAlloc(size_t size, ref size_t alloc_size, uint bits, const TypeInfo ti = null) nothrow
     {
-        debug(PRINTF) printf("In bigAlloc.  Size:  %d\n", size);
+        debug(PRINTF) printf("In bigAlloc.  Size:  %zd\n", size);
 
         LargeObjectPool* pool;
         size_t pn;
@@ -2066,7 +2306,7 @@ struct Gcx
         debug(PRINTF) printFreeInfo(&pool.base);
 
         auto p = pool.baseAddr + pn * PAGESIZE;
-        debug(PRINTF) printf("Got large alloc:  %p, pt = %d, np = %d\n", p, pool.pagetable[pn], npages);
+        debug(PRINTF) printf("Got large alloc:  %p, pt = %d, np = %zd\n", p, pool.pagetable[pn], npages);
         invalidate(p[0 .. size], 0xF1, true);
         alloc_size = npages * PAGESIZE;
         //debug(PRINTF) printf("\tp = %p\n", p);
@@ -2556,14 +2796,11 @@ struct Gcx
     }
 
     // collection step 2: mark roots and heap
-    void markAll(alias markFn)(bool nostack) nothrow
+    void markAll(alias markFn)() nothrow
     {
-        if (!nostack)
-        {
-            debug(COLLECT_PRINTF) printf("\tscan stacks.\n");
-            // Scan stacks and registers for each paused thread
-            thread_scanAll(&markFn);
-        }
+        debug(COLLECT_PRINTF) printf("\tscan stacks.\n");
+        // Scan stacks registers, and TLS for each paused thread
+        thread_scanAll(&markFn);
 
         // Scan roots[]
         debug(COLLECT_PRINTF) printf("\tscan roots[]\n");
@@ -2584,14 +2821,11 @@ struct Gcx
     }
 
     version (COLLECT_PARALLEL)
-    void collectAllRoots(bool nostack) nothrow
+    void collectAllRoots() nothrow
     {
-        if (!nostack)
-        {
-            debug(COLLECT_PRINTF) printf("\tcollect stacks.\n");
-            // Scan stacks and registers for each paused thread
-            thread_scanAll(&collectRoots);
-        }
+        debug(COLLECT_PRINTF) printf("\tcollect stacks.\n");
+        // Scan stacks registers and TLS for each paused thread
+        thread_scanAll(&collectRoots);
 
         // Scan roots[]
         debug(COLLECT_PRINTF) printf("\tcollect roots[]\n");
@@ -2900,7 +3134,7 @@ struct Gcx
                 markProcPid = 0;
                 // process GC marks then sweep
                 thread_suspendAll();
-                thread_processGCMarks(&isMarked);
+                thread_processTLSGCData(&clearBlkCacheData);
                 thread_resumeAll();
                 break;
             case ChildStatus.running:
@@ -2920,7 +3154,7 @@ struct Gcx
     }
 
     version (COLLECT_FORK)
-    ChildStatus markFork(bool nostack, bool block, bool doParallel) nothrow
+    ChildStatus markFork(bool block, bool doParallel) nothrow
     {
         // Forking is enabled, so we fork() and start a new concurrent mark phase
         // in the child. If the collection should not block, the parent process
@@ -2936,11 +3170,11 @@ struct Gcx
         int child_mark() scope
         {
             if (doParallel)
-                markParallel(nostack);
+                markParallel();
             else if (ConservativeGC.isPrecise)
-                markAll!(markPrecise!true)(nostack);
+                markAll!(markPrecise!true)();
             else
-                markAll!(markConservative!true)(nostack);
+                markAll!(markConservative!true)();
             return 0;
         }
 
@@ -2999,11 +3233,11 @@ struct Gcx
                     // do the marking in this thread
                     disableFork();
                     if (doParallel)
-                        markParallel(nostack);
+                        markParallel();
                     else if (ConservativeGC.isPrecise)
-                        markAll!(markPrecise!false)(nostack);
+                        markAll!(markPrecise!false)();
                     else
-                        markAll!(markConservative!false)(nostack);
+                        markAll!(markConservative!false)();
                 } else {
                     assert(r == ChildStatus.done);
                     assert(r != ChildStatus.running);
@@ -3016,7 +3250,7 @@ struct Gcx
      * Return number of full pages free'd.
      * The collection is done concurrently only if block and isFinal are false.
      */
-    size_t fullcollect(bool nostack = false, bool block = false, bool isFinal = false) nothrow
+    size_t fullcollect(bool block = false, bool isFinal = false) nothrow
     {
         // It is possible that `fullcollect` will be called from a thread which
         // is not yet registered in runtime (because allocating `new Thread` is
@@ -3098,7 +3332,7 @@ Lmark:
             {
                 version (COLLECT_FORK)
                 {
-                    auto forkResult = markFork(nostack, block, doParallel);
+                    auto forkResult = markFork(block, doParallel);
                     final switch (forkResult)
                     {
                         case ChildStatus.error:
@@ -3125,17 +3359,17 @@ Lmark:
             else if (doParallel)
             {
                 version (COLLECT_PARALLEL)
-                    markParallel(nostack);
+                    markParallel();
             }
             else
             {
                 if (ConservativeGC.isPrecise)
-                    markAll!(markPrecise!false)(nostack);
+                    markAll!(markPrecise!false)();
                 else
-                    markAll!(markConservative!false)(nostack);
+                    markAll!(markConservative!false)();
             }
 
-            thread_processGCMarks(&isMarked);
+            thread_processTLSGCData(&clearBlkCacheData);
             thread_resumeAll();
             isFinal = false;
         }
@@ -3184,8 +3418,22 @@ Lmark:
 
         updateCollectThresholds();
         if (doFork && isFinal)
-            return fullcollect(true, true, false);
+            return fullcollect(true, false);
         return freedPages;
+    }
+
+    /**
+     * Clear the block cache data if it exists, given the data which is the
+     * block info cache.
+     *
+     * Warning! This should only be called while the world is stopped inside
+     * the fullcollect function after all live objects have been marked, but
+     * before sweeping.
+     */
+    void *clearBlkCacheData(void* data) scope nothrow
+    {
+        processGCMarks(data, &isMarked);
+        return data;
     }
 
     /**
@@ -3194,12 +3442,11 @@ Lmark:
      * Warning! This should only be called while the world is stopped inside
      * the fullcollect function after all live objects have been marked, but before sweeping.
      */
-    int isMarked(void *addr) scope nothrow
+    IsMarked isMarked(void *addr) scope nothrow
     {
         // first, we find the Pool this block is in, then check to see if the
         // mark bit is clear.
-        auto pool = findPool(addr);
-        if (pool)
+        if (auto pool = findPool(addr))
         {
             auto offset = cast(size_t)(addr - pool.baseAddr);
             auto pn = offset / PAGESIZE;
@@ -3300,10 +3547,10 @@ Lmark:
     shared uint stoppedThreads;
     bool stopGC;
 
-    void markParallel(bool nostack) nothrow
+    void markParallel() nothrow
     {
         toscanRoots.clear();
-        collectAllRoots(nostack);
+        collectAllRoots();
         if (toscanRoots.empty)
             return;
 
@@ -3401,7 +3648,7 @@ Lmark:
 
         version (Posix)
         {
-            import core.sys.posix.signal;
+            import core.sys.posix.signal : pthread_sigmask, SIG_BLOCK, SIG_SETMASK, sigfillset, sigset_t;
             // block all signals, scanBackground inherits this mask.
             // see https://issues.dlang.org/show_bug.cgi?id=20256
             sigset_t new_mask, old_mask;
@@ -3485,9 +3732,12 @@ Lmark:
         if (atomicLoad(busyThreads) == 0)
             return;
 
-        debug(PARALLEL_PRINTF)
+        version (Posix) debug (PARALLEL_PRINTF)
+        {
+            import core.sys.posix.pthread : pthread_self, pthread_t;
             pthread_t threadId = pthread_self();
-        debug(PARALLEL_PRINTF) printf("scanBackground thread %d start\n", threadId);
+            printf("scanBackground thread %d start\n", threadId);
+        }
 
         ScanRange!precise rng;
         alias toscan = scanStack!precise;
@@ -3503,13 +3753,16 @@ Lmark:
             busyThreads.atomicOp!"+="(1);
             if (toscan.popLocked(rng))
             {
-                debug(PARALLEL_PRINTF) printf("scanBackground thread %d scanning range [%p,%lld] from stack\n", threadId,
-                                              rng.pbot, cast(long) (rng.ptop - rng.pbot));
+                version (Posix) debug (PARALLEL_PRINTF)
+                {
+                    printf("scanBackground thread %d scanning range [%p,%lld] from stack\n",
+                        threadId, rng.pbot, cast(long) (rng.ptop - rng.pbot));
+                }
                 mark!(precise, true, true)(rng);
             }
             busyThreads.atomicOp!"-="(1);
         }
-        debug(PARALLEL_PRINTF) printf("scanBackground thread %d done\n", threadId);
+        version (Posix) debug (PARALLEL_PRINTF) printf("scanBackground thread %d done\n", threadId);
     }
 }
 
@@ -3951,7 +4204,7 @@ struct Pool
     void Invariant() const {}
 
     debug(INVARIANT)
-    invariant()
+    invariant
     {
         if (baseAddr)
         {
@@ -4029,12 +4282,12 @@ struct Pool
                                      debugTypeName(ti).ptr, p, bitmap, cast(ulong)element_size);
                 debug(PRINTF)
                     for (size_t i = 0; i < element_size/((void*).sizeof); i++)
-                        printf("%d", (bitmap[i/(8*size_t.sizeof)] >> (i%(8*size_t.sizeof))) & 1);
+                        printf("%zd", (bitmap[i/(8*size_t.sizeof)] >> (i%(8*size_t.sizeof))) & 1);
                 debug(PRINTF) printf("\n");
 
                 if (tocopy * (void*).sizeof < s) // better safe than sorry: if allocated more, assume pointers inside
                 {
-                    debug(PRINTF) printf("    Appending %d pointer bits\n", s/(void*).sizeof - tocopy);
+                    debug(PRINTF) printf("    Appending %zd pointer bits\n", s/(void*).sizeof - tocopy);
                     is_pointer.setRange(offset/(void*).sizeof + tocopy, s/(void*).sizeof - tocopy);
                 }
             }
@@ -4560,7 +4813,7 @@ debug(PRINTF) void printFreeInfo(Pool* pool) nothrow
         if (pool.pagetable[i] >= Bins.B_FREE) nReallyFree++;
     }
 
-    printf("Pool %p:  %d really free, %d supposedly free\n", pool, nReallyFree, pool.freepages);
+    printf("Pool %p:  %d really free, %zd supposedly free\n", pool, nReallyFree, pool.freepages);
 }
 
 debug(PRINTF)
@@ -4569,7 +4822,7 @@ void printGCBits(GCBits* bits)
     for (size_t i = 0; i < bits.nwords; i++)
     {
         if (i % 32 == 0) printf("\n\t");
-        printf("%x ", bits.data[i]);
+        printf("%zx ", bits.data[i]);
     }
     printf("\n");
 }
@@ -5144,4 +5397,43 @@ void undefinedWrite(T)(ref T var, T value) nothrow
     }
     else
         var = value;
+}
+
+private void adjustAttrs(ref uint attrs, const TypeInfo ti) nothrow
+{
+    bool hasContext = ti !is null;
+    if((attrs & BlkAttr.FINALIZE) && hasContext && typeid(ti) is typeid(TypeInfo_Struct))
+        attrs |= BlkAttr.STRUCTFINAL;
+    else
+        // STRUCTFINAL now just means "has a context pointer added to the block"
+        attrs &= ~BlkAttr.STRUCTFINAL;
+}
+
+// sets up the array/context pointer metadata based on the block allocated.
+// This is called on any block *creation*, and not on updating the array
+// metadata.
+//
+// The return value is the true data that the user can use.
+private void[] setupMetadata(void[] block, uint bits, size_t padding, size_t used, const TypeInfo ti) nothrow
+{
+    import core.internal.gc.blockmeta;
+    import core.internal.array.utils;
+
+    BlkInfo info = BlkInfo(
+            base: block.ptr,
+            attr: bits,
+            size: block.length
+    );
+
+
+    __setBlockFinalizerInfo(info, ti);
+
+    if (bits & BlkAttr.APPENDABLE) {
+        auto typeInfoSize = (bits & BlkAttr.STRUCTFINAL) ? (void*).sizeof : 0;
+        auto success = __setArrayAllocLengthImpl(info, used, false, size_t.max, typeInfoSize);
+        assert(success);
+        return __arrayStart(info)[0 .. block.length - padding];
+    }
+
+    return block.ptr[0 .. block.length - padding];
 }

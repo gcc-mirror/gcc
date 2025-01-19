@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,11 @@ package Diagnostics.JSON_Utils is
    procedure NL_And_Indent;
    --  Print a new line
 
+   procedure Write_Boolean_Attribute (Name : String; Value : Boolean);
+   --  Write a JSON attribute with a boolean value.
+   --
+   --  The value is either 'true' or 'false' without any quotes
+
    procedure Write_Int_Attribute (Name : String; Value : Int);
 
    procedure Write_JSON_Escaped_String (Str : String);
@@ -62,6 +67,9 @@ package Diagnostics.JSON_Utils is
    --  we choose to use the UTF-8 representation instead.
 
    procedure Write_String_Attribute (Name : String; Value : String);
-   --  Write a JSON attribute with a string value
+   --  Write a JSON attribute with a string value.
+   --
+   --  The Value is surrounded by double quotes ("") and the special characters
+   --  within the string are escaped.
 
 end Diagnostics.JSON_Utils;

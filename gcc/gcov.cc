@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -32,7 +32,6 @@ along with Gcov; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #define INCLUDE_STRING
 #define INCLUDE_MAP
@@ -1072,7 +1071,7 @@ print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
   fnotice (stdout, "JSON format version: %s\n", GCOV_JSON_FORMAT_VERSION);
-  fprintf (stdout, "Copyright %s 2024 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2025 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\

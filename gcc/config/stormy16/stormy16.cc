@@ -1,5 +1,5 @@
 /* Xstormy16 target functions.
-   Copyright (C) 1997-2024 Free Software Foundation, Inc.
+   Copyright (C) 1997-2025 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
    This file is part of GCC.
@@ -2914,6 +2914,9 @@ xstormy16_push_rounding (poly_int64 bytes)
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "Xstormy16"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

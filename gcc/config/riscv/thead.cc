@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for RISC-V.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Christoph Müllner (christoph.muellner@vrull.eu).
 
    This file is part of GCC.
@@ -285,19 +285,27 @@ th_mempair_operands_p (rtx operands[4], bool load_p,
   if (MEM_VOLATILE_P (mem_1) || MEM_VOLATILE_P (mem_2))
     return false;
 
-  /* If we have slow unaligned access, we only accept aligned memory.  */
-  if (riscv_slow_unaligned_access_p
-      && known_lt (MEM_ALIGN (mem_1), GET_MODE_SIZE (mode) * BITS_PER_UNIT))
-    return false;
 
   /* Check if the addresses are in the form of [base+offset].  */
   bool reversed = false;
   if (!th_mempair_check_consecutive_mems (mode, &mem_1, &mem_2, &reversed))
     return false;
 
+  /* If necessary, reverse the local copy of the operands to simplify	
+     testing of alignments and mempair operand.  */
+  if (reversed)
+    {
+      std::swap (mem_1, mem_2);
+      std::swap (reg_1, reg_2);
+    }
+
+  /* If we have slow unaligned access, we only accept aligned memory.  */
+  if (riscv_slow_unaligned_access_p
+      && known_lt (MEM_ALIGN (mem_1), GET_MODE_SIZE (mode) * BITS_PER_UNIT))
+    return false;
+
   /* The first memory accesses must be a mempair operand.  */
-  if ((!reversed && !th_mempair_operand_p (mem_1, mode))
-      || (reversed && !th_mempair_operand_p (mem_2, mode)))
+  if (!th_mempair_operand_p (mem_1, mode))
     return false;
 
   /* The operands must be of the same size.  */

@@ -1,5 +1,5 @@
 /* Description of pass structure
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_ccp, false /* nonzero_p */);
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
-	  NEXT_PASS (pass_forwprop);
+	  NEXT_PASS (pass_forwprop, /*last=*/false);
           NEXT_PASS (pass_early_thread_jumps, /*first=*/true);
 	  NEXT_PASS (pass_sra_early);
 	  /* pass_build_ealias is a dummy pass that ensures that we
@@ -214,7 +214,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
-      NEXT_PASS (pass_forwprop);
+      NEXT_PASS (pass_forwprop, /*last=*/false);
       /* pass_build_alias is a dummy pass that ensures that we
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
@@ -254,7 +254,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_isolate_erroneous_paths);
       NEXT_PASS (pass_reassoc, true /* early_p */);
       NEXT_PASS (pass_dce);
-      NEXT_PASS (pass_forwprop);
+      NEXT_PASS (pass_forwprop, /*last=*/false);
       NEXT_PASS (pass_phiopt, false /* early_p */);
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       /* After CCP we rewrite no longer addressed locals into SSA
@@ -291,6 +291,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_cd_dce, false /* update_address_taken_p */);
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_loop_distribution);
+	  NEXT_PASS (pass_crc_optimization);
 	  NEXT_PASS (pass_linterchange);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);
@@ -355,7 +356,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_dce, true /* update_address_taken_p */, true /* remove_unused_locals */);
       /* After late DCE we rewrite no longer addressed locals into SSA
 	 form if possible.  */
-      NEXT_PASS (pass_forwprop);
+      NEXT_PASS (pass_forwprop, /*last=*/true);
       NEXT_PASS (pass_sink_code, true /* unsplit edges */);
       NEXT_PASS (pass_phiopt, false /* early_p */);
       NEXT_PASS (pass_fold_builtins);
@@ -462,6 +463,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_rtl_cprop);
       NEXT_PASS (pass_rtl_pre);
       NEXT_PASS (pass_rtl_hoist);
+      NEXT_PASS (pass_hardreg_pre);
       NEXT_PASS (pass_rtl_cprop);
       NEXT_PASS (pass_rtl_store_motion);
       NEXT_PASS (pass_cse_after_global_opts);
@@ -503,6 +505,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sms);
       NEXT_PASS (pass_live_range_shrinkage);
       NEXT_PASS (pass_sched);
+      NEXT_PASS (pass_rtl_avoid_store_forwarding);
       NEXT_PASS (pass_early_remat);
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);

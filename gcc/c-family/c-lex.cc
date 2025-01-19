@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,10 +54,10 @@ static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
 static int dump_one_header (splay_tree_node, void *);
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
-static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
-static void cb_def_pragma (cpp_reader *, unsigned int);
-static void cb_define (cpp_reader *, unsigned int, cpp_hashnode *);
-static void cb_undef (cpp_reader *, unsigned int, cpp_hashnode *);
+static void cb_ident (cpp_reader *, location_t, const cpp_string *);
+static void cb_def_pragma (cpp_reader *, location_t);
+static void cb_define (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_undef (cpp_reader *, location_t, cpp_hashnode *);
 
 void
 init_c_lex (void)
@@ -164,7 +164,7 @@ dump_time_statistics (void)
 
 static void
 cb_ident (cpp_reader * ARG_UNUSED (pfile),
-	  unsigned int ARG_UNUSED (line),
+	  location_t ARG_UNUSED (line),
 	  const cpp_string * ARG_UNUSED (str))
 {
   if (!flag_no_ident)
@@ -497,7 +497,7 @@ c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
       if (token->type != CPP_CLOSE_PAREN)
 	{
 	  cpp_error (pfile, CPP_DL_ERROR,
-		     "expected %<)%> after %<%s%>", name);
+		     "expected %<)%> after %qs", name);
 	  name = "";
 	}
     }
@@ -1235,6 +1235,8 @@ interpret_float (const cpp_token *token, unsigned int flags,
       type = dfloat128_type_node;
     else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
       type = dfloat32_type_node;
+    else if ((flags & CPP_N_FLOATNX) != 0)
+      type = dfloat64x_type_node;
     else
       type = dfloat64_type_node;
   else
@@ -1305,7 +1307,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	    if (cxx_dialect < cxx23 && pedantic)
 	      pedwarn (input_location, OPT_Wc__23_extensions,
 		       "%<f%d%> or %<F%d%> suffix on floating constant only "
-		       "available with %<-std=c++2b%> or %<-std=gnu++2b%>",
+		       "available with %<-std=c++23%> or %<-std=gnu++23%>",
 		       n, n);
 	  }
 	else
@@ -1326,7 +1328,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	else if (cxx_dialect < cxx23 && pedantic)
 	  pedwarn (input_location, OPT_Wc__23_extensions,
 		   "%<bf16%> or %<BF16%> suffix on floating constant only "
-		   "available with %<-std=c++2b%> or %<-std=gnu++2b%>");
+		   "available with %<-std=c++23%> or %<-std=gnu++23%>");
       }
     else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = long_double_type_node;
@@ -1347,7 +1349,14 @@ interpret_float (const cpp_token *token, unsigned int flags,
   if (flags & CPP_N_USERDEF)
     copylen -= strlen (suffix);
   else if (flags & CPP_N_DFLOAT)
-    copylen -= 2;
+    {
+      if (ISDIGIT (token->val.str.text[copylen - 1]))
+	copylen -= (flags & CPP_N_LARGE) ? 4 : 3;
+      else if ((flags & CPP_N_FLOATNX) != 0)
+	copylen -= 4;
+      else
+	copylen -= 2;
+    }
   else
     {
       if ((flags & CPP_N_WIDTH) != CPP_N_MEDIUM)

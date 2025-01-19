@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2024, AdaCore                     --
+--                     Copyright (C) 1998-2025, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -255,7 +255,7 @@ package body GNAT.Spitbol is
    function S (Num : Integer) return String is
       Buf : String (1 .. 30);
       Ptr : Natural := Buf'Last + 1;
-      Val : Natural := abs (Num);
+      Val : Natural := abs Num;
 
    begin
       loop
@@ -748,7 +748,7 @@ package body GNAT.Spitbol is
    function V (Num : Integer) return VString is
       Buf : String (1 .. 30);
       Ptr : Natural := Buf'Last + 1;
-      Val : Natural := abs (Num);
+      Val : Natural := abs Num;
 
    begin
       loop

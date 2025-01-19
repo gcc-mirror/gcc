@@ -41,6 +41,12 @@ real function f7 ()
   f7 = 1
 end
 
+real function f_serial ()
+!$acc serial
+!$acc end serial
+  f_serial = 1
+end
+
 real function f8 ()
 !$acc data
 !$acc end data

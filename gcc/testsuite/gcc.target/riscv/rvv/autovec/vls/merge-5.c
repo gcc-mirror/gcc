@@ -4,3 +4,5 @@
 #include "../vls-vlmax/merge-5.c"
 
 /* { dg-final { scan-assembler-times {\tvmerge.vvm} 8 } } */
+/* { dg-final { scan-assembler-not {\tvms} } } */
+/* { dg-final { scan-assembler-times {\tvlm.v} 8 } } */

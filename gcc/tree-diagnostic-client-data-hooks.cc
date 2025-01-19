@@ -1,6 +1,6 @@
 /* Implementation of diagnostic_client_data_hooks for the compilers
    (e.g. with knowledge of "tree", lang_hooks, and timevars).
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "version.h"
@@ -144,11 +143,11 @@ public:
     const final override
   {
     if (g_timer)
-      if (json::value *timereport_val = g_timer->make_json ())
+      if (auto timereport_val = g_timer->make_json ())
 	{
 	  sarif_property_bag &bag_obj
 	    = invocation_obj.get_or_create_properties ();
-	  bag_obj.set ("gcc/timeReport", timereport_val);
+	  bag_obj.set ("gcc/timeReport", std::move (timereport_val));
 
 	  /* If the user requested SARIF output, then assume they want the
 	     time report data in the SARIF output, and *not* later emitted on

@@ -38,6 +38,8 @@ void ext_consume_sve_sc (svint8_t);
 void ext_consume_varargs (int, ...);
 svint8_t ext_produce_sve_sc ();
 
+extern int bar (void);
+
 /* Main tests for statements and expressions.  */
 
 void
@@ -69,11 +71,21 @@ statements (int n)
 
   int initi_a = sve_sc1; /* { dg-error {incompatible types when initializing type 'int' using type 'svint8_t'} } */
   int initi_b = { sve_sc1 }; /* { dg-error {incompatible types when initializing type 'int' using type 'svint8_t'} } */
+  svint32_t init_sve_vc1 = { 0, 1 };
+  svint32_t init_sve_vc2 = { 0, bar () };
+  svint32_t init_sve_vc3 = { bar (), n };
+  svint32_t init_sve_vc4 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  svint32_t init_sve_vc5 = { 0, 1, bar (), 3, 4, 5, 6, 7 };
+  svint32_t init_sve_vc6 = { 0, 1, 2, 3, 4, 5, 6, 7, 8 }; /* { dg-warning {excess elements in vector initializer} } */
+  svint32_t init_sve_vc7 = { 0, 1, 2, 3, bar (), 5, 6, 7, 8 }; /* { dg-warning {excess elements in vector initializer} } */
+  svint32_t init_sve_vc8 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }; /* { dg-warning {excess elements in vector initializer} } */
+  svint32_t init_sve_vc9 = { 0, bar (), 2, 3, 4, 5, 6, 7, 8, 9, n }; /* { dg-warning {excess elements in vector initializer} } */
+
 
   /* Compound literals.  */
 
   (svint8_t) {};
-  (svint8_t) { sve_sc1 };
+  (svint8_t) { sve_sc1 }; /* { dg-error {incompatible types when initializing type 'signed char' using type 'svint8_t'} } */
 
   (int) { sve_sc1 }; /* { dg-error {incompatible types when initializing type 'int' using type 'svint8_t'} } */
 

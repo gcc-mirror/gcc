@@ -73,5 +73,5 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 4 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" { xfail vect_variable_length } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vec_stmt_relevant_p: stmt live but not relevant" 4 "vect" } } */

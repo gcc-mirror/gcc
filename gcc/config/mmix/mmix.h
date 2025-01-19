@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -656,11 +656,11 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM) \
  sprintf (LABEL, "*%s:%ld", PREFIX, (long)(NUM))
 
-/* Insert "::"; these are rarer than internal labels.  FIXME: Make sure no
-   ":" is seen in the object file; we don't really want that mmixal
-   feature visible there.  We don't want the default, which uses a dot;
-   that'd be incompatible with mmixal.  */
-#define ASM_PN_FORMAT "%s::%lu"
+/* Override the default, which looks at NO_DOT_IN_LABEL and NO_DOLLAR_IN_LABEL.
+   We want the real default "%s.%lu" in dumps and compiler messages, but the
+   actual assembly code format is adjusted to the effect of "%s::%lu".  See
+   mmix_asm_output_labelref.  */
+#define ASM_PN_FORMAT "%s.%lu"
 
 #define ASM_OUTPUT_DEF(STREAM, NAME, VALUE) \
  mmix_asm_output_def (STREAM, NAME, VALUE)

@@ -1,5 +1,5 @@
 /* strub (stack scrubbing) support.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <oliva@adacore.com>.
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -64,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-thunks.h"
 #include "attr-fnspec.h"
 #include "target.h"
+#include "gcc-urlifier.h"
 
 /* This file introduces two passes that, together, implement
    machine-independent stack scrubbing, strub for short.  It arranges
@@ -675,6 +675,8 @@ can_strub_p (cgraph_node *node, bool report = false)
 
   if (!report && (!result || strub_always_inline_p (node)))
     return result;
+
+  auto_urlify_attributes sentinel;
 
   if (flag_split_stack)
     {
@@ -2255,16 +2257,16 @@ remove_named_attribute_unsharing (const char *name, tree *attrs)
     }
 }
 
-/* Record the order of the last cgraph entry whose mode we've already set, so
+/* Record the uid of the last cgraph entry whose mode we've already set, so
    that we can perform mode setting incrementally without duplication.  */
-static int last_cgraph_order;
+static int last_cgraph_uid;
 
 /* Set strub modes for functions introduced since the last call.  */
 
 static void
 ipa_strub_set_mode_for_new_functions ()
 {
-  if (symtab->order == last_cgraph_order)
+  if (symtab->cgraph_max_uid == last_cgraph_uid)
     return;
 
   cgraph_node *node;
@@ -2279,13 +2281,13 @@ ipa_strub_set_mode_for_new_functions ()
 	continue;
 
       /*  Already done.  */
-      if (node->order < last_cgraph_order)
+      if (node->get_uid () < last_cgraph_uid)
 	continue;
 
       set_strub_mode (node);
     }
 
-  last_cgraph_order = symtab->order;
+  last_cgraph_uid = symtab->cgraph_max_uid;
 }
 
 /* Return FALSE if NODE is a strub context, and TRUE otherwise.  */
@@ -2661,7 +2663,7 @@ pass_ipa_strub::adjust_at_calls_calls (cgraph_node *node)
 unsigned int
 pass_ipa_strub_mode::execute (function *)
 {
-  last_cgraph_order = 0;
+  last_cgraph_uid = 0;
   ipa_strub_set_mode_for_new_functions ();
 
   /* Verify before any inlining or other transformations.  */
@@ -2879,12 +2881,13 @@ pass_ipa_strub::execute (function *)
 		   && (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
 		       <= 4 * UNITS_PER_WORD))))
 	{
-	  /* No point in indirecting pointer types.  Presumably they
-	     won't ever pass the size-based test above, but check the
-	     assumption here, because getting this wrong would mess
-	     with attribute access and possibly others.  We deal with
-	     fn spec below.  */
-	  gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (nparm)));
+	  /* No point in indirecting pointer types, unless they're
+	     volatile.  Presumably they won't ever pass the size-based
+	     test above, but check the assumption here, because
+	     getting this wrong would mess with attribute access and
+	     possibly others.  We deal with fn spec below.  */
+	  gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (nparm))
+			       || TREE_THIS_VOLATILE (parm));
 
 	  indirect_nparms.add (nparm);
 

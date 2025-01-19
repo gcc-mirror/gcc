@@ -3701,7 +3701,6 @@
 	association, use symtree rather than symbol.  For everything
 	except generic subroutines, substitute the symtree in the call
 	rather than the symbol.
-
 
 Copyright (C) 2009 Free Software Foundation, Inc.
 

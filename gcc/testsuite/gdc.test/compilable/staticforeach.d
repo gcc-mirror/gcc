@@ -117,8 +117,8 @@ foo2
 T2
 TestStaticForeach2
 issue22007
-1 2 '3'
-2 3 '4'
+1 2 3
+2 3 4
 0 1
 1 2
 2 3

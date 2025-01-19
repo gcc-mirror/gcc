@@ -1,0 +1,17 @@
+{
+  "version": "2.1.0",
+  "runs": [{
+    "tool": { "driver": { "name": "example" } },
+    "results": [
+      { "message": { "text" : "before open '{{' after open" },
+      	"locations": []},
+      { "message": { "text" : "before close '}}' after close" },
+      	"locations": []}
+    ]
+  }]
+}
+
+/* { dg-begin-multiline-output "" }
+example: warning: before open '{' after open
+example: warning: before close '}' after close
+   { dg-end-multiline-output "" }  */

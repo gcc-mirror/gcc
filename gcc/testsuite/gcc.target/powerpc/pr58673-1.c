@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O1" } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O1 -std=gnu17" } */
 /* { dg-require-effective-target powerpc_vsx } */
 
 enum typecode

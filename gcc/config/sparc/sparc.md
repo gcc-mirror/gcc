@@ -1,5 +1,5 @@
 ;; Machine description for SPARC.
-;; Copyright (C) 1987-2024 Free Software Foundation, Inc.
+;; Copyright (C) 1987-2025 Free Software Foundation, Inc.
 ;; Contributed by Michael Tiemann (tiemann@cygnus.com)
 ;; 64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;; at Cygnus Support.
@@ -56,7 +56,6 @@
   UNSPEC_MUL8UL
   UNSPEC_MULDUL
   UNSPEC_ALIGNDATA
-  UNSPEC_FCMP
   UNSPEC_PDIST
   UNSPEC_EDGE8
   UNSPEC_EDGE8L
@@ -83,7 +82,6 @@
   UNSPEC_CMASK32
   UNSPEC_FCHKSM16
   UNSPEC_PDISTN
-  UNSPEC_FUCMP
   UNSPEC_FHADD
   UNSPEC_FHSUB
   UNSPEC_XMUL
@@ -97,7 +95,7 @@
 
   UNSPEC_DICTUNPACK
   UNSPEC_FPCMPSHL
-  UNSPEC_FPUCMPSHL
+  UNSPEC_FPCMPUSHL
   UNSPEC_FPCMPDESHL
   UNSPEC_FPCMPURSHL
 ])
@@ -7834,9 +7832,9 @@
   int read_or_write = INTVAL (operands[1]);
   int locality = INTVAL (operands[2]);
 
-  gcc_assert (read_or_write == 0 || read_or_write == 1);
-  gcc_assert (locality >= 0 && locality < 4);
-  return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
+  gcc_assert (IN_RANGE (read_or_write, 0, 2));
+  gcc_assert (IN_RANGE (locality, 0, 3));
+  return prefetch_instr [read_or_write & 1][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")
    (set_attr "subtype" "prefetch")])
@@ -7860,9 +7858,9 @@
   int read_or_write = INTVAL (operands[1]);
   int locality = INTVAL (operands[2]);
 
-  gcc_assert (read_or_write == 0 || read_or_write == 1);
-  gcc_assert (locality >= 0 && locality < 4);
-  return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
+  gcc_assert (IN_RANGE (read_or_write, 0, 2));
+  gcc_assert (IN_RANGE (locality, 0, 3));
+  return prefetch_instr [read_or_write & 1][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")
    (set_attr "subtype" "prefetch")])
@@ -8984,95 +8982,70 @@
   "edge32l\t%r1, %r2, %0"
   [(set_attr "type" "edge")])
 
-(define_code_iterator gcond [le ne gt eq])
-(define_mode_iterator GCM [V4HI V2SI])
-(define_mode_attr gcm_name [(V4HI "16") (V2SI "32")])
+(define_mode_iterator FPCMP [V8QI V4HI V2SI])
+(define_code_iterator fpcmpcond [eq ne le gt])
+(define_code_iterator fpcmpucond [leu gtu])
+(define_code_attr signed_code [(leu "le") (gtu "gt")])
 
-(define_insn "fcmp<gcond:code><GCM:gcm_name><P:mode>_vis"
+(define_insn "fpcmp<fpcmpcond:code><FPCMP:vbits><P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-  	(unspec:P [(gcond:GCM (match_operand:GCM 1 "register_operand" "e")
-		              (match_operand:GCM 2 "register_operand" "e"))]
-	 UNSPEC_FCMP))]
-  "TARGET_VIS"
-  "fcmp<gcond:code><GCM:gcm_name>\t%1, %2, %0"
+	(fpcmpcond:P (match_operand:FPCMP 1 "register_operand" "e")
+		     (match_operand:FPCMP 2 "register_operand" "e")))]
+  "TARGET_VIS
+   && (<FPCMP:MODE>mode != V8QImode
+       || (TARGET_VIS3B && (<fpcmpcond:CODE> == EQ || <fpcmpcond:CODE> == NE))
+       || TARGET_VIS4)"
+  "fpcmp<fpcmpcond:code><FPCMP:vbits>\t%1, %2, %0"
   [(set_attr "type" "viscmp")])
 
-(define_insn "fpcmp<gcond:code>8<P:mode>_vis"
-  [(set (match_operand:P 0 "register_operand" "=r")
-  	(unspec:P [(gcond:V8QI (match_operand:V8QI 1 "register_operand" "e")
-		               (match_operand:V8QI 2 "register_operand" "e"))]
-	 UNSPEC_FCMP))]
-  "TARGET_VIS4"
-  "fpcmp<gcond:code>8\t%1, %2, %0"
-  [(set_attr "type" "viscmp")])
-
-(define_expand "vcond<GCM:mode><GCM:mode>"
-  [(match_operand:GCM 0 "register_operand" "")
-   (match_operand:GCM 1 "register_operand" "")
-   (match_operand:GCM 2 "register_operand" "")
-   (match_operator 3 ""
-     [(match_operand:GCM 4 "register_operand" "")
-      (match_operand:GCM 5 "register_operand" "")])]
-  "TARGET_VIS3"
+(define_expand "vec_cmp<FPCMP:mode><P:mode>"
+  [(set (match_operand:P 0 "register_operand" "")
+        (match_operator:P 1 "vec_cmp_operator"
+          [(match_operand:FPCMP 2 "register_operand" "")
+           (match_operand:FPCMP 3 "register_operand" "")]))]
+  "TARGET_VIS3B"
 {
-  sparc_expand_vcond (<MODE>mode, operands, UNSPEC_CMASK<gcm_name>, UNSPEC_FCMP);
-  DONE;
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (code == LT || code == GE)
+    {
+      PUT_CODE (operands[1], swap_condition (code));
+      std::swap (operands[2], operands[3]);
+    }
 })
 
-(define_expand "vcondv8qiv8qi"
-  [(match_operand:V8QI 0 "register_operand" "")
-   (match_operand:V8QI 1 "register_operand" "")
-   (match_operand:V8QI 2 "register_operand" "")
-   (match_operator 3 ""
-     [(match_operand:V8QI 4 "register_operand" "")
-      (match_operand:V8QI 5 "register_operand" "")])]
-  "TARGET_VIS4"
-{
-  sparc_expand_vcond (V8QImode, operands, UNSPEC_CMASK8, UNSPEC_FCMP);
-  DONE;
-})
-
-(define_insn "fucmp<gcond:code>8<P:mode>_vis"
+(define_insn "fpcmpu<fpcmpucond:signed_code><FPCMP:vbits><P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P [(gcond:V8QI (match_operand:V8QI 1 "register_operand" "e")
-		               (match_operand:V8QI 2 "register_operand" "e"))]
-	 UNSPEC_FUCMP))]
-  "TARGET_VIS3"
-  "fucmp<gcond:code>8\t%1, %2, %0"
+	(fpcmpucond:P (match_operand:FPCMP 1 "register_operand" "e")
+		      (match_operand:FPCMP 2 "register_operand" "e")))]
+  "TARGET_VIS3B && (<FPCMP:MODE>mode == V8QImode || TARGET_VIS4)"
+  "fpcmpu<fpcmpucond:signed_code><FPCMP:vbits>\t%1, %2, %0"
   [(set_attr "type" "viscmp")])
 
-(define_insn "fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P [(gcond:GCM (match_operand:GCM 1 "register_operand" "e")
-		              (match_operand:GCM 2 "register_operand" "e"))]
-	 UNSPEC_FUCMP))]
-  "TARGET_VIS4"
-  "fpcmpu<gcond:code><GCM:gcm_name>\t%1, %2, %0"
-  [(set_attr "type" "viscmp")])
-
-(define_expand "vcondu<GCM:mode><GCM:mode>"
-  [(match_operand:GCM 0 "register_operand" "")
-   (match_operand:GCM 1 "register_operand" "")
-   (match_operand:GCM 2 "register_operand" "")
-   (match_operator 3 ""
-     [(match_operand:GCM 4 "register_operand" "")
-      (match_operand:GCM 5 "register_operand" "")])]
-  "TARGET_VIS4"
+(define_expand "vec_cmpu<FPCMP:mode><P:mode>"
+  [(set (match_operand:P 0 "register_operand" "")
+        (match_operator:P 1 "vec_cmpu_operator"
+          [(match_operand:FPCMP 2 "register_operand" "")
+           (match_operand:FPCMP 3 "register_operand" "")]))]
+  "TARGET_VIS3B"
 {
-  sparc_expand_vcond (<MODE>mode, operands, UNSPEC_CMASK<gcm_name>, UNSPEC_FUCMP);
-  DONE;
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (code == LTU || code == GEU)
+    {
+      PUT_CODE (operands[1], swap_condition (code));
+      std::swap (operands[2], operands[3]);
+    }
 })
 
-(define_expand "vconduv8qiv8qi"
-  [(match_operand:V8QI 0 "register_operand" "")
-   (match_operand:V8QI 1 "register_operand" "")
-   (match_operand:V8QI 2 "register_operand" "")
-   (match_operator 3 ""
-     [(match_operand:V8QI 4 "register_operand" "")
-      (match_operand:V8QI 5 "register_operand" "")])]
-  "TARGET_VIS3"
+(define_expand "vcond_mask_<FPCMP:mode><P:mode>"
+  [(match_operand:FPCMP 0 "register_operand" "")
+   (match_operand:FPCMP 1 "register_operand" "")
+   (match_operand:FPCMP 2 "register_operand" "")
+   (match_operand:P     3 "register_operand" "")]
+  "TARGET_VIS3B"
 {
-  sparc_expand_vcond (V8QImode, operands, UNSPEC_CMASK8, UNSPEC_FUCMP);
+  sparc_expand_vcond_mask (<FPCMP:MODE>mode, operands, UNSPEC_CMASK<vbits>);
   DONE;
 })
 
@@ -9252,6 +9225,8 @@
 (define_code_attr vis3_shift_patname
   [(ashift "ashl") (ss_ashift "ssashl") (lshiftrt "lshr") (ashiftrt "ashr")])
    
+(define_mode_iterator GCM [V4HI V2SI])
+
 (define_insn "v<vis3_shift_patname><GCM:mode>3"
   [(set (match_operand:GCM 0 "register_operand" "=<vconstr>")
 	(vis3_shift:GCM (match_operand:GCM 1 "register_operand" "<vconstr>")
@@ -9293,7 +9268,7 @@
   [(set (match_operand:V1DI 0 "register_operand" "=e")
 	(plusminus:V1DI (match_operand:V1DI 1 "register_operand" "e")
 			(match_operand:V1DI 2 "register_operand" "e")))]
-  "TARGET_VIS3"
+  "TARGET_VIS3B"
   "fp<plusminus_insn>64\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "subtype" "addsub64")])
@@ -9483,10 +9458,14 @@
   [(set_attr "type" "fp")
    (set_attr "fptype" "double")])
 
-;; VIS4B instructions.
+;; VIS4B instructions (specified in the unpublished OSA 2017)
 
-(define_mode_iterator DUMODE [V2SI V4HI V8QI])
+(define_mode_iterator DUMODE [V8QI V4HI V2SI])
 
+;; Unpack a DUMODE right-justified value from {8,4,2} consecutive bitfields of (opnd 1):
+;; for  0 <= (opnd 2) <= 7 : V8QI value from 8 consecutive bitfields of (opnd 2) + 1 bits
+;; for  8 <= (opnd 2) <= 15: V4HI value from 4 consecutive bitfields of (opnd 2) + 1 bits
+;; for 16 <= (opnd 2) <= 31: V2SI value from 2 consecutive bitfields of (opnd 2) + 1 bits
 (define_insn "dictunpack<DUMODE:vbits>"
   [(set (match_operand:DUMODE 0 "register_operand" "=e")
         (unspec:DUMODE [(match_operand:DF 1 "register_operand" "e")
@@ -9497,48 +9476,53 @@
   [(set_attr "type" "fga")
    (set_attr "subtype" "other")])
 
-(define_mode_iterator FPCSMODE [V2SI V4HI V8QI])
-(define_code_iterator fpcscond [le gt eq ne])
-(define_code_iterator fpcsucond [le gt])
-
-(define_insn "fpcmp<fpcscond:code><FPCSMODE:vbits><P:mode>shl"
+;; Same as fpcmp but the {8,4,2}-bit result is shifted left by (opnd 3) * {8,4,2}
+(define_insn "fpcmp<fpcmpcond:code><FPCMP:vbits><P:mode>shl"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(fpcscond:FPCSMODE (match_operand:FPCSMODE 1 "register_operand" "e")
-                                      (match_operand:FPCSMODE 2 "register_operand" "e"))
+        (unspec:P [(fpcmpcond:FPCMP (match_operand:FPCMP 1 "register_operand" "e")
+                                    (match_operand:FPCMP 2 "register_operand" "e"))
                    (match_operand:SI 3 "imm2_operand" "q")]
          UNSPEC_FPCMPSHL))]
    "TARGET_VIS4B"
-   "fpcmp<fpcscond:code><FPCSMODE:vbits>shl\t%1, %2, %3, %0"
+   "fpcmp<fpcmpcond:code><FPCMP:vbits>shl\t%1, %2, %3, %0"
    [(set_attr "type" "viscmp")])
 
-(define_insn "fpcmpu<fpcsucond:code><FPCSMODE:vbits><P:mode>shl"
+;; Same as fpcmpu but the {8,4,2}-bit result is shifted left by (opnd 3) * {8,4,2}
+(define_insn "fpcmpu<fpcmpucond:signed_code><FPCMP:vbits><P:mode>shl"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(fpcsucond:FPCSMODE (match_operand:FPCSMODE 1 "register_operand" "e")
-                                       (match_operand:FPCSMODE 2 "register_operand" "e"))
+        (unspec:P [(fpcmpucond:FPCMP (match_operand:FPCMP 1 "register_operand" "e")
+                                     (match_operand:FPCMP 2 "register_operand" "e"))
                    (match_operand:SI 3 "imm2_operand" "q")]
-         UNSPEC_FPUCMPSHL))]
+         UNSPEC_FPCMPUSHL))]
    "TARGET_VIS4B"
-   "fpcmpu<fpcsucond:code><FPCSMODE:vbits>shl\t%1, %2, %3, %0"
+   "fpcmpu<fpcmpucond:signed_code><FPCMP:vbits>shl\t%1, %2, %3, %0"
    [(set_attr "type" "viscmp")])
 
-(define_insn "fpcmpde<FPCSMODE:vbits><P:mode>shl"
+;; Dual Equal comparison: the unshifted result is the OR of two EQ comparisons
+;; of (opnd 1) with 1) the 32-bit highpart of (opnd 2) concatenated with itself
+;; and 2) the 32-bit lowpart of (opnd 2) concatenated with itself.
+(define_insn "fpcmpde<FPCMP:vbits><P:mode>shl"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:FPCSMODE 1 "register_operand" "e")
-                   (match_operand:FPCSMODE 2 "register_operand" "e")
+        (unspec:P [(match_operand:FPCMP 1 "register_operand" "e")
+                   (match_operand:FPCMP 2 "register_operand" "e")
                    (match_operand:SI 3 "imm2_operand" "q")]
          UNSPEC_FPCMPDESHL))]
    "TARGET_VIS4B"
-   "fpcmpde<FPCSMODE:vbits>shl\t%1, %2, %3, %0"
+   "fpcmpde<FPCMP:vbits>shl\t%1, %2, %3, %0"
    [(set_attr "type" "viscmp")])
 
-(define_insn "fpcmpur<FPCSMODE:vbits><P:mode>shl"
+;; Unsigned Range comparison: the unshifted result is True if (opnd 1) lies in
+;; partitioned unsigned range (LB,HB) with LB) the 32-bit highpart of (opnd 2)
+;; concatenated with itself and HB) the 32-bit lowpart of (opnd 2) concatenated
+;; with itself.
+(define_insn "fpcmpur<FPCMP:vbits><P:mode>shl"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:FPCSMODE 1 "register_operand" "e")
-                   (match_operand:FPCSMODE 2 "register_operand" "e")
+        (unspec:P [(match_operand:FPCMP 1 "register_operand" "e")
+                   (match_operand:FPCMP 2 "register_operand" "e")
                    (match_operand:SI 3 "imm2_operand" "q")]
          UNSPEC_FPCMPURSHL))]
    "TARGET_VIS4B"
-   "fpcmpur<FPCSMODE:vbits>shl\t%1, %2, %3, %0"
+   "fpcmpur<FPCMP:vbits>shl\t%1, %2, %3, %0"
    [(set_attr "type" "viscmp")])
 
 (include "sync.md")

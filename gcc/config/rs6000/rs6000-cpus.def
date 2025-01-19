@@ -1,5 +1,5 @@
 /* IBM RS/6000 CPU names..
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -67,12 +67,6 @@
 				  | OPTION_MASK_P9_MISC			\
 				  | OPTION_MASK_P9_VECTOR)		\
 				 & ~OTHER_FUSION_MASKS)
-
-/* Support for the IEEE 128-bit floating point hardware requires a lot of the
-   VSX instructions that are part of ISA 3.0.  */
-#define ISA_3_0_MASKS_IEEE	(OPTION_MASK_VSX			\
-				 | OPTION_MASK_P8_VECTOR		\
-				 | OPTION_MASK_P9_VECTOR)
 
 /* Flags that need to be turned off if -mno-power10.  */
 /* We comment out PCREL_OPT here to disable it by default because SPEC2017

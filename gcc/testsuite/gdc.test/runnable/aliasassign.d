@@ -15,7 +15,7 @@ template Qual(alias T)
     alias Qual = T;
 }
 
-void test()
+void test1()
 {
     int x = 3;
     int y = 4;
@@ -25,7 +25,33 @@ void test()
     assert(XY[1] == 4);
 }
 
-void main()
+/**********************************************/
+
+struct T
 {
-    test();
+    int k,i = 2;
+}
+
+struct S
+{
+    int x;
+    T t;
+    alias ti = t.i;
+}
+
+void test2()
+{
+    T t = T(1, 2);
+    S s;
+    assert(s.ti == 2);
+}
+
+/**********************************************/
+
+int main()
+{
+    test1();
+    test2();
+
+    return 0;
 }

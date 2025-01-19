@@ -1302,6 +1302,17 @@ void test16271()
     T!().auf() = 2;  assert(T!().x == 2);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24525
+void test24525()
+{
+    int a;
+    auto ref () {return a;}() = 1;
+    assert(a == 1);
+
+    ref () {return a;}() = 2;
+    assert(a == 2);
+}
+
 /***************************************************/
 
 int main()
@@ -1361,6 +1372,7 @@ int main()
     test14745();
     test15794();
     test16271();
+    test24525();
 
     printf("Success\n");
     return 0;

@@ -5,6 +5,16 @@
 
 use std::ffi::CStr;
 
+trait StringLeakExt {
+    fn leak<'a>(self) -> &'a mut str;
+}
+
+impl StringLeakExt for String {
+    fn leak<'a>(self) -> &'a mut str {
+        Box::leak(self.into_boxed_str())
+    }
+}
+
 trait IntoFFI<T> {
     fn into_ffi(self) -> T;
 }

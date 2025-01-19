@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.cc for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
-   Copyright (C) 1995-2024 Free Software Foundation, Inc.
+   Copyright (C) 1995-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -576,20 +575,20 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
 
 #include "gsyms.h"
 
-/* Mark a function appropriately.  This should only be called for
+/* Mark a function or an object appropriately.  This should only be called for
    functions for which we are not emitting COFF debugging information.
    FILE is the assembler output file, NAME is the name of the
    function, and PUB is nonzero if the function is globally
    visible.  */
 
 void
-mingw_pe_declare_function_type (FILE *file, const char *name, int pub)
+mingw_pe_declare_type (FILE *file, const char *name, bool pub, bool func)
 {
   fprintf (file, "\t.def\t");
   assemble_name (file, name);
   fprintf (file, ";\t.scl\t%d;\t.type\t%d;\t.endef\n",
 	   pub ? (int) C_EXT : (int) C_STAT,
-	   (int) DT_FCN << N_BTSHFT);
+	   (int) (func ? DT_FCN : DT_NON) << N_BTSHFT);
 }
 
 /* Keep a list of external functions.  */
@@ -636,6 +635,7 @@ struct GTY(()) stub_list
 {
   struct stub_list *next;
   const char *name;
+  bool is_weak_decl_needed;
 };
 
 static GTY(()) struct export_list *export_head;
@@ -673,7 +673,7 @@ mingw_pe_maybe_record_exported_symbol (tree decl, const char *name, int is_data)
 }
 
 void
-mingw_pe_record_stub (const char *name)
+mingw_pe_record_stub (const char *name, bool is_weak_decl_needed)
 {
   struct stub_list *p;
 
@@ -692,6 +692,7 @@ mingw_pe_record_stub (const char *name)
   p = ggc_alloc<stub_list> ();
   p->next = stub_head;
   p->name = name;
+  p->is_weak_decl_needed = is_weak_decl_needed;
   stub_head = p;
 }
 
@@ -770,12 +771,12 @@ mingw_pe_file_end (void)
 	     the real function so that an (unused) import is created.  */
 	  const char *realsym = i386_find_on_wrapper_list (p->name);
 	  if (realsym)
-	    mingw_pe_declare_function_type (asm_out_file,
-		concat ("__real_", realsym, NULL), TREE_PUBLIC (decl));
+	    mingw_pe_declare_type (asm_out_file,
+		concat ("__real_", realsym, NULL), TREE_PUBLIC (decl), 1);
 #endif /* CXX_WRAP_SPEC_LIST */
 	  TREE_ASM_WRITTEN (decl) = 1;
-	  mingw_pe_declare_function_type (asm_out_file, p->name,
-					 TREE_PUBLIC (decl));
+	  mingw_pe_declare_type (asm_out_file, p->name,
+				 TREE_PUBLIC (decl), 1);
 	}
     }
 
@@ -808,6 +809,15 @@ mingw_pe_file_end (void)
 	  if (!startswith (name, "refptr."))
 	    continue;
 	  name += 7;
+
+	  if (q->is_weak_decl_needed)
+	    {
+#ifdef ASM_WEAKEN_LABEL
+	      ASM_WEAKEN_LABEL (asm_out_file, name);
+#endif
+	      mingw_pe_declare_type (asm_out_file, name, 1, 1);
+	    }
+
 	  fprintf (asm_out_file, "\t.section\t.rdata$%s, \"dr\"\n"
 	  		   "\t.globl\t%s\n"
 			   "\t.linkonce\tdiscard\n", oname, oname);
@@ -821,14 +831,14 @@ mingw_pe_file_end (void)
 static enum debug_info_levels saved_debug_info_level;
 
 void
-i386_pe_asm_lto_start (void)
+mingw_pe_asm_lto_start (void)
 {
   saved_debug_info_level = debug_info_level;
   debug_info_level = DINFO_LEVEL_NONE;
 }
 
 void
-i386_pe_asm_lto_end (void)
+mingw_pe_asm_lto_end (void)
 {
   debug_info_level = saved_debug_info_level;
 }
@@ -1364,7 +1374,7 @@ void
 i386_pe_start_function (FILE *f, const char *name, tree decl)
 {
   mingw_pe_maybe_record_exported_symbol (decl, name, 0);
-  mingw_pe_declare_function_type (f, name, TREE_PUBLIC (decl));
+  mingw_pe_declare_type (f, name, TREE_PUBLIC (decl), 1);
   /* In case section was altered by debugging output.  */
   if (decl != NULL_TREE)
     switch_to_section (function_section (decl));

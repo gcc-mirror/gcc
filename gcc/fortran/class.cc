@@ -1,5 +1,5 @@
 /* Implementation of Fortran 2003 Polymorphism.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Paul Richard Thomas <pault@gcc.gnu.org>
    and Janus Weil <janus@gcc.gnu.org>
 
@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
    type-bound procedures.  */
 
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -885,11 +884,22 @@ static void
 add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
 {
   gfc_component *c;
-
-  if (tb->non_overridable && !tb->overridden)
-    return;
+  bool is_abstract = false;
 
   c = gfc_find_component (vtype, name, true, true, NULL);
+
+  /* If the present component typebound proc is abstract, the new version
+     should unconditionally be tested if it is a suitable replacement.  */
+  if (c && c->tb && c->tb->u.specific
+      && c->tb->u.specific->n.sym->attr.abstract)
+    is_abstract = true;
+
+  /* Pass on the new tb being not overridable if a component is found and
+     either there is not an overridden specific or the present component
+     tb is abstract. This ensures that possible, viable replacements are
+     loaded.  */
+  if (tb->non_overridable && !tb->overridden && !is_abstract && c)
+    return;
 
   if (c == NULL)
     {
@@ -1152,8 +1162,9 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
       gcc_assert (c);
 
-      /* Set scalar argument for storage_size.  */
-      gfc_get_symbol ("comp_byte_stride", sub_ns, &byte_stride);
+      /* Set scalar argument for storage_size. A leading underscore in
+	 the name prevents an unwanted finalization.  */
+      gfc_get_symbol ("_comp_byte_stride", sub_ns, &byte_stride);
       byte_stride->ts = e->ts;
       byte_stride->attr.flavor = FL_VARIABLE;
       byte_stride->attr.value = 1;
@@ -1728,7 +1739,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   gfc_expr *ancestor_wrapper = NULL, *rank;
   gfc_iterator *iter;
 
-  if (derived->attr.unlimited_polymorphic)
+  if (derived->attr.unlimited_polymorphic || derived->error)
     {
       vtab_final->initializer = gfc_get_null_expr (NULL);
       return;
@@ -2496,20 +2507,6 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	    {
 	      gfc_component *c;
 	      gfc_symbol *parent = NULL, *parent_vtab = NULL;
-	      bool rdt = false;
-
-	      /* Is this a derived type with recursive allocatable
-		 components?  */
-	      c = (derived->attr.unlimited_polymorphic
-		   || derived->attr.abstract) ?
-		  NULL : derived->components;
-	      for (; c; c= c->next)
-		if (c->ts.type == BT_DERIVED
-		    && c->ts.u.derived == derived)
-		  {
-		    rdt = true;
-		    break;
-		  }
 
 	      gfc_get_symbol (name, ns, &vtype);
 	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL,
@@ -2692,9 +2689,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      c->attr.access = ACCESS_PRIVATE;
 	      c->tb = XCNEW (gfc_typebound_proc);
 	      c->tb->ppc = 1;
-	      if (derived->attr.unlimited_polymorphic
-		  || derived->attr.abstract
-		  || !rdt)
+	      if (derived->attr.unlimited_polymorphic || derived->attr.abstract
+		  || !derived->attr.recursive)
 		c->initializer = gfc_get_null_expr (NULL);
 	      else
 		{

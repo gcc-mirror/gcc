@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2025, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -23,7 +23,6 @@
  *                                                                          *
  ****************************************************************************/
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -284,7 +283,7 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   /* Unfortunately the post_options hook is called before the value of
      flag_short_enums is autodetected, if need be.  Mimic the process
      for our private flag_short_enums.  */
-  if (flag_short_enums == 2)
+  if (!OPTION_SET_P (flag_short_enums))
     flag_short_enums = targetm.default_short_enums ();
 
   return false;

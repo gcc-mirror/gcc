@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,8 @@ with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Validsw;        use Validsw;
 with Warnsw;         use Warnsw;
+
+with System.Case_Util; use System.Case_Util;
 
 package body Exp_Prag is
 
@@ -887,8 +889,8 @@ package body Exp_Prag is
       --  type.
 
       function Get_Nth_Arg_Type
-         (Subprogram : Entity_Id;
-          N          : Positive) return Entity_Id;
+        (Subprogram : Entity_Id;
+         N          : Positive) return Entity_Id;
       --  Returns the type of the Nth argument of Subprogram
 
       function To_Addresses (Elmts : Elist_Id) return List_Id;
@@ -1147,8 +1149,8 @@ package body Exp_Prag is
       ----------------------
 
       function Get_Nth_Arg_Type
-         (Subprogram : Entity_Id;
-          N          : Positive) return Entity_Id
+        (Subprogram : Entity_Id;
+         N          : Positive) return Entity_Id
       is
          Argument : Entity_Id := First_Entity (Subprogram);
       begin
@@ -2123,6 +2125,97 @@ package body Exp_Prag is
       Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
    end Expand_Pragma_Exceptional_Cases;
 
+   ------------------------------
+   -- Expand_Pragma_Exit_Cases --
+   ------------------------------
+
+   --  Aspect Exit_Cases shoule be expanded in the following manner:
+
+   --    subprogram S is
+   --       Count      : Natural := 0;
+   --       Flag_1     : Boolean := False;
+   --       . . .
+   --       Flag_N     : Boolean := False;
+   --       Flag_N[+1] : Boolean := False; --  if others present
+
+   --       <preconditions (if any)>
+
+   --       --  Evaluate all case guards
+
+   --       if Case_Guard_1 then
+   --          Flag_1 := True;
+   --          Count  := Count + 1;
+   --       end if;
+   --       . . .
+   --       if Case_Guard_N then
+   --          Flag_N := True;
+   --          Count  := Count + 1;
+   --       end if;
+
+   --       --  Emit errors depending on the number of case guards that
+   --       --  evaluated to True.
+
+   --       if Count = 0 then
+   --         Flag_N+1 := True;  --  if others present
+   --       elsif Count > 1 then
+   --          declare
+   --             Str_Base : constant String :=
+   --                      "exit cases overlap for subprogram S";
+   --             Str_Normal_Return : constant String :=
+   --                      (if Flag_... then
+   --                         Str_Base & "case guard at xxx evaluates to True"
+   --                       else Str_Base);
+   --             StrN : constant String :=
+   --                      (if Flag_... then
+   --                         StrN-1 & "case guard at xxx evaluates to True"
+   --                       else StrN-1);
+   --          begin
+   --             raise Assertion_Error with StrN;
+   --          end;
+   --       end if;
+
+   --       procedure _Postconditions is
+   --       begin
+   --          <postconditions (if any)>
+
+   --          if Flag_1 and then Exit_Kind_1 /= Normal_Return then
+   --             raise Assertion_Error with
+   --                 "subprogram returned normally, failed exit case at xxx";
+   --          end if;
+   --          . . .
+   --          if Flag_N[+1] and then Exit_Kind_N[+1] /= Normal_Return then
+   --             raise Assertion_Error with
+   --                 "subprogram returned normally, failed exit case at xxx";
+   --          end if;
+   --       end _Postconditions;
+   --    begin
+   --
+   --        --  normal body of of P
+   --        declare
+   --        ...
+   --        end;
+   --
+   --     exception
+   --        when E : Exp2 =>
+   --           if Flag_1
+   --             and then Exit_Kind_1 /= Exception_Raised
+   --             and then (Nkind (Exit_Kind_1) /= N_Associated_Component
+   --                 or else Expression (Exit_Kind_1) /= E)
+   --           then
+   --             raise Assertion_Error with
+   --                 "subprogram raised " & E & ", failed exit case at xxx";
+   --           end if;
+   --           . . .
+   --           raise;
+   --    end S;
+
+   procedure Expand_Pragma_Exit_Cases (Prag : Node_Id) is
+   begin
+      --  Currently we don't expand this pragma
+
+      Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
+   end Expand_Pragma_Exit_Cases;
+
    ---------------------------------------
    -- Expand_Pragma_Import_Or_Interface --
    ---------------------------------------
@@ -2157,24 +2250,73 @@ package body Exp_Prag is
          --  Import a C++ convention
 
          declare
+            procedure Check_Class_Suffix;
+            --  Check whether the External Name string designated by
+            --  Name, declared below, ends with "'class" and, if so,
+            --  set Lang_Id accordingly, and drop the suffix from Name
+            --  and from Rtti_Name.
+
             Loc          : constant Source_Ptr := Sloc (N);
-            Rtti_Name    : constant Node_Id    := Arg_N (N, 3);
             Dum          : constant Entity_Id  := Make_Temporary (Loc, 'D');
+            Lang_Id      : Character  := 'C';
+            Rtti_Name    : Node_Id    := Arg_N (N, 3);
+            Name         : String_Id  := Strval (Get_Pragma_Arg (Rtti_Name));
             Exdata       : List_Id;
             Lang_Char    : Node_Id;
             Foreign_Data : Node_Id;
 
+            ------------------------
+            -- Check_Class_Suffix --
+            ------------------------
+
+            procedure Check_Class_Suffix is
+               Attr : constant String := "'class";
+               J : Nat := String_Length (Name);
+            begin
+               --  We can't end with "'class" if there's no room for it
+
+               if J < Attr'Length then
+                  return;
+               end if;
+
+               --  Check that we end with "'class", ignoring case.
+               --  Return if we don't.
+
+               for K in reverse 1 .. Attr'Length loop
+                  if To_Lower (Get_Character (Get_String_Char (Name, J)))
+                    /= Attr (K)
+                  then
+                     return;
+                  end if;
+                  J := J - 1;
+               end loop;
+
+               --  Build a new string without the pseudo attribute.
+               --  Change Lang_Id to use base-type matching.
+
+               Start_String;
+               for I in 1 .. J loop
+                  Store_String_Char (Get_String_Char (Name, I));
+               end loop;
+               Name := End_String;
+               Rtti_Name := Make_String_Literal (Sloc (Rtti_Name),
+                                                 Strval => Name);
+               Lang_Id := 'B';
+            end Check_Class_Suffix;
+
          begin
+            Check_Class_Suffix;
+
             Exdata := Component_Associations (Expression (Parent (Def_Id)));
 
             Lang_Char := Next (First (Exdata));
 
-            --  Change the one-character language designator to 'C'
+            --  Change the one-character language designator to Lang_Id
 
             Rewrite (Expression (Lang_Char),
               Make_Character_Literal (Loc,
                 Chars              => Name_uC,
-                Char_Literal_Value => UI_From_CC (Get_Char_Code ('C'))));
+                Char_Literal_Value => UI_From_CC (Get_Char_Code (Lang_Id))));
             Analyze (Expression (Lang_Char));
 
             --  Change the value of Foreign_Data
@@ -3368,27 +3510,6 @@ package body Exp_Prag is
 
       if No (Init_Call) and then Present (Expression (Parent (Def_Id))) then
          Set_Expression (Parent (Def_Id), Empty);
-      end if;
-
-      --  The object may not have any initialization, but in the presence of
-      --  Initialize_Scalars code is inserted after then declaration, which
-      --  must now be removed as well. The code carries the same source
-      --  location as the declaration itself.
-
-      if Initialize_Scalars and then Is_Array_Type (Etype (Def_Id)) then
-         declare
-            Init : Node_Id;
-            Nxt  : Node_Id;
-         begin
-            Init := Next (Parent (Def_Id));
-            while not Comes_From_Source (Init)
-              and then Sloc (Init) = Sloc (Def_Id)
-            loop
-               Nxt := Next (Init);
-               Remove (Init);
-               Init := Nxt;
-            end loop;
-         end;
       end if;
    end Undo_Initialization;
 

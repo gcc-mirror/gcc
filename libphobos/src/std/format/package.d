@@ -60,7 +60,7 @@ Limitation: This package does not support localization, but
     adheres to the rounding mode of the floating point unit, if
     available.
 
-$(SECTION3 Format Strings)
+$(H3 $(LNAME2 format-strings, Format Strings))
 
 The functions contained in this package use $(I format strings). A
 format string describes the layout of another string for reading or
@@ -144,10 +144,10 @@ recommended to assign (lower- and uppercase) letters.
 Note: The $(I Parameters) of a $(I CompoundIndicator) are currently
 limited to a $(B '-') flag.
 
-$(SECTION4 Format Indicator)
+$(H4 $(LNAME2 format-indicator, Format Indicator))
 
 The $(I format indicator) can either be a single character or an
-expression surrounded by $(B %\() and $(B %\)). It specifies the
+expression surrounded by $(B '%$(LPAREN)') and $(B '%$(RPAREN)'). It specifies the
 basic manner in which a value will be formatted and is the minimum
 requirement to format a value.
 
@@ -187,7 +187,7 @@ $(BOOKTABLE ,
 
 The $(I compound indicator) can be used to describe compound types
 like arrays or structs in more detail. A compound type is enclosed
-within $(B '%\(') and $(B '%\)'). The enclosed sub-format string is
+within $(B '%$(LPAREN)') and $(B '%$(RPAREN)'). The enclosed sub-format string is
 applied to individual elements. The trailing portion of the
 sub-format string following the specifier for the element is
 interpreted as the delimiter, and is therefore omitted following the
@@ -205,7 +205,7 @@ Note: Inside a $(I compound indicator), strings and characters are
 escaped automatically. To avoid this behavior, use `"%-$(LPAREN)"`
 instead of `"%$(LPAREN)"`.
 
-$(SECTION4 Flags)
+$(H4 $(LNAME2 flags, Flags))
 
 There are several flags that affect the outcome of the formatting.
 
@@ -244,7 +244,7 @@ $(BOOKTABLE ,
              sections below for more information.))
 )
 
-$(SECTION4 Width$(COMMA) Precision and Separator)
+$(H4 $(LNAME2 width-precision-separator, Width, Precision and Separator))
 
 The $(I width) parameter specifies the minimum width of the result.
 
@@ -269,7 +269,7 @@ The $(I separator) can also be followed by a $(B '?'). In that case,
 an additional argument is used to specify the symbol that should be
 used to separate the chunks.
 
-$(SECTION4 Position)
+$(H4 $(LNAME2 position, Position))
 
 By default, the arguments are processed in the provided order. With
 the $(I position) parameter it is possible to address arguments
@@ -282,7 +282,7 @@ It's also possible to use positional arguments for $(I width), $(I
 precision) and $(I separator) by adding a number and a $(B
 '$(DOLLAR)') after the $(B '*').
 
-$(SECTION4 Types)
+$(H4 $(LNAME2 types, Types))
 
 This section describes the result of combining types with format
 characters. It is organized in 2 subsections: a list of general
@@ -358,7 +358,7 @@ $(BOOKTABLE ,
                  Default precision is large enough to add all digits
                  of the integral value.
 
-                 In case of ($B 'a') and $(B 'A'), the integral digit can be
+                 In case of $(B 'a') and $(B 'A'), the integral digit can be
                  any hexadecimal digit.
                )
    )

@@ -884,9 +884,24 @@ identical to the non-@safe case, but safety introduces some restrictions:
 
 */
 @trusted auto task(F, Args...)(F fun, Args args)
-if (is(typeof(fun(args))) && isSafeTask!F)
+if (__traits(compiles, () @safe => fun(args)) && isSafeTask!F)
 {
     return new Task!(run, F, Args)(fun, args);
+}
+
+@safe unittest
+{
+    static struct Oops {
+        int convert() {
+            *cast(int*) 0xcafebabe = 0xdeadbeef;
+            return 0;
+        }
+        alias convert this;
+    }
+    static void foo(int) @safe {}
+
+    static assert(!__traits(compiles, task(&foo, Oops.init)));
+    static assert(!__traits(compiles, scopedTask(&foo, Oops.init)));
 }
 
 /**
@@ -928,7 +943,7 @@ if (is(typeof(delegateOrFp(args))) && !isSafeTask!F)
 
 /// Ditto
 @trusted auto scopedTask(F, Args...)(F fun, Args args)
-if (is(typeof(fun(args))) && isSafeTask!F)
+if (__traits(compiles, () @safe => fun(args)) && isSafeTask!F)
 {
     auto ret = Task!(run, F, Args)(fun, args);
     ret.isScoped = true;
@@ -2254,7 +2269,8 @@ public:
     call to `popFront` or, if thrown during construction, simply
     allowed to propagate to the caller.
     */
-    auto asyncBuf(S)(S source, size_t bufSize = 100) if (isInputRange!S)
+    auto asyncBuf(S)(S source, size_t bufSize = 100)
+    if (isInputRange!S)
     {
         static final class AsyncBuf
         {

@@ -1,5 +1,5 @@
 /* Tuning model description for AArch64 architecture.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -115,7 +115,7 @@ static const struct tune_params thunderx2t99_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   4, /* issue_rate.  */
-  (AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_AES_AESMC
+  (AARCH64_FUSE_BASE | AARCH64_FUSE_ALU_BRANCH
    | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
   "16",	/* function_align.  */
   "8",	/* jump_align.  */

@@ -9,7 +9,7 @@
 **   # tune = sifive-5-series
 **   ...
 */
-long foo () __attribute__((target("tune=sifive-5-series")));
+long foo (long a, long b) __attribute__((target("tune=sifive-5-series")));
 long foo (long a, long b)
 {
   return a + (b * 2);

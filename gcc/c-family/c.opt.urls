@@ -307,6 +307,12 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-enum-float-conv
 Wdeprecated-literal-operator
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-literal-operator)
 
+Wdeprecated-non-prototype
+UrlSuffix(gcc/Warning-Options.html#index-Wdeprecated-non-prototype)
+
+Wdeprecated-variadic-comma-omission
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-variadic-comma-omission)
+
 Wdesignated-init
 UrlSuffix(gcc/Warning-Options.html#index-Wdesignated-init)
 
@@ -417,6 +423,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wformat)
 
 Wframe-address
 UrlSuffix(gcc/Warning-Options.html#index-Wframe-address)
+
+Wfree-labels
+UrlSuffix(gcc/Warning-Options.html#index-Wfree-labels)
 
 Wglobal-module
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wglobal-module)
@@ -549,6 +558,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wmissing-format-attribute)
 
 Wmissing-include-dirs
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-include-dirs)
+
+Wmissing-parameter-name
+UrlSuffix(gcc/Warning-Options.html#index-Wmissing-parameter-name)
 
 Wmissing-parameter-type
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-parameter-type)
@@ -852,14 +864,14 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-system-headers)
 Wtemplates
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-templates)
 
-Wtautological-compare
-UrlSuffix(gcc/Warning-Options.html#index-Wno-tautological-compare)
-
 Wtemplate-body
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-body)
 
 Wtemplate-id-cdtor
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-id-cdtor)
+
+Wtemplate-names-tu-local
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-names-tu-local)
 
 Wterminate
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-terminate)
@@ -996,6 +1008,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-faligned-new)
 
 fasm
 UrlSuffix(gcc/C-Dialect-Options.html#index-fasm)
+
+fassume-sane-operators-new-delete
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fassume-sane-operators-new-delete)
 
 ; skipping UrlSuffix for 'fbuiltin' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-fbuiltin'
@@ -1154,8 +1169,8 @@ UrlSuffix(gcc/Optimize-Options.html#index-fkeep-inline-dllexport)
 flax-vector-conversions
 UrlSuffix(gcc/C-Dialect-Options.html#index-flax-vector-conversions)
 
-fmodules-ts
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodules-ts)
+fmodules
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodules)
 
 fmodule-header
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodule-header)
@@ -1244,16 +1259,16 @@ fobjc-nilcheck
 UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fobjc-nilcheck)
 
 fopenacc
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
 
 fopenacc-dim=
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenacc-dim)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc-dim)
 
 fopenmp
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
 
 fopenmp-simd
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
 
 foperator-names
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-operator-names)
@@ -1297,6 +1312,12 @@ UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-f
 
 frtti
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-rtti) LangUrlSuffix_D(gdc/Runtime-Options.html#index-fno-rtti)
+
+fsearch-include-path
+UrlSuffix(gcc/Preprocessor-Options.html#index-fsearch-include-path)
+
+fsearch-include-path=
+UrlSuffix(gcc/Preprocessor-Options.html#index-fsearch-include-path)
 
 ; skipping UrlSuffix for 'fshort-enums' due to multiple URLs:
 ;   duplicate: 'gcc/Code-Gen-Options.html#index-fshort-enums'

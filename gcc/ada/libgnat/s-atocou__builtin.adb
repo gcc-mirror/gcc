@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements Atomic_Counter and Atomic_Unsigned operations for
---  platforms where GCC supports __atomic_add_fetch and __atomic_sub_fetch
---  builtins.
+--  This package implements unsigned and signed atomic counters using GCC's
+--  __atomic_add_fetch and __atomic_sub_fetch builtins.
 
 with System.Atomic_Primitives; use System.Atomic_Primitives;
 

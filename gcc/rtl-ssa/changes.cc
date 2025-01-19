@@ -1,5 +1,5 @@
 // RTL SSA routines for changing instructions                       -*- C++ -*-
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -19,7 +19,6 @@
 
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
-#define INCLUDE_MEMORY
 #define INCLUDE_ARRAY
 #include "config.h"
 #include "system.h"
@@ -173,21 +172,29 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 				 bool strict_p)
 {
   unsigned int old_cost = 0;
-  unsigned int new_cost = 0;
   sreal weighted_old_cost = 0;
-  sreal weighted_new_cost = 0;
   auto entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  {
+    undo_recog_changes undo (0);
+    for (insn_change *change : changes)
+      {
+	// Count zero for the old cost if the old instruction was a no-op
+	// move or had an unknown cost.  This should reduce the chances of
+	// making an unprofitable change.
+	old_cost += change->old_cost ();
+	basic_block cfg_bb = change->bb ()->cfg_bb ();
+	if (optimize_bb_for_speed_p (cfg_bb))
+	  weighted_old_cost += (cfg_bb->count.to_sreal_scale (entry_count)
+				* change->old_cost ());
+
+      }
+  }
+  unsigned int new_cost = 0;
+  sreal weighted_new_cost = 0;
   for (insn_change *change : changes)
     {
-      // Count zero for the old cost if the old instruction was a no-op
-      // move or had an unknown cost.  This should reduce the chances of
-      // making an unprofitable change.
-      old_cost += change->old_cost ();
       basic_block cfg_bb = change->bb ()->cfg_bb ();
       bool for_speed = optimize_bb_for_speed_p (cfg_bb);
-      if (for_speed)
-	weighted_old_cost += (cfg_bb->count.to_sreal_scale (entry_count)
-			      * change->old_cost ());
       if (!change->is_deletion ()
 	  && INSN_CODE (change->rtl ()) != NOOP_MOVE_INSN_CODE)
 	{

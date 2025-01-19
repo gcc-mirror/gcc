@@ -1839,24 +1839,26 @@ template hasToString(T, Char)
     else static if (is(typeof(
         (T val) {
             const FormatSpec!Char f;
-            static struct S {void put(scope Char s){}}
+            static struct S
+            {
+                @disable this(this);
+                void put(scope Char s){}
+            }
             S s;
             val.toString(s, f);
-            static assert(!__traits(compiles, val.toString(s, FormatSpec!Char())),
-                          "force toString to take parameters by ref");
-            static assert(!__traits(compiles, val.toString(S(), f)),
-                          "force toString to take parameters by ref");
         })))
     {
         enum hasToString = HasToStringResult.customPutWriterFormatSpec;
     }
     else static if (is(typeof(
         (T val) {
-            static struct S {void put(scope Char s){}}
+            static struct S
+            {
+                @disable this(this);
+                void put(scope Char s){}
+            }
             S s;
             val.toString(s);
-            static assert(!__traits(compiles, val.toString(S())),
-                          "force toString to take parameters by ref");
         })))
     {
         enum hasToString = HasToStringResult.customPutWriter;
@@ -1935,7 +1937,8 @@ template hasToString(T, Char)
     static struct G
     {
         string toString() {return "";}
-        void toString(Writer)(ref Writer w) if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w)
+        if (isOutputRange!(Writer, string)) {}
     }
     static struct H
     {
@@ -1946,7 +1949,8 @@ template hasToString(T, Char)
     }
     static struct I
     {
-        void toString(Writer)(ref Writer w) if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w)
+        if (isOutputRange!(Writer, string)) {}
         void toString(Writer)(ref Writer w, scope const ref FormatSpec!char fmt)
         if (isOutputRange!(Writer, string))
         {}
@@ -1994,9 +1998,10 @@ template hasToString(T, Char)
         static assert(hasToString!(G, char) == customPutWriter);
         static assert(hasToString!(H, char) == customPutWriterFormatSpec);
         static assert(hasToString!(I, char) == customPutWriterFormatSpec);
-        static assert(hasToString!(J, char) == hasSomeToString);
+        static assert(hasToString!(J, char) == hasSomeToString
+            || hasToString!(J, char) == constCharSinkFormatSpec); // depends on -preview=rvaluerefparam
         static assert(hasToString!(K, char) == constCharSinkFormatSpec);
-        static assert(hasToString!(L, char) == none);
+        static assert(hasToString!(L, char) == customPutWriterFormatSpec);
         static if (hasPreviewIn)
         {
             static assert(hasToString!(M, char) == inCharSinkFormatSpec);
@@ -2042,7 +2047,8 @@ template hasToString(T, Char)
     static struct G
     {
         string toString() const {return "";}
-        void toString(Writer)(ref Writer w) const if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w) const
+        if (isOutputRange!(Writer, string)) {}
     }
     static struct H
     {
@@ -2053,7 +2059,8 @@ template hasToString(T, Char)
     }
     static struct I
     {
-        void toString(Writer)(ref Writer w) const if (isOutputRange!(Writer, string)) {}
+        void toString(Writer)(ref Writer w) const
+        if (isOutputRange!(Writer, string)) {}
         void toString(Writer)(ref Writer w, scope const ref FormatSpec!char fmt) const
         if (isOutputRange!(Writer, string))
         {}
@@ -2101,9 +2108,10 @@ template hasToString(T, Char)
         static assert(hasToString!(G, char) == customPutWriter);
         static assert(hasToString!(H, char) == customPutWriterFormatSpec);
         static assert(hasToString!(I, char) == customPutWriterFormatSpec);
-        static assert(hasToString!(J, char) == hasSomeToString);
+        static assert(hasToString!(J, char) == hasSomeToString
+            || hasToString!(J, char) == constCharSinkFormatSpec); // depends on -preview=rvaluerefparam
         static assert(hasToString!(K, char) == constCharSinkFormatSpec);
-        static assert(hasToString!(L, char) == none);
+        static assert(hasToString!(L, char) == HasToStringResult.customPutWriterFormatSpec);
         static if (hasPreviewIn)
         {
             static assert(hasToString!(M, char) == inCharSinkFormatSpec);
@@ -2121,9 +2129,10 @@ template hasToString(T, Char)
         static assert(hasToString!(inout(G), char) == customPutWriter);
         static assert(hasToString!(inout(H), char) == customPutWriterFormatSpec);
         static assert(hasToString!(inout(I), char) == customPutWriterFormatSpec);
-        static assert(hasToString!(inout(J), char) == hasSomeToString);
+        static assert(hasToString!(inout(J), char) == hasSomeToString
+            || hasToString!(inout(J), char) == constCharSinkFormatSpec); // depends on -preview=rvaluerefparam
         static assert(hasToString!(inout(K), char) == constCharSinkFormatSpec);
-        static assert(hasToString!(inout(L), char) == none);
+        static assert(hasToString!(inout(L), char) == customPutWriterFormatSpec);
         static if (hasPreviewIn)
         {
             static assert(hasToString!(inout(M), char) == inCharSinkFormatSpec);
@@ -2603,7 +2612,8 @@ if ((is(T == struct) || is(T == union)) && (hasToString!(T, Char) || !is(Builtin
     {
         int n = 0;
         alias n this;
-        T opCast(T) () if (is(T == Frop))
+        T opCast(T) ()
+        if (is(T == Frop))
         {
             return Frop();
         }

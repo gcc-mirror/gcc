@@ -25,7 +25,7 @@ void f8 (void) {}
 #pragma omp begin assumes contains (target enter data, target exit data) absent (target enter data, parallel)	/* { dg-error "'target enter data' directive mentioned in both 'absent' and 'contains' clauses" } */
 void f9 (void) {}
 #pragma omp end assumes
-#pragma omp begin assumes contains (declare target)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
+#pragma omp begin assumes contains (declare target)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
 void f10 (void) {}
 #pragma omp end assumes
 #pragma omp begin assumes absent (parallel for simd)			/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
@@ -34,16 +34,16 @@ void f11 (void) {}
 #pragma omp begin assumes contains (target parallel)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
 void f12 (void) {}
 #pragma omp end assumes
-#pragma omp begin assumes absent (assume)				/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
+#pragma omp begin assumes absent (assume)				/* { dg-error "invalid OpenMP directive name in 'absent' clause argument" } */
 void f13 (void) {}
 #pragma omp end assumes
-#pragma omp begin assumes absent (assumes)				/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
+#pragma omp begin assumes absent (assumes)				/* { dg-error "invalid OpenMP directive name in 'absent' clause argument" } */
 void f14 (void) {}
 #pragma omp end assumes
-#pragma omp begin assumes contains (begin assumes)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
+#pragma omp begin assumes contains (begin assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
 void f15 (void) {}
 #pragma omp end assumes
-#pragma omp begin assumes contains (end assumes)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
+#pragma omp begin assumes contains (end assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
 void f16 (void) {}
 #pragma omp end assumes
 #pragma omp begin assumes contains (foo)				/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */

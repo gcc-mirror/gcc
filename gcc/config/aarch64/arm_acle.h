@@ -1,6 +1,6 @@
 /* AArch64 Non-NEON ACLE intrinsics include file.
 
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -119,7 +119,7 @@ __revl (unsigned long __value)
 }
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.3-a")
+#pragma GCC target ("+nothing+jscvt")
 __extension__ extern __inline int32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __jcvt (double __a)
@@ -130,7 +130,7 @@ __jcvt (double __a)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.5-a")
+#pragma GCC target ("+nothing+frintts")
 __extension__ extern __inline float
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __rint32zf (float __a)
@@ -190,8 +190,33 @@ __rint64x (double __a)
 
 #pragma GCC pop_options
 
-#pragma GCC push_options
 
+#pragma GCC push_options
+#pragma GCC target ("+nothing")
+
+/* Feature constants for CHKFEAT operation.  */
+#define _CHKFEAT_GCS 1
+
+__extension__ extern __inline uint64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__chkfeat (uint64_t __feat)
+{
+  return __builtin_aarch64_chkfeat (__feat) ^ __feat;
+}
+
+#define __gcspr() \
+  __builtin_aarch64_gcspr ()
+
+#define __gcspopm() \
+  __builtin_aarch64_gcspopm ()
+
+#define __gcsss(__stack) \
+  __builtin_aarch64_gcsss (__stack)
+
+#pragma GCC pop_options
+
+
+#pragma GCC push_options
 #pragma GCC target ("+nothing+crc")
 
 __extension__ extern __inline uint32_t

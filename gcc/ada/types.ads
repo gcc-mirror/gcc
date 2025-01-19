@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -707,8 +707,7 @@ package Types is
    Tasking_Check              : constant := 28;
    Raise_Check                : constant := 29;
    --  Values used to represent individual predefined checks (including the
-   --  setting of Atomic_Synchronization, which is implemented internally using
-   --  a "check" whose name is Atomic_Synchronization).
+   --  pseudo-check _Atomic_Synchronization).
 
    All_Checks : constant := 30;
    --  Value used to represent All_Checks value

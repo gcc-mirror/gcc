@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "" { *-*-* } { "-flto" } } */
 /* { dg-require-effective-target float16_runtime } */
 /* { dg-require-effective-target dfprt } */
 /* { dg-options "-save-temps" } */

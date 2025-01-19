@@ -22,6 +22,6 @@ union u;
 
 void v(union u x) { } /* { dg-error "parameter 1 \\('x'\\) has incomplete type" } */
 
-void p(void x); /* { dg-warning "parameter 1 \\('x'\\) has void type" } */
+void p(void x); /* { dg-error "'void' must be the only parameter and unnamed" } */
 
-void q(const void x); /* { dg-warning "parameter 1 \\('x'\\) has void type" } */
+void q(const void x); /* { dg-error "'void' must be the only parameter and unnamed" } */

@@ -1,7 +1,7 @@
 /* PR target/113733 */
 /* { dg-do assemble { target { apxf && { ! ia32 } } } } */
 /* { dg-require-effective-target tls } */
-/* { dg-options "-mapxf -O3 -w" } */
+/* { dg-options "-std=gnu17 -mapxf -O3 -w" } */
 
 extern __thread int a, j;
 enum b

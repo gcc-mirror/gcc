@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019-2024, Free Software Foundation, Inc.      --
+--             Copyright (C) 2019-2025, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
       function To_Big_Real (Arg : Num) return Valid_Big_Real is
 
-         A : constant Num'Base := abs (Arg);
+         A : constant Num'Base := abs Arg;
          E : constant Integer  := Num'Exponent (A);
          F : constant Num'Base := Num'Fraction (A);
          M : constant Natural  := Num'Machine_Mantissa;
@@ -229,7 +229,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
          --  Local variables
 
-         V : Big_Real := abs (Arg);
+         V : Big_Real := abs Arg;
          E : Integer  := 0;
          L : Integer;
 

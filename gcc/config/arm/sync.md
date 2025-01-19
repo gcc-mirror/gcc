@@ -1,5 +1,5 @@
 ;; Machine description for ARM processor synchronization primitives.
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Written by Marcus Shawcroft (marcus.shawcroft@arm.com)
 ;; 64bit Atomics by Dave Gilbert (david.gilbert@linaro.org)
 ;;
@@ -161,7 +161,7 @@
 (define_insn "arm_atomic_loaddi2_ldrd"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec_volatile:DI
-	  [(match_operand:DI 1 "memory_operand" "m")]
+	  [(match_operand:DI 1 "arm_ldrd_memory_operand" "Uo")]
 	    VUNSPEC_LDRD_ATOMIC))]
   "ARM_DOUBLEWORD_ALIGN && TARGET_HAVE_LPAE"
   "ldrd\t%0, %H0, %1"

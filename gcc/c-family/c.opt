@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2024 Free Software Foundation, Inc.
+; Copyright (C) 2003-2025 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -668,6 +668,14 @@ Wdeprecated-literal-operator
 C++ ObjC++ Var(warn_deprecated_literal_operator) Warning
 Warn about deprecated space between "" and suffix in a user-defined literal operator.
 
+Wdeprecated-non-prototype
+C ObjC Var(warn_deprecated_non_prototype) Init(-1) Warning
+Warn about calls with arguments to functions declared without parameters.
+
+Wdeprecated-variadic-comma-omission
+C++ ObjC++ Var(warn_deprecated_variadic_comma_omission) Warning
+Warn about deprecated omission of comma before ... in varargs function declaration.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
@@ -827,6 +835,10 @@ Warn about printf/scanf/strftime/strfmon format string anomalies.
 Wframe-address
 C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
+
+Wfree-labels
+C ObjC Var(warn_free_labels) Init(-1) Warning
+Warn about labels on declarations and at the end of compound statements.
 
 Wglobal-module
 C++ ObjC++ Var(warn_global_module) Warning Init(1)
@@ -1025,6 +1037,10 @@ C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
 Wmissing-include-dirs
 C ObjC C++ ObjC++ CPP(warn_missing_include_dirs) CppReason(CPP_W_MISSING_INCLUDE_DIRS) Var(cpp_warn_missing_include_dirs) Init(0) Warning
 Warn about user-specified include directories that do not exist.
+
+Wmissing-parameter-name
+C ObjC Var(warn_missing_parameter_name) Init(-1) Warning
+Warn about function definitions omitting parameter names.
 
 Wmissing-parameter-type
 C ObjC Var(warn_missing_parameter_type) Warning EnabledBy(Wextra)
@@ -1461,10 +1477,6 @@ Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.
 
-Wtautological-compare
-C ObjC C++ ObjC++ Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn if a comparison always evaluates to true or false.
-
 Wtemplate-body
 C++ ObjC++ Var(warn_template_body) Warning Init(1)
 Diagnose errors when parsing a template.
@@ -1472,6 +1484,10 @@ Diagnose errors when parsing a template.
 Wtemplate-id-cdtor
 C++ ObjC++ Var(warn_template_id_cdtor) Warning
 Warn about simple-template-id in a constructor or destructor.
+
+Wtemplate-names-tu-local
+C++ ObjC++ Var(warn_template_names_tu_local) Warning EnabledBy(Wextra)
+Warn about templates naming TU-local entities in a module.
 
 Wterminate
 C++ ObjC++ Warning Var(warn_terminate) Init(1)
@@ -1632,7 +1648,7 @@ C ObjC C++ ObjC++ Var(warn_xor_used_as_pow) Warning Init(1)
 Warn about xor operators where it appears the user meant exponentiation.
 
 Wzero-as-null-pointer-constant
-C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
+C ObjC C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer.
 
 Wzero-length-bounds
@@ -1681,6 +1697,10 @@ No longer supported.
 fasm
 C ObjC C++ ObjC++ Var(flag_no_asm, 0)
 Recognize the \"asm\" keyword.
+
+fassume-sane-operators-new-delete
+C++ ObjC++ Optimization Var(flag_assume_sane_operators_new_delete) Init(1)
+Assume C++ replaceable global operators new, new[], delete, delete[] don't read or write visible global state.
 
 ; Define extra predefined macros for use in libgcc.
 fbuilding-libgcc
@@ -2100,12 +2120,12 @@ flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
-fmodules-ts
-C++ ObjC++ Var(flag_modules) Integer Init(0)
-Enable C++ modules-ts (experimental).
+fmodules
+C++ ObjC++ Var(flag_modules) Integer
+Enable C++20 Modules (experimental).
 
-fno-modules
-C++ ObjC++ Undocumented RejectNegative Var(flag_modules,0) Integer
+fmodules-ts
+C++ ObjC++ Alias(fmodules) Undocumented
 ;; undocumented
 
 fmodule-header
@@ -2342,6 +2362,13 @@ Removed in GCC 10.  This switch has no effect.
 frtti
 C++ ObjC++ Optimization Var(flag_rtti) Init(1)
 Generate run time type descriptor information.
+
+fsearch-include-path
+C ObjC C++ ObjC++
+Look for the main source file on the include path.
+
+fsearch-include-path=
+C++ ObjC++ Joined RejectNegative Undocumented
 
 fshort-enums
 C ObjC C++ ObjC++ LTO Optimization Var(flag_short_enums)
@@ -2657,7 +2684,7 @@ Conform to the ISO 2017 C standard (published in 2018).
 
 std=c23
 C ObjC
-Conform to the ISO 2023 C standard draft (expected to be published in 2024).
+Conform to the ISO 2023 C standard (published in 2024).
 
 std=c2x
 C ObjC Alias(std=c23)
@@ -2759,7 +2786,7 @@ Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
 
 std=gnu23
 C ObjC
-Conform to the ISO 2023 C standard draft (expected to be published in 2024) with GNU extensions.
+Conform to the ISO 2023 C standard (published in 2024) with GNU extensions.
 
 std=gnu2x
 C ObjC Alias(std=gnu23)
@@ -2815,7 +2842,7 @@ Conform to the ISO 2017 C standard (published in 2018).
 
 std=iso9899:2024
 C ObjC Alias(std=c23)
-Conform to the ISO 2023 C standard draft (expected to be published in 2024).
+Conform to the ISO 2023 C standard (published in 2024).
 
 stdlib=
 Driver C++ ObjC++ Common Condition(ENABLE_STDLIB_OPTION) Var(flag_stdlib_kind) Joined Enum(stdlib_kind) RejectNegative Init(1)

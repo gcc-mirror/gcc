@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2018-2025 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -19,6 +19,11 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* An executable stack is *not* required for these functions.  */
+#ifdef __linux__
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
 
 #ifdef L__mulsi3
 	.balign 4

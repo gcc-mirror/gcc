@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,6 +336,7 @@ package body System.Val_Real is
       pragma Import (Ada, Powfive_300);
       for Powfive_300'Address use Powfive_300_Address;
 
+      H : Double_T;
       R : Double_T;
       E : Natural;
 
@@ -359,8 +360,15 @@ package body System.Val_Real is
          E := Exp - Maxpow;
       end if;
 
+      --  Accumulate 5**Maxpow into R until E <= Maxpow or R saturates to +Inf
+
       while E > Maxpow loop
+         H := R;
          R := R * Powfive (Maxpow);
+         if R = H then
+            E := Maxpow;
+            exit;
+         end if;
          E := E - Maxpow;
       end loop;
 
@@ -381,11 +389,15 @@ package body System.Val_Real is
       pragma Import (Ada, Powfive);
       for Powfive'Address use Powfive_Address;
 
+      H : Double_T;
       R : Double_T;
       E : Natural;
 
    begin
       pragma Assert (Exp > Maxexp);
+
+      --  This routine supports any type but it is not necessary to invoke it
+      --  for large types because the above one is sufficient for them.
 
       pragma Warnings (Off, "-gnatw.a");
       pragma Assert (not Is_Large_Type);
@@ -398,6 +410,8 @@ package body System.Val_Real is
       --  its final value does not overflow but, if it's too large, then do not
       --  bother doing it since overflow is just fine. The scaling factor is -3
       --  for every power of 5 above the maximum, in other words division by 8.
+      --  Note that Maxpow is an upper bound of the span of exponents for which
+      --  scaling is needed, but it's OK to apply it even if it is not needed.
 
       if Exp - Maxexp <= Maxpow then
          S := 3 * (Exp - Maxexp);
@@ -407,8 +421,15 @@ package body System.Val_Real is
          S := 0;
       end if;
 
+      --  Accumulate 5**Maxpow into R until E <= Maxpow or R saturates to +Inf
+
       while E > Maxpow loop
+         H := R;
          R := R * Powfive (Maxpow);
+         if R = H then
+            E := Maxpow;
+            exit;
+         end if;
          E := E - Maxpow;
       end loop;
 

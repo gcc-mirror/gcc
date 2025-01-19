@@ -19,7 +19,6 @@ import core.stdc.stdio;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
-import dmd.errors;
 import dmd.cond;
 import dmd.declaration;
 import dmd.dsymbol;
@@ -30,10 +29,10 @@ import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
 import dmd.rootobject;
-import dmd.sapply;
 import dmd.staticassert;
 import dmd.tokens;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 /***********************************************************
  * Specification: https://dlang.org/spec/statement.html
@@ -267,57 +266,58 @@ extern (C++) abstract class Statement : ASTNode
     pure nothrow @nogc
     inout(ReturnStatement) endsWithReturnStatement() inout { return null; }
 
-    final pure inout nothrow @nogc @safe:
-
-    /********************
-     * A cheaper method of doing downcasting of Statements.
-     * Returns:
-     *    the downcast statement if it can be downcasted, otherwise `null`
-     */
-    inout(ErrorStatement)       isErrorStatement()       { return stmt == STMT.Error       ? cast(typeof(return))this : null; }
-    inout(PeelStatement)        isPeelStatement()        { return stmt == STMT.Peel        ? cast(typeof(return))this : null; }
-    inout(ScopeStatement)       isScopeStatement()       { return stmt == STMT.Scope       ? cast(typeof(return))this : null; }
-    inout(ExpStatement)         isExpStatement()         { return stmt == STMT.Exp         ? cast(typeof(return))this : null; }
-    inout(CompoundStatement)    isCompoundStatement()    { return stmt == STMT.Compound    ? cast(typeof(return))this : null; }
-    inout(ReturnStatement)      isReturnStatement()      { return stmt == STMT.Return      ? cast(typeof(return))this : null; }
-    inout(IfStatement)          isIfStatement()          { return stmt == STMT.If          ? cast(typeof(return))this : null; }
-    inout(ConditionalStatement) isConditionalStatement() { return stmt == STMT.Conditional ? cast(typeof(return))this : null; }
-    inout(StaticForeachStatement) isStaticForeachStatement() { return stmt == STMT.StaticForeach ? cast(typeof(return))this : null; }
-    inout(CaseStatement)        isCaseStatement()        { return stmt == STMT.Case        ? cast(typeof(return))this : null; }
-    inout(DefaultStatement)     isDefaultStatement()     { return stmt == STMT.Default     ? cast(typeof(return))this : null; }
-    inout(LabelStatement)       isLabelStatement()       { return stmt == STMT.Label       ? cast(typeof(return))this : null; }
-    inout(GotoStatement)        isGotoStatement()        { return stmt == STMT.Goto        ? cast(typeof(return))this : null; }
-    inout(GotoDefaultStatement) isGotoDefaultStatement() { return stmt == STMT.GotoDefault ? cast(typeof(return))this : null; }
-    inout(GotoCaseStatement)    isGotoCaseStatement()    { return stmt == STMT.GotoCase    ? cast(typeof(return))this : null; }
-    inout(BreakStatement)       isBreakStatement()       { return stmt == STMT.Break       ? cast(typeof(return))this : null; }
-    inout(DtorExpStatement)     isDtorExpStatement()     { return stmt == STMT.DtorExp     ? cast(typeof(return))this : null; }
-    inout(MixinStatement)       isMixinStatement()       { return stmt == STMT.Mixin       ? cast(typeof(return))this : null; }
-    inout(ForwardingStatement)  isForwardingStatement()  { return stmt == STMT.Forwarding  ? cast(typeof(return))this : null; }
-    inout(DoStatement)          isDoStatement()          { return stmt == STMT.Do          ? cast(typeof(return))this : null; }
-    inout(WhileStatement)       isWhileStatement()       { return stmt == STMT.While       ? cast(typeof(return))this : null; }
-    inout(ForStatement)         isForStatement()         { return stmt == STMT.For         ? cast(typeof(return))this : null; }
-    inout(ForeachStatement)     isForeachStatement()     { return stmt == STMT.Foreach     ? cast(typeof(return))this : null; }
-    inout(SwitchStatement)      isSwitchStatement()      { return stmt == STMT.Switch      ? cast(typeof(return))this : null; }
-    inout(ContinueStatement)    isContinueStatement()    { return stmt == STMT.Continue    ? cast(typeof(return))this : null; }
-    inout(WithStatement)        isWithStatement()        { return stmt == STMT.With        ? cast(typeof(return))this : null; }
-    inout(TryCatchStatement)    isTryCatchStatement()    { return stmt == STMT.TryCatch    ? cast(typeof(return))this : null; }
-    inout(ThrowStatement)       isThrowStatement()       { return stmt == STMT.Throw       ? cast(typeof(return))this : null; }
-    inout(DebugStatement)       isDebugStatement()       { return stmt == STMT.Debug       ? cast(typeof(return))this : null; }
-    inout(TryFinallyStatement)  isTryFinallyStatement()  { return stmt == STMT.TryFinally  ? cast(typeof(return))this : null; }
-    inout(ScopeGuardStatement)  isScopeGuardStatement()  { return stmt == STMT.ScopeGuard  ? cast(typeof(return))this : null; }
-    inout(SwitchErrorStatement)  isSwitchErrorStatement()  { return stmt == STMT.SwitchError  ? cast(typeof(return))this : null; }
-    inout(UnrolledLoopStatement) isUnrolledLoopStatement() { return stmt == STMT.UnrolledLoop ? cast(typeof(return))this : null; }
-    inout(ForeachRangeStatement) isForeachRangeStatement() { return stmt == STMT.ForeachRange ? cast(typeof(return))this : null; }
-    inout(CompoundDeclarationStatement) isCompoundDeclarationStatement() { return stmt == STMT.CompoundDeclaration ? cast(typeof(return))this : null; }
-    inout(CompoundAsmStatement)  isCompoundAsmStatement()  { return stmt == STMT.CompoundAsm  ? cast(typeof(return))this : null; }
-    inout(PragmaStatement)       isPragmaStatement()       { return stmt == STMT.Pragma       ? cast(typeof(return))this : null; }
-    inout(StaticAssertStatement) isStaticAssertStatement() { return stmt == STMT.StaticAssert ? cast(typeof(return))this : null; }
-    inout(CaseRangeStatement)    isCaseRangeStatement()    { return stmt == STMT.CaseRange    ? cast(typeof(return))this : null; }
-    inout(SynchronizedStatement) isSynchronizedStatement() { return stmt == STMT.Synchronized ? cast(typeof(return))this : null; }
-    inout(AsmStatement)          isAsmStatement()          { return stmt == STMT.Asm          ? cast(typeof(return))this : null; }
-    inout(InlineAsmStatement)    isInlineAsmStatement()    { return stmt == STMT.InlineAsm    ? cast(typeof(return))this : null; }
-    inout(GccAsmStatement)       isGccAsmStatement()       { return stmt == STMT.GccAsm       ? cast(typeof(return))this : null; }
-    inout(ImportStatement)       isImportStatement()       { return stmt == STMT.Import       ? cast(typeof(return))this : null; }
+    final pure inout nothrow @nogc @trusted
+    {
+        /********************
+         * A cheaper method of doing downcasting of Statements.
+         * Returns:
+         *    the downcast statement if it can be downcasted, otherwise `null`
+         */
+        inout(ErrorStatement)       isErrorStatement()       { return stmt == STMT.Error       ? cast(typeof(return))this : null; }
+        inout(PeelStatement)        isPeelStatement()        { return stmt == STMT.Peel        ? cast(typeof(return))this : null; }
+        inout(ScopeStatement)       isScopeStatement()       { return stmt == STMT.Scope       ? cast(typeof(return))this : null; }
+        inout(ExpStatement)         isExpStatement()         { return stmt == STMT.Exp         ? cast(typeof(return))this : null; }
+        inout(CompoundStatement)    isCompoundStatement()    { return stmt == STMT.Compound    ? cast(typeof(return))this : null; }
+        inout(ReturnStatement)      isReturnStatement()      { return stmt == STMT.Return      ? cast(typeof(return))this : null; }
+        inout(IfStatement)          isIfStatement()          { return stmt == STMT.If          ? cast(typeof(return))this : null; }
+        inout(ConditionalStatement) isConditionalStatement() { return stmt == STMT.Conditional ? cast(typeof(return))this : null; }
+        inout(StaticForeachStatement) isStaticForeachStatement() { return stmt == STMT.StaticForeach ? cast(typeof(return))this : null; }
+        inout(CaseStatement)        isCaseStatement()        { return stmt == STMT.Case        ? cast(typeof(return))this : null; }
+        inout(DefaultStatement)     isDefaultStatement()     { return stmt == STMT.Default     ? cast(typeof(return))this : null; }
+        inout(LabelStatement)       isLabelStatement()       { return stmt == STMT.Label       ? cast(typeof(return))this : null; }
+        inout(GotoStatement)        isGotoStatement()        { return stmt == STMT.Goto        ? cast(typeof(return))this : null; }
+        inout(GotoDefaultStatement) isGotoDefaultStatement() { return stmt == STMT.GotoDefault ? cast(typeof(return))this : null; }
+        inout(GotoCaseStatement)    isGotoCaseStatement()    { return stmt == STMT.GotoCase    ? cast(typeof(return))this : null; }
+        inout(BreakStatement)       isBreakStatement()       { return stmt == STMT.Break       ? cast(typeof(return))this : null; }
+        inout(DtorExpStatement)     isDtorExpStatement()     { return stmt == STMT.DtorExp     ? cast(typeof(return))this : null; }
+        inout(MixinStatement)       isMixinStatement()       { return stmt == STMT.Mixin       ? cast(typeof(return))this : null; }
+        inout(ForwardingStatement)  isForwardingStatement()  { return stmt == STMT.Forwarding  ? cast(typeof(return))this : null; }
+        inout(DoStatement)          isDoStatement()          { return stmt == STMT.Do          ? cast(typeof(return))this : null; }
+        inout(WhileStatement)       isWhileStatement()       { return stmt == STMT.While       ? cast(typeof(return))this : null; }
+        inout(ForStatement)         isForStatement()         { return stmt == STMT.For         ? cast(typeof(return))this : null; }
+        inout(ForeachStatement)     isForeachStatement()     { return stmt == STMT.Foreach     ? cast(typeof(return))this : null; }
+        inout(SwitchStatement)      isSwitchStatement()      { return stmt == STMT.Switch      ? cast(typeof(return))this : null; }
+        inout(ContinueStatement)    isContinueStatement()    { return stmt == STMT.Continue    ? cast(typeof(return))this : null; }
+        inout(WithStatement)        isWithStatement()        { return stmt == STMT.With        ? cast(typeof(return))this : null; }
+        inout(TryCatchStatement)    isTryCatchStatement()    { return stmt == STMT.TryCatch    ? cast(typeof(return))this : null; }
+        inout(ThrowStatement)       isThrowStatement()       { return stmt == STMT.Throw       ? cast(typeof(return))this : null; }
+        inout(DebugStatement)       isDebugStatement()       { return stmt == STMT.Debug       ? cast(typeof(return))this : null; }
+        inout(TryFinallyStatement)  isTryFinallyStatement()  { return stmt == STMT.TryFinally  ? cast(typeof(return))this : null; }
+        inout(ScopeGuardStatement)  isScopeGuardStatement()  { return stmt == STMT.ScopeGuard  ? cast(typeof(return))this : null; }
+        inout(SwitchErrorStatement)  isSwitchErrorStatement()  { return stmt == STMT.SwitchError  ? cast(typeof(return))this : null; }
+        inout(UnrolledLoopStatement) isUnrolledLoopStatement() { return stmt == STMT.UnrolledLoop ? cast(typeof(return))this : null; }
+        inout(ForeachRangeStatement) isForeachRangeStatement() { return stmt == STMT.ForeachRange ? cast(typeof(return))this : null; }
+        inout(CompoundDeclarationStatement) isCompoundDeclarationStatement() { return stmt == STMT.CompoundDeclaration ? cast(typeof(return))this : null; }
+        inout(CompoundAsmStatement)  isCompoundAsmStatement()  { return stmt == STMT.CompoundAsm  ? cast(typeof(return))this : null; }
+        inout(PragmaStatement)       isPragmaStatement()       { return stmt == STMT.Pragma       ? cast(typeof(return))this : null; }
+        inout(StaticAssertStatement) isStaticAssertStatement() { return stmt == STMT.StaticAssert ? cast(typeof(return))this : null; }
+        inout(CaseRangeStatement)    isCaseRangeStatement()    { return stmt == STMT.CaseRange    ? cast(typeof(return))this : null; }
+        inout(SynchronizedStatement) isSynchronizedStatement() { return stmt == STMT.Synchronized ? cast(typeof(return))this : null; }
+        inout(AsmStatement)          isAsmStatement()          { return stmt == STMT.Asm          ? cast(typeof(return))this : null; }
+        inout(InlineAsmStatement)    isInlineAsmStatement()    { return stmt == STMT.InlineAsm    ? cast(typeof(return))this : null; }
+        inout(GccAsmStatement)       isGccAsmStatement()       { return stmt == STMT.GccAsm       ? cast(typeof(return))this : null; }
+        inout(ImportStatement)       isImportStatement()       { return stmt == STMT.Import       ? cast(typeof(return))this : null; }
+    }
 }
 
 /***********************************************************
@@ -890,7 +890,7 @@ extern (C++) final class ForeachStatement : Statement
 extern (C++) final class ForeachRangeStatement : Statement
 {
     TOK op;                 // TOK.foreach_ or TOK.foreach_reverse_
-    Parameter prm;          // loop index variable
+    Parameter param;          // loop index variable
     Expression lwr;
     Expression upr;
     Statement _body;
@@ -898,11 +898,11 @@ extern (C++) final class ForeachRangeStatement : Statement
 
     VarDeclaration key;
 
-    extern (D) this(const ref Loc loc, TOK op, Parameter prm, Expression lwr, Expression upr, Statement _body, Loc endloc) @safe
+    extern (D) this(const ref Loc loc, TOK op, Parameter param, Expression lwr, Expression upr, Statement _body, Loc endloc) @safe
     {
         super(loc, STMT.ForeachRange);
         this.op = op;
-        this.prm = prm;
+        this.param = param;
         this.lwr = lwr;
         this.upr = upr;
         this._body = _body;
@@ -911,7 +911,7 @@ extern (C++) final class ForeachRangeStatement : Statement
 
     override ForeachRangeStatement syntaxCopy()
     {
-        return new ForeachRangeStatement(loc, op, prm.syntaxCopy(), lwr.syntaxCopy(), upr.syntaxCopy(), _body ? _body.syntaxCopy() : null, endloc);
+        return new ForeachRangeStatement(loc, op, param.syntaxCopy(), lwr.syntaxCopy(), upr.syntaxCopy(), _body ? _body.syntaxCopy() : null, endloc);
     }
 
     override bool hasBreak() const pure nothrow
@@ -935,17 +935,17 @@ extern (C++) final class ForeachRangeStatement : Statement
  */
 extern (C++) final class IfStatement : Statement
 {
-    Parameter prm;
+    Parameter param;
     Expression condition;
     Statement ifbody;
     Statement elsebody;
     VarDeclaration match;   // for MatchExpression results
     Loc endloc;                 // location of closing curly bracket
 
-    extern (D) this(const ref Loc loc, Parameter prm, Expression condition, Statement ifbody, Statement elsebody, Loc endloc) @safe
+    extern (D) this(const ref Loc loc, Parameter param, Expression condition, Statement ifbody, Statement elsebody, Loc endloc) @safe
     {
         super(loc, STMT.If);
-        this.prm = prm;
+        this.param = param;
         this.condition = condition;
         this.ifbody = ifbody;
         this.elsebody = elsebody;
@@ -955,7 +955,7 @@ extern (C++) final class IfStatement : Statement
     override IfStatement syntaxCopy()
     {
         return new IfStatement(loc,
-            prm ? prm.syntaxCopy() : null,
+            param ? param.syntaxCopy() : null,
             condition.syntaxCopy(),
             ifbody ? ifbody.syntaxCopy() : null,
             elsebody ? elsebody.syntaxCopy() : null,

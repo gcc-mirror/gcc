@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    Offloading and Multi Processing builtins used in the GNU compiler.
-   Copyright (C) 2005-2024 Free Software Foundation, Inc.
+   Copyright (C) 2005-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -80,6 +80,16 @@ DEF_GOMP_BUILTIN (BUILT_IN_OMP_GET_TEAM_NUM, "omp_get_team_num",
 		  BT_FN_INT, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_GOMP_BUILTIN (BUILT_IN_OMP_GET_NUM_TEAMS, "omp_get_num_teams",
 		  BT_FN_INT, ATTR_CONST_NOTHROW_LEAF_LIST)
+DEF_GOMP_BUILTIN (BUILT_IN_OMP_GET_MAPPED_PTR, "omp_get_mapped_ptr",
+		  BT_FN_PTR_CONST_PTR_INT, ATTR_NOTHROW_LEAF_LIST)
+DEF_GOMP_BUILTIN (BUILT_IN_OMP_GET_DEFAULT_DEVICE, "omp_get_default_device",
+		  BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
+DEF_GOMP_BUILTIN (BUILT_IN_OMP_SET_DEFAULT_DEVICE, "omp_set_default_device",
+		  BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
+DEF_GOMP_BUILTIN (BUILT_IN_OMP_GET_INTEROP_INT, "omp_get_interop_int",
+		  BT_FN_PTRMODE_PTR_INT_PTR, ATTR_NOTHROW_LEAF_LIST)
+DEF_GOMP_BUILTIN (BUILT_IN_OMP_GET_NUM_DEVICES, "omp_get_num_devices",
+		  BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 DEF_GOMP_BUILTIN (BUILT_IN_GOMP_ATOMIC_START, "GOMP_atomic_start",
 		  BT_FN_VOID, ATTR_NOTHROW_LEAF_LIST)

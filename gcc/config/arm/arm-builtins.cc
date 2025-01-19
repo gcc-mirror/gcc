@@ -1,5 +1,5 @@
 /* Description of builtins used by the ARM backend.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -609,152 +609,6 @@ arm_quadop_unone_unone_unone_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
     qualifier_none, qualifier_predicate };
 #define QUADOP_UNONE_UNONE_UNONE_NONE_PRED_QUALIFIERS \
   (arm_quadop_unone_unone_unone_none_pred_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strss_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_none};
-#define STRSS_QUALIFIERS (arm_strss_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned};
-#define STRSU_QUALIFIERS (arm_strsu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_immediate, qualifier_none};
-#define STRSBS_QUALIFIERS (arm_strsbs_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned};
-#define STRSBU_QUALIFIERS (arm_strsbu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned, qualifier_predicate};
-#define STRSU_P_QUALIFIERS (arm_strsu_p_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strss_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_none, qualifier_predicate};
-#define STRSS_P_QUALIFIERS (arm_strss_p_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_immediate,
-      qualifier_none, qualifier_predicate};
-#define STRSBS_P_QUALIFIERS (arm_strsbs_p_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned, qualifier_predicate};
-#define STRSBU_P_QUALIFIERS (arm_strsbu_p_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_pointer, qualifier_unsigned};
-#define LDRGU_QUALIFIERS (arm_ldrgu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_pointer, qualifier_unsigned};
-#define LDRGS_QUALIFIERS (arm_ldrgs_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_unsigned, qualifier_immediate};
-#define LDRGBS_QUALIFIERS (arm_ldrgbs_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate};
-#define LDRGBU_QUALIFIERS (arm_ldrgbu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBS_Z_QUALIFIERS (arm_ldrgbs_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBU_Z_QUALIFIERS (arm_ldrgbu_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_pointer, qualifier_unsigned,
-      qualifier_predicate};
-#define LDRGS_Z_QUALIFIERS (arm_ldrgs_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_pointer, qualifier_unsigned,
-      qualifier_predicate};
-#define LDRGU_Z_QUALIFIERS (arm_ldrgu_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbxu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate};
-#define LDRGBWBXU_QUALIFIERS (arm_ldrgbwbxu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbxu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBWBXU_Z_QUALIFIERS (arm_ldrgbwbxu_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_unsigned, qualifier_immediate};
-#define LDRGBWBS_QUALIFIERS (arm_ldrgbwbs_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate};
-#define LDRGBWBU_QUALIFIERS (arm_ldrgbwbu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBWBS_Z_QUALIFIERS (arm_ldrgbwbs_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBWBU_Z_QUALIFIERS (arm_ldrgbwbu_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbwbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const, qualifier_none};
-#define STRSBWBS_QUALIFIERS (arm_strsbwbs_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbwbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const, qualifier_unsigned};
-#define STRSBWBU_QUALIFIERS (arm_strsbwbu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbwbs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
-      qualifier_none, qualifier_predicate};
-#define STRSBWBS_P_QUALIFIERS (arm_strsbwbs_p_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbwbu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
-      qualifier_unsigned, qualifier_predicate};
-#define STRSBWBU_P_QUALIFIERS (arm_strsbwbu_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_lsll_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -4148,9 +4002,8 @@ arm_general_check_builtin_call (unsigned int code)
 
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 bool
-arm_check_builtin_call (location_t loc, vec<location_t> arg_loc,
-			tree fndecl, tree orig_fndecl,
-			unsigned int nargs, tree *args)
+arm_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
+			tree orig_fndecl, unsigned int nargs, tree *args, bool)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> ARM_BUILTIN_SHIFT;

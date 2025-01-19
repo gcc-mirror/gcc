@@ -1,5 +1,5 @@
 /* Next Runtime (ABI-0/1) private.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Iain Sandoe (split from objc-act.cc)
 
 This file is part of GCC.
@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
    of additions made for properties and optional protocol methods as
    ABI=1 (module version 7).  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

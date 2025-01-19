@@ -1,6 +1,6 @@
 /* LTO IL options.
 
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -154,6 +153,8 @@ lto_write_options (void)
 	case OPT_fcanon_prefix_map:
 	case OPT_fwhole_program:
 	case OPT_fltrans_output_list_:
+	case OPT_flto_incremental_:
+	case OPT_flto_incremental_cache_size_:
 	  continue;
 
 	default:

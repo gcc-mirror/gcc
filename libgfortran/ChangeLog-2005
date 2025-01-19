@@ -2913,7 +2913,6 @@
 	PR fortran/18398
 	* transfer.c (next_record_r): always skip the
 	eol search if it was found during sf_read.
-
 
 Copyright (C) 2005 Free Software Foundation, Inc.
 

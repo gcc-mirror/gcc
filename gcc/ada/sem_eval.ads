@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -421,6 +421,15 @@ package Sem_Eval is
    --  routine. This routine is *not* to be used in contexts where the test is
    --  for compile time evaluation purposes. Use Compile_Time_Known_Value
    --  instead (see section on "Compile-Time Known Values" above).
+
+   type Staticity is (Static, Not_Static, Invalid);
+
+   function Is_OK_Static_Expression_Of_Type
+     (Expr : Node_Id; Typ : Entity_Id := Empty) return Staticity;
+   --  Return whether Expr is a static expression of the given type (i.e. it
+   --  will be analyzed and resolved using this type, which can be any valid
+   --  argument to Resolve, e.g. Any_Integer is OK). Includes checking that the
+   --  expression does not raise Constraint_Error.
 
    function Is_OK_Static_Range (N : Node_Id) return Boolean;
    --  Determines if range is static, as defined in RM 4.9(26), and also checks

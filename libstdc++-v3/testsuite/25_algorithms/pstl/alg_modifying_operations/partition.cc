@@ -57,15 +57,24 @@ struct DataType
     T my_val;
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+// is_trivial is deprecated in C++26
 template <typename Iterator>
-typename std::enable_if<std::is_trivial<typename std::iterator_traits<Iterator>::value_type>::value, bool>::type
+using iterator_value_type_is_trivial = std::is_trivial<
+    typename std::iterator_traits<Iterator>::value_type
+>;
+#pragma GCC diagnostic pop
+
+template <typename Iterator>
+typename std::enable_if<iterator_value_type_is_trivial<Iterator>::value, bool>::type
 is_equal(Iterator first, Iterator last, Iterator d_first)
 {
     return std::equal(first, last, d_first);
 }
 
 template <typename Iterator>
-typename std::enable_if<!std::is_trivial<typename std::iterator_traits<Iterator>::value_type>::value, bool>::type
+typename std::enable_if<!iterator_value_type_is_trivial<Iterator>::value, bool>::type
     is_equal(Iterator, Iterator, Iterator)
 {
     return true;

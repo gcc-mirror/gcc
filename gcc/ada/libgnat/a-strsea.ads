@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,7 +148,7 @@ is
                       then J <= Index'Result - 1
                       else J - 1 in Index'Result
                                     .. Source'Last - Pattern'Length)
-                  then not (Match (Source, Pattern, Mapping, J)))),
+                  then not Match (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 
@@ -195,7 +195,7 @@ is
                       then J <= Index'Result - 1
                       else J - 1 in Index'Result
                                     .. Source'Last - Pattern'Length)
-                  then not (Match (Source, Pattern, Mapping, J)))),
+                  then not Match (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 
@@ -295,7 +295,7 @@ is
                       then J in From .. Index'Result - 1
                       else J - 1 in Index'Result
                                     .. From - Pattern'Length)
-                  then not (Match (Source, Pattern, Mapping, J)))),
+                  then not Match (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 
@@ -353,7 +353,7 @@ is
                       then J in From .. Index'Result - 1
                       else J - 1 in Index'Result
                                     .. From - Pattern'Length)
-                  then not (Match (Source, Pattern, Mapping, J)))),
+                  then not Match (Source, Pattern, Mapping, J))),
 
         --  Otherwise, 0 is returned
 

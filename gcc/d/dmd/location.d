@@ -16,6 +16,7 @@ import core.stdc.stdio;
 import dmd.common.outbuffer;
 import dmd.root.array;
 import dmd.root.filename;
+import dmd.root.string: toDString;
 
 version (DMDLIB)
 {
@@ -27,8 +28,8 @@ enum MessageStyle : ubyte
 {
     digitalmars,  /// filename.d(line): message
     gnu,          /// filename.d:line: message, see https://www.gnu.org/prep/standards/html_node/Errors.html
+    sarif         /// JSON SARIF output, see https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html
 }
-
 /**
 A source code location
 
@@ -126,35 +127,7 @@ nothrow:
         MessageStyle messageStyle = Loc.messageStyle) const nothrow
     {
         OutBuffer buf;
-        if (fileIndex)
-        {
-            buf.writestring(filename);
-        }
-        if (linnum)
-        {
-            final switch (messageStyle)
-            {
-                case MessageStyle.digitalmars:
-                    buf.writeByte('(');
-                    buf.print(linnum);
-                    if (showColumns && charnum)
-                    {
-                        buf.writeByte(',');
-                        buf.print(charnum);
-                    }
-                    buf.writeByte(')');
-                    break;
-                case MessageStyle.gnu: // https://www.gnu.org/prep/standards/html_node/Errors.html
-                    buf.writeByte(':');
-                    buf.print(linnum);
-                    if (showColumns && charnum)
-                    {
-                        buf.writeByte(':');
-                        buf.print(charnum);
-                    }
-                    break;
-            }
-        }
+        writeSourceLoc(buf, SourceLoc(this), showColumns, messageStyle);
         return buf.extractChars();
     }
 
@@ -208,5 +181,81 @@ nothrow:
     bool isValid() const pure @safe
     {
         return fileIndex != 0;
+    }
+}
+
+/**
+ * Format a source location for error messages
+ *
+ * Params:
+ *   buf = buffer to write string into
+ *   loc = source location to write
+ *   showColumns = include column number in message
+ *   messageStyle = select error message format
+ */
+void writeSourceLoc(ref OutBuffer buf,
+    SourceLoc loc,
+    bool showColumns,
+    MessageStyle messageStyle) nothrow
+{
+    buf.writestring(loc.filename);
+    if (loc.line == 0)
+        return;
+
+    final switch (messageStyle)
+    {
+        case MessageStyle.digitalmars:
+            buf.writeByte('(');
+            buf.print(loc.line);
+            if (showColumns && loc.column)
+            {
+                buf.writeByte(',');
+                buf.print(loc.column);
+            }
+            buf.writeByte(')');
+            break;
+        case MessageStyle.gnu: // https://www.gnu.org/prep/standards/html_node/Errors.html
+            buf.writeByte(':');
+            buf.print(loc.line);
+            if (showColumns && loc.column)
+            {
+                buf.writeByte(':');
+                buf.print(loc.column);
+            }
+            break;
+        case MessageStyle.sarif: // https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html
+            // No formatting needed here for SARIF
+            break;
+    }
+}
+
+/**
+ * Describes a location in the source code as a file + line number + column number
+ *
+ * While `Loc` is a compact opaque location meant to be stored in the AST,
+ * this struct has simple modifiable fields and is used for printing.
+ */
+struct SourceLoc
+{
+    const(char)[] filename; /// name of source file
+    uint line; /// line number (starts at 1)
+    uint column; /// column number (starts at 1)
+
+    // aliases for backwards compatibility
+    alias linnum = line;
+    alias charnum = column;
+
+    this(const(char)[] filename, uint line, uint column) nothrow
+    {
+        this.filename = filename;
+        this.line = line;
+        this.column = column;
+    }
+
+    this(Loc loc) nothrow
+    {
+        this.filename = loc.filename.toDString();
+        this.line = loc.linnum;
+        this.column = loc.charnum;
     }
 }

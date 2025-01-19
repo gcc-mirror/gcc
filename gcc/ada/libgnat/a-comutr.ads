@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -491,6 +491,45 @@ private
 
    for Reference_Type'Write use Write;
 
+   --  Base iterator type for shared functionality between Child_Iterator
+   --  and Subtree_Iterator - namely finalization.
+   type Root_Iterator is abstract new Limited_Controlled and
+     Tree_Iterator_Interfaces.Forward_Iterator with
+   record
+      Container : Tree_Access;
+      Subtree   : Tree_Node_Access;
+   end record
+     with Disable_Controlled => not T_Check;
+
+   overriding procedure Finalize (Object : in out Root_Iterator);
+
+   --  Iterator to handle traversal within a specific subtree.
+   type Subtree_Iterator is new Root_Iterator with null record;
+
+   overriding function First (Object : Subtree_Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Subtree_Iterator;
+      Position : Cursor) return Cursor;
+
+   --  Iterator to handle bidirectional traversal of a node's immediate
+   --  children for operations like reverse enumeration and selective
+   --  insertion.
+   type Child_Iterator is new Root_Iterator and
+     Tree_Iterator_Interfaces.Reversible_Iterator with null record
+       with Disable_Controlled => not T_Check;
+
+   overriding function First (Object : Child_Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Child_Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Last (Object : Child_Iterator) return Cursor;
+
+   overriding function Previous
+     (Object   : Child_Iterator;
+      Position : Cursor) return Cursor;
    --  See Ada.Containers.Vectors for documentation on the following
 
    function Pseudo_Reference

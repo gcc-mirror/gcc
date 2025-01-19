@@ -1266,7 +1266,7 @@ building specialized scripts.
    defining occurrences appear exactly as in the source file where they
    are declared. The other values for this switch --
    :switch:`--name-upper-case`, :switch:`--name-lower-case`, and
-   :switch:``--name-mixed-case``
+   :switch:`--name-mixed-case`
    -- result in upper, lower, or mixed case, respectively. If
    ``gnatpp`` changes the casing of a defining occurrence, it
    similarly changes the casing of all the usage occurrences of this

@@ -3,9 +3,8 @@
 // https://issues.dlang.org/show_bug.cgi?id=19920
 module cppmangle3;
 
-version (CppRuntime_Clang)       version = CppMangle_Itanium;
-version (CppRuntime_DigitalMars) version = CppMangle_MSVC;
-version (CppRuntime_Gcc)         version = CppMangle_Itanium;
+version (CppRuntime_LLVM)      version = CppMangle_Itanium;
+version (CppRuntime_GNU)   version = CppMangle_Itanium;
 version (CppRuntime_Microsoft)   version = CppMangle_MSVC;
 version (CppRuntime_Sun)         version = CppMangle_Itanium;
 

@@ -20,15 +20,17 @@ import dmd.astenums;
 import dmd.blockexit : BE, checkThrow;
 import dmd.declaration;
 import dmd.dsymbol;
+import dmd.dsymbolsem : include;
 import dmd.errorsink;
 import dmd.expression;
+import dmd.expressionsem : errorSupplementalInferredAttr;
 import dmd.func;
 import dmd.globals;
 import dmd.init;
 import dmd.mtype;
-import dmd.postordervisitor;
 import dmd.tokens;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 /**
  * Status indicating what kind of throwable might be caused by an expression.
@@ -72,16 +74,16 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
         void checkFuncThrows(Expression e, FuncDeclaration f)
         {
             auto tf = f.type.toBasetype().isTypeFunction();
-            if (tf && !tf.isnothrow)
+            if (tf && !tf.isNothrow)
             {
                 if (eSink)
                 {
                     eSink.error(e.loc, "%s `%s` is not `nothrow`", f.kind(), f.toPrettyChars());
                     if (!f.isDtorDeclaration())
-                        errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
+                        errorSupplementalInferredAttr(f, 10, false, STC.nothrow_, eSink);
 
                     import dmd.expressionsem : checkOverriddenDtor;
-                    f.checkOverriddenDtor(null, e.loc, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
+                    f.checkOverriddenDtor(null, e.loc, dd => dd.type.toTypeFunction().isNothrow, "not nothrow");
                 }
                 else if (func)
                 {
@@ -111,11 +113,9 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
             if (ce.f && ce.arguments.length > 0)
             {
                 Type tb = (*ce.arguments)[0].type.toBasetype();
-                auto tbNext = tb.nextOf();
-                if (tbNext)
+                if (auto tbNext = tb.nextOf())
                 {
-                    auto ts = tbNext.baseElemOf().isTypeStruct();
-                    if (ts)
+                    if (auto ts = tbNext.baseElemOf().isTypeStruct())
                     {
                         auto sd = ts.sym;
                         const id = ce.f.ident;
@@ -135,7 +135,7 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
             if (ce.f && ce.f == func)
                 return;
             const tf = ce.calledFunctionType();
-            if (tf && tf.isnothrow)
+            if (tf && tf.isNothrow)
                 return;
 
             if (ce.f)

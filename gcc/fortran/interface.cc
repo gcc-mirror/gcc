@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
    formal argument list points to symbols within the same namespace as
    the program unit name.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1692,9 +1691,30 @@ gfc_check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	      return false;
 
 	    case -2:
-	      /* FIXME: Implement a warning for this case.
-	      snprintf (errmsg, err_len, "Possible character length mismatch "
-			"in function result");*/
+	      if (r1->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+		{
+		  snprintf (errmsg, err_len,
+			    "Function declared with a non-constant character "
+			    "length referenced with a constant length");
+		  return false;
+		}
+	      else if (r2->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+		{
+		  snprintf (errmsg, err_len,
+			    "Function declared with a constant character "
+			    "length referenced with a non-constant length");
+		  return false;
+		}
+	      /* Warn if length expression types are different, except for
+		  possibly false positives where complex expressions might have
+		  been used.  */
+	      else if ((r1->ts.u.cl->length->expr_type
+			!= r2->ts.u.cl->length->expr_type)
+		       && (r1->ts.u.cl->length->expr_type != EXPR_OP
+			   || r2->ts.u.cl->length->expr_type != EXPR_OP))
+		gfc_warning (0, "Possible character length mismatch in "
+			     "function result between %L and %L",
+			     &r1->declared_at, &r2->declared_at);
 	      break;
 
 	    case 0:
@@ -2736,7 +2756,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   rank_check = where != NULL && !is_elemental && formal_as
     && (formal_as->type == AS_ASSUMED_SHAPE
 	|| formal_as->type == AS_DEFERRED)
-    && actual->expr_type != EXPR_NULL;
+    && !(actual->expr_type == EXPR_NULL
+	 && actual->ts.type == BT_UNKNOWN);
 
   /* Skip rank checks for NO_ARG_CHECK.  */
   if (formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
@@ -3210,6 +3231,7 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   gfc_array_ref *actual_arr_ref;
   gfc_array_spec *fas, *aas;
   bool pointer_dummy, pointer_arg, allocatable_arg;
+  bool procptr_dummy, optional_dummy, allocatable_dummy;
 
   bool ok = true;
 
@@ -3362,15 +3384,33 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  goto match;
 	}
 
+      /* Allow passing of NULL() as disassociated pointer, procedure
+	 pointer, or unallocated allocatable (F2008+) to a respective dummy
+	 argument.  */
+      pointer_dummy = ((f->sym->ts.type != BT_CLASS
+			&& f->sym->attr.pointer)
+		       || (f->sym->ts.type == BT_CLASS
+			   && CLASS_DATA (f->sym)->attr.class_pointer));
+
+      procptr_dummy = ((f->sym->ts.type != BT_CLASS
+			&& f->sym->attr.proc_pointer)
+		       || (f->sym->ts.type == BT_CLASS
+			   && CLASS_DATA (f->sym)->attr.proc_pointer));
+
+      optional_dummy = f->sym->attr.optional;
+
+      allocatable_dummy = ((f->sym->ts.type != BT_CLASS
+			    && f->sym->attr.allocatable)
+			   || (f->sym->ts.type == BT_CLASS
+			       && CLASS_DATA (f->sym)->attr.allocatable));
+
       if (a->expr->expr_type == EXPR_NULL
-	  && ((f->sym->ts.type != BT_CLASS && !f->sym->attr.pointer
-	       && (f->sym->attr.allocatable || !f->sym->attr.optional
-		   || (gfc_option.allow_std & GFC_STD_F2008) == 0))
-	      || (f->sym->ts.type == BT_CLASS
-		  && !CLASS_DATA (f->sym)->attr.class_pointer
-		  && (CLASS_DATA (f->sym)->attr.allocatable
-		      || !f->sym->attr.optional
-		      || (gfc_option.allow_std & GFC_STD_F2008) == 0))))
+	  && !pointer_dummy
+	  && !procptr_dummy
+	  && !(optional_dummy
+	       && (gfc_option.allow_std & GFC_STD_F2008) != 0)
+	  && !(allocatable_dummy
+	       && (gfc_option.allow_std & GFC_STD_F2008) != 0))
 	{
 	  if (where
 	      && (!f->sym->attr.optional
@@ -3513,12 +3553,17 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
      skip_size_check:
 
-      /* Satisfy F03:12.4.1.3 by ensuring that a procedure pointer actual
-         argument is provided for a procedure pointer formal argument.  */
+      /* Satisfy either: F03:12.4.1.3 by ensuring that a procedure pointer
+	 actual argument is provided for a procedure pointer formal argument;
+	 or: F08:12.5.2.9 (F18:15.5.2.10) by ensuring that the effective
+	 argument shall be an external, internal, module, or dummy procedure.
+	 The interfaces are checked elsewhere.  */
       if (f->sym->attr.proc_pointer
 	  && !((a->expr->expr_type == EXPR_VARIABLE
 		&& (a->expr->symtree->n.sym->attr.proc_pointer
 		    || gfc_is_proc_ptr_comp (a->expr)))
+	       || (a->expr->ts.type == BT_PROCEDURE
+		   && f->sym->ts.interface)
 	       || (a->expr->expr_type == EXPR_FUNCTION
 		   && is_procptr_result (a->expr))))
 	{
@@ -3564,7 +3609,9 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  pointer_dummy = f->sym->attr.pointer;
 	}
 
-      if (a->expr->expr_type != EXPR_VARIABLE)
+      if (a->expr->expr_type != EXPR_VARIABLE
+	  && !(a->expr->expr_type == EXPR_NULL
+	       && a->expr->ts.type != BT_UNKNOWN))
 	{
 	  aas = NULL;
 	  pointer_arg = false;

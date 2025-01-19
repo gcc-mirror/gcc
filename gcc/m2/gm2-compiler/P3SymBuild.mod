@@ -1,6 +1,6 @@
 (* P3SymBuild.mod pass 3 symbol creation.
 
-Copyright (C) 2001-2024 Free Software Foundation, Inc.
+Copyright (C) 2001-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -29,7 +29,7 @@ FROM M2Debug IMPORT Assert, WriteDebug ;
 FROM M2Error IMPORT WriteFormat0, WriteFormat1, WriteFormat2, FlushErrors, InternalError ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 
-FROM SymbolTable IMPORT NulSym, ModeOfAddr,
+FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         StartScope, EndScope, GetScope, GetCurrentScope,
                         GetModuleScope,
                         SetCurrentModule, GetCurrentModule, SetFileModule,
@@ -45,7 +45,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr,
                         IsConst, IsConstructor, PutConst, PutConstructor,
                         PopValue, PushValue,
                         MakeTemporary, PutVar,
-                        PutSubrange,
+                        PutSubrange, GetProcedureKind,
                         GetSymName ;
 
 FROM M2Batch IMPORT MakeDefinitionSource,
@@ -692,10 +692,15 @@ END BuildVarAtAddress ;
 
 PROCEDURE BuildOptArgInitializer ;
 VAR
-   const: CARDINAL ;
+   tok    : CARDINAL ;
+   const,
+   ProcSym: CARDINAL ;
 BEGIN
-   PopT(const) ;
-   PutOptArgInit(GetCurrentScope(), const)
+   PopT (const) ;
+   PopTtok (ProcSym, tok) ;
+   Assert (IsProcedure (ProcSym)) ;
+   PushTtok (ProcSym, tok) ;
+   PutOptArgInit (GetCurrentScope (), const)
 END BuildOptArgInitializer ;
 
 

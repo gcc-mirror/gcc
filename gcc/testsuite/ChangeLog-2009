@@ -12669,7 +12669,6 @@
 
 	PR c/36489
 	* gcc.dg/pr36489.c: New test.
-
 
 Copyright (C) 2009 Free Software Foundation, Inc.
 

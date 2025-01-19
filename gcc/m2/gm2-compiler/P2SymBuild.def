@@ -1,6 +1,6 @@
 (* P2SymBuild.def pass 2 symbol creation.
 
-Copyright (C) 2001-2024 Free Software Foundation, Inc.
+Copyright (C) 2001-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -432,7 +432,7 @@ PROCEDURE StartBuildEnumeration ;
                       |------------|        |------------|
 *)
 
-PROCEDURE BuildSubrange (Base: CARDINAL) ;
+PROCEDURE BuildSubrange (tok: CARDINAL; Base: CARDINAL) ;
 
 
 (*
@@ -803,23 +803,7 @@ PROCEDURE EndBuildForward ;
    BuildNoReturnAttribute - provide an interface to the symbol table module.
 *)
 
-PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
-
-
-(*
-   BuildProcedureDefinedByForward - indicates that the parameters for ProcSym have
-                                    been defined using the FORWARD keyword.
-*)
-
-PROCEDURE BuildProcedureDefinedByForward (ProcSym: CARDINAL) ;
-
-
-(*
-   BuildProcedureDefinedByProper - indicates that the parameters for ProcSym have
-                                   been defined during a proper procedure declaration.
-*)
-
-PROCEDURE BuildProcedureDefinedByProper (ProcSym: CARDINAL) ;
+PROCEDURE BuildNoReturnAttribute ;
 
 
 (*

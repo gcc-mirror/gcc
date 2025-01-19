@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -305,6 +305,11 @@ package Diagnostics is
 
    type Diagnostic_Kind is
      (Error,
+      Non_Serious_Error,
+      --  Typically all errors are considered serious and the compiler should
+      --  stop its processing since the tree is essentially invalid. However,
+      --  some errors are not serious and the compiler can continue its
+      --  processing to discover more critical errors.
       Warning,
       Default_Warning,
       --  Warning representing the old warnings created with the '??' insertion
@@ -317,11 +322,7 @@ package Diagnostics is
       Tagless_Warning,
       --  Warning representing the old warnings created with the '?' insertion
       --  character.
-      Info,
-      Info_Warning
-      --  Info warnings are old messages where both warning and info were set
-      --  to true. These info messages behave like warnings and are usually
-      --  accompanied by a warning tag.
+      Info
    );
 
    type Diagnostic_Entry_Type is record
@@ -352,12 +353,6 @@ package Diagnostics is
       --  Signal whether the diagnostic was converted from a warning to an
       --  error. This needs to be set during the message emission as this
       --  behavior depends on the context of the code.
-
-      Serious : Boolean := True;
-      --  Typically all errors are considered serious and the compiler should
-      --  stop its processing since the tree is essentially invalid. However,
-      --  some errors are not serious and the compiler can continue its
-      --  processing to discover more critical errors.
 
       Locations : Labeled_Span_List := Labeled_Span_Lists.Nil;
 

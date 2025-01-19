@@ -41,8 +41,11 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [frontend.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/frontend.d)   | An interface for using DMD as a library                               |
 | [errors.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errors.d)       | Error reporting implementation                                        |
 | [errorsink.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errorsink.d) | Error reporting interface                                             |
+| [sarif.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/sarif.d)         | Generates SARIF reports for errors and warnings.                      |
 | [target.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/target.d)       | Manage target-specific parameters for cross-compiling (for LDC/GDC)   |
 | [compiler.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/compiler.d)   | Describe a back-end compiler and implements compiler-specific actions |
+| [deps.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/deps.d)           | Implement the `-deps` and `-makedeps` switches                        |
+| [timetrace.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/timetrace.d) | Build time profiling utility                                          |
 
 ### Lexing / parsing
 
@@ -96,19 +99,20 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                                                      | Purpose                                                                          |
 |-----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| [parsetimevisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/parsetimevisitor.d)                 | General [visitor](https://en.wikipedia.org/wiki/Visitor_pattern) for AST nodes   |
-| [permissivevisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/permissivevisitor.d)               | Subclass of ParseTimeVisitor that does not `assert(0)` on unimplemented nodes    |
-| [strictvisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/strictvisitor.d)                       | Visitor that forces derived classes to implement `visit` for every possible node |
-| [visitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor.d)                                   | A visitor implementing `visit` for all nodes present in the compiler             |
-| [transitivevisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/transitivevisitor.d)               | Provide a mixin template with visit methods for the parse time AST               |
-| [postordervisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/postordervisitor.d)                                       | Depth-first expression visitor                                                   |
-| [sapply.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/sapply.d)                                     | Depth-first statement visitor                                                    |
-| [statement_rewrite_walker.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/statement_rewrite_walker.d) | Statement visitor that allows replacing the currently visited node               |
+| [visitor/parsetime.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/parsetime.d)                 | General [visitor](https://en.wikipedia.org/wiki/Visitor_pattern) for AST nodes   |
+| [visitor/permissive.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/permissive.d)               | Subclass of ParseTimeVisitor that does not `assert(0)` on unimplemented nodes    |
+| [visitor/strict.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/strict.d)                       | Visitor that forces derived classes to implement `visit` for every possible node |
+| [visitor/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/package.d)                                   | A visitor implementing `visit` for all nodes present in the compiler             |
+| [visitor/transitive.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/transitive.d)               | Provide a mixin template with visit methods for the parse time AST               |
+| [visitor/postorder.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/postorder.d)                 | Depth-first expression & statement visitor                                                   |
+| [visitor/statement_rewrite_walker.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/statement_rewrite_walker.d) | Statement visitor that allows replacing the currently visited node               |
+| [visitor/foreachvar.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/foreachvar.d)   | Used in `ob.d` to iterate over all variables in an expression |
 
 **Semantic passes**
 
 | File                                                                                      | Purpose                                                           |
 |-------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| [attribsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/attribsem.d)               | Attribute semantics                                               |
 | [dsymbolsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dsymbolsem.d)             | Do semantic 1 pass (symbol identifiers/types)                     |
 | [enumsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/enumsem.d)                   | Enum semantics                                                    |
 | [funcsem.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/funcsem.d)                   | Function semantics                                                |
@@ -196,15 +200,13 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                          | Purpose                                              |
 |-------------------------------------------------------------------------------|------------------------------------------------------|
-| [lib.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib.d)               | Abstract library class                               |
-| [libelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libelf.d)         | Library in ELF format (Unix)                         |
-| [libmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libmach.d)       | Library in Mach-O format (macOS)                     |
-| [libmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libmscoff.d)   | Library in COFF format (32/64-bit Windows)           |
-| [libomf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/libomf.d)         | Library in OMF format (legacy 32-bit Windows)        |
-| [scanelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanelf.d)       | Extract symbol names from a library in ELF format    |
-| [scanmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanmach.d)     | Extract symbol names from a library in Mach-O format |
-| [scanmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanmscoff.d) | Extract symbol names from a library in COFF format   |
-| [scanomf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/scanomf.d)       | Extract symbol names from a library in OMF format    |
+| [lib/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/package.d)               | Abstract library class                               |
+| [lib/elf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/elf.d)         | Library in ELF format (Unix)                         |
+| [lib/mach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/mach.d)       | Library in Mach-O format (macOS)                     |
+| [lib/mscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/mscoff.d)   | Library in COFF format (32/64-bit Windows)           |
+| [lib/scanelf.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanelf.d)       | Extract symbol names from a library in ELF format    |
+| [lib/scanmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanmach.d)     | Extract symbol names from a library in Mach-O format |
+| [lib/scanmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanmscoff.d) | Extract symbol names from a library in COFF format   |
 
 ### Code generation / back-end interfacing
 
@@ -232,10 +234,10 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                              | Purpose                                                          |
 |-----------------------------------------------------------------------------------|------------------------------------------------------------------|
-| [cppmangle.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cppmangle.d)       | C++ name mangling                                                |
-| [cppmanglewin.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cppmanglewin.d) | C++ name mangling for Windows                                    |
-| [basicmangle.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/basicmangle.d)   | D name mangling for basic types                                  |
-| [dmangle.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dmangle.d)           | D [name mangling](https://dlang.org/spec/abi.html#name_mangling) |
+| [mangle/cpp.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/cpp.d)       | C++ name mangling                                                |
+| [mangle/cppwin.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/cppwin.d) | C++ name mangling for Windows                                    |
+| [mangle/basic.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/basic.d)   | D name mangling for basic types                                  |
+| [mangle/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/package.d)           | D [name mangling](https://dlang.org/spec/abi.html#name_mangling) |
 
 ### Linking
 
@@ -252,6 +254,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [hdrgen.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/hdrgen.d) | Convert an AST into D source code for `.di` header generation, as well as `-vcg-ast` and error messages |
 | [json.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/json.d)     | Describe the module in a `.json` file for the `-X` flag                                                 |
 | [dtoh.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dtoh.d)     | C++ header generation from D source files                                                               |
+| [disasm86.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/backend/x86/disasm86.d)       | x86-64 disassembly generation
+| [disasmarm.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/backend/arm/disasmarm.d) | AArch64 disassembly generation
 
 ### Utility
 
@@ -267,4 +271,3 @@ Note: many other utilities are in [dmd/root](https://github.com/dlang/dmd/tree/m
 |---------------------------------------------------------------------------------|---------------------------------------------------------------|
 | [asttypename.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/asttypename.d) | Print the internal name of an AST node (for debugging only)   |
 | [printast.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/printast.d)       | Print the AST data structure                                  |
-| [foreachvar.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/foreachvar.d)   | Used in `ob.d` to iterate over all variables in an expression |

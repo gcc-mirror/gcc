@@ -1,7 +1,7 @@
 ; Options for VxWorks configurations where smp/!smp variants of the
 ; system libraries are installed in separate locations.
 ;
-; Copyright (C) 2023-2024 Free Software Foundation, Inc.
+; Copyright (C) 2023-2025 Free Software Foundation, Inc.
 ; Contributed by AdaCore.
 ;
 ; This file is part of GCC.

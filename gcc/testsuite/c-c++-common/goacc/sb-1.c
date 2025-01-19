@@ -9,6 +9,8 @@ void foo()
     goto bad1; // { dg-error "invalid branch to/from OpenACC structured block" }
   #pragma acc kernels
     goto bad1; // { dg-error "invalid branch to/from OpenACC structured block" }
+  #pragma acc serial
+    goto bad1; // { dg-error "invalid branch to/from OpenACC structured block" }
   #pragma acc data
     goto bad1; // { dg-error "invalid branch to/from OpenACC structured block" }
   #pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
@@ -25,6 +27,12 @@ void foo()
   #pragma acc kernels
     {
       bad2_kernels: ;
+    }
+
+  goto bad2_serial; // { dg-error "invalid entry to OpenACC structured block" }
+  #pragma acc serial
+    {
+      bad2_serial: ;
     }
 
   goto bad2_data; // { dg-error "invalid entry to OpenACC structured block" }
@@ -54,6 +62,14 @@ void foo()
       goto ok1_kernels;
       for (i = 0; i < 10; ++i)
 	{ ok1_kernels: break; }
+    }
+
+  #pragma acc serial
+    {
+      int i;
+      goto ok1_serial;
+      for (i = 0; i < 10; ++i)
+	{ ok1_serial: break; }
     }
 
   #pragma acc data

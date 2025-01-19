@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,8 +126,8 @@ function System.Width_I (Lo, Hi : Int) return Natural is
 
    Pow    : Big_Integer := 1 with Ghost;
    T_Init : constant Int :=
-     Int'Max (abs (Int'Max (Lo, Int'First + 1)),
-              abs (Int'Max (Hi, Int'First + 1)))
+     Int'Max (abs Int'Max (Lo, Int'First + 1),
+              abs Int'Max (Hi, Int'First + 1))
      with Ghost;
 
 --  Start of processing for System.Width_I
@@ -145,8 +145,8 @@ begin
       --  negative number (note that First + 1 has same digits as First)
 
       T := Int'Max (
-             abs (Int'Max (Lo, Int'First + 1)),
-             abs (Int'Max (Hi, Int'First + 1)));
+             abs Int'Max (Lo, Int'First + 1),
+             abs Int'Max (Hi, Int'First + 1));
 
       --  Increase value if more digits required
 

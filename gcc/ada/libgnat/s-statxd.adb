@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2024, Free Software Foundation, Inc.          --
+--         Copyright (C) 1996-2025, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GARLIC is free software;  you can redistribute it and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1254,7 +1254,7 @@ package body System.Stream_Attributes.XDR is
       --  Compute Sign
 
       Is_Positive := (0.0 <= Item);
-      F := abs (Item);
+      F := abs Item;
 
       --  Signed zero
 
@@ -1400,7 +1400,7 @@ package body System.Stream_Attributes.XDR is
       --  Compute Sign
 
       Is_Positive := (0.0 <= Item);
-      F := abs (Item);
+      F := abs Item;
 
       --  Signed zero
 
@@ -1747,7 +1747,7 @@ package body System.Stream_Attributes.XDR is
       --  Compute Sign
 
       Is_Positive := (0.0 <= Item);
-      F := abs (Item);
+      F := abs Item;
 
       --  Signed zero
 

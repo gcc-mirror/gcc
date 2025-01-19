@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1628,8 +1628,6 @@ package body Exp_Ch9 is
                   Make_Defining_Identifier (Loc, Chars (Formal)),
                 Component_Definition =>
                   Make_Component_Definition (Loc,
-                    Aliased_Present =>
-                      False,
                     Subtype_Indication =>
                       New_Occurrence_Of (Comp_Nam, Loc))));
 
@@ -4808,7 +4806,7 @@ package body Exp_Ch9 is
           Identifier => New_Occurrence_Of (Blkent, Loc),
           Declarations => New_List (
 
-            --  _Chain : Activation_Chain;
+            --  _Chain : aliased Activation_Chain;
 
             Make_Object_Declaration (Loc,
               Defining_Identifier => Chain,
@@ -4968,7 +4966,6 @@ package body Exp_Ch9 is
 
                     Component_Definition =>
                       Make_Component_Definition (Loc,
-                        Aliased_Present    => False,
                         Subtype_Indication =>
                           New_Occurrence_Of (Standard_Character, Loc))));
             end;
@@ -4984,7 +4981,6 @@ package body Exp_Ch9 is
 
                 Component_Definition =>
                   Make_Component_Definition (Loc,
-                    Aliased_Present    => False,
                     Subtype_Indication =>
                       Make_Subtype_Indication (Loc,
                         Subtype_Mark =>
@@ -5764,7 +5760,6 @@ package body Exp_Ch9 is
           Defining_Identifier  => Make_Temporary (Loc, 'P'),
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present    => False,
               Subtype_Indication =>
                 New_Occurrence_Of (RTE (RE_Address), Loc))),
 
@@ -5772,7 +5767,6 @@ package body Exp_Ch9 is
           Defining_Identifier  => Make_Temporary (Loc, 'S'),
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present    => False,
               Subtype_Indication => New_Occurrence_Of (D_T2, Loc))));
 
       Decl2 :=
@@ -6482,7 +6476,7 @@ package body Exp_Ch9 is
    --             _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --          end;
    --       exception
-   --          when Abort_Signal => Abort_Undefer;
+   --          when Abort_Signal => null;
    --       end;
 
    --       parm := P.param;
@@ -6545,7 +6539,7 @@ package body Exp_Ch9 is
    --           _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --        end;
    --     exception
-   --        when Abort_Signal => Abort_Undefer;
+   --        when Abort_Signal => null;
    --     end;
 
    --     if not Cancelled (Bnn) then
@@ -6626,7 +6620,7 @@ package body Exp_Ch9 is
    --                   _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --                end;
    --             exception
-   --                when Abort_Signal => Abort_Undefer;
+   --                when Abort_Signal => null;
    --             end;
 
    --             if not Cancelled (Bnn) then
@@ -6659,7 +6653,7 @@ package body Exp_Ch9 is
    --                      _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --                   end;
    --                exception
-   --                   when Abort_Signal => Abort_Undefer;
+   --                   when Abort_Signal => null;
    --                end;
 
    --                if not U then
@@ -6693,7 +6687,6 @@ package body Exp_Ch9 is
       Abrt : constant Node_Id    := Abortable_Part (N);
       Trig : constant Node_Id    := Triggering_Alternative (N);
 
-      Abort_Block_Ent   : Entity_Id;
       Abortable_Block   : Node_Id;
       Actuals           : List_Id;
       Astats            : List_Id;
@@ -6714,7 +6707,6 @@ package body Exp_Ch9 is
       Ename             : Node_Id;
       Enqueue_Call      : Node_Id;
       Formals           : List_Id;
-      Hdle              : List_Id;
       Index             : Node_Id;
       Lim_Typ_Stmts     : List_Id;
       N_Orig            : Node_Id;
@@ -6968,17 +6960,11 @@ package body Exp_Ch9 is
             --    begin
             --       Cleanup_Block
             --    exception
-            --       when Abort_Signal => Abort_Undefer;
+            --       when Abort_Signal => null;
             --    end;
 
-            Abort_Block_Ent := Make_Temporary (Loc, 'A');
-            ProtE_Stmts :=
-              New_List (
-                Make_Implicit_Label_Declaration (Loc,
-                  Defining_Identifier => Abort_Block_Ent),
-
-                Build_Abort_Block
-                  (Loc, Abort_Block_Ent, Cleanup_Block_Ent, Cleanup_Block));
+            ProtE_Stmts := New_List (
+              Build_Abort_Block (Loc, Cleanup_Block_Ent, Cleanup_Block));
 
             --  Generate:
             --    if not Cancelled (Bnn) then
@@ -7081,18 +7067,11 @@ package body Exp_Ch9 is
             --    begin
             --       Cleanup_Block
             --    exception
-            --       when Abort_Signal => Abort_Undefer;
+            --       when Abort_Signal => null;
             --    end;
 
-            Abort_Block_Ent := Make_Temporary (Loc, 'A');
-
             Append_To (TaskE_Stmts,
-              Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier => Abort_Block_Ent));
-
-            Append_To (TaskE_Stmts,
-              Build_Abort_Block
-                (Loc, Abort_Block_Ent, Cleanup_Block_Ent, Cleanup_Block));
+              Build_Abort_Block (Loc, Cleanup_Block_Ent, Cleanup_Block));
 
             --  Generate:
             --    if not T then
@@ -7237,10 +7216,6 @@ package body Exp_Ch9 is
                 Prefix         => New_Occurrence_Of (Dblock_Ent, Loc),
                 Attribute_Name => Name_Unchecked_Access));
 
-            --  Create the inner block to protect the abortable part
-
-            Hdle := New_List (Build_Abort_Block_Handler (Loc));
-
             Prepend_To (Astats, Build_Runtime_Call (Loc, RE_Abort_Undefer));
 
             Abortable_Block :=
@@ -7252,6 +7227,18 @@ package body Exp_Ch9 is
                 Has_Created_Identifier     => True,
                 Is_Asynchronous_Call_Block => True);
 
+            --  Wrap the abortable block in an exception handling block
+
+            --  Generate:
+            --    begin
+            --       Abortable_Block
+            --    exception
+            --       when Abort_Signal => null;
+            --    end;
+
+            Stmts := New_List (
+              Build_Abort_Block (Loc, Blk_Ent, Abortable_Block));
+
             --  Append call to if Enqueue (When, DB'Unchecked_Access) then
 
             Rewrite (Ecall,
@@ -7260,16 +7247,7 @@ package body Exp_Ch9 is
                   Make_Function_Call (Loc,
                     Name => Enqueue_Call,
                     Parameter_Associations => Parameter_Associations (Ecall)),
-                Then_Statements =>
-                  New_List (Make_Block_Statement (Loc,
-                    Handled_Statement_Sequence =>
-                      Make_Handled_Sequence_Of_Statements (Loc,
-                        Statements => New_List (
-                          Make_Implicit_Label_Declaration (Loc,
-                            Defining_Identifier => Blk_Ent,
-                            Label_Construct     => Abortable_Block),
-                          Abortable_Block),
-                        Exception_Handlers => Hdle)))));
+                Then_Statements => Stmts));
 
             Stmts := New_List (Ecall);
 
@@ -7387,31 +7365,21 @@ package body Exp_Ch9 is
              Has_Created_Identifier => True,
              Is_Asynchronous_Call_Block => True);
 
+         --  Wrap the abortable block in an exception handling block
+
+         --  Generate:
+         --    begin
+         --       Abortable_Block
+         --    exception
+         --       when Abort_Signal => null;
+         --    end;
+
          Stmts := New_List (
-           Make_Block_Statement (Loc,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Implicit_Label_Declaration (Loc,
-                     Defining_Identifier => Blk_Ent,
-                     Label_Construct     => Abortable_Block),
-                   Abortable_Block),
+           Build_Abort_Block (Loc, Blk_Ent, Abortable_Block),
 
-               --  exception
-
-                 Exception_Handlers => New_List (
-                   Make_Implicit_Exception_Handler (Loc,
-
-               --  when Abort_Signal =>
-               --     null;
-
-                     Exception_Choices =>
-                       New_List (New_Occurrence_Of (Stand.Abort_Signal, Loc)),
-                     Statements => New_List (Make_Null_Statement (Loc)))))),
-
-         --  if not Cancelled (Bnn) then
-         --     triggered statements
-         --  end if;
+           --  if not Cancelled (Bnn) then
+           --     triggered statements
+           --  end if;
 
            Make_Implicit_If_Statement (N,
              Condition => Make_Op_Not (Loc,
@@ -7467,10 +7435,6 @@ package body Exp_Ch9 is
 
          Call := Stmt;
 
-         --  Create the inner block to protect the abortable part
-
-         Hdle := New_List (Build_Abort_Block_Handler (Loc));
-
          if Abort_Allowed then
             Prepend_To (Astats, Build_Runtime_Call (Loc, RE_Abort_Undefer));
          end if;
@@ -7483,16 +7447,17 @@ package body Exp_Ch9 is
              Has_Created_Identifier     => True,
              Is_Asynchronous_Call_Block => True);
 
+         --  Wrap the abortable block in an exception handling block
+
+         --  Generate:
+         --    begin
+         --       Abortable_Block
+         --    exception
+         --       when Abort_Signal => null;
+         --    end;
+
          Insert_After (Call,
-           Make_Block_Statement (Loc,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Implicit_Label_Declaration (Loc,
-                     Defining_Identifier => Blk_Ent,
-                     Label_Construct     => Abortable_Block),
-                   Abortable_Block),
-                 Exception_Handlers => Hdle)));
+           Build_Abort_Block (Loc, Blk_Ent, Abortable_Block));
 
          --  Create new call statement
 
@@ -8182,7 +8147,6 @@ package body Exp_Ch9 is
                 Defining_Identifier => Component,
                 Component_Definition =>
                   Make_Component_Definition (Loc,
-                    Aliased_Present    => False,
                     Subtype_Indication => New_Occurrence_Of (Ctype, Loc))));
 
             Next_Formal_With_Extras (Formal);
@@ -9107,14 +9071,12 @@ package body Exp_Ch9 is
                if Present (Subtype_Indication (Old_Comp)) then
                   New_Comp :=
                     Make_Component_Definition (Sloc (Oent),
-                      Aliased_Present    => False,
                       Subtype_Indication =>
                         New_Copy_Tree
                           (Subtype_Indication (Old_Comp), Discr_Map));
                else
                   New_Comp :=
                     Make_Component_Definition (Sloc (Oent),
-                      Aliased_Present   => False,
                       Access_Definition =>
                         New_Copy_Tree
                           (Access_Definition (Old_Comp), Discr_Map));
@@ -9281,7 +9243,7 @@ package body Exp_Ch9 is
          end;
 
          --  Put the _Object component after the private component so that it
-         --  be finalized early as required by 9.4 (20)
+         --  be finalized early as required by 9.4(20).
 
          Append_To (Cdecls, Object_Comp);
       end if;
@@ -11853,9 +11815,9 @@ package body Exp_Ch9 is
           Defining_Identifier =>
             Make_Defining_Identifier (Sloc (Tasktyp),
               Chars => New_External_Name (Tasknm, 'E')),
-          Aliased_Present      => True,
-          Object_Definition    => New_Occurrence_Of (Standard_Boolean, Loc),
-          Expression           => New_Occurrence_Of (Standard_False, Loc));
+          Aliased_Present     => True,
+          Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+          Expression          => New_Occurrence_Of (Standard_False, Loc));
 
       Insert_After (N, Elab_Decl);
 
@@ -11909,7 +11871,6 @@ package body Exp_Ch9 is
             Make_Defining_Identifier (Loc, Name_uTask_Id),
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present    => False,
               Subtype_Indication => New_Occurrence_Of (RTE (RO_ST_Task_Id),
                                     Loc))));
 
@@ -11974,6 +11935,35 @@ package body Exp_Ch9 is
                else
                   Task_Size := New_Copy_Tree (Expr_N);
                end if;
+
+               --  On targets with a preallocated task stack the minimum stack
+               --  size is defined in System.Parameters. Since we do not have
+               --  access to the value of that definition here we replace the
+               --  static task size with the static expression
+               --  Size_Type'Max (Task_Size, Minimum_Stack_Size).
+               --  The compiler will evaluate this expression and replace the
+               --  task size with the Minimum_Stack_Size if needed. It is
+               --  important for this expression to be static to avoid
+               --  introducing implicit heap allocations that would break code
+               --  with the No_Implicit_Heap_Allocations restriction.
+               --  On some runtimes the allocation of the minimum stack size is
+               --  ensured by a call to Adjust_Storage_Size. We cannot use this
+               --  function here as it is not static and evaluated at runtime.
+               --  Note: This expression may not appear in the expanded code
+               --  as the compiler evaluates this expression before code
+               --  generation.
+
+               Task_Size :=
+                 Convert_To
+                   (RTE (RE_Storage_Offset),
+                    Make_Attribute_Reference (Loc,
+                      Attribute_Name => Name_Max,
+                      Prefix         =>
+                        New_Occurrence_Of
+                          (RTE (RE_Size_Type), Loc), Expressions => New_List (
+                             Convert_To (RTE (RE_Size_Type), Task_Size),
+                             New_Occurrence_Of (RTE (RE_Minimum_Stack_Size),
+                               Loc))));
             end;
 
          else
@@ -12076,7 +12066,6 @@ package body Exp_Ch9 is
                Make_Defining_Identifier (Loc, Name_uPriority),
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (Standard_Integer, Loc))));
       end if;
@@ -12086,12 +12075,11 @@ package body Exp_Ch9 is
       if Present (Taskdef) and then Has_Storage_Size_Pragma (Taskdef) then
          Append_To (Cdecls,
            Make_Component_Declaration (Loc,
-             Defining_Identifier =>
+             Defining_Identifier  =>
                Make_Defining_Identifier (Loc, Name_uSize),
 
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_Size_Type), Loc)),
 
@@ -12116,7 +12104,6 @@ package body Exp_Ch9 is
 
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_Size_Type), Loc))));
       end if;
@@ -12131,7 +12118,6 @@ package body Exp_Ch9 is
 
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_Task_Info_Type), Loc)),
 
@@ -12152,7 +12138,6 @@ package body Exp_Ch9 is
 
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_CPU_Range), Loc))));
       end if;
@@ -12174,7 +12159,6 @@ package body Exp_Ch9 is
 
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_Time_Span), Loc)),
 
@@ -12203,7 +12187,6 @@ package body Exp_Ch9 is
 
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of
                      (RTE (RE_Dispatching_Domain_Access), Loc))));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Sinfo.Nodes;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
+with Stylesw;  use Stylesw;
 with Targparm;
 with Uintp;    use Uintp;
 with Widechar; use Widechar;
@@ -145,29 +146,7 @@ package body Erroutc is
          loop
             Errors.Table (D).Deleted := True;
 
-            --  Adjust error message count
-
-            if Errors.Table (D).Info then
-
-               Info_Messages := Info_Messages - 1;
-
-            elsif Errors.Table (D).Warn or else Errors.Table (D).Style then
-               Warnings_Detected := Warnings_Detected - 1;
-
-               --  Note: we do not need to decrement Warnings_Treated_As_Errors
-               --  because this only gets incremented if we actually output the
-               --  message, which we won't do if we are deleting it here!
-
-            elsif Errors.Table (D).Check then
-               Check_Messages := Check_Messages - 1;
-
-            else
-               Total_Errors_Detected := Total_Errors_Detected - 1;
-
-               if Errors.Table (D).Serious then
-                  Serious_Errors_Detected := Serious_Errors_Detected - 1;
-               end if;
-            end if;
+            Decrease_Error_Msg_Count (Errors.Table (D));
 
             --  Substitute shorter of the two error messages
 
@@ -278,7 +257,7 @@ package body Erroutc is
    begin
       for J in 1 .. Errors.Last loop
          begin
-            if Errors.Table (J).Warn
+            if Errors.Table (J).Kind = Warning
                and then Errors.Table (J).Compile_Time_Pragma
                and then not Errors.Table (J).Deleted
             then
@@ -288,6 +267,32 @@ package body Erroutc is
       end loop;
       return Result;
    end Count_Compile_Time_Pragma_Warnings;
+
+   ------------------------------
+   -- Decrease_Error_Msg_Count --
+   ------------------------------
+
+   procedure Decrease_Error_Msg_Count (E : Error_Msg_Object) is
+
+   begin
+      case E.Kind is
+         when Info =>
+            Info_Messages := Info_Messages - 1;
+
+         when Warning | Style =>
+            Warnings_Detected := Warnings_Detected - 1;
+
+         when High_Check | Medium_Check | Low_Check =>
+            Check_Messages := Check_Messages - 1;
+
+         when Error =>
+            Total_Errors_Detected := Total_Errors_Detected - 1;
+            Serious_Errors_Detected := Serious_Errors_Detected - 1;
+
+         when Non_Serious_Error =>
+            Total_Errors_Detected := Total_Errors_Detected - 1;
+      end case;
+   end Decrease_Error_Msg_Count;
 
    ------------------
    -- Debug_Output --
@@ -334,13 +339,9 @@ package body Erroutc is
 
       w ("  Line               = ", Int (E.Line));
       w ("  Col                = ", Int (E.Col));
-      w ("  Info               = ", E.Info);
-      w ("  Warn               = ", E.Warn);
+      w ("  Kind               = ", E.Kind'Img);
       w ("  Warn_Err           = ", E.Warn_Err);
-      w ("  Warn_Runtime_Raise = ", E.Warn_Runtime_Raise);
       w ("  Warn_Chr           = '" & E.Warn_Chr & ''');
-      w ("  Style              = ", E.Style);
-      w ("  Serious            = ", E.Serious);
       w ("  Uncond             = ", E.Uncond);
       w ("  Msg_Cont           = ", E.Msg_Cont);
       w ("  Deleted            = ", E.Deleted);
@@ -371,7 +372,7 @@ package body Erroutc is
    ------------------------
 
    function Get_Warning_Option (Id : Error_Msg_Id) return String is
-      Style    : constant Boolean         := Errors.Table (Id).Style;
+      Is_Style : constant Boolean         := Errors.Table (Id).Kind in Style;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
 
    begin
@@ -380,7 +381,7 @@ package body Erroutc is
       then
          if Warn_Chr = "$ " then
             return "-gnatel";
-         elsif Style then
+         elsif Is_Style then
             return "-gnaty" & Warn_Chr (1);
          elsif Warn_Chr (2) = ' ' then
             return "-gnatw" & Warn_Chr (1);
@@ -414,6 +415,69 @@ package body Erroutc is
       return "";
    end Get_Warning_Tag;
 
+   ------------------------------
+   -- Increase_Error_Msg_Count --
+   ------------------------------
+
+   procedure Increase_Error_Msg_Count (E : Error_Msg_Object) is
+
+   begin
+      case E.Kind is
+         when Info =>
+            Info_Messages := Info_Messages + 1;
+
+         when Warning | Style =>
+            Warnings_Detected := Warnings_Detected + 1;
+
+         when High_Check | Medium_Check | Low_Check =>
+            Check_Messages := Check_Messages + 1;
+
+         when Error =>
+            Total_Errors_Detected := Total_Errors_Detected + 1;
+            Serious_Errors_Detected := Serious_Errors_Detected + 1;
+
+         when Non_Serious_Error =>
+            Total_Errors_Detected := Total_Errors_Detected + 1;
+      end case;
+   end Increase_Error_Msg_Count;
+
+   --------------------------------
+   -- Is_Redundant_Error_Message --
+   --------------------------------
+
+   function Is_Redundant_Error_Message
+     (Prev_Msg : Error_Msg_Id; Cur_Msg : Error_Msg_Id) return Boolean is
+
+   begin
+      return
+        Prev_Msg /= No_Error_Msg
+
+        --  Error messages are posted on the same line
+
+        and then Errors.Table (Prev_Msg).Line = Errors.Table (Cur_Msg).Line
+        and then Errors.Table (Prev_Msg).Sfile = Errors.Table (Cur_Msg).Sfile
+
+        --  Do not consider unconditional messages to be redundant right now
+        --  They may be removed later.
+
+        and then not Errors.Table (Cur_Msg).Uncond
+
+        --  Do not consider continuation messages as they are removed with
+        --  their parent later on.
+
+        and then not Errors.Table (Cur_Msg).Msg_Cont
+
+        --  Don't delete if prev msg is warning and new msg is an error.
+        --  This is because we don't want a real error masked by a
+        --  warning. In all other cases (that is parse errors for the
+        --  same line that are not unconditional) we do delete the
+        --  message. This helps to avoid junk extra messages from
+        --  cascaded parsing errors
+
+        and then (Errors.Table (Prev_Msg).Kind not in Warning | Style
+                  or else Errors.Table (Cur_Msg).Kind in Warning | Style);
+   end Is_Redundant_Error_Message;
+
    --------------------
    -- Has_Switch_Tag --
    --------------------
@@ -421,14 +485,10 @@ package body Erroutc is
    function Has_Switch_Tag (Id : Error_Msg_Id) return Boolean
    is (Has_Switch_Tag (Errors.Table (Id)));
 
-   function Has_Switch_Tag (E_Msg : Error_Msg_Object) return Boolean
-   is
-      Warn     : constant Boolean         := E_Msg.Warn;
-      Style    : constant Boolean         := E_Msg.Style;
-      Info     : constant Boolean         := E_Msg.Info;
-      Warn_Chr : constant String (1 .. 2) := E_Msg.Warn_Chr;
+   function Has_Switch_Tag (E_Msg : Error_Msg_Object) return Boolean is
    begin
-      return (Warn or Style or Info) and then Warn_Chr /= "  ";
+      return
+        E_Msg.Kind in Warning | Info | Style and then E_Msg.Warn_Chr /= "  ";
    end Has_Switch_Tag;
 
    -------------
@@ -774,6 +834,35 @@ package body Erroutc is
       end loop;
    end Output_Text_Within;
 
+   -------------------------
+   -- Output_Msg_Location --
+   -------------------------
+
+   procedure Output_Msg_Location (E : Error_Msg_Id) is
+      E_Obj : constant Error_Msg_Object := Errors.Table (E);
+   begin
+      Write_Str (SGR_Locus);
+
+      if Full_Path_Name_For_Brief_Errors then
+         Write_Name (Full_Ref_Name (E_Obj.Sfile));
+      else
+         Write_Name (Reference_Name (E_Obj.Sfile));
+      end if;
+
+      Write_Char (':');
+      Write_Int (Int (Physical_To_Logical (E_Obj.Line, E_Obj.Sfile)));
+      Write_Char (':');
+
+      if E_Obj.Col < 10 then
+         Write_Char ('0');
+      end if;
+
+      Write_Int (Int (E_Obj.Col));
+      Write_Str (": ");
+
+      Write_Str (SGR_Reset);
+   end Output_Msg_Location;
+
    ---------------------
    -- Output_Msg_Text --
    ---------------------
@@ -807,7 +896,7 @@ package body Erroutc is
 
       --  For info messages, prefix message with "info: "
 
-      elsif E_Msg.Info then
+      elsif E_Msg.Kind = Info then
          Txt := new String'(SGR_Note & "info: " & SGR_Reset & Txt.all);
 
       --  Warning treated as error
@@ -823,12 +912,12 @@ package body Erroutc is
 
       --  Normal warning, prefix with "warning: "
 
-      elsif E_Msg.Warn then
+      elsif E_Msg.Kind = Warning then
          Txt := new String'(SGR_Warning & "warning: " & SGR_Reset & Txt.all);
 
       --  No prefix needed for style message, "(style)" is there already
 
-      elsif E_Msg.Style then
+      elsif E_Msg.Kind = Style then
          if Txt (Txt'First .. Txt'First + 6) = "(style)" then
             Txt := new String'(SGR_Warning & "(style)" & SGR_Reset
                                & Txt (Txt'First + 7 .. Txt'Last));
@@ -836,7 +925,7 @@ package body Erroutc is
 
       --  No prefix needed for check message, severity is there already
 
-      elsif E_Msg.Check then
+      elsif E_Msg.Kind in High_Check | Medium_Check | Low_Check then
 
          --  The message format is "severity: ..."
          --
@@ -960,35 +1049,46 @@ package body Erroutc is
 
          --  Set initial values of globals (may be changed during scan)
 
-         Is_Serious_Error     := True;
+         Error_Msg_Kind       := Error;
          Is_Unconditional_Msg := False;
-         Is_Warning_Msg       := False;
          Is_Runtime_Raise     := False;
          Warning_Msg_Char     := "  ";
 
          --  Check style message
 
-         Is_Style_Msg :=
-           Msg'Length > 7
-             and then Msg (Msg'First .. Msg'First + 6) = "(style)";
+         if Msg'Length > 7
+           and then Msg (Msg'First .. Msg'First + 6) = "(style)"
+         then
+            Error_Msg_Kind := Style;
 
-         --  Check info message
+            --  Check info message
 
-         Is_Info_Msg :=
-           Msg'Length > 6
-             and then Msg (Msg'First .. Msg'First + 5) = "info: ";
+         elsif Msg'Length > 6
+           and then Msg (Msg'First .. Msg'First + 5) = "info: "
+         then
+            Error_Msg_Kind := Info;
 
-         --  Check check message
+            --  Check high check message
 
-         Is_Check_Msg :=
-           (Msg'Length > 8
-             and then Msg (Msg'First .. Msg'First + 7) = "medium: ")
-           or else
-           (Msg'Length > 6
-             and then Msg (Msg'First .. Msg'First + 5) = "high: ")
-           or else
-           (Msg'Length > 5
-             and then Msg (Msg'First .. Msg'First + 4) = "low: ");
+         elsif Msg'Length > 6
+           and then Msg (Msg'First .. Msg'First + 5) = "high: "
+         then
+            Error_Msg_Kind := High_Check;
+
+            --  Check medium check message
+
+         elsif Msg'Length > 8
+           and then Msg (Msg'First .. Msg'First + 7) = "medium: "
+         then
+            Error_Msg_Kind := Medium_Check;
+
+            --  Check low check message
+
+         elsif Msg'Length > 5
+           and then Msg (Msg'First .. Msg'First + 4) = "low: "
+         then
+            Error_Msg_Kind := Low_Check;
+         end if;
       end if;
 
       Has_Double_Exclam  := False;
@@ -1016,7 +1116,10 @@ package body Erroutc is
                --  characters and not the generic ? or ?? warning insertion
                --  characters.
 
-               Is_Warning_Msg := not (Is_Style_Msg or else Is_Info_Msg);
+               if Error_Msg_Kind not in Style | Info then
+                  Error_Msg_Kind := Warning;
+               end if;
+
                J := J + 1;
                Warning_Msg_Char := Parse_Message_Class;
 
@@ -1050,7 +1153,7 @@ package body Erroutc is
          --  Non-serious error (| insertion)
 
          elsif Msg (J) = '|' then
-            Is_Serious_Error := False;
+            Error_Msg_Kind := Non_Serious_Error;
             J := J + 1;
 
          --  Error code ([] insertion)
@@ -1066,10 +1169,6 @@ package body Erroutc is
             J := J + 1;
          end if;
       end loop;
-
-      if Is_Info_Msg or Is_Warning_Msg or Is_Style_Msg or Is_Check_Msg then
-         Is_Serious_Error := False;
-      end if;
    end Prescan_Message;
 
    --------------------
@@ -1093,16 +1192,7 @@ package body Erroutc is
            and then Errors.Table (E).Sptr.Ptr > From
            and then Errors.Table (E).Sptr.Ptr < To
          then
-            if Errors.Table (E).Warn or else Errors.Table (E).Style then
-               Warnings_Detected := Warnings_Detected - 1;
-
-            else
-               Total_Errors_Detected := Total_Errors_Detected - 1;
-
-               if Errors.Table (E).Serious then
-                  Serious_Errors_Detected := Serious_Errors_Detected - 1;
-               end if;
-            end if;
+            Decrease_Error_Msg_Count (Errors.Table (E));
 
             return True;
 
@@ -1240,6 +1330,18 @@ package body Erroutc is
          Code_Rest := Code_Rest - Code_Digit * P10 (Code_Len - J);
       end loop;
    end Set_Msg_Insertion_Code;
+
+   ------------------------------
+   -- Set_Msg_Insertion_Column --
+   ------------------------------
+
+   procedure Set_Msg_Insertion_Column is
+   begin
+      if RM_Column_Check then
+         Set_Msg_Str (" in column ");
+         Set_Msg_Int (Int (Error_Msg_Col) + 1);
+      end if;
+   end Set_Msg_Insertion_Column;
 
    ---------------------------------
    -- Set_Msg_Insertion_File_Name --
@@ -1924,5 +2026,143 @@ package body Erroutc is
          return No_String;
       end if;
    end Warnings_Suppressed;
+
+   -------------------------
+   -- Write_Error_Summary --
+   -------------------------
+
+   procedure Write_Error_Summary is
+   begin
+      --  Extra blank line if error messages or source listing were output
+
+      if Total_Errors_Detected + Warnings_Detected > 0 or else Full_List
+      then
+         Write_Eol;
+      end if;
+
+      --  Message giving number of lines read and number of errors detected.
+      --  This normally goes to Standard_Output. The exception is when brief
+      --  mode is not set, verbose mode (or full list mode) is set, and
+      --  there are errors. In this case we send the message to standard
+      --  error to make sure that *something* appears on standard error
+      --  in an error situation.
+
+      if Total_Errors_Detected + Warnings_Detected /= 0
+         and then not Brief_Output
+         and then (Verbose_Mode or Full_List)
+      then
+         Set_Standard_Error;
+      end if;
+
+      --  Message giving total number of lines. Don't give this message if
+      --  the Main_Source line is unknown (this happens in error situations,
+      --  e.g. when integrated preprocessing fails).
+
+      if Main_Source_File > No_Source_File then
+         Write_Str (" ");
+         Write_Int (Num_Source_Lines (Main_Source_File));
+
+         if Num_Source_Lines (Main_Source_File) = 1 then
+            Write_Str (" line: ");
+         else
+            Write_Str (" lines: ");
+         end if;
+      end if;
+
+      if Total_Errors_Detected = 0 then
+         Write_Str ("No errors");
+
+      elsif Total_Errors_Detected = 1 then
+         Write_Str ("1 error");
+
+      else
+         Write_Int (Total_Errors_Detected);
+         Write_Str (" errors");
+      end if;
+
+      --  We now need to output warnings. When using -gnatwe, all warnings
+      --  should be treated as errors, except for warnings originating from
+      --  the use of the Compile_Time_Warning pragma. Another situation
+      --  where a warning might be treated as an error is when the source
+      --  code contains a Warning_As_Error pragma.
+      --  When warnings are treated as errors, we still log them as
+      --  warnings, but we add a message denoting how many of these warnings
+      --  are also errors.
+
+      declare
+         Warnings_Count : constant Int := Warnings_Detected;
+
+         Compile_Time_Warnings : Int;
+         --  Number of warnings that come from a Compile_Time_Warning
+         --  pragma.
+
+         Non_Compile_Time_Warnings : Int;
+         --  Number of warnings that do not come from a Compile_Time_Warning
+         --  pragmas.
+
+      begin
+         if Warnings_Count > 0 then
+            Write_Str (", ");
+            Write_Int (Warnings_Count);
+            Write_Str (" warning");
+
+            if Warnings_Count > 1 then
+               Write_Char ('s');
+            end if;
+
+            Compile_Time_Warnings := Count_Compile_Time_Pragma_Warnings;
+            Non_Compile_Time_Warnings :=
+               Warnings_Count - Compile_Time_Warnings;
+
+            if Warning_Mode = Treat_As_Error
+               and then Non_Compile_Time_Warnings > 0
+            then
+               Write_Str (" (");
+
+               if Compile_Time_Warnings > 0 then
+                  Write_Int (Non_Compile_Time_Warnings);
+                  Write_Str (" ");
+               end if;
+
+               Write_Str ("treated as error");
+
+               if Non_Compile_Time_Warnings > 1 then
+                  Write_Char ('s');
+               end if;
+
+               Write_Char (')');
+
+            elsif Warnings_Treated_As_Errors > 0 then
+               Write_Str (" (");
+
+               if Warnings_Treated_As_Errors /= Warnings_Count then
+                  Write_Int (Warnings_Treated_As_Errors);
+                  Write_Str (" ");
+               end if;
+
+               Write_Str ("treated as error");
+
+               if Warnings_Treated_As_Errors > 1 then
+                  Write_Str ("s");
+               end if;
+
+               Write_Str (")");
+            end if;
+         end if;
+      end;
+
+      if Info_Messages /= 0 then
+         Write_Str (", ");
+         Write_Int (Info_Messages);
+         Write_Str (" info message");
+
+         if Info_Messages > 1 then
+            Write_Char ('s');
+         end if;
+      end if;
+
+      Write_Eol;
+      Set_Standard_Output;
+   end Write_Error_Summary;
 
 end Erroutc;

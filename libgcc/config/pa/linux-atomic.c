@@ -1,5 +1,5 @@
 /* Linux-specific atomic operations for PA Linux.
-   Copyright (C) 2008-2024 Free Software Foundation, Inc.
+   Copyright (C) 2008-2025 Free Software Foundation, Inc.
    Based on code contributed by CodeSourcery for ARM EABI Linux.
    Modifications for PA Linux by Helge Deller <deller@gmx.de>
 
@@ -263,8 +263,6 @@ OP_AND_FETCH_WORD (or,    , |)
 OP_AND_FETCH_WORD (and,   , &)
 OP_AND_FETCH_WORD (xor,   , ^)
 OP_AND_FETCH_WORD (nand, ~, &)
-
-typedef unsigned char bool;
 
 #define COMPARE_AND_SWAP_2(TYPE, WIDTH, INDEX)				\
   TYPE HIDDEN								\

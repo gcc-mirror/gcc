@@ -1,5 +1,5 @@
 /* RISC-V-specific code for C family languages.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -223,6 +223,15 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
 
+  if (TARGET_ZICFISS && ((flag_cf_protection & CF_RETURN) == CF_RETURN))
+    builtin_define ("__riscv_shadow_stack");
+
+  if (TARGET_ZICFILP && ((flag_cf_protection & CF_BRANCH) == CF_BRANCH))
+    {
+      builtin_define ("__riscv_landing_pad");
+      builtin_define ("__riscv_landing_pad_unlabeled");
+    }
+
   const riscv_subset_list *subset_list = riscv_cmdline_subset_list ();
   if (!subset_list)
     return;
@@ -294,7 +303,7 @@ riscv_pragma_intrinsic (cpp_reader *)
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 static bool
 riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
-			  tree, unsigned int nargs, tree *args)
+			  tree, unsigned int nargs, tree *args, bool)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
@@ -312,11 +321,10 @@ riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
 static tree
-riscv_resolve_overloaded_builtin (unsigned int uncast_location, tree fndecl,
-				  void *uncast_arglist)
+riscv_resolve_overloaded_builtin (location_t loc, tree fndecl,
+				  void *uncast_arglist, bool)
 {
   vec<tree, va_gc> empty = {};
-  location_t loc = (location_t) uncast_location;
   vec<tree, va_gc> *arglist = (vec<tree, va_gc> *) uncast_arglist;
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;

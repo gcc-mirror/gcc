@@ -511,7 +511,7 @@ Parse::struct_type()
 	{
 	  if (pi->field_name() == pj->field_name()
 	      && !Gogo::is_sink_name(pi->field_name()))
-	    go_error_at(pi->location(), "duplicate field name %<%s%>",
+	    go_error_at(pi->location(), "duplicate field name %qs",
 			Gogo::message_name(pi->field_name()).c_str());
 	}
     }
@@ -966,7 +966,7 @@ Parse::parameter_list(bool* is_varargs)
 		    type = Type::make_forward_declaration(no);
 		  else
 		    {
-		      go_error_at(p->location(), "expected %<%s%> to be a type",
+		      go_error_at(p->location(), "expected %qs to be a type",
 				  Gogo::message_name(p->name()).c_str());
 		      saw_error = true;
 		      type = Type::make_error_type();

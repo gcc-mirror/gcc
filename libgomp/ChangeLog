@@ -1,3 +1,184 @@
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/metadirective-1.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-2.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-3.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-4.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-5.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-late-1.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-late-2.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-target-device.c: New.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* testsuite/libgomp.c++/metadirective-template-1.C: New.
+	* testsuite/libgomp.c++/metadirective-template-2.C: New.
+	* testsuite/libgomp.c++/metadirective-template-3.C: New.
+
+2025-01-13  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* testsuite/libgomp.fortran/dispatch-1.f90: Add missing target
+	directive.
+
+2025-01-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/65181
+	* fortran.c (omp_get_device_from_uid_): Adjust.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+
+2025-01-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 6.0): Fix typo.
+	(omp_get_default_device): Update the wording as the value
+	returned by omp_get_initial_device is now ambiguous.
+	(omp_get_num_devices): Minor wording tweak.
+	(omp_get_initial_device): Note that the function may also
+	return omp_initial_device since OpenMP 6.
+
+2025-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerate.
+
+2025-01-03  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* libgomp.texi:
+
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* testsuite/libgomp.fortran/declare-variant-2-aux.f90: New test.
+	* testsuite/libgomp.fortran/declare-variant-2.f90: New test (xfail).
+	* testsuite/libgomp.fortran/dispatch-1.f90: New test.
+	* testsuite/libgomp.fortran/dispatch-2.f90: New test.
+	* testsuite/libgomp.fortran/dispatch-3.f90: New test.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2024-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Document that 'kind' also
+	accepts 'cpu'/'any' on host and 'any'/'nohost' on 'nohost' devices.
+
+2024-12-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_dev2dev, GOMP_OFFLOAD_async_run):
+	Handle omp_async_queue == NULL after call to maybe_init_omp_async.
+	(GOMP_OFFLOAD_openacc_async_construct): Use error not fatal error,
+	partially reverting r15-5392.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm89.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Adjust.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm52.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Adjust.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm37.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Adjust.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* libgomp.texi: Clarify nvptx 'omp_low_lat_mem_space'
+	documentation.
+
+2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/82250
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-1.c: Revert
+	last change.
+
+2024-12-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Memory allocation): Mention (non-)effect of 'align'
+	on _Alignof.
+	* testsuite/libgomp.c/allocate-7.c: New test.
+
+2024-11-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-gcn.c
+	[!__cplusplus]: Don't 'typedef int bool;'.
+
+2024-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.c/alloc-pinned-3.c [!__linux__]
+	(set_pin_limit): Add size arg.
+	* testsuite/libgomp.c/alloc-pinned-4.c [!__linux__]
+	(set_pin_limit): Likewise.
+	* testsuite/libgomp.c/alloc-pinned-6.c [!__linux__]
+	(set_pin_limit): Likewise.
+
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/dispatch-1.c: New test.
+	* testsuite/libgomp.c-c++-common/dispatch-2.c: New test.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libgomp.exp: Add
+	"load_gcc_lib dg-test-cleanup.exp".
+
+2024-11-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_construct): In
+	case of an error, call GOMP_PLUGIN_fatal not ..._error; use NULL
+	not false in return.
+
+2024-11-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/117626
+	* plugin/plugin-nvptx.c (nvptx_open_device): Use 'CUDA_CALL_ERET'
+	with 'NULL' as error return instead of 'CUDA_CALL' that returns false.
+
+2024-11-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Change TR13 to
+	OpenMP 6.0, now released. Fix a typo in the omp_target_memset_async
+	routine name.
+
+2024-11-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/pr109062.c: Update dg-output
+	to also accept GOMP_SPINCOUNT = 1 for x86-64.
+
+2024-11-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (isa_matches_agent): Mention the device number
+	and ROCR_VISIBLE_DEVICES when reporting an ISA mismatch error.
+
+2024-11-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/max_vf-1.c: Adjust.
+	* testsuite/libgomp.c/max_vf-2.c: Likewise.
+
+2024-11-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Technical Report 13): Remove 'iterator'
+	in 'map' clause of 'declare mapper' as it is already the list above.
+	(Interoperability Routines): Add.
+	(omp_target_memcpy_async, omp_target_memcpy_rect_async):
+	Document that depobj_list may be omitted in C++ and Fortran.
+
+2024-11-07  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c/max_vf-1.c: Add -mno-avx.
+
+2024-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c/max_vf-1.c: New test.
+	* testsuite/libgomp.c/max_vf-2.c: New test.
+
 2024-10-22  Andrew Stubbs  <ams@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 
@@ -21711,7 +21892,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2024 Free Software Foundation, Inc.
+Copyright (C) 2005-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

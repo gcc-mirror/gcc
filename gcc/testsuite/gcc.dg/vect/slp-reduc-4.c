@@ -61,5 +61,5 @@ int main (void)
    reduction exceeds the number of elements in a 128-bit granule.  */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { ! vect_multiple_sizes } xfail { vect_no_int_min_max || { aarch64_sve && vect_variable_length } } } } } */
 /* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target { vect_multiple_sizes && { ! { vect_load_lanes && vect_strided8 } } } } } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" { xfail { aarch64_sve && vect_variable_length } } } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" { xfail { { aarch64_sve && vect_variable_length } || vect_no_int_min_max } } } } */
 

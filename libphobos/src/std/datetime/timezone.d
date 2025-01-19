@@ -1550,7 +1550,7 @@ package:
             isoString = A string which represents a time zone in the ISO format.
       +/
     static immutable(SimpleTimeZone) fromISOString(S)(S isoString) @safe pure
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         import std.algorithm.searching : startsWith;
         import std.conv : text, to, ConvException;
@@ -1704,7 +1704,7 @@ package:
             isoExtString = A string which represents a time zone in the ISO format.
       +/
     static immutable(SimpleTimeZone) fromISOExtString(S)(scope S isoExtString) @safe pure
-        if (isSomeString!S)
+    if (isSomeString!S)
     {
         import std.algorithm.searching : startsWith;
         import std.conv : ConvException, to;
@@ -2642,7 +2642,7 @@ private:
         Reads an int from a TZ file.
       +/
     static T readVal(T)(ref File tzFile) @trusted
-        if ((isIntegral!T || isSomeChar!T) || is(immutable T == immutable bool))
+    if ((isIntegral!T || isSomeChar!T) || is(immutable T == immutable bool))
     {
         import std.bitmanip : bigEndianToNative;
         T[1] buff;
@@ -2657,7 +2657,7 @@ private:
         Reads an array of values from a TZ file.
       +/
     static T readVal(T)(ref File tzFile, size_t length) @trusted
-        if (isArray!T)
+    if (isArray!T)
     {
         auto buff = new T(length);
 
@@ -2672,7 +2672,7 @@ private:
         Reads a `TempTTInfo` from a TZ file.
       +/
     static T readVal(T)(ref File tzFile) @safe
-        if (is(T == TempTTInfo))
+    if (is(T == TempTTInfo))
     {
         return TempTTInfo(readVal!int(tzFile),
                           readVal!bool(tzFile),
@@ -3339,7 +3339,7 @@ else version (Posix)
     Windows uses a different set of time zone names than the IANA time zone
     database does, and how they correspond to one another changes over time
     (particularly when Microsoft updates Windows).
-    $(HTTP unicode.org/cldr/data/common/supplemental/windowsZones.xml, windowsZones.xml)
+    $(HTTP github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml, windowsZones.xml)
     provides the current conversions (which may or may not match up with what's
     on a particular Windows box depending on how up-to-date it is), and
     parseTZConversions reads in those conversions from windowsZones.xml so that
@@ -3358,7 +3358,7 @@ else version (Posix)
 
     Params:
         windowsZonesXMLText = The text from
-        $(HTTP unicode.org/cldr/data/common/supplemental/windowsZones.xml, windowsZones.xml)
+        $(HTTP github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml, windowsZones.xml)
 
     Throws:
         Exception if there is an error while parsing the given XML.
@@ -3372,7 +3372,7 @@ else version (Posix)
     // and parse it so that it's guaranteed to be up-to-date, though
     // that has the downside that the code needs to worry about the
     // site being down or unicode.org changing the URL.
-    auto url = "http://unicode.org/cldr/data/common/supplemental/windowsZones.xml";
+    auto url = "https://raw.githubusercontent.com/unicode-org/cldr/main/common/supplemental/windowsZones.xml";
     auto conversions2 = parseTZConversions(std.net.curl.get(url));
 --------------------
   +/
@@ -3458,7 +3458,7 @@ TZConversions parseTZConversions(string windowsZonesXMLText) @safe pure
     import std.algorithm.iteration : uniq;
     import std.algorithm.sorting : isSorted;
 
-    // Reduced text from http://unicode.org/cldr/data/common/supplemental/windowsZones.xml
+    // Reduced text from https://github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml
     auto sampleFileText =
 `<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE supplementalData SYSTEM "../../common/dtd/ldmlSupplemental.dtd">

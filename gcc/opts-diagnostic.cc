@@ -1,5 +1,5 @@
 /* Support for -fdiagnostics-add-output= and -fdiagnostics-set-output=.
-   Copyright (C) 2024 Free Software Foundation, Inc.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ARRAY
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
@@ -361,6 +360,9 @@ text_scheme_handler::make_sink (const context &ctxt,
 				const scheme_name_and_params &parsed_arg) const
 {
   bool show_color = pp_show_color (ctxt.m_dc.get_reference_printer ());
+  bool show_nesting = false;
+  bool show_locations_in_nesting = true;
+  bool show_levels = false;
   for (auto& iter : parsed_arg.m_kvs)
     {
       const std::string &key = iter.first;
@@ -371,17 +373,42 @@ text_scheme_handler::make_sink (const context &ctxt,
 	    return nullptr;
 	  continue;
 	}
+      if (key == "experimental-nesting")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 show_nesting))
+	    return nullptr;
+	  continue;
+	}
+      if (key == "experimental-nesting-show-locations")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 show_locations_in_nesting))
+	    return nullptr;
+	  continue;
+	}
+      if (key == "experimental-nesting-show-levels")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value, show_levels))
+	    return nullptr;
+	  continue;
+	}
 
       /* Key not found.  */
       auto_vec<const char *> known_keys;
       known_keys.safe_push ("color");
+      known_keys.safe_push ("experimental-nesting");
+      known_keys.safe_push ("experimental-nesting-show-locations");
+      known_keys.safe_push ("experimental-nesting-show-levels");
       ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
 			       known_keys);
       return nullptr;
     }
 
-  std::unique_ptr<diagnostic_output_format> sink;
-  sink = ::make_unique<diagnostic_text_output_format> (ctxt.m_dc);
+  auto sink = ::make_unique<diagnostic_text_output_format> (ctxt.m_dc);
+  sink->set_show_nesting (show_nesting);
+  sink->set_show_locations_in_nesting (show_locations_in_nesting);
+  sink->set_show_nesting_levels (show_levels);
   return sink;
 }
 

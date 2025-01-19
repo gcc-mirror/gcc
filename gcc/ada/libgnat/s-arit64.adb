@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+pragma Assertion_Policy (Ghost => Ignore);
 
 with System.Arith_Double;
 
@@ -50,6 +51,9 @@ is
 
    function Multiply_With_Ovflo_Check64 (X, Y : Int64) return Int64
      renames Impl.Multiply_With_Ovflo_Check;
+
+   function Round_Quotient (X, Y, Q, R : Big_Integer) return Big_Integer
+     renames Impl.Round_Quotient;
 
    procedure Scaled_Divide64
      (X, Y, Z : Int64;

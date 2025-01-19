@@ -1,5 +1,5 @@
 /* Loop unrolling.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -372,7 +372,8 @@ decide_unroll_constant_iterations (class loop *loop, int flags)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
 
   /* Skip big loops.  */
-  if (nunroll <= 1)
+  if (nunroll <= 1
+      && !(loop->unroll > 1 && loop->unroll < USHRT_MAX))
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not considering loop, is too big\n");

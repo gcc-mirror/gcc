@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Argonaut EPIPHANY cpu.
-   Copyright (C) 1994-2024 Free Software Foundation, Inc.
+   Copyright (C) 1994-2025 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.

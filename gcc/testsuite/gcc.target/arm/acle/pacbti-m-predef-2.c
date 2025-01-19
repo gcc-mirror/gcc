@@ -1,7 +1,9 @@
 /* { dg-do run } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_pacbti_link } */
 /* { dg-require-effective-target mbranch_protection_ok } */
 /* { dg-require-effective-target arm_pacbti_hw } */
-/* { dg-options "-march=armv8.1-m.main+pacbti+fp -mbranch-protection=bti+pac-ret+leaf -mthumb -mfloat-abi=hard" } */
+/* { dg-options "-mbranch-protection=bti+pac-ret+leaf -mfloat-abi=hard" } */
+/* { dg-add-options arm_arch_v8_1m_main_pacbti } */
 
 #if !defined (__ARM_FEATURE_BTI_DEFAULT)
 #error "Feature test macro __ARM_FEATURE_BTI_DEFAULT should be defined."

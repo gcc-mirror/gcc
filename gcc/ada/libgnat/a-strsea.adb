@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,7 +71,7 @@ package body Ada.Strings.Search with SPARK_Mode is
    is
       (if Test = Inside then
           Is_In (Element, Set)
-      else not (Is_In (Element, Set)));
+      else not Is_In (Element, Set));
 
    -----------
    -- Count --
@@ -125,7 +125,7 @@ package body Ada.Strings.Search with SPARK_Mode is
                if Pattern (K) /= Value (Mapping,
                  Source (Ind + (K - Pattern'First)))
                then
-                  pragma Assert (not (Match (Source, Pattern, Mapping, Ind)));
+                  pragma Assert (not Match (Source, Pattern, Mapping, Ind));
                   goto Cont;
                end if;
 
@@ -188,7 +188,7 @@ package body Ada.Strings.Search with SPARK_Mode is
                pragma Annotate (GNATprove, False_Positive,
                                 "call via access-to-subprogram",
                                 "function Mapping must always terminate");
-               pragma Assert (not (Match (Source, Pattern, Mapping, Ind)));
+               pragma Assert (not Match (Source, Pattern, Mapping, Ind));
                goto Cont;
             end if;
 
@@ -280,7 +280,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
          pragma Loop_Invariant
            (for all K in Integer'Max (From, Source'First) .. J =>
-                not (Belongs (Source (K), Set, Test)));
+                not Belongs (Source (K), Set, Test));
       end loop;
 
       --  Here if no token found
@@ -323,7 +323,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
          pragma Loop_Invariant
            (for all K in Source'First .. J =>
-              not (Belongs (Source (K), Set, Test)));
+              not Belongs (Source (K), Set, Test));
       end loop;
 
       --  Here if no token found
@@ -380,7 +380,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
                pragma Loop_Invariant
                  (for all J in Source'First .. Ind =>
-                    not (Match (Source, Pattern, Mapping, J)));
+                    not Match (Source, Pattern, Mapping, J));
             end loop;
 
          --  Mapped forward case
@@ -406,7 +406,7 @@ package body Ada.Strings.Search with SPARK_Mode is
                <<Cont1>>
                pragma Loop_Invariant
                  (for all J in Source'First .. Ind =>
-                    not (Match (Source, Pattern, Mapping, J)));
+                    not Match (Source, Pattern, Mapping, J));
                null;
             end loop;
          end if;
@@ -425,7 +425,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
                pragma Loop_Invariant
                  (for all J in Ind .. Source'Last - PL1 =>
-                    not (Match (Source, Pattern, Mapping, J)));
+                    not Match (Source, Pattern, Mapping, J));
             end loop;
 
          --  Mapped backward case
@@ -451,7 +451,7 @@ package body Ada.Strings.Search with SPARK_Mode is
                <<Cont2>>
                pragma Loop_Invariant
                  (for all J in Ind .. Source'Last - PL1 =>
-                    not (Match (Source, Pattern, Mapping, J)));
+                    not Match (Source, Pattern, Mapping, J));
                null;
             end loop;
          end if;
@@ -515,7 +515,7 @@ package body Ada.Strings.Search with SPARK_Mode is
             <<Cont1>>
             pragma Loop_Invariant
               (for all J in Source'First .. Ind =>
-                 not (Match (Source, Pattern, Mapping, J)));
+                 not Match (Source, Pattern, Mapping, J));
             null;
          end loop;
 
@@ -546,7 +546,7 @@ package body Ada.Strings.Search with SPARK_Mode is
             <<Cont2>>
             pragma Loop_Invariant
               (for all J in Ind .. Source'Last - PL1 =>
-                not (Match (Source, Pattern, Mapping, J)));
+                not Match (Source, Pattern, Mapping, J));
             null;
          end loop;
       end if;
@@ -574,7 +574,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
             pragma Loop_Invariant
               (for all C of Source (Source'First .. J) =>
-                   not (Belongs (C, Set, Test)));
+                   not Belongs (C, Set, Test));
          end loop;
 
       --  Backwards case
@@ -587,7 +587,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
             pragma Loop_Invariant
               (for all C of Source (J .. Source'Last) =>
-                   not (Belongs (C, Set, Test)));
+                   not Belongs (C, Set, Test));
          end loop;
       end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,6 +63,17 @@ package body Diagnostics.JSON_Utils is
          Indent;
       end if;
    end NL_And_Indent;
+
+   -----------------------------
+   -- Write_Boolean_Attribute --
+   -----------------------------
+
+   procedure Write_Boolean_Attribute (Name : String; Value : Boolean) is
+
+   begin
+      Write_Str ("""" & Name & """" & ": ");
+      Write_Str (if Value then "true" else "false");
+   end Write_Boolean_Attribute;
 
    -------------------------
    -- Write_Int_Attribute --

@@ -2,7 +2,8 @@
 // { dg-options "-O2" } 
 // Check that, even when optimizing, we emit an out-of-line call to
 // the type-info comparison function.
-// { dg-final { scan-assembler _ZNKSt9type_infoeqERKS_ } }
+// { dg-final { scan-assembler _ZNKSt9type_infoeqERKS_ { target { ! c++26 } } } }
+// { dg-final { scan-assembler _ZNKSt9type_info7__equalERKS_ { target { c++26 } } } }
 
 #include <typeinfo>
 

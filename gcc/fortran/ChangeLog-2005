@@ -3721,7 +3721,6 @@
 	* trans-stmt.c: Ditto
 	* trans.c: Ditto
 	* trans-intrinsic.c: Remove stdio.h and string.h
-
 
 Copyright (C) 2005 Free Software Foundation, Inc.
 

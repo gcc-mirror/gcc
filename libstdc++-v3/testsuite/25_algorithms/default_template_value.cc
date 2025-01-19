@@ -27,7 +27,7 @@ struct Output
 struct Input
 {
   Input(int, double);
-  friend bool operator<=>(const Input &, const Input &) = default;
+  friend auto operator<=>(const Input &, const Input &) = default;
   friend Input operator+(const Input &, const Input &);
   operator Output() const;
 };

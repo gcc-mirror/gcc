@@ -37,17 +37,18 @@ version (Windows)
 }
 else version (Darwin)
 {
+    import core.stdc.errno : EINTR, errno;
     import core.sync.config;
-    import core.stdc.errno;
-    import core.sys.posix.time;
-    import core.sys.darwin.mach.semaphore;
+    import core.sys.darwin.mach.kern_return : KERN_ABORTED, KERN_OPERATION_TIMED_OUT;
+    import core.sys.darwin.mach.semaphore : mach_task_self, mach_timespec_t, semaphore_create, semaphore_destroy,
+        semaphore_signal, semaphore_t, semaphore_timedwait, semaphore_wait, SYNC_POLICY_FIFO;
 }
 else version (Posix)
 {
+    import core.stdc.errno : EAGAIN, EINTR, errno, ETIMEDOUT;
     import core.sync.config;
-    import core.stdc.errno;
-    import core.sys.posix.pthread;
-    import core.sys.posix.semaphore;
+    import core.sys.posix.semaphore : sem_destroy, sem_init, sem_post, sem_t, sem_timedwait, sem_trywait, sem_wait;
+    import core.sys.posix.time : clock_gettime, CLOCK_REALTIME, timespec;
 }
 else
 {
@@ -253,8 +254,6 @@ class Semaphore
         }
         else version (Posix)
         {
-            import core.sys.posix.time : clock_gettime, CLOCK_REALTIME;
-
             timespec t = void;
             clock_gettime( CLOCK_REALTIME, &t );
             mvtspec( t, period );
@@ -364,7 +363,8 @@ protected:
 
 unittest
 {
-    import core.thread, core.atomic;
+    import core.atomic;
+    import core.thread;
 
     void testWait()
     {

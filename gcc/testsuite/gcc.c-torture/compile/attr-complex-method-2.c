@@ -8,5 +8,5 @@ void do_div (_Complex double *a, _Complex double *b)
   *a = *b / (4.0 - 5.0fi);
 }
 
-/* { dg-final { scan-tree-dump "__(?:gnu_)?divdc3" "optimized" { target { ! { avr-*-* } } } } } */
-/* { dg-final { scan-tree-dump "__(?:gnu_)?divsc3" "optimized" { target { avr-*-* } } } } */
+/* { dg-final { scan-tree-dump "__(?:gnu_)?divdc3" "optimized" { target { large_double } } } } */
+/* { dg-final { scan-tree-dump "__(?:gnu_)?divsc3" "optimized" { target { ! { large_double } } } } } */

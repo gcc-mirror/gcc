@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,14 +41,21 @@ package body Diagnostics.Converter is
      (E_Id : Error_Msg_Id) return Sub_Diagnostic_Type;
 
    function Get_Warning_Kind (E_Msg : Error_Msg_Object) return Diagnostic_Kind
-   is (if E_Msg.Info then Info_Warning
-       elsif E_Msg.Warn_Chr = "* " then Restriction_Warning
+   is (if E_Msg.Warn_Chr = "* " then Restriction_Warning
        elsif E_Msg.Warn_Chr = "? " then Default_Warning
        elsif E_Msg.Warn_Chr = "  " then Tagless_Warning
        else Warning);
    --  NOTE: Some messages have both info and warning set to true. The old
    --  printer added the warning switch label but treated the message as
    --  an info message.
+
+   function Get_Diagnostics_Kind (E_Msg : Error_Msg_Object)
+                                  return Diagnostic_Kind
+   is (if E_Msg.Kind = Erroutc.Warning then Get_Warning_Kind (E_Msg)
+      elsif E_Msg.Kind = Erroutc.Style then Style
+      elsif E_Msg.Kind = Erroutc.Info then Info
+      elsif E_Msg.Kind = Erroutc.Non_Serious_Error then Non_Serious_Error
+      else Error);
 
    -----------------------------------
    -- Convert_Errors_To_Diagnostics --
@@ -92,27 +99,14 @@ package body Diagnostics.Converter is
       --  shall be printed with the same kind token as the main diagnostic.
       D.Kind := Continuation;
 
-      declare
-         L : Labeled_Span_Type;
-      begin
-         if E_Msg.Insertion_Sloc /= No_Location then
-            L.Span := To_Span (E_Msg.Insertion_Sloc);
-         else
-            L.Span := E_Msg.Sptr;
-         end if;
-
-         L.Is_Primary := True;
-         Add_Location (D, L);
-      end;
+      Add_Location (D,
+        Primary_Labeled_Span
+          (if E_Msg.Insertion_Sloc /= No_Location
+           then To_Span (E_Msg.Insertion_Sloc)
+           else E_Msg.Sptr));
 
       if E_Msg.Optr.Ptr /= E_Msg.Sptr.Ptr then
-         declare
-            L : Labeled_Span_Type;
-         begin
-            L.Span       := E_Msg.Optr;
-            L.Is_Primary := False;
-            Add_Location (D, L);
-         end;
+         Add_Location (D, Secondary_Labeled_Span (E_Msg.Optr));
       end if;
 
       return D;
@@ -131,43 +125,22 @@ package body Diagnostics.Converter is
    begin
       D.Message := E_Msg.Text;
 
-      if E_Msg.Warn then
-         D.Kind   := Get_Warning_Kind (E_Msg);
+      D.Kind := Get_Diagnostics_Kind (E_Msg);
+
+      if E_Msg.Kind in Erroutc.Warning | Erroutc.Style | Erroutc.Info then
          D.Switch := Get_Switch_Id (E_Msg);
-      elsif E_Msg.Style then
-         D.Kind   := Style;
-         D.Switch := Get_Switch_Id (E_Msg);
-      elsif E_Msg.Info then
-         D.Kind := Info;
-         D.Switch := Get_Switch_Id (E_Msg);
-      else
-         D.Kind := Error;
       end if;
 
       D.Warn_Err := E_Msg.Warn_Err;
 
-      D.Serious := E_Msg.Serious;
-
       --  Convert the primary location
 
-      declare
-         L : Labeled_Span_Type;
-      begin
-         L.Span       := E_Msg.Sptr;
-         L.Is_Primary := True;
-         Add_Location (D, L);
-      end;
+      Add_Location (D, Primary_Labeled_Span (E_Msg.Sptr));
 
       --  Convert the secondary location if it is different from the primary
 
       if E_Msg.Optr.Ptr /= E_Msg.Sptr.Ptr then
-         declare
-            L : Labeled_Span_Type;
-         begin
-            L.Span       := E_Msg.Optr;
-            L.Is_Primary := False;
-            Add_Location (D, L);
-         end;
+         Add_Location (D, Secondary_Labeled_Span (E_Msg.Optr));
       end if;
 
       E_Next_Id := Errors.Table (E_Id).Next;

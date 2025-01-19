@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -281,9 +281,16 @@ package body Exp_Ch6 is
    --  Does the main work of Expand_Call. Post_Call is as for Expand_Actuals.
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id; Use_Sec_Stack : Boolean);
-   --  N is a function call which returns a controlled object. Transform the
+   --  N is a function call that returns a controlled object. Transform the
    --  call into a temporary which retrieves the returned object from the
    --  primary or secondary stack (Use_Sec_Stack says which) using 'reference.
+
+   --  This expansion is necessary in all the cases where the constant object
+   --  denoted by the call needs finalization in the current subprogram, which
+   --  excludes return statements, and is not identified with another object
+   --  that will be finalized, which excludes (statically) declared objects,
+   --  dynamically allocated objects, and targets of assignments that are done
+   --  directly (without intermediate temporaries).
 
    procedure Expand_Non_Function_Return (N : Node_Id);
    --  Expand a simple return statement found in a procedure body, entry body,
@@ -334,8 +341,8 @@ package body Exp_Ch6 is
    --    --  formals; therefore Is_Build_In_Place_Function_Call returns False.
 
    procedure Replace_Renaming_Declaration_Id
-      (New_Decl  : Node_Id;
-       Orig_Decl : Node_Id);
+     (New_Decl  : Node_Id;
+      Orig_Decl : Node_Id);
    --  Replace the internal identifier of the new renaming declaration New_Decl
    --  with the identifier of its original declaration Orig_Decl exchanging the
    --  entities containing their defining identifiers to ensure the correct
@@ -539,15 +546,20 @@ package body Exp_Ch6 is
                Build_Anonymous_Collection (Ptr_Typ);
             end if;
 
-            --  Access-to-controlled types should always have a collection
+            --  Named access-to-controlled types must have a collection, but
+            --  anonymous access-to-controlled types need not.
 
-            pragma Assert (Present (Finalization_Collection (Ptr_Typ)));
+            if Present (Finalization_Collection (Ptr_Typ)) then
+               Actual :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     New_Occurrence_Of
+                       (Finalization_Collection (Ptr_Typ), Loc),
+                   Attribute_Name => Name_Unrestricted_Access);
 
-            Actual :=
-              Make_Attribute_Reference (Loc,
-                Prefix =>
-                  New_Occurrence_Of (Finalization_Collection (Ptr_Typ), Loc),
-                Attribute_Name => Name_Unrestricted_Access);
+            else pragma Assert (Ekind (Ptr_Typ) = E_Anonymous_Access_Type);
+               Actual := Make_Null (Loc);
+            end if;
 
          --  Tagged types
 
@@ -5309,6 +5321,43 @@ package body Exp_Ch6 is
             Establish_Transient_Scope
               (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
          end if;
+
+      --  Functions returning noncontrolled objects that may be subject to
+      --  user-defined indexing also need special attention. The problem
+      --  is that, when a call to such a function is directly passed as an
+      --  actual in a call to the Constant_Indexing function, the latter
+      --  call effectively binds the lifetime of the actual to that of its
+      --  return value, thus extending it beyond the call. This cannot be
+      --  directly supported by code generators, for which the lifetime of
+      --  temporaries created for actuals ends immediately after the call.
+      --  Therefore we force the creation of a temporary in this case, as
+      --  the above code would have done in the controlled case; note that,
+      --  in this latter case, the temporary cannot be finalized just after
+      --  the call as would naturally be done, and Is_Finalizable_Transient
+      --  also has a special processing for it (see Is_Indexed_Container).
+
+      elsif Nkind (Call_Node) = N_Function_Call
+        and then Nkind (Parent (Call_Node)) = N_Function_Call
+        and then Is_Entity_Name (Name (Parent (Call_Node)))
+      then
+         declare
+            Aspect : constant Node_Id :=
+              Find_Value_Of_Aspect
+                (Etype (Call_Node), Aspect_Constant_Indexing);
+            Subp   : constant Entity_Id := Entity (Name (Parent (Call_Node)));
+
+         begin
+            if Present (Aspect)
+              and then Subp = Ultimate_Alias (Entity (Aspect))
+            then
+               --  Resolution is now finished, make sure we don't start
+               --  analysis again because of the duplication.
+
+               Set_Analyzed (Call_Node);
+
+               Remove_Side_Effects (Call_Node);
+            end if;
+         end;
       end if;
    end Expand_Call_Helper;
 
@@ -5318,7 +5367,8 @@ package body Exp_Ch6 is
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id; Use_Sec_Stack : Boolean)
    is
-      Par : constant Node_Id := Parent (N);
+      Par        : constant Node_Id := Parent (N);
+      Uncond_Par : constant Node_Id := Unconditional_Parent (N);
 
    begin
       --  Optimization: if the returned value is returned again, then no need
@@ -5327,13 +5377,7 @@ package body Exp_Ch6 is
       --  Note that simple return statements are distributed into conditional
       --  expressions but we may be invoked before this distribution is done.
 
-      if Nkind (Par) = N_Simple_Return_Statement
-        or else (Nkind (Par) = N_If_Expression
-                  and then Nkind (Parent (Par)) = N_Simple_Return_Statement)
-        or else (Nkind (Par) = N_Case_Expression_Alternative
-                  and then
-                    Nkind (Parent (Parent (Par))) = N_Simple_Return_Statement)
-      then
+      if Nkind (Uncond_Par) = N_Simple_Return_Statement then
          return;
       end if;
 
@@ -5346,7 +5390,37 @@ package body Exp_Ch6 is
 
       if Nkind (Par) in N_Object_Declaration | N_Delta_Aggregate
         and then Expression (Par) = N
-        and then not Use_Sec_Stack
+      then
+         if not Use_Sec_Stack then
+            return;
+         end if;
+
+      --  Note that object declarations are also distributed into conditional
+      --  expressions but we may be invoked before this distribution is done.
+
+      elsif Nkind (Uncond_Par) = N_Object_Declaration then
+         return;
+      end if;
+
+      --  The same optimization: if the returned value is used to initialize a
+      --  dynamically allocated object, then no need to copy/readjust/finalize,
+      --  we can initialize it in place.
+
+      if Nkind (Par) = N_Qualified_Expression
+        and then Nkind (Parent (Par)) = N_Allocator
+      then
+         return;
+      end if;
+
+      --  Avoid expansion to catch the error when the function call is on the
+      --  left-hand side of an assignment. Likewise if it is on the right-hand
+      --  side and no controlling actions will be performed for the assignment,
+      --  which means that this is an initialization of the target and it can
+      --  thus be performed directly. Note that the code generator should also
+      --  avoid creating a temporary for the right-hand side in this case.
+
+      if Nkind (Par) = N_Assignment_Statement
+        and then (N = Name (Par) or else No_Ctrl_Actions (Par))
       then
          return;
       end if;
@@ -6621,11 +6695,16 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  For the case of a simple return that does not come from an
-      --  extended return, in the case of build-in-place, we rewrite
-      --  "return <expression>;" to be:
-
-      --    return _anon_ : <return_subtype> := <expression>
+      --  For the case of a simple return that does not come from an extended
+      --  return, and if the function returns in place or the expression is an
+      --  aggregate whose expansion has been delayed to be returned in place
+      --  (see Is_Build_In_Place_Aggregate_Return), we rewrite:
+      --
+      --    return <expression>;
+      --
+      --  into
+      --
+      --    return _anonymous_ : <return_subtype> := <expression>
 
       --  The expansion produced by Expand_N_Extended_Return_Statement will
       --  contain simple return statements (for example, a block containing
@@ -6644,7 +6723,8 @@ package body Exp_Ch6 is
           or else Has_BIP_Formals (Scope_Id));
 
       if not Comes_From_Extended_Return_Statement (N)
-        and then Is_Build_In_Place_Function (Scope_Id)
+        and then (Is_Build_In_Place_Function (Scope_Id)
+                   or else Is_Delayed_Aggregate (Exp))
 
          --  The functionality of interface thunks is simple and it is always
          --  handled by means of simple return statements. This leaves their
@@ -6653,23 +6733,20 @@ package body Exp_Ch6 is
         and then not Is_Thunk (Scope_Id)
       then
          declare
-            Return_Object_Entity : constant Entity_Id :=
-                                     Make_Temporary (Loc, 'R', Exp);
-
             Obj_Decl : constant Node_Id :=
                          Make_Object_Declaration (Loc,
-                           Defining_Identifier => Return_Object_Entity,
+                           Defining_Identifier => Make_Temporary (Loc, 'R'),
                            Object_Definition   => Subtype_Ind,
-                           Expression          => Exp);
+                           Expression          => Relocate_Node (Exp));
 
-            Ext : constant Node_Id :=
-                    Make_Extended_Return_Statement (Loc,
-                      Return_Object_Declarations => New_List (Obj_Decl));
+            Stmt : constant Node_Id :=
+                     Make_Extended_Return_Statement (Loc,
+                       Return_Object_Declarations => New_List (Obj_Decl));
             --  Do not perform this high-level optimization if the result type
             --  is an interface because the "this" pointer must be displaced.
 
          begin
-            Rewrite (N, Ext);
+            Rewrite (N, Stmt);
             Analyze (N);
             return;
          end;
@@ -8422,7 +8499,22 @@ package body Exp_Ch6 is
             Chain   := Empty;
          end if;
 
-         Insert_Actions (Allocator, Actions);
+         --  See the Needs_Cleanup predicate in Expand_Allocator_Expression
+
+         if Alloc_Form = Caller_Allocation
+           and then not For_Special_Return_Object (Allocator)
+           and then not (Is_Entity_Name (Name (Func_Call))
+                          and then No_Raise (Entity (Name (Func_Call))))
+           and then not Restriction_Active (No_Exception_Propagation)
+           and then RTE_Available (RE_Free)
+           and then not Debug_Flag_QQ
+         then
+            Insert_Action (Allocator,
+              Build_Cleanup_For_Allocator (Loc,
+                Return_Obj_Access, Storage_Pool (Allocator), Actions));
+         else
+            Insert_Actions (Allocator, Actions);
+         end if;
       end;
 
       --  When the function has a controlling result, an allocation-form
@@ -8749,6 +8841,7 @@ package body Exp_Ch6 is
       Func_Call   : constant Node_Id    := Unqual_Conv (Function_Call);
       Function_Id : constant Entity_Id  := Get_Function_Id (Func_Call);
       Loc         : constant Source_Ptr := Sloc (Function_Call);
+      Marker      : constant Node_Id    := Next (Obj_Decl);
       Obj_Loc     : constant Source_Ptr := Sloc (Obj_Decl);
       Obj_Def_Id  : constant Entity_Id  := Defining_Identifier (Obj_Decl);
       Obj_Typ     : constant Entity_Id  := Etype (Obj_Def_Id);
@@ -8828,71 +8921,10 @@ package body Exp_Ch6 is
       --  if the object declaration is for a return object, the access type and
       --  object must be inserted before the object, since the object
       --  declaration is rewritten to be a renaming of a dereference of the
-      --  access object. Note: we need to freeze Ptr_Typ explicitly, because
-      --  the result object is in a different (transient) scope, so won't cause
-      --  freezing.
+      --  access object.
 
       if Definite and then not Is_OK_Return_Object then
-
-         --  The presence of an address clause complicates the build-in-place
-         --  expansion because the indicated address must be processed before
-         --  the indirect call is generated (including the definition of a
-         --  local pointer to the object). The address clause may come from
-         --  an aspect specification or from an explicit attribute
-         --  specification appearing after the object declaration. These two
-         --  cases require different processing.
-
-         if Has_Aspect (Obj_Def_Id, Aspect_Address) then
-
-            --  Skip non-delayed pragmas that correspond to other aspects, if
-            --  any, to find proper insertion point for freeze node of object.
-
-            declare
-               D : Node_Id := Obj_Decl;
-               N : Node_Id := Next (D);
-
-            begin
-               while Present (N)
-                 and then Nkind (N) in N_Attribute_Reference | N_Pragma
-               loop
-                  Analyze (N);
-                  D := N;
-                  Next (N);
-               end loop;
-
-               Insert_After (D, Ptr_Typ_Decl);
-
-               --  Freeze object before pointer declaration, to ensure that
-               --  generated attribute for address is inserted at the proper
-               --  place.
-
-               Freeze_Before (Ptr_Typ_Decl, Obj_Def_Id);
-            end;
-
-            Analyze (Ptr_Typ_Decl);
-
-         elsif Present (Following_Address_Clause (Obj_Decl)) then
-
-            --  Locate explicit address clause, which may also follow pragmas
-            --  generated by other aspect specifications.
-
-            declare
-               Addr : constant Node_Id := Following_Address_Clause (Obj_Decl);
-               D    : Node_Id := Next (Obj_Decl);
-
-            begin
-               while Present (D) loop
-                  Analyze (D);
-                  exit when D = Addr;
-                  Next (D);
-               end loop;
-
-               Insert_After_And_Analyze (Addr, Ptr_Typ_Decl);
-            end;
-
-         else
-            Insert_After_And_Analyze (Obj_Decl, Ptr_Typ_Decl);
-         end if;
+         Insert_Action_After (Obj_Decl, Ptr_Typ_Decl);
       else
          Insert_Action (Obj_Decl, Ptr_Typ_Decl);
       end if;
@@ -9112,24 +9144,24 @@ package body Exp_Ch6 is
 
       if Definite and then not Is_OK_Return_Object then
 
-         --  The related object declaration is encased in a transient block
-         --  because the build-in-place function call contains at least one
-         --  nested function call that produces a controlled transient
-         --  temporary:
-
-         --    Obj : ... := BIP_Func_Call (Ctrl_Func_Call);
-
-         --  Since the build-in-place expansion decouples the call from the
-         --  object declaration, the finalization machinery lacks the context
-         --  which prompted the generation of the transient block. To resolve
-         --  this scenario, store the build-in-place call.
-
-         if Scope_Is_Transient then
-            Set_BIP_Initialization_Call (Obj_Def_Id, Res_Decl);
-         end if;
-
          Set_Expression (Obj_Decl, Empty);
          Set_No_Initialization (Obj_Decl);
+
+         --  Since the build-in-place expansion decouples the call from the
+         --  object declaration, the finalization machinery needs to know
+         --  when the object is initialized. Store the build-in-place call.
+
+         Set_BIP_Initialization_Call (Obj_Def_Id, Res_Decl);
+
+         --  Park the generated statements if the declaration requires it and
+         --  is not the node that is wrapped in a transient scope.
+
+         if Needs_Initialization_Statements (Obj_Decl)
+           and then not (Scope_Is_Transient
+                          and then Obj_Decl = Node_To_Be_Wrapped)
+         then
+            Move_To_Initialization_Statements (Obj_Decl, Marker);
+         end if;
 
       --  In case of an indefinite result subtype, or if the call is the
       --  return expression of an enclosing BIP function, rewrite the object
@@ -9611,8 +9643,8 @@ package body Exp_Ch6 is
    -------------------------------------
 
    procedure Replace_Renaming_Declaration_Id
-      (New_Decl  : Node_Id;
-       Orig_Decl : Node_Id)
+     (New_Decl  : Node_Id;
+      Orig_Decl : Node_Id)
    is
       New_Id  : constant Entity_Id := Defining_Entity (New_Decl);
       Orig_Id : constant Entity_Id := Defining_Entity (Orig_Decl);
@@ -9807,7 +9839,7 @@ package body Exp_Ch6 is
             when N_Entry_Call_Statement
                | N_Procedure_Call_Statement
                | N_Function_Call
-              =>
+            =>
                declare
                   Call_Node : Node_Id renames Nod;
                   Subp      : Entity_Id;
@@ -9887,7 +9919,7 @@ package body Exp_Ch6 is
 
             when N_Procedure_Specification
                | N_Function_Specification
-              =>
+            =>
                return Skip;
 
             when N_Abstract_Subprogram_Declaration
@@ -9917,7 +9949,7 @@ package body Exp_Ch6 is
                | N_Use_Package_Clause
                | N_Use_Type_Clause
                | N_With_Clause
-              =>
+            =>
                return Skip;
 
             when others =>

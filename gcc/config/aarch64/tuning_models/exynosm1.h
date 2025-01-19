@@ -1,5 +1,5 @@
 /* Tuning model description for AArch64 architecture.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -123,7 +123,7 @@ static const struct tune_params exynosm1_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   3,	/* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
+  AARCH64_FUSE_BASE, /* fusible_ops  */
   "4",	/* function_align.  */
   "4",	/* jump_align.  */
   "4",	/* loop_align.  */

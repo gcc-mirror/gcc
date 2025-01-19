@@ -1,6 +1,6 @@
 /* Definitions for LoongArch systems using GNU (glibc-based) userspace,
    or other userspace with libc derived from glibc.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

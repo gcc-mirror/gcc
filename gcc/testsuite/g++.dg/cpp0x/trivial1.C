@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-deprecated" { target c++26 } }
 
 // [basic.types]/10:
 // Scalar types, trivial class types (Clause 9), arrays of such types and

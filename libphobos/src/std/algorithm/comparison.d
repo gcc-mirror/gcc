@@ -102,7 +102,7 @@ template among(values...)
 if (isExpressionTuple!values)
 {
     uint among(Value)(Value value)
-        if (!is(CommonType!(Value, values) == void))
+    if (!is(CommonType!(Value, values) == void))
     {
         switch (value)
         {

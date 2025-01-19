@@ -1,6 +1,6 @@
 /* Subroutines used for code generation for RISC-V 'V' Extension for
    GNU compiler.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
    This file is part of GCC.
@@ -1439,9 +1439,11 @@ expand_const_vector (rtx target, rtx src)
 		  rtx shift_count
 		    = gen_int_mode (exact_log2 (builder.npatterns ()),
 				    builder.inner_mode ());
-		  rtx tmp1 = expand_simple_binop (builder.mode (), LSHIFTRT,
-						 vid, shift_count, NULL_RTX,
-						 false, OPTAB_DIRECT);
+		  rtx tmp1 = gen_reg_rtx (builder.mode ());
+		  rtx shift_ops[] = {tmp1, vid, shift_count};
+		  emit_vlmax_insn (code_for_pred_scalar
+				   (LSHIFTRT, builder.mode ()), BINARY_OP,
+				   shift_ops);
 
 		  /* Step 3: Generate tmp2 = tmp1 * step.  */
 		  rtx tmp2 = gen_reg_rtx (builder.mode ());
@@ -1476,13 +1478,20 @@ expand_const_vector (rtx target, rtx src)
 
 	     can be interpreted into:
 
-		  EEW = 32, { 2, 4, ... }  */
+		  EEW = 32, { 2, 4, ... }.
+
+	     This only works as long as the larger type does not overflow
+	     as we can't guarantee a zero value for each second element
+	     of the sequence with smaller EEW.
+	     ??? For now we assume that no overflow happens with positive
+	     steps and forbid negative steps altogether.  */
 	  unsigned int new_smode_bitsize = builder.inner_bits_size () * 2;
 	  scalar_int_mode new_smode;
 	  machine_mode new_mode;
 	  poly_uint64 new_nunits
 	    = exact_div (GET_MODE_NUNITS (builder.mode ()), 2);
-	  if (int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
+	  if (known_ge (step1, 0) && known_ge (step2, 0)
+	      && int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
 	      && get_vector_mode (new_smode, new_nunits).exists (&new_mode))
 	    {
 	      rtx tmp1 = gen_reg_rtx (new_mode);
@@ -1496,10 +1505,11 @@ expand_const_vector (rtx target, rtx src)
 		{
 		  /* { 1, 1, 2, 1, ... }.  */
 		  rtx scalar = expand_simple_binop (
-		    new_smode, ASHIFT,
-		    gen_int_mode (rtx_to_poly_int64 (base2), new_smode),
-		    gen_int_mode (builder.inner_bits_size (), new_smode),
+		    Xmode, ASHIFT,
+		    gen_int_mode (rtx_to_poly_int64 (base2), Xmode),
+		    gen_int_mode (builder.inner_bits_size (), Xmode),
 		    NULL_RTX, false, OPTAB_DIRECT);
+		  scalar = simplify_gen_subreg (new_smode, scalar, Xmode, 0);
 		  rtx tmp2 = gen_reg_rtx (new_mode);
 		  rtx ior_ops[] = {tmp2, tmp1, scalar};
 		  emit_vlmax_insn (code_for_pred_scalar (IOR, new_mode),
@@ -3101,9 +3111,27 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
   machine_mode mask_mode = get_mask_mode (vmode);
   rtx mask = gen_reg_rtx (mask_mode);
 
-  if (indices_fit_selector_p)
+  if (indices_fit_selector_p && vec_len.is_constant ())
     {
-      /* MASK = SELECTOR < NUNITS ? 1 : 0.  */
+      /* For a constant vector length we can generate the needed mask at
+	 compile time and load it as mask at runtime.
+	 This saves a compare at runtime.  */
+      rtx_vector_builder sel (mask_mode, d->perm.encoding ().npatterns (),
+			      d->perm.encoding ().nelts_per_pattern ());
+      unsigned int encoded_nelts = sel.encoded_nelts ();
+      for (unsigned int i = 0; i < encoded_nelts; i++)
+	sel.quick_push (gen_int_mode (d->perm[i].to_constant ()
+				      < vec_len.to_constant (),
+				      GET_MODE_INNER (mask_mode)));
+      mask = sel.build ();
+    }
+  else if (indices_fit_selector_p)
+    {
+      /* For a dynamic vector length < 256 we keep the permutation
+	 indices in the literal pool, load it at runtime and create the
+	 mask by selecting either OP0 or OP1 by
+
+	    INDICES < NUNITS ? 1 : 0.  */
       rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
       rtx x = gen_int_mode (vec_len, GET_MODE_INNER (sel_mode));
       insn_code icode = code_for_pred_cmp_scalar (sel_mode);
@@ -3373,7 +3401,247 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
 
   insn_code icode = code_for_pred_compress (vmode);
   rtx ops[] = {d->target, merge, d->op0, mask};
-  emit_vlmax_insn (icode, COMPRESS_OP_MERGE, ops);
+  emit_nonvlmax_insn (icode, COMPRESS_OP_MERGE, ops,
+		      gen_int_mode (vlen, Pmode));
+  return true;
+}
+
+/* Recognize patterns like [4 5 6 7 12 13 14 15] where either the lower
+   or the higher parts of both vectors are combined into one.  */
+
+static bool
+shuffle_slide_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  poly_int64 vec_len = d->perm.length ();
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  int vlen = vec_len.to_constant ();
+  if (vlen < 4)
+    return false;
+
+  if (d->one_vector_p)
+    return false;
+
+  /* For a slideup OP0 can stay, for a slidedown OP1 can.
+     The former requires that the first element of the permutation
+     is the first element of OP0, the latter that the last permutation
+     element is the last element of OP1.  */
+  bool slideup = false;
+  bool slidedown = false;
+
+  /* For a slideup the permutation must start at OP0's first element.  */
+  if (known_eq (d->perm[0], 0))
+    slideup = true;
+
+  /* For a slidedown the permutation must end at OP1's last element.  */
+  if (known_eq (d->perm[vlen - 1], 2 * vlen - 1))
+    slidedown = true;
+
+  if (slideup && slidedown)
+    return false;
+
+  if (!slideup && !slidedown)
+    return false;
+
+  /* Check for a monotonic sequence with one pivot.  */
+  int pivot = -1;
+  for (int i = 0; i < vlen; i++)
+    {
+      if (pivot == -1 && known_ge (d->perm[i], vec_len))
+	pivot = i;
+      if (i > 0 && i != pivot
+	  && maybe_ne (d->perm[i], d->perm[i - 1] + 1))
+	return false;
+    }
+
+  if (pivot == -1)
+    return false;
+
+  /* For a slideup OP1's part (to be slid up) must be a low part,
+     i.e. starting with its first element.  */
+  if (slideup && maybe_ne (d->perm[pivot], vlen))
+      return false;
+
+  /* For a slidedown OP0's part (to be slid down) must be a high part,
+     i.e. ending with its last element.  */
+  if (slidedown && maybe_ne (d->perm[pivot - 1], vlen - 1))
+    return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  /* PIVOT is the start of the lower/higher part of OP1 or OP2.
+     For a slideup it indicates how many elements of OP1 to
+     skip/slide over.  For a slidedown it indicates how long
+     OP1's high part is, while VLEN - PIVOT is the amount to slide.  */
+  int slide_cnt = slideup ? pivot : vlen - pivot;
+  insn_code icode;
+  if (slideup)
+    {
+      /* No need for a vector length because we slide up until the
+	 end of OP1 anyway.  */
+      rtx ops[] = {d->target, d->op0, d->op1, gen_int_mode (slide_cnt, Pmode)};
+      icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+      emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+    }
+  else
+    {
+      /* Here we need a length because we slide to the beginning of OP1
+	 leaving the remaining elements undisturbed.  */
+      int len = pivot;
+      rtx ops[] = {d->target, d->op1, d->op0,
+		   gen_int_mode (slide_cnt, Pmode)};
+      icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, vmode);
+      emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops,
+			  gen_int_mode (len, Pmode));
+    }
+
+  return true;
+}
+
+/* Recognize interleaving patterns like [0 4 1 5].  */
+
+static bool
+shuffle_interleave_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  machine_mode sel_mode = related_int_vector_mode (vmode).require ();
+  poly_int64 vec_len = d->perm.length ();
+  int n_patterns = d->perm.encoding ().npatterns ();
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  if (n_patterns != 2)
+    return false;
+
+  unsigned vlen = vec_len.to_constant ();
+
+  if (vlen < 4 || vlen > 64)
+    return false;
+
+  if (d->one_vector_p)
+    return false;
+
+  bool low = true;
+  if (d->perm.series_p (0, 2, 0, 1)
+      && d->perm.series_p (1, 2, vlen, 1))
+    low = true;
+  else if (d->perm.series_p (0, 2, vlen / 2, 1)
+	   && d->perm.series_p (1, 2, vlen + vlen / 2, 1))
+    low = false;
+  else
+    return false;
+
+  vec_perm_builder sel (vlen, 2, 1);
+  sel.safe_grow (vlen);
+  int cnt = 0;
+  for (unsigned i = 0; i < vlen; i += 2)
+    {
+      sel[i] = cnt;
+      sel[i + 1] = cnt + vlen / 2;
+      cnt++;
+    }
+
+  vec_perm_indices indices (sel, 2, vlen);
+
+  if (vlen != indices.length ().to_constant ())
+    return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  int slide_cnt = vlen / 2;
+  rtx tmp = gen_reg_rtx (vmode);
+
+  if (low)
+    {
+      /* No need for a vector length because we slide up until the
+	 end of OP1 anyway.  */
+      rtx ops[] = {tmp, d->op0, d->op1, gen_int_mode (slide_cnt, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+      emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+    }
+  else
+    {
+      rtx ops[] = {tmp, d->op1, d->op0, gen_int_mode (slide_cnt, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, vmode);
+      emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops,
+			  gen_int_mode (slide_cnt, Pmode));
+    }
+
+  rtx sel_rtx = vec_perm_indices_to_rtx (sel_mode, indices);
+  emit_vlmax_gather_insn (gen_lowpart (vmode, d->target), tmp, sel_rtx);
+
+  return true;
+}
+
+
+/* Recognize even/odd patterns like [0 2 4 6].  We use two compress
+   and one slideup.  */
+
+static bool
+shuffle_even_odd_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  poly_int64 vec_len = d->perm.length ();
+  int n_patterns = d->perm.encoding ().npatterns ();
+
+  if (n_patterns != 1)
+    return false;
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  int vlen = vec_len.to_constant ();
+  if (vlen < 4 || vlen > 64)
+    return false;
+
+  if (d->one_vector_p)
+    return false;
+
+  bool even = true;
+  if (!d->perm.series_p (0, 1, 0, 2))
+    {
+      even = false;
+      if (!d->perm.series_p (0, 1, 1, 2))
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  machine_mode mask_mode = get_mask_mode (vmode);
+  rvv_builder builder (mask_mode, vlen, 1);
+  int bit = even ? 0 : 1;
+  for (int i = 0; i < vlen; i++)
+    {
+      bit ^= 1;
+      if (bit)
+	builder.quick_push (CONST1_RTX (BImode));
+      else
+	builder.quick_push (CONST0_RTX (BImode));
+    }
+  rtx mask = force_reg (mask_mode, builder.build ());
+
+  insn_code icode = code_for_pred_compress (vmode);
+  rtx ops1[] = {d->target, d->op0, mask};
+  emit_vlmax_insn (icode, COMPRESS_OP, ops1);
+
+  rtx tmp2 = gen_reg_rtx (vmode);
+  rtx ops2[] = {tmp2, d->op1, mask};
+  emit_vlmax_insn (icode, COMPRESS_OP, ops2);
+
+  rtx ops[] = {d->target, d->target, tmp2, gen_int_mode (vlen / 2, Pmode)};
+  icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+  emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+
   return true;
 }
 
@@ -3539,11 +3807,13 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
   return true;
 }
 
-/* Recognize the pattern that can be shuffled by vec_extract and slide1up
-   approach.  */
+/* Recognize patterns like [3 4 5 6] where we combine the last element
+   of the first vector and the first n - 1 elements of the second vector.
+   This can be implemented by slides or by extracting and re-inserting
+   (slide1up) the first vector's last element.  */
 
 static bool
-shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
+shuffle_off_by_one_patterns (struct expand_vec_perm_d *d)
 {
   poly_int64 nunits = GET_MODE_NUNITS (d->vmode);
 
@@ -3561,17 +3831,39 @@ shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  /* Extract the last element of the first vector.  */
-  scalar_mode smode = GET_MODE_INNER (d->vmode);
-  rtx tmp = gen_reg_rtx (smode);
-  emit_vec_extract (tmp, d->op0, gen_int_mode (nunits - 1, Pmode));
+  int scalar_cost = riscv_register_move_cost (d->vmode, V_REGS, GR_REGS)
+    + riscv_register_move_cost (d->vmode, GR_REGS, V_REGS) + 2;
+  int slide_cost = 2;
 
-  /* Insert the scalar into element 0.  */
-  unsigned int unspec
-    = FLOAT_MODE_P (d->vmode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
-  insn_code icode = code_for_pred_slide (unspec, d->vmode);
-  rtx ops[] = {d->target, d->op1, tmp};
-  emit_vlmax_insn (icode, BINARY_OP, ops);
+  if (slide_cost < scalar_cost)
+    {
+      /* This variant should always be preferable because we just need two
+	 slides.  The extract-variant also requires two slides but additionally
+	 pays the latency for register-file crossing.  */
+      rtx tmp = gen_reg_rtx (d->vmode);
+      rtx ops[] = {tmp, d->op1, gen_int_mode (1, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, d->vmode);
+      emit_vlmax_insn (icode, BINARY_OP, ops);
+
+      rtx ops2[] = {d->target, tmp, d->op0, gen_int_mode (nunits - 1, Pmode)};
+      icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, d->vmode);
+      emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops2, gen_int_mode (1, Pmode));
+    }
+  else
+    {
+      /* Extract the last element of the first vector.  */
+      scalar_mode smode = GET_MODE_INNER (d->vmode);
+      rtx tmp = gen_reg_rtx (smode);
+      emit_vec_extract (tmp, d->op0, gen_int_mode (nunits - 1, Pmode));
+
+      /* Insert the scalar into element 0.  */
+      unsigned int unspec
+	= FLOAT_MODE_P (d->vmode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+      insn_code icode = code_for_pred_slide (unspec, d->vmode);
+      rtx ops[] = {d->target, d->op1, tmp};
+      emit_vlmax_insn (icode, BINARY_OP, ops);
+    }
+
   return true;
 }
 
@@ -3691,13 +3983,19 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	    return true;
 	  if (shuffle_consecutive_patterns (d))
 	    return true;
+	  if (shuffle_slide_patterns (d))
+	    return true;
+	  if (shuffle_interleave_patterns (d))
+	    return true;
+	  if (shuffle_even_odd_patterns (d))
+	    return true;
 	  if (shuffle_compress_patterns (d))
 	    return true;
 	  if (shuffle_decompress_patterns (d))
 	    return true;
 	  if (shuffle_bswap_pattern (d))
 	    return true;
-	  if (shuffle_extract_and_slide1up_patterns (d))
+	  if (shuffle_off_by_one_patterns (d))
 	    return true;
 	  if (shuffle_series_patterns (d))
 	    return true;
@@ -3720,15 +4018,6 @@ expand_vec_perm_const (machine_mode vmode, machine_mode op_mode, rtx target,
   /* RVV doesn't have Mask type pack/unpack instructions and we don't use
      mask to do the iteration loop control. Just disable it directly.  */
   if (GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL)
-    return false;
-  /* FIXME: Explicitly disable VLA interleave SLP vectorization when we
-     may encounter ICE for poly size (1, 1) vectors in loop vectorizer.
-     Ideally, middle-end loop vectorizer should be able to disable it
-     itself, We can remove the codes here when middle-end code is able
-     to disable VLA SLP vectorization for poly size (1, 1) VF.  */
-  if (!BYTES_PER_RISCV_VECTOR.is_constant ()
-      && maybe_lt (BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL,
-		   poly_int64 (16, 16)))
     return false;
 
   struct expand_vec_perm_d d;
@@ -3793,12 +4082,23 @@ expand_select_vl (rtx *ops)
   emit_insn (gen_no_side_effects_vsetvl_rtx (rvv_mode, ops[0], ops[1]));
 }
 
+/* Return RVV_VUNDEF if the ELSE value is scratch rtx.  */
+static rtx
+get_else_operand (rtx op)
+{
+  return GET_CODE (op) == SCRATCH ? RVV_VUNDEF (GET_MODE (op)) : op;
+}
+
 /* Expand MASK_LEN_{LOAD,STORE}.  */
 void
 expand_load_store (rtx *ops, bool is_load)
 {
-  rtx mask = ops[2];
-  rtx len = ops[3];
+  int idx = 2;
+  rtx mask = ops[idx++];
+  /* A masked load has a merge/else operand.  */
+  if (is_load)
+    get_else_operand (ops[idx++]);
+  rtx len = ops[idx];
   machine_mode mode = GET_MODE (ops[0]);
 
   if (is_vlmax_len_p (mode, len))
@@ -3841,7 +4141,9 @@ expand_strided_load (machine_mode mode, rtx *ops)
   rtx base = ops[1];
   rtx stride = ops[2];
   rtx mask = ops[3];
-  rtx len = ops[4];
+  int idx = 4;
+  get_else_operand (ops[idx++]);
+  rtx len = ops[idx];
   poly_int64 len_val;
 
   insn_code icode = code_for_pred_strided_load (mode);
@@ -3941,13 +4243,6 @@ expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
     emit_vlmax_insn (icode, insn_flags, ops);
   else
     emit_nonvlmax_insn (icode, insn_flags, ops, len);
-}
-
-/* Return RVV_VUNDEF if the ELSE value is scratch rtx.  */
-static rtx
-get_else_operand (rtx op)
-{
-  return GET_CODE (op) == SCRATCH ? RVV_VUNDEF (GET_MODE (op)) : op;
 }
 
 /* Expand unary ops COND_LEN_*.  */
@@ -4070,6 +4365,8 @@ expand_gather_scatter (rtx *ops, bool is_load)
   int shift;
   rtx mask = ops[5];
   rtx len = ops[6];
+  if (is_load)
+    len = ops[7];
   if (is_load)
     {
       vec_reg = ops[0];
@@ -4215,30 +4512,47 @@ expand_cond_ternop (unsigned icode, rtx *ops)
      Case 2: ops = {scalar_dest, vector_src, mask, vl}
 */
 void
-expand_reduction (unsigned unspec, unsigned insn_flags, rtx *ops, rtx init)
+expand_reduction (unsigned unspec, unsigned unspec_for_vl0_safe,
+		  unsigned insn_flags, rtx *ops, rtx init)
 {
   rtx scalar_dest = ops[0];
   rtx vector_src = ops[1];
   machine_mode vmode = GET_MODE (vector_src);
   machine_mode vel_mode = GET_MODE (scalar_dest);
   machine_mode m1_mode = get_m1_mode (vel_mode).require ();
+  rtx vl_op = NULL_RTX;
+  bool need_vl0_safe = false;
+  if (need_mask_operand_p (insn_flags))
+    {
+      vl_op = ops[3];
+      need_vl0_safe = !CONST_INT_P (vl_op) && !CONST_POLY_INT_P (vl_op);
+    }
 
   rtx m1_tmp = gen_reg_rtx (m1_mode);
   rtx scalar_move_ops[] = {m1_tmp, init};
   insn_code icode = code_for_pred_broadcast (m1_mode);
   if (need_mask_operand_p (insn_flags))
-    emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, ops[3]);
+    {
+      if (need_vl0_safe)
+	emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, const1_rtx);
+      else
+	emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, vl_op);
+    }
   else
     emit_vlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops);
 
   rtx m1_tmp2 = gen_reg_rtx (m1_mode);
   rtx reduc_ops[] = {m1_tmp2, vector_src, m1_tmp};
-  icode = code_for_pred (unspec, vmode);
+
+  if (need_vl0_safe)
+    icode = code_for_pred (unspec_for_vl0_safe, vmode);
+  else
+    icode = code_for_pred (unspec, vmode);
 
   if (need_mask_operand_p (insn_flags))
     {
       rtx mask_len_reduc_ops[] = {m1_tmp2, ops[2], vector_src, m1_tmp};
-      emit_nonvlmax_insn (icode, insn_flags, mask_len_reduc_ops, ops[3]);
+      emit_nonvlmax_insn (icode, insn_flags, mask_len_reduc_ops, vl_op);
     }
   else
     emit_vlmax_insn (icode, insn_flags, reduc_ops);
@@ -4292,6 +4606,8 @@ expand_lanes_load_store (rtx *ops, bool is_load)
 {
   rtx mask = ops[2];
   rtx len = ops[3];
+  if (is_load)
+    len = ops[4];
   rtx addr = is_load ? XEXP (ops[1], 0) : XEXP (ops[0], 0);
   rtx reg = is_load ? ops[0] : ops[1];
   machine_mode mode = GET_MODE (ops[0]);
@@ -5146,6 +5462,9 @@ vlmax_avl_type_p (rtx_insn *rinsn)
   int index = get_attr_avl_type_idx (rinsn);
   if (index == INVALID_ATTRIBUTE)
     return false;
+
+  gcc_assert (index < recog_data.n_operands);
+
   rtx avl_type = recog_data.operand[index];
   return INTVAL (avl_type) == VLMAX;
 }
@@ -5194,6 +5513,9 @@ nonvlmax_avl_type_p (rtx_insn *rinsn)
   int index = get_attr_avl_type_idx (rinsn);
   if (index == INVALID_ATTRIBUTE)
     return false;
+
+  gcc_assert (index < recog_data.n_operands);
+
   rtx avl_type = recog_data.operand[index];
   return INTVAL (avl_type) == NONVLMAX;
 }
@@ -5372,7 +5694,7 @@ splat_to_scalar_move_p (rtx *ops)
   return satisfies_constraint_Wc1 (ops[1])
 	 && satisfies_constraint_vu (ops[2])
 	 && !MEM_P (ops[3])
-	 && satisfies_constraint_c01 (ops[4])
+	 && satisfies_constraint_k01 (ops[4])
 	 && INTVAL (ops[7]) == NONVLMAX
 	 && known_ge (GET_MODE_SIZE (Pmode), GET_MODE_SIZE (GET_MODE (ops[3])));
 }

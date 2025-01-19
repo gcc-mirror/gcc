@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mabi=lp64d -O2 -fdump-rtl-split1" } */
+/* { dg-final { scan-assembler-not "test:.*>>.*test" } } */
 
 long int
 test (void)

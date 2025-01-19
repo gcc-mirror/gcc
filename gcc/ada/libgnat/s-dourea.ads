@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2021-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2021-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package System.Double_Real is
    pragma Pure;
 
    type Double_T is record
-     Hi, Lo : Num;
+      Hi, Lo : Num;
    end record;
 
    function To_Double (N : Num) return Double_T is ((Hi => N, Lo => 0.0));
@@ -53,7 +53,7 @@ package System.Double_Real is
    --  Convert a double to a single real
 
    function Quick_Two_Sum (A, B : Num) return Double_T
-     with Pre => A = 0.0 or else abs (A) >= abs (B);
+     with Pre => A = 0.0 or else abs A >= abs B;
    --  Compute A + B and its rounding error exactly, but assume |A| >= |B|
 
    function Two_Sum (A, B : Num) return Double_T;

@@ -1,6 +1,6 @@
 /* Arm multilib default option include file.
 
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Arm.
 
    This file is part of GCC.

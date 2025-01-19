@@ -1,5 +1,5 @@
 /* Tuning model description for AArch64 architecture.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -49,8 +49,8 @@ static const struct tune_params cortexa53_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   2, /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
-   | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
+  (AARCH64_FUSE_BASE | AARCH64_FUSE_MOVK | AARCH64_FUSE_ADRP_ADD
+   | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
   "16",	/* function_align.  */
   "4",	/* jump_align.  */
   "8",	/* loop_align.  */

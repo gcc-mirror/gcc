@@ -1,5 +1,5 @@
 /* Target definitions for GCC for Intel 80386 using ELF
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
    Derived from sysv4.h written by Ron Guilmette (rfg@netcom.com).
 

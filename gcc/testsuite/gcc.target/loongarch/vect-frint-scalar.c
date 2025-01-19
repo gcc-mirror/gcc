@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlsx" } */
+/* { dg-options "-O2 -mlsx -ffp-int-builtin-inexact" } */
 
 #define test(func, suffix) \
 __typeof__ (1.##suffix) \

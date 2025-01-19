@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,12 +61,18 @@ package body Ch11 is
       Handled_Stmt_Seq_Node :=
         New_Node (N_Handled_Sequence_Of_Statements, Token_Ptr);
       Set_Statements
-        (Handled_Stmt_Seq_Node, P_Sequence_Of_Statements (SS_Extm_Sreq));
+        (Handled_Stmt_Seq_Node, P_Sequence_Of_Statements (SS_Extm_Fitm_Sreq));
 
       if Token = Tok_Exception then
          Scan; -- past EXCEPTION
          Set_Exception_Handlers
            (Handled_Stmt_Seq_Node, Parse_Exception_Handlers);
+      end if;
+
+      if Token = Tok_Finally then
+         Scan; -- past FINALLY
+         Set_Finally_Statements
+           (Handled_Stmt_Seq_Node, P_Sequence_Of_Statements (SS_Sreq));
       end if;
 
       return Handled_Stmt_Seq_Node;
@@ -141,7 +147,8 @@ package body Ch11 is
       end loop;
 
       TF_Arrow;
-      Set_Statements (Handler_Node, P_Sequence_Of_Statements (SS_Sreq_Whtm));
+      Set_Statements
+        (Handler_Node, P_Sequence_Of_Statements (SS_Sreq_Fitm_Whtm));
       return Handler_Node;
    end P_Exception_Handler;
 

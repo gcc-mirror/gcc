@@ -1,5 +1,5 @@
 /* SLP - Pattern matcher on SLP trees
-   Copyright (C) 2020-2024 Free Software Foundation, Inc.
+   Copyright (C) 2020-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -221,9 +220,15 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
   perm_cache->put (root, retval);
 
   /* If it's a load node, then just read the load permute.  */
-  if (SLP_TREE_LOAD_PERMUTATION (root).exists ())
+  if (SLP_TREE_DEF_TYPE (root) == vect_internal_def
+      && SLP_TREE_CODE (root) != VEC_PERM_EXPR
+      && STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))
+      && DR_IS_READ (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))))
     {
-      retval = is_linear_load_p (SLP_TREE_LOAD_PERMUTATION (root));
+      if (SLP_TREE_LOAD_PERMUTATION (root).exists ())
+	retval = is_linear_load_p (SLP_TREE_LOAD_PERMUTATION (root));
+      else
+	retval = PERM_EVENODD;
       perm_cache->put (root, retval);
       return retval;
     }
@@ -798,8 +803,8 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
 	return false;
     }
 
-  if (!SLP_TREE_LOAD_PERMUTATION (a).exists ()
-      || !SLP_TREE_LOAD_PERMUTATION (b).exists ())
+  if (!STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (a))
+      || !STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (b)))
     {
       for (unsigned i = 0; i < gimple_num_args (a_stmt); i++)
 	{
@@ -1070,7 +1075,15 @@ complex_mul_pattern::matches (complex_operation_t op,
   enum _conj_status status;
   if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
 				     right_op, false, &status))
-    return IFN_LAST;
+    {
+      /* Try swapping the order and re-trying since multiplication is
+	 commutative.  */
+      std::swap (left_op[0], left_op[1]);
+      std::swap (right_op[0], right_op[1]);
+      if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
+					 right_op, false, &status))
+	return IFN_LAST;
+    }
 
   if (status == CONJ_NONE)
     {
@@ -1287,7 +1300,15 @@ complex_fms_pattern::matches (complex_operation_t op,
   enum _conj_status status;
   if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
 				     left_op, true, &status))
-    return IFN_LAST;
+    {
+      /* Try swapping the order and re-trying since multiplication is
+	 commutative.  */
+      std::swap (left_op[0], left_op[1]);
+      std::swap (right_op[0], right_op[1]);
+      if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
+					 left_op, true, &status))
+	return IFN_LAST;
+    }
 
   if (status == CONJ_NONE)
     ifn = IFN_COMPLEX_FMS;

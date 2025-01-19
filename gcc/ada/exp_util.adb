@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@ with Exp_Aggr;       use Exp_Aggr;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Ch11;       use Exp_Ch11;
+with Exp_Dbug;       use Exp_Dbug;
 with Freeze;         use Freeze;
 with Ghost;          use Ghost;
 with Inline;         use Inline;
@@ -141,14 +142,14 @@ package body Exp_Util is
    --  function body that computes image.
 
    procedure Build_Task_Image_Prefix
-      (Loc    : Source_Ptr;
-       Len    : out Entity_Id;
-       Res    : out Entity_Id;
-       Pos    : out Entity_Id;
-       Prefix : Entity_Id;
-       Sum    : Node_Id;
-       Decls  : List_Id;
-       Stats  : List_Id);
+     (Loc    : Source_Ptr;
+      Len    : out Entity_Id;
+      Res    : out Entity_Id;
+      Pos    : out Entity_Id;
+      Prefix : Entity_Id;
+      Sum    : Node_Id;
+      Decls  : List_Id;
+      Stats  : List_Id);
    --  Common processing for Task_Array_Image and Task_Record_Image. Create
    --  local variables and assign prefix of name to result string.
 
@@ -1079,10 +1080,11 @@ package body Exp_Util is
               Unchecked_Convert_To (RTE (RE_Storage_Offset),
                 Make_Attribute_Reference (Loc,
                   Prefix         =>
-                    (if No (Alloc_Expr) then
-                       Make_Explicit_Dereference (Loc, Relocate_Node (Expr))
+                    (if Is_Allocate then
+                       Duplicate_Subexpr_No_Checks (Expression (Alloc_Expr))
                      else
-                       Relocate_Node (Expression (Alloc_Expr))),
+                       Make_Explicit_Dereference (Loc,
+                         Duplicate_Subexpr_No_Checks (Expr))),
                   Attribute_Name => Name_Alignment)));
          end if;
 
@@ -1094,7 +1096,6 @@ package body Exp_Util is
 
                Flag_Expr : Node_Id;
                Param     : Node_Id;
-               Pref      : Node_Id;
                Temp      : Node_Id;
 
             begin
@@ -1136,7 +1137,7 @@ package body Exp_Util is
                   if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
                      Param :=
                        Make_Explicit_Dereference (Loc,
-                         Prefix => Relocate_Node (Temp));
+                         Prefix => Duplicate_Subexpr_No_Checks (Temp));
 
                   --  In the default case, obtain the tag of the object about
                   --  to be allocated / deallocated. Generate:
@@ -1149,16 +1150,14 @@ package body Exp_Util is
                   --  in the code that follows.
 
                   else
-                     Pref := Temp;
-
-                     if Nkind (Parent (Pref)) = N_Unchecked_Type_Conversion
+                     if Nkind (Parent (Temp)) = N_Unchecked_Type_Conversion
                      then
-                        Pref := Parent (Pref);
+                        Temp := Parent (Temp);
                      end if;
 
                      Param :=
                        Make_Attribute_Reference (Loc,
-                         Prefix         => Relocate_Node (Pref),
+                         Prefix         => Duplicate_Subexpr_No_Checks (Temp),
                          Attribute_Name => Name_Tag);
                   end if;
 
@@ -1281,6 +1280,11 @@ package body Exp_Util is
                           (Find_Last_Init (N), Stmt, Suppress => All_Checks);
                      end if;
                   end;
+
+               --  Nothing to generate for the cleanup of an allocator
+
+               elsif For_Allocator (N) then
+                  null;
 
                --  Generate:
                --    if F then
@@ -4396,6 +4400,10 @@ package body Exp_Util is
                  Nkind (Parent (Id_Ref)) = N_Assignment_Statement
                    and then
                  Nkind (Expression (Parent (Id_Ref))) = N_Allocator;
+      Id     : constant Node_Id :=
+        (if Nkind (Id_Ref) = N_Expanded_Name then Selector_Name (Id_Ref)
+         else Id_Ref);
+      --  Replace expanded_name X.Y with Y
 
       Component_Suffix_Index : constant Int :=
         (if In_Init_Proc then -1 else 0);
@@ -4421,11 +4429,10 @@ package body Exp_Util is
                Expression =>
                  Make_String_Literal (Loc,
                    Strval => String_From_Name_Buffer)));
+      end if;
 
-      else
-         if Nkind (Id_Ref) = N_Identifier
-           or else Nkind (Id_Ref) = N_Defining_Identifier
-         then
+      case Nkind (Id) is
+         when N_Identifier | N_Defining_Identifier =>
             --  For a simple variable, the image of the task is built from
             --  the name of the variable. To avoid possible conflict with the
             --  anonymous type created for a single protected object, add a
@@ -4433,29 +4440,31 @@ package body Exp_Util is
 
             T_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Id_Ref), 'T', 1));
+                New_External_Name (Chars (Id), 'T', 1));
 
-            Get_Name_String (Chars (Id_Ref));
+            Get_Name_String (Chars (Id));
 
             Expr :=
               Make_String_Literal (Loc,
                 Strval => String_From_Name_Buffer);
 
-         elsif Nkind (Id_Ref) = N_Selected_Component then
+         when N_Selected_Component =>
             T_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Selector_Name (Id_Ref)), 'T',
+                New_External_Name (Chars (Selector_Name (Id)), 'T',
                   Suffix_Index => Component_Suffix_Index));
-            Fun := Build_Task_Record_Image (Loc, Id_Ref, Is_Dyn);
+            Fun := Build_Task_Record_Image (Loc, Id, Is_Dyn);
 
-         elsif Nkind (Id_Ref) = N_Indexed_Component then
+         when N_Indexed_Component =>
             T_Id :=
               Make_Defining_Identifier (Loc,
                 New_External_Name (Chars (A_Type), 'N'));
 
-            Fun := Build_Task_Array_Image (Loc, Id_Ref, A_Type, Is_Dyn);
-         end if;
-      end if;
+            Fun := Build_Task_Array_Image (Loc, Id, A_Type, Is_Dyn);
+
+         when others =>
+            raise Program_Error;
+      end case;
 
       if Present (Fun) then
          Append (Fun, Decls);
@@ -4513,14 +4522,14 @@ package body Exp_Util is
    -----------------------------
 
    procedure Build_Task_Image_Prefix
-      (Loc    : Source_Ptr;
-       Len    : out Entity_Id;
-       Res    : out Entity_Id;
-       Pos    : out Entity_Id;
-       Prefix : Entity_Id;
-       Sum    : Node_Id;
-       Decls  : List_Id;
-       Stats  : List_Id)
+     (Loc    : Source_Ptr;
+      Len    : out Entity_Id;
+      Res    : out Entity_Id;
+      Pos    : out Entity_Id;
+      Prefix : Entity_Id;
+      Sum    : Node_Id;
+      Decls  : List_Id;
+      Stats  : List_Id)
    is
    begin
       Len := Make_Temporary (Loc, 'L', Sum);
@@ -5029,6 +5038,23 @@ package body Exp_Util is
 
       return Decls;
    end Current_Sem_Unit_Declarations;
+
+   -------------------------------------------
+   -- Delay_Conditional_Expressions_Between --
+   -------------------------------------------
+
+   procedure Delay_Conditional_Expressions_Between (From, To : Node_Id) is
+      N : Node_Id := From;
+
+   begin
+      while N /= To loop
+         if Nkind (N) in N_Case_Expression | N_If_Expression then
+            Set_Expansion_Delayed (N);
+         end if;
+
+         N := Parent (N);
+      end loop;
+   end Delay_Conditional_Expressions_Between;
 
    -----------------------
    -- Duplicate_Subexpr --
@@ -5827,10 +5853,6 @@ package body Exp_Util is
    is
       U_Typ : constant Entity_Id := Unique_Entity (Typ);
 
-      Calls_OK : Boolean := False;
-      --  This flag is set to True when expression Expr contains at least one
-      --  call to a nondispatching primitive function of Typ.
-
       function Search_Primitive_Calls (N : Node_Id) return Traverse_Result;
       --  Search for nondispatching calls to primitive functions of type Typ
 
@@ -5865,8 +5887,6 @@ package body Exp_Util is
                if Present (Disp_Typ)
                  and then Unique_Entity (Disp_Typ) = U_Typ
                then
-                  Calls_OK := True;
-
                   --  There is no need to continue the traversal, as one such
                   --  call suffices.
 
@@ -5878,13 +5898,12 @@ package body Exp_Util is
          return OK;
       end Search_Primitive_Calls;
 
-      procedure Search_Calls is new Traverse_Proc (Search_Primitive_Calls);
+      function Search_Calls is new Traverse_Func (Search_Primitive_Calls);
 
    --  Start of processing for Expression_Contains_Primitives_Calls_Of_Type
 
    begin
-      Search_Calls (Expr);
-      return Calls_OK;
+      return Search_Calls (Expr) = Abandon;
    end Expression_Contains_Primitives_Calls_Of;
 
    ----------------------
@@ -6081,7 +6100,7 @@ package body Exp_Util is
 
          if not Found
            and then Present (Interfaces (Typ))
-           and then not (Is_Empty_Elmt_List (Interfaces (Typ)))
+           and then not Is_Empty_Elmt_List (Interfaces (Typ))
          then
             --  Skip the tag associated with the primary table
 
@@ -6702,7 +6721,7 @@ package body Exp_Util is
       --  then we need to insert at the appropriate (inner) location in
       --  the not as an action on Node_To_Be_Wrapped.
 
-      In_Cond_Expr : constant Boolean := Within_Case_Or_If_Expression (N);
+      In_Cond_Expr : constant Boolean := Within_Conditional_Expression (N);
 
    begin
       --  When the node is inside a case/if expression, the lifetime of any
@@ -6713,8 +6732,14 @@ package body Exp_Util is
          Par := N;
          Top := N;
          while Present (Par) loop
-            if Nkind (Original_Node (Par)) in
-                 N_Case_Expression | N_If_Expression
+            if Nkind (Original_Node (Par)) in N_Case_Expression
+                                            | N_If_Expression
+            then
+               Top := Par;
+
+            elsif Nkind (Par) in N_Case_Statement
+                               | N_If_Statement
+              and then From_Conditional_Expression (Par)
             then
                Top := Par;
 
@@ -7502,9 +7527,9 @@ package body Exp_Util is
             --  type T identifies T.
 
             when N_Indexed_Component
-              |  N_Selected_Component
-              |  N_Aggregate
-              |  N_Extension_Aggregate
+               | N_Selected_Component
+               | N_Aggregate
+               | N_Extension_Aggregate
             =>
                return True;
 
@@ -7683,20 +7708,20 @@ package body Exp_Util is
          return;
       end if;
 
-      --  Insert the action when the context is "Handling of Default and Per-
-      --  Object Expressions" only when requested by the caller.
-
-      if Spec_Expr_OK then
-         null;
-
       --  Ignore insert of actions from inside default expression (or other
       --  similar "spec expression") in the special spec-expression analyze
       --  mode. Any insertions at this point have no relevance, since we are
       --  only doing the analyze to freeze the types of any static expressions.
       --  See section "Handling of Default and Per-Object Expressions" in the
-      --  spec of package Sem for further details.
+      --  spec of package Sem for further details. However, if the user does
+      --  nevertheless request the insert, then obey it.
 
-      elsif In_Spec_Expression then
+      --  Under strict preanalysis we cannot ignore insert of actions because
+      --  we may be adding to the tree a subtype declaration that is required
+      --  for proper preanalysis (see Sem_Ch3.Find_Type_Of_Object).
+
+      if In_Spec_Expression and then not Spec_Expr_OK then
+         pragma Assert (not In_Strict_Preanalysis);
          return;
       end if;
 
@@ -8116,9 +8141,9 @@ package body Exp_Util is
             --  If a component association appears within a loop created for
             --  an array aggregate, attach the actions to the association so
             --  they can be subsequently inserted within the loop. For other
-            --  component associations insert outside of the aggregate. For
+            --  component associations, insert outside of the aggregate. For
             --  an association that will generate a loop, its Loop_Actions
-            --  attribute is already initialized (see exp_aggr.adb).
+            --  field is already initialized (see exp_aggr.adb).
 
             --  The list of Loop_Actions can in turn generate additional ones,
             --  that are inserted before the associated node. If the associated
@@ -8131,27 +8156,12 @@ package body Exp_Util is
                | N_Iterated_Element_Association
             =>
                if Nkind (Parent (P)) in N_Aggregate | N_Delta_Aggregate
-
-                 --  We must not climb up out of an N_Iterated_xxx_Association
-                 --  because the actions might contain references to the loop
-                 --  parameter, except if we come from the Discrete_Choices of
-                 --  N_Iterated_Component_Association which cannot contain any.
-                 --  But it turns out that setting the Loop_Actions field in
-                 --  the case of an N_Component_Association when the field was
-                 --  not already set can lead to gigi assertion failures that
-                 --  are presumably due to malformed trees, so don't do that.
-
-                 and then
-                   not (Nkind (P) = N_Iterated_Component_Association
-                          and then Is_List_Member (N)
-                          and then List_Containing (N) = Discrete_Choices (P))
-                 and then
-                   not (Nkind (P) = N_Component_Association
-                          and then No (Loop_Actions (P)))
+                 and then Present (Loop_Actions (P))
                then
                   if Is_Empty_List (Loop_Actions (P)) then
                      Set_Loop_Actions (P, Ins_Actions);
                      Analyze_List (Ins_Actions);
+
                   else
                      declare
                         Decl : Node_Id;
@@ -8355,7 +8365,6 @@ package body Exp_Util is
                | N_Terminate_Alternative
                | N_Triggering_Alternative
                | N_Type_Conversion
-               | N_Unchecked_Expression
                | N_Unchecked_Type_Conversion
                | N_Unconstrained_Array_Definition
                | N_Unused_At_End
@@ -8564,18 +8573,30 @@ package body Exp_Util is
       return Nkind (N) in N_Type_Conversion | N_Unchecked_Type_Conversion
         or else (Nkind (N) = N_Explicit_Dereference
                   and then Nkind (Prefix (N)) in N_Type_Conversion
-                                              |  N_Unchecked_Type_Conversion)
+                                               | N_Unchecked_Type_Conversion)
         or else (Is_Entity_Name (N)
                   and then Present (Entity (N))
                   and then Is_Formal (Entity (N)));
    end Is_Conversion_Or_Reference_To_Formal;
+
+   ---------------------------------------
+   -- Is_Delayed_Conditional_Expression --
+   ---------------------------------------
+
+   function Is_Delayed_Conditional_Expression (N : Node_Id) return Boolean is
+      Unqual_N : constant Node_Id := Unqualify (N);
+
+   begin
+      return Nkind (Unqual_N) in N_Case_Expression | N_If_Expression
+        and then Expansion_Delayed (Unqual_N);
+   end Is_Delayed_Conditional_Expression;
 
    --------------------------------------------------
    -- Is_Expanded_Class_Wide_Interface_Object_Decl --
    --------------------------------------------------
 
    function Is_Expanded_Class_Wide_Interface_Object_Decl
-      (N : Node_Id) return Boolean is
+     (N : Node_Id) return Boolean is
    begin
       return not Comes_From_Source (N)
         and then Nkind (Original_Node (N)) = N_Object_Declaration
@@ -8929,7 +8950,7 @@ package body Exp_Util is
          Aspect := Find_Value_Of_Aspect (Typ, Aspect_Constant_Indexing);
 
          if Present (Aspect) then
-            Index := Entity (Aspect);
+            Index := Ultimate_Alias (Entity (Aspect));
 
             --  Examine the statements following the container object and
             --  look for a call to the default indexing routine where the
@@ -9014,7 +9035,7 @@ package body Exp_Util is
          Aspect := Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
 
          if Present (Aspect) then
-            Iter := Entity (Aspect);
+            Iter := Ultimate_Alias (Entity (Aspect));
 
             --  Examine the statements following the container object and
             --  look for a call to the default iterate routine where the
@@ -10288,7 +10309,6 @@ package body Exp_Util is
                Make_Defining_Identifier (Loc, Name_uParent),
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication => New_Occurrence_Of (Constr_Root, Loc))));
 
          Set_Reverse_Storage_Order
@@ -10303,7 +10323,6 @@ package body Exp_Util is
                Make_Defining_Identifier (Loc, Name_uTag),
              Component_Definition =>
                Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_Tag), Loc))));
 
@@ -10315,7 +10334,6 @@ package body Exp_Util is
           Defining_Identifier  => Make_Temporary (Loc, 'C'),
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present    => False,
               Subtype_Indication => New_Occurrence_Of (Str_Type, Loc))));
 
       Append_To (List_Def,
@@ -10853,7 +10871,11 @@ package body Exp_Util is
          --  operator on private type might not be visible and won't be
          --  resolved.
 
-         else pragma Assert (Is_RTE (Base_Type (Typ), RE_Big_Integer));
+         else pragma Assert (Is_RTE (Base_Type (Typ), RE_Big_Integer)
+                               or else
+                             Is_RTE (Base_Type (Typ), RO_GH_Big_Integer)
+                               or else
+                             Is_RTE (Base_Type (Typ), RO_SP_Big_Integer));
             return
               Make_Function_Call (Loc,
                 Name                   =>
@@ -11570,6 +11592,27 @@ package body Exp_Util is
       return True;
    end May_Generate_Large_Temp;
 
+   ---------------------------------------
+   -- Move_To_Initialization_Statements --
+   ---------------------------------------
+
+   procedure Move_To_Initialization_Statements (Decl, Stop : Node_Id) is
+      Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+      Stmts  : constant List_Id   := New_List;
+      Stmt   : constant Node_Id   :=
+                 Make_Compound_Statement (Sloc (Decl), Actions => Stmts);
+
+   begin
+      while Next (Decl) /= Stop loop
+         Append_To (Stmts, Remove_Next (Decl));
+      end loop;
+
+      pragma Assert (No (Initialization_Statements (Obj_Id)));
+
+      Insert_After (Decl, Stmt);
+      Set_Initialization_Statements (Obj_Id, Stmt);
+   end Move_To_Initialization_Statements;
+
    --------------------------------
    -- Name_Of_Controlled_Prim_Op --
    --------------------------------
@@ -11674,6 +11717,22 @@ package body Exp_Util is
          return True;
       end if;
    end Needs_Constant_Address;
+
+   -------------------------------------
+   -- Needs_Initialization_Statements --
+   -------------------------------------
+
+   function Needs_Initialization_Statements (Decl : Node_Id) return Boolean is
+      Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+
+   begin
+      --  See the documentation of Initialization_Statements in Einfo
+
+      return Comes_From_Source (Decl)
+        and then (Has_Delayed_Aspects (Obj_Id)
+                   or else Present (Following_Address_Clause (Decl))
+                   or else Init_Or_Norm_Scalars);
+   end Needs_Initialization_Statements;
 
    ----------------------------
    -- New_Class_Wide_Subtype --
@@ -12135,6 +12194,22 @@ package body Exp_Util is
       if Present (Initialization_Statements (Var)) then
          Init_Call := Initialization_Statements (Var);
          Set_Initialization_Statements (Var, Empty);
+
+         --  Note that we rewrite Init_Call into a null statement, rather than
+         --  just removing it, because Freeze_All may rely on this particular
+         --  node still being present in the enclosing list to know where to
+         --  stop freezing (see Explode_Initialization_Compound_Statement).
+
+         if Nkind (Init_Call) = N_Compound_Statement then
+            declare
+               Init_Actions : constant List_Id    := Actions (Init_Call);
+               Loc          : constant Source_Ptr := Sloc (Init_Call);
+
+            begin
+               Rewrite (Init_Call, Make_Null_Statement (Loc));
+               return Make_Compound_Statement (Loc, Init_Actions);
+            end;
+         end if;
 
       elsif not Has_Non_Null_Base_Init_Proc (Typ) then
 
@@ -13311,6 +13386,12 @@ package body Exp_Util is
             elsif Is_Ignored_For_Finalization (Obj_Id) then
                null;
 
+            --  Ignored Ghost objects do not need any cleanup actions because
+            --  they will not appear in the final tree.
+
+            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
+               null;
+
             --  Conversely, if one of the above cases created a Master_Node,
             --  finalization actions are required for the associated object.
 
@@ -13318,12 +13399,6 @@ package body Exp_Util is
               and then Is_RTE (Obj_Typ, RE_Master_Node)
             then
                return True;
-
-            --  Ignored Ghost objects do not need any cleanup actions because
-            --  they will not appear in the final tree.
-
-            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
-               null;
 
             --  The object is of the form:
             --    Obj : [constant] Typ [:= Expr];
@@ -13476,6 +13551,46 @@ package body Exp_Util is
 
       return False;
    end Requires_Cleanup_Actions;
+
+   --------------------------------------------
+   -- Rewrite_Object_Declaration_As_Renaming --
+   --------------------------------------------
+
+   procedure Rewrite_Object_Declaration_As_Renaming (N, Nam : Node_Id) is
+      Def_Id : constant Entity_Id  := Defining_Identifier (N);
+      Loc    : constant Source_Ptr := Sloc (N);
+
+   begin
+      Rewrite (N,
+        Make_Object_Renaming_Declaration (Loc,
+          Defining_Identifier => Def_Id,
+          Subtype_Mark        => New_Occurrence_Of (Etype (Def_Id), Loc),
+          Name                => Nam));
+
+      --  Keep original aspects
+
+      Move_Aspects (Original_Node (N), N);
+
+      --  We do not analyze this renaming declaration, because all its
+      --  components have already been analyzed, and if we were to go
+      --  ahead and analyze it, we would in effect be trying to generate
+      --  another declaration of X, which won't do.
+
+      Set_Renamed_Object (Def_Id, Nam);
+      Set_Analyzed (N);
+
+      --  We do need to deal with debug issues for this renaming
+
+      --  First, if entity comes from source, then mark it as needing
+      --  debug information, even though it is defined by a generated
+      --  renaming that does not come from source.
+
+      Set_Debug_Info_Defining_Id (N);
+
+      --  Now call the routine to generate debug info for the renaming
+
+      Insert_Action (N, Debug_Renaming_Declaration (N));
+   end Rewrite_Object_Declaration_As_Renaming;
 
    ------------------------------------
    -- Safe_Unchecked_Type_Conversion --
@@ -14270,7 +14385,6 @@ package body Exp_Util is
 
          when N_Qualified_Expression
             | N_Type_Conversion
-            | N_Unchecked_Expression
          =>
             return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
 
@@ -14613,6 +14727,62 @@ package body Exp_Util is
       end if;
    end Type_May_Have_Bit_Aligned_Components;
 
+   ----------------------------------------------
+   -- Unanalyze_Delayed_Conditional_Expression --
+   ----------------------------------------------
+
+   procedure Unanalyze_Delayed_Conditional_Expression (N : Node_Id) is
+      Expr : Node_Id := N;
+
+   begin
+      --  Is_Delayed_Conditional_Expression looks through qualified expressions
+      --  surrounding conditional expressions, so we need to reset the Analyzed
+      --  flag on them as well.
+
+      loop
+         Set_Analyzed (Expr, False);
+
+         exit when Nkind (Expr) in N_Case_Expression | N_If_Expression;
+
+         pragma Assert (Nkind (Expr) = N_Qualified_Expression);
+         Expr := Expression (Expr);
+      end loop;
+   end Unanalyze_Delayed_Conditional_Expression;
+
+   --------------------------
+   -- Unconditional_Parent --
+   --------------------------
+
+   function Unconditional_Parent (N : Node_Id) return Node_Id is
+      Node        : Node_Id := N;
+      Parent_Node : Node_Id := Parent (Node);
+
+   begin
+      loop
+         case Nkind (Parent_Node) is
+            when N_Case_Expression_Alternative =>
+               null;
+
+            when N_Case_Expression =>
+               exit when Node = Expression (Parent_Node);
+
+            when N_If_Expression =>
+               exit when Node = First (Expressions (Parent_Node));
+
+            when N_Qualified_Expression =>
+               null;
+
+            when others =>
+               exit;
+         end case;
+
+         Node        := Parent_Node;
+         Parent_Node := Parent (Node);
+      end loop;
+
+      return Parent_Node;
+   end Unconditional_Parent;
+
    -------------------------------
    -- Update_Primitives_Mapping --
    -------------------------------
@@ -14629,18 +14799,19 @@ package body Exp_Util is
       Map_Types (Parent_Type, Derived_Type);
    end Update_Primitives_Mapping;
 
-   ----------------------------------
-   -- Within_Case_Or_If_Expression --
-   ----------------------------------
+   -----------------------------------
+   -- Within_Conditional_Expression --
+   -----------------------------------
 
-   function Within_Case_Or_If_Expression (N : Node_Id) return Boolean is
+   function Within_Conditional_Expression (N : Node_Id) return Boolean is
       Nod : Node_Id;
       Par : Node_Id;
 
    begin
       --  Locate an enclosing case or if expression. Note that these constructs
-      --  can be expanded into Expression_With_Actions, hence the test of the
-      --  original node.
+      --  can be rewritten as Expression_With_Actions nodes, hence the test of
+      --  the original node. Moreover, we need to take into account conditional
+      --  statements synthesized out of these expressions.
 
       Nod := N;
       Par := Parent (Nod);
@@ -14653,6 +14824,18 @@ package body Exp_Util is
 
          elsif Nkind (Original_Node (Par)) = N_If_Expression
            and then Nod /= First (Expressions (Original_Node (Par)))
+         then
+            return True;
+
+         elsif Nkind (Par) = N_Case_Statement
+           and then From_Conditional_Expression (Par)
+           and then Nod /= Expression (Par)
+         then
+            return True;
+
+         elsif Nkind (Par) = N_If_Statement
+           and then From_Conditional_Expression (Par)
+           and then Nod /= Condition (Par)
          then
             return True;
 
@@ -14677,7 +14860,7 @@ package body Exp_Util is
       end loop;
 
       return False;
-   end Within_Case_Or_If_Expression;
+   end Within_Conditional_Expression;
 
    ------------------------------
    -- Predicate_Check_In_Scope --

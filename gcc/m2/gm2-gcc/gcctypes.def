@@ -1,6 +1,6 @@
 (* gcctypes provides a placeholder module for gcc declared data types.
 
-Copyright (C) 2024 Free Software Foundation, Inc.
+Copyright (C) 2024-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
 
 This file is part of GNU Modula-2.
@@ -21,7 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE gcctypes ;
 
-FROM SYSTEM IMPORT ADDRESS ;
+FROM SYSTEM IMPORT ADDRESS, CARDINAL64 ;
 
 EXPORT UNQUALIFIED location_t, tree ;
 
@@ -29,7 +29,7 @@ EXPORT UNQUALIFIED location_t, tree ;
 TYPE
    (* Not declared here by the bootstrap tool mc when
       --gcc-config-system is used.  *)
-   location_t = CARDINAL ;
+   location_t = CARDINAL64 ;
    tree = ADDRESS ;
 
 

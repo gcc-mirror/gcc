@@ -1,5 +1,5 @@
 ;; Machine description for auto-vectorization using RVV for GNU compiler.
-;; Copyright (C) 2023-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2023-2025 Free Software Foundation, Inc.
 ;; Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 ;; This file is part of GCC.
@@ -26,8 +26,9 @@
   [(match_operand:V 0 "register_operand")
    (match_operand:V 1 "memory_operand")
    (match_operand:<VM> 2 "vector_mask_operand")
-   (match_operand 3 "autovec_length_operand")
-   (match_operand 4 "const_0_operand")]
+   (match_operand:V 3 "maskload_else_operand")
+   (match_operand 4 "autovec_length_operand")
+   (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_load_store (operands, true);
@@ -57,8 +58,9 @@
    (match_operand 3 "<RATIO64:gs_extension>")
    (match_operand 4 "<RATIO64:gs_scale>")
    (match_operand:<RATIO64:VM> 5 "vector_mask_operand")
-   (match_operand 6 "autovec_length_operand")
-   (match_operand 7 "const_0_operand")]
+   (match_operand 6 "maskload_else_operand")
+   (match_operand 7 "autovec_length_operand")
+   (match_operand 8 "const_0_operand")]
   "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO64I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -72,8 +74,9 @@
    (match_operand 3 "<RATIO32:gs_extension>")
    (match_operand 4 "<RATIO32:gs_scale>")
    (match_operand:<RATIO32:VM> 5 "vector_mask_operand")
-   (match_operand 6 "autovec_length_operand")
-   (match_operand 7 "const_0_operand")]
+   (match_operand 6 "maskload_else_operand")
+   (match_operand 7 "autovec_length_operand")
+   (match_operand 8 "const_0_operand")]
   "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO32I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -87,8 +90,9 @@
    (match_operand 3 "<RATIO16:gs_extension>")
    (match_operand 4 "<RATIO16:gs_scale>")
    (match_operand:<RATIO16:VM> 5 "vector_mask_operand")
-   (match_operand 6 "autovec_length_operand")
-   (match_operand 7 "const_0_operand")]
+   (match_operand 6 "maskload_else_operand")
+   (match_operand 7 "autovec_length_operand")
+   (match_operand 8 "const_0_operand")]
   "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO16I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -102,8 +106,9 @@
    (match_operand 3 "<RATIO8:gs_extension>")
    (match_operand 4 "<RATIO8:gs_scale>")
    (match_operand:<RATIO8:VM> 5 "vector_mask_operand")
-   (match_operand 6 "autovec_length_operand")
-   (match_operand 7 "const_0_operand")]
+   (match_operand 6 "maskload_else_operand")
+   (match_operand 7 "autovec_length_operand")
+   (match_operand 8 "const_0_operand")]
   "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO8I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -117,8 +122,9 @@
    (match_operand 3 "<RATIO4:gs_extension>")
    (match_operand 4 "<RATIO4:gs_scale>")
    (match_operand:<RATIO4:VM> 5 "vector_mask_operand")
-   (match_operand 6 "autovec_length_operand")
-   (match_operand 7 "const_0_operand")]
+   (match_operand 6 "maskload_else_operand")
+   (match_operand 7 "autovec_length_operand")
+   (match_operand 8 "const_0_operand")]
   "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO4I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -132,8 +138,9 @@
    (match_operand 3 "<RATIO2:gs_extension>")
    (match_operand 4 "<RATIO2:gs_scale>")
    (match_operand:<RATIO2:VM> 5 "vector_mask_operand")
-   (match_operand 6 "autovec_length_operand")
-   (match_operand 7 "const_0_operand")]
+   (match_operand 6 "maskload_else_operand")
+   (match_operand 7 "autovec_length_operand")
+   (match_operand 8 "const_0_operand")]
   "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO2I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -151,8 +158,9 @@
    (match_operand 3 "<gs_extension>")
    (match_operand 4 "<gs_scale>")
    (match_operand:<VM> 5 "vector_mask_operand")
-   (match_operand 6 "autovec_length_operand")
-   (match_operand 7 "const_0_operand")]
+   (match_operand 6 "maskload_else_operand")
+   (match_operand 7 "autovec_length_operand")
+   (match_operand 8 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -280,8 +288,9 @@
   [(match_operand:VT 0 "register_operand")
    (match_operand:VT 1 "memory_operand")
    (match_operand:<VM> 2 "vector_mask_operand")
-   (match_operand 3 "autovec_length_operand")
-   (match_operand 4 "const_0_operand")]
+   (match_operand 3 "maskload_else_operand")
+   (match_operand 4 "autovec_length_operand")
+   (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR_AUTOVEC_SEGMENT"
   {
     riscv_vector::expand_lanes_load_store (operands, true);
@@ -2176,7 +2185,9 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_SUM, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_SUM,
+				  UNSPEC_REDUC_SUM_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 }
@@ -2189,7 +2200,9 @@
 {
   int prec = GET_MODE_PRECISION (<VEL>mode);
   rtx min = immed_wide_int_const (wi::min_value (prec, SIGNED), <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX,
+				  UNSPEC_REDUC_MAX_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, min);
   DONE;
 })
@@ -2199,7 +2212,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAXU, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAXU,
+				  UNSPEC_REDUC_MAXU_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 })
@@ -2211,7 +2226,9 @@
 {
   int prec = GET_MODE_PRECISION (<VEL>mode);
   rtx max = immed_wide_int_const (wi::max_value (prec, SIGNED), <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN,
+				  UNSPEC_REDUC_MIN_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, max);
   DONE;
 })
@@ -2223,7 +2240,9 @@
 {
   int prec = GET_MODE_PRECISION (<VEL>mode);
   rtx max = immed_wide_int_const (wi::max_value (prec, UNSIGNED), <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MINU, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MINU,
+				  UNSPEC_REDUC_MINU_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, max);
   DONE;
 })
@@ -2233,7 +2252,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_AND, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_AND,
+				  UNSPEC_REDUC_AND_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONSTM1_RTX (<VEL>mode));
   DONE;
 })
@@ -2243,7 +2264,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_OR, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_OR,
+				  UNSPEC_REDUC_OR_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 })
@@ -2253,7 +2276,9 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_reduction (UNSPEC_REDUC_XOR, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_XOR,
+				  UNSPEC_REDUC_XOR_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
 })
@@ -2278,6 +2303,7 @@
   [(const_int 0)]
 {
   riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_UNORDERED,
+				  UNSPEC_REDUC_SUM_UNORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   operands, CONST0_RTX (<VEL>mode));
   DONE;
@@ -2292,7 +2318,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, true);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX,
+				  UNSPEC_REDUC_MAX_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2305,7 +2333,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, false);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN,
+				  UNSPEC_REDUC_MIN_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2318,7 +2348,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, true);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MAX,
+				  UNSPEC_REDUC_MAX_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2331,7 +2363,9 @@
   REAL_VALUE_TYPE rv;
   real_inf (&rv, false);
   rtx f = const_double_from_real_value (rv, <VEL>mode);
-  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (UNSPEC_REDUC_MIN,
+				  UNSPEC_REDUC_MIN_VL0_SAFE,
+				  riscv_vector::REDUCE_OP,
                                   operands, f);
   DONE;
 })
@@ -2357,6 +2391,7 @@
 {
   rtx ops[] = {operands[0], operands[2]};
   riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_ORDERED,
+				  UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   ops, operands[1]);
   DONE;
@@ -2384,6 +2419,7 @@
     {
       rtx ops[] = {operands[0], operands[2], operands[3], operands[4]};
       riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_ORDERED,
+				      UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE,
                                       riscv_vector::REDUCE_OP_M_FRM_DYN,
                                       ops, operands[1]);
     }
@@ -2769,7 +2805,7 @@
 
 (define_expand "ustrunc<mode><v_oct_trunc>2"
   [(match_operand:<V_OCT_TRUNC> 0 "register_operand")
-   (match_operand:VOEXTI         1 "register_operand")]
+   (match_operand:VOEXTI        1 "register_operand")]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_vec_oct_ustrunc (operands[0], operands[1], <MODE>mode,
@@ -2894,12 +2930,13 @@
 ;; == Strided Load/Store
 ;; =========================================================================
 (define_expand "mask_len_strided_load_<mode>"
-  [(match_operand:V     0 "register_operand")
+  [(match_operand:V_VLS 0 "register_operand")
    (match_operand       1 "pmode_reg_or_0_operand")
    (match_operand       2 "pmode_reg_or_0_operand")
    (match_operand:<VM>  3 "vector_mask_operand")
-   (match_operand       4 "autovec_length_operand")
-   (match_operand       5 "const_0_operand")]
+   (match_operand       4 "maskload_else_operand")
+   (match_operand       5 "autovec_length_operand")
+   (match_operand       6 "const_0_operand")]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_strided_load (<MODE>mode, operands);
@@ -2909,7 +2946,7 @@
 (define_expand "mask_len_strided_store_<mode>"
   [(match_operand       0 "pmode_reg_or_0_operand")
    (match_operand       1 "pmode_reg_or_0_operand")
-   (match_operand:V     2 "register_operand")
+   (match_operand:V_VLS 2 "register_operand")
    (match_operand:<VM>  3 "vector_mask_operand")
    (match_operand       4 "autovec_length_operand")
    (match_operand       5 "const_0_operand")]
@@ -2918,3 +2955,29 @@
     riscv_vector::expand_strided_store (<MODE>mode, operands);
     DONE;
   })
+
+; ========
+; == Absolute difference (not including sum)
+; ========
+(define_expand "uabd<mode>3"
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")
+   (match_operand:V_VLSI 2 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    rtx max = gen_reg_rtx (<MODE>mode);
+    insn_code icode = code_for_pred (UMAX, <MODE>mode);
+    rtx ops1[] = {max, operands[1], operands[2]};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
+
+    rtx min = gen_reg_rtx (<MODE>mode);
+    icode = code_for_pred (UMIN, <MODE>mode);
+    rtx ops2[] = {min, operands[1], operands[2]};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops2);
+
+    icode = code_for_pred (MINUS, <MODE>mode);
+    rtx ops3[] = {operands[0], max, min};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops3);
+
+    DONE;
+  });

@@ -1,5 +1,5 @@
 /* function_base implementation for RISC-V 'V' Extension for GNU compiler.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Ju-Zhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
    This file is part of GCC.
@@ -56,12 +56,6 @@ enum lst_type
   LST_UNIT_STRIDE,
   LST_STRIDED,
   LST_INDEXED,
-};
-
-enum frm_op_type
-{
-  NO_FRM,
-  HAS_FRM,
 };
 
 /* Helper function to fold vleff and vlsegff.  */

@@ -62,7 +62,7 @@ VEC_PERM_CONST_OVERRUN (vnx8hf,  ((vnx8hi)  { 8 + (32 * 3), 27 + (32 * 1),
 					      3 + (32 * 2), 24 + (32 * 2),
 					      15 + (32 * 1), 1 + (32 * 1) }));
 
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.s, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.h, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.b, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.d, {z[0-9]+\.d}, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.s, {z[0-9]+\.s}, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.h, {z[0-9]+\.h}, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.b, {z[0-9]+\.b}, z[0-9]+\.b\n} 2 } } */

@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2024 Free Software Foundation, Inc.
+// Copyright (C) 2003-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -168,6 +168,11 @@ namespace __gnu_debug
     __valid_range_aux(_InputIterator __first, _InputIterator __last,
 		      std::input_iterator_tag)
     {
+      // FIXME: The checks for singular iterators fail during constant eval
+      // due to PR c++/85944. e.g. PR libstdc++/109517 and PR libstdc++/109976.
+      if (std::__is_constant_evaluated())
+	return true;
+
       return __first == __last
 	|| (!__gnu_debug::__check_singular(__first)
 	      && !__gnu_debug::__check_singular(__last));

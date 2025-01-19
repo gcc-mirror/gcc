@@ -1,8 +1,8 @@
 /* REQUIRED_ARGS: -preview=dip1000
  * TEST_OUTPUT:
 ---
-fail_compilation/fail19881.d(13): Error: address of local variable `local` assigned to return scope `input`
-fail_compilation/fail19881.d(13): Error: address of variable `local` assigned to `input` with longer lifetime
+fail_compilation/fail19881.d(13): Error: assigning address of local variable `local` to return scope `input` is not allowed in a `@safe` function
+fail_compilation/fail19881.d(13): Error: assigning address of variable `local` to `input` with longer lifetime is not allowed in a `@safe` function
 ---
  */
 

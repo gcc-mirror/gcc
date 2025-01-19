@@ -1,5 +1,5 @@
 /* Paths through the code associated with a diagnostic.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
 This file is part of GCC.
@@ -167,7 +167,7 @@ class diagnostic_event
   {
   }
 
-  label_text get_desc () const;
+  label_text get_desc (pretty_printer &ref_pp) const;
 };
 
 /* Abstract base class representing a thread of execution within

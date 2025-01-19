@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,7 +20,7 @@
    builtins defined in the AVR part of the GNU compiler.
    Befor including this file, define a macro
 
-   DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, LIBNAME)
+   DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, LIBNAME, ATTRS)
 
    NAME:    `__builtin_avr_name' will be the user-level name of the builtin.
             `AVR_BUILTIN_NAME' will be the internal builtin's id.
@@ -30,31 +30,33 @@
    ICODE:   Name of attached insn or expander.  If special treatment in avr.cc
             is needed to expand the built-in, use `nothing'.
    LIBNAME: Name of the attached implementation in libgcc which is used if
-            the builtin cannot be folded away and there is no insn.  */
+            the builtin cannot be folded away and there is no insn.
+   ATTRS:   Function attributes like "attr_const" for the `const' attribute
+            or "NULL_TREE" for no attribute.  */
 
 /* Mapped to respective instruction.  */
 
-DEF_BUILTIN (NOP,  -1, void_ftype_void, nothing, NULL)
-DEF_BUILTIN (SEI,   0, void_ftype_void, enable_interrupt, NULL)
-DEF_BUILTIN (CLI,   0, void_ftype_void, disable_interrupt, NULL)
-DEF_BUILTIN (WDR,   0, void_ftype_void, wdr, NULL)
-DEF_BUILTIN (SLEEP, 0, void_ftype_void, sleep, NULL)
+DEF_BUILTIN (NOP,  -1, void_ftype_void, nothing, NULL, NULL_TREE)
+DEF_BUILTIN (SEI,   0, void_ftype_void, enable_interrupt, NULL, NULL_TREE)
+DEF_BUILTIN (CLI,   0, void_ftype_void, disable_interrupt, NULL, NULL_TREE)
+DEF_BUILTIN (WDR,   0, void_ftype_void, wdr, NULL, NULL_TREE)
+DEF_BUILTIN (SLEEP, 0, void_ftype_void, sleep, NULL, NULL_TREE)
 
 /* Mapped to respective instruction but might also be folded away
    or emit as libgcc call if ISA does not provide the instruction.  */
 
-DEF_BUILTIN (SWAP,   1, uintQI_ftype_uintQI,        rotlqi3_4, NULL)
-DEF_BUILTIN (FMUL,   2, uintHI_ftype_uintQI_uintQI, fmul, NULL)
-DEF_BUILTIN (FMULS,  2, intHI_ftype_intQI_intQI,    fmuls, NULL)
-DEF_BUILTIN (FMULSU, 2, intHI_ftype_intQI_uintQI,   fmulsu, NULL)
+DEF_BUILTIN (SWAP,   1, uintQI_ftype_uintQI,        rotlqi3_4, NULL, attr_const)
+DEF_BUILTIN (FMUL,   2, uintHI_ftype_uintQI_uintQI, fmul, NULL, attr_const)
+DEF_BUILTIN (FMULS,  2, intHI_ftype_intQI_intQI,    fmuls, NULL, attr_const)
+DEF_BUILTIN (FMULSU, 2, intHI_ftype_intQI_uintQI,   fmulsu, NULL, attr_const)
 
 /* More complex stuff that cannot be mapped 1:1 to an instruction.  */
 
-DEF_BUILTIN (DELAY_CYCLES, -1, void_ftype_uintSI, nothing, NULL)
-DEF_BUILTIN (NOPS,         -1, void_ftype_uintSI, nothing, NULL)
-DEF_BUILTIN (MASK1,       2, uintQI_ftype_uintQI_uintQI, gen_mask1, NULL)
-DEF_BUILTIN (INSERT_BITS, 3, uintQI_ftype_uintSI_uintQI_uintQI, insert_bits, NULL)
-DEF_BUILTIN (FLASH_SEGMENT, 1, intQI_ftype_const_memx_ptr, flash_segment, NULL)
+DEF_BUILTIN (DELAY_CYCLES, -1, void_ftype_uintSI, nothing, NULL, NULL_TREE)
+DEF_BUILTIN (NOPS,         -1, void_ftype_uintSI, nothing, NULL, NULL_TREE)
+DEF_BUILTIN (MASK1,       2, uintQI_ftype_uintQI_uintQI, gen_mask1, NULL, attr_const)
+DEF_BUILTIN (INSERT_BITS, 3, uintQI_ftype_uintSI_uintQI_uintQI, insert_bits, NULL, attr_const)
+DEF_BUILTIN (FLASH_SEGMENT, 1, intQI_ftype_const_memx_ptr, flash_segment, NULL, attr_const)
 
 /* ISO/IEC TR 18037 "Embedded C"
    The following builtins are undocumented and used by stdfix.h.  */
@@ -63,109 +65,109 @@ DEF_BUILTIN (FLASH_SEGMENT, 1, intQI_ftype_const_memx_ptr, flash_segment, NULL)
 
 /* 7.18a.6.2 The fixed-point absolute value functions. */
 
-DEF_BUILTIN (ABSHR,   1, hr_ftype_hr,   ssabsqq2, "__ssabs_1")
-DEF_BUILTIN (ABSR,    1, nr_ftype_nr,   ssabshq2, "__ssabs_2")
-DEF_BUILTIN (ABSLR,   1, lr_ftype_lr,   ssabssq2, "__ssabs_4")
-DEF_BUILTIN (ABSLLR, -1, llr_ftype_llr, nothing,  "__ssabsdq2") // GCC extension
+DEF_BUILTIN (ABSHR,   1, hr_ftype_hr,   ssabsqq2, "__ssabs_1", attr_const)
+DEF_BUILTIN (ABSR,    1, nr_ftype_nr,   ssabshq2, "__ssabs_2", attr_const)
+DEF_BUILTIN (ABSLR,   1, lr_ftype_lr,   ssabssq2, "__ssabs_4", attr_const)
+DEF_BUILTIN (ABSLLR, -1, llr_ftype_llr, nothing,  "__ssabsdq2", attr_const) // GCC extension
 
-DEF_BUILTIN (ABSHK,   1, hk_ftype_hk,   ssabsha2, "__ssabs_2")
-DEF_BUILTIN (ABSK,    1, nk_ftype_nk,   ssabssa2, "__ssabs_4")
-DEF_BUILTIN (ABSLK,  -1, lk_ftype_lk,   nothing,  "__ssabsda2")
-DEF_BUILTIN (ABSLLK, -1, llk_ftype_llk, nothing,  "__ssabsta2") // GCC extension
+DEF_BUILTIN (ABSHK,   1, hk_ftype_hk,   ssabsha2, "__ssabs_2", attr_const)
+DEF_BUILTIN (ABSK,    1, nk_ftype_nk,   ssabssa2, "__ssabs_4", attr_const)
+DEF_BUILTIN (ABSLK,  -1, lk_ftype_lk,   nothing,  "__ssabsda2", attr_const)
+DEF_BUILTIN (ABSLLK, -1, llk_ftype_llk, nothing,  "__ssabsta2", attr_const) // GCC extension
 
 /* 7.18a.6.3 The fixed-point round functions. */
 
-DEF_BUILTIN (ROUNDHR,    2, hr_ftype_hr_int,     roundqq3,  "__roundhr")
-DEF_BUILTIN (ROUNDR,     2, nr_ftype_nr_int,     roundhq3,  "__roundr")
-DEF_BUILTIN (ROUNDLR,    2, lr_ftype_lr_int,     roundsq3,  "__roundlr")
-DEF_BUILTIN (ROUNDLLR,  -1, llr_ftype_llr_int,   nothing,   "__rounddq3") // GCC extension
+DEF_BUILTIN (ROUNDHR,    2, hr_ftype_hr_int,     roundqq3,  "__roundhr", attr_const)
+DEF_BUILTIN (ROUNDR,     2, nr_ftype_nr_int,     roundhq3,  "__roundr", attr_const)
+DEF_BUILTIN (ROUNDLR,    2, lr_ftype_lr_int,     roundsq3,  "__roundlr", attr_const)
+DEF_BUILTIN (ROUNDLLR,  -1, llr_ftype_llr_int,   nothing,   "__rounddq3", attr_const) // GCC extension
 
-DEF_BUILTIN (ROUNDUHR,   2, uhr_ftype_uhr_int,   rounduqq3, "__rounduhr")
-DEF_BUILTIN (ROUNDUR,    2, unr_ftype_unr_int,   rounduhq3, "__roundur")
-DEF_BUILTIN (ROUNDULR,   2, ulr_ftype_ulr_int,   roundusq3, "__roundulr")
-DEF_BUILTIN (ROUNDULLR, -1, ullr_ftype_ullr_int, nothing,   "__roundudq3") // GCC extension
+DEF_BUILTIN (ROUNDUHR,   2, uhr_ftype_uhr_int,   rounduqq3, "__rounduhr", attr_const)
+DEF_BUILTIN (ROUNDUR,    2, unr_ftype_unr_int,   rounduhq3, "__roundur", attr_const)
+DEF_BUILTIN (ROUNDULR,   2, ulr_ftype_ulr_int,   roundusq3, "__roundulr", attr_const)
+DEF_BUILTIN (ROUNDULLR, -1, ullr_ftype_ullr_int, nothing,   "__roundudq3", attr_const) // GCC extension
 
-DEF_BUILTIN (ROUNDHK,    2, hk_ftype_hk_int,     roundha3,  "__roundhk")
-DEF_BUILTIN (ROUNDK,     2, nk_ftype_nk_int,     roundsa3,  "__roundk")
-DEF_BUILTIN (ROUNDLK,   -1, lk_ftype_lk_int,     nothing,   "__roundda3")
-DEF_BUILTIN (ROUNDLLK,  -1, llk_ftype_llk_int,   nothing,   "__roundta3") // GCC extension
+DEF_BUILTIN (ROUNDHK,    2, hk_ftype_hk_int,     roundha3,  "__roundhk", attr_const)
+DEF_BUILTIN (ROUNDK,     2, nk_ftype_nk_int,     roundsa3,  "__roundk", attr_const)
+DEF_BUILTIN (ROUNDLK,   -1, lk_ftype_lk_int,     nothing,   "__roundda3", attr_const)
+DEF_BUILTIN (ROUNDLLK,  -1, llk_ftype_llk_int,   nothing,   "__roundta3", attr_const) // GCC extension
 
-DEF_BUILTIN (ROUNDUHK,   2, uhk_ftype_uhk_int,   rounduha3, "__rounduhk")
-DEF_BUILTIN (ROUNDUK,    2, unk_ftype_unk_int,   roundusa3, "__rounduk")
-DEF_BUILTIN (ROUNDULK,  -1, ulk_ftype_ulk_int,   nothing,   "__rounduda3")
-DEF_BUILTIN (ROUNDULLK, -1, ullk_ftype_ullk_int, nothing,   "__rounduta3") // GCC extension
+DEF_BUILTIN (ROUNDUHK,   2, uhk_ftype_uhk_int,   rounduha3, "__rounduhk", attr_const)
+DEF_BUILTIN (ROUNDUK,    2, unk_ftype_unk_int,   roundusa3, "__rounduk", attr_const)
+DEF_BUILTIN (ROUNDULK,  -1, ulk_ftype_ulk_int,   nothing,   "__rounduda3", attr_const)
+DEF_BUILTIN (ROUNDULLK, -1, ullk_ftype_ullk_int, nothing,   "__rounduta3", attr_const) // GCC extension
 
 /* 7.18a.6.4 The fixed-point bit countls functions. */
 
-DEF_BUILTIN (COUNTLSHR,   -1, int_ftype_hr,   nothing, "__countlsqi2")
-DEF_BUILTIN (COUNTLSR,    -1, int_ftype_nr,   nothing, "__countlshi2")
-DEF_BUILTIN (COUNTLSLR,   -1, int_ftype_lr,   nothing, "__countlssi2")
-DEF_BUILTIN (COUNTLSLLR,  -1, int_ftype_llr,  nothing, "__countlsdi2") // GCC extension
+DEF_BUILTIN (COUNTLSHR,   -1, int_ftype_hr,   nothing, "__countlsqi2", attr_const)
+DEF_BUILTIN (COUNTLSR,    -1, int_ftype_nr,   nothing, "__countlshi2", attr_const)
+DEF_BUILTIN (COUNTLSLR,   -1, int_ftype_lr,   nothing, "__countlssi2", attr_const)
+DEF_BUILTIN (COUNTLSLLR,  -1, int_ftype_llr,  nothing, "__countlsdi2", attr_const) // GCC extension
 
-DEF_BUILTIN (COUNTLSUHR,  -1, int_ftype_uhr,  nothing, "__countlsuqi2")
-DEF_BUILTIN (COUNTLSUR,   -1, int_ftype_unr,  nothing, "__countlsuhi2")
-DEF_BUILTIN (COUNTLSULR,  -1, int_ftype_ulr,  nothing, "__countlsusi2")
-DEF_BUILTIN (COUNTLSULLR, -1, int_ftype_ullr, nothing, "__countlsudi2") // GCC extension
+DEF_BUILTIN (COUNTLSUHR,  -1, int_ftype_uhr,  nothing, "__countlsuqi2", attr_const)
+DEF_BUILTIN (COUNTLSUR,   -1, int_ftype_unr,  nothing, "__countlsuhi2", attr_const)
+DEF_BUILTIN (COUNTLSULR,  -1, int_ftype_ulr,  nothing, "__countlsusi2", attr_const)
+DEF_BUILTIN (COUNTLSULLR, -1, int_ftype_ullr, nothing, "__countlsudi2", attr_const) // GCC extension
 
-DEF_BUILTIN (COUNTLSHK,   -1, int_ftype_hk,   nothing, "__countlshi2")
-DEF_BUILTIN (COUNTLSK,    -1, int_ftype_nk,   nothing, "__countlssi2")
-DEF_BUILTIN (COUNTLSLK,   -1, int_ftype_lk,   nothing, "__countlsdi2")
-DEF_BUILTIN (COUNTLSLLK,  -1, int_ftype_llk,  nothing, "__countlsdi2") // GCC extension
+DEF_BUILTIN (COUNTLSHK,   -1, int_ftype_hk,   nothing, "__countlshi2", attr_const)
+DEF_BUILTIN (COUNTLSK,    -1, int_ftype_nk,   nothing, "__countlssi2", attr_const)
+DEF_BUILTIN (COUNTLSLK,   -1, int_ftype_lk,   nothing, "__countlsdi2", attr_const)
+DEF_BUILTIN (COUNTLSLLK,  -1, int_ftype_llk,  nothing, "__countlsdi2", attr_const) // GCC extension
 
-DEF_BUILTIN (COUNTLSUHK,  -1, int_ftype_uhk,  nothing, "__countlsuhi2")
-DEF_BUILTIN (COUNTLSUK,   -1, int_ftype_unk,  nothing, "__countlsusi2")
-DEF_BUILTIN (COUNTLSULK,  -1, int_ftype_ulk,  nothing, "__countlsudi2")
-DEF_BUILTIN (COUNTLSULLK, -1, int_ftype_ullk, nothing, "__countlsudi2") // GCC extension
+DEF_BUILTIN (COUNTLSUHK,  -1, int_ftype_uhk,  nothing, "__countlsuhi2", attr_const)
+DEF_BUILTIN (COUNTLSUK,   -1, int_ftype_unk,  nothing, "__countlsusi2", attr_const)
+DEF_BUILTIN (COUNTLSULK,  -1, int_ftype_ulk,  nothing, "__countlsudi2", attr_const)
+DEF_BUILTIN (COUNTLSULLK, -1, int_ftype_ullk, nothing, "__countlsudi2", attr_const) // GCC extension
 
 /* 7.18a.6.5 The bitwise fixed-point to integer conversion functions. */
 
-DEF_BUILTIN (BITSHR,   -1,   inthr_ftype_hr,   nothing, "__ret")
-DEF_BUILTIN (BITSR,    -1,   intnr_ftype_nr,   nothing, "__ret")
-DEF_BUILTIN (BITSLR,   -1,   intlr_ftype_lr,   nothing, "__ret")
-DEF_BUILTIN (BITSLLR,  -1,  intllr_ftype_llr,  nothing, "__ret") // GCC extension
+DEF_BUILTIN (BITSHR,   -1,   inthr_ftype_hr,   nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSR,    -1,   intnr_ftype_nr,   nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSLR,   -1,   intlr_ftype_lr,   nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSLLR,  -1,  intllr_ftype_llr,  nothing, "__ret", attr_const) // GCC extension
 
-DEF_BUILTIN (BITSUHR,  -1,  intuhr_ftype_uhr,  nothing, "__ret")
-DEF_BUILTIN (BITSUR,   -1,  intunr_ftype_unr,  nothing, "__ret")
-DEF_BUILTIN (BITSULR,  -1,  intulr_ftype_ulr,  nothing, "__ret")
-DEF_BUILTIN (BITSULLR, -1, intullr_ftype_ullr, nothing, "__ret") // GCC extension
+DEF_BUILTIN (BITSUHR,  -1,  intuhr_ftype_uhr,  nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSUR,   -1,  intunr_ftype_unr,  nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSULR,  -1,  intulr_ftype_ulr,  nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSULLR, -1, intullr_ftype_ullr, nothing, "__ret", attr_const) // GCC extension
 
-DEF_BUILTIN (BITSHK,   -1,   inthk_ftype_hk,   nothing, "__ret")
-DEF_BUILTIN (BITSK,    -1,   intnk_ftype_nk,   nothing, "__ret")
-DEF_BUILTIN (BITSLK,   -1,   intlk_ftype_lk,   nothing, "__ret")
-DEF_BUILTIN (BITSLLK,  -1,  intllk_ftype_llk,  nothing, "__ret") // GCC extension
+DEF_BUILTIN (BITSHK,   -1,   inthk_ftype_hk,   nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSK,    -1,   intnk_ftype_nk,   nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSLK,   -1,   intlk_ftype_lk,   nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSLLK,  -1,  intllk_ftype_llk,  nothing, "__ret", attr_const) // GCC extension
 
-DEF_BUILTIN (BITSUHK,  -1,  intuhk_ftype_uhk,  nothing, "__ret")
-DEF_BUILTIN (BITSUK,   -1,  intunk_ftype_unk,  nothing, "__ret")
-DEF_BUILTIN (BITSULK,  -1,  intulk_ftype_ulk,  nothing, "__ret")
-DEF_BUILTIN (BITSULLK, -1, intullk_ftype_ullk, nothing, "__ret") // GCC extension
+DEF_BUILTIN (BITSUHK,  -1,  intuhk_ftype_uhk,  nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSUK,   -1,  intunk_ftype_unk,  nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSULK,  -1,  intulk_ftype_ulk,  nothing, "__ret", attr_const)
+DEF_BUILTIN (BITSULLK, -1, intullk_ftype_ullk, nothing, "__ret", attr_const) // GCC extension
 
 
 /* 7.18a.6.6 The bitwise integer to fixed-point conversion functions. */
 
-DEF_BUILTIN (  HRBITS, -1,   hr_ftype_inthr,   nothing, "__ret")
-DEF_BUILTIN (   RBITS, -1,   nr_ftype_intnr,   nothing, "__ret")
-DEF_BUILTIN (  LRBITS, -1,   lr_ftype_intlr,   nothing, "__ret")
-DEF_BUILTIN ( LLRBITS, -1,  llr_ftype_intllr,  nothing, "__ret") // GCC extension
+DEF_BUILTIN (  HRBITS, -1,   hr_ftype_inthr,   nothing, "__ret", attr_const)
+DEF_BUILTIN (   RBITS, -1,   nr_ftype_intnr,   nothing, "__ret", attr_const)
+DEF_BUILTIN (  LRBITS, -1,   lr_ftype_intlr,   nothing, "__ret", attr_const)
+DEF_BUILTIN ( LLRBITS, -1,  llr_ftype_intllr,  nothing, "__ret", attr_const) // GCC extension
 
-DEF_BUILTIN ( UHRBITS, -1,  uhr_ftype_intuhr,  nothing, "__ret")
-DEF_BUILTIN (  URBITS, -1,  unr_ftype_intunr,  nothing, "__ret")
-DEF_BUILTIN ( ULRBITS, -1,  ulr_ftype_intulr,  nothing, "__ret")
-DEF_BUILTIN (ULLRBITS, -1, ullr_ftype_intullr, nothing, "__ret") // GCC extension
+DEF_BUILTIN ( UHRBITS, -1,  uhr_ftype_intuhr,  nothing, "__ret", attr_const)
+DEF_BUILTIN (  URBITS, -1,  unr_ftype_intunr,  nothing, "__ret", attr_const)
+DEF_BUILTIN ( ULRBITS, -1,  ulr_ftype_intulr,  nothing, "__ret", attr_const)
+DEF_BUILTIN (ULLRBITS, -1, ullr_ftype_intullr, nothing, "__ret", attr_const) // GCC extension
 
-DEF_BUILTIN (  HKBITS, -1,   hk_ftype_inthk,   nothing, "__ret")
-DEF_BUILTIN (   KBITS, -1,   nk_ftype_intnk,   nothing, "__ret")
-DEF_BUILTIN (  LKBITS, -1,   lk_ftype_intlk,   nothing, "__ret")
-DEF_BUILTIN ( LLKBITS, -1,  llk_ftype_intllk,  nothing, "__ret") // GCC extension
+DEF_BUILTIN (  HKBITS, -1,   hk_ftype_inthk,   nothing, "__ret", attr_const)
+DEF_BUILTIN (   KBITS, -1,   nk_ftype_intnk,   nothing, "__ret", attr_const)
+DEF_BUILTIN (  LKBITS, -1,   lk_ftype_intlk,   nothing, "__ret", attr_const)
+DEF_BUILTIN ( LLKBITS, -1,  llk_ftype_intllk,  nothing, "__ret", attr_const) // GCC extension
 
-DEF_BUILTIN ( UHKBITS, -1,  uhk_ftype_intuhk,  nothing, "__ret")
-DEF_BUILTIN (  UKBITS, -1,  unk_ftype_intunk,  nothing, "__ret")
-DEF_BUILTIN ( ULKBITS, -1,  ulk_ftype_intulk,  nothing, "__ret")
-DEF_BUILTIN (ULLKBITS, -1, ullk_ftype_intullk, nothing, "__ret") // GCC extension
+DEF_BUILTIN ( UHKBITS, -1,  uhk_ftype_intuhk,  nothing, "__ret", attr_const)
+DEF_BUILTIN (  UKBITS, -1,  unk_ftype_intunk,  nothing, "__ret", attr_const)
+DEF_BUILTIN ( ULKBITS, -1,  ulk_ftype_intulk,  nothing, "__ret", attr_const)
+DEF_BUILTIN (ULLKBITS, -1, ullk_ftype_intullk, nothing, "__ret", attr_const) // GCC extension
 
 /* Overloaded */
 
 /* 7.18a.6.7  Type-generic fixed-point functions. */
 
-DEF_BUILTIN (ABSFX,     -1, void_ftype_void /* dummy */, nothing, NULL)
-DEF_BUILTIN (ROUNDFX,   -1, void_ftype_void /* dummy */, nothing, NULL)
-DEF_BUILTIN (COUNTLSFX, -1, void_ftype_void /* dummy */, nothing, NULL)
+DEF_BUILTIN (ABSFX,     -1, void_ftype_void /* dummy */, nothing, NULL, attr_const)
+DEF_BUILTIN (ROUNDFX,   -1, void_ftype_void /* dummy */, nothing, NULL, attr_const)
+DEF_BUILTIN (COUNTLSFX, -1, void_ftype_void /* dummy */, nothing, NULL, attr_const)

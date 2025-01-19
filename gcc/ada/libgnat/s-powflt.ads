@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2020-2024, Free Software Foundation, Inc.      --
+--             Copyright (C) 2020-2025, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ package System.Powten_Flt is
 
    Maxpow_Exact : constant := 10;
    --  Largest power of five exactly representable with Float. It is equal to
-   --  floor (M * log 2 / log 5), when M is the size of the mantissa (24).
+   --  floor (M * log 2 / log 5), where M is the size of the mantissa (24).
    --  It also works for any number of the form 5*(2**N) and in particular 10.
 
    Maxpow : constant := Maxpow_Exact * 2;

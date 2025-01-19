@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=ev4" } */
+/* { dg-options "-mcpu=ev4" } */
 
 unsigned int ntfs_getinfo(void *p)
 {

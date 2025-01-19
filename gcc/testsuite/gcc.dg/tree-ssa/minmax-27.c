@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom2" } */
+/* { dg-options "-O2 -fdump-tree-dom2 -fno-tree-vrp" } */
 
 
 int min1(int a, int b)

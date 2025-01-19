@@ -516,8 +516,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 0U) & 1U));
         }
 
-        enum ulong disabled_min = cast(ulong) 0U;
-        enum ulong disabled_max = cast(ulong) 1U;
+        enum ulong disabled_min = 0UL;
+        enum ulong disabled_max = 1UL;
         ///
         @property ulong inherit() @safe pure nothrow @nogc const
         {
@@ -536,8 +536,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 1U) & 2U));
         }
 
-        enum ulong inherit_min = cast(ulong) 0U;
-        enum ulong inherit_max = cast(ulong) 1U;
+        enum ulong inherit_min = 0UL;
+        enum ulong inherit_max = 1UL;
         ///
         @property ulong pinned() @safe pure nothrow @nogc const
         {
@@ -556,8 +556,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 2U) & 4U));
         }
 
-        enum ulong pinned_min = cast(ulong) 0U;
-        enum ulong pinned_max = cast(ulong) 1U;
+        enum ulong pinned_min = 0UL;
+        enum ulong pinned_max = 1UL;
         ///
         @property ulong exclusive() @safe pure nothrow @nogc const
         {
@@ -576,8 +576,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 3U) & 8U));
         }
 
-        enum ulong exclusive_min = cast(ulong) 0U;
-        enum ulong exclusive_max = cast(ulong) 1U;
+        enum ulong exclusive_min = 0UL;
+        enum ulong exclusive_max = 1UL;
         ///
         @property ulong exclude_user() @safe pure nothrow @nogc const
         {
@@ -596,8 +596,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 4U) & 16U));
         }
 
-        enum ulong exclude_user_min = cast(ulong) 0U;
-        enum ulong exclude_user_max = cast(ulong) 1U;
+        enum ulong exclude_user_min = 0UL;
+        enum ulong exclude_user_max = 1UL;
         ///
         @property ulong exclude_kernel() @safe pure nothrow @nogc const
         {
@@ -616,8 +616,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 5U) & 32U));
         }
 
-        enum ulong exclude_kernel_min = cast(ulong) 0U;
-        enum ulong exclude_kernel_max = cast(ulong) 1U;
+        enum ulong exclude_kernel_min = 0UL;
+        enum ulong exclude_kernel_max = 1UL;
         ///
         @property ulong exclude_hv() @safe pure nothrow @nogc const
         {
@@ -636,8 +636,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 6U) & 64U));
         }
 
-        enum ulong exclude_hv_min = cast(ulong) 0U;
-        enum ulong exclude_hv_max = cast(ulong) 1U;
+        enum ulong exclude_hv_min = 0UL;
+        enum ulong exclude_hv_max = 1UL;
         ///
         @property ulong exclude_idle() @safe pure nothrow @nogc const
         {
@@ -656,8 +656,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 7U) & 128U));
         }
 
-        enum ulong exclude_idle_min = cast(ulong) 0U;
-        enum ulong exclude_idle_max = cast(ulong) 1U;
+        enum ulong exclude_idle_min = 0UL;
+        enum ulong exclude_idle_max = 1UL;
         ///
         @property ulong mmap() @safe pure nothrow @nogc const
         {
@@ -674,8 +674,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 8U) & 256U));
         }
 
-        enum ulong mmap_min = cast(ulong) 0U;
-        enum ulong mmap_max = cast(ulong) 1U;
+        enum ulong mmap_min = 0UL;
+        enum ulong mmap_max = 1UL;
         ///
         @property ulong comm() @safe pure nothrow @nogc const
         {
@@ -692,8 +692,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 9U) & 512U));
         }
 
-        enum ulong comm_min = cast(ulong) 0U;
-        enum ulong comm_max = cast(ulong) 1U;
+        enum ulong comm_min = 0UL;
+        enum ulong comm_max = 1UL;
         ///
         @property ulong freq() @safe pure nothrow @nogc const
         {
@@ -710,8 +710,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 10U) & 1024U));
         }
 
-        enum ulong freq_min = cast(ulong) 0U;
-        enum ulong freq_max = cast(ulong) 1U;
+        enum ulong freq_min = 0UL;
+        enum ulong freq_max = 1UL;
         ///
         @property ulong inherit_stat() @safe pure nothrow @nogc const
         {
@@ -730,8 +730,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 11U) & 2048U));
         }
 
-        enum ulong inherit_stat_min = cast(ulong) 0U;
-        enum ulong inherit_stat_max = cast(ulong) 1U;
+        enum ulong inherit_stat_min = 0UL;
+        enum ulong inherit_stat_max = 1UL;
         ///
         @property ulong enable_on_exec() @safe pure nothrow @nogc const
         {
@@ -750,8 +750,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 12U) & 4096U));
         }
 
-        enum ulong enable_on_exec_min = cast(ulong) 0U;
-        enum ulong enable_on_exec_max = cast(ulong) 1U;
+        enum ulong enable_on_exec_min = 0UL;
+        enum ulong enable_on_exec_max = 1UL;
         ///
         @property ulong task() @safe pure nothrow @nogc const
         {
@@ -768,8 +768,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 13U) & 8192U));
         }
 
-        enum ulong task_min = cast(ulong) 0U;
-        enum ulong task_max = cast(ulong) 1U;
+        enum ulong task_min = 0UL;
+        enum ulong task_max = 1UL;
         ///
         @property ulong watermark() @safe pure nothrow @nogc const
         {
@@ -788,8 +788,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 14U) & 16384U));
         }
 
-        enum ulong watermark_min = cast(ulong) 0U;
-        enum ulong watermark_max = cast(ulong) 1U;
+        enum ulong watermark_min = 0UL;
+        enum ulong watermark_max = 1UL;
         ///
         @property ulong precise_ip() @safe pure nothrow @nogc const
         {
@@ -808,8 +808,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 15U) & 98304U));
         }
 
-        enum ulong precise_ip_min = cast(ulong) 0U;
-        enum ulong precise_ip_max = cast(ulong) 3U;
+        enum ulong precise_ip_min = 0UL;
+        enum ulong precise_ip_max = 3UL;
         ///
         @property ulong mmap_data() @safe pure nothrow @nogc const
         {
@@ -828,8 +828,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 17U) & 131072U));
         }
 
-        enum ulong mmap_data_min = cast(ulong) 0U;
-        enum ulong mmap_data_max = cast(ulong) 1U;
+        enum ulong mmap_data_min = 0UL;
+        enum ulong mmap_data_max = 1UL;
         ///
         @property ulong sample_id_all() @safe pure nothrow @nogc const
         {
@@ -848,8 +848,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 18U) & 262144U));
         }
 
-        enum ulong sample_id_all_min = cast(ulong) 0U;
-        enum ulong sample_id_all_max = cast(ulong) 1U;
+        enum ulong sample_id_all_min = 0UL;
+        enum ulong sample_id_all_max = 1UL;
         ///
         @property ulong exclude_host() @safe pure nothrow @nogc const
         {
@@ -868,8 +868,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 19U) & 524288U));
         }
 
-        enum ulong exclude_host_min = cast(ulong) 0U;
-        enum ulong exclude_host_max = cast(ulong) 1U;
+        enum ulong exclude_host_min = 0UL;
+        enum ulong exclude_host_max = 1UL;
         ///
         @property ulong exclude_guest() @safe pure nothrow @nogc const
         {
@@ -888,8 +888,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 20U) & 1048576U));
         }
 
-        enum ulong exclude_guest_min = cast(ulong) 0U;
-        enum ulong exclude_guest_max = cast(ulong) 1U;
+        enum ulong exclude_guest_min = 0UL;
+        enum ulong exclude_guest_max = 1UL;
         ///
         @property ulong exclude_callchain_kernel() @safe pure nothrow @nogc const
         {
@@ -908,8 +908,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 21U) & 2097152U));
         }
 
-        enum ulong exclude_callchain_kernel_min = cast(ulong) 0U;
-        enum ulong exclude_callchain_kernel_max = cast(ulong) 1U;
+        enum ulong exclude_callchain_kernel_min = 0UL;
+        enum ulong exclude_callchain_kernel_max = 1UL;
         ///
         @property ulong exclude_callchain_user() @safe pure nothrow @nogc const
         {
@@ -928,8 +928,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 22U) & 4194304U));
         }
 
-        enum ulong exclude_callchain_user_min = cast(ulong) 0U;
-        enum ulong exclude_callchain_user_max = cast(ulong) 1U;
+        enum ulong exclude_callchain_user_min = 0UL;
+        enum ulong exclude_callchain_user_max = 1UL;
         ///
         @property ulong mmap2() @safe pure nothrow @nogc const
         {
@@ -948,8 +948,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 23U) & 8388608U));
         }
 
-        enum ulong mmap2_min = cast(ulong) 0U;
-        enum ulong mmap2_max = cast(ulong) 1U;
+        enum ulong mmap2_min = 0UL;
+        enum ulong mmap2_max = 1UL;
         ///
         @property ulong comm_exec() @safe pure nothrow @nogc const
         {
@@ -968,8 +968,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 24U) & 16777216U));
         }
 
-        enum ulong comm_exec_min = cast(ulong) 0U;
-        enum ulong comm_exec_max = cast(ulong) 1U;
+        enum ulong comm_exec_min = 0UL;
+        enum ulong comm_exec_max = 1UL;
         ///
         @property ulong use_clockid() @safe pure nothrow @nogc const
         {
@@ -988,8 +988,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 25U) & 33554432U));
         }
 
-        enum ulong use_clockid_min = cast(ulong) 0U;
-        enum ulong use_clockid_max = cast(ulong) 1U;
+        enum ulong use_clockid_min = 0UL;
+        enum ulong use_clockid_max = 1UL;
         ///
         @property ulong context_switch() @safe pure nothrow @nogc const
         {
@@ -1008,8 +1008,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 26U) & 67108864U));
         }
 
-        enum ulong context_switch_min = cast(ulong) 0U;
-        enum ulong context_switch_max = cast(ulong) 1U;
+        enum ulong context_switch_min = 0UL;
+        enum ulong context_switch_max = 1UL;
         ///
         @property ulong write_backward() @safe pure nothrow @nogc const
         {
@@ -1028,8 +1028,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 27U) & 134217728U));
         }
 
-        enum ulong write_backward_min = cast(ulong) 0U;
-        enum ulong write_backward_max = cast(ulong) 1U;
+        enum ulong write_backward_min = 0UL;
+        enum ulong write_backward_max = 1UL;
         ///
         @property ulong namespaces() @safe pure nothrow @nogc const
         {
@@ -1048,8 +1048,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 28U) & 268435456U));
         }
 
-        enum ulong namespaces_min = cast(ulong) 0U;
-        enum ulong namespaces_max = cast(ulong) 1U;
+        enum ulong namespaces_min = 0UL;
+        enum ulong namespaces_max = 1UL;
         ///
         @property ulong __reserved_1() @safe pure nothrow @nogc const
         {
@@ -1069,8 +1069,8 @@ struct perf_event_attr
                                 (cast(typeof(perf_event_attr_bitmanip)) v << 29U) & 18446744073172680704UL));
         }
 
-        enum ulong __reserved_1_min = cast(ulong) 0U;
-        enum ulong __reserved_1_max = cast(ulong) 34359738367UL;
+        enum ulong __reserved_1_min = 0UL;
+        enum ulong __reserved_1_max = 34359738367UL;
         ///
         union
         {
@@ -1242,8 +1242,8 @@ struct perf_event_mmap_page
                                                 (cast(typeof(mmap_page_bitmanip)) v << 0U) & 1U));
                         }
 
-                        enum ulong cap_bit0_min = cast(ulong) 0U;
-                        enum ulong cap_bit0_max = cast(ulong) 1U;
+                        enum ulong cap_bit0_min = 0UL;
+                        enum ulong cap_bit0_max = 1UL;
                         ///
                         @property ulong cap_bit0_is_deprecated() @safe pure nothrow @nogc const
                         {
@@ -1262,8 +1262,8 @@ struct perf_event_mmap_page
                                                 (cast(typeof(mmap_page_bitmanip)) v << 1U) & 2U));
                         }
 
-                        enum ulong cap_bit0_is_deprecated_min = cast(ulong) 0U;
-                        enum ulong cap_bit0_is_deprecated_max = cast(ulong) 1U;
+                        enum ulong cap_bit0_is_deprecated_min = 0UL;
+                        enum ulong cap_bit0_is_deprecated_max = 1UL;
                         ///
                         @property ulong cap_user_rdpmc() @safe pure nothrow @nogc const
                         {
@@ -1282,8 +1282,8 @@ struct perf_event_mmap_page
                                                 (cast(typeof(mmap_page_bitmanip)) v << 2U) & 4U));
                         }
 
-                        enum ulong cap_user_rdpmc_min = cast(ulong) 0U;
-                        enum ulong cap_user_rdpmc_max = cast(ulong) 1U;
+                        enum ulong cap_user_rdpmc_min = 0UL;
+                        enum ulong cap_user_rdpmc_max = 1UL;
                         ///
                         @property ulong cap_user_time() @safe pure nothrow @nogc const
                         {
@@ -1302,8 +1302,8 @@ struct perf_event_mmap_page
                                                 (cast(typeof(mmap_page_bitmanip)) v << 3U) & 8U));
                         }
 
-                        enum ulong cap_user_time_min = cast(ulong) 0U;
-                        enum ulong cap_user_time_max = cast(ulong) 1U;
+                        enum ulong cap_user_time_min = 0UL;
+                        enum ulong cap_user_time_max = 1UL;
                         ///
                         @property ulong cap_user_time_zero() @safe pure nothrow @nogc const
                         {
@@ -1322,8 +1322,8 @@ struct perf_event_mmap_page
                                                 (cast(typeof(mmap_page_bitmanip)) v << 4U) & 16U));
                         }
 
-                        enum ulong cap_user_time_zero_min = cast(ulong) 0U;
-                        enum ulong cap_user_time_zero_max = cast(ulong) 1U;
+                        enum ulong cap_user_time_zero_min = 0UL;
+                        enum ulong cap_user_time_zero_max = 1UL;
                         ///
                         @property ulong cap_____res() @safe pure nothrow @nogc const
                         {
@@ -1342,8 +1342,8 @@ struct perf_event_mmap_page
                                                 (cast(typeof(mmap_page_bitmanip)) v << 5U) & 18446744073709551584UL));
                         }
 
-                        enum ulong cap_____res_min = cast(ulong) 0U;
-                        enum ulong cap_____res_max = cast(ulong) 576460752303423487UL;
+                        enum ulong cap_____res_min = 0UL;
+                        enum ulong cap_____res_max = 576460752303423487UL;
                 }
         }
 
@@ -1891,8 +1891,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 0U) & 31U));
                         }
 
-                        enum ulong mem_op_min = cast(ulong) 0U;
-                        enum ulong mem_op_max = cast(ulong) 31U;
+                        enum ulong mem_op_min = 0UL;
+                        enum ulong mem_op_max = 31UL;
                         ///
                         @property ulong mem_lvl() @safe pure nothrow @nogc const
                         {
@@ -1912,8 +1912,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 5U) & 524256U));
                         }
 
-                        enum ulong mem_lvl_min = cast(ulong) 0U;
-                        enum ulong mem_lvl_max = cast(ulong) 16383U;
+                        enum ulong mem_lvl_min = 0UL;
+                        enum ulong mem_lvl_max = 16383UL;
                         ///
                         @property ulong mem_snoop() @safe pure nothrow @nogc const
                         {
@@ -1933,8 +1933,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 19U) & 16252928U));
                         }
 
-                        enum ulong mem_snoop_min = cast(ulong) 0U;
-                        enum ulong mem_snoop_max = cast(ulong) 31U;
+                        enum ulong mem_snoop_min = 0UL;
+                        enum ulong mem_snoop_max = 31UL;
                         ///
                         @property ulong mem_lock() @safe pure nothrow @nogc const
                         {
@@ -1954,8 +1954,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 24U) & 50331648U));
                         }
 
-                        enum ulong mem_lock_min = cast(ulong) 0U;
-                        enum ulong mem_lock_max = cast(ulong) 3U;
+                        enum ulong mem_lock_min = 0UL;
+                        enum ulong mem_lock_max = 3UL;
                         ///
                         @property ulong mem_dtlb() @safe pure nothrow @nogc const
                         {
@@ -1975,8 +1975,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 26U) & 8522825728UL));
                         }
 
-                        enum ulong mem_dtlb_min = cast(ulong) 0U;
-                        enum ulong mem_dtlb_max = cast(ulong) 127U;
+                        enum ulong mem_dtlb_min = 0UL;
+                        enum ulong mem_dtlb_max = 127UL;
                         ///
                         @property ulong mem_lvl_num() @safe pure nothrow @nogc const
                         {
@@ -1996,8 +1996,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 33U) & 128849018880UL));
                         }
 
-                        enum ulong mem_lvl_num_min = cast(ulong) 0U;
-                        enum ulong mem_lvl_num_max = cast(ulong) 15U;
+                        enum ulong mem_lvl_num_min = 0UL;
+                        enum ulong mem_lvl_num_max = 15UL;
                         ///
                         @property ulong mem_remote() @safe pure nothrow @nogc const
                         {
@@ -2017,8 +2017,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 37U) & 137438953472UL));
                         }
 
-                        enum ulong mem_remote_min = cast(ulong) 0U;
-                        enum ulong mem_remote_max = cast(ulong) 1U;
+                        enum ulong mem_remote_min = 0UL;
+                        enum ulong mem_remote_max = 1UL;
                         ///
                         @property ulong mem_snoopx() @safe pure nothrow @nogc const
                         {
@@ -2038,8 +2038,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 38U) & 824633720832UL));
                         }
 
-                        enum ulong mem_snoopx_min = cast(ulong) 0U;
-                        enum ulong mem_snoopx_max = cast(ulong) 3U;
+                        enum ulong mem_snoopx_min = 0UL;
+                        enum ulong mem_snoopx_max = 3UL;
                         ///
                         @property ulong mem_rsvd() @safe pure nothrow @nogc const
                         {
@@ -2060,8 +2060,8 @@ version (LittleEndian)
                                                 (cast(typeof(perf_mem_data_src_bitmanip)) v << 40U) & 18446742974197923840UL));
                         }
 
-                        enum ulong mem_rsvd_min = cast(ulong) 0U;
-                        enum ulong mem_rsvd_max = cast(ulong) 16777215U;
+                        enum ulong mem_rsvd_min = 0UL;
+                        enum ulong mem_rsvd_max = 16777215UL;
 
                 }
         }
@@ -2099,8 +2099,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 0U) & 16777215U));
                         }
 
-                        enum ulong mem_rsvd_min = cast(ulong) 0U;
-                        enum ulong mem_rsvd_max = cast(ulong) 16777215U;
+                        enum ulong mem_rsvd_min = 0UL;
+                        enum ulong mem_rsvd_max = 16777215UL;
                         ///
                         @property ulong mem_snoopx() @safe pure nothrow @nogc const
                         {
@@ -2119,8 +2119,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 24U) & 50331648U));
                         }
 
-                        enum ulong mem_snoopx_min = cast(ulong) 0U;
-                        enum ulong mem_snoopx_max = cast(ulong) 3U;
+                        enum ulong mem_snoopx_min = 0UL;
+                        enum ulong mem_snoopx_max = 3UL;
                         ///
                         @property ulong mem_remote() @safe pure nothrow @nogc const
                         {
@@ -2139,8 +2139,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 26U) & 67108864U));
                         }
 
-                        enum ulong mem_remote_min = cast(ulong) 0U;
-                        enum ulong mem_remote_max = cast(ulong) 1U;
+                        enum ulong mem_remote_min = 0UL;
+                        enum ulong mem_remote_max = 1UL;
                         ///
                         @property ulong mem_lvl_num() @safe pure nothrow @nogc const
                         {
@@ -2159,8 +2159,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 27U) & 2013265920U));
                         }
 
-                        enum ulong mem_lvl_num_min = cast(ulong) 0U;
-                        enum ulong mem_lvl_num_max = cast(ulong) 15U;
+                        enum ulong mem_lvl_num_min = 0UL;
+                        enum ulong mem_lvl_num_max = 15UL;
                         ///
                         @property ulong mem_dtlb() @safe pure nothrow @nogc const
                         {
@@ -2179,8 +2179,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 31U) & 272730423296UL));
                         }
 
-                        enum ulong mem_dtlb_min = cast(ulong) 0U;
-                        enum ulong mem_dtlb_max = cast(ulong) 127U;
+                        enum ulong mem_dtlb_min = 0UL;
+                        enum ulong mem_dtlb_max = 127UL;
                         ///
                         @property ulong mem_lock() @safe pure nothrow @nogc const
                         {
@@ -2199,8 +2199,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 38U) & 824633720832UL));
                         }
 
-                        enum ulong mem_lock_min = cast(ulong) 0U;
-                        enum ulong mem_lock_max = cast(ulong) 3U;
+                        enum ulong mem_lock_min = 0UL;
+                        enum ulong mem_lock_max = 3UL;
                         ///
                         @property ulong mem_snoop() @safe pure nothrow @nogc const
                         {
@@ -2219,8 +2219,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 40U) & 34084860461056UL));
                         }
 
-                        enum ulong mem_snoop_min = cast(ulong) 0U;
-                        enum ulong mem_snoop_max = cast(ulong) 31U;
+                        enum ulong mem_snoop_min = 0UL;
+                        enum ulong mem_snoop_max = 31UL;
                         ///
                         @property ulong mem_lvl() @safe pure nothrow @nogc const
                         {
@@ -2239,8 +2239,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 45U) & 576425567931334656UL));
                         }
 
-                        enum ulong mem_lvl_min = cast(ulong) 0U;
-                        enum ulong mem_lvl_max = cast(ulong) 16383U;
+                        enum ulong mem_lvl_min = 0UL;
+                        enum ulong mem_lvl_max = 16383UL;
                         ///
                         @property ulong mem_op() @safe pure nothrow @nogc const
                         {
@@ -2259,8 +2259,8 @@ else
                                                 (cast(typeof(perf_mem_data_src)) v << 59U) & 17870283321406128128UL));
                         }
 
-                        enum ulong mem_op_min = cast(ulong) 0U;
-                        enum ulong mem_op_max = cast(ulong) 31U;
+                        enum ulong mem_op_min = 0UL;
+                        enum ulong mem_op_max = 31UL;
                 }
         }
 }
@@ -2392,8 +2392,8 @@ struct perf_branch_entry
                                 (cast(typeof(perf_branch_entry_bitmanip)) v << 0U) & 1U));
         }
 
-        enum ulong mispred_min = cast(ulong) 0U;
-        enum ulong mispred_max = cast(ulong) 1U;
+        enum ulong mispred_min = 0UL;
+        enum ulong mispred_max = 1UL;
         ///
         @property ulong predicted() @safe pure nothrow @nogc const
         {
@@ -2412,8 +2412,8 @@ struct perf_branch_entry
                                 (cast(typeof(perf_branch_entry_bitmanip)) v << 1U) & 2U));
         }
 
-        enum ulong predicted_min = cast(ulong) 0U;
-        enum ulong predicted_max = cast(ulong) 1U;
+        enum ulong predicted_min = 0UL;
+        enum ulong predicted_max = 1UL;
         ///
         @property ulong in_tx() @safe pure nothrow @nogc const
         {
@@ -2432,8 +2432,8 @@ struct perf_branch_entry
                                 (cast(typeof(perf_branch_entry_bitmanip)) v << 2U) & 4U));
         }
 
-        enum ulong in_tx_min = cast(ulong) 0U;
-        enum ulong in_tx_max = cast(ulong) 1U;
+        enum ulong in_tx_min = 0UL;
+        enum ulong in_tx_max = 1UL;
         ///
         @property ulong abort() @safe pure nothrow @nogc const
         {
@@ -2452,8 +2452,8 @@ struct perf_branch_entry
                                 (cast(typeof(perf_branch_entry_bitmanip)) v << 3U) & 8U));
         }
 
-        enum ulong abort_min = cast(ulong) 0U;
-        enum ulong abort_max = cast(ulong) 1U;
+        enum ulong abort_min = 0UL;
+        enum ulong abort_max = 1UL;
         ///
         @property ulong cycles() @safe pure nothrow @nogc const
         {
@@ -2472,8 +2472,8 @@ struct perf_branch_entry
                                 (cast(typeof(perf_branch_entry_bitmanip)) v << 4U) & 1048560U));
         }
 
-        enum ulong cycles_min = cast(ulong) 0U;
-        enum ulong cycles_max = cast(ulong) 65535U;
+        enum ulong cycles_min = 0UL;
+        enum ulong cycles_max = 65535UL;
         ///
         @property ulong type() @safe pure nothrow @nogc const
         {
@@ -2490,8 +2490,8 @@ struct perf_branch_entry
                                 (cast(typeof(perf_branch_entry_bitmanip)) v << 20U) & 15728640U));
         }
 
-        enum ulong type_min = cast(ulong) 0U;
-        enum ulong type_max = cast(ulong) 15U;
+        enum ulong type_min = 0UL;
+        enum ulong type_max = 15UL;
         ///
         @property ulong reserved() @safe pure nothrow @nogc const
         {
@@ -2511,6 +2511,6 @@ struct perf_branch_entry
                                 (cast(typeof(perf_branch_entry_bitmanip)) v << 24U) & 18446744073692774400UL));
         }
 
-        enum ulong reserved_min = cast(ulong) 0U;
-        enum ulong reserved_max = cast(ulong) 1099511627775UL;
+        enum ulong reserved_min = 0UL;
+        enum ulong reserved_max = 1099511627775UL;
 }

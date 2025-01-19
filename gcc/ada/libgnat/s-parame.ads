@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,10 @@
 
 --  Default version used when no target-specific version is provided
 
---  This package defines some system dependent parameters for GNAT. These
---  are values that are referenced by the runtime library and are therefore
---  relevant to the target machine.
+--  This package defines a number of system-dependent parameters for GNAT.
+--  These are values that are referenced by the runtime library and are
+--  therefore relevant to the target machine. This includes the default and
+--  minimum size and the length of a task name.
 
 --  The parameters whose value is defined in the spec are not generally
 --  expected to be changed. If they are changed, it will be necessary to

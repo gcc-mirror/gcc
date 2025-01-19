@@ -16,6 +16,7 @@ module dmd.arrayop;
 import core.stdc.stdio;
 import dmd.arraytypes;
 import dmd.astenums;
+import dmd.dcast : implicitConvTo;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
@@ -145,7 +146,10 @@ Expression arrayOp(BinExp e, Scope* sc)
         if (auto te = id.isTemplateExp())
             arrayOp = te.td;
         else
-            ObjectNotFound(idArrayOp);   // fatal error
+        {
+            ObjectNotFound(e.loc, idArrayOp);   // fatal error
+            return ErrorExp.get();
+        }
     }
 
     auto fd = resolveFuncCall(e.loc, sc, arrayOp, tiargs, null, ArgumentList(args), FuncResolveFlag.standard);
@@ -283,9 +287,8 @@ bool isUnaArrayOp(EXP op) @safe
     case EXP.tilde:
         return true;
     default:
-        break;
+        return false;
     }
-    return false;
 }
 
 /***********************************************
@@ -306,9 +309,8 @@ bool isBinArrayOp(EXP op) @safe
     case EXP.pow:
         return true;
     default:
-        break;
+        return false;
     }
-    return false;
 }
 
 /***********************************************
@@ -329,9 +331,8 @@ bool isBinAssignArrayOp(EXP op) @safe
     case EXP.powAssign:
         return true;
     default:
-        break;
+        return false;
     }
-    return false;
 }
 
 /***********************************************

@@ -1,6 +1,6 @@
 // Filesystem operations -*- C++ -*-
 
-// Copyright (C) 2014-2024 Free Software Foundation, Inc.
+// Copyright (C) 2014-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -914,24 +914,16 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
   else
     err = errno;
 
-  if (exists(s1) && exists(s2))
-    {
-      if (is_other(s1) && is_other(s2))
-	{
-	  ec = std::__unsupported();
-	  return false;
-	}
-      ec.clear();
-      if (is_other(s1) || is_other(s2))
-	return false;
-      return fs::equiv_files(p1.c_str(), st1, p2.c_str(), st2, ec);
-    }
+  if (err)
+    ec.assign(err, std::generic_category());
   else if (!exists(s1) || !exists(s2))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
-  else if (err)
-    ec.assign(err, std::generic_category());
   else
-    ec.clear();
+    {
+      ec.clear();
+      if (s1.type() == s2.type())
+	return fs::equiv_files(p1.c_str(), st1, p2.c_str(), st2, ec);
+    }
   return false;
 #else
   ec = std::make_error_code(std::errc::function_not_supported);

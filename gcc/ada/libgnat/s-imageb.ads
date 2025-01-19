@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  Contains the routine for computing the image in based format of signed and
---  unsigned integers for use by Text_IO.Integer_IO and Text_IO.Modular_IO.
+--  unsigned integers for use by ``Text_IO.Integer_IO`` and
+--  ``Text_IO.Modular_IO``.
 
 generic
 

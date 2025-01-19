@@ -1,5 +1,5 @@
 /* A pure C API to enable client code to embed GCC as a JIT-compiler.
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -176,6 +176,9 @@ enum gcc_jit_str_option
   /* The name of the program, for use as a prefix when printing error
      messages to stderr.  If NULL, or default, "libgccjit.so" is used.  */
   GCC_JIT_STR_OPTION_PROGNAME,
+
+  /* Special characters to allow in function names.  */
+  GCC_JIT_STR_OPTION_SPECIAL_CHARS_IN_FUNC_NAMES,
 
   GCC_JIT_NUM_STR_OPTIONS
 };
@@ -1037,6 +1040,19 @@ extern gcc_jit_lvalue *
 gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
 				       gcc_jit_rvalue *init_value);
 
+#define LIBGCCJIT_HAVE_gcc_jit_context_get_target_builtin_function
+
+/* Create a reference to a machine-specific builtin function (sometimes called
+   intrinsic functions).
+
+   This API entrypoint was added in LIBGCCJIT_ABI_32; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_get_target_builtin_function
+*/
+extern gcc_jit_function *
+gcc_jit_context_get_target_builtin_function (gcc_jit_context *ctxt,
+					     const char *name);
+
 #define LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
 
 /* Set an initial value for a global, which must be an array of
@@ -1348,6 +1364,35 @@ gcc_jit_context_convert_vector (gcc_jit_context *ctxt,
 				gcc_jit_rvalue *vector,
 				gcc_jit_type *type);
 
+/* Build a permutation vector rvalue from an 3 arrays of elements.
+
+   "vec_type" should be a vector type, created using gcc_jit_type_get_vector.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_31; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_VECTOR_OPERATIONS
+*/
+extern gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_vector_perm (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_rvalue *elements1,
+					gcc_jit_rvalue *elements2,
+					gcc_jit_rvalue *mask);
+
+#define LIBGCCJIT_HAVE_VECTOR_OPERATIONS
+
+/* Get the element at INDEX in VECTOR.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_31; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_VECTOR_OPERATIONS
+*/
+extern gcc_jit_lvalue *
+gcc_jit_context_new_vector_access (gcc_jit_context *ctxt,
+				   gcc_jit_location *loc,
+				   gcc_jit_rvalue *vector,
+				   gcc_jit_rvalue *index);
+
 /* Field access is provided separately for both lvalues and rvalues.  */
 
 /* Accessing a field of an lvalue of struct type, analogous to:
@@ -1430,6 +1475,13 @@ gcc_jit_function_new_local (gcc_jit_function *func,
 			    gcc_jit_location *loc,
 			    gcc_jit_type *type,
 			    const char *name);
+
+extern gcc_jit_lvalue *
+gcc_jit_function_new_temp (gcc_jit_function *func,
+			   gcc_jit_location *loc,
+			   gcc_jit_type *type);
+
+#define LIBGCCJIT_HAVE_gcc_jit_function_new_temp
 
 /**********************************************************************
  Statement-creation.
@@ -2100,6 +2152,12 @@ extern void
 gcc_jit_lvalue_add_string_attribute (gcc_jit_lvalue *variable,
 				     enum gcc_jit_variable_attribute attribute,
 				     const char* value);
+
+extern void
+gcc_jit_context_set_output_ident (gcc_jit_context *ctxt,
+				  const char* output_ident);
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_output_ident
 
 #ifdef __cplusplus
 }

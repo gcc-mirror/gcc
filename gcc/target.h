@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -164,6 +164,9 @@ class function_arg_info;
 
 /* This is defined in function-abi.h.  */
 class predefined_function_abi;
+
+/* This is defined in avoid-store-forwarding.h.  */
+struct store_fwd_info;
 
 /* These are defined in tree-vect-stmts.cc.  */
 extern tree stmt_vectype (class _stmt_vec_info *);

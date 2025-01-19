@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -284,6 +284,13 @@ package Sem_Prag is
       Freeze_Id : Entity_Id := Empty);
    --  Perform full analysis of delayed pragma Exceptional_Cases. Freeze_Id is
    --  the entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
+
+   procedure Analyze_Exit_Cases_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Exit_Cases. Freeze_Id is the
+   --  entity of [generic] package body or [generic] subprogram body which
    --  caused "freezing" of the related contract where the pragma resides.
 
    procedure Analyze_External_Property_In_Decl_Part

@@ -48,6 +48,7 @@ load_gcc_lib scanwpaipa.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
+load_gcc_lib dg-test-cleanup.exp
 
 set dg-do-what-default run
 

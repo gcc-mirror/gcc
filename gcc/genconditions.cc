@@ -1,5 +1,5 @@
 /* Process machine description and calculate constant conditions.
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -141,9 +141,9 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
     }
 
   fputs ("\",\n    __builtin_constant_p ", stdout);
-  rtx_reader_ptr->print_c_condition (test->expr);
+  rtx_reader_ptr->print_c_condition (stdout, test->expr);
   fputs ("\n    ? (int) ", stdout);
-  rtx_reader_ptr->print_c_condition (test->expr);
+  rtx_reader_ptr->print_c_condition (stdout, test->expr);
   fputs ("\n    : -1 },\n", stdout);
   return 1;
 }

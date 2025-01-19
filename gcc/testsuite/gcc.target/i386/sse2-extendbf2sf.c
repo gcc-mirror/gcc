@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-msse2 -O2" } */
+/* { dg-options "-msse2 -O2 -ffast-math" } */
 /* { dg-final { scan-assembler-times {(?n)(?:vpermi2w|punpcklwd)} 2 { target { ! ia32 } } } } */
 
 typedef float v2sf __attribute__((vector_size(8)));

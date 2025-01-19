@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf6, 0x33, 0x33, 0x33,
 					0x33, 0x33, 0x33, 0x33 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff2, 0x3333, 0x3333, 0x3333 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xf2, 0x33, 0x33, 0x33,
+					   0x33, 0x33, 0x33, 0x33 };
+#endif
 VECT_VAR_DECL(expected,hfloat,16,4) [] = { 0xcb80, 0x3333, 0x3333, 0x3333 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1700000, 0x33333333 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0xff, 0x33, 0x33, 0x33,
@@ -43,6 +47,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xfa, 0x33, 0x33, 0x33,
 					 0x33, 0x33, 0x33, 0x33 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff4, 0x3333, 0x3333, 0x3333,
 					 0x3333, 0x3333, 0x3333, 0x3333 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xfe, 0x33, 0x33, 0x33,
+					    0x33, 0x33, 0x33, 0x33,
+					    0x33, 0x33, 0x33, 0x33,
+					    0x33, 0x33, 0x33, 0x33 };
+#endif
 VECT_VAR_DECL(expected,hfloat,16,8) [] = { 0xc900, 0x3333, 0x3333, 0x3333,
 					   0x3333, 0x3333, 0x3333, 0x3333 };
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc1700000, 0x33333333,
@@ -72,6 +82,7 @@ void exec_vst1_lane (void)
   TEST_VST1_LANE(, uint, u, 64, 1, 0);
   TEST_VST1_LANE(, poly, p, 8, 8, 6);
   TEST_VST1_LANE(, poly, p, 16, 4, 2);
+  MFLOAT8_ONLY(TEST_VST1_LANE(, mfloat, mf, 8, 8, 2));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VST1_LANE(, float, f, 16, 4, 1);
 #endif
@@ -87,6 +98,7 @@ void exec_vst1_lane (void)
   TEST_VST1_LANE(q, uint, u, 64, 2, 0);
   TEST_VST1_LANE(q, poly, p, 8, 16, 10);
   TEST_VST1_LANE(q, poly, p, 16, 8, 4);
+  MFLOAT8_ONLY(TEST_VST1_LANE(q, mfloat, mf, 8, 16, 14));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VST1_LANE(q, float, f, 16, 8, 6);
 #endif

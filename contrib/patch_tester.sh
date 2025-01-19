@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Tests a set of patches from a directory.
-# Copyright (C) 2007-2024 Free Software Foundation, Inc.
+# Copyright (C) 2007-2025 Free Software Foundation, Inc.
 # Contributed by Sebastian Pop <sebastian.pop@amd.com>
 
 # This program is free software; you can redistribute it and/or modify

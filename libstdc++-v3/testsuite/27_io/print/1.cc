@@ -18,7 +18,7 @@ void
 test_println_default()
 {
   std::println("I walk the line");
-  // { dg-output "I walk the line\n" }
+  // { dg-output "I walk the line\r?\n" }
 }
 
 void

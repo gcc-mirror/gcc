@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -698,24 +698,6 @@ package body Sem_Aux is
    begin
       return Present (Get_Rep_Pragma (E, Nam1, Nam2, Check_Parents));
    end Has_Rep_Pragma;
-
-   --------------------------------
-   -- Has_Unconstrained_Elements --
-   --------------------------------
-
-   function Has_Unconstrained_Elements (T : Entity_Id) return Boolean is
-      U_T : constant Entity_Id := Underlying_Type (T);
-   begin
-      if No (U_T) then
-         return False;
-      elsif Is_Record_Type (U_T) then
-         return Has_Discriminants (U_T) and then not Is_Constrained (U_T);
-      elsif Is_Array_Type (U_T) then
-         return Has_Unconstrained_Elements (Component_Type (U_T));
-      else
-         return False;
-      end if;
-   end Has_Unconstrained_Elements;
 
    ----------------------
    -- Has_Variant_Part --

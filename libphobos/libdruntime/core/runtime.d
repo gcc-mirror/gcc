@@ -4,7 +4,7 @@
  * Copyright: Copyright Sean Kelly 2005 - 2009.
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Authors:   Sean Kelly
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/druntime/src/core/runtime.d, _runtime.d)
+ * Source:    $(DRUNTIMESRC core/_runtime.d)
  * Documentation: https://dlang.org/phobos/core_runtime.html
  */
 
@@ -101,15 +101,15 @@ struct UnitTestResult
 }
 
 /// Legacy module unit test handler
-alias bool function() ModuleUnitTester;
+alias ModuleUnitTester = bool function();
 /// Module unit test handler
-alias UnitTestResult function() ExtendedModuleUnitTester;
+alias ExtendedModuleUnitTester = UnitTestResult function();
 private
 {
-    alias bool function(Object) CollectHandler;
-    alias Throwable.TraceInfo function( void* ptr ) TraceHandler;
+    alias CollectHandler = bool function(Object);
+    alias TraceHandler = Throwable.TraceInfo function(void* ptr);
 
-    alias void delegate( Throwable ) ExceptionHandler;
+    alias ExceptionHandler = void delegate(Throwable);
     extern (C) void _d_print_throwable(Throwable t);
 
     extern (C) void* thread_stackBottom() nothrow @nogc;
@@ -575,7 +575,9 @@ extern (C) UnitTestResult runModuleUnitTests()
 
     static if (__traits(compiles, new LibBacktrace(0)))
     {
-        import core.sys.posix.signal; // segv handler
+        // segv handler
+        import core.sys.posix.signal : SA_RESETHAND, SA_SIGINFO, sigaction, sigaction_t, SIGBUS, sigfillset, siginfo_t,
+            SIGSEGV;
 
         static extern (C) void unittestSegvHandler(int signum, siginfo_t* info, void* ptr)
         {
@@ -613,7 +615,7 @@ extern (C) UnitTestResult runModuleUnitTests()
 
         static extern (C) void unittestSegvHandler( int signum, siginfo_t* info, void* ptr ) nothrow
         {
-            static enum MAXFRAMES = 128;
+            enum MAXFRAMES = 128;
             void*[MAXFRAMES]  callstack;
 
             auto numframes = backtrace( callstack.ptr, MAXFRAMES );
@@ -667,7 +669,7 @@ extern (C) UnitTestResult runModuleUnitTests()
                 if (moduleName.length && e.file.length > moduleName.length
                     && e.file[0 .. moduleName.length] == moduleName)
                 {
-                    import core.stdc.stdio;
+                    import core.stdc.stdio : printf;
                     printf("%.*s(%llu): [unittest] %.*s\n",
                         cast(int) e.file.length, e.file.ptr, cast(ulong) e.line,
                         cast(int) e.message.length, e.message.ptr);
@@ -796,7 +798,7 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null ) // @nogc
 unittest
 {
     import core.runtime;
-    import core.stdc.stdio;
+    import core.stdc.stdio : printf;
 
     void main()
     {
@@ -942,7 +944,7 @@ else static if (hasExecinfo) private class DefaultTraceInfo : Throwable.TraceInf
 
 private:
     int     numframes;
-    static enum MAXFRAMES = 128;
+    enum MAXFRAMES = 128;
     void*[MAXFRAMES]  callstack = void;
 
 private:

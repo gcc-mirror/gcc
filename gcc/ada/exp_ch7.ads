@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,7 +311,7 @@ package Exp_Ch7 is
    --  Return the node to be wrapped if the current scope is transient
 
    procedure Store_Before_Actions_In_Scope (L : List_Id);
-   --  Append the list L of actions to the end of the before-actions store in
+   --  Append the list L of actions to the end of the before-actions stored in
    --  the top of the scope stack (also analyzes these actions).
 
    procedure Store_After_Actions_In_Scope (L : List_Id);
@@ -324,9 +324,12 @@ package Exp_Ch7 is
    --  last call executed first). Within the list L for a single call, the
    --  actions are executed in the order in which they appear in this list.
 
+   procedure Store_After_Actions_In_Scope_Without_Analysis (L : List_Id);
+   --  Same as above, but without analyzing the actions
+
    procedure Store_Cleanup_Actions_In_Scope (L : List_Id);
    --  Prepend the list L of actions to the beginning of the cleanup-actions
-   --  store in the top of the scope stack.
+   --  stored in the top of the scope stack.
 
    procedure Wrap_Transient_Declaration (N : Node_Id);
    --  N is an object declaration. Expand the finalization calls after the

@@ -17,7 +17,7 @@ double vararg_outgoing (int x1, ...)
   double a1 = x1, a2 = x1 * 2, a3 = x1 * 3, a4 = x1 * 4, a5 = x1 * 5, a6 = x1 * 6;
   __builtin_va_list vl;
   __builtin_va_start (vl, x1);
-  outgoing (vl, a1, a2, a3, a4, a5, a6, REP64 (1));
+  outgoing (vl, a1, a2, a3, a4, a5, a6, REP64 (1), REP8 (1));
   __builtin_va_end (vl);
   return a1 + a2 + a3 + a4 + a5 + a6;
 }

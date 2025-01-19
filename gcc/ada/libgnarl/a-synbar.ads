@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -32,6 +32,10 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  This package implements functionality defined by ARM D.10.1 to
+--  synchronously release multiple blocked tasks after the number
+--  of blocked tasks has reached a specified threshold.
 
 package Ada.Synchronous_Barriers with SPARK_Mode => Off is
    pragma Preelaborate (Synchronous_Barriers);

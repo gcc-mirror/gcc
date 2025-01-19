@@ -30,7 +30,7 @@ void shared_b () [[arm::inout("za")]];
 void shared_c () [[arm::in("za")]] {} // { dg-error "conflicting types" }
 
 void shared_d () [[arm::in("za")]];
-[[arm::new("za")]] void shared_d () {} // { dg-error "cannot create a new 'za' scope since 'za' is shared with callers" }
+[[arm::new("za")]] void shared_d () {} // { dg-error "conflicting types" }
 
 [[arm::new("za")]] void shared_e () {}
 void shared_e () [[arm::out("za")]]; // { dg-error "conflicting types" }

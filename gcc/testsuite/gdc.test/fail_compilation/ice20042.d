@@ -1,5 +1,5 @@
 /*
-DISABLED: freebsd32 linux32 osx32 win32
+DISABLED: freebsd32 openbsd32 linux32 osx32 win32
 TEST_OUTPUT:
 ---
 fail_compilation/ice20042.d(18): Error: slice operation `cast(__vector(float[4]))[nanF, nanF, nanF, nanF] = [1.0F, 2.0F, 3.0F, 4.0F][0..4]` cannot be evaluated at compile time

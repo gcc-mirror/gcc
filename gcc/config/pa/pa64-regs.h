@@ -1,5 +1,5 @@
 /* Configuration for GCC-compiler for PA-RISC.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -157,13 +157,10 @@ along with GCC; see the file COPYING3.  If not see
    : FP_REGNO_P (REGNO)							\
      ? (VALID_FP_MODE_P (MODE)						\
 	&& (GET_MODE_SIZE (MODE) <= 8					\
-	    || (GET_MODE_SIZE (MODE) == 16 && ((REGNO) & 1) == 0)	\
-	    || (GET_MODE_SIZE (MODE) == 32 && ((REGNO) & 3) == 0)))	\
+	    || (GET_MODE_SIZE (MODE) == 16 && ((REGNO) & 1) == 0)))	\
    : (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD				\
       || (GET_MODE_SIZE (MODE) == 2 * UNITS_PER_WORD			\
-	  && ((((REGNO) & 1) == 1 && (REGNO) <= 25) || (REGNO) == 28))	\
-      || (GET_MODE_SIZE (MODE) == 4 * UNITS_PER_WORD			\
-	  && ((REGNO) & 3) == 3 && (REGNO) <= 23)))
+	  && ((((REGNO) & 1) == 1 && (REGNO) <= 25) || (REGNO) == 28))))
 
 /* How to renumber registers for gdb.
 

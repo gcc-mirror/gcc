@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ package body Debug is
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
-   --  dQ
+   --  dQ   Do not generate cleanups for qualified expressions of allocators
    --  dR   Bypass check for correct version of s-rpc
    --  dS   Never convert numbers to machine numbers in Sem_Eval
    --  dT   Convert to machine numbers only for constant declarations
@@ -154,7 +154,7 @@ package body Debug is
    --  d_n
    --  d_o
    --  d_p  Ignore assertion pragmas for elaboration
-   --  d_q
+   --  d_q  Do not enforce freezing for equality operator of boolean subtype
    --  d_r  Disable the use of the return slot in functions
    --  d_s  Stop elaboration checks on synchronous suspension
    --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
@@ -180,7 +180,7 @@ package body Debug is
    --  d_M  Ignore Source_File_Name and Source_File_Name_Project pragmas
    --  d_N
    --  d_O
-   --  d_P  Enable runtime check for null prefix of prefixed subprogram call
+   --  d_P  Disable runtime check for null prefix of prefixed subprogram call
    --  d_Q
    --  d_R  For LLVM, dump the representation of records
    --  d_S
@@ -640,6 +640,9 @@ package body Debug is
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
 
+   --  dQ   Do not generate cleanups to deallocate the memory in case qualified
+   --       expressions of allocators raise an exception.
+
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use
    --       of stubs generation without needing to have GLADE (or some
@@ -996,6 +999,10 @@ package body Debug is
    --       semantics of invariants and postconditions in both the static and
    --       dynamic elaboration models.
 
+   --  d_q  The compiler does not enforce the new freezing rule introduced for
+   --       primitive equality operators in Ada 2012 when the operator returns
+   --       a subtype of Boolean.
+
    --  d_r  The compiler does not make use of the return slot in the expansion
    --       of functions returning a by-reference type. If this use is required
    --       for these functions to return on the primary stack, then they are
@@ -1040,13 +1047,14 @@ package body Debug is
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
 
-   --  d_P  For prefixed subprogram calls with an access-type prefix, generate
-   --       a null-excluding runtime check on the prefix, even when the called
-   --       subprogram has a first access parameter that does not exclude null
-   --       (that is the case only for class-wide parameter, as controlling
-   --       parameters are automatically null-excluding). In such a case,
-   --       P.Proc is equivalent to Proc(P.all'Access); see RM 6.4(9.1/5).
-   --       This includes a dereference, and thus a null check.
+   --  d_P  For prefixed subprogram calls with an access-type prefix, disable
+   --       the generation of a null-excluding runtime check on the prefix,
+   --       even when the called subprogram has a first access parameter that
+   --       does not exclude null (that is the case only for class-wide
+   --       parameter, as controlling parameters are automatically null-
+   --       excluding). In such a case, P.Proc is equivalent to the call
+   --       Proc(P.all'Access); see RM 6.4(9.1/5). This includes a dereference,
+   --       and thus a null check.
 
    --  d_R  In the LLVM backend, output the internal representation of
    --       each record

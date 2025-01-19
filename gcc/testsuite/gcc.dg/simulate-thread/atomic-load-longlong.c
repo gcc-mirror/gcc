@@ -51,6 +51,7 @@ unsigned long long table[16] = {
 int table_cycle_size = 16;
 
 /* Return 0 if 'result' is a valid value to have loaded.  */
+__attribute__((noinline))
 int verify_result ()
 {
   int x;
@@ -71,6 +72,7 @@ int verify_result ()
 }
 
 /* Iterate VALUE through the different valid values. */
+__attribute__((noinline))
 void simulate_thread_other_threads ()
 {
   static int current = 0;
@@ -80,11 +82,13 @@ void simulate_thread_other_threads ()
   value = table[current];
 }
 
+__attribute__((noinline))
 int simulate_thread_step_verify ()
 {
   return verify_result ();
 }
 
+__attribute__((noinline))
 int simulate_thread_final_verify ()
 {
   return verify_result ();

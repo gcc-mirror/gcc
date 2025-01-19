@@ -1,6 +1,6 @@
 // Debugging map implementation -*- C++ -*-
 
-// Copyright (C) 2003-2024 Free Software Foundation, Inc.
+// Copyright (C) 2003-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -344,7 +344,7 @@ namespace __debug
 	}
 
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_map_try_emplace // C++ >= 17 && HOSTED
       template <typename... _Args>
         pair<iterator, bool>
         try_emplace(const key_type& __k, _Args&&... __args)

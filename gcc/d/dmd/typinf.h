@@ -22,4 +22,4 @@ namespace dmd
     bool isSpeculativeType(Type *t);
     bool builtinTypeInfo(Type *t);
 }
-Type *getTypeInfoType(const Loc &loc, Type *t, Scope *sc, bool genObjCode = true);
+Type *getTypeInfoType(const Loc &loc, Type *t, Scope *sc);

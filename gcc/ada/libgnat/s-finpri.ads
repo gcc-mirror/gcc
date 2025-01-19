@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2023-2024, Free Software Foundation, Inc.          --
+--         Copyright (C) 2023-2025, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,14 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;
-
 with System.OS_Locks;
 with System.Storage_Elements;
 
 --  This package encapsulates the types and operations used by the compiler
---  to support finalization of objects of Ada controlled types (types derived
---  from types Controlled and Limited_Controlled).
+--  to support finalization of objects of finalizable types (types derived
+--  from standard Ada types Controlled and Limited_Controlled, as well as
+--  types declared with the GNAT Finalizable aspect).
 
 package System.Finalization_Primitives with Preelaborate is
 
@@ -130,8 +129,10 @@ package System.Finalization_Primitives with Preelaborate is
    --  object itself is managed via a Master_Node attached to its finalization
    --  master.
 
-   type Finalization_Collection is
-     new Ada.Finalization.Limited_Controlled with private;
+   type Finalization_Collection is limited private
+     with Finalizable => (Initialize           => Initialize,
+                          Finalize             => Finalize,
+                          Relaxed_Finalization => Standard.False);
    --  Objects of this type encapsulate a set of zero or more controlled
    --  objects associated with an access type. The compiler ensures that
    --  each finalization collection is in turn associated with a finalization
@@ -142,12 +143,10 @@ package System.Finalization_Primitives with Preelaborate is
    --  A reference to a collection. Since this type may not be used to
    --  allocate objects, its storage size is zero.
 
-   overriding procedure Initialize
-     (Collection : in out Finalization_Collection);
+   procedure Initialize (Collection : in out Finalization_Collection);
    --  Initializes the dummy head of a collection
 
-   overriding procedure Finalize
-     (Collection : in out Finalization_Collection);
+   procedure Finalize (Collection : in out Finalization_Collection);
    --  Finalizes each object that has been associated with a finalization
    --  collection, in some arbitrary order. Calls to this procedure with
    --  a collection that has already been finalized have no effect.
@@ -244,9 +243,7 @@ private
 
    --  Finalization collection type structure
 
-   type Finalization_Collection is
-     new Ada.Finalization.Limited_Controlled with
-   record
+   type Finalization_Collection is limited record
       Head : aliased Collection_Node;
       --  The head of the circular doubly-linked list of collection nodes
 

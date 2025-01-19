@@ -129,12 +129,12 @@ am__objects_1 = limits.lo placeholders.lo
 am__objects_3 = ctype_configure_char.lo ctype_members.lo
 am__objects_4 = basic_file.lo
 am__objects_5 = assert_fail.lo chrono.lo codecvt.lo \
-	condition_variable.lo cow-stdexcept.lo ctype.lo debug.lo \
-	functexcept.lo functional.lo futex.lo future.lo hash_c++0x.lo \
-	hashtable_c++0x.lo ios.lo ios_errcat.lo locale_init.lo \
-	localename.lo mutex.lo random.lo regex.lo shared_ptr.lo \
-	snprintf_lite.lo system_error.lo thread.lo $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4)
+	condition_variable.lo cow-stdexcept.lo cow-system_error.lo \
+	ctype.lo debug.lo functexcept.lo functional.lo futex.lo \
+	future.lo hash_c++0x.lo hashtable_c++0x.lo ios.lo \
+	ios_errcat.lo locale_init.lo localename.lo mutex.lo random.lo \
+	regex.lo shared_ptr.lo snprintf_lite.lo system_error.lo \
+	thread.lo $(am__objects_2) $(am__objects_3) $(am__objects_4)
 @ENABLE_DUAL_ABI_TRUE@am__objects_6 = cow-fstream-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.lo cow-string-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-string-io-inst.lo \
@@ -488,6 +488,7 @@ sources = \
 	codecvt.cc \
 	condition_variable.cc \
 	cow-stdexcept.cc \
+	cow-system_error.cc \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \

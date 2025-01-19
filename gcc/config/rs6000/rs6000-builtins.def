@@ -1,5 +1,5 @@
 ; Built-in functions for PowerPC.
-; Copyright (C) 2020-2024 Free Software Foundation, Inc.
+; Copyright (C) 2020-2025 Free Software Foundation, Inc.
 ; Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 ;
 ; This file is part of GCC.
@@ -1472,12 +1472,6 @@
   const vf __builtin_vsx_uns_floato_v2di (vsll);
     UNS_FLOATO_V2DI unsfloatov2di {}
 
-  const vss __builtin_vsx_vperm_8hi (vss, vss, vuc);
-    VPERM_8HI_X altivec_vperm_v8hi {}
-
-  const vus __builtin_vsx_vperm_8hi_uns (vus, vus, vuc);
-    VPERM_8HI_UNS_X altivec_vperm_v8hi_uns {}
-
   const vsll __builtin_vsx_vsigned_v2df (vd);
     VEC_VSIGNED_V2DF vsx_xvcvdpsxds {}
 
@@ -1621,9 +1615,6 @@
 
   const vf __builtin_vsx_xvcvuxdsp (vull);
     XVCVUXDSP vsx_xvcvuxdsp {}
-
-  const vd __builtin_vsx_xvcvuxwdp (vsi);
-    XVCVUXWDP vsx_xvcvuxwdp {}
 
   const vf __builtin_vsx_xvcvuxwsp (vsi);
     XVCVUXWSP vsx_floatunsv4siv4sf2 {}
@@ -2012,7 +2003,7 @@
     VADDUDM addv2di3 {}
 
   const vsq __builtin_altivec_vadduqm (vsq, vsq);
-    VADDUQM altivec_vadduqm {}
+    VADDUQM addv1ti3 {}
 
   const vsll __builtin_altivec_vbpermq (vsc, vsc);
     VBPERMQ altivec_vbpermq {}
@@ -2150,7 +2141,7 @@
     VSUBUDM subv2di3 {}
 
   const vsq __builtin_altivec_vsubuqm (vsq, vsq);
-    VSUBUQM altivec_vsubuqm {}
+    VSUBUQM subv1ti3 {}
 
   const vsll __builtin_altivec_vupkhsw (vsi);
     VUPKHSW altivec_vupkhsw {}
@@ -3687,11 +3678,11 @@
     PMXVI4GER8_INTERNAL mma_pmxvi4ger8 {mma}
 
   void __builtin_mma_pmxvi4ger8pp (v512 *, vuc, vuc, const int<4>, \
-                                   const int<4>, const int<4>);
+                                   const int<4>, const int<8>);
     PMXVI4GER8PP nothing {mma,quad,mmaint}
 
   v512 __builtin_mma_pmxvi4ger8pp_internal (v512, vuc, vuc, const int<4>, \
-                                            const int<4>, const int<4>);
+                                            const int<4>, const int<8>);
     PMXVI4GER8PP_INTERNAL mma_pmxvi4ger8pp {mma,quad}
 
   void __builtin_mma_pmxvi8ger4 (v512 *, vuc, vuc, const int<4>, \

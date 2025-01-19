@@ -1,5 +1,5 @@
 /* Functions used by the Windows port of libgccjit.
-   Copyright (C) 2020-2024 Free Software Foundation, Inc.
+   Copyright (C) 2020-2025 Free Software Foundation, Inc.
    Contributed by Nicolas Bertolo <nicolasbertolo@gmail.com>.
 
 This file is part of GCC.

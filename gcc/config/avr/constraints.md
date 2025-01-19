@@ -1,5 +1,5 @@
 ;; Insn constraint definitions for AVR 8-bit microcontrollers.
-;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -133,15 +133,35 @@
   (and (match_code "const_int")
        (match_test "ival == 7")))
 
+(define_constraint "C7c"
+  "Constant integer the range 7 @dots{} 12."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 7, 12)")))
+
+(define_constraint "C14"
+  "Constant integer 14."
+  (and (match_code "const_int")
+       (match_test "ival == 14")))
+
 (define_constraint "C15"
   "Constant integer 15."
   (and (match_code "const_int")
        (match_test "ival == 15")))
 
+(define_constraint "C22"
+  "Constant integer 22."
+  (and (match_code "const_int")
+       (match_test "ival == 22")))
+
 (define_constraint "C23"
   "Constant integer 23."
   (and (match_code "const_int")
        (match_test "ival == 23")))
+
+(define_constraint "C30"
+  "Constant integer 30."
+  (and (match_code "const_int")
+       (match_test "ival == 30")))
 
 (define_constraint "C31"
   "Constant integer 31."
@@ -187,6 +207,11 @@
   "Constant 4-byte integer that allows OR without clobber register."
   (and (match_code "const_int")
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<1) | (1<<8))")))
+
+(define_constraint "Cb1"
+  "Constant 1-byte integer that has exactly 1 bit set."
+  (and (match_code "const_int")
+       (match_test "single_one_operand (op, QImode)")))
 
 (define_constraint "Cb2"
   "Constant 2-byte integer that has exactly 1 bit set."
@@ -257,6 +282,52 @@
   "A constant integer or symbolic operand that is at least .p2align 8."
   (and (match_code "const_int,symbol_ref,const")
        (match_test "const_0mod256_operand (op, HImode)")))
+
+(define_constraint "C2a"
+  "A constant integer shift offset for a 2-byte ASHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (2, ival, ASHIFTRT)")))
+
+(define_constraint "C2r"
+  "A constant integer shift offset for a 2-byte LSHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (2, ival, LSHIFTRT)")))
+
+(define_constraint "C2l"
+  "A constant integer shift offset for a 2-byte ASHIFT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (2, ival, ASHIFT)")))
+
+(define_constraint "C3a"
+  "A constant integer shift offset for a 3-byte ASHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (3, ival, ASHIFTRT)")))
+
+(define_constraint "C3r"
+  "A constant integer shift offset for a 3-byte LSHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (3, ival, LSHIFTRT)")))
+
+(define_constraint "C3l"
+  "A constant integer shift offset for a 3-byte ASHIFT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (3, ival, ASHIFT)")))
+
+(define_constraint "C4a"
+  "A constant integer shift offset for a 4-byte ASHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (4, ival, ASHIFTRT)")))
+
+(define_constraint "C4r"
+  "A constant integer shift offset for a 4-byte LSHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (4, ival, LSHIFTRT)")))
+
+(define_constraint "C4l"
+  "A constant integer shift offset for a 4-byte ASHIFT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (4, ival, ASHIFT)")))
+
 
 ;; CONST_FIXED is no element of 'n' so cook our own.
 ;; "i" or "s" would match but because the insn uses iterators that cover

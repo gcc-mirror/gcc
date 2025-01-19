@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-require-effective-target rv64 } */
 /* We aggressively skip as we really just need to test the basic synthesis
    which shouldn't vary based on the optimization level.  -O1 seems to work

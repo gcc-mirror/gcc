@@ -1,6 +1,6 @@
 (* M2Options.mod initializes the user options.
 
-Copyright (C) 2001-2024 Free Software Foundation, Inc.
+Copyright (C) 2001-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -76,6 +76,7 @@ VAR
    UselistFilename,
    RuntimeModuleOverride,
    CppArgs              : String ;
+   EnableForward,
    DebugFunctionLineNumbers,
    DebugTraceQuad,   (* -fm2-debug-trace=quad.  *)
    DebugTraceLine,   (* -fm2-debug-trace=line.  *)
@@ -94,6 +95,7 @@ VAR
    UselistFlag,
    CC1Quiet,
    SeenSources          : BOOLEAN ;
+   OffTBits             : CARDINAL ;
    ForcedLocationValue  : location_t ;
 
 
@@ -1097,6 +1099,7 @@ END SetQuadDebugging ;
 
 (*
    SetCompilerDebugging - turn on internal compiler debugging.
+                          Enabled via the command line option -fd.
 *)
 
 PROCEDURE SetCompilerDebugging (value: BOOLEAN) ;
@@ -2007,6 +2010,50 @@ BEGIN
 END GetDumpDecl ;
 
 
+(*
+   GetEnableForward - return EnableForward.
+*)
+
+PROCEDURE GetEnableForward () : BOOLEAN ;
+BEGIN
+   RETURN EnableForward
+END GetEnableForward ;
+
+
+(*
+   SetEnableForward - set EnableForward to value.
+*)
+
+PROCEDURE SetEnableForward (value: BOOLEAN) ;
+BEGIN
+   EnableForward := value
+END SetEnableForward ;
+
+
+(*
+   SetFileOffsetBits - create SYSTEM.COFF_T as a signed integer of size bits.
+*)
+
+PROCEDURE SetFileOffsetBits (value: BOOLEAN; bits: CARDINAL) : BOOLEAN ;
+BEGIN
+   IF value
+   THEN
+      OffTBits := bits
+   END ;
+   RETURN TRUE
+END SetFileOffsetBits ;
+
+
+(*
+   GetFileOffsetBits - return the number of bits used to create SYSTEM.COFF_T.
+*)
+
+PROCEDURE GetFileOffsetBits () : CARDINAL ;
+BEGIN
+   RETURN OffTBits
+END GetFileOffsetBits ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -2098,5 +2145,7 @@ BEGIN
    DumpQuad                          := FALSE ;
    DumpGimple                        := FALSE ;
    M2Dump                            := NIL ;
-   M2DumpFilter                      := NIL
+   M2DumpFilter                      := NIL ;
+   EnableForward                     := TRUE ;
+   OffTBits                          := 64 ;  (* Default to 64bit OFF_T.  *)
 END M2Options.

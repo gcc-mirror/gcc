@@ -4,7 +4,7 @@
  * Copyright: Copyright Sean Kelly 2005 - 2009.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Sean Kelly, Walter Bright
- * Source: $(DRUNTIMESRC rt/util/_string.d)
+ * Source: $(DRUNTIMESRC core/internal/_string.d)
  */
 
 module core.internal.string;

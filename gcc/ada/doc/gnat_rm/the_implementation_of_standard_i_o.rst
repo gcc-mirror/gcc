@@ -894,7 +894,7 @@ One common use of file sharing in Ada 83 is the use of instantiations of
 Sequential_IO on the same file with different types, to achieve
 heterogeneous input-output.  Although this approach will work in GNAT if
 ``shared=yes`` is specified, it is preferable in Ada to use Stream_IO
-for this purpose (using the stream attributes)
+for this purpose (using the stream attributes).
 
 .. _Filenames_encoding:
 

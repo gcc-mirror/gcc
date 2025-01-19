@@ -1,6 +1,6 @@
 /* PR target/106906 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mbuild-constants" } */
+/* { dg-options "-mbuild-constants" } */
 
 void
 do_console (unsigned short *vga)

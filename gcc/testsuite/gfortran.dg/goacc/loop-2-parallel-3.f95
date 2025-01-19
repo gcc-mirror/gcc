@@ -1,4 +1,4 @@
-! See also "../../c-c++-common/goacc/loop-3.c".
+! See also "../../c-c++-common/goacc/loop-3-parallel.c".
 
 program test
   implicit none

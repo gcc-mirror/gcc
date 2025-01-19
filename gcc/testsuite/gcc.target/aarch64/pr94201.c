@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcmodel=tiny -mabi=ilp32 -fPIC" } */
+/* { dg-options "-mcmodel=tiny -mabi=ilp32 -Wno-deprecated -fPIC" } */
 /* { dg-require-effective-target fpic } */
 
 extern int bar (void *);

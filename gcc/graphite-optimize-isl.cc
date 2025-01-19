@@ -1,5 +1,5 @@
 /* A scheduling optimizer for Graphite
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
    Contributed by Tobias Grosser <tobias@grosser.es>.
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_ISL
-#define INCLUDE_MEMORY
 
 #include "config.h"
 

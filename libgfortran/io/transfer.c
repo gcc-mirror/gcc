@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -2364,6 +2364,9 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	    {
 	      case BT_INTEGER:
 		write_i (dtp, f, p, kind);
+		break;
+	      case BT_UNSIGNED:
+		write_iu (dtp, f, p, kind);
 		break;
 	      case BT_LOGICAL:
 		write_l (dtp, f, p, kind);

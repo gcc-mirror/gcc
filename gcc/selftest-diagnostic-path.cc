@@ -1,5 +1,5 @@
 /* Concrete classes for selftests involving diagnostic paths.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
 This file is part of GCC.
@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"

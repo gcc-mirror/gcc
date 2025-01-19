@@ -1,5 +1,5 @@
 // Early register allocation pass.
-// Copyright (C) 2023-2024 Free Software Foundation, Inc.
+// Copyright (C) 2023-2025 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -40,7 +40,6 @@
 
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
-#define INCLUDE_MEMORY
 #define INCLUDE_ARRAY
 #include "config.h"
 #include "system.h"
@@ -160,6 +159,9 @@ private:
   // as a multi-register vector operand in some other non-move instruction.
   static constexpr unsigned int HAS_FLEXIBLE_STRIDE = 1U << 10;
   static constexpr unsigned int HAS_FIXED_STRIDE = 1U << 11;
+  //
+  // Whether we have decided not to allocate the pseudo register.
+  static constexpr unsigned int IGNORE_REG = 1U << 12;
 
   // Flags that should be propagated across moves between pseudo registers.
   static constexpr unsigned int PSEUDO_COPY_FLAGS = ~(HAS_FLEXIBLE_STRIDE
@@ -439,6 +441,11 @@ private:
 
   void start_new_region ();
 
+  template<typename T>
+  void record_live_range_failure (T);
+  template<typename T>
+  void record_allocation_failure (T);
+
   allocno_group_info *create_allocno_group (unsigned int, unsigned int);
   allocno_subgroup get_allocno_subgroup (rtx);
   void record_fpr_use (unsigned int);
@@ -450,7 +457,9 @@ private:
   void record_copy (rtx, rtx, bool = false);
   void record_constraints (rtx_insn *);
   void record_artificial_refs (unsigned int);
-  void record_insn_refs (rtx_insn *);
+  void record_insn_defs (rtx_insn *);
+  void record_insn_call (rtx_call_insn *);
+  void record_insn_uses (rtx_insn *);
 
   bool consider_strong_copy_src_chain (allocno_info *);
   int strided_polarity_pref (allocno_info *, allocno_info *);
@@ -493,6 +502,7 @@ private:
 
   void process_region ();
   bool is_dead_insn (rtx_insn *);
+  bool could_split_region_here ();
   void process_block (basic_block, bool);
   void process_blocks ();
 
@@ -548,6 +558,10 @@ private:
   // A mask of the FPRs that must be at least partially preserved by the
   // current function.
   unsigned int m_call_preserved_fprs;
+
+  // True if we have so far been able to track the live ranges of individual
+  // allocnos.
+  bool m_accurate_live_ranges;
 
   // True if we haven't yet failed to allocate the current region.
   bool m_allocation_successful;
@@ -1062,8 +1076,9 @@ is_stride_candidate (rtx_insn *insn)
     return false;
 
   auto stride_type = get_attr_stride_type (insn);
-  return (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
-	  || stride_type == STRIDE_TYPE_ST1_CONSECUTIVE);
+  return (TARGET_STREAMING_SME2
+	  && (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
+	      || stride_type == STRIDE_TYPE_ST1_CONSECUTIVE));
 }
 
 // Go through the constraints of INSN, which has already been extracted,
@@ -1215,7 +1230,9 @@ early_ra::fpr_preference (unsigned int regno)
 {
   auto mode = m_pseudo_regs[regno].mode;
   auto flags = m_pseudo_regs[regno].flags;
-  if (mode == VOIDmode || !targetm.hard_regno_mode_ok (V0_REGNUM, mode))
+  if (flags & IGNORE_REG)
+    return -4;
+  else if (mode == VOIDmode || !targetm.hard_regno_mode_ok (V0_REGNUM, mode))
     return -3;
   else if (flags & HAS_FLEXIBLE_STRIDE)
     return 3;
@@ -1311,8 +1328,46 @@ early_ra::start_new_region ()
   m_dead_insns.truncate (0);
   m_allocated_fprs = 0;
   m_call_preserved_fprs = 0;
+  m_accurate_live_ranges = true;
   m_allocation_successful = true;
   m_current_region += 1;
+}
+
+// Record that we can no longer track the liveness of individual allocnos.
+// Call DUMP to dump the reason to a dump file.
+template<typename T>
+void
+early_ra::record_live_range_failure (T dump)
+{
+  if (!m_accurate_live_ranges)
+    return;
+
+  m_accurate_live_ranges = false;
+  m_allocation_successful = false;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Unable to track live ranges further: ");
+      dump ();
+      fprintf (dump_file, "\n");
+    }
+}
+
+// Record that the allocation of the current region has filed.  Call DUMP to
+// dump the reason to a dump file.
+template<typename T>
+void
+early_ra::record_allocation_failure (T dump)
+{
+  if (!m_allocation_successful)
+    return;
+
+  m_allocation_successful = false;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Not allocating region: ");
+      dump ();
+      fprintf (dump_file, "\n");
+    }
 }
 
 // Create and return an allocno group of size SIZE for register REGNO.
@@ -1384,19 +1439,36 @@ early_ra::get_allocno_subgroup (rtx reg)
       if (!inner)
 	return {};
 
-      if (!targetm.modes_tieable_p (GET_MODE (SUBREG_REG (reg)),
-				    GET_MODE (reg)))
+      if (!targetm.can_change_mode_class (GET_MODE (SUBREG_REG (reg)),
+					  GET_MODE (reg), FP_REGS))
 	{
-	  m_allocation_successful = false;
+	  record_live_range_failure ([&](){
+	    fprintf (dump_file, "cannot refer to r%d:%s in mode %s",
+		     REGNO (SUBREG_REG (reg)),
+		     GET_MODE_NAME (GET_MODE (SUBREG_REG (reg))),
+		     GET_MODE_NAME (GET_MODE (reg)));
+	  });
 	  return {};
 	}
+
+      if (!targetm.modes_tieable_p (GET_MODE (SUBREG_REG (reg)),
+				    GET_MODE (reg)))
+	record_allocation_failure ([&](){
+	    fprintf (dump_file, "r%d's mode %s is not tieable to mode %s",
+		     REGNO (SUBREG_REG (reg)),
+		     GET_MODE_NAME (GET_MODE (SUBREG_REG (reg))),
+		     GET_MODE_NAME (GET_MODE (reg)));
+	});
 
       subreg_info info;
       subreg_get_info (V0_REGNUM, GET_MODE (SUBREG_REG (reg)),
 		       SUBREG_BYTE (reg), GET_MODE (reg), &info);
       if (!info.representable_p)
 	{
-	  m_allocation_successful = false;
+	  record_live_range_failure ([&](){
+	    fprintf (dump_file, "subreg of r%d is invalid for V0",
+		     REGNO (SUBREG_REG (reg)));
+	  });
 	  return {};
 	}
 
@@ -1435,7 +1507,9 @@ early_ra::get_allocno_subgroup (rtx reg)
 	  || ((flags & ALLOWS_NONFPR)
 	      && !FLOAT_MODE_P (GET_MODE (reg))
 	      && !VECTOR_MODE_P (GET_MODE (reg))))
-	m_allocation_successful = false;
+	record_allocation_failure ([&](){
+	  fprintf (dump_file, "r%d has FPR and non-FPR references", regno);
+	});
 
       if (flags & ALLOWS_FPR8)
 	group->fpr_candidates &= 0xff;
@@ -1827,7 +1901,10 @@ early_ra::record_constraints (rtx_insn *insn)
 	  rtx op = recog_data.operand[opno];
 	  if (GET_CODE (op) == SCRATCH
 	      && reg_classes_intersect_p (op_alt[opno].cl, FP_REGS))
-	    m_allocation_successful = false;
+	    record_allocation_failure ([&](){
+	      fprintf (dump_file, "insn %d has FPR match_scratch",
+		       INSN_UID (insn));
+	    });
 
 	  // Record filter information, which applies to the first register
 	  // in the operand.
@@ -1854,22 +1931,40 @@ early_ra::record_constraints (rtx_insn *insn)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "       -- no match\n");
-      m_allocation_successful = false;
+      record_allocation_failure ([&](){
+	fprintf (dump_file, "no matching constraints for insn %d",
+		 INSN_UID (insn));
+      });
     }
 
-  // Record if there is an output operand that is never earlyclobber and never
-  // matched to an input.  See the comment below for how this is used.
   rtx dest_op = NULL_RTX;
   for (int opno = 0; opno < recog_data.n_operands; ++opno)
     {
+      rtx op = recog_data.operand[opno];
       auto op_mask = operand_mask (1) << opno;
+      // Record if there is an output operand that is "independent" of the
+      // inputs, in the sense that it is never earlyclobber and is never
+      // matched to an input.  See the comment below for how this is used.
       if (recog_data.operand_type[opno] == OP_OUT
 	  && (earlyclobber_operands & op_mask) == 0
 	  && (matched_operands & op_mask) == 0)
 	{
-	  dest_op = recog_data.operand[opno];
+	  dest_op = op;
 	  break;
 	}
+      // We sometimes decide not to allocate pseudos even if they meet
+      // the normal FPR preference criteria; see the setters of IGNORE_REG
+      // for details.  However, the premise is that we should only ignore
+      // definitions of such pseudos if they are independent of the other
+      // operands in the instruction.
+      else if (recog_data.operand_type[opno] != OP_IN
+	       && REG_P (op)
+	       && !HARD_REGISTER_P (op)
+	       && (m_pseudo_regs[REGNO (op)].flags & IGNORE_REG) != 0)
+	record_allocation_failure ([&](){
+	  fprintf (dump_file, "ignored register r%d depends on input operands",
+		   REGNO (op));
+	});
     }
 
   for (int opno = 0; opno < recog_data.n_operands; ++opno)
@@ -1882,7 +1977,10 @@ early_ra::record_constraints (rtx_insn *insn)
       // register, since we don't have IRA's ability to find an alternative.
       // It's better if earlier passes don't create this kind of situation.
       if (REG_P (op) && FP_REGNUM_P (REGNO (op)))
-	m_allocation_successful = false;
+	record_allocation_failure ([&](){
+	  fprintf (dump_file, "operand %d of insn %d refers directly to %s",
+		   opno, INSN_UID (insn), reg_names[REGNO (op)]);
+	});
 
       // Treat input operands as being earlyclobbered if an output is
       // sometimes earlyclobber and if the input never matches an output.
@@ -1935,21 +2033,70 @@ early_ra::record_artificial_refs (unsigned int flags)
   m_current_point += 1;
 }
 
-// Model the register references in INSN as part of a backwards walk.
+// Return true if:
+//
+// - X is a SUBREG, in which case it is a SUBREG of some REG Y
+//
+// - one 64-bit word of Y can be modified while preserving all other words
+//
+// - X refers to no more than one 64-bit word of Y
+//
+// - assigning FPRs to Y would put more than one 64-bit word in each FPR
+//
+// For example, this is true of:
+//
+// - (subreg:DI (reg:TI R) 0) and
+// - (subreg:DI (reg:TI R) 8)
+//
+// but is not true of:
+//
+// - (subreg:V2SI (reg:V2x2SI R) 0) or
+// - (subreg:V2SI (reg:V2x2SI R) 8).
+static bool
+allocno_assignment_is_rmw (rtx x)
+{
+  if (partial_subreg_p (x))
+    {
+      auto outer_mode = GET_MODE (x);
+      auto inner_mode = GET_MODE (SUBREG_REG (x));
+      if (known_eq (REGMODE_NATURAL_SIZE (inner_mode), 0U + UNITS_PER_WORD)
+	  && known_lt (GET_MODE_SIZE (outer_mode), UNITS_PER_VREG))
+	{
+	  auto nregs = targetm.hard_regno_nregs (V0_REGNUM, inner_mode);
+	  if (maybe_ne (nregs * UNITS_PER_WORD, GET_MODE_SIZE (inner_mode)))
+	    return true;
+	}
+    }
+  return false;
+}
+
+// Called as part of a backwards walk over a block.  Model the definitions
+// in INSN, excluding partial call clobbers.
 void
-early_ra::record_insn_refs (rtx_insn *insn)
+early_ra::record_insn_defs (rtx_insn *insn)
 {
   df_ref ref;
 
-  // Record all definitions, excluding partial call clobbers.
   FOR_EACH_INSN_DEF (ref, insn)
     if (IN_RANGE (DF_REF_REGNO (ref), V0_REGNUM, V31_REGNUM))
       record_fpr_def (DF_REF_REGNO (ref));
     else
       {
-	auto range = get_allocno_subgroup (DF_REF_REG (ref));
+	rtx reg = DF_REF_REG (ref);
+	auto range = get_allocno_subgroup (reg);
 	for (auto &allocno : range.allocnos ())
 	  {
+	    // Make sure that assigning to the DF_REF_REG clobbers the
+	    // whole of this allocno, not just some of it.
+	    if (allocno_assignment_is_rmw (reg))
+	      {
+		record_live_range_failure ([&](){
+		  fprintf (dump_file, "read-modify-write of allocno %d",
+			   allocno.id);
+		});
+		break;
+	      }
+
 	    // If the destination is unused, record a momentary blip
 	    // in its live range.
 	    if (!bitmap_bit_p (m_live_allocnos, allocno.id))
@@ -1958,19 +2105,28 @@ early_ra::record_insn_refs (rtx_insn *insn)
 	  }
       }
   m_current_point += 1;
+}
 
-  // Model the call made by a call insn as a separate phase in the
-  // evaluation of the insn.  Any partial call clobbers happen at that
-  // point, rather than in the definition or use phase of the insn.
-  if (auto *call_insn = dyn_cast<rtx_call_insn *> (insn))
-    {
-      function_abi abi = insn_callee_abi (call_insn);
-      m_call_points[abi.id ()].safe_push (m_current_point);
-      m_current_point += 1;
-    }
+// Called as part of a backwards walk over a block.  Model the call made
+// by INSN as a separate phase in the evaluation of the insn.  Any partial
+// call clobbers happen at that point, rather than in the definition or use
+// phase of the insn.
+void
+early_ra::record_insn_call (rtx_call_insn *insn)
+{
+  function_abi abi = insn_callee_abi (insn);
+  m_call_points[abi.id ()].safe_push (m_current_point);
+  m_current_point += 1;
+}
 
-  // Record all uses.  We can ignore READ_MODIFY_WRITE uses of plain subregs,
-  // since we track the FPR-sized parts of them individually.
+// Called as part of a backwards walk over a block.  Model the uses in INSN.
+// We can ignore READ_MODIFY_WRITE uses of plain subregs, since we track the
+// FPR-sized parts of them individually.
+void
+early_ra::record_insn_uses (rtx_insn *insn)
+{
+  df_ref ref;
+
   FOR_EACH_INSN_USE (ref, insn)
     if (IN_RANGE (DF_REF_REGNO (ref), V0_REGNUM, V31_REGNUM))
       record_fpr_use (DF_REF_REGNO (ref));
@@ -2856,7 +3012,9 @@ early_ra::allocate_colors ()
 
       if (best == INVALID_REGNUM)
 	{
-	  m_allocation_successful = false;
+	  record_allocation_failure ([&](){
+	    fprintf (dump_file, "no free register for color %d", color->id);
+	  });
 	  return;
 	}
 
@@ -3213,9 +3371,9 @@ early_ra::maybe_convert_to_strided_access (rtx_insn *insn)
   auto stride_type = get_attr_stride_type (insn);
   rtx pat = PATTERN (insn);
   rtx op;
-  if (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
+  if (TARGET_STREAMING_SME2 && stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
     op = SET_DEST (pat);
-  else if (stride_type == STRIDE_TYPE_ST1_CONSECUTIVE)
+  else if (TARGET_STREAMING_SME2 && stride_type == STRIDE_TYPE_ST1_CONSECUTIVE)
     op = XVECEXP (SET_SRC (pat), 0, 1);
   else
     return false;
@@ -3399,6 +3557,35 @@ early_ra::is_dead_insn (rtx_insn *insn)
   return true;
 }
 
+// Return true if we could split a single-block region into two regions
+// at the current program point.  This is true if the block up to this
+// point is worth treating as an independent region and if no registers
+// that would affect the allocation are currently live.
+inline bool
+early_ra::could_split_region_here ()
+{
+  return (m_accurate_live_ranges
+	  && bitmap_empty_p (m_live_allocnos)
+	  && m_live_fprs == 0
+	  && !m_allocnos.is_empty ());
+}
+
+// Return true if any of the pseudos defined by INSN are also defined
+// elsewhere.
+static bool
+defines_multi_def_pseudo (rtx_insn *insn)
+{
+  df_ref ref;
+
+  FOR_EACH_INSN_DEF (ref, insn)
+    {
+      unsigned int regno = DF_REF_REGNO (ref);
+      if (!HARD_REGISTER_NUM_P (regno) && DF_REG_DEF_COUNT (regno) > 1)
+	return true;
+    }
+  return false;
+}
+
 // Build up information about block BB.  IS_ISOLATED is true if the
 // block is not part of a larger region.
 void
@@ -3469,7 +3656,54 @@ early_ra::process_block (basic_block bb, bool is_isolated)
 	}
       else
 	{
-	  record_insn_refs (insn);
+	  record_insn_defs (insn);
+
+	  // If we've decided not to allocate the current region, and if
+	  // all relevant registers are now dead, consider splitting the
+	  // block into two regions at this point.
+	  //
+	  // This is useful when a sequence of vector code ends in a
+	  // vector-to-scalar-integer operation.  We wouldn't normally
+	  // want to allocate the scalar integer, since IRA is much better
+	  // at handling cross-file moves.  But if nothing of relevance is
+	  // live between the death of the final vector and the birth of the
+	  // scalar integer, we can try to split the region at that point.
+	  // We'd then allocate the vector input and leave the real RA
+	  // to handle the scalar output.
+	  if (is_isolated
+	      && !m_allocation_successful
+	      && could_split_region_here ()
+	      && !defines_multi_def_pseudo (insn))
+	    {
+	      // Mark that we've deliberately chosen to leave the output
+	      // pseudos to the real RA.
+	      df_ref ref;
+	      FOR_EACH_INSN_DEF (ref, insn)
+		{
+		  unsigned int regno = DF_REF_REGNO (ref);
+		  if (!HARD_REGISTER_NUM_P (regno))
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "Ignoring register r%d\n", regno);
+		      m_pseudo_regs[regno].flags |= IGNORE_REG;
+		      bitmap_clear_bit (m_fpr_pseudos, regno);
+		    }
+		}
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "\nStarting new region at insn %d\n",
+			 INSN_UID (insn));
+
+	      // Start a new region and replay the definitions.  The replay
+	      // is needed if the instruction sets a hard FP register.
+	      start_new_region ();
+	      record_insn_defs (insn);
+	      start_insn = insn;
+	    }
+
+	  if (auto *call_insn = dyn_cast<rtx_call_insn *> (insn))
+	    record_insn_call (call_insn);
+	  record_insn_uses (insn);
 	  rtx pat = PATTERN (insn);
 	  if (is_move_set (pat))
 	    record_copy (SET_DEST (pat), SET_SRC (pat), true);
@@ -3482,15 +3716,14 @@ early_ra::process_block (basic_block bb, bool is_isolated)
 
       // See whether we have a complete region, with no remaining live
       // allocnos.
-      if (is_isolated
-	  && bitmap_empty_p (m_live_allocnos)
-	  && m_live_fprs == 0
-	  && m_allocation_successful
-	  && !m_allocnos.is_empty ())
+      if (is_isolated && could_split_region_here ())
 	{
 	  rtx_insn *prev_insn = PREV_INSN (insn);
-	  m_insn_ranges.safe_push ({ start_insn, prev_insn });
-	  process_region ();
+	  if (m_allocation_successful)
+	    {
+	      m_insn_ranges.safe_push ({ start_insn, prev_insn });
+	      process_region ();
+	    }
 	  start_new_region ();
 	  is_first = true;
 	  start_insn = prev_insn;

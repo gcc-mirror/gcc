@@ -1,5 +1,5 @@
 /* Analyze RTL for GNU compiler.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1686,6 +1686,7 @@ set_noop_p (const_rtx set)
 	}
       return
 	REG_CAN_CHANGE_MODE_P (REGNO (dst), GET_MODE (src0), GET_MODE (dst))
+	&& validate_subreg (GET_MODE (dst), GET_MODE (src0), src0, offset)
 	&& simplify_subreg_regno (REGNO (src0), GET_MODE (src0),
 				  offset, GET_MODE (dst)) == (int) REGNO (dst);
     }
@@ -2162,10 +2163,18 @@ rtx_properties::try_to_add_dest (const_rtx x, unsigned int flags)
 
   if (LIKELY (REG_P (x)))
     {
-      /* We want to keep sp alive everywhere -  by making all
-	 writes to sp also use sp. */
       if (REGNO (x) == STACK_POINTER_REGNUM)
-	flags |= rtx_obj_flags::IS_READ;
+	{
+	  /* Stack accesses are dependent on previous allocations and
+	     anti-dependent on later deallocations, so both types of
+	     stack operation are akin to a memory write.  */
+	  if (ref_iter != ref_end)
+	    *ref_iter++ = rtx_obj_reference (MEM_REGNO, flags, BLKmode);
+
+	  /* We want to keep sp alive everywhere - by making all
+	     writes to sp also use sp.  */
+	  flags |= rtx_obj_flags::IS_READ;
+	}
       try_to_add_reg (x, flags);
       return;
     }

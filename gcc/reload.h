@@ -1,5 +1,5 @@
 /* Communication between reload.cc, reload1.cc and the rest of compiler.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

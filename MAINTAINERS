@@ -102,8 +102,6 @@ moxie port              Anthony Green           <green@moxielogic.com>
 msp430 port             Nick Clifton            <nickc@redhat.com>
 nds32 port              Chung-Ju Wu             <jasonwucj@gmail.com>
 nds32 port              Shiva Chen              <shiva0217@gmail.com>
-nios2 port              Chung-Lin Tang          <cltang@baylibre.com>
-nios2 port              Sandra Loosemore        <sloosemore@baylibre.com>
 nvptx port              Tom de Vries            <tdevries@suse.de>
 nvptx port              Thomas Schwinge         <tschwinge@baylibre.com>
 or1k port               Stafford Horne          <shorne@gmail.com>
@@ -329,12 +327,12 @@ from other maintainers or reviewers.
 
 Name                            BZ account      Email
 
+Soumya AR                       soumyaa         <soumyaa@nvidia.com>
 Mark G. Adams                   mgadams         <mark.g.adams@sympatico.ca>
 Ajit Kumar Agarwal              aagarwa         <aagarwa1@linux.ibm.com>
 Pedro Alves                     palves          <palves@redhat.com>
 John David Anglin               danglin         <dave.anglin@bell.net>
 Harald Anlauf                   anlauf          <anlauf@gmx.de>
-Soumya AR                       soumyaa         <soumyaa@nvidia.com>
 Paul-Antoine Arras              parras          <parras@baylibre.com>
 Arsen Arsenović                 arsen           <arsen@aarsen.me>
 Raksit Ashok                    raksit          <raksit@google.com>
@@ -347,6 +345,7 @@ Simon Baldwin                   simonb          <simonb@google.com>
 Richard Ball                    ricbal02        <richard.ball@arm.com>
 Scott Bambrough                 -               <scottb@netwinder.org>
 Wolfgang Bangerth               -               <bangerth@dealii.org>
+Claudio Bantaloukas             rdfm            <claudio.bantaloukas@arm.com>
 Gergö Barany                    -               <gergo@codesourcery.com>
 Thiago Jung Bauermann           -               <thiago.bauermann@linaro.org>
 Charles Baylis                  cbaylis         <charles.baylis@linaro.org>
@@ -511,6 +510,7 @@ Olivier Hainque                 hainque         <hainque@adacore.com>
 Jivan Hakobyan                  -               <jivanhakobyan9@gmail.com>
 Andrew Haley                    aph             <aph@redhat.com>
 Demin Han                       deminhan        <demin.han@starfivetech.com>
+Mark Harmstone                  maharmstone     <mark@harmstone.com>
 Frederik Harwath                frederik        <frederik@harwath.name>
 Stuart Hastings                 stuart          <stuart@apple.com>
 Michael Haubenwallner           haubi           <michael.haubenwallner@ssi-schaefer.com>
@@ -570,10 +570,12 @@ Kean Johnston                   -               <jkj@sco.com>
 Phillip Jordan                  pmj             <phillip.m.jordan@gmail.com>
 Tim Josling                     timjosling      <tej@melbpc.org.au>
 Victor Kaplansky                victork         <victork@il.ibm.com>
+Evgeny Karpov                   -               <evgeny.karpov@microsoft.com>
 Filip Kastl                     pheeck          <fkastl@suse.cz>
 Geoffrey Keating                geoffk          <geoffk@geoffk.org>
 Brendan Kehoe                   -               <brendan@zen.org>
 Richard Kenner                  kenner          <kenner@nyu.edu>
+Yury Khrustalev                 ykhrustalev     <yury.khrustalev@arm.com>
 Andi Kleen                      ak              <andi@firstfloor.org>
 Matthias Klose                  doko            <doko@debian.org>
 Jeff Knaggs                     -               <jknaggs@redhat.com>
@@ -629,6 +631,7 @@ Sa Liu                          saliu           <saliu@de.ibm.com>
 Ralph Loader                    ralph           <rcl@ihug.co.nz>
 Sheldon Lobo                    smlobo          <sheldon.lobo@oracle.com>
 Gabor Loki                      loki            <loki@inf.u-szeged.hu>
+Matthieu Longo                  mlongo          <matthieu.longo@arm.com>
 Sandra Loosemore                sandra          <sloosemore@baylibre.com>
 Manuel López-Ibáñez             manu            <manu@gcc.gnu.org>
 Carl Love                       carll           <cel@linux.ibm.com>

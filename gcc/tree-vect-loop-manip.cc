@@ -1,5 +1,5 @@
 /* Vectorizer Specific Loop Manipulations
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -3100,12 +3099,12 @@ vect_get_main_loop_result (loop_vec_info loop_vinfo, tree main_loop_value,
    The analysis resulting in this epilogue loop's loop_vec_info was performed
    in the same vect_analyze_loop call as the main loop's.  At that time
    vect_analyze_loop constructs a list of accepted loop_vec_info's for lower
-   vectorization factors than the main loop.  This list is stored in the main
-   loop's loop_vec_info in the 'epilogue_vinfos' member.  Everytime we decide to
-   vectorize the epilogue loop for a lower vectorization factor,  the
-   loop_vec_info sitting at the top of the epilogue_vinfos list is removed,
-   updated and linked to the epilogue loop.  This is later used to vectorize
-   the epilogue.  The reason the loop_vec_info needs updating is that it was
+   vectorization factors than the main loop.  This list is chained in the
+   loop's loop_vec_info in the 'epilogue_vinfo' member.  When we decide to
+   vectorize the epilogue loop for a lower vectorization factor, the
+   loop_vec_info in epilogue_vinfo is updated and linked to the epilogue loop.
+   This is later used to vectorize the epilogue.
+   The reason the loop_vec_info needs updating is that it was
    constructed based on the original main loop, and the epilogue loop is a
    copy of this loop, so all links pointing to statements in the original loop
    need updating.  Furthermore, these loop_vec_infos share the
@@ -3128,13 +3127,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   profile_probability prob_prolog, prob_vector, prob_epilog;
   int estimated_vf;
   int prolog_peeling = 0;
-  bool vect_epilogues = loop_vinfo->epilogue_vinfos.length () > 0;
-  /* We currently do not support prolog peeling if the target alignment is not
-     known at compile time.  'vect_gen_prolog_loop_niters' depends on the
-     target alignment being constant.  */
-  dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  if (dr_info && !DR_TARGET_ALIGNMENT (dr_info).is_constant ())
-    return NULL;
+  bool vect_epilogues = loop_vinfo->epilogue_vinfo != NULL;
 
   if (!vect_use_loop_mask_for_alignment_p (loop_vinfo))
     prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
@@ -3204,7 +3197,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   prob_prolog = prob_epilog = profile_probability::guessed_always ()
 			.apply_scale (estimated_vf - 1, estimated_vf);
 
-  class loop *prolog, *epilog = NULL;
+  class loop *prolog = NULL, *epilog = NULL;
   class loop *first_loop = loop;
   bool irred_flag = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
 
@@ -3255,13 +3248,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   else
     niters_prolog = build_int_cst (type, 0);
 
-  loop_vec_info epilogue_vinfo = NULL;
-  if (vect_epilogues)
-    {
-      epilogue_vinfo = loop_vinfo->epilogue_vinfos[0];
-      loop_vinfo->epilogue_vinfos.ordered_remove (0);
-    }
-
+  loop_vec_info epilogue_vinfo = loop_vinfo->epilogue_vinfo;
   tree niters_vector_mult_vf = NULL_TREE;
   /* Saving NITERs before the loop, as this may be changed by prologue.  */
   tree before_loop_niters = LOOP_VINFO_NITERS (loop_vinfo);
@@ -3284,7 +3271,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   bool skip_vector = (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
 		      ? maybe_lt (LOOP_VINFO_INT_NITERS (loop_vinfo),
 				  bound_prolog + bound_epilog)
-		      : (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
+		      : (!LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
 			 || vect_epilogues));
 
   /* Epilog loop must be executed if the number of iterations for epilog
@@ -3477,6 +3464,30 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  skip_e = guard_e;
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
+
+	  /* Handle any remaining dominator updates needed after
+	     inserting the loop skip edge above.  */
+	  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+	      && prolog_peeling)
+	    {
+	      /* Adding a skip edge to skip a loop with multiple exits
+		 means the dominator of the join blocks for all exits shifts
+		 from the prolog skip guard to the loop skip guard.  */
+	      auto prolog_skip_bb
+		= single_pred (loop_preheader_edge (prolog)->src);
+	      auto needs_update
+		= get_dominated_by (CDI_DOMINATORS, prolog_skip_bb);
+
+	      /* Update everything except for the immediate children of
+		 the prolog skip block (the prolog and vector preheaders).
+		 Those should remain dominated by the prolog skip block itself,
+		 since the loop guard edge goes to the epilogue.  */
+	      for (auto bb : needs_update)
+		if (bb != EDGE_SUCC (prolog_skip_bb, 0)->dest
+		    && bb != EDGE_SUCC (prolog_skip_bb, 1)->dest)
+		  set_immediate_dominator (CDI_DOMINATORS, bb, guard_bb);
+	    }
+
 	  slpeel_update_phi_nodes_for_guard1 (first_loop, epilog, guard_e, e);
 
 	  /* Simply propagate profile info from guard_bb to guard_to which is
@@ -3543,7 +3554,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
       /* If we have a peeled vector iteration we will never skip the epilog loop
 	 and we can simplify the cfg a lot by not doing the edge split.  */
-      if (skip_epilog || LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+      if (skip_epilog
+	  || (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+	      && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo)))
 	{
 	  guard_cond = fold_build2 (EQ_EXPR, boolean_type_node,
 				    niters, niters_vector_mult_vf);
@@ -4197,6 +4210,14 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			    prob * prob2, (prob * prob2).invert (),
 			    prob * prob2, (prob * prob2).invert (),
 			    true);
+
+      /* If the PHI nodes in the loop header were reallocated, we need to fix up
+	 our internally stashed copies of those.  */
+      if (loop_to_version == loop)
+	for (auto gsi = gsi_start_phis (loop->header);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  loop_vinfo->resync_stmt_addr (gsi.phi ());
+
       /* We will later insert second conditional so overall outcome of
 	 both is prob * prob2.  */
       edge true_e, false_e;

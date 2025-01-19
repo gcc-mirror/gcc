@@ -1166,7 +1166,6 @@
 	(ExprVisitor::lvalue_p): New function.
 	(ExprVisitor::visit(AssignExp)): Check for dtor in array assignments.
 	(ExprVisitor::visit(TypeidExp)): Cast result to expression type.
-
 
 Copyright (C) 2017 Free Software Foundation, Inc.
 

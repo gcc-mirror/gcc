@@ -82,17 +82,24 @@ model*:\ 126|\
 model*:\ 167|\
 model*:\ 140|\
 model*:\ 141|\
-model*:\ 143|\
-model*:\ 207|\
 model*:\ 106|\
-model*:\ 108) E="cpu/event=0xc4,umask=0x20/p$FLAGS" ;;
+model*:\ 108|\
+model*:\ 173|\
+model*:\ 174) E="cpu/event=0xc4,umask=0x20/$FLAGS" ;;
 model*:\ 134|\
 model*:\ 150|\
-model*:\ 156|\
-model*:\ 190) E="cpu/event=0xc4,umask=0xfe/p$FLAGS" ;;
+model*:\ 156) E="cpu/event=0xc4,umask=0xfe/p$FLAGS" ;;
+model*:\ 143|\
+model*:\ 207) E="cpu/event=0xc4,umask=0x20/p$FLAGS" ;;
+model*:\ 190) E="cpu/event=0xc4,umask=0xc0/$FLAGS" ;;
+model*:\ 190) E="cpu/event=0xc4,umask=0xfe/$FLAGS" ;;
 *)
+        if perf list br_inst_retired | grep -q br_inst_retired.near_taken ; then
+            E=br_inst_retired.near_taken:p
+        else
 echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
-	exit 1 ;;
+	  exit 1
+        fi ;;
 esac
 set -x
 if ! perf record -e $E -b "$@" ; then
@@ -100,7 +107,7 @@ if ! perf record -e $E -b "$@" ; then
   # (e.g., in a virtual machine). Trying to run without /p.
   set +x
   echo >&2 "Retrying without /p."
-  E="$(echo "${E}" | sed -e 's/\/p/\//')"
+  E="$(echo "${E}" | sed -e \'s/\/p/\//\ -e s/:p//)"
   set -x
   exec perf record -e $E -b "$@"
  set +x

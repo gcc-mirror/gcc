@@ -54,11 +54,6 @@ interface GC
     void collect() nothrow;
 
     /**
-     *
-     */
-    void collectNoStack() nothrow;
-
-    /**
      * minimize free space usage
      */
     void minimize() nothrow;
@@ -195,4 +190,84 @@ interface GC
      * GC.stats().allocatedInCurrentThread, but faster.
      */
     ulong allocatedInCurrentThread() nothrow;
+
+    // ARRAY FUNCTIONS
+    /**
+     * Get the current used capacity of an array block.
+     *
+     * Note that this is only needed if you are about to change the array used
+     * size and need to deal with the memory that is about to go away. For
+     * appending or shrinking arrays that have no destructors, you probably
+     * don't need this function.
+     *
+     * Params:
+     *   ptr = The pointer to check. This can be an interior pointer, but if it
+     *       is beyond the end of the used space, the return value may not be
+     *       valid.
+     *   atomic = The value is fetched atomically (for shared arrays)
+     * Returns:
+     *   Current array slice, or null if the pointer does not point to a valid
+     *   appendable GC block.
+     */
+    void[] getArrayUsed(void *ptr, bool atomic = false) nothrow;
+
+    /**
+     * Expand the array used size in place.
+     *
+     * Used for appending and expanding the length of the array slice. If the
+     * operation can be performed without reallocating, the function succeeds.
+     * Newly expanded data is not initialized. Slices that do not point at
+     * expandable GC blocks cannot be affected, and this function will always
+     * return false.
+     *
+     * Params:
+     *   slice = the slice to attempt expanding in place.
+     *   newUsed = the size that should be stored as used.
+     *   atomic = if true, the array may be shared between threads, and this
+     *   operation should be done atomically.
+     * Returns: true if successful.
+     */
+    bool expandArrayUsed(void[] slice, size_t newUsed, bool atomic = false) nothrow @safe;
+
+    /**
+     * Expand the array capacity in place.
+     *
+     * Used for reserving space that can be used for appending. If the
+     * operation can be performed without reallocating, the function succeeds.
+     * The used size is not changed. Slices that do not point at expandable GC
+     * blocks cannot be affected, and this function will always return zero.
+     *
+     * Params:
+     *   slice = the slice to attempt reserving capacity for.
+     *   request = the requested size to expand to. Includes the existing data.
+     *      Passing a value less than the current array size will result in no
+     *      changes, but will return the current capacity.
+     *   atomic = The array may be shared between threads, and this operation
+     *      should be done atomically.
+     *
+     * Returns:
+     *   Resulting capacity size or 0 if the operation could not be performed.
+     */
+    size_t reserveArrayCapacity(void[] slice, size_t request, bool atomic = false) nothrow @safe;
+
+    /**
+     * Shrink used space of a slice in place.
+     *
+     * Unlike the other array functions, the array slice passed in is the
+     * target slice, and the existing used space is passed separately. This is
+     * to discourage code that ends up with a slice to dangling valid data.
+     *
+     * If slice.ptr[0 .. existingUsed] does not point to the end of a valid GC
+     * appendable slice, then the operation fails.
+     *
+     * Params:
+     *   slice = The proposed valid slice data.
+     *   existingUsed = The amount of data in the block (starting at slice.ptr)
+     *       that is currently valid in the array. If this amount does not match
+     *       the current used size, the operation fails.
+     *   atomic = The slice may be shared between threads, and the operation
+     *       should be atomic.
+     * Returns: true if successful.
+     */
+    bool shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic = false) nothrow;
 }

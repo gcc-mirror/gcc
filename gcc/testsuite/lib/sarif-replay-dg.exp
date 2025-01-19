@@ -1,0 +1,90 @@
+# Copyright (C) 2012-2025 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib gcc-dg.exp
+
+# Define sarif-replay callbacks for dg.exp.
+
+proc sarif-replay-dg-test { prog do_what extra_tool_flags } {
+    upvar dg-do-what dg-do-what
+
+    set result \
+	[gcc-dg-test-1 sarif-replay_target_compile $prog "replay-sarif" $extra_tool_flags]
+
+    set comp_output [lindex $result 0]
+    set output_file [lindex $result 1]
+
+    return [list $comp_output $output_file]
+}
+
+proc sarif-replay-dg-prune { system text } {
+    return [gcc-dg-prune $system $text]
+}
+
+# Utility routines.
+
+#
+# Modified dg-runtest that can cycle through a list of optimization options
+# as c-torture does.
+#
+
+proc sarif-replay-dg-runtest { testcases flags default-extra-flags } {
+    global runtests
+
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+	}
+
+	# Use TORTURE_OPTIONS to cycle through an option list.
+	if [torture-options-exist] then {
+	    global torture_with_loops
+	    set option_list $torture_with_loops
+	} else {
+	    set option_list { "" }
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags_t $option_list {
+	    verbose "Testing $nshort, $flags $flags_t" 1
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	}
+    }
+}
+
+#
+# sarif-replay_load -- wrapper around default sarif-replay_load to handle tests that
+# require program arguments passed to them.
+#
+
+if { [info procs sarif-replay_load] != [list] \
+      && [info procs prev_sarif-replay_load] == [list] } {
+    rename sarif-replay_load prev_sarif-replay_load
+
+    proc sarif-replay_load { program args } {
+	global SARIF_REPLAY_EXECUTE_ARGS
+	if [info exists SARIF_REPLAY_EXECUTE_ARGS] then {
+	    set args [concat "{$SARIF_REPLAY_EXECUTE_ARGS}"]
+	}
+	#print "Running: $program [lindex $args 0]"
+	set result [eval [list prev_sarif-replay_load $program] $args ]
+	return $result
+    }
+}
+

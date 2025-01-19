@@ -374,9 +374,7 @@ wchar_t f13289_cpp_wchar_t(wchar_t ch)
         return ch;
     }
 }
-#ifdef __DMC__
-// DMC doesn't support c++11
-#elif defined (_MSC_VER) //&& _MSC_VER <= 1800
+#if defined (_MSC_VER) //&& _MSC_VER <= 1800
 // MSVC2013 doesn't support char16_t/char32_t
 #else
 #define TEST_UNICODE

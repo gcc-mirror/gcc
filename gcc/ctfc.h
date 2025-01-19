@@ -1,5 +1,5 @@
 /* ctfc.h - Declarations and definitions related to the CTF container.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -464,5 +464,7 @@ extern void btf_mark_type_used (tree);
 
 extern int ctfc_get_dtd_srcloc (ctf_dtdef_ref, ctf_srcloc_ref);
 extern int ctfc_get_dvd_srcloc (ctf_dvdef_ref, ctf_srcloc_ref);
+
+extern uint32_t btf_dtd_kind (ctf_dtdef_ref dtd);
 
 #endif /* GCC_CTFC_H */

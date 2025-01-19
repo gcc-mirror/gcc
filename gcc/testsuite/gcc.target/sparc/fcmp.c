@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=ultrasparc -mvis" } */
+
 typedef int vec32 __attribute__((vector_size(8)));
 typedef short vec16 __attribute__((vector_size(8)));
 
@@ -43,11 +44,11 @@ long test_fcmpeq32 (vec32 a, vec32 b)
   return __builtin_vis_fcmpeq32 (a, b);
 }
 
-/* { dg-final { scan-assembler "fcmple16\t%" } } */
-/* { dg-final { scan-assembler "fcmple32\t%" } } */
-/* { dg-final { scan-assembler "fcmpne16\t%" } } */
-/* { dg-final { scan-assembler "fcmpne32\t%" } } */
-/* { dg-final { scan-assembler "fcmpgt16\t%" } } */
-/* { dg-final { scan-assembler "fcmpgt32\t%" } } */
-/* { dg-final { scan-assembler "fcmpeq16\t%" } } */
-/* { dg-final { scan-assembler "fcmpeq32\t%" } } */
+/* { dg-final { scan-assembler "fpcmple16\t%" } } */
+/* { dg-final { scan-assembler "fpcmple32\t%" } } */
+/* { dg-final { scan-assembler "fpcmpne16\t%" } } */
+/* { dg-final { scan-assembler "fpcmpne32\t%" } } */
+/* { dg-final { scan-assembler "fpcmpgt16\t%" } } */
+/* { dg-final { scan-assembler "fpcmpgt32\t%" } } */
+/* { dg-final { scan-assembler "fpcmpeq16\t%" } } */
+/* { dg-final { scan-assembler "fpcmpeq32\t%" } } */

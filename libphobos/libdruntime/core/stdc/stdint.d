@@ -49,16 +49,8 @@ version (Windows)
     alias int16_t  = short;  ///
     alias uint8_t  = ubyte;  ///
     alias uint16_t = ushort; ///
-    version (CRuntime_DigitalMars)
-    {
-        alias int32_t  = cpp_long;  ///
-        alias uint32_t = cpp_ulong; ///
-    }
-    else
-    {
-        alias int32_t  = int;  ///
-        alias uint32_t = uint; ///
-    }
+    alias int32_t  = int;    ///
+    alias uint32_t = uint;   ///
     alias int64_t  = long;   ///
     alias uint64_t = ulong;  ///
 
@@ -489,11 +481,19 @@ enum int_fast64_t  INT_FAST64_MIN  = int_fast64_t.min;
 enum int_fast64_t  INT_FAST64_MAX  = int_fast64_t.max;
 
 ///
+enum uint_fast8_t  UINT_FAST8_MIN  = uint_fast8_t.min;
+///
 enum uint_fast8_t  UINT_FAST8_MAX  = uint_fast8_t.max;
+///
+enum uint_fast16_t UINT_FAST16_MIN = uint_fast16_t.min;
 ///
 enum uint_fast16_t UINT_FAST16_MAX = uint_fast16_t.max;
 ///
+enum uint_fast32_t UINT_FAST32_MIN = uint_fast32_t.min;
+///
 enum uint_fast32_t UINT_FAST32_MAX = uint_fast32_t.max;
+///
+enum uint_fast64_t UINT_FAST64_MIN = uint_fast64_t.min;
 ///
 enum uint_fast64_t UINT_FAST64_MAX = uint_fast64_t.max;
 

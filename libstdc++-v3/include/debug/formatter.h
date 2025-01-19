@@ -1,6 +1,6 @@
 // Debug-mode error formatting implementation -*- C++ -*-
 
-// Copyright (C) 2003-2024 Free Software Foundation, Inc.
+// Copyright (C) 2003-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -571,7 +571,7 @@ namespace __gnu_debug
     _Error_formatter&
     _M_message(_Debug_msg_id __id) const throw ();
 
-    _GLIBCXX_NORETURN void
+    _GLIBCXX_NORETURN __attribute__((__cold__)) void
     _M_error() const;
 
 #if !_GLIBCXX_INLINE_VERSION

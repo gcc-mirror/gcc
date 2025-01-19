@@ -133,9 +133,6 @@ public:
 
     DYNCAST dyncast() const override { return DYNCAST_TEMPLATEPARAMETER; }
 
-    /* Create dummy argument based on parameter.
-     */
-    virtual RootObject *dummyArg() = 0;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -155,7 +152,6 @@ public:
     RootObject *specialization() override final;
     RootObject *defaultArg(const Loc &instLoc, Scope *sc) override final;
     bool hasDefaultArg() override final;
-    RootObject *dummyArg() override final;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -187,7 +183,6 @@ public:
     RootObject *specialization() override;
     RootObject *defaultArg(const Loc &instLoc, Scope *sc) override;
     bool hasDefaultArg() override;
-    RootObject *dummyArg() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -208,7 +203,6 @@ public:
     RootObject *specialization() override;
     RootObject *defaultArg(const Loc &instLoc, Scope *sc) override;
     bool hasDefaultArg() override;
-    RootObject *dummyArg() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -225,7 +219,6 @@ public:
     RootObject *specialization() override;
     RootObject *defaultArg(const Loc &instLoc, Scope *sc) override;
     bool hasDefaultArg() override;
-    RootObject *dummyArg() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 

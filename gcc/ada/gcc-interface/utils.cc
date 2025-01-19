@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2025, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -23,7 +23,6 @@
  *                                                                          *
  ****************************************************************************/
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -7513,6 +7512,7 @@ static int flag_isoc94 = 0;
 static int flag_isoc99 = 0;
 static int flag_isoc11 = 0;
 static int flag_isoc23 = 0;
+static int flag_isoc2y = 0;
 
 /* Install what the common builtins.def offers plus our local additions.
 

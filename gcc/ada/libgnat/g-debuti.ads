@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2024, AdaCore                     --
+--                     Copyright (C) 1995-2025, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package GNAT.Debug_Utilities is
    function Image (S : String) return String;
    --  Returns a string image of S, obtained by prepending and appending
    --  quote (") characters and doubling any quote characters in the string.
-   --  The maximum length of the result is thus 2 ** S'Length + 2.
+   --  The maximum length of the result is thus 2 * S'Length + 2.
 
    function Image (A : System.Address) return Image_String;
    --  Returns a string of the form 16#hhhh_hhhh# for 32-bit addresses

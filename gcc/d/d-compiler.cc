@@ -1,5 +1,5 @@
 /* d-compiler.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2020-2024 Free Software Foundation, Inc.
+   Copyright (C) 2020-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,9 +46,9 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 
   Type *tb = type->toBasetype ();
 
-  if (expr->type->isintegral ())
+  if (expr->type->isIntegral ())
     cst = build_integer_cst (expr->toInteger (), build_ctype (expr->type));
-  else if (expr->type->isfloating ())
+  else if (expr->type->isFloating ())
     cst = build_float_cst (expr->toReal (), expr->type);
   else if (expr->op == EXP::arrayLiteral)
     {
@@ -60,13 +60,13 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       for (size_t i = 0; i < elements->length; i++)
 	{
 	  Expression *e = (*elements)[i];
-	  if (e->type->isintegral ())
+	  if (e->type->isIntegral ())
 	    {
 	      tree value = build_integer_cst (e->toInteger (),
 					      build_ctype (e->type));
 	      CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
 	    }
-	  else if (e->type->isfloating ())
+	  else if (e->type->isFloating ())
 	    {
 	      tree value = build_float_cst (e->toReal (), e->type);
 	      CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);

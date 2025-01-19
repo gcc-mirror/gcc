@@ -3191,6 +3191,10 @@ auto byValue(T : V[K], K, V)(T* aa) pure nothrow @nogc
         sum += v;
 
     assert(sum == 3);
+
+    foreach (ref v; dict.byValue)
+        v++;
+    assert(dict == ["k1": 2, "k2": 3]);
 }
 
 /***********************************
@@ -3214,7 +3218,7 @@ auto byValue(T : V[K], K, V)(T* aa) pure nothrow @nogc
  *---
  *
  * Note that this is a low-level interface to iterating over the associative
- * array and is not compatible withth the
+ * array and is not compatible with the
  * $(LINK2 $(ROOT_DIR)phobos/std_typecons.html#.Tuple,`Tuple`) type in Phobos.
  * For compatibility with `Tuple`, use
  * $(LINK2 $(ROOT_DIR)phobos/std_array.html#.byPair,std.array.byPair) instead.
@@ -3278,8 +3282,11 @@ auto byKeyValue(T : V[K], K, V)(T* aa) pure nothrow @nogc
         assert(e.key[1] == e.value + '0');
         sum += e.value;
     }
-
     assert(sum == 3);
+
+    foreach (e; dict.byKeyValue)
+        e.value++;
+    assert(dict == ["k1": 2, "k2": 3]);
 }
 
 /***********************************
@@ -3451,8 +3458,8 @@ Value[] values(T : Value[Key], Value, Key)(T *aa) @property
 }
 
 /***********************************
- * Looks up key; if it exists returns corresponding value else evaluates and
- * returns defaultValue.
+ * If `key` is in `aa`, returns corresponding value; otherwise it evaluates and
+ * returns `defaultValue`.
  * Params:
  *      aa =     The associative array.
  *      key =    The key.
@@ -3481,8 +3488,8 @@ inout(V) get(K, V)(inout(V[K])* aa, K key, lazy inout(V) defaultValue)
 }
 
 /***********************************
- * Looks up key; if it exists returns corresponding value else evaluates
- * value, adds it to the associative array and returns it.
+ * If `key` is in `aa`, returns corresponding value; otherwise it evaluates
+ * `value`, adds it to the associative array and returns it.
  * Params:
  *      aa =     The associative array.
  *      key =    The key.
@@ -3614,7 +3621,7 @@ if (is(typeof(create()) : V) && (is(typeof(update(aa[K.init])) : V) || is(typeof
     @safe const:
         // stubs
         bool opEquals(S rhs) { assert(0); }
-        size_t toHash() { assert(0); }
+        size_t toHash() const { assert(0); }
     }
 
     int[string] aai;

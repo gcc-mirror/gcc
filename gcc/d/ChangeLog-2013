@@ -1212,7 +1212,6 @@
 	(d_init): Fix definition of D_LP64 version.
 	* setup-gcc.sh: Likewise.
 	* target-ver-syms.sh: Likewise.
-
 
 Copyright (C) 2013 Free Software Foundation, Inc.
 

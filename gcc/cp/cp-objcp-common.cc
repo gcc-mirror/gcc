@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+   Copyright (C) 2004-2025 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -234,6 +233,7 @@ cp_tree_size (enum tree_code code)
     case ASSERTION_STMT:	return sizeof (tree_exp);
     case PRECONDITION_STMT:	return sizeof (tree_exp);
     case POSTCONDITION_STMT:	return sizeof (tree_exp);
+    case TU_LOCAL_ENTITY:	return sizeof (tree_tu_local_entity);
     default:
       switch (TREE_CODE_CLASS (code))
 	{
@@ -545,10 +545,10 @@ identifier_global_tag (tree name)
   return ret;
 }
 
-/* Returns true if NAME refers to a built-in function or function-like
-   operator.  */
+/* Returns non-zero (result of __has_builtin) if NAME refers to a built-in
+   function or function-like operator.  */
 
-bool
+int
 names_builtin_p (const char *name)
 {
   tree id = get_identifier (name);
@@ -556,23 +556,23 @@ names_builtin_p (const char *name)
     {
       if (TREE_CODE (binding) == FUNCTION_DECL
 	  && DECL_IS_UNDECLARED_BUILTIN (binding))
-	return true;
+	return 1;
 
       /* Handle the case when an overload for a  built-in name exists.  */
       if (TREE_CODE (binding) != OVERLOAD)
-	return false;
+	return 0;
 
       for (ovl_iterator it (binding); it; ++it)
 	{
 	  tree decl = *it;
 	  if (DECL_IS_UNDECLARED_BUILTIN (decl))
-	    return true;
+	    return 1;
 	}
     }
 
   /* Check for built-in traits.  */
   if (IDENTIFIER_TRAIT_P (id))
-    return true;
+    return 1;
 
   /* Also detect common reserved C++ words that aren't strictly built-in
      functions.  */
@@ -588,12 +588,15 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_ASSOC_BARRIER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:
-      return true;
+      return 1;
+    case RID_BUILTIN_OPERATOR_NEW:
+    case RID_BUILTIN_OPERATOR_DELETE:
+      return 201802L;
     default:
       break;
     }
 
-  return false;
+  return 0;
 }
 
 /* Register c++-specific dumps.  */
@@ -609,6 +612,8 @@ cp_register_dumps (gcc::dump_manager *dumps)
 
   raw_dump_id = dumps->dump_register
     (".raw", "lang-raw", "lang-raw", DK_lang, OPTGROUP_NONE, false);
+  coro_dump_id = dumps->dump_register
+    (".coro", "lang-coro", "lang-coro", DK_lang, OPTGROUP_NONE, false);
 }
 
 void
@@ -618,6 +623,7 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (PTRMEM_CST);
   MARK_TS_TYPED (LAMBDA_EXPR);
   MARK_TS_TYPED (TYPE_ARGUMENT_PACK);
+  MARK_TS_TYPED (TRAIT_EXPR);
 
   /* Random new trees.  */
   MARK_TS_COMMON (BASELINK);
@@ -626,7 +632,6 @@ cp_common_init_ts (void)
 
   /* New decls.  */
   MARK_TS_DECL_COMMON (TEMPLATE_DECL);
-  MARK_TS_DECL_COMMON (WILDCARD_DECL);
 
   MARK_TS_DECL_NON_COMMON (USING_DECL);
 
@@ -643,6 +648,7 @@ cp_common_init_ts (void)
   MARK_TS_TYPE_NON_COMMON (TEMPLATE_TEMPLATE_PARM);
   MARK_TS_TYPE_NON_COMMON (TEMPLATE_TYPE_PARM);
   MARK_TS_TYPE_NON_COMMON (TYPE_PACK_EXPANSION);
+  MARK_TS_TYPE_NON_COMMON (PACK_INDEX_TYPE);
 
   /* Statements.  */
   MARK_TS_EXP (CLEANUP_STMT);
@@ -685,7 +691,6 @@ cp_common_init_ts (void)
   MARK_TS_EXP (TAG_DEFN);
   MARK_TS_EXP (TEMPLATE_ID_EXPR);
   MARK_TS_EXP (THROW_EXPR);
-  MARK_TS_EXP (TRAIT_EXPR);
   MARK_TS_EXP (TYPEID_EXPR);
   MARK_TS_EXP (TYPE_EXPR);
   MARK_TS_EXP (UNARY_PLUS_EXPR);
@@ -701,6 +706,7 @@ cp_common_init_ts (void)
   MARK_TS_EXP (NONTYPE_ARGUMENT_PACK);
   MARK_TS_EXP (UNARY_LEFT_FOLD_EXPR);
   MARK_TS_EXP (UNARY_RIGHT_FOLD_EXPR);
+  MARK_TS_EXP (PACK_INDEX_EXPR);
 
   /* Constraints.  */
   MARK_TS_EXP (COMPOUND_REQ);

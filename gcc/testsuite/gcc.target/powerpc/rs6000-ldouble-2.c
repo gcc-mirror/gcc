@@ -1,5 +1,5 @@
 /* { dg-do run { target { { powerpc*-*-darwin* powerpc*-*-aix* rs6000-*-* } || { powerpc*-*-linux* && lp64 } } } } */
-/* { dg-options "-mlong-double-128" } */
+/* { dg-options "-mlong-double-128 -std=gnu17" } */
 
 /* Check that LDBL_EPSILON is right for 'long double'.  */
 

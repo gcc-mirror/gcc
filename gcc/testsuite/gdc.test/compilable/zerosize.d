@@ -6,10 +6,7 @@ version (CRuntime_Microsoft)
 else
     static assert(S.sizeof == 0);
 
-version (CRuntime_DigitalMars)
-    static assert(S.alignof == 0);
-else
-    static assert(S.alignof == 1);
+static assert(S.alignof == 1);
 
 extern (C++) struct T { }
 

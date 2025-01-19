@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2799,7 +2799,7 @@ const pass_data pass_data_duplicate_computed_gotos =
   RTL_PASS, /* type */
   "compgotos", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_REORDER_BLOCKS, /* tv_id */
+  TV_DUP_COMPGOTO, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */

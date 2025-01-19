@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for SPARC running Solaris 2
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -377,7 +377,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	  && (DECL) && DECL_SIZE (DECL))			\
 	{							\
 	  size_directive_output = 1;				\
-	  size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	  size = tree_to_uhwi (DECL_SIZE_UNIT (DECL));		\
 	  ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);		\
 	}							\
 								\

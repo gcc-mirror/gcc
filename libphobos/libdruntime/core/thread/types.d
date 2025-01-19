@@ -6,7 +6,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly, Walter Bright, Alex Rønne Petersen, Martin Nowak
- * Source:    $(DRUNTIMESRC core/thread/osthread.d)
+ * Source:    $(DRUNTIMESRC core/thread/types.d)
  */
 
 module core.thread.types;
@@ -20,7 +20,7 @@ version (Windows)
 else
 version (Posix)
 {
-    import core.sys.posix.pthread;
+    import core.sys.posix.sys.types : pthread_t;
 
     alias ThreadID = pthread_t;
 }
@@ -55,7 +55,7 @@ shared static this()
 {
     version (Posix)
     {
-        import core.sys.posix.unistd;
+        import core.sys.posix.unistd : _SC_THREAD_STACK_MIN, sysconf;
 
         PTHREAD_STACK_MIN = cast(size_t)sysconf(_SC_THREAD_STACK_MIN);
     }

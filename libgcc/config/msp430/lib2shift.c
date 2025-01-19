@@ -1,5 +1,5 @@
 /* Shift functions for the GCC support library for the MSP430
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.

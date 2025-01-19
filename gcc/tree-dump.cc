@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -698,6 +697,13 @@ dequeue_and_dump (dump_info_p di)
 	  dump_child ("op: ", OMP_CLAUSE_OPERAND (t, i));
       }
       break;
+
+    case OBJ_TYPE_REF:
+      dump_child ("expr", OBJ_TYPE_REF_EXPR (t));
+      dump_child ("obj", OBJ_TYPE_REF_OBJECT (t));
+      dump_child ("tok", OBJ_TYPE_REF_TOKEN (t));
+      break;
+
     default:
       /* There are no additional fields to print.  */
       break;

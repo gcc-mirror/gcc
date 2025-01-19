@@ -4221,7 +4221,6 @@
 	PR c/64423
 	* typeck.c (cp_build_array_ref): Pass loc down to
 	warn_array_subscript_with_type_char.
-
 
 Copyright (C) 2015 Free Software Foundation, Inc.
 

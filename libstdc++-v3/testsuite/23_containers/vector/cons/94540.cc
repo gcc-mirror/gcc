@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +23,8 @@
 // Assume that 9MB is larger than the stack limit.
 struct X { char data[9*1024*1024]; };
 
-static_assert( std::is_trivial<X>::value, "" );
+static_assert( std::is_trivially_default_constructible<X>::value, "" );
+static_assert( std::is_trivially_copyable<X>::value, "" );
 
 int main()
 {

@@ -17,7 +17,5 @@ g (int64x2x4_t *ptr)
   *ptr = save;
 }
 
-/* { dg-final { scan-assembler-times {\tld1\t} 1 } } */
-/* { dg-final { scan-assembler-times {\tst1\t} 1 } } */
-/* { dg-final { scan-assembler-not {\tld[pr]\tq} } } */
-/* { dg-final { scan-assembler-not {\tst[pr]\tq} } } */
+/* { dg-final { scan-assembler {\tld[pr]\tq} } } */
+/* { dg-final { scan-assembler {\tst[pr]\tq} } } */

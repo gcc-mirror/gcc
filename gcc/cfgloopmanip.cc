@@ -1,5 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1447,9 +1447,9 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 	}
       else
 	{
+	  redirect_edge_and_branch_force (e, new_bbs[0]);
 	  redirect_edge_and_branch_force (new_spec_edges[SE_LATCH],
 					  loop->header);
-	  redirect_edge_and_branch_force (e, new_bbs[0]);
 	  set_immediate_dominator (CDI_DOMINATORS, new_bbs[0], e->src);
 	  e = new_spec_edges[SE_LATCH];
 	}

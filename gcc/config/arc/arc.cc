@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2024 Free Software Foundation, Inc.
+   Copyright (C) 1994-2025 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -11573,6 +11572,9 @@ arc_libm_function_max_error (unsigned cfn, machine_mode mode,
 
 #undef  TARGET_LIBM_FUNCTION_MAX_ERROR
 #define TARGET_LIBM_FUNCTION_MAX_ERROR arc_libm_function_max_error
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "ARC"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

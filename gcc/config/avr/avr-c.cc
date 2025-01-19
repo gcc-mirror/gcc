@@ -1,5 +1,5 @@
 /* Code for the C/C++ front end for AVR 8-bit microcontrollers.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
    This file is part of GCC.
@@ -36,7 +36,7 @@
 
 enum avr_builtin_id
   {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)  \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS) \
     AVR_BUILTIN_ ## NAME,
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -48,12 +48,11 @@ enum avr_builtin_id
 /* Implement `TARGET_RESOLVE_OVERLOADED_PLUGIN'.  */
 
 static tree
-avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
+avr_resolve_overloaded_builtin (location_t loc, tree fndecl, void *vargs, bool)
 {
   tree type0, type1, fold = NULL_TREE;
   avr_builtin_id id = AVR_BUILTIN_COUNT;
-  location_t loc = (location_t) iloc;
-  vec<tree, va_gc> &args = * (vec<tree, va_gc>*) vargs;
+  vec<tree, va_gc> &args = * (vec<tree, va_gc> *) vargs;
 
   switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
@@ -61,10 +60,10 @@ avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
       break;
 
     case AVR_BUILTIN_ABSFX:
-      if (args.length() != 1)
+      if (args.length () != 1)
 	{
 	  error_at (loc, "%qs expects 1 argument but %d given",
-		    "absfx", (int) args.length());
+		    "absfx", (int) args.length ());
 
 	  fold = error_mark_node;
 	  break;
@@ -120,10 +119,10 @@ avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
       break; // absfx
 
     case AVR_BUILTIN_ROUNDFX:
-      if (args.length() != 2)
+      if (args.length () != 2)
 	{
 	  error_at (loc, "%qs expects 2 arguments but %d given",
-		    "roundfx", (int) args.length());
+		    "roundfx", (int) args.length ());
 
 	  fold = error_mark_node;
 	  break;
@@ -186,10 +185,10 @@ avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
       break; // roundfx
 
     case AVR_BUILTIN_COUNTLSFX:
-      if (args.length() != 1)
+      if (args.length () != 1)
 	{
 	  error_at (loc, "%qs expects 1 argument but %d given",
-		    "countlsfx", (int) args.length());
+		    "countlsfx", (int) args.length ());
 
 	  fold = error_mark_node;
 	  break;
@@ -500,7 +499,7 @@ avr_cpu_cpp_builtins (cpp_reader *pfile)
   /* Define builtin macros so that the user can easily query whether or
      not a specific builtin is available. */
 
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)  \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS) \
   cpp_define (pfile, "__BUILTIN_AVR_" #NAME);
 #include "builtins.def"
 #undef DEF_BUILTIN

@@ -14,20 +14,20 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   svuint8_t init_sve_u1 = 0; // { dg-error {cannot convert 'int' to 'svuint8_t' in initialization} }
   svuint8_t init_sve_u2 = {};
   svuint8_t init_sve_u3 = { sve_u1 };
-  svuint8_t init_sve_u4 = { gnu_u1 };
-  svuint8_t init_sve_u5 = { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'svuint8_t' in initialization} }
-  svuint8_t init_sve_u6 = { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'svuint8_t' in initialization} }
-  svuint8_t init_sve_u7 = { 0 }; // { dg-error {cannot convert 'int' to 'svuint8_t' in initialization} }
-  svuint8_t init_sve_u8 = { sve_u1, sve_u1 }; // { dg-error {too many initializers for 'svuint8_t'} }
-  svuint8_t init_sve_u9 = { gnu_u1, gnu_u1 }; // { dg-error {too many initializers for 'svuint8_t'} }
+  svuint8_t init_sve_u4 = { gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u5 = { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u6 = { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u7 = { 0 };
+  svuint8_t init_sve_u8 = { sve_u1, sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u9 = { gnu_u1, gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
   svuint8_t init_sve_u10 {};
   svuint8_t init_sve_u11 { sve_u1 };
-  svuint8_t init_sve_u12 { gnu_u1 };
-  svuint8_t init_sve_u13 { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'svuint8_t' in initialization} }
-  svuint8_t init_sve_u14 { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'svuint8_t' in initialization} }
-  svuint8_t init_sve_u15 { 0 }; // { dg-error {cannot convert 'int' to 'svuint8_t' in initialization} }
-  svuint8_t init_sve_u16 { sve_u1, sve_u1 }; // { dg-error {too many initializers for 'svuint8_t'} }
-  svuint8_t init_sve_u17 { gnu_u1, gnu_u1 }; // { dg-error {too many initializers for 'svuint8_t'} }
+  svuint8_t init_sve_u12 { gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u13 { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u14 { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u15 { 0 };
+  svuint8_t init_sve_u16 { sve_u1, sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
+  svuint8_t init_sve_u17 { gnu_u1, gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
   svuint8_t init_sve_u18 (0); // { dg-error {cannot convert 'int' to 'svuint8_t' in initialization} }
   svuint8_t init_sve_u19 (sve_u1);
   svuint8_t init_sve_u20 (gnu_u1);
@@ -59,13 +59,13 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   // Compound literals
 
   (svuint8_t) {};
-  (svuint8_t) { 0 }; // { dg-error {cannot convert 'int' to 'svuint8_t' in initialization} }
+  (svuint8_t) { 0 };
   (svuint8_t) { sve_u1 };
-  (svuint8_t) { gnu_u1 };
-  (svuint8_t) { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'svuint8_t' in initialization} }
-  (svuint8_t) { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'svuint8_t' in initialization} }
-  (svuint8_t) { sve_u1, sve_u1 }; // { dg-error {too many initializers for 'svuint8_t'} }
-  (svuint8_t) { gnu_u1, gnu_u1 }; // { dg-error {too many initializers for 'svuint8_t'} }
+  (svuint8_t) { gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
+  (svuint8_t) { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'unsigned char' in initialization} }
+  (svuint8_t) { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'unsigned char' in initialization} }
+  (svuint8_t) { sve_u1, sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
+  (svuint8_t) { gnu_u1, gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
 
   (gnu_uint8_t) {};
   (gnu_uint8_t) { 0 };
@@ -93,14 +93,14 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   // Casts
 
   (void) sve_u1;
-  (int) sve_u1; // { dg-error {invalid cast from type 'svuint8_t' to type 'int'} }
-  (bool) sve_u1; // { dg-error {invalid cast from type 'svuint8_t' to type 'bool'} }
-  (svuint8_t) 0; // { dg-error {invalid cast from type 'int' to type 'svuint8_t'} }
-  (svuint8_t) n; // { dg-error {invalid cast from type 'int' to type 'svuint8_t'} }
+  (int) sve_u1; // { dg-error {cannot convert a vector of type 'svuint8_t' to type 'int'} }
+  (bool) sve_u1;  // { dg-error {cannot convert a vector of type 'svuint8_t' to type 'bool'} }
+  (svuint8_t) 0; // { dg-error {cannot convert a value of type 'int' to vector type 'svuint8_t'} }
+  (svuint8_t) n; // { dg-error {cannot convert a value of type 'int' to vector type 'svuint8_t'} }
   (svuint8_t) sve_u1;
   (svuint8_t) gnu_u1;
-  (svuint8_t) sve_s1; // { dg-error {invalid cast from type 'svint8_t' to type 'svuint8_t'} }
-  (svuint8_t) gnu_s1; // { dg-error {invalid cast from type 'gnu_int8_t'[^\n]* to type 'svuint8_t'} }
+  (svuint8_t) sve_s1;
+  (svuint8_t) gnu_s1;
 
   (void) gnu_u1;
   (int) gnu_u1; // { dg-error {cannot convert a vector of type 'gnu_uint8_t'[^\n]* to type 'int'} }
@@ -114,26 +114,26 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   // Vector indexing.
 
-  sve_u1[0]; // { dg-error {subscripted value is neither array nor pointer} }
-  &sve_u1[0]; // { dg-error {subscripted value is neither array nor pointer} }
+  sve_u1[0];
+  &sve_u1[0];
 
   gnu_u1[0];
   &gnu_u1[0];
 
   // Unary vector arithmetic.
 
-  +sve_u1; // { dg-error {wrong type argument to unary plus} }
-  -sve_u1; // { dg-error {wrong type argument to unary minus} }
-  ~sve_u1; // { dg-error {wrong type argument to bit-complement} }
-  !sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-        // { dg-error {in argument to unary !} "" { target *-*-* } .-1 }
+  +sve_u1;
+  -sve_u1;
+  ~sve_u1;
+  !sve_u1;
+
   *sve_u1; // { dg-error {invalid type argument of unary '\*'} }
   __real sve_u1; // { dg-error {wrong type argument to __real} }
   __imag sve_u1; // { dg-error {wrong type argument to __imag} }
-  ++sve_u1; // { dg-error {no pre-increment operator for type} }
-  --sve_u1; // { dg-error {no pre-decrement operator for type} }
-  sve_u1++; // { dg-error {no post-increment operator for type} }
-  sve_u1--; // { dg-error {no post-decrement operator for type} }
+  ++sve_u1;
+  --sve_u1;
+  sve_u1++;
+  sve_u1--;
 
   +gnu_u1;
   -gnu_u1;
@@ -149,65 +149,65 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   // Vector-vector binary arithmetic.
 
-  sve_u1 + sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator\+'} }
-  sve_u1 - sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator-'} }
-  sve_u1 * sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator\*'} }
-  sve_u1 / sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator/'} }
-  sve_u1 % sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator%'} }
-  sve_u1 & sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator\&'} }
-  sve_u1 | sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator\|'} }
-  sve_u1 ^ sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator\^'} }
-  sve_u1 == sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator=='} }
-  sve_u1 != sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator!='} }
-  sve_u1 <= sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator<='} }
-  sve_u1 < sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator<'} }
-  sve_u1 > sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator>'} }
-  sve_u1 >= sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator>='} }
-  sve_u1 <=> sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator<=>'} }
-  sve_u1 << sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator<<'} }
-  sve_u1 >> sve_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'svuint8_t' to binary 'operator>>'} }
-  sve_u1 && sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 || sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
+  sve_u1 + sve_u1;
+  sve_u1 - sve_u1;
+  sve_u1 * sve_u1;
+  sve_u1 / sve_u1;
+  sve_u1 % sve_u1;
+  sve_u1 & sve_u1;
+  sve_u1 | sve_u1;
+  sve_u1 ^ sve_u1;
+  sve_u1 == sve_u1;
+  sve_u1 != sve_u1;
+  sve_u1 <= sve_u1;
+  sve_u1 < sve_u1;
+  sve_u1 > sve_u1;
+  sve_u1 >= sve_u1;
+  sve_u1 <=> sve_u1; // { dg-message {three-way comparison of vectors} }
+  sve_u1 << sve_u1;
+  sve_u1 >> sve_u1;
+  sve_u1 && sve_u1;
+  sve_u1 || sve_u1;
 
-  sve_u1 + gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator\+'} }
-  sve_u1 - gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator-'} }
-  sve_u1 * gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator\*'} }
-  sve_u1 / gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator/'} }
-  sve_u1 % gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator%'} }
-  sve_u1 & gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator\&'} }
-  sve_u1 | gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator\|'} }
-  sve_u1 ^ gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator\^'} }
-  sve_u1 == gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator=='} }
-  sve_u1 != gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator!='} }
-  sve_u1 <= gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator<='} }
-  sve_u1 < gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator<'} }
-  sve_u1 > gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator>'} }
-  sve_u1 >= gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator>='} }
-  sve_u1 <=> gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator<=>'} }
-  sve_u1 << gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator<<'} }
-  sve_u1 >> gnu_u1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_uint8_t'[^\n]* to binary 'operator>>'} }
-  sve_u1 && gnu_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 || gnu_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
+  sve_u1 + gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 - gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 * gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 / gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 % gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 & gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 | gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 ^ gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 == gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 != gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 <= gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 < gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 > gnu_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 >= gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 <=> gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 << gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 >> gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 && gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 || gnu_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
 
-  gnu_u1 + sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator\+'} }
-  gnu_u1 - sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator-'} }
-  gnu_u1 * sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator\*'} }
-  gnu_u1 / sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator/'} }
-  gnu_u1 % sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator%'} }
-  gnu_u1 & sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator\&'} }
-  gnu_u1 | sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator\|'} }
-  gnu_u1 ^ sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator\^'} }
-  gnu_u1 == sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator=='} }
-  gnu_u1 != sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator!='} }
-  gnu_u1 <= sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator<='} }
-  gnu_u1 < sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator<'} }
-  gnu_u1 > sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator>'} }
-  gnu_u1 >= sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator>='} }
-  gnu_u1 <=> sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator<=>'} }
-  gnu_u1 << sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator<<'} }
-  gnu_u1 >> sve_u1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svuint8_t' to binary 'operator>>'} }
-  gnu_u1 && sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  gnu_u1 || sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
+  gnu_u1 + sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 - sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 * sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 / sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 % sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 & sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 | sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 ^ sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 == sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 != sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 <= sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 < sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 > sve_u1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 >= sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 <=> sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 << sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 >> sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 && sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 || sve_u1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
 
   gnu_u1 + gnu_u1;
   gnu_u1 - gnu_u1;
@@ -233,45 +233,45 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   // Vector-scalar binary arithmetic.
 
-  sve_u1 + 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator\+'} }
-  sve_u1 - 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator-'} }
-  sve_u1 * 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator\*'} }
-  sve_u1 / 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator/'} }
-  sve_u1 % 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator%'} }
-  sve_u1 & 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator\&'} }
-  sve_u1 | 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator\|'} }
-  sve_u1 ^ 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator\^'} }
-  sve_u1 == 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator=='} }
-  sve_u1 != 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator!='} }
-  sve_u1 <= 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator<='} }
-  sve_u1 < 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator<'} }
-  sve_u1 > 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator>'} }
-  sve_u1 >= 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator>='} }
+  sve_u1 + 2;
+  sve_u1 - 2;
+  sve_u1 * 2;
+  sve_u1 / 2;
+  sve_u1 % 2;
+  sve_u1 & 2;
+  sve_u1 | 2;
+  sve_u1 ^ 2;
+  sve_u1 == 2;
+  sve_u1 != 2;
+  sve_u1 <= 2;
+  sve_u1 < 2;
+  sve_u1 > 2;
+  sve_u1 >= 2;
   sve_u1 <=> 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator<=>'} }
-  sve_u1 << 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator<<'} }
-  sve_u1 >> 2; // { dg-error {invalid operands of types 'svuint8_t' and 'int' to binary 'operator>>'} }
-  sve_u1 && 2; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 || 2; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
+  sve_u1 << 2;
+  sve_u1 >> 2;
+  sve_u1 && 2;
+  sve_u1 || 2;
 
-  sve_u1 + uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator\+'} }
-  sve_u1 - uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator-'} }
-  sve_u1 * uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator\*'} }
-  sve_u1 / uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator/'} }
-  sve_u1 % uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator%'} }
-  sve_u1 & uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator\&'} }
-  sve_u1 | uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator\|'} }
-  sve_u1 ^ uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator\^'} }
-  sve_u1 == uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator=='} }
-  sve_u1 != uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator!='} }
-  sve_u1 <= uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator<='} }
-  sve_u1 < uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator<'} }
-  sve_u1 > uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator>'} }
-  sve_u1 >= uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator>='} }
+  sve_u1 + uc;
+  sve_u1 - uc;
+  sve_u1 * uc;
+  sve_u1 / uc;
+  sve_u1 % uc;
+  sve_u1 & uc;
+  sve_u1 | uc;
+  sve_u1 ^ uc;
+  sve_u1 == uc;
+  sve_u1 != uc;
+  sve_u1 <= uc;
+  sve_u1 < uc;
+  sve_u1 > uc;
+  sve_u1 >= uc;
   sve_u1 <=> uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator<=>'} }
-  sve_u1 << uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator<<'} }
-  sve_u1 >> uc; // { dg-error {invalid operands of types 'svuint8_t' and 'unsigned char' to binary 'operator>>'} }
-  sve_u1 && uc; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 || uc; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
+  sve_u1 << uc;
+  sve_u1 >> uc;
+  sve_u1 && uc;
+  sve_u1 || uc;
 
   gnu_u1 + 2;
   gnu_u1 - 2;
@@ -315,25 +315,25 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   // Scalar-vector binary 'operatorarithmetic.
 
-  3 + sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator\+'} }
-  3 - sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator-'} }
-  3 * sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator\*'} }
-  3 / sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator/'} }
-  3 % sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator%'} }
-  3 & sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator\&'} }
-  3 | sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator\|'} }
-  3 ^ sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator\^'} }
-  3 == sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator=='} }
-  3 != sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator!='} }
-  3 <= sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator<='} }
+  3 + sve_u1;
+  3 - sve_u1;
+  3 * sve_u1;
+  3 / sve_u1;
+  3 % sve_u1;
+  3 & sve_u1;
+  3 | sve_u1;
+  3 ^ sve_u1;
+  3 == sve_u1;
+  3 != sve_u1;
+  3 <= sve_u1;
   3 <=> sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator<=>'} }
-  3 < sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator<'} }
-  3 > sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator>'} }
-  3 >= sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator>='} }
-  3 << sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator<<'} }
-  3 >> sve_u1; // { dg-error {invalid operands of types 'int' and 'svuint8_t' to binary 'operator>>'} }
-  3 && sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  3 || sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
+  3 < sve_u1;
+  3 > sve_u1;
+  3 >= sve_u1;
+  3 << sve_u1;
+  3 >> sve_u1;
+  3 && sve_u1;
+  3 || sve_u1;
 
   3 + gnu_u1;
   3 - gnu_u1;
@@ -357,59 +357,59 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   // Mismatched types.
 
-  sve_u1 + sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator\+'} }
-  sve_u1 - sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator-'} }
-  sve_u1 * sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator\*'} }
-  sve_u1 / sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator/'} }
-  sve_u1 % sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator%'} }
-  sve_u1 & sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator\&'} }
-  sve_u1 | sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator\|'} }
-  sve_u1 ^ sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator\^'} }
-  sve_u1 == sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator=='} }
-  sve_u1 != sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator!='} }
-  sve_u1 <= sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator<='} }
-  sve_u1 < sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator<'} }
-  sve_u1 > sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator>'} }
-  sve_u1 >= sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator>='} }
-  sve_u1 <=> sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator<=>'} }
-  sve_u1 << sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator<<'} }
-  sve_u1 >> sve_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'svint8_t' to binary 'operator>>'} }
+  sve_u1 + sve_s1;
+  sve_u1 - sve_s1;
+  sve_u1 * sve_s1;
+  sve_u1 / sve_s1;
+  sve_u1 % sve_s1;
+  sve_u1 & sve_s1;
+  sve_u1 | sve_s1;
+  sve_u1 ^ sve_s1;
+  sve_u1 == sve_s1;
+  sve_u1 != sve_s1;
+  sve_u1 <= sve_s1;
+  sve_u1 < sve_s1;
+  sve_u1 > sve_s1;
+  sve_u1 >= sve_s1;
+  sve_u1 <=> sve_s1; // { dg-message {three-way comparison of vectors} }
+  sve_u1 << sve_s1;
+  sve_u1 >> sve_s1;
 
-  sve_u1 + gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator\+'} }
-  sve_u1 - gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator-'} }
-  sve_u1 * gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator\*'} }
-  sve_u1 / gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator/'} }
-  sve_u1 % gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator%'} }
-  sve_u1 & gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator\&'} }
-  sve_u1 | gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator\|'} }
-  sve_u1 ^ gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator\^'} }
-  sve_u1 == gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator=='} }
-  sve_u1 != gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator!='} }
-  sve_u1 <= gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator<='} }
-  sve_u1 < gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator<'} }
-  sve_u1 > gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator>'} }
-  sve_u1 >= gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator>='} }
-  sve_u1 <=> gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator<=>'} }
-  sve_u1 << gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator<<'} }
-  sve_u1 >> gnu_s1; // { dg-error {invalid operands of types 'svuint8_t' and 'gnu_int8_t'[^\n]* to binary 'operator>>'} }
+  sve_u1 + gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 - gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 * gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 / gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 % gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 & gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 | gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 ^ gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 == gnu_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 != gnu_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 <= gnu_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 < gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 > gnu_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 >= gnu_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 <=> gnu_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 << gnu_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  sve_u1 >> gnu_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
 
-  gnu_u1 + sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator\+'} }
-  gnu_u1 - sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator-'} }
-  gnu_u1 * sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator\*'} }
-  gnu_u1 / sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator/'} }
-  gnu_u1 % sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator%'} }
-  gnu_u1 & sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator\&'} }
-  gnu_u1 | sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator\|'} }
-  gnu_u1 ^ sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator\^'} }
-  gnu_u1 == sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator=='} }
-  gnu_u1 != sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator!='} }
-  gnu_u1 <= sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator<='} }
-  gnu_u1 < sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator<'} }
-  gnu_u1 > sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator>'} }
-  gnu_u1 >= sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator>='} }
-  gnu_u1 <=> sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator<=>'} }
-  gnu_u1 << sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator<<'} }
-  gnu_u1 >> sve_s1; // { dg-error {invalid operands of types 'gnu_uint8_t'[^\n]* and 'svint8_t' to binary 'operator>>'} }
+  gnu_u1 + sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 - sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 * sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 / sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 % sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 & sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 | sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 ^ sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 == sve_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 != sve_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 <= sve_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 < sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 > sve_s1; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 >= sve_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 <=> sve_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 << sve_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gnu_u1 >> sve_s1;// { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
 
   gnu_u1 + gnu_s1;
   gnu_u1 - gnu_s1;
@@ -438,35 +438,35 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   uc ? sve_u1 : gnu_u1; // { dg-error {operands to '\?:' have different types 'svuint8_t' and 'gnu_uint8_t'} }
   uc ? gnu_u1 : gnu_u1;
 
-  sve_u1 ? sve_u1 : sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 ? gnu_u1 : sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 ? sve_u1 : gnu_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 ? gnu_u1 : gnu_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 ? sve_u1 : uc; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 ? uc : sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 ? gnu_u1 : uc; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
-  sve_u1 ? uc : gnu_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
+  sve_u1 ? sve_u1 : sve_u1;
+  sve_u1 ? gnu_u1 : sve_u1; // { dg-error {incompatible vector types in conditional expression} }
+  sve_u1 ? sve_u1 : gnu_u1; // { dg-error {incompatible vector types in conditional expression} }
+  sve_u1 ? gnu_u1 : gnu_u1;
+  sve_u1 ? sve_u1 : uc;
+  sve_u1 ? uc : sve_u1;
+  sve_u1 ? gnu_u1 : uc;
+  sve_u1 ? uc : gnu_u1;
 
-  gnu_u1 ? sve_u1 : sve_u1; // { dg-error {incompatible vector types in conditional expression} }
+  gnu_u1 ? sve_u1 : sve_u1;
   gnu_u1 ? gnu_u1 : sve_u1; // { dg-error {incompatible vector types in conditional expression} }
   gnu_u1 ? sve_u1 : gnu_u1; // { dg-error {incompatible vector types in conditional expression} }
   gnu_u1 ? gnu_u1 : gnu_u1;
-  gnu_u1 ? sve_u1 : uc; // { dg-error {incompatible vector types in conditional expression} }
-  gnu_u1 ? uc : sve_u1; // { dg-error {incompatible vector types in conditional expression} }
+  gnu_u1 ? sve_u1 : uc;
+  gnu_u1 ? uc : sve_u1;
   gnu_u1 ? gnu_u1 : uc;
   gnu_u1 ? uc : gnu_u1;
 
   // Vector built-ins.
 
-  __builtin_shuffle (sve_u1, sve_u1, sve_u1); // { dg-error {'__builtin_shuffle' last argument must be an integer vector} }
-  __builtin_shuffle (sve_u1, gnu_u1, gnu_u1); // { dg-error {'__builtin_shuffle' arguments must be vectors} }
-  __builtin_shuffle (gnu_u1, sve_u1, gnu_u1); // { dg-error {'__builtin_shuffle' arguments must be vectors} }
-  __builtin_shuffle (gnu_u1, gnu_u1, sve_u1); // { dg-error {'__builtin_shuffle' last argument must be an integer vector} }
+  __builtin_shuffle (sve_u1, sve_u1, sve_u1);
+  __builtin_shuffle (sve_u1, gnu_u1, gnu_u1); // { dg-error {'__builtin_shuffle' argument vectors must be of the same type} }
+  __builtin_shuffle (gnu_u1, sve_u1, gnu_u1); // { dg-error {'__builtin_shuffle' argument vectors must be of the same type} }
+  __builtin_shuffle (gnu_u1, gnu_u1, sve_u1);
   __builtin_shuffle (gnu_u1, gnu_u1, gnu_u1);
 
-  __builtin_convertvector (sve_u1, svuint8_t); // { dg-error {'__builtin_convertvector' first argument must be an integer or floating vector} }
-  __builtin_convertvector (gnu_u1, svuint8_t); // { dg-error {'__builtin_convertvector' second argument must be an integer or floating vector type} }
-  __builtin_convertvector (sve_u1, gnu_uint8_t); // { dg-error {'__builtin_convertvector' first argument must be an integer or floating vector} }
+  __builtin_convertvector (sve_u1, svuint8_t);
+  __builtin_convertvector (gnu_u1, svuint8_t);
+  __builtin_convertvector (sve_u1, gnu_uint8_t);
   __builtin_convertvector (gnu_u1, gnu_uint8_t);
 
   // Type queries.

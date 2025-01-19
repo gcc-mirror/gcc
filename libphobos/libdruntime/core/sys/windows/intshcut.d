@@ -70,7 +70,7 @@ interface IUniformResourceLocator : IUnknown {
 alias IUniformResourceLocator PIUniformResourceLocator,
   PCIUniformResourceLocator;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     BOOL InetIsOffline(DWORD);
     HRESULT MIMEAssociationDialogA(HWND, DWORD, PCSTR, PCSTR, PSTR, UINT);
     HRESULT MIMEAssociationDialogW(HWND, DWORD, PCWSTR, PCWSTR, PWSTR, UINT);

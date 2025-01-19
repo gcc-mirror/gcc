@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  ordinary fixed point types whose Small is the ratio of two Int values, and
---  also for conversion operations required in Text_IO.Fixed_IO for such types.
+--  This package provides the subprograms supporting the ``Image`` attribute
+--  and ``Ada.Text_IO.Fixed_IO`` conversions routines for for ordinary fixed
+--  point types whose Small is the ratio of two Int values.
 
 generic
 
@@ -56,11 +56,11 @@ package System.Image_F is
    --  Computes fixed_type'Image (V), where V is the integer value (in units of
    --  small) of an ordinary fixed point type with small Num/Den, and stores
    --  the result in S (1 .. P), updating P on return. The result is computed
-   --  according to the rules for image for fixed-point types (RM 3.5(34)).
+   --  according to the rules for image for fixed-point types (RM 4.10(14)).
    --  For0 and Aft0 are the values of the Fore and Aft attributes for the
    --  fixed point type whose mantissa type is Int and whose small is Num/Den.
-   --  This function is used only for fixed point whose Small is an integer or
-   --  its reciprocal (see package System.Image_R for the handling of other
+   --  This function is used only for fixed point whose Small is the ratio of
+   --  two Int values (see package System.Image_R for the handling of other
    --  ordinary fixed-point types). The caller guarantees that S is long enough
    --  to hold the result and has a lower bound of 1.
 

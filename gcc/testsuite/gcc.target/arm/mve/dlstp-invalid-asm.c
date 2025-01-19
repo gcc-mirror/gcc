@@ -127,10 +127,43 @@ void test9 (int32_t *a, int32_t *b, int32_t *c, int n)
     }
 }
 
-/* Using a VPR that gets re-generated within the loop.  */
-void test10 (int32_t *a, int32_t *b, int32_t *c, int n)
+/* Using a VPR that gets re-generated within the loop.  Even though we
+   currently reject such loops, it would be possible to dlstp transform this
+   specific loop, as long as we make sure that the first vldrwq_z mask would
+   either:
+   * remain the same as its mask in the first iteration,
+   * become the same as the loop mask after the first iteration,
+   * become all ones, since the dlstp would then mask it the same as the loop
+   mask.  */
+void test10a (int32_t *a, int32_t *b, int32_t *c, int n)
 {
   mve_pred16_t p = vctp32q (n);
+  while (n > 0)
+    {
+      int32x4_t va = vldrwq_z_s32 (a, p);
+      p = vctp32q (n);
+      int32x4_t vb = vldrwq_z_s32 (b, p);
+      int32x4_t vc = vaddq_x_s32 (va, vb, p);
+      vstrwq_p_s32 (c, vc, p);
+      c += 4;
+      a += 4;
+      b += 4;
+      n -= 4;
+    }
+}
+
+/* Using a VPR that gets re-generated within the loop, the difference between
+   this test and test10a is to make sure the two vctp calls are never the same,
+   this leads to slightly different codegen in some cases triggering the issue
+   in a different way.   This loop too would be OK to dlstp transform as long
+   as we made sure that the first vldrwq_z mask would either:
+   * remain the same as the its mask in the first iteration,
+   * become the same as the loop mask after the first iteration,
+   * become all ones, since the dlstp would then mask it the same as the loop
+   mask.  */
+void test10b (int32_t *a, int32_t *b, int32_t *c, int n)
+{
+  mve_pred16_t p = vctp32q (n-4);
   while (n > 0)
     {
       int32x4_t va = vldrwq_z_s32 (a, p);

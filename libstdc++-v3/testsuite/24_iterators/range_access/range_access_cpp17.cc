@@ -1,6 +1,6 @@
 // { dg-do compile { target c++17 } }
 
-// Copyright (C) 2017-2024 Free Software Foundation, Inc.
+// Copyright (C) 2017-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,4 +67,61 @@ test03()
   // LWG 3537
   static_assert( noexcept(std::rbegin(il)),  "LWG 3537" );
   static_assert( noexcept(std::rend(il)),    "LWG 3537" );
+}
+
+void
+test04()
+{
+  static int i[1]{};
+  static_assert( std::size(i) == 1 );
+  static_assert( noexcept(std::size(i)) );
+  static const int ci[2]{};
+  static_assert( std::size(ci) == 2 );
+  static_assert( noexcept(std::size(ci)) );
+  static constexpr std::initializer_list<int> il{1, 2, 3};
+  static_assert( std::size(il) == 3 );
+  struct Cont
+  {
+    constexpr unsigned size() const { return 4; }
+  };
+  constexpr Cont c;
+  static_assert( std::size(c) == 4 );
+}
+
+void
+test05()
+{
+  static int i[1]{};
+  static_assert( std::empty(i) == false );
+  static_assert( noexcept(std::size(i)) );
+  static const int ci[2]{};
+  static_assert( std::empty(ci) == false );
+  static_assert( noexcept(std::size(ci)) );
+  static constexpr std::initializer_list<int> il{1, 2, 3};
+  static_assert( std::empty(il) == false );
+  struct Cont
+  {
+    constexpr bool empty() const { return true; }
+  };
+  constexpr Cont c;
+  static_assert( std::empty(c) == true );
+}
+
+void
+test06()
+{
+  static int i[1]{};
+  static_assert( std::data(i) == i );
+  static_assert( noexcept(std::size(i)) );
+  static const int ci[2]{};
+  static_assert( std::data(ci) == ci );
+  static_assert( noexcept(std::size(ci)) );
+  static constexpr std::initializer_list<int> il{1, 2, 3};
+  static_assert( std::data(il) == il.begin() );
+  struct Cont
+  {
+    constexpr int* data() const { return nullptr; }
+  };
+  constexpr Cont c;
+  static_assert( std::data(c) == nullptr );
 }

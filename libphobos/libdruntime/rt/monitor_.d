@@ -27,7 +27,7 @@ do
     auto m = ensureMonitor(cast(Object) owner);
     if (m.impl is null)
     {
-        atomicOp!("+=")(m.refs, cast(size_t) 1);
+        atomicOp!"+="(m.refs, size_t(1));
     }
     // Assume the monitor is garbage collected and simply copy the reference.
     ownee.__monitor = owner.__monitor;
@@ -44,7 +44,7 @@ extern (C) void _d_monitordelete(Object h, bool det)
         // let the GC collect the monitor
         setMonitor(h, null);
     }
-    else if (!atomicOp!("-=")(m.refs, cast(size_t) 1))
+    else if (!atomicOp!"-="(m.refs, size_t(1)))
     {
         // refcount == 0 means unshared => no synchronization required
         disposeEvent(cast(Monitor*) m, h);
@@ -65,7 +65,7 @@ extern (C) void _d_monitordelete_nogc(Object h) @nogc nothrow
         // let the GC collect the monitor
         setMonitor(h, null);
     }
-    else if (!atomicOp!("-=")(m.refs, cast(size_t) 1))
+    else if (!atomicOp!"-="(m.refs, size_t(1)))
     {
         // refcount == 0 means unshared => no synchronization required
         deleteMonitor(cast(Monitor*) m);
@@ -173,10 +173,6 @@ alias DEvent = void delegate(Object);
 
 version (Windows)
 {
-    version (CRuntime_DigitalMars)
-    {
-        pragma(lib, "snn.lib");
-    }
     import core.sys.windows.winbase /+: CRITICAL_SECTION, DeleteCriticalSection,
         EnterCriticalSection, InitializeCriticalSection, LeaveCriticalSection+/;
 
@@ -189,7 +185,10 @@ version (Windows)
 }
 else version (Posix)
 {
-    import core.sys.posix.pthread;
+    import core.sys.posix.pthread : pthread_mutex_destroy, pthread_mutex_init, pthread_mutex_lock,
+        PTHREAD_MUTEX_RECURSIVE, pthread_mutex_unlock, pthread_mutexattr_destroy, pthread_mutexattr_init,
+        pthread_mutexattr_settype;
+    import core.sys.posix.sys.types : pthread_mutex_t, pthread_mutexattr_t;
 
 @nogc:
     alias Mutex = pthread_mutex_t;
@@ -235,7 +234,7 @@ private:
     return *cast(shared Monitor**)&h.__monitor;
 }
 
-private shared(Monitor)* getMonitor(Object h) pure @nogc
+shared(Monitor)* getMonitor(Object h) pure @nogc
 {
     return atomicLoad!(MemoryOrder.acq)(h.monitor);
 }

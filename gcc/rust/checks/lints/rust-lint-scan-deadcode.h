@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2024 Free Software Foundation, Inc.
+// Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -61,7 +61,7 @@ public:
 	      {
 		rust_warning_at (
 		  function.get_function_name ().get_locus (), 0,
-		  "associated function is never used: %<%s%>",
+		  "associated function is never used: %qs",
 		  function.get_function_name ().as_string ().c_str ());
 	      }
 	  }
@@ -69,7 +69,7 @@ public:
 	  {
 	    rust_warning_at (
 	      function.get_function_name ().get_locus (), 0,
-	      "function is never used: %<%s%>",
+	      "function is never used: %qs",
 	      function.get_function_name ().as_string ().c_str ());
 	  }
       }
@@ -84,7 +84,7 @@ public:
 	  = stct.get_identifier ().as_string ().at (0) == '_';
 	if (!name_starts_underscore)
 	  rust_warning_at (stct.get_locus (), 0,
-			   "struct is never constructed: %<%s%>",
+			   "struct is never constructed: %qs",
 			   stct.get_identifier ().as_string ().c_str ());
       }
     else
@@ -97,7 +97,7 @@ public:
 		&& !field.get_visibility ().is_public ())
 	      {
 		rust_warning_at (field.get_locus (), 0,
-				 "field is never read: %<%s%>",
+				 "field is never read: %qs",
 				 field.get_field_name ().as_string ().c_str ());
 	      }
 	  }
@@ -111,7 +111,7 @@ public:
     if (should_warn (hirId) && !stct.get_visibility ().is_public ())
       {
 	rust_warning_at (stct.get_locus (), 0,
-			 "struct is never constructed: %<%s%>",
+			 "struct is never constructed: %qs",
 			 stct.get_identifier ().as_string ().c_str ());
       }
   }

@@ -726,7 +726,7 @@ struct TRUSTED_DOMAIN_FULL_INFORMATION {
 }
 alias TRUSTED_DOMAIN_FULL_INFORMATION* PTRUSTED_DOMAIN_FULL_INFORMATION;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     NTSTATUS LsaAddAccountRights(LSA_HANDLE, PSID, PLSA_UNICODE_STRING,
       ULONG);
     NTSTATUS LsaCallAuthenticationPackage(HANDLE, ULONG, PVOID, ULONG,

@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GCC_C_COMMON_C
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -55,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
 #include "tree-pretty-print-markup.h"
+#include "gcc-rich-location.h"
+#include "gcc-urlifier.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -100,7 +101,8 @@ machine_mode c_default_pointer_mode = VOIDmode;
 
 	tree dfloat32_type_node;
 	tree dfloat64_type_node;
-	tree_dfloat128_type_node;
+	tree dfloat128_type_node;
+	tree dfloat64x_type_node; 
 
 	tree intQI_type_node;
 	tree intHI_type_node;
@@ -407,6 +409,7 @@ const struct c_common_resword c_common_reswords[] =
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY },
   { "_Decimal128",      RID_DFLOAT128, D_CONLY },
+  { "_Decimal64x",      RID_DFLOAT64X, D_CONLY },
   { "_Fract",           RID_FRACT,     D_CONLY | D_EXT },
   { "_Accum",           RID_ACCUM,     D_CONLY | D_EXT },
   { "_Sat",             RID_SAT,       D_CONLY | D_EXT },
@@ -434,6 +437,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_counted_by_ref", RID_BUILTIN_COUNTED_BY_REF, D_CONLY },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
+  { "__builtin_operator_new", RID_BUILTIN_OPERATOR_NEW, D_CXXONLY },
+  { "__builtin_operator_delete", RID_BUILTIN_OPERATOR_DELETE, D_CXXONLY },
   { "__builtin_observable", RID_BUILTIN_OBSERVABLE, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
   { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
@@ -456,6 +461,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
   { "__builtin_offsetof", RID_OFFSETOF, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, D_CONLY },
+  { "__builtin_c23_va_start", RID_C23_VA_START,	D_C23 },
   { "__builtin_va_arg",	RID_VA_ARG,	0 },
   { "__complex",	RID_COMPLEX,	0 },
   { "__complex__",	RID_COMPLEX,	0 },
@@ -4480,6 +4486,7 @@ c_common_nodes_and_builtins (void)
       record_builtin_type (RID_DFLOAT32, NULL, dfloat32_type_node);
       record_builtin_type (RID_DFLOAT64, NULL, dfloat64_type_node);
       record_builtin_type (RID_DFLOAT128, NULL, dfloat128_type_node);
+      record_builtin_type (RID_DFLOAT64X, NULL, dfloat64x_type_node);
     }
 
   if (targetm.fixed_point_supported_p ())
@@ -5718,6 +5725,8 @@ struct nonnull_arg_ctx
   /* The function whose arguments are being checked and its type (used
      for calls through function pointers).  */
   const_tree fndecl, fntype;
+  /* For nonnull_if_nonzero, index of the other argument.  */
+  unsigned HOST_WIDE_INT other;
   /* True if a warning has been issued.  */
   bool warned_p;
 };
@@ -5756,23 +5765,19 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
     }
 
   tree attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (ctx.fntype));
-  if (attrs == NULL_TREE)
-    return ctx.warned_p;
 
   tree a = attrs;
   /* See if any of the nonnull attributes has no arguments.  If so,
      then every pointer argument is checked (in which case the check
      for pointer type is done in check_nonnull_arg).  */
-  if (TREE_VALUE (a) != NULL_TREE)
-    do
-      a = lookup_attribute ("nonnull", TREE_CHAIN (a));
-    while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE);
+  while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE)
+    a = lookup_attribute ("nonnull", TREE_CHAIN (a));
 
   if (a != NULL_TREE)
     for (int i = firstarg; i < nargs; i++)
       check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[i],
 					i + 1, OPT_Wnonnull);
-  else
+  else if (attrs)
     {
       /* Walk the argument list.  If we encounter an argument number we
 	 should check for non-null, do it.  */
@@ -5791,6 +5796,28 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 					      OPT_Wnonnull);
 	}
     }
+  if (a == NULL_TREE)
+    for (attrs = TYPE_ATTRIBUTES (ctx.fntype);
+	 (attrs = lookup_attribute ("nonnull_if_nonzero", attrs));
+	 attrs = TREE_CHAIN (attrs))
+      {
+	tree args = TREE_VALUE (attrs);
+	unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+	unsigned int idx2
+	  = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	if (idx < (unsigned) nargs - firstarg
+	    && idx2 < (unsigned) nargs - firstarg
+	    && INTEGRAL_TYPE_P (TREE_TYPE (argarray[firstarg + idx2]))
+	    && integer_nonzerop (argarray[firstarg + idx2]))
+	  {
+	    ctx.other = firstarg + idx2 + 1;
+	    check_function_arguments_recurse (check_nonnull_arg, &ctx,
+					      argarray[firstarg + idx],
+					      firstarg + idx + 1,
+					      OPT_Wnonnull);
+	    ctx.other = 0;
+	  }
+      }
   return ctx.warned_p;
 }
 
@@ -5972,13 +5999,23 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     }
   else
     {
-      warned = warning_at (loc, OPT_Wnonnull,
-			   "argument %u null where non-null expected",
-			   (unsigned) param_num);
+      if (pctx->other)
+	warned = warning_at (loc, OPT_Wnonnull,
+			     "argument %u null where non-null expected "
+			     "because argument %u is nonzero",
+			     (unsigned) param_num,
+			     TREE_CODE (pctx->fntype) == METHOD_TYPE
+			     ? (unsigned) pctx->other - 1
+			     : (unsigned) pctx->other);
+      else
+	warned = warning_at (loc, OPT_Wnonnull,
+			     "argument %u null where non-null expected",
+			     (unsigned) param_num);
       if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to function %qD declared %qs",
-		pctx->fndecl, "nonnull");
+		pctx->fndecl,
+		pctx->other ? "nonnull_if_nonzero" : "nonnull");
     }
 
   if (warned)
@@ -6071,8 +6108,11 @@ parse_optimize_options (tree args, bool attr_p)
 		{
 		  ret = false;
 		  if (attr_p)
-		    warning (OPT_Wattributes,
-			     "bad option %qs to attribute %<optimize%>", p);
+		    {
+		      auto_urlify_attributes sentinel;
+		      warning (OPT_Wattributes,
+			       "bad option %qs to attribute %<optimize%>", p);
+		    }
 		  else
 		    warning (OPT_Wpragmas,
 			     "bad option %qs to pragma %<optimize%>", p);
@@ -6121,9 +6161,12 @@ parse_optimize_options (tree args, bool attr_p)
 	{
 	  ret = false;
 	  if (attr_p)
-	    warning (OPT_Wattributes,
-		     "bad option %qs to attribute %<optimize%>",
-		     decoded_options[i].orig_option_with_args_text);
+	    {
+	      auto_urlify_attributes sentinel;
+	      warning (OPT_Wattributes,
+		       "bad option %qs to attribute %<optimize%>",
+		       decoded_options[i].orig_option_with_args_text);
+	    }
 	  else
 	    warning (OPT_Wpragmas,
 		     "bad option %qs to pragma %<optimize%>",
@@ -6171,6 +6214,7 @@ attribute_fallthrough_p (tree attr)
   tree t = lookup_attribute ("", "fallthrough", attr);
   if (t == NULL_TREE)
     return false;
+  auto_urlify_attributes sentinel;
   /* It is no longer true that "this attribute shall appear at most once in
      each attribute-list", but we still give a warning.  */
   if (lookup_attribute ("", "fallthrough", TREE_CHAIN (t)))
@@ -6224,7 +6268,7 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
      to do this if format checking is enabled.  */
   if (warn_nonnull)
     {
-      nonnull_arg_ctx ctx = { loc, fndecl, fntype, false };
+      nonnull_arg_ctx ctx = { loc, fndecl, fntype, 0, false };
       warned_p = check_function_nonnull (ctx, nargs, argarray);
     }
 
@@ -6359,16 +6403,18 @@ check_function_arguments_recurse (void (*callback)
 
 static bool
 builtin_function_validate_nargs (location_t loc, tree fndecl, int nargs,
-				 int required)
+				 int required, bool complain)
 {
   if (nargs < required)
     {
-      error_at (loc, "too few arguments to function %qE", fndecl);
+      if (complain)
+	error_at (loc, "too few arguments to function %qE", fndecl);
       return false;
     }
   else if (nargs > required)
     {
-      error_at (loc, "too many arguments to function %qE", fndecl);
+      if (complain)
+	error_at (loc, "too many arguments to function %qE", fndecl);
       return false;
     }
   return true;
@@ -6389,16 +6435,16 @@ builtin_function_validate_nargs (location_t loc, tree fndecl, int nargs,
 
 bool
 check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
-				  tree fndecl, tree orig_fndecl,
-				  int nargs, tree *args)
+				  tree fndecl, tree orig_fndecl, int nargs,
+				  tree *args, bool complain)
 {
   if (!fndecl_built_in_p (fndecl))
     return true;
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return (!targetm.check_builtin_call
-	    || targetm.check_builtin_call (loc, arg_loc, fndecl,
-					   orig_fndecl, nargs, args));
+	    || targetm.check_builtin_call (loc, arg_loc, fndecl, orig_fndecl,
+					   nargs, args, complain));
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_FRONTEND)
     return true;
@@ -6409,9 +6455,11 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
       if (!tree_fits_uhwi_p (args[2]))
 	{
-	  error_at (ARG_LOCATION (2),
-		    "third argument to function %qE must be a constant integer",
-		    fndecl);
+	  if (complain)
+	    error_at (
+	      ARG_LOCATION (2),
+	      "third argument to function %qE must be a constant integer",
+	      fndecl);
 	  return false;
 	}
       /* fall through */
@@ -6434,17 +6482,18 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	/* Reject invalid alignments.  */
 	if (align < BITS_PER_UNIT || maxalign < align)
 	  {
-	    error_at (ARG_LOCATION (1),
-		      "second argument to function %qE must be a constant "
-		      "integer power of 2 between %qi and %qu bits",
-		      fndecl, BITS_PER_UNIT, maxalign);
+	    if (complain)
+	      error_at (ARG_LOCATION (1),
+			"second argument to function %qE must be a constant "
+			"integer power of 2 between %qi and %qu bits",
+			fndecl, BITS_PER_UNIT, maxalign);
 	    return false;
 	  }
 	return true;
       }
 
     case BUILT_IN_CONSTANT_P:
-      return builtin_function_validate_nargs (loc, fndecl, nargs, 1);
+      return builtin_function_validate_nargs (loc, fndecl, nargs, 1, complain);
 
     case BUILT_IN_ISFINITE:
     case BUILT_IN_ISINF:
@@ -6453,12 +6502,15 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ISNORMAL:
     case BUILT_IN_ISSIGNALING:
     case BUILT_IN_SIGNBIT:
-      if (builtin_function_validate_nargs (loc, fndecl, nargs, 1))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 1, complain))
 	{
 	  if (TREE_CODE (TREE_TYPE (args[0])) != REAL_TYPE)
 	    {
-	      error_at (ARG_LOCATION (0), "non-floating-point argument in "
-			"call to function %qE", fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (0),
+			  "non-floating-point argument in "
+			  "call to function %qE",
+			  fndecl);
 	      return false;
 	    }
 	  return true;
@@ -6472,7 +6524,7 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ISLESSGREATER:
     case BUILT_IN_ISUNORDERED:
     case BUILT_IN_ISEQSIG:
-      if (builtin_function_validate_nargs (loc, fndecl, nargs, 2))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 2, complain))
 	{
 	  enum tree_code code0, code1;
 	  code0 = TREE_CODE (TREE_TYPE (args[0]));
@@ -6483,8 +6535,11 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 		|| ((code0 == INTEGER_TYPE || code0 == BITINT_TYPE)
 		    && code1 == REAL_TYPE)))
 	    {
-	      error_at (loc, "non-floating-point arguments in call to "
-			"function %qE", fndecl);
+	      if (complain)
+		error_at (loc,
+			  "non-floating-point arguments in call to "
+			  "function %qE",
+			  fndecl);
 	      return false;
 	    }
 	  return true;
@@ -6492,20 +6547,26 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
       return false;
 
     case BUILT_IN_FPCLASSIFY:
-      if (builtin_function_validate_nargs (loc, fndecl, nargs, 6))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 6, complain))
 	{
 	  for (unsigned int i = 0; i < 5; i++)
 	    if (TREE_CODE (args[i]) != INTEGER_CST)
 	      {
-		error_at (ARG_LOCATION (i), "non-const integer argument %u in "
-			  "call to function %qE", i + 1, fndecl);
+		if (complain)
+		  error_at (ARG_LOCATION (i),
+			    "non-const integer argument %u in "
+			    "call to function %qE",
+			    i + 1, fndecl);
 		return false;
 	      }
 
 	  if (TREE_CODE (TREE_TYPE (args[5])) != REAL_TYPE)
 	    {
-	      error_at (ARG_LOCATION (5), "non-floating-point argument in "
-			"call to function %qE", fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (5),
+			  "non-floating-point argument in "
+			  "call to function %qE",
+			  fndecl);
 	      return false;
 	    }
 	  return true;
@@ -6513,14 +6574,18 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
       return false;
 
     case BUILT_IN_ASSUME_ALIGNED:
-      if (builtin_function_validate_nargs (loc, fndecl, nargs, 2 + (nargs > 2)))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 2 + (nargs > 2),
+					   complain))
 	{
 	  if (nargs >= 3
 	      && TREE_CODE (TREE_TYPE (args[2])) != INTEGER_TYPE
 	      && TREE_CODE (TREE_TYPE (args[2])) != BITINT_TYPE)
 	    {
-	      error_at (ARG_LOCATION (2), "non-integer argument 3 in call to "
-			"function %qE", fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "non-integer argument 3 in call to "
+			  "function %qE",
+			  fndecl);
 	      return false;
 	    }
 	  return true;
@@ -6530,47 +6595,63 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ADD_OVERFLOW:
     case BUILT_IN_SUB_OVERFLOW:
     case BUILT_IN_MUL_OVERFLOW:
-      if (builtin_function_validate_nargs (loc, fndecl, nargs, 3))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 3, complain))
 	{
 	  unsigned i;
 	  for (i = 0; i < 2; i++)
 	    if (!INTEGRAL_TYPE_P (TREE_TYPE (args[i])))
 	      {
-		error_at (ARG_LOCATION (i), "argument %u in call to function "
-			  "%qE does not have integral type", i + 1, fndecl);
+		if (complain)
+		  error_at (ARG_LOCATION (i),
+			    "argument %u in call to function "
+			    "%qE does not have integral type",
+			    i + 1, fndecl);
 		return false;
 	      }
 	  if (TREE_CODE (TREE_TYPE (args[2])) != POINTER_TYPE
 	      || !INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (args[2]))))
 	    {
-	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
-			"does not have pointer to integral type", fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "argument 3 in call to function %qE "
+			  "does not have pointer to integral type",
+			  fndecl);
 	      return false;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) == ENUMERAL_TYPE)
 	    {
-	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
-			"has pointer to enumerated type", fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "argument 3 in call to function %qE "
+			  "has pointer to enumerated type",
+			  fndecl);
 	      return false;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) == BOOLEAN_TYPE)
 	    {
-	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
-			"has pointer to boolean type", fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "argument 3 in call to function %qE "
+			  "has pointer to boolean type",
+			  fndecl);
 	      return false;
 	    }
 	  else if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (args[2]))))
 	    {
-	      error_at (ARG_LOCATION (2), "argument %u in call to function %qE "
-			"has pointer to %qs type (%qT)", 3, fndecl, "const",
-			TREE_TYPE (args[2]));
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "argument %u in call to function %qE "
+			  "has pointer to %qs type (%qT)",
+			  3, fndecl, "const", TREE_TYPE (args[2]));
 	      return false;
 	    }
 	  else if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (args[2]))))
 	    {
-	      error_at (ARG_LOCATION (2), "argument %u in call to function %qE "
-			"has pointer to %qs type (%qT)", 3, fndecl,
-			"_Atomic", TREE_TYPE (args[2]));
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "argument %u in call to function %qE "
+			  "has pointer to %qs type (%qT)",
+			  3, fndecl, "_Atomic", TREE_TYPE (args[2]));
 	      return false;
 	    }
 	  return true;
@@ -6580,26 +6661,35 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ADD_OVERFLOW_P:
     case BUILT_IN_SUB_OVERFLOW_P:
     case BUILT_IN_MUL_OVERFLOW_P:
-      if (builtin_function_validate_nargs (loc, fndecl, nargs, 3))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 3, complain))
 	{
 	  unsigned i;
 	  for (i = 0; i < 3; i++)
 	    if (!INTEGRAL_TYPE_P (TREE_TYPE (args[i])))
 	      {
-		error_at (ARG_LOCATION (i), "argument %u in call to function "
-			  "%qE does not have integral type", i + 1, fndecl);
+		if (complain)
+		  error_at (ARG_LOCATION (i),
+			    "argument %u in call to function "
+			    "%qE does not have integral type",
+			    i + 1, fndecl);
 		return false;
 	      }
 	  if (TREE_CODE (TREE_TYPE (args[2])) == ENUMERAL_TYPE)
 	    {
-	      error_at (ARG_LOCATION (2), "argument %u in call to function "
-			"%qE has enumerated type", 3, fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "argument %u in call to function "
+			  "%qE has enumerated type",
+			  3, fndecl);
 	      return false;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (args[2])) == BOOLEAN_TYPE)
 	    {
-	      error_at (ARG_LOCATION (2), "argument %u in call to function "
-			"%qE has boolean type", 3, fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (2),
+			  "argument %u in call to function "
+			  "%qE has boolean type",
+			  3, fndecl);
 	      return false;
 	    }
 	  return true;
@@ -6607,32 +6697,42 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
       return false;
 
     case BUILT_IN_CLEAR_PADDING:
-      if (builtin_function_validate_nargs (loc, fndecl, nargs, 1))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 1, complain))
 	{
 	  if (!POINTER_TYPE_P (TREE_TYPE (args[0])))
 	    {
-	      error_at (ARG_LOCATION (0), "argument %u in call to function "
-			"%qE does not have pointer type", 1, fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (0),
+			  "argument %u in call to function "
+			  "%qE does not have pointer type",
+			  1, fndecl);
 	      return false;
 	    }
 	  else if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (args[0]))))
 	    {
-	      error_at (ARG_LOCATION (0), "argument %u in call to function "
-			"%qE points to incomplete type", 1, fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (0),
+			  "argument %u in call to function "
+			  "%qE points to incomplete type",
+			  1, fndecl);
 	      return false;
 	    }
 	  else if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (args[0]))))
 	    {
-	      error_at (ARG_LOCATION (0), "argument %u in call to function %qE "
-			"has pointer to %qs type (%qT)", 1, fndecl, "const",
-			TREE_TYPE (args[0]));
+	      if (complain)
+		error_at (ARG_LOCATION (0),
+			  "argument %u in call to function %qE "
+			  "has pointer to %qs type (%qT)",
+			  1, fndecl, "const", TREE_TYPE (args[0]));
 	      return false;
 	    }
 	  else if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (args[0]))))
 	    {
-	      error_at (ARG_LOCATION (0), "argument %u in call to function %qE "
-			"has pointer to %qs type (%qT)", 1, fndecl,
-			"_Atomic", TREE_TYPE (args[0]));
+	      if (complain)
+		error_at (ARG_LOCATION (0),
+			  "argument %u in call to function %qE "
+			  "has pointer to %qs type (%qT)",
+			  1, fndecl, "_Atomic", TREE_TYPE (args[0]));
 	      return false;
 	    }
 	  return true;
@@ -6651,8 +6751,11 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	{
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (args[1])))
 	    {
-	      error_at (ARG_LOCATION (1), "argument %u in call to function "
-			"%qE does not have integral type", 2, fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (1),
+			  "argument %u in call to function "
+			  "%qE does not have integral type",
+			  2, fndecl);
 	      return false;
 	    }
 	  if ((TYPE_PRECISION (TREE_TYPE (args[1]))
@@ -6661,30 +6764,43 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 		  == TYPE_PRECISION (integer_type_node)
 		  && TYPE_UNSIGNED (TREE_TYPE (args[1]))))
 	    {
-	      error_at (ARG_LOCATION (1), "argument %u in call to function "
-			"%qE does not have %<int%> type", 2, fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (1),
+			  "argument %u in call to function "
+			  "%qE does not have %<int%> type",
+			  2, fndecl);
 	      return false;
 	    }
 	}
-      else if (!builtin_function_validate_nargs (loc, fndecl, nargs, 1))
+      else if (!builtin_function_validate_nargs (loc, fndecl, nargs, 1,
+						 complain))
 	return false;
 
       if (!INTEGRAL_TYPE_P (TREE_TYPE (args[0])))
 	{
-	  error_at (ARG_LOCATION (0), "argument %u in call to function "
-		    "%qE does not have integral type", 1, fndecl);
+	  if (complain)
+	    error_at (ARG_LOCATION (0),
+		      "argument %u in call to function "
+		      "%qE does not have integral type",
+		      1, fndecl);
 	  return false;
 	}
       if (TREE_CODE (TREE_TYPE (args[0])) == ENUMERAL_TYPE)
 	{
-	  error_at (ARG_LOCATION (0), "argument %u in call to function "
-		    "%qE has enumerated type", 1, fndecl);
+	  if (complain)
+	    error_at (ARG_LOCATION (0),
+		      "argument %u in call to function "
+		      "%qE has enumerated type",
+		      1, fndecl);
 	  return false;
 	}
       if (TREE_CODE (TREE_TYPE (args[0])) == BOOLEAN_TYPE)
 	{
-	  error_at (ARG_LOCATION (0), "argument %u in call to function "
-		    "%qE has boolean type", 1, fndecl);
+	  if (complain)
+	    error_at (ARG_LOCATION (0),
+		      "argument %u in call to function "
+		      "%qE has boolean type",
+		      1, fndecl);
 	  return false;
 	}
       if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FFSG
@@ -6692,15 +6808,21 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	{
 	  if (TYPE_UNSIGNED (TREE_TYPE (args[0])))
 	    {
-	      error_at (ARG_LOCATION (0), "argument 1 in call to function "
-			"%qE has unsigned type", fndecl);
+	      if (complain)
+		error_at (ARG_LOCATION (0),
+			  "argument 1 in call to function "
+			  "%qE has unsigned type",
+			  fndecl);
 	      return false;
 	    }
 	}
       else if (!TYPE_UNSIGNED (TREE_TYPE (args[0])))
 	{
-	  error_at (ARG_LOCATION (0), "argument 1 in call to function "
-		    "%qE has signed type", fndecl);
+	  if (complain)
+	    error_at (ARG_LOCATION (0),
+		      "argument 1 in call to function "
+		      "%qE has signed type",
+		      fndecl);
 	  return false;
 	}
       return true;
@@ -7294,7 +7416,8 @@ builtin_type_for_size (int size, bool unsignedp)
    the size is too large; 0 if the argument type is a pointer or the
    size if it is integral.  */
 static enum built_in_function
-speculation_safe_value_resolve_call (tree function, vec<tree, va_gc> *params)
+speculation_safe_value_resolve_call (tree function, vec<tree, va_gc> *params,
+				     bool complain)
 {
   /* Type of the argument.  */
   tree type;
@@ -7302,7 +7425,8 @@ speculation_safe_value_resolve_call (tree function, vec<tree, va_gc> *params)
 
   if (vec_safe_is_empty (params))
     {
-      error ("too few arguments to function %qE", function);
+      if (complain)
+	error ("too few arguments to function %qE", function);
       return BUILT_IN_NONE;
     }
 
@@ -7331,7 +7455,7 @@ speculation_safe_value_resolve_call (tree function, vec<tree, va_gc> *params)
  incompatible:
   /* Issue the diagnostic only if the argument is valid, otherwise
      it would be redundant at best and could be misleading.  */
-  if (type != error_mark_node)
+  if (type != error_mark_node && complain)
     error ("operand type %qT is incompatible with argument %d of %qE",
 	   type, 1, function);
 
@@ -7343,19 +7467,21 @@ speculation_safe_value_resolve_call (tree function, vec<tree, va_gc> *params)
    argument, if present, must be type compatible with the first.  */
 static bool
 speculation_safe_value_resolve_params (location_t loc, tree orig_function,
-				       vec<tree, va_gc> *params)
+				       vec<tree, va_gc> *params, bool complain)
 {
   tree val;
 
   if (params->length () == 0)
     {
-      error_at (loc, "too few arguments to function %qE", orig_function);
+      if (complain)
+	error_at (loc, "too few arguments to function %qE", orig_function);
       return false;
     }
 
   else if (params->length () > 2)
     {
-      error_at (loc, "too many arguments to function %qE", orig_function);
+      if (complain)
+	error_at (loc, "too many arguments to function %qE", orig_function);
       return false;
     }
 
@@ -7365,9 +7491,9 @@ speculation_safe_value_resolve_params (location_t loc, tree orig_function,
   if (!(TREE_CODE (TREE_TYPE (val)) == POINTER_TYPE
 	|| TREE_CODE (TREE_TYPE (val)) == INTEGER_TYPE))
     {
-      error_at (loc,
-		"expecting argument of type pointer or of type integer "
-		"for argument 1");
+      if (complain)
+	error_at (loc, "expecting argument of type pointer or of type integer "
+		       "for argument 1");
       return false;
     }
   (*params)[0] = val;
@@ -7382,7 +7508,8 @@ speculation_safe_value_resolve_params (location_t loc, tree orig_function,
       if (!(TREE_TYPE (val) == TREE_TYPE (val2)
 	    || useless_type_conversion_p (TREE_TYPE (val), TREE_TYPE (val2))))
 	{
-	  error_at (loc, "both arguments must be compatible");
+	  if (complain)
+	    error_at (loc, "both arguments must be compatible");
 	  return false;
 	}
       (*params)[1] = val2;
@@ -7418,7 +7545,7 @@ speculation_safe_value_resolve_return (tree first_param, tree result)
 
 static int
 sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
-		   bool orig_format)
+		   bool orig_format, bool complain)
 {
   /* Type of the argument.  */
   tree argtype;
@@ -7428,7 +7555,8 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
 
   if (vec_safe_is_empty (params))
     {
-      error ("too few arguments to function %qE", function);
+      if (complain)
+	error ("too few arguments to function %qE", function);
       return 0;
     }
 
@@ -7454,11 +7582,13 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
 
   size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (size == 16
-      && fetch
-      && !orig_format
       && TREE_CODE (type) == BITINT_TYPE
       && !targetm.scalar_mode_supported_p (TImode))
-    return -1;
+    {
+      if (fetch && !orig_format)
+	return -1;
+      goto incompatible;
+    }
 
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;
@@ -7469,7 +7599,7 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
  incompatible:
   /* Issue the diagnostic only if the argument is valid, otherwise
      it would be redundant at best and could be misleading.  */
-  if (argtype != error_mark_node)
+  if (argtype != error_mark_node && complain)
     error ("operand type %qT is incompatible with argument %d of %qE",
 	   argtype, 1, function);
   return 0;
@@ -7482,7 +7612,7 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
 
 static bool
 sync_resolve_params (location_t loc, tree orig_function, tree function,
-		     vec<tree, va_gc> *params, bool orig_format)
+		     vec<tree, va_gc> *params, bool orig_format, bool complain)
 {
   function_args_iterator iter;
   tree ptype;
@@ -7511,7 +7641,8 @@ sync_resolve_params (location_t loc, tree orig_function, tree function,
       ++parmnum;
       if (params->length () <= parmnum)
 	{
-	  error_at (loc, "too few arguments to function %qE", orig_function);
+	  if (complain)
+	    error_at (loc, "too few arguments to function %qE", orig_function);
 	  return false;
 	}
 
@@ -7537,7 +7668,8 @@ sync_resolve_params (location_t loc, tree orig_function, tree function,
   /* __atomic routines are not variadic.  */
   if (!orig_format && params->length () != parmnum + 1)
     {
-      error_at (loc, "too many arguments to function %qE", orig_function);
+      if (complain)
+	error_at (loc, "too many arguments to function %qE", orig_function);
       return false;
     }
 
@@ -7574,7 +7706,7 @@ sync_resolve_return (tree first_param, tree result, bool orig_format)
 
 static int
 get_atomic_generic_size (location_t loc, tree function,
-			 vec<tree, va_gc> *params)
+			 vec<tree, va_gc> *params, bool complain)
 {
   unsigned int n_param;
   unsigned int n_model;
@@ -7612,7 +7744,9 @@ get_atomic_generic_size (location_t loc, tree function,
 
   if (vec_safe_length (params) != n_param)
     {
-      error_at (loc, "incorrect number of arguments to function %qE", function);
+      if (complain)
+	error_at (loc, "incorrect number of arguments to function %qE",
+		  function);
       return 0;
     }
 
@@ -7626,24 +7760,27 @@ get_atomic_generic_size (location_t loc, tree function,
     }
   if (TREE_CODE (type_0) != POINTER_TYPE || VOID_TYPE_P (TREE_TYPE (type_0)))
     {
-      error_at (loc, "argument 1 of %qE must be a non-void pointer type",
-		function);
+      if (complain)
+	error_at (loc, "argument 1 of %qE must be a non-void pointer type",
+		  function);
       return 0;
     }
 
   if (!COMPLETE_TYPE_P (TREE_TYPE (type_0)))
     {
-      error_at (loc, "argument 1 of %qE must be a pointer to a complete type",
-		function);
+      if (complain)
+	error_at (loc, "argument 1 of %qE must be a pointer to a complete type",
+		  function);
       return 0;
     }
 
   /* Types must be compile time constant sizes. */
   if (!tree_fits_uhwi_p ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))))
     {
-      error_at (loc,
-		"argument 1 of %qE must be a pointer to a constant size type",
-		function);
+      if (complain)
+	error_at (loc,
+		  "argument 1 of %qE must be a pointer to a constant size type",
+		  function);
       return 0;
     }
 
@@ -7652,9 +7789,10 @@ get_atomic_generic_size (location_t loc, tree function,
   /* Zero size objects are not allowed.  */
   if (size_0 == 0)
     {
-      error_at (loc,
-		"argument 1 of %qE must be a pointer to a nonzero size object",
-		function);
+      if (complain)
+	error_at (
+	  loc, "argument 1 of %qE must be a pointer to a nonzero size object",
+	  function);
       return 0;
     }
 
@@ -7674,30 +7812,38 @@ get_atomic_generic_size (location_t loc, tree function,
 	}
       if (!POINTER_TYPE_P (type))
 	{
-	  error_at (loc, "argument %d of %qE must be a pointer type", x + 1,
-		    function);
+	  if (complain)
+	    error_at (loc, "argument %d of %qE must be a pointer type", x + 1,
+		      function);
 	  return 0;
 	}
       else if (TYPE_SIZE_UNIT (TREE_TYPE (type))
 	       && TREE_CODE ((TYPE_SIZE_UNIT (TREE_TYPE (type))))
 		  != INTEGER_CST)
 	{
-	  error_at (loc, "argument %d of %qE must be a pointer to a constant "
-		    "size type", x + 1, function);
+	  if (complain)
+	    error_at (loc,
+		      "argument %d of %qE must be a pointer to a constant "
+		      "size type",
+		      x + 1, function);
 	  return 0;
 	}
       else if (FUNCTION_POINTER_TYPE_P (type))
 	{
-	  error_at (loc, "argument %d of %qE must not be a pointer to a "
-		    "function", x + 1, function);
+	  if (complain)
+	    error_at (loc,
+		      "argument %d of %qE must not be a pointer to a "
+		      "function",
+		      x + 1, function);
 	  return 0;
 	}
       tree type_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
       size = type_size ? tree_to_uhwi (type_size) : 0;
       if (size != size_0)
 	{
-	  error_at (loc, "size mismatch in argument %d of %qE", x + 1,
-		    function);
+	  if (complain)
+	    error_at (loc, "size mismatch in argument %d of %qE", x + 1,
+		      function);
 	  return 0;
 	}
 
@@ -7709,8 +7855,11 @@ get_atomic_generic_size (location_t loc, tree function,
 	  {
 	    if (c_dialect_cxx ())
 	      {
-		error_at (loc, "argument %d of %qE must not be a pointer to "
-			  "a %<const%> type", x + 1, function);
+		if (complain)
+		  error_at (loc,
+			    "argument %d of %qE must not be a pointer to "
+			    "a %<const%> type",
+			    x + 1, function);
 		return 0;
 	      }
 	    else
@@ -7723,8 +7872,11 @@ get_atomic_generic_size (location_t loc, tree function,
 	  {
 	    if (c_dialect_cxx ())
 	      {
-		error_at (loc, "argument %d of %qE must not be a pointer to "
-			  "a %<volatile%> type", x + 1, function);
+		if (complain)
+		  error_at (loc,
+			    "argument %d of %qE must not be a pointer to "
+			    "a %<volatile%> type",
+			    x + 1, function);
 		return 0;
 	      }
 	    else
@@ -7741,8 +7893,9 @@ get_atomic_generic_size (location_t loc, tree function,
       tree p = (*params)[x];
       if (!INTEGRAL_TYPE_P (TREE_TYPE (p)))
 	{
-	  error_at (loc, "non-integer memory model argument %d of %qE", x + 1,
-		    function);
+	  if (complain)
+	    error_at (loc, "non-integer memory model argument %d of %qE", x + 1,
+		      function);
 	  return 0;
 	}
       p = fold_for_warn (p);
@@ -7753,9 +7906,14 @@ get_atomic_generic_size (location_t loc, tree function,
 	     bits will be checked later during expansion in target specific
 	     way.  */
 	  if (memmodel_base (TREE_INT_CST_LOW (p)) >= MEMMODEL_LAST)
-	    warning_at (loc, OPT_Winvalid_memory_model,
-			"invalid memory model argument %d of %qE", x + 1,
-			function);
+	    {
+	      if (complain)
+		warning_at (loc, OPT_Winvalid_memory_model,
+			    "invalid memory model argument %d of %qE", x + 1,
+			    function);
+	      else
+		return 0;
+	    }
 	}
     }
 
@@ -7833,11 +7991,12 @@ atomic_size_supported_p (int n)
    NEW_RETURN is set to the return value the result is copied into.  */
 static bool
 resolve_overloaded_atomic_exchange (location_t loc, tree function,
-				    vec<tree, va_gc> *params, tree *new_return)
+				    vec<tree, va_gc> *params, tree *new_return,
+				    bool complain)
 {
   tree p0, p1, p2, p3;
   tree I_type, I_type_ptr;
-  int n = get_atomic_generic_size (loc, function, params);
+  int n = get_atomic_generic_size (loc, function, params, complain);
 
   /* Size of 0 is an error condition.  */
   if (n == 0)
@@ -7890,7 +8049,6 @@ resolve_overloaded_atomic_exchange (location_t loc, tree function,
   return false;
 }
 
-
 /* This will process an __atomic_compare_exchange function call, determine
    whether it needs to be mapped to the _N variation, or turned into a lib call.
    LOC is the location of the builtin call.
@@ -7903,11 +8061,11 @@ resolve_overloaded_atomic_exchange (location_t loc, tree function,
 static bool
 resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
 					    vec<tree, va_gc> *params,
-					    tree *new_return)
+					    tree *new_return, bool complain)
 {
   tree p0, p1, p2;
   tree I_type, I_type_ptr;
-  int n = get_atomic_generic_size (loc, function, params);
+  int n = get_atomic_generic_size (loc, function, params, complain);
 
   /* Size of 0 is an error condition.  */
   if (n == 0)
@@ -7971,7 +8129,6 @@ resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
   return false;
 }
 
-
 /* This will process an __atomic_load function call, determine whether it
    needs to be mapped to the _N variation, or turned into a library call.
    LOC is the location of the builtin call.
@@ -7984,11 +8141,12 @@ resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
 
 static bool
 resolve_overloaded_atomic_load (location_t loc, tree function,
-				vec<tree, va_gc> *params, tree *new_return)
+				vec<tree, va_gc> *params, tree *new_return,
+				bool complain)
 {
   tree p0, p1, p2;
   tree I_type, I_type_ptr;
-  int n = get_atomic_generic_size (loc, function, params);
+  int n = get_atomic_generic_size (loc, function, params, complain);
 
   /* Size of 0 is an error condition.  */
   if (n == 0)
@@ -8031,7 +8189,6 @@ resolve_overloaded_atomic_load (location_t loc, tree function,
   return false;
 }
 
-
 /* This will process an __atomic_store function call, determine whether it
    needs to be mapped to the _N variation, or turned into a library call.
    LOC is the location of the builtin call.
@@ -8044,11 +8201,12 @@ resolve_overloaded_atomic_load (location_t loc, tree function,
 
 static bool
 resolve_overloaded_atomic_store (location_t loc, tree function,
-				 vec<tree, va_gc> *params, tree *new_return)
+				 vec<tree, va_gc> *params, tree *new_return,
+				 bool complain)
 {
   tree p0, p1;
   tree I_type, I_type_ptr;
-  int n = get_atomic_generic_size (loc, function, params);
+  int n = get_atomic_generic_size (loc, function, params, complain);
 
   /* Size of 0 is an error condition.  */
   if (n == 0)
@@ -8090,7 +8248,6 @@ resolve_overloaded_atomic_store (location_t loc, tree function,
 
   return false;
 }
-
 
 /* Emit __atomic*fetch* on _BitInt which doesn't have a size of
    1, 2, 4, 8 or 16 bytes using __atomic_compare_exchange loop.
@@ -8328,7 +8485,7 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
 
 tree
 resolve_overloaded_builtin (location_t loc, tree function,
-			    vec<tree, va_gc> *params)
+			    vec<tree, va_gc> *params, bool complain)
 {
   /* Is function one of the _FETCH_OP_ or _OP_FETCH_ built-ins?
      Those are not valid to call with a pointer to _Bool (or C++ bool)
@@ -8343,7 +8500,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
       break;
     case BUILT_IN_MD:
       if (targetm.resolve_overloaded_builtin)
-	return targetm.resolve_overloaded_builtin (loc, function, params);
+	return targetm.resolve_overloaded_builtin (loc, function, params,
+						   complain);
       else
 	return NULL_TREE;
     default:
@@ -8358,13 +8516,14 @@ resolve_overloaded_builtin (location_t loc, tree function,
       {
 	tree new_function, first_param, result;
 	enum built_in_function fncode
-	  = speculation_safe_value_resolve_call (function, params);
+	  = speculation_safe_value_resolve_call (function, params, complain);
 
 	if (fncode == BUILT_IN_NONE)
 	  return error_mark_node;
 
 	first_param = (*params)[0];
-	if (!speculation_safe_value_resolve_params (loc, function, params))
+	if (!speculation_safe_value_resolve_params (loc, function, params,
+						    complain))
 	  return error_mark_node;
 
 	if (targetm.have_speculation_safe_value (true))
@@ -8384,14 +8543,20 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	       against incorrect speculative execution.  Simply return the
 	       first parameter to the builtin.  */
 	    if (!targetm.have_speculation_safe_value (false))
-	      /* The user has invoked __builtin_speculation_safe_value
-		 even though __HAVE_SPECULATION_SAFE_VALUE is not
-		 defined: emit a warning.  */
-	      warning_at (input_location, 0,
-			  "this target does not define a speculation barrier; "
-			  "your program will still execute correctly, "
-			  "but incorrect speculation may not be "
-			  "restricted");
+	      {
+		if (complain)
+		  /* The user has invoked __builtin_speculation_safe_value
+		     even though __HAVE_SPECULATION_SAFE_VALUE is not
+		     defined: emit a warning.  */
+		  warning_at (
+		    input_location, 0,
+		    "this target does not define a speculation barrier; "
+		    "your program will still execute correctly, "
+		    "but incorrect speculation may not be "
+		    "restricted");
+		else
+		  return error_mark_node;
+	      }
 
 	    /* If the optional second argument is present, handle any side
 	       effects now.  */
@@ -8416,7 +8581,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  case BUILT_IN_ATOMIC_EXCHANGE:
 	    {
 	      if (resolve_overloaded_atomic_exchange (loc, function, params,
-						      &new_return))
+						      &new_return, complain))
 		return new_return;
 	      /* Change to the _N variant.  */
 	      orig_code = BUILT_IN_ATOMIC_EXCHANGE_N;
@@ -8425,9 +8590,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
 
 	  case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
 	    {
-	      if (resolve_overloaded_atomic_compare_exchange (loc, function,
-							      params,
-							      &new_return))
+	      if (resolve_overloaded_atomic_compare_exchange (
+		    loc, function, params, &new_return, complain))
 		return new_return;
 	      /* Change to the _N variant.  */
 	      orig_code = BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N;
@@ -8436,7 +8600,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  case BUILT_IN_ATOMIC_LOAD:
 	    {
 	      if (resolve_overloaded_atomic_load (loc, function, params,
-						  &new_return))
+						  &new_return, complain))
 		return new_return;
 	      /* Change to the _N variant.  */
 	      orig_code = BUILT_IN_ATOMIC_LOAD_N;
@@ -8445,7 +8609,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  case BUILT_IN_ATOMIC_STORE:
 	    {
 	      if (resolve_overloaded_atomic_store (loc, function, params,
-						   &new_return))
+						   &new_return, complain))
 		return new_return;
 	      /* Change to the _N variant.  */
 	      orig_code = BUILT_IN_ATOMIC_STORE_N;
@@ -8501,7 +8665,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
 		      && orig_code != BUILT_IN_SYNC_LOCK_TEST_AND_SET_N
 		      && orig_code != BUILT_IN_SYNC_LOCK_RELEASE_N);
 
-	int n = sync_resolve_size (function, params, fetch_op, orig_format);
+	int n = sync_resolve_size (function, params, fetch_op, orig_format,
+				   complain);
 	tree new_function, first_param, result;
 	enum built_in_function fncode;
 
@@ -8509,13 +8674,24 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  return error_mark_node;
 
 	if (n == -1)
-	  return atomic_bitint_fetch_using_cas_loop (loc, orig_code,
-						     function, params);
+	  {
+	    /* complain is related to SFINAE context.
+	       _BitInt is not defined in C++, hence can't enter this clause
+	       with complain unset.  Even if at the abstraction level
+	       this complain is unset that still makes sense (whether
+	       this function should report an error or not if anything is
+	       wrong).
+	       Since can't test avoiding an error when this value is false not
+	       writing the code and instead asserting value is not set.  */
+	    gcc_assert (complain);
+	    return atomic_bitint_fetch_using_cas_loop (loc, orig_code, function,
+						       params);
+	  }
 
 	fncode = (enum built_in_function)((int)orig_code + exact_log2 (n) + 1);
 	new_function = builtin_decl_explicit (fncode);
 	if (!sync_resolve_params (loc, function, new_function, params,
-				  orig_format))
+				  orig_format, complain))
 	  return error_mark_node;
 
 	first_param = (*params)[0];
@@ -9040,10 +9216,12 @@ convert_vector_to_array_for_subscript (location_t loc,
       ret = !lvalue_p (*vecp);
 
       index = fold_for_warn (index);
-      if (TREE_CODE (index) == INTEGER_CST)
-        if (!tree_fits_uhwi_p (index)
-	    || maybe_ge (tree_to_uhwi (index), TYPE_VECTOR_SUBPARTS (type)))
-	  warning_at (loc, OPT_Warray_bounds_, "index value is out of bound");
+      /* Warn out-of-bounds index for vectors only if known.  */
+      if (poly_int_tree_p (index))
+	if (!tree_fits_poly_uint64_p (index)
+	    || known_ge (tree_to_poly_uint64 (index),
+			  TYPE_VECTOR_SUBPARTS (type)))
+	    warning_at (loc, OPT_Warray_bounds_, "index value is out of bound");
 
       /* We are building an ARRAY_REF so mark the vector as addressable
          to not run into the gimplifiers premature setting of DECL_GIMPLE_REG_P
@@ -9623,6 +9801,40 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
 
       richloc->set_range (0, hint_loc, SHOW_RANGE_WITH_CARET);
       richloc->add_range (old_loc);
+    }
+}
+
+/* Potentially emit a note about likely missing '&' or '*',
+   depending on EXPR and EXPECTED_TYPE.  */
+
+void
+maybe_emit_indirection_note (location_t loc,
+			     tree expr, tree expected_type)
+{
+  gcc_assert (expr);
+  gcc_assert (expected_type);
+
+  tree actual_type = TREE_TYPE (expr);
+
+  /* Missing '&'.  */
+  if (TREE_CODE (expected_type) == POINTER_TYPE
+      && compatible_types_for_indirection_note_p (actual_type,
+						  TREE_TYPE (expected_type))
+      && lvalue_p (expr))
+    {
+      gcc_rich_location richloc (loc);
+      richloc.add_fixit_insert_before ("&");
+      inform (&richloc, "possible fix: take the address with %qs", "&");
+    }
+
+  /* Missing '*'.  */
+  if (TREE_CODE (actual_type) == POINTER_TYPE
+      && compatible_types_for_indirection_note_p (TREE_TYPE (actual_type),
+						  expected_type))
+    {
+      gcc_rich_location richloc (loc);
+      richloc.add_fixit_insert_before ("*");
+      inform (&richloc, "possible fix: dereference with %qs", "*");
     }
 }
 

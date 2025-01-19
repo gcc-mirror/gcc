@@ -48,7 +48,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* ma
     import core.stdc.stdint : uintptr_t;
     debug(PRINTF) import core.stdc.stdio : printf;
 
-    debug(PRINTF) printf("_d_arrayctor(from = %p,%d) size = %d\n", from.ptr, from.length, T.sizeof);
+    debug(PRINTF) printf("_d_arrayctor(from = %p,%zd) size = %zd\n", from.ptr, from.length, T.sizeof);
 
     void[] vFrom = (cast(void*) from.ptr)[0..from.length];
     void[] vTo = (cast(void*) to.ptr)[0..to.length];
@@ -349,7 +349,7 @@ T[] _d_newarrayU(T)(size_t length, bool isShared=false) @trusted
 {
     import core.exception : onOutOfMemoryError;
     import core.internal.traits : Unqual;
-    import core.internal.array.utils : __arrayStart, __setArrayAllocLength, __arrayAlloc;
+    import core.internal.array.utils : __arrayAlloc;
 
     alias UnqT = Unqual!T;
 
@@ -395,16 +395,11 @@ Loverflow:
     assert(0);
 
 Lcontinue:
-    auto info = __arrayAlloc!UnqT(arraySize);
-    if (!info.base)
+    auto arr = __arrayAlloc!UnqT(arraySize);
+    if (!arr.ptr)
         goto Loverflow;
-    debug(PRINTF) printf("p = %p\n", info.base);
-
-    auto arrstart = __arrayStart(info);
-
-    __setArrayAllocLength!UnqT(info, arraySize, isShared);
-
-    return (cast(T*) arrstart)[0 .. length];
+    debug(PRINTF) printf("p = %p\n", arr.ptr);
+    return (cast(T*) arr.ptr)[0 .. length];
 }
 
 /// ditto
@@ -513,7 +508,7 @@ version (D_ProfileGC)
  */
 Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trusted
 {
-    debug(PRINTF) printf("_d_newarraymTX(dims.length = %d)\n", dims.length);
+    debug(PRINTF) printf("_d_newarraymTX(dims.length = %zd)\n", dims.length);
 
     if (dims.length == 0)
         return null;
@@ -522,31 +517,30 @@ Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trust
 
     void[] __allocateInnerArray(size_t[] dims)
     {
-        import core.internal.array.utils : __arrayStart, __setArrayAllocLength, __arrayAlloc;
+        import core.internal.array.utils : __arrayAlloc;
 
         auto dim = dims[0];
 
-        debug(PRINTF) printf("__allocateInnerArray(ti = %p, ti.next = %p, dim = %d, ndims = %d\n", ti, ti.next, dim, dims.length);
+        debug(PRINTF) printf("__allocateInnerArray(UnqT = %s, dim = %lu, ndims = %lu\n", UnqT.stringof.ptr, dim, dims.length);
         if (dims.length == 1)
         {
             auto r = _d_newarrayT!UnqT(dim, isShared);
-            return *cast(void[]*)(&r);
+            return *cast(void[]*)&r;
         }
 
         auto allocSize = (void[]).sizeof * dim;
-        auto info = __arrayAlloc!UnqT(allocSize);
-        __setArrayAllocLength!UnqT(info, allocSize, isShared);
-        auto p = __arrayStart(info)[0 .. dim];
+        // the array-of-arrays holds pointers! Don't use UnqT here!
+        auto arr = __arrayAlloc!(void[])(allocSize);
 
         foreach (i; 0..dim)
         {
-            (cast(void[]*)p.ptr)[i] = __allocateInnerArray(dims[1..$]);
+            (cast(void[]*)arr.ptr)[i] = __allocateInnerArray(dims[1..$]);
         }
-        return p;
+        return arr.ptr[0 .. dim];
     }
 
     auto result = __allocateInnerArray(dims);
-    debug(PRINTF) printf("result = %llx\n", result.ptr);
+    debug(PRINTF) printf("result = %p\n", result.ptr);
 
     return (cast(U*) result.ptr)[0 .. dims[0]];
 }
@@ -577,6 +571,31 @@ unittest
         for (size_t j = 0; j < a[i].length; j++)
             assert(a[i][j].x == 1);
     }
+}
+
+// Test 3-level array allocation (this uses different code paths).
+unittest
+{
+    int[][][] a = _d_newarraymTX!(int[][][], int)([3, 4, 5]);
+    int[5] zeros = 0;
+
+    assert(a.length == 3);
+    foreach(l2; a)
+    {
+        assert(l2.length == 4);
+        foreach(l3; l2)
+            assert(l3 == zeros[]);
+    }
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24436
+@system unittest
+{
+    import core.memory : GC;
+
+    int[][] a = _d_newarraymTX!(int[][], int)([2, 2]);
+
+    assert(!(GC.getAttr(a.ptr) & GC.BlkAttr.NO_SCAN));
 }
 
 version (D_ProfileGC)

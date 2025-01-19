@@ -8,4 +8,6 @@ foo (unsigned long long a, unsigned char *b, unsigned short *c)
   return a + *b * *c;
 }
 
-/* { dg-final { scan-assembler "umlal" } } */
+/* After zero-extending both to SImode, either signed- or unsigned-widening
+   multiply will do.  */
+/* { dg-final { scan-assembler {[us]mlal} } } */

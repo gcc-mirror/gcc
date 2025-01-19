@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2025 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 

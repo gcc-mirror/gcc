@@ -976,8 +976,6 @@
 
 	* trans.c (tree_transform) [N_Loop_Statement]: Use
 	expand_exit_loop_top_cond.
-
-
 
 Copyright (C) 2002 Free Software Foundation, Inc.
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -685,6 +685,9 @@ static const scoped_attribute_specs *const ia64_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "IA-64"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6902,6 +6905,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	  case '0':	/* unused field */
 	  case 'i':	/* integer */
 	  case 'n':	/* note */
+	  case 'L':     /* location_t */
 	  case 'w':	/* wide integer */
 	  case 's':	/* pointer to string */
 	  case 'S':	/* optional pointer to string */

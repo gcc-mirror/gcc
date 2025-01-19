@@ -11,3 +11,9 @@ struct AS
 
 void popFront(ref string) { }
 static assert(!is(typeof((R r) => r.popFront)));
+
+// https://issues.dlang.org/show_bug.cgi?id=24883
+int toString(Writer)(ref Writer sink) => 3;
+int toString(void delegate(scope const(char)[]) sink) => 4;
+void put() {}
+static assert(toString(dst => put()) == 4);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2025, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -273,7 +273,6 @@ package body System.Interrupts is
       Check_Reserved_Interrupt (Interrupt);
       Interrupt_Manager.Attach_Handler (New_Handler, Interrupt, Static);
    end Attach_Handler;
-   pragma Obsolescent (Attach_Handler, "Use the VXBus subsystem instead");
 
    -----------------------------
    -- Bind_Interrupt_To_Entry --

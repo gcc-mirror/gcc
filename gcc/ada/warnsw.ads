@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,6 +69,7 @@ package Warnsw is
          Warn_On_Dereference,
          Warn_On_Elab_Access,
          Warn_On_Export_Import,
+         Warn_On_GNAT_Extension_Compatibility,
          Warn_On_Hiding,
          Warn_On_Ignored_Equality,
          Warn_On_Ineffective_Predicate_Test,
@@ -128,6 +129,7 @@ package Warnsw is
       Warn_On_Assumed_Low_Bound |
       Warn_On_Biased_Representation |
       Warn_On_Export_Import |
+      Warn_On_GNAT_Extension_Compatibility |
       Warn_On_No_Value_Assigned |
       Warn_On_Questionable_Missing_Parens |
       Warn_On_Reverse_Bit_Order |
@@ -327,6 +329,10 @@ package Warnsw is
    Warn_On_Export_Import : Boolean renames F (X.Warn_On_Export_Import);
    --  Set to True to generate warnings for suspicious use of export or
    --  import pragmas. Modified by use of -gnatwx/X.
+
+   Warn_On_GNAT_Extension_Compatibility : Boolean renames F (X.Warn_On_GNAT_Extension_Compatibility);
+   --  Set to True to generate all warnings on GNAT extension compatibility
+   --  issues. There is no switch controlling this option.
 
    Warn_On_Hiding : Boolean renames F (X.Warn_On_Hiding);
    --  Set to True to generate warnings if a declared entity hides another

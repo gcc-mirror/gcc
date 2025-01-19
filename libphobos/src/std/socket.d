@@ -15,7 +15,7 @@
 
 /**
  * Socket primitives.
- * Example: See $(SAMPLESRC listener.d) and $(SAMPLESRC htmlget.d)
+ * Example: See [listener.d](https://github.com/dlang/undeaD/blob/master/dmdsamples/listener.d) and [htmlget.d](https://github.com/dlang/undeaD/blob/master/dmdsamples/htmlget.d)
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: Christopher E. Miller, $(HTTP klickverbot.at, David Nadlinger),
  *      $(HTTP thecybershadow.net, Vladimir Panteleev)
@@ -54,6 +54,12 @@ version (Windows)
     enum socket_t : SOCKET { INVALID_SOCKET }
     private const int _SOCKET_ERROR = SOCKET_ERROR;
 
+    /**
+     * On Windows, there is no `SO_REUSEPORT`.
+     * However, `SO_REUSEADDR` is equivalent to `SO_REUSEPORT` there.
+     * $(LINK https://learn.microsoft.com/en-us/windows/win32/winsock/using-so-reuseaddr-and-so-exclusiveaddruse)
+     */
+    private enum SO_REUSEPORT = SO_REUSEADDR;
 
     private int _lasterr() nothrow @nogc
     {
@@ -702,7 +708,7 @@ class InternetHost
         // must synchronize across all threads
         private bool getHost(string opMixin, T)(T param) @system
         {
-            synchronized(this.classinfo)
+            synchronized(typeid(this))
                 return getHostNoSync!(opMixin, T)(param);
         }
     }
@@ -1116,7 +1122,7 @@ Address[] getAddress(scope const(char)[] hostname, ushort port)
             // test via gethostbyname
             auto getaddrinfoPointerBackup = getaddrinfoPointer;
             cast() getaddrinfoPointer = null;
-            scope(exit) cast() getaddrinfoPointer = getaddrinfoPointerBackup;
+            scope(exit) () @trusted { cast() getaddrinfoPointer = getaddrinfoPointerBackup; }();
 
             addresses = getAddress("63.105.9.61");
             assert(addresses.length && addresses[0].toAddrString() == "63.105.9.61");
@@ -1196,7 +1202,7 @@ Address parseAddress(scope const(char)[] hostaddr, ushort port)
             // test via inet_addr
             auto getaddrinfoPointerBackup = getaddrinfoPointer;
             cast() getaddrinfoPointer = null;
-            scope(exit) cast() getaddrinfoPointer = getaddrinfoPointerBackup;
+            scope(exit) () @trusted { cast() getaddrinfoPointer = getaddrinfoPointerBackup; }();
 
             address = parseAddress("63.105.9.61");
             assert(address.toAddrString() == "63.105.9.61");
@@ -1698,7 +1704,7 @@ public:
                 // test reverse lookup, via gethostbyaddr
                 auto getnameinfoPointerBackup = getnameinfoPointer;
                 cast() getnameinfoPointer = null;
-                scope(exit) cast() getnameinfoPointer = getnameinfoPointerBackup;
+                scope(exit) () @trusted { cast() getnameinfoPointer = getnameinfoPointerBackup; }();
 
                 assert(ia.toHostNameString() == "digitalmars.com");
             }
@@ -1716,7 +1722,7 @@ public:
             // test failing reverse lookup, via gethostbyaddr
             auto getnameinfoPointerBackup = getnameinfoPointer;
             cast() getnameinfoPointer = null;
-            scope(exit) cast() getnameinfoPointer = getnameinfoPointerBackup;
+            scope(exit) () @trusted { cast() getnameinfoPointer = getnameinfoPointerBackup; }();
 
             assert(ia.toHostNameString() is null);
         }
@@ -1925,7 +1931,7 @@ version (StdDdoc)
      * auto abstractAddr = new UnixAddress("\0/tmp/dbus-OtHLWmCLPR");
      * ---
      *
-     * See_Also: $(HTTP http://man7.org/linux/man-pages/man7/unix.7.html, UNIX(7))
+     * See_Also: $(HTTP man7.org/linux/man-pages/man7/unix.7.html, UNIX(7))
      */
     class UnixAddress: Address
     {
@@ -2589,6 +2595,22 @@ enum SocketOption: int
     DEBUG =                SO_DEBUG,            /// Record debugging information
     BROADCAST =            SO_BROADCAST,        /// Allow transmission of broadcast messages
     REUSEADDR =            SO_REUSEADDR,        /// Allow local reuse of address
+    /**
+     * Allow local reuse of port
+     *
+     * On Windows, this is equivalent to `SocketOption.REUSEADDR`.
+     * There is in fact no option named `REUSEPORT`.
+     * However, `SocketOption.REUSEADDR` matches the behavior of
+     * `SocketOption.REUSEPORT` on other platforms. Further details on this
+     * topic can be found here:
+     * $(LINK https://learn.microsoft.com/en-us/windows/win32/winsock/using-so-reuseaddr-and-so-exclusiveaddruse)
+     *
+     * On Linux, this ensures fair distribution of incoming connections accross threads.
+     *
+     * See_Also:
+     *   https://lwn.net/Articles/542629/
+     */
+    REUSEPORT =            SO_REUSEPORT,
     LINGER =               SO_LINGER,           /// Linger on close if unsent data is present
     OOBINLINE =            SO_OOBINLINE,        /// Receive out-of-band data in band
     SNDBUF =               SO_SNDBUF,           /// Send buffer size

@@ -1,5 +1,5 @@
 /* { dg-do compile }  */
-/* { dg-options "-O2" }  */
+/* { dg-options "-O2 -std=gnu17" }  */
 
 struct b1 {
       char c;

@@ -48,6 +48,12 @@ program test
   !$acc parallel firstprivate(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }
   !$acc end parallel
 
+  !$acc serial private(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }
+  !$acc end serial
+
+  !$acc serial firstprivate(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }
+  !$acc end serial
+
   !$acc update device(b, /blockA/, x) ! { dg-error "Symbol .x. present on multiple clauses" }
   !$acc update self(z, /blockB/, v) ! { dg-error "Symbol .z. present on multiple clauses" }
   !$acc update host(/blockA/, c) ! { dg-error "Symbol .c. present on multiple clauses" }

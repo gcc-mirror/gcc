@@ -1,5 +1,5 @@
 /* Types for drawing 2d "text art".
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This header uses std::vector, but <vector> can't be directly
    included due to issues with macros.  Hence it must be included from
-   system.h by defining INCLUDE_MEMORY in any source file using it.  */
+   system.h by defining INCLUDE_VECTOR in any source file using it.  */
 
 #ifndef INCLUDE_VECTOR
 # error "You must define INCLUDE_VECTOR before including system.h to use text-art/types.h"

@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
     optimization.  It represents a multi-graph where nodes are functions
     (symbols within symbol table) and edges are call sites. */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -291,7 +290,7 @@ cgraph_node *
 symbol_table::create_empty (void)
 {
   cgraph_count++;
-  return new (ggc_alloc<cgraph_node> ()) cgraph_node (cgraph_max_uid++);
+  return new (ggc_alloc<cgraph_node> ()) cgraph_node ();
 }
 
 /* Register HOOK to be called with DATA on each removed edge.  */
@@ -933,8 +932,6 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 				      caller->decl);
   else
     edge->in_polymorphic_cdtor = caller->thunk;
-  if (callee)
-    caller->calls_declare_variant_alt |= callee->declare_variant_alt;
 
   if (callee && symtab->state != LTO_STREAMING
       && edge->callee->comdat_local_p ())
@@ -4341,7 +4338,7 @@ test_symbol_table_test ()
       /* Verify that the node has order 0 on both iterations,
 	 and thus that nodes have predictable dump names in selftests.  */
       ASSERT_EQ (node->order, 0);
-      ASSERT_STREQ (node->dump_name (), "test_decl/0");
+      ASSERT_STREQ (node->dump_name (), "test_decl/1");
     }
 }
 

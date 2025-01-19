@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@ with Output;   use Output;
 with Scans;    use Scans;
 with Sinput;   use Sinput;
 with Stringt;  use Stringt;
-with Stylesw;  use Stylesw;
 
 package body Errutil is
 
@@ -58,16 +57,12 @@ package body Errutil is
    --  indicates if there are errors attached to the line, which forces
    --  listing on, even in the presence of pragma List (Off).
 
-   procedure Set_Msg_Insertion_Column;
-   --  Handle column number insertion (@ insertion character)
-
    procedure Set_Msg_Text (Text : String; Flag : Source_Ptr);
    --  Add a sequence of characters to the current message. The characters may
    --  be one of the special insertion characters (see documentation in spec).
    --  Flag is the location at which the error is to be posted, which is used
    --  to determine whether or not the # insertion needs a file name. The
-   --  variables Msg_Buffer, Msglen, Is_Style_Msg, Is_Warning_Msg, and
-   --  Is_Unconditional_Msg are set on return.
+   --  variables Msg_Buffer, Msglen and Is_Unconditional_Msg are set on return.
 
    ------------------
    -- Error_Msg_AP --
@@ -173,10 +168,6 @@ package body Errutil is
          return;
       end if;
 
-      if Raise_Exception_On_Error /= 0 then
-         raise Error_Msg_Exception;
-      end if;
-
       Prescan_Message (Msg);
       Set_Msg_Text (Msg, Sptr);
 
@@ -194,15 +185,12 @@ package body Errutil is
       --  Immediate return if warning message and warnings are suppressed.
       --  Note that style messages are not warnings for this purpose.
 
-      if Is_Warning_Msg and then Warnings_Suppressed (Sptr) /= No_String then
+      if Error_Msg_Kind = Warning
+        and then Warnings_Suppressed (Sptr) /= No_String
+      then
          Cur_Msg := No_Error_Msg;
          return;
       end if;
-
-      --  Warning, Style and Info attributes are mutually exclusive
-
-      pragma Assert (Boolean'Pos (Is_Warning_Msg) + Boolean'Pos (Is_Info_Msg) +
-        Boolean'Pos (Is_Style_Msg) <= 1);
 
       --  Otherwise build error message object for new message
 
@@ -218,19 +206,14 @@ package body Errutil is
             Line                => Get_Physical_Line_Number (Sptr),
             Col                 => Get_Column_Number (Sptr),
             Compile_Time_Pragma => Is_Compile_Time_Msg,
-            Warn                => Is_Warning_Msg,
-            Info                => Is_Info_Msg,
-            Check               => Is_Check_Msg,
             Warn_Err            => Warning_Mode = Treat_As_Error,
-            Warn_Runtime_Raise  => Is_Runtime_Raise,
             Warn_Chr            => Warning_Msg_Char,
-            Style               => Is_Style_Msg,
-            Serious             => Is_Serious_Error,
             Uncond              => Is_Unconditional_Msg,
             Msg_Cont            => Continuation,
-            Deleted             => False));
+            Deleted             => False,
+            Kind                => Error_Msg_Kind));
 
-      Cur_Msg  := Errors.Last;
+      Cur_Msg := Errors.Last;
       Prev_Msg := No_Error_Msg;
       Next_Msg := First_Error_Msg;
 
@@ -256,44 +239,11 @@ package body Errutil is
       --  from the parser recovering. In full errors mode, we don't do this
       --  deletion, but otherwise such messages are discarded at this stage.
 
-      if Prev_Msg /= No_Error_Msg
-        and then Errors.Table (Prev_Msg).Line =
-        Errors.Table (Cur_Msg).Line
-        and then Errors.Table (Prev_Msg).Sfile =
-        Errors.Table (Cur_Msg).Sfile
-      then
-         --  Don't delete unconditional messages and at this stage, don't
-         --  delete continuation lines (we attempted to delete those earlier
-         --  if the parent message was deleted.
+      if Is_Redundant_Error_Message (Prev_Msg, Cur_Msg) then
+         pragma Assert (not Continuation);
 
-         if not Errors.Table (Cur_Msg).Uncond
-           and then not Continuation
-         then
-
-            --  Don't delete if prev msg is warning and new msg is an error.
-            --  This is because we don't want a real error masked by a warning.
-            --  In all other cases (that is parse errors for the same line that
-            --  are not unconditional) we do delete the message. This helps to
-            --  avoid junk extra messages from cascaded parsing errors
-
-            if not (Errors.Table (Prev_Msg).Warn
-                     or else
-                    Errors.Table (Prev_Msg).Style)
-              or else
-                   (Errors.Table (Cur_Msg).Warn
-                     or else
-                    Errors.Table (Cur_Msg).Style)
-            then
-               --  All tests passed, delete the message by simply returning
-               --  without any further processing.
-
-               if not Continuation then
-                  Last_Killed := True;
-               end if;
-
-               return;
-            end if;
-         end if;
+         Last_Killed := True;
+         return;
       end if;
 
       --  Come here if message is to be inserted in the error chain
@@ -310,27 +260,7 @@ package body Errutil is
 
       Errors.Table (Cur_Msg).Next := Next_Msg;
 
-      --  Bump appropriate statistics counts
-
-      if Errors.Table (Cur_Msg).Info then
-         Info_Messages := Info_Messages + 1;
-
-      elsif Errors.Table (Cur_Msg).Warn
-        or else Errors.Table (Cur_Msg).Style
-      then
-         Warnings_Detected := Warnings_Detected + 1;
-
-      elsif Errors.Table (Cur_Msg).Check then
-         Check_Messages := Check_Messages + 1;
-
-      else
-         Total_Errors_Detected := Total_Errors_Detected + 1;
-
-         if Errors.Table (Cur_Msg).Serious then
-            Serious_Errors_Detected := Serious_Errors_Detected + 1;
-         end if;
-      end if;
-
+      Increase_Error_Msg_Count (Errors.Table (Cur_Msg));
    end Error_Msg;
 
    -----------------
@@ -411,24 +341,7 @@ package body Errutil is
 
          while E /= No_Error_Msg loop
             if not Errors.Table (E).Deleted then
-               if Full_Path_Name_For_Brief_Errors then
-                  Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
-               else
-                  Write_Name (Reference_Name (Errors.Table (E).Sfile));
-               end if;
-
-               Write_Char (':');
-               Write_Int (Int (Physical_To_Logical
-                                (Errors.Table (E).Line,
-                                 Errors.Table (E).Sfile)));
-               Write_Char (':');
-
-               if Errors.Table (E).Col < 10 then
-                  Write_Char ('0');
-               end if;
-
-               Write_Int (Int (Errors.Table (E).Col));
-               Write_Str (": ");
+               Output_Msg_Location (E);
                Output_Msg_Text (E);
                Write_Eol;
             end if;
@@ -500,84 +413,14 @@ package body Errutil is
       --  Output error summary if verbose or full list mode
 
       if Verbose_Mode or else Full_List then
-
-         --  Extra blank line if error messages or source listing were output
-
-         if Total_Errors_Detected + Warnings_Detected > 0
-           or else Full_List
-         then
-            Write_Eol;
-         end if;
-
-         --  Message giving number of lines read and number of errors detected.
-         --  This normally goes to Standard_Output. The exception is when brief
-         --  mode is not set, verbose mode (or full list mode) is set, and
-         --  there are errors. In this case we send the message to standard
-         --  error to make sure that *something* appears on standard error in
-         --  an error situation.
-
-         --  Historical note: Formerly, only the "# errors" suffix was sent
-         --  to stderr, whereas "# lines:" appeared on stdout. This caused
-         --  some problems on now-obsolete ports, but there seems to be no
-         --  reason to revert this page since it would be incompatible.
-
-         if Total_Errors_Detected + Warnings_Detected /= 0
-           and then not Brief_Output
-           and then (Verbose_Mode or Full_List)
-         then
-            Set_Standard_Error;
-         end if;
-
-         --  Message giving total number of lines
-
-         Write_Str (" ");
-         Write_Int (Num_Source_Lines (Main_Source_File));
-
-         if Num_Source_Lines (Main_Source_File) = 1 then
-            Write_Str (" line: ");
-         else
-            Write_Str (" lines: ");
-         end if;
-
-         if Total_Errors_Detected = 0 then
-            Write_Str ("No errors");
-
-         elsif Total_Errors_Detected = 1 then
-            Write_Str ("1 error");
-
-         else
-            Write_Int (Total_Errors_Detected);
-            Write_Str (" errors");
-         end if;
-
-         if Warnings_Detected /= 0 then
-            Write_Str (", ");
-            Write_Int (Warnings_Detected);
-            Write_Str (" warning");
-
-            if Warnings_Detected /= 1 then
-               Write_Char ('s');
-            end if;
-
-            if Warning_Mode = Treat_As_Error then
-               Write_Str (" (treated as error");
-
-               if Warnings_Detected /= 1 then
-                  Write_Char ('s');
-               end if;
-
-               Write_Char (')');
-            end if;
-         end if;
-
-         Write_Eol;
-         Set_Standard_Output;
+         Write_Error_Summary;
       end if;
 
       if Maximum_Messages /= 0 then
          if Warnings_Detected >= Maximum_Messages then
             Set_Standard_Error;
             Write_Line ("maximum number of warnings detected");
+
             Warning_Mode := Suppress;
          end if;
 
@@ -687,18 +530,6 @@ package body Errutil is
    begin
       Errors_Must_Be_Ignored := To;
    end Set_Ignore_Errors;
-
-   ------------------------------
-   -- Set_Msg_Insertion_Column --
-   ------------------------------
-
-   procedure Set_Msg_Insertion_Column is
-   begin
-      if RM_Column_Check then
-         Set_Msg_Str (" in column ");
-         Set_Msg_Int (Int (Error_Msg_Col) + 1);
-      end if;
-   end Set_Msg_Insertion_Column;
 
    ------------------
    -- Set_Msg_Text --

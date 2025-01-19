@@ -180,17 +180,6 @@ version (GNUFP)
         static assert(0, "Unimplemented architecture");
     }
 }
-else version (CRuntime_DigitalMars)
-{
-    struct fenv_t
-    {
-        ushort    status;
-        ushort    control;
-        ushort    round;
-        ushort[2] reserved;
-    }
-    alias fexcept_t = int;
-}
 else version (CRuntime_Microsoft)
 {
     struct fenv_t
@@ -442,6 +431,14 @@ else version (CRuntime_Musl)
                 uint __mxcsr;
         }
         alias ushort fexcept_t;
+    }
+    else version (LoongArch64)
+    {
+        struct fenv_t
+        {
+            uint __cw;
+        }
+        alias uint fexcept_t;
     }
     else
     {
@@ -872,12 +869,6 @@ version (GNUFP)
     ///
     enum FE_DFL_ENV = cast(fenv_t*)(-1);
 }
-else version (CRuntime_DigitalMars)
-{
-    private extern __gshared fenv_t _FE_DFL_ENV;
-    ///
-    enum fenv_t* FE_DFL_ENV = &_FE_DFL_ENV;
-}
 else version (CRuntime_Microsoft)
 {
     private extern __gshared fenv_t _Fenv0;
@@ -976,7 +967,7 @@ version (CRuntime_Microsoft) // supported since MSVCRT 12 (VS 2013) only
             double num;
             double denom;
         }
-        static __gshared immutable(Entry[5]) table =
+        static immutable Entry[5] table =
         [ // Raise exception by evaluating num / denom:
             { FE_INVALID,   0.0,    0.0    },
             { FE_DIVBYZERO, 1.0,    0.0    },

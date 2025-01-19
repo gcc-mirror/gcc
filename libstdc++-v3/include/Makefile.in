@@ -427,6 +427,8 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/deque \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/execution \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/filesystem \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/flat_map \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/flat_set \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/format \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/forward_list \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/fstream \
@@ -489,7 +491,9 @@ bits_freestanding = \
 	${bits_srcdir}/iterator_concepts.h \
 	${bits_srcdir}/max_size_type.h \
 	${bits_srcdir}/memoryfwd.h \
+	${bits_srcdir}/monostate.h \
 	${bits_srcdir}/move.h \
+	${bits_srcdir}/ostream.h \
 	${bits_srcdir}/out_ptr.h \
 	${bits_srcdir}/predefined_ops.h \
 	${bits_srcdir}/parse_numbers.h \

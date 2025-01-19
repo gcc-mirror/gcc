@@ -2,7 +2,7 @@
 // { dg-options "-Wall" }
 // -*- C++ -*-
  
-// Copyright (C) 2004-2024 Free Software Foundation, Inc.
+// Copyright (C) 2004-2025 Free Software Foundation, Inc.
  
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,7 +44,7 @@ case_labels(bitmask_type b)
       break;
     case std::ios_base::trunc:
       break;
-#ifdef __glibcxx_ios_noreplace
+#ifdef __cpp_lib_ios_noreplace
     case std::ios_base::noreplace:
       break;
 #endif

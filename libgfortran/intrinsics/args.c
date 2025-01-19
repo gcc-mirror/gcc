@@ -1,6 +1,6 @@
 /* Implementation of the GETARG and IARGC g77, and
    corresponding F2003, intrinsics. 
-   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+   Copyright (C) 2004-2025 Free Software Foundation, Inc.
    Contributed by Bud Davis and Janne Blomqvist.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).

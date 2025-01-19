@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -728,9 +728,10 @@ package body Sem_Elim is
    begin
       --  No check needed within a default expression for a formal, since this
       --  is not really a use, and the expression (a call or attribute) may
-      --  never be used if the enclosing subprogram is itself eliminated.
+      --  never be used if the enclosing subprogram is itself eliminated. Same
+      --  under strict preanalysis.
 
-      if In_Spec_Expression then
+      if Preanalysis_Active then
          return;
       end if;
 

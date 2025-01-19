@@ -1,7 +1,7 @@
 /* Functions for querying whether a function name is reserved by the
    OpenMP API.  This is used for error checking.
 
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 extern bool omp_runtime_api_procname (const char *name);
 extern bool omp_runtime_api_call (const_tree fndecl);
 
-extern int omp_get_fr_id_from_name (const char *);
+extern char omp_get_fr_id_from_name (const char *);
 extern const char *omp_get_name_from_fr_id (int);
 
 #endif

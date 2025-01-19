@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (function shapes)
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -71,7 +71,11 @@ namespace aarch64_sve
        scalar displacement".
 
      - "_pred" indicates that the function takes an svbool_t argument
-       that does not act as a governing predicate..  */
+       that does not act as a governing predicate..
+
+     - "_group_selection" indicates that the function takes an imm integer
+       argument that selects a specific group of elements that fit a 128 bit
+       vector. */
   namespace shapes
   {
     extern const function_shape *const adr_index;
@@ -128,6 +132,7 @@ namespace aarch64_sve
     extern const function_shape *const dupq;
     extern const function_shape *const dup_neonq;
     extern const function_shape *const ext;
+    extern const function_shape *const extq;
     extern const function_shape *const extract_pred;
     extern const function_shape *const fold_left;
     extern const function_shape *const get;
@@ -139,6 +144,7 @@ namespace aarch64_sve
     extern const function_shape *const inherent;
     extern const function_shape *const inherent_b;
     extern const function_shape *const inherent_za;
+    extern const function_shape *const inherent_za_slice;
     extern const function_shape *const inherent_zt;
     extern const function_shape *const inherent_mask_za;
     extern const function_shape *const ldr_zt;
@@ -152,12 +158,19 @@ namespace aarch64_sve
     extern const function_shape *const load_gather_sv;
     extern const function_shape *const load_gather_sv_restricted;
     extern const function_shape *const load_gather_vs;
+    extern const function_shape *const load_gather64_sv_index;
+    extern const function_shape *const load_gather64_sv_offset;
+    extern const function_shape *const load_gather64_vs_index;
+    extern const function_shape *const load_gather64_vs_offset;
     extern const function_shape *const load_replicate;
     extern const function_shape *const load_za;
     extern const function_shape *const luti2_lane_zt;
     extern const function_shape *const luti4_lane_zt;
     extern const function_shape *const mmla;
     extern const function_shape *const pattern_pred;
+    extern const function_shape *const pmov_from_vector;
+    extern const function_shape *const pmov_from_vector_lane;
+    extern const function_shape *const pmov_to_vector_lane;
     extern const function_shape *const prefetch;
     extern const function_shape *const prefetch_gather_index;
     extern const function_shape *const prefetch_gather_offset;
@@ -167,6 +180,7 @@ namespace aarch64_sve
     extern const function_shape *const read_za_m;
     extern const function_shape *const read_za_slice;
     extern const function_shape *const reduction;
+    extern const function_shape *const reduction_neonq;
     extern const function_shape *const reduction_wide;
     extern const function_shape *const reinterpret;
     extern const function_shape *const select_pred;
@@ -186,6 +200,8 @@ namespace aarch64_sve
     extern const function_shape *const store_scatter_index_restricted;
     extern const function_shape *const store_scatter_offset;
     extern const function_shape *const store_scatter_offset_restricted;
+    extern const function_shape *const store_scatter64_index;
+    extern const function_shape *const store_scatter64_offset;
     extern const function_shape *const store_za;
     extern const function_shape *const storexn;
     extern const function_shape *const str_za;
@@ -201,6 +217,10 @@ namespace aarch64_sve
     extern const function_shape *const ternary_lane_rotate;
     extern const function_shape *const ternary_long_lane;
     extern const function_shape *const ternary_long_opt_n;
+    extern const function_shape *const ternary_mfloat8;
+    extern const function_shape *const ternary_mfloat8_lane;
+    extern const function_shape *const ternary_mfloat8_lane_group_selection;
+    extern const function_shape *const ternary_mfloat8_opt_n;
     extern const function_shape *const ternary_opt_n;
     extern const function_shape *const ternary_qq_or_011_lane;
     extern const function_shape *const ternary_qq_lane_rotate;
@@ -217,7 +237,10 @@ namespace aarch64_sve
     extern const function_shape *const unary;
     extern const function_shape *const unary_convert;
     extern const function_shape *const unary_convert_narrowt;
+    extern const function_shape *const unary_convertxn_narrowt;
     extern const function_shape *const unary_convertxn;
+    extern const function_shape *const unary_convertxn_narrow;
+    extern const function_shape *const unary_lane;
     extern const function_shape *const unary_long;
     extern const function_shape *const unary_n;
     extern const function_shape *const unary_narrowb;

@@ -53045,7 +53045,6 @@
 
 	* gcc.target/i386/extendditi2-1.c: New test case.
 	* gcc.target/i386/extendditi2-2.c: Likewise.
-
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 

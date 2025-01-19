@@ -21,6 +21,7 @@ import dmd.astcodegen;
 import dmd.astenums;
 import dmd.attrib;
 import dmd.blockexit;
+import dmd.timetrace;
 import dmd.clone;
 import dmd.dcast;
 import dmd.dclass;
@@ -40,6 +41,7 @@ import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -55,6 +57,7 @@ import dmd.parse;
 import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
+import dmd.root.string : toDString;
 import dmd.rootobject;
 import dmd.root.utf;
 import dmd.sideeffect;
@@ -117,43 +120,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
         else if (result)
             return;
 
-        if (sa.msgs)
-        {
-            OutBuffer msgbuf;
-            for (size_t i = 0; i < sa.msgs.length; i++)
-            {
-                Expression e = (*sa.msgs)[i];
-                sc = sc.startCTFE();
-                e = e.expressionSemantic(sc);
-                e = resolveProperties(sc, e);
-                sc = sc.endCTFE();
-                e = ctfeInterpretForPragmaMsg(e);
-                if (e.op == EXP.error)
-                {
-                    errorSupplemental(sa.loc, "while evaluating `static assert` argument `%s`", (*sa.msgs)[i].toChars());
-                    return;
-                }
-                StringExp se = e.toStringExp();
-                if (se)
-                {
-                    const slice = se.toUTF8(sc).peekString();
-                    // Hack to keep old formatting to avoid changing error messages everywhere
-                    if (sa.msgs.length == 1)
-                        msgbuf.printf("\"%.*s\"", cast(int)slice.length, slice.ptr);
-                    else
-                        msgbuf.printf("%.*s", cast(int)slice.length, slice.ptr);
-                }
-                else
-                    msgbuf.printf("%s", e.toChars());
-            }
-            error(sa.loc, "static assert:  %s", msgbuf.extractChars());
-        }
-        else
-            error(sa.loc, "static assert:  `%s` is false", sa.exp.toChars());
-        if (sc.tinst)
-            sc.tinst.printInstantiationTrace();
-        if (!global.gag)
-            fatal();
+        staticAssertFail(sa, sc);
     }
 
     override void visit(TemplateInstance tempinst)
@@ -179,11 +146,9 @@ private extern(C++) final class Semantic2Visitor : Visitor
         sc.tinst = tempinst;
         sc.minst = tempinst.minst;
 
-        int needGagging = (tempinst.gagged && !global.gag);
-        uint olderrors = global.errors;
-        int oldGaggedErrors = -1; // dead-store to prevent spurious warning
-        if (needGagging)
-            oldGaggedErrors = global.startGagging();
+        const needGagging = (tempinst.gagged && !global.gag);
+        const olderrors = global.errors;
+        const oldGaggedErrors = needGagging ? global.startGagging() : -1;
 
         for (size_t i = 0; i < tempinst.members.length; i++)
         {
@@ -263,7 +228,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             return;
         }
 
-        UserAttributeDeclaration.checkGNUABITag(vd, vd._linkage);
+        checkGNUABITag(vd, vd._linkage);
 
         if (vd._init && !vd.toParent().isFuncDeclaration())
         {
@@ -281,7 +246,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             // https://issues.dlang.org/show_bug.cgi?id=14166
             // https://issues.dlang.org/show_bug.cgi?id=20417
             // Don't run CTFE for the temporary variables inside typeof or __traits(compiles)
-            vd._init = vd._init.initializerSemantic(sc, vd.type, sc.intypeof == 1 || sc.flags & SCOPE.compile ? INITnointerpret : INITinterpret);
+            vd._init = vd._init.initializerSemantic(sc, vd.type, sc.intypeof == 1 || sc.traitsCompiles ? INITnointerpret : INITinterpret);
             lowerStaticAAs(vd, sc);
             vd.inuse--;
         }
@@ -314,7 +279,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                         return arrayHasInvalidEnumInitializer((cast(StructLiteralExp)e).elements);
                     if (e.op == EXP.assocArrayLiteral)
                     {
-                        AssocArrayLiteralExp ae = cast(AssocArrayLiteralExp)e;
+                        auto ae = cast(AssocArrayLiteralExp)e;
                         return arrayHasInvalidEnumInitializer(ae.values) ||
                                arrayHasInvalidEnumInitializer(ae.keys);
                     }
@@ -329,7 +294,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
         {
             // Cannot initialize a thread-local class or pointer to struct variable with a literal
             // that itself is a thread-local reference and would need dynamic initialization also.
-            if ((vd.type.ty == Tclass) && vd.type.isMutable() && !vd.type.isShared())
+            if (vd.type.ty == Tclass && vd.type.isMutable() && !vd.type.isShared())
             {
                 ExpInitializer ei = vd._init.isExpInitializer();
                 if (ei && ei.exp.op == EXP.classReference)
@@ -391,6 +356,9 @@ private extern(C++) final class Semantic2Visitor : Visitor
         }
         assert(fd.semanticRun <= PASS.semantic2);
         fd.semanticRun = PASS.semantic2;
+
+        timeTraceBeginEvent(TimeTraceEventType.sema2);
+        scope(exit) timeTraceEndEvent(TimeTraceEventType.sema2, fd);
 
         //printf("FuncDeclaration::semantic2 [%s] fd: %s type: %s\n", fd.loc.toChars(), fd.toChars(), fd.type ? fd.type.toChars() : "".ptr);
 
@@ -501,7 +469,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             return;
         TypeFunction f = cast(TypeFunction) fd.type;
 
-        UserAttributeDeclaration.checkGNUABITag(fd, fd._linkage);
+        checkGNUABITag(fd, fd._linkage);
         //semantic for parameters' UDAs
         foreach (i, param; f.parameterList)
         {
@@ -535,7 +503,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             printf("+Nspace::semantic2('%s')\n", ns.toChars());
             scope(exit) printf("-Nspace::semantic2('%s')\n", ns.toChars());
         }
-        UserAttributeDeclaration.checkGNUABITag(ns, LINK.cpp);
+        checkGNUABITag(ns, LINK.cpp);
         if (!ns.members)
             return;
 
@@ -593,7 +561,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
 
     override void visit(CPPNamespaceDeclaration decl)
     {
-        UserAttributeDeclaration.checkGNUABITag(decl, LINK.cpp);
+        checkGNUABITag(decl, LINK.cpp);
         visit(cast(AttribDeclaration)decl);
     }
 
@@ -620,7 +588,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                 }
 
                 // Handles compiler-recognized `core.attribute.gnuAbiTag`
-                if (UserAttributeDeclaration.isGNUABITag(e))
+                if (isGNUABITag(e))
                     doGNUABITagSemantic(e, lastTag);
             }
         }
@@ -642,8 +610,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             return;
         }
 
-        UserAttributeDeclaration.checkGNUABITag(
-            ad, ad.classKind == ClassKind.cpp ? LINK.cpp : LINK.d);
+        checkGNUABITag(ad, ad.classKind == ClassKind.cpp ? LINK.cpp : LINK.d);
 
         auto sc2 = ad.newScope(sc);
 
@@ -750,8 +717,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
  */
 private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
 {
-    import dmd.dmangle;
-
+    import dmd.mangle : isValidMangling;
     // When `@gnuAbiTag` is used, the type will be the UDA, not the struct literal
     if (e.op == EXP.type)
     {
@@ -887,4 +853,59 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
 
         aaExp.lowering = loweredExp;
     }
+
+    // https://issues.dlang.org/show_bug.cgi?id=24602
+    // TODO: Is this intionally not visited by SemanticTimeTransitiveVisitor?
+    override void visit(ClassReferenceExp crExp)
+    {
+        this.visit(crExp.value);
+    }
+}
+
+/**
+ * Given a static assert with a failing condition, print an error
+ * Params:
+ *   sa = Static assert with failing condition
+ *   sc = scope for evaluating assert message and printing context
+ */
+void staticAssertFail(StaticAssert sa, Scope* sc)
+{
+    if (sa.msgs)
+    {
+        OutBuffer msgbuf;
+        for (size_t i = 0; i < sa.msgs.length; i++)
+        {
+            Expression e = (*sa.msgs)[i];
+            sc = sc.startCTFE();
+            e = e.expressionSemantic(sc);
+            e = resolveProperties(sc, e);
+            sc = sc.endCTFE();
+            e = ctfeInterpretForPragmaMsg(e);
+            if (e.op == EXP.error)
+            {
+                errorSupplemental(sa.loc, "while evaluating `static assert` argument `%s`", (*sa.msgs)[i].toChars());
+                if (!global.gag)
+                    fatal();
+                return;
+            }
+            if (StringExp se = e.toStringExp())
+            {
+                const slice = se.toUTF8(sc).peekString();
+                // Hack to keep old formatting to avoid changing error messages everywhere
+                if (sa.msgs.length == 1)
+                    msgbuf.printf("\"%.*s\"", cast(int)slice.length, slice.ptr);
+                else
+                    msgbuf.printf("%.*s", cast(int)slice.length, slice.ptr);
+            }
+            else
+                msgbuf.printf("%s", e.toChars());
+        }
+        error(sa.loc, "static assert:  %s", msgbuf.extractChars());
+    }
+    else
+        error(sa.loc, "static assert:  `%s` is false", sa.exp.toChars());
+    if (sc.tinst)
+        sc.tinst.printInstantiationTrace();
+    if (!global.gag)
+        fatal();
 }

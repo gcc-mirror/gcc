@@ -1,5 +1,5 @@
 /* Linux-specific atomic operations for NDS32 Linux.
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -207,8 +207,6 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
 
 SUBWORD_VAL_CAS (unsigned short, 2)
 SUBWORD_VAL_CAS (unsigned char,  1)
-
-typedef unsigned char bool;
 
 bool HIDDEN
 __sync_bool_compare_and_swap_4 (int *ptr, int oldval, int newval)

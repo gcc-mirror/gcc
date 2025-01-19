@@ -6,4 +6,6 @@ int main ()
   return f();
 }
 
+#error foo			// { dg-error "foo" }
+
 // { dg-final { scan-lang-dump {Translating include to import} module } }

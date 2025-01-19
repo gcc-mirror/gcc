@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This file contains the definition of the types provided by the
-   Fortran 2003 ISO_C_BINDING intrinsic module.  */
+   Fortran 2003 ISO_C_BINDING intrinsic module.  The ordering of
+   the entries matters for the *.mod backwards compatibility.  */
 
 #ifndef NAMED_INTCST
 # define NAMED_INTCST(a,b,c,d)
@@ -112,62 +113,6 @@ NAMED_INTCST (ISOCBINDING_INT_FAST64_T, "c_int_fast64_t", \
 NAMED_INTCST (ISOCBINDING_INT_FAST128_T, "c_int_fast128_t",
 	      get_int_kind_from_width (128), GFC_STD_GNU)
 
-/* UNSIGNED.  */
-NAMED_UINTCST (ISOCBINDING_UINT, "c_unsigned", gfc_c_uint_kind, \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_USHORT, "c_unsigned_short", \
-	       get_unsigned_kind_from_node (short_unsigned_type_node), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UCHAR, "c_unsigned_char", \
-	       get_unsigned_kind_from_node (unsigned_char_type_node), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_ULONG, "c_unsigned_long", \
-	       get_unsigned_kind_from_node (long_unsigned_type_node), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_ULONGLONG, "c_unsigned_long_long", \
-	       get_unsigned_kind_from_node (long_long_unsigned_type_node), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINTMAX_T, "c_uintmax_t", \
-	       get_uint_kind_from_name (UINTMAX_TYPE), GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT8_T, "c_uint8_t", \
-	       get_uint_kind_from_name (UINT8_TYPE), GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT16_T, "c_uint16_t", \
-	       get_uint_kind_from_name (UINT16_TYPE), GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT32_T, "c_uint32_t", \
-	       get_uint_kind_from_name (UINT32_TYPE), GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT64_T, "c_uint64_t", \
-	       get_uint_kind_from_name (UINT64_TYPE), GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT128_T, "c_uint128_t", \
-	       get_uint_kind_from_width (128), GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_LEAST8_T, "c_uint_least8_t", \
-	       get_uint_kind_from_name (UINT_LEAST8_TYPE), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_LEAST16_T, "c_uint_least16_t", \
-	       get_uint_kind_from_name (UINT_LEAST16_TYPE), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_LEAST32_T, "c_uint_least32_t", \
-	       get_uint_kind_from_name (UINT_LEAST32_TYPE),\
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_LEAST64_T, "c_uint_least64_t", \
-	       get_uint_kind_from_name (UINT_LEAST64_TYPE),\
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_LEAST128_T, "c_uint_least128_t", \
-	       get_uint_kind_from_width (128), GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_FAST8_T, "c_uint_fast8_t", \
-	       get_uint_kind_from_name (UINT_FAST8_TYPE), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_FAST16_T, "c_uint_fast16_t", \
-	       get_uint_kind_from_name (UINT_FAST16_TYPE), \
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_FAST32_T, "c_uint_fast32_t", \
-	       get_uint_kind_from_name (UINT_FAST32_TYPE),\
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_FAST64_T, "c_uint_fast64_t", \
-	       get_uint_kind_from_name (UINT_FAST64_TYPE),\
-	       GFC_STD_UNSIGNED)
-NAMED_UINTCST (ISOCBINDING_UINT_FAST128_T, "c_uint_fast128_t", \
-	       get_uint_kind_from_width (128), GFC_STD_UNSIGNED)
-
 NAMED_REALCST (ISOCBINDING_FLOAT, "c_float", \
                get_real_kind_from_node (float_type_node), GFC_STD_F2003)
 NAMED_REALCST (ISOCBINDING_DOUBLE, "c_double", \
@@ -255,6 +200,65 @@ NAMED_FUNCTION (ISOCBINDING_LOC, "c_loc",
 
 NAMED_FUNCTION (ISOCBINDING_C_SIZEOF, "c_sizeof", \
                 GFC_ISYM_C_SIZEOF, GFC_STD_F2008)
+
+NAMED_FUNCTION (ISOCBINDING_F_C_STRING, "f_c_string", \
+                GFC_ISYM_F_C_STRING, GFC_STD_F2023)
+
+/* UNSIGNED.  */
+NAMED_UINTCST (ISOCBINDING_UINT, "c_unsigned", gfc_c_uint_kind, \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_USHORT, "c_unsigned_short", \
+	       get_unsigned_kind_from_node (short_unsigned_type_node), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UCHAR, "c_unsigned_char", \
+	       get_unsigned_kind_from_node (unsigned_char_type_node), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_ULONG, "c_unsigned_long", \
+	       get_unsigned_kind_from_node (long_unsigned_type_node), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_ULONGLONG, "c_unsigned_long_long", \
+	       get_unsigned_kind_from_node (long_long_unsigned_type_node), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINTMAX_T, "c_uintmax_t", \
+	       get_uint_kind_from_name (UINTMAX_TYPE), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT8_T, "c_uint8_t", \
+	       get_uint_kind_from_name (UINT8_TYPE), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT16_T, "c_uint16_t", \
+	       get_uint_kind_from_name (UINT16_TYPE), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT32_T, "c_uint32_t", \
+	       get_uint_kind_from_name (UINT32_TYPE), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT64_T, "c_uint64_t", \
+	       get_uint_kind_from_name (UINT64_TYPE), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT128_T, "c_uint128_t", \
+	       get_uint_kind_from_width (128), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_LEAST8_T, "c_uint_least8_t", \
+	       get_uint_kind_from_name (UINT_LEAST8_TYPE), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_LEAST16_T, "c_uint_least16_t", \
+	       get_uint_kind_from_name (UINT_LEAST16_TYPE), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_LEAST32_T, "c_uint_least32_t", \
+	       get_uint_kind_from_name (UINT_LEAST32_TYPE),\
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_LEAST64_T, "c_uint_least64_t", \
+	       get_uint_kind_from_name (UINT_LEAST64_TYPE),\
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_LEAST128_T, "c_uint_least128_t", \
+	       get_uint_kind_from_width (128), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_FAST8_T, "c_uint_fast8_t", \
+	       get_uint_kind_from_name (UINT_FAST8_TYPE), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_FAST16_T, "c_uint_fast16_t", \
+	       get_uint_kind_from_name (UINT_FAST16_TYPE), \
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_FAST32_T, "c_uint_fast32_t", \
+	       get_uint_kind_from_name (UINT_FAST32_TYPE),\
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_FAST64_T, "c_uint_fast64_t", \
+	       get_uint_kind_from_name (UINT_FAST64_TYPE),\
+	       GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOCBINDING_UINT_FAST128_T, "c_uint_fast128_t", \
+	       get_uint_kind_from_width (128), GFC_STD_UNSIGNED)
 
 #undef NAMED_INTCST
 #undef NAMED_UINTCST

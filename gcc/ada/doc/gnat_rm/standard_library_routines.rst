@@ -383,7 +383,8 @@ the unit is not implemented.
   then such a backward jump may occur.
 
 ``Ada.Real_Time.Timing_Events`` *(D.15)*
-  Not implemented in GNAT.
+  This package allows procedures to be executed at a specified time without
+  the use of a task or a delay statement.
 
 ``Ada.Sequential_IO`` *(A.8.1)*
   This package provides input-output facilities for sequential files,

@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -397,6 +397,14 @@ DEFTREECODE (TYPE_PACK_EXPANSION, "type_pack_expansion", tcc_type, 0)
    but will be used for expressions.  */
 DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 3)
 
+/* Represents a pack index Ts...[I], yielding a type.  PACK_INDEX_PACK is
+   the pack expansion Ts, PACK_INDEX_INDEX the index I.  */
+DEFTREECODE (PACK_INDEX_TYPE, "pack_index_type", tcc_type, 0)
+
+/* Represents a pack index Ts...[I], yielding an expression.  PACK_INDEX_PACK
+   is the pack expansion Ts, PACK_INDEX_INDEX the index I.  */
+DEFTREECODE (PACK_INDEX_EXPR, "pack_index_expr", tcc_expression, 2)
+
 /* Selects the Ith parameter out of an argument pack. This node will
    be used when instantiating pack expansions; see
    tsubst_pack_expansion.
@@ -487,12 +495,6 @@ DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
 /* Used to represent information associated with constrained declarations. */
 DEFTREECODE (CONSTRAINT_INFO, "constraint_info", tcc_exceptional, 0)
 
-/* A wildcard declaration is a placeholder for a template parameter
-   used to resolve constrained-type-names in concepts.  During
-   resolution, the matching argument is saved as the TREE_TYPE
-   of the wildcard.  */
-DEFTREECODE (WILDCARD_DECL, "wildcard_decl", tcc_declaration, 0)
-
 /* A requires-expr has three operands. The first operand is
    its parameter list (possibly NULL). The second is a list of
    requirements, which are denoted by the _REQ* tree codes
@@ -572,6 +574,12 @@ DEFTREECODE (CO_RETURN_EXPR, "co_return", tcc_statement, 2)
 DEFTREECODE (ASSERTION_STMT, "assertion_stmt", tcc_statement, 3)
 DEFTREECODE (PRECONDITION_STMT, "precondition_stmt", tcc_statement, 3)
 DEFTREECODE (POSTCONDITION_STMT, "postcondition_stmt", tcc_statement, 4)
+
+/* A reference to a translation-unit local entity.
+
+   This is emitted by modules streaming when writing a TU-local entity that
+   wasn't an exposure (e.g. in a non-inline function template).  */
+DEFTREECODE (TU_LOCAL_ENTITY, "tu_local_entity", tcc_exceptional, 0)
 
 /*
 Local variables:

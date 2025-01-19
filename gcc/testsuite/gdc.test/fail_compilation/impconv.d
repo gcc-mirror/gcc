@@ -3,7 +3,7 @@ FIXME: DMD host compilers < 2.073 with faulty optimization
 lead to unfortunate test failures, see
 https://github.com/dlang/dmd/pull/6831#issuecomment-304495842.
 
-DISABLED: win32 win64 linux osx freebsd
+DISABLED: win32 win64 linux osx freebsd openbsd
 */
 
 /*

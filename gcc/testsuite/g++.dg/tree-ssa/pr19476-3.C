@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fcheck-new -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fcheck-new -fdump-tree-optimized -fno-allocation-dce" } */
 
 #include <new>
 

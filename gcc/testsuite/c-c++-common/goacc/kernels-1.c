@@ -1,3 +1,5 @@
+// See also 'parallel-1.c', 'serial-1.c'.
+
 /* { dg-additional-options "-fopt-info-optimized-omp" } */
 
 int

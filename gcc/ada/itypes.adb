@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,9 +85,9 @@ package body Itypes is
    ---------------------------------
 
    function Create_Null_Excluding_Itype
-      (T           : Entity_Id;
-       Related_Nod : Node_Id;
-       Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
+     (T           : Entity_Id;
+      Related_Nod : Node_Id;
+      Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
    is
       I_Typ : Entity_Id;
 

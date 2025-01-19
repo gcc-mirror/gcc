@@ -1,5 +1,5 @@
 // rust-gcc.cc -- Rust frontend to gcc IR.
-// Copyright (C) 2011-2024 Free Software Foundation, Inc.
+// Copyright (C) 2011-2025 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 // forked from gccgo
 

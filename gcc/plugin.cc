@@ -1,5 +1,5 @@
 /* Support for GCC plugin mechanism.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -714,7 +714,7 @@ try_init_one_plugin (struct plugin_name_args *plugin)
   /* Check the plugin license.  */
   if (dlsym (dl_handle, str_license) == NULL)
     fatal_error (input_location,
-		 "plugin %s is not licensed under a GPL-compatible license"
+		 "plugin %s is not licensed under a GPL-compatible license:"
 		 " %s", plugin->full_name, dlerror ());
 
   PTR_UNION_AS_VOID_PTR (plugin_init_union)

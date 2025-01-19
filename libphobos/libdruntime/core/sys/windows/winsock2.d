@@ -405,7 +405,7 @@ const(SOCKET)* stop = start + set.fd_count;
 
 
 // Adds.
-void FD_SET(SOCKET fd, fd_set* set)     pure @nogc
+void FD_SET(SOCKET fd, fd_set* set) pure @nogc
 {
     uint c = set.fd_count;
     set.fd_array.ptr[c] = fd;
@@ -547,13 +547,29 @@ enum: uint
 
 enum: int
 {
-    AI_PASSIVE = 0x1,
-    AI_CANONNAME = 0x2,
-    AI_NUMERICHOST = 0x4,
-    AI_ADDRCONFIG = 0x0400,
-    AI_NON_AUTHORITATIVE = 0x04000,
-    AI_SECURE = 0x08000,
-    AI_RETURN_PREFERRED_NAMES = 0x010000,
+    AI_PASSIVE = 0x1, // Socket address will be used in bind() call
+    AI_CANONNAME = 0x2, // Return canonical name in first ai_canonname
+    AI_NUMERICHOST = 0x4, // Nodename must be a numeric address string
+    AI_NUMERICSERV = 0x8, // Servicename must be a numeric port number
+    AI_DNS_ONLY = 0x10, // Restrict queries to unicast DNS only (no LLMNR, netbios, etc.)
+    AI_FORCE_CLEAR_TEXT = 0x20, // Force clear text DNS query
+    AI_BYPASS_DNS_CACHE = 0x40, // Bypass DNS cache
+    AI_RETURN_TTL = 0x80, // Return record TTL
+    AI_ALL = 0x0100, // Query both IP6 and IP4 with AI_V4MAPPED
+    AI_ADDRCONFIG = 0x0400, // Resolution only if global address configured
+    AI_V4MAPPED = 0x0800, // On v6 failure, query v4 and convert to V4MAPPED format
+    AI_NON_AUTHORITATIVE = 0x04000, // LUP_NON_AUTHORITATIVE
+    AI_SECURE = 0x08000, // LUP_SECURE
+    AI_RETURN_PREFERRED_NAMES = 0x010000, // LUP_RETURN_PREFERRED_NAMES
+    AI_FQDN = 0x00020000, // Return the FQDN in ai_canonname
+    AI_FILESERVER = 0x00040000, // Resolving fileserver name resolution
+    AI_DISABLE_IDN_ENCODING = 0x00080000, // Disable Internationalized Domain Names handling
+    AI_SECURE_WITH_FALLBACK = 0x00100000, // Forces clear text fallback if the secure DNS query fails
+    AI_EXCLUSIVE_CUSTOM_SERVERS = 0x00200000, // Use exclusively the custom DNS servers
+    AI_RETURN_RESPONSE_FLAGS = 0x10000000, // Requests extra information about the DNS results
+    AI_REQUIRE_SECURE = 0x20000000, // Forces the DNS query to be done over seucre protocols
+    AI_RESOLUTION_HANDLE = 0x40000000, // Request resolution handle
+    AI_EXTENDED = 0x80000000, // Indicates this is extended ADDRINFOEX(2/..) struct
 }
 
 
@@ -702,12 +718,12 @@ struct hostent
 // Note: These are Winsock2!!
 struct WSAOVERLAPPED;
 alias LPWSAOVERLAPPED = WSAOVERLAPPED*;
-alias LPWSAOVERLAPPED_COMPLETION_ROUTINE = void function(uint, uint, LPWSAOVERLAPPED, uint);
+alias LPWSAOVERLAPPED_COMPLETION_ROUTINE = void function(uint, uint, LPWSAOVERLAPPED, uint) nothrow @nogc;
 int WSAIoctl(SOCKET s, uint dwIoControlCode,
     void* lpvInBuffer, uint cbInBuffer,
     void* lpvOutBuffer, uint cbOutBuffer,
     uint* lpcbBytesReturned,
-    LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+    LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine) @nogc;
 
 
 enum IOC_VENDOR = 0x18000000;
@@ -720,3 +736,31 @@ struct tcp_keepalive
     uint keepalivetime;
     uint keepaliveinterval;
 }
+
+
+struct pollfd
+{
+    SOCKET  fd;        // Socket handle
+    short   events;    // Requested events to monitor
+    short   revents;   // Returned events indicating status
+}
+alias WSAPOLLFD = pollfd;
+alias PWSAPOLLFD = pollfd*;
+alias LPWSAPOLLFD = pollfd*;
+
+enum: short {
+    POLLRDNORM = 0x0100,
+    POLLRDBAND = 0x0200,
+    POLLIN = (POLLRDNORM | POLLRDBAND),
+    POLLPRI = 0x0400,
+
+    POLLWRNORM = 0x0010,
+    POLLOUT = (POLLWRNORM),
+    POLLWRBAND = 0x0020,
+
+    POLLERR = 0x0001,
+    POLLHUP = 0x0002,
+    POLLNVAL = 0x0004
+}
+
+int WSAPoll(LPWSAPOLLFD fdArray, uint fds, int timeout) @nogc;

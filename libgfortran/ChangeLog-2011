@@ -1476,7 +1476,6 @@
 	PR libgfortran/47154
 	* io/list_read.c (namelist_read): Remove calls to hit_eof to avoid the
 	duplicate calls via next_record.
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

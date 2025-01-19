@@ -1,5 +1,5 @@
 ;; Constraint definitions for RISC-V target.
-;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2025 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -28,10 +28,20 @@
 (define_register_constraint "j" "SIBCALL_REGS"
   "@internal")
 
+(define_register_constraint "R" "GR_REGS"
+  "Even-odd general purpose register pair."
+  "regno % 2 == 0")
+
 ;; Avoid using register t0 for JALR's argument, because for some
 ;; microarchitectures that is a return-address stack hint.
 (define_register_constraint "l" "JALR_REGS"
   "@internal")
+
+(define_register_constraint "cr" "RVC_GR_REGS"
+  "RVC general purpose register (x8-x15).")
+
+(define_register_constraint "cf" "TARGET_HARD_FLOAT ? RVC_FP_REGS : (TARGET_ZFINX ? RVC_GR_REGS : NO_REGS)"
+  "RVC floating-point registers (f8-f15), if available, reuse GPR as FPR when use zfinx.")
 
 ;; General constraints
 
@@ -45,27 +55,27 @@
   (and (match_code "const_int")
        (match_test "ival == 0")))
 
-(define_constraint "c01"
+(define_constraint "k01"
   "Constant value 1."
   (and (match_code "const_int")
        (match_test "ival == 1")))
 
-(define_constraint "c02"
+(define_constraint "k02"
   "Constant value 2"
   (and (match_code "const_int")
        (match_test "ival == 2")))
 
-(define_constraint "c03"
+(define_constraint "k03"
   "Constant value 3"
   (and (match_code "const_int")
        (match_test "ival == 3")))
 
-(define_constraint "c04"
+(define_constraint "k04"
   "Constant value 4"
   (and (match_code "const_int")
        (match_test "ival == 4")))
 
-(define_constraint "c08"
+(define_constraint "k08"
   "Constant value 8"
   (and (match_code "const_int")
        (match_test "ival == 8")))

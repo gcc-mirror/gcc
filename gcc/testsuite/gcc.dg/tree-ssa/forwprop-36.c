@@ -21,5 +21,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "if \\(b.0_\[0-9\]+ != 0\\)" "cddce1" { target { ! mmix-knuth-mmixware } } } } */
-/* { dg-final { scan-tree-dump "if \\(b::1_\[0-9\]+ != 0\\)" "cddce1" { target { mmix-knuth-mmixware } } } } */
+/* { dg-final { scan-tree-dump "if \\(b\\.\[01\]_\[0-9\]+ != 0\\)" "cddce1" } } */

@@ -6,7 +6,7 @@
 
 #undef FIVE // no effect
 import "macro-4_a.H";
-int a;
+inline int a;
 #undef THREE
 #undef FOUR
 #define FOUR 4c

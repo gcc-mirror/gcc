@@ -1,7 +1,5 @@
 // REQUIRED_ARGS: -g
 
-// If this is failing, you need optlink 8.00.14 or higher
-
 string gen()
 {
     string m;

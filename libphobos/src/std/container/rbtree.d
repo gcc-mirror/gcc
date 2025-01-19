@@ -1057,7 +1057,8 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
 
        Complexity: $(BIGOH log(n))
      +/
-    bool opBinaryRight(string op)(Elem e) const if (op == "in")
+    bool opBinaryRight(string op)(Elem e) const
+    if (op == "in")
     {
         return _find(e) !is null;
     }
@@ -1261,7 +1262,8 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      *
      * Complexity: $(BIGOH log(n))
      */
-    size_t stableInsert(Stuff)(Stuff stuff) if (isImplicitlyConvertible!(Stuff, Elem))
+    size_t stableInsert(Stuff)(Stuff stuff)
+    if (isImplicitlyConvertible!(Stuff, Elem))
     {
         static if (allowDuplicates)
         {
@@ -1283,8 +1285,8 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      * Complexity: $(BIGOH m * log(n))
      */
     size_t stableInsert(Stuff)(scope Stuff stuff)
-        if (isInputRange!Stuff &&
-            isImplicitlyConvertible!(ElementType!Stuff, Elem))
+    if (isInputRange!Stuff &&
+        isImplicitlyConvertible!(ElementType!Stuff, Elem))
     {
         size_t result = 0;
         static if (allowDuplicates)
@@ -1534,7 +1536,7 @@ assert(equal(rbt[], [5]));
 --------------------
       +/
     size_t removeKey(U...)(U elems)
-        if (allSatisfy!(isImplicitlyConvertibleToElem, U))
+    if (allSatisfy!(isImplicitlyConvertibleToElem, U))
     {
         Elem[U.length] toRemove = [elems];
         return removeKey(toRemove[]);
@@ -1542,7 +1544,7 @@ assert(equal(rbt[], [5]));
 
     /++ Ditto +/
     size_t removeKey(U)(scope U[] elems)
-        if (isImplicitlyConvertible!(U, Elem))
+    if (isImplicitlyConvertible!(U, Elem))
     {
         immutable lenBefore = length;
 
@@ -1564,9 +1566,9 @@ assert(equal(rbt[], [5]));
 
     /++ Ditto +/
     size_t removeKey(Stuff)(Stuff stuff)
-        if (isInputRange!Stuff &&
-           isImplicitlyConvertible!(ElementType!Stuff, Elem) &&
-           !isDynamicArray!Stuff)
+    if (isInputRange!Stuff &&
+        isImplicitlyConvertible!(ElementType!Stuff, Elem) &&
+        !isDynamicArray!Stuff)
     {
         import std.array : array;
         //We use array in case stuff is a Range from this RedBlackTree - either
@@ -1873,7 +1875,8 @@ assert(equal(rbt[], [5]));
     /**
      * Constructor. Pass in a range of elements to initialize the tree with.
      */
-    this(Stuff)(Stuff stuff) if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, Elem))
+    this(Stuff)(Stuff stuff)
+    if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, Elem))
     {
         _setup();
         stableInsert(stuff);

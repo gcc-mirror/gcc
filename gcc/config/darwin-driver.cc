@@ -1,5 +1,5 @@
 /* Additional functions for the GCC driver on Darwin native.
-   Copyright (C) 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2006-2025 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -349,6 +349,16 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	  gcc_checking_assert ((*decoded_options)[i].arg);
 	  if (startswith ((*decoded_options)[i].arg, "-exported_symbol"))
 	    noexport_p = false;
+	  break;
+
+	case OPT_ObjC:
+	  (*decoded_options)[i].opt_index = OPT_x;
+	  (*decoded_options)[i].arg = "objective-c";
+	  break;
+
+	case OPT_ObjC__:
+	  (*decoded_options)[i].opt_index = OPT_x;
+	  (*decoded_options)[i].arg = "objective-c++";
 	  break;
 
 	default:

@@ -1,6 +1,6 @@
 // -*- C++ -*- compatibility header.
 
-// Copyright (C) 2007-2024 Free Software Foundation, Inc.
+// Copyright (C) 2007-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,11 +32,12 @@
 #include <bits/c++config.h>
 
 #if __cplusplus >= 201103L
-# include <ctgmath>
-#else
-# if _GLIBCXX_HAVE_TGMATH_H
-#  include_next <tgmath.h>
-# endif
+# include <cmath>
+extern "C++" {
+# include <complex>
+}
+#elif _GLIBCXX_HAVE_TGMATH_H
+# include_next <tgmath.h>
 #endif
 
 #endif

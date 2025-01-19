@@ -1,0 +1,6 @@
+{ } // { dg-error "expected sarifLog object to have a 'version' property \\\[SARIF v2.1.0 §3.13.2\\\]" }
+
+/* { dg-begin-multiline-output "" }
+    1 | { }
+      | ^~~
+   { dg-end-multiline-output "" } */

@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2015-2024 Free Software Foundation, Inc.
+// Copyright (C) 2015-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -172,11 +172,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool __equal, memory_order __mo,
 	const chrono::time_point<std::chrono::system_clock, _Dur>& __atime)
     {
-      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-      // XXX correct?
+      auto __d = __atime.time_since_epoch();
+      if (__d < __d.zero()) [[__unlikely__]]
+	return false;
+      auto __s = chrono::duration_cast<chrono::seconds>(__d);
+      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__d - __s);
       return _M_load_and_test_until(__assumed, __operand, __equal, __mo,
-	  true, __s.time_since_epoch(), __ns);
+				    true, __s, __ns);
     }
 
     template<typename _Dur>
@@ -185,11 +187,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool __equal, memory_order __mo,
 	const chrono::time_point<std::chrono::steady_clock, _Dur>& __atime)
     {
-      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-      // XXX correct?
+      auto __d = __atime.time_since_epoch();
+      if (__d < __d.zero()) [[__unlikely__]]
+	return false;
+      auto __s = chrono::duration_cast<chrono::seconds>(__d);
+      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__d - __s);
       return _M_load_and_test_until_steady(__assumed, __operand, __equal, __mo,
-	  true, __s.time_since_epoch(), __ns);
+	  true, __s, __ns);
     }
 
   public:
@@ -301,14 +305,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { }
 
     _GLIBCXX_ALWAYS_INLINE unsigned
-    _M_load(memory_order __mo)
+    _M_load(memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       return _M_data;
     }
 
     _GLIBCXX_ALWAYS_INLINE unsigned
-    _M_load_when_not_equal(unsigned __val, memory_order __mo)
+    _M_load_when_not_equal(unsigned __val, memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       while (_M_data == __val)
@@ -317,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     _GLIBCXX_ALWAYS_INLINE void
-    _M_load_when_equal(unsigned __val, memory_order __mo)
+    _M_load_when_equal(unsigned __val, memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       while (_M_data != __val)
@@ -326,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Rep, typename _Period>
       _GLIBCXX_ALWAYS_INLINE bool
-      _M_load_when_equal_for(unsigned __val, memory_order __mo,
+      _M_load_when_equal_for(unsigned __val, memory_order,
 	  const chrono::duration<_Rep, _Period>& __rtime)
       {
 	unique_lock<mutex> __lock(_M_mutex);
@@ -336,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Clock, typename _Duration>
       _GLIBCXX_ALWAYS_INLINE bool
-      _M_load_when_equal_until(unsigned __val, memory_order __mo,
+      _M_load_when_equal_until(unsigned __val, memory_order,
 	  const chrono::time_point<_Clock, _Duration>& __atime)
       {
 	unique_lock<mutex> __lock(_M_mutex);
@@ -345,7 +349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     _GLIBCXX_ALWAYS_INLINE void
-    _M_store_notify_all(unsigned __val, memory_order __mo)
+    _M_store_notify_all(unsigned __val, memory_order)
     {
       unique_lock<mutex> __lock(_M_mutex);
       _M_data = __val;

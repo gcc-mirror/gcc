@@ -1,6 +1,6 @@
 // { dg-do compile { target c++20 } }
 
-// Copyright (C) 2019-2024 Free Software Foundation, Inc.
+// Copyright (C) 2019-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,12 +44,16 @@ test03()
 {
   struct Cont
   {
-    constexpr unsigned short size() const { return 3; }
+    constexpr unsigned short size() const noexcept { return 3; }
   };
   constexpr Cont c;
   constexpr auto s = std::ssize(c);
   const std::ptrdiff_t* check_type = &s;
   static_assert(s == 3);
+
+#ifdef _GLIBCXX_RELEASE
+  static_assert( noexcept(std::ssize(c)) ); // This is a libstdc++ extension.
+#endif
 }
 
 void
@@ -63,4 +67,6 @@ test04()
   constexpr auto s = std::ssize(c);
   const long long* check_type = &s;
   static_assert(s == 4);
+
+  static_assert( ! noexcept(std::ssize(c)) );
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -41,3 +41,12 @@ AARCH64_FUSION_PAIR ("cmp+csel", CMP_CSEL)
 AARCH64_FUSION_PAIR ("cmp+cset", CMP_CSET)
 
 #undef AARCH64_FUSION_PAIR
+
+/* Baseline fusion settings suitable for all cores.  */
+#define AARCH64_FUSE_BASE (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC)
+
+/* Baseline fusion settings suitable for all Neoverse cores.  */
+#define AARCH64_FUSE_NEOVERSE_BASE (AARCH64_FUSE_BASE | AARCH64_FUSE_CMP_CSEL \
+				    | AARCH64_FUSE_CMP_CSET)
+
+#define AARCH64_FUSE_MOVK (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_MOVK_MOVK)

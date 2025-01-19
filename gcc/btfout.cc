@@ -1,5 +1,5 @@
 /* Output BTF format from GCC.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -148,7 +148,7 @@ get_btf_kind (uint32_t ctf_kind)
 
 /* Convenience wrapper around get_btf_kind for the common case.  */
 
-static uint32_t
+uint32_t
 btf_dtd_kind (ctf_dtdef_ref dtd)
 {
   if (!dtd)
@@ -1661,13 +1661,19 @@ btf_finalize (void)
   datasecs.release ();
 
   funcs = NULL;
-  func_map->empty ();
-  func_map = NULL;
+  if (func_map)
+    {
+      func_map->empty ();
+      func_map = NULL;
+    }
 
   if (debug_prune_btf)
     {
-      btf_used_types->empty ();
-      btf_used_types = NULL;
+      if (btf_used_types)
+	{
+	  btf_used_types->empty ();
+	  btf_used_types = NULL;
+	}
 
       fixups.release ();
       forwards = NULL;

@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V atomic operations.
-;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2025 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -467,6 +467,7 @@
 
   rtx shifted_value = gen_reg_rtx (SImode);
   riscv_lshift_subword (<MODE>mode, value, shift, &shifted_value);
+  emit_move_insn (shifted_value, gen_rtx_AND (SImode, shifted_value, mask));
 
   emit_insn (gen_subword_atomic_exchange_strong (old, aligned_mem,
 						 shifted_value, model,
@@ -580,7 +581,7 @@
 	 value is sign-extended.  */
       rtx tmp0 = gen_reg_rtx (word_mode);
       emit_insn (gen_extend_insn (tmp0, operands[3], word_mode, <MODE>mode, 0));
-      operands[3] = simplify_gen_subreg (<MODE>mode, tmp0, word_mode, 0);
+      operands[3] = gen_lowpart (<MODE>mode, tmp0);
     }
 
   if (TARGET_ZACAS)

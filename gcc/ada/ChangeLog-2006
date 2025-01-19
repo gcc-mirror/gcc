@@ -4452,8 +4452,6 @@
 
 	PR ada/24533
 	* s-osinte-linux-hppa.ads: Reduce alignment of atomic_lock_t to 8.
-
-
 
 Copyright (C) 2006 Free Software Foundation, Inc.
 

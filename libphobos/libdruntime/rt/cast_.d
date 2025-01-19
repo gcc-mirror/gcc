@@ -14,6 +14,8 @@
  */
 module rt.cast_;
 
+debug(cast_) import core.stdc.stdio : printf;
+
 extern (C):
 @nogc:
 nothrow:
@@ -60,7 +62,7 @@ Object _d_toObject(return scope void* p)
      */
     if (pi.offset < 0x10000)
     {
-        debug(cast_) printf("\tpi.offset = %d\n", pi.offset);
+        debug(cast_) printf("\tpi.offset = %zd\n", pi.offset);
         return cast(Object)(p - pi.offset);
     }
     return o;
@@ -72,19 +74,19 @@ Object _d_toObject(return scope void* p)
  */
 void* _d_interface_cast(void* p, ClassInfo c)
 {
-    debug(cast_) printf("_d_interface_cast(p = %p, c = '%.*s')\n", p, c.name);
+    debug(cast_) printf("_d_interface_cast(p = %p, c = '%.*s')\n", p, cast(int) c.name.length, c.name.ptr);
     if (!p)
         return null;
 
     Interface* pi = **cast(Interface***) p;
 
-    debug(cast_) printf("\tpi.offset = %d\n", pi.offset);
+    debug(cast_) printf("\tpi.offset = %zd\n", pi.offset);
     Object o2 = cast(Object)(p - pi.offset);
     void* res = null;
     size_t offset = 0;
     if (o2 && _d_isbaseof2(typeid(o2), c, offset))
     {
-        debug(cast_) printf("\toffset = %d\n", offset);
+        debug(cast_) printf("\toffset = %zd\n", offset);
         res = cast(void*) o2 + offset;
     }
     debug(cast_) printf("\tresult = %p\n", res);
@@ -101,13 +103,13 @@ void* _d_interface_cast(void* p, ClassInfo c)
  */
 void* _d_dynamic_cast(Object o, ClassInfo c)
 {
-    debug(cast_) printf("_d_dynamic_cast(o = %p, c = '%.*s')\n", o, c.name);
+    debug(cast_) printf("_d_dynamic_cast(o = %p, c = '%.*s')\n", o, cast(int) c.name.length, c.name.ptr);
 
     void* res = null;
     size_t offset = 0;
     if (o && _d_isbaseof2(typeid(o), c, offset))
     {
-        debug(cast_) printf("\toffset = %d\n", offset);
+        debug(cast_) printf("\toffset = %zd\n", offset);
         res = cast(void*) o + offset;
     }
     debug(cast_) printf("\tresult = %p\n", res);
@@ -124,7 +126,7 @@ void* _d_dynamic_cast(Object o, ClassInfo c)
  */
 void* _d_class_cast(Object o, ClassInfo c)
 {
-    debug(cast_) printf("_d_cast_cast(o = %p, c = '%.*s', level %d)\n", o, c.name, level);
+    debug(cast_) printf("_d_cast_cast(o = %p, c = '%.*s')\n", o, cast(int) c.name.length, c.name.ptr);
 
     if (!o)
         return null;
@@ -167,7 +169,7 @@ void* _d_paint_cast(Object o, ClassInfo c)
 {
     /* If o is really an instance of c, just do a paint
      */
-    auto p = (o && cast(void*)(areClassInfosEqual(typeid(o), c)) ? o : null);
+    auto p = o && cast(void*)(areClassInfosEqual(typeid(o), c)) ? o : null;
     debug assert(cast(void*)p is cast(void*)_d_dynamic_cast(o, c));
     return cast(void*)p;
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -442,6 +442,10 @@ package body Sem_Ch11 is
          Analyze_Exception_Handlers (Handlers);
       elsif Present (At_End_Proc (N)) then
          Analyze (At_End_Proc (N));
+      end if;
+
+      if Present (Finally_Statements (N)) then
+         Analyze_Statements (Finally_Statements (N));
       end if;
    end Analyze_Handled_Statements;
 

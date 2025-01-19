@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V bfloat16 extensions.
-;; Copyright (C) 2024 Free Software Foundation, Inc.
+;; Copyright (C) 2024-2025 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 

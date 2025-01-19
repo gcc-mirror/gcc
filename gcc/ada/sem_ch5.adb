@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,6 +120,9 @@ package body Sem_Ch5 is
    procedure Analyze_Assignment (N : Node_Id) is
       Lhs : constant Node_Id := Name (N);
       Rhs : constant Node_Id := Expression (N);
+
+      Save_Full_Analysis : Boolean := False;
+      --  Force initialization to facilitate static analysis
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it is not
@@ -318,7 +321,24 @@ package body Sem_Ch5 is
                            and then No (Actual_Designated_Subtype (Opnd))))
            and then not Is_Unchecked_Union (Opnd_Type)
          then
-            Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
+            --  If the right-hand side contains target names, expansion has
+            --  been disabled to prevent expansion that might move target
+            --  names out of the context of the assignment statement. Restore
+            --  temporarily the current compilation mode so that the actual
+            --  subtype can be built.
+
+            if Nkind (N) = N_Assignment_Statement
+              and then Has_Target_Names (N)
+              and then Present (Current_Assignment)
+            then
+               Expander_Mode_Restore;
+               Full_Analysis := Save_Full_Analysis;
+               Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
+               Expander_Mode_Save_And_Set (False);
+               Full_Analysis := False;
+            else
+               Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
+            end if;
 
             if Present (Decl) then
                Insert_Action (N, Decl);
@@ -365,9 +385,6 @@ package body Sem_Ch5 is
 
       T1 : Entity_Id;
       T2 : Entity_Id;
-
-      Save_Full_Analysis : Boolean := False;
-      --  Force initialization to facilitate static analysis
 
    --  Start of processing for Analyze_Assignment
 
@@ -1249,9 +1266,12 @@ package body Sem_Ch5 is
 
       begin
          --  Initialize unblocked exit count for statements of begin block
-         --  plus one for each exception handler that is present.
+         --  plus one for each exception handler that is present, plus one for
+         --  the finally part if it present.
 
-         Unblocked_Exit_Count := 1 + List_Length (EH);
+         Unblocked_Exit_Count :=
+           1 + List_Length (EH)
+           + (if Present (Finally_Statements (HSS)) then 1 else 0);
 
          --  If a label is present analyze it and mark it as referenced
 
@@ -1706,6 +1726,33 @@ package body Sem_Ch5 is
          end if;
       end loop;
 
+      Finally_Legality_Check : declare
+         --  The following value can actually be a block statement due to
+         --  expansion, but we call it Target_Loop_Statement because it was
+         --  originally a loop statement.
+         Target_Loop_Statement : constant Node_Id :=
+           (if Present (U_Name) then Label_Construct ((Parent (U_Name)))
+            else Empty);
+
+         X : Node_Id := N;
+      begin
+         while Present (X) loop
+            if Nkind (X) = N_Loop_Statement
+              and then (No (Target_Loop_Statement)
+                        or else X = Target_Loop_Statement)
+            then
+               exit;
+            elsif Nkind (Parent (X)) = N_Handled_Sequence_Of_Statements
+              and then Is_List_Member (X)
+              and then List_Containing (X) = Finally_Statements (Parent (X))
+            then
+               Error_Msg_N ("cannot exit out of finally part", N);
+               exit;
+            end if;
+            X := Parent (X);
+         end loop;
+      end Finally_Legality_Check;
+
       --  Verify that if present the condition is a Boolean expression
 
       if Present (Cond) then
@@ -1766,6 +1813,28 @@ package body Sem_Ch5 is
          Error_Msg_N ("target of goto statement is not reachable", Label);
          return;
       end if;
+
+      Finally_Legality_Check : declare
+         LCA : constant Union_Id :=
+           Lowest_Common_Ancestor (N, Label_Construct (Parent (Label_Ent)));
+
+         N1 : Union_Id := Union_Id (N);
+         N2 : Union_Id;
+      begin
+         while N1 /= LCA loop
+            N2 := Parent_Or_List_Containing (N1);
+
+            if N2 in Node_Range
+              and then Nkind (Node_Id (N2)) = N_Handled_Sequence_Of_Statements
+              and then Union_Id (Finally_Statements (Node_Id (N2))) = N1
+            then
+               Error_Msg_N ("cannot goto out of finally part", N);
+               exit;
+            end if;
+
+            N1 := N2;
+         end loop;
+      end Finally_Legality_Check;
 
       --  Here if goto passes initial validity checks
 
@@ -3303,7 +3372,10 @@ package body Sem_Ch5 is
                   --  set the appropriate flag to remove the loop entirely
                   --  during expansion.
 
-                  Set_Is_Null_Loop (Loop_Nod);
+                  if Nkind (Loop_Nod) = N_Loop_Statement then
+                     Set_Is_Null_Loop (Loop_Nod);
+                  end if;
+
                   Null_Range := True;
                end if;
 
@@ -3311,24 +3383,25 @@ package body Sem_Ch5 is
                --  instance, since in practice they tend to be dubious in these
                --  cases since they can result from intended parameterization.
 
-               if not Inside_A_Generic and then not In_Instance then
+               if Comes_From_Source (N)
+                 and then not Inside_A_Generic
+                 and then not In_Instance
+               then
 
                   --  Specialize msg if invalid values could make the loop
                   --  non-null after all.
 
                   if Null_Range then
-                     if Comes_From_Source (N) then
-                        Error_Msg_N
-                          ("??loop range is null, loop will not execute", DS);
-                     end if;
+                     Error_Msg_N
+                       ("??loop range is null, loop will not execute", DS);
 
                   --  Here is where the loop could execute because of
                   --  invalid values, so issue appropriate message.
 
-                  elsif Comes_From_Source (N) then
+                  else
                      Error_Msg_N
-                       ("??loop range may be null, loop may not execute",
-                        DS);
+                       ("??loop range may be null, loop may not execute", DS);
+
                      Error_Msg_N
                        ("??can only execute if invalid values are present",
                         DS);
@@ -3339,7 +3412,9 @@ package body Sem_Ch5 is
                --  since it is likely that these warnings will be inappropriate
                --  if the loop never actually executes, which is likely.
 
-               Set_Suppress_Loop_Warnings (Loop_Nod);
+               if Nkind (Loop_Nod) = N_Loop_Statement then
+                  Set_Suppress_Loop_Warnings (Loop_Nod);
+               end if;
 
                --  The other case for a warning is a reverse loop where the
                --  upper bound is the integer literal zero or one, and the
@@ -3441,12 +3516,13 @@ package body Sem_Ch5 is
                           Subtype_Mark (DS));
                      end if;
 
-                     Set_Is_Null_Loop (Loop_Nod);
-                     Null_Range := True;
+                     if Nkind (Loop_Nod) = N_Loop_Statement then
+                        Set_Is_Null_Loop (Loop_Nod);
 
-                     --  Suppress other warnings about the body of the loop, as
-                     --  it will never execute.
-                     Set_Suppress_Loop_Warnings (Loop_Nod);
+                        --  Suppress other warnings about the body of the loop,
+                        --  as it will never execute.
+                        Set_Suppress_Loop_Warnings (Loop_Nod);
+                     end if;
                   end if;
                end;
             end if;
@@ -4529,34 +4605,14 @@ package body Sem_Ch5 is
       ----------------
 
       function Check_Call (N : Node_Id) return Traverse_Result is
-         Nam  : Node_Id;
          Subp : Entity_Id;
-         Typ  : Entity_Id;
 
       begin
          if Nkind (N) = N_Function_Call then
-            Nam := Name (N);
-
-            --  Obtain the subprogram being invoked
-
-            loop
-               if Nkind (Nam) = N_Explicit_Dereference then
-                  Nam := Prefix (Nam);
-
-               elsif Nkind (Nam) = N_Selected_Component then
-                  Nam := Selector_Name (Nam);
-
-               else
-                  exit;
-               end if;
-            end loop;
-
-            Subp := Entity (Nam);
+            Subp := Get_Called_Entity (N);
 
             if Present (Subp) then
-               Typ := Etype (Subp);
-
-               if Requires_Transient_Scope (Typ) then
+               if Requires_Transient_Scope (Etype (Subp)) then
                   return Abandon;
 
                elsif Sec_Stack_Needed_For_Return (Subp) then

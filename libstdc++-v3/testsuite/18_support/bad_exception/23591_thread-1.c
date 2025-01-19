@@ -2,7 +2,7 @@
 // { dg-skip-if "invalid options for C" { *-*-* } { "-std=c++??" "-std=gnu++??" } }
 // { dg-options "-g -O2 -pthread -ldl -x c -fvtable-verify=none -Wno-pedantic" { target *-*-linux* *-*-gnu* *-*-solaris2.1[2-9]* } }
 
-// Copyright (C) 2005-2024 Free Software Foundation, Inc.
+// Copyright (C) 2005-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

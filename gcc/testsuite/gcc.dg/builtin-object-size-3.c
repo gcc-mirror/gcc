@@ -619,7 +619,7 @@ test10 (void)
 	  if (__builtin_object_size (p - 3, 2) != sizeof (buf) - i + 3)
 	    FAIL ();
 #else
-	  if (__builtin_object_size (p - 3, 2) != 0)
+	  if (__builtin_object_size (p - 3, 2) != 3)
 	    FAIL ();
 #endif
 	  break;

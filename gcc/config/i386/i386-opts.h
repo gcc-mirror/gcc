@@ -1,5 +1,5 @@
 /* Definitions for option handling for IA-32.
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -87,7 +87,8 @@ enum asm_dialect {
 enum ix86_veclibabi {
   ix86_veclibabi_type_none,
   ix86_veclibabi_type_svml,
-  ix86_veclibabi_type_acml
+  ix86_veclibabi_type_acml,
+  ix86_veclibabi_type_aocl
 };
 
 enum stack_protector_guard {

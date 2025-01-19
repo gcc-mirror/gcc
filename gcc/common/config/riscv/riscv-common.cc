@@ -1,5 +1,5 @@
 /* Common hooks for RISC-V.
-   Copyright (C) 2016-2024 Free Software Foundation, Inc.
+   Copyright (C) 2016-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <sstream>
 #include <vector>
+#include <queue>
 
 #define INCLUDE_STRING
 #define INCLUDE_SET
@@ -109,6 +110,10 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zdinx", "zfinx"},
   {"zfinx", "zicsr"},
   {"zdinx", "zicsr"},
+
+  {"zicfiss", "zicsr"},
+  {"zicfiss", "zimop"},
+  {"zicfilp", "zicsr"},
 
   {"zk", "zkn"},
   {"zk", "zkr"},
@@ -324,6 +329,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zicclsm",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"ziccrse",  ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zicfiss", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zicfilp", ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zimop", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zcmop", ISA_SPEC_CLASS_NONE, 1, 0},
 
@@ -404,6 +412,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svpbmt",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svvptc",  ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"xcvmac", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xcvalu", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -429,6 +438,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"xsfvcp",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"xsfcease", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xsfvqmaccqoq",    ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xsfvqmaccdod",    ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_NONE, 1, 0},
 
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
@@ -1642,6 +1654,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zicbop", x_riscv_zicmo_subext, MASK_ZICBOP),
   RISCV_EXT_FLAG_ENTRY ("zic64b", x_riscv_zicmo_subext, MASK_ZIC64B),
 
+  RISCV_EXT_FLAG_ENTRY ("zicfiss", x_riscv_zi_subext, MASK_ZICFISS),
+  RISCV_EXT_FLAG_ENTRY ("zicfilp", x_riscv_zi_subext, MASK_ZICFILP),
+
   RISCV_EXT_FLAG_ENTRY ("zimop", x_riscv_mop_subext, MASK_ZIMOP),
   RISCV_EXT_FLAG_ENTRY ("zcmop", x_riscv_mop_subext, MASK_ZCMOP),
 
@@ -1719,6 +1734,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   RISCV_EXT_FLAG_ENTRY ("svinval", x_riscv_sv_subext, MASK_SVINVAL),
   RISCV_EXT_FLAG_ENTRY ("svnapot", x_riscv_sv_subext, MASK_SVNAPOT),
+  RISCV_EXT_FLAG_ENTRY ("svvptc", x_riscv_sv_subext, MASK_SVVPTC),
 
   RISCV_EXT_FLAG_ENTRY ("ztso", x_riscv_ztso_subext, MASK_ZTSO),
 
@@ -1758,8 +1774,29 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   RISCV_EXT_FLAG_ENTRY ("xsfvcp",   x_riscv_sifive_subext, MASK_XSFVCP),
   RISCV_EXT_FLAG_ENTRY ("xsfcease", x_riscv_sifive_subext, MASK_XSFCEASE),
+  RISCV_EXT_FLAG_ENTRY ("xsfvqmaccqoq",    x_riscv_sifive_subext, MASK_XSFVQMACCQOQ),
+  RISCV_EXT_FLAG_ENTRY ("xsfvqmaccdod",    x_riscv_sifive_subext, MASK_XSFVQMACCDOD),
+  RISCV_EXT_FLAG_ENTRY ("xsfvfnrclipxfqf", x_riscv_sifive_subext, MASK_XSFVFNRCLIPXFQF),
 
   {NULL, NULL, NULL, 0}
+};
+
+/* Types for recording extension to RISC-V C-API bitmask.  */
+struct riscv_ext_bitmask_table_t {
+  const char *ext;
+  int groupid;
+  int bit_position;
+};
+
+/* Mapping table between extension to RISC-V C-API extension bitmask.
+   This table should sort the extension by Linux hwprobe order to get the
+   minimal feature bits.  */
+static const riscv_ext_bitmask_table_t riscv_ext_bitmask_table[] =
+{
+#define RISCV_EXT_BITMASK(NAME, GROUPID, BITPOS) \
+  {NAME, GROUPID, BITPOS},
+#include "riscv-ext-bitmask.def"
+  {NULL,	       -1, -1}
 };
 
 /* Apply SUBSET_LIST to OPTS if OPTS is not null.  */
@@ -1826,6 +1863,81 @@ riscv_x_target_flags_isa_mask (void)
 	mask |= arch_ext_flag_tab->mask;
     }
   return mask;
+}
+
+/* Get the minimal feature bits in Linux hwprobe of the given ISA string.
+
+   Used for generating Function Multi-Versioning (FMV) dispatcher for RISC-V.
+
+   The minimal feature bits refer to using the earliest extension that appeared
+   in the Linux hwprobe to support the specified ISA string.  This ensures that
+   older kernels, which may lack certain implied extensions, can still run the
+   FMV dispatcher correctly.  */
+
+bool
+riscv_minimal_hwprobe_feature_bits (const char *isa,
+				    struct riscv_feature_bits *res,
+				    location_t loc)
+{
+  riscv_subset_list *subset_list;
+  subset_list = riscv_subset_list::parse (isa, loc);
+  if (!subset_list)
+    return false;
+
+  /* Initialize the result feature bits to zero.  */
+  res->length = RISCV_FEATURE_BITS_LENGTH;
+  for (int i = 0; i < RISCV_FEATURE_BITS_LENGTH; ++i)
+    res->features[i] = 0;
+
+  /* Use a std::set to record all visited implied extensions.  */
+  std::set <std::string> implied_exts;
+
+  /* Iterate through the extension bitmask table in Linux hwprobe order to get
+     the minimal covered feature bits.  Avoiding some sub-extensions which will
+     be implied by the super-extensions like V implied Zve32x.  */
+  const riscv_ext_bitmask_table_t *ext_bitmask_tab;
+  for (ext_bitmask_tab = &riscv_ext_bitmask_table[0];
+       ext_bitmask_tab->ext;
+       ++ext_bitmask_tab)
+    {
+      /* Skip the extension if it is not in the subset list or already implied
+	 by previous extension.  */
+      if (subset_list->lookup (ext_bitmask_tab->ext) == NULL
+	  || implied_exts.count (ext_bitmask_tab->ext))
+	continue;
+
+      res->features[ext_bitmask_tab->groupid]
+	|= 1ULL << ext_bitmask_tab->bit_position;
+
+      /* Find the sub-extension using BFS and set the corresponding bit.  */
+      std::queue <const char *> search_q;
+      search_q.push (ext_bitmask_tab->ext);
+
+      while (!search_q.empty ())
+	{
+	  const char * search_ext = search_q.front ();
+	  search_q.pop ();
+
+	  /* Iterate through the implied extension table.  */
+	  const riscv_implied_info_t *implied_info;
+	  for (implied_info = &riscv_implied_info[0];
+	      implied_info->ext;
+	      ++implied_info)
+	    {
+	      /* When the search extension matches the implied extension and
+		 the implied extension has not been visited, mark the implied
+		 extension in the implied_exts set and push it into the
+		 queue.  */
+	      if (implied_info->match (subset_list, search_ext)
+		  && implied_exts.count (implied_info->implied_ext) == 0)
+		{
+		  implied_exts.insert (implied_info->implied_ext);
+		  search_q.push (implied_info->implied_ext);
+		}
+	    }
+	}
+    }
+  return true;
 }
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
@@ -2335,7 +2447,19 @@ riscv_get_valid_option_values (int option_code,
 
 	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
 	for (;cpu_info->name; ++cpu_info)
-	  v.safe_push (cpu_info->name);
+	  {
+	    /* Skip duplicates.  */
+	    bool skip = false;
+	    int i;
+	    const char *str;
+	    FOR_EACH_VEC_ELT (v, i, str)
+	      {
+		if (!strcmp (str, cpu_info->name))
+		  skip = true;
+	      }
+	    if (!skip)
+	      v.safe_push (cpu_info->name);
+	  }
       }
       break;
     case OPT_mcpu_:

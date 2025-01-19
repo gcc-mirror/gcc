@@ -1,7 +1,7 @@
 ;; Machine Description for MIPS MSA ASE
 ;; Based on the MIPS MSA spec Revision 1.11 8/4/2014
 ;;
-;; Copyright (C) 2015-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

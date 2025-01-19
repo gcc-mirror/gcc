@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -344,7 +344,6 @@ package body Ch6 is
       end if;
 
       Scopes (Scope.Last).Labl := Name_Node;
-      Current_Node := Name_Node;
       Ignore (Tok_Colon);
 
       --  Deal with generic instantiation, the one case in which we do not
@@ -884,6 +883,7 @@ package body Ch6 is
 
                      if not (Paren_Count (Expr) /= 0
                               or else Nkind (Expr) in N_Aggregate
+                                                    | N_Delta_Aggregate
                                                     | N_Extension_Aggregate
                                                     | N_Quantified_Expression)
                      then

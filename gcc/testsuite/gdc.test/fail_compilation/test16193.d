@@ -3,7 +3,7 @@ REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
 fail_compilation/test16193.d(39): Error: function `test16193.abc` is `@nogc` yet allocates closure for `abc()` with the GC
-fail_compilation/test16193.d(41):        delegate `test16193.abc.__foreachbody2` closes over variable `x`
+fail_compilation/test16193.d(41):        delegate `test16193.abc.__foreachbody_L41_C5` closes over variable `x`
 fail_compilation/test16193.d(40):        `x` declared here
 ---
 */

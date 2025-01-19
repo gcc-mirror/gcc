@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2024 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -317,12 +317,17 @@ String Options
    copy of the underlying string, so it is valid to pass in a pointer to
    an on-stack buffer.
 
-   There is just one string option specified this way:
-
    .. macro:: GCC_JIT_STR_OPTION_PROGNAME
 
       The name of the program, for use as a prefix when printing error
       messages to stderr.  If `NULL`, or default, "libgccjit.so" is used.
+
+  .. macro:: GCC_JIT_STR_OPTION_SPECIAL_CHARS_IN_FUNC_NAMES
+
+      Alphabetic ASCII characters and underscores are always valid. Numeric
+      ASCII characters are always valid after the initial character of the
+      string. Use this entrypoint to specify additional ASCII characters that
+      are valid throughout function names (ex.: ".$").
 
 Boolean options
 ***************
@@ -599,3 +604,32 @@ Additional command-line options
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_driver_option
+
+Output options
+**************
+
+.. function:: void gcc_jit_context_set_output_ident (gcc_jit_context *ctxt,\
+                                                     const char* output_ident)
+
+   Set the identifier to write in the .comment section of the output file to
+   ``output_ident``.
+
+   The parameter ``output_ident`` must be non-NULL.
+
+   This only works on some target, as you can see here:
+   https://gcc.gnu.org/onlinedocs/cpp/Other-Directives.html
+
+   Analogous to:
+
+   .. code-block:: c
+
+      #ident "My comment"
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_34`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_output_ident

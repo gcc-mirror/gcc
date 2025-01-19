@@ -4,7 +4,7 @@
 void sink(...);
 template <int... args> void f()
 {
-  sink ([] <int T> (int...) { return 1; }
+  sink ([] <int T> (int...) { return 1; }	// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
         .operator()<args>(args...)...); // { dg-warning "-Wmissing-template-keyword" }
 } // { dg-prune-output {expected '\)'} }
 

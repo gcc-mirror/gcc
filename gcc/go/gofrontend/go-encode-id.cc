@@ -172,7 +172,7 @@ go_encode_id(const std::string &id)
 		}
 	      else
 		{
-		  char buf[8];
+		  char buf[16];
 		  snprintf(buf, sizeof buf, "_x%02x", c);
 		  ret.append(buf);
 		}

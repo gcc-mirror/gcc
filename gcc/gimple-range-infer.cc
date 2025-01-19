@@ -1,5 +1,5 @@
 /* Gimple range inference implementation.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -152,18 +151,23 @@ gimple_infer_range::add_nonzero (tree name)
 }
 
 // Process S for range inference and fill in the summary list.
-// This is the routine where new inferred ranges should be added.
+// This is the routine where any new inferred ranges should be added.
 // If USE_RANGEOPS is true, invoke range-ops on stmts with a single
-// ssa-name aa constant to reflect an inferred range. ie
+// ssa-name a constant to reflect an inferred range. ie
 // x_2 = y_3 + 1 will provide an inferred range for y_3 of [-INF, +INF - 1].
 // This defaults to FALSE as it can be expensive.,
 
-gimple_infer_range::gimple_infer_range (gimple *s, bool use_rangeops)
+gimple_infer_range::gimple_infer_range (gimple *s, range_query *q,
+					bool use_rangeops)
 {
   num_args = 0;
 
   if (is_a<gphi *> (s))
     return;
+
+  // Default to the global query if none provided.
+  if (!q)
+    q = get_global_range_query ();
 
   if (is_a<gcall *> (s) && flag_delete_null_pointer_checks)
     {
@@ -184,6 +188,30 @@ gimple_infer_range::gimple_infer_range (gimple *s, bool use_rangeops)
 	    }
 	  BITMAP_FREE (nonnullargs);
 	}
+      if (fntype)
+	for (tree attrs = TYPE_ATTRIBUTES (fntype);
+	     (attrs = lookup_attribute ("nonnull_if_nonzero", attrs));
+	     attrs = TREE_CHAIN (attrs))
+	  {
+	    tree args = TREE_VALUE (attrs);
+	    unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+	    unsigned int idx2
+	      = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	    if (idx < gimple_call_num_args (s)
+		&& idx2 < gimple_call_num_args (s))
+	      {
+		tree arg = gimple_call_arg (s, idx);
+		tree arg2 = gimple_call_arg (s, idx2);
+		if (!POINTER_TYPE_P (TREE_TYPE (arg))
+		    || !INTEGRAL_TYPE_P (TREE_TYPE (arg2))
+		    || integer_zerop (arg2))
+		  continue;
+		if (integer_nonzerop (arg2))
+		  add_nonzero (arg);
+		// FIXME: Can one query here whether arg2 has
+		// nonzero range if it is a SSA_NAME?
+	      }
+	  }
       // Fallthru and walk load/store ops now.
     }
 
@@ -220,14 +248,14 @@ gimple_infer_range::gimple_infer_range (gimple *s, bool use_rangeops)
   if (ssa1)
     {
       value_range op1 (TREE_TYPE (ssa1));
-      if (op1_range (op1, s, get_global_range_query ()) && !op1.varying_p ())
+      if (op1_range (op1, s, q) && !op1.varying_p ())
 	add_range (ssa1, op1);
     }
   else
     {
       gcc_checking_assert (ssa2);
       value_range op2 (TREE_TYPE (ssa2));
-      if (op2_range (op2, s, get_global_range_query ()) && !op2.varying_p ())
+      if (op2_range (op2, s, q) && !op2.varying_p ())
 	add_range (ssa2, op2);
     }
 }
@@ -274,9 +302,14 @@ infer_range_manager::exit_range_head::find_ptr (tree ssa)
 // Construct a range infer manager.  DO_SEARCH indicates whether an immediate
 // use scan should be made the first time a name is processed.  This is for
 // on-demand clients who may not visit every statement and may miss uses.
+// Q is the range_query to use for any lookups.  Default is NULL which maps
+// to the global_range_query.
 
-infer_range_manager::infer_range_manager (bool do_search)
+infer_range_manager::infer_range_manager (bool do_search, range_query *q)
 {
+  // Set the range query to use.
+  m_query = q ? q : get_global_range_query ();
+
   bitmap_obstack_initialize (&m_bitmaps);
   m_on_exit.create (0);
   m_on_exit.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
@@ -367,7 +400,14 @@ void
 infer_range_manager::add_ranges (gimple *s, gimple_infer_range &infer)
 {
   for (unsigned x = 0; x < infer.num (); x++)
-    add_range (infer.name (x), s, infer.range (x));
+    {
+      tree arg = infer.name (x);
+      value_range r (TREE_TYPE (arg));
+      m_query->range_of_expr (r, arg, s);
+      // Only add the inferred range if it changes the current range.
+      if (r.intersect (infer.range (x)))
+	add_range (arg, s, infer.range (x));
+    }
 }
 
 // Add range R as an inferred range for NAME on stmt S.
@@ -450,7 +490,7 @@ infer_range_manager::register_all_uses (tree name)
   FOR_EACH_IMM_USE_FAST (use_p, iter, name)
     {
       gimple *s = USE_STMT (use_p);
-      gimple_infer_range infer (s);
+      gimple_infer_range infer (s, m_query);
       for (unsigned x = 0; x < infer.num (); x++)
 	{
 	  if (name == infer.name (x))

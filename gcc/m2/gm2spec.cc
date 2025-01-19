@@ -1,6 +1,6 @@
 /* gm2spec.cc specific flags and argument handling within GNU Modula-2.
 
-Copyright (C) 2007-2024 Free Software Foundation, Inc.
+Copyright (C) 2007-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.

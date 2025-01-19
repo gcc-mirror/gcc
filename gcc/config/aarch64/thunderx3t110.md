@@ -1,5 +1,5 @@
 ;; Cavium ThunderX 3 CN11xx pipeline description
-;; Copyright (C) 2020-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2025 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Marvell
 

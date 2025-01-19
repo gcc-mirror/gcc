@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -20,14 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_PRETTY_PRINT_H
 #define GCC_PRETTY_PRINT_H
-
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence it must be included from
-   system.h by defining INCLUDE_MEMORY in any source file using it.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use pretty-print.h"
-#endif
 
 #include "obstack.h"
 #include "rich-location.h"

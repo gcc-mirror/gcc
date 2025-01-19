@@ -2,10 +2,10 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/diag23295.d(21): Error: scope variable `x` assigned to non-scope parameter `y` calling `foo`
+fail_compilation/diag23295.d(21): Error: assigning scope variable `x` to non-scope parameter `y` calling `foo` is not allowed in a `@safe` function
 fail_compilation/diag23295.d(32):        which is assigned to non-scope parameter `z`
 fail_compilation/diag23295.d(34):        which is not `scope` because of `f = & z`
-fail_compilation/diag23295.d(24): Error: scope variable `ex` assigned to non-scope parameter `e` calling `thro`
+fail_compilation/diag23295.d(24): Error: assigning scope variable `ex` to non-scope parameter `e` calling `thro` is not allowed in a `@safe` function
 fail_compilation/diag23295.d(39):        which is not `scope` because of `throw e`
 ---
 */

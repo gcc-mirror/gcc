@@ -2,7 +2,7 @@
    hard register all the way through compilation.  Example derived
    from glibc source.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -frename-registers -fcprop-registers" } */
+/* { dg-options "-frename-registers -fcprop-registers" } */
 /* { dg-final { scan-assembler "callsys1 .0 .19 .0 .16 .17" } } */
 /* { dg-final { scan-assembler "callsys2 .0 .19 .0 .16 .17" } } */
 

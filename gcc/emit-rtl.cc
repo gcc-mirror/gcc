@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -511,10 +511,10 @@ gen_rtx_INSN_LIST (machine_mode mode, rtx insn, rtx insn_list)
 
 rtx_insn *
 gen_rtx_INSN (machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
-	      basic_block bb, rtx pattern, int location, int code,
+	      basic_block bb, rtx pattern, location_t location, int code,
 	      rtx reg_notes)
 {
-  return as_a <rtx_insn *> (gen_rtx_fmt_uuBeiie (INSN, mode,
+  return as_a <rtx_insn *> (gen_rtx_fmt_uuBeLie (INSN, mode,
 						 prev_insn, next_insn,
 						 bb, pattern, location, code,
 						 reg_notes));
@@ -4369,9 +4369,11 @@ add_insn_before (rtx_insn *insn, rtx_insn *before, basic_block bb)
 {
   add_insn_before_nobb (insn, before);
 
+  if (BARRIER_P (insn))
+    return;
+
   if (!bb
-      && !BARRIER_P (before)
-      && !BARRIER_P (insn))
+      && !BARRIER_P (before))
     bb = BLOCK_FOR_INSN (before);
 
   if (bb)
@@ -5892,6 +5894,7 @@ copy_insn_1 (rtx orig)
       case 't':
       case 'w':
       case 'i':
+      case 'L':
       case 'p':
       case 's':
       case 'S':

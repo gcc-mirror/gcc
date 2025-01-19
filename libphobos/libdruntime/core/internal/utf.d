@@ -21,6 +21,8 @@
 
 module core.internal.utf;
 
+debug (utf) import core.stdc.stdio : printf;
+
 extern (C) void onUnicodeError( string msg, size_t idx, string file = __FILE__, size_t line = __LINE__ ) @safe pure;
 
 /*******************************

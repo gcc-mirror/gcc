@@ -1,6 +1,6 @@
 /* { dg-do run { target { powerpc*-*-linux* && { lp64 && p9vector_hw } } } } */
-/* { dg-options "-O2 -mvsx -mpower9-misc" } */
-/* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <amo.h>
 #include <stdint.h>

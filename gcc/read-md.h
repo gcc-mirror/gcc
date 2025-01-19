@@ -1,5 +1,5 @@
 /* MD reader definitions.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -205,7 +205,7 @@ class md_reader
 
   const char *join_c_conditions (const char *cond1, const char *cond2);
   void fprint_c_condition (FILE *outf, const char *cond);
-  void print_c_condition (const char *cond);
+  void print_c_condition (FILE *outf, const char *cond);
 
   /* Defined in read-rtl.cc.  */
   const char *apply_iterator_to_string (const char *string);
@@ -364,8 +364,10 @@ class rtx_reader : public md_reader
   /* Analogous to rtx_writer's m_in_call_function_usage.  */
   bool m_in_call_function_usage;
 
+#ifndef GENERATOR_FILE
   /* Support for "reuse_rtx" directives.  */
   auto_vec<rtx> m_reuse_rtx_by_id;
+#endif
 };
 
 /* Global singleton; constrast with md_reader_ptr above.  */

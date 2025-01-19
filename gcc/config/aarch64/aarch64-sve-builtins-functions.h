@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (function_base classes)
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -270,10 +270,12 @@ public:
   CONSTEXPR unspec_based_function_base (int unspec_for_sint,
 					int unspec_for_uint,
 					int unspec_for_fp,
+					int unspec_for_mfp8 = -1,
 					unsigned int suffix_index = 0)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
       m_unspec_for_fp (unspec_for_fp),
+      m_unspec_for_mfp8 (unspec_for_mfp8),
       m_suffix_index (suffix_index)
   {}
 
@@ -281,6 +283,9 @@ public:
   int
   unspec_for (const function_instance &instance) const
   {
+    if (instance.fpm_mode == FPM_set)
+      return m_unspec_for_mfp8;
+
     auto &suffix = instance.type_suffix (m_suffix_index);
     return (!suffix.integer_p ? m_unspec_for_fp
 	    : suffix.unsigned_p ? m_unspec_for_uint
@@ -292,6 +297,7 @@ public:
   int m_unspec_for_sint;
   int m_unspec_for_uint;
   int m_unspec_for_fp;
+  int m_unspec_for_mfp8;
 
   /* Which type suffix is used to choose between the unspecs.  */
   unsigned int m_suffix_index;
@@ -427,7 +433,7 @@ public:
 
   CONSTEXPR sme_1mode_function (int unspec_for_sint, int unspec_for_uint,
 				int unspec_for_fp)
-    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, 1)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, -1, 1)
   {}
 
   rtx
@@ -443,7 +449,11 @@ public:
 };
 
 /* General SME unspec-based functions, parameterized on both the ZA mode
-   and the vector mode.  */
+   and the vector mode.  If the elements of the ZA and vector modes are
+   the same size (e.g. _za64_f64 or _za32_s32) then the two mode arguments
+   are equal, otherwise the first mode argument is the single-vector integer
+   mode associated with the ZA suffix and the second mode argument is the
+   tuple mode associated with the vector suffix.  */
 template<insn_code (*CODE) (int, machine_mode, machine_mode),
 	 insn_code (*CODE_SINGLE) (int, machine_mode, machine_mode)>
 class sme_2mode_function_t : public read_write_za<unspec_based_function_base>
@@ -453,18 +463,21 @@ public:
 
   CONSTEXPR sme_2mode_function_t (int unspec_for_sint, int unspec_for_uint,
 				  int unspec_for_fp)
-    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, 1)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, -1, 1)
   {}
 
   rtx
   expand (function_expander &e) const override
   {
     insn_code icode;
+    machine_mode za_mode = e.vector_mode (0);
+    machine_mode v_mode = e.tuple_mode (1);
+    if (GET_MODE_UNIT_BITSIZE (za_mode) == GET_MODE_UNIT_BITSIZE (v_mode))
+      za_mode = v_mode;
     if (e.mode_suffix_id == MODE_single)
-      icode = CODE_SINGLE (unspec_for (e), e.vector_mode (0),
-			   e.tuple_mode (1));
+      icode = CODE_SINGLE (unspec_for (e), za_mode, v_mode);
     else
-      icode = CODE (unspec_for (e), e.vector_mode (0), e.tuple_mode (1));
+      icode = CODE (unspec_for (e), za_mode, v_mode);
     return e.use_exact_insn (icode);
   }
 };
@@ -489,7 +502,8 @@ public:
   {
     int unspec = unspec_for (e);
     insn_code icode;
-    if (e.type_suffix (m_suffix_index).float_p)
+    if (e.type_suffix (m_suffix_index).float_p
+	&& e.fpm_mode != FPM_set)
       {
 	/* Put the operands in the normal (fma ...) order, with the accumulator
 	   last.  This fits naturally since that's also the unprinted operand
@@ -519,7 +533,8 @@ public:
   {
     int unspec = unspec_for (e);
     insn_code icode;
-    if (e.type_suffix (m_suffix_index).float_p)
+    if (e.type_suffix (m_suffix_index).float_p
+	&& e.fpm_mode != FPM_set)
       {
 	/* Put the operands in the normal (fma ...) order, with the accumulator
 	   last.  This fits naturally since that's also the unprinted operand
@@ -600,7 +615,7 @@ public:
     tree perm_type = build_vector_type (ssizetype, nelts);
     return gimple_build_assign (f.lhs, VEC_PERM_EXPR,
 				gimple_call_arg (f.call, 0),
-				gimple_call_arg (f.call, nargs - 1),
+				gimple_call_arg (f.call, nargs == 1 ? 0 : 1),
 				vec_perm_indices_to_tree (perm_type, indices));
   }
 };

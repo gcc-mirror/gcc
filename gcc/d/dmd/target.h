@@ -16,6 +16,7 @@
 #include "globals.h"
 #include "tokens.h"
 
+class BitFieldDeclaration;
 class ClassDeclaration;
 class Dsymbol;
 class Expression;
@@ -50,7 +51,6 @@ struct TargetC
     {
         Unspecified,
         Bionic,
-        DigitalMars,
         Glibc,
         Microsoft,
         Musl,
@@ -62,7 +62,6 @@ struct TargetC
     enum class BitFieldStyle : unsigned char
     {
         Unspecified,
-        DM,                   // Digital Mars 32 bit C compiler
         MS,                   // Microsoft 32 and 64 bit C compilers
                               // https://docs.microsoft.com/en-us/cpp/c-language/c-bit-fields?view=msvc-160
                               // https://docs.microsoft.com/en-us/cpp/cpp/cpp-bit-fields?view=msvc-160
@@ -79,6 +78,8 @@ struct TargetC
     uint8_t wchar_tsize;         // size of a C 'wchar_t' type
     Runtime runtime;
     BitFieldStyle bitFieldStyle; // different C compilers do it differently
+
+    bool contributesToAggregateAlignment(BitFieldDeclaration *bfd);
 };
 
 struct TargetCPP
@@ -86,9 +87,8 @@ struct TargetCPP
     enum class Runtime : unsigned char
     {
         Unspecified,
-        Clang,
-        DigitalMars,
-        Gcc,
+        LLVM,
+        GNU,
         Microsoft,
         Sun
     };
@@ -156,7 +156,9 @@ struct Target
 
     DString architectureName;    // name of the platform architecture (e.g. X86_64)
     CPU cpu;                // CPU instruction set to target
+    d_bool isAArch64;         // generate 64 bit Arm code
     d_bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
+    d_bool isX86;             // generate 32 bit Intel x86 code
     d_bool isLP64;            // pointers are 64 bits
 
     // Environmental
@@ -164,7 +166,6 @@ struct Target
     DString lib_ext;    /// extension for static library files
     DString dll_ext;    /// extension for dynamic library files
     d_bool run_noext;     /// allow -run sources without extensions
-    d_bool omfobj;        /// for Win32: write OMF object files instead of COFF
 
     template <typename T>
     struct FPTypeProperties
@@ -198,7 +199,7 @@ public:
     unsigned fieldalign(Type *type);
     Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
     int isVectorTypeSupported(int sz, Type *type);
-    bool isVectorOpSupported(Type *type, EXP op, Type *t2 = NULL);
+    bool isVectorOpSupported(Type *type, EXP op, Type *t2 = nullptr);
     // ABI and backend.
     LINK systemLinkage();
     TypeTuple *toArgTypes(Type *t);

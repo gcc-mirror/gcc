@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -808,6 +807,10 @@ operands_scanner::get_expr_operands (tree *expr_p, int flags)
     case CONST_DECL:
       if (!(flags & opf_address_taken))
 	add_stmt_operand (expr_p, flags);
+      return;
+
+    case OMP_NEXT_VARIANT:
+    case OMP_TARGET_DEVICE_MATCHES:
       return;
 
     case DEBUG_EXPR_DECL:

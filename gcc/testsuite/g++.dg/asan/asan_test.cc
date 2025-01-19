@@ -932,6 +932,9 @@ TEST(AddressSanitizer, ShadowGapTest) {
 #else
 # if defined(__powerpc64__)
   char *addr = (char*)0x024000800000;
+# elif defined(__riscv) && __riscv_xlen == 64
+  extern void *__asan_shadow_memory_dynamic_address;
+  char *addr = (char*)__asan_shadow_memory_dynamic_address + 0x1000;
 # else
   char *addr = (char*)0x0000100000080000;
 # endif

@@ -5,7 +5,7 @@
 /*
 ** dup_lane_w0_f32_tied1:
 **	mov	(z[0-9]+\.s), w0
-**	tbl	z0\.s, z0\.s, \1
+**	tbl	z0\.s, {z0\.s}, \1
 **	ret
 */
 TEST_UNIFORM_ZX (dup_lane_w0_f32_tied1, svfloat32_t, uint32_t,
@@ -15,7 +15,7 @@ TEST_UNIFORM_ZX (dup_lane_w0_f32_tied1, svfloat32_t, uint32_t,
 /*
 ** dup_lane_w0_f32_untied:
 **	mov	(z[0-9]+\.s), w0
-**	tbl	z0\.s, z1\.s, \1
+**	tbl	z0\.s, {z1\.s}, \1
 **	ret
 */
 TEST_UNIFORM_ZX (dup_lane_w0_f32_untied, svfloat32_t, uint32_t,
@@ -52,7 +52,7 @@ TEST_UNIFORM_Z (dup_lane_15_f32, svfloat32_t,
 /*
 ** dup_lane_16_f32:
 **	mov	(z[0-9]+\.s), #16
-**	tbl	z0\.s, z0\.s, \1
+**	tbl	z0\.s, {z0\.s}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_16_f32, svfloat32_t,
@@ -62,7 +62,7 @@ TEST_UNIFORM_Z (dup_lane_16_f32, svfloat32_t,
 /*
 ** dup_lane_31_f32:
 **	mov	(z[0-9]+\.s), #31
-**	tbl	z0\.s, z0\.s, \1
+**	tbl	z0\.s, {z0\.s}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_31_f32, svfloat32_t,
@@ -72,7 +72,7 @@ TEST_UNIFORM_Z (dup_lane_31_f32, svfloat32_t,
 /*
 ** dup_lane_32_f32:
 **	mov	(z[0-9]+\.s), #32
-**	tbl	z0\.s, z0\.s, \1
+**	tbl	z0\.s, {z0\.s}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_32_f32, svfloat32_t,
@@ -82,7 +82,7 @@ TEST_UNIFORM_Z (dup_lane_32_f32, svfloat32_t,
 /*
 ** dup_lane_63_f32:
 **	mov	(z[0-9]+\.s), #63
-**	tbl	z0\.s, z0\.s, \1
+**	tbl	z0\.s, {z0\.s}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_63_f32, svfloat32_t,
@@ -92,7 +92,7 @@ TEST_UNIFORM_Z (dup_lane_63_f32, svfloat32_t,
 /*
 ** dup_lane_64_f32:
 **	mov	(z[0-9]+\.s), #64
-**	tbl	z0\.s, z0\.s, \1
+**	tbl	z0\.s, {z0\.s}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_64_f32, svfloat32_t,
@@ -102,7 +102,7 @@ TEST_UNIFORM_Z (dup_lane_64_f32, svfloat32_t,
 /*
 ** dup_lane_255_f32:
 **	mov	(z[0-9]+\.s), #255
-**	tbl	z0\.s, z0\.s, \1
+**	tbl	z0\.s, {z0\.s}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_255_f32, svfloat32_t,

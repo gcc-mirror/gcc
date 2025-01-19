@@ -8,9 +8,9 @@ void f3 (void);
 void f4 (void);
 #pragma omp declare variant match(user={condition(0)})	/* { dg-error "expected '\\(' before 'match'" } */
 void f5 (void);
-#pragma omp declare variant (f1)	/* { dg-error "expected 'match' before end of line" } */
+#pragma omp declare variant (f1)	/* { dg-error "expected 'match', 'adjust_args' or 'append_args' clause before end of line" } */
 void f6 (void);
-#pragma omp declare variant (f1) simd	/* { dg-error "expected 'match' before 'simd'" } */
+#pragma omp declare variant (f1) simd	/* { dg-error "expected 'match', 'adjust_args' or 'append_args' clause before 'simd'" } */
 void f7 (void);
 #pragma omp declare variant (f1) match	/* { dg-error "expected '\\(' before end of line" } */
 void f8 (void);
@@ -38,8 +38,8 @@ void f18 (void);
 void f19 (void);
 #pragma omp declare variant (f1) match(user={condition()})	/* { dg-error "expected \[^\n\r]*expression before '\\)' token" } */
 void f20 (void);
-#pragma omp declare variant (f1) match(user={condition(f1)})	/* { dg-error "property must be constant integer expression" "" { target { c || c++11 } } } */
-void f21 (void);						/* { dg-error "cannot appear in a constant-expression" "" { target c++98_only } .-1 } */
+#pragma omp declare variant (f1) match(user={condition(f1)})	/* { dg-error "property must be integer expression" } */
+void f21 (void);
 #pragma omp declare variant (f1) match(user={condition(1, 2, 3)})	/* { dg-error "expected '\\)' before ',' token" } */
 void f22 (void);
 #pragma omp declare variant (f1) match(construct={master})	/* { dg-warning "unknown selector 'master' for context selector set 'construct'" } */

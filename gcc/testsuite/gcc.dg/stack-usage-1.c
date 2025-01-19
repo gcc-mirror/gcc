@@ -89,8 +89,6 @@
 #  define SIZE 248
 #elif defined (xstormy16)
 #  define SIZE 254
-#elif defined (__nios2__)
-#  define SIZE 252
 #elif defined (__PRU__)
 #  define SIZE 252
 #elif defined (__v850__)

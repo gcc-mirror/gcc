@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_MUTEX
 #include "libgccjit.h"
 #include "system.h"
@@ -32,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tree-cfg.h"
 #include "convert.h"
+#include "gimple-expr.h"
 #include "stor-layout.h"
 #include "print-tree.h"
 #include "gimplify.h"
@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc.h"
 #include "diagnostic.h"
 #include "stmt.h"
+#include "realmpfr.h"
 
 #include "jit-playback.h"
 #include "jit-result.h"
@@ -327,6 +328,13 @@ get_type (enum gcc_jit_types type_)
   return new type (type_node);
 }
 
+void
+playback::context::
+set_output_ident (const char* ident)
+{
+  targetm.asm_out.output_ident (ident);
+}
+
 /* Construct a playback::type instance (wrapping a tree) for the given
    array type.  */
 
@@ -571,7 +579,8 @@ new_function (location *loc,
 					  std::string>> &string_attributes,
 	      const std::vector<std::pair<gcc_jit_fn_attribute,
 					  std::vector<int>>>
-					  &int_array_attributes)
+					  &int_array_attributes,
+	      bool is_target_builtin)
 {
   int i;
   param *param;
@@ -606,6 +615,15 @@ new_function (location *loc,
   DECL_CONTEXT (resdecl) = fndecl;
 
   tree fn_attributes = NULL_TREE;
+
+  if (is_target_builtin)
+  {
+    tree *decl = target_builtins.get (name);
+    if (decl != NULL)
+      fndecl = *decl;
+    else
+      add_error (loc, "cannot find target builtin %s", name);
+  }
 
   if (builtin_id)
     {
@@ -1078,22 +1096,16 @@ new_rvalue_from_const <double> (type *type,
   // FIXME: type-checking, or coercion?
   tree inner_type = type->as_tree ();
 
+  mpfr_t mpf_value;
+
+  mpfr_init2 (mpf_value, 64);
+  mpfr_set_d (mpf_value, value, MPFR_RNDN);
+
   /* We have a "double", we want a REAL_VALUE_TYPE.
 
-     real.cc:real_from_target appears to require the representation to be
-     split into 32-bit values, and then sent as an pair of host long
-     ints.  */
+     realmpfr.cc:real_from_mpfr.  */
   REAL_VALUE_TYPE real_value;
-  union
-  {
-    double as_double;
-    uint32_t as_uint32s[2];
-  } u;
-  u.as_double = value;
-  long int as_long_ints[2];
-  as_long_ints[0] = u.as_uint32s[0];
-  as_long_ints[1] = u.as_uint32s[1];
-  real_from_target (&real_value, as_long_ints, DFmode);
+  real_from_mpfr (&real_value, mpf_value, inner_type, MPFR_RNDN);
   tree inner = build_real (inner_type, real_value);
   return new rvalue (this, inner);
 }
@@ -1176,6 +1188,26 @@ playback::context::new_rvalue_from_vector (location *,
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elements[i]->as_tree ());
   tree t_ctor = build_constructor (type->as_tree (), v);
   return new rvalue (this, t_ctor);
+}
+
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   vector perm.  */
+
+playback::rvalue *
+playback::context::new_rvalue_vector_perm (location *loc,
+					   rvalue* elements1,
+					   rvalue* elements2,
+					   rvalue* mask)
+{
+  tree t_elements1 = elements1->as_tree ();
+  tree t_elements2 = elements2->as_tree ();
+  tree t_mask = mask->as_tree ();
+
+  tree t_vector_perm = build3 (VEC_PERM_EXPR, TREE_TYPE (t_elements1),
+			       t_elements1, t_elements2, t_mask);
+  if (loc)
+    set_tree_location (t_vector_perm, loc);
+  return new rvalue (this, t_vector_perm);
 }
 
 /* Coerce a tree expression into a boolean tree expression.  */
@@ -1722,6 +1754,136 @@ convert_vector (location *loc,
   return new rvalue (this, t_result);
 }
 
+/* The following functions come from c-common.h.  */
+/* Like c_mark_addressable but don't check register qualifier.  */
+void
+common_mark_addressable_vec (tree t)
+{
+  while (handled_component_p (t) || TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+    {
+      t = TREE_OPERAND (t, 0);
+    }
+  if (!VAR_P (t)
+      && TREE_CODE (t) != PARM_DECL
+      && TREE_CODE (t) != COMPOUND_LITERAL_EXPR
+      && TREE_CODE (t) != TARGET_EXPR)
+    return;
+  if (!VAR_P (t) || !DECL_HARD_REGISTER (t))
+    TREE_ADDRESSABLE (t) = 1;
+  if (TREE_CODE (t) == COMPOUND_LITERAL_EXPR)
+    TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (t)) = 1;
+  else if (TREE_CODE (t) == TARGET_EXPR)
+    TREE_ADDRESSABLE (TARGET_EXPR_SLOT (t)) = 1;
+}
+
+/* Return true if TYPE is a vector type that should be subject to the GNU
+   vector extensions (as opposed to a vector type that is used only for
+   the purposes of defining target-specific built-in functions).  */
+
+inline bool
+gnu_vector_type_p (const_tree type)
+{
+  return TREE_CODE (type) == VECTOR_TYPE && !TYPE_INDIVISIBLE_P (type);
+}
+
+/* Return nonzero if REF is an lvalue valid for this language.
+   Lvalues can be assigned, unless their type has TYPE_READONLY.
+   Lvalues can have their address taken, unless they have C_DECL_REGISTER.  */
+
+bool
+lvalue_p (const_tree ref)
+{
+  const enum tree_code code = TREE_CODE (ref);
+
+  switch (code)
+    {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case COMPONENT_REF:
+      return lvalue_p (TREE_OPERAND (ref, 0));
+
+    case C_MAYBE_CONST_EXPR:
+      return lvalue_p (TREE_OPERAND (ref, 1));
+
+    case COMPOUND_LITERAL_EXPR:
+    case STRING_CST:
+      return true;
+
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* MEM_REFs can appear from -fgimple parsing or folding, so allow them
+	 here as well.  */
+    case INDIRECT_REF:
+    case ARRAY_REF:
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+    case ERROR_MARK:
+      return (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
+	      && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE);
+
+    case BIND_EXPR:
+      return TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE;
+
+    default:
+      return false;
+    }
+}
+
+bool
+convert_vector_to_array_for_subscript (tree *vecp)
+{
+  bool ret = false;
+  if (gnu_vector_type_p (TREE_TYPE (*vecp)))
+    {
+      tree type = TREE_TYPE (*vecp);
+
+      ret = !lvalue_p (*vecp);
+
+      /* We are building an ARRAY_REF so mark the vector as addressable
+	to not run into the gimplifiers premature setting of DECL_GIMPLE_REG_P
+	 for function parameters.  */
+      /* NOTE: that was the missing piece for making vector access work with
+	optimizations enabled.  */
+      common_mark_addressable_vec (*vecp);
+
+      *vecp = build1 (VIEW_CONVERT_EXPR,
+		      build_array_type_nelts (TREE_TYPE (type),
+					      TYPE_VECTOR_SUBPARTS (type)),
+		      *vecp);
+    }
+  return ret;
+}
+
+/* Construct a playback::lvalue instance (wrapping a tree) for a
+   vector access.  */
+
+playback::lvalue *
+playback::context::
+new_vector_access (location *loc,
+		   rvalue *vector,
+		   rvalue *index)
+{
+  gcc_assert (vector);
+  gcc_assert (index);
+
+  /* For comparison, see:
+       c/c-typeck.cc: build_array_ref
+  */
+
+  tree t_vector = vector->as_tree ();
+  bool non_lvalue = convert_vector_to_array_for_subscript (&t_vector);
+  tree type = TREE_TYPE (TREE_TYPE (t_vector));
+  tree t_result = build4 (ARRAY_REF, type, t_vector, index->as_tree (),
+			  NULL_TREE, NULL_TREE);
+  if (non_lvalue)
+    t_result = non_lvalue (t_result);
+
+  if (loc)
+    set_tree_location (t_result, loc);
+  return new lvalue (this, t_result);
+}
+
 /* Construct a tree for a field access.  */
 
 tree
@@ -2012,10 +2174,20 @@ new_local (location *loc,
 				       std::string>> &attributes)
 {
   gcc_assert (type);
-  gcc_assert (name);
-  tree inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+  tree inner;
+  if (name)
+    inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 			   get_identifier (name),
 			   type->as_tree ());
+  else
+  {
+    inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			create_tmp_var_name ("JITTMP"),
+			type->as_tree ());
+    DECL_ARTIFICIAL (inner) = 1;
+    DECL_IGNORED_P (inner) = 1;
+    DECL_NAMELESS (inner) = 1;
+  }
   DECL_CONTEXT (inner) = this->m_inner_fndecl;
 
   /* Prepend to BIND_EXPR_VARS: */

@@ -1,5 +1,5 @@
 ;; Machine description for Visium.
-;; Copyright (C) 2002-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2025 Free Software Foundation, Inc.
 ;; Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
 ;; This file is part of GCC.

@@ -2164,12 +2164,12 @@ private void quickSortImpl(alias less, Range)(Range r, size_t depth)
 {
     import std.algorithm.comparison : min, max;
     import std.algorithm.mutation : swap, swapAt;
-    import std.conv : to;
 
     alias Elem = ElementType!(Range);
-    enum size_t shortSortGetsBetter = max(32, 1024 / Elem.sizeof);
+    enum int size = Elem.sizeof;
+    enum size_t shortSortGetsBetter = max(32, 1024 / size);
     static assert(shortSortGetsBetter >= 1, Elem.stringof ~ " "
-        ~ to!string(Elem.sizeof));
+        ~ size.stringof);
 
     // partition
     while (r.length > shortSortGetsBetter)
@@ -2385,7 +2385,11 @@ private template TimSortImpl(alias pred, R)
         size_t stackLen = 0;
 
         // Allocate temporary memory if not provided by user
-        if (temp.length < minTemp) temp = () @trusted { return uninitializedArray!(T[])(minTemp); }();
+        if (temp.length < minTemp)
+        {
+            static if (hasElaborateAssign!T) temp = new T[](minTemp);
+            else temp = () @trusted { return uninitializedArray!(T[])(minTemp); }();
+        }
 
         for (size_t i = 0; i < range.length; )
         {
@@ -2621,11 +2625,21 @@ private template TimSortImpl(alias pred, R)
             // can't use `temp.length` if there's no default constructor
             static if (__traits(compiles, { T defaultConstructed; cast(void) defaultConstructed; }))
             {
-                if (__ctfe) temp.length = newSize;
-                else temp = () @trusted { return uninitializedArray!(T[])(newSize); }();
+
+                static if (hasElaborateAssign!T)
+                    temp.length = newSize;
+                else
+                {
+                    if (__ctfe) temp.length = newSize;
+                    else temp = () @trusted { return uninitializedArray!(T[])(newSize); }();
+                }
             }
             else
             {
+                static assert(!hasElaborateAssign!T,
+                              "Structs which have opAssign but cannot be default-initialized " ~
+                              "do not currently work with stable sort: " ~
+                              "https://issues.dlang.org/show_bug.cgi?id=24810");
                 temp = () @trusted { return uninitializedArray!(T[])(newSize); }();
             }
         }
@@ -3074,6 +3088,79 @@ private template TimSortImpl(alias pred, R)
     }
     S[] array;
     array.sort!("a < b", SwapStrategy.stable);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24773
+@safe unittest
+{
+    static struct S
+    {
+        int i = 42;
+        ~this() { assert(i == 42); }
+    }
+
+    auto array = new S[](400);
+    array.sort!((a, b) => false, SwapStrategy.stable);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24809
+@safe unittest
+{
+    static struct E
+    {
+        int value;
+        int valid = 42;
+
+        ~this()
+        {
+            assert(valid == 42);
+        }
+    }
+
+    import std.array : array;
+    import std.range : chain, only, repeat;
+    auto arr = chain(repeat(E(41), 18),
+                     only(E(39)),
+                     repeat(E(41), 16),
+                     only(E(1)),
+                     repeat(E(42), 33),
+                     only(E(33)),
+                     repeat(E(42), 16),
+                     repeat(E(43), 27),
+                     only(E(33)),
+                     repeat(E(43), 34),
+                     only(E(34)),
+                     only(E(43)),
+                     only(E(63)),
+                     repeat(E(44), 42),
+                     only(E(27)),
+                     repeat(E(44), 11),
+                     repeat(E(45), 64),
+                     repeat(E(46), 3),
+                     only(E(11)),
+                     repeat(E(46), 7),
+                     only(E(4)),
+                     repeat(E(46), 34),
+                     only(E(36)),
+                     repeat(E(46), 17),
+                     repeat(E(47), 36),
+                     only(E(39)),
+                     repeat(E(47), 26),
+                     repeat(E(48), 17),
+                     only(E(21)),
+                     repeat(E(48), 5),
+                     only(E(39)),
+                     repeat(E(48), 14),
+                     only(E(58)),
+                     repeat(E(48), 24),
+                     repeat(E(49), 13),
+                     only(E(40)),
+                     repeat(E(49), 38),
+                     only(E(18)),
+                     repeat(E(49), 11),
+                     repeat(E(50), 6)).array();
+
+    arr.sort!((a, b) => a.value < b.value, SwapStrategy.stable)();
 }
 
 // schwartzSort

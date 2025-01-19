@@ -17,7 +17,7 @@ The easiest way to create a log message is to write:
 import std.logger;
 
 void main() {
-    log("Hello World");
+    info("Hello World");
 }
 -------------
 This will print a message to the `stderr` device. The message will contain
@@ -59,12 +59,12 @@ $(UL
     $(LI `fatal`)
 )
 The default `Logger` will by default log to `stderr` and has a default
-`LogLevel` of `LogLevel.all`. The default Logger can be accessed by
+`LogLevel` of `LogLevel.info`. The default Logger can be accessed by
 using the property called `sharedLog`. This property is a reference to the
 current default `Logger`. This reference can be used to assign a new
 default `Logger`.
 -------------
-sharedLog = new FileLogger("New_Default_Log_File.log");
+sharedLog = new shared FileLogger("New_Default_Log_File.log");
 -------------
 
 Additional `Logger` can be created by creating a new instance of the

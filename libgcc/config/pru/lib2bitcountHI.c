@@ -1,5 +1,5 @@
 /* libgcc routines for PRU
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Based on lib2bitcountHI.c from MSP430 port.
 
    This file is part of GCC.

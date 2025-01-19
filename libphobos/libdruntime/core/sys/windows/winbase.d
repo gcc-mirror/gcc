@@ -345,6 +345,14 @@ enum DWORD
     SECURITY_SQOS_PRESENT     = 0x00100000,
     SECURITY_VALID_SQOS_FLAGS = 0x001F0000;
 
+// for GetFinalPathNameByHandle()
+enum DWORD
+    VOLUME_NAME_DOS      = 0x0,
+    VOLUME_NAME_GUID     = 0x1,
+    VOLUME_NAME_NT       = 0x2,
+    VOLUME_NAME_NONE     = 0x4,
+    FILE_NAME_NORMALIZED = 0x0,
+    FILE_NAME_OPENED     = 0x8;
 
 // Thread exit code
 enum DWORD STILL_ACTIVE = 0x103;
@@ -1333,6 +1341,51 @@ enum GET_FILEEX_INFO_LEVELS {
     GetFileExMaxInfoLevel
 }
 
+import core.sys.windows.sdkddkver : NTDDI_VERSION, NTDDI_LONGHORN;
+
+static if (NTDDI_VERSION >= NTDDI_LONGHORN)
+{
+    enum FILE_INFO_BY_HANDLE_CLASS
+    {
+        FileBasicInfo,
+        FileStandardInfo,
+        FileNameInfo,
+        FileRenameInfo,
+        FileDispositionInfo,
+        FileAllocationInfo,
+        FileEndOfFileInfo,
+        FileStreamInfo,
+        FileCompressionInfo,
+        FileAttributeTagInfo,
+        FileIdBothDirectoryInfo,
+        FileIdBothDirectoryRestartInfo,
+        FileIoPriorityHintInfo,
+        FileRemoteProtocolInfo,
+        FileFullDirectoryInfo,
+        FileFullDirectoryRestartInfo,
+//        static if (NTDDI_VERSION >= NTDDI_WIN8)
+//        {
+            FileStorageInfo,
+            FileAlignmentInfo,
+            FileIdInfo,
+            FileIdExtdDirectoryInfo,
+            FileIdExtdDirectoryRestartInfo,
+//        }
+//        static if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+//        {
+            FileDispositionInfoEx,
+            FileRenameInfoEx,
+//        }
+//        static if (NTDDI_VERSION >= NTDDI_WIN10_19H1)
+//        {
+            FileCaseSensitiveInfo,
+            FileNormalizedNameInfo,
+//        }
+        MaximumFileInfoByHandleClass
+    }
+    alias PFILE_INFO_BY_HANDLE_CLASS = FILE_INFO_BY_HANDLE_CLASS*;
+}
+
 struct SYSTEM_INFO {
     union {
         DWORD dwOemId;
@@ -1590,12 +1643,32 @@ static if (_WIN32_WINNT >= 0x410) {
     alias DWORD EXECUTION_STATE;
 }
 
-// CreateSymbolicLink
+// CreateSymbolicLink, GetFileInformationByHandleEx
 static if (_WIN32_WINNT >= 0x600) {
     enum {
         SYMBOLIC_LINK_FLAG_DIRECTORY = 0x1,
         SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE = 0x2
     }
+
+    struct FILE_BASIC_INFO
+    {
+        LARGE_INTEGER CreationTime;
+        LARGE_INTEGER LastAccessTime;
+        LARGE_INTEGER LastWriteTime;
+        LARGE_INTEGER ChangeTime;
+        DWORD FileAttributes;
+    }
+    alias PFILE_BASIC_INFO = FILE_BASIC_INFO*;
+
+    struct FILE_STANDARD_INFO
+    {
+        LARGE_INTEGER AllocationSize;
+        LARGE_INTEGER EndOfFile;
+        DWORD NumberOfLinks;
+        BOOLEAN DeletePending;
+        BOOLEAN Directory;
+    }
+    alias PFILE_STANDARD_INFO = FILE_STANDARD_INFO*;
 }
 
 // Callbacks
@@ -1844,6 +1917,8 @@ WINBASEAPI DWORD WINAPI GetCurrentThreadId(void);
     DWORD GetFileSize(HANDLE, PDWORD);
     BOOL GetFileTime(HANDLE, LPFILETIME, LPFILETIME, LPFILETIME);
     DWORD GetFileType(HANDLE);
+    DWORD GetFinalPathNameByHandleA(HANDLE, LPSTR, DWORD, DWORD);
+    DWORD GetFinalPathNameByHandleW(HANDLE, LPWSTR, DWORD, DWORD);
     DWORD GetFullPathNameA(LPCSTR, DWORD, LPSTR, LPSTR*);
     DWORD GetFullPathNameW(LPCWSTR, DWORD, LPWSTR, LPWSTR*);
     DWORD GetLastError() @trusted;
@@ -2485,6 +2560,7 @@ WINBASEAPI BOOL WINAPI SetEvent(HANDLE);
     static if (_WIN32_WINNT >= 0x600) {
         BOOL CreateSymbolicLinkA(LPCSTR, LPCSTR, DWORD);
         BOOL CreateSymbolicLinkW(LPCWSTR, LPCWSTR, DWORD);
+        BOOL GetFileInformationByHandleEx(HANDLE, FILE_INFO_BY_HANDLE_CLASS, LPVOID, DWORD);
     }
 }
 

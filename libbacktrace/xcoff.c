@@ -1,5 +1,5 @@
 /* xcoff.c -- Get debug data from an XCOFF file for backtraces.
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
    Adapted from elf.c.
 
 Redistribution and use in source and binary forms, with or without

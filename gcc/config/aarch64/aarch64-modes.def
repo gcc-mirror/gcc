@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -48,18 +48,21 @@ ADJUST_FLOAT_FORMAT (HF, &ieee_half_format);
 
 /* Vector modes.  */
 
+VECTOR_BOOL_MODE (VNx64BI, 64, BI, 8);
 VECTOR_BOOL_MODE (VNx32BI, 32, BI, 4);
 VECTOR_BOOL_MODE (VNx16BI, 16, BI, 2);
 VECTOR_BOOL_MODE (VNx8BI, 8, BI, 2);
 VECTOR_BOOL_MODE (VNx4BI, 4, BI, 2);
 VECTOR_BOOL_MODE (VNx2BI, 2, BI, 2);
 
+ADJUST_NUNITS (VNx64BI, aarch64_sve_vg * 32);
 ADJUST_NUNITS (VNx32BI, aarch64_sve_vg * 16);
 ADJUST_NUNITS (VNx16BI, aarch64_sve_vg * 8);
 ADJUST_NUNITS (VNx8BI, aarch64_sve_vg * 4);
 ADJUST_NUNITS (VNx4BI, aarch64_sve_vg * 2);
 ADJUST_NUNITS (VNx2BI, aarch64_sve_vg);
 
+ADJUST_ALIGNMENT (VNx64BI, 2);
 ADJUST_ALIGNMENT (VNx32BI, 2);
 ADJUST_ALIGNMENT (VNx16BI, 2);
 ADJUST_ALIGNMENT (VNx8BI, 2);
@@ -191,7 +194,7 @@ ADV_SIMD_Q_REG_STRUCT_MODES (4, V4x16, V4x8, V4x4, V4x2)
    stored in each 128-bit unit.  The actual size of the mode depends
    on command-line flags.
 
-   VNx1TI isn't really a native SVE mode, but it can be useful in some
+   VNx1* aren't really native SVE modes, but they can be useful in some
    limited situations.  */
 VECTOR_MODE_WITH_PREFIX (VNx, INT, TI, 1, 1);
 SVE_MODES (1, VNx16, VNx8, VNx4, VNx2, VNx1)
@@ -201,9 +204,10 @@ SVE_MODES (4, VNx64, VNx32, VNx16, VNx8, VNx4)
 
 /* Partial SVE vectors:
 
-      VNx2QI VNx4QI VNx8QI
-      VNx2HI VNx4HI
-      VNx2SI
+             VNx2QI VNx4QI VNx8QI
+             VNx2HI VNx4HI
+      VNx1SI VNx2SI
+      VNx1DI
 
    In memory they occupy contiguous locations, in the same way as fixed-length
    vectors.  E.g. VNx8QImode is half the size of VNx16QImode.
@@ -211,11 +215,16 @@ SVE_MODES (4, VNx64, VNx32, VNx16, VNx8, VNx4)
    Passing 2 as the final argument ensures that the modes come after all
    other single-vector modes in the GET_MODE_WIDER chain, so that we never
    pick them in preference to a full vector mode.  */
+VECTOR_MODE_WITH_PREFIX (VNx, INT, SI, 1, 2);
+VECTOR_MODE_WITH_PREFIX (VNx, INT, DI, 1, 2);
 VECTOR_MODES_WITH_PREFIX (VNx, INT, 2, 2);
 VECTOR_MODES_WITH_PREFIX (VNx, INT, 4, 2);
 VECTOR_MODES_WITH_PREFIX (VNx, INT, 8, 2);
 VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 4, 2);
 VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 8, 2);
+
+ADJUST_NUNITS (VNx1SI, exact_div (aarch64_sve_vg, 2));
+ADJUST_NUNITS (VNx1DI, exact_div (aarch64_sve_vg, 2));
 
 ADJUST_NUNITS (VNx2QI, aarch64_sve_vg);
 ADJUST_NUNITS (VNx2HI, aarch64_sve_vg);
@@ -242,8 +251,11 @@ ADJUST_ALIGNMENT (VNx2BF, 2);
 ADJUST_ALIGNMENT (VNx4HF, 2);
 ADJUST_ALIGNMENT (VNx4BF, 2);
 
+ADJUST_ALIGNMENT (VNx1SI, 4);
 ADJUST_ALIGNMENT (VNx2SI, 4);
 ADJUST_ALIGNMENT (VNx2SF, 4);
+
+ADJUST_ALIGNMENT (VNx1DI, 8);
 
 /* Quad float: 128-bit floating mode for long doubles.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);

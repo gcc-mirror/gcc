@@ -1,5 +1,5 @@
 /* Diagnostic routines shared by all languages that are variants of C.
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -41,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-pretty-print.h"
 #include "langhooks.h"
+#include "gcc-urlifier.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -2677,6 +2677,7 @@ warn_duplicated_cond_add_or_warn (location_t loc, tree cond, vec<tree> **chain)
 bool
 diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 {
+  auto_urlify_attributes sentinel;
   bool warned = false;
 
   tree a1 = lookup_attribute ("optimize", DECL_ATTRIBUTES (olddecl));
@@ -3709,7 +3710,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	      else
 		warned = warning_at (&richloc, OPT_Wvla_parameter,
 				     "argument %u of type %s declared "
-				     "with mismatched bound %<%s%>",
+				     "with mismatched bound %qs",
 				     parmpos + 1, newparmstr.c_str (),
 				     newbndstr);
 
@@ -3726,7 +3727,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 		    }
 		  else
 		    inform (&richloc, "previously declared as %s with bound "
-			    "%<%s%>", curparmstr.c_str (), curbndstr);
+			    "%qs", curparmstr.c_str (), curbndstr);
 
 		  continue;
 		}
@@ -3743,7 +3744,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 
 	      if (warning_at (newloc, OPT_Wvla_parameter,
 			      "argument %u of type %s declared with "
-			      "mismatched bound %<%s%>",
+			      "mismatched bound %qs",
 			      parmpos + 1, newparmstr.c_str (), newbndstr))
 		inform (origloc, "previously declared as %s with bound %qs",
 			curparmstr.c_str (), curbndstr);
@@ -3819,8 +3820,9 @@ maybe_warn_sizeof_array_div (location_t loc, tree arr, tree arr_type,
 
 /* Warn about C++20 [depr.array.comp] array comparisons: "Equality
    and relational comparisons between two operands of array type are
-   deprecated."  We also warn in C and earlier C++ standards.  CODE is
-   the code for this comparison, OP0 and OP1 are the operands.  */
+   deprecated."  In C++26 this is a permerror.  We also warn in C and earlier
+   C++ standards.  CODE is the code for this comparison, OP0 and OP1 are
+   the operands.  */
 
 void
 do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
@@ -3833,10 +3835,22 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
     op1 = TREE_OPERAND (op1, 0);
 
   auto_diagnostic_group d;
-  if (warning_at (location, OPT_Warray_compare,
-		  (c_dialect_cxx () && cxx_dialect >= cxx20)
-		  ? G_("comparison between two arrays is deprecated in C++20")
-		  : G_("comparison between two arrays")))
+  diagnostic_t kind = DK_WARNING;
+  const char *msg;
+  if (c_dialect_cxx () && cxx_dialect >= cxx20)
+    {
+      /* P2865R5 made this comparison ill-formed in C++26.  */
+      if (cxx_dialect >= cxx26)
+	{
+	  msg = G_("comparison between two arrays is not allowed in C++26");
+	  kind = DK_PERMERROR;
+	}
+      else
+	msg = G_("comparison between two arrays is deprecated in C++20");
+    }
+  else
+    msg = G_("comparison between two arrays");
+  if (emit_diagnostic (kind, location, OPT_Warray_compare, msg))
     {
       /* C doesn't allow +arr.  */
       if (c_dialect_cxx ())

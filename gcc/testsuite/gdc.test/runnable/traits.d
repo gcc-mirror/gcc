@@ -10,7 +10,7 @@ Creating library {{RESULTS_DIR}}/runnable/traits_0.lib and object {{RESULTS_DIR}
 TRANSFORM_OUTPUT: remove_lines("Creating library")
 TEST_OUTPUT:
 ---
-__lambda1
+__lambda_L1073_C5
 ---
 */
 

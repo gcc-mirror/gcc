@@ -8,12 +8,6 @@
 /* Adapted from various files in the Linux kernel, all of which have:  */
 /* SPDX-License-Identifier: GPL-2.0 */
 
-#ifndef __cplusplus 
-  typedef _Bool bool;
-  #define true 1
-  #define false 0
-#endif
-
 typedef struct {} atomic_t;
 
 /* Adapted from include/linux/compiler_attributes.h  */

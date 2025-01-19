@@ -24,6 +24,7 @@ import dmd.denum;
 import dmd.dimport;
 import dmd.dmodule;
 import dmd.dsymbol;
+import dmd.dsymbolsem : include;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
@@ -41,7 +42,8 @@ import dmd.target;
 import dmd.visitor;
 
 version(Windows) {
-    extern (C) char* getcwd(char* buffer, size_t maxlen);
+    extern (C) char* _getcwd(char* buffer, size_t maxlen);
+    alias getcwd = _getcwd;
 } else {
     import core.sys.posix.unistd : getcwd;
 }
@@ -904,7 +906,7 @@ public:
         arrayStart();
         foreach (importPath; global.params.imppath[])
         {
-            item(importPath.toDString);
+            item(importPath.path.toDString);
         }
         arrayEnd();
 
@@ -990,35 +992,34 @@ void json_generate(ref Modules modules, ref OutBuffer buf)
         // of modules representing their syntax.
         json.generateModules(modules);
         json.removeComma();
+        return;
     }
-    else
-    {
-        // Generate the new format which is an object where each
-        // output option is its own field.
 
-        json.objectStart();
-        if (global.params.jsonFieldFlags & JsonFieldFlags.compilerInfo)
-        {
-            json.propertyStart("compilerInfo");
-            json.generateCompilerInfo();
-        }
-        if (global.params.jsonFieldFlags & JsonFieldFlags.buildInfo)
-        {
-            json.propertyStart("buildInfo");
-            json.generateBuildInfo();
-        }
-        if (global.params.jsonFieldFlags & JsonFieldFlags.modules)
-        {
-            json.propertyStart("modules");
-            json.generateModules(modules);
-        }
-        if (global.params.jsonFieldFlags & JsonFieldFlags.semantics)
-        {
-            json.propertyStart("semantics");
-            json.generateSemantics();
-        }
-        json.objectEnd();
+    // Generate the new format which is an object where each
+    // output option is its own field.
+
+    json.objectStart();
+    if (global.params.jsonFieldFlags & JsonFieldFlags.compilerInfo)
+    {
+        json.propertyStart("compilerInfo");
+        json.generateCompilerInfo();
     }
+    if (global.params.jsonFieldFlags & JsonFieldFlags.buildInfo)
+    {
+        json.propertyStart("buildInfo");
+        json.generateBuildInfo();
+    }
+    if (global.params.jsonFieldFlags & JsonFieldFlags.modules)
+    {
+        json.propertyStart("modules");
+        json.generateModules(modules);
+    }
+    if (global.params.jsonFieldFlags & JsonFieldFlags.semantics)
+    {
+        json.propertyStart("semantics");
+        json.generateSemantics();
+    }
+    json.objectEnd();
 }
 
 /**

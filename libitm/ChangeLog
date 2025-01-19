@@ -1,3 +1,12 @@
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libitm.exp: Add
+	"load_gcc_lib dg-test-cleanup.exp".
+
 2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* config/aarch64/sjlj.S: Replace SPARC CFI directive by
@@ -2662,7 +2671,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2024 Free Software Foundation, Inc.
+Copyright (C) 2008-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

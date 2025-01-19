@@ -15,7 +15,7 @@ struct BitArray
 {
     BitArray()
       : len(0)
-      , ptr(NULL)
+      , ptr(nullptr)
     {}
 
     ~BitArray()

@@ -1,5 +1,5 @@
 /* Tuning model description for FUJITSU-MONAKA.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -42,7 +42,7 @@ static const struct tune_params fujitsu_monaka_tunings =
     1 /* store_pred.  */
   }, /* memmov_cost.  */
   3, /* issue_rate.  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops.  */
+  AARCH64_FUSE_BASE, /* fusible_ops.  */
   "32:16",	/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */
@@ -54,8 +54,7 @@ static const struct tune_params fujitsu_monaka_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND
-   | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
+  (AARCH64_EXTRA_TUNE_BASE
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
   &generic_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1723,7 +1723,7 @@ procedure Gnatchop is
       end;
    end Write_Unit;
 
-      procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+   procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
 --  Start of processing for gnatchop
 

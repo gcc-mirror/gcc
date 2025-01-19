@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -400,6 +400,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       Eftm : Boolean;      -- ELSIF can terminate sequence
       Eltm : Boolean;      -- ELSE can terminate sequence
       Extm : Boolean;      -- EXCEPTION can terminate sequence
+      Fitm : Boolean;      -- FINALLY can terminate sequence
       Ortm : Boolean;      -- OR can terminate sequence
       Sreq : Boolean;      -- at least one statement required
       Tatm : Boolean;      -- THEN ABORT can terminate sequence
@@ -408,15 +409,16 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    end record;
    pragma Pack (SS_Rec);
 
-   SS_Eftm_Eltm_Sreq : constant SS_Rec := (T, T, F, F, T, F, F, F);
-   SS_Eltm_Ortm_Tatm : constant SS_Rec := (F, T, F, T, F, T, F, F);
-   SS_Extm_Sreq      : constant SS_Rec := (F, F, T, F, T, F, F, F);
-   SS_None           : constant SS_Rec := (F, F, F, F, F, F, F, F);
-   SS_Ortm_Sreq      : constant SS_Rec := (F, F, F, T, T, F, F, F);
-   SS_Sreq           : constant SS_Rec := (F, F, F, F, T, F, F, F);
-   SS_Sreq_Whtm      : constant SS_Rec := (F, F, F, F, T, F, T, F);
-   SS_Whtm           : constant SS_Rec := (F, F, F, F, F, F, T, F);
-   SS_Unco           : constant SS_Rec := (F, F, F, F, F, F, F, T);
+   SS_Eftm_Eltm_Sreq : constant SS_Rec := (T, T, F, F, F, T, F, F, F);
+   SS_Eltm_Ortm_Tatm : constant SS_Rec := (F, T, F, F, T, F, T, F, F);
+   SS_Extm_Fitm_Sreq : constant SS_Rec := (F, F, T, T, F, T, F, F, F);
+   SS_None           : constant SS_Rec := (F, F, F, F, F, F, F, F, F);
+   SS_Ortm_Sreq      : constant SS_Rec := (F, F, F, F, T, T, F, F, F);
+   SS_Sreq           : constant SS_Rec := (F, F, F, F, F, T, F, F, F);
+   SS_Sreq_Whtm      : constant SS_Rec := (F, F, F, F, F, T, F, T, F);
+   SS_Sreq_Fitm_Whtm : constant SS_Rec := (F, F, F, T, F, T, F, T, F);
+   SS_Whtm           : constant SS_Rec := (F, F, F, F, F, F, F, T, F);
+   SS_Unco           : constant SS_Rec := (F, F, F, F, F, F, F, F, T);
 
    Goto_List : Elist_Id;
    --  List of goto nodes appearing in the current compilation. Used to

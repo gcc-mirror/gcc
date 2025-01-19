@@ -1,6 +1,7 @@
-// { dg-do compile { target c++11 } }
+// { dg-options "-D_GLIBCXX_USE_DEPRECATED=0 -Wdeprecated" }
+// { dg-do preprocess }
 
-// Copyright (C) 2012-2024 Free Software Foundation, Inc.
+// Copyright (C) 2012-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +20,11 @@
 
 #include <cstdbool>
 
+// { dg-error "ISO C.. 2011" "" { target c++98_only } 0 }
+// { dg-warning "deprecated" "" { target c++17_only } 0 }
+// { dg-error "not a standard header" "" { target c++20 } 0 }
+
+#if __cplusplus >= 201103L
 #ifndef __bool_true_false_are_defined
 # error "The header <cstdbool> fails to define a macro named __bool_true_false_are_defined"
 #endif
@@ -33,4 +39,5 @@
 
 #ifdef false
 # error "The header <cstdbool> defines a macro named false"
+#endif
 #endif

@@ -1,4 +1,5 @@
 // PERMUTE_ARGS: -unittest -O -release -inline -fPIC -g
+// TRANSFORM_OUTPUT: remove_lines("warning: sprintf\(\) is often misused")
 
 extern(C) int printf(const char*, ...);
 extern(C) int sprintf(char*, const char*, ...);

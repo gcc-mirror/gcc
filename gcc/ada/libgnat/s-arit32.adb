@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,7 +119,9 @@ is
    --  0 .. 2**31 - 1, then the corresponding nonnegative signed integer is
    --  returned, otherwise constraint error is raised.
 
-   procedure Raise_Error;
+   procedure Raise_Error with
+     Always_Terminates,
+     Exceptional_Cases => (Constraint_Error => True);
    pragma No_Return (Raise_Error);
    --  Raise constraint error with appropriate message
 
@@ -130,7 +132,7 @@ is
    procedure Lemma_Abs_Commutation (X : Int32)
    with
      Ghost,
-     Post => abs (Big (X)) = Big (Uns32'(abs X));
+     Post => abs Big (X) = Big (Uns32'(abs X));
 
    procedure Lemma_Abs_Div_Commutation (X, Y : Big_Integer)
    with

@@ -147,3 +147,19 @@ struct S { int i; int* p; }
     S* s = cast(S*)malloc();
     free(s.p);    // consumes s
 }
+
+/*******************************
+ * https://issues.dlang.org/show_bug.cgi?id=21854
+ */
+
+@live void test21854()
+{
+    foreach(int tmp; 0..10) { }
+
+    int key = 0;
+    int limit = 10;
+    for (; key < limit; key += 1)
+    {
+        int tmp = key;
+    }
+}

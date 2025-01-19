@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2024 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2025 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2341,6 +2341,9 @@ edge.  Rethrowing the exception is represented using @code{RESX_EXPR}.
 @tindex OMP_CONTINUE
 @tindex OMP_ATOMIC
 @tindex OMP_CLAUSE
+@tindex OMP_METADIRECTIVE
+@tindex OMP_NEXT_VARIANT
+@tindex OMP_TARGET_DEVICE_MATCHES
 
 All the statements starting with @code{OMP_} represent directives and
 clauses used by the OpenMP API @w{@uref{https://www.openmp.org}}.
@@ -2557,6 +2560,66 @@ of variables are restricted to exactly one, accessed with
 same clause @code{C} need to be represented as multiple @code{C} clauses
 chained together.  This facilitates adding new clauses during
 compilation.
+
+@item OMP_METADIRECTIVE
+
+Represents @code{#pragma omp metadirective}.  This node has one field,
+accessed by the @code{OMP_METADIRECTIVE_VARIANTS (@var{node})} macro.
+
+Metadirective variants are represented internally as @code{TREE_LIST} nodes
+but you should use the interface provided in @file{tree.h} to
+access their components.
+
+@code{OMP_METADIRECTIVE_VARIANT_SELECTOR (@var{variant})}
+is the selector associated with the variant; this is null for the
+@samp{otherwise}/@samp{default} alternative.
+
+@code{OMP_METADIRECTIVE_VARIANT_DIRECTIVE (@var{variant})} is the
+nested directive for the variant.
+
+@code{OMP_METADIRECTIVE_VARIANT_BODY (@var{variant})} represents
+statements following a nested standalone or utility directive.
+In other cases, this field is null and the body is part of the
+nested directive instead.
+
+Metadirective context selectors (as well as context selectors for
+@code{#pragma omp declare variant}) are also represented internally using
+a @code{TREE_LIST} representation but with accessors and constructors
+declared in @file{omp-general.h}.  A complete context selector is a list of
+trait-set selectors, which are in turn composed of a list of trait selectors,
+each of which may have a list of trait properties.
+Identifiers for trait-set selectors and trait selectors are enums
+defined in @file{omp-selectors.h}, while trait property identifiers are
+string constants.
+
+@item OMP_NEXT_VARIANT
+Some OpenMP variant constructs cannot be resolved until the ompdevlow pass,
+in @file{omp-offload.cc}.  The gimplifier turns these into a @code{switch}
+statement in a loop, using @code{OMP_NEXT_VARIANT} as a placeholder to set
+the switch control variable.  The ompdevlow pass replaces these with constant
+integers after resolution.
+
+@code{OMP_NEXT_VARIANT} has two operands.  Operand 0 is
+@code{OMP_NEXT_VARIANT_INDEX}, an @code{INTEGER_CST} for the current current
+index.  Operand 1 is @code{OMP_NEXT_VARIANT_STATE}, a @code{TREE_LIST} shared
+among all @code{OMP_NEXT_VARIANT} expressions for the same variant construct
+that holds resolution state information for that construct.
+
+@item OMP_TARGET_DEVICE_MATCHES
+Similarly to @code{OMP_NEXT_VARIANT}, this tree node is a placeholder that is
+resolved in the ompdevlow pass.  It is used to implement the
+@code{target_device} dynamic selector.  The gimplifier generates these
+nodes and arranges for them to be executed on the @code{device_num} specified
+in the selector.  The ompdevlow pass replaces each
+@code{OMP_TARGET_DEVICE_MATCHES} node with a constant value, depending on the
+corresponding kind, arch, or isa properties configured for the offload compiler.
+
+@code{OMP_TARGET_DEVICES} has two operands.  Operand 0 is
+@code{OMP_TARGET_DEVICE_MATCHES_SELECTOR}, an @code{INTEGER_CST}
+encoding one of the constants @code{OMP_TRAIT_DEVICE_KIND},
+@code{OMP_TRAIT_DEVICE_ARCH}, or @code{OMP_TRAIT_DEVICE_ISA}.  Operand
+1 is @code{OMP_TARGET_DEVICE_MATCHES_PROPERTIES}, a @code{TREE_LIST}
+using the same internal representation as the properties part of the selector.
 
 @end table
 

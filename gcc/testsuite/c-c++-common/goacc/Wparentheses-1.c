@@ -59,6 +59,21 @@ f1 (void)
       else
 	baz2 ();
 
+  if (a) /* { dg-warning "ambiguous" } */
+    #pragma acc serial
+      if (b)
+	bar2 ();
+      else
+	baz2 ();
+
+  if (a) /* { dg-warning "ambiguous" } */
+    #pragma acc serial loop
+    for (i = 0; i < 10; i++)
+      if (b)
+	bar2 ();
+      else
+	baz2 ();
+
   (void) d[0];
 
   if (a)
@@ -138,14 +153,23 @@ f1 (void)
       }
 
   if (a)
-    {
-      #pragma acc parallel loop
-      for (i = 0; i < 10; i++)
+    #pragma acc serial
+      {
 	if (b)
 	  bar2 ();
 	else
 	  baz2 ();
-    }
+      }
+
+  if (a)
+    #pragma acc serial loop
+    for (i = 0; i < 10; i++)
+      {
+	if (b)
+	  bar2 ();
+	else
+	  baz2 ();
+      }
 }
 
 #pragma acc routine vector

@@ -1,6 +1,8 @@
-/* { dg-do assemble { target aarch64_asm_sve_ok } } */
+/* { dg-do assemble { target aarch64_asm_sve-b16b16_ok } } */
+/* { dg-do compile { target { ! aarch64_asm_sve-b16b16_ok } } } */
 /* { dg-options "-O3 -msve-vector-bits=256 --save-temps" } */
 
+typedef __bf16 vnx8bf __attribute__((vector_size(32)));
 typedef _Float16 vnx8hf __attribute__((vector_size(32)));
 typedef float vnx4sf __attribute__((vector_size(32)));
 typedef double vnx2df __attribute__((vector_size(32)));
@@ -24,6 +26,11 @@ DO_OP (vnx8hf)
 DO_OP (vnx4sf)
 DO_OP (vnx2df)
 
+#pragma GCC target "+sve2+sve-b16b16"
+
+DO_OP (vnx8bf)
+
+/* { dg-final { scan-assembler-times {\tbfmls\tz0\.h, p[0-7]/m, z2\.h, z4\.h\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmls\tz0\.h, p[0-7]/m, z2\.h, z4\.h\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmls\tz0\.s, p[0-7]/m, z2\.s, z4\.s\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmls\tz0\.d, p[0-7]/m, z2\.d, z4\.d\n} 1 } } */

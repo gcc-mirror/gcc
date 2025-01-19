@@ -4053,8 +4053,6 @@
 	PR c++/42567
 	* semantics.c (describable_type): Remove decltype comment and
 	semantics.
-
-
 
 Copyright (C) 2010 Free Software Foundation, Inc.
 

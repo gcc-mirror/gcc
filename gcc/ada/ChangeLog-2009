@@ -12161,8 +12161,6 @@
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Put
 	the _Tag field before any discriminants in the field list.
 	(components_to_record): Remove obsolete comment.
-
-
 
 Copyright (C) 2009 Free Software Foundation, Inc.
 

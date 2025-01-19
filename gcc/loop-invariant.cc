@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+   Copyright (C) 2004-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -334,6 +334,8 @@ hash_invariant_expr_1 (rtx_insn *insn, rtx x)
 	}
       else if (fmt[i] == 'i' || fmt[i] == 'n')
 	val ^= XINT (x, i);
+      else if (fmt[i] == 'L')
+	val ^= XLOC (x, i);
       else if (fmt[i] == 'p')
 	val ^= constant_lower_bound (SUBREG_BYTE (x));
     }

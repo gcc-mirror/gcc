@@ -34,6 +34,9 @@ namespace dmd
 {
     bool functionSemantic(FuncDeclaration* fd);
     bool functionSemantic3(FuncDeclaration* fd);
+    bool checkClosure(FuncDeclaration* fd);
+    MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);
+    PURE isPure(FuncDeclaration *f);
 }
 
 //enum STC : ulong from astenums.d:
@@ -235,7 +238,6 @@ public:
     VarDeclaration *lastVar;    // Linked list of variables for goto-skips-init detection
     Expression *edtor;          // if !=NULL, does the destruction of the variable
     IntRange *range;            // if !NULL, the variable is known to be within the range
-    VarDeclarations *maybes;    // STCmaybescope variables that are assigned to this STCmaybescope variable
 
     unsigned endlinnum;         // line number of end of scope that this var lives in
     unsigned offset;
@@ -588,13 +590,6 @@ public:
 
     // Things that should really go into Scope
 
-    // 1 if there's a return exp; statement
-    // 2 if there's a throw statement
-    // 4 if there's an assert(0)
-    // 8 if there's inline asm
-    // 16 if there are multiple return statements
-    int hasReturnExp;
-
     VarDeclaration *nrvo_var;           // variable to replace with shidden
     Symbol *shidden;                    // hidden pointer passed to function
 
@@ -637,12 +632,12 @@ public:
     bool nothrowInprocess(bool v);
     bool nogcInprocess() const;
     bool nogcInprocess(bool v);
-    bool returnInprocess() const;
-    bool returnInprocess(bool v);
+    bool saferD() const;
+    bool saferD(bool v);
+    bool scopeInprocess() const;
+    bool scopeInprocess(bool v);
     bool inlineScanned() const;
     bool inlineScanned(bool v);
-    bool inferScope() const;
-    bool inferScope(bool v);
     bool hasCatches() const;
     bool hasCatches(bool v);
     bool skipCodegen() const;
@@ -679,6 +674,12 @@ public:
     bool dllImport(bool v);
     bool dllExport() const;
     bool dllExport(bool v);
+    bool hasReturnExp() const;
+    bool hasReturnExp(bool v);
+    bool hasInlineAsm() const;
+    bool hasInlineAsm(bool v);
+    bool hasMultipleReturnExp() const;
+    bool hasMultipleReturnExp(bool v);
 
     // Data for a function declaration that is needed for the Objective-C
     // integration.
@@ -706,7 +707,6 @@ public:
 
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
-    static MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);
     LabelDsymbol *searchLabel(Identifier *ident, const Loc &loc);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     const char *toFullSignature();  // for diagnostics, e.g. 'int foo(int x, int y) pure'
@@ -719,10 +719,8 @@ public:
     bool isCodeseg() const override final;
     bool isOverloadable() const override final;
     bool isAbstract() override final;
-    PURE isPure();
     bool isSafe();
     bool isTrusted();
-    bool isNogc();
 
     virtual bool isNested() const;
     AggregateDeclaration *isThis() override;
@@ -735,7 +733,6 @@ public:
     const char *kind() const override;
     bool isUnique();
     bool needsClosure();
-    bool checkClosure();
     bool hasNestedFrameRefs();
     ParameterList getParameterList();
 
@@ -787,6 +784,7 @@ class CtorDeclaration final : public FuncDeclaration
 {
 public:
     d_bool isCpCtor;
+    d_bool isMoveCtor;
     CtorDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
     const char *toChars() const override;

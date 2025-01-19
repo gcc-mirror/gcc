@@ -1,6 +1,6 @@
 // Variable Templates For Type Traits -*- C++ -*-
 
-// Copyright (C) 2014-2024 Free Software Foundation, Inc.
+// Copyright (C) 2014-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -121,8 +121,11 @@ template <typename _Tp>
   constexpr bool is_const_v = is_const<_Tp>::value;
 template <typename _Tp>
   constexpr bool is_volatile_v = is_volatile<_Tp>::value;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 template <typename _Tp>
   constexpr bool is_trivial_v = is_trivial<_Tp>::value;
+#pragma GCC diagnostic pop
 template <typename _Tp>
   constexpr bool is_trivially_copyable_v = is_trivially_copyable<_Tp>::value;
 template <typename _Tp>

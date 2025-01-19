@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2024 Free Software Foundation, Inc.
+// Copyright (C) 2011-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -835,20 +835,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   /// @cond undocumented
-#if __cplusplus < 201703L
-  template<typename _Alloc>
-    [[__gnu__::__always_inline__]]
-    inline void
-    __do_alloc_on_copy(_Alloc& __one, const _Alloc& __two, true_type)
-    { __one = __two; }
-
-  template<typename _Alloc>
-    [[__gnu__::__always_inline__]]
-    inline void
-    __do_alloc_on_copy(_Alloc&, const _Alloc&, false_type)
-    { }
-#endif
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   template<typename _Alloc>
     [[__gnu__::__always_inline__]]
     _GLIBCXX14_CONSTEXPR inline void
@@ -857,12 +845,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __traits = allocator_traits<_Alloc>;
       using __pocca =
 	typename __traits::propagate_on_container_copy_assignment::type;
-#if __cplusplus >= 201703L
       if constexpr (__pocca::value)
 	__one = __two;
-#else
-      __do_alloc_on_copy(__one, __two, __pocca());
-#endif
     }
 
   template<typename _Alloc>
@@ -874,18 +858,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __traits::select_on_container_copy_construction(__a);
     }
 
-#if __cplusplus < 201703L
-  template<typename _Alloc>
-    [[__gnu__::__always_inline__]]
-    inline void __do_alloc_on_move(_Alloc& __one, _Alloc& __two, true_type)
-    { __one = std::move(__two); }
-
-  template<typename _Alloc>
-    [[__gnu__::__always_inline__]]
-    inline void __do_alloc_on_move(_Alloc&, _Alloc&, false_type)
-    { }
-#endif
-
   template<typename _Alloc>
     [[__gnu__::__always_inline__]]
     _GLIBCXX14_CONSTEXPR inline void
@@ -894,28 +866,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __traits = allocator_traits<_Alloc>;
       using __pocma
 	= typename __traits::propagate_on_container_move_assignment::type;
-#if __cplusplus >= 201703L
       if constexpr (__pocma::value)
 	__one = std::move(__two);
-#else
-      __do_alloc_on_move(__one, __two, __pocma());
-#endif
     }
-
-#if __cplusplus < 201703L
-  template<typename _Alloc>
-    [[__gnu__::__always_inline__]]
-    inline void __do_alloc_on_swap(_Alloc& __one, _Alloc& __two, true_type)
-    {
-      using std::swap;
-      swap(__one, __two);
-    }
-
-  template<typename _Alloc>
-    [[__gnu__::__always_inline__]]
-    inline void __do_alloc_on_swap(_Alloc&, _Alloc&, false_type)
-    { }
-#endif
 
   template<typename _Alloc>
     [[__gnu__::__always_inline__]]
@@ -924,16 +877,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using __traits = allocator_traits<_Alloc>;
       using __pocs = typename __traits::propagate_on_container_swap::type;
-#if __cplusplus >= 201703L
       if constexpr (__pocs::value)
 	{
 	  using std::swap;
 	  swap(__one, __two);
 	}
-#else
-      __do_alloc_on_swap(__one, __two, __pocs());
-#endif
     }
+#pragma GCC diagnostic pop
 
   template<typename _Alloc, typename _Tp,
 	   typename _ValueT = __remove_cvref_t<typename _Alloc::value_type>,
@@ -1007,6 +957,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename _Alloc::value_type;
       __a.deallocate(__a.allocate(1u), 1u);
     };
+
+  template<typename _Alloc>
+    concept __not_allocator_like = !__allocator_like<_Alloc>;
 #endif
   /// @endcond
 #endif // C++11

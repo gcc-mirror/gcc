@@ -555,7 +555,6 @@
 	* Makefile.in: Regenerate.
 	* ieee/ieee_helper.c: Use issignaling macro to recognized
 	signaling NaNs.
-
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

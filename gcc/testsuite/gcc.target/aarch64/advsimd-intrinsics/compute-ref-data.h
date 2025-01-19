@@ -122,6 +122,10 @@ PAD(buffer_pad, uint, 64, 1);
 VECT_VAR_DECL_INIT(buffer, poly, 64, 1);
 PAD(buffer_pad, poly, 64, 1);
 #endif
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(buffer, mfloat, 8, 8)[8];
+PAD(buffer_pad, mfloat, 8, 8);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 VECT_VAR_DECL_INIT(buffer, float, 16, 4);
 PAD(buffer_pad, float, 16, 4);
@@ -151,6 +155,10 @@ PAD(buffer_pad, poly, 16, 8);
 #if defined (__ARM_FEATURE_CRYPTO)
 VECT_VAR_DECL_INIT(buffer, poly, 64, 2);
 PAD(buffer_pad, poly, 64, 2);
+#endif
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(buffer, mfloat, 8, 16)[16];
+PAD(buffer_pad, mfloat, 8, 16);
 #endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 VECT_VAR_DECL_INIT(buffer, float, 16, 8);
@@ -190,6 +198,10 @@ VECT_VAR_DECL(buffer_dup_pad, poly, 16, 4);
 VECT_VAR_DECL_INIT4(buffer_dup, poly, 64, 1);
 VECT_VAR_DECL(buffer_dup_pad, poly, 64, 1);
 #endif
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(buffer_dup, mfloat, 8, 8)[8];
+PAD(buffer_dup_pad, mfloat, 8, 8);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 VECT_VAR_DECL_INIT4(buffer_dup, float, 16, 4);
 VECT_VAR_DECL(buffer_dup_pad, float, 16, 4);
@@ -221,9 +233,26 @@ VECT_VAR_DECL(buffer_dup_pad, poly, 16, 8);
 VECT_VAR_DECL_INIT4(buffer_dup, poly, 64, 2);
 VECT_VAR_DECL(buffer_dup_pad, poly, 64, 2);
 #endif
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(buffer_dup, mfloat, 8, 16)[16];
+PAD(buffer_dup_pad, mfloat, 8, 16);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 VECT_VAR_DECL_INIT(buffer_dup, float, 16, 8);
 VECT_VAR_DECL(buffer_dup_pad, float, 16, 8);
 #endif
 VECT_VAR_DECL_INIT(buffer_dup, float, 32, 4);
 VECT_VAR_DECL(buffer_dup_pad, float, 32, 4);
+
+#if MFLOAT8_SUPPORTED
+static void __attribute__((constructor))
+copy_mfloat8 ()
+{
+  memcpy (VECT_VAR(buffer, mfloat, 8, 8), VECT_VAR(buffer, uint, 8, 8), 8);
+  memcpy (VECT_VAR(buffer, mfloat, 8, 16), VECT_VAR(buffer, uint, 8, 16), 16);
+  memcpy (VECT_VAR(buffer_dup, mfloat, 8, 8),
+	  VECT_VAR(buffer_dup, uint, 8, 8), 8);
+  memcpy (VECT_VAR(buffer_dup, mfloat, 8, 16),
+	  VECT_VAR(buffer_dup, uint, 8, 16), 16);
+}
+#endif

@@ -6,7 +6,7 @@
 --                     M U L T I P R O C E S S O R S                        --
 --                                S p e c                                   --
 --                                                                          --
---                     Copyright (C) 2010-2024, AdaCore                     --
+--                     Copyright (C) 2010-2025, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,9 @@
 -- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  This package provides primitives used for protected objects on
+--  multiprocessor systems.
 
 package System.Tasking.Protected_Objects.Multiprocessors is
 

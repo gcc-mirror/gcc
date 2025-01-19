@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2024 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2025 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2433,6 +2433,12 @@ nvptx code by default compiles for at least PTX ISA version 6.0.
 @item nvptx_runtime_alias_ptx
 The nvptx runtime environment supports the PTX ISA directive
 @code{.alias}.
+
+@item nvptx_runtime_alloca_ptx
+The nvptx runtime environment supports PTX 'alloca'.
+
+@item nvptx_softstack
+nvptx @option{-msoft-stack} is enabled.
 @end table
 
 @subsubsection PowerPC-specific attributes
@@ -2547,6 +2553,24 @@ Test target architecture has support for the zacas extension.
 
 @item riscv_zalrsc
 Test target architecture has support for the zalrsc extension.
+
+@item riscv_zbc
+Test target architecture has support for the zbc extension.
+
+@item riscv_zbc_ok
+Test target architecture can execute code with zbc extension enabled.
+
+@item riscv_zbkb
+Test target architecture has support for the zbkb extension.
+
+@item riscv_zbkb_ok
+Test target architecture can execute code with zbkb extension enabled.
+
+@item riscv_zbkc
+Test target architecture has support for the zbkc extension.
+
+@item riscv_zbkc_ok
+Test target architecture can execute code with zbkc extension enabled.
 
 @item riscv_ztso
 Test target architecture has support for the ztso extension.
@@ -3337,6 +3361,9 @@ Only MIPS targets support this feature, and only then in certain modes.
 
 @item nvptx_alias_ptx
 Enable using the PTX ISA directive @code{.alias} on nvptx targets.
+
+@item nvptx_alloca_ptx
+Enable PTX 'alloca' on nvptx targets.
 
 @item riscv_a
 Add the 'A' extension to the -march string on RISC-V targets.

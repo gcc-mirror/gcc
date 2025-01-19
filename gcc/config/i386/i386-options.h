@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,6 +60,7 @@ void ix86_simd_clone_adjust (struct cgraph_node *node);
 extern tree (*ix86_veclib_handler) (combined_fn, tree, tree);
 extern tree ix86_veclibabi_svml (combined_fn, tree, tree);
 extern tree ix86_veclibabi_acml (combined_fn, tree, tree);
+extern tree ix86_veclibabi_aocl (combined_fn, tree, tree);
 
 enum ix86_function_specific_strings
 {

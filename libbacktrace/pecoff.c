@@ -1,5 +1,5 @@
 /* pecoff.c -- Get debug data from a PE/COFFF file for backtraces.
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
    Adapted from elf.c by Tristan Gingold, AdaCore.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,8 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "internal.h"
 
 #ifdef HAVE_WINDOWS_H
-#ifndef WIN32_MEAN_AND_LEAN
-#define WIN32_MEAN_AND_LEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #endif
 
 #ifndef NOMINMAX

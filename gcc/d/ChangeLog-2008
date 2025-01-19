@@ -322,7 +322,6 @@
 	outer class functions.
 
 	* Rename patch-build_gcc-4.0 to patch-build_gcc-4.0.x
-
 
 Copyright (C) 2008 Free Software Foundation, Inc.
 

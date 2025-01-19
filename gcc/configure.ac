@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2024 Free Software Foundation, Inc.
+# Copyright (C) 1997-2025 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -463,12 +463,28 @@ ACX_PROG_GDC([-I"$srcdir"/d])
 # Do configure tests with the C++ compiler, since that's what we build with.
 AC_LANG(C++)
 
-# Remove the -O2: for historical reasons, unless bootstrapping we prefer
+# Remove all -O flags: for historical reasons, unless bootstrapping we prefer
 # optimizations to be activated explicitly by the toplevel.
 case "$CC" in
   */prev-gcc/xgcc*) ;;
-  *) CFLAGS=`echo "$CFLAGS " | sed -e "s/-Ofast[[ 	]]//" -e "s/-O[[gs]][[ 	]]//" -e "s/-O[[0-9]]*[[ 	]]//" `
-     CXXFLAGS=`echo "$CXXFLAGS " | sed -e "s/-Ofast[[ 	]]//" -e "s/-O[[gs]][[ 	]]//" -e "s/-O[[0-9]]*[[ 	]]//" ` ;;
+  *)
+    new_CFLAGS=
+    for flag in $CFLAGS; do
+      case $flag in
+	-O*) ;;
+	*) new_CFLAGS="$new_CFLAGS $flag" ;;
+      esac
+    done
+    CFLAGS=$new_CFLAGS
+    new_CXXFLAGS=
+    for flag in $CXXFLAGS; do
+      case $flag in
+	-O*) ;;
+	*) new_CXXFLAGS="$new_CXXFLAGS $flag" ;;
+      esac
+    done
+    CXXFLAGS=$new_CXXFLAGS
+    ;;
 esac
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -913,10 +929,10 @@ fi
 
 AC_SUBST(DEFAULT_MATCHPD_PARTITIONS)
 
-# Specify the number of splits of insn-emit.cc to generate.
+# Specify the number of splits of insn-emit.cc and insn-recog.cc to generate.
 AC_ARG_WITH(insnemit-partitions,
 [AS_HELP_STRING([--with-insnemit-partitions=num],
-[Set the number of partitions of insn-emit.cc for genemit to create. [default=10]])],
+[Set the number of partitions of insn-emit.cc for genemit and genrecog to create. [default=10]])],
 [DEFAULT_INSNEMIT_PARTITIONS="$with_insnemit_partitions"], [DEFAULT_INSNEMIT_PARTITIONS=10])
 if (test $DEFAULT_INSNEMIT_PARTITIONS -lt 1); then
   AC_MSG_ERROR(m4_normalize([
@@ -1202,7 +1218,7 @@ if test "x$enable_offload_defaulted" = xyes; then
 fi
 
 AC_ARG_WITH(multilib-list,
-[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, ARM, AVR, OR1K, RISC-V, SH and x86-64 only)])],
+[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, ARM, AVR, nvptx, OR1K, RISC-V, SH and x86-64 only)])],
 :,
 with_multilib_list=default)
 
@@ -1381,7 +1397,7 @@ AC_CHECK_HEADERS(ext/hash_map)
 ZW_CREATE_DEPDIR
 AC_CONFIG_COMMANDS([gccdepdir],[
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common analyzer text-art rtl-ssa
+  for lang in $subdirs c-family common analyzer text-art rtl-ssa sym-exec
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
@@ -1636,7 +1652,7 @@ AC_CHECK_DECLS([basename(const char*), strstr(const char*,const char*)], , ,[
 #include "system.h"])
 
 gcc_AC_CHECK_DECLS(getenv atol atoll asprintf sbrk abort atof getcwd getwd \
-	madvise stpcpy strnlen strsignal strverscmp \
+	madvise mkstemps stpcpy strnlen strsignal strverscmp \
 	strtol strtoul strtoll strtoull setenv unsetenv \
 	errno snprintf vsnprintf vasprintf malloc realloc calloc \
 	free getopt clock getpagesize ffs fmemopen gcc_UNLOCKED_FUNCS, , ,[
@@ -3065,6 +3081,9 @@ gcc_GAS_CHECK_FEATURE([.base64], gcc_cv_as_base64,,
  	.base64 "Tm9uIHB1ZG9yIGVzdCBuaWwgc2NpcmUsIHB1ZG9yIG5pbCBkaXNjZXJlIHZlbGxlLgo="],,
 [AC_DEFINE(HAVE_GAS_BASE64, 1, [Define if your assembler supports .base64.])])
 
+gcc_GAS_CHECK_FEATURE([.cv_ucomp], gcc_cv_as_cv_ucomp,,[.cv_ucomp 0],,
+[AC_DEFINE(HAVE_GAS_CV_UCOMP, 1, [Define if your assembler supports .cv_ucomp.])])
+
 # gnu_indirect_function type is an extension proposed at
 # http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
 # selection of function implementation
@@ -3593,12 +3612,14 @@ gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
  [--fatal-warnings],
  [.section .rodata.str, "aMS", @progbits, 1])
 if test $gcc_cv_as_shf_merge = no; then
-  gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
+  gcc_GAS_CHECK_FEATURE(section merging support (%progbits),
+    gcc_cv_as_shf_merge_percent,
     [--fatal-warnings],
     [.section .rodata.str, "aMS", %progbits, 1])
 fi
 AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
-  [`if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`],
+  [`if test $gcc_cv_as_shf_merge = yes \
+    || test $gcc_cv_as_shf_merge_percent = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
 
 gcc_GAS_CHECK_FEATURE([COMDAT group support (GNU as)],
@@ -3951,11 +3972,6 @@ foo:
 	move.l x@TLSIE(%a5),%a0
 	move.l x@TLSLE(%a5),%a0'
 	tls_as_opt='--fatal-warnings'
-	;;
-  nios2-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits'
-	tls_as_opt="--fatal-warnings"
 	;;
   aarch64*-*-*)
     conftest_s='
@@ -4402,14 +4418,14 @@ case "$target" in
     AC_ARG_ENABLE(standard-branch-protection,
     [
 AS_HELP_STRING([--enable-standard-branch-protection],
-        [enable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+        [enable Branch Target Identification Mechanism, Return Address Signing, and Guarded Control Stack by default for AArch64])
 AS_HELP_STRING([--disable-standard-branch-protection],
-        [disable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+        [disable Branch Target Identification Mechanism, Return Address Signing, and Guarded Control Stack by default for AArch64])
     ],
       [
         case $enableval in
           yes)
-            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1"
+            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1 TARGET_ENABLE_GCS=1"
             ;;
           no)
             ;;
@@ -5438,17 +5454,6 @@ pointers into PC-relative form.])
 configured with --enable-newlib-nano-formatted-io.])
       fi
     ;;
-    nios2-*-*)
-    # Versions 2.33 and earlier lacked support for the %gotoff relocation
-    # syntax that is documented in the ABI specification.
-    gcc_GAS_CHECK_FEATURE([support for %gotoff relocations in constant data],
-      gcc_cv_as_nios2_gotoff_relocation,,
-[	.extern foo
-	.data
-	.long %gotoff(foo)],,
-      [AC_DEFINE(HAVE_AS_NIOS2_GOTOFF_RELOCATION, 1,
-          [Define if your assembler supports %gotoff relocation syntax.])])
-    ;;
     riscv*-*-*)
     gcc_GAS_CHECK_FEATURE([.attribute support],
       gcc_cv_as_riscv_attribute,,
@@ -5618,7 +5623,7 @@ esac
 # version to the per-target configury.
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
-  | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
+  | m68k | microblaze | mips | nds32 | pa | riscv | rs6000 | score | sparc \
   | visium | xstormy16 | xtensa | ft32)
     insn="nop"
     ;;
@@ -7380,6 +7385,9 @@ for language in $all_selected_languages
 do
 	check_languages="$check_languages check-$language"
 done
+if test x$enable_libgdiagnostics = xyes; then
+	check_languages="$check_languages check-libgdiagnostics check-sarif-replay"
+fi
 
 selftest_languages=
 for language in $all_selected_languages
@@ -7611,6 +7619,19 @@ AC_ARG_ENABLE(host-pie,
 [AS_HELP_STRING([--enable-host-pie],
 		[build host code as PIE])])
 AC_SUBST(enable_host_pie)
+
+AC_ARG_ENABLE(libgdiagnostics,
+[AS_HELP_STRING([--enable-libgdiagnostics],
+		[build libgdiagnostics shared library])])
+AC_SUBST(enable_libgdiagnostics)
+
+if test "$enable_libgdiagnostics" = "yes"; then
+  LIBGDIAGNOSTICS='libgdiagnostics sarif-replay'
+else
+  LIBGDIAGNOSTICS=''
+fi
+AC_SUBST(LIBGDIAGNOSTICS)
+
 
 # Enable --enable-host-bind-now
 AC_ARG_ENABLE(host-bind-now,

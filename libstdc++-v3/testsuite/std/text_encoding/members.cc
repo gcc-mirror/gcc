@@ -70,10 +70,25 @@ test_every_id()
     auto end = aliases.end();
     VERIFY( (begin + std::ranges::distance(aliases)) == end );
 #ifndef _GLIBCXX_ASSERTIONS
-    // This is an error, but with assertions disabled is guaranteed safe:
+    // These ops violate preconditions, but as libstdc++ extensions they are
+    // guaranteed to either assert or have well-defined behaviour.
+
+    // This erroneously returns ""sv:
     VERIFY( begin[std::ranges::distance(aliases)] == ""sv );
     // Likewise:
-    VERIFY( begin[999999] == *begin );
+    VERIFY( begin[999999] == ""sv );
+
+    auto iter = begin;
+    std::ranges::advance(iter, end);
+    // Erroneously sets iter to a value-initialized state.
+    ++iter;
+    VERIFY( iter == decltype(iter){} );
+    VERIFY( *iter == ""sv );
+
+    iter = begin;
+    // Erroneously sets iter to a value-initialized state.
+    --iter;
+    VERIFY( iter == decltype(iter){} );
 #endif
   }
 }

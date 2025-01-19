@@ -1,5 +1,5 @@
 /* ACLE support for Arm MVE
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -387,6 +387,7 @@ public:
   type_suffix_index infer_pointer_type (unsigned int);
   type_suffix_index infer_vector_or_tuple_type (unsigned int, unsigned int);
   type_suffix_index infer_vector_type (unsigned int);
+  type_suffix_index infer_tuple_type (unsigned int);
 
   bool require_vector_or_scalar_type (unsigned int);
 
@@ -398,6 +399,7 @@ public:
 				    unsigned int = SAME_SIZE);
   bool require_scalar_type (unsigned int, const char *);
   bool require_pointer_type (unsigned int);
+  bool require_pointer_to_type (unsigned int, tree);
   bool require_integer_immediate (unsigned int);
   bool require_derived_scalar_type (unsigned int, type_class_index,
 				    unsigned int = SAME_SIZE);
@@ -436,6 +438,8 @@ public:
   bool require_immediate_one_of (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT,
 				 HOST_WIDE_INT, HOST_WIDE_INT);
   bool require_immediate_range (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT);
+  bool require_immediate_range_multiple (unsigned int, HOST_WIDE_INT,
+					 HOST_WIDE_INT, HOST_WIDE_INT);
 
   bool check ();
 
@@ -443,6 +447,7 @@ private:
   bool argument_exists_p (unsigned int);
 
   bool require_immediate (unsigned int, HOST_WIDE_INT &);
+  bool require_signed_immediate (unsigned int, HOST_WIDE_INT &);
 
   /* The type of the resolved function.  */
   tree m_fntype;
@@ -580,6 +585,7 @@ public:
 				       enum mode_suffix_index) const = 0;
   virtual bool skip_overload_p (enum predication_index,
 				enum mode_suffix_index) const = 0;
+  virtual bool mode_after_pred () const = 0;
 
   /* Define all functions associated with the given group.  */
   virtual void build (function_builder &,
@@ -728,7 +734,7 @@ inline tree
 function_instance::tuple_type (unsigned int i) const
 {
   unsigned int num_vectors = vectors_per_tuple ();
-  return acle_vector_types[num_vectors - 1][type_suffix (i).vector_type];
+  return acle_vector_types[num_vectors >> 1][type_suffix (i).vector_type];
 }
 
 /* Return the vector or predicate mode associated with type suffix I.  */

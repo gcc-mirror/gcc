@@ -362,16 +362,16 @@ fmodule-private
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fmodule-private)
 
 fopenacc
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
 
 fopenacc-dim=
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenacc-dim)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc-dim)
 
 fopenmp
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
 
 fopenmp-simd
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
 
 fopenmp-allocators
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-allocators)

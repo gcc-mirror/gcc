@@ -1,5 +1,5 @@
 /* Classes for saving, deduplicating, and emitting analyzer diagnostics.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -2833,7 +2832,8 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 	      if (get_logger ())
 		{
 		  label_text desc
-		    (path->get_checker_event (idx)->get_desc ());
+		    (path->get_checker_event (idx)->get_desc
+		       (*global_dc->get_reference_printer ()));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/entry/return: %s",
 		       idx, idx + 2, desc.get ());
@@ -2855,7 +2855,8 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 	      if (get_logger ())
 		{
 		  label_text desc
-		    (path->get_checker_event (idx)->get_desc ());
+		    (path->get_checker_event (idx)->get_desc
+		     (*global_dc->get_reference_printer ()));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/return: %s",
 		       idx, idx + 1, desc.get ());
@@ -2952,7 +2953,8 @@ diagnostic_manager::prune_system_headers (checker_path *path) const
 	      {
 		if (get_logger ())
 		  {
-		    label_text desc (event->get_desc ());
+		    label_text desc
+		      (event->get_desc (*global_dc->get_reference_printer ()));
 		    log ("filtering event %i:"
 			 "system header entry event: %s",
 			 idx, desc.get ());

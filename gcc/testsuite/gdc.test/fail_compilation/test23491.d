@@ -2,9 +2,9 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test23491.d(16): Error: reference to local variable `buffer` assigned to non-scope anonymous parameter
-fail_compilation/test23491.d(17): Error: reference to local variable `buffer` assigned to non-scope anonymous parameter calling `sinkF`
-fail_compilation/test23491.d(18): Error: reference to local variable `buffer` assigned to non-scope parameter `buf`
+fail_compilation/test23491.d(16): Error: reference to local variable `buffer` assigned to non-scope anonymous parameter is not allowed in a `@safe` function
+fail_compilation/test23491.d(17): Error: assigning reference to local variable `buffer` to non-scope anonymous parameter calling `sinkF` is not allowed in a `@safe` function
+fail_compilation/test23491.d(18): Error: assigning reference to local variable `buffer` to non-scope parameter `buf` is not allowed in a `@safe` function
 ---
 */
 

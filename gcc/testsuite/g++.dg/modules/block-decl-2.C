@@ -11,7 +11,7 @@ export extern "C++" auto foo() {
   struct X {
     // `foo` is not attached to a named module, and as such
     // `X::f` should be implicitly `inline` here
-    void f() {  // { dg-error "references internal linkage entity" }
+    void f() {  // { dg-error "exposes TU-local entity" }
       internal();
     }
   };

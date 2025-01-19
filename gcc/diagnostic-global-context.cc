@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines that implicitly use global_dc.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 /* This file implements the parts of the language independent aspect
    of diagnostic messages that implicitly use global_dc.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -575,4 +574,16 @@ auto_diagnostic_group::auto_diagnostic_group ()
 auto_diagnostic_group::~auto_diagnostic_group ()
 {
   global_dc->end_group ();
+}
+
+/* class auto_diagnostic_nesting_level.  */
+
+auto_diagnostic_nesting_level::auto_diagnostic_nesting_level ()
+{
+  global_dc->push_nesting_level ();
+}
+
+auto_diagnostic_nesting_level::~auto_diagnostic_nesting_level ()
+{
+  global_dc->pop_nesting_level ();
 }

@@ -190,5 +190,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 0 "strlen1" { xfail vect_slp_v2qi_store_unalign } } } */
-/* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen1" { target vect_slp_v2qi_store_unalign } } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 0 "strlen1" } } */

@@ -21,6 +21,7 @@ import dmd.attrib;
 import dmd.dinterpret;
 import dmd.dscope;
 import dmd.dsymbol;
+import dmd.dsymbolsem : include;
 import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
@@ -40,10 +41,10 @@ void pragmaDeclSemantic(PragmaDeclaration pd, Scope* sc)
 {
     import dmd.aggregate;
     import dmd.common.outbuffer;
-    import dmd.dmangle;
     import dmd.dmodule;
     import dmd.dsymbolsem;
     import dmd.identifier;
+    import dmd.mangle : isValidMangling;
     import dmd.root.rmem;
     import dmd.root.utf;
     import dmd.target;
@@ -67,6 +68,8 @@ void pragmaDeclSemantic(PragmaDeclaration pd, Scope* sc)
         }
         version (all)
         {
+            import dmd.common.charactertables;
+
             /* Note: D language specification should not have any assumption about backend
              * implementation. Ideally pragma(mangle) can accept a string of any content.
              *
@@ -94,7 +97,7 @@ void pragmaDeclSemantic(PragmaDeclaration pd, Scope* sc)
                     .error(pd.loc, "%s `%s` %.*s", pd.kind, pd.toPrettyChars, cast(int)msg.length, msg.ptr);
                     break;
                 }
-                if (!isUniAlpha(c))
+                if (!isAnyIdentifierCharacter(c))
                 {
                     .error(pd.loc, "%s `%s` char `0x%04x` not allowed in mangled name", pd.kind, pd.toPrettyChars, c);
                     break;
@@ -508,10 +511,9 @@ package PINLINE evalPragmaInline(Loc loc, Scope* sc, Expressions* args)
     const opt = e.toBool();
     if (opt.isEmpty())
         return PINLINE.default_;
-    else if (opt.get())
+    if (opt.get())
         return PINLINE.always;
-    else
-        return PINLINE.never;
+    return PINLINE.never;
 }
 
 /**
@@ -555,32 +557,17 @@ private uint setMangleOverride(Dsymbol s, const(char)[] sym)
 private bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
 {
     import dmd.tokens;
+    import dmd.common.outbuffer;
 
     if (!args)
         return true;
-    foreach (arg; *args)
-    {
-        sc = sc.startCTFE();
-        auto e = arg.expressionSemantic(sc);
-        e = resolveProperties(sc, e);
-        sc = sc.endCTFE();
 
-        // pragma(msg) is allowed to contain types as well as expressions
-        e = ctfeInterpretForPragmaMsg(e);
-        if (e.op == EXP.error)
-        {
-            errorSupplemental(loc, "while evaluating `pragma(msg, %s)`", arg.toChars());
-            return false;
-        }
-        if (auto se = e.toStringExp())
-        {
-            const slice = se.toUTF8(sc).peekString();
-            fprintf(stderr, "%.*s", cast(int)slice.length, slice.ptr);
-        }
-        else
-            fprintf(stderr, "%s", e.toChars());
-    }
-    fprintf(stderr, "\n");
+    OutBuffer buf;
+    if (expressionsToString(buf, sc, args, loc, "while evaluating `pragma(msg, %s)`", false))
+        return false;
+
+    buf.writestring("\n");
+    fprintf(stderr, buf.extractChars);
     return true;
 }
 

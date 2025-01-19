@@ -23,6 +23,10 @@ good (int *p)
   __builtin_prefetch (p, 1, 1);
   __builtin_prefetch (p, 1, 2);
   __builtin_prefetch (p, 1, 3);
+  __builtin_prefetch (p, 2, 0);
+  __builtin_prefetch (p, 2, 1);
+  __builtin_prefetch (p, 2, 2);
+  __builtin_prefetch (p, 2, 3);
 }
 
 void

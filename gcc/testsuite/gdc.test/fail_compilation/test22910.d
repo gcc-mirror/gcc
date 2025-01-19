@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test22910.d(17): Error: returning `&this.val` escapes a reference to parameter `this`
+fail_compilation/test22910.d(17): Error: escaping a reference to parameter `this` by returning `&this.val` is not allowed in a `@safe` function
 fail_compilation/test22910.d(15):        perhaps change the `return scope` into `scope return`
 ---
 */

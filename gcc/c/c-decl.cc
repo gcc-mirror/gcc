@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_STRING
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -62,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
 #include "c-parser.h"
+#include "gcc-urlifier.h"
 
 #include "tree-pretty-print.h"
 
@@ -4548,6 +4548,17 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 						  IDENTIFIER_POINTER (name),
 						  header_hint));
 
+  /* Next, look for exact matches for builtin defines that would have been
+     defined if the user had passed a command-line option (e.g. -fopenmp
+     for "_OPENMP").  */
+  diagnostic_option_id option_id
+    = get_option_for_builtin_define (IDENTIFIER_POINTER (name));
+  if (option_id.m_idx > 0)
+    return name_hint (nullptr,
+		      new suggest_missing_option (loc,
+						  IDENTIFIER_POINTER (name),
+						  option_id));
+
   /* Only suggest names reserved for the implementation if NAME begins
      with an underscore.  */
   bool consider_implementation_names = (IDENTIFIER_POINTER (name)[0] == '_');
@@ -4799,7 +4810,7 @@ c_init_decl_processing (void)
 			boolean_type_node));
 
   /* C-specific nullptr initialization.  */
-  record_builtin_type (RID_MAX, "nullptr_t", nullptr_type_node);
+  record_builtin_type (RID_MAX, "typeof (nullptr)", nullptr_type_node);
   /* The size and alignment of nullptr_t is the same as for a pointer to
      character type.  */
   SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
@@ -5465,12 +5476,8 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	attributes = tree_cons (get_identifier ("omp declare target implicit"),
 				NULL_TREE, attributes);
       else
-	{
-	  attributes = tree_cons (get_identifier ("omp declare target"),
-				  NULL_TREE, attributes);
-	  attributes = tree_cons (get_identifier ("omp declare target block"),
-				  NULL_TREE, attributes);
-	}
+	attributes = tree_cons (get_identifier ("omp declare target"),
+				NULL_TREE, attributes);
       if (TREE_CODE (*node) == FUNCTION_DECL)
 	{
 	  int device_type
@@ -5733,8 +5740,11 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning (OPT_Wattributes, "inline function %q+D given attribute %qs",
-	     decl, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning (OPT_Wattributes, "inline function %q+D given attribute %qs",
+	       decl, "noinline");
+    }
 
   /* C99 6.7.4p3: An inline definition of a function with external
      linkage shall not contain a definition of a modifiable object
@@ -6514,9 +6524,14 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
     {
       int failure = complete_array_type (&TREE_TYPE (decl),
 					 DECL_INITIAL (decl), true);
-      /* If complete_array_type returns 3, it means that the
-         initial value of the compound literal is empty.  Allow it.  */
+      /* If complete_array_type returns 3, it means that the initial value of
+         the compound literal is empty.  Allow it with a pedwarn; in pre-C23
+         modes, the empty initializer itself has been diagnosed if pedantic so
+         does not need to be diagnosed again here.  */
       gcc_assert (failure == 0 || failure == 3);
+      if (failure == 3 && flag_isoc23)
+	pedwarn (loc, OPT_Wpedantic,
+		 "array of unknown size with empty initializer");
 
       type = TREE_TYPE (decl);
       TREE_TYPE (DECL_INITIAL (decl)) = type;
@@ -7501,10 +7516,6 @@ grokdeclarator (const struct c_declarator *declarator,
 		/* C99 6.7.5.2p4 */
 		if (decl_context == TYPENAME)
 		  warning (0, "%<[*]%> not in a declaration");
-		/* Array of unspecified size.  */
-		tree upper = build2 (COMPOUND_EXPR, TREE_TYPE (size_zero_node),
-				     integer_zero_node, size_zero_node);
-		itype = build_index_type (upper);
 		size_varies = true;
 	      }
 
@@ -7540,7 +7551,10 @@ grokdeclarator (const struct c_declarator *declarator,
 		if (!ADDR_SPACE_GENERIC_P (as) && as != TYPE_ADDR_SPACE (type))
 		  type = c_build_qualified_type (type,
 						 ENCODE_QUAL_ADDR_SPACE (as));
-		type = c_build_array_type (type, itype);
+		if (array_parm_vla_unspec_p)
+		  type = c_build_array_type_unspecified (type);
+		else
+		  type = c_build_array_type (type, itype);
 	      }
 
 	    if (type != error_mark_node)
@@ -8476,8 +8490,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 	 or definition of the function.  In the case where the tag was
 	 first declared within the parameter list, a warning has
 	 already been given.  If a parameter has void type, then
-	 however the function cannot be defined or called, so
-	 warn.  */
+	 this has already received an error (constraint violation in C2Y,
+	 previously implicitly undefined behavior).  */
 
       for (parm = arg_info->parms, typelt = arg_types, parmno = 1;
 	   parm;
@@ -8503,17 +8517,6 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 		  TREE_VALUE (typelt) = error_mark_node;
 		  TREE_TYPE (parm) = error_mark_node;
 		  arg_types = NULL_TREE;
-		}
-	      else if (VOID_TYPE_P (type))
-		{
-		  if (DECL_NAME (parm))
-		    warning_at (input_location, 0,
-				"parameter %u (%q+D) has void type",
-				parmno, parm);
-		  else
-		    warning_at (DECL_SOURCE_LOCATION (parm), 0,
-				"parameter %u has void type",
-				parmno);
 		}
 	    }
 
@@ -8623,12 +8626,14 @@ get_parm_info (bool ellipsis, tree expr)
 	  if (TREE_ASM_WRITTEN (decl))
 	    error_at (b->locus,
 		      "parameter %q+D has just a forward declaration", decl);
-	  /* Check for (..., void, ...) and issue an error.  */
-	  else if (VOID_TYPE_P (type) && !DECL_NAME (decl))
+	  /* Check for (..., void, ...) and named void parameters and issue an
+	     error.  */
+	  else if (VOID_TYPE_P (type))
 	    {
 	      if (!gave_void_only_once_err)
 		{
-		  error_at (b->locus, "%<void%> must be the only parameter");
+		  error_at (b->locus,
+			    "%<void%> must be the only parameter and unnamed");
 		  gave_void_only_once_err = true;
 		}
 	    }
@@ -8668,7 +8673,7 @@ get_parm_info (bool ellipsis, tree expr)
 	      if (b->id)
 		{
 		  /* The %s will be one of 'struct', 'union', or 'enum'.  */
-		  if (!flag_isoc23)
+		  if (!flag_isoc23 || !COMPLETE_TYPE_P (decl))
 		    warning_at (b->locus, 0,
 				"%<%s %E%> declared inside parameter list"
 				" will not be visible outside of this definition or"
@@ -9873,6 +9878,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       hashval_t hash = c_struct_hasher::hash (t);
 
       gcc_checking_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
+      gcc_checking_assert (!TYPE_NAME (t)
+			   || TREE_CODE (TYPE_NAME (t)) == IDENTIFIER_NODE);
+
       tree *e = c_struct_htab->find_slot_with_hash (t, hash, INSERT);
       if (*e)
 	TYPE_CANONICAL (t) = *e;
@@ -10646,9 +10654,12 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   if (DECL_DECLARED_INLINE_P (decl1)
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
-    warning_at (loc, OPT_Wattributes,
-		"inline function %qD given attribute %qs",
-		decl1, "noinline");
+    {
+      auto_urlify_attributes sentinel;
+      warning_at (loc, OPT_Wattributes,
+		  "inline function %qD given attribute %qs",
+		  decl1, "noinline");
+    }
 
   /* Handle gnu_inline attribute.  */
   if (declspecs->inline_p
@@ -10746,6 +10757,24 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 		}
 	    }
 	}
+    }
+
+  /* Optionally warn about C23 compatibility.  */
+  if (warn_deprecated_non_prototype
+      && old_decl != NULL_TREE
+      && TREE_CODE (oldtype) == FUNCTION_TYPE
+      && !TYPE_ARG_TYPES (oldtype)
+      && !TYPE_NO_NAMED_ARGS_STDARG_P (oldtype)
+      && (TYPE_ARG_TYPES (newtype)
+	  && TREE_VALUE (TYPE_ARG_TYPES (newtype)) != void_type_node))
+    {
+      bool warned = warning_at (loc, OPT_Wdeprecated_non_prototype,
+				"ISO C23 does not allow defining"
+				" parameters for function %qE declared"
+				" without parameters",
+				decl1);
+      if (warned)
+	inform (DECL_SOURCE_LOCATION (old_decl), "declared here");
     }
 
   /* Optionally warn of old-fashioned def with no previous prototype.  */
@@ -10901,7 +10930,7 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
 	    warn_if_shadowing (decl);
 	}
       else
-	pedwarn_c11 (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+	pedwarn_c11 (DECL_SOURCE_LOCATION (decl), OPT_Wmissing_parameter_name,
 		     "ISO C does not support omitting parameter names in "
 		     "function definitions before C23");
     }
@@ -11751,10 +11780,10 @@ identifier_global_tag (tree t)
   return NULL_TREE;
 }
 
-/* Returns true if NAME refers to a built-in function or function-like
-   operator.  */
+/* Returns non-zero (result of __has_builtin) if NAME refers to a built-in
+   function or function-like operator.  */
 
-bool
+int
 names_builtin_p (const char *name)
 {
   tree id = get_identifier (name);
@@ -11775,12 +11804,12 @@ names_builtin_p (const char *name)
     case RID_CHOOSE_EXPR:
     case RID_OFFSETOF:
     case RID_TYPES_COMPATIBLE_P:
-      return true;
+      return 1;
     default:
       break;
     }
 
-  return false;
+  return 0;
 }
 
 /* In C, the only C-linkage public declaration is at file scope.  */
@@ -12120,6 +12149,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<long%> and %<_Decimal64x%> in "
+			   "declaration specifiers"));
 	      else
 		{
 		  specs->long_p = true;
@@ -12185,6 +12218,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<short%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<short%> and %<_Decimal64x%> in "
+			   "declaration specifiers"));
 	      else
 		{
 		  specs->short_p = true;
@@ -12236,6 +12273,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
 			  ("both %<signed%> and %<_Decimal128%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<signed%> and %<_Decimal64x%> in "
 			   "declaration specifiers"));
 	      else
 		{
@@ -12289,6 +12330,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<unsigned%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<unsigned%> and %<_Decimal64x%> in "
+			   "declaration specifiers"));
 	      else
 		{
 		  specs->unsigned_p = true;
@@ -12327,6 +12372,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
 			  ("both %<complex%> and %<_Decimal128%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<complex%> and %<_Decimal64x%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_fract)
 		error_at (loc,
@@ -12409,6 +12458,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<_Sat%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_Decimal64x%> in "
+			   "declaration specifiers"));
 	      else if (specs->complex_p)
 		error_at (loc,
 			  ("both %<_Sat%> and %<complex%> in "
@@ -12436,8 +12489,22 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	     "__auto_type".  */
 	  if (specs->typespec_word != cts_none)
 	    {
-	      error_at (loc,
-			"two or more data types in declaration specifiers");
+	      if (i == RID_BOOL)
+		{
+		  auto_diagnostic_group d;
+		  if (specs->storage_class == csc_typedef)
+		    error_at (loc,
+			      "%qs cannot be defined via %<typedef%>",
+			      IDENTIFIER_POINTER (type));
+		  else
+		    error_at (loc,
+			      "%qs cannot be used here",
+			      IDENTIFIER_POINTER (type));
+		  add_note_about_new_keyword (loc, type);
+		}
+	      else
+		error_at (loc,
+			  "two or more data types in declaration specifiers");
 	      return specs;
 	    }
 	  switch (i)
@@ -12734,14 +12801,17 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_DFLOAT32:
 	    case RID_DFLOAT64:
 	    case RID_DFLOAT128:
+	    case RID_DFLOAT64X:
 	      {
 		const char *str;
 		if (i == RID_DFLOAT32)
 		  str = "_Decimal32";
 		else if (i == RID_DFLOAT64)
 		  str = "_Decimal64";
-		else
+		else if (i == RID_DFLOAT128)
 		  str = "_Decimal128";
+		else
+		  str = "_Decimal64x";
 		if (specs->long_long_p)
 		  error_at (loc,
 			    ("both %<long long%> and %qs in "
@@ -12781,8 +12851,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  specs->typespec_word = cts_dfloat32;
 		else if (i == RID_DFLOAT64)
 		  specs->typespec_word = cts_dfloat64;
-		else
+		else if (i == RID_DFLOAT128)
 		  specs->typespec_word = cts_dfloat128;
+		else
+		  specs->typespec_word = cts_dfloat64x;
 		specs->locations[cdw_typespec] = loc;
 	      }
 	      if (!targetm.decimal_float_supported_p ())
@@ -13351,6 +13423,7 @@ finish_declspecs (struct c_declspecs *specs)
     case cts_dfloat32:
     case cts_dfloat64:
     case cts_dfloat128:
+    case cts_dfloat64x:
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p && !specs->complex_p);
       if (!targetm.decimal_float_supported_p ())
@@ -13359,8 +13432,10 @@ finish_declspecs (struct c_declspecs *specs)
 	specs->type = dfloat32_type_node;
       else if (specs->typespec_word == cts_dfloat64)
 	specs->type = dfloat64_type_node;
-      else
+      else if (specs->typespec_word == cts_dfloat128)
 	specs->type = dfloat128_type_node;
+      else
+	specs->type = dfloat64x_type_node;
       break;
     case cts_fract:
       gcc_assert (!specs->complex_p);

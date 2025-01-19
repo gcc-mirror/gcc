@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright (C) 1997-2024 Free Software Foundation, Inc.
+   Copyright (C) 1997-2025 Free Software Foundation, Inc.
 
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -197,6 +197,10 @@ extern int fdmatch (int fd1, int fd2);
    prototype on systems where we know that we need it.  */
 #if defined (HAVE_DECL_FFS) && !HAVE_DECL_FFS
 extern int ffs(int);
+#endif
+
+#if defined (HAVE_DECL_MKSTEMPS) && !HAVE_DECL_MKSTEMPS
+extern int mkstemps(char *, int);
 #endif
 
 /* Get the working directory.  The result is cached, so don't call

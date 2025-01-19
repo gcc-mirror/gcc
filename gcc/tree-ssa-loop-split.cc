@@ -1,5 +1,5 @@
 /* Loop splitting.
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -623,6 +622,7 @@ split_loop (class loop *loop1)
 	gphi *phi = find_or_create_guard_phi (loop1, guard_iv, &iv);
 	if (!phi)
 	  continue;
+	const tree phi_result = gimple_phi_result (phi);
 	gcond *guard_stmt = as_a<gcond *> (*gsi_last_bb (bbs[i]));
 	tree guard_init = PHI_ARG_DEF_FROM_EDGE (phi,
 						 loop_preheader_edge (loop1));
@@ -704,6 +704,12 @@ split_loop (class loop *loop1)
 					  profile_probability::very_likely (),
 					  true);
 	gcc_assert (loop2);
+
+	/* The phi address may have changed due to being resized in
+	   loop_version (), so reobtain it.  */
+	phi = as_a<gphi *> (SSA_NAME_DEF_STMT (phi_result));
+	gcc_checking_assert (gimple_bb (phi) == loop1->header);
+
 	/* Correct probability of edge  cond_bb->preheader_of_loop2.  */
 	single_pred_edge
 		(loop_preheader_edge (loop2)->src)->probability

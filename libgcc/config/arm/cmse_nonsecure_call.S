@@ -1,7 +1,7 @@
 /* CMSE wrapper function used to save, clear and restore callee saved registers
    for cmse_nonsecure_call's.
 
-   Copyright (C) 2016-2024 Free Software Foundation, Inc.
+   Copyright (C) 2016-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is free software; you can redistribute it and/or modify it

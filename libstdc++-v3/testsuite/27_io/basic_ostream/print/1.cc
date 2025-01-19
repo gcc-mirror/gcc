@@ -63,14 +63,6 @@ test_vprint_nonunicode()
   // { dg-output "garbage in . garbage out" }
 }
 
-struct brit_punc : std::numpunct<char>
-{
-  std::string do_grouping() const override { return "\3\3"; }
-  char do_thousands_sep() const override { return ','; }
-  std::string do_truename() const override { return "yes mate"; }
-  std::string do_falsename() const override { return "nah bruv"; }
-};
-
 void
 test_locale()
 {
@@ -82,7 +74,7 @@ test_locale()
 
   // The default C locale.
   std::locale cloc = std::locale::classic();
-  // A custom locale using comma digit separators.
+  // A custom locale using tilde digit separators.
   std::locale bloc(cloc, new stream_punc);
 
   {
@@ -100,6 +92,14 @@ test_locale()
     os.imbue(bloc);
     std::print(os, "{:L} {}", 12345, 6789);
     VERIFY(os.str() == "1~23~45 6789");
+  }
+
+  {
+    // LWG 4088. println ignores the locale imbued in std::ostream
+    std::ostringstream os;
+    os.imbue(bloc);
+    std::println(os, "{:L} {}", 12345, 6789);
+    VERIFY(os.str() == "1~23~45 6789\n");
   }
 }
 

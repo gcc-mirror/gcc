@@ -1,5 +1,5 @@
 // REQUIRED_ARGS: -g
-// REQUIRED_ARGS(linux freebsd dragonflybsd): -L-export-dynamic
+// REQUIRED_ARGS(linux freebsd openbsd dragonflybsd): -L-export-dynamic
 // PERMUTE_ARGS:
 // DISABLED: osx
 

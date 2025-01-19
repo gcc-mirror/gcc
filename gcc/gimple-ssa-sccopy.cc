@@ -1,5 +1,5 @@
 /* Strongly-connected copy propagation pass for the GNU compiler.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Filip Kastl <fkastl@suse.cz>
 
 This file is part of GCC.

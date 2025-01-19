@@ -1,5 +1,5 @@
 /* ACLE support for Arm MVE (__ARM_FEATURE_MVE intrinsics)
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -82,9 +82,20 @@ extern const function_base *const vhsubq;
 extern const function_base *const vidupq;
 extern const function_base *const viwdupq;
 extern const function_base *const vld1q;
+extern const function_base *const vld2q;
+extern const function_base *const vld4q;
 extern const function_base *const vldrbq;
+extern const function_base *const vldrbq_gather;
+extern const function_base *const vldrdq_gather;
+extern const function_base *const vldrdq_gather_base;
+extern const function_base *const vldrdq_gather_shifted;
 extern const function_base *const vldrhq;
+extern const function_base *const vldrhq_gather;
+extern const function_base *const vldrhq_gather_shifted;
 extern const function_base *const vldrwq;
+extern const function_base *const vldrwq_gather;
+extern const function_base *const vldrwq_gather_base;
+extern const function_base *const vldrwq_gather_shifted;
 extern const function_base *const vmaxaq;
 extern const function_base *const vmaxavq;
 extern const function_base *const vmaxnmaq;
@@ -205,9 +216,20 @@ extern const function_base *const vshrq;
 extern const function_base *const vsliq;
 extern const function_base *const vsriq;
 extern const function_base *const vst1q;
+extern const function_base *const vst2q;
+extern const function_base *const vst4q;
 extern const function_base *const vstrbq;
+extern const function_base *const vstrbq_scatter;
+extern const function_base *const vstrdq_scatter;
+extern const function_base *const vstrdq_scatter_base;
+extern const function_base *const vstrdq_scatter_shifted;
 extern const function_base *const vstrhq;
+extern const function_base *const vstrhq_scatter;
+extern const function_base *const vstrhq_scatter_shifted;
 extern const function_base *const vstrwq;
+extern const function_base *const vstrwq_scatter;
+extern const function_base *const vstrwq_scatter_base;
+extern const function_base *const vstrwq_scatter_shifted;
 extern const function_base *const vsubq;
 extern const function_base *const vuninitializedq;
 

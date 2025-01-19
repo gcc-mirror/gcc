@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -2762,7 +2762,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	{
 	  pos--;
 	  pfile->buffer->cur = pos;
-	  if ((pfile->state.in_directive || pfile->state.parsing_args)
+	  if ((pfile->state.in_directive || pfile->state.parsing_args
+	       || pfile->state.in_deferred_pragma)
 	      && pfile->buffer->next_line >= pfile->buffer->rlimit)
 	    {
 	      cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, 0,
@@ -4997,7 +4998,8 @@ _cpp_aligned_alloc (cpp_reader *pfile, size_t len)
 void *
 _cpp_commit_buff (cpp_reader *pfile, size_t size)
 {
-  void *ptr = BUFF_FRONT (pfile->a_buff);
+  const auto buff = pfile->a_buff;
+  void *ptr = BUFF_FRONT (buff);
 
   if (pfile->hash_table->alloc_subobject)
     {
@@ -5006,7 +5008,12 @@ _cpp_commit_buff (cpp_reader *pfile, size_t size)
       ptr = copy;
     }
   else
-    BUFF_FRONT (pfile->a_buff) += size;
+    {
+      BUFF_FRONT (buff) += size;
+      /* Make sure the remaining space is maximally aligned for whatever this
+	 buffer holds next.  */
+      BUFF_FRONT (buff) += BUFF_ROOM (buff) % DEFAULT_ALIGNMENT;
+    }
 
   return ptr;
 }

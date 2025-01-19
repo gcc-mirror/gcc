@@ -1,5 +1,5 @@
 /* Declarations for rtx-reader support for gen* routines.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -231,5 +231,6 @@ extern file_location get_file_location (rtx);
 extern const char *get_emit_function (rtx);
 extern bool needs_barrier_p (rtx);
 extern bool find_optab (optab_pattern *, const char *);
+extern FILE *choose_output (const vec<FILE *> &, unsigned &);
 
 #endif /* GCC_GENSUPPORT_H */

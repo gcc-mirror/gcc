@@ -2,7 +2,7 @@
 // { dg-options "-O0" }
 // { dg-require-debug-mode "" }
 
-// Copyright (C) 2013-2024 Free Software Foundation, Inc.
+// Copyright (C) 2013-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

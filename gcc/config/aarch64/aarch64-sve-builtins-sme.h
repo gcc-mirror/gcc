@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SME.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -53,6 +53,9 @@ namespace aarch64_sve
     extern const function_base *const svread_za;
     extern const function_base *const svread_hor_za;
     extern const function_base *const svread_ver_za;
+    extern const function_base *const svreadz_za;
+    extern const function_base *const svreadz_hor_za;
+    extern const function_base *const svreadz_ver_za;
     extern const function_base *const svst1_hor_za;
     extern const function_base *const svst1_ver_za;
     extern const function_base *const svstr_za;

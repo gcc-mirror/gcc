@@ -1,6 +1,6 @@
 // Utilities used throughout the library -*- C++ -*-
 
-// Copyright (C) 2004-2024 Free Software Foundation, Inc.
+// Copyright (C) 2004-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -307,6 +307,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @since C++11
    */
   _GLIBCXX17_INLINE constexpr _Swallow_assign ignore{};
+
+#if __glibcxx_flat_map || __glibcxx_flat_set // >= C++23
+  struct sorted_unique_t { explicit sorted_unique_t() = default; };
+  inline constexpr sorted_unique_t sorted_unique{};
+
+  struct sorted_equivalent_t { explicit sorted_equivalent_t() = default; };
+  inline constexpr sorted_equivalent_t sorted_equivalent{};
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

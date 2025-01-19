@@ -1,5 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -6781,6 +6780,214 @@ gfc_simplify_or (gfc_expr *x, gfc_expr *y)
       default:
 	gcc_unreachable();
     }
+}
+
+
+gfc_expr *
+gfc_simplify_out_of_range (gfc_expr *x, gfc_expr *mold, gfc_expr *round)
+{
+  gfc_expr *result;
+  mpfr_t a;
+  mpz_t b;
+  int i, k;
+  bool res = false;
+  bool rnd = false;
+
+  i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
+  k = gfc_validate_kind (mold->ts.type, mold->ts.kind, false);
+
+  mpfr_init (a);
+
+  switch (x->ts.type)
+    {
+    case BT_REAL:
+      if (mold->ts.type == BT_REAL)
+	{
+	  if (mpfr_cmp (gfc_real_kinds[i].huge,
+			gfc_real_kinds[k].huge) <= 0)
+	    {
+	      /* Range of MOLD is always sufficient.  */
+	      res = false;
+	      goto done;
+	    }
+	  else if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      mpfr_neg (a, gfc_real_kinds[k].huge, GFC_RND_MODE);
+	      res = (mpfr_cmp (x->value.real, a) < 0
+		     || mpfr_cmp (x->value.real, gfc_real_kinds[k].huge) > 0);
+	      goto done;
+	    }
+	}
+      else if (mold->ts.type == BT_INTEGER)
+	{
+	  if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      res = mpfr_inf_p (x->value.real) || mpfr_nan_p (x->value.real);
+	      if (res)
+		goto done;
+
+	      if (round && round->expr_type != EXPR_CONSTANT)
+		break;
+
+	      if (round && round->expr_type == EXPR_CONSTANT)
+		rnd = round->value.logical;
+
+	      if (rnd)
+		mpfr_round (a, x->value.real);
+	      else
+		mpfr_trunc (a, x->value.real);
+
+	      mpz_init (b);
+	      mpfr_get_z (b, a, GFC_RND_MODE);
+	      res = (mpz_cmp (b, gfc_integer_kinds[k].min_int) < 0
+		     || mpz_cmp (b, gfc_integer_kinds[k].huge) > 0);
+	      mpz_clear (b);
+	      goto done;
+	    }
+	}
+      else if (mold->ts.type == BT_UNSIGNED)
+	{
+	  if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      res = mpfr_inf_p (x->value.real) || mpfr_nan_p (x->value.real);
+	      if (res)
+		goto done;
+
+	      if (round && round->expr_type != EXPR_CONSTANT)
+		break;
+
+	      if (round && round->expr_type == EXPR_CONSTANT)
+		rnd = round->value.logical;
+
+	      if (rnd)
+		mpfr_round (a, x->value.real);
+	      else
+		mpfr_trunc (a, x->value.real);
+
+	      mpz_init (b);
+	      mpfr_get_z (b, a, GFC_RND_MODE);
+	      res = (mpz_cmp (b, gfc_unsigned_kinds[k].huge) > 0
+		     || mpz_cmp_si (b, 0) < 0);
+	      mpz_clear (b);
+	      goto done;
+	    }
+	}
+      break;
+
+    case BT_INTEGER:
+      gcc_assert (round == NULL);
+      if (mold->ts.type == BT_INTEGER)
+	{
+	  if (mpz_cmp (gfc_integer_kinds[i].huge,
+		       gfc_integer_kinds[k].huge) <= 0)
+	    {
+	      /* Range of MOLD is always sufficient.  */
+	      res = false;
+	      goto done;
+	    }
+	  else if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      res = (mpz_cmp (x->value.integer,
+			      gfc_integer_kinds[k].min_int) < 0
+		     || mpz_cmp (x->value.integer,
+				 gfc_integer_kinds[k].huge) > 0);
+	      goto done;
+	    }
+	}
+      else if (mold->ts.type == BT_UNSIGNED)
+	{
+	  if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      res = (mpz_cmp_si (x->value.integer, 0) < 0
+		     || mpz_cmp (x->value.integer,
+				 gfc_unsigned_kinds[k].huge) > 0);
+	      goto done;
+	    }
+	}
+      else if (mold->ts.type == BT_REAL)
+	{
+	  mpfr_set_z (a, gfc_integer_kinds[i].min_int, GFC_RND_MODE);
+	  mpfr_neg (a, a, GFC_RND_MODE);
+	  res = mpfr_cmp (a, gfc_real_kinds[k].huge) > 0;
+	  /* When false, range of MOLD is always sufficient.  */
+	  if (!res)
+	    goto done;
+
+	  if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      mpfr_set_z (a, x->value.integer, GFC_RND_MODE);
+	      mpfr_abs (a, a, GFC_RND_MODE);
+	      res = mpfr_cmp (a, gfc_real_kinds[k].huge) > 0;
+	      goto done;
+	    }
+	}
+      break;
+
+    case BT_UNSIGNED:
+      gcc_assert (round == NULL);
+      if (mold->ts.type == BT_UNSIGNED)
+	{
+	  if (mpz_cmp (gfc_unsigned_kinds[i].huge,
+		       gfc_unsigned_kinds[k].huge) <= 0)
+	    {
+	      /* Range of MOLD is always sufficient.  */
+	      res = false;
+	      goto done;
+	    }
+	  else if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      res = mpz_cmp (x->value.integer,
+			     gfc_unsigned_kinds[k].huge) > 0;
+	      goto done;
+	    }
+	}
+      else if (mold->ts.type == BT_INTEGER)
+	{
+	  if (mpz_cmp (gfc_unsigned_kinds[i].huge,
+		       gfc_integer_kinds[k].huge) <= 0)
+	    {
+	      /* Range of MOLD is always sufficient.  */
+	      res = false;
+	      goto done;
+	    }
+	  else if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      res = mpz_cmp (x->value.integer,
+			     gfc_integer_kinds[k].huge) > 0;
+	      goto done;
+	    }
+	}
+      else if (mold->ts.type == BT_REAL)
+	{
+	  mpfr_set_z (a, gfc_unsigned_kinds[i].huge, GFC_RND_MODE);
+	  res = mpfr_cmp (a, gfc_real_kinds[k].huge) > 0;
+	  /* When false, range of MOLD is always sufficient.  */
+	  if (!res)
+	    goto done;
+
+	  if (x->expr_type == EXPR_CONSTANT)
+	    {
+	      mpfr_set_z (a, x->value.integer, GFC_RND_MODE);
+	      res = mpfr_cmp (a, gfc_real_kinds[k].huge) > 0;
+	      goto done;
+	    }
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  mpfr_clear (a);
+
+  return NULL;
+
+done:
+  result = gfc_get_logical_expr (gfc_default_logical_kind, &x->where, res);
+
+  mpfr_clear (a);
+
+  return result;
 }
 
 

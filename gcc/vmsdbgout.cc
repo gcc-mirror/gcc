@@ -1,5 +1,5 @@
 /* Output VMS debug format symbol table information from GCC.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
    Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
 
@@ -154,7 +154,7 @@ static void vmsdbgout_define (unsigned int, const char *);
 static void vmsdbgout_undef (unsigned int, const char *);
 static void vmsdbgout_start_source_file (unsigned int, const char *);
 static void vmsdbgout_end_source_file (unsigned int);
-static void vmsdbgout_begin_block (unsigned int, unsigned int);
+static void vmsdbgout_begin_block (unsigned int, unsigned int, tree);
 static void vmsdbgout_end_block (unsigned int, unsigned int);
 static bool vmsdbgout_ignore_block (const_tree);
 static void vmsdbgout_source_line (unsigned int, unsigned int, const char *,
@@ -1230,10 +1230,11 @@ vmsdbgout_end_epilogue (unsigned int line, const char *file)
    a lexical block.  */
 
 static void
-vmsdbgout_begin_block (unsigned line, unsigned blocknum)
+vmsdbgout_begin_block (unsigned line, unsigned blocknum,
+		       tree block)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.begin_block) (line, blocknum);
+    (*dwarf2_debug_hooks.begin_block) (line, blocknum, block);
 
   if (debug_info_level > DINFO_LEVEL_TERSE)
     targetm.asm_out.internal_label (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);

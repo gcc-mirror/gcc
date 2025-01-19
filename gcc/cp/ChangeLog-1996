@@ -4044,7 +4044,6 @@ Tue Jan  2 17:00:56 1996  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (expand_throw): Call assemble_external for __empty, if we
 	use it.
-
 
 Copyright (C) 1996 Free Software Foundation, Inc.
 

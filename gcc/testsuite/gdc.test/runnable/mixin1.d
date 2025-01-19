@@ -100,6 +100,7 @@ template Foo2(T)
 
 mixin Foo2!(uint) B2;
 mixin Foo2!(long) C2;
+mixin D2 = Foo2!(wchar);
 mixin Foo2!(int);
 
 void test2()
@@ -107,6 +108,7 @@ void test2()
     B2.x2 = 3;
     assert(B2.x2 == 3);
     assert(C2.x2 == long.sizeof);
+    assert(D2.x2 == 2);
 //    assert(x2 == int.sizeof);
 }
 
@@ -284,6 +286,9 @@ void test11()
     int y = 8;
     mixin Foo11!(y) B;
     assert(B.abc() == 8);
+
+    mixin C = Foo11!2;
+    assert(C.abc() == 2);
 }
 
 /*******************************************/

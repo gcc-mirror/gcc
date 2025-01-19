@@ -1,5 +1,5 @@
 ; lang.opt -- Options for the D front end.
-; Copyright (C) 2006-2024 Free Software Foundation, Inc.
+; Copyright (C) 2006-2025 Free Software Foundation, Inc.
 ;
 ; GCC is free software; you can redistribute it and/or modify it under
 ; the terms of the GNU General Public License as published by the Free
@@ -399,6 +399,10 @@ Implement 'in' contracts of overridden methods to be a superset of parent contra
 fpreview=nosharedaccess
 D RejectNegative
 Disable access to shared memory objects.
+
+fpreview=safer
+D RejectNegative
+Enable safety checks on all functions by default.
 
 fpreview=rvaluerefparam
 D RejectNegative

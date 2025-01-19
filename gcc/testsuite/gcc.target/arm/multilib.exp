@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024 Free Software Foundation, Inc.
+# Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ dg-init
 
 foreach flagsvar {multilib_flags cflags} {
   if { [board_info [target_info name] exists $flagsvar] 
-     && [regexp {(-marm|-mthumb|-march=.*|-mcpu=.*|-mfpu=.*|-mfloat=abi=.*)\y} [board_info [target_info name] $flagsvar]] } {
+     && [regexp {(-marm|-mthumb|-march=.*|-mcpu=.*|-mfpu=.*|-mfloat-abi=.*|-msoft-float|-mhard-float)\y} [board_info [target_info name] $flagsvar]] } {
 	
     # Multilib flags override anything we can apply to a test, so
     # skip if any of the above options are set there.

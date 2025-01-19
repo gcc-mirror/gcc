@@ -33,8 +33,8 @@ else version (Posix)
     else version (WatchOS)
         version = Darwin;
 
-    import core.sys.posix.sys.mman;
     import core.stdc.stdlib;
+    import core.sys.posix.sys.mman : MAP_ANON, MAP_FAILED, MAP_PRIVATE, MAP_SHARED, mmap, munmap, PROT_READ, PROT_WRITE;
 
 
     /// Possible results for the wait_pid() function.
@@ -67,16 +67,16 @@ else version (Posix)
         while (waited_pid == -1 && errno == EINTR);
         if (waited_pid == 0)
             return ChildStatus.running;
-        else if (errno ==  ECHILD)
+        if (errno ==  ECHILD)
             return ChildStatus.done; // someone called posix.syswait
-        else if (waited_pid != pid || status != 0)
+        if (waited_pid != pid || status != 0)
             onForkError();
         return ChildStatus.done;
     }
 
-    public import core.sys.posix.unistd: pid_t, fork;
-    import core.sys.posix.sys.wait: waitpid, WNOHANG;
-    import core.stdc.errno: errno, EINTR, ECHILD;
+    public import core.sys.posix.unistd : fork, pid_t;
+    import core.stdc.errno : ECHILD, EINTR, errno;
+    import core.sys.posix.sys.wait : waitpid, WNOHANG;
 
     //version = GC_Use_Alloc_MMap;
 }
@@ -292,12 +292,18 @@ else version (Posix)
 {
     ulong os_physical_mem(bool avail) nothrow @nogc
     {
-        import core.sys.posix.unistd;
+        static import core.sys.posix.unistd;
+        import core.sys.posix.unistd : _SC_PAGESIZE, _SC_PHYS_PAGES, sysconf;
         const pageSize = sysconf(_SC_PAGESIZE);
-        static if (__traits(compiles, _SC_AVPHYS_PAGES)) // not available on all platforms
+        static if (__traits(compiles, core.sys.posix.unistd._SC_AVPHYS_PAGES)) // not available on all platforms
+        {
+            import core.sys.posix.unistd : _SC_AVPHYS_PAGES;
             const sc = avail ? _SC_AVPHYS_PAGES : _SC_PHYS_PAGES;
+        }
         else
+        {
             const sc = _SC_PHYS_PAGES;
+        }
         const pages = sysconf(sc);
         return pageSize * pages;
     }

@@ -1,7 +1,7 @@
 --
 -- mc-1.bnf grammar and associated actions for mcp1.
 --
--- Copyright (C) 2015-2024 Free Software Foundation, Inc.
+-- Copyright (C) 2015-2025 Free Software Foundation, Inc.
 -- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 --
 -- This file is part of GNU Modula-2.
@@ -22,7 +22,7 @@
 % module mcp1 begin
 (* output from mc-1.bnf, automatically generated do not edit.
 
-Copyright (C) 2015-2024 Free Software Foundation, Inc.
+Copyright (C) 2015-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

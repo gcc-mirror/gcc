@@ -1,9 +1,11 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_fp_ok } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* Do not use dg-add-options arm_v8_1m_mve, because this might expand to "",
    which could imply mve+fp depending on the user settings. We want to make
    sure the '+fp' extension is not enabled.  */
-/* { dg-options "-mfpu=auto -march=armv8.1-m.main+mve" } */
+/* { dg-options "-mfpu=auto -mcpu=unset -march=armv8.1-m.main+mve" } */
+/* { dg-add-options arm_fp } */
 
 #include <arm_mve.h>
 

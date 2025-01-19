@@ -1,6 +1,6 @@
 /* Expand a SYMBOL into its corresponding dllimport, far-address,
 or refptr symbol.
-Copyright (C) 1988-2024 Free Software Foundation, Inc.
+Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -134,7 +134,7 @@ get_dllimport_decl (tree decl, bool beimport)
     {
       SYMBOL_REF_FLAGS (rtl) |= SYMBOL_FLAG_EXTERNAL;
 #ifdef SUB_TARGET_RECORD_STUB
-      SUB_TARGET_RECORD_STUB (name);
+      SUB_TARGET_RECORD_STUB (name, decl);
 #endif
     }
 
@@ -206,7 +206,7 @@ legitimize_pe_coff_symbol (rtx addr, bool inreg)
 	}
     }
 
-  if (!PE_COFF_LEGITIMIZE_EXTERN_DECL)
+  if (!PE_COFF_LEGITIMIZE_EXTERN_DECL (addr))
     return NULL_RTX;
 
   if (GET_CODE (addr) == SYMBOL_REF

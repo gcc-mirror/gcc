@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005-2024 Free Software Foundation, Inc.
+   Copyright (C) 2005-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
    The data structures would be more complex in order to work on all the
    variables in a single pass.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -4129,6 +4128,9 @@ match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
   if (!gimple_unsigned_integer_sat_add (phi_result, ops, NULL)
       && !gimple_signed_integer_sat_add (phi_result, ops, NULL))
     return false;
+
+  if (!TYPE_UNSIGNED (TREE_TYPE (ops[0])) && TREE_CODE (ops[1]) == INTEGER_CST)
+    ops[1] = fold_convert (TREE_TYPE (ops[0]), ops[1]);
 
   return build_saturation_binary_arith_call_and_insert (gsi, IFN_SAT_ADD,
 							phi_result, ops[0],

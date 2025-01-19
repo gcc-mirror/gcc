@@ -1,0 +1,25 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "foo"
+        }
+      },
+      "results": [
+        {
+	  "level": "none", /* { dg-message "sorry, unimplemented: unable to handle value for 'level': 'none' \\\[SARIF v2.1.0 §3.27.10\\\]" } */
+          "message": {
+            "text": "bar"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+/* { dg-begin-multiline-output "" }
+   12 |           "level": "none",
+      |                    ^~~~~~
+   { dg-end-multiline-output "" } */

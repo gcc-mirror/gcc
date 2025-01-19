@@ -45,7 +45,5 @@ foo ( uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2 )
     return (((uint16_t)sum) + ((uint32_t)sum>>16)) >> 1;
 }
 
-
-/* The first loop should be vectorized, which will eliminate redundant stores
-   and loads.  */
-/* { dg-final { scan-tree-dump-times "  MEM <vector\\\(4\\\) unsigned int> \\\[\[\^\]\]\*\\\] = " 4 "slp1" } } */
+/* All loops should be vectorized.  */
+/* { dg-final { scan-tree-dump-times "MEM\[^\n\]*tmp\[^\n\]*= " 0 "slp1" } } */

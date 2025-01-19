@@ -1,5 +1,5 @@
 /* LRA (local register allocator) driver and LRA utilities.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1749,6 +1749,10 @@ lra_rtx_hash (rtx x)
 	  val += XINT (x, i);
 	  break;
 
+	case 'L':
+	  val += XLOC (x, i);
+	  break;
+
 	case 'V':
 	case 'E':
 	  val += XVECLEN (x, i);
@@ -2551,8 +2555,11 @@ lra (FILE *f, int verbose)
 	 rematerialize them first.  */
       if (lra_remat ())
 	{
-	  /* We need full live info -- see the comment above.  */
-	  lra_create_live_ranges (lra_reg_spill_p, true);
+	  /* We need full live info -- see the comment above.  We also might
+	     need live info if we have a pseudo assigned to hard frame pointer
+	     reg and will need FP for usual purposes.  */
+	  lra_create_live_ranges (lra_reg_spill_p || lra_fp_pseudo_p (),
+				  true);
 	  live_p = true;
 	  if (! lra_need_for_spills_p ())
 	    {

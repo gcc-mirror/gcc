@@ -1,6 +1,6 @@
 (* LongConv.mod implement the ISO LongConv specification.
 
-Copyright (C) 2009-2024 Free Software Foundation, Inc.
+Copyright (C) 2009-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -257,7 +257,8 @@ BEGIN
       RETURN( doValueReal(str) )
    ELSE
       EXCEPTIONS.RAISE(realConv, ORD(invalid),
-                       'LongConv.' + __FUNCTION__ + ': real number is invalid')
+                       'LongConv.' + __FUNCTION__ + ': real number is invalid') ;
+      RETURN 0.0
    END
 END ValueReal ;
 

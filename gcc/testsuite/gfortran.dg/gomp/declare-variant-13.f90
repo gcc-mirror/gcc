@@ -2,27 +2,25 @@
 ! { dg-additional-options "-fdump-tree-gimple" }
 ! { dg-additional-options "-mno-sse3" { target { i?86-*-* x86_64-*-* } } }
 
-program main
-  implicit none
-contains
+module main
+
+implicit none
+
+interface
   integer function f01 (x)
     integer, intent(in) :: x
-    f01 = x
   end function
 
   integer function f02 (x)
     integer, intent(in) :: x
-    f02 = x
   end function
 
   integer function f03 (x)
     integer, intent(in) :: x
-    f03 = x
   end function
 
   integer function f04 (x)
     integer, intent(in) :: x
-    f04 = x
   end function
 
   integer function f05 (x)
@@ -32,8 +30,10 @@ contains
     !$omp declare variant (f02) match (implementation={vendor(score(3):gnu)},device={kind(cpu)}) ! (1 or 2) + 3
     !$omp declare variant (f03) match (user={condition(score(9):.true.)})
     !$omp declare variant (f04) match (implementation={vendor(score(6):gnu)},device={kind(host)}) ! (1 or 2) + 6
-    f05 = x
   end function
+end interface
+
+contains
 
   integer function test1 (x)
     !$omp declare simd
@@ -43,6 +43,9 @@ contains
     ! isa has score 2^2 or 2^3.  We can't decide on whether avx512f will match or
     ! not, that also depends on whether it is a declare simd clone or not and which
     ! one, but the f03 variant has a higher score anyway.  */
-    test1 = f05 (x)	! { dg-final { scan-tree-dump-times "f03 \\\(x" 1 "gimple" } }
+    test1 = f05 (x)
+    ! { dg-final { scan-tree-dump "f03 \\\(" "gimple" } }
+    ! { dg-final { scan-tree-dump-not "f05 \\\(" "gimple" } }
   end function
-end program
+
+end module

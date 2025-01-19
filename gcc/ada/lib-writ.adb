@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1240,22 +1240,19 @@ package body Lib.Writ is
          Write_Info_Str (" DB");
       end if;
 
-      if Tasking_Used and then not Is_Predefined_Unit (Main_Unit) then
-         if Locking_Policy /= ' ' then
-            Write_Info_Str  (" L");
-            Write_Info_Char (Locking_Policy);
-         end if;
+      if Locking_Policy /= ' ' then
+         Write_Info_Str  (" L");
+         Write_Info_Char (Locking_Policy);
+      end if;
 
-         if Queuing_Policy /= ' ' then
-            Write_Info_Str  (" Q");
-            Write_Info_Char (Queuing_Policy);
-         end if;
+      if Queuing_Policy /= ' ' then
+         Write_Info_Str  (" Q");
+         Write_Info_Char (Queuing_Policy);
+      end if;
 
-         if Task_Dispatching_Policy /= ' ' then
-            Write_Info_Str  (" T");
-            Write_Info_Char (Task_Dispatching_Policy);
-            Write_Info_Char (' ');
-         end if;
+      if Task_Dispatching_Policy /= ' ' then
+         Write_Info_Str  (" T");
+         Write_Info_Char (Task_Dispatching_Policy);
       end if;
 
       if GNATprove_Mode then

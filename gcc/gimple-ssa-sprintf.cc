@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2025 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
 This file is part of GCC.
@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
    character arrays that a character pointer may point to as a bound
    on the longest string.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

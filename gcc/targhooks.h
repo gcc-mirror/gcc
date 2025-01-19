@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -253,6 +253,9 @@ extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_rename_class (reg_class_t rclass);
 extern bool default_class_likely_spilled_p (reg_class_t);
 extern unsigned char default_class_max_nregs (reg_class_t, machine_mode);
+
+extern bool default_avoid_store_forwarding_p (vec<store_fwd_info>, rtx, int,
+					      bool);
 
 extern enum unwind_info_type default_debug_unwind_info (void);
 

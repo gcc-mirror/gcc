@@ -44,6 +44,12 @@ UrlSuffix(gcc/AVR-Options.html#index-mrelax)
 maccumulate-args
 UrlSuffix(gcc/AVR-Options.html#index-maccumulate-args)
 
+msplit-bit-shift
+UrlSuffix(gcc/AVR-Options.html#index-msplit-bit-shift)
+
+msplit-ldst
+UrlSuffix(gcc/AVR-Options.html#index-msplit-ldst)
+
 mstrict-X
 UrlSuffix(gcc/AVR-Options.html#index-mstrict-X)
 
@@ -70,6 +76,12 @@ UrlSuffix(gcc/AVR-Options.html#index-Wmisspelled-isr)
 
 mfract-convert-truncate
 UrlSuffix(gcc/AVR-Options.html#index-mfract-convert-truncate)
+
+mfuse-move
+UrlSuffix(gcc/AVR-Options.html#index-mfuse-move)
+
+mfuse-move=
+UrlSuffix(gcc/AVR-Options.html#index-mfuse-move)
 
 mabsdata
 UrlSuffix(gcc/AVR-Options.html#index-mabsdata)

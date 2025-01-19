@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+   Copyright (C) 2004-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -338,6 +337,8 @@ static unsigned stack_vars_alloc;
 static unsigned stack_vars_num;
 static hash_map<tree, unsigned> *decl_to_stack_part;
 
+#define INVALID_STACK_INDEX ((unsigned)-1)
+
 /* Conflict bitmaps go on this obstack.  This allows us to destroy
    all of them in one big sweep.  */
 static bitmap_obstack stack_var_bitmap_obstack;
@@ -526,6 +527,27 @@ stack_var_conflict_p (unsigned x, unsigned y)
   return bitmap_bit_p (a->conflicts, y);
 }
 
+/* Returns the DECL's index into the stack_vars array.
+   If the DECL does not exist return INVALID_STACK_INDEX.  */
+static unsigned
+decl_stack_index (tree decl)
+{
+  if (!decl)
+    return INVALID_STACK_INDEX;
+  if (!DECL_P (decl))
+    return INVALID_STACK_INDEX;
+  if (DECL_RTL_IF_SET (decl) != pc_rtx)
+    return INVALID_STACK_INDEX;
+  unsigned *v = decl_to_stack_part->get (decl);
+  if (!v)
+    return INVALID_STACK_INDEX;
+
+  unsigned indx = *v;
+  gcc_checking_assert (indx != INVALID_STACK_INDEX);
+  gcc_checking_assert (indx < stack_vars_num);
+  return indx;
+}
+
 /* Callback for walk_stmt_ops.  If OP is a decl touched by add_stack_var
    enter its partition number into bitmap DATA.  */
 
@@ -534,14 +556,9 @@ visit_op (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
-  if (op
-      && DECL_P (op)
-      && DECL_RTL_IF_SET (op) == pc_rtx)
-    {
-      unsigned *v = decl_to_stack_part->get (op);
-      if (v)
-	bitmap_set_bit (active, *v);
-    }
+  unsigned idx = decl_stack_index (op);
+  if (idx != INVALID_STACK_INDEX)
+    bitmap_set_bit (active, idx);
   return false;
 }
 
@@ -554,53 +571,268 @@ visit_conflict (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
-  if (op
-      && DECL_P (op)
-      && DECL_RTL_IF_SET (op) == pc_rtx)
+  unsigned num = decl_stack_index (op);
+  if (num != INVALID_STACK_INDEX
+      && bitmap_set_bit (active, num))
     {
-      unsigned *v = decl_to_stack_part->get (op);
-      if (v && bitmap_set_bit (active, *v))
-	{
-	  unsigned num = *v;
-	  bitmap_iterator bi;
-	  unsigned i;
-	  gcc_assert (num < stack_vars_num);
-	  EXECUTE_IF_SET_IN_BITMAP (active, 0, i, bi)
-	    add_stack_var_conflict (num, i);
-	}
+      bitmap_iterator bi;
+      unsigned i;
+      gcc_assert (num < stack_vars_num);
+      EXECUTE_IF_SET_IN_BITMAP (active, 0, i, bi)
+	add_stack_var_conflict (num, i);
     }
   return false;
 }
 
-/* Helper function for add_scope_conflicts_1.  For USE on
-   a stmt, if it is a SSA_NAME and in its SSA_NAME_DEF_STMT is known to be
-   based on some ADDR_EXPR, invoke VISIT on that ADDR_EXPR.  */
-
-static inline void
-add_scope_conflicts_2 (tree use, bitmap work,
-		       walk_stmt_load_store_addr_fn visit)
+/* A cache for ssa name to address of stack variables.
+   When taking into account if a ssa name refers to an
+   address of a stack variable, we need to walk the
+   expressions backwards to find the addresses. This
+   cache is there so we don't need to walk the expressions
+   all the time.  */
+struct vars_ssa_cache
 {
-  if (TREE_CODE (use) == SSA_NAME
-      && (POINTER_TYPE_P (TREE_TYPE (use))
-	  || INTEGRAL_TYPE_P (TREE_TYPE (use))))
+private:
+  /* Currently an entry is a bitmap of all of the known stack variables
+     addresses that are referenced by the ssa name.
+     When the bitmap is the nullptr, then there is no cache.
+     Currently only empty bitmaps are shared.
+     The reason for why empty cache is not just a null is so we know the
+     cache for an entry is filled in.  */
+  struct entry
+  {
+    bitmap bmap = nullptr;
+  };
+  entry *vars_ssa_caches;
+public:
+
+  vars_ssa_cache();
+  ~vars_ssa_cache();
+  const_bitmap operator() (tree name);
+  void dump (FILE *file);
+
+private:
+  /* Can't copy. */
+  vars_ssa_cache(const vars_ssa_cache&) = delete;
+  vars_ssa_cache(vars_ssa_cache&&) = delete;
+
+  /* The shared empty bitmap.  */
+  bitmap empty;
+
+  /* Unshare the index, currently only need
+     to unshare if the entry was empty. */
+  void unshare(int indx)
+  {
+    if (vars_ssa_caches[indx].bmap == empty)
+	vars_ssa_caches[indx].bmap = BITMAP_ALLOC (&stack_var_bitmap_obstack);
+  }
+  void create (tree);
+  bool exists (tree use);
+  void add_one (tree old_name, unsigned);
+  bool update (tree old_name, tree use);
+};
+
+/* Constructor of the cache, create the cache array. */
+vars_ssa_cache::vars_ssa_cache ()
+{
+  vars_ssa_caches = new entry[num_ssa_names]{};
+
+  /* Create the shared empty bitmap too. */
+  empty = BITMAP_ALLOC (&stack_var_bitmap_obstack);
+}
+
+/* Delete the array. The bitmaps will be freed
+   when stack_var_bitmap_obstack is freed.  */
+vars_ssa_cache::~vars_ssa_cache ()
+{
+  delete []vars_ssa_caches;
+}
+
+/* Create an empty entry for the USE ssa name.  */
+void
+vars_ssa_cache::create (tree use)
+{
+  int num = SSA_NAME_VERSION (use);
+  if (vars_ssa_caches[num].bmap)
+    return;
+  vars_ssa_caches[num].bmap = empty;
+}
+
+/* Returns true if the cache for USE exists.  */
+bool
+vars_ssa_cache::exists (tree use)
+{
+  int num = SSA_NAME_VERSION (use);
+  return vars_ssa_caches[num].bmap != nullptr;
+}
+
+/* Add to USE's bitmap for stack variable IDX.  */
+void
+vars_ssa_cache::add_one (tree use, unsigned idx)
+{
+  gcc_assert (idx != INVALID_STACK_INDEX);
+  int num = SSA_NAME_VERSION (use);
+  gcc_assert (vars_ssa_caches[num].bmap);
+  unshare (num);
+  bitmap_set_bit (vars_ssa_caches[num].bmap, idx);
+}
+
+/* Update cache of OLD_NAME from the USE's cache. */
+bool
+vars_ssa_cache::update (tree old_name, tree use)
+{
+  if (old_name == use)
+    return false;
+  int num = SSA_NAME_VERSION (use);
+  int old_num = SSA_NAME_VERSION (old_name);
+
+  /* If the old name was empty, then there is nothing to be updated. */
+  if (vars_ssa_caches[num].bmap == empty)
+    return false;
+  unshare (old_num);
+  return bitmap_ior_into (vars_ssa_caches[old_num].bmap, vars_ssa_caches[num].bmap);
+}
+
+/* Dump out the cache. Note empty and non-filled
+   in ssa names are not printed out. */
+void
+vars_ssa_cache::dump (FILE *file)
+{
+  fprintf (file, "var ssa address cache\n");
+  for (unsigned num = 0; num < num_ssa_names; num++)
     {
-      gimple *g = SSA_NAME_DEF_STMT (use);
-      if (gassign *a = dyn_cast <gassign *> (g))
+      if (!vars_ssa_caches[num].bmap
+	  || vars_ssa_caches[num].bmap == empty)
+	continue;
+      fprintf (file, "_%d refers to:\n", num);
+      bitmap_iterator bi;
+      unsigned i;
+      EXECUTE_IF_SET_IN_BITMAP (vars_ssa_caches[num].bmap, 0, i, bi)
 	{
-	  if (tree op = gimple_assign_rhs1 (a))
-	    if (TREE_CODE (op) == ADDR_EXPR)
-	      visit (a, TREE_OPERAND (op, 0), op, work);
+	  fputc ('\t', file);
+	  print_generic_expr (file, stack_vars[i].decl, dump_flags);
+	}
+      fputc ('\n', file);
+  }
+  fputc ('\n', file);
+}
+
+/* Returns the filled in cache for NAME.
+   This will fill in the cache if it does not exist already.
+   Returns an empty for ssa names that can't contain pointers
+   (only intergal types and pointer types will contain pointers).  */
+
+const_bitmap
+vars_ssa_cache::operator() (tree name)
+{
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+
+  if (!POINTER_TYPE_P (TREE_TYPE (name))
+      && !ANY_INTEGRAL_TYPE_P (TREE_TYPE (name)))
+    return empty;
+
+  if (exists (name))
+    return vars_ssa_caches[SSA_NAME_VERSION (name)].bmap;
+
+  auto_vec<std::pair<tree,tree>, 4> work_list;
+  auto_vec<std::pair<tree,tree>, 4> update_cache_list;
+
+  work_list.safe_push (std::make_pair (name, name));
+
+  while (!work_list.is_empty ())
+    {
+      auto item = work_list.pop();
+      tree use = item.first;
+      tree old_name = item.second;
+      if (TREE_CODE (use) == ADDR_EXPR)
+	{
+	  tree op = TREE_OPERAND (use, 0);
+	  op = get_base_address (op);
+	  unsigned idx = decl_stack_index (op);
+	  if (idx != INVALID_STACK_INDEX)
+	    add_one (old_name, idx);
+	  continue;
+	}
+
+      if (TREE_CODE (use) != SSA_NAME)
+	continue;
+
+      if (!POINTER_TYPE_P (TREE_TYPE (use))
+	  && !ANY_INTEGRAL_TYPE_P (TREE_TYPE (use)))
+	continue;
+
+      /* Mark the old ssa name needs to be update from the use. */
+      update_cache_list.safe_push (item);
+
+      /* If the cache exists for the use, don't try to recreate it. */
+      if (exists (use))
+	continue;
+
+      /* Create the cache bitmap for the use and also
+	 so we don't go into an infinite loop for some phi nodes with loops.  */
+      create (use);
+
+      gimple *g = SSA_NAME_DEF_STMT (use);
+ 
+      /* CONSTRUCTOR here is always a vector initialization,
+	 walk each element too. */
+      if (gimple_assign_single_p (g)
+	  && TREE_CODE (gimple_assign_rhs1 (g)) == CONSTRUCTOR)
+	{
+	  tree ctr = gimple_assign_rhs1 (g);
+	  unsigned i;
+	  tree elm;
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctr), i, elm)
+	    work_list.safe_push (std::make_pair (elm, use));
+	}
+      /* For assignments, walk each operand for possible addresses.
+	 For PHI nodes, walk each argument. */
+      else if (gassign *a = dyn_cast <gassign *> (g))
+	{
+	  /* operand 0 is the lhs. */
+	  for (unsigned i = 1; i < gimple_num_ops (g); i++)
+	    work_list.safe_push (std::make_pair (gimple_op (a, i), use));
 	}
       else if (gphi *p = dyn_cast <gphi *> (g))
 	for (unsigned i = 0; i < gimple_phi_num_args (p); ++i)
-	  if (TREE_CODE (use = gimple_phi_arg_def (p, i)) == SSA_NAME)
-	    if (gassign *a = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (use)))
-	      {
-		if (tree op = gimple_assign_rhs1 (a))
-		  if (TREE_CODE (op) == ADDR_EXPR)
-		    visit (a, TREE_OPERAND (op, 0), op, work);
-	      }
+	  work_list.safe_push (std::make_pair (gimple_phi_arg_def (p, i), use));
     }
+
+  /* Update the cache. Note a loop is needed as phi nodes could
+     cause a loop to form. The number of times through this loop
+     will be small though.  */
+  bool changed;
+  do {
+    changed = false;
+    for (auto &e : update_cache_list)
+      {
+	if (update (e.second, e.first))
+	  changed = true;
+      }
+  } while (changed);
+
+  return vars_ssa_caches[SSA_NAME_VERSION (name)].bmap;
+}
+
+/* Helper function for add_scope_conflicts_1.  For USE on
+   a stmt, if it is a SSA_NAME and in its defining statement
+   is known to be based on some ADDR_EXPR, invoke VISIT
+   on that ADDR_EXPR.  */
+
+static inline void
+add_scope_conflicts_2 (vars_ssa_cache &cache, tree name,
+		       bitmap work, walk_stmt_load_store_addr_fn visit)
+{
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+
+  /* Querry the cache for the mapping of addresses that are referendd by
+     ssa name NAME. Querrying it will fill in it.  */
+  bitmap_iterator bi;
+  unsigned i;
+  const_bitmap bmap = cache (name);
+  /* Visit each stack variable that is referenced.  */
+  EXECUTE_IF_SET_IN_BITMAP (bmap, 0, i, bi)
+    visit (nullptr, stack_vars[i].decl, nullptr, work);
 }
 
 /* Helper routine for add_scope_conflicts, calculating the active partitions
@@ -609,7 +841,7 @@ add_scope_conflicts_2 (tree use, bitmap work,
    liveness.  */
 
 static void
-add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
+add_scope_conflicts_1 (vars_ssa_cache &cache, basic_block bb, bitmap work, bool for_conflict)
 {
   edge e;
   edge_iterator ei;
@@ -617,41 +849,45 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
   walk_stmt_load_store_addr_fn visit;
   use_operand_p use_p;
   ssa_op_iter iter;
+  bool had_non_clobbers = false;
 
   bitmap_clear (work);
+  /* The copy what was alive out going from the edges. */
   FOR_EACH_EDGE (e, ei, bb->preds)
     bitmap_ior_into (work, (bitmap)e->src->aux);
 
-  visit = visit_op;
+  visit = for_conflict ? visit_conflict : visit_op;
 
+  /* Addresses coming into the bb via phis are alive at the entry point. */
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      gphi *phi = as_a <gphi *> (stmt);
-      walk_stmt_load_store_addr_ops (stmt, work, NULL, NULL, visit);
-      FOR_EACH_PHI_ARG (use_p, phi, iter, SSA_OP_USE)
-	add_scope_conflicts_2 (USE_FROM_PTR (use_p), work, visit);
-    }
+    add_scope_conflicts_2 (cache, gimple_phi_result (gsi_stmt (gsi)), work, visit_op);
+
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
 
+      /* Debug statements are not considered for liveness. */
+      if (is_gimple_debug (stmt))
+	continue;
+
+      /* If we had `var = {CLOBBER}`, then var is no longer
+	 considered alive after this point but might become
+	 alive later on. */
       if (gimple_clobber_p (stmt))
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
-	  unsigned *v;
-	  /* Handle only plain var clobbers.
+	  /* Handle only plain var clobbers, not partial ones.
 	     Nested functions lowering and C++ front-end inserts clobbers
-	     which are not just plain variables.  */
+	     which are partial clobbers.  */
 	  if (!VAR_P (lhs))
 	    continue;
-	  if (DECL_RTL_IF_SET (lhs) == pc_rtx
-	      && (v = decl_to_stack_part->get (lhs)))
-	    bitmap_clear_bit (work, *v);
+	  unsigned indx = decl_stack_index (lhs);
+	  if (indx != INVALID_STACK_INDEX)
+	    bitmap_clear_bit (work, indx);
 	}
-      else if (!is_gimple_debug (stmt))
+      else
 	{
-	  if (for_conflict && visit == visit_op)
+	  if (for_conflict && !had_non_clobbers)
 	    {
 	      /* When we are inheriting live variables from our predecessors
 		 through a CFG merge we might not see an actual mention of
@@ -673,17 +909,17 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 		      a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 		    bitmap_ior_into (a->conflicts, work);
 		  }
-	      visit = visit_conflict;
+	      had_non_clobbers = true;
 	    }
 	  walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
-	    add_scope_conflicts_2 (USE_FROM_PTR (use_p), work, visit);
+	    add_scope_conflicts_2 (cache, USE_FROM_PTR (use_p), work, visit);
 	}
     }
 
   /* When there was no real instruction but there's a CFG merge we need
      to add the conflicts now.  */
-  if (for_conflict && visit == visit_op && EDGE_COUNT (bb->preds) > 1)
+  if (for_conflict && !had_non_clobbers && EDGE_COUNT (bb->preds) > 1)
     {
       bitmap_iterator bi;
       unsigned i;
@@ -703,11 +939,18 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 static void
 add_scope_conflicts (void)
 {
+  /* If there is only one variable, there is nothing to be done as
+     there is only possible partition.  */
+  if (stack_vars_num == 1)
+    return;
+
   basic_block bb;
   bool changed;
   bitmap work = BITMAP_ALLOC (NULL);
   int *rpo;
   int n_bbs;
+
+  vars_ssa_cache cache;
 
   /* We approximate the live range of a stack variable by taking the first
      mention of its name as starting point(s), and by the end-of-scope
@@ -735,14 +978,17 @@ add_scope_conflicts (void)
 	  bitmap active;
 	  bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	  active = (bitmap)bb->aux;
-	  add_scope_conflicts_1 (bb, work, false);
+	  add_scope_conflicts_1 (cache, bb, work, false);
 	  if (bitmap_ior_into (active, work))
 	    changed = true;
 	}
     }
 
   FOR_EACH_BB_FN (bb, cfun)
-    add_scope_conflicts_1 (bb, work, true);
+    add_scope_conflicts_1 (cache, bb, work, true);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    cache.dump (dump_file);
 
   free (rpo);
   BITMAP_FREE (work);
@@ -2844,6 +3090,7 @@ expand_call_stmt (gcall *stmt)
       if (builtin_p
 	  && TREE_CODE (arg) == SSA_NAME
 	  && (def = get_gimple_for_ssa_name (arg))
+	  && is_gimple_assign (def)
 	  && gimple_assign_rhs_code (def) == ADDR_EXPR)
 	arg = gimple_assign_rhs1 (def);
       CALL_EXPR_ARG (exp, i) = arg;
@@ -3204,6 +3451,12 @@ expand_asm_stmt (gasm *stmt)
 		{
 		  rtx x = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
 		  clobber_rvec.safe_push (x);
+		}
+	      else if (j == -5)
+		{
+		  if (targetm.redzone_clobber)
+		    if (rtx x = targetm.redzone_clobber ())
+		      clobber_rvec.safe_push (x);
 		}
 	      else
 		{
@@ -4404,7 +4657,7 @@ avoid_deep_ter_for_debug (gimple *stmt, int depth)
       gimple *g = get_gimple_for_ssa_name (use);
       if (g == NULL)
 	continue;
-      if (depth > 6 && !stmt_ends_bb_p (g))
+      if ((depth > 6 || !is_gimple_assign (g)) && !stmt_ends_bb_p (g))
 	{
 	  if (deep_ter_debug_map == NULL)
 	    deep_ter_debug_map = new hash_map<tree, tree>;
@@ -5378,7 +5631,13 @@ expand_debug_expr (tree exp)
 		  t = *slot;
 	      }
 	    if (t == NULL_TREE)
-	      t = gimple_assign_rhs_to_tree (g);
+	      {
+		if (is_gimple_assign (g))
+		  t = gimple_assign_rhs_to_tree (g);
+		else
+		  /* expand_debug_expr doesn't handle CALL_EXPR right now.  */
+		  return NULL;
+	      }
 	    op0 = expand_debug_expr (t);
 	    if (!op0)
 	      return NULL;
@@ -5954,7 +6213,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	  /* Look for SSA names that have their last use here (TERed
 	     names always have only one real use).  */
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	    if ((def = get_gimple_for_ssa_name (op)))
+	    if ((def = get_gimple_for_ssa_name (op))
+		&& is_gimple_assign (def))
 	      {
 		imm_use_iterator imm_iter;
 		use_operand_p use_p;
@@ -6198,7 +6458,17 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       emit_insn_after_noloc (gen_move_insn (dummy, dummy), last, NULL);
     }
 
-  do_pending_stack_adjust ();
+  /* A __builtin_unreachable () will insert a barrier that should end
+     the basic block.  In gimple, any code after it will have already
+     deleted, even without optimization.  If we emit additional code
+     here, as we would to adjust the stack after a call, it should be
+     eventually deleted, but it confuses internal checkers (PR118006)
+     and optimizers before it does, because we don't expect to find
+     barriers inside basic blocks.  */
+  if (!BARRIER_P (get_last_insn ()))
+    do_pending_stack_adjust ();
+  else
+    discard_pending_stack_adjust ();
 
   /* Find the block tail.  The last insn in the block is the insn
      before a barrier and/or table jump insn.  */

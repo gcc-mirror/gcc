@@ -1,5 +1,5 @@
 /* Lower _BitInt(N) operations to scalar operations.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2143,6 +2142,7 @@ bitint_large_huge::handle_stmt (gimple *stmt, tree idx)
 						idx),
 				gimple_assign_rhs2 (stmt), idx);
 	case SSA_NAME:
+	case PAREN_EXPR:
 	case INTEGER_CST:
 	  return handle_operand (gimple_assign_rhs1 (stmt), idx);
 	CASE_CONVERT:
@@ -3597,6 +3597,7 @@ bitint_large_huge::lower_muldiv_stmt (tree obj, gimple *stmt)
       insert_before (g);
       break;
     case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
       g = gimple_build_call_internal (IFN_DIVMODBITINT, 8,
 				      lhs, build_int_cst (sitype, prec),
 				      null_pointer_node,
@@ -5560,6 +5561,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 		return;
 	      case MULT_EXPR:
 	      case TRUNC_DIV_EXPR:
+	      case EXACT_DIV_EXPR:
 	      case TRUNC_MOD_EXPR:
 		lower_muldiv_stmt (lhs, g);
 		goto handled;
@@ -5607,7 +5609,9 @@ bitint_large_huge::lower_stmt (gimple *stmt)
       || gimple_store_p (stmt)
       || gimple_assign_load_p (stmt)
       || eq_p
-      || mergeable_cast_p)
+      || mergeable_cast_p
+      || (is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == PAREN_EXPR))
     {
       lhs = lower_mergeable_stmt (stmt, cmp_code, cmp_op1, cmp_op2);
       if (!eq_p)
@@ -5694,6 +5698,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	return;
       case MULT_EXPR:
       case TRUNC_DIV_EXPR:
+      case EXACT_DIV_EXPR:
       case TRUNC_MOD_EXPR:
 	lower_muldiv_stmt (NULL_TREE, stmt);
 	return;
@@ -5740,6 +5745,7 @@ stmt_needs_operand_addr (gimple *stmt)
       {
       case MULT_EXPR:
       case TRUNC_DIV_EXPR:
+      case EXACT_DIV_EXPR:
       case TRUNC_MOD_EXPR:
       case FLOAT_EXPR:
 	return true;
@@ -5931,6 +5937,7 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 		{
 		case MULT_EXPR:
 		case TRUNC_DIV_EXPR:
+		case EXACT_DIV_EXPR:
 		case TRUNC_MOD_EXPR:
 		  muldiv_p = true;
 		default:
@@ -6174,6 +6181,7 @@ gimple_lower_bitint (void)
 		break;
 	      case MULT_EXPR:
 	      case TRUNC_DIV_EXPR:
+	      case EXACT_DIV_EXPR:
 	      case TRUNC_MOD_EXPR:
 		if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (s))
 		  {
@@ -6225,11 +6233,20 @@ gimple_lower_bitint (void)
 		  tree p = build_int_cst (TREE_TYPE (n),
 					  TYPE_PRECISION (type));
 		  if (TREE_CODE (n) == INTEGER_CST)
-		    m = fold_build2 (MINUS_EXPR, TREE_TYPE (n), p, n);
+		    {
+		      if (integer_zerop (n))
+			m = n;
+		      else
+			m = fold_build2 (MINUS_EXPR, TREE_TYPE (n), p, n);
+		    }
 		  else
 		    {
+		      tree tem = make_ssa_name (TREE_TYPE (n));
+		      g = gimple_build_assign (tem, MINUS_EXPR, p, n);
+		      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+		      gimple_set_location (g, loc);
 		      m = make_ssa_name (TREE_TYPE (n));
-		      g = gimple_build_assign (m, MINUS_EXPR, p, n);
+		      g = gimple_build_assign (m, TRUNC_MOD_EXPR, tem, p);
 		      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 		      gimple_set_location (g, loc);
 		    }
@@ -6455,6 +6472,7 @@ gimple_lower_bitint (void)
 			switch (gimple_assign_rhs_code (use_stmt))
 			  {
 			  case TRUNC_DIV_EXPR:
+			  case EXACT_DIV_EXPR:
 			  case TRUNC_MOD_EXPR:
 			  case FLOAT_EXPR:
 			    /* For division, modulo and casts to floating
@@ -6568,6 +6586,7 @@ gimple_lower_bitint (void)
 		  case RSHIFT_EXPR:
 		  case MULT_EXPR:
 		  case TRUNC_DIV_EXPR:
+		  case EXACT_DIV_EXPR:
 		  case TRUNC_MOD_EXPR:
 		  case FIX_TRUNC_EXPR:
 		  case REALPART_EXPR:

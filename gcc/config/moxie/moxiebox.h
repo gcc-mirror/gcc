@@ -1,5 +1,5 @@
 /* Definitions for the moxiebox.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by Anthony Green (green@moxielogic.com)
 
 This file is part of GCC.

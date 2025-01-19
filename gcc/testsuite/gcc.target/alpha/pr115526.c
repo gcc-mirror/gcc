@@ -1,6 +1,6 @@
 /* PR target/115526 */
 /* { dg-do assemble } */
-/* { dg-options "-O2 -Wno-attributes -fvisibility=hidden -fPIC -mcpu=ev4" } */
+/* { dg-options "-Wno-attributes -fvisibility=hidden -fPIC -mcpu=ev4" } */
 
 struct _ts {
   struct _dtoa_state *interp;

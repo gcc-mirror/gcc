@@ -1,7 +1,7 @@
 /* Dependency checks for instruction scheduling, shared between ARM and
    AARCH64.
 
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -23,7 +23,6 @@
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -712,9 +711,9 @@ aarch_validate_mbranch_protection (
 	{
 	  res = false;
 	  if (strcmp (str, "") == 0)
-	    error ("missing feature or flag for %<%s%>", opt);
+	    error ("missing feature or flag for %qs", opt);
 	  else
-	    error ("invalid argument %<%s%> for %<%s%>", str, opt);
+	    error ("invalid argument %qs for %qs", str, opt);
 	  break;
 	}
 
@@ -725,7 +724,7 @@ aarch_validate_mbranch_protection (
       if (reject_alone && alone_str != NULL)
 	{
 	  res = false;
-	  error ("argument %<%s%> can only appear alone in %<%s%>",
+	  error ("argument %qs can only appear alone in %qs",
 		 alone_str, opt);
 	  break;
 	}

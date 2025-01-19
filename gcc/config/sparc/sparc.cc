@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for SPARC.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -719,6 +719,7 @@ static HOST_WIDE_INT sparc_constant_alignment (const_tree, HOST_WIDE_INT);
 static bool sparc_vectorize_vec_perm_const (machine_mode, machine_mode,
 					    rtx, rtx, rtx,
 					    const vec_perm_indices &);
+static opt_machine_mode sparc_get_mask_mode (machine_mode);
 static bool sparc_can_follow_jump (const rtx_insn *, const rtx_insn *);
 static HARD_REG_SET sparc_zero_call_used_regs (HARD_REG_SET);
 static machine_mode sparc_c_mode_for_floating_type (enum tree_index);
@@ -971,6 +972,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST
 #define TARGET_VECTORIZE_VEC_PERM_CONST sparc_vectorize_vec_perm_const
+
+#undef TARGET_VECTORIZE_GET_MASK_MODE
+#define TARGET_VECTORIZE_GET_MASK_MODE sparc_get_mask_mode
 
 #undef TARGET_CAN_FOLLOW_JUMP
 #define TARGET_CAN_FOLLOW_JUMP sparc_can_follow_jump
@@ -1667,6 +1671,8 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "VIS2 ");
   if (flags & MASK_VIS3)
     fprintf (stderr, "VIS3 ");
+  if (flags & MASK_VIS3B)
+    fprintf (stderr, "VIS3B ");
   if (flags & MASK_VIS4)
     fprintf (stderr, "VIS4 ");
   if (flags & MASK_VIS4B)
@@ -1915,19 +1921,23 @@ sparc_option_override (void)
   if (TARGET_VIS3)
     target_flags |= MASK_VIS2 | MASK_VIS;
 
-  /* -mvis4 implies -mvis3, -mvis2 and -mvis.  */
-  if (TARGET_VIS4)
+  /* -mvis3b implies -mvis3, -mvis2 and -mvis.  */
+  if (TARGET_VIS3B)
     target_flags |= MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
-  /* -mvis4b implies -mvis4, -mvis3, -mvis2 and -mvis */
-  if (TARGET_VIS4B)
-    target_flags |= MASK_VIS4 | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
+  /* -mvis4 implies -mvis3b, -mvis3, -mvis2 and -mvis.  */
+  if (TARGET_VIS4)
+    target_flags |= MASK_VIS3B | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4, -mvis4b, -mfmaf and -mfsmuld if
-     FPU is disabled.  */
+  /* -mvis4b implies -mvis4, -mvis3b, -mvis3, -mvis2 and -mvis */
+  if (TARGET_VIS4B)
+    target_flags |= MASK_VIS4 | MASK_VIS3B | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
+
+  /* Don't allow -mvis, -mvis2, -mvis3, -mvis3b, -mvis4, -mvis4b, -mfmaf and
+     -mfsmuld if FPU is disabled.  */
   if (!TARGET_FPU)
-    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS4
-		      | MASK_VIS4B | MASK_FMAF | MASK_FSMULD);
+    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS3B
+		      | MASK_VIS4 | MASK_VIS4B | MASK_FMAF | MASK_FSMULD);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available; -m64 also implies v9.  */
@@ -11271,40 +11281,40 @@ sparc_vis_init_builtins (void)
   /* Pixel compare.  */
   if (TARGET_ARCH64)
     {
-      def_builtin_const ("__builtin_vis_fcmple16", CODE_FOR_fcmple16di_vis,
+      def_builtin_const ("__builtin_vis_fcmple16", CODE_FOR_fpcmple16di_vis,
 			 SPARC_BUILTIN_FCMPLE16, di_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmple32", CODE_FOR_fcmple32di_vis,
+      def_builtin_const ("__builtin_vis_fcmple32", CODE_FOR_fpcmple32di_vis,
 			 SPARC_BUILTIN_FCMPLE32, di_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fcmpne16", CODE_FOR_fcmpne16di_vis,
+      def_builtin_const ("__builtin_vis_fcmpne16", CODE_FOR_fpcmpne16di_vis,
 			 SPARC_BUILTIN_FCMPNE16, di_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmpne32", CODE_FOR_fcmpne32di_vis,
+      def_builtin_const ("__builtin_vis_fcmpne32", CODE_FOR_fpcmpne32di_vis,
 			 SPARC_BUILTIN_FCMPNE32, di_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fcmpgt16", CODE_FOR_fcmpgt16di_vis,
+      def_builtin_const ("__builtin_vis_fcmpgt16", CODE_FOR_fpcmpgt16di_vis,
 			 SPARC_BUILTIN_FCMPGT16, di_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmpgt32", CODE_FOR_fcmpgt32di_vis,
+      def_builtin_const ("__builtin_vis_fcmpgt32", CODE_FOR_fpcmpgt32di_vis,
 			 SPARC_BUILTIN_FCMPGT32, di_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fcmpeq16", CODE_FOR_fcmpeq16di_vis,
+      def_builtin_const ("__builtin_vis_fcmpeq16", CODE_FOR_fpcmpeq16di_vis,
 			 SPARC_BUILTIN_FCMPEQ16, di_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fcmpeq32di_vis,
+      def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fpcmpeq32di_vis,
 			 SPARC_BUILTIN_FCMPEQ32, di_ftype_v2si_v2si);
     }
   else
     {
-      def_builtin_const ("__builtin_vis_fcmple16", CODE_FOR_fcmple16si_vis,
+      def_builtin_const ("__builtin_vis_fcmple16", CODE_FOR_fpcmple16si_vis,
 			 SPARC_BUILTIN_FCMPLE16, si_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmple32", CODE_FOR_fcmple32si_vis,
+      def_builtin_const ("__builtin_vis_fcmple32", CODE_FOR_fpcmple32si_vis,
 			 SPARC_BUILTIN_FCMPLE32, si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fcmpne16", CODE_FOR_fcmpne16si_vis,
+      def_builtin_const ("__builtin_vis_fcmpne16", CODE_FOR_fpcmpne16si_vis,
 			 SPARC_BUILTIN_FCMPNE16, si_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmpne32", CODE_FOR_fcmpne32si_vis,
+      def_builtin_const ("__builtin_vis_fcmpne32", CODE_FOR_fpcmpne32si_vis,
 			 SPARC_BUILTIN_FCMPNE32, si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fcmpgt16", CODE_FOR_fcmpgt16si_vis,
+      def_builtin_const ("__builtin_vis_fcmpgt16", CODE_FOR_fpcmpgt16si_vis,
 			 SPARC_BUILTIN_FCMPGT16, si_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmpgt32", CODE_FOR_fcmpgt32si_vis,
+      def_builtin_const ("__builtin_vis_fcmpgt32", CODE_FOR_fpcmpgt32si_vis,
 			 SPARC_BUILTIN_FCMPGT32, si_ftype_v2si_v2si);
-      def_builtin_const ("__builtin_vis_fcmpeq16", CODE_FOR_fcmpeq16si_vis,
+      def_builtin_const ("__builtin_vis_fcmpeq16", CODE_FOR_fpcmpeq16si_vis,
 			 SPARC_BUILTIN_FCMPEQ16, si_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fcmpeq32si_vis,
+      def_builtin_const ("__builtin_vis_fcmpeq32", CODE_FOR_fpcmpeq32si_vis,
 			 SPARC_BUILTIN_FCMPEQ32, si_ftype_v2si_v2si);
     }
 
@@ -11447,10 +11457,6 @@ sparc_vis_init_builtins (void)
 
       def_builtin_const ("__builtin_vis_fmean16", CODE_FOR_fmean16_vis,
 			 SPARC_BUILTIN_FMEAN16, v4hi_ftype_v4hi_v4hi);
-      def_builtin_const ("__builtin_vis_fpadd64", CODE_FOR_fpadd64_vis,
-			 SPARC_BUILTIN_FPADD64, di_ftype_di_di);
-      def_builtin_const ("__builtin_vis_fpsub64", CODE_FOR_fpsub64_vis,
-			 SPARC_BUILTIN_FPSUB64, di_ftype_di_di);
 
       def_builtin_const ("__builtin_vis_fpadds16", CODE_FOR_ssaddv4hi3,
 			 SPARC_BUILTIN_FPADDS16, v4hi_ftype_v4hi_v4hi);
@@ -11468,29 +11474,6 @@ sparc_vis_init_builtins (void)
 			 SPARC_BUILTIN_FPSUBS32, v2si_ftype_v2si_v2si);
       def_builtin_const ("__builtin_vis_fpsubs32s", CODE_FOR_sssubv1si3,
 			 SPARC_BUILTIN_FPSUBS32S, v1si_ftype_v1si_v1si);
-
-      if (TARGET_ARCH64)
-	{
-	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fucmple8di_vis,
-			     SPARC_BUILTIN_FUCMPLE8, di_ftype_v8qi_v8qi);
-	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fucmpne8di_vis,
-			     SPARC_BUILTIN_FUCMPNE8, di_ftype_v8qi_v8qi);
-	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fucmpgt8di_vis,
-			     SPARC_BUILTIN_FUCMPGT8, di_ftype_v8qi_v8qi);
-	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fucmpeq8di_vis,
-			     SPARC_BUILTIN_FUCMPEQ8, di_ftype_v8qi_v8qi);
-	}
-      else
-	{
-	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fucmple8si_vis,
-			     SPARC_BUILTIN_FUCMPLE8, si_ftype_v8qi_v8qi);
-	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fucmpne8si_vis,
-			     SPARC_BUILTIN_FUCMPNE8, si_ftype_v8qi_v8qi);
-	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fucmpgt8si_vis,
-			     SPARC_BUILTIN_FUCMPGT8, si_ftype_v8qi_v8qi);
-	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fucmpeq8si_vis,
-			     SPARC_BUILTIN_FUCMPEQ8, si_ftype_v8qi_v8qi);
-	}
 
       def_builtin_const ("__builtin_vis_fhadds", CODE_FOR_fhaddsf_vis,
 			 SPARC_BUILTIN_FHADDS, sf_ftype_sf_sf);
@@ -11511,6 +11494,37 @@ sparc_vis_init_builtins (void)
 			 SPARC_BUILTIN_XMULX, di_ftype_di_di);
       def_builtin_const ("__builtin_vis_xmulxhi", CODE_FOR_xmulxhi_vis,
 			 SPARC_BUILTIN_XMULXHI, di_ftype_di_di);
+    }
+
+  if (TARGET_VIS3B)
+    {
+      def_builtin_const ("__builtin_vis_fpadd64", CODE_FOR_fpadd64_vis,
+			 SPARC_BUILTIN_FPADD64, di_ftype_di_di);
+      def_builtin_const ("__builtin_vis_fpsub64", CODE_FOR_fpsub64_vis,
+			 SPARC_BUILTIN_FPSUB64, di_ftype_di_di);
+
+      if (TARGET_ARCH64)
+	{
+	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fpcmpule8di_vis,
+			     SPARC_BUILTIN_FUCMPLE8, di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fpcmpne8di_vis,
+			     SPARC_BUILTIN_FUCMPNE8, di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fpcmpugt8di_vis,
+			     SPARC_BUILTIN_FUCMPGT8, di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fpcmpeq8di_vis,
+			     SPARC_BUILTIN_FUCMPEQ8, di_ftype_v8qi_v8qi);
+	}
+      else
+	{
+	  def_builtin_const ("__builtin_vis_fucmple8", CODE_FOR_fpcmpule8si_vis,
+			     SPARC_BUILTIN_FUCMPLE8, si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpne8", CODE_FOR_fpcmpne8si_vis,
+			     SPARC_BUILTIN_FUCMPNE8, si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpgt8", CODE_FOR_fpcmpugt8si_vis,
+			     SPARC_BUILTIN_FUCMPGT8, si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fucmpeq8", CODE_FOR_fpcmpeq8si_vis,
+			     SPARC_BUILTIN_FUCMPEQ8, si_ftype_v8qi_v8qi);
+	}
     }
 
   if (TARGET_VIS4)
@@ -13105,6 +13119,14 @@ sparc_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   return true;
 }
 
+/* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */
+
+static opt_machine_mode
+sparc_get_mask_mode (machine_mode)
+{
+  return Pmode;
+}
+
 /* Implement TARGET_FRAME_POINTER_REQUIRED.  */
 
 static bool
@@ -13679,43 +13701,20 @@ sparc_expand_conditional_move (machine_mode mode, rtx *operands)
 }
 
 /* Emit code to conditionally move a combination of OPERANDS[1] and OPERANDS[2]
-   into OPERANDS[0] in MODE, depending on the outcome of the comparison of
-   OPERANDS[4] and OPERANDS[5].  OPERANDS[3] is the operator of the condition.
-   FCODE is the machine code to be used for OPERANDS[3] and CCODE the machine
-   code to be used for the condition mask.  */
+   into OPERANDS[0] in MODE, depending on the mask in OPERANDS[3].  CODE is the
+   machine code to be used for the cmask instruction.  */
 
 void
-sparc_expand_vcond (machine_mode mode, rtx *operands, int ccode, int fcode)
+sparc_expand_vcond_mask (machine_mode mode, rtx *operands, int code)
 {
-  enum rtx_code code = signed_condition (GET_CODE (operands[3]));
-  rtx mask, cop0, cop1, fcmp, cmask, bshuf, gsr;
-
-  mask = gen_reg_rtx (Pmode);
-  cop0 = operands[4];
-  cop1 = operands[5];
-  if (code == LT || code == GE)
-    {
-      code = swap_condition (code);
-      std::swap (cop0, cop1);
-    }
-
-  gsr = gen_rtx_REG (DImode, SPARC_GSR_REG);
-
-  fcmp = gen_rtx_UNSPEC (Pmode,
-			 gen_rtvec (1, gen_rtx_fmt_ee (code, mode, cop0, cop1)),
-			 fcode);
-
-  cmask = gen_rtx_UNSPEC (DImode,
-			  gen_rtvec (2, mask, gsr),
-			  ccode);
-
-  bshuf = gen_rtx_UNSPEC (mode,
-			  gen_rtvec (3, operands[1], operands[2], gsr),
-			  UNSPEC_BSHUFFLE);
-
-  emit_insn (gen_rtx_SET (mask, fcmp));
+  rtx gsr = gen_rtx_REG (DImode, SPARC_GSR_REG);
+  rtx cmask = gen_rtx_UNSPEC (DImode,
+			      gen_rtvec (2, operands[3], gsr),
+			      code);
+  rtx bshuf = gen_rtx_UNSPEC (mode,
+			      gen_rtvec (3, operands[1], operands[2], gsr),
+			      UNSPEC_BSHUFFLE);
   emit_insn (gen_rtx_SET (gsr, cmask));
-
   emit_insn (gen_rtx_SET (operands[0], bshuf));
 }
 

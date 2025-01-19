@@ -4,7 +4,7 @@
 ;; Definitions for side 1, cross n
 
 ;; Scheduling description for TI C6X.
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.
 ;;
@@ -237,7 +237,7 @@
 ;; Definitions for side 2, cross n
 
 ;; Scheduling description for TI C6X.
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.
 ;;
@@ -470,7 +470,7 @@
 ;; Definitions for side 1, cross y
 
 ;; Scheduling description for TI C6X.
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.
 ;;
@@ -703,7 +703,7 @@
 ;; Definitions for side 2, cross y
 
 ;; Scheduling description for TI C6X.
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.
 ;;

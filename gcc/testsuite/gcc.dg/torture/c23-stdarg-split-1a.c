@@ -35,3 +35,5 @@ main ()
   h7 ((struct s) {}, 0.0, 1, 2.0, 3, 4.0, 5, 6.0, 7, 8.0, 9);
   exit (0);
 }
+
+/* { dg-warning "'va_start' macro used with additional arguments other than identifier of the last named argument" "" { target *-*-* } 0 } */

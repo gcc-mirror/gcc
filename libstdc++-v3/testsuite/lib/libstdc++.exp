@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001-2024 Free Software Foundation, Inc.
+# Copyright (C) 2001-2025 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@ load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib wrapper.exp
 load_gcc_lib target-utils.exp
+load_gcc_lib dg-test-cleanup.exp
 
 # Useful for debugging.  Pass the name of a variable and the verbosity
 # threshold (number of -v's on the command line).

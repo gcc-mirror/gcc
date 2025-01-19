@@ -1,9 +1,7 @@
-// REQUIRED_ARGS: -de
-
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/deprecate1553.d(18): Deprecation: cannot use `foreach_reverse` with a delegate
+fail_compilation/deprecate1553.d(16): Error: cannot use `foreach_reverse` with a delegate
 ---
 */
 

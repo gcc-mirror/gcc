@@ -1,5 +1,5 @@
 /* Definitions for Linux-based systems with libraries in ELF format.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

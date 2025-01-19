@@ -1,7 +1,7 @@
 /* Write and read the cgraph to the memory mapped representation of a
    .o file.
 
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -97,6 +96,8 @@ lto_symtab_encoder_delete (lto_symtab_encoder_t encoder)
    encoder->nodes.release ();
    if (encoder->map)
      delete encoder->map;
+   if (encoder->order_remap)
+     delete encoder->order_remap;
    free (encoder);
 }
 
@@ -113,7 +114,7 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
 
   if (!encoder->map)
     {
-      lto_encoder_entry entry = {node, false, false, false};
+      lto_encoder_entry entry (node);
 
       ref = encoder->nodes.length ();
       encoder->nodes.safe_push (entry);
@@ -123,7 +124,7 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
   size_t *slot = encoder->map->get (node);
   if (!slot || !*slot)
     {
-      lto_encoder_entry entry = {node, false, false, false};
+      lto_encoder_entry entry (node);
       ref = encoder->nodes.length ();
       if (!slot)
         encoder->map->put (node, ref + 1);
@@ -142,7 +143,6 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
 			        symtab_node *node)
 {
   int index;
-  lto_encoder_entry last_node;
 
   size_t *slot = encoder->map->get (node);
   if (slot == NULL || !*slot)
@@ -153,7 +153,7 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
 
   /* Remove from vector. We do this by swapping node with the last element
      of the vector.  */
-  last_node = encoder->nodes.pop ();
+  lto_encoder_entry last_node = encoder->nodes.pop ();
   if (last_node.node != node)
     {
       bool existed = encoder->map->put (last_node.node, index + 1);
@@ -168,6 +168,15 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
   return true;
 }
 
+/* Return TRUE if the NODE and its clones are always inlined.  */
+
+bool
+lto_symtab_encoder_only_for_inlining_p (lto_symtab_encoder_t encoder,
+					struct cgraph_node *node)
+{
+  int index = lto_symtab_encoder_lookup (encoder, node);
+  return encoder->nodes[index].only_for_inlining;
+}
 
 /* Return TRUE if we should encode the body of NODE (if any).  */
 
@@ -177,17 +186,6 @@ lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t encoder,
 {
   int index = lto_symtab_encoder_lookup (encoder, node);
   return encoder->nodes[index].body;
-}
-
-/* Specify that we encode the body of NODE in this partition.  */
-
-static void
-lto_set_symtab_encoder_encode_body (lto_symtab_encoder_t encoder,
-				    struct cgraph_node *node)
-{
-  int index = lto_symtab_encoder_encode (encoder, node);
-  gcc_checking_assert (encoder->nodes[index].node == node);
-  encoder->nodes[index].body = true;
 }
 
 /* Return TRUE if we should encode initializer of NODE (if any).  */
@@ -408,7 +406,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   streamer_write_enum (ob->main_stream, LTO_symtab_tags, LTO_symtab_last_tag,
 		       tag);
-  streamer_write_hwi_stream (ob->main_stream, node->order);
+  int output_order = *encoder->order_remap->get (node->order);
+  streamer_write_hwi_stream (ob->main_stream, output_order);
 
   /* In WPA mode, we only output part of the call-graph.  Also, we
      fake cgraph node attributes.  There are two cases that we care.
@@ -551,8 +550,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->merged_extern_inline, 1);
   bp_pack_value (&bp, node->thunk, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
-  bp_pack_value (&bp, node->declare_variant_alt, 1);
-  bp_pack_value (&bp, node->calls_declare_variant_alt, 1);
+  bp_pack_value (&bp, node->has_omp_variant_constructs, 1);
 
   /* Stream thunk info always because we use it in
      ipa_polymorphic_call_context::ipa_polymorphic_call_context
@@ -605,7 +603,8 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
 
   streamer_write_enum (ob->main_stream, LTO_symtab_tags, LTO_symtab_last_tag,
 		       LTO_symtab_variable);
-  streamer_write_hwi_stream (ob->main_stream, node->order);
+  int output_order = *encoder->order_remap->get (node->order);
+  streamer_write_hwi_stream (ob->main_stream, output_order);
   lto_output_var_decl_ref (ob->decl_state, ob->main_stream, node->decl);
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->externally_visible, 1);
@@ -782,9 +781,6 @@ output_refs (lto_symtab_encoder_t encoder)
 	  for (int i = 0; node->iterate_reference (i, ref); i++)
 	    lto_output_ref (ob, ref, encoder);
 	}
-      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
-	if (cnode->declare_variant_alt)
-	  omp_lto_output_declare_variant_alt (ob, cnode, encoder);
     }
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -797,13 +793,28 @@ output_refs (lto_symtab_encoder_t encoder)
 
 static void
 add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
-	     bool include_body)
+	     bool include_body, bool not_inlined)
 {
   if (node->clone_of)
-    add_node_to (encoder, node->clone_of, include_body);
+    add_node_to (encoder, node->clone_of, include_body, not_inlined);
+
+  int index = lto_symtab_encoder_encode (encoder, node);
+  gcc_checking_assert (encoder->nodes[index].node == node);
+
   if (include_body)
-    lto_set_symtab_encoder_encode_body (encoder, node);
-  lto_symtab_encoder_encode (encoder, node);
+    encoder->nodes[index].body = true;
+  if (not_inlined)
+    encoder->nodes[index].only_for_inlining = false;
+}
+
+/* Add NODE into encoder as well as nodes it is cloned from.
+   Do it in a way so clones appear first.  */
+
+static void
+add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
+	     bool include_body)
+{
+  add_node_to (encoder, node, include_body, include_body && !node->inlined_to);
 }
 
 /* Add all references in NODE to encoders.  */
@@ -1243,8 +1254,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->merged_extern_inline = bp_unpack_value (bp, 1);
   node->thunk = bp_unpack_value (bp, 1);
   node->parallelized_function = bp_unpack_value (bp, 1);
-  node->declare_variant_alt = bp_unpack_value (bp, 1);
-  node->calls_declare_variant_alt = bp_unpack_value (bp, 1);
+  node->has_omp_variant_constructs = bp_unpack_value (bp, 1);
   *has_thunk_info = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
@@ -1654,9 +1664,6 @@ input_refs (class lto_input_block *ib,
 	  input_ref (ib, node, nodes);
 	  count--;
 	}
-      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
-	if (cnode->declare_variant_alt)
-	  omp_lto_input_declare_variant_alt (ib, cnode, nodes);
     }
 }
 
@@ -2099,7 +2106,7 @@ output_cgraph_opt_summary (void)
 	  output_node_opt_summary (ob, cnode, encoder);
 	}
     }
-  produce_asm (ob, NULL);
+  produce_asm (ob);
   destroy_output_block (ob);
 }
 

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the EPIPHANY cpu.
-   Copyright (C) 1994-2024 Free Software Foundation, Inc.
+   Copyright (C) 1994-2025 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -3044,5 +3044,8 @@ epiphany_starting_frame_offset (void)
 {
   return epiphany_stack_offset;
 }
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "Epiphany"
 
 struct gcc_target targetm = TARGET_INITIALIZER;

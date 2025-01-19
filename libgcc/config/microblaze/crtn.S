@@ -1,7 +1,7 @@
 /* crtn.s for __init, __fini
    This file supplies the epilogue for __init and __fini routines 
 
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 

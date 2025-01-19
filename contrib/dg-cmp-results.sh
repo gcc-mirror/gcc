@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2006-2024 Free Software Foundation, Inc.
+# Copyright (C) 2006-2025 Free Software Foundation, Inc.
 #
 # Analyze changes in GCC DejaGNU test logs for binutils, gcc, gdb, etc.
 # Original version written in 2005 by James Lemke <jwlemke@wasabisystems.com>.

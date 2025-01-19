@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
-# Copyright (C) 2009-2024 Free Software Foundation, Inc.
+# Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -513,6 +513,7 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/a-numeri.o	\
  ada/libgnat/ada.o	\
  ada/libgnat/g-byorma.o	\
+ ada/libgnat/g-cstyin.o	\
  ada/libgnat/g-heasor.o	\
  ada/libgnat/g-htable.o	\
  ada/libgnat/g-spchge.o	\
@@ -520,6 +521,7 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/g-table.o	\
  ada/libgnat/g-u3spch.o	\
  ada/libgnat/i-c.o	\
+ ada/libgnat/i-cstrin.o	\
  ada/libgnat/interfac.o	\
  ada/libgnat/s-addope.o	\
  ada/libgnat/s-addima.o \
@@ -692,9 +694,11 @@ GNATBIND_OBJS +=  \
  ada/libgnat/a-numeri.o   \
  ada/libgnat/ada.o        \
  ada/libgnat/g-byorma.o   \
+ ada/libgnat/g-cstyin.o   \
  ada/libgnat/g-hesora.o   \
  ada/libgnat/g-htable.o   \
  ada/libgnat/i-c.o	      \
+ ada/libgnat/i-cstrin.o   \
  ada/libgnat/interfac.o   \
  ada/libgnat/s-addope.o   \
  ada/libgnat/s-assert.o   \
@@ -793,7 +797,7 @@ gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS)
 	+$(GCC_LINK) -o $@ $(CFLAGS) ada/b_gnatb.o $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(GNATLIB)
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink
-gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
+gnattools: $(CONFIG_H) prefix.o force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 
@@ -823,10 +827,14 @@ gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 gnattools-cross-mv:
 	$(GNATTOOLS_CROSS_MV)
 
+# gnatbind$(exeext) is a prerequisite of the ada target and
+# thus needs to be copied instead of moved.
 GNATTOOLS_CROSS_MV=\
-  for tool in $(ADA_TOOLS) ; do \
-    if [ -f $$tool$(exeext) ] ; \
-    then \
+  if [ -f gnatbind$(exeext) ] ; then \
+    $(CP) gnatbind$(exeext) gnatbind-cross$(exeext); \
+  fi; \
+  for tool in $(filter-out gnatbind, $(ADA_TOOLS)) ; do \
+    if [ -f $$tool$(exeext) ] ; then \
       $(MV) $$tool$(exeext) $$tool-cross$(exeext); \
     fi; \
   done

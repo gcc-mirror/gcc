@@ -1,5 +1,5 @@
 /* Subroutines for log output for AVR 8-bit microcontrollers.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
    This file is part of GCC.
@@ -76,6 +76,10 @@ avr_log_t avr_log;
 
 /* The worker function implementing the %-codes */
 static void avr_log_vadump (FILE*, const char*, va_list);
+
+/* Forward to fprintf for convenience.  Return the number of consumed format
+   chars after a %-code, or 0 if unrecognized and nothing consumed.  */
+static int avr_forward_to_printf (FILE*, const char*, va_list);
 
 /* Wrapper for avr_log_vadump.  If STREAM is NULL we are called by avr_dump,
    i.e. output to dump_file if available.  The 2nd argument is __FUNCTION__.
@@ -155,14 +159,6 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
 		else
 		  print_node_brief (file, "", t, 3);
 	      }
-	      break;
-
-	    case 'd':
-	      fprintf (file, "%d", va_arg (ap, int));
-	      break;
-
-	    case 'x':
-	      fprintf (file, "%x", va_arg (ap, int));
 	      break;
 
 	    case 'b':
@@ -258,11 +254,18 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
 	      abort();
 
 	    default:
-	      /* Unknown %-code: Stop printing */
-
-	      fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
-	      fmt = "";
-
+	      int n_used = avr_forward_to_printf (file, fmt - 1, ap);
+	      if (n_used > 0)
+		{
+		  // "-1" due to "*fmt++" above.
+		  fmt += n_used - 1;
+		}
+	      else
+		{
+		  // Unknown %-code: Stop printing.
+		  fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
+		  fmt = "";
+		}
 	      break;
 	    }
 	  break; /* % */
@@ -270,6 +273,63 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
     }
 
   fflush (file);
+}
+
+
+#define IS_INTC(c) (c == 'd' || c == 'x' || c == 'X')
+
+// Consume FMTs like:  %x  %4x  %04x  %*x  %0*x
+// and similar for 'd' or 'ld' or 'X' instead of 'x'.
+
+static int
+avr_forward_to_printf (FILE *file, const char* const fmt, va_list ap)
+{
+  const char *p = fmt;
+  bool len_p = false;
+
+  // Optional fill
+  p += p[0] == '0' || p[0] == ' ';
+
+  // optional length
+  if (p[0] >= '1' && p[0] <= '9')
+    ++p;
+  else if (p[0] == '*')
+    ++p, len_p = true;
+
+  // Type
+  const bool long_p = p[0] == 'l';
+
+  if (IS_INTC (p[0])
+      || (long_p && IS_INTC (p[1])))
+    {
+      p += 1 + long_p;
+
+      const int n_used = (int) (p - fmt);
+
+      char xfm[10] = { '%' };
+      memcpy (xfm + 1, fmt, n_used);
+      xfm[1 + n_used] = '\0';
+
+      if (len_p)
+	{
+	  const int len = va_arg (ap, int);
+	  if (long_p)
+	    fprintf (file, xfm, len, va_arg (ap, long));
+	  else
+	    fprintf (file, xfm, len, va_arg (ap, int));
+	}
+      else
+	{
+	  if (long_p)
+	    fprintf (file, xfm, va_arg (ap, long));
+	  else
+	    fprintf (file, xfm, va_arg (ap, int));
+	}
+
+      return n_used;
+    }
+
+  return 0;
 }
 
 
@@ -282,17 +342,17 @@ avr_log_set_avr_log (void)
   bool all = TARGET_ALL_DEBUG != 0;
 
   if (all)
-    avr_log_details = "all";
+    avropt_log_details = "all";
 
-  if (all || avr_log_details)
+  if (all || avropt_log_details)
     {
       /* Adding , at beginning and end of string makes searching easier.  */
 
-      char *str = (char*) alloca (3 + strlen (avr_log_details));
+      char *str = (char*) alloca (3 + strlen (avropt_log_details));
       bool info;
 
       str[0] = ',';
-      strcat (stpcpy (str+1, avr_log_details), ",");
+      strcat (stpcpy (str+1, avropt_log_details), ",");
 
       all |= strstr (str, ",all,") != NULL;
       info = strstr (str, ",?,") != NULL;

@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-O2 -fdump-tree-forwprop2-details" } */
 /* { dg-additional-options "-mbmi" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } */
 /* { dg-additional-options "-march=rv64gc_zbb" { target { rv64 } } } */

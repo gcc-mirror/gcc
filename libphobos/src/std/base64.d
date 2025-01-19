@@ -299,9 +299,10 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
     /**
      * ditto
      */
-    char[] encode(R1, R2)(R1 source, R2 buffer) if (!isArray!R1 && isInputRange!R1 &&
-                                                    is(ElementType!R1 : ubyte) && hasLength!R1 &&
-                                                    is(R2 == char[]))
+    char[] encode(R1, R2)(R1 source, R2 buffer)
+    if (!isArray!R1 && isInputRange!R1 &&
+        is(ElementType!R1 : ubyte) && hasLength!R1 &&
+        is(R2 == char[]))
     in
     {
         assert(buffer.length >= encodeLength(source.length), "Insufficient buffer for encoding");
@@ -474,8 +475,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * ditto
      */
     size_t encode(R1, R2)(R1 source, auto ref R2 range)
-        if (!isArray!R1 && isInputRange!R1 && is(ElementType!R1 : ubyte) &&
-            hasLength!R1 && !is(R2 == char[]) && isOutputRange!(R2, char))
+    if (!isArray!R1 && isInputRange!R1 && is(ElementType!R1 : ubyte) &&
+        hasLength!R1 && !is(R2 == char[]) && isOutputRange!(R2, char))
     {
         immutable srcLen = source.length;
         if (srcLen == 0)
@@ -559,7 +560,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      *  A newly-allocated `char[]` buffer containing the encoded string.
      */
     @safe
-    pure char[] encode(Range)(Range source) if (isArray!Range && is(ElementType!Range : ubyte))
+    pure char[] encode(Range)(Range source)
+    if (isArray!Range && is(ElementType!Range : ubyte))
     {
         return encode(source, new char[encodeLength(source.length)]);
     }
@@ -575,8 +577,9 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
     /**
      * ditto
      */
-    char[] encode(Range)(Range source) if (!isArray!Range && isInputRange!Range &&
-                                           is(ElementType!Range : ubyte) && hasLength!Range)
+    char[] encode(Range)(Range source)
+    if (!isArray!Range && isInputRange!Range &&
+        is(ElementType!Range : ubyte) && hasLength!Range)
     {
         return encode(source, new char[encodeLength(source.length)]);
     }
@@ -592,8 +595,9 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * Note: This struct is not intended to be created in user code directly;
      * use the $(LREF encoder) function instead.
      */
-    struct Encoder(Range) if (isInputRange!Range && (is(ElementType!Range : const(ubyte)[]) ||
-                                                     is(ElementType!Range : const(char)[])))
+    struct Encoder(Range)
+    if (isInputRange!Range && (is(ElementType!Range : const(ubyte)[]) ||
+        is(ElementType!Range : const(char)[])))
     {
       private:
         Range  range_;
@@ -702,7 +706,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * Note: This struct is not intended to be created in user code directly;
      * use the $(LREF encoder) function instead.
      */
-    struct Encoder(Range) if (isInputRange!Range && is(ElementType!Range : ubyte))
+    struct Encoder(Range)
+    if (isInputRange!Range && is(ElementType!Range : ubyte))
     {
       private:
         Range range_;
@@ -884,7 +889,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * }
      * -----
      */
-    Encoder!(Range) encoder(Range)(Range range) if (isInputRange!Range)
+    Encoder!(Range) encoder(Range)(Range range)
+    if (isInputRange!Range)
     {
         return typeof(return)(range);
     }
@@ -981,8 +987,9 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      *  base alphabet of the current Base64 encoding scheme.
      */
     @trusted
-    pure ubyte[] decode(R1, R2)(in R1 source, return scope R2 buffer) if (isArray!R1 && is(ElementType!R1 : dchar) &&
-                                                             is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
+    pure ubyte[] decode(R1, R2)(in R1 source, return scope R2 buffer)
+    if (isArray!R1 && is(ElementType!R1 : dchar) &&
+        is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
     in
     {
         assert(buffer.length >= realDecodeLength(source), "Insufficient buffer for decoding");
@@ -1065,9 +1072,10 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
     /**
      * ditto
      */
-    ubyte[] decode(R1, R2)(R1 source, R2 buffer) if (!isArray!R1 && isInputRange!R1 &&
-                                                     is(ElementType!R1 : dchar) && hasLength!R1 &&
-                                                     is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
+    ubyte[] decode(R1, R2)(R1 source, R2 buffer)
+    if (!isArray!R1 && isInputRange!R1 &&
+        is(ElementType!R1 : dchar) && hasLength!R1 &&
+        is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
     in
     {
         assert(buffer.length >= decodeLength(source.length), "Insufficient buffer for decoding");
@@ -1156,8 +1164,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      *  base alphabet of the current Base64 encoding scheme.
      */
     size_t decode(R1, R2)(in R1 source, auto ref R2 range)
-        if (isArray!R1 && is(ElementType!R1 : dchar) &&
-            !is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
+    if (isArray!R1 && is(ElementType!R1 : dchar) &&
+        !is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
     out(result)
     {
         immutable expect = realDecodeLength(source);
@@ -1244,8 +1252,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * ditto
      */
     size_t decode(R1, R2)(R1 source, auto ref R2 range)
-        if (!isArray!R1 && isInputRange!R1 && is(ElementType!R1 : dchar) &&
-            hasLength!R1 && !is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
+    if (!isArray!R1 && isInputRange!R1 && is(ElementType!R1 : dchar) &&
+        hasLength!R1 && !is(R2 == ubyte[]) && isOutputRange!(R2, ubyte))
     out(result)
     {
         // @@@BUG@@@ Workaround for DbC problem.
@@ -1334,7 +1342,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      *  A newly-allocated `ubyte[]` buffer containing the decoded string.
      */
     @safe
-    pure ubyte[] decode(Range)(Range source) if (isArray!Range && is(ElementType!Range : dchar))
+    pure ubyte[] decode(Range)(Range source)
+    if (isArray!Range && is(ElementType!Range : dchar))
     {
         return decode(source, new ubyte[decodeLength(source.length)]);
     }
@@ -1350,8 +1359,9 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
     /**
      * ditto
      */
-    ubyte[] decode(Range)(Range source) if (!isArray!Range && isInputRange!Range &&
-                                            is(ElementType!Range : dchar) && hasLength!Range)
+    ubyte[] decode(Range)(Range source)
+    if (!isArray!Range && isInputRange!Range &&
+        is(ElementType!Range : dchar) && hasLength!Range)
     {
         return decode(source, new ubyte[decodeLength(source.length)]);
     }
@@ -1367,8 +1377,9 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * Note: This struct is not intended to be created in user code directly;
      * use the $(LREF decoder) function instead.
      */
-    struct Decoder(Range) if (isInputRange!Range && (is(ElementType!Range : const(char)[]) ||
-                                                     is(ElementType!Range : const(ubyte)[])))
+    struct Decoder(Range)
+    if (isInputRange!Range && (is(ElementType!Range : const(char)[]) ||
+        is(ElementType!Range : const(ubyte)[])))
     {
       private:
         Range   range_;
@@ -1492,7 +1503,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * Note: This struct is not intended to be created in user code directly;
      * use the $(LREF decoder) function instead.
      */
-    struct Decoder(Range) if (isInputRange!Range && is(ElementType!Range : char))
+    struct Decoder(Range)
+    if (isInputRange!Range && is(ElementType!Range : char))
     {
       private:
         Range range_;
@@ -1683,7 +1695,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * }
      * -----
      */
-    Decoder!(Range) decoder(Range)(Range range) if (isInputRange!Range)
+    Decoder!(Range) decoder(Range)(Range range)
+    if (isInputRange!Range)
     {
         return typeof(return)(range);
     }

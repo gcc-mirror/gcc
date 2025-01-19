@@ -35986,7 +35986,6 @@ Tue Jan  1 17:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(mmix_asm_output_labelref): Revert condition for global symbol.
 	(mmix_print_operand): <case '+'>: Emit P for a likely branch.
 	(mmix_print_operand_punct_valid_p): A '+' is valid.
-
 
 Copyright (C) 2002 Free Software Foundation, Inc.
 

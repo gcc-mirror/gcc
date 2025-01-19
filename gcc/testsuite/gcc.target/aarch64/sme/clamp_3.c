@@ -2,6 +2,8 @@
 
 #include <arm_sme.h>
 
+#pragma GCC target "+sme2"
+
 #define TEST(TYPE)							\
   TYPE									\
   tied1_##TYPE(TYPE a, TYPE b, TYPE c) __arm_streaming			\

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2024 Free Software Foundation, Inc.
+// Copyright (C) 2005-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -46,8 +46,11 @@ namespace __gnu_pbds
   {
     namespace detail
     {
-      struct int_hash : public std::unary_function<int, size_t>
+      struct int_hash
       {
+	typedef size_t result_type;
+	typedef int argument_type;
+
 	inline size_t
         operator()(const int i) const
 	{ return (static_cast<size_t>(i)); }

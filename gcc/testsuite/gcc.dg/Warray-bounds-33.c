@@ -2,7 +2,6 @@
    an object of incomplete type
    { dg-do compile }
    { dg-options "-O2 -Wall" }  */
-/* { dg-skip-if "acessing data memory with program memory address" { "avr-*-*" } } */
 
 struct S
 {
@@ -30,7 +29,7 @@ void test_incomplete_enum (void)
 void test_func (void)
 {
   struct S *b = (struct S*)&f;
-  if (b->s)
+  if (b->s) /* { dg-warning "accessing data memory with program memory address.*" "" { target avr-*-* } } */
     f ();
 }
 

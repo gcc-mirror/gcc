@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Free Software Foundation, Inc.
+# Copyright (C) 2020-2025 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -28,7 +28,7 @@ Codepoint = int
 Range = Tuple[Codepoint, Codepoint]
 
 COPYRIGHT = (
-    "// Copyright (C) 2020-2024 Free Software Foundation, Inc.\n"
+    "// Copyright (C) 2020-2025 Free Software Foundation, Inc.\n"
     "\n"
     "// This file is part of GCC.\n"
     "\n"

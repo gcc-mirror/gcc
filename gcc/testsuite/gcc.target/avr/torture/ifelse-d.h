@@ -6,12 +6,12 @@
 #ifdef __OPTIMIZE__
 
 typedef __UINT32_TYPE__ u32;
-typedef __uint24 u24;
+__extension__ typedef __uint24 u24;
 typedef __UINT16_TYPE__ u16;
 typedef __UINT8_TYPE__ u8;
 
 typedef __INT32_TYPE__ i32;
-typedef __int24 i24;
+__extension__ typedef __int24 i24;
 typedef __INT16_TYPE__ i16;
 typedef __INT8_TYPE__ i8;
 

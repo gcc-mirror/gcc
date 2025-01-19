@@ -38,6 +38,7 @@ extern (C++) class Initializer : ASTNode
 {
     Loc loc;
     InitKind kind;
+    bool semanticDone = false; /// initializerSemantic has been run on this
 
     override DYNCAST dyncast() const
     {
@@ -51,38 +52,38 @@ extern (C++) class Initializer : ASTNode
         this.kind = kind;
     }
 
-    final inout(ErrorInitializer) isErrorInitializer() inout @nogc nothrow pure
+    final inout(ErrorInitializer) isErrorInitializer() inout @nogc nothrow pure @trusted
     {
         // Use void* cast to skip dynamic casting call
         return kind == InitKind.error ? cast(inout ErrorInitializer)cast(void*)this : null;
     }
 
-    final inout(VoidInitializer) isVoidInitializer() inout @nogc nothrow pure
+    final inout(VoidInitializer) isVoidInitializer() inout @nogc nothrow pure @trusted
     {
         return kind == InitKind.void_ ? cast(inout VoidInitializer)cast(void*)this : null;
     }
 
-    final inout(DefaultInitializer) isDefaultInitializer() inout @nogc nothrow pure
+    final inout(DefaultInitializer) isDefaultInitializer() inout @nogc nothrow pure @trusted
     {
         return kind == InitKind.default_ ? cast(inout DefaultInitializer)cast(void*)this : null;
     }
 
-    final inout(StructInitializer) isStructInitializer() inout @nogc nothrow pure
+    final inout(StructInitializer) isStructInitializer() inout @nogc nothrow pure @trusted
     {
         return kind == InitKind.struct_ ? cast(inout StructInitializer)cast(void*)this : null;
     }
 
-    final inout(ArrayInitializer) isArrayInitializer() inout @nogc nothrow pure
+    final inout(ArrayInitializer) isArrayInitializer() inout @nogc nothrow pure @trusted
     {
         return kind == InitKind.array ? cast(inout ArrayInitializer)cast(void*)this : null;
     }
 
-    final inout(ExpInitializer) isExpInitializer() inout @nogc nothrow pure
+    final inout(ExpInitializer) isExpInitializer() inout @nogc nothrow pure @trusted
     {
         return kind == InitKind.exp ? cast(inout ExpInitializer)cast(void*)this : null;
     }
 
-    final inout(CInitializer) isCInitializer() inout @nogc nothrow pure
+    final inout(CInitializer) isCInitializer() inout @nogc nothrow pure @trusted
     {
         return kind == InitKind.C_ ? cast(inout CInitializer)cast(void*)this : null;
     }
@@ -176,7 +177,6 @@ extern (C++) final class ArrayInitializer : Initializer
     Initializers value;     // of Initializer *'s
     uint dim;               // length of array being initialized
     Type type;              // type that array will be used to initialize
-    bool sem;               // true if semantic() is run
     bool isCarray;          // C array semantics
 
     extern (D) this(const ref Loc loc)
@@ -256,7 +256,6 @@ extern (C++) final class CInitializer : Initializer
 {
     DesigInits initializerList; /// initializer-list
     Type type;              /// type that array will be used to initialize
-    bool sem;               /// true if semantic() is run
 
     extern (D) this(const ref Loc loc)
     {

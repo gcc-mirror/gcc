@@ -1,5 +1,5 @@
 # Machine description for AArch64 architecture.
-#  Copyright (C) 2009-2024 Free Software Foundation, Inc.
+#  Copyright (C) 2009-2025 Free Software Foundation, Inc.
 #  Contributed by ARM Ltd.
 #
 #  This file is part of GCC.
@@ -55,6 +55,7 @@ aarch64-builtins.o: $(srcdir)/config/aarch64/aarch64-builtins.cc $(CONFIG_H) \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
   $(srcdir)/config/aarch64/aarch64-simd-builtins.def \
   $(srcdir)/config/aarch64/aarch64-simd-builtin-types.def \
+  $(srcdir)/config/aarch64/aarch64-simd-pragma-builtins.def \
   aarch64-builtin-iterators.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/aarch64/aarch64-builtins.cc

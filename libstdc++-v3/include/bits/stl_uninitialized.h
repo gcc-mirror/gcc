@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001-2024 Free Software Foundation, Inc.
+// Copyright (C) 2001-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1248,7 +1248,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Also known as is_trivially_relocatable.
   template<typename _Tp, typename = void>
     struct __is_bitwise_relocatable
-    : is_trivial<_Tp> { };
+    : __bool_constant<__is_trivial(_Tp)>
+    { };
 
   template <typename _InputIterator, typename _ForwardIterator,
 	    typename _Allocator>

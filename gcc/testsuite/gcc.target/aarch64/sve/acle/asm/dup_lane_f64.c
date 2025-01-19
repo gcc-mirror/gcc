@@ -5,7 +5,7 @@
 /*
 ** dup_lane_x0_f64_tied1:
 **	mov	(z[0-9]+\.d), x0
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_ZX (dup_lane_x0_f64_tied1, svfloat64_t, uint64_t,
@@ -15,7 +15,7 @@ TEST_UNIFORM_ZX (dup_lane_x0_f64_tied1, svfloat64_t, uint64_t,
 /*
 ** dup_lane_x0_f64_untied:
 **	mov	(z[0-9]+\.d), x0
-**	tbl	z0\.d, z1\.d, \1
+**	tbl	z0\.d, {z1\.d}, \1
 **	ret
 */
 TEST_UNIFORM_ZX (dup_lane_x0_f64_untied, svfloat64_t, uint64_t,
@@ -43,7 +43,7 @@ TEST_UNIFORM_Z (dup_lane_0_f64_untied, svfloat64_t,
 /*
 ** dup_lane_15_f64:
 **	mov	(z[0-9]+\.d), #15
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_15_f64, svfloat64_t,
@@ -53,7 +53,7 @@ TEST_UNIFORM_Z (dup_lane_15_f64, svfloat64_t,
 /*
 ** dup_lane_16_f64:
 **	mov	(z[0-9]+\.d), #16
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_16_f64, svfloat64_t,
@@ -63,7 +63,7 @@ TEST_UNIFORM_Z (dup_lane_16_f64, svfloat64_t,
 /*
 ** dup_lane_31_f64:
 **	mov	(z[0-9]+\.d), #31
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_31_f64, svfloat64_t,
@@ -73,7 +73,7 @@ TEST_UNIFORM_Z (dup_lane_31_f64, svfloat64_t,
 /*
 ** dup_lane_32_f64:
 **	mov	(z[0-9]+\.d), #32
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_32_f64, svfloat64_t,
@@ -83,7 +83,7 @@ TEST_UNIFORM_Z (dup_lane_32_f64, svfloat64_t,
 /*
 ** dup_lane_63_f64:
 **	mov	(z[0-9]+\.d), #63
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_63_f64, svfloat64_t,
@@ -93,7 +93,7 @@ TEST_UNIFORM_Z (dup_lane_63_f64, svfloat64_t,
 /*
 ** dup_lane_64_f64:
 **	mov	(z[0-9]+\.d), #64
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_64_f64, svfloat64_t,
@@ -103,7 +103,7 @@ TEST_UNIFORM_Z (dup_lane_64_f64, svfloat64_t,
 /*
 ** dup_lane_255_f64:
 **	mov	(z[0-9]+\.d), #255
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_255_f64, svfloat64_t,

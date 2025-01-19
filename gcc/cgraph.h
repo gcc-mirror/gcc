@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -121,10 +121,10 @@ public:
       used_from_other_partition (false), in_other_partition (false),
       address_taken (false), in_init_priority_hash (false),
       need_lto_streaming (false), offloadable (false), ifunc_resolver (false),
-      order (false), next_sharing_asm_name (NULL),
+      order (-1), next_sharing_asm_name (NULL),
       previous_sharing_asm_name (NULL), same_comdat_group (NULL), ref_list (),
       alias_target (NULL), lto_file_data (NULL), aux (NULL),
-      x_comdat_group (NULL_TREE), x_section (NULL)
+      x_comdat_group (NULL_TREE), x_section (NULL), m_uid (-1)
   {}
 
   /* Return name.  */
@@ -431,6 +431,10 @@ public:
   /* Return true if ONE and TWO are part of the same COMDAT group.  */
   inline bool in_same_comdat_group_p (symtab_node *target);
 
+  /* Return true if symbol is known to be nonzero, assume that
+     flag_delete_null_pointer_checks is equal to delete_null_pointer_checks.  */
+  bool nonzero_address (bool delete_null_pointer_checks);
+
   /* Return true if symbol is known to be nonzero.  */
   bool nonzero_address ();
 
@@ -487,6 +491,12 @@ public:
 
   /* Perform internal consistency checks, if they are enabled.  */
   static inline void checking_verify_symtab_nodes (void);
+
+  /* Get unique identifier of the node.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
 
   /* Type of the symbol.  */
   ENUM_BITFIELD (symtab_type) type : 8;
@@ -664,6 +674,9 @@ protected:
 				      void *data,
 				      bool include_overwrite);
 private:
+  /* Unique id of the node.  */
+  int m_uid;
+
   /* Workers for set_section.  */
   static bool set_section_from_string (symtab_node *n, void *s);
   static bool set_section_from_node (symtab_node *n, void *o);
@@ -878,7 +891,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   friend class symbol_table;
 
   /* Constructor.  */
-  explicit cgraph_node (int uid)
+  explicit cgraph_node ()
     : symtab_node (SYMTAB_FUNCTION), callees (NULL), callers (NULL),
       indirect_calls (NULL),
       next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
@@ -897,10 +910,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       split_part (false), indirect_call_target (false), local (false),
       versionable (false), can_change_signature (false),
       redefined_extern_inline (false), tm_may_enter_irr (false),
-      ipcp_clone (false), declare_variant_alt (false),
-      calls_declare_variant_alt (false), gc_candidate (false),
-      called_by_ifunc_resolver (false),
-      m_uid (uid), m_summary_id (-1)
+      ipcp_clone (false), gc_candidate (false),
+      called_by_ifunc_resolver (false), has_omp_variant_constructs (false),
+      m_summary_id (-1)
   {}
 
   /* Remove the node from cgraph and all inline clones inlined into it.
@@ -1301,12 +1313,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
     dump_cgraph (stderr);
   }
 
-  /* Get unique identifier of the node.  */
-  inline int get_uid ()
-  {
-    return m_uid;
-  }
-
   /* Get summary id of the node.  */
   inline int get_summary_id ()
   {
@@ -1490,21 +1496,16 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned tm_may_enter_irr : 1;
   /* True if this was a clone created by ipa-cp.  */
   unsigned ipcp_clone : 1;
-  /* True if this is the deferred declare variant resolution artificial
-     function.  */
-  unsigned declare_variant_alt : 1;
-  /* True if the function calls declare_variant_alt functions.  */
-  unsigned calls_declare_variant_alt : 1;
   /* True if the function should only be emitted if it is used.  This flag
      is set for local SIMD clones when they are created and cleared if the
      vectorizer uses them.  */
   unsigned gc_candidate : 1;
   /* Set if the function is called by an IFUNC resolver.  */
   unsigned called_by_ifunc_resolver : 1;
+  /* True if the function contains unresolved OpenMP metadirectives.  */
+  unsigned has_omp_variant_constructs : 1;
 
 private:
-  /* Unique id of the node.  */
-  int m_uid;
 
   /* Summary id that is recycled.  */
   int m_summary_id;
@@ -2815,7 +2816,10 @@ symbol_table::register_symbol (symtab_node *node)
     nodes->previous = node;
   nodes = node;
 
-  node->order = order++;
+  nodes->m_uid = cgraph_max_uid++;
+
+  if (node->order == -1)
+    node->order = order++;
 }
 
 /* Register a top-level asm statement ASM_STR.  */

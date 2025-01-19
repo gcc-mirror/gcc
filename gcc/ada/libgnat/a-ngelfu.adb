@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,7 +116,7 @@ is
                return Sqrt (Left);
 
             else
-               A_Right := abs (Right);
+               A_Right := abs Right;
 
                --  If exponent is larger than one, compute integer exponen-
                --  tiation if possible, and evaluate fractional part with more

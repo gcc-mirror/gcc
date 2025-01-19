@@ -6902,8 +6902,6 @@
 	* lex.c: Remove superfluous include of cpplib.h.
 	(CONSTRAINT): Define without conditions.
 	(init_cp_pragma): Use c_register_pragma.
-
-
 
 Copyright (C) 2003 Free Software Foundation, Inc.
 

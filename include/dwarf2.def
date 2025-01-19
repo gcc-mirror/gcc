@@ -1,7 +1,7 @@
 /* -*- c -*-
    Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -364,6 +364,9 @@ DW_AT (DW_AT_export_symbols, 0x89)
 DW_AT (DW_AT_deleted, 0x8a)
 DW_AT (DW_AT_defaulted, 0x8b)
 DW_AT (DW_AT_loclists_base, 0x8c)
+/* DWARF 6.  */
+DW_AT (DW_AT_language_name, 0x90)
+DW_AT (DW_AT_language_version, 0x91)
 
 DW_AT_DUP (DW_AT_lo_user, 0x2000) /* Implementation-defined range start.  */
 DW_AT_DUP (DW_AT_hi_user, 0x3fff) /* Implementation-defined range end.  */

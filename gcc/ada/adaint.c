@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2025, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -3079,32 +3079,36 @@ __gnat_locate_exec (char *exec_name, char *path_val)
 /* Locate an executable using the Systems default PATH.  */
 
 char *
-__gnat_locate_exec_on_path (char *exec_name)
+__gnat_locate_exec_on_path (char *exec_name,
+				    int current_dir_on_windows ATTRIBUTE_UNUSED)
 {
   char *apath_val;
 
 #if defined (_WIN32)
   TCHAR *wpath_val = _tgetenv (_T("PATH"));
-  TCHAR *wapath_val;
-  /* In Win32 systems we expand the PATH as for XP environment
-     variables are not automatically expanded. We also prepend the
-     ".;" to the path to match normal NT path search semantics */
-
   #define EXPAND_BUFFER_SIZE 32767
-
-  wapath_val = (TCHAR *) alloca (EXPAND_BUFFER_SIZE);
-
-  wapath_val [0] = '.';
-  wapath_val [1] = ';';
-
-  DWORD res = ExpandEnvironmentStrings
-    (wpath_val, &wapath_val[2], EXPAND_BUFFER_SIZE - 2);
-
-  if (!res) wapath_val [0] = _T('\0');
-
   apath_val = (char *) alloca (EXPAND_BUFFER_SIZE);
 
-  WS2SC (apath_val, wapath_val, EXPAND_BUFFER_SIZE);
+  if (current_dir_on_windows) {
+    TCHAR *wapath_val;
+    /* In Win32 systems we expand the PATH as for XP environment
+      variables are not automatically expanded. We also prepend the
+      ".;" to the path to match normal NT path search semantics */
+
+    wapath_val = (TCHAR *) alloca (EXPAND_BUFFER_SIZE);
+
+    wapath_val [0] = '.';
+    wapath_val [1] = ';';
+
+    DWORD res = ExpandEnvironmentStrings
+      (wpath_val, &wapath_val[2], EXPAND_BUFFER_SIZE - 2);
+
+    if (!res) wapath_val [0] = _T('\0');
+
+    WS2SC (apath_val, wapath_val, EXPAND_BUFFER_SIZE);
+  } else {
+    WS2SC (apath_val, wpath_val, EXPAND_BUFFER_SIZE);
+  }
 
 #else
   const char *path_val = getenv ("PATH");

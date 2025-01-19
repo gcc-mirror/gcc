@@ -1,5 +1,5 @@
 /* RTL reader for GCC.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -326,6 +326,9 @@ apply_int_iterator (rtx x, unsigned int index, HOST_WIDE_INT value)
     case 'i':
     case 'n':
       XINT (x, index) = value;
+      break;
+    case 'L':
+      XLOC (x, index) = value;
       break;
     case 'w':
       XWINT (x, index) = value;
@@ -811,9 +814,14 @@ md_reader::handle_overloaded_name (rtx original, vec<mapping *> *iterators)
 	  pending_underscore_p = false;
 	}
 
-      /* Record an argument for ITERATOR.  */
-      iterators->safe_push (iterator);
-      tmp_oname.arg_types.safe_push (iterator->group->type);
+      /* Skip define_subst iterators, since define_substs are allowed to
+	 add new match_operands in their output templates.  */
+      if (iterator->group != &substs)
+	{
+	  /* Record an argument for ITERATOR.  */
+	  iterators->safe_push (iterator);
+	  tmp_oname.arg_types.safe_push (iterator->group->type);
+	}
     }
   if (base == copy)
     fatal_with_file_and_line ("no iterator attributes in name `%s'", name);
@@ -948,6 +956,7 @@ apply_iterators (rtx original, vec<rtx> *queue)
       /* We apply subst iterator after RTL-template is copied, as during
 	 subst-iterator processing, we could add an attribute to the
 	 RTL-template, and we don't want to do it in the original one.  */
+      bool add_oname = true;
       FOR_EACH_VEC_ELT (iterator_uses, i, iuse)
 	{
 	  v = iuse->iterator->current_value;
@@ -958,10 +967,14 @@ apply_iterators (rtx original, vec<rtx> *queue)
 	      current_iterator_name = iuse->iterator->name;
 	      iuse->iterator->group->apply_iterator (iuse->x, iuse->index,
 						     v->number);
+	      /* Only handle '@' overloading for the default value.
+		 See handle_overloaded_name for details.  */
+	      if (v != iuse->iterator->values)
+		add_oname = false;
 	    }
 	}
 
-      if (oname)
+      if (oname && add_oname)
 	add_overload_instance (oname, iterators, x);
 
       /* Add the new rtx to the end of the queue.  */
@@ -1672,7 +1685,6 @@ rtx_reader::read_rtx_code (const char *code_name)
   struct md_name name;
   rtx return_rtx;
   int c;
-  long reuse_id = -1;
 
   /* Linked list structure for making RTXs: */
   struct rtx_list
@@ -1681,6 +1693,8 @@ rtx_reader::read_rtx_code (const char *code_name)
       rtx value;		/* Value of this node.  */
     };
 
+#ifndef GENERATOR_FILE
+  long reuse_id = -1;
   /* Handle reuse_rtx ids e.g. "(0|scratch:DI)".  */
   if (ISDIGIT (code_name[0]))
     {
@@ -1696,10 +1710,12 @@ rtx_reader::read_rtx_code (const char *code_name)
       read_name (&name);
       unsigned idx = atoi (name.string);
       /* Look it up by ID.  */
-      gcc_assert (idx < m_reuse_rtx_by_id.length ());
+      if (idx >= m_reuse_rtx_by_id.length ())
+	fatal_with_file_and_line ("invalid reuse index %u", idx);
       return_rtx = m_reuse_rtx_by_id[idx];
       return return_rtx;
     }
+#endif
 
   /* Handle "const_double_zero".  */
   if (strcmp (code_name, "const_double_zero") == 0)
@@ -1727,12 +1743,14 @@ rtx_reader::read_rtx_code (const char *code_name)
   memset (return_rtx, 0, RTX_CODE_SIZE (code));
   PUT_CODE (return_rtx, code);
 
+#ifndef GENERATOR_FILE
   if (reuse_id != -1)
     {
       /* Store away for later reuse.  */
       m_reuse_rtx_by_id.safe_grow_cleared (reuse_id + 1, true);
       m_reuse_rtx_by_id[reuse_id] = return_rtx;
     }
+#endif
 
   /* Check for flags. */
   read_flags (return_rtx);
@@ -2048,6 +2066,7 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
     case 'n':
     case 'w':
     case 'p':
+    case 'L':
       {
 	/* Can be an iterator or an integer constant.  */
 	file_location loc = read_name (&name);

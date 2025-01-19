@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -86,11 +86,24 @@
 #define Pmode (TARGET_ABI64 ? DImode : SImode)
 #define STACK_SIZE_MODE Pmode
 
+/* We always have to maintain the '-msoft-stack' pointer, but the PTX "native"
+   stack pointer is handled implicitly at function level.  */
+#define STACK_SAVEAREA_MODE(LEVEL) \
+  (TARGET_SOFT_STACK ? Pmode \
+   : (LEVEL == SAVE_FUNCTION ? VOIDmode \
+      : Pmode))
+
 #include "nvptx-gen.h"
 
+/* There are no 'TARGET_PTX_3_1' and smaller conditionals: our baseline is
+   PTX ISA Version 3.1.  */
+#define TARGET_PTX_4_1 (ptx_version_option >= PTX_VERSION_4_1)
+#define TARGET_PTX_4_2 (ptx_version_option >= PTX_VERSION_4_2)
 #define TARGET_PTX_6_0 (ptx_version_option >= PTX_VERSION_6_0)
 #define TARGET_PTX_6_3 (ptx_version_option >= PTX_VERSION_6_3)
 #define TARGET_PTX_7_0 (ptx_version_option >= PTX_VERSION_7_0)
+#define TARGET_PTX_7_3 (ptx_version_option >= PTX_VERSION_7_3)
+#define TARGET_PTX_7_8 (ptx_version_option >= PTX_VERSION_7_8)
 
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { rv32 } } } */
+/* { dg-do compile { target { rv32 && { ! riscv_abi_e } } } } */
 /* { dg-options "-march=rv32gc_xtheadbb" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Os" "-Og" "-Oz" } } */
 

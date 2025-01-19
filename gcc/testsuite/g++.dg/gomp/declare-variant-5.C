@@ -74,7 +74,7 @@ struct E { int e; };
 
 void fn19 (E, int) {}
 
-#pragma omp declare variant (fn19)match(user={condition(0)})	// { dg-error "could not convert '0' from 'int' to 'E'" }
+#pragma omp declare variant (fn19)match(user={condition(0)})	// { dg-error {could not convert 'std::declval<int>\(\)' from 'int' to 'E'} }
 void fn20 (int, E) {}
 
 struct F { operator int () const { return 42; } int f; };
@@ -83,7 +83,7 @@ void fn21 (int, F) {}
 #pragma omp declare variant ( fn21 ) match (user = { condition ( 1 - 1 ) } )	// { dg-error "variant 'void fn21\\\(int, F\\\)' and base 'void fn22\\\(F, F\\\)' have incompatible types" }
 void fn22 (F, F) {}
 
-#pragma omp declare variant (fn19) match (user={condition(0)})		// { dg-error "could not convert '<anonymous>' from 'F' to 'E'" }
+#pragma omp declare variant (fn19) match (user={condition(0)})		// { dg-error {could not convert 'std::declval<F>\(\)' from 'F' to 'E'} }
 void fn23 (F, int) {}
 
 void fn24 (int);

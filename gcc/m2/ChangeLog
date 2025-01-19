@@ -1,3 +1,847 @@
+2025-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116557
+	* COPYING.FDL: Remove physical address and replace with a URL.
+
+2025-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118453
+	* gm2-compiler/M2Check.mod (buildError4): Call MetaError1
+	for the actual and formal parameter type.
+	* gm2-compiler/P2Build.bnf (SubrangeType): Construct a virtual
+	token containing the subrange type declaration.
+	(PrefixedSubrangeType): Ditto.
+	* gm2-compiler/P2SymBuild.def (BuildSubrange): Add tok parameter.
+	* gm2-compiler/P2SymBuild.mod (BuildSubrange): Use tok parameter,
+	rather than the token at the start of the subrange.
+
+2025-01-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	PR modula2/118183
+	* gm2-compiler/M2GCCDeclare.mod (Import): COffT, GetCOffTType.
+	(DeclareDefaultSimpleTypes): Declare COFF_T.
+	* gm2-compiler/M2GenGCC.mod (GetParamSize): Correct first
+	parameter to BuildSize to use location rather than a token position.
+	* gm2-compiler/M2Options.def (SetFileOffsetBits): New procedure.
+	(GetFileOffsetBits): New procedure function.
+	* gm2-compiler/M2Options.mod (SetFileOffsetBits): New procedure.
+	(GetFileOffsetBits): New procedure function.
+	(OffTBits): New variable.
+	* gm2-compiler/M2System.def (COffT): New variable.
+	* gm2-compiler/M2System.mod (MakeExtraSystemTypes): Declare
+	COffT.
+	* gm2-compiler/P1SymBuild.mod (EndBuildProcedure): Call
+	PutProcedureDefined.
+	* gm2-compiler/P2SymBuild.mod (Debug): Reimplement.
+	* gm2-compiler/SymbolTable.mod (InitProcedureDeclaration):
+	Initialize ProcedureTok.
+	* gm2-gcc/gcctypes.def (location_t): Declare as CARDINAL64.
+	* gm2-gcc/m2linemap.cc (m2linemap_GetLocationBinary): Add
+	call to linemap_add indication a LC_LEAVE.
+	* gm2-gcc/m2options.h (M2Options_SetFileOffsetBits): New procedure.
+	(M2Options_GetFileOffsetBits): New procedure function.
+	* gm2-gcc/m2type.cc (m2_offt_type_node): New variable.
+	(m2type_GetCSizeTType): Reword comment.
+	(m2type_GetCSSizeTType): Reword comment.
+	(m2type_GetCOffTType): New function.
+	(build_m2_offt_type_node): New function.
+	(m2type_InitSystemTypes): Initialize m2_offt_type_node.
+	* gm2-gcc/m2type.def (GetCSizeTType): Reword comment.
+	(GetCOffTType): New procedure function.
+	* gm2-gcc/m2type.h (m2type_GetCOffTType): New prototype.
+	* gm2-lang.cc (gm2_langhook_handle_option): New clause
+	OPT_fm2_file_offset_bits_.
+	* gm2-libs-coroutines/SYSTEM.def: Add COFF_T to export list.
+	* gm2-libs-iso/SYSTEM.def: Ditto.
+	* gm2-libs-min/SYSTEM.def: Ditto.
+	* gm2-libs/SYSTEM.def: Add COFF_T and CARDINAL64 to export list.
+	* gm2-libs/libc.def (lseek): Change return type to COFF_T.
+	* lang.opt (-fm2-file-offset-bits=): New option.
+	* mc-boot-ch/Glibc.c (libc_lseek): Change result to use off_t.
+	* mc-boot/GASCII.cc: Rebuilt.
+	* mc-boot/GASCII.h: Ditto.
+	* mc-boot/GArgs.cc: Ditto.
+	* mc-boot/GArgs.h: Ditto.
+	* mc-boot/GAssertion.cc: Ditto.
+	* mc-boot/GAssertion.h: Ditto.
+	* mc-boot/GBreak.cc: Ditto.
+	* mc-boot/GBreak.h: Ditto.
+	* mc-boot/GCOROUTINES.h: Ditto.
+	* mc-boot/GCmdArgs.cc: Ditto.
+	* mc-boot/GCmdArgs.h: Ditto.
+	* mc-boot/GDebug.cc: Ditto.
+	* mc-boot/GDebug.h: Ditto.
+	* mc-boot/GDynamicStrings.cc: Ditto.
+	* mc-boot/GDynamicStrings.h: Ditto.
+	* mc-boot/GEnvironment.cc: Ditto.
+	* mc-boot/GEnvironment.h: Ditto.
+	* mc-boot/GFIO.cc: Ditto.
+	* mc-boot/GFIO.h: Ditto.
+	* mc-boot/GFormatStrings.cc: Ditto.
+	* mc-boot/GFormatStrings.h: Ditto.
+	* mc-boot/GFpuIO.cc: Ditto.
+	* mc-boot/GFpuIO.h: Ditto.
+	* mc-boot/GIO.cc: Ditto.
+	* mc-boot/GIO.h: Ditto.
+	* mc-boot/GIndexing.cc: Ditto.
+	* mc-boot/GIndexing.h: Ditto.
+	* mc-boot/GM2Dependent.cc: Ditto.
+	* mc-boot/GM2Dependent.h: Ditto.
+	* mc-boot/GM2EXCEPTION.cc: Ditto.
+	* mc-boot/GM2EXCEPTION.h: Ditto.
+	* mc-boot/GM2RTS.cc: Ditto.
+	(M2RTS_Halt): Call libc_exit.
+	(M2RTS_HaltC): Ditto.
+	* mc-boot/GM2RTS.h: Rebuilt.
+	* mc-boot/GMemUtils.cc: Ditto.
+	* mc-boot/GMemUtils.h: Ditto.
+	* mc-boot/GNumberIO.cc: Ditto.
+	* mc-boot/GNumberIO.h: Ditto.
+	* mc-boot/GPushBackInput.cc: Ditto.
+	* mc-boot/GPushBackInput.h: Ditto.
+	* mc-boot/GRTExceptions.cc: Ditto.
+	* mc-boot/GRTExceptions.h: Ditto.
+	* mc-boot/GRTco.h: Ditto.
+	* mc-boot/GRTentity.h: Ditto.
+	* mc-boot/GRTint.cc: Ditto.
+	* mc-boot/GRTint.h: Ditto.
+	* mc-boot/GSArgs.cc: Ditto.
+	* mc-boot/GSArgs.h: Ditto.
+	* mc-boot/GSFIO.cc: Ditto.
+	* mc-boot/GSFIO.h: Ditto.
+	* mc-boot/GSYSTEM.h: Ditto.
+	* mc-boot/GSelective.h: Ditto.
+	* mc-boot/GStdIO.cc: Ditto.
+	* mc-boot/GStdIO.h: Ditto.
+	* mc-boot/GStorage.cc: Ditto.
+	* mc-boot/GStorage.h: Ditto.
+	* mc-boot/GStrCase.cc: Ditto.
+	* mc-boot/GStrCase.h: Ditto.
+	* mc-boot/GStrIO.cc: Ditto.
+	* mc-boot/GStrIO.h: Ditto.
+	* mc-boot/GStrLib.cc: Ditto.
+	* mc-boot/GStrLib.h: Ditto.
+	* mc-boot/GStringConvert.cc: Ditto.
+	* mc-boot/GStringConvert.h: Ditto.
+	* mc-boot/GSysExceptions.h: Ditto.
+	* mc-boot/GSysStorage.cc: Ditto.
+	* mc-boot/GSysStorage.h: Ditto.
+	* mc-boot/GTimeString.cc: Ditto.
+	* mc-boot/GTimeString.h: Ditto.
+	* mc-boot/GUnixArgs.h: Ditto.
+	* mc-boot/Galists.cc: Ditto.
+	* mc-boot/Galists.h: Ditto.
+	* mc-boot/Gdecl.cc: Ditto.
+	* mc-boot/Gdecl.h: Rebuilt.
+	* mc-boot/Gdtoa.h: Ditto.
+	* mc-boot/Gerrno.h: Ditto.
+	* mc-boot/Gkeyc.cc: Ditto.
+	* mc-boot/Gkeyc.h: Rebuilt.
+	* mc-boot/Gldtoa.h: Ditto.
+	* mc-boot/Glibc.h: Ditto.
+	* mc-boot/Glibm.h: Ditto.
+	* mc-boot/Glists.cc: Ditto.
+	* mc-boot/Glists.h: Ditto.
+	* mc-boot/GmcComment.cc: Ditto.
+	* mc-boot/GmcComment.h: Ditto.
+	* mc-boot/GmcComp.cc: Ditto.
+	* mc-boot/GmcComp.h: Ditto.
+	* mc-boot/GmcDebug.cc: Ditto.
+	* mc-boot/GmcDebug.h: Ditto.
+	* mc-boot/GmcError.cc: Ditto.
+	* mc-boot/GmcError.h: Ditto.
+	* mc-boot/GmcFileName.cc: Ditto.
+	* mc-boot/GmcFileName.h: Ditto.
+	* mc-boot/GmcLexBuf.cc: Ditto.
+	* mc-boot/GmcLexBuf.h: Ditto.
+	* mc-boot/GmcMetaError.cc: Ditto.
+	* mc-boot/GmcMetaError.h: Ditto.
+	* mc-boot/GmcOptions.cc: Ditto.
+	* mc-boot/GmcOptions.h: Ditto.
+	* mc-boot/GmcPreprocess.cc: Ditto.
+	* mc-boot/GmcPreprocess.h: Ditto.
+	* mc-boot/GmcPretty.cc: Ditto.
+	* mc-boot/GmcPretty.h: Ditto.
+	* mc-boot/GmcPrintf.cc: Ditto.
+	* mc-boot/GmcPrintf.h: Ditto.
+	* mc-boot/GmcQuiet.cc: Ditto.
+	* mc-boot/GmcQuiet.h: Ditto.
+	* mc-boot/GmcReserved.cc: Ditto.
+	* mc-boot/GmcReserved.h: Ditto.
+	* mc-boot/GmcSearch.cc: Ditto.
+	* mc-boot/GmcSearch.h: Ditto.
+	* mc-boot/GmcStack.cc: Ditto.
+	* mc-boot/GmcStack.h: Ditto.
+	* mc-boot/GmcStream.cc: Ditto.
+	* mc-boot/GmcStream.h: Ditto.
+	* mc-boot/Gmcflex.h: Ditto.
+	* mc-boot/Gmcp1.cc: Ditto.
+	* mc-boot/Gmcp1.h: Ditto.
+	* mc-boot/Gmcp2.cc: Ditto.
+	* mc-boot/Gmcp2.h: Ditto.
+	* mc-boot/Gmcp3.cc: Ditto.
+	* mc-boot/Gmcp3.h: Ditto.
+	* mc-boot/Gmcp4.cc: Ditto.
+	* mc-boot/Gmcp4.h: Ditto.
+	* mc-boot/Gmcp5.cc: Ditto.
+	* mc-boot/Gmcp5.h: Ditto.
+	* mc-boot/GnameKey.cc: Ditto.
+	* mc-boot/GnameKey.h: Ditto.
+	* mc-boot/GsymbolKey.cc: Ditto.
+	* mc-boot/GsymbolKey.h: Ditto.
+	* mc-boot/Gtermios.h: Ditto.
+	* mc-boot/Gtop.cc: Ditto.
+	* mc-boot/Gvarargs.cc: Ditto.
+	* mc-boot/Gvarargs.h: Ditto.
+	* mc-boot/Gwlists.cc: Ditto.
+	* mc-boot/Gwlists.h: Ditto.
+	* mc-boot/Gwrapc.h: Ditto.
+	* mc/decl.mod (cofft): New enum.
+	(cardinal64): Ditto.
+	(cofftN): New variable.
+	(cardinal64N): Ditto.
+	(isProcedure): Remove.
+	(getSymName): Add clause for cofft and cardinal64.
+	(makeBase): Ditto.
+	(isOrdinal): Ditto.
+	(getType): Ditto.
+	(doGetExprType): Ditto.
+	(getScope): Ditto.
+	(doExprC): Ditto.
+	(isSystem): Ditto.
+	(doSystemC): Ditto.
+	(doDependants): Ditto.
+	(visitDependants): Ditto.
+	(genKind): Ditto.
+	(doSystemM2): Ditto.
+	(doDupExpr): Ditto.
+	(makeSystem): Initialize cofftN and cardinal64N.
+	* mc/keyc.mod (useUIntMin): Remove.
+	(useUIntMax): Ditto.
+	* pge-boot/GIndexing.h: Rebuilt.
+	* pge-boot/GSEnvironment.h: Ditto.
+	* pge-boot/GScan.h: Ditto.
+	* pge-boot/Glibc.h: Ditto.
+
+2024-12-23  Wilken Gottwalt  <wilken.gottwalt@posteo.net>
+
+	* gm2-libs-log/InOut.mod: Fix bad identifier warning.
+
+2024-12-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117120
+	* gm2-compiler/M2CaseList.mod (CaseBoundsResolved): Rewrite.
+	(ConvertNulStr2NulChar): New procedure function.
+	(NulStr2NulChar): Ditto.
+	(GetCaseExpression): Ditto.
+	(OverlappingCaseBound): Rewrite.
+	* gm2-compiler/M2GCCDeclare.mod (CheckResolveSubrange): Allow
+	'' to be used as the subrange low limit.
+	* gm2-compiler/M2GenGCC.mod (FoldConvert): Rewrite.
+	(PopKindTree): Ditto.
+	(BuildHighFromString): Reformat.
+	* gm2-compiler/SymbolTable.mod (PushConstString): Add test for
+	length 0 and PushChar (nul).
+
+2024-12-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115328
+	* gm2-compiler/M2Options.def (GetEnableForward): New procedure
+	function.
+	(SetEnableForward): New procedure.
+	* gm2-compiler/M2Options.mod (GetEnableForward): New procedure
+	function.
+	(SetEnableForward): New procedure.
+	(EnableForward): New boolean.
+	* gm2-compiler/P1SymBuild.mod (EndBuildForward): Check
+	GetEnableForward and generate an error message if false.
+
+2024-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117948
+	* gm2-compiler/P1Build.bnf (ForwardDeclaration): Pass token
+	position of the FORWARD keyword to EndBuildForward.
+	* gm2-compiler/P1SymBuild.def (EndBuildForward): New parameter
+	forwardPos.
+	* gm2-compiler/P1SymBuild.mod (EndBuildForward): Issue an error at
+	forwardPos if the Iso boolean is false.
+
+2024-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117904
+	* gm2-compiler/M2GenGCC.mod (PerformLastForIterator): Add call to
+	BuildConvert when increment is > 0.
+
+2024-11-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117777
+	* gm2-compiler/P0SyntaxCheck.bnf (AsmOperands): Allow term after
+	ConstExpression to be optional.
+	* gm2-compiler/P1Build.bnf (AsmOperands): Ditto.
+	* gm2-compiler/P2Build.bnf (AsmOperands): Ditto.
+	* gm2-compiler/PCBuild.bnf (AsmOperands): Ditto.
+	* gm2-compiler/PHBuild.bnf (AsmOperands): Ditto.
+
+2024-11-23  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* Make-lang.in (m2 modula-2 modula2): Remove $(GCC_PARTS).
+
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* gm2-gcc/gcc-consolidation.h (INCLUDE_MEMORY): Remove.
+	* gm2-gcc/m2configure.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GASCII.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GASCII.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GArgs.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GArgs.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GAssertion.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GAssertion.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GBreak.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GBreak.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GCOROUTINES.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GCmdArgs.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GCmdArgs.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GDebug.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GDebug.h (INCLUDE_MEMORY): Remove. Remove.
+	* mc-boot/GDynamicStrings.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GDynamicStrings.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GEnvironment.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GEnvironment.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GFIO.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GFIO.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GFormatStrings.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GFormatStrings.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GFpuIO.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GFpuIO.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GIO.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GIO.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GIndexing.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GIndexing.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GM2Dependent.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GM2Dependent.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GM2EXCEPTION.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GM2EXCEPTION.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GM2RTS.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GM2RTS.h (INCLUDE_MEMORY): Remove. Remove.
+	* mc-boot/GMemUtils.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GMemUtils.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GNumberIO.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GNumberIO.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GPushBackInput.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GPushBackInput.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GRTExceptions.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GRTExceptions.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GRTco.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GRTentity.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GRTint.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GRTint.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSArgs.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSArgs.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSFIO.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSFIO.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSYSTEM.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSelective.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStdIO.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStdIO.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStorage.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStorage.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStrCase.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStrCase.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStrIO.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStrIO.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStrLib.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStrLib.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStringConvert.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GStringConvert.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSysExceptions.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSysStorage.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GSysStorage.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GTimeString.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GTimeString.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GUnixArgs.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Galists.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Galists.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gdecl.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gdecl.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gdtoa.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gerrno.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gkeyc.cc (INCLUDE_MEMORY): Remove.
+	(checkGccConfigSystem): Remove printing out `#define INCLUDE_MEMORY`.
+	* mc-boot/Gkeyc.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gldtoa.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Glibc.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Glibm.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Glists.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Glists.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcComment.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcComment.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcComp.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcComp.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcDebug.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcDebug.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcError.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcError.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcFileName.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcFileName.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcLexBuf.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcLexBuf.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcMetaError.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcMetaError.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcOptions.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcOptions.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcPreprocess.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcPreprocess.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcPretty.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcPretty.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcPrintf.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcPrintf.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcQuiet.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcQuiet.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcReserved.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcReserved.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcSearch.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcSearch.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcStack.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcStack.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcStream.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GmcStream.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcflex.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp1.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp1.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp2.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp2.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp3.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp3.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp4.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp4.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp5.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gmcp5.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GnameKey.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GnameKey.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/GsymbolKey.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/GsymbolKey.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gtermios.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gtop.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gvarargs.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gvarargs.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gwlists.cc (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gwlists.h (INCLUDE_MEMORY): Remove.
+	* mc-boot/Gwrapc.h (INCLUDE_MEMORY): Remove.
+	* pge-boot/GIndexing.h (INCLUDE_MEMORY): Remove.
+	* pge-boot/GSEnvironment.h (INCLUDE_MEMORY): Remove.
+	* pge-boot/GScan.h (INCLUDE_MEMORY): Remove.
+
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117555
+	* gm2-libs-iso/M2EXCEPTION.mod (M2Exception): Add missing
+	return statement.
+	* gm2-libs-iso/RealConv.mod (ValueReal): Ditto.
+	* gm2-libs-iso/RndFile.mod (StartPos): Ditto.
+	(EndPos): Ditto.
+	(NewPos): Ditto.
+	* gm2-libs-iso/ShortConv.mod (ValueReal): Ditto.
+	* gm2-libs-iso/WholeConv.mod (ValueInt): Ditto.
+	(ValueCard): Ditto.
+
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117660
+	* gm2-compiler/P2Build.bnf (ArrayType): Update tok with the
+	composite token produced during array type declaration.
+	* gm2-compiler/P2SymBuild.mod (EndBuildArray): Create the
+	combinedtok and store it into the symbol table.
+	Also ensure combinedtok is pushed to the quad stack.
+	(BuildFieldArray): Preserve typetok.
+	* gm2-compiler/SymbolTable.def (PutArray): Rename parameters.
+	* gm2-compiler/SymbolTable.mod (PutArray): Rename parameters.
+
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2-compiler/M2GenGCC.mod (PerformLastForIterator):
+	Add check for zero step value and issue an error message.
+
+2024-11-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117555
+	* gm2-libs-iso/EXCEPTIONS.mod (CurrentNumber): Add return
+	statement.
+	* gm2-libs-iso/IOChan.mod (ReadResult): Ditto.
+	(CurrentFlags): Ditto.
+	(DeviceError): Ditto.
+	* gm2-libs-iso/IOLink.mod (DeviceTablePtrValue): Ditto.
+	* gm2-libs-iso/LongConv.mod (ValueReal): Ditto.
+	* gm2-libs/M2RTS.mod (Halt): Add noreturn attribute.
+	Add exit (1).
+	(HaltC): Add exit (1).
+	* pge-boot/GM2RTS.cc (M2RTS_Halt): Add exit (1).
+	(M2RTS_HaltC): Ditto.
+
+2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2-compiler/M2Base.mod (MixMetaTypes): Add parameter TRUE to
+	MetaErrorDecl.
+	(IsUserType): Test against ZType.
+	(MixTypesDecl): Test for ZType.
+	* gm2-compiler/M2GenGCC.mod (ErrorMessageDecl): Add parameter TRUE to
+	MetaErrorDecl.
+	(CodeLastForIterator): New procedure.
+	(FoldLastForIterator): Ditto.
+	(PerformLastForIterator): Ditto.
+	(CodeStatement): Add case clause for LastForIteratorOp.
+	(ErrorMessageDecl): Add iserror parameter.
+	Call MetaErrorDecl with iserror parameter.
+	(checkIncorrectMeta): Call MetaErrorDecl with TRUE parameter.
+	(CheckBinaryExpressionTypes): Ditto.
+	(CheckElementSetTypes): Ditto.
+	* gm2-compiler/M2LexBuf.def (MakeVirtualTok): Update comment
+	detailing the fall back when UnknownTokenNo is encountered.
+	(MakeVirtual2Tok): Ditto.
+	* gm2-compiler/M2LexBuf.mod (MakeVirtualTok): Check against
+	UnknownTokenNo.
+	(MakeVirtual2Tok): Ditto.
+	* gm2-compiler/M2MetaError.def (MetaErrorDecl): Add error parameter.
+	* gm2-compiler/M2MetaError.mod (MetaErrorDecl): Add error
+	parameter.
+	Issue warning if error is FALSE.
+	* gm2-compiler/M2Quads.def (QuadOperator): Add LastForIteratorOp.
+	* gm2-compiler/M2Quads.mod (AddQuadInformation): New case clause
+	LastForIteratorOp.
+	(CheckAddTuple2Read): New procedure.
+	(BuildForLoopToRangeCheck): Remove.
+	(ForLoopLastIteratorVariable): Ditto.
+	(ForLoopLastIteratorConstant): Ditto.
+	(ForLoopLastIterator): Reimplement.
+	(BuildForToByDo): Remove ByType from call to ForLoopLastIterator.
+	(WriteQuad): New case clause LastForIteratorOp.
+	(WriteOperator): Ditto.
+	* gm2-compiler/M2Students.def
+	(CheckForVariableThatLooksLikeKeyword): Replace with ...
+	(CheckVariableAgainstKeyword): ... this.
+	* gm2-compiler/M2Students.mod
+	(CheckForVariableThatLooksLikeKeyword): Replace with ...
+	(CheckVariableAgainstKeyword): ... this.
+	* gm2-compiler/M2SymInit.mod (CheckLastForIterator): New
+	procedure.
+	(CheckReadBeforeInitQuad): New case clause to call
+	CheckLastForIterator.
+	* gm2-compiler/P2SymBuild.mod: Replace
+	CheckForVariableThatLooksLikeKeyword with CheckVariableAgainstKeyword.
+
+2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2/gm2-compiler-boot/P0SyntaxCheck.c):
+	New rule.
+	(m2/gm2-compiler-boot/P0SyntaxCheck.o): Ditto.
+	(m2/gm2-compiler-boot/P1Build.c): Ditto.
+	(m2/gm2-compiler-boot/P1Build.o): Ditto.
+	(m2/gm2-compiler-boot/P2Build.c): Ditto.
+	(m2/gm2-compiler-boot/P2Build.o): Ditto.
+	(m2/gm2-compiler-boot/P3Build.c): Ditto.
+	(m2/gm2-compiler-boot/P3Build.o): Ditto.
+	(m2/gm2-compiler-boot/PCBuild.c): Ditto.
+	(m2/gm2-compiler-boot/PCBuild.o): Ditto.
+	(m2/gm2-compiler-boot/PHBuild.c): Ditto.
+	(m2/gm2-compiler-boot/PHBuild.o): Ditto.
+
+2024-11-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Base.def (MixTypes): Rename parameters.
+	(MixTypesDecl): New procedure function.
+	* gm2-compiler/M2Base.mod (BuildOrdFunctions): Add
+	DefProcedure parameter to PutFunction.
+	(BuildTruncFunctions): Ditto.
+	(BuildFloatFunctions): Ditto.
+	(BuildIntFunctions): Ditto.
+	(InitBaseFunctions): Ditto.
+	(MixTypesDecl): New procedure function.
+	(MixTypes): Reimplement.
+	* gm2-compiler/M2Check.mod (checkProcType): Replace
+	NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(checkProcedureProcType): Ditto.
+	* gm2-compiler/M2Error.def: Remove unnecessary export qualified list.
+	* gm2-compiler/M2GCCDeclare.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(DeclareProcedureToGccWholeProgram): Rename son to
+	Variable.
+	(DeclareProcedureToGccSeparateProgram): Ditto.
+	(PrintKind): New procedure.
+	(PrintProcedureParameters): Ditto.
+	(PrintProcedureReturnType): Ditto.
+	(PrintProcedure): Reimplement.
+	(PrintProcTypeParameters): New procedure.
+	(PrintProcType): Ditto.
+	(DeclareProcType): Rename Son to Parameter.
+	* gm2-compiler/M2GenGCC.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(ErrorMessageDecl): New procedure.
+	(checkIncorrectMeta): Replace call to MetaErrorT2 with
+	ErrorMessageDecl.
+	(ComparisonMixTypes): Add varleft and varright parameters.
+	Adjust all callers of ComparisonMixTypes.
+	* gm2-compiler/M2MetaError.def (MetaErrorDecl): New procedure.
+	* gm2-compiler/M2MetaError.mod (MetaErrorDecl): New procedure.
+	* gm2-compiler/M2Options.def (SetXCode): Add -fd flag description
+	to comment.
+	* gm2-compiler/M2Options.mod (SetXCode): Add -fd flag description
+	to comment.
+	* gm2-compiler/M2Quads.mod (CheckBreak): New procedure.
+	Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(FailParameter): Reimplement using GetVarDeclFullTok.
+	Generate message for formal parameter, actual parameter and
+	declaration of actual parameter.
+	(WarnParameter): Ditto.
+	(CheckBuildFunction): Reimplement error message using MetaErrorT1.
+	* gm2-compiler/M2Range.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	* gm2-compiler/M2Scaffold.mod (DeclareScaffoldFunctions): Call
+	PutProcedureDefined after every procedure declaration.
+	(DeclareArgEnvParams): Add ProperProcedure parameter to PutParam.
+	* gm2-compiler/M2Size.mod (MakeSize): Add DefProcedure parameter
+	to PutFunction.
+	* gm2-compiler/M2Swig.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	* gm2-compiler/M2SymInit.mod: Ditto.
+	* gm2-compiler/M2System.mod (InitSystem): Add DefProcedure
+	parameter to PutFunction.
+	* gm2-compiler/P1SymBuild.mod (StartBuildProcedure): Reimplement.
+	(EndBuildProcedure): Ditto.
+	(EndBuildForward): Ditto.
+	* gm2-compiler/P2Build.bnf (BuildProcedureDefinedByForward):
+	Remove.
+	(BuildProcedureDefinedByProper): Ditto.
+	(ForwardDeclaration): Remove BuildProcedureDefinedByForward.
+	(BuildNoReturnAttribute): Remove parameter.
+	* gm2-compiler/P2SymBuild.def (BuildNoReturnAttribute): Remove
+	parameter.
+	(BuildProcedureDefinedByForward): Remove.
+	(BuildProcedureDefinedByProper): Ditto.
+	* gm2-compiler/P2SymBuild.mod (Import): Remove
+	AreParametersDefinedInDefinition,
+	AreParametersDefinedInImplementation,
+	AreProcedureParametersDefined,
+	ParametersDefinedInDefinition,
+	ParametersDefinedInImplementation,
+	GetProcedureDeclaredDefinition,
+	GetProcedureDeclaredForward,
+	GetProcedureDeclaredProper,
+	GetParametersDefinedByForward,
+	GetParametersDefinedByProper and
+	PutProcedureNoReturn.
+	Add PutProcedureParametersDefined,
+	GetProcedureParametersDefined,
+	GetProcedureKindDesc,
+	GetProcedureDeclaredTok,
+	GetProcedureKind,
+	GetReturnTypeTok,
+	SetReturnOptional,
+	IsReturnOptional,
+	PutProcedureNoReturn and
+	PutProcedureDefined.
+	(Debug): New procedure.
+	(P2StartBuildDefModule): Space formatting.
+	(BuildVariable): Reimplement to record full declaration.
+	(StartBuildProcedure): Reimplement using token to determine
+	the kind of procedure.
+	(BuildProcedureHeading): Ditto.
+	(BuildFPSection): Ditto.
+	(BuildVarArgs): Ditto.
+	(BuildOptArg): Ditto.
+	(BuildProcedureDefinedByForward): Remove.
+	(BuildProcedureDefinedByProper): Ditto.
+	(BuildFormalParameterSection): Reimplement so that the
+	quad stack is unchanged.
+	(CheckFormalParameterSection): Ditto.
+	(RemoveFPParameters): New procedure.
+	(ParameterError): Reimplement.
+	(StartBuildFormalParameters): Add annotation.
+	(ParameterMismatch): Reimplement.
+	(EndBuildFormalParameters): Reimplement to check against
+	all procedure kinds.
+	(GetSourceDesc): Remove.
+	(GetCurSrcDesc): Ditto.
+	(GetDeclared): Ditto.
+	(ReturnTypeMismatch): Reimplement.
+	(BuildFunction): Ditto.
+	(BuildOptFunction): Ditto.
+	(CheckOptFunction): New procedure.
+	(BuildNoReturnAttribute): Remove parameter and obtain
+	procedure symbol from quad stack.
+	(CheckProcedureReturn): New procedure.
+	* gm2-compiler/P3SymBuild.mod (BuildOptArgInitializer):
+	Preserve ProcSym tok on the quad stack.
+	Add Assert.
+	* gm2-compiler/PCSymBuild.mod (fixupProcedureType): Replace
+	NoOfParam with NoOfParamAny.
+	* gm2-compiler/SymbolTable.def (GetNthParam): Add ProcedureKind
+	parameter.
+	(PutFunction): Ditto.
+	(PutOptFunction): Ditto.
+	(IsReturnOptional): Ditto.
+	(PutParam): Ditto.
+	(PutVarParam): Ditto.
+	(PutParamName): Ditto.
+	(PutProcedureNoReturn): Ditto.
+	(IsProcedureNoReturn): Ditto.
+	(IsVarParam): Ditto.
+	(IsUnboundedParam): Ditto.
+	(NoOfParam): Ditto.
+	(ForeachLocalSymDo): Ditto.
+	(GetProcedureKind): Ditto.
+	(GetProcedureDeclaredTok): Ditto.
+	(PutProcedureDeclaredTok): Ditto.
+	(GetReturnTypeTok): Ditto.
+	(PutReturnTypeTok): Ditto.
+	(PutParametersDefinedByForward): New procedure.
+	(PutProcedureParametersDefined): Ditto.
+	(PutProcedureDefined): Ditto.
+	(GetParametersDefinedByProper): Ditto.
+	(GetProcedureDeclaredForward): Ditto.
+	(GetProcedureDeclaredProper): Ditto.
+	(PutProcedureDeclaredProper): Ditto.
+	(GetProcedureDeclaredDefinition): Ditto.
+	(PutProcedureDeclaredDefinition): Ditto.
+	(GetProcedureDefined): Ditto.
+	(PutUseOptArg): Ditto.
+	(UsesOptArg): Ditto.
+	(PutOptArgInit): Ditto.
+	(SetReturnOptional): Ditto.
+	(UsesOptArgAny): Ditto.
+	(GetProcedureKindDesc): Ditto.
+	(IsReturnOptionalAny): New procedure function.
+	(GetNthParamAny): Ditto.
+	(NoOfParamAny): Ditto.
+	(IsProcedureAnyNoReturn): Ditto.
+	(AreParametersDefinedInImplementation): Remove.
+	(ParametersDefinedInImplementation): Ditto.
+	(AreParametersDefinedInDefinition): Ditto.
+	(AreProcedureParametersDefined): Ditto.
+	(ParametersDefinedInDefinition): Ditto.
+	(ProcedureParametersDefined): Ditto.
+	(PutParametersDefinedByProper): Ditto.
+	(PutProcedureDeclaredForward): Ditto.
+	(GetParametersDefinedByForward): Ditto.
+	(GetProcedureParametersDefined): Ditto.
+	(PushOffset): Ditto.
+	(PopSize): Ditto.
+	(PushParamSize): Ditto.
+	(PushSumOfLocalVarSize): Ditto.
+	(PushSumOfParamSize): Ditto.
+	(PopOffset): Ditto.
+	(PopSumOfParamSize): Ditto.
+	* gm2-compiler/SymbolTable.mod (MakeProcedure): Reimplement.
+	(PutProcedureNoReturn): Add ProcedureKind parameter.
+	(GetNthParam): Ditto.
+	(PutFunction): Ditto.
+	(PutOptFunction): Ditto.
+	(IsReturnOptional): Ditto.
+	(MakeVariableForParam): Ditto.
+	(PutParam): Ditto.
+	(PutVarParam): Ditto.
+	(PutParamName): Ditto.
+	(AddParameter): Ditto.
+	(IsVarParam): Ditto.
+	(IsVarParamAny): Ditto.
+	(NoOfParam): Ditto.
+	(HasVarParameters): Ditto.
+	(IsUnboundedParam): Ditto.
+	(PutUseVarArgs): Ditto.
+	(UsesVarArgs): Ditto.
+	(PutUseOptArg): Ditto.
+	(UsesOptArg): Ditto.
+	(UsesOptArgAny): Ditto.
+	(PutOptArgInit): Ditto.
+	(IsProcedure): Ditto.
+	(IsPointer): Ditto.
+	(IsRecord): Ditto.
+	(IsArray): Ditto.
+	(IsEnumeration): Ditto.
+	(IsUnbounded): Ditto.
+	(IsSet): Ditto.
+	(IsSetPacked): Ditto.
+	(CheckUnbounded): Ditto.
+	(IsOAFamily): Ditto.
+	(IsModuleWithinProcedure): Ditto.
+	(GetDeclaredDef): Ditto.
+	(GetDeclaredMod): Ditto.
+	(GetDeclaredFor): Ditto.
+	(GetProcedureDeclaredForward): Ditto.
+	(GetProcedureKind): Ditto.
+	(PutProcedureDeclaredForward): Ditto.
+	(GetProcedureDeclaredTok): Ditto.
+	(GetProcedureDeclaredProper): Ditto.
+	(PutProcedureDeclaredTok): Ditto.
+	(PutProcedureDeclaredProper): Ditto.
+	(GetReturnTypeTok): Ditto.
+	(GetProcedureDeclaredDefinition): Ditto.
+	(PutReturnTypeTok): Ditto.
+	(PutProcedureDeclaredDefinition): Ditto.
+	(GetProcedureKindDesc): Ditto.
+	(IsProcedureVariable): Ditto.
+	(IsAModula2Type): Ditto.
+	(GetParam): Ditto.
+	(ProcedureParametersDefined): Ditto.
+	(AreParametersDefinedInImplementation): Remove.
+	(AreParametersDefinedInDefinition): Ditto.
+	(AreProcedureParametersDefined): Ditto.
+	(IsSizeSolved): Ditto.
+	(IsOffsetSolved): Ditto.
+	(IsValueSolved): Ditto.
+	(IsSumOfParamSizeSolved): Ditto.
+	(PushSize): Ditto.
+	(PushOffset): Ditto.
+	(PopSize): Ditto.
+	(PushValue): Ditto.
+	(PushParamSize): Ditto.
+	(PushSumOfLocalVarSize): Ditto.
+	(PushSumOfParamSize): Ditto.
+	(PushVarSize): Ditto.
+	(PopValue): Ditto.
+	(PopSize): Ditto.
+	(PopOffset): Ditto.
+	(PopSumOfParamSize): Ditto.
+	(PutParametersDefinedByForward): New procedure.
+	(PutProcedureParametersDefined): Ditto.
+	(PutProcedureDefined): Ditto.
+	(GetParametersDefinedByProper): Ditto.
+	(GetProcedureDeclaredForward): Ditto.
+	(GetProcedureDeclaredProper): Ditto.
+	(PutProcedureDeclaredProper): Ditto.
+	(GetProcedureDeclaredDefinition): Ditto.
+	(PutProcedureDeclaredDefinition): Ditto.
+	(GetProcedureDefined): Ditto.
+	(PutUseOptArg): Ditto.
+	(UsesOptArg): Ditto.
+	(PutOptArgInit): Ditto.
+	(SetReturnOptional): Ditto.
+	(UsesOptArgAny): Ditto.
+	(GetProcedureKindDesc): Ditto.
+	(PutParametersDefinedByProper): Ditto.
+	(GetParametersDefinedByProper): Ditto.
+	(IsReturnOptionalAny): New procedure function.
+	(IsProcedureAnyDefaultBoolean): Ditto.
+	(IsProcedureAnyBoolean): Ditto.
+	(IsProcedureAnyNoReturn): Ditto.
+	(GetNthParamAny): Ditto.
+	(NoOfParamAny): Ditto.
+	(IsProcedureAnyNoReturn): Ditto.
+	(GetProcedureKind): Ditto.
+	(IsVarParamAny): Ditto.
+	(IsUnboundedParamAny): Ditto.
+	(ForeachParamSymDo): New comment.
+	* gm2-libs-coroutines/SYSTEM.mod: Reformat.
+
+2024-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (m2_OBJS): Add $(BUILD-LIBS-BOOT),
+	$(BUILD-COMPILER-BOOT) and $(MC_LIBS).
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* mc-boot/GFpuIO.cc: Remove trailing whitespace.

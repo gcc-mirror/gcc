@@ -1,5 +1,5 @@
 /* Subroutines used for code generation of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -5880,6 +5880,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "NDS32"
 
 
 /* ------------------------------------------------------------------------ */

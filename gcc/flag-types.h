@@ -1,5 +1,5 @@
 /* Compilation switch flag type definitions for GCC.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -289,6 +289,13 @@ enum auto_init_type {
   AUTO_INIT_UNINITIALIZED = 0,
   AUTO_INIT_PATTERN = 1,
   AUTO_INIT_ZERO = 2
+};
+
+/* Initialization of padding bits with zeros.  */
+enum zero_init_padding_bits_kind {
+  ZERO_INIT_PADDING_BITS_STANDARD = 0,
+  ZERO_INIT_PADDING_BITS_UNIONS = 1,
+  ZERO_INIT_PADDING_BITS_ALL = 2
 };
 
 /* Different instrumentation modes.  */

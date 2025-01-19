@@ -1,5 +1,5 @@
 /* Common unwinding code for ARM EABI and C6X.
-   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+   Copyright (C) 2004-2025 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -52,8 +52,6 @@
 
 /* Definitions for C++ runtime support routines.  We make these weak
    declarations to avoid pulling in libsupc++ unnecessarily.  */
-typedef unsigned char bool;
-
 typedef struct _ZSt9type_info type_info; /* This names C++ type_info type */
 enum __cxa_type_match_result
   {

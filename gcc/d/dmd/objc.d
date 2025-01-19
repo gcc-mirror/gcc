@@ -17,11 +17,11 @@ import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
+import dmd.attribsem;
 import dmd.cond;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.denum;
-import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
@@ -37,6 +37,7 @@ import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
+import dmd.mangle;
 import dmd.mtype;
 import dmd.root.array;
 import dmd.common.outbuffer;
@@ -92,39 +93,66 @@ struct ObjcSelector
         return sel;
     }
 
+    static const(char)[] toPascalCase(const(char)[] id) {
+        OutBuffer buf;
+        char firstChar = id[0];
+        if (firstChar >= 'a' && firstChar <= 'z')
+            firstChar = cast(char)(firstChar - 'a' + 'A');
+
+        buf.writeByte(firstChar);
+        buf.writestring(id[1..$]);
+        return cast(const(char)[])buf.extractSlice(false);
+    }
+
     extern (C++) static ObjcSelector* create(FuncDeclaration fdecl)
     {
         OutBuffer buf;
-        TypeFunction ftype = cast(TypeFunction)fdecl.type;
+        auto ftype = cast(TypeFunction)fdecl.type;
         const id = fdecl.ident.toString();
         const nparams = ftype.parameterList.length;
+
         // Special case: property setter
-        if (ftype.isproperty && nparams == 1)
+        if (ftype.isProperty && nparams == 1)
         {
-            // rewrite "identifier" as "setIdentifier"
-            char firstChar = id[0];
-            if (firstChar >= 'a' && firstChar <= 'z')
-                firstChar = cast(char)(firstChar - 'a' + 'A');
-            buf.writestring("set");
-            buf.writeByte(firstChar);
-            buf.write(id[1 .. id.length - 1]);
+
+            // Special case: "isXYZ:"
+            if (id.length >= 2 && id[0..2] == "is")
+            {
+                buf.writestring("set");
+                buf.write(toPascalCase(id[2..$]));
+            }
+            else
+            {
+                buf.writestring("set");
+                buf.write(toPascalCase(id));
+            }
             buf.writeByte(':');
             goto Lcomplete;
         }
+
         // write identifier in selector
         buf.write(id[]);
-        // add mangled type and colon for each parameter
-        if (nparams)
+
+        // To make it easier to match the selectors of objects nicely,
+        // the implementation has been replaced so that the parameter name followed by a colon
+        // is used instead.
+        // eg. void myFunction(int a, int b, int c) would be mangled to a selector as `myFunction:b:c:
+        if (nparams > 1)
         {
-            buf.writeByte('_');
-            foreach (i, fparam; ftype.parameterList)
+            buf.writeByte(':');
+            foreach(i; 1..nparams)
             {
-                mangleToBuffer(fparam.type, buf);
+                buf.write(ftype.parameterList[i].ident.toString());
                 buf.writeByte(':');
             }
         }
+        else if (nparams == 1)
+        {
+            buf.writeByte(':');
+        }
     Lcomplete:
         buf.writeByte('\0');
+
         // the slice is not expected to include a terminating 0
         return lookup(cast(const(char)*)buf[].ptr, buf.length - 1, nparams);
     }
@@ -564,13 +592,23 @@ extern(C++) private final class Supported : Objc
 
             return 0;
         });
+
+        // Avoid attempting to generate selectors for template instances.
+        if (fd.parent && fd.parent.isTemplateInstance())
+            return;
+
+        // No selector declared, generate one.
+        if (fd._linkage == LINK.objc && !fd.objc.selector)
+        {
+            fd.objc.selector = ObjcSelector.create(fd);
+        }
     }
 
     override void validateSelector(FuncDeclaration fd)
     {
         if (!fd.objc.selector)
             return;
-        TypeFunction tf = cast(TypeFunction)fd.type;
+        auto tf = cast(TypeFunction)fd.type;
         if (fd.objc.selector.paramCount != tf.parameterList.parameters.length)
             .error(fd.loc, "%s `%s` number of colons in Objective-C selector must match number of parameters", fd.kind, fd.toPrettyChars);
         if (fd.parent && fd.parent.isTemplateInstance())

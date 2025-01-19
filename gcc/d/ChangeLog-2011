@@ -1239,7 +1239,6 @@
 	d/d-glue.cc, d/d-lang-45.h, d/d-lang.cc, d/d-lang.h, d/d-objfile.cc:
 	Declare d_build_decl as extern "C". Add function d_build_decl_loc.
 	[29253025adb2]
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

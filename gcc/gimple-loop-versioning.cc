@@ -1,5 +1,5 @@
 /* Loop versioning pass.
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -554,7 +553,7 @@ loop_versioning::loop_versioning (function *fn)
      handled efficiently by scalar code.  omp_max_vf calculates the
      maximum number of bytes in a vector, when such a value is relevant
      to loop optimization.  */
-  m_maximum_scale = estimated_poly_value (omp_max_vf ());
+  m_maximum_scale = estimated_poly_value (omp_max_vf (false));
   m_maximum_scale = MAX (m_maximum_scale, MAX_FIXED_MODE_SIZE);
 }
 

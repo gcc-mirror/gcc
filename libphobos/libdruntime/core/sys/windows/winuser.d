@@ -3848,7 +3848,7 @@ int GetMenuStringA(HMENU, UINT, LPSTR, int, UINT);
 int GetMenuStringW(HMENU, UINT, LPWSTR, int, UINT);
 BOOL GetMessageA(LPMSG, HWND, UINT, UINT);
 BOOL GetMessageW(LPMSG, HWND, UINT, UINT);
-LONG GetMessageExtraInfo();
+LPARAM GetMessageExtraInfo();
 DWORD GetMessagePos();
 LONG GetMessageTime();
 

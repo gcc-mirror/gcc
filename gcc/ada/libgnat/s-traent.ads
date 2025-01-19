@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,8 +51,8 @@ package System.Traceback_Entries is
 
    function PC_For (TB_Entry : Traceback_Entry) return System.Address;
    pragma Inline (PC_For);
-   --  Returns the address of the call instruction associated with the
-   --  provided entry.
+   --  Returns the address of the call instruction associated with
+   --  the provided entry.
 
    function TB_Entry_For (PC : System.Address) return Traceback_Entry;
    pragma Inline (TB_Entry_For);

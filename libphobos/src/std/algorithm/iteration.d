@@ -443,7 +443,8 @@ if (fun.length >= 1)
         A range with each fun applied to all the elements. If there is more than one
         fun, the element type will be `Tuple` containing one element for each fun.
      */
-    auto map(Range)(Range r) if (isInputRange!(Unqual!Range))
+    auto map(Range)(Range r)
+    if (isInputRange!(Unqual!Range))
     {
         import std.meta : AliasSeq, staticMap;
 
@@ -1308,7 +1309,8 @@ if (is(typeof(unaryFun!predicate)))
         A range containing only elements `x` in `range` for
         which `predicate(x)` returns `true`.
      */
-    auto filter(Range)(Range range) if (isInputRange!(Unqual!Range))
+    auto filter(Range)(Range range)
+    if (isInputRange!(Unqual!Range))
     {
         return FilterResult!(unaryFun!predicate, Range)(range);
     }
@@ -1545,7 +1547,8 @@ template filterBidirectional(alias pred)
     Returns:
         A range containing only the elements in `r` for which `pred` returns `true`.
      */
-    auto filterBidirectional(Range)(Range r) if (isBidirectionalRange!(Unqual!Range))
+    auto filterBidirectional(Range)(Range r)
+    if (isBidirectionalRange!(Unqual!Range))
     {
         return FilterBidiResult!(unaryFun!pred, Range)(r);
     }

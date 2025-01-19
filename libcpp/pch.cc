@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Precompiled header reading/writing.)
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -648,7 +648,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	  if (CPP_OPTION (r, warn_invalid_pch))
 	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
 				"%s: not used because %<%.*s%> defined as "
-				"%<%s%> not %<%.*s%>",
+				"%qs not %<%.*s%>",
 				name, m.name_length, namebuf,
 				newdefn + m.name_length,
 				m.definition_length - m.name_length,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -523,6 +523,8 @@ procedure Gnat1drv is
          Restore_Warnings
            ((Warnings_Package.Elab_Warnings => True,
              Warnings_Package.Warn_On_Suspicious_Contract => True,
+             Warnings_Package.Warning_Doc_Switch =>
+               Warnsw.Warning_Doc_Switch,
              others => False));
 
          --  Suppress the generation of name tables for enumerations, which are
@@ -654,10 +656,7 @@ procedure Gnat1drv is
          end if;
       end if;
 
-      --  Set default for atomic synchronization. As this synchronization
-      --  between atomic accesses can be expensive, and not typically needed
-      --  on some targets, an optional target parameter can turn the option
-      --  off. Note Atomic Synchronization is implemented as check.
+      --  Set default for atomic synchronization
 
       Suppress_Options.Suppress (Atomic_Synchronization) :=
         not Atomic_Sync_Default_On_Target;
@@ -1034,6 +1033,13 @@ begin
       Sem_Eval.Initialize;
       Sem_Type.Init_Interp_Tables;
 
+      --  If there was a -gnatem switch, initialize the mappings of unit names
+      --  to file names and of file names to path names from the mapping file.
+
+      if Mapping_File_Name /= null then
+         Fmap.Initialize (Mapping_File_Name.all);
+      end if;
+
       --  Capture compilation date and time
 
       Opt.Compilation_Time := System.OS_Lib.Current_Time_String;
@@ -1051,9 +1057,12 @@ begin
             N : File_Name_Type;
 
          begin
-            Name_Buffer (1 .. 10) := "system.ads";
-            Name_Len := 10;
-            N := Name_Find;
+            N := Fmap.Mapped_File_Name (Name_To_Unit_Name (Name_System));
+
+            if N = No_File then
+               N := Name_Find ("system.ads");
+            end if;
+
             S := Load_Source_File (N);
 
             --  Failed to read system.ads, fatal error

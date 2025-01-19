@@ -1,5 +1,5 @@
 /* Callgraph clones
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
    only difference is that clones are not visible during the
    Generate Summary stage.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -389,7 +388,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   if (!new_inlined_to)
     prof_count = count.combine_with_ipa_count (prof_count);
   new_node->count = prof_count;
-  new_node->calls_declare_variant_alt = this->calls_declare_variant_alt;
+  new_node->has_omp_variant_constructs = this->has_omp_variant_constructs;
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
   if (update_original)
@@ -402,6 +401,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
         count = count.combine_with_ipa_count (count.ipa () - prof_count.ipa ());
     }
   new_node->decl = new_decl;
+  new_node->order = order;
   new_node->register_symbol ();
   new_node->lto_file_data = lto_file_data;
   new_node->analyzed = analyzed;

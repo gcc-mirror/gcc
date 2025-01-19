@@ -12,18 +12,18 @@
 /* { dg-final { scan-assembler-times "negc" 10 { target { ! sh2a } } } }  */
 /* { dg-final { scan-assembler-times "movrt" 10 { target { sh2a } } } }  */
 
-typedef unsigned char bool;
+typedef unsigned char mybool;
 
 int other_func_a (int, int);
 int other_func_b (int, int);
 
-bool
+mybool
 test_00 (int a, int b)
 {
   return (a ^ b) >= 0;
 }
 
-bool
+mybool
 test_01 (int a, int b)
 {
   return (a ^ b) < 0;
@@ -53,7 +53,7 @@ test_04 (int a, int b)
   return (a ^ b) >= 0 ? -20 : -40;
 }
 
-bool
+mybool
 test_05 (int a, int b)
 {
   return (a ^ b) < 0;
@@ -65,7 +65,7 @@ test_06 (int a, int b)
   return (a ^ b) < 0 ? -20 : -40;
 }
 
-bool
+mybool
 test_07 (int a, int b)
 {
   return (a < 0) == (b < 0);
@@ -77,7 +77,7 @@ test_08 (int a, int b)
   return (a < 0) == (b < 0) ? -20 : -40;
 }
 
-bool
+mybool
 test_09 (int a, int b)
 {
   return (a < 0) != (b < 0);
@@ -89,7 +89,7 @@ test_10 (int a, int b)
   return (a < 0) != (b < 0) ? -20 : -40;
 }
 
-bool
+mybool
 test_11 (int a, int b)
 {
   return (a >= 0) ^ (b < 0);
@@ -101,7 +101,7 @@ test_12 (int a, int b)
   return (a >= 0) ^ (b < 0) ? -20 : -40;
 }
 
-bool
+mybool
 test_13 (int a, int b)
 {
   return !((a >= 0) ^ (b < 0));
@@ -113,7 +113,7 @@ test_14 (int a, int b)
   return !((a >= 0) ^ (b < 0)) ? -20 : -40;
 }
 
-bool
+mybool
 test_15 (int a, int b)
 {
  return (a & 0x80000000) == (b & 0x80000000);
@@ -125,7 +125,7 @@ test_16 (int a, int b)
   return (a & 0x80000000) == (b & 0x80000000) ? -20 : -40;
 }
 
-bool
+mybool
 test_17 (int a, int b)
 {
   return (a & 0x80000000) != (b & 0x80000000);
@@ -164,20 +164,20 @@ test_22 (int a, int b, int c, int d)
     return other_func_b (c, d);
 }
 
-bool
+mybool
 test_23 (int a, int b, int c, int d)
 {
   /* Should emit 2x div0s.  */
   return ((a < 0) == (b < 0)) | ((c < 0) == (d < 0));
 }
 
-bool
+mybool
 test_24 (int a, int b)
 {
   return a >= 0 != b >= 0;
 }
 
-bool
+mybool
 test_25 (int a, int b)
 {
   return !(a < 0 != b < 0);
@@ -215,42 +215,42 @@ test_30 (int a, int b)
 
 // -------------------------------------------------------
 
-bool
+mybool
 test_31 (int a, int b)
 {
   /* 2x exts.w, div0s  */
   return ((a & 0x8000) ^ (b & 0x8000)) != 0;
 }
 
-bool
+mybool
 test_32 (int a, int b)
 {
   /* 2x exts.w, div0s  */
   return (a & 0x8000) != (b & 0x8000);
 }
 
-bool
+mybool
 test_33 (int a, int b)
 {
   /* 2x add/shll, div0s  */
   return ((a & (1<<30)) ^ (b & (1<<30))) != 0;
 }
 
-bool
+mybool
 test_34 (int a, int b)
 {
   /* 2x exts.b, div0s  */
   return (a & 0x80) != (b & 0x80);
 }
 
-bool
+mybool
 test_35 (signed char a, signed char b)
 {
   /* 2x exts.b, div0s  */
   return (a < 0) != (b < 0);
 }
 
-bool
+mybool
 test_36 (short a, short b)
 {
   /* 2x exts.w, div0s  */
@@ -264,21 +264,21 @@ test_37 (short a, short b)
   return (a < 0) != (b < 0) ? 40 : -10;
 }
 
-bool
+mybool
 test_38 (int a, int b)
 {
   /* 2x shll8, div0s  */
   return ((a & (1<<23)) ^ (b & (1<<23))) != 0;
 }
 
-bool
+mybool
 test_39 (int a, int b)
 {
   /* 2x shll2, div0s  */
   return ((a & (1<<29)) ^ (b & (1<<29))) != 0;
 }
 
-bool
+mybool
 test_40 (short a, short b)
 {
   /* 2x exts.w, div0s, negc  */

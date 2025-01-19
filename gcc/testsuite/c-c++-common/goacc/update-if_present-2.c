@@ -38,5 +38,9 @@ t2 ()
 #pragma acc parallel loop if_present /* { dg-error "'if_present' is not valid" } */
     for (b = 1; b < 10; b++)
     ;
+
+#pragma acc serial loop if_present /* { dg-error "'if_present' is not valid" } */
+    for (b = 1; b < 10; b++)
+    ;
 }
 

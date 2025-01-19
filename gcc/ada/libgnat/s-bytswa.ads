@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2006-2024, AdaCore                     --
+--                     Copyright (C) 2006-2025, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  Intrinsic routines for byte swapping. These are used by the expanded code
---  (supporting alternative byte ordering), and by the GNAT.Byte_Swapping run
---  time package which provides user level routines for byte swapping.
+--  (supporting alternative byte ordering), and by the ``GNAT.Byte_Swapping``
+--  run-time package which provides user level routines for byte swapping.
 
 with Interfaces;
 

@@ -1,5 +1,5 @@
 // Pass to fuse CC operations with other instructions.
-// Copyright (C) 2021-2024 Free Software Foundation, Inc.
+// Copyright (C) 2021-2025 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -64,7 +64,6 @@
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
 #define INCLUDE_ARRAY
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

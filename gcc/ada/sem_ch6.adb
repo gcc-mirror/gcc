@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Expander;       use Expander;
+with Exp_Aggr;       use Exp_Aggr;
 with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch9;        use Exp_Ch9;
@@ -224,10 +225,6 @@ package body Sem_Ch6 is
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
 
-   procedure Preanalyze_Formal_Expression (N : Node_Id; T : Entity_Id);
-   --  Preanalysis of default expressions of subprogram formals. N is the
-   --  expression to be analyzed and T is the expected type.
-
    procedure Set_Formal_Mode (Formal_Id : Entity_Id);
    --  Set proper Ekind to reflect formal mode (in, out, in out), and set
    --  miscellaneous other attributes.
@@ -313,7 +310,7 @@ package body Sem_Ch6 is
       Typ      : Entity_Id := Empty;
 
       Def_Id : Entity_Id := Empty;
-      Prev   : Entity_Id;
+      Prev   : Entity_Id := Current_Entity_In_Scope (Defining_Entity (Spec));
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
 
@@ -328,10 +325,15 @@ package body Sem_Ch6 is
       Inline_Processing_Required := True;
 
       --  Create a specification for the generated body. This must be done
-      --  prior to the analysis of the initial declaration.
+      --  prior to the analysis of the initial declaration. We mark the
+      --  generated Defining_Unit_Name as Comes_From_Source to avoid
+      --  suppressing warnings on it. We do not do that in instances,
+      --  because of arcane interactions with ghost generics.
 
       New_Spec := Copy_Subprogram_Spec (Spec);
-      Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
+      if not In_Instance then
+         Set_Comes_From_Source (Defining_Unit_Name (New_Spec));
+      end if;
 
       --  Copy SPARK pragma from expression function
 
@@ -425,6 +427,12 @@ package body Sem_Ch6 is
          --  As elsewhere, we do not emit freeze nodes within a generic unit.
 
          if not Inside_A_Generic then
+            --  Set the parent of the new node to be the parent of the original
+            --  to get the proper context, which is needed for complete error
+            --  reporting and for semantic analysis.
+
+            Set_Parent (New_Body, Parent (N));
+
             Freeze_Expr_Types
               (Def_Id => Def_Id,
                Typ    => Typ,
@@ -525,29 +533,6 @@ package body Sem_Ch6 is
          Set_Corresponding_Body (N, Defining_Entity (New_Body));
          Set_Corresponding_Spec (New_Body, Def_Id);
 
-         --  Within a generic preanalyze the original expression for name
-         --  capture. The body is also generated but plays no role in
-         --  this because it is not part of the original source.
-         --  If this is an ignored Ghost entity, analysis of the generated
-         --  body is needed to hide external references (as is done in
-         --  Analyze_Subprogram_Body) after which the subprogram profile
-         --  can be frozen, which is needed to expand calls to such an ignored
-         --  Ghost subprogram.
-
-         if Inside_A_Generic then
-            Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
-            Push_Scope (Def_Id);
-            Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Typ);
-            End_Scope;
-         else
-            Push_Scope (Def_Id);
-            Install_Formals (Def_Id);
-            Preanalyze_Formal_Expression (Expr, Typ);
-            Check_Limited_Return (Orig_N, Expr, Typ);
-            End_Scope;
-         end if;
-
          --  If this is a wrapper created in an instance for a formal
          --  subprogram, insert body after declaration, to be analyzed when the
          --  enclosing instance is analyzed.
@@ -583,6 +568,29 @@ package body Sem_Ch6 is
             end;
          end if;
 
+         --  Within a generic preanalyze the original expression for name
+         --  capture. The body is also generated but plays no role in
+         --  this because it is not part of the original source.
+         --  If this is an ignored Ghost entity, analysis of the generated
+         --  body is needed to hide external references (as is done in
+         --  Analyze_Subprogram_Body) after which the subprogram profile
+         --  can be frozen, which is needed to expand calls to such an ignored
+         --  Ghost subprogram.
+
+         if Inside_A_Generic then
+            Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Spec_Expression (Expr, Typ);
+            End_Scope;
+         else
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Spec_Expression (Expr, Typ);
+            Check_Limited_Return (Orig_N, Expr, Typ);
+            End_Scope;
+         end if;
+
          --  In the case of an expression function marked with the aspect
          --  Static, we need to check the requirement that the function's
          --  expression is a potentially static expression. This is done
@@ -609,7 +617,7 @@ package body Sem_Ch6 is
                   begin
                      Set_Checking_Potentially_Static_Expression (True);
 
-                     Preanalyze_Formal_Expression (Exp_Copy, Typ);
+                     Preanalyze_Spec_Expression (Exp_Copy, Typ);
 
                      if not Is_Static_Expression (Exp_Copy) then
                         Error_Msg_N
@@ -989,13 +997,17 @@ package body Sem_Ch6 is
          --  The return value is converted to the return type of the function,
          --  which implies a predicate check if the return type is predicated.
          --  We do not apply the check for an extended return statement because
-         --  Analyze_Object_Declaration has already done it on Obj_Decl above.
-         --  We do not apply the check to a case expression because it will
-         --  be expanded into a series of return statements, each of which
+         --  Analyze_Object_Declaration has already done it on Obj_Decl above,
+         --  or to a delayed aggregate because the return will be turned into
+         --  an extended return by Expand_Simple_Function_Return in this case.
+         --  We do not apply the check to a conditional expression because it
+         --  will be expanded into a series of return statements, each of which
          --  will receive a predicate check.
 
          if Nkind (N) /= N_Extended_Return_Statement
+           and then not Is_Delayed_Aggregate (Expr)
            and then Nkind (Expr) /= N_Case_Expression
+           and then Nkind (Expr) /= N_If_Expression
          then
             Apply_Predicate_Check (Expr, R_Type);
          end if;
@@ -1362,11 +1374,10 @@ package body Sem_Ch6 is
       Form       : Node_Id;
       Null_Body  : Node_Id := Empty;
       Null_Stmt  : Node_Id := Null_Statement (Spec);
-      Prev       : Entity_Id;
+      Prev       : Entity_Id :=
+        Current_Entity_In_Scope (Defining_Entity (Spec));
 
    begin
-      Prev := Current_Entity_In_Scope (Defining_Entity (Spec));
-
       --  A null procedure is Ghost when it is stand-alone and is subject to
       --  pragma Ghost, or when the corresponding spec is Ghost. Set the mode
       --  now, to ensure that any nodes generated during analysis and expansion
@@ -2016,6 +2027,23 @@ package body Sem_Ch6 is
       if Nkind (N) = N_Extended_Return_Statement then
          End_Scope;
       end if;
+
+      Finally_Legality_Check : declare
+         X : Node_Id := N;
+      begin
+         while Present (X) loop
+            if Nkind (X) in N_Proper_Body then
+               exit;
+            elsif Nkind (Parent (X)) = N_Handled_Sequence_Of_Statements
+              and then Is_List_Member (X)
+              and then List_Containing (X) = Finally_Statements (Parent (X))
+            then
+               Error_Msg_N ("cannot return out of finally part", N);
+               exit;
+            end if;
+            X := Parent (X);
+         end loop;
+      end Finally_Legality_Check;
 
       Kill_Current_Values (Last_Assignment_Only => True);
       Check_Unreachable_Code (N);
@@ -4531,8 +4559,10 @@ package body Sem_Ch6 is
       --  may now appear in parameter and result profiles. Since the analysis
       --  of a subprogram body may use the parameter and result profile of the
       --  spec, swap any limited views with their non-limited counterpart.
+      --
+      --  Note that the non-limited view should also be exchanged in Ada 2005.
 
-      if Ada_Version >= Ada_2012 and then Present (Spec_Id) then
+      if Ada_Version >= Ada_2005 and then Present (Spec_Id) then
          Exch_Views := Exchange_Limited_Views (Spec_Id);
       end if;
 
@@ -5143,14 +5173,6 @@ package body Sem_Ch6 is
 
       if Nkind (Parent (N)) = N_Compilation_Unit then
          Set_Body_Required (Parent (N), True);
-
-         if Ada_Version >= Ada_2005
-           and then Nkind (Specification (N)) = N_Procedure_Specification
-           and then Null_Present (Specification (N))
-         then
-            Error_Msg_N
-              ("null procedure cannot be declared at library level", N);
-         end if;
       end if;
 
       Generate_Reference_To_Formals (Designator);
@@ -9992,7 +10014,7 @@ package body Sem_Ch6 is
                --  from interfaces several null primitives which differ only
                --  in the mode of the formals.
 
-               if not (Comes_From_Source (E))
+               if not Comes_From_Source (E)
                  and then Is_Null_Procedure (E)
                  and then not Mode_Conformant (Designator, E)
                then
@@ -12658,7 +12680,7 @@ package body Sem_Ch6 is
                   --  overridden operation is the inherited primitive
                   --  (which is available through the attribute alias).
 
-                  elsif not (Comes_From_Source (E))
+                  elsif not Comes_From_Source (E)
                     and then Is_Dispatching_Operation (E)
                     and then Find_Dispatching_Type (E) =
                              Find_Dispatching_Type (S)
@@ -12858,26 +12880,22 @@ package body Sem_Ch6 is
 
       <<Check_Inequality>>
          if Chars (S) = Name_Op_Eq
-           and then Etype (S) = Standard_Boolean
+           and then Base_Type (Etype (S)) = Standard_Boolean
            and then Present (Parent (S))
            and then not Is_Dispatching_Operation (S)
          then
             Make_Inequality_Operator (S);
-            Check_Untagged_Equality (S);
+
+            --  The freezing rule introduced in Ada 2012 was historically
+            --  not enforced for operators returning a subtype of Boolean.
+
+            if Etype (S) = Standard_Boolean
+              or else not Debug_Flag_Underscore_Q
+            then
+               Check_Untagged_Equality (S);
+            end if;
          end if;
    end New_Overloaded_Entity;
-
-   ----------------------------------
-   -- Preanalyze_Formal_Expression --
-   ----------------------------------
-
-   procedure Preanalyze_Formal_Expression (N : Node_Id; T : Entity_Id) is
-      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
-   begin
-      In_Spec_Expression := True;
-      Preanalyze_With_Freezing_And_Resolve (N, T);
-      In_Spec_Expression := Save_In_Spec_Expression;
-   end Preanalyze_Formal_Expression;
 
    ---------------------
    -- Process_Formals --
@@ -13139,6 +13157,16 @@ package body Sem_Ch6 is
          --  An access formal type
 
          else
+            if Nkind (Parent (T)) = N_Accept_Statement
+              or else (Nkind (Parent (T)) = N_Entry_Declaration
+                       and then Nkind (Context) = N_Task_Definition)
+            then
+               Error_Msg_N
+                 ("task entries cannot have access parameters",
+                  Parameter_Type (Param_Spec));
+               return;
+            end if;
+
             Formal_Type :=
               Access_Definition (Related_Nod, Parameter_Type (Param_Spec));
 
@@ -13179,7 +13207,7 @@ package body Sem_Ch6 is
             --  Do the special preanalysis of the expression (see section on
             --  "Handling of Default Expressions" in the spec of package Sem).
 
-            Preanalyze_Formal_Expression (Default, Formal_Type);
+            Preanalyze_Spec_Expression (Default, Formal_Type);
 
             --  An access to constant cannot be the default for
             --  an access parameter that is an access to variable.

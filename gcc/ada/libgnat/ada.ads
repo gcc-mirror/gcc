@@ -13,6 +13,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This is an empty package at the top of the Ada package hierarchy
+
 package Ada is
    pragma No_Elaboration_Code_All;
    pragma Pure;

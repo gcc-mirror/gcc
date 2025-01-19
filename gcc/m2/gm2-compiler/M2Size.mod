@@ -1,6 +1,6 @@
 (* M2Size.mod exports the standard function SIZE.
 
-Copyright (C) 2003-2024 Free Software Foundation, Inc.
+Copyright (C) 2003-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,8 @@ FROM M2Base IMPORT ZType ;
 FROM M2LexBuf IMPORT BuiltinTokenNo ;
 
 FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
-                        AddSymToModuleScope, GetCurrentScope ;
+                        AddSymToModuleScope, GetCurrentScope,
+                        ProcedureKind ;
 
 
 (*
@@ -38,11 +39,12 @@ BEGIN
    IF Size=NulSym
    THEN
                                                      (* Function        *)
-      Size := MakeProcedure (BuiltinTokenNo, MakeKey('SIZE')) ;
-      PutFunction(Size, ZType)                       (* Return Type     *)
+      Size := MakeProcedure (BuiltinTokenNo, MakeKey ('SIZE')) ;
+      PutFunction (BuiltinTokenNo, Size, DefProcedure, ZType)
+                                                     (* Return Type     *)
                                                      (* ZType           *)
    ELSE
-      AddSymToModuleScope(GetCurrentScope(), Size)
+      AddSymToModuleScope (GetCurrentScope (), Size)
    END
 END MakeSize ;
 

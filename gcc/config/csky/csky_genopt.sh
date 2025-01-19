@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate csky_tables.opt from the lists in *.def.
-# Copyright (C) 2018-2024 Free Software Foundation, Inc.
+# Copyright (C) 2018-2025 Free Software Foundation, Inc.
 # Contributed by C-SKY Microsystems and Mentor Graphics.
 #
 # This file is part of GCC.
@@ -23,7 +23,7 @@ cat <<EOF
 ; -*- buffer-read-only: t -*-
 ; Generated automatically by csky_genopt.sh from csky_cores.def.
 
-; Copyright (C) 2018-2024 Free Software Foundation, Inc.
+; Copyright (C) 2018-2025 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1023,8 +1023,8 @@ is
             while Source.Last >= Index_Type'First loop
                pragma Assert
                  (Source.Last <= Index_Type'First
-                   or else not (Is_Less (SA (Source.Last),
-                                         SA (Source.Last - 1))));
+                   or else not Is_Less (SA (Source.Last),
+                                        SA (Source.Last - 1)));
 
                if I < Index_Type'First then
                   declare
@@ -1041,7 +1041,7 @@ is
 
                pragma Assert
                  (I <= Index_Type'First
-                    or else not (Is_Less (TA (I), TA (I - 1))));
+                    or else not Is_Less (TA (I), TA (I - 1)));
 
                declare
                   Src : Element_Access renames SA (Source.Last);

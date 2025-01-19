@@ -7454,8 +7454,6 @@ PR ada/10768
 	__gnat_init_float): Define for OpenBSD.
 
 	* initialize.c (__gnat_initialize): Define for OpenBSD.
-
-
 
 Copyright (C) 2008 Free Software Foundation, Inc.
 

@@ -1,0 +1,46 @@
+#  Copyright (C) 2023-2025 Free Software Foundation, Inc.
+
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it under
+#  the terms of the GNU General Public License as published by the Free
+#  Software Foundation; either version 3, or (at your option) any later
+#  version.
+#
+#  GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#  for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib sarif-replay-dg.exp
+
+global DEFAULT_SARIF_REPLAY_FLAGS
+if [info exists DEFAULT_SARIF_REPLAY_FLAGS] then {
+  set save_default_sarif_replay_flags $DEFAULT_SARIF_REPLAY_FLAGS
+}
+
+# If a testcase doesn't have special options, use these.
+set DEFAULT_SARIF_REPLAY_FLAGS "-fjson-comments -fdiagnostics-color=never"
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+sarif-replay-dg-runtest [lsort \
+       [glob -nocomplain $srcdir/$subdir/*/*.sarif ] ] "" $DEFAULT_SARIF_REPLAY_FLAGS
+
+# All done.
+dg-finish
+
+if [info exists save_default_sarif_replay_flags] {
+  set DEFAULT_SARIF_REPLAY_FLAGS $save_default_sarif_replay_flags
+} else {
+  unset DEFAULT_SARIF_REPLAY_FLAGS
+}

@@ -5547,7 +5547,6 @@
 	-fcheck=recursion when -frecursive is used.
 
 	* intrinsic.texi (iso_c_binding): Improve wording.
-
 
 Copyright (C) 2010 Free Software Foundation, Inc.
 

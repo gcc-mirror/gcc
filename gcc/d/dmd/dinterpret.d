@@ -50,7 +50,7 @@ import dmd.rootobject;
 import dmd.root.utf;
 import dmd.statement;
 import dmd.tokens;
-import dmd.typesem : mutableOf, equivalent, pointerTo, sarrayOf, arrayOf;
+import dmd.typesem : mutableOf, equivalent, pointerTo, sarrayOf, arrayOf, size;
 import dmd.utils : arrayCastBigEndian;
 import dmd.visitor;
 
@@ -99,6 +99,10 @@ public Expression ctfeInterpret(Expression e)
         return ErrorExp.get();
 
     auto rgnpos = ctfeGlobals.region.savePos();
+
+    import dmd.timetrace;
+    timeTraceBeginEvent(TimeTraceEventType.ctfe);
+    scope (exit) timeTraceEndEvent(TimeTraceEventType.ctfe, e);
 
     Expression result = interpret(e, null);
 
@@ -432,6 +436,27 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
         printf("\n********\n%s FuncDeclaration::interpret(istate = %p) %s\n", fd.loc.toChars(), istate, fd.toChars());
     }
 
+    scope dlg = () {
+        import dmd.common.outbuffer;
+        auto strbuf = OutBuffer(20);
+        strbuf.writestring(fd.toPrettyChars());
+        strbuf.write("(");
+        if (arguments)
+        {
+            foreach (i, arg; *arguments)
+            {
+                if (i > 0)
+                    strbuf.write(", ");
+                strbuf.writestring(arg.toChars());
+            }
+        }
+        strbuf.write(")");
+        return strbuf.extractSlice();
+    };
+    import dmd.timetrace;
+    timeTraceBeginEvent(TimeTraceEventType.ctfeCall);
+    scope (exit) timeTraceEndEvent(TimeTraceEventType.ctfeCall, fd, dlg);
+
     void fdError(const(char)* msg)
     {
         error(fd.loc, "%s `%s` %s", fd.kind, fd.toPrettyChars, msg);
@@ -695,9 +720,9 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
         }
     }
 
-    if (tf.isref && e.op == EXP.variable && e.isVarExp().var == fd.vthis)
+    if (tf.isRef && e.op == EXP.variable && e.isVarExp().var == fd.vthis)
         e = thisarg;
-    if (tf.isref && fd.hasDualContext() && e.op == EXP.index)
+    if (tf.isRef && fd.hasDualContext() && e.op == EXP.index)
     {
         auto ie = e.isIndexExp();
         auto pe = ie.e1.isPtrExp();
@@ -974,7 +999,7 @@ Expression interpretStatement(UnionExp* pue, Statement s, InterState* istate)
         /* If the function returns a ref AND it's been called from an assignment,
          * we need to return an lvalue. Otherwise, just do an (rvalue) interpret.
          */
-        if (tf.isref)
+        if (tf.isRef)
         {
             result = interpret(pue, s.exp, istate, CTFEGoal.LValue);
             return;
@@ -2903,7 +2928,7 @@ public:
             result = eref;
             return;
         }
-        if (e.newtype.toBasetype().isscalar())
+        if (e.newtype.toBasetype().isScalar())
         {
             Expression newval;
             if (e.arguments && e.arguments.length)
@@ -3002,7 +3027,7 @@ public:
             result = pointerDifference(pue, e.loc, e.type, e1, e2);
             return;
         }
-        if (e.e1.type.ty == Tpointer && e.e2.type.isintegral())
+        if (e.e1.type.ty == Tpointer && e.e2.type.isIntegral())
         {
             UnionExp ue1 = void;
             Expression e1 = interpret(&ue1, e.e1, istate);
@@ -3015,7 +3040,7 @@ public:
             result = pointerArithmetic(pue, e.loc, e.op, e.type, e1, e2);
             return;
         }
-        if (e.e2.type.ty == Tpointer && e.e1.type.isintegral() && e.op == EXP.add)
+        if (e.e2.type.ty == Tpointer && e.e1.type.isIntegral() && e.op == EXP.add)
         {
             UnionExp ue1 = void;
             Expression e1 = interpret(&ue1, e.e1, istate);
@@ -3611,7 +3636,7 @@ public:
 
                 newval = (*fp)(e.loc, e.type, oldval, newval).copy();
             }
-            else if (e.e2.type.isintegral() &&
+            else if (e.e2.type.isIntegral() &&
                      (e.op == EXP.addAssign ||
                       e.op == EXP.minAssign ||
                       e.op == EXP.plusPlus ||
@@ -3844,7 +3869,7 @@ public:
                 if (auto bf = v.isBitFieldDeclaration())
                 {
                     sinteger_t value = ival.toInteger();
-                    if (bf.type.isunsigned())
+                    if (bf.type.isUnsigned())
                         value &= (1L << bf.fieldWidth) - 1; // zero extra bits
                     else
                     {   // sign extend extra bits
@@ -4830,33 +4855,6 @@ public:
 
                 return;
             }
-            else if (fd.ident == Id._d_arrayappendT || fd.ident == Id._d_arrayappendTTrace)
-            {
-                // In expressionsem.d `ea ~= eb` was lowered to `_d_arrayappendT{,Trace}({file, line, funcname}, ea, eb);`.
-                // The following code will rewrite it back to `ea ~= eb` and then interpret that expression.
-                Expression lhs, rhs;
-
-                if (fd.ident == Id._d_arrayappendT)
-                {
-                    assert(e.arguments.length == 2);
-                    lhs = (*e.arguments)[0];
-                    rhs = (*e.arguments)[1];
-                }
-                else
-                {
-                    assert(e.arguments.length == 5);
-                    lhs = (*e.arguments)[3];
-                    rhs = (*e.arguments)[4];
-                }
-
-                auto cae = new CatAssignExp(e.loc, lhs, rhs);
-                cae.type = e.type;
-
-                result = interpretRegion(cae, istate, CTFEGoal.LValue);
-                return;
-            }
-            else if (fd.ident == Id._d_arrayappendcTX)
-                assert(0, "CTFE cannot interpret _d_arrayappendcTX!");
         }
         else if (auto soe = ecall.isSymOffExp())
         {
@@ -6107,7 +6105,7 @@ public:
         {
             auto se = e1.isStringExp();
             // Allow casting a hex string literal to short[], int[] or long[]
-            if (se && se.hexString && se.postfix == StringExp.NoPostfix)
+            if (se && se.hexString && se.postfix == StringExp.NoPostfix && e.to.nextOf().isIntegral)
             {
                 const sz = cast(size_t) e.to.nextOf().size;
                 if ((se.len % sz) != 0)
@@ -6126,8 +6124,7 @@ public:
             }
             error(e.loc, "array cast from `%s` to `%s` is not supported at compile time", e1.type.toChars(), e.to.toChars());
             if (se && se.hexString && se.postfix != StringExp.NoPostfix)
-                errorSupplemental(e.loc, "perhaps remove postfix `%s` from hex string",
-                    (cast(char) se.postfix ~ "\0").ptr);
+                errorSupplemental(e.loc, "perhaps remove postfix `%.*s` from hex string", 1, &se.postfix);
 
             result = CTFEExp.cantexp;
             return;
@@ -6144,9 +6141,9 @@ public:
         }
         else if (tobt.isTypeBasic() && e1.op == EXP.null_)
         {
-            if (tobt.isintegral())
+            if (tobt.isIntegral())
                 emplaceExp!(IntegerExp)(pue, e.loc, 0, e.to);
-            else if (tobt.isreal())
+            else if (tobt.isReal())
                 emplaceExp!(RealExp)(pue, e.loc, CTFloat.zero, e.to);
             result = pue.exp();
             return;
@@ -6855,10 +6852,10 @@ private Expression scrubReturnValue(const ref Loc loc, Expression e)
     Expression scrubSE(StructLiteralExp sle)
     {
         sle.ownedByCtfe = OwnedBy.code;
-        if (!(sle.stageflags & stageScrub))
+        if (!(sle.stageflags & StructLiteralExp.StageFlags.scrub))
         {
             const old = sle.stageflags;
-            sle.stageflags |= stageScrub;       // prevent infinite recursion
+            sle.stageflags |= StructLiteralExp.StageFlags.scrub; // prevent infinite recursion
             if (auto ex = scrubArray(sle.elements, true))
                 return ex;
             sle.stageflags = old;
@@ -6935,10 +6932,10 @@ private Expression scrubCacheValue(Expression e)
     Expression scrubSE(StructLiteralExp sle)
     {
         sle.ownedByCtfe = OwnedBy.cache;
-        if (!(sle.stageflags & stageScrub))
+        if (!(sle.stageflags & StructLiteralExp.StageFlags.scrub))
         {
             const old = sle.stageflags;
-            sle.stageflags |= stageScrub;       // prevent infinite recursion
+            sle.stageflags |= StructLiteralExp.StageFlags.scrub;  // prevent infinite recursion
             if (auto ex = scrubArrayCache(sle.elements))
                 return ex;
             sle.stageflags = old;
@@ -7012,10 +7009,10 @@ private Expression copyRegionExp(Expression e)
 
     static void copySE(StructLiteralExp sle)
     {
-        if (1 || !(sle.stageflags & stageScrub))
+        if (1 || !(sle.stageflags & StructLiteralExp.StageFlags.scrub))
         {
             const old = sle.stageflags;
-            sle.stageflags |= stageScrub;       // prevent infinite recursion
+            sle.stageflags |= StructLiteralExp.StageFlags.scrub; // prevent infinite recursion
             copyArray(sle.elements);
             sle.stageflags = old;
         }

@@ -1,3 +1,82 @@
+2025-01-13  Martin Jambor  <mjambor@suse.cz>
+
+	* MAINTAINERS: Fix the name order of the Write After Approval section.
+
+2024-12-23  Mark Harmstone  <mark@harmstone.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	Revert:
+	2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+		    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.def: Add dependencies so libatomic is built before target
+	libraries are configured.
+	* Makefile.tpl: Export TARGET_CONFIGDIRS.
+	* configure.ac: Add libatomic to bootstrap_target_libs.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.def: Add dependencies so libatomic is built before target
+	libraries are configured.
+	* Makefile.tpl: Export TARGET_CONFIGDIRS.
+	* configure.ac: Add libatomic to bootstrap_target_libs.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2024-12-11  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-12-02  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac: Rename "libdiagnostics" to "libgdiagnostics".
+	* configure: Regenerate.
+
+2024-11-29  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* MAINTAINERS: Remove references to nios2.
+	* configure.ac: Likewise.
+	* configure: Regenerated.
+
+2024-11-22  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+	* configure.ac: Sync with Binutils.
+
+2024-11-22  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-11-19  Florian Weimer  <fweimer@redhat.com>
+
+	* SECURITY.txt: Remove Debian.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac (--enable-libdiagnostics): New.
+	* configure: Regenerate.
+
+2024-11-05  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac: Add sim to noconfigdirs for ARM targets.
+	* configure: Regenerate.
+
 2024-10-30  Soumya AR  <soumyaa@nvidia.com>
 
 	* MAINTAINERS: Add myself to write after approval and DCO.

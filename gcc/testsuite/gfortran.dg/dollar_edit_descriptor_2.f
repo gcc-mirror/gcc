@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-w" }
+! { dg-options "-w -std=legacy" }
 ! PR25545 internal file and dollar edit descriptor.
       program main
       character*20 line

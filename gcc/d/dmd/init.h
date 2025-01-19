@@ -33,6 +33,7 @@ class Initializer : public ASTNode
 public:
     Loc loc;
     unsigned char kind;
+    d_bool semanticDone;
 
     DYNCAST dyncast() const override { return DYNCAST_INITIALIZER; }
 
@@ -85,7 +86,6 @@ public:
     Initializers value; // of Initializer *'s
     unsigned dim;       // length of array being initialized
     Type *type;         // type that array will be used to initialize
-    d_bool sem;           // true if semantic() is run
     d_bool isCarray;      // C array semantics
 
     bool isAssociativeArray() const;
@@ -119,13 +119,12 @@ class CInitializer final : public Initializer
 public:
     DesigInits initializerList;
     Type *type;         // type that array will be used to initialize
-    d_bool sem;           // true if semantic() is run
 
     void accept(Visitor *v) override { v->visit(this); }
 };
 
 namespace dmd
 {
-    Expression *initializerToExpression(Initializer *init, Type *t = NULL, const bool isCfile = false);
+    Expression *initializerToExpression(Initializer *init, Type *t = nullptr, const bool isCfile = false);
     Initializer *initializerSemantic(Initializer *init, Scope *sc, Type *&tx, NeedInterpret needInterpret);
 }

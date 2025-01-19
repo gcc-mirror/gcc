@@ -10,6 +10,8 @@ module rt.aApply;
 
 import core.internal.utf : decode, toUTF8;
 
+debug (apply) import core.stdc.stdio : printf;
+
 /**********************************************/
 /* 1 argument versions */
 
@@ -76,7 +78,7 @@ extern (C) int _aApplycd1(scope const(char)[] aa, dg_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplycd1(), len = %d\n", len);
+    debug(apply) printf("_aApplycd1(), len = %zd\n", len);
     for (size_t i = 0; i < len; )
     {
         dchar d = aa[i];
@@ -137,7 +139,7 @@ extern (C) int _aApplywd1(scope const(wchar)[] aa, dg_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplywd1(), len = %d\n", len);
+    debug(apply) printf("_aApplywd1(), len = %zd\n", len);
     for (size_t i = 0; i < len; )
     {
         dchar d = aa[i];
@@ -198,7 +200,7 @@ extern (C) int _aApplycw1(scope const(char)[] aa, dg_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplycw1(), len = %d\n", len);
+    debug(apply) printf("_aApplycw1(), len = %zd\n", len);
     for (size_t i = 0; i < len; )
     {
         wchar w = aa[i];
@@ -272,7 +274,7 @@ extern (C) int _aApplywc1(scope const(wchar)[] aa, dg_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplywc1(), len = %d\n", len);
+    debug(apply) printf("_aApplywc1(), len = %zd\n", len);
     for (size_t i = 0; i < len; )
     {
         wchar w = aa[i];
@@ -351,7 +353,7 @@ extern (C) int _aApplydc1(scope const(dchar)[] aa, dg_t dg)
 {
     int result;
 
-    debug(apply) printf("_aApplydc1(), len = %d\n", aa.length);
+    debug(apply) printf("_aApplydc1(), len = %zd\n", aa.length);
     foreach (dchar d; aa)
     {
         if (d & ~0x7F)
@@ -427,7 +429,7 @@ extern (C) int _aApplydw1(scope const(dchar)[] aa, dg_t dg)
 {
     int result;
 
-    debug(apply) printf("_aApplydw1(), len = %d\n", aa.length);
+    debug(apply) printf("_aApplydw1(), len = %zd\n", aa.length);
     foreach (dchar d; aa)
     {
         wchar w;
@@ -513,7 +515,7 @@ extern (C) int _aApplycd2(scope const(char)[] aa, dg2_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplycd2(), len = %d\n", len);
+    debug(apply) printf("_aApplycd2(), len = %zd\n", len);
     size_t n;
     for (size_t i = 0; i < len; i += n)
     {
@@ -581,7 +583,7 @@ extern (C) int _aApplywd2(scope const(wchar)[] aa, dg2_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplywd2(), len = %d\n", len);
+    debug(apply) printf("_aApplywd2(), len = %zd\n", len);
     size_t n;
     for (size_t i = 0; i < len; i += n)
     {
@@ -649,7 +651,7 @@ extern (C) int _aApplycw2(scope const(char)[] aa, dg2_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplycw2(), len = %d\n", len);
+    debug(apply) printf("_aApplycw2(), len = %zd\n", len);
     size_t n;
     for (size_t i = 0; i < len; i += n)
     {
@@ -728,7 +730,7 @@ extern (C) int _aApplywc2(scope const(wchar)[] aa, dg2_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplywc2(), len = %d\n", len);
+    debug(apply) printf("_aApplywc2(), len = %zd\n", len);
     size_t n;
     for (size_t i = 0; i < len; i += n)
     {
@@ -813,7 +815,7 @@ extern (C) int _aApplydc2(scope const(dchar)[] aa, dg2_t dg)
     int result;
     size_t len = aa.length;
 
-    debug(apply) printf("_aApplydc2(), len = %d\n", len);
+    debug(apply) printf("_aApplydc2(), len = %zd\n", len);
     for (size_t i = 0; i < len; i++)
     {
         dchar d = aa[i];
@@ -891,7 +893,7 @@ unittest
 extern (C) int _aApplydw2(scope const(dchar)[] aa, dg2_t dg)
 {   int result;
 
-    debug(apply) printf("_aApplydw2(), len = %d\n", aa.length);
+    debug(apply) printf("_aApplydw2(), len = %zd\n", aa.length);
     foreach (size_t i, dchar d; aa)
     {
         wchar w;

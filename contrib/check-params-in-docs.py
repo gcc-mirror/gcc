@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018-2024 Free Software Foundation, Inc.
+# Copyright (C) 2018-2025 Free Software Foundation, Inc.
 #
 # Find missing and extra parameters in documentation compared to
 # output of: gcc --help=params.
@@ -57,7 +57,7 @@ for line in open(args.params_output).readlines():
         help_params[r[0]] = r[1]
 
 # Skip target-specific params
-help_params = [x for x in help_params.keys() if not target_specific(x)]
+help_params = {x:y for x,y in help_params.items() if not target_specific(x)}
 
 # Find section in .texi manual with parameters
 texi = ([x.strip() for x in open(args.texi_file).readlines()])
@@ -87,7 +87,7 @@ for line in texi:
 texi_params = [x for x in texi_params if not target_specific(x)]
 
 texi_set = set(texi_params) - ignored
-params_set = set(help_params) - ignored
+params_set = set(help_params.keys()) - ignored
 
 success = True
 extra = texi_set - params_set
@@ -101,7 +101,7 @@ if len(missing):
     print('Missing:')
     for m in missing:
         print('@item ' + m)
-        print(params[m])
+        print(help_params[m])
         print()
     success = False
 

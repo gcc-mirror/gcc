@@ -1,5 +1,5 @@
 /* Code translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -242,6 +241,16 @@ gfc_add_modify (stmtblock_t * pblock, tree lhs, tree rhs)
   gfc_add_modify_loc (input_location, pblock, lhs, rhs);
 }
 
+tree
+gfc_trans_force_lval (stmtblock_t *pblock, tree e)
+{
+  if (VAR_P (e))
+    return e;
+
+  tree v = gfc_create_var (TREE_TYPE (e), NULL);
+  gfc_add_modify (pblock, v, e);
+  return v;
+}
 
 /* Create a new scope/binding level and initialize a block.  Care must be
    taken when translating expressions as any temporaries will be placed in
@@ -2562,6 +2571,7 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_CANCELLATION_POINT:
 	case EXEC_OMP_CRITICAL:
 	case EXEC_OMP_DEPOBJ:
+	case EXEC_OMP_DISPATCH:
 	case EXEC_OMP_DISTRIBUTE:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:

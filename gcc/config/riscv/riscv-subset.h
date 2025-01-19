@@ -1,5 +1,5 @@
 /* Definition of data structure of RISC-V subset for GNU compiler.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_RISCV_SUBSET_H
 #define GCC_RISCV_SUBSET_H
+
+#include "riscv-feature-bits.h"
 
 #define RISCV_DONT_CARE_VERSION -1
 
@@ -120,6 +122,9 @@ public:
 extern const riscv_subset_list *riscv_cmdline_subset_list (void);
 extern void
 riscv_set_arch_by_subset_list (riscv_subset_list *, struct gcc_options *);
+extern bool riscv_minimal_hwprobe_feature_bits (const char *,
+						struct riscv_feature_bits *,
+						location_t);
 extern bool
 riscv_ext_is_subset (struct cl_target_option *, struct cl_target_option *);
 extern int riscv_x_target_flags_isa_mask (void);

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=ev67" } */
+/* { dg-options "-mcpu=ev67" } */
 
 typedef short INT16;
 typedef unsigned int CARD32;

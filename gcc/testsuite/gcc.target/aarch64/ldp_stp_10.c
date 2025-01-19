@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fschedule-insns" } */
 
 int
 load (int *arr)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2089,8 +2089,7 @@ package body Exp_Dist is
       --  disambiguated within their own scope.
 
       if Overload_Order > 1 then
-         Name_Buffer (Name_Len + 1 .. Name_Len + 2) := "__";
-         Name_Len := Name_Len + 2;
+         Add_Str_To_Name_Buffer ("__");
          Add_Nat_To_Name_Buffer (Overload_Order);
       end if;
 
@@ -2826,7 +2825,6 @@ package body Exp_Dist is
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => NVList,
-          Aliased_Present     => False,
           Object_Definition   =>
               New_Occurrence_Of (RTE (RE_NVList_Ref), Loc)));
 
@@ -7252,7 +7250,6 @@ package body Exp_Dist is
          Append_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Result,
-             Aliased_Present     => False,
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_NamedValue), Loc),
              Expression =>
@@ -7379,7 +7376,6 @@ package body Exp_Dist is
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Any,
-                      Aliased_Present     => False,
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Any), Loc),
                       Expression          => Expr));
@@ -7450,7 +7446,6 @@ package body Exp_Dist is
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Extra_Any_Parameter,
-                      Aliased_Present     => False,
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Any), Loc),
                       Expression          =>
@@ -8631,7 +8626,7 @@ package body Exp_Dist is
             --  The RACW case is taken care of by Exp_Dist.Add_RACW_From_Any
 
             pragma Assert
-              (not (Is_Remote_Access_To_Class_Wide_Type (Typ)));
+              (not Is_Remote_Access_To_Class_Wide_Type (Typ));
 
             Use_Opaque_Representation := False;
 
@@ -11188,11 +11183,8 @@ package body Exp_Dist is
       -----------------------------------
 
       procedure Reserve_NamingContext_Methods is
-         Str_Resolve : constant String := "resolve";
       begin
-         Name_Buffer (1 .. Str_Resolve'Length) := Str_Resolve;
-         Name_Len := Str_Resolve'Length;
-         Overload_Counter_Table.Set (Name_Find, 1);
+         Overload_Counter_Table.Set (Name_Find ("resolve"), 1);
       end Reserve_NamingContext_Methods;
 
       -----------------------

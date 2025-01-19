@@ -1,5 +1,5 @@
 /* Power ISA 3.0 atomic memory operation include file.
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
    Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>.
 
    This file is part of GCC.

@@ -318,7 +318,7 @@ struct Bytecode
     @property bool backreference() const
     {
         assert(code == IR.GroupStart || code == IR.GroupEnd);
-        return cast(bool)(raw & 1 << 23);
+        return (raw & 1 << 23) != 0;
     }
 
     //mark as local reference (for backrefs in lookarounds)
@@ -332,7 +332,7 @@ struct Bytecode
     @property bool localRef() const
     {
         assert(code == IR.Backref);
-        return cast(bool)(raw & 1 << 23);
+        return (raw & 1 << 23) != 0;
     }
 
     //human readable name of instruction

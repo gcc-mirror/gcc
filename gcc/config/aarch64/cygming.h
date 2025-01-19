@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995-2024 Free Software Foundation, Inc.
+   Copyright (C) 1995-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,8 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_AARCH64_CYGMING_H
 #define GCC_AARCH64_CYGMING_H
 
+#define DWARF2_DEBUGGING_INFO 1
+
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DINFO_TYPE_NONE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+#undef DWARF2_UNWIND_INFO
+#define DWARF2_UNWIND_INFO 0
 
 #define FASTCALL_PREFIX '@'
 
@@ -73,7 +78,39 @@ still needed for compilation.  */
 
 /* Declare the type properly for any external libcall.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
-  mingw_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
+  mingw_pe_declare_type (FILE, XSTR (FUN, 0), 1, 1)
+
+/* Use section relative relocations for debugging offsets.  Unlike
+   other targets that fake this by putting the section VMA at 0, PE
+   won't allow it.  */
+#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL, OFFSET, SECTION) \
+  do {								\
+    switch (SIZE)						\
+      {								\
+      case 4:							\
+	fputs ("\t.secrel32\t", FILE);				\
+	assemble_name (FILE, LABEL);				\
+	if ((OFFSET) != 0)					\
+	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC,		\
+		   (HOST_WIDE_INT) (OFFSET));			\
+	break;							\
+      case 8:							\
+	/* This is a hack.  There is no 64-bit section relative	\
+	   relocation.  However, the COFF format also does not	\
+	   support 64-bit file offsets; 64-bit applications are	\
+	   limited to 32-bits of code+data in any one module.	\
+	   Fake the 64-bit offset by zero-extending it.  */	\
+	fputs ("\t.secrel32\t", FILE);				\
+	assemble_name (FILE, LABEL);				\
+	if ((OFFSET) != 0)					\
+	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC,		\
+		   (HOST_WIDE_INT) (OFFSET));			\
+	fputs ("\n\t.long\t0", FILE);				\
+	break;							\
+      default:							\
+	gcc_unreachable ();					\
+      }								\
+  } while (0)
 
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
@@ -171,9 +208,26 @@ still needed for compilation.  */
     mingw_handle_selectany_attribute, NULL }
 
 #undef SUB_TARGET_RECORD_STUB
-#define SUB_TARGET_RECORD_STUB mingw_pe_record_stub
+#define SUB_TARGET_RECORD_STUB(NAME, DECL) mingw_pe_record_stub((NAME), \
+  DECL_WEAK ((DECL)))
 
 #define SUPPORTS_ONE_ONLY 1
+
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
+  do {									\
+    mingw_pe_declare_type (STREAM, NAME, TREE_PUBLIC (DECL), 0);	\
+    ASM_OUTPUT_LABEL ((STREAM), (NAME));				\
+  } while (0)
+
+
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)	\
+  do {									\
+    mingw_pe_declare_type (STREAM, NAME, TREE_PUBLIC (DECL), 1);	\
+    aarch64_declare_function_name (STREAM, NAME, DECL);			\
+  } while (0)
+
 
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
@@ -186,8 +240,15 @@ still needed for compilation.  */
 #undef GOT_ALIAS_SET
 #define GOT_ALIAS_SET mingw_GOT_alias_set ()
 
-#define PE_COFF_LEGITIMIZE_EXTERN_DECL 1
+#define PE_COFF_LEGITIMIZE_EXTERN_DECL(RTX) \
+  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_WEAK (RTX))
 
 #define HAVE_64BIT_POINTERS 1
+
+/* Kludge because of missing PE-COFF support for early LTO debug.  */
+#undef  TARGET_ASM_LTO_START
+#define TARGET_ASM_LTO_START mingw_pe_asm_lto_start
+#undef  TARGET_ASM_LTO_END
+#define TARGET_ASM_LTO_END mingw_pe_asm_lto_end
 
 #endif

@@ -4,7 +4,7 @@
 
 /*
 ** tbl_f64_tied1:
-**	tbl	z0\.d, z0\.d, z4\.d
+**	tbl	z0\.d, {z0\.d}, z4\.d
 **	ret
 */
 TEST_DUAL_Z (tbl_f64_tied1, svfloat64_t, svuint64_t,
@@ -13,7 +13,7 @@ TEST_DUAL_Z (tbl_f64_tied1, svfloat64_t, svuint64_t,
 
 /*
 ** tbl_f64_tied2:
-**	tbl	z0\.d, z4\.d, z0\.d
+**	tbl	z0\.d, {z4\.d}, z0\.d
 **	ret
 */
 TEST_DUAL_Z_REV (tbl_f64_tied2, svfloat64_t, svuint64_t,
@@ -22,7 +22,7 @@ TEST_DUAL_Z_REV (tbl_f64_tied2, svfloat64_t, svuint64_t,
 
 /*
 ** tbl_f64_untied:
-**	tbl	z0\.d, z1\.d, z4\.d
+**	tbl	z0\.d, {z1\.d}, z4\.d
 **	ret
 */
 TEST_DUAL_Z (tbl_f64_untied, svfloat64_t, svuint64_t,

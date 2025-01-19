@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -376,5 +376,16 @@ extern rtx expr_size (tree);
 
 extern bool mem_ref_refers_to_non_mem_p (tree);
 extern bool non_mem_decl_p (tree);
+
+/* Return the quotient of the polynomial long division of x^2N by POLYNOMIAL
+   in GF (2^N).  */
+extern unsigned HOST_WIDE_INT
+gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT, unsigned short);
+
+/* Generate table-based CRC.  */
+extern void generate_reflecting_code_standard (rtx *);
+extern void expand_crc_table_based (rtx, rtx, rtx, rtx, machine_mode);
+extern void expand_reversed_crc_table_based (rtx, rtx, rtx, rtx, machine_mode,
+					     void (*) (rtx *));
 
 #endif /* GCC_EXPR_H */

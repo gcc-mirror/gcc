@@ -18,15 +18,16 @@ import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
-import dmd.postordervisitor;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
+import dmd.visitor.postorder;
 
 /**************************************************
  * Front-end expression rewriting should create temporary variables for
@@ -112,7 +113,7 @@ int callSideEffectLevel(FuncDeclaration f)
         return 0;
     assert(f.type.ty == Tfunction);
     TypeFunction tf = cast(TypeFunction)f.type;
-    if (!tf.isnothrow)
+    if (!tf.isNothrow)
         return 0;
     final switch (f.isPure())
     {
@@ -122,7 +123,7 @@ int callSideEffectLevel(FuncDeclaration f)
         return 0;
 
     case PURE.const_:
-        return mutabilityOfType(tf.isref, tf.next) == 2 ? 2 : 1;
+        return mutabilityOfType(tf.isRef, tf.next) == 2 ? 2 : 1;
     }
 }
 
@@ -137,7 +138,7 @@ int callSideEffectLevel(Type t)
         assert(t.ty == Tfunction);
         tf = cast(TypeFunction)t;
     }
-    if (!tf.isnothrow)  // function can throw
+    if (!tf.isNothrow)  // function can throw
         return 0;
 
     tf.purityLevel();
@@ -151,7 +152,7 @@ int callSideEffectLevel(Type t)
     }
 
     if (purity == PURE.const_)
-        return mutabilityOfType(tf.isref, tf.next) == 2 ? 2 : 1;
+        return mutabilityOfType(tf.isRef, tf.next) == 2 ? 2 : 1;
 
     return 0;
 }
@@ -407,7 +408,7 @@ Expression extractSideEffect(Scope* sc, const char[] name,
      * https://issues.dlang.org/show_bug.cgi?id=17145
      */
     if (!alwaysCopy &&
-        ((sc.flags & SCOPE.ctfe) ? !hasSideEffect(e) : isTrivialExp(e)))
+        (sc.ctfe ? !hasSideEffect(e) : isTrivialExp(e)))
         return e;
 
     auto vd = copyToTemp(0, name, e);

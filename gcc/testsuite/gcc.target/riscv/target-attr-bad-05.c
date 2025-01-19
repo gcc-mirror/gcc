@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gc -O2 -mabi=lp64" } */
 
 
-long foo() __attribute__((target(""))); /* { dg-warning "empty string in attribute .target." } */
+long foo(long a, long b) __attribute__((target(""))); /* { dg-warning "empty string in attribute .target." } */
 long foo(long a, long b){
   return a + (b * 2);
 }

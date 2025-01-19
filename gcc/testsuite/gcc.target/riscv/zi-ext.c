@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-march=rv64gc_zic64b_ziccamoa_ziccif_zicclsm_ziccrse" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zic64b_ziccamoa_ziccif_zicclsm_ziccrse" { target { rv32 } } } */
 

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-skip-if "skip override" { *-*-* } { "-mfloat-abi=hard" } { "" } } */
-/* { dg-options "-mpure-code -mcpu=cortex-m23 -march=armv8-m.base -mthumb -mfloat-abi=soft" } */
+/* { dg-require-effective-target arm_cpu_cortex_m23_ok } */
+/* { dg-options "-mpure-code" } */
+/* { dg-add-options arm_cpu_cortex_m23 } */
 
 typedef int __attribute__ ((__vector_size__ (16))) V;
 

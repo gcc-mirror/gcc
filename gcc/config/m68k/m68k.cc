@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for Motorola 68000 family.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -381,6 +381,9 @@ TARGET_GNU_ATTRIBUTES (m68k_attribute_table,
   { "interrupt_thread", 0, 0, true,  false, false, false,
     m68k_handle_fndecl_attribute, NULL }
 });
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "m68k"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

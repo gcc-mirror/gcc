@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 /* { dg-final { scan-assembler-not "addl" } } */
 
 unsigned

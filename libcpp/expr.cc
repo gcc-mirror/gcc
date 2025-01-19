@@ -1,5 +1,5 @@
 /* Parse C expressions for cpplib.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
@@ -99,12 +99,10 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   /* The following decimal float suffixes, from TR 24732:2009, TS
      18661-2:2015 and C23, are supported:
 
-     df, DF - _Decimal32.
-     dd, DD - _Decimal64.
-     dl, DL - _Decimal128.
-
-     The dN and DN suffixes for _DecimalN, and dNx and DNx for
-     _DecimalNx, defined in TS 18661-3:2015, are not supported.
+     df, DF, d32, D32 - _Decimal32.
+     dd, DD, d64, D64 - _Decimal64.
+     dl, DL, d128, D128 - _Decimal128.
+     d64x, D64x - _Decimal64x.
 
      Fixed-point suffixes, from TR 18037:2008, are supported.  They
      consist of three parts, in order:
@@ -253,7 +251,23 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	      break;
 	    }
 	  return 0;
-	case 'd': case 'D': d++; break;
+	case 'd': case 'D':
+	  if (!CPP_OPTION (pfile, cplusplus) && orig_s == s && len > 1)
+	    {
+	      if (s[1] == '3' && s[2] == '2' && len == 2)
+		return CPP_N_DFLOAT | CPP_N_SMALL;
+	      if (s[1] == '6' && s[2] == '4')
+		{
+		  if (len == 2)
+		    return CPP_N_DFLOAT | CPP_N_MEDIUM;
+		  if (len == 3 && s[3] == 'x')
+		    return CPP_N_DFLOAT | CPP_N_FLOATNX;
+		}
+	      if (s[1] == '1' && s[2] == '2' && len == 3 && s[3] == '8')
+		return CPP_N_DFLOAT | CPP_N_LARGE;
+	    }
+	  d++;
+	  break;
 	case 'l': case 'L': l++; break;
 	case 'w': case 'W': w++; break;
 	case 'q': case 'Q': q++; break;
@@ -911,8 +925,25 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 
  syntax_ok:
   if (result & CPP_N_IMAGINARY)
-    cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location, 0,
-			      "imaginary constants are a GCC extension");
+    {
+      if (CPP_OPTION (pfile, cplusplus) || (result & CPP_N_FLOATING) == 0)
+	cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+				  "imaginary constants are a GCC extension");
+      else
+	{
+	  bool warned = false;
+	  if (!CPP_OPTION (pfile, imaginary_constants) && CPP_PEDANTIC (pfile))
+	    warned
+	      = cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+					  virtual_location, 0,
+					  "imaginary constants are a C2Y "
+					  "feature or GCC extension");
+	  if (!warned && CPP_OPTION (pfile, cpp_warn_c23_c2y_compat) > 0)
+	    cpp_warning_with_line (pfile, CPP_W_C23_C2Y_COMPAT,
+				   virtual_location, 0,
+				   "imaginary constants are a C2Y feature");
+	}
+    }
   if (radix == 2)
     {
       bool warned = false;

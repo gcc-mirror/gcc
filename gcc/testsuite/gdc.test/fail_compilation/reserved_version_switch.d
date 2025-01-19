@@ -74,6 +74,7 @@
 // REQUIRED_ARGS: -version=LoongArch64
 // REQUIRED_ARGS: -version=LoongArch_HardFloat
 // REQUIRED_ARGS: -version=LoongArch_SoftFloat
+// REQUIRED_ARGS: -version=Xtensa
 // REQUIRED_ARGS: -version=LittleEndian
 // REQUIRED_ARGS: -version=BigEndian
 // REQUIRED_ARGS: -version=ELFv1
@@ -86,9 +87,9 @@
 // REQUIRED_ARGS: -version=CRuntime_Newlib
 // REQUIRED_ARGS: -version=CRuntime_UClibc
 // REQUIRED_ARGS: -version=CRuntime_WASI
-// REQUIRED_ARGS: -version=CppRuntime_Clang
+// REQUIRED_ARGS: -version=CppRuntime_LLVM
 // REQUIRED_ARGS: -version=CppRuntime_DigitalMars
-// REQUIRED_ARGS: -version=CppRuntime_Gcc
+// REQUIRED_ARGS: -version=CppRuntime_GNU
 // REQUIRED_ARGS: -version=CppRuntime_Microsoft
 // REQUIRED_ARGS: -version=CppRuntime_Sun
 // REQUIRED_ARGS: -version=D_Coverage
@@ -183,6 +184,7 @@
 // REQUIRED_ARGS: -debug=LoongArch64
 // REQUIRED_ARGS: -debug=LoongArch_HardFloat
 // REQUIRED_ARGS: -debug=LoongArch_SoftFloat
+// REQUIRED_ARGS: -debug=Xtensa
 // REQUIRED_ARGS: -debug=LittleEndian
 // REQUIRED_ARGS: -debug=BigEndian
 // REQUIRED_ARGS: -debug=ELFv1
@@ -195,9 +197,9 @@
 // REQUIRED_ARGS: -debug=CRuntime_Newlib
 // REQUIRED_ARGS: -debug=CRuntime_UClibc
 // REQUIRED_ARGS: -debug=CRuntime_WASI
-// REQUIRED_ARGS: -debug=CppRuntime_Clang
+// REQUIRED_ARGS: -debug=CppRuntime_LLVM
 // REQUIRED_ARGS: -debug=CppRuntime_DigitalMars
-// REQUIRED_ARGS: -debug=CppRuntime_Gcc
+// REQUIRED_ARGS: -debug=CppRuntime_GNU
 // REQUIRED_ARGS: -debug=CppRuntime_Microsoft
 // REQUIRED_ARGS: -debug=CppRuntime_Sun
 // REQUIRED_ARGS: -debug=D_Coverage
@@ -298,6 +300,7 @@ Error: version identifier `LoongArch32` is reserved and cannot be set
 Error: version identifier `LoongArch64` is reserved and cannot be set
 Error: version identifier `LoongArch_HardFloat` is reserved and cannot be set
 Error: version identifier `LoongArch_SoftFloat` is reserved and cannot be set
+Error: version identifier `Xtensa` is reserved and cannot be set
 Error: version identifier `LittleEndian` is reserved and cannot be set
 Error: version identifier `BigEndian` is reserved and cannot be set
 Error: version identifier `ELFv1` is reserved and cannot be set
@@ -310,9 +313,9 @@ Error: version identifier `CRuntime_Musl` is reserved and cannot be set
 Error: version identifier `CRuntime_Newlib` is reserved and cannot be set
 Error: version identifier `CRuntime_UClibc` is reserved and cannot be set
 Error: version identifier `CRuntime_WASI` is reserved and cannot be set
-Error: version identifier `CppRuntime_Clang` is reserved and cannot be set
+Error: version identifier `CppRuntime_LLVM` is reserved and cannot be set
 Error: version identifier `CppRuntime_DigitalMars` is reserved and cannot be set
-Error: version identifier `CppRuntime_Gcc` is reserved and cannot be set
+Error: version identifier `CppRuntime_GNU` is reserved and cannot be set
 Error: version identifier `CppRuntime_Microsoft` is reserved and cannot be set
 Error: version identifier `CppRuntime_Sun` is reserved and cannot be set
 Error: version identifier `D_Coverage` is reserved and cannot be set

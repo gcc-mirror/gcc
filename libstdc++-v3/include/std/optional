@@ -1,6 +1,6 @@
 // <optional> -*- C++ -*-
 
-// Copyright (C) 2013-2024 Free Software Foundation, Inc.
+// Copyright (C) 2013-2025 Free Software Foundation, Inc.
 // Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -876,7 +876,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base(std::in_place, std::forward<_Up>(__t)) { }
 
       template<typename _Up>
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, const _Up&>
 	  && __construct_from_contained_value<_Up>
 	constexpr explicit(!is_convertible_v<const _Up&, _Tp>)
@@ -888,7 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, _Up>
 	  && __construct_from_contained_value<_Up>
 	constexpr explicit(!is_convertible_v<_Up, _Tp>)
@@ -1043,7 +1043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up>
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, const _Up&>
 	  && is_assignable_v<_Tp&, const _Up&>
 	  && (!__converts_from_optional<_Tp, _Up>::value)
@@ -1077,7 +1077,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up>
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
-	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	requires (!is_same_v<_Tp, _Up>)
 	  && is_constructible_v<_Tp, _Up>
 	  && is_assignable_v<_Tp&, _Up>
 	  && (!__converts_from_optional<_Tp, _Up>::value)
@@ -1732,10 +1732,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Hash.
 
-  template<typename _Tp, typename _Up = remove_const_t<_Tp>,
-	   bool = __poison_hash<_Up>::__enable_hash_call>
-    struct __optional_hash_call_base
+  template<typename _Tp, typename _Up = remove_const_t<_Tp>>
+    struct __optional_hash
+#if ! _GLIBCXX_INLINE_VERSION
+    : public __hash_empty_base<_Up>
+#endif
     {
+#if __cplusplus < 202002L
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = optional<_Tp>;
+#endif
+
       size_t
       operator()(const optional<_Tp>& __t) const
       noexcept(noexcept(hash<_Up>{}(*__t)))
@@ -1747,17 +1754,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  template<typename _Tp, typename _Up>
-    struct __optional_hash_call_base<_Tp, _Up, false> {};
-
   template<typename _Tp>
     struct hash<optional<_Tp>>
-    : private __poison_hash<remove_const_t<_Tp>>,
-      public __optional_hash_call_base<_Tp>
-    {
-      using result_type [[__deprecated__]] = size_t;
-      using argument_type [[__deprecated__]] = optional<_Tp>;
-    };
+    : public __conditional_t<__is_hash_enabled_for<remove_const_t<_Tp>>,
+			     __optional_hash<_Tp>,
+			     __hash_not_enabled<_Tp>>
+    { };
 
   template<typename _Tp>
     struct __is_fast_hash<hash<optional<_Tp>>> : __is_fast_hash<hash<_Tp>>

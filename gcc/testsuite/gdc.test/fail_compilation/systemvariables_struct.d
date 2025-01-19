@@ -2,16 +2,16 @@
 REQUIRED_ARGS: -preview=systemVariables
 TEST_OUTPUT:
 ---
-fail_compilation/systemvariables_struct.d(31): Error: cannot access `@system` field `S.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(32): Error: cannot access `@system` field `S.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(33): Error: cannot access `@system` field `S.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(36): Error: cannot access `@system` field `S.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(37): Error: cannot access `@system` field `S.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(38): Error: cannot access `@system` field `S.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(54): Error: cannot access `@system` field `S2.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(55): Error: cannot access `@system` field `S2.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(56): Error: cannot access `@system` field `S.syst` in `@safe` code
-fail_compilation/systemvariables_struct.d(57): Error: cannot access `@system` field `S.syst` in `@safe` code
+fail_compilation/systemvariables_struct.d(31): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(32): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(33): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(36): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(37): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(38): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(54): Error: accessing `@system` field `S2.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(55): Error: accessing `@system` field `S2.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(56): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
+fail_compilation/systemvariables_struct.d(57): Error: accessing `@system` field `S.syst` is not allowed in a `@safe` function
 ---
 */
 

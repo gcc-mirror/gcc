@@ -2,7 +2,7 @@
 
 typedef __UINT8_TYPE__ u8;
 typedef __UINT16_TYPE__ u16;
-typedef __uint24 u24;
+__extension__ typedef __uint24 u24;
 typedef __UINT32_TYPE__ u32;
 
 u32 sub_32_8  (u32 a, u8 b)  { return a - b; }

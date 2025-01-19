@@ -170,7 +170,7 @@ RootObject aliasParameterSemantic(Loc loc, Scope* sc, RootObject o, TemplatePara
         Dsymbol s = ta.toDsymbol(sc);
         if (s)
             return s;
-        else if (TypeInstance ti = ta.isTypeInstance())
+        if (TypeInstance ti = ta.isTypeInstance())
         {
             Type t;
             const errors = global.errors;
@@ -183,14 +183,13 @@ RootObject aliasParameterSemantic(Loc loc, Scope* sc, RootObject o, TemplatePara
             // see https://issues.dlang.org/show_bug.cgi?id=16472
             if (t)
                 return t.typeSemantic(loc, sc);
-            else if (ea)
+            if (ea)
             {
                 return eaCTFE();
             }
-            else if (s)
+            if (s)
                 return s;
-            else
-                assert(0);
+            assert(0);
         }
         else
             return ta.typeSemantic(loc, sc);

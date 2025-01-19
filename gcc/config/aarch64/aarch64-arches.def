@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -33,11 +33,11 @@
 AARCH64_ARCH("armv8-a",       generic_armv8_a,   V8A,       8,  (SIMD))
 AARCH64_ARCH("armv8.1-a",     generic_armv8_a,   V8_1A,     8,  (V8A, LSE, CRC, RDMA))
 AARCH64_ARCH("armv8.2-a",     generic_armv8_a,   V8_2A,     8,  (V8_1A))
-AARCH64_ARCH("armv8.3-a",     generic_armv8_a,   V8_3A,     8,  (V8_2A, PAUTH, RCPC))
-AARCH64_ARCH("armv8.4-a",     generic_armv8_a,   V8_4A,     8,  (V8_3A, F16FML, DOTPROD, FLAGM))
-AARCH64_ARCH("armv8.5-a",     generic_armv8_a,   V8_5A,     8,  (V8_4A, SB, SSBS, PREDRES))
+AARCH64_ARCH("armv8.3-a",     generic_armv8_a,   V8_3A,     8,  (V8_2A, PAUTH, RCPC, FCMA, JSCVT))
+AARCH64_ARCH("armv8.4-a",     generic_armv8_a,   V8_4A,     8,  (V8_3A, F16FML, DOTPROD, FLAGM, RCPC2))
+AARCH64_ARCH("armv8.5-a",     generic_armv8_a,   V8_5A,     8,  (V8_4A, SB, SSBS, PREDRES, FRINTTS, FLAGM2))
 AARCH64_ARCH("armv8.6-a",     generic_armv8_a,   V8_6A,     8,  (V8_5A, I8MM, BF16))
-AARCH64_ARCH("armv8.7-a",     generic_armv8_a,   V8_7A,     8,  (V8_6A))
+AARCH64_ARCH("armv8.7-a",     generic_armv8_a,   V8_7A,     8,  (V8_6A, WFXT, XS))
 AARCH64_ARCH("armv8.8-a",     generic_armv8_a,   V8_8A,     8,  (V8_7A, MOPS))
 AARCH64_ARCH("armv8.9-a",     generic_armv8_a,   V8_9A,     8,  (V8_8A, CSSC))
 AARCH64_ARCH("armv8-r",       generic_armv8_a,   V8R  ,     8,  (V8_4A))

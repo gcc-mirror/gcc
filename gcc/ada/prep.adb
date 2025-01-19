@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -489,7 +489,14 @@ package body Prep is
 
                            if Symbol1 = No_Symbol then
                               Error_Msg_Name_1 := Symbol_Name1;
-                              Error_Msg ("unknown symbol %", Symbol_Pos1);
+                              if Undefined_Symbols_Are_False then
+                                 Error_Msg
+                                   ("symbol % value is implicitly False"
+                                     & " and so not an integer",
+                                    Symbol_Pos1);
+                              else
+                                 Error_Msg ("unknown symbol %", Symbol_Pos1);
+                              end if;
                               Symbol_Value1 := No_String;
 
                            else
@@ -498,7 +505,7 @@ package body Prep is
                               if Data.Is_A_String then
                                  Error_Msg_Name_1 := Symbol_Name1;
                                  Error_Msg
-                                   ("symbol % value is not integer",
+                                   ("symbol % value is not an integer",
                                     Symbol_Pos1);
 
                               else

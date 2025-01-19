@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -985,6 +985,9 @@ extern char * filename_from_unit (int);
 internal_proto(filename_from_unit);
 
 /* stop.c */
+
+extern void report_exception (void);
+iexport_proto (report_exception);
 
 extern _Noreturn void stop_string (const char *, size_t, bool);
 export_proto(stop_string);

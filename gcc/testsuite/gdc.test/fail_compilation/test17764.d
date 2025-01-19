@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
  * TEST_OUTPUT:
 ---
-fail_compilation/test17764.d(109): Error: scope variable `c` assigned to global variable `global`
+fail_compilation/test17764.d(109): Error: assigning scope variable `c` to global variable `global` is not allowed in a `@safe` function
 ---
  */
 

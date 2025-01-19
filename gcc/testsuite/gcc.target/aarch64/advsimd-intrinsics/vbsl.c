@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffff1 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf3, 0xf3, 0xf3, 0xf3,
 					0xf7, 0xf7, 0xf7, 0xf7 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff0, 0xfff0, 0xfff2, 0xfff2 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xfa, 0xfa, 0xfa, 0xfa,
+					   0xfe, 0xfe, 0xfe, 0xfe };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 4) [] = { 0xcc09, 0xcb89,
 					       0xcb09, 0xca89 };
@@ -47,6 +51,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xf3, 0xf3, 0xf3, 0xf3,
 					 0xf7, 0xf7, 0xf7, 0xf7 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff0, 0xfff0, 0xfff2, 0xfff2,
 					 0xfff4, 0xfff4, 0xfff6, 0xfff6 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xf1, 0xf1, 0xf1, 0xf1,
+					    0xf5, 0xf5, 0xf5, 0xf5,
+					    0xf1, 0xf1, 0xf1, 0xf1,
+					    0xf5, 0xf5, 0xf5, 0xf5 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected, hfloat, 16, 8) [] = { 0xcc09, 0xcb89,
 					       0xcb09, 0xca89,
@@ -76,6 +86,10 @@ void exec_vbsl (void)
   clean_results ();
 
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector, buffer);
+#if MFLOAT8_SUPPORTED
+  VLOAD(vector, buffer, , mfloat, mf, 8, 8);
+  VLOAD(vector, buffer, q, mfloat, mf, 8, 16);
+#endif
 #if defined (FP16_SUPPORTED)
   VLOAD(vector, buffer, , float, f, 16, 4);
   VLOAD(vector, buffer, q, float, f, 16, 8);
@@ -94,6 +108,7 @@ void exec_vbsl (void)
   VDUP(vector2, , uint, u, 16, 4, 0xFFF2);
   VDUP(vector2, , uint, u, 32, 2, 0xFFFFFFF0);
   VDUP(vector2, , uint, u, 64, 1, 0xFFFFFFF3);
+  MFLOAT8_ONLY(VDUP(vector2, , mfloat, mf, 8, 8, MFLOAT8(0xca));)
 #if defined (FP16_SUPPORTED)
   VDUP(vector2, , float, f, 16, 4, -2.4f);   /* -2.4f is 0xC0CD.  */
 #endif
@@ -111,6 +126,7 @@ void exec_vbsl (void)
   VDUP(vector2, q, uint, u, 64, 2, 0xFFFFFFF3);
   VDUP(vector2, q, poly, p, 8, 16, 0xF3);
   VDUP(vector2, q, poly, p, 16, 8, 0xFFF2);
+  MFLOAT8_ONLY(VDUP(vector2, q, mfloat, mf, 8, 16, MFLOAT8(0x55));)
 #if defined (FP16_SUPPORTED)
   VDUP(vector2, q, float, f, 16, 8, -2.4f);
 #endif
@@ -131,6 +147,10 @@ void exec_vbsl (void)
   TEST_VBSL(uint, , poly, p, 16, 4);
   TEST_VBSL(uint, q, poly, p, 8, 16);
   TEST_VBSL(uint, q, poly, p, 16, 8);
+#if MFLOAT8_SUPPORTED
+  TEST_VBSL(uint, , mfloat, mf, 8, 8);
+  TEST_VBSL(uint, q, mfloat, mf, 8, 16);
+#endif
 #if defined (FP16_SUPPORTED)
   TEST_VBSL(uint, , float, f, 16, 4);
   TEST_VBSL(uint, q, float, f, 16, 8);

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -mcmodel=small -fPIC -fno-builtin" }  */
+/* { dg-options "-Wno-old-style-definition -O2 -mcmodel=small -fPIC -fno-builtin" }  */
 /* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
 

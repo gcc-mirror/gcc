@@ -26,7 +26,7 @@ struct Array
   public:
     Array()
     {
-        data.ptr = NULL;
+        data.ptr = nullptr;
         length = 0;
         data.length = 0;
     }
@@ -86,7 +86,7 @@ struct Array
                 if (nentries <= SMALLARRAYCAP)
                 {
                     data.length = SMALLARRAYCAP;
-                    data.ptr = SMALLARRAYCAP ? &smallarray[0] : NULL;
+                    data.ptr = SMALLARRAYCAP ? &smallarray[0] : nullptr;
                 }
                 else
                 {

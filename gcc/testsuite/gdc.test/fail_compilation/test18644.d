@@ -1,9 +1,9 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test18644.d(15): Error: storing reference to stack allocated value returned by `foo()` into allocated memory causes it to escape
-fail_compilation/test18644.d(16): Error: escaping reference to stack allocated value returned by `foo()`
-fail_compilation/test18644.d(22): Error: escaping reference to stack allocated value returned by `foo()`
+fail_compilation/test18644.d(15): Error: escaping a `scope` value returned from nested function `foo` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test18644.d(16): Error: escaping local variable through nested function `foo` is not allowed in a `@safe` function
+fail_compilation/test18644.d(22): Error: escaping local variable through nested function `foo` is not allowed in a `@safe` function
 ---
 */
 

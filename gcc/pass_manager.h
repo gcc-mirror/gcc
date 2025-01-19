@@ -1,5 +1,5 @@
 /* pass_manager.h - The pipeline of optimization passes
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,7 +65,7 @@ public:
   void execute_early_local_passes ();
   unsigned int execute_pass_mode_switching ();
 
-  /* Various passes are manually cloned by epiphany. */
+  /* Various passes are manually cloned by avr and epiphany. */
   opt_pass *get_pass_split_all_insns () const {
     return pass_split_all_insns_1;
   }

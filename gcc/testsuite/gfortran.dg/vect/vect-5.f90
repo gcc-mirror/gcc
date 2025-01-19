@@ -18,6 +18,7 @@
         end do
 
         do I = 1, N
+!GCC$ novector
           do J = I, M
             if (A(J,2) /= B(J)) then
               STOP 1

@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/fail22138.d(107): Error: scope variable `e` may not be returned
+fail_compilation/fail22138.d(107): Error: returning scope variable `e` is not allowed in a `@safe` function
 ---
  */
 

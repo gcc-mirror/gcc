@@ -1,5 +1,5 @@
 ;; Predicate definitions for HP PA-RISC.
-;; Copyright (C) 2005-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -285,7 +285,7 @@
       return false;
 
     default:
-      return (INTVAL (op) % GET_MODE_SIZE (mode)) == 0;
+      return (INTVAL (op) & (GET_MODE_SIZE (mode) - 1)) == 0;
     }
 
   return false;

@@ -51,3 +51,66 @@ version (LDC)
 
 /// Writes `s` to `stderr` during CTFE (does nothing at runtime).
 void __ctfeWrite(scope const(char)[] s) @nogc @safe pure nothrow {}
+
+version (GNU)
+{
+    /// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fexpect
+    alias expect = __builtin_expect;
+    /// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005ftrap
+    alias trap = __builtin_trap;
+}
+else version (LDC)
+{
+    /// https://llvm.org/docs/LangRef.html#llvm-expect-intrinsic
+    alias expect = llvm_expect;
+    debug
+        /// https://llvm.org/docs/LangRef.html#llvm-debugtrap-intrinsic
+        alias trap = llvm_debugtrap;
+    else
+        /// https://llvm.org/docs/LangRef.html#llvm-trap-intrinsic
+        alias trap = llvm_trap;
+}
+else version (DigitalMars)
+{
+    pragma(inline, true)
+    T expect(T)(T val, T expected) if (__traits(isIntegral, T))
+    {
+        return val;
+    }
+
+    /// Execute target dependent trap instruction, if supported.
+    /// Otherwise, abort execution.
+    pragma(inline, true)
+    void trap()
+    {
+        debug
+        {
+            version(D_InlineAsm_X86)
+                asm nothrow @nogc pure @trusted { int 3; }
+        }
+        assert(0);
+    }
+}
+
+/// Provide static branch and value hints for the LDC/GDC compilers.
+/// DMD ignores these hints.
+pragma(inline, true) bool likely()(bool b)   { return !!expect(b, true);  }
+/// ditto
+pragma(inline, true) bool unlikely()(bool b) { return !!expect(b, false); }
+
+///
+@nogc nothrow pure @safe unittest
+{
+    int x = 12;
+
+    expect(x, 12);
+
+    if (likely(x > 0))
+    {
+        // ...
+    }
+    else if (unlikely(x == int.min))
+    {
+        // ...
+    }
+}

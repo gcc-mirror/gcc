@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O3 -fsanitize=undefined" } */
+/* { dg-additional-options "-O3 -fsanitize=undefined -fno-malloc-dce" } */
 
 void memory_exhausted();
 void memcheck(void *ptr) {

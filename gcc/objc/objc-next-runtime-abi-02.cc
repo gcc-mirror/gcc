@@ -1,5 +1,5 @@
 /* Next Runtime (ABI-2) private.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
 
    Contributed by Iain Sandoe and based, in part, on an implementation in
    'branches/apple/trunk' contributed by Apple Computer Inc.
@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
    This version is intended to match (logically) the output of Apple's
    4.2.1 compiler.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2024 Free Software Foundation, Inc.
+// Copyright (C) 2006-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,11 @@ void test01()
 
   std::allocator<_List_node<int> > a;
   VERIFY( l.max_size() == __gnu_test::max_size(a) );
+
+#if _GLIBCXX_LIST_USE_ALLOC_PTR
+  std::allocator<std::__list::_Node<int*>> b;
+  VERIFY( __gnu_test::max_size(b) == __gnu_test::max_size(a) );
+#endif
 }
 
 int main()

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2024 Free Software Foundation, Inc.
+// Copyright (C) 2007-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,9 @@
 #ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
 #endif
+
+#include <cerrno>
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -295,43 +298,76 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_t __len = (__hi - __lo) * 2;
 
-      _CharT* __c = new _CharT[__len];
+      struct _Buf
+      {
+	_Buf(size_t __n, void* __buf, int __e)
+	: _M_c(__buf ? (_CharT*)__buf : new _CharT[__n]),
+	  _M_stackbuf(__buf),
+	  _M_errno(__e)
+	{ }
 
-      __try
+	~_Buf()
 	{
-	  // strxfrm stops when it sees a nul character so we break
-	  // the string into zero-terminated substrings and pass those
-	  // to strxfrm.
-	  for (;;)
+	  if (_M_c != _M_stackbuf)
+	    delete[] _M_c;
+	  if (errno == 0)
+	    errno = _M_errno;
+	}
+
+	void _M_realloc(size_t __len)
+	{
+	  _CharT* __p = new _CharT[__len];
+	  if (_M_c != _M_stackbuf)
+	    delete[] _M_c;
+	  _M_c = __p;
+	}
+
+	_CharT* _M_c;
+	void* const _M_stackbuf;
+	int _M_errno;
+      };
+
+      const size_t __bytes = __len * sizeof(_CharT);
+      _Buf __buf(__len, __bytes <= 256 ? __builtin_alloca(__bytes) : 0, errno);
+      errno = 0;
+
+      // strxfrm stops when it sees a nul character so we break
+      // the string into zero-terminated substrings and pass those
+      // to strxfrm.
+      for (;;)
+	{
+	  // First try a buffer perhaps big enough.
+	  size_t __res = _M_transform(__buf._M_c, __p, __len);
+	  // If the buffer was not large enough, try again with the
+	  // correct size.
+	  if (__res >= __len)
 	    {
-	      // First try a buffer perhaps big enough.
-	      size_t __res = _M_transform(__c, __p, __len);
-	      // If the buffer was not large enough, try again with the
-	      // correct size.
-	      if (__res >= __len)
+	      if (__builtin_expect(errno, 0))
 		{
-		  __len = __res + 1;
-		  delete [] __c, __c = 0;
-		  __c = new _CharT[__len];
-		  __res = _M_transform(__c, __p, __len);
+#if __cpp_exceptions
+		  __throw_system_error(errno);
+#else
+		  // std::regex can call this function internally with
+		  // char values that always fail, so we don't want to
+		  // use _GLIBCXX_THROW_OR_ABORT here.
+		  __ret.clear();
+		  break;
+#endif
 		}
 
-	      __ret.append(__c, __res);
-	      __p += char_traits<_CharT>::length(__p);
-	      if (__p == __pend)
-		break;
-
-	      __p++;
-	      __ret.push_back(_CharT());
+	      __len = __res + 1;
+	      __buf._M_realloc(__len);
+	      __res = _M_transform(__buf._M_c, __p, __len);
 	    }
-	}
-      __catch(...)
-	{
-	  delete [] __c;
-	  __throw_exception_again;
-	}
 
-      delete [] __c;
+	  __ret.append(__buf._M_c, __res);
+	  __p += char_traits<_CharT>::length(__p);
+	  if (__p == __pend)
+	    break;
+
+	  __p++;
+	  __ret.push_back(_CharT());
+	}
 
       return __ret;
     }

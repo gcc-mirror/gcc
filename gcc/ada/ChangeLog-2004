@@ -8337,8 +8337,6 @@
 
 	* s-stalib.adb (Elab_Final_Code): Add missing year in date inside ???
 	comment.
-
-
 
 Copyright (C) 2004 Free Software Foundation, Inc.
 

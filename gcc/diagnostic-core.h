@@ -1,7 +1,7 @@
 /* Declarations of core diagnostic functionality for code that does
    not need to deal with diagnostic contexts or diagnostic info
    structures.
-   Copyright (C) 1998-2024 Free Software Foundation, Inc.
+   Copyright (C) 1998-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,6 +46,18 @@ class auto_diagnostic_group
  public:
   auto_diagnostic_group ();
   ~auto_diagnostic_group ();
+};
+
+/* RAII-style class for nesting hierarchical diagnostics.
+   Any diagnostics emitted within the lifetime of this object
+   will be treated as one level of nesting deeper than diagnostics
+   emitted outside the lifetime of the object.  */
+
+class auto_diagnostic_nesting_level
+{
+ public:
+  auto_diagnostic_nesting_level ();
+  ~auto_diagnostic_nesting_level ();
 };
 
 /* Forward decl.  */

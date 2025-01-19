@@ -332,7 +332,7 @@ struct MONMSGSTRUCT {
 }
 alias MONMSGSTRUCT* PMONMSGSTRUCT;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     BOOL DdeAbandonTransaction(DWORD, HCONV, DWORD);
     PBYTE DdeAccessData(HDDEDATA, PDWORD);
     HDDEDATA DdeAddData(HDDEDATA, PBYTE, DWORD, DWORD);

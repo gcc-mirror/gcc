@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GCOV_LINKAGE
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1342,7 +1341,7 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (bbg_file_stamp);
 	  /* Use an arbitrary checksum */
 	  gcov_write_unsigned (0);
-	  gcov_write_string (getpwd ());
+	  gcov_write_string (remap_profile_filename (getpwd ()));
 
 	  /* Do not support has_unexecuted_blocks for Ada.  */
 	  gcov_write_unsigned (strcmp (lang_hooks.name, "GNU Ada") != 0);

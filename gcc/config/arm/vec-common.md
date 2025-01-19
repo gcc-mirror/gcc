@@ -1,5 +1,5 @@
 ;; Machine Description for shared bits common to IWMMXT and Neon.
-;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2025 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -416,88 +416,26 @@
     }
 })
 
-;; Conditional instructions.  These are comparisons with conditional moves for
-;; vectors.  They perform the assignment:
-;;
-;;     Vop0 = (Vop4 <op3> Vop5) ? Vop1 : Vop2;
-;;
-;; where op3 is <, <=, ==, !=, >= or >.  Operations are performed
-;; element-wise.
-
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VDQWH 0 "s_register_operand")
-	(if_then_else:VDQWH
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQWH 4 "s_register_operand")
-	     (match_operand:VDQWH 5 "reg_or_zero_operand")])
-	  (match_operand:VDQWH 1 "s_register_operand")
-	  (match_operand:VDQWH 2 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT
-   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
-(define_expand "vcond<V_cvtto><mode>"
-  [(set (match_operand:<V_CVTTO> 0 "s_register_operand")
-	(if_then_else:<V_CVTTO>
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:V32 4 "s_register_operand")
-	     (match_operand:V32 5 "reg_or_zero_operand")])
-	  (match_operand:<V_CVTTO> 1 "s_register_operand")
-	  (match_operand:<V_CVTTO> 2 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT
-   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
-(define_expand "vcond<VH_cvtto><mode>"
-  [(set (match_operand:<VH_CVTTO> 0 "s_register_operand")
-	(if_then_else:<VH_CVTTO>
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:V16 4 "s_register_operand")
-	     (match_operand:V16 5 "reg_or_zero_operand")])
-	  (match_operand:<VH_CVTTO> 1 "s_register_operand")
-	  (match_operand:<VH_CVTTO> 2 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT
-   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
-(define_expand "vcondu<mode><v_cmp_result>"
-  [(set (match_operand:VDQW 0 "s_register_operand")
-	(if_then_else:VDQW
-	  (match_operator 3 "arm_comparison_operator"
-	    [(match_operand:<V_cmp_result> 4 "s_register_operand")
-	     (match_operand:<V_cmp_result> 5 "reg_or_zero_operand")])
-	  (match_operand:VDQW 1 "s_register_operand")
-	  (match_operand:VDQW 2 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT"
-{
-  arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
 (define_expand "vec_load_lanesoi<mode>"
   [(set (match_operand:OI 0 "s_register_operand")
         (unspec:OI [(match_operand:OI 1 "neon_struct_operand")
                     (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 		   UNSPEC_VLD2))]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vld2<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vld2q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vld2<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V2xYYY modes instead of OI
+(define_expand "vec_load_lanes<MVE_vld2_vst2><mode>"
+  [(set (match_operand:<MVE_VLD2_VST2> 0 "s_register_operand")
+        (unspec:<MVE_VLD2_VST2> [(match_operand:<MVE_VLD2_VST2> 1 "neon_struct_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_VLD2))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD2_VST2>mode))"
+{
+  emit_insn (gen_mve_vld2q<mode> (operands[0], operands[1]));
   DONE;
 })
 
@@ -506,12 +444,21 @@
 	(unspec:OI [(match_operand:OI 1 "s_register_operand")
                     (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST2))]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vst2<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vst2q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vst2<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V2xYYY modes instead of OI
+(define_expand "vec_store_lanes<MVE_vld2_vst2><mode>"
+  [(set (match_operand:<MVE_VLD2_VST2> 0 "neon_struct_operand")
+	(unspec:<MVE_VLD2_VST2> [(match_operand:<MVE_VLD2_VST2> 1 "s_register_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST2))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD2_VST2>mode))"
+{
+  emit_insn (gen_mve_vst2q<mode> (operands[0], operands[1]));
   DONE;
 })
 
@@ -519,12 +466,21 @@
   [(match_operand:XI 0 "s_register_operand")
    (match_operand:XI 1 "neon_struct_operand")
    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vld4<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vld4q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vld4<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V4xYYY modes instead of XI
+(define_expand "vec_load_lanes<MVE_vld4_vst4><mode>"
+  [(set (match_operand:<MVE_VLD4_VST4> 0 "s_register_operand")
+        (unspec:<MVE_VLD4_VST4> [(match_operand:<MVE_VLD4_VST4> 1 "neon_struct_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_VLD4))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD4_VST4>mode))"
+{
+  emit_insn (gen_mve_vld4q<mode> (operands[0], operands[1]));
   DONE;
 })
 
@@ -532,12 +488,21 @@
   [(match_operand:XI 0 "neon_struct_operand")
    (match_operand:XI 1 "s_register_operand")
    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vst4<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vst4q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vst4<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V4xYYY modes instead of XI
+(define_expand "vec_store_lanes<MVE_vld4_vst4><mode>"
+  [(set (match_operand:<MVE_VLD4_VST4> 0 "neon_struct_operand")
+	(unspec:<MVE_VLD4_VST4> [(match_operand:<MVE_VLD4_VST4> 1 "s_register_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST4))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD4_VST4>mode))"
+{
+  emit_insn (gen_mve_vst4q<mode> (operands[0], operands[1]));
   DONE;
 })
 

@@ -1,5 +1,5 @@
 ;; GCC machine description for MMIX
-;; Copyright (C) 2000-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2000-2025 Free Software Foundation, Inc.
 ;; Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 ;; This file is part of GCC.

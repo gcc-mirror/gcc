@@ -1,6 +1,6 @@
 
 /* REQUIRED_ARGS: -mcpu=avx
-DISABLED: win32 freebsd32 linux32 osx32
+DISABLED: win32 freebsd32 openbsd32 linux32 osx32
 TEST_OUTPUT:
 ---
 fail_compilation/xmmslice.d(110): Error: `__vector(int[4])` cannot be sliced with `[]`

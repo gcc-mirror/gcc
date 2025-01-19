@@ -35,6 +35,8 @@ contains
   !$acc end parallel
   !$acc kernels deviceptr (i, c, r, ia, ca, ra, asa, ti)
   !$acc end kernels
+  !$acc serial deviceptr (i, c, r, ia, ca, ra, asa, ti)
+  !$acc end serial
   !$acc data deviceptr (i, c, r, ia, ca, ra, asa, ti)
   !$acc end data
 
@@ -50,6 +52,8 @@ contains
   !$acc end parallel
   !$acc kernels copy (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial copy (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data copy (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -67,6 +71,8 @@ contains
   !$acc end parallel
   !$acc kernels copyin (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial copyin (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data copyin (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -86,6 +92,8 @@ contains
   !$acc end parallel
   !$acc kernels copyout (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial copyout (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data copyout (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -107,6 +115,8 @@ contains
   !$acc end parallel
   !$acc kernels create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -128,6 +138,8 @@ contains
   !$acc end parallel
   !$acc kernels no_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial no_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data no_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -151,6 +163,8 @@ contains
   !$acc end parallel
   !$acc kernels present (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial present (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data present (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -186,6 +200,8 @@ contains
   !$acc end parallel
   !$acc kernels present_or_copy (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial present_or_copy (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data present_or_copy (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -213,6 +229,8 @@ contains
   !$acc end parallel
   !$acc kernels present_or_copyin (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial present_or_copyin (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data present_or_copyin (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -242,6 +260,8 @@ contains
   !$acc end parallel
   !$acc kernels present_or_copyout (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial present_or_copyout (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data present_or_copyout (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 
@@ -273,6 +293,8 @@ contains
   !$acc end parallel
   !$acc kernels present_or_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end kernels
+  !$acc serial present_or_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end serial
   !$acc data present_or_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
   !$acc end data
 

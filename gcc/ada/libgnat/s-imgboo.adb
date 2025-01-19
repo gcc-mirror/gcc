@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2024, Free Software Foundation, Inc.        --
+--           Copyright (C) 1992-2025, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,20 @@ package body System.Img_Bool
   with SPARK_Mode
 is
 
+   --  Local lemmas
+
+   procedure Lemma_Is_First_Non_Space_Ghost (S : String; R : Positive) with
+     Ghost,
+     Pre => R in S'Range and then S (R) /= ' '
+       and then System.Val_Spec.Only_Space_Ghost (S, S'First, R - 1),
+     Post => System.Val_Spec.First_Non_Space_Ghost (S, S'First, S'Last) = R;
+
+   ------------------------------------
+   -- Lemma_Is_First_Non_Space_Ghost --
+   ------------------------------------
+
+   procedure Lemma_Is_First_Non_Space_Ghost (S : String; R : Positive) is null;
+
    -------------------
    -- Image_Boolean --
    -------------------
@@ -55,13 +69,11 @@ is
       if V then
          S (1 .. 4) := "TRUE";
          P := 4;
-         pragma Assert
-           (System.Val_Spec.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
+         Lemma_Is_First_Non_Space_Ghost (S, 1);
       else
          S (1 .. 5) := "FALSE";
          P := 5;
-         pragma Assert
-           (System.Val_Spec.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
+         Lemma_Is_First_Non_Space_Ghost (S, 1);
       end if;
    end Image_Boolean;
 

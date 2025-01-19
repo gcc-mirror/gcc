@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -90,6 +90,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * x86 specific memory model extensions for transactional memory:: x86 memory models.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
+* New/Delete Builtins:: Built-in functions for C++ allocations and deallocations.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
@@ -97,6 +98,8 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Unnamed Fields::      Unnamed struct/union fields within structs/unions.
 * Thread-Local::        Per-thread variables.
 * Binary constants::    Binary constants using the @samp{0b} prefix.
+* OpenMP::              Multiprocessing extensions.
+* OpenACC::             Extensions for offloading code to accelerator devices.
 @end menu
 
 @node Statement Exprs
@@ -1524,6 +1527,14 @@ address space @code{__flash@var{N}}.
 The compiler sets the @code{RAMPZ} segment register appropriately 
 before reading data by means of the @code{ELPM} instruction.
 
+@cindex @code{__flashx} AVR Named Address Spaces
+@item __flashx
+
+This is a 24-bit flash address space locating data in section
+@code{.progmemx.data}.
+The compiler sets the @code{RAMPZ} segment register appropriately 
+before reading data by means of the @code{ELPM} instruction.
+
 @cindex @code{__memx} AVR Named Address Spaces
 @item __memx
 This is a 24-bit address space that linearizes flash and RAM:
@@ -1603,9 +1614,9 @@ together with attribute @code{progmem}.
 @item
 Reading across the 64@tie{}KiB section boundary of
 the @code{__flash} or @code{__flash@var{N}} address spaces
-shows undefined behavior. The only address space that
-supports reading across the 64@tie{}KiB flash segment boundaries is
-@code{__memx}.
+is not supported. The only address spaces that
+support reading across the 64@tie{}KiB flash segment boundaries are
+@code{__memx} and @code{__flashx}.
 
 @item
 If you use one of the @code{__flash@var{N}} address spaces
@@ -2640,7 +2651,6 @@ GCC plugins may provide their own attributes.
 * MIPS Function Attributes::
 * MSP430 Function Attributes::
 * NDS32 Function Attributes::
-* Nios II Function Attributes::
 * Nvidia PTX Function Attributes::
 * PowerPC Function Attributes::
 * RISC-V Function Attributes::
@@ -2754,9 +2764,10 @@ object size, for example in functions that call @code{__builtin_object_size}.
 Note that the @code{access} attribute merely specifies how an object
 referenced by the pointer argument can be accessed; it does not imply that
 an access @strong{will} happen.  Also, the @code{access} attribute does not
-imply the attribute @code{nonnull}; it may be appropriate to add both attributes
-at the declaration of a function that unconditionally manipulates a buffer via
-a pointer argument.  See the @code{nonnull} attribute for more information and
+imply the attribute @code{nonnull} nor the attribute @code{nonnull_if_nonzero};
+it may be appropriate to add both attributes at the declaration of a function
+that unconditionally manipulates a buffer via a pointer argument.  See the
+@code{nonnull} or @code{nonnull_if_nonzero} attributes for more information and
 caveats.
 
 @cindex @code{alias} function attribute
@@ -3788,6 +3799,34 @@ my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
 
+@cindex @code{nonnull_if_nonzero} function attribute
+@item nonnull_if_nonzero
+@itemx nonnull_if_nonzero (@var{arg-index}, @var{arg2-index})
+The @code{nonnull_if_nonzero} attribute is a conditional version of the
+@code{nonnull} attribute.  It has two arguments, the first argument
+shall be argument index of a pointer argument which must be in some
+cases non-null and the second argument shall be argument index of an
+integral argument (other than boolean).  If the integral argument is
+zero, the pointer argument can be null, if it is non-zero, the pointer
+argument must not be null.
+
+@smallexample
+extern void *
+my_memcpy (void *dest, const void *src, size_t len)
+        __attribute__((nonnull (1, 2)));
+extern void *
+my_memcpy2 (void *dest, const void *src, size_t len)
+        __attribute__((nonnull_if_nonzero (1, 3),
+                       nonnull_if_nonzero (2, 3)));
+@end smallexample
+
+With these declarations, it is invalid to call
+@code{my_memcpy (NULL, NULL, 0);} or to
+call @code{my_memcpy2 (NULL, NULL, 4);} but it is valid
+to call @code{my_memcpy2 (NULL, NULL, 0);}.  This attribute should be
+used on declarations which have e.g.@: an exception for zero sizes,
+in which case null may be passed.
+
 @cindex @code{noplt} function attribute
 @item noplt
 The @code{noplt} attribute is the counterpart to option @option{-fno-plt}.
@@ -4311,8 +4350,7 @@ within the strings.
 The options supported are specific to each target; refer to @ref{x86
 Function Attributes}, @ref{PowerPC Function Attributes},
 @ref{ARM Function Attributes}, @ref{AArch64 Function Attributes},
-@ref{Nios II Function Attributes}, and @ref{S/390 Function Attributes}
-for details.
+and @ref{S/390 Function Attributes} for details.
 
 @cindex @code{target_clones} function attribute
 @item target_clones (@var{options})
@@ -4759,6 +4797,16 @@ behavior and permissible arguments are the same as for the command-line option
 Enable or disable calls to out-of-line helpers to implement atomic operations.
 This corresponds to the behavior of the command-line options
 @option{-moutline-atomics} and @option{-mno-outline-atomics}.
+
+@cindex @code{indirect_return} function attribute, AArch64
+@item indirect_return
+The @code{indirect_return} attribute can be applied to a function type
+to indicate that the function may return via an indirect branch instead
+of via a normal return instruction.  For example, this can be true of
+functions that implement manual context switching between user space
+threads, such as the POSIX @code{swapcontext} function.  This attribute
+adds a @code{BTI J} instruction when BTI is enabled e.g. via
+@option{-mbranch-protection}.
 
 @end table
 
@@ -6182,49 +6230,13 @@ Provide a user-defined function to handle warm reset exception.
 @end table
 @end table
 
-@node Nios II Function Attributes
-@subsection Nios II Function Attributes
-
-These function attributes are supported by the Nios II back end:
-
-@table @code
-@cindex @code{target} function attribute
-@item target (@var{options})
-As discussed in @ref{Common Function Attributes}, this attribute 
-allows specification of target-specific compilation options.
-
-When compiling for Nios II, the following options are allowed:
-
-@table @samp
-@cindex @code{target("custom-@var{insn}=@var{N}")} function attribute, Nios II
-@cindex @code{target("no-custom-@var{insn}")} function attribute, Nios II
-@item custom-@var{insn}=@var{N}
-@itemx no-custom-@var{insn}
-Each @samp{custom-@var{insn}=@var{N}} attribute locally enables use of a
-custom instruction with encoding @var{N} when generating code that uses 
-@var{insn}.  Similarly, @samp{no-custom-@var{insn}} locally inhibits use of
-the custom instruction @var{insn}.
-These target attributes correspond to the
-@option{-mcustom-@var{insn}=@var{N}} and @option{-mno-custom-@var{insn}}
-command-line options, and support the same set of @var{insn} keywords.
-@xref{Nios II Options}, for more information.
-
-@cindex @code{target("custom-fpu-cfg=@var{name}")} function attribute, Nios II
-@item custom-fpu-cfg=@var{name}
-This attribute corresponds to the @option{-mcustom-fpu-cfg=@var{name}}
-command-line option, to select a predefined set of custom instructions
-named @var{name}.
-@xref{Nios II Options}, for more information.
-@end table
-@end table
-
 @node Nvidia PTX Function Attributes
 @subsection Nvidia PTX Function Attributes
 
 These function attributes are supported by the Nvidia PTX back end:
 
 @table @code
-@cindex @code{kernel} attribute, Nvidia PTX
+@cindex @code{kernel} function attribute, Nvidia PTX
 @item kernel
 This attribute indicates that the corresponding function should be compiled
 as a kernel function, which can be invoked from the host via the CUDA RT 
@@ -8318,11 +8330,11 @@ only when the trailing array is declared as a flexible array member per C99
 standard onwards (@samp{[]}), it is treated as a flexible array member.
 
 There are two more levels in between 0 and 3, which are provided to
-support older codes that use GCC zero-length array extension
+support older code that uses the GCC zero-length array extension
 (@samp{[0]}) or one-element array as flexible array members
 (@samp{[1]}).  When @var{level} is 1, the trailing array is treated as
 a flexible array member when it is declared as either @samp{[]},
-@samp{[0]}, or @samp{[1]}; When @var{level} is 2, the trailing array
+@samp{[0]}, or @samp{[1]}.  When @var{level} is 2, the trailing array
 is treated as a flexible array member when it is declared as either
 @samp{[]}, or @samp{[0]}.
 
@@ -8875,7 +8887,7 @@ will be used, and the @code{.lower} prefix will not be added.
 These variable attributes are supported by the Nvidia PTX back end:
 
 @table @code
-@cindex @code{shared} attribute, Nvidia PTX
+@cindex @code{shared} variable attribute, Nvidia PTX
 @item shared
 Use this attribute to place a variable in the @code{.shared} memory space.
 This memory space is private to each cooperative thread array; only threads
@@ -10200,6 +10212,10 @@ Refer to the relevant language standards for exact details on the
 placement of @samp{[[]]} attributes within your code, as they differ
 in some details from the rules for the GNU attribute syntax.
 
+With the @option{-fopenmp} option, GCC additionally recognizes OpenMP
+directives, with names prefixed with @samp{omp::}, using the standard
+@samp{[[]]} syntax.  @xref{OpenMP}.
+
 The remainder of this section describes the details of the GNU extension
 @code{__attribute__} syntax,
 and the constructs to which attribute specifiers bind, for the C
@@ -10839,8 +10855,8 @@ statements.  A @dfn{basic @code{asm}} statement is one with no
 operands (@pxref{Basic Asm}), while an @dfn{extended @code{asm}}
 statement (@pxref{Extended Asm}) includes one or more operands.  
 The extended form is preferred for mixing C and assembly language
-within a function, but to include assembly language at
-top level you must use basic @code{asm}.
+within a function and can be used at top level as well with certain
+restrictions.
 
 You can also use the @code{asm} keyword to override the assembler name
 for a C symbol, or to place a C variable in a specific register.
@@ -10849,6 +10865,8 @@ for a C symbol, or to place a C variable in a specific register.
 * Basic Asm::          Inline assembler without operands.
 * Extended Asm::       Inline assembler with operands.
 * Constraints::        Constraints for @code{asm} operands
+* Asm constexprs::     C++11 constant expressions instead of string
+                       literals.
 * Asm Labels::         Specifying the assembler name to use for a C symbol.
 * Explicit Register Variables::  Defining variables residing in specified 
                        registers.
@@ -10878,6 +10896,8 @@ can be used for code compiled with @option{-fno-asm}.
 @item volatile
 The optional @code{volatile} qualifier has no effect. 
 All basic @code{asm} blocks are implicitly volatile.
+Basic @code{asm} statements outside of functions may not use any
+qualifiers.
 
 @item inline
 If you use the @code{inline} qualifier, then for inlining purposes the size
@@ -10902,45 +10922,17 @@ Some assemblers allow semicolons as a line separator. However,
 note that some assembler dialects use semicolons to start a comment.
 @end table
 
-@node asm constexprs
-With gnu++11 or later the string can also be a compile time constant expression
-inside parens.  The constant expression can return a string or a container
-with data and size members, following similar rules as C++26 @code{static_assert}
-message. Any string is converted to the character set of the source code.
-When this feature is available the @code{__GXX_CONSTEXPR_ASM__} cpp symbol is defined.
-
-@example
-#include <string>
-constexpr std::string_view genfoo() @{ return "foo"; @}
-
-void function()
-@{
-  asm((genfoo()));
-@}
-@end example
-
 @subsubheading Remarks
 Using extended @code{asm} (@pxref{Extended Asm}) typically produces
 smaller, safer, and more efficient code, and in most cases it is a
-better solution than basic @code{asm}.  However, there are two
-situations where only basic @code{asm} can be used:
-
-@itemize @bullet
-@item
-Extended @code{asm} statements have to be inside a C
-function, so to write inline assembly language at file scope (``top-level''),
-outside of C functions, you must use basic @code{asm}.
-You can use this technique to emit assembler directives,
-define assembly language macros that can be invoked elsewhere in the file,
-or write entire functions in assembly language.
-Basic @code{asm} statements outside of functions may not use any
-qualifiers.
-
-@item
-Functions declared
-with the @code{naked} attribute also require basic @code{asm}
+better solution than basic @code{asm}.  However, functions declared
+with the @code{naked} attribute require only basic @code{asm}
 (@pxref{Function Attributes}).
-@end itemize
+
+Basic @code{asm} statements may be used both inside a C function or at
+file scope (``top-level''), where you can use this technique to emit
+assembler directives, define assembly language macros that can be invoked
+elsewhere in the file, or write entire functions in assembly language.
 
 Safely accessing C data and calling functions from basic @code{asm} is more 
 complex than it may appear. To access C data, it is better to use extended 
@@ -11062,26 +11054,26 @@ perform a jump to one of the labels listed in the @var{GotoLabels}.
 This is a literal string that is the template for the assembler code. It is a 
 combination of fixed text and tokens that refer to the input, output, 
 and goto parameters. @xref{AssemblerTemplate}. With gnu++11 or later it can
-also be a constant expression inside parens (see @ref{asm constexprs}).
+also be a constant expression inside parens (see @ref{Asm constexprs}).
 
 @item OutputOperands
 A comma-separated list of the C variables modified by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{OutputOperands}.
 With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{asm constexprs})
+(see @ref{Asm constexprs})
 
 @item InputOperands
 A comma-separated list of C expressions read by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{InputOperands}.
 With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{asm constexprs})
+(see @ref{Asm constexprs})
 
 @item Clobbers
 A comma-separated list of registers or other values changed by the 
 @var{AssemblerTemplate}, beyond those listed as outputs.
 An empty list is permitted.  @xref{Clobbers and Scratch Registers}.
 With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{asm constexprs})
+(see @ref{Asm constexprs})
 
 @item GotoLabels
 When you are using the @code{goto} form of @code{asm}, this section contains 
@@ -11103,9 +11095,17 @@ within C code. This may help you to maximize performance in time-sensitive
 code or to access assembly instructions that are not readily available to C 
 programs.
 
-Note that extended @code{asm} statements must be inside a function. Only 
-basic @code{asm} may be outside functions (@pxref{Basic Asm}).
-Functions declared with the @code{naked} attribute also require basic 
+Similarly to basic @code{asm}, extended @code{asm} statements may be used
+both inside a C function or at file scope (``top-level''), where you can
+use this technique to emit assembler directives, define assembly language
+macros that can be invoked elsewhere in the file, or write entire functions
+in assembly language.
+Extended @code{asm} statements outside of functions may not use any
+qualifiers, may not specify clobbers, may not use @code{%}, @code{+} or
+@code{&} modifiers in constraints and can only use constraints which don't
+allow using any register.
+
+Functions declared with the @code{naked} attribute require basic 
 @code{asm} (@pxref{Function Attributes}).
 
 While the uses of @code{asm} are many and varied, it may help to think of an 
@@ -11827,7 +11827,7 @@ asm volatile ("movc3 %0, %1, %2"
                    : "r0", "r1", "r2", "r3", "r4", "r5", "memory");
 @end example
 
-Also, there are two special clobber arguments:
+Also, there are three special clobber arguments:
 
 @table @code
 @item "cc"
@@ -11854,6 +11854,18 @@ memory barrier for the compiler.
 Note that this clobber does not prevent the @emph{processor} from doing 
 speculative reads past the @code{asm} statement. To prevent that, you need 
 processor-specific fence instructions.
+
+@item "redzone"
+The @code{"redzone"} clobber tells the compiler that the assembly code
+may write to the stack red zone, area below the stack pointer which on
+some architectures in some calling conventions is guaranteed not to be
+changed by signal handlers, interrupts or exceptions and so the compiler
+can store there temporaries in leaf functions.  On targets which have
+no concept of the stack red zone, the clobber is ignored.
+It should be used e.g.@: in case the assembly code uses call instructions
+or pushes something to the stack without taking the red zone into account
+by subtracting red zone size from the stack pointer first and restoring
+it afterwards.
 
 @end table
 
@@ -12117,6 +12129,11 @@ The following table shows the modifiers supported by all targets and their effec
 @item @code{c}
 @tab Require a constant operand and print the constant expression with no punctuation.
 @tab @code{%c0}
+@item @code{cc}
+@tab Like @samp{%c} except try harder to print it with no punctuation.
+@samp{%c} can e.g.@: fail to print constant addresses in position independent code on
+some architectures.
+@tab @code{%cc0}
 @item @code{n}
 @tab Like @samp{%c} except that the value of the constant is negated before printing.
 @tab @code{%n0}
@@ -12576,6 +12593,7 @@ The list below describes the supported modifiers and their effects for RISC-V.
 @headitem Modifier @tab Description
 @item @code{z} @tab Print ''@code{zero}'' instead of 0 if the operand is an immediate with a value of zero.
 @item @code{i} @tab Print the character ''@code{i}'' if the operand is an immediate.
+@item @code{N} @tab Print the register encoding as integer (0 - 31).
 @end multitable
 
 @anchor{shOperandmodifiers}
@@ -12610,6 +12628,26 @@ The list below describes the supported modifiers and their effects for the SH fa
 @lowersections
 @include md.texi
 @raisesections
+
+@node Asm constexprs
+@subsection C++11 constant expressions instead of string literals
+
+With gnu++11 or later the string can also be a compile time constant expression
+inside parens.  The constant expression can return a container with data and size
+member functions, following similar rules as C++26 @code{static_assert}
+message.  Any string is converted to the character set of the source code.
+When this feature is available the @code{__GXX_CONSTEXPR_ASM__} preprocessor
+macro is predefined.
+
+@example
+#include <string>
+constexpr std::string_view genfoo() @{ return "foo"; @}
+
+void function()
+@{
+  asm((genfoo()));
+@}
+@end example
 
 @node Asm Labels
 @subsection Controlling Names Used in Assembler Code
@@ -13548,15 +13586,10 @@ builtins (@pxref{__atomic Builtins}).  They should not be used for new
 code which should use the @samp{__atomic} builtins instead.
 
 Not all operations are supported by all target processors.  If a particular
-operation cannot be implemented on the target processor, a warning is
-generated and a call to an external function is generated.  The external
-function carries the same name as the built-in version,
-with an additional suffix
+operation cannot be implemented on the target processor, a call to an
+external function is generated.  The external function carries the same name
+as the built-in version, with an additional suffix
 @samp{_@var{n}} where @var{n} is the size of the data type.
-
-@c ??? Should we have a mechanism to suppress this warning?  This is almost
-@c useful for implementing the operation under the control of an external
-@c mutex.
 
 In most cases, these built-in functions are considered a @dfn{full barrier}.
 That is,
@@ -14312,6 +14345,33 @@ format string @var{fmt}.  If the compiler is able to optimize them to
 @code{fputc} etc.@: functions, it does, otherwise the checking function
 is called and the @var{flag} argument passed to it.
 @enddefbuiltin
+
+@node New/Delete Builtins
+@section Built-in functions for C++ allocations and deallocations
+@findex __builtin_operator_new
+@findex __builtin_operator_delete
+Calling these C++ built-in functions is similar to calling
+@code{::operator new} or @code{::operator delete} with the same arguments,
+except that it is an error if the selected @code{::operator new} or
+@code{::operator delete} overload is not a replaceable global operator
+and for optimization purposes calls to pairs of these functions can be
+omitted if access to the allocation is optimized out, or could be replaced
+with implementation provided buffer on the stack, or multiple allocation
+calls can be merged into a single allocation.  In C++ such optimizations
+are normally allowed just for calls to such replaceable global operators
+from @code{new} and @code{delete} expressions.
+
+@smallexample
+void foo () @{
+  int *a = new int;
+  delete a; // This pair of allocation/deallocation operators can be omitted
+	    // or replaced with int _temp; int *a = &_temp; etc.@:
+  void *b = ::operator new (32);
+  ::operator delete (b); // This one cannnot.
+  void *c = __builtin_operator_new (32);
+  __builtin_operator_delete (c); // This one can.
+@}
+@end smallexample
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
@@ -15303,7 +15363,7 @@ a function if it does not.  For example:
 
 You may use this built-in function in either a macro or an inline
 function.  However, if you use it in an inlined function and pass an
-argument of the function as the argument to the built-in, GCC 
+argument of the function as the argument to the built-in, GCC
 never returns 1 when you call the inline function with a string constant
 or compound literal (@pxref{Compound Literals}) and does not return 1
 when you pass a constant numeric value to the inline function unless you
@@ -15468,9 +15528,9 @@ when testing pointer or floating-point values.
 
 For the purposes of branch prediction optimizations, the probability that
 a @code{__builtin_expect} expression is @code{true} is controlled by GCC's
-@code{builtin-expect-probability} parameter, which defaults to 90%.  
+@code{builtin-expect-probability} parameter, which defaults to 90%.
 
-You can also use @code{__builtin_expect_with_probability} to explicitly 
+You can also use @code{__builtin_expect_with_probability} to explicitly
 assign a probability value to individual expressions.  If the built-in
 is used in a loop construct, the provided probability will influence
 the expected number of iterations made by loop optimizations.
@@ -15482,7 +15542,7 @@ the expected number of iterations made by loop optimizations.
 This function has the same semantics as @code{__builtin_expect},
 but the caller provides the expected probability that @var{exp} == @var{c}.
 The last argument, @var{probability}, is a floating-point value in the
-range 0.0 to 1.0, inclusive.  The @var{probability} argument must be
+range 0.0 to 1.0, inclusive.  The @var{probability} argument must be a
 constant floating-point expression.
 @enddefbuiltin
 
@@ -15675,9 +15735,11 @@ be in the cache by the time it is accessed.
 
 The value of @var{addr} is the address of the memory to prefetch.
 There are two optional arguments, @var{rw} and @var{locality}.
-The value of @var{rw} is a compile-time constant one or zero; one
-means that the prefetch is preparing for a write to the memory address
-and zero, the default, means that the prefetch is preparing for a read.
+The value of @var{rw} is a compile-time constant zero, one or two; one
+means that the prefetch is preparing for a write to the memory address,
+two means that the prefetch is preparing for a shared read (expected to be
+read by at least one other processor before it is written if written at
+all) and zero, the default, means that the prefetch is preparing for a read.
 The value @var{locality} must be a compile-time constant integer between
 zero and three.  A value of zero means that the data has no temporal
 locality, so it need not be left in the cache after the access.  A value
@@ -16244,6 +16306,115 @@ Returns the openacc gang, worker or vector size depending on whether @var{x} is
 0, 1 or 2.
 @enddefbuiltin
 
+@defbuiltin{uint8_t __builtin_rev_crc8_data8 (uint8_t @var{crc}, uint8_t @var{data}, uint8_t @var{poly})}
+Returns the calculated 8-bit bit-reversed CRC using the initial CRC (8-bit),
+data (8-bit) and the polynomial (8-bit).
+@var{crc} is the initial CRC, @var{data} is the data and
+@var{poly} is the polynomial without leading 1.
+Table-based or clmul-based CRC may be used for the
+calculation, depending on the target architecture.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_rev_crc16_data16 (uint16_t @var{crc}, uint16_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
+are 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_rev_crc16_data8 (uint16_t @var{crc}, uint8_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_rev_crc16_data16}, except the @var{data} argument
+type is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_rev_crc32_data32 (uint32_t @var{crc}, uint32_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
+are 32-bit and for the CRC calculation may be also used crc* machine instruction
+depending on the target and the polynomial.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_rev_crc32_data8 (uint32_t @var{crc}, uint8_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_rev_crc32_data32}, except the @var{data} argument
+type is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_rev_crc32_data16 (uint32_t @var{crc}, uint16_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_rev_crc32_data32}, except the @var{data} argument
+type is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data64 (uint64_t @var{crc}, uint64_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
+are 64-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data8 (uint64_t @var{crc}, uint8_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data16 (uint64_t @var{crc}, uint16_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
+is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data32 (uint64_t @var{crc}, uint32_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
+is 32-bit.
+@enddefbuiltin
+
+@defbuiltin{uint8_t __builtin_crc8_data8 (uint8_t @var{crc}, uint8_t @var{data}, uint8_t @var{poly})}
+Returns the calculated 8-bit bit-forward CRC using the initial CRC (8-bit),
+data (8-bit) and the polynomial (8-bit).
+@var{crc} is the initial CRC, @var{data} is the data and
+@var{poly} is the polynomial without leading 1.
+Table-based or clmul-based CRC may be used for the
+calculation, depending on the target architecture.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_crc16_data16 (uint16_t @var{crc}, uint16_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_crc8_data8}, except the argument and return types
+are 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_crc16_data8 (uint16_t @var{crc}, uint8_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_crc16_data16}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_crc32_data32 (uint32_t @var{crc}, uint32_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_crc8_data8}, except the argument and return types
+are 32-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_crc32_data8 (uint32_t @var{crc}, uint8_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_crc32_data32}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_crc32_data16 (uint32_t @var{crc}, uint16_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_crc32_data32}, except the @var{data} argument type
+is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data64 (uint64_t @var{crc}, uint64_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc8_data8}, except the argument and return types
+are 64-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data8 (uint64_t @var{crc}, uint8_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data16 (uint64_t @var{crc}, uint16_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
+is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data32 (uint64_t @var{crc}, uint32_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
+is 32-bit.
+@enddefbuiltin
+
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
 
@@ -16254,7 +16425,6 @@ instructions, but allow the compiler to schedule those calls.
 @menu
 * AArch64 Built-in Functions::
 * Alpha Built-in Functions::
-* Altera Nios II Built-in Functions::
 * ARC Built-in Functions::
 * ARC SIMD Built-in Functions::
 * ARM iWMMXt Built-in Functions::
@@ -16393,119 +16563,6 @@ PAL calls, but when invoked with @option{-mtls-kernel}, they invoke
 void *__builtin_thread_pointer (void);
 void __builtin_set_thread_pointer (void *);
 @end smallexample
-
-@node Altera Nios II Built-in Functions
-@subsection Altera Nios II Built-in Functions
-
-These built-in functions are available for the Altera Nios II
-family of processors.
-
-The following built-in functions are always available.  They
-all generate the machine instruction that is part of the name.
-
-@example
-int __builtin_ldbio (volatile const void *);
-int __builtin_ldbuio (volatile const void *);
-int __builtin_ldhio (volatile const void *);
-int __builtin_ldhuio (volatile const void *);
-int __builtin_ldwio (volatile const void *);
-void __builtin_stbio (volatile void *, int);
-void __builtin_sthio (volatile void *, int);
-void __builtin_stwio (volatile void *, int);
-void __builtin_sync (void);
-int __builtin_rdctl (int);
-int __builtin_rdprs (int, int);
-void __builtin_wrctl (int, int);
-void __builtin_flushd (volatile void *);
-void __builtin_flushda (volatile void *);
-int __builtin_wrpie (int);
-void __builtin_eni (int);
-int __builtin_ldex (volatile const void *);
-int __builtin_stex (volatile void *, int);
-int __builtin_ldsex (volatile const void *);
-int __builtin_stsex (volatile void *, int);
-@end example
-
-The following built-in functions are always available.  They
-all generate a Nios II Custom Instruction. The name of the
-function represents the types that the function takes and
-returns. The letter before the @code{n} is the return type
-or void if absent. The @code{n} represents the first parameter
-to all the custom instructions, the custom instruction number.
-The two letters after the @code{n} represent the up to two
-parameters to the function.
-
-The letters represent the following data types:
-@table @code
-@item <no letter>
-@code{void} for return type and no parameter for parameter types.
-
-@item i
-@code{int} for return type and parameter type
-
-@item f
-@code{float} for return type and parameter type
-
-@item p
-@code{void *} for return type and parameter type
-
-@end table
-
-And the function names are:
-@example
-void __builtin_custom_n (void);
-void __builtin_custom_ni (int);
-void __builtin_custom_nf (float);
-void __builtin_custom_np (void *);
-void __builtin_custom_nii (int, int);
-void __builtin_custom_nif (int, float);
-void __builtin_custom_nip (int, void *);
-void __builtin_custom_nfi (float, int);
-void __builtin_custom_nff (float, float);
-void __builtin_custom_nfp (float, void *);
-void __builtin_custom_npi (void *, int);
-void __builtin_custom_npf (void *, float);
-void __builtin_custom_npp (void *, void *);
-int __builtin_custom_in (void);
-int __builtin_custom_ini (int);
-int __builtin_custom_inf (float);
-int __builtin_custom_inp (void *);
-int __builtin_custom_inii (int, int);
-int __builtin_custom_inif (int, float);
-int __builtin_custom_inip (int, void *);
-int __builtin_custom_infi (float, int);
-int __builtin_custom_inff (float, float);
-int __builtin_custom_infp (float, void *);
-int __builtin_custom_inpi (void *, int);
-int __builtin_custom_inpf (void *, float);
-int __builtin_custom_inpp (void *, void *);
-float __builtin_custom_fn (void);
-float __builtin_custom_fni (int);
-float __builtin_custom_fnf (float);
-float __builtin_custom_fnp (void *);
-float __builtin_custom_fnii (int, int);
-float __builtin_custom_fnif (int, float);
-float __builtin_custom_fnip (int, void *);
-float __builtin_custom_fnfi (float, int);
-float __builtin_custom_fnff (float, float);
-float __builtin_custom_fnfp (float, void *);
-float __builtin_custom_fnpi (void *, int);
-float __builtin_custom_fnpf (void *, float);
-float __builtin_custom_fnpp (void *, void *);
-void * __builtin_custom_pn (void);
-void * __builtin_custom_pni (int);
-void * __builtin_custom_pnf (float);
-void * __builtin_custom_pnp (void *);
-void * __builtin_custom_pnii (int, int);
-void * __builtin_custom_pnif (int, float);
-void * __builtin_custom_pnip (int, void *);
-void * __builtin_custom_pnfi (float, int);
-void * __builtin_custom_pnff (float, float);
-void * __builtin_custom_pnfp (float, void *);
-void * __builtin_custom_pnpi (void *, int);
-void * __builtin_custom_pnpf (void *, float);
-void * __builtin_custom_pnpp (void *, void *);
-@end example
 
 @node ARC Built-in Functions
 @subsection ARC Built-in Functions
@@ -21795,8 +21852,18 @@ vector bool __int128 vec_sel (vector bool __int128,
                vector bool __int128, vector unsigned __int128);
 @end smallexample
 
-The instance is an extension of the exiting overloaded built-in @code{vec_sel}
+The instance is an extension of the existing overloaded built-in @code{vec_sel}
 that is documented in the PVIPR.
+
+@smallexample
+vector signed __int128 vec_perm (vector signed __int128,
+               vector signed __int128);
+vector unsigned __int128 vec_perm (vector unsigned __int128,
+               vector unsigned __int128);
+@end smallexample
+
+The instance is an extension of the existing overloaded built-in
+@code{vec_perm} that is documented in the PVIPR.
 
 @node Basic PowerPC Built-in Functions Available on ISA 2.06
 @subsubsection Basic PowerPC Built-in Functions Available on ISA 2.06
@@ -26645,6 +26712,9 @@ Intel Core i7 Arrow Lake S CPU.
 @item pantherlake
 Intel Core i7 Panther Lake CPU.
 
+@item diamondrapids
+Intel Core i7 Diamond Rapids CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
@@ -28305,6 +28375,10 @@ The GNU C preprocessor recognizes several pragmas in addition to the
 compiler pragmas documented here.  Refer to the CPP manual for more
 information.
 
+GCC additionally recognizes OpenMP pragmas when the @option{-fopenmp}
+option is specified, and OpenACC pragmas when the @option{-fopenacc}
+option is specified.  @xref{OpenMP}, and @ref{OpenACC}.
+
 @menu
 * AArch64 Pragmas::
 * ARM Pragmas::
@@ -28843,7 +28917,7 @@ for more information about the @code{target} attribute and the attribute
 syntax.
 
 The @code{#pragma GCC target} pragma is presently implemented for
-x86, ARM, AArch64, PowerPC, S/390, and Nios II targets only.
+x86, ARM, AArch64, PowerPC, and S/390 targets only.
 
 @cindex pragma GCC optimize
 @item #pragma GCC optimize (@var{string}, @dots{})
@@ -29309,6 +29383,57 @@ i = 0b101010;
 The type of these constants follows the same rules as for octal or
 hexadecimal integer constants, so suffixes like @samp{L} or @samp{UL}
 can be applied.
+
+@node OpenMP
+@section OpenMP
+@cindex OpenMP extension support
+
+OpenMP (Open Multi-Processing) is an application programming
+interface (API) that supports multi-platform shared memory
+multiprocessing programming in C/C++ and Fortran on many
+architectures, including Unix and Microsoft Windows platforms.
+It consists of a set of compiler directives, library routines,
+and environment variables that influence run-time behavior.
+
+GCC implements all of the @uref{https://openmp.org/specifications/,
+OpenMP Application Program Interface v4.5}, and many features from later
+versions of the OpenMP specification.
+@xref{OpenMP Implementation Status,,,libgomp,
+GNU Offloading and Multi Processing Runtime Library},
+for more details about currently supported OpenMP features.
+
+To enable the processing of OpenMP directives @samp{#pragma omp},
+@samp{[[omp::directive(...)]]}, @samp{[[omp::decl(...)]]},
+and @samp{[[omp::sequence(...)]]} in C and C++,
+GCC needs to be invoked with the @option{-fopenmp} option.
+This option also arranges for automatic linking of the OpenMP
+runtime library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+
+@xref{OpenMP and OpenACC Options}, for additional options useful with
+@option{-fopenmp}.
+
+@node OpenACC
+@section OpenACC
+@cindex OpenACC extension support
+
+OpenACC is an application programming interface (API) that supports
+offloading of code to accelerator devices.  It consists of a set of
+compiler directives, library routines, and environment variables that
+influence run-time behavior.
+
+GCC strives to be compatible with the
+@uref{https://www.openacc.org/, OpenACC Application Programming
+Interface v2.6}.
+
+To enable the processing of OpenACC directives @samp{#pragma acc}
+in C and C++, GCC needs to be invoked with the @option{-fopenacc} option.
+This option also arranges for automatic linking of the OpenACC runtime
+library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+
+@xref{OpenMP and OpenACC Options}, for additional options useful with
+@option{-fopenacc}.
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language

@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -119,8 +119,6 @@ ASM_MISA_SPEC
 "%{march=*:%:riscv_expand_arch(%*)} "				\
 "%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
 
-#define TARGET_DEFAULT_CMODEL CM_MEDLOW
-
 #define LOCAL_LABEL_PREFIX	"."
 #define USER_LABEL_PREFIX	""
 
@@ -192,7 +190,8 @@ ASM_MISA_SPEC
 #define PARM_BOUNDARY BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY ((TARGET_RVC || TARGET_ZCA) ? 16 : 32)
+#define FUNCTION_BOUNDARY \
+  (((TARGET_RVC || TARGET_ZCA) && !is_zicfilp_p ()) ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
@@ -415,7 +414,8 @@ ASM_MISA_SPEC
 #define RISCV_DWARF_VLENB (4096 + 0xc22)
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM (GP_TEMP_FIRST + 2)
+#define STATIC_CHAIN_REGNUM \
+  ((is_zicfilp_p ()) ? (GP_TEMP_FIRST + 23) : (GP_TEMP_FIRST + 2))
 
 /* Registers used as temporaries in prologue/epilogue code.
 
@@ -437,6 +437,10 @@ ASM_MISA_SPEC
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
+
+#define RISCV_CALL_ADDRESS_LPAD_REGNUM (GP_TEMP_FIRST + 2)
+#define RISCV_CALL_ADDRESS_LPAD(MODE) \
+  gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_LPAD_REGNUM)
 
 #define RETURN_ADDR_MASK (1 << RETURN_ADDR_REGNUM)
 #define S0_MASK (1 << S0_REGNUM)
@@ -506,8 +510,10 @@ enum reg_class
 {
   NO_REGS,			/* no registers in set */
   SIBCALL_REGS,			/* registers used by indirect sibcalls */
+  RVC_GR_REGS,			/* RVC general registers */
   JALR_REGS,			/* registers used by indirect calls */
   GR_REGS,			/* integer registers */
+  RVC_FP_REGS,			/* RVC floating-point registers */
   FP_REGS,			/* floating-point registers */
   FRAME_REGS,			/* arg pointer and frame pointer */
   VM_REGS,			/* v0.t registers */
@@ -529,8 +535,10 @@ enum reg_class
 {									\
   "NO_REGS",								\
   "SIBCALL_REGS",							\
+  "RVC_GR_REGS",							\
   "JALR_REGS",								\
   "GR_REGS",								\
+  "RVC_FP_REGS",							\
   "FP_REGS",								\
   "FRAME_REGS",								\
   "VM_REGS",								\
@@ -554,8 +562,10 @@ enum reg_class
 {									\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
   { 0xf003fcc0, 0x00000000, 0x00000000, 0x00000000 },	/* SIBCALL_REGS */	\
+  { 0x0000ff00, 0x00000000, 0x00000000, 0x00000000 },	/* RVC_GR_REGS */	\
   { 0xffffffc0, 0x00000000, 0x00000000, 0x00000000 },	/* JALR_REGS */		\
   { 0xffffffff, 0x00000000, 0x00000000, 0x00000000 },	/* GR_REGS */		\
+  { 0x00000000, 0x0000ff00, 0x00000000, 0x00000000 },	/* RVC_FP_REGS */	\
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000 },	/* FP_REGS */		\
   { 0x00000000, 0x00000000, 0x00000003, 0x00000000 },	/* FRAME_REGS */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000001 },	/* V0_REGS */		\
@@ -817,7 +827,8 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 
 /* Trampolines are a block of code followed by two pointers.  */
 
-#define TRAMPOLINE_CODE_SIZE 16
+#define TRAMPOLINE_CODE_SIZE ((is_zicfilp_p ()) ? 24 : 16)
+
 #define TRAMPOLINE_SIZE		\
   ((Pmode == SImode)		\
    ? TRAMPOLINE_CODE_SIZE	\
@@ -1185,6 +1196,9 @@ extern poly_int64 riscv_v_adjust_nunits (enum machine_mode, int);
 extern poly_int64 riscv_v_adjust_nunits (machine_mode, bool, int, int);
 extern poly_int64 riscv_v_adjust_precision (enum machine_mode, int);
 extern poly_int64 riscv_v_adjust_bytesize (enum machine_mode, int);
+extern bool is_zicfiss_p ();
+extern bool is_zicfilp_p ();
+extern bool need_shadow_stack_push_pop_p ();
 /* The number of bits and bytes in a RVV vector.  */
 #define BITS_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk * 8))
 #define BYTES_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk))
@@ -1297,5 +1311,12 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
     ? ROUND_UP (STACK_CLASH_MIN_BYTES_OUTGOING_ARGS,       \
 		STACK_BOUNDARY / BITS_PER_UNIT)		   \
     : (crtl->outgoing_args_size + STACK_POINTER_OFFSET))
+
+/* According to the RISC-V C API, the arch string may contains ','. To avoid
+   the conflict with the default separator, we choose '#' as the separator for
+   the target attribute.  */
+#define TARGET_CLONES_ATTR_SEPARATOR '#'
+
+#define TARGET_HAS_FMV_TARGET_ATTRIBUTE 0
 
 #endif /* ! GCC_RISCV_H */

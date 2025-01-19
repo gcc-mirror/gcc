@@ -1,6 +1,6 @@
 ; Options for the Modula-2 front end.
 ;
-; Copyright (C) 2016-2024 Free Software Foundation, Inc.
+; Copyright (C) 2016-2025 Free Software Foundation, Inc.
 ; Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 ;
 ; This file is part of GNU Modula-2.
@@ -153,6 +153,10 @@ dump Modula-2 quads to the filename stem specified
 fm2-dump-filter=
 Modula-2 Joined
 filter the language dump using a comma separated list of procedures and modules
+
+fm2-file-offset-bits=
+Modula-2 Joined
+override the default 64 bit definition of SYSTEM.COFF_T with the argument specified
 
 fm2-g
 Modula-2

@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -3441,7 +3440,7 @@ public:
     {
       return ix86_apx_nf_convert ();
     }
-}; // class pass_rpad
+}; // class pass_apx_nf_convert
 
 } // anon namespace
 
@@ -3620,7 +3619,9 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return optimize && optimize_function_for_speed_p (cfun);
+      return TARGET_ALIGN_TIGHT_LOOPS
+	     && optimize
+	     && optimize_function_for_speed_p (cfun);
     }
 
   unsigned int execute (function *) final override

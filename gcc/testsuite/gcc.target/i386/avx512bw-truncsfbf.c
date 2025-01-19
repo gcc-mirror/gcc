@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512bw -mavx512vl -mno-avx512bf16 -mno-avxneconvert -O2" } */
+/* { dg-options "-mavx512bw -mavx512vl -mno-avx512bf16 -mno-avxneconvert -O2 -ffast-math" } */
 /* { dg-final { scan-assembler-times {(?n)(?:vpermw|vpshufb)} 6 } } */
 
 typedef float v4sf __attribute__((vector_size(16)));

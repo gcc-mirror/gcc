@@ -1,5 +1,5 @@
 /* Tuning model description for AArch64 architecture.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,7 +25,7 @@
 static const struct tune_params neoversen1_tunings =
 {
   &cortexa76_extra_costs,
-  &generic_addrcost_table,
+  &generic_armv8_a_addrcost_table,
   &generic_regmove_cost,
   &cortexa57_vector_cost,
   &generic_branch_cost,
@@ -39,7 +39,7 @@ static const struct tune_params neoversen1_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   3, /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  AARCH64_FUSE_BASE, /* fusible_ops  */
   "32:16",	/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */
@@ -51,8 +51,8 @@ static const struct tune_params neoversen1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
-  &generic_prefetch_tune,
+  (AARCH64_EXTRA_TUNE_BASE),	/* tune_flags.  */
+  &generic_armv9a_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */
   AARCH64_LDP_STP_POLICY_ALWAYS    /* stp_policy_model.  */
 };

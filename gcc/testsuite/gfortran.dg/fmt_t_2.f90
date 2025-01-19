@@ -12,7 +12,7 @@
       read (11, '(a040,t1,040a)', end = 999)  foost1 , foost2
       if (foost1.ne.foost2) STOP 1
 
-      read (11, '(a032,t2,a032t3,a032)', end = 999)  foost1 , foost2, foost3
+      read (11, '(a032,t2,a032,t3,a032)', end = 999)  foost1 , foost2, foost3
       if (foost1(1:32).ne."123456789 123456789 123456789   ") STOP 2
       if (foost2(1:32).ne."23456789 123456789 123456789    ") STOP 3
       if (foost3(1:32).ne."3456789 123456789 123456789     ") STOP 4

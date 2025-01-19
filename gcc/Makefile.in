@@ -1,7 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987-2024 Free Software Foundation, Inc.
+# Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -239,6 +239,12 @@ INSNEMIT_SEQ_SRC = $(patsubst %, insn-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
 INSNEMIT_SEQ_TMP = $(patsubst %, tmp-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
 INSNEMIT_SEQ_O = $(patsubst %, insn-emit-%.o, $(INSNEMIT_SPLITS_SEQ))
 
+# Re-use the split number for insn-recog as well.
+INSNRECOG_SPLITS_SEQ = $(wordlist 1,$(NUM_INSNEMIT_SPLITS),$(one_to_9999))
+INSNRECOG_SEQ_SRC = $(patsubst %, insn-recog-%.cc, $(INSNRECOG_SPLITS_SEQ))
+INSNRECOG_SEQ_TMP = $(patsubst %, tmp-recog-%.cc, $(INSNRECOG_SPLITS_SEQ))
+INSNRECOG_SEQ_O = $(patsubst %, insn-recog-%.o, $(INSNRECOG_SPLITS_SEQ))
+
 # These files are to have specific diagnostics suppressed, or are not to
 # be subject to -Werror:
 # flex output may yield harmless "no previous prototype" warnings
@@ -436,6 +442,8 @@ endif
 
 enable_host_shared = @enable_host_shared@
 
+enable_libgdiagnostics = @enable_libgdiagnostics@
+
 enable_as_accelerator = @enable_as_accelerator@
 
 CPPLIB = ../libcpp/libcpp.a
@@ -488,7 +496,7 @@ T_STDINT_GCC_H = $(srcdir)/ginclude/stdint-gcc.h
 GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld $(TFLAGS)
 
 # The GCC to use when running selftests
-GCC_FOR_SELFTESTS = LC_ALL=C $(GCC_FOR_TARGET)
+GCC_FOR_SELFTESTS = LC_ALL=C GCC_COLORS= $(GCC_FOR_TARGET)
 
 # Set if the compiler was configured with --with-build-sysroot.
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
@@ -618,6 +626,9 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
+ifeq (@enable_libgdiagnostics@,yes)
+lang_checks += check-libgdiagnostics check-sarif-replay
+endif
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt $(srcdir)/analyzer/analyzer.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
@@ -1292,6 +1303,8 @@ RUST_TARGET_OBJS=@rust_target_objs@
 # Object files for gcc many-languages driver.
 GCC_OBJS = gcc.o gcc-main.o ggc-none.o gcc-urlifier.o options-urls.o
 
+SARIF_REPLAY_OBJS = sarif-replay.o libsarifreplay.o
+
 c-family-warn = $(STRICT_WARN)
 
 # Language-specific object files shared by all C-family front ends.
@@ -1378,7 +1391,7 @@ OBJS = \
 	insn-output.o \
 	insn-peep.o \
 	insn-preds.o \
-	insn-recog.o \
+	$(INSNRECOG_SEQ_O) \
 	insn-enums.o \
 	ggc-page.o \
 	adjust-alignment.o \
@@ -1466,6 +1479,7 @@ OBJS = \
 	function-abi.o \
 	function-tests.o \
 	fwprop.o \
+	gcc-attribute-urlifier.o \
 	gcc-rich-location.o \
 	gcc-urlifier.o \
 	gcse.o \
@@ -1686,6 +1700,7 @@ OBJS = \
 	statistics.o \
 	stmt.o \
 	stor-layout.o \
+	avoid-store-forwarding.o \
 	store-motion.o \
 	streamer-hooks.o \
 	stringpool.o \
@@ -1722,6 +1737,11 @@ OBJS = \
 	tree-iterator.o \
 	tree-logical-location.o \
 	tree-loop-distribution.o \
+	crc-verification.o \
+	gimple-crc-optimization.o \
+	sym-exec/sym-exec-expression.o \
+	sym-exec/sym-exec-state.o \
+	sym-exec/sym-exec-condition.o \
 	tree-nested.o \
 	tree-nrv.o \
 	tree-object-size.o \
@@ -1833,7 +1853,7 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-show-locus.o \
 	edit-context.o \
 	pretty-print.o intl.o \
-	json.o \
+	json.o json-parsing.o \
 	sbitmap.o \
 	vec.o input.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o selftest-diagnostic.o sort.o \
@@ -1866,7 +1886,7 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
   $(GCOV_TOOL_OBJS) $(GENGTYPE_OBJS) gcc-ar.o gcc-nm.o gcc-ranlib.o \
-  lto-wrapper.o collect-utils.o
+  lto-wrapper.o collect-utils.o lockfile.o lto-ltrans-cache.o
 
 # for anything that is shared use the cc1plus profile data, as that
 # is likely the most exercised during the build
@@ -1880,6 +1900,10 @@ endif
 # compilation or not.
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
+ifeq (@enable_libgdiagnostics@,yes)
+ALL_HOST_OBJS += $(libgdiagnostics_OBJS) $(SARIF_REPLAY_OBJS)
+endif
+
 BACKEND = libbackend.a main.o libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER)
 
@@ -1891,8 +1915,8 @@ TREECHECKING = @TREECHECKING@
 FULL_DRIVER_NAME=$(target_noncanonical)-gcc-$(version)$(exeext)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
- insn-output.cc insn-recog.cc $(INSNEMIT_SEQ_SRC) \
- insn-extract.cc insn-peep.cc \
+ insn-output.cc $(INSNRECOG_SEQ_SRC) insn-recog.h \
+ $(INSNEMIT_SEQ_SRC) insn-extract.cc insn-peep.cc \
  insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
  insn-latencytab.cc insn-opinit.cc insn-opinit.h insn-preds.cc insn-constants.h \
  tm-preds.h tm-constrs.h checksum-options $(GIMPLE_MATCH_PD_SEQ_SRC) \
@@ -2186,7 +2210,7 @@ all.cross: native gcc-cross$(exeext) cpp$(exeext) specs \
 	libgcc-support lang.all.cross doc selftest @GENINSRC@ srcextra
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
-	libgcc-support lang.start.encap @GENINSRC@ srcextra
+	libgcc-support lang.start.encap @LIBGDIAGNOSTICS@ @GENINSRC@ srcextra
 # These can't be made until after GCC can run.
 rest.encap: lang.rest.encap
 # This is what is made with the host's compiler
@@ -2274,6 +2298,135 @@ cpp$(exeext): $(GCC_OBJS) c-family/cppspec.o libcommon-target.a $(LIBDEPS) \
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
 	  c-family/cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
 	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+
+libgdiagnostics_OBJS = libgdiagnostics.o \
+	libcommon.a
+
+# libgdiagnostics
+
+LIBGDIAGNOSTICS_VERSION_NUM = 0
+LIBGDIAGNOSTICS_MINOR_NUM = 0
+LIBGDIAGNOSTICS_RELEASE_NUM = 1
+
+ifneq (,$(findstring mingw,$(target)))
+LIBGDIAGNOSTICS_FILENAME = libgdiagnostics-$(LIBGDIAGNOSTICS_VERSION_NUM).dll
+LIBGDIAGNOSTICS_IMPORT_LIB = libgdiagnostics.dll.a
+
+libgdiagnostics: $(LIBGDIAGNOSTICS_FILENAME)
+
+else
+
+ifneq (,$(findstring darwin,$(host)))
+
+LIBGDIAGNOSTICS_AGE = 1
+LIBGDIAGNOSTICS_BASENAME = libgdiagnostics
+
+LIBGDIAGNOSTICS_SONAME = \
+  ${libdir}/$(LIBGDIAGNOSTICS_BASENAME).$(LIBGDIAGNOSTICS_VERSION_NUM).dylib
+LIBGDIAGNOSTICS_FILENAME = $(LIBGDIAGNOSTICS_BASENAME).$(LIBGDIAGNOSTICS_VERSION_NUM).dylib
+LIBGDIAGNOSTICS_LINKER_NAME = $(LIBGDIAGNOSTICS_BASENAME).dylib
+
+# Conditionalize the use of the LD_VERSION_SCRIPT_OPTION and
+# LD_SONAME_OPTION depending if configure found them, using $(if)
+# We have to define a LIBGDIAGNOSTICS_COMMA here, otherwise the commas in the "true"
+# result are treated as separators by the $(if).
+LIBGDIAGNOSTICS_COMMA := ,
+LIBGDIAGNOSTICS_VERSION_SCRIPT_OPTION = \
+	$(if $(LD_VERSION_SCRIPT_OPTION),\
+	  -Wl$(LIBGDIAGNOSTICS_COMMA)$(LD_VERSION_SCRIPT_OPTION)$(LIBGDIAGNOSTICS_COMMA)$(srcdir)/libgdiagnostics.map)
+
+LIBGDIAGNOSTICS_SONAME_OPTION = \
+	$(if $(LD_SONAME_OPTION), \
+	     -Wl$(LIBGDIAGNOSTICS_COMMA)$(LD_SONAME_OPTION)$(LIBGDIAGNOSTICS_COMMA)$(LIBGDIAGNOSTICS_SONAME))
+
+LIBGDIAGNOSTICS_SONAME_SYMLINK = $(LIBGDIAGNOSTICS_FILENAME)
+LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK = $(LIBGDIAGNOSTICS_LINKER_NAME)
+
+libgdiagnostics: $(LIBGDIAGNOSTICS_FILENAME) \
+	$(LIBGDIAGNOSTICS_SYMLINK) \
+	$(LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK)
+
+else
+
+LIBGDIAGNOSTICS_LINKER_NAME = libgdiagnostics.so
+LIBGDIAGNOSTICS_SONAME = $(LIBGDIAGNOSTICS_LINKER_NAME).$(LIBGDIAGNOSTICS_VERSION_NUM)
+LIBGDIAGNOSTICS_FILENAME = \
+  $(LIBGDIAGNOSTICS_SONAME).$(LIBGDIAGNOSTICS_MINOR_NUM).$(LIBGDIAGNOSTICS_RELEASE_NUM)
+
+LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK = $(LIBGDIAGNOSTICS_LINKER_NAME)
+LIBGDIAGNOSTICS_SONAME_SYMLINK = $(LIBGDIAGNOSTICS_SONAME)
+
+# Conditionalize the use of the LD_VERSION_SCRIPT_OPTION and
+# LD_SONAME_OPTION depending if configure found them, using $(if)
+# We have to define a LIBGDIAGNOSTICS_COMMA here, otherwise the commas in the "true"
+# result are treated as separators by the $(if).
+LIBGDIAGNOSTICS_COMMA := ,
+LIBGDIAGNOSTICS_VERSION_SCRIPT_OPTION = \
+	$(if $(LD_VERSION_SCRIPT_OPTION),\
+	  -Wl$(LIBGDIAGNOSTICS_COMMA)$(LD_VERSION_SCRIPT_OPTION)$(LIBGDIAGNOSTICS_COMMA)$(srcdir)/libgdiagnostics.map)
+
+LIBGDIAGNOSTICS_SONAME_OPTION = \
+	$(if $(LD_SONAME_OPTION), \
+	     -Wl$(LIBGDIAGNOSTICS_COMMA)$(LD_SONAME_OPTION)$(LIBGDIAGNOSTICS_COMMA)$(LIBGDIAGNOSTICS_SONAME))
+
+libgdiagnostics: $(LIBGDIAGNOSTICS_FILENAME) \
+	$(LIBGDIAGNOSTICS_SYMLINK) \
+	$(LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK)
+
+endif
+endif
+
+libgdiagnostics.serial = $(LIBGDIAGNOSTICS_FILENAME)
+
+# Tell GNU make to ignore these if they exist.
+.PHONY: libgdiagnostics
+
+ifneq (,$(findstring mingw,$(target)))
+# Create import library
+LIBGDIAGNOSTICS_EXTRA_OPTS = -Wl,--out-implib,$(LIBGDIAGNOSTICS_IMPORT_LIB)
+else
+
+ifneq (,$(findstring darwin,$(host)))
+# TODO : Construct a Darwin-style symbol export file.
+LIBGDIAGNOSTICS_EXTRA_OPTS = -Wl,-compatibility_version,$(LIBGDIAGNOSTICS_VERSION_NUM) \
+	-Wl,-current_version,$(LIBGDIAGNOSTICS_VERSION_NUM).$(LIBGDIAGNOSTICS_MINOR_NUM).$(LIBGDIAGNOSTICS_AGE) \
+	$(LIBGDIAGNOSTICS_VERSION_SCRIPT_OPTION) \
+	$(LIBGDIAGNOSTICS_SONAME_OPTION)
+else
+
+LIBGDIAGNOSTICS_EXTRA_OPTS = $(LIBGDIAGNOSTICS_VERSION_SCRIPT_OPTION) \
+	$(LIBGDIAGNOSTICS_SONAME_OPTION)
+endif
+endif
+
+$(LIBGDIAGNOSTICS_FILENAME): $(libgdiagnostics_OBJS) $(CPPLIB) $(EXTRA_GCC_LIBS) $(LIBS) \
+	$(LIBDEPS) $(srcdir)/libgdiagnostics.map
+	@$(call LINK_PROGRESS,$(INDEX.libgdiagnostics),start)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
+	     $(libgdiagnostics_OBJS) \
+	     $(CPPLIB) $(EXTRA_GCC_LIBS) $(LIBS) \
+	     $(LIBGDIAGNOSTICS_EXTRA_OPTS)
+	@$(call LINK_PROGRESS,$(INDEX.libgdiagnostics),end)
+
+# Create symlinks when not building for Windows
+ifeq (,$(findstring mingw,$(target)))
+
+ifeq (,$(findstring darwin,$(host)))
+# but only one level for Darwin, version info is embedded.
+$(LIBGDIAGNOSTICS_SONAME_SYMLINK): $(LIBGDIAGNOSTICS_FILENAME)
+	ln -sf $(LIBGDIAGNOSTICS_FILENAME) $(LIBGDIAGNOSTICS_SONAME_SYMLINK)
+endif
+
+$(LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK): $(LIBGDIAGNOSTICS_SONAME_SYMLINK)
+	ln -sf $(LIBGDIAGNOSTICS_SONAME_SYMLINK) $(LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK)
+endif
+
+# sarif-replay: a command-line tool that uses libgdiagnostics to
+# replay SARIF files
+sarif-replay: $(SARIF_REPLAY_OBJS) $(LIBGDIAGNOSTICS_FILENAME)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(SARIF_REPLAY_OBJS) $(LIBGDIAGNOSTICS_FILENAME) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)
@@ -2395,7 +2548,9 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 CFLAGS-collect2.o += -DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	@TARGET_SYSTEM_ROOT_DEFINE@
 
-LTO_WRAPPER_OBJS = lto-wrapper.o collect-utils.o ggc-none.o
+LTO_WRAPPER_OBJS = lto-wrapper.o collect-utils.o ggc-none.o lockfile.o \
+  lto-ltrans-cache.o
+
 lto-wrapper$(exeext): $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o T$@ \
 	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBS)
@@ -2530,7 +2685,8 @@ $(common_out_object_file): $(common_out_file)
 # and compile them.
 
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h insn-constants.h \
-  $(INSNEMIT_SEQ_SRC) insn-recog.cc insn-extract.cc insn-output.cc \
+  $(INSNEMIT_SEQ_SRC) insn-recog.h $(INSNRECOG_SEQ_SRC) \
+  insn-extract.cc insn-output.cc \
   insn-peep.cc insn-attr.h insn-attr-common.h insn-attrtab.cc \
   insn-dfatab.cc insn-latencytab.cc insn-preds.cc \
   $(GIMPLE_MATCH_PD_SEQ_SRC) $(GENERIC_MATCH_PD_SEQ_SRC) \
@@ -2559,7 +2715,7 @@ simple_rtl_generated_h	= insn-attr.h insn-attr-common.h insn-codes.h \
 
 simple_rtl_generated_c	= insn-automata.cc \
 			  insn-extract.cc insn-output.cc \
-			  insn-peep.cc insn-recog.cc
+			  insn-peep.cc
 
 simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h
 
@@ -2596,6 +2752,18 @@ s-tmp-emit: build/genemit$(build_exeext) $(MD_DEPS) insn-conditions.md
 	  $(SHELL) $(srcdir)/../move-if-change tmp-emit-$(id).cc \
 	  insn-emit-$(id).cc;)
 	$(STAMP) s-tmp-emit
+
+# Same for genrecog.
+$(INSNRECOG_SEQ_SRC): s-tmp-recog; @true
+insn-recog.h: s-tmp-recog; @true
+s-tmp-recog: build/genrecog$(build_exeext) $(MD_DEPS) insn-conditions.md
+	$(RUN_GEN) build/genrecog$(build_exeext) $(md_file) insn-conditions.md \
+	  -Hinsn-recog.h \
+	  $(addprefix -O,${INSNRECOG_SEQ_TMP})
+	$(foreach id, $(INSNRECOG_SPLITS_SEQ), \
+	  $(SHELL) $(srcdir)/../move-if-change tmp-recog-$(id).cc \
+	  insn-recog-$(id).cc;)
+	$(STAMP) s-tmp-recog
 
 # gencheck doesn't read the machine description, and the file produced
 # doesn't use the insn-* convention.
@@ -2884,6 +3052,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.cc $(srcdir)/tree-nested.cc \
   $(srcdir)/omp-offload.h \
+  $(srcdir)/omp-general.h \
   $(srcdir)/omp-general.cc \
   $(srcdir)/omp-low.cc \
   $(srcdir)/targhooks.cc $(out_file) $(srcdir)/passes.cc \
@@ -2910,7 +3079,6 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-strub.cc \
   $(srcdir)/internal-fn.h \
   $(srcdir)/calls.cc \
-  $(srcdir)/omp-general.h \
   $(srcdir)/analyzer/analyzer-language.cc \
   @all_gtfiles@
 
@@ -3662,6 +3830,18 @@ regenerate-opt-urls: $(srcdir)/regenerate-opt-urls.py $(OPT_URLS_HTML_DEPS)
 regenerate-opt-urls-unit-test: $(OPT_URLS_HTML_DEPS)
 	$(srcdir)/regenerate-opt-urls.py $(build_htmldir) $(shell dirname $(srcdir)) --unit-test
 
+# Regenerate attr-urls.def from the generated html.
+.PHONY: regenerate-attr-urls
+ATTR_URLS_HTML_DEPS = $(build_htmldir)/gcc/Concept-and-Symbol-Index.html
+
+regenerate-attr-urls: $(srcdir)/regenerate-attr-urls.py $(ATTR_URLS_HTML_DEPS)
+	$(srcdir)/regenerate-attr-urls.py $(build_htmldir) $(shell dirname $(srcdir))
+
+# Run the unit tests for regenerate-attr-urls.py
+.PHONY: regenerate-attr-urls-unit-test
+regenerate-attr-urls-unit-test: $(ATTR_URLS_HTML_DEPS)
+	$(srcdir)/regenerate-attr-urls.py $(build_htmldir) $(shell dirname $(srcdir)) --unit-test
+
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 \
            doc/fsf-funding.7 doc/gcov-tool.1 doc/gcov-dump.1 \
 	   $(if $(filter yes,@enable_lto@),doc/lto-dump.1)
@@ -3814,6 +3994,10 @@ install: install-common $(INSTALL_HEADERS) \
 
 ifeq ($(enable_plugin),yes)
 install: install-plugin
+endif
+
+ifeq ($(enable_libgdiagnostics),yes)
+install: install-libgdiagnostics
 endif
 
 install-strip: override INSTALL_PROGRAM = $(INSTALL_STRIP_PROGRAM)
@@ -3991,6 +4175,49 @@ install-driver: installdirs xgcc$(exeext)
 	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi; \
 	fi
+
+libgdiagnostics.install-headers: installdirs
+	$(INSTALL_DATA) $(srcdir)/libgdiagnostics.h \
+	  $(DESTDIR)$(includedir)/libgdiagnostics.h
+	$(INSTALL_DATA) $(srcdir)/libgdiagnostics++.h \
+	  $(DESTDIR)$(includedir)/libgdiagnostics++.h
+
+ifneq (,$(findstring mingw,$(target)))
+libgdiagnostics.install-common: installdirs libgdiagnostics.install-headers
+# Install import library
+	$(INSTALL_PROGRAM) $(LIBGDIAGNOSTICS_IMPORT_LIB) \
+	  $(DESTDIR)$(libdir)/$(LIBGDIAGNOSTICS_IMPORT_LIB)
+# Install DLL file
+	$(INSTALL_PROGRAM) $(LIBGDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(bindir)/$(LIBGDIAGNOSTICS_FILENAME)
+
+else
+ifneq (,$(findstring darwin,$(host)))
+# but only one level for Darwin
+
+libgdiagnostics.install-common: installdirs libgdiagnostics.install-headers
+	$(INSTALL_PROGRAM) $(LIBGDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBGDIAGNOSTICS_FILENAME)
+	ln -sf \
+	  $(LIBGDIAGNOSTICS_SONAME_SYMLINK)\
+	  $(DESTDIR)$(libdir)/$(LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK)
+
+else
+libgdiagnostics.install-common: installdirs libgdiagnostics.install-headers
+	$(INSTALL_PROGRAM) $(LIBGDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBGDIAGNOSTICS_FILENAME)
+	ln -sf \
+	  $(LIBGDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBGDIAGNOSTICS_SONAME_SYMLINK)
+	ln -sf \
+	  $(LIBGDIAGNOSTICS_SONAME_SYMLINK)\
+	  $(DESTDIR)$(libdir)/$(LIBGDIAGNOSTICS_LINKER_NAME_SYMLINK)
+endif
+endif
+
+install-libgdiagnostics: libgdiagnostics.install-common sarif-replay
+	-rm -f $(DESTDIR)$(bindir)/sarif-replay
+	-$(INSTALL_PROGRAM) sarif-replay $(DESTDIR)$(bindir)/sarif-replay
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir

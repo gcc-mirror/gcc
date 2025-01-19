@@ -124,6 +124,8 @@ void thrower2 () throw (svint8_t); // { dg-error {cannot throw or catch SVE type
 void thrower3 () throw (svint8_t); // { dg-error {cannot throw or catch SVE type 'svint8_t'} "" { target c++98_only } }
 #endif
 
+extern int bar (void);
+
 // Main tests for statements and expressions.
 
 void
@@ -159,8 +161,17 @@ statements (int n)
   svint8_t init_sve_sc3 = sve_sc1;
   svint8_t init_sve_sc4 = sve_sh1; // { dg-error {cannot convert 'svint16_t' to 'svint8_t'} }
   svint8_t init_sve_sc5 = {};
-  svint8_t init_sve_sc6 = { sve_sc1 };
-  svint8_t init_sve_sc7 = { sve_sh1 }; // { dg-error {cannot convert 'svint16_t' to 'svint8_t'} }
+  svint8_t init_sve_sc6 = { sve_sc1 }; // { dg-error {cannot convert 'svint8_t' to 'signed char'} "" { target c++98_only } }
+  svint8_t init_sve_sc7 = { sve_sh1 }; // { dg-error {cannot convert 'svint16_t' to 'signed char'} }
+  svint32_t init_sve_vc1 = { 0, 1 };
+  svint32_t init_sve_vc2 = { 0, bar () };
+  svint32_t init_sve_vc3 = { bar (), n };
+  svint32_t init_sve_vc4 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  svint32_t init_sve_vc5 = { 0, 1, bar (), 3, 4, 5, n, 7 };
+  svint32_t init_sve_vc6 = { 0, 1, 2, 3, 4, 5, 6, 7, 8 }; // { dg-error {too many initializers for 'svint32_t'} }
+  svint32_t init_sve_vc7 = { 0, 1, 2, 3, bar (), 5, 6, 7, n }; // { dg-error {too many initializers for 'svint32_t'} }
+  svint32_t init_sve_vc8 = { 0, bar (), 2, 3, 4, n, 5, 6, 7, 8, 9 }; // { dg-error {too many initializers for 'svint32_t'} }
+  svint32_t init_sve_vc9 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // { dg-error {too many initializers for 'svint32_t'} }
 
   // Constructor calls.
 
@@ -301,7 +312,7 @@ statements (int n)
 
   // Other built-ins
 
-  __builtin_launder (sve_sc1); // { dg-error {non-pointer argument to '__builtin_launder'} }
+  __builtin_launder (sve_sc1); // { dg-error {'svint8_t' of argument to '__builtin_launder' is not a pointer to object type} }
   __builtin_memcpy (&sve_sc1, &sve_sc2, 2);
 
   // Lambdas
@@ -340,7 +351,7 @@ statements (int n)
   { typedef int f[__has_unique_object_representations (svint8_t) ? 1 : -1]; }
   { typedef int f[!__has_virtual_destructor (svint8_t) ? 1 : -1]; }
   { typedef int f[!__is_abstract (svint8_t) ? 1 : -1]; }
-  { typedef int f[!__is_aggregate (svint8_t) ? 1 : -1]; }
+  { typedef int f[__is_aggregate (svint8_t) ? 1 : -1]; }
   { typedef int f[!__is_base_of (svint8_t, svint8_t) ? 1 : -1]; }
   { typedef int f[!__is_base_of (svint8_t, svint16_t) ? 1 : -1]; }
   { typedef int f[!__is_class (svint8_t) ? 1 : -1]; }

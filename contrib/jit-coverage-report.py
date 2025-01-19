@@ -4,7 +4,7 @@
 # cases, and which lack test coverage.  Tested with Python 2.7 and 3.2
 # To be run from the root directory of the source tree.
 #
-# Copyright (C) 2014-2024 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 # Written by David Malcolm <dmalcolm@redhat.com>.
 #
 # This script is Free Software, and it can be copied, distributed and

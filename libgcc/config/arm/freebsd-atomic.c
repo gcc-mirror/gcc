@@ -1,5 +1,5 @@
 /* FreeBSD specific atomic operations for ARM EABI.
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -126,8 +126,6 @@ __sync_val_compare_and_swap_##N (TYPE *mem, TYPE expected,		\
                   "r" (ras_start));					\
         return (old);							\
 }
-
-typedef unsigned char bool;
 
 #define SYNC_BOOL_CAS_N(N, TYPE)                                        \
 bool HIDDEN								\

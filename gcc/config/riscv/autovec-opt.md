@@ -1,5 +1,5 @@
 ;; Machine description for optimization of RVV auto-vectorization.
-;; Copyright (C) 2023-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2023-2025 Free Software Foundation, Inc.
 ;; Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 ;; This file is part of GCC.
@@ -810,7 +810,8 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (<WREDUC_UNSPEC>, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>, <WREDUC_UNSPEC_VL0_SAFE>,
+				  riscv_vector::REDUCE_OP,
                                   operands,
                                   CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -830,6 +831,7 @@
   [(const_int 0)]
 {
   riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
+				  UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   operands,
                                   CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
@@ -851,6 +853,7 @@
   [(const_int 0)]
 {
   riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED,
+				  UNSPEC_WREDUC_SUM_ORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   operands, operands[2]);
   DONE;
@@ -879,6 +882,7 @@
     {
       rtx ops[] = {operands[0], operands[2], operands[3], operands[4]};
       riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED,
+				      UNSPEC_WREDUC_SUM_ORDERED_VL0_SAFE,
                                       riscv_vector::REDUCE_OP_M_FRM_DYN,
                                       ops, operands[1]);
     }
@@ -1227,6 +1231,7 @@
   rtx ops[] = {operands[0], operands[2], operands[1],
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_reduction (<WREDUC_UNSPEC>,
+				  <WREDUC_UNSPEC_VL0_SAFE>,
                                   riscv_vector::REDUCE_OP_M,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -1282,6 +1287,7 @@
 {
   rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
   riscv_vector::expand_reduction (<WREDUC_UNSPEC>,
+				  <WREDUC_UNSPEC_VL0_SAFE>,
                                   riscv_vector::REDUCE_OP_M,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -1318,6 +1324,7 @@
   rtx ops[] = {operands[0], operands[2], operands[1],
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
+				  UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_M_FRM_DYN,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -1373,6 +1380,7 @@
 {
   rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
   riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
+				  UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE,
                                   riscv_vector::REDUCE_OP_M_FRM_DYN,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;

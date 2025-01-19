@@ -1,3 +1,68 @@
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GCCFilter): Ignore gen-evolution.awk and
+	gen-cxxapi-file.py.
+	(TestsuiteFilter): Ignore spec-example-4.sarif.
+	(LibCppFilter): Ignore uname2c.h.
+
+2024-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-changelog/git_commit.py (bug_components): Add
+	'libgdiagnostics' and 'sarif-replay'.
+
+2024-12-09  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* clang-format: AlwaysBreakAfterReturnType set to
+	TopLevelDefinitions and BraceWrapping.BeforeWhile set to true.
+
+2024-12-06  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* clang-format: Set BraceWrapping.AfterCaseLabel.
+
+2024-12-04  Filip Kastl  <fkastl@suse.cz>
+
+	* check-params-in-docs.py: 'params' -> 'help_params'.  Don't
+	convert 'help_params' to a list.
+
+2024-12-01  Gabi Falk  <gabifalk@gmx.com>
+
+	* testsuite-management/validate_failures.py: Change re.compile()
+	function arguments to Python raw strings.
+
+2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config-list.mk: Remove references to Nios II.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/96032
+	* regenerate-sarif-spec-index.py: New file.
+
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/106852
+	* relpath.sh: New file.
+
+2024-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add
+	another ignored commit.
+
+2024-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add 2
+	further commits.
+
+2024-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add 2
+	further commits.
+
+2024-11-09  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gen_autofdo_event.py: Convert strings to raw.
+	Add fallback to using builtin perf event list.
+
 2024-10-09  René Rebe  <rene@exactcode.de>
 
 	* config-list.mk (LIST): no --enable-obsolete for ia64-linux.

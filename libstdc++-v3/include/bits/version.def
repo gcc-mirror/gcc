@@ -1,5 +1,5 @@
 // Feature test macro definitions                                  -*- C++ -*-
-// Copyright (C) 2023-2024 Free Software Foundation, Inc.
+// Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1664,6 +1664,22 @@ ftms = {
 };
 
 ftms = {
+  name = flat_map;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = flat_set;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = formatters;
   values = {
     v = 202302;
@@ -1854,6 +1870,14 @@ ftms = {
 };
 
 ftms = {
+  name = span_initializer_list;
+  values = {
+    v = 202311;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = text_encoding;
   values = {
     v = 202306;
@@ -1870,6 +1894,15 @@ ftms = {
     cxxmin = 26;
     hosted = yes;
     extra_cond = "__glibcxx_to_chars";
+  };
+};
+
+ftms = {
+  name = modules;
+  values = {
+    v = 202207;
+    cxxmin = 20;
+    extra_cond = "__cpp_modules";
   };
 };
 

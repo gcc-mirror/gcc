@@ -295,7 +295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       const allocator_type& __alloc) noexcept
       : _M_alloc(__alloc)
       {
-	if constexpr (_Allocator::is_always_equal::value)
+	if constexpr (_AllocTraits::is_always_equal::value)
 	  _M_impl = std::__exchange(__other._M_impl, {});
 	else if (_M_alloc == __other._M_alloc)
 	  _M_impl = std::__exchange(__other._M_impl, {});
@@ -601,8 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_resize(size_type __n, allocator_type& __alloc) noexcept
 	{
-	  for (size_type __i = __n; __i < _M_size; ++__i)
-	    _AllocTraits::destroy(__alloc, &_M_frames[__i]);
+	  std::_Destroy(_M_frames + __n, _M_frames + _M_size, __alloc);
 	  _M_size = __n;
 	}
 

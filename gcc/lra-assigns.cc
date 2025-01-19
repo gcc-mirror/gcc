@@ -1,5 +1,5 @@
 /* Assign reload pseudos.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -629,13 +629,12 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	hard_regno = ira_class_hard_regs[rclass][i];
       if (! overlaps_hard_reg_set_p (conflict_set,
 				     PSEUDO_REGNO_MODE (regno), hard_regno)
-	  && targetm.hard_regno_mode_ok (hard_regno,
-					 PSEUDO_REGNO_MODE (regno))
+	  && targetm.hard_regno_mode_ok (hard_regno, PSEUDO_REGNO_MODE (regno))
 	  /* We cannot use prohibited_class_mode_regs for all classes
 	     because it is not defined for all classes.  */
 	  && (ira_allocno_class_translate[rclass] != rclass
 	      || ! TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs
-				      [rclass][PSEUDO_REGNO_MODE (regno)],
+				      [rclass][biggest_mode],
 				      hard_regno))
 	  && ! TEST_HARD_REG_BIT (impossible_start_hard_regs, hard_regno)
 	  && (nregs_diff == 0
@@ -1362,14 +1361,7 @@ find_all_spills_for (int regno)
 	    {
 	      if (live_pseudos_reg_renumber[r2->regno] >= 0
 		  && ! sparseset_bit_p (live_range_hard_reg_pseudos, r2->regno)
-		  && rclass_intersect_p[regno_allocno_class_array[r2->regno]]
-		  && ((int) r2->regno < lra_constraint_new_regno_start
-		      || bitmap_bit_p (&lra_inheritance_pseudos, r2->regno)
-		      || bitmap_bit_p (&lra_split_regs, r2->regno)
-		      || bitmap_bit_p (&lra_optional_reload_pseudos, r2->regno)
-		      /* There is no sense to consider another reload
-			 pseudo if it has the same class.  */
-		      || regno_allocno_class_array[r2->regno] != rclass))
+		  && rclass_intersect_p[regno_allocno_class_array[r2->regno]])
 		sparseset_set_bit (live_range_hard_reg_pseudos, r2->regno);
 	    }
 	}

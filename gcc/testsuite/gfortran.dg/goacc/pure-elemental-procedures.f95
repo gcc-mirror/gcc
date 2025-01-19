@@ -6,22 +6,26 @@ module test
 contains
   elemental subroutine test1
     !$acc parallel ! { dg-error "may not appear in PURE procedures" }
+    !$acc serial ! { dg-error "may not appear in PURE procedures" }
   end subroutine test1
 
   pure subroutine test2
     !$acc parallel ! { dg-error "may not appear in PURE procedures" }
+    !$acc serial ! { dg-error "may not appear in PURE procedures" }
   end subroutine test2
 
   ! Implicit pure
   elemental real function test3(x)
     real, intent(in) :: x
     !$acc parallel ! { dg-error "may not appear in PURE procedures" }
+    !$acc serial ! { dg-error "may not appear in PURE procedures" }
     test3 = x*x
   end function test3
 
   pure real function test4(x)
     real, intent(in) :: x
     !$acc parallel ! { dg-error "may not appear in PURE procedures" }
+    !$acc serial ! { dg-error "may not appear in PURE procedures" }
     test4 = x
   end function test4
 
@@ -29,6 +33,10 @@ contains
     real :: x = 0.0
     integer :: i
     !$acc parallel loop collapse(1) reduction(+:x)
+    do i = 1,10
+      x = x + 0.3
+    enddo
+    !$acc serial loop collapse(1) reduction(+:x)
     do i = 1,10
       x = x + 0.3
     enddo
@@ -42,6 +50,10 @@ contains
     do i = 1,10
       x = x + 0.3
     enddo
+    !$acc serial loop collapse(1) reduction(+:x)
+    do i = 1,10
+      x = x + 0.3
+    enddo
     test6 = x
   end function test6
 
@@ -50,12 +62,21 @@ contains
     !$acc parallel 
     test7 = x
     !$acc end parallel
+    !$acc serial 
+    test7 = x
+    !$acc end serial
   end function test7
 
   subroutine test8
     real :: x = 0.0
     integer :: i
     !$acc parallel loop collapse(1) reduction(+:x)
+    do i = 1,10
+      critical ! { dg-error "CRITICAL block inside of" }
+        x = x + 0.3
+      end critical
+    enddo
+    !$acc serial loop collapse(1) reduction(+:x)
     do i = 1,10
       critical ! { dg-error "CRITICAL block inside of" }
         x = x + 0.3

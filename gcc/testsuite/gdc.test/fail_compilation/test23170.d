@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test23170.d(10): Error: array literal in `@nogc` delegate `test23170.__lambda5` may cause a GC allocation
+fail_compilation/test23170.d(10): Error: this array literal causes a GC allocation in `@nogc` delegate `__lambda_L10_C15`
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=23170

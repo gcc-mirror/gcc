@@ -1,5 +1,5 @@
 /* ACLE support for Arm MVE (function shapes)
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -63,8 +63,12 @@ namespace arm_mve
     extern const function_shape *const inherent;
     extern const function_shape *const load;
     extern const function_shape *const load_ext;
+    extern const function_shape *const load_ext_gather_offset;
+    extern const function_shape *const load_gather_base;
     extern const function_shape *const mvn;
     extern const function_shape *const store;
+    extern const function_shape *const store_scatter_base;
+    extern const function_shape *const store_scatter_offset;
     extern const function_shape *const ternary;
     extern const function_shape *const ternary_lshift;
     extern const function_shape *const ternary_n;

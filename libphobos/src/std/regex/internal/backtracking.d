@@ -702,7 +702,7 @@ final:
     }
 
     void stackPush(T)(T val)
-        if (!isDynamicArray!T)
+    if (!isDynamicArray!T)
     {
         *cast(T*)&memory[lastState] = val;
         enum delta = (T.sizeof+size_t.sizeof/2)/size_t.sizeof;
@@ -720,7 +720,7 @@ final:
     }
 
     void stackPop(T)(ref T val)
-        if (!isDynamicArray!T)
+    if (!isDynamicArray!T)
     {
         enum delta = (T.sizeof+size_t.sizeof/2)/size_t.sizeof;
         lastState -= delta;

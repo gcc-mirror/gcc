@@ -1,4 +1,6 @@
 ! { dg-do run { target i?86-*-linux* x86_64-*-linux* } }
+! disable DCE so the allocations are not optimized away
+! { dg-additional-options "-fno-malloc-dce" }
 ! { dg-additional-sources set_vm_limit.c }
 !
 ! This test calls set_vm_limit to set an artificially low address space

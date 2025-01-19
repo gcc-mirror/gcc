@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -24,6 +24,8 @@
 
 #ifndef USED_FOR_TARGET
 #include "bbitmap.h"
+
+constexpr unsigned int AARCH64_NUM_ABI_ATTRIBUTES = 1;
 
 typedef uint64_t aarch64_isa_mode;
 

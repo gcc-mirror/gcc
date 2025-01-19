@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2025 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -35,8 +35,9 @@
    UNSPEC_FPINT_NEARBYINT
 
    UNSPEC_ALLOCA
-
    UNSPEC_SET_SOFTSTACK
+   UNSPEC_STACKSAVE
+   UNSPEC_STACKRESTORE
 
    UNSPEC_DIM_SIZE
 
@@ -1663,21 +1664,46 @@
    (match_operand 1 "nvptx_register_operand")]
   ""
 {
-  if (TARGET_SOFT_STACK)
+  if (!TARGET_SOFT_STACK
+      && TARGET_PTX_7_3
+      && TARGET_SM52)
+    emit_insn (gen_nvptx_alloca (Pmode, operands[0], operands[1]));
+  else if (!TARGET_SOFT_STACK)
+    {
+      sorry ("target cannot support alloca");
+      emit_insn (gen_nop ());
+    }
+  else if (TARGET_SOFT_STACK)
     {
       emit_move_insn (stack_pointer_rtx,
 		      gen_rtx_MINUS (Pmode, stack_pointer_rtx, operands[1]));
       emit_insn (gen_set_softstack (Pmode, stack_pointer_rtx));
       emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
-      DONE;
     }
-  /* The ptx documentation specifies an alloca intrinsic (for 32 bit
-     only)  but notes it is not implemented.  The assembler emits a
-     confused error message.  Issue a blunt one now instead.  */
-  sorry ("target cannot support alloca");
-  emit_insn (gen_nop ());
+  else
+    gcc_unreachable ();
   DONE;
 })
+
+(define_insn "@nvptx_alloca_<mode>"
+  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
+        (unspec:P [(match_operand:P 1 "nvptx_nonmemory_operand" "Ri")]
+		  UNSPEC_ALLOCA))]
+  "TARGET_PTX_7_3
+   && TARGET_SM52"
+  {
+    /* Convert the address from '.local' state space to generic.  That way,
+       we don't have to use 'st.local', 'ld.local', and can easily pass the
+       address to other "generic functions".
+       TODO 'gcc.target/nvptx/alloca-5.c' */
+    output_asm_insn ("{", NULL);
+    output_asm_insn ("\\t.reg%t0\\t%0_local;", operands);
+    output_asm_insn ("\\talloca%u0\\t%0_local, %1;", operands);
+    output_asm_insn ("\\tcvta.local%u0\\t%0, %0_local;", operands);
+    output_asm_insn ("}", NULL);
+    return "";
+  }
+  [(set_attr "predicable" "no")])
 
 (define_insn "@set_softstack_<mode>"
   [(unspec [(match_operand:P 0 "nvptx_register_operand" "R")]
@@ -1687,16 +1713,76 @@
   return nvptx_output_set_softstack (REGNO (operands[0]));
 })
 
+(define_expand "save_stack_block"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "register_operand" "")]
+  "!TARGET_SOFT_STACK"
+{
+  if (TARGET_PTX_7_3
+      && TARGET_SM52)
+    {
+      gcc_checking_assert (REG_P (operands[0]));
+      emit_insn (gen_nvptx_stacksave (Pmode, operands[0], operands[1]));
+    }
+  else
+    {
+      /* The concept of a '%stack' pointer doesn't apply like this.
+         GCC however occasionally synthesizes '__builtin_stack_save ()',
+	 '__builtin_stack_restore ()', and isn't able to optimize them all
+	 away.  Just submit a dummy -- user code shouldn't be able to observe
+	 this.  */
+      emit_move_insn (operands[0], GEN_INT (0xdeadbeef));
+    }
+  DONE;
+})
+
+(define_insn "@nvptx_stacksave_<mode>"
+  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
+        (unspec:P [(match_operand:P 1 "register_operand" "R")]
+	 UNSPEC_STACKSAVE))]
+  "TARGET_PTX_7_3
+   && TARGET_SM52"
+  "%.\\tstacksave%u0\\t%0;")
+
 (define_expand "restore_stack_block"
   [(match_operand 0 "register_operand" "")
    (match_operand 1 "register_operand" "")]
   ""
 {
-  if (TARGET_SOFT_STACK)
+  if (!TARGET_SOFT_STACK
+      && TARGET_PTX_7_3
+      && TARGET_SM52)
+    {
+      operands[1] = force_reg (Pmode, operands[1]);
+      emit_insn (gen_nvptx_stackrestore (Pmode, operands[0], operands[1]));
+    }
+  else if (!TARGET_SOFT_STACK)
+    ; /* See 'save_stack_block'.  */
+  else if (TARGET_SOFT_STACK)
     {
       emit_move_insn (operands[0], operands[1]);
       emit_insn (gen_set_softstack (Pmode, operands[0]));
     }
+  else
+    gcc_unreachable ();
+  DONE;
+})
+
+(define_insn "@nvptx_stackrestore_<mode>"
+  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
+        (unspec:P [(match_operand:P 1 "nvptx_register_operand" "R")]
+         UNSPEC_STACKRESTORE))]
+  "TARGET_PTX_7_3
+   && TARGET_SM52"
+  "%.\\tstackrestore%u1\\t%1;")
+
+(define_expand "save_stack_function"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "register_operand" "")]
+  "!TARGET_SOFT_STACK"
+{
+  /* See 'STACK_SAVEAREA_MODE'.  */
+  gcc_checking_assert (operands[0] == 0);
   DONE;
 })
 
@@ -1705,6 +1791,9 @@
    (match_operand 1 "register_operand" "")]
   ""
 {
+  if (!TARGET_SOFT_STACK)
+    /* See 'STACK_SAVEAREA_MODE'.  */
+    gcc_checking_assert (operands[1] == 0);
   DONE;
 })
 

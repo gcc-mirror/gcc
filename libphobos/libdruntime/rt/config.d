@@ -129,8 +129,7 @@ string rt_envvarsOption(string opt, scope rt_configCallBack dg) @nogc nothrow
             var[4 + i] = cast(char) toupper(c);
         var[4 + opt.length] = 0;
 
-        auto p = getenv(var.ptr);
-        if (p)
+        if (auto p = getenv(var.ptr))
         {
             string s = dg(cast(string) p[0 .. strlen(p)]);
             if (s != null)

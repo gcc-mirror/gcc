@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "revision": 1,
+  "modules": [
+    {
+      "logical-name": "std",
+      "source-path": "@MODPATH@/std.cc",
+      "is-std-library": true
+    },
+    {
+      "logical-name": "std.compat",
+      "source-path": "@MODPATH@/std.compat.cc",
+      "is-std-library": true
+    }
+  ]
+}

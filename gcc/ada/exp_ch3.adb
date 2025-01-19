@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,14 +32,12 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
-with Expander;       use Expander;
 with Exp_Aggr;       use Exp_Aggr;
 with Exp_Atag;       use Exp_Atag;
 with Exp_Ch4;        use Exp_Ch4;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Ch9;        use Exp_Ch9;
-with Exp_Dbug;       use Exp_Dbug;
 with Exp_Disp;       use Exp_Disp;
 with Exp_Dist;       use Exp_Dist;
 with Exp_Put_Image;
@@ -1351,9 +1349,8 @@ package body Exp_Ch3 is
 
          Append_To (Component_Associations (Aggr),
            Make_Component_Association (Loc,
-             Choices    => New_List (Make_Others_Choice (Loc)),
-             Expression => Empty));
-         Set_Box_Present (Last (Component_Associations (Aggr)));
+             Choices     => New_List (Make_Others_Choice (Loc)),
+             Box_Present => True));
 
          if Typ /= Full_Typ then
             Analyze_And_Resolve (Aggr, Full_View (Base_Type (Full_Typ)));
@@ -2620,11 +2617,10 @@ package body Exp_Ch3 is
          Default_Loc : constant Source_Ptr := Sloc (Default);
          Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
-         Adj_Call : Node_Id;
-         Exp      : Node_Id;
-         Exp_Q    : Node_Id;
-         Lhs      : Node_Id;
-         Res      : List_Id;
+         Exp   : Node_Id;
+         Exp_Q : Node_Id;
+         Lhs   : Node_Id;
+         Res   : List_Id;
 
       begin
          Lhs :=
@@ -2679,45 +2675,48 @@ package body Exp_Ch3 is
              Name       => Lhs,
              Expression => Exp));
 
-         Set_No_Ctrl_Actions (First (Res));
-
          Exp_Q := Unqualify (Exp);
 
-         --  Adjust the tag if tagged (because of possible view conversions).
-         --  Suppress the tag adjustment when not Tagged_Type_Expansion because
-         --  tags are represented implicitly in objects, and when the record is
-         --  initialized with a raise expression.
-
-         if Is_Tagged_Type (Typ)
-           and then Tagged_Type_Expansion
-           and then Nkind (Exp_Q) /= N_Raise_Expression
-         then
-            Append_To (Res,
-              Make_Tag_Assignment_From_Type
-                (Default_Loc,
-                 New_Copy_Tree (Lhs, New_Scope => Proc_Id),
-                 Underlying_Type (Typ)));
-         end if;
-
-         --  Adjust the component if controlled except if it is an aggregate
+         --  Adjust the component if controlled, except if it is an aggregate
          --  that will be expanded inline (but note that the case of container
-         --  aggregates does require component adjustment).
+         --  aggregates does require component adjustment), or a function call.
+         --  Note that, when we don't inhibit component adjustment, the tag
+         --  will be automatically inserted by Make_Tag_Ctrl_Assignment in the
+         --  tagged case. Otherwise, we have to generate a tag assignment here.
 
          if Needs_Finalization (Typ)
            and then (Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
                       or else Is_Container_Aggregate (Exp_Q))
            and then not Is_Build_In_Place_Function_Call (Exp)
+           and then Nkind (Exp) /= N_Function_Call
          then
-            Adj_Call :=
-              Make_Adjust_Call
-                (Obj_Ref => New_Copy_Tree (Lhs),
-                 Typ     => Etype (Id));
+            Set_No_Finalize_Actions (First (Res));
 
-            --  Guard against a missing [Deep_]Adjust when the component type
-            --  was not properly frozen.
+         else
+            Set_No_Ctrl_Actions (First (Res));
 
-            if Present (Adj_Call) then
-               Append_To (Res, Adj_Call);
+            --  Adjust the tag if tagged because of possible view conversions
+
+            if Is_Tagged_Type (Typ)
+              and then Tagged_Type_Expansion
+              and then Nkind (Exp_Q) /= N_Raise_Expression
+            then
+               declare
+                  Utyp : Entity_Id := Underlying_Type (Typ);
+
+               begin
+                  --  Get the relevant type for Make_Tag_Assignment_From_Type,
+                  --  which, for concurrent types is the corresponding record.
+
+                  if Ekind (Utyp) in E_Protected_Type | E_Task_Type then
+                     Utyp := Corresponding_Record_Type (Utyp);
+                  end if;
+
+                  Append_To (Res,
+                    Make_Tag_Assignment_From_Type (Default_Loc,
+                      New_Copy_Tree (Lhs, New_Scope => Proc_Id),
+                      Utyp));
+               end;
             end if;
          end if;
 
@@ -2950,10 +2949,8 @@ package body Exp_Ch3 is
                 Defining_Identifier => Acc_Type,
                 Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
-                    All_Present            => True,
-                    Null_Exclusion_Present => False,
-                    Constant_Present       => False,
-                    Subtype_Indication     =>
+                    All_Present        => True,
+                    Subtype_Indication =>
                       New_Occurrence_Of (Rec_Type, Loc)))));
 
             Set_Handled_Statement_Sequence (Body_Node,
@@ -4290,10 +4287,9 @@ package body Exp_Ch3 is
            (SI         : Node_Id;
             Check_List : List_Id)
          is
-            C                     : constant Node_Id := Constraint (SI);
-            Number_Of_Constraints : Nat := 0;
-            Index                 : Node_Id;
-            S, T                  : Entity_Id;
+            C     : constant Node_Id := Constraint (SI);
+            Index : Node_Id;
+            S, T  : Entity_Id;
 
             procedure Constrain_Index
               (Index      : Node_Id;
@@ -4331,12 +4327,6 @@ package body Exp_Ch3 is
                T := Designated_Type (T);
             end if;
 
-            S := First (Constraints (C));
-            while Present (S) loop
-               Number_Of_Constraints := Number_Of_Constraints + 1;
-               Next (S);
-            end loop;
-
             --  In either case, the index constraint must provide a discrete
             --  range for each index of the array type and the type of each
             --  discrete range must be the same as that of the corresponding
@@ -4348,7 +4338,7 @@ package body Exp_Ch3 is
 
             --  Apply constraints to each index type
 
-            for J in 1 .. Number_Of_Constraints loop
+            while Present (S) loop
                Constrain_Index (Index, S, Check_List);
                Next (Index);
                Next (S);
@@ -5684,7 +5674,6 @@ package body Exp_Ch3 is
 
                  Component_Definition =>
                    Make_Component_Definition (Loc,
-                     Aliased_Present => False,
                      Subtype_Indication => New_Occurrence_Of (Typ, Loc))),
 
              Expression =>
@@ -6428,10 +6417,10 @@ package body Exp_Ch3 is
          Build_Record_Init_Proc (Typ_Decl, Typ);
       end if;
 
-     --  Create the body of TSS primitive Finalize_Address. This must be done
-     --  before the bodies of all predefined primitives are created. If Typ
-     --  is limited, Stream_Input and Stream_Read may produce build-in-place
-     --  allocations and for those the expander needs Finalize_Address.
+      --  Create the body of TSS primitive Finalize_Address. This must be done
+      --  before the bodies of all predefined primitives are created. If Typ
+      --  is limited, Stream_Input and Stream_Read may produce build-in-place
+      --  allocations and for those the expander needs Finalize_Address.
 
       if Is_Controlled (Typ) then
          Make_Finalize_Address_Body (Typ);
@@ -7351,8 +7340,9 @@ package body Exp_Ch3 is
 
          --  However, there are exceptions in the latter case for interfaces
          --  (see Analyze_Object_Declaration), as well as class-wide types and
-         --  types with unknown discriminants if they are additionally limited
-         --  (see Expand_Subtype_From_Expr), so we must cope with them.
+         --  types with unknown discriminants if they have no underlying record
+         --  view or are inherently limited (see Expand_Subtype_From_Expr), so
+         --  we must cope with them.
 
          elsif Is_Interface (Typ) then
             pragma Assert (Is_Class_Wide_Type (Typ));
@@ -7384,7 +7374,8 @@ package body Exp_Ch3 is
 
          else pragma Assert (Is_Definite_Subtype (Typ)
            or else (Has_Unknown_Discriminants (Typ)
-                     and then Is_Inherently_Limited_Type (Typ)));
+                     and then (No (Underlying_Record_View (Typ))
+                                or else Is_Inherently_Limited_Type (Typ))));
 
             Alloc_Typ := Typ;
          end if;
@@ -7626,8 +7617,6 @@ package body Exp_Ch3 is
               or else Has_Aspect (Def_Id, Aspect_Address)
             then
                Ensure_Freeze_Node (Def_Id);
-               Set_Has_Delayed_Freeze (Def_Id);
-               Set_Is_Frozen (Def_Id, False);
 
                if not Partial_View_Has_Unknown_Discr (Typ) then
                   Append_Freeze_Action (Def_Id,
@@ -7640,16 +7629,25 @@ package body Exp_Ch3 is
             end if;
          end if;
 
+         --  For a special return object, the initialization must wait until
+         --  after the object is turned into an allocator.
+
          if not Special_Ret_Obj then
             Default_Initialize_Object (Init_After);
 
-            --  Check whether an access object has been initialized above
+            --  Check whether the object has been initialized above
 
-            if Is_Access_Type (Typ) and then Present (Expression (N)) then
-               if Known_Non_Null (Expression (N)) then
-                  Set_Is_Known_Non_Null (Def_Id);
-               elsif Known_Null (Expression (N)) then
-                  Set_Is_Known_Null (Def_Id);
+            if Present (Expression (N)) then
+               if Is_Access_Type (Typ) then
+                  if Known_Non_Null (Expression (N)) then
+                     Set_Is_Known_Non_Null (Def_Id);
+                  elsif Known_Null (Expression (N)) then
+                     Set_Is_Known_Null (Def_Id);
+                  end if;
+               end if;
+
+               if Is_Delayed_Aggregate (Expression (N)) then
+                  Convert_Aggr_In_Object_Decl (N);
                end if;
             end if;
          end if;
@@ -7678,27 +7676,12 @@ package body Exp_Ch3 is
 
          Expr_Q := Unqualify (Expr);
 
-         --  When we have the appropriate type of aggregate in the expression
-         --  (it has been determined during analysis of the aggregate by
-         --  setting the delay flag), let's perform in place assignment and
-         --  thus avoid creating a temporary.
+         --  When we have the appropriate kind of aggregate in the expression
+         --  (this has been determined during analysis of the aggregate by
+         --  setting the Expansion_Delayed flag), let's perform in place
+         --  assignment and thus avoid creating a temporary.
 
          if Is_Delayed_Aggregate (Expr_Q) then
-
-            --  An aggregate that must be built in place is not resolved and
-            --  expanded until the enclosing construct is expanded. This will
-            --  happen when the aggregate is limited and the declared object
-            --  has a following address clause. Resolution is done without
-            --  expansion because it will take place when the declaration
-            --  itself is expanded.
-
-            if Is_Limited_Type (Typ)
-              and then not Analyzed (Expr)
-            then
-               Expander_Mode_Save_And_Set (False);
-               Resolve (Expr, Typ);
-               Expander_Mode_Restore;
-            end if;
 
             --  For a special return object, the transformation must wait until
             --  after the object is turned into an allocator.
@@ -7718,14 +7701,15 @@ package body Exp_Ch3 is
 
             if not Special_Ret_Obj then
                declare
+                  Rhs    : constant Node_Id := Relocate_Node (Expr);
                   Assign : constant Node_Id :=
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Def_Id, Loc),
-                      Expression => Relocate_Node (Expr));
+                      Expression => Rhs);
 
                begin
                   Set_Assignment_OK (Name (Assign));
-                  Set_Analyzed (Expression (Assign), False);
+                  Unanalyze_Delayed_Conditional_Expression (Rhs);
                   Set_No_Finalize_Actions (Assign);
                   Insert_Action_After (Init_After, Assign);
 
@@ -8148,7 +8132,9 @@ package body Exp_Ch3 is
             Tag_Assign := Make_Tag_Assignment (N);
 
             if Present (Tag_Assign) then
-               if Present (Following_Address_Clause (N)) then
+               if Present (Following_Address_Clause (N))
+                 or else Has_Aspect (Def_Id, Aspect_Address)
+               then
                   Ensure_Freeze_Node (Def_Id);
                elsif not Special_Ret_Obj then
                   Insert_Action_After (Init_After, Tag_Assign);
@@ -8802,23 +8788,23 @@ package body Exp_Ch3 is
 
                       Else_Statements => New_List (Guard_Except));
 
-                     --  If a separate initialization assignment was created
-                     --  earlier, append that following the assignment of the
-                     --  implicit access formal to the access object, to ensure
-                     --  that the return object is initialized in that case. In
-                     --  this situation, the target of the assignment must be
-                     --  rewritten to denote a dereference of the access to the
-                     --  return object passed in by the caller.
+                  --  If a separate initialization assignment was created
+                  --  earlier, append that following the assignment of the
+                  --  implicit access formal to the access object, to ensure
+                  --  that the return object is initialized in that case. In
+                  --  this situation, the target of the assignment must be
+                  --  rewritten to denote a dereference of the access to the
+                  --  return object passed in by the caller.
 
-                     if Present (Init_Stmt) then
-                        Set_Name (Init_Stmt,
-                          Make_Explicit_Dereference (Loc,
-                            Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
-                        Set_Assignment_OK (Name (Init_Stmt));
+                  if Present (Init_Stmt) then
+                     Set_Name (Init_Stmt,
+                       Make_Explicit_Dereference (Loc,
+                         Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
+                     Set_Assignment_OK (Name (Init_Stmt));
 
-                        Append_To (Then_Statements (Alloc_Stmt), Init_Stmt);
-                        Init_Stmt := Empty;
-                     end if;
+                     Append_To (Then_Statements (Alloc_Stmt), Init_Stmt);
+                     Init_Stmt := Empty;
+                  end if;
 
                   Insert_Action (N, Alloc_Stmt, Suppress => All_Checks);
 
@@ -9126,35 +9112,7 @@ package body Exp_Ch3 is
       --  illegal code if written by hand, but that's OK.
 
       if Rewrite_As_Renaming then
-         Rewrite (N,
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Subtype_Mark        => New_Occurrence_Of (Etype (Def_Id), Loc),
-             Name                => Expr_Q));
-
-         --  Keep original aspects
-
-         Move_Aspects (Original_Node (N), N);
-
-         --  We do not analyze this renaming declaration, because all its
-         --  components have already been analyzed, and if we were to go
-         --  ahead and analyze it, we would in effect be trying to generate
-         --  another declaration of X, which won't do.
-
-         Set_Renamed_Object (Def_Id, Expr_Q);
-         Set_Analyzed (N);
-
-         --  We do need to deal with debug issues for this renaming
-
-         --  First, if entity comes from source, then mark it as needing
-         --  debug information, even though it is defined by a generated
-         --  renaming that does not come from source.
-
-         Set_Debug_Info_Defining_Id (N);
-
-         --  Now call the routine to generate debug info for the renaming
-
-         Insert_Action (N, Debug_Renaming_Declaration (N));
+         Rewrite_Object_Declaration_As_Renaming (N, Expr_Q);
       end if;
 
    --  Exception on library entity not available
@@ -9346,7 +9304,6 @@ package body Exp_Ch3 is
           Defining_Identifier => Parent_N,
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present => False,
               Subtype_Indication => New_Occurrence_Of (Par_Subtype, Loc)));
 
       if Null_Present (Rec_Ext_Part) then
@@ -9404,7 +9361,6 @@ package body Exp_Ch3 is
           Defining_Identifier => First_Tag_Component (T),
           Component_Definition =>
             Make_Component_Definition (Sloc_N,
-              Aliased_Present => False,
               Subtype_Indication => New_Occurrence_Of (RTE (RE_Tag), Sloc_N)));
 
       if Null_Present (Comp_List)
@@ -10427,63 +10383,57 @@ package body Exp_Ch3 is
         (Decl     : Node_Id;
          Rec_Type : Entity_Id) return Boolean
       is
-         References_Current_Instance : Boolean := False;
-         Has_Access_Discriminant     : Boolean := False;
-         Has_Internal_Call           : Boolean := False;
-
-         function Find_Access_Discriminant
+         function Is_Access_Discriminant
            (N : Node_Id) return Traverse_Result;
          --  Look for a name denoting an access discriminant
 
-         function Find_Current_Instance
+         function Is_Current_Instance
            (N : Node_Id) return Traverse_Result;
          --  Look for a reference to the current instance of the type
 
-         function Find_Internal_Call
+         function Is_Internal_Call
            (N : Node_Id) return Traverse_Result;
          --  Look for an internal protected function call
 
-         ------------------------------
-         -- Find_Access_Discriminant --
-         ------------------------------
+         ----------------------------
+         -- Is_Access_Discriminant --
+         ----------------------------
 
-         function Find_Access_Discriminant
+         function Is_Access_Discriminant
            (N : Node_Id) return Traverse_Result is
          begin
             if Is_Entity_Name (N)
               and then Denotes_Discriminant (N)
               and then Is_Access_Type (Etype (N))
             then
-               Has_Access_Discriminant := True;
                return Abandon;
             else
                return OK;
             end if;
-         end Find_Access_Discriminant;
+         end Is_Access_Discriminant;
 
-         ---------------------------
-         -- Find_Current_Instance --
-         ---------------------------
+         -------------------------
+         -- Is_Current_Instance --
+         -------------------------
 
-         function Find_Current_Instance
+         function Is_Current_Instance
            (N : Node_Id) return Traverse_Result is
          begin
             if Is_Entity_Name (N)
               and then Present (Entity (N))
               and then Is_Current_Instance (N)
             then
-               References_Current_Instance := True;
                return Abandon;
             else
                return OK;
             end if;
-         end Find_Current_Instance;
+         end Is_Current_Instance;
 
-         ------------------------
-         -- Find_Internal_Call --
-         ------------------------
+         ----------------------
+         -- Is_Internal_Call --
+         ----------------------
 
-         function Find_Internal_Call (N : Node_Id) return Traverse_Result is
+         function Is_Internal_Call (N : Node_Id) return Traverse_Result is
 
             function Call_Scope (N : Node_Id) return Entity_Id;
             --  Return the scope enclosing a given call node N
@@ -10507,21 +10457,20 @@ package body Exp_Ch3 is
               and then Call_Scope (N)
                          = Corresponding_Concurrent_Type (Rec_Type)
             then
-               Has_Internal_Call := True;
                return Abandon;
             else
                return OK;
             end if;
-         end Find_Internal_Call;
+         end Is_Internal_Call;
 
-         procedure Search_Access_Discriminant is new
-           Traverse_Proc (Find_Access_Discriminant);
+         function Search_Access_Discriminant is new
+           Traverse_Func (Is_Access_Discriminant);
 
-         procedure Search_Current_Instance is new
-           Traverse_Proc (Find_Current_Instance);
+         function Search_Current_Instance is new
+           Traverse_Func (Is_Current_Instance);
 
-         procedure Search_Internal_Call is new
-           Traverse_Proc (Find_Internal_Call);
+         function Search_Internal_Call is new
+           Traverse_Func (Is_Internal_Call);
 
          --  Start of processing for Requires_Late_Init
 
@@ -10542,9 +10491,7 @@ package body Exp_Ch3 is
             --  it has an initialization expression that includes a name
             --  denoting an access discriminant;
 
-            Search_Access_Discriminant (Expression (Decl));
-
-            if Has_Access_Discriminant then
+            if Search_Access_Discriminant (Expression (Decl)) = Abandon then
                return True;
             end if;
 
@@ -10552,18 +10499,14 @@ package body Exp_Ch3 is
             --  reference to the current instance of the type either by
             --  name...
 
-            Search_Current_Instance (Expression (Decl));
-
-            if References_Current_Instance then
+            if Search_Current_Instance (Expression (Decl)) = Abandon then
                return True;
             end if;
 
             --  ...or implicitly as the target object of a call.
 
             if Is_Protected_Record_Type (Rec_Type) then
-               Search_Internal_Call (Expression (Decl));
-
-               if Has_Internal_Call then
+               if Search_Internal_Call (Expression (Decl)) = Abandon then
                   return True;
                end if;
             end if;
@@ -12455,7 +12398,10 @@ package body Exp_Ch3 is
       --  on the body to add the appropriate stuff.
 
       elsif For_Body then
-         return Make_Subprogram_Body (Loc, Spec, Empty_List, Empty);
+         return Make_Subprogram_Body (Loc,
+                  Specification              => Spec,
+                  Declarations               => Empty_List,
+                  Handled_Statement_Sequence => Empty);
 
       --  For the case of an Input attribute predefined for an abstract type,
       --  generate an abstract specification. This will never be called, but we

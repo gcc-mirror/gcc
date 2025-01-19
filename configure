@@ -691,6 +691,7 @@ extra_host_libiberty_configure_flags
 stage1_languages
 host_libs_picflag
 CRAB1_LIBS
+enable_libgdiagnostics
 PICFLAG
 host_shared
 gcc_host_pie
@@ -844,6 +845,7 @@ enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
 enable_host_pie
 enable_host_shared
+enable_libgdiagnostics
 enable_stage1_languages
 enable_objc_gc
 with_target_bdw_gc
@@ -1549,7 +1551,7 @@ Optional Features:
 
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
-  --enable-gprofng[=ARG]  build gprofng [ARG={yes,no}]
+  --disable-gprofng       do not build gprofng
   --enable-compressed-debug-sections={all,gas,gold,ld,none}
                           Enable compressed debug sections for gas, gold or ld
                           by default
@@ -1578,6 +1580,8 @@ Optional Features:
                           plugins [none]
   --enable-host-pie       build position independent host executables
   --enable-host-shared    build host code as shared libraries
+  --enable-libgdiagnostics
+                          build libgdiagnostics shared library
   --enable-stage1-languages[=all]
                           choose additional languages to build during stage1.
                           Mostly useful for compiler development
@@ -3148,7 +3152,9 @@ fi
 
 if test "$enable_gprofng" = "yes"; then
   case "${target}" in
-    x86_64-*-linux* | i?86-*-linux* | aarch64-*-linux*)
+    *-musl*)
+      ;;
+    x86_64-*-linux* | i?86-*-linux* | aarch64-*-linux* | riscv64-*-linux*)
     configdirs="$configdirs gprofng"
     ;;
   esac
@@ -3667,6 +3673,15 @@ case "${target}" in
   cris-*-* | crisv32-*-*)
     libgloss_dir=cris
     ;;
+  kvx-*-elf)
+    libgloss_dir=kvx-elf
+    ;;
+  kvx-*-mbr)
+    libgloss_dir=kvx-mbr
+    ;;
+  kvx-*-cos)
+    libgloss_dir=kvx-cos
+    ;;
   hppa*-*-*)
     libgloss_dir=pa
     ;;
@@ -3967,6 +3982,9 @@ case "${target}" in
     ;;
   i[3456789]86-*-rdos*)
     noconfigdirs="$noconfigdirs gdb"
+    ;;
+  kvx-*-*)
+    noconfigdirs="$noconfigdirs gdb gdbserver sim"
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs gdb"
@@ -9603,6 +9621,45 @@ fi
 
 
 
+
+# Check for libgdiagnostics support.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable libgdiagnostics" >&5
+$as_echo_n "checking whether to enable libgdiagnostics... " >&6; }
+# Check whether --enable-libgdiagnostics was given.
+if test "${enable_libgdiagnostics+set}" = set; then :
+  enableval=$enable_libgdiagnostics; enable_libgdiagnostics=$enableval
+else
+  enable_libgdiagnostics=no
+fi
+
+
+if test x$enable_libgdiagnostics = xyes; then
+  # Disable libgdiagnostics if -enable-host-shared not specified
+  # but not if building for Mingw. All code in Windows
+  # is position independent code (PIC).
+  case $target in
+     *mingw*) ;;
+     *)
+       if test x$host_shared != xyes; then
+	 as_fn_error $? "
+Enabling libgdiagnostics requires --enable-host-shared.
+
+--enable-host-shared typically slows the rest of the compiler down by
+a few %, so you must explicitly enable it.
+
+If you want to build both libgdiagnostics and the regular compiler, it is often
+best to do this via two separate configure/builds, in separate
+directories, to avoid imposing the performance cost of
+--enable-host-shared on the regular compiler." "$LINENO" 5
+       fi
+       ;;
+   esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libgdiagnostics" >&5
+$as_echo "$enable_libgdiagnostics" >&6; }
+
+
+
 # Rust requires -ldl and -lpthread if you are using an old glibc that does not include them by
 # default, so we check for them here
 # We are doing the test here and not in the gcc/configure to be able to nicely disable the
@@ -10686,9 +10743,6 @@ case "${target}" in
   mips*-*-*linux* | mips*-*-gnu*)
     target_makefile_frag="config/mt-mips-gnu"
     ;;
-  nios2-*-elf*)
-    target_makefile_frag="config/mt-nios2-elf"
-    ;;
   *-*-linux-android*)
     target_makefile_frag="config/mt-android"
     ;;
@@ -11272,7 +11326,8 @@ hbaseargs="$hbaseargs --disable-option-checking"
 tbaseargs="$tbaseargs --disable-option-checking"
 
 if test "$enable_year2038" = no; then
-  baseargs="$baseargs --disable-year2038"
+  bbaseargs="$bbaseargs --disable-year2038"
+  hbaseargs="$hbaseargs --disable-year2038"
   tbaseargs="$tbaseargs --disable-year2038"
 fi
 

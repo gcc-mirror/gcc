@@ -1,0 +1,177 @@
+#include <type_traits>
+
+class X{};
+/* Want a zero-sized type in order to trigger one of the error messages.
+   Don't want the error message about creating a zero sized type.
+   However, *do* want to see any pedantic error messages coming from the rest
+   of the testcase.  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+class Zero {
+    unsigned int trailing[0];
+};
+#pragma GCC diagnostic pop
+class Large { public: int arr[10]; };
+class Incomplete;
+
+/* We have to use std::remove_pointer_t<T> for a few of the cases below to
+   handle using `int *` as the type.
+   In turn the problem is:
+     1) __atomic_load_n (int *, int) is valid, so when having `int *` as the
+	type to operate on does not create something invalid (which is the
+	point of the NONPOINTER_PARAMS entry).
+     2) __atomic_store_n (int *, int *, int) is not correct w.r.t. types
+	according to the GCC manual (and indeed ends up casting the pointer VAL
+	into an integer before storing it into the location.
+	However this is a known behaviour (PR 69404) so we're just working
+	around that for the moment.
+     3) __atomic_load, __atomic_store, __atomic_exchange, __atomic_exchange_n,
+       __atomic_compare_exchange, and __atomic_compare_exchange_n, and all the
+	__atomic_fetch_<op> functions are using std::remove_pointer_t for
+	essentially the same behaviour of discarding the types as
+	__atomic_store_n.  */
+
+#define ATOMIC_SFINAES                                                         \
+  SFINAE_TYPE_CHECK (load_n, (std::declval<T *> (), int ()),                   \
+		     (std::declval<std::remove_pointer_t<T>> (), int ()))      \
+  SFINAE_TYPE_CHECK (load,                                                     \
+		     (std::declval<T *> (), std::declval<T *> (), int ()),     \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T *> (), int ()))                           \
+  SFINAE_TYPE_CHECK (store_n,                                                  \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (store,                                                    \
+		     (std::declval<T *> (), std::declval<T *> (), int ()),     \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T *> (), int ()))                           \
+  SFINAE_TYPE_CHECK (exchange_n,                                               \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (exchange,                                                 \
+		     (std::declval<T *> (), std::declval<T *> (),              \
+		      std::declval<T *> (), int ()),                           \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T *> (), std::declval<T *> (), int ()))     \
+  SFINAE_TYPE_CHECK (compare_exchange_n,                                       \
+		     (std::declval<T *> (), std::declval<T *> (),              \
+		      std::declval<T> (), bool (), int (), int ()),            \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T *> (), std::declval<T> (), bool (),       \
+		      int (), int ()))                                         \
+  SFINAE_TYPE_CHECK (compare_exchange,                                         \
+		     (std::declval<T *> (), std::declval<T *> (),              \
+		      std::declval<T *> (), bool (), int (), int ()),          \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T *> (), std::declval<T *> (), bool (),     \
+		      int (), int ()))                                         \
+  SFINAE_TYPE_CHECK (add_fetch,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (fetch_add,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (sub_fetch,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (fetch_sub,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (and_fetch,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (fetch_and,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (xor_fetch,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (fetch_xor,                                                \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (or_fetch,                                                 \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (fetch_or,                                                 \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (nand_fetch,                                               \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))                             \
+  SFINAE_TYPE_CHECK (fetch_nand,                                               \
+		     (std::declval<T *> (), std::declval<T> (), int ()),       \
+		     (std::declval<std::remove_pointer_t<T>> (),               \
+		      std::declval<T> (), int ()))
+
+ATOMIC_SFINAES
+
+#define FETCH_OP_ASSERTS(NAME) \
+  MAKE_ATOMIC_ASSERT(NAME, int *, true) \
+  MAKE_ATOMIC_ASSERT(NAME, float, false) \
+  MAKE_ATOMIC_ASSERT(NAME, int, true) \
+  MAKE_ATOMIC_ASSERT(NAME, bool,  false) \
+  MAKE_ATOMIC_ASSERT(NAME, X,  false) \
+  MAKE_ATOMIC_ASSERT(NAME, Zero,  false) \
+  MAKE_ATOMIC_ASSERT(NAME, Large,  false) \
+  MAKE_ATOMIC_ASSERT(NAME, Incomplete,  false) \
+  MAKE_ATOMIC_ASSERT(NAME, long, true)
+
+#define ATOMIC_FETCH_ASSERTS \
+  FETCH_OP_ASSERTS(add_fetch) \
+  FETCH_OP_ASSERTS(fetch_add) \
+  FETCH_OP_ASSERTS(sub_fetch) \
+  FETCH_OP_ASSERTS(fetch_sub) \
+  FETCH_OP_ASSERTS(and_fetch) \
+  FETCH_OP_ASSERTS(fetch_and) \
+  FETCH_OP_ASSERTS(xor_fetch) \
+  FETCH_OP_ASSERTS(fetch_xor) \
+  FETCH_OP_ASSERTS(or_fetch) \
+  FETCH_OP_ASSERTS(fetch_or) \
+  FETCH_OP_ASSERTS(nand_fetch) \
+  FETCH_OP_ASSERTS(fetch_nand)
+
+#define ATOMIC_GENERIC_ASSERTS(NAME) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, int *, true) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, int, true) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, bool,  true) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, X,  false) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, Zero,  false) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, Large,  false) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, Incomplete,  false) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, long, true) \
+  MAKE_ATOMIC_ASSERT(NAME##_n, float, false) \
+  MAKE_ATOMIC_ASSERT(NAME, int *, true) \
+  MAKE_ATOMIC_ASSERT(NAME, int, true) \
+  MAKE_ATOMIC_ASSERT(NAME, bool,  true) \
+  MAKE_ATOMIC_ASSERT(NAME, X,  true) \
+  MAKE_ATOMIC_ASSERT(NAME, Zero,  false) \
+  MAKE_ATOMIC_ASSERT(NAME, Large,  true) \
+  MAKE_ATOMIC_ASSERT(NAME, Incomplete,  false) \
+  MAKE_ATOMIC_ASSERT(NAME, float, true) \
+  MAKE_ATOMIC_ASSERT(NAME, long, true)
+
+
+#define ATOMIC_ASSERTS \
+  ATOMIC_FETCH_ASSERTS \
+  ATOMIC_GENERIC_ASSERTS(load) \
+  ATOMIC_GENERIC_ASSERTS(store) \
+  ATOMIC_GENERIC_ASSERTS(exchange) \
+  ATOMIC_GENERIC_ASSERTS(compare_exchange)
+
+int main() {
+    ATOMIC_ASSERTS
+    return 0;
+}

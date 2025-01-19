@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0x88 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					0xf4, 0xf5, 0x55, 0xf7 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff0, 0xfff1, 0x66, 0xfff3 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+					   0xbb, 0xf5, 0xf6, 0xf7 };
+#endif
 VECT_VAR_DECL(expected,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0x4840, 0xca80 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1800000, 0x4204cccd };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
@@ -42,6 +46,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					 0xfc, 0xfd, 0xdd, 0xff };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3,
 					 0xfff4, 0xfff5, 0xee, 0xfff7 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+					    0xf4, 0xf5, 0xf6, 0xf7,
+					    0xf8, 0xf9, 0xa0, 0xfb,
+					    0xfc, 0xfd, 0xfe, 0xff };
+#endif
 VECT_VAR_DECL(expected,hfloat,16,8) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80,
 					   0xca00, 0x4480, 0xc900, 0xc880 };
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc1800000, 0xc1700000,
@@ -64,6 +74,10 @@ void exec_vset_lane (void)
 
   /* Initialize input "vector" from "buffer".  */
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector, buffer);
+#if MFLOAT8_SUPPORTED
+  VLOAD (vector, buffer, , mfloat, mf, 8, 8);
+  VLOAD (vector, buffer, q, mfloat, mf, 8, 16);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VLOAD(vector, buffer, , float, f, 16, 4);
   VLOAD(vector, buffer, q, float, f, 16, 8);
@@ -82,6 +96,7 @@ void exec_vset_lane (void)
   TEST_VSET_LANE(, uint, u, 64, 1, 0x88, 0);
   TEST_VSET_LANE(, poly, p, 8, 8, 0x55, 6);
   TEST_VSET_LANE(, poly, p, 16, 4, 0x66, 2);
+  MFLOAT8_ONLY(TEST_VSET_LANE(, mfloat, mf, 8, 8, MFLOAT8(0xbb), 4));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VSET_LANE(, float, f, 16, 4, 8.5f, 2);
 #endif
@@ -97,6 +112,7 @@ void exec_vset_lane (void)
   TEST_VSET_LANE(q, uint, u, 64, 2, 0x11, 1);
   TEST_VSET_LANE(q, poly, p, 8, 16, 0xDD, 14);
   TEST_VSET_LANE(q, poly, p, 16, 8, 0xEE, 6);
+  MFLOAT8_ONLY(TEST_VSET_LANE(q, mfloat, mf, 8, 16, MFLOAT8(0xa0), 10));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VSET_LANE(q, float, f, 16, 8, 4.5f, 5);
 #endif

@@ -283,6 +283,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-output-ident.c: This can't be in the testcases array as it
+   is target-specific.  */
+
 /* test-quadratic.c */
 #define create_code create_code_quadratic
 #define verify_code verify_code_quadratic
@@ -373,12 +376,25 @@
 /* test-setting-alignment.c: This can't be in the testcases array as it
    is target-specific.  */
 
+/* test-signed-char.c */
+#define create_code create_code_signed_char
+#define verify_code verify_code_signed_char
+#include "test-signed-char.c"
+#undef create_code
+#undef verify_code
+
 /* test-sizeof.c */
 #define create_code create_code_sizeof
 #define verify_code verify_code_sizeof
 #include "test-sizeof.c"
 #undef create_code
 #undef verify_code
+
+/* test-target-builtins.c: This can't be in the testcases array as it
+   is target-specific.  */
+
+/* test-temp.c: This can't be in the testcases array as it
+   is target-specific.  */
 
 /* test-string-literal.c */
 #define create_code create_code_string_literal
@@ -447,6 +463,13 @@
 
 /* test-weak-attribute.c: This can't be in the testcases array as it
    doesn't have a verify_code implementation.  */
+
+/* test-vector-perm.c */
+#define create_code create_code_vector_perm
+#define verify_code verify_code_vector_perm
+#include "test-vector-perm.c"
+#undef create_code
+#undef verify_code
 
 /* Now expose the individual testcases as instances of this struct.  */
 
@@ -586,6 +609,9 @@ const struct testcase testcases[] = {
   {"reflection",
    create_code_reflection ,
    verify_code_reflection },
+  {"signed-char",
+   create_code_signed_char,
+   verify_code_signed_char},
   {"sizeof",
    create_code_sizeof,
    verify_code_sizeof},
@@ -612,7 +638,10 @@ const struct testcase testcases[] = {
    verify_code_version},
   {"volatile",
    create_code_volatile,
-   verify_code_volatile}
+   verify_code_volatile},
+  {"vector_perm",
+   create_code_vector_perm,
+   verify_code_vector_perm},
 };
 
 const int num_testcases = (sizeof (testcases) / sizeof (testcases[0]));

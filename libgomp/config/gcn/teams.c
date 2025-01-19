@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -317,6 +317,7 @@ package body Inline is
    --    Global
    --    Depends
    --    Exceptional_Cases
+   --    Exit_Cases
    --    Postcondition
    --    Precondition
    --    Refined_Global
@@ -498,7 +499,7 @@ package body Inline is
          --  package of the subprogram to find more calls to be inlined.
 
          if Comp = Cunit (Main_Unit)
-           or else Comp = Spec_Or_Body_Lib_Unit (Cunit (Main_Unit))
+           or else Comp = Other_Comp_Unit (Cunit (Main_Unit))
          then
             Add_Call (E);
             return Inline_Package;
@@ -1369,8 +1370,8 @@ package body Inline is
    -------------------------------------------
 
    function Call_Can_Be_Inlined_In_GNATprove_Mode
-    (N    : Node_Id;
-     Subp : Entity_Id) return Boolean
+     (N    : Node_Id;
+      Subp : Entity_Id) return Boolean
    is
       function Has_Dereference (N : Node_Id) return Boolean;
       --  Return whether N contains an explicit dereference
@@ -2431,12 +2432,11 @@ package body Inline is
 
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
-             Defining_Identifier    =>
+             Defining_Identifier =>
                Make_Defining_Identifier (Loc, Chars (Obj_Id)),
-             In_Present             => False,
-             Out_Present            => not Constant_Present (Obj_Decl),
-             Null_Exclusion_Present => False,
-             Parameter_Type         => Typ_Def));
+             In_Present          => False,
+             Out_Present         => not Constant_Present (Obj_Decl),
+             Parameter_Type      => Typ_Def));
       end Build_Return_Object_Formal;
 
       --------------------------------------
@@ -3319,9 +3319,9 @@ package body Inline is
    -------------------------
 
    procedure Expand_Inlined_Call
-    (N         : Node_Id;
-     Subp      : Entity_Id;
-     Orig_Subp : Entity_Id)
+     (N         : Node_Id;
+      Subp      : Entity_Id;
+      Orig_Subp : Entity_Id)
    is
       Decls     : constant List_Id    := New_List;
       Is_Predef : constant Boolean    :=
@@ -4716,7 +4716,7 @@ package body Inline is
       end loop;
 
       return Comp = Cunit (Main_Unit)
-        or else Comp = Spec_Or_Body_Lib_Unit (Cunit (Main_Unit));
+        or else Comp = Other_Comp_Unit (Cunit (Main_Unit));
    end In_Main_Unit_Or_Subunit;
 
    ----------------
@@ -5268,6 +5268,7 @@ package body Inline is
                                         | Name_Global
                                         | Name_Depends
                                         | Name_Exceptional_Cases
+                                        | Name_Exit_Cases
                                         | Name_Postcondition
                                         | Name_Precondition
                                         | Name_Refined_Global

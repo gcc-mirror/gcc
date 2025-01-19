@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,6 +218,8 @@ package body Fname.UF is
       Fname : File_Name_Type := No_File;
       --  Path name and File name for mapping
 
+      Unit_Buf : Bounded_String;
+
    begin
       --  Null or error name means that some previous error occurred. This is
       --  an unrecoverable error, so signal it.
@@ -247,7 +249,7 @@ package body Fname.UF is
 
       --  Here for the case where the name was not found in the table
 
-      Get_Decoded_Name_String (Uname);
+      Append_Decoded (Unit_Buf, Uname);
 
       --  A special fudge, normally we don't have operator symbols present,
       --  since it is always an error to do so. However, if we do, at this
@@ -266,21 +268,27 @@ package body Fname.UF is
       --  avoid bombs due to writing a bad file name, and we get expected error
       --  processing downstream, e.g. a compilation following gnatchop.
 
-      if Name_Buffer (1) = '"' then
-         Get_Name_String (Uname);
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len)     := Name_Buffer (Name_Len - 1);
-         Name_Buffer (Name_Len - 1) := Name_Buffer (Name_Len - 2);
-         Name_Buffer (Name_Len - 2) := '_';
-         Name_Buffer (1)            := '_';
+      if Unit_Buf.Chars (1) = '"' then
+         Unit_Buf.Length := 0;
+         Append (Unit_Buf, Uname);
+         Unit_Buf.Length := Unit_Buf.Length + 1;
+         Unit_Buf.Chars (Unit_Buf.Length) :=
+           Unit_Buf.Chars (Unit_Buf.Length - 1);
+         Unit_Buf.Chars (Unit_Buf.Length - 1) :=
+           Unit_Buf.Chars (Unit_Buf.Length - 2);
+         Unit_Buf.Chars (Unit_Buf.Length - 2) := '_';
+         Unit_Buf.Chars (1) := '_';
       end if;
 
       --  Deal with spec or body suffix
 
-      Unit_Char := Name_Buffer (Name_Len);
+      Unit_Char := Unit_Buf.Chars (Unit_Buf.Length);
       pragma Assert (Unit_Char = 'b' or else Unit_Char = 's');
-      pragma Assert (Name_Len >= 3 and then Name_Buffer (Name_Len - 1) = '%');
-      Name_Len := Name_Len - 2;
+      pragma
+        Assert
+          (Unit_Buf.Length >= 3
+             and then Unit_Buf.Chars (Unit_Buf.Length - 1) = '%');
+      Unit_Buf.Length := Unit_Buf.Length - 2;
 
       if Subunit then
          Unit_Char := 'u';
@@ -289,14 +297,8 @@ package body Fname.UF is
       --  Now we need to find the proper translation of the name
 
       declare
-         Uname : constant String (1 .. Name_Len) :=
-                   Name_Buffer (1 .. Name_Len);
-
          Pent : Nat;
          Fnam : File_Name_Type := No_File;
-
-         Is_Predef : Boolean;
-         --  Set True for predefined file
 
       --  Start of search through pattern table
 
@@ -318,21 +320,21 @@ package body Fname.UF is
             Pent := SFN_Patterns.First;
             while Pent <= SFN_Patterns.Last loop
                if SFN_Patterns.Table (Pent).Typ = Unit_Char_Search then
-                  --  Determine if we have a predefined file name
-
-                  Is_Predef :=
-                    Is_Predefined_Unit_Name
-                      (Uname, Renamings_Included => True);
-
                   --  Found a match, execute the pattern
+                  declare
+                     Is_Predef : constant Boolean :=
+                       Is_Predefined_Unit_Name
+                         (Uname, Renamings_Included => True);
 
-                  Name_Len := Uname'Length;
-                  Name_Buffer (1 .. Name_Len) := Uname;
+                     Buf : Bounded_String;
+                  begin
+                     Append (Buf, Unit_Buf);
 
-                  Instantiate_SFN_Pattern
-                    (SFN_Patterns.Table (Pent), Global_Name_Buffer, Is_Predef);
+                     Instantiate_SFN_Pattern
+                       (SFN_Patterns.Table (Pent), Buf, Is_Predef);
 
-                  Fnam := Name_Find;
+                     Fnam := Name_Find (Buf);
+                  end;
 
                   --  If we are in the second search of the table, we accept
                   --  the file name without checking, because we know that the

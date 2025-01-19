@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
    --  Return True iff A is symmetric, see RM G.3.1 (90).
 
    function Is_Tiny (Value, Compared_To : Real) return Boolean is
-     (abs Compared_To + 100.0 * abs (Value) = abs Compared_To);
+     (abs Compared_To + 100.0 * abs Value = abs Compared_To);
    --  Return True iff the Value is much smaller in magnitude than the least
    --  significant digit of Compared_To.
 
@@ -96,7 +96,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
      (A               : Real_Matrix;
       Values          : out Real_Vector;
       Vectors         : out Real_Matrix;
-      Compute_Vectors : Boolean := True);
+      Compute_Vectors : Boolean);
    --  Perform Jacobi's eigensystem algorithm on real symmetric matrix A
 
    function Length is new Square_Matrix_Length (Real'Base, Real_Matrix);
@@ -107,8 +107,9 @@ package body Ada.Numerics.Generic_Real_Arrays is
    --  Perform a Givens rotation
 
    procedure Sort_Eigensystem
-     (Values  : in out Real_Vector;
-      Vectors : in out Real_Matrix);
+     (Values          : in out Real_Vector;
+      Vectors         : in out Real_Matrix;
+      Compute_Vectors : Boolean);
    --  Sort Values and associated Vectors by decreasing absolute value
 
    procedure Swap (Left, Right : in out Real);
@@ -486,7 +487,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
    is
    begin
       Jacobi (A, Values, Vectors, Compute_Vectors => True);
-      Sort_Eigensystem (Values, Vectors);
+      Sort_Eigensystem (Values, Vectors, Compute_Vectors => True);
    end Eigensystem;
 
    -----------------
@@ -500,7 +501,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Vectors : Real_Matrix (1 .. 0, 1 .. 0);
          begin
             Jacobi (A, Values, Vectors, Compute_Vectors => False);
-            Sort_Eigensystem (Values, Vectors);
+            Sort_Eigensystem (Values, Vectors, Compute_Vectors => False);
          end;
       end return;
    end Eigenvalues;
@@ -522,7 +523,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
      (A               : Real_Matrix;
       Values          : out Real_Vector;
       Vectors         : out Real_Matrix;
-      Compute_Vectors : Boolean := True)
+      Compute_Vectors : Boolean)
    is
       --  This subprogram uses Carl Gustav Jacob Jacobi's iterative method
       --  for computing eigenvalues and eigenvectors and is based on
@@ -731,8 +732,9 @@ package body Ada.Numerics.Generic_Real_Arrays is
    ----------------------
 
    procedure Sort_Eigensystem
-     (Values  : in out Real_Vector;
-      Vectors : in out Real_Matrix)
+     (Values          : in out Real_Vector;
+      Vectors         : in out Real_Matrix;
+      Compute_Vectors : Boolean)
    is
       procedure Swap (Left, Right : Integer);
       --  Swap Values (Left) with Values (Right), and also swap the
@@ -748,8 +750,10 @@ package body Ada.Numerics.Generic_Real_Arrays is
       procedure Swap (Left, Right : Integer) is
       begin
          Swap (Values (Left), Values (Right));
-         Swap_Column (Vectors, Left - Values'First + Vectors'First (2),
-                               Right - Values'First + Vectors'First (2));
+         if Compute_Vectors then
+            Swap_Column (Vectors, Left - Values'First + Vectors'First (2),
+                                  Right - Values'First + Vectors'First (2));
+         end if;
       end Swap;
 
    begin

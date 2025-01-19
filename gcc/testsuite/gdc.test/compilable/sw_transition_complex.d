@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-// REQUIRED_ARGS: -unittest
+// REQUIRED_ARGS: -verrors=simple -unittest -verrors=0
 
 /*
 TEST_OUTPUT:

@@ -7,9 +7,9 @@ DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D
 if USING_MAC_INTERPOSE
 DEFS += -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
 endif
-AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -fno-ipa-icf
+AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -fno-ipa-icf
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
-AM_CXXFLAGS += -std=gnu++14
+AM_CXXFLAGS += -std=gnu++17
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
 AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
@@ -46,9 +46,8 @@ asan_files = \
 	asan_suppressions.cpp \
 	asan_thread.cpp \
 	asan_win.cpp \
-	asan_win_dll_thunk.cpp \
 	asan_win_dynamic_runtime_thunk.cpp \
-  asan_interceptors_vfork.S
+	asan_interceptors_vfork.S
 
 libasan_la_SOURCES = $(asan_files)
 libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/lsan/libsanitizer_lsan.la

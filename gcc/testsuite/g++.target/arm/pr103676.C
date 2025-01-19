@@ -1,6 +1,8 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_thumb1_ok } */
-/* { dg-additional-options "-mcpu=cortex-m7 -mthumb -O2" }  */
+/* { dg-require-effective-target arm_cpu_cortex_m7_ok } */
+/* { dg-additional-options "-O2" }  */
+/* { dg-add-options arm_cpu_cortex_m7 } */
+
 
 typedef unsigned long long uint64_t;
 struct timer {

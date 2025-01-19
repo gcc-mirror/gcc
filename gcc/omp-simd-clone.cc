@@ -1,6 +1,6 @@
 /* OMP constructs' SIMD clone supporting code.
 
-Copyright (C) 2005-2024 Free Software Foundation, Inc.
+Copyright (C) 2005-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -542,9 +541,12 @@ simd_clone_mangle (struct cgraph_node *node,
   pp_string (&pp, "_ZGV");
   pp_character (&pp, vecsize_mangle);
   pp_character (&pp, mask);
-  /* For now, simdlen is always constant, while variable simdlen pp 'n'.  */
-  unsigned int len = simdlen.to_constant ();
-  pp_decimal_int (&pp, (len));
+
+  unsigned HOST_WIDE_INT len;
+  if (simdlen.is_constant (&len))
+    pp_decimal_int (&pp, (int) (len));
+  else
+    pp_character (&pp, 'x');
 
   for (n = 0; n < clone_info->nargs; ++n)
     {
@@ -689,8 +691,8 @@ simd_clone_create (struct cgraph_node *old_node, bool force_local)
 	 the old node.  */
       new_node->local = old_node->local;
       new_node->externally_visible = old_node->externally_visible;
-      new_node->calls_declare_variant_alt
-	= old_node->calls_declare_variant_alt;
+      new_node->has_omp_variant_constructs
+	= old_node->has_omp_variant_constructs;
     }
 
   /* Mark clones with internal linkage as gc'able, so they will not be
@@ -1534,8 +1536,8 @@ simd_clone_adjust (struct cgraph_node *node)
 	 below).  */
       loop = alloc_loop ();
       cfun->has_force_vectorize_loops = true;
-      /* For now, simlen is always constant.  */
-      loop->safelen = node->simdclone->simdlen.to_constant ();
+      /* We can assert that safelen is the 'minimum' simdlen.  */
+      loop->safelen = constant_lower_bound (node->simdclone->simdlen);
       loop->force_vectorize = true;
       loop->header = body_bb;
     }

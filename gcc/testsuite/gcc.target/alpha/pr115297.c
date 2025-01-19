@@ -1,6 +1,6 @@
 /* PR target/115297 */
 /* { dg-do compile } */
-/* { dg-options "-O1" } */
+/* { dg-options "" } */
 
 enum { BPF_F_USER_BUILD_ID } __bpf_get_stack_size;
 long __bpf_get_stack_flags, bpf_get_stack___trans_tmp_2;

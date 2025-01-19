@@ -426,7 +426,6 @@ namespace foo
     }
 }
 
-#ifndef __DMC__ // DMC doesn't support c++11
 template<typename ...T> void foovargs(T... args);
 
 void test40()
@@ -446,4 +445,3 @@ void test41()
     make_shared_poc<int, int, int>(a, b);
 
 }
-#endif

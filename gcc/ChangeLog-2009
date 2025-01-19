@@ -34874,7 +34874,6 @@
 	* c-tree.h (process_init_element): Adjust prototype.
 	* c-parser.c (c_parser_initelt, c_parser_initval): Adjust
 	process_init_element callers.
-
 
 Copyright (C) 2009 Free Software Foundation, Inc.
 

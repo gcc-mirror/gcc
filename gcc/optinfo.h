@@ -1,5 +1,5 @@
 /* Optimization information.
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,15 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_OPTINFO_H
 #define GCC_OPTINFO_H
-
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence <memory> must be included
-   from system.h by defining INCLUDE_MEMORY in any source file using
-   optinfo.h.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use optinfo.h"
-#endif
 
 /* An "optinfo" is a bundle of information describing part of an
    optimization, which can be emitted to zero or more of several

@@ -1,5 +1,5 @@
 ;; Machine Description for LoongArch SIMD instructions for GNU compiler.
-;; Copyright (C) 2023-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -29,11 +29,20 @@
 ;; FP modes supported by LASX
 (define_mode_iterator FLASX   [V4DF V8SF])
 
+;; All modes supported by LSX
+(define_mode_iterator LSX    [ILSX FLSX])
+
+;; ALL modes supported by LASX
+(define_mode_iterator LASX   [ILASX FLASX])
+
 ;; All integer modes available
 (define_mode_iterator IVEC    [(ILSX "ISA_HAS_LSX") (ILASX "ISA_HAS_LASX")])
 
 ;; All FP modes available
 (define_mode_iterator FVEC    [(FLSX "ISA_HAS_LSX") (FLASX "ISA_HAS_LASX")])
+
+;; All vector modes available
+(define_mode_iterator ALLVEC  [(LSX "ISA_HAS_LSX") (LASX "ISA_HAS_LASX")])
 
 ;; Mnemonic prefix, "x" for LASX modes.
 (define_mode_attr x [(V2DI "") (V4SI "") (V8HI "") (V16QI "")
@@ -71,6 +80,14 @@
 ;; Lower-case version.
 (define_mode_attr vimode [(V2DF "v2di") (V4SF "v4si")
 			  (V4DF "v4di") (V8SF "v8si")])
+
+;; Integer vector modes with the same size, in lower-case.
+(define_mode_attr allmode_i [(V2DI "v2di") (V4SI "v4si")
+              (V8HI "v8hi") (V16QI "v16qi")
+              (V2DF "v2di") (V4SF "v4si")
+              (V4DI "v4di") (V8SI "v8si")
+              (V16HI "v16hi") (V32QI "v32qi")
+              (V4DF "v4di") (V8SF "v8si")])
 
 ;; Suffix for LSX or LASX instructions.
 (define_mode_attr simdfmt [(V2DF "d") (V4DF "d")
@@ -475,6 +492,59 @@
   "<x>vbitrevi.<simdfmt_as_i>\t%<wu>0,%<wu>1,<elmsgnbit>"
   [(set_attr "type" "simd_logic")
    (set_attr "mode" "<MODE>")])
+
+;; vector compare
+(define_expand "vec_cmp<mode><allmode_i>"
+  [(set (match_operand:<VIMODE> 0 "register_operand")
+    (match_operator 1 ""
+      [(match_operand:ALLVEC 2 "register_operand")
+       (match_operand:ALLVEC 3 "nonmemory_operand")]))]
+  ""
+{
+  loongarch_expand_vec_cmp (operands);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><allmode_i>"
+  [(set (match_operand:<VIMODE> 0 "register_operand")
+    (match_operator 1 ""
+      [(match_operand:IVEC 2 "register_operand")
+       (match_operand:IVEC 3 "nonmemory_operand")]))]
+  ""
+{
+  loongarch_expand_vec_cmp (operands);
+  DONE;
+})
+
+;; cbranch
+(define_expand "cbranch<mode>4"
+ [(set (pc)
+       (if_then_else
+         (match_operator 0 "equality_operator"
+           [(match_operand:IVEC 1 "register_operand")
+            (match_operand:IVEC 2 "reg_or_vector_same_val_operand")])
+         (label_ref (match_operand 3 ""))
+         (pc)))]
+ ""
+{
+  RTX_CODE code = GET_CODE (operands[0]);
+  rtx tmp = operands[1];
+  rtx const0 = CONST0_RTX (SImode);
+
+  /* If comparing against a non-zero vector we have to do a comparison first
+    so we can have a != 0 comparison with the result.  */
+  if (operands[2] != CONST0_RTX (<MODE>mode))
+    {
+      tmp = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_xor<mode>3 (tmp, operands[1], operands[2]));
+    }
+
+  if (code == NE)
+    emit_jump_insn (gen_<simd_isa>_<x>bnz_v_b (operands[3], tmp, const0));
+  else
+    emit_jump_insn (gen_<simd_isa>_<x>bz_v_b (operands[3], tmp, const0));
+  DONE;
+})
 
 ; The LoongArch SX Instructions.
 (include "lsx.md")

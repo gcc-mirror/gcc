@@ -114,7 +114,7 @@ alias ISecurityInformation LPSECURITYINFO;
 // FIXME: linkage attribute?
 extern (C) /+DECLSPEC_IMPORT+/ extern const IID IID_ISecurityInformation;
 
-extern (Windows) {
+extern (Windows) nothrow @nogc {
     HPROPSHEETPAGE CreateSecurityPage(LPSECURITYINFO psi);
     BOOL EditSecurity(HWND hwndOwner, LPSECURITYINFO psi);
 }

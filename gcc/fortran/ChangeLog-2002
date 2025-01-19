@@ -331,7 +331,6 @@
 	(g95_conv_intrinsic_anyall): New function.
 	* iresolve.c (g95_resolve_any, g95_resolve_all): Include rank in
 	mangled name
-
 
 Copyright (C) 2002 Free Software Foundation, Inc.
 

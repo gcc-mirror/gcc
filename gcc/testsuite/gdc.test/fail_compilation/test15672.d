@@ -1,8 +1,10 @@
 /*
  * TEST_OUTPUT:
 ---
-fail_compilation/test15672.d(15): Error: cast from `void[]` to `byte[]` not allowed in safe code
-fail_compilation/test15672.d(25): Error: cast from `void*` to `byte*` not allowed in safe code
+fail_compilation/test15672.d(17): Error: cast from `void[]` to `byte[]` is not allowed in a `@safe` function
+fail_compilation/test15672.d(17):        `void` data may contain pointers and target element type is mutable
+fail_compilation/test15672.d(27): Error: cast from `void*` to `byte*` is not allowed in a `@safe` function
+fail_compilation/test15672.d(27):        `void` data may contain pointers and target element type is mutable
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=15672

@@ -201,14 +201,20 @@ int test_10 ()
 {
   s10 v10_a, v10_b;
 
-  return v10_a - v10_b; // { dg-error "no match for" }
+  return v10_a - v10_b; // { dg-line s10_usage }
+  // { dg-error "no match for" "" { target *-*-* } s10_usage }
   /* { dg-begin-multiline-output "" }
    return v10_a - v10_b;
           ~~~~~ ^ ~~~~~
           |       |
           s10     s10
      { dg-end-multiline-output "" } */
-  // { dg-message "candidate" "" { target *-*-* } s10_operator }
+  // { dg-message "there is 1 candidate" "" { target *-*-* } s10_usage }
+  /* { dg-begin-multiline-output "" }
+   return v10_a - v10_b;
+          ~~~~~~^~~~~~~
+     { dg-end-multiline-output "" } */
+  // { dg-message "candidate 1:" "" { target *-*-* } s10_operator }
   /* { dg-begin-multiline-output "" }
  extern int operator- (const s10&, int);
             ^~~~~~~~

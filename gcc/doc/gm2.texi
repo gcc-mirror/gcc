@@ -1,6 +1,6 @@
 \input texinfo
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2024 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2025 Free Software Foundation, Inc.
 @c This is part of the GM2 manual.
 
 @c User level documentation for GNU Modula-2
@@ -15,7 +15,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-gm2 1999-2024
+@set copyrights-gm2 1999-2025
 
 @copying
 @c man begin COPYRIGHT
@@ -499,6 +499,10 @@ the previous forms could be:
 @code{-fm2-dump-filter=_M2_hello_init},
 @code{-fm2-dump-filter=m2pim.StrIO.WriteString} and
 @code{-fm2-dump-filter=StrLib.mod:StrIO.WriteString}.
+
+@item -fm2-file-offset-bits=
+force the type @code{SYSTEM.COFF_T} to be built using the specified
+number of bits.  If this option is not used then default is 64 bits.
 
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
@@ -1382,7 +1386,7 @@ The language as defined in 'Programming in Modula-2' 2nd Edition,
 Springer Verlag, 1982, 1983 by Niklaus Wirth (PIM2), 'Programming in
 Modula-2', 3rd Corrected Edition, Springer Verlag, 1985 (PIM3) and
 'Programming in Modula-2', 4th Edition, Springer Verlag, 1988 (PIM4)
-@uref{http://freepages.modula2.org/report4/modula-2.html} and the ISO
+@uref{https://freepages.modula2.org/report4/modula-2.html} and the ISO
 Modula-2 language as defined in ISO/IEC Information technology -
 programming languages - part 1: Modula-2 Language, ISO/IEC 10514-1
 (1996) (ISO).

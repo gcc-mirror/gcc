@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do compile } */
 /* { dg-skip-if "Don't inline memset using neon instructions" { ! arm_tune_string_ops_prefer_neon } } */
 /* { dg-options "-save-temps -Os -fno-inline" } */
 /* { dg-add-options "arm_neon" } */

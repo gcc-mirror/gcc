@@ -1,5 +1,5 @@
 /* Conditional compare related functions
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -100,7 +100,7 @@ ccmp_candidate_p (gimple *g, bool outer = false)
   tree_code tcode;
   basic_block bb;
 
-  if (!g)
+  if (!g || !is_gimple_assign (g))
     return false;
 
   tcode = gimple_assign_rhs_code (g);
@@ -138,7 +138,7 @@ get_compare_parts (tree t, int *up, rtx_code *rcode,
 {
   tree_code code;
   gimple *g = get_gimple_for_ssa_name (t);
-  if (g)
+  if (g && is_gimple_assign (g))
     {
       *up = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (g)));
       code = gimple_assign_rhs_code (g);

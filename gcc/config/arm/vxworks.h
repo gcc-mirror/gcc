@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for ARM with targeting the VXWorks run time environment.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
 
    Contributed by: Mike Stump <mrs@wrs.com>
    Brought up to date by CodeSourcery, LLC.

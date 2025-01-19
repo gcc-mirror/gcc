@@ -7,5 +7,5 @@ int a;
 void fun ()
 {
 	a = 0;
-	a = ({}); /* { dg-error "not ignored" "void stmt expr" } */
+	a = ({}); /* { dg-error "invalid use of void expression" "void stmt expr" } */
 }

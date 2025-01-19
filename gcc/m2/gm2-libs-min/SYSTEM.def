@@ -1,6 +1,6 @@
 (* SYSTEM.def a minimal SYSTEM module.
 
-Copyright (C) 2001-2024 Free Software Foundation, Inc.
+Copyright (C) 2001-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEFINITION MODULE SYSTEM ;
 
 EXPORT QUALIFIED BITSPERBYTE, BYTESPERWORD,
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* @SYSTEM_DATATYPES@ *)
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, (* @SYSTEM_DATATYPES@ *)
                  ADR, TSIZE ;
                  (* SIZE is also exported if -fpim2 is used *)
 

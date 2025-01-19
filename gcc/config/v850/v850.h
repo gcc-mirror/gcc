@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996-2024 Free Software Foundation, Inc.
+   Copyright (C) 1996-2025 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.

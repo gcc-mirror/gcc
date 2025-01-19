@@ -1,5 +1,5 @@
 /* Back-propagation of usage information to definitions.
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
    Note that this pass does not deal with direct redundancies,
    such as cos(-x)->cos(x).  match.pd handles those cases instead.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

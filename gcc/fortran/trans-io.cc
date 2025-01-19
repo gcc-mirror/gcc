@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2648,6 +2647,28 @@ gfc_trans_transfer (gfc_code * code)
 		 && expr->symtree->n.sym->assoc->variable)
 	     || gfc_expr_attr (expr).pointer))
 	goto scalarize;
+
+      /* With array-bounds checking enabled, force scalarization in some
+	 situations, e.g., when an array index depends on a function
+	 evaluation or an expression and possibly has side-effects.  */
+      if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+	  && ref
+	  && ref->u.ar.type == AR_SECTION)
+	{
+	  for (n = 0; n < ref->u.ar.dimen; n++)
+	    if (ref->u.ar.dimen_type[n] == DIMEN_ELEMENT
+		&& ref->u.ar.start[n])
+	      {
+		switch (ref->u.ar.start[n]->expr_type)
+		  {
+		  case EXPR_FUNCTION:
+		  case EXPR_OP:
+		    goto scalarize;
+		  default:
+		    break;
+		  }
+	      }
+	}
 
       if (!(gfc_bt_struct (expr->ts.type)
 	      || expr->ts.type == BT_CLASS)

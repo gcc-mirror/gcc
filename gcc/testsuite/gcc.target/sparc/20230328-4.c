@@ -1,6 +1,6 @@
 /* PR target/109140 */
 /* { dg-do compile } */
-/* { dg-options "-O3 -mvis3 -std=c99" } */
+/* { dg-options "-O3 -mvis3b -std=c99" } */
 
 #define TYPE short
 
@@ -16,4 +16,4 @@ void foo (void)
     s.ub[i] = s.ub[i] > v;
 }
 
-/* { dg-final { scan-assembler "fcmpgt16\t%" } } */
+/* { dg-final { scan-assembler "fpcmpgt16\t%" } } */

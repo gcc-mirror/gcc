@@ -1,6 +1,6 @@
 (* M2System.mod defines the SYSTEM builtin types.
 
-Copyright (C) 2001-2024 Free Software Foundation, Inc.
+Copyright (C) 2001-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -50,7 +50,7 @@ FROM SymbolTable IMPORT NulSym,
                         PutProcedureNoReturn,
                         GetSym, GetSymName,
                         GetCurrentModule, SetCurrentModule,
-                        IsLegal,
+                        IsLegal, ProcedureKind,
                         PopValue,
                         PopSize ;
 
@@ -86,7 +86,8 @@ FROM m2type IMPORT GetMaxFrom, GetMinFrom,
                    GetM2Real32, GetM2Real64, GetM2Real96, GetM2Real128,
                    GetM2Complex32, GetM2Complex64, GetM2Complex96, GetM2Complex128,
                    GetBitsetType, GetISOByteType, GetISOWordType,
-		   GetCSizeTType, GetCSSizeTType, InitSystemTypes ;
+		   GetCSizeTType, GetCSSizeTType, GetCOffTType,
+                   InitSystemTypes ;
 
 FROM m2expr IMPORT BuildSize, GetSizeOf, AreConstantsEqual ;
 
@@ -327,7 +328,8 @@ END InitISOTypes ;
 PROCEDURE MakeExtraSystemTypes ;
 BEGIN
    CSizeT  := CreateType ('CSIZE_T' , '', '', TRUE, GetCSizeTType ()) ;
-   CSSizeT := CreateType ('CSSIZE_T', '', '', TRUE, GetCSSizeTType ())
+   CSSizeT := CreateType ('CSSIZE_T', '', '', TRUE, GetCSSizeTType ()) ;
+   COffT := CreateType ('COFF_T', '', '', TRUE, GetCOffTType ()) ;
 END MakeExtraSystemTypes ;
 
 
@@ -372,43 +374,45 @@ BEGIN
       END
    END ;
 
-   (* And now the predefined pseudo functions *)
+   (* The predefined pseudo functions.  *)
 
    Adr := MakeProcedure(BuiltinTokenNo,
                         MakeKey('ADR')) ;           (* Function        *)
-   PutFunction(Adr, Address) ;                      (* Return Type     *)
+   PutFunction (BuiltinTokenNo, Adr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
                                                     (* Address         *)
-
    TSize := MakeProcedure(BuiltinTokenNo,
                           MakeKey('TSIZE')) ;       (* Function        *)
-   PutFunction(TSize, ZType) ;                      (* Return Type     *)
+   PutFunction (BuiltinTokenNo, TSize, DefProcedure, ZType) ;
+                                                    (* Return Type     *)
                                                     (* ZType           *)
-
    TBitSize := MakeProcedure(BuiltinTokenNo,
                              MakeKey('TBITSIZE')) ; (* GNU extension   *)
                                                     (* Function        *)
-   PutFunction(TBitSize, ZType) ;                   (* Return Type     *)
+   PutFunction (BuiltinTokenNo, TBitSize, DefProcedure, ZType) ;
+                                                    (* Return Type     *)
                                                     (* ZType           *)
-   (* and the ISO specific predefined pseudo functions *)
+   (* The ISO specific predefined pseudo functions.  *)
 
    AddAdr := MakeProcedure(BuiltinTokenNo,
                            MakeKey('ADDADR')) ;     (* Function        *)
-   PutFunction(AddAdr, Address) ;                   (* Return Type     *)
-
+   PutFunction (BuiltinTokenNo, AddAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
    SubAdr := MakeProcedure(BuiltinTokenNo,
                            MakeKey('SUBADR')) ;     (* Function        *)
-   PutFunction(SubAdr, Address) ;                   (* Return Type     *)
+   PutFunction (BuiltinTokenNo, SubAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
+   DifAdr := MakeProcedure (BuiltinTokenNo,
+                            MakeKey ('DIFADR')) ;   (* Function        *)
+   PutFunction (BuiltinTokenNo, DifAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
+   MakeAdr := MakeProcedure (BuiltinTokenNo,
+                             MakeKey ('MAKEADR')) ; (* Function        *)
+   PutFunction (BuiltinTokenNo, MakeAdr, DefProcedure, Address) ;
+                                                    (* Return Type     *)
 
-   DifAdr := MakeProcedure(BuiltinTokenNo,
-                           MakeKey('DIFADR')) ;     (* Function        *)
-   PutFunction(DifAdr, Address) ;                   (* Return Type     *)
-
-   MakeAdr := MakeProcedure(BuiltinTokenNo,
-                            MakeKey('MAKEADR')) ;   (* Function        *)
-   PutFunction(MakeAdr, Address) ;                  (* Return Type     *)
-
-   (* the return value for ROTATE, SHIFT and CAST is actually the
-      same as the first parameter, this is faked in M2Quads *)
+   (* The return value for ROTATE, SHIFT and CAST is the
+      same as the first parameter and is faked in M2Quads.  *)
 
    Rotate := MakeProcedure(BuiltinTokenNo,
                            MakeKey('ROTATE')) ;     (* Function        *)
@@ -419,7 +423,7 @@ BEGIN
 
    Throw := MakeProcedure(BuiltinTokenNo,
                           MakeKey('THROW')) ;       (* Procedure       *)
-   PutProcedureNoReturn (Throw, TRUE) ;
+   PutProcedureNoReturn (Throw, DefProcedure, TRUE) ;
 
    CreateMinMaxFor(Word, 'MinWord', 'MaxWord', GetWordType()) ;
    CreateMinMaxFor(Address, 'MinAddress', 'MaxAddress', GetPointerType()) ;

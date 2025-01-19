@@ -24,16 +24,16 @@ unsigned long ula[8];
 unsigned long
 func (void)
 {
-  /* 1 */
+  /* 0:1 */
   int b = _(my_s.b);
 
-  /* 2 */
+  /* 0:2 */
   char c = _(my_s.c);
 
-  /* 2:3 */
+  /* 0:2:3 */
   unsigned char uc = _(my_u.uc[3]);
 
-  /* 6 */
+  /* 0:6 */
   unsigned long ul = _(ula[6]);
 
   return b + c + uc + ul;
@@ -55,10 +55,10 @@ u_ptr (union U *pu)
   return x;
 }
 
-/* { dg-final { scan-assembler-times "ascii \"1.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
-/* { dg-final { scan-assembler-times "ascii \"2.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
-/* { dg-final { scan-assembler-times "ascii \"2:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
-/* { dg-final { scan-assembler-times "ascii \"6.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
+/* { dg-final { scan-assembler-times "ascii \"0:1.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
+/* { dg-final { scan-assembler-times "ascii \"0:2.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
+/* { dg-final { scan-assembler-times "ascii \"0:2:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
+/* { dg-final { scan-assembler-times "ascii \"0:6.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:2.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:2:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 

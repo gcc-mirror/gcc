@@ -10,9 +10,7 @@ namespace std
     struct test19248  {int a;};
 };
 
-#ifdef __DMC__
-// DMC doesn't support c++11
-#elif defined (_MSC_VER) && _MSC_VER <= 1800
+#if defined (_MSC_VER) && _MSC_VER <= 1800
 // MSVC2013 doesn't support char16_t/char32_t
 #else
 #define TEST_UNICODE
@@ -26,11 +24,7 @@ struct S18784
 
 S18784::S18784(int n) : i(n) {}
 
-#ifdef __DMC__ // DMC doesn't support c++11
-template <class>
-#else
 template <class...>
-#endif
 struct SPack
 {
     int i;

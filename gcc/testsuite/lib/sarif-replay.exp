@@ -1,0 +1,204 @@
+# Copyright (C) 2012-2025 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# sarif-replay support library routines
+#
+
+load_lib prune.exp
+load_lib gcc-defs.exp
+load_lib timeout.exp
+load_lib target-libpath.exp
+
+#
+# SARIF_REPLAY_UNDER_TEST is the compiler under test.
+#
+
+set sarif-replay_compile_options ""
+
+
+#
+# sarif-replay_version -- extract and print the version number of the compiler
+#
+
+proc sarif-replay_version { } {
+    global SARIF_REPLAY_UNDER_TEST
+
+    sarif-replay_init
+
+    # ignore any arguments after the command
+    set compiler [lindex $SARIF_REPLAY_UNDER_TEST 0]
+
+    # verify that the compiler exists
+    if { [is_remote host] || [which $compiler] != 0 } then {
+	set tmp [remote_exec host "$compiler -v"]
+	set status [lindex $tmp 0]
+	set output [lindex $tmp 1]
+	regexp " version \[^\n\r\]*" $output version
+	if { $status == 0 && [info exists version] } then {
+	    if [is_remote host] {
+		clone_output "$compiler $version\n"
+	    } else {
+		clone_output "[which $compiler] $version\n"
+	    }
+	} else {
+	    clone_output "Couldn't determine version of [which $compiler]\n"
+	}
+    } else {
+	# compiler does not exist (this should have already been detected)
+	warning "$compiler does not exist"
+    }
+}
+
+#
+# sarif-replay_include_flags -- include flags for the gcc tree structure
+#
+
+proc sarif-replay_include_flags { paths } {
+    global srcdir
+    global SARIF-REPLAY_INCLUDE_CXX_FLAGS
+    global TESTING_IN_BUILD_TREE
+
+    set flags ""
+
+    if { [is_remote host] || ![info exists TESTING_IN_BUILD_TREE] } {
+	return "${flags}"
+    }
+
+    if [info exists SARIF-REPLAY_INCLUDE_CXX_FLAGS] {
+	set include_cxx_flags $SARIF-REPLAY_INCLUDE_CXX_FLAGS
+    } else {
+	set include_cxx_flags 0
+    }
+
+    set gccpath ${paths}
+
+    if { $gccpath != "" } {
+	if [file exists "${gccpath}/libphobos/libdruntime"] {
+	    append flags "-I${gccpath}/libphobos/libdruntime "
+	}
+    }
+    append flags "-I${srcdir}/../../libphobos/libdruntime "
+    append flags "-I${srcdir}/../../libphobos/src "
+
+    # For the tests that mix C++ and D, need to know where headers are located.
+    if $include_cxx_flags {
+	set odir [lookfor_file ${gccpath} libstdc++-v3]
+	if { ${odir} != "" && [file exists ${odir}/scripts/testsuite_flags] } {
+	    set cxxflags [exec sh ${odir}/scripts/testsuite_flags --build-includes]
+	    set idx [lsearch $cxxflags "-nostdinc++"]
+	    append flags [lreplace $cxxflags $idx $idx]
+	}
+    }
+
+    return "$flags"
+}
+
+#
+# sarif-replay_init -- called at the start of each subdir of tests
+#
+
+proc sarif-replay_init { args } {
+    global sarif-replay_initialized
+    global base_dir
+    global tmpdir
+    global libdir
+    global gluefile wrap_flags
+    global TOOL_EXECUTABLE
+    global SARIF_REPLAY_UNDER_TEST
+    global TESTING_IN_BUILD_TREE
+    global gcc_warning_prefix
+    global gcc_error_prefix
+
+    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    setenv LC_ALL C
+    setenv LANG C
+
+    if ![info exists SARIF_REPLAY_UNDER_TEST] then {
+	if [info exists TOOL_EXECUTABLE] {
+	    set SARIF_REPLAY_UNDER_TEST $TOOL_EXECUTABLE
+	} else {
+	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
+		set SARIF_REPLAY_UNDER_TEST [transform sarif-replay]
+	    } else {
+		set SARIF_REPLAY_UNDER_TEST [findfile $base_dir/../../sarif-replay "$base_dir/../../sarif-replay" [findfile $base_dir/sarif-replay "$base_dir/sarif-replay" [transform sarif-replay]]]
+	    }
+	}
+    }
+
+    verbose "SARIF_REPLAY_UNDER_TEST: $SARIF_REPLAY_UNDER_TEST" 2
+
+    if ![is_remote host] {
+	if { [which $SARIF_REPLAY_UNDER_TEST] == 0 } then {
+	    perror "SARIF_REPLAY_UNDER_TEST ($SARIF_REPLAY_UNDER_TEST) does not exist"
+	    exit 1
+	}
+    }
+    if ![info exists tmpdir] {
+	set tmpdir "/tmp"
+    }
+
+    if [info exists gluefile] {
+	unset gluefile
+    }
+
+    set gcc_warning_prefix "warning:"
+    set gcc_error_prefix "(fatal )?error:"
+
+    verbose "sarif-replay is initialized" 3
+}
+
+#
+# sarif-replay_target_compile -- compile a source file
+#
+
+proc sarif-replay_target_compile { source dest type options } {
+    global tmpdir
+    global gluefile wrap_flags
+    global SARIF_REPLAY_UNDER_TEST
+    global TOOL_OPTIONS
+    global TEST_ALWAYS_FLAGS
+
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
+    }
+
+    set always_sarif_replay_flags ""
+
+    # FIXME: strip out -fdiagnostics-plain-output from TEST_ALWAYS_FLAGS
+    # rather than hacking this out:
+    #
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    ##  if [info exists TEST_ALWAYS_FLAGS] {
+    ##	lappend always_sarif_replay_flags "additional_flags=$TEST_ALWAYS_FLAGS"
+    ##  }
+
+    if [info exists TOOL_OPTIONS] {
+	lappend always_sarif_replay_flags "additional_flags=$TOOL_OPTIONS"
+    }
+
+    verbose "always_sarif_replay_flags set to: $always_sarif_replay_flags"
+
+    lappend options "timeout=[timeout_value]"
+    lappend options "compiler=$SARIF_REPLAY_UNDER_TEST"
+
+    set options [concat "$always_sarif_replay_flags" $options]
+    set options [dg-additional-files-options $options $source $dest $type]
+    return [target_compile $source $dest $type $options]
+}

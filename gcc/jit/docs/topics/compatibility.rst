@@ -1,4 +1,4 @@
-.. Copyright (C) 2015-2024 Free Software Foundation, Inc.
+.. Copyright (C) 2015-2025 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -418,3 +418,38 @@ on functions and variables:
 --------------------
 ``LIBGCCJIT_ABI_30`` covers the addition of
 :func:`gcc_jit_context_convert_vector`
+
+.. _LIBGCCJIT_ABI_31:
+
+``LIBGCCJIT_ABI_31``
+--------------------
+``LIBGCCJIT_ABI_31`` covers the addition of functions to manipulate vectors:
+
+  * :func:`gcc_jit_context_new_rvalue_vector_perm`
+  * :func:`gcc_jit_context_new_vector_access`
+
+.. _LIBGCCJIT_ABI_32:
+
+``LIBGCCJIT_ABI_32``
+--------------------
+
+``LIBGCCJIT_ABI_32`` covers the addition of a function to get target builtins:
+
+  * :func:`gcc_jit_context_get_target_builtin_function`
+
+.. _LIBGCCJIT_ABI_33:
+
+``LIBGCCJIT_ABI_33``
+--------------------
+``LIBGCCJIT_ABI_33`` covers the addition of a function to create a new
+temporary variable:
+
+  * :func:`gcc_jit_function_new_temp`
+
+.. _LIBGCCJIT_ABI_34:
+
+``LIBGCCJIT_ABI_34``
+--------------------
+``LIBGCCJIT_ABI_34`` covers the addition of
+
+ * :func:`gcc_jit_context_set_output_ident`

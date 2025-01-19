@@ -48,9 +48,9 @@ public:
         if (context is null)
         {
             version (Win64)
-                static enum INTERNALFRAMES = 3;
+                enum INTERNALFRAMES = 3;
             else version (Win32)
-                static enum INTERNALFRAMES = 2;
+                enum INTERNALFRAMES = 2;
 
             skip += INTERNALFRAMES; //skip the stack frames within the StackTrace class
         }
@@ -58,9 +58,9 @@ public:
         {
             //When a exception context is given the first stack frame is repeated for some reason
             version (Win64)
-                static enum INTERNALFRAMES = 1;
+                enum INTERNALFRAMES = 1;
             else version (Win32)
-                static enum INTERNALFRAMES = 1;
+                enum INTERNALFRAMES = 1;
 
             skip += INTERNALFRAMES;
         }
@@ -309,13 +309,6 @@ private:
         auto res = formatStackFrame(pc);
         res ~= " in ";
         const(char)[] tempSymName = symName[0 .. strlen(symName)];
-        // Deal with dmd mangling of long names for OMF 32 bits builds
-        // Note that `target.d` only defines `CRuntime_DigitalMars` for OMF builds
-        version (CRuntime_DigitalMars)
-        {
-            size_t decodeIndex = 0;
-            tempSymName = decodeDmdString(tempSymName, decodeIndex);
-        }
         res ~= demangle(tempSymName, demangleBuf);
         return res;
     }
@@ -338,34 +331,6 @@ private:
     }
 }
 
-
-// Workaround OPTLINK bug (Bugzilla 8263)
-extern(Windows) BOOL FixupDebugHeader(HANDLE hProcess, ULONG ActionCode,
-                                      ulong CallbackContext, ulong UserContext)
-{
-    if (ActionCode == CBA_READ_MEMORY)
-    {
-        auto p = cast(IMAGEHLP_CBA_READ_MEMORY*)CallbackContext;
-        if (!(p.addr & 0xFF) && p.bytes == 0x1C &&
-            // IMAGE_DEBUG_DIRECTORY.PointerToRawData
-            (*cast(DWORD*)(p.addr + 24) & 0xFF) == 0x20)
-        {
-            immutable base = DbgHelp.get().SymGetModuleBase64(hProcess, p.addr);
-            // IMAGE_DEBUG_DIRECTORY.AddressOfRawData
-            if (base + *cast(DWORD*)(p.addr + 20) == p.addr + 0x1C &&
-                *cast(DWORD*)(p.addr + 0x1C) == 0 &&
-                *cast(DWORD*)(p.addr + 0x20) == ('N'|'B'<<8|'0'<<16|'9'<<24))
-            {
-                debug(PRINTF) printf("fixup IMAGE_DEBUG_DIRECTORY.AddressOfRawData\n");
-                memcpy(p.buf, cast(void*)p.addr, 0x1C);
-                *cast(DWORD*)(p.buf + 20) = cast(DWORD)(p.addr - base) + 0x20;
-                *p.bytesread = 0x1C;
-                return TRUE;
-            }
-        }
-    }
-    return FALSE;
-}
 
 private string generateSearchPath()
 {
@@ -426,8 +391,6 @@ shared static this()
 
     if (!dbghelp.SymInitialize(hProcess, generateSearchPath().ptr, TRUE))
         return;
-
-    dbghelp.SymRegisterCallback64(hProcess, &FixupDebugHeader, 0);
 
     InitializeCriticalSection(&mutex);
     initialized = true;

@@ -53,7 +53,7 @@ $(TR $(TD Miscellaneous) $(TD
     See_Also:
         $(LINK2 http://en.wikipedia.org/wiki/Unicode, Wikipedia)<br>
         $(LINK http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8)<br>
-        $(LINK http://anubis.dkuug.dk/JTC1/SC2/WG2/docs/n1335)
+        $(LINK https://web.archive.org/web/20100113043530/https://anubis.dkuug.dk/JTC1/SC2/WG2/docs/n1335)
     Copyright: Copyright The D Language Foundation 2000 - 2012.
     License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
     Authors:   $(HTTP digitalmars.com, Walter Bright) and
@@ -328,7 +328,7 @@ Returns:
 bool isValidCodepoint(Char)(Char c)
 if (isSomeChar!Char)
 {
-    alias UChar = Unqual!Char;
+    alias UChar = typeof(cast() c);
     static if (is(UChar == char))
     {
         return c <= 0x7F;
@@ -1418,8 +1418,8 @@ do
         }
         else
         {
-            alias Char = Unqual!(ElementType!S);
-            Char[4] codeUnits;
+            alias Char = typeof(cast() ElementType!S.init);
+            Char[4] codeUnits = void;
             S tmp = str.save;
             for (size_t i = numCodeUnits; i > 0; )
             {
@@ -2528,8 +2528,8 @@ size_t encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
     encode(buf, '\u0000'); assert(buf[0] == '\u0000');
     encode(buf, '\uD7FF'); assert(buf[0] == '\uD7FF');
     encode(buf, '\uE000'); assert(buf[0] == '\uE000');
-    encode(buf, 0xFFFE ); assert(buf[0] == 0xFFFE);
-    encode(buf, 0xFFFF ); assert(buf[0] == 0xFFFF);
+    encode(buf, 0xFFFE); assert(buf[0] == 0xFFFE);
+    encode(buf, 0xFFFF); assert(buf[0] == 0xFFFF);
     encode(buf, '\U0010FFFF'); assert(buf[0] == '\U0010FFFF');
 
     assertThrown!UTFException(encode(buf, cast(dchar) 0xD800));
@@ -2749,8 +2749,8 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
     encode(buf, '\u0000'); assert(buf[0] == '\u0000');
     encode(buf, '\uD7FF'); assert(buf[1] == '\uD7FF');
     encode(buf, '\uE000'); assert(buf[2] == '\uE000');
-    encode(buf, 0xFFFE ); assert(buf[3] == 0xFFFE);
-    encode(buf, 0xFFFF ); assert(buf[4] == 0xFFFF);
+    encode(buf, 0xFFFE); assert(buf[3] == 0xFFFE);
+    encode(buf, 0xFFFF); assert(buf[4] == 0xFFFF);
     encode(buf, '\U0010FFFF'); assert(buf[5] == '\U0010FFFF');
 
     assertThrown!UTFException(encode(buf, cast(dchar) 0xD800));
@@ -2821,7 +2821,7 @@ if (isSomeChar!C)
 size_t codeLength(C, InputRange)(InputRange input)
 if (isSomeFiniteCharInputRange!InputRange)
 {
-    alias EncType = Unqual!(ElementEncodingType!InputRange);
+    alias EncType = typeof(cast() ElementEncodingType!InputRange.init);
     static if (isSomeString!InputRange && is(EncType == C) && is(typeof(input.length)))
         return input.length;
     else
@@ -3089,7 +3089,8 @@ private T toUTFImpl(T, S)(scope S s)
         static if (is(S == C[], C) || hasLength!S)
             app.reserve(s.length);
 
-        foreach (c; s.byUTF!(Unqual!(ElementEncodingType!T)))
+        ElementEncodingType!T e = void;
+        foreach (c; s.byUTF!(typeof(cast() ElementEncodingType!T.init)))
             app.put(c);
 
         return app.data;
@@ -3168,10 +3169,10 @@ if (is(immutable typeof(*P.init) == typeof(str[0])))
         return trustedPtr();
     }
 
-    alias C = Unqual!(ElementEncodingType!S);
+    alias C = typeof(cast() ElementEncodingType!S.init);
 
     //If the P is mutable, then we have to make a copy.
-    static if (is(Unqual!(typeof(*P.init)) == typeof(*P.init)))
+    static if (is(typeof(cast() *P.init) == typeof(*P.init)))
     {
         return toUTFzImpl!(P, const(C)[])(cast(const(C)[])str);
     }
@@ -3203,13 +3204,15 @@ private P toUTFzImpl(P, S)(return scope S str) @safe pure
 if (is(typeof(str[0]) C) && is(immutable typeof(*P.init) == immutable C) && !is(C == immutable))
 //C[] or const(C)[] -> C*, const(C)*, or immutable(C)*
 {
-    alias InChar  = typeof(str[0]);
-    alias OutChar = typeof(*P.init);
+    alias InChar   = typeof(str[0]);
+    alias UInChar  = typeof(cast() str[0]); // unqualified version of InChar
+    alias OutChar  = typeof(*P.init);
+    alias UOutChar = typeof(cast() *P.init); // unqualified version
 
     //const(C)[] -> const(C)* or
     //C[] -> C* or const(C)*
-    static if (( is(const(Unqual!InChar) == InChar) &&  is(const(Unqual!OutChar) == OutChar)) ||
-               (!is(const(Unqual!InChar) == InChar) && !is(immutable(Unqual!OutChar) == OutChar)))
+    static if (( is(const(UInChar) == InChar) &&  is(    const(UOutChar) == OutChar)) ||
+               (!is(const(UInChar) == InChar) && !is(immutable(UOutChar) == OutChar)))
     {
         if (!__ctfe)
         {
@@ -3228,7 +3231,7 @@ if (is(typeof(str[0]) C) && is(immutable typeof(*P.init) == immutable C) && !is(
     else
     {
         import std.array : uninitializedArray;
-        auto copy = uninitializedArray!(Unqual!OutChar[])(str.length + 1);
+        auto copy = uninitializedArray!(UOutChar[])(str.length + 1);
         copy[0 .. $ - 1] = str[];
         copy[$ - 1] = '\0';
 
@@ -4300,13 +4303,13 @@ if (isSomeChar!C)
     else:
 
     auto ref byUTF(R)(R r)
-        if (isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
+    if (isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
     {
         return byUTF(r.byCodeUnit());
     }
 
     auto ref byUTF(R)(R r)
-        if (!isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
+    if (!isAutodecodableString!R && isInputRange!R && isSomeChar!(ElementEncodingType!R))
     {
         static if (is(immutable ElementEncodingType!R == immutable RC, RC) && is(RC == C))
         {

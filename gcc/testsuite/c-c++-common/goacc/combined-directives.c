@@ -8,6 +8,7 @@ test ()
 {
   int a[100], i, j, z;
 
+
   // acc parallel
 
   #pragma acc parallel loop collapse (2)
@@ -56,6 +57,7 @@ test ()
 //  for (i = 0; i < 100; i++)
 //    ;
 
+
   // acc kernels
 
   #pragma acc kernels loop collapse (2)
@@ -103,14 +105,64 @@ test ()
 //  #pragma acc kernels loop reduction (+:z) copy (z)
 //  for (i = 0; i < 100; i++)
 //    ;
+
+  
+  // acc serial
+
+  #pragma acc serial loop collapse (2)
+  for (i = 0; i < 100; i++)
+    for (j = 0; j < 10; j++)
+      ;
+
+  #pragma acc serial loop gang
+  for (i = 0; i < 100; i++)
+    ;
+
+  #pragma acc serial loop worker
+  for (i = 0; i < 100; i++)
+    for (j = 0; j < 10; j++)
+      ;
+
+  #pragma acc serial loop vector
+  for (i = 0; i < 100; i++)
+    for (j = 0; j < 10; j++)
+      ;
+
+  #pragma acc serial loop seq
+  for (i = 0; i < 100; i++)
+    for (j = 0; j < 10; j++)
+      ;
+
+  #pragma acc serial loop auto
+  for (i = 0; i < 100; i++)
+    for (j = 0; j < 10; j++)
+      ;
+
+  #pragma acc serial loop tile (2, 3)
+  for (i = 0; i < 100; i++)
+    for (j = 0; j < 10; j++)
+      ;
+
+  #pragma acc serial loop independent
+  for (i = 0; i < 100; i++)
+    ;
+
+  #pragma acc serial loop private (z)
+  for (i = 0; i < 100; i++)
+    z = 0;
+
+//  #pragma acc serial loop reduction (+:z) copy (z)
+//  for (i = 0; i < 100; i++)
+//    ;
 }
 
-// { dg-final { scan-tree-dump-times "acc loop collapse.2. private.j. private.i" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop gang" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop worker" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop vector" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop seq" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop auto" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop tile.2, 3" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop independent private.i" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "private.z" 2 "gimple" } }
+
+// { dg-final { scan-tree-dump-times "acc loop collapse.2. private.j. private.i" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop gang" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop worker" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop vector" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop seq" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop auto" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop tile.2, 3" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop independent private.i" 3 "gimple" } }
+// { dg-final { scan-tree-dump-times "private.z" 3 "gimple" } }

@@ -1,5 +1,5 @@
 /* decl.cc -- Lower D frontend declarations to GCC trees.
-   Copyright (C) 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -351,7 +350,7 @@ public:
 
   void visit (AttribDeclaration *d) final override
   {
-    Dsymbols *ds = d->include (NULL);
+    Dsymbols *ds = dmd::include (d, NULL);
 
     if (!ds)
       return;
@@ -562,10 +561,8 @@ public:
 	    if (fd2->isFuture ())
 	      continue;
 
-	    if (FuncDeclaration::leastAsSpecialized (fd, fd2, NULL)
-		    == MATCH::nomatch
-		&& FuncDeclaration::leastAsSpecialized (fd2, fd, NULL)
-		    == MATCH::nomatch)
+	    if (dmd::leastAsSpecialized (fd, fd2, NULL) == MATCH::nomatch
+		&& dmd::leastAsSpecialized (fd2, fd, NULL) == MATCH::nomatch)
 	      continue;
 
 	    /* Hiding detected; same name, overlapping specializations.  */
@@ -730,7 +727,7 @@ public:
       create_typeinfo (d->type, NULL);
 
     TypeEnum *tc = d->type->isTypeEnum ();
-    if (tc->sym->members && !d->type->isZeroInit ())
+    if (tc->sym->members && !dmd::isZeroInit (d->type))
       {
 	/* Generate static initializer.  */
 	d->sinit = enum_initializer_decl (d);
@@ -784,7 +781,7 @@ public:
       {
 	/* Do not store variables we cannot take the address of,
 	   but keep the values for purposes of debugging.  */
-	if (d->type->isscalar () && !dmd::hasPointers (d->type))
+	if (d->type->isScalar () && !dmd::hasPointers (d->type))
 	  {
 	    tree decl = get_symbol_decl (d);
 	    d_pushdecl (decl);
@@ -806,7 +803,7 @@ public:
 	  return;
 
 	/* How big a symbol can be should depend on back-end.  */
-	tree size = build_integer_cst (d->type->size (d->loc),
+	tree size = build_integer_cst (dmd::size (d->type, d->loc),
 				       build_ctype (Type::tsize_t));
 	if (!valid_constant_size_p (size))
 	  {
@@ -824,7 +821,7 @@ public:
 		DECL_INITIAL (decl) = build_expr (e, true);
 	      }
 	  }
-	else if (!d->type->isZeroInit ())
+	else if (!dmd::isZeroInit (d->type))
 	  {
 	    /* Use default initializer for the type.  */
 	    if (TypeStruct *ts = d->type->isTypeStruct ())
@@ -1248,7 +1245,7 @@ get_symbol_decl (Declaration *decl)
       /* CONST_DECL was initially intended for enumerals and may be used for
 	 scalars in general, but not for aggregates.  Here a non-constant
 	 value is generated anyway so as its value can be used.  */
-      if (!vd->canTakeAddressOf () && !vd->type->isscalar ())
+      if (!vd->canTakeAddressOf () && !vd->type->isScalar ())
 	{
 	  gcc_assert (vd->_init && !vd->_init->isVoidInitializer ());
 	  Expression *ie = dmd::initializerToExpression (vd->_init);
@@ -1309,7 +1306,7 @@ get_symbol_decl (Declaration *decl)
 	  /* Cannot make an expression out of a void initializer.  */
 	  gcc_assert (vd->_init && !vd->_init->isVoidInitializer ());
 	  /* Non-scalar manifest constants have already been dealt with.  */
-	  gcc_assert (vd->type->isscalar ());
+	  gcc_assert (vd->type->isScalar ());
 
 	  Expression *ie = dmd::initializerToExpression (vd->_init);
 	  DECL_INITIAL (decl->csym) = build_expr (ie, true);
@@ -2419,7 +2416,7 @@ layout_struct_initializer (StructDeclaration *sd)
 {
   StructLiteralExp *sle = StructLiteralExp::create (sd->loc, sd, NULL);
 
-  if (!sd->fill (sd->loc, *sle->elements, true))
+  if (!dmd::fill (sd, sd->loc, *sle->elements, true))
     gcc_unreachable ();
 
   sle->type = sd->type;

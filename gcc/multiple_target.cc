@@ -2,7 +2,7 @@
 
    Contributed by Evgeny Stupachenko <evstupac@gmail.com>
 
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -181,7 +180,7 @@ create_dispatcher_calls (struct cgraph_node *node)
     }
 }
 
-/* Create string with attributes separated by comma.
+/* Create string with attributes separated by TARGET_CLONES_ATTR_SEPARATOR.
    Return number of attributes.  */
 
 static int
@@ -195,17 +194,21 @@ get_attr_str (tree arglist, char *attr_str)
     {
       const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
       size_t len = strlen (str);
-      for (const char *p = strchr (str, ','); p; p = strchr (p + 1, ','))
+      for (const char *p = strchr (str, TARGET_CLONES_ATTR_SEPARATOR);
+	   p;
+	   p = strchr (p + 1, TARGET_CLONES_ATTR_SEPARATOR))
 	argnum++;
       memcpy (attr_str + str_len_sum, str, len);
-      attr_str[str_len_sum + len] = TREE_CHAIN (arg) ? ',' : '\0';
+      attr_str[str_len_sum + len]
+	= TREE_CHAIN (arg) ? TARGET_CLONES_ATTR_SEPARATOR : '\0';
       str_len_sum += len + 1;
       argnum++;
     }
   return argnum;
 }
 
-/* Return number of attributes separated by comma and put them into ARGS.
+/* Return number of attributes separated by TARGET_CLONES_ATTR_SEPARATOR
+   and put them into ARGS.
    If there is no DEFAULT attribute return -1.
    If there is an empty string in attribute return -2.
    If there are multiple DEFAULT attributes return -3.
@@ -216,9 +219,10 @@ separate_attrs (char *attr_str, char **attrs, int attrnum)
 {
   int i = 0;
   int default_count = 0;
+  static const char separator_str[] = { TARGET_CLONES_ATTR_SEPARATOR, 0 };
 
-  for (char *attr = strtok (attr_str, ",");
-       attr != NULL; attr = strtok (NULL, ","))
+  for (char *attr = strtok (attr_str, separator_str);
+       attr != NULL; attr = strtok (NULL, separator_str))
     {
       if (strcmp (attr, "default") == 0)
 	{
@@ -306,7 +310,7 @@ static bool
 expand_target_clones (struct cgraph_node *node, bool definition)
 {
   int i;
-  /* Parsing target attributes separated by comma.  */
+  /* Parsing target attributes separated by TARGET_CLONES_ATTR_SEPARATOR.  */
   tree attr_target = lookup_attribute ("target_clones",
 				       DECL_ATTRIBUTES (node->decl));
   /* No targets specified.  */
@@ -438,7 +442,14 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 
 /* When NODE is a target clone, consider all callees and redirect
    to a clone with equal target attributes.  That prevents multiple
-   multi-versioning dispatches and a call-chain can be optimized.  */
+   multi-versioning dispatches and a call-chain can be optimized.
+
+   This optimisation might pick the wrong version in some cases, since knowing
+   that we meet the target requirements for a matching callee version does not
+   tell us that we won't also meet the target requirements for a higher
+   priority callee version at runtime.  Since this is longstanding behaviour
+   for x86 and powerpc, we preserve it for those targets, but skip the optimisation
+   for targets that use the "target_version" attribute for multi-versioning.  */
 
 static void
 redirect_to_specific_clone (cgraph_node *node)
@@ -447,6 +458,7 @@ redirect_to_specific_clone (cgraph_node *node)
   if (fv == NULL)
     return;
 
+  gcc_assert (TARGET_HAS_FMV_TARGET_ATTRIBUTE);
   tree attr_target = lookup_attribute ("target", DECL_ATTRIBUTES (node->decl));
   if (attr_target == NULL_TREE)
     return;
@@ -499,8 +511,9 @@ ipa_target_clone (void)
   for (unsigned i = 0; i < to_dispatch.length (); i++)
     create_dispatcher_calls (to_dispatch[i]);
 
-  FOR_EACH_FUNCTION (node)
-    redirect_to_specific_clone (node);
+  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    FOR_EACH_FUNCTION (node)
+      redirect_to_specific_clone (node);
 
   return 0;
 }

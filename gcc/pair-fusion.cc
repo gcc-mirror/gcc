@@ -1,5 +1,5 @@
 // Pass to fuse adjacent loads/stores into paired memory accesses.
-// Copyright (C) 2023-2024 Free Software Foundation, Inc.
+// Copyright (C) 2023-2025 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -20,7 +20,6 @@
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
 #define INCLUDE_LIST
-#define INCLUDE_MEMORY
 #define INCLUDE_TYPE_TRAITS
 #define INCLUDE_ARRAY
 #include "config.h"

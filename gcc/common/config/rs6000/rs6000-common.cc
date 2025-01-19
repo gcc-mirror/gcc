@@ -1,5 +1,5 @@
 /* Common hooks for IBM RS/6000.
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -222,7 +222,7 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case OPT_mabi_ieeelongdouble:
       if (opts->x_rs6000_long_double_type_size == 64)
 	{
-	  error_at (loc, "option %<%s%> requires %<-mlong-double-128%>",
+	  error_at (loc, "option %qs requires %<-mlong-double-128%>",
 		    decoded->orig_option_with_args_text);
 	  return true;
 	}

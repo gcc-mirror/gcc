@@ -22,9 +22,10 @@ import std.traits : isSomeString;
  * OutBuffer's byte order is the format native to the computer.
  * To control the byte order (endianness), use a class derived
  * from OutBuffer.
+ *
  * OutBuffer's internal buffer is allocated with the GC. Pointers
  * stored into the buffer are scanned by the GC, but you have to
- * ensure proper alignment, e.g. by using alignSize((void*).sizeof).
+ * ensure proper alignment, e.g. by using `alignSize((void*).sizeof)`.
  */
 
 class OutBuffer
@@ -297,7 +298,7 @@ class OutBuffer
      * Append output of C's vprintf() to internal buffer.
      */
 
-    void vprintf(scope string format, va_list args) @trusted nothrow
+    void vprintf(scope string format, va_list args) @system nothrow
     {
         import core.stdc.stdio : vsnprintf;
         import core.stdc.stdlib : alloca;
@@ -342,7 +343,7 @@ class OutBuffer
      * Append output of C's printf() to internal buffer.
      */
 
-    void printf(scope string format, ...) @trusted
+    void printf(scope string format, ...) @system
     {
         va_list ap;
         va_start(ap, format);
@@ -475,7 +476,7 @@ class OutBuffer
     buf.write("hello");
     buf.write(cast(byte) 0x20);
     buf.write("world");
-    buf.printf(" %d", 62665);
+    buf.writef(" %d", 62665);
     assert(cmp(buf.toString(), "hello world 62665") == 0);
 
     buf.clear();

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2024 Free Software Foundation, Inc.
+# Copyright (C) 1997-2025 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -273,7 +273,6 @@ esac
 # Obsolete configurations.
 case ${target} in
      ia64*-*-hpux* | ia64*-*-*vms* | ia64*-*-elf*	\
-   | nios2*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -347,7 +346,7 @@ m32c*-*-*)
         ;;
 aarch64*-*-*)
 	cpu_type=aarch64
-	extra_headers="arm_fp16.h arm_neon.h arm_bf16.h arm_acle.h arm_sve.h arm_sme.h arm_neon_sve_bridge.h arm_private_fp8.h"
+	extra_headers="arm_fp16.h arm_neon.h arm_bf16.h arm_acle.h arm_sve.h arm_sme.h arm_neon_sve_bridge.h arm_private_fp8.h arm_private_neon_types.h"
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
@@ -514,10 +513,6 @@ nds32*)
 	esac
 	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o nds32-relax-opt.o nds32-utils.o"
 	;;
-nios2-*-*)
-	cpu_type=nios2
-	extra_options="${extra_options} g.opt"
-	;;
 nvptx-*-*)
 	cpu_type=nvptx
 	c_target_objs="nvptx-c.o"
@@ -557,8 +552,8 @@ riscv*)
 	cpu_type=riscv
 	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-string.o"
 	extra_objs="${extra_objs} riscv-v.o riscv-vsetvl.o riscv-vector-costs.o riscv-avlprop.o"
-	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
-	extra_objs="${extra_objs} thead.o riscv-target-attr.o"
+	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o sifive-vector-builtins-bases.o"
+	extra_objs="${extra_objs} thead.o riscv-target-attr.o riscv-zicfilp.o"
 	d_target_objs="riscv-d.o"
 	extra_headers="riscv_vector.h riscv_crypto.h riscv_bitmanip.h riscv_th_vector.h riscv_cmo.h"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.cc"
@@ -721,7 +716,7 @@ skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
 nano-x2 eden-x4 nano-x4 lujiazui yongfeng shijidadao x86-64 x86-64-v2 \
 x86-64-v3 x86-64-v4 sierraforest graniterapids graniterapids-d grandridge \
-arrowlake arrowlake-s clearwaterforest pantherlake native"
+arrowlake arrowlake-s clearwaterforest pantherlake diamondrapids native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1291,6 +1286,7 @@ aarch64-*-mingw*)
 	extra_options="${extra_options} mingw/cygming.opt mingw/mingw.opt"
 	extra_objs="${extra_objs} winnt.o winnt-dll.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
+	cxx_target_objs="${cxx_target_objs} msformat-c.o"
 	d_target_objs="${d_target_objs} winnt-d.o"
 	tmake_file="${tmake_file} mingw/t-cygming"
 	case ${enable_threads} in
@@ -1694,7 +1690,7 @@ bpf-*-*)
         tm_file="elfos.h ${tm_file}"
         tmake_file="${tmake_file} bpf/t-bpf"
         use_collect2=no
-        use_gcc_stdint=provide
+        use_gcc_stdint=wrap
         extra_objs="btfext-out.o core-builtins.o"
         target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/btfext-out.cc \$(srcdir)/config/bpf/core-builtins.cc"
         ;;
@@ -2911,23 +2907,6 @@ nds32*-*-*)
 	if test x${with_ext_dsp} = xyes; then
 		tm_defines="${tm_defines} TARGET_DEFAULT_EXT_DSP=1"
 	fi
-	;;
-nios2-*-*)
-	tm_file="elfos.h ${tm_file}"
-        tmake_file="${tmake_file} nios2/t-nios2"
-        case ${target} in
-        nios2-*-linux*)
-                tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h nios2/linux.h "
-                ;;
-	nios2-*-elf*)
-		tm_file="${tm_file} newlib-stdint.h nios2/elf.h"
-		extra_options="${extra_options} nios2/elf.opt"
-		;;
-	nios2-*-rtems*)
-		tm_file="${tm_file} newlib-stdint.h nios2/rtems.h rtems.h"
-		tmake_file="${tmake_file} t-rtems nios2/t-rtems"
-		;;
-        esac
 	;;
 nvptx-*)
 	tm_file="${tm_file} newlib-stdint.h"
@@ -4154,7 +4133,7 @@ if test x$with_arch = x ; then
       with_arch=mips2
       ;;
     nvptx-*)
-      with_arch=sm_30
+      with_arch=sm_52
       ;;
   esac
 
@@ -4732,7 +4711,7 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute isa_spec tls"
+		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
@@ -4888,6 +4867,25 @@ case "${target}" in
 				exit 1
 			esac
 		fi
+
+		# Handle --with-cmodel.
+		# Make sure --with-cmodel is valid.  If it was not specified,
+		# use medlow as the default value.
+		case "${with_cmodel}" in
+		"" | medlow)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_MEDLOW"
+			;;
+		medany)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_MEDANY"
+			;;
+		large)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_LARGE"
+			;;
+		*)
+			echo "invalid option for --with-cmodel: '${with_cmodel}', available values are 'medlow' 'medany' 'large'" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	mips*-*-*)
@@ -5595,36 +5593,72 @@ case "${target}" in
 
 
 		;;
-	nios2*-*-*)
-		supported_defaults="arch"
-			case "$with_arch" in
-			"" | r1 | r2)
-				# OK
+	nvptx-*)
+		supported_defaults=arch
+
+		nvptx_multilibs_default=sm_52
+
+		case "x${with_multilib_list}" in
+		x | xno)
+			nvptx_multilibs=
+			;;
+		xdefault | xyes)
+			nvptx_multilibs=default
+			;;
+		*)
+			nvptx_multilibs=$with_multilib_list
+			;;
+		esac
+		nvptx_multilibs=`echo $nvptx_multilibs | sed -e 's/,/ /g'`
+		# Expand 'default'.
+		nvptx_multilibs_expanded=
+		for nvptx_multilib in $nvptx_multilibs; do
+			case $nvptx_multilib in
+			default )
+				nvptx_multilibs_expanded="$nvptx_multilibs_expanded $nvptx_multilibs_default"
 				;;
-			*)
-				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
+			* )
+				nvptx_multilibs_expanded="$nvptx_multilibs_expanded $nvptx_multilib"
+				;;
+			esac
+		done
+		# The '--with-arch=[...]' one comes first.
+		nvptx_multilibs=$with_arch$nvptx_multilibs_expanded
+		# Filter out any duplicates.
+		nvptx_multilibs_filtered=
+		for nvptx_multilib in $nvptx_multilibs; do
+			case " $nvptx_multilibs_filtered " in
+			*" $nvptx_multilib "* )
+				:
+				;;
+			* )
+				nvptx_multilibs_filtered="$nvptx_multilibs_filtered $nvptx_multilib"
+				;;
+			esac
+		done
+		nvptx_multilibs=$nvptx_multilibs_filtered
+		# Verify, and build 'TM_MULTILIB_CONFIG'.
+		TM_MULTILIB_CONFIG=
+		for nvptx_multilib in $nvptx_multilibs; do
+			case $nvptx_multilib in
+			#TODO 'sm_[...]' list per 'nvptx-sm.def'.
+			sm_30 | sm_35 | sm_37 \
+			| sm_52 | sm_53 \
+			| sm_70 | sm_75 \
+			| sm_80 | sm_89 )
+				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG $nvptx_multilib"
+				;;
+			$with_arch )
+				echo "Unknown arch used in --with-arch=$nvptx_multilib" 1>&2
+				exit 1
+				;;
+			* )
+				echo "Unknown arch used in --with-multilib-list: $nvptx_multilib" 1>&2
 				exit 1
 				;;
 			esac
-		;;
-
-	nvptx-*)
-		supported_defaults=arch
-		TM_MULTILIB_CONFIG=$with_arch
-		#TODO 'sm_[...]' list per 'nvptx-sm.def'.
-		case $with_arch in
-			sm_30 )
-				# OK; default.
-				;;
-			sm_35 | sm_53 | sm_70 | sm_75 | sm_80 )
-				# OK, but we'd like 'sm_30', too.
-				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG sm_30"
-				;;
-			* )
-				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
-				exit 1
-				;;
-		esac
+		done
+		TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^ //'`
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
@@ -6080,7 +6114,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa cmodel"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

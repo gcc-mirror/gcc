@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                        Copyright (C) 2013-2024, AdaCore                  --
+--                        Copyright (C) 2013-2025, AdaCore                  --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;
-with System.Storage_Elements;
+with System; use System;
 with Interfaces.C; use Interfaces.C;
 with Ada.Unchecked_Conversion;
 with System.Standard_Library; use System.Standard_Library;
@@ -84,7 +83,7 @@ package body GNAT.CPP_Exceptions is
    begin
       --  Check the exception was imported from C++
 
-      if Id_Data.Lang /= 'C' then
+      if Id_Data.Lang not in 'B' | 'C' then
          raise Constraint_Error;
       end if;
 
@@ -101,22 +100,33 @@ package body GNAT.CPP_Exceptions is
       cxa_throw (Occ, Id_Data.Foreign_Data, System.Null_Address);
    end Raise_Cpp_Exception;
 
-   ----------------
-   -- Get_Object --
-   ----------------
+   ------------------------
+   -- Get_Object_Address --
+   ------------------------
 
-   function Get_Object (X : Exception_Occurrence) return T
+   function Get_Object_Address
+     (X : Exception_Occurrence) return System.Address
    is
-      use System;
-      use System.Storage_Elements;
-
-      Unwind_Exception_Size : Natural;
-      pragma Import (C, Unwind_Exception_Size, "__gnat_unwind_exception_size");
-      --  Size in bytes of _Unwind_Exception
-
       Exception_Addr : constant Address :=
         Get_Exception_Machine_Occurrence (X);
       --  Machine occurrence of X
+
+      Object_Addr : Address;
+      --  Address of the raised object, after calling Convert
+
+      Id : constant Exception_Id := Exception_Identity (X);
+
+      Id_Data : constant Exception_Data_Ptr := To_Exception_Data_Ptr (Id);
+      --  Get a non-private view on the exception
+
+      Success : Integer;
+
+      procedure Convert (Success     : out Integer;
+                         Object_Addr : out Address;
+                         Catch_Type  : Address;
+                         Convention  : Character;
+                         Unw_Except  : Address);
+      pragma Import (C, Convert, "__gnat_obtain_caught_object");
 
    begin
       --  Check the machine occurrence exists
@@ -125,15 +135,136 @@ package body GNAT.CPP_Exceptions is
          raise Constraint_Error;
       end if;
 
-      declare
-         --  Import the object from the occurrence
-         Result : T;
-         pragma Import (Ada, Result);
-         for Result'Address use
-            Exception_Addr + Storage_Offset (Unwind_Exception_Size);
-      begin
-         --  And return it
-         return Result;
-      end;
+      if Id_Data.Lang not in 'A' .. 'C' then
+         raise Constraint_Error;
+      end if;
+
+      Convert (Success, Object_Addr,
+               Id_Data.Foreign_Data, Id_Data.Lang,
+               Exception_Addr);
+      if Success = 0 then
+         raise Constraint_Error;
+      end if;
+
+      return Object_Addr;
+   end Get_Object_Address;
+
+   ----------------
+   -- Get_Object --
+   ----------------
+
+   function Get_Object (X : Exception_Occurrence) return T
+   is
+      Object_Addr : constant System.Address := Get_Object_Address (X);
+      --  Address of the raised object
+
+      --  Import the object from the occurrence
+      Result : constant T;
+      pragma Import (Ada, Result);
+      for Result'Address use Object_Addr;
+   begin
+      return Result;
    end Get_Object;
+
+   --------------------------
+   -- Get_Access_To_Object --
+   --------------------------
+
+   function Get_Access_To_Object (X : Exception_Occurrence)
+                                 return access T
+   is
+      Object_Addr : constant System.Address := Get_Object_Address (X);
+      --  Address of the raised object
+
+      type T_Acc is access T;
+
+      function To_T_Acc is
+         new Ada.Unchecked_Conversion (System.Address, T_Acc);
+
+      --  Import the object from the occurrence
+      Result : constant T_Acc := To_T_Acc (Object_Addr);
+   begin
+      return Result;
+   end Get_Access_To_Object;
+
+   ---------------------------------
+   -- Get_Access_To_Tagged_Object --
+   ---------------------------------
+
+   function Get_Access_To_Tagged_Object (X : Exception_Occurrence)
+                                        return access T'Class
+   is
+      Object_Addr : constant System.Address := Get_Object_Address (X);
+      --  Address of the raised object
+
+      type T_Acc is access T'Class;
+
+      function To_T_Acc is
+         new Ada.Unchecked_Conversion (System.Address, T_Acc);
+
+      --  Import the object from the occurrence
+      Result : constant T_Acc := To_T_Acc (Object_Addr);
+   begin
+      return Result;
+   end Get_Access_To_Tagged_Object;
+
+   -------------------
+   -- Get_Type_Info --
+   -------------------
+
+   function Get_Type_Info (Id : Exception_Id) return Type_Info_Ptr is
+      Id_Data : constant Exception_Data_Ptr := To_Exception_Data_Ptr (Id);
+      --  Get a non-private view on the exception
+
+      Foreign_Exception : aliased Exception_Data;
+      pragma Import
+        (Ada, Foreign_Exception, "system__exceptions__foreign_exception");
+   begin
+      if Id_Data.Lang not in 'B' | 'C' then
+         if Id_Data.Lang = 'A'
+           and then
+           Id_Data = Foreign_Exception'Unchecked_Access
+         then
+            return No_Type_Info;
+         end if;
+         raise Constraint_Error;
+      end if;
+
+      return To_Type_Info_Ptr (Id_Data.Foreign_Data);
+   end Get_Type_Info;
+
+   -------------------
+   -- Get_Type_Info --
+   -------------------
+
+   function Get_Type_Info (X : Exception_Occurrence) return Type_Info_Ptr is
+      Exception_Addr : constant Address :=
+        Get_Exception_Machine_Occurrence (X);
+      --  Machine occurrence of X
+
+      function Get_MO_RTTI (MO : Address) return Type_Info_Ptr;
+      pragma Import (Cpp, Get_MO_RTTI, "__gnat_get_cxx_exception_type_info");
+
+      TI : Type_Info_Ptr;
+   begin
+      if Exception_Addr = Null_Address then
+         raise Constraint_Error;
+      end if;
+
+      if To_Exception_Data_Ptr (Exception_Identity (X)).Lang
+        not in 'A' .. 'C'
+      then
+         raise Constraint_Error;
+      end if;
+
+      TI := Get_MO_RTTI (Exception_Addr);
+
+      if TI = No_Type_Info then
+         raise Constraint_Error;
+      end if;
+
+      return TI;
+
+   end Get_Type_Info;
+
 end GNAT.CPP_Exceptions;

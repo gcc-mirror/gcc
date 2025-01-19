@@ -104,7 +104,7 @@ T emplace(T, Args...)(T chunk, auto ref Args args)
 
     // Initialize the object in its pre-ctor state
     const initializer = __traits(initSymbol, T);
-    (() @trusted { (cast(void*) chunk)[0 .. initializer.length] = initializer[]; })();
+    () @trusted { (cast(void*) chunk)[0 .. initializer.length] = cast(void[]) initializer[]; }();
 
     static if (isInnerClass!T)
     {
@@ -1699,7 +1699,7 @@ template forward(args...)
         {
             x_ = forward!x;
         }
-        this()(auto const ref X x)
+        this()(auto ref const X x)
         {
             x_ = forward!x;
         }
@@ -2348,7 +2348,7 @@ pure nothrow @nogc @system unittest
 
 debug(PRINTF)
 {
-    import core.stdc.stdio;
+    import core.stdc.stdio : printf;
 }
 
 /// Implementation of `_d_delstruct` and `_d_delstructTrace`
@@ -2683,7 +2683,7 @@ T _d_newThrowable(T)() @trusted
     debug(PRINTF) printf(" p = %p\n", p);
 
     // initialize it
-    p[0 .. init.length] = init[];
+    p[0 .. init.length] = cast(void[]) init[];
 
     import core.internal.traits : hasIndirections;
     if (hasIndirections!T)
@@ -2739,8 +2739,11 @@ if (is(T == class))
     auto init = __traits(initSymbol, T);
     void* p;
 
-    static if (__traits(getLinkage, T) == "Windows")
+    static if (__traits(isCOMClass, T))
     {
+        // If this is a COM class we allocate it using malloc.
+        // This allows the reference counting to outlive the reference known about by the GC.
+
         p = pureMalloc(init.length);
         if (!p)
             onOutOfMemoryError();
@@ -2776,7 +2779,7 @@ if (is(T == class))
     }
 
     // initialize it
-    p[0 .. init.length] = init[];
+    p[0 .. init.length] = cast(void[]) init[];
 
     debug(PRINTF) printf("initialization done\n");
     return cast(T) p;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,17 +54,6 @@ package Err_Vars is
    --  description of the } insertion character. Note that this value does
    --  not get reset by any Error_Msg call, so the caller is responsible
    --  for resetting it.
-
-   Raise_Exception_On_Error : Nat := 0;
-   --  If this value is non-zero, then any attempt to generate an error
-   --  message raises the exception Error_Msg_Exception, and the error
-   --  message is not output. This is used for defending against junk
-   --  resulting from illegalities, and also for substitution of more
-   --  appropriate error messages from higher semantic levels. It is
-   --  a counter so that the increment/decrement protocol nests neatly.
-
-   Error_Msg_Exception : exception;
-   --  Exception raised if Raise_Exception_On_Error is true
 
    Current_Error_Source_File : Source_File_Index := No_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This

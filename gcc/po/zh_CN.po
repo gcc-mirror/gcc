@@ -36,7 +36,7 @@ msgstr ""
 "Project-Id-Version: gcc 14.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-07-25 16:23+0000\n"
-"PO-Revision-Date: 2024-09-15 10:21+0800\n"
+"PO-Revision-Date: 2024-12-03 09:31+0800\n"
 "Last-Translator: Zhanhaoxiang Zhang <zzhx2006@outlook.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -19268,11 +19268,11 @@ msgstr "编译中断。\n"
 
 #: diagnostic.cc:881
 msgid "                 from"
-msgstr "          从"
+msgstr "        于"
 
 #: diagnostic.cc:882
 msgid "In file included from"
-msgstr ""
+msgstr "包含于文件"
 
 #. 2
 #: diagnostic.cc:883
@@ -19281,7 +19281,7 @@ msgstr "        包含自"
 
 #: diagnostic.cc:884
 msgid "In module"
-msgstr ""
+msgstr "在模块中"
 
 #. 4
 #: diagnostic.cc:885
@@ -19290,12 +19290,12 @@ msgstr ""
 
 #: diagnostic.cc:886
 msgid "In module imported at"
-msgstr ""
+msgstr "在此处导入的模块中"
 
 #. 6
 #: diagnostic.cc:887
 msgid "imported at"
-msgstr ""
+msgstr "在此导入"
 
 #: diagnostic.cc:1592
 #, c-format
@@ -22946,22 +22946,16 @@ msgid "In static member function %qD"
 msgstr "在静态成员函数%qs中"
 
 #: cp/error.cc:3705
-#, fuzzy
-#| msgid "In copy constructor %qs"
 msgid "In copy constructor %qD"
-msgstr "在复制构造函数%qs"
+msgstr "在复制构造函数%qD"
 
 #: cp/error.cc:3707
-#, fuzzy
-#| msgid "In constructor %qs"
 msgid "In constructor %qD"
-msgstr "在构造函数%qs中"
+msgstr "在构造函数%qD中"
 
 #: cp/error.cc:3709
-#, fuzzy
-#| msgid "In destructor %qs"
 msgid "In destructor %qD"
-msgstr "在析构函数%qs中"
+msgstr "在析构函数%qD中"
 
 #: cp/error.cc:3711
 msgid "In lambda function"
@@ -22980,10 +22974,8 @@ msgid "In member function %qD"
 msgstr "在成员函数%qs中"
 
 #: cp/error.cc:3718
-#, fuzzy
-#| msgid "In function %qs"
 msgid "In function %qD"
-msgstr "在函数%qs中"
+msgstr "在函数%qD中"
 
 #: cp/error.cc:3741
 #, fuzzy, c-format
@@ -22991,9 +22983,8 @@ msgid "%s: In substitution of %qS:\n"
 msgstr "空动态字符串替换"
 
 #: cp/error.cc:3742
-#, fuzzy
 msgid "%s: In instantiation of %q#D:\n"
-msgstr "对%q#D的显式实例化"
+msgstr "%s: 在%q#D的实例化中: \n"
 
 #: cp/error.cc:3767 cp/error.cc:3925
 msgid "%r%s:%d:%d:%R   "
@@ -23019,9 +23010,8 @@ msgid "recursively required from %q#D\n"
 msgstr "与先前的声明%q+D不同"
 
 #: cp/error.cc:3785
-#, fuzzy
 msgid "required from %q#D\n"
-msgstr "与先前的声明%q+D不同"
+msgstr "在 %q#D 中的要求\n"
 
 #: cp/error.cc:3792
 #, fuzzy
@@ -23029,9 +23019,8 @@ msgid "recursively required from here\n"
 msgstr "从此处调用"
 
 #: cp/error.cc:3793
-#, fuzzy
 msgid "required from here\n"
-msgstr "从此处调用"
+msgstr "在此处的要求\n"
 
 #: cp/error.cc:3849
 #, fuzzy
@@ -26600,10 +26589,9 @@ msgid "%q+F declared %<static%> but never defined"
 msgstr "%q+F声明为%<static%>却从未定义过"
 
 #: cgraphunit.cc:1144
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D defined but not used"
+#, gcc-internal-format
 msgid "%qD defined but not used"
-msgstr "%q+D定义后未使用"
+msgstr "%qD 在此处定义"
 
 #: cgraphunit.cc:1479
 #, fuzzy, gcc-internal-format
@@ -29586,7 +29574,7 @@ msgstr ""
 #: gimplify.cc:2764
 #, gcc-internal-format
 msgid "here"
-msgstr ""
+msgstr "此处"
 
 #. We've found [[fallthrough]]; at the end of a switch, which the C++
 #. standard says is ill-formed; see [dcl.attr.fallthrough].
@@ -34011,9 +33999,9 @@ msgid "in definition of macro %qs"
 msgstr "%qs后缺少宏名"
 
 #: tree-diagnostic.cc:224
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in expansion of macro %qs"
-msgstr "印出 EXPR 的宏展开"
+msgstr "在宏 %qs 展开时"
 
 #: tree-eh.cc:4946
 #, gcc-internal-format, gfc-internal-format
@@ -34735,14 +34723,14 @@ msgid "tree check: accessed operand %d of %<omp_clause %s%> with %d operands in 
 msgstr "树检查：在 %4$s 中访问有 %3$d 个操作数的 omp_clause %2$s 的第 %1$d 个操作数，于 %5$s:%6$d"
 
 #: tree.cc:12476
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is deprecated: %s"
-msgstr "已弃用%qE：%s"
+msgstr "%qD 已被弃用: %s"
 
 #: tree.cc:12479
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is deprecated"
-msgstr "已弃用%qE"
+msgstr "%qD 已被弃用"
 
 #: tree.cc:12502
 #, gcc-internal-format
@@ -35246,9 +35234,9 @@ msgid "invalid initial value for member %qE"
 msgstr "成员%qE的初始值无效"
 
 #: varasm.cc:5981
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared weak after being used"
-msgstr "%q+D声明为友元"
+msgstr "%qD 在使用后被声明为弱符号"
 
 #: varasm.cc:6033
 #, fuzzy, gcc-internal-format
@@ -36060,9 +36048,9 @@ msgid "%qE argument not an identifier"
 msgstr "cleanup 实参不是一个标识符"
 
 #: c-family/c-attribs.cc:4396
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not compatible with %qD"
-msgstr "选择%qD而不是%qD"
+msgstr "%qD 与 %qD 不兼容"
 
 #: c-family/c-attribs.cc:4399
 #, fuzzy, gcc-internal-format
@@ -37978,9 +37966,9 @@ msgid "%qD specified in %<allocate%> clause but not in an explicit privatization
 msgstr ""
 
 #: c-family/c-omp.cc:3039 c-family/c-omp.cc:3054
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a function argument"
-msgstr "  初始化%2$qD的实参 %1$P"
+msgstr "%qD 不是一个函数参数"
 
 #: c-family/c-omp.cc:3335 c/c-typeck.cc:15466 cp/semantics.cc:8254
 #, fuzzy, gcc-internal-format
@@ -39364,10 +39352,9 @@ msgid "comparison of promoted bitwise complement of an unsigned value with unsig
 msgstr "比较无符号数和取反后又经提升的无符号数"
 
 #: c-family/c-warn.cc:2552
-#, fuzzy, gcc-internal-format
-#| msgid "unused parameter %q+D"
+#, gcc-internal-format
 msgid "unused parameter %qD"
-msgstr "未使用的参数%q+D"
+msgstr "未使用的参数%qD"
 
 #: c-family/c-warn.cc:2614
 #, fuzzy, gcc-internal-format
@@ -46011,9 +45998,9 @@ msgid "built-in function %qE requires the %qs ISA extension"
 msgstr "内建函数%q+D未被声明为函数"
 
 #: config/riscv/riscv-vector-builtins.cc:4747
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no matching function call to %qE with empty arguments"
-msgstr "对%<%D(%A)%>的调用没有匹配的函数"
+msgstr "没有与 %qE 匹配的函数调用，参数为空"
 
 #: config/riscv/riscv.cc:723
 #, fuzzy, gcc-internal-format
@@ -49674,9 +49661,9 @@ msgid "version control conflict marker in file"
 msgstr ""
 
 #: c/c-parser.cc:1257 cp/parser.cc:3320
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "to match this %qs"
-msgstr "没有匹配"
+msgstr "为了匹配这个%qs"
 
 #: c/c-parser.cc:1409 cp/parser.cc:34505
 #, gcc-internal-format
@@ -50921,9 +50908,9 @@ msgid "%qD is not a variable"
 msgstr "%qD不是一个变量"
 
 #: c/c-parser.cc:15750 cp/semantics.cc:8612
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a pointer variable"
-msgstr "%qD不是一个变量"
+msgstr "%qD 不是一个指针变量"
 
 #: c/c-parser.cc:15792 cp/parser.cc:38997
 #, gcc-internal-format
@@ -51373,10 +51360,9 @@ msgid "expected function name"
 msgstr "需要函数"
 
 #: c/c-parser.cc:20433 cp/parser.cc:50131
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a member template function"
+#, gcc-internal-format
 msgid "%qD does not refer to a function"
-msgstr "%qD不是一个成员模板函数"
+msgstr "%qD 不引用一个函数"
 
 #: c/c-parser.cc:20456 c/c-parser.cc:20504 cp/parser.cc:1662
 #, fuzzy, gcc-internal-format
@@ -53539,9 +53525,9 @@ msgid "%<#pragma omp cancellation point%> must specify one of %<parallel%>, %<fo
 msgstr "%<#pragma omp taskwait%>只能用在复合语句中"
 
 #: c/c-typeck.cc:13897 cp/semantics.cc:5552 cp/semantics.cc:8560
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable in %qs clause"
-msgstr "%qD在子句%qs中不是一个变量"
+msgstr "%qD 不是 %qs 子句中的变量"
 
 #: c/c-typeck.cc:13901 c/c-typeck.cc:15708 cp/semantics.cc:5556
 #: cp/semantics.cc:8564
@@ -53904,9 +53890,9 @@ msgstr "%qD在数据子句中多次出现"
 
 #: c/c-typeck.cc:15734 c/c-typeck.cc:15876 cp/semantics.cc:8599
 #: cp/semantics.cc:8766
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD does not have a mappable type in %qs clause"
-msgstr "%qD在子句%qs中不是一个变量"
+msgstr "%qD 在 %qs 子句中没有可映射的类型"
 
 #: c/c-typeck.cc:15859 cp/semantics.cc:8748
 #, fuzzy, gcc-internal-format
@@ -53920,9 +53906,9 @@ msgid "%qE appears more than once on the same %<declare target%> directive"
 msgstr "%qE在数据子句中多次出现"
 
 #: c/c-typeck.cc:15899 cp/semantics.cc:8794
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not an argument in %<uniform%> clause"
-msgstr "%qD在%<lastprivate%>子句中不是一个变量"
+msgstr "%qD 不是 %<uniform%> 子句中的参数"
 
 #: c/c-typeck.cc:15902 cp/semantics.cc:8797
 #, fuzzy, gcc-internal-format
@@ -54289,14 +54275,12 @@ msgstr "以从%qT转换为%qT"
 
 #. Conversion of conversion function return value failed.
 #: cp/call.cc:3907
-#, fuzzy
 msgid "  no known conversion from %qH to %qI"
-msgstr "以从%qT转换为%qT"
+msgstr "  没有已知的从 %qH 到 %qI 的转换"
 
 #: cp/call.cc:3913
-#, fuzzy
 msgid "  no known conversion for argument %d from %qH to %qI"
-msgstr "以从%qT转换为%qT"
+msgstr "  对于参数 %d 没有已知的从 %qH 到 %qI 的转换"
 
 #: cp/call.cc:3927 cp/pt.cc:7123
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -54392,9 +54376,9 @@ msgstr "  替代的 deduced 模板参数结果的在中错误看见以上的"
 
 #. Re-run template unification with diagnostics.
 #: cp/call.cc:4032
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  template argument deduction/substitution failed:"
-msgstr "模板第 %d 个参数无效"
+msgstr "  模板参数推导/替换失败:"
 
 #: cp/call.cc:4046
 #, fuzzy, gcc-internal-format
@@ -54470,19 +54454,19 @@ msgid "ambiguous overload for "
 msgstr "调用重载的%<%D(%A)%>有歧义"
 
 #: cp/call.cc:5459
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for "
-msgstr "没有匹配"
+msgstr "没有找到匹配的 "
 
 #: cp/call.cc:5462
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " (operand types are %qT, %qT, and %qT)"
-msgstr "将%qT赋值给%qT时类型不兼容"
+msgstr " (操作数类型分别是 %qT, %qT 和 %qT)"
 
 #: cp/call.cc:5464
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " (operand types are %qT and %qT)"
-msgstr "在类型%qT和%qT间比较"
+msgstr " (操作数类型分别是 %qT 和 %qT)"
 
 #: cp/call.cc:5466
 #, gcc-internal-format
@@ -54670,10 +54654,9 @@ msgid "comparison between %q#T and %q#T"
 msgstr "在%q#T和%q#T间比较"
 
 #: cp/call.cc:7615
-#, fuzzy, gcc-internal-format
-#| msgid "no match for call to %<(%T) (%A)%>"
+#, gcc-internal-format
 msgid "no match for call to %<%T::operator[] (%A)%>"
-msgstr "对%<(%T) (%A)%>的调用没有匹配"
+msgstr "对%<%T::operator[] (%A)%>的调用没有匹配"
 
 #: cp/call.cc:7629
 #, fuzzy, gcc-internal-format
@@ -54822,22 +54805,16 @@ msgid "in C++11 and above a default constructor can be explicit"
 msgstr ""
 
 #: cp/call.cc:8861
-#, fuzzy
-#| msgid "conversion to volatile reference type %q#T from rvalue of type %qT"
 msgid "cannot bind rvalue reference of type %qH to lvalue of type %qI"
-msgstr "将类型为%2$qT的右值转换为%1$qT的 volatile 引用"
+msgstr "无法将类型为 %qH 的右值引用绑定到类型为 %qI 的左值"
 
 #: cp/call.cc:8870
-#, fuzzy
-#| msgid "invalid initialization of non-const reference of type %qT from an rvalue of type %qT"
 msgid "cannot bind non-const lvalue reference of type %qH to a value of type %qI"
-msgstr "用类型为%2$qT的右值初始化类型为%1$qT的非常量引用无效"
+msgstr "无法将类型为 %qH 的非常量左值引用绑定到类型为 %qI 的值"
 
 #: cp/call.cc:8875
-#, fuzzy
-#| msgid "invalid initialization of non-const reference of type %qT from an rvalue of type %qT"
 msgid "cannot bind non-const lvalue reference of type %qH to an rvalue of type %qI"
-msgstr "用类型为%2$qT的右值初始化类型为%1$qT的非常量引用无效"
+msgstr "无法将类型为 %qH 的非常量左值引用绑定到类型为 %qI 的右值"
 
 #. extype is volatile
 #: cp/call.cc:8878
@@ -54992,10 +54969,9 @@ msgid "%qD clearing an object of type %#qT with no trivial copy-assignment%s"
 msgstr ""
 
 #: cp/call.cc:10939
-#, fuzzy, gcc-internal-format
-#| msgid "creating pointer to member of non-class type %qT"
+#, gcc-internal-format
 msgid "%qD clearing an object of non-trivial type %#qT%s"
-msgstr "生成非类类型%qT的成员指针"
+msgstr "%qD 正在清除一个非平凡类型 %#qT%s 的对象"
 
 #: cp/call.cc:10941
 #, gcc-internal-format
@@ -55091,21 +55067,18 @@ msgid "constructor delegates to itself"
 msgstr "inlined_to pointer 指向自身"
 
 #: cp/call.cc:11463 cp/typeck.cc:10386
-#, fuzzy
-#| msgid "cannot convert %qT to %qT"
 msgid "cannot convert %qH to %qI"
-msgstr "不能将%qT转换为%qT"
+msgstr "不能将%qH转换为%qI"
 
 #: cp/call.cc:11485
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no matching function for call to %<%T::operator %T(%A)%#V%>"
-msgstr "对%<%T::%s(%A)%#V%>的调用没有匹配的函数"
+msgstr "对%<%T::operator %T(%A)%#V%>的调用没有匹配的函数"
 
 #: cp/call.cc:11517
-#, fuzzy, gcc-internal-format
-#| msgid "no matching function for call to %<%T::%s(%A)%#V%>"
+#, gcc-internal-format
 msgid "no matching function for call to %<%T::%s%E(%A)%#V%>"
-msgstr "对%<%T::%s(%A)%#V%>的调用没有匹配的函数"
+msgstr "对%<%T::%s%E(%A)%#V%>的调用没有匹配的函数"
 
 #: cp/call.cc:11565
 #, gcc-internal-format
@@ -55123,9 +55096,9 @@ msgid "for a function-style cast, remove the redundant %<::%D%>"
 msgstr "对于函数类型的类型转换，移除冗余的%<::%D%>"
 
 #: cp/call.cc:11787
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no matching function for call to %<%s(%A)%>"
-msgstr "对%<%D(%A)%>的调用没有匹配的函数"
+msgstr "对%<%s(%A)%>的调用没有匹配的函数"
 
 #: cp/call.cc:11790
 #, gcc-internal-format
@@ -55373,9 +55346,9 @@ msgid "no unique final overrider for %qD in %qT"
 msgstr "%qD的最终重载在%qT中不唯一"
 
 #: cp/class.cc:3208
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD can be marked override"
-msgstr "函数%q+D的定义被标记为 dllimport"
+msgstr "%qD 可以标记为 override"
 
 #: cp/class.cc:3211
 #, fuzzy, gcc-internal-format
@@ -56299,9 +56272,9 @@ msgid "%qD was not declared %<constexpr%>"
 msgstr "%qD在其类外被声明为%<constexpr%>"
 
 #: cp/constexpr.cc:6065
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD does not have integral or enumeration type"
-msgstr "new 声明中的表达式必须具有整数或枚举类型"
+msgstr "%qD 不是整型或枚举类型"
 
 #: cp/constexpr.cc:6357
 #, fuzzy, gcc-internal-format
@@ -56673,10 +56646,9 @@ msgid "original template declaration here"
 msgstr "%q+D已在此声明过"
 
 #: cp/constraint.cc:1417
-#, fuzzy, gcc-internal-format
-#| msgid "no matching template for %qD found"
+#, gcc-internal-format
 msgid "no matching concepts for %qE"
-msgstr "没有找到与%qD匹配的模板"
+msgstr "没有与%qE匹配的概念"
 
 #: cp/constraint.cc:1723
 #, gcc-internal-format
@@ -56723,10 +56695,9 @@ msgid "the required type %qT is invalid"
 msgstr "重复的基类型%qT无效"
 
 #: cp/constraint.cc:2112 cp/constraint.cc:2186
-#, fuzzy, gcc-internal-format
-#| msgid "cannot convert %qT to %qT"
+#, gcc-internal-format
 msgid "cannot convert %qE to %qT"
-msgstr "不能将%qT转换为%qT"
+msgstr "不能将%qE转换为%qT"
 
 #: cp/constraint.cc:2141
 #, fuzzy, gcc-internal-format
@@ -56746,10 +56717,9 @@ msgid "%qE does not satisfy return-type-requirement"
 msgstr "指令不满足其约束："
 
 #: cp/constraint.cc:2181
-#, fuzzy, gcc-internal-format
-#| msgid "cannot convert %qT to %qT"
+#, gcc-internal-format
 msgid "cannot convert %qE to %qT because"
-msgstr "不能将%qT转换为%qT"
+msgstr "不能将%qE转换为%qT，因为"
 
 #. Replay the substitution error.
 #: cp/constraint.cc:2225
@@ -56849,22 +56819,19 @@ msgid "  %qT does not have a virtual destructor"
 msgstr "基类%q#T有一个非虚析构函数"
 
 #: cp/constraint.cc:3751
-#, fuzzy, gcc-internal-format
-#| msgid "%q#T is not a class"
+#, gcc-internal-format
 msgid "  %qT is not an abstract class"
-msgstr "%q#T不是一个类"
+msgstr "  %qT 不是一个抽象类"
 
 #: cp/constraint.cc:3754
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a template"
+#, gcc-internal-format
 msgid "  %qT is not an aggregate"
-msgstr "%qT不是一个模板"
+msgstr "  %qT 不是一个聚合体"
 
 #: cp/constraint.cc:3757
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a template"
+#, gcc-internal-format
 msgid "  %qT is not an array"
-msgstr "%qT不是一个模板"
+msgstr "  %qT 不是一个数组"
 
 #: cp/constraint.cc:3760
 #, fuzzy, gcc-internal-format
@@ -56872,22 +56839,19 @@ msgid "  %qT is not assignable from %qT"
 msgstr "派生联合%qT无效"
 
 #: cp/constraint.cc:3763
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a base of %qT"
+#, gcc-internal-format
 msgid "  %qT is not a base of %qT"
-msgstr "%qT不是%qT的基类"
+msgstr "  %qT不是%qT的基类"
 
 #: cp/constraint.cc:3766
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a template"
+#, gcc-internal-format
 msgid "  %qT is not a bounded array"
-msgstr "%qT不是一个模板"
+msgstr "  %qT 不是一个绑定的数组"
 
 #: cp/constraint.cc:3769
-#, fuzzy, gcc-internal-format
-#| msgid "%q#T is not a class"
+#, gcc-internal-format
 msgid "  %qT is not a class"
-msgstr "%q#T不是一个类"
+msgstr "  %qT 不是一个类"
 
 #: cp/constraint.cc:3773
 #, fuzzy, gcc-internal-format
@@ -56906,27 +56870,24 @@ msgid "  %qT is not convertible from %qE"
 msgstr "派生联合%qT无效"
 
 #: cp/constraint.cc:3781
-#, fuzzy, gcc-internal-format
-#| msgid "%q#T is not a class"
+#, gcc-internal-format
 msgid "  %qT is not an empty class"
-msgstr "%q#T不是一个类"
+msgstr "  %qT 不是一个空类"
 
 #: cp/constraint.cc:3784
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a template"
+#, gcc-internal-format
 msgid "  %qT is not an enum"
-msgstr "%qT不是一个模板"
+msgstr "  %qT 不是一个枚举"
 
 #: cp/constraint.cc:3787
-#, fuzzy, gcc-internal-format
-#| msgid "%q#T is not a class"
+#, gcc-internal-format
 msgid "  %qT is not a final class"
-msgstr "%q#T不是一个类"
+msgstr "  %qT 不是一个最终类"
 
 #: cp/constraint.cc:3790
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  %qT is not a function"
-msgstr "在函数%qs中"
+msgstr "  %qT 不是一个函数"
 
 #: cp/constraint.cc:3793
 #, fuzzy, gcc-internal-format
@@ -56934,28 +56895,24 @@ msgid "  %qT is not layout compatible with %qT"
 msgstr "选择%qD而不是%qD"
 
 #: cp/constraint.cc:3796
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a class type"
+#, gcc-internal-format
 msgid "  %qT is not a literal type"
-msgstr "%qT不是一个类"
+msgstr "  %qT 不是一个字面类型"
 
 #: cp/constraint.cc:3799
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a member template function"
+#, gcc-internal-format
 msgid "  %qT is not a member function pointer"
-msgstr "%qD不是一个成员模板函数"
+msgstr "  %qT 不是一个成员函数指针"
 
 #: cp/constraint.cc:3802
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a member of %qT"
+#, gcc-internal-format
 msgid "  %qT is not a member object pointer"
-msgstr "%qT不是%qT的成员"
+msgstr "  %qT 不是一个成员对象指针"
 
 #: cp/constraint.cc:3805
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a member of %qT"
+#, gcc-internal-format
 msgid "  %qT is not a member pointer"
-msgstr "%qT不是%qT的成员"
+msgstr "  %qT 不是一个成员指针"
 
 #: cp/constraint.cc:3808
 #, fuzzy, gcc-internal-format
@@ -56973,10 +56930,9 @@ msgid "  %qT is not nothrow convertible from %qE"
 msgstr "派生联合%qT无效"
 
 #: cp/constraint.cc:3820
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a type"
+#, gcc-internal-format
 msgid "  %qT is not an object type"
-msgstr "%qD不是一个类型"
+msgstr " %qT 不是一个对象类型"
 
 #: cp/constraint.cc:3823
 #, fuzzy, gcc-internal-format
@@ -56985,22 +56941,19 @@ msgid "  %qT is not pointer-interconvertible base of %qT"
 msgstr "%qT是%qT的一个不可访问的基类"
 
 #: cp/constraint.cc:3827
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a type"
+#, gcc-internal-format
 msgid "  %qT is not a POD type"
-msgstr "%qD不是一个类型"
+msgstr "  %qT 不是一个POD类型"
 
 #: cp/constraint.cc:3830
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a class type"
+#, gcc-internal-format
 msgid "  %qT is not a polymorphic type"
-msgstr "%qT不是一个类"
+msgstr "  %qT 不是一个多态类型"
 
 #: cp/constraint.cc:3833
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a template"
+#, gcc-internal-format
 msgid "  %qT is not a reference"
-msgstr "%qT不是一个模板"
+msgstr "  %qT 不是一个引用"
 
 #: cp/constraint.cc:3836
 #, fuzzy, gcc-internal-format
@@ -57009,22 +56962,19 @@ msgid "  %qT is not the same as %qT"
 msgstr "%qT不是%qT的基类"
 
 #: cp/constraint.cc:3839
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a template"
+#, gcc-internal-format
 msgid "  %qT is not a scoped enum"
-msgstr "%qT不是一个模板"
+msgstr "  %qT 不是一个带作用域的枚举"
 
 #: cp/constraint.cc:3842
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a template type"
+#, gcc-internal-format
 msgid "  %qT is not an standard layout type"
-msgstr "%qT不是一个模板类型"
+msgstr "  %qT 不是一个标准布局类型"
 
 #: cp/constraint.cc:3845
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a class type"
+#, gcc-internal-format
 msgid "  %qT is not a trivial type"
-msgstr "%qT不是一个类"
+msgstr "  %qT 不是一个平凡类型"
 
 #: cp/constraint.cc:3848
 #, fuzzy, gcc-internal-format
@@ -57042,9 +56992,9 @@ msgid "  %qT is not trivially copyable"
 msgstr "在%q#T和%q#T间比较"
 
 #: cp/constraint.cc:3860
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  %qT is not a union"
-msgstr "在函数%qs中"
+msgstr "  %qT 不是一个联合体"
 
 #: cp/constraint.cc:3863
 #, gcc-internal-format
@@ -57295,9 +57245,9 @@ msgid "%<return_void%> declared here"
 msgstr "%<return_void%>在此声明"
 
 #: cp/coroutines.cc:648 cp/coroutines.cc:726 cp/coroutines.cc:4283
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no member named %qE in %qT"
-msgstr "没有名为%q#T的类模板，在%q#T中 "
+msgstr "在%2$qT中没有名为%1$qE的成员"
 
 #: cp/coroutines.cc:741
 #, fuzzy, gcc-internal-format
@@ -57513,20 +57463,19 @@ msgid "%qD is not a type"
 msgstr "%qD不是一个类型"
 
 #: cp/cp-gimplify.cc:3726
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is not a class type"
+#, gcc-internal-format
 msgid "%qD is not a class type"
-msgstr "%qT不是一个类"
+msgstr "%qD 不是一个类"
 
 #: cp/cp-gimplify.cc:3743
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD does not have %<const char *%> type"
-msgstr "%qE不是一个类"
+msgstr "%qD 不是 %<const char *%> 类型"
 
 #: cp/cp-gimplify.cc:3753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD does not have integral type"
-msgstr "new 声明中的表达式必须具有整数或枚举类型"
+msgstr "%qD 不是整型"
 
 #: cp/cp-gimplify.cc:3765
 #, gcc-internal-format
@@ -57546,10 +57495,8 @@ msgid "conversion of %qE from %qH to %qI is ambiguous"
 msgstr "将%qE从%qT转换到%qT有歧义"
 
 #: cp/cvt.cc:174 cp/cvt.cc:201 cp/cvt.cc:255
-#, fuzzy
-#| msgid "cannot convert %qE from type %qT to type %qT"
 msgid "cannot convert %qE from type %qH to type %qI"
-msgstr "无法将%qE从类型%qT转换到类型%qT"
+msgstr "无法将%qE从类型%qH转换到类型%qI"
 
 #: cp/cvt.cc:391
 #, gcc-internal-format
@@ -57916,10 +57863,9 @@ msgid "template-parameter-"
 msgstr "模板形参-"
 
 #: cp/cxx-pretty-print.cc:2329
-#, fuzzy, gcc-internal-format
-#| msgid "%qT referred to as %qs"
+#, gcc-internal-format
 msgid "requires"
-msgstr "%qT作为%qs被引用"
+msgstr "需要"
 
 #: cp/cxx-pretty-print.cc:2849 cp/error.cc:399
 #, gcc-internal-format
@@ -58840,10 +58786,9 @@ msgid "%qT has no non-static data member named %qD"
 msgstr "%qT没有名为%qD的非静态数据成员"
 
 #: cp/decl.cc:7083
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a member of %qT"
+#, gcc-internal-format
 msgid "%qD is not a direct member of %qT"
-msgstr "%qD不是%qT的成员"
+msgstr "%qD 不是 %qT 的直接成员"
 
 #: cp/decl.cc:7138
 #, fuzzy, gcc-internal-format
@@ -59571,9 +59516,9 @@ msgid "overflow in array dimension"
 msgstr "数组维数溢出"
 
 #: cp/decl.cc:11798
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as array of template placeholder type %qT"
-msgstr "成员函数%qD未在%qT中声明"
+msgstr "%qD 被声明为模板占位符类型 %qT 的数组"
 
 #: cp/decl.cc:11801
 #, fuzzy, gcc-internal-format
@@ -60201,10 +60146,9 @@ msgid "an explicit object member function cannot be %<static%>"
 msgstr ""
 
 #: cp/decl.cc:13751
-#, fuzzy, gcc-internal-format
-#| msgid "In static member function %qs"
+#, gcc-internal-format
 msgid "%qD cannot be an explicit object member function"
-msgstr "在静态成员函数%qs中"
+msgstr "%qD 不能是一个显式的对象成员函数"
 
 #: cp/decl.cc:13774
 #, gcc-internal-format
@@ -60488,10 +60432,9 @@ msgid "function %qD declared %<virtual%> inside a union"
 msgstr "联合成员函数%qD被声明为虚函数"
 
 #: cp/decl.cc:14660
-#, fuzzy, gcc-internal-format
-#| msgid "%qD cannot be declared virtual, since it is always static"
+#, gcc-internal-format
 msgid "%qD cannot be declared %<virtual%>, since it is always static"
-msgstr "%qD不能声明为虚函数，因为它总是静态的"
+msgstr "%qD 不能被声明为 %<virtual%>，因为它总是静态的"
 
 #: cp/decl.cc:14674
 #, gcc-internal-format
@@ -60526,10 +60469,9 @@ msgid "a concept cannot be a member function"
 msgstr "析构函数不能是静态成员函数"
 
 #: cp/decl.cc:14730 cp/decl.cc:15085
-#, fuzzy, gcc-internal-format
-#| msgid "cannot open %s"
+#, gcc-internal-format
 msgid "%qD cannot be %qs"
-msgstr "不能打开 %s"
+msgstr "%qD 不能是 %qs"
 
 #: cp/decl.cc:14739
 #, fuzzy, gcc-internal-format
@@ -61115,7 +61057,7 @@ msgstr "成员函数没有名字"
 #: cp/decl2.cc:481 cp/decl2.cc:529
 #, gcc-internal-format
 msgid "top-level comma expression in array subscript changed meaning in C++23"
-msgstr ""
+msgstr "C++23 中，数组下标中的顶级逗号表达式的含义已更改"
 
 #: cp/decl2.cc:519
 #, gcc-internal-format
@@ -61183,10 +61125,9 @@ msgid "no conversion operators declared"
 msgstr ""
 
 #: cp/decl2.cc:923
-#, fuzzy, gcc-internal-format
-#| msgid "In function %qs"
+#, gcc-internal-format
 msgid "no functions named %qD"
-msgstr "在函数%qs中"
+msgstr "没有名称为%qD的函数"
 
 #: cp/decl2.cc:925
 #, gcc-internal-format
@@ -61637,10 +61578,9 @@ msgid "reference to %<%T::%D%> is ambiguous"
 msgstr "对%<%T::%D%>的引用有歧义"
 
 #: cp/error.cc:4693
-#, fuzzy, gcc-internal-format
-#| msgid "%qT has no member named %qE"
+#, gcc-internal-format
 msgid "%qD is not a member of %qT; did you mean %qs?"
-msgstr "%qT没有名为%qE的成员"
+msgstr "%qD 不是 %qT 的成员；你是说 %qs 吗？"
 
 #: cp/error.cc:4697 cp/typeck.cc:2871
 #, gcc-internal-format
@@ -61648,10 +61588,9 @@ msgid "%qD is not a member of %qT"
 msgstr "%qD不是%qT的成员"
 
 #: cp/error.cc:4719
-#, fuzzy, gcc-internal-format
-#| msgid "%qT has no member named %qE"
+#, gcc-internal-format
 msgid "%qD is not a member of %qD; did you mean %qs?"
-msgstr "%qT没有名为%qE的成员"
+msgstr "%qD 不是 %qD 的成员；你是说 %qs 吗？"
 
 #: cp/error.cc:4723 cp/typeck.cc:3463
 #, gcc-internal-format
@@ -61865,9 +61804,9 @@ msgid "initializing %qD from %qE does not extend the lifetime of the underlying 
 msgstr ""
 
 #: cp/init.cc:901 cp/init.cc:1014
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is initialized with itself"
-msgstr "形参%qD已初始化"
+msgstr "%qD 用其自身进行了初始化"
 
 #: cp/init.cc:907
 #, gcc-internal-format
@@ -61906,15 +61845,14 @@ msgid "uninitialized reference member in %q#T"
 msgstr "%q#T中有未初始化的引用成员"
 
 #: cp/init.cc:1351
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D will be initialized after"
+#, gcc-internal-format
 msgid "%qD will be initialized after"
-msgstr "%q+D将在"
+msgstr "%qD 将在之后被初始化"
 
 #: cp/init.cc:1354
 #, gcc-internal-format
 msgid "base %qT will be initialized after"
-msgstr "基类%qT将在"
+msgstr "基类%qT将在之后被初始化"
 
 #: cp/init.cc:1358
 #, gcc-internal-format
@@ -62420,9 +62358,9 @@ msgid "non-static reference member %q#D, cannot use default assignment operator"
 msgstr "非静态的引用成员%q#D，不能使用默认的赋值运算符"
 
 #: cp/method.cc:957
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a static data member"
-msgstr "%q#D不是%qT的非静态数据成员"
+msgstr "%qD 不是一个静态数据成员"
 
 #: cp/method.cc:958
 #, fuzzy, gcc-internal-format
@@ -62787,12 +62725,12 @@ msgstr ""
 #: cp/module.cc:18027
 #, gcc-internal-format
 msgid "module %qs expected, header module found"
-msgstr ""
+msgstr "需要模块 %qs，但找到了头模块"
 
 #: cp/module.cc:18042
 #, gcc-internal-format
 msgid "module %qs CRC mismatch"
-msgstr ""
+msgstr "模块 %qs CRC 不匹配"
 
 #: cp/module.cc:18056
 #, gcc-internal-format
@@ -63001,7 +62939,7 @@ msgstr ""
 #: cp/module.cc:20354
 #, gcc-internal-format
 msgid "module dependencies require preprocessing"
-msgstr ""
+msgstr "模块依赖需要预处理"
 
 #: cp/module.cc:20356
 #, gcc-internal-format
@@ -63330,10 +63268,9 @@ msgid "inline namespace must be specified at initial definition"
 msgstr "方法属性必须被指定的于结束只有"
 
 #: cp/name-lookup.cc:9159
-#, fuzzy, gcc-internal-format
-#| msgid "label %qD defined here"
+#, gcc-internal-format
 msgid "%qD defined here"
-msgstr "标号%qD在此定义"
+msgstr "%qD 不是 %<const char *%> 类型"
 
 #: cp/name-lookup.cc:9207
 #, fuzzy, gcc-internal-format
@@ -63703,7 +63640,7 @@ msgstr "不一致用户定义的实字后缀 %qD 和 %qD 在中字串实字"
 #: cp/parser.cc:4664
 #, gcc-internal-format
 msgid "concatenation of string literals with conflicting encoding prefixes"
-msgstr ""
+msgstr "字符串字面量拼接时存在编码前缀冲突"
 
 #: cp/parser.cc:4885
 #, fuzzy, gcc-internal-format
@@ -64073,7 +64010,7 @@ msgstr "ISO C++ 不允许省略 ?: 的中间操作数"
 #: cp/parser.cc:10947
 #, gcc-internal-format
 msgid "top-level comma expression in array subscript is deprecated"
-msgstr ""
+msgstr "数组下标中的顶级逗号表达式已弃用"
 
 #: cp/parser.cc:11095
 #, fuzzy, gcc-internal-format
@@ -64455,7 +64392,7 @@ msgstr ""
 #: cp/parser.cc:15169
 #, gcc-internal-format
 msgid "module-declaration only permitted as first declaration, or ending a global module fragment"
-msgstr ""
+msgstr "模块声明只允许作为第一个声明，或者结束全局模块片段"
 
 #: cp/parser.cc:15209
 #, gcc-internal-format
@@ -64987,9 +64924,9 @@ msgid "%qD is an enumeration template"
 msgstr "%qD不是一个枚举模板"
 
 #: cp/parser.cc:21539
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD does not name an enumeration in %qT"
-msgstr "new 声明中的表达式必须具有整数或枚举类型"
+msgstr "%qD 在 %qT 中不是一个枚举的名称"
 
 #: cp/parser.cc:21554
 #, fuzzy, gcc-internal-format
@@ -65060,10 +64997,9 @@ msgid "unexpanded parameter pack in enumerator in lambda"
 msgstr ""
 
 #: cp/parser.cc:21970
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a namespace-name"
+#, gcc-internal-format
 msgid "%qD is not a namespace-name; did you mean %qs?"
-msgstr "%qD不是一个命名空间名"
+msgstr "%qD 不是一个命名空间名；你是说 %qs 吗？"
 
 #: cp/parser.cc:21974
 #, gcc-internal-format
@@ -65866,9 +65802,8 @@ msgstr ""
 
 #: cp/parser.cc:33001
 #, fuzzy, gcc-internal-format
-#| msgid "no matching template for %qD found"
 msgid "no matching concept for template-introduction"
-msgstr "没有找到与%qD匹配的模板"
+msgstr "没有与模板引入匹配的概念"
 
 #: cp/parser.cc:33024
 #, gcc-internal-format
@@ -66357,9 +66292,9 @@ msgid "%<#pragma acc routine%> names a set of overloads"
 msgstr ""
 
 #: cp/parser.cc:50124
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD does not refer to a namespace scope function"
-msgstr "#pragma GCC optimize 不允许用在函数中"
+msgstr "%qD 不引用命名空间范围内的函数"
 
 #. cancel-and-throw is unimplemented.
 #: cp/parser.cc:50485
@@ -66526,9 +66461,9 @@ msgid "%qD is not a function template"
 msgstr "%qD不是一个函数模板"
 
 #: cp/pt.cc:2188
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable template"
-msgstr "%qD不是一个模板"
+msgstr "%qD 不是一个变量模板"
 
 #: cp/pt.cc:2471
 #, gcc-internal-format
@@ -67065,9 +67000,9 @@ msgid "  member function type %qT is not a valid template argument"
 msgstr "%qE不是类型%qT的有效模板实参，因为它的类型是%qT"
 
 #: cp/pt.cc:7154
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  cannot convert %qE (type %qT) to type %qT"
-msgstr "无法将%qE从类型%qT转换到类型%qT"
+msgstr "  无法将 %qE (类型为 %qT) 转换为类型 %qT"
 
 #: cp/pt.cc:7167
 #, fuzzy, gcc-internal-format
@@ -67075,9 +67010,9 @@ msgid "  %qT is an ambiguous base class of %qT"
 msgstr "%qT是%qT的有歧义的基类"
 
 #: cp/pt.cc:7171
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  %qT is not derived from %qT"
-msgstr "派生联合%qT无效"
+msgstr "  %qT 不是从 %qT 派生的"
 
 #: cp/pt.cc:7182
 #, fuzzy, gcc-internal-format
@@ -67255,10 +67190,9 @@ msgid "constraint mismatch at argument %d in template parameter list for %qD"
 msgstr "实参 %d 的类型/值不匹配，在%qD的模板参数列表中"
 
 #: cp/pt.cc:8767
-#, fuzzy, gcc-internal-format
-#| msgid "  expected a type, got %qE"
+#, gcc-internal-format
 msgid "  expected %qD but got %qD"
-msgstr "需要一个类型，却给出了%qE"
+msgstr "  需要%qD，却给出了%qD"
 
 #: cp/pt.cc:8855
 #, fuzzy, gcc-internal-format
@@ -67560,9 +67494,9 @@ msgid "use %<%T::%D%> instead"
 msgstr "使用%<%T::%D%>而不是%<%T::%D%>来以限定名指定构造函数"
 
 #: cp/pt.cc:21002
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared here, later in the translation unit"
-msgstr "%qE未声明(不在函数内)"
+msgstr "%qD 在此声明，稍后在翻译单元中"
 
 #: cp/pt.cc:21053
 #, fuzzy, gcc-internal-format
@@ -68516,9 +68450,9 @@ msgid "%<dist_schedule%> chunk size expression must be integral"
 msgstr "调度块大小表达式必须为整型"
 
 #: cp/semantics.cc:7972
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable in %<aligned%> clause"
-msgstr "%qD在%<lastprivate%>子句中不是一个变量"
+msgstr "%qD 不是 %<aligned%> 子句中的变量"
 
 #: cp/semantics.cc:7987
 #, gcc-internal-format
@@ -68536,9 +68470,9 @@ msgid "%<aligned%> clause alignment expression must be integral"
 msgstr "调度块大小表达式必须为整型"
 
 #: cp/semantics.cc:8042
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable in %<nontemporal%> clause"
-msgstr "%qD在子句%qs中不是一个变量"
+msgstr "%qD 不是 %<nontemporal%> 子句中的变量"
 
 #: cp/semantics.cc:8053
 #, fuzzy, gcc-internal-format
@@ -68551,9 +68485,9 @@ msgid "%<this%> not allowed in %<allocate%> clause"
 msgstr "%qE在子句%<firstprivate%>中不是一个变量"
 
 #: cp/semantics.cc:8082
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable in %<allocate%> clause"
-msgstr "%qD在%<lastprivate%>子句中不是一个变量"
+msgstr "%qD 不是 %<allocate%> 子句中的变量"
 
 #: cp/semantics.cc:8091
 #, fuzzy, gcc-internal-format
@@ -68561,9 +68495,9 @@ msgid "%qD appears more than once in %<allocate%> clauses"
 msgstr "%qD在数据子句中多次出现"
 
 #: cp/semantics.cc:8239
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not lvalue expression nor array section in %qs clause"
-msgstr "%qD在子句%qs中不是一个变量"
+msgstr "%qD 不是 %qs 子句中的左值表达式或数组段"
 
 #: cp/semantics.cc:8741
 #, fuzzy, gcc-internal-format
@@ -68729,9 +68663,9 @@ msgid "%<__builtin_is_corresponding_member%> argument is not pointer to member"
 msgstr ""
 
 #: cp/semantics.cc:12837
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a class or alias template"
-msgstr "需要一个类模板，却给出了%qE"
+msgstr "%qD 不是一个类模板或别名模板"
 
 #: cp/semantics.cc:13026
 #, fuzzy, gcc-internal-format
@@ -68825,10 +68759,9 @@ msgid "%qD is not public"
 msgstr "%qD未被捕获"
 
 #: cp/tree.cc:4979
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable"
+#, gcc-internal-format
 msgid "%qD is mutable"
-msgstr "%qD不是一个变量"
+msgstr "%qD 是可变的"
 
 #: cp/tree.cc:4987
 #, fuzzy, gcc-internal-format
@@ -69213,9 +69146,9 @@ msgid "%qE cannot be used as a function"
 msgstr "%qE不能用作函数"
 
 #: cp/typeck.cc:4427
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD cannot be used as a function"
-msgstr "%qE不能用作函数"
+msgstr "%qD 不能用作函数"
 
 #: cp/typeck.cc:4430
 #, fuzzy, gcc-internal-format
@@ -69801,34 +69734,24 @@ msgid "invalid conversion to type %qT from type %qT"
 msgstr "到类型%qT的转换无效，从类型%qT"
 
 #: cp/typeck.cc:10377
-#, fuzzy
-#| msgid "cannot convert %qT to %qT in default argument"
 msgid "cannot convert %qH to %qI in default argument"
-msgstr "不能在参数默认时将%qT转换为%qT"
+msgstr "不能在参数默认时将%qH转换为%qI"
 
 #: cp/typeck.cc:10382
-#, fuzzy
-#| msgid "cannot convert %qT to %qT in argument passing"
 msgid "cannot convert %qH to %qI in argument passing"
-msgstr "不能在传参时将%qT转换为%qT"
+msgstr "不能在传参时将%qH转换为%qI"
 
 #: cp/typeck.cc:10391
-#, fuzzy
-#| msgid "cannot convert %qT to %qT in initialization"
 msgid "cannot convert %qH to %qI in initialization"
-msgstr "不能在初始化时将%qT转换为%qT"
+msgstr "不能在初始化时将%qH转换为%qI"
 
 #: cp/typeck.cc:10395
-#, fuzzy
-#| msgid "cannot convert %qT to %qT in return"
 msgid "cannot convert %qH to %qI in return"
-msgstr "不能在返回时将%qT转换为%qT"
+msgstr "不能在返回时将%qH转换为%qI"
 
 #: cp/typeck.cc:10400
-#, fuzzy
-#| msgid "cannot convert %qT to %qT in assignment"
 msgid "cannot convert %qH to %qI in assignment"
-msgstr "不能在赋值时将%qT转换为%qT"
+msgstr "不能在赋值时将%qH转换为%qI"
 
 #: cp/typeck.cc:10436
 #, fuzzy, gcc-internal-format
@@ -73693,7 +73616,7 @@ msgstr "%L处 PURE 过程不能指定 SAVE 属性"
 #: fortran/decl.cc:6827
 #, gcc-internal-format
 msgid "MODULE PROCEDURE formal argument is alternate return and conflicts with %qs in the separate declaration at %C"
-msgstr ""
+msgstr "MODULE PROCEDURE 的形式参数是替代返回值，并且与在 %2$C 处单独声明中的 %1$qs 发生冲突"
 
 #: fortran/decl.cc:6832
 #, gcc-internal-format, gfc-internal-format
@@ -76462,7 +76385,7 @@ msgstr "不能将 %s 转换为 %s，于 %L"
 #: fortran/intrinsic.cc:5418
 #, fuzzy, gcc-internal-format
 msgid "Cannot convert %qs to %qs at %L"
-msgstr "不能将 %s 转换为 %s，于 %L"
+msgstr "不能将 %qs 转换为 %qs，于 %L"
 
 #: fortran/intrinsic.cc:5510
 #, fuzzy, gcc-internal-format
@@ -78561,7 +78484,7 @@ msgstr "无法打开模块文件‘%s’读取，在%C处：%s"
 #: fortran/module.cc:7375
 #, gcc-internal-format
 msgid "Module file %qs has not been generated, either because the module does not contain a MODULE PROCEDURE or there is an error in the module."
-msgstr ""
+msgstr "模块文件 %qs 未生成，这可能是因为模块不包含 MODULE PROCEDURE，或者模块中存在错误。"
 
 #: fortran/module.cc:7386
 #, fuzzy, gcc-internal-format
@@ -85534,14 +85457,14 @@ msgid "Unused variable %qs declared at %L"
 msgstr "%2$L处声明了未使用的变量‘%1$s’"
 
 #: fortran/trans-decl.cc:6192
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unused parameter %qs declared at %L"
-msgstr "%2$L处声明了未使用的参数‘%1$s’"
+msgstr "%2$L处声明了未使用的参数‘%1$qs’"
 
 #: fortran/trans-decl.cc:6196
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unused parameter %qs which has been explicitly imported at %L"
-msgstr "%2$L处声明了未使用的参数‘%1$s’"
+msgstr "未使用的参数 %qs，它已在 %L 处显式导入"
 
 #: fortran/trans-decl.cc:6226
 #, fuzzy, gcc-internal-format
@@ -87454,14 +87377,14 @@ msgid "modification of %qE is not a constant expression"
 msgstr "整型表达式%qE不是常量"
 
 #: rust/backend/rust-constexpr.cc:6172
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared %<thread_local%> in %<constexpr%> context"
-msgstr "函数%qs的存储类%<__thread%>无效"
+msgstr "%qD 在 %<constexpr%> 上下文中被声明为 %<thread_local%>"
 
 #: rust/backend/rust-constexpr.cc:6181
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared %<static%> in %<constexpr%> context"
-msgstr "非静态数据成员%qE被声明为%<constexpr%>"
+msgstr "%qD 在 %<constexpr%> 上下文中被声明为 %<static%>"
 
 #: rust/backend/rust-tree.cc:616
 #, fuzzy, gcc-internal-format

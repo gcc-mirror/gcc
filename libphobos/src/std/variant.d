@@ -382,7 +382,7 @@ private:
                         static if (isStaticArray!A && isDynamicArray!T)
                         {
                             auto this_ = (*src)[];
-                            emplaceRef(*cast(Unqual!T*) zat, cast(Unqual!T) this_);
+                            emplaceRef(*cast(Unqual!T*) zat, cast() cast(T) this_);
                         }
                         else
                         {
@@ -658,7 +658,7 @@ public:
 
     /// Allows assignment from a subset algebraic type
     this(T : VariantN!(tsize, Types), size_t tsize, Types...)(T value)
-        if (!is(T : VariantN) && Types.length > 0 && allSatisfy!(allowed, Types))
+    if (!is(T : VariantN) && Types.length > 0 && allSatisfy!(allowed, Types))
     {
         opAssign(value);
     }
@@ -735,7 +735,7 @@ public:
 
     // Allow assignment from another variant which is a subset of this one
     VariantN opAssign(T : VariantN!(tsize, Types), size_t tsize, Types...)(T rhs)
-        if (!is(T : VariantN) && Types.length > 0 && allSatisfy!(allowed, Types))
+    if (!is(T : VariantN) && Types.length > 0 && allSatisfy!(allowed, Types))
     {
         // discover which type rhs is actually storing
         foreach (V; T.AllowedTypes)
@@ -1098,7 +1098,7 @@ public:
     { return opLogic!(T, op)(lhs); }
     ///ditto
     VariantN opBinary(string op, T)(T rhs)
-        if (op == "~")
+    if (op == "~")
     {
         auto temp = this;
         temp ~= rhs;
@@ -1191,7 +1191,8 @@ public:
        If the `VariantN` contains an array, applies `dg` to each
        element of the array in turn. Otherwise, throws an exception.
      */
-    int opApply(Delegate)(scope Delegate dg) if (is(Delegate == delegate))
+    int opApply(Delegate)(scope Delegate dg)
+    if (is(Delegate == delegate))
     {
         alias A = Parameters!(Delegate)[0];
         if (type == typeid(A[]))
@@ -2410,7 +2411,7 @@ if (Handlers.length > 0)
 {
     ///
     auto visit(VariantType)(VariantType variant)
-        if (isAlgebraic!VariantType)
+    if (isAlgebraic!VariantType)
     {
         return visitImpl!(true, VariantType, Handlers)(variant);
     }
@@ -2553,7 +2554,7 @@ if (Handlers.length > 0)
 {
     ///
     auto tryVisit(VariantType)(VariantType variant)
-        if (isAlgebraic!VariantType)
+    if (isAlgebraic!VariantType)
     {
         return visitImpl!(false, VariantType, Handlers)(variant);
     }

@@ -341,7 +341,7 @@ Syntax:
   pragma Always_Terminates [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Always_Terminates``
-in the SPARK 2014 Reference Manual, section 6.1.10.
+in the SPARK 2014 Reference Manual, section 6.1.11.
 
 .. _Pragma-Annotate:
 
@@ -1662,18 +1662,20 @@ Syntax:
 
   pragma Disable_Atomic_Synchronization [(Entity)];
 
+  pragma Enable_Atomic_Synchronization [(Entity)];
 
 Ada requires that accesses (reads or writes) of an atomic variable be
 regarded as synchronization points in the case of multiple tasks.
 Particularly in the case of multi-processors this may require special
-handling, e.g. the generation of memory barriers. This capability may
-be turned off using this pragma in cases where it is known not to be
-required.
+handling, e.g. the generation of memory barriers. This synchronization
+is performed by default, but can be turned off using pragma
+``Disable_Atomic_Synchronization``.
+The ``Enable_Atomic_Synchronization`` pragma turns it back on.
 
-The placement and scope rules for this pragma are the same as those
-for ``pragma Suppress``. In particular it can be used as a
-configuration  pragma, or in a declaration sequence where it applies
-till the end of the scope. If an ``Entity`` argument is present,
+The placement and scope rules for these pragmas are the same as those
+for ``pragma Suppress``. In particular they can be used as
+configuration pragmas, or in a declaration sequence where they apply
+until the end of the scope. If an ``Entity`` argument is present,
 the action applies only to that entity.
 
 Pragma Dispatching_Domain
@@ -1903,21 +1905,8 @@ Syntax:
 
   pragma Enable_Atomic_Synchronization [(Entity)];
 
-
-Ada requires that accesses (reads or writes) of an atomic variable be
-regarded as synchronization points in the case of multiple tasks.
-Particularly in the case of multi-processors this may require special
-handling, e.g. the generation of memory barriers. This synchronization
-is performed by default, but can be turned off using
-``pragma Disable_Atomic_Synchronization``. The
-``Enable_Atomic_Synchronization`` pragma can be used to turn
-it back on.
-
-The placement and scope rules for this pragma are the same as those
-for ``pragma Unsuppress``. In particular it can be used as a
-configuration  pragma, or in a declaration sequence where it applies
-till the end of the scope. If an ``Entity`` argument is present,
-the action applies only to that entity.
+Reenables atomic synchronization; see ``pragma Disable_Atomic_Synchronization``
+for details.
 
 Pragma Exceptional_Cases
 ========================
@@ -1936,6 +1925,26 @@ Syntax:
 
 For the semantics of this aspect, see the SPARK 2014 Reference Manual, section
 6.1.9.
+
+Pragma Exit_Cases
+=================
+.. index:: Exit_Cases
+
+Syntax:
+
+::
+
+  pragma Exit_Cases (EXIT_CASE_LIST);
+
+  EXIT_CASE_LIST ::= EXIT_CASE {, EXIT_CASE}
+  EXIT_CASE      ::= GUARD => EXIT_KIND
+  EXIT_KIND      ::= Normal_Return
+                   | Exception_Raised
+		   | (Exception_Raised => exception_name)
+  GUARD          ::= Boolean_expression
+
+For the semantics of this aspect, see the SPARK 2014 Reference Manual, section
+6.1.10.
 
 Pragma Export_Function
 ======================
@@ -5899,7 +5908,7 @@ Syntax:
   pragma Side_Effects [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect
-``Side_Effects`` in the SPARK Reference Manual, section 6.1.11.
+``Side_Effects`` in the SPARK Reference Manual, section 6.1.12.
 
 .. _Pragma-Simple_Storage_Pool_Type:
 
@@ -7057,9 +7066,9 @@ Syntax:
 
 
 If this pragma occurs in a unit that is processed by the compiler, GNAT
-aborts with the message :samp:`xxx not implemented`, where
-``xxx`` is the name of the current compilation unit.  This pragma is
-intended to allow the compiler to handle unimplemented library units in
+aborts with the message :samp:`xxx is not supported in this configuration`,
+where ``xxx`` is the name of the current compilation unit.  This pragma
+is intended to allow the compiler to handle unimplemented library units in
 a clean manner.
 
 The abort only happens if code is being generated.  Thus you can use

@@ -1071,8 +1071,18 @@ Params:
         copy is performed.
 */
 void move(T)(ref T source, ref T target)
+if (__traits(compiles, target = T.init))
 {
     moveImpl(target, source);
+}
+
+/// ditto
+template move(T)
+if (!__traits(compiles, imported!"std.traits".lvalueOf!T = T.init))
+{
+    ///
+    deprecated("Can't move into `target` as `" ~ T.stringof ~ "` can't be assigned")
+    void move(ref T source, ref T target) => moveImpl(target, source);
 }
 
 /// For non-struct types, `move` just performs `target = source`:
@@ -1182,6 +1192,19 @@ pure nothrow @safe @nogc unittest
     S5 s53;
     move(s52, s53);
     assert(s53 is s51);
+}
+
+@system unittest
+{
+    static struct S
+    {
+        immutable int i;
+        ~this() @safe {}
+    }
+    alias ol = __traits(getOverloads, std.algorithm.mutation, "move", true)[1];
+    static assert(__traits(isDeprecated, ol!S));
+    // uncomment after deprecation
+    //static assert(!__traits(compiles, { S a, b; move(a, b); }));
 }
 
 /// Ditto
@@ -2837,6 +2860,13 @@ Params:
     lhs = Data to be swapped with `rhs`.
     rhs = Data to be swapped with `lhs`.
 */
+void swap(T)(ref T lhs, ref T rhs)
+if (is(typeof(lhs.proxySwap(rhs))))
+{
+    lhs.proxySwap(rhs);
+}
+
+/// ditto
 void swap(T)(ref T lhs, ref T rhs) @trusted pure nothrow @nogc
 if (isBlitAssignable!T && !is(typeof(lhs.proxySwap(rhs))))
 {
@@ -2855,6 +2885,17 @@ if (isBlitAssignable!T && !is(typeof(lhs.proxySwap(rhs))))
     {
         if (&lhs != &rhs)
         {
+            static if (__traits(compiles, lhs.tupleof = rhs.tupleof))
+            {
+                if (__ctfe)
+                {
+                    // can't reinterpret cast
+                    foreach (i, ref e; lhs.tupleof)
+                        swap(e, rhs.tupleof[i]);
+                    return;
+                }
+            }
+
             // For structs with non-trivial assignment, move memory directly
             ubyte[T.sizeof] t = void;
             auto a = (cast(ubyte*) &lhs)[0 .. T.sizeof];
@@ -3098,11 +3139,16 @@ if (isBlitAssignable!T && !is(typeof(lhs.proxySwap(rhs))))
     swap(a3, a4);
 }
 
-/// ditto
-void swap(T)(ref T lhs, ref T rhs)
-if (is(typeof(lhs.proxySwap(rhs))))
+// https://issues.dlang.org/show_bug.cgi?id=21429
+@safe unittest
 {
-    lhs.proxySwap(rhs);
+    enum e = (){
+        Tuple!int a = 5, b = 6;
+        swap(a, b);
+        assert(a[0] == 6);
+        assert(b[0] == 5);
+        return 0;
+    }();
 }
 
 /**

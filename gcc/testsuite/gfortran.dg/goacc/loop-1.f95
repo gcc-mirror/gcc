@@ -82,6 +82,13 @@ subroutine test1
   do i = 1,10
   enddo
   !$acc end kernels loop
+  !$acc serial loop
+  do i = 1,10
+  enddo
+  !$acc serial loop
+  do i = 1,10
+  enddo
+  !$acc end serial loop
 
   !$acc kernels loop reduction(max:i)
   do i = 1,10
@@ -148,8 +155,8 @@ subroutine test1
     !$acc parallel loop collapse(2)
     do i = 1, 3
         do r = 4, 6
+           ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } .-1 }
         end do
-        ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 150 }
     end do
 
   !$acc loop independent seq

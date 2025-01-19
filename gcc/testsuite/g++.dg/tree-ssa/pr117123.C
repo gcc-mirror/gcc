@@ -49,4 +49,6 @@ int patatino(int a) {
 }
 
 // { dg-final { scan-tree-dump-not "dont_be_here" "optimized" } }
-// { dg-final { scan-tree-dump-times "if " 3 "optimized" } }
+// Depending on LOGICAL_OP_NON_SHORT_CIRCUIT (or BRANCH_COST) this might
+// or might not be optimized fully
+// { dg-final { scan-tree-dump-times "if " 3 "optimized" { xfail { aarch64-*-* } } } }

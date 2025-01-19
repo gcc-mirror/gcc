@@ -13,6 +13,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This is the top level unit for multiprocessor task support as defined by
+--  ARM D.16. It provides the base types to enumerate CPUs and the
+--  functionality to get the number of CPUs on the current system.
+
 package System.Multiprocessors is
    pragma Preelaborate (Multiprocessors);
 

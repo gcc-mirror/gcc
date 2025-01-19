@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2076,7 +2076,7 @@ package body Checks is
          Lo := Succ (Expr_Type, UR_From_Uint (Ifirst - 1));
          Lo_OK := True;
 
-      elsif abs (Ifirst) < Max_Bound then
+      elsif abs Ifirst < Max_Bound then
          Lo := UR_From_Uint (Ifirst) - Ureal_Half;
          Lo_OK := (Ifirst > 0);
 
@@ -2120,7 +2120,7 @@ package body Checks is
          Hi := Pred (Expr_Type, UR_From_Uint (Ilast + 1));
          Hi_OK := True;
 
-      elsif abs (Ilast) < Max_Bound then
+      elsif abs Ilast < Max_Bound then
          Hi := UR_From_Uint (Ilast) + Ureal_Half;
          Hi_OK := (Ilast < 0);
       else
@@ -2893,6 +2893,10 @@ package body Checks is
 
       if Deref then
          Expr := Make_Explicit_Dereference (Loc, Prefix => Expr);
+
+         --  Preserve Comes_From_Source for Predicate_Check_In_Scope
+
+         Preserve_Comes_From_Source (Expr, N);
       end if;
 
       --  Disable checks to prevent an infinite recursion
@@ -3976,8 +3980,10 @@ package body Checks is
    -------------------------------------
 
    --  Note: internally Disable/Enable_Atomic_Synchronization is implemented
-   --  using a bogus check called Atomic_Synchronization. This is to make it
-   --  more convenient to get exactly the same semantics as [Un]Suppress.
+   --  using a pseudo-check called _Atomic_Synchronization. This is to make it
+   --  more convenient to get the same placement and scope rules as
+   --  [Un]Suppress. The check name has a leading underscore to make
+   --  it reserved by the implementation.
 
    function Atomic_Synchronization_Disabled (E : Entity_Id) return Boolean is
    begin
@@ -6237,7 +6243,7 @@ package body Checks is
       --  do the corresponding optimizations later on when applying the checks.
 
       if Mode in Minimized_Or_Eliminated then
-         if not (Overflow_Checks_Suppressed (Etype (N)))
+         if not Overflow_Checks_Suppressed (Etype (N))
            and then not (Is_Entity_Name (N)
                           and then Overflow_Checks_Suppressed (Entity (N)))
          then
@@ -7300,9 +7306,7 @@ package body Checks is
       --  Delay the generation of the check until 'Loop_Entry has been properly
       --  expanded. This is done in Expand_Loop_Entry_Attributes.
 
-      elsif Nkind (Prefix (N)) = N_Attribute_Reference
-        and then Attribute_Name (Prefix (N)) = Name_Loop_Entry
-      then
+      elsif Is_Attribute_Loop_Entry (Prefix (N)) then
          return;
       end if;
 
@@ -8403,11 +8407,15 @@ package body Checks is
 
       if Inside_A_Generic then
          return;
-      end if;
+
+      --  No check during preanalysis
+
+      elsif Preanalysis_Active then
+         return;
 
       --  No check needed if known to be non-null
 
-      if Known_Non_Null (N) then
+      elsif Known_Non_Null (N) then
          return;
       end if;
 
@@ -8425,7 +8433,7 @@ package body Checks is
            --  where the expression might not be evaluated, and the warning
            --  appear as extraneous noise.
 
-           and then not Within_Case_Or_If_Expression (N)
+           and then not Within_Conditional_Expression (N)
          then
             Apply_Compile_Time_Constraint_Error
               (N, "null value not allowed here??", CE_Access_Check_Failed);
@@ -8565,6 +8573,11 @@ package body Checks is
       --  expansion is not desirable.
 
       if GNATprove_Mode then
+         return;
+
+      --  No check during preanalysis
+
+      elsif Preanalysis_Active then
          return;
 
       --  Do not generate an elaboration check if all checks have been
@@ -9615,16 +9628,11 @@ package body Checks is
 
    function Range_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      if Present (E) then
-         if Kill_Range_Checks (E) then
-            return True;
-
-         elsif Checks_May_Be_Suppressed (E) then
-            return Is_Check_Suppressed (E, Range_Check);
-         end if;
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Range_Check);
+      else
+         return Scope_Suppress.Suppress (Range_Check);
       end if;
-
-      return Scope_Suppress.Suppress (Range_Check);
    end Range_Checks_Suppressed;
 
    -----------------------------------------

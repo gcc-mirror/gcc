@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlsx -ftree-vectorize" } */
+/* { dg-options "-O2 -mlsx -ftree-vectorize -fdump-tree-optimized" } */
 
 #ifndef N
 #define N 4

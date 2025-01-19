@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,6 +253,7 @@ package body Sem_Aggr is
       Index          : Node_Id;
       Index_Constr   : Node_Id;
       Component_Typ  : Entity_Id;
+      Iterated       : Boolean;
       Others_Allowed : Boolean) return Boolean;
    --  This procedure performs the semantic checks for an array aggregate.
    --  True is returned if the aggregate resolution succeeds.
@@ -277,6 +278,9 @@ package body Sem_Aggr is
    --    there is no applicable index constraint and this node is set to Index.
    --
    --    Component_Typ is the array component type.
+   --
+   --    Iterated indicates whether the aggregate appears in the context of an
+   --    iterated association for a parent aggregate.
    --
    --    Others_Allowed indicates whether an others choice is allowed
    --    in the context where the top-level aggregate appeared.
@@ -1063,7 +1067,7 @@ package body Sem_Aggr is
 
    function Is_Null_Aggregate (N : Node_Id) return Boolean is
    begin
-      return Ada_Version >= Ada_2022
+      return Nkind (N) = N_Aggregate
         and then Is_Homogeneous_Aggregate (N)
         and then Is_Empty_List (Expressions (N))
         and then Is_Empty_List (Component_Associations (N));
@@ -1378,11 +1382,11 @@ package body Sem_Aggr is
 
          --  Do not perform this transformation if this was a string literal
          --  to start with, whose components needed constraint checks, or if
-         --  the component type is non-static, because it will require those
-         --  checks and be transformed back into an aggregate. If the index
-         --  type is not Integer the aggregate may represent a user-defined
-         --  string type but the context might need the original type so we
-         --  do not perform the transformation at this point.
+         --  the component type is nonstatic or has predicates, because it will
+         --  require those checks and be transformed back into an aggregate.
+         --  If the index type is not Integer, then the aggregate may represent
+         --  a user-defined string type but the context might need the original
+         --  type, so we do not perform the transformation at this point.
 
          if Number_Dimensions (Typ) = 1
            and then Is_Standard_Character_Type (Component_Type (Typ))
@@ -1392,6 +1396,7 @@ package body Sem_Aggr is
            and then not Is_Bit_Packed_Array (Typ)
            and then Nkind (Original_Node (Parent (N))) /= N_String_Literal
            and then Is_OK_Static_Subtype (Component_Type (Typ))
+           and then not Has_Predicates (Component_Type (Typ))
            and then Base_Type (Etype (First_Index (Typ))) =
                       Base_Type (Standard_Integer)
            and then not Has_Static_Empty_Array_Bounds (Typ)
@@ -1499,6 +1504,7 @@ package body Sem_Aggr is
                     Index          => First_Index (Aggr_Typ),
                     Index_Constr   => First_Index (Typ),
                     Component_Typ  => Component_Type (Typ),
+                    Iterated       => False,
                     Others_Allowed => True);
             else
                Aggr_Resolved :=
@@ -1507,6 +1513,7 @@ package body Sem_Aggr is
                     Index          => First_Index (Aggr_Typ),
                     Index_Constr   => First_Index (Aggr_Typ),
                     Component_Typ  => Component_Type (Typ),
+                    Iterated       => False,
                     Others_Allowed => False);
             end if;
 
@@ -1575,12 +1582,16 @@ package body Sem_Aggr is
       Index          : Node_Id;
       Index_Constr   : Node_Id;
       Component_Typ  : Entity_Id;
+      Iterated       : Boolean;
       Others_Allowed : Boolean) return Boolean
    is
       Loc : constant Source_Ptr := Sloc (N);
 
       Failure : constant Boolean := False;
       Success : constant Boolean := True;
+
+      Ctyp : constant Entity_Id :=
+        Get_Corresponding_Mutably_Tagged_Type_If_Present (Component_Typ);
 
       Index_Typ      : constant Entity_Id := Etype (Index);
       Index_Typ_Low  : constant Node_Id   := Type_Low_Bound  (Index_Typ);
@@ -1633,18 +1644,15 @@ package body Sem_Aggr is
       --  cause raising CE at runtime.
 
       function Resolve_Aggr_Expr
-        (Expr        : Node_Id;
-         Single_Elmt : Boolean) return Boolean;
+        (Expr          : Node_Id;
+         Iterated_Elmt : Boolean := False;
+         Single_Elmt   : Boolean := True) return Boolean;
       --  Resolves aggregate expression Expr. Returns False if resolution
       --  fails. If Single_Elmt is set to False, the expression Expr may be
       --  used to initialize several array aggregate elements (this can happen
       --  for discrete choices such as "L .. H => Expr" or the OTHERS choice).
       --  In this event we do not resolve Expr unless expansion is disabled.
       --  To know why, see the DELAYED COMPONENT RESOLUTION note above.
-      --
-      --  NOTE: In the case of "... => <>", we pass the N_Component_Association
-      --  node as Expr, since there is no Expression and we need a Sloc for the
-      --  error message.
 
       function Resolve_Iterated_Component_Association
         (N         : Node_Id;
@@ -1966,9 +1974,13 @@ package body Sem_Aggr is
       -----------------------
 
       function Resolve_Aggr_Expr
-        (Expr        : Node_Id;
-         Single_Elmt : Boolean) return Boolean
+        (Expr          : Node_Id;
+         Iterated_Elmt : Boolean := False;
+         Single_Elmt   : Boolean := True) return Boolean
       is
+         Iterated_Expr  : constant Boolean := Iterated_Elmt or else Iterated;
+         --  True if the Expr is in an iteration context, possibly nested
+
          Nxt_Ind        : constant Node_Id := Next_Index (Index);
          Nxt_Ind_Constr : constant Node_Id := Next_Index (Index_Constr);
          --  Index is the current index corresponding to the expression
@@ -1997,7 +2009,7 @@ package body Sem_Aggr is
                --  operator, it is still an operator symbol, which will be
                --  transformed into a string when analyzed.
 
-               if Is_Character_Type (Component_Typ)
+               if Is_Character_Type (Ctyp)
                  and then No (Next_Index (Nxt_Ind))
                  and then Nkind (Expr) in N_String_Literal | N_Operator_Symbol
                then
@@ -2027,51 +2039,77 @@ package body Sem_Aggr is
                end if;
             end if;
 
-            --  If it's "... => <>", nothing to resolve
-
-            if Nkind (Expr) = N_Component_Association then
-               pragma Assert (Box_Present (Expr));
-               return Success;
-            end if;
-
             --  Ada 2005 (AI-231): Propagate the type to the nested aggregate.
             --  Required to check the null-exclusion attribute (if present).
             --  This value may be overridden later on.
 
             Set_Etype (Expr, Etype (N));
 
-            Resolution_OK := Resolve_Array_Aggregate
-              (Expr, Nxt_Ind, Nxt_Ind_Constr, Component_Typ, Others_Allowed);
+            Resolution_OK :=
+              Resolve_Array_Aggregate
+                (Expr, Nxt_Ind, Nxt_Ind_Constr, Ctyp,
+                 Iterated => Iterated_Expr, Others_Allowed => Others_Allowed);
 
             if Resolution_OK = Failure then
                return Failure;
             end if;
+
          else
-            --  If it's "... => <>", nothing to resolve
+            --  In an iterated context, preanalyze a copy of the expression to
+            --  verify legality. We use a copy because the expression will be
+            --  analyzed anew when the enclosing aggregate is expanded and the
+            --  construct is rewritten as a loop with a new iteration variable.
+            --  This does not apply to SPARK mode, where expansion is skipped.
 
-            if Nkind (Expr) = N_Component_Association then
-               pragma Assert (Box_Present (Expr));
-               return Success;
-            end if;
+            --  If the parent is a component association, we also temporarily
+            --  point its Expression field to the copy, because analysis may
+            --  expect this invariant to hold.
 
-            --  Do not resolve the expressions of discrete or others choices
-            --  unless the expression covers a single component, or the
-            --  expander is inactive.
+            if Iterated_Expr and then not GNATprove_Mode then
+               declare
+                  In_Assoc : constant Boolean :=
+                    Nkind (Parent (Expr)) in N_Component_Association
+                                           | N_Iterated_Component_Association;
+                  New_Expr : constant Node_Id := Copy_Separate_Tree (Expr);
 
-            --  In SPARK mode, expressions that can perform side effects will
-            --  be recognized by the gnat2why back-end, and the whole
-            --  subprogram will be ignored. So semantic analysis can be
-            --  performed safely.
+               begin
+                  Set_Parent (New_Expr, Parent (Expr));
+                  if In_Assoc then
+                     Set_Expression (Parent (Expr), New_Expr);
+                  end if;
 
-            if Single_Elmt
-              or else not Expander_Active
-              or else In_Spec_Expression
-            then
-               Analyze_And_Resolve (Expr, Component_Typ);
+                  Preanalyze_And_Resolve (New_Expr, Ctyp);
+                  Check_Expr_OK_In_Limited_Aggregate (New_Expr);
+                  Check_Expression_Dimensions (New_Expr, Ctyp);
+
+                  if In_Assoc then
+                     Set_Expression (Parent (Expr), Expr);
+                  end if;
+               end;
+
+            --  If the expander is active and the choice may cover multiple
+            --  components, then we cannot expand (see the spec of Sem), so
+            --  we preanalyze the expression.
+
+            elsif Expander_Active and then not Single_Elmt then
+               Preanalyze_And_Resolve (Expr, Ctyp);
                Check_Expr_OK_In_Limited_Aggregate (Expr);
+               Check_Expression_Dimensions (Expr, Ctyp);
+
+               --  The range given by the choice may be empty, in which case we
+               --  do not want spurious warnings about CE raised at run time.
+
+               Remove_Warning_Messages (Expr);
+
+            --  Otherwise, we perform a full analysis of the expression
+
+            else
+               Analyze_And_Resolve (Expr, Ctyp);
+               Check_Expr_OK_In_Limited_Aggregate (Expr);
+               Check_Expression_Dimensions (Expr, Ctyp);
                Check_Non_Static_Context (Expr);
-               Aggregate_Constraint_Checks (Expr, Component_Typ);
                Check_Unset_Reference (Expr);
+               Aggregate_Constraint_Checks (Expr, Ctyp);
             end if;
          end if;
 
@@ -2081,10 +2119,10 @@ package body Sem_Aggr is
          --  component assignments. If the expression covers several components
          --  the analysis and the predicate check take place later.
 
-         if Has_Predicates (Component_Typ)
+         if Has_Predicates (Ctyp)
            and then Analyzed (Expr)
          then
-            Apply_Predicate_Check (Expr, Component_Typ);
+            Apply_Predicate_Check (Expr, Ctyp);
          end if;
 
          if Raises_Constraint_Error (Expr)
@@ -2101,7 +2139,7 @@ package body Sem_Aggr is
          --  the expander is not active.
 
          if Do_Range_Check (Expr) then
-            Generate_Range_Check (Expr, Component_Typ, CE_Range_Check_Failed);
+            Generate_Range_Check (Expr, Ctyp, CE_Range_Check_Failed);
          end if;
 
          return Resolution_OK;
@@ -2118,29 +2156,6 @@ package body Sem_Aggr is
          Loc  : constant Source_Ptr := Sloc (N);
          Id   : constant Entity_Id  := Defining_Identifier (N);
          Expr : constant Node_Id    := Expression (N);
-
-         -----------------------
-         -- Remove_References --
-         -----------------------
-
-         function Remove_Reference (N : Node_Id) return Traverse_Result;
-         --  Remove reference to the entity Id after analysis, so it can be
-         --  properly reanalyzed after construct is expanded into a loop.
-
-         function Remove_Reference (N : Node_Id) return Traverse_Result is
-         begin
-            if Nkind (N) = N_Identifier
-               and then Present (Entity (N))
-               and then Entity (N) = Id
-            then
-               Set_Entity (N, Empty);
-               Set_Etype (N, Empty);
-            end if;
-            Set_Analyzed (N, False);
-            return OK;
-         end Remove_Reference;
-
-         procedure Remove_References is new Traverse_Proc (Remove_Reference);
 
          --  Local variables
 
@@ -2210,26 +2225,9 @@ package body Sem_Aggr is
             Set_Scope (Id, Scop);
          end if;
 
-         --  Analyze expression without expansion, to verify legality.
-         --  When generating code, we then remove references to the index
-         --  variable, because the expression will be analyzed anew after
-         --  rewritting as a loop with a new index variable; when not
-         --  generating code we leave the analyzed expression as it is.
+         --  Analyze expression without expansion, to verify legality
 
-         Resolution_OK := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
-
-         if Operating_Mode /= Check_Semantics then
-            Remove_References (Expr);
-            declare
-               Loop_Action : Node_Id;
-            begin
-               Loop_Action := First (Loop_Actions (N));
-               while Present (Loop_Action) loop
-                  Remove_References (Loop_Action);
-                  Next (Loop_Action);
-               end loop;
-            end;
-         end if;
+         Resolution_OK := Resolve_Aggr_Expr (Expr, Iterated_Elmt => True);
 
          End_Scope;
 
@@ -2343,8 +2341,6 @@ package body Sem_Aggr is
       ----------------------------------------
 
       procedure Warn_On_Null_Component_Association (Expr : Node_Id) is
-         Comp_Typ : constant Entity_Id := Component_Type (Etype (N));
-
          procedure Check_Case_Expr (N : Node_Id);
          --  Check if a case expression may initialize some component with a
          --  null value.
@@ -2442,14 +2438,14 @@ package body Sem_Aggr is
               Make_Raise_Constraint_Error (Sloc (Null_Expr),
                 Reason => CE_Access_Check_Failed));
 
-            Set_Etype    (Null_Expr, Comp_Typ);
+            Set_Etype    (Null_Expr, Ctyp);
             Set_Analyzed (Null_Expr);
          end Warn_On_Null_Expression_And_Rewrite;
 
       --  Start of processing for Warn_On_Null_Component_Association
 
       begin
-         pragma Assert (Can_Never_Be_Null (Comp_Typ));
+         pragma Assert (Can_Never_Be_Null (Ctyp));
 
          case Nkind (Expr) is
             when N_If_Expression =>
@@ -2973,8 +2969,8 @@ package body Sem_Aggr is
                               Scope_Parent : Node_Id;
                            begin
                               if Nkind (Exp) /= N_Identifier
-                                or else not Present (Entity (Exp))
-                                or else not Present (Scope (Entity (Exp)))
+                                or else No (Entity (Exp))
+                                or else No (Scope (Entity (Exp)))
                                 or else Ekind (Scope (Entity (Exp))) /= E_Loop
                               then
                                  return OK;
@@ -3060,7 +3056,7 @@ package body Sem_Aggr is
                   --            (if Func (J) = 0 then A(J)'Access else Null)];
 
                   elsif Ada_Version >= Ada_2022
-                    and then Can_Never_Be_Null (Component_Type (Etype (N)))
+                    and then Can_Never_Be_Null (Ctyp)
                     and then Nkind (Assoc) = N_Iterated_Component_Association
                     and then Nkind (Expression (Assoc)) in N_If_Expression
                                                          | N_Case_Expression
@@ -3074,15 +3070,13 @@ package body Sem_Aggr is
 
                if Box_Present (Assoc) then
 
-                  --  Ada 2005 (AI-287): In case of default initialization of a
-                  --  component the expander will generate calls to the
-                  --  corresponding initialization subprogram. We need to call
-                  --  Resolve_Aggr_Expr to check the rules about
-                  --  dimensionality.
+                  --  Ada 2005 (AI-287): In case of default initialization of
+                  --  a component, the expander will generate calls to the
+                  --  corresponding initialization subprogram. Check that we
+                  --  have a single dimension.
 
-                  if not Resolve_Aggr_Expr
-                           (Assoc, Single_Elmt => Single_Choice)
-                  then
+                  if Present (Next_Index (Index)) then
+                     Error_Msg_N ("nested array aggregate expected", Assoc);
                      return Failure;
                   end if;
 
@@ -3110,26 +3104,15 @@ package body Sem_Aggr is
 
                elsif No (Etype (Expression (Assoc))) then
                   declare
-                     Save_Analysis : constant Boolean := Full_Analysis;
-                     Expr          : constant Node_Id :=
-                                       New_Copy_Tree (Expression (Assoc));
+                     Expr : constant Node_Id :=
+                              New_Copy_Tree (Expression (Assoc));
 
                   begin
-                     Expander_Mode_Save_And_Set (False);
-                     Full_Analysis := False;
-
-                     --  Analyze the expression, making sure it is properly
+                     --  Preanalyze the expression, making sure it is properly
                      --  attached to the tree before we do the analysis.
 
                      Set_Parent (Expr, Parent (Expression (Assoc)));
-                     Analyze (Expr);
-
-                     --  Compute its dimensions now, rather than at the end of
-                     --  resolution, because in the case of multidimensional
-                     --  aggregates subsequent expansion may lead to spurious
-                     --  errors.
-
-                     Check_Expression_Dimensions (Expr, Component_Typ);
+                     Preanalyze (Expr);
 
                      --  If the expression is a literal, propagate this info
                      --  to the expression in the association, to enable some
@@ -3139,19 +3122,14 @@ package body Sem_Aggr is
                        and then Present (Entity (Expr))
                        and then Ekind (Entity (Expr)) = E_Enumeration_Literal
                      then
-                        Analyze_And_Resolve
-                          (Expression (Assoc), Component_Typ);
+                        Preanalyze_And_Resolve (Expression (Assoc), Ctyp);
                      end if;
-
-                     Full_Analysis := Save_Analysis;
-                     Expander_Mode_Restore;
 
                      --  Skip tagged checking for mutably tagged CW equivalent
                      --  types.
 
                      if Is_Tagged_Type (Etype (Expr))
-                       and then Is_Class_Wide_Equivalent_Type
-                                  (Component_Type (Etype (N)))
+                       and then Is_Class_Wide_Equivalent_Type (Ctyp)
                      then
                         null;
 
@@ -3160,7 +3138,7 @@ package body Sem_Aggr is
                      elsif Is_Tagged_Type (Etype (Expr)) then
                         Check_Dynamically_Tagged_Expression
                           (Expr => Expr,
-                           Typ  => Component_Type (Etype (N)),
+                           Typ  => Ctyp,
                            Related_Nod => N);
                      end if;
                   end;
@@ -3168,7 +3146,7 @@ package body Sem_Aggr is
                elsif Is_Tagged_Type (Etype (Expression (Assoc))) then
                   Check_Dynamically_Tagged_Expression
                     (Expr        => Expression (Assoc),
-                     Typ         => Component_Type (Etype (N)),
+                     Typ         => Ctyp,
                      Related_Nod => N);
                end if;
 
@@ -3582,17 +3560,19 @@ package body Sem_Aggr is
                Check_Can_Never_Be_Null (Etype (N), Expr);
             end if;
 
-            if not Resolve_Aggr_Expr (Expr, Single_Elmt => True) then
+            if not Resolve_Aggr_Expr (Expr) then
                return Failure;
             end if;
 
             --  Check incorrect use of dynamically tagged expression
 
-            if Is_Tagged_Type (Etype (Expr)) then
-               Check_Dynamically_Tagged_Expression
-                 (Expr => Expr,
-                  Typ  => Component_Type (Etype (N)),
-                  Related_Nod => N);
+            if not Iterated then
+               if Is_Tagged_Type (Etype (Expr)) then
+                  Check_Dynamically_Tagged_Expression
+                    (Expr => Expr,
+                     Typ  => Ctyp,
+                     Related_Nod => N);
+               end if;
             end if;
 
             Next (Expr);
@@ -3612,15 +3592,23 @@ package body Sem_Aggr is
 
             if Box_Present (Assoc) then
 
-               --  Ada 2005 (AI-287): In case of default initialization of a
-               --  component the expander will generate calls to the
-               --  corresponding initialization subprogram. We need to call
-               --  Resolve_Aggr_Expr to check the rules about
-               --  dimensionality.
+               --  Ada 2005 (AI-287): In case of default initialization of
+               --  a component, the expander will generate calls to the
+               --  corresponding initialization subprogram. Check that we
+               --  have a single dimension.
 
-               if not Resolve_Aggr_Expr (Assoc, Single_Elmt => False) then
+               if Present (Next_Index (Index)) then
+                  Error_Msg_N ("nested array aggregate expected", Assoc);
                   return Failure;
                end if;
+
+            --  ??? Checks for dynamically tagged expressions below will
+            --  be only applied to iterated_component_association after
+            --  expansion; in particular, errors might not be reported when
+            --  -gnatc switch is used.
+
+            elsif Nkind (Assoc) = N_Iterated_Component_Association then
+               null;   --  handled above, in a loop context
 
             elsif not Resolve_Aggr_Expr (Expression (Assoc),
                                          Single_Elmt => False)
@@ -3632,7 +3620,7 @@ package body Sem_Aggr is
             --  In order to diagnose the semantic error we create a duplicate
             --  tree to analyze it and perform the check.
 
-            elsif Nkind (Assoc) /= N_Iterated_Component_Association then
+            else
                declare
                   Save_Analysis : constant Boolean := Full_Analysis;
                   Expr          : constant Node_Id :=
@@ -3648,7 +3636,7 @@ package body Sem_Aggr is
                   if Is_Tagged_Type (Etype (Expr)) then
                      Check_Dynamically_Tagged_Expression
                        (Expr        => Expr,
-                        Typ         => Component_Type (Etype (N)),
+                        Typ         => Ctyp,
                         Related_Nod => N);
                   end if;
                end;
@@ -3775,7 +3763,7 @@ package body Sem_Aggr is
 
       --  Check the dimensions of each component in the array aggregate
 
-      Analyze_Dimension_Array_Aggregate (N, Component_Typ);
+      Analyze_Dimension_Array_Aggregate (N, Ctyp);
 
       if Serious_Errors_Detected /= Saved_SED then
          return Failure;
@@ -3790,9 +3778,9 @@ package body Sem_Aggr is
 
    procedure Resolve_Container_Aggregate (N : Node_Id; Typ : Entity_Id) is
       procedure Resolve_Iterated_Association
-       (Comp      : Node_Id;
-        Key_Type  : Entity_Id;
-        Elmt_Type : Entity_Id);
+        (Comp      : Node_Id;
+         Key_Type  : Entity_Id;
+         Elmt_Type : Entity_Id);
       --  Resolve choices and expression in an iterated component association
       --  or an iterated element association, which has a key_expression.
       --  This is similar but not identical to the handling of this construct
@@ -3815,9 +3803,9 @@ package body Sem_Aggr is
       ----------------------------------
 
       procedure Resolve_Iterated_Association
-       (Comp      : Node_Id;
-        Key_Type  : Entity_Id;
-        Elmt_Type : Entity_Id)
+        (Comp      : Node_Id;
+         Key_Type  : Entity_Id;
+         Elmt_Type : Entity_Id)
       is
          Loc           : constant Source_Ptr := Sloc (N);
          Choice        : Node_Id;
@@ -4030,10 +4018,10 @@ package body Sem_Aggr is
          --  enclosing aggregate is expanded, and the construct is rewritten
          --  as a loop with a new index variable.
 
-         Expr := New_Copy_Tree (Expression (Comp));
+         Expr := Copy_Separate_Tree (Expression (Comp));
+         Set_Parent (Expr, Comp);
          Preanalyze_And_Resolve (Expr, Elmt_Type);
          End_Scope;
-
       end Resolve_Iterated_Association;
 
    --  Start of processing for Resolve_Container_Aggregate
@@ -4413,6 +4401,85 @@ package body Sem_Aggr is
          Resolve_Delta_Record_Aggregate (N, Typ);
       end if;
 
+      declare
+         Assoc  : Node_Id;
+         Choice : Node_Id;
+
+         procedure Check_For_Bad_Dd_Component_Choice (Choice : Node_Id);
+         --  Enforce the GNAT RM rule that a deep delta aggregate choice
+         --  cannot name a discriminant-dependent component if the
+         --  immediately enclosing object's subtype is unconstrained and the
+         --  prefix of the component includes at least one array indexing.
+         --  [Note: The motivation for this rule is unclear. The GNAT RM
+         --  gives a rationale for this particular rule, but it still
+         --  seems dubious.]
+
+         ---------------------------------------
+         -- Check_For_Bad_Dd_Component_Choice --
+         ---------------------------------------
+
+         procedure Check_For_Bad_Dd_Component_Choice (Choice : Node_Id) is
+            Pref         : Node_Id := Choice;
+            Dd_Comp_Name : Node_Id := Empty;
+         begin
+            loop
+               case Nkind (Pref) is
+                  when N_Selected_Component =>
+                     declare
+                        Comp : constant Entity_Id
+                          := Entity (Selector_Name (Pref));
+
+                        Enclosing_Type : Entity_Id := Etype (Prefix (Pref));
+                     begin
+                        if Is_Declared_Within_Variant (Comp)
+                          or else Has_Discriminant_Dependent_Constraint (Comp)
+                        then
+                           if not Has_Discriminants (Enclosing_Type) then
+                              --  a deep delta array aggregate choice like
+                              --     (Index_Value).Record_Component => ...
+                              Enclosing_Type := Component_Type (Etype (N));
+                           end if;
+
+                           if not Is_Constrained (Enclosing_Type) then
+                              Dd_Comp_Name := Selector_Name (Pref);
+                           end if;
+                        end if;
+                     end;
+
+                  when N_Indexed_Component =>
+                     exit when Present (Dd_Comp_Name);
+
+                  when N_Identifier =>
+                     return;
+
+                  when others =>
+                     exit;
+               end case;
+               Pref := Prefix (Pref);
+            end loop;
+
+            if Present (Dd_Comp_Name) then
+               --  It would be difficult to explain the whole rule briefly,
+               --  so we just say "illegal".
+
+               Error_Msg_N
+                 ("illegal discriminant-dependent component &" &
+                  " in deep delta aggregate choice", Dd_Comp_Name);
+            end if;
+         end Check_For_Bad_Dd_Component_Choice;
+
+      begin
+         Assoc := First (Component_Associations (N));
+         while Present (Assoc) loop
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               Check_For_Bad_Dd_Component_Choice (Choice);
+               Next (Choice);
+            end loop;
+            Next (Assoc);
+         end loop;
+      end;
+
       Set_Etype (N, Typ);
    end Resolve_Delta_Aggregate;
 
@@ -4468,14 +4535,17 @@ package body Sem_Aggr is
                   Set_Is_Not_Self_Hidden (Id);
                   Set_Scope (Id, Ent);
                end if;
+
                Enter_Name (Id);
 
-               --  Resolve a copy of the expression, after setting
-               --  its parent properly to preserve its context.
+               --  Analyze a copy of the expression, to verify legality. We use
+               --  a copy because the expression will be analyzed anew when the
+               --  enclosing aggregate is expanded, and the construct is
+               --  rewritten as a loop with a new index variable.
 
-               Expr := New_Copy_Tree (Expression (Assoc));
+               Expr := Copy_Separate_Tree (Expression (Assoc));
                Set_Parent (Expr, Assoc);
-               Analyze_And_Resolve (Expr, Component_Type (Typ));
+               Preanalyze_And_Resolve (Expr, Component_Type (Typ));
                End_Scope;
             end;
 
@@ -4739,10 +4809,11 @@ package body Sem_Aggr is
 
       Deltas : constant List_Id := Component_Associations (N);
 
-      Assoc       : Node_Id;
-      Choice      : Node_Id;
-      Comp_Type   : Entity_Id := Empty; -- init to avoid warning
-      Deep_Choice : Boolean;
+      Assoc        : Node_Id;
+      Choice       : Node_Id;
+      Comp_Type    : Entity_Id := Empty; -- init to avoid warning
+      Deep_Choice  : Boolean;
+      Choice_Count : Natural := 0;
 
    --  Start of processing for Resolve_Delta_Record_Aggregate
 
@@ -4753,6 +4824,8 @@ package body Sem_Aggr is
       while Present (Assoc) loop
          Choice := First (Choice_List (Assoc));
          while Present (Choice) loop
+            Choice_Count := Choice_Count + 1;
+
             Deep_Choice := Nkind (Choice) /= N_Identifier;
             if Deep_Choice then
                Error_Msg_GNAT_Extension
@@ -4807,6 +4880,117 @@ package body Sem_Aggr is
 
          Next (Assoc);
       end loop;
+
+      declare
+         type Choice_Info is record
+            Choice : Node_Id;
+            Depth  : Natural; -- 0 indicates non-record selector
+         end record;
+
+         Info          : array (1 .. Choice_Count) of Choice_Info;
+         Current_Index : Natural := 0;
+
+         function Choice_Depth (Choice : Node_Id) return Natural;
+         --  Given a choice in record delta aggregate, return 1 for
+         --  "Abc", 3 for "Aa.Bb.Cc", and 0 if anything other than
+         --  record component selectors are involved.
+
+         procedure Check_For_Bad_Overlap (Info1, Info2 : Choice_Info);
+         --  If the two choices overlap illegally, then generate an error
+         --  message. If deep delta aggregates are not enabled, then choices
+         --  should be N_Identifier nodes and depths should each be 1.
+
+         ------------------
+         -- Choice_Depth --
+         ------------------
+
+         function Choice_Depth (Choice : Node_Id) return Natural is
+            Prefix_Depth : Natural;
+         begin
+            case Nkind (Choice) is
+               when N_Identifier =>
+                  return 1;
+               when N_Selected_Component =>
+                  Prefix_Depth := Choice_Depth (Prefix (Choice));
+                  if Prefix_Depth = 0 then
+                     return 0;
+                  else
+                     return Prefix_Depth + 1;
+                  end if;
+               when others =>
+                  return 0;
+            end case;
+         end Choice_Depth;
+
+         ---------------------------
+         -- Check_For_Bad_Overlap --
+         ---------------------------
+
+         procedure Check_For_Bad_Overlap (Info1, Info2 : Choice_Info) is
+            Choice1, Choice2 : Node_Id;
+         begin
+            if Info1.Depth = 0 or Info2.Depth = 0 then
+               --  We're not interested in cases involving array indexing
+               return;
+            end if;
+            if Info1.Depth > Info2.Depth then
+               --  Normalize
+               Check_For_Bad_Overlap (Info1 => Info2, Info2 => Info1);
+               return;
+            end if;
+            pragma Assert (Info1.Depth <= Info2.Depth);
+            Choice1 := Info1.Choice;
+            Choice2 := Info2.Choice;
+
+            --  Adjust deeper choice to match depth of the other choice
+            for Count in 1 .. Info2.Depth - Info1.Depth loop
+               pragma Assert (Nkind (Choice2) = N_Selected_Component);
+               Choice2 := Prefix (Choice2);
+            end loop;
+
+            --  Traverse the two choices; return if Entity mismatch found.
+            loop
+               pragma Assert (Nkind (Choice1) = Nkind (Choice2));
+               if Nkind (Choice1) = N_Identifier then
+                  exit when Entity (Choice1) = Entity (Choice2);
+                  return; -- no overlap if entities differ
+               end if;
+               if Entity (Selector_Name (Choice1)) /=
+                  Entity (Selector_Name (Choice2))
+               then
+                  return; -- no overlap if selected entities differ
+               end if;
+               Choice1 := Prefix (Choice1);
+               Choice2 := Prefix (Choice2);
+            end loop;
+
+            --  Illegal overlap detected
+            Error_Msg_Sloc := Sloc (Info2.Choice);
+            Error_Msg_NE
+              ("record delta aggregate choice overlaps with choice & #",
+               Info1.Choice, Info2.Choice);
+         end Check_For_Bad_Overlap;
+
+      begin
+         Assoc := First (Deltas);
+         while Present (Assoc) loop
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               Current_Index := Current_Index + 1;
+               Info (Current_Index) := (Choice => Choice,
+                                        Depth => Choice_Depth (Choice));
+
+               --  Check against previous Info elements
+               for Prev_Index in 1 .. Current_Index - 1 loop
+                  Check_For_Bad_Overlap
+                    (Info (Prev_Index), Info (Current_Index));
+               end loop;
+
+               Next (Choice);
+            end loop;
+            Next (Assoc);
+         end loop;
+      end;
    end Resolve_Delta_Record_Aggregate;
 
    ------------------------------

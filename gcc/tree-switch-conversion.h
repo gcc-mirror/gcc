@@ -1,5 +1,5 @@
 /* Tree switch conversion for GNU compiler.
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -396,6 +396,24 @@ public:
   void emit (tree index_expr, tree index_type,
 	     tree default_label_expr, basic_block default_bb, location_t loc)
      final override;
+
+  /* Find bit tests of given CLUSTERS, where all members of the vector are of
+     type simple_cluster.  Use a fast algorithm that might not find the optimal
+     solution (minimal number of clusters on the output).  New clusters are
+     returned.
+
+     You should call find_bit_tests () instead of calling this function
+     directly.  */
+  static vec<cluster *> find_bit_tests_fast (vec<cluster *> &clusters);
+
+  /* Find bit tests of given CLUSTERS, where all members of the vector
+     are of type simple_cluster.  Use a slow (quadratic) algorithm that always
+     finds the optimal solution (minimal number of clusters on the output).  New
+     clusters are returned.
+
+     You should call find_bit_tests () instead of calling this function
+     directly.  */
+  static vec<cluster *> find_bit_tests_slow (vec<cluster *> &clusters);
 
   /* Find bit tests of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */

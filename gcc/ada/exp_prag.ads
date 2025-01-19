@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,10 @@ package Exp_Prag is
    procedure Expand_Pragma_Exceptional_Cases (Prag : Node_Id);
    --  Given pragma Exceptional_Cases Prag, create the circuitry needed to
    --  catch exceptions and evaluate consequence expressions.
+
+   procedure Expand_Pragma_Exit_Cases (Prag : Node_Id);
+   --  Given pragma Exit_Cases Prag, create the circuitry needed to evaluate
+   --  case guards and check the exit kind (exception raised or normal return).
 
    procedure Expand_Pragma_Initial_Condition
      (Pack_Id : Entity_Id;

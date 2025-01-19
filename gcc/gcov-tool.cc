@@ -1,5 +1,5 @@
 /* Gcc offline profile processing tool support. */
-/* Copyright (C) 2014-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by Rong Xu <xur@google.com>.
 
 This file is part of GCC.
@@ -23,7 +23,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -593,7 +592,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "%s %s%s\n", progname, pkgversion_string, version_string);
-  fnotice (stdout, "Copyright %s 2024 Free Software Foundation, Inc.\n",
+  fnotice (stdout, "Copyright %s 2025 Free Software Foundation, Inc.\n",
            _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\

@@ -1,6 +1,6 @@
 /* Process the ObjC-specific declarations and variables for
    the Objective-C++ compiler.
-   Copyright (C) 2005-2024 Free Software Foundation, Inc.
+   Copyright (C) 2005-2025 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020-2024 Free Software Foundation, Inc.
+# Copyright (C) 2020-2025 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -111,6 +111,7 @@ bug_components = {
     'libfortran',
     'libgcc',
     'libgcj',
+    'libgdiagnostics',
     'libgomp',
     'libitm',
     'libobjc',
@@ -130,6 +131,7 @@ bug_components = {
     'rtl-optimization',
     'rust',
     'sanitizer',
+    'sarif-replay',
     'spam',
     'target',
     'testsuite',

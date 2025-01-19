@@ -1,3 +1,25 @@
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* gofrontend/embed.cc (Gogo::initializer_for_embeds): Replace
+	"%<%s%>" with "%qs" in message wording.
+	* gofrontend/expressions.cc
+	(Selector_expression::lower_method_expression): Likewise.
+	* gofrontend/gogo.cc (Gogo::set_package_name): Likewise.
+	(Named_object::export_named_object): Likewise.
+	* gofrontend/parse.cc (Parse::struct_type): Likewise.
+	(Parse::parameter_list): Likewise.
+
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* go-backend.cc (INCLUDE_MEMORY): Remove.
+	* go-lang.cc (INCLUDE_MEMORY): Remove.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* go-gcc.cc: Remove trailing whitespace.
@@ -2118,7 +2140,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2024 Free Software Foundation, Inc.
+Copyright (C) 2010-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Compare the assembly language output for all the gcc tests.
-# Copyright (C) 2009-2024 Free Software Foundation, Inc.
+# Copyright (C) 2009-2025 Free Software Foundation, Inc.
 # Contributed by Paolo Bonzini.
 #
 # Invoke it as "bash compare-all-tests target1 target2 ... targetN".

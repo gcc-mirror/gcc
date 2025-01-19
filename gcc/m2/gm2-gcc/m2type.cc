@@ -1,6 +1,6 @@
 /* m2type.cc provides an interface to GCC type trees.
 
-Copyright (C) 2012-2024 Free Software Foundation, Inc.
+Copyright (C) 2012-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -119,6 +119,7 @@ static GTY (()) tree m2_complex96_type_node;
 static GTY (()) tree m2_complex128_type_node;
 static GTY (()) tree m2_packed_boolean_type_node;
 static GTY (()) tree m2_cardinal_address_type_node;
+static GTY (()) tree m2_offt_type_node;
 
 /* gm2_canonicalize_array - returns a unique array node based on
    index_type and type.  */
@@ -824,7 +825,7 @@ m2type_GetIntegerType (void)
   return integer_type_node;
 }
 
-/* GetCSizeTType return a type representing, size_t on this system.  */
+/* GetCSizeTType return a type representing size_t.  */
 
 tree
 m2type_GetCSizeTType (void)
@@ -832,13 +833,20 @@ m2type_GetCSizeTType (void)
   return sizetype;
 }
 
-/* GetCSSizeTType return a type representing, size_t on this
-   system.  */
+/* GetCSSizeTType return a type representing size_t.  */
 
 tree
 m2type_GetCSSizeTType (void)
 {
   return ssizetype;
+}
+
+/* GetCSSizeTType return a type representing off_t.  */
+
+tree
+m2type_GetCOffTType (void)
+{
+  return m2_offt_type_node;
 }
 
 /* GetPackedBooleanType return the packed boolean data type node.  */
@@ -1373,6 +1381,14 @@ build_m2_iso_byte_node (location_t location, int loc)
   return c;
 }
 
+static tree
+build_m2_offt_type_node (location_t location)
+{
+  m2assert_AssertLocation (location);
+  return build_m2_specific_size_type (location, INTEGER_TYPE,
+				      M2Options_GetFileOffsetBits (), true);
+}
+
 /* m2type_InitSystemTypes initialise loc and word derivatives.  */
 
 void
@@ -1386,6 +1402,7 @@ m2type_InitSystemTypes (location_t location, int loc)
   m2_word16_type_node = build_m2_word16_type_node (location, loc);
   m2_word32_type_node = build_m2_word32_type_node (location, loc);
   m2_word64_type_node = build_m2_word64_type_node (location, loc);
+  m2_offt_type_node = build_m2_offt_type_node (location);
 }
 
 static tree

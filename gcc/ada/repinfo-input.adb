@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2018-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2018-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -341,7 +341,8 @@ package body Repinfo.Input is
 
          else
             declare
-               S : String (Integer (Lo) .. Integer (Hi));
+               S : constant String (Integer (Lo) .. Integer (Hi));
+               pragma Import (Ada, S);
                for S'Address use Text (Lo)'Address;
 
             begin
@@ -627,7 +628,8 @@ package body Repinfo.Input is
 
          else
             declare
-               S : String (Integer (Lo) .. Integer (Hi));
+               S : constant String (Integer (Lo) .. Integer (Hi));
+               pragma Import (Ada, S);
                for S'Address use Text (Lo)'Address;
 
             begin

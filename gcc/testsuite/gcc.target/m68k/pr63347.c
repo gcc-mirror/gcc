@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -mcpu=5208 -w" } */
 
 void __attribute__ ((noinline))
-oof()
+oof(const char *s)
 {
   asm volatile ("" ::: "memory");
 }

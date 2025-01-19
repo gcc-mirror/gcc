@@ -2,7 +2,7 @@
    directives to separate functions, converts others into explicit calls to the
    runtime library (libgomp) and so forth
 
-Copyright (C) 2005-2024 Free Software Foundation, Inc.
+Copyright (C) 2005-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -127,6 +126,23 @@ is_combined_parallel (struct omp_region *region)
   return region->is_combined_parallel;
 }
 
+/* Return true is REGION is or is contained within an offload region.  */
+
+static bool
+is_in_offload_region (struct omp_region *region)
+{
+  gimple *entry_stmt = last_nondebug_stmt (region->entry);
+  if (is_gimple_omp (entry_stmt)
+      && is_gimple_omp_offloaded (entry_stmt))
+    return true;
+  else if (region->outer)
+    return is_in_offload_region (region->outer);
+  else
+    return (lookup_attribute ("omp declare target",
+			      DECL_ATTRIBUTES (current_function_decl))
+	    != NULL);
+}
+
 /* Given two blocks PAR_ENTRY_BB and WS_ENTRY_BB such that WS_ENTRY_BB
    is the immediate dominator of PAR_ENTRY_BB, return true if there
    are no data dependencies that would prevent expanding the parallel
@@ -207,20 +223,34 @@ workshare_safe_to_combine_p (basic_block ws_entry_bb)
    presence (SIMD_SCHEDULE).  */
 
 static tree
-omp_adjust_chunk_size (tree chunk_size, bool simd_schedule)
+omp_adjust_chunk_size (tree chunk_size, bool simd_schedule, bool offload)
 {
   if (!simd_schedule || integer_zerop (chunk_size))
     return chunk_size;
 
-  poly_uint64 vf = omp_max_vf ();
-  if (known_eq (vf, 1U))
-    return chunk_size;
-
+  tree vf;
   tree type = TREE_TYPE (chunk_size);
-  chunk_size = fold_build2 (PLUS_EXPR, type, chunk_size,
-			    build_int_cst (type, vf - 1));
-  return fold_build2 (BIT_AND_EXPR, type, chunk_size,
-		      build_int_cst (type, -vf));
+
+  if (offload)
+    {
+      cfun->curr_properties &= ~PROP_gimple_lomp_dev;
+      vf = build_call_expr_internal_loc (UNKNOWN_LOCATION, IFN_GOMP_MAX_VF,
+					 unsigned_type_node, 0);
+      vf = fold_convert (type, vf);
+    }
+  else
+    {
+      poly_uint64 vf_num = omp_max_vf (false);
+      if (known_eq (vf_num, 1U))
+	return chunk_size;
+      vf = build_int_cst (type, vf_num);
+    }
+
+  tree vf_minus_one = fold_build2 (MINUS_EXPR, type, vf,
+				   build_int_cst (type, 1));
+  tree negative_vf = fold_build1 (NEGATE_EXPR, type, vf);
+  chunk_size = fold_build2 (PLUS_EXPR, type, chunk_size, vf_minus_one);
+  return fold_build2 (BIT_AND_EXPR, type, chunk_size, negative_vf);
 }
 
 /* Collect additional arguments needed to emit a combined
@@ -228,7 +258,7 @@ omp_adjust_chunk_size (tree chunk_size, bool simd_schedule)
    expanded.  */
 
 static vec<tree, va_gc> *
-get_ws_args_for (gimple *par_stmt, gimple *ws_stmt)
+get_ws_args_for (gimple *par_stmt, gimple *ws_stmt, bool offload)
 {
   tree t;
   location_t loc = gimple_location (ws_stmt);
@@ -270,7 +300,7 @@ get_ws_args_for (gimple *par_stmt, gimple *ws_stmt)
       if (fd.chunk_size)
 	{
 	  t = fold_convert_loc (loc, long_integer_type_node, fd.chunk_size);
-	  t = omp_adjust_chunk_size (t, fd.simd_schedule);
+	  t = omp_adjust_chunk_size (t, fd.simd_schedule, offload);
 	  ws_args->quick_push (t);
 	}
 
@@ -366,7 +396,8 @@ determine_parallel_type (struct omp_region *region)
 
       region->is_combined_parallel = true;
       region->inner->is_combined_parallel = true;
-      region->ws_args = get_ws_args_for (par_stmt, ws_stmt);
+      region->ws_args = get_ws_args_for (par_stmt, ws_stmt,
+					 is_in_offload_region (region));
     }
 }
 
@@ -1479,6 +1510,8 @@ expand_omp_taskreg (struct omp_region *region)
       child_cfun->has_force_vectorize_loops |= cfun->has_force_vectorize_loops;
       cgraph_node *node = cgraph_node::get_create (child_fn);
       node->parallelized_function = 1;
+      node->has_omp_variant_constructs
+	|= cgraph_node::get (cfun->decl)->has_omp_variant_constructs;
       cgraph_node::add_new_function (child_fn, true);
 
       bool need_asm = DECL_ASSEMBLER_NAME_SET_P (current_function_decl)
@@ -3929,6 +3962,7 @@ expand_omp_for_generic (struct omp_region *region,
   tree *counts = NULL;
   int i;
   bool ordered_lastprivate = false;
+  bool offload = is_in_offload_region (region);
 
   gcc_assert (!broken_loop || !in_combined_parallel);
   gcc_assert (fd->iter_type == long_integer_type_node
@@ -4196,7 +4230,7 @@ expand_omp_for_generic (struct omp_region *region,
 	  if (fd->chunk_size)
 	    {
 	      t = fold_convert (fd->iter_type, fd->chunk_size);
-	      t = omp_adjust_chunk_size (t, fd->simd_schedule);
+	      t = omp_adjust_chunk_size (t, fd->simd_schedule, offload);
 	      if (sched_arg)
 		{
 		  if (fd->ordered)
@@ -4240,7 +4274,7 @@ expand_omp_for_generic (struct omp_region *region,
 	    {
 	      tree bfn_decl = builtin_decl_explicit (start_fn);
 	      t = fold_convert (fd->iter_type, fd->chunk_size);
-	      t = omp_adjust_chunk_size (t, fd->simd_schedule);
+	      t = omp_adjust_chunk_size (t, fd->simd_schedule, offload);
 	      if (sched_arg)
 		t = build_call_expr (bfn_decl, 10, t5, t0, t1, t2, sched_arg,
 				     t, t3, t4, reductions, mem);
@@ -5937,7 +5971,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
   step = force_gimple_operand_gsi (&gsi, fold_convert (itype, step),
 				   true, NULL_TREE, true, GSI_SAME_STMT);
   tree chunk_size = fold_convert (itype, fd->chunk_size);
-  chunk_size = omp_adjust_chunk_size (chunk_size, fd->simd_schedule);
+  chunk_size = omp_adjust_chunk_size (chunk_size, fd->simd_schedule,
+				      is_in_offload_region (region));
   chunk_size
     = force_gimple_operand_gsi (&gsi, chunk_size, true, NULL_TREE, true,
 				GSI_SAME_STMT);
@@ -10018,6 +10053,8 @@ expand_omp_target (struct omp_region *region)
       child_cfun->has_force_vectorize_loops |= cfun->has_force_vectorize_loops;
       cgraph_node *node = cgraph_node::get_create (child_fn);
       node->parallelized_function = 1;
+      node->has_omp_variant_constructs
+	|= cgraph_node::get (cfun->decl)->has_omp_variant_constructs;
       cgraph_node::add_new_function (child_fn, true);
 
       /* Add the new function to the offload table.  */
@@ -10109,7 +10146,7 @@ expand_omp_target (struct omp_region *region)
 
 	  /* Enable pass_omp_device_lower pass.  */
 	  fn2_node = cgraph_node::get (DECL_CONTEXT (child_fn));
-	  fn2_node->calls_declare_variant_alt = 1;
+	  fn2_node->has_omp_variant_constructs = 1;
 
 	  t = build_decl (DECL_SOURCE_LOCATION (child_fn),
 			  RESULT_DECL, NULL_TREE, void_type_node);

@@ -51,14 +51,14 @@
 #endif
 
 #if __has_embed ("embed-1.c" limit (0)) != __STDC_EMBED_EMPTY__
-#errror "__has_embed fail"
+#error "__has_embed fail"
 #endif
 
 #define E1 "embed-1.c"
 #define E2 limit (
 #define E3 1)
 #if __has_embed (E1 E2 E3) != __STDC_EMBED_FOUND__
-#errror "__has_embed fail"
+#error "__has_embed fail"
 #endif
 
 #if __has_embed (<embed-1.c>) != __STDC_EMBED_NOT_FOUND__
@@ -77,19 +77,19 @@ E6 \
 #endif
 
 #if __has_embed ("embed-1.inc") != __STDC_EMBED_FOUND__
-#errror "__has_embed fail"
+#error "__has_embed fail"
 #endif
 
 #if __has_embed ( "embed-1.inc" __limit__ ( 7 - 7 ) ) != __STDC_EMBED_EMPTY__
-#errror "__has_embed fail"
+#error "__has_embed fail"
 #endif
 
 #if __has_embed (<embed-1.inc>) != __STDC_EMBED_FOUND__
-#errror "__has_embed fail"
+#error "__has_embed fail"
 #endif
 
 #if __has_embed (<embed-1.inc> limit(0)) != __STDC_EMBED_EMPTY__
-#errror "__has_embed fail"
+#error "__has_embed fail"
 #endif
 
 #if __has_embed ("../empty.h") != __STDC_EMBED_EMPTY__

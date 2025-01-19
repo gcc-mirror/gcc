@@ -138,10 +138,9 @@ immutable(void)* g10063(inout int* p) pure
 TEST_OUTPUT:
 ---
 fail_compilation/testInference.d(154): Error: `pure` function `testInference.bar14049` cannot call impure function `testInference.foo14049!int.foo14049`
-fail_compilation/testInference.d(149):        which calls `testInference.foo14049!int.foo14049.__lambda2`
+fail_compilation/testInference.d(149):        which calls `testInference.foo14049!int.foo14049.__lambda_L147_C14`
 fail_compilation/testInference.d(148):        which calls `testInference.impure14049`
-fail_compilation/testInference.d(143):        which wasn't inferred `pure` because of:
-fail_compilation/testInference.d(143):        `pure` function `testInference.impure14049` cannot access mutable static data `i`
+fail_compilation/testInference.d(143):        and accessing mutable static data `i` makes it fail to infer `pure`
 ---
 */
 #line 143
@@ -191,11 +190,9 @@ void test12422() pure
 TEST_OUTPUT:
 ---
 fail_compilation/testInference.d(198): Error: `pure` function `testInference.test13729a` cannot call impure function `testInference.test13729a.foo`
-fail_compilation/testInference.d(196):        which wasn't inferred `pure` because of:
-fail_compilation/testInference.d(196):        `pure` function `testInference.test13729a.foo` cannot access mutable static data `g13729`
+fail_compilation/testInference.d(196):        and accessing mutable static data `g13729` makes it fail to infer `pure`
 fail_compilation/testInference.d(206): Error: `pure` function `testInference.test13729b` cannot call impure function `testInference.test13729b.foo!().foo`
-fail_compilation/testInference.d(204):        which wasn't inferred `pure` because of:
-fail_compilation/testInference.d(204):        `pure` function `testInference.test13729b.foo!().foo` cannot access mutable static data `g13729`
+fail_compilation/testInference.d(204):        and accessing mutable static data `g13729` makes it fail to infer `pure`
 ---
 */
 
@@ -222,7 +219,7 @@ void test13729b() pure
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/testInference.d(225): Error: `testInference.test17086` called with argument types `(bool)` matches both:
+fail_compilation/testInference.d(225): Error: `testInference.test17086` called with argument types `(bool)` matches multiple overloads exactly:
 fail_compilation/testInference.d(219):     `testInference.test17086!(bool, false).test17086(bool x)`
 and:
 fail_compilation/testInference.d(220):     `testInference.test17086!(bool, false).test17086(bool y)`

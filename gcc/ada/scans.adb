@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,6 +134,9 @@ package body Scans is
       --  Ada 2012 reserved words
 
       Set_Reserved (Name_Some, Tok_Some);
+
+      --  GNAT extensions reserved words
+      Set_Reserved (Name_Finally, Tok_Finally);
    end Initialize_Ada_Keywords;
 
    ------------------

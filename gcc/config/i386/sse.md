@@ -1,5 +1,5 @@
 ;; GCC machine description for SSE instructions
-;; Copyright (C) 2005-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -540,7 +540,7 @@
   [(V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")])
 
 (define_mode_iterator VF1_AVX512BW
-  [(V16SF "TARGET_EVEX512 && TARGET_EVEX512") (V8SF "TARGET_AVX2") V4SF])
+  [(V16SF "TARGET_AVX512BW && TARGET_EVEX512") (V8SF "TARGET_AVX2") V4SF])
 
 (define_mode_iterator VF1_AVX10_2
   [(V16SF "TARGET_AVX10_2_512") V8SF V4SF])
@@ -10424,7 +10424,10 @@
        (match_dup 2)
        (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE2"
-  "operands[2] = gen_reg_rtx (V4SFmode);")
+{
+  operands[2] = gen_reg_rtx (V4SFmode);
+  emit_move_insn (operands[2], CONST0_RTX (V4SFmode));
+})
 
 (define_expand "vec_unpacks_hi_v8sf"
   [(set (match_dup 2)
@@ -28650,7 +28653,7 @@
    (set_attr "btver2_decode" "vector") 
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "maskload<mode><sseintvecmodelower>"
+(define_expand "maskload<mode><sseintvecmodelower>_1"
   [(set (match_operand:V48_128_256 0 "register_operand")
 	(unspec:V48_128_256
 	  [(match_operand:<sseintvecmode> 2 "register_operand")
@@ -28658,13 +28661,28 @@
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
 
+(define_expand "maskload<mode><sseintvecmodelower>"
+  [(set (match_operand:V48_128_256 0 "register_operand")
+       (unspec:V48_128_256
+         [(match_operand:<sseintvecmode> 2 "register_operand")
+          (match_operand:V48_128_256 1 "memory_operand")
+          (match_operand:V48_128_256 3 "const0_operand")]
+         UNSPEC_MASKMOV))]
+  "TARGET_AVX"
+{
+  emit_insn (gen_maskload<mode><sseintvecmodelower>_1 (operands[0],
+						       operands[1],
+						       operands[2]));
+  DONE;
+})
+
 (define_expand "maskload<mode><avx512fmaskmodelower>"
   [(set (match_operand:V48_AVX512VL 0 "register_operand")
 	(vec_merge:V48_AVX512VL
 	  (unspec:V48_AVX512VL
 	    [(match_operand:V48_AVX512VL 1 "memory_operand")]
 	    UNSPEC_MASKLOAD)
-	  (match_dup 0)
+          (match_operand:V48_AVX512VL 3 "const0_operand")
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
 
@@ -28674,7 +28692,7 @@
 	  (unspec:VI12HFBF_AVX512VL
 	    [(match_operand:VI12HFBF_AVX512VL 1 "memory_operand")]
 	    UNSPEC_MASKLOAD)
-	  (match_dup 0)
+          (match_operand:VI12HFBF_AVX512VL 3 "const0_operand")
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512BW")
 
@@ -30995,7 +31013,10 @@
   [(set (match_operand:V4BF 0 "register_operand")
 	  (float_truncate:V4BF
 	    (match_operand:V4SF 1 "nonimmediate_operand")))]
-  "TARGET_SSSE3"
+  "TARGET_SSSE3 && !HONOR_NANS (BFmode) && !flag_rounding_math
+   && (flag_unsafe_math_optimizations
+       || TARGET_AVXNECONVERT
+       || (TARGET_AVX512BF16 && TARGET_AVX512VL))"
 {
   if (!TARGET_AVXNECONVERT
       && !(TARGET_AVX512BF16 && TARGET_AVX512VL))
@@ -31088,7 +31109,10 @@
   [(set (match_operand:V8BF 0 "register_operand")
 	(float_truncate:V8BF
 	  (match_operand:V8SF 1 "nonimmediate_operand")))]
-  "TARGET_AVX2"
+  "TARGET_AVX2 && !HONOR_NANS (BFmode) && !flag_rounding_math
+   && (flag_unsafe_math_optimizations
+       || TARGET_AVXNECONVERT
+       || (TARGET_AVX512BF16 && TARGET_AVX512VL))"
 {
   if (!TARGET_AVXNECONVERT
       && !(TARGET_AVX512BF16 && TARGET_AVX512VL))
@@ -31114,7 +31138,9 @@
   [(set (match_operand:V16BF 0 "register_operand")
 	(float_truncate:V16BF
 	  (match_operand:V16SF 1 "nonimmediate_operand")))]
-  "TARGET_AVX512BW && TARGET_EVEX512"
+  "TARGET_AVX512BW && TARGET_EVEX512
+   && !HONOR_NANS (BFmode) && !flag_rounding_math
+   && (flag_unsafe_math_optimizations || TARGET_AVX512BF16)"
 {
   if (!TARGET_AVX512BF16)
     {
@@ -31127,7 +31153,7 @@
   [(set (match_operand:VF1_AVX512BW 0 "register_operand")
 	(float_extend:VF1_AVX512BW
 	  (match_operand:<sf_cvt_bf16> 1 "nonimmediate_operand")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && !HONOR_NANS (BFmode)"
 {
   ix86_expand_vector_bf2sf_with_vec_perm (operands[0], operands[1]);
   DONE;

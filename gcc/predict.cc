@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
    [3] "Corpus-based Static Branch Prediction"
        Calder, Grunwald, Lindsay, Martin, Mozer, and Zorn; PLDI '95.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

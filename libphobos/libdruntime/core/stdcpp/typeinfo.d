@@ -13,53 +13,7 @@ module core.stdcpp.typeinfo;
 
 import core.attribute : weak;
 
-version (CppRuntime_DigitalMars)
-{
-    import core.stdcpp.exception;
-
-    extern (C++, "std"):
-
-    class type_info
-    {
-    @nogc:
-        void* pdata;
-
-    public:
-        //virtual ~this();
-        void dtor() { }     // reserve slot in vtbl[]
-
-        //bool operator==(const type_info rhs) const;
-        //bool operator!=(const type_info rhs) const;
-        final bool before(const type_info rhs) const nothrow;
-        final const(char)* name() const nothrow;
-    protected:
-        //type_info();
-    private:
-        //this(const type_info rhs);
-        //type_info operator=(const type_info rhs);
-    }
-
-    class bad_cast : exception
-    {
-    @nogc:
-        extern(D) this() nothrow { }
-        extern(D) this(const bad_cast) nothrow { }
-        //bad_cast operator=(const bad_cast) nothrow { return this; }
-        //virtual ~this() nothrow;
-        override const(char)* what() const nothrow;
-    }
-
-    class bad_typeid : exception
-    {
-    @nogc:
-        extern(D) this() nothrow { }
-        extern(D) this(const bad_typeid) nothrow { }
-        //bad_typeid operator=(const bad_typeid) nothrow { return this; }
-        //virtual ~this() nothrow;
-        override const (char)* what() const nothrow;
-    }
-}
-else version (CppRuntime_Microsoft)
+version (CppRuntime_Microsoft)
 {
     import core.stdcpp.exception;
 
@@ -102,7 +56,7 @@ else version (CppRuntime_Microsoft)
         //virtual ~this();
     }
 }
-else version (CppRuntime_Gcc)
+else version (CppRuntime_GNU)
 {
     import core.stdcpp.exception;
 
@@ -156,7 +110,7 @@ else version (CppRuntime_Gcc)
         @weak override const(char)* what() const nothrow { return "bad typeid"; }
     }
 }
-else version (CppRuntime_Clang)
+else version (CppRuntime_LLVM)
 {
     import core.stdcpp.exception;
 

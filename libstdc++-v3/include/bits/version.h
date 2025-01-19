@@ -1,4 +1,4 @@
-// Copyright (C) 2023-2024 Free Software Foundation, Inc.
+// Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1835,6 +1835,26 @@
 #endif /* !defined(__cpp_lib_adaptor_iterator_pair_constructor) && defined(__glibcxx_want_adaptor_iterator_pair_constructor) */
 #undef __glibcxx_want_adaptor_iterator_pair_constructor
 
+#if !defined(__cpp_lib_flat_map)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_flat_map 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_flat_map)
+#   define __cpp_lib_flat_map 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_flat_map) && defined(__glibcxx_want_flat_map) */
+#undef __glibcxx_want_flat_map
+
+#if !defined(__cpp_lib_flat_set)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_flat_set 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_flat_set)
+#   define __cpp_lib_flat_set 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_flat_set) && defined(__glibcxx_want_flat_set) */
+#undef __glibcxx_want_flat_set
+
 #if !defined(__cpp_lib_formatters)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_formatters 202302L
@@ -2055,6 +2075,16 @@
 #endif /* !defined(__cpp_lib_saturation_arithmetic) && defined(__glibcxx_want_saturation_arithmetic) */
 #undef __glibcxx_want_saturation_arithmetic
 
+#if !defined(__cpp_lib_span_initializer_list)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_span_initializer_list 202311L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_span_initializer_list)
+#   define __cpp_lib_span_initializer_list 202311L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_span_initializer_list) && defined(__glibcxx_want_span_initializer_list) */
+#undef __glibcxx_want_span_initializer_list
+
 #if !defined(__cpp_lib_text_encoding)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (_GLIBCXX_USE_NL_LANGINFO_L)
 #  define __glibcxx_text_encoding 202306L
@@ -2074,5 +2104,15 @@
 # endif
 #endif /* !defined(__cpp_lib_to_string) && defined(__glibcxx_want_to_string) */
 #undef __glibcxx_want_to_string
+
+#if !defined(__cpp_lib_modules)
+# if (__cplusplus >= 202002L) && (__cpp_modules)
+#  define __glibcxx_modules 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_modules)
+#   define __cpp_lib_modules 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_modules) && defined(__glibcxx_want_modules) */
+#undef __glibcxx_want_modules
 
 #undef __glibcxx_want_all

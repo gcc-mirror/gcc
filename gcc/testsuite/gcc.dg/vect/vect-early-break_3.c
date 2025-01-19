@@ -5,7 +5,7 @@
 
 /* { dg-additional-options "-Ofast" } */
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
 
 unsigned test4(char x, char *vect, int n)
 {  

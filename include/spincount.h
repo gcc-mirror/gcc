@@ -1,4 +1,4 @@
-/* Copyright (C) 2023-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2023-2025 Free Software Foundation, Inc.
    Contributed by Jun Zhang <jun.zhang@intel.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library

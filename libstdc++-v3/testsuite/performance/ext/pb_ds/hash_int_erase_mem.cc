@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2024 Free Software Foundation, Inc.
+// Copyright (C) 2005-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -45,8 +45,11 @@
 #include <vector>
 #include <functional>
 
-struct int_hash : public std::unary_function<int, int>
+struct int_hash
 {
+  typedef int result_type;
+  typedef int argument_type;
+
   inline int
   operator()(int i) const
   { return i; }

@@ -1,5 +1,5 @@
 /* typeinfo.cc -- D runtime type identification.
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -259,10 +258,10 @@ create_tinfo_types (Module *mod)
 			  Identifier::idPool ("TypeInfo_Class"),
 			  array_type_node, array_type_node, array_type_node,
 			  array_type_node, ptr_type_node, ptr_type_node,
-			  ptr_type_node, d_uint_type, ptr_type_node,
-			  array_type_node, ptr_type_node, ptr_type_node,
-			  d_uint_type, d_uint_type, d_uint_type, d_uint_type,
-			  NULL);
+			  ptr_type_node, d_ushort_type, d_ushort_type,
+			  ptr_type_node, array_type_node, ptr_type_node,
+			  ptr_type_node, d_uint_type, d_uint_type, d_uint_type,
+			  d_uint_type, NULL);
 
   object_module = mod;
 }
@@ -663,9 +662,9 @@ public:
     this->layout_string (ed->toPrettyChars ());
 
     /* Default initializer for enum.  */
-    if (ed->members && !d->tinfo->isZeroInit ())
+    if (ed->members && !dmd::isZeroInit (d->tinfo))
       {
-	tree length = size_int (ed->type->size ());
+	tree length = size_int (dmd::size (ed->type));
 	tree ptr = build_address (enum_initializer_decl (ed));
 	this->layout_field (d_array_value (array_type_node, length, ptr));
       }
@@ -814,6 +813,7 @@ public:
 	void *destructor;
 	void function(Object) classInvariant;
 	ClassFlags m_flags;
+	ushort depth;
 	void *deallocator;
 	OffsetTypeInfo[] m_offTi;
 	void function(Object) defaultConstructor;
@@ -919,7 +919,10 @@ public:
 	flags |= ClassFlags::noPointers;
 
     Lhaspointers:
-	this->layout_field (build_integer_cst (flags, d_uint_type));
+	this->layout_field (build_integer_cst (flags, d_ushort_type));
+
+	/* ushort depth;  (not implemented)  */
+	this->layout_field (build_zero_cst (d_ushort_type));
 
 	/* void *deallocator;  */
 	this->layout_field (null_pointer_node);
@@ -980,7 +983,10 @@ public:
 	if (cd->isCOMinterface ())
 	  flags |= ClassFlags::isCOMclass;
 
-	this->layout_field (build_integer_cst (flags, d_uint_type));
+	this->layout_field (build_integer_cst (flags, d_ushort_type));
+
+	/* ushort depth;  (not implemented)  */
+	this->layout_field (build_zero_cst (d_ushort_type));
 
 	/* void *deallocator;
 	   OffsetTypeInfo[] m_offTi;  (not implemented)
@@ -1416,7 +1422,7 @@ check_typeinfo_type (const Loc &loc, Scope *sc, Expression *expr)
     {
       /* Even when compiling without RTTI we should still be able to evaluate
 	 TypeInfo at compile-time, just not at run-time.  */
-      if (!sc || !(sc->flags & unsigned(SCOPE::ctfe)))
+      if (!sc || !sc->ctfe ())
 	{
 	  static int warned = 0;
 
@@ -1541,12 +1547,10 @@ get_cpp_typeinfo_decl (ClassDeclaration *decl)
   return decl->cpp_type_info_ptr_sym;
 }
 
-/* Get the exact TypeInfo for TYPE, if it doesn't exist, create it.
-   When GENERATE is true, push the TypeInfo as a member of MOD so that it will
-   get code generation. */
+/* Get the exact TypeInfo for TYPE, if it doesn't exist, create it.  */
 
 void
-create_typeinfo (Type *type, Module *mod, bool generate)
+create_typeinfo (Type *type, Module *mod)
 {
   if (!Type::dtypeinfo)
     create_frontend_tinfo_types ();
@@ -1704,7 +1708,7 @@ create_typeinfo (Type *type, Module *mod, bool generate)
 
       /* If this has a custom implementation in rt/typeinfo, then
 	 do not generate a COMDAT for it.  */
-      if (generate && !builtin_typeinfo_p (t))
+      if (!builtin_typeinfo_p (t))
 	{
 	  /* Find module that will go all the way to an object file.  */
 	  if (mod)

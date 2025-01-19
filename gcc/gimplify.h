@@ -1,5 +1,5 @@
 /* Header file for gimplification.
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,7 +76,8 @@ extern void omp_firstprivatize_variable (struct gimplify_omp_ctx *, tree);
 extern enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 					   bool (*) (tree), fallback_t);
 
-int omp_construct_selector_matches (enum tree_code *, int, int *);
+extern tree omp_get_construct_context (void);
+int omp_has_novariants (void);
 
 extern void gimplify_type_sizes (tree, gimple_seq *);
 extern void gimplify_one_sizepos (tree *, gimple_seq *);

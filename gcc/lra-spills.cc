@@ -1,5 +1,5 @@
 /* Change pseudos by memory.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -537,6 +537,11 @@ spill_pseudos (void)
 		      break;
 		    }
 		}
+	      if (GET_CODE (PATTERN (insn)) == CLOBBER)
+		/* This is a CLOBBER insn with pseudo spilled to memory.
+		   Mark it for removing it later together with LRA temporary
+		   CLOBBER insns.  */
+		LRA_TEMP_CLOBBER_P (PATTERN (insn)) = 1;
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,
 			 "Changing spilled pseudos to memory in insn #%u\n",
@@ -589,8 +594,9 @@ lra_need_for_scratch_reg_p (void)
 bool
 lra_need_for_spills_p (void)
 {
-  int i; max_regno = max_reg_num ();
+  int i;
 
+  max_regno = max_reg_num ();
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
 	&& ! ira_former_scratch_p (i))

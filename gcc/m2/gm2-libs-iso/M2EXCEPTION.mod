@@ -1,6 +1,6 @@
 (* M2EXCEPTION.mod implements access to the exception state.
 
-Copyright (C) 2003-2024 Free Software Foundation, Inc.
+Copyright (C) 2003-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -42,7 +42,8 @@ BEGIN
    ELSE
       RTExceptions.Raise(ORD(exException),
                          ADR(__FILE__), __LINE__, __COLUMN__, ADR(__FUNCTION__),
-                         ADR('current coroutine is not in the exceptional execution state'))
+                         ADR('current coroutine is not in the exceptional execution state')) ;
+      RETURN exException
    END
 END M2Exception ;
 

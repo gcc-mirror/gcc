@@ -47878,7 +47878,6 @@
 	(ix86_expand_vector_init): New.
 	* emmintrin.h (__mm_set_pd, __mm_set_ps): Use vector extensions.
 	* md.texi (vec_set, vec_extract): Document
-
 
 Copyright (C) 2004 Free Software Foundation, Inc.
 

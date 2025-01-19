@@ -1,3 +1,4 @@
+/* { dg-additional-options "-Wno-old-style-definition" } */
 /* { dg-require-effective-target int32plus } */
 
 typedef long unsigned int size_t;

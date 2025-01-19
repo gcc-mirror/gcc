@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -286,13 +286,6 @@ begin
 
       Save_Config_Cunit_Boolean_Restrictions;
 
-      --  If there was a -gnatem switch, initialize the mappings of unit names
-      --  to file names and of file names to path names from the mapping file.
-
-      if Mapping_File_Name /= null then
-         Fmap.Initialize (Mapping_File_Name.all);
-      end if;
-
       --  Adjust Optimize_Alignment mode from debug switches if necessary
 
       if Debug_Flag_Dot_SS then
@@ -387,9 +380,7 @@ begin
       --  Disable Initialize_Scalars for runtime files to avoid circular
       --  dependencies.
 
-      if Initialize_Scalars
-        and then Fname.Is_Predefined_File_Name (File_Name (Main_Source_File))
-      then
+      if Initialize_Scalars and then Is_Predefined_Unit (Main_Unit) then
          Initialize_Scalars   := False;
          Init_Or_Norm_Scalars := Normalize_Scalars;
       end if;

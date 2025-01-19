@@ -1,5 +1,5 @@
 /+
-REQUIRED_ARGS: -HC -c -o- -wi -extern-std=c++20
+REQUIRED_ARGS: -verrors=simple -HC -c -o- -wi -extern-std=c++20
 PERMUTE_ARGS:
 TEST_OUTPUT:
 ---
@@ -20,33 +20,6 @@ compilable/dtoh_invalid_identifiers.d(145): Warning: function `__attribute__` is
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#ifdef CUSTOM_D_ARRAY_TYPE
-#define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
-#else
-/// Represents a D [] array
-template<typename T>
-struct _d_dynamicArray final
-{
-    size_t length;
-    T *ptr;
-
-    _d_dynamicArray() : length(0), ptr(NULL) { }
-
-    _d_dynamicArray(size_t length_in, T *ptr_in)
-        : length(length_in), ptr(ptr_in) { }
-
-    T& operator[](const size_t idx) {
-        assert(idx < length);
-        return ptr[idx];
-    }
-
-    const T& operator[](const size_t idx) const {
-        assert(idx < length);
-        return ptr[idx];
-    }
-};
-#endif
 
 extern void register(int32_t* ptr);
 

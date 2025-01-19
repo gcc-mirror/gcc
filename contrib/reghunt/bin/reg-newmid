@@ -10,7 +10,7 @@
 # A nifty improvement would be to record known ranges of failure as
 # ranges, and then pick revisions just before and just after the range.
 #
-# Copyright (C) 2006-2024 Free Software Foundation, Inc.
+# Copyright (C) 2006-2025 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler.  LoongArch version.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on MIPS target for GNU compiler.
 
@@ -86,7 +86,7 @@ extern void loongarch_split_move (rtx, rtx);
 extern bool loongarch_addu16i_imm12_operand_p (HOST_WIDE_INT, machine_mode);
 extern void loongarch_split_plus_constant (rtx *, machine_mode);
 extern void loongarch_split_vector_move (rtx, rtx);
-extern const char *loongarch_output_move (rtx, rtx);
+extern const char *loongarch_output_move (rtx *);
 #ifdef RTX_CODE
 extern void loongarch_expand_scc (rtx *);
 extern void loongarch_expand_vec_cmp (rtx *);
@@ -113,8 +113,9 @@ extern rtx loongarch_return_addr (int, rtx);
 
 extern bool loongarch_const_vector_same_val_p (rtx, machine_mode);
 extern bool loongarch_const_vector_same_bytes_p (rtx, machine_mode);
-extern bool loongarch_const_vector_same_int_p (rtx, machine_mode, HOST_WIDE_INT,
-					  HOST_WIDE_INT);
+extern bool loongarch_const_vector_same_int_p (rtx, machine_mode,
+			   HOST_WIDE_INT low = HOST_WIDE_INT_MIN,
+			   HOST_WIDE_INT high = HOST_WIDE_INT_MAX);
 extern bool loongarch_const_vector_shuffle_set_p (rtx, machine_mode);
 extern bool loongarch_const_vector_bitimm_set_p (rtx, machine_mode);
 extern bool loongarch_const_vector_bitimm_clr_p (rtx, machine_mode);
@@ -170,7 +171,7 @@ extern void loongarch_expand_atomic_qihi (union loongarch_gen_fn_ptrs,
 
 extern void loongarch_expand_vector_group_init (rtx, rtx);
 extern void loongarch_expand_vector_init (rtx, rtx);
-extern void loongarch_expand_vec_unpack (rtx op[2], bool, bool);
+extern void loongarch_expand_vec_unpack (rtx op[2], bool);
 extern void loongarch_expand_vec_perm (rtx, rtx, rtx, rtx);
 extern void loongarch_expand_vec_perm_1 (rtx[]);
 extern void loongarch_expand_vector_extract (rtx, rtx, int);
@@ -203,7 +204,6 @@ extern void loongarch_atomic_assign_expand_fenv (tree *, tree *, tree *);
 extern tree loongarch_builtin_decl (unsigned int, bool);
 extern rtx loongarch_expand_builtin (tree, rtx, rtx subtarget ATTRIBUTE_UNUSED,
 				     machine_mode, int);
-extern tree loongarch_builtin_vectorized_function (unsigned int, tree, tree);
 extern rtx loongarch_gen_const_int_vector_shuffle (machine_mode, int);
 extern tree loongarch_build_builtin_va_list (void);
 

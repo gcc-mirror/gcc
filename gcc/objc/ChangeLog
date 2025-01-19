@@ -1,3 +1,14 @@
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* objc-act.cc (INCLUDE_MEMORY): Remove.
+	* objc-encoding.cc (INCLUDE_MEMORY): Remove.
+	* objc-gnu-runtime-abi-01.cc (INCLUDE_MEMORY): Remove.
+	* objc-lang.cc (INCLUDE_MEMORY): Remove.
+	* objc-next-runtime-abi-01.cc (INCLUDE_MEMORY): Remove.
+	* objc-next-runtime-abi-02.cc (INCLUDE_MEMORY): Remove.
+	* objc-runtime-shared-support.cc (INCLUDE_MEMORY): Remove.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc-encoding.cc: Remove trailing whitespace.
@@ -4362,9 +4373,8 @@
 	LANG_HOOKS_INCOMPLETE_TYPE_ERROR, LANG_HOOKS_TYPE_PROMOTES_TO,
 	LANG_HOOKS_REGISTER_BUILTIN_TYPE, LANG_HOOKS_WRITE_GLOBALS):
 	Move to c-objc-common.h.
-
 
-Copyright (C) 2004-2024 Free Software Foundation, Inc.
+Copyright (C) 2004-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

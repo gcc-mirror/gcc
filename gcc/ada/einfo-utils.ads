@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2020-2024, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2025, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -447,6 +447,7 @@ package Einfo.Utils is
    --    Effective_Reads
    --    Effective_Writes
    --    Exceptional_Cases
+   --    Exit_Cases
    --    Extensions_Visible
    --    Global
    --    Initial_Condition

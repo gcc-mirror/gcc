@@ -1,6 +1,6 @@
 (* SShortWholeIO.mod implements input/output of SHORTINT/SHORTCARD over channels.
 
-Copyright (C) 2013-2024 Free Software Foundation, Inc.
+Copyright (C) 2013-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

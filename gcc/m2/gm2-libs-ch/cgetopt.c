@@ -1,6 +1,6 @@
 /* getopt.c provide access to the C getopt library.
 
-Copyright (C) 2017-2024 Free Software Foundation, Inc.
+Copyright (C) 2017-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

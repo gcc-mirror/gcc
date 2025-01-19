@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -296,8 +296,8 @@ package body Table is
       --------------
 
       procedure Set_Item
-         (Index : Table_Index_Type;
-          Item  : Table_Component_Type)
+        (Index : Table_Index_Type;
+         Item  : Table_Component_Type)
       is
          --  If Item is a value within the current allocation, and we are going
          --  to reallocate, then we must preserve an intermediate copy here

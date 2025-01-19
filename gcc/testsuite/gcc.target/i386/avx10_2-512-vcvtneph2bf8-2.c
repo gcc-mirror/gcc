@@ -11,8 +11,8 @@
 #include "avx10-helper.h"
 #include "fp8-helper.h"
 
-#define SIZE_SRC (AVX512F_LEN / 16)
-#define SIZE (AVX512F_LEN_HALF / 8)
+#define SIZE (AVX512F_LEN / 16)
+#define SIZE_DST (AVX512F_LEN_HALF / 8)
 #include "avx512f-mask-type.h"
 
 void
@@ -23,14 +23,14 @@ CALC (unsigned char *r, _Float16 *s)
   hf8_bf8 = 1;
   saturate = 0;
   
-  for (i = 0; i < SIZE; i++)
+  for (i = 0; i < SIZE_DST; i++)
     {
       r[i] = 0;
-      if (i < SIZE_SRC)
-        {
-          Float16Union usrc = {.f16 = s[i]};
-          r[i] = convert_fp16_to_fp8(usrc.f16, 0, hf8_bf8, saturate);
-        }
+      if (i < SIZE)
+	{
+	  Float16Union usrc = {.f16 = s[i]};
+	  r[i] = convert_fp16_to_fp8(usrc.f16, 0, hf8_bf8, saturate);
+	}
     }
 }
 
@@ -41,17 +41,22 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN_HALF, i_b) res1, res2, res3; 
   UNION_TYPE (AVX512F_LEN, h) src;
   MASK_TYPE mask = MASK_VALUE;
-  unsigned char res_ref[SIZE];
+  unsigned char res_ref[SIZE_DST];
 
   sign = 1;
-  for (i = 0; i < SIZE_SRC; i++)
+  for (i = 0; i < SIZE; i++)
     {
       src.a[i] = (_Float16)(sign * (2.5 * (1 << (i % 3))));
       sign = -sign;
     }
 
+#if AVX512F_LEN > 128
+  for (i = 0; i < SIZE_DST; i++)
+    res2.a[i] = DEFAULT_VALUE;
+#else
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
+#endif
 
   CALC(res_ref, src.a);
 

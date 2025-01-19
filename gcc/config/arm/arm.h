@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2024 Free Software Foundation, Inc.
+   Copyright (C) 1991-2025 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -1127,8 +1127,20 @@ extern const int arm_arch_cde_coproc_bits[];
   ((MODE) == TImode || (MODE) == EImode || (MODE) == OImode \
    || (MODE) == CImode || (MODE) == XImode)
 
-#define VALID_MVE_STRUCT_MODE(MODE) \
-  ((MODE) == TImode || (MODE) == OImode || (MODE) == XImode)
+#define VALID_MVE_STRUCT_MODE(MODE)			    \
+  ((MODE) == TImode					    \
+   || (MODE) == OImode					    \
+   || (MODE) == XImode					    \
+   || (MODE) == V2x16QImode				    \
+   || (MODE) == V2x8HImode				    \
+   || (MODE) == V2x4SImode				    \
+   || (MODE) == V2x8HFmode				    \
+   || (MODE) == V2x4SFmode				    \
+   || (MODE) == V4x16QImode				    \
+   || (MODE) == V4x8HImode				    \
+   || (MODE) == V4x4SImode				    \
+   || (MODE) == V4x8HFmode				    \
+   || (MODE) == V4x4SFmode)
 
 /* The conditions under which vector modes are supported for general
    arithmetic using Neon.  */

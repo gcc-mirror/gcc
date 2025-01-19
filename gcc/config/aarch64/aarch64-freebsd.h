@@ -1,5 +1,5 @@
 /* Definitions for AArch64 running FreeBSD
-   Copyright (C) 2016-2024 Free Software Foundation, Inc.
+   Copyright (C) 2016-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -46,6 +46,14 @@
       %{!shared:-dynamic-linker " FBSD_DYNAMIC_LINKER " }}      \
     -X" SUBTARGET_EXTRA_LINK_SPEC "                             \
     %{mbig-endian:-EB} %{mlittle-endian:-EL}"
+
+#ifndef CC1_SPEC
+# define CC1_SPEC AARCH64_ERRATA_COMPILE_SPEC
+#endif
+
+#ifndef CC1PLUS_SPEC
+# define CC1PLUS_SPEC AARCH64_ERRATA_COMPILE_SPEC
+#endif
 
 #undef  LINK_SPEC
 #define LINK_SPEC FBSD_TARGET_LINK_SPEC AARCH64_ERRATA_LINK_SPEC

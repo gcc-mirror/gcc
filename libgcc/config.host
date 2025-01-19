@@ -1,5 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright (C) 1997-2024 Free Software Foundation, Inc.
+# Copyright (C) 1997-2025 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -182,9 +182,6 @@ mips*-*-*)
 	;;
 nds32*-*)
 	cpu_type=nds32
-	;;
-nios2*-*-*)
-	cpu_type=nios2
 	;;
 or1k*-*-*)
 	cpu_type=or1k
@@ -479,6 +476,7 @@ aarch64-*-mingw*)
 	tmake_file="${tmake_file} ${cpu_type}/t-no-eh ${tmake_thr_file}"
 	tmake_file="${tmake_file} t-dfprules"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
+	tmake_file="${tmake_file} ${cpu_type}/t-mingw"
 	tmake_file="${tmake_file} ${cpu_type}/t-lse"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	;;
@@ -1197,15 +1195,6 @@ nds32*-elf*)
 		exit 1
 		;;
 	esac
-	;;
-nios2-*-linux*)
-	tmake_file="$tmake_file nios2/t-nios2 nios2/t-linux t-libgcc-pic t-eh-dw2-dip t-slibgcc-libgcc"
-	tm_file="$tm_file nios2/elf-lib.h"
-	md_unwind_header=nios2/linux-unwind.h
-	;;
-nios2-*-*)
-	tmake_file="$tmake_file nios2/t-nios2 t-softfp-sfdf t-softfp-excl t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 or1k-*-linux*)
 	tmake_file="$tmake_file or1k/t-or1k or1k/t-crtstuff"

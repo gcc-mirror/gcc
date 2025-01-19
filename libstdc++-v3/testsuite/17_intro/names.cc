@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2024 Free Software Foundation, Inc.
+// Copyright (C) 2017-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -138,6 +138,8 @@
 // <charconv> defines to_chars_result::ptr and to_chars_result::ec
 #define ec (
 #define ptr (
+// <map> and <unordered_map> define try_emplace
+#define try_emplace (
 #endif
 
 // These clash with newlib so don't use them.

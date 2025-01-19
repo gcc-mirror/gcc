@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile for the D runtime library.
-# Copyright (C) 2012-2024 Free Software Foundation, Inc.
+# Copyright (C) 2012-2025 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -209,6 +209,7 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/internal/container/treap.lo core/internal/convert.lo \
 	core/internal/dassert.lo core/internal/destruction.lo \
 	core/internal/entrypoint.lo core/internal/gc/bits.lo \
+	core/internal/gc/blkcache.lo core/internal/gc/blockmeta.lo \
 	core/internal/gc/impl/conservative/gc.lo \
 	core/internal/gc/impl/manual/gc.lo \
 	core/internal/gc/impl/proto/gc.lo core/internal/gc/os.lo \
@@ -233,16 +234,17 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/sync/condition.lo core/sync/config.lo core/sync/event.lo \
 	core/sync/exception.lo core/sync/mutex.lo core/sync/package.lo \
 	core/sync/rwmutex.lo core/sync/semaphore.lo \
-	core/thread/context.lo core/thread/fiber.lo \
-	core/thread/osthread.lo core/thread/package.lo \
-	core/thread/threadbase.lo core/thread/threadgroup.lo \
-	core/thread/types.lo core/time.lo core/vararg.lo \
-	core/volatile.lo etc/valgrind/valgrind.lo gcc/attribute.lo \
-	gcc/attributes.lo gcc/backtrace.lo gcc/builtins.lo gcc/deh.lo \
-	gcc/emutls.lo gcc/gthread.lo gcc/sections/common.lo \
-	gcc/sections/elf.lo gcc/sections/macho.lo \
-	gcc/sections/package.lo gcc/sections/pecoff.lo gcc/simd.lo \
-	gcc/unwind/arm.lo gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
+	core/thread/context.lo core/thread/fiber/base.lo \
+	core/thread/fiber/package.lo core/thread/osthread.lo \
+	core/thread/package.lo core/thread/threadbase.lo \
+	core/thread/threadgroup.lo core/thread/types.lo core/time.lo \
+	core/vararg.lo core/volatile.lo etc/valgrind/valgrind.lo \
+	gcc/attribute.lo gcc/attributes.lo gcc/backtrace.lo \
+	gcc/builtins.lo gcc/deh.lo gcc/emutls.lo gcc/gthread.lo \
+	gcc/sections/common.lo gcc/sections/elf.lo \
+	gcc/sections/macho.lo gcc/sections/package.lo \
+	gcc/sections/pecoff.lo gcc/simd.lo gcc/unwind/arm.lo \
+	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
 	rt/arraycat.lo rt/cast_.lo rt/config.lo rt/critical_.lo \
@@ -329,10 +331,11 @@ am__objects_11 = core/sys/bionic/err.lo core/sys/bionic/fcntl.lo \
 @DRUNTIME_OS_ANDROID_TRUE@am__objects_12 = $(am__objects_11)
 am__objects_13 = core/sys/freebsd/config.lo core/sys/freebsd/dlfcn.lo \
 	core/sys/freebsd/err.lo core/sys/freebsd/execinfo.lo \
-	core/sys/freebsd/ifaddrs.lo core/sys/freebsd/net/if_.lo \
-	core/sys/freebsd/net/if_dl.lo core/sys/freebsd/netinet/in_.lo \
-	core/sys/freebsd/pthread_np.lo core/sys/freebsd/stdlib.lo \
-	core/sys/freebsd/string.lo core/sys/freebsd/sys/_bitset.lo \
+	core/sys/freebsd/ifaddrs.lo core/sys/freebsd/mqueue.lo \
+	core/sys/freebsd/net/if_.lo core/sys/freebsd/net/if_dl.lo \
+	core/sys/freebsd/netinet/in_.lo core/sys/freebsd/pthread_np.lo \
+	core/sys/freebsd/stdlib.lo core/sys/freebsd/string.lo \
+	core/sys/freebsd/sys/_bitset.lo \
 	core/sys/freebsd/sys/_cpuset.lo core/sys/freebsd/sys/cdefs.lo \
 	core/sys/freebsd/sys/elf.lo core/sys/freebsd/sys/elf32.lo \
 	core/sys/freebsd/sys/elf64.lo \
@@ -377,13 +380,14 @@ am__objects_19 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 	core/sys/linux/stdio.lo core/sys/linux/string.lo \
 	core/sys/linux/sys/auxv.lo core/sys/linux/sys/eventfd.lo \
 	core/sys/linux/sys/file.lo core/sys/linux/sys/inotify.lo \
-	core/sys/linux/sys/mman.lo core/sys/linux/sys/prctl.lo \
-	core/sys/linux/sys/procfs.lo core/sys/linux/sys/signalfd.lo \
-	core/sys/linux/sys/socket.lo core/sys/linux/sys/sysinfo.lo \
-	core/sys/linux/sys/time.lo core/sys/linux/sys/xattr.lo \
-	core/sys/linux/termios.lo core/sys/linux/time.lo \
-	core/sys/linux/timerfd.lo core/sys/linux/tipc.lo \
-	core/sys/linux/uinput.lo core/sys/linux/unistd.lo
+	core/sys/linux/sys/mman.lo core/sys/linux/sys/mount.lo \
+	core/sys/linux/sys/prctl.lo core/sys/linux/sys/procfs.lo \
+	core/sys/linux/sys/signalfd.lo core/sys/linux/sys/socket.lo \
+	core/sys/linux/sys/sysinfo.lo core/sys/linux/sys/time.lo \
+	core/sys/linux/sys/xattr.lo core/sys/linux/termios.lo \
+	core/sys/linux/time.lo core/sys/linux/timerfd.lo \
+	core/sys/linux/tipc.lo core/sys/linux/uinput.lo \
+	core/sys/linux/unistd.lo
 @DRUNTIME_OS_LINUX_TRUE@am__objects_20 = $(am__objects_19)
 am__objects_21 = core/sys/windows/accctrl.lo \
 	core/sys/windows/aclapi.lo core/sys/windows/aclui.lo \
@@ -866,6 +870,7 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/container/treap.d core/internal/convert.d \
 	core/internal/dassert.d core/internal/destruction.d \
 	core/internal/entrypoint.d core/internal/gc/bits.d \
+	core/internal/gc/blkcache.d core/internal/gc/blockmeta.d \
 	core/internal/gc/impl/conservative/gc.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \
@@ -887,7 +892,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/barrier.d core/sync/condition.d core/sync/config.d \
 	core/sync/event.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/package.d core/sync/rwmutex.d core/sync/semaphore.d \
-	core/thread/context.d core/thread/fiber.d core/thread/osthread.d \
+	core/thread/context.d core/thread/fiber/base.d \
+	core/thread/fiber/package.d core/thread/osthread.d \
 	core/thread/package.d core/thread/threadbase.d \
 	core/thread/threadgroup.d core/thread/types.d core/time.d \
 	core/vararg.d core/volatile.d etc/valgrind/valgrind.d gcc/attribute.d \
@@ -943,17 +949,18 @@ DRUNTIME_DSOURCES_ELF = core/sys/elf/package.d
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 	core/sys/freebsd/dlfcn.d core/sys/freebsd/err.d \
 	core/sys/freebsd/execinfo.d core/sys/freebsd/ifaddrs.d \
-	core/sys/freebsd/net/if_.d core/sys/freebsd/net/if_dl.d \
-	core/sys/freebsd/netinet/in_.d core/sys/freebsd/pthread_np.d \
-	core/sys/freebsd/stdlib.d core/sys/freebsd/string.d \
-	core/sys/freebsd/sys/_bitset.d core/sys/freebsd/sys/_cpuset.d \
-	core/sys/freebsd/sys/cdefs.d core/sys/freebsd/sys/elf.d \
-	core/sys/freebsd/sys/elf32.d core/sys/freebsd/sys/elf64.d \
-	core/sys/freebsd/sys/elf_common.d core/sys/freebsd/sys/event.d \
-	core/sys/freebsd/sys/link_elf.d core/sys/freebsd/sys/mman.d \
-	core/sys/freebsd/sys/mount.d core/sys/freebsd/sys/socket.d \
-	core/sys/freebsd/sys/sysctl.d core/sys/freebsd/sys/types.d \
-	core/sys/freebsd/time.d core/sys/freebsd/unistd.d
+	core/sys/freebsd/mqueue.d core/sys/freebsd/net/if_.d \
+	core/sys/freebsd/net/if_dl.d core/sys/freebsd/netinet/in_.d \
+	core/sys/freebsd/pthread_np.d core/sys/freebsd/stdlib.d \
+	core/sys/freebsd/string.d core/sys/freebsd/sys/_bitset.d \
+	core/sys/freebsd/sys/_cpuset.d core/sys/freebsd/sys/cdefs.d \
+	core/sys/freebsd/sys/elf.d core/sys/freebsd/sys/elf32.d \
+	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
+	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
+	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
+	core/sys/freebsd/sys/socket.d core/sys/freebsd/sys/sysctl.d \
+	core/sys/freebsd/sys/types.d core/sys/freebsd/time.d \
+	core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
@@ -967,13 +974,13 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/stdio.d core/sys/linux/string.d \
 	core/sys/linux/sys/auxv.d core/sys/linux/sys/eventfd.d \
 	core/sys/linux/sys/file.d core/sys/linux/sys/inotify.d \
-	core/sys/linux/sys/mman.d core/sys/linux/sys/prctl.d \
-	core/sys/linux/sys/procfs.d core/sys/linux/sys/signalfd.d \
-	core/sys/linux/sys/socket.d core/sys/linux/sys/sysinfo.d \
-	core/sys/linux/sys/time.d core/sys/linux/sys/xattr.d \
-	core/sys/linux/termios.d core/sys/linux/time.d \
-	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/uinput.d \
-	core/sys/linux/unistd.d
+	core/sys/linux/sys/mman.d core/sys/linux/sys/mount.d \
+	core/sys/linux/sys/prctl.d core/sys/linux/sys/procfs.d \
+	core/sys/linux/sys/signalfd.d core/sys/linux/sys/socket.d \
+	core/sys/linux/sys/sysinfo.d core/sys/linux/sys/time.d \
+	core/sys/linux/sys/xattr.d core/sys/linux/termios.d \
+	core/sys/linux/time.d core/sys/linux/timerfd.d core/sys/linux/tipc.d \
+	core/sys/linux/uinput.d core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/err.d core/sys/netbsd/execinfo.d \
@@ -1262,6 +1269,8 @@ core/internal/gc/$(am__dirstamp):
 	@$(MKDIR_P) core/internal/gc
 	@: > core/internal/gc/$(am__dirstamp)
 core/internal/gc/bits.lo: core/internal/gc/$(am__dirstamp)
+core/internal/gc/blkcache.lo: core/internal/gc/$(am__dirstamp)
+core/internal/gc/blockmeta.lo: core/internal/gc/$(am__dirstamp)
 core/internal/gc/impl/conservative/$(am__dirstamp):
 	@$(MKDIR_P) core/internal/gc/impl/conservative
 	@: > core/internal/gc/impl/conservative/$(am__dirstamp)
@@ -1345,7 +1354,11 @@ core/thread/$(am__dirstamp):
 	@$(MKDIR_P) core/thread
 	@: > core/thread/$(am__dirstamp)
 core/thread/context.lo: core/thread/$(am__dirstamp)
-core/thread/fiber.lo: core/thread/$(am__dirstamp)
+core/thread/fiber/$(am__dirstamp):
+	@$(MKDIR_P) core/thread/fiber
+	@: > core/thread/fiber/$(am__dirstamp)
+core/thread/fiber/base.lo: core/thread/fiber/$(am__dirstamp)
+core/thread/fiber/package.lo: core/thread/fiber/$(am__dirstamp)
 core/thread/osthread.lo: core/thread/$(am__dirstamp)
 core/thread/package.lo: core/thread/$(am__dirstamp)
 core/thread/threadbase.lo: core/thread/$(am__dirstamp)
@@ -1610,6 +1623,7 @@ core/sys/freebsd/dlfcn.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/err.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/execinfo.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/ifaddrs.lo: core/sys/freebsd/$(am__dirstamp)
+core/sys/freebsd/mqueue.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/net/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/freebsd/net
 	@: > core/sys/freebsd/net/$(am__dirstamp)
@@ -1732,6 +1746,7 @@ core/sys/linux/sys/eventfd.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/file.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/inotify.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/mman.lo: core/sys/linux/sys/$(am__dirstamp)
+core/sys/linux/sys/mount.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/prctl.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/procfs.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/signalfd.lo: core/sys/linux/sys/$(am__dirstamp)
@@ -2138,6 +2153,8 @@ mostlyclean-compile:
 	-rm -f core/sys/windows/stdc/*.lo
 	-rm -f core/thread/*.$(OBJEXT)
 	-rm -f core/thread/*.lo
+	-rm -f core/thread/fiber/*.$(OBJEXT)
+	-rm -f core/thread/fiber/*.lo
 	-rm -f etc/valgrind/*.$(OBJEXT)
 	-rm -f etc/valgrind/*.lo
 	-rm -f gcc/*.$(OBJEXT)
@@ -2303,6 +2320,7 @@ clean-libtool:
 	-rm -rf core/sys/windows/.libs core/sys/windows/_libs
 	-rm -rf core/sys/windows/stdc/.libs core/sys/windows/stdc/_libs
 	-rm -rf core/thread/.libs core/thread/_libs
+	-rm -rf core/thread/fiber/.libs core/thread/fiber/_libs
 	-rm -rf etc/valgrind/.libs etc/valgrind/_libs
 	-rm -rf gcc/.libs gcc/_libs
 	-rm -rf gcc/sections/.libs gcc/sections/_libs
@@ -2469,6 +2487,7 @@ distclean-generic:
 	-rm -f core/sys/windows/$(am__dirstamp)
 	-rm -f core/sys/windows/stdc/$(am__dirstamp)
 	-rm -f core/thread/$(am__dirstamp)
+	-rm -f core/thread/fiber/$(am__dirstamp)
 	-rm -f etc/valgrind/$(am__dirstamp)
 	-rm -f gcc/$(am__dirstamp)
 	-rm -f gcc/sections/$(am__dirstamp)

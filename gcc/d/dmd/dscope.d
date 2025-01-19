@@ -24,6 +24,7 @@ import dmd.dclass;
 import dmd.declaration;
 import dmd.dmodule;
 import dmd.doc;
+import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
@@ -45,37 +46,80 @@ import dmd.tokens;
 
 //version=LOGSEARCH;
 
-
-// List of flags that can be applied to this `Scope`
-enum SCOPE
+/// What kind of contract function we're in, if any
+enum Contract : ubyte
 {
-    ctor          = 0x0001,   /// constructor type
-    noaccesscheck = 0x0002,   /// don't do access checks
-    condition     = 0x0004,   /// inside static if/assert condition
-    debug_        = 0x0008,   /// inside debug conditional
-    constraint    = 0x0010,   /// inside template constraint
-    invariant_    = 0x0020,   /// inside invariant code
-    require       = 0x0040,   /// inside in contract code
-    ensure        = 0x0060,   /// inside out contract code
-    contract      = 0x0060,   /// [mask] we're inside contract code
-    ctfe          = 0x0080,   /// inside a ctfe-only expression
-    compile       = 0x0100,   /// inside __traits(compile)
-    ignoresymbolvisibility    = 0x0200,   /// ignore symbol visibility
-                                          /// https://issues.dlang.org/show_bug.cgi?id=15907
-    Cfile         = 0x0800,   /// C semantics apply
-    free          = 0x8000,   /// is on free list
-
-    fullinst      = 0x10000,  /// fully instantiate templates
-    ctfeBlock     = 0x20000,  /// inside a `if (__ctfe)` block
-    dip1000       = 0x40000,  /// dip1000 errors enabled for this scope
-    dip25         = 0x80000,  /// dip25 errors enabled for this scope
+    none = 0,
+    invariant_ = 1,
+    require = 2, // in contract
+    ensure = 3, // out contract
 }
 
-/// Flags that are carried along with a scope push()
-private enum PersistentFlags =
-    SCOPE.contract | SCOPE.debug_ | SCOPE.ctfe | SCOPE.compile | SCOPE.constraint |
-    SCOPE.noaccesscheck | SCOPE.ignoresymbolvisibility |
-    SCOPE.Cfile | SCOPE.ctfeBlock | SCOPE.dip1000 | SCOPE.dip25;
+private extern (D) struct BitFields
+{
+    bool ctor;              /// constructor type
+    bool noAccessCheck;     /// don't do access checks
+    bool condition;         /// inside static if/assert condition
+    bool debug_;            /// inside debug conditional
+    bool inTemplateConstraint; /// inside template constraint
+    Contract contract;
+    bool ctfe;              /// inside a ctfe-only expression
+    bool traitsCompiles;    /// inside __traits(compile)
+    /// ignore symbol visibility
+    /// https://issues.dlang.org/show_bug.cgi?id=15907
+    bool ignoresymbolvisibility;
+    bool inCfile;            /// C semantics apply
+    bool canFree;            /// is on free list
+    bool fullinst;          /// fully instantiate templates
+    bool ctfeBlock;         /// inside a `if (__ctfe)` block
+}
+
+/// State of -preview switches
+///
+/// By making them part of a Scope, we reduce reliance on dmd.globals,
+/// and can enable/disable them per module / edition.
+private struct Previews
+{
+    // Run `dmd -preview=h` for the meaning of these switches
+    private extern (D) static struct BitFields
+    {
+        bool bitfields;
+        bool dip1000;
+        bool dip1008;
+        bool dip1021;
+        bool dip25;
+        bool fieldwise;
+        bool fixAliasThis;
+        bool fixImmutableConv;
+        bool in_;
+        bool inclusiveInContracts;
+        bool noSharedAccess;
+        bool rvalueRefParam;
+        bool safer;
+        FeatureState systemVariables;
+    }
+
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ushort));
+
+    void setFromParams(ref Param params) @nogc nothrow pure @safe
+    {
+        this.bitfields = params.bitfields;
+        this.dip1000 = params.useDIP1000 == FeatureState.enabled;
+        this.dip1008 = params.ehnogc;
+        this.dip1021 = params.useDIP1021; //  == FeatureState.enabled;
+        this.dip25 = params.useDIP25 == FeatureState.enabled;
+        this.fixAliasThis = params.fixAliasThis;
+        this.fixImmutableConv = params.fixImmutableConv;
+        this.in_ = params.previewIn;
+        this.inclusiveInContracts = params.inclusiveInContracts;
+        this.noSharedAccess = params.noSharedAccess == FeatureState.enabled;
+        this.rvalueRefParam = params.rvalueRefParam == FeatureState.enabled;
+        this.safer = params.safer == FeatureState.enabled;
+        this.systemVariables = params.systemVariables;
+        this.fieldwise = params.fieldwise == FeatureState.enabled;
+    }
+}
 
 extern (C++) struct Scope
 {
@@ -136,7 +180,10 @@ extern (C++) struct Scope
 
     DeprecatedDeclaration depdecl;  /// customized deprecation message
 
-    uint flags;
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ushort));
+
+    Previews previews;
 
     // user defined attributes
     UserAttributeDeclaration userAttribDecl;
@@ -147,6 +194,7 @@ extern (C++) struct Scope
 
     AliasDeclaration aliasAsg; /// if set, then aliasAsg is being assigned a new value,
                                /// do not set wasRead for it
+    StructDeclaration argStruct;    /// elimiate recursion when looking for rvalue construction
 
     extern (D) __gshared Scope* freelist;
 
@@ -157,8 +205,8 @@ extern (C++) struct Scope
             Scope* s = freelist;
             freelist = s.enclosing;
             //printf("freelist %p\n", s);
-            assert(s.flags & SCOPE.free);
-            s.flags &= ~SCOPE.free;
+            assert(s.canFree);
+            s.canFree = false;
             return s;
         }
         return new Scope();
@@ -180,12 +228,10 @@ extern (C++) struct Scope
             m = m.parent;
         m.addMember(null, sc.scopesym);
         m.parent = null; // got changed by addMember()
-        if (global.params.useDIP1000 == FeatureState.enabled)
-            sc.flags |= SCOPE.dip1000;
-        if (global.params.useDIP25 == FeatureState.enabled)
-            sc.flags |= SCOPE.dip25;
+        sc.previews.setFromParams(global.params);
+
         if (_module.filetype == FileType.c)
-            sc.flags |= SCOPE.Cfile;
+            sc.inCfile = true;
         // Create the module scope underneath the global scope
         sc = sc.push(_module);
         sc.parent = _module;
@@ -207,13 +253,13 @@ extern (C++) struct Scope
     {
         Scope* s = copy();
         //printf("Scope::push(this = %p) new = %p\n", this, s);
-        assert(!(flags & SCOPE.free));
+        assert(!this.canFree);
         s.scopesym = null;
         s.enclosing = &this;
         debug
         {
             if (enclosing)
-                assert(!(enclosing.flags & SCOPE.free));
+                assert(!enclosing.canFree);
             if (s == enclosing)
             {
                 printf("this = %p, enclosing = %p, enclosing.enclosing = %p\n", s, &this, enclosing);
@@ -223,10 +269,34 @@ extern (C++) struct Scope
         s.slabel = null;
         s.nofree = false;
         s.ctorflow.fieldinit = ctorflow.fieldinit.arraydup;
-        s.flags = (flags & PersistentFlags);
+
+        // Only keep persistent flags
+        s.resetAllFlags();
+        s.contract = this.contract;
+        s.debug_ = this.debug_;
+        s.ctfe = this.ctfe;
+        s.traitsCompiles = this.traitsCompiles;
+        s.inTemplateConstraint = this.inTemplateConstraint;
+        s.noAccessCheck = this.noAccessCheck;
+        s.ignoresymbolvisibility = this.ignoresymbolvisibility;
+        s.inCfile = this.inCfile;
+        s.ctfeBlock = this.ctfeBlock;
+        s.previews = this.previews;
         s.lastdc = null;
         assert(&this != s);
         return s;
+    }
+
+    /// Copy flags from scope `other`
+    extern(D) void copyFlagsFrom(Scope* other) @safe
+    {
+        this.bitFields = other.bitFields;
+    }
+
+    /// Set all scope flags to their initial value
+    extern(D) void resetAllFlags() @safe
+    {
+        this.bitFields = 0;
     }
 
     extern (D) Scope* push(ScopeDsymbol ss)
@@ -251,7 +321,7 @@ extern (C++) struct Scope
                 this = this.init;
             enclosing = freelist;
             freelist = &this;
-            flags |= SCOPE.free;
+            this.canFree = true;
         }
         return enc;
     }
@@ -270,7 +340,8 @@ extern (C++) struct Scope
     extern (D) Scope* startCTFE()
     {
         Scope* sc = this.push();
-        sc.flags = this.flags | SCOPE.ctfe;
+        sc.copyFlagsFrom(&this);
+        sc.ctfe = true;
         version (none)
         {
             /* TODO: Currently this is not possible, because we need to
@@ -300,7 +371,7 @@ extern (C++) struct Scope
 
     extern (D) Scope* endCTFE()
     {
-        assert(flags & SCOPE.ctfe);
+        assert(this.ctfe);
         return pop();
     }
 
@@ -317,24 +388,23 @@ extern (C++) struct Scope
             error(loc, "one path skips constructor");
 
         const fies = ctorflow.fieldinit;
-        if (this.ctorflow.fieldinit.length && fies.length)
+        if (!this.ctorflow.fieldinit.length || !fies.length)
+            return;
+        FuncDeclaration f = func;
+        if (fes)
+            f = fes.func;
+        auto ad = f.isMemberDecl();
+        assert(ad);
+        foreach (i, v; ad.fields)
         {
-            FuncDeclaration f = func;
-            if (fes)
-                f = fes.func;
-            auto ad = f.isMemberDecl();
-            assert(ad);
-            foreach (i, v; ad.fields)
+            bool mustInit = (v.storage_class & STC.nodefaultctor || v.type.needsNested());
+            auto fieldInit = &this.ctorflow.fieldinit[i];
+            const fiesCurrent = fies[i];
+            if (fieldInit.loc is Loc.init)
+                fieldInit.loc = fiesCurrent.loc;
+            if (!mergeFieldInit(this.ctorflow.fieldinit[i].csx, fiesCurrent.csx) && mustInit)
             {
-                bool mustInit = (v.storage_class & STC.nodefaultctor || v.type.needsNested());
-                auto fieldInit = &this.ctorflow.fieldinit[i];
-                const fiesCurrent = fies[i];
-                if (fieldInit.loc is Loc.init)
-                    fieldInit.loc = fiesCurrent.loc;
-                if (!mergeFieldInit(this.ctorflow.fieldinit[i].csx, fiesCurrent.csx) && mustInit)
-                {
-                    error(loc, "one path skips field `%s`", v.toChars());
-                }
+                error(loc, "one path skips field `%s`", v.toChars());
             }
         }
     }
@@ -470,7 +540,7 @@ extern (C++) struct Scope
 
                 if (sc.scopesym.isModule())
                     flags |= SearchOpt.unqualifiedModule;    // tell Module.search() that SearchOpt.localsOnly is to be obeyed
-                else if (sc.flags & SCOPE.Cfile && sc.scopesym.isStructDeclaration())
+                else if (sc.inCfile && sc.scopesym.isStructDeclaration())
                     continue;                                // C doesn't have struct scope
 
                 if (Dsymbol s = sc.scopesym.search(loc, ident, flags))
@@ -492,11 +562,10 @@ extern (C++) struct Scope
                 }
 
             NotFound:
-                if (global.params.fixAliasThis)
+                if (sc.previews.fixAliasThis)
                 {
                     Expression exp = new ThisExp(loc);
-                    Dsymbol aliasSym = checkAliasThis(sc.scopesym.isAggregateDeclaration(), ident, flags, &exp);
-                    if (aliasSym)
+                    if (Dsymbol aliasSym = checkAliasThis(sc.scopesym.isAggregateDeclaration(), ident, flags, &exp))
                     {
                         //printf("found aliassym: %s\n", aliasSym.toChars());
                         pscopesym = new ExpressionDsymbol(exp);
@@ -511,7 +580,7 @@ extern (C++) struct Scope
             return null;
         }
 
-        if (this.flags & SCOPE.ignoresymbolvisibility)
+        if (this.ignoresymbolvisibility)
             flags |= SearchOpt.ignoreVisibility;
 
         // First look in local scopes
@@ -658,7 +727,7 @@ extern (C++) struct Scope
         //printf("\t\tscopesym = %p\n", scopesym);
         if (!scopesym.symtab)
             scopesym.symtab = new DsymbolTable();
-        if (!(flags & SCOPE.Cfile))
+        if (!this.inCfile)
             return scopesym.symtabInsert(s);
 
         // ImportC insert
@@ -753,7 +822,7 @@ extern (C++) struct Scope
         {
             //printf("\tsc = %p\n", sc);
             sc.nofree = true;
-            assert(!(flags & SCOPE.free));
+            assert(!this.canFree);
             //assert(sc != sc.enclosing);
             //assert(!sc.enclosing || sc != sc.enclosing.enclosing);
             //if (++i == 10)
@@ -814,7 +883,7 @@ extern (C++) struct Scope
      */
     extern (D) bool isFromSpeculativeSemanticContext() scope
     {
-        return this.intypeof || this.flags & SCOPE.compile;
+        return this.intypeof || this.traitsCompiles;
     }
 
 
@@ -824,18 +893,24 @@ extern (C++) struct Scope
      */
     extern (D) bool needsCodegen()
     {
-        return (flags & (SCOPE.ctfe | SCOPE.ctfeBlock | SCOPE.compile)) == 0;
+        return !this.ctfe && !this.ctfeBlock && !this.traitsCompiles;
     }
 
     /// Returns: whether to raise DIP1000 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
     extern (D) FeatureState useDIP1000()
     {
-        return (flags & SCOPE.dip1000) ? FeatureState.enabled : FeatureState.disabled;
+        return (this.previews.dip1000 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
     }
 
     /// Returns: whether to raise DIP25 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
     extern (D) FeatureState useDIP25()
     {
-        return (flags & SCOPE.dip25) ? FeatureState.enabled : FeatureState.disabled;
+        return (this.previews.dip25 || hasEdition(Edition.v2024)) ? FeatureState.enabled : FeatureState.disabled;
+    }
+
+    /// Returns: whether this scope compiles with `edition` or later
+    extern (D) bool hasEdition(Edition edition)
+    {
+        return _module && _module.edition >= edition;
     }
 }

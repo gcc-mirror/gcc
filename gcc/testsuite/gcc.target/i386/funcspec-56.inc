@@ -220,6 +220,7 @@ extern void test_arch_graniterapids_d (void)	__attribute__((__target__("arch=gra
 extern void test_arch_arrowlake (void)		__attribute__((__target__("arch=arrowlake")));
 extern void test_arch_arrowlake_s (void)	__attribute__((__target__("arch=arrowlake-s")));
 extern void test_arch_pantherlake (void)	__attribute__((__target__("arch=pantherlake")));
+extern void test_arch_diamondrapids (void)	__attribute__((__target__("arch=diamondrapids")));
 extern void test_arch_lujiazui (void)		__attribute__((__target__("arch=lujiazui")));
 extern void test_arch_yongfeng (void)		__attribute__((__target__("arch=yongfeng")));
 extern void test_arch_shijidadao (void)		__attribute__((__target__("arch=shijidadao")));

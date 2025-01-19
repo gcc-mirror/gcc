@@ -1,5 +1,5 @@
 /* AArch64 SVE intrinsics include file.
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -27,11 +27,8 @@
 
 #include <stdint.h>
 #include <arm_private_fp8.h>
+#include <arm_private_neon_types.h>
 #include <arm_bf16.h>
-
-typedef __fp16 float16_t;
-typedef float float32_t;
-typedef double float64_t;
 
 /* NOTE: This implementation of arm_sve.h is intentionally short.  It does
    not define the SVE types and intrinsic functions directly in C and C++

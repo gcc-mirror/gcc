@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,12 +57,16 @@ package body Pprint is
       function Expr_Name
         (Expr        : Node_Id;
          Take_Prefix : Boolean := True;
-         Expand_Type : Boolean := True) return String;
+         Expand_Type : Boolean := True;
+         No_Parens   : Boolean := False) return String;
       --  Return string corresponding to Expr. If no string can be extracted,
       --  return "...". If Take_Prefix is True, go back to prefix when needed,
       --  otherwise only consider the right-hand side of an expression. If
       --  Expand_Type is True and Expr is a type, try to expand Expr (an
       --  internally generated type) into a user understandable name.
+      --  If No_Parens is True, then suppress creating parentheses around
+      --  expression. If False, check to see whether expression should be
+      --  parenthesized.
 
       function Count_Parentheses (S : String; C : Character) return Natural
         with Pre => C in '(' | ')';
@@ -70,6 +74,8 @@ package body Pprint is
       --  to string S for getting a correctly parenthesized result. For C = '('
       --  this means prepending the character, for C = ')' this means appending
       --  the character.
+      --  In other words, count the number of missing instances of C,
+      --  but never return less than zero.
 
       function Fix_Parentheses (S : String) return String;
       --  Counts the number of required opening and closing parentheses in S to
@@ -101,6 +107,7 @@ package body Pprint is
          Elmt : Node_Id;
 
          Printed_Elmts : Natural := 0;
+         List_Len : constant Natural := Natural (List_Length (List));
 
       begin
          --  Give up if the printed list is too deep
@@ -146,7 +153,8 @@ package body Pprint is
             --  Print expression itself as "12345"
 
             else
-               Append (Buf, Expr_Name (Elmt));
+               --  Suppress parens if is the only parameter
+               Append (Buf, Expr_Name (Elmt, No_Parens => List_Len = 1));
             end if;
 
             Next (Elmt);
@@ -178,9 +186,39 @@ package body Pprint is
       function Expr_Name
         (Expr        : Node_Id;
          Take_Prefix : Boolean := True;
-         Expand_Type : Boolean := True) return String
+         Expand_Type : Boolean := True;
+         No_Parens   : Boolean := False) return String
       is
+         --  Define a subtype matching logical operations
+         --  and [then], or [else], and xor.
+         --  In Ada, these operations are non associative -- they
+         --  all have the same precedence, so parentheses
+         --  are needed to indicate the association of
+         --  operands in a sequence of distinct operations.
+         subtype Non_Associative is N_Subexpr
+           with Static_Predicate =>
+             Non_Associative in
+               N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor;
       begin
+         if not No_Parens
+          and then
+            (Paren_Count (Expr) > 0
+              or else
+             (Nkind (Expr) in Non_Associative
+               and then
+              Nkind (Parent (Expr)) in Non_Associative
+               and then
+              Nkind (Parent (Expr)) /= Nkind (Expr)))
+         then
+            --  Parentheses are needed, either because
+            --  Paren_Count is greater than zero, or because
+            --  this operation and its parent are non associative,
+            --  and are not the same operation.
+            return '(' &
+              Expr_Name (Expr, Take_Prefix, Expand_Type, No_Parens => True) &
+              ')';
+         end if;
+
          Num_Elements := Num_Elements + 1;
 
          if Num_Elements > Max_Expr_Elements then
@@ -424,9 +462,7 @@ package body Pprint is
                   end if;
                end;
 
-            when N_Expression_With_Actions
-               | N_Unchecked_Expression
-            =>
+            when N_Expression_With_Actions =>
                return Expr_Name (Expression (Expr));
 
             when N_Raise_Constraint_Error =>
@@ -591,7 +627,9 @@ package body Pprint is
                return "abs " & Expr_Name (Right_Opnd (Expr));
 
             when N_Op_Not =>
-               return "not (" & Expr_Name (Right_Opnd (Expr)) & ")";
+               return "not (" &
+                      Expr_Name (Right_Opnd (Expr), No_Parens => True) &
+                      ")";
 
             when N_Type_Conversion =>
 
@@ -610,7 +648,9 @@ package body Pprint is
                            Is_Modular_Integer_Type (Etype (Expression (Expr)))
                then
                   return Expr_Name (Subtype_Mark (Expr)) &
-                    "(" & Expr_Name (Expression (Expr)) & ")";
+                    "(" &
+                    Expr_Name (Expression (Expr), No_Parens => True) &
+                    ")";
                else
                   return Expr_Name (Expression (Expr));
                end if;
@@ -638,7 +678,9 @@ package body Pprint is
                        & List_Name (Parameter_Associations (Expr))
                        & "))";
                   else
-                     return '(' & Expr_Name (Name (Expr)) & ')';
+                     return '(' &
+                             Expr_Name (Name (Expr), No_Parens => True) &
+                             ')';
                   end if;
                elsif Present (Parameter_Associations (Expr)) then
                   return
@@ -678,6 +720,8 @@ package body Pprint is
          --  Process next character Ch and update the number Count of C
          --  characters to add for correct parenthesizing, where D is the
          --  opposite parenthesis.
+         --  In other words, count the number of missing instances of C,
+         --  or equivalently, the number of unmatched instances of D.
 
          ---------------
          -- Next_Char --
@@ -777,7 +821,7 @@ package body Pprint is
         or else Opt.Debug_Generated_Code
       then
          declare
-            S : constant String := Expr_Name (Expr);
+            S : constant String := Expr_Name (Expr, No_Parens => True);
          begin
             if S = "..." then
                return Default;

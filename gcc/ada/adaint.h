@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2025, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -240,7 +240,7 @@ extern int    __gnat_portable_wait                 (int *);
 extern int    __gnat_portable_no_block_wait        (int *);
 extern int    __gnat_current_process_id            (void);
 extern char  *__gnat_locate_exec                   (char *, char *);
-extern char  *__gnat_locate_exec_on_path           (char *);
+extern char  *__gnat_locate_exec_on_path           (char *, int);
 extern char  *__gnat_locate_regular_file           (char *, char *);
 extern void   __gnat_maybe_glob_args               (int *, char ***);
 extern void   __gnat_os_exit			   (int);

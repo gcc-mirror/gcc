@@ -1,5 +1,5 @@
 /* Operations on HOST_WIDE_INT.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -187,4 +187,22 @@ HOST_WIDE_INT
 least_common_multiple (HOST_WIDE_INT a, HOST_WIDE_INT b)
 {
   return mul_hwi (abs_hwi (a) / gcd (a, b), abs_hwi (b));
+}
+
+/* Reflect (reverse) the bits of a given VALUE within a specified BITWIDTH.  */
+
+unsigned HOST_WIDE_INT
+reflect_hwi (unsigned HOST_WIDE_INT value, unsigned bitwidth)
+{
+  unsigned HOST_WIDE_INT reflected_value = 0;
+  /* Loop through each bit in the specified BITWIDTH.  */
+  for (size_t i = 0; i < bitwidth; i++)
+    {
+      reflected_value <<= 1;
+      /* Add the least significant bit of the current value to the
+	 reflected value.  */
+      reflected_value |= (value & 1);
+      value >>= 1;
+    }
+  return reflected_value;
 }

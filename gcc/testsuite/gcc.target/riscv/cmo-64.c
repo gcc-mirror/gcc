@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
-/* { dg-options "-march=rv64gc_zicbom_zicbop_zicboz -mabi=lp64d" } */
+/* { dg-options "-march=rv64gc_zicbom_zicbop_zicboz -mabi=lp64d -std=gnu17" } */
 
 #include "riscv_cmo.h"
 

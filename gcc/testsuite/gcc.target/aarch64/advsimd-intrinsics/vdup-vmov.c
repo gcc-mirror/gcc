@@ -19,6 +19,10 @@ VECT_VAR_DECL(expected0,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected0,poly,8,8) [] = { 0xf0, 0xf0, 0xf0, 0xf0,
 					 0xf0, 0xf0, 0xf0, 0xf0 };
 VECT_VAR_DECL(expected0,poly,16,4) [] = { 0xfff0, 0xfff0, 0xfff0, 0xfff0 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected0,hmfloat,8,8) [] = { 0xf0, 0xf0, 0xf0, 0xf0,
+					    0xf0, 0xf0, 0xf0, 0xf0 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected0, hfloat, 16, 4) [] = { 0xcc00, 0xcc00,
 						0xcc00, 0xcc00 };
@@ -50,6 +54,12 @@ VECT_VAR_DECL(expected0,poly,8,16) [] = { 0xf0, 0xf0, 0xf0, 0xf0,
 					  0xf0, 0xf0, 0xf0, 0xf0 };
 VECT_VAR_DECL(expected0,poly,16,8) [] = { 0xfff0, 0xfff0, 0xfff0, 0xfff0,
 					  0xfff0, 0xfff0, 0xfff0, 0xfff0 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected0,hmfloat,8,16) [] = { 0xf0, 0xf0, 0xf0, 0xf0,
+					     0xf0, 0xf0, 0xf0, 0xf0,
+					     0xf0, 0xf0, 0xf0, 0xf0,
+					     0xf0, 0xf0, 0xf0, 0xf0 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected0, hfloat, 16, 8) [] = { 0xcc00, 0xcc00,
 						0xcc00, 0xcc00,
@@ -73,6 +83,10 @@ VECT_VAR_DECL(expected1,uint,64,1) [] = { 0xfffffffffffffff1 };
 VECT_VAR_DECL(expected1,poly,8,8) [] = { 0xf1, 0xf1, 0xf1, 0xf1,
 					 0xf1, 0xf1, 0xf1, 0xf1 };
 VECT_VAR_DECL(expected1,poly,16,4) [] = { 0xfff1, 0xfff1, 0xfff1, 0xfff1 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected1,hmfloat,8,8) [] = { 0xf1, 0xf1, 0xf1, 0xf1,
+					    0xf1, 0xf1, 0xf1, 0xf1 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected1, hfloat, 16, 4) [] = { 0xcb80, 0xcb80,
 						0xcb80, 0xcb80 };
@@ -104,6 +118,12 @@ VECT_VAR_DECL(expected1,poly,8,16) [] = { 0xf1, 0xf1, 0xf1, 0xf1,
 					  0xf1, 0xf1, 0xf1, 0xf1 };
 VECT_VAR_DECL(expected1,poly,16,8) [] = { 0xfff1, 0xfff1, 0xfff1, 0xfff1,
 					  0xfff1, 0xfff1, 0xfff1, 0xfff1 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected1,hmfloat,8,16) [] = { 0xf1, 0xf1, 0xf1, 0xf1,
+					     0xf1, 0xf1, 0xf1, 0xf1,
+					     0xf1, 0xf1, 0xf1, 0xf1,
+					     0xf1, 0xf1, 0xf1, 0xf1 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected1, hfloat, 16, 8) [] = { 0xcb80, 0xcb80,
 						0xcb80, 0xcb80,
@@ -127,6 +147,10 @@ VECT_VAR_DECL(expected2,uint,64,1) [] = { 0xfffffffffffffff2 };
 VECT_VAR_DECL(expected2,poly,8,8) [] = { 0xf2, 0xf2, 0xf2, 0xf2,
 					 0xf2, 0xf2, 0xf2, 0xf2 };
 VECT_VAR_DECL(expected2,poly,16,4) [] = { 0xfff2, 0xfff2, 0xfff2, 0xfff2 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected2,hmfloat,8,8) [] = { 0xf2, 0xf2, 0xf2, 0xf2,
+					    0xf2, 0xf2, 0xf2, 0xf2 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected2, hfloat, 16, 4) [] = { 0xcb00, 0xcb00,
 						0xcb00, 0xcb00 };
@@ -158,6 +182,12 @@ VECT_VAR_DECL(expected2,poly,8,16) [] = { 0xf2, 0xf2, 0xf2, 0xf2,
 					  0xf2, 0xf2, 0xf2, 0xf2 };
 VECT_VAR_DECL(expected2,poly,16,8) [] = { 0xfff2, 0xfff2, 0xfff2, 0xfff2,
 					  0xfff2, 0xfff2, 0xfff2, 0xfff2 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected2,hmfloat,8,16) [] = { 0xf2, 0xf2, 0xf2, 0xf2,
+					     0xf2, 0xf2, 0xf2, 0xf2,
+					     0xf2, 0xf2, 0xf2, 0xf2,
+					     0xf2, 0xf2, 0xf2, 0xf2 };
+#endif
 #if defined (FP16_SUPPORTED)
 VECT_VAR_DECL (expected2, hfloat, 16, 8) [] = { 0xcb00, 0xcb00,
 						0xcb00, 0xcb00,
@@ -201,6 +231,7 @@ void exec_vdup_vmov (void)
     TEST_VDUP(, uint, u, 64, 1);
     TEST_VDUP(, poly, p, 8, 8);
     TEST_VDUP(, poly, p, 16, 4);
+    MFLOAT8_ONLY(TEST_VDUP(, mfloat, mf, 8, 8));
 #if defined (FP16_SUPPORTED)
     TEST_VDUP(, float, f, 16, 4);
 #endif
@@ -216,6 +247,7 @@ void exec_vdup_vmov (void)
     TEST_VDUP(q, uint, u, 64, 2);
     TEST_VDUP(q, poly, p, 8, 16);
     TEST_VDUP(q, poly, p, 16, 8);
+    MFLOAT8_ONLY(TEST_VDUP(q, mfloat, mf, 8, 16));
 #if defined (FP16_SUPPORTED)
     TEST_VDUP(q, float, f, 16, 8);
 #endif
@@ -268,6 +300,7 @@ void exec_vdup_vmov (void)
     TEST_VMOV(, uint, u, 64, 1);
     TEST_VMOV(, poly, p, 8, 8);
     TEST_VMOV(, poly, p, 16, 4);
+    MFLOAT8_ONLY(TEST_VMOV(, mfloat, mf, 8, 8));
 #if defined (FP16_SUPPORTED)
     TEST_VMOV(, float, f, 16, 4);
 #endif
@@ -283,6 +316,7 @@ void exec_vdup_vmov (void)
     TEST_VMOV(q, uint, u, 64, 2);
     TEST_VMOV(q, poly, p, 8, 16);
     TEST_VMOV(q, poly, p, 16, 8);
+    MFLOAT8_ONLY(TEST_VMOV(q, mfloat, mf, 8, 16));
 #if defined (FP16_SUPPORTED)
     TEST_VMOV(q, float, f, 16, 8);
 #endif

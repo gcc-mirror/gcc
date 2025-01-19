@@ -1,5 +1,5 @@
 # Generate a flat list of symbols to export.
-#	Copyright (C) 2007-2024 Free Software Foundation, Inc.
+#	Copyright (C) 2007-2025 Free Software Foundation, Inc.
 #	Contributed by Richard Henderson <rth@cygnus.com>
 #
 # This file is part of GCC.

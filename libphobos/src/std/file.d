@@ -1083,6 +1083,7 @@ private void removeImpl(scope const(char)[] name, scope const(FSChar)* namez) @t
 @safe unittest
 {
     import std.exception : collectExceptionMsg, assertThrown;
+    import std.algorithm.searching : startsWith;
 
     string filename = null; // e.g. as returned by File.tmpfile.name
 
@@ -1090,12 +1091,10 @@ private void removeImpl(scope const(char)[] name, scope const(FSChar)* namez) @t
     {
         // exact exception message is OS-dependent
         auto msg = filename.remove.collectExceptionMsg!FileException;
-        assert("Failed to remove file (null): Bad address" == msg, msg);
+        assert(msg.startsWith("Failed to remove file (null):"), msg);
     }
     else version (Windows)
     {
-        import std.algorithm.searching : startsWith;
-
         // don't test exact message on windows, it's language dependent
         auto msg = filename.remove.collectExceptionMsg!FileException;
         assert(msg.startsWith("(null):"), msg);
@@ -4054,12 +4053,10 @@ else version (Posix)
          +/
         void _ensureStatDone() @trusted scope
         {
-            import std.exception : enforce;
-
             if (_didStat)
                 return;
 
-            enforce(stat(_name.tempCString(), &_statBuf) == 0,
+            cenforce(stat(_name.tempCString(), &_statBuf) == 0,
                     "Failed to stat file `" ~ _name ~ "'");
 
             _didStat = true;
@@ -4096,13 +4093,11 @@ else version (Posix)
          +/
         void _ensureLStatDone() @trusted scope
         {
-            import std.exception : enforce;
-
             if (_didLStat)
                 return;
 
             stat_t statbuf = void;
-            enforce(lstat(_name.tempCString(), &statbuf) == 0,
+            cenforce(lstat(_name.tempCString(), &statbuf) == 0,
                 "Failed to stat file `" ~ _name ~ "'");
 
             _lstatMode = statbuf.st_mode;
@@ -4184,12 +4179,12 @@ else version (Posix)
                 assert(!de.isFile);
                 assert(!de.isDir);
                 assert(de.isSymlink);
-                assertThrown(de.size);
-                assertThrown(de.timeStatusChanged);
-                assertThrown(de.timeLastAccessed);
-                assertThrown(de.timeLastModified);
-                assertThrown(de.attributes);
-                assertThrown(de.statBuf);
+                assertThrown!FileException(de.size);
+                assertThrown!FileException(de.timeStatusChanged);
+                assertThrown!FileException(de.timeLastAccessed);
+                assertThrown!FileException(de.timeLastModified);
+                assertThrown!FileException(de.attributes);
+                assertThrown!FileException(de.statBuf);
                 assert(symfile.exists);
                 symfile.remove();
             }
@@ -4799,7 +4794,7 @@ private struct DirIteratorImpl
     }
 
     this(R)(R pathname, SpanMode mode, bool followSymlink)
-        if (isSomeFiniteCharInputRange!R)
+    if (isSomeFiniteCharInputRange!R)
     {
         _mode = mode;
         _followSymlink = followSymlink;

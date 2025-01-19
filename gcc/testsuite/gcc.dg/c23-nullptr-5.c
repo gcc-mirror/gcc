@@ -3,7 +3,7 @@
 /* { dg-options "-std=c23 -pedantic-errors" } */
 
 int i;
-nullptr_t fn () { ++i; return nullptr; }
+typeof (nullptr) fn () { ++i; return nullptr; }
 
 int
 main ()

@@ -1,6 +1,6 @@
 # Pretty-printers for libstdc++.
 
-# Copyright (C) 2008-2024 Free Software Foundation, Inc.
+# Copyright (C) 2008-2025 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -2830,10 +2830,6 @@ def build_libstdcxx_dictionary():
     # vector<bool>
     libstdcxx_printer.add_version('std::', 'locale', StdLocalePrinter)
 
-    libstdcxx_printer.add_version('std::', 'integral_constant',
-                                  StdIntegralConstantPrinter)
-    libstdcxx_printer.add_version('std::', 'text_encoding',
-                                  StdTextEncodingPrinter)
 
     if hasattr(gdb.Value, 'dynamic_type'):
         libstdcxx_printer.add_version('std::', 'error_code',
@@ -2896,6 +2892,8 @@ def build_libstdcxx_dictionary():
                                   StdChronoDurationPrinter)
     libstdcxx_printer.add_version('std::chrono::', 'time_point',
                                   StdChronoTimePointPrinter)
+    libstdcxx_printer.add_version('std::', 'integral_constant',
+                                  StdIntegralConstantPrinter)
 
     # std::regex components
     libstdcxx_printer.add_version('std::__detail::', '_State',
@@ -2971,6 +2969,9 @@ def build_libstdcxx_dictionary():
     # libstdcxx_printer.add_version('std::chrono::(anonymous namespace)', 'Rule',
     #                              StdChronoTimeZoneRulePrinter)
 
+    # C++26 components
+    libstdcxx_printer.add_version('std::', 'text_encoding',
+                                  StdTextEncodingPrinter)
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)
 

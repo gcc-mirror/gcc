@@ -26,8 +26,8 @@ import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.expression;
 import dmd.func;
-import dmd.dmangle;
 import dmd.hdrgen;
+import dmd.mangle;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
@@ -240,39 +240,39 @@ public:
         auto id = exp.ident.toChars();
 
         // If it's not an argument
-        if (!checkArgument(id))
+        if (checkArgument(id))
+            return;
+
+        // we must check what the identifier expression is.
+        Dsymbol scopesym;
+        Dsymbol s = sc.search(exp.loc, exp.ident, scopesym);
+
+        // If it's an unknown symbol, consider the function incomparable
+        if (!s)
         {
-            // we must check what the identifier expression is.
-            Dsymbol scopesym;
-            Dsymbol s = sc.search(exp.loc, exp.ident, scopesym);
-            if (s)
-            {
-                auto v = s.isVarDeclaration();
-                // If it's a VarDeclaration, it must be a manifest constant
-                if (v && (v.storage_class & STC.manifest))
-                {
-                    v.getConstInitializer.accept(this);
-                }
-                else if (auto em = s.isEnumDeclaration())
-                {
-                    d = em;
-                    et = ExpType.EnumDecl;
-                }
-                else if (auto fd = s.isFuncDeclaration())
-                {
-                    writeMangledName(fd);
-                }
-                // For anything else, the function is deemed uncomparable
-                else
-                {
-                    buf.setsize(0);
-                }
-            }
-            // If it's an unknown symbol, consider the function incomparable
-            else
-            {
-                buf.setsize(0);
-            }
+            buf.setsize(0);
+            return;
+        }
+
+        auto v = s.isVarDeclaration();
+        // If it's a VarDeclaration, it must be a manifest constant
+        if (v && (v.storage_class & STC.manifest))
+        {
+            v.getConstInitializer.accept(this);
+        }
+        else if (auto em = s.isEnumDeclaration())
+        {
+            d = em;
+            et = ExpType.EnumDecl;
+        }
+        else if (auto fd = s.isFuncDeclaration())
+        {
+            writeMangledName(fd);
+        }
+        // For anything else, the function is deemed uncomparable
+        else
+        {
+            buf.setsize(0);
         }
     }
 
@@ -450,21 +450,22 @@ public:
             printf("StructLiteralExp: %s\n", e.toChars);
 
         auto ty = cast(TypeStruct)e.stype;
-        if (ty)
+        if (!ty)
         {
-            writeMangledName(ty.sym);
-            auto dim = e.elements.length;
-            foreach (i; 0..dim)
-            {
-                auto elem = (*e.elements)[i];
-                if (elem)
-                    elem.accept(this);
-                else
-                    buf.writestring("null_");
-            }
-        }
-        else
             buf.setsize(0);
+            return;
+        }
+
+        writeMangledName(ty.sym);
+        auto dim = e.elements.length;
+        foreach (i; 0..dim)
+        {
+            auto elem = (*e.elements)[i];
+            if (elem)
+                elem.accept(this);
+            else
+                buf.writestring("null_");
+        }
     }
 
     override void visit(ArrayLiteralExp) { buf.setsize(0); }

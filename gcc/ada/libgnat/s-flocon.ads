@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2024, AdaCore                     --
+--                     Copyright (C) 2000-2025, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,4 +56,8 @@ package System.Float_Control is
    --
    --  The call to Reset simply has no effect if the target environment
    --  does not give rise to such concerns.
+
+   --  The *Reset* procedure is a no-op on all Bareboard targets, the FPU
+   --  configuration being under full control there.
+
 end System.Float_Control;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,10 +52,6 @@ package Exp_Aggr is
 
    function Is_Delayed_Aggregate (N : Node_Id) return Boolean;
    --  Returns True if N is an aggregate of some kind whose Expansion_Delayed
-   --  flag is set (see sinfo for meaning of flag).
-
-   function Is_Delayed_Conditional_Expression (N : Node_Id) return Boolean;
-   --  Returns True if N is a conditional expression whose Expansion_Delayed
    --  flag is set (see sinfo for meaning of flag).
 
    function Is_Two_Pass_Aggregate (N : Node_Id) return Boolean;

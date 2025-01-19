@@ -1,6 +1,6 @@
 // 2007-10-02  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007-2024 Free Software Foundation, Inc.
+// Copyright (C) 2007-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,5 +33,5 @@ bool ab(A, B);
 void test01(A* a, B b)
 {
   std::lower_bound(a, a, b, ab);
-  // { dg-warning "ignoring return value" "" { target c++17 } 35 }
+  // { dg-warning "ignoring return value" "" { target c++11 } 35 }
 }

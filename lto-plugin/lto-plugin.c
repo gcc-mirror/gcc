@@ -1,5 +1,5 @@
 /* LTO plugin for linkers like gold, GNU ld or mold.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
    Contributed by Rafael Avila de Espindola (espindola@google.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -214,6 +214,7 @@ static char *ltrans_objects = NULL;
 
 static bool debug;
 static bool save_temps;
+static bool flto_incremental;
 static bool verbose;
 static char nop;
 static char *resolution_file = NULL;
@@ -941,8 +942,9 @@ cleanup_handler (void)
   if (arguments_file_name)
     maybe_unlink (arguments_file_name);
 
-  for (i = 0; i < num_output_files; i++)
-    maybe_unlink (output_files[i]);
+  if (!flto_incremental)
+    for (i = 0; i < num_output_files; i++)
+      maybe_unlink (output_files[i]);
 
   free_2 ();
   return LDPS_OK;
@@ -1614,6 +1616,9 @@ onload (struct ld_plugin_tv *tv)
 
       if (strstr (collect_gcc_options, "'-save-temps'"))
 	save_temps = true;
+
+      if (strstr (collect_gcc_options, "'-flto-incremental="))
+	flto_incremental = true;
 
       if (strstr (collect_gcc_options, "'-v'")
           || strstr (collect_gcc_options, "'--verbose'"))

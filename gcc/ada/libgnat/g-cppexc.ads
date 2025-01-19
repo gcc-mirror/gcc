@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                        Copyright (C) 2013-2024, AdaCore                  --
+--                        Copyright (C) 2013-2025, AdaCore                  --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,9 @@
 
 --  This package provides an interface for raising and handling C++ exceptions
 
+with System;
 with Ada.Exceptions; use Ada.Exceptions;
+with GNAT.CPP.Std; use GNAT.CPP.Std;
 
 package GNAT.CPP_Exceptions is
    generic
@@ -40,9 +42,51 @@ package GNAT.CPP_Exceptions is
    --  Raise a C++ exception identified by Id. Associate Value with this
    --  occurrence. Id must refer to an exception that has the Cpp convention.
 
+   function Get_Object_Address
+     (X : Exception_Occurrence) return System.Address;
+   --  Extract the address of the object associated with X. The
+   --  exception of the occurrence X must have a Cpp Convention.  When
+   --  the exception handler catches a base type of the raised object,
+   --  the returned address is that of the base type part of the
+   --  object, the type explicitly expected by the handler.
+
    generic
       type T is private;
    function Get_Object (X : Exception_Occurrence) return T;
-   --  Extract the object associated with X. The exception of the occurrence
-   --  X must have a Cpp Convention.
+   --  Extract the object associated with X. The exception of the
+   --  occurrence X must have a Cpp Convention.  When the exception
+   --  handler catches a base type of the raised object, the returned
+   --  object is (a copy of) the base type portion of the object.
+
+   generic
+      type T is limited private;
+   function Get_Access_To_Object (X : Exception_Occurrence)
+                                 return access T;
+   --  Extract the object associated with X. The exception of the
+   --  occurrence X must have a Cpp Convention. When the exception
+   --  handler catches a base type of the raised object, access is
+   --  returned to the base type part of the object, the type
+   --  explicitly expected by the handler.
+
+   generic
+      type T is abstract tagged limited private;
+   function Get_Access_To_Tagged_Object (X : Exception_Occurrence)
+                                        return access T'Class;
+   --  Extract the object associated with X. The exception of the
+   --  occurrence X must have a Cpp Convention. When the exception
+   --  handler catches a base type of the raised object, access is
+   --  returned to the base type part of the object, the type
+   --  explicitly expected by the handler.
+
+   function Get_Type_Info (X : Exception_Occurrence) return Type_Info_Ptr;
+   --  Obtain the type information of the full C++ object raised as X.
+   --  When the exception is caught using a base-type match exception,
+   --  this may be a derived class from that named for the exception.
+
+   function Get_Type_Info (Id : Exception_Id) return Type_Info_Ptr;
+   --  Obtain the type information of a C++ exception type. This will
+   --  be the std::type_info object named in the exception
+   --  declaration, even if ID is taken from an exception occurrence
+   --  containing an object of a derived type.
+
 end GNAT.CPP_Exceptions;

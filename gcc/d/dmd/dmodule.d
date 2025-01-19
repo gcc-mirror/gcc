@@ -24,12 +24,13 @@ import dmd.astenums;
 import dmd.common.outbuffer;
 import dmd.compiler;
 import dmd.cparse;
+import dmd.declaration;
 import dmd.dimport;
 import dmd.dmacro;
 import dmd.doc;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
+import dmd.dsymbolsem : dsymbolSemantic, importAll, load, include;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
@@ -309,8 +310,9 @@ extern (C++) class Package : ScopeDsymbol
             packages ~= s.ident;
         reverse(packages);
 
-        if (Module.find(getFilename(packages, ident)))
-            Module.load(Loc.initial, packages, this.ident);
+        ImportPathInfo pathThatFoundThis;
+        if (Module.find(getFilename(packages, ident), pathThatFoundThis))
+            Module.load(Loc.initial, packages, this.ident, pathThatFoundThis);
         else
             isPkgMod = PKG.package_;
     }
@@ -348,8 +350,8 @@ extern (C++) final class Module : Package
     const(char)[] arg;           // original argument name
     ModuleDeclaration* md;      // if !=null, the contents of the ModuleDeclaration declaration
     const FileName srcfile;     // input source file
-    const FileName objfile;     // output .obj file
-    const FileName hdrfile;     // 'header' file
+    FileName objfile;           // output .obj file
+    FileName hdrfile;           // 'header' file
     FileName docfile;           // output documentation file
     const(ubyte)[] src;         /// Raw content of the file
     uint errors;                // if any errors in file
@@ -357,6 +359,7 @@ extern (C++) final class Module : Package
     FileType filetype;          // source file type
     bool hasAlwaysInlines;      // contains references to functions that must be inlined
     bool isPackageFile;         // if it is a package.d
+    Edition edition;            // language edition that this module is compiled with
     Package pkg;                // if isPackageFile is true, the Package that contains this package.d
     Strings contentImportedFiles; // array of files whose content was imported
     int needmoduleinfo;
@@ -454,7 +457,7 @@ extern (C++) final class Module : Package
             FileName.exists(filename) == 1)
         {
             FileName.free(srcfilename.ptr);
-            srcfilename = FileName.removeExt(filename); // just does a mem.strdup(filename)
+            srcfilename = FileName.sansExt(filename);
         }
         else if (!FileName.equalsExt(srcfilename, mars_ext) &&
                  !FileName.equalsExt(srcfilename, hdr_ext) &&
@@ -476,6 +479,8 @@ extern (C++) final class Module : Package
             setDocfile();
         if (doHdrGen)
             hdrfile = setOutfilename(global.params.dihdr.name, global.params.dihdr.dir, arg, hdr_ext);
+
+        this.edition = Edition.legacy;
     }
 
     extern (D) this(const(char)[] filename, Identifier ident, int doDocComment, int doHdrGen)
@@ -495,12 +500,18 @@ extern (C++) final class Module : Package
 
     static const(char)* find(const(char)* filename)
     {
-        return find(filename.toDString).ptr;
+        ImportPathInfo pathThatFoundThis; // is this needed? In fact is this function needed still???
+        return find(filename.toDString, pathThatFoundThis).ptr;
     }
 
-    extern (D) static const(char)[] find(const(char)[] filename)
+    extern (D) static const(char)[] find(const(char)[] filename, out ImportPathInfo pathThatFoundThis)
     {
-        return global.fileManager.lookForSourceFile(filename, global.path[]);
+        ptrdiff_t whichPathFoundThis;
+        const(char)[] ret = global.fileManager.lookForSourceFile(filename, global.path[], whichPathFoundThis);
+
+        if (whichPathFoundThis >= 0)
+            pathThatFoundThis = global.path[whichPathFoundThis];
+        return ret;
     }
 
     extern (C++) static Module load(const ref Loc loc, Identifiers* packages, Identifier ident)
@@ -508,7 +519,7 @@ extern (C++) final class Module : Package
         return load(loc, packages ? (*packages)[] : null, ident);
     }
 
-    extern (D) static Module load(const ref Loc loc, Identifier[] packages, Identifier ident)
+    extern (D) static Module load(const ref Loc loc, Identifier[] packages, Identifier ident, ImportPathInfo pathInfo = ImportPathInfo.init)
     {
         //printf("Module::load(ident = '%s')\n", ident.toChars());
         // Build module filename by turning:
@@ -517,10 +528,16 @@ extern (C++) final class Module : Package
         //  foo\bar\baz
         const(char)[] filename = getFilename(packages, ident);
         // Look for the source file
-        if (const result = find(filename))
+        ImportPathInfo importPathThatFindUs;
+        if (const result = find(filename, importPathThatFindUs))
+        {
             filename = result; // leaks
+            pathInfo = importPathThatFindUs;
+        }
 
         auto m = new Module(loc, filename, ident, 0, 0);
+
+        // TODO: apply import path information (pathInfo) on to module
 
         if (!m.read(loc))
             return null;
@@ -575,6 +592,22 @@ extern (C++) final class Module : Package
                 argdoc = arg;
             else
                 argdoc = FileName.name(arg);
+
+            if (global.params.fullyQualifiedObjectFiles)
+            {
+                const fqn = md ? md.toString() : toString();
+                argdoc = FileName.replaceName(argdoc, fqn);
+
+                // add ext, otherwise forceExt will make nested.module into nested.<ext>
+                const bufferLength = argdoc.length + 1 + ext.length + /* null terminator */ 1;
+                char[] s = new char[bufferLength];
+                s[0 .. argdoc.length] = argdoc[];
+                s[argdoc.length] = '.';
+                s[$-1-ext.length .. $-1] = ext[];
+                s[$-1] = 0;
+                argdoc = s;
+            }
+
             // If argdoc doesn't have an absolute path, make it relative to dir
             if (!FileName.absolute(argdoc))
             {
@@ -609,41 +642,30 @@ extern (C++) final class Module : Package
      */
     private void onFileReadError(const ref Loc loc)
     {
-        if (FileName.equals(srcfile.toString(), "object.d"))
+        const name = srcfile.toString();
+        if (FileName.equals(name, "object.d"))
         {
-            .error(loc, "cannot find source code for runtime library file 'object.d'");
-            version (IN_LLVM)
-            {
-                errorSupplemental(loc, "ldc2 might not be correctly installed.");
-                errorSupplemental(loc, "Please check your ldc2.conf configuration file.");
-                errorSupplemental(loc, "Installation instructions can be found at http://wiki.dlang.org/LDC.");
-            }
-            version (MARS)
-            {
-                errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-                const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
-                errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
-            }
+            ObjectNotFound(Loc.initial, ident);
         }
         else if (FileName.ext(this.arg) || !loc.isValid())
         {
             // Modules whose original argument name has an extension, or do not
             // have a valid location come from the command-line.
             // Error that their file cannot be found and return early.
-            .error(loc, "cannot find input file `%s`", srcfile.toChars());
+            .error(loc, "cannot find input file `%.*s`", cast(int)name.length, name.ptr);
         }
         else
         {
             // if module is not named 'package' but we're trying to read 'package.d', we're looking for a package module
             bool isPackageMod = (strcmp(toChars(), "package") != 0) && isPackageFileName(srcfile);
             if (isPackageMod)
-                .error(loc, "importing package '%s' requires a 'package.d' file which cannot be found in '%s'", toChars(), srcfile.toChars());
+                .error(loc, "importing package '%s' requires a 'package.d' file which cannot be found in '%.*s'", toChars(), cast(int)name.length, name.ptr);
             else
             {
                 .error(loc, "unable to read module `%s`", toChars());
-                const pkgfile = FileName.combine(FileName.removeExt(srcfile.toString()), package_d);
-                .errorSupplemental(loc, "Expected '%s' or '%s' in one of the following import paths:",
-                    srcfile.toChars(), pkgfile.ptr);
+                const pkgfile = FileName.combine(FileName.sansExt(name), package_d);
+                .errorSupplemental(loc, "Expected '%.*s' or '%.*s' in one of the following import paths:",
+                    cast(int)name.length, name.ptr, cast(int)pkgfile.length, pkgfile.ptr);
             }
         }
         if (!global.gag)
@@ -653,11 +675,11 @@ extern (C++) final class Module : Package
             if (global.path.length)
             {
                 foreach (i, p; global.path[])
-                    fprintf(stderr, "import path[%llu] = %s\n", cast(ulong)i, p);
+                    fprintf(stderr, "import path[%llu] = %s\n", cast(ulong)i, p.path);
             }
             else
             {
-                fprintf(stderr, "Specify path to file '%s' with -I switch\n", srcfile.toChars());
+                fprintf(stderr, "Specify path to file '%.*s' with -I switch\n", cast(int)name.length, name.ptr);
             }
 
             removeHdrFilesAndFail(global.params, Module.amodules);
@@ -722,6 +744,11 @@ extern (C++) final class Module : Package
     {
         const(char)* srcname = srcfile.toChars();
         //printf("Module::parse(srcname = '%s')\n", srcname);
+
+        import dmd.timetrace;
+        timeTraceBeginEvent(TimeTraceEventType.parse);
+        scope (exit) timeTraceEndEvent(TimeTraceEventType.parse, this);
+
         isPackageFile = isPackageFileName(srcfile);
         const(char)[] buf = processSource(src, this);
         // an error happened on UTF conversion
@@ -773,7 +800,7 @@ extern (C++) final class Module : Package
         {
             filetype = FileType.c;
 
-            global.compileEnv.masm = target.os == Target.OS.Windows && !target.omfobj; // Microsoft inline assembler format
+            global.compileEnv.masm = target.os == Target.OS.Windows; // Microsoft inline assembler format
             scope p = new CParser!AST(this, buf, cast(bool) docfile, global.errorSink, target.c, &defines, &global.compileEnv);
             global.compileEnv.masm = false;
             p.nextToken();
@@ -786,7 +813,6 @@ extern (C++) final class Module : Package
         {
             const bool doUnittests = global.params.parsingUnittestsRequired();
             scope p = new Parser!AST(this, buf, cast(bool) docfile, global.errorSink, &global.compileEnv, doUnittests);
-            p.transitionIn = global.params.v.vin;
             p.nextToken();
             p.parseModuleDeclaration();
             md = p.md;
@@ -1394,7 +1420,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 {
     enum SourceEncoding { utf16, utf32}
     enum Endian { little, big}
-    immutable loc = mod.getLoc();
+    immutable loc = mod.loc;
 
     /*
      * Convert a buffer from UTF32 to UTF8

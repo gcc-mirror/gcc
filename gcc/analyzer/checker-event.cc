@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -188,8 +187,8 @@ checker_event::dump (pretty_printer *pp) const
       if (m_effective_fndecl != m_original_fndecl)
 	pp_printf (pp, " corrected from %qE", m_original_fndecl);
     }
-  pp_printf (pp, ", m_loc=%x)",
-	     get_location ());
+  pp_printf (pp, ", m_loc=%llx)",
+	     (unsigned long long) get_location ());
 }
 
 /* Dump this event to stderr (for debugging/logging purposes).  */

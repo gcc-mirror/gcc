@@ -1,5 +1,5 @@
 ;; Predicate definitions for GCN.
-;; Copyright (C) 2016-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -228,3 +228,5 @@
   return gcn_stepped_zero_int_parallel_p (op, 1);
 })
 
+(define_predicate "maskload_else_operand"
+  (match_operand 0 "scratch_operand"))

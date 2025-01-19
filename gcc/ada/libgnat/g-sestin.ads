@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                      Copyright (C) 2004-2024, AdaCore                    --
+--                      Copyright (C) 2004-2025, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides facilities for obtaining information on secondary
---  stack usage. See System.Secondary_Stack for documentation.
+--  This package provides a public interface to the internal package
+--  ``System.Secondary_Stack``. It allows users to query the current high water
+--  mark of the secondary stack, the stack used to return unconstrained types.
 
 with System.Secondary_Stack;
 
@@ -38,5 +39,7 @@ package GNAT.Secondary_Stack_Info is
 
    function SS_Get_Max return Long_Long_Integer
      renames System.Secondary_Stack.SS_Get_Max;
+   --  Return the high water mark of the secondary stack for the current
+   --  secondary stack in bytes.
 
 end GNAT.Secondary_Stack_Info;

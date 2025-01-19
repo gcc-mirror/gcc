@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fgimple -fdump-tree-cunroll-blocks-details" } */
+/* { dg-options "-O3 -fgimple -fdump-tree-cunroll-blocks-details -fno-tree-vectorize" } */
 
 #if __SIZEOF_INT__ < 4
 __extension__ typedef __INT32_TYPE__ i32;

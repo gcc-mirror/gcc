@@ -4,7 +4,7 @@
 template <int...> struct seq {};
 template <bool> struct S {
     template <typename Args>
-    constexpr static void call(Args&&...) {}
+    constexpr static void call(Args&&...) {}	// { dg-warning "omission of ',' before varargs '...' is deprecated" "" { target c++26 } }
 };
 
 template <int ...Idx,typename ...Args>

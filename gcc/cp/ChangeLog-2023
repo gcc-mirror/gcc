@@ -4088,7 +4088,6 @@
 	PR c++/108206
 	* decl.cc (merge_default_template_args): Return false if either
 	new_parm or old_parm are erroneous.
-
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 

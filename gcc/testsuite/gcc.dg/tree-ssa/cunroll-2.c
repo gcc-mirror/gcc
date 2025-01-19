@@ -13,5 +13,6 @@ test(int c)
 	return;
     }
 }
+
 /* We are not able to get rid of the final conditional because the loop has two exits.  */
-/* { dg-final { scan-tree-dump "loop with 1 iterations completely unrolled" "cunroll"} } */
+/* { dg-final { scan-tree-dump "Not unrolling loop 1: contains call and code would grow" "cunroll"} } */

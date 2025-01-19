@@ -21,11 +21,6 @@ import core.sync.condition;
 import core.sync.mutex;
 import core.memory;
 
-version (Posix)
-{
-    import core.sys.posix.pthread;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // ReadWriteMutex

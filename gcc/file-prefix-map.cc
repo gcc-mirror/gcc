@@ -1,5 +1,5 @@
 /* Implementation of file prefix remapping support (-f*-prefix-map options).
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -15,7 +15,6 @@
    along with this program; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

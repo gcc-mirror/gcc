@@ -176,7 +176,6 @@
 	* d-glue.cc, d-objfile.cc, d-codegen.cc, d-lang.h, d-builtins2.cc,
 	d-convert.cc, d-codegen.h: Replace calls to build macro by appropriate
 	buildN function (build is removed in GCC > 4.1).
-
 
 Copyright (C) 2009 Free Software Foundation, Inc.
 

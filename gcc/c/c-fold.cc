@@ -1,5 +1,5 @@
 /* Support for fully folding sub-trees of an expression for C compiler.
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -410,7 +409,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 		    || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
 		   && compare_tree_int (op1,
 					TYPE_PRECISION (TREE_TYPE (orig_op0)))
-		      >= 0)
+		      >= 0
+		   && !warning_suppressed_p (expr, OPT_Wshift_count_overflow))
 	    warning_at (loc, OPT_Wshift_count_overflow,
 			(code == LSHIFT_EXPR
 			 ? G_("left shift count >= width of type")

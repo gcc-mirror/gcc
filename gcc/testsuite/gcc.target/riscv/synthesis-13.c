@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-require-effective-target rv64 } */
 /* We aggressively skip as we really just need to test the basic synthesis
    which shouldn't vary based on the optimization level.  -O1 seems to work
@@ -12,7 +12,7 @@
    total number of instructions.
 
    This isn't expected to change much and any change is worthy of a look.  */
-/* { dg-final { scan-assembler-times "\\t(add|addi|bseti|li|pack|ret|sh1add|sh2add|sh3add|slli|srli|xori|or)" 45 } } */
+/* { dg-final { scan-assembler-times "\\t(add|addi|bseti|li|pack|ret|sh1add|sh2add|sh3add|slli|srli|xori|or)" 54 } } */
 
 
 unsigned long foo_0x7907d89a2857f2de(void) { return 0x7907d89a2857f2deUL; }

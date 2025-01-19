@@ -33643,7 +33643,6 @@ Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* loop.h (REG_IV_CLASS): New accessor macro.
 	* loop.c (REG_IV_CLASS): Use it instead of reg_iv_class array.
 	* unroll.c (REG_IV_CLASS): Likewise.
-
 
 Copyright (C) 2001 Free Software Foundation, Inc.
 

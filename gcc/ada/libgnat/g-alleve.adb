@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -377,7 +377,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
       begin
          for K in Varray_Type'Range loop
             D (K) := (if A (K) /= Component_Type'First
-                      then abs (A (K)) else Component_Type'First);
+                      then abs A (K) else Component_Type'First);
          end loop;
 
          return D;
@@ -392,7 +392,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
 
       begin
          for K in Varray_Type'Range loop
-            D (K) := Saturate (abs (SI64 (A (K))));
+            D (K) := Saturate (abs SI64 (A (K)));
          end loop;
 
          return D;
@@ -1583,7 +1583,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
 
    begin
       if Bits (VSCR, NJ_POS, NJ_POS) = 1
-        and then abs (X) < 2.0 ** (-126)
+        and then abs X < 2.0 ** (-126)
       then
          D := (if X < 0.0 then -0.0 else +0.0);
       else
@@ -1959,7 +1959,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
 
    begin
       for J in Varray_float'Range loop
-         D (J) := abs (VA.Values (J));
+         D (J) := abs VA.Values (J);
       end loop;
 
       return To_Vector ((Values => D));

@@ -6,7 +6,7 @@
 # The resulting file can be used with test result comparison scripts for
 # results from tests that were run in parallel.  See usage() below.
 
-# Copyright (C) 2008-2024 Free Software Foundation, Inc.
+# Copyright (C) 2008-2025 Free Software Foundation, Inc.
 # Contributed by Janis Johnson <janis187@us.ibm.com>
 #
 # This file is part of GCC.

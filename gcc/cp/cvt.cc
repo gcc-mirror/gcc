@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
    Every language front end must have a `convert' function
    but what kind of conversions it does will depend on the language.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -37,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "escaped_string.h"
+#include "gcc-urlifier.h"
 
 static tree convert_to_pointer_force (tree, tree, tsubst_flags_t);
 static tree build_type_conversion (tree, tree);
@@ -1087,11 +1087,12 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       const char *format
 	= (msg
 	   ? G_("ignoring return value of %qD, "
-		"declared with attribute %<nodiscard%>: %<%s%>")
+		"declared with attribute %<nodiscard%>: %qs")
 	   : G_("ignoring return value of %qD, "
 		"declared with attribute %<nodiscard%>%s"));
       const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
+      auto_urlify_attributes sentinel;
       if (warning_at (loc, OPT_Wunused_result, format, fn, raw_msg))
 	inform (DECL_SOURCE_LOCATION (fn), "declared here");
     }
@@ -1105,11 +1106,12 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       const char *format
 	= (msg
 	   ? G_("ignoring returned value of type %qT, "
-		"declared with attribute %<nodiscard%>: %<%s%>")
+		"declared with attribute %<nodiscard%>: %qs")
 	   : G_("ignoring returned value of type %qT, "
 		"declared with attribute %<nodiscard%>%s"));
       const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
+      auto_urlify_attributes sentinel;
       if (warning_at (loc, OPT_Wunused_result, format, rettype, raw_msg))
 	{
 	  if (fn)
@@ -1124,6 +1126,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
     {
       /* The TARGET_EXPR confuses do_warn_unused_result into thinking that the
 	 result is used, so handle that case here.  */
+      auto_urlify_attributes sentinel;
       if (fn)
 	{
 	  auto_diagnostic_group d;

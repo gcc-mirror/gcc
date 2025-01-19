@@ -477,7 +477,7 @@ void gendocfile(Module m, const char[] ddoctext, const char* datetime, ErrorSink
     auto p = slice.ptr;
     for (size_t j = 0; j < slice.length; j++)
     {
-        char c = p[j];
+        const c = p[j];
         if (c == 0xFF && j + 1 < slice.length)
         {
             j++;
@@ -510,7 +510,7 @@ void escapeDdocString(ref OutBuffer buf, size_t start)
 {
     for (size_t u = start; u < buf.length; u++)
     {
-        char c = buf[u];
+        const c = buf[u];
         switch (c)
         {
         case '$':
@@ -637,7 +637,7 @@ private void escapeStrayParenthesis(Loc loc, ref OutBuffer buf, size_t start, bo
         for (size_t u = buf.length; u > start;)
         {
             u--;
-            char c = buf[u];
+            const c = buf[u];
             switch (c)
             {
             case ')':
@@ -2107,42 +2107,12 @@ int getMarkdownIndent(ref OutBuffer buf, size_t from, size_t to) @safe
 }
 
 /************************************************
- * Scan forward to one of:
- *      start of identifier
- *      beginning of next line
- *      end of buf
- */
-size_t skiptoident(ref OutBuffer buf, size_t i) @safe
-{
-    const slice = buf[];
-    while (i < slice.length)
-    {
-        dchar c;
-        size_t oi = i;
-        if (utf_decodeChar(slice, i, c))
-        {
-            /* Ignore UTF errors, but still consume input
-             */
-            break;
-        }
-        if (c >= 0x80)
-        {
-            if (!isUniAlpha(c))
-                continue;
-        }
-        else if (!(isalpha(c) || c == '_' || c == '\n'))
-            continue;
-        i = oi;
-        break;
-    }
-    return i;
-}
-
-/************************************************
  * Scan forward past end of identifier.
  */
 size_t skippastident(ref OutBuffer buf, size_t i) @safe
 {
+    import dmd.common.charactertables;
+
     const slice = buf[];
     while (i < slice.length)
     {
@@ -2156,7 +2126,8 @@ size_t skippastident(ref OutBuffer buf, size_t i) @safe
         }
         if (c >= 0x80)
         {
-            if (isUniAlpha(c))
+            // we don't care if it is start/continue here
+            if (isAnyIdentifierCharacter(c))
                 continue;
         }
         else if (isalnum(c) || c == '_')
@@ -2173,6 +2144,8 @@ size_t skippastident(ref OutBuffer buf, size_t i) @safe
  */
 size_t skipPastIdentWithDots(ref OutBuffer buf, size_t i) @safe
 {
+    import dmd.common.charactertables;
+
     const slice = buf[];
     bool lastCharWasDot;
     while (i < slice.length)
@@ -2203,7 +2176,8 @@ size_t skipPastIdentWithDots(ref OutBuffer buf, size_t i) @safe
         {
             if (c >= 0x80)
             {
-                if (isUniAlpha(c))
+                // we don't care if it is start/continue here
+                if (isAnyIdentifierCharacter(c))
                 {
                     lastCharWasDot = false;
                     continue;
@@ -2300,10 +2274,9 @@ void removeBlankLineMacro(ref OutBuffer buf, ref size_t iAt, ref size_t i)
  *                thematic break. If the replacement is made `i` changes to
  *                point to the closing parenthesis of the `$(HR)` macro.
  *  iLineStart  = the index within `buf` that the thematic break's line starts at
- *  loc         = the current location within the file
  * Returns: whether a thematic break was replaced
  */
-bool replaceMarkdownThematicBreak(ref OutBuffer buf, ref size_t i, size_t iLineStart, const ref Loc loc)
+bool replaceMarkdownThematicBreak(ref OutBuffer buf, ref size_t i, size_t iLineStart)
 {
 
     const slice = buf[];
@@ -2404,11 +2377,10 @@ void removeAnyAtxHeadingSuffix(ref OutBuffer buf, size_t i)
  *  iEnd          = the index within `buf` of the character after the last
  *                  heading character. Is incremented by the length of the
  *                  inserted heading macro when this function ends.
- *  loc           = the location of the Ddoc within the file
  *  headingLevel  = the level (1-6) of heading to end. Is set to `0` when this
  *                  function ends.
  */
-void endMarkdownHeading(ref OutBuffer buf, size_t iStart, ref size_t iEnd, const ref Loc loc, ref int headingLevel)
+void endMarkdownHeading(ref OutBuffer buf, size_t iStart, ref size_t iEnd, ref int headingLevel)
 {
     char[5] heading = "$(H0 ";
     heading[3] = cast(char) ('0' + headingLevel);
@@ -2465,12 +2437,11 @@ size_t endAllListsAndQuotes(ref OutBuffer buf, ref size_t i, ref MarkdownList[] 
  * e.g. `*very* **nice**` becomes `$(EM very) $(STRONG nice)`.
  * Params:
  *  buf               = an OutBuffer containing the DDoc
- *  loc               = the current location within the file
  *  inlineDelimiters  = the collection of delimiters found within a paragraph. When this function returns its length will be reduced to `downToLevel`.
  *  downToLevel       = the length within `inlineDelimiters`` to reduce emphasis to
  * Returns: the number of characters added to the buffer by the replacements
  */
-size_t replaceMarkdownEmphasis(ref OutBuffer buf, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, int downToLevel = 0)
+size_t replaceMarkdownEmphasis(ref OutBuffer buf, ref MarkdownDelimiter[] inlineDelimiters, int downToLevel = 0)
 {
     size_t replaceEmphasisPair(ref MarkdownDelimiter start, ref MarkdownDelimiter end)
     {
@@ -2613,7 +2584,7 @@ TypeFunction isTypeFunction(Dsymbol s) @safe
     {
         Type t = f.originalType ? f.originalType : f.type;
         if (t.ty == Tfunction)
-            return cast(TypeFunction)t;
+            return (() @trusted => cast(TypeFunction)t)();
     }
     return null;
 }
@@ -2849,10 +2820,9 @@ struct MarkdownList
      *  i             = the index within `buf` of the list item. If this function succeeds `i` will be adjusted to fit the inserted macro.
      *  iPrecedingBlankLine = the index within `buf` of the preceeding blank line. If non-zero and a new list was started, the preceeding blank line is removed and this value is set to `0`.
      *  nestedLists   = a set of nested lists. If this function succeeds it may contain a new nested list.
-     *  loc           = the location of the Ddoc within the file
      * Returns: `true` if a list was created
      */
-    bool startItem(ref OutBuffer buf, ref size_t iLineStart, ref size_t i, ref size_t iPrecedingBlankLine, ref MarkdownList[] nestedLists, const ref Loc loc)
+    bool startItem(ref OutBuffer buf, ref size_t iLineStart, ref size_t i, ref size_t iPrecedingBlankLine, ref MarkdownList[] nestedLists)
     {
         buf.remove(iStart, iContentStart - iStart);
 
@@ -3027,14 +2997,13 @@ struct MarkdownLink
      *  buf               = an OutBuffer containing the DDoc
      *  i                 = the index within `buf` that points to the `]` character of the potential link.
      *                      If this function succeeds it will be adjusted to fit the inserted link macro.
-     *  loc               = the current location within the file
      *  inlineDelimiters  = previously parsed Markdown delimiters, including emphasis and link/image starts
      *  delimiterIndex    = the index within `inlineDelimiters` of the nearest link/image starting delimiter
      *  linkReferences    = previously parsed link references. When this function returns it may contain
      *                      additional previously unparsed references.
      * Returns: whether a reference link was found and replaced at `i`
      */
-    static bool replaceLink(ref OutBuffer buf, ref size_t i, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, int delimiterIndex, ref MarkdownLinkReferences linkReferences)
+    static bool replaceLink(ref OutBuffer buf, ref size_t i, ref MarkdownDelimiter[] inlineDelimiters, int delimiterIndex, ref MarkdownLinkReferences linkReferences)
     {
         const delimiter = inlineDelimiters[delimiterIndex];
         MarkdownLink link;
@@ -3043,7 +3012,7 @@ struct MarkdownLink
         if (iEnd > i)
         {
             i = delimiter.iStart;
-            link.storeAndReplaceDefinition(buf, i, iEnd, linkReferences, loc);
+            link.storeAndReplaceDefinition(buf, i, iEnd, linkReferences);
             inlineDelimiters.length = delimiterIndex;
             return true;
         }
@@ -3055,7 +3024,7 @@ struct MarkdownLink
             if (iEnd > i)
             {
                 const label = link.label;
-                link = linkReferences.lookupReference(label, buf, i, loc);
+                link = linkReferences.lookupReference(label, buf, i);
                 // check rightFlanking to avoid replacing things like int[string]
                 if (!link.href.length && !delimiter.rightFlanking)
                     link = linkReferences.lookupSymbol(label);
@@ -3067,7 +3036,7 @@ struct MarkdownLink
         if (iEnd == i)
             return false;
 
-        immutable delta = replaceMarkdownEmphasis(buf, loc, inlineDelimiters, delimiterIndex);
+        immutable delta = replaceMarkdownEmphasis(buf, inlineDelimiters, delimiterIndex);
         iEnd += delta;
         i += delta;
         link.replaceLink(buf, i, iEnd, delimiter);
@@ -3084,10 +3053,9 @@ struct MarkdownLink
      *  delimiterIndex    = the index within `inlineDelimiters` of the nearest link/image starting delimiter
      *  linkReferences    = previously parsed link references. When this function returns it may contain
      *                      additional previously unparsed references.
-     *  loc               = the current location in the file
      * Returns: whether a reference link was found and replaced at `i`
      */
-    static bool replaceReferenceDefinition(ref OutBuffer buf, ref size_t i, ref MarkdownDelimiter[] inlineDelimiters, int delimiterIndex, ref MarkdownLinkReferences linkReferences, const ref Loc loc)
+    static bool replaceReferenceDefinition(ref OutBuffer buf, ref size_t i, ref MarkdownDelimiter[] inlineDelimiters, int delimiterIndex, ref MarkdownLinkReferences linkReferences)
     {
         const delimiter = inlineDelimiters[delimiterIndex];
         MarkdownLink link;
@@ -3096,7 +3064,7 @@ struct MarkdownLink
             return false;
 
         i = delimiter.iStart;
-        link.storeAndReplaceDefinition(buf, i, iEnd, linkReferences, loc);
+        link.storeAndReplaceDefinition(buf, i, iEnd, linkReferences);
         inlineDelimiters.length = delimiterIndex;
         return true;
     }
@@ -3469,9 +3437,8 @@ struct MarkdownLink
      *  iEnd              = the index within `buf` that points just after the end of the definition
      *  linkReferences    = previously parsed link references. When this function returns it may contain
      *                      an additional reference.
-     *  loc               = the current location in the file
      */
-    private void storeAndReplaceDefinition(ref OutBuffer buf, ref size_t i, size_t iEnd, ref MarkdownLinkReferences linkReferences, const ref Loc loc)
+    private void storeAndReplaceDefinition(ref OutBuffer buf, ref size_t i, size_t iEnd, ref MarkdownLinkReferences linkReferences)
     {
         // Remove the definition and trailing whitespace
         iEnd = skipChars(buf, iEnd, " \t\r\n");
@@ -3604,14 +3571,13 @@ struct MarkdownLinkReferences
      *  label = the label to find the reference for
      *  buf   = an OutBuffer containing the DDoc
      *  i     = the index within `buf` to start searching for references at
-     *  loc   = the current location in the file
      * Returns: a link. If the `href` member has a value then the reference is valid.
      */
-    MarkdownLink lookupReference(string label, ref OutBuffer buf, size_t i, const ref Loc loc)
+    MarkdownLink lookupReference(string label, ref OutBuffer buf, size_t i)
     {
         const lowercaseLabel = label.toLowercase();
         if (lowercaseLabel !in references)
-            extractReferences(buf, i, loc);
+            extractReferences(buf, i);
 
         if (lowercaseLabel in references)
             return references[lowercaseLabel];
@@ -3659,10 +3625,9 @@ struct MarkdownLinkReferences
      * Params:
      *  buf   = an OutBuffer containing the DDoc
      *  i     = the index within `buf` to start looking at
-     *  loc   = the current location in the file
      * Returns: whether a reference was extracted
      */
-    private void extractReferences(ref OutBuffer buf, size_t i, const ref Loc loc)
+    private void extractReferences(ref OutBuffer buf, size_t i)
     {
         static bool isFollowedBySpace(ref OutBuffer buf, size_t i)
         {
@@ -3750,7 +3715,7 @@ struct MarkdownLinkReferences
                 break;
             case ']':
                 if (delimiters.length && !inCode &&
-                    MarkdownLink.replaceReferenceDefinition(buf, i, delimiters, cast(int) delimiters.length - 1, this, loc))
+                    MarkdownLink.replaceReferenceDefinition(buf, i, delimiters, cast(int) delimiters.length - 1, this))
                     --i;
                 break;
             default:
@@ -3923,19 +3888,18 @@ size_t parseTableDelimiterRow(ref OutBuffer buf, const size_t iStart, bool inQuo
  *  buf       = an OutBuffer containing the DDoc
  *  iStart    = the index within `buf` that the table header row starts at, inclusive
  *  iEnd      = the index within `buf` that the table header row ends at, exclusive
- *  loc       = the current location in the file
  *  inQuote   = whether the table is inside a quote
  *  inlineDelimiters = delimiters containing columns separators and any inline emphasis
  *  columnAlignments = the parsed alignments for each column
  * Returns: the number of characters added by starting the table, or `0` if unchanged
  */
-size_t startTable(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc loc, bool inQuote, ref MarkdownDelimiter[] inlineDelimiters, out TableColumnAlignment[] columnAlignments)
+size_t startTable(ref OutBuffer buf, size_t iStart, size_t iEnd, bool inQuote, ref MarkdownDelimiter[] inlineDelimiters, out TableColumnAlignment[] columnAlignments)
 {
     const iDelimiterRowEnd = parseTableDelimiterRow(buf, iEnd + 1, inQuote, columnAlignments);
     if (iDelimiterRowEnd)
     {
         size_t delta;
-        if (replaceTableRow(buf, iStart, iEnd, loc, inlineDelimiters, columnAlignments, true, delta))
+        if (replaceTableRow(buf, iStart, iEnd, inlineDelimiters, columnAlignments, true, delta))
         {
             buf.remove(iEnd + delta, iDelimiterRowEnd - iEnd);
             buf.insert(iEnd + delta, "$(TBODY ");
@@ -3956,7 +3920,6 @@ size_t startTable(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc l
  *  buf       = an OutBuffer containing the DDoc
  *  iStart    = the index within `buf` that the table row starts at, inclusive
  *  iEnd      = the index within `buf` that the table row ends at, exclusive
- *  loc       = the current location in the file
  *  inlineDelimiters = delimiters containing columns separators and any inline emphasis
  *  columnAlignments = alignments for each column
  *  headerRow = if `true` then the number of columns will be enforced to match
@@ -3965,7 +3928,7 @@ size_t startTable(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc l
  *  delta     = the number of characters added by replacing the row, or `0` if unchanged
  * Returns: `true` if a table row was found and replaced
  */
-bool replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, TableColumnAlignment[] columnAlignments, bool headerRow, out size_t delta)
+bool replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, ref MarkdownDelimiter[] inlineDelimiters, TableColumnAlignment[] columnAlignments, bool headerRow, out size_t delta)
 {
     delta = 0;
 
@@ -3991,7 +3954,7 @@ bool replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Lo
 
     void replaceTableCell(size_t iCellStart, size_t iCellEnd, int cellIndex, int di)
     {
-        const eDelta = replaceMarkdownEmphasis(buf, loc, inlineDelimiters, di);
+        const eDelta = replaceMarkdownEmphasis(buf, inlineDelimiters, di);
         delta += eDelta;
         iCellEnd += eDelta;
 
@@ -4109,15 +4072,14 @@ size_t endTable(ref OutBuffer buf, size_t i, ref TableColumnAlignment[] columnAl
  *  buf       = an OutBuffer containing the DDoc
  *  iStart    = the index within `buf` that the table row starts at, inclusive
  *  iEnd      = the index within `buf` that the table row ends at, exclusive
- *  loc       = the current location in the file
  *  inlineDelimiters = delimiters containing columns separators and any inline emphasis
  *  columnAlignments = alignments for each column; upon return is set to length `0`
  * Returns: the number of characters added by replacing the row, or `0` if unchanged
  */
-size_t endRowAndTable(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, ref TableColumnAlignment[] columnAlignments)
+size_t endRowAndTable(ref OutBuffer buf, size_t iStart, size_t iEnd, ref MarkdownDelimiter[] inlineDelimiters, ref TableColumnAlignment[] columnAlignments)
 {
     size_t delta;
-    replaceTableRow(buf, iStart, iEnd, loc, inlineDelimiters, columnAlignments, false, delta);
+    replaceTableRow(buf, iStart, iEnd, inlineDelimiters, columnAlignments, false, delta);
     delta += endTable(buf, iEnd + delta, columnAlignments);
     return delta;
 }
@@ -4187,19 +4149,19 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
             }
             if (headingLevel)
             {
-                i += replaceMarkdownEmphasis(buf, loc, inlineDelimiters);
-                endMarkdownHeading(buf, iParagraphStart, i, loc, headingLevel);
+                i += replaceMarkdownEmphasis(buf, inlineDelimiters);
+                endMarkdownHeading(buf, iParagraphStart, i, headingLevel);
                 removeBlankLineMacro(buf, iPrecedingBlankLine, i);
                 ++i;
                 iParagraphStart = skipChars(buf, i, " \t\r\n");
             }
 
             if (tableRowDetected && !columnAlignments.length)
-                i += startTable(buf, iLineStart, i, loc, lineQuoted, inlineDelimiters, columnAlignments);
+                i += startTable(buf, iLineStart, i, lineQuoted, inlineDelimiters, columnAlignments);
             else if (columnAlignments.length)
             {
                 size_t delta;
-                if (replaceTableRow(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments, false, delta))
+                if (replaceTableRow(buf, iLineStart, i, inlineDelimiters, columnAlignments, false, delta))
                     i += delta;
                 else
                     i += endTable(buf, i, columnAlignments);
@@ -4214,7 +4176,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                 i += endTable(buf, i, columnAlignments);
                 if (!lineQuoted && quoteLevel)
                     endAllListsAndQuotes(buf, i, nestedLists, quoteLevel, quoteMacroLevel);
-                i += replaceMarkdownEmphasis(buf, loc, inlineDelimiters);
+                i += replaceMarkdownEmphasis(buf, inlineDelimiters);
 
                 // if we don't already know about this paragraph break then
                 // insert a blank line and record the paragraph break
@@ -4330,7 +4292,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
 
                     if (quoteLevel < lineQuoteLevel)
                     {
-                        i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
+                        i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
                         if (nestedLists.length)
                         {
                             const indent = getMarkdownIndent(buf, iLineStart, i);
@@ -4453,7 +4415,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                 if (!headingLevel)
                     break;
 
-                i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
+                i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
                 if (!lineQuoted && quoteLevel)
                     i += endAllListsAndQuotes(buf, iLineStart, nestedLists, quoteLevel, quoteMacroLevel);
 
@@ -4494,7 +4456,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                     const list = MarkdownList.parseItem(buf, iLineStart, i);
                     if (list.isValid)
                     {
-                        if (replaceMarkdownThematicBreak(buf, i, iLineStart, loc))
+                        if (replaceMarkdownThematicBreak(buf, i, iLineStart))
                         {
                             removeBlankLineMacro(buf, iPrecedingBlankLine, i);
                             iParagraphStart = skipChars(buf, i+1, " \t\r\n");
@@ -4618,7 +4580,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                 }
                 else
                 {
-                    i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
+                    i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
                     if (!lineQuoted && quoteLevel)
                     {
                         const delta = endAllListsAndQuotes(buf, iLineStart, nestedLists, quoteLevel, quoteMacroLevel);
@@ -4650,9 +4612,9 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
 
         case '_':
         {
-            if (leadingBlank && !inCode && replaceMarkdownThematicBreak(buf, i, iLineStart, loc))
+            if (leadingBlank && !inCode && replaceMarkdownThematicBreak(buf, i, iLineStart))
             {
-                i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
+                i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
                 if (!lineQuoted && quoteLevel)
                     i += endAllListsAndQuotes(buf, iLineStart, nestedLists, quoteLevel, quoteMacroLevel);
                 removeBlankLineMacro(buf, iPrecedingBlankLine, i);
@@ -4680,7 +4642,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                         break;
                     }
 
-                    i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
+                    i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
                     if (!lineQuoted && quoteLevel)
                     {
                         const delta = endAllListsAndQuotes(buf, iLineStart, nestedLists, quoteLevel, quoteMacroLevel);
@@ -4690,7 +4652,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                     }
 
                     list.macroLevel = macroLevel;
-                    list.startItem(buf, iLineStart, i, iPrecedingBlankLine, nestedLists, loc);
+                    list.startItem(buf, iLineStart, i, iPrecedingBlankLine, nestedLists);
                     break;
                 }
             }
@@ -4709,9 +4671,9 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
             if (leadingBlank)
             {
                 // Check for a thematic break
-                if (replaceMarkdownThematicBreak(buf, i, iLineStart, loc))
+                if (replaceMarkdownThematicBreak(buf, i, iLineStart))
                 {
-                    i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
+                    i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
                     if (!lineQuoted && quoteLevel)
                         i += endAllListsAndQuotes(buf, iLineStart, nestedLists, quoteLevel, quoteMacroLevel);
                     removeBlankLineMacro(buf, iPrecedingBlankLine, i);
@@ -4790,7 +4752,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                 if (delimiter.type == '[' || delimiter.type == '!')
                 {
                     if (delimiter.isValid &&
-                        MarkdownLink.replaceLink(buf, i, loc, inlineDelimiters, d, linkReferences))
+                        MarkdownLink.replaceLink(buf, i, inlineDelimiters, d, linkReferences))
                     {
                         // if we removed a reference link then we're at line start
                         if (i <= delimiter.iStart)
@@ -4888,10 +4850,10 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                     --downToLevel;
                 if (headingLevel && headingMacroLevel >= macroLevel)
                 {
-                    endMarkdownHeading(buf, iParagraphStart, i, loc, headingLevel);
+                    endMarkdownHeading(buf, iParagraphStart, i, headingLevel);
                     removeBlankLineMacro(buf, iPrecedingBlankLine, i);
                 }
-                i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
+                i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
                 while (nestedLists.length && nestedLists[$-1].macroLevel >= macroLevel)
                 {
                     i = buf.insert(i, ")\n)");
@@ -4899,7 +4861,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
                 }
                 if (quoteLevel && quoteMacroLevel >= macroLevel)
                     i += endAllMarkdownQuotes(buf, i, quoteLevel);
-                i += replaceMarkdownEmphasis(buf, loc, inlineDelimiters, downToLevel);
+                i += replaceMarkdownEmphasis(buf, inlineDelimiters, downToLevel);
 
                 --macroLevel;
                 quoteMacroLevel = 0;
@@ -4975,11 +4937,11 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
     size_t i = buf.length;
     if (headingLevel)
     {
-        endMarkdownHeading(buf, iParagraphStart, i, loc, headingLevel);
+        endMarkdownHeading(buf, iParagraphStart, i, headingLevel);
         removeBlankLineMacro(buf, iPrecedingBlankLine, i);
     }
-    i += endRowAndTable(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments);
-    i += replaceMarkdownEmphasis(buf, loc, inlineDelimiters);
+    i += endRowAndTable(buf, iLineStart, i, inlineDelimiters, columnAlignments);
+    i += replaceMarkdownEmphasis(buf, inlineDelimiters);
     endAllListsAndQuotes(buf, i, nestedLists, quoteLevel, quoteMacroLevel);
 }
 
@@ -5249,6 +5211,8 @@ bool isCVariadicArg(const(char)[] p) @nogc nothrow pure @safe
 @trusted
 bool isIdStart(const(char)* p) @nogc nothrow pure
 {
+    import dmd.common.charactertables;
+
     dchar c = *p;
     if (isalpha(c) || c == '_')
         return true;
@@ -5257,7 +5221,7 @@ bool isIdStart(const(char)* p) @nogc nothrow pure
         size_t i = 0;
         if (utf_decodeChar(p[0 .. 4], i, c))
             return false; // ignore errors
-        if (isUniAlpha(c))
+        if (isAnyStart(c))
             return true;
     }
     return false;
@@ -5269,6 +5233,8 @@ bool isIdStart(const(char)* p) @nogc nothrow pure
 @trusted
 bool isIdTail(const(char)* p) @nogc nothrow pure
 {
+    import dmd.common.charactertables;
+
     dchar c = *p;
     if (isalnum(c) || c == '_')
         return true;
@@ -5277,7 +5243,7 @@ bool isIdTail(const(char)* p) @nogc nothrow pure
         size_t i = 0;
         if (utf_decodeChar(p[0 .. 4], i, c))
             return false; // ignore errors
-        if (isUniAlpha(c))
+        if (isAnyContinue(c))
             return true;
     }
     return false;

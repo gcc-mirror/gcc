@@ -1,5 +1,5 @@
 ;; Insn predicate definitions for AVR 8-bit microcontrollers.
-;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -27,7 +27,7 @@
   (and (match_code "reg")
        (match_test "REGNO (op) >= 16 && REGNO (op) <= 31")))
 
-(define_predicate "scratch_or_d_register_operand"
+(define_predicate "scratch_or_dreg_operand"
   (ior (match_operand 0 "d_register_operand")
        (and (match_code ("scratch"))
             (match_operand 0 "scratch_operand"))))
@@ -89,6 +89,7 @@
 (define_predicate "nox_general_operand"
   (and (match_operand 0 "general_operand")
        (not (match_test "avr_load_libgcc_p (op)"))
+       (not (match_test "avr_mem_flashx_p (op)"))
        (not (match_test "avr_mem_memx_p (op)"))))
 
 ;; Return 1 if OP is the zero constant for MODE.
@@ -176,6 +177,11 @@
 ;; Returns true if OP is either the constant zero or a register.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const0_operand")))
+
+;; Returns true if OP is either the constant zero or an upper register.
+(define_predicate "dreg_or_0_operand"
+  (ior (match_operand 0 "d_register_operand")
        (match_operand 0 "const0_operand")))
 
 ;; Returns 1 if OP is a SYMBOL_REF.
@@ -374,3 +380,7 @@
   (ior (match_code "const_fixed")
        (match_code "const_double")
        (match_operand 0 "immediate_operand")))
+
+(define_predicate "set_some_operation"
+  (and (match_code "parallel")
+       (match_test "avr_set_some_operation (op)")))

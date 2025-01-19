@@ -24,7 +24,7 @@ import dmd.dscope;
 import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
-import dmd.expressionsem;
+import dmd.expressionsem : expressionSemantic, evalStaticCondition, resolveProperties;
 import dmd.globals;
 import dmd.identifier;
 import dmd.location;
@@ -160,34 +160,33 @@ extern (C++) final class StaticForeach : RootObject
         sc = sc.endCTFE();
         el = el.optimize(WANTvalue);
         el = el.ctfeInterpret();
-        if (el.op == EXP.int64)
+        if (el.op != EXP.int64)
         {
-            Expressions *es = void;
-            if (auto ale = aggr.isArrayLiteralExp())
-            {
-                // Directly use the elements of the array for the TupleExp creation
-                es = ale.elements;
-            }
-            else
-            {
-                const length = cast(size_t)el.toInteger();
-                es = new Expressions(length);
-                foreach (i; 0 .. length)
-                {
-                    auto index = new IntegerExp(loc, i, Type.tsize_t);
-                    auto value = new IndexExp(aggr.loc, aggr, index);
-                    (*es)[i] = value;
-                }
-            }
-            aggrfe.aggr = new TupleExp(aggr.loc, es);
-            aggrfe.aggr = aggrfe.aggr.expressionSemantic(sc);
-            aggrfe.aggr = aggrfe.aggr.optimize(WANTvalue);
-            aggrfe.aggr = aggrfe.aggr.ctfeInterpret();
+            aggrfe.aggr = ErrorExp.get();
+            return;
+        }
+
+        Expressions *es;
+        if (auto ale = aggr.isArrayLiteralExp())
+        {
+            // Directly use the elements of the array for the TupleExp creation
+            es = ale.elements;
         }
         else
         {
-            aggrfe.aggr = ErrorExp.get();
+            const length = cast(size_t)el.toInteger();
+            es = new Expressions(length);
+            foreach (i; 0 .. length)
+            {
+                auto index = new IntegerExp(loc, i, Type.tsize_t);
+                auto value = new IndexExp(aggr.loc, aggr, index);
+                (*es)[i] = value;
+            }
         }
+        aggrfe.aggr = new TupleExp(aggr.loc, es);
+        aggrfe.aggr = aggrfe.aggr.expressionSemantic(sc);
+        aggrfe.aggr = aggrfe.aggr.optimize(WANTvalue);
+        aggrfe.aggr = aggrfe.aggr.ctfeInterpret();
     }
 
     /*****************************************
@@ -323,7 +322,7 @@ extern (C++) final class StaticForeach : RootObject
         {
             foreach (params; pparams)
             {
-                auto p = aggrfe ? (*aggrfe.parameters)[i] : rangefe.prm;
+                auto p = aggrfe ? (*aggrfe.parameters)[i] : rangefe.param;
                 params.push(new Parameter(aloc, p.storageClass, p.type, p.ident, null, null));
             }
         }
@@ -383,7 +382,7 @@ extern (C++) final class StaticForeach : RootObject
 
         // Run 'typeof' gagged to avoid duplicate errors and if it fails just create
         // an empty foreach to expose them.
-        uint olderrors = global.startGagging();
+        const olderrors = global.startGagging();
         ety = ety.typeSemantic(aloc, sc);
         if (global.endGagging(olderrors))
             s2.push(createForeach(aloc, pparams[1], null));
@@ -398,7 +397,7 @@ extern (C++) final class StaticForeach : RootObject
         Expression aggr = void;
         Type indexty = void;
 
-        if (rangefe && (indexty = ety).isintegral())
+        if (rangefe && (indexty = ety).isIntegral())
         {
             rangefe.lwr.type = indexty;
             rangefe.upr.type = indexty;
@@ -571,31 +570,32 @@ extern (C++) final class DebugCondition : DVCondition
     override int include(Scope* sc)
     {
         //printf("DebugCondition::include() level = %d, debuglevel = %d\n", level, global.params.debuglevel);
-        if (inc == Include.notComputed)
+        if (inc != Include.notComputed)
         {
-            inc = Include.no;
-            bool definedInModule = false;
-            if (ident)
-            {
-                if (mod.debugids && findCondition(*mod.debugids, ident))
-                {
-                    inc = Include.yes;
-                    definedInModule = true;
-                }
-                else if (findCondition(global.debugids, ident))
-                    inc = Include.yes;
-                else
-                {
-                    if (!mod.debugidsNot)
-                        mod.debugidsNot = new Identifiers();
-                    mod.debugidsNot.push(ident);
-                }
-            }
-            else if (level <= global.params.debuglevel || level <= mod.debuglevel)
-                inc = Include.yes;
-            if (!definedInModule)
-                printDepsConditional(sc, this, "depsDebug ");
+            return inc == Include.yes;
         }
+        inc = Include.no;
+        bool definedInModule = false;
+        if (ident)
+        {
+            if (mod.debugids && findCondition(*mod.debugids, ident))
+            {
+                inc = Include.yes;
+                definedInModule = true;
+            }
+            else if (findCondition(global.debugids, ident))
+                inc = Include.yes;
+            else
+            {
+                if (!mod.debugidsNot)
+                    mod.debugidsNot = new Identifiers();
+                mod.debugidsNot.push(ident);
+            }
+        }
+        else if (level <= global.params.debuglevel || level <= mod.debuglevel)
+            inc = Include.yes;
+        if (!definedInModule)
+            printDepsConditional(sc, this, "depsDebug ");
         return (inc == Include.yes);
     }
 
@@ -659,9 +659,9 @@ extern (C++) final class VersionCondition : DVCondition
             case "AVR":
             case "BigEndian":
             case "BSD":
-            case "CppRuntime_Clang":
+            case "CppRuntime_LLVM":
             case "CppRuntime_DigitalMars":
-            case "CppRuntime_Gcc":
+            case "CppRuntime_GNU":
             case "CppRuntime_Microsoft":
             case "CppRuntime_Sun":
             case "CRuntime_Bionic":
@@ -744,6 +744,7 @@ extern (C++) final class VersionCondition : DVCondition
             case "Win32":
             case "Win64":
             case "Windows":
+            case "Xtensa":
             case "X86":
             case "X86_64":
                 return true;
@@ -851,33 +852,35 @@ extern (C++) final class VersionCondition : DVCondition
     {
         //printf("VersionCondition::include() level = %d, versionlevel = %d\n", level, global.params.versionlevel);
         //if (ident) printf("\tident = '%s'\n", ident.toChars());
-        if (inc == Include.notComputed)
+        if (inc != Include.notComputed)
         {
-            inc = Include.no;
-            bool definedInModule = false;
-            if (ident)
+            return inc == Include.yes;
+        }
+
+        inc = Include.no;
+        bool definedInModule = false;
+        if (ident)
+        {
+            if (mod.versionids && findCondition(*mod.versionids, ident))
             {
-                if (mod.versionids && findCondition(*mod.versionids, ident))
-                {
-                    inc = Include.yes;
-                    definedInModule = true;
-                }
-                else if (findCondition(global.versionids, ident))
-                    inc = Include.yes;
-                else
-                {
-                    if (!mod.versionidsNot)
-                        mod.versionidsNot = new Identifiers();
-                    mod.versionidsNot.push(ident);
-                }
-            }
-            else if (level <= global.params.versionlevel || level <= mod.versionlevel)
                 inc = Include.yes;
-            if (!definedInModule &&
-                (!ident || (!isReserved(ident.toString()) && ident != Id._unittest && ident != Id._assert)))
-            {
-                printDepsConditional(sc, this, "depsVersion ");
+                definedInModule = true;
             }
+            else if (findCondition(global.versionids, ident))
+                inc = Include.yes;
+            else
+            {
+                if (!mod.versionidsNot)
+                    mod.versionidsNot = new Identifiers();
+                mod.versionidsNot.push(ident);
+            }
+        }
+        else if (level <= global.params.versionlevel || level <= mod.versionlevel)
+            inc = Include.yes;
+        if (!definedInModule &&
+            (!ident || (!isReserved(ident.toString()) && ident != Id._unittest && ident != Id._assert)))
+        {
+            printDepsConditional(sc, this, "depsVersion ");
         }
         return (inc == Include.yes);
     }
@@ -926,31 +929,33 @@ extern (C++) final class StaticIfCondition : Condition
             return 0;
         }
 
-        if (inc == Include.notComputed)
+        if (inc != Include.notComputed)
         {
-            if (!sc)
-            {
-                error(loc, "`static if` conditional cannot be at global scope");
-                inc = Include.no;
-                return 0;
-            }
-
-            import dmd.staticcond;
-            bool errors;
-
-            bool result = evalStaticCondition(sc, exp, exp, errors);
-
-            // Prevent repeated condition evaluation.
-            // See: fail_compilation/fail7815.d
-            if (inc != Include.notComputed)
-                return (inc == Include.yes);
-            if (errors)
-                return errorReturn();
-            if (result)
-                inc = Include.yes;
-            else
-                inc = Include.no;
+            return inc == Include.yes;
         }
+
+        if (!sc)
+        {
+            error(loc, "`static if` conditional cannot be at global scope");
+            inc = Include.no;
+            return 0;
+        }
+
+        import dmd.staticcond;
+        bool errors;
+
+        bool result = evalStaticCondition(sc, exp, exp, errors);
+
+        // Prevent repeated condition evaluation.
+        // See: fail_compilation/fail7815.d
+        if (inc != Include.notComputed)
+            return (inc == Include.yes);
+        if (errors)
+            return errorReturn();
+        if (result)
+            inc = Include.yes;
+        else
+            inc = Include.no;
         return (inc == Include.yes);
     }
 

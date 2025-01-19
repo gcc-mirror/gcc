@@ -1,5 +1,5 @@
 /* libgcc functions for Blackfin.
-   Copyright (C) 2005-2024 Free Software Foundation, Inc.
+   Copyright (C) 2005-2025 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
 This file is part of GCC.

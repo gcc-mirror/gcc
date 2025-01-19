@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_ok } */
 /* { dg-require-effective-target mbranch_protection_ok } */
-/* { dg-additional-options "-march=armv8.1-m.main+fp -mbranch-protection=bti -mfloat-abi=hard --save-temps" } */
+/* { dg-additional-options "-mbranch-protection=bti -mfloat-abi=hard --save-temps" } */
+/* { dg-add-options arm_arch_v8_1m_main } */
 
 #if !defined (__ARM_FEATURE_BTI_DEFAULT)
 #error "Feature test macro __ARM_FEATURE_BTI_DEFAULT should be defined."

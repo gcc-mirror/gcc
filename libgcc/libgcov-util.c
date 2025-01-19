@@ -1,6 +1,6 @@
 /* Utility functions for reading gcda files into in-memory
    gcov_info structures and offline profile processing. */
-/* Copyright (C) 2014-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by Rong Xu <xur@google.com>.
 
 This file is part of GCC.

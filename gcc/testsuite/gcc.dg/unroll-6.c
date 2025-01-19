@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-rtl-loop2_unroll-details-blocks -funroll-loops" } */
+/* { dg-options "-O3 -fdump-rtl-loop2_unroll-details-blocks -funroll-loops -fno-tree-vectorize" } */
 /* { dg-require-effective-target int32plus } */
 
 void abort (void);

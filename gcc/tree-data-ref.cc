@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -74,7 +74,6 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #define INCLUDE_ALGORITHM
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -4089,7 +4088,7 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
       }
 
     case INTEGER_CST:
-      return chrec;
+      return cst_and_fits_in_hwi (chrec) ? chrec : chrec_dont_know;
 
     default:
       gcc_unreachable ();

@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 
 long a, b, *c = &b;
 short d, e;

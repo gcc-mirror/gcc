@@ -1096,8 +1096,8 @@ and later.
 <section xml:id="api.rel_131"><info><title><constant>13</constant></title></info>
 
 <para>
-Tunables <variable>glibcxx.eh_pool.obj_count</variable> and
-<variable>glibcxx.eh_pool.obj_size</variable> were added.
+Tunables <varname>glibcxx.eh_pool.obj_count</varname> and
+<varname>glibcxx.eh_pool.obj_size</varname> were added.
 </para>
 
 <para>Static library <filename>libstdc++exp.a</filename> was added
@@ -1133,6 +1133,21 @@ to be used with <code>std::basic_istream</code>.
 
 <para>
 Enabled debug assertions by default for unoptimized builds.
+</para>
+
+<para>
+Added warnings when including the headers that were deprecated in C++17
+and removed in C++20:
+<filename class="headerfile">&lt;ccomplex&gt;</filename>,
+<filename class="headerfile">&lt;ciso646&gt;</filename>,
+<filename class="headerfile">&lt;cstdalign&gt;</filename>,
+<filename class="headerfile">&lt;cstdbool&gt;</filename>, and
+<filename class="headerfile">&lt;ctgmath&gt;</filename>.
+</para>
+
+<para>
+Nested <code>result_type</code> and <code>argument_type</code> removed from
+<classname>std::hash</classname> specializations for C++20.
 </para>
 
 </section>

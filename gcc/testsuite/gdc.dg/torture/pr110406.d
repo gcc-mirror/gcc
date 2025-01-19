@@ -1,6 +1,6 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=110406
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
-// { dg-options "-fdump-tree-optimized" }
+// { dg-options "-fno-moduleinfo -fdump-tree-optimized" }
 struct cpuid_abcd_t
 {
     uint eax;

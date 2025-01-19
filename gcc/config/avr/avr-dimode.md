@@ -1,5 +1,5 @@
 ;;   Support 64-bit operations for AVR 8-bit microcontrollers.
-;;   Copyright (C) 1998-2024 Free Software Foundation, Inc.
+;;   Copyright (C) 1998-2025 Free Software Foundation, Inc.
 ;;   Contributed by Georg Lay (avr@gjlay.de)
 ;;
 ;; This file is part of GCC.

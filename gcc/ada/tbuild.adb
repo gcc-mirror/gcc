@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,17 +98,6 @@ package body Tbuild is
          end;
       end if;
    end Add_Unique_Serial_Number;
-
-   ----------------
-   -- Checks_Off --
-   ----------------
-
-   function Checks_Off (N : Node_Id) return Node_Id is
-   begin
-      return
-        Make_Unchecked_Expression (Sloc (N),
-          Expression => N);
-   end Checks_Off;
 
    ----------------
    -- Convert_To --
@@ -503,7 +492,7 @@ package body Tbuild is
    -- Make_SC --
    -------------
 
-   function  Make_SC (Pre, Sel : Node_Id) return Node_Id is
+   function Make_SC (Pre, Sel : Node_Id) return Node_Id is
    begin
       return
         Make_Selected_Component (System_Location,

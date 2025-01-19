@@ -1,5 +1,5 @@
 /* Symbolic names for highlighting colors in diagnostics.
-   Copyright (C) 2024 Free Software Foundation, Inc.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,7 +47,8 @@ namespace highlight_colors {
 extern const char *const expected;
 extern const char *const actual;
 
-/* Color names for expressing "LHS" vs "RHS" values in a binary operation.  */
+/* Color names for expressing "LHS" vs "RHS" values in a binary operation
+   or when we are listing two different things.  */
 extern const char *const lhs;
 extern const char *const rhs;
 

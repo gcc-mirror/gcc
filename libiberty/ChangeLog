@@ -1,3 +1,23 @@
+2024-12-11  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* configure: Regenerate.
+	* configure.ac: Fix autoupdate warnings.
+
+2024-12-11  Sangamesh Mallayya  <swamy.sangamesh@gmail.com>
+
+	* getopt.c: Remove _NO_PROTO block
+
+2024-11-19  Evgeny Karpov  <evgeny.karpov@microsoft.com>
+
+	* simple-object-coff.c: Add aarch64.
+
+2024-11-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* testsuite/test-demangle.c (get_line): Change K&R style
+	definition into ANSI C90 definitions.
+	(fail): Likewise.
+	(main): Likewise.
+
 2024-10-31  Mark Wielaard  <mark@klomp.org>
 
 	* cplus-dem.c: Change preceeded to preceded.

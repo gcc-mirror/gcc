@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,15 @@ package System.Img_LLW is
       S : out String;
       P : in out Natural)
      renames Impl.Set_Image_Width_Integer;
+   --  Sets the signed image of V in based format, using base value B (2..16)
+   --  starting at S (P + 1), updating P to point to the last character stored.
+   --  The image includes a leading minus sign if necessary, but no leading
+   --  spaces unless W is positive, in which case leading spaces are output if
+   --  necessary to ensure that the output string is no less than W characters
+   --  long. The caller promises that the buffer is large enough and no check
+   --  is made for this. Constraint_Error will not necessarily be raised if
+   --  this is violated, since it is perfectly valid to compile this unit with
+   --  checks off.
 
    procedure Set_Image_Width_Long_Long_Unsigned
      (V : Long_Long_Unsigned;
@@ -56,5 +65,13 @@ package System.Img_LLW is
       S : out String;
       P : in out Natural)
      renames Impl.Set_Image_Width_Unsigned;
+   --  Sets the unsigned image of V in based format, using base value B (2..16)
+   --  starting at S (P + 1), updating P to point to the last character stored.
+   --  The image includes no leading spaces unless W is positive, in which case
+   --  leading spaces are output if necessary to ensure that the output string
+   --  is no less than W characters long. The caller promises that the buffer
+   --  is large enough and no check is made for this. Constraint_Error will not
+   --  necessarily be raised if this is violated, since it is perfectly valid
+   --  to compile this unit with checks off).
 
 end System.Img_LLW;

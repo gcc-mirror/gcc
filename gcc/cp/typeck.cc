@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
    including computing the types of the result, C and C++ specific error
    checks, and some optimization.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1623,6 +1622,12 @@ structural_comptypes (tree t1, tree t2, int strict)
 	      && comp_template_args (PACK_EXPANSION_EXTRA_ARGS (t1),
 				     PACK_EXPANSION_EXTRA_ARGS (t2)));
 
+    case PACK_INDEX_TYPE:
+      return (cp_tree_equal (PACK_INDEX_PACK (t1),
+			     PACK_INDEX_PACK (t2))
+	      && cp_tree_equal (PACK_INDEX_INDEX (t1),
+				PACK_INDEX_INDEX (t2)));
+
     case DECLTYPE_TYPE:
       if (DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t1)
           != DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t2))
@@ -1685,6 +1690,14 @@ structural_comptypes (tree t1, tree t2, int strict)
     }
 
   return true;
+}
+
+/* C++ implementation of compatible_types_for_indirection_note_p.  */
+
+bool
+compatible_types_for_indirection_note_p (tree type1, tree type2)
+{
+  return same_type_p (type1, type2);
 }
 
 /* Return true if T1 and T2 are related as allowed by STRICT.  STRICT
@@ -4500,9 +4513,11 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
 
   /* Check for errors in format strings and inappropriately
      null parameters.  */
-  bool warned_p = check_function_arguments (input_location, fndecl, fntype,
-					    nargs, argarray, NULL,
-					    cp_comp_parm_types);
+  bool warned_p
+    = ((complain & tf_warning)
+       && check_function_arguments (input_location, fndecl, fntype,
+				    nargs, argarray, NULL,
+				    cp_comp_parm_types));
 
   ret = build_cxx_call (function, nargs, argarray, complain, orig_fndecl);
 
@@ -5817,23 +5832,28 @@ cp_build_binary_op (const op_location_t &location,
 	warning_at (location, OPT_Wfloat_equal,
 		    "comparing floating-point with %<==%> "
 		    "or %<!=%> is unsafe");
-      if (complain & tf_warning)
-	{
-	  tree stripped_orig_op0 = tree_strip_any_location_wrapper (orig_op0);
-	  tree stripped_orig_op1 = tree_strip_any_location_wrapper (orig_op1);
-	  if ((TREE_CODE (stripped_orig_op0) == STRING_CST
-	       && !integer_zerop (cp_fully_fold (op1)))
-	      || (TREE_CODE (stripped_orig_op1) == STRING_CST
-		  && !integer_zerop (cp_fully_fold (op0))))
-	    warning_at (location, OPT_Waddress,
-			"comparison with string literal results in "
-			"unspecified behavior");
-	  else if (warn_array_compare
-		   && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
-		   && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE)
-	    do_warn_array_compare (location, code, stripped_orig_op0,
-				   stripped_orig_op1);
-	}
+      {
+	tree stripped_orig_op0 = tree_strip_any_location_wrapper (orig_op0);
+	tree stripped_orig_op1 = tree_strip_any_location_wrapper (orig_op1);
+	if ((complain & tf_warning_or_error)
+	    && ((TREE_CODE (stripped_orig_op0) == STRING_CST
+		 && !integer_zerop (cp_fully_fold (op1)))
+		|| (TREE_CODE (stripped_orig_op1) == STRING_CST
+		    && !integer_zerop (cp_fully_fold (op0)))))
+	  warning_at (location, OPT_Waddress,
+		      "comparison with string literal results in "
+		      "unspecified behavior");
+	else if (TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+		 && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE)
+	  {
+	    /* P2865R5 made array comparisons ill-formed in C++26.  */
+	    if (complain & tf_warning_or_error)
+	      do_warn_array_compare (location, code, stripped_orig_op0,
+				     stripped_orig_op1);
+	    else if (cxx_dialect >= cxx26)
+	      return error_mark_node;
+	  }
+      }
 
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
@@ -6112,14 +6132,17 @@ cp_build_binary_op (const op_location_t &location,
 			"comparison with string literal results "
 			"in unspecified behavior");
 	}
-      else if (warn_array_compare
-	       && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+      else if (TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
 	       && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE
-	       && code != SPACESHIP_EXPR
-	       && (complain & tf_warning))
-	do_warn_array_compare (location, code,
-			       tree_strip_any_location_wrapper (orig_op0),
-			       tree_strip_any_location_wrapper (orig_op1));
+	       && code != SPACESHIP_EXPR)
+	{
+	  if (complain & tf_warning_or_error)
+	    do_warn_array_compare (location, code,
+				   tree_strip_any_location_wrapper (orig_op0),
+				   tree_strip_any_location_wrapper (orig_op1));
+	  else if (cxx_dialect >= cxx26)
+	    return error_mark_node;
+	}
 
       if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	{
@@ -7128,11 +7151,11 @@ build_address (tree t)
 /* Return a NOP_EXPR converting EXPR to TYPE.  */
 
 tree
-build_nop (tree type, tree expr)
+build_nop (tree type, tree expr MEM_STAT_DECL)
 {
   if (type == error_mark_node || error_operand_p (expr))
     return expr;
-  return build1_loc (EXPR_LOCATION (expr), NOP_EXPR, type, expr);
+  return build1_loc (EXPR_LOCATION (expr), NOP_EXPR, type, expr PASS_MEM_STAT);
 }
 
 /* Take the address of ARG, whatever that means under C++ semantics.

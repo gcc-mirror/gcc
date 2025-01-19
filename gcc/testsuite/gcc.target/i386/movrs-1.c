@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-mmovrs -O2" } */
-/* { dg-final { scan-assembler-times "movrsb\[ \\t\]\+\\(%r.x\\), %.l" 1 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "movrsw\[ \\t\]\+\\(%r.x\\), %.x" 1 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "movrsl\[ \\t\]\+\\(%r.x\\), %e.x" 1 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "movrsq\[ \\t\]\+\\(%r.x\\), %r.x" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "movrsb\[ \\t\]\+\\(%(?:r|e).x\\), %.l" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "movrsw\[ \\t\]\+\\(%(?:r|e).x\\), %.x" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "movrsl\[ \\t\]\+\\(%(?:r|e).x\\), %e.x" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "movrsq\[ \\t\]\+\\(%(?:r|e).x\\), %r.x" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "prefetchrst2\[ \\t\]" 1 } } */
 
 

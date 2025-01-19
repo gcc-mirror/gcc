@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fschedule-insns" } */
 
 void
 store_offset (int *array, int x, int y)

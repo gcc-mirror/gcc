@@ -180,7 +180,6 @@ Reporting private security bugs
     security teams.  The following teams have volunteered to handle
     such bugs:
 
-      Debian:  security@debian.org
       Red Hat: secalert@redhat.com
       SUSE:    security@suse.de
       AdaCore: product-security@adacore.com

@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -493,6 +493,8 @@ void gfc_init_se (gfc_se *, gfc_se *);
 tree gfc_create_var (tree, const char *);
 /* Like above but doesn't add it to the current scope.  */
 tree gfc_create_var_np (tree, const char *);
+/* Ensure that tree can be used as an lvalue.  */
+tree gfc_trans_force_lval (stmtblock_t *, tree);
 
 /* Store the result of an expression in a temp variable so it can be used
    repeatedly even if the original changes */
@@ -881,12 +883,21 @@ extern GTY(()) tree gfor_fndecl_caf_this_image;
 extern GTY(()) tree gfor_fndecl_caf_num_images;
 extern GTY(()) tree gfor_fndecl_caf_register;
 extern GTY(()) tree gfor_fndecl_caf_deregister;
+
+// Deprecate start
 extern GTY(()) tree gfor_fndecl_caf_get;
 extern GTY(()) tree gfor_fndecl_caf_send;
 extern GTY(()) tree gfor_fndecl_caf_sendget;
 extern GTY(()) tree gfor_fndecl_caf_get_by_ref;
 extern GTY(()) tree gfor_fndecl_caf_send_by_ref;
 extern GTY(()) tree gfor_fndecl_caf_sendget_by_ref;
+// Deprecate end
+
+extern GTY (()) tree gfor_fndecl_caf_register_accessor;
+extern GTY (()) tree gfor_fndecl_caf_register_accessors_finish;
+extern GTY (()) tree gfor_fndecl_caf_get_remote_function_index;
+extern GTY (()) tree gfor_fndecl_caf_get_by_ct;
+
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_memory;
 extern GTY(()) tree gfor_fndecl_caf_sync_images;

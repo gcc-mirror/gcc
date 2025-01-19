@@ -4,9 +4,9 @@
 /*
 TEST_OUTPUT:
 ---
-CT x.offsetof = <
 CT y.offsetof = <
 0 > y
+CT x.offsetof = <
 0 > x
 ---
 */

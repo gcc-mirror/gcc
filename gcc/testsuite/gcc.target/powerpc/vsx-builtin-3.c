@@ -39,6 +39,8 @@
 
 #include <altivec.h>
 
+extern __vector long long bool bll[][4];
+extern __vector unsigned long long ull[][4];
 extern __vector int si[][4];
 extern __vector short ss[][4];
 extern __vector signed char sc[][4];
@@ -55,7 +57,6 @@ extern __vector double d[][4];
 extern __vector long sl[][4];
 extern __vector long long sll[][4];
 extern __vector unsigned long ul[][4];
-extern __vector unsigned long long ull[][4];
 extern __vector __bool long bl[][4];
 #endif
 
@@ -88,11 +89,22 @@ int do_perm(void)
 {
   int i = 0;
 
+  sll[i][0] = vec_perm (sll[i][1], sll[i][2], uc[i][3]); i++;
+  bll[i][0] = vec_perm (bll[i][1], bll[i][2], uc[i][3]); i++;
   si[i][0] = vec_perm (si[i][1], si[i][2], uc[i][3]); i++;
+  bi[i][0] = vec_perm (bi[i][1], bi[i][2], uc[i][3]); i++;
   ss[i][0] = vec_perm (ss[i][1], ss[i][2], uc[i][3]); i++;
+  bs[i][0] = vec_perm (bs[i][1], bs[i][2], uc[i][3]); i++;
   sc[i][0] = vec_perm (sc[i][1], sc[i][2], uc[i][3]); i++;
+  bc[i][0] = vec_perm (bc[i][1], bc[i][2], uc[i][3]); i++;
+  p[i][0] = vec_perm (p[i][1], p[i][2], uc[i][3]); i++;
   f[i][0] = vec_perm (f[i][1], f[i][2], uc[i][3]); i++;
   d[i][0] = vec_perm (d[i][1], d[i][2], uc[i][3]); i++;
+
+  ull[i][0] = vec_perm (ull[i][1], ull[i][2], uc[i][3]); i++;
+  ui[i][0] = vec_perm (ui[i][1], ui[i][2], uc[i][3]); i++;
+  us[i][0] = vec_perm (us[i][1], us[i][2], uc[i][3]); i++;
+  uc[i][0] = vec_perm (uc[i][1], uc[i][2], uc[i][3]); i++;
 
   si[i][0] = vec_perm (si[i][1], si[i][2], uc[i][3]); i++;
   ss[i][0] = vec_perm (ss[i][1], ss[i][2], uc[i][3]); i++;

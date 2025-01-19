@@ -1,6 +1,8 @@
 /* PR116126 -- once this works use this version in libcpp/lex.c.
    This also requires working value range propagation for s/end.  */
 /* { dg-do compile } */
+/* { dg-add-options vect_early_break } */
+/* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
 
 const unsigned char *search_line_fast2 (const unsigned char *s,
@@ -14,4 +16,5 @@ const unsigned char *search_line_fast2 (const unsigned char *s,
   return s;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ilp32 } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! ilp32 } } } } */

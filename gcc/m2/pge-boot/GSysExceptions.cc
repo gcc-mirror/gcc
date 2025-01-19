@@ -1,6 +1,6 @@
 /* GSysExceptions.c low level module interfacing exceptions to the OS.
 
-Copyright (C) 2016-2024 Free Software Foundation, Inc.
+Copyright (C) 2016-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.

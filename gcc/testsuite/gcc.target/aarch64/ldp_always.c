@@ -24,43 +24,14 @@ TYPE ldp_unaligned_##TYPE(char* ptr){ \
     return a_0 + a_1; \
 }
 
-#define LDP_TEST_ADJUST_ALIGNED(TYPE) \
-TYPE ldp_aligned_adjust_##TYPE(char* ptr){ \
-    TYPE a_0, a_1, a_2, a_3, a_4; \
-    TYPE *arr = (TYPE*) ((uintptr_t)ptr & ~(2 * 8 * _Alignof(TYPE) - 1)); \
-    a_0 = arr[100]; \
-    a_1 = arr[101]; \
-    a_2 = arr[102]; \
-    a_3 = arr[103]; \
-    a_4 = arr[110]; \
-    return a_0 + a_1 + a_2 + a_3 + a_4; \
-}
-
-#define LDP_TEST_ADJUST_UNALIGNED(TYPE) \
-TYPE ldp_unaligned_adjust_##TYPE(char* ptr){ \
-    TYPE a_0, a_1, a_2, a_3, a_4; \
-    TYPE *arr = (TYPE*) ((uintptr_t)ptr & ~(2 * 8 * _Alignof(TYPE) - 1)); \
-    TYPE *a = arr+1; \
-    a_0 = a[100]; \
-    a_1 = a[101]; \
-    a_2 = a[102]; \
-    a_3 = a[103]; \
-    a_4 = a[110]; \
-    return a_0 + a_1 + a_2 + a_3 + a_4; \
-}
-
 LDP_TEST_ALIGNED(int32_t);
 LDP_TEST_ALIGNED(int64_t);
 LDP_TEST_ALIGNED(v4si);
 LDP_TEST_UNALIGNED(int32_t);
 LDP_TEST_UNALIGNED(int64_t);
 LDP_TEST_UNALIGNED(v4si);
-LDP_TEST_ADJUST_ALIGNED(int32_t);
-LDP_TEST_ADJUST_ALIGNED(int64_t);
-LDP_TEST_ADJUST_UNALIGNED(int32_t);
-LDP_TEST_ADJUST_UNALIGNED(int64_t);
 
-/* { dg-final { scan-assembler-times "ldp\tw\[0-9\]+, w\[0-9\]" 6 } } */
-/* { dg-final { scan-assembler-times "ldp\tx\[0-9\]+, x\[0-9\]" 6 } } */
+/* { dg-final { scan-assembler-times "ldp\tw\[0-9\]+, w\[0-9\]" 2 } } */
+/* { dg-final { scan-assembler-times "ldp\tx\[0-9\]+, x\[0-9\]" 2 } } */
 /* { dg-final { scan-assembler-times "ldp\tq\[0-9\]+, q\[0-9\]" 2 } } */
 

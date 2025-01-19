@@ -11,6 +11,15 @@ include:
 * No dependency on runtime type information (`TypeInfo`).
 * Compatibility with BetterC.
 
+$(H3 List of examples)
+
+* [Basic usage](#basic-usage)
+* [Matching with an overload set](#matching-with-an-overload-set)
+* [Recursive SumTypes](#recursive-sumtypes)
+* [Memory corruption](#memory-corruption) (why assignment can be `@system`)
+* [Avoiding unintentional matches](#avoiding-unintentional-matches)
+* [Multiple dispatch](#multiple-dispatch)
+
 License: Boost License 1.0
 Authors: Paul Backus
 Source: $(PHOBOSSRC std/sumtype.d)
@@ -77,52 +86,38 @@ version (D_BetterC) {} else
     assert(!isFahrenheit(t3));
 }
 
-/** $(DIVID introspection-based-matching, $(H3 Introspection-based matching))
+/** $(DIVID matching-with-an-overload-set, $(H3 Matching with an overload set))
  *
- * In the `length` and `horiz` functions below, the handlers for `match` do not
- * specify the types of their arguments. Instead, matching is done based on how
- * the argument is used in the body of the handler: any type with `x` and `y`
- * properties will be matched by the `rect` handlers, and any type with `r` and
- * `theta` properties will be matched by the `polar` handlers.
+ * Instead of writing `match` handlers inline as lambdas, you can write them as
+ * overloads of a function. An `alias` can be used to create an additional
+ * overload for the `SumType` itself.
+ *
+ * For example, with this overload set:
+ *
+ * ---
+ * string handle(int n) { return "got an int"; }
+ * string handle(string s) { return "got a string"; }
+ * string handle(double d) { return "got a double"; }
+ * alias handle = match!handle;
+ * ---
+ *
+ * Usage would look like this:
  */
 version (D_BetterC) {} else
 @safe unittest
 {
-    import std.math.operations : isClose;
-    import std.math.trigonometry : cos;
-    import std.math.constants : PI;
-    import std.math.algebraic : sqrt;
+    alias ExampleSumType = SumType!(int, string, double);
 
-    struct Rectangular { double x, y; }
-    struct Polar { double r, theta; }
-    alias Vector = SumType!(Rectangular, Polar);
+    ExampleSumType a = 123;
+    ExampleSumType b = "hello";
+    ExampleSumType c = 3.14;
 
-    double length(Vector v)
-    {
-        return v.match!(
-            rect => sqrt(rect.x^^2 + rect.y^^2),
-            polar => polar.r
-        );
-    }
-
-    double horiz(Vector v)
-    {
-        return v.match!(
-            rect => rect.x,
-            polar => polar.r * cos(polar.theta)
-        );
-    }
-
-    Vector u = Rectangular(1, 1);
-    Vector v = Polar(1, PI/4);
-
-    assert(length(u).isClose(sqrt(2.0)));
-    assert(length(v).isClose(1));
-    assert(horiz(u).isClose(1));
-    assert(horiz(v).isClose(sqrt(0.5)));
+    assert(a.handle == "got an int");
+    assert(b.handle == "got a string");
+    assert(c.handle == "got a double");
 }
 
-/** $(DIVID arithmetic-expression-evaluator, $(H3 Arithmetic expression evaluator))
+/** $(DIVID recursive-sumtypes, $(H3 Recursive SumTypes))
  *
  * This example makes use of the special placeholder type `This` to define a
  * [recursive data type](https://en.wikipedia.org/wiki/Recursive_data_type): an
@@ -227,6 +222,10 @@ version (D_BetterC) {} else
     assert(pprint(*myExpr) == "(a + (2 * b))");
 }
 
+// For the "Matching with an overload set" example above
+// Needs public import to work with `make publictests`
+version (unittest) public import std.internal.test.sumtype_example_overloads;
+
 import std.format.spec : FormatSpec, singleSpec;
 import std.meta : AliasSeq, Filter, IndexOf = staticIndexOf, Map = staticMap;
 import std.meta : NoDuplicates;
@@ -266,8 +265,7 @@ private enum isInout(T) = is(T == inout);
  *
  * The special type `This` can be used as a placeholder to create
  * self-referential types, just like with `Algebraic`. See the
- * ["Arithmetic expression evaluator" example](#arithmetic-expression-evaluator) for
- * usage.
+ * ["Recursive SumTypes" example](#recursive-sumtypes) for usage.
  *
  * A `SumType` is initialized by default to hold the `.init` value of its
  * first member type, just like a regular union. The version identifier
@@ -1619,9 +1617,9 @@ enum bool isSumType(T) = is(T : SumType!Args, Args...);
  * overloads are considered as potential matches.
  *
  * Templated handlers are also accepted, and will match any type for which they
- * can be [implicitly instantiated](https://dlang.org/glossary.html#ifti). See
- * ["Introspection-based matching"](#introspection-based-matching) for an
- * example of templated handler usage.
+ * can be [implicitly instantiated](https://dlang.org/glossary.html#ifti).
+ * (Remember that a $(DDSUBLINK spec/expression,function_literals, function literal)
+ * without an explicit argument type is considered a template.)
  *
  * If multiple [SumType]s are passed to match, their values are passed to the
  * handlers as separate arguments, and matching is done for each possible
@@ -1862,87 +1860,64 @@ private template Iota(size_t n)
     assert(Iota!3 == AliasSeq!(0, 1, 2));
 }
 
-/* The number that the dim-th argument's tag is multiplied by when
- * converting TagTuples to and from case indices ("caseIds").
- *
- * Named by analogy to the stride that the dim-th index into a
- * multidimensional static array is multiplied by to calculate the
- * offset of a specific element.
- */
-private size_t stride(size_t dim, lengths...)()
-{
-    import core.checkedint : mulu;
-
-    size_t result = 1;
-    bool overflow = false;
-
-    static foreach (i; 0 .. dim)
-    {
-        result = mulu(result, lengths[i], overflow);
-    }
-
-    /* The largest number matchImpl uses, numCases, is calculated with
-     * stride!(SumTypes.length), so as long as this overflow check
-     * passes, we don't need to check for overflow anywhere else.
-     */
-    assert(!overflow, "Integer overflow");
-    return result;
-}
-
 private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
 {
     auto ref matchImpl(SumTypes...)(auto ref SumTypes args)
     if (allSatisfy!(isSumType, SumTypes) && args.length > 0)
     {
-        alias stride(size_t i) = .stride!(i, Map!(typeCount, SumTypes));
-        alias TagTuple = .TagTuple!(SumTypes);
-
-        /*
-         * A list of arguments to be passed to a handler needed for the case
-         * labeled with `caseId`.
-         */
-        template handlerArgs(size_t caseId)
+        // Single dispatch (fast path)
+        static if (args.length == 1)
         {
-            enum tags = TagTuple.fromCaseId(caseId);
-            enum argsFrom(size_t i : tags.length) = "";
-            enum argsFrom(size_t i) = "args[" ~ toCtString!i ~ "].get!(SumTypes[" ~ toCtString!i ~ "]" ~
-                ".Types[" ~ toCtString!(tags[i]) ~ "])(), " ~ argsFrom!(i + 1);
-            enum handlerArgs = argsFrom!0;
+            /* When there's only one argument, the caseId is just that
+             * argument's tag, so there's no need for TagTuple.
+             */
+            enum handlerArgs(size_t caseId) =
+                "args[0].get!(SumTypes[0].Types[" ~ toCtString!caseId ~ "])()";
+
+            alias valueTypes(size_t caseId) =
+                typeof(args[0].get!(SumTypes[0].Types[caseId])());
+
+            enum numCases = SumTypes[0].Types.length;
         }
-
-        /* An AliasSeq of the types of the member values in the argument list
-         * returned by `handlerArgs!caseId`.
-         *
-         * Note that these are the actual (that is, qualified) types of the
-         * member values, which may not be the same as the types listed in
-         * the arguments' `.Types` properties.
-         */
-        template valueTypes(size_t caseId)
+        // Multiple dispatch (slow path)
+        else
         {
-            enum tags = TagTuple.fromCaseId(caseId);
+            alias typeCounts = Map!(typeCount, SumTypes);
+            alias stride(size_t i) = .stride!(i, typeCounts);
+            alias TagTuple = .TagTuple!typeCounts;
 
-            template getType(size_t i)
+            alias handlerArgs(size_t caseId) = .handlerArgs!(caseId, typeCounts);
+
+            /* An AliasSeq of the types of the member values in the argument list
+             * returned by `handlerArgs!caseId`.
+             *
+             * Note that these are the actual (that is, qualified) types of the
+             * member values, which may not be the same as the types listed in
+             * the arguments' `.Types` properties.
+             */
+            template valueTypes(size_t caseId)
             {
-                enum tid = tags[i];
-                alias T = SumTypes[i].Types[tid];
-                alias getType = typeof(args[i].get!T());
+                enum tags = TagTuple.fromCaseId(caseId);
+
+                template getType(size_t i)
+                {
+                    enum tid = tags[i];
+                    alias T = SumTypes[i].Types[tid];
+                    alias getType = typeof(args[i].get!T());
+                }
+
+                alias valueTypes = Map!(getType, Iota!(tags.length));
             }
 
-            alias valueTypes = Map!(getType, Iota!(tags.length));
+            /* The total number of cases is
+             *
+             *   Π SumTypes[i].Types.length for 0 ≤ i < SumTypes.length
+             *
+             * Conveniently, this is equal to stride!(SumTypes.length), so we can
+             * use that function to compute it.
+             */
+            enum numCases = stride!(SumTypes.length);
         }
-
-        /* The total number of cases is
-         *
-         *   Π SumTypes[i].Types.length for 0 ≤ i < SumTypes.length
-         *
-         * Or, equivalently,
-         *
-         *   ubyte[SumTypes[0].Types.length]...[SumTypes[$-1].Types.length].sizeof
-         *
-         * Conveniently, this is equal to stride!(SumTypes.length), so we can
-         * use that function to compute it.
-         */
-        enum numCases = stride!(SumTypes.length);
 
         /* Guaranteed to never be a valid handler index, since
          * handlers.length <= size_t.max.
@@ -1988,7 +1963,7 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
                     ? "template"
                     : typeof(handler).stringof
                 ) ~ "` " ~
-                "never matches"
+                "never matches. Perhaps the handler failed to compile"
             );
         }
 
@@ -2000,7 +1975,12 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
             mixin("alias ", handlerName!hid, " = handler;");
         }
 
-        immutable argsId = TagTuple(args).toCaseId;
+        // Single dispatch (fast path)
+        static if (args.length == 1)
+            immutable argsId = args[0].tag;
+        // Multiple dispatch (slow path)
+        else
+            immutable argsId = TagTuple(args).toCaseId;
 
         final switch (argsId)
         {
@@ -2031,10 +2011,11 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
     }
 }
 
+// Predicate for staticMap
 private enum typeCount(SumType) = SumType.Types.length;
 
-/* A TagTuple represents a single possible set of tags that `args`
- * could have at runtime.
+/* A TagTuple represents a single possible set of tags that the arguments to
+ * `matchImpl` could have at runtime.
  *
  * Because D does not allow a struct to be the controlling expression
  * of a switch statement, we cannot dispatch on the TagTuple directly.
@@ -2056,22 +2037,23 @@ private enum typeCount(SumType) = SumType.Types.length;
  * When there is only one argument, the caseId is equal to that
  * argument's tag.
  */
-private struct TagTuple(SumTypes...)
+private struct TagTuple(typeCounts...)
 {
-    size_t[SumTypes.length] tags;
+    size_t[typeCounts.length] tags;
     alias tags this;
 
-    alias stride(size_t i) = .stride!(i, Map!(typeCount, SumTypes));
+    alias stride(size_t i) = .stride!(i, typeCounts);
 
     invariant
     {
         static foreach (i; 0 .. tags.length)
         {
-            assert(tags[i] < SumTypes[i].Types.length, "Invalid tag");
+            assert(tags[i] < typeCounts[i], "Invalid tag");
         }
     }
 
-    this(ref const(SumTypes) args)
+    this(SumTypes...)(ref const SumTypes args)
+    if (allSatisfy!(isSumType, SumTypes) && args.length == typeCounts.length)
     {
         static foreach (i; 0 .. tags.length)
         {
@@ -2103,6 +2085,52 @@ private struct TagTuple(SumTypes...)
         }
 
         return result;
+    }
+}
+
+/* The number that the dim-th argument's tag is multiplied by when
+ * converting TagTuples to and from case indices ("caseIds").
+ *
+ * Named by analogy to the stride that the dim-th index into a
+ * multidimensional static array is multiplied by to calculate the
+ * offset of a specific element.
+ */
+private size_t stride(size_t dim, lengths...)()
+{
+    import core.checkedint : mulu;
+
+    size_t result = 1;
+    bool overflow = false;
+
+    static foreach (i; 0 .. dim)
+    {
+        result = mulu(result, lengths[i], overflow);
+    }
+
+    /* The largest number matchImpl uses, numCases, is calculated with
+     * stride!(SumTypes.length), so as long as this overflow check
+     * passes, we don't need to check for overflow anywhere else.
+     */
+    assert(!overflow, "Integer overflow");
+    return result;
+}
+
+/* A list of arguments to be passed to a handler needed for the case
+ * labeled with `caseId`.
+ */
+private template handlerArgs(size_t caseId, typeCounts...)
+{
+    enum tags = TagTuple!typeCounts.fromCaseId(caseId);
+
+    alias handlerArgs = AliasSeq!();
+
+    static foreach (i; 0 .. tags.length)
+    {
+        handlerArgs = AliasSeq!(
+            handlerArgs,
+            "args[" ~ toCtString!i ~ "].get!(SumTypes[" ~ toCtString!i ~ "]" ~
+            ".Types[" ~ toCtString!(tags[i]) ~ "])(), "
+        );
     }
 }
 

@@ -3,7 +3,7 @@
 /* { dg-require-effective-target arm_arch_v7a_arm_ok } */
 /* { dg-skip-if "-mslow-flash-data and -mword-relocations incompatible" { *-*-* } { "-mslow-flash-data" } } */
 /* { dg-skip-if "-mpure-code and -mword-relocations incompatible" { *-*-* } { "-mpure-code" } } */
-/* { dg-options "-O2 -mword-relocations" } */
+/* { dg-options "-O2 -mword-relocations -std=c17" } */
 /* { dg-add-options arm_arch_v7a_arm } */
 /* { dg-final { scan-assembler-not "\[\\t \]+movw" } } */
 

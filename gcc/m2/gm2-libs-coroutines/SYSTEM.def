@@ -1,6 +1,6 @@
 (* SYSTEM.def provides access to COROUTINE primitives and underlying system.
 
-Copyright (C) 2002-2024 Free Software Foundation, Inc.
+Copyright (C) 2002-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -34,7 +34,7 @@ DEFINITION MODULE SYSTEM ;
 FROM COROUTINES IMPORT PROTECTION ;
 
 EXPORT QUALIFIED (* the following are built into the compiler: *)
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* @SYSTEM_DATATYPES@ *)
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, (* @SYSTEM_DATATYPES@ *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE,
                  (* SIZE is exported depending upon -fpim2 and
                     -fpedantic.  *)

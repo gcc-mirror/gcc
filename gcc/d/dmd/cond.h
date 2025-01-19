@@ -39,8 +39,8 @@ public:
 
     virtual Condition *syntaxCopy() = 0;
     virtual int include(Scope *sc) = 0;
-    virtual DebugCondition *isDebugCondition() { return NULL; }
-    virtual VersionCondition *isVersionCondition() { return NULL; }
+    virtual DebugCondition *isDebugCondition() { return nullptr; }
+    virtual VersionCondition *isVersionCondition() { return nullptr; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 

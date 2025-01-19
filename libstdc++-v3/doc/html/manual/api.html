@@ -483,8 +483,8 @@ the process.
 Calling a <code class="code">std::bind</code> result as volatile is ill-formed for C++20
 and later.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_131"></a><code class="constant">13</code></h3></div></div></div><p>
-Tunables <span style="color: red">&lt;variable&gt;glibcxx.eh_pool.obj_count&lt;/variable&gt;</span> and
-<span style="color: red">&lt;variable&gt;glibcxx.eh_pool.obj_size&lt;/variable&gt;</span> were added.
+Tunables <code class="varname">glibcxx.eh_pool.obj_count</code> and
+<code class="varname">glibcxx.eh_pool.obj_size</code> were added.
 </p><p>Static library <code class="filename">libstdc++exp.a</code> was added
 to provide the symbols for the experimental C++ Contracts support.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_133"></a><code class="constant">13.3</code></h3></div></div></div><p>
 Symbols for the Filesystem TS and C++23 <code class="filename">&lt;stacktrace&gt;</code>
@@ -498,4 +498,15 @@ to be used with <code class="code">std::basic_istream</code>.
   longer allowed in C++20 mode.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_151"></a><code class="constant">15</code></h3></div></div></div><p>
 Enabled debug assertions by default for unoptimized builds.
+</p><p>
+Added warnings when including the headers that were deprecated in C++17
+and removed in C++20:
+<code class="filename">&lt;ccomplex&gt;</code>,
+<code class="filename">&lt;ciso646&gt;</code>,
+<code class="filename">&lt;cstdalign&gt;</code>,
+<code class="filename">&lt;cstdbool&gt;</code>, and
+<code class="filename">&lt;ctgmath&gt;</code>.
+</p><p>
+Nested <code class="code">result_type</code> and <code class="code">argument_type</code> removed from
+<code class="classname">std::hash</code> specializations for C++20.
 </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="abi.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backwards.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ABI Policy and Guidelines </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Backwards Compatibility</td></tr></table></div></body></html>

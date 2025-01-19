@@ -9,7 +9,7 @@
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly,
  *            Alex Rønne Petersen
- * Source:    $(DRUNTIMESRC core/stdc/_time.d)
+ * Source:    $(DRUNTIMESRC core/sys/windows/stdc/_time.d)
  * Standards: ISO/IEC 9899:1999 (E)
  */
 

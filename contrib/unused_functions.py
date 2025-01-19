@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018-2024 Free Software Foundation, Inc.
+# Copyright (C) 2018-2025 Free Software Foundation, Inc.
 # Contributed by Bernhard Reutner-Fischer <aldot@gcc.gnu.org>
 # Inspired by bloat-o-meter from busybox.
 

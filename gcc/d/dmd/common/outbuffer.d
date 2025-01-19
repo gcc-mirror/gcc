@@ -141,7 +141,7 @@ struct OutBuffer
     memory buffer. The config variables `notlinehead`, `doindent` etc. are
     not changed.
     */
-    extern (C++) void destroy() pure nothrow @trusted
+    extern (C++) void destroy() pure nothrow
     {
         dtor();
         fileMapping = null;
@@ -247,7 +247,7 @@ struct OutBuffer
     /**
      * Writes a 16 bit value, no reserve check.
      */
-    @trusted nothrow
+    nothrow @safe
     void write16n(int v)
     {
         auto x = cast(ushort) v;
@@ -367,8 +367,7 @@ struct OutBuffer
     }
 
     // Position buffer to accept the specified number of bytes at offset
-    @trusted
-    void position(size_t where, size_t nbytes) nothrow
+    void position(size_t where, size_t nbytes) nothrow @safe
     {
         if (where + nbytes > data.length)
         {
@@ -382,7 +381,7 @@ struct OutBuffer
     /**
      * Writes an 8 bit byte, no reserve check.
      */
-    extern (C++) @trusted nothrow
+    extern (C++) nothrow @safe
     void writeByten(int b)
     {
         this.data[offset++] = cast(ubyte) b;
@@ -786,10 +785,11 @@ struct OutBuffer
 
     Returns: `true` iff the operation succeeded.
     */
-    extern(D) bool moveToFile(const char* filename) @system
+    extern(D) bool moveToFile(const char[] filename) @system
     {
         bool result = true;
-        const bool identical = this[] == FileMapping!(const ubyte)(filename)[];
+        const filenameZ = (filename ~ "\0").ptr;
+        const bool identical = this[] == FileMapping!(const ubyte)(filenameZ)[];
 
         if (fileMapping && fileMapping.active)
         {
@@ -802,7 +802,7 @@ struct OutBuffer
             {
                 // Resize to fit to get rid of the slack bytes at the end
                 fileMapping.resize(offset);
-                result = fileMapping.moveToFile(filename);
+                result = fileMapping.moveToFile(filenameZ);
             }
             // Can't call destroy() here because the file mapping is already closed.
             data = null;
@@ -811,12 +811,12 @@ struct OutBuffer
         else
         {
             if (!identical)
-                writeFile(filename, this[]);
+                writeFile(filenameZ, this[]);
             destroy();
         }
 
         return identical
-            ? result && touchFile(filename)
+            ? result && touchFile(filenameZ)
             : result;
     }
 }

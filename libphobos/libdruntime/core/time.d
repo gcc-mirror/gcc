@@ -66,19 +66,8 @@
 module core.time;
 
 import core.exception;
-import core.stdc.time;
-import core.stdc.stdio;
 import core.internal.string;
-
-version (Windows)
-{
-import core.sys.windows.winbase /+: QueryPerformanceCounter, QueryPerformanceFrequency+/;
-}
-else version (Posix)
-{
-import core.sys.posix.time;
-import core.sys.posix.sys.time;
-}
+import core.stdc.time : time;
 
 version (OSX)
     version = Darwin;
@@ -89,12 +78,30 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+version (Windows)
+{
+    import core.sys.windows.winbase /+: QueryPerformanceCounter, QueryPerformanceFrequency+/;
+}
+else version (Darwin)
+{
+    import core.sys.posix.sys.time : gettimeofday, timeval;
+    import core.sys.posix.time : timespec;
+}
+else version (Posix)
+{
+    import core.sys.posix.sys.time : gettimeofday, timeval;
+    import core.sys.posix.time : clock_getres, clock_gettime, CLOCK_MONOTONIC, timespec;
+}
+
+version (unittest) import core.stdc.stdio : printf;
+
+
 //This probably should be moved somewhere else in druntime which
 //is Darwin-specific.
 version (Darwin)
 {
 
-public import core.sys.darwin.mach.kern_return;
+import core.sys.darwin.mach.kern_return : kern_return_t;
 
 extern(C) nothrow @nogc
 {
@@ -701,9 +708,10 @@ public:
 
     version (CoreUnittest) unittest
     {
-        foreach (D; AliasSeq!(Duration, const Duration, immutable Duration))
+        alias Types = AliasSeq!(Duration, const Duration, immutable Duration);
+        foreach (D; Types)
         {
-            foreach (E; AliasSeq!(Duration, const Duration, immutable Duration))
+            foreach (E; Types)
             {
                 assert((cast(D)Duration(5)) + (cast(E)Duration(7)) == Duration(12));
                 assert((cast(D)Duration(5)) - (cast(E)Duration(7)) == Duration(-2));
@@ -2693,7 +2701,7 @@ unittest
 
     // It would be too expensive to cover a large range of possible values for
     // ticks, so we use random values in an attempt to get reasonable coverage.
-    import core.stdc.stdlib;
+    import core.stdc.stdlib : rand, srand;
     immutable seed = cast(int)time(null);
     srand(seed);
     scope(failure) printf("seed %d\n", seed);
@@ -2707,7 +2715,7 @@ unittest
     // than or equal to freq5, which at one point was considered for MonoTime's
     // ticksPerSecond rather than using the system's actual clock frequency, so
     // it seemed like a good test case to have.
-    import core.stdc.math;
+    import core.stdc.math : floor, log10, pow;
     immutable numDigitsMinus1 = cast(int)floor(log10(freq5));
     auto freq6 = cast(long)pow(10, numDigitsMinus1);
     if (freq5 > freq6)
@@ -3924,7 +3932,14 @@ version (CoreUnittest) const(char)* numToStringz()(long value) @trusted pure not
 }
 
 
-import core.internal.traits : AliasSeq;
+/+
+    dmd @@@BUG18223@@@
+    A selective import of `AliasSeq` happens to bleed through and causes symbol clashes downstream.
+ +/
+version (none)
+    import core.internal.traits : AliasSeq;
+else
+    import core.internal.traits;
 
 
 /+ An adjusted copy of std.exception.assertThrown. +/

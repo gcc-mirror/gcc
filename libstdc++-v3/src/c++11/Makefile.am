@@ -1,6 +1,6 @@
 ## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2024 Free Software Foundation, Inc.
+## Copyright (C) 1997-2025 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -69,6 +69,7 @@ sources = \
 	codecvt.cc \
 	condition_variable.cc \
 	cow-stdexcept.cc \
+	cow-system_error.cc \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \

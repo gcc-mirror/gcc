@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2024 Free Software Foundation, Inc.
+Copyright (C) 2005-2025 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
@@ -252,6 +252,7 @@ Some basic guidelines for editing this document:
 * @code{NULL}:          NULL,      Function that returns an disassociated pointer
 * @code{NUM_IMAGES}:    NUM_IMAGES, Number of images
 * @code{OR}:            OR,        Bitwise logical OR
+* @code{OUT_OF_RANGE}:  OUT_OF_RANGE, Range check for numerical conversion
 * @code{PACK}:          PACK,      Pack an array into an array of rank one
 * @code{PARITY}:        PARITY,    Reduction with exclusive OR
 * @code{PERROR}:        PERROR,    Print system error message
@@ -344,14 +345,14 @@ The enumeration of the @code{KIND} type parameter is processor defined in
 the Fortran 95 standard.  GNU Fortran defines the default integer type and
 default real type by @code{INTEGER(KIND=4)} and @code{REAL(KIND=4)},
 respectively.  The standard mandates that both data types shall have
-another kind, which have more precision.  On typical target architectures
+another kind that has more precision.  On typical target architectures
 supported by @command{gfortran}, this kind type parameter is @code{KIND=8}.
 Hence, @code{REAL(KIND=8)} and @code{DOUBLE PRECISION} are equivalent.
 In the description of generic intrinsic procedures, the kind type parameter
-will be specified by @code{KIND=*}, and in the description of specific
-names for an intrinsic procedure the kind type parameter will be explicitly
+is specified by @code{KIND=*}, and in the description of specific
+names for an intrinsic procedure the kind type parameter is explicitly
 given (e.g., @code{REAL(KIND=4)} or @code{REAL(KIND=8)}).  Finally, for
-brevity the optional @code{KIND=} syntax will be omitted.
+brevity the optional @code{KIND=} syntax is omitted.
 
 Many of the intrinsic procedures take one or more optional arguments.
 This document follows the convention used in the Fortran 95 standard,
@@ -380,8 +381,8 @@ the applicable standard for each intrinsic procedure is noted.
 @table @asis
 @item @emph{Description}:
 @code{ABORT} causes immediate termination of the program.  On operating
-systems that support a core dump, @code{ABORT} will produce a core dump.
-It will also print a backtrace, unless @code{-fno-backtrace} is given.
+systems that support a core dump, @code{ABORT} produces a core dump.
+It also prints a backtrace, unless @code{-fno-backtrace} is given.
 
 @item @emph{Standard}:
 GNU extension
@@ -759,7 +760,7 @@ Inverse function: @*
 
 @table @asis
 @item @emph{Description}:
-@code{ADJUSTL(STRING)} will left adjust a string by removing leading spaces.
+@code{ADJUSTL(STRING)} left adjusts a string by removing leading spaces.
 Spaces are inserted at the end of the string as needed.
 
 @item @emph{Standard}:
@@ -805,7 +806,7 @@ end program test_adjustl
 
 @table @asis
 @item @emph{Description}:
-@code{ADJUSTR(STRING)} will right adjust a string by removing trailing spaces.
+@code{ADJUSTR(STRING)} right adjusts a string by removing trailing spaces.
 Spaces are inserted at the start of the string as needed.
 
 @item @emph{Standard}:
@@ -929,7 +930,7 @@ expression indicating the kind parameter of the result.
 @item @emph{Return value}:
 The return value is of type @code{REAL} with the kind type parameter of the
 argument if the optional @var{KIND} is absent; otherwise, the kind
-type parameter will be given by @var{KIND}.  If the magnitude of 
+type parameter is given by @var{KIND}.  If the magnitude of
 @var{X} is less than one, @code{AINT(X)} returns zero.  If the
 magnitude is equal to or greater than one then it returns the largest
 whole number that does not exceed its magnitude.  The sign is the same
@@ -967,7 +968,7 @@ end program test_aint
 @code{ALARM(SECONDS, HANDLER [, STATUS])} causes external subroutine @var{HANDLER}
 to be executed after a delay of @var{SECONDS} by using @code{alarm(2)} to
 set up a signal and @code{signal(2)} to catch it. If @var{STATUS} is
-supplied, it will be returned with the number of seconds remaining until
+supplied, it is returned with the number of seconds remaining until
 any previously scheduled alarm was due to be delivered, or zero if there
 was no previously scheduled alarm.
 
@@ -1002,7 +1003,7 @@ program test_alarm
   call sleep(10)
 end program test_alarm
 @end smallexample
-This will cause the external routine @var{handler_print} to be called
+This causes the external routine @var{handler_print} to be called
 after 3 seconds.
 @end table
 
@@ -1211,7 +1212,7 @@ expression indicating the kind parameter of the result.
 @item @emph{Return value}:
 The return value is of type real with the kind type parameter of the
 argument if the optional @var{KIND} is absent; otherwise, the kind
-type parameter will be given by @var{KIND}.  If @var{A} is greater than
+type parameter is given by @var{KIND}.  If @var{A} is greater than
 zero, @code{ANINT(A)} returns @code{AINT(X+0.5)}.  If @var{A} is
 less than or equal to zero then it returns @code{AINT(X-0.5)}.
 
@@ -1577,7 +1578,7 @@ if @var{Y} is present, @var{X} shall be REAL.
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
 If @var{Y} is present, the result is identical to @code{ATAN2(Y,X)}.
-Otherwise, it the arcus tangent of @var{X}, where the real part of
+Otherwise, it is the arctangent of @var{X}, where the real part of
 the result is in radians and lies in the range
 @math{-\pi/2 \leq \Re \atan(x) \leq \pi/2}.
 
@@ -3379,7 +3380,7 @@ the sizes of the data pointed to by these components.
    print *, (c_sizeof(s)/c_sizeof(r) == 5)
    end
 @end smallexample
-The example will print @code{T} unless you are using a platform
+The example prints @code{T} unless you are using a platform
 where default @code{REAL} variables are unusually padded.
 
 @item @emph{See also}:
@@ -3626,7 +3627,8 @@ component.  If @var{Y} is not present then the imaginary component is set to
 0.0.  If @var{X} is complex then @var{Y} must not be present.
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{Class}:
 Elemental function
@@ -3637,9 +3639,9 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type may be @code{INTEGER}, @code{REAL},
-or @code{COMPLEX}.
+@code{COMPLEX} or @code{UNSIGNED}.
 @item @var{Y} @tab (Optional; only allowed if @var{X} is not
-@code{COMPLEX}.)  May be @code{INTEGER} or @code{REAL}.
+@code{COMPLEX}.)  May be @code{INTEGER}, @code{REAL} or @code{UNSIGNED}.
 @item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
@@ -4049,7 +4051,7 @@ None
 
 @item @emph{Return value}:
 The return value is a default-kind string with system-dependent length.
-It contains the compiler flags used to compile the file, which called
+It contains the compiler flags used to compile the file that called
 the @code{COMPILER_OPTIONS} intrinsic.
 
 @item @emph{Example}:
@@ -4576,13 +4578,13 @@ Returns a @code{REAL} value representing the elapsed CPU time in
 seconds.  This is useful for testing segments of code to determine
 execution time.
 
-If a time source is available, time will be reported with microsecond
+If a time source is available, time is reported with microsecond
 resolution. If no time source is available, @var{TIME} is set to
 @code{-1.0}.
 
-Note that @var{TIME} may contain a, system dependent, arbitrary offset
+Note that @var{TIME} may contain a system-dependent arbitrary offset
 and may not start with @code{0.0}. For @code{CPU_TIME}, the absolute
-value is meaningless, only differences between subsequent calls to
+value is meaningless; only differences between subsequent calls to
 this subroutine, as shown in the example below, should be used.
 
 
@@ -4690,7 +4692,7 @@ end program test_cshift
 @table @asis
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
-@ref{TIME8}, to a string. The output will be of the form @samp{Sat
+@ref{TIME8}, to a string. The output is of the form @samp{Sat
 Aug 19 18:13:14 1995}.
 
 This intrinsic is provided in both subroutine and function forms; however,
@@ -4714,7 +4716,7 @@ Subroutine, function
 @item @var{RESULT}  @tab The type shall be of type @code{CHARACTER} and
 of default kind. It is an @code{INTENT(OUT)} argument. If the length
 of this variable is too short for the time and date string to fit
-completely, it will be blank on procedure return.
+completely, it is blank on procedure return.
 @end multitable
 
 @item @emph{Return value}:
@@ -5283,8 +5285,8 @@ sufficiently small limits that overflows (wrap around) are possible, such as
 become, negative, or numerically less than previous values, during a single
 run of the compiled program.
 
-Please note, that this implementation is thread safe if used within OpenMP
-directives, i.e., its state will be consistent while called from multiple
+Please note that this implementation is thread safe if used within OpenMP
+directives, i.e., its state is consistent while called from multiple
 threads. However, if @code{DTIME} is called from multiple threads, the result
 is still the time since the last invocation. This may not give the intended
 results. If possible, use @code{CPU_TIME} instead.
@@ -5668,10 +5670,10 @@ end program test_etime
 
 @table @asis
 @item @emph{Description}:
-@code{EVENT_QUERY} assignes the number of events to @var{COUNT} which have been
+@code{EVENT_QUERY} assigns the number of events to @var{COUNT} that have been
 posted to the @var{EVENT} variable and not yet been removed by calling
-@code{EVENT WAIT}. When @var{STAT} is present and the invocation was successful,
-it is assigned the value 0. If it is present and the invocation has failed,
+@code{EVENT WAIT}. When @var{STAT} is present and the invocation is successful,
+it is assigned the value 0. If it is present and the invocation fails,
 it is assigned a positive value and @var{COUNT} is assigned the value @math{-1}.
 
 @item @emph{Standard}:
@@ -5784,8 +5786,8 @@ end program test_exec
 
 Because this intrinsic is implemented in terms of the @code{system}
 function call, its behavior with respect to signaling is processor
-dependent. In particular, on POSIX-compliant systems, the SIGINT and
-SIGQUIT signals will be ignored, and the SIGCHLD will be blocked. As
+dependent. In particular, on POSIX-compliant systems, the @code{SIGINT} and
+@code{SIGQUIT} signals are ignored, and @code{SIGCHLD} is blocked. As
 such, if the parent process is terminated, the child process might not be
 terminated alongside.
 
@@ -6006,7 +6008,7 @@ Subroutine, function
 @item @var{DATE}@tab The type shall be of type @code{CHARACTER} of the
 default kind. It is an @code{INTENT(OUT)} argument.  If the length of
 this variable is too short for the date and time string to fit
-completely, it will be blank on procedure return.
+completely, it is blank on procedure return.
 @end multitable
 
 @item @emph{Return value}:
@@ -6204,7 +6206,7 @@ Transformational function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array of intrinsic type.
-@item @var{VALUE} @tab A scalar of intrinsic type which is in type
+@item @var{VALUE} @tab A scalar of intrinsic type that is in type
 conformance with @var{ARRAY}.
 @item @var{DIM} @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
@@ -6916,7 +6918,7 @@ After @code{GETARG} returns, the @var{VALUE} argument holds the
 @var{POS}th command line argument. If @var{VALUE} cannot hold the
 argument, it is truncated to fit the length of @var{VALUE}. If there are
 less than @var{POS} arguments specified at the command line, @var{VALUE}
-will be filled with blanks. If @math{@var{POS} = 0}, @var{VALUE} is set
+is filled with blanks. If @math{@var{POS} = 0}, @var{VALUE} is set
 to the name of the program (on systems that support this feature).
 
 @item @emph{Example}:
@@ -7031,7 +7033,7 @@ and of default kind.
 After @code{GET_COMMAND_ARGUMENT} returns, the @var{VALUE} argument holds the 
 @var{NUMBER}-th command line argument. If @var{VALUE} cannot hold the argument, it is 
 truncated to fit the length of @var{VALUE}. If there are less than @var{NUMBER}
-arguments specified at the command line, @var{VALUE} will be filled with blanks. 
+arguments specified at the command line, @var{VALUE} is filled with blanks.
 If @math{@var{NUMBER} = 0}, @var{VALUE} is set to the name of the program (on
 systems that support this feature). The @var{LENGTH} argument contains the
 length of the @var{NUMBER}-th command line argument. If the argument retrieval
@@ -7145,7 +7147,7 @@ Subroutine
 @item @emph{Return value}:
 Stores the value of @var{NAME} in @var{VALUE}. If @var{VALUE} is 
 not large enough to hold the data, it is truncated. If @var{NAME}
-is not set, @var{VALUE} will be filled with blanks.
+is not set, @var{VALUE} is filled with blanks.
 
 @item @emph{Example}:
 @smallexample
@@ -7202,7 +7204,7 @@ and of default kind.
 @item @emph{Return value}:
 Stores the value of @var{NAME} in @var{VALUE}. If @var{VALUE} is 
 not large enough to hold the data, it is truncated. If @var{NAME}
-is not set, @var{VALUE} will be filled with blanks. Argument @var{LENGTH}
+is not set, @var{VALUE} is filled with blanks. Argument @var{LENGTH}
 contains the length needed for storing the environment variable @var{NAME}
 or zero if it is not present. @var{STATUS} is -1 if @var{VALUE} is present
 but too short for the environment variable; it is 1 if the environment
@@ -7284,8 +7286,8 @@ Subroutine
 @item @emph{Return value}:
 Stores the current user name in @var{C}.  (On systems where POSIX
 functions @code{geteuid} and @code{getpwuid} are not available, and 
-the @code{getlogin} function is not implemented either, this will
-return a blank string.)
+the @code{getlogin} function is not implemented either, this
+returns a blank string.)
 
 @item @emph{Example}:
 @smallexample
@@ -8271,7 +8273,7 @@ the corank of @var{COARRAY}.
 
 
 @item @emph{Return value}:
-Scalar default integer with the value of the image index which corresponds
+Scalar default integer with the value of the image index that corresponds
 to the cosubscripts. For invalid cosubscripts the result is zero.
 
 @item @emph{Example}:
@@ -8355,7 +8357,8 @@ Convert to integer type
 Fortran 77 and later, with boz-literal-constant Fortran 2008 and later.
 
 @item @emph{Class}:
-Elemental function
+Elemental function, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers}).
 
 @item @emph{Syntax}:
 @code{RESULT = INT(A [, KIND))}
@@ -8386,7 +8389,6 @@ If @var{A} is of type @code{COMPLEX}, rule B is applied to the real part of @var
 If @var{A} is of type @code{UNSIGNED} and @math{0 \leq A \leq}
 @code{HUGE(A)}, @code{INT(A) = A}.  Outside that range, the result
 is interpreted using two's complement.
-
 @end table
 
 @item @emph{Example}:
@@ -8686,7 +8688,7 @@ Inquiry function
 @end multitable
 
 @item @emph{Return value}:
-Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
+Returns a @code{LOGICAL} of the default kind, which is @code{.TRUE.} if
 @var{ARRAY} is contiguous and false otherwise.
 
 @item @emph{Example}:
@@ -8738,8 +8740,8 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
-@var{I} has the value which indicates an end of file condition for
+Returns a @code{LOGICAL} of the default kind, which is @code{.TRUE.} if
+@var{I} has the value that indicates an end of file condition for
 @code{IOSTAT=} specifiers, and is @code{.FALSE.} otherwise.
 
 @item @emph{Example}:
@@ -8783,8 +8785,8 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
-@var{I} has the value which indicates an end of file condition for
+Returns a @code{LOGICAL} of the default kind, which is @code{.TRUE.} if
+@var{I} has the value that indicates an end of file condition for
 @code{IOSTAT=} specifiers, and is @code{.FALSE.} otherwise.
 
 @item @emph{Example}:
@@ -9732,7 +9734,7 @@ If @var{X} is @code{COMPLEX}, the imaginary part @math{\omega} is in the range
 program test_log
   real(8) :: x = 2.7182818284590451_8
   complex :: z = (1.0, 2.0)
-  x = log(x)    ! will yield (approximately) 1
+  x = log(x)    ! yields (approximately) 1
   z = log(z)
 end program test_log
 @end smallexample
@@ -9946,8 +9948,8 @@ The return value is of type @code{INTEGER} and of the same kind as
 @table @asis
 @item @emph{Description}:
 @code{LSTAT} is identical to @ref{STAT}, except that if path is a
-symbolic link, then the link itself is statted, not the file that it
-refers to.
+symbolic link, then the operation is performed on the link itself,
+not the file that it refers to.
 
 The elements in @code{VALUES} are the same as described by @ref{STAT}.
 
@@ -10504,7 +10506,7 @@ on the function @code{clock(3)} in the C standard library.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{clock(3)}. On a system with a 32-bit
-@code{clock(3)}, @code{MCLOCK8} will return a 32-bit value, even though
+@code{clock(3)}, @code{MCLOCK8} returns a 32-bit value, even though
 it is converted to a 64-bit @code{INTEGER(8)} value. That means
 overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
@@ -10983,7 +10985,7 @@ end program
 @table @asis
 @item @emph{Description}:
 @code{MOVE_ALLOC(FROM, TO)} moves the allocation from @var{FROM} to
-@var{TO}.  @var{FROM} will become deallocated in the process.
+@var{TO}.  @var{FROM} becomes deallocated in the process.
 
 @item @emph{Standard}:
 Fortran 2003 and later
@@ -11404,11 +11406,11 @@ Transformational function
 Scalar default-kind integer.  If @var{DISTANCE} is not present or has value 0,
 the number of images in the current team is returned. For values smaller or
 equal distance to the initial team, it returns the number of images index
-on the ancestor team which has a distance of @var{DISTANCE} from the invoking
+on the ancestor team that has a distance of @var{DISTANCE} from the invoking
 team. If @var{DISTANCE} is larger than the distance to the initial team, the
 number of images of the initial team is returned. If @var{FAILED} is not present
 the total number of images is returned; if it has the value @code{.TRUE.},
-the number of failed images is returned, otherwise, the number of images which
+the number of failed images is returned, otherwise, the number of images that
 do have not the failed status.
 
 @item @emph{Example}:
@@ -11487,6 +11489,72 @@ END PROGRAM
 @item @emph{See also}:
 Fortran 95 elemental function: @*
 @ref{IOR}
+@end table
+
+
+
+@node OUT_OF_RANGE
+@section @code{OUT_OF_RANGE} --- Range check for numerical conversion
+@fnindex OUT_OF_RANGE
+@cindex range check, numerical conversion
+
+@table @asis
+@item @emph{Description}:
+@code{OUT_OF_RANGE(X, MOLD[, ROUND])} determines if the value of @code{X}
+can be safely converted to an object with the type of argument @code{MOLD}.
+
+@item @emph{Standard}:
+Fortran 2018
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = OUT_OF_RANGE(X, MOLD[, ROUND])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be either @code{INTEGER}, @code{UNSIGNED}
+or @code{REAL}.
+@item @var{MOLD} @tab The type shall be a scalar @code{INTEGER},
+@code{UNSIGNED} or @code{REAL}.  If it is a variable, it need not be defined.
+@item @var{ROUND} @tab (Optional) A scalar @code{LOGICAL} that shall only
+be present if @var{X} is of type @code{REAL} and @var{MOLD} is of type
+@code{INTEGER} or @code{UNSIGNED}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL}.
+
+If @var{MOLD} is of type @code{INTEGER} or @code{UNSIGNED}, and
+@var{ROUND} is absent or present with the value false, the result is
+true if and only if the value of @var{X} is an IEEE infinity or NaN, or
+if the integer with largest magnitude that lies between zero and @var{X}
+inclusive is not representable by objects with the type and kind of
+@var{MOLD}.
+
+If @var{MOLD} is of type @code{INTEGER} or @code{UNSIGNED}, and
+@var{ROUND} is present with the value true, the result is true if and
+only if the value of @var{X} is an IEEE infinity or NaN, or if the
+integer nearest @var{X}, or the integer of greater magnitude if two
+integers are equally near to @var{X}, is not representable by objects
+with the type and kind of @var{MOLD}.
+
+Otherwise, the result is true if and only if the value of @var{X} is an IEEE
+infinity or NaN that is not supported by objects of the type and kind of
+@var{MOLD}, or if @var{X} is a finite number and the result of rounding the
+value of @var{X} to the model for the kind of @var{MOLD} has magnitude larger
+than that of the largest finite number with the same sign as @var{X} that is
+representable by objects with the type and kind of @var{MOLD}.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_out_of_range
+  PRINT *, OUT_OF_RANGE (-128.5, 0_1)           ! Will print: F
+  PRINT *, OUT_OF_RANGE (-128.5, 0_1, .TRUE.)   ! Will print: T
+END PROGRAM
+@end smallexample
+
 @end table
 
 
@@ -12081,7 +12149,7 @@ and when using multiple threads up to @math{2^{128}} threads can each
 generate @math{2^{128}} random numbers before any aliasing occurs.
 
 Note that in a multi-threaded program (e.g. using OpenMP directives),
-each thread will have its own random number state. For details of the
+each thread has its own random number state. For details of the
 seeding procedure, see the documentation for the @code{RANDOM_SEED}
 intrinsic.
 
@@ -12287,7 +12355,10 @@ end program test_rank
 and its use is strongly discouraged.
 
 @item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 90 and later, has GNU extensions
+Fortran 77 and later, with @var{KIND} argument Fortran 90 and later,
+has GNU extensions.  Extension for @code{UNSIGNED} (@pxref{Unsigned
+integers}).
+
 
 @item @emph{Class}:
 Elemental function
@@ -12300,8 +12371,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A}    @tab Shall be @code{INTEGER}, @code{REAL}, or
-@code{COMPLEX}.
+@item @var{A}    @tab Shall be @code{INTEGER}, @code{REAL},
+@code{COMPLEX} or @code{UNSIGNED}.
 @item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
@@ -12313,14 +12384,14 @@ the following rules:
 @table @asis
 @item (A)
 @code{REAL(A)} is converted to a default real type if @var{A} is an 
-integer or real variable.
+integer, real or unsigned variable.
 @item (B)
 @code{REAL(A)} is converted to a real type with the kind type parameter
 of @var{A} if @var{A} is a complex variable.
 @item (C)
 @code{REAL(A, KIND)} is converted to a real type with kind type
-parameter @var{KIND} if @var{A} is a complex, integer, or real
-variable.
+parameter @var{KIND} if @var{A} is a complex, integer, real
+or unsigned variable.
 @end table
 
 @item @emph{Example}:
@@ -13651,7 +13722,7 @@ storage or an array element multiplied by the size of the array.
    print *, (sizeof(s)/sizeof(r) == 5)
    end
 @end smallexample
-The example will print @code{.TRUE.} unless you are using a platform
+The example prints @code{.TRUE.} unless you are using a platform
 where default @code{REAL} variables are unusually padded.
 
 @item @emph{See also}:
@@ -14191,8 +14262,8 @@ larger integer kinds), @var{COUNT} typically represents micro- or
 nanoseconds depending on resolution of the underlying platform clock.
 @var{COUNT_MAX} usually equals @code{HUGE(COUNT_MAX)}. Note that the
 millisecond resolution of the @var{kind=4} version implies that the
-@var{COUNT} will wrap around in roughly 25 days. In order to avoid issues
-with the wrap around and for more precise timing, please use the
+@var{COUNT} wraps around in roughly 25 days. In order to avoid issues
+with the wrap-around and for more precise timing, please use the
 @var{kind=8} version.
 
 If there is no clock, or querying the clock fails, @var{COUNT} is set
@@ -14443,7 +14514,7 @@ Default integer. If @var{COARRAY} is not present, it is scalar; if
 @var{DISTANCE} is not present or has value 0, its value is the image index on
 the invoking image for the current team, for values smaller or equal
 distance to the initial team, it returns the image index on the ancestor team
-which has a distance of @var{DISTANCE} from the invoking team. If
+that has a distance of @var{DISTANCE} from the invoking team. If
 @var{DISTANCE} is larger than the distance to the initial team, the image
 index of the initial team is returned. Otherwise when the @var{COARRAY} is
 present, if @var{DIM} is not present, a rank-1 array with corank elements is
@@ -14534,7 +14605,7 @@ suitable for passing to @ref{CTIME}, @ref{GMTIME}, and @ref{LTIME}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{time(3)}. On a system with a 32-bit
-@code{time(3)}, @code{TIME8} will return a 32-bit value, even though
+@code{time(3)}, @code{TIME8} returns a 32-bit value, even though
 it is converted to a 64-bit @code{INTEGER(8)} value. That means
 overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
@@ -14760,7 +14831,7 @@ Transformational function
 @end multitable
 
 @item @emph{Return value}:
-A scalar of type @code{CHARACTER} which length is that of @var{STRING}
+A scalar of type @code{CHARACTER} that is the length of @var{STRING}
 less the number of trailing blanks.
 
 @item @emph{Example}:
@@ -15301,7 +15372,7 @@ Identifies the preconnected unit identified by the asterisk
 
 @item @code{INT8}, @code{INT16}, @code{INT32}, @code{INT64}:
 Kind type parameters to specify an INTEGER type with a storage
-size of 16, 32, and 64 bits. It is negative if a target platform
+size of 8, 16, 32, and 64 bits. It is negative if a target platform
 does not support the particular kind. (Fortran 2008 or later.)
 
 @item @code{INTEGER_KINDS}:
@@ -15342,28 +15413,34 @@ Default-kind integer constant array of rank one containing the supported kind
 parameters of the @code{REAL} type. (Fortran 2008 or later.)
 
 @item @code{STAT_LOCKED}:
-Scalar default-integer constant used as STAT= return value by @code{LOCK} to
+Scalar default-integer constant used as @code{STAT=} return value by @code{LOCK} to
 denote that the lock variable is locked by the executing image. (Fortran 2008
 or later.)
 
 @item @code{STAT_LOCKED_OTHER_IMAGE}:
-Scalar default-integer constant used as STAT= return value by @code{UNLOCK} to
+Scalar default-integer constant used as @code{STAT=} return value by @code{UNLOCK} to
 denote that the lock variable is locked by another image. (Fortran 2008 or
 later.)
 
 @item @code{STAT_STOPPED_IMAGE}:
-Positive, scalar default-integer constant used as STAT= return value if the
-argument in the statement requires synchronisation with an image, which has
-initiated the termination of the execution. (Fortran 2008 or later.)
+Positive, scalar default-integer constant used as @code{STAT=} return value if the
+argument in the statement requires synchronization with an image that has
+initiated termination.  (Fortran 2008 or later.)
 
 @item @code{STAT_FAILED_IMAGE}:
-Positive, scalar default-integer constant used as STAT= return value if the
-argument in the statement requires communication with an image, which has
-is in the failed state. (TS 18508 or later.)
+Positive, scalar default-integer constant used as @code{STAT=} return value if the
+argument in the statement requires communication with an image that is
+in the failed state. (TS 18508 or later.)
 
 @item @code{STAT_UNLOCKED}:
-Scalar default-integer constant used as STAT= return value by @code{UNLOCK} to
+Scalar default-integer constant used as @code{STAT=} return value by @code{UNLOCK} to
 denote that the lock variable is unlocked. (Fortran 2008 or later.)
+
+@item @code{UINT8}, @code{UINT16}, @code{UINT32}, @code{UINT64}:
+Kind type parameters to specify an UNSIGNED type with a storage
+size of 8, 16, 32, and 64 bits. It is negative if a target platform
+does not support the particular kind. (Extension, @pxref{Unsigned integers}.)
+
 @end table
 
 The module provides the following derived type:
@@ -15451,6 +15528,33 @@ Furthermore, if @code{_Float128} is supported in C, the named constants
 @item @code{CHARACTER}@tab @code{C_CHAR}        @tab @code{char}
 @end multitable
 
+GNU Fortran also provides as an extension, named constants for
+@code{UNSIGNED} integers @pxref{Unsigned integers}.
+@multitable @columnfractions .20 0.40 0.40
+@headitem Fortran Type  @tab Named constant         @tab C type
+@item @code{UNSIGNED}@tab @code{C_UNSIGNED}		@tab @code{unsigned int}
+@item @code{UNSIGNED}@tab @code{C_UNSIGNED_SHORT} 	@tab @code{unsigned short}
+@item @code{UNSIGNED}@tab @code{C_UNSIGNED_CHAR}	@tab @code{unsigned char}
+@item @code{UNSINGED}@tab @code{C_UNSIGNED_LONG}	@tab @code{unsigned long}
+@item @code{UNSINGED}@tab @code{C_UNSIGNED_LONG_LONG}	@tab @code{unsigned long long}
+@item @code{UNSIGNED}@tab @code{C_UINTMAX_T}		@tab @code{uintmax_t}
+@item @code{UNSIGNED}@tab @code{C_UINT8_T}		@tab @code{uint8_t}
+@item @code{UNSIGNED}@tab @code{C_UINT16_T}		@tab @code{uint16_t}
+@item @code{UNSIGNED}@tab @code{C_UINT32_T}		@tab @code{uint32_t}
+@item @code{UNSIGNED}@tab @code{C_UINT64_T}		@tab @code{uint64_t}
+@item @code{UNSIGNED}@tab @code{C_UINT128_T}		@tab @code{uint128_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST8_T}		@tab @code{uint_fast8_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST16_T}	@tab @code{uint_fast16_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST32_T}	@tab @code{uint_fast32_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST64_T}	@tab @code{uint_fast64_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_FAST128_T}	@tab @code{uint_fast128_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST8_T}	@tab @code{uint_least8_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST16_T}	@tab @code{uint_least16_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST32_T}	@tab @code{uint_least32_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST64_T}	@tab @code{uint_least64_t}
+@item @code{UNSIGNED}@tab @code{C_UINT_LEAST128_T}	@tab @code{uint_least128_t}
+@end multitable
+
 Additionally, the following parameters of type @code{CHARACTER(KIND=C_CHAR)}
 are defined.
 
@@ -15493,8 +15597,8 @@ modules are only provided on the following supported platforms:
 
 @itemize @bullet
 @item i386 and x86_64 processors
-@item platforms which use the GNU C Library (glibc)
-@item platforms with support for SysV/386 routines for floating point
+@item platforms that use the GNU C Library (glibc)
+@item platforms with support for SysV/386 routines for floating-point
 interface (including Solaris and BSDs)
 @item platforms with the AIX OS
 @end itemize

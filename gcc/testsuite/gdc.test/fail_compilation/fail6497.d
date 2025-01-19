@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail6497.d(12): Error: cannot take address of local `n` in `@safe` function `main`
-fail_compilation/fail6497.d(12): Error: cannot take address of local `n` in `@safe` function `main`
+fail_compilation/fail6497.d(12): Error: taking the address of stack-allocated local variable `n` is not allowed in a `@safe` function
+fail_compilation/fail6497.d(12): Error: taking the address of stack-allocated local variable `n` is not allowed in a `@safe` function
 ---
 */
 

@@ -1,5 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -106,7 +106,7 @@ extern void sparc_expand_compare_and_swap (rtx op[]);
 extern void sparc_expand_vector_init (rtx, rtx);
 extern void sparc_expand_vec_perm_bmask(machine_mode, rtx);
 extern bool sparc_expand_conditional_move (machine_mode, rtx *);
-extern void sparc_expand_vcond (machine_mode, rtx *, int, int);
+extern void sparc_expand_vcond_mask (machine_mode, rtx *, int);
 unsigned int sparc_regmode_natural_size (machine_mode);
 #endif /* RTX_CODE */
 

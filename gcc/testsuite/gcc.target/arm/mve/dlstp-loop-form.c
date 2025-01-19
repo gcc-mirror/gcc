@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
-/* { dg-options "-Ofast" } */
+/* { dg-options "-Ofast -std=c99" } */
 /* { dg-add-options arm_v8_1m_mve_fp } */
 #pragma GCC arm "arm_mve_types.h"
 #pragma GCC arm "arm_mve.h" false
@@ -25,3 +25,15 @@ void n() {
   }
 }
 
+int a;
+void g2() {
+  long b;
+  while (a) {
+    char *c;
+    for (long d = b; d > 0; d -= 4) {
+      mve_pred16_t e = vctp32q(d);
+      int32x4_t f;
+      vstrbq_p_s32(c, f, e);
+    }
+  }
+}

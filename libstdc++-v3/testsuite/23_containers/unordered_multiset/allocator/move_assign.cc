@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2024 Free Software Foundation, Inc.
+// Copyright (C) 2013-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,8 +46,9 @@ void test01()
   VERIFY( 1 == v1.get_allocator().get_personality() );
   VERIFY( 2 == v2.get_allocator().get_personality() );
 
-  VERIFY( counter_type::move_count == 1  );
-  VERIFY( counter_type::destructor_count == 2 );
+  VERIFY( counter_type::move_count == 0  );
+  // 1 element in v1 destroyed.
+  VERIFY( counter_type::destructor_count == 1 );
 }
 
 void test02()

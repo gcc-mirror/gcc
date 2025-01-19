@@ -1102,7 +1102,6 @@
 	* io/transfer.c (extract_real): Remove unused prototype.
 	(st_set_nml_var): Make static.
 	* io/write.c (extract_real): Make static.
-
 
 Copyright (C) 2004 Free Software Foundation, Inc.
 

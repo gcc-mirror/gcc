@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides atomic counter on platforms where it is supported:
+--  This package provides atomic counters routines
+
+--  This package support the following platforms:
 --    - all Alpha platforms
 --    - all AARCH64 platforms
 --    - all ARM platforms

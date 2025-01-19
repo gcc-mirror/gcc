@@ -1,6 +1,6 @@
 (* WholeConv.mod implement the ISO WholeConv specification.
 
-Copyright (C) 2008-2024 Free Software Foundation, Inc.
+Copyright (C) 2008-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -196,7 +196,8 @@ BEGIN
       RETURN( v )
    ELSE
       EXCEPTIONS.RAISE(wholeConv, ORD(invalidSigned),
-                       'WholeConv.' + __FUNCTION__ + ': signed number is invalid')
+                       'WholeConv.' + __FUNCTION__ + ': signed number is invalid') ;
+      RETURN 0
    END
 END ValueInt ;
 
@@ -333,7 +334,8 @@ BEGIN
       RETURN( value )
    ELSE
       EXCEPTIONS.RAISE(wholeConv, ORD(invalidUnsigned),
-                       'WholeConv:' + __FUNCTION__ + ': unsigned number is invalid')
+                       'WholeConv:' + __FUNCTION__ + ': unsigned number is invalid') ;
+      RETURN 0
    END
 END ValueCard ;
 

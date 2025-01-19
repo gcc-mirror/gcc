@@ -240,10 +240,14 @@ struct BitRange
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/shared.d(3004): Error: cast from `void*` to `shared(int*)` not allowed in safe code
-fail_compilation/shared.d(3005): Error: cast from `void*` to `shared(const(int*))` not allowed in safe code
-fail_compilation/shared.d(3008): Error: cast from `shared(void*)` to `int*` not allowed in safe code
-fail_compilation/shared.d(3009): Error: cast from `shared(void*)` to `shared(const(int*))` not allowed in safe code
+fail_compilation/shared.d(3004): Error: cast from `void*` to `shared(int*)` is not allowed in a `@safe` function
+fail_compilation/shared.d(3004):        `void` data may contain pointers and target element type is mutable
+fail_compilation/shared.d(3005): Error: cast from `void*` to `shared(const(int*))` is not allowed in a `@safe` function
+fail_compilation/shared.d(3005):        Source type is incompatible with target type containing a pointer
+fail_compilation/shared.d(3008): Error: cast from `shared(void*)` to `int*` is not allowed in a `@safe` function
+fail_compilation/shared.d(3008):        `void` data may contain pointers and target element type is mutable
+fail_compilation/shared.d(3009): Error: cast from `shared(void*)` to `shared(const(int*))` is not allowed in a `@safe` function
+fail_compilation/shared.d(3009):        Source type is incompatible with target type containing a pointer
 ---
 */
 

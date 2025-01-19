@@ -23,7 +23,6 @@ static import rt.lifetime, rt.sections;
 struct Data
 {
     typeof(rt.sections.initTLSRanges()) tlsRanges;
-    rt.lifetime.BlkInfo** blockInfoCache;
 }
 
 /**
@@ -39,8 +38,6 @@ void* init() nothrow @nogc
 
     // do module specific initialization
     data.tlsRanges = rt.sections.initTLSRanges();
-    data.blockInfoCache = &rt.lifetime.__blkcache_storage;
-
     return data;
 }
 
@@ -66,17 +63,4 @@ void scan(void* data, scope ScanDg dg) nothrow
 {
     // do module specific marking
     rt.sections.scanTLSRanges((cast(Data*)data).tlsRanges, dg);
-}
-
-alias int delegate(void* addr) nothrow IsMarkedDg;
-
-/**
- * GC sweep hook, called FOR each thread. Can be used to free
- * additional thread local memory or associated data structures. Note
- * that only memory allocated from the GC can have marks.
- */
-void processGCMarks(void* data, scope IsMarkedDg dg) nothrow
-{
-    // do module specific sweeping
-    rt.lifetime.processGCMarks(*(cast(Data*)data).blockInfoCache, dg);
 }

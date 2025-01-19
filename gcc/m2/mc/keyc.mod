@@ -1,5 +1,5 @@
 (* keyc maintains the C name scope and avoids C/C++ name conflicts.
-   Copyright (C) 2016-2024 Free Software Foundation, Inc.
+   Copyright (C) 2016-2025 Free Software Foundation, Inc.
 
 This file is part of GNU Modula-2.
 
@@ -265,16 +265,6 @@ END useUCharMin ;
 
 
 (*
-   useUIntMin - indicate we have used UINT_MIN.
-*)
-
-PROCEDURE useUIntMin ;
-BEGIN
-   seenUIntMin := TRUE
-END useUIntMin ;
-
-
-(*
    useIntMax - indicate we have used INT_MAX.
 *)
 
@@ -332,16 +322,6 @@ PROCEDURE useUCharMax ;
 BEGIN
    seenUCharMax := TRUE
 END useUCharMax ;
-
-
-(*
-   useUIntMax - indicate we have used UINT_MAX.
-*)
-
-PROCEDURE useUIntMax ;
-BEGIN
-   seenUIntMax := TRUE
-END useUIntMax ;
 
 
 (*

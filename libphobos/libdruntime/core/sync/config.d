@@ -18,16 +18,16 @@ module core.sync.config;
 
 version (Posix)
 {
-    import core.sys.posix.pthread;
-    import core.sys.posix.time;
-    import core.sys.posix.sys.time;
+    import core.sys.posix.sys.time : gettimeofday, timeval;
+    import core.sys.posix.time : timespec;
     import core.time;
 
 
     void mktspec( ref timespec t ) nothrow @nogc
     {
-        static if ( is (typeof ( pthread_condattr_setclock ) ) )
+        static if ( is (typeof ( imported!"core.sys.posix.pthread".pthread_condattr_setclock ) ) )
         {
+            import core.sys.posix.time : clock_gettime, CLOCK_MONOTONIC;
             clock_gettime( CLOCK_MONOTONIC, &t );
         }
         else

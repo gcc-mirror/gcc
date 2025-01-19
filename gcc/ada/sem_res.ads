@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,6 +84,17 @@ package Sem_Res is
    --
    --  The parameter T is the Typ for the corresponding resolve call.
 
+   function Is_Ambiguous_Operand
+     (Operand        : Node_Id;
+      In_Interp_Expr : Boolean := False;
+      Report_Errors  : Boolean := True) return Boolean;
+   --  Examine the interpretations of the given overloaded operand in a type
+   --  conversion or interpolated expression. Returns True if the call is
+   --  ambiguous; reports errors for ambiguous calls unless Report_Errors is
+   --  set to False. In_Interp_Expr is True when the operand is an
+   --  interpolated expression; used to improve the clarity of reported
+   --  error messages.
+
    procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id);
    --  Performs a preanalysis of expression node N. During preanalysis, N is
    --  analyzed and then resolved against type T, but no expansion is carried
@@ -92,9 +103,6 @@ package Sem_Res is
 
    procedure Preanalyze_And_Resolve (N : Node_Id);
    --  Same, but use type of node because context does not impose a single type
-
-   procedure Preanalyze_With_Freezing_And_Resolve (N : Node_Id; T : Entity_Id);
-   --  Same, but perform freezing of static expressions of N or its children.
 
    procedure Resolve (N : Node_Id; Typ : Entity_Id);
    procedure Resolve (N : Node_Id; Typ : Entity_Id; Suppress : Check_Id);

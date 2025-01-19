@@ -30,7 +30,7 @@ main ()
 }
 
 /* { dg-output "FOO MARKER1(\n|\r\n|\r)" } */
-/* { dg-output "(\[^\n\r]*runtime error: passing zero to ctz\\\(\\\), which is not a valid argument\[^\n\r]*(\n|\r\n|\r)){4}" } */
+/* { dg-output "(\[^\n\r]*runtime error: passing zero to __builtin_ctz\\\(\\\), which is not a valid argument\[^\n\r]*(\n|\r\n|\r)){4}" } */
 /* { dg-output "FOO MARKER2(\n|\r\n|\r)" } */
-/* { dg-output "(\[^\n\r]*runtime error: passing zero to clz\\\(\\\), which is not a valid argument\[^\n\r]*(\n|\r\n|\r)){4}" } */
+/* { dg-output "(\[^\n\r]*runtime error: passing zero to __builtin_clz\\\(\\\), which is not a valid argument\[^\n\r]*(\n|\r\n|\r)){4}" } */
 /* { dg-output "FOO MARKER3" } */

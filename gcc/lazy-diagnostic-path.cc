@@ -1,5 +1,5 @@
 /* Helper class for deferring path creation until a diagnostic is emitted.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
 This file is part of GCC.
@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -119,8 +118,10 @@ test_intraprocedural_path (pretty_printer *event_pp)
   ASSERT_TRUE (path.generated_p ());
   ASSERT_EQ (path.num_threads (), 1);
   ASSERT_FALSE (path.interprocedural_p ());
-  ASSERT_STREQ (path.get_event (0).get_desc ().get (), "first `free'");
-  ASSERT_STREQ (path.get_event (1).get_desc ().get (), "double `free'");
+  ASSERT_STREQ (path.get_event (0).get_desc (*event_pp).get (),
+		"first `free'");
+  ASSERT_STREQ (path.get_event (1).get_desc (*event_pp).get (),
+		"double `free'");
 }
 
 /* Implementation of diagnostic_option_manager for which all

@@ -1,6 +1,8 @@
 /* { dg-options "-O2 -msoft-stack" } */
 /* { dg-do run } */
 
+/* See also 'gcc.target/nvptx/alloca-5.c'.  */
+
 static __attribute__((noinline,noclone)) int f(int *p)
 {
   return __sync_lock_test_and_set(p, 1);

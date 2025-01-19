@@ -17,14 +17,14 @@ test_vst1##SUFFIX##_x2 ()			\
   BASE##x##ELTS##x##2##_t vectors;		\
   int i,j;					\
   for (i = 0; i < ELTS * 2; i++)		\
-    data [i] = (BASE##_t) 2*i;		\
+    data [i] = CONVERT (BASE##_t, 2*i);		\
   asm volatile ("" : : : "memory");		\
   vectors.val[0] = vld1##SUFFIX (data);		\
   vectors.val[1] = vld1##SUFFIX (&data[ELTS]);	\
   vst1##SUFFIX##_x2 (temp, vectors);		\
   asm volatile ("" : : : "memory");		\
   for (j = 0; j < ELTS * 2; j++)		\
-    if (temp[j] != data[j])			\
+    if (!BITEQUAL (temp[j], data[j]))		\
       return 1;					\
   return 0;					\
 }
@@ -57,6 +57,8 @@ VARIANT (float32, 4, q_f32)
 
 #ifdef __aarch64__
 #define VARIANTS(VARIANT) VARIANTS_1(VARIANT)	\
+VARIANT (mfloat8, 8, _mf8)			\
+VARIANT (mfloat8, 16, q_mf8)			\
 VARIANT (float64, 1, _f64)			\
 VARIANT (float64, 2, q_f64)
 #else
@@ -68,7 +70,7 @@ VARIANTS (TESTMETH)
 
 #define CHECKS(BASE, ELTS, SUFFIX)	\
   if (test_vst1##SUFFIX##_x2 () != 0)	\
-    fprintf (stderr, "test_vst1##SUFFIX##_x2");
+    fprintf (stderr, "test_vst1##SUFFIX##_x2"), __builtin_abort ();
 
 int
 main (int argc, char **argv)

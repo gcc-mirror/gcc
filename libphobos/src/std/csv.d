@@ -175,6 +175,16 @@ class CSVException : Exception
     assert(ex.toString == "(Row: 1, Col: 2) Unexpected 'b' when converting from type string to type int");
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24478
+@safe unittest
+{
+    import std.exception : collectException;
+    import std.algorithm.searching : count;
+    string text = "A, B\n1, 2, 3";
+    auto ex = collectException!CSVException(csvReader!(string[string])(text, null).count);
+    assert(ex.toString == "(Row: 1, Col: 3) row contains more values than header");
+}
+
 @safe pure unittest
 {
     import std.string;
@@ -1179,7 +1189,10 @@ public:
             {
                 for (; !recordRange.empty; recordRange.popFront())
                 {
-                    aa[header[_input.col-1]] = recordRange.front;
+                    const i = _input.col - 1;
+                    if (i >= header.length)
+                        throw new CSVException("row contains more values than header", _input.row, _input.col);
+                    aa[header[i]] = recordRange.front;
                 }
             }
             catch (ConvException e)

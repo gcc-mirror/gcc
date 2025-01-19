@@ -7,4 +7,4 @@ void foo(int* p)
   p[1] = 0;
 }
 
-/* { dg-final { scan-assembler "strd|stm" } } */
+/* { dg-final { scan-assembler "strd|stm|vst1\\.32" } } */

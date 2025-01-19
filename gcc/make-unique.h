@@ -1,5 +1,5 @@
 /* Minimal implementation of make_unique for C++11 compatibility.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,15 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_MAKE_UNIQUE
 #define GCC_MAKE_UNIQUE
-
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence <memory> must be included
-   from system.h by defining INCLUDE_MEMORY in any source file using
-   make-unique.h.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use make-unique.h"
-#endif
 
 #include <type_traits>
 

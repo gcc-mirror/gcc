@@ -102,6 +102,8 @@ immutable Msgtable[] msgtable =
     { "ctfe", "__ctfe" },
     { "offset" },
     { "offsetof" },
+    { "bitoffsetof" },
+    { "bitwidth" },
     { "ModuleInfo" },
     { "ClassInfo" },
     { "classinfo" },
@@ -387,6 +389,7 @@ immutable Msgtable[] msgtable =
     // Builtin functions
     { "std" },
     { "core" },
+    { "internal" },
     { "config" },
     { "c_complex_float" },
     { "c_complex_double" },
@@ -448,11 +451,14 @@ immutable Msgtable[] msgtable =
     { "outp"},
     { "outpl"},
     { "outpw"},
+    { "builtinsModuleName", "builtins" },
+    { "ctfeWrite", "__ctfeWrite" },
 
     // Traits
     { "isAbstractClass" },
     { "isArithmetic" },
     { "isAssociativeArray" },
+    { "isBitfield" },
     { "isFinalClass" },
     { "isTemplate" },
     { "isPOD" },
@@ -476,9 +482,12 @@ immutable Msgtable[] msgtable =
     { "isRef" },
     { "isOut" },
     { "isLazy" },
+    { "isCOMClass" },
     { "hasMember" },
     { "identifier" },
     { "fullyQualifiedName" },
+    { "getBitfieldOffset" },
+    { "getBitfieldWidth" },
     { "getProtection" },
     { "getVisibility" },
     { "parent" },
@@ -510,6 +519,7 @@ immutable Msgtable[] msgtable =
     { "getLocation" },
     { "hasPostblit" },
     { "hasCopyConstructor" },
+    { "hasMoveConstructor" },
     { "isCopyable" },
     { "toType" },
     { "parameters" },
@@ -528,6 +538,9 @@ immutable Msgtable[] msgtable =
     { "udaOptional", "optional"},
     { "udaMustUse", "mustuse" },
     { "udaStandalone", "standalone" },
+
+    // Editions
+    { "__edition_latest_do_not_use", },
 
     // C names, for undefined identifier error messages
     { "NULL" },
@@ -553,7 +566,7 @@ immutable Msgtable[] msgtable =
     { "_align", "align" },
     { "aligned" },
     { "__pragma", "pragma" },
-    { "builtins", "__builtins" },
+    { "importc_builtins", "__importc_builtins" },
     { "builtin_va_list", "__builtin_va_list" },
     { "builtin_va_arg", "__builtin_va_arg" },
     { "va_list_tag", "__va_list_tag" },
@@ -566,6 +579,7 @@ immutable Msgtable[] msgtable =
     { "define" },
     { "undef" },
     { "ident" },
+    { "packed" },
 ];
 
 

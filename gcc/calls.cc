@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2024 Free Software Foundation, Inc.
+   Copyright (C) 1989-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -5246,7 +5245,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 		     they aren't really at the same location.  Check for
 		     this by making sure that the incoming size is the
 		     same as the outgoing size.  */
-		  if (maybe_ne (arg->locate.size.constant, size_val))
+		  if (partial != 0)
 		    sibcall_failure = true;
 		}
 	      else if (maybe_in_range_p (arg->locate.offset.constant,

@@ -1,5 +1,5 @@
 /* JSON trees
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -21,23 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_JSON_H
 #define GCC_JSON_H
 
-/* This header uses std::unique_ptr, but <memory> can't be directly
-   included due to issues with macros.  Hence <memory> must be included
-   from system.h by defining INCLUDE_MEMORY in any source file using
-   json.h.  */
-
-#ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use json.h"
-#endif
-
 /* Implementation of JSON, a lightweight data-interchange format.
 
    See http://www.json.org/
    and http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
    and https://tools.ietf.org/html/rfc7159
 
-   Supports creating a DOM-like tree of json::value *, and then dumping
-   json::value * to text.  */
+   Supports parsing text into a DOM-like tree of json::value *, directly
+   creating such trees, and dumping json::value * to text.  */
 
 /* TODO: `libcpp/mkdeps.cc` wants JSON writing support for p1689r5 output;
    extract this code and move to libiberty.  */
@@ -175,6 +166,13 @@ class array : public value
   size_t size () const { return m_elements.length (); }
   value *operator[] (size_t i) const { return m_elements[i]; }
 
+  value **begin () { return m_elements.begin (); }
+  value **end () { return m_elements.end (); }
+  const value * const *begin () const { return m_elements.begin (); }
+  const value * const *end () const { return m_elements.end (); }
+  size_t length () const { return m_elements.length (); }
+  value *get (size_t idx) const { return m_elements[idx]; }
+
  private:
   auto_vec<value *> m_elements;
 };
@@ -251,5 +249,116 @@ class literal : public value
 };
 
 } // namespace json
+
+template <>
+template <>
+inline bool
+is_a_helper <json::value *>::test (json::value *)
+{
+  return true;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const json::value *>::test (const json::value *)
+{
+  return true;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <json::object *>::test (json::value *jv)
+{
+  return jv->get_kind () == json::JSON_OBJECT;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const json::object *>::test (const json::value *jv)
+{
+  return jv->get_kind () == json::JSON_OBJECT;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <json::array *>::test (json::value *jv)
+{
+  return jv->get_kind () == json::JSON_ARRAY;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const json::array *>::test (const json::value *jv)
+{
+  return jv->get_kind () == json::JSON_ARRAY;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <json::float_number *>::test (json::value *jv)
+{
+  return jv->get_kind () == json::JSON_FLOAT;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const json::float_number *>::test (const json::value *jv)
+{
+  return jv->get_kind () == json::JSON_FLOAT;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <json::integer_number *>::test (json::value *jv)
+{
+  return jv->get_kind () == json::JSON_INTEGER;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const json::integer_number *>::test (const json::value *jv)
+{
+  return jv->get_kind () == json::JSON_INTEGER;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <json::string *>::test (json::value *jv)
+{
+  return jv->get_kind () == json::JSON_STRING;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const json::string *>::test (const  json::value *jv)
+{
+  return jv->get_kind () == json::JSON_STRING;
+}
+
+#if CHECKING_P
+
+namespace selftest {
+
+class location;
+
+extern void assert_print_eq (const location &loc,
+			     const json::value &jv,
+			     bool formatted,
+			     const char *expected_json);
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
 
 #endif  /* GCC_JSON_H  */

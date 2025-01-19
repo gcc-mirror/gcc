@@ -102,7 +102,7 @@ alias void delegate(Throwable) ExceptionHandler;
 /**
  * Keep track of how often rt_init/rt_term were called.
  */
-shared size_t _initCount;
+private shared size_t _initCount;
 
 /**********************************************
  * Initialize druntime.
@@ -175,6 +175,13 @@ extern (C) int rt_term()
         _d_monitor_staticdtor();
     }
     return 0;
+}
+
+/**
+ * Indicates whether druntime has been or is being initialized.
+ */
+bool isRuntimeInitialized() @nogc nothrow {
+    return atomicLoad!(MemoryOrder.raw)(_initCount) != 0;
 }
 
 /**********************************************
@@ -464,6 +471,13 @@ private extern (C) int _d_run_main2(char[][] args, size_t totalArgsLength, MainF
             useExceptionTrap = false;
     }
 
+    version (none)
+    {
+        // Causes test failures related to Fibers, not enabled by default yet
+        import etc.linux.memoryerror;
+        cast(void) registerMemoryAssertHandler();
+    }
+
     void tryExec(scope void delegate() dg)
     {
         if (useExceptionTrap)
@@ -600,7 +614,7 @@ extern (C) void _d_print_throwable(Throwable t)
             void sink(in char[] s) scope nothrow
             {
                 if (!s.length) return;
-                int swlen = MultiByteToWideChar(
+                const swlen = MultiByteToWideChar(
                         CP_UTF8, 0, s.ptr, cast(int)s.length, null, 0);
                 if (!swlen) return;
 
@@ -608,7 +622,7 @@ extern (C) void _d_print_throwable(Throwable t)
                         (this.len + swlen + 1) * WCHAR.sizeof);
                 if (!newPtr) return;
                 ptr = newPtr;
-                auto written = MultiByteToWideChar(
+                const written = MultiByteToWideChar(
                         CP_UTF8, 0, s.ptr, cast(int)s.length, ptr+len, swlen);
                 len += written;
             }
@@ -620,15 +634,8 @@ extern (C) void _d_print_throwable(Throwable t)
 
         HANDLE windowsHandle(int fd)
         {
-            version (CRuntime_Microsoft)
-                return cast(HANDLE)_get_osfhandle(fd);
-            else
-                return _fdToHandle(fd);
+            return cast(HANDLE)_get_osfhandle(fd);
         }
-
-        auto hStdErr = windowsHandle(fileno(stderr));
-        CONSOLE_SCREEN_BUFFER_INFO sbi;
-        bool isConsole = GetConsoleScreenBufferInfo(hStdErr, &sbi) != 0;
 
         // ensure the exception is shown at the beginning of the line, while also
         // checking whether stderr is a valid file
@@ -646,22 +653,22 @@ extern (C) void _d_print_throwable(Throwable t)
 
                 // Avoid static user32.dll dependency for console applications
                 // by loading it dynamically as needed
-                auto user32 = LoadLibraryW("user32.dll");
-                if (user32)
+                if (auto user32 = LoadLibraryW("user32.dll"))
                 {
                     alias typeof(&MessageBoxW) PMessageBoxW;
-                    auto pMessageBoxW = cast(PMessageBoxW)
-                        GetProcAddress(user32, "MessageBoxW");
-                    if (pMessageBoxW)
+                    if (auto pMessageBoxW = cast(PMessageBoxW) GetProcAddress(user32, "MessageBoxW"))
                         pMessageBoxW(null, buf.get(), caption.get(), MB_ICONERROR);
+                    FreeLibrary(user32);
                 }
-                FreeLibrary(user32);
                 caption.free();
                 buf.free();
             }
             return;
         }
-        else if (isConsole)
+        auto hStdErr = windowsHandle(fileno(stderr));
+        CONSOLE_SCREEN_BUFFER_INFO sbi = void;
+        const isConsole = GetConsoleScreenBufferInfo(hStdErr, &sbi) != 0;
+        if (isConsole)
         {
             WSink buf;
             formatThrowable(t, &buf.sink);
@@ -669,10 +676,9 @@ extern (C) void _d_print_throwable(Throwable t)
             if (buf.ptr)
             {
                 uint codepage = GetConsoleOutputCP();
-                int slen = WideCharToMultiByte(codepage, 0,
+                const slen = WideCharToMultiByte(codepage, 0,
                         buf.ptr, cast(int)buf.len, null, 0, null, null);
-                auto sptr = cast(char*)malloc(slen * char.sizeof);
-                if (sptr)
+                if (auto sptr = cast(char*)malloc(slen * char.sizeof))
                 {
                     WideCharToMultiByte(codepage, 0,
                         buf.ptr, cast(int)buf.len, sptr, slen, null, null);

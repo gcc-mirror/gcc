@@ -11,7 +11,7 @@ f1 (svbool_t pg, short *s16_ptr, unsigned short *u16_ptr,
     svint32_t s32, svuint32_t u32, svfloat32_t f32,
     svint64_t s64, svuint64_t u64, svfloat64_t f64, struct s s)
 {
-  svld1sh_gather_index (pg, s16_ptr, s32); /* { dg-error {implicit declaration of function 'svld1sh_gather_index'; did you mean 'svld1_gather_index'} } */
+  svld1sh_gather_index (pg, s16_ptr, s32); /* { dg-error {implicit declaration of function 'svld1sh_gather_index'; did you mean 'svld1q?_gather_index'} } */
   svld1sh_gather_index_u32 (pg, s16_ptr); /* { dg-error {too few arguments to function 'svld1sh_gather_index_u32'} } */
   svld1sh_gather_index_u32 (pg, s16_ptr, s32, 0); /* { dg-error {too many arguments to function 'svld1sh_gather_index_u32'} } */
   svld1sh_gather_index_u32 (pg, u16_ptr, s32); /* { dg-warning {pointer targets in passing argument 2 of 'svld1sh_gather_s32index_u32' differ in signedness} } */

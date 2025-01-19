@@ -1,5 +1,5 @@
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
-   Copyright (C) 1989-2024 Free Software Foundation, Inc.
+   Copyright (C) 1989-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1172,6 +1172,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (RAW_DATA_CST_CHECK (NODE)->raw_data_cst.str)
 #define RAW_DATA_OWNER(NODE) \
   (RAW_DATA_CST_CHECK (NODE)->raw_data_cst.owner)
+#define RAW_DATA_UCHAR_ELT(NODE, I) \
+  (((const unsigned char *) RAW_DATA_POINTER (NODE))[I])
+#define RAW_DATA_SCHAR_ELT(NODE, I) \
+  (((const signed char *) RAW_DATA_POINTER (NODE))[I])
 
 /* In a COMPLEX_CST node.  */
 #define TREE_REALPART(NODE) (COMPLEX_CST_CHECK (NODE)->complex.real)
@@ -1233,6 +1237,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (vec_safe_length (CONSTRUCTOR_ELTS (NODE)))
 #define CONSTRUCTOR_NO_CLEARING(NODE) \
   (CONSTRUCTOR_CHECK (NODE)->base.public_flag)
+/* True if even padding bits should be zeroed during initialization.  */
+#define CONSTRUCTOR_ZERO_PADDING_BITS(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.default_def_flag)
 
 /* Iterate through the vector V of CONSTRUCTOR_ELT elements, yielding the
    value of each element (stored within VAL). IX must be a scratch variable
@@ -1365,10 +1372,6 @@ class auto_suppress_location_wrappers
   auto_suppress_location_wrappers () { ++suppress_location_wrappers; }
   ~auto_suppress_location_wrappers () { --suppress_location_wrappers; }
 };
-
-/* COND_EXPR identificer/discriminator accessors.  */
-#define SET_EXPR_UID(t, v) EXPR_CHECK ((t))->exp.condition_uid = (v)
-#define EXPR_COND_UID(t) EXPR_CHECK ((t))->exp.condition_uid
 
 /* In a TARGET_EXPR node.  */
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
@@ -1555,6 +1558,9 @@ class auto_suppress_location_wrappers
 #define OMP_FOR_PRE_BODY(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 5)
 #define OMP_FOR_ORIG_DECLS(NODE)   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 6)
 
+#define OMP_INTEROP_CLAUSES(NODE)\
+  TREE_OPERAND (OMP_INTEROP_CHECK (NODE), 0)
+
 #define OMP_LOOPXFORM_CHECK(NODE) TREE_RANGE_CHECK (NODE, OMP_TILE, OMP_UNROLL)
 #define OMP_LOOPXFORM_LOWERED(NODE) \
   (OMP_LOOPXFORM_CHECK (NODE)->base.public_flag)
@@ -1609,8 +1615,21 @@ class auto_suppress_location_wrappers
 #define OMP_TARGET_EXIT_DATA_CLAUSES(NODE)\
   TREE_OPERAND (OMP_TARGET_EXIT_DATA_CHECK (NODE), 0)
 
+#define OMP_METADIRECTIVE_VARIANTS(NODE) \
+  TREE_OPERAND (OMP_METADIRECTIVE_CHECK (NODE), 0)
+
+#define OMP_METADIRECTIVE_VARIANT_SELECTOR(v) \
+  TREE_PURPOSE (v)
+#define OMP_METADIRECTIVE_VARIANT_DIRECTIVE(v) \
+  TREE_PURPOSE (TREE_VALUE (v))
+#define OMP_METADIRECTIVE_VARIANT_BODY(v) \
+  TREE_VALUE (TREE_VALUE (v))
+
 #define OMP_SCAN_BODY(NODE)	TREE_OPERAND (OMP_SCAN_CHECK (NODE), 0)
 #define OMP_SCAN_CLAUSES(NODE)	TREE_OPERAND (OMP_SCAN_CHECK (NODE), 1)
+
+#define OMP_DISPATCH_BODY(NODE) TREE_OPERAND (OMP_DISPATCH_CHECK (NODE), 0)
+#define OMP_DISPATCH_CLAUSES(NODE) TREE_OPERAND (OMP_DISPATCH_CHECK (NODE), 1)
 
 #define OMP_CLAUSE_SIZE(NODE)						\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
@@ -1759,6 +1778,10 @@ class auto_suppress_location_wrappers
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PARTIAL), 0)
 #define OMP_CLAUSE_SIZES_LIST(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SIZES), 0)
+#define OMP_CLAUSE_NOVARIANTS_EXPR(NODE)                                       \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NOVARIANTS), 0)
+#define OMP_CLAUSE_NOCONTEXT_EXPR(NODE)                                        \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NOCONTEXT), 0)
 
 #define OMP_CLAUSE_GRAINSIZE_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_GRAINSIZE),0)
@@ -1823,6 +1846,15 @@ class auto_suppress_location_wrappers
 
 #define OMP_CLAUSE_MOTION_PRESENT(NODE) \
   (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_FROM, OMP_CLAUSE_TO)->base.deprecated_flag)
+
+#define OMP_CLAUSE_INIT_TARGET(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_INIT)->base.public_flag)
+#define OMP_CLAUSE_INIT_TARGETSYNC(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_INIT)->base.deprecated_flag)
+#define OMP_CLAUSE_INIT_PREFER_TYPE(NODE)				\
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
+					      OMP_CLAUSE_INIT,		\
+					      OMP_CLAUSE_INIT), 1)
 
 /* Nonzero if this map clause is for array (rather than pointer) based array
    section with zero bias.  Both the non-decl OMP_CLAUSE_MAP and corresponding
@@ -2073,6 +2105,18 @@ class auto_suppress_location_wrappers
    to pass to __builtin_stack_restore or free.  */
 #define OMP_CLAUSE__SCANTEMP__CONTROL(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__SCANTEMP_))
+
+/* OpenMP OMP_NEXT_VARIANT accessors.  */
+#define OMP_NEXT_VARIANT_INDEX(NODE)			\
+  TREE_OPERAND (OMP_NEXT_VARIANT_CHECK (NODE), 0)
+#define OMP_NEXT_VARIANT_STATE(NODE)			\
+  TREE_OPERAND (OMP_NEXT_VARIANT_CHECK (NODE), 1)
+
+/* OpenMP OMP_TARGET_DEVICE_MATCHES accessors.  */
+#define OMP_TARGET_DEVICE_MATCHES_SELECTOR(NODE)	\
+  TREE_OPERAND (OMP_TARGET_DEVICE_MATCHES_CHECK (NODE), 0)
+#define OMP_TARGET_DEVICE_MATCHES_PROPERTIES(NODE)	\
+  TREE_OPERAND (OMP_TARGET_DEVICE_MATCHES_CHECK (NODE), 1)
 
 /* SSA_NAME accessors.  */
 
@@ -4537,6 +4581,7 @@ tree_strip_any_location_wrapper (tree exp)
 #define dfloat32_type_node              global_trees[TI_DFLOAT32_TYPE]
 #define dfloat64_type_node              global_trees[TI_DFLOAT64_TYPE]
 #define dfloat128_type_node             global_trees[TI_DFLOAT128_TYPE]
+#define dfloat64x_type_node		global_trees[TI_DFLOAT64X_TYPE]
 
 /* The fixed-point types.  */
 #define sat_short_fract_type_node       global_trees[TI_SAT_SFRACT_TYPE]

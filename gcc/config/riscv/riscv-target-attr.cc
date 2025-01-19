@@ -1,5 +1,5 @@
 /* Subroutines used for parsing target attribute for RISC-V.
-   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -39,16 +38,19 @@ public:
     : m_found_arch_p (false)
     , m_found_tune_p (false)
     , m_found_cpu_p (false)
+    , m_found_priority_p (false)
     , m_subset_list (nullptr)
     , m_loc (loc)
     , m_cpu_info (nullptr)
     , m_tune (nullptr)
+    , m_priority (0)
   {
   }
 
   bool handle_arch (const char *);
   bool handle_cpu (const char *);
   bool handle_tune (const char *);
+  bool handle_priority (const char *);
 
   void update_settings (struct gcc_options *opts) const;
 private:
@@ -58,10 +60,12 @@ private:
   bool m_found_arch_p;
   bool m_found_tune_p;
   bool m_found_cpu_p;
+  bool m_found_priority_p;
   riscv_subset_list *m_subset_list;
   location_t m_loc;
   const  riscv_cpu_info *m_cpu_info;
   const char *m_tune;
+  int m_priority;
 };
 }
 
@@ -77,10 +81,16 @@ struct riscv_attribute_info
 
 /* The target attributes that we support.  */
 
-static const struct riscv_attribute_info riscv_attributes[]
+static const struct riscv_attribute_info riscv_target_attrs[]
   = {{"arch", &riscv_target_attr_parser::handle_arch},
      {"cpu", &riscv_target_attr_parser::handle_cpu},
-     {"tune", &riscv_target_attr_parser::handle_tune}};
+     {"tune", &riscv_target_attr_parser::handle_tune},
+     {NULL, NULL}};
+
+static const struct riscv_attribute_info riscv_target_version_attrs[]
+  = {{"arch", &riscv_target_attr_parser::handle_arch},
+     {"priority", &riscv_target_attr_parser::handle_priority},
+     {NULL, NULL}};
 
 bool
 riscv_target_attr_parser::parse_arch (const char *str)
@@ -130,7 +140,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
 	      error_at (
 		m_loc,
 		"unexpected arch for %<target()%> attribute: bad "
-		"string found %<%s%>", token);
+		"string found %qs", token);
 	      goto fail;
 	    }
 
@@ -210,6 +220,22 @@ riscv_target_attr_parser::handle_tune (const char *str)
   return true;
 }
 
+bool
+riscv_target_attr_parser::handle_priority (const char *str)
+{
+  if (m_found_priority_p)
+    error_at (m_loc, "%<target()%> attribute: priority appears more than once");
+  m_found_priority_p = true;
+
+  if (sscanf (str, "%d", &m_priority) != 1)
+    {
+      error_at (m_loc, "%<target()%> attribute: invalid priority %qs", str);
+      return false;
+    }
+
+  return true;
+}
+
 void
 riscv_target_attr_parser::update_settings (struct gcc_options *opts) const
 {
@@ -236,6 +262,9 @@ riscv_target_attr_parser::update_settings (struct gcc_options *opts) const
       if (m_cpu_info)
 	opts->x_riscv_tune_string = m_cpu_info->tune;
     }
+
+  if (m_priority)
+    opts->x_riscv_fmv_priority = m_priority;
 }
 
 /* Parse ARG_STR which contains the definition of one target attribute.
@@ -244,7 +273,8 @@ riscv_target_attr_parser::update_settings (struct gcc_options *opts) const
 static bool
 riscv_process_one_target_attr (char *arg_str,
 			       location_t loc,
-			       riscv_target_attr_parser &attr_parser)
+			       riscv_target_attr_parser &attr_parser,
+			       const struct riscv_attribute_info *attrs)
 {
   size_t len = strlen (arg_str);
 
@@ -271,15 +301,17 @@ riscv_process_one_target_attr (char *arg_str,
 
   arg[0] = '\0';
   ++arg;
-  for (const auto &attr : riscv_attributes)
+  for (const auto *attr = attrs;
+       attr->name;
+       ++attr)
     {
       /* If the names don't match up, or the user has given an argument
 	 to an attribute that doesn't accept one, or didn't give an argument
 	 to an attribute that expects one, fail to match.  */
-      if (strncmp (str_to_check, attr.name, strlen (attr.name)) != 0)
+      if (strncmp (str_to_check, attr->name, strlen (attr->name)) != 0)
 	continue;
 
-      return (&attr_parser->*attr.handler) (arg);
+      return (&attr_parser->*attr->handler) (arg);
     }
 
   error_at (loc, "Got unknown attribute %<target(\"%s\")%>", str_to_check);
@@ -308,7 +340,9 @@ num_occurrences_in_str (char c, char *str)
    and update the global target options space.  */
 
 bool
-riscv_process_target_attr (const char *args, location_t loc)
+riscv_process_target_attr (const char *args,
+			   location_t loc,
+			   const struct riscv_attribute_info *attrs)
 {
   size_t len = strlen (args);
 
@@ -335,7 +369,7 @@ riscv_process_target_attr (const char *args, location_t loc)
   while (token)
     {
       num_attrs++;
-      if (!riscv_process_one_target_attr (token, loc, attr_parser))
+      if (!riscv_process_one_target_attr (token, loc, attr_parser, attrs))
 	return false;
 
       token = strtok_r (NULL, ";", &str_to_check);
@@ -358,7 +392,9 @@ riscv_process_target_attr (const char *args, location_t loc)
    and update the global target options space.  */
 
 static bool
-riscv_process_target_attr (tree args, location_t loc)
+riscv_process_target_attr (tree args,
+			   location_t loc,
+			   const struct riscv_attribute_info *attrs)
 {
   if (TREE_CODE (args) == TREE_LIST)
     {
@@ -367,7 +403,7 @@ riscv_process_target_attr (tree args, location_t loc)
 	  tree head = TREE_VALUE (args);
 	  if (head)
 	    {
-	      if (!riscv_process_target_attr (head, loc))
+	      if (!riscv_process_target_attr (head, loc, attrs))
 		return false;
 	    }
 	  args = TREE_CHAIN (args);
@@ -382,7 +418,7 @@ riscv_process_target_attr (tree args, location_t loc)
       return false;
     }
 
-  return riscv_process_target_attr (TREE_STRING_POINTER (args), loc);
+  return riscv_process_target_attr (TREE_STRING_POINTER (args), loc, attrs);
 }
 
 /* Implement TARGET_OPTION_VALID_ATTRIBUTE_P.
@@ -420,7 +456,7 @@ riscv_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 			      TREE_TARGET_OPTION (target_option_default_node));
 
   /* Now we can parse the attributes and set &global_options accordingly.  */
-  ret = riscv_process_target_attr (args, loc);
+  ret = riscv_process_target_attr (args, loc, riscv_target_attrs);
   if (ret)
     {
       riscv_override_options_internal (&global_options);
@@ -431,5 +467,86 @@ riscv_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 
   /* Restore current target options to original state.  */
   cl_target_option_restore (&global_options, &global_options_set, &cur_target);
+  return ret;
+}
+
+/* Parse the tree in ARGS that contains the target_version attribute
+   information and update the global target options space.  */
+
+bool
+riscv_process_target_version_attr (tree args, location_t loc)
+{
+  if (TREE_CODE (args) == TREE_LIST)
+    {
+      if (TREE_CHAIN (args))
+	{
+	  error ("attribute %<target_version%> has multiple values");
+	  return false;
+	}
+      args = TREE_VALUE (args);
+    }
+
+  if (!args || TREE_CODE (args) != STRING_CST)
+    {
+      error ("attribute %<target_version%> argument not a string");
+      return false;
+    }
+
+  const char *str = TREE_STRING_POINTER (args);
+  if (strcmp (str, "default") == 0)
+    return true;
+
+  return riscv_process_target_attr (str, loc, riscv_target_version_attrs);
+}
+
+
+/* Implement TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P.  This is used to
+   process attribute ((target_version ("..."))).  */
+
+bool
+riscv_option_valid_version_attribute_p (tree fndecl, tree, tree args, int)
+{
+  struct cl_target_option cur_target;
+  bool ret;
+  tree new_target;
+  tree existing_target = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+  location_t loc = DECL_SOURCE_LOCATION (fndecl);
+
+  /* Save the current target options to restore at the end.  */
+  cl_target_option_save (&cur_target, &global_options, &global_options_set);
+
+  /* If fndecl already has some target attributes applied to it, unpack
+     them so that we add this attribute on top of them, rather than
+     overwriting them.  */
+  if (existing_target)
+    {
+      struct cl_target_option *existing_options
+	= TREE_TARGET_OPTION (existing_target);
+
+      if (existing_options)
+	cl_target_option_restore (&global_options, &global_options_set,
+				  existing_options);
+    }
+  else
+    cl_target_option_restore (&global_options, &global_options_set,
+			      TREE_TARGET_OPTION (target_option_current_node));
+
+  ret = riscv_process_target_version_attr (args, loc);
+
+  /* Set up any additional state.  */
+  if (ret)
+    {
+      riscv_override_options_internal (&global_options);
+      new_target = build_target_option_node (&global_options,
+					     &global_options_set);
+    }
+  else
+    new_target = NULL;
+
+  if (fndecl && ret)
+    DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
+
+  cl_target_option_restore (&global_options, &global_options_set, &cur_target);
+
   return ret;
 }

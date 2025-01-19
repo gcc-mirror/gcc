@@ -1,5 +1,5 @@
 /* Support routines for Splitting Paths to loop backedges
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
    Contributed by Ajit Kumar Agarwal <ajitkum@xilinx.com>.
 
  This file is part of GCC.

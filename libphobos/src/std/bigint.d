@@ -63,8 +63,8 @@ public:
      * Throws:
      *     $(REF ConvException, std,conv) if the string doesn't represent a valid number
      */
-    this(Range)(Range s) if (
-        isBidirectionalRange!Range &&
+    this(Range)(Range s)
+    if (isBidirectionalRange!Range &&
         isSomeChar!(ElementType!Range) &&
         !isInfinite!Range &&
         !isNarrowString!Range)
@@ -160,8 +160,8 @@ public:
      *          (ignored when magnitude is zero)
      *     magnitude = a finite range of unsigned integers
      */
-    this(Range)(bool isNegative, Range magnitude) if (
-        isInputRange!Range &&
+    this(Range)(bool isNegative, Range magnitude)
+    if (isInputRange!Range &&
         isUnsigned!(ElementType!Range) &&
         (hasLength!Range || isForwardRange!Range) &&
         !isInfinite!Range)
@@ -181,7 +181,8 @@ public:
     }
 
     /// Construct a `BigInt` from a built-in integral type.
-    this(T)(T x) pure nothrow @safe if (isIntegral!T)
+    this(T)(T x) pure nothrow @safe
+    if (isIntegral!T)
     {
         data = data.init; // @@@: Workaround for compiler bug
         opAssign(x);
@@ -196,7 +197,8 @@ public:
     }
 
     /// Construct a `BigInt` from another `BigInt`.
-    this(T)(T x) pure nothrow @safe if (is(immutable T == immutable BigInt))
+    this(T)(T x) pure nothrow @safe
+    if (is(immutable T == immutable BigInt))
     {
         opAssign(x);
     }
@@ -210,7 +212,8 @@ public:
     }
 
     /// Assignment from built-in integer types.
-    BigInt opAssign(T)(T x) pure nothrow @safe if (isIntegral!T)
+    BigInt opAssign(T)(T x) pure nothrow @safe
+    if (isIntegral!T)
     {
         data = cast(ulong) absUnsign(x);
         sign = (x < 0);
@@ -247,8 +250,8 @@ public:
      * `BigInt op= integer`.
      */
     BigInt opOpAssign(string op, T)(T y) pure nothrow @safe return scope
-        if ((op=="+" || op=="-" || op=="*" || op=="/" || op=="%"
-          || op==">>" || op=="<<" || op=="^^" || op=="|" || op=="&" || op=="^") && isIntegral!T)
+    if ((op=="+" || op=="-" || op=="*" || op=="/" || op=="%"
+        || op==">>" || op=="<<" || op=="^^" || op=="|" || op=="&" || op=="^") && isIntegral!T)
     {
         ulong u = absUnsign(y);
 
@@ -436,8 +439,7 @@ public:
      * Implements assignment operators of the form `BigInt op= BigInt`.
      */
     BigInt opOpAssign(string op, T)(T y) pure nothrow @safe return scope
-        if ((op=="+" || op== "-" || op=="*" || op=="|" || op=="&" || op=="^" || op=="/" || op=="%")
-            && is (T: BigInt))
+    if ((op=="+" || op== "-" || op=="*" || op=="|" || op=="&" || op=="^" || op=="/" || op=="%") && is (T: BigInt))
     {
         static if (op == "+")
         {
@@ -494,9 +496,8 @@ public:
      * Implements binary operators between `BigInt`s.
      */
     BigInt opBinary(string op, T)(T y) pure nothrow @safe const return scope
-        if ((op=="+" || op == "*" || op=="-" || op=="|" || op=="&" || op=="^" ||
-            op=="/" || op=="%")
-            && is (T: BigInt))
+    if ((op=="+" || op == "*" || op=="-" || op=="|" || op=="&" || op=="^" ||
+        op=="/" || op=="%") && is (T: BigInt))
     {
         BigInt r = this;
         return r.opOpAssign!(op)(y);
@@ -515,9 +516,9 @@ public:
      * Implements binary operators between `BigInt`'s and built-in integers.
      */
     BigInt opBinary(string op, T)(T y) pure nothrow @safe const return scope
-        if ((op=="+" || op == "*" || op=="-" || op=="/" || op=="|" || op=="&" ||
-            op=="^"|| op==">>" || op=="<<" || op=="^^")
-            && isIntegral!T)
+    if ((op=="+" || op == "*" || op=="-" || op=="/" || op=="|" || op=="&" ||
+        op=="^"|| op==">>" || op=="<<" || op=="^^")
+        && isIntegral!T)
     {
         BigInt r = this;
         r.opOpAssign!(op)(y);
@@ -546,7 +547,7 @@ public:
         )
      */
     auto opBinary(string op, T)(T y) pure nothrow @safe const
-        if (op == "%" && isIntegral!T)
+    if (op == "%" && isIntegral!T)
     {
         assert(y != 0, "% 0 not allowed");
 
@@ -602,7 +603,7 @@ public:
         `BigInt` on the right-hand side.
      */
     BigInt opBinaryRight(string op, T)(T y) pure nothrow @safe const
-        if ((op=="+" || op=="*" || op=="|" || op=="&" || op=="^") && isIntegral!T)
+    if ((op=="+" || op=="*" || op=="|" || op=="&" || op=="^") && isIntegral!T)
     {
         return opBinary!(op)(y);
     }
@@ -627,7 +628,7 @@ public:
     //  BigInt = integer op BigInt
     /// ditto
     BigInt opBinaryRight(string op, T)(T y) pure nothrow @safe const
-        if (op == "-" && isIntegral!T)
+    if (op == "-" && isIntegral!T)
     {
         ulong u = absUnsign(y);
         BigInt r;
@@ -643,7 +644,7 @@ public:
     //  integer = integer op BigInt
     /// ditto
     T opBinaryRight(string op, T)(T x) pure nothrow @safe const
-        if ((op=="%" || op=="/") && isIntegral!T)
+    if ((op=="%" || op=="/") && isIntegral!T)
     {
         checkDivByZero();
 
@@ -669,7 +670,8 @@ public:
     /**
         Implements `BigInt` unary operators.
      */
-    BigInt opUnary(string op)() pure nothrow @safe const if (op=="+" || op=="-" || op=="~")
+    BigInt opUnary(string op)() pure nothrow @safe const
+    if (op=="+" || op=="-" || op=="~")
     {
        static if (op=="-")
        {
@@ -687,7 +689,8 @@ public:
 
     // non-const unary operations
     /// ditto
-    BigInt opUnary(string op)() pure nothrow @safe if (op=="++" || op=="--")
+    BigInt opUnary(string op)() pure nothrow @safe
+    if (op=="++" || op=="--")
     {
         static if (op=="++")
         {
@@ -721,7 +724,8 @@ public:
     }
 
     /// ditto
-    bool opEquals(T)(const T y) const pure nothrow @nogc @safe if (isIntegral!T)
+    bool opEquals(T)(const T y) const pure nothrow @nogc @safe
+    if (isIntegral!T)
     {
         if (sign != (y<0))
             return 0;
@@ -729,7 +733,8 @@ public:
     }
 
     /// ditto
-    bool opEquals(T)(const T y) const pure nothrow @nogc if (isFloatingPoint!T)
+    bool opEquals(T)(const T y) const pure nothrow @nogc
+    if (isFloatingPoint!T)
     {
         return 0 == opCmp(y);
     }
@@ -896,7 +901,8 @@ public:
     /**
         Implements casting to floating point types.
      */
-    T opCast(T)() @safe nothrow @nogc const if (isFloatingPoint!T)
+    T opCast(T)() @safe nothrow @nogc const
+    if (isFloatingPoint!T)
     {
         return toFloat!(T, "nearest");
     }
@@ -1090,7 +1096,8 @@ public:
     }
 
     /// ditto
-    int opCmp(T)(const T y) pure nothrow @nogc @safe const if (isIntegral!T)
+    int opCmp(T)(const T y) pure nothrow @nogc @safe const
+    if (isIntegral!T)
     {
         if (sign != (y<0) )
             return sign ? -1 : 1;
@@ -1098,7 +1105,8 @@ public:
         return sign? -cmp: cmp;
     }
     /// ditto
-    int opCmp(T)(const T y) nothrow @nogc @safe const if (isFloatingPoint!T)
+    int opCmp(T)(const T y) nothrow @nogc @safe const
+    if (isFloatingPoint!T)
     {
         import core.bitop : bsr;
         import std.math.operations : cmp;

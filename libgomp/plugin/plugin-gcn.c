@@ -1,6 +1,6 @@
 /* Plugin for AMD GCN execution.
 
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded
 
@@ -2414,14 +2414,17 @@ isa_matches_agent (struct agent_info *agent, Elf64_Ehdr *image)
 
   if (isa_field != agent->device_isa)
     {
-      char msg[120];
+      char msg[204];
       const char *agent_isa_s = isa_name (agent->device_isa);
       assert (agent_isa_s);
 
       snprintf (msg, sizeof msg,
-		"GCN code object ISA '%s' does not match GPU ISA '%s'.\n"
-		"Try to recompile with '-foffload-options=-march=%s'.\n",
-		isa_s, agent_isa_s, agent_isa_s);
+		"GCN code object ISA '%s' does not match GPU ISA '%s' "
+		"(device %d).\n"
+		"Try to recompile with '-foffload-options=-march=%s',\n"
+		"or use ROCR_VISIBLE_DEVICES to disable incompatible "
+		"devices.\n",
+		isa_s, agent_isa_s, agent->device_id, agent_isa_s);
 
       hsa_error (msg, HSA_STATUS_ERROR);
       return false;
@@ -3936,6 +3939,8 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
     {
       struct agent_info *agent = get_agent_info (device);
       maybe_init_omp_async (agent);
+      if (!agent->omp_async_queue)
+	return false;
       queue_push_copy (agent->omp_async_queue, dst, src, n);
       return true;
     }
@@ -4347,6 +4352,8 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
     }
 
   maybe_init_omp_async (agent);
+  if (!agent->omp_async_queue)
+    GOMP_PLUGIN_fatal ("Asynchronous queue initialization failed");
   queue_push_launch (agent->omp_async_queue, kernel, tgt_vars, kla);
   queue_push_callback (agent->omp_async_queue,
 		       GOMP_PLUGIN_target_task_completion, async_data);
@@ -4414,17 +4421,17 @@ GOMP_OFFLOAD_openacc_async_construct (int device)
   if (pthread_mutex_init (&aq->mutex, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize a GCN agent queue mutex");
-      return false;
+      return NULL;
     }
   if (pthread_cond_init (&aq->queue_cond_in, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize a GCN agent queue cond");
-      return false;
+      return NULL;
     }
   if (pthread_cond_init (&aq->queue_cond_out, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize a GCN agent queue cond");
-      return false;
+      return NULL;
     }
 
   hsa_status_t status = hsa_fns.hsa_queue_create_fn (agent->id,

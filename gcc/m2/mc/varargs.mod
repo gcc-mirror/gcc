@@ -1,6 +1,6 @@
 (* varargs.mod provides a basic vararg facility for GNU Modula-2.
 
-Copyright (C) 2015-2024 Free Software Foundation, Inc.
+Copyright (C) 2015-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.

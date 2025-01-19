@@ -25,8 +25,6 @@
 #include <math.h>
 #include <altivec.h>
 
-#define DEBUG 0
-
 #ifdef DEBUG
 #include <stdio.h>
 #endif
@@ -281,8 +279,7 @@ int main()
     /* Signed word multiply high */
     i_arg1 = (vector int){ 2147483648, 2147483648, 2147483648, 2147483648 };
     i_arg2 = (vector int){ 2, 3, 4, 5};
-    //    vec_i_expected = (vector int){-1, -2, -2, -3};
-    vec_i_expected = (vector int){1, -2, -2, -3};
+    vec_i_expected = (vector int){-1, -2, -2, -3};
 
     vec_i_result = vec_mulh (i_arg1, i_arg2);
 

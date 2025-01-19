@@ -1,5 +1,5 @@
 # Makefile.am -- Backtrace in libsanitizer Makefile.
-# Copyright (C) 2012-2013 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -39,7 +39,7 @@ CXX_WARN_FLAGS = $(WARN_FLAGS) -Wno-unused-parameter
 AM_CFLAGS = $(C_WARN_FLAGS)
 AM_CFLAGS += $(EXTRA_CFLAGS)
 AM_CXXFLAGS = $(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions
-AM_CXXFLAGS += -std=gnu++14
+AM_CXXFLAGS += -std=gnu++17
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
 
 noinst_LTLIBRARIES = libsanitizer_libbacktrace.la

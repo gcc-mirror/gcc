@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2024 Free Software Foundation, Inc.
+// Copyright (C) 2013-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -108,7 +108,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class basic_string_view
     {
       static_assert(!is_array_v<_CharT>);
-      static_assert(is_trivial_v<_CharT> && is_standard_layout_v<_CharT>);
+      static_assert(is_trivially_copyable_v<_CharT>
+	  && is_trivially_default_constructible_v<_CharT>
+	  && is_standard_layout_v<_CharT>);
       static_assert(is_same_v<_CharT, typename _Traits::char_type>);
 
     public:

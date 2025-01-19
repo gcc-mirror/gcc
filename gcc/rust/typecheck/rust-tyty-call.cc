@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -60,7 +60,7 @@ TypeCheckCallExpr::visit (ADTType &type)
     {
       rust_error_at (
 	call.get_locus (), ErrorCode::E0423,
-	"expected function, tuple struct or tuple variant, found struct %<%s%>",
+	"expected function, tuple struct or tuple variant, found struct %qs",
 	type.get_name ().c_str ());
       return;
     }

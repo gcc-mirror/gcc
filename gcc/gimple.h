@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright (C) 2007-2024 Free Software Foundation, Inc.
+   Copyright (C) 2007-2025 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -259,23 +259,26 @@ struct GTY((desc ("gimple_statement_structure (&%h)"), tag ("GSS_BASE"),
      in there.  */
   unsigned int subcode		: 16;
 
-  /* UID of this statement.  This is used by passes that want to
-     assign IDs to statements.  It must be assigned and used by each
-     pass.  By default it should be assumed to contain garbage.  */
+  /* UID of this statement.  This is used by passes that want to assign IDs
+     to statements.  It must be assigned and used by each pass.  By default
+     it should be assumed to contain garbage.  */
   unsigned uid;
 
   /* [ WORD 2 ]
+     Number of operands in this tuple.  */
+  unsigned num_ops;
+
+  /* Unused 32 bits padding on 64-bit hosts.  */
+
+  /* [ WORD 3 ]
      Locus information for debug info.  */
   location_t location;
 
-  /* Number of operands in this tuple.  */
-  unsigned num_ops;
-
-  /* [ WORD 3 ]
+  /* [ WORD 4 ]
      Basic block holding this statement.  */
   basic_block bb;
 
-  /* [ WORD 4-5 ]
+  /* [ WORD 5-6 ]
      Linked lists of gimple statements.  The next pointers form
      a NULL terminated list, the prev pointers are a cyclic list.
      A gimple statement is hence also a double-ended list of
@@ -479,7 +482,7 @@ struct GTY((tag("GSS_PHI")))
   /* [ WORD 8 ]  */
   tree result;
 
-  /* [ WORD 9 ]  */
+  /* [ WORD 9-14 ]  */
   struct phi_arg_d GTY ((length ("%h.nargs"))) args[1];
 };
 
@@ -742,7 +745,7 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
 };
 
 /* GIMPLE_OMP_SINGLE, GIMPLE_OMP_ORDERED, GIMPLE_OMP_TASKGROUP,
-   GIMPLE_OMP_SCAN, GIMPLE_OMP_MASKED, GIMPLE_OMP_SCOPE.  */
+   GIMPLE_OMP_SCAN, GIMPLE_OMP_MASKED, GIMPLE_OMP_SCOPE, GIMPLE_OMP_DISPATCH. */
 
 struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
   gimple_statement_omp_single_layout : public gimple_statement_omp
@@ -1591,6 +1594,7 @@ gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
 gimple *gimple_build_omp_section (gimple_seq);
 gimple *gimple_build_omp_structured_block (gimple_seq);
 gimple *gimple_build_omp_scope (gimple_seq, tree);
+gimple *gimple_build_omp_dispatch (gimple_seq, tree);
 gimple *gimple_build_omp_master (gimple_seq);
 gimple *gimple_build_omp_masked (gimple_seq, tree);
 gimple *gimple_build_omp_taskgroup (gimple_seq, tree);
@@ -1661,7 +1665,7 @@ extern bool nonfreeing_call_p (gimple *);
 extern bool nonbarrier_call_p (gimple *);
 extern bool infer_nonnull_range (gimple *, tree);
 extern bool infer_nonnull_range_by_dereference (gimple *, tree);
-extern bool infer_nonnull_range_by_attribute (gimple *, tree);
+extern bool infer_nonnull_range_by_attribute (gimple *, tree, tree * = NULL);
 extern void sort_case_labels (vec<tree> &);
 extern void preprocess_case_label_vec_for_gimple (vec<tree> &, tree, tree *);
 extern void gimple_seq_set_location (gimple_seq, location_t);
@@ -1882,6 +1886,7 @@ gimple_has_substatements (gimple *g)
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SCOPE:
+    case GIMPLE_OMP_DISPATCH:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TARGET:
@@ -5434,6 +5439,34 @@ gimple_omp_scope_set_clauses (gimple *gs, tree clauses)
     = clauses;
 }
 
+/* Return the clauses associated with OMP_DISPATCH statement GS.  */
+
+inline tree
+gimple_omp_dispatch_clauses (const gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_DISPATCH);
+  return static_cast<const gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+/* Return a pointer to the clauses associated with OMP dispatch statement
+   GS.  */
+
+inline tree *
+gimple_omp_dispatch_clauses_ptr (gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_DISPATCH);
+  return &static_cast<gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+/* Set CLAUSES to be the clauses associated with OMP dispatch statement
+   GS.  */
+
+inline void
+gimple_omp_dispatch_set_clauses (gimple *gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_DISPATCH);
+  static_cast<gimple_statement_omp_single_layout *> (gs)->clauses = clauses;
+}
 
 /* Return the kind of the OMP_FOR statemement G.  */
 
@@ -6768,6 +6801,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_TARGET:			\
     case GIMPLE_OMP_TEAMS:			\
     case GIMPLE_OMP_SCOPE:			\
+    case GIMPLE_OMP_DISPATCH:			\
     case GIMPLE_OMP_SECTION:			\
     case GIMPLE_OMP_STRUCTURED_BLOCK:		\
     case GIMPLE_OMP_MASTER:			\

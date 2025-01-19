@@ -21,8 +21,12 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
-debug(trace) import core.stdc.stdio : printf;
-debug(info) import core.stdc.stdio : printf;
+debug (trace) debug = needPrintf;
+debug (info) debug = needPrintf;
+
+debug (needPrintf)
+private int printf(Args...)(scope const char* fmt, scope const Args args)
+    => __ctfe ? 0 : imported!"core.stdc.stdio".printf(fmt, args);
 
 extern (C) alias CXX_DEMANGLER = char* function (const char* mangled_name,
                                                 char* output_buffer,
@@ -1754,13 +1758,10 @@ pure @safe:
 
                     if (parseMangledNameArg())
                         continue;
-                    else
-                    {
-                        dst.len = l;
-                        pos = p;
-                        brp = b;
-                        debug(trace) printf( "not a mangled name arg\n" );
-                    }
+                    dst.len = l;
+                    pos = p;
+                    brp = b;
+                    debug(trace) printf( "not a mangled name arg\n" );
                 }
                 if ( isDigit( front ) && isDigit( peek( 1 ) ) )
                 {
@@ -2128,7 +2129,7 @@ pure @safe:
             }
             name = dst[beg .. nameEnd];
 
-            debug(info) printf( "name (%.*s)\n", cast(int) name.length, name.ptr );
+            debug(info) printf( "name (%.*s)\n", cast(int) name.length, name.getSlice.ptr );
             if ( 'M' == front )
                 popFront(); // has 'this' pointer
 
@@ -2867,56 +2868,6 @@ unittest
     assert(demangle(aggr.mangleof) == "pure nothrow @nogc @safe void " ~ parent ~ "().aggr(" ~ parent ~ "().S!(noreturn).S)");
 }
 
-/*
- * Expand an OMF, DMD-generated compressed identifier into its full form
- *
- * This function only has a visible effect for OMF binaries (Win32),
- * as compression is otherwise not used.
- *
- * See_Also: `compiler/src/dmd/backend/compress.d`
- */
-string decodeDmdString( const(char)[] ln, ref size_t p ) nothrow pure @safe
-{
-    string s;
-    uint zlen, zpos;
-
-    // decompress symbol
-    while ( p < ln.length )
-    {
-        int ch = cast(ubyte) ln[p++];
-        if ( (ch & 0xc0) == 0xc0 )
-        {
-            zlen = (ch & 0x7) + 1;
-            zpos = ((ch >> 3) & 7) + 1; // + zlen;
-            if ( zpos > s.length )
-                break;
-            s ~= s[$ - zpos .. $ - zpos + zlen];
-        }
-        else if ( ch >= 0x80 )
-        {
-            if ( p >= ln.length )
-                break;
-            int ch2 = cast(ubyte) ln[p++];
-            zlen = (ch2 & 0x7f) | ((ch & 0x38) << 4);
-            if ( p >= ln.length )
-                break;
-            int ch3 = cast(ubyte) ln[p++];
-            zpos = (ch3 & 0x7f) | ((ch & 7) << 7);
-            if ( zpos > s.length )
-                break;
-            s ~= s[$ - zpos .. $ - zpos + zlen];
-        }
-        else if ( Demangle!().isAlpha(cast(char)ch) || Demangle!().isDigit(cast(char)ch) || ch == '_' )
-            s ~= cast(char) ch;
-        else
-        {
-            p--;
-            break;
-        }
-    }
-    return s;
-}
-
 // locally purified for internal use here only
 extern (C) private
 {
@@ -3237,9 +3188,7 @@ private struct BufSlice
     size_t from;
     size_t to;
 
-    @safe:
-    pure:
-    nothrow:
+    @safe pure nothrow:
 
     @disable this();
 
@@ -3259,7 +3208,7 @@ private struct BufSlice
             this.to = to;
     }
 
-    invariant()
+    invariant
     {
         if (buf is null)
         {

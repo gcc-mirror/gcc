@@ -13,11 +13,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package is defined by ARM 13.9 to implement unchecked type
+--  conversions.
+
 generic
    type Source (<>) is limited private;
    type Target (<>) is limited private;
 
 function Ada.Unchecked_Conversion (S : Source) return Target;
+--  Returns the bit pattern of ``S`` for type ``Target``
 
 pragma No_Elaboration_Code_All (Ada.Unchecked_Conversion);
 pragma Pure (Ada.Unchecked_Conversion);

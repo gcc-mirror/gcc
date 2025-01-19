@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 Free Software Foundation, Inc.
+// Copyright (C) 2019-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,9 +68,26 @@ test02()
   VERIFY( ! f(x, x) );
 }
 
+struct A
+{
+  bool operator==(const A&) const noexcept { return true; }
+  bool operator==(A&&) const { return true; }
+};
+
+void
+test03()
+{
+  const A a{};
+  static_assert( noexcept(a == a) );
+  static_assert( ! noexcept(a == A{}) );
+  static_assert( noexcept(std::ranges::not_equal_to{}(a, a)) );
+  static_assert( ! noexcept(std::ranges::not_equal_to{}(a, A{})) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

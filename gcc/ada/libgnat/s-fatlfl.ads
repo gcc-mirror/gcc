@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package contains an instantiation of the floating-point attribute
---  runtime routines for the type Long_Float.
+--  runtime routines for the type Long_Float. It is an instantiation of
+--  ``System.Fat_Gen`` for Long_Float.
 
 with System.Fat_Gen;
 

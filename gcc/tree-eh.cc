@@ -1,5 +1,5 @@
 /* Exception handling semantics and decomposition for trees.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1025,8 +1025,9 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
 	 terminate before we get to it, so strip it away before adding the
 	 MUST_NOT_THROW filter.  */
       gimple_stmt_iterator gsi = gsi_start (finally);
-      gimple *x = gsi_stmt (gsi);
-      if (gimple_code (x) == GIMPLE_TRY
+      gimple *x = !gsi_end_p (gsi) ? gsi_stmt (gsi) : NULL;
+      if (x
+	  && gimple_code (x) == GIMPLE_TRY
 	  && gimple_try_kind (x) == GIMPLE_TRY_CATCH
 	  && gimple_try_catch_is_cleanup (x))
 	{

@@ -2,7 +2,7 @@
 
 // 2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2024 Free Software Foundation, Inc.
+// Copyright (C) 2010-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,9 +27,12 @@ void test01()
   using std::is_trivial;
   using namespace __gnu_test;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   static_assert(test_category<is_trivial, TType>(true), "");
   static_assert(test_category<is_trivial, PODType>(true), "");
 
   static_assert(test_category<is_trivial, NType>(false), "");
   static_assert(test_category<is_trivial, SLType>(false), "");
+#pragma GCC diagnostic pop
 }

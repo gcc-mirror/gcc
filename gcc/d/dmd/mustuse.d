@@ -202,7 +202,7 @@ private bool isIncrementOrDecrement(Expression e)
  */
 private bool hasMustUseAttribute(Dsymbol sym, Scope* sc)
 {
-    import dmd.attrib : foreachUda;
+    import dmd.attribsem : foreachUda;
 
     bool result = false;
 

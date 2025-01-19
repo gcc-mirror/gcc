@@ -4,7 +4,7 @@
 --                                                                          --
 --                       A D A . A S S E R T I O N S                        --
 --                                                                          --
---            Copyright (C) 2015-2024, Free Software Foundation, Inc.       --
+--            Copyright (C) 2015-2025, Free Software Foundation, Inc.       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -32,6 +32,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc. --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  This package provides the assertion feature defined by ARM 11.4.2
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised when calling Assert.

@@ -8,7 +8,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly, Alex Rønne Petersen
- * Source:    https://github.com/dlang/dmd/blob/master/druntime/src/core/stdc/errno.d
+ * Source:    $(DRUNTIMESRC core/stdc/_errno.d)
  * Standards: ISO/IEC 9899:1999 (E)
  */
 
@@ -43,15 +43,7 @@ version (X86_64)  version = X86_Any;
 nothrow:
 @nogc:
 
-version (CRuntime_DigitalMars)
-{
-    extern (C)
-    {
-        ref int _errno();
-        alias errno = _errno;
-    }
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     extern (C)
     {
@@ -172,93 +164,7 @@ else
 extern (C):
 
 
-version (CRuntime_DigitalMars)
-{
-    enum EPERM              = 1;        /// Operation not permitted
-    enum ENOENT             = 2;        /// No such file or directory
-    enum ESRCH              = 3;        /// No such process
-    enum EINTR              = 4;        /// Interrupted system call
-    enum EIO                = 5;        /// I/O error
-    enum ENXIO              = 6;        /// No such device or address
-    enum E2BIG              = 7;        /// Argument list too long
-    enum ENOEXEC            = 8;        /// Exec format error
-    enum EBADF              = 9;        /// Bad file number
-    enum ECHILD             = 10;       /// No child processes
-    enum EAGAIN             = 11;       /// Try again
-    enum ENOMEM             = 12;       /// Out of memory
-    enum EACCES             = 13;       /// Permission denied
-    enum EFAULT             = 14;       /// Bad address
-    enum EBUSY              = 16;       /// Device or resource busy
-    enum EEXIST             = 17;       /// File exists
-    enum EXDEV              = 18;       /// Cross-device link
-    enum ENODEV             = 19;       /// No such device
-    enum ENOTDIR            = 20;       /// Not a directory
-    enum EISDIR             = 21;       /// Is a directory
-    enum EINVAL             = 22;       /// Invalid argument
-    enum ENFILE             = 23;       /// File table overflow
-    enum EMFILE             = 24;       /// Too many open files
-    enum ENOTTY             = 25;       /// Not a typewriter
-    enum EFBIG              = 27;       /// File too large
-    enum ENOSPC             = 28;       /// No space left on device
-    enum ESPIPE             = 29;       /// Illegal seek
-    enum EROFS              = 30;       /// Read-only file system
-    enum EMLINK             = 31;       /// Too many links
-    enum EPIPE              = 32;       /// Broken pipe
-    enum EDOM               = 33;       /// Math argument out of domain of func
-    enum ERANGE             = 34;       /// Math result not representable
-    enum EDEADLK            = 36;       /// Resource deadlock would occur
-    enum ENAMETOOLONG       = 38;       /// File name too long
-    enum ENOLCK             = 39;       /// No record locks available
-    enum ENOSYS             = 40;       /// Function not implemented
-    enum ENOTEMPTY          = 41;       /// Directory not empty
-    enum EILSEQ             = 42;       /// Illegal byte sequence
-    enum EDEADLOCK          = EDEADLK;  /// Resource deadlock would occur
-
-    // POSIX compatibility
-    // See_Also: https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-constants
-    enum EADDRINUSE         = 100;
-    enum EADDRNOTAVAIL      = 101;
-    enum EAFNOSUPPORT       = 102;
-    enum EALREADY           = 103;
-    enum EBADMSG            = 104;
-    enum ECANCELED          = 105;
-    enum ECONNABORTED       = 106;
-    enum ECONNREFUSED       = 107;
-    enum ECONNRESET         = 108;
-    enum EDESTADDRREQ       = 109;
-    enum EHOSTUNREACH       = 110;
-    enum EIDRM              = 111;
-    enum EINPROGRESS        = 112;
-    enum EISCONN            = 113;
-    enum ELOOP              = 114;
-    enum EMSGSIZE           = 115;
-    enum ENETDOWN           = 116;
-    enum ENETRESET          = 117;
-    enum ENETUNREACH        = 118;
-    enum ENOBUFS            = 119;
-    enum ENODATA            = 120;
-    enum ENOLINK            = 121;
-    enum ENOMSG             = 122;
-    enum ENOPROTOOPT        = 123;
-    enum ENOSR              = 124;
-    enum ENOSTR             = 125;
-    enum ENOTCONN           = 126;
-    enum ENOTRECOVERABLE    = 127;
-    enum ENOTSOCK           = 128;
-    enum ENOTSUP            = 129;
-    enum EOPNOTSUPP         = 130;
-    enum EOTHER             = 131;
-    enum EOVERFLOW          = 132;
-    enum EOWNERDEAD         = 133;
-    enum EPROTO             = 134;
-    enum EPROTONOSUPPORT    = 135;
-    enum EPROTOTYPE         = 136;
-    enum ETIME              = 137;
-    enum ETIMEDOUT          = 138;
-    enum ETXTBSY            = 139;
-    enum EWOULDBLOCK        = 140;
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     enum EPERM              = 1;        /// Operation not permitted
     enum ENOENT             = 2;        /// No such file or directory

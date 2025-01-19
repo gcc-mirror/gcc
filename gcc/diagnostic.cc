@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
    message module.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -281,9 +280,11 @@ diagnostic_context::initialize (int n_opts)
   m_tabstop = 8;
   m_escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
   m_edit_context_ptr = nullptr;
-  m_diagnostic_groups.m_nesting_depth = 0;
+  m_diagnostic_groups.m_group_nesting_depth = 0;
+  m_diagnostic_groups.m_diagnostic_nesting_level = 0;
   m_diagnostic_groups.m_emission_count = 0;
-  m_output_sinks.safe_push (new diagnostic_text_output_format (*this, true));
+  m_output_sinks.safe_push
+    (new diagnostic_text_output_format (*this, nullptr, true));
   m_set_locations_cb = nullptr;
   m_client_data_hooks = nullptr;
   m_diagrams.m_theme = nullptr;
@@ -384,7 +385,7 @@ diagnostic_context::finish ()
   /* We might be handling a fatal error.
      Close any active diagnostic groups, which may trigger flushing
      sinks.  */
-  while (m_diagnostic_groups.m_nesting_depth > 0)
+  while (m_diagnostic_groups.m_group_nesting_depth > 0)
     end_group ();
 
   set_diagnostic_buffer (nullptr);
@@ -439,14 +440,25 @@ diagnostic_context::dump (FILE *out) const
   m_diagnostic_counters.dump (out, 2);
   fprintf (out, "  reference printer:\n");
   m_reference_printer->dump (out, 4);
-  for (unsigned i = 0; i < m_output_sinks.length (); ++i)
+  fprintf (out, "  output sinks:\n");
+  if (m_output_sinks.length () > 0)
     {
-      fprintf (out, "  sink %i:\n", i);
-      m_output_sinks[i]->dump (out, 4);
+      for (unsigned i = 0; i < m_output_sinks.length (); ++i)
+	{
+	  fprintf (out, "  sink %i:\n", i);
+	  m_output_sinks[i]->dump (out, 4);
+	}
     }
+  else
+    fprintf (out, "    (none):\n");
   fprintf (out, "  diagnostic buffer:\n");
   if (m_diagnostic_buffer)
     m_diagnostic_buffer->dump (out, 4);
+  else
+    fprintf (out, "    (none):\n");
+  fprintf (out, "  file cache:\n");
+  if (m_file_cache)
+    m_file_cache->dump (out, 4);
   else
     fprintf (out, "    (none):\n");
 }
@@ -465,11 +477,17 @@ diagnostic_context::execution_failed_p () const
 }
 
 void
-diagnostic_context::
-set_output_format (std::unique_ptr<diagnostic_output_format> output_format)
+diagnostic_context::remove_all_output_sinks ()
 {
   while (!m_output_sinks.is_empty ())
     delete m_output_sinks.pop ();
+}
+
+void
+diagnostic_context::
+set_output_format (std::unique_ptr<diagnostic_output_format> output_format)
+{
+  remove_all_output_sinks ();
   m_output_sinks.safe_push (output_format.release ());
 }
 
@@ -585,6 +603,14 @@ diagnostic_context::set_prefixing_rule (diagnostic_prefixing_rule_t rule)
   for (auto sink : m_output_sinks)
     if (sink->follows_reference_printer_p ())
       pp_prefixing_rule (sink->get_printer ()) = rule;
+}
+
+/* Set the urlifier without deleting the existing one.  */
+
+void
+diagnostic_context::override_urlifier (urlifier *urlifier)
+{
+  m_urlifier = urlifier;
 }
 
 void
@@ -1322,7 +1348,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
   /* Every call to report_diagnostic should be within a
      begin_group/end_group pair so that output formats can reliably
      flush diagnostics with on_end_group when the topmost group is ended.  */
-  gcc_assert (m_diagnostic_groups.m_nesting_depth > 0);
+  gcc_assert (m_diagnostic_groups.m_group_nesting_depth > 0);
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
@@ -1701,13 +1727,13 @@ fancy_abort (const char *file, int line, const char *function)
 void
 diagnostic_context::begin_group ()
 {
-  m_diagnostic_groups.m_nesting_depth++;
+  m_diagnostic_groups.m_group_nesting_depth++;
 }
 
 void
 diagnostic_context::end_group ()
 {
-  if (--m_diagnostic_groups.m_nesting_depth == 0)
+  if (--m_diagnostic_groups.m_group_nesting_depth == 0)
     {
       /* Handle the case where we've popped the final diagnostic group.
 	 If any diagnostics were emitted, give the context a chance
@@ -1717,6 +1743,18 @@ diagnostic_context::end_group ()
 	  sink->on_end_group ();
       m_diagnostic_groups.m_emission_count = 0;
     }
+}
+
+void
+diagnostic_context::push_nesting_level ()
+{
+  ++m_diagnostic_groups.m_diagnostic_nesting_level;
+}
+
+void
+diagnostic_context::pop_nesting_level ()
+{
+  --m_diagnostic_groups.m_diagnostic_nesting_level;
 }
 
 void
@@ -1824,7 +1862,11 @@ diagnostic_context::set_diagnostic_buffer (diagnostic_buffer *buffer)
   /* We don't allow changing buffering within a diagnostic group
      (to simplify handling of buffered diagnostics within the
      diagnostic_format implementations).  */
-  gcc_assert (m_diagnostic_groups.m_nesting_depth == 0);
+  gcc_assert (m_diagnostic_groups.m_group_nesting_depth == 0);
+
+  /* Likewise, for simplicity, we only allow changing buffers
+     at nesting level 0.  */
+  gcc_assert (m_diagnostic_groups.m_diagnostic_nesting_level == 0);
 
   m_diagnostic_buffer = buffer;
 

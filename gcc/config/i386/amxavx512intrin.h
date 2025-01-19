@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Free Software Foundation, Inc.
+/* Copyright (C) 2024-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -53,38 +53,38 @@
   dst;									\
 })
 
-#define _tile_cvtrowps2pbf16h_internal(src,A)				\
+#define _tile_cvtrowps2bf16h_internal(src,A)				\
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2pbf16h\t%1, %%tmm"#src", %0|tcvtrowps2pbf16h\t%0, %%tmm"#src", %1}"	\
+  ("{tcvtrowps2bf16h\t%1, %%tmm"#src", %0|tcvtrowps2bf16h\t%0, %%tmm"#src", %1}"	\
    : "=v" (dst) : "r" ((unsigned) (A)));				\
   dst;									\
 })
 
-#define _tile_cvtrowps2pbf16hi_internal(src,imm)			\
+#define _tile_cvtrowps2bf16hi_internal(src,imm)			\
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2pbf16h\t$"#imm", %%tmm"#src", %0|tcvtrowps2pbf16h\t%0, %%tmm"#src", "#imm"}"	\
+  ("{tcvtrowps2bf16h\t$"#imm", %%tmm"#src", %0|tcvtrowps2bf16h\t%0, %%tmm"#src", "#imm"}"	\
    : "=v" (dst) :);							\
   dst;									\
 })
 
-#define _tile_cvtrowps2pbf16l_internal(src,A)				\
+#define _tile_cvtrowps2bf16l_internal(src,A)				\
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2pbf16l\t%1, %%tmm"#src", %0|tcvtrowps2pbf16l\t%0, %%tmm"#src", %1}"	\
+  ("{tcvtrowps2bf16l\t%1, %%tmm"#src", %0|tcvtrowps2bf16l\t%0, %%tmm"#src", %1}"	\
    : "=v" (dst) : "r" ((unsigned) (A)));				\
   dst;									\
 })
 
-#define _tile_cvtrowps2pbf16li_internal(src,imm)			\
+#define _tile_cvtrowps2bf16li_internal(src,imm)			\
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2pbf16l\t$"#imm", %%tmm"#src", %0|tcvtrowps2pbf16l\t%0, %%tmm"#src", "#imm"}"	\
+  ("{tcvtrowps2bf16l\t$"#imm", %%tmm"#src", %0|tcvtrowps2bf16l\t%0, %%tmm"#src", "#imm"}"	\
    : "=v" (dst) :);							\
   dst;									\
 })
@@ -149,17 +149,17 @@
 #define _tile_cvtrowd2psi(src,imm)				\
   _tile_cvtrowd2psi_internal (src,imm)
 
-#define _tile_cvtrowps2pbf16h(src,A)				\
-  _tile_cvtrowps2pbf16h_internal (src,A)
+#define _tile_cvtrowps2bf16h(src,A)				\
+  _tile_cvtrowps2bf16h_internal (src,A)
 
-#define _tile_cvtrowps2pbf16hi(src,imm)				\
-  _tile_cvtrowps2pbf16hi_internal (src,imm)
+#define _tile_cvtrowps2bf16hi(src,imm)				\
+  _tile_cvtrowps2bf16hi_internal (src,imm)
 
-#define _tile_cvtrowps2pbf16l(src,A)				\
-  _tile_cvtrowps2pbf16l_internal (src,A)
+#define _tile_cvtrowps2bf16l(src,A)				\
+  _tile_cvtrowps2bf16l_internal (src,A)
 
-#define _tile_cvtrowps2pbf16li(src,imm)				\
-  _tile_cvtrowps2pbf16li_internal (src,imm)
+#define _tile_cvtrowps2bf16li(src,imm)				\
+  _tile_cvtrowps2bf16li_internal (src,imm)
 
 #define _tile_cvtrowps2phh(src,A)				\
   _tile_cvtrowps2phh_internal (src,A)

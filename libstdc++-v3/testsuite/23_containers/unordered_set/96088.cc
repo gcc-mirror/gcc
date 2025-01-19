@@ -2,7 +2,7 @@
 // { dg-require-effective-target std_allocator_new }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
-// Copyright (C) 2021-2024 Free Software Foundation, Inc.
+// Copyright (C) 2021-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,7 @@ test01()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 void
@@ -67,7 +67,7 @@ test02()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 std::size_t
@@ -96,7 +96,7 @@ test11()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 std::size_t
@@ -125,7 +125,7 @@ test12()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 struct hash_string_functor
@@ -155,7 +155,7 @@ test21()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 struct hash_string_view_noexcept_functor
@@ -185,7 +185,7 @@ test22()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 struct hash_string_view_functor
@@ -215,7 +215,7 @@ test23()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 void
@@ -244,7 +244,7 @@ test03()
     VERIFY( us.size() == 1 );
 
     VERIFY( __gnu_test::counter::count() == origin + increments );
-    VERIFY( __gnu_test::counter::get()._M_increments == increments + 1 );
+    VERIFY( __gnu_test::counter::get()._M_increments == increments );
   }
   VERIFY( __gnu_test::counter::count() == origin );
 

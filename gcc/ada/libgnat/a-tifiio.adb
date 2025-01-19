@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,7 +69,7 @@
 --  Operations
 --  ----------
 
---  [Wide_[Wide_]]Image attribute (see RM 3.5(27.1/2))
+--  [Wide_[Wide_]]Image attribute (see RM 4.10(30))
 
 --          These attributes return a decimal real literal best approximating
 --          the value (rounded away from zero if halfway between) with a
@@ -191,51 +191,59 @@ package body Ada.Text_IO.Fixed_IO with SPARK_Mode => Off is
    OK_Get_32 : constant Boolean :=
      Num'Base'Object_Size <= 32
        and then
-         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
+         ((Num'Base'Small_Numerator = 1
+            and then Num'Base'Small_Denominator <= 2**31)
            or else
-          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**31)
+          (Num'Base'Small_Denominator = 1
+            and then Num'Base'Small_Numerator <= 2**31)
            or else
-          (Num'Small_Numerator <= 2**27
-            and then Num'Small_Denominator <= 2**27));
+          (Num'Base'Small_Numerator <= 2**27
+            and then Num'Base'Small_Denominator <= 2**27));
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_32 : constant Boolean :=
      Num'Base'Object_Size <= 32
        and then
-         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
+         ((Num'Base'Small_Numerator = 1
+            and then Num'Base'Small_Denominator <= 2**31)
            or else
-          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**31)
+          (Num'Base'Small_Denominator = 1
+            and then Num'Base'Small_Numerator <= 2**31)
            or else
-          (Num'Small_Numerator < Num'Small_Denominator
-            and then Num'Small_Denominator <= 2**27)
+          (Num'Base'Small_Numerator < Num'Base'Small_Denominator
+            and then Num'Base'Small_Denominator <= 2**27)
            or else
-          (Num'Small_Denominator < Num'Small_Numerator
-            and then Num'Small_Numerator <= 2**25));
+          (Num'Base'Small_Denominator < Num'Base'Small_Numerator
+            and then Num'Base'Small_Numerator <= 2**25));
    --  These conditions are derived from the prerequisites of System.Image_F
 
    OK_Get_64 : constant Boolean :=
      Num'Base'Object_Size <= 64
        and then
-         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
+         ((Num'Base'Small_Numerator = 1
+            and then Num'Base'Small_Denominator <= 2**63)
            or else
-          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**63)
+          (Num'Base'Small_Denominator = 1
+            and then Num'Base'Small_Numerator <= 2**63)
            or else
-          (Num'Small_Numerator <= 2**59
-            and then Num'Small_Denominator <= 2**59));
+          (Num'Base'Small_Numerator <= 2**59
+            and then Num'Base'Small_Denominator <= 2**59));
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_64 : constant Boolean :=
      Num'Base'Object_Size <= 64
        and then
-         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
+         ((Num'Base'Small_Numerator = 1
+            and then Num'Base'Small_Denominator <= 2**63)
            or else
-          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**63)
+          (Num'Base'Small_Denominator = 1
+            and then Num'Base'Small_Numerator <= 2**63)
            or else
-          (Num'Small_Numerator < Num'Small_Denominator
-            and then Num'Small_Denominator <= 2**59)
+          (Num'Base'Small_Numerator < Num'Base'Small_Denominator
+            and then Num'Base'Small_Denominator <= 2**59)
            or else
-          (Num'Small_Denominator < Num'Small_Numerator
-            and then Num'Small_Numerator <= 2**53));
+          (Num'Base'Small_Denominator < Num'Base'Small_Numerator
+            and then Num'Base'Small_Numerator <= 2**53));
    --  These conditions are derived from the prerequisites of System.Image_F
 
    E : constant Natural := 63 - 32 * Boolean'Pos (OK_Put_32);

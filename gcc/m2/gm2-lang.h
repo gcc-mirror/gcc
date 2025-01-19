@@ -1,5 +1,5 @@
 /* Language-dependent hooks for GNU Modula-2.
-   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+   Copyright (C) 2003-2025 Free Software Foundation, Inc.
    Contributed by Gaius Mulley <gaius@glam.ac.uk>
 
 This file is part of GNU CC.

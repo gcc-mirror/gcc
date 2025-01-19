@@ -1,6 +1,6 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
    which are zero based.  Symbols are written to the module in no
    particular order.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -85,7 +84,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
    recognized.  */
-#define MOD_VERSION "15"
+#define MOD_VERSION "16"
+/* Older mod versions we can still parse.  */
+#define COMPAT_MOD_VERSIONS { "15" }
 
 
 /* Structure that describes a position within a module file.  */
@@ -3925,6 +3926,7 @@ mio_expr (gfc_expr **ep)
       switch (e->ts.type)
 	{
 	case BT_INTEGER:
+	case BT_UNSIGNED:
 	  mio_gmp_integer (&e->value.integer);
 	  break;
 
@@ -7120,12 +7122,22 @@ use_iso_fortran_env_module (void)
 #include "iso-fortran-env.def"
     { ISOFORTRANENV_INVALID, NULL, -1234, 0 } };
 
+  /* We could have used c in the NAMED_{,U}INTCST macros
+     instead of 0, but then current g++ expands the initialization
+     as clearing the whole object followed by explicit stores of
+     all the non-zero elements (over 150), while by using 0s for
+     the non-constant initializers and initializing them afterwards
+     g++ will often copy everything from .rodata and then only override
+     over 30 non-constant ones.  */
   i = 0;
 #define NAMED_INTCST(a,b,c,d) symbol[i++].value = c;
-#include "iso-fortran-env.def"
-
 #define NAMED_UINTCST(a,b,c,d) symbol[i++].value = c;
+#define NAMED_KINDARRAY(a,b,c,d) i++;
+#define NAMED_DERIVED_TYPE(a,b,c,d) i++;
+#define NAMED_FUNCTION(a,b,c,d) i++;
+#define NAMED_SUBROUTINE(a,b,c,d) i++;
 #include "iso-fortran-env.def"
+  gcc_checking_assert (i == (int) ARRAY_SIZE (symbol) - 1);
 
   /* Generate the symbol for the module itself.  */
   mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, mod);
@@ -7284,12 +7296,11 @@ use_iso_fortran_env_module (void)
 	    break;
 
 #define NAMED_FUNCTION(a,b,c,d) \
-		case a:
+	  case a:
 #include "iso-fortran-env.def"
-		  create_intrinsic_function (symbol[i].name, symbol[i].id, mod,
-					     INTMOD_ISO_FORTRAN_ENV, false,
-					     NULL);
-		  break;
+	    create_intrinsic_function (symbol[i].name, symbol[i].id, mod,
+				       INTMOD_ISO_FORTRAN_ENV, false, NULL);
+	    break;
 
 	  default:
 	    gcc_unreachable ();
@@ -7451,10 +7462,23 @@ gfc_use_module (gfc_use_list *module)
 			 " module file", module_fullpath);
       if (start == 3)
 	{
+	  bool fatal = false;
 	  if (strcmp (atom_name, " version") != 0
 	      || module_char () != ' '
-	      || parse_atom () != ATOM_STRING
-	      || strcmp (atom_string, MOD_VERSION))
+	      || parse_atom () != ATOM_STRING)
+	    fatal = true;
+	  else if (strcmp (atom_string, MOD_VERSION))
+	    {
+	      static const char *compat_mod_versions[] = COMPAT_MOD_VERSIONS;
+	      fatal = true;
+	      for (unsigned i = 0; i < ARRAY_SIZE (compat_mod_versions); ++i)
+		if (!strcmp (atom_string, compat_mod_versions[i]))
+		  {
+		    fatal = false;
+		    break;
+		  }
+	    }
+	  if (fatal)
 	    gfc_fatal_error ("Cannot read module file %qs opened at %C,"
 			     " because it was created by a different"
 			     " version of GNU Fortran", module_fullpath);

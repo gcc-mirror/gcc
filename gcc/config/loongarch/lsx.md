@@ -1,6 +1,6 @@
 ;; Machine Description for LARCH Loongson SX ASE
 ;;
-;; Copyright (C) 2018-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -20,8 +20,6 @@
 ;;
 
 (define_c_enum "unspec" [
-  UNSPEC_LSX_ABSD_S
-  UNSPEC_LSX_VABSD_U
   UNSPEC_LSX_VAVG_S
   UNSPEC_LSX_VAVG_U
   UNSPEC_LSX_VAVGR_S
@@ -39,15 +37,12 @@
   UNSPEC_LSX_VFCVTH
   UNSPEC_LSX_VFCVTL
   UNSPEC_LSX_VFLOGB
-  UNSPEC_LSX_VFRECIP
   UNSPEC_LSX_VFRECIPE
-  UNSPEC_LSX_VFRINT
   UNSPEC_LSX_VFRSQRT
   UNSPEC_LSX_VFRSQRTE
   UNSPEC_LSX_VFTINT_U
   UNSPEC_LSX_VSAT_S
   UNSPEC_LSX_VSAT_U
-  UNSPEC_LSX_VREPLVEI
   UNSPEC_LSX_VSRAR
   UNSPEC_LSX_VSRARI
   UNSPEC_LSX_VSRLR
@@ -76,16 +71,10 @@
   UNSPEC_LSX_VMSKLTZ
   UNSPEC_LSX_VSIGNCOV
   UNSPEC_LSX_VFTINT_W_D
-  UNSPEC_LSX_VFFINT_S_L
-  UNSPEC_LSX_VFTINTRZ_W_D
   UNSPEC_LSX_VFTINTRP_W_D
   UNSPEC_LSX_VFTINTRM_W_D
   UNSPEC_LSX_VFTINTRNE_W_D
   UNSPEC_LSX_VFTINTL_L_S
-  UNSPEC_LSX_VFFINTH_D_W
-  UNSPEC_LSX_VFFINTL_D_W
-  UNSPEC_LSX_VFTINTRZL_L_S
-  UNSPEC_LSX_VFTINTRZH_L_S
   UNSPEC_LSX_VFTINTRPL_L_S
   UNSPEC_LSX_VFTINTRPH_L_S
   UNSPEC_LSX_VFTINTRMH_L_S
@@ -167,25 +156,6 @@
    (V8HI "wu")
    (V16QI "hu")])
 
-(define_mode_attr d2lsxfmt
-  [(V4SI "q")
-   (V8HI "d")
-   (V16QI "w")])
-
-(define_mode_attr d2lsxfmt_u
-  [(V4SI "qu")
-   (V8HI "du")
-   (V16QI "wu")])
-
-;; The attribute gives two double modes for vector modes.
-(define_mode_attr VD2MODE
-  [(V4SI "V2DI")
-   (V8HI "V2DI")
-   (V16QI "V4SI")])
-
-;; All vector modes with 128 bits.
-(define_mode_iterator LSX      [V2DF V4SF V2DI V4SI V8HI V16QI])
-
 ;; Only used for vilvh and splitting insert_d and copy_{u,s}.d.
 (define_mode_iterator LSX_D    [V2DI V2DF])
 
@@ -218,6 +188,11 @@
   [(V8HI "V16QI")
    (V4SI "V8HI")
    (V2DI "V4SI")])
+
+;; Signed and unsigned max operations.
+(define_code_iterator SU_MAX [smax umax])
+
+(define_code_attr su_min [(smax "smin") (umax "umin")])
 
 ;; The attribute gives double modes for vector modes.
 (define_mode_attr VDMODE
@@ -302,23 +277,11 @@
    (V8HI "h")
    (V16QI "b")])
 
-(define_mode_attr flsxfmt_f
-  [(V2DF "d_f")
-   (V4SF "s_f")
-   (V2DI "d")
-   (V4SI "w")
-   (V8HI "h")
-   (V16QI "b")])
-
 (define_mode_attr flsxfmt
   [(V2DF "d")
    (V4SF "s")
    (V2DI "d")
    (V4SI "s")])
-
-(define_mode_attr flsxfrint
-  [(V2DF "d")
-   (V4SF "s")])
 
 (define_mode_attr ilsxfmt
   [(V2DF "l")
@@ -370,54 +333,15 @@
   [(set_attr "type" "simd_permute")
    (set_attr "mode" "<MODE>")])
 
-(define_expand "vec_unpacks_hi_v4sf"
-  [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(float_extend:V2DF
-	  (vec_select:V2SF
-	    (match_operand:V4SF 1 "register_operand" "f")
-	    (match_dup 2))))]
-  "ISA_HAS_LSX"
-{
-  operands[2] = loongarch_lsx_vec_parallel_const_half (V4SFmode,
-      true/*high_p*/);
-})
-
-(define_expand "vec_unpacks_lo_v4sf"
-  [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(float_extend:V2DF
-	  (vec_select:V2SF
-	    (match_operand:V4SF 1 "register_operand" "f")
-	    (match_dup 2))))]
-  "ISA_HAS_LSX"
-{
-  operands[2] = loongarch_lsx_vec_parallel_const_half (V4SFmode,
-      false/*high_p*/);
-})
-
-(define_expand "vec_unpacks_hi_<mode>"
-  [(match_operand:<VDMODE> 0 "register_operand")
-   (match_operand:ILSX_WHB 1 "register_operand")]
-  "ISA_HAS_LSX"
-{
-  loongarch_expand_vec_unpack (operands, false/*unsigned_p*/, true/*high_p*/);
-  DONE;
-})
-
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<VDMODE> 0 "register_operand")
    (match_operand:ILSX_WHB 1 "register_operand")]
   "ISA_HAS_LSX"
 {
-  loongarch_expand_vec_unpack (operands, false/*unsigned_p*/, false/*high_p*/);
-  DONE;
-})
-
-(define_expand "vec_unpacku_hi_<mode>"
-  [(match_operand:<VDMODE> 0 "register_operand")
-   (match_operand:ILSX_WHB 1 "register_operand")]
-  "ISA_HAS_LSX"
-{
-  loongarch_expand_vec_unpack (operands, true/*unsigned_p*/, true/*high_p*/);
+  if (ISA_HAS_LASX)
+    emit_insn (gen_vec_unpacks_lo_<mode>_internal (operands[0], operands[1]));
+  else
+    loongarch_expand_vec_unpack (operands, false/*unsigned_p*/);
   DONE;
 })
 
@@ -426,7 +350,10 @@
    (match_operand:ILSX_WHB 1 "register_operand")]
   "ISA_HAS_LSX"
 {
-  loongarch_expand_vec_unpack (operands, true/*unsigned_p*/, false/*high_p*/);
+  if (ISA_HAS_LASX)
+    emit_insn (gen_vec_unpacku_lo_<mode>_internal (operands[0], operands[1]));
+  else
+    loongarch_expand_vec_unpack (operands, true/*unsigned_p*/);
   DONE;
 })
 
@@ -505,28 +432,6 @@
   rtx index = GEN_INT (1 << INTVAL (operands[2]));
   emit_insn (gen_lsx_vextrins_<lsxfmt_f>_scalar (operands[0], operands[1],
 						 operands[0], index));
-  DONE;
-})
-
-(define_expand "vec_cmp<mode><mode_i>"
-  [(set (match_operand:<VIMODE> 0 "register_operand")
-	(match_operator 1 ""
-	  [(match_operand:LSX 2 "register_operand")
-	   (match_operand:LSX 3 "register_operand")]))]
-  "ISA_HAS_LSX"
-{
-  loongarch_expand_vec_cmp (operands);
-  DONE;
-})
-
-(define_expand "vec_cmpu<ILSX:mode><mode_i>"
-  [(set (match_operand:<VIMODE> 0 "register_operand")
-	(match_operator 1 ""
-	  [(match_operand:ILSX 2 "register_operand")
-	   (match_operand:ILSX 3 "register_operand")]))]
-  "ISA_HAS_LSX"
-{
-  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 
@@ -692,7 +597,7 @@
   [(set (match_operand:LSX 0 "nonimmediate_operand" "=f,f,R,*r,*f,*r")
 	(match_operand:LSX 1 "move_operand" "fYGYI,R,f,*f,*r,*r"))]
   "ISA_HAS_LSX"
-{ return loongarch_output_move (operands[0], operands[1]); }
+{ return loongarch_output_move (operands); }
   [(set_attr "type" "simd_move,simd_load,simd_store,simd_copy,simd_insert,simd_copy")
    (set_attr "mode" "<MODE>")])
 
@@ -879,11 +784,23 @@
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
 	(lshiftrt:ILSX
 	  (match_operand:ILSX 1 "register_operand" "f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILSX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LSX"
-  "@
-   vsrl.<lsxfmt>\t%w0,%w1,%w2
-   vsrli.<lsxfmt>\t%w0,%w1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "vsrl.<lsxfmt>\t%w0,%w1,%w2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "vsrli.<lsxfmt>\t%w0,%w1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -891,11 +808,23 @@
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
 	(ashiftrt:ILSX
 	  (match_operand:ILSX 1 "register_operand" "f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILSX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LSX"
-  "@
-   vsra.<lsxfmt>\t%w0,%w1,%w2
-   vsrai.<lsxfmt>\t%w0,%w1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "vsra.<lsxfmt>\t%w0,%w1,%w2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "vsrai.<lsxfmt>\t%w0,%w1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -903,11 +832,23 @@
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
 	(ashift:ILSX
 	  (match_operand:ILSX 1 "register_operand" "f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
+	  (match_operand:ILSX 2 "reg_or_vector_same_uimm_operand" "f,Uuvx")))]
   "ISA_HAS_LSX"
-  "@
-   vsll.<lsxfmt>\t%w0,%w1,%w2
-   vslli.<lsxfmt>\t%w0,%w1,%E2"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "vsll.<lsxfmt>\t%w0,%w1,%w2";
+    case 1:
+      {
+	unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (operands[2], 0));
+	operands[2] = GEN_INT (val & (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1));
+	return "vslli.<lsxfmt>\t%w0,%w1,%d2";
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -1038,23 +979,17 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vabsd_s_<lsxfmt>"
+(define_insn "<su>abd<mode>3"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_ABSD_S))]
+	(minus:ILSX
+	  (SU_MAX:ILSX
+	    (match_operand:ILSX 1 "register_operand" "f")
+	    (match_operand:ILSX 2 "register_operand" "f"))
+	  (<su_min>:ILSX
+	    (match_dup 1)
+	    (match_dup 2))))]
   "ISA_HAS_LSX"
-  "vabsd.<lsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vabsd_u_<lsxfmt_u>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VABSD_U))]
-  "ISA_HAS_LSX"
-  "vabsd.<lsxfmt_u>\t%w0,%w1,%w2"
+  "vabsd.<lsxfmt><u>\t%w0,%w1,%w2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
@@ -1264,10 +1199,6 @@
    (set_attr "cnv_mode" "<FINTCNV>")
    (set_attr "mode" "<MODE>")])
 
-(define_mode_attr FFQ
-  [(V4SF "V8HI")
-   (V2DF "V4SI")])
-
 (define_insn "lsx_vreplgr2vr_<lsxfmt_f>"
   [(set (match_operand:ILSX 0 "register_operand" "=f,f")
 	(vec_duplicate:ILSX
@@ -1275,7 +1206,7 @@
   "ISA_HAS_LSX"
 {
   if (which_alternative == 1)
-    return "vldi.<lsxfmt>\t%w0,0";
+    return "vrepli.b\t%w0,0";
 
   return "vreplgr2vr.<lsxfmt>\t%w0,%z1";
 }
@@ -2117,7 +2048,7 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V4SF")])
 
-(define_insn "lsx_vfcvth_d_s"
+(define_insn "vec_unpacks_hi_v4sf"
   [(set (match_operand:V2DF 0 "register_operand" "=f")
 	(float_extend:V2DF
 	(vec_select:V2SF
@@ -2137,7 +2068,7 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V4SF")])
 
-(define_insn "lsx_vfcvtl_d_s"
+(define_insn "vec_unpacks_lo_v4sf"
   [(set (match_operand:V2DF 0 "register_operand" "=f")
 	(float_extend:V2DF
 	(vec_select:V2SF
@@ -2715,23 +2646,23 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "V2DF")])
 
-(define_insn "lsx_vffint_s_l"
+(define_insn "vec_packs_float_v2di"
   [(set (match_operand:V4SF 0 "register_operand" "=f")
-	(unspec:V4SF [(match_operand:V2DI 1 "register_operand" "f")
-		      (match_operand:V2DI 2 "register_operand" "f")]
-		     UNSPEC_LSX_VFFINT_S_L))]
+	(vec_concat:V4SF
+	  (float:V2SF (match_operand:V2DI 1 "register_operand" "f"))
+	  (float:V2SF (match_operand:V2DI 2 "register_operand" "f"))))]
   "ISA_HAS_LSX"
-  "vffint.s.l\t%w0,%w1,%w2"
+  "vffint.s.l\t%w0,%w2,%w1"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "V2DI")])
 
-(define_insn "lsx_vftintrz_w_d"
+(define_insn "vec_pack_sfix_trunc_v2df"
   [(set (match_operand:V4SI 0 "register_operand" "=f")
-	(unspec:V4SI [(match_operand:V2DF 1 "register_operand" "f")
-		      (match_operand:V2DF 2 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRZ_W_D))]
+	(vec_concat:V4SI
+	  (fix:V2SI (match_operand:V2DF 1 "register_operand" "f"))
+	  (fix:V2SI (match_operand:V2DF 2 "register_operand" "f"))))]
   "ISA_HAS_LSX"
-  "vftintrz.w.d\t%w0,%w1,%w2"
+  "vftintrz.w.d\t%w0,%w2,%w1"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "V2DF")])
 
@@ -2783,37 +2714,45 @@
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "V4SF")])
 
-(define_insn "lsx_vffinth_d_w"
+(define_insn "vec_unpacks_float_hi_v4si"
   [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(unspec:V2DF [(match_operand:V4SI 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFFINTH_D_W))]
+	(float:V2DF
+	  (vec_select:V2SI
+	    (match_operand:V4SI 1 "register_operand" "f")
+	    (parallel [(const_int 2) (const_int 3)]))))]
   "ISA_HAS_LSX"
   "vffinth.d.w\t%w0,%w1"
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "V4SI")])
 
-(define_insn "lsx_vffintl_d_w"
+(define_insn "vec_unpacks_float_lo_v4si"
   [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(unspec:V2DF [(match_operand:V4SI 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFFINTL_D_W))]
+	(float:V2DF
+	  (vec_select:V2SI
+	    (match_operand:V4SI 1 "register_operand" "f")
+	    (parallel [(const_int 0) (const_int 1)]))))]
   "ISA_HAS_LSX"
   "vffintl.d.w\t%w0,%w1"
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "V4SI")])
 
-(define_insn "lsx_vftintrzh_l_s"
+(define_insn "vec_unpack_sfix_trunc_hi_v4sf"
   [(set (match_operand:V2DI 0 "register_operand" "=f")
-	(unspec:V2DI [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRZH_L_S))]
+	(fix:V2DI
+	  (vec_select:V2SF
+	    (match_operand:V4SF 1 "register_operand" "f")
+	    (parallel [(const_int 2) (const_int 3)]))))]
   "ISA_HAS_LSX"
   "vftintrzh.l.s\t%w0,%w1"
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "V4SF")])
 
-(define_insn "lsx_vftintrzl_l_s"
+(define_insn "vec_unpack_sfix_trunc_lo_v4sf"
   [(set (match_operand:V2DI 0 "register_operand" "=f")
-	(unspec:V2DI [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRZL_L_S))]
+	(fix:V2DI
+	  (vec_select:V2SF
+	    (match_operand:V4SF 1 "register_operand" "f")
+	    (parallel [(const_int 0) (const_int 1)]))))]
   "ISA_HAS_LSX"
   "vftintrzl.l.s\t%w0,%w1"
   [(set_attr "type" "simd_shift")
@@ -3239,7 +3178,7 @@
   rtx t1 = gen_reg_rtx (V16QImode);
   rtx t2 = gen_reg_rtx (V8HImode);
   rtx t3 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_lsx_vabsd_u_bu (t1, operands[1], operands[2]));
+  emit_insn (gen_uabdv16qi3 (t1, operands[1], operands[2]));
   emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
   emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
@@ -3256,7 +3195,7 @@
   rtx t1 = gen_reg_rtx (V16QImode);
   rtx t2 = gen_reg_rtx (V8HImode);
   rtx t3 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_lsx_vabsd_s_b (t1, operands[1], operands[2]));
+  emit_insn (gen_sabdv16qi3 (t1, operands[1], operands[2]));
   emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
   emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
@@ -4039,7 +3978,7 @@
   [(set_attr "type" "simd_bit")
    (set_attr "mode" "V16QI")])
 
-(define_insn "lsx_vexth_h<u>_b<u>"
+(define_insn "vec_unpack<su>_hi_v16qi"
   [(set (match_operand:V8HI 0 "register_operand" "=f")
 	(any_extend:V8HI
 	  (vec_select:V8QI
@@ -4053,7 +3992,7 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V8HI")])
 
-(define_insn "lsx_vexth_w<u>_h<u>"
+(define_insn "vec_unpack<su>_hi_v8hi"
   [(set (match_operand:V4SI 0 "register_operand" "=f")
 	(any_extend:V4SI
 	  (vec_select:V4HI
@@ -4065,7 +4004,7 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V4SI")])
 
-(define_insn "lsx_vexth_d<u>_w<u>"
+(define_insn "vec_unpack<su>_hi_v4si"
   [(set (match_operand:V2DI 0 "register_operand" "=f")
 	(any_extend:V2DI
 	  (vec_select:V2SI

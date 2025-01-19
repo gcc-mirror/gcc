@@ -8004,8 +8004,6 @@
 	* exp_pakd.adb (Create_Packed_Array_Type): Add a guard to check
 	whether the ancestor type is private, as may be the case with nested
 	instantiations.
-
-
 
 Copyright (C) 2005 Free Software Foundation, Inc.
 

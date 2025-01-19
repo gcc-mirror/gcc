@@ -1,5 +1,5 @@
 /* Definitions for C++ contract levels
-   Copyright (C) 2020-2024 Free Software Foundation, Inc.
+   Copyright (C) 2020-2025 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.
@@ -130,7 +130,6 @@ along with GCC; see the file COPYING3.  If not see
    More helpful for optimization might be to make the contracts a wrapper
    function that could be inlined into the caller, the callee, or both.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2586,7 +2585,7 @@ emit_preconditions (tree attr)
   return emit_contract_conditions (attr, PRECONDITION_STMT);
 }
 
-/* Emit statements for precondition attributes.  */
+/* Emit statements for postcondition attributes.  */
 
 static void
 emit_postconditions (tree attr)

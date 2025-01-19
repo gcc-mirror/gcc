@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized -fdelete-null-pointer-checks" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdelete-null-pointer-checks -fno-allocation-dce" } */
 /* { dg-skip-if "" keeps_null_pointer_checks } */
 
 #include <new>

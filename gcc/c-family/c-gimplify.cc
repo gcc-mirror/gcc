@@ -2,7 +2,7 @@
    by the C-based front ends.  The structure of gimplified, or
    language-independent, trees is dictated by the grammar described in this
    file.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Lowering of expressions contributed by Sebastian Pop <s.pop@laposte.net>
    Re-written to support lowering of whole function trees, documentation
    and miscellaneous cleanups by Diego Novillo <dnovillo@redhat.com>
@@ -23,7 +23,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -44,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "tree-pass.h"
 #include "internal-fn.h"
+#include "omp-general.h"
 
 /*  The gimplification pass converts the language-dependent trees
     (ld-trees) emitted by the parser into language-independent trees
@@ -544,6 +544,27 @@ genericize_omp_for_stmt (tree *stmt_p, int *walk_subtrees, void *data,
   finish_bc_block (&OMP_FOR_BODY (stmt), bc_continue, clab);
 }
 
+/* Genericize a OMP_METADIRECTIVE node *STMT_P.  */
+
+static void
+genericize_omp_metadirective_stmt (tree *stmt_p, int *walk_subtrees,
+				   void *data, walk_tree_fn func,
+				   walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+
+  for (tree variant = OMP_METADIRECTIVE_VARIANTS (stmt);
+       variant != NULL_TREE;
+       variant = TREE_CHAIN (variant))
+    {
+      walk_tree_1 (&OMP_METADIRECTIVE_VARIANT_DIRECTIVE (variant),
+		   func, data, NULL, lh);
+      walk_tree_1 (&OMP_METADIRECTIVE_VARIANT_BODY (variant),
+		   func, data, NULL, lh);
+    }
+
+  *walk_subtrees = 0;
+}
 
 /* Lower structured control flow tree nodes, such as loops.  The
    STMT_P, WALK_SUBTREES, and DATA arguments are as for the walk_tree_fn
@@ -592,6 +613,11 @@ c_genericize_control_stmt (tree *stmt_p, int *walk_subtrees, void *data,
     case OMP_UNROLL:
     case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    case OMP_METADIRECTIVE:
+      genericize_omp_metadirective_stmt (stmt_p, walk_subtrees, data, func,
+					 lh);
       break;
 
     case STATEMENT_LIST:
@@ -807,7 +833,8 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	   We should get rid of this conversion when we have a proper
 	   type demotion/promotion pass.  */
 	tree *op1_p = &TREE_OPERAND (*expr_p, 1);
-	if (!VECTOR_TYPE_P (TREE_TYPE (*op1_p))
+	if (!error_operand_p (*op1_p)
+	    && !VECTOR_TYPE_P (TREE_TYPE (*op1_p))
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
 				    unsigned_type_node)
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),

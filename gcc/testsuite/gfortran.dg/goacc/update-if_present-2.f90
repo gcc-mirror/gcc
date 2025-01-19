@@ -49,4 +49,10 @@ subroutine t2
   do b = 1, 10
   end do
   !$acc end parallel loop   ! { dg-error "Unexpected ..ACC END PARALLEL LOOP statement" }
+
+  !$acc serial loop if_present ! { dg-error "Expected '\\(' after 'if'" }
+  do b = 1, 10
+  end do
+  !$acc end serial loop   ! { dg-error "Unexpected ..ACC END SERIAL LOOP statement" }
+
 end subroutine t2

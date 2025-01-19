@@ -29,10 +29,5 @@ void test6(void)
    Assume p was non-NULL for test2.
    For test5, it doesn't matter if p is NULL or non-NULL.  */
 
-/* { dg-final { scan-tree-dump-times "free" 0 "optimized" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "malloc" 0 "optimized" { xfail *-*-* } } } */
-
-/* But make sure we don't partially optimize for now.  */
-
-/* { dg-final { scan-tree-dump-times "free" 3 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "malloc" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "free" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "malloc" 0 "optimized" } } */

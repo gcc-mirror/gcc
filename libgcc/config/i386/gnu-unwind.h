@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for GNU Hurd: x86.
-   Copyright (C) 2020-2024 Free Software Foundation, Inc.
+   Copyright (C) 2020-2025 Free Software Foundation, Inc.
    Contributed by Samuel Thibault <samuel.thibault@gnu.org>
 
 This file is part of GCC.

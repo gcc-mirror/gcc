@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2024, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2025, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 
 with Atree;  use Atree;
 with Debug;  use Debug;
+with GNAT.Lists;
 with Output; use Output;
 with Seinfo;
 with Sinput; use Sinput;
@@ -345,6 +346,73 @@ package body Sinfo.Utils is
          return Arg;
       end if;
    end Get_Pragma_Arg;
+
+   procedure Destroy_Element (Elem : in out Union_Id);
+   --  Does not do anything but is used to instantiate
+   --  GNAT.Lists.Doubly_Linked_Lists.
+
+   ---------------------
+   -- Destroy_Element --
+   ---------------------
+
+   procedure Destroy_Element (Elem : in out Union_Id) is
+   begin
+      null;
+   end Destroy_Element;
+
+   package Lists is
+     new GNAT.Lists.Doubly_Linked_Lists
+       (Element_Type => Union_Id, "=" => "=",
+      Destroy_Element => Destroy_Element, Check_Tampering => False);
+
+   ----------------------------
+   -- Lowest_Common_Ancestor --
+   ----------------------------
+
+   function Lowest_Common_Ancestor (N1, N2 : Node_Id) return Union_Id is
+      function Path_From_Root (N : Node_Id) return Lists.Doubly_Linked_List;
+
+      --------------------
+      -- Path_From_Root --
+      --------------------
+
+      function Path_From_Root (N : Node_Id) return Lists.Doubly_Linked_List is
+         L : constant Lists.Doubly_Linked_List := Lists.Create;
+
+         X : Union_Id := Union_Id (N);
+      begin
+         while X /= Union_Id (Empty) loop
+            Lists.Prepend (L, X);
+            X := Parent_Or_List_Containing (X);
+         end loop;
+
+         return L;
+      end Path_From_Root;
+
+      L1 : Lists.Doubly_Linked_List := Path_From_Root (N1);
+      L2 : Lists.Doubly_Linked_List := Path_From_Root (N2);
+
+      X1, X2 : Union_Id;
+
+      Common_Ancestor : Union_Id := Union_Id (Empty);
+   begin
+      while not Lists.Is_Empty (L1) and then not Lists.Is_Empty (L2) loop
+         X1 := Lists.First (L1);
+         Lists.Delete_First (L1);
+
+         X2 := Lists.First (L2);
+         Lists.Delete_First (L2);
+
+         exit when X1 /= X2;
+
+         Common_Ancestor := X1;
+      end loop;
+
+      Lists.Destroy (L1);
+      Lists.Destroy (L2);
+
+      return Common_Ancestor;
+   end Lowest_Common_Ancestor;
 
    ----------------------
    -- Set_End_Location --

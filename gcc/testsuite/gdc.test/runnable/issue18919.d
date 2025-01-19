@@ -20,9 +20,12 @@ imports.issue18919b.func9.fp: issue18919b.d:216 imports.issue18919b
 imports.issue18919b.func10: expr1=imports.issue18919b, expr2=imports.issue18919b
 imports.issue18919b.func11: issue18919b.d:233   imports.issue18919b
 imports.issue18919b.func12: issue18919.d issue18919.main void issue18919.main() issue18919
+imports.issue18919b.func13: runnable/issue18919.d
 ---
 */
 import imports.issue18919b;
+
+#line 26
 
 void main()
 {
@@ -44,4 +47,5 @@ void main()
     func10();
     func11();
     func12();
+    func13();
 }

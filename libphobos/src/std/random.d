@@ -935,7 +935,8 @@ Parameters for the generator.
    `Exception` if the InputRange didn't provide enough elements to seed the generator.
    The number of elements required is the 'n' template parameter of the MersenneTwisterEngine struct.
  */
-    void seed(T)(T range) if (isInputRange!T && is(immutable ElementType!T == immutable UIntType))
+    void seed(T)(T range)
+    if (isInputRange!T && is(immutable ElementType!T == immutable UIntType))
     {
         this.seedImpl(range, this.state);
     }
@@ -945,7 +946,7 @@ Parameters for the generator.
        which can be used with an arbitrary `State` instance
     */
     private static void seedImpl(T)(T range, ref State mtState)
-        if (isInputRange!T && is(immutable ElementType!T == immutable UIntType))
+    if (isInputRange!T && is(immutable ElementType!T == immutable UIntType))
     {
         size_t j;
         for (j = 0; j < n && !range.empty; ++j, range.popFront())
@@ -2215,6 +2216,7 @@ at least that number won't be represented fairly.
 Hence, our condition to reroll is
 `bucketFront > (UpperType.max - (upperDist - 1))`
 +/
+/// ditto
 auto uniform(string boundaries = "[)", T1, T2, RandomGen)
 (T1 a, T2 b, ref RandomGen rng)
 if ((isIntegral!(CommonType!(T1, T2)) || isSomeChar!(CommonType!(T1, T2))) &&
@@ -2277,9 +2279,14 @@ if ((isIntegral!(CommonType!(T1, T2)) || isSomeChar!(CommonType!(T1, T2))) &&
     return cast(ResultType)(lower + offset);
 }
 
+///
 @safe unittest
 {
     import std.conv : to;
+    import std.meta : AliasSeq;
+    import std.range.primitives : isForwardRange;
+    import std.traits : isIntegral, isSomeChar;
+
     auto gen = Mt19937(123_456_789);
     static assert(isForwardRange!(typeof(gen)));
 
@@ -2290,7 +2297,7 @@ if ((isIntegral!(CommonType!(T1, T2)) || isSomeChar!(CommonType!(T1, T2))) &&
     auto c = uniform(0.0, 1.0);
     assert(0 <= c && c < 1);
 
-    static foreach (T; std.meta.AliasSeq!(char, wchar, dchar, byte, ubyte, short, ushort,
+    static foreach (T; AliasSeq!(char, wchar, dchar, byte, ubyte, short, ushort,
                           int, uint, long, ulong, float, double, real))
     {{
         T lo = 0, hi = 100;
@@ -2344,7 +2351,7 @@ if ((isIntegral!(CommonType!(T1, T2)) || isSomeChar!(CommonType!(T1, T2))) &&
 
     auto reproRng = Xorshift(239842);
 
-    static foreach (T; std.meta.AliasSeq!(char, wchar, dchar, byte, ubyte, short,
+    static foreach (T; AliasSeq!(char, wchar, dchar, byte, ubyte, short,
                           ushort, int, uint, long, ulong))
     {{
         T lo = T.min + 10, hi = T.max - 10;

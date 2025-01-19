@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -788,11 +788,6 @@ package Sinfo is
    --    created for the expansion of an allocator with a subtype_indication
    --    and the designated subtype is an unconstrained composite type.
 
-   --  Address_Warning_Posted
-   --    Present in N_Attribute_Definition nodes. Set to indicate that we have
-   --    posted a warning for the address clause regarding size or alignment
-   --    issues. Used to inhibit multiple redundant messages.
-
    --  Aggregate_Bounds
    --    Present in array N_Aggregate nodes. If the bounds of the aggregate are
    --    known at compile time, this field points to an N_Range node with those
@@ -820,6 +815,11 @@ package Sinfo is
    --    Present in N_Aspect_Specification nodes. Points to the corresponding
    --    pragma/attribute definition node used to process the aspect.
 
+   --  Aspect_Subprograms
+   --    Present in N_Aspect_Specification nodes. Contains a list of the
+   --    subprograms that the aspect is associated with. Currently only used
+   --    for indexing aspects.
+
    --  Assignment_OK
    --    This flag is set in a subexpression node for an object, indicating
    --    that the associated object can be modified, even if this would not
@@ -828,11 +828,9 @@ package Sinfo is
    --    for a number of purposes, including initialization of constants and
    --    limited type objects (such as tasks), setting discriminant fields,
    --    setting tag values, etc. N_Object_Declaration nodes also have this
-   --    flag defined. Here it is used to indicate that an initialization
+   --    flag defined: here it is used to indicate that an initialization
    --    expression is valid, even where it would normally not be allowed
-   --    (e.g. where the type involved is limited). It is also used to stop
-   --    a Force_Evaluation call for an unchecked conversion, but this usage
-   --    is unclear and not documented ???
+   --    (e.g. where the type involved is limited).
 
    --  Associated_Node
    --    Present in nodes that can denote an entity: identifiers, character
@@ -1283,7 +1281,9 @@ package Sinfo is
    --    target of the assignment or initialization is used to generate the
    --    left-hand side of individual assignment to each subcomponent.
    --    Also set on conditional expressions whose dependent expressions are
-   --    nested aggregates, in order to avoid creating a temporary for them.
+   --    nested aggregates (recursively), or which are expressions of simple
+   --    return statements (recursively again), in order to avoid creating a
+   --    temporary for them.
 
    --  Expression_Copy
    --    Present in N_Pragma_Argument_Association nodes. Contains a copy of the
@@ -1294,6 +1294,10 @@ package Sinfo is
    --  File_Index
    --    Present in N_External_Initializer nodes. Contains a Source_File_Index
    --    that references the file the external initializer points to.
+
+   --  Finally_Statements
+   --    Present in N_Handled_Statement_Sequences nodes. Points to a list
+   --    containing statements.
 
    --  First_Inlined_Subprogram
    --    Present in the N_Compilation_Unit node for the main program. Points
@@ -1333,6 +1337,10 @@ package Sinfo is
    --    definitely safe, and a runtime check may be required if the backend
    --    cannot figure it out. If both flags Forwards_OK and Backwards_OK are
    --    set, it means that the front end can assure no overlap of operands.
+
+   --  For_Allocator
+   --    Present in N_Free_Statement nodes. True if the statement is generated
+   --    for the cleanup of an allocator.
 
    --  For_Special_Return_Object
    --    Present in N_Allocator nodes. True if the allocator is generated for
@@ -1682,6 +1690,7 @@ package Sinfo is
    --      Contract_Cases
    --      Depends
    --      Exceptional_Cases
+   --      Exit_Cases
    --      Extensions_Visible
    --      Global
    --      Initial_Condition
@@ -1749,10 +1758,6 @@ package Sinfo is
    --    discriminant check has a correct value cannot be performed in this
    --    case (or the discriminant check may be optimized away).
 
-   --  Is_Inherited_Pragma
-   --    This flag is set in an N_Pragma node that appears in a N_Contract node
-   --    to indicate that the pragma has been inherited from a parent context.
-
    --  Is_Initialization_Block
    --    Defined in block nodes. Set when the block statement was created by
    --    the finalization machinery to wrap initialization statements. This
@@ -1765,7 +1770,7 @@ package Sinfo is
    --    in interpolated expressions.
 
    --  Is_Known_Guaranteed_ABE
-   --    NOTE: this flag is shared between the legacy ABE mechanism and the
+   --    Note: this flag is shared between the legacy ABE mechanism and the
    --    default ABE mechanism.
    --
    --    Present in the following nodes:
@@ -1803,16 +1808,15 @@ package Sinfo is
    --    A flag set on an aggregate that uses parentheses as delimiters
 
    --  Is_Power_Of_2_For_Shift
-   --    A flag present only in N_Op_Expon nodes. It is set when the
-   --    exponentiation is of the form 2 ** N, where the type of N is an
-   --    unsigned integral subtype whose size does not exceed the size of
-   --    Standard_Integer (i.e. a type that can be safely converted to
-   --    Natural), and the exponentiation appears as the right operand of an
-   --    integer multiplication or an integer division where the dividend is
-   --    unsigned. It is also required that overflow checking is off for both
-   --    the exponentiation and the multiply/divide node. If this set of
-   --    conditions holds, and the flag is set, then the division or
-   --    multiplication can be (and is) converted to a shift.
+   --    Present in N_Op_Expon nodes. It is set when the exponentiation is of
+   --    the form 2 ** N, where the type of N is an integer subtype whose size
+   --    does not exceed the size of Standard.Integer (i.e. a type that can be
+   --    safely converted to Natural), and the exponentiation appears as the
+   --    right operand of an integer multiplication or an integer division
+   --    where the dividend is unsigned. It is also required that overflow
+   --    checking is off for both the exponentiation and the multiply/divide
+   --    node. If this set of conditions holds, and the flag is set, then the
+   --    division or multiplication is converted to a shift.
 
    --  Is_Preelaborable_Call
    --    Present in call marker nodes. Set when the related call is non-static
@@ -1911,9 +1915,11 @@ package Sinfo is
    --    for further details.
 
    --  Kill_Range_Check
-   --    Used in an N_Unchecked_Type_Conversion node to indicate that the
-   --    result should not be subjected to range checks. This is used for the
-   --    implementation of Normalize_Scalars.
+   --    Used in N_Indexed_Component to indicate that its expressions should
+   --    not be subjected to range checks and in N_Unchecked_Type_Conversion
+   --    to indicate that the result of the conversion should not be subjected
+   --    to range checks. This is used for the implementation of aggregates and
+   --    Normalize_Scalars respectively.
 
    --  Label_Construct
    --    Used in an N_Implicit_Label_Declaration node. Refers to an N_Label,
@@ -2051,14 +2057,18 @@ package Sinfo is
    --    Present in N_Assignment_Statement to indicate that neither Finalize
    --    nor Adjust should take place on this assignment even though the LHS
    --    and RHS are controlled. Also to indicate that the primitive _assign
-   --    should not be used for a tagged assignment. This flag is used in init
-   --    proc and aggregate expansion where the generated assignments are
+   --    should not be used for a tagged assignment. This flag is only used
+   --    in initialization procedures, and the expansion of aggregates, object
+   --    declarations and allocators, where the generated assignments are
    --    initializations, not real assignments. Note that it also suppresses
    --    the creation of transient scopes around the N_Assignment_Statement,
    --    in other words it disables all controlled actions for the assignment.
+   --    Additional note: the code generator should avoid creating a temporary
+   --    for the RHS when this flag is set on the N_Assignment_Statement node,
+   --    including when this RHS is a function call.
 
    --  No_Elaboration_Check
-   --    NOTE: this flag is relevant only for the legacy ABE mechanism and
+   --    Note: this flag is relevant only for the legacy ABE mechanism and
    --    should not be used outside of that context.
    --
    --    Present in N_Function_Call and N_Procedure_Call_Statement. Indicates
@@ -2079,10 +2089,14 @@ package Sinfo is
    --    Present in N_Assignment_Statement to indicate that no Finalize should
    --    take place on this assignment even though the LHS is controlled. Also
    --    to indicate that the primitive _assign should not be used for a tagged
-   --    assignment. This flag is only used in aggregates expansion where the
-   --    generated assignments are initializations, not real assignments. Note
-   --    that, unlike the No_Ctrl_Actions flag, it does *not* suppress the
+   --    assignment. This flag is only used in initialization procedures, and
+   --    the expansion of aggregates, object declarations and allocators, where
+   --    the generated assignments are initializations, not real assignments.
+   --    Note that, unlike No_Ctrl_Actions, this flag does *not* suppress the
    --    creation of transient scopes around the N_Assignment_Statement.
+   --    Additional note: the code generator should avoid creating a temporary
+   --    for the RHS when this flag is set on the N_Assignment_Statement node,
+   --    including when this RHS is a function call.
 
    --  No_Initialization
    --    Present in N_Object_Declaration and N_Allocator to indicate that the
@@ -2272,7 +2286,8 @@ package Sinfo is
    --    known to be in range, i.e. is in the range from zero to word length
    --    minus one. If this flag is not set, then the shift count may be
    --    outside this range, i.e. larger than the word length, and the code
-   --    must ensure that such shift counts give the appropriate result.
+   --    generated by the back end must ensure that such shift counts give the
+   --    appropriate result.
 
    --  Source_Type
    --    Used in an N_Validate_Unchecked_Conversion node to point to the
@@ -2670,7 +2685,6 @@ package Sinfo is
       --  Next_Rep_Item
       --  Is_Generic_Contract_Pragma
       --  Is_Checked_Ghost_Pragma
-      --  Is_Inherited_Pragma
       --  Is_Analyzed_Pragma
       --  Class_Present set if from Aspect with 'Class
       --  Uneval_Old_Accept
@@ -3832,8 +3846,9 @@ package Sinfo is
       --  Sloc contains a copy of the Sloc value of the Prefix
       --  Prefix
       --  Expressions
-      --  Generalized_Indexing
       --  Atomic_Sync_Required
+      --  Generalized_Indexing
+      --  Kill_Range_Check
       --  plus fields for expression
 
       --  Note: if any of the subscripts requires a range check, then the
@@ -7529,7 +7544,6 @@ package Sinfo is
       --  Check_Address_Alignment
       --  From_Aspect_Specification
       --  Is_Delayed_Aspect
-      --  Address_Warning_Posted
 
       --  Note: if From_Aspect_Specification is set, then Sloc points to the
       --  aspect name, and Entity is resolved already to reference the entity
@@ -7576,6 +7590,7 @@ package Sinfo is
       --  Aspect_Rep_Item
       --  Expression (set to Empty if none)
       --  Entity entity to which the aspect applies
+      --  Aspect_Subprograms (set to No_Elist if no associated subprograms)
       --  Next_Rep_Item
       --  Class_Present Set if 'Class present
       --  Is_Ignored
@@ -7717,15 +7732,13 @@ package Sinfo is
       --  operator names. Note that for a given shift operation, one node
       --  covers all possible types, as for normal operators.
 
-      --  Note: it is perfectly permissible for the expander to generate
-      --  shift operation nodes directly, in which case they will be analyzed
-      --  and parsed in the usual manner.
-
       --  Sprint syntax: shift-function-name!(expr, count)
 
-      --  Note: the Left_Opnd field holds the first argument (the value to
-      --  be shifted). The Right_Opnd field holds the second argument (the
-      --  shift count). The Chars field is the name of the intrinsic function.
+      --  The Left_Opnd field holds the first argument (the value to be
+      --  shifted). The Right_Opnd field holds the second argument (the shift
+      --  count). The Chars field is the name of the intrinsic function.
+      --  The back end is responsible for generating correct code in the case
+      --  of large shift counts (in which case Shift_Count_OK will be False).
 
       --  N_Op_Rotate_Left
       --  Sloc points to the function name
@@ -8093,6 +8106,7 @@ package Sinfo is
       --  Storage_Pool
       --  Procedure_To_Call
       --  Actual_Designated_Subtype
+      --  For_Allocator
 
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the FREE keyword in the Sprint file output.
@@ -8429,28 +8443,6 @@ package Sinfo is
       --  An N_Scil_Membership_Test node may be associated (via Get_SCIL_Node)
       --  with the N_In node (or a rewriting thereof) corresponding to a
       --  classwide membership test.
-
-      --------------------------
-      -- Unchecked Expression --
-      --------------------------
-
-      --  An unchecked expression is one that must be analyzed and resolved
-      --  with all checks off, regardless of the current setting of scope
-      --  suppress flags.
-
-      --  Sprint syntax: `(expression)
-
-      --  Note: this node is always removed from the tree (and replaced by
-      --  its constituent expression) on completion of analysis, so it only
-      --  appears in intermediate trees, and will never be seen by Gigi.
-
-      --  N_Unchecked_Expression
-      --  Sloc is a copy of the Sloc of the expression
-      --  Expression
-      --  plus fields for expression
-
-      --  Note: in the case where a debug source file is generated, the Sloc
-      --  for this node points to the back quote in the Sprint file output.
 
       -------------------------------
       -- Unchecked Type Conversion --

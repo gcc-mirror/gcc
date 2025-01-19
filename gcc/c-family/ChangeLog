@@ -1,3 +1,386 @@
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-attribs.cc (c_common_gnu_attributes): Delete "omp declare
+	target block".
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* c-common.h (enum c_omp_directive_kind): Add C_OMP_DIR_META.
+	(c_omp_expand_variant_construct): Declare.
+	* c-gimplify.cc: Include omp-general.h.
+	(genericize_omp_metadirective_stmt): New.
+	(c_genericize_control_stmt): Add case for OMP_METADIRECTIVE.
+	* c-omp.cc (c_omp_directives): Fix entries for metadirective.
+	(c_omp_expand_variant_construct_r): New.
+	(c_omp_expand_variant_construct): New.
+	* c-pragma.cc (omp_pragmas): Add metadirective.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_METADIRECTIVE.
+
+2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (interpret_float): Use -std=c++23 and -std=gnu++23
+	in diagnostics rather than -std=c++2b and -std=gnu++2b.
+
+2025-01-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/118303
+	* c-pretty-print.cc (c_pretty_printer::primary_expression) <SSA_NAME>:
+	Call primary_expression for all SSA_NAME_VAR nodes and instead move the
+	DECL_ARTIFICIAL private name stripping to...
+	(pp_c_tree_decl_identifier): ...here.
+
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-attribs.cc: (c_common_gnu_attributes): Rename "omp declare variant
+	variant adjust_args" into "omp declare variant variant args" to also
+	accommodate append_args.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* c.opt: New warning '-Wtemplate-names-tu-local'.
+
+2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-omp.cc (c_omp_interop_t_p): Handle error_mark_node.
+
+2024-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* c-common.h (attr_aligned_exclusions): Declare.
+	(handle_aligned_attribute): Likewise.
+	* c-attribs.cc (handle_aligned_attribute): No longer
+	static.
+	(attr_aligned_exclusions): Use extern instead of static.
+
+2024-12-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/26154
+	* c.opt.urls: Regenerated.
+
+2024-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117943
+	* c-format.cc (selftest::test_type_mismatch_range_labels): Use
+	dc.m_source_printing.
+	* c-opts.cc (c_diagnostic_text_finalizer): Use source-printing
+	options from text_output.
+
+2024-12-12  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Peter Eisentraut  <peter@eisentraut.org>
+
+	PR c/115532
+	* c.opt.urls: Regenerated.
+
+2024-12-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* c.opt (Wtautological-compare): Move to ../common.opt.
+
+2024-12-10  Arsen Arsenović  <arsen@aarsen.me>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-pretty-print.cc (c_pretty_printer::storage_class_specifier):
+	Check that we're looking at a PARM_DECL or VAR_DECL before
+	looking at DECL_REGISTER.
+
+2024-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117788
+	* c-warn.cc (do_warn_array_compare): Emit a permerror in C++26.
+
+2024-12-09  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* c-common.cc (builtin_function_validate_nargs,
+	check_builtin_function_arguments,
+	speculation_safe_value_resolve_call,
+	speculation_safe_value_resolve_params, sync_resolve_size,
+	sync_resolve_params, get_atomic_generic_size,
+	resolve_overloaded_atomic_exchange,
+	resolve_overloaded_atomic_compare_exchange,
+	resolve_overloaded_atomic_load, resolve_overloaded_atomic_store,
+	resolve_overloaded_builtin):  Add `complain` boolean parameter
+	and determine whether to emit errors based on its value.
+	* c-common.h (check_builtin_function_arguments,
+	resolve_overloaded_builtin):  Mention `complain` boolean
+	parameter in declarations.  Give it a default of `true`.
+
+2024-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-attribs.cc: Include "gcc-urlifier.h".
+	(positional_argument): Use auto_urlify_attributes.
+	* c-common.cc: Include "gcc-urlifier.h".
+	(parse_optimize_options): Use auto_urlify_attributes with
+	OPT_Wattributes.
+	(attribute_fallthrough_p): Use auto_urlify_attributes.
+	* c-warn.cc: Include "gcc-urlifier.h".
+	(diagnose_mismatched_attributes): Use auto_urlify_attributes.
+
+2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107980
+	* c-common.h (enum rid): Add RID_C23_VA_START.
+	* c-common.cc (c_common_reswords): Add __builtin_c23_va_start.
+
+2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wdeprecated-variadic-comma-omission): New option.
+	* c.opt.urls: Regenerate.
+	* c-opts.cc (c_common_post_options): Default to
+	-Wdeprecated-variadic-comma-omission for C++26 or -Wpedantic.
+
+2024-11-29  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* c-common.cc (convert_vector_to_array_for_subscript): Add
+	range-check for target vector types.
+
+2024-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113798
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_pack_indexing=202311L for C++26.
+
+2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* c-attribs.cc (handle_nonnull_if_nonzero_attribute): New
+	function.
+	(c_common_gnu_attributes): Add nonnull_if_nonzero attribute.
+	(handle_nonnull_attribute): Fix comment typo.
+	* c-common.cc (struct nonnull_arg_ctx): Add other member.
+	(check_function_nonnull): Also check nonnull_if_nonzero attributes.
+	(check_nonnull_arg): Use different warning wording if pctx->other
+	is non-zero.
+	(check_function_arguments): Initialize ctx.other.
+
+2024-11-28  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117757
+	* c-gimplify.cc (c_gimplify_expr): Check for error_operand_p
+	before calling TYPE_MAIN_VARIANT for shifts.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82892
+	* c-common.h (get_option_for_builtin_define): New decl.
+	* c-cppbuiltin.cc (get_option_for_builtin_define): New.
+	* known-headers.cc: Include "opts.h".
+	(suggest_missing_option::suggest_missing_option): New.
+	(suggest_missing_option::~suggest_missing_option): New.
+	* known-headers.h (class suggest_missing_option): New.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87850
+	* c-common.cc: Include "gcc-rich-location.h".
+	(maybe_emit_indirection_note): New function.
+	* c-common.h (maybe_emit_indirection_note): New decl.
+	(compatible_types_for_indirection_note_p): New decl.
+
+2024-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/104896
+	* c-lex.cc (c_common_lex_availability_macro): Replace "%<%s%>"
+	with "%qs" in message wording.
+	* c-opts.cc (c_common_handle_option): Likewise.
+	* c-warn.cc (warn_parm_array_mismatch): Likewise.
+
+2024-11-27  Florian Weimer  <fweimer@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Initialize
+	warn_free_labels.
+	* c.opt (Wfree-labels): New option.
+	* c.opt.urls: Regenerate.
+
+2024-11-27  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Enable -Warray-compare
+	in C++20.
+
+2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* c-cppbuiltin.cc (builtin_define_decimal_float_constants): Use
+	get_max_float.
+
+2024-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-11-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-indentation.cc (should_warn_for_misleading_indentation): Remove
+	comment about -flarge-source-files.
+	* c-lex.cc (cb_ident): Change "unsigned int" argument to type
+	"location_t".
+	(cb_def_pragma): Likewise.
+	(cb_define): Likewise.
+	(cb_undef): Likewise.
+
+2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR bootstrap/117737
+	* c-ada-spec.cc (INCLUDE_MEMORY): Remove.
+	* c-attribs.cc (INCLUDE_MEMORY): Remove.
+	* c-common.cc (INCLUDE_MEMORY): Remove.
+	* c-format.cc (INCLUDE_MEMORY): Remove.
+	* c-gimplify.cc (INCLUDE_MEMORY): Remove.
+	* c-indentation.cc (INCLUDE_MEMORY): Remove.
+	* c-opts.cc (INCLUDE_MEMORY): Remove.
+	* c-pch.cc (INCLUDE_MEMORY): Remove.
+	* c-pragma.cc (INCLUDE_MEMORY): Remove.
+	* c-pretty-print.cc (INCLUDE_MEMORY): Remove.
+	* c-type-mismatch.cc (INCLUDE_MEMORY): Remove.
+	* c-warn.cc (INCLUDE_MEMORY): Remove.
+	* known-headers.cc (INCLUDE_MEMORY): Remove.
+	* name-hint.h: Remove check of INCLUDE_MEMORY.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110137
+	PR middle-end/101480
+	* c.opt (fassume-sane-operators-new-delete): New option.
+
+2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117641
+	* c-common.cc (sync_resolve_size): For size 16 with _BitInt
+	on targets where TImode isn't supported, use goto incompatible if
+	!fetch.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_INTEROP.
+
+2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-common.h (enum c_omp_region_type): Add C_ORT_INTEROP
+	and C_ORT_OMP_INTEROP.
+	(c_omp_interop_t_p): New prototype.
+	* c-omp.cc (c_omp_interop_t_p): Check whether the type is
+	omp_interop_t.
+	(c_omp_directives): Uncomment 'interop'.
+	* c-pragma.cc (omp_pragmas): Add 'interop'.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_INTEROP.
+	(enum pragma_omp_clause): Add init, use, and destroy clauses.
+
+2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (std=c23, std=gnu23, std=iso9899:2024): Adjust description
+	for publication of the ISO/IEC 9899:2024 standard.
+
+2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-attribs.cc (c_common_gnu_attributes): Add attribute for adjust_args
+	need_device_ptr.
+	* c-omp.cc (c_omp_directives): Uncomment dispatch.
+	* c-pragma.cc (omp_pragmas): Add dispatch.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_DISPATCH.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_NOCONTEXT and
+	PRAGMA_OMP_CLAUSE_NOVARIANTS.
+
+2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117641
+	* c-common.cc (sync_resolve_size): For size == 16 fetch of
+	BITINT_TYPE if TImode isn't supported scalar mode diagnose
+	and return 0 if orig_format instead of returning 16.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* c-opts.cc (c_diagnostic_text_finalizer): Use
+	text_output.build_indent_prefix for prefix to
+	diagnostic_show_locus.
+
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-11-17  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/95445
+	* c-opts.cc (c_common_post_options): Initialize
+	warn_deprecated_non_prototype.
+	* c.opt (Wdeprecated-non-prototype): New option.
+	* c.opt.urls: Regenerate.
+
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* c-ppoutput.cc (preprocess_file): Don't set directives_only here.
+
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fsearch-include-path.
+	* c-opts.cc (c_common_post_options): Handle it.
+
+2024-11-15  Joseph Myers  <josmyers@redhat.com>
+
+	* c-opts.cc (c_common_init_options): Default to C23.
+
+2024-11-15  Florian Weimer  <fweimer@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-11-15  Florian Weimer  <fweimer@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Initialize
+	warn_missing_parameter_name.
+	* c.opt (Wmissing-parameter-name): New.
+
+2024-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum rid): Add RID_DFLOAT64X.
+	* c-common.cc (c_global_trees): Fix comment typo.  Add
+	dfloat64x_type_node.
+	(c_common_nodes_and_builtins): Handle RID_DFLOAT64X.
+	* c-cppbuiltin.cc (c_cpp_builtins): Call
+	builtin_define_decimal_float_constants also for dfloat64x_type_node
+	if non-NULL.
+	* c-lex.cc (interpret_float): Handle d64x suffixes.
+	* c-pretty-print.cc (pp_c_floating_constant): Print d64x suffixes
+	on dfloat64x_type_node typed constants.
+
+2024-11-13  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117059
+	* c.opt (Wzero-as-null-pointer-constant): Enable for C and ObjC.
+
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (interpret_float): Subtract 3 or 4 from copylen
+	rather than 2 if last character of CPP_N_DFLOAT is a digit.
+
+2024-11-12  Jason Merrill  <jason@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-11-11  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fmodules with same effect as -fmodules-ts.
+
+2024-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum rid): Add RID_BUILTIN_OPERATOR_NEW
+	and RID_BUILTIN_OPERATOR_DELETE.
+	(names_builtin_p): Change return type from bool to int.
+	* c-common.cc (c_common_reswords): Add __builtin_operator_new
+	and __builtin_operator_delete.
+
+2024-11-07  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* c-pragma.cc (struct pragma_pp_data): Use (struct internal_pragma_handler);
+	(c_register_pragma_1): Always register name and space for all pragmas.
+	(c_invoke_pragma_handler): Adapt.
+	(c_invoke_early_pragma_handler): Likewise.
+	(c_pp_invoke_early_pragma_handler): Likewise.
+
 2024-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (std=c++2b, std=c++23, std=gnu++2b, std=gnu++23): Adjust
@@ -15579,7 +15962,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2024 Free Software Foundation, Inc.
+Copyright (C) 2010-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

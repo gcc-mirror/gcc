@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,9 +58,9 @@ with GNAT.Sets;
 package body Sem_Case is
 
    type Choice_Bounds is record
-     Lo   : Node_Id;
-     Hi   : Node_Id;
-     Node : Node_Id;
+      Lo   : Node_Id;
+      Hi   : Node_Id;
+      Node : Node_Id;
    end record;
    --  Represent one choice bounds entry with Lo and Hi values, Node points
    --  to the choice node itself.

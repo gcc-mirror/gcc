@@ -21,6 +21,7 @@ module std.math.traits;
 
 import std.traits : isFloatingPoint, isIntegral, isNumeric, isSigned;
 
+
 /*********************************
  * Determines if $(D_PARAM x) is NaN.
  * Params:
@@ -466,8 +467,27 @@ if (isFloatingPoint!(X))
  */
 bool isIdentical(real x, real y) @trusted pure nothrow @nogc
 {
-    import std.math.traits : floatTraits, RealFormat;
-
+    if (__ctfe)
+    {
+        if (x !is y) return false;
+        if (x == x) return true; // If not NaN `is` implies identical representation.
+        static if (double.mant_dig != real.mant_dig)
+        {
+            // Works because we are in CTFE and there is no way in CTFE to set more
+            // bits of NaN payload than can fit in a double, and since 2.087
+            // changed real.init to be non-signaling I *think* there is no way in
+            // CTFE for a real to be a signaling NaN unless real and double have
+            // the same representation so real's bits can be manipulated directly.
+            double d1 = x, d2 = y;
+        }
+        else
+        {
+            // Alias to avoid converting signaling to quiet.
+            alias d1 = x;
+            alias d2 = y;
+        }
+        return *cast(long*) &d1 == *cast(long*) &d2;
+    }
     // We're doing a bitwise comparison so the endianness is irrelevant.
     long*   pxs = cast(long *)&x;
     long*   pys = cast(long *)&y;
@@ -491,20 +511,44 @@ bool isIdentical(real x, real y) @trusted pure nothrow @nogc
         assert(0, "isIdentical not implemented");
     }
 }
-
 ///
 @safe @nogc pure nothrow unittest
 {
+    // We're forcing the CTFE to run by assigning the result of the function to an enum
+    enum test1 = isIdentical(1.0,1.0);
+    enum test2 = isIdentical(real.nan,real.nan);
+    enum test3 = isIdentical(real.infinity, real.infinity);
+    enum test4 = isIdentical(real.infinity, real.infinity);
+    enum test5 = isIdentical(0.0, 0.0);
+
+    assert(test1);
+    assert(test2);
+    assert(test3);
+    assert(test4);
+    assert(test5);
+
+    enum test6 = !isIdentical(0.0, -0.0);
+    enum test7 = !isIdentical(real.nan, -real.nan);
+    enum test8 = !isIdentical(real.infinity, -real.infinity);
+
+    assert(test6);
+    assert(test7);
+    assert(test8);
+}
+
+@safe @nogc pure nothrow unittest
+{
+    assert( !isIdentical(1.2,1.3));
     assert( isIdentical(0.0, 0.0));
     assert( isIdentical(1.0, 1.0));
     assert( isIdentical(real.infinity, real.infinity));
     assert( isIdentical(-real.infinity, -real.infinity));
+    assert( isIdentical(real.nan, real.nan));
 
     assert(!isIdentical(0.0, -0.0));
     assert(!isIdentical(real.nan, -real.nan));
     assert(!isIdentical(real.infinity, -real.infinity));
 }
-
 /*********************************
  * Return 1 if sign bit of e is set, 0 if not.
  */

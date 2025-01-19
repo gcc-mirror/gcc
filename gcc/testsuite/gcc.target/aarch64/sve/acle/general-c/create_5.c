@@ -17,7 +17,7 @@ f1 (svint32x4_t *ptr, svbool_t pg, svint32_t s32, svfloat64_t f64,
   *ptr = svcreate4 (s32, x, s32, s32); /* { dg-error {passing 'int' to argument 2 of 'svcreate4', which expects an SVE type rather than a scalar} } */
   *ptr = svcreate4 (x, s32, s32, s32); /* { dg-error {passing 'int' to argument 1 of 'svcreate4', which expects an SVE type rather than a scalar} } */
   *ptr = svcreate4 (pg, s32, s32, s32); /* { dg-error {passing 'svint32_t' to argument 2 of 'svcreate4', but argument 1 had type 'svbool_t'} } */
-  *ptr = svcreate4 (pg, pg, pg, pg); /* { dg-error {'svcreate4' has no form that takes 'svbool_t' arguments} } */
+  *ptr = svcreate4 (pg, pg, pg, pg); /* { dg-error {incompatible types when assigning to type 'svint32x4_t' from type 'svboolx4_t'} } */
   *ptr = svcreate4 (s32, s32, s32, s32);
   *ptr = svcreate4 (f64, f64, f64, f64); /* { dg-error {incompatible types when assigning to type 'svint32x4_t' from type 'svfloat64x4_t'} } */
 }

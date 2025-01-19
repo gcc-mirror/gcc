@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2020-2024, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2025, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,6 +136,10 @@ package Sinfo.Utils is
    --  Given an argument to a pragma Arg, this function returns the expression
    --  for the argument. This is Arg itself, or, in the case where Arg is a
    --  pragma argument association node, the expression from this node.
+
+   function Lowest_Common_Ancestor (N1, N2 : Node_Id) return Union_Id;
+   --  Returns the list or node that is the lowest common ancestor of N1 and
+   --  N2 in the syntax tree.
 
    -----------------------
    -- Utility Functions --

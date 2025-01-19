@@ -1,5 +1,5 @@
 /* Balanced binary trees using treaps.
-   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+   Copyright (C) 2000-2025 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
    This implementation is based on Stefan Nilsson's article in the
    July 1997 Doctor Dobb's Journal, "Treaps in Java".  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

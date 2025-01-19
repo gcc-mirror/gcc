@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,7 +67,7 @@ package body Ada.Numerics.Generic_Complex_Types is
          --  their operands could overflow. Given that all operations on NaNs
          --  return false, the test can only be written thus.
 
-         if not (abs (X) <= R'Last) then
+         if not (abs X <= R'Last) then
             pragma Annotate
               (CodePeer, Intentional,
                "test always false", "test for infinity");
@@ -76,7 +76,7 @@ package body Ada.Numerics.Generic_Complex_Types is
                              (Left.Im / Scale) * (Right.Im / Scale));
          end if;
 
-         if not (abs (Y) <= R'Last) then
+         if not (abs Y <= R'Last) then
             pragma Annotate
               (CodePeer, Intentional,
                "test always false", "test for infinity");
@@ -599,7 +599,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       exception
          when Constraint_Error =>
             pragma Assert (X.Re /= 0.0);
-            return R (abs (X.Re))
+            return R (abs X.Re)
               * Aux.Sqrt (1.0 + (R (X.Im) / R (X.Re)) ** 2);
       end;
 
@@ -614,7 +614,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       exception
          when Constraint_Error =>
             pragma Assert (X.Im /= 0.0);
-            return R (abs (X.Im))
+            return R (abs X.Im)
               * Aux.Sqrt (1.0 + (R (X.Re) / R (X.Im)) ** 2);
       end;
 
@@ -625,29 +625,29 @@ package body Ada.Numerics.Generic_Complex_Types is
       if Re2 = 0.0 then
 
          if X.Re = 0.0 then
-            return abs (X.Im);
+            return abs X.Im;
 
          elsif Im2 = 0.0 then
 
             if X.Im = 0.0 then
-               return abs (X.Re);
+               return abs X.Re;
 
             else
-               if abs (X.Re) > abs (X.Im) then
-                  return R (abs (X.Re))
+               if abs X.Re > abs X.Im then
+                  return R (abs X.Re)
                     * Aux.Sqrt (1.0 + (R (X.Im) / R (X.Re)) ** 2);
                else
-                  return R (abs (X.Im))
+                  return R (abs X.Im)
                     * Aux.Sqrt (1.0 + (R (X.Re) / R (X.Im)) ** 2);
                end if;
             end if;
 
          else
-            return abs (X.Im);
+            return abs X.Im;
          end if;
 
       elsif Im2 = 0.0 then
-         return abs (X.Re);
+         return abs X.Re;
 
       --  In all other cases, the naive computation will do
 

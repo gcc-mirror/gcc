@@ -1,6 +1,6 @@
 
 ;; Iterators for RISC-V 'V' Extension for GNU compiler.
-;; Copyright (C) 2022-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2022-2025 Free Software Foundation, Inc.
 ;; Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 ;; This file is part of GCC.
@@ -88,8 +88,11 @@
   ;; Integer and Float Reduction
   UNSPEC_REDUC
   UNSPEC_REDUC_SUM
+  UNSPEC_REDUC_SUM_VL0_SAFE
   UNSPEC_REDUC_SUM_ORDERED
   UNSPEC_REDUC_SUM_UNORDERED
+  UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE
+  UNSPEC_REDUC_SUM_UNORDERED_VL0_SAFE
   UNSPEC_REDUC_MAXU
   UNSPEC_REDUC_MAX
   UNSPEC_REDUC_MINU
@@ -97,12 +100,26 @@
   UNSPEC_REDUC_AND
   UNSPEC_REDUC_OR
   UNSPEC_REDUC_XOR
+  UNSPEC_REDUC_MAXU_VL0_SAFE
+  UNSPEC_REDUC_MAX_VL0_SAFE
+  UNSPEC_REDUC_MINU_VL0_SAFE
+  UNSPEC_REDUC_MIN_VL0_SAFE
+  UNSPEC_REDUC_AND_VL0_SAFE
+  UNSPEC_REDUC_OR_VL0_SAFE
+  UNSPEC_REDUC_XOR_VL0_SAFE
 
   UNSPEC_WREDUC_SUM
   UNSPEC_WREDUC_SUMU
+  UNSPEC_WREDUC_SUM_VL0_SAFE
+  UNSPEC_WREDUC_SUMU_VL0_SAFE
   UNSPEC_WREDUC_SUM_ORDERED
   UNSPEC_WREDUC_SUM_UNORDERED
+  UNSPEC_WREDUC_SUM_ORDERED_VL0_SAFE
+  UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE
   UNSPEC_SELECT_MASK
+
+  UNSPEC_SF_VFNRCLIP
+  UNSPEC_SF_VFNRCLIPU
 ])
 
 (define_c_enum "unspecv" [
@@ -365,7 +382,7 @@
 
   (RVVM2BF "TARGET_VECTOR_ELEN_BF_16")
   (RVVM1BF "TARGET_VECTOR_ELEN_BF_16")
-  (RVVMF2BF "TARGET_VECTOR_ELEN_FP_16")
+  (RVVMF2BF "TARGET_VECTOR_ELEN_BF_16")
   (RVVMF4BF "TARGET_VECTOR_ELEN_BF_16 && TARGET_MIN_VLEN > 32 && TARGET_64BIT")
 
   (RVVM2HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_64BIT")
@@ -1662,32 +1679,75 @@
   UNSPEC_REDUC_MIN UNSPEC_REDUC_AND UNSPEC_REDUC_OR UNSPEC_REDUC_XOR
 ])
 
+(define_int_iterator ANY_REDUC_VL0_SAFE [
+  UNSPEC_REDUC_SUM_VL0_SAFE UNSPEC_REDUC_MAXU_VL0_SAFE UNSPEC_REDUC_MAX_VL0_SAFE UNSPEC_REDUC_MINU_VL0_SAFE
+  UNSPEC_REDUC_MIN_VL0_SAFE UNSPEC_REDUC_AND_VL0_SAFE UNSPEC_REDUC_OR_VL0_SAFE UNSPEC_REDUC_XOR_VL0_SAFE
+])
+
 (define_int_iterator ANY_WREDUC [
   UNSPEC_WREDUC_SUM UNSPEC_WREDUC_SUMU
+])
+
+(define_int_iterator ANY_WREDUC_VL0_SAFE [
+  UNSPEC_WREDUC_SUM_VL0_SAFE UNSPEC_WREDUC_SUMU_VL0_SAFE
 ])
 
 (define_int_iterator ANY_FREDUC [
   UNSPEC_REDUC_MAX UNSPEC_REDUC_MIN
 ])
 
+(define_int_iterator ANY_FREDUC_VL0_SAFE [
+  UNSPEC_REDUC_MAX_VL0_SAFE UNSPEC_REDUC_MIN_VL0_SAFE
+])
+
 (define_int_iterator ANY_FREDUC_SUM [
   UNSPEC_REDUC_SUM_ORDERED UNSPEC_REDUC_SUM_UNORDERED
+])
+
+(define_int_iterator ANY_FREDUC_SUM_VL0_SAFE [
+  UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE UNSPEC_REDUC_SUM_UNORDERED_VL0_SAFE
 ])
 
 (define_int_iterator ANY_FWREDUC_SUM [
   UNSPEC_WREDUC_SUM_ORDERED UNSPEC_WREDUC_SUM_UNORDERED
 ])
 
+(define_int_iterator ANY_FWREDUC_SUM_VL0_SAFE [
+  UNSPEC_WREDUC_SUM_ORDERED_VL0_SAFE UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE
+])
+
+(define_int_attr reduc_op_pat_name [
+  (UNSPEC_REDUC_SUM "redsum")
+  (UNSPEC_REDUC_SUM_VL0_SAFE "redsum_vl0s")
+  (UNSPEC_REDUC_SUM_ORDERED "redosum") (UNSPEC_REDUC_SUM_UNORDERED "redusum")
+  (UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE "redosum_vl0s") (UNSPEC_REDUC_SUM_UNORDERED_VL0_SAFE "redusum_vl0s")
+  (UNSPEC_REDUC_MAXU "redmaxu") (UNSPEC_REDUC_MAX "redmax") (UNSPEC_REDUC_MINU "redminu") (UNSPEC_REDUC_MIN "redmin")
+  (UNSPEC_REDUC_MAXU_VL0_SAFE "redmaxu_vl0s") (UNSPEC_REDUC_MAX_VL0_SAFE "redmax_vl0s") (UNSPEC_REDUC_MINU_VL0_SAFE "redminu_vl0s") (UNSPEC_REDUC_MIN_VL0_SAFE "redmin_vl0s")
+  (UNSPEC_REDUC_AND "redand") (UNSPEC_REDUC_OR "redor") (UNSPEC_REDUC_XOR "redxor")
+  (UNSPEC_REDUC_AND_VL0_SAFE "redand_vl0s") (UNSPEC_REDUC_OR_VL0_SAFE "redor_vl0s") (UNSPEC_REDUC_XOR_VL0_SAFE "redxor_vl0s")
+  (UNSPEC_WREDUC_SUM "wredsum") (UNSPEC_WREDUC_SUMU "wredsumu")
+  (UNSPEC_WREDUC_SUM_VL0_SAFE "wredsum_vl0s") (UNSPEC_WREDUC_SUMU_VL0_SAFE "wredsumu_vl0s")
+  (UNSPEC_WREDUC_SUM_ORDERED "wredosum") (UNSPEC_WREDUC_SUM_UNORDERED "wredusum")
+  (UNSPEC_WREDUC_SUM_ORDERED_VL0_SAFE "wredosum_vl0s") (UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE "wredusum_vl0s")
+])
+
 (define_int_attr reduc_op [
   (UNSPEC_REDUC_SUM "redsum")
+  (UNSPEC_REDUC_SUM_VL0_SAFE "redsum")
   (UNSPEC_REDUC_SUM_ORDERED "redosum") (UNSPEC_REDUC_SUM_UNORDERED "redusum")
+  (UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE "redosum") (UNSPEC_REDUC_SUM_UNORDERED_VL0_SAFE "redusum")
   (UNSPEC_REDUC_MAXU "redmaxu") (UNSPEC_REDUC_MAX "redmax") (UNSPEC_REDUC_MINU "redminu") (UNSPEC_REDUC_MIN "redmin")
+  (UNSPEC_REDUC_MAXU_VL0_SAFE "redmaxu") (UNSPEC_REDUC_MAX_VL0_SAFE "redmax") (UNSPEC_REDUC_MINU_VL0_SAFE "redminu") (UNSPEC_REDUC_MIN_VL0_SAFE "redmin")
   (UNSPEC_REDUC_AND "redand") (UNSPEC_REDUC_OR "redor") (UNSPEC_REDUC_XOR "redxor")
+  (UNSPEC_REDUC_AND_VL0_SAFE "redand") (UNSPEC_REDUC_OR_VL0_SAFE "redor") (UNSPEC_REDUC_XOR_VL0_SAFE "redxor")
   (UNSPEC_WREDUC_SUM "wredsum") (UNSPEC_WREDUC_SUMU "wredsumu")
+  (UNSPEC_WREDUC_SUM_VL0_SAFE "wredsum") (UNSPEC_WREDUC_SUMU_VL0_SAFE "wredsumu")
   (UNSPEC_WREDUC_SUM_ORDERED "wredosum") (UNSPEC_WREDUC_SUM_UNORDERED "wredusum")
+  (UNSPEC_WREDUC_SUM_ORDERED_VL0_SAFE "wredosum") (UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE "wredusum")
 ])
 
 (define_code_attr WREDUC_UNSPEC [(zero_extend "UNSPEC_WREDUC_SUMU") (sign_extend "UNSPEC_WREDUC_SUM")])
+(define_code_attr WREDUC_UNSPEC_VL0_SAFE [(zero_extend "UNSPEC_WREDUC_SUMU_VL0_SAFE") (sign_extend "UNSPEC_WREDUC_SUM_VL0_SAFE")])
 
 (define_mode_attr VINDEX [
   (RVVM8QI "RVVM8QI") (RVVM4QI "RVVM4QI") (RVVM2QI "RVVM2QI") (RVVM1QI "RVVM1QI")
@@ -3524,72 +3584,315 @@
 
   (RVVM8DF "vector_eew64_stride_operand") (RVVM4DF "vector_eew64_stride_operand")
   (RVVM2DF "vector_eew64_stride_operand") (RVVM1DF "vector_eew64_stride_operand")
+
+  (V1QI "vector_eew8_stride_operand")
+  (V2QI "vector_eew8_stride_operand")
+  (V4QI "vector_eew8_stride_operand")
+  (V8QI "vector_eew8_stride_operand")
+  (V16QI "vector_eew8_stride_operand")
+  (V32QI "vector_eew8_stride_operand")
+  (V64QI "vector_eew8_stride_operand")
+  (V128QI "vector_eew8_stride_operand")
+  (V256QI "vector_eew8_stride_operand")
+  (V512QI "vector_eew8_stride_operand")
+  (V1024QI "vector_eew8_stride_operand")
+  (V2048QI "vector_eew8_stride_operand")
+  (V4096QI "vector_eew8_stride_operand")
+  (V1HI "vector_eew16_stride_operand")
+  (V2HI "vector_eew16_stride_operand")
+  (V4HI "vector_eew16_stride_operand")
+  (V8HI "vector_eew16_stride_operand")
+  (V16HI "vector_eew16_stride_operand")
+  (V32HI "vector_eew16_stride_operand")
+  (V64HI "vector_eew16_stride_operand")
+  (V128HI "vector_eew16_stride_operand")
+  (V256HI "vector_eew16_stride_operand")
+  (V512HI "vector_eew16_stride_operand")
+  (V1024HI "vector_eew16_stride_operand")
+  (V2048HI "vector_eew16_stride_operand")
+  (V1SI "vector_eew32_stride_operand")
+  (V2SI "vector_eew32_stride_operand")
+  (V4SI "vector_eew32_stride_operand")
+  (V8SI "vector_eew32_stride_operand")
+  (V16SI "vector_eew32_stride_operand")
+  (V32SI "vector_eew32_stride_operand")
+  (V64SI "vector_eew32_stride_operand")
+  (V128SI "vector_eew32_stride_operand")
+  (V256SI "vector_eew32_stride_operand")
+  (V512SI "vector_eew32_stride_operand")
+  (V1024SI "vector_eew32_stride_operand")
+  (V1DI "vector_eew64_stride_operand")
+  (V2DI "vector_eew64_stride_operand")
+  (V4DI "vector_eew64_stride_operand")
+  (V8DI "vector_eew64_stride_operand")
+  (V16DI "vector_eew64_stride_operand")
+  (V32DI "vector_eew64_stride_operand")
+  (V64DI "vector_eew64_stride_operand")
+  (V128DI "vector_eew64_stride_operand")
+  (V256DI "vector_eew64_stride_operand")
+  (V512DI "vector_eew64_stride_operand")
+
+  (V1HF "vector_eew16_stride_operand")
+  (V2HF "vector_eew16_stride_operand")
+  (V4HF "vector_eew16_stride_operand")
+  (V8HF "vector_eew16_stride_operand")
+  (V16HF "vector_eew16_stride_operand")
+  (V32HF "vector_eew16_stride_operand")
+  (V64HF "vector_eew16_stride_operand")
+  (V128HF "vector_eew16_stride_operand")
+  (V256HF "vector_eew16_stride_operand")
+  (V512HF "vector_eew16_stride_operand")
+  (V1024HF "vector_eew16_stride_operand")
+  (V2048HF "vector_eew16_stride_operand")
+  (V1SF "vector_eew32_stride_operand")
+  (V2SF "vector_eew32_stride_operand")
+  (V4SF "vector_eew32_stride_operand")
+  (V8SF "vector_eew32_stride_operand")
+  (V16SF "vector_eew32_stride_operand")
+  (V32SF "vector_eew32_stride_operand")
+  (V64SF "vector_eew32_stride_operand")
+  (V128SF "vector_eew32_stride_operand")
+  (V256SF "vector_eew32_stride_operand")
+  (V512SF "vector_eew32_stride_operand")
+  (V1024SF "vector_eew32_stride_operand")
+  (V1DF "vector_eew64_stride_operand")
+  (V2DF "vector_eew64_stride_operand")
+  (V4DF "vector_eew64_stride_operand")
+  (V8DF "vector_eew64_stride_operand")
+  (V16DF "vector_eew64_stride_operand")
+  (V32DF "vector_eew64_stride_operand")
+  (V64DF "vector_eew64_stride_operand")
+  (V128DF "vector_eew64_stride_operand")
+  (V256DF "vector_eew64_stride_operand")
+  (V512DF "vector_eew64_stride_operand")
 ])
 
 (define_mode_attr stride_load_constraint [
-  (RVVM8QI "rJ,rJ,rJ,c01,c01,c01") (RVVM4QI "rJ,rJ,rJ,c01,c01,c01")
-  (RVVM2QI "rJ,rJ,rJ,c01,c01,c01") (RVVM1QI "rJ,rJ,rJ,c01,c01,c01")
-  (RVVMF2QI "rJ,rJ,rJ,c01,c01,c01") (RVVMF4QI "rJ,rJ,rJ,c01,c01,c01")
-  (RVVMF8QI "rJ,rJ,rJ,c01,c01,c01")
+  (RVVM8QI "rJ,rJ,rJ,k01,k01,k01") (RVVM4QI "rJ,rJ,rJ,k01,k01,k01")
+  (RVVM2QI "rJ,rJ,rJ,k01,k01,k01") (RVVM1QI "rJ,rJ,rJ,k01,k01,k01")
+  (RVVMF2QI "rJ,rJ,rJ,k01,k01,k01") (RVVMF4QI "rJ,rJ,rJ,k01,k01,k01")
+  (RVVMF8QI "rJ,rJ,rJ,k01,k01,k01")
 
-  (RVVM8HI "rJ,rJ,rJ,c02,c02,c02") (RVVM4HI "rJ,rJ,rJ,c02,c02,c02")
-  (RVVM2HI "rJ,rJ,rJ,c02,c02,c02") (RVVM1HI "rJ,rJ,rJ,c02,c02,c02")
-  (RVVMF2HI "rJ,rJ,rJ,c02,c02,c02") (RVVMF4HI "rJ,rJ,rJ,c02,c02,c02")
+  (RVVM8HI "rJ,rJ,rJ,k02,k02,k02") (RVVM4HI "rJ,rJ,rJ,k02,k02,k02")
+  (RVVM2HI "rJ,rJ,rJ,k02,k02,k02") (RVVM1HI "rJ,rJ,rJ,k02,k02,k02")
+  (RVVMF2HI "rJ,rJ,rJ,k02,k02,k02") (RVVMF4HI "rJ,rJ,rJ,k02,k02,k02")
 
-  (RVVM8BF "rJ,rJ,rJ,c02,c02,c02") (RVVM4BF "rJ,rJ,rJ,c02,c02,c02")
-  (RVVM2BF "rJ,rJ,rJ,c02,c02,c02") (RVVM1BF "rJ,rJ,rJ,c02,c02,c02")
-  (RVVMF2BF "rJ,rJ,rJ,c02,c02,c02") (RVVMF4BF "rJ,rJ,rJ,c02,c02,c02")
+  (RVVM8BF "rJ,rJ,rJ,k02,k02,k02") (RVVM4BF "rJ,rJ,rJ,k02,k02,k02")
+  (RVVM2BF "rJ,rJ,rJ,k02,k02,k02") (RVVM1BF "rJ,rJ,rJ,k02,k02,k02")
+  (RVVMF2BF "rJ,rJ,rJ,k02,k02,k02") (RVVMF4BF "rJ,rJ,rJ,k02,k02,k02")
 
-  (RVVM8HF "rJ,rJ,rJ,c02,c02,c02") (RVVM4HF "rJ,rJ,rJ,c02,c02,c02")
-  (RVVM2HF "rJ,rJ,rJ,c02,c02,c02") (RVVM1HF "rJ,rJ,rJ,c02,c02,c02")
-  (RVVMF2HF "rJ,rJ,rJ,c02,c02,c02") (RVVMF4HF "rJ,rJ,rJ,c02,c02,c02")
+  (RVVM8HF "rJ,rJ,rJ,k02,k02,k02") (RVVM4HF "rJ,rJ,rJ,k02,k02,k02")
+  (RVVM2HF "rJ,rJ,rJ,k02,k02,k02") (RVVM1HF "rJ,rJ,rJ,k02,k02,k02")
+  (RVVMF2HF "rJ,rJ,rJ,k02,k02,k02") (RVVMF4HF "rJ,rJ,rJ,k02,k02,k02")
 
-  (RVVM8SI "rJ,rJ,rJ,c04,c04,c04") (RVVM4SI "rJ,rJ,rJ,c04,c04,c04")
-  (RVVM2SI "rJ,rJ,rJ,c04,c04,c04") (RVVM1SI "rJ,rJ,rJ,c04,c04,c04")
-  (RVVMF2SI "rJ,rJ,rJ,c04,c04,c04")
+  (RVVM8SI "rJ,rJ,rJ,k04,k04,k04") (RVVM4SI "rJ,rJ,rJ,k04,k04,k04")
+  (RVVM2SI "rJ,rJ,rJ,k04,k04,k04") (RVVM1SI "rJ,rJ,rJ,k04,k04,k04")
+  (RVVMF2SI "rJ,rJ,rJ,k04,k04,k04")
 
-  (RVVM8SF "rJ,rJ,rJ,c04,c04,c04") (RVVM4SF "rJ,rJ,rJ,c04,c04,c04")
-  (RVVM2SF "rJ,rJ,rJ,c04,c04,c04") (RVVM1SF "rJ,rJ,rJ,c04,c04,c04")
-  (RVVMF2SF "rJ,rJ,rJ,c04,c04,c04")
+  (RVVM8SF "rJ,rJ,rJ,k04,k04,k04") (RVVM4SF "rJ,rJ,rJ,k04,k04,k04")
+  (RVVM2SF "rJ,rJ,rJ,k04,k04,k04") (RVVM1SF "rJ,rJ,rJ,k04,k04,k04")
+  (RVVMF2SF "rJ,rJ,rJ,k04,k04,k04")
 
-  (RVVM8DI "rJ,rJ,rJ,c08,c08,c08") (RVVM4DI "rJ,rJ,rJ,c08,c08,c08")
-  (RVVM2DI "rJ,rJ,rJ,c08,c08,c08") (RVVM1DI "rJ,rJ,rJ,c08,c08,c08")
+  (RVVM8DI "rJ,rJ,rJ,k08,k08,k08") (RVVM4DI "rJ,rJ,rJ,k08,k08,k08")
+  (RVVM2DI "rJ,rJ,rJ,k08,k08,k08") (RVVM1DI "rJ,rJ,rJ,k08,k08,k08")
 
-  (RVVM8DF "rJ,rJ,rJ,c08,c08,c08") (RVVM4DF "rJ,rJ,rJ,c08,c08,c08")
-  (RVVM2DF "rJ,rJ,rJ,c08,c08,c08") (RVVM1DF "rJ,rJ,rJ,c08,c08,c08")
+  (RVVM8DF "rJ,rJ,rJ,k08,k08,k08") (RVVM4DF "rJ,rJ,rJ,k08,k08,k08")
+  (RVVM2DF "rJ,rJ,rJ,k08,k08,k08") (RVVM1DF "rJ,rJ,rJ,k08,k08,k08")
+
+  (V1QI "rJ,rJ,rJ,k01,k01,k01")
+  (V2QI "rJ,rJ,rJ,k01,k01,k01")
+  (V4QI "rJ,rJ,rJ,k01,k01,k01")
+  (V8QI "rJ,rJ,rJ,k01,k01,k01")
+  (V16QI "rJ,rJ,rJ,k01,k01,k01")
+  (V32QI "rJ,rJ,rJ,k01,k01,k01")
+  (V64QI "rJ,rJ,rJ,k01,k01,k01")
+  (V128QI "rJ,rJ,rJ,k01,k01,k01")
+  (V256QI "rJ,rJ,rJ,k01,k01,k01")
+  (V512QI "rJ,rJ,rJ,k01,k01,k01")
+  (V1024QI "rJ,rJ,rJ,k01,k01,k01")
+  (V2048QI "rJ,rJ,rJ,k01,k01,k01")
+  (V4096QI "rJ,rJ,rJ,k01,k01,k01")
+  (V1HI "rJ,rJ,rJ,k02,k02,k02")
+  (V2HI "rJ,rJ,rJ,k02,k02,k02")
+  (V4HI "rJ,rJ,rJ,k02,k02,k02")
+  (V8HI "rJ,rJ,rJ,k02,k02,k02")
+  (V16HI "rJ,rJ,rJ,k02,k02,k02")
+  (V32HI "rJ,rJ,rJ,k02,k02,k02")
+  (V64HI "rJ,rJ,rJ,k02,k02,k02")
+  (V128HI "rJ,rJ,rJ,k02,k02,k02")
+  (V256HI "rJ,rJ,rJ,k02,k02,k02")
+  (V512HI "rJ,rJ,rJ,k02,k02,k02")
+  (V1024HI "rJ,rJ,rJ,k02,k02,k02")
+  (V2048HI "rJ,rJ,rJ,k02,k02,k02")
+  (V1SI "rJ,rJ,rJ,k04,k04,k04")
+  (V2SI "rJ,rJ,rJ,k04,k04,k04")
+  (V4SI "rJ,rJ,rJ,k04,k04,k04")
+  (V8SI "rJ,rJ,rJ,k04,k04,k04")
+  (V16SI "rJ,rJ,rJ,k04,k04,k04")
+  (V32SI "rJ,rJ,rJ,k04,k04,k04")
+  (V64SI "rJ,rJ,rJ,k04,k04,k04")
+  (V128SI "rJ,rJ,rJ,k04,k04,k04")
+  (V256SI "rJ,rJ,rJ,k04,k04,k04")
+  (V512SI "rJ,rJ,rJ,k04,k04,k04")
+  (V1024SI "rJ,rJ,rJ,k04,k04,k04")
+  (V1DI "rJ,rJ,rJ,k08,k08,k08")
+  (V2DI "rJ,rJ,rJ,k08,k08,k08")
+  (V4DI "rJ,rJ,rJ,k08,k08,k08")
+  (V8DI "rJ,rJ,rJ,k08,k08,k08")
+  (V16DI "rJ,rJ,rJ,k08,k08,k08")
+  (V32DI "rJ,rJ,rJ,k08,k08,k08")
+  (V64DI "rJ,rJ,rJ,k08,k08,k08")
+  (V128DI "rJ,rJ,rJ,k08,k08,k08")
+  (V256DI "rJ,rJ,rJ,k08,k08,k08")
+  (V512DI "rJ,rJ,rJ,k08,k08,k08")
+
+  (V1HF "rJ,rJ,rJ,k02,k02,k02")
+  (V2HF "rJ,rJ,rJ,k02,k02,k02")
+  (V4HF "rJ,rJ,rJ,k02,k02,k02")
+  (V8HF "rJ,rJ,rJ,k02,k02,k02")
+  (V16HF "rJ,rJ,rJ,k02,k02,k02")
+  (V32HF "rJ,rJ,rJ,k02,k02,k02")
+  (V64HF "rJ,rJ,rJ,k02,k02,k02")
+  (V128HF "rJ,rJ,rJ,k02,k02,k02")
+  (V256HF "rJ,rJ,rJ,k02,k02,k02")
+  (V512HF "rJ,rJ,rJ,k02,k02,k02")
+  (V1024HF "rJ,rJ,rJ,k02,k02,k02")
+  (V2048HF "rJ,rJ,rJ,k02,k02,k02")
+  (V1SF "rJ,rJ,rJ,k04,k04,k04")
+  (V2SF "rJ,rJ,rJ,k04,k04,k04")
+  (V4SF "rJ,rJ,rJ,k04,k04,k04")
+  (V8SF "rJ,rJ,rJ,k04,k04,k04")
+  (V16SF "rJ,rJ,rJ,k04,k04,k04")
+  (V32SF "rJ,rJ,rJ,k04,k04,k04")
+  (V64SF "rJ,rJ,rJ,k04,k04,k04")
+  (V128SF "rJ,rJ,rJ,k04,k04,k04")
+  (V256SF "rJ,rJ,rJ,k04,k04,k04")
+  (V512SF "rJ,rJ,rJ,k04,k04,k04")
+  (V1024SF "rJ,rJ,rJ,k04,k04,k04")
+  (V1DF "rJ,rJ,rJ,k08,k08,k08")
+  (V2DF "rJ,rJ,rJ,k08,k08,k08")
+  (V4DF "rJ,rJ,rJ,k08,k08,k08")
+  (V8DF "rJ,rJ,rJ,k08,k08,k08")
+  (V16DF "rJ,rJ,rJ,k08,k08,k08")
+  (V32DF "rJ,rJ,rJ,k08,k08,k08")
+  (V64DF "rJ,rJ,rJ,k08,k08,k08")
+  (V128DF "rJ,rJ,rJ,k08,k08,k08")
+  (V256DF "rJ,rJ,rJ,k08,k08,k08")
+  (V512DF "rJ,rJ,rJ,k08,k08,k08")
 ])
 
 (define_mode_attr stride_store_constraint [
-  (RVVM8QI "rJ,c01") (RVVM4QI "rJ,c01")
-  (RVVM2QI "rJ,c01") (RVVM1QI "rJ,c01")
-  (RVVMF2QI "rJ,c01") (RVVMF4QI "rJ,c01")
-  (RVVMF8QI "rJ,c01")
+  (RVVM8QI "rJ,k01") (RVVM4QI "rJ,k01")
+  (RVVM2QI "rJ,k01") (RVVM1QI "rJ,k01")
+  (RVVMF2QI "rJ,k01") (RVVMF4QI "rJ,k01")
+  (RVVMF8QI "rJ,k01")
 
-  (RVVM8HI "rJ,c02") (RVVM4HI "rJ,c02")
-  (RVVM2HI "rJ,c02") (RVVM1HI "rJ,c02")
-  (RVVMF2HI "rJ,c02") (RVVMF4HI "rJ,c02")
+  (RVVM8HI "rJ,k02") (RVVM4HI "rJ,k02")
+  (RVVM2HI "rJ,k02") (RVVM1HI "rJ,k02")
+  (RVVMF2HI "rJ,k02") (RVVMF4HI "rJ,k02")
 
-  (RVVM8BF "rJ,c02") (RVVM4BF "rJ,c02")
-  (RVVM2BF "rJ,c02") (RVVM1BF "rJ,c02")
-  (RVVMF2BF "rJ,c02") (RVVMF4BF "rJ,c02")
+  (RVVM8BF "rJ,k02") (RVVM4BF "rJ,k02")
+  (RVVM2BF "rJ,k02") (RVVM1BF "rJ,k02")
+  (RVVMF2BF "rJ,k02") (RVVMF4BF "rJ,k02")
 
-  (RVVM8HF "rJ,c02") (RVVM4HF "rJ,c02")
-  (RVVM2HF "rJ,c02") (RVVM1HF "rJ,c02")
-  (RVVMF2HF "rJ,c02") (RVVMF4HF "rJ,c02")
+  (RVVM8HF "rJ,k02") (RVVM4HF "rJ,k02")
+  (RVVM2HF "rJ,k02") (RVVM1HF "rJ,k02")
+  (RVVMF2HF "rJ,k02") (RVVMF4HF "rJ,k02")
 
-  (RVVM8SI "rJ,c04") (RVVM4SI "rJ,c04")
-  (RVVM2SI "rJ,c04") (RVVM1SI "rJ,c04")
-  (RVVMF2SI "rJ,c04")
+  (RVVM8SI "rJ,k04") (RVVM4SI "rJ,k04")
+  (RVVM2SI "rJ,k04") (RVVM1SI "rJ,k04")
+  (RVVMF2SI "rJ,k04")
 
-  (RVVM8SF "rJ,c04") (RVVM4SF "rJ,c04")
-  (RVVM2SF "rJ,c04") (RVVM1SF "rJ,c04")
-  (RVVMF2SF "rJ,c04")
+  (RVVM8SF "rJ,k04") (RVVM4SF "rJ,k04")
+  (RVVM2SF "rJ,k04") (RVVM1SF "rJ,k04")
+  (RVVMF2SF "rJ,k04")
 
-  (RVVM8DI "rJ,c08") (RVVM4DI "rJ,c08")
-  (RVVM2DI "rJ,c08") (RVVM1DI "rJ,c08")
+  (RVVM8DI "rJ,k08") (RVVM4DI "rJ,k08")
+  (RVVM2DI "rJ,k08") (RVVM1DI "rJ,k08")
 
-  (RVVM8DF "rJ,c08") (RVVM4DF "rJ,c08")
-  (RVVM2DF "rJ,c08") (RVVM1DF "rJ,c08")
+  (RVVM8DF "rJ,k08") (RVVM4DF "rJ,k08")
+  (RVVM2DF "rJ,k08") (RVVM1DF "rJ,k08")
+
+  (V1QI "rJ,k01")
+  (V2QI "rJ,k01")
+  (V4QI "rJ,k01")
+  (V8QI "rJ,k01")
+  (V16QI "rJ,k01")
+  (V32QI "rJ,k01")
+  (V64QI "rJ,k01")
+  (V128QI "rJ,k01")
+  (V256QI "rJ,k01")
+  (V512QI "rJ,k01")
+  (V1024QI "rJ,k01")
+  (V2048QI "rJ,k01")
+  (V4096QI "rJ,k01")
+  (V1HI "rJ,k02")
+  (V2HI "rJ,k02")
+  (V4HI "rJ,k02")
+  (V8HI "rJ,k02")
+  (V16HI "rJ,k02")
+  (V32HI "rJ,k02")
+  (V64HI "rJ,k02")
+  (V128HI "rJ,k02")
+  (V256HI "rJ,k02")
+  (V512HI "rJ,k02")
+  (V1024HI "rJ,k02")
+  (V2048HI "rJ,k02")
+  (V1SI "rJ,k04")
+  (V2SI "rJ,k04")
+  (V4SI "rJ,k04")
+  (V8SI "rJ,k04")
+  (V16SI "rJ,k04")
+  (V32SI "rJ,k04")
+  (V64SI "rJ,k04")
+  (V128SI "rJ,k04")
+  (V256SI "rJ,k04")
+  (V512SI "rJ,k04")
+  (V1024SI "rJ,k04")
+  (V1DI "rJ,k08")
+  (V2DI "rJ,k08")
+  (V4DI "rJ,k08")
+  (V8DI "rJ,k08")
+  (V16DI "rJ,k08")
+  (V32DI "rJ,k08")
+  (V64DI "rJ,k08")
+  (V128DI "rJ,k08")
+  (V256DI "rJ,k08")
+  (V512DI "rJ,k08")
+
+  (V1HF "rJ,k02")
+  (V2HF "rJ,k02")
+  (V4HF "rJ,k02")
+  (V8HF "rJ,k02")
+  (V16HF "rJ,k02")
+  (V32HF "rJ,k02")
+  (V64HF "rJ,k02")
+  (V128HF "rJ,k02")
+  (V256HF "rJ,k02")
+  (V512HF "rJ,k02")
+  (V1024HF "rJ,k02")
+  (V2048HF "rJ,k02")
+  (V1SF "rJ,k04")
+  (V2SF "rJ,k04")
+  (V4SF "rJ,k04")
+  (V8SF "rJ,k04")
+  (V16SF "rJ,k04")
+  (V32SF "rJ,k04")
+  (V64SF "rJ,k04")
+  (V128SF "rJ,k04")
+  (V256SF "rJ,k04")
+  (V512SF "rJ,k04")
+  (V1024SF "rJ,k04")
+  (V1DF "rJ,k08")
+  (V2DF "rJ,k08")
+  (V4DF "rJ,k08")
+  (V8DF "rJ,k08")
+  (V16DF "rJ,k08")
+  (V32DF "rJ,k08")
+  (V64DF "rJ,k08")
+  (V128DF "rJ,k08")
+  (V256DF "rJ,k08")
+  (V512DF "rJ,k08")
 ])
 
 (define_mode_attr gs_extension [
@@ -3658,6 +3961,8 @@
 
 (define_int_iterator VNCLIP [UNSPEC_VNCLIP UNSPEC_VNCLIPU])
 
+(define_int_iterator SF_VFNRCLIP [UNSPEC_SF_VFNRCLIP UNSPEC_SF_VFNRCLIPU])
+
 (define_int_iterator VSLIDES [UNSPEC_VSLIDEUP UNSPEC_VSLIDEDOWN])
 (define_int_iterator VSLIDES1 [UNSPEC_VSLIDE1UP UNSPEC_VSLIDE1DOWN])
 (define_int_iterator VFSLIDES1 [UNSPEC_VFSLIDE1UP UNSPEC_VFSLIDE1DOWN])
@@ -3682,11 +3987,14 @@
   (UNSPEC_ORDERED "o") (UNSPEC_UNORDERED "u")
   (UNSPEC_REDUC_SUM_ORDERED "o") (UNSPEC_REDUC_SUM_UNORDERED "u")
   (UNSPEC_WREDUC_SUM_ORDERED "o") (UNSPEC_WREDUC_SUM_UNORDERED "u")
+  (UNSPEC_REDUC_SUM_ORDERED_VL0_SAFE "o") (UNSPEC_REDUC_SUM_UNORDERED_VL0_SAFE "u")
+  (UNSPEC_WREDUC_SUM_ORDERED_VL0_SAFE "o") (UNSPEC_WREDUC_SUM_UNORDERED_VL0_SAFE "u")
 ])
 
 (define_int_attr v_su [(UNSPEC_VMULHS "") (UNSPEC_VMULHU "u") (UNSPEC_VMULHSU "su")
 		       (UNSPEC_VNCLIP "") (UNSPEC_VNCLIPU "u")
-		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")])
+		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")
+		       (UNSPEC_SF_VFNRCLIP "") (UNSPEC_SF_VFNRCLIPU "u")])
 (define_int_attr sat_op [(UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
 			 (UNSPEC_VASUBU "asubu") (UNSPEC_VASUB "asub")
 			 (UNSPEC_VSMUL "smul") (UNSPEC_VSSRL "ssrl")
@@ -4511,4 +4819,57 @@
   (V128DF "v32df")
   (V256DF "v64df")
   (V512DF "v128df")
+])
+
+(define_mode_iterator SF_VSI [
+  RVVM8SI RVVM4SI RVVM2SI RVVM1SI
+])
+
+(define_mode_attr SF_VQMACC_QOQ [
+  (RVVM8SI "RVVM4QI")
+  (RVVM4SI "RVVM2QI")
+  (RVVM2SI "RVVM1QI")
+  (RVVM1SI "RVVMF2QI")
+])
+
+(define_mode_attr sf_vqmacc_qoq [
+  (RVVM8SI "rvvm4qi")
+  (RVVM4SI "rvvm2qi")
+  (RVVM2SI "rvvm1qi")
+  (RVVM1SI "rvvmf2qi")
+])
+
+(define_mode_attr SF_VQMACC_DOD [
+  (RVVM8SI "RVVM8QI")
+  (RVVM4SI "RVVM4QI")
+  (RVVM2SI "RVVM2QI")
+  (RVVM1SI "RVVM1QI")
+])
+
+(define_mode_attr sf_vqmacc_dod [
+  (RVVM8SI "rvvm8qi")
+  (RVVM4SI "rvvm4qi")
+  (RVVM2SI "rvvm2qi")
+  (RVVM1SI "rvvm1qi")
+])
+
+(define_mode_iterator SF_XF [
+  RVVM2QI RVVM1QI RVVMF2QI RVVMF4QI (RVVMF8QI "TARGET_MIN_VLEN > 32")
+])
+
+
+(define_mode_attr SF_XFQF [
+  (RVVMF8QI "RVVMF2SF")
+  (RVVMF4QI "RVVM1SF")
+  (RVVMF2QI "RVVM2SF")
+  (RVVM1QI  "RVVM4SF")
+  (RVVM2QI  "RVVM8SF")
+])
+
+(define_mode_attr sf_xfqf [
+  (RVVMF8QI "rvvmf2sf")
+  (RVVMF4QI "rvvm1sf")
+  (RVVMF2QI "rvvm2sf")
+  (RVVM1QI  "rvvm4sf")
+  (RVVM2QI  "rvvm8sf")
 ])

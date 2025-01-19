@@ -1,6 +1,6 @@
 // <cstdbool> -*- C++ -*-
 
-// Copyright (C) 2007-2024 Free Software Foundation, Inc.
+// Copyright (C) 2007-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,14 @@
 #  include <bits/c++config.h>
 #  if _GLIBCXX_HAVE_STDBOOL_H
 #    include <stdbool.h>
+#  endif
+#  if __cplusplus >= 202002L && ! _GLIBCXX_USE_DEPRECATED
+#    error "<cstdbool> is not a standard header in C++20, remove the #include"
+#  elif __cplusplus >= 201703L && defined __DEPRECATED
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wc++23-extensions"
+#    warning "<cstdbool> is deprecated in C++17, remove the #include"
+#    pragma GCC diagnostic pop
 #  endif
 #endif
 

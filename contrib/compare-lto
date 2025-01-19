@@ -2,7 +2,7 @@
 
 # Compare copies of two given object files.
 
-# Copyright (C) 2007-2024 Free Software Foundation, Inc.
+# Copyright (C) 2007-2025 Free Software Foundation, Inc.
 # Originally by Alexandre Oliva <aoliva@redhat.com>
 # Modified for LTO bootstrap by Richard Biener <rguenther@suse.de>
 

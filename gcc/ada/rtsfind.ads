@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -192,6 +192,14 @@ package Rtsfind is
       --  Children of Interfaces.C
 
       Interfaces_C_Strings,
+
+      --  Package SPARK
+
+      SPARK,
+
+      --  Children of SPARK
+
+      SPARK_Big_Integers,
 
       --  Package System
 
@@ -575,6 +583,7 @@ package Rtsfind is
 
      RE_Big_Integer,             -- Ada.Numerics.Big_Numbers.Big_Integers
      RO_GH_Big_Integer,          -- Ada.Numerics.Big_Numbers.Big_Integers_Ghost
+     RO_SP_Big_Integer,          -- SPARK.Big_Integers
 
      RE_Names,                           -- Ada.Interrupts.Names
 
@@ -1609,6 +1618,7 @@ package Rtsfind is
 
      RE_Adjust_Storage_Size,             -- System.Parameters
      RE_Default_Stack_Size,              -- System.Parameters
+     RE_Minimum_Stack_Size,              -- System.Parameters
      RE_Size_Type,                       -- System.Parameters
      RE_Unspecified_Size,                -- System.Parameters
 
@@ -2222,6 +2232,7 @@ package Rtsfind is
 
      RE_Big_Integer             => Ada_Numerics_Big_Numbers_Big_Integers,
      RO_GH_Big_Integer          => Ada_Numerics_Big_Numbers_Big_Integers_Ghost,
+     RO_SP_Big_Integer          => SPARK_Big_Integers,
 
      RE_Names                            => Ada_Interrupts_Names,
 
@@ -3264,6 +3275,7 @@ package Rtsfind is
 
      RE_Adjust_Storage_Size              => System_Parameters,
      RE_Default_Stack_Size               => System_Parameters,
+     RE_Minimum_Stack_Size               => System_Parameters,
      RE_Size_Type                        => System_Parameters,
      RE_Unspecified_Size                 => System_Parameters,
 

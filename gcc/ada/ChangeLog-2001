@@ -2229,8 +2229,6 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-02  Geert Bosch  <bosch@gnat.com>
 
 	* misc.c (insert_default_attributes): Add dummy version.
-
-
 
 Copyright (C) 2001 Free Software Foundation, Inc.
 

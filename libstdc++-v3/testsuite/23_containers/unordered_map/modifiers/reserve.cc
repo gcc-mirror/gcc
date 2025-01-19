@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2012-2024 Free Software Foundation, Inc.
+// Copyright (C) 2012-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@ void test01()
       m.reserve(bkts);
       VERIFY( m.bucket_count() == bkts );
 
-      for (++i; i < bkts; ++i)
+      for (++i; size_t(i) < bkts; ++i)
 	{
 	  m.insert(std::make_pair(i, i));
 

@@ -1,5 +1,5 @@
 /* -Winfinite-recursion support.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>
 
    This file is part of GCC.

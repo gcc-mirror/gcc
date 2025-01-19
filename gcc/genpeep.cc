@@ -1,5 +1,5 @@
 /* Generate code from machine description to perform peephole optimizations.
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -273,6 +273,8 @@ match_rtx (rtx x, struct link *path, int fail_label)
 	  printf ("  if (XINT (x, %d) != %d) goto L%d;\n",
 		  i, XINT (x, i), fail_label);
 	}
+      else if (fmt[i] == 'L')
+	gcc_unreachable ();
       else if (fmt[i] == 'r')
 	{
 	  gcc_assert (i == 0);

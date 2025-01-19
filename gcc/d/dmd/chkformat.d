@@ -21,6 +21,7 @@ import dmd.globals;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
+import dmd.typesem;
 import dmd.target;
 
 
@@ -173,13 +174,13 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
 
             case Format.lu:     // unsigned long int
             case Format.ld:     // long int
-                if (!(t.isintegral() && t.size() == c_longsize))
+                if (!(t.isIntegral() && t.size() == c_longsize))
                 {
                     if (fmt == Format.lu)
                         errorMsg(null, e, (c_longsize == 4 ? "uint" : "ulong"), t);
                     else
                         errorMsg(null, e, (c_longsize == 4 ? "int" : "long"), t);
-                    if (t.isintegral() && t.size() != c_longsize)
+                    if (t.isIntegral() && t.size() != c_longsize)
                         eSink.errorSupplemental(e.loc, "C `long` is %d bytes on your system", c_longsize);
                 }
                 break;
@@ -202,12 +203,12 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
                 break;
 
             case Format.zd:     // size_t
-                if (!(t.isintegral() && t.size() == ptrsize))
+                if (!(t.isIntegral() && t.size() == ptrsize))
                     errorMsg(null, e, "size_t", t);
                 break;
 
             case Format.td:     // ptrdiff_t
-                if (!(t.isintegral() && t.size() == ptrsize))
+                if (!(t.isIntegral() && t.size() == ptrsize))
                     errorMsg(null, e, "ptrdiff_t", t);
                 break;
 
@@ -233,7 +234,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
                 break;
 
             case Format.ln:     // pointer to long int
-                if (!(t.ty == Tpointer && tnext.isintegral() && tnext.size() == c_longsize))
+                if (!(t.ty == Tpointer && tnext.isIntegral() && tnext.size() == c_longsize))
                     errorMsg(null, e, (c_longsize == 4 ? "int*" : "long*"), t);
                 break;
 
@@ -258,12 +259,12 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
                 break;
 
             case Format.zn:     // pointer to size_t
-                if (!(t.ty == Tpointer && tnext.isintegral() && tnext.isunsigned() && tnext.size() == ptrsize))
+                if (!(t.ty == Tpointer && tnext.isIntegral() && tnext.isUnsigned() && tnext.size() == ptrsize))
                     errorMsg(null, e, "size_t*", t);
                 break;
 
             case Format.tn:     // pointer to ptrdiff_t
-                if (!(t.ty == Tpointer && tnext.isintegral() && !tnext.isunsigned() && tnext.size() == ptrsize))
+                if (!(t.ty == Tpointer && tnext.isIntegral() && !tnext.isUnsigned() && tnext.size() == ptrsize))
                     errorMsg(null, e, "ptrdiff_t*", t);
                 break;
 
@@ -413,7 +414,7 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
 
             case Format.ln:
             case Format.ld:     // pointer to long int
-                if (!(t.ty == Tpointer && tnext.isintegral() && !tnext.isunsigned() && tnext.size() == c_longsize))
+                if (!(t.ty == Tpointer && tnext.isIntegral() && !tnext.isUnsigned() && tnext.size() == c_longsize))
                     errorMsg(null, e, (c_longsize == 4 ? "int*" : "long*"), t);
                 break;
 
@@ -431,13 +432,13 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
 
             case Format.zn:
             case Format.zd:     // pointer to size_t
-                if (!(t.ty == Tpointer && tnext.isintegral() && tnext.isunsigned() && tnext.size() == ptrsize))
+                if (!(t.ty == Tpointer && tnext.isIntegral() && tnext.isUnsigned() && tnext.size() == ptrsize))
                     errorMsg(null, e, "size_t*", t);
                 break;
 
             case Format.tn:
             case Format.td:     // pointer to ptrdiff_t
-                if (!(t.ty == Tpointer && tnext.isintegral() && !tnext.isunsigned() && tnext.size() == ptrsize))
+                if (!(t.ty == Tpointer && tnext.isIntegral() && !tnext.isUnsigned() && tnext.size() == ptrsize))
                     errorMsg(null, e, "ptrdiff_t*", t);
                 break;
 
@@ -457,7 +458,7 @@ bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expres
                 break;
 
             case Format.lu:     // pointer to unsigned long int
-                if (!(t.ty == Tpointer && tnext.isintegral() && tnext.isunsigned() && tnext.size() == c_longsize))
+                if (!(t.ty == Tpointer && tnext.isIntegral() && tnext.isUnsigned() && tnext.size() == c_longsize))
                     errorMsg(null, e, (c_longsize == 4 ? "uint*" : "ulong*"), t);
                 break;
 

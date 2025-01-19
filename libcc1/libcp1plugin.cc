@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -799,7 +799,7 @@ plugin_add_namespace_alias (cc1_plugin::connection *,
   tree name = get_identifier (id);
   tree target = convert_in (target_in);
 
-  do_namespace_alias (name, target);
+  do_namespace_alias (input_location, name, target);
 
   return 1;
 }

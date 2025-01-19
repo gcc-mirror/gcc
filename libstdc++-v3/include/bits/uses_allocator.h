@@ -1,6 +1,6 @@
 // Uses-allocator Construction -*- C++ -*-
 
-// Copyright (C) 2010-2024 Free Software Foundation, Inc.
+// Copyright (C) 2010-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -133,6 +133,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool uses_allocator_v =
       uses_allocator<_Tp, _Alloc>::value;
 #endif // C++17
+
+#if __cpp_concepts
+  template<typename _Alloc, typename... _Ts>
+    concept __allocator_for = (uses_allocator_v<_Ts, _Alloc> && ...);
+#endif
 
   template<template<typename...> class _Predicate,
 	   typename _Tp, typename _Alloc, typename... _Args>

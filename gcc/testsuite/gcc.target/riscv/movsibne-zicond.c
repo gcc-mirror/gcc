@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" } } */
 /* { dg-options "-march=rv64gc_zicond -mtune=rocket -mbranch-cost=2 -fdump-rtl-ce1" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zicond -mtune=rocket -mbranch-cost=2 -fdump-rtl-ce1" { target { rv32 } } } */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,7 +174,7 @@ package body Uintp is
    --  K is as small as possible S.T. Right_Hat < Base * Base. It is required
    --  that Left >= Right for the algorithm to work.
 
-   function N_Digits (Input : Valid_Uint) return Int;
+   function N_Digits (Input : Valid_Uint) return Pos;
    pragma Inline (N_Digits);
    --  Returns number of "digits" in a Uint
 
@@ -565,7 +565,7 @@ package body Uintp is
          begin
             --  It is not so clear what to return when Arg is negative???
 
-            Left_Hat := abs (L1) * Base + L2;
+            Left_Hat := abs L1 * Base + L2;
          end;
       end if;
 
@@ -584,7 +584,7 @@ package body Uintp is
             Length_R := 2;
 
          else
-            R1 := abs (Udigits.Table (Uints.Table (Right).Loc));
+            R1 := abs Udigits.Table (Uints.Table (Right).Loc);
             R2 := Udigits.Table (Uints.Table (Right).Loc + 1);
             Length_R := Uints.Table (Right).Length;
          end if;
@@ -603,7 +603,7 @@ package body Uintp is
    -- N_Digits --
    ---------------
 
-   function N_Digits (Input : Valid_Uint) return Int is
+   function N_Digits (Input : Valid_Uint) return Pos is
    begin
       if Direct (Input) then
          if Direct_Val (Input) >= Base then
@@ -635,7 +635,7 @@ package body Uintp is
       --  For any other number in Int_Range, get absolute value of number
 
       elsif UI_Is_In_Int_Range (Input) then
-         Num := abs (UI_To_Int (Input));
+         Num := abs UI_To_Int (Input);
          Bits := 0;
 
       --  If not in Int_Range then initialize bit count for all low order
@@ -643,7 +643,7 @@ package body Uintp is
 
       else
          Bits := Base_Bits * (Uints.Table (Input).Length - 1);
-         Num  := abs (Udigits.Table (Uints.Table (Input).Loc));
+         Num  := abs Udigits.Table (Uints.Table (Input).Loc);
       end if;
 
       --  Increase bit count for remaining value in Num
@@ -2041,8 +2041,8 @@ package body Uintp is
          Init_Operand (Left, L_Vec);
          Init_Operand (Right, R_Vec);
          Neg := L_Vec (1) < Int_0 xor R_Vec (1) < Int_0;
-         L_Vec (1) := abs (L_Vec (1));
-         R_Vec (1) := abs (R_Vec (1));
+         L_Vec (1) := abs L_Vec (1);
+         R_Vec (1) := abs R_Vec (1);
 
          Algorithm_M : declare
             Product : UI_Vector (1 .. L_Length + R_Length);

@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fschedule-insns" } */
 
 #pragma GCC target "+nosimd+fp"
 

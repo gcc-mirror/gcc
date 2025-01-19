@@ -1,5 +1,5 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992-2024 Free Software Foundation, Inc.
+   Copyright (C) 1992-2025 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -191,6 +190,11 @@ cxx_print_type (FILE *file, tree node, int indent)
     case TYPE_PACK_EXPANSION:
       print_node (file, "pattern", PACK_EXPANSION_PATTERN (node), indent + 4);
       print_node (file, "args", PACK_EXPANSION_EXTRA_ARGS (node), indent + 4);
+      return;
+
+    case PACK_INDEX_TYPE:
+      print_node (file, "pack", PACK_INDEX_PACK (node), indent + 4);
+      print_node (file, "index", PACK_INDEX_INDEX (node), indent + 4);
       return;
 
     default:

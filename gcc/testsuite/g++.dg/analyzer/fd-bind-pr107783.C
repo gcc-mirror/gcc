@@ -7,5 +7,5 @@ struct _Bind {
   _Bind(_Bind &);
 };
 template <typename _Func, typename _BoundArgs>
-_Bind bind(_Func, _BoundArgs &&...);
+_Bind bind(_Func, _BoundArgs &&, ...);
 void test01() { bind(minus(), _2, _1); }

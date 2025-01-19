@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,8 @@ package System.Powten_LLF is
    Maxpow_Exact : constant :=
      (if Long_Long_Float'Machine_Mantissa = 64 then 27 else 22);
    --  Largest power of five exactly representable with Long_Long_Float. It is
-   --  equal to floor (M * log 2 / log 5), when M is the size of the mantissa
-   --  assumed to be either 64 for IEEE Extended or 53 for IEEE Double.
+   --  equal to floor (M * log 2 / log 5), where M is the size of the mantissa
+   --  (assumed to be either 64 for IEEE Extended or 53 for IEEE Double).
    --  It also works for any number of the form 5*(2**N) and in particular 10.
 
    Maxpow : constant := Maxpow_Exact * 2;

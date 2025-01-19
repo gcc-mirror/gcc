@@ -1,6 +1,6 @@
 /* Windows support code to wrap differences between different
    versions of the Microsoft C libaries.
-   Copyright (C) 2021-2024 Free Software Foundation, Inc.
+   Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

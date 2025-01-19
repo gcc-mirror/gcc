@@ -1,6 +1,6 @@
 ;; Scheduling description for PowerPC 604, PowerPC 604e, PowerPC 620,
 ;; and PowerPC 630 processors.
-;;   Copyright (C) 2003-2024 Free Software Foundation, Inc.
+;;   Copyright (C) 2003-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 

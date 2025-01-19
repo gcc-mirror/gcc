@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -372,6 +372,9 @@ static HOST_WIDE_INT visium_constant_alignment (const_tree, HOST_WIDE_INT);
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_DOCUMENTATION_NAME
+#define TARGET_DOCUMENTATION_NAME "Visium"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

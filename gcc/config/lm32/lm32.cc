@@ -1,7 +1,7 @@
 /* Subroutines used for code generation on the Lattice Mico32 architecture.
    Contributed by Jon Beniston <jon@beniston.com>
 
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -44,6 +44,11 @@
 #include "expr.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+#include "langhooks.h"
+#include "stor-layout.h"
+#include "fold-const.h"
+#include "gimple.h"
+#include "gimplify.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -66,6 +71,10 @@ static bool lm32_in_small_data_p (const_tree);
 static void lm32_setup_incoming_varargs (cumulative_args_t cum,
 					 const function_arg_info &,
 					 int *pretend_size, int no_rtl);
+static tree lm32_build_builtin_va_list (void);
+static void lm32_builtin_va_start (tree valist, rtx nextarg);
+static tree lm32_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
+				       gimple_seq *post_p);
 static bool lm32_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 			    int *total, bool speed);
 static bool lm32_can_eliminate (const int, const int);
@@ -92,6 +101,13 @@ static HOST_WIDE_INT lm32_starting_frame_offset (void);
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS lm32_setup_incoming_varargs
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST lm32_build_builtin_va_list
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START lm32_builtin_va_start
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR lm32_gimplify_va_arg_expr
+
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG lm32_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
@@ -632,8 +648,7 @@ lm32_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   if (targetm.calls.must_pass_in_stack (arg))
     return NULL_RTX;
 
-  if (!arg.named
-      || *cum + LM32_NUM_REGS2 (arg.mode, arg.type) > LM32_NUM_ARG_REGS)
+  if (*cum + LM32_NUM_REGS2 (arg.mode, arg.type) > LM32_NUM_ARG_REGS)
     return NULL_RTX;
 
   return gen_rtx_REG (arg.mode, *cum + LM32_FIRST_ARG_REG);
@@ -680,14 +695,18 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v,
 			     const function_arg_info &arg,
 			     int *pretend_size, int no_rtl)
 {
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum_v);
   int first_anon_arg;
   tree fntype;
 
   fntype = TREE_TYPE (current_function_decl);
 
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
+    lm32_function_arg_advance (pack_cumulative_args (&next_cum), arg);
+
   if (stdarg_p (fntype))
-    first_anon_arg = *cum + LM32_FIRST_ARG_REG;
+    first_anon_arg = next_cum + LM32_FIRST_ARG_REG;
   else
     {
       /* this is the common case, we have been passed details setup
@@ -698,23 +717,273 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v,
       int size = arg.promoted_size_in_bytes ();
 
       first_anon_arg =
-	*cum + LM32_FIRST_ARG_REG +
+	next_cum + LM32_FIRST_ARG_REG +
 	((size + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
     }
 
-  if ((first_anon_arg < (LM32_FIRST_ARG_REG + LM32_NUM_ARG_REGS)) && !no_rtl)
+  if (FUNCTION_ARG_REGNO_P (first_anon_arg))
     {
-      int first_reg_offset = first_anon_arg;
       int size = LM32_FIRST_ARG_REG + LM32_NUM_ARG_REGS - first_anon_arg;
-      rtx regblock;
 
-      regblock = gen_rtx_MEM (BLKmode,
-			      plus_constant (Pmode, arg_pointer_rtx,
-					     FIRST_PARM_OFFSET (0)));
-      move_block_from_reg (first_reg_offset, regblock, size);
+      if (!no_rtl)
+	{
+	  rtx regblock
+	    = gen_rtx_MEM (BLKmode,
+			   plus_constant (Pmode, arg_pointer_rtx,
+					  FIRST_PARM_OFFSET (0)));
+	  move_block_from_reg (first_anon_arg, regblock, size);
+	}
 
       *pretend_size = size * UNITS_PER_WORD;
     }
+}
+/* This is the "struct __va_list".  */
+
+static GTY(()) tree va_list_type;
+
+/* Implement TARGET_BUILD_BUILTIN_VA_LIST.  */
+
+static tree
+lm32_build_builtin_va_list (void)
+{
+  /* We keep one pointer and a count
+
+     The pointer is the regular void *
+
+     The count tracks how many registers arguments
+     remain. When that goes to zero, we have to skip
+     over the reserved space that was the top of the
+     stack at function entry
+
+   */
+  tree va_list_name;
+  tree ap_field;
+  tree ap_reg_field;
+
+  va_list_type = lang_hooks.types.make_type (RECORD_TYPE);
+  /* Name it */
+  va_list_name = build_decl (BUILTINS_LOCATION,
+			     TYPE_DECL,
+			     get_identifier ("__va_list"),
+			     va_list_type);
+
+  DECL_ARTIFICIAL (va_list_name) = 1;
+  TYPE_NAME (va_list_type) = va_list_name;
+  TYPE_STUB_DECL (va_list_type) = va_list_name;
+
+  ap_field = build_decl (BUILTINS_LOCATION,
+			 FIELD_DECL,
+			 get_identifier("__ap"),
+			 ptr_type_node);
+  DECL_ARTIFICIAL (ap_field) = 1;
+  DECL_FIELD_CONTEXT (ap_field) = va_list_type;
+  TYPE_FIELDS (va_list_type) = ap_field;
+
+  ap_reg_field = build_decl(BUILTINS_LOCATION,
+			    FIELD_DECL,
+			    get_identifier("__ap_reg"),
+			    ptr_type_node);
+  DECL_ARTIFICIAL (ap_reg_field) = 1;
+  DECL_FIELD_CONTEXT (ap_reg_field) = va_list_type;
+  DECL_CHAIN (ap_field) = ap_reg_field;
+
+  layout_type (va_list_type);
+
+  return va_list_type;
+}
+
+/* Implement TARGET_EXPAND_BUILTIN_VA_START.  */
+
+static void
+lm32_builtin_va_start (tree valist, rtx nextarg)
+{
+  const CUMULATIVE_ARGS *cum;
+  tree ap_field, ap_reg_field;
+  tree ap, ap_reg;
+  tree t;
+  int pretend_args_size = crtl->args.pretend_args_size;
+  cum = &crtl->args.info;
+
+  ap_field = TYPE_FIELDS(TREE_TYPE (valist));
+  ap = build3 (COMPONENT_REF, TREE_TYPE (ap_field), valist,
+	       ap_field, NULL_TREE);
+
+  std_expand_builtin_va_start (ap, nextarg);
+
+  ap_reg_field = DECL_CHAIN(ap_field);
+  ap_reg = build3 (COMPONENT_REF, TREE_TYPE (ap_reg_field), valist,
+		   ap_reg_field, NULL_TREE);
+
+  /* Emit code to initialize __ap_reg */
+
+  rtx last_reg_arg = expand_binop (ptr_mode, add_optab,
+				   crtl->args.internal_arg_pointer,
+				   gen_int_mode (pretend_args_size, Pmode),
+				   NULL_RTX, 0, OPTAB_LIB_WIDEN);
+
+  rtx ap_reg_r = expand_expr (ap_reg, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  convert_move (ap_reg_r, last_reg_arg, 0);
+}
+
+#ifndef PAD_VARARGS_DOWN
+#define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
+#endif
+
+/*
+ * This was copied from "standard" implementation of va_arg, and then
+ * handling for overflow of the register paramters added
+ */
+
+static tree
+lm32_std_gimplify_va_arg_expr (tree valist, tree ap_reg, tree type, gimple_seq *pre_p,
+			       gimple_seq *post_p)
+{
+  tree addr, t, type_size, rounded_size, valist_tmp;
+  unsigned HOST_WIDE_INT align, boundary;
+  bool indirect;
+
+  /* All of the alignment and movement below is for args-grow-up machines.
+     As of 2004, there are only 3 ARGS_GROW_DOWNWARD targets, and they all
+     implement their own specialized gimplify_va_arg_expr routines.  */
+  if (ARGS_GROW_DOWNWARD)
+    gcc_unreachable ();
+
+  indirect = pass_va_arg_by_reference (type);
+  if (indirect)
+    type = build_pointer_type (type);
+
+  if (targetm.calls.split_complex_arg
+      && TREE_CODE (type) == COMPLEX_TYPE
+      && targetm.calls.split_complex_arg (type))
+    {
+      tree real_part, imag_part;
+
+      real_part = std_gimplify_va_arg_expr (valist,
+					    TREE_TYPE (type), pre_p, NULL);
+      real_part = get_initialized_tmp_var (real_part, pre_p);
+
+      imag_part = std_gimplify_va_arg_expr (unshare_expr (valist),
+					    TREE_TYPE (type), pre_p, NULL);
+      imag_part = get_initialized_tmp_var (imag_part, pre_p);
+
+      return build2 (COMPLEX_EXPR, type, real_part, imag_part);
+   }
+
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
+  boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
+
+  /* When we align parameter on stack for caller, if the parameter
+     alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be
+     aligned at MAX_SUPPORTED_STACK_ALIGNMENT.  We will match callee
+     here with caller.  */
+  if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+    boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
+
+  boundary /= BITS_PER_UNIT;
+
+  /* Hoist the valist value into a temporary for the moment.  */
+  valist_tmp = get_initialized_tmp_var (valist, pre_p);
+
+  /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
+     requires greater alignment, we must perform dynamic alignment.  */
+  if (boundary > align
+      && !TYPE_EMPTY_P (type)
+      && !integer_zerop (TYPE_SIZE (type)))
+    {
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_build_pointer_plus_hwi (valist_tmp, boundary - 1));
+      gimplify_and_add (t, pre_p);
+
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_build2 (BIT_AND_EXPR, TREE_TYPE (valist),
+			       valist_tmp,
+			       build_int_cst (TREE_TYPE (valist), -boundary)));
+      gimplify_and_add (t, pre_p);
+    }
+  else
+    boundary = align;
+
+  /* If the actual alignment is less than the alignment of the type,
+     adjust the type accordingly so that we don't assume strict alignment
+     when dereferencing the pointer.  */
+  boundary *= BITS_PER_UNIT;
+  if (boundary < TYPE_ALIGN (type))
+    {
+      type = build_variant_type_copy (type);
+      SET_TYPE_ALIGN (type, boundary);
+    }
+
+  /* Compute the rounded size of the type.  */
+  type_size = arg_size_in_bytes (type);
+  rounded_size = round_up (type_size, align);
+
+  /* Reduce rounded_size so it's sharable with the postqueue.  */
+  gimplify_expr (&rounded_size, pre_p, post_p, is_gimple_val, fb_rvalue);
+
+  /*
+   * Check for a large parameter which didn't fit in the remaining registers
+   * and got pushed off to the stack instead
+   */
+  if (int_size_in_bytes(type) > UNITS_PER_WORD) {
+
+    /* Hoist the ap_reg value into a temporary for the moment.  */
+    tree ap_reg_tmp = get_initialized_tmp_var (ap_reg, pre_p);
+
+    t = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+			 boolean_type_node,
+			 fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
+					  valist_tmp, ap_reg_tmp),
+			 fold_build2_loc (input_location, GT_EXPR, boolean_type_node,
+					  fold_build_pointer_plus (valist_tmp, rounded_size), ap_reg_tmp));
+
+    t = fold_build3 (COND_EXPR, TREE_TYPE(valist), t, ap_reg_tmp, valist_tmp);
+
+    t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp, t);
+
+    gimplify_and_add (t, pre_p);
+  }
+
+  /* Get AP.  */
+  addr = valist_tmp;
+  if (PAD_VARARGS_DOWN && !integer_zerop (rounded_size))
+    {
+      /* Small args are padded downward.  */
+      t = fold_build2_loc (input_location, GT_EXPR, sizetype,
+		       rounded_size, size_int (align));
+      t = fold_build3 (COND_EXPR, sizetype, t, size_zero_node,
+		       size_binop (MINUS_EXPR, rounded_size, type_size));
+      addr = fold_build_pointer_plus (addr, t);
+    }
+
+  /* Compute new value for AP.  */
+  t = fold_build_pointer_plus (valist_tmp, rounded_size);
+  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+  gimplify_and_add (t, pre_p);
+
+  addr = fold_convert (build_pointer_type (type), addr);
+
+  if (indirect)
+    addr = build_va_arg_indirect_ref (addr);
+
+  return build_va_arg_indirect_ref (addr);
+}
+
+/* Return an expression of type "void *" pointing to the next
+   available argument in a variable-argument list.  VALIST is the
+   user-level va_list object, of type __builtin_va_list.  */
+/* Implement TARGET_GIMPLIFY_VA_ARG_EXPR.  */
+static tree
+lm32_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
+			  gimple_seq *post_p)
+{
+  tree ap_field = TYPE_FIELDS(TREE_TYPE (valist));
+  tree ap_reg_field = DECL_CHAIN(ap_field);
+  tree ap = build3 (COMPONENT_REF, TREE_TYPE (ap_field), valist,
+		    ap_field, NULL_TREE);
+  tree ap_reg = build3 (COMPONENT_REF, TREE_TYPE (ap_reg_field), valist,
+			ap_reg_field, NULL_TREE);
+
+  return lm32_std_gimplify_va_arg_expr(ap, ap_reg, type, pre_p, post_p);
 }
 
 /* Override command line options.  */
@@ -1252,3 +1521,5 @@ lm32_starting_frame_offset (void)
 {
   return UNITS_PER_WORD;
 }
+
+#include "gt-lm32.h"

@@ -14,6 +14,7 @@ fail_compilation/hexstring.d(39):        perhaps remove postfix `c` from hex str
 fail_compilation/hexstring.d(40): Error: hex string with `dstring` type needs to be multiple of 4 bytes, not 5
 fail_compilation/hexstring.d(41): Error: cannot implicitly convert expression `x"11223344"d` of type `dstring` to `immutable(float[])`
 fail_compilation/hexstring.d(42): Error: cannot implicitly convert expression `x"1122"w` of type `wstring` to `immutable(ubyte[])`
+fail_compilation/hexstring.d(50): Error: array cast from `string` to `S[]` is not supported at compile time
 fail_compilation/hexstring.d(28): Error: cannot implicitly convert expression `x"123F"` of type `string` to `ubyte[]`
 ---
 */
@@ -21,7 +22,6 @@ immutable ubyte[] s0 = x"123F";
 static assert(s0[0] == 0x12);
 static assert(s0[1] == 0x3F);
 immutable byte[] s1 = x"123F";
-
 enum E(X) = cast(X[]) x"AABBCCDD";
 static assert(E!int[0] == 0xAABBCCDD);
 
@@ -40,3 +40,11 @@ immutable uint[] f11 = cast(immutable uint[]) x"AABBCCDD"c;
 immutable uint[] f12 = x"1122334455"d;
 immutable float[] f13 = x"11223344"d;
 immutable ubyte[] f14 = x"1122"w;
+
+// https://issues.dlang.org/show_bug.cgi?id=24832
+struct S
+{
+    ushort l0, l1, l2, l3, l4, l5;
+}
+
+immutable S[] returnValues = cast(S[]) x"FFFFFFFFFFFFFFFFFFFFFFFF";

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2009-2024, Free Software Foundation, Inc.          --
+--         Copyright (C) 2009-2025, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,11 +75,13 @@ package body System.Object_Reader is
       EM_SPARC32PLUS : constant := 18; --  Sun SPARC 32+
       EM_PPC         : constant := 20; --  PowerPC
       EM_PPC64       : constant := 21; --  PowerPC 64-bit
+      EM_S390        : constant := 22; --  IBM S/390
       EM_ARM         : constant := 40; --  ARM
       EM_SPARCV9     : constant := 43; --  SPARC v9 64-bit
       EM_IA_64       : constant := 50; --  Intel Merced
       EM_X86_64      : constant := 62; --  AMD x86-64 architecture
       EM_AARCH64     : constant := 183; --  Aarch64
+      EM_RISCV       : constant := 243; --  RISC-V
 
       EN_NIDENT  : constant := 16;
 
@@ -620,8 +622,8 @@ package body System.Object_Reader is
             =>
                Res.Arch := SPARC;
 
-            when EM_386 =>
-               Res.Arch := i386;
+            when EM_SPARCV9 =>
+               Res.Arch := SPARC64;
 
             when EM_MIPS
                | EM_MIPS_RS3_LE
@@ -634,8 +636,11 @@ package body System.Object_Reader is
             when EM_PPC64 =>
                Res.Arch := PPC64;
 
-            when EM_SPARCV9 =>
-               Res.Arch := SPARC64;
+            when EM_S390 =>
+               Res.Arch := S390;
+
+            when EM_386 =>
+               Res.Arch := i386;
 
             when EM_IA_64 =>
                Res.Arch := IA64;
@@ -648,6 +653,9 @@ package body System.Object_Reader is
 
             when EM_AARCH64 =>
                Res.Arch := AARCH64;
+
+            when EM_RISCV =>
+               Res.Arch := RISCV;
 
             when others =>
                raise Format_Error with "unrecognized architecture";
@@ -2072,6 +2080,20 @@ package body System.Object_Reader is
          =>
             Address_64 := Read (S);
             return Address_64;
+
+         when RISCV | S390 =>
+            case Obj.Format is
+               when ELF32 =>
+                  Address_32 := Read (S);
+                  return uint64 (Address_32);
+
+               when ELF64 =>
+                  Address_64 := Read (S);
+                  return Address_64;
+
+               when others =>
+                  raise Format_Error with "unrecognized object format";
+            end case;
 
          when Unknown =>
             raise Format_Error with "unrecognized machine architecture";

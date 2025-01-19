@@ -3,7 +3,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13577.d(27): Error: cannot implicilty convert range element of type `int[]` to variable `x` of type `immutable(int[])`
+fail_compilation/fail13577.d(27): Error: cannot implicitly convert tuple element of type `int[]` to variable `x` of type `immutable(int[])`
 ---
 */
 

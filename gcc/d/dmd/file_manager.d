@@ -11,10 +11,12 @@
 module dmd.file_manager;
 
 import core.stdc.stdio;
+import dmd.common.outbuffer;
 import dmd.root.stringtable : StringTable;
 import dmd.root.file : File, Buffer;
 import dmd.root.filename : FileName, isDirSeparator;
 import dmd.root.string : toDString;
+import dmd.errors;
 import dmd.globals;
 import dmd.identifier;
 import dmd.location;
@@ -70,44 +72,84 @@ private struct PathStack
     }
 }
 
-final class FileManager
+/***************************
+ * Cache path lookups so the operating system
+ * is only consulted once for each path.
+ */
+private struct PathCache
 {
-    private StringTable!(const(ubyte)[]) files;  // contents of files indexed by file name
-    private StringTable!(bool) packageStatus;
+    /* for filespec "a/b/c/d.ext"
+     * a b and c are directories, a, a/b, a/b/c are paths.
+     */
 
-    // check if the package path of the given path exists. The input path is
-    // expected to contain the full path to the module, so the parent
-    // directories of that path are checked.
-    private bool packageExists(const(char)[] p) nothrow
+    StringTable!(bool) pathStatus;      // cached value of does a path exist or not
+
+  nothrow:
+
+    /**
+     * Determine if the path part of path/filename exists.
+     * Cache the results for the path and each left-justified subpath of the path.
+     * Params:
+     *  filespec = path/filename
+     * Returns:
+     *  true if path exists, false if it does not
+     */
+    bool pathExists(const(char)[] filespec) nothrow
     {
-        // step 1, look for the closest parent path that is cached
+        /* look for the longest leftmost parent path that is cached
+         * by starting at the right and working to the left
+         */
         bool exists = true;
-        auto st = PathStack(p);
+        auto st = PathStack(filespec);
         while (st.up) {
-            if (auto cached = packageStatus.lookup(st.cur)) {
+            if (auto cached = pathStatus.lookup(st.cur)) {
                 exists = cached.value;
                 break;
             }
         }
-        // found a parent that is cached (or reached the end of the stack).
-        // step 2, traverse back up the stack storing either false if the
-        // parent doesn't exist, or the result of the `exists` call if it does.
+        /* found a parent path that is cached (or reached the left end of the path).
+         * Now move right caching the results of those directories.
+         * Once a directory is found to not exist, all the directories
+         * to the right of it do not exist
+         */
         while (st.down) {
             if (!exists)
-                packageStatus.insert(st.cur, false);
+                pathStatus.insert(st.cur, false);
             else
-                exists = packageStatus.insert(st.cur, FileName.exists(st.cur) == 2).value;
+                exists = pathStatus.insert(st.cur, FileName.exists(st.cur) == 2).value;
         }
 
-        // at this point, exists should be the answer.
         return exists;
     }
+
+    /**
+     * Ask if path ends in a directory.
+     * Cache result for speed.
+     * Params:
+     *  path = a path
+     * Returns:
+     *  true if it's a path, false if not
+     */
+    bool isExistingPath(const char[] path)
+    {
+        auto cached = pathStatus.lookup(path);
+        if (!cached)
+            cached = pathStatus.insert(path, FileName.exists(path) == 2);
+        return cached.value;
+    }
+}
+
+final class FileManager
+{
+    private StringTable!(const(ubyte)[]) files;  // contents of files indexed by file name
+
+    private PathCache pathCache;
 
     ///
     public this () nothrow
     {
         this.files._init();
-        this.packageStatus._init();
+        this.pathCache.pathStatus._init();
     }
 
 nothrow:
@@ -117,18 +159,22 @@ nothrow:
     * Does not open the file.
     * Params:
     *      filename = as supplied by the user
-    *      path = path to look for filename
+    *      pathsInfo = pathsInfo to look for filename with metadata
+    *      whichPathFoundThis = Which path from `path` was used in determining the output path, or -1 if unknown.
     * Returns:
     *      the found file name or
     *      `null` if it is not different from filename.
     */
-    const(char)[] lookForSourceFile(const char[] filename, const char*[] path)
+    const(char)[] lookForSourceFile(const char[] filename, const ImportPathInfo[] pathsInfo, out ptrdiff_t whichPathFoundThis)
     {
         //printf("lookForSourceFile(`%.*s`)\n", cast(int)filename.length, filename.ptr);
-        /* Search along path[] for .di file, then .d file.
+        /* Search along pathsInfo[] for .di file, then .d file.
         */
+
+        whichPathFoundThis = -1;
+
         // see if we should check for the module locally.
-        bool checkLocal = packageExists(filename);
+        bool checkLocal = pathCache.pathExists(filename);
         const sdi = FileName.forceExt(filename, hdr_ext);
         if (checkLocal && FileName.exists(sdi) == 1)
             return sdi;
@@ -144,12 +190,9 @@ nothrow:
 
         if (checkLocal)
         {
-            auto cached = packageStatus.lookup(filename);
-            if (!cached)
-                cached = packageStatus.insert(filename, FileName.exists(filename) == 2);
-            if (cached.value)
+            if (pathCache.isExistingPath(filename))
             {
-                /* The filename exists and it's a directory.
+                /* The filename exists but it's a directory.
                  * Therefore, the result should be: filename/package.d
                  * iff filename/package.d is a file
                  */
@@ -167,15 +210,15 @@ nothrow:
 
         if (FileName.absolute(filename))
             return null;
-        if (!path.length)
+        if (!pathsInfo.length)
             return null;
-        foreach (entry; path)
+        foreach (pathIndex, entry; pathsInfo)
         {
-            const p = entry.toDString();
+            const p = entry.path.toDString();
 
             const(char)[] n = FileName.combine(p, sdi);
 
-            if (!packageExists(n)) {
+            if (!pathCache.pathExists(n)) {
                 FileName.free(n.ptr);
                 continue; // no need to check for anything else.
             }
@@ -186,37 +229,34 @@ nothrow:
 
             n = FileName.combine(p, sd);
             if (FileName.exists(n) == 1) {
+                whichPathFoundThis = pathIndex;
                 return n;
             }
             FileName.free(n.ptr);
 
-            const b = FileName.removeExt(filename);
-            n = FileName.combine(p, b);
-            FileName.free(b.ptr);
-
+            n = FileName.combine(p, FileName.sansExt(filename));
             scope(exit) FileName.free(n.ptr);
 
             // also cache this if we are looking for package.d[i]
-            auto cached = packageStatus.lookup(n);
-            if (!cached) {
-                cached = packageStatus.insert(n, FileName.exists(n) == 2);
-            }
-
-            if (cached.value)
+            if (pathCache.isExistingPath(n))
             {
                 const n2i = FileName.combine(n, package_di);
-                if (FileName.exists(n2i) == 1)
+                if (FileName.exists(n2i) == 1) {
+                    whichPathFoundThis = pathIndex;
                     return n2i;
+                }
+
                 FileName.free(n2i.ptr);
                 const n2 = FileName.combine(n, package_d);
                 if (FileName.exists(n2) == 1) {
+                    whichPathFoundThis = pathIndex;
                     return n2;
                 }
                 FileName.free(n2.ptr);
             }
         }
 
-        /* ImportC: No D modules found, now search along path[] for .i file, then .c file.
+        /* ImportC: No D modules found, now search along paths[] for .i file, then .c file.
          */
         const si = FileName.forceExt(filename, i_ext);
         if (FileName.exists(si) == 1)
@@ -227,18 +267,20 @@ nothrow:
         if (FileName.exists(sc) == 1)
             return sc;
         scope(exit) FileName.free(sc.ptr);
-        foreach (entry; path)
+        foreach (pathIndex, entry; pathsInfo)
         {
-            const p = entry.toDString();
+            const p = entry.path.toDString();
 
             const(char)[] n = FileName.combine(p, si);
             if (FileName.exists(n) == 1) {
+                whichPathFoundThis = pathIndex;
                 return n;
             }
             FileName.free(n.ptr);
 
             n = FileName.combine(p, sc);
             if (FileName.exists(n) == 1) {
+                whichPathFoundThis = pathIndex;
                 return n;
             }
             FileName.free(n.ptr);
@@ -261,126 +303,29 @@ nothrow:
         if (auto val = files.lookup(name))      // if `name` is cached
             return val.value;                   // return its contents
 
+        OutBuffer buf;
         if (name == "__stdin.d")                // special name for reading from stdin
         {
-            const ubyte[] buffer = readFromStdin().extractSlice();
-            if (this.files.insert(name, buffer) is null)
-                // this.files already contains the name
-                assert(0, "stdin: Insert after lookup failure should never return `null`");
-            return buffer;
+            if (readFromStdin(buf))
+                fatal();
+        }
+        else
+        {
+            if (FileName.exists(name) != 1) // if not an ordinary file
+                return null;
+
+            if (File.read(name, buf))
+                return null;        // failed
         }
 
-        if (FileName.exists(name) != 1) // if not an ordinary file
-            return null;
+        buf.write32(0);         // terminating dchar 0
 
-        auto readResult = File.read(name);
-        if (!readResult.success)
-            return null;
-
-        const ubyte[] fb = readResult.extractSlice();
+        const length = buf.length;
+        const ubyte[] fb = cast(ubyte[])(buf.extractSlice()[0 .. length - 4]);
         if (files.insert(name, fb) is null)
             assert(0, "Insert after lookup failure should never return `null`");
 
         return fb;
-    }
-
-    /**********************************
-     * Take `text` and turn it into an InputRange that emits
-     * slices into `text` for each line.
-     * Params:
-     *  text = array of characters
-     * Returns:
-     *  InputRange accessing `text` as a sequence of lines
-     * Reference:
-     *  `std.string.splitLines()`
-     */
-    auto splitLines(const char[] text)
-    {
-        struct Range
-        {
-          @safe:
-          @nogc:
-          nothrow:
-          pure:
-          private:
-
-            const char[] text;
-            size_t index;       // index of start of line
-            size_t eolIndex;    // index of end of line before newline characters
-            size_t nextIndex;   // index past end of line
-
-            public this(const char[] text)
-            {
-                this.text = text;
-            }
-
-            public bool empty() { return index == text.length; }
-
-            public void popFront() { advance(); index = nextIndex; }
-
-            public const(char)[] front() { advance(); return text[index .. eolIndex]; }
-
-            private void advance()
-            {
-                if (index != nextIndex) // if already advanced
-                    return;
-
-                for (size_t i = index; i < text.length; ++i)
-                {
-                    switch (text[i])
-                    {
-                        case '\v', '\f', '\n':
-                            eolIndex = i;
-                            nextIndex = i + 1;
-                            return;
-
-                        case '\r':
-                            if (i + 1 < text.length && text[i + 1] == '\n') // decode "\r\n"
-                            {
-                                eolIndex = i;
-                                nextIndex = i + 2;
-                                return;
-                            }
-                            eolIndex = i;
-                            nextIndex = i + 1;
-                            return;
-
-                        /* Manually decode:
-                         *  NEL is C2 85
-                         */
-                        case 0xC2:
-                            if (i + 1 < text.length && text[i + 1] == 0x85)
-                            {
-                                eolIndex = i;
-                                nextIndex = i + 2;
-                                return;
-                            }
-                            break;
-
-                        /* Manually decode:
-                         *  lineSep is E2 80 A8
-                         *  paraSep is E2 80 A9
-                         */
-                        case 0xE2:
-                            if (i + 2 < text.length &&
-                                text[i + 1] == 0x80 &&
-                                (text[i + 2] == 0xA8 || text[i + 2] == 0xA9)
-                               )
-                            {
-                                eolIndex = i;
-                                nextIndex = i + 3;
-                                return;
-                            }
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-            }
-        }
-
-        return Range(text);
     }
 
     /**
@@ -398,44 +343,34 @@ nothrow:
     }
 }
 
-private Buffer readFromStdin() nothrow
+private bool readFromStdin(ref OutBuffer sink) nothrow
 {
     import core.stdc.stdio;
     import dmd.errors;
-    import dmd.root.rmem;
 
-    enum bufIncrement = 128 * 1024;
-    size_t pos = 0;
-    size_t sz = bufIncrement;
+    enum BufIncrement = 128 * 1024;
 
-    ubyte* buffer = null;
-    for (;;)
+    for (size_t j; 1; ++j)
     {
-        buffer = cast(ubyte*)mem.xrealloc(buffer, sz + 4); // +2 for sentinel and +2 for lexer
+        char[] buffer = sink.allocate(BufIncrement);
 
         // Fill up buffer
+        size_t filled = 0;
         do
         {
-            assert(sz > pos);
-            size_t rlen = fread(buffer + pos, 1, sz - pos, stdin);
-            pos += rlen;
+            filled += fread(buffer.ptr + filled, 1, buffer.length - filled, stdin);
             if (ferror(stdin))
             {
                 import core.stdc.errno;
                 error(Loc.initial, "cannot read from stdin, errno = %d", errno);
-                fatal();
+                return true;
             }
-            if (feof(stdin))
+            if (feof(stdin)) // successful completion
             {
-                // We're done
-                assert(pos < sz + 2);
-                buffer[pos .. pos + 4] = '\0';
-                return Buffer(buffer[0 .. pos]);
+                sink.setsize(j * BufIncrement + filled);
+                return false;
             }
-        } while (pos < sz);
-
-        // Buffer full, expand
-        sz += bufIncrement;
+        } while (filled < BufIncrement);
     }
 
     assert(0);

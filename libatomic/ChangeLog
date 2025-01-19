@@ -1,3 +1,43 @@
+2025-01-10  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/linux/aarch64/host-config.h (has_lse2): Cleanup.
+	(has_lse128): Likewise.
+	(has_rcpc3): Add early check for LSE2.
+
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	Revert:
+	2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+		    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.am: Pass -fno-link-libatomic.
+	New rule all.
+	* configure.ac: Assert that CFLAGS is set and pass -fno-link-libatomic.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2024-12-18  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.am: Pass -fno-link-libatomic.
+	New rule all.
+	* configure.ac: Assert that CFLAGS is set and pass -fno-link-libatomic.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libatomic.exp: Add
+	"load_gcc_lib dg-test-cleanup.exp".
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/linux/aarch64/atomic_16.S (FEATURE_1_GCS): Define.
+	(GCS_FLAG): Define if GCS is enabled.
+	(GNU_PROPERTY): Add GCS_FLAG.
+
 2024-09-02  Alex Coplan  <alex.coplan@arm.com>
 
 	* testsuite/lib/libatomic.exp: Load scanltrans.exp instead of
@@ -973,7 +1013,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2012-2024 Free Software Foundation, Inc.
+Copyright (C) 2012-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -31,18 +31,18 @@ bool c = C3{} == C3{};
 struct D {
   D ();
   D (int *);
-  bool operator== (const D &) const;	// { dg-message "candidate: 'bool D::operator==\\\(const D&\\\) const' \\\(reversed\\\)" }
+  bool operator== (const D &) const;	// { dg-message "candidate 1: 'bool D::operator==\\\(const D&\\\) const' \\\(reversed\\\)" }
   operator int * () const;
 };
 bool d = nullptr != D{};	// { dg-error "ambiguous overload for 'operator!=' in 'nullptr != D\\\(\\\)' \\\(operand types are 'std::nullptr_t' and 'D'\\\)" }
-				// { dg-message "candidate: 'operator!=\\\(int\\\*, int\\\*\\\)' \\\(built-in\\\)" "" { target *-*-* } .-1 }
+				// { dg-message "candidate 2: 'operator!=\\\(int\\\*, int\\\*\\\)' \\\(built-in\\\)" "" { target *-*-* } .-1 }
 
 using ubool = unsigned char;
 
 struct E {
   operator bool () const;
 };
-unsigned char operator== (E, E);// { dg-message "candidate: 'unsigned char operator==\\\(E, E\\\)'" }
+unsigned char operator== (E, E);// { dg-message "candidate 2: 'unsigned char operator==\\\(E, E\\\)'" }
 				// { dg-message "no known conversion for argument 1 from 'int' to 'E'" "" { target *-*-* } .-1 }
 unsigned char e = E{} != E{};	// { dg-error "return type of 'unsigned char operator==\\\(E, E\\\)' is not 'bool'" }
 				// { dg-message "used as rewritten candidate for comparison of 'E' and 'E'" "" { target *-*-* } .-1 }
@@ -50,7 +50,7 @@ unsigned char e = E{} != E{};	// { dg-error "return type of 'unsigned char opera
 // F-H are the testcase from [over.match.oper]
 struct F {};
 template <typename T>
-bool operator== (F, T);		// { dg-message "candidate: 'template<class T> bool operator==\\\(F, T\\\)'" }
+bool operator== (F, T);		// { dg-message "candidate 1: 'template<class T> bool operator==\\\(F, T\\\)'" }
 				// { dg-message "template argument deduction/substitution failed:" "" { target *-*-* } .-1 }
 bool f1 = 0 == F ();		// OK, calls reversed ==
 template <typename T>

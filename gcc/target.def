@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -1645,10 +1645,10 @@ void, (struct cgraph_node *), NULL)
 DEFHOOK
 (usable,
 "This hook should return -1 if SIMD clone @var{node} shouldn't be used\n\
-in vectorized loops in current function, or non-negative number if it is\n\
-usable.  In that case, the smaller the number is, the more desirable it is\n\
-to use it.",
-int, (struct cgraph_node *), NULL)
+in vectorized loops in current function with @var{vector_mode}, or\n\
+non-negative number if it is usable.  In that case, the smaller the number\n\
+is, the more desirable it is to use it.",
+int, (struct cgraph_node *, machine_mode), NULL)
 
 HOOK_VECTOR_END (simd_clone)
 
@@ -2496,8 +2496,11 @@ declaration of the built-in function.  @var{arglist} is the list of\n\
 arguments passed to the built-in function.  The result is a\n\
 complete expression that implements the operation, usually\n\
 another @code{CALL_EXPR}.\n\
-@var{arglist} really has type @samp{VEC(tree,gc)*}",
- tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
+@var{arglist} really has type @samp{VEC(tree,gc)*}\n\
+@var{complain} is a boolean indicating whether invalid operations\n\
+should emit errors.  This is set to @code{false} when the C++ templating\n\
+context expects that errors should not be emitted (i.e. SFINAE).",
+ tree, (location_t loc, tree fndecl, void *arglist, bool complain), NULL)
 
 DEFHOOK
 (check_builtin_call,
@@ -2512,9 +2515,11 @@ but after the optional @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}\n\
 step is now to built-in function @var{fndecl}.  @var{loc} is the\n\
 location of the call and @var{args} is an array of function arguments,\n\
 of which there are @var{nargs}.  @var{arg_loc} specifies the location\n\
-of each argument.",
+of each argument.  @var{complain} is a boolean indicating whether invalid\n\
+arguments should emitm errors.  This is set to @code{false} when the C++\n\
+templating context expects that errors should not be emitted (i.e. SFINAE).",
  bool, (location_t loc, vec<location_t> arg_loc, tree fndecl,
-	tree orig_fndecl, unsigned int nargs, tree *args),
+	tree orig_fndecl, unsigned int nargs, tree *args, bool complain),
  NULL)
 
 /* Fold a target-specific builtin to a tree valid for both GIMPLE
@@ -3374,6 +3379,16 @@ store patterns available for @var{mode} have this issue.\n\
 The default is to assume modes with the same precision as size are fine\n\
 to be used.",
  bool, (machine_mode mode),
+ NULL)
+
+DEFHOOK
+(redzone_clobber,
+ "Define this to return some RTL for the @code{redzone} @code{asm} clobber\n\
+if target has a red zone and wants to support the @code{redzone} clobber\n\
+or return NULL if the clobber should be ignored.\n\
+\n\
+The default is to ignore the @code{redzone} clobber.",
+ rtx, (),
  NULL)
 
 /* Support for named address spaces.  */
@@ -4700,9 +4715,15 @@ DEFHOOK
  "Return the offset bitwise ored into shifted address to get corresponding\n\
 Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not\n\
 supported by the target.  May return 0 if Address Sanitizer is not supported\n\
-by a subtarget.",
+or using dynamic shadow offset by a subtarget.",
  unsigned HOST_WIDE_INT, (void),
  NULL)
+
+DEFHOOK
+(asan_dynamic_shadow_offset_p,
+ "Return true if asan should use dynamic shadow offset.",
+ bool, (void),
+ hook_bool_void_false)
 
 /* Functions relating to calls - argument passing, returns, etc.  */
 /* Members of struct call have no special macro prefix.  */
@@ -6979,6 +7000,16 @@ HOOK_VECTOR_END (shrink_wrap)
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
 
+DEFHOOK
+(avoid_store_forwarding_p,
+ "Given a list of stores and a load instruction that reads from the location\n\
+of the stores, this hook decides if it's profitable to emit additional code\n\
+to avoid a potential store forwarding stall.  The additional instructions\n\
+needed, the sequence cost and additional relevant information is given in\n\
+the arguments so that the target can make an informed decision.",
+ bool, (vec<store_fwd_info>, rtx, int, bool),
+ default_avoid_store_forwarding_p)
+
 /* Determine the type of unwind info to emit for debugging.  */
 DEFHOOK
 (debug_unwind_info,
@@ -7459,6 +7490,15 @@ DEFHOOKPOD
  "This value is true if the target platform supports\n\
 libatomic.  The default value is false.",
  bool, false)
+
+/* This value represents whether libatomic is available on
+   the target platform.  */
+DEFHOOKPOD
+(documentation_name,
+ "If non-NULL, this value is a string used for locating target-specific\
+ documentation for this target.\n\
+The default value is NULL.",
+ const char *, NULL)
 
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

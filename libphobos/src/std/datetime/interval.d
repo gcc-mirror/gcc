@@ -137,7 +137,7 @@ public:
         --------------------
       +/
     this(U)(scope const TP begin, scope const U end) pure
-        if (is(immutable TP == immutable U))
+    if (is(immutable TP == immutable U))
     {
         if (!_valid(begin, end))
             throw new DateTimeException("Arguments would result in an invalid Interval.");
@@ -162,7 +162,7 @@ public:
         --------------------
       +/
     this(D)(scope const TP begin, scope const D duration) pure
-        if (__traits(compiles, begin + duration))
+    if (__traits(compiles, begin + duration))
     {
         _begin = cast(TP) begin;
         _end = begin + duration;
@@ -1118,7 +1118,7 @@ public:
         --------------------
       +/
     void shift(D)(D duration) pure
-        if (__traits(compiles, begin + duration))
+    if (__traits(compiles, begin + duration))
     {
         _enforceNotEmpty();
 
@@ -1168,7 +1168,7 @@ public:
             --------------------
           +/
         void shift(T)(T years, T months = 0, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-            if (isIntegral!T)
+        if (isIntegral!T)
         {
             _enforceNotEmpty();
 
@@ -1215,7 +1215,7 @@ public:
         --------------------
       +/
     void expand(D)(D duration, Direction dir = Direction.both) pure
-        if (__traits(compiles, begin + duration))
+    if (__traits(compiles, begin + duration))
     {
         _enforceNotEmpty();
 
@@ -3919,7 +3919,7 @@ assert(interval2 == PosInfInterval!Date(Date(1995, 11, 13)));
 --------------------
       +/
     void shift(D)(D duration) pure nothrow
-        if (__traits(compiles, begin + duration))
+    if (__traits(compiles, begin + duration))
     {
         _begin += duration;
     }
@@ -3960,7 +3960,7 @@ assert(interval2 == PosInfInterval!Date(Date(1995, 11, 13)));
 --------------------
           +/
         void shift(T)(T years, T months = 0, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-            if (isIntegral!T)
+        if (isIntegral!T)
         {
             auto begin = _begin;
 
@@ -3992,7 +3992,7 @@ assert(interval2 == PosInfInterval!Date(Date(1996, 1, 4)));
 --------------------
       +/
     void expand(D)(D duration) pure nothrow
-        if (__traits(compiles, begin + duration))
+    if (__traits(compiles, begin + duration))
     {
         _begin -= duration;
     }
@@ -4028,7 +4028,7 @@ assert(interval2 == PosInfInterval!Date(Date(1998, 1, 2)));
 --------------------
           +/
         void expand(T)(T years, T months = 0, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-            if (isIntegral!T)
+        if (isIntegral!T)
         {
             auto begin = _begin;
 
@@ -6145,7 +6145,7 @@ assert(interval2 == NegInfInterval!Date( Date(2012, 2, 15)));
 --------------------
       +/
     void shift(D)(D duration) pure nothrow
-        if (__traits(compiles, end + duration))
+    if (__traits(compiles, end + duration))
     {
         _end += duration;
     }
@@ -6185,7 +6185,7 @@ assert(interval2 == NegInfInterval!Date(Date(2010, 3, 1)));
 --------------------
           +/
         void shift(T)(T years, T months = 0, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-            if (isIntegral!T)
+        if (isIntegral!T)
         {
             auto end = _end;
 
@@ -6217,7 +6217,7 @@ assert(interval2 == NegInfInterval!Date(Date(2012, 2, 28)));
 --------------------
       +/
     void expand(D)(D duration) pure nothrow
-        if (__traits(compiles, end + duration))
+    if (__traits(compiles, end + duration))
     {
         _end += duration;
     }
@@ -6253,7 +6253,7 @@ assert(interval2 == NegInfInterval!Date(Date(2010, 3, 1)));
 --------------------
           +/
         void expand(T)(T years, T months = 0, AllowDayOverflow allowOverflow = AllowDayOverflow.yes)
-            if (isIntegral!T)
+        if (isIntegral!T)
         {
             auto end = _end;
 

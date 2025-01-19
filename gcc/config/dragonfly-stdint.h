@@ -1,5 +1,5 @@
 /* Definitions for <stdint.h> types for DragonFly systems.
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
    Contributed by John Marino <gnugcc@marino.st>
 
 This file is part of GCC.

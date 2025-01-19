@@ -20,4 +20,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Inlining foo/0 into main/2"  "einline" } } */
+/* { dg-final { scan-tree-dump "Inlining foo/1 into main/3"  "einline" } } */

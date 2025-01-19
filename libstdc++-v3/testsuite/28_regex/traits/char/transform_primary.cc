@@ -4,7 +4,7 @@
 //
 // 2010-02-17  Stephen M. Webb <stephen.webb@bregmasoft.ca>
 //
-// Copyright (C) 2010-2024 Free Software Foundation, Inc.
+// Copyright (C) 2010-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +21,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 28.3 Requirements [re.req]
-// 28.2 (4) Table 127 - Regular expression traits class requirements
-// 28.7 Class template regex_traits [re.traits]
+// C++11 28.3 Requirements [re.req]
+// C++11 28.3 (4) Table 137 - Regular expression traits class requirements
+// C++11 28.7 Class template regex_traits [re.traits]
 
 #include <regex>
 #include <string>

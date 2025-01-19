@@ -1,0 +1,30 @@
+#include <type_traits>
+
+/* Use std::remove_pointer_t<T> here in order to make `int *` fail when using
+   the INVALID_PARAMETERS block.  Pointers of two different types are allowed
+   in __builtin_speculation_safe_value, it's one argument of a pointer and
+   another argument that is not a pointer that give errors.  */
+#define SPECULATION_SFINAES                                                    \
+  SFINAE_TYPE_CHECK ((std::declval<T> (), std::declval<T> ()),                 \
+		     (std::declval<T> ()),                                     \
+		     (std::declval<std::remove_pointer_t<T>> (), std::declval<T *> ()))
+
+SPECULATION_SFINAES
+
+class X{};
+class Large { public: int arr[10]; };
+class Incomplete;
+
+#define SPECULATION_ASSERTS                                                    \
+  MAKE_SPECULATION_ASSERT (int, true)                                          \
+  MAKE_SPECULATION_ASSERT (float, false)                                       \
+  MAKE_SPECULATION_ASSERT (X, false)                                           \
+  MAKE_SPECULATION_ASSERT (Large, false)                                       \
+  MAKE_SPECULATION_ASSERT (Incomplete, false)                                  \
+  MAKE_SPECULATION_ASSERT (int *, true)                                        \
+  MAKE_SPECULATION_ASSERT (long, true)
+
+int main() {
+    SPECULATION_ASSERTS
+    return 0;
+}

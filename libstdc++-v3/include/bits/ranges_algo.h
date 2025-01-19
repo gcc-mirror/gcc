@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2020-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -595,6 +595,13 @@ namespace ranges
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3560. ranges::is_permutation should short-circuit for sized_ranges
+	if constexpr (sized_range<_Range1>)
+	  if constexpr (sized_range<_Range2>)
+	    if (ranges::distance(__r1) != ranges::distance(__r2))
+	      return false;
+
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
 		       ranges::begin(__r2), ranges::end(__r2),
 		       std::move(__pred),
@@ -2945,11 +2952,11 @@ namespace ranges
 	auto __result = *__first;
 	while (++__first != __last)
 	  {
-	    auto __tmp = *__first;
+	    auto&& __tmp = *__first;
 	    if (std::__invoke(__comp,
 			      std::__invoke(__proj, __result),
 			      std::__invoke(__proj, __tmp)))
-	      __result = std::move(__tmp);
+	      __result = std::forward<decltype(__tmp)>(__tmp);
 	  }
 	return __result;
       }

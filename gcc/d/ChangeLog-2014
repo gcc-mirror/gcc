@@ -651,7 +651,6 @@
 	(d_finish_function): Set function local if function body was compiled.
 	* d-decls.cc (Dsymbol::toSymbolX): Use unsigned integer format for the
 	prefix string length.
-
 
 Copyright (C) 2014 Free Software Foundation, Inc.
 

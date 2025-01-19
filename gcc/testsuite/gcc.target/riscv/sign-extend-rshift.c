@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-march=rv32gc" { target { rv32 } } } */
 /* { dg-options "-march=rv64gc" { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } {"-O0" "-O1" "-Os" "-Og" "-Oz" "-flto" } } */
@@ -84,7 +84,7 @@ SLONG_EXT_SSHORT_RSHIFT_N_SLONG(63)
 
 #if __riscv_xlen == 64
 // Below "slli ((32+16)-N); srai (32+16)" for rv64
-//    or "slli (16-N); sraiw 16" for rv64
+//    or "slli (16-N); srai 16" for rv64
 SINT_EXT_SSHORT_RSHIFT_N_SINT(1)
 SINT_EXT_SSHORT_RSHIFT_N_SINT(7)
 SINT_EXT_SSHORT_RSHIFT_N_SINT(8)
@@ -104,7 +104,7 @@ SINT_EXT_SSHORT_RSHIFT_N_SINT(31)
 
 // Below "slli (16-N); srai 16" for rv32
 // Below "slli ((32+16)-N); srai (32+16)" for rv64
-//    or "slli (16-N); sraiw 16" for rv64
+//    or "slli (16-N); srai 16" for rv64
 SINT_EXT_SSHORT_RSHIFT_N_SLONG(9)
 SINT_EXT_SSHORT_RSHIFT_N_SLONG(15)
 
@@ -119,5 +119,5 @@ SLONG_EXT_SSHORT_RSHIFT_N_SINT(15)
 /* { dg-final { scan-assembler-times "srai\t" 26 { target { rv32 } } } } */
 
 /* { dg-final { scan-assembler-times "slli\t" 44 { target { rv64 } } } } */
-/* { dg-final { scan-assembler-times "srai\t" 51 { target { rv64 } } } } */
-/* { dg-final { scan-assembler-times "sraiw\t" 10 { target { rv64 } } } } */
+/* { dg-final { scan-assembler-times "srai\t" 58 { target { rv64 } } } } */
+/* { dg-final { scan-assembler-times "sraiw\t" 3 { target { rv64 } } } } */

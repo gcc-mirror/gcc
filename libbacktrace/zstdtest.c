@@ -1,5 +1,5 @@
 /* ztest.c -- Test for libbacktrace zstd code.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -379,8 +379,7 @@ test_large (struct backtrace_state *state ATTRIBUTE_UNUSED)
     }
 
   r = ZSTD_compress (compressed_buf, compressed_bufsize,
-		     orig_buf, orig_bufsize,
-		     ZSTD_CLEVEL_DEFAULT);
+		     orig_buf, orig_bufsize, 3);
   if (ZSTD_isError (r))
     {
       fprintf (stderr, "zstd compress failed: %s\n", ZSTD_getErrorName (r));

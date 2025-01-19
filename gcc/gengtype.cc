@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1254,6 +1254,11 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      subname = "rt_int";
 	      break;
 
+	    case 'L':
+	      t = scalar_tp;
+	      subname = "rt_loc";
+	      break;
+
 	    case 'p':
 	      t = scalar_tp;
 	      subname = "rt_subreg";
@@ -1600,7 +1605,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004-2024 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2025 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
@@ -1724,7 +1729,6 @@ open_base_files (void)
     outf_p gtype_desc_c;
 
     gtype_desc_c = create_file ("GCC", "gtype-desc.cc");
-    oprintf (gtype_desc_c, "#define INCLUDE_MEMORY\n");
     for (ifp = ifiles; *ifp; ifp++)
       oprintf (gtype_desc_c, "#include \"%s\"\n", *ifp);
     for (int j = 0; j < (int) num_build_headers; j++)

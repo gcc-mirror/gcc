@@ -84,7 +84,7 @@ Expression expandVar(int result, VarDeclaration v)
     {
         Type tb = v.type.toBasetype();
         if (v.storage_class & STC.manifest ||
-            tb.isscalar() ||
+            tb.isScalar() ||
             ((result & WANTexpand) && (tb.ty != Tsarray && tb.ty != Tstruct)))
         {
             if (v._init)
@@ -110,7 +110,7 @@ Expression expandVar(int result, VarDeclaration v)
                 }
                 if (ei.op == EXP.construct || ei.op == EXP.blit)
                 {
-                    AssignExp ae = cast(AssignExp)ei;
+                    auto ae = cast(AssignExp)ei;
                     ei = ae.e2;
                     if (ei.isConst() == 1)
                     {
@@ -183,31 +183,29 @@ private Expression fromConstInitializer(int result, Expression e1)
 {
     //printf("fromConstInitializer(result = %x, %s)\n", result, e1.toChars());
     //static int xx; if (xx++ == 10) assert(0);
+    auto ve = e1.isVarExp();
+    if (!ve)
+        return e1;
+
     Expression e = e1;
-    if (auto ve = e1.isVarExp())
+    VarDeclaration v = ve.var.isVarDeclaration();
+    e = expandVar(result, v);
+    if (!e)
+        return e1;
+
+    // If it is a comma expression involving a declaration, we mustn't
+    // perform a copy -- we'd get two declarations of the same variable.
+    // See https://issues.dlang.org/show_bug.cgi?id=4465.
+    if (e.op == EXP.comma && e.isCommaExp().e1.isDeclarationExp())
+        e = e1;
+    else if (e.type != e1.type && e1.type && e1.type.ty != Tident)
     {
-        VarDeclaration v = ve.var.isVarDeclaration();
-        e = expandVar(result, v);
-        if (e)
-        {
-            // If it is a comma expression involving a declaration, we mustn't
-            // perform a copy -- we'd get two declarations of the same variable.
-            // See https://issues.dlang.org/show_bug.cgi?id=4465.
-            if (e.op == EXP.comma && e.isCommaExp().e1.isDeclarationExp())
-                e = e1;
-            else if (e.type != e1.type && e1.type && e1.type.ty != Tident)
-            {
-                // Type 'paint' operation
-                e = e.copy();
-                e.type = e1.type;
-            }
-            e.loc = e1.loc;
-        }
-        else
-        {
-            e = e1;
-        }
+        // Type 'paint' operation
+        e = e.copy();
+        e.type = e1.type;
     }
+    e.loc = e1.loc;
+
     return e;
 }
 
@@ -372,10 +370,10 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
 
     void visitStructLiteral(StructLiteralExp e)
     {
-        if (e.stageflags & stageOptimize)
+        if (e.stageflags & StructLiteralExp.StageFlags.optimize)
             return;
         const old = e.stageflags;
-        e.stageflags |= stageOptimize;
+        e.stageflags |= StructLiteralExp.StageFlags.optimize;
         if (e.elements)
         {
             foreach (ref ex; (*e.elements)[])
@@ -1071,7 +1069,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         if (binOptimize(e, result))
             return;
         // All negative integral powers are illegal.
-        if (e.e1.type.isintegral() && (e.e2.op == EXP.int64) && cast(sinteger_t)e.e2.toInteger() < 0)
+        if (e.e1.type.isIntegral() && (e.e2.op == EXP.int64) && cast(sinteger_t)e.e2.toInteger() < 0)
         {
             error(e.loc, "cannot raise `%s` to a negative integer power. Did you mean `(cast(real)%s)^^%s` ?", e.e1.type.toBasetype().toChars(), e.e1.toChars(), e.e2.toChars());
             return errorReturn();
@@ -1080,7 +1078,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         if (e.e2.op == EXP.float64 && e.e2.toReal() == real_t(cast(sinteger_t)e.e2.toReal()))
         {
             // This only applies to floating point, or positive integral powers.
-            if (e.e1.type.isfloating() || cast(sinteger_t)e.e2.toInteger() >= 0)
+            if (e.e1.type.isFloating() || cast(sinteger_t)e.e2.toInteger() >= 0)
                 e.e2 = new IntegerExp(e.loc, e.e2.toInteger(), Type.tint64);
         }
         if (e.e1.isConst() == 1 && e.e2.isConst() == 1)
@@ -1238,18 +1236,21 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         if (expOptimize(e.e1, WANTvalue))
             return;
         const oror = e.op == EXP.orOr;
+        void returnE_e1()
+        {
+            ret = e.e1;
+            if (!e.e1.type.equals(e.type))
+            {
+                ret = new CastExp(e.loc, ret, e.type);
+                ret.type = e.type;
+                ret = optimize(ret, result, false);
+            }
+        }
         if (e.e1.toBool().hasValue(oror))
         {
-            // Replace with (e1, oror)
-            ret = IntegerExp.createBool(oror);
-            ret = Expression.combine(e.e1, ret);
-            if (e.type.toBasetype().ty == Tvoid)
-            {
-                ret = new CastExp(e.loc, ret, Type.tvoid);
-                ret.type = e.type;
-            }
-            ret = optimize(ret, result, false);
-            return;
+            // e_true || e2 -> e_true
+            // e_false && e2 -> e_false
+            return returnE_e1();
         }
         expOptimize(e.e2, WANTvalue);
         if (e.e1.isConst())
@@ -1263,6 +1264,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
             }
             else if (e1Opt.hasValue(!oror))
             {
+
                 if (e.type.toBasetype().ty == Tvoid)
                     ret = e.e2;
                 else
@@ -1270,6 +1272,29 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
                     ret = new CastExp(e.loc, e.e2, e.type);
                     ret.type = e.type;
                 }
+            }
+        }
+        else if (e.e2.isConst())
+        {
+            const e2Opt = e.e2.toBool();
+            if (e2Opt.hasValue(oror))
+            {
+                // e1 || true -> (e1, true)
+                // e1 && false -> (e1, false)
+                ret = IntegerExp.createBool(oror);
+                ret = Expression.combine(e.e1, ret);
+                if (e.type.toBasetype().ty == Tvoid)
+                {
+                    ret = new CastExp(e.loc, ret, Type.tvoid);
+                    ret.type = e.type;
+                }
+                ret = optimize(ret, result, false);
+            }
+            else if (e2Opt.hasValue(!oror))
+            {
+                // e1 || false -> e1
+                // e1 && true -> e1
+                return returnE_e1();
             }
         }
     }

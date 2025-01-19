@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2024 Free Software Foundation, Inc.
+   Copyright (C) 2010-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -450,6 +450,12 @@ struct GTY(()) cp_parser {
   /* Pointer to state for parsing omp_loops.  Managed by
      cp_parser_omp_for_loop in parser.cc and not used outside that file.  */
   struct omp_for_parse_data * GTY((skip)) omp_for_parse_state;
+
+  /* Non-null only when parsing the body of an OpenMP metadirective.
+     Managed by cp_parser_omp_metadirective in parser.cc and not used
+     outside that file.  */
+  struct omp_metadirective_parse_data * GTY((skip))
+    omp_metadirective_state;
 };
 
 /* In parser.cc  */

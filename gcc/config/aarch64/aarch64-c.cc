@@ -1,5 +1,5 @@
 /* Target-specific code for C family languages.
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -193,27 +193,35 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SIMD_RDMA, "__ARM_FEATURE_QRDMX", pfile);
   aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE", pfile);
   cpp_undef (pfile, "__ARM_FEATURE_SVE_BITS");
+  cpp_undef (pfile, "__ARM_FEATURE_SVE_VECTOR_OPERATORS");
   if (TARGET_SVE)
     {
       int bits;
+      int ops = 1;
       if (!BITS_PER_SVE_VECTOR.is_constant (&bits))
-	bits = 0;
+	{
+	  bits = 0;
+	  ops = 2;
+	}
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
+      builtin_define_with_int_value ("__ARM_FEATURE_SVE_VECTOR_OPERATORS", ops);
     }
-  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE_VECTOR_OPERATORS",
-			pfile);
   aarch64_def_or_undef (TARGET_SVE_I8MM,
 			"__ARM_FEATURE_SVE_MATMUL_INT8", pfile);
   aarch64_def_or_undef (TARGET_SVE_F32MM,
 			"__ARM_FEATURE_SVE_MATMUL_FP32", pfile);
   aarch64_def_or_undef (TARGET_SVE_F64MM,
 			"__ARM_FEATURE_SVE_MATMUL_FP64", pfile);
+  aarch64_def_or_undef (AARCH64_HAVE_ISA (SVE_B16B16)
+			&& (TARGET_SVE2 || TARGET_SME2),
+			"__ARM_FEATURE_SVE_B16B16", pfile);
   aarch64_def_or_undef (TARGET_SVE2, "__ARM_FEATURE_SVE2", pfile);
   aarch64_def_or_undef (TARGET_SVE2_AES, "__ARM_FEATURE_SVE2_AES", pfile);
   aarch64_def_or_undef (TARGET_SVE2_BITPERM,
 			"__ARM_FEATURE_SVE2_BITPERM", pfile);
   aarch64_def_or_undef (TARGET_SVE2_SHA3, "__ARM_FEATURE_SVE2_SHA3", pfile);
   aarch64_def_or_undef (TARGET_SVE2_SM4, "__ARM_FEATURE_SVE2_SM4", pfile);
+  aarch64_def_or_undef (TARGET_SVE2p1, "__ARM_FEATURE_SVE2p1", pfile);
 
   aarch64_def_or_undef (TARGET_LSE, "__ARM_FEATURE_ATOMICS", pfile);
   aarch64_def_or_undef (TARGET_AES, "__ARM_FEATURE_AES", pfile);
@@ -247,6 +255,9 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_PAUTH, "__ARM_FEATURE_PAUTH", pfile);
   aarch64_def_or_undef (TARGET_BTI, "__ARM_FEATURE_BTI", pfile);
+  aarch64_def_or_undef (aarch64_gcs_enabled (),
+			"__ARM_FEATURE_GCS_DEFAULT", pfile);
+  aarch64_def_or_undef (TARGET_GCS, "__ARM_FEATURE_GCS", pfile);
   aarch64_def_or_undef (TARGET_I8MM, "__ARM_FEATURE_MATMUL_INT8", pfile);
   aarch64_def_or_undef (TARGET_BF16_SIMD,
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);
@@ -257,6 +268,14 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SVE_BF16,
 			"__ARM_FEATURE_SVE_BF16", pfile);
 
+  aarch64_def_or_undef (TARGET_FP8, "__ARM_FEATURE_FP8", pfile);
+
+  aarch64_def_or_undef (TARGET_FP8DOT2, "__ARM_FEATURE_FP8DOT2", pfile);
+
+  aarch64_def_or_undef (TARGET_FP8DOT4, "__ARM_FEATURE_FP8DOT4", pfile);
+
+  aarch64_def_or_undef (TARGET_FP8FMA, "__ARM_FEATURE_FP8FMA", pfile);
+
   aarch64_def_or_undef (TARGET_LS64,
 			"__ARM_FEATURE_LS64", pfile);
   aarch64_def_or_undef (TARGET_RCPC, "__ARM_FEATURE_RCPC", pfile);
@@ -264,8 +283,14 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_SME, "__ARM_FEATURE_SME", pfile);
   aarch64_def_or_undef (TARGET_SME_I16I64, "__ARM_FEATURE_SME_I16I64", pfile);
+  aarch64_def_or_undef (AARCH64_HAVE_ISA (SME_B16B16),
+			"__ARM_FEATURE_SME_B16B16", pfile);
+  aarch64_def_or_undef (AARCH64_HAVE_ISA (SME_F16F16),
+			"__ARM_FEATURE_SME_F16F16", pfile);
   aarch64_def_or_undef (TARGET_SME_F64F64, "__ARM_FEATURE_SME_F64F64", pfile);
   aarch64_def_or_undef (TARGET_SME2, "__ARM_FEATURE_SME2", pfile);
+  aarch64_def_or_undef (AARCH64_HAVE_ISA (SME2p1),
+			"__ARM_FEATURE_SME2p1", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
@@ -365,11 +390,10 @@ aarch64_pragma_aarch64 (cpp_reader *)
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
 static tree
-aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
-				    tree fndecl, void *uncast_arglist)
+aarch64_resolve_overloaded_builtin (location_t location,
+				    tree fndecl, void *uncast_arglist, bool)
 {
   vec<tree, va_gc> empty = {};
-  location_t location = (location_t) uncast_location;
   vec<tree, va_gc> *arglist = (uncast_arglist
 			       ? (vec<tree, va_gc> *) uncast_arglist
 			       : &empty);
@@ -395,8 +419,8 @@ aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 static bool
 aarch64_check_builtin_call (location_t loc, vec<location_t> arg_loc,
-			    tree fndecl, tree orig_fndecl,
-			    unsigned int nargs, tree *args)
+			    tree fndecl, tree orig_fndecl, unsigned int nargs,
+			    tree *args, bool)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;

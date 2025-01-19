@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2024 Free Software Foundation, Inc.
+   Copyright (C) 2005-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1179,6 +1179,7 @@ ipcp_get_transformation_summary (cgraph_node *node)
 
 /* Function formal parameters related computations.  */
 void ipa_initialize_node_params (struct cgraph_node *node);
+void ipa_print_constant_value (FILE *f, tree val);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					vec<cgraph_edge *> *new_edges);
 
@@ -1247,6 +1248,8 @@ void ipa_push_agg_values_from_jfunc (ipa_node_params *info, cgraph_node *node,
 				     unsigned dst_index,
 				     vec<ipa_argagg_value> *res);
 void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
+void ipa_dump_jump_function (FILE *f, ipa_jump_func *jfunc,
+			     class ipa_polymorphic_call_context *ctx = NULL);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
 bool ipcp_get_parm_bits (tree, tree *, widest_int *);
@@ -1255,7 +1258,7 @@ tree ipcp_get_aggregate_const (struct function *func, tree parm, bool by_ref,
 			       HOST_WIDE_INT bit_size);
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
-
+void ipa_get_range_from_ip_invariant (vrange &r, tree val, cgraph_node *node);
 void ipa_prop_cc_finalize (void);
 
 /* From tree-sra.cc:  */
@@ -1264,19 +1267,6 @@ tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 
 /* In ipa-cp.cc  */
 void ipa_cp_cc_finalize (void);
-
-/* Set R to the range of [VAL, VAL] while normalizing addresses to
-   non-zero.  */
-
-inline void
-ipa_range_set_and_normalize (vrange &r, tree val)
-{
-  if (TREE_CODE (val) == ADDR_EXPR)
-    r.set_nonzero (TREE_TYPE (val));
-  else
-    r.set (val, val);
-}
-
 bool ipa_return_value_range (value_range &range, tree decl);
 void ipa_record_return_value_range (value_range val);
 bool ipa_jump_functions_equivalent_p (ipa_jump_func *jf1, ipa_jump_func *jf2);

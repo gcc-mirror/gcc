@@ -1,5 +1,5 @@
 /* Preprocess only, using cpplib.
-   Copyright (C) 1995-2024 Free Software Foundation, Inc.
+   Copyright (C) 1995-2025 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
    This program is free software; you can redistribute it and/or modify it
@@ -95,7 +95,6 @@ preprocess_file (cpp_reader *pfile)
       if (flag_modules)
 	{
 	  /* For macros from imported headers we need directives_only_cb.  */
-	  cpp_get_options (pfile)->directives_only = true;
 	  scan_translation_unit_directives_only (pfile);
 	}
       else

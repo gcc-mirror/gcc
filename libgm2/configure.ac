@@ -1,5 +1,5 @@
 # Configure script for libgm2.
-# Copyright (C) 2013-2023 Free Software Foundation, Inc.
+# Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -27,7 +27,7 @@ AC_CONFIG_SRCDIR(Makefile.am)
 # AC_CONFIG_MACRO_DIR([config])
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=19:0:0
+libtool_VERSION=20:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)

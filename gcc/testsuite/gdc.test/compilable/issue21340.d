@@ -1,5 +1,5 @@
-version (CppRuntime_Clang) version = CppMangle_Itanium;
-version (CppRuntime_Gcc)   version = CppMangle_Itanium;
+version (CppRuntime_LLVM) version = CppMangle_Itanium;
+version (CppRuntime_GNU)   version = CppMangle_Itanium;
 version (CppRuntime_Sun)   version = CppMangle_Itanium;
 
 template ScopeClass(C)

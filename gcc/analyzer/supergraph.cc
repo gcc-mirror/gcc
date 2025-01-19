@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2024 Free Software Foundation, Inc.
+   Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -738,7 +737,7 @@ supernode::to_json () const
 
   /* Phi nodes.  */
   {
-    json::array *phi_arr = new json::array ();
+    auto phi_arr = ::make_unique<json::array> ();
     for (gphi_iterator gpi = const_cast<supernode *> (this)->start_phis ();
 	 !gsi_end_p (gpi); gsi_next (&gpi))
       {
@@ -748,12 +747,12 @@ supernode::to_json () const
 	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
 	phi_arr->append_string (pp_formatted_text (&pp));
       }
-    snode_obj->set ("phis", phi_arr);
+    snode_obj->set ("phis", std::move (phi_arr));
   }
 
   /* Statements.  */
   {
-    json::array *stmt_arr = new json::array ();
+    auto stmt_arr = ::make_unique<json::array> ();
     int i;
     gimple *stmt;
     FOR_EACH_VEC_ELT (m_stmts, i, stmt)
@@ -763,7 +762,7 @@ supernode::to_json () const
 	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
 	stmt_arr->append_string (pp_formatted_text (&pp));
       }
-    snode_obj->set ("stmts", stmt_arr);
+    snode_obj->set ("stmts", std::move (stmt_arr));
   }
 
   return snode_obj;

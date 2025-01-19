@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992-2024 Free Software Foundation, Inc.
+;; Copyright (C) 1992-2025 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
 ;; This file is part of GCC.
@@ -4201,7 +4201,7 @@
 })
 
 ;; For the unaligned byte and halfword cases, we use code similar to that
-;; in the ;; Architecture book, but reordered to lower the number of registers
+;; in the Architecture book, but reordered to lower the number of registers
 ;; required.  Operand 0 is the address.  Operand 1 is the data to store.
 ;; Operands 2, 3, and 4 are DImode temporaries, where operands 2 and 4 may
 ;; be the same temporary, if desired.  If the address is in a register,
@@ -4626,7 +4626,7 @@
   [(set (zero_extract:DI (match_operand:BLK 0 "memory_operand")
 			 (match_operand:DI 1 "const_int_operand")
 			 (match_operand:DI 2 "const_int_operand"))
-	(match_operand:DI 3 "register_operand"))]
+	(match_operand:DI 3 "reg_or_0_operand"))]
   ""
 {
   /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
@@ -5005,11 +5005,27 @@
   rtx pv = gen_rtx_REG (Pmode, 27);
 
   /* This bit is the same as expand_builtin_longjmp.  */
-  emit_move_insn (hard_frame_pointer_rtx, fp);
+
+  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
+  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
+
   emit_move_insn (pv, lab);
+
+  /* Restore the frame pointer and stack pointer.  We must use a
+     temporary since the setjmp buffer may be a local.  */
+  fp = copy_to_reg (fp);
   emit_stack_restore (SAVE_NONLOCAL, stack);
+
+  /* Ensure the frame pointer move is not optimized.  */
+  emit_insn (gen_blockage ());
+  emit_clobber (hard_frame_pointer_rtx);
+  emit_clobber (frame_pointer_rtx);
+  emit_move_insn (hard_frame_pointer_rtx, fp);
+
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
+
+  /* End of the bit corresponding to expand_builtin_longjmp.  */
 
   /* Load the label we are jumping through into $27 so that we know
      where to look for it when we get back to setjmp's function for
@@ -5171,7 +5187,7 @@
     }
   };
 
-  bool write = INTVAL (operands[1]) != 0;
+  bool write = (INTVAL (operands[1]) & 1) != 0;
   bool lru = INTVAL (operands[2]) != 0;
 
   return alt[write][lru];

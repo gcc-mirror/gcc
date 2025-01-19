@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2011-2024 Free Software Foundation, Inc.
+   Copyright (C) 2011-2025 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -34,6 +34,9 @@ extern bool asan_expand_mark_ifn (gimple_stmt_iterator *);
 extern bool asan_expand_poison_ifn (gimple_stmt_iterator *, bool *,
 				    hash_map<tree, tree> &);
 extern rtx asan_memfn_rtl (tree);
+
+extern void
+asan_maybe_insert_dynamic_shadow_at_function_entry (function *);
 
 extern void hwasan_record_frame_init ();
 extern void hwasan_record_stack_var (rtx, rtx, poly_int64, poly_int64);

@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -66,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "profile.h"
 #include "sreal.h"
+#include "gcc-urlifier.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -1251,7 +1251,7 @@ assign_discriminators (void)
 	    }
 	  /* Allocate a new discriminator for CALL stmt.  */
 	  if (gimple_code (stmt) == GIMPLE_CALL)
-	    curr_discr = next_discriminator_for_locus (curr_locus);
+	    curr_discr = next_discriminator_for_locus (curr_locus_e.line);
 	}
 
       gimple *last = last_nondebug_stmt (bb);
@@ -3176,7 +3176,7 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	      return true;
 	    }
 	  if (!AGGREGATE_TYPE_P (TREE_TYPE (op))
-	      && maybe_gt (size + bitpos,
+	      && known_gt (size + bitpos,
 			   tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (op)))))
 	    {
 	      error ("position plus size exceeds size of referenced object in "
@@ -5344,6 +5344,7 @@ tree_node_can_be_shared (tree t)
       || TREE_CODE (t) == SSA_NAME
       || TREE_CODE (t) == IDENTIFIER_NODE
       || TREE_CODE (t) == CASE_LABEL_EXPR
+      || TREE_CODE (t) == OMP_NEXT_VARIANT
       || is_gimple_min_invariant (t))
     return true;
 
@@ -9938,6 +9939,8 @@ do_warn_unused_result (gimple_seq seq)
 
 	  if (lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (ftype)))
 	    {
+	      auto_urlify_attributes sentinel;
+
 	      location_t loc = gimple_location (g);
 
 	      if (fdecl)

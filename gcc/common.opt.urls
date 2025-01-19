@@ -223,6 +223,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-suggest-attribute_003dnoreturn)
 Wsuggest-attribute=malloc
 UrlSuffix(gcc/Warning-Options.html#index-Wno-suggest-attribute_003dmalloc)
 
+Wsuggest-attribute=returns_nonnull
+UrlSuffix(gcc/Warning-Options.html#index-Wno-suggest-attribute_003dreturns_005fnonnull)
+
 Wsuggest-final-types
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-suggest-final-types)
 
@@ -234,6 +237,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-switch-unreachable)
 
 Wsystem-headers
 UrlSuffix(gcc/Warning-Options.html#index-Wno-system-headers)
+
+Wtautological-compare
+UrlSuffix(gcc/Warning-Options.html#index-Wno-tautological-compare)
 
 Wtrampolines
 UrlSuffix(gcc/Warning-Options.html#index-Wno-trampolines)
@@ -706,6 +712,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fgcse-lm)
 fgcse-sm
 UrlSuffix(gcc/Optimize-Options.html#index-fgcse-sm)
 
+favoid-store-forwarding
+UrlSuffix(gcc/Optimize-Options.html#index-favoid-store-forwarding)
+
 fgcse-las
 UrlSuffix(gcc/Optimize-Options.html#index-fgcse-las)
 
@@ -717,9 +726,6 @@ UrlSuffix(gcc/Optimize-Options.html#index-fgraphite-identity)
 
 fhoist-adjacent-loads
 UrlSuffix(gcc/Optimize-Options.html#index-fhoist-adjacent-loads)
-
-flarge-source-files
-UrlSuffix(gcc/Preprocessor-Options.html#index-flarge-source-files)
 
 flate-combine-instructions
 UrlSuffix(gcc/Optimize-Options.html#index-flate-combine-instructions)
@@ -947,6 +953,12 @@ UrlSuffix(gcc/Optimize-Options.html#index-fmath-errno)
 fmax-errors=
 UrlSuffix(gcc/Warning-Options.html#index-fmax-errors) LangUrlSuffix_D(gdc/Warnings.html#index-fmax-errors)
 
+fmalloc-dce
+UrlSuffix(gcc/Optimize-Options.html#index-fmalloc-dce)
+
+fmalloc-dce=
+UrlSuffix(gcc/Optimize-Options.html#index-fmalloc-dce)
+
 fmem-report
 UrlSuffix(gcc/Developer-Options.html#index-fmem-report)
 
@@ -993,25 +1005,28 @@ fnon-call-exceptions
 UrlSuffix(gcc/Code-Gen-Options.html#index-fnon-call-exceptions)
 
 foffload=
-UrlSuffix(gcc/C-Dialect-Options.html#index-foffload)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-foffload)
 
 foffload-options=
-UrlSuffix(gcc/C-Dialect-Options.html#index-foffload-options)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-foffload-options)
 
 fomit-frame-pointer
 UrlSuffix(gcc/Optimize-Options.html#index-fomit-frame-pointer)
 
 fopenmp-target-simd-clone
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp-target-simd-clone)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-target-simd-clone)
 
 fopenmp-target-simd-clone=
-UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp-target-simd-clone)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-target-simd-clone)
 
 fopt-info
 UrlSuffix(gcc/Developer-Options.html#index-fopt-info)
 
 fsave-optimization-record
 UrlSuffix(gcc/Developer-Options.html#index-fsave-optimization-record)
+
+foptimize-crc
+UrlSuffix(gcc/Optimize-Options.html#index-foptimize-crc)
 
 foptimize-sibling-calls
 UrlSuffix(gcc/Optimize-Options.html#index-foptimize-sibling-calls)
@@ -1163,7 +1178,7 @@ flive-patching=
 UrlSuffix(gcc/Optimize-Options.html#index-flive-patching)
 
 fallocation-dce
-UrlSuffix(gcc/Optimize-Options.html#index-fno-allocation-dce)
+UrlSuffix(gcc/Optimize-Options.html#index-fallocation-dce)
 
 flive-range-shrinkage
 UrlSuffix(gcc/Optimize-Options.html#index-flive-range-shrinkage)

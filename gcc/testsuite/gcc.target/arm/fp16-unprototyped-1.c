@@ -2,7 +2,7 @@
    function in another compilation unit.  */
 
 /* { dg-do run } */
-/* { dg-options "-mfp16-format=ieee" } */
+/* { dg-options "-mfp16-format=ieee -std=c17" } */
 /* { dg-additional-sources "fp16-unprototyped-2.c" } */
 
 #include <stdlib.h>

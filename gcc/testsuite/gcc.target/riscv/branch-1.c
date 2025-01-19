@@ -41,7 +41,8 @@ void f6(long long a)
 }
 
 /* { dg-final { scan-assembler-times "slli\t" 2 } } */
-/* { dg-final { scan-assembler-times "srli\t" 5 } } */
+/* { dg-final { scan-assembler-times "srai\t" 2 } } */
+/* { dg-final { scan-assembler-times "srli\t" 3 } } */
 /* { dg-final { scan-assembler-times "andi\t" 3 } } */
 /* { dg-final { scan-assembler-times "\tli\t" 3 } } */
 /* { dg-final { scan-assembler-not "addi\t" } } */

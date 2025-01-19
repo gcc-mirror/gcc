@@ -1,5 +1,5 @@
 /* JSON trees
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "json.h"
@@ -383,7 +382,7 @@ namespace selftest {
 
 /* Verify that JV->print () prints EXPECTED_JSON.  */
 
-static void
+void
 assert_print_eq (const location &loc,
 		 const json::value &jv,
 		 bool formatted,

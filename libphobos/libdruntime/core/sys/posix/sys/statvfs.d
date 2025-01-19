@@ -84,7 +84,57 @@ version (CRuntime_Glibc) {
         int statvfs (const char * file, statvfs_t* buf);
         int fstatvfs (int fildes, statvfs_t *buf);
     }
+}
+else version (CRuntime_Musl)
+{
+    struct statvfs_t
+    {
+        c_ulong f_bsize;
+        c_ulong f_frsize;
+        fsblkcnt_t f_blocks;
+        fsblkcnt_t f_bfree;
+        fsblkcnt_t f_bavail;
+        fsfilcnt_t f_files;
+        fsfilcnt_t f_ffree;
+        fsfilcnt_t f_favail;
+        static if (true /+__BYTE_ORDER == __LITTLE_ENDIAN+/)
+        {
+            c_ulong f_fsid;
+            byte[2*int.sizeof-c_long.sizeof] __padding;
+        }
+        else
+        {
+            byte[2*int.sizeof-c_long.sizeof] __padding;
+            c_ulong f_fsid;
+        }
+        c_ulong f_flag;
+        c_ulong f_namemax;
+        uint    f_type;
+        int[5]  __reserved;
+    }
 
+    enum FFlag
+    {
+        ST_RDONLY = 1,        /* Mount read-only.  */
+        ST_NOSUID = 2,
+        ST_NODEV = 4,         /* Disallow access to device special files.  */
+        ST_NOEXEC = 8,        /* Disallow program execution.  */
+        ST_SYNCHRONOUS = 16,      /* Writes are synced at once.  */
+        ST_MANDLOCK = 64,     /* Allow mandatory locks on an FS.  */
+        ST_WRITE = 128,       /* Write on file/directory/symlink.  */
+        ST_APPEND = 256,      /* Append-only file.  */
+        ST_IMMUTABLE = 512,       /* Immutable file.  */
+        ST_NOATIME = 1024,        /* Do not update access times.  */
+        ST_NODIRATIME = 2048,     /* Do not update directory access times.  */
+        ST_RELATIME = 4096        /* Update atime relative to mtime/ctime.  */
+
+    }
+
+    int statvfs (const char * file, statvfs_t* buf);
+    int fstatvfs (int fildes, statvfs_t *buf);
+
+    alias statvfs statvfs64;
+    alias fstatvfs fstatvfs64;
 }
 else version (NetBSD)
 {

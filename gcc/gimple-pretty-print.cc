@@ -1,5 +1,5 @@
 /* Pretty formatting of GIMPLE statements and expressions.
-   Copyright (C) 2001-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2025 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Diego Novillo <dnovillo@google.com>
 
@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1727,6 +1726,35 @@ dump_gimple_omp_scope (pretty_printer *pp, const gimple *gs,
     }
 }
 
+/* Dump a GIMPLE_OMP_DISPATCH tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_dispatch (pretty_printer *buffer, const gimple *gs, int spc,
+			  dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_dispatch_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp dispatch");
+      dump_omp_clauses (buffer, gimple_omp_dispatch_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_left_brace (buffer);
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_right_brace (buffer);
+	}
+    }
+}
+
 /* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer PP.  */
 
 static void
@@ -2804,6 +2832,10 @@ pp_gimple_stmt_1 (pretty_printer *pp, const gimple *gs, int spc,
 
     case GIMPLE_OMP_SCOPE:
       dump_gimple_omp_scope (pp, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_DISPATCH:
+      dump_gimple_omp_dispatch(pp, gs, spc, flags);
       break;
 
     case GIMPLE_OMP_MASTER:

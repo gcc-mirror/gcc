@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -613,9 +613,6 @@ package body Sem is
          when N_Type_Conversion =>
             Analyze_Type_Conversion (N);
 
-         when N_Unchecked_Expression =>
-            Analyze_Unchecked_Expression (N);
-
          when N_Unchecked_Type_Conversion =>
             Analyze_Unchecked_Type_Conversion (N);
 
@@ -683,15 +680,6 @@ package body Sem is
          =>
             null;
 
-         --  A quantified expression with a missing "all" or "some" qualifier
-         --  looks identical to an iterated component association. By language
-         --  definition, the latter must be present within array aggregates. If
-         --  this is not the case, then the iterated component association is
-         --  really an illegal quantified expression. Diagnose this scenario.
-
-         when N_Iterated_Component_Association =>
-            Diagnose_Iterated_Component_Association (N);
-
          when N_Iterated_Element_Association =>
             null;   --  May require a more precise error if misplaced.
 
@@ -745,6 +733,7 @@ package body Sem is
             | N_Function_Specification
             | N_Generic_Association
             | N_Index_Or_Discriminant_Constraint
+            | N_Iterated_Component_Association
             | N_Iteration_Scheme
             | N_Mod_Clause
             | N_Modular_Type_Definition
@@ -1349,13 +1338,22 @@ package body Sem is
       Scope_Stack.Locked := True;
    end Lock;
 
+   ---------------------------
+   -- In_Strict_Preanalysis --
+   ---------------------------
+
+   function In_Strict_Preanalysis return Boolean is
+   begin
+      return Preanalysis_Active and then not In_Spec_Expression;
+   end In_Strict_Preanalysis;
+
    ------------------------
    -- Preanalysis_Active --
    ------------------------
 
    function Preanalysis_Active return Boolean is
    begin
-      return not Full_Analysis and not Expander_Active;
+      return not Full_Analysis and then not Expander_Active;
    end Preanalysis_Active;
 
    ----------------
@@ -1547,18 +1545,9 @@ package body Sem is
       --  unit. All with'ed units are analyzed with config restrictions reset
       --  and we need to restore these saved values at the end.
 
-      Save_Preanalysis_Counter : constant Nat :=
-                                   Inside_Preanalysis_Without_Freezing;
-      --  Saves the preanalysis nesting-level counter; required since we may
-      --  need to analyze a unit as a consequence of the preanalysis of an
-      --  expression without freezing (and the loaded unit must be fully
-      --  analyzed).
-
    --  Start of processing for Semantics
 
    begin
-      Inside_Preanalysis_Without_Freezing := 0;
-
       if Debug_Unit_Walk then
          if Already_Analyzed then
             Write_Str ("(done)");
@@ -1733,8 +1722,6 @@ package body Sem is
             Unit (Comp_Unit),
             Prefix => "<-- ");
       end if;
-
-      Inside_Preanalysis_Without_Freezing := Save_Preanalysis_Counter;
    end Semantics;
 
    --------
@@ -2123,27 +2110,32 @@ package body Sem is
          while Present (Clause) loop
             if Nkind (Clause) = N_With_Clause then
                Spec := Withed_Lib_Unit (Clause);
-               Body_CU := Body_Lib_Unit (Spec);
-
-               --  If we are processing the spec of the main unit, load bodies
-               --  only if the with_clause indicates that it forced the loading
-               --  of the body for a generic instantiation. Note that bodies of
-               --  parents that are instances have been loaded already.
-
-               if Present (Body_CU)
-                 and then Body_CU /= Main_CU
-                 and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
-                 and then Nkind (Unit (Comp)) /= N_Package_Declaration
+               if Unit (Spec) in N_Lib_Unit_Declaration_Id
+                               | N_Lib_Unit_Renaming_Declaration_Id
                then
-                  Body_U := Get_Cunit_Unit_Number (Body_CU);
+                  Body_CU := Body_Lib_Unit (Spec);
 
-                  if not Seen (Body_U)
-                    and then not Depends_On_Main (Body_CU)
+                  --  If we are processing the spec of the main unit, load
+                  --  bodies only if the with_clause indicates that it forced
+                  --  the loading of the body for a generic instantiation.
+                  --  Note that bodies of parents that are instances have been
+                  --  loaded already.
+
+                  if Present (Body_CU)
+                    and then Body_CU /= Main_CU
+                    and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
+                    and then Nkind (Unit (Comp)) /= N_Package_Declaration
                   then
-                     Seen (Body_U) := True;
-                     Do_Withed_Units (Body_CU, Include_Limited => False);
-                     Do_Action (Body_CU, Unit (Body_CU));
-                     Done (Body_U) := True;
+                     Body_U := Get_Cunit_Unit_Number (Body_CU);
+
+                     if not Seen (Body_U)
+                       and then not Depends_On_Main (Body_CU)
+                     then
+                        Seen (Body_U) := True;
+                        Do_Withed_Units (Body_CU, Include_Limited => False);
+                        Do_Action (Body_CU, Unit (Body_CU));
+                        Done (Body_U) := True;
+                     end if;
                   end if;
                end if;
             end if;

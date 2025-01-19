@@ -1,5 +1,5 @@
 /* Definitions for AVR 8-bit microcontrollers if configured for AVR-LibC.
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2025 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
 This file is part of GCC.

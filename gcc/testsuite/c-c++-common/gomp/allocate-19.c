@@ -19,14 +19,14 @@ typedef enum omp_allocator_handle_t
   __omp_allocator_handle_t_max__ = __UINTPTR_MAX__
 } omp_allocator_handle_t;
 
-static int A1[5] = {1,2,3,4,5};
+static int A1[5] = {1,2,3,4,5}, B1[5];
 #pragma omp allocate(A1) align(128) allocator(omp_default_mem_alloc)
 /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 
 #ifndef __cplusplus
-_Static_assert (_Alignof(A1) == 128, "wrong alignment");
+_Static_assert (_Alignof(A1) == _Alignof(B1), "wrong alignment");
 #elif __cplusplus >= 201103L
-static_assert (alignof(A1) == 128, "wrong alignment");  /* { dg-bogus "static assertion failed: wrong alignment" "" { xfail { c++ && { ! c++98_only } } } } */
+static_assert (alignof(A1) == alignof(B1), "wrong alignment");
 #endif
 
 
@@ -49,9 +49,9 @@ get ()
   /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 
 #ifndef __cplusplus
-  _Static_assert (_Alignof(q) == 1024, "wrong alignment");
+  _Static_assert (_Alignof(q) == _Alignof(int), "wrong alignment");
 #elif __cplusplus >= 201103L
-  static_assert (alignof(q) == 1024, "wrong alignment");  /* { dg-bogus "static assertion failed: wrong alignment" "" { xfail { c++ && { ! c++98_only } } } } */
+  static_assert (alignof(q) == alignof(int), "wrong alignment");
 #endif
 
   q += 1;

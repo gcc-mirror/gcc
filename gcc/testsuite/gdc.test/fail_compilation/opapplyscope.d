@@ -1,7 +1,7 @@
 /* TEST_OUTPUT:
 ---
 fail_compilation/opapplyscope.d(113): Error: function `opapplyscope.S.opApply(scope int delegate(scope int* ptr) @safe dg)` is not callable using argument types `(int delegate(int* x) nothrow @nogc @safe)`
-fail_compilation/opapplyscope.d(113):        cannot pass argument `__foreachbody3` of type `int delegate(int* x) nothrow @nogc @safe` to parameter `scope int delegate(scope int* ptr) @safe dg`
+fail_compilation/opapplyscope.d(113):        cannot pass argument `__foreachbody_L113_C5` of type `int delegate(int* x) nothrow @nogc @safe` to parameter `scope int delegate(scope int* ptr) @safe dg`
 ---
  */
 

@@ -1,5 +1,5 @@
-/* Scheduler hooks for IA-32 which implement bdver1-4 specific logic.
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+/* Scheduler hooks for IA-32 which implement Core 2 specific logic.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

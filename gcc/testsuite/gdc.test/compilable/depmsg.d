@@ -1,5 +1,5 @@
 /*
-REQUIRED_ARGS: -dw
+REQUIRED_ARGS: -verrors=simple -dw
 TEST_OUTPUT:
 ---
 compilable/depmsg.d(39): Deprecation: struct `depmsg.main.Inner.A` is deprecated - With message!

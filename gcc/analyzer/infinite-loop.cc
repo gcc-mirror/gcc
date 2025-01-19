@@ -1,5 +1,5 @@
 /* Detection of infinite loops.
-   Copyright (C) 2022-2024 Free Software Foundation, Inc.
+   Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -106,15 +105,15 @@ struct infinite_loop
 	    && m_loc == other.m_loc);
   }
 
-  json::object *
+  std::unique_ptr<json::object>
   to_json () const
   {
-    json::object *loop_obj = new json::object ();
+    auto loop_obj = ::make_unique<json::object> ();
     loop_obj->set_integer ("enode", m_enode.m_index);
-    json::array *edge_arr = new json::array ();
+    auto edge_arr = ::make_unique<json::array> ();
     for (auto eedge : m_eedge_vec)
       edge_arr->append (eedge->to_json ());
-    loop_obj->set ("eedges", edge_arr);
+    loop_obj->set ("eedges", std::move (edge_arr));
     return loop_obj;
   }
 

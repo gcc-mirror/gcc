@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -219,11 +219,11 @@ package body Diagnostics.Utils is
      (if D.Warn_Err then "error"
       else
        (case D.Kind is
-        when Diagnostics.Error => "error",
+        when Diagnostics.Error | Non_Serious_Error => "error",
         when Warning | Restriction_Warning | Default_Warning |
              Tagless_Warning => "warning",
         when Style => "style",
-        when Info | Info_Warning => "info"));
+        when Info => "info"));
 
    ------------------------------
    -- Get_Primary_Labeled_Span --
@@ -258,11 +258,10 @@ package body Diagnostics.Utils is
    begin
       if Warning_Doc_Switch
         and then Diag.Kind in Default_Warning
-          | Info
-          | Info_Warning
-          | Restriction_Warning
-          | Style
-          | Warning
+                            | Info
+                            | Restriction_Warning
+                            | Style
+                            | Warning
       then
          if Diag.Switch = No_Switch_Id then
             if Diag.Kind = Restriction_Warning then
@@ -273,7 +272,7 @@ package body Diagnostics.Utils is
 
             elsif Diag.Kind /= Info then
 
-               --  For Default_Warning and Info_Warning
+               --  For Default_Warning
 
                return "[enabled by default]";
             end if;

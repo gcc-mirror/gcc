@@ -1,5 +1,5 @@
 /* SARIF output for diagnostics
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+   Copyright (C) 2018-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #define INCLUDE_LIST
 #define INCLUDE_MAP
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -658,9 +657,13 @@ private:
    - secondary ranges without labels (as related locations)
 
    Known limitations:
-   - GCC supports one-deep nesting of diagnostics (via auto_diagnostic_group),
-     but we only capture location and message information from such nested
-     diagnostics (e.g. we ignore fix-it hints on them)
+   - GCC supports nesting of diagnostics (one-deep nesting via
+     auto_diagnostic_group, and arbitrary nesting via
+     auto_diagnostic_nesting_level).  These are captured in the SARIF
+     as related locations, and so we only capture location and message
+     information from such nested diagnostics (e.g. we ignore fix-it
+     hints on them).  Diagnostics within an auto_diagnostic_nesting_level
+     have their nesting level captured as a property.
    - although we capture command-line arguments (section 3.20.2), we don't
      yet capture response files.
    - doesn't capture "artifact.encoding" property
@@ -1221,6 +1224,12 @@ sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
     = builder.make_message_object (pp_formatted_text (builder.get_printer ()));
   pp_clear_output_area (builder.get_printer ());
   location_obj->set<sarif_message> ("message", std::move (message_obj));
+
+  /* Add nesting level, as per "P3358R0 SARIF for Structured Diagnostics"
+     https://wg21.link/P3358R0  */
+  sarif_property_bag &bag = location_obj->get_or_create_properties ();
+  bag.set_integer ("nestingLevel",
+		   builder.get_context ().get_diagnostic_nesting_level ());
 
   add_related_location (std::move (location_obj), builder);
 }

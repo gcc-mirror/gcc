@@ -1,6 +1,6 @@
 /* gm2-lang.cc language-dependent hooks for GNU Modula-2.
 
-Copyright (C) 2002-2024 Free Software Foundation, Inc.
+Copyright (C) 2002-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -512,6 +512,16 @@ gm2_langhook_handle_option (
       return M2Options_SetUninitVariableChecking (value, "known");
     case OPT_Wuninit_variable_checking_:
       return M2Options_SetUninitVariableChecking (value, arg);
+    case OPT_fm2_file_offset_bits_:
+      {
+	if (arg != NULL)
+	  {
+	    unsigned int bits = atoi (arg);
+	    if (bits > 0)
+	      return M2Options_SetFileOffsetBits (value, bits);
+	  }
+	return 0;
+      }
     case OPT_fm2_strict_type:
       M2Options_SetStrictTypeChecking (value);
       return 1;

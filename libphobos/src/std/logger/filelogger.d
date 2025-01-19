@@ -37,7 +37,7 @@ class FileLogger : Logger
     auto l3 = new FileLogger("logFile", LogLevel.fatal, CreateFolder.yes);
     -------------
     */
-    this(const string fn, const LogLevel lv = LogLevel.all) @safe
+    this(this This)(const string fn, const LogLevel lv = LogLevel.all)
     {
          this(fn, lv, CreateFolder.yes);
     }
@@ -63,7 +63,7 @@ class FileLogger : Logger
     auto l2 = new FileLogger(file, LogLevel.fatal);
     -------------
     */
-    this(const string fn, const LogLevel lv, CreateFolder createFileNameFolder) @safe
+    this(this This)(const string fn, const LogLevel lv, CreateFolder createFileNameFolder)
     {
         import std.file : exists, mkdirRecurse;
         import std.path : dirName;
@@ -80,7 +80,8 @@ class FileLogger : Logger
                                    " created in '", d,"' could not be created."));
         }
 
-        this.file_.open(this.filename, "a");
+        // Cast away `shared` when the constructor is inferred shared.
+        () @trusted { (cast() this.file_).open(this.filename, "a"); }();
     }
 
     /** A constructor for the `FileLogger` Logger that takes a reference to
@@ -269,4 +270,13 @@ class FileLogger : Logger
     auto tl = cast(StdForwardLogger) stdThreadLocalLog;
     assert(tl !is null);
     stdThreadLocalLog.logLevel = LogLevel.all;
+}
+
+@safe unittest
+{
+    // we don't need to actually run the code, only make sure
+    // it compiles
+    static void _() {
+        auto l = new shared FileLogger("");
+    }
 }

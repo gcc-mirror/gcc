@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xaa, 0xaa, 0xaa, 0xaa,
 					0xaa, 0xaa, 0xaa, 0xf0 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xaaaa, 0xaaaa, 0xaaaa, 0xfff0 };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,8) [] = { 0xaa, 0xaa, 0xaa, 0xaa,
+					   0xaa, 0xf0, 0xaa, 0xaa };
+#endif
 VECT_VAR_DECL(expected,hfloat,16,4) [] = { 0xaaaa, 0xaaaa, 0xcc00, 0xaaaa };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xaaaaaaaa, 0xc1800000 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0xaa, 0xaa, 0xaa, 0xaa,
@@ -44,6 +48,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xaa, 0xaa, 0xaa, 0xaa,
 					 0xf0, 0xaa, 0xaa, 0xaa };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa,
 					 0xaaaa, 0xaaaa, 0xfff0, 0xaaaa };
+#if MFLOAT8_SUPPORTED
+VECT_VAR_DECL(expected,hmfloat,8,16) [] = { 0xaa, 0xaa, 0xaa, 0xaa,
+					    0xaa, 0xaa, 0xaa, 0xaa,
+					    0xaa, 0xaa, 0xaa, 0xf0,
+					    0xaa, 0xaa, 0xaa, 0xaa };
+#endif
 VECT_VAR_DECL(expected,hfloat,16,8) [] = { 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa,
 					   0xaaaa, 0xcc00, 0xaaaa, 0xaaaa };
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xaaaaaaaa, 0xaaaaaaaa,
@@ -75,6 +85,7 @@ void exec_vld1_lane (void)
   ARRAY(buffer_src, uint, 64, 1);
   ARRAY(buffer_src, poly, 8, 8);
   ARRAY(buffer_src, poly, 16, 4);
+  MFLOAT8_ONLY(ARRAY(buffer_src, mfloat, 8, 8));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   ARRAY(buffer_src, float, 16, 4);
 #endif
@@ -90,6 +101,7 @@ void exec_vld1_lane (void)
   ARRAY(buffer_src, uint, 64, 2);
   ARRAY(buffer_src, poly, 8, 16);
   ARRAY(buffer_src, poly, 16, 8);
+  MFLOAT8_ONLY(ARRAY(buffer_src, mfloat, 8, 16));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   ARRAY(buffer_src, float, 16, 8);
 #endif
@@ -108,6 +120,7 @@ void exec_vld1_lane (void)
   TEST_VLD1_LANE(, uint, u, 64, 1, 0);
   TEST_VLD1_LANE(, poly, p, 8, 8, 7);
   TEST_VLD1_LANE(, poly, p, 16, 4, 3);
+  MFLOAT8_ONLY(TEST_VLD1_LANE(, mfloat, mf, 8, 8, 5));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VLD1_LANE(, float, f, 16, 4, 2);
 #endif
@@ -123,6 +136,7 @@ void exec_vld1_lane (void)
   TEST_VLD1_LANE(q, uint, u, 64, 2, 0);
   TEST_VLD1_LANE(q, poly, p, 8, 16, 12);
   TEST_VLD1_LANE(q, poly, p, 16, 8, 6);
+  MFLOAT8_ONLY(TEST_VLD1_LANE(q, mfloat, mf, 8, 16, 11));
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VLD1_LANE(q, float, f, 16, 8, 5);
 #endif

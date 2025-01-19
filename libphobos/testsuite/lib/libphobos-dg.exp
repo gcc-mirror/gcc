@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024 Free Software Foundation, Inc.
+# Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ load_gcc_lib scanipa.exp
 load_gcc_lib torture-options.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib fortran-modules.exp
+load_gcc_lib dg-test-cleanup.exp
 load_gcc_lib gcc-dg.exp
 
 # Utility routines.

@@ -1,18 +1,30 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail20000.d(25): Error: cast from `fail20000.DClass` to `fail20000.CppClass` not allowed in safe code
-fail_compilation/fail20000.d(26): Error: cast from `fail20000.DInterface` to `fail20000.CppClass` not allowed in safe code
-fail_compilation/fail20000.d(27): Error: cast from `fail20000.CppClass2` to `fail20000.CppClass` not allowed in safe code
-fail_compilation/fail20000.d(28): Error: cast from `fail20000.CppInterface2` to `fail20000.CppClass` not allowed in safe code
-fail_compilation/fail20000.d(30): Error: cast from `fail20000.DClass` to `fail20000.CppInterface` not allowed in safe code
-fail_compilation/fail20000.d(31): Error: cast from `fail20000.DInterface` to `fail20000.CppInterface` not allowed in safe code
-fail_compilation/fail20000.d(32): Error: cast from `fail20000.CppClass2` to `fail20000.CppInterface` not allowed in safe code
-fail_compilation/fail20000.d(33): Error: cast from `fail20000.CppInterface2` to `fail20000.CppInterface` not allowed in safe code
-fail_compilation/fail20000.d(35): Error: cast from `fail20000.CppClass` to `fail20000.DClass` not allowed in safe code
-fail_compilation/fail20000.d(36): Error: cast from `fail20000.CppInterface` to `fail20000.DClass` not allowed in safe code
-fail_compilation/fail20000.d(38): Error: cast from `fail20000.CppClass` to `fail20000.DInterface` not allowed in safe code
-fail_compilation/fail20000.d(39): Error: cast from `fail20000.CppInterface` to `fail20000.DInterface` not allowed in safe code
+fail_compilation/fail20000.d(37): Error: cast from `fail20000.DClass` to `fail20000.CppClass` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(37):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(38): Error: cast from `fail20000.DInterface` to `fail20000.CppClass` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(38):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(39): Error: cast from `fail20000.CppClass2` to `fail20000.CppClass` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(39):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(40): Error: cast from `fail20000.CppInterface2` to `fail20000.CppClass` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(40):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(42): Error: cast from `fail20000.DClass` to `fail20000.CppInterface` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(42):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(43): Error: cast from `fail20000.DInterface` to `fail20000.CppInterface` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(43):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(44): Error: cast from `fail20000.CppClass2` to `fail20000.CppInterface` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(44):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(45): Error: cast from `fail20000.CppInterface2` to `fail20000.CppInterface` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(45):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(47): Error: cast from `fail20000.CppClass` to `fail20000.DClass` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(47):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(48): Error: cast from `fail20000.CppInterface` to `fail20000.DClass` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(48):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(50): Error: cast from `fail20000.CppClass` to `fail20000.DInterface` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(50):        Source object type is incompatible with target type
+fail_compilation/fail20000.d(51): Error: cast from `fail20000.CppInterface` to `fail20000.DInterface` is not allowed in a `@safe` function
+fail_compilation/fail20000.d(51):        Source object type is incompatible with target type
 ---
 */
 extern(C++) class CppClass { int a; }

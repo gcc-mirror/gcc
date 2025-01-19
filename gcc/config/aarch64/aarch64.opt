@@ -1,5 +1,5 @@
 ; Machine description for AArch64 architecture.
-; Copyright (C) 2009-2024 Free Software Foundation, Inc.
+; Copyright (C) 2009-2025 Free Software Foundation, Inc.
 ; Contributed by ARM Ltd.
 ;
 ; This file is part of GCC.
@@ -44,6 +44,9 @@ uint64_t aarch64_isa_flags_1 = 0
 
 TargetVariable
 unsigned aarch_enable_bti = 2
+
+TargetVariable
+unsigned aarch64_enable_gcs = 2
 
 TargetVariable
 enum aarch64_key_type aarch64_ra_sign_key = AARCH64_KEY_A

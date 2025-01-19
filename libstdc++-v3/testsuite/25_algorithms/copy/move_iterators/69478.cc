@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2016-2024 Free Software Foundation, Inc.
+// Copyright (C) 2016-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,8 @@ test01()
     trivial_rvalstruct(trivial_rvalstruct&&) = default;
     trivial_rvalstruct& operator=(trivial_rvalstruct&&) = default;
   };
-  static_assert(std::is_trivial<trivial_rvalstruct>::value, "");
+  static_assert(std::is_trivially_default_constructible<trivial_rvalstruct>::value, "");
+  static_assert(std::is_trivially_copyable<trivial_rvalstruct>::value, "");
 
   trivial_rvalstruct a[1], b[1];
   copy(std::make_move_iterator(a), std::make_move_iterator(a + 1), b);

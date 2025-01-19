@@ -62,7 +62,7 @@ Tret _d_arraycatnTX(Tret, Tarr...)(auto ref Tarr froms) @trusted
     {
         size_t i = 0;
         foreach (ref from; froms)
-            static if (is (typeof(from) : T))
+            static if (is(typeof(from) : T))
                 copyEmplace(cast(T) from, res[i++]);
             else
             {

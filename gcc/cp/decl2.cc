@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2024 Free Software Foundation, Inc.
+   Copyright (C) 1988-2025 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 /* ??? not all decl nodes are given the most useful possible
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1020,6 +1019,7 @@ finish_static_data_member_decl (tree decl,
     }
 
   cp_finish_decl (decl, init, init_const_expr_p, asmspec_tree, flags);
+  check_module_decl_linkage (decl);
 }
 
 /* DECLARATOR and DECLSPECS correspond to a class member.  The other
@@ -1786,13 +1786,8 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	      = tree_cons (get_identifier ("omp declare target implicit"),
 			   NULL_TREE, attributes);
 	  else
-	    {
-	      attributes = tree_cons (get_identifier ("omp declare target"),
-				      NULL_TREE, attributes);
-	      attributes
-		= tree_cons (get_identifier ("omp declare target block"),
-			     NULL_TREE, attributes);
-	    }
+	    attributes = tree_cons (get_identifier ("omp declare target"),
+				    NULL_TREE, attributes);
 	  if (TREE_CODE (*decl) == FUNCTION_DECL)
 	    {
 	      cp_omp_declare_target_attr &last
@@ -3656,6 +3651,13 @@ copy_linkage (tree guard, tree decl)
 	comdat_linkage (guard);
       DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
       DECL_VISIBILITY_SPECIFIED (guard) = DECL_VISIBILITY_SPECIFIED (decl);
+      if (!TREE_PUBLIC (decl))
+	{
+	  gcc_checking_assert (DECL_INTERFACE_KNOWN (decl));
+	  DECL_INTERFACE_KNOWN (guard) = 1;
+	  if (DECL_LANG_SPECIFIC (decl) && DECL_LANG_SPECIFIC (guard))
+	    DECL_NOT_REALLY_EXTERN (guard) = DECL_NOT_REALLY_EXTERN (decl);
+	}
     }
 }
 
@@ -5946,7 +5948,12 @@ cp_handle_deprecated_or_unavailable (tree decl, tsubst_flags_t complain)
 	}
     }
   else
-    warned = warn_deprecated_use (decl, NULL_TREE);
+    {
+      if (!warning_suppressed_at (input_location,
+				  OPT_Wdeprecated_declarations))
+	warned = warn_deprecated_use (decl, NULL_TREE);
+      suppress_warning_at (input_location, OPT_Wdeprecated_declarations);
+    }
 
   return warned;
 }

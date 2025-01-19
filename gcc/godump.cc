@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2024 Free Software Foundation, Inc.
+   Copyright (C) 2008-2025 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.

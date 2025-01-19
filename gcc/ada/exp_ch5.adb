@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,9 +196,14 @@ package body Exp_Ch5 is
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
    --  Generate the necessary code for controlled and tagged assignment, that
    --  is to say, finalization of the target before, adjustment of the target
-   --  after and save and restore of the tag and finalization pointers which
-   --  are not 'part of the value' and must not be changed upon assignment. N
-   --  is the original Assignment node.
+   --  after, and save and restore of the tag. N is the original assignment.
+
+   --  Note that the function relocates N and adds it to the list result, which
+   --  means that the subtrees of N are effectively detached from the main tree
+   --  until after the list result is inserted into it. That's why inserting
+   --  actions in them and, in particular, removing side effects will not work
+   --  properly. Therefore, this must be done before invoking the function, and
+   --  it assumes that side effects have been removed from the Name of N.
 
    --------------------------------------
    -- Build_Formal_Container_Iteration --
@@ -340,7 +345,7 @@ package body Exp_Ch5 is
       Lhs : constant Node_Id := Name (N);
 
       Act_Lhs : constant Node_Id := Get_Referenced_Object (Lhs);
-      Act_Rhs : Node_Id          := Get_Referenced_Object (Rhs);
+      Act_Rhs : constant Node_Id := Get_Referenced_Object (Rhs);
 
       L_Type : constant Entity_Id :=
                  Underlying_Type (Get_Actual_Subtype (Act_Lhs));
@@ -515,14 +520,9 @@ package body Exp_Ch5 is
          Set_Backwards_OK (N, False);
       end if;
 
-      --  We certainly must use a loop for change of representation and also
-      --  we use the operand of the conversion on the right-hand side as the
-      --  effective right-hand side (the component types must match in this
-      --  situation).
+      --  We certainly must use a loop for change of representation
 
       if Crep then
-         Act_Rhs := Get_Referenced_Object (Rhs);
-         R_Type  := Get_Actual_Subtype (Act_Rhs);
          Loop_Required := True;
 
       --  We require a loop if either side is possibly bit aligned
@@ -534,9 +534,14 @@ package body Exp_Ch5 is
          Loop_Required := True;
 
       --  Arrays with controlled components are expanded into a loop to force
-      --  calls to Adjust at the component level.
+      --  calls to Adjust at the component level, except for a function call
+      --  that requires no controlling actions (see Expand_Ctrl_Function_Call).
 
       elsif Has_Controlled_Component (L_Type) then
+         if Nkind (Rhs) = N_Function_Call and then No_Ctrl_Actions (N) then
+            return;
+         end if;
+
          Loop_Required := True;
 
       --  If object is full access, we cannot tolerate a loop
@@ -987,8 +992,8 @@ package body Exp_Ch5 is
 
          elsif Restriction_Active (No_Implicit_Conditionals) then
             declare
-                  T : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc, Chars => Name_T);
+               T : constant Entity_Id :=
+                  Make_Defining_Identifier (Loc, Chars => Name_T);
 
             begin
                Rewrite (N,
@@ -2968,19 +2973,13 @@ package body Exp_Ch5 is
         or else (Needs_Finalization (Typ) and then not Is_Array_Type (Typ))
       then
          Tagged_Case : declare
-            L                   : List_Id := No_List;
             Expand_Ctrl_Actions : constant Boolean :=
               not No_Ctrl_Actions (N)
                 and then not No_Finalize_Actions (N);
 
+            L :  List_Id := No_List;
+
          begin
-            --  In the controlled case, we ensure that function calls are
-            --  evaluated before finalizing the target. In all cases, it makes
-            --  the expansion easier if the side effects are removed first.
-
-            Remove_Side_Effects (Lhs);
-            Remove_Side_Effects (Rhs);
-
             --  Avoid recursion in the mechanism
 
             Set_Analyzed (N);
@@ -3167,40 +3166,70 @@ package body Exp_Ch5 is
                   end;
                end;
 
+            --  Untagged case
+
             else
-               L := Make_Tag_Ctrl_Assignment (N);
+               declare
+                  Needs_Self_Protection : constant Boolean :=
+                    Expand_Ctrl_Actions
+                      and then not Restriction_Active (No_Finalization)
+                      and then not Statically_Different (Lhs, Rhs);
+                  --  We can't afford to have destructive finalization actions
+                  --  in the self-assignment case, so if the target and source
+                  --  are not obviously different, we generate code to avoid
+                  --  the self-assignment case altogether.
 
-               --  We can't afford to have destructive Finalization Actions in
-               --  the Self assignment case, so if the target and the source
-               --  are not obviously different, code is generated to avoid the
-               --  self assignment case:
+               begin
+                  --  See the description of Make_Tag_Ctrl_Assignment
 
-               --    if lhs'address /= rhs'address then
-               --       <code for controlled and/or tagged assignment>
-               --    end if;
+                  Remove_Side_Effects (Lhs);
 
-               --  Skip this if Restriction (No_Finalization) is active
+                  --  Logically we would only need to remove side effects from
+                  --  the RHS when the protection against self-assignment will
+                  --  be generated below. However, in some very specific cases
+                  --  like Present (Unqual_BIP_Iface_Function_Call (Rhs)), the
+                  --  creation of the temporary is necessary to enable further
+                  --  expansion of the RHS. Therefore, we take a conservative
+                  --  stance and always do it for the time being, except when
+                  --  Expand_Ctrl_Function_Call does not do it either.
 
-               if not Statically_Different (Lhs, Rhs)
-                 and then Expand_Ctrl_Actions
-                 and then not Restriction_Active (No_Finalization)
-               then
-                  L := New_List (
-                    Make_Implicit_If_Statement (N,
-                      Condition =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd =>
-                            Make_Attribute_Reference (Loc,
-                              Prefix         => Duplicate_Subexpr (Lhs),
-                              Attribute_Name => Name_Address),
+                  if Nkind (Rhs) = N_Function_Call
+                    and then No_Ctrl_Actions (N)
+                  then
+                     --  We should not need protection against self-assignment
+                     --  in the case of a function call
 
-                           Right_Opnd =>
-                            Make_Attribute_Reference (Loc,
-                              Prefix         => Duplicate_Subexpr (Rhs),
-                              Attribute_Name => Name_Address)),
+                     pragma Assert (not Needs_Self_Protection);
 
-                      Then_Statements => L));
-               end if;
+                  else
+                     Remove_Side_Effects (Rhs);
+                  end if;
+
+                  L := Make_Tag_Ctrl_Assignment (N);
+
+                  --  Generate:
+                  --    if Lhs'Address /= Rhs'Address then
+                  --       <code for controlled and/or tagged assignment>
+                  --    end if;
+
+                  if Needs_Self_Protection then
+                     L := New_List (
+                       Make_Implicit_If_Statement (N,
+                         Condition =>
+                           Make_Op_Ne (Loc,
+                             Left_Opnd =>
+                               Make_Attribute_Reference (Loc,
+                                 Prefix         => New_Copy_Tree (Lhs),
+                                 Attribute_Name => Name_Address),
+
+                             Right_Opnd =>
+                               Make_Attribute_Reference (Loc,
+                                 Prefix         => New_Copy_Tree (Rhs),
+                                 Attribute_Name => Name_Address)),
+
+                         Then_Statements => L));
+                  end if;
+               end;
 
                --  We need to set up an exception handler for implementing
                --  7.6.1(18), but this is skipped if the type has relaxed
@@ -3220,11 +3249,16 @@ package body Exp_Ch5 is
                end if;
             end if;
 
+            --  No need for a block if there are no controlling actions
+
+            if No_Ctrl_Actions (N) and then List_Length (L) = 1 then
+               Rewrite (N, Remove_Head (L));
+
             --  We will analyze the block statement with all checks suppressed
             --  below, but we need elaboration checks for the primitives in the
             --  case of an assignment created by the expansion of an aggregate.
 
-            if No_Finalize_Actions (N) then
+            elsif No_Finalize_Actions (N) then
                Rewrite (N,
                  Make_Unsuppress_Block (Loc, Name_Elaboration_Check, L));
 
@@ -3283,6 +3317,10 @@ package body Exp_Ch5 is
       --  Array types
 
       elsif Is_Array_Type (Typ) then
+         --  We use the operand of a conversion on the right-hand side as the
+         --  effective right-hand side (the component types must match in this
+         --  situation).
+
          declare
             Actual_Rhs : Node_Id := Rhs;
 
@@ -6333,7 +6371,6 @@ package body Exp_Ch5 is
    ------------------------------
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id is
-      Asn : constant Node_Id    := Relocate_Node (N);
       L   : constant Node_Id    := Name (N);
       Loc : constant Source_Ptr := Sloc (N);
       Res : constant List_Id    := New_List;
@@ -6356,9 +6393,12 @@ package body Exp_Ch5 is
                                        and then Tagged_Type_Expansion;
       Adj_Call : Node_Id;
       Fin_Call : Node_Id;
+      New_N    : Node_Id;
       Tag_Id   : Entity_Id;
 
    begin
+      pragma Assert (Side_Effect_Free (L));
+
       --  Finalize the target of the assignment when controlled
 
       --  We have two exceptions here:
@@ -6390,9 +6430,7 @@ package body Exp_Ch5 is
 
       else
          Fin_Call :=
-           Make_Final_Call
-             (Obj_Ref => Duplicate_Subexpr_No_Checks (L),
-              Typ     => Etype (L));
+           Make_Final_Call (Obj_Ref => New_Copy_Tree (L), Typ => Etype (L));
 
          if Present (Fin_Call) then
             Append_To (Res, Fin_Call);
@@ -6410,7 +6448,7 @@ package body Exp_Ch5 is
              Object_Definition   => New_Occurrence_Of (RTE (RE_Tag), Loc),
              Expression          =>
                Make_Selected_Component (Loc,
-                 Prefix        => Duplicate_Subexpr_No_Checks (L),
+                 Prefix        => New_Copy_Tree (L),
                  Selector_Name =>
                    New_Occurrence_Of (First_Tag_Component (T), Loc))));
 
@@ -6425,12 +6463,14 @@ package body Exp_Ch5 is
       --  generate the proper code and propagate this scenario by setting a
       --  flag to avoid infinite recursion.
 
+      New_N := Relocate_Node (N);
+
       if Comp_Asn then
-         Set_Analyzed (Asn, False);
-         Set_Componentwise_Assignment (Asn, True);
+         Set_Analyzed (New_N, False);
+         Set_Componentwise_Assignment (New_N, True);
       end if;
 
-      Append_To (Res, Asn);
+      Append_To (Res, New_N);
 
       --  Restore the tag
 
@@ -6439,7 +6479,7 @@ package body Exp_Ch5 is
            Make_Assignment_Statement (Loc,
              Name       =>
                Make_Selected_Component (Loc,
-                 Prefix        => Duplicate_Subexpr_No_Checks (L),
+                 Prefix        => New_Copy_Tree (L),
                  Selector_Name =>
                    New_Occurrence_Of (First_Tag_Component (T), Loc)),
              Expression => New_Occurrence_Of (Tag_Id, Loc)));
@@ -6448,8 +6488,7 @@ package body Exp_Ch5 is
 
       elsif Set_Tag then
          Append_To (Res,
-           Make_Tag_Assignment_From_Type
-             (Loc, Duplicate_Subexpr_No_Checks (L), T));
+           Make_Tag_Assignment_From_Type (Loc, New_Copy_Tree (L), T));
       end if;
 
       --  Adjust the target after the assignment when controlled (not in the
@@ -6457,9 +6496,7 @@ package body Exp_Ch5 is
 
       if Ctrl_Act or else Adj_Act then
          Adj_Call :=
-           Make_Adjust_Call
-             (Obj_Ref => Duplicate_Subexpr_Move_Checks (L),
-              Typ     => Etype (L));
+           Make_Adjust_Call (Obj_Ref => New_Copy_Tree (L), Typ => Etype (L));
 
          if Present (Adj_Call) then
             Append_To (Res, Adj_Call);

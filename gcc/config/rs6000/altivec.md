@@ -1,5 +1,5 @@
 ;; AltiVec patterns.
-;; Copyright (C) 2002-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2025 Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
 ;; This file is part of GCC.
@@ -227,8 +227,7 @@
 (define_mode_attr VI_unit [(V16QI "VECTOR_UNIT_ALTIVEC_P (V16QImode)")
 			   (V8HI "VECTOR_UNIT_ALTIVEC_P (V8HImode)")
 			   (V4SI "VECTOR_UNIT_ALTIVEC_P (V4SImode)")
-			   (V2DI "VECTOR_UNIT_P8_VECTOR_P (V2DImode)")
-			   (V1TI "VECTOR_UNIT_ALTIVEC_P (V1TImode)")])
+			   (V2DI "VECTOR_UNIT_P8_VECTOR_P (V2DImode)")])
 
 ;; Vector pack/unpack
 (define_mode_iterator VP [V2DI V4SI V8HI])
@@ -4427,7 +4426,7 @@
 ;; ISA 2.07 128-bit binary support to target the VMX/altivec registers without
 ;; having to worry about the register allocator deciding GPRs are better.
 
-(define_insn "altivec_vadduqm"
+(define_insn "addv1ti3"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
 	(plus:V1TI (match_operand:V1TI 1 "register_operand" "v")
 		   (match_operand:V1TI 2 "register_operand" "v")))]
@@ -4444,7 +4443,7 @@
   "vaddcuq %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "altivec_vsubuqm"
+(define_insn "subv1ti3"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
 	(minus:V1TI (match_operand:V1TI 1 "register_operand" "v")
 		    (match_operand:V1TI 2 "register_operand" "v")))]

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2009-2024, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2009-2025, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,5 +33,4 @@ extern void __gnat_getenv (char *name, int *len, char **value);
 extern void __gnat_setenv (char *name, char *value);
 extern char **__gnat_environ (void);
 extern void __gnat_unsetenv (char *name);
-extern void __gnat_clearenv (void);
-
+extern void __gnat_clearenv(void);

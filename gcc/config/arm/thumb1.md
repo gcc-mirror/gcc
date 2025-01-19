@@ -1,5 +1,5 @@
 ;; ARM Thumb-1 Machine Description
-;; Copyright (C) 2007-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2025 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1146,8 +1146,8 @@
       switch (get_attr_length (insn))
 	{
 	case 4:  return "b%d0\t%l2";
-	case 6:  return "b%D0\t.LCB%=;b\t%l2\t%@long jump\n.LCB%=:";
-	case 8:  return "b%D0\t.LCB%=;bl\t%l2\t%@far jump\n.LCB%=:";
+	case 6:  return "b%D0\t.LCB%=\;b\t%l2\t%@long jump\n.LCB%=:";
+	case 8:  return "b%D0\t.LCB%=\;bl\t%l2\t%@far jump\n.LCB%=:";
 	default: gcc_unreachable ();
 	}
     }

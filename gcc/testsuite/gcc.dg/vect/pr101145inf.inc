@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
+#include "tree-vect.h"
 
 void test_finite ();
 void test_infinite ();
@@ -10,7 +11,8 @@ void do_exit (int i)
   exit (0);
 }
 
-int main(void)
+__attribute__((noinline))
+int main1(void)
 {
   test_finite ();
   struct sigaction s;
@@ -26,3 +28,8 @@ int main(void)
   return 1;
 }
 
+int main(void)
+{
+  check_vect ();
+  return main1();
+}

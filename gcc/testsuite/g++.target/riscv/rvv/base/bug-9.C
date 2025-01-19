@@ -3,7 +3,6 @@
 /* { dg-require-effective-target rv64 } */
 /* { dg-require-effective-target riscv_v } */
 
-#include<cstdalign>
 #include<cmath>
 #include<cstddef>
 #include<cstdint>

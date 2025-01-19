@@ -22,200 +22,51 @@ import dmd.delegatize;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
+import dmd.dsymbolsem : dsymbolSemantic, aliasSemantic;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
+import dmd.funcsem : overloadApply, getLevelAndCheck;
 import dmd.globals;
 import dmd.gluelayer;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
-import dmd.initsem;
+import dmd.initsem : initializerToExpression, initializerSemantic;
 import dmd.intrange;
 import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.rootobject;
+import dmd.root.filename;
 import dmd.target;
 import dmd.tokens;
-import dmd.typesem;
+import dmd.typesem : toDsymbol, typeSemantic, size, hasPointers;
 import dmd.visitor;
 
 version (IN_GCC) {}
 else version (IN_LLVM) {}
 else version = MARS;
 
-/************************************
- * Check to see the aggregate type is nested and its context pointer is
- * accessible from the current scope.
- * Returns true if error occurs.
- */
-bool checkFrameAccess(Loc loc, Scope* sc, AggregateDeclaration ad, size_t iStart = 0)
-{
-    Dsymbol sparent = ad.toParentLocal();
-    Dsymbol sparent2 = ad.toParent2();
-    Dsymbol s = sc.func;
-    if (ad.isNested() && s)
-    {
-        //printf("ad = %p %s [%s], parent:%p\n", ad, ad.toChars(), ad.loc.toChars(), ad.parent);
-        //printf("sparent = %p %s [%s], parent: %s\n", sparent, sparent.toChars(), sparent.loc.toChars(), sparent.parent,toChars());
-        //printf("sparent2 = %p %s [%s], parent: %s\n", sparent2, sparent2.toChars(), sparent2.loc.toChars(), sparent2.parent,toChars());
-        if (!ensureStaticLinkTo(s, sparent) || sparent != sparent2 && !ensureStaticLinkTo(s, sparent2))
-        {
-            error(loc, "cannot access frame pointer of `%s`", ad.toPrettyChars());
-            return true;
-        }
-    }
-
-    bool result = false;
-    for (size_t i = iStart; i < ad.fields.length; i++)
-    {
-        VarDeclaration vd = ad.fields[i];
-        Type tb = vd.type.baseElemOf();
-        if (tb.ty == Tstruct)
-        {
-            result |= checkFrameAccess(loc, sc, (cast(TypeStruct)tb).sym);
-        }
-    }
-    return result;
-}
-
-/***********************************************
- * Mark variable v as modified if it is inside a constructor that var
- * is a field in.
- * Also used to allow immutable globals to be initialized inside a static constructor.
- * Returns:
- *    true if it's an initialization of v
- */
-bool modifyFieldVar(Loc loc, Scope* sc, VarDeclaration var, Expression e1)
-{
-    //printf("modifyFieldVar(var = %s)\n", var.toChars());
-    Dsymbol s = sc.func;
-    while (1)
-    {
-        FuncDeclaration fd = null;
-        if (s)
-            fd = s.isFuncDeclaration();
-        if (fd &&
-            ((fd.isCtorDeclaration() && var.isField()) ||
-             ((fd.isStaticCtorDeclaration() || fd.isCrtCtor) && !var.isField())) &&
-            fd.toParentDecl() == var.toParent2() &&
-            (!e1 || e1.op == EXP.this_))
-        {
-            bool result = true;
-
-            var.ctorinit = true;
-            //printf("setting ctorinit\n");
-
-            if (var.isField() && sc.ctorflow.fieldinit.length && !sc.intypeof)
-            {
-                assert(e1);
-                auto mustInit = ((var.storage_class & STC.nodefaultctor) != 0 ||
-                                 var.type.needsNested());
-
-                const dim = sc.ctorflow.fieldinit.length;
-                auto ad = fd.isMemberDecl();
-                assert(ad);
-                size_t i;
-                for (i = 0; i < dim; i++) // same as findFieldIndexByName in ctfeexp.c ?
-                {
-                    if (ad.fields[i] == var)
-                        break;
-                }
-                assert(i < dim);
-                auto fieldInit = &sc.ctorflow.fieldinit[i];
-                const fi = fieldInit.csx;
-
-                if (fi & CSX.this_ctor)
-                {
-                    if (var.type.isMutable() && e1.type.isMutable())
-                        result = false;
-                    else
-                    {
-                        const(char)* modStr = !var.type.isMutable() ? MODtoChars(var.type.mod) : MODtoChars(e1.type.mod);
-                        .error(loc, "%s field `%s` initialized multiple times", modStr, var.toChars());
-                        .errorSupplemental(fieldInit.loc, "Previous initialization is here.");
-                    }
-                }
-                else if (sc.inLoop || (fi & CSX.label))
-                {
-                    if (!mustInit && var.type.isMutable() && e1.type.isMutable())
-                        result = false;
-                    else
-                    {
-                        const(char)* modStr = !var.type.isMutable() ? MODtoChars(var.type.mod) : MODtoChars(e1.type.mod);
-                        .error(loc, "%s field `%s` initialization is not allowed in loops or after labels", modStr, var.toChars());
-                    }
-                }
-
-                fieldInit.csx |= CSX.this_ctor;
-                fieldInit.loc = e1.loc;
-                if (var.overlapped) // https://issues.dlang.org/show_bug.cgi?id=15258
-                {
-                    foreach (j, v; ad.fields)
-                    {
-                        if (v is var || !var.isOverlappedWith(v))
-                            continue;
-                        v.ctorinit = true;
-                        sc.ctorflow.fieldinit[j].csx = CSX.this_ctor;
-                    }
-                }
-            }
-            else if (fd != sc.func)
-            {
-                if (var.type.isMutable())
-                    result = false;
-                else if (sc.func.fes)
-                {
-                    const(char)* p = var.isField() ? "field" : var.kind();
-                    .error(loc, "%s %s `%s` initialization is not allowed in foreach loop",
-                        MODtoChars(var.type.mod), p, var.toChars());
-                }
-                else
-                {
-                    const(char)* p = var.isField() ? "field" : var.kind();
-                    .error(loc, "%s %s `%s` initialization is not allowed in nested function `%s`",
-                        MODtoChars(var.type.mod), p, var.toChars(), sc.func.toChars());
-                }
-            }
-            else if (fd.isStaticCtorDeclaration() && !fd.isSharedStaticCtorDeclaration() &&
-                     var.type.isImmutable())
-            {
-                .error(loc, "%s %s `%s` initialization is not allowed in `static this`",
-                    MODtoChars(var.type.mod), var.kind(), var.toChars());
-                errorSupplemental(loc, "Use `shared static this` instead.");
-            }
-            else if (fd.isStaticCtorDeclaration() && !fd.isSharedStaticCtorDeclaration() &&
-                    var.type.isConst())
-            {
-                // @@@DEPRECATED_2.116@@@
-                // Turn this into an error, merging with the branch above
-                .deprecation(loc, "%s %s `%s` initialization is not allowed in `static this`",
-                    MODtoChars(var.type.mod), var.kind(), var.toChars());
-                deprecationSupplemental(loc, "Use `shared static this` instead.");
-            }
-            return result;
-        }
-        else
-        {
-            if (s)
-            {
-                s = s.toParentP(var.toParent2());
-                continue;
-            }
-        }
-        break;
-    }
-    return false;
-}
-
 /******************************************
  */
-void ObjectNotFound(Identifier id)
+void ObjectNotFound(Loc loc, Identifier id)
 {
-    error(Loc.initial, "`%s` not found. object.d may be incorrectly installed or corrupt.", id.toChars());
+    error(loc, "`%s` not found. object.d may be incorrectly installed or corrupt.", id.toChars());
+    version (IN_LLVM)
+    {
+        errorSupplemental(loc, "ldc2 might not be correctly installed.");
+        errorSupplemental(loc, "Please check your ldc2.conf configuration file.");
+        errorSupplemental(loc, "Installation instructions can be found at http://wiki.dlang.org/LDC.");
+    }
+    else version (MARS)
+    {
+        errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
+        const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
+        errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
+    }
     fatal();
 }
 
@@ -245,6 +96,7 @@ extern (C++) abstract class Declaration : Dsymbol
       enum ignoreRead = 2; // ignore any reads of AliasDeclaration
       enum nounderscore = 4; // don't prepend _ to mangled name
       enum hidden       = 8; // don't print this in .di files
+      enum nrvo = 0x10;      /// forward to fd.nrvo_var when generating code
 
     // overridden symbol with pragma(mangle, "...")
     const(char)[] mangleOverride;
@@ -273,150 +125,6 @@ extern (C++) abstract class Declaration : Dsymbol
         if (sz == SIZE_INVALID)
             errors = true;
         return sz;
-    }
-
-    /**
-     * Issue an error if an attempt to call a disabled method is made
-     *
-     * If the declaration is disabled but inside a disabled function,
-     * returns `true` but do not issue an error message.
-     *
-     * Params:
-     *   loc = Location information of the call
-     *   sc  = Scope in which the call occurs
-     *   isAliasedDeclaration = if `true` searches overload set
-     *
-     * Returns:
-     *   `true` if this `Declaration` is `@disable`d, `false` otherwise.
-     */
-    extern (D) final bool checkDisabled(Loc loc, Scope* sc, bool isAliasedDeclaration = false)
-    {
-        if (!(storage_class & STC.disable))
-            return false;
-
-        if (sc.func && sc.func.storage_class & STC.disable)
-            return true;
-
-        if (auto p = toParent())
-        {
-            if (auto postblit = isPostBlitDeclaration())
-            {
-                /* https://issues.dlang.org/show_bug.cgi?id=21885
-                 *
-                 * If the generated postblit is disabled, it
-                 * means that one of the fields has a disabled
-                 * postblit. Print the first field that has
-                 * a disabled postblit.
-                 */
-                if (postblit.isGenerated())
-                {
-                    auto sd = p.isStructDeclaration();
-                    assert(sd);
-                    for (size_t i = 0; i < sd.fields.length; i++)
-                    {
-                        auto structField = sd.fields[i];
-                        if (structField.overlapped)
-                            continue;
-                        Type tv = structField.type.baseElemOf();
-                        if (tv.ty != Tstruct)
-                            continue;
-                        auto sdv = (cast(TypeStruct)tv).sym;
-                        if (!sdv.postblit)
-                            continue;
-                        if (sdv.postblit.isDisabled())
-                        {
-                            .error(loc, "%s `%s` is not copyable because field `%s` is not copyable", p.kind, p.toPrettyChars, structField.toChars());
-                            return true;
-                        }
-                    }
-                }
-                .error(loc, "%s `%s` is not copyable because it has a disabled postblit", p.kind, p.toPrettyChars);
-                return true;
-            }
-        }
-
-        // if the function is @disabled, maybe there
-        // is an overload in the overload set that isn't
-        if (isAliasedDeclaration)
-        {
-            FuncDeclaration fd = isFuncDeclaration();
-            if (fd)
-            {
-                for (FuncDeclaration ovl = fd; ovl; ovl = cast(FuncDeclaration)ovl.overnext)
-                    if (!(ovl.storage_class & STC.disable))
-                        return false;
-            }
-        }
-
-        if (auto ctor = isCtorDeclaration())
-        {
-            if (ctor.isCpCtor && ctor.isGenerated())
-            {
-                .error(loc, "generating an `inout` copy constructor for `struct %s` failed, therefore instances of it are uncopyable", parent.toPrettyChars());
-                return true;
-            }
-        }
-        .error(loc, "%s `%s` cannot be used because it is annotated with `@disable`", kind, toPrettyChars);
-        return true;
-    }
-
-    /*************************************
-     * Check to see if declaration can be modified in this context (sc).
-     * Issue error if not.
-     * Params:
-     *  loc  = location for error messages
-     *  e1   = `null` or `this` expression when this declaration is a field
-     *  sc   = context
-     *  flag = if the first bit is set it means do not issue error message for
-     *         invalid modification; if the second bit is set, it means that
-               this declaration is a field and a subfield of it is modified.
-     * Returns:
-     *  Modifiable.yes or Modifiable.initialization
-     */
-    extern (D) final Modifiable checkModify(Loc loc, Scope* sc, Expression e1, ModifyFlags flag)
-    {
-        VarDeclaration v = isVarDeclaration();
-        if (v && v.canassign)
-            return Modifiable.initialization;
-
-        if (isParameter() || isResult())
-        {
-            for (Scope* scx = sc; scx; scx = scx.enclosing)
-            {
-                if (scx.func == parent && (scx.flags & SCOPE.contract))
-                {
-                    const(char)* s = isParameter() && parent.ident != Id.ensure ? "parameter" : "result";
-                    if (!(flag & ModifyFlags.noError))
-                        error(loc, "%s `%s` cannot modify %s `%s` in contract", kind, toPrettyChars, s, toChars());
-                    return Modifiable.initialization; // do not report type related errors
-                }
-            }
-        }
-
-        if (e1 && e1.op == EXP.this_ && isField())
-        {
-            VarDeclaration vthis = e1.isThisExp().var;
-            for (Scope* scx = sc; scx; scx = scx.enclosing)
-            {
-                if (scx.func == vthis.parent && (scx.flags & SCOPE.contract))
-                {
-                    if (!(flag & ModifyFlags.noError))
-                        error(loc, "%s `%s` cannot modify parameter `this` in contract", kind, toPrettyChars);
-                    return Modifiable.initialization; // do not report type related errors
-                }
-            }
-        }
-
-        if (v && (v.isCtorinit() || isField()))
-        {
-            // It's only modifiable if inside the right constructor
-            if ((storage_class & (STC.foreach_ | STC.ref_)) == (STC.foreach_ | STC.ref_))
-                return Modifiable.initialization;
-            if (flag & ModifyFlags.fieldAssign)
-                return Modifiable.yes;
-            return modifyFieldVar(loc, sc, v, e1) ? Modifiable.initialization : Modifiable.yes;
-        }
-        return Modifiable.yes;
     }
 
     final bool isStatic() const pure nothrow @nogc @safe
@@ -735,8 +443,7 @@ extern (C++) final class AliasDeclaration : Declaration
     extern (D) this(const ref Loc loc, Identifier ident, Type type) @safe
     {
         super(loc, ident);
-        //printf("AliasDeclaration(id = '%s', type = %p)\n", ident.toChars(), type);
-        //printf("type = '%s'\n", type.toChars());
+        //debug printf("AliasDeclaration(id = '%s', type = `%s`, %p)\n", ident.toChars(), dmd.hdrgen.toChars(type), type.isTypeIdentifier());
         this.type = type;
         assert(type);
     }
@@ -744,7 +451,7 @@ extern (C++) final class AliasDeclaration : Declaration
     extern (D) this(const ref Loc loc, Identifier ident, Dsymbol s) @safe
     {
         super(loc, ident);
-        //printf("AliasDeclaration(id = '%s', s = %p)\n", ident.toChars(), s);
+        //debug printf("AliasDeclaration(id = '%s', s = `%s`)\n", ident.toChars(), s.toChars());
         assert(s != this);
         this.aliassym = s;
         assert(s);
@@ -905,11 +612,21 @@ extern (C++) final class AliasDeclaration : Declaration
 
     override Dsymbol toAlias()
     {
-        //printf("[%s] AliasDeclaration::toAlias('%s', this = %p, aliassym = %p, kind = '%s', inuse = %d)\n",
-        //    loc.toChars(), toChars(), this, aliassym, aliassym ? aliassym.kind() : "", inuse);
+        static if (0)
+        printf("[%s] AliasDeclaration::toAlias('%s', this = %p, aliassym: %s, kind: '%s', inuse = %d)\n",
+            loc.toChars(), toChars(), this, aliassym ? aliassym.toChars() : "", aliassym ? aliassym.kind() : "", inuse);
         assert(this != aliassym);
         //static int count; if (++count == 10) *(char*)0=0;
 
+        Dsymbol err()
+        {
+            // Avoid breaking "recursive alias" state during errors gagged
+            if (global.gag)
+                return this;
+            aliassym = new AliasDeclaration(loc, ident, Type.terror);
+            type = Type.terror;
+            return aliassym;
+        }
         // Reading the AliasDeclaration
         if (!(adFlags & ignoreRead))
             adFlags |= wasRead;                 // can never assign to this AliasDeclaration again
@@ -917,16 +634,16 @@ extern (C++) final class AliasDeclaration : Declaration
         if (inuse == 1 && type && _scope)
         {
             inuse = 2;
-            uint olderrors = global.errors;
+            const olderrors = global.errors;
             Dsymbol s = type.toDsymbol(_scope);
             //printf("[%s] type = %s, s = %p, this = %p\n", loc.toChars(), type.toChars(), s, this);
             if (global.errors != olderrors)
-                goto Lerr;
+                return err();
             if (s)
             {
                 s = s.toAlias();
                 if (global.errors != olderrors)
-                    goto Lerr;
+                    return err();
                 aliassym = s;
                 inuse = 0;
             }
@@ -934,9 +651,9 @@ extern (C++) final class AliasDeclaration : Declaration
             {
                 Type t = type.typeSemantic(loc, _scope);
                 if (t.ty == Terror)
-                    goto Lerr;
+                    return err();
                 if (global.errors != olderrors)
-                    goto Lerr;
+                    return err();
                 //printf("t = %s\n", t.toChars());
                 inuse = 0;
             }
@@ -944,14 +661,7 @@ extern (C++) final class AliasDeclaration : Declaration
         if (inuse)
         {
             .error(loc, "%s `%s` recursive alias declaration", kind, toPrettyChars);
-
-        Lerr:
-            // Avoid breaking "recursive alias" state during errors gagged
-            if (global.gag)
-                return this;
-            aliassym = new AliasDeclaration(loc, ident, Type.terror);
-            type = Type.terror;
-            return aliassym;
+            return err();
         }
 
         if (semanticRun >= PASS.semanticdone)
@@ -1123,7 +833,6 @@ extern (C++) class VarDeclaration : Declaration
     VarDeclaration lastVar;         // Linked list of variables for goto-skips-init detection
     Expression edtor;               // if !=null, does the destruction of the variable
     IntRange* range;                // if !=null, the variable is known to be within the range
-    VarDeclarations* maybes;        // maybeScope variables that are assigned to this maybeScope variable
 
     uint endlinnum;                 // line number of end of scope that this var lives in
     uint offset;
@@ -1225,8 +934,7 @@ extern (C++) class VarDeclaration : Declaration
              */
             for (auto s = cast(Dsymbol)this; s; s = s.parent)
             {
-                auto ad = (cast(inout)s).isMember();
-                if (ad)
+                if (auto ad = (cast(inout)s).isMember())
                     return ad;
                 if (!s.parent || !s.parent.isTemplateMixin())
                     break;
@@ -1339,7 +1047,7 @@ extern (C++) class VarDeclaration : Declaration
         auto vbitoffset = v.offset * 8;
 
         // Bitsize of types are overridden by any bit-field widths.
-        ulong tbitsize = void;
+        ulong tbitsize;
         if (auto bf = isBitFieldDeclaration())
         {
             bitoffset += bf.bitOffset;
@@ -1348,7 +1056,7 @@ extern (C++) class VarDeclaration : Declaration
         else
             tbitsize = tsz * 8;
 
-        ulong vbitsize = void;
+        ulong vbitsize;
         if (auto vbf = v.isBitFieldDeclaration())
         {
             vbitoffset += vbf.bitOffset;
@@ -1370,7 +1078,7 @@ extern (C++) class VarDeclaration : Declaration
     /*************************************
      * Return true if we can take the address of this variable.
      */
-    final bool canTakeAddressOf()
+    final bool canTakeAddressOf() @safe
     {
         return !(storage_class & STC.manifest);
     }
@@ -1378,122 +1086,10 @@ extern (C++) class VarDeclaration : Declaration
     /******************************************
      * Return true if variable needs to call the destructor.
      */
-    final bool needsScopeDtor()
+    final bool needsScopeDtor() @safe
     {
         //printf("VarDeclaration::needsScopeDtor() %s %d\n", toChars(), edtor && !(storage_class & STC.nodtor));
         return edtor && !(storage_class & STC.nodtor);
-    }
-
-    /******************************************
-     * If a variable has a scope destructor call, return call for it.
-     * Otherwise, return NULL.
-     */
-    extern (D) final Expression callScopeDtor(Scope* sc)
-    {
-        //printf("VarDeclaration::callScopeDtor() %s\n", toChars());
-
-        // Destruction of STC.field's is handled by buildDtor()
-        if (storage_class & (STC.nodtor | STC.ref_ | STC.out_ | STC.field))
-        {
-            return null;
-        }
-
-        if (iscatchvar)
-            return null;    // destructor is built by `void semantic(Catch c, Scope* sc)`, not here
-
-        Expression e = null;
-        // Destructors for structs and arrays of structs
-        Type tv = type.baseElemOf();
-        if (tv.ty == Tstruct)
-        {
-            StructDeclaration sd = (cast(TypeStruct)tv).sym;
-            if (!sd.dtor || sd.errors)
-                return null;
-
-            const sz = type.size();
-            assert(sz != SIZE_INVALID);
-            if (!sz)
-                return null;
-
-            if (type.toBasetype().ty == Tstruct)
-            {
-                // v.__xdtor()
-                e = new VarExp(loc, this);
-
-                /* This is a hack so we can call destructors on const/immutable objects.
-                 * Need to add things like "const ~this()" and "immutable ~this()" to
-                 * fix properly.
-                 */
-                e.type = e.type.mutableOf();
-
-                // Enable calling destructors on shared objects.
-                // The destructor is always a single, non-overloaded function,
-                // and must serve both shared and non-shared objects.
-                e.type = e.type.unSharedOf;
-
-                e = new DotVarExp(loc, e, sd.dtor, false);
-                e = new CallExp(loc, e);
-            }
-            else
-            {
-                // __ArrayDtor(v[0 .. n])
-                e = new VarExp(loc, this);
-
-                const sdsz = sd.type.size();
-                assert(sdsz != SIZE_INVALID && sdsz != 0);
-                const n = sz / sdsz;
-                SliceExp se = new SliceExp(loc, e, new IntegerExp(loc, 0, Type.tsize_t),
-                    new IntegerExp(loc, n, Type.tsize_t));
-
-                // Prevent redundant bounds check
-                se.upperIsInBounds = true;
-                se.lowerIsLessThanUpper = true;
-
-                // This is a hack so we can call destructors on const/immutable objects.
-                se.type = sd.type.arrayOf();
-
-                e = new CallExp(loc, new IdentifierExp(loc, Id.__ArrayDtor), se);
-            }
-            return e;
-        }
-        // Destructors for classes
-        if (storage_class & (STC.auto_ | STC.scope_) && !(storage_class & STC.parameter))
-        {
-            for (ClassDeclaration cd = type.isClassHandle(); cd; cd = cd.baseClass)
-            {
-                /* We can do better if there's a way with onstack
-                 * classes to determine if there's no way the monitor
-                 * could be set.
-                 */
-                //if (cd.isInterfaceDeclaration())
-                //    error("interface `%s` cannot be scope", cd.toChars());
-
-                if (onstack) // if any destructors
-                {
-                    // delete'ing C++ classes crashes (and delete is deprecated anyway)
-                    if (cd.classKind == ClassKind.cpp)
-                    {
-                        // Don't call non-existant dtor
-                        if (!cd.dtor)
-                            break;
-
-                        e = new VarExp(loc, this);
-                        e.type = e.type.mutableOf().unSharedOf(); // Hack for mutable ctor on immutable instances
-                        e = new DotVarExp(loc, e, cd.dtor, false);
-                        e = new CallExp(loc, e);
-                        break;
-                    }
-
-                    // delete this;
-                    Expression ec;
-                    ec = new VarExp(loc, this);
-                    e = new DeleteExp(loc, ec, true);
-                    e.type = Type.tvoid;
-                    break;
-                }
-            }
-        }
-        return e;
     }
 
     /*******************************************
@@ -1505,7 +1101,7 @@ extern (C++) class VarDeclaration : Declaration
         assert(type && _init);
 
         // Ungag errors when not speculative
-        uint oldgag = global.gag;
+        const oldgag = global.gag;
         if (global.gag)
         {
             Dsymbol sym = isMember();
@@ -1528,25 +1124,6 @@ extern (C++) class VarDeclaration : Declaration
         return e;
     }
 
-    /*******************************************
-     * Helper function for the expansion of manifest constant.
-     */
-    extern (D) final Expression expandInitializer(Loc loc)
-    {
-        assert((storage_class & STC.manifest) && _init);
-
-        auto e = getConstInitializer();
-        if (!e)
-        {
-            .error(loc, "cannot make expression out of initializer for `%s`", toChars());
-            return ErrorExp.get();
-        }
-
-        e = e.copy();
-        e.loc = loc;    // for better error message
-        return e;
-    }
-
     override final void checkCtorConstInit()
     {
         version (none)
@@ -1566,7 +1143,7 @@ extern (C++) class VarDeclaration : Declaration
     extern (D) final bool checkNestedReference(Scope* sc, Loc loc)
     {
         //printf("VarDeclaration::checkNestedReference() %s\n", toChars());
-        if (sc.intypeof == 1 || (sc.flags & SCOPE.ctfe))
+        if (sc.intypeof == 1 || sc.ctfe)
             return false;
         if (!parent || parent == sc.parent)
             return false;
@@ -1601,7 +1178,7 @@ extern (C++) class VarDeclaration : Declaration
         }
 
         // Add this VarDeclaration to fdv.closureVars[] if not already there
-        if (!sc.intypeof && !(sc.flags & SCOPE.compile) &&
+        if (!sc.intypeof && !sc.traitsCompiles &&
             // https://issues.dlang.org/show_bug.cgi?id=17605
             (fdv.skipCodegen || !fdthis.skipCodegen))
         {
@@ -1705,7 +1282,7 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
     final ulong getMinMax(Identifier id)
     {
         const width = fieldWidth;
-        const uns = type.isunsigned();
+        const uns = type.isUnsigned();
         const min = id == Id.min;
         ulong v;
         assert(width != 0);  // should have been rejected in semantic pass
@@ -1751,7 +1328,7 @@ extern (C++) final class SymbolDeclaration : Declaration
  */
 private Identifier getTypeInfoIdent(Type t)
 {
-    import dmd.dmangle;
+    import dmd.mangle;
     import core.stdc.stdlib;
     import dmd.root.rmem;
     // _init_10TypeInfo_%s
@@ -1832,7 +1409,7 @@ extern (C++) final class TypeInfoStructDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfostruct)
         {
-            ObjectNotFound(Id.TypeInfo_Struct);
+            ObjectNotFound(loc, Id.TypeInfo_Struct);
         }
         type = Type.typeinfostruct.type;
     }
@@ -1857,7 +1434,7 @@ extern (C++) final class TypeInfoClassDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfoclass)
         {
-            ObjectNotFound(Id.TypeInfo_Class);
+            ObjectNotFound(loc, Id.TypeInfo_Class);
         }
         type = Type.typeinfoclass.type;
     }
@@ -1882,7 +1459,7 @@ extern (C++) final class TypeInfoInterfaceDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfointerface)
         {
-            ObjectNotFound(Id.TypeInfo_Interface);
+            ObjectNotFound(loc, Id.TypeInfo_Interface);
         }
         type = Type.typeinfointerface.type;
     }
@@ -1907,7 +1484,7 @@ extern (C++) final class TypeInfoPointerDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfopointer)
         {
-            ObjectNotFound(Id.TypeInfo_Pointer);
+            ObjectNotFound(loc, Id.TypeInfo_Pointer);
         }
         type = Type.typeinfopointer.type;
     }
@@ -1932,7 +1509,7 @@ extern (C++) final class TypeInfoArrayDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfoarray)
         {
-            ObjectNotFound(Id.TypeInfo_Array);
+            ObjectNotFound(loc, Id.TypeInfo_Array);
         }
         type = Type.typeinfoarray.type;
     }
@@ -1957,7 +1534,7 @@ extern (C++) final class TypeInfoStaticArrayDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfostaticarray)
         {
-            ObjectNotFound(Id.TypeInfo_StaticArray);
+            ObjectNotFound(loc, Id.TypeInfo_StaticArray);
         }
         type = Type.typeinfostaticarray.type;
     }
@@ -1982,7 +1559,7 @@ extern (C++) final class TypeInfoAssociativeArrayDeclaration : TypeInfoDeclarati
         super(tinfo);
         if (!Type.typeinfoassociativearray)
         {
-            ObjectNotFound(Id.TypeInfo_AssociativeArray);
+            ObjectNotFound(loc, Id.TypeInfo_AssociativeArray);
         }
         type = Type.typeinfoassociativearray.type;
     }
@@ -2007,7 +1584,7 @@ extern (C++) final class TypeInfoEnumDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfoenum)
         {
-            ObjectNotFound(Id.TypeInfo_Enum);
+            ObjectNotFound(loc, Id.TypeInfo_Enum);
         }
         type = Type.typeinfoenum.type;
     }
@@ -2032,7 +1609,7 @@ extern (C++) final class TypeInfoFunctionDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfofunction)
         {
-            ObjectNotFound(Id.TypeInfo_Function);
+            ObjectNotFound(loc, Id.TypeInfo_Function);
         }
         type = Type.typeinfofunction.type;
     }
@@ -2057,7 +1634,7 @@ extern (C++) final class TypeInfoDelegateDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfodelegate)
         {
-            ObjectNotFound(Id.TypeInfo_Delegate);
+            ObjectNotFound(loc, Id.TypeInfo_Delegate);
         }
         type = Type.typeinfodelegate.type;
     }
@@ -2082,7 +1659,7 @@ extern (C++) final class TypeInfoTupleDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfotypelist)
         {
-            ObjectNotFound(Id.TypeInfo_Tuple);
+            ObjectNotFound(loc, Id.TypeInfo_Tuple);
         }
         type = Type.typeinfotypelist.type;
     }
@@ -2107,7 +1684,7 @@ extern (C++) final class TypeInfoConstDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfoconst)
         {
-            ObjectNotFound(Id.TypeInfo_Const);
+            ObjectNotFound(loc, Id.TypeInfo_Const);
         }
         type = Type.typeinfoconst.type;
     }
@@ -2132,7 +1709,7 @@ extern (C++) final class TypeInfoInvariantDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfoinvariant)
         {
-            ObjectNotFound(Id.TypeInfo_Invariant);
+            ObjectNotFound(loc, Id.TypeInfo_Invariant);
         }
         type = Type.typeinfoinvariant.type;
     }
@@ -2157,7 +1734,7 @@ extern (C++) final class TypeInfoSharedDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfoshared)
         {
-            ObjectNotFound(Id.TypeInfo_Shared);
+            ObjectNotFound(loc, Id.TypeInfo_Shared);
         }
         type = Type.typeinfoshared.type;
     }
@@ -2182,7 +1759,7 @@ extern (C++) final class TypeInfoWildDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfowild)
         {
-            ObjectNotFound(Id.TypeInfo_Wild);
+            ObjectNotFound(loc, Id.TypeInfo_Wild);
         }
         type = Type.typeinfowild.type;
     }
@@ -2207,7 +1784,7 @@ extern (C++) final class TypeInfoVectorDeclaration : TypeInfoDeclaration
         super(tinfo);
         if (!Type.typeinfovector)
         {
-            ObjectNotFound(Id.TypeInfo_Vector);
+            ObjectNotFound(loc, Id.TypeInfo_Vector);
         }
         type = Type.typeinfovector.type;
     }

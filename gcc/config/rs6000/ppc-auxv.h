@@ -1,7 +1,7 @@
 /* PowerPC support for accessing the AUXV AT_PLATFORM, AT_HWCAP and AT_HWCAP2
    values from the Thread Control Block (TCB).
 
-   Copyright (C) 2016-2024 Free Software Foundation, Inc.
+   Copyright (C) 2016-2025 Free Software Foundation, Inc.
    Contributed by Peter Bergner <bergner@vnet.ibm.com>.
 
    This file is part of GCC.

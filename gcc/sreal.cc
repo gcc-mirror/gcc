@@ -1,5 +1,5 @@
 /* Simple data type for real numbers for the GNU compiler.
-   Copyright (C) 2002-2024 Free Software Foundation, Inc.
+   Copyright (C) 2002-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 	sig == 0 && exp == -SREAL_MAX_EXP
 */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <math.h>

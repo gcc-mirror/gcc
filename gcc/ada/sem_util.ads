@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -598,12 +598,16 @@ package Sem_Util is
    --  attribute, except in the case of formal private and derived types.
    --  Possible optimization???
 
-   function Corresponding_Primitive_Op
+   function Corresponding_Op_Of_Derived_Type
      (Ancestor_Op     : Entity_Id;
       Descendant_Type : Entity_Id) return Entity_Id;
-   --  Given a primitive subprogram of a first type and a (distinct)
-   --  descendant type of that type, find the corresponding primitive
-   --  subprogram of the descendant type.
+   --  Given a subprogram Ancestor_Op associated with an ancestor type,
+   --  and a (distinct) descendant type of that type, find the corresponding
+   --  subprogram entity, if any, of the descendant type and return it.
+   --  Usually this is a primitive subprogram, but if Ancestor_Op is not
+   --  a primitive of the ancestor type (for example, it could be a class-wide
+   --  operation of the ancestor), then this function will simply return
+   --  Ancestor_Op.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
@@ -704,10 +708,6 @@ package Sem_Util is
    --  Returns True if Name1 and Name2 designate the same unit name; each of
    --  these names is supposed to be a selected component name, an expanded
    --  name, a defining program unit name or an identifier.
-
-   procedure Diagnose_Iterated_Component_Association (N : Node_Id);
-   --  Emit an error if iterated component association N is actually an illegal
-   --  quantified expression lacking a quantifier.
 
    function Discriminated_Size (Comp : Entity_Id) return Boolean;
    --  If a component size is not static then a warning will be emitted
@@ -1625,8 +1625,11 @@ package Sem_Util is
    function In_Package_Body return Boolean;
    --  Returns True if current scope is within a package body
 
-   function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean;
-   --  Returns true if the expression N occurs within a pragma with name Nam
+   function In_Pragma_Expression
+     (N : Node_Id; Nam : Name_Id := No_Name) return Boolean;
+   --  Returns true if the expression N occurs within a pragma. If Name /=
+   --  No_Name returns true if the expression occurs within a pragma with
+   --  the given name.
 
    function In_Pre_Post_Condition
      (N : Node_Id; Class_Wide_Only : Boolean := False) return Boolean;
@@ -1698,6 +1701,16 @@ package Sem_Util is
    --  component if it is known at compile time. A value of No_Uint means that
    --  either the value is not yet known before back-end processing or it is
    --  not known at compile time after back-end processing.
+
+   procedure Inherit_Nonoverridable_Aspects
+     (Typ : Entity_Id; From_Typ : Entity_Id);
+   --  For each nonoverridable aspect of parent type From_Typ, create an
+   --  inherited aspect for Typ and identify the subprograms that are denoted
+   --  by the inherited aspect, which may be the same subprograms of From_Typ,
+   --  or the corresponding inherited or overriding subprograms of Typ (in the
+   --  case where the parent subprogram is primitive), or even other eligible
+   --  subprograms that have been added to the derived type (such as can occur
+   --  in the case of indexing aspects).
 
    procedure Inherit_Predicate_Flags
      (Subt, Par  : Entity_Id;
@@ -1966,24 +1979,19 @@ package Sem_Util is
    --  . machine_emax = 2**10
    --  . machine_emin = 3 - machine_emax
 
-   function Is_Effectively_Volatile
-     (Id               : Entity_Id;
-      Ignore_Protected : Boolean := False) return Boolean;
+   function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile (SPARK RM 7.1.2). To qualify as such, the entity must be either
    --    * Volatile without No_Caching
    --    * An array type subject to aspect Volatile_Components
    --    * An array type whose component type is effectively volatile
+   --    * A record type for which all components have an effectively volatile
+   --      type
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
-   --
-   --  If Ignore_Protected is True, then a protected object/type is treated
-   --  like a non-protected record object/type for computing the result of
-   --  this query.
 
    function Is_Effectively_Volatile_For_Reading
-     (Id               : Entity_Id;
-      Ignore_Protected : Boolean := False) return Boolean;
+     (Id : Entity_Id) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile for reading (SPARK RM 7.1.2). To qualify as such, the entity
    --  must be either
@@ -1993,12 +2001,10 @@ package Sem_Util is
    --      Async_Writers and Effective_Reads set to False
    --    * An array type whose component type is effectively volatile for
    --      reading
+   --    * A record type for which at least one component has an effectively
+   --      volatile type for reading
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
-   --
-   --  If Ignore_Protected is True, then a protected object/type is treated
-   --  like a non-protected record object/type for computing the result of
-   --  this query.
 
    function Is_Effectively_Volatile_Object
      (N : Node_Id) return Boolean;
@@ -2362,6 +2368,7 @@ package Sem_Util is
    --    Contract_Cases
    --    Depends
    --    Exceptional_Cases
+   --    Exit_Cases
    --    Extensions_Visible
    --    Global
    --    Post
@@ -3379,6 +3386,11 @@ package Sem_Util is
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
+
+   function Within_Spec_Static_Expression (N : Node_Id) return Boolean;
+   --  Returns True if we are preanalyzing a default expression, and N is
+   --  within a static expression. See "Handling of Default Expressions"
+   --  in the spec of package Sem for further details.
 
    procedure Warn_On_Hiding_Entity
      (N               : Node_Id;

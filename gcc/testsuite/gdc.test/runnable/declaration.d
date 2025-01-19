@@ -406,6 +406,65 @@ void test13950()
 
 /***************************************************/
 
+
+void testlocalref()
+{
+    int x = 4;
+    ref int rx = x;
+    rx = 5;
+    assert(x == 5);
+    ref int r2 = rx;
+    r2 = 6;
+    assert(x == 6);
+}
+
+/***************************************************/
+
+int global;
+
+ref int tgr() { return global; }
+
+void testglobalref()
+{
+    auto i = tgr();
+    i = 1;
+    assert(global == 0);
+}
+
+/***************************************************/
+
+void testAutoRef()
+{
+    auto ref int x = 4;
+    auto ref int y = x;
+    auto ref z = x + 0;
+    auto ref char w;
+    auto ref float v = x; // type conversion
+
+    static assert(!__traits(isRef, x));
+    static assert( __traits(isRef, y));
+    static assert(!__traits(isRef, z));
+    static assert(!__traits(isRef, w));
+    static assert(!__traits(isRef, v));
+
+    assert(&y == &x);
+    assert(&z != &x);
+    assert(w == char.init);
+    assert(v == 4.0);
+
+    if (auto ref int a = 3)
+        static assert(!__traits(isRef, a));
+
+    while (auto ref a = x)
+    {
+        static assert(is(typeof(a) == int));
+        static assert(__traits(isRef, a));
+        break;
+    }
+}
+
+/***************************************************/
+
 int main()
 {
     test6475();
@@ -419,6 +478,9 @@ int main()
     test10142();
     test11421();
     test13950();
+    testlocalref();
+    testglobalref();
+    testAutoRef();
 
     printf("Success\n");
     return 0;

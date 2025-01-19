@@ -9,6 +9,8 @@
 #define __memx  /* empty */
 #endif
 
+__extension__ typedef __int24 int24_t;
+
 #define NC __attribute__((noipa))
 
 void NC vfun (char n, ...)
@@ -30,7 +32,7 @@ void NC vfun (char n, ...)
         abort();
       break;
     case 3:
-      if (333333 != va_arg (ap, __int24))
+      if (333333 != va_arg (ap, int24_t))
         abort();
       break;
     case 4:
@@ -67,12 +69,12 @@ void NC boox_hi (const __memx int *p)
   vfun (2, *p);
 }
 
-void NC boo_psi (const __flash __int24 *p)
+void NC boo_psi (const __flash int24_t *p)
 {
   vfun (3, *p);
 }
 
-void NC boox_psi (const __memx __int24 *p)
+void NC boox_psi (const __memx int24_t *p)
 {
   vfun (3, *p);
 }
@@ -99,19 +101,19 @@ void NC boox_di (const __memx long long *p)
 
 const __flash char f_qi = 11;
 const __flash int f_hi = 2222;
-const __flash __int24 f_psi = 333333;
+const __flash int24_t f_psi = 333333;
 const __flash long f_si = 44444444;
 const __flash long long f_di = 8888888888888888;
 
 const __memx char x_qi = 11;
 const __memx int x_hi = 2222;
-const __memx __int24 x_psi = 333333;
+const __memx int24_t x_psi = 333333;
 const __memx long x_si = 44444444;
 const __memx long long x_di = 8888888888888888;
 
 char r_qi = 11;
 int r_hi = 2222;
-__int24 r_psi = 333333;
+int24_t r_psi = 333333;
 long r_si = 44444444;
 long long r_di = 8888888888888888;
 

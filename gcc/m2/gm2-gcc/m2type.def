@@ -1,6 +1,6 @@
 (* m2type.def definition module for m2type.cc.
 
-Copyright (C) 2011-2024 Free Software Foundation, Inc.
+Copyright (C) 2011-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -766,17 +766,24 @@ PROCEDURE GetM2CharType () : tree ;
 
 
 (*
-   GetCSizeTType - return a type representing, size_t on this system.
+   GetCSizeTType - return a type representing size_t.
 *)
 
 PROCEDURE GetCSizeTType () : tree ;
 
 
 (*
-   GetCSSizeTType - return a type representing, ssize_t on this system.
+   GetCSSizeTType - return a type representing ssize_t.
 *)
 
 PROCEDURE GetCSSizeTType () : tree ;
+
+
+(*
+   GetCOffTType - return a type representing OFF_T.
+*)
+
+PROCEDURE GetCOffTType () : tree ;
 
 
 (*

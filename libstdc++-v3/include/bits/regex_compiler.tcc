@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2024 Free Software Foundation, Inc.
+// Copyright (C) 2013-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -611,10 +611,13 @@ namespace __detail
 	    return true;
 	if (_M_traits.isctype(__ch, _M_class_set))
 	  return true;
-	if (std::find(_M_equiv_set.begin(), _M_equiv_set.end(),
-		      _M_traits.transform_primary(&__ch, &__ch+1))
-	    != _M_equiv_set.end())
-	  return true;
+	if (!_M_equiv_set.empty())
+	  {
+	    auto __x = _M_traits.transform_primary(&__ch, &__ch+1);
+	    auto __p = std::find(_M_equiv_set.begin(), _M_equiv_set.end(), __x);
+	    if (__p != _M_equiv_set.end())
+	      return true;
+	  }
 	for (auto& __it : _M_neg_class_set)
 	  if (!_M_traits.isctype(__ch, __it))
 	    return true;

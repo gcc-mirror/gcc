@@ -1,5 +1,5 @@
 ;; Matrix-Multiply Assist (MMA) patterns.
-;; Copyright (C) 2020-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2025 Free Software Foundation, Inc.
 ;; Contributed by Peter Bergner <bergner@linux.ibm.com> and
 ;;		  Michael Meissner <meissner@linux.ibm.com>
 ;;

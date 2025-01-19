@@ -1,6 +1,6 @@
 // <ranges> -*- C++ -*-
 
-// Copyright (C) 2019-2024 Free Software Foundation, Inc.
+// Copyright (C) 2019-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -949,8 +949,7 @@ namespace views::__adaptor
   // _S_has_simple_call_op to true if the behavior of this adaptor is
   // independent of the constness/value category of the adaptor object.
   template<typename _Derived>
-    struct _RangeAdaptorClosure
-    { };
+    struct _RangeAdaptorClosure;
 
   template<typename _Tp, typename _Up>
     requires (!same_as<_Tp, _RangeAdaptorClosure<_Up>>)
@@ -983,6 +982,26 @@ namespace views::__adaptor
 						 std::forward<_Rhs>(__rhs)};
     }
 #pragma GCC diagnostic pop
+
+  template<typename _Derived>
+    struct _RangeAdaptorClosure
+    {
+      // In non-modules compilation ADL finds these operators either way and
+      // the friend declarations are redundant.  But with the std module these
+      // friend declarations enable ADL to find these operators without having
+      // to export them.
+      template<typename _Self, typename _Range>
+	requires __is_range_adaptor_closure<_Self>
+	  && __adaptor_invocable<_Self, _Range>
+	friend constexpr auto
+	operator|(_Range&& __r, _Self&& __self);
+
+      template<typename _Lhs, typename _Rhs>
+	requires __is_range_adaptor_closure<_Lhs>
+	  && __is_range_adaptor_closure<_Rhs>
+	friend constexpr auto
+	operator|(_Lhs&& __lhs, _Rhs&& __rhs);
+    };
 
   // The base class of every range adaptor non-closure.
   //
@@ -4551,11 +4570,13 @@ namespace views::__adaptor
     inline constexpr bool enable_borrowed_range<elements_view<_Tp, _Nm>>
       = enable_borrowed_range<_Tp>;
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3563. keys_view example is broken
   template<typename _Range>
-    using keys_view = elements_view<views::all_t<_Range>, 0>;
+    using keys_view = elements_view<_Range, 0>;
 
   template<typename _Range>
-    using values_view = elements_view<views::all_t<_Range>, 1>;
+    using values_view = elements_view<_Range, 1>;
 
   namespace views
   {

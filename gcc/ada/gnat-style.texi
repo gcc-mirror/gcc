@@ -19,11 +19,11 @@
 
 @copying
 @quotation
-GNAT Coding Style: A Guide for GNAT Developers , Oct 07, 2024
+GNAT Coding Style: A Guide for GNAT Developers , Jan 03, 2025
 
 AdaCore
 
-Copyright @copyright{} 2008-2024, Free Software Foundation
+Copyright @copyright{} 2008-2025, Free Software Foundation
 @end quotation
 
 @end copying

@@ -1,5 +1,5 @@
 /* d-attribs.c -- D attributes handling.
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Implementation of attribute handlers for user defined attributes and
    internal built-in functions.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -441,7 +440,7 @@ apply_user_attributes (Dsymbol *sym, tree node)
   if (TYPE_P (node) && !COMPLETE_TYPE_P (node))
     attr_flags |= ATTR_FLAG_TYPE_IN_PLACE;
 
-  Expressions *attrs = uda->getAttributes ();
+  Expressions *attrs = dmd::getAttributes (uda);
   decl_attributes (&node, build_attributes (attrs), attr_flags);
 
   input_location = saved_location;

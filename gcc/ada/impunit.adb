@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2024, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2025, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -649,7 +649,7 @@ package body Impunit is
 
    type Aunit_Record is record
       Fname : String (1 .. 6);
-      Aname : String_Ptr_Const;
+      Aname : not null String_Ptr_Const;
    end record;
 
    --  Array of alternative unit names

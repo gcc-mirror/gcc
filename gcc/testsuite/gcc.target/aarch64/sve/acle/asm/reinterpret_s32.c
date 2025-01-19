@@ -3,6 +3,23 @@
 #include "test_sve_acle.h"
 
 /*
+** reinterpret_s32_mf8_tied1:
+**	ret
+*/
+TEST_DUAL_Z_REV (reinterpret_s32_mf8_tied1, svint32_t, svmfloat8_t,
+		 z0_res = svreinterpret_s32_mf8 (z0),
+		 z0_res = svreinterpret_s32 (z0))
+
+/*
+** reinterpret_s32_mf8_untied:
+**	mov	z0\.d, z4\.d
+**	ret
+*/
+TEST_DUAL_Z (reinterpret_s32_mf8_untied, svint32_t, svmfloat8_t,
+	     z0 = svreinterpret_s32_mf8 (z4),
+	     z0 = svreinterpret_s32 (z4))
+
+/*
 ** reinterpret_s32_bf16_tied1:
 **	ret
 */

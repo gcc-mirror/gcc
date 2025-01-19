@@ -1,3 +1,13 @@
+2024-12-14  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/117812
+	* zstdtest.c (test_large): Use 3 rather than ZSTD_CLEVEL_DEFAULT
+
+2024-11-29  Ian Lance Taylor  <iant@golang.org>
+
+	* fileline.c: Use WIN32_LEAN_AND_MEAN, not WIN32_MEAN_AND_LEAN.
+	* pecoff.c: Likewise.
+
 2024-10-25  Ian Lance Taylor  <iant@golang.org>
 
 	* macho.c (dwarf_section_names): Add __debug_addr and
@@ -2233,7 +2243,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2024 Free Software Foundation, Inc.
+Copyright (C) 2012-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

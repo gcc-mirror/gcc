@@ -1,9 +1,10 @@
 // COMPILABLE_MATH_TEST
 // PERMUTE_ARGS:
+// REQUIRED_ARGS: -verrors=simple
 // EXTRA_FILES: imports/a12506.d
 /* TEST_OUTPUT:
 ---
-compilable/compile1.d(230): Deprecation: use of complex type `cdouble` is deprecated, use `std.complex.Complex!(double)` instead
+compilable/compile1.d(231): Deprecation: use of complex type `cdouble` is deprecated, use `std.complex.Complex!(double)` instead
 ---
 */
 
@@ -623,6 +624,11 @@ static assert       (__traits(compiles, false && error) == false);
 int f11042a3()() if (__traits(compiles, true  || error) == false) { return 0; }   enum x11042a3 = f11042a3();
 int f11042b3()() if (__traits(compiles, false && error) == false) { return 0; }   enum x11042b3 = f11042b3();
 
+// https://issues.dlang.org/show_bug.cgi?id=24699
+enum T24699(bool cond) = cond;
+enum b24699a = T24699!(true || error);
+enum b24699b = T24699!(false && error);
+
 /***************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=11554
 
@@ -856,7 +862,7 @@ S14166 s14166;
 
 struct X14166 { this(int) { } X14166 opAssign(int) { return this; } }
 X14166[int] aa14166;
-X14166[int] makeAA14166() { return aa14166; }
+ref X14166[int] makeAA14166() { return aa14166; }
 
 struct Tup14166(T...) { T field; alias field this; }
 Tup14166!(int, int) tup14166;

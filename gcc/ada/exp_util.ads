@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,6 +174,57 @@ package Exp_Util is
    procedure Insert_Library_Level_Actions (L : List_Id);
    --  Similar, but inserts a list of actions
 
+   ------------------------
+   -- Delayed Expansion --
+   ------------------------
+
+   --  The default, bottom-up expansion of expressions is not appropriate for
+   --  some specific situations, either because it would generate problematic
+   --  constructs in the expanded code, for example temporaries of a limited
+   --  type, or because it would generate superfluous copy operations. These
+   --  situations involve either aggregates or conditional expressions (or a
+   --  combination of them) of composite types:
+
+   --    1. For aggregates, the default expansion model is to instantiate the
+   --       anonymous object where elaboration is performed, in other words to
+   --       create a temporary. This can be directly avoided if the aggregate
+   --       is the initialization expression of an object, but cannot be if the
+   --       aggregate is nested in another aggregate, or else is the dependent
+   --       expression of a conditional expression.
+
+   --    2. For (most) conditional expressions of composite types, the default
+   --       expansion model is to take 'Unrestricted_Access of their dependent
+   --       expressions and to replace them with the dereference of the access
+   --       value designating the dependent expression chosen by the condition.
+   --       Now taking 'Unrestricted_Access of an expression, for example again
+   --       an aggregate or a function call, forces the creation of a temporary
+   --       to hold the value of the expression.
+
+   --  In these specific situations, it is desirable, if not required, to delay
+   --  the expansion of the expression until after that of the parent construct
+   --  has started or has completed, so that it can drive this expansion in the
+   --  first case or completely rewrite the expression in the second case.
+
+   --  This is achieved by means of the Expansion_Delayed flag that may be set
+   --  on aggregates and conditional expressions: when the above situations are
+   --  recognized, expansion is blocked, the flag is set, and Expand returns
+   --  after setting the Analyzed flag on the expression as usual, which means
+   --  that it is up to the parent construct either to perform the expansion of
+   --  the expression directly (case of nested aggregates), or to reset the
+   --  Analyzed flag on the expression so that Expand can give it another try
+   --  in a modified context (case of conditional expressions).
+
+   procedure Delay_Conditional_Expressions_Between (From, To : Node_Id);
+   --  Mark all the conditional expressions in the tree between From and To
+   --  as having their expansion delayed (From included, To excluded).
+
+   function Is_Delayed_Conditional_Expression (N : Node_Id) return Boolean;
+   --  Returns True if N is a conditional expression whose Expansion_Delayed
+   --  flag is set.
+
+   procedure Unanalyze_Delayed_Conditional_Expression (N : Node_Id);
+   --  Schedule the reanalysis of the delayed conditional expression N
+
    -----------------------
    -- Other Subprograms --
    -----------------------
@@ -182,9 +233,9 @@ package Exp_Util is
    --  N is a node for which atomic synchronization may be required (it is
    --  either an identifier, expanded name, or selected/indexed component or
    --  an explicit dereference). The caller has checked the basic conditions
-   --  (atomic variable appearing and Atomic_Sync not disabled). This function
-   --  checks if atomic synchronization is required and if so sets the flag
-   --  and if appropriate generates a warning (in -gnatw.n mode).
+   --  (atomic variable appearing and Atomic_Synchronization enabled). This
+   --  function checks if atomic synchronization is required and if so sets
+   --  the flag and (in -gnatw.n mode) generates a warning.
 
    procedure Adjust_Condition (N : Node_Id);
    --  The node N is an expression whose root-type is Boolean, and which
@@ -1011,6 +1062,18 @@ package Exp_Util is
    --  caller has to check whether stack checking is actually enabled in order
    --  to guide the expansion (typically of a function call).
 
+   procedure Move_To_Initialization_Statements (Decl, Stop : Node_Id);
+   --  Decl is an N_Object_Declaration node and Stop is a node past Decl in
+   --  the same list. Move all the nodes on the list between Decl and Stop
+   --  (excluded) into a compound statement inserted between Decl and Stop
+   --  and attached to the object by means of Initialization_Statements.
+
+   function Needs_Initialization_Statements (Decl : Node_Id) return Boolean;
+   --  Decl is the N_Object_Declaration node of an object initialized with an
+   --  aggregate or a call expanded in place. Return True if the statements
+   --  created by expansion need to be moved to the Initialization_Statements
+   --  of the object.
+
    function Name_Of_Controlled_Prim_Op
      (Typ : Entity_Id;
       Nam : Name_Id) return Name_Id
@@ -1180,6 +1243,9 @@ package Exp_Util is
    --  These cases require special actions on scope exit. Lib_Level is True if
    --  the construct is at library level, and False otherwise.
 
+   procedure Rewrite_Object_Declaration_As_Renaming (N, Nam : Node_Id);
+   --  Rewrite object declaration N as an object renaming declaration of Nam
+
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this
    --  is an unchecked conversion that Gigi can handle directly. Otherwise
@@ -1274,6 +1340,11 @@ package Exp_Util is
    --  is conservative, in that a result of False is decisive. A result of True
    --  means that such a component may or may not be present.
 
+   function Unconditional_Parent (N : Node_Id) return Node_Id;
+   --  Return the first parent of arbitrary node N that is not a conditional
+   --  expression, one of whose dependent expressions is N, and that is not
+   --  a qualified expression, whose expression is N, recursively.
+
    procedure Update_Primitives_Mapping
      (Inher_Id : Entity_Id;
       Subp_Id  : Entity_Id);
@@ -1283,11 +1354,11 @@ package Exp_Util is
    --  when elaborating a contract for a subprogram, and when freezing a type
    --  extension to verify legality rules on inherited conditions.
 
-   function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
+   function Within_Conditional_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is immediately within a dependent
-   --  expression of a case or an if expression. The criterion is whether
+   --  expression of a conditional expression. The criterion is whether
    --  temporaries created by the actions attached to N need to outlive an
-   --  enclosing case or if expression.
+   --  enclosing conditional expression.
 
 private
    pragma Inline (Duplicate_Subexpr);

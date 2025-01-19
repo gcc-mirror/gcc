@@ -1,6 +1,6 @@
 ; Parameter options of the compiler.
 
-; Copyright (C) 2019-2024 Free Software Foundation, Inc.
+; Copyright (C) 2019-2025 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -65,6 +65,10 @@ Enable asan stack protection.
 -param=asan-use-after-return=
 Common Joined UInteger Var(param_asan_use_after_return) Init(1) IntegerRange(0, 1) Param Optimization
 Enable asan detection of use-after-return bugs.
+
+-param=cycle-accurate-model=
+Common Joined UInteger Var(param_cycle_accurate_model) Init(1) IntegerRange(0, 1) Param Optimization
+Whether the scheduling description is mostly a cycle-accurate model of the target processor and is likely to be spill aggressively to fill any pipeline bubbles.
 
 -param=hwasan-instrument-stack=
 Common Joined UInteger Var(param_hwasan_instrument_stack) Init(1) IntegerRange(0, 1) Param Optimization
@@ -1040,9 +1044,17 @@ Allow the store merging pass to introduce unaligned stores if it is legal to do 
 Common Joined UInteger Var(param_store_merging_max_size) Init(65536) IntegerRange(1, 65536) Param Optimization
 Maximum size of a single store merging region in bytes.
 
+-param=store-forwarding-max-distance=
+Common Joined UInteger Var(param_store_forwarding_max_distance) Init(10) IntegerRange(0, 1000) Param Optimization
+Maximum number of instruction distance that a small store forwarded to a larger load may stall. Value '0' disables the cost checks for the avoid-store-forwarding pass.
+
 -param=switch-conversion-max-branch-ratio=
 Common Joined UInteger Var(param_switch_conversion_branch_ratio) Init(8) IntegerRange(1, 65536) Param Optimization
 The maximum ratio between array size and switch branches for a switch conversion to take place.
+
+-param=switch-lower-slow-alg-max-cases=
+Common Joined UInteger Var(param_switch_lower_slow_alg_max_cases) Init(1000) IntegerRange(1, 1000000000) Param Optimization
+Maximum number of cases for slow switch lowering algorithms to be used.
 
 -param=modref-max-bases=
 Common Joined UInteger Var(param_modref_max_bases) Init(32) Param Optimization
@@ -1207,7 +1219,7 @@ Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRange(0, 1
 Enable loop vectorization of floating point inductions.
 
 -param=vect-force-slp=
-Common Joined UInteger Var(param_vect_force_slp) Init(0) IntegerRange(0, 1) Param Optimization
+Common Joined UInteger Var(param_vect_force_slp) Init(1) IntegerRange(0, 1) Param Optimization
 Force the use of SLP when vectorizing, fail if not possible.
 
 -param=vrp-block-limit=

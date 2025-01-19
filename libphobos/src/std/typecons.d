@@ -980,24 +980,35 @@ if (distinctFieldNames!(Specs))
         {
             import std.algorithm.mutation : swap;
 
-            static if (is(R : Tuple!Types) && !__traits(isRef, rhs) && isTuple!R)
+            /*
+                This optimization caused compilation failures with no error message available:
+
+                > Error: unknown, please file report on issues.dlang.org
+                > std/sumtype.d(1262): Error: template instance `std.sumtype.SumType!(Flag, Tuple!(This*))` error instantiating
+            */
+            version (none)
             {
-                if (__ctfe)
+                static if (is(R == Tuple!Types) && !__traits(isRef, rhs) && isTuple!R)
                 {
-                    // Cannot use swap at compile time
-                    field[] = rhs.field[];
+                    if (__ctfe)
+                    {
+                        // Cannot use swap at compile time
+                        field[] = rhs.field[];
+                    }
+                    else
+                    {
+                        // Use swap-and-destroy to optimize rvalue assignment
+                        swap!(Tuple!Types)(this, rhs);
+                    }
                 }
                 else
                 {
-                    // Use swap-and-destroy to optimize rvalue assignment
-                    swap!(Tuple!Types)(this, rhs);
+                    // Do not swap; opAssign should be called on the fields.
+                    field[] = rhs.field[];
                 }
             }
-            else
-            {
-                // Do not swap; opAssign should be called on the fields.
-                field[] = rhs.field[];
-            }
+
+            field[] = rhs.field[];
             return this;
         }
 
@@ -2235,12 +2246,14 @@ template tuple(Names...)
             // e.g. Tuple!(int, "x", string, "y")
             template Interleave(A...)
             {
-                template and(B...) if (B.length == 1)
+                template and(B...)
+                if (B.length == 1)
                 {
                     alias and = AliasSeq!(A[0], B[0]);
                 }
 
-                template and(B...) if (B.length != 1)
+                template and(B...)
+                if (B.length != 1)
                 {
                     alias and = AliasSeq!(A[0], B[0],
                         Interleave!(A[1..$]).and!(B[1..$]));
@@ -3102,17 +3115,18 @@ private:
     {
         static if (useQualifierCast)
         {
-            this.data = cast() value;
+            static if (hasElaborateAssign!T)
+            {
+                import core.lifetime : copyEmplace;
+                copyEmplace(cast() value, this.data);
+            }
+            else
+                this.data = cast() value;
         }
         else
         {
-            // As we're escaping a copy of `value`, deliberately leak a copy:
-            static union DontCallDestructor
-            {
-                T value;
-            }
-            DontCallDestructor copy = DontCallDestructor(value);
-            this.data = *cast(Payload*) &copy;
+            import core.lifetime : copyEmplace;
+            copyEmplace(cast() value, cast() *cast(T*) &this.data);
         }
     }
 
@@ -3125,13 +3139,344 @@ private:
         }
 
         // call possible struct destructors
-        .destroy!(No.initialize)(*cast(T*) &this.data);
+        static if (is(T == struct))
+        {
+            .destroy!(No.initialize)(*cast(T*) &this.data);
+        }
     }
 }
 
 package(std) Rebindable2!T rebindable2(T)(T value)
 {
     return Rebindable2!T(value);
+}
+
+// Verify that the destructor is called properly if there is one.
+@system unittest
+{
+    {
+        bool destroyed;
+
+        struct S
+        {
+            int i;
+
+            this(int i) @safe
+            {
+                this.i = i;
+            }
+
+            ~this() @safe
+            {
+                destroyed = true;
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+
+            // Whether destruction has occurred here depends on whether the
+            // temporary gets moved or not, so we won't assume that it has or
+            // hasn't happened. What we care about here is that foo gets destroyed
+            // properly when it leaves the scope.
+            destroyed = false;
+        }
+        assert(destroyed);
+
+        {
+            auto foo = rebindable2(const S(42));
+            destroyed = false;
+        }
+        assert(destroyed);
+    }
+
+    // Test for double destruction with qualifer cast being used
+    {
+        static struct S
+        {
+            int i;
+            bool destroyed;
+
+            this(int i) @safe
+            {
+                this.i = i;
+            }
+
+            ~this() @safe
+            {
+                destroyed = true;
+            }
+
+            @safe invariant
+            {
+                assert(!destroyed);
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(typeof(foo).useQualifierCast);
+            assert(foo.data.i == 42);
+            assert(!foo.data.destroyed);
+        }
+        {
+            auto foo = rebindable2(S(42));
+            destroy(foo);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            assert(typeof(foo).useQualifierCast);
+            assert(foo.data.i == 42);
+            assert(!foo.data.destroyed);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            destroy(foo);
+        }
+    }
+
+    // Test for double destruction without qualifer cast being used
+    {
+        static struct S
+        {
+            int i;
+            bool destroyed;
+
+            this(int i) @safe
+            {
+                this.i = i;
+            }
+
+            ~this() @safe
+            {
+                destroyed = true;
+            }
+
+            @disable ref S opAssign()(auto ref S rhs);
+
+            @safe invariant
+            {
+                assert(!destroyed);
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(!typeof(foo).useQualifierCast);
+            assert((cast(S*)&(foo.data)).i == 42);
+            assert(!(cast(S*)&(foo.data)).destroyed);
+        }
+        {
+            auto foo = rebindable2(S(42));
+            destroy(foo);
+        }
+    }
+}
+
+// Verify that if there is an overloaded assignment operator, it's not assigned
+// to garbage.
+@safe unittest
+{
+    static struct S
+    {
+        int i;
+        bool destroyed;
+
+        this(int i) @safe
+        {
+            this.i = i;
+        }
+
+        ~this() @safe
+        {
+            destroyed = true;
+        }
+
+        ref opAssign()(auto ref S rhs)
+        {
+            assert(!this.destroyed);
+            this.i = rhs.i;
+            return this;
+        }
+    }
+
+    {
+        auto foo = rebindable2(S(42));
+        foo = S(99);
+        assert(foo.data.i == 99);
+    }
+    {
+        auto foo = rebindable2(S(42));
+        foo = const S(99);
+        assert(foo.data.i == 99);
+    }
+}
+
+// Verify that postblit or copy constructor is called properly if there is one.
+@system unittest
+{
+    // postblit with type qualifier cast
+    {
+        static struct S
+        {
+            int i;
+            static bool copied;
+
+            this(this) @safe
+            {
+                copied = true;
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+
+            // Whether a copy has occurred here depends on whether the
+            // temporary gets moved or not, so we won't assume that it has or
+            // hasn't happened. What we care about here is that foo gets copied
+            // properly when we copy it below.
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            assert(typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+    }
+
+    // copy constructor with type qualifier cast
+    {
+        static struct S
+        {
+            int i;
+            static bool copied;
+
+            this(ref inout S rhs) @safe inout
+            {
+                this.i = rhs.i;
+                copied = true;
+            }
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+        }
+    }
+
+    // FIXME https://issues.dlang.org/show_bug.cgi?id=24829
+
+    // Making this work requires either reworking how the !useQualiferCast
+    // version works so that the compiler can correctly generate postblit
+    // constructors and copy constructors as appropriate, or an explicit
+    // postblit or copy constructor needs to be added for such cases, which
+    // gets pretty complicated if we want to correctly add the same attributes
+    // that T's postblit or copy constructor has.
+
+    /+
+    // postblit without type qualifier cast
+    {
+        static struct S
+        {
+            int* ptr;
+            static bool copied;
+
+            this(int i)
+            {
+                ptr = new int(i);
+            }
+
+            this(this) @safe
+            {
+                if (ptr !is null)
+                    ptr = new int(*ptr);
+                copied = true;
+            }
+
+            @disable ref S opAssign()(auto ref S rhs);
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(!typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+    }
+
+    // copy constructor without type qualifier cast
+    {
+        static struct S
+        {
+            int* ptr;
+            static bool copied;
+
+            this(int i)
+            {
+                ptr = new int(i);
+            }
+
+            this(ref inout S rhs) @safe inout
+            {
+                if (rhs.ptr !is null)
+                    ptr = new inout int(*rhs.ptr);
+                copied = true;
+            }
+
+            @disable ref S opAssign()(auto ref S rhs);
+        }
+
+        {
+            auto foo = rebindable2(S(42));
+            assert(!typeof(foo).useQualifierCast);
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+        {
+            auto foo = rebindable2(const S(42));
+            S.copied = false;
+
+            auto bar = foo;
+            assert(S.copied);
+            assert(*(cast(S*)&(foo.data)).ptr == *(cast(S*)&(bar.data)).ptr);
+            assert((cast(S*)&(foo.data)).ptr !is (cast(S*)&(bar.data)).ptr);
+        }
+    }
+    +/
 }
 
 /**
@@ -3538,6 +3883,35 @@ struct Nullable(T)
         const Nullable!string a = const(Nullable!string)();
 
         format!"%s"(a);
+    }
+
+    /**
+     * Returns true if `this` has a value, otherwise false.
+     *
+     * Allows a `Nullable` to be used as the condition in an `if` statement:
+     *
+     * ---
+     * if (auto result = functionReturningNullable())
+     * {
+     *     doSomethingWith(result.get);
+     * }
+     * ---
+     */
+    bool opCast(T : bool)() const
+    {
+        return !isNull;
+    }
+
+    /// Prevents `opCast` from disabling built-in conversions.
+    auto ref T opCast(T, this This)()
+    if (is(This : T) || This.sizeof == T.sizeof)
+    {
+        static if (is(This : T))
+            // Convert implicitly
+            return this;
+        else
+            // Reinterpret
+            return *cast(T*) &this;
     }
 
     /**
@@ -4397,6 +4771,26 @@ auto nullable(T)(T t)
     assert(destroyed);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=22293
+@safe unittest
+{
+    Nullable!int empty;
+    Nullable!int full = 123;
+
+    assert(cast(bool) empty == false);
+    assert(cast(bool) full == true);
+
+    if (empty) assert(0);
+    if (!full) assert(0);
+}
+
+// check that opCast doesn't break unsafe casts
+@system unittest
+{
+    Nullable!(const(int*)) a;
+    auto result = cast(immutable(Nullable!(int*))) a;
+}
+
 /**
 Just like `Nullable!T`, except that the null state is defined as a
 particular value. For example, $(D Nullable!(uint, uint.max)) is an
@@ -5082,7 +5476,7 @@ Params:
             non-release mode.
  */
     void opAssign()(T value)
-        if (isAssignable!T) //@@@9416@@@
+    if (isAssignable!T) //@@@9416@@@
     {
         enum message = "Called `opAssign' on null NullableRef!" ~ T.stringof ~ ".";
         assert(!isNull, message);
@@ -5417,15 +5811,17 @@ nothrow pure @safe unittest
     }
 }
 
-// / ditto
+/// ditto
 class NotImplementedError : Error
 {
+    ///
     this(string method) nothrow pure @safe
     {
         super(method ~ " is not implemented");
     }
 }
 
+///
 @system unittest
 {
     import std.exception : assertThrown;
@@ -7446,7 +7842,8 @@ Constructor that initializes the payload.
 
 Postcondition: `refCountedStore.isInitialized`
  */
-    this(A...)(auto ref A args) if (A.length > 0)
+    this(A...)(auto ref A args)
+    if (A.length > 0)
     out
     {
         assert(refCountedStore.isInitialized);
@@ -7879,7 +8276,8 @@ template borrow(alias fun)
 {
     import std.functional : unaryFun;
 
-    auto ref borrow(RC)(RC refCount) if
+    auto ref borrow(RC)(RC refCount)
+    if
     (
         isInstanceOf!(SafeRefCounted, RC)
         && is(typeof(unaryFun!fun(refCount.refCountedPayload)))
@@ -8088,7 +8486,7 @@ mixin template Proxy(alias a)
         }
 
         bool opEquals(T)(T b)
-            if (is(ValueType : T) || is(typeof(a.opEquals(b))) || is(typeof(b.opEquals(a))))
+        if (is(ValueType : T) || is(typeof(a.opEquals(b))) || is(typeof(b.opEquals(a))))
         {
             static if (is(typeof(a.opEquals(b))))
                 return a.opEquals(b);
@@ -8112,7 +8510,7 @@ mixin template Proxy(alias a)
         }
 
         int opCmp(T)(auto ref const T b)
-            if (is(ValueType : T) || is(typeof(a.opCmp(b))) || is(typeof(b.opCmp(a))))
+        if (is(ValueType : T) || is(typeof(a.opCmp(b))) || is(typeof(b.opCmp(a))))
         {
             static if (is(typeof(a.opCmp(b))))
                 return a.opCmp(b);
@@ -8222,7 +8620,8 @@ mixin template Proxy(alias a)
         }
     }
 
-    auto ref opAssign     (this X, V      )(auto ref V v) if (!is(V == typeof(this))) { return a       = v; }
+    auto ref opAssign     (this X, V      )(auto ref V v)
+    if (!is(V == typeof(this))) { return a       = v; }
     auto ref opIndexAssign(this X, V, D...)(auto ref V v, auto ref D i)               { return a[i]    = v; }
     auto ref opSliceAssign(this X, V      )(auto ref V v)                             { return a[]     = v; }
     auto ref opSliceAssign(this X, V, B, E)(auto ref V v, auto ref B b, auto ref E e) { return a[b .. e] = v; }
@@ -9741,6 +10140,7 @@ Flag!"encryption".no).
 */
 struct Yes
 {
+    ///
     template opDispatch(string name)
     {
         enum opDispatch = Flag!name.yes;
@@ -9751,6 +10151,7 @@ struct Yes
 /// Ditto
 struct No
 {
+    ///
     template opDispatch(string name)
     {
         enum opDispatch = Flag!name.no;
@@ -9889,7 +10290,7 @@ public:
     }
 
     this(T...)(T flags)
-        if (allSatisfy!(isBaseEnumType, T))
+    if (allSatisfy!(isBaseEnumType, T))
     {
         this = flags;
     }
@@ -9900,19 +10301,19 @@ public:
     }
 
     Base opCast(B)() const
-        if (is(Base : B))
+    if (is(Base : B))
     {
         return mValue;
     }
 
     auto opUnary(string op)() const
-        if (op == "~")
+    if (op == "~")
     {
         return BitFlags(cast(E) cast(Base) ~mValue);
     }
 
     auto ref opAssign(T...)(T flags)
-        if (allSatisfy!(isBaseEnumType, T))
+    if (allSatisfy!(isBaseEnumType, T))
     {
         mValue = 0;
         foreach (E flag; flags)
@@ -9953,7 +10354,7 @@ public:
     }
 
     auto opBinary(string op)(BitFlags flags) const
-        if (op == "|" || op == "&")
+    if (op == "|" || op == "&")
     {
         BitFlags result = this;
         result.opOpAssign!op(flags);
@@ -9961,7 +10362,7 @@ public:
     }
 
     auto opBinary(string op)(E flag) const
-        if (op == "|" || op == "&")
+    if (op == "|" || op == "&")
     {
         BitFlags result = this;
         result.opOpAssign!op(flag);
@@ -9969,7 +10370,7 @@ public:
     }
 
     auto opBinaryRight(string op)(E flag) const
-        if (op == "|" || op == "&")
+    if (op == "|" || op == "&")
     {
         return opBinary!op(flag);
     }
@@ -10601,25 +11002,29 @@ struct Ternary
       $(TR $(TD `unknown`) $(TD `unknown`) $(TD) $(TD `unknown`) $(TD `unknown`) $(TD `unknown`))
     )
     */
-    Ternary opUnary(string s)() if (s == "~")
+    Ternary opUnary(string s)()
+    if (s == "~")
     {
         return make((386 >> value) & 6);
     }
 
     /// ditto
-    Ternary opBinary(string s)(Ternary rhs) if (s == "|")
+    Ternary opBinary(string s)(Ternary rhs)
+    if (s == "|")
     {
         return make((25_512 >> (value + rhs.value)) & 6);
     }
 
     /// ditto
-    Ternary opBinary(string s)(Ternary rhs) if (s == "&")
+    Ternary opBinary(string s)(Ternary rhs)
+    if (s == "&")
     {
         return make((26_144 >> (value + rhs.value)) & 6);
     }
 
     /// ditto
-    Ternary opBinary(string s)(Ternary rhs) if (s == "^")
+    Ternary opBinary(string s)(Ternary rhs)
+    if (s == "^")
     {
         return make((26_504 >> (value + rhs.value)) & 6);
     }
@@ -10885,7 +11290,8 @@ struct RefCounted(T, RefCountedAutoInitialize autoInit =
         return _refCounted;
     }
 
-    this(A...)(auto ref A args) if (A.length > 0)
+    this(A...)(auto ref A args)
+    if (A.length > 0)
     out
     {
         assert(refCountedStore.isInitialized);
@@ -10925,19 +11331,22 @@ struct RefCounted(T, RefCountedAutoInitialize autoInit =
         swap(_refCounted._store, rhs._refCounted._store);
     }
 
-    void opAssign(T rhs)
+    static if (__traits(compiles, lvalueOf!T = T.init))
     {
-        import std.algorithm.mutation : move;
+        void opAssign(T rhs)
+        {
+            import std.algorithm.mutation : move;
 
-        static if (autoInit == RefCountedAutoInitialize.yes)
-        {
-            _refCounted.ensureInitialized();
+            static if (autoInit == RefCountedAutoInitialize.yes)
+            {
+                _refCounted.ensureInitialized();
+            }
+            else
+            {
+                assert(_refCounted.isInitialized);
+            }
+            move(rhs, _refCounted._store._payload);
         }
-        else
-        {
-            assert(_refCounted.isInitialized);
-        }
-        move(rhs, _refCounted._store._payload);
     }
 
     static if (autoInit == RefCountedAutoInitialize.yes)

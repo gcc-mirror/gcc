@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv32} */
-/* { dg-options "-march=rv32gc_zicbom_zicbop_zicboz -mabi=ilp32" } */
+/* { dg-options "-march=rv32gc_zicbom_zicbop_zicboz -mabi=ilp32 -std=gnu17" } */
 
 #include "riscv_cmo.h"
 

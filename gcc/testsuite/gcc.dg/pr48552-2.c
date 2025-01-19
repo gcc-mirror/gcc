@@ -20,6 +20,7 @@ void
 f3 (void *x)
 {
   __asm ("" : : "m" (*x));	/* { dg-warning "dereferencing" } */
+  /* { dg-error "memory input 0 is not directly addressable" "not addressable" { target *-*-* } .-1 } */
 }
 
 void

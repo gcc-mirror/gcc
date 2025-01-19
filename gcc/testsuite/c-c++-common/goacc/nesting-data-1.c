@@ -30,6 +30,13 @@ f (void)
       caa[3][12] = ca[3] + caa[3][12];
     }
 
+#pragma acc serial copyout(ca[3:4])
+    {
+      c = 9;
+      ca[11] = c;
+      caa[3][12] = ca[3] + caa[3][12];
+    }
+
 #pragma acc data pcopy(ca[5:7])
     {
       c = 15;
@@ -54,6 +61,13 @@ f (void)
       {
 	c = 18;
 	ca[10] = c;
+	caa[3][12] = ca[3] + caa[3][12];
+      }
+
+#pragma acc serial pcopyout(caa[3:7][0:30])
+      {
+	c = 19;
+	ca[12] = c;
 	caa[3][12] = ca[3] + caa[3][12];
       }
     }

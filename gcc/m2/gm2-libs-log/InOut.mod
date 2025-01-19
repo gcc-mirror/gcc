@@ -1,6 +1,6 @@
 (* InOut.mod provides a compatible PIM [234] InOut module.
 
-Copyright (C) 2004-2024 Free Software Foundation, Inc.
+Copyright (C) 2004-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -48,9 +48,8 @@ TYPE
    CharSet = SET OF CHAR ;
 
 VAR
-   in, out: File ;
-   inUsed,
-   outUsed: BOOLEAN ;
+   inFile, outFile: File ;
+   inUsed, outUsed: BOOLEAN ;
 
 
 (*
@@ -71,8 +70,8 @@ BEGIN
    END ;
    IF SFIO.Exists(s)
    THEN
-      in := SFIO.OpenToRead(s) ;
-      Done := FIO.IsNoError(in) ;
+      inFile := SFIO.OpenToRead(s) ;
+      Done := FIO.IsNoError(inFile) ;
       inUsed := TRUE
    ELSE
       Done := FALSE ;
@@ -91,8 +90,8 @@ PROCEDURE CloseInput ;
 BEGIN
    IF inUsed
    THEN
-      FIO.Close(in) ;
-      in := StdIn ;
+      FIO.Close(inFile) ;
+      inFile := StdIn ;
       inUsed := FALSE
    END
 END CloseInput ;
@@ -116,8 +115,8 @@ BEGIN
    END ;
    IF SFIO.Exists(s)
    THEN
-      out := SFIO.OpenToWrite(s) ;
-      Done := FIO.IsNoError(out) ;
+      outFile := SFIO.OpenToWrite(s) ;
+      Done := FIO.IsNoError(outFile) ;
       outUsed := TRUE
    ELSE
       Done := FALSE ;
@@ -136,8 +135,8 @@ PROCEDURE CloseOutput ;
 BEGIN
    IF outUsed
    THEN
-      FIO.Close(out) ;
-      out := StdOut ;
+      FIO.Close(outFile) ;
+      outFile := StdOut ;
       outUsed := FALSE
    END
 END CloseOutput ;
@@ -149,8 +148,8 @@ END CloseOutput ;
 
 PROCEDURE LocalRead (VAR ch: CHAR) ;
 BEGIN
-   ch := FIO.ReadChar(in) ;
-   Done := FIO.IsNoError(in) AND (NOT FIO.EOF(in))
+   ch := FIO.ReadChar(inFile) ;
+   Done := FIO.IsNoError(inFile) AND (NOT FIO.EOF(inFile))
 END LocalRead ;
 
 
@@ -246,8 +245,8 @@ END ReadString ;
 
 PROCEDURE WriteString (s: ARRAY OF CHAR) ;
 BEGIN
-   FIO.WriteString(out, s) ;
-   Done := FIO.IsNoError(out)
+   FIO.WriteString(outFile, s) ;
+   Done := FIO.IsNoError(outFile)
 END WriteString ;
 
 
@@ -257,13 +256,13 @@ END WriteString ;
 
 PROCEDURE LocalWrite (ch: CHAR) ;
 BEGIN
-   FIO.WriteChar(out, ch) ;
-   Done := FIO.IsNoError(out)
+   FIO.WriteChar(outFile, ch) ;
+   Done := FIO.IsNoError(outFile)
 (*
    IF outUsed
    THEN
-      FIO.WriteChar(out, ch) ;
-      Done := FIO.IsNoError(out)
+      FIO.WriteChar(outFile, ch) ;
+      Done := FIO.IsNoError(outFile)
    ELSE
       Done := (write(stdout, ADR(ch), 1) = 1)
    END
@@ -308,8 +307,8 @@ PROCEDURE WriteLn ;
 BEGIN
    IF outUsed
    THEN
-      FIO.WriteLine(out) ;
-      Done := FIO.IsNoError(out)
+      FIO.WriteLine(outFile) ;
+      Done := FIO.IsNoError(outFile)
    ELSE
       Terminal.WriteLn
    END
@@ -366,7 +365,7 @@ END ReadCard ;
 
 PROCEDURE WriteCard (x, n: CARDINAL) ;
 BEGIN
-   IF KillString(SFIO.WriteS(out, ctos(x, n, ' ')))=NIL
+   IF KillString(SFIO.WriteS(outFile, ctos(x, n, ' ')))=NIL
    THEN
    END
 END WriteCard ;
@@ -380,7 +379,7 @@ END WriteCard ;
 
 PROCEDURE WriteInt (x: INTEGER; n: CARDINAL) ;
 BEGIN
-   IF KillString(SFIO.WriteS(out, itos(x, n, ' ', FALSE)))=NIL
+   IF KillString(SFIO.WriteS(outFile, itos(x, n, ' ', FALSE)))=NIL
    THEN
    END
 END WriteInt ;
@@ -394,7 +393,7 @@ END WriteInt ;
 
 PROCEDURE WriteOct (x, n: CARDINAL) ;
 BEGIN
-   IF KillString(SFIO.WriteS(out, CardinalToString(x, n, ' ', 8, FALSE)))=NIL
+   IF KillString(SFIO.WriteS(outFile, CardinalToString(x, n, ' ', 8, FALSE)))=NIL
    THEN
    END
 END WriteOct ;
@@ -408,7 +407,7 @@ END WriteOct ;
 
 PROCEDURE WriteHex (x, n: CARDINAL) ;
 BEGIN
-   IF KillString(SFIO.WriteS(out, CardinalToString(x, n, ' ', 16, TRUE)))=NIL
+   IF KillString(SFIO.WriteS(outFile, CardinalToString(x, n, ' ', 16, TRUE)))=NIL
    THEN
    END
 END WriteHex ;
@@ -420,8 +419,8 @@ END WriteHex ;
 
 PROCEDURE Init ;
 BEGIN
-   in := FIO.StdIn ;
-   out := FIO.StdOut ;
+   inFile := FIO.StdIn ;
+   outFile := FIO.StdOut ;
    inUsed := FALSE ;
    outUsed := FALSE ;
    AssignRead(LocalRead, LocalStatus, Done) ;

@@ -30,7 +30,6 @@ import dmd.declaration;
 import dmd.denum;
 import dmd.dimport;
 import dmd.dinterpret;
-import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
@@ -119,7 +118,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
     ed.cppnamespace = sc.namespace;
 
     ed.semanticRun = PASS.semantic;
-    UserAttributeDeclaration.checkGNUABITag(ed, sc.linkage);
+    checkGNUABITag(ed, sc.linkage);
     checkMustUseReserved(ed);
 
     if (!ed.members && !ed.memtype) // enum ident;
@@ -186,13 +185,13 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
 
     if (ed.members.length == 0)
     {
-        .error(ed.loc, "%s `%s enum `%s` must have at least one member", ed.kind, ed.toPrettyChars, ed.toChars());
+        .error(ed.loc, "%s `%s` enum `%s` must have at least one member", ed.kind, ed.toPrettyChars, ed.toChars());
         ed.errors = true;
         ed.semanticRun = PASS.semanticdone;
         return;
     }
 
-    if (!(sc.flags & SCOPE.Cfile))  // C enum remains incomplete until members are done
+    if (!sc.inCfile)  // C enum remains incomplete until members are done
         ed.semanticRun = PASS.semanticdone;
 
     version (none)
@@ -219,8 +218,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
      */
     ed.members.foreachDsymbol( (s)
     {
-        EnumMember em = s.isEnumMember();
-        if (em)
+        if (EnumMember em = s.isEnumMember())
             em._scope = sce;
     });
 
@@ -230,7 +228,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
      */
     addEnumMembersToSymtab(ed, sc, sc.getScopesym());
 
-    if (sc.flags & SCOPE.Cfile)
+    if (sc.inCfile)
     {
         /* C11 6.7.2.2
          */
@@ -325,7 +323,10 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
                 if (EnumMember em = s.isEnumMember())
                 {
                     em.type = commonType;
-                    em.value = em.value.castTo(sc, commonType);
+                    // optimize out the cast so that other parts of the compiler can
+                    // assume that an integral enum's members are `IntegerExp`s.
+                    // https://issues.dlang.org/show_bug.cgi?id=24504
+                    em.value = em.value.castTo(sc, commonType).optimize(WANTvalue);
                 }
             });
         }
@@ -383,8 +384,7 @@ Expression getDefaultValue(EnumDeclaration ed, const ref Loc loc)
 
     foreach (const i; 0 .. ed.members.length)
     {
-        EnumMember em = (*ed.members)[i].isEnumMember();
-        if (em)
+        if (EnumMember em = (*ed.members)[i].isEnumMember())
         {
             if (em.semanticRun < PASS.semanticdone)
             {
@@ -698,7 +698,7 @@ void enumMemberSemantic(Scope* sc, EnumMember em)
 
         if (e.op == EXP.error)
             return errorReturn();
-        if (e.type.isfloating())
+        if (e.type.isFloating())
         {
             // Check that e != eprev (not always true for floats)
             Expression etest = new EqualExp(EXP.equal, em.loc, e, eprev);

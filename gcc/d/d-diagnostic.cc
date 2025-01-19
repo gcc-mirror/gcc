@@ -1,5 +1,5 @@
 /* d-diagnostics.cc -- D frontend interface to gcc diagnostics.
-   Copyright (C) 2017-2024 Free Software Foundation, Inc.
+   Copyright (C) 2017-2025 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -242,7 +241,7 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
     }
   else if (kind == ErrorKind::warning)
     {
-      if (global.gag || global.params.warnings == DIAGNOSTICoff)
+      if (global.gag || global.params.useWarnings == DIAGNOSTICoff)
 	{
 	  if (global.gag)
 	    global.gaggedWarnings++;
@@ -251,7 +250,7 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
 	}
 
       /* Warnings don't count if not treated as errors.  */
-      if (global.params.warnings == DIAGNOSTICerror)
+      if (global.params.useWarnings == DIAGNOSTICerror)
 	global.warnings++;
 
       diag_kind = DK_WARNING;
@@ -315,7 +314,7 @@ verrorReportSupplemental (const Loc& loc, const char* format, va_list ap,
     }
   else if (kind == ErrorKind::warning)
     {
-      if (global.params.warnings == DIAGNOSTICoff || global.gag)
+      if (global.params.useWarnings == DIAGNOSTICoff || global.gag)
 	return;
     }
   else if (kind == ErrorKind::deprecation)

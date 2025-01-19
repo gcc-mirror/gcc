@@ -1,5 +1,5 @@
 /* Lock-free btree for manually registered unwind frames.  */
-/* Copyright (C) 2022-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by Thomas Neumann
 
 This file is part of GCC.

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wall" } */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern void *realloc (void *__ptr, size_t __size)
      __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__warn_unused_result__)) __attribute__ ((__alloc_size__ (2)));
 struct vector_objective; 

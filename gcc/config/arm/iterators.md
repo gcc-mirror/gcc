@@ -1,6 +1,6 @@
 
 ;; Code and mode itertator and attribute definitions for the ARM backend
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -139,7 +139,36 @@
 
 ;; Opaque structure types wider than TImode.
 (define_mode_iterator VSTRUCT [(EI "!TARGET_HAVE_MVE") OI
-			       (CI "!TARGET_HAVE_MVE") XI])
+			       (CI "!TARGET_HAVE_MVE") XI
+			       (V2x16QI "TARGET_HAVE_MVE")
+			       (V2x8HI "TARGET_HAVE_MVE")
+			       (V2x4SI "TARGET_HAVE_MVE")
+			       (V2x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V2x4SF "TARGET_HAVE_MVE_FLOAT")
+			       (V4x16QI "TARGET_HAVE_MVE")
+			       (V4x8HI "TARGET_HAVE_MVE")
+			       (V4x4SI "TARGET_HAVE_MVE")
+			       (V4x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V4x4SF "TARGET_HAVE_MVE_FLOAT")
+			       ])
+
+;; Structure types of the same size as OImode
+(define_mode_iterator VSTRUCT2 [OI
+			       (V2x16QI "TARGET_HAVE_MVE")
+			       (V2x8HI "TARGET_HAVE_MVE")
+			       (V2x4SI "TARGET_HAVE_MVE")
+			       (V2x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V2x4SF "TARGET_HAVE_MVE_FLOAT")
+			       ])
+
+;; Structure types of the same size as XImode
+(define_mode_iterator VSTRUCT4 [XI
+			       (V4x16QI "TARGET_HAVE_MVE")
+			       (V4x8HI "TARGET_HAVE_MVE")
+			       (V4x4SI "TARGET_HAVE_MVE")
+			       (V4x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V4x4SF "TARGET_HAVE_MVE_FLOAT")
+			       ])
 
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
@@ -271,17 +300,43 @@
 
 ;; MVE mode iterator.
 (define_mode_iterator MVE_types [V16QI V8HI V4SI V2DI TI V8HF V4SF V2DF])
-(define_mode_iterator MVE_vecs [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
+(define_mode_iterator MVE_vecs [V16QI V8HI V4SI V2DI V8HF V4SF])
 (define_mode_iterator MVE_VLD_ST [V16QI V8HI V4SI V8HF V4SF])
+(define_mode_iterator MVE_VLD_ST_scatter [V16QI V8HI V4SI V8HF V4SF V2DI])
+(define_mode_iterator MVE_VLD_ST_scatter_shifted [V8HI V4SI V8HF V4SF V2DI])
 (define_mode_iterator MVE_0 [V8HF V4SF])
 (define_mode_iterator MVE_1 [V16QI V8HI V4SI V2DI])
-(define_mode_iterator MVE_3 [V16QI V8HI])
 (define_mode_iterator MVE_2 [V16QI V8HI V4SI])
+(define_mode_iterator MVE_3 [V16QI V8HI])
+(define_mode_iterator MVE_4 [V4SI V4SF V2DI])
 (define_mode_iterator MVE_5 [V8HI V4SI])
 (define_mode_iterator MVE_7 [V16BI V8BI V4BI V2QI])
 (define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI V2QI])
 (define_mode_iterator MVE_V8HF [V8HF])
 (define_mode_iterator MVE_V16QI [V16QI])
+
+(define_mode_attr MVE_VLD2_VST2 [(V16QI "V2x16QI")
+				 (V8HI "V2x8HI")
+				 (V4SI "V2x4SI")
+				 (V8HF "V2x8HF")
+				 (V4SF "V2x4SF")])
+(define_mode_attr MVE_vld2_vst2 [(V16QI "v2x16qi")
+				 (V8HI "v2x8hi")
+				 (V4SI "v2x4si")
+				 (V8HF "v2x8hf")
+				 (V4SF "v2x4sf")])
+
+(define_mode_attr MVE_VLD4_VST4 [(V16QI "V4x16QI")
+				 (V8HI "V4x8HI")
+				 (V4SI "V4x4SI")
+				 (V8HF "V4x8HF")
+				 (V4SF "V4x4SF")])
+
+(define_mode_attr MVE_vld4_vst4 [(V16QI "v4x16qi")
+				 (V8HI "v4x8hi")
+				 (V4SI "v4x4si")
+				 (V8HF "v4x8hf")
+				 (V4SF "v4x4sf")])
 
 ;; Types for MVE truncating stores and widening loads
 (define_mode_iterator MVE_w_narrow_TYPE [V8QI V4QI V4HI])
@@ -290,6 +345,8 @@
 (define_mode_attr MVE_wide_n_type [(V8QI "v8hi") (V4QI "v4si") (V4HI "v4si")])
 (define_mode_attr MVE_wide_n_sz_elem [(V8QI "16") (V4QI "32") (V4HI "32")])
 (define_mode_attr MVE_wide_n_VPRED [(V8QI "V8BI") (V4QI "V4BI") (V4HI "V4BI")])
+(define_mode_attr MVE_scatter_offset [(V16QI "V16QI") (V8HI "V8HI") (V4SI "V4SI") (V8HF "V8HI") (V4SF "V4SI") (V2DI "V2DI")])
+(define_mode_attr MVE_scatter_shift [(V8HI "1") (V4SI "2") (V8HF "1") (V4SF "2") (V2DI "3")])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
@@ -1792,6 +1849,16 @@
                             (DI   "u64") (V2DI  "u64")
                             (V2SF "f32") (V4SF  "f32")])
 
+;; Same, but for MVE gather loads.
+;; Note that using "uNN" or "NN" everywhere would work too.
+;; We use this to match the expected output described in ACLE.
+(define_mode_attr MVE_u_elem [(V16QI "u8")
+                              (V8HI  "u16")
+                              (V4SI  "u32")
+                              (V2DI  "u64")
+                              (V8HF  "f16")
+                              (V4SF  "u32")])
+
 ;; Element types for extraction of unsigned scalars.
 (define_mode_attr V_uf_sclr [(V8QI "u8")  (V16QI "u8")
                  (V4HI "u16") (V8HI "u16")
@@ -1817,7 +1884,8 @@
 
 (define_mode_attr MVE_elem_ch [(V4QI "b") (V8QI "b") (V16QI "b")
 			       (V4HI "h") (V8HI "h") (V8HF "h")
-			       (V4SI "w") (V4SF "w")])
+			       (V4SI "w") (V4SF "w")
+			       (V2DI "d")])
 
 (define_mode_attr VH_elem_ch [(V4HI "s") (V8HI  "s")
 			      (V4HF "s") (V8HF  "s")
@@ -2521,24 +2589,9 @@
 		       (VQRSHRNBQ_M_N_S "s") (VQRSHRNBQ_M_N_U "u")
 		       (VMLALDAVAXQ_P_S "s")
 		       (VMLALDAVAQ_P_S "s") (VMLALDAVAQ_P_U "u")
-		       (VSTRWQSB_S "s") (VSTRWQSB_U "u") (VSTRBQSO_S "s")
-		       (VSTRBQSO_U "u")
-		       (VLDRBQGO_S "s") (VLDRBQGO_U "u") (VLDRWQGB_S "s")
-		       (VLDRWQGB_U "u") (VLDRHQGO_S "s")
-		       (VLDRHQGO_U "u") (VLDRHQGSO_S "s") (VLDRHQGSO_U "u")
-		       (VLDRDQGB_S "s") (VLDRDQGB_U "u")
-		       (VLDRDQGO_S "s") (VLDRDQGO_U "u") (VLDRDQGSO_S "s")
-		       (VLDRDQGSO_U "u") (VLDRWQGO_S "s") (VLDRWQGO_U "u")
-		       (VLDRWQGSO_S "s") (VLDRWQGSO_U "u")
-		       (VSTRHQSO_S "s") (VSTRHQSO_U "u")
-		       (VSTRHQSSO_S "s") (VSTRHQSSO_U "u")
-		       (VSTRDQSB_S "s") (VSTRDQSB_U "u") (VSTRDQSO_S "s")
-		       (VSTRDQSO_U "u") (VSTRDQSSO_S "s") (VSTRDQSSO_U "u")
-		       (VSTRWQSO_U "u") (VSTRWQSO_S "s") (VSTRWQSSO_U "u")
-		       (VSTRWQSSO_S "s") (VSTRWQSBWB_S "s") (VSTRWQSBWB_U "u")
-		       (VLDRWQGBWB_S "s") (VLDRWQGBWB_U "u") (VLDRDQGBWB_S "s")
-		       (VLDRDQGBWB_U "u") (VSTRDQSBWB_S "s") (VADCQ_M_S "s")
-		       (VSTRDQSBWB_U "u") (VSBCQ_U "u")  (VSBCQ_M_U "u")
+		       (VSTRDQSB_S "s") (VSTRDQSB_U "u")
+		       (VADCQ_M_S "s")
+		       (VSBCQ_U "u")  (VSBCQ_M_U "u")
 		       (VSBCQ_S "s")  (VSBCQ_M_S "s") (VSBCIQ_U "u")
 		       (VSBCIQ_M_U "u") (VSBCIQ_S "s") (VSBCIQ_M_S "s")
 		       (VADCQ_U "u")  (VADCQ_M_U "u") (VADCQ_S "s")
@@ -2936,28 +2989,6 @@
 (define_int_iterator VSHLLxQ_M_N [VSHLLBQ_M_N_U VSHLLBQ_M_N_S VSHLLTQ_M_N_U VSHLLTQ_M_N_S])
 (define_int_iterator VSHRNBQ_M_N [VSHRNBQ_M_N_S VSHRNBQ_M_N_U])
 (define_int_iterator VSHRNTQ_M_N [VSHRNTQ_M_N_S VSHRNTQ_M_N_U])
-(define_int_iterator VSTRWSBQ [VSTRWQSB_S VSTRWQSB_U])
-(define_int_iterator VSTRBSOQ [VSTRBQSO_S VSTRBQSO_U])
-(define_int_iterator VLDRBGOQ [VLDRBQGO_S VLDRBQGO_U])
-(define_int_iterator VLDRWGBQ [VLDRWQGB_S VLDRWQGB_U])
-(define_int_iterator VLDRHGOQ [VLDRHQGO_S VLDRHQGO_U])
-(define_int_iterator VLDRHGSOQ [VLDRHQGSO_S VLDRHQGSO_U])
-(define_int_iterator VLDRDGBQ [VLDRDQGB_S VLDRDQGB_U])
-(define_int_iterator VLDRDGOQ [VLDRDQGO_S VLDRDQGO_U])
-(define_int_iterator VLDRDGSOQ [VLDRDQGSO_S VLDRDQGSO_U])
-(define_int_iterator VLDRWGOQ [VLDRWQGO_S VLDRWQGO_U])
-(define_int_iterator VLDRWGSOQ [VLDRWQGSO_S VLDRWQGSO_U])
-(define_int_iterator VSTRHSOQ [VSTRHQSO_S VSTRHQSO_U])
-(define_int_iterator VSTRHSSOQ [VSTRHQSSO_S VSTRHQSSO_U])
-(define_int_iterator VSTRDSBQ [VSTRDQSB_S VSTRDQSB_U])
-(define_int_iterator VSTRDSOQ [VSTRDQSO_S VSTRDQSO_U])
-(define_int_iterator VSTRDSSOQ [VSTRDQSSO_S VSTRDQSSO_U])
-(define_int_iterator VSTRWSOQ [VSTRWQSO_S VSTRWQSO_U])
-(define_int_iterator VSTRWSSOQ [VSTRWQSSO_S VSTRWQSSO_U])
-(define_int_iterator VSTRWSBWBQ [VSTRWQSBWB_S VSTRWQSBWB_U])
-(define_int_iterator VLDRWGBWBQ [VLDRWQGBWB_S VLDRWQGBWB_U])
-(define_int_iterator VSTRDSBWBQ [VSTRDQSBWB_S VSTRDQSBWB_U])
-(define_int_iterator VLDRDGBWBQ [VLDRDQGBWB_S VLDRDQGBWB_U])
 (define_int_iterator VxCIQ [VADCIQ_U VADCIQ_S VSBCIQ_U VSBCIQ_S])
 (define_int_iterator VxCIQ_M [VADCIQ_M_U VADCIQ_M_S VSBCIQ_M_U VSBCIQ_M_S])
 (define_int_iterator VxCQ [VADCQ_U VADCQ_S  VSBCQ_U VSBCQ_S])

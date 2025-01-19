@@ -1,6 +1,6 @@
 // 2002-04-13  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2002-2024 Free Software Foundation, Inc.
+// Copyright (C) 2002-2025 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-using namespace std::rel_ops;
+using namespace std::rel_ops; // { dg-warning "deprecated" "" { target c++20 } }
 
 // libstdc++/3628
 void test01()

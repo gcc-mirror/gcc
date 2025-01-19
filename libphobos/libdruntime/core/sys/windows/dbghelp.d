@@ -6,7 +6,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Benjamin Thaut, Sean Kelly
- * Source:    $(DRUNTIMESRC core/sys/windows/_stacktrace.d)
+ * Source:    $(DRUNTIMESRC core/sys/windows/_dbghelp.d)
  */
 
 module core.sys.windows.dbghelp;

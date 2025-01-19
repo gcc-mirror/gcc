@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+/* { dg-additional-options "-fno-assume-sane-operators-new-delete" } */
 
 #include <stdlib.h>
 #include <assert.h>

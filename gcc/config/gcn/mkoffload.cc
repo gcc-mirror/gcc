@@ -1,6 +1,6 @@
 /* Offload image generation tool for AMD GCN.
 
-   Copyright (C) 2014-2024 Free Software Foundation, Inc.
+   Copyright (C) 2014-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -24,7 +24,6 @@
    This is not a complete assembler.  We presume the source is well
    formed from the compiler and can die horribly if it is not.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

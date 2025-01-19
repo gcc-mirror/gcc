@@ -1,5 +1,5 @@
 // PR c++/84556
-// { dg-do run { target c++11 } }
+// { dg-require-effective-target c++11 }
 // { dg-additional-options "-O2 -fopenmp-simd" }
 // { dg-additional-options "-mavx" { target avx_runtime } }
 

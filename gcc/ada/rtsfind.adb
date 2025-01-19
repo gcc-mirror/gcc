@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -153,7 +153,7 @@ package body Rtsfind is
 
    --    packed component size of 43 is not supported
 
-   type CString_Ptr is access constant String;
+   type CString_Ptr is not null access constant String;
 
    type PRE_Id_Entry is record
       Str : CString_Ptr;
@@ -456,7 +456,7 @@ package body Rtsfind is
       end if;
 
    exception
-         --  Generate error message if run-time unit not available
+      --  Generate error message if run-time unit not available
 
       when RE_Not_Available =>
          Error_Msg_N ("& not available", Nam);
@@ -604,6 +604,9 @@ package body Rtsfind is
    subtype Interfaces_C_Descendant is Interfaces_Descendant
      range Interfaces_C_Strings .. Interfaces_C_Strings;
 
+   subtype SPARK_Descendant is RTU_Id
+     range SPARK_Big_Integers .. SPARK_Big_Integers;
+
    subtype System_Descendant is RTU_Id
      range System_Address_To_Access_Conversions .. System_Tasking_Stages;
 
@@ -698,6 +701,9 @@ package body Rtsfind is
          if U_Id in Interfaces_C_Descendant then
             Name_Buffer (13) := '.';
          end if;
+
+      elsif U_Id in SPARK_Descendant then
+         Name_Buffer (6) := '.';
 
       elsif U_Id in System_Descendant then
          Name_Buffer (7) := '.';

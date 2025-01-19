@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -530,6 +530,15 @@ package body Ch10 is
             end if;
 
             Unit_Node := Specification (Unit_Node);
+         end if;
+
+         --  Disallow null procedures as library units and subunits
+
+         if Nkind (Unit_Node) = N_Procedure_Specification
+           and then Null_Present (Unit_Node)
+         then
+            Error_Msg_N
+              ("null procedure cannot be used as compilation unit", Unit_Node);
          end if;
 
          if Nkind (Unit_Node) in N_Task_Body

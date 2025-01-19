@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2025 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -3453,12 +3453,13 @@
 
 (define_insn_and_split "vsx_stxvd2x4_le_const_<mode>"
   [(set (match_operand:VSX_W 0 "memory_operand" "=Z")
-	(match_operand:VSX_W 1 "immediate_operand" "W"))]
+	(match_operand:VSX_W 1 "immediate_operand" "W"))
+   (clobber (match_scratch:VSX_W 2 "=wa"))]
   "!BYTES_BIG_ENDIAN
    && VECTOR_MEM_VSX_P (<MODE>mode)
    && !TARGET_P9_VECTOR
-   && const_vec_duplicate_p (operands[1])
-   && can_create_pseudo_p ()"
+   && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)
+   && const_vec_duplicate_p (operands[1])"
   "#"
   "&& 1"
   [(set (match_dup 2)
@@ -3471,7 +3472,8 @@
 {
   /* Here all the constants must be loaded without memory.  */
   gcc_assert (easy_altivec_constant (operands[1], <MODE>mode));
-  operands[2] = gen_reg_rtx (<MODE>mode);
+  if (GET_CODE (operands[2]) == SCRATCH)
+    operands[2] = gen_reg_rtx (<MODE>mode);
 }
   [(set_attr "type" "vecstore")
    (set_attr "length" "8")])
@@ -6338,7 +6340,7 @@
    (set (match_operand:SF SFBOOL_MTVSR_D "vsx_register_operand")
 	(unspec:SF [(match_dup SFBOOL_SHL_D)] UNSPEC_P8V_MTVSRD))]
 
-  "TARGET_POWERPC64 && TARGET_DIRECT_MOVE
+  "TARGET_DIRECT_MOVE_64BIT
    /* The REG_P (xxx) tests prevents SUBREG's, which allows us to use REGNO
       to compare registers, when the mode is different.  */
    && REG_P (operands[SFBOOL_MFVSR_D]) && REG_P (operands[SFBOOL_BOOL_D])

@@ -2,9 +2,7 @@
 /* { dg-options "-march=rv32gcv -mabi=ilp32 -O2 -ftree-vectorize -flto -fno-use-linker-plugin -flto-partition=none -mrvv-max-lmul=dynamic" } */
 
 void (*foo[6][6]) (int);
-void bar (hdR)
-    int hdR;
-{ }
+void bar (int hdR) { }
 void xxx ()
 {
     unsigned int i, j;

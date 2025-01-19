@@ -6,16 +6,18 @@
 int
 main (void)
 {
-  int l, l2, l3, l4;
+  int l, l2, ls, l3, l4;
   /* { dg-note {'l' was declared here} {} { target *-*-* } .-1 } */
   /* { dg-note {'l2' was declared here} {} { target *-*-* } .-2 } */
-  /* { dg-note {'l3' was declared here} {} { target *-*-* } .-3 } */
-  /* { dg-note {'l4' was declared here} {} { target *-*-* } .-4 } */
-  bool b, b2, b3, b4;
+  /* { dg-note {'ls' was declared here} {} { target *-*-* } .-3 } */
+  /* { dg-note {'l3' was declared here} {} { target *-*-* } .-4 } */
+  /* { dg-note {'l4' was declared here} {} { target *-*-* } .-5 } */
+  bool b, b2, bs, b3, b4;
   /* { dg-note {'b' was declared here} {} { target *-*-* } .-1 } */
   /* { dg-note {'b2' was declared here} {} { target *-*-* } .-2 } */
-  /* { dg-note {'b3' was declared here} {} { target *-*-* } .-3 } */
-  /* { dg-note {'b4' was declared here} {} { target *-*-* } .-4 } */
+  /* { dg-note {'bs' was declared here} {} { target *-*-* } .-3 } */
+  /* { dg-note {'b3' was declared here} {} { target *-*-* } .-4 } */
+  /* { dg-note {'b4' was declared here} {} { target *-*-* } .-5 } */
   int i, i2;
 
   #pragma acc parallel if(l) /* { dg-warning "is used uninitialized" } */
@@ -28,6 +30,12 @@ main (void)
   ;
 
   #pragma acc kernels if(b2) /* { dg-warning "is used uninitialized" } */
+  ;
+
+  #pragma acc serial if(ls) /* { dg-warning "is used uninitialized" } */
+  ;
+
+  #pragma acc serial if(bs) /* { dg-warning "is used uninitialized" } */
   ;
 
   #pragma acc data if(l3) /* { dg-warning "is used uninitialized" } */

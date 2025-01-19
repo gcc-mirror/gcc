@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004-2024 Free Software Foundation, Inc.
+   Copyright (C) 2004-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -42,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
+#include "tree-data-ref.h"
 #include "tree-dfa.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
@@ -1200,17 +1200,6 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	  if (integer_zerop (assumption))
 	    return false;
 	}
-      if (mpz_cmp (mmod, bnds->below) < 0)
-	noloop = boolean_false_node;
-      else if (POINTER_TYPE_P (type))
-	noloop = fold_build2 (GT_EXPR, boolean_type_node,
-			      iv0->base,
-			      fold_build_pointer_plus (iv1->base, tmod));
-      else
-	noloop = fold_build2 (GT_EXPR, boolean_type_node,
-			      iv0->base,
-			      fold_build2 (PLUS_EXPR, type1,
-					   iv1->base, tmod));
     }
   else
     {
@@ -1226,20 +1215,14 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	  if (integer_zerop (assumption))
 	    return false;
 	}
-      if (mpz_cmp (mmod, bnds->below) < 0)
-	noloop = boolean_false_node;
-      else if (POINTER_TYPE_P (type))
-	noloop = fold_build2 (GT_EXPR, boolean_type_node,
-			      fold_build_pointer_plus (iv0->base,
-						       fold_build1 (NEGATE_EXPR,
-								    type1, tmod)),
-			      iv1->base);
-      else
-	noloop = fold_build2 (GT_EXPR, boolean_type_node,
-			      fold_build2 (MINUS_EXPR, type1,
-					   iv0->base, tmod),
-			      iv1->base);
     }
+
+  /* IV0 < IV1 does not loop if IV0->base >= IV1->base.  */
+  if (mpz_cmp (mmod, bnds->below) < 0)
+    noloop = boolean_false_node;
+  else
+    noloop = fold_build2 (GE_EXPR, boolean_type_node,
+			  iv0->base, iv1->base);
 
   if (!integer_nonzerop (assumption))
     niter->assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
@@ -3612,7 +3595,51 @@ loop_niter_by_eval (class loop *loop, edge exit)
 	{
 	  phi = get_base_for (loop, op[j]);
 	  if (!phi)
-	    return chrec_dont_know;
+	    {
+	      gassign *def;
+	      if (j == 0
+		  && (cmp == NE_EXPR || cmp == EQ_EXPR)
+		  && TREE_CODE (op[0]) == SSA_NAME
+		  && TREE_CODE (op[1]) == INTEGER_CST
+		  && (def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op[0])))
+		  && gimple_assign_rhs_code (def) == MEM_REF)
+		{
+		  tree mem = gimple_assign_rhs1 (def);
+		  affine_iv iv;
+		  if (TYPE_MODE (TREE_TYPE (mem)) == TYPE_MODE (char_type_node)
+		      && simple_iv (loop, loop,
+				    TREE_OPERAND (mem, 0), &iv, false)
+		      && tree_fits_uhwi_p (TREE_OPERAND (mem, 1))
+		      && tree_fits_uhwi_p (iv.step))
+		    {
+		      tree str, off;
+		      /* iv.base can be &"Foo" but also (char *)&"Foo" + 1.  */
+		      split_constant_offset (iv.base, &str, &off);
+		      STRIP_NOPS (str);
+		      if (TREE_CODE (str) == ADDR_EXPR
+			  && TREE_CODE (TREE_OPERAND (str, 0)) == STRING_CST
+			  && tree_fits_uhwi_p (off))
+			{
+			  str = TREE_OPERAND (str, 0);
+			  unsigned i = 0;
+			  for (unsigned HOST_WIDE_INT idx
+			       = (tree_to_uhwi (TREE_OPERAND (mem, 1))
+				  + tree_to_uhwi (off));
+			       idx < (unsigned)TREE_STRING_LENGTH (str)
+			       && i < MAX_ITERATIONS_TO_TRACK;
+			       idx += tree_to_uhwi (iv.step), ++i)
+			    {
+			      int res = compare_tree_int
+				(op[1], TREE_STRING_POINTER (str)[idx]);
+			      if ((cmp == NE_EXPR && res == 0)
+				  || (cmp == EQ_EXPR && res != 0))
+				return build_int_cst (unsigned_type_node, i);
+			    }
+			}
+		    }
+		}
+	      return chrec_dont_know;
+	    }
 	  val[j] = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
 	  next[j] = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
 	}

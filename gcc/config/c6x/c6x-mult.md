@@ -3,7 +3,7 @@
 ;; Multiplication patterns for TI C6X.
 ;; This file is processed by genmult.sh to produce two variants of each
 ;; pattern, a normal one and a real_mult variant for modulo scheduling.
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.
 ;;
@@ -424,7 +424,7 @@
 ;; Multiplication patterns for TI C6X.
 ;; This file is processed by genmult.sh to produce two variants of each
 ;; pattern, a normal one and a real_mult variant for modulo scheduling.
-;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2025 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.
 ;;

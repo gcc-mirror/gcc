@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2023-2024, Free Software Foundation, Inc.         --
+--          Copyright (C) 2023-2025, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains specification functions for scanning signed Integer
---  values for use in Text_IO.Integer_IO, and the Value attribute.
+--  values for use in ``Text_IO.Integer_IO``, and the Value attribute.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by

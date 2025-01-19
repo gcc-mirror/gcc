@@ -2,7 +2,7 @@
  * D header file for the Solaris priocntl(2) and priocntlset(2) functions.
  *
  * Copyright:   Copyright 2014 Jason King.
- * License:     $(HTTP www.boost.org/LICENSE_1.0.txt, Boost License 1.0).
+ * License:     $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:     Jason King
  */
 

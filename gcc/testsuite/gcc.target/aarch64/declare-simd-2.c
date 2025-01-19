@@ -43,6 +43,7 @@ float f04 (double a)
 }
 /* { dg-final { scan-assembler {_ZGVnN2v_f04:} } } */
 /* { dg-final { scan-assembler {_ZGVnM2v_f04:} } } */
+/* { dg-final { scan-assembler-not {_ZGVs[0-9a-z]*_f04:} } } */
 
 #pragma omp declare simd uniform(a) linear (b)
 void f05 (short a, short *b, short c)

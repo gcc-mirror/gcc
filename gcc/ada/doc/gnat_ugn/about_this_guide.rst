@@ -22,6 +22,13 @@ language version.  Throughout this manual, references to 'Ada' without
 a year suffix apply to all versions of the Ada language starting with
 Ada 95.
 
+GNAT supports both the GCC and LLVM back end compilation families.
+Most GNAT versions use the GCC back end, but some are now available using
+the LLVM back end. In some places in this manual, we distinguish between
+the two back ends, but in most cases, everything in this manual applies
+to both back ends. We refer to GNAT with the LLVM back end as 'GNAT LLVM'.
+See :ref:`GNATLLVM` for limitations of GNAT LLVM.
+
 What This Guide Contains
 ========================
 

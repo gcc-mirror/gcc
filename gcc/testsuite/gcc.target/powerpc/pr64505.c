@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
-/* { dg-options "-w -O2 -mpowerpc64" } */
+/* { dg-options "-w -O2 -mpowerpc64 -std=gnu17" } */
 
 /*
  * (below is minimized test case)

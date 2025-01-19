@@ -4,7 +4,7 @@
 
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005-2024 Free Software Foundation, Inc.
+   Copyright (C) 2005-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -4206,6 +4205,11 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       scan_omp (gimple_omp_body_ptr (stmt), ctx);
       break;
 
+    case GIMPLE_OMP_DISPATCH:
+      ctx = new_omp_context (stmt, ctx);
+      scan_omp (gimple_omp_body_ptr (stmt), ctx);
+      break;
+
     case GIMPLE_OMP_SECTIONS:
       scan_omp_sections (as_a <gomp_sections *> (stmt), ctx);
       break;
@@ -4589,7 +4593,8 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 {
   if (known_eq (sctx->max_vf, 0U))
     {
-      sctx->max_vf = sctx->is_simt ? omp_max_simt_vf () : omp_max_vf ();
+      sctx->max_vf = (sctx->is_simt ? omp_max_simt_vf ()
+		      : omp_max_vf (omp_maybe_offloaded_ctx (ctx)));
       if (maybe_gt (sctx->max_vf, 1U))
 	{
 	  tree c = omp_find_clause (gimple_omp_for_clauses (ctx->stmt),
@@ -8947,6 +8952,31 @@ lower_omp_scope (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (BLOCK_VARS (block))
     TREE_USED (block) = 1;
 }
+
+/* Lower code for an OMP dispatch directive.  */
+
+static void
+lower_omp_dispatch (gimple_stmt_iterator *gsi_p, omp_context *ctx)
+{
+  tree block;
+  gimple *stmt = gsi_stmt (*gsi_p);
+  gbind *bind;
+
+  push_gimplify_context ();
+
+  block = make_node (BLOCK);
+  bind = gimple_build_bind (NULL, NULL, block);
+  gsi_replace (gsi_p, bind, true);
+
+  lower_omp (gimple_omp_body_ptr (stmt), ctx);
+  gimple_bind_set_body (bind, maybe_catch_exception (gimple_omp_body (stmt)));
+
+  pop_gimplify_context (bind);
+
+  gimple_bind_append_vars (bind, ctx->block_vars);
+  BLOCK_VARS (block) = ctx->block_vars;
+}
+
 /* Expand code for an OpenMP master or masked directive.  */
 
 static void
@@ -14577,6 +14607,11 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
       lower_omp_scope (gsi_p, ctx);
+      break;
+    case GIMPLE_OMP_DISPATCH:
+      ctx = maybe_lookup_ctx (stmt);
+      gcc_assert (ctx);
+      lower_omp_dispatch (gsi_p, ctx);
       break;
     case GIMPLE_OMP_SINGLE:
       ctx = maybe_lookup_ctx (stmt);

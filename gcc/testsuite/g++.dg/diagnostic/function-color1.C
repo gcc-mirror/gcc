@@ -13,7 +13,7 @@ int main()
 call of overloaded '[01m[Kf<int>(int)[m[K' is ambiguous
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
-candidate: '[01m[Kvoid[01;32m[K f[m[K(short int) [35m[K[with T = int][m[K[m[K'
+candidate 1: '[01m[Kvoid[01;32m[K f[m[K(short int) [35m[K[with T = int][m[K[m[K'
      { dg-end-multiline-output "" } */
 }
 

@@ -1,3 +1,7 @@
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
 2024-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* libquadmath.texi (M_LOG2Eq, M_LOG10Eq, M_1_PIq,
@@ -1335,7 +1339,7 @@
 	PR fortran/32049
 	Initial implementation and checkin.
 
-Copyright (C) 2010-2024 Free Software Foundation, Inc.
+Copyright (C) 2010-2025 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

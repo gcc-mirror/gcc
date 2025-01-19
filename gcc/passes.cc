@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2024 Free Software Foundation, Inc.
+   Copyright (C) 1987-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
    in the proper order, and counts the time used by each.
    Error messages and low-level interface to malloc also handled here.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2896,8 +2895,7 @@ ipa_write_summaries (void)
     {
       struct cgraph_node *node = order[i];
 
-      if ((node->definition || node->declare_variant_alt)
-	  && node->need_lto_streaming)
+      if (node->definition && node->need_lto_streaming)
 	{
 	  if (gimple_has_body_p (node->decl))
 	    lto_prepare_function_for_streaming (node);

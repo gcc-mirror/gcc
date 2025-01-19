@@ -1,5 +1,5 @@
 /* Definitions for AArch64 running GNU/Hurd.
-   Copyright (C) 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 2009-2025 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,6 +36,13 @@
    %{mbig-endian:-EB} %{mlittle-endian:-EL}     \
    -maarch64gnu%{mabi=ilp32:32}%{mbig-endian:b}"
 
+#ifndef CC1_SPEC
+# define CC1_SPEC AARCH64_ERRATA_COMPILE_SPEC
+#endif
+
+#ifndef CC1PLUS_SPEC
+# define CC1PLUS_SPEC AARCH64_ERRATA_COMPILE_SPEC
+#endif
 
 #define LINK_SPEC GNU_TARGET_LINK_SPEC AARCH64_ERRATA_LINK_SPEC
 

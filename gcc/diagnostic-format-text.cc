@@ -1,5 +1,5 @@
 /* Classic text-based output of diagnostics.
-   Copyright (C) 1999-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "config.h"
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -220,9 +219,36 @@ on_report_diagnostic (const diagnostic_info &diagnostic,
   if (m_context.m_show_option_requested)
     print_option_information (diagnostic, orig_diag_kind);
 
+  /* If we're showing nested diagnostics, then print the location
+     on a new line, indented.  */
+  if (m_show_nesting && m_show_locations_in_nesting)
+    {
+      const int nesting_level = get_context ().get_diagnostic_nesting_level ();
+      if (nesting_level > 0)
+	{
+	  location_t loc = diagnostic_location (&diagnostic);
+	  pp_set_prefix (pp, nullptr);
+	  char *indent_prefix = build_indent_prefix (false);
+	  /* Only print changes of location.  */
+	  if (loc != get_context ().m_last_location
+	      && loc > BUILTINS_LOCATION)
+	    {
+	      const expanded_location s
+		= diagnostic_expand_location (&diagnostic);
+	      label_text location_text = get_location_text (s);
+	      pp_newline (pp);
+	      pp_printf (pp, "%s%s", indent_prefix, location_text.get ());
+	    }
+	  pp_set_prefix (pp, indent_prefix);
+	}
+    }
+
   (*diagnostic_text_finalizer (&m_context)) (*this,
 					     &diagnostic,
 					     orig_diag_kind);
+
+  if (m_show_nesting && m_show_locations_in_nesting)
+    get_context ().m_last_location = diagnostic_location (&diagnostic);
 }
 
 void
@@ -257,8 +283,12 @@ after_diagnostic (const diagnostic_info &diagnostic)
 }
 
 /* Return a malloc'd string describing a location and the severity of the
-   diagnostic, e.g. "foo.c:42:10: error: ".  The caller is responsible for
-   freeing the memory.  */
+   diagnostic, e.g. "foo.c:42:10: error: ".
+
+   If m_show_nesting, then the above will be preceded by indentation to show
+   the level, and a bullet point.
+
+   The caller is responsible for freeing the memory.  */
 char *
 diagnostic_text_output_format::
 build_prefix (const diagnostic_info &diagnostic) const
@@ -275,12 +305,28 @@ build_prefix (const diagnostic_info &diagnostic) const
       text_ce = colorize_stop (pp_show_color (pp));
     }
 
-  const expanded_location s = diagnostic_expand_location (&diagnostic);
-  label_text location_text = get_location_text (s);
+  const int nesting_level = get_context ().get_diagnostic_nesting_level ();
+  if (m_show_nesting && nesting_level > 0)
+    {
+      char *indent_prefix = build_indent_prefix (true);
 
-  char *result = build_message_string ("%s %s%s%s", location_text.get (),
-				       text_cs, text, text_ce);
-  return result;
+      /* Reduce verbosity of nested diagnostics by not printing "note: "
+	 all the time.  */
+      if (diagnostic.kind == DK_NOTE)
+	return indent_prefix;
+
+      char *result = build_message_string ("%s%s%s%s", indent_prefix,
+					   text_cs, text, text_ce);
+      free (indent_prefix);
+      return result;
+    }
+  else
+    {
+      const expanded_location s = diagnostic_expand_location (&diagnostic);
+      label_text location_text = get_location_text (s);
+      return build_message_string ("%s %s%s%s", location_text.get (),
+				   text_cs, text, text_ce);
+    }
 }
 
 /* Same as build_prefix, but only the source FILE is given.  */
@@ -292,6 +338,71 @@ diagnostic_text_output_format::file_name_as_prefix (const char *f) const
     = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   return build_message_string ("%s%s:%s ", locus_cs, f, locus_ce);
+}
+
+/* Get the unicode code point for bullet points when showing
+   nested diagnostics.  */
+
+static unsigned
+get_bullet_point_unichar (bool unicode)
+{
+  if (unicode)
+    return 0x2022; /* U+2022: Bullet */
+  else
+    return '*';
+}
+
+/* Return true if DC's theme supports unicode characters.  */
+
+static bool
+use_unicode_p (const diagnostic_context &dc)
+{
+  if (text_art::theme *theme = dc.get_diagram_theme ())
+    return theme->unicode_p ();
+  else
+    return false;
+}
+
+/* Get the unicode code point for bullet points when showing
+   nested diagnostics.  */
+
+static unsigned
+get_bullet_point_unichar (diagnostic_context &dc)
+{
+  return get_bullet_point_unichar (use_unicode_p (dc));
+}
+
+/* Return a malloc'd string for use as a prefix to show indentation.
+   If m_show_nesting is false, or we're at the top-level, then the
+   result will be the empty string.
+
+   If m_show_nesting, then the result will contain indentation to show
+   the nesting level, then either a bullet point (if WITH_BULLET is true),
+   or a space.
+
+   The caller is responsible for freeing the memory.  */
+
+char *
+diagnostic_text_output_format::build_indent_prefix (bool with_bullet) const
+{
+  if (!m_show_nesting)
+    return xstrdup ("");
+
+  const int nesting_level = get_context ().get_diagnostic_nesting_level ();
+  if (nesting_level == 0)
+    return xstrdup ("");
+
+  pretty_printer pp;
+  for (int i = 0; i < nesting_level; i++)
+    pp_string (&pp, "  ");
+  if (with_bullet)
+    pp_unicode_character (&pp, get_bullet_point_unichar (get_context ()));
+  else
+    pp_space (&pp);
+  pp_space (&pp);
+  if (m_show_nesting_levels)
+    pp_printf (&pp, "(level %i):", nesting_level);
+  return xstrdup (pp_formatted_text (&pp));
 }
 
 /* Add a purely textual note with text GMSGID and with LOCATION.  */
@@ -321,7 +432,8 @@ diagnostic_text_output_format::append_note (location_t location,
   pp_destroy_prefix (pp);
   pp_set_prefix (pp, saved_prefix);
   pp_newline (pp);
-  diagnostic_show_locus (context, &richloc, DK_NOTE, pp);
+  diagnostic_show_locus (context, get_source_printing_options (),
+			 &richloc, DK_NOTE, pp);
   va_end (ap);
 }
 
@@ -347,6 +459,8 @@ update_printer ()
   pp_show_color (m_printer.get ()) = show_color;
   m_printer->set_url_format (url_format);
   // ...etc
+
+  m_source_printing = get_context ().m_source_printing;
 }
 
 /* If DIAGNOSTIC has a CWE identifier, print it.
@@ -609,6 +723,7 @@ default_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
   pp_set_prefix (pp, NULL);
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
+			 text_output.get_source_printing_options (),
 			 diagnostic->richloc, diagnostic->kind, pp);
   pp_set_prefix (pp, saved_prefix);
   pp_flush (pp);

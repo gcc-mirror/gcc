@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2025 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -923,6 +923,7 @@
 
 (define_predicate "aarch64_sve_float_maxmin_immediate"
   (and (match_code "const_vector")
+       (match_test "GET_MODE_INNER (GET_MODE (op)) != BFmode")
        (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
 	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
 
@@ -1067,3 +1068,7 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op),  -4096, 4080)
 		    && !(INTVAL (op) & 0xf)")))
+
+(define_predicate "aarch64_maskload_else_operand"
+  (and (match_code "const_int,const_vector")
+       (match_test "op == CONST0_RTX (GET_MODE (op))")))

@@ -1,5 +1,5 @@
 /* Verify that fcsr instructions emitted.  */
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-require-effective-target hard_float } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-g" "-Oz" "-Os" "-flto" } } */
 /* { dg-options "-march=rv64gc_xtheadmempair -mtune=thead-c906 -funwind-tables" { target { rv64 } } } */

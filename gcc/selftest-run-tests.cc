@@ -1,5 +1,5 @@
 /* Implementation of selftests.
-   Copyright (C) 2015-2024 Free Software Foundation, Inc.
+   Copyright (C) 2015-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,6 +75,7 @@ selftest::run_tests ()
   opt_suggestions_cc_tests ();
   opts_cc_tests ();
   json_cc_tests ();
+  json_parser_cc_tests ();
   cgraph_cc_tests ();
   optinfo_emit_json_cc_tests ();
   ordered_hash_map_tests_cc_tests ();
@@ -126,6 +127,7 @@ selftest::run_tests ()
 
   text_art_tests ();
   gcc_urlifier_cc_tests ();
+  gcc_attribute_urlifier_cc_tests ();
 
   /* Run the analyzer selftests (if enabled).  */
   ana::selftest::run_analyzer_selftests ();

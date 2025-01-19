@@ -1,3 +1,7 @@
+2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* mt-nios2-elf: Deleted.
+
 2024-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* acx.m4 (ACX_PROG_CARGO): Use 'AC_CHECK_PROGS'.

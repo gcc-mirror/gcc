@@ -2,6 +2,7 @@
 REQUIRED_ARGS: -vcg-ast -o-
 PERMUTE_ARGS:
 OUTPUT_FILES: compilable/vcg-ast.d.cg
+EXTRA_FILES: imports/vcg_ast_import.d
 TEST_OUTPUT_FILE: extra-files/vcg-ast.d.cg
 */
 
@@ -63,3 +64,14 @@ void main()
 {
     values!wchar_t;
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=24764
+
+import imports.vcg_ast_import;
+
+template imported()
+{
+    import imported = imports.vcg_ast_import;
+}
+
+alias myImport = imported!();

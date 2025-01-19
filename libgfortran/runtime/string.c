@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2025 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -241,18 +241,35 @@ gfc_itoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 	 the uint64_t function are not sufficient for all 128-bit unsigned
 	 integers (we would need three calls), but they do suffice for all
 	 values up to 2^127, which is the largest that Fortran can produce
-	 (-HUGE(0_16)-1) with its signed integer types.  */
+	 (-HUGE(0_16)-1) with its signed integer types.
+	 With the introduction of UNSIGNED integers, we must treat the case
+	 of unsigned ints larger than (10^19 * 2^64) by adding one step.  */
       _Static_assert (sizeof(GFC_UINTEGER_LARGEST) <= 2 * sizeof(uint64_t),
 		      "integer too large");
 
-      GFC_UINTEGER_LARGEST r;
-      r = n % TEN19;
-      n = n / TEN19;
-      assert (r <= UINT64_MAX);
-      p = itoa64_pad19 (r, p);
+      if (n <= TEN19 * UINT64_MAX)
+	{
+	  GFC_UINTEGER_LARGEST r;
+	  r = n % TEN19;
+	  n = n / TEN19;
+	  assert (r <= UINT64_MAX);
+	  p = itoa64_pad19 (r, p);
 
-      assert(n <= UINT64_MAX);
-      return itoa64 (n, p);
+	  assert(n <= UINT64_MAX);
+	  return itoa64 (n, p);
+	}
+      else
+	{
+	  /* Here n > (10^19 * 2^64).  */
+	  GFC_UINTEGER_LARGEST d1, r1, d2, r2;
+	  d1 = n / (TEN19 * TEN19);
+	  r1 = n % (TEN19 * TEN19);
+	  d2 = r1 / TEN19;
+	  r2 = r1 % TEN19;
+	  p = itoa64_pad19 (r2, p);
+	  p = itoa64_pad19 (d2, p);
+	  return itoa64 (d1, p);
+	}
     }
 #else
   /* On targets where the largest integer is 64-bit, just use that.  */

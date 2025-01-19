@@ -5,8 +5,6 @@ REQUIRED_ARGS: -preview=dip1000
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope3.d(2008): Error: copying `& i` into allocated memory escapes a reference to local variable `i`
-fail_compilation/retscope3.d(2017): Error: copying `S2000(& i)` into allocated memory escapes a reference to local variable `i`
 ---
 */
 
@@ -53,9 +51,11 @@ void bar4()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope3.d(4003): Error: copying `u[]` into allocated memory escapes a reference to variadic parameter `u`
+fail_compilation/retscope3.d(2008): Error: escaping a reference to local variable `i` by copying `& i` into allocated memory is not allowed in a `@safe` function
+fail_compilation/retscope3.d(2017): Error: escaping a reference to local variable `i` by copying `S2000(& i)` into allocated memory is not allowed in a `@safe` function
+fail_compilation/retscope3.d(4003): Error: escaping a reference to parameter `u` by copying `u[]` into allocated memory is not allowed in a `@safe` function
 fail_compilation/retscope3.d(4016): Error: storing reference to outer local variable `i` into allocated memory causes it to escape
-fail_compilation/retscope3.d(4025): Error: storing reference to stack allocated value returned by `makeSA()` into allocated memory causes it to escape
+fail_compilation/retscope3.d(4025): Error: escaping reference to stack allocated value returned by `makeSA()` into allocated memory
 ---
 */
 

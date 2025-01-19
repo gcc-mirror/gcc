@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mieee" } */
+/* { dg-options "-mieee" } */
 
 double foo (void);
 void bar (float, float);

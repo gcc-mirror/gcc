@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2025 Free Software Foundation, Inc.
    Contributed by Mentor Embedded.
 
    This file is part of the GNU Offloading and Multi Processing Library

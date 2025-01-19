@@ -2,7 +2,7 @@
 
 # calcpath return a path which is $1/$2/$3 when $2 is relative and $2/$3 if absolute.
 
-# Copyright (C) 2021-2024 Free Software Foundation, Inc.
+# Copyright (C) 2021-2025 Free Software Foundation, Inc.
 # Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 #
 # This file is part of GNU Modula-2.

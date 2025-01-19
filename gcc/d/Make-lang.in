@@ -1,5 +1,5 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for the D frontend.
-# Copyright (C) 2006-2024 Free Software Foundation, Inc.
+# Copyright (C) 2006-2025 Free Software Foundation, Inc.
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -84,24 +84,25 @@ D_FRONTEND_OBJS = \
 	d/arrayop.o \
 	d/arraytypes.o \
 	d/attrib.o \
+	d/attribsem.o \
 	d/ast_node.o \
 	d/astcodegen.o \
 	d/astenums.o \
-	d/basicmangle.o \
 	d/blockexit.o \
 	d/builtin.o \
 	d/canthrow.o \
 	d/chkformat.o \
 	d/clone.o \
 	d/common-bitfields.o \
+	d/common-charactertables.o \
 	d/common-file.o \
+	d/common-identifiertables.o \
 	d/common-outbuffer.o \
 	d/common-smallbuffer.o \
 	d/compiler.o \
 	d/cond.o \
 	d/constfold.o \
 	d/cparse.o \
-	d/cppmangle.o \
 	d/ctfeexpr.o \
 	d/ctorflow.o \
 	d/cxxfrontend.o \
@@ -110,10 +111,10 @@ D_FRONTEND_OBJS = \
 	d/declaration.o \
 	d/delegatize.o \
 	d/denum.o \
+	d/deps.o \
 	d/dimport.o \
 	d/dinterpret.o \
 	d/dmacro.o \
-	d/dmangle.o \
 	d/dmodule.o \
 	d/doc.o \
 	d/dscope.o \
@@ -131,7 +132,6 @@ D_FRONTEND_OBJS = \
 	d/expression.o \
 	d/expressionsem.o \
 	d/file_manager.o \
-	d/foreachvar.o \
 	d/func.o \
 	d/funcsem.o \
 	d/globals.o \
@@ -152,6 +152,9 @@ D_FRONTEND_OBJS = \
 	d/lambdacomp.o \
 	d/lexer.o \
 	d/location.o \
+        d/mangle-basic.o \
+	d/mangle-cpp.o \
+	d/mangle-package.o \
 	d/mtype.o \
 	d/mustuse.o \
 	d/nogc.o \
@@ -161,9 +164,6 @@ D_FRONTEND_OBJS = \
 	d/opover.o \
 	d/optimize.o \
 	d/parse.o \
-	d/parsetimevisitor.o \
-	d/permissivevisitor.o \
-	d/postordervisitor.o \
 	d/pragmasem.o \
 	d/printast.o \
 	d/root-aav.o \
@@ -185,12 +185,10 @@ D_FRONTEND_OBJS = \
 	d/root-utf.o \
 	d/rootobject.o \
 	d/safe.o \
-	d/sapply.o \
 	d/semantic2.o \
 	d/semantic3.o \
 	d/sideeffect.o \
 	d/statement.o \
-	d/statement_rewrite_walker.o \
 	d/statementsem.o \
 	d/staticassert.o \
 	d/staticcond.o \
@@ -198,13 +196,19 @@ D_FRONTEND_OBJS = \
 	d/target.o \
 	d/templateparamsem.o \
 	d/templatesem.o \
+	d/timetrace.o \
 	d/tokens.o \
 	d/traits.o \
-	d/transitivevisitor.o \
 	d/typesem.o \
 	d/typinf.o \
 	d/utils.o \
-	d/visitor.o
+	d/visitor-foreachvar.o \
+	d/visitor-package.o \
+	d/visitor-parsetime.o \
+	d/visitor-permissive.o \
+	d/visitor-postorder.o \
+	d/visitor-statement_rewrite_walker.o \
+	d/visitor-transitive.o
 
 # Language-specific object files for D.
 D_OBJS = \
@@ -291,7 +295,7 @@ d.srcextra:
 
 d.tags: force
 	cd $(srcdir)/d; \
-	$(ETAGS) -o TAGS.sub *.cc *.h dmd/*.h dmd/root/*.h; \
+        $(ETAGS) -o TAGS.sub *.cc *.h dmd/*.h dmd/common/*.h dmd/root/*.h; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 d.man: doc/gdc.1
@@ -416,6 +420,14 @@ d/common-%.o: d/dmd/common/%.d
 	$(DCOMPILE) $(D_INCLUDES) $<
 	$(DPOSTCOMPILE)
 
+d/mangle-%.o: d/dmd/mangle/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)
+
 d/root-%.o: d/dmd/root/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)
+
+d/visitor-%.o: d/dmd/visitor/%.d
 	$(DCOMPILE) $(D_INCLUDES) $<
 	$(DPOSTCOMPILE)

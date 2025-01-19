@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -14064,6 +14063,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
 
+      if (GET_MODE (op1) != Pmode)
+	op1 = convert_to_mode (Pmode, op1, 1);
+
       if (!address_operand (op2, VOIDmode))
 	{
 	  op2 = convert_memory_address (Pmode, op2);
@@ -14099,6 +14101,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       emit_label (ok_label);
       emit_insn (gen_rtx_SET (target, pat));
 
+      if (GET_MODE (op0) != Pmode)
+	op0 = convert_to_mode (Pmode, op0, 1);
+
       for (i = 0; i < 8; i++)
 	{
 	  op = gen_rtx_MEM (V2DImode,
@@ -14122,6 +14127,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
 	if (!REG_P (op0))
 	  op0 = copy_to_mode_reg (SImode, op0);
+
+	if (GET_MODE (op2) != Pmode)
+	  op2 = convert_to_mode (Pmode, op2, 1);
 
 	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (0));
 	emit_move_insn (op, op1);
@@ -14159,6 +14167,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
 	if (!REG_P (op0))
 	  op0 = copy_to_mode_reg (SImode, op0);
+
+	if (GET_MODE (op3) != Pmode)
+	  op3 = convert_to_mode (Pmode, op3, 1);
 
 	/* Force to use xmm0, xmm1 for keylow, keyhi*/
 	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (0));
@@ -14211,7 +14222,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
 	if (INTVAL (op3) == 1)
 	  {
-	    if (INTVAL (op2) < 2 || INTVAL (op2) > 3)
+	    if (!IN_RANGE (INTVAL (op2), 2, 3))
 	      {
 		error ("invalid third argument");
 		return const0_rtx;
@@ -14241,14 +14252,16 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 		op0 = copy_addr_to_reg (op0);
 	      }
 
-	    if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
+	    if (!IN_RANGE (INTVAL (op2), 0, 3))
 	      {
 		warning (0, "invalid third argument to %<__builtin_ia32_prefetch%>; using zero");
 		op2 = const0_rtx;
 	      }
 
-	    if (TARGET_3DNOW || TARGET_PREFETCH_SSE
-		|| TARGET_PRFCHW)
+	    if (TARGET_3DNOW
+		|| TARGET_PREFETCH_SSE
+		|| TARGET_PRFCHW
+		|| TARGET_MOVRS)
 	      emit_insn (gen_prefetch (op0, op1, op2));
 	    else if (!MEM_P (op0) && side_effects_p (op0))
 	      /* Don't do anything with direct references to volatile memory,
@@ -23091,6 +23104,53 @@ expand_vec_perm_vpshufb2_vpermq_even_odd (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* A subroutine of ix86_expand_vec_perm_const_1. Try to implement a
+   permutation (which is a bland) with and, andnot and or when pshufb is not available.
+
+   It handles case:
+   __builtin_shufflevector (v1, v2, 0, 9, 2, 11, 4, 13, 6, 15);
+   __builtin_shufflevector (v1, v2, 8, 1, 2, 11, 4, 13, 6, 15);
+
+   An element[i] must be chosen between op0[i] and op1[i] to satisfy the
+   requirement.
+ */
+
+static bool
+expand_vec_perm_pand_pandn_por (struct expand_vec_perm_d *d)
+{
+  rtx rperm[16], vperm;
+  unsigned int i, nelt = d->nelt;
+
+  if (!TARGET_SSE2
+      || d->one_operand_p
+      || (d->vmode != V16QImode && d->vmode != V8HImode))
+    return false;
+
+  if (d->perm[0] != 0)
+    return false;
+
+  /* The dest[i] must select an element between op0[i] and op1[i].  */
+  for (i = 1; i < nelt; i++)
+    if ((d->perm[i] % nelt) != i)
+      return false;
+
+  if (d->testing_p)
+     return true;
+
+  /* Generates a blend mask for the operators AND and ANDNOT.  */
+  machine_mode inner_mode = GET_MODE_INNER (d->vmode);
+  for (i = 0; i < nelt; i++)
+    rperm[i] = (d->perm[i] <  nelt) ? CONSTM1_RTX (inner_mode)
+      : CONST0_RTX (inner_mode);
+
+  vperm = gen_rtx_CONST_VECTOR (d->vmode, gen_rtvec_v (nelt, rperm));
+  vperm = force_reg (d->vmode, vperm);
+
+  ix86_expand_sse_movcc (d->target, vperm, d->op0, d->op1);
+
+  return true;
+}
+
 /* Implement permutation with pslldq + psrldq + por when pshufb is not
    available.  */
 static bool
@@ -23824,7 +23884,7 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       if (d->testing_p)
 	return true;
 
-      rtx (*gen_interleave) (machine_mode, int, rtx, rtx, rtx);
+      rtx (*gen_interleave) (machine_mode, rtx, rtx, rtx);
       if (elt >= nelt2)
 	{
 	  gen_interleave = gen_vec_interleave_high;
@@ -23835,7 +23895,7 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       nelt2 /= 2;
 
       dest = gen_reg_rtx (vmode);
-      emit_insn (gen_interleave (vmode, 1, dest, op0, op0));
+      emit_insn (gen_interleave (vmode, dest, op0, op0));
 
       vmode = V4SImode;
       op0 = gen_lowpart (vmode, dest);
@@ -24148,6 +24208,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_psrlw_psllw_por (d))
+    return true;
+
+  if (expand_vec_perm_pand_pandn_por (d))
     return true;
 
   /* Try sequences of four instructions.  */
@@ -24801,11 +24864,9 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
      generic permutation to merge the data back into the right place.  This
      permutation results in VPERMQ, which is slow, so better fall back to
      ix86_expand_vecop_qihi.  */
-  if (!TARGET_AVX512BW)
-    return false;
-
-  if ((qimode == V16QImode && !TARGET_AVX2)
-      || (qimode == V32QImode && (!TARGET_AVX512BW || !TARGET_EVEX512))
+  if (!TARGET_AVX512BW
+      || (qimode == V16QImode && !TARGET_AVX512VL)
+      || (qimode == V32QImode && !TARGET_EVEX512)
       /* There are no V64HImode instructions.  */
       || qimode == V64QImode)
      return false;
@@ -24820,8 +24881,7 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
     {
     case E_V16QImode:
       himode = V16HImode;
-      if (TARGET_AVX512VL && TARGET_AVX512BW)
-	gen_truncate = gen_truncv16hiv16qi2;
+      gen_truncate = gen_truncv16hiv16qi2;
       break;
     case E_V32QImode:
       himode = V32HImode;
@@ -24863,33 +24923,7 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
     hdest = expand_simple_binop (himode, code, hop1, hop2,
 				 NULL_RTX, 1, OPTAB_DIRECT);
 
-  if (gen_truncate)
-    emit_insn (gen_truncate (dest, hdest));
-  else
-    {
-      struct expand_vec_perm_d d;
-      rtx wqdest = gen_reg_rtx (wqimode);
-      rtx wqres = gen_lowpart (wqimode, hdest);
-      bool ok;
-      int i;
-
-      /* Merge the data back into the right place.  */
-      d.target = wqdest;
-      d.op0 = d.op1 = wqres;
-      d.vmode = wqimode;
-      d.nelt = GET_MODE_NUNITS (wqimode);
-      d.one_operand_p = false;
-      d.testing_p = false;
-
-      for (i = 0; i < d.nelt; ++i)
-	d.perm[i] = i * 2;
-
-      ok = ix86_expand_vec_perm_const_1 (&d);
-      gcc_assert (ok);
-
-      emit_move_insn (dest, gen_lowpart (qimode, wqdest));
-    }
-
+  emit_insn (gen_truncate (dest, hdest));
   return true;
 }
 

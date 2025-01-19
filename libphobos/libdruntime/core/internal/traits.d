@@ -51,7 +51,7 @@ unittest
     static assert(is(BaseElemOf!(int[1][2]) == int));
     static assert(is(BaseElemOf!(int[1][]) == int[1][]));
     static assert(is(BaseElemOf!(int[][1]) == int[]));
-    static enum E : int[2]{ test = [0, 1] }
+    enum E : int[2]{ test = [0, 1] }
     static assert(is(BaseElemOf!(E) == int));
 }
 
@@ -267,13 +267,75 @@ template hasElaborateDestructor(S)
     }
     else static if (is(S == struct))
     {
-        enum hasElaborateDestructor = __traits(hasMember, S, "__dtor")
-            || anySatisfy!(.hasElaborateDestructor, Fields!S);
+        // Once https://issues.dlang.org/show_bug.cgi?id=24865 is fixed, then
+        // this should be the implementation, but until that's fixed, we need the
+        // uncommented code.
+        // enum hasElaborateDestructor = __traits(hasMember, S, "__xdtor");
+
+        enum hasElaborateDestructor = hasDtor([__traits(allMembers, S)]);
     }
     else
     {
         enum bool hasElaborateDestructor = false;
     }
+}
+
+private bool hasDtor(string[] members)
+{
+    foreach (name; members)
+    {
+        if (name == "__xdtor")
+            return true;
+    }
+
+    return false;
+}
+
+@safe unittest
+{
+    static struct NoDestructor {}
+    static assert(!hasElaborateDestructor!NoDestructor);
+    static assert(!hasElaborateDestructor!(NoDestructor[42]));
+    static assert(!hasElaborateDestructor!(NoDestructor[0]));
+    static assert(!hasElaborateDestructor!(NoDestructor[]));
+
+    static struct HasDestructor { ~this() {} }
+    static assert( hasElaborateDestructor!HasDestructor);
+    static assert( hasElaborateDestructor!(HasDestructor[42]));
+    static assert(!hasElaborateDestructor!(HasDestructor[0]));
+    static assert(!hasElaborateDestructor!(HasDestructor[]));
+
+    static struct HasDestructor2 { HasDestructor s; }
+    static assert( hasElaborateDestructor!HasDestructor2);
+    static assert( hasElaborateDestructor!(HasDestructor2[42]));
+    static assert(!hasElaborateDestructor!(HasDestructor2[0]));
+    static assert(!hasElaborateDestructor!(HasDestructor2[]));
+
+    static class HasFinalizer { ~this() {} }
+    static assert(!hasElaborateDestructor!HasFinalizer);
+
+    static struct HasUnion { union { HasDestructor s; } }
+    static assert(!hasElaborateDestructor!HasUnion);
+    static assert(!hasElaborateDestructor!(HasUnion[42]));
+    static assert(!hasElaborateDestructor!(HasUnion[0]));
+    static assert(!hasElaborateDestructor!(HasUnion[]));
+
+    static assert(!hasElaborateDestructor!int);
+    static assert(!hasElaborateDestructor!(int[0]));
+    static assert(!hasElaborateDestructor!(int[42]));
+    static assert(!hasElaborateDestructor!(int[]));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24865
+@safe unittest
+{
+    static struct S2 { ~this() {} }
+    static struct S3 { S2 field; }
+    static struct S6 { S3[0] field; }
+
+    static assert( hasElaborateDestructor!S2);
+    static assert( hasElaborateDestructor!S3);
+    static assert(!hasElaborateDestructor!S6);
 }
 
 // std.traits.hasElaborateCopyDestructor
@@ -302,7 +364,7 @@ template hasElaborateCopyConstructor(S)
         this(int x, int y) {}
     }
 
-    static assert(hasElaborateCopyConstructor!S);
+    static assert( hasElaborateCopyConstructor!S);
     static assert(!hasElaborateCopyConstructor!(S[0][1]));
 
     static struct S2
@@ -320,7 +382,11 @@ template hasElaborateCopyConstructor(S)
         this(int x, int y) {}
     }
 
-    static assert(hasElaborateCopyConstructor!S3);
+    static assert( hasElaborateCopyConstructor!S3);
+
+    static struct S4 { union { S s; } }
+
+    static assert(!hasElaborateCopyConstructor!S4);
 }
 
 template hasElaborateAssign(S)
@@ -332,8 +398,7 @@ template hasElaborateAssign(S)
     else static if (is(S == struct))
     {
         enum hasElaborateAssign = is(typeof(S.init.opAssign(rvalueOf!S))) ||
-                                  is(typeof(S.init.opAssign(lvalueOf!S))) ||
-                                  anySatisfy!(.hasElaborateAssign, Fields!S);
+                                  is(typeof(S.init.opAssign(lvalueOf!S)));
     }
     else
     {
@@ -341,17 +406,303 @@ template hasElaborateAssign(S)
     }
 }
 
+unittest
+{
+    {
+        static struct S {}
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct S { int i; }
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct S { void opAssign(S) {} }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct S { void opAssign(ref S) {} }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct S { void opAssign(int) {} }
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct S { this(this) {} }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    // https://issues.dlang.org/show_bug.cgi?id=24834
+    /+
+    {
+        static struct S { this(ref S) {} }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    +/
+    {
+        static struct S { ~this() {} }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct S { @disable void opAssign(S); }
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct Member {}
+        static struct S { Member member; }
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct Member { void opAssign(Member) {} }
+        static struct S { Member member; }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct Member {}
+        static struct S { Member member; void opAssign(S) {} }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct Member { @disable void opAssign(Member); }
+        static struct S { Member member; }
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct Member { @disable void opAssign(Member); }
+        static struct S { Member member; void opAssign(S) {} }
+        static assert( hasElaborateAssign!S);
+        static assert( hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct Member { void opAssign(Member) {} }
+        static struct S { Member member; @disable void opAssign(S); }
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+    {
+        static struct Member { void opAssign(Member) {} }
+        static struct S { union { Member member; } }
+        static assert(!hasElaborateAssign!S);
+        static assert(!hasElaborateAssign!(S[10]));
+        static assert(!hasElaborateAssign!(S[0]));
+        static assert(!hasElaborateAssign!(S[]));
+    }
+
+    static assert(!hasElaborateAssign!int);
+    static assert(!hasElaborateAssign!(string[]));
+    static assert(!hasElaborateAssign!Object);
+}
+
 template hasIndirections(T)
 {
-    static if (is(T == struct) || is(T == union))
+    static if (is(T == enum))
+        enum hasIndirections = hasIndirections!(OriginalType!T);
+    else static if (is(T == struct) || is(T == union))
         enum hasIndirections = anySatisfy!(.hasIndirections, typeof(T.tupleof));
+    else static if (__traits(isAssociativeArray, T) || is(T == class) || is(T == interface))
+        enum hasIndirections = true;
     else static if (is(T == E[N], E, size_t N))
-        enum hasIndirections = T.sizeof && is(E == void) ? true : hasIndirections!(BaseElemOf!E);
+        enum hasIndirections = T.sizeof && (is(E == void) || hasIndirections!(BaseElemOf!E));
     else static if (isFunctionPointer!T)
         enum hasIndirections = false;
     else
-        enum hasIndirections = isPointer!T || isDelegate!T || isDynamicArray!T ||
-            __traits(isAssociativeArray, T) || is (T == class) || is(T == interface);
+        enum hasIndirections = isPointer!T || isDelegate!T || isDynamicArray!T;
+}
+
+@safe unittest
+{
+    static assert(!hasIndirections!int);
+    static assert(!hasIndirections!(const int));
+
+    static assert( hasIndirections!(int*));
+    static assert( hasIndirections!(const int*));
+
+    static assert( hasIndirections!(int[]));
+    static assert(!hasIndirections!(int[42]));
+    static assert(!hasIndirections!(int[0]));
+
+    static assert( hasIndirections!(int*));
+    static assert( hasIndirections!(int*[]));
+    static assert( hasIndirections!(int*[42]));
+    static assert(!hasIndirections!(int*[0]));
+
+    static assert( hasIndirections!string);
+    static assert( hasIndirections!(string[]));
+    static assert( hasIndirections!(string[42]));
+    static assert(!hasIndirections!(string[0]));
+
+    static assert( hasIndirections!(void[]));
+    static assert( hasIndirections!(void[17]));
+    static assert(!hasIndirections!(void[0]));
+
+    static assert( hasIndirections!(string[int]));
+    static assert( hasIndirections!(string[int]*));
+    static assert( hasIndirections!(string[int][]));
+    static assert( hasIndirections!(string[int][12]));
+    static assert(!hasIndirections!(string[int][0]));
+
+    static assert(!hasIndirections!(int function(string)));
+    static assert( hasIndirections!(int delegate(string)));
+    static assert(!hasIndirections!(const(int function(string))));
+    static assert( hasIndirections!(const(int delegate(string))));
+    static assert(!hasIndirections!(immutable(int function(string))));
+    static assert( hasIndirections!(immutable(int delegate(string))));
+
+    static class C {}
+    static assert( hasIndirections!C);
+
+    static interface I {}
+    static assert( hasIndirections!I);
+
+    {
+        enum E : int { a }
+        static assert(!hasIndirections!E);
+    }
+    {
+        enum E : int* { a }
+        static assert( hasIndirections!E);
+    }
+    {
+        enum E : string { a = "" }
+        static assert( hasIndirections!E);
+    }
+    {
+        enum E : int[] { a = null }
+        static assert( hasIndirections!E);
+    }
+    {
+        enum E : int[3] { a = [1, 2, 3]  }
+        static assert(!hasIndirections!E);
+    }
+    {
+        enum E : int*[3] { a = [null, null, null] }
+        static assert( hasIndirections!E);
+    }
+    {
+        enum E : int*[0] { a = int*[0].init }
+        static assert(!hasIndirections!E);
+    }
+    {
+        enum E : C { a = null }
+        static assert( hasIndirections!E);
+    }
+    {
+        enum E : I { a = null }
+        static assert( hasIndirections!E);
+    }
+
+    {
+        static struct S {}
+        static assert(!hasIndirections!S);
+
+        enum E : S { a = S.init }
+        static assert(!hasIndirections!S);
+    }
+    {
+        static struct S { int i; }
+        static assert(!hasIndirections!S);
+
+        enum E : S { a = S.init }
+        static assert(!hasIndirections!S);
+    }
+    {
+        static struct S { C c; }
+        static assert( hasIndirections!S);
+
+        enum E : S { a = S.init }
+        static assert( hasIndirections!S);
+    }
+    {
+        static struct S { int[] arr; }
+        static assert( hasIndirections!S);
+
+        enum E : S { a = S.init }
+        static assert( hasIndirections!S);
+    }
+    {
+        int local;
+        struct S { void foo() { ++local; } }
+        static assert( hasIndirections!S);
+
+        enum E : S { a = S.init }
+        static assert( hasIndirections!S);
+    }
+
+    {
+        static union U {}
+        static assert(!hasIndirections!U);
+    }
+    {
+        static union U { int i; }
+        static assert(!hasIndirections!U);
+    }
+    {
+        static union U { C c; }
+        static assert( hasIndirections!U);
+    }
+    {
+        static union U { int[] arr; }
+        static assert( hasIndirections!U);
+    }
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=12000
+@safe unittest
+{
+    static struct S(T)
+    {
+        static assert(hasIndirections!T);
+    }
+
+    static class A(T)
+    {
+        S!A a;
+    }
+
+    A!int dummy;
 }
 
 template hasUnsharedIndirections(T)
@@ -809,30 +1160,23 @@ unittest
 
 template hasUDA(alias symbol, alias attribute)
 {
-    alias attrs = __traits(getAttributes, symbol);
+    enum isAttr(T) = is(T == attribute);
 
-    static foreach (a; attrs)
-    {
-        static if (is(a == attribute))
-        {
-            enum hasUDA = true;
-        }
-    }
-
-    static if (!__traits(compiles, (hasUDA == true)))
-        enum hasUDA = false;
+    enum hasUDA = anySatisfy!(isAttr, __traits(getAttributes, symbol));
 }
 
 unittest
 {
-    struct SomeUDA{}
+    enum SomeUDA;
 
     struct Test
     {
         int woUDA;
-        @SomeUDA int withUDA;
+        @SomeUDA int oneUDA;
+        @SomeUDA @SomeUDA int twoUDAs;
     }
 
-    static assert(hasUDA!(Test.withUDA, SomeUDA));
+    static assert(hasUDA!(Test.oneUDA, SomeUDA));
+    static assert(hasUDA!(Test.twoUDAs, SomeUDA));
     static assert(!hasUDA!(Test.woUDA, SomeUDA));
 }

@@ -1,5 +1,5 @@
 /* Core of implementation of libgccjit.so
-   Copyright (C) 2013-2024 Free Software Foundation, Inc.
+   Copyright (C) 2013-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -134,6 +134,7 @@ namespace recording {
     class statement;
       class extended_asm;
     class case_;
+    class memento_of_get_aligned;
   class top_level_asm;
 
   /* End of recording types. */

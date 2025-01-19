@@ -123,9 +123,6 @@ alias KeepTerminator = Flag!"keepTerminator";
 version (CRuntime_Microsoft)
 {
 }
-else version (CRuntime_DigitalMars)
-{
-}
 else version (CRuntime_Glibc)
 {
 }
@@ -215,54 +212,7 @@ version (Posix)
     static import core.sys.posix.stdio; // getdelim, flockfile
 }
 
-version (CRuntime_DigitalMars)
-{
-    private alias _FPUTC = _fputc_nlock;
-    private alias _FPUTWC = _fputwc_nlock;
-    private alias _FGETC = _fgetc_nlock;
-    private alias _FGETWC = _fgetwc_nlock;
-    private alias _FLOCK = __fp_lock;
-    private alias _FUNLOCK = __fp_unlock;
-
-    // Alias for CRuntime_Microsoft compatibility.
-    // @@@DEPRECATED_2.107@@@
-    // Rename this back to _setmode once the deprecation phase has ended.
-    private alias __setmode = setmode;
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTC = _fputc_nlock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTWC = _fputwc_nlock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETC = _fgetc_nlock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETWC = _fgetwc_nlock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FLOCK = __fp_lock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FUNLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FUNLOCK = __fp_unlock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias _setmode was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias _setmode = setmode;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function _fileno was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    fileno_t _fileno(FILE* f) { return f._file; }
-}
-else version (CRuntime_Microsoft)
+version (CRuntime_Microsoft)
 {
     private alias _FPUTC = _fputc_nolock;
     private alias _FPUTWC = _fputwc_nolock;
@@ -270,35 +220,6 @@ else version (CRuntime_Microsoft)
     private alias _FGETWC = _fgetwc_nolock;
     private alias _FLOCK = _lock_file;
     private alias _FUNLOCK = _unlock_file;
-
-    // @@@DEPRECATED_2.107@@@
-    // Remove this once the deprecation phase for CRuntime_DigitalMars has ended.
-    private alias __setmode = _setmode;
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTC = _fputc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTWC = _fputwc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETC = _fgetc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETWC = _fgetwc_nolock;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FLOCK = _lock_file;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FUNLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FUNLOCK = _unlock_file;
 }
 else version (CRuntime_Glibc)
 {
@@ -308,31 +229,6 @@ else version (CRuntime_Glibc)
     private alias _FGETWC = fgetwc_unlocked;
     private alias _FLOCK = core.sys.posix.stdio.flockfile;
     private alias _FUNLOCK = core.sys.posix.stdio.funlockfile;
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTC = fputc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTWC = fputwc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETC = fgetc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETWC = fgetwc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FLOCK = core.sys.posix.stdio.flockfile;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FUNLOCK was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FUNLOCK = core.sys.posix.stdio.funlockfile;
 }
 else version (GENERIC_IO)
 {
@@ -358,52 +254,6 @@ else version (GENERIC_IO)
     {
         static assert(0, "don't know how to lock files on GENERIC_IO");
     }
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fputc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, fputc.mangleof) int fputc_unlocked(int c, _iobuf* fp);
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fputwc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, core.stdc.wchar_.fputwc.mangleof) int fputwc_unlocked(wchar_t c, _iobuf* fp);
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fgetc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, fgetc.mangleof) int fgetc_unlocked(_iobuf* fp);
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal function fgetwc_unlocked was unintentionally available "
-               ~ "from std.stdio and will be removed afer 2.107")
-    extern (C) pragma(mangle, core.stdc.wchar_.fgetwc.mangleof) int fgetwc_unlocked(_iobuf* fp);
-
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTC = fputc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FPUTWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FPUTWC = fputwc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETC = fgetc_unlocked;
-    // @@@DEPRECATED_2.107@@@
-    deprecated("internal alias FGETWC was unintentionally available from "
-               ~ "std.stdio and will be removed afer 2.107")
-    alias FGETWC = fgetwc_unlocked;
-
-    version (Posix)
-    {
-        // @@@DEPRECATED_2.107@@@
-        deprecated("internal alias FLOCK was unintentionally available from "
-                   ~ "std.stdio and will be removed afer 2.107")
-        alias FLOCK = core.sys.posix.stdio.flockfile;
-        // @@@DEPRECATED_2.107@@@
-        deprecated("internal alias FUNLOCK was unintentionally available from "
-                   ~ "std.stdio and will be removed afer 2.107")
-        alias FUNLOCK = core.sys.posix.stdio.funlockfile;
-    }
 }
 else
 {
@@ -413,11 +263,7 @@ else
 private extern (C) @nogc nothrow
 {
     pragma(mangle, _FPUTC.mangleof) int trustedFPUTC(int ch, _iobuf* h) @trusted;
-
-    version (CRuntime_DigitalMars)
-        pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(int ch, _iobuf* h) @trusted;
-    else
-        pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(wchar_t ch, _iobuf* h) @trusted;
+    pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(wchar_t ch, _iobuf* h) @trusted;
 }
 
 //------------------------------------------------------------------------------
@@ -601,7 +447,7 @@ Throws: `ErrnoException` if the file could not be opened.
 
     /// ditto
     this(R1, R2)(R1 name)
-        if (isSomeFiniteCharInputRange!R1)
+    if (isSomeFiniteCharInputRange!R1)
     {
         import std.conv : to;
         this(name.to!string, "rb");
@@ -609,8 +455,8 @@ Throws: `ErrnoException` if the file could not be opened.
 
     /// ditto
     this(R1, R2)(R1 name, R2 mode)
-        if (isSomeFiniteCharInputRange!R1 &&
-            isSomeFiniteCharInputRange!R2)
+    if (isSomeFiniteCharInputRange!R1 &&
+        isSomeFiniteCharInputRange!R2)
     {
         import std.conv : to;
         this(name.to!string, mode.to!string);
@@ -829,7 +675,6 @@ Throws: `ErrnoException` in case of error.
         f.close();
     }
 
-    version (CRuntime_DigitalMars) {} else // Not implemented
     version (CRuntime_Microsoft) {} else // Not implemented
     @safe unittest // Test changing mode
     {
@@ -854,7 +699,7 @@ Throws: `ErrnoException` in case of error.
 /**
 Detaches from the current file (throwing on failure), and then runs a command
 by calling the C standard library function $(HTTP
-opengroup.org/onlinepubs/007908799/xsh/_popen.html, _popen).
+pubs.opengroup.org/onlinepubs/7908799/xsh/popen.html, popen).
 
 Throws: `ErrnoException` in case of error.
  */
@@ -872,8 +717,9 @@ The mode must be compatible with the mode of the file descriptor.
 Throws: `ErrnoException` in case of error.
 Params:
     fd = File descriptor to associate with this `File`.
-    stdioOpenmode = Mode to associate with this File. The mode has the same semantics
-        semantics as in the C standard library $(CSTDIO fdopen) function,
+    stdioOpenmode = Mode to associate with this File. The mode has the same
+        semantics as in the POSIX library function $(HTTP
+        pubs.opengroup.org/onlinepubs/7908799/xsh/fdopen.html, fdopen)
         and must be compatible with `fd`.
  */
     void fdopen(int fd, scope const(char)[] stdioOpenmode = "rb") @safe
@@ -889,22 +735,7 @@ Params:
         auto modez = stdioOpenmode.tempCString();
         detach();
 
-        version (CRuntime_DigitalMars)
-        {
-            // This is a re-implementation of DMC's fdopen, but without the
-            // mucking with the file descriptor.  POSIX standard requires the
-            // new fdopen'd file to retain the given file descriptor's
-            // position.
-            auto fp = fopen("NUL", modez);
-            errnoEnforce(fp, "Cannot open placeholder NUL stream");
-            _FLOCK(fp);
-            auto iob = cast(_iobuf*) fp;
-            .close(iob._file);
-            iob._file = fd;
-            iob._flag &= ~_IOTRAN;
-            _FUNLOCK(fp);
-        }
-        else version (CRuntime_Microsoft)
+        version (CRuntime_Microsoft)
         {
             auto fp = _fdopen(fd, modez);
             errnoEnforce(fp);
@@ -943,26 +774,21 @@ Throws: `ErrnoException` in case of error.
         import std.format : format;
 
         // Create file descriptors from the handles
-        version (CRuntime_DigitalMars)
-            auto fd = _handleToFD(handle, FHND_DEVICE);
-        else // MSVCRT
-        {
-            int mode;
-            modeLoop:
-            foreach (c; stdioOpenmode)
-                switch (c)
-                {
-                    case 'r': mode |= _O_RDONLY; break;
-                    case '+': mode &=~_O_RDONLY; break;
-                    case 'a': mode |= _O_APPEND; break;
-                    case 'b': mode |= _O_BINARY; break;
-                    case 't': mode |= _O_TEXT;   break;
-                    case ',': break modeLoop;
-                    default: break;
-                }
+        int mode;
+        modeLoop:
+        foreach (c; stdioOpenmode)
+            switch (c)
+            {
+                case 'r': mode |= _O_RDONLY; break;
+                case '+': mode &=~_O_RDONLY; break;
+                case 'a': mode |= _O_APPEND; break;
+                case 'b': mode |= _O_BINARY; break;
+                case 't': mode |= _O_TEXT;   break;
+                case ',': break modeLoop;
+                default: break;
+            }
 
-            auto fd = _open_osfhandle(cast(intptr_t) handle, mode);
-        }
+        auto fd = _open_osfhandle(cast(intptr_t) handle, mode);
 
         errnoEnforce(fd >= 0, "Cannot open Windows HANDLE");
         fdopen(fd, stdioOpenmode, "HANDLE(%s)".format(handle));
@@ -1186,17 +1012,8 @@ Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
         version (Windows)
         {
             immutable fileno_t fd = .fileno(_p.handle);
-            immutable mode = .__setmode(fd, _O_BINARY);
-            scope(exit) .__setmode(fd, mode);
-            version (CRuntime_DigitalMars)
-            {
-                import core.atomic : atomicOp;
-
-                // https://issues.dlang.org/show_bug.cgi?id=4243
-                immutable info = __fhnd_info[fd];
-                atomicOp!"&="(__fhnd_info[fd], ~FHND_TEXT);
-                scope(exit) __fhnd_info[fd] = info;
-            }
+            immutable mode = ._setmode(fd, _O_BINARY);
+            scope(exit) ._setmode(fd, mode);
         }
         immutable freadResult = trustedFread(_p.handle, buffer);
         assert(freadResult <= buffer.length); // fread return guarantee
@@ -1222,6 +1039,9 @@ Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
         f.close();
         assert(buf == "\r\n\n\r\n");
     }
+
+    // https://issues.dlang.org/show_bug.cgi?id=24685
+    static assert(!__traits(compiles, (File f) @safe { int*[1] bar; f.rawRead(bar[]); }));
 
     // https://issues.dlang.org/show_bug.cgi?id=21729
     @system unittest
@@ -1276,24 +1096,14 @@ Throws: `ErrnoException` if the file is not opened or if the call to `fwrite` fa
         version (Windows)
         {
             immutable fileno_t fd = .fileno(_p.handle);
-            immutable oldMode = .__setmode(fd, _O_BINARY);
+            immutable oldMode = ._setmode(fd, _O_BINARY);
 
             if (oldMode != _O_BINARY)
             {
                 // need to flush the data that was written with the original mode
-                .__setmode(fd, oldMode);
-                flush(); // before changing translation mode .__setmode(fd, _O_BINARY);
-                .__setmode(fd, _O_BINARY);
-            }
-
-            version (CRuntime_DigitalMars)
-            {
-                import core.atomic : atomicOp;
-
-                // https://issues.dlang.org/show_bug.cgi?id=4243
-                immutable info = __fhnd_info[fd];
-                atomicOp!"&="(__fhnd_info[fd], ~FHND_TEXT);
-                scope (exit) __fhnd_info[fd] = info;
+                ._setmode(fd, oldMode);
+                flush(); // before changing translation mode ._setmode(fd, _O_BINARY);
+                ._setmode(fd, _O_BINARY);
             }
 
             scope (exit)
@@ -1301,7 +1111,7 @@ Throws: `ErrnoException` if the file is not opened or if the call to `fwrite` fa
                 if (oldMode != _O_BINARY)
                 {
                     flush();
-                    .__setmode(fd, oldMode);
+                    ._setmode(fd, oldMode);
                 }
             }
         }
@@ -1394,9 +1204,6 @@ Throws: `Exception` if the file is not opened.
         f.seek(7);
         assert(f.readln() == "hijklmnopqrstuvwxyz");
 
-        version (CRuntime_DigitalMars)
-            auto bigOffset = int.max - 100;
-        else
         version (CRuntime_Bionic)
             auto bigOffset = int.max - 100;
         else
@@ -2349,10 +2156,7 @@ Returns the underlying operating system `HANDLE` (Windows only).
     version (Windows)
     @property HANDLE windowsHandle()
     {
-        version (CRuntime_DigitalMars)
-            return _fdToHandle(fileno);
-        else
-            return cast(HANDLE)_get_osfhandle(fileno);
+        return cast(HANDLE)_get_osfhandle(fileno);
     }
 
 
@@ -2365,13 +2169,13 @@ Allows to directly use range operations on lines of a file.
     private struct ByLineImpl(Char, Terminator)
     {
     private:
-        import std.typecons : RefCounted, RefCountedAutoInitialize;
+        import std.typecons : borrow, RefCountedAutoInitialize, SafeRefCounted;
 
         /* Ref-counting stops the source range's Impl
          * from getting out of sync after the range is copied, e.g.
          * when accessing range.front, then using std.range.take,
          * then accessing range.front again. */
-        alias PImpl = RefCounted!(Impl, RefCountedAutoInitialize.no);
+        alias PImpl = SafeRefCounted!(Impl, RefCountedAutoInitialize.no);
         PImpl impl;
 
         static if (isScalarType!Terminator)
@@ -2386,19 +2190,24 @@ Allows to directly use range operations on lines of a file.
             impl = PImpl(f, kt, terminator);
         }
 
-        @property bool empty()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property bool empty() @trusted
         {
-            return impl.refCountedPayload.empty;
+            // Using `ref` is actually necessary here.
+            return impl.borrow!((ref i) => i.empty);
         }
 
-        @property Char[] front()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property Char[] front() @trusted
         {
-            return impl.refCountedPayload.front;
+            // Using `ref` is likely optional here.
+            return impl.borrow!((ref i) => i.front);
         }
 
-        void popFront()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        void popFront() @trusted
         {
-            impl.refCountedPayload.popFront();
+            return impl.borrow!((ref i) => i.popFront());
         }
 
     private:
@@ -2412,6 +2221,7 @@ Allows to directly use range operations on lines of a file.
             KeepTerminator keepTerminator;
             bool haveLine;
 
+        @safe:
         public:
             this(File f, KeepTerminator kt, Terminator terminator)
             {
@@ -2536,6 +2346,24 @@ void main()
 Notice that neither example accesses the line data returned by
 `front` after the corresponding `popFront` call is made (because
 the contents may well have changed).
+----
+
+Windows specific Example:
+----
+import std.stdio;
+
+version (Windows)
+void main()
+{
+
+	foreach (line; File("file.txt").byLine(No.keepTerminator, "\r\n"))
+	{
+		writeln("|"~line~"|");
+		if (line == "HelloWorld")
+		    writeln("^This Line is here.");
+	}
+
+}
 */
     auto byLine(Terminator = char, Char = char)
             (KeepTerminator keepTerminator = No.keepTerminator,
@@ -2553,7 +2381,7 @@ the contents may well have changed).
         return ByLineImpl!(Char, Terminator)(this, keepTerminator, terminator);
     }
 
-    @system unittest
+    @safe unittest
     {
         static import std.file;
         auto deleteme = testFilename();
@@ -2571,7 +2399,7 @@ the contents may well have changed).
     }
 
     // https://issues.dlang.org/show_bug.cgi?id=19980
-    @system unittest
+    @safe unittest
     {
         static import std.file;
         auto deleteme = testFilename();
@@ -2587,13 +2415,13 @@ the contents may well have changed).
     private struct ByLineCopy(Char, Terminator)
     {
     private:
-        import std.typecons : RefCounted, RefCountedAutoInitialize;
+        import std.typecons : borrow, RefCountedAutoInitialize, SafeRefCounted;
 
         /* Ref-counting stops the source range's ByLineCopyImpl
          * from getting out of sync after the range is copied, e.g.
          * when accessing range.front, then using std.range.take,
          * then accessing range.front again. */
-        alias Impl = RefCounted!(ByLineCopyImpl!(Char, Terminator),
+        alias Impl = SafeRefCounted!(ByLineCopyImpl!(Char, Terminator),
             RefCountedAutoInitialize.no);
         Impl impl;
 
@@ -2603,19 +2431,24 @@ the contents may well have changed).
             impl = Impl(f, kt, terminator);
         }
 
-        @property bool empty()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property bool empty() @trusted
         {
-            return impl.refCountedPayload.empty;
+            // Using `ref` is actually necessary here.
+            return impl.borrow!((ref i) => i.empty);
         }
 
-        @property Char[] front()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        @property Char[] front() @trusted
         {
-            return impl.refCountedPayload.front;
+            // Using `ref` is likely optional here.
+            return impl.borrow!((ref i) => i.front);
         }
 
-        void popFront()
+        /* Verifiably `@safe` when built with -preview=DIP1000. */
+        void popFront() @trusted
         {
-            impl.refCountedPayload.popFront();
+            impl.borrow!((ref i) => i.popFront());
         }
     }
 
@@ -2714,12 +2547,11 @@ $(REF readText, std,file)
             is(typeof(File("").byLineCopy!(char, char).front) == char[]));
     }
 
-    @system unittest
+    @safe unittest
     {
         import std.algorithm.comparison : equal;
         static import std.file;
 
-        scope(failure) printf("Failed test at line %d\n", __LINE__);
         auto deleteme = testFilename();
         std.file.write(deleteme, "");
         scope(success) std.file.remove(deleteme);
@@ -2793,7 +2625,7 @@ $(REF readText, std,file)
         test("sue\r", ["sue\r"], kt, '\r');
     }
 
-    @system unittest
+    @safe unittest
     {
         import std.algorithm.comparison : equal;
         import std.range : drop, take;
@@ -2844,7 +2676,7 @@ $(REF readText, std,file)
         assert(!file.isOpen);
     }
 
-    @system unittest
+    @safe unittest
     {
         static import std.file;
         auto deleteme = testFilename();
@@ -3151,11 +2983,11 @@ is empty, throws an `Exception`. In case of an I/O error throws
                 // concept of ANSI/UNICODE mode. fputc doesn't work in UNICODE
                 // mode; fputwc has to be used. So that essentially means
                 // "wide-oriented" for us.
-                immutable int mode = __setmode(f.fileno, _O_TEXT);
+                immutable int mode = _setmode(f.fileno, _O_TEXT);
                     // Set some arbitrary mode to obtain the previous one.
-                if (mode != -1) // __setmode() succeeded
+                if (mode != -1) // _setmode() succeeded
                 {
-                    __setmode(f.fileno, mode); // Restore previous mode.
+                    _setmode(f.fileno, mode); // Restore previous mode.
                     if (mode & (_O_WTEXT | _O_U16TEXT | _O_U8TEXT))
                     {
                         orientation_ = 1; // wide
@@ -3193,10 +3025,10 @@ is empty, throws an `Exception`. In case of an I/O error throws
 
         /// Range primitive implementations.
         void put(A)(scope A writeme)
-            if ((isSomeChar!(ElementType!A) ||
-                  is(ElementType!A : const(ubyte))) &&
-                isInputRange!A &&
-                !isInfinite!A)
+        if ((isSomeChar!(ElementType!A) ||
+            is(ElementType!A : const(ubyte))) &&
+            isInputRange!A &&
+            !isInfinite!A)
         {
             import std.exception : errnoEnforce;
 
@@ -3222,7 +3054,8 @@ is empty, throws an `Exception`. In case of an I/O error throws
         }
 
         /// ditto
-        void put(C)(scope C c) @safe if (isSomeChar!C || is(C : const(ubyte)))
+        void put(C)(scope C c) @safe
+        if (isSomeChar!C || is(C : const(ubyte)))
         {
             import std.utf : decodeFront, encode, stride;
 
@@ -3386,8 +3219,6 @@ is empty, throws an `Exception`. In case of an I/O error throws
         {
             fileno_t fd;
             int oldMode;
-            version (CRuntime_DigitalMars)
-                ubyte oldInfo;
         }
 
     public:
@@ -3407,15 +3238,7 @@ is empty, throws an `Exception`. In case of an I/O error throws
             {
                 .fflush(fps); // before changing translation mode
                 fd = .fileno(fps);
-                oldMode = .__setmode(fd, _O_BINARY);
-                version (CRuntime_DigitalMars)
-                {
-                    import core.atomic : atomicOp;
-
-                    // https://issues.dlang.org/show_bug.cgi?id=4243
-                    oldInfo = __fhnd_info[fd];
-                    atomicOp!"&="(__fhnd_info[fd], ~FHND_TEXT);
-                }
+                oldMode = ._setmode(fd, _O_BINARY);
             }
         }
 
@@ -3429,12 +3252,7 @@ is empty, throws an `Exception`. In case of an I/O error throws
             version (Windows)
             {
                 .fflush(fps); // before restoring translation mode
-                version (CRuntime_DigitalMars)
-                {
-                    // https://issues.dlang.org/show_bug.cgi?id=4243
-                    __fhnd_info[fd] = oldInfo;
-                }
-                .__setmode(fd, oldMode);
+                ._setmode(fd, oldMode);
             }
 
             _FUNLOCK(fps);
@@ -3887,19 +3705,12 @@ void main()
         return setlocale(LC_CTYPE, loc.ptr).fromStringz.endsWith(loc);
     });
     scope(exit) () @trusted { setlocale(LC_CTYPE, oldCt); } ();
-    version (CRuntime_DigitalMars) // DM can't handle Unicode above U+07FF.
-    {
-        alias strs = AliasSeq!("xä\u07FE", "yö\u07FF"w);
-    }
-    else
-    {
-        alias strs = AliasSeq!("xä\U0001F607", "yö\U0001F608"w);
-    }
+    alias strs = AliasSeq!("xä\U0001F607", "yö\U0001F608"w);
     {
         auto f = File(deleteme, "w");
         version (CRuntime_Microsoft)
         {
-            () @trusted { __setmode(fileno(f.getFP()), _O_U8TEXT); } ();
+            () @trusted { _setmode(fileno(f.getFP()), _O_U8TEXT); } ();
         }
         else
         {
@@ -4702,11 +4513,11 @@ if ((isSomeFiniteCharInputRange!R1 || isSomeString!R1) &&
         {
             /*
              * The new opengroup large file support API is transparently
-             * included in the normal C bindings. http://opengroup.org/platform/lfs.html#1.0
+             * included in the normal C bindings. https://www.opengroup.org/platform/lfs.html#1.0
              * if _FILE_OFFSET_BITS in druntime is 64, off_t is 64 bit and
              * the normal functions work fine. If not, then large file support
              * probably isn't available. Do not use the old transitional API
-             * (the native extern(C) fopen64, http://www.unix.org/version2/whatsnew/lfs20mar.html#3.0)
+             * (the native extern(C) fopen64, https://unix.org/version2/whatsnew/lfs20mar.html#3.0)
              */
             import core.sys.posix.stdio : fopen;
             return fopen(namez, modez);
@@ -4755,6 +4566,13 @@ private auto trustedFwrite(T)(FILE* f, const T[] obj) @trusted
  * Convenience function that forwards to `core.stdc.stdio.fread`
  */
 private auto trustedFread(T)(FILE* f, T[] obj) @trusted
+if (!imported!"std.traits".hasIndirections!T)
+{
+    return fread(obj.ptr, T.sizeof, obj.length, f);
+}
+
+private auto trustedFread(T)(FILE* f, T[] obj) @system
+if (imported!"std.traits".hasIndirections!T)
 {
     return fread(obj.ptr, T.sizeof, obj.length, f);
 }
@@ -4818,7 +4636,7 @@ struct lines
     f = File to read lines from.
     terminator = Line separator (`'\n'` by default).
     */
-    this(File f, dchar terminator = '\n')
+    this(File f, dchar terminator = '\n') @safe
     {
         this.f = f;
         this.terminator = terminator;
@@ -4910,6 +4728,56 @@ struct lines
         // can only reach when _FGETC returned -1
         if (!f.eof) throw new StdioException("Error in reading file"); // error occured
         return result;
+    }
+}
+
+@safe unittest
+{
+    /*
+        As pointed out in <https://github.com/dlang/phobos/issues/10605>,
+        it's a pity that `byLine()` & co. aren't @safe to use yet.
+
+        This is a first attempt at working towards that goal.
+        For now, this test doesn't do much; as there isn't much to do safely yet.
+     */
+    auto deleteMe = testFilename();
+    scope(exit) { imported!"std.file".remove(deleteMe); }
+
+    // Setup
+    {
+        auto f = File(deleteMe, "w");
+        scope(exit) { f.close(); }
+        foreach (i; 1 .. 11)
+            f.writeln(i);
+    }
+
+    // Actual tests
+    {
+        auto f = File(deleteMe, "r");
+        scope(exit) { f.close(); }
+
+        auto myLines = lines(f);
+        foreach (string line; myLines)
+            continue;
+    }
+
+
+    {
+        auto f = File(deleteMe, "r");
+        scope(exit) { f.close(); }
+
+        auto myByLineCopy = f.byLineCopy;
+        foreach (line; myByLineCopy)
+            continue;
+    }
+
+    {
+        auto f = File(deleteMe, "r");
+        scope(exit) { f.close(); }
+
+        auto myByLine = f.byLine;
+        foreach (line; myByLine)
+            continue;
     }
 }
 
@@ -5537,120 +5405,7 @@ private struct LockedFile
 // Private implementation of readln
 private size_t readlnImpl(FILE* fps, ref char[] buf, dchar terminator, File.Orientation orientation) @safe
 {
-    version (CRuntime_DigitalMars)
-    return () @trusted {
-        auto lf = LockedFile(fps);
-        ReadlnAppender app;
-        app.initialize(buf);
-
-        if (__fhnd_info[lf.fp._file] & FHND_WCHAR)
-        {   /* Stream is in wide characters.
-             * Read them and convert to chars.
-             */
-            static assert(wchar_t.sizeof == 2);
-            for (int c = void; (c = lf.fgetwc()) != -1; )
-            {
-                if ((c & ~0x7F) == 0)
-                {
-                    app.putchar(cast(char) c);
-                    if (c == terminator)
-                        break;
-                }
-                else
-                {
-                    if (c >= 0xD800 && c <= 0xDBFF)
-                    {
-                        int c2 = void;
-                        if ((c2 = lf.fgetwc()) != -1 ||
-                                c2 < 0xDC00 && c2 > 0xDFFF)
-                        {
-                            StdioException("unpaired UTF-16 surrogate");
-                        }
-                        c = ((c - 0xD7C0) << 10) + (c2 - 0xDC00);
-                    }
-                    app.putdchar(cast(dchar) c);
-                }
-            }
-            if (ferror(fps))
-                StdioException();
-        }
-        else if (lf.fp._flag & _IONBF)
-        {
-            /* Use this for unbuffered I/O, when running
-             * across buffer boundaries, or for any but the common
-             * cases.
-             */
-        L1:
-            int c;
-            while ((c = lf.fgetc()) != -1)
-            {
-                app.putchar(cast(char) c);
-                if (c == terminator)
-                {
-                    buf = app.data;
-                    return buf.length;
-                }
-
-            }
-
-            if (ferror(fps))
-                StdioException();
-        }
-        else
-        {
-            int u = lf.fp._cnt;
-            char* p = lf.fp._ptr;
-            int i;
-            if (lf.fp._flag & _IOTRAN)
-            {   /* Translated mode ignores \r and treats ^Z as end-of-file
-                 */
-                char c;
-                while (1)
-                {
-                    if (i == u)         // if end of buffer
-                        goto L1;        // give up
-                    c = p[i];
-                    i++;
-                    if (c != '\r')
-                    {
-                        if (c == terminator)
-                            break;
-                        if (c != 0x1A)
-                            continue;
-                        goto L1;
-                    }
-                    else
-                    {   if (i != u && p[i] == terminator)
-                            break;
-                        goto L1;
-                    }
-                }
-                app.putonly(p[0 .. i]);
-                app.buf[i - 1] = cast(char) terminator;
-                if (terminator == '\n' && c == '\r')
-                    i++;
-            }
-            else
-            {
-                while (1)
-                {
-                    if (i == u)         // if end of buffer
-                        goto L1;        // give up
-                    auto c = p[i];
-                    i++;
-                    if (c == terminator)
-                        break;
-                }
-                app.putonly(p[0 .. i]);
-            }
-            lf.fp._cnt -= i;
-            lf.fp._ptr += i;
-        }
-
-        buf = app.data;
-        return buf.length;
-    }();
-    else version (CRuntime_Microsoft)
+    version (CRuntime_Microsoft)
     {
         auto lf = LockedFile(fps);
 

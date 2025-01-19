@@ -1,6 +1,6 @@
 (* M2MetaError.mod provides a set of high level error routines.
 
-Copyright (C) 2008-2024 Free Software Foundation, Inc.
+Copyright (C) 2008-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -50,7 +50,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsDefImp, IsModule, IsInnerModule,
                         IsUnknown, IsType, IsProcedure, IsParameter,
                         IsParameterUnbounded, IsParameterVar, IsVarParam,
-                        IsUnboundedParam, IsPointer, IsRecord, IsVarient,
+                        IsUnboundedParamAny, IsPointer, IsRecord, IsVarient,
                         IsFieldVarient, IsEnumeration, IsFieldEnumeration,
                         IsUnbounded, IsArray, IsRecordField, IsProcType,
                         IsVar, IsConst, IsConstString, IsConstLit, IsConstSet,
@@ -2680,6 +2680,36 @@ BEGIN
    sym[3] := s4 ;
    RETURN wrapString (m, sym)
 END MetaString4 ;
+
+
+(*
+   MetaErrorDecl - if sym is a variable or parameter then generate a
+                   declaration error or warning message.  If error is
+                   FALSE then a warning is issued.
+*)
+
+PROCEDURE MetaErrorDecl (sym: CARDINAL; error: BOOLEAN) ;
+BEGIN
+   IF (sym # NulSym) AND IsVar (sym)
+   THEN
+      IF error
+      THEN
+         IF IsVarAParam (sym)
+         THEN
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'parameter declaration for {%1ad}', sym)
+         ELSE
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'variable declaration for {%1ad}', sym)
+         END
+      ELSE
+         IF IsVarAParam (sym)
+         THEN
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'parameter declaration for {%1Wad}', sym)
+         ELSE
+            MetaErrorT1 (GetVarDeclFullTok (sym), 'variable declaration for {%1Wad}', sym)
+         END
+      END
+   END
+END MetaErrorDecl ;
 
 
 BEGIN

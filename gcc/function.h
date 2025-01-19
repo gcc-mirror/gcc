@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989-2024 Free Software Foundation, Inc.
+   Copyright (C) 1989-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -701,6 +701,8 @@ extern void number_blocks (tree);
 extern void set_cfun (struct function *new_cfun, bool force = false);
 extern void push_cfun (struct function *new_cfun);
 extern void pop_cfun (void);
+extern void push_function_decl (tree, bool = false);
+extern void pop_function_decl (void);
 
 extern int get_next_funcdef_no (void);
 extern int get_last_funcdef_no (void);

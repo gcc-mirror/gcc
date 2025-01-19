@@ -778,11 +778,11 @@ uninstall-am:
 
 # Testsuite/check forwarding targets.
 check-%:
-	cd testsuite && $(MAKE) $@
+	$(MAKE) -C testsuite $@
 
 # Documentation forwarding targets.
 doc-%:
-	cd doc && $(MAKE) $@
+	$(MAKE) -C doc $@
 
 # Documentation primary rules.
 #

@@ -40,7 +40,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2025 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -64,7 +64,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2024 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2025 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -833,7 +833,7 @@ hppa64, i486, i686, ia64, iq2000, lm32, loongarch64, m32c, m32r, m32rle, m68k,
 mcore, microblaze, microblazeel, mips, mips64, mips64el, mips64octeon,
 mips64orion, mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
 mipsisa64r2el, mipsisa64sb1, mipsisa64sr71k, mipstx39, mmix, mn10300, moxie,
-msp430, nds32be, nds32le, nios2, nvptx, or1k, pdp11, powerpc, powerpc64,
+msp430, nds32be, nds32le, nvptx, or1k, pdp11, powerpc, powerpc64,
 powerpc64le, powerpcle, pru, riscv32, riscv32be, riscv64, riscv64be, rl78, rx,
 s390, s390x, sh, shle, sparc, sparc64, tic6x, v850,
 v850e, v850e1, vax, visium, x86_64, xstormy16, xtensa
@@ -1119,7 +1119,7 @@ yielding a slightly slower compiler (but faster than
 at random addresses each time they are executed, therefore provide additional
 protection against Return Oriented Programming (ROP) attacks.
 
-@option{--enable-host-pie}) may be used with @option{--enable-host-shared}),
+@option{--enable-host-pie} may be used with @option{--enable-host-shared},
 in which case @option{-fPIC} is used when compiling, and @option{-pie} when
 linking.
 
@@ -1145,8 +1145,7 @@ whether you use the GNU assembler.  On any other system,
 @option{--with-gnu-as} has no effect.
 
 @itemize @bullet
-@item @samp{hppa1.0-@var{any}-@var{any}}
-@item @samp{hppa1.1-@var{any}-@var{any}}
+@item @samp{hppa*-@var{any}-@var{any}}
 @item @samp{*-*-solaris2.11}
 @end itemize
 
@@ -1232,6 +1231,19 @@ virtual calls in verifiable mode at all.  However the libvtv library will
 still be built (see @option{--disable-libvtv} to turn off building libvtv).
 @option{--disable-vtable-verify} is the default.
 
+@item --enable-libgdiagnostics
+Specify whether to build @code{libgdiagnostics}, a shared library exposing
+GCC's diagnostics capabilities via a C API, and a C++ wrapper API adding
+``syntactic sugar''.
+
+This option requires @option{--enable-host-shared} on non-Windows hosts.
+
+This option also enables @code{sarif-replay}, a command-line tool for
+viewing @uref{https://sarif.info/,,SARIF files}.  @code{sarif-replay} takes
+one or more @code{.sarif} files as input and attempts to replay any
+diagnostics within them to stderr (via @code{libgdiagnostics}) in the style
+of GCC's diagnostics.
+
 @item --disable-gcov
 Specify that the run-time library used for coverage analysis
 and associated host tools should not be built.
@@ -1263,13 +1275,13 @@ sysv, aix.
 
 @end table
 
-@item --with-multilib-list=@var{list}
+@item @anchor{with-multilib-list}--with-multilib-list=@var{list}
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for aarch64*-*-*, amdgcn*-*-*, arm*-*-*, loongarch*-*-*, riscv*-*-*, sh*-*-*
-and x86-64-*-linux*.  The accepted values and meaning for each target is given
-below.
+for aarch64*-*-*, amdgcn*-*-*, arm*-*-*, loongarch*-*-*, nvptx-*, riscv*-*-*,
+sh*-*-* and x86-64-*-linux*.
+The accepted values and meaning for each target is given below.
 
 @table @code
 @item aarch64*-*-*
@@ -1394,6 +1406,28 @@ for @code{loongarch64-*} targets).
 If @var{list} is empty or @code{default}, or if @option{--with-multilib-list}
 is not specified, then only the default variant of the libraries are built,
 where the default ABI is implied by the configured target triplet.
+
+@item nvptx-*
+The target libraries corresponding to the default value of the
+@option{-march} option are always built,
+@ifnothtml
+@pxref{nvptx-x-none,,host/target specific installation notes}.
+@end ifnothtml
+@ifhtml
+see
+@uref{specific.html#nvptx-x-none,,host/target specific installation notes}.
+@end ifhtml
+If @var{list} is empty, @samp{no}, or @option{--without-multilib-list}
+is specified, then no additional multilibs are built.
+Otherwise, @var{list} is a comma separated list specifying which
+multilibs to build.
+List items are either @samp{sm_SM}, or @samp{default}, which is a
+placeholder specifying a default set of multilibs: @samp{sm_52}.
+Any duplicates are filtered out.
+If @option{--with-multilib-list} is not specified, then
+@option{--with-multilib-list=default} is assumed.
+For @samp{sm_30}, @samp{sm_35} target libraries, @option{-mptx-3.1}
+sub-variants are additionally built.
 
 @item riscv*-*-*
 @var{list} is a single ABI name.  The target architecture must be either
@@ -1524,6 +1558,10 @@ Use big endian by default.  Provide a multilib for little endian.
 @item little,big
 Use little endian by default.  Provide a multilib for big endian.
 @end table
+
+@item --with-cmodel=@var{cmodel}
+Specify what code model to use by default.
+Currently only implemented for riscv*-*-*.
 
 @item --enable-threads
 Specify that the target
@@ -3147,6 +3185,12 @@ Compiles GCC itself using HWAddress Sanitization in order to catch invalid
 memory accesses within the GCC code.  This option is only available on AArch64
 systems that are running Linux kernel version 5.4 or later.
 
+@item @samp{bootstrap-ubsan}
+Compiles GCC itself using Undefined Behavior Sanitization in order to catch
+undefined behavior within the GCC code.  Note that it does not abort on errors
+by default.  @code{UBSAN_OPTIONS} can be set to change this, like
+@samp{UBSAN_OPTIONS='abort_on_error=1:halt_on_error=1:print_summary=1:print_stacktrace=1'}.
+
 @end table
 
 @section Building a cross compiler
@@ -3670,13 +3714,6 @@ AIX 7.1)}.
 DOS---@uref{http://www.delorie.com/djgpp/,,DJGPP}.
 
 @item
-HP-UX:
-@itemize
-@item
-@uref{http://hpux.connect.org.uk/,,HP-UX Porting Center};
-@end itemize
-
-@item
 macOS:
 @itemize
 @item
@@ -3767,9 +3804,9 @@ information have to.
 @item
 @uref{#h8300-hms,,h8300-hms}
 @item
-@uref{#hppa-hp-hpux,,hppa*-hp-hpux*}
+@uref{#hppa-x-linux,,hppa-*-linux}
 @item
-@uref{#hppa-hp-hpux11,,hppa*-hp-hpux11}
+@uref{#hppa64-hp-hpux11,,hppa64-hp-hpux11*}
 @item
 @uref{#x-x-linux-gnu,,*-*-linux-gnu}
 @item
@@ -3963,9 +4000,8 @@ Instead of GNU Binutils, you will need to install LLVM 15, or later, and copy
 by specifying a @code{--with-multilib-list=} that does not list @code{gfx1100}
 and @code{gfx1103}.
 
-Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and git commits
-7dd4eb1db and ed50a50b9 (2024-04-04, post-4.4.0) fix device console output
-for GFX10 and GFX11 devices).
+Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and 4.5.0 fixes
+the device console output for GFX10 and GFX11 devices).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
@@ -4125,137 +4161,28 @@ Renesas H8/300 series of processors.
 @html
 <hr />
 @end html
-@anchor{hppa-hp-hpux}
-@heading hppa*-hp-hpux*
-We require using gas on all hppa platforms.  Version 2.19 or
-later is recommended.
+@anchor{hppa64-hp-hpux11}
+@heading hppa64-hp-hpux11*
+Only the 64-bit @samp{hppa} target is supported on HP-UX.  Support
+for 32-bit @samp{hppa} was discontinued in GCC 13.
+ 
+We require using gas on all hppa platforms.
 
 It may be helpful to configure GCC with the
 @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}} and
 @option{--with-as=@dots{}} options to ensure that GCC can find GAS@.
 
-There are two default scheduling models for instructions.  These are
-PROCESSOR_7100LC and PROCESSOR_8000.  They are selected from the pa-risc
-architecture specified for the target machine when configuring.
-PROCESSOR_8000 is the default.  PROCESSOR_7100LC is selected when
-the target is a @samp{hppa1*} machine.
+Only the HP linker is supported.  Thus, it is best to explicitly
+configure the target with the @option{--with-ld=@dots{}} option.
 
-The PROCESSOR_8000 model is not well suited to older processors.  Thus,
-it is important to completely specify the machine architecture when
-configuring if you want a model other than PROCESSOR_8000.  The macro
-TARGET_SCHED_DEFAULT can be defined in BOOT_CFLAGS if a different
-default scheduling model is desired.
+The DCE thread library is not supported, so @option{--enable-threads=dce}
+does not work.
 
-As of GCC 4.0, GCC uses the UNIX 95 namespace for HP-UX 10.10
-through 11.00, and the UNIX 98 namespace for HP-UX 11.11 and later.
-This namespace change might cause problems when bootstrapping with
-an earlier version of GCC or the HP compiler as essentially the same
-namespace is required for an entire build.  This problem can be avoided
-in a number of ways.  With HP cc, @env{UNIX_STD} can be set to @samp{95}
-or @samp{98}.  Another way is to add an appropriate set of predefines
-to @env{CC}.  The description for the @option{munix=} option contains
-a list of the predefines used with each standard.
+Currently, there are no precompiled binaries for 64-bit HP-UX.
 
-More specific information to @samp{hppa*-hp-hpux*} targets follows.
-
-@html
-<hr />
-@end html
-@anchor{hppa-hp-hpux11}
-@heading hppa*-hp-hpux11
-Refer to @uref{binaries.html,,binaries} for information about obtaining
-precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
-to build the Ada language as it cannot be bootstrapped using C@.  Ada is
-only available for the 32-bit PA-RISC runtime.
-
-Starting with GCC 3.4 an ISO C compiler is required to bootstrap.  The
-bundled compiler supports only traditional C; you will need either HP's
-unbundled compiler, or a binary distribution of GCC@.
-
-It is possible to build GCC 3.3 starting with the bundled HP compiler,
-but the process requires several steps.  GCC 3.3 can then be used to
-build later versions.
-
-There are several possible approaches to building the distribution.
-Binutils can be built first using the HP tools.  Then, the GCC
-distribution can be built.  The second approach is to build GCC
-first using the HP tools, then build binutils, then rebuild GCC@.
-There have been problems with various binary distributions, so it
-is best not to start from a binary distribution.
-
-On 64-bit capable systems, there are two distinct targets.  Different
-installation prefixes must be used if both are to be installed on
-the same system.  The @samp{hppa[1-2]*-hp-hpux11*} target generates code
-for the 32-bit PA-RISC runtime architecture and uses the HP linker.
-The @samp{hppa64-hp-hpux11*} target generates 64-bit code for the
-PA-RISC 2.0 architecture.
-
-The script config.guess now selects the target type based on the compiler
-detected during configuration.  You must define @env{PATH} or @env{CC} so
-that configure finds an appropriate compiler for the initial bootstrap.
-When @env{CC} is used, the definition should contain the options that are
-needed whenever @env{CC} is used.
-
-Specifically, options that determine the runtime architecture must be
-in @env{CC} to correctly select the target for the build.  It is also
-convenient to place many other compiler options in @env{CC}.  For example,
-@env{CC="cc -Ac +DA2.0W -Wp,-H16376 -D_CLASSIC_TYPES -D_HPUX_SOURCE"}
-can be used to bootstrap the GCC 3.3 branch with the HP compiler in
-64-bit K&R/bundled mode.  The @option{+DA2.0W} option will result in
-the automatic selection of the @samp{hppa64-hp-hpux11*} target.  The
-macro definition table of cpp needs to be increased for a successful
-build with the HP compiler.  _CLASSIC_TYPES and _HPUX_SOURCE need to
-be defined when building with the bundled compiler, or when using the
-@option{-Ac} option.  These defines aren't necessary with @option{-Ae}.
-
-It is best to explicitly configure the @samp{hppa64-hp-hpux11*} target
-with the @option{--with-ld=@dots{}} option.  This overrides the standard
-search for ld.  The two linkers supported on this target require different
-commands.  The default linker is determined during configuration.  As a
-result, it's not possible to switch linkers in the middle of a GCC build.
-This has been reported to sometimes occur in unified builds of binutils
-and GCC@.
-
-A recent linker patch must be installed for the correct operation of
-GCC 3.3 and later.  @code{PHSS_26559} and @code{PHSS_24304} are the
-oldest linker patches that are known to work.  They are for HP-UX
-11.00 and 11.11, respectively.  @code{PHSS_24303}, the companion to
-@code{PHSS_24304}, might be usable but it hasn't been tested.  These
-patches have been superseded.  Consult the HP patch database to obtain
-the currently recommended linker patch for your system.
-
-The patches are necessary for the support of weak symbols on the
-32-bit port, and for the running of initializers and finalizers.  Weak
-symbols are implemented using SOM secondary definition symbols.  Prior
-to HP-UX 11, there are bugs in the linker support for secondary symbols.
-The patches correct a problem of linker core dumps creating shared
-libraries containing secondary symbols, as well as various other
-linking issues involving secondary symbols.
-
-GCC 3.3 uses the ELF DT_INIT_ARRAY and DT_FINI_ARRAY capabilities to
-run initializers and finalizers on the 64-bit port.  The 32-bit port
-uses the linker @option{+init} and @option{+fini} options for the same
-purpose.  The patches correct various problems with the +init/+fini
-options, including program core dumps.  Binutils 2.14 corrects a
-problem on the 64-bit port resulting from HP's non-standard use of
-the .init and .fini sections for array initializers and finalizers.
-
-Only the HP linker is supported for the @samp{hppa64-hp-hpux11*} target.
-
-At this time, the GNU linker does not support the creation of long
-branch stubs.  As a result, it cannot successfully link binaries
-containing branch offsets larger than 8 megabytes.  In addition,
-there are problems linking shared libraries, linking executables
-with @option{-static}, and with dwarf2 unwind and exception support.
-It also doesn't provide stubs for internal calls to global functions
-in shared libraries, so these calls cannot be overloaded.
-
-The HP dynamic loader does not support GNU symbol versioning, so symbol
-versioning is not supported.  It may be necessary to disable symbol
-versioning with @option{--disable-symvers} when using GNU ld.
-
-POSIX threads are the default.  The optional DCE thread library is not
-supported, so @option{--enable-threads=dce} does not work.
+Binutils and other required tools can be built using the HP tools.
+Then, the GCC distribution can be built.  This is challenging due
+to the many dependencies.
 
 @html
 <hr />
@@ -4448,21 +4375,17 @@ Some versions of the AIX binder (linker) can fail with a relocation
 overflow severe error when the @option{-bbigtoc} option is used to link
 GCC-produced object files into an executable that overflows the TOC@.  A fix
 for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
-available from IBM Customer Support and from its
-@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
-website as PTF U455193.
+available as PTF U455193.
 
 The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
 with a segmentation fault when invoked by any version of GCC@.  A fix for
-APAR IX87327 is available from IBM Customer Support and from its
-@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
-website as PTF U461879.  This fix is incorporated in AIX 4.3.3 and above.
+APAR IX87327 is available as PTF U461879.  This fix is incorporated in
+AIX 4.3.3 and above.
 
 The initial assembler shipped with AIX 4.3.0 generates incorrect object
 files.  A fix for APAR IX74254 (64BIT DISASSEMBLED OUTPUT FROM COMPILER FAILS
-TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
-@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
-website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
+TO ASSEMBLE/BIND) is available as PTF U453956. This fix is incorporated in
+AIX 4.3.1 and above.
 
 AIX provides National Language Support (NLS)@.  Compilers and assemblers
 use NLS to support locale-specific representations of various data
@@ -4700,11 +4623,19 @@ Use the @option{--disable-sjlj-exceptions} and
 The @option{--with-arch} option may be specified to override the
 default value for the @option{-march} option, and to also build
 corresponding target libraries.
-The default is @option{--with-arch=sm_30}.
+The default is @option{--with-arch=sm_52}.
 
 For example, if @option{--with-arch=sm_70} is specified,
-@option{-march=sm_30} and @option{-march=sm_70} target libraries are
-built, and code generation defaults to @option{-march=sm_70}.
+code generation defaults to @option{-march=sm_70} and
+corresponding target libraries are built, in addition to those
+mandated by @option{--with-multilib-list}, if any,
+@ifnothtml
+@pxref{with-multilib-list,,@option{--with-multilib-list}}.
+@end ifnothtml
+@ifhtml
+see
+@uref{configure.html#with-multilib-list,,@option{--with-multilib-list}}.
+@end ifhtml
 
 @html
 <hr />
