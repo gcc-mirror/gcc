@@ -1,5 +1,5 @@
-/* C++ code produced by gperf version 3.0.3 */
-/* Command-line: /Library/Developer/CommandLineTools/usr/bin/gperf -o -C -E -k '1,2,7,11,$' -D -N find -L C++ --output-file std-name-hint.h std-name-hint.gperf  */
+/* C++ code produced by gperf version 3.1 */
+/* Command-line: /opt/iains/x86_64-apple-darwin19/gcc-7-5-toolchain/bin/gperf -o -C -E -k '1,2,7,11,$' -D -N find -L C++ --output-file std-name-hint.h std-name-hint.gperf  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -25,7 +25,7 @@
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
 /* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
 #line 4 "std-name-hint.gperf"
@@ -66,13 +66,13 @@ struct std_name_hint
 class std_name_hint_lookup
 {
 private:
-  static inline unsigned int hash (const char *str, unsigned int len);
+  static inline unsigned int hash (const char *str, size_t len);
 public:
-  static const struct std_name_hint *find (const char *str, unsigned int len);
+  static const struct std_name_hint *find (const char *str, size_t len);
 };
 
 inline unsigned int
-std_name_hint_lookup::hash (register const char *str, register unsigned int len)
+std_name_hint_lookup::hash (const char *str, size_t len)
 {
   static const unsigned short asso_values[] =
     {
@@ -103,35 +103,35 @@ std_name_hint_lookup::hash (register const char *str, register unsigned int len)
       2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087,
       2087, 2087, 2087, 2087, 2087, 2087, 2087
     };
-  register unsigned int hval = len;
+  unsigned int hval = len;
 
   switch (hval)
     {
       default:
-        hval += asso_values[(unsigned char)str[10]];
+        hval += asso_values[static_cast<unsigned char>(str[10])];
       /*FALLTHROUGH*/
       case 10:
       case 9:
       case 8:
       case 7:
-        hval += asso_values[(unsigned char)str[6]];
+        hval += asso_values[static_cast<unsigned char>(str[6])];
       /*FALLTHROUGH*/
       case 6:
       case 5:
       case 4:
       case 3:
       case 2:
-        hval += asso_values[(unsigned char)str[1]+1];
+        hval += asso_values[static_cast<unsigned char>(str[1]+1)];
       /*FALLTHROUGH*/
       case 1:
-        hval += asso_values[(unsigned char)str[0]];
+        hval += asso_values[static_cast<unsigned char>(str[0])];
         break;
     }
-  return hval + asso_values[(unsigned char)str[len - 1]];
+  return hval + asso_values[static_cast<unsigned char>(str[len - 1])];
 }
 
 const struct std_name_hint *
-std_name_hint_lookup::find (register const char *str, register unsigned int len)
+std_name_hint_lookup::find (const char *str, size_t len)
 {
   enum
     {
@@ -1431,24 +1431,24 @@ std_name_hint_lookup::find (register const char *str, register unsigned int len)
 
       if (key <= MAX_HASH_VALUE)
         {
-          register int index = lookup[key];
+          int index = lookup[key];
 
           if (index >= 0)
             {
-              register const char *s = wordlist[index].name;
+              const char *s = wordlist[index].name;
 
               if (*str == *s && !strcmp (str + 1, s + 1))
                 return &wordlist[index];
             }
           else if (index < -TOTAL_KEYWORDS)
             {
-              register int offset = - 1 - TOTAL_KEYWORDS - index;
-              register const struct std_name_hint *wordptr = &wordlist[TOTAL_KEYWORDS + lookup[offset]];
-              register const struct std_name_hint *wordendptr = wordptr + -lookup[offset + 1];
+              int offset = - 1 - TOTAL_KEYWORDS - index;
+              const struct std_name_hint *wordptr = &wordlist[TOTAL_KEYWORDS + lookup[offset]];
+              const struct std_name_hint *wordendptr = wordptr + -lookup[offset + 1];
 
               while (wordptr < wordendptr)
                 {
-                  register const char *s = wordptr->name;
+                  const char *s = wordptr->name;
 
                   if (*str == *s && !strcmp (str + 1, s + 1))
                     return wordptr;
