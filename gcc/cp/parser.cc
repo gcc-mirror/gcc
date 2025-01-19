@@ -16728,6 +16728,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
 			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
 			  &decomp);
+	  check_module_decl_linkage (decl);
 	}
     }
   else if (decl != error_mark_node)

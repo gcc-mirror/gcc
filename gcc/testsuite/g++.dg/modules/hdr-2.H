@@ -3,8 +3,11 @@
 // external linkage variables or functions in header units must
 // not have non-inline definitions
 
+struct S { int x; };
+
 int x_err;  // { dg-error "external linkage definition" }
 int y_err = 123;  // { dg-error "external linkage definition" }
+auto [d_err] = S{};  // { dg-error "external linkage definition" }
 void f_err() {}  // { dg-error "external linkage definition" }
 
 struct Err {
@@ -59,6 +62,7 @@ struct Inl {
 // Internal linkage decls are OK
 static int x_internal;
 static int y_internal = 123;
+namespace { auto [d_internal] = S{}; }
 static void f_internal() {}
 
 namespace {
@@ -80,6 +84,11 @@ inline void f_static() {
   static int y_static = 123;
   thread_local int x_thread_local;
   thread_local int y_thread_local = 123;
+
+#if __cplusplus >= 202002L
+  static auto [d_static] = S{};
+  thread_local auto [d_thread_local] = S{};
+#endif
 
   x_static = y_static;
   x_thread_local = y_thread_local;
