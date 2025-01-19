@@ -29395,7 +29395,7 @@ architectures, including Unix and Microsoft Windows platforms.
 It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
-GCC implements all of the @uref{https://openmp.org/specifications/,
+GCC implements all of the @uref{https://www.openmp.org/specifications/,
 OpenMP Application Program Interface v4.5}, and many features from later
 versions of the OpenMP specification.
 @xref{OpenMP Implementation Status,,,libgomp,
