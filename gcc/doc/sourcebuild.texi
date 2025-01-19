@@ -2808,6 +2808,9 @@ both scalar and vector modes.
 @subsubsection Environment attributes
 
 @table @code
+@item alarm
+Target supports @code{alarm}.
+
 @item c
 The language for the compiler under test is C.
 

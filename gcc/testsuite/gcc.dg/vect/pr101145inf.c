@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alarm } */
 /* { dg-require-effective-target signal } */
 /* { dg-additional-options "-O3" } */
 #include <limits.h>

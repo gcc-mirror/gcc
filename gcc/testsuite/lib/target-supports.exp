@@ -14271,3 +14271,30 @@ proc add_options_for_nvptx_alloca_ptx { flags } {
 
     return $flags
 }
+
+# Return true if alarm is supported on the target.
+
+proc check_effective_target_alarm { } {
+    if { ![check_effective_target_signal] } {
+	return 0
+    }
+
+    return [check_no_compiler_messages alarm executable {
+	#include <signal.h>
+	#include <stdlib.h>
+	#include <unistd.h>
+	void do_exit(int i) { exit (0); }
+	int main (void) { 
+	  struct sigaction s;
+	  sigemptyset (&s.sa_mask);
+	  s.sa_handler = exit;
+	  s.sa_flags = 0;
+	  sigaction (SIGALRM, &s, NULL);
+	  alarm (1);
+
+	  /* Infinite loop to simulate work...  */
+	  while (1);
+	  abort ();
+	}
+    }]
+}
