@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O -fno-split-wide-types -mavx512f" } */
 
 typedef unsigned short U __attribute__((__vector_size__(64)));
