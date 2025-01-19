@@ -583,7 +583,7 @@ name_lookup::preserve_state ()
   if (previous)
     {
       unsigned length = vec_safe_length (previous->scopes);
-      vec_safe_reserve (previous->scopes, length * 2);
+      vec_safe_reserve (previous->scopes, length);
       for (unsigned ix = length; ix--;)
 	{
 	  tree decl = (*previous->scopes)[ix];

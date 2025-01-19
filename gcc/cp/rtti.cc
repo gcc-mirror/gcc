@@ -1318,18 +1318,9 @@ get_pseudo_ti_index (tree type)
 static tinfo_s *
 get_tinfo_desc (unsigned ix)
 {
-  unsigned len = tinfo_descs->length ();
-
-  if (len <= ix)
-    {
-      /* too short, extend.  */
-      len = ix + 1 - len;
-      vec_safe_reserve (tinfo_descs, len);
-      tinfo_s elt;
-      elt.type = elt.vtable = elt.name = NULL_TREE;
-      while (len--)
-	tinfo_descs->quick_push (elt);
-    }
+  if (tinfo_descs->length () <= ix)
+    /* too short, extend.  */
+    vec_safe_grow_cleared (tinfo_descs, ix + 1);
 
   tinfo_s *res = &(*tinfo_descs)[ix];
 
