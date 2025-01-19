@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb1_ok } */
-/* { dg-options "-O1 -mthumb" }  */
+/* { dg-options "-O1 -mthumb -std=c17" }  */
 
 struct foo
 {
