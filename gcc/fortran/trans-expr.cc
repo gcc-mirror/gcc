@@ -5200,6 +5200,7 @@ gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
   gfc_se work_se;
   gfc_se *parmse;
   bool pass_optional;
+  bool readonly;
 
   pass_optional = fsym && fsym->attr.optional && sym && sym->attr.optional;
 
@@ -5416,8 +5417,14 @@ gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
 
   /* Wrap the whole thing up by adding the second loop to the post-block
      and following it by the post-block of the first loop.  In this way,
-     if the temporary needs freeing, it is done after use!  */
-  if (intent != INTENT_IN)
+     if the temporary needs freeing, it is done after use!
+     If input expr is read-only, e.g. a PARAMETER array, copying back
+     modified values is undefined behavior.  */
+  readonly = (expr->expr_type == EXPR_VARIABLE
+	      && expr->symtree
+	      && expr->symtree->n.sym->attr.flavor == FL_PARAMETER);
+
+  if ((intent != INTENT_IN) && !readonly)
     {
       gfc_add_block_to_block (&parmse->post, &loop2.pre);
       gfc_add_block_to_block (&parmse->post, &loop2.post);
