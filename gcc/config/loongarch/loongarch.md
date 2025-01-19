@@ -374,10 +374,6 @@
 ;; from the same template.
 (define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
 
-;; A copy of GPR that can be used when a pattern has two independent
-;; modes.
-(define_mode_iterator GPR2 [SI (DI "TARGET_64BIT")])
-
 ;; This mode iterator allows 16-bit and 32-bit GPR patterns and 32-bit 64-bit
 ;; FPR patterns to be generated from the same template.
 (define_mode_iterator JOIN_MODE [HI
@@ -2507,11 +2503,11 @@
 
 ;; Conditional move instructions.
 
-(define_insn "*sel<code><GPR:mode>_using_<GPR2:mode>"
+(define_insn "*sel<code><GPR:mode>_using_<X:mode>"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
 	(if_then_else:GPR
-	 (equality_op:GPR2 (match_operand:GPR2 1 "register_operand" "r,r")
-			   (const_int 0))
+	 (equality_op:X (match_operand:X 1 "register_operand" "r,r")
+			(const_int 0))
 	 (match_operand:GPR 2 "reg_or_0_operand" "r,J")
 	 (match_operand:GPR 3 "reg_or_0_operand" "J,r")))]
   "register_operand (operands[2], <GPR:MODE>mode)
