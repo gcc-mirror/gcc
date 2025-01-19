@@ -1,3 +1,106 @@
+2025-01-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116308
+	* config/riscv/riscv.cc (riscv_lshift_subword): Use gen_lowpart
+	rather than simplify_gen_subreg.
+
+2025-01-18  Michal Jires  <mjires@suse.cz>
+
+	* cgraph.cc (symbol_table::create_empty):
+	Move uid to symtab_node.
+	(test_symbol_table_test): Change expected dump id.
+	* cgraph.h (struct cgraph_node):
+	Move uid to symtab_node.
+	(symbol_table::register_symbol): Likewise.
+	* dumpfile.cc (test_capture_of_dump_calls):
+	Change expected dump id.
+	* ipa-inline.cc (update_caller_keys):
+	Use summary id instead of uid.
+	(update_callee_keys): Likewise.
+	* symtab.cc (symtab_node::get_dump_name):
+	Use uid instead of order.
+
+2025-01-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/118512
+	* config/sparc/sparc-c.cc (sparc_target_macros): Deal with VIS 3B.
+	* config/sparc/sparc.cc (dump_target_flag_bits): Likewise.
+	(sparc_option_override): Likewise.
+	(sparc_vis_init_builtins): Likewise.
+	* config/sparc/sparc.md (fpcmp_vis): Replace TARGET_VIS3 with
+	TARGET_VIS3B.
+	(vec_cmp): Likewise.
+	(fpcmpu_vis): Likewise.
+	(vec_cmpu): Likewise.
+	(vcond_mask_): Likewise.
+	* config/sparc/sparc.opt (VIS3B): New target mask.
+	* doc/invoke.texi (SPARC options): Document -mvis3b.
+
+2025-01-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118357
+	* config/riscv/riscv-vsetvl.cc: Function change_vtype_only_p always
+	returns false for XTheadVector.
+
+2025-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118529
+	* tree-vect-stmts.cc (vectorizable_condition): Check the
+	shape of the vector and condition vector type are compatible.
+
+2025-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): Fix plenk at -msplit-ldst.
+
+2025-01-18  Akram Ahmad  <Akram.Ahmad@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc: Expand iterators.
+	* config/aarch64/aarch64-simd-builtins.def: Use standard names
+	* config/aarch64/aarch64-simd.md: Use standard names, split insn
+	definitions on signedness of operator and type of operands.
+	* config/aarch64/arm_neon.h: Use standard builtin names.
+	* config/aarch64/iterators.md: Add VSDQ_I_QI_HI iterator to
+	simplify splitting of insn for unsigned scalar arithmetic.
+
+2025-01-18  Akram Ahmad  <Akram.Ahmad@arm.com>
+
+	* config/aarch64/aarch64-sve.md: Rename insns
+
+2025-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2025-01-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc: Expand iterators.
+	* config/aarch64/aarch64-simd-builtins.def: Use standard names
+	* config/aarch64/aarch64-simd.md: Use standard names, split insn
+	definitions on signedness of operator and type of operands.
+	* config/aarch64/arm_neon.h: Use standard builtin names.
+	* config/aarch64/iterators.md: Add VSDQ_I_QI_HI iterator to
+	simplify splitting of insn for unsigned scalar arithmetic.
+
+2025-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2025-01-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md: Rename insns
+
+2025-01-18  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.cc: Remove unused variable.
+
+2025-01-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_rtx_costs): Fix the
+	cost for (a + b * imm) and (a + (b << imm)) which can be
+	implemented with a single alsl instruction.
+
+2025-01-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (alslsi3_extend): Add alsl.wu.
+
 2025-01-17  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/118067

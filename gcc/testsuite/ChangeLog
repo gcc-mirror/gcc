@@ -1,3 +1,134 @@
+2025-01-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm3.d: Adjust test.
+
+2025-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118513
+	* g++.dg/modules/decomp-3_a.H: New test.
+	* g++.dg/modules/decomp-3_b.C: New test.
+
+2025-01-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116308
+	* gcc.target/riscv/pr116308.c: New test.
+
+2025-01-18  Michal Jires  <mjires@suse.cz>
+
+	* gcc.dg/live-patching-1.c: Change expected dump id.
+	* gcc.dg/live-patching-4.c: Likewise.
+
+2025-01-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20230328-1.c: Pass -mvis3b instead of -mvis3.
+	* gcc.target/sparc/20230328-4.c: Likewise.
+	* gcc.target/sparc/fucmp.c: Likewise.
+	* gcc.target/sparc/vis3misc.c: Likewise.
+
+2025-01-18  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/crc-21-rv64-zbc.c: Disallow rv32 targets.
+	* gcc.target/riscv/crc-21-rv64-zbkc.c: Ditto.
+
+2025-01-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118357
+	* gcc.target/riscv/rvv/xtheadvector/pr118357.c: New test.
+
+2025-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118529
+	* gcc.target/sparc/pr118529.c: New testcase.
+
+2025-01-18  Akram Ahmad  <Akram.Ahmad@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c: Update testcases.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect.inc:
+	Template file for unsigned vector saturating arithmetic tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_1.c:
+	8-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_2.c:
+	16-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_3.c:
+	32-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_4.c:
+	64-bit vector type tests.
+	* gcc.target/aarch64/saturating_arithmetic.inc: Template file
+	for scalar saturating arithmetic tests.
+	* gcc.target/aarch64/saturating_arithmetic_1.c: 8-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_2.c: 16-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_3.c: 32-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_4.c: 64-bit tests.
+	* gcc.target/aarch64/saturating-arithmetic-signed.c: New file.
+
+2025-01-18  Akram Ahmad  <Akram.Ahmad@arm.com>
+
+	* gcc.target/aarch64/sve/saturating_arithmetic.inc:
+	Template file for auto-vectorizer tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_1.c:
+	Instantiate 8-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_2.c:
+	Instantiate 16-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_3.c:
+	Instantiate 32-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_4.c:
+	Instantiate 64-bit vector tests.
+
+2025-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2025-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c: Update testcases.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect.inc:
+	Template file for unsigned vector saturating arithmetic tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_1.c:
+	8-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_2.c:
+	16-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_3.c:
+	32-bit vector type tests.
+	* gcc.target/aarch64/advsimd-intrinsics/saturating_arithmetic_autovect_4.c:
+	64-bit vector type tests.
+	* gcc.target/aarch64/saturating_arithmetic.inc: Template file
+	for scalar saturating arithmetic tests.
+	* gcc.target/aarch64/saturating_arithmetic_1.c: 8-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_2.c: 16-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_3.c: 32-bit tests.
+	* gcc.target/aarch64/saturating_arithmetic_4.c: 64-bit tests.
+	* gcc.target/aarch64/saturating-arithmetic-signed.c: New file.
+
+2025-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2025-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/saturating_arithmetic.inc:
+	Template file for auto-vectorizer tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_1.c:
+	Instantiate 8-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_2.c:
+	Instantiate 16-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_3.c:
+	Instantiate 32-bit vector tests.
+	* gcc.target/aarch64/sve/saturating_arithmetic_4.c:
+	Instantiate 64-bit vector tests.
+
+2025-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118534
+	* g++.dg/cpp/embed-24.C: New test.
+	* g++.dg/cpp1y/pr118534.C: New test.
+
+2025-01-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/alsl-cost.c: New test.
+
+2025-01-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/alsl_wu.c: New test.
+
 2025-01-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR libfortran/118536

@@ -1,3 +1,16 @@
+2025-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118513
+	* decl2.cc (copy_linkage): If not TREE_PUBLIC, also set
+	DECL_INTERFACE_KNOWN, assert it was set on decl and copy
+	DECL_NOT_REALLY_EXTERN flags.
+
+2025-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118534
+	* constexpr.cc (find_array_ctor_elt): Don't return i early if
+	i == end - 1 and the last elt's value is RAW_DATA_CST.
+
 2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/118049
