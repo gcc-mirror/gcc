@@ -2269,3 +2269,14 @@
   "TARGET_NNPA"
   "vcnf\t%v0,%v1,%2,1"
   [(set_attr "op_type" "VRR")])
+
+; vblendb, vblendh, vblendf, vblendg, vblendq
+(define_insn "vblend<mode>"
+  [(set (match_operand:VT_HW 0 "register_operand" "=v")
+	(unspec:VT_HW [(match_operand:VT_HW 1 "register_operand" "v")
+		       (match_operand:VT_HW 2 "register_operand" "v")
+		       (match_operand:<VT_HW:TOINTVEC> 3 "register_operand" "v")]
+		      UNSPEC_VEC_VBLEND))]
+  "TARGET_VXE3"
+  "vblend<bhfgq>\t%v0,%v1,%v2,%v3"
+  [(set_attr "op_type" "VRR")])

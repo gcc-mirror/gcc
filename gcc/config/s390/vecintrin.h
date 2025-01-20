@@ -195,6 +195,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_any_nge __builtin_s390_vec_any_nge
 #define vec_any_ngt __builtin_s390_vec_any_ngt
 #define vec_avg __builtin_s390_vec_avg
+#define vec_blend __builtin_s390_vec_blend
 #define vec_bperm __builtin_s390_vec_bperm
 #define vec_bperm_u128 __builtin_s390_vec_bperm_u128
 #define vec_cmpeq __builtin_s390_vec_cmpeq
