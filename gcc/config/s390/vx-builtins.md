@@ -1041,9 +1041,9 @@
 
 ; Vector shift left
 
-(define_insn "vec_sll<VI_HW:mode><VI_HW_QHS:mode>"
-  [(set (match_operand:VI_HW                    0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW     1 "register_operand"  "v")
+(define_insn "@vec_sll<V_HW3:mode><VI_HW_QHS:mode>"
+  [(set (match_operand:V_HW3                    0 "register_operand" "=v")
+	(unspec:V_HW3 [(match_operand:V_HW3     1 "register_operand"  "v")
 		       (match_operand:VI_HW_QHS 2 "register_operand"  "v")]
 		      UNSPEC_VEC_SLL))]
   "TARGET_VX"
@@ -1054,15 +1054,12 @@
 ; Vector shift left by byte
 
 ; Pattern definition in vector.md, see vec_vslb
-(define_expand "vec_slb<mode>"
-  [(set (match_operand:V_HW 0 "register_operand"                     "")
-	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
-		      (match_operand:<TOINTVEC> 2 "register_operand" "")]
+(define_expand "@vec_slb<mode>"
+  [(set (match_operand:V_HW3 0 "register_operand"                     "")
+	(unspec:V_HW3 [(match_operand:V_HW3 1 "register_operand"       "")
+		      (match_operand:V16QI 2 "register_operand" "")]
 		     UNSPEC_VEC_SLB))]
-  "TARGET_VX"
-{
-  PUT_MODE (operands[2], V16QImode);
-})
+  "TARGET_VX")
 
 ; Vector shift left double by byte
 
@@ -1113,9 +1110,9 @@
 
 ; Vector shift right arithmetic
 
-(define_insn "vec_sral<VI_HW:mode><VI_HW_QHS:mode>"
-  [(set (match_operand:VI_HW                    0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW     1 "register_operand"  "v")
+(define_insn "@vec_sral<V_HW3:mode><VI_HW_QHS:mode>"
+  [(set (match_operand:V_HW3                    0 "register_operand" "=v")
+	(unspec:V_HW3 [(match_operand:V_HW3     1 "register_operand"  "v")
 		       (match_operand:VI_HW_QHS 2 "register_operand"  "v")]
 		      UNSPEC_VEC_SRAL))]
   "TARGET_VX"
@@ -1125,10 +1122,10 @@
 
 ; Vector shift right arithmetic by byte
 
-(define_insn "vec_srab<mode>"
-  [(set (match_operand:V_HW 0 "register_operand"                    "=v")
-	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "v")
-		      (match_operand:<TOINTVEC> 2 "register_operand" "v")]
+(define_insn "@vec_srab<mode>"
+  [(set (match_operand:V_HW3 0 "register_operand"               "=v")
+	(unspec:V_HW3 [(match_operand:V_HW3 1 "register_operand" "v")
+		       (match_operand:V16QI 2 "register_operand" "v")]
 		     UNSPEC_VEC_SRAB))]
   "TARGET_VX"
   "vsrab\t%v0,%v1,%v2"
@@ -1137,9 +1134,9 @@
 
 ; Vector shift right logical
 
-(define_insn "vec_srl<VI_HW:mode><VI_HW_QHS:mode>"
-  [(set (match_operand:VI_HW                    0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW     1 "register_operand"  "v")
+(define_insn "@vec_srl<V_HW3:mode><VI_HW_QHS:mode>"
+  [(set (match_operand:V_HW3                    0 "register_operand" "=v")
+	(unspec:V_HW3 [(match_operand:V_HW3     1 "register_operand"  "v")
 		       (match_operand:VI_HW_QHS 2 "register_operand"  "v")]
 		      UNSPEC_VEC_SRL))]
   "TARGET_VX"
@@ -1150,15 +1147,12 @@
 ; Vector shift right logical by byte
 
 ; Pattern definition in vector.md, see vec_vsrb
-(define_expand "vec_srb<mode>"
-  [(set (match_operand:V_HW 0 "register_operand"                     "")
-	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
-		      (match_operand:<TOINTVEC> 2 "register_operand" "")]
-		     UNSPEC_VEC_SRLB))]
-  "TARGET_VX"
-{
-  PUT_MODE (operands[2], V16QImode);
-})
+(define_expand "@vec_srb<mode>"
+  [(set (match_operand:V_HW3 0 "register_operand"                     "")
+	(unspec:V_HW3 [(match_operand:V_HW3 1 "register_operand"      "")
+		       (match_operand:V16QI 2 "register_operand" "")]
+		      UNSPEC_VEC_SRLB))]
+  "TARGET_VX")
 
 ; Vector subtract
 

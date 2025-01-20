@@ -1469,10 +1469,41 @@
 
 ; Each vector element rotated by a scalar
 (define_expand "<vec_shifts_name><mode>3"
-  [(set (match_operand:VI 0 "register_operand" "")
-	(VEC_SHIFTS:VI (match_operand:VI 1 "register_operand" "")
-		       (match_operand:QI 2 "shift_count_operand" "")))]
-  "TARGET_VX")
+  [(set (match_operand:VIT 0 "register_operand" "")
+	(VEC_SHIFTS:VIT (match_operand:VIT 1 "register_operand" "")
+			(match_operand:QI  2 "shift_count_operand" "")))]
+  "TARGET_VX && ((<MODE>mode != V1TImode && <MODE>mode != TImode) || <CODE> != ROTATE)"
+{
+  if (<MODE>mode == V1TImode || <MODE>mode == TImode)
+    {
+      rtx shift_count = gen_reg_rtx (V16QImode);
+      emit_insn (gen_vec_splatsv16qi (shift_count, operands[2]));
+
+      if (!CONST_INT_P (operands[2]) || UINTVAL (operands[2]) > 7)
+	switch (<CODE>)
+	  {
+	  case ASHIFT: emit_insn (gen_vec_slb (<MODE>mode, operands[0], operands[1], shift_count)); break;
+	  case ASHIFTRT: emit_insn (gen_vec_srab (<MODE>mode, operands[0], operands[1], shift_count)); break;
+	  case LSHIFTRT: emit_insn (gen_vec_srb (<MODE>mode, operands[0], operands[1], shift_count)); break;
+	  default: gcc_unreachable ();
+	  }
+      else
+	emit_move_insn (operands[0], operands[1]);
+
+      if (!CONST_INT_P (operands[2]) || (UINTVAL (operands[2]) & 7) != 0)
+	{
+	  switch (<CODE>)
+	    {
+	    case ASHIFT: emit_insn (gen_vec_sll (<MODE>mode, V16QImode, operands[0], operands[0], shift_count)); break;
+	    case ASHIFTRT: emit_insn (gen_vec_sral (<MODE>mode, V16QImode, operands[0], operands[0], shift_count)); break;
+	    case LSHIFTRT: emit_insn (gen_vec_srl (<MODE>mode, V16QImode, operands[0], operands[0], shift_count)); break;
+	    default: gcc_unreachable ();
+	    }
+	}
+
+      DONE;
+    }
+})
 
 ; verllb, verllh, verllf, verllg
 ; veslb,  veslh,  veslf,  veslg
@@ -1540,8 +1571,8 @@
 
 ; Pattern used by e.g. popcount
 (define_insn "*vec_srb<mode>"
-  [(set (match_operand:V_128                0 "register_operand" "=v")
-	(unspec:V_128 [(match_operand:V_128 1 "register_operand"  "v")
+  [(set (match_operand:V_HW3                0 "register_operand" "=v")
+	(unspec:V_HW3 [(match_operand:V_HW3 1 "register_operand"  "v")
 		       (match_operand:V16QI 2 "register_operand"  "v")]
 		   UNSPEC_VEC_SRLB))]
   "TARGET_VX"
@@ -1552,8 +1583,8 @@
 ; Vector shift left by byte
 
 (define_insn "*vec_slb<mode>"
-  [(set (match_operand:V_128                0 "register_operand" "=v")
-	(unspec:V_128 [(match_operand:V_128 1 "register_operand"  "v")
+  [(set (match_operand:V_HW3                0 "register_operand" "=v")
+	(unspec:V_HW3 [(match_operand:V_HW3 1 "register_operand"  "v")
 		    (match_operand:V16QI    2 "register_operand"  "v")]
 		   UNSPEC_VEC_SLB))]
   "TARGET_VX"
