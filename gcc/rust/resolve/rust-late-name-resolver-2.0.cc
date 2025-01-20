@@ -390,5 +390,18 @@ Late::visit (AST::GenericArg &arg)
   DefaultResolver::visit (arg);
 }
 
+void
+Late::visit (AST::ClosureExprInner &closure)
+{
+  auto vals = ctx.values.peek ().get_values ();
+  for (auto &val : vals)
+    {
+      ctx.mappings.add_capture (closure.get_node_id (),
+				val.second.get_node_id ());
+    }
+
+  DefaultResolver::visit (closure);
+}
+
 } // namespace Resolver2_0
 } // namespace Rust

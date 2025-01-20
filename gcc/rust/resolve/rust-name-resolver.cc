@@ -674,6 +674,8 @@ Resolver::decl_needs_capture (NodeId decl_rib_node_id,
 const std::set<NodeId> &
 Resolver::get_captures (NodeId id) const
 {
+  rust_assert (!flag_name_resolution_2_0);
+
   auto it = closures_capture_mappings.find (id);
   rust_assert (it != closures_capture_mappings.end ());
   return it->second;

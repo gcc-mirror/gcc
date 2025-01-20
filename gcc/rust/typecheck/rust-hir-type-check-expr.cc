@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-tyty-call.h"
 #include "rust-hir-type-check-struct-field.h"
 #include "rust-hir-path-probe.h"
@@ -1599,7 +1600,24 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 
   // generate the closure type
   NodeId closure_node_id = expr.get_mappings ().get_nodeid ();
-  const std::set<NodeId> &captures = resolver->get_captures (closure_node_id);
+
+  // Resolve closure captures
+
+  std::set<NodeId> captures;
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+      if (auto opt_cap = nr_ctx.mappings.lookup_captures (closure_node_id))
+	for (auto cap : opt_cap.value ())
+	  captures.insert (cap);
+    }
+  else
+    {
+      captures = resolver->get_captures (closure_node_id);
+    }
+
   infered = new TyTy::ClosureType (ref, id, ident, closure_args, result_type,
 				   subst_refs, captures);
 
