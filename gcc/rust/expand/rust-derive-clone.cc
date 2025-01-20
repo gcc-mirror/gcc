@@ -422,17 +422,16 @@ DeriveClone::visit_union (Union &item)
   // FIXME: Should be $crate::core::clone::AssertParamIsCopy (or similar)
   // (Rust-GCC#3329)
 
-  auto copy_path = TypePath (vec (builder.type_path_segment ("Copy")), loc);
-  auto sized_path = TypePath (vec (builder.type_path_segment ("Sized")), loc);
+  auto copy_path = builder.type_path (LangItem::Kind::COPY);
+  auto sized_path = builder.type_path (LangItem::Kind::SIZED);
 
   auto copy_bound = std::unique_ptr<TypeParamBound> (
     new TraitBound (copy_path, item.get_locus ()));
   auto sized_bound = std::unique_ptr<TypeParamBound> (
-    new TraitBound (sized_path, item.get_locus (), false, true));
+    new TraitBound (sized_path, item.get_locus (), false,
+		    true /* opening_question_mark */));
 
-  auto bounds = std::vector<std::unique_ptr<TypeParamBound>> ();
-  bounds.emplace_back (std::move (copy_bound));
-  bounds.emplace_back (std::move (sized_bound));
+  auto bounds = vec (std::move (copy_bound), std::move (sized_bound));
 
   // struct AssertParamIsCopy<T: Copy + ?Sized> { _t: PhantomData<T> }
   auto assert_param_is_copy = "AssertParamIsCopy";
