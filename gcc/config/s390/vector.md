@@ -30,6 +30,12 @@
 (define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI V1TI TI V2DF
 			     (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")
 			     (TF "TARGET_VXE")])
+(define_mode_iterator V_HW1 [V16QI V8HI V4SI V2DI V1TI V2DF
+			     (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")
+			     (TF "TARGET_VXE")])
+(define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")
+			     (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
+(define_mode_iterator V_HW3 [V16QI V8HI V4SI V2DI V1TI TI V4SF V2DF V1TF TF])
 
 (define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
 (define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
@@ -39,8 +45,12 @@
 
 ; All full size integer vector modes supported in a vector register + TImode
 (define_mode_iterator VIT_HW    [V16QI V8HI V4SI V2DI V1TI TI])
+(define_mode_iterator VIT_HW_VXE3_T [V16QI V8HI V4SI V2DI (V1TI "TARGET_VXE3") (TI "TARGET_VXE3")])
+(define_mode_iterator VIT_HW_VXE3_DT [V16QI V8HI V4SI (V2DI "TARGET_VXE3") (V1TI "TARGET_VXE3") (TI "TARGET_VXE3")])
 (define_mode_iterator VI_HW     [V16QI V8HI V4SI V2DI])
+(define_mode_iterator VI_HW_VXE3 [V16QI V8HI V4SI (V2DI "TARGET_VXE3")])
 (define_mode_iterator VI_HW_QHS [V16QI V8HI V4SI])
+(define_mode_iterator VI_HW_SDT [V4SI  V2DI V1TI TI])
 (define_mode_iterator VI_HW_HSD [V8HI  V4SI V2DI])
 (define_mode_iterator VI_HW_HSDT [V8HI V4SI V2DI V1TI TI])
 (define_mode_iterator VI_HW_HS  [V8HI  V4SI])
@@ -54,14 +64,15 @@
 ; All integer vector modes supported in a vector register + TImode
 (define_mode_iterator VIT [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1TI TI])
 (define_mode_iterator VI  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI])
+(define_mode_iterator VI_VXE3 [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI (V2DI "TARGET_VXE3")])
 (define_mode_iterator VI_QHS [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI])
 
 (define_mode_iterator VFT [(V1SF "TARGET_VXE") (V2SF "TARGET_VXE") (V4SF "TARGET_VXE")
 			   V1DF V2DF
 			   (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
-; All modes present in V_HW and VFT.
-(define_mode_iterator V_HW_FT [V16QI V8HI V4SI V2DI (V1TI "TARGET_VXE") V1DF
+; All modes present in V_HW1 and VFT.
+(define_mode_iterator V_HW1_FT [V16QI V8HI V4SI V2DI V1TI V1DF
 			       V2DF (V1SF "TARGET_VXE") (V2SF "TARGET_VXE")
 			       (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")
 			       (TF "TARGET_VXE")])
@@ -139,7 +150,8 @@
 (define_mode_attr w [(V1QI "")  (V2QI "")  (V4QI "")  (V8QI "") (V16QI "")
 		     (V1HI "w") (V2HI "w") (V4HI "w") (V8HI "w")
 		     (V1SI "")  (V2SI "")  (V4SI "")
-		     (V1DI "")  (V2DI "")])
+		     (V1DI "")  (V2DI "")
+		     (V1TI "")  (TI "")])
 
 ; Resulting mode of a vector comparison.  For floating point modes an
 ; integer vector mode with the same element size is picked.
@@ -173,7 +185,7 @@
 (define_mode_attr vec_double [(V1QI "V1HI") (V2QI "V1HI") (V4QI "V2HI") (V8QI "V4HI") (V16QI "V8HI")
 			      (V1HI "V1SI") (V2HI "V1SI") (V4HI "V2SI") (V8HI "V4SI")
 			      (V1SI "V1DI") (V2SI "V1DI") (V4SI "V2DI")
-			      (V1DI "V1TI") (V2DI "V1TI")
+			      (V1DI "V1TI") (V2DI "TI")
 			      (V1SF "V1DF") (V2SF "V1DF") (V4SF "V2DF")])
 
 ; Vector with shrinked element size but twice the number of elements.
@@ -1121,11 +1133,11 @@
   "vs<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmlb, vmlhw, vmlf
+; vmlb, vmlhw, vmlf, vmlg, vmlq
 (define_insn "mul<mode>3"
-  [(set (match_operand:VI_QHS              0 "register_operand" "=v")
-	(mult:VI_QHS (match_operand:VI_QHS 1 "register_operand"  "v")
-		     (match_operand:VI_QHS 2 "register_operand"  "v")))]
+  [(set (match_operand:VIT_HW_VXE3_DT                      0 "register_operand" "=v")
+	(mult:VIT_HW_VXE3_DT (match_operand:VIT_HW_VXE3_DT 1 "register_operand"  "v")
+			     (match_operand:VIT_HW_VXE3_DT 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vml<bhfgq><w>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
@@ -1541,41 +1553,41 @@
   "vmxl<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmeb, vmeh, vmef
+; vmeb, vmeh, vmef, vmeg
 (define_insn "vec_widen_smult_even_<mode>"
-  [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
-			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+  [(set (match_operand:<vec_double>                  0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_operand:VI_VXE3 1 "register_operand"  "v")
+			      (match_operand:VI_VXE3 2 "register_operand"  "v")]
 			     UNSPEC_VEC_SMULT_EVEN))]
   "TARGET_VX"
   "vme<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmleb, vmleh, vmlef
+; vmleb, vmleh, vmlef, vmleg
 (define_insn "vec_widen_umult_even_<mode>"
-  [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
-			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+  [(set (match_operand:<vec_double>                  0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_operand:VI_VXE3 1 "register_operand"  "v")
+			      (match_operand:VI_VXE3 2 "register_operand"  "v")]
 			     UNSPEC_VEC_UMULT_EVEN))]
   "TARGET_VX"
   "vmle<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmob, vmoh, vmof
+; vmob, vmoh, vmof, vmog
 (define_insn "vec_widen_smult_odd_<mode>"
-  [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
-			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+  [(set (match_operand:<vec_double>                  0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_operand:VI_VXE3 1 "register_operand"  "v")
+			      (match_operand:VI_VXE3 2 "register_operand"  "v")]
 			     UNSPEC_VEC_SMULT_ODD))]
   "TARGET_VX"
   "vmo<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmlob, vmloh, vmlof
+; vmlob, vmloh, vmlof, vmlog
 (define_insn "vec_widen_umult_odd_<mode>"
-  [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
-			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+  [(set (match_operand:<vec_double>                  0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_operand:VI_VXE3 1 "register_operand"  "v")
+			      (match_operand:VI_VXE3 2 "register_operand"  "v")]
 			     UNSPEC_VEC_UMULT_ODD))]
   "TARGET_VX"
   "vmlo<bhfgq>\t%v0,%v1,%v2"

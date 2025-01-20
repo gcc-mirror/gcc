@@ -80,6 +80,8 @@ __lcbb(const void *ptr, int bndry)
   return __builtin_s390_lcbb (ptr, code);
 }
 
+#define vec_adde __builtin_s390_vec_adde
+#define vec_addec __builtin_s390_vec_addec
 #define vec_all_nle(X, Y) vec_all_nge ((Y), (X))
 #define vec_all_nlt(X, Y) vec_all_ngt ((Y), (X))
 #define vec_any_nle(X, Y) vec_any_nge ((Y), (X))
@@ -97,6 +99,8 @@ __lcbb(const void *ptr, int bndry)
 #define vec_splat_s32 __builtin_s390_vec_splat_s32
 #define vec_splat_u64 __builtin_s390_vec_splat_u64
 #define vec_splat_s64 __builtin_s390_vec_splat_s64
+#define vec_sube __builtin_s390_vec_sube
+#define vec_subec __builtin_s390_vec_subec
 #define vec_checksum __builtin_s390_vcksm
 #define vec_gfmsum_128 __builtin_s390_vgfmg_128
 #define vec_gfmsum_accum_128 __builtin_s390_vgfmag_128
@@ -191,6 +195,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_any_nge __builtin_s390_vec_any_nge
 #define vec_any_ngt __builtin_s390_vec_any_ngt
 #define vec_avg __builtin_s390_vec_avg
+#define vec_bperm __builtin_s390_vec_bperm
 #define vec_bperm_u128 __builtin_s390_vec_bperm_u128
 #define vec_cmpeq __builtin_s390_vec_cmpeq
 #define vec_cmpeq_idx __builtin_s390_vec_cmpeq_idx
@@ -263,6 +268,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_mladd __builtin_s390_vec_mladd
 #define vec_moadd __builtin_s390_vec_moadd
 #define vec_msub __builtin_s390_vec_msub
+#define vec_msum __builtin_s390_vec_msum
 #define vec_msum_u128 __builtin_s390_vec_msum_u128
 #define vec_mule __builtin_s390_vec_mule
 #define vec_mulh __builtin_s390_vec_mulh
@@ -313,6 +319,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_subc_u128 __builtin_s390_vec_subc_u128
 #define vec_sube_u128 __builtin_s390_vec_sube_u128
 #define vec_subec_u128 __builtin_s390_vec_subec_u128
+#define vec_sum __builtin_s390_vec_sum
 #define vec_sum2 __builtin_s390_vec_sum2
 #define vec_sum4 __builtin_s390_vec_sum4
 #define vec_sum_u128 __builtin_s390_vec_sum_u128
