@@ -5430,6 +5430,7 @@ static void
 fold_marked_statements (int first, hash_set<gimple *> *statements)
 {
   auto_bitmap to_purge;
+  auto_bitmap to_purge_abnormal;
 
   auto_vec<edge, 20> stack (n_basic_blocks_for_fn (cfun) + 2);
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
@@ -5456,8 +5457,16 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 	      continue;
 
 	    gimple *old_stmt = gsi_stmt (gsi);
-	    tree old_decl = (is_gimple_call (old_stmt)
-			     ? gimple_call_fndecl (old_stmt) : 0);
+	    bool can_make_abnormal_goto = false;
+	    tree old_decl = NULL_TREE;
+
+	    if (is_gimple_call (old_stmt))
+	      {
+		old_decl = gimple_call_fndecl (old_stmt);
+		if (stmt_can_make_abnormal_goto (old_stmt))
+		  can_make_abnormal_goto = true;
+	      }
+
 	    if (old_decl && fndecl_built_in_p (old_decl))
 	      {
 		/* Folding builtins can create multiple instructions,
@@ -5473,6 +5482,8 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 		      {
 			cgraph_update_edges_for_call_stmt (old_stmt,
 							   old_decl, NULL);
+			if (can_make_abnormal_goto)
+			  bitmap_set_bit (to_purge_abnormal, dest->index);
 			break;
 		      }
 		    if (gsi_end_p (i2))
@@ -5501,6 +5512,9 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 			    if (maybe_clean_or_replace_eh_stmt (old_stmt,
 								new_stmt))
 			      bitmap_set_bit (to_purge, dest->index);
+			    if (can_make_abnormal_goto
+				&& !stmt_can_make_abnormal_goto (new_stmt))
+			      bitmap_set_bit (to_purge_abnormal, dest->index);
 			    break;
 			  }
 			gsi_next (&i2);
@@ -5521,6 +5535,9 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 
 		if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
 		  bitmap_set_bit (to_purge, dest->index);
+		if (can_make_abnormal_goto
+		    && !stmt_can_make_abnormal_goto (new_stmt))
+		  bitmap_set_bit (to_purge_abnormal, dest->index);
 	      }
 	  }
 
@@ -5542,6 +5559,7 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
     }
 
   gimple_purge_all_dead_eh_edges (to_purge);
+  gimple_purge_all_dead_abnormal_call_edges (to_purge_abnormal);
 }
 
 /* Expand calls to inline functions in the body of FN.  */
