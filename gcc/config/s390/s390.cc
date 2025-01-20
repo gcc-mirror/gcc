@@ -1199,6 +1199,9 @@ s390_handle_vectorbool_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
   mode = TYPE_MODE (type);
   switch (mode)
     {
+    case E_TImode: case E_V1TImode:
+      result = s390_builtin_types[BT_BV1TI];
+      break;
     case E_DImode: case E_V2DImode:
       result = s390_builtin_types[BT_BV2DI];
       break;
