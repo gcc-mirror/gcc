@@ -1,8 +1,8 @@
 #[lang = "sized"]
 pub trait Sized {}
 
+#[lang = "copy"]
 pub trait Copy {}
-
 
 #[lang = "clone"]
 pub trait Clone {
