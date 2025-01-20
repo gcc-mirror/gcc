@@ -90,6 +90,12 @@
 			     (V8HI "V4SI") (V16HI "V8SI")
 			     (V16QI "V8HI") (V32QI "V16HI")])
 
+;; Lower-case version.
+(define_mode_attr wvec_half [(V2DI "v1ti") (V4DI "v2ti")
+			     (V4SI "v2di") (V8SI "v4di")
+			     (V8HI "v4si") (V16HI "v8si")
+			     (V16QI "v8hi") (V32QI "v16hi")])
+
 ;; Integer vector modes with the same length and unit size as a mode.
 (define_mode_attr VIMODE [(V2DI "V2DI") (V4SI "V4SI")
 			  (V8HI "V8HI") (V16QI "V16QI")
@@ -783,6 +789,29 @@
 					      operands[2], operands[3],
 					      op4);
   emit_insn (insn);
+  DONE;
+})
+
+(define_expand "<su>dot_prod<wvec_half><mode>"
+  [(match_operand:<WVEC_HALF> 0 "register_operand" "=f,f")
+   (match_operand:IVEC	      1 "register_operand" " f,f")
+   (match_operand:IVEC	      2 "register_operand" " f,f")
+   (match_operand:<WVEC_HALF> 3 "reg_or_0_operand" " 0,YG")
+   (any_extend (const_int 0))]
+  ""
+{
+  auto [op0, op1, op2, op3] = operands;
+
+  if (op3 == CONST0_RTX (<WVEC_HALF>mode))
+    emit_insn (
+      gen_<simd_isa>_<x>vmulwev_<simdfmt_w>_<simdfmt><u> (op0, op1, op2));
+  else
+    emit_insn (
+      gen_<simd_isa>_<x>vmaddwev_<simdfmt_w>_<simdfmt><u> (op0, op3, op1,
+							   op2));
+
+  emit_insn (
+    gen_<simd_isa>_<x>vmaddwod_<simdfmt_w>_<simdfmt><u> (op0, op0, op1, op2));
   DONE;
 })
 

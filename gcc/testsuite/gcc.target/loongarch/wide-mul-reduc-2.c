@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlasx" } */
+/* { dg-options "-O2 -mlasx -fdump-tree-optimized" } */
 /* { dg-final { scan-assembler "xvmaddw(ev|od)\\.d\\.w" } } */
+/* { dg-final { scan-tree-dump "DOT_PROD_EXPR" "optimized" } } */
 
 typedef __INT32_TYPE__ i32;
 typedef __INT64_TYPE__ i64;
