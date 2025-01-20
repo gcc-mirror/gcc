@@ -5280,6 +5280,12 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	  SUBST (XEXP (x, 0), XEXP (x, 1));
 	  SUBST (XEXP (x, 1), tem);
 	}
+      /* Many targets have a `(and (not X) Y)` and/or `(ior (not X) Y)` instructions.
+	 Split at that insns.  However if this is
+	 the SET_SRC, we likely do not have such an instruction and it's
+	 worthless to try this split.  */
+      if (!set_src && GET_CODE (XEXP (x, 0)) == NOT)
+	return loc;
       break;
 
     case PLUS:
