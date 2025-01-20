@@ -5987,6 +5987,21 @@ start_decl (const cp_declarator *declarator,
       return error_mark_node;
     }
 
+  if (flag_contracts_nonattr
+      && TREE_CODE (decl) == FUNCTION_DECL
+      && !processing_template_decl
+      && DECL_RESULT (decl)
+      && is_auto (TREE_TYPE (DECL_RESULT (decl))))
+    for (tree contract = DECL_CONTRACTS (decl); contract;
+	 contract = CONTRACT_CHAIN (contract))
+      if (POSTCONDITION_P (CONTRACT_STATEMENT (contract))
+	  && POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (contract)))
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "postconditions with deduced result name types must only"
+		    " appear on function definitions");
+	  return error_mark_node;
+	}
   /* Save the DECL_INITIAL value in case it gets clobbered to assist
      with attribute validation.  */
   initial = DECL_INITIAL (decl);
