@@ -1195,7 +1195,8 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	      break;
 
 	    case COMPOUND_EXPR:
-	      if (TREE_CODE (TREE_OPERAND (incr, 0)) != SAVE_EXPR
+	      if ((TREE_CODE (TREE_OPERAND (incr, 0)) != SAVE_EXPR
+		   && TREE_CODE (TREE_OPERAND (incr, 0)) != TARGET_EXPR)
 		  || TREE_CODE (TREE_OPERAND (incr, 1)) != MODIFY_EXPR)
 		break;
 	      incr = TREE_OPERAND (incr, 1);
