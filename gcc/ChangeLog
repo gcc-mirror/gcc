@@ -1,3 +1,21 @@
+2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal): Reorder ISA attribute
+	by ascending alternative index.
+
+2025-01-19  Mark Wielaard  <mark@klomp.org>
+
+	* config/sparc/sparc.opt.urls: Regenerated.
+
+2025-01-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (Type compatibility): Move modula2.org link
+	to https.
+
+2025-01-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (OpenMP): Adjust link to specifications.
+
 2025-01-18  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116308

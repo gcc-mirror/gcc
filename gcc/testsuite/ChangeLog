@@ -1,3 +1,15 @@
+2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118067
+	* gcc.target/i386/pr118067.c (dg-compile): Use target int128.
+	* gcc.target/i386/pr118067-2.c (dg-compile): Ditto.
+	(dg-options): Use -mtune= instead of deprecated -mcpu= option.
+
+2025-01-19  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/torture/pr117546.c: Require effective target int32.
+	(main): Add return statement.
+
 2025-01-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/asm3.d: Adjust test.
