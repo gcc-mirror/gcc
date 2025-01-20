@@ -1,3 +1,21 @@
+2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal): Reorder ISA attribute
+	by ascending alternative index.
+
+2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-12-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/118067
+	* config/i386/i386.md (*movdi_internal):
+	Disable alternatives from/to mask registers without AVX512BW.
+	(*movsi_internal): Ditto.
+
 2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
