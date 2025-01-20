@@ -140,28 +140,30 @@ begin
       end if;
 
       for J in Main_Unit .. Lib.Last_Unit loop
-         declare
-            Path : File_Name_Type :=
-              Fmap.Mapped_Path_Name (Lib.Unit_File_Name (J));
+         --  We skip library units that fall under one of the following cases:
+         --  - Internal library units.
+         --  - Units that were synthesized for child subprograms without spec
+         --    files.
+         --  - Dummy entries that Add_Preprocessing_Dependency puts in
+         --    Lib.Units.
+         --  Those cases correspond to the conjuncts in the condition below.
+         if not Lib.Is_Internal_Unit (J)
+           and then Comes_From_Source (Lib.Cunit (J))
+           and then Lib.Unit_Name (J) /= No_Unit_Name
+         then
+            declare
+               Path : File_Name_Type :=
+                 Fmap.Mapped_Path_Name (Lib.Unit_File_Name (J));
 
-            Unit_Name : constant Unit_Name_Type :=
-              (if J = Main_Unit then Main_Unit_Name else Lib.Unit_Name (J));
+               Unit_Name : constant Unit_Name_Type :=
+                 (if J = Main_Unit then Main_Unit_Name else Lib.Unit_Name (J));
 
-            Default_File_Name : constant String :=
-              Fname.UF.Get_Default_File_Name (Unit_Name);
+               Default_File_Name : constant String :=
+                 Fname.UF.Get_Default_File_Name (Unit_Name);
 
-            File_Copy_Path : constant String :=
-              Src_Dir_Path & Directory_Separator & Default_File_Name;
-
-            --  We may have synthesized units for child subprograms without
-            --  spec files. We need to filter out those units because we would
-            --  create bogus spec files that break compilation if we didn't.
-            Is_Synthetic_Subprogram_Spec : constant Boolean :=
-              not Comes_From_Source (Lib.Cunit (J));
-         begin
-            if not Lib.Is_Internal_Unit (J)
-              and then not Is_Synthetic_Subprogram_Spec
-            then
+               File_Copy_Path : constant String :=
+                 Src_Dir_Path & Directory_Separator & Default_File_Name;
+            begin
                --  Mapped_Path_Name might have returned No_File. This has been
                --  observed for files with a Source_File_Name pragma.
                if Path = No_File then
@@ -178,8 +180,8 @@ begin
 
                   pragma Assert (Success);
                end;
-            end if;
-         end;
+            end;
+         end if;
       end loop;
    end Create_Semantic_Closure_Project;
 
