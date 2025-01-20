@@ -3164,3 +3164,8 @@ B_DEF      (s390_vcrnfs,                 vcrnfs_v8hi,       0,                  
 
 B_DEF      (s390_vcfn,                   vcfn_v8hi,         0,                  B_NNPA,             O2_U4,              BT_FN_UV8HI_UV8HI_UINT)
 B_DEF      (s390_vcnf,                   vcnf_v8hi,         0,                  B_NNPA,             O2_U4,              BT_FN_UV8HI_UV8HI_UINT)
+
+/* arch 15 builtins */
+
+B_DEF      (s390_bdepg,                 bdepg,              0,                  B_ARCH15,           0,                  BT_FN_ULONG_ULONG_ULONG)
+B_DEF      (s390_bextg,                 bextg,              0,                  B_ARCH15,           0,                  BT_FN_ULONG_ULONG_ULONG)
