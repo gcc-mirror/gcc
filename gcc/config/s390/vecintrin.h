@@ -115,10 +115,6 @@ __lcbb(const void *ptr, int bndry)
 #define vec_round(X)  __builtin_s390_vfi((X), 4, 4)
 #define vec_doublee(X) __builtin_s390_vflls((X))
 #define vec_floate(X) __builtin_s390_vflrd((X), 0, 0)
-#define vec_load_len_r(X,L)				\
-  (__vector unsigned char)__builtin_s390_vlrlr((L),(X))
-#define vec_store_len_r(X,Y,L) \
-  __builtin_s390_vstrlr((__vector signed char)(X),(L),(Y))
 
 #define vec_all_nan(a)						\
   __extension__ ({						\
@@ -265,6 +261,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_ld2f __builtin_s390_vec_ld2f
 #define vec_load_bndry __builtin_s390_vec_load_bndry
 #define vec_load_len __builtin_s390_vec_load_len
+#define vec_load_len_r __builtin_s390_vec_load_len_r
 #define vec_load_pair __builtin_s390_vec_load_pair
 #define vec_madd __builtin_s390_vec_madd
 #define vec_max __builtin_s390_vec_max
@@ -322,6 +319,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_srl __builtin_s390_vec_srl
 #define vec_st2f __builtin_s390_vec_st2f
 #define vec_store_len __builtin_s390_vec_store_len
+#define vec_store_len_r __builtin_s390_vec_store_len_r
 #define vec_sub_u128 __builtin_s390_vec_sub_u128
 #define vec_subc __builtin_s390_vec_subc
 #define vec_subc_u128 __builtin_s390_vec_subc_u128

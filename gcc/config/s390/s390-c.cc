@@ -706,6 +706,7 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 	case S390_OVERLOADED_BUILTIN_s390_vec_sel:
 	case S390_OVERLOADED_BUILTIN_s390_vec_insert:
 	case S390_OVERLOADED_BUILTIN_s390_vec_load_len:
+	case S390_OVERLOADED_BUILTIN_s390_vec_load_len_r:
 	  /* Swap the first to arguments. It is better to do it here
 	     instead of the header file to avoid operand checking
 	     throwing error messages for a weird operand index.  */
@@ -718,6 +719,7 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 	    }
 	  break;
 	case S390_OVERLOADED_BUILTIN_s390_vec_store_len:
+	case S390_OVERLOADED_BUILTIN_s390_vec_store_len_r:
 	  if (dest_arg_index == 1 || dest_arg_index == 2)
 	    {
 	      folded_args->quick_push (fully_fold_convert (TREE_VALUE (arg_chain),
