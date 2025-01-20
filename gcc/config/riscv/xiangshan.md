@@ -98,6 +98,18 @@
        (eq_attr "type" "nop,const,branch,arith,shift,slt,multi,logical,move,bitmanip,unknown"))
   "xs_alu_rs")
 
+;; Someone familiar with the xiangshan uarch needs to put
+;; these into the right reservations.  This is just a placeholder
+;; for everything I found that had no mapping to a reservation.
+;;
+;; Note that even if the processor does not implementat a particular
+;; instruction it should still have suitable reservations, even if
+;; they are just dummies like this one.
+(define_insn_reservation "xiangshan_alu_unknown" 1
+  (and (eq_attr "tune" "xiangshan")
+       (eq_attr "type" "zicond,min,max,minu,maxu,clz,ctz,cpop,ghost,rotate,clmul,condmove,crypto,mvpair,rdvlenb,rdvl,wrvxrm,wrfrm,rdfrm,vsetvl,vsetvl_pre,vlde,vste,vldm,vstm,vlds,vsts,vldux,vldox,vstux,vstox,vldff,vldr,vstr,vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,vimul,vidiv,viwmul,vimuladd,sf_vqmacc,viwmuladd,vimerge,vimov,vsalu,vaalu,vsmul,vsshift,vnclip,sf_vfnrclip,vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,vgather,vcompress,vmov,vector,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vcpop,vrol,vror,vwsll,vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16"))
+  "xs_alu_rs")
+
 ;; ----------------------------------------------------
 ;; Float
 ;; ----------------------------------------------------
