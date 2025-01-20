@@ -21,6 +21,7 @@
 
 #include "rust-ast-full.h"
 #include "rust-default-resolver.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -55,6 +56,7 @@ public:
   void visit (AST::StructStruct &) override;
   void visit (AST::GenericArgs &) override;
   void visit (AST::GenericArg &);
+  void visit (AST::ClosureExprInner &) override;
 
 private:
   /* Setup Rust's builtin types (u8, i32, !...) in the resolver */

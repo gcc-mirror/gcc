@@ -344,6 +344,8 @@ public:
 
   void insert_auto_trait (HIR::Trait *trait);
   std::vector<HIR::Trait *> &get_auto_traits ();
+  void add_capture (NodeId closure, NodeId definition);
+  tl::optional<std::vector<NodeId>> lookup_captures (NodeId closure);
 
 private:
   Mappings ();
@@ -434,6 +436,9 @@ private:
 
   // AST mappings
   std::map<NodeId, AST::Item *> ast_item_mappings;
+
+  // Closure AST NodeId -> vector of Definition node ids
+  std::unordered_map<NodeId, std::vector<NodeId>> captures;
 };
 
 } // namespace Analysis

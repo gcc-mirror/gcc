@@ -1321,5 +1321,25 @@ Mappings::get_auto_traits ()
   return auto_traits;
 }
 
+void
+Mappings::add_capture (NodeId closure, NodeId definition)
+{
+  auto cap = captures.find (closure);
+  if (cap == captures.end ())
+    captures[closure] = {definition};
+  else
+    cap->second.push_back (definition);
+}
+
+tl::optional<std::vector<NodeId>>
+Mappings::lookup_captures (NodeId closure)
+{
+  auto cap = captures.find (closure);
+  if (cap == captures.end ())
+    return tl::nullopt;
+  else
+    return cap->second;
+}
+
 } // namespace Analysis
 } // namespace Rust
