@@ -1191,10 +1191,29 @@
   "vlc<bhfgq>\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
-; vlpb, vlph, vlpf, vlpg
-(define_insn "abs<mode>2"
-  [(set (match_operand:VI         0 "register_operand" "=v")
-	(abs:VI (match_operand:VI 1 "register_operand"  "v")))]
+(define_expand "abs<mode>2"
+  [(set (match_operand:VIT          0 "register_operand" "=v")
+	(abs:VIT (match_operand:VIT 1 "register_operand"  "v")))]
+  "TARGET_VX"
+{
+  // Emulate via vec_sel (op1, -op1, op1 < 0)
+  if ((<MODE>mode == V1TImode || <MODE>mode == TImode) && !TARGET_VXE3)
+    {
+      rtx zero = gen_reg_rtx (<MODE>mode);
+      rtx neg_op1 = gen_reg_rtx (<MODE>mode);
+      rtx lt = gen_reg_rtx (<MODE>mode);
+      emit_move_insn (zero, GEN_INT (0));
+      emit_move_insn (neg_op1, gen_rtx_MINUS (<MODE>mode, zero, operands[1]));
+      s390_expand_vec_compare (lt, LT, operands[1], zero);
+      emit_insn (gen_vec_sel0<mode> (operands[0], operands[1], neg_op1, lt, GEN_INT (0)));
+      DONE;
+    }
+})
+
+; vlpb, vlph, vlpf, vlpg, vlpq
+(define_insn "*abs<mode>2"
+  [(set (match_operand:VIT_VXE3               0 "register_operand" "=v")
+	(abs:VIT_VXE3 (match_operand:VIT_VXE3 1 "register_operand"  "v")))]
   "TARGET_VX"
   "vlp<bhfgq>\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
@@ -2430,7 +2449,7 @@
 })
 
 ; op0 = op3 == 0 ? op1 : op2
-(define_insn "*vec_sel0<mode>"
+(define_insn "vec_sel0<mode>"
   [(set (match_operand:VT 0 "register_operand" "=v")
 	(if_then_else:VT
 	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "v")

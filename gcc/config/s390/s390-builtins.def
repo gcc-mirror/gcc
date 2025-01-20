@@ -1820,6 +1820,7 @@ OB_DEF_VAR (s390_vec_abs_s8,            s390_vlpb,          0,                  
 OB_DEF_VAR (s390_vec_abs_s16,           s390_vlph,          0,                  0,                  BT_OV_V8HI_V8HI)
 OB_DEF_VAR (s390_vec_abs_s32,           s390_vlpf,          0,                  0,                  BT_OV_V4SI_V4SI)
 OB_DEF_VAR (s390_vec_abs_s64,           s390_vlpg,          0,                  0,                  BT_OV_V2DI_V2DI)
+OB_DEF_VAR (s390_vec_abs_s128,          s390_vlpq,          0,                  0,                  BT_OV_V1TI_V1TI)    /* NOGEN */
 OB_DEF_VAR (s390_vec_abs_flt,           s390_vflpsb,        B_VXE,              0,                  BT_OV_V4SF_V4SF)
 OB_DEF_VAR (s390_vec_abs_dbl,           s390_vflpdb,        0,                  0,                  BT_OV_V2DF_V2DF)
 
@@ -1827,6 +1828,7 @@ B_DEF      (s390_vlpb,                  absv16qi2,          0,                  
 B_DEF      (s390_vlph,                  absv8hi2,           0,                  B_VX,               0,                  BT_FN_V8HI_V8HI)
 B_DEF      (s390_vlpf,                  absv4si2,           0,                  B_VX,               0,                  BT_FN_V4SI_V4SI)
 B_DEF      (s390_vlpg,                  absv2di2,           0,                  B_VX,               0,                  BT_FN_V2DI_V2DI)
+B_DEF      (s390_vlpq,                  absti2,             0,                  B_VX,               0,                  BT_FN_INT128_INT128)
 B_DEF      (s390_vflpsb,                absv4sf2,           0,                  B_VXE,              0,                  BT_FN_V4SF_V4SF)
 B_DEF      (s390_vflpdb,                absv2df2,           0,                  B_VX,               0,                  BT_FN_V2DF_V2DF)
 
