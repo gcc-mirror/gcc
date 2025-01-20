@@ -633,6 +633,8 @@ vec_info::move_dr (stmt_vec_info new_stmt_info, stmt_vec_info old_stmt_info)
     = STMT_VINFO_GATHER_SCATTER_P (old_stmt_info);
   STMT_VINFO_STRIDED_P (new_stmt_info)
     = STMT_VINFO_STRIDED_P (old_stmt_info);
+  STMT_VINFO_SIMD_LANE_ACCESS_P (new_stmt_info)
+    = STMT_VINFO_SIMD_LANE_ACCESS_P (old_stmt_info);
 }
 
 /* Permanently remove the statement described by STMT_INFO from the
