@@ -1439,11 +1439,17 @@ package body Osint is
    ---------------------
 
    function Get_Current_Dir return String is
-      Current_Dir : String (1 .. Max_Path + 1);
-      Last        : Natural;
+      Path_Len : Natural := Max_Path;
+      Buffer   : String (1 .. 1 + Max_Path + 1);
+
    begin
-      Get_Current_Dir (Current_Dir'Address, Last'Address);
-      return Current_Dir (1 .. Last);
+      Get_Current_Dir (Buffer'Address, Path_Len'Address);
+
+      if Path_Len = 0 then
+         raise Program_Error;
+      end if;
+
+      return Buffer (1 .. Path_Len);
    end Get_Current_Dir;
 
    -------------------
@@ -2800,6 +2806,14 @@ package body Osint is
       for I in 1 .. Depth loop
          Append (Rel_Path, ".." & System.OS_Lib.Directory_Separator);
       end loop;
+
+      --  Avoid starting the relative path with a directory separator
+
+      if Last < Norm_Path'Length
+        and then Is_Directory_Separator (Norm_Path (Norm_Path'First + Last))
+      then
+         Last := Last + 1;
+      end if;
 
       --  Add the rest of the path from the common point
 

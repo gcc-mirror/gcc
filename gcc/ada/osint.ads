@@ -236,6 +236,11 @@ package Osint is
    function Relative_Path (Path : String; Ref : String) return String;
    --  Given an absolute path Path calculate its relative path from a reference
    --  directory Ref.
+   --
+   --  If the paths are the same it will return ".".
+   --
+   --  If the paths are on different drives on Windows based systems then it
+   --  will return the normalized version of Path.
 
    function Relocate_Path
      (Prefix : String;

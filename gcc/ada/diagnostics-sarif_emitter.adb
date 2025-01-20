@@ -66,7 +66,7 @@ package body Diagnostics.SARIF_Emitter is
    N_RUNS                  : constant String := "runs";
    N_SCHEMA                : constant String := "$schema";
    N_START_COLUMN          : constant String := "startColumn";
-   N_START_LINE            : constant String := "strartLine";
+   N_START_LINE            : constant String := "startLine";
    N_TEXT                  : constant String := "text";
    N_TOOL                  : constant String := "tool";
    N_URI                   : constant String := "uri";
@@ -687,6 +687,9 @@ package body Diagnostics.SARIF_Emitter is
       function Compose_Command_Line return String is
          Buffer : Bounded_String;
       begin
+         Find_Program_Name;
+         Append (Buffer, Name_Buffer (1 .. Name_Len));
+         Append (Buffer, ' ');
          Append (Buffer, Get_First_Main_File_Name);
          for I in 1 .. Compilation_Switches_Last loop
             declare
@@ -718,7 +721,7 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print executionSuccessful
 
-      Write_Boolean_Attribute (N_EXECUTION_SUCCESSFUL, Compilation_Errors);
+      Write_Boolean_Attribute (N_EXECUTION_SUCCESSFUL, not Compilation_Errors);
 
       End_Block;
       NL_And_Indent;
