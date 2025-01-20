@@ -2280,3 +2280,21 @@
   "TARGET_VXE3"
   "vblend<bhfgq>\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
+
+; vgemb
+(define_insn "vgemv16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v")]
+		      UNSPEC_VEC_VGEM))]
+  "TARGET_VXE3"
+  "vgemb\t%v0,%v1"
+  [(set_attr "op_type" "VRR")])
+
+; vgemh, vgemf, vgemg, vgemq
+(define_insn "vgem<mode>"
+  [(set (match_operand:VI_HW_HSDT 0 "register_operand" "=v")
+	(unspec:VI_HW_HSDT [(match_operand:V16QI 1 "register_operand" "v")]
+			   UNSPEC_VEC_VGEM))]
+  "TARGET_VXE3"
+  "vgem<bhfgq>\t%v0,%v1"
+  [(set_attr "op_type" "VRR")])

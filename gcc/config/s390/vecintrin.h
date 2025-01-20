@@ -170,6 +170,12 @@ __lcbb(const void *ptr, int bndry)
 #define vec_convert_to_fp16 __builtin_s390_vcfn
 #define vec_convert_from_fp16 __builtin_s390_vcnf
 
+#define vec_gen_element_masks_8 __builtin_s390_vgemb
+#define vec_gen_element_masks_16 __builtin_s390_vgemh
+#define vec_gen_element_masks_32 __builtin_s390_vgemf
+#define vec_gen_element_masks_64 __builtin_s390_vgemg
+#define vec_gen_element_masks_128 __builtin_s390_vec_gen_element_masks_128
+
 #define vec_abs __builtin_s390_vec_abs
 #define vec_add_u128 __builtin_s390_vec_add_u128
 #define vec_addc __builtin_s390_vec_addc

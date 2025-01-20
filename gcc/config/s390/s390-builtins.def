@@ -3213,3 +3213,11 @@ OB_DEF_VAR (s390_vec_evaluate_b128,     s390_veval,         0,                  
 OB_DEF_VAR (s390_vec_evaluate_u128,     s390_veval,         0,                  O4_U8,              BT_OV_UV1TI_UV1TI_UV1TI_UV1TI_INT)        /* veval */
 
 B_DEF      (s390_veval,                 vevalv16qi,         0,                  B_VXE3,             O4_U8,              BT_FN_UV16QI_UV16QI_UV16QI_UV16QI_INT)
+
+B_DEF      (s390_vec_gen_element_masks_128,vgemti,          0,                  B_VXE3,             0,                  BT_FN_UV1TI_UV16QI)
+
+B_DEF      (s390_vgemb,                 vgemv16qi,          0,                  B_VXE3,             0,                  BT_FN_UV16QI_UV8HI)
+B_DEF      (s390_vgemh,                 vgemv8hi,           0,                  B_VXE3,             0,                  BT_FN_UV8HI_UV16QI)
+B_DEF      (s390_vgemf,                 vgemv4si,           0,                  B_VXE3,             0,                  BT_FN_UV4SI_UV16QI)
+B_DEF      (s390_vgemg,                 vgemv2di,           0,                  B_VXE3,             0,                  BT_FN_UV2DI_UV16QI)
+B_DEF      (s390_vgemq,                 vgemti,             0,                  B_VXE3,             0,                  BT_FN_UINT128_UV16QI)
