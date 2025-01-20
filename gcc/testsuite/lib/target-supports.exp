@@ -12959,6 +12959,22 @@ proc check_effective_target_s390_vxe2 { } {
     } "-march=arch13 -mzarch" ]
 }
 
+# Same as above but for the arch15 vector enhancement facility. Test
+# is performed with the vector divide instruction.
+proc check_effective_target_s390_vxe3 { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_vxe3 {
+	int main (void)
+	{
+	    asm ("vd %%v24, %%v26, %%v28, 2, 0" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    } "-march=arch15 -mzarch" ]
+}
+
 # Same as above but for the arch14 NNPA facility.
 proc check_effective_target_s390_nnpa { } {
     if ![istarget s390*-*-*] then {

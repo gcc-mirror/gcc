@@ -300,6 +300,8 @@
 #define B_VXE2  (1 << 4)  /* Builtins requiring the z15 vector extensions.  */
 #define B_DEP   (1 << 5)  /* Builtin has been deprecated and a warning should be issued.  */
 #define B_NNPA  (1 << 6)  /* Builtins requiring the NNPA Facility.  */
+#define B_VXE3  (1 << 7)  /* Builtins requiring the arch15 vector extensions.  */
+#define B_ARCH15 (1 << 8) /* Builtins requiring arch15.  */
 
 /* B_DEF defines a standard (not overloaded) builtin
    B_DEF (<builtin name>, <RTL expander name>, <function attributes>, <builtin flags>, <operand flags, see above>, <fntype>)

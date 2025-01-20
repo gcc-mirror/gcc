@@ -958,6 +958,12 @@ s390_resolve_overloaded_builtin (location_t loc, tree ob_fndecl,
       return error_mark_node;
     }
 
+  if (!TARGET_VXE3 && (ob_flags & B_VXE3))
+    {
+      error_at (loc, "%qF requires arch15 or higher", ob_fndecl);
+      return error_mark_node;
+    }
+
   ob_fcode -= S390_BUILTIN_MAX;
 
   for (b_arg_chain = TYPE_ARG_TYPES (TREE_TYPE (ob_fndecl));
@@ -1041,6 +1047,14 @@ s390_resolve_overloaded_builtin (location_t loc, tree ob_fndecl,
       && bflags_overloaded_builtin_var[last_match_index] & B_VXE2)
     {
       error_at (loc, "%qs matching variant requires z15 or higher",
+		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
+      return error_mark_node;
+    }
+
+  if (!TARGET_VXE3
+      && bflags_overloaded_builtin_var[last_match_index] & B_VXE3)
+    {
+      error_at (loc, "%qs matching variant requires arch15 or higher",
 		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
       return error_mark_node;
     }
