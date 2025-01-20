@@ -46,6 +46,7 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"shr_assign", Kind::SHR_ASSIGN},
   {"deref", Kind::DEREF},
   {"deref_mut", Kind::DEREF_MUT},
+  {"receiver", Kind::RECEIVER},
   {"index", Kind::INDEX},
   {"index_mut", Kind::INDEX_MUT},
   {"RangeFull", Kind::RANGE_FULL},

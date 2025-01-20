@@ -61,6 +61,7 @@ public:
 
     DEREF,
     DEREF_MUT,
+    RECEIVER,
 
     // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/index.rs
     INDEX,
