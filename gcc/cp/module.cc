@@ -8650,9 +8650,18 @@ trees_in::decl_value ()
 	  if (stub_decl)
 	    TREE_TYPE (stub_decl) = type;
 
+	  tree etype = TREE_TYPE (existing);
+
 	  /* Handle separate declarations with different attributes.  */
-	  tree &eattr = TYPE_ATTRIBUTES (TREE_TYPE (existing));
+	  tree &eattr = TYPE_ATTRIBUTES (etype);
 	  eattr = merge_attributes (eattr, TYPE_ATTRIBUTES (type));
+
+	  /* When merging a partial specialisation, the existing decl may have
+	     had its TYPE_CANONICAL adjusted.  If so we should use structural
+	     equality to ensure is_matching_decl doesn't get confused.  */
+	  if ((spec_flags & 2)
+	      && TYPE_CANONICAL (type) != TYPE_CANONICAL (etype))
+	    SET_TYPE_STRUCTURAL_EQUALITY (type);
 	}
 
       if (inner_tag)
