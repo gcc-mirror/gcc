@@ -257,6 +257,9 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe/*.{c,S}]] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe2/*.{c,S}]] \
 	"" "-O3 -march=arch13 -mzarch"
 
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe3/*.{c,S}]] \
+	"" "-O3 -march=arch15 -mzarch"
+
 # Some md tests require libatomic
 atomic_init
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S}]] \
