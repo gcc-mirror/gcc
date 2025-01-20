@@ -1629,9 +1629,9 @@ Attribute Valid_Value
 .. index:: Valid_Value
 
 The ``'Valid_Value`` attribute is defined for enumeration types other than
-those in package Standard. This attribute is a function that takes
-a String, and returns Boolean. ``T'Valid_Value (S)`` returns True
-if and only if ``T'Value (S)`` would not raise Constraint_Error.
+those in package Standard or types derived from those types. This attribute is
+a function that takes a String, and returns Boolean. ``T'Valid_Value (S)``
+returns True if and only if ``T'Value (S)`` would not raise Constraint_Error.
 
 Attribute Valid_Scalars
 =======================
