@@ -3194,3 +3194,22 @@ B_DEF      (s390_vblendh,               vblendv8hi,         0,                  
 B_DEF      (s390_vblendf,               vblendv4si,         0,                  B_VXE3,             0,                  BT_FN_UV4SI_UV4SI_UV4SI_V4SI)
 B_DEF      (s390_vblendg,               vblendv2di,         0,                  B_VXE3,             0,                  BT_FN_UV2DI_UV2DI_UV2DI_V2DI)
 B_DEF      (s390_vblendq,               vblendti,           0,                  B_VXE3,             0,                  BT_FN_UINT128_UINT128_UINT128_INT128)
+
+OB_DEF     (s390_vec_evaluate,          s390_vec_evaluate_s8,s390_vec_evaluate_u128,B_VXE3,         BT_FN_OV4SI_OV4SI_OV4SI_OV4SI_INT)
+OB_DEF_VAR (s390_vec_evaluate_s8,       s390_veval,         0,                  O4_U8,              BT_OV_V16QI_V16QI_V16QI_V16QI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_b8,       s390_veval,         0,                  O4_U8,              BT_OV_BV16QI_BV16QI_BV16QI_BV16QI_INT)    /* veval */
+OB_DEF_VAR (s390_vec_evaluate_u8,       s390_veval,         0,                  O4_U8,              BT_OV_UV16QI_UV16QI_UV16QI_UV16QI_INT)    /* veval */
+OB_DEF_VAR (s390_vec_evaluate_s16,      s390_veval,         0,                  O4_U8,              BT_OV_V8HI_V8HI_V8HI_V8HI_INT)            /* veval */
+OB_DEF_VAR (s390_vec_evaluate_b16,      s390_veval,         0,                  O4_U8,              BT_OV_BV8HI_BV8HI_BV8HI_BV8HI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_u16,      s390_veval,         0,                  O4_U8,              BT_OV_UV8HI_UV8HI_UV8HI_UV8HI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_s32,      s390_veval,         0,                  O4_U8,              BT_OV_V4SI_V4SI_V4SI_V4SI_INT)            /* veval */
+OB_DEF_VAR (s390_vec_evaluate_b32,      s390_veval,         0,                  O4_U8,              BT_OV_BV4SI_BV4SI_BV4SI_BV4SI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_u32,      s390_veval,         0,                  O4_U8,              BT_OV_UV4SI_UV4SI_UV4SI_UV4SI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_s64,      s390_veval,         0,                  O4_U8,              BT_OV_V2DI_V2DI_V2DI_V2DI_INT)            /* veval */
+OB_DEF_VAR (s390_vec_evaluate_b64,      s390_veval,         0,                  O4_U8,              BT_OV_BV2DI_BV2DI_BV2DI_BV2DI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_u64,      s390_veval,         0,                  O4_U8,              BT_OV_UV2DI_UV2DI_UV2DI_UV2DI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_s128,     s390_veval,         0,                  O4_U8,              BT_OV_V1TI_V1TI_V1TI_V1TI_INT)            /* veval */
+OB_DEF_VAR (s390_vec_evaluate_b128,     s390_veval,         0,                  O4_U8,              BT_OV_BV1TI_BV1TI_BV1TI_BV1TI_INT)        /* veval */
+OB_DEF_VAR (s390_vec_evaluate_u128,     s390_veval,         0,                  O4_U8,              BT_OV_UV1TI_UV1TI_UV1TI_UV1TI_INT)        /* veval */
+
+B_DEF      (s390_veval,                 vevalv16qi,         0,                  B_VXE3,             O4_U8,              BT_FN_UV16QI_UV16QI_UV16QI_UV16QI_INT)

@@ -234,6 +234,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_ctul __builtin_s390_vec_ctul
 #define vec_double __builtin_s390_vec_double
 #define vec_eqv __builtin_s390_vec_eqv
+#define vec_evaluate __builtin_s390_vec_evaluate
 #define vec_extend_s64 __builtin_s390_vec_extend_s64
 #define vec_extract __builtin_s390_vec_extract
 #define vec_find_any_eq __builtin_s390_vec_find_any_eq

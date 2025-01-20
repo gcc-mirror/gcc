@@ -3256,6 +3256,42 @@
   DONE;
 });;
 
+(define_code_iterator LOGIC_OP1 [and ior xor])
+(define_code_iterator LOGIC_OP2 [and ior xor])
+(define_code_attr logic_op [(and "&") (ior "|") (xor "^")])
+(define_code_attr logic_op_stringify [(and "and") (ior "ior") (xor "xor")])
+
+(define_insn_and_split "*veval<mode>_<LOGIC_OP1:logic_op_stringify><LOGIC_OP2:logic_op_stringify>"
+  [(set (match_operand:VIT   0 "register_operand" "=v")
+        (LOGIC_OP1:VIT
+	 (LOGIC_OP2:VIT
+	  (match_operand:VIT 1 "register_operand"  "v")
+	  (match_operand:VIT 2 "register_operand"  "v"))
+	 (match_operand:VIT  3 "register_operand"  "v")))]
+  "TARGET_VXE3"
+  "#"
+  "&& true"
+  [(set (match_dup 0)
+	(unspec:VIT [(match_dup 3)
+		     (match_dup 1)
+		     (match_dup 2)
+		     (match_dup 4)]
+		    UNSPEC_VEC_VEVAL))]
+{
+  int op = 15 <LOGIC_OP1:logic_op> (23 <LOGIC_OP2:logic_op> 113);
+  operands[4] = GEN_INT (op);
+})
+
+(define_insn "veval<mode>"
+  [(set (match_operand:VIT              0 "register_operand" "=v")
+	(unspec:VIT [(match_operand:VIT 1 "register_operand"  "v")
+		     (match_operand:VIT 2 "register_operand"  "v")
+		     (match_operand:VIT 3 "register_operand"  "v")
+		     (match_operand:QI  4 "const_int_operand")]
+		    UNSPEC_VEC_VEVAL))]
+  "TARGET_VXE3"
+  "veval\t%v0,%v1,%v2,%v3,%b4"
+  [(set_attr "op_type" "VRI")])
 
 ; reduc_smin
 ; reduc_smax
