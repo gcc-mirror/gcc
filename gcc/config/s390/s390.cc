@@ -7296,7 +7296,8 @@ s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
   rtx tmp_reg = gen_reg_rtx (SImode);
   bool swap_p = false;
 
-  if (GET_MODE_CLASS (GET_MODE (cmp1)) == MODE_VECTOR_INT)
+  if (GET_MODE_CLASS (GET_MODE (cmp1)) == MODE_VECTOR_INT
+      || GET_MODE (cmp1) == TImode)
     {
       switch (code)
 	{

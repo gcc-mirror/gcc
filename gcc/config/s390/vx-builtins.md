@@ -748,10 +748,10 @@
 
 ; vec_all/any int compares
 
-(define_expand "vec_all_<intcmpcc:code><VI_HW:mode>"
-  [(match_operand:SI                0 "register_operand" "")
-   (intcmpcc (match_operand:VI_HW 1 "register_operand" "")
-	     (match_operand:VI_HW 2 "register_operand" ""))]
+(define_expand "vec_all_<intcmpcc:code><VIT_HW_VXE3_T:mode>"
+  [(match_operand:SI                      0 "register_operand" "")
+   (intcmpcc (match_operand:VIT_HW_VXE3_T 1 "register_operand" "")
+	     (match_operand:VIT_HW_VXE3_T 2 "register_operand" ""))]
   "TARGET_VX"
 {
   s390_expand_vec_compare_cc (operands[0],
@@ -762,10 +762,10 @@
   DONE;
 })
 
-(define_expand "vec_any_<intcmpcc:code><VI_HW:mode>"
-  [(match_operand:SI                0 "register_operand" "")
-   (intcmpcc (match_operand:VI_HW 1 "register_operand" "")
-	     (match_operand:VI_HW 2 "register_operand" ""))]
+(define_expand "vec_any_<intcmpcc:code><VIT_HW_VXE3_T:mode>"
+  [(match_operand:SI                      0 "register_operand" "")
+   (intcmpcc (match_operand:VIT_HW_VXE3_T 1 "register_operand" "")
+	     (match_operand:VIT_HW_VXE3_T 2 "register_operand" ""))]
   "TARGET_VX"
 {
   s390_expand_vec_compare_cc (operands[0],
@@ -809,10 +809,10 @@
 
 ; Compare without generating CC
 
-(define_expand "vec_cmp<intcmp:code><VI_HW:mode>"
-  [(set (match_operand:VI_HW               0 "register_operand" "=v")
-	(intcmp:VI_HW (match_operand:VI_HW 1 "register_operand"  "v")
-		      (match_operand:VI_HW 2 "register_operand"  "v")))]
+(define_expand "vec_cmp<intcmp:code><VIT_HW_VXE3_T:mode>"
+  [(set (match_operand:VIT_HW_VXE3_T                       0 "register_operand" "=v")
+	(intcmp:VIT_HW_VXE3_T (match_operand:VIT_HW_VXE3_T 1 "register_operand"  "v")
+			      (match_operand:VIT_HW_VXE3_T 2 "register_operand"  "v")))]
   "TARGET_VX"
 {
   s390_expand_vec_compare (operands[0], <intcmp:CODE>, operands[1], operands[2]);
@@ -1979,13 +1979,13 @@
 ; All comparisons which produce a CC need fully populated (VI_HW)
 ; vector arguments.  Otherwise the any/all CCs would be just bogus.
 
-(define_insn "*vec_cmp<VICMP:insn_cmp><VI_HW:mode>_cconly"
+(define_insn "*vec_cmp<VICMP:insn_cmp><VIT_HW_VXE3_T:mode>_cconly"
   [(set (reg:VICMP CC_REGNUM)
-	(compare:VICMP (match_operand:VI_HW 0 "register_operand" "v")
-		       (match_operand:VI_HW 1 "register_operand" "v")))
-   (clobber (match_scratch:VI_HW 2 "=v"))]
+	(compare:VICMP (match_operand:VIT_HW_VXE3_T 0 "register_operand" "v")
+		       (match_operand:VIT_HW_VXE3_T 1 "register_operand" "v")))
+   (clobber (match_scratch:VIT_HW_VXE3_T 2 "=v"))]
   "TARGET_VX"
-  "vc<VICMP:insn_cmp><VI_HW:bhfgq>s\t%v2,%v0,%v1"
+  "vc<VICMP:insn_cmp><VIT_HW_VXE3_T:bhfgq>s\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
 ; FIXME: The following 2x3 definitions should be merged into 2 with
@@ -1993,68 +1993,68 @@
 ; operator (eq) depending on the mode CCVEQ (mode_iterator). Or the
 ; other way around - setting the mode depending on the code
 ; (code_iterator).
-(define_expand "vec_cmpeq<VI_HW:mode>_cc"
+(define_expand "vec_cmpeq<VIT_HW_VXE3_T:mode>_cc"
   [(parallel
     [(set (reg:CCVEQ CC_REGNUM)
-	(compare:CCVEQ (match_operand:VI_HW 1 "register_operand" "v")
-		       (match_operand:VI_HW 2 "register_operand" "v")))
-     (set (match_operand:VI_HW 0 "register_operand" "=v")
-	  (eq:VI_HW (match_dup 1) (match_dup 2)))])
+	(compare:CCVEQ (match_operand:VIT_HW_VXE3_T 1 "register_operand" "v")
+		       (match_operand:VIT_HW_VXE3_T 2 "register_operand" "v")))
+     (set (match_operand:VIT_HW_VXE3_T 0 "register_operand" "=v")
+	  (eq:VIT_HW_VXE3_T (match_dup 1) (match_dup 2)))])
    (set (match_operand:SI 3 "memory_operand" "")
 	(unspec:SI [(reg:CCVEQ CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX")
 
-(define_expand "vec_cmph<VI_HW:mode>_cc"
+(define_expand "vec_cmph<VIT_HW_VXE3_T:mode>_cc"
   [(parallel
     [(set (reg:CCVIH CC_REGNUM)
-	  (compare:CCVIH (match_operand:VI_HW 1 "register_operand" "v")
-			 (match_operand:VI_HW 2 "register_operand" "v")))
-     (set (match_operand:VI_HW 0 "register_operand" "=v")
-	  (gt:VI_HW (match_dup 1) (match_dup 2)))])
+	  (compare:CCVIH (match_operand:VIT_HW_VXE3_T 1 "register_operand" "v")
+			 (match_operand:VIT_HW_VXE3_T 2 "register_operand" "v")))
+     (set (match_operand:VIT_HW_VXE3_T 0 "register_operand" "=v")
+	  (gt:VIT_HW_VXE3_T (match_dup 1) (match_dup 2)))])
    (set (match_operand:SI 3 "memory_operand" "")
 	(unspec:SI [(reg:CCVIH CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX")
 
-(define_expand "vec_cmphl<VI_HW:mode>_cc"
+(define_expand "vec_cmphl<VIT_HW_VXE3_T:mode>_cc"
   [(parallel
     [(set (reg:CCVIHU CC_REGNUM)
-	  (compare:CCVIHU (match_operand:VI_HW 1 "register_operand" "v")
-			  (match_operand:VI_HW 2 "register_operand" "v")))
-     (set (match_operand:VI_HW 0 "register_operand" "=v")
-	  (gtu:VI_HW (match_dup 1) (match_dup 2)))])
+	  (compare:CCVIHU (match_operand:VIT_HW_VXE3_T 1 "register_operand" "v")
+			  (match_operand:VIT_HW_VXE3_T 2 "register_operand" "v")))
+     (set (match_operand:VIT_HW_VXE3_T 0 "register_operand" "=v")
+	  (gtu:VIT_HW_VXE3_T (match_dup 1) (match_dup 2)))])
    (set (match_operand:SI 3 "memory_operand" "")
 	(unspec:SI [(reg:CCVIHU CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX")
 
 
-(define_insn "*vec_cmpeq<VI_HW:mode>_cc"
+(define_insn "*vec_cmpeq<VIT_HW_VXE3_T:mode>_cc"
   [(set (reg:CCVEQ CC_REGNUM)
-	(compare:CCVEQ (match_operand:VI_HW 0 "register_operand"  "v")
-		       (match_operand:VI_HW 1 "register_operand"  "v")))
-   (set (match_operand:VI_HW                2 "register_operand" "=v")
-	(eq:VI_HW (match_dup 0) (match_dup 1)))]
+	(compare:CCVEQ (match_operand:VIT_HW_VXE3_T 0 "register_operand"  "v")
+		       (match_operand:VIT_HW_VXE3_T 1 "register_operand"  "v")))
+   (set (match_operand:VIT_HW_VXE3_T                2 "register_operand" "=v")
+	(eq:VIT_HW_VXE3_T (match_dup 0) (match_dup 1)))]
   "TARGET_VX"
-  "vceq<VI_HW:bhfgq>s\t%v2,%v0,%v1"
+  "vceq<VIT_HW_VXE3_T:bhfgq>s\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "*vec_cmph<VI_HW:mode>_cc"
+(define_insn "*vec_cmph<VIT_HW_VXE3_T:mode>_cc"
   [(set (reg:CCVIH CC_REGNUM)
-	(compare:CCVIH (match_operand:VI_HW 0 "register_operand"  "v")
-		       (match_operand:VI_HW 1 "register_operand"  "v")))
-   (set (match_operand:VI_HW               2 "register_operand" "=v")
-	(gt:VI_HW (match_dup 0) (match_dup 1)))]
+	(compare:CCVIH (match_operand:VIT_HW_VXE3_T 0 "register_operand"  "v")
+		       (match_operand:VIT_HW_VXE3_T 1 "register_operand"  "v")))
+   (set (match_operand:VIT_HW_VXE3_T                2 "register_operand" "=v")
+	(gt:VIT_HW_VXE3_T (match_dup 0) (match_dup 1)))]
   "TARGET_VX"
-  "vch<VI_HW:bhfgq>s\t%v2,%v0,%v1"
+  "vch<VIT_HW_VXE3_T:bhfgq>s\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "*vec_cmphl<VI_HW:mode>_cc"
+(define_insn "*vec_cmphl<VIT_HW_VXE3_T:mode>_cc"
   [(set (reg:CCVIHU CC_REGNUM)
-	(compare:CCVIHU (match_operand:VI_HW 0 "register_operand"  "v")
-			(match_operand:VI_HW 1 "register_operand"  "v")))
-   (set (match_operand:VI_HW                2 "register_operand" "=v")
-	(gtu:VI_HW (match_dup 0) (match_dup 1)))]
+	(compare:CCVIHU (match_operand:VIT_HW_VXE3_T 0 "register_operand"  "v")
+			(match_operand:VIT_HW_VXE3_T 1 "register_operand"  "v")))
+   (set (match_operand:VIT_HW_VXE3_T                 2 "register_operand" "=v")
+	(gtu:VIT_HW_VXE3_T (match_dup 0) (match_dup 1)))]
   "TARGET_VX"
-  "vchl<VI_HW:bhfgq>s\t%v2,%v0,%v1"
+  "vchl<VIT_HW_VXE3_T:bhfgq>s\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
 ;;

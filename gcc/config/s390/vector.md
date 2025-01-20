@@ -66,6 +66,7 @@
 
 ; All integer vector modes supported in a vector register + TImode
 (define_mode_iterator VIT [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1TI TI])
+(define_mode_iterator VIT_VXE3 [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI (V1TI "TARGET_VXE3") (TI "TARGET_VXE3")])
 (define_mode_iterator VI  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI])
 (define_mode_iterator VI_VXE3 [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI (V2DI "TARGET_VXE3")])
 (define_mode_iterator VI_QHS [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI])
@@ -237,6 +238,7 @@
 ; Comparison operators on int and fp compares which are directly
 ; supported by the HW.
 (define_code_iterator VICMP_HW_OP [eq gt gtu])
+(define_code_iterator VICMP_HW_OP2 [gt gtu])
 ; For int insn_cmp_op can be used in the insn name as well as in the asm output.
 (define_code_attr insn_cmp_op [(eq "eq") (gt "h") (gtu "hl") (ge "he")])
 
@@ -1978,8 +1980,8 @@
 (define_expand "vec_cmp<mode><tointvec>"
   [(set (match_operand:<TOINTVEC>  0 "register_operand" "")
 	(match_operator:<TOINTVEC> 1 "vcond_comparison_operator"
-	  [(match_operand:V_HW     2 "register_operand" "")
-	   (match_operand:V_HW     3 "nonmemory_operand" "")]))]
+	  [(match_operand:V_HW1    2 "register_operand" "")
+	   (match_operand:V_HW1    3 "nonmemory_operand" "")]))]
   "TARGET_VX"
 {
   s390_expand_vec_compare (operands[0], GET_CODE(operands[1]), operands[2], operands[3]);
@@ -1997,19 +1999,19 @@
   DONE;
 })
 
-(define_insn "*vec_cmp<VICMP_HW_OP:code><VI:mode><VI:mode>_nocc"
-  [(set (match_operand:VI                 2 "register_operand" "=v")
-	(VICMP_HW_OP:VI (match_operand:VI 0 "register_operand"  "v")
-			(match_operand:VI 1 "register_operand"  "v")))]
+(define_insn "*vec_cmp<VICMP_HW_OP:code><VIT_VXE3:mode><VIT_VXE3:mode>_nocc"
+  [(set (match_operand:VIT_VXE3                       2 "register_operand" "=v")
+	(VICMP_HW_OP:VIT_VXE3 (match_operand:VIT_VXE3 0 "register_operand"  "v")
+			      (match_operand:VIT_VXE3 1 "register_operand"  "v")))]
   "TARGET_VX"
-  "vc<VICMP_HW_OP:insn_cmp_op><VI:bhfgq>\t%v2,%v0,%v1"
+  "vc<VICMP_HW_OP:insn_cmp_op><VIT_VXE3:bhfgq>\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
 (define_insn_and_split "*vec_cmpeq<mode><mode>_nocc_emu"
   [(set (match_operand:VI_HW_T             0 "register_operand" "=v")
 	(eq:VI_HW_T (match_operand:VI_HW_T 1 "register_operand"  "v")
 		    (match_operand:VI_HW_T 2 "register_operand"  "v")))]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE3"
   "#"
   "&& can_create_pseudo_p ()"
   [(set (match_dup 3)
@@ -2031,7 +2033,7 @@
   [(set (match_operand:VI_HW_T             0 "register_operand" "=v")
 	(gt:VI_HW_T (match_operand:VI_HW_T 1 "register_operand"  "v")
 		    (match_operand:VI_HW_T 2 "register_operand"  "v")))]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE3"
   "#"
   "&& can_create_pseudo_p ()"
   [(set (match_dup 3)
