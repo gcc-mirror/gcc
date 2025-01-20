@@ -1929,9 +1929,12 @@ Enum(p2900_semantic) String(quick_enforce) Value(5)
 EnumValue
 Enum(p2900_semantic) String(noexcept_enforce) Value(6)
 
+EnumValue
+Enum(p2900_semantic) String(noexcept_observe) Value(7)
+
 fcontract-evaluation-semantic=
 C++ Joined RejectNegative Enum(p2900_semantic) Var(flag_contract_evaluation_semantic) Init (3)
--fcontract-evaluation-semantic=[ignore|observe|enforce|quick_enforce|noexcept_enforce]	Select the contract evaluation semantic (defaults to enforce).
+-fcontract-evaluation-semantic=[ignore|observe|enforce|quick_enforce|noexcept_enforce|noexcept_observe]	Select the contract evaluation semantic (defaults to enforce).
 
 fcontract-checks-outlined
 C++ Var(flag_contract_checks_outlined) Init(1)

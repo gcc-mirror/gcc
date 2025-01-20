@@ -2171,6 +2171,8 @@ get_evaluation_semantic(tree contract)
 	return CES_QUICK;
       case CCS_NOEXCEPT_ENFORCE:
 	return CES_NOEXCEPT_ENFORCE;
+      case CCS_NOEXCEPT_OBSERVE:
+	return CES_NOEXCEPT_OBSERVE;
     }
 }
 
@@ -2375,12 +2377,14 @@ build_contract_check (tree contract)
       finish_if_stmt_cond (cond, if_stmt);
       /* Using the P2900 names here c++2a ENFORCE=NEVER, OBSERVE=MAYBE.  */
       if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE
-	  || semantic == CCS_NOEXCEPT_ENFORCE)
+	  || semantic == CCS_NOEXCEPT_ENFORCE
+	  || semantic == CCS_NOEXCEPT_OBSERVE)
 	{
 	  tree violation = build_contract_violation (contract,
 						     /*is_const*/true);
-	  build_contract_handler_call (violation,
-				       semantic == CCS_NOEXCEPT_ENFORCE);
+	  bool noexcept_wrap = (semantic == CCS_NOEXCEPT_ENFORCE)
+	       || (semantic == CCS_NOEXCEPT_OBSERVE);
+	  build_contract_handler_call (violation, noexcept_wrap);
 	}
 
       if (semantic == CCS_QUICK)
@@ -2417,7 +2421,8 @@ build_contract_check (tree contract)
      violation object or handler.  */
   tree excp_ = NULL_TREE;
   if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE
-      || semantic ==CCS_NOEXCEPT_ENFORCE)
+      || semantic ==CCS_NOEXCEPT_ENFORCE
+      || semantic == CCS_NOEXCEPT_OBSERVE)
     {
       excp_ = build_decl (loc, VAR_DECL, NULL, boolean_type_node);
       /* compiler-generated.  */
@@ -2433,7 +2438,8 @@ build_contract_check (tree contract)
 
   tree violation = NULL_TREE;
   if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE
-      || semantic == CCS_NOEXCEPT_ENFORCE)
+      || semantic == CCS_NOEXCEPT_ENFORCE
+      || semantic == CCS_NOEXCEPT_OBSERVE)
     violation = build_contract_violation (contract, /*is_const*/false);
 
   /* Wrap the contract check in a try-catch.  */
@@ -2446,7 +2452,8 @@ build_contract_check (tree contract)
   tree handler = begin_handler ();
   finish_handler_parms (NULL_TREE, handler); /* catch (...) */
   if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE
-      || semantic == CCS_NOEXCEPT_ENFORCE)
+      || semantic == CCS_NOEXCEPT_ENFORCE
+      || semantic == CCS_NOEXCEPT_OBSERVE)
     {
       /* Update the violation object type.  */
       tree v_type = get_pseudo_contract_violation_type ();
@@ -2457,7 +2464,9 @@ build_contract_check (tree contract)
       r = cp_build_init_expr (r, build_int_cst (integer_type_node,
 					    CDM_EVAL_EXCEPTION));
       finish_expr_stmt (r);
-      build_contract_handler_call (violation, semantic == CCS_NOEXCEPT_ENFORCE);
+      bool noexcept_wrap = (semantic == CCS_NOEXCEPT_ENFORCE)
+	  || (semantic == CCS_NOEXCEPT_OBSERVE);
+      build_contract_handler_call (violation, noexcept_wrap);
       /* Note we had an exception.  */
       finish_expr_stmt (cp_build_init_expr (excp_, boolean_true_node));
     }
@@ -2476,7 +2485,8 @@ build_contract_check (tree contract)
   finish_if_stmt_cond (cond, if_not_cond);
 
   if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE
-      || semantic == CCS_NOEXCEPT_ENFORCE)
+      || semantic == CCS_NOEXCEPT_ENFORCE
+      || semantic == CCS_NOEXCEPT_OBSERVE)
     {
       tree if_not_excp = begin_if_stmt ();
       cond = build_x_unary_op (loc, TRUTH_NOT_EXPR, excp_, NULL_TREE,
