@@ -153,20 +153,33 @@ is
       --  the result, and doesn't copy the string on the stack, otherwise its
       --  use is limited when used from tasks on large strings.
 
-      Result : constant chars_ptr := Memory_Alloc (Str'Length + 1);
+      Len : Natural := 0;
+      --  Length of the longest prefix of Str that doesn't contain NUL
 
-      Result_Array : char_array  (1 .. Str'Length + 1);
-      for Result_Array'Address use To_Address (Result);
-      pragma Import (Ada, Result_Array);
-
-      Count : size_t;
-
+      Result : chars_ptr;
    begin
-      To_C
-        (Item       => Str,
-         Target     => Result_Array,
-         Count      => Count,
-         Append_Nul => True);
+      for C of Str loop
+         if C = ASCII.NUL then
+            exit;
+         end if;
+         Len := Len + 1;
+      end loop;
+
+      Result := Memory_Alloc (size_t (Len) + 1);
+
+      declare
+         Result_Array : char_array (1 .. size_t (Len) + 1)
+         with Address => To_Address (Result), Import, Convention => Ada;
+
+         Count : size_t;
+      begin
+         To_C
+           (Item       => Str (Str'First .. Str'First + Len - 1),
+            Target     => Result_Array,
+            Count      => Count,
+            Append_Nul => True);
+      end;
+
       return Result;
    end New_String;
 
