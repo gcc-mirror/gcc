@@ -4,7 +4,10 @@
 #include <exception>
 #include <cstdlib>
 
-// Test that there is an active exception when we reach the terminate handler.
+// Test that noexcept_enforce behaves like enforce in the case that
+// nothing throws. A contract failure should still terminate in those
+// cases.
+
 void my_term()
 {
   std::exit(0);
