@@ -38,6 +38,7 @@ enum contract_level
    CCS_NEVER  -> enforce
    CCS_QUICK  -> quick_enforce
    CCS_NOEXCEPT_ENFORCE -> noexcept_enforce
+   CCS_NOEXCEPT_OBSERVE -> noexcept_observe
 */
 
 enum contract_semantic
@@ -50,7 +51,8 @@ enum contract_semantic
   CCS_MAYBE = 4,
   CCS_OBSERVE = CCS_MAYBE,
   CCS_QUICK = 5,
-  CCS_NOEXCEPT_ENFORCE
+  CCS_NOEXCEPT_ENFORCE,
+  CCS_NOEXCEPT_OBSERVE
 };
 
 /* True if the contract is unchecked.  */
@@ -102,7 +104,8 @@ enum contract_evaluation_semantic {
   CES_OBSERVE = 2,
   CES_ENFORCE = 3,
   CES_QUICK = 4,
-  CES_NOEXCEPT_ENFORCE =5
+  CES_NOEXCEPT_ENFORCE = 5,
+  CES_NOEXCEPT_OBSERVE = 6
 };
 
 enum constract_detection_mode {
