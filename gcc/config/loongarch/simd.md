@@ -630,6 +630,7 @@
 ;; Operations on elements at even/odd indices.
 (define_int_iterator zero_one [0 1])
 (define_int_attr ev_od [(0 "ev") (1 "od")])
+(define_int_attr even_odd [(0 "even") (1 "odd")])
 
 ;; Integer widening add/sub/mult.
 (define_insn "simd_<optab>w_evod_<mode>_<su>"
@@ -662,6 +663,21 @@
   rtx insn = gen_simd_<optab>w_evod_<mode>_<su> (operands[0], operands[1],
 						 operands[2], op3);
   emit_insn (insn);
+  DONE;
+})
+
+(define_expand "vec_widen_<su>mult_<even_odd>_<mode>"
+  [(match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+   (match_operand:IVEC	      1 "register_operand" " f")
+   (match_operand:IVEC	      2 "register_operand" " f")
+   (any_extend (const_int 0))
+   (const_int zero_one)]
+  ""
+{
+  emit_insn (
+    gen_<simd_isa>_<x>vmulw<ev_od>_<simdfmt_w>_<simdfmt><u> (operands[0],
+							     operands[1],
+							     operands[2]));
   DONE;
 })
 
