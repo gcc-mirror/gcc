@@ -25,6 +25,9 @@
 (define_mode_iterator VT
   [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1SF
    V2SF V4SF V1DF V2DF V1TF V1TI TI])
+(define_mode_iterator VT_VXE3
+  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1SF
+   V2SF V4SF V1DF V2DF V1TF (V1TI "TARGET_VXE3") (TI "TARGET_VXE3")])
 
 ; All modes directly supported by the hardware having full vector reg size
 (define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI V1TI TI V2DF
@@ -1369,19 +1372,19 @@
 })
 
 ; Count leading zeros
-; vclzb, vclzh, vclzf, vclzg
+; vclzb, vclzh, vclzf, vclzg, vclzq
 (define_insn "clz<mode>2"
-  [(set (match_operand:V        0 "register_operand" "=v")
-	(clz:V (match_operand:V 1 "register_operand"  "v")))]
+  [(set (match_operand:VT_VXE3              0 "register_operand" "=v")
+	(clz:VT_VXE3 (match_operand:VT_VXE3 1 "register_operand"  "v")))]
   "TARGET_VX"
   "vclz<bhfgq>\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
 ; Count trailing zeros
-; vctzb, vctzh, vctzf, vctzg
+; vctzb, vctzh, vctzf, vctzg, vctzq
 (define_insn "ctz<mode>2"
-  [(set (match_operand:V        0 "register_operand" "=v")
-	(ctz:V (match_operand:V 1 "register_operand"  "v")))]
+  [(set (match_operand:VT_VXE3              0 "register_operand" "=v")
+	(ctz:VT_VXE3 (match_operand:VT_VXE3 1 "register_operand"  "v")))]
   "TARGET_VX"
   "vctz<bhfgq>\t%v0,%v1"
   [(set_attr "op_type" "VRR")])

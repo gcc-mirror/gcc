@@ -1034,6 +1034,9 @@ do {									\
 /* Specify the value which is used when clz operand is zero.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
 
+/* Specify the value which is used when ctz operand is zero.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
+
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_ALIGN_SHIFT	  SYMBOL_FLAG_MACH_DEP_SHIFT
 #define SYMBOL_FLAG_ALIGN_MASK    \
