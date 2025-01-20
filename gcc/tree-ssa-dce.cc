@@ -331,7 +331,7 @@ is_removable_allocation_p (gcall *stmt, bool non_null_check)
 	return false;
       if (TREE_CODE (a1) == INTEGER_CST
 	  && TREE_CODE (a2) == INTEGER_CST
-	  && (wi::to_widest (a1) + wi::to_widest (a2)
+	  && (wi::to_widest (a1) * wi::to_widest (a2)
 	      > tree_to_uhwi (TYPE_MAX_VALUE (ptrdiff_type_node))))
 	return false;
       return true;

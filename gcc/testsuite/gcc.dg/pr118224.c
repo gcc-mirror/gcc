@@ -27,5 +27,7 @@ main ()
 #endif
   if (__builtin_calloc ((~(__SIZE_TYPE__) 0) / 2, 3))
     __builtin_abort ();
+  if (__builtin_calloc ((~(__SIZE_TYPE__) 0) / 16, 64))
+    __builtin_abort ();
   foo (1);
 }
