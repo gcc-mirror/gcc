@@ -2786,6 +2786,33 @@ start_function_contracts (tree decl1)
   if (!handle_contracts_p (decl1))
     return;
 
+  /* Check that the user did not try to shadow a function parameter with the
+     specified postcondition result name.  */
+  if (flag_contracts_nonattr)
+    for (tree ca = DECL_CONTRACTS (decl1); ca; ca = CONTRACT_CHAIN (ca))
+      if (POSTCONDITION_P (CONTRACT_STATEMENT (ca)))
+	if (tree id = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (ca)))
+	  {
+	    if (TREE_CODE (id) == PARM_DECL)
+	      id = DECL_NAME (id);
+	    gcc_checking_assert (id && TREE_CODE (id) == IDENTIFIER_NODE);
+	    tree seen = lookup_name (id);
+	    if (seen
+		&& TREE_CODE (seen) == PARM_DECL
+		&& DECL_CONTEXT (seen)
+		&& DECL_CONTEXT (seen) == decl1)
+	      {
+		auto_diagnostic_group d;
+		error_at (EXPR_LOCATION (CONTRACT_STATEMENT (ca)),
+			  "contract postcondition result names must not shadow"
+			  " function parameters");
+		inform (DECL_SOURCE_LOCATION (seen), "parameter declared here");
+		POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (ca))
+		  = error_mark_node;
+		CONTRACT_CONDITION (CONTRACT_STATEMENT (ca)) = error_mark_node;
+	      }
+	  }
+
   /* For cdtors, we evaluate the contracts check inline.  */
   if (!outline_contracts_p (decl1))
     return;
@@ -2795,7 +2822,6 @@ start_function_contracts (tree decl1)
   /* Do we already have declarations generated ? */
   if (!DECL_PRE_FN (decl1) && !DECL_POST_FN (decl1))
     build_contract_function_decls (decl1);
-
 }
 
 /* If we have a precondition function and it's valid, call it.  */
