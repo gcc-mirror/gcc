@@ -1499,7 +1499,7 @@ public:
   void visit (PtrExp *e) final override
   {
     Type *tnext = NULL;
-    size_t offset;
+    dinteger_t offset;
     tree result;
 
     if (e->e1->op == EXP::add)
@@ -2074,7 +2074,7 @@ public:
   void visit (SymOffExp *e) final override
   {
     /* Build the address and offset of the symbol.  */
-    size_t soffset = e->isSymOffExp ()->offset;
+    dinteger_t soffset = e->isSymOffExp ()->offset;
     tree result = get_decl_tree (e->var);
     TREE_USED (result) = 1;
 
