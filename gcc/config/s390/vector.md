@@ -1145,6 +1145,42 @@
   "vml<bhfgq><w>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+; vdf, vdg, vdq
+(define_insn "div<mode>3"
+  [(set (match_operand:VI_HW_SDT                0 "register_operand" "=v")
+	(div:VI_HW_SDT (match_operand:VI_HW_SDT 1 "register_operand"  "v")
+		       (match_operand:VI_HW_SDT 2 "register_operand"  "v")))]
+  "TARGET_VXE3"
+  "vd<bhfgq>\t%v0,%v1,%v2,0"
+  [(set_attr "op_type" "VRR")])
+
+; vdlf, vdlg, vdlq
+(define_insn "udiv<mode>3"
+  [(set (match_operand:VI_HW_SDT                 0 "register_operand" "=v")
+	(udiv:VI_HW_SDT (match_operand:VI_HW_SDT 1 "register_operand"  "v")
+			(match_operand:VI_HW_SDT 2 "register_operand"  "v")))]
+  "TARGET_VXE3"
+  "vdl<bhfgq>\t%v0,%v1,%v2,0"
+  [(set_attr "op_type" "VRR")])
+
+; vrf, vrg, vrq
+(define_insn "mod<mode>3"
+  [(set (match_operand:VI_HW_SDT                0 "register_operand" "=v")
+	(mod:VI_HW_SDT (match_operand:VI_HW_SDT 1 "register_operand"  "v")
+		       (match_operand:VI_HW_SDT 2 "register_operand"  "v")))]
+  "TARGET_VXE3"
+  "vr<bhfgq>\t%v0,%v1,%v2,0"
+  [(set_attr "op_type" "VRR")])
+
+; vrlf, vrlg, vrlq
+(define_insn "umod<mode>3"
+  [(set (match_operand:VI_HW_SDT                 0 "register_operand" "=v")
+	(umod:VI_HW_SDT (match_operand:VI_HW_SDT 1 "register_operand"  "v")
+			(match_operand:VI_HW_SDT 2 "register_operand"  "v")))]
+  "TARGET_VXE3"
+  "vrl<bhfgq>\t%v0,%v1,%v2,0"
+  [(set_attr "op_type" "VRR")])
+
 ; vlcb, vlch, vlcf, vlcg
 (define_insn "neg<mode>2"
   [(set (match_operand:VI         0 "register_operand" "=v")
