@@ -1577,38 +1577,102 @@
    operands[3] = gen_reg_rtx(V16QImode);
  })
 
-; vmnb, vmnh, vmnf, vmng
-(define_insn "smin<mode>3"
-  [(set (match_operand:VI          0 "register_operand" "=v")
-	(smin:VI (match_operand:VI 1 "register_operand"  "v")
-		 (match_operand:VI 2 "register_operand"  "v")))]
+(define_expand "smin<mode>3"
+  [(set (match_operand:VIT           0 "register_operand" "=v")
+	(smin:VIT (match_operand:VIT 1 "register_operand"  "v")
+		  (match_operand:VIT 2 "register_operand"  "v")))]
+  "TARGET_VX"
+{
+  // Emulate via vec_sel (op1, op2, op2 < op1)
+  if ((<MODE>mode == V1TImode || <MODE>mode == TImode) && !TARGET_VXE3)
+    {
+      rtx lt = gen_reg_rtx (<MODE>mode);
+      s390_expand_vec_compare (lt, LT, operands[2], operands[1]);
+      emit_insn (gen_vec_sel0<mode> (operands[0], operands[1], operands[2], lt, GEN_INT (0)));
+      DONE;
+    }
+})
+
+; vmnb, vmnh, vmnf, vmng, vmnq
+(define_insn "*smin<mode>3"
+  [(set (match_operand:VIT_VXE3                0 "register_operand" "=v")
+	(smin:VIT_VXE3 (match_operand:VIT_VXE3 1 "register_operand"  "v")
+		       (match_operand:VIT_VXE3 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmn<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmxb, vmxh, vmxf, vmxg
-(define_insn "smax<mode>3"
-  [(set (match_operand:VI          0 "register_operand" "=v")
-	(smax:VI (match_operand:VI 1 "register_operand"  "v")
-		 (match_operand:VI 2 "register_operand"  "v")))]
+(define_expand "smax<mode>3"
+  [(set (match_operand:VIT           0 "register_operand" "=v")
+	(smax:VIT (match_operand:VIT 1 "register_operand"  "v")
+		  (match_operand:VIT 2 "register_operand"  "v")))]
+  "TARGET_VX"
+{
+  // Emulate via vec_sel (op1, op2, op1 < op2)
+  if ((<MODE>mode == V1TImode || <MODE>mode == TImode) && !TARGET_VXE3)
+    {
+      rtx lt = gen_reg_rtx (<MODE>mode);
+      s390_expand_vec_compare (lt, LT, operands[1], operands[2]);
+      emit_insn (gen_vec_sel0<mode> (operands[0], operands[1], operands[2], lt, GEN_INT (0)));
+      DONE;
+    }
+})
+
+; vmxb, vmxh, vmxf, vmxg, vmxq
+(define_insn "*smax<mode>3"
+  [(set (match_operand:VIT_VXE3                0 "register_operand" "=v")
+	(smax:VIT_VXE3 (match_operand:VIT_VXE3 1 "register_operand"  "v")
+		       (match_operand:VIT_VXE3 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmx<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmnlb, vmnlh, vmnlf, vmnlg
-(define_insn "umin<mode>3"
-  [(set (match_operand:VI          0 "register_operand" "=v")
-	(umin:VI (match_operand:VI 1 "register_operand"  "v")
-		 (match_operand:VI 2 "register_operand"  "v")))]
+(define_expand "umin<mode>3"
+  [(set (match_operand:VIT           0 "register_operand" "=v")
+	(umin:VIT (match_operand:VIT 1 "register_operand"  "v")
+		  (match_operand:VIT 2 "register_operand"  "v")))]
+  "TARGET_VX"
+{
+  // Emulate via vec_sel (op1, op2, op2 < op1)
+  if ((<MODE>mode == V1TImode || <MODE>mode == TImode) && !TARGET_VXE3)
+    {
+      rtx ltu = gen_reg_rtx (<MODE>mode);
+      s390_expand_vec_compare (ltu, LTU, operands[2], operands[1]);
+      emit_insn (gen_vec_sel0<mode> (operands[0], operands[1], operands[2], ltu, GEN_INT (0)));
+      DONE;
+    }
+})
+
+; vmnlb, vmnlh, vmnlf, vmnlg, vmnlq
+(define_insn "*umin<mode>3"
+  [(set (match_operand:VIT_VXE3                0 "register_operand" "=v")
+	(umin:VIT_VXE3 (match_operand:VIT_VXE3 1 "register_operand"  "v")
+		       (match_operand:VIT_VXE3 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmnl<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vmxlb, vmxlh, vmxlf, vmxlg
-(define_insn "umax<mode>3"
-  [(set (match_operand:VI          0 "register_operand" "=v")
-	(umax:VI (match_operand:VI 1 "register_operand"  "v")
-		 (match_operand:VI 2 "register_operand"  "v")))]
+(define_expand "umax<mode>3"
+  [(set (match_operand:VIT           0 "register_operand" "=v")
+	(umax:VIT (match_operand:VIT 1 "register_operand"  "v")
+		  (match_operand:VIT 2 "register_operand"  "v")))]
+  "TARGET_VX"
+{
+  // Emulate via vec_sel (op1, op2, op1 < op2)
+  if ((<MODE>mode == V1TImode || <MODE>mode == TImode) && !TARGET_VXE3)
+    {
+      rtx ltu = gen_reg_rtx (<MODE>mode);
+      s390_expand_vec_compare (ltu, LTU, operands[1], operands[2]);
+      emit_insn (gen_vec_sel0<mode> (operands[0], operands[1], operands[2], ltu, GEN_INT (0)));
+      DONE;
+    }
+})
+
+; vmxlb, vmxlh, vmxlf, vmxlg, vmxlq
+(define_insn "*umax<mode>3"
+  [(set (match_operand:VIT_VXE3                0 "register_operand" "=v")
+	(umax:VIT_VXE3 (match_operand:VIT_VXE3 1 "register_operand"  "v")
+		       (match_operand:VIT_VXE3 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmxl<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
