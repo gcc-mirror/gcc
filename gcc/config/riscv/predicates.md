@@ -413,11 +413,11 @@
 (define_predicate "consecutive_bits_operand"
   (match_code "const_int")
 {
-	unsigned HOST_WIDE_INT val = UINTVAL (op);
-	if (exact_log2 ((val >> ctz_hwi (val)) + 1) < 0)
-	        return false;
+  unsigned HOST_WIDE_INT val = UINTVAL (op);
+  if (exact_log2 ((val >> ctz_hwi (val)) + 1) <= 0)
+    return false;
 
-	return true;
+  return true;
 })
 
 ;; CORE-V Predicates:
