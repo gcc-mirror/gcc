@@ -519,9 +519,18 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 }
 
 void
-TypeCheckPattern::visit (HIR::IdentifierPattern &)
+TypeCheckPattern::visit (HIR::IdentifierPattern &pattern)
 {
-  infered = parent;
+  if (!pattern.get_is_ref ())
+    {
+      infered = parent;
+      return;
+    }
+
+  infered = new TyTy::ReferenceType (pattern.get_mappings ().get_hirid (),
+				     TyTy::TyVar (parent->get_ref ()),
+				     pattern.is_mut () ? Mutability::Mut
+						       : Mutability::Imm);
 }
 
 void
