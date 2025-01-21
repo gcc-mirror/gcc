@@ -97,11 +97,19 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"Some", Kind::OPTION_SOME},
   {"None", Kind::OPTION_NONE},
 
+  {"Ok", Kind::RESULT_OK},
+  {"Err", Kind::RESULT_ERR},
+
   {"into_iter", Kind::INTOITER_INTOITER},
   {"next", Kind::ITERATOR_NEXT},
 
   {"eq", Kind::EQ},
   {"partial_ord", Kind::PARTIAL_ORD},
+
+  {"try", Kind::TRY},
+  {"into_result", Kind::TRY_INTO_RESULT},
+  {"from_error", Kind::TRY_FROM_ERROR},
+  {"from_ok", Kind::TRY_FROM_OK},
 }};
 
 tl::optional<LangItem::Kind>
