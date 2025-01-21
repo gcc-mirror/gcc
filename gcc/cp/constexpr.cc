@@ -9092,10 +9092,18 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     return r;
   else if (non_constant_p && TREE_CONSTANT (r))
     r = mark_non_constant (r);
-  else if (non_constant_p
-	   /* Check we are not trying to return the wrong type.  */
-	   || !same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (r)))
+  else if (non_constant_p)
     return t;
+
+  /* Check we are not trying to return the wrong type.  */
+  if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (r)))
+    {
+      /* If so, this is not a constant expression.  */
+      if (!allow_non_constant)
+	error ("%qE is not a constant expression because it initializes "
+	       "a %qT rather than %qT", t, TREE_TYPE (t), type);
+      return t;
+    }
 
   if (should_unshare)
     r = unshare_expr (r);
