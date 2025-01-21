@@ -4561,14 +4561,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    case SIMD_CLONE_ARG_TYPE_MASK:
 	      if (loop_vinfo
 		  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-		{
-		  unsigned nmasks
-		    = exact_div (ncopies * bestn->simdclone->simdlen,
-				 TYPE_VECTOR_SUBPARTS (vectype)).to_constant ();
-		  vect_record_loop_mask (loop_vinfo,
-					 &LOOP_VINFO_MASKS (loop_vinfo),
-					 nmasks, vectype, op);
-		}
+		vect_record_loop_mask (loop_vinfo,
+				       &LOOP_VINFO_MASKS (loop_vinfo),
+				       ncopies, vectype, op);
 
 	      break;
 	    }
