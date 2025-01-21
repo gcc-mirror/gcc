@@ -150,4 +150,5 @@ issue-2953-1.rs
 issue-3030.rs
 traits12.rs
 try-trait.rs
+issue-3174.rs
 # please don't delete the trailing newline

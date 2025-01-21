@@ -481,8 +481,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 						      tuple_field_index++,
 						      pattern->get_locus ());
 
-		ctx->insert_pattern_binding (
-		  pattern->get_mappings ().get_hirid (), binding);
+		CompilePatternBindings::Compile (*pattern, binding, ctx);
 	      }
 	  }
 	else
@@ -497,8 +496,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 						      tuple_field_index++,
 						      pattern->get_locus ());
 
-		ctx->insert_pattern_binding (
-		  pattern->get_mappings ().get_hirid (), binding);
+		CompilePatternBindings::Compile (*pattern, binding, ctx);
 	      }
 	  }
       }
@@ -607,8 +605,16 @@ CompilePatternBindings::visit (HIR::ReferencePattern &pattern)
 void
 CompilePatternBindings::visit (HIR::IdentifierPattern &pattern)
 {
-  ctx->insert_pattern_binding (pattern.get_mappings ().get_hirid (),
-			       match_scrutinee_expr);
+  if (!pattern.get_is_ref ())
+    {
+      ctx->insert_pattern_binding (pattern.get_mappings ().get_hirid (),
+				   match_scrutinee_expr);
+      return;
+    }
+
+  tree ref = address_expression (match_scrutinee_expr,
+				 EXPR_LOCATION (match_scrutinee_expr));
+  ctx->insert_pattern_binding (pattern.get_mappings ().get_hirid (), ref);
 }
 
 void
