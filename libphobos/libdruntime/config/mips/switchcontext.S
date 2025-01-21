@@ -99,4 +99,82 @@ fiber_switchContext:
     .end fiber_switchContext
     .size fiber_switchContext,.-fiber_switchContext
 
+#endif /* _MIPS_SIM == _ABIO32 */
+
+#if defined(__mips64) && _MIPS_SIM == _ABI64
+/************************************************************************************
+ * MIPS 64 ASM BITS
+ * $a0 - void** - ptr to old stack pointer
+ * $a1 - void*  - new stack pointer
+ *
+ */
+    .text
+    .globl fiber_switchContext
+    .align 2
+    .ent fiber_switchContext,0
+fiber_switchContext:
+    .cfi_startproc
+    daddiu $sp, $sp, -(10 * 8)
+
+    // fp regs and return address are stored below the stack
+    // because we don't want the GC to scan them.
+
+#ifdef __mips_hard_float
+#define BELOW (8 * 8 + 8)
+    s.d  $f24, (0 * 8 - BELOW)($sp)
+    s.d  $f25, (1 * 8 - BELOW)($sp)
+    s.d  $f26, (2 * 8 - BELOW)($sp)
+    s.d  $f27, (3 * 8 - BELOW)($sp)
+    s.d  $f28, (4 * 8 - BELOW)($sp)
+    s.d  $f29, (5 * 8 - BELOW)($sp)
+    s.d  $f30, (6 * 8 - BELOW)($sp)
+    s.d  $f31, (7 * 8 - BELOW)($sp)
 #endif
+    sd $ra, -8($sp)
+
+    sd  $s0, (0 * 8)($sp)
+    sd  $s1, (1 * 8)($sp)
+    sd  $s2, (2 * 8)($sp)
+    sd  $s3, (3 * 8)($sp)
+    sd  $s4, (4 * 8)($sp)
+    sd  $s5, (5 * 8)($sp)
+    sd  $s6, (6 * 8)($sp)
+    sd  $s7, (7 * 8)($sp)
+    sd  $gp, (8 * 8)($sp)
+    sd  $fp, (9 * 8)($sp)
+
+    // swap stack pointer
+    sd   $sp, 0($a0)
+    move $sp, $a1
+
+#ifdef __mips_hard_float
+    l.d  $f24, (0 * 8 - BELOW)($sp)
+    l.d  $f25, (1 * 8 - BELOW)($sp)
+    l.d  $f26, (2 * 8 - BELOW)($sp)
+    l.d  $f27, (3 * 8 - BELOW)($sp)
+    l.d  $f28, (4 * 8 - BELOW)($sp)
+    l.d  $f29, (5 * 8 - BELOW)($sp)
+    l.d  $f30, (6 * 8 - BELOW)($sp)
+    l.d  $f31, (7 * 8 - BELOW)($sp)
+#endif
+    ld $ra, -8($sp)
+
+    ld $s0, (0 * 8)($sp)
+    ld $s1, (1 * 8)($sp)
+    ld $s2, (2 * 8)($sp)
+    ld $s3, (3 * 8)($sp)
+    ld $s4, (4 * 8)($sp)
+    ld $s5, (5 * 8)($sp)
+    ld $s6, (6 * 8)($sp)
+    ld $s7, (7 * 8)($sp)
+    ld $gp, (8 * 8)($sp)
+    ld $fp, (9 * 8)($sp)
+
+    daddiu $sp, $sp, (10 * 8)
+
+    jr $ra // return
+    .cfi_endproc
+    .end fiber_switchContext
+    .size fiber_switchContext,.-fiber_switchContext
+
+#endif /* defined(__mips64) && _MIPS_SIM == _ABI64 */
