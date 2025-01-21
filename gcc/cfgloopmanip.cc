@@ -154,10 +154,17 @@ fix_loop_placement (class loop *loop, bool *irred_invalidated,
 	  if (e->flags & EDGE_IRREDUCIBLE_LOOP)
 	    *irred_invalidated = true;
 	  rescan_loop_exit (e, false, false);
-	  /* Any LC SSA PHIs on e->dest might now be on the wrong edge
-	     if their defs were in a former outer loop.  */
-	  if (loop_closed_ssa_invalidated)
-	    bitmap_set_bit (loop_closed_ssa_invalidated, e->src->index);
+	}
+      /* Any LC SSA PHIs on e->dest might now be on the wrong edge
+	 if their defs were in a former outer loop.  Also all uses
+	 in the original inner loop of defs in the outer loop(s) now
+	 require LC PHI nodes.  */
+      if (loop_closed_ssa_invalidated)
+	{
+	  basic_block *bbs = get_loop_body (loop);
+	  for (unsigned i = 0; i < loop->num_nodes; ++i)
+	    bitmap_set_bit (loop_closed_ssa_invalidated, bbs[i]->index);
+	  free (bbs);
 	}
 
       ret = true;
@@ -233,13 +240,6 @@ fix_bb_placements (basic_block from,
 				   loop_closed_ssa_invalidated))
 	    continue;
 	  target_loop = loop_outer (from->loop_father);
-	  if (loop_closed_ssa_invalidated)
-	    {
-	      basic_block *bbs = get_loop_body (from->loop_father);
-	      for (unsigned i = 0; i < from->loop_father->num_nodes; ++i)
-		bitmap_set_bit (loop_closed_ssa_invalidated, bbs[i]->index);
-	      free (bbs);
-	    }
 	}
       else
 	{
