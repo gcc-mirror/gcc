@@ -9,4 +9,4 @@ prefix (vint32m1_t vx, vint32m1_t vy, size_t vl)
   return __riscv_vadd_vv_i32m1 (vx, vy, vl);
 }
 
-/* { dg-final { scan-assembler {\mth\.v\M} } } */
+/* { dg-final { scan-assembler {\mth\.vadd\.vv\M} } } */
