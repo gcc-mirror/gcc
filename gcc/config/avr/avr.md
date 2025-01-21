@@ -184,6 +184,7 @@
 ;; elpm : ISA has ELPM but no ELPMX      elpmx : ISA has ELPMX
 ;; no_xmega: non-XMEGA core              xmega : XMEGA core
 ;; no_adiw:  ISA has no ADIW, SBIW       adiw  : ISA has ADIW, SBIW
+;; no_mul:   ISA has no MUL              mul   : ISA has [F]MUL[S[U]]
 
 ;; The following ISA attributes are actually not architecture specific,
 ;; but depend on (optimization) options.  This is because the "enabled"
@@ -195,7 +196,7 @@
 
 (define_attr "isa"
   "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx, no_xmega,xmega,
-   no_adiw,adiw,
+   no_adiw,adiw, no_mul,mul,
    3op,
    standard"
   (const_string "standard"))
@@ -245,6 +246,12 @@
 
         (and (eq_attr "isa" "no_adiw")
              (match_test "!AVR_HAVE_ADIW"))
+
+        (and (eq_attr "isa" "mul")
+             (match_test "AVR_HAVE_MUL"))
+
+        (and (eq_attr "isa" "no_mul")
+             (match_test "!AVR_HAVE_MUL"))
 
         (and (eq_attr "isa" "3op")
              (match_test "avr_shift_is_3op ()"))
@@ -5459,16 +5466,16 @@
 ;; "*ashlhq3_const"  "*ashluhq3_const"
 ;; "*ashlha3_const"  "*ashluha3_const"
 (define_insn "*ashl<mode>3_const"
-  [(set (match_operand:ALL2 0 "register_operand"              "=r  ,r        ,r  ,r")
-        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0  ,r        ,r  ,0")
-                     (match_operand:QI 2 "const_int_operand"   "LPK,O C7c C15,C2l,n")))
-   (clobber (match_scratch:QI 3                               "=X  ,X        ,&d ,&d"))
+  [(set (match_operand:ALL2 0 "register_operand"              "=r  ,r        ,r      ,r  ,r")
+        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0  ,r        ,r      ,r  ,0")
+                     (match_operand:QI 2 "const_int_operand"   "LPK,O C7c C15,C05 C06,C2l,n")))
+   (clobber (match_scratch:QI 3                               "=X  ,X        ,&d     ,&d ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashlhi3_out (insn, operands, NULL);
   }
-  [(set_attr "isa" "*,*,3op,*")
+  [(set_attr "isa" "*,*,mul,3op,*")
    (set_attr "length" "10")
    (set_attr "adjust_len" "ashlhi")])
 

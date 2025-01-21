@@ -563,11 +563,19 @@ avr_option_override (void)
 }
 
 
-int avr_optimize_size_level ()
+int
+avr_optimize_size_level ()
 {
   return cfun && cfun->decl
     ? opt_for_fn (cfun->decl, optimize_size)
     : optimize_size;
+}
+
+
+static bool
+avr_optimize_size_max_p ()
+{
+  return avr_optimize_size_level () == OPTIMIZE_SIZE_MAX;
 }
 
 
@@ -7048,6 +7056,26 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 }
 
 
+/* Output a 16-bit left shift  XOP[0] = XOP[1] << XOP[2]  using MUL.
+   XOP[3] is an upper 8-bit scratch register.  This function is currently
+   only used for offsets 5 and 6 but works for offsets 1...7 as well.  */
+
+static const char*
+avr_out_ashlhi3_mul (rtx *xop, bool scratch_p, int *plen)
+{
+  gcc_assert (scratch_p && AVR_HAVE_MUL);
+
+  // Takes 7 words and 9 cycles.
+  return avr_asm_len ("ldi %3,1<<%2" CR_TAB
+		      "mul %B1,%3"   CR_TAB
+		      "mov %B0,r0"   CR_TAB
+		      "mul %A1,%3"   CR_TAB
+		      "mov %A0,r0"   CR_TAB
+		      "or  %B0,r1"   CR_TAB
+		      "clr __zero_reg__", xop, plen, -7);
+}
+
+
 /* 16bit shift left ((short)x << i)   */
 
 const char *
@@ -7060,6 +7088,10 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 		      && REG_P (operands[3]));
       bool ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       bool reg1_unused_after = reg_unused_after (insn, operands[1]);
+      int size;
+      int reg0 = REGNO (operands[0]);
+      int reg1 = REGNO (operands[1]);
+      bool use_mul_p = reg1 != reg0 || (scratch && AVR_HAVE_MUL);
 
       if (plen)
 	*plen = 0;
@@ -7073,7 +7105,7 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	  return avr_asm_len ("clr %B0" CR_TAB
 			      "clr %A0", operands, plen, 2);
 	case 4:
-	  if (optimize_size && scratch)
+	  if (avr_optimize_size_max_p () && scratch)
 	    break;  /* 5 */
 	  if (ldi_ok)
 	    return avr_asm_len ("swap %A0"      CR_TAB
@@ -7093,6 +7125,23 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	  break;  /* optimize_size ? 6 : 8 */
 
 	case 5:
+	  size = (scratch ? 5 : 6) + (reg1 != reg0) * (2 - AVR_HAVE_MOVW);
+	  if (avr_optimize_size_max_p () && (size < 7 || !use_mul_p))
+	    {
+	      if (reg0 != reg1)
+		{
+		  if (AVR_HAVE_MOVW)
+		    avr_asm_len ("movw %0,%1", operands, plen, 1);
+		  else
+		    avr_asm_len ("mov %A0,%A1" CR_TAB
+				 "mov %B0,%B1", operands, plen, 2);
+		}
+	      break;  // scratch ? 5 : 6
+	    }
+
+	  if (use_mul_p)
+	    return avr_out_ashlhi3_mul (operands, scratch, plen); // 7
+
 	  if (optimize_size)
 	    break;  /* scratch ? 5 : 6 */
 	  if (ldi_ok)
@@ -7117,6 +7166,23 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	  break;  /* 10 */
 
 	case 6:
+	  size = (scratch ? 5 : 6) + (reg1 != reg0) * (2 - AVR_HAVE_MOVW);
+	  if (avr_optimize_size_max_p () && (size < 7 || !use_mul_p))
+	    {
+	      if (reg0 != reg1)
+		{
+		  if (AVR_HAVE_MOVW)
+		    avr_asm_len ("movw %0,%1", operands, plen, 1);
+		  else
+		    avr_asm_len ("mov %A0,%A1" CR_TAB
+				 "mov %B0,%B1", operands, plen, 2);
+		}
+	      break;  // scratch ? 5 : 6
+	    }
+
+	  if (use_mul_p)
+	    return avr_out_ashlhi3_mul (operands, scratch, plen); // 7
+
 	  if (optimize_size)
 	    break;  /* scratch ? 5 : 6 */
 	  return avr_asm_len ("clr __tmp_reg__" CR_TAB
@@ -7252,7 +7318,7 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
     }
 
   out_shift_with_cnt ("lsl %A0" CR_TAB
-			  "rol %B0", insn, operands, plen, 2);
+		      "rol %B0", insn, operands, plen, 2);
   return "";
 }
 
