@@ -1,3 +1,195 @@
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/export-6.C: Add structured binding tests.
+	* g++.dg/modules/hdr-2.H: Likewise.
+
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118101
+	* g++.dg/modules/partial-7.h: New test.
+	* g++.dg/modules/partial-7_a.C: New test.
+	* g++.dg/modules/partial-7_b.C: New test.
+	* g++.dg/modules/partial-7_c.C: New test.
+
+2025-01-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116256
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-37.c: Update expected
+	output.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-15.c: Likewise.
+
+2025-01-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/114442
+	* gcc.target/riscv/pr114442.c: New test.
+
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107122
+	* gfortran.dg/gomp/order-8.f90: Adjust pattern.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118348
+	* gcc.target/aarch64/pr118348_1.c: New test.
+	* gcc.target/aarch64/pr118348_2.c: Likewise.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118384
+	* gcc.target/aarch64/pr118384_1.c: New test.
+	* gcc.target/aarch64/pr118384_2.c: Likewise.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118384
+	* gcc.target/aarch64/pr118384_1.c: New test.
+	* gcc.target/aarch64/pr118384_2.c: Likewise.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118501
+	* gcc.c-torture/compile/pr118501.c: New test.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ins_bitfield_1a.c: New test.
+	* gcc.target/aarch64/ins_bitfield_3a.c: Likewise.
+	* gcc.target/aarch64/ins_bitfield_5a.c: Likewise.
+
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81978
+	* gfortran.dg/pr81978.f90: New test.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118528
+	* g++.dg/cpp/embed-21.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr16.C: New test.
+
+2025-01-20  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadcondmov-bug.c: New test.
+
+2025-01-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118077
+	PR tree-optimization/117668
+	* g++.dg/opt/devirt6.C: New test.
+
+2025-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: Use
+	arm_v8_3a_complex_neon.
+
+2025-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/vect/complex/complex-operations-run.c: Remove duplicate
+	dg-add-options arm_v8_3a_complex_neon.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c:
+	Likewise.
+
+2025-01-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115921
+	* gcc.target/loongarch/bstrpick_alsl_paired.c (scan-rtl-dump):
+	Scan for and_shift_reversedi instead of the removed
+	bstrpick_alsl_paired.
+	* gcc.target/loongarch/bitwise-shift-reassoc.c: New test.
+
+2025-01-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.c-torture/compile/pr116438.c: Rename to ...
+	* gcc.c-torture/compile/pr116348.c: ... this.
+
+2025-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118552
+	* gcc.dg/torture/pr118552.c: New testcase.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118509
+	* g++.dg/expr/pmf-4.C: New test.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118224
+	* gcc.dg/pr118224.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-shift-10.c: New test.
+	* gcc.target/s390/vector/vec-shift-11.c: New test.
+	* gcc.target/s390/vector/vec-shift-12.c: New test.
+	* gcc.target/s390/vector/vec-shift-3.c: New test.
+	* gcc.target/s390/vector/vec-shift-4.c: New test.
+	* gcc.target/s390/vector/vec-shift-5.c: New test.
+	* gcc.target/s390/vector/vec-shift-6.c: New test.
+	* gcc.target/s390/vector/vec-shift-7.c: New test.
+	* gcc.target/s390/vector/vec-shift-8.c: New test.
+	* gcc.target/s390/vector/vec-shift-9.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-max-emu.c: New test.
+	* gcc.target/s390/vector/vec-min-emu.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-abs-emu.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vxe3/vd-1.c: New test.
+	* gcc.target/s390/vxe3/vd-2.c: New test.
+	* gcc.target/s390/vxe3/vdl-1.c: New test.
+	* gcc.target/s390/vxe3/vdl-2.c: New test.
+	* gcc.target/s390/vxe3/vr-1.c: New test.
+	* gcc.target/s390/vxe3/vr-2.c: New test.
+	* gcc.target/s390/vxe3/vrl-1.c: New test.
+	* gcc.target/s390/vxe3/vrl-2.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vxe3/veval-1.c: New test.
+	* gcc.target/s390/vxe3/veval-2.c: New test.
+	* gcc.target/s390/vxe3/veval-3.c: New test.
+	* gcc.target/s390/vxe3/veval-4.c: New test.
+	* gcc.target/s390/vxe3/veval-5.c: New test.
+	* gcc.target/s390/vxe3/veval-6.c: New test.
+	* gcc.target/s390/vxe3/veval-7.c: New test.
+	* gcc.target/s390/vxe3/veval-8.c: New test.
+	* gcc.target/s390/vxe3/veval-9.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/llxa-1.c: New test.
+	* gcc.target/s390/llxa-2.c: New test.
+	* gcc.target/s390/llxa-3.c: New test.
+	* gcc.target/s390/lxa-1.c: New test.
+	* gcc.target/s390/lxa-2.c: New test.
+	* gcc.target/s390/lxa-3.c: New test.
+	* gcc.target/s390/lxa-4.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* lib/target-supports.exp: VXE3 effective target check.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: Set compiler flags for the vxe3
+	subdirectory of the testsuite as done e.g. for vxe2.
+
+2025-01-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/118510
+	* gcc.target/i386/pr118510.c: New test.
+
 2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/118067

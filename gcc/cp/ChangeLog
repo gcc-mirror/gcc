@@ -1,3 +1,16 @@
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* parser.cc (cp_parser_decomposition_declaration): Check linkage
+	of structured bindings in modules.
+	* tree.cc (decl_linkage): Structured bindings don't necessarily
+	have no linkage.
+
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118101
+	* module.cc (trees_in::decl_value): Use structural equality when
+	deduping partial specs with mismatching canonical types.
+
 2025-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118513

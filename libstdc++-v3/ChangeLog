@@ -1,3 +1,11 @@
+2025-01-20  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/118185
+	PR libstdc++/100249
+	* include/bits/ranges_algo.h (__clamp_fn): Correctly forward the
+	projected value to the comparator.
+	* testsuite/25_algorithms/clamp/118185.cc: New test.
+
 2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/99995

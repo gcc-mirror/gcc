@@ -1,3 +1,15 @@
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107122
+	* openmp.cc (resolve_omp_clauses): Add 'with' to error message text.
+
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81978
+	* trans-array.cc (gfc_conv_array_parameter): Do not copy back data
+	if actual array parameter has the PARAMETER attribute.
+	* trans-expr.cc (gfc_conv_subref_array_arg): Likewise.
+
 2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/118321

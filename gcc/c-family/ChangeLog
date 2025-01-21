@@ -1,3 +1,15 @@
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118528
+	* c-common.cc (make_tree_vector_from_ctor): Expand RAW_DATA_CST
+	elements from the CONSTRUCTOR to individual INTEGER_CSTs.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118509
+	* c-omp.cc (c_finish_omp_for): Handle TARGET_EXPR in first operand
+	of COMPOUND_EXPR incr the same as SAVE_EXPR.
+
 2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c-attribs.cc (c_common_gnu_attributes): Delete "omp declare

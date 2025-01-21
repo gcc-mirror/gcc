@@ -1,3 +1,10 @@
+2025-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/114434
+	* expr.cc (ExprVisitor::visit (PtrExp *)): Get the offset as a
+	dinteger_t rather than a size_t.
+	(ExprVisitor::visit (SymOffExp *)): Likewise.
+
 2025-01-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd d115713410.

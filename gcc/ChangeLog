@@ -1,3 +1,359 @@
+2025-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118560
+	* lra-constraints.cc (invalid_mode_reg_p): Exchange args in
+	hard_reg_set_subset_p call.
+
+2025-01-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/114442
+	* config/riscv/xiangshan.md: Add missing insn types to a
+	new dummy insn reservation.
+
+2025-01-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116256
+	* config/riscv/riscv.md (reassocating constant addition): Adjust
+	condition to avoid creating an unrecognizable insn.
+
+2025-01-20  Denis Chertykov  <chertykov@gmail.com>
+
+	PR rtl-optimization/117868
+	* lra-spills.cc (assign_stack_slot_num_and_sort_pseudos): Reuse slots
+	only without allocated memory or only with equal or smaller registers
+	with equal or smaller alignment.
+	(lra_spill): Print slot size as width.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118348
+	* tree-vectorizer.cc (vec_info::move_dr): Copy
+	STMT_VINFO_SIMD_LANE_ACCESS_P.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118384
+	* tree-vectorizer.cc (vec_info::move_dr): Copy
+	STMT_VINFO_SIMD_LANE_ACCESS_P.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118384
+	* tree-vectorizer.cc (vec_info::move_dr): Copy
+	STMT_VINFO_SIMD_LANE_ACCESS_P.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118501
+	* config/aarch64/aarch64.md (@xorsign<mode>3): Use
+	force_lowpart_subreg.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118531
+	* config/aarch64/aarch64.md (*insv_reg<mode>_<SUBDI_BITS>)
+	(*aarch64_bfi<GPI:mode><ALLX:mode>_<SUBDI_BITS>)
+	(*aarch64_bfidi<ALLX:mode>_subreg_<SUBDI_BITS>): Add missing
+	simd requirements.
+
+2025-01-20  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/thead.md (*th_cond_mov<GPR:mode><GPR2:mode>):
+	Change GPR2 to X.
+	(*th_cond_mov<GPR:mode>): Likewise.
+
+2025-01-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118077
+	PR tree-optimization/117668
+	* tree-inline.cc (fold_marked_statements): Purge abnormal edges
+	as needed.
+
+2025-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117875
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Handle SSA copies.
+
+2025-01-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115921
+	* config/loongarch/loongarch-protos.h
+	(loongarch_reassoc_shift_bitwise): New function prototype.
+	* config/loongarch/loongarch.cc
+	(loongarch_reassoc_shift_bitwise): Implement.
+	* config/loongarch/loongarch.md
+	(*alslsi3_extend_subreg): New define_insn_and_split.
+	(<any_bitwise:optab>_shift_reverse<X:mode>): New
+	define_insn_and_split.
+	(<any_bitwise:optab>_alsl_reversesi_extended): New
+	define_insn_and_split.
+	(zero_extend_ashift): Remove as it's just a special case of
+	and_shift_reversedi, and it does not make too much sense to
+	write "alsl.d rd,rs,r0,shamt" instead of "slli.d rd,rs,shamt".
+	(bstrpick_alsl_paired): Remove as it is already done by
+	splitting and_shift_reversedi into and + ashift first, then
+	late combining the ashift and a further add.
+
+2025-01-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/constraints.md (Yy): New define_constriant.
+	* config/loongarch/loongarch.cc (loongarch_print_operand):
+	For "%M", output the index of bits to be used with
+	bstrins/bstrpick.
+	* config/loongarch/predicates.md (ins_zero_bitmask_operand):
+	Exclude low_bitmask_operand as for low_bitmask_operand it's
+	always better to use bstrpick instead of bstrins.
+	(and_operand): New define_predicate.
+	* config/loongarch/loongarch.md (any_or): New
+	define_code_iterator.
+	(bitwise_operand): New define_code_attr.
+	(*<optab:any_or><mode:GPR>3): New define_insn.
+	(*and<mode:GPR>3): New define_insn.
+	(<optab:any_bitwise><mode:X>3): New define_expand.
+	(and<mode>3_extended): Remove, replaced by the 3rd alternative
+	of *and<mode:GPR>3.
+	(bstrins_<mode>_for_mask): Remove, replaced by the 4th
+	alternative of *and<mode:GPR>3.
+	(*<optab:any_bitwise>si3_internal): Remove, already covered by
+	the *<optab:any_or><mode:GPR>3 and *and<mode:GPR>3 templates.
+
+2025-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118552
+	* cfgloopmanip.cc (fix_loop_placement): Properly mark
+	exit source blocks as to be scanned for LC SSA update when
+	the loops nesting relationship changed.
+	(fix_loop_placements): Adjust.
+	(fix_bb_placements): Likewise.
+
+2025-01-20  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS): Don't add 'mptx=3.1' if
+	neither sm_30 nor sm_35 multilib variant is built.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118509
+	* tree.cc (tree_invariant_p_1): Return true for TARGET_EXPR too.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118224
+	* tree-ssa-dce.cc (is_removable_allocation_p): Multiply a1 by a2
+	instead of adding it.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def (s390_vec_load_len): Deprecate
+	some overloads.
+	(s390_vec_store_len): Deprecate some overloads.
+	(s390_vec_load_len_r): Add.
+	(s390_vec_store_len_r): Add.
+	* config/s390/s390-c.cc (s390_vec_load_len_r): Add.
+	(s390_vec_store_len_r): Add.
+	* config/s390/vecintrin.h (vec_load_len_r): Redefine.
+	(vec_store_len_r): Redefine.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def: Add 128-bit variants.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/vector.md (<vec_shifts_name><mode>3): Add 128-bit
+	variants.
+	* config/s390/vx-builtins.md: Ditto.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def: Add 128-bit variants and remove
+	bool variants.
+	* config/s390/s390-builtin-types.def: Update accordinly.
+	* config/s390/s390.md: Emulate min/max for GPR.
+	* config/s390/vector.md: Add min/max patterns and emulate in
+	case of no VXE3.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def (s390_vec_abs_s128): Add.
+	(s390_vlpq): Add.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/vector.md (abs<mode>2): Emulate w/o VXE3.
+	(*abs<mode>2): Add 128-bit variant.
+	(*vec_sel0<mode>): Make it a ...
+	(vec_sel0<mode>): named pattern.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def: Add 128-bit variants.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/s390.cc (s390_expand_vec_compare_cc): Also
+	consider TI modes for vectors.
+	* config/s390/vector.md: Enable *vec_cmp et al. for VXE3.
+	* config/s390/vx-builtins.md: Ditto.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md (div<mode>3): Add.
+	(udiv<mode>3): Add.
+	(mod<mode>3): Add.
+	(umod<mode>3): Add.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def (s390_vec_cntlz): Add 128-bit
+	integer overloads.
+	(s390_vclzq): Add.
+	(s390_vec_cnttz): Add 128-bit integer overloads.
+	(s390_vctzq): Add.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/s390.h (CTZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/s390/s390.md (*clzg): New insn.
+	(clztidi2): Exploit new insn for target arch15.
+	(ctzdi2): New insn.
+	* config/s390/vector.md (clz<mode>2): Extend modes including
+	128-bit integer.
+	(ctz<mode>2): Likewise.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def (s390_vec_gen_element_masks_128): Add.
+	(s390_vgemb): Add.
+	(s390_vgemh): Add.
+	(s390_vgemf): Add.
+	(s390_vgemg): Add.
+	(s390_vgemq): Add.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/s390.md (UNSPEC_VEC_VGEM): Add.
+	* config/s390/vecintrin.h (vec_gen_element_masks_8): Define.
+	(vec_gen_element_masks_16): Define.
+	(vec_gen_element_masks_32): Define.
+	(vec_gen_element_masks_64): Define.
+	(vec_gen_element_masks_128): Define.
+	* config/s390/vx-builtins.md (vgemv16qi): Add.
+	(vgem<mode>): Add.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def (s390_vec_evaluate): Add.
+	(s390_veval): Add.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/s390.md (UNSPEC_VEC_VEVAL): Add.
+	* config/s390/vecintrin.h (vec_evaluate): Define.
+	* config/s390/vector.md
+	(*veval<mode>_<logic_op1:logic_op_stringify><logic_op2:logic_op_stringify>):
+	Add.
+	(veval<mode>): Add.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def (s390_vec_blend): Add.
+	(s390_vblendb): Add.
+	(s390_vblendh): Add.
+	(s390_vblendf): Add.
+	(s390_vblendg): Add.
+	(s390_vblendq): Add.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/s390.md (UNSPEC_VEC_VBLEND): Add.
+	* config/s390/vecintrin.h (vec_blend): Define.
+	* config/s390/vx-builtins.md (vblend<mode>): Add.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def (s390_bdepg): Add.
+	(s390_bextg): Add.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/s390.md (UNSPEC_BDEPG): Add.
+	(UNSPEC_BEXTG): Add.
+	(bdepg): Add.
+	(bextg): Add.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (*lxa<LXAMODE>_index): Add.
+	(*lxa<LXAMODE>_displacement_index): Add.
+	(*lxa<LXAMODE>_index_base): Add.
+	(*lxa<LXAMODE>_displacement_index_base): Add.
+	(*lxab_displacement_index_base): Add.
+	(*llxa<LXAMODE>_displacement_index): Add.
+	(*llxa<LXAMODE>_index_base): Add.
+	(*llxa<LXAMODE>_displacement_index_base): Add.
+	(*llxab_displacement_index_base): Add.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.def: Add new instruction variants.
+	* config/s390/s390-builtin-types.def: Update accordingly.
+	* config/s390/vecintrin.h: Add new defines.
+	* config/s390/vector.md: Adapt insns for new instruction
+	variants.
+	* config/s390/vx-builtins.md: Ditto.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (B_VXE3): Define.
+	(B_ARCH15): Define.
+	* config/s390/s390-c.cc (s390_resolve_overloaded_builtin):
+	Consistency checks for VXE3.
+	* config/s390/s390.cc (s390_expand_builtin): Consistency checks
+	for VXE3.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-c.cc (rid_int128): New helper function.
+	(s390_macro_to_expand): Deal with `vector __int128`.
+	(s390_cpu_cpp_builtins_internal): Bump __VEC__.
+	* config/s390/s390.cc (s390_handle_vectorbool_attribute): Add
+	128-bit bool zvector.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* common/config/s390/s390-common.cc: Add arch15 processor flags.
+	* config.gcc: Add arch15 for options --with-{arch,mtune}.
+	* config/s390/driver-native.cc (s390_host_detect_local_cpu):
+	Default to arch15.
+	* config/s390/s390-opts.h (enum processor_type): Add
+	PROCESSOR_ARCH15.
+	* config/s390/s390.cc (processor_table,s390_issue_rate,
+	s390_get_sched_attrmask,s390_get_unit_mask): Add arch15.
+	* config/s390/s390.h (enum processor_flags): Add processor flags
+	for VXE3 and ARCH15.
+	(TARGET_CPU_VXE3): Define.
+	(TARGET_CPU_VXE3_P): Define.
+	(TARGET_CPU_ARCH15): Define.
+	(TARGET_CPU_ARCH15_P): Define.
+	(TARGET_VXE3): Define.
+	(TARGET_VXE3_P): Define.
+	(TARGET_ARCH15): Define.
+	(TARGET_ARCH15_P): Define.
+	* config/s390/s390.md: Add VXE3 and ARCH15 to cpu_facility, and
+	let attribute "enabled" deal with them.
+	* config/s390/s390.opt: Add arch15.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/vecintrin.h: Sort definitions.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md: Stay scalar for TOINTVEC/tointvec.
+
+2025-01-20  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.gcc (riscv*): Install sifive_vector.h.
+	* config/riscv/sifive_vector.h: New.
+
+2025-01-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/118510
+	* config/i386/i386.md (*x86_64_shld_ndd_2): Use register_operand
+	for operand[0] and adjust the output template to directly
+	generate ndd form shld pattern.
+	(*x86_shld_ndd_2): Likewise.
+	(*x86_64_shrd_ndd_2): Likewise.
+	(*x86_shrd_ndd_2): Likewise.
+
 2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdi_internal): Reorder ISA attribute
