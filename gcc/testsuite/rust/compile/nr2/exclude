@@ -58,6 +58,7 @@ iterators1.rs
 lookup_err1.rs
 macros/mbe/macro13.rs
 macros/mbe/macro15.rs
+macros/mbe/macro20.rs
 macros/mbe/macro23.rs
 macros/mbe/macro40.rs
 macros/mbe/macro43.rs
@@ -151,4 +152,18 @@ derive_macro6.rs
 issue-2987.rs
 issue-3139-1.rs
 issue-3139-3.rs
+issue-1019.rs
+issue-1034.rs
+issue-2019-1.rs
+issue-2019-2.rs
+issue-2019-3.rs
+issue-2105.rs
+issue-2190-1.rs
+issue-2190-2.rs
+issue-2304.rs
+issue-2747.rs
+issue-2953-1.rs
+issue-3030.rs
+traits12.rs
+try-trait.rs
 # please don't delete the trailing newline
