@@ -3160,13 +3160,13 @@
 ;; add.w => alsl.w, so implement slli.d + and + add.w => and + alsl.w on
 ;; our own.
 (define_insn_and_split "<optab>_alsl_reversesi_extended"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(sign_extend:DI
 	  (plus:SI
 	    (subreg:SI
 	      (any_bitwise:DI
 		(ashift:DI
-		  (match_operand:DI 1 "register_operand" "r")
+		  (match_operand:DI 1 "register_operand" "r0")
 		  (match_operand:SI 2 "const_immalsl_operand" ""))
 		(match_operand:DI 3 "const_int_operand" "i"))
 	      0)
@@ -3175,7 +3175,7 @@
    && loongarch_reassoc_shift_bitwise (<is_and>, operands[2], operands[3],
 				       SImode)"
   "#"
-  "&& true"
+  "&& reload_completed"
   [; r0 = r1 [&|^] r3 is emitted in PREPARATION-STATEMENTS because we
    ; need to handle a special case, see below.
    (set (match_dup 0)
