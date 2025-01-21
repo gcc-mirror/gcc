@@ -248,12 +248,9 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	    return CompileInherentImplItem::Compile (resolved_item->first, ctx,
 						     lookup, true, expr_locus);
 	}
-      else
+      else if (auto trait_item
+	       = ctx->get_mappings ().lookup_hir_trait_item (ref))
 	{
-	  // it might be resolved to a trait item
-	  tl::optional<HIR::TraitItem *> trait_item
-	    = ctx->get_mappings ().lookup_hir_trait_item (ref);
-
 	  HIR::Trait *trait = ctx->get_mappings ().lookup_trait_item_mapping (
 	    trait_item.value ()->get_mappings ().get_hirid ());
 
