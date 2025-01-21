@@ -63,7 +63,6 @@ macros/mbe/macro23.rs
 macros/mbe/macro40.rs
 macros/mbe/macro43.rs
 macros/mbe/macro44.rs
-macros/mbe/macro50.rs
 macros/mbe/macro54.rs
 macros/mbe/macro6.rs
 macros/mbe/macro_rules_macro_rules.rs
@@ -141,7 +140,6 @@ issue-2423.rs
 issue-266.rs
 additional-trait-bounds2.rs
 auto_traits2.rs
-auto_traits4.rs
 issue-3140.rs
 cmp1.rs
 derive_clone_enum1.rs
