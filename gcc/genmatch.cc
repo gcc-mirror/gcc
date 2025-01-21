@@ -1485,7 +1485,7 @@ public:
   virtual void gen_transform (FILE *, int, const char *, bool, int,
 			      const char *, capture_info *,
 			      dt_operand ** = 0,
-			      int = 0)
+			      int = 0, const char * = nullptr)
     { gcc_unreachable  (); }
 };
 
@@ -1538,8 +1538,8 @@ public:
   /* If non-zero, the group for optional handling.  */
   unsigned char opt_grp;
   void gen_transform (FILE *f, int, const char *, bool, int,
-		      const char *, capture_info *,
-		      dt_operand ** = 0, int = 0) override;
+		      const char *, capture_info *, dt_operand ** = 0,
+		      int = 0, const char * = nullptr) override;
 };
 
 /* An operator that is represented by native C code.  This is always
@@ -1572,8 +1572,8 @@ public:
   /* The identifier replacement vector.  */
   vec<id_tab> ids;
   void gen_transform (FILE *f, int, const char *, bool, int,
-		      const char *, capture_info *,
-		      dt_operand ** = 0, int = 0) final override;
+		      const char *, capture_info *, dt_operand ** = 0,
+		      int = 0, const char * = nullptr) final override;
 };
 
 /* A wrapper around another operand that captures its value.  */
@@ -1593,8 +1593,8 @@ public:
   /* The captured value.  */
   operand *what;
   void gen_transform (FILE *f, int, const char *, bool, int,
-		      const char *, capture_info *,
-		      dt_operand ** = 0, int = 0) final override;
+		      const char *, capture_info *, dt_operand ** = 0,
+		      int = 0, const char * = nullptr) final override;
 };
 
 /* if expression.  */
@@ -3196,6 +3196,14 @@ is_conversion (id_base *op)
 	  || *op == VIEW_CONVERT_EXPR);
 }
 
+bool
+possible_noop_convert (id_base *op)
+{
+  return (*op == CONVERT_EXPR
+	  || *op == NOP_EXPR
+	  || *op == VIEW_CONVERT_EXPR);
+}
+
 /* Get the type to be used for generating operand POS of OP from the
    various sources.  */
 
@@ -3249,7 +3257,7 @@ get_operand_type (id_base *op, unsigned pos,
 void
 expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 		     int depth, const char *in_type, capture_info *cinfo,
-		     dt_operand **indexes, int)
+		     dt_operand **indexes, int, const char *in_place)
 {
   id_base *opr = operation;
   /* When we delay operator substituting during lowering of fors we
@@ -3307,10 +3315,23 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
   if (!type)
     fatal_at (location, "cannot determine type of operand");
 
+  bool child_in_place = (!in_place
+			 && gimple
+			 && possible_noop_convert (opr)
+			 && is_a <expr *> (ops[0]));
+
   fprintf_indent (f, indent, "{\n");
   indent += 2;
-  fprintf_indent (f, indent,
-		  "tree _o%d[%u], _r%d;\n", depth, ops.length (), depth);
+  if (child_in_place)
+    {
+      fprintf_indent (f, indent, "tree _r%d;\n", depth);
+      fprintf_indent (f, indent,
+		      "gimple_match_op tem_op (res_op->cond.any_else (), "
+		      "ERROR_MARK, error_mark_node, 1);\n");
+    }
+  else
+    fprintf_indent (f, indent,
+		    "tree _o%d[%u], _r%d;\n", depth, ops.length (), depth);
   char op0type[64];
   snprintf (op0type, sizeof (op0type), "TREE_TYPE (_o%d[0])", depth);
   for (unsigned i = 0; i < ops.length (); ++i)
@@ -3322,7 +3343,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 			    i == 0 ? NULL : op0type);
       ops[i]->gen_transform (f, indent, dest1, gimple, depth + 1, optype1,
 			     cinfo, indexes,
-			     *opr == COND_EXPR && i == 0 ? 1 : 2);
+			     *opr == COND_EXPR && i == 0 ? 1 : 2,
+			     child_in_place ? "tem_op" : NULL);
     }
 
   const char *opr_name;
@@ -3333,45 +3355,95 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 
   if (gimple)
     {
-      if (*opr == CONVERT_EXPR)
+      if (child_in_place)
 	{
+	  gcc_assert (!in_place);
 	  fprintf_indent (f, indent,
-			  "if (%s != TREE_TYPE (_o%d[0])\n",
-			  type, depth);
+			  "if (%s != tem_op.type\n", type);
 	  fprintf_indent (f, indent,
-			  "    && !useless_type_conversion_p (%s, TREE_TYPE "
-			  "(_o%d[0])))\n",
-			  type, depth);
+			  "    && !useless_type_conversion_p (%s, tem_op.type))\n",
+			  type);
 	  fprintf_indent (f, indent + 2, "{\n");
 	  indent += 4;
-	}
-      /* ???  Building a stmt can fail for various reasons here, seq being
-         NULL or the stmt referencing SSA names occuring in abnormal PHIs.
-	 So if we fail here we should continue matching other patterns.  */
-      fprintf_indent (f, indent, "gimple_match_op tem_op "
-		      "(res_op->cond.any_else (), %s, %s", opr_name, type);
-      for (unsigned i = 0; i < ops.length (); ++i)
-	fprintf (f, ", _o%d[%u]", depth, i);
-      fprintf (f, ");\n");
-      fprintf_indent (f, indent, "tem_op.resimplify (%s, valueize);\n",
-		      !force_leaf ? "lseq" : "NULL");
-      fprintf_indent (f, indent,
-		      "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n", depth,
-		      !force_leaf ? "lseq" : "NULL");
-      fprintf_indent (f, indent,
-		      "if (!_r%d) goto %s;\n",
-		      depth, fail_label);
-      if (*opr == CONVERT_EXPR)
-	{
+	  fprintf_indent (f, indent,
+			  "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n",
+			  depth, (!as_a <expr *> (ops[0])->force_leaf
+				  ? "lseq" : "NULL"));
+	  fprintf_indent (f, indent,
+			  "if (!_r%d) goto %s;\n", depth, fail_label);
+	  fprintf_indent (f, indent,
+			  "tem_op.set_op (%s, %s, 1);\n", opr_name, type);
+	  fprintf_indent (f, indent,
+			  "tem_op.ops[0] = _r%d;\n", depth);
+	  fprintf_indent (f, indent,
+			  "tem_op.resimplify (%s, valueize);\n",
+			  !force_leaf ? "lseq" : "NULL");
 	  indent -= 4;
-	  fprintf_indent (f, indent, "  }\n");
-	  fprintf_indent (f, indent, "else\n");
-	  fprintf_indent (f, indent, "  _r%d = _o%d[0];\n", depth, depth);
+	  fprintf_indent (f, indent + 2, "}\n");
+	  fprintf_indent (f, indent,
+			  "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n",
+			  depth, !force_leaf ? "lseq" : "NULL");
+	  fprintf_indent (f, indent,
+			  "if (!_r%d) goto %s;\n", depth, fail_label);
+	}
+      else if (in_place)
+	{
+	  gcc_assert (!child_in_place);
+	  fprintf_indent (f, indent,
+			  "%s.set_op (%s, %s, %d);\n", in_place,
+			  opr_name, type, ops.length ());
+	  for (unsigned i = 0; i < ops.length (); ++i)
+	    fprintf_indent (f, indent,
+			    "%s.ops[%u] = _o%d[%u];\n", in_place, i, depth, i);
+	  fprintf_indent (f, indent,
+			  "%s.resimplify (%s, valueize);\n",
+			  in_place, !force_leaf ? "lseq" : "NULL");
+	  indent -= 2;
+	  fprintf_indent (f, indent, "}\n");
+	  return;
+	}
+      else
+	{
+	  if (possible_noop_convert (opr))
+	    {
+	      fprintf_indent (f, indent,
+			      "if (%s != TREE_TYPE (_o%d[0]) /* XXX */\n",
+			      type, depth);
+	      fprintf_indent (f, indent,
+			      "    && !useless_type_conversion_p (%s, TREE_TYPE "
+			      "(_o%d[0])))\n",
+			      type, depth);
+	      fprintf_indent (f, indent + 2, "{\n");
+	      indent += 4;
+	    }
+	  /* ???  Building a stmt can fail for various reasons here, seq being
+	     NULL or the stmt referencing SSA names occuring in abnormal PHIs.
+	     So if we fail here we should continue matching other patterns.  */
+	  fprintf_indent (f, indent, "gimple_match_op tem_op "
+			  "(res_op->cond.any_else (), %s, %s", opr_name, type);
+	  for (unsigned i = 0; i < ops.length (); ++i)
+	    fprintf (f, ", _o%d[%u]", depth, i);
+	  fprintf (f, ");\n");
+	  fprintf_indent (f, indent, "tem_op.resimplify (%s, valueize);\n",
+			  !force_leaf ? "lseq" : "NULL");
+	  fprintf_indent (f, indent,
+			  "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n",
+			  depth, !force_leaf ? "lseq" : "NULL");
+	  fprintf_indent (f, indent,
+			  "if (!_r%d) goto %s;\n",
+			  depth, fail_label);
+	  if (possible_noop_convert (opr))
+	    {
+	      indent -= 4;
+	      fprintf_indent (f, indent, "  }\n");
+	      fprintf_indent (f, indent, "else\n");
+	      fprintf_indent (f, indent, "  _r%d = _o%d[0];\n", depth, depth);
+	    }
 	}
     }
   else
     {
-      if (*opr == CONVERT_EXPR)
+      if (possible_noop_convert (opr))
 	{
 	  fprintf_indent (f, indent, "if (TREE_TYPE (_o%d[0]) != %s)\n",
 			  depth, type);
@@ -3397,7 +3469,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 	  fprintf_indent (f, indent, "if (EXPR_P (_r%d))\n", depth);
 	  fprintf_indent (f, indent, "  goto %s;\n", fail_label);
 	}
-      if (*opr == CONVERT_EXPR)
+      if (possible_noop_convert (opr))
 	{
 	  fprintf_indent (f, indent - 2, "}\n");
 	  indent -= 4;
@@ -3417,8 +3489,10 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 void
 c_expr::gen_transform (FILE *f, int indent, const char *dest,
 		       bool, int, const char *, capture_info *,
-		       dt_operand **, int)
+		       dt_operand **, int, const char *in_place)
 {
+  gcc_assert (!in_place);
+
   if (dest && nr_stmts == 1)
     fprintf_indent (f, indent, "%s = ", dest);
 
@@ -3501,8 +3575,11 @@ c_expr::gen_transform (FILE *f, int indent, const char *dest,
 void
 capture::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 			int depth, const char *in_type, capture_info *cinfo,
-			dt_operand **indexes, int cond_handling)
+			dt_operand **indexes, int cond_handling,
+			const char *in_place)
 {
+  gcc_assert (!in_place);
+
   if (what && is_a<expr *> (what))
     {
       if (indexes[where] == 0)
@@ -4353,7 +4430,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 
   if (s->kind == simplify::SIMPLIFY)
     {
-      fprintf_indent (f, indent, "if (UNLIKELY (!dbg_cnt (match))) goto %s;\n", fail_label);
+      fprintf_indent (f, indent, "if (UNLIKELY (!dbg_cnt (match))) goto %s;\n",
+		      fail_label);
       needs_label = true;
     }
 
@@ -4408,16 +4486,45 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	      if (!is_predicate)
 		cond_handling = (*opr == COND_EXPR && j == 0) ? 1 : 2;
 	      e->ops[j]->gen_transform (f, indent, dest, true, 1, optype,
-					&cinfo, indexes, cond_handling);
+					&cinfo, indexes, cond_handling,
+					(possible_noop_convert (opr)
+					 && is_a <expr *> (e->ops[j]))
+					? "(*res_op)" : NULL);
 	    }
 
 	  /* Re-fold the toplevel result.  It's basically an embedded
 	     gimple_build w/o actually building the stmt.  */
 	  if (!is_predicate)
 	    {
-	      fprintf_indent (f, indent,
-			      "res_op->resimplify (%s, valueize);\n",
-			      !e->force_leaf ? "lseq" : "NULL");
+	      if (possible_noop_convert (opr)
+		  && is_a <expr *> (e->ops[0]))
+		{
+		  fprintf_indent (f, indent,
+				  "if (type != res_op->type\n");
+		  fprintf_indent (f, indent,
+				  "    && !useless_type_conversion_p (type, res_op->type))\n");
+		  fprintf_indent (f, indent,
+				  "  {\n");
+		  indent += 4;
+		  fprintf_indent (f, indent,
+				  "if (!(res_op->ops[0] = maybe_push_res_to_seq (res_op, %s))) goto %s;\n",
+				  !as_a <expr *> (e->ops[0])->force_leaf
+				  ? "lseq" : "NULL", fail_label);
+		  needs_label = true;
+		  fprintf_indent (f, indent,
+				  "res_op->set_op (%s, type, 1);\n",
+				  *opr == CONVERT_EXPR ? "NOP_EXPR" : opr->id);
+		  fprintf_indent (f, indent,
+				  "res_op->resimplify (%s, valueize);\n",
+				  !e->force_leaf ? "lseq" : "NULL");
+		  indent -= 4;
+		  fprintf_indent (f, indent,
+				  "  }\n");
+		}
+	      else
+		fprintf_indent (f, indent,
+				"res_op->resimplify (%s, valueize);\n",
+				!e->force_leaf ? "lseq" : "NULL");
 	      if (e->force_leaf)
 		{
 		  fprintf_indent (f, indent,

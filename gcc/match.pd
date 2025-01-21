@@ -5701,11 +5701,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (part (convert?:s@2 (op:s @0 @1)))
    (convert (op (part @0) (part @1))))))
 (simplify
- (realpart (convert?:s (CEXPI:s @0)))
- (convert (COS @0)))
+ (realpart (convert?@2 (CEXPI@1 @0)))
+ (if (single_use (@1) && single_use (@2))
+  (convert (COS @0))))
 (simplify
- (imagpart (convert?:s (CEXPI:s @0)))
- (convert (SIN @0)))
+ (imagpart (convert?@2 (CEXPI@1 @0)))
+ (if (single_use (@1) && single_use (@2))
+  (convert (SIN @0))))
 
 /* conj(conj(x)) -> x  */
 (simplify
