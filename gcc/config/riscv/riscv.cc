@@ -10375,7 +10375,7 @@ riscv_file_end ()
       fprintf (asm_out_file, "\t.long\t4f - 3f\n");
       fprintf (asm_out_file, "3:\n");
       /* zicfiss, zicfilp.  */
-      fprintf (asm_out_file, "\t.long\t%x\n", feature_1_and);
+      fprintf (asm_out_file, "\t.long\t%lx\n", feature_1_and);
       fprintf (asm_out_file, "4:\n");
       fprintf (asm_out_file, "\t.p2align\t%u\n", p2align);
       fprintf (asm_out_file, "5:\n");
@@ -11959,7 +11959,7 @@ riscv_subword_address (rtx mem, rtx *aligned_mem, rtx *shift, rtx *mask,
 /* Leftshift a subword within an SImode register.  */
 
 void
-riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
+riscv_lshift_subword (machine_mode mode ATTRIBUTE_UNUSED, rtx value, rtx shift,
 		      rtx *shifted_value)
 {
   rtx value_reg = gen_reg_rtx (SImode);
