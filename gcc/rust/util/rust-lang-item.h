@@ -127,8 +127,20 @@ public:
     OPTION_SOME,
     OPTION_NONE,
 
+    RESULT_OK,
+    RESULT_ERR,
+
     INTOITER_INTOITER,
     ITERATOR_NEXT,
+
+    // NOTE: These lang items are *not* necessarily present in later versions of
+    // Rust (I am unsure at which point they have been removed as the `Try`
+    // trait is unstable). They will need to be changed when updating the
+    // targeted Rust version of gccrs
+    TRY,
+    TRY_INTO_RESULT,
+    TRY_FROM_ERROR,
+    TRY_FROM_OK,
   };
 
   static const BiMap<std::string, Kind> lang_items;
