@@ -3,7 +3,7 @@
 
 #include "arm_sve.h"
 
-#pragma GCC target "+sve+faminmax"
+#pragma GCC target "+sve2+faminmax"
 
 #define TEST_FAMAX(TYPE)						\
   void fn_famax_##TYPE (TYPE * restrict a,				\
