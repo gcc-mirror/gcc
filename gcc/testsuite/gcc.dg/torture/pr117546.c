@@ -1,4 +1,4 @@
-/* { dg-do run { target int32 } } */
+/* { dg-do run { target int32plus } } */
 
 typedef struct {
   int a;
