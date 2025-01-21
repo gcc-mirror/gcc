@@ -45,5 +45,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.C]] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[C\]]] \
         "" $CFLAGS
 
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xtheadvector/*.C]] \
+	"" $CFLAGS
+
 # All done.
 dg-finish
