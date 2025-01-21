@@ -92,3 +92,6 @@ UrlSuffix(gcc/AArch64-Options.html#index-mstack-protector-guard-reg)
 mstack-protector-guard-offset=
 UrlSuffix(gcc/AArch64-Options.html#index-mstack-protector-guard-offset)
 
+Wexperimental-fmv-target
+UrlSuffix(gcc/AArch64-Options.html#index-Wexperimental-fmv-target)
+
