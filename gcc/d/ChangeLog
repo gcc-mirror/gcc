@@ -1,3 +1,13 @@
+2025-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/114434
+	* expr.cc (ExprVisitor::visit (PtrExp *)): Get the offset as a
+	dinteger_t rather than a size_t.
+	(ExprVisitor::visit (SymOffExp *)): Likewise.
+
 2024-06-20  Release Manager
 
 	* GCC 12.4.0 released.
