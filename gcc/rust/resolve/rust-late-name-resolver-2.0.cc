@@ -287,6 +287,14 @@ Late::visit (AST::TypePath &type)
   // maybe we can overload `resolve_path<Namespace::Types>` to only do
   // typepath-like path resolution? that sounds good
 
+  if (type.get_segments ().size () != 1)
+    {
+      rust_sorry_at (
+	type.get_locus (),
+	"name resolution 2.0 cannot resolve multi-segment type paths");
+      return;
+    }
+
   auto str = type.get_segments ().back ()->get_ident_segment ().as_string ();
   auto values = ctx.types.peek ().get_values ();
 
