@@ -394,8 +394,7 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 		/* A slot with allocated memory can be shared only with equal
 		   or smaller register with equal or smaller alignment.  */
 		if (slots[j].align >= spill_slot_alignment (mode)
-		    && compare_sizes_for_sort (slots[j].size,
-					       GET_MODE_SIZE (mode)) != -1)
+		    && known_ge (slots[j].size, GET_MODE_SIZE (mode)))
 		  break;
 	      }
 	}
