@@ -36734,14 +36734,22 @@ cp_parser_objc_message_args (cp_parser* parser)
   /* Handle non-selector arguments, if any. */
   while (token->type == CPP_COMMA)
     {
-      tree arg;
-
       cp_lexer_consume_token (parser->lexer);
-      arg = cp_parser_assignment_expression (parser);
 
-      addl_args
-	= chainon (addl_args,
-		   build_tree_list (NULL_TREE, arg));
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	{
+	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+	  cp_lexer_consume_token (parser->lexer);
+	  for (tree argument : raw_data_range (raw_data))
+	    addl_args = chainon (addl_args,
+				 build_tree_list (NULL_TREE, argument));
+	}
+      else
+	{
+	  tree arg = cp_parser_assignment_expression (parser);
+	  addl_args = chainon (addl_args,
+			       build_tree_list (NULL_TREE, arg));
+	}
 
       token = cp_lexer_peek_token (parser->lexer);
     }
