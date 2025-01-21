@@ -2980,7 +2980,7 @@ build_class_member_access_expr (cp_expr object, tree member,
 				    /*nonnull=*/1, complain);
 	  /* If we found the base successfully then we should be able
 	     to convert to it successfully.  */
-	  gcc_assert (object != error_mark_node);
+	  gcc_assert (object != error_mark_node || seen_error ());
 	}
 
       /* If MEMBER is from an anonymous aggregate, we have converted
