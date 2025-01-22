@@ -249,6 +249,9 @@ void _gfortran_caf_get_from_remote (
   const bool may_realloc_dst, const int getter_index, void *get_data,
   const size_t get_data_size, int *stat, caf_team_t *team, int *team_number);
 
+int32_t _gfortran_caf_is_present_on_remote (caf_token_t token, int, int,
+					    void *add_data,
+					    const size_t add_data_size);
 
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);
@@ -271,8 +274,6 @@ int _gfortran_caf_image_status (int, caf_team_t * __attribute__ ((unused)));
 void _gfortran_caf_stopped_images (gfc_descriptor_t *,
 				   caf_team_t * __attribute__ ((unused)),
 				   int *);
-
-int _gfortran_caf_is_present (caf_token_t, int, caf_reference_t *);
 
 void _gfortran_caf_random_init (bool, bool);
 

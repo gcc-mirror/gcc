@@ -928,7 +928,7 @@ extern GTY(()) tree gfor_fndecl_co_max;
 extern GTY(()) tree gfor_fndecl_co_min;
 extern GTY(()) tree gfor_fndecl_co_reduce;
 extern GTY(()) tree gfor_fndecl_co_sum;
-extern GTY(()) tree gfor_fndecl_caf_is_present;
+extern GTY(()) tree gfor_fndecl_caf_is_present_on_remote;
 
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.cc.  */

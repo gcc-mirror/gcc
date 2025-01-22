@@ -60,6 +60,8 @@ caf_static_t *caf_static_list = NULL;
 typedef void (*accessor_t) (void *, const int *, void **, int32_t *, void *,
 			    caf_token_t, const size_t, size_t *,
 			    const size_t *);
+typedef void (*is_present_t) (void *, const int *, int32_t *, void *,
+			      caf_single_token_t, const size_t);
 struct accessor_hash_t
 {
   int hash;
@@ -67,6 +69,7 @@ struct accessor_hash_t
   union
   {
     accessor_t accessor;
+    is_present_t is_present;
   } u;
 };
 
@@ -2966,6 +2969,29 @@ _gfortran_caf_get_from_remote (
     }
 }
 
+int32_t
+_gfortran_caf_is_present_on_remote (caf_token_t token, const int image_index,
+				    const int present_index, void *add_data,
+				    const size_t add_data_size
+				    __attribute__ ((unused)))
+{
+  /* Unregistered tokens are always not present.  */
+  if (!token)
+    return 0;
+
+  caf_single_token_t single_token = TOKEN (token);
+  int32_t result;
+  struct caf_single_token cb_token = {add_data, NULL, false};
+
+
+  accessor_hash_table[present_index].u.is_present (add_data, &image_index,
+						   &result,
+						   single_token->memptr,
+						   &cb_token, 0);
+
+  return result;
+}
+
 void
 _gfortran_caf_atomic_define (caf_token_t token, size_t offset,
 			     int image_index __attribute__ ((unused)),
@@ -3174,106 +3200,6 @@ _gfortran_caf_unlock (caf_token_t token, size_t index,
   _gfortran_caf_error_stop_str (msg, strlen (msg), false);
 }
 
-int
-_gfortran_caf_is_present (caf_token_t token,
-			  int image_index __attribute__ ((unused)),
-			  caf_reference_t *refs)
-{
-  const char arraddressingnotallowed[] = "libcaf_single::caf_is_present(): "
-				   "only scalar indexes allowed.\n";
-  const char unknownreftype[] = "libcaf_single::caf_get_by_ref(): "
-				"unknown reference type.\n";
-  const char unknownarrreftype[] = "libcaf_single::caf_get_by_ref(): "
-				   "unknown array reference type.\n";
-  size_t i;
-  caf_single_token_t single_token = TOKEN (token);
-  void *memptr = single_token->memptr;
-  gfc_descriptor_t *src = single_token->desc;
-  caf_reference_t *riter = refs;
-
-  while (riter)
-    {
-      switch (riter->type)
-	{
-	case CAF_REF_COMPONENT:
-	  if (riter->u.c.caf_token_offset)
-	    {
-	      single_token = *(caf_single_token_t*)
-					 (memptr + riter->u.c.caf_token_offset);
-	      memptr = single_token->memptr;
-	      src = single_token->desc;
-	    }
-	  else
-	    {
-	      memptr += riter->u.c.offset;
-	      src = (gfc_descriptor_t *)memptr;
-	    }
-	  break;
-	case CAF_REF_ARRAY:
-	  for (i = 0; riter->u.a.mode[i] != CAF_ARR_REF_NONE; ++i)
-	    {
-	      switch (riter->u.a.mode[i])
-		{
-		case CAF_ARR_REF_SINGLE:
-		  memptr += (riter->u.a.dim[i].s.start
-			     - GFC_DIMENSION_LBOUND (src->dim[i]))
-		      * GFC_DIMENSION_STRIDE (src->dim[i])
-		      * riter->item_size;
-		  break;
-		case CAF_ARR_REF_FULL:
-		  /* A full array ref is allowed on the last reference only.  */
-		  if (riter->next == NULL)
-		    break;
-		  /* else fall through reporting an error.  */
-		  /* FALLTHROUGH */
-		case CAF_ARR_REF_VECTOR:
-		case CAF_ARR_REF_RANGE:
-		case CAF_ARR_REF_OPEN_END:
-		case CAF_ARR_REF_OPEN_START:
-		  caf_internal_error (arraddressingnotallowed, 0, NULL, 0);
-		  return 0;
-		default:
-		  caf_internal_error (unknownarrreftype, 0, NULL, 0);
-		  return 0;
-		}
-	    }
-	  break;
-	case CAF_REF_STATIC_ARRAY:
-	  for (i = 0; riter->u.a.mode[i] != CAF_ARR_REF_NONE; ++i)
-	    {
-	      switch (riter->u.a.mode[i])
-		{
-		case CAF_ARR_REF_SINGLE:
-		  memptr += riter->u.a.dim[i].s.start
-		      * riter->u.a.dim[i].s.stride
-		      * riter->item_size;
-		  break;
-		case CAF_ARR_REF_FULL:
-		  /* A full array ref is allowed on the last reference only.  */
-		  if (riter->next == NULL)
-		    break;
-		  /* else fall through reporting an error.  */
-		  /* FALLTHROUGH */
-		case CAF_ARR_REF_VECTOR:
-		case CAF_ARR_REF_RANGE:
-		case CAF_ARR_REF_OPEN_END:
-		case CAF_ARR_REF_OPEN_START:
-		  caf_internal_error (arraddressingnotallowed, 0, NULL, 0);
-		  return 0;
-		default:
-		  caf_internal_error (unknownarrreftype, 0, NULL, 0);
-		  return 0;
-		}
-	    }
-	  break;
-	default:
-	  caf_internal_error (unknownreftype, 0, NULL, 0);
-	  return 0;
-	}
-      riter = riter->next;
-    }
-  return memptr != NULL;
-}
 
 /* Reference the libraries implementation.  */
 extern void _gfortran_random_init (int32_t, int32_t, int32_t);

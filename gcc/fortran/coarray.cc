@@ -942,6 +942,154 @@ add_caf_get_from_remote (gfc_expr *e)
   free (wrapper);
 }
 
+static gfc_expr *
+create_allocated_callback (gfc_expr *expr)
+{
+  gfc_namespace *ns;
+  gfc_symbol *extproc, *proc, *result, *base, *add_data, *caller_image;
+  char tname[GFC_MAX_SYMBOL_LEN + 1];
+  char *name;
+  const char *mname;
+  gfc_expr *cb, *post_caf_ref_expr;
+  gfc_code *code;
+  gfc_code *backup_caf_accessor_prepend = caf_accessor_prepend;
+  caf_accessor_prepend = nullptr;
+  gfc_expr swp;
+
+  /* Find the top-level namespace.  */
+  for (ns = gfc_current_ns; ns->parent; ns = ns->parent)
+    ;
+
+  if (expr->value.function.actual->expr->expr_type == EXPR_VARIABLE)
+    strcpy (tname, expr->value.function.actual->expr->symtree->name);
+  else
+    strcpy (tname, "dummy");
+  if (expr->value.function.actual->expr->symtree->n.sym->module)
+    mname = expr->value.function.actual->expr->symtree->n.sym->module;
+  else
+    mname = "main";
+  name = xasprintf ("_caf_present_%s_%s_%d", mname, tname, ++caf_sym_cnt);
+  gfc_get_symbol (name, ns, &extproc);
+  extproc->declared_at = expr->where;
+  gfc_set_sym_referenced (extproc);
+  ++extproc->refs;
+  gfc_commit_symbol (extproc);
+
+  /* Set up namespace.  */
+  gfc_namespace *sub_ns = gfc_get_namespace (ns, 0);
+  sub_ns->sibling = ns->contained;
+  ns->contained = sub_ns;
+  sub_ns->resolved = 1;
+  /* Set up procedure symbol.  */
+  gfc_find_symbol (name, sub_ns, 1, &proc);
+  sub_ns->proc_name = proc;
+  proc->attr.if_source = IFSRC_DECL;
+  proc->attr.access = ACCESS_PUBLIC;
+  gfc_add_subroutine (&proc->attr, name, NULL);
+  proc->attr.host_assoc = 1;
+  proc->attr.always_explicit = 1;
+  proc->declared_at = expr->where;
+  ++proc->refs;
+  gfc_commit_symbol (proc);
+  free (name);
+
+  split_expr_at_caf_ref (expr->value.function.actual->expr, sub_ns,
+			 &post_caf_ref_expr);
+
+  if (ns->proc_name->attr.flavor == FL_MODULE)
+    proc->module = ns->proc_name->name;
+  gfc_set_sym_referenced (proc);
+  /* Set up formal arguments.  */
+  gfc_formal_arglist **argptr = &proc->formal;
+#define ADD_ARG(name, nsym, stype, skind, sintent)                             \
+  gfc_get_symbol (name, sub_ns, &nsym);                                        \
+  nsym->ts.type = stype;                                                       \
+  nsym->ts.kind = skind;                                                       \
+  nsym->attr.flavor = FL_PARAMETER;                                            \
+  nsym->attr.dummy = 1;                                                        \
+  nsym->attr.intent = sintent;                                                 \
+  nsym->declared_at = expr->where;                                             \
+  gfc_set_sym_referenced (nsym);                                               \
+  *argptr = gfc_get_formal_arglist ();                                         \
+  (*argptr)->sym = nsym;                                                       \
+  argptr = &(*argptr)->next
+
+  name = xasprintf ("add_data_%s_%s_%d", mname, tname, ++caf_sym_cnt);
+  ADD_ARG (name, add_data, BT_DERIVED, 0, INTENT_IN);
+  gfc_commit_symbol (add_data);
+  free (name);
+  ADD_ARG ("caller_image", caller_image, BT_INTEGER, gfc_default_integer_kind,
+	   INTENT_IN);
+  gfc_commit_symbol (caller_image);
+
+  ADD_ARG ("result", result, BT_LOGICAL, gfc_default_logical_kind, INTENT_OUT);
+  gfc_commit_symbol (result);
+
+  // ADD_ARG (expr->symtree->name, base, BT_VOID, INTENT_IN);
+  base = post_caf_ref_expr->symtree->n.sym;
+  gfc_set_sym_referenced (base);
+  gfc_commit_symbol (base);
+  *argptr = gfc_get_formal_arglist ();
+  (*argptr)->sym = base;
+  argptr = &(*argptr)->next;
+  gfc_commit_symbol (base);
+#undef ADD_ARG
+
+  /* Set up code.  */
+  /* Code: result = post_caf_ref_expr;  */
+  code = sub_ns->code = gfc_get_code (EXEC_ASSIGN);
+  code->loc = expr->where;
+  code->expr1 = gfc_lval_expr_from_sym (result);
+  swp = *expr;
+  *expr = *swp.value.function.actual->expr;
+  swp.value.function.actual->expr = nullptr;
+  code->expr2 = gfc_copy_expr (&swp);
+  code->expr2->value.function.actual->expr = post_caf_ref_expr;
+
+  remove_caf_ref (code->expr2->value.function.actual->expr, true);
+  add_data->ts.u.derived
+    = create_caf_add_data_parameter_type (post_caf_ref_expr, ns, add_data);
+
+  cb = gfc_lval_expr_from_sym (extproc);
+  cb->ts.interface = extproc;
+
+  if (caf_accessor_prepend)
+    {
+      gfc_code *c = caf_accessor_prepend;
+      /* Find last in chain.  */
+      for (; c->next; c = c->next)
+	;
+      c->next = sub_ns->code;
+      sub_ns->code = caf_accessor_prepend;
+    }
+  caf_accessor_prepend = backup_caf_accessor_prepend;
+  return cb;
+}
+
+static void
+rewrite_caf_allocated (gfc_expr **e)
+{
+  gfc_expr *present_fn_expr, *present_hash_expr, *wrapper;
+
+  present_fn_expr = create_allocated_callback (*e);
+
+  present_hash_expr = gfc_get_expr ();
+  present_hash_expr->expr_type = EXPR_CONSTANT;
+  present_hash_expr->ts.type = BT_INTEGER;
+  present_hash_expr->ts.kind = gfc_default_integer_kind;
+  present_hash_expr->where = (*e)->where;
+  mpz_init_set_ui (present_hash_expr->value.integer,
+		   gfc_hash_value (present_fn_expr->symtree->n.sym));
+  wrapper
+    = gfc_build_intrinsic_call (gfc_current_ns,
+				GFC_ISYM_CAF_IS_PRESENT_ON_REMOTE,
+				"caf_is_present_on_remote", (*e)->where, 3, *e,
+				present_hash_expr, present_fn_expr);
+  gfc_add_caf_accessor (present_hash_expr, present_fn_expr);
+  wrapper->ts = (*e)->ts;
+  *e = wrapper;
+}
+
 static int
 coindexed_expr_callback (gfc_expr **e, int *walk_subtrees,
 			 void *data ATTRIBUTE_UNUSED)
@@ -963,7 +1111,16 @@ coindexed_expr_callback (gfc_expr **e, int *walk_subtrees,
       if ((*e)->value.function.isym)
 	switch ((*e)->value.function.isym->id)
 	  {
+	  case GFC_ISYM_ALLOCATED:
+	    if ((*e)->value.function.actual->expr
+		&& gfc_is_coindexed ((*e)->value.function.actual->expr))
+	      {
+		rewrite_caf_allocated (e);
+		*walk_subtrees = 0;
+	      }
+	    break;
 	  case GFC_ISYM_CAF_GET:
+	  case GFC_ISYM_CAF_IS_PRESENT_ON_REMOTE:
 	    *walk_subtrees = 0;
 	    break;
 	  default:

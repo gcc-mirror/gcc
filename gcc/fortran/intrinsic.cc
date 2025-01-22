@@ -3521,6 +3521,13 @@ add_functions (void)
 	     BT_REAL, dr, GFC_STD_GNU, NULL, NULL, NULL,
 	     x, BT_REAL, dr, REQUIRED);
   make_from_module();
+
+  add_sym_3 (GFC_PREFIX ("caf_is_present_on_remote"),
+	     GFC_ISYM_CAF_IS_PRESENT_ON_REMOTE, CLASS_IMPURE, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_GNU, NULL, NULL, NULL, ca, BT_VOID, di,
+	     REQUIRED, val, BT_INTEGER, di, REQUIRED, i, BT_INTEGER, di,
+	     REQUIRED);
+  make_from_module ();
 }
 
 

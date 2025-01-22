@@ -180,7 +180,7 @@ tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_reduce;
 tree gfor_fndecl_co_sum;
-tree gfor_fndecl_caf_is_present;
+tree gfor_fndecl_caf_is_present_on_remote;
 tree gfor_fndecl_caf_random_init;
 
 
@@ -4300,10 +4300,11 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 5, pvoid_type_node, integer_type_node,
 	pint_type, pchar_type_node, size_type_node);
 
-      gfor_fndecl_caf_is_present = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_is_present")), ". r . r ",
-	integer_type_node, 3, pvoid_type_node, integer_type_node,
-	pvoid_type_node);
+      gfor_fndecl_caf_is_present_on_remote
+	= gfc_build_library_function_decl_with_spec (
+	  get_identifier (PREFIX ("caf_is_present_on_remote")), ". r r r r r ",
+	  integer_type_node, 5, pvoid_type_node, integer_type_node,
+	  integer_type_node, pvoid_type_node, size_type_node);
 
       gfor_fndecl_caf_random_init = gfc_build_library_function_decl (
 	    get_identifier (PREFIX("caf_random_init")),

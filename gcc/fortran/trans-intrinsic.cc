@@ -1966,6 +1966,46 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
   return;
 }
 
+/* Generate call to caf_is_present_on_remote for allocated (coarrary[...])
+   calls.  */
+
+static void
+gfc_conv_intrinsic_caf_is_present_remote (gfc_se *se, gfc_expr *e)
+{
+  gfc_expr *caf_expr, *hash, *present_fn;
+  gfc_symbol *add_data_sym;
+  tree fn_index, add_data_tree, add_data_size, caf_decl, image_index, token;
+
+  gcc_assert (e->expr_type == EXPR_FUNCTION
+	      && e->value.function.isym->id
+		   == GFC_ISYM_CAF_IS_PRESENT_ON_REMOTE);
+  caf_expr = e->value.function.actual->expr;
+  hash = e->value.function.actual->next->expr;
+  present_fn = e->value.function.actual->next->next->expr;
+  add_data_sym = present_fn->symtree->n.sym->formal->sym;
+
+  fn_index = conv_caf_func_index (&se->pre, gfc_current_ns,
+				  "__caf_present_on_remote_fn_index_%d", hash);
+  add_data_tree = conv_caf_add_call_data (&se->pre, gfc_current_ns,
+					  "__caf_present_on_remote_add_data_%d",
+					  add_data_sym, &add_data_size);
+  ++caf_call_cnt;
+
+  caf_decl = gfc_get_tree_for_caf_expr (caf_expr);
+  if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
+    caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
+
+  image_index = gfc_caf_get_image_index (&se->pre, caf_expr, caf_decl);
+  gfc_get_caf_token_offset (se, &token, NULL, caf_decl, NULL, caf_expr);
+
+  se->expr
+    = fold_convert (logical_type_node,
+		    build_call_expr_loc (input_location,
+					 gfor_fndecl_caf_is_present_on_remote,
+					 5, token, image_index, fn_index,
+					 add_data_tree, add_data_size));
+}
+
 static bool
 has_ref_after_cafref (gfc_expr *expr)
 {
@@ -9498,42 +9538,6 @@ scalar_transfer:
 }
 
 
-/* Generate a call to caf_is_present.  */
-
-static tree
-trans_caf_is_present (gfc_se *se, gfc_expr *expr)
-{
-  tree caf_reference, caf_decl, token, image_index;
-
-  /* Compile the reference chain.  */
-  caf_reference = conv_expr_ref_to_caf_ref (&se->pre, expr);
-  gcc_assert (caf_reference != NULL_TREE);
-
-  caf_decl = gfc_get_tree_for_caf_expr (expr);
-  if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
-    caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
-  image_index = gfc_caf_get_image_index (&se->pre, expr, caf_decl);
-  gfc_get_caf_token_offset (se, &token, NULL, caf_decl, NULL,
-			    expr);
-
-  return build_call_expr_loc (input_location, gfor_fndecl_caf_is_present,
-			      3, token, image_index, caf_reference);
-}
-
-
-/* Test whether this ref-chain refs this image only.  */
-
-static bool
-caf_this_image_ref (gfc_ref *ref)
-{
-  for ( ; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->u.ar.codimen)
-      return ref->u.ar.dimen_type[ref->u.ar.dimen] == DIMEN_THIS_IMAGE;
-
-  return false;
-}
-
-
 /* Generate code for the ALLOCATED intrinsic.
    Generate inline code that directly check the address of the argument.  */
 
@@ -9542,7 +9546,6 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
 {
   gfc_se arg1se;
   tree tmp;
-  bool coindexed_caf_comp = false;
   gfc_expr *e = expr->value.function.actual->expr;
 
   gfc_init_se (&arg1se, NULL);
@@ -9557,52 +9560,25 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
 	gfc_add_data_component (e);
     }
 
-  /* When 'e' references an allocatable component in a coarray, then call
-     the caf-library function caf_is_present ().  */
-  if (flag_coarray == GFC_FCOARRAY_LIB && e->expr_type == EXPR_FUNCTION
-      && e->value.function.isym
-      && e->value.function.isym->id == GFC_ISYM_CAF_GET)
+  gcc_assert (flag_coarray != GFC_FCOARRAY_LIB || !gfc_is_coindexed (e));
+
+  if (e->rank == 0)
     {
-      e = e->value.function.actual->expr;
-      if (gfc_expr_attr (e).codimension)
-	{
-	  /* Last partref is the coindexed coarray. As coarrays are collectively
-	     (de)allocated, the allocation status must be the same as the one of
-	     the local allocation.  Convert to local access. */
-	  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
-	    if (ref->type == REF_ARRAY && ref->u.ar.codimen)
-	      {
-		for (int i = ref->u.ar.dimen;
-		     i < ref->u.ar.dimen + ref->u.ar.codimen; ++i)
-		ref->u.ar.dimen_type[i] = DIMEN_THIS_IMAGE;
-		break;
-	      }
-	}
-      else if (!caf_this_image_ref (e->ref))
-	coindexed_caf_comp = true;
+      /* Allocatable scalar.  */
+      arg1se.want_pointer = 1;
+      gfc_conv_expr (&arg1se, e);
+      tmp = arg1se.expr;
     }
-  if (coindexed_caf_comp)
-    tmp = trans_caf_is_present (se, e);
   else
     {
-      if (e->rank == 0)
-	{
-	  /* Allocatable scalar.  */
-	  arg1se.want_pointer = 1;
-	  gfc_conv_expr (&arg1se, e);
-	  tmp = arg1se.expr;
-	}
-      else
-	{
-	  /* Allocatable array.  */
-	  arg1se.descriptor_only = 1;
-	  gfc_conv_expr_descriptor (&arg1se, e);
-	  tmp = gfc_conv_descriptor_data_get (arg1se.expr);
-	}
-
-      tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node, tmp,
-			     fold_convert (TREE_TYPE (tmp), null_pointer_node));
+      /* Allocatable array.  */
+      arg1se.descriptor_only = 1;
+      gfc_conv_expr_descriptor (&arg1se, e);
+      tmp = gfc_conv_descriptor_data_get (arg1se.expr);
     }
+
+  tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node, tmp,
+			 fold_convert (TREE_TYPE (tmp), null_pointer_node));
 
   /* Components of pointer array references sometimes come back with a pre block.  */
   if (arg1se.pre.head)
@@ -11716,6 +11692,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_CAF_GET:
       gfc_conv_intrinsic_caf_get (se, expr, NULL_TREE, false, NULL);
+      break;
+
+    case GFC_ISYM_CAF_IS_PRESENT_ON_REMOTE:
+      gfc_conv_intrinsic_caf_is_present_remote (se, expr);
       break;
 
     case GFC_ISYM_CMPLX:
