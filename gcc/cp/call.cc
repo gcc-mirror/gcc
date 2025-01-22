@@ -4258,30 +4258,10 @@ add_list_candidates (tree fns, tree first_arg,
 
   /* Expand the CONSTRUCTOR into a new argument vec.  */
   vec<tree, va_gc> *new_args;
-  unsigned nelts = nart + CONSTRUCTOR_NELTS (init_list);
-  vec_alloc (new_args, nelts);
+  vec_alloc (new_args, nart + CONSTRUCTOR_NELTS (init_list));
   for (unsigned i = 0; i < nart; ++i)
     new_args->quick_push ((*args)[i]);
-  for (unsigned i = 0; i < CONSTRUCTOR_NELTS (init_list); ++i)
-    if (TREE_CODE (CONSTRUCTOR_ELT (init_list, i)->value) == RAW_DATA_CST)
-      {
-	tree raw_data = CONSTRUCTOR_ELT (init_list, i)->value;
-	nelts += RAW_DATA_LENGTH (raw_data) - 1;
-	vec_safe_reserve (new_args, nelts - new_args->length ());
-	if (TYPE_PRECISION (TREE_TYPE (raw_data)) > CHAR_BIT
-	    || TYPE_UNSIGNED (TREE_TYPE (raw_data)))
-	  for (unsigned j = 0; j < (unsigned) RAW_DATA_LENGTH (raw_data); ++j)
-	    new_args->quick_push (build_int_cst (TREE_TYPE (raw_data),
-						 RAW_DATA_UCHAR_ELT (raw_data,
-								     j)));
-	else
-	  for (unsigned j = 0; j < (unsigned) RAW_DATA_LENGTH (raw_data); ++j)
-	    new_args->quick_push (build_int_cst (TREE_TYPE (raw_data),
-						 RAW_DATA_SCHAR_ELT (raw_data,
-								     j)));
-      }
-    else
-      new_args->quick_push (CONSTRUCTOR_ELT (init_list, i)->value);
+  new_args = append_ctor_to_tree_vector (new_args, init_list);
 
   /* We aren't looking for list-ctors anymore.  */
   flags &= ~LOOKUP_LIST_ONLY;

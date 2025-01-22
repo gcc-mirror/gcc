@@ -9010,33 +9010,42 @@ make_tree_vector_from_list (tree list)
   return ret;
 }
 
+/* Append to a tree vector V the values of a CONSTRUCTOR CTOR
+   and return the new possibly reallocated vector.  */
+
+vec<tree, va_gc> *
+append_ctor_to_tree_vector (vec<tree, va_gc> *v, tree ctor)
+{
+  unsigned nelts = vec_safe_length (v) + CONSTRUCTOR_NELTS (ctor);
+  vec_safe_reserve (v, CONSTRUCTOR_NELTS (ctor));
+  for (unsigned i = 0; i < CONSTRUCTOR_NELTS (ctor); ++i)
+    if (TREE_CODE (CONSTRUCTOR_ELT (ctor, i)->value) == RAW_DATA_CST)
+      {
+	tree raw_data = CONSTRUCTOR_ELT (ctor, i)->value;
+	nelts += RAW_DATA_LENGTH (raw_data) - 1;
+	vec_safe_reserve (v, nelts - v->length ());
+	if (TYPE_PRECISION (TREE_TYPE (raw_data)) > CHAR_BIT
+	    || TYPE_UNSIGNED (TREE_TYPE (raw_data)))
+	  for (unsigned j = 0; j < (unsigned) RAW_DATA_LENGTH (raw_data); ++j)
+	    v->quick_push (build_int_cst (TREE_TYPE (raw_data),
+					  RAW_DATA_UCHAR_ELT (raw_data, j)));
+	else
+	  for (unsigned j = 0; j < (unsigned) RAW_DATA_LENGTH (raw_data); ++j)
+	    v->quick_push (build_int_cst (TREE_TYPE (raw_data),
+					  RAW_DATA_SCHAR_ELT (raw_data, j)));
+      }
+    else
+      v->quick_push (CONSTRUCTOR_ELT (ctor, i)->value);
+  return v;
+}
+
 /* Get a new tree vector of the values of a CONSTRUCTOR.  */
 
 vec<tree, va_gc> *
 make_tree_vector_from_ctor (tree ctor)
 {
   vec<tree,va_gc> *ret = make_tree_vector ();
-  unsigned nelts = CONSTRUCTOR_NELTS (ctor);
-  vec_safe_reserve (ret, CONSTRUCTOR_NELTS (ctor));
-  for (unsigned i = 0; i < CONSTRUCTOR_NELTS (ctor); ++i)
-    if (TREE_CODE (CONSTRUCTOR_ELT (ctor, i)->value) == RAW_DATA_CST)
-      {
-	tree raw_data = CONSTRUCTOR_ELT (ctor, i)->value;
-	nelts += RAW_DATA_LENGTH (raw_data) - 1;
-	vec_safe_reserve (ret, nelts - ret->length ());
-	if (TYPE_PRECISION (TREE_TYPE (raw_data)) > CHAR_BIT
-	    || TYPE_UNSIGNED (TREE_TYPE (raw_data)))
-	  for (unsigned j = 0; j < (unsigned) RAW_DATA_LENGTH (raw_data); ++j)
-	    ret->quick_push (build_int_cst (TREE_TYPE (raw_data),
-					    RAW_DATA_UCHAR_ELT (raw_data, j)));
-	else
-	  for (unsigned j = 0; j < (unsigned) RAW_DATA_LENGTH (raw_data); ++j)
-	    ret->quick_push (build_int_cst (TREE_TYPE (raw_data),
-					    RAW_DATA_SCHAR_ELT (raw_data, j)));
-      }
-    else
-      ret->quick_push (CONSTRUCTOR_ELT (ctor, i)->value);
-  return ret;
+  return append_ctor_to_tree_vector (ret, ctor);
 }
 
 /* Get a new tree vector which is a copy of an existing one.  */
