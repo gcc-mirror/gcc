@@ -9428,7 +9428,24 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 initializer.  It is not legal to redeclare a static data
 	 member, so this issue does not arise in that case.  */
       else if (var_definition_p && TREE_STATIC (decl))
-	expand_static_init (decl, init);
+	{
+	  if (decomp && DECL_FUNCTION_SCOPE_P (decl))
+	    {
+	      tree sl = push_stmt_list ();
+	      auto saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+	      current_stmt_tree ()->stmts_are_full_exprs_p = 0;
+	      expand_static_init (decl, init);
+	      current_stmt_tree ()->stmts_are_full_exprs_p
+		= saved_stmts_are_full_exprs_p;
+	      cp_finish_decomp (decl, decomp);
+	      decomp = NULL;
+	      sl = pop_stmt_list (sl);
+	      sl = maybe_cleanup_point_expr_void (sl);
+	      add_stmt (sl);
+	    }
+	  else
+	    expand_static_init (decl, init);
+	}
     }
 
   /* If a CLEANUP_STMT was created to destroy a temporary bound to a
