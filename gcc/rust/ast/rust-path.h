@@ -622,6 +622,8 @@ public:
 
   std::string as_string () const override;
 
+  bool is_lang_item () const { return kind == Kind::LangItem; }
+
   // TODO: this seems kinda dodgy
   std::vector<PathExprSegment> &get_segments ()
   {
