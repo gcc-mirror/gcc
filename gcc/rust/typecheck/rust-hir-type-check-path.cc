@@ -16,6 +16,9 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-diagnostics.h"
+#include "rust-hir-map.h"
+#include "rust-hir-path.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-item.h"
@@ -24,6 +27,7 @@
 #include "rust-hir-path-probe.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
+#include "rust-hir-item.h"
 #include "rust-session-manager.h"
 #include "rust-immutable-name-resolution-context.h"
 
@@ -179,20 +183,72 @@ void
 TypeCheckExpr::visit (HIR::PathInExpression &expr)
 {
   NodeId resolved_node_id = UNKNOWN_NODEID;
-  size_t offset = -1;
-  TyTy::BaseType *tyseg = resolve_root_path (expr, &offset, &resolved_node_id);
-  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-    return;
-
-  bool fully_resolved = offset == expr.get_segments ().size ();
-  if (fully_resolved)
+  if (expr.is_lang_item ())
     {
-      infered = tyseg;
-      return;
-    }
+      auto lookup
+	= Analysis::Mappings::get ().get_lang_item_node (expr.get_lang_item ());
+      auto hir_id = mappings.lookup_node_to_hir (lookup);
 
-  resolve_segments (resolved_node_id, expr.get_segments (), offset, tyseg,
-		    expr.get_mappings (), expr.get_locus ());
+      // We can type resolve the path in expression easily as it is a lang
+      // item path, but we still need to setup the various generics and
+      // substitutions
+
+      // FIXME: We probably need to check *if* the type needs substitutions
+      // or not
+      if (LangItem::IsEnumVariant (expr.get_lang_item ()))
+	{
+	  std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
+	    = mappings.lookup_hir_enumitem (*hir_id);
+	  bool enum_item_ok = enum_item_lookup.first != nullptr
+			      && enum_item_lookup.second != nullptr;
+	  rust_assert (enum_item_ok);
+
+	  HirId variant_id
+	    = enum_item_lookup.second->get_mappings ().get_hirid ();
+
+	  HIR::EnumItem *enum_item = enum_item_lookup.second;
+	  resolved_node_id = enum_item->get_mappings ().get_nodeid ();
+
+	  // insert the id of the variant we are resolved to
+	  context->insert_variant_definition (expr.get_mappings ().get_hirid (),
+					      variant_id);
+
+	  query_type (variant_id, &infered);
+	  infered = SubstMapper::InferSubst (infered, expr.get_locus ());
+	}
+      else
+	{
+	  TyTy::BaseType *resolved = nullptr;
+	  context->lookup_type (*hir_id, &resolved);
+
+	  rust_assert (resolved);
+
+	  query_type (*hir_id, &infered);
+
+	  infered = SubstMapper::InferSubst (resolved, expr.get_locus ());
+	}
+
+      // FIXME: also we probably need to insert resolved types in the name
+      // resolver here
+    }
+  else
+    {
+      size_t offset = -1;
+      TyTy::BaseType *tyseg
+	= resolve_root_path (expr, &offset, &resolved_node_id);
+      if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
+	return;
+
+      bool fully_resolved = offset == expr.get_segments ().size ();
+      if (fully_resolved)
+	{
+	  infered = tyseg;
+	  return;
+	}
+
+      resolve_segments (resolved_node_id, expr.get_segments (), offset, tyseg,
+			expr.get_mappings (), expr.get_locus ());
+    }
 }
 
 TyTy::BaseType *

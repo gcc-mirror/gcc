@@ -35,15 +35,29 @@ namespace Compile {
 void
 ResolvePathRef::visit (HIR::QualifiedPathInExpression &expr)
 {
-  resolved = resolve (expr.get_final_segment ().get_segment (),
-		      expr.get_mappings (), expr.get_locus (), true);
+  auto final_segment = HIR::PathIdentSegment::create_error ();
+  if (expr.is_lang_item ())
+    final_segment
+      = HIR::PathIdentSegment (LangItem::ToString (expr.get_lang_item ()));
+  else
+    final_segment = expr.get_final_segment ().get_segment ();
+
+  resolved
+    = resolve (final_segment, expr.get_mappings (), expr.get_locus (), true);
 }
 
 void
 ResolvePathRef::visit (HIR::PathInExpression &expr)
 {
-  resolved = resolve (expr.get_final_segment ().get_segment (),
-		      expr.get_mappings (), expr.get_locus (), false);
+  auto final_segment = HIR::PathIdentSegment::create_error ();
+  if (expr.is_lang_item ())
+    final_segment
+      = HIR::PathIdentSegment (LangItem::ToString (expr.get_lang_item ()));
+  else
+    final_segment = expr.get_final_segment ().get_segment ();
+
+  resolved
+    = resolve (final_segment, expr.get_mappings (), expr.get_locus (), true);
 }
 
 tree
