@@ -2791,7 +2791,7 @@ start_function_contracts (tree decl1)
 
   /* If this is not a client side check and definition side checks are
      disabled, do nothing.  */
-  if (!flag_contracts_nonattr_def_contracts &&
+  if (!flag_contracts_nonattr_definition_check &&
       !DECL_CONTRACT_WRAPPER(decl1))
     return;
 
@@ -2912,7 +2912,7 @@ maybe_apply_function_contracts (tree fndecl)
 
   /* If this is not a client side check and definition side checks are
      disabled, do nothing.  */
-  if (!flag_contracts_nonattr_def_contracts &&
+  if (!flag_contracts_nonattr_definition_check &&
       !DECL_CONTRACT_WRAPPER(fndecl))
     return;
 
@@ -3051,7 +3051,7 @@ finish_function_contracts (tree fndecl)
 
   /* If this is not a client side check and definition side checks are
      disabled, do nothing.  */
-  if (!flag_contracts_nonattr_def_contracts &&
+  if (!flag_contracts_nonattr_definition_check &&
       !DECL_CONTRACT_WRAPPER(fndecl))
     return;
 
