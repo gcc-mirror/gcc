@@ -106,7 +106,8 @@ TEST_LOOP (_Float16, uint64_t)
 TEST_LOOP (float, uint64_t)
 TEST_LOOP (double, uint64_t)
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 80 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 80 "vect" { target { ! riscv_zvfh } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 88 "vect" { target riscv_zvfh } } } */
 /* { dg-final { scan-tree-dump " \.MASK_LEN_GATHER_LOAD" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.GATHER_LOAD" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_GATHER_LOAD" "vect" } } */
