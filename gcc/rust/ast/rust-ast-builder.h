@@ -95,9 +95,9 @@ public:
 
   /* Create a let binding with an optional type and initializer (`let <name> :
    * <type> = <init>`) */
-  std::unique_ptr<Stmt> let (std::unique_ptr<Pattern> pattern,
-			     std::unique_ptr<Type> type = nullptr,
-			     std::unique_ptr<Expr> init = nullptr) const;
+  std::unique_ptr<Stmt> let (std::unique_ptr<Pattern> &&pattern,
+			     std::unique_ptr<Type> &&type = nullptr,
+			     std::unique_ptr<Expr> &&init = nullptr) const;
 
   /**
    * Create a call expression to a function, struct or enum variant, given its

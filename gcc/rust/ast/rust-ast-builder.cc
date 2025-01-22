@@ -306,8 +306,8 @@ Builder::return_expr (std::unique_ptr<Expr> &&to_return)
 }
 
 std::unique_ptr<Stmt>
-Builder::let (std::unique_ptr<Pattern> pattern, std::unique_ptr<Type> type,
-	      std::unique_ptr<Expr> init) const
+Builder::let (std::unique_ptr<Pattern> &&pattern, std::unique_ptr<Type> &&type,
+	      std::unique_ptr<Expr> &&init) const
 {
   return std::unique_ptr<Stmt> (new LetStmt (std::move (pattern),
 					     std::move (init), std::move (type),
