@@ -3,7 +3,7 @@
 // This tests the behaviour of a post condition on a member function
 // with caller side checks.
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe -fcontracts-nonattr-client-contracts=all " }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe -fcontracts-nonattr-client-check=all " }
 
 #include <experimental/contract>
 #include <iostream>
