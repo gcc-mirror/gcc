@@ -1347,8 +1347,8 @@
   machine_mode lsx_mode
     = <MODE>mode == SFmode ? V4SFmode : V2DFmode;
   rtx tmp = gen_reg_rtx (lsx_mode);
-  rtx op1 = lowpart_subreg (lsx_mode, operands[1], <MODE>mode);
-  rtx op2 = lowpart_subreg (lsx_mode, operands[2], <MODE>mode);
+  rtx op1 = force_lowpart_subreg (lsx_mode, operands[1], <MODE>mode);
+  rtx op2 = force_lowpart_subreg (lsx_mode, operands[2], <MODE>mode);
   emit_insn (gen_xorsign3 (lsx_mode, tmp, op1, op2));
   emit_move_insn (operands[0],
           lowpart_subreg (<MODE>mode, tmp, lsx_mode));
