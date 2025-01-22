@@ -6409,8 +6409,16 @@ gfc_conv_intrinsic_findloc (gfc_se *se, gfc_expr *expr)
       nonempty = false;
       S = from;
       while (S <= to) {
-	if (mask[S]) { nonempty = true; if (a[S] <= limit) goto lab; }
-	S++;
+	if (mask[S]) {
+	  nonempty = true;
+	  if (a[S] <= limit) {
+	    limit = a[S];
+	    S++;
+	    goto lab;
+	  }
+	else
+	  S++;
+	}
       }
       limit = nonempty ? NaN : huge (limit);
       lab:
@@ -6419,7 +6427,15 @@ gfc_conv_intrinsic_findloc (gfc_se *se, gfc_expr *expr)
       at runtime whether array is nonempty or not, rank 1:
       limit = Infinity;
       S = from;
-      while (S <= to) { if (a[S] <= limit) goto lab; S++; }
+      while (S <= to) {
+	if (a[S] <= limit) {
+	  limit = a[S];
+	  S++;
+	  goto lab;
+	  }
+	else
+	  S++;
+      }
       limit = (from <= to) ? NaN : huge (limit);
       lab:
       while (S <= to) { limit = min (a[S], limit); S++; }
@@ -6710,6 +6726,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_copy_loopinfo_to_se (&arrayse, &loop);
   arrayse.ss = arrayss;
   gfc_conv_expr_val (&arrayse, arrayexpr);
+  arrayse.expr = gfc_evaluate_now (arrayse.expr, &arrayse.pre);
   gfc_add_block_to_block (&block, &arrayse.pre);
 
   gfc_init_block (&block2);
@@ -6722,7 +6739,18 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
       tmp = fold_build2_loc (input_location, op == GT_EXPR ? GE_EXPR : LE_EXPR,
 			     logical_type_node, arrayse.expr, limit);
       if (lab)
-	ifbody = build1_v (GOTO_EXPR, lab);
+	{
+	  stmtblock_t ifblock;
+	  tree inc_loop;
+	  inc_loop = fold_build2_loc (input_location, PLUS_EXPR,
+				      TREE_TYPE (loop.loopvar[0]),
+				      loop.loopvar[0], gfc_index_one_node);
+	  gfc_init_block (&ifblock);
+	  gfc_add_modify (&ifblock, limit, arrayse.expr);
+	  gfc_add_modify (&ifblock, loop.loopvar[0], inc_loop);
+	  gfc_add_expr_to_block (&ifblock, build1_v (GOTO_EXPR, lab));
+	  ifbody = gfc_finish_block (&ifblock);
+	}
       else
 	{
 	  stmtblock_t ifblock;
@@ -6816,6 +6844,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
       gfc_copy_loopinfo_to_se (&arrayse, &loop);
       arrayse.ss = arrayss;
       gfc_conv_expr_val (&arrayse, arrayexpr);
+      arrayse.expr = gfc_evaluate_now (arrayse.expr, &arrayse.pre);
       gfc_add_block_to_block (&block, &arrayse.pre);
 
       /* MIN_EXPR/MAX_EXPR has unspecified behavior with NaNs or
