@@ -18,6 +18,7 @@
 
 #include "rust-session-manager.h"
 #include "rust-collect-lang-items.h"
+#include "rust-desugar-for-loops.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-pattern-analysis.h"
 #include "rust-immutable-name-resolution-context.h"
@@ -614,6 +615,9 @@ Session::compile_crate (const char *filename)
   // expansion pipeline stage
 
   expansion (parsed_crate, name_resolution_ctx);
+
+  AST::DesugarForLoops ().go (parsed_crate);
+
   rust_debug ("\033[0;31mSUCCESSFULLY FINISHED EXPANSION \033[0m");
   if (options.dump_option_enabled (CompileOptions::EXPANSION_DUMP))
     {
