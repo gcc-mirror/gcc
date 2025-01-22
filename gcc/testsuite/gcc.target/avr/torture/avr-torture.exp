@@ -45,7 +45,7 @@ dg-init
 	{ -Os -fomit-frame-pointer } \
 	{ -Os -fomit-frame-pointer -finline-functions } \
 	{ -O3 -g } \
-	{ -Os -mcall-prologues} ]
+	{ -Oz -mcall-prologues} ]
 
 
 #Initialize use of torture lists. 

@@ -418,6 +418,15 @@ avr_adiw_reg_p (rtx reg)
 }
 
 
+/* Return true iff REGNO is in R16...R31.  */
+
+static bool
+avr_ld_regno_p (int regno)
+{
+  return TEST_HARD_REG_CLASS (LD_REGS, regno);
+}
+
+
 static bool
 ra_in_progress ()
 {
@@ -7397,17 +7406,20 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 {
   if (CONST_INT_P (operands[2]))
     {
+      int off = INTVAL (operands[2]);
       int reg0 = true_regnum (operands[0]);
       int reg1 = true_regnum (operands[1]);
       bool reg1_unused_after = reg_unused_after (insn, operands[1]);
-
+      bool scratch_p = (GET_CODE (PATTERN (insn)) == PARALLEL
+			&& XVECLEN (PATTERN (insn), 0) == 3
+			&& REG_P (operands[3]));
       if (plen)
 	*plen = 0;
 
-      switch (INTVAL (operands[2]))
+      switch (off)
 	{
 	default:
-	  if (INTVAL (operands[2]) < 32)
+	  if (off < 32)
 	    break;
 
 	  return AVR_HAVE_MOVW
@@ -7461,11 +7473,58 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %D0,%B1"  CR_TAB
 			   "clr %B0"      CR_TAB
 			   "clr %A0", operands, plen, 4);
+	case 30:
+	  if (AVR_HAVE_MUL && scratch_p)
+	    return avr_asm_len ("ldi %3,1<<6"       CR_TAB
+				"mul %3,%A1"        CR_TAB
+				"mov %D0,r0"        CR_TAB
+				"clr __zero_reg__"  CR_TAB
+				"clr %C0"           CR_TAB
+				"clr %B0"           CR_TAB
+				"clr %A0", operands, plen, 7);
+	  // Fallthrough
+
+	case 28:
+	case 29:
+	  {
+	    const bool ld_reg0_p = avr_ld_regno_p (reg0 + 3); // %D0
+	    const bool ld_reg1_p = avr_ld_regno_p (reg1 + 0); // %A1
+	    if (ld_reg0_p
+		|| (ld_reg1_p && reg1_unused_after)
+		|| scratch_p)
+	      {
+		if (ld_reg0_p)
+		  avr_asm_len ("mov %D0,%A1"    CR_TAB
+			       "swap %D0"       CR_TAB
+			       "andi %D0,0xf0", operands, plen, 3);
+		else if (ld_reg1_p && reg1_unused_after)
+		  avr_asm_len ("swap %A1"       CR_TAB
+			       "andi %A1,0xf0"  CR_TAB
+			       "mov %D0,%A1", operands, plen, 3);
+		else
+		  avr_asm_len ("mov %D0,%A1"    CR_TAB
+			       "swap %D0"       CR_TAB
+			       "ldi %3,0xf0"    CR_TAB
+			       "and %D0,%3", operands, plen, 4);
+		for (int i = 28; i < off; ++i)
+		  avr_asm_len ("lsl %D0", operands, plen, 1);
+		return avr_asm_len ("clr %C0"  CR_TAB
+				    "clr %B0"  CR_TAB
+				    "clr %A0", operands, plen, 3);
+	      }
+	  }
+	  // Fallthrough
+
 	case 24:
-	  return avr_asm_len ("mov %D0,%A1"  CR_TAB
-			      "clr %C0"      CR_TAB
+	case 25:
+	case 26:
+	case 27:
+	  avr_asm_len ("mov %D0,%A1", operands, plen, 1);
+	  for (int i = 24; i < off; ++i)
+	    avr_asm_len ("lsl %D0", operands, plen, 1);
+	  return avr_asm_len ("clr %C0"      CR_TAB
 			      "clr %B0"      CR_TAB
-			      "clr %A0", operands, plen, 4);
+			      "clr %A0", operands, plen, 3);
 	case 31:
 	  return AVR_HAVE_MOVW
 	    ? avr_asm_len ("bst %A1,0"    CR_TAB
@@ -8298,17 +8357,20 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 {
   if (CONST_INT_P (operands[2]))
     {
+      int off = INTVAL (operands[2]);
       int reg0 = true_regnum (operands[0]);
       int reg1 = true_regnum (operands[1]);
       bool reg1_unused_after = reg_unused_after (insn, operands[1]);
-
+      bool scratch_p = (GET_CODE (PATTERN (insn)) == PARALLEL
+			&& XVECLEN (PATTERN (insn), 0) == 3
+			&& REG_P (operands[3]));
       if (plen)
 	*plen = 0;
 
-      switch (INTVAL (operands[2]))
+      switch (off)
 	{
 	default:
-	  if (INTVAL (operands[2]) < 32)
+	  if (off < 32)
 	    break;
 
 	  return AVR_HAVE_MOVW
@@ -8362,11 +8424,58 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %A0,%C1" CR_TAB
 			   "clr %C0"     CR_TAB
 			   "clr %D0", operands, plen, 4);
+	case 30:
+	  if (AVR_HAVE_MUL && scratch_p)
+	    return avr_asm_len ("ldi %3,1<<2"       CR_TAB
+				"mul %3,%D1"        CR_TAB
+				"mov %A0,r1"        CR_TAB
+				"clr __zero_reg__"  CR_TAB
+				"clr %B0"           CR_TAB
+				"clr %C0"           CR_TAB
+				"clr %D0", operands, plen, 7);
+	  // Fallthrough
+
+	case 29:
+	case 28:
+	  {
+	    const bool ld_reg0_p = avr_ld_regno_p (reg0 + 0); // %A0
+	    const bool ld_reg1_p = avr_ld_regno_p (reg1 + 3); // %D1
+	    if (ld_reg0_p
+		|| (ld_reg1_p && reg1_unused_after)
+		|| scratch_p)
+	      {
+		if (ld_reg0_p)
+		  avr_asm_len ("mov %A0,%D1"    CR_TAB
+			       "swap %A0"       CR_TAB
+			       "andi %A0,0x0f", operands, plen, 3);
+		else if (ld_reg1_p && reg1_unused_after)
+		  avr_asm_len ("swap %D1"       CR_TAB
+			       "andi %D1,0x0f"  CR_TAB
+			       "mov %A0,%D1", operands, plen, 3);
+		else
+		  avr_asm_len ("mov %A0,%D1"    CR_TAB
+			       "swap %A0"       CR_TAB
+			       "ldi %3,0x0f"    CR_TAB
+			       "and %A0,%3", operands, plen, 4);
+		for (int i = 28; i < off; ++i)
+		  avr_asm_len ("lsr %A0", operands, plen, 1);
+		return avr_asm_len ("clr %B0"  CR_TAB
+				    "clr %C0"  CR_TAB
+				    "clr %D0", operands, plen, 3);
+	      }
+	  }
+	  // Fallthrough
+
+	case 27:
+	case 26:
+	case 25:
 	case 24:
-	  return avr_asm_len ("mov %A0,%D1" CR_TAB
-			      "clr %B0"     CR_TAB
+	  avr_asm_len ("mov %A0,%D1", operands, plen, 1);
+	  for (int i = 24; i < off; ++i)
+	    avr_asm_len ("lsr %A0", operands, plen, 1);
+	  return avr_asm_len ("clr %B0"     CR_TAB
 			      "clr %C0"     CR_TAB
-			      "clr %D0", operands, plen, 4);
+			      "clr %D0", operands, plen, 3);
 	case 31:
 	  return AVR_HAVE_MOVW
 	    ? avr_asm_len ("bst %D1,7"    CR_TAB
@@ -13037,9 +13146,6 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      case 0:
 		*total = 0;
 		break;
-	      case 24:
-		*total = COSTS_N_INSNS (3);
-		break;
 	      case 1:
 	      case 8:
 		*total = COSTS_N_INSNS (4);
@@ -13049,6 +13155,19 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		break;
 	      case 16:
 		*total = COSTS_N_INSNS (4 - AVR_HAVE_MOVW);
+		break;
+	      case 24:
+	      case 25:
+	      case 26:
+	      case 27:
+		*total = COSTS_N_INSNS (4 + val1 - 24);
+		break;
+	      case 28:
+	      case 29:
+		*total = COSTS_N_INSNS (6 + val1 - 28);
+		break;
+	      case 30:
+		*total = COSTS_N_INSNS (!speed && AVR_HAVE_MUL ? 7 : 8);
 		break;
 	      case 31:
 		*total = COSTS_N_INSNS (6);
@@ -13346,6 +13465,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		*total = 0;
 		break;
 	      case 1:
+	      case 8:
 		*total = COSTS_N_INSNS (4);
 		break;
 	      case 2:
@@ -13357,9 +13477,18 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      case 16:
 		*total = COSTS_N_INSNS (4 - AVR_HAVE_MOVW);
 		break;
-	      case 8:
 	      case 24:
-		*total = COSTS_N_INSNS (4);
+	      case 25:
+	      case 26:
+	      case 27:
+		*total = COSTS_N_INSNS (4 + val1 - 24);
+		break;
+	      case 28:
+	      case 29:
+		*total = COSTS_N_INSNS (6 + val1 - 28);
+		break;
+	      case 30:
+		*total = COSTS_N_INSNS (!speed && AVR_HAVE_MUL ? 7 : 8);
 		break;
 	      case 31:
 		*total = COSTS_N_INSNS (6);
