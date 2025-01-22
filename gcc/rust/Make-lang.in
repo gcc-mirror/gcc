@@ -239,6 +239,7 @@ GRS_OBJS = \
 	rust/rust-lang-item.o \
 	rust/rust-collect-lang-items.o \
 	rust/rust-desugar-for-loops.o \
+	rust/rust-desugar-question-mark.o \
     $(END)
 # removed object files from here
 
