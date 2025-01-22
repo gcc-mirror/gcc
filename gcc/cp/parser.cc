@@ -11825,9 +11825,6 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->omp_array_section_p = saved_omp_array_section_p;
   }
 
-  /* This field is only used during parsing of the lambda.  */
-  LAMBDA_EXPR_THIS_CAPTURE (lambda_expr) = NULL_TREE;
-
   /* This lambda shouldn't have any proxies left at this point.  */
   gcc_assert (LAMBDA_EXPR_PENDING_PROXIES (lambda_expr) == NULL);
   /* And now that we're done, push proxies for an enclosing lambda.  */

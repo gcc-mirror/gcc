@@ -785,6 +785,12 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
   tree result;
 
   tree this_capture = LAMBDA_EXPR_THIS_CAPTURE (lambda);
+  if (this_capture)
+    if (tree spec = retrieve_local_specialization (this_capture))
+      {
+	gcc_checking_assert (generic_lambda_fn_p (lambda_function (lambda)));
+	this_capture = spec;
+      }
 
   /* In unevaluated context this isn't an odr-use, so don't capture.  */
   if (cp_unevaluated_operand)
