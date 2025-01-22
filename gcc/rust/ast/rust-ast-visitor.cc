@@ -89,8 +89,10 @@ void
 DefaultASTVisitor::visit (AST::PathInExpression &path)
 {
   visit_outer_attrs (path);
-  for (auto &segment : path.get_segments ())
-    visit (segment);
+
+  if (!path.is_lang_item ())
+    for (auto &segment : path.get_segments ())
+      visit (segment);
 }
 
 void

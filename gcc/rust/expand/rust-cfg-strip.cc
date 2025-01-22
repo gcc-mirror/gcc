@@ -19,6 +19,7 @@
 #include "rust-cfg-strip.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
+#include "rust-path.h"
 #include "rust-session-manager.h"
 #include "rust-attribute-values.h"
 
@@ -434,10 +435,13 @@ CfgStrip::visit (AST::PathInExpression &path)
       return;
     }
 
-  for (auto &segment : path.get_segments ())
+  if (!path.is_lang_item ())
     {
-      if (segment.has_generic_args ())
-	maybe_strip_generic_args (segment.get_generic_args ());
+      for (auto &segment : path.get_segments ())
+	{
+	  if (segment.has_generic_args ())
+	    maybe_strip_generic_args (segment.get_generic_args ());
+	}
     }
 }
 

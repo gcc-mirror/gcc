@@ -18,6 +18,7 @@
 
 #include "rust-ast-resolve-path.h"
 #include "rust-ast-resolve-type.h"
+#include "rust-hir-map.h"
 #include "rust-path.h"
 
 namespace Rust {
@@ -49,6 +50,10 @@ ResolvePath::go (AST::SimplePath &expr)
 NodeId
 ResolvePath::resolve_path (AST::PathInExpression &expr)
 {
+  if (expr.is_lang_item ())
+    return Analysis::Mappings::get ().get_lang_item_node (
+      expr.get_lang_item ());
+
   NodeId resolved_node_id = UNKNOWN_NODEID;
   NodeId module_scope_id = resolver->peek_current_module_scope ();
   NodeId previous_resolved_node_id = module_scope_id;
