@@ -1305,8 +1305,8 @@ Mappings::get_lang_item_node (LangItem::Kind item_type)
   if (auto lookup = lookup_lang_item_node (item_type))
     return *lookup;
 
-  rust_fatal_error (UNKNOWN_LOCATION, "failed to find lang item %qs",
-		    LangItem::ToString (item_type).c_str ());
+  rust_fatal_error (UNKNOWN_LOCATION, "undeclared lang item: %qs",
+		    LangItem::PrettyString (item_type).c_str ());
 }
 
 void
