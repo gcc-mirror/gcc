@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-client-contracts=none" }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-client-check=none" }
 static int pre_check = 0;
 bool fpre()
 {
