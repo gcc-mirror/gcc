@@ -1,3 +1,46 @@
+2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/118525
+	* cp-gimplify.cc (cp_fold): Check operands of unary, binary, cond/vec_cond
+	and array_ref for error_mark before checking if the operands had changed.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc++/118586
+	* parser.cc (cp_parser_objc_message_args): Handle CPP_EMBED.
+
+2025-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118396
+	PR c++/118523
+	* constexpr.cc (cxx_eval_outermost_constant_expr): For non-simple
+	TARGET_EXPRs, return ctx.ctor rather than the result of
+	cxx_eval_constant_expression.  If TYPE and the type of R don't
+	match, return the original expression.
+
+2025-01-21  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118225
+	* typeck.cc (build_class_member_access_expr): Let errors that
+	that have been reported go through.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_lexer_new_main): Attempt to optimize large sequences
+	of CPP_NUMBER with int type and values 0-255 separated by CPP_COMMA
+	into CPP_EMBED with RAW_DATA_CST u.value.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.cc (names_builtin_p): Return 1 for RID_VA_ARG.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118532
+	* call.cc (add_list_candidates): Handle RAW_DATA_CST among init_list
+	elts.
+	* error.cc (dump_expr_init_vec): Handle RAW_DATA_CST among v elts.
+
 2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* parser.cc (cp_parser_decomposition_declaration): Check linkage

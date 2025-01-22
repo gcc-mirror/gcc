@@ -1,3 +1,8 @@
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (names_builtin_p): Return 1 for RID_C23_VA_START and
+	RID_VA_ARG.
+
 2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c-parser.cc (c_parser_omp_assumption_clauses): Give a more specific

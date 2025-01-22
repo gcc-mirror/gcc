@@ -1,3 +1,179 @@
+2025-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-10-29  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/cmo-32.c: New test.
+	* gcc.target/riscv/cmo-64.c: New test.
+
+2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118483
+	* gcc.dg/tree-ssa/pr118483-1.c: New test.
+	* gcc.dg/tree-ssa/pr118483-2.c: New test.
+	* gcc.dg/tree-ssa/pr118483-3.c: New test.
+	* gcc.dg/tree-ssa/pr118483-4.c: New test.
+
+2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/118525
+	* g++.dg/cpp2a/consteval38.C: New test.
+
+2025-01-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/torture/pr117546.c: Require effective target int32plus.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc++/118586
+	* objc.dg/embed-1.m: New test.
+	* obj-c++.dg/embed-1.mm: New test.
+	* obj-c++.dg/va-meth-2.mm: New test.
+
+2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116593
+	* g++.target/riscv/rvv/rvv.exp: Enable testsuite of XTheadVector.
+	* g++.target/riscv/rvv/xtheadvector/pr116593.C: New test.
+
+2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Enable testsuite of
+	XTheadVector.
+	* gcc.target/riscv/rvv/xtheadvector/pr114194.c: Adjust correctly.
+	* gcc.target/riscv/rvv/xtheadvector/prefix.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlb-vsb.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlbu-vsb.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlh-vsh.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlhu-vsh.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlw-vsw.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlwu-vsw.c: Likewise.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118560
+	* gcc.dg/dfp/pr118560.c: New test.
+
+2025-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118396
+	PR c++/118523
+	* g++.dg/cpp0x/constexpr-prvalue4.C: New test.
+	* g++.dg/cpp1y/constexpr-prvalue3.C: New test.
+
+2025-01-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* gcc.dg/vect/vect-switch-search-line-fast.c: Update for GCN.
+
+2025-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118569
+	* gcc.dg/torture/pr118569.c: New testcase.
+
+2025-01-21  Vladimir Miloserdov  <vladimir.miloserdov@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h: New test
+	macro.
+	* lib/target-supports.exp: Add lut flag to the for loop.
+	* gcc.target/aarch64/sve/acle/general-c/lut_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/lut_2.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/lut_3.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/lut_4.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_bf16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_f16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_s16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_s8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_u16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_u8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_bf16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_bf16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_f16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_f16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_s16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_s16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_s8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_u16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_u16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_u8.c: New test.
+
+2025-01-21  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118225
+	* g++.dg/cpp0x/constexpr-ice21.C: New test.
+
+2025-01-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/118273
+	* gcc.target/aarch64/vect-simd-clone-4.c: New test.
+
+2025-01-21  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/arch-func-attr-1.c: Add '#pragma'.
+	* gcc.target/loongarch/cmodel-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/lasx-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/lsx-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/strict_align-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/strict_align-func-attr-2.c: Likewise.
+	* gcc.target/loongarch/vector-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/arch-pragma-attr-1.c: Likewise.
+	* gcc.target/loongarch/cmodel-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/lsx-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/lsx-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/strict_align-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/strict_align-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/vector-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/pragma-push-pop.c: New test.
+
+2025-01-21  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/arch-func-attr-1.c: New test.
+	* gcc.target/loongarch/cmodel-func-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-func-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-func-attr-2.c: New test.
+	* gcc.target/loongarch/lsx-func-attr-1.c: New test.
+	* gcc.target/loongarch/lsx-func-attr-2.c: New test.
+	* gcc.target/loongarch/strict_align-func-attr-1.c: New test.
+	* gcc.target/loongarch/strict_align-func-attr-2.c: New test.
+	* gcc.target/loongarch/vector-func-attr-1.c: New test.
+	* gcc.target/loongarch/attr-check-error-message.c: New test.
+
+2025-01-21  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118277
+	* g++.dg/cpp1z/constexpr-asm-5.C: Pass -fno-implicit-constexpr.
+
+2025-01-21  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/aarch64/mv-1.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols1.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols2.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols3.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols4.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols5.C: Add CLI flag.
+	* g++.target/aarch64/mv-warning1.C: New test.
+	* g++.target/aarch64/mvc-symbols1.C: Add CLI flag.
+	* g++.target/aarch64/mvc-symbols2.C: Add CLI flag.
+	* g++.target/aarch64/mvc-symbols3.C: Add CLI flag.
+	* g++.target/aarch64/mvc-symbols4.C: Add CLI flag.
+	* g++.target/aarch64/mv-pragma.C: Add CLI flag.
+	* g++.target/aarch64/mvc-warning1.C: New test.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/has-builtin-4.c: New test.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118532
+	* g++.dg/cpp/embed-22.C: New test.
+	* g++.dg/cpp/embed-23.C: New test.
+	* g++.dg/cpp0x/pr118532.C: New test.
+	* g++.dg/cpp2a/explicit20.C: New test.
+
 2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* g++.dg/modules/export-6.C: Add structured binding tests.

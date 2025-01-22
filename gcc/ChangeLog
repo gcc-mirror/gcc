@@ -1,3 +1,150 @@
+2025-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-10-29  yulong  <shiyulong@iscas.ac.cn>
+
+	* config.gcc: Add riscv_cmo.h.
+	* config/riscv/riscv_cmo.h: New file.
+
+2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118483
+	* match.pd (`x ==/!= ~x`): Allow for an optional convert
+	and use itwise_inverted_equal_p/maybe_bit_not instead of
+	directly matching bit_not.
+
+2025-01-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_file_end): Fix format string.
+	(riscv_lshift_subword): Mark MODE as unused.
+
+2025-01-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-passes.cc (avr_emit_shift) [ASHIFT,HImode]:
+	Allow offsets 5 and 6 as 3op provided have MUL and a scratch.
+	* config/avr/avr.cc (avr_optimize_size_max_p): New function.
+	(avr_out_ashlhi3_mul): New function.
+	(ashlhi3_out) [case 4, 5, 6]: Better speed for -Os.
+	* config/avr/avr.md (isa) <mul, no_mul>: New attr values.
+	(*ashlhi3_const): Add alternative for offsets 5 and 6.
+
+2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116593
+	* config/riscv/constraints.md (vl): New.
+	* config/riscv/thead-vector.md: Replacing rK with rvl.
+	* config/riscv/vector.md: Likewise.
+
+2025-01-21  Denis Chertykov  <chertykov@gmail.com>
+
+	* lra-spills.cc (assign_stack_slot_num_and_sort_pseudos): Use known_ge
+	to compare sizes.
+
+2025-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116256
+	* config/riscv/predicates.md (consecutive_bits_operand): Properly
+	handle (const_int 0).
+
+2025-01-21  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.opt.urls: Regenerate
+
+2025-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118569
+	* cfgloopmanip.cc (fix_loop_placement): When the loops
+	nesting parents changed, mark all blocks to be scanned
+	for LC PHI uses.
+	(fix_bb_placements): Remove code moved into fix_loop_placement.
+
+2025-01-21  Vladimir Miloserdov  <vladimir.miloserdov@arm.com>
+
+	* config/aarch64/aarch64-c.cc
+	(aarch64_update_cpp_builtins): Add new flag TARGET_LUT.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(struct luti_base): Shape for lut intrinsics.
+	(SHAPE): Specializations for lut shapes for luti2 and luti4..
+	* config/aarch64/aarch64-sve-builtins-shapes.h: Declare lut
+	intrinsics.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(class svluti_lane_impl): Define expand for lut intrinsics.
+	(FUNCTION): Define expand for lut intrinsics.
+	* config/aarch64/aarch64-sve-builtins-sve2.def
+	(REQUIRED_EXTENSIONS): Declare lut intrinsics behind lut flag.
+	(svluti2_lane): Define intrinsic behind flag.
+	(svluti4_lane): Define intrinsic behind flag.
+	* config/aarch64/aarch64-sve-builtins-sve2.h: Declare lut
+	intrinsics.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(TYPES_bh_data): New type for byte and halfword.
+	(bh_data): Type array for byte and halfword.
+	(h_data): Type array for halfword.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_luti<LUTI_BITS><mode>): Instruction patterns for
+	lut intrinsics.
+	* config/aarch64/iterators.md: Iterators and attributes for lut
+	intrinsics.
+
+2025-01-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/118273
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use nvectors when
+	doing mask registrations.
+
+2025-01-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config.gcc (aarch64-*-elf): Drop ILP32 from default multilibs.
+
+2025-01-21  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_reset_previous_fndecl):  Add function declaration.
+	(loongarch_save_restore_target_globals): Likewise.
+	(loongarch_register_pragmas): Likewise.
+	* config/loongarch/loongarch-target-attr.cc
+	(loongarch_option_valid_attribute_p): Optimize the processing
+	of attributes.
+	(loongarch_pragma_target_parse): New functions.
+	(loongarch_register_pragmas): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_reset_previous_fndecl): New functions.
+	(loongarch_set_current_function): When the old_tree is the same
+	as the new_tree, the rules for using registers, etc.,
+	are set according to the option values to ensure that the
+	pragma can be processed correctly.
+	* config/loongarch/loongarch.h (REGISTER_TARGET_PRAGMAS):
+	Define macro.
+	* doc/extend.texi: Supplemental Documentation.
+
+2025-01-21  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* attr-urls.def: Regenerate.
+	* config.gcc: Add loongarch-target-attr.o to extra_objs.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_option_valid_attribute_p): Function declaration.
+	(loongarch_option_override_internal): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_option_override_internal): Delete the modifications
+	to target_option_default_node and target_option_current_node.
+	(loongarch_set_current_function): Add annotation information.
+	(loongarch_option_override): add assignment operations to
+	target_option_default_node and target_option_current_node.
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Define.
+	* config/loongarch/t-loongarch: Add compilation of target file
+	loongarch-target-attr.o.
+	* doc/extend.texi: Add description information of LoongArch
+	Function Attributes.
+	* config/loongarch/loongarch-target-attr.cc: New file.
+
+2025-01-21  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_process_target_version_attr): Add experimental warning.
+	* config/aarch64/aarch64.opt: Add command line option to disable
+	warning.
+	* doc/invoke.texi: Add documentation for -W[no-]experimental-fmv-target.
+
 2025-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/118560
