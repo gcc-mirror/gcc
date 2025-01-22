@@ -1961,7 +1961,7 @@ Enum(client_contract_check) String(pre) Value(1)
 EnumValue
 Enum(client_contract_check) String(all) Value(2)
 
-fcontracts-nonattr-client-contracts=
+fcontracts-nonattr-client-check=
 C++ Joined RejectNegative Enum(client_contract_check) Var(flag_contract_nonattr_client_check) Init (0)
 -fcontracts-nonattr-client-check=[none|pre|all] Select which contracts will be checked on the client side for non virtual functions
 
