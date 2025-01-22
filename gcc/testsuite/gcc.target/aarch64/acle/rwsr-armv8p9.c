@@ -3,10 +3,8 @@
 /* { dg-options "-O2 -march=armv8.9-a" } */
 #include <arm_acle.h>
 void
-readwrite_armv8p9a_sysregs ()
+readwrite_armv8p9a_sysregs (long long int a)
 {
-  long long int a;
-
   /* Write-only system registers.  */
   __arm_wsr64 ("pmzr_el0", a); /* { dg-final { scan-assembler "msr\ts3_3_c9_c13_4, x0" } } */
 

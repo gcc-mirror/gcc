@@ -659,7 +659,7 @@
 
 (define_insn "aarch64_write_sysregdi"
   [(unspec_volatile:DI [(match_operand 0 "aarch64_sysreg_string" "")
-			(match_operand:DI 1 "register_operand" "rZ")]
+			(match_operand:DI 1 "aarch64_reg_or_zero" "rZ")]
 		       UNSPEC_SYSREG_WDI)]
   ""
   "msr\t%0, %x1"
