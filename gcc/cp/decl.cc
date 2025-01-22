@@ -19208,9 +19208,6 @@ finish_function (bool inline_p)
   if (fndecl == NULL_TREE || fndecl == error_mark_node)
     return error_mark_node;
 
-  bool do_contracts = (DECL_HAS_CONTRACTS_P (fndecl)
-		       && !processing_template_decl);
-
   if (!DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     finish_lambda_scope ();
 
@@ -19253,7 +19250,7 @@ finish_function (bool inline_p)
 			      current_eh_spec_block);
 
      /* If outlining succeeded, then add contracts handling if needed.  */
-     if (coroutine->cp_valid_coroutine () && do_contracts)
+     if (coroutine->cp_valid_coroutine ())
 	maybe_apply_function_contracts (fndecl);
     }
   else
@@ -19271,8 +19268,7 @@ finish_function (bool inline_p)
 			      (TREE_TYPE (current_function_decl)),
 			      current_eh_spec_block);
 
-     if (do_contracts)
-	maybe_apply_function_contracts (current_function_decl);
+      maybe_apply_function_contracts (current_function_decl);
 
     }
 

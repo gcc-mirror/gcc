@@ -1874,6 +1874,9 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh, bool check_post = tru
   /* no function body at present * */
   DECL_INITIAL (wrapdecl) = error_mark_node;
 
+  /* This declaration is a contract wrapper function. */
+  DECL_CONTRACT_WRAPPER(wrapdecl) = true;
+
   /* Build our result decl.  */
   tree resdecl = build_decl (loc, RESULT_DECL, 0, wrapper_return_type);
   DECL_CONTEXT (resdecl) = wrapdecl;
@@ -2786,6 +2789,12 @@ start_function_contracts (tree decl1)
   if (!handle_contracts_p (decl1))
     return;
 
+  /* If this is not a client side check and definition side checks are
+     disabled, do nothing.  */
+  if (!flag_contracts_nonattr_def_contracts &&
+      !DECL_CONTRACT_WRAPPER(decl1))
+    return;
+
   /* Check that the user did not try to shadow a function parameter with the
      specified postcondition result name.  */
   if (flag_contracts_nonattr)
@@ -2899,6 +2908,12 @@ maybe_apply_function_contracts (tree fndecl)
   if (!handle_contracts_p (fndecl))
     /* We did nothing and the original function body statement list will be
        popped by our caller.  */
+    return;
+
+  /* If this is not a client side check and definition side checks are
+     disabled, do nothing.  */
+  if (!flag_contracts_nonattr_def_contracts &&
+      !DECL_CONTRACT_WRAPPER(fndecl))
     return;
 
   bool do_pre = has_active_preconditions (fndecl);
@@ -3032,6 +3047,12 @@ finish_function_contracts (tree fndecl)
 
   if (!handle_contracts_p (fndecl)
       || !outline_contracts_p (fndecl))
+    return;
+
+  /* If this is not a client side check and definition side checks are
+     disabled, do nothing.  */
+  if (!flag_contracts_nonattr_def_contracts &&
+      !DECL_CONTRACT_WRAPPER(fndecl))
     return;
 
   for (tree ca = DECL_CONTRACTS (fndecl); ca; ca = CONTRACT_CHAIN (ca))

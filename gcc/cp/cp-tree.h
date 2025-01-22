@@ -3051,9 +3051,11 @@ struct GTY(()) lang_decl_fn {
   unsigned coroutine_p : 1;
   unsigned implicit_constexpr : 1;
   unsigned escalated_p : 1;
-  unsigned xobj_func : 1;
 
-  unsigned spare : 7;
+  unsigned xobj_func : 1;
+  unsigned contract_wrapper : 1;
+
+  unsigned spare : 6;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3473,6 +3475,11 @@ struct GTY(()) lang_decl {
 #define DECL_XOBJ_MEMBER_FUNCTION_P(NODE)		\
   (TREE_CODE (STRIP_TEMPLATE (NODE)) == FUNCTION_DECL	\
    && DECL_FUNCTION_XOBJ_FLAG (NODE) == 1)
+
+/* Nonzero for FUNCTION_DECL means that this decl is a contract
+   wrapper function.  */
+#define DECL_CONTRACT_WRAPPER(NODE)	\
+  LANG_DECL_FN_CHECK (NODE)->contract_wrapper
 
 /* Nonzero if NODE is a member function with an object argument,
    in other words, a non-static member function.  */
