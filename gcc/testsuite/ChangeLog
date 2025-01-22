@@ -1,3 +1,11 @@
+2025-01-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2024-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/111650
+	* gdc.dg/pr111650.d: New test.
+
 2025-01-19  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:
