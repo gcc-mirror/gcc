@@ -1811,8 +1811,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
   gfc_namespace *ns;
   gfc_expr *get_fn_hash = expr->value.function.actual->next->expr,
 	   *get_fn_expr = expr->value.function.actual->next->next->expr;
-  gfc_symbol *add_data_sym
-    = get_fn_expr->symtree->n.sym->formal->next->next->next->sym;
+  gfc_symbol *add_data_sym = get_fn_expr->symtree->n.sym->formal->sym;
 
   gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
 

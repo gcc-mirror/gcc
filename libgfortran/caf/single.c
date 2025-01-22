@@ -57,13 +57,17 @@ typedef struct caf_single_token *caf_single_token_t;
 /* Global variables.  */
 caf_static_t *caf_static_list = NULL;
 
-typedef void (*accessor_t) (void **, int32_t *, void *, void *, size_t *,
+typedef void (*accessor_t) (void *, const int *, void **, int32_t *, void *,
+			    caf_token_t, const size_t, size_t *,
 			    const size_t *);
 struct accessor_hash_t
 {
   int hash;
   int pad;
-  accessor_t accessor;
+  union
+  {
+    accessor_t accessor;
+  } u;
 };
 
 static struct accessor_hash_t *accessor_hash_table = NULL;
@@ -2874,7 +2878,7 @@ _gfortran_caf_register_accessor (const int hash, accessor_t accessor)
       accessor_hash_table_state = AHT_OPEN;
     }
   accessor_hash_table[aht_size].hash = hash;
-  accessor_hash_table[aht_size].accessor = accessor;
+  accessor_hash_table[aht_size].u.accessor = accessor;
   ++aht_size;
 }
 
@@ -2919,7 +2923,7 @@ _gfortran_caf_get_remote_function_index (const int hash)
 void
 _gfortran_caf_get_from_remote (
   caf_token_t token, const gfc_descriptor_t *opt_src_desc,
-  const size_t *opt_src_charlen, const int image_index __attribute__ ((unused)),
+  const size_t *opt_src_charlen, const int image_index,
   const size_t dst_size __attribute__ ((unused)), void **dst_data,
   size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
   const bool may_realloc_dst, const int getter_index, void *get_data,
@@ -2932,6 +2936,10 @@ _gfortran_caf_get_from_remote (
   int32_t free_buffer;
   void *dst_ptr = opt_dst_desc ? (void *)opt_dst_desc : dst_data;
   void *old_dst_data_ptr = NULL;
+  struct caf_single_token cb_token;
+  cb_token.memptr = get_data;
+  cb_token.desc = NULL;
+  cb_token.owning_memory = false;
 
   if (stat)
     *stat = 0;
@@ -2942,9 +2950,10 @@ _gfortran_caf_get_from_remote (
       opt_dst_desc->base_addr = NULL;
     }
 
-  accessor_hash_table[getter_index].accessor (dst_ptr, &free_buffer, src_ptr,
-					      get_data, opt_dst_charlen,
-					      opt_src_charlen);
+  accessor_hash_table[getter_index].u.accessor (get_data, &image_index, dst_ptr,
+						&free_buffer, src_ptr,
+						&cb_token, 0, opt_dst_charlen,
+						opt_src_charlen);
   if (opt_dst_desc && old_dst_data_ptr && !may_realloc_dst
       && opt_dst_desc->base_addr != old_dst_data_ptr)
     {

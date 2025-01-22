@@ -234,8 +234,9 @@ void _gfortran_caf_sendget_by_ref (
 	int *src_stat, int dst_type, int src_type);
 
 void _gfortran_caf_register_accessor (
-  const int hash, void (*accessor) (void **, int32_t *, void *, void *,
-				    size_t *, const size_t *));
+  const int hash,
+  void (*accessor) (void *, const int *, void **, int32_t *, void *,
+		    caf_token_t, const size_t, size_t *, const size_t *));
 
 void _gfortran_caf_register_accessors_finish (void);
 
