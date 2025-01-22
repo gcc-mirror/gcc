@@ -10822,11 +10822,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	WALK_SUBTREE (TYPE_TI_ARGS (t));
       break;
 
-    case INTEGER_TYPE:
-      WALK_SUBTREE (TYPE_MIN_VALUE (t));
-      WALK_SUBTREE (TYPE_MAX_VALUE (t));
-      break;
-
     case METHOD_TYPE:
       /* Since we're not going to walk subtrees, we have to do this
 	 explicitly here.  */
