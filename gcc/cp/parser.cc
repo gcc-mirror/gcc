@@ -36721,9 +36721,7 @@ cp_parser_objc_message_args (cp_parser* parser)
       cp_parser_require (parser, CPP_COLON, RT_COLON);
       arg = cp_parser_assignment_expression (parser);
 
-      sel_args
-	= chainon (sel_args,
-		   build_tree_list (selector, arg));
+      sel_args = tree_cons (selector, arg, sel_args);
 
       token = cp_lexer_peek_token (parser->lexer);
     }
@@ -36738,14 +36736,12 @@ cp_parser_objc_message_args (cp_parser* parser)
 	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
 	  cp_lexer_consume_token (parser->lexer);
 	  for (tree argument : raw_data_range (raw_data))
-	    addl_args = chainon (addl_args,
-				 build_tree_list (NULL_TREE, argument));
+	    addl_args = tree_cons (NULL_TREE, argument, addl_args);
 	}
       else
 	{
 	  tree arg = cp_parser_assignment_expression (parser);
-	  addl_args = chainon (addl_args,
-			       build_tree_list (NULL_TREE, arg));
+	  addl_args = tree_cons (NULL_TREE, arg, addl_args);
 	}
 
       token = cp_lexer_peek_token (parser->lexer);
@@ -36757,7 +36753,7 @@ cp_parser_objc_message_args (cp_parser* parser)
       return build_tree_list (error_mark_node, error_mark_node);
     }
 
-  return build_tree_list (sel_args, addl_args);
+  return build_tree_list (nreverse (sel_args), nreverse (addl_args));
 }
 
 /* Parse an Objective-C encode expression.
