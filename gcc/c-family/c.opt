@@ -1965,9 +1965,9 @@ fcontracts-nonattr-client-contracts=
 C++ Joined RejectNegative Enum(client_contract_check) Var(flag_contract_nonattr_client_check) Init (0)
 -fcontracts-nonattr-client-check=[none|pre|all] Select which contracts will be checked on the client side for non virtual functions
 
-fcontracts-nonattr-def-contracts=
-C++ Var(flag_contracts_nonattr_def_contracts) Enum(on_off) Joined Init(1) RejectNegative
--fcontracts-nonattr-def-contract=[on|off]	Enable or disable contract checks on the definition side for all functions (default on).
+fcontracts-nonattr-definition-check=
+C++ Joined RejectNegative Enum(on_off) Var(flag_contracts_nonattr_definition_check) Init(1)
+-fcontracts-nonattr-definition-check=[on|off]	Enable or disable contract checks on the definition side for all functions (default on).
 
 fcoroutines
 C++ LTO Var(flag_coroutines)
