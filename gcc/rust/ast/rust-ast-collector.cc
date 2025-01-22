@@ -15,12 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
 #include "rust-ast-collector.h"
 #include "rust-ast.h"
 #include "rust-diagnostics.h"
 #include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-keyword-values.h"
+#include "rust-path.h"
 #include "rust-system.h"
 #include "rust-token.h"
 
@@ -530,10 +532,22 @@ TokenCollector::visit (PathExprSegment &segment)
 void
 TokenCollector::visit (PathInExpression &path)
 {
-  if (path.opening_scope_resolution ())
+  if (path.is_lang_item ())
     {
-      push (Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
+      push (Rust::Token::make (TokenId::HASH, path.get_locus ()));
+      push (Rust::Token::make (TokenId::LEFT_SQUARE, path.get_locus ()));
+      push (Rust::Token::make_identifier (path.get_locus (), "lang"));
+      push (Rust::Token::make (TokenId::EQUAL, path.get_locus ()));
+      push (
+	Rust::Token::make_string (path.get_locus (),
+				  LangItem::ToString (path.get_lang_item ())));
+      push (Rust::Token::make (TokenId::RIGHT_SQUARE, path.get_locus ()));
+
+      return;
     }
+
+  if (path.opening_scope_resolution ())
+    push (Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
 
   visit_items_joined_by_separator (path.get_segments (), SCOPE_RESOLUTION);
 }
