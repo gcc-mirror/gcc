@@ -2791,7 +2791,7 @@ static keyed_map_t *keyed_table;
 
 /* Instantiations of temploid friends imported from another module
    need to be attached to the same module as the temploid.  This maps
-   these decls to the temploid they are instantiated them, as there is
+   these decls to the temploid they are instantiated from, as there is
    no other easy way to get this information.  */
 static GTY((cache)) decl_tree_cache_map *imported_temploid_friends;
 
@@ -7961,7 +7961,6 @@ trees_out::decl_value (tree decl, depset *dep)
     }
 
   merge_kind mk = get_merge_kind (decl, dep);
-  bool is_imported_temploid_friend = imported_temploid_friends->get (decl);
 
   if (CHECKING_P)
     {
@@ -7998,10 +7997,6 @@ trees_out::decl_value (tree decl, depset *dep)
 		is_attached = true;
 
 	      bits.b (is_attached);
-
-	      /* Also tell the importer whether this is an imported temploid
-		 friend, which has implications for merging.  */
-	      bits.b (is_imported_temploid_friend);
 	    }
 	  bits.b (dep && dep->has_defn ());
 	}
@@ -8086,6 +8081,16 @@ trees_out::decl_value (tree decl, depset *dep)
      we start emitting keys for this decl.  */
   tree container = decl_container (decl);
   unsigned tpl_levels = 0;
+
+  /* Also tell the importer whether this is a temploid friend attached
+     to a different module (which has implications for merging), so that
+     importers can reconstruct this information on stream-in.  */
+  if (TREE_CODE (inner) == FUNCTION_DECL || TREE_CODE (inner) == TYPE_DECL)
+    {
+      tree* temploid_friend_slot = imported_temploid_friends->get (decl);
+      gcc_checking_assert (!temploid_friend_slot || *temploid_friend_slot);
+      tree_node (temploid_friend_slot ? *temploid_friend_slot : NULL_TREE);
+    }
 
   {
     auto wmk = make_temp_override (dep_hash->writing_merge_key, true);
@@ -8182,14 +8187,6 @@ trees_out::decl_value (tree decl, depset *dep)
 	}
     }
 
-  if (is_imported_temploid_friend)
-    {
-      /* Write imported temploid friends so that importers can reconstruct
-	 this information on stream-in.  */
-      tree* slot = imported_temploid_friends->get (decl);
-      tree_node (*slot);
-    }
-
   bool is_typedef = false;
   if (!type && TREE_CODE (inner) == TYPE_DECL)
     {
@@ -8266,7 +8263,6 @@ trees_in::decl_value ()
 {
   int tag = 0;
   bool is_attached = false;
-  bool is_imported_temploid_friend = false;
   bool has_defn = false;
   unsigned mk_u = u ();
   if (mk_u >= MK_hwm || !merge_kind_name[mk_u])
@@ -8287,10 +8283,7 @@ trees_in::decl_value ()
 	{
 	  bits_in bits = stream_bits ();
 	  if (!(mk & MK_template_mask) && !state->is_header ())
-	    {
-	      is_attached = bits.b ();
-	      is_imported_temploid_friend = bits.b ();
-	    }
+	    is_attached = bits.b ();
 
 	  has_defn = bits.b ();
 	}
@@ -8385,6 +8378,12 @@ trees_in::decl_value ()
   tree container = decl_container ();
   unsigned tpl_levels = 0;
 
+  /* If this is an imported temploid friend, get the owning decl its
+     attachment is determined by (or NULL_TREE otherwise).  */
+  tree temploid_friend = NULL_TREE;
+  if (TREE_CODE (inner) == FUNCTION_DECL || TREE_CODE (inner) == TYPE_DECL)
+    temploid_friend = tree_node ();
+
   /* Figure out if this decl is already known about.  */
   int parm_tag = 0;
 
@@ -8395,7 +8394,7 @@ trees_in::decl_value ()
     parm_tag = fn_parms_init (inner);
 
   tree existing = key_mergeable (tag, mk, decl, inner, type, container,
-				 is_attached, is_imported_temploid_friend);
+				 is_attached, temploid_friend);
   tree existing_inner = existing;
   if (existing)
     {
@@ -8500,11 +8499,6 @@ trees_in::decl_value ()
 	}
     }
 
-  if (is_imported_temploid_friend)
-    if (tree owner = tree_node ())
-      if (is_new)
-	imported_temploid_friends->put (decl, owner);
-
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
   unsigned tdef_flags = 0;
   bool is_typedef = false;
@@ -8529,6 +8523,9 @@ trees_in::decl_value ()
 	  retrofit_lang_decl (inner);
 	  DECL_MODULE_IMPORT_P (inner) = true;
 	}
+
+      if (temploid_friend)
+	imported_temploid_friends->put (decl, temploid_friend);
 
       if (spec.spec)
 	set_constraints (decl, spec.spec);
