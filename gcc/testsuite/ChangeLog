@@ -1,3 +1,40 @@
+2025-01-22  Arsen Arsenović  <arsen@aarsen.me>
+
+	* gcc.dg/driver-nostdlibstar.c: New test.
+
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* g++.dg/DRs/dr2867-3.C: New test.
+	* g++.dg/DRs/dr2867-4.C: New test.
+
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-4.c: New test.
+	* gcc.target/aarch64/acle/rwsr-armv8p9.c: Avoid read of uninitialized
+	variable.
+
+2025-01-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/118591
+	* gcc.target/avr/torture/pr118591-1.c: New test.
+	* gcc.target/avr/torture/pr118591-2.c: New test.
+
+2025-01-22  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118199
+	* g++.dg/init/no-elide3.C: New test.
+
+2025-01-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/bitwise-shift-reassoc-clobber.c: New
+	test.
+
+2025-01-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116756
+	* g++.dg/cpp1z/constexpr-if-lambda7.C: New test.
+
 2025-01-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

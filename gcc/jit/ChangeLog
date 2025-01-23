@@ -1,3 +1,11 @@
+2025-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc (tree_type_to_jit_type): For POINTER_TYPE,
+	bail out if the inner call to tree_type_to_jit_type fails.
+	Don't abort on unknown types.
+	(jit_langhook_pushdecl): Replace gcc_unreachable with return of
+	NULL_TREE.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

@@ -1,3 +1,9 @@
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (append_ctor_to_tree_vector): Declare.
+	* c-common.cc (append_ctor_to_tree_vector): New function.
+	(make_tree_vector_from_ctor): Use it.
+
 2025-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118528

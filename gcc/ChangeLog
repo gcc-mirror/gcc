@@ -1,3 +1,24 @@
+2025-01-22  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc: Fix arch15 machine string which must not
+	be empty.
+
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_read_sysregti): Change
+	the source predicate to aarch64_reg_or_zero.
+
+2025-01-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md
+	(<optab>_alsl_reversesi_extended): Add '&' to the destination
+	register constraint and append '0' to the first source register
+	constraint to indicate the destination register cannot be same
+	as the second source register, and change the split condition to
+	reload_completed so that the insn will be split only after RA in
+	order to obtain allocated registers that satisfy the above
+	constraints.
+
 2025-01-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

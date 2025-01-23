@@ -1,3 +1,7 @@
+2025-01-22  Arsen Arsenović  <arsen@aarsen.me>
+
+	* lang-specs.h: Replace %{nostdinc*} with %{nostdinc}.
+
 2025-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/114434

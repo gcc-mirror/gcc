@@ -1,3 +1,50 @@
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* decl.cc: Partially implement CWG 2867 - Order of initialization
+	for structured bindings.
+	(cp_finish_decl): If need_decomp_init, for function scope structure
+	binding bases, temporarily clear stmts_are_full_exprs_p before
+	calling expand_static_init, after it call cp_finish_decomp and wrap
+	code emitted by both into maybe_cleanup_point_expr_void and ensure
+	cp_finish_decomp isn't called again.
+
+2025-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118396
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Add an error call
+	when !allow_non_constant.
+
+2025-01-22  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118199
+	* typeck2.cc (split_nonconstant_init_1): Clear
+	TARGET_EXPR_ELIDING_P if we need to use a copy constructor
+	because of __no_unique_address__.
+
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_objc_message_args): Use tree_cons with
+	nreverse at the end for both sel_args and addl_args, instead of
+	chainon with build_tree_list second argument.
+
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* call.cc (add_list_candidates): Use append_ctor_to_tree_vector.
+
+2025-01-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116756
+	* lambda.cc (lambda_expr_this_capture): Call
+	retrieve_local_specialization on the result of
+	LAMBDA_EXPR_THIS_CAPTURE for a generic lambda.
+	* parser.cc (cp_parser_lambda_expression): Don't clear
+	LAMBDA_EXPR_THIS_CAPTURE.
+	* pt.cc (tsubst_stmt) <case DECL_EXPR>: Don't overwrite
+	LAMBDA_EXPR_THIS_CAPTURE with the specialized capture.
+	(tsubst_lambda_expr): Don't clear LAMBDA_EXPR_THIS_CAPTURE
+	afterward.
+
 2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR c++/118525
