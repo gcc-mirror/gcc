@@ -8645,7 +8645,7 @@ vectorizable_store (vec_info *vinfo,
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
       gimple *incr;
-      tree offvar;
+      tree offvar = NULL_TREE;
       tree ivstep;
       tree running_off;
       tree stride_base, stride_step, alias_off;
@@ -10603,7 +10603,7 @@ vectorizable_load (vec_info *vinfo,
     {
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
-      tree offvar;
+      tree offvar = NULL_TREE;
       tree ivstep;
       tree running_off;
       vec<constructor_elt, va_gc> *v = NULL;
