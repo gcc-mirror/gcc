@@ -1,6 +1,21 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-10-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* array.cc (gfc_match_array_constructor): Only update the
+	character length if the expression is of character type.
+	* error.cc (gfc_get_location_with_offset): New; split off
+	from ...
+	(gfc_format_decoder): ... here; call it.
+	* gfortran.h (gfc_get_location_with_offset): New prototype.
+	(gfc_get_location): New inline function.
+	* trans.cc (gfc_get_location): Remove function definition.
+	* trans.h (gfc_get_location): Remove declaration.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
 
 	* parse.cc (decode_omp_directive): Set target-used bit of
