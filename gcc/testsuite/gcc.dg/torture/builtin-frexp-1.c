@@ -11,6 +11,7 @@
    floating point formats need -funsafe-math-optimizations.  */
 /* { dg-require-effective-target inf } */
 /* { dg-options "-funsafe-math-optimizations" { target powerpc*-*-* } } */
+/* { dg-additional-options "-Wmaybe-uninitialized" } */
 
 extern void link_error(int);
 
@@ -52,22 +53,36 @@ extern void link_error(int);
     link_error(__LINE__); \
   } while (0)
 
+int __attribute__ ((__noipa__))
+bar (int x)
+{
+  (void) x;
+  return 42;
+} 
+
 /* Test that FUNCRES(frexp(NEG FUNCARG(ARGARG),&i)) is false.  Check
-   the sign as well.  Ensure side-effects are evaluated in i.  */
+   the sign as well.  Ensure side-effects are evaluated in the second
+   frexp argument.  */
 #define TESTIT_FREXP2(NEG,FUNCARG,ARGARG,FUNCRES) do { \
-  int i=5; \
+  int i, j = 5; \
   if (!__builtin_##FUNCRES##f(__builtin_frexpf(NEG __builtin_##FUNCARG##f(ARGARG),&i)) \
-      || CKSGN_F(__builtin_frexpf(NEG __builtin_##FUNCARG##f(ARGARG),(i++,&i)), NEG __builtin_##FUNCARG##f(ARGARG)) \
-      || CKEXP(i,6)) \
+      || CKSGN_F(__builtin_frexpf(NEG __builtin_##FUNCARG##f(ARGARG),(j++,&i)), NEG __builtin_##FUNCARG##f(ARGARG)) \
+      || CKEXP(j,6)) \
     link_error(__LINE__); \
+  if (CKEXP(bar(i),42)) \
+    __builtin_abort(); \
   if (!__builtin_##FUNCRES(__builtin_frexp(NEG __builtin_##FUNCARG(ARGARG),&i)) \
-      || CKSGN(__builtin_frexp(NEG __builtin_##FUNCARG(ARGARG),(i++,&i)), NEG __builtin_##FUNCARG(ARGARG)) \
-      || CKEXP(i,7)) \
+      || CKSGN(__builtin_frexp(NEG __builtin_##FUNCARG(ARGARG),(j++,&i)), NEG __builtin_##FUNCARG(ARGARG)) \
+      || CKEXP(j,7)) \
     link_error(__LINE__); \
+  if (CKEXP(bar(i),42)) \
+    __builtin_abort(); \
   if (!__builtin_##FUNCRES##l(__builtin_frexpl(NEG __builtin_##FUNCARG##l(ARGARG),&i)) \
-      || CKSGN_L(__builtin_frexpl(NEG __builtin_##FUNCARG##l(ARGARG),(i++,&i)), NEG __builtin_##FUNCARG##l(ARGARG)) \
-      || CKEXP(i,8)) \
+      || CKSGN_L(__builtin_frexpl(NEG __builtin_##FUNCARG##l(ARGARG),(j++,&i)), NEG __builtin_##FUNCARG##l(ARGARG)) \
+      || CKEXP(j,8)) \
     link_error(__LINE__); \
+  if (CKEXP(bar(i),42)) \
+    __builtin_abort(); \
   } while (0)
 
 void __attribute__ ((__noinline__))
@@ -111,8 +126,10 @@ foo(void)
      Exponent is left unspecified, but we test for side-effects.  */
   TESTIT_FREXP2 ( ,inf, , isinf);
   TESTIT_FREXP2 (- ,inf, , isinf);
+#ifdef __OPTIMIZE__
   TESTIT_FREXP2 ( ,nan, "", isnan);
   TESTIT_FREXP2 (- ,nan, "", isnan);
+#endif
 }
 
 int main()
