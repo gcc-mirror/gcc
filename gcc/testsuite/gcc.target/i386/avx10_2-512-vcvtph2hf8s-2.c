@@ -21,7 +21,7 @@ CALC (unsigned char *r, _Float16 *s)
   int i, hf8_bf8, saturate;
 
   hf8_bf8 = 0;
-  saturate = 0;
+  saturate = 1;
   
   for (i = 0; i < SIZE_DST; i++)
     {
@@ -60,16 +60,16 @@ TEST (void)
 
   CALC(res_ref, src.a);
 
-  res1.x = INTRINSIC (_cvtneph_phf8) (src.x);
+  res1.x = INTRINSIC (_cvtsph_hf8) (src.x);
   if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res1, res_ref))
     abort ();
 
-  res2.x = INTRINSIC (_mask_cvtneph_phf8) (res2.x, mask, src.x);
+  res2.x = INTRINSIC (_mask_cvtsph_hf8) (res2.x, mask, src.x);
   MASK_MERGE (i_b) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res2, res_ref))
     abort ();
 
-  res3.x = INTRINSIC (_maskz_cvtneph_phf8) (mask, src.x);
+  res3.x = INTRINSIC (_maskz_cvtsph_hf8) (mask, src.x);
   MASK_ZERO (i_b) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res3, res_ref))
     abort ();

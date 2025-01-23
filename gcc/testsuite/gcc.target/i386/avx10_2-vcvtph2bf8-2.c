@@ -6,11 +6,11 @@
 #define AVX512VL
 #define AVX512F_LEN 256
 #define AVX512F_LEN_HALF 128
-#include "avx10_2-512-vcvtneph2hf8s-2.c"
+#include "avx10_2-512-vcvtph2bf8-2.c"
 
 #undef AVX512F_LEN
 #undef AVX512F_LEN_HALF
 
 #define AVX512F_LEN 128
 #define AVX512F_LEN_HALF 128
-#include "avx10_2-512-vcvtneph2hf8s-2.c"
+#include "avx10_2-512-vcvtph2bf8-2.c"
