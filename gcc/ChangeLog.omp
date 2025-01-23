@@ -1,6 +1,14 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-09-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (omp_runtime_api_procname): Add
+	get_device_from_uid and omp_get_uid_from_device routines.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/116661

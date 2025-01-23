@@ -425,6 +425,9 @@ extern const char *omp_get_interop_type_desc (const omp_interop_t,
 extern const char *omp_get_interop_rc_desc (const omp_interop_t,
 					    omp_interop_rc_t) __GOMP_NOTHROW;
 
+extern int omp_get_device_from_uid (const char *) __GOMP_NOTHROW;
+extern const char *omp_get_uid_from_device (int) __GOMP_NOTHROW;
+
 #ifdef __cplusplus
 }
 #endif

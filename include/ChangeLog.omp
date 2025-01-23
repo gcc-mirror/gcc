@@ -1,6 +1,14 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-09-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	* cuda/cuda.h (cuDeviceGetUuid): Declare.
+	(cuDeviceGetUuid_v2): Add prototype.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/116661

@@ -834,6 +834,21 @@ omp_get_interop_rc_desc_ (const char **res, size_t *res_len,
   *res_len = *res ? strlen (*res) : 0;
 }
 
+void
+omp_get_uid_from_device_ (const char **res, size_t *res_len,
+			  int32_t device_num)
+{
+  *res = omp_get_uid_from_device (device_num);
+  *res_len = *res ? strlen (*res) : 0;
+}
+
+void
+omp_get_uid_from_device_8_ (const char **res, size_t *res_len,
+			    int64_t device_num)
+{
+  omp_get_uid_from_device_ (res, res_len, (int32_t) device_num);
+}
+
 #ifndef LIBGOMP_OFFLOADED_ONLY
 
 void
