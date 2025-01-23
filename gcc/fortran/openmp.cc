@@ -1943,6 +1943,7 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 		  }
 		fr_found = true;
 		gfc_symbol *sym = NULL;
+		e = NULL;
 		locus loc = gfc_current_locus;
 		if (gfc_match_symbol (&sym, 0) != MATCH_YES
 		    || gfc_match (" _") == MATCH_YES)
@@ -1964,7 +1965,7 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 		  {
 		    gfc_error ("Expected constant integer identifier or "
 			       "non-empty default-kind character literal at %L",
-			       &e->where);
+			       &loc);
 		    gfc_free_expr (e);
 		    return MATCH_ERROR;
 		  }

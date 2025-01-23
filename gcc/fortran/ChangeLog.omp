@@ -1,6 +1,15 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-09-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* openmp.cc (gfc_match_omp_prefer_type): NULL init a gfc_expr
+	variable and use right locus in gfc_error.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Handle OMP_LIST_INIT.
