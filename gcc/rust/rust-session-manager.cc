@@ -19,6 +19,7 @@
 #include "rust-session-manager.h"
 #include "rust-collect-lang-items.h"
 #include "rust-desugar-for-loops.h"
+#include "rust-desugar-question-mark.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-pattern-analysis.h"
 #include "rust-immutable-name-resolution-context.h"
@@ -610,6 +611,7 @@ Session::compile_crate (const char *filename)
     return;
 
   AST::CollectLangItems ().go (parsed_crate);
+  AST::DesugarQuestionMark ().go (parsed_crate);
 
   auto name_resolution_ctx = Resolver2_0::NameResolutionContext ();
   // expansion pipeline stage
