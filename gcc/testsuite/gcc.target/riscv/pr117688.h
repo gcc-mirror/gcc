@@ -45,4 +45,26 @@
     return 0;                                               \
   }
 
+#define DEFINE_SIGNED_SAT_TRUNC_RUN(WT, NT, NT_MIN, NT_MAX) \
+  WT x;                                                     \
+  NT result;                                                \
+                                                            \
+  __attribute__ ((noipa)) void                              \
+  foo ()                                                    \
+  {                                                         \
+    NT trunc = (NT)x;                                       \
+    result = (WT)NT_MIN <= x && x <= (WT)NT_MAX             \
+       ? trunc                                              \
+       : x < 0 ? NT_MIN : NT_MAX;                           \
+  }                                                         \
+                                                            \
+  int main ()                                               \
+  {                                                         \
+    x = (WT)NT_MIN - 1 ;                                    \
+    foo();                                                  \
+    if (result != (NT)NT_MIN)                               \
+      __builtin_abort ();                                   \
+    return 0;                                               \
+  }
+
 #endif

@@ -13031,7 +13031,7 @@ riscv_expand_sstrunc (rtx dest, rtx src)
   rtx xmode_narrow_min = gen_reg_rtx (Xmode);
   rtx xmode_lt = gen_reg_rtx (Xmode);
   rtx xmode_gt = gen_reg_rtx (Xmode);
-  rtx xmode_src = gen_lowpart (Xmode, src);
+  rtx xmode_src = riscv_extend_to_xmode_reg (src, GET_MODE (src), SIGN_EXTEND);
   rtx xmode_dest = gen_reg_rtx (Xmode);
   rtx xmode_mask = gen_reg_rtx (Xmode);
   rtx xmode_sat = gen_reg_rtx (Xmode);
