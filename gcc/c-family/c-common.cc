@@ -9044,7 +9044,8 @@ append_ctor_to_tree_vector (vec<tree, va_gc> *v, tree ctor)
 vec<tree, va_gc> *
 make_tree_vector_from_ctor (tree ctor)
 {
-  vec<tree,va_gc> *ret = make_tree_vector ();
+  vec<tree,va_gc> *ret
+    = CONSTRUCTOR_NELTS (ctor) <= 16 ? make_tree_vector () : NULL;
   return append_ctor_to_tree_vector (ret, ctor);
 }
 
