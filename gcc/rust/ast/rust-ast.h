@@ -1263,6 +1263,16 @@ public:
     Identifier,
     FormatArgs,
     MacroInvocation,
+    Borrow,
+    Dereference,
+    ErrorPropagation,
+    Negation,
+    ArithmeticOrLogical,
+    Comparison,
+    LazyBoolean,
+    TypeCast,
+    Assignment,
+    CompoundAssignment,
   };
 
   virtual Kind get_expr_kind () const = 0;

@@ -407,6 +407,8 @@ public:
   bool get_is_double_borrow () const { return double_borrow; }
   bool is_raw_borrow () const { return raw_borrow; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Borrow; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -437,6 +439,8 @@ public:
     return *main_or_left_expr;
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Dereference; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -466,6 +470,11 @@ public:
   {
     rust_assert (main_or_left_expr != nullptr);
     return *main_or_left_expr;
+  }
+
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::ErrorPropagation;
   }
 
 protected:
@@ -510,6 +519,8 @@ public:
     rust_assert (main_or_left_expr != nullptr);
     return *main_or_left_expr;
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Negation; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -599,6 +610,11 @@ public:
   void visit_lhs (ASTVisitor &vis) { main_or_left_expr->accept_vis (vis); }
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
 
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::ArithmeticOrLogical;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -685,6 +701,8 @@ public:
   }
 
   ExprType get_kind () { return expr_type; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Comparison; }
 
   /* TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
    * maybe? */
@@ -774,6 +792,8 @@ public:
 
   ExprType get_kind () { return expr_type; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::LazyBoolean; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -835,6 +855,8 @@ public:
     rust_assert (type_to_convert_to != nullptr);
     return *type_to_convert_to;
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::TypeCast; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -913,6 +935,8 @@ public:
     rust_assert (right_expr != nullptr);
     return *right_expr;
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Assignment; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -998,6 +1022,11 @@ public:
   {
     rust_assert (right_expr != nullptr);
     return right_expr;
+  }
+
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::CompoundAssignment;
   }
 
 protected:
@@ -2138,6 +2167,8 @@ public:
     rust_assert (function != nullptr);
     return *function;
   }
+
+  std::unique_ptr<Expr> &get_function_expr_ptr () { return function; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
