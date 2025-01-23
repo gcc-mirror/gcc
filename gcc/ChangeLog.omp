@@ -1,6 +1,17 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* omp-api.h (omp_get_fr_id_from_name, omp_get_name_from_fr_id): New
+	prototypes.
+	* omp-general.cc (omp_get_fr_id_from_name, omp_get_name_from_fr_id):
+	New.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-11  Tobias Burnus  <tburnus@baylibre.com>
 
 	* omp-general.cc (omp_runtime_api_procname): Add

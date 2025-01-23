@@ -1910,16 +1910,31 @@ error:
    where 'fr' takes an integer named constant or a string literal
    and 'attr takes a string literal, starting with 'ompx_')
 
-Document string + int format
-*/
+   For the foreign runtime identifiers, string values are converted to
+   their integer value; unknown string or integer values are set to 0.
+
+   For the simple syntax, pref_int_array contains alternatingly the
+   fr_id integer value and GOMP_INTEROP_IFR_SEPARATOR followed by a
+   GOMP_INTEROP_IFR_SEPARATOR as last item.
+   For the complex syntax, it contains the values associated with a
+   'fr(...)' followed by GOMP_INTEROP_IFR_SEPARATOR.  If there is no
+   'fr' in a curly-brace block, it is GOMP_INTEROP_IFR_NONE followed
+   by GOMP_INTEROP_IFR_SEPARATOR.  An additional GOMP_INTEROP_IFR_SEPARATOR
+   at the end terminates the array.
+
+   For attributes, if the simply syntax is used, it is NULL - likewise if no
+   'attr' appears.  For the complex syntax it is: For reach curly-brace block,
+   it is \0\0 is no attr appears and otherwise a concatenation (including
+   the \0) of all 'attr' strings followed by a tailing '\0'. At the end,
+   another '\0' follows.  */
 
 static match
-gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_array)
+gfc_match_omp_prefer_type (char **fr_int_array, char **attr_str, int *attr_str_len)
 {
   gfc_expr *e;
-  size_t cnt = 0;
-  std::vector<int> int_list;
-  std::string pref_string;
+  int cnt_brace_grp = 0;
+  std::vector<char> int_list;
+  std::string attr_string;
   /* New syntax.  */
   if (gfc_peek_ascii_char () == '{')
     do
@@ -1929,8 +1944,8 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 	    gfc_error ("Expected %<{%> at %C");
 	    return MATCH_ERROR;
 	  }
-	std::string attr;
 	bool fr_found = false;
+	bool attr_found = false;
 	do
 	  {
 	    if (gfc_match ("fr ( ") == MATCH_YES)
@@ -1942,97 +1957,127 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 		    return MATCH_ERROR;
 		  }
 		fr_found = true;
-		gfc_symbol *sym = NULL;
-		e = NULL;
-		locus loc = gfc_current_locus;
-		if (gfc_match_symbol (&sym, 0) != MATCH_YES
-		    || gfc_match (" _") == MATCH_YES)
+		do
 		  {
-		    gfc_current_locus = loc;
-		    if (gfc_match_expr (&e) == MATCH_ERROR)
+		    if (gfc_match_expr (&e) != MATCH_YES)
 		      return MATCH_ERROR;
-		  }
-		if ((!sym && !e)
-		    || (e && (!gfc_resolve_expr (e)
-			      || e->expr_type != EXPR_CONSTANT
-			      || e->ts.type != BT_CHARACTER
-			      || e->ts.kind != gfc_default_character_kind
-			      || e->value.character.length == 0))
-		    || (sym && (sym->attr.flavor != FL_PARAMETER
-				|| sym->ts.type != BT_INTEGER
-				|| !mpz_fits_sint_p (sym->value->value.integer)
-				|| sym->attr.dimension)))
-		  {
-		    gfc_error ("Expected constant integer identifier or "
-			       "non-empty default-kind character literal at %L",
-			       &loc);
-		    gfc_free_expr (e);
+		    if (e->expr_type != EXPR_CONSTANT
+			|| e->ref != NULL
+			|| !gfc_resolve_expr (e)
+			|| (e->ts.type != BT_INTEGER
+			    && e->ts.type != BT_CHARACTER)
+			|| (e->ts.type == BT_INTEGER
+			    && (!e->symtree
+				|| e->symtree->n.sym->attr.flavor != FL_PARAMETER
+				|| !mpz_fits_sint_p (e->value.integer)))
+			|| (e->ts.type == BT_CHARACTER
+			    && (e->ts.kind != gfc_default_character_kind
+				|| e->value.character.length == 0)))
+		      {
+			gfc_error ("Expected scalar integer parameter or "
+				   "non-empty default-kind character literal "
+				   "at %L", &e->where);
+			gfc_free_expr (e);
+			return MATCH_ERROR;
+		      }
+		    gfc_gobble_whitespace ();
+		    int val;
+		    if (e->ts.type == BT_INTEGER)
+		      {
+			val = mpz_get_si (e->value.integer);
+			if (val < 1 || val > GOMP_INTEROP_IFR_LAST)
+			  {
+			    gfc_warning (OPT_Wopenmp,
+					 "Unknown foreign runtime identifier "
+					 "%qd at %L", val, &e->where);
+			    val = 0;
+			  }
+		      }
+		    else
+		      {
+			char *str = XALLOCAVEC (char,
+						e->value.character.length+1);
+			for (int i = 0; i < e->value.character.length + 1; i++)
+			  str[i] = e->value.character.string[i];
+			if (memchr (str, '\0', e->value.character.length) != 0)
+			  {
+			    gfc_error ("Unexpected null character in character "
+				       "literal at %L", &e->where);
+			    return MATCH_ERROR;
+			  }
+			val = omp_get_fr_id_from_name (str);
+			if (val == 0)
+			  gfc_warning (OPT_Wopenmp,
+				       "Unknown foreign runtime identifier %qs "
+				       "at %L", str, &e->where);
+		      }
+		    int_list.push_back (val);
+		    if (gfc_match (", ") == MATCH_YES)
+		      continue;
+		    if (gfc_match (") ") == MATCH_YES)
+		      break;
+		    gfc_error ("Expected %<,%> or %<)%> at %C");
 		    return MATCH_ERROR;
 		  }
-		if (sym)
-		  {
-		    for (size_t i = int_list.size(); i < cnt; ++i)
-		      int_list.push_back (0);
-		    int_list.push_back (mpz_get_si (sym->value->value.integer));
-		    pref_string += ' ';
-		    pref_string += '\0';
-		  }
-		else
-		  {
-		    char *str = XALLOCAVEC (char, e->value.character.length+1);
-		    for (int i = 0; i < e->value.character.length + 1; i++)
-		      str[i] = e->value.character.string[i];
-		   if (memchr (str, '\0', e->value.character.length) != 0)
-		     {
-		       gfc_error ("Unexpected null character in character "
-				  "literal at %L", &loc);
-		       return MATCH_ERROR;
-		     }
-		    pref_string += str;
-		    pref_string += '\0';
-		  }
+		while (true);
 	      }
 	    else if (gfc_match ("attr ( ") == MATCH_YES)
 	      {
-		locus loc = gfc_current_locus;
-		if (gfc_match_expr (&e) != MATCH_YES
-		    || e->expr_type != EXPR_CONSTANT
-		    || e->ts.type != BT_CHARACTER)
+		attr_found = true;
+		if (attr_string.empty ())
+		  for (int i = 0; i < cnt_brace_grp; ++i)
+		    {
+		      /* Add dummy elements for previous curly-brace blocks.  */
+		      attr_string += ' ';
+		      attr_string += '\0';
+		      attr_string += '\0';
+		    }
+		do
 		  {
-		    gfc_error ("Expected default-kind character literal at %L",
-			       &loc);
-		    gfc_free_expr (e);
+		    if (gfc_match_expr (&e) != MATCH_YES)
+		      return MATCH_ERROR;
+		    if (e->expr_type != EXPR_CONSTANT
+			|| e->rank != 0
+			|| e->ts.type != BT_CHARACTER
+		    || e->ts.kind != gfc_default_character_kind)
+		      {
+			gfc_error ("Expected default-kind character literal "
+				   "at %L", &e->where);
+			gfc_free_expr (e);
+			return MATCH_ERROR;
+		      }
+		    gfc_gobble_whitespace ();
+		    char *str = XALLOCAVEC (char, e->value.character.length+1);
+		    for (int i = 0; i < e->value.character.length + 1; i++)
+		      str[i] = e->value.character.string[i];
+		    if (!startswith (str, "ompx_"))
+		      {
+			gfc_error ("Character literal at %L must start with "
+				   "%<ompx_%>", &e->where);
+			gfc_free_expr (e);
+			return MATCH_ERROR;
+		      }
+		    if (memchr (str, '\0', e->value.character.length) != 0
+			|| memchr (str, ',', e->value.character.length) != 0)
+		      {
+			gfc_error ("Unexpected null or %<,%> character in "
+				   "character literal at %L", &e->where);
+			return MATCH_ERROR;
+		      }
+		    attr_string += str;
+		    attr_string += '\0';
+		    if (gfc_match (", ") == MATCH_YES)
+		      continue;
+		    if (gfc_match (") ") == MATCH_YES)
+		      break;
+		    gfc_error ("Expected %<,%> or %<)%> at %C");
 		    return MATCH_ERROR;
 		  }
-		char *str = XALLOCAVEC (char, e->value.character.length+1);
-		for (int i = 0; i < e->value.character.length + 1; i++)
-		  str[i] = e->value.character.string[i];
-		if (!startswith (str, "ompx_"))
-		  {
-		    gfc_error ("Character literal at %L must start with "
-			      "%<ompx_%>", &e->where);
-		    gfc_free_expr (e);
-		    return MATCH_ERROR;
-		  }
-		if (memchr (str, '\0', e->value.character.length) != 0
-		    || memchr (str, ',', e->value.character.length) != 0)
-		  {
-		    gfc_error ("Unexpected null or %<,%> character in "
-			       "character literal at %L", &e->where);
-		    return MATCH_ERROR;
-		  }
-		attr += str;
-		attr += '\0';
+		while (true);
 	      }
 	    else
 	      {
 		gfc_error ("Expected %<fr(%> or %<attr(%> at %C");
-		return MATCH_ERROR;
-	      }
-	    ++cnt;
-	    if (gfc_match (") ") != MATCH_YES)
-	      {
-		gfc_error ("Expected %<)%> at %C");
 		return MATCH_ERROR;
 	      }
 	    if (gfc_match (", ") == MATCH_YES)
@@ -2043,13 +2088,20 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 	    return MATCH_ERROR;
 	  }
 	while (true);
+	++cnt_brace_grp;
 	if (!fr_found)
+	  int_list.push_back (GOMP_INTEROP_IFR_NONE);
+	int_list.push_back (GOMP_INTEROP_IFR_SEPARATOR);
+	if (!attr_string.empty ())
 	  {
-	    pref_string += ' ';
-	    pref_string += '\0';
+	    if (!attr_found)
+	      {
+		/* Dummy entry.  */
+		attr_string += ' ';
+		attr_string += '\0';
+	      }
+	    attr_string += '\0';
 	  }
-	pref_string += attr;
-	pref_string += '\0';
 
 	if (gfc_match (", ") == MATCH_YES)
 	  continue;
@@ -2065,6 +2117,7 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 	if (gfc_match_expr (&e) != MATCH_YES)
 	  return MATCH_ERROR;
 	if (!gfc_resolve_expr (e)
+	    || e->rank != 0
 	    || e->expr_type != EXPR_CONSTANT
 	    || (e->ts.type != BT_INTEGER && e->ts.type != BT_CHARACTER)
 	    || (e->ts.type == BT_INTEGER
@@ -2073,17 +2126,23 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 		&& (e->ts.kind != gfc_default_character_kind
 		    || e->value.character.length == 0)))
 	  {
-	    gfc_error ("Expected constant integer expression or non-empty "
-		       "default-kind character literal at %L", &e->where);
+	    gfc_error ("Expected constant scalar integer expression or "
+		       "non-empty default-kind character literal at %L", &e->where);
 	    gfc_free_expr (e);
 	    return MATCH_ERROR;
 	  }
+	gfc_gobble_whitespace ();
+	int val;
 	if (e->ts.type == BT_INTEGER)
 	  {
-	    for (size_t i = int_list.size(); i < cnt; ++i)
-	      int_list.push_back (0);
-	    int_list.push_back (mpz_get_si (e->value.integer));
-	    pref_string += ' ';
+	    val = mpz_get_si (e->value.integer);
+	    if (val < 1 || val > GOMP_INTEROP_IFR_LAST)
+	      {
+		gfc_warning (OPT_Wopenmp,
+			     "Unknown foreign runtime identifier %qd at %L",
+			     val, &e->where);
+		val = 0;
+	      }
 	  }
 	else
 	  {
@@ -2092,15 +2151,18 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 	      str[i] = e->value.character.string[i];
 	    if (memchr (str, '\0', e->value.character.length) != 0)
 	      {
-		gfc_error ("Unexpected null character in character literal "
-			   "at %L", &e->where);
+		gfc_error ("Unexpected null character in character "
+			   "literal at %L", &e->where);
 		return MATCH_ERROR;
 	      }
-	    pref_string += str;
+	    val = omp_get_fr_id_from_name (str);
+	    if (val == 0)
+	      gfc_warning (OPT_Wopenmp,
+			   "Unknown foreign runtime identifier %qs at %L",
+			   str, &e->where);
 	  }
-	pref_string += '\0';
-	pref_string += '\0';
-	++cnt;
+	int_list.push_back (val);
+	int_list.push_back (GOMP_INTEROP_IFR_SEPARATOR);
 	gfc_free_expr (e);
 	if (gfc_match (", ") == MATCH_YES)
 	  continue;
@@ -2110,19 +2172,16 @@ gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_ar
 	return MATCH_ERROR;
       }
     while (true);
-  if (!int_list.empty())
-    for (size_t i = int_list.size(); i < cnt; ++i)
-     int_list.push_back (0);
+  int_list.push_back (GOMP_INTEROP_IFR_SEPARATOR);
+  *fr_int_array = XNEWVEC (char, int_list.size ());
+  memcpy (*fr_int_array, int_list.data (), sizeof (char) * int_list.size ());
 
-  pref_string += '\0';
-
-  *pref_str_len = pref_string.length();
-  *pref_str = XNEWVEC (char, pref_string.length ());
-  memcpy (*pref_str, pref_string.data (), pref_string.length ());
-  if (!int_list.empty ())
+  if (!attr_string.empty ())
     {
-      *pref_int_array = XNEWVEC (int, cnt);
-      memcpy (*pref_int_array, int_list.data (), sizeof (int) * cnt);
+      attr_string += '\0';
+      *attr_str_len = attr_string.length();
+      *attr_str = XNEWVEC (char, attr_string.length ());
+      memcpy (*attr_str, attr_string.data (), attr_string.length ());
     }
   return MATCH_YES;
 }
@@ -2135,21 +2194,21 @@ static match
 gfc_match_omp_init (gfc_omp_namelist **list)
 {
   bool target = false, targetsync = false;
-  char *pref_str = NULL;
-  int pref_str_len = 0;
-  int *pref_int_array = NULL;
+  char *fr_int_array = NULL;
+  char *attr_str = NULL;
+  int attr_str_len = 0;
   match m;
   locus old_loc = gfc_current_locus;
   do {
        if (gfc_match ("prefer_type ( ") == MATCH_YES)
 	{
-	  if (pref_str)
+	  if (fr_int_array)
 	    {
 	      gfc_error ("Duplicate %<prefer_type%> modifier at %C");
 	      return MATCH_ERROR;
 	    }
-	  m = gfc_match_omp_prefer_type (&pref_str, &pref_str_len,
-					 &pref_int_array);
+	  m = gfc_match_omp_prefer_type (&fr_int_array, &attr_str,
+					 &attr_str_len);
 	  if (m != MATCH_YES)
 	    return m;
 	  if (gfc_match (", ") == MATCH_YES)
@@ -2167,7 +2226,7 @@ gfc_match_omp_init (gfc_omp_namelist **list)
 	  if (gfc_match (": ") == MATCH_YES)
 	    break;
 	  gfc_char_t c = gfc_peek_char ();
-	  if (!pref_str
+	  if (!fr_int_array
 	      && (c == ')'
 		  || (gfc_current_form != FORM_FREE
 		      && (c == '_' || ISALPHA (c)))))
@@ -2186,7 +2245,7 @@ gfc_match_omp_init (gfc_omp_namelist **list)
 	  if (gfc_match (": ") == MATCH_YES)
 	    break;
 	  gfc_char_t c = gfc_peek_char ();
-	  if (!pref_str
+	  if (!fr_int_array
 	      && (c == ')'
 		  || (gfc_current_form != FORM_FREE
 		      && (c == '_' || ISALPHA (c)))))
@@ -2197,7 +2256,7 @@ gfc_match_omp_init (gfc_omp_namelist **list)
 	  gfc_error ("Expected %<,%> or %<:%> at %C");
 	  return MATCH_ERROR;
 	}
-      if (pref_str)
+      if (fr_int_array)
 	{
 	  gfc_error ("Expected %<target%> or %<targetsync%> at %C");
 	  return MATCH_ERROR;
@@ -2214,9 +2273,9 @@ gfc_match_omp_init (gfc_omp_namelist **list)
    {
      n->u.init.target = target;
      n->u.init.targetsync = targetsync;
-     n->u.init.str = pref_str;
-     n->u.init.len = pref_str_len;
-     n->u2.interop_int = pref_int_array;
+     n->u.init.attr = attr_str;
+     n->u.init.len = attr_str_len;
+     n->u2.init_interop_fr = fr_int_array;
    }
  return MATCH_YES;
 }
