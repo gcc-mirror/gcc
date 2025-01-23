@@ -225,4 +225,8 @@ Enum(frust_panic) String(unwind) Value(0)
 EnumValue
 Enum(frust_panic) String(abort) Value(1)
 
+frust-overflow-checks
+Rust Var(flag_overflow_checks) Init(1)
+Enable the overflow checks in code generation
+
 ; This comment is to ensure we retain the blank line above.
