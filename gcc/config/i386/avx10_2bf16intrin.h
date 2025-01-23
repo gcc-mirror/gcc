@@ -350,7 +350,7 @@ extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_scalef_pbh (__m256bh __A, __m256bh __B)
 {
-  return (__m256bh) __builtin_ia32_scalefpbf16256 (__A, __B);
+  return (__m256bh) __builtin_ia32_scalefbf16256 (__A, __B);
 }
 
 extern __inline__ __m256bh
@@ -359,7 +359,7 @@ _mm256_mask_scalef_pbh (__m256bh __W, __mmask16 __U,
 			__m256bh __A, __m256bh __B)
 {
   return (__m256bh)
-    __builtin_ia32_scalefpbf16256_mask (__A, __B, __W, __U);
+    __builtin_ia32_scalefbf16256_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m256bh
@@ -367,16 +367,16 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_scalef_pbh (__mmask16 __U, __m256bh __A, __m256bh __B)
 {
   return (__m256bh)
-    __builtin_ia32_scalefpbf16256_mask (__A, __B,
-					(__v16bf) _mm256_setzero_si256 (),
-					__U);
+    __builtin_ia32_scalefbf16256_mask (__A, __B,
+				       (__v16bf) _mm256_setzero_si256 (),
+				       __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_scalef_pbh (__m128bh __A, __m128bh __B)
 {
-  return (__m128bh) __builtin_ia32_scalefpbf16128 (__A, __B);
+  return (__m128bh) __builtin_ia32_scalefbf16128 (__A, __B);
 }
 
 extern __inline__ __m128bh
@@ -385,7 +385,7 @@ _mm_mask_scalef_pbh (__m128bh __W, __mmask8 __U,
 		     __m128bh __A, __m128bh __B)
 {
   return (__m128bh)
-    __builtin_ia32_scalefpbf16128_mask (__A, __B, __W, __U);
+    __builtin_ia32_scalefbf16128_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m128bh
@@ -393,9 +393,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_scalef_pbh (__mmask8 __U, __m128bh __A, __m128bh __B)
 {
   return (__m128bh)
-    __builtin_ia32_scalefpbf16128_mask (__A, __B,
-					(__v8bf) _mm_setzero_si128 (),
-					__U);
+    __builtin_ia32_scalefbf16128_mask (__A, __B,
+				       (__v8bf) _mm_setzero_si128 (),
+				       __U);
 }
 
 extern __inline__ __m256bh
@@ -682,9 +682,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_rsqrt_pbh (__m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_rsqrtpbf16256_mask (__A,
-				       (__v16bf) _mm256_setzero_si256 (),
-				       (__mmask16) -1);
+    __builtin_ia32_rsqrtbf16256_mask (__A,
+				      (__v16bf) _mm256_setzero_si256 (),
+				      (__mmask16) -1);
 }
 
 extern __inline__ __m256bh
@@ -692,7 +692,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_rsqrt_pbh (__m256bh __W, __mmask16 __U, __m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_rsqrtpbf16256_mask (__A, __W, __U);
+    __builtin_ia32_rsqrtbf16256_mask (__A, __W, __U);
 }
 
 extern __inline__ __m256bh
@@ -700,9 +700,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_rsqrt_pbh (__mmask16 __U, __m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_rsqrtpbf16256_mask (__A,
-				       (__v16bf) _mm256_setzero_si256 (),
-				       __U);
+    __builtin_ia32_rsqrtbf16256_mask (__A,
+				      (__v16bf) _mm256_setzero_si256 (),
+				      __U);
 }
 
 extern __inline__ __m128bh
@@ -710,9 +710,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt_pbh (__m128bh __A)
 {
   return (__m128bh)
-	__builtin_ia32_rsqrtpbf16128_mask (__A,
-				       	   (__v8bf) _mm_setzero_si128 (),
-					   (__mmask8) -1);
+	__builtin_ia32_rsqrtbf16128_mask (__A,
+					  (__v8bf) _mm_setzero_si128 (),
+					  (__mmask8) -1);
 }
 
 extern __inline__ __m128bh
@@ -720,7 +720,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_rsqrt_pbh (__m128bh __W, __mmask8 __U, __m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_rsqrtpbf16128_mask (__A, __W, __U);
+    __builtin_ia32_rsqrtbf16128_mask (__A, __W, __U);
 }
 
 extern __inline__ __m128bh
@@ -728,65 +728,65 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_rsqrt_pbh (__mmask8 __U, __m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_rsqrtpbf16128_mask (__A,
-				       (__v8bf) _mm_setzero_si128 (),
-				       __U);
+    __builtin_ia32_rsqrtbf16128_mask (__A,
+				      (__v8bf) _mm_setzero_si128 (),
+				      __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_sqrtne_pbh (__m256bh __A)
+_mm256_sqrt_pbh (__m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_sqrtnepbf16256_mask (__A,
-				       	(__v16bf) _mm256_setzero_si256 (),
-					(__mmask16) -1);
+    __builtin_ia32_sqrtbf16256_mask (__A,
+				     (__v16bf) _mm256_setzero_si256 (),
+				     (__mmask16) -1);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_sqrtne_pbh (__m256bh __W, __mmask16 __U, __m256bh __A)
+_mm256_mask_sqrt_pbh (__m256bh __W, __mmask16 __U, __m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_sqrtnepbf16256_mask (__A, __W, __U);
+    __builtin_ia32_sqrtbf16256_mask (__A, __W, __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_sqrtne_pbh (__mmask16 __U, __m256bh __A)
+_mm256_maskz_sqrt_pbh (__mmask16 __U, __m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_sqrtnepbf16256_mask (__A,
-					(__v16bf) _mm256_setzero_si256 (),
-					__U);
+    __builtin_ia32_sqrtbf16256_mask (__A,
+				     (__v16bf) _mm256_setzero_si256 (),
+				     __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_sqrtne_pbh (__m128bh __A)
+_mm_sqrt_pbh (__m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_sqrtnepbf16128_mask (__A,
-				       	(__v8bf) _mm_setzero_si128 (),
-					(__mmask8) -1);
+    __builtin_ia32_sqrtbf16128_mask (__A,
+				     (__v8bf) _mm_setzero_si128 (),
+				     (__mmask8) -1);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_sqrtne_pbh (__m128bh __W, __mmask8 __U, __m128bh __A)
+_mm_mask_sqrt_pbh (__m128bh __W, __mmask8 __U, __m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_sqrtnepbf16128_mask (__A, __W, __U);
+    __builtin_ia32_sqrtbf16128_mask (__A, __W, __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_sqrtne_pbh (__mmask8 __U, __m128bh __A)
+_mm_maskz_sqrt_pbh (__mmask8 __U, __m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_sqrtnepbf16128_mask (__A,
-					(__v8bf) _mm_setzero_si128 (),
-					__U);
+    __builtin_ia32_sqrtbf16128_mask (__A,
+				     (__v8bf) _mm_setzero_si128 (),
+				     __U);
 }
 
 extern __inline__ __m256bh

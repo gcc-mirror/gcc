@@ -229,7 +229,7 @@
   UNSPEC_VCVTNEPH2HF8
   UNSPEC_VCVTNEPH2HF8S
   UNSPEC_VCVTHF82PH
-  UNSPEC_VSCALEFPBF16
+  UNSPEC_VSCALEFBF16
   UNSPEC_VRNDSCALEBF16
   UNSPEC_VREDUCEBF16
   UNSPEC_VGETMANTBF16
@@ -32075,14 +32075,14 @@
   "vdpphps\t{%3, %2, %0%{%5%}%N4|%0%{%5%}%N4, %2, %3}"
   [(set_attr "prefix" "evex")])
 
-(define_insn "avx10_2_scalefpbf16_<mode><mask_name>"
+(define_insn "avx10_2_scalefbf16_<mode><mask_name>"
    [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
       (unspec:VBF_AVX10_2
 	[(match_operand:VBF_AVX10_2 1 "register_operand" "v")
 	 (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")]
-       UNSPEC_VSCALEFPBF16))]
+       UNSPEC_VSCALEFBF16))]
    "TARGET_AVX10_2_256"
-   "vscalefpbf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+   "vscalefbf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
    [(set_attr "prefix" "evex")])
 
 (define_expand "<code><mode>3"
@@ -32371,21 +32371,21 @@
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_rsqrtpbf16_<mode><mask_name>"
+(define_insn "avx10_2_rsqrtbf16_<mode><mask_name>"
    [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
 	 (unspec:VBF_AVX10_2
 	   [(match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")]
 	  UNSPEC_RSQRT))]
    "TARGET_AVX10_2_256"
-   "vrsqrtpbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+   "vrsqrtbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
    [(set_attr "prefix" "evex")])
 
-(define_insn "avx10_2_sqrtnepbf16_<mode><mask_name>"
+(define_insn "avx10_2_sqrtbf16_<mode><mask_name>"
    [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
 	 (sqrt:VBF_AVX10_2
 	   (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")))]
    "TARGET_AVX10_2_256"
-   "vsqrtnepbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+   "vsqrtbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
    [(set_attr "prefix" "evex")])
 
 (define_insn "avx10_2_rcpbf16_<mode><mask_name>"
