@@ -23,6 +23,7 @@
 #include "rust-ast.h"
 #include "rust-attribute-values.h"
 #include "rust-diagnostics.h"
+#include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-system.h"
 #include "rust-attributes.h"
@@ -30,11 +31,18 @@
 namespace Rust {
 namespace HIR {
 
-// We special case lowering macro invocations as that should NEVER happen
 void
 ASTLoweringBase::visit (AST::MacroInvocation &invoc)
 {
   rust_fatal_error (invoc.get_locus (), "rogue macro detected during lowering");
+  rust_unreachable ();
+}
+
+void
+ASTLoweringBase::visit (AST::ErrorPropagationExpr &expr)
+{
+  rust_fatal_error (expr.get_locus (),
+		    "missing desugar for question mark operator");
   rust_unreachable ();
 }
 
@@ -114,9 +122,6 @@ ASTLoweringBase::visit (AST::BorrowExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::DereferenceExpr &)
-{}
-void
-ASTLoweringBase::visit (AST::ErrorPropagationExpr &)
 {}
 void
 ASTLoweringBase::visit (AST::NegationExpr &)
