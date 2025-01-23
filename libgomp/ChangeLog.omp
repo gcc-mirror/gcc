@@ -1,6 +1,14 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-11-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/pr109062.c: Update dg-output
+	to also accept GOMP_SPINCOUNT = 1 for x86-64.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-11-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Technical Report 13): Remove 'iterator'
