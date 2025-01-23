@@ -1,3 +1,10 @@
+2025-01-23  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-07-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-format.cc (gcc_gfc_char_table): Add formats for tree objects.
+
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c-attribs.cc (c_common_gnu_attributes): Delete "omp declare
