@@ -1,6 +1,14 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-10-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* tree-core.h (enum omp_clause_code): Add comments to cross ref to
+	OMP_CLAUSE_DECL etc. and mark the ranges used in the range checks.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	* omp-general.cc (omp_runtime_api_procname): Strip "omp_" from
