@@ -110,6 +110,8 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"into_result", Kind::TRY_INTO_RESULT},
   {"from_error", Kind::TRY_FROM_ERROR},
   {"from_ok", Kind::TRY_FROM_OK},
+
+  {"from", Kind::FROM_FROM},
 }};
 
 tl::optional<LangItem::Kind>
