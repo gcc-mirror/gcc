@@ -223,16 +223,6 @@ aarch64_print_hint_candidates (const char *str,
   XDELETEVEC (s);
 }
 
-/* Append all architecture extension candidates to the CANDIDATES vector.  */
-
-void
-aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates)
-{
-  const struct aarch64_extension_info *opt;
-  for (opt = all_extensions; opt->name != NULL; opt++)
-    candidates->safe_push (opt->name);
-}
-
 /* Print a hint with a suggestion for an extension name
    that most closely resembles what the user passed in STR.  */
 
@@ -240,7 +230,10 @@ void
 aarch64_print_hint_for_extensions (const char *str)
 {
   auto_vec<const char *> candidates;
-  aarch64_get_all_extension_candidates (&candidates);
+  const struct aarch64_extension_info *opt;
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    candidates.safe_push (opt->name);
+
   aarch64_print_hint_candidates (str, candidates);
 }
 
