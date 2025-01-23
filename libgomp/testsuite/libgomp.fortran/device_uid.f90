@@ -12,7 +12,7 @@ program main
 
   do i = omp_invalid_device - 1, omp_get_num_devices () + 1
     str => omp_get_uid_from_device (i)
-    dev = omp_get_device_from_uid (str);
+    dev = omp_get_device_from_uid (str)
 ! print *, i, str, dev
     if (i < omp_initial_device .or. i > omp_get_num_devices ()) then
       if (dev /= omp_invalid_device .or. associated(str)) &
@@ -30,12 +30,26 @@ program main
       stop 4
     end if
     strs(dev)%str => str
+
+    block
+      ! Check substring handling
+      character(len=100) :: long_str
+      integer :: dev2
+      long_str = str // "ABCDEF"
+      dev2 = omp_get_device_from_uid (long_str(1:len(str)))
+      if (i == omp_initial_device .or. i == omp_get_num_devices ()) then
+        if (dev2 /= omp_initial_device .and. dev2  /= omp_get_num_devices ()) &
+          stop 5
+      else if (dev /= dev2) then
+        stop 6
+      end if
+    end block
   end do
 
   do i = 0, omp_get_num_devices () - 1
     do j = i + 1, omp_get_num_devices ()
       if (strs(i)%str == strs(j)%str) &
-        stop 4
+        stop 7
     end do
   end do
   deallocate (strs)
