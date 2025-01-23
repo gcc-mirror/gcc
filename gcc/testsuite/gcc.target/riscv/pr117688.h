@@ -24,4 +24,25 @@
     return 0;                                             \
   }
 
+#define DEFINE_SIGNED_SAT_SUB_RUN(T, MIN, MAX)              \
+  T x, y, result;                                           \
+                                                            \
+  __attribute__ ((noipa)) void                              \
+  foo ()                                                    \
+  {                                                         \
+    T minus;                                                \
+    _Bool overflow = __builtin_sub_overflow (x, y, &minus); \
+    result = overflow ? (x < 0 ? MIN : MAX) : minus;        \
+  }                                                         \
+                                                            \
+  int main ()                                               \
+  {                                                         \
+    x = MIN;                                                \
+    y = 0x1;                                                \
+    foo();                                                  \
+    if (result != (T)MIN)                                   \
+      __builtin_abort ();                                   \
+    return 0;                                               \
+  }
+
 #endif
