@@ -732,70 +732,8 @@ aarch64_rewrite_march (int argc, const char **argv)
   return xstrdup (outstr.c_str ());
 }
 
-/* Attempt to rewrite NAME, which has been passed on the command line
-   as a -mcpu option to an equivalent -march value.  If we can do so,
-   return the new string, otherwise return an error.  */
-
-const char *
-aarch64_rewrite_selected_cpu (const char *name)
-{
-  std::string original_string (name);
-  std::string extension_str;
-  std::string processor;
-  size_t extension_pos = original_string.find_first_of ('+');
-
-  /* Strip and save the extension string.  */
-  if (extension_pos != std::string::npos)
-    {
-      processor = original_string.substr (0, extension_pos);
-      extension_str = original_string.substr (extension_pos,
-					      std::string::npos);
-    }
-  else
-    {
-      /* No extensions.  */
-      processor = original_string;
-    }
-
-  const struct aarch64_processor_info* p_to_a;
-  for (p_to_a = all_cores;
-       p_to_a->arch != aarch64_no_arch;
-       p_to_a++)
-    {
-      if (p_to_a->name == processor)
-	break;
-    }
-
-  const struct aarch64_arch_info* a_to_an;
-  for (a_to_an = all_architectures;
-       a_to_an->arch != aarch64_no_arch;
-       a_to_an++)
-    {
-      if (a_to_an->arch == p_to_a->arch)
-	break;
-    }
-
-  /* We couldn't find that processor name, or the processor name we
-     found does not map to an architecture we understand.  */
-  if (p_to_a->arch == aarch64_no_arch
-      || a_to_an->arch == aarch64_no_arch)
-    fatal_error (input_location, "unknown value %qs for %<-mcpu%>", name);
-
-  aarch64_feature_flags extensions = p_to_a->flags;
-  aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
-
-  std::string outstr = aarch64_get_arch_string_for_assembler (a_to_an->arch,
-							      extensions);
-
-  /* We are going to memory leak here, nobody elsewhere
-     in the callchain is going to clean up after us.  The alternative is
-     to allocate a static buffer, and assert that it is big enough for our
-     modified string, which seems much worse!  */
-  return xstrdup (outstr.c_str ());
-}
-
-/* Called by the driver to rewrite a name passed to the -mcpu
-   argument in preparation to be passed to the assembler.  The
+/* Called by the driver to rewrite a name passed to the -mcpu argument
+   to an equivalent -march value to be passed to the assembler.  The
    names passed from the commend line will be in ARGV, we want
    to use the right-most argument, which should be in
    ARGV[ARGC - 1].  ARGC should always be greater than 0.  */
@@ -804,7 +742,25 @@ const char *
 aarch64_rewrite_mcpu (int argc, const char **argv)
 {
   gcc_assert (argc);
-  return aarch64_rewrite_selected_cpu (argv[argc - 1]);
+  const char *name = argv[argc - 1];
+  aarch64_cpu cpu;
+  aarch64_feature_flags flags;
+
+  aarch64_validate_mcpu (name, &cpu, &flags);
+
+  const struct aarch64_processor_info *entry;
+  for (entry = all_cores; entry->processor != aarch64_no_cpu; entry++)
+    if (entry->processor == cpu)
+      break;
+
+  std::string outstr = aarch64_get_arch_string_for_assembler (entry->arch,
+							      flags);
+
+  /* We are going to memory leak here, nobody elsewhere
+     in the callchain is going to clean up after us.  The alternative is
+     to allocate a static buffer, and assert that it is big enough for our
+     modified string, which seems much worse!  */
+  return xstrdup (outstr.c_str ());
 }
 
 /* Checks to see if the host CPU may not be Cortex-A53 or an unknown Armv8-a

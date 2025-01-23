@@ -1210,7 +1210,6 @@ bool aarch64_validate_march (const char *, aarch64_arch *,
 bool aarch64_validate_mcpu (const char *, aarch64_cpu *,
 			    aarch64_feature_flags *);
 bool aarch64_validate_mtune (const char *, aarch64_cpu *);
-const char *aarch64_rewrite_selected_cpu (const char *name);
 std::string aarch64_get_extension_string_for_isa_flags (aarch64_feature_flags,
 							aarch64_feature_flags);
 std::string aarch64_get_arch_string_for_assembler (aarch64_arch,
