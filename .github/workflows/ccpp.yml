@@ -80,9 +80,9 @@ jobs:
            cd gccrs-build; \
            make check-rust RUNTESTFLAGS="--target_board=unix\{-m64}"
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: check-rust-logs
+        name: check-rust-logs-ubuntu-64
         path: |
           gccrs-build/gcc/testsuite/rust/
     - name: Check regressions
@@ -165,9 +165,9 @@ jobs:
            cd gccrs-build; \
            make check-rust RUNTESTFLAGS="--target_board=unix\{-m64}"
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: check-rust-logs
+        name: check-rust-logs-ubuntu-64-glibcxx
         path: |
           gccrs-build/gcc/testsuite/rust/
     - name: Check regressions
@@ -249,9 +249,9 @@ jobs:
            cd gccrs-build; \
            make check-rust RUNTESTFLAGS="--target_board=unix\{-m32}"
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: check-rust-logs
+        name: check-rust-logs-ubuntu-32
         path: |
           gccrs-build/gcc/testsuite/rust/
     - name: Check regressions
@@ -350,7 +350,7 @@ jobs:
              make check-rust RUNTESTFLAGS="--target_board=unix\{-m32,-m64}"
 
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: check-rust-logs-5
         path: |
@@ -410,7 +410,7 @@ jobs:
   #          cd gccrs-build; \
   #          make check-rust
   #   - name: Archive check-rust results
-  #     uses: actions/upload-artifact@v3
+  #     uses: actions/upload-artifact@v4
   #     with:
   #       name: check-rust-logs-macos
   #       path: |
@@ -496,9 +496,9 @@ jobs:
            ASAN_OPTIONS=detect_leaks=0:use_odr_indicator=1 \
            make check-rust RUNTESTFLAGS="--target_board=unix\{-m64}"
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: check-rust-logs
+        name: check-rust-logs-asan
         path: |
           gccrs-build/gcc/testsuite/rust/
     - name: Check regressions

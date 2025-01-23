@@ -84,7 +84,7 @@ jobs:
            cat log_warnings
       shell: alpine.sh {0}
     - name: Archive warnings logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: warnings 
         path: |
@@ -108,7 +108,7 @@ jobs:
       shell: alpine.sh {0}
 
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: check-rust-logs
         path: |
