@@ -220,10 +220,10 @@
   UNSPEC_VCVTBIASPH2BF8S
   UNSPEC_VCVTBIASPH2HF8
   UNSPEC_VCVTBIASPH2HF8S
-  UNSPEC_VCVTNE2PH2BF8
-  UNSPEC_VCVTNE2PH2BF8S
-  UNSPEC_VCVTNE2PH2HF8
-  UNSPEC_VCVTNE2PH2HF8S
+  UNSPEC_VCVT2PH2BF8
+  UNSPEC_VCVT2PH2BF8S
+  UNSPEC_VCVT2PH2HF8
+  UNSPEC_VCVT2PH2HF8S
   UNSPEC_VCVTNEPH2BF8
   UNSPEC_VCVTNEPH2BF8S
   UNSPEC_VCVTNEPH2HF8
@@ -31722,24 +31722,24 @@
 (define_mode_attr ssebvecmode
   [(V8HF "V16QI") (V16HF "V32QI") (V32HF "V64QI")])
 
-(define_int_iterator UNSPEC_NECONVERTFP8_PACK
-   [UNSPEC_VCVTNE2PH2BF8 UNSPEC_VCVTNE2PH2BF8S
-    UNSPEC_VCVTNE2PH2HF8 UNSPEC_VCVTNE2PH2HF8S])
+(define_int_iterator UNSPEC_CONVERTFP8_PACK
+   [UNSPEC_VCVT2PH2BF8 UNSPEC_VCVT2PH2BF8S
+    UNSPEC_VCVT2PH2HF8 UNSPEC_VCVT2PH2HF8S])
 
-(define_int_attr neconvertfp8_pack
-   [(UNSPEC_VCVTNE2PH2BF8 "ne2ph2bf8")
-    (UNSPEC_VCVTNE2PH2BF8S "ne2ph2bf8s")
-    (UNSPEC_VCVTNE2PH2HF8 "ne2ph2hf8")
-    (UNSPEC_VCVTNE2PH2HF8S "ne2ph2hf8s")])
+(define_int_attr convertfp8_pack
+   [(UNSPEC_VCVT2PH2BF8 "2ph2bf8")
+    (UNSPEC_VCVT2PH2BF8S "2ph2bf8s")
+    (UNSPEC_VCVT2PH2HF8 "2ph2hf8")
+    (UNSPEC_VCVT2PH2HF8S "2ph2hf8s")])
 
-(define_insn "vcvt<neconvertfp8_pack><mode><mask_name>"
+(define_insn "vcvt<convertfp8_pack><mode><mask_name>"
   [(set (match_operand:<ssebvecmode> 0 "register_operand" "=v")
 	(unspec:<ssebvecmode>
 	  [(match_operand:VHF_AVX10_2 1 "register_operand" "v")
 	   (match_operand:VHF_AVX10_2 2 "nonimmediate_operand" "vm")]
-	  UNSPEC_NECONVERTFP8_PACK))]
+	  UNSPEC_CONVERTFP8_PACK))]
   "TARGET_AVX10_2_256"
-  "vcvt<neconvertfp8_pack>\t{%2, %1, %0<mask_operand3>|%0<mask_operand2>, %1, %2}"
+  "vcvt<convertfp8_pack>\t{%2, %1, %0<mask_operand3>|%0<mask_operand2>, %1, %2}"
   [(set_attr "prefix" "evex")])
 
 (define_mode_attr ssebvecmode_2

@@ -23,21 +23,21 @@ CALC (unsigned char *r, _Float16 *s1, _Float16 *s2)
   int i, hf8_bf8, saturate;
 
   hf8_bf8 = 0;
-  saturate = 1;
+  saturate = 0;
   
   for (i = 0; i < SIZE; i++)
     {
       r[i] = 0;
       if (i < SIZE_SRC)
-      {
-        Float16Union usrc2 = {.f16 = s2[i]};
-        ut.u16 = usrc2.u16;
-      }
+        {
+          Float16Union usrc2 = {.f16 = s2[i]};
+          ut.u16 = usrc2.u16;
+        }
       else
-      {
-        Float16Union usrc1 = {.f16 = s1[i-SIZE_SRC]};
-        ut.u16 = usrc1.u16;
-      }
+        {
+          Float16Union usrc1 = {.f16 = s1[i-SIZE_SRC]};
+          ut.u16 = usrc1.u16;
+        }
       r[i] = convert_fp16_to_fp8(ut.f16, 0, hf8_bf8, saturate);
     }
 }
@@ -56,7 +56,7 @@ TEST (void)
     {
       src1.a[i] = (_Float16)(sign * (1.5 * (1 << (i % 3))));
       src2.a[i] = (_Float16)(-sign * (2.5 * (1 << (i % 3))));
-      sign *= -1;
+      sign = -sign;
     }
 
   for (i = 0; i < SIZE; i++)
@@ -64,16 +64,16 @@ TEST (void)
 
   CALC(res_ref, src1.a, src2.a);
 
-  res1.x = INTRINSIC (_cvtnes2ph_phf8) (src1.x, src2.x);
+  res1.x = INTRINSIC (_cvt2ph_hf8) (src1.x, src2.x);
   if (UNION_CHECK (AVX512F_LEN, i_b) (res1, res_ref))
     abort ();
 
-  res2.x = INTRINSIC (_mask_cvtnes2ph_phf8) (res2.x, mask, src1.x, src2.x);
+  res2.x = INTRINSIC (_mask_cvt2ph_hf8) (res2.x, mask, src1.x, src2.x);
   MASK_MERGE (i_b) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_b) (res2, res_ref))
     abort ();
 
-  res3.x = INTRINSIC (_maskz_cvtnes2ph_phf8) (mask, src1.x, src2.x);
+  res3.x = INTRINSIC (_maskz_cvt2ph_hf8) (mask, src1.x, src2.x);
   MASK_ZERO (i_b) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_b) (res3, res_ref))
     abort ();

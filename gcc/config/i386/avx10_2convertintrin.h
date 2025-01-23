@@ -418,266 +418,266 @@ _mm256_maskz_cvtbiassph_phf8 (__mmask16 __U, __m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtne2ph_pbf8 (__m128h __A, __m128h __B)
+_mm_cvt2ph_bf8 (__m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2bf8128_mask ((__v8hf) __A,
-						 	 (__v8hf) __B,
-							 (__v16qi)
-							 _mm_setzero_si128 (),
-							 (__mmask16) -1);
+  return (__m128i) __builtin_ia32_vcvt2ph2bf8128_mask ((__v8hf) __A,
+						       (__v8hf) __B,
+						       (__v16qi)
+						       _mm_setzero_si128 (),
+						       (__mmask16) -1);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtne2ph_pbf8 (__m128i __W, __mmask16 __U,
-			__m128h __A, __m128h __B)
+_mm_mask_cvt2ph_bf8 (__m128i __W, __mmask16 __U,
+		     __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2bf8128_mask ((__v8hf) __A,
-							 (__v8hf) __B,
-							 (__v16qi) __W,
-							 (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2bf8128_mask ((__v8hf) __A,
+						       (__v8hf) __B,
+						       (__v16qi) __W,
+						       (__mmask16) __U);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtne2ph_pbf8 (__mmask16 __U, __m128h __A, __m128h __B)
+_mm_maskz_cvt2ph_bf8 (__mmask16 __U, __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2bf8128_mask ((__v8hf) __A,
-						 	 (__v8hf) __B,
-							 (__v16qi)
-							 _mm_setzero_si128 (),
-							 (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2bf8128_mask ((__v8hf) __A,
+						       (__v8hf) __B,
+						       (__v16qi)
+						       _mm_setzero_si128 (),
+						       (__mmask16) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtne2ph_pbf8 (__m256h __A, __m256h __B)
+_mm256_cvt2ph_bf8 (__m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2bf8256_mask ((__v16hf) __A,
-							 (__v16hf) __B,
-							 (__v32qi)
-							 _mm256_setzero_si256 (),
-							 (__mmask32) -1);
+  return (__m256i) __builtin_ia32_vcvt2ph2bf8256_mask ((__v16hf) __A,
+						       (__v16hf) __B,
+						       (__v32qi)
+						       _mm256_setzero_si256 (),
+						       (__mmask32) -1);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtne2ph_pbf8 (__m256i __W, __mmask32 __U,
-			   __m256h __A, __m256h __B)
+_mm256_mask_cvt2ph_bf8 (__m256i __W, __mmask32 __U,
+			__m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2bf8256_mask ((__v16hf) __A,
-							 (__v16hf) __B,
-							 (__v32qi) __W,
-							 (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2bf8256_mask ((__v16hf) __A,
+						       (__v16hf) __B,
+						       (__v32qi) __W,
+						       (__mmask32) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtne2ph_pbf8 (__mmask32 __U, __m256h __A, __m256h __B)
+_mm256_maskz_cvt2ph_bf8 (__mmask32 __U, __m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2bf8256_mask ((__v16hf) __A,
-							 (__v16hf) __B,
-							 (__v32qi)
-							 _mm256_setzero_si256 (),
-							 (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2bf8256_mask ((__v16hf) __A,
+						       (__v16hf) __B,
+						       (__v32qi)
+						       _mm256_setzero_si256 (),
+						       (__mmask32) __U);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtnes2ph_pbf8 (__m128h __A, __m128h __B)
+_mm_cvts2ph_bf8 (__m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2bf8s128_mask ((__v8hf) __A,
-							  (__v8hf) __B,
-							  (__v16qi)
-							  _mm_setzero_si128 (),
-							  (__mmask16) -1);
+  return (__m128i) __builtin_ia32_vcvt2ph2bf8s128_mask ((__v8hf) __A,
+							(__v8hf) __B,
+							(__v16qi)
+							_mm_setzero_si128 (),
+							(__mmask16) -1);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtnes2ph_pbf8 (__m128i __W, __mmask16 __U,
-			 __m128h __A, __m128h __B)
+_mm_mask_cvts2ph_bf8 (__m128i __W, __mmask16 __U,
+		      __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2bf8s128_mask ((__v8hf) __A,
-							  (__v8hf) __B,
-							  (__v16qi) __W,
-							  (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2bf8s128_mask ((__v8hf) __A,
+							(__v8hf) __B,
+							(__v16qi) __W,
+							(__mmask16) __U);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtnes2ph_pbf8 (__mmask16 __U, __m128h __A, __m128h __B)
+_mm_maskz_cvts2ph_bf8 (__mmask16 __U, __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2bf8s128_mask ((__v8hf) __A,
-							  (__v8hf) __B,
-							  (__v16qi)
-							  _mm_setzero_si128 (),
-							  (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2bf8s128_mask ((__v8hf) __A,
+							(__v8hf) __B,
+							(__v16qi)
+							_mm_setzero_si128 (),
+							(__mmask16) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtnes2ph_pbf8 (__m256h __A, __m256h __B)
+_mm256_cvts2ph_bf8 (__m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2bf8s256_mask ((__v16hf) __A,
-							  (__v16hf) __B,
-							  (__v32qi)
-							  _mm256_setzero_si256 (),
-							  (__mmask32) -1);
+  return (__m256i) __builtin_ia32_vcvt2ph2bf8s256_mask ((__v16hf) __A,
+							(__v16hf) __B,
+							(__v32qi)
+							_mm256_setzero_si256 (),
+							(__mmask32) -1);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtnes2ph_pbf8 (__m256i __W, __mmask32 __U,
+_mm256_mask_cvts2ph_bf8 (__m256i __W, __mmask32 __U,
 			    __m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2bf8s256_mask ((__v16hf) __A,
-							  (__v16hf) __B,
-							  (__v32qi) __W,
-							  (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2bf8s256_mask ((__v16hf) __A,
+							(__v16hf) __B,
+							(__v32qi) __W,
+							(__mmask32) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtnes2ph_pbf8 (__mmask32 __U, __m256h __A, __m256h __B)
+_mm256_maskz_cvts2ph_bf8 (__mmask32 __U, __m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2bf8s256_mask ((__v16hf) __A,
-							  (__v16hf) __B,
-							  (__v32qi)
-							  _mm256_setzero_si256 (),
-							  (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2bf8s256_mask ((__v16hf) __A,
+							(__v16hf) __B,
+							(__v32qi)
+							_mm256_setzero_si256 (),
+							(__mmask32) __U);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtne2ph_phf8 (__m128h __A, __m128h __B)
+_mm_cvt2ph_hf8 (__m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2hf8128_mask ((__v8hf) __A,
-						    	 (__v8hf) __B,
-							 (__v16qi)
-							 _mm_setzero_si128 (),
-							 (__mmask16) -1);
+  return (__m128i) __builtin_ia32_vcvt2ph2hf8128_mask ((__v8hf) __A,
+						       (__v8hf) __B,
+						       (__v16qi)
+						       _mm_setzero_si128 (),
+						       (__mmask16) -1);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtne2ph_phf8 (__m128i __W, __mmask16 __U,
-			__m128h __A, __m128h __B)
+_mm_mask_cvt2ph_hf8 (__m128i __W, __mmask16 __U,
+		     __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2hf8128_mask ((__v8hf) __A,
-							 (__v8hf) __B,
-							 (__v16qi) __W,
-							 (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2hf8128_mask ((__v8hf) __A,
+						       (__v8hf) __B,
+						       (__v16qi) __W,
+						       (__mmask16) __U);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtne2ph_phf8 (__mmask16 __U, __m128h __A, __m128h __B)
+_mm_maskz_cvt2ph_hf8 (__mmask16 __U, __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2hf8128_mask ((__v8hf) __A,
-						    	 (__v8hf) __B,
-							 (__v16qi)
-							 _mm_setzero_si128 (),
-							 (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2hf8128_mask ((__v8hf) __A,
+						       (__v8hf) __B,
+						       (__v16qi)
+						       _mm_setzero_si128 (),
+						       (__mmask16) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtne2ph_phf8 (__m256h __A, __m256h __B)
+_mm256_cvt2ph_hf8 (__m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2hf8256_mask ((__v16hf) __A,
-						    	 (__v16hf) __B,
-							 (__v32qi)
-							 _mm256_setzero_si256 (),
-							 (__mmask32) -1);
+  return (__m256i) __builtin_ia32_vcvt2ph2hf8256_mask ((__v16hf) __A,
+						       (__v16hf) __B,
+						       (__v32qi)
+						       _mm256_setzero_si256 (),
+						       (__mmask32) -1);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtne2ph_phf8 (__m256i __W, __mmask32 __U,
-			   __m256h __A, __m256h __B)
+_mm256_mask_cvt2ph_hf8 (__m256i __W, __mmask32 __U,
+			__m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2hf8256_mask ((__v16hf) __A,
-							 (__v16hf) __B,
-							 (__v32qi) __W,
-							 (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2hf8256_mask ((__v16hf) __A,
+						       (__v16hf) __B,
+						       (__v32qi) __W,
+						       (__mmask32) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtne2ph_phf8 (__mmask32 __U, __m256h __A, __m256h __B)
+_mm256_maskz_cvt2ph_hf8 (__mmask32 __U, __m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2hf8256_mask ((__v16hf) __A,
-						    	 (__v16hf) __B,
-							 (__v32qi)
-							 _mm256_setzero_si256 (),
-							 (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2hf8256_mask ((__v16hf) __A,
+						       (__v16hf) __B,
+						       (__v32qi)
+						       _mm256_setzero_si256 (),
+						       (__mmask32) __U);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtnes2ph_phf8 (__m128h __A, __m128h __B)
+_mm_cvts2ph_hf8 (__m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2hf8s128_mask ((__v8hf) __A,
-						     	  (__v8hf) __B,
-							  (__v16qi)
-							  _mm_setzero_si128 (),
-							  (__mmask16) -1);
+  return (__m128i) __builtin_ia32_vcvt2ph2hf8s128_mask ((__v8hf) __A,
+							(__v8hf) __B,
+							(__v16qi)
+							_mm_setzero_si128 (),
+							(__mmask16) -1);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtnes2ph_phf8 (__m128i __W, __mmask16 __U,
-			 __m128h __A, __m128h __B)
+_mm_mask_cvts2ph_hf8 (__m128i __W, __mmask16 __U,
+		      __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2hf8s128_mask ((__v8hf) __A,
-						     	  (__v8hf) __B,
-							  (__v16qi) __W,
-							  (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2hf8s128_mask ((__v8hf) __A,
+							(__v8hf) __B,
+							(__v16qi) __W,
+							(__mmask16) __U);
 }
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtnes2ph_phf8 (__mmask16 __U, __m128h __A, __m128h __B)
+_mm_maskz_cvts2ph_hf8 (__mmask16 __U, __m128h __A, __m128h __B)
 {
-  return (__m128i) __builtin_ia32_vcvtne2ph2hf8s128_mask ((__v8hf) __A,
-						     	  (__v8hf) __B,
-							  (__v16qi)
-							  _mm_setzero_si128 (),
-							  (__mmask16) __U);
+  return (__m128i) __builtin_ia32_vcvt2ph2hf8s128_mask ((__v8hf) __A,
+							(__v8hf) __B,
+							(__v16qi)
+							_mm_setzero_si128 (),
+							(__mmask16) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtnes2ph_phf8 (__m256h __A, __m256h __B)
+_mm256_cvts2ph_hf8 (__m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2hf8s256_mask ((__v16hf) __A,
-						     	  (__v16hf) __B,
-							  (__v32qi)
-							  _mm256_setzero_si256 (),
-							  (__mmask32) -1);
+  return (__m256i) __builtin_ia32_vcvt2ph2hf8s256_mask ((__v16hf) __A,
+							(__v16hf) __B,
+							(__v32qi)
+							_mm256_setzero_si256 (),
+							(__mmask32) -1);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtnes2ph_phf8 (__m256i __W, __mmask32 __U,
-			    __m256h __A, __m256h __B)
+_mm256_mask_cvts2ph_hf8 (__m256i __W, __mmask32 __U,
+			 __m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2hf8s256_mask ((__v16hf) __A,
-							  (__v16hf) __B,
-							  (__v32qi) __W,
-							  (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2hf8s256_mask ((__v16hf) __A,
+							(__v16hf) __B,
+							(__v32qi) __W,
+							(__mmask32) __U);
 }
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtnes2ph_phf8 (__mmask32 __U, __m256h __A, __m256h __B)
+_mm256_maskz_cvts2ph_hf8 (__mmask32 __U, __m256h __A, __m256h __B)
 {
-  return (__m256i) __builtin_ia32_vcvtne2ph2hf8s256_mask ((__v16hf) __A,
-						     	  (__v16hf) __B,
-							  (__v32qi)
-							  _mm256_setzero_si256 (),
-							  (__mmask32) __U);
+  return (__m256i) __builtin_ia32_vcvt2ph2hf8s256_mask ((__v16hf) __A,
+							(__v16hf) __B,
+							(__v32qi)
+							_mm256_setzero_si256 (),
+							(__mmask32) __U);
 }
 
 extern __inline__ __m128h
