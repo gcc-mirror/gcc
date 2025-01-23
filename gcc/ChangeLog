@@ -1,3 +1,33 @@
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/117186
+	* rtl.h (simplify_context::simplify_logical_relational_operation): Add
+	an invert0_p parameter.
+	* simplify-rtx.cc (unsigned_comparison_to_mask): New function.
+	(mask_to_unsigned_comparison): Likewise.
+	(comparison_code_valid_for_mode): Delete.
+	(simplify_context::simplify_logical_relational_operation): Add
+	an invert0_p parameter.  Handle AND and XOR.  Handle unsigned
+	comparisons.  Handle always-false results.  Ignore the low bit
+	of the mask if the operands are always ordered and remove the
+	then-redundant check of comparison_code_valid_for_mode.  Check
+	for side-effects in the operands before simplifying them away.
+	(simplify_context::simplify_binary_operation_1): Remove
+	simplification of (compare (gt ...) (lt ...)) and instead...
+	(simplify_context::simplify_relational_operation_1): ...handle
+	comparisons of comparisons here.
+	(test_comparisons): New function.
+	(test_scalar_ops): Call it.
+
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118184
+	* config/aarch64/aarch64-early-ra.cc (allocno_assignment_is_rmw):
+	New function.
+	(early_ra::record_insn_defs): Mark the live range information as
+	untrustworthy if an assignment would change part of an allocno
+	but preserve the rest.
+
 2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

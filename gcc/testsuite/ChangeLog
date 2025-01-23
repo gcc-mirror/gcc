@@ -1,3 +1,13 @@
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/117186
+	* gcc.dg/torture/pr117186.c: New test.
+	* gcc.target/aarch64/pr117186.c: Likewise.
+
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr118184.c: New test.
+
 2025-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118509
