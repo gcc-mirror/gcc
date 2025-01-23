@@ -25,4 +25,5 @@ foo (struct st * restrict p)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Loop nest . distributed: split to 0 loops and 3 library" 1 "ldist" } } */
+/* The cost modeling doesn't consider splitting a WAR re-use profitable.  */
+/* { dg-final { scan-tree-dump-times "Loop nest . distributed: split to 1 loops and 1 library" 1 "ldist" } } */
